@@ -1,0 +1,34 @@
+{
+  "name": "@org/mobile-rehearsal-player",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "eas-build-post-install": "cd ../../ && node tools/scripts/eas-build-post-install.mjs . packages/mobile-rehearsal-player"
+  },
+  "nx": {
+    "name": "mobile-rehearsal-player"
+  },
+  "dependencies": {
+    "@expo/metro-config": "*",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@testing-library/react-native": "*",
+    "expo": "*",
+    "expo-auth-session": "~7.0.11",
+    "expo-constants": "~18.0.13",
+    "expo-dev-client": "~6.0.21",
+    "expo-secure-store": "~15.0.8",
+    "expo-splash-screen": "*",
+    "expo-status-bar": "*",
+    "expo-system-ui": "*",
+    "expo-web-browser": "~15.0.11",
+    "jest-expo": "*",
+    "metro-config": "*",
+    "metro-resolver": "*",
+    "react": "*",
+    "react-native": "*",
+    "react-native-svg": "*",
+    "react-native-svg-transformer": "*",
+    "react-native-track-player": "^4.1.2",
+    "react-native-web": "*"
+  }
+}

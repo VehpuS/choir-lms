@@ -2,5 +2,18 @@
   "extends": "./tsconfig.base.json",
   "compileOnSave": false,
   "files": [],
-  "references": []
+  "references": [
+    {
+      "path": "./packages/mobile-rehearsal-player"
+    },
+    {
+      "path": "./packages/rehearsal-domain"
+    },
+    {
+      "path": "./packages/rehearsal-playback"
+    },
+    {
+      "path": "./packages/google-drive"
+    }
+  ]
 }

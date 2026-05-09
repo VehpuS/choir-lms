@@ -1,8 +1,8 @@
 ## 1. Workspace and app foundation
 
-- [ ] 1.1 Generate the Expo-based mobile application and shared workspace packages needed for domain, playback, and Google integration code.
-- [ ] 1.2 Add and configure the MVP dependencies for Google authentication, Google Drive access, audio playback, native media controls, and app-owned persistence.
-- [ ] 1.3 Establish environment configuration for Google credentials, supported audio formats, and mobile platform setup.
+- [x] 1.1 Generate the Expo-based mobile application and shared workspace packages needed for domain, playback, and Google integration code.
+- [x] 1.2 Add and configure the MVP dependencies for Google authentication, Google Drive access, audio playback, native media controls, and app-owned persistence.
+- [x] 1.3 Establish environment configuration for Google credentials, supported audio formats, and mobile platform setup.
 
 ## 2. Domain and data modeling
 
