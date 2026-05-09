@@ -9,14 +9,16 @@ This repository is an Nx monorepo for a broader choir learning platform. See the
 - When creating apps or libraries, keep package boundaries reusable so future choir LMS apps can share domain, auth, media, and storage logic.
 - Keep the [README](README.md) updated with any changes to the development focus, repository structure, or workflow expectations.
 - For TypeScript and TSX work, follow the repo coding style guidance in `.github/instructions/typescript-coding-style-policy.instructions.md`.
+- For automated test work, follow the repo testing guidance in `.github/instructions/testing-policy.instructions.md`.
 - When adding or materially expanding code in a language or framework without comparable repo coding style guidance, first draft a suggested policy in `.github/instructions/` and confirm it with the user before proceeding with broader implementation in that language or framework.
+- Before suggesting or creating a commit, clear VS Code Problems in every touched file. If Vscode is out of sync with repo configuration, help the user address this. Alternatively, if a touched file is outside the current lint or typecheck surface, extend project validation so `nx lint` or a lint dependency fails until that file is clean.
 
 ## Deliberate OpenSpec Implementation
 
 - When implementing from OpenSpec artifacts or using `/opsx:apply`, invoke the `openspec-checkpointed-implementation` skill before writing code.
 - Work on exactly one unchecked numbered subtask at a time. Do not silently batch across multiple task checkboxes unless the user explicitly asks for batch mode.
 - Before the first edit for a subtask, state the exact task being implemented, the local hypothesis driving the change, and the narrow validation you expect to run. If public API shape, naming, UX, styling, data model, or architecture is still ambiguous after reading nearby code and artifacts, pause and ask the user instead of guessing.
-- Add or update automated tests in the same slice for every new behavior, fix, or regression-prone branch. If automation is not practical, explain why, identify the manual test gap, and ask before skipping tests.
+- Add or update automated tests in the same slice for every new behavior, fix, or regression-prone branch, following `.github/instructions/testing-policy.instructions.md`. If automation is not practical, explain why, identify the manual test gap, and ask before skipping tests.
 - After completing a subtask, run focused validation, update only that task checkbox, and invoke the `implementation-checkpoint` skill before moving on.
 - Each completed subtask is the default commit boundary. Offer a suggested commit message and create the commit only after explicit user approval.
 - For auth, native, device, background playback, or third-party integration work, request manual verification before marking the related task complete.
