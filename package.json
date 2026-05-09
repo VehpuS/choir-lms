@@ -4,12 +4,15 @@
   "license": "MIT",
   "scripts": {},
   "private": true,
-  "dependencies": {},
   "devDependencies": {
+    "@expo/cli": "~54.0.16",
+    "@nx/expo": "^22.7.0",
     "@nx/js": "22.7.0",
     "@swc-node/register": "1.11.1",
     "@swc/core": "1.15.8",
     "@swc/helpers": "0.5.18",
+    "metro-config": "~0.83.0",
+    "metro-resolver": "~0.83.0",
     "nx": "22.7.0",
     "prettier": "^3.8.1",
     "tslib": "^2.3.0",
@@ -17,5 +20,18 @@
   },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "overrides": {
+    "axios": "1.16.0",
+    "brace-expansion": "5.0.6",
+    "follow-redirects": "1.16.0",
+    "postcss": "8.5.14",
+    "yaml": "2.8.4"
+  },
+  "dependencies": {
+    "expo": "~54.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-native": "0.81.5"
+  }
 }
