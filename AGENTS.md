@@ -1,3 +1,14 @@
+## Choir LMS Agent Guidance
+
+This repository is an Nx monorepo for a broader choir learning platform. See the [README](README.md) for vision, direction, and development notes.
+
+## Workflow Expectations
+
+- For product or implementation changes, read the relevant OpenSpec proposal, design, specs, and tasks before editing code.
+- If a request materially changes scope or behavior, update or create the corresponding OpenSpec artifacts before implementation.
+- When creating apps or libraries, keep package boundaries reusable so future choir LMS apps can share domain, auth, media, and storage logic.
+- Keep the [README](README.md) updated with any changes to the development focus, repository structure, or workflow expectations.
+
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
 

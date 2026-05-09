@@ -1,0 +1,81 @@
+## Context
+
+This repository is a greenfield Nx monorepo intended to support a broader choir learning platform over time, but the first product slice is intentionally narrower: a mobile rehearsal player for online audio practice. The MVP centers on Google Drive as the initial media source, app-defined loops and playlists as the core rehearsal structures, and a mobile playback experience that feels dependable enough for repeated daily use.
+
+The main constraint is that media behavior matters more than broad platform coverage in this slice. The product needs stable mobile playback, background audio, and native transport integration without taking on the complexity of offline sync, collaborative editing, or advanced recording workflows.
+
+## Goals / Non-Goals
+
+**Goals:**
+- Deliver a mobile-first React application with dependable playback of Google Drive audio files.
+- Model full tracks and named loops as first-class playable items that can be queued together in playlists.
+- Support playlist playback modes needed for rehearsal practice: ordered playback, repeat, and shuffle.
+- Preserve native mobile playback affordances where practical for MVP, including background playback and lock-screen transport controls.
+- Keep domain and package boundaries clean enough to support future choir LMS applications in the same Nx workspace.
+
+**Non-Goals:**
+- Offline downloads, sync, or conflict resolution.
+- Rich collaboration features such as shared editing, comments, or real-time playlist co-authoring.
+- Non-audio materials such as PDF scores, lyrics, schedules, or video playback.
+- Multi-stem mixing, member recording capture, composite performance generation, or other DAW-like behavior.
+- A full web companion or admin surface in the first slice.
+
+## Decisions
+
+### 1. Build the first client as an Expo-based mobile application
+The MVP prioritizes dependable mobile playback over zero-install distribution. Expo provides a more credible path to background audio, native media controls, and mobile transport integration than a PWA-first approach.
+
+Alternatives considered:
+- PWA-first: rejected for MVP because mobile browser media constraints would put core rehearsal behavior at risk.
+- Dual app and web launch: rejected because it broadens scope before the core practice loop is validated.
+
+### 2. Treat Google Drive as the source of media, but keep rehearsal structures as app-owned data
+Audio files remain in Google Drive. The application stores references to those files plus app-defined entities such as loops, playlists, and queue state. This keeps the MVP focused on rehearsal behavior rather than attempting to encode product semantics back into Drive.
+
+Alternatives considered:
+- Mirror or ingest audio into app-managed storage: rejected for MVP because it adds media hosting and sync complexity too early.
+- Store loops and playlists only on-device: rejected because app-owned persistence is a better foundation for future cross-device and choir-scoped use.
+
+### 3. Use a single playable-item model for both full tracks and loops
+The playback engine should operate on a normalized playable item with a source audio file and a start/end range. A full track is the special case where the range spans the whole file. A saved loop is the same shape with explicit boundaries.
+
+Alternatives considered:
+- Separate track and loop playback pipelines: rejected because it duplicates queue logic and makes playlist behavior harder to reason about.
+
+### 4. Keep MVP playback online-only
+Playback will stream from Google Drive-backed sources at play time. If access is unavailable, the app should fail clearly rather than introduce partial offline behavior.
+
+Alternatives considered:
+- Partial caching: rejected because it creates offline expectations without delivering a full offline product.
+- Full offline support: rejected because download management and invalidation are outside MVP scope.
+
+### 5. Start with personal practice structures, while leaving room for later publishing models
+The MVP should assume loops and playlists are primarily user-owned. The data model should still leave room for future ownership scopes such as section or choir without requiring a redesign.
+
+Alternatives considered:
+- Shared-by-default rehearsal structures: rejected for MVP because permissions and collaboration would become part of the critical path.
+
+## Risks / Trade-offs
+
+- [Google Drive streaming behavior may be inconsistent across file types or permissions] → Validate supported formats and access patterns early with representative Drive content.
+- [Loop boundaries may feel imprecise for musically sensitive excerpts] → Define loop markers as millisecond offsets and test acceptability with real rehearsal audio before expanding scope.
+- [Native playback integration may behave differently across iOS and Android] → Keep queue semantics app-defined and use native controls as a transport surface, not as the source of truth.
+- [Deferring offline support may limit use in poor-network environments] → Keep the scope explicit in product messaging and design persistence so offline can be added later without changing domain objects.
+- [A narrow MVP may under-serve conductors who want shared structures immediately] → Optimize first for singer rehearsal value and add publishing workflows only after the core player is validated.
+
+## Migration Plan
+
+1. Create the mobile client and shared domain packages inside the Nx workspace.
+2. Implement Google authentication and Drive audio discovery for the supported MVP file set.
+3. Implement the playback engine around the playable-item abstraction.
+4. Add loop creation, loop persistence, and playlist management on top of the same playback model.
+5. Enable native mobile transport integration and validate behavior on both supported mobile platforms.
+
+Rollback is low risk because this is the first product slice in a greenfield repository. If the chosen media stack proves insufficient, the client implementation can change without invalidating the proposed domain model.
+
+## Open Questions
+
+- Which Google Drive permission and sharing model is expected for the first cohort of choirs?
+- What minimum audio format set should be considered supported in MVP?
+- Should playlists in MVP be strictly personal, or can a later server-side publish model be anticipated from day one?
+- How precise do loop markers need to be for the target rehearsal material to feel trustworthy?
