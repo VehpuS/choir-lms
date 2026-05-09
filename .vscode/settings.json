@@ -13,7 +13,15 @@
       "approve": true,
       "matchCommandLine": true
     },
-    "/^npm exec nx run-many -t test/": {
+    "/^npm exec -- nx run-many -t test/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run-many -t typecheck/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run-many -t lint/": {
       "approve": true,
       "matchCommandLine": true
     }
