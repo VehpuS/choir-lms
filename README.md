@@ -64,6 +64,14 @@ openspec list --json
 openspec status --change "add-mobile-rehearsal-player"
 ```
 
+### Agentic OpenSpec workflow:
+
+- repo-level policy lives in `AGENTS.md`
+- OpenSpec change artifacts auto-load additional guidance from `.github/instructions/openspec-deliberate-execution.instructions.md`
+- `openspec-checkpointed-implementation` keeps implementation scoped to one numbered subtask at a time
+- `implementation-checkpoint` pauses for feedback, manual verification, and an optional commit before the next subtask
+- new behavior should add automated tests in the same slice unless the user explicitly accepts a documented manual-only gap
+
 ## Status
 
 The repository is still in early setup. The product direction and first implementation slice are defined in OpenSpec, and the next step is implementation of the mobile rehearsal player foundations.
