@@ -6,7 +6,26 @@
     "eas-build-post-install": "cd ../../ && node tools/scripts/eas-build-post-install.mjs . packages/mobile-rehearsal-player"
   },
   "nx": {
-    "name": "mobile-rehearsal-player"
+    "name": "mobile-rehearsal-player",
+    "targets": {
+      "typecheck-config": {
+        "executor": "nx:run-commands",
+        "cache": true,
+        "inputs": [
+          "{workspaceRoot}/tsconfig.base.json",
+          "{projectRoot}/tsconfig.config.json",
+          "{projectRoot}/app.config.ts",
+          "{projectRoot}/src/config/**/*.ts"
+        ],
+        "options": {
+          "cwd": "packages/mobile-rehearsal-player",
+          "command": "tsc --noEmit -p tsconfig.config.json"
+        }
+      },
+      "lint": {
+        "dependsOn": ["typecheck-config"]
+      }
+    }
   },
   "dependencies": {
     "@expo/metro-config": "*",

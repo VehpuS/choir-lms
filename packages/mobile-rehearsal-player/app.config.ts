@@ -1,17 +1,15 @@
+/// <reference types="node" />
+
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
-const DEFAULT_AUDIO_MIME_TYPES = [
-  'audio/mpeg',
-  'audio/mp4',
-  'audio/x-m4a',
-  'audio/wav',
-  'audio/x-wav',
-  'audio/aac',
-  'audio/flac',
-  'audio/ogg',
-];
-
-const DEFAULT_AUDIO_EXTENSIONS = ['mp3', 'm4a', 'wav', 'aac', 'flac', 'ogg'];
+import {
+  DEFAULT_ANDROID_PACKAGE,
+  DEFAULT_APP_SCHEME,
+  DEFAULT_GOOGLE_DRIVE_SCOPE,
+  DEFAULT_IOS_BUNDLE_IDENTIFIER,
+  DEFAULT_SUPPORTED_AUDIO_EXTENSIONS,
+  DEFAULT_SUPPORTED_AUDIO_MIME_TYPES,
+} from './src/config/defaults';
 
 const parseCsv = (value: string | undefined, fallback: string[]) => {
   if (!value) {
@@ -27,18 +25,19 @@ const parseCsv = (value: string | undefined, fallback: string[]) => {
 };
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-  const scheme = process.env.EXPO_PUBLIC_APP_SCHEME ?? 'choirlms';
+  const scheme = process.env.EXPO_PUBLIC_APP_SCHEME ?? DEFAULT_APP_SCHEME;
   const iosBundleIdentifier =
-    process.env.EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER ?? 'com.choirlms.mobile';
+    process.env.EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER ??
+    DEFAULT_IOS_BUNDLE_IDENTIFIER;
   const androidPackage =
-    process.env.EXPO_PUBLIC_ANDROID_PACKAGE ?? 'com.choirlms.mobile';
+    process.env.EXPO_PUBLIC_ANDROID_PACKAGE ?? DEFAULT_ANDROID_PACKAGE;
   const supportedAudioMimeTypes = parseCsv(
     process.env.EXPO_PUBLIC_GOOGLE_DRIVE_SUPPORTED_MIME_TYPES,
-    DEFAULT_AUDIO_MIME_TYPES
+    DEFAULT_SUPPORTED_AUDIO_MIME_TYPES,
   );
   const supportedAudioExtensions = parseCsv(
     process.env.EXPO_PUBLIC_GOOGLE_DRIVE_SUPPORTED_EXTENSIONS,
-    DEFAULT_AUDIO_EXTENSIONS
+    DEFAULT_SUPPORTED_AUDIO_EXTENSIONS,
   );
 
   return {
@@ -86,7 +85,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           androidClientId:
             process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? '',
           webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '',
-          driveScope: 'https://www.googleapis.com/auth/drive.readonly',
+          driveScope: DEFAULT_GOOGLE_DRIVE_SCOPE,
         },
         supportedAudioMimeTypes,
         supportedAudioExtensions,

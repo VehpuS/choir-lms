@@ -17,5 +17,6 @@ applyTo: '**/*.{ts,tsx}'
 - Exports: Prefer named exports over default exports for shared code so refactors and imports stay explicit.
 - Package boundaries: Keep shared package code framework-agnostic unless the package is explicitly app-facing / framework-specific.
 - Maintenance: Match the repo formatter expectations by running it on changed files.
+- Validation: If Vscode is out of sync with repo configuration, help the user address this. Alternatively, if a touched file is outside the current lint or typecheck surface, extend project validation so `nx lint` or a lint dependency fails until that file is clean.
 - Comments: Add comments where the intent is not obvious from the code itself.
 - Linting: Add linters and lint rules to help enforce these conventions in new nx packages and apps.

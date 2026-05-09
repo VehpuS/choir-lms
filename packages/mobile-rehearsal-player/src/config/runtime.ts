@@ -1,5 +1,14 @@
 import Constants from 'expo-constants';
 
+import {
+  DEFAULT_ANDROID_PACKAGE,
+  DEFAULT_APP_SCHEME,
+  DEFAULT_GOOGLE_DRIVE_SCOPE,
+  DEFAULT_IOS_BUNDLE_IDENTIFIER,
+  DEFAULT_SUPPORTED_AUDIO_EXTENSIONS,
+  DEFAULT_SUPPORTED_AUDIO_MIME_TYPES,
+} from './defaults';
+
 type RuntimeGoogleConfig = {
   iosClientId: string;
   androidClientId: string;
@@ -28,26 +37,17 @@ export type RuntimeConfig = {
 };
 
 const DEFAULT_RUNTIME_CONFIG: RuntimeConfig = {
-  scheme: 'choirlms',
-  iosBundleIdentifier: 'com.choirlms.mobile',
-  androidPackage: 'com.choirlms.mobile',
+  scheme: DEFAULT_APP_SCHEME,
+  iosBundleIdentifier: DEFAULT_IOS_BUNDLE_IDENTIFIER,
+  androidPackage: DEFAULT_ANDROID_PACKAGE,
   google: {
     iosClientId: '',
     androidClientId: '',
     webClientId: '',
-    driveScope: 'https://www.googleapis.com/auth/drive.readonly',
+    driveScope: DEFAULT_GOOGLE_DRIVE_SCOPE,
   },
-  supportedAudioMimeTypes: [
-    'audio/mpeg',
-    'audio/mp4',
-    'audio/x-m4a',
-    'audio/wav',
-    'audio/x-wav',
-    'audio/aac',
-    'audio/flac',
-    'audio/ogg',
-  ],
-  supportedAudioExtensions: ['mp3', 'm4a', 'wav', 'aac', 'flac', 'ogg'],
+  supportedAudioMimeTypes: DEFAULT_SUPPORTED_AUDIO_MIME_TYPES,
+  supportedAudioExtensions: DEFAULT_SUPPORTED_AUDIO_EXTENSIONS,
 };
 
 const mobileConfig =

@@ -6,6 +6,8 @@
   "private": true,
   "devDependencies": {
     "@expo/cli": "~54.0.16",
+    "@nx/eslint": "^22.7.0",
+    "@nx/eslint-plugin": "^22.7.0",
     "@nx/expo": "^22.7.0",
     "@nx/js": "22.7.0",
     "@swc-node/register": "1.11.1",
@@ -14,12 +16,15 @@
     "@types/node": "20.19.9",
     "@types/react": "^19.1.0",
     "babel-preset-expo": "~54.0.7",
+    "eslint": "~8.57.0",
+    "eslint-config-prettier": "^10.1.8",
     "metro-config": "~0.83.0",
     "metro-resolver": "~0.83.0",
     "nx": "22.7.0",
     "prettier": "^3.8.1",
     "tslib": "^2.3.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "typescript-eslint": "^8.59.2"
   },
   "workspaces": [
     "packages/*"
