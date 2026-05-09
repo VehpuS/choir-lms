@@ -6,9 +6,9 @@
 
 ## 2. Domain and data modeling
 
-- [ ] 2.1 Define the core domain models for Drive audio sources, playable items, named loops, playlists, and ownership scope.
-- [ ] 2.2 Implement persistence for user-owned loops and playlists that references Google Drive audio without copying source media.
-- [ ] 2.3 Implement services for Drive library metadata, authorization state, and unavailable-source handling.
+- [x] 2.1 Define the core domain models for Drive audio sources, playable items, named loops, playlists, and ownership scope.
+- [x] 2.2 Implement persistence for user-owned loops and playlists that references Google Drive audio without copying source media.
+- [x] 2.3 Implement services for Drive library metadata, authorization state, and unavailable-source handling.
 
 ## 3. Google Drive library and full-track playback
 

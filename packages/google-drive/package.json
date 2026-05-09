@@ -16,5 +16,7 @@
   "nx": {
     "name": "google-drive"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@org/rehearsal-domain": "^0.0.1"
+  }
 }
