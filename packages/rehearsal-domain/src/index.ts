@@ -1,1 +1,1 @@
-export * from './lib/rehearsal-domain.js';
+export * from './lib/rehearsal-domain.ts';

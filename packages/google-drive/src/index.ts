@@ -1,1 +1,1 @@
-export * from './lib/google-drive.js';
+export * from './lib/google-drive.ts';

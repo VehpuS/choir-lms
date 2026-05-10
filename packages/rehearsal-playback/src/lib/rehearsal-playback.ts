@@ -10,6 +10,7 @@ import {
   type RepeatMode,
 } from '@org/rehearsal-domain';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { filter, flatMap, keyBy, size, sortBy } from 'es-toolkit/compat';
 
 export type PracticeRepository = {
   listLoops(ownerId: string): Promise<NamedLoop[]>;
@@ -53,8 +54,9 @@ const shuffleItems = <Entity>(
   random: () => number = Math.random,
 ) => {
   const items = [...values];
+  const itemCount = size(items);
 
-  for (let index = items.length - 1; index > 0; index -= 1) {
+  for (let index = itemCount - 1; index > 0; index -= 1) {
     const targetIndex = Math.floor(random() * (index + 1));
     const currentValue = items[index];
 
@@ -72,19 +74,18 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
 
   async saveLoop(loop: NamedLoop) {
     const loops = await this.listLoops(loop.ownerId);
-    const nextLoops = [
-      ...loops.filter((existingLoop) => existingLoop.id !== loop.id),
-      loop,
-    ].sort((leftLoop, rightLoop) => {
-      return leftLoop.name.localeCompare(rightLoop.name);
-    });
+    const otherLoops = filter(
+      loops,
+      (existingLoop) => existingLoop.id !== loop.id,
+    );
+    const nextLoops = sortBy([...otherLoops, loop], ['name']);
 
     return writeCollection(storageKey('loops', loop.ownerId), nextLoops);
   }
 
   async deleteLoop(ownerId: string, loopId: string) {
     const loops = await this.listLoops(ownerId);
-    const nextLoops = loops.filter((loop) => loop.id !== loopId);
+    const nextLoops = filter(loops, (loop) => loop.id !== loopId);
 
     return writeCollection(storageKey('loops', ownerId), nextLoops);
   }
@@ -95,14 +96,11 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
 
   async savePlaylist(playlist: Playlist) {
     const playlists = await this.listPlaylists(playlist.ownerId);
-    const nextPlaylists = [
-      ...playlists.filter(
-        (existingPlaylist) => existingPlaylist.id !== playlist.id,
-      ),
-      playlist,
-    ].sort((leftPlaylist, rightPlaylist) => {
-      return leftPlaylist.name.localeCompare(rightPlaylist.name);
-    });
+    const otherPlaylists = filter(
+      playlists,
+      (existingPlaylist) => existingPlaylist.id !== playlist.id,
+    );
+    const nextPlaylists = sortBy([...otherPlaylists, playlist], ['name']);
 
     return writeCollection(
       storageKey('playlists', playlist.ownerId),
@@ -112,7 +110,8 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
 
   async deletePlaylist(ownerId: string, playlistId: string) {
     const playlists = await this.listPlaylists(ownerId);
-    const nextPlaylists = playlists.filter(
+    const nextPlaylists = filter(
+      playlists,
       (playlist) => playlist.id !== playlistId,
     );
 
@@ -125,11 +124,17 @@ export const resolvePlaylistItems = (
   loops: NamedLoop[],
   sources: DriveAudioSource[],
 ) => {
-  const loopsById = new Map(loops.map((loop) => [loop.id, loop]));
-  const sourcesById = new Map(sources.map((source) => [source.id, source]));
+  const loopsById: Partial<Record<string, NamedLoop>> = keyBy(
+    loops,
+    (loop) => loop.id,
+  );
+  const sourcesById: Partial<Record<string, DriveAudioSource>> = keyBy(
+    sources,
+    (source) => source.id,
+  );
 
-  const playableItems = playlist.items.flatMap((entry) => {
-    const source = sourcesById.get(entry.sourceId);
+  const playableItems = flatMap(playlist.items, (entry) => {
+    const source = sourcesById[entry.sourceId];
 
     if (!source || !isSourcePlayable(source)) {
       return [];
@@ -143,7 +148,7 @@ export const resolvePlaylistItems = (
       return [];
     }
 
-    const loop = loopsById.get(entry.loopId);
+    const loop = loopsById[entry.loopId];
 
     if (!loop) {
       return [];

@@ -4,6 +4,7 @@ import {
   type DriveAudioSource,
   type SourceAvailabilityReason,
 } from '@org/rehearsal-domain';
+import { map, partition } from 'es-toolkit/compat';
 
 export type DriveAuthorizationStatus =
   | 'unconfigured'
@@ -201,21 +202,21 @@ export const listDriveLibrary = async (options: {
   const payload = (await response.json()) as {
     files?: DriveFileMetadata[];
   };
-  const sources = (payload.files ?? []).map((file) => {
+  const sources = map(payload.files ?? [], (file) => {
     return mapDriveFileToAudioSource(
       file,
       options.supportedMimeTypes,
       options.supportedExtensions,
     );
   });
+  const [playableSources, unavailableSources] = partition(
+    sources,
+    (source) => source.availability.status === 'available',
+  );
 
   return {
-    playableSources: sources.filter(
-      (source) => source.availability.status === 'available',
-    ),
-    unavailableSources: sources.filter(
-      (source) => source.availability.status !== 'available',
-    ),
+    playableSources,
+    unavailableSources,
   } satisfies DriveLibrarySnapshot;
 };
 

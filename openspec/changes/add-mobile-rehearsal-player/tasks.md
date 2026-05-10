@@ -12,7 +12,7 @@
 
 ## 3. Google Drive library and full-track playback
 
-- [ ] 3.1 Implement the Google sign-in and Drive authorization flow for the mobile rehearsal player.
+- [x] 3.1 Implement the Google sign-in and Drive authorization flow for the mobile rehearsal player.
 - [ ] 3.2 Build the mobile rehearsal library view for supported Google Drive audio files and unavailable or unsupported file states.
 - [ ] 3.3 Implement full-track playback from the rehearsal library using the shared playable-item model.
 

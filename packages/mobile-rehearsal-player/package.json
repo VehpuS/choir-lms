@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "eas-build-post-install": "cd ../../ && node tools/scripts/eas-build-post-install.mjs . packages/mobile-rehearsal-player"
+    "eas-build-post-install": "cd ../../ && node tools/scripts/eas-build-post-install.mjs . packages/mobile-rehearsal-player",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "nx": {
     "name": "mobile-rehearsal-player",
@@ -22,15 +24,32 @@
           "command": "tsc --noEmit -p tsconfig.config.json"
         }
       },
+      "test": {
+        "executor": "nx:run-commands",
+        "cache": true,
+        "inputs": [
+          "default",
+          "^production",
+          "{workspaceRoot}/package-lock.json"
+        ],
+        "options": {
+          "cwd": "packages/mobile-rehearsal-player",
+          "command": "tsx --test src/app/auth/google-drive-authorization.spec.ts"
+        }
+      },
       "lint": {
-        "dependsOn": ["typecheck-config"]
+        "dependsOn": [
+          "typecheck-config"
+        ]
       }
     }
   },
   "dependencies": {
     "@expo/metro-config": "*",
+    "@org/google-drive": "^0.0.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@testing-library/react-native": "*",
+    "es-toolkit": "^1.46.1",
     "expo": "*",
     "expo-auth-session": "~7.0.11",
     "expo-constants": "~18.0.13",
@@ -43,7 +62,7 @@
     "jest-expo": "*",
     "metro-config": "*",
     "metro-resolver": "*",
-    "react": "*",
+    "react": "19.1.0",
     "react-native": "*",
     "react-native-svg": "*",
     "react-native-svg-transformer": "*",

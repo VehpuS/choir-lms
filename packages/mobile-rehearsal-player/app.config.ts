@@ -1,27 +1,44 @@
 /// <reference types="node" />
 
+import { compact, isEmpty, map, split } from 'es-toolkit/compat';
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
-import {
-  DEFAULT_ANDROID_PACKAGE,
-  DEFAULT_APP_SCHEME,
-  DEFAULT_GOOGLE_DRIVE_SCOPE,
-  DEFAULT_IOS_BUNDLE_IDENTIFIER,
-  DEFAULT_SUPPORTED_AUDIO_EXTENSIONS,
-  DEFAULT_SUPPORTED_AUDIO_MIME_TYPES,
-} from './src/config/defaults';
+// Expo CLI evaluates app.config.ts directly in Node, so these defaults stay
+// in this file instead of importing TypeScript modules from src/.
+const DEFAULT_APP_SCHEME = 'choirlms';
+const DEFAULT_ANDROID_PACKAGE = 'com.choirlms.mobile';
+const DEFAULT_IOS_BUNDLE_IDENTIFIER = 'com.choirlms.mobile';
+const DEFAULT_GOOGLE_DRIVE_SCOPE =
+  'https://www.googleapis.com/auth/drive.readonly';
+
+const DEFAULT_SUPPORTED_AUDIO_MIME_TYPES = [
+  'audio/mpeg',
+  'audio/mp4',
+  'audio/x-m4a',
+  'audio/wav',
+  'audio/x-wav',
+  'audio/aac',
+  'audio/flac',
+  'audio/ogg',
+];
+
+const DEFAULT_SUPPORTED_AUDIO_EXTENSIONS = [
+  'mp3',
+  'm4a',
+  'wav',
+  'aac',
+  'flac',
+  'ogg',
+];
 
 const parseCsv = (value: string | undefined, fallback: string[]) => {
-  if (!value) {
+  if (isEmpty(value)) {
     return fallback;
   }
 
-  const items = value
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
+  const items = compact(map(split(value, ','), (item) => item.trim()));
 
-  return items.length > 0 ? items : fallback;
+  return isEmpty(items) ? fallback : items;
 };
 
 export default ({ config }: ConfigContext): ExpoConfig => {

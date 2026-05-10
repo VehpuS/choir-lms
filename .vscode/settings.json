@@ -24,6 +24,22 @@
     "/^npm exec -- nx run-many -t lint/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec nx run mobile-rehearsal-player:test/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec nx run mobile-rehearsal-player:lint/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec nx run mobile-rehearsal-player:typecheck/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^cd /Users/vehpus/git/choir-lms/packages/mobile-rehearsal-player && npx expo config --type public$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

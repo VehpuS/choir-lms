@@ -57,6 +57,41 @@ npx nx graph
 npx nx sync
 ```
 
+### Google OAuth for mobile manual testing
+
+The mobile rehearsal player reads Google Drive OAuth IDs from `packages/mobile-rehearsal-player/.env`.
+
+For the default app identifiers in this repo:
+
+- `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` should be an iOS OAuth client for bundle ID `com.choirlms.mobile`
+- `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` should be an Android OAuth client for package `com.choirlms.mobile`
+- `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` is only needed when running the app on web
+
+To get the Android debug SHA-1 for local `expo run:android` builds:
+
+```sh
+keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore -storepass android -keypass android | grep SHA1
+```
+
+If `~/.android/debug.keystore` does not exist yet, generate the standard Android debug keystore first:
+
+```sh
+keytool -genkeypair -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+```
+
+After filling the client ID for the platform you are testing, verify the Expo config and launch a dev build:
+
+```sh
+cd packages/mobile-rehearsal-player
+npx expo config --type public
+```
+
+```sh
+npm exec -- nx run mobile-rehearsal-player:run-ios
+# or
+npm exec -- nx run mobile-rehearsal-player:run-android
+```
+
 OpenSpec workflow:
 
 ```sh

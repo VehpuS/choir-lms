@@ -1,6 +1,9 @@
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { join, map, toUpper } from 'es-toolkit/compat';
 
-import { hasGoogleAuthConfig, runtimeConfig } from '../config/runtime';
+import { runtimeConfig } from '../config/runtime';
+import { DriveAuthorizationCard } from './auth/DriveAuthorizationCard';
+import { useGoogleDriveAuthorization } from './auth/use-google-drive-authorization';
 
 type BulletListProps = {
   items: string[];
@@ -24,13 +27,10 @@ const CURRENT_FOCUS = [
   'Playlist assembly, ordered playback, repeat, and shuffle.',
 ];
 
-const AUDIO_FORMAT_LABEL = runtimeConfig.supportedAudioExtensions
-  .map((extension) => extension.toUpperCase())
-  .join(', ');
-
-const GOOGLE_AUTH_STATUS = hasGoogleAuthConfig()
-  ? 'Configured'
-  : 'Pending credentials';
+const AUDIO_FORMAT_LABEL = join(
+  map(runtimeConfig.supportedAudioExtensions, (extension) => toUpper(extension)),
+  ', ',
+);
 
 const BORDER_COLOR = '#d6d1c4';
 const CARD_BACKGROUND = '#f8f1e3';
@@ -54,7 +54,7 @@ const SummaryCard = ({ eyebrow, title, body }: SummaryCardProps) => {
 const BulletList = ({ items }: BulletListProps) => {
   return (
     <View style={styles.list}>
-      {items.map((item) => {
+      {map(items, (item) => {
         return (
           <View key={item} style={styles.listItem}>
             <View style={styles.listMarker} />
@@ -66,7 +66,42 @@ const BulletList = ({ items }: BulletListProps) => {
   );
 };
 
+const getGoogleAuthStatusLabel = (options: {
+  googleAuthConfigured: boolean;
+  status: 'unconfigured' | 'authorized' | 'expired' | 'attention-required';
+}) => {
+  if (!options.googleAuthConfigured) {
+    return 'Credentials missing';
+  }
+
+  if (options.status === 'authorized') {
+    return 'Connected';
+  }
+
+  if (options.status === 'expired') {
+    return 'Expired';
+  }
+
+  if (options.status === 'attention-required') {
+    return 'Needs attention';
+  }
+
+  return 'Ready to connect';
+};
+
 export const App = () => {
+  const {
+    authState,
+    canClearAuthorization,
+    canStartAuthorization,
+    clearAuthorization,
+    googleAuthConfigured,
+    isBusy,
+    requestReady,
+    startAuthorization,
+    statusCopy,
+  } = useGoogleDriveAuthorization();
+
   return (
     <SafeAreaView style={styles.screen}>
       <ScrollView
@@ -83,7 +118,12 @@ export const App = () => {
           <View style={styles.statusRow}>
             <View style={styles.statusPill}>
               <Text style={styles.statusLabel}>Google auth</Text>
-              <Text style={styles.statusValue}>{GOOGLE_AUTH_STATUS}</Text>
+              <Text style={styles.statusValue}>
+                {getGoogleAuthStatusLabel({
+                  googleAuthConfigured,
+                  status: authState.status,
+                })}
+              </Text>
             </View>
             <View style={styles.statusPill}>
               <Text style={styles.statusLabel}>Audio support</Text>
@@ -102,6 +142,21 @@ export const App = () => {
           eyebrow="Runtime configuration"
           title="Drive access is read-only by default"
           body={`Scheme ${runtimeConfig.scheme} uses ${runtimeConfig.google.driveScope} and prepares iOS bundle ${runtimeConfig.iosBundleIdentifier} with Android package ${runtimeConfig.androidPackage}.`}
+        />
+
+        <DriveAuthorizationCard
+          authState={authState}
+          canClearAuthorization={canClearAuthorization}
+          canStartAuthorization={canStartAuthorization}
+          isBusy={isBusy}
+          onClearAuthorization={() => {
+            void clearAuthorization();
+          }}
+          onStartAuthorization={() => {
+            void startAuthorization();
+          }}
+          requestReady={requestReady}
+          statusCopy={statusCopy}
         />
 
         <View style={styles.section}>
@@ -233,3 +288,5 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 });
+
+export default App;

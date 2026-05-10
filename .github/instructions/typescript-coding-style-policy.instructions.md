@@ -13,7 +13,7 @@ applyTo: '**/*.{ts,tsx}'
 - Structure: Favor early returns and guard clauses over deep nesting.
 - Readability: Prefer named constants and helper variables over repeated string, number, or boolean literals. Avoid magic values in conditionals, object construction, and JSX props.
 - Readability: Define reusable regular expressions at module scope, give them descriptive names, and reuse them instead of recreating them inside functions.
-- Readability: Prefer `es-toolkit` helpers over ad hoc built-in JavaScript chains. If a touched package needs `es-toolkit` for the first time, add the dependency as part of the same change instead of reimplementing the helper locally.
+- Stability: Prefer `es-toolkit` helpers over ad hoc built-in JavaScript chains. If a touched package needs `es-toolkit` for the first time, add the dependency as part of the same change instead of reimplementing the helper locally.
 - Exports: Prefer named exports over default exports for shared code so refactors and imports stay explicit.
 - Package boundaries: Keep shared package code framework-agnostic unless the package is explicitly app-facing / framework-specific.
 - Maintenance: Match the repo formatter expectations by running it on changed files.

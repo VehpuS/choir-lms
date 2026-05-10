@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 import {
   DEFAULT_ANDROID_PACKAGE,
@@ -63,14 +64,17 @@ export const runtimeConfig: RuntimeConfig = {
     mobileConfig.androidPackage ?? DEFAULT_RUNTIME_CONFIG.androidPackage,
   google: {
     iosClientId:
-      mobileConfig.google?.iosClientId ?? DEFAULT_RUNTIME_CONFIG.google.iosClientId,
+      mobileConfig.google?.iosClientId ??
+      DEFAULT_RUNTIME_CONFIG.google.iosClientId,
     androidClientId:
       mobileConfig.google?.androidClientId ??
       DEFAULT_RUNTIME_CONFIG.google.androidClientId,
     webClientId:
-      mobileConfig.google?.webClientId ?? DEFAULT_RUNTIME_CONFIG.google.webClientId,
+      mobileConfig.google?.webClientId ??
+      DEFAULT_RUNTIME_CONFIG.google.webClientId,
     driveScope:
-      mobileConfig.google?.driveScope ?? DEFAULT_RUNTIME_CONFIG.google.driveScope,
+      mobileConfig.google?.driveScope ??
+      DEFAULT_RUNTIME_CONFIG.google.driveScope,
   },
   supportedAudioMimeTypes:
     mobileConfig.supportedAudioMimeTypes ??
@@ -80,10 +84,25 @@ export const runtimeConfig: RuntimeConfig = {
     DEFAULT_RUNTIME_CONFIG.supportedAudioExtensions,
 };
 
-export const hasGoogleAuthConfig = () => {
-  return [
-    runtimeConfig.google.iosClientId,
-    runtimeConfig.google.androidClientId,
-    runtimeConfig.google.webClientId,
-  ].some(Boolean);
+export type GoogleAuthPlatform = 'ios' | 'android' | 'web';
+
+export const getGoogleAuthClientId = (
+  platform: GoogleAuthPlatform = Platform.OS === 'ios' ||
+  Platform.OS === 'android'
+    ? Platform.OS
+    : 'web',
+) => {
+  if (platform === 'ios') {
+    return runtimeConfig.google.iosClientId;
+  }
+
+  if (platform === 'android') {
+    return runtimeConfig.google.androidClientId;
+  }
+
+  return runtimeConfig.google.webClientId;
+};
+
+export const hasGoogleAuthConfig = (platform?: GoogleAuthPlatform) => {
+  return Boolean(getGoogleAuthClientId(platform));
 };
