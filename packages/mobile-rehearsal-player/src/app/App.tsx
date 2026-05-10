@@ -28,7 +28,9 @@ const CURRENT_FOCUS = [
 ];
 
 const AUDIO_FORMAT_LABEL = join(
-  map(runtimeConfig.supportedAudioExtensions, (extension) => toUpper(extension)),
+  map(runtimeConfig.supportedAudioExtensions, (extension) =>
+    toUpper(extension),
+  ),
   ', ',
 );
 

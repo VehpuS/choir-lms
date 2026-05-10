@@ -8,6 +8,7 @@ This repository is an Nx monorepo for a broader choir learning platform. See the
 - If a request materially changes scope or behavior, update or create the corresponding OpenSpec artifacts before implementation.
 - When creating apps or libraries, keep package boundaries reusable so future choir LMS apps can share domain, auth, media, and storage logic.
 - Keep the [README](README.md) updated with any changes to the development focus, repository structure, or workflow expectations.
+- For workspace manifests, lockfiles, Nx target wiring, and CI-facing target behavior, follow `.github/instructions/workspace-install-and-target-policy.instructions.md`.
 - For TypeScript and TSX work, follow the repo coding style guidance in `.github/instructions/typescript-coding-style-policy.instructions.md`.
 - For automated test work, follow the repo testing guidance in `.github/instructions/testing-policy.instructions.md`.
 - When adding or materially expanding code in a language or framework without comparable repo coding style guidance, first draft a suggested policy in `.github/instructions/` and confirm it with the user before proceeding with broader implementation in that language or framework.
@@ -15,13 +16,8 @@ This repository is an Nx monorepo for a broader choir learning platform. See the
 
 ## Deliberate OpenSpec Implementation
 
-- When implementing from OpenSpec artifacts or using `/opsx:apply`, invoke the `openspec-checkpointed-implementation` skill before writing code.
-- Work on exactly one unchecked numbered subtask at a time. Do not silently batch across multiple task checkboxes unless the user explicitly asks for batch mode.
-- Before the first edit for a subtask, state the exact task being implemented, the local hypothesis driving the change, and the narrow validation you expect to run. If public API shape, naming, UX, styling, data model, or architecture is still ambiguous after reading nearby code and artifacts, pause and ask the user instead of guessing.
-- Add or update automated tests in the same slice for every new behavior, fix, or regression-prone branch, following `.github/instructions/testing-policy.instructions.md`. If automation is not practical, explain why, identify the manual test gap, and ask before skipping tests.
-- After completing a subtask, run focused validation, update only that task checkbox, and invoke the `implementation-checkpoint` skill before moving on.
-- Each completed subtask is the default commit boundary. Offer a suggested commit message and create the commit only after explicit user approval.
-- For auth, native, device, background playback, or third-party integration work, request manual verification before marking the related task complete.
+- For OpenSpec execution, follow `.github/instructions/openspec-deliberate-execution.instructions.md`.
+- Use `openspec-checkpointed-implementation` for the one-subtask execution loop and `implementation-checkpoint` for the validated pause, feedback, manual verification, and commit handoff.
 - The user can explicitly opt out of checkpoints, commit boundaries, or the default test expectation for the current session. Otherwise, default to this slower, review-oriented loop.
 
 <!-- nx configuration start-->

@@ -24,6 +24,27 @@
           "command": "tsc --noEmit -p tsconfig.config.json"
         }
       },
+      "build": {
+        "executor": "nx:run-commands",
+        "cache": true,
+        "inputs": [
+          "default",
+          "^production",
+          "{workspaceRoot}/package-lock.json"
+        ],
+        "outputs": [
+          "{workspaceRoot}/packages/mobile-rehearsal-player/dist"
+        ],
+        "options": {
+          "cwd": "packages/mobile-rehearsal-player",
+          "command": "expo export --clear"
+        }
+      },
+      "eas-build": {
+        "executor": "@nx/expo:build",
+        "cache": false,
+        "options": {}
+      },
       "test": {
         "executor": "nx:run-commands",
         "cache": true,

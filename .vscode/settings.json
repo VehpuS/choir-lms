@@ -40,6 +40,10 @@
     "/^cd /Users/vehpus/git/choir-lms/packages/mobile-rehearsal-player && npx expo config --type public$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec -- nx format:check --base=HEAD~1$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

@@ -92,6 +92,8 @@ npm exec -- nx run mobile-rehearsal-player:run-ios
 npm exec -- nx run mobile-rehearsal-player:run-android
 ```
 
+For deterministic local and CI validation, `npm exec -- nx run mobile-rehearsal-player:build` performs a local Expo export. Use `npm exec -- nx run mobile-rehearsal-player:eas-build` when you intentionally want to trigger an EAS build.
+
 OpenSpec workflow:
 
 ```sh
@@ -103,10 +105,8 @@ openspec status --change "add-mobile-rehearsal-player"
 
 - repo-level policy lives in `AGENTS.md`
 - OpenSpec change artifacts auto-load additional guidance from `.github/instructions/openspec-deliberate-execution.instructions.md`
-- automated test work follows `.github/instructions/testing-policy.instructions.md`; agents should add missing test tooling instead of skipping coverage when the touched surface lacks a usable harness
-- `openspec-checkpointed-implementation` keeps implementation scoped to one numbered subtask at a time
-- `implementation-checkpoint` pauses for feedback, manual verification, and an optional commit before the next subtask
-- new behavior should add automated tests in the same slice unless the user explicitly accepts a documented manual-only gap
+- `openspec-checkpointed-implementation` runs the one-subtask execution loop
+- `implementation-checkpoint` handles the validated pause for feedback, manual verification, and commit decisions
 
 ## Status
 
