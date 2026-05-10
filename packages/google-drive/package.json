@@ -14,7 +14,22 @@
     "./package.json": "./package.json"
   },
   "nx": {
-    "name": "google-drive"
+    "name": "google-drive",
+    "targets": {
+      "test": {
+        "executor": "nx:run-commands",
+        "cache": true,
+        "inputs": [
+          "default",
+          "^production",
+          "{workspaceRoot}/package-lock.json"
+        ],
+        "options": {
+          "cwd": "packages/google-drive",
+          "command": "tsx --test src/lib/google-drive.spec.ts"
+        }
+      }
+    }
   },
   "dependencies": {
     "@org/rehearsal-domain": "^0.0.1"

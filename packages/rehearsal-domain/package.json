@@ -14,7 +14,22 @@
     "./package.json": "./package.json"
   },
   "nx": {
-    "name": "rehearsal-domain"
+    "name": "rehearsal-domain",
+    "targets": {
+      "test": {
+        "executor": "nx:run-commands",
+        "cache": true,
+        "inputs": [
+          "default",
+          "^production",
+          "{workspaceRoot}/package-lock.json"
+        ],
+        "options": {
+          "cwd": "packages/rehearsal-domain",
+          "command": "tsx --test src/lib/rehearsal-domain.spec.ts"
+        }
+      }
+    }
   },
   "dependencies": {}
 }

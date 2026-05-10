@@ -23,6 +23,7 @@
     "nx": "22.7.0",
     "prettier": "^3.8.1",
     "tslib": "^2.3.0",
+    "tsx": "^4.21.0",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.59.2"
   },
