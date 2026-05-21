@@ -4,6 +4,7 @@ import { join, map, toUpper } from 'es-toolkit/compat';
 import { runtimeConfig } from '../config/runtime';
 import { DriveAuthorizationCard } from './auth/DriveAuthorizationCard';
 import { useGoogleDriveAuthorization } from './auth/use-google-drive-authorization';
+import { DriveLibrarySection } from './library/DriveLibrarySection';
 
 type BulletListProps = {
   items: string[];
@@ -159,6 +160,11 @@ export const App = () => {
           }}
           requestReady={requestReady}
           statusCopy={statusCopy}
+        />
+
+        <DriveLibrarySection
+          authState={authState}
+          googleAuthConfigured={googleAuthConfigured}
         />
 
         <View style={styles.section}>

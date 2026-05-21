@@ -55,7 +55,7 @@
         ],
         "options": {
           "cwd": "packages/mobile-rehearsal-player",
-          "command": "tsx --test src/app/auth/google-drive-authorization.spec.ts"
+          "command": "tsx --test src/app/auth/google-drive-authorization.spec.ts src/app/library/drive-library-view-model.spec.ts"
         }
       },
       "lint": {

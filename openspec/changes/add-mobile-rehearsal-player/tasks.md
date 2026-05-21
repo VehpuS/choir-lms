@@ -13,13 +13,14 @@
 ## 3. Google Drive library and full-track playback
 
 - [x] 3.1 Implement the Google sign-in and Drive authorization flow for the mobile rehearsal player.
-- [ ] 3.2 Build the mobile rehearsal library view for supported Google Drive audio files and unavailable or unsupported file states.
-- [ ] 3.3 Implement full-track playback from the rehearsal library using the shared playable-item model.
+- [ ] 3.2 Implement Drive browsing and search across personal Google Drive and accessible shared folders, with supported and unavailable file states.
+- [ ] 3.3 Implement saving and removing Google Drive track references in the app-owned rehearsal library.
+- [ ] 3.4 Implement full-track playback from the saved rehearsal library using the shared playable-item model.
 
 ## 4. Loop and playlist workflows
 
-- [ ] 4.1 Implement loop marker selection, loop validation, and named loop creation from a source track.
-- [ ] 4.2 Implement playlist creation and editing for both full tracks and saved loops.
+- [ ] 4.1 Implement loop marker selection, loop validation, and named loop creation from a saved rehearsal library track.
+- [ ] 4.2 Implement playlist creation and editing for saved full tracks and saved loops.
 - [ ] 4.3 Implement rehearsal queue behavior for ordered playback, repeat, and shuffle across playlist items.
 
 ## 5. Native playback integration and validation

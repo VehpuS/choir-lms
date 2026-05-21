@@ -168,6 +168,7 @@ describe('listDriveLibrary', () => {
       /https:\/\/www\.googleapis\.com\/drive\/v3\/files\?/,
     );
     assert.match(requestUrl, /mimeType\+contains\+%27audio%2F%27/);
+    assert.match(requestUrl, /spaces=drive/);
     assert.equal(authorizationHeader, 'Bearer drive-token');
     assert.equal(snapshot.playableSources.length, 1);
     assert.equal(snapshot.unavailableSources.length, 1);
@@ -176,6 +177,96 @@ describe('listDriveLibrary', () => {
       snapshot.unavailableSources[0]?.availability.status,
       'unsupported',
     );
+  });
+
+  it('retries with a simpler request when the initial Drive query is rejected', async () => {
+    const requestUrls: string[] = [];
+    let requestCount = 0;
+
+    globalThis.fetch = async (input) => {
+      requestCount += 1;
+      requestUrls.push(String(input));
+
+      if (requestCount === 1) {
+        return new Response(
+          JSON.stringify({
+            error: {
+              message:
+                'Invalid field selection audioMediaMetadata/durationMillis.',
+            },
+          }),
+          {
+            status: 400,
+            headers: {
+              'content-type': 'application/json',
+            },
+          },
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          files: [
+            {
+              id: 'drive-file-4',
+              name: 'Tenor Part.mp3',
+              mimeType: 'audio/mpeg',
+              fileExtension: 'mp3',
+            },
+          ],
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+        },
+      );
+    };
+
+    const snapshot = await listDriveLibrary({
+      accessToken: 'drive-token',
+      supportedMimeTypes: SUPPORTED_MIME_TYPES,
+      supportedExtensions: SUPPORTED_EXTENSIONS,
+    });
+
+    assert.equal(requestCount, 2);
+    assert.match(requestUrls[0] ?? '', /audioMediaMetadata%2FdurationMillis/);
+    assert.match(requestUrls[0] ?? '', /supportsAllDrives=true/);
+    assert.doesNotMatch(
+      requestUrls[1] ?? '',
+      /audioMediaMetadata%2FdurationMillis/,
+    );
+    assert.doesNotMatch(requestUrls[1] ?? '', /supportsAllDrives=true/);
+    assert.equal(snapshot.playableSources.length, 1);
+    assert.equal(snapshot.playableSources[0]?.name, 'Tenor Part.mp3');
+  });
+
+  it('surfaces the Drive API error body when the request fails', async () => {
+    globalThis.fetch = async () => {
+      return new Response(
+        JSON.stringify({
+          error: {
+            message:
+              'Google Drive API has not been used in project 123456 before or it is disabled.',
+          },
+        }),
+        {
+          status: 403,
+          headers: {
+            'content-type': 'application/json',
+          },
+        },
+      );
+    };
+
+    await assert.rejects(() => {
+      return listDriveLibrary({
+        accessToken: 'drive-token',
+        supportedMimeTypes: SUPPORTED_MIME_TYPES,
+        supportedExtensions: SUPPORTED_EXTENSIONS,
+      });
+    }, /Drive library request failed with 403: Google Drive API has not been used in project 123456 before or it is disabled\./);
   });
 
   it('maps Drive request failures onto unavailable source reasons', () => {

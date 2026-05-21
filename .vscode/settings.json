@@ -1,47 +1,51 @@
 {
   "cSpell.words": ["Agentic", "checkpointed", "LINTABLE", "openspec"],
   "chat.tools.terminal.autoApprove": {
-    "/^pnpm nx show project \\S* --json$/": {
+    "/^npx nx show/": {
       "approve": true,
       "matchCommandLine": true
     },
-    "/^npm exec nx lint/": {
+    "/^npm exec nx (?:test|lint|typecheck)/": {
       "approve": true,
       "matchCommandLine": true
     },
-    "/^npm exec nx test/": {
+    "/^npm exec -- nx run-many -t (?:test|lint|typecheck)/": {
       "approve": true,
       "matchCommandLine": true
     },
-    "/^npm exec -- nx run-many -t test/": {
+    "/^npm exec nx run [A-Za-z-]+:(?:test|lint|typecheck)/": {
       "approve": true,
       "matchCommandLine": true
     },
-    "/^npm exec -- nx run-many -t typecheck/": {
+    "/^cd /Users/vehpus/git/choir-lms/packages/[A-Za-z-]+ && npx expo config --type public$/": {
       "approve": true,
       "matchCommandLine": true
     },
-    "/^npm exec -- nx run-many -t lint/": {
-      "approve": true,
-      "matchCommandLine": true
-    },
-    "/^npm exec nx run mobile-rehearsal-player:test/": {
-      "approve": true,
-      "matchCommandLine": true
-    },
-    "/^npm exec nx run mobile-rehearsal-player:lint/": {
-      "approve": true,
-      "matchCommandLine": true
-    },
-    "/^npm exec nx run mobile-rehearsal-player:typecheck/": {
-      "approve": true,
-      "matchCommandLine": true
-    },
-    "/^cd /Users/vehpus/git/choir-lms/packages/mobile-rehearsal-player && npx expo config --type public$/": {
+    "/^npm exec -- nx run-many --targets=(typecheck|lint|test)(?:,(typecheck|lint|test))*/": {
       "approve": true,
       "matchCommandLine": true
     },
     "/^npm exec -- nx format:check --base=HEAD~1$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx show/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npx tsx --test/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^openspec status/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^openspec instructions/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npx eslint ./": {
       "approve": true,
       "matchCommandLine": true
     }

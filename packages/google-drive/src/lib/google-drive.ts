@@ -39,10 +39,25 @@ export type DriveLibrarySnapshot = {
   unavailableSources: DriveAudioSource[];
 };
 
+type DriveApiErrorPayload = {
+  error?: {
+    message?: string;
+  };
+};
+
 const DEFAULT_FIELDS = [
   'files(id,name,mimeType,fileExtension,size,modifiedTime,webViewLink,iconLink,audioMediaMetadata/durationMillis)',
   'nextPageToken',
 ].join(',');
+
+const FALLBACK_FIELDS = [
+  'files(id,name,mimeType,fileExtension,size,modifiedTime,webViewLink,iconLink)',
+  'nextPageToken',
+].join(',');
+
+const DRIVE_FILES_ENDPOINT = 'https://www.googleapis.com/drive/v3/files';
+
+const DRIVE_LIBRARY_QUERY = "trashed = false and mimeType contains 'audio/'";
 
 const toNumber = (value?: string) => {
   if (!value) {
@@ -90,6 +105,104 @@ const resolveAvailabilityReason = (
 
 export const buildDriveMediaUrl = (driveFileId: string) => {
   return `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`;
+};
+
+const createDriveLibrarySearchParams = (options: {
+  fields: string;
+  includeSharedDrives: boolean;
+}) => {
+  const searchParams = new URLSearchParams({
+    q: DRIVE_LIBRARY_QUERY,
+    fields: options.fields,
+    pageSize: '100',
+    spaces: 'drive',
+  });
+
+  if (options.includeSharedDrives) {
+    searchParams.set('supportsAllDrives', 'true');
+    searchParams.set('includeItemsFromAllDrives', 'true');
+  }
+
+  return searchParams;
+};
+
+const readDriveErrorMessage = async (response: Response) => {
+  const rawBody = (await response.text()).trim();
+
+  if (!rawBody) {
+    return undefined;
+  }
+
+  try {
+    const parsedBody = JSON.parse(rawBody) as DriveApiErrorPayload;
+
+    if (typeof parsedBody.error?.message === 'string') {
+      return parsedBody.error.message;
+    }
+  } catch {
+    return rawBody;
+  }
+
+  return rawBody;
+};
+
+const createDriveRequestError = async (response: Response) => {
+  const errorDetail = await readDriveErrorMessage(response);
+
+  if (!errorDetail) {
+    return new Error(`Drive library request failed with ${response.status}`);
+  }
+
+  return new Error(
+    `Drive library request failed with ${response.status}: ${errorDetail}`,
+  );
+};
+
+const requestDriveLibrary = async (options: {
+  accessToken: string;
+  fields: string;
+  includeSharedDrives: boolean;
+  signal?: AbortSignal;
+}) => {
+  return fetch(
+    `${DRIVE_FILES_ENDPOINT}?${createDriveLibrarySearchParams({
+      fields: options.fields,
+      includeSharedDrives: options.includeSharedDrives,
+    })}`,
+    {
+      method: 'GET',
+      signal: options.signal,
+      headers: {
+        Authorization: `Bearer ${options.accessToken}`,
+      },
+    },
+  );
+};
+
+const parseDriveLibrarySnapshot = async (
+  response: Response,
+  supportedMimeTypes: string[],
+  supportedExtensions: string[],
+) => {
+  const payload = (await response.json()) as {
+    files?: DriveFileMetadata[];
+  };
+  const sources = map(payload.files ?? [], (file) => {
+    return mapDriveFileToAudioSource(
+      file,
+      supportedMimeTypes,
+      supportedExtensions,
+    );
+  });
+  const [playableSources, unavailableSources] = partition(
+    sources,
+    (source) => source.availability.status === 'available',
+  );
+
+  return {
+    playableSources,
+    unavailableSources,
+  } satisfies DriveLibrarySnapshot;
 };
 
 export const getDriveAuthorizationState = (
@@ -176,48 +289,41 @@ export const listDriveLibrary = async (options: {
   supportedExtensions: string[];
   signal?: AbortSignal;
 }) => {
-  const response = await fetch(
-    'https://www.googleapis.com/drive/v3/files?' +
-      new URLSearchParams({
-        q: "trashed = false and mimeType contains 'audio/'",
-        fields: DEFAULT_FIELDS,
-        pageSize: '100',
-        supportsAllDrives: 'true',
-        includeItemsFromAllDrives: 'true',
-        corpora: 'user',
-      }),
-    {
-      method: 'GET',
-      signal: options.signal,
-      headers: {
-        Authorization: `Bearer ${options.accessToken}`,
-      },
-    },
-  );
+  const response = await requestDriveLibrary({
+    accessToken: options.accessToken,
+    fields: DEFAULT_FIELDS,
+    includeSharedDrives: true,
+    signal: options.signal,
+  });
 
-  if (!response.ok) {
-    throw new Error(`Drive library request failed with ${response.status}`);
-  }
-
-  const payload = (await response.json()) as {
-    files?: DriveFileMetadata[];
-  };
-  const sources = map(payload.files ?? [], (file) => {
-    return mapDriveFileToAudioSource(
-      file,
+  if (response.ok) {
+    return parseDriveLibrarySnapshot(
+      response,
       options.supportedMimeTypes,
       options.supportedExtensions,
     );
-  });
-  const [playableSources, unavailableSources] = partition(
-    sources,
-    (source) => source.availability.status === 'available',
-  );
+  }
 
-  return {
-    playableSources,
-    unavailableSources,
-  } satisfies DriveLibrarySnapshot;
+  if (response.status === 400) {
+    const fallbackResponse = await requestDriveLibrary({
+      accessToken: options.accessToken,
+      fields: FALLBACK_FIELDS,
+      includeSharedDrives: false,
+      signal: options.signal,
+    });
+
+    if (fallbackResponse.ok) {
+      return parseDriveLibrarySnapshot(
+        fallbackResponse,
+        options.supportedMimeTypes,
+        options.supportedExtensions,
+      );
+    }
+
+    throw await createDriveRequestError(fallbackResponse);
+  }
+
+  throw await createDriveRequestError(response);
 };
 
 export const handleDriveSourceError = (
