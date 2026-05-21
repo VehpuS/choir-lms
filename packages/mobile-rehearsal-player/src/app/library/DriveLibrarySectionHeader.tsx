@@ -1,9 +1,12 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 type DriveLibrarySectionHeaderProps = {
+  body?: string;
   canRefresh: boolean;
+  eyebrow?: string;
   isLoading: boolean;
   onRefresh: () => void;
+  title?: string;
 };
 
 const PRIMARY_ACTION_BACKGROUND = '#173229';
@@ -12,22 +15,19 @@ const PRIMARY_TEXT = '#1f1c17';
 const SECONDARY_TEXT = '#5f5647';
 
 export const DriveLibrarySectionHeader = ({
+  body = 'Find supported tracks across My Drive and shared folders, inspect unavailable or unsupported items, and prepare the sources that will later be saved into the app-owned rehearsal library.',
   canRefresh,
+  eyebrow = 'Drive discovery',
   isLoading,
   onRefresh,
+  title = 'Browse folders and search for practice tracks',
 }: DriveLibrarySectionHeaderProps) => {
   return (
     <View style={styles.sectionHeader}>
       <View style={styles.sectionCopy}>
-        <Text style={styles.eyebrow}>Drive discovery</Text>
-        <Text style={styles.sectionTitle}>
-          Browse folders and search for practice tracks
-        </Text>
-        <Text style={styles.sectionBody}>
-          Find supported tracks across My Drive and shared folders, inspect
-          unavailable or unsupported items, and prepare the sources that will
-          later be saved into the app-owned rehearsal library.
-        </Text>
+        <Text style={styles.eyebrow}>{eyebrow}</Text>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <Text style={styles.sectionBody}>{body}</Text>
       </View>
       {canRefresh ? (
         <Pressable

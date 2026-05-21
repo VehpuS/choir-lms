@@ -13,6 +13,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { filter, flatMap, keyBy, size, sortBy } from 'es-toolkit/compat';
 
 export type PracticeRepository = {
+  listSources(ownerId: string): Promise<DriveAudioSource[]>;
+  saveSource(
+    ownerId: string,
+    source: DriveAudioSource,
+  ): Promise<DriveAudioSource[]>;
+  deleteSource(ownerId: string, sourceId: string): Promise<DriveAudioSource[]>;
   listLoops(ownerId: string): Promise<NamedLoop[]>;
   saveLoop(loop: NamedLoop): Promise<NamedLoop[]>;
   deleteLoop(ownerId: string, loopId: string): Promise<NamedLoop[]>;
@@ -28,7 +34,10 @@ export type PlaybackQueue = {
   items: PlayableItem[];
 };
 
-const storageKey = (entity: 'loops' | 'playlists', ownerId: string) => {
+const storageKey = (
+  entity: 'sources' | 'loops' | 'playlists',
+  ownerId: string,
+) => {
   return `choirlms:practice:${entity}:${ownerId}`;
 };
 
@@ -39,9 +48,14 @@ const readCollection = async <Entity>(key: string): Promise<Entity[]> => {
     return [];
   }
 
-  const parsedValue = JSON.parse(value) as Entity[];
+  try {
+    const parsedValue = JSON.parse(value) as Entity[];
 
-  return Array.isArray(parsedValue) ? parsedValue : [];
+    return Array.isArray(parsedValue) ? parsedValue : [];
+  } catch {
+    await AsyncStorage.removeItem(key);
+    return [];
+  }
 };
 
 const writeCollection = async <Entity>(key: string, values: Entity[]) => {
@@ -68,6 +82,28 @@ const shuffleItems = <Entity>(
 };
 
 export class AsyncStoragePracticeRepository implements PracticeRepository {
+  async listSources(ownerId: string) {
+    return readCollection<DriveAudioSource>(storageKey('sources', ownerId));
+  }
+
+  async saveSource(ownerId: string, source: DriveAudioSource) {
+    const sources = await this.listSources(ownerId);
+    const otherSources = filter(
+      sources,
+      (existingSource) => existingSource.id !== source.id,
+    );
+    const nextSources = sortBy([...otherSources, source], ['name']);
+
+    return writeCollection(storageKey('sources', ownerId), nextSources);
+  }
+
+  async deleteSource(ownerId: string, sourceId: string) {
+    const sources = await this.listSources(ownerId);
+    const nextSources = filter(sources, (source) => source.id !== sourceId);
+
+    return writeCollection(storageKey('sources', ownerId), nextSources);
+  }
+
   async listLoops(ownerId: string) {
     return readCollection<NamedLoop>(storageKey('loops', ownerId));
   }

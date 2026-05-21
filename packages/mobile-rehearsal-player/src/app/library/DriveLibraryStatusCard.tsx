@@ -7,6 +7,7 @@ import {
 
 type DriveLibraryStatusCardProps = {
   isLoading: boolean;
+  loadingLabel?: string;
   statusCopy: DriveLibraryStatusCopy;
 };
 
@@ -54,6 +55,7 @@ const getToneTitleStyle = (tone: DriveLibraryStatusTone) => {
 
 export const DriveLibraryStatusCard = ({
   isLoading,
+  loadingLabel = 'Refreshing Google Drive…',
   statusCopy,
 }: DriveLibraryStatusCardProps) => {
   return (
@@ -65,7 +67,7 @@ export const DriveLibraryStatusCard = ({
       {isLoading ? (
         <View style={styles.loadingRow}>
           <ActivityIndicator color={SECONDARY_TEXT} size="small" />
-          <Text style={styles.loadingLabel}>Refreshing Google Drive…</Text>
+          <Text style={styles.loadingLabel}>{loadingLabel}</Text>
         </View>
       ) : null}
     </View>

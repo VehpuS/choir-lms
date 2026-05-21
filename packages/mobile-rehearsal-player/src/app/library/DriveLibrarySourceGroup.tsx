@@ -1,5 +1,5 @@
 import { map } from 'es-toolkit/compat';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
   getSourceAvailabilityLabel,
@@ -9,6 +9,14 @@ import {
 } from './drive-library-view-model';
 
 type DriveLibrarySourceGroupProps = {
+  getAction?: (
+    source: DriveLibrarySource,
+  ) => {
+    disabled?: boolean;
+    label: string;
+    onPress: () => void;
+  } | null;
+  getMessage?: (source: DriveLibrarySource) => string | undefined;
   sources: DriveLibrarySource[];
   title: string;
 };
@@ -47,29 +55,64 @@ const getAvailabilityLabelStyle = (source: DriveLibrarySource) => {
   return styles.badgeErrorLabel;
 };
 
-const DriveLibrarySourceCard = ({ source }: { source: DriveLibrarySource }) => {
+const DriveLibrarySourceCard = ({
+  getAction,
+  getMessage,
+  source,
+}: {
+  getAction?: DriveLibrarySourceGroupProps['getAction'];
+  getMessage?: DriveLibrarySourceGroupProps['getMessage'];
+  source: DriveLibrarySource;
+}) => {
+  const action = getAction?.(source) ?? null;
+  const externalMessage = getMessage?.(source);
   const metadataLabel = getSourceMetadataLabels(source).join(' • ');
-  const statusMessage = getSourceStatusMessage(source);
+  const statusMessage = externalMessage ?? getSourceStatusMessage(source);
+  const isErrorMessage = externalMessage !== undefined;
 
   return (
     <View style={styles.sourceCard}>
       <View style={styles.sourceHeader}>
         <Text style={styles.sourceName}>{source.name}</Text>
-        <View style={[styles.badge, getAvailabilityBadgeStyle(source)]}>
-          <Text style={[styles.badgeLabel, getAvailabilityLabelStyle(source)]}>
-            {getSourceAvailabilityLabel(source)}
-          </Text>
+        <View style={styles.sourceControls}>
+          <View style={[styles.badge, getAvailabilityBadgeStyle(source)]}>
+            <Text
+              style={[styles.badgeLabel, getAvailabilityLabelStyle(source)]}
+            >
+              {getSourceAvailabilityLabel(source)}
+            </Text>
+          </View>
+          {action ? (
+            <Pressable
+              accessibilityRole="button"
+              disabled={action.disabled}
+              onPress={action.onPress}
+              style={({ pressed }) => [
+                styles.actionButton,
+                pressed && !action.disabled ? styles.actionButtonPressed : undefined,
+                action.disabled ? styles.actionButtonDisabled : undefined,
+              ]}
+            >
+              <Text style={styles.actionButtonLabel}>{action.label}</Text>
+            </Pressable>
+          ) : null}
         </View>
       </View>
       <Text style={styles.sourceMetadata}>{metadataLabel}</Text>
       {statusMessage ? (
-        <Text style={styles.sourceMessage}>{statusMessage}</Text>
+        <Text
+          style={isErrorMessage ? styles.sourceErrorMessage : styles.sourceMessage}
+        >
+          {statusMessage}
+        </Text>
       ) : null}
     </View>
   );
 };
 
 export const DriveLibrarySourceGroup = ({
+  getAction,
+  getMessage,
   sources,
   title,
 }: DriveLibrarySourceGroupProps) => {
@@ -82,7 +125,14 @@ export const DriveLibrarySourceGroup = ({
       <Text style={styles.groupTitle}>{title}</Text>
       <View style={styles.groupItems}>
         {map(sources, (source) => {
-          return <DriveLibrarySourceCard key={source.id} source={source} />;
+          return (
+            <DriveLibrarySourceCard
+              getAction={getAction}
+              getMessage={getMessage}
+              key={source.id}
+              source={source}
+            />
+          );
         })}
       </View>
     </View>
@@ -112,6 +162,12 @@ const styles = StyleSheet.create({
   sourceHeader: {
     gap: 12,
   },
+  sourceControls: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    alignItems: 'center',
+  },
   sourceName: {
     color: PRIMARY_TEXT,
     fontSize: 15,
@@ -125,6 +181,11 @@ const styles = StyleSheet.create({
   },
   sourceMessage: {
     color: SECONDARY_TEXT,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  sourceErrorMessage: {
+    color: ERROR_TEXT,
     fontSize: 13,
     lineHeight: 18,
   },
@@ -157,5 +218,24 @@ const styles = StyleSheet.create({
   },
   badgeErrorLabel: {
     color: ERROR_TEXT,
+  },
+  actionButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    borderRadius: 999,
+    backgroundColor: '#fffdf8',
+  },
+  actionButtonPressed: {
+    opacity: 0.88,
+  },
+  actionButtonDisabled: {
+    opacity: 0.56,
+  },
+  actionButtonLabel: {
+    color: PRIMARY_TEXT,
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

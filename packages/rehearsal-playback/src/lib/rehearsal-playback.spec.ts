@@ -20,11 +20,13 @@ import {
 
 const mutableAsyncStorage = AsyncStorage as {
   getItem: (key: string) => Promise<string | null>;
+  removeItem: (key: string) => Promise<void>;
   setItem: (key: string, value: string) => Promise<void>;
 };
 
 const ORIGINAL_ASYNC_STORAGE = {
   getItem: mutableAsyncStorage.getItem,
+  removeItem: mutableAsyncStorage.removeItem,
   setItem: mutableAsyncStorage.setItem,
 };
 
@@ -80,20 +82,42 @@ const PLAYLIST: Playlist = {
 
 afterEach(() => {
   mutableAsyncStorage.getItem = ORIGINAL_ASYNC_STORAGE.getItem;
+  mutableAsyncStorage.removeItem = ORIGINAL_ASYNC_STORAGE.removeItem;
   mutableAsyncStorage.setItem = ORIGINAL_ASYNC_STORAGE.setItem;
 });
 
 describe('AsyncStoragePracticeRepository', () => {
-  it('persists loops and playlists in sorted order and supports deletion', async () => {
+  it('persists saved sources, loops, and playlists in sorted order and supports deletion', async () => {
     const storage = new Map<string, string>();
     const repository = new AsyncStoragePracticeRepository();
 
     mutableAsyncStorage.getItem = async (key) => {
       return storage.get(key) ?? null;
     };
+    mutableAsyncStorage.removeItem = async (key) => {
+      storage.delete(key);
+    };
     mutableAsyncStorage.setItem = async (key, value) => {
       storage.set(key, value);
     };
+
+    const savedSources = await repository.saveSource('user-1', {
+      ...AVAILABLE_SOURCE,
+      id: 'drive:drive-file-3',
+      driveFileId: 'drive-file-3',
+      name: 'Amen.mp3',
+    });
+
+    await repository.saveSource('user-1', AVAILABLE_SOURCE);
+
+    assert.deepEqual(
+      savedSources.map((source) => source.name),
+      ['Amen.mp3'],
+    );
+    assert.deepEqual(
+      (await repository.listSources('user-1')).map((source) => source.name),
+      ['Amen.mp3', 'Full Choir.mp3'],
+    );
 
     const savedLoops = await repository.saveLoop({
       ...SAVED_LOOP,
@@ -127,12 +151,43 @@ describe('AsyncStoragePracticeRepository', () => {
       ),
       ['Morning rehearsal', 'Z Finales'],
     );
+    assert.deepEqual(
+      await repository.deleteSource('user-1', 'drive:drive-file-3'),
+      [AVAILABLE_SOURCE],
+    );
     assert.deepEqual(await repository.deleteLoop('user-1', 'loop-2'), [
       SAVED_LOOP,
     ]);
     assert.deepEqual(await repository.deletePlaylist('user-1', 'playlist-2'), [
       PLAYLIST,
     ]);
+  });
+
+  it('drops malformed saved-source storage and treats it as empty', async () => {
+    const storage = new Map<string, string>([
+      ['choirlms:practice:sources:user-1', '{not-json'],
+    ]);
+    const repository = new AsyncStoragePracticeRepository();
+
+    mutableAsyncStorage.getItem = async (key) => {
+      return storage.get(key) ?? null;
+    };
+    mutableAsyncStorage.removeItem = async (key) => {
+      storage.delete(key);
+    };
+    mutableAsyncStorage.setItem = async (key, value) => {
+      storage.set(key, value);
+    };
+
+    assert.deepEqual(await repository.listSources('user-1'), []);
+    assert.equal(storage.has('choirlms:practice:sources:user-1'), false);
+
+    await repository.saveSource('user-1', AVAILABLE_SOURCE);
+
+    assert.deepEqual(
+      (await repository.listSources('user-1')).map((source) => source.name),
+      ['Full Choir.mp3'],
+    );
   });
 });
 

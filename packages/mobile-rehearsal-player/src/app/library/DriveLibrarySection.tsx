@@ -9,7 +9,13 @@ import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
 import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import { getDriveLibraryStatusCopy } from './drive-library-view-model';
+import {
+  getSavedRehearsalLibrarySourceIssue,
+  getSavedRehearsalLibraryStatusCopy,
+  resolveSavedRehearsalLibrarySources,
+} from './saved-rehearsal-library-view-model';
 import { useDriveLibrary } from './use-drive-library';
+import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
 
 type DriveLibrarySectionProps = {
   authState: DriveAuthorizationState;
@@ -42,6 +48,15 @@ export const DriveLibrarySection = ({
     submitSearch,
     unavailableSources,
   } = useDriveLibrary(authState);
+  const {
+    canMutateLibrary,
+    isLoading: isSavedLibraryLoading,
+    issue: savedLibraryIssue,
+    pendingSourceId,
+    removeSource,
+    savedSources,
+    saveSource,
+  } = useSavedRehearsalLibrary();
   const statusCopy = getDriveLibraryStatusCopy({
     authState,
     activeSearchQuery,
@@ -63,6 +78,20 @@ export const DriveLibrarySection = ({
   const unavailableSourceTitle = isSearchMode
     ? `Unavailable or unsupported results (${unavailableSources.length})`
     : `Unavailable or unsupported in ${currentLocation.name} (${unavailableSources.length})`;
+  const savedLibrarySources = resolveSavedRehearsalLibrarySources({
+    authState,
+    savedSources,
+    visibleSources: [...playableSources, ...unavailableSources],
+  });
+  const savedSourceIds = new Set(savedSources.map((source) => source.id));
+  const savedLibraryStatusCopy = getSavedRehearsalLibraryStatusCopy({
+    authState,
+    isLoading: isSavedLibraryLoading,
+    issue: savedLibraryIssue,
+    savedSources: savedLibrarySources,
+  });
+  const isSavedLibraryMutating = pendingSourceId !== null;
+  const savedSourceTitle = `Saved rehearsal tracks (${savedLibrarySources.length})`;
 
   return (
     <View style={styles.section}>
@@ -97,6 +126,48 @@ export const DriveLibrarySection = ({
 
       <DriveLibraryStatusCard isLoading={isLoading} statusCopy={statusCopy} />
 
+      <View style={styles.savedLibrarySection}>
+        <DriveLibrarySectionHeader
+          canRefresh={false}
+          isLoading={false}
+          onRefresh={() => {
+            return undefined;
+          }}
+          title="Saved rehearsal library"
+          body="Keep explicit Google Drive references ready for full-track playback, loops, and playlists without copying the source media."
+          eyebrow="Saved tracks"
+        />
+
+        <DriveLibraryStatusCard
+          isLoading={isSavedLibraryLoading}
+          loadingLabel="Refreshing saved rehearsal tracks…"
+          statusCopy={savedLibraryStatusCopy}
+        />
+
+        <DriveLibrarySourceGroup
+          getAction={(source) => {
+            const isPending = pendingSourceId === source.id;
+
+            return {
+              disabled: !canMutateLibrary || isSavedLibraryMutating,
+              label: isPending ? 'Removing…' : 'Remove',
+              onPress: () => {
+                void removeSource(source);
+              },
+            };
+          }}
+          getMessage={(source) => {
+            return getSavedRehearsalLibrarySourceIssue(
+              savedLibraryIssue,
+              source,
+              'remove',
+            );
+          }}
+          sources={savedLibrarySources}
+          title={savedSourceTitle}
+        />
+      </View>
+
       {!isSearchMode ? (
         <DriveFolderGroup
           folders={browseSnapshot.folders}
@@ -106,6 +177,39 @@ export const DriveLibrarySection = ({
       ) : null}
 
       <DriveLibrarySourceGroup
+        getAction={(source) => {
+          const isSaved = savedSourceIds.has(source.id);
+          const isPending = pendingSourceId === source.id;
+
+          return {
+            disabled:
+              !canMutateLibrary ||
+              isSavedLibraryLoading ||
+              isSavedLibraryMutating,
+            label: isPending
+              ? isSaved
+                ? 'Removing…'
+                : 'Saving…'
+              : isSaved
+                ? 'Remove'
+                : 'Save',
+            onPress: () => {
+              if (isSaved) {
+                void removeSource(source);
+                return;
+              }
+
+              void saveSource(source);
+            },
+          };
+        }}
+        getMessage={(source) => {
+          return getSavedRehearsalLibrarySourceIssue(
+            savedLibraryIssue,
+            source,
+            'save',
+          );
+        }}
         sources={playableSources}
         title={playableSourceTitle}
       />
@@ -126,5 +230,13 @@ const styles = StyleSheet.create({
     borderColor: BORDER_COLOR,
     borderRadius: 20,
     backgroundColor: CARD_BACKGROUND,
+  },
+  savedLibrarySection: {
+    gap: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    borderRadius: 16,
+    backgroundColor: '#faf6ee',
   },
 });

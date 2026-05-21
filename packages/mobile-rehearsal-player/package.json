@@ -24,6 +24,21 @@
           "command": "tsc --noEmit -p tsconfig.config.json"
         }
       },
+      "typecheck": {
+        "executor": "nx:run-commands",
+        "cache": true,
+        "inputs": [
+          "{workspaceRoot}/tsconfig.base.json",
+          "{projectRoot}/tsconfig.app.json",
+          "{projectRoot}/tsconfig.json",
+          "{projectRoot}/src/**/*",
+          "{workspaceRoot}/package-lock.json"
+        ],
+        "options": {
+          "cwd": "packages/mobile-rehearsal-player",
+          "command": "tsc -b tsconfig.json"
+        }
+      },
       "build": {
         "executor": "nx:run-commands",
         "cache": true,
@@ -55,12 +70,13 @@
         ],
         "options": {
           "cwd": "packages/mobile-rehearsal-player",
-          "command": "tsx --test src/app/auth/google-drive-authorization.spec.ts src/app/library/drive-library-view-model.spec.ts"
+          "command": "tsx --test src/app/auth/google-drive-authorization.spec.ts src/app/library/drive-library-view-model.spec.ts src/app/library/use-saved-rehearsal-library.spec.ts"
         }
       },
       "lint": {
         "dependsOn": [
-          "typecheck-config"
+          "typecheck-config",
+          "typecheck"
         ]
       }
     }
@@ -68,6 +84,7 @@
   "dependencies": {
     "@expo/metro-config": "*",
     "@org/google-drive": "^0.0.1",
+    "@org/rehearsal-playback": "^0.0.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@testing-library/react-native": "*",
     "es-toolkit": "^1.46.1",
