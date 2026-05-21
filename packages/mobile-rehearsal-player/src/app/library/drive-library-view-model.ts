@@ -1,12 +1,15 @@
 import type {
   DriveAuthorizationState,
-  DriveLibrarySnapshot,
+  DriveBrowseSnapshot,
+  DriveDiscoveredAudioSource,
+  DriveFolder,
+  DriveSearchSnapshot,
 } from '@org/google-drive';
 import { compact } from 'es-toolkit/compat';
 
-export type DriveLibrarySource =
-  | DriveLibrarySnapshot['playableSources'][number]
-  | DriveLibrarySnapshot['unavailableSources'][number];
+export type DriveLibrarySource = DriveDiscoveredAudioSource;
+
+export type DriveLibraryFolder = DriveFolder;
 
 export type DriveLibraryStatusTone = 'neutral' | 'warning' | 'error' | 'ready';
 
@@ -18,10 +21,12 @@ export type DriveLibraryStatusCopy = {
 
 type DriveLibraryStatusOptions = {
   authState: DriveAuthorizationState;
+  activeSearchQuery: string | null;
+  browseSnapshot: DriveBrowseSnapshot;
   googleAuthConfigured: boolean;
   isLoading: boolean;
   issue: string | null;
-  snapshot: DriveLibrarySnapshot;
+  searchSnapshot: DriveSearchSnapshot;
 };
 
 const AUTH_FAILURE_PATTERN = /\b(401|403)\b/;
@@ -31,6 +36,14 @@ const DETAILED_DRIVE_FAILURE_PATTERN =
 
 const pluralize = (count: number, noun: string) => {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
+};
+
+const formatAttentionCount = (count: number) => {
+  if (count === 1) {
+    return '1 item needs attention';
+  }
+
+  return `${count} items need attention`;
 };
 
 const formatDurationSegment = (value: number) => {
@@ -59,7 +72,11 @@ const formatFormatLabel = (source: DriveLibrarySource) => {
   return source.mimeType;
 };
 
-const getTotalSourceCount = (snapshot: DriveLibrarySnapshot) => {
+const getTotalBrowseSourceCount = (snapshot: DriveBrowseSnapshot) => {
+  return snapshot.playableSources.length + snapshot.unavailableSources.length;
+};
+
+const getTotalSearchSourceCount = (snapshot: DriveSearchSnapshot) => {
   return snapshot.playableSources.length + snapshot.unavailableSources.length;
 };
 
@@ -105,9 +122,19 @@ export const formatDurationLabel = (durationMs?: number) => {
 export const getDriveLibraryStatusCopy = (
   options: DriveLibraryStatusOptions,
 ): DriveLibraryStatusCopy => {
-  const playableCount = options.snapshot.playableSources.length;
-  const unavailableCount = options.snapshot.unavailableSources.length;
-  const totalSourceCount = getTotalSourceCount(options.snapshot);
+  const browseFolderCount = options.browseSnapshot.folders.length;
+  const browsePlayableCount = options.browseSnapshot.playableSources.length;
+  const browseUnavailableCount =
+    options.browseSnapshot.unavailableSources.length;
+  const browseTotalSourceCount = getTotalBrowseSourceCount(
+    options.browseSnapshot,
+  );
+  const searchPlayableCount = options.searchSnapshot.playableSources.length;
+  const searchUnavailableCount =
+    options.searchSnapshot.unavailableSources.length;
+  const searchTotalSourceCount = getTotalSearchSourceCount(
+    options.searchSnapshot,
+  );
 
   if (!options.googleAuthConfigured) {
     return {
@@ -147,51 +174,103 @@ export const getDriveLibraryStatusCopy = (
 
   if (options.issue) {
     return {
-      title: 'Library refresh failed',
+      title: 'Drive discovery failed',
       message: normalizeIssueMessage(options.issue),
       tone: 'error',
     };
   }
 
-  if (options.isLoading && totalSourceCount === 0) {
+  if (options.activeSearchQuery) {
+    if (options.isLoading && searchTotalSourceCount === 0) {
+      return {
+        title: 'Searching Google Drive',
+        message:
+          'Looking for matching audio across My Drive and shared folders.',
+        tone: 'neutral',
+      };
+    }
+
+    if (searchPlayableCount === 0 && searchUnavailableCount === 0) {
+      return {
+        title: 'No search results',
+        message: `No supported audio matched "${options.activeSearchQuery}". Try another track name or return to folder browsing.`,
+        tone: 'neutral',
+      };
+    }
+
+    if (searchPlayableCount === 0) {
+      return {
+        title: 'No playable matches',
+        message: `${formatAttentionCount(searchUnavailableCount)} matched "${options.activeSearchQuery}" but are not currently playable.`,
+        tone: 'warning',
+      };
+    }
+
+    if (searchUnavailableCount === 0) {
+      return {
+        title: 'Search results ready',
+        message: `${pluralize(searchPlayableCount, 'matching track')} found across My Drive and shared folders.`,
+        tone: 'ready',
+      };
+    }
+
     return {
-      title: 'Loading rehearsal library',
-      message:
-        'Checking Google Drive for supported audio files and any items that need attention.',
+      title: 'Search results ready',
+      message: `${pluralize(searchPlayableCount, 'matching track')} found, plus ${formatAttentionCount(searchUnavailableCount)}.`,
+      tone: 'ready',
+    };
+  }
+
+  if (options.isLoading && browseFolderCount + browseTotalSourceCount === 0) {
+    return {
+      title: 'Loading Drive browser',
+      message: `Checking folders and audio in ${options.browseSnapshot.location.name}.`,
       tone: 'neutral',
     };
   }
 
-  if (playableCount === 0 && unavailableCount === 0) {
+  if (browseFolderCount === 0 && browsePlayableCount === 0 && browseUnavailableCount === 0) {
     return {
-      title: 'No rehearsal audio found',
-      message:
-        'No supported Google Drive audio files are currently available to this rehearsal library.',
+      title: 'Nothing here yet',
+      message: `No folders or supported audio are currently available in ${options.browseSnapshot.location.name}.`,
       tone: 'neutral',
     };
   }
 
-  if (playableCount === 0) {
+  if (browsePlayableCount === 0 && browseUnavailableCount > 0) {
     return {
-      title: 'No playable tracks yet',
-      message: `${pluralize(unavailableCount, 'file')} need attention before playback. Review the unavailable and unsupported items below.`,
+      title: 'No playable tracks here',
+      message: `Review ${formatAttentionCount(browseUnavailableCount)} in ${options.browseSnapshot.location.name} before saving or playback.`,
       tone: 'warning',
     };
   }
 
-  if (unavailableCount === 0) {
+  if (browseUnavailableCount === 0) {
     return {
-      title: 'Library ready',
-      message: `${pluralize(playableCount, 'playable track')} are available in the rehearsal library.`,
+      title: 'Drive browser ready',
+      message: `${pluralize(browseFolderCount, 'folder')} and ${pluralize(browsePlayableCount, 'playable track')} are available in ${options.browseSnapshot.location.name}.`,
       tone: 'ready',
     };
   }
 
   return {
-    title: 'Library ready',
-    message: `${pluralize(playableCount, 'playable track')} found, plus ${pluralize(unavailableCount, 'item')} that need attention.`,
+    title: 'Drive browser ready',
+    message: `${pluralize(browseFolderCount, 'folder')}, ${pluralize(browsePlayableCount, 'playable track')}, and ${formatAttentionCount(browseUnavailableCount)} are available in ${options.browseSnapshot.location.name}.`,
     tone: 'ready',
   };
+};
+
+export const getFolderMetadataLabels = (folder: DriveLibraryFolder) => {
+  const labels = compact([
+    folder.shared || folder.rootKind === 'shared' ? 'Shared folder' : 'Folder',
+    formatUpdatedLabel(folder.modifiedTime),
+  ]);
+
+  if (labels.length > 0) {
+    return labels;
+  }
+
+  return ['Folder'];
 };
 
 export const getSourceAvailabilityLabel = (source: DriveLibrarySource) => {
@@ -218,6 +297,7 @@ export const getSourceMetadataLabels = (source: DriveLibrarySource) => {
     formatFormatLabel(source),
     formatDurationLabel(source.durationMs),
     formatUpdatedLabel(source.modifiedTime),
+    source.locationLabel,
   ]);
 
   if (labels.length > 0) {

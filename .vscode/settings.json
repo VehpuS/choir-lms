@@ -9,7 +9,11 @@
       "approve": true,
       "matchCommandLine": true
     },
-    "/^npm exec -- nx run-many -t (?:test|lint|typecheck)/": {
+    "/^npm exec -- nx run-many -t (?:test|lint|typecheck)(?:,(?:test|lint|typecheck))*/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run-many --targets (?:test|lint|typecheck)(?:,(?:test|lint|typecheck))*/": {
       "approve": true,
       "matchCommandLine": true
     },
@@ -46,6 +50,10 @@
       "matchCommandLine": true
     },
     "/^npx eslint ./": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npx tsx --test ./": {
       "approve": true,
       "matchCommandLine": true
     }
