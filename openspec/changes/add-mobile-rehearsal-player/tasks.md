@@ -15,7 +15,7 @@
 - [x] 3.1 Implement the Google sign-in and Drive authorization flow for the mobile rehearsal player.
 - [x] 3.2 Implement Drive browsing and search across personal Google Drive and accessible shared folders, with supported and unavailable file states.
 - [x] 3.3 Implement saving and removing Google Drive track references in the app-owned rehearsal library.
-- [ ] 3.4 Implement full-track playback from the saved rehearsal library using the shared playable-item model.
+- [x] 3.4 Implement full-track playback from the saved rehearsal library using the shared playable-item model.
 
 ## 4. Loop and playlist workflows
 

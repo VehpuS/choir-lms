@@ -14,8 +14,16 @@ import {
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
 } from './saved-rehearsal-library-view-model';
+import {
+  getSavedTrackPlaybackActionCopy,
+  getSavedTrackPlaybackSourceIssue,
+  getSavedTrackPlaybackStatusCopy,
+  isSavedTrackPlaybackActive,
+  isSavedTrackPlaybackBusy,
+} from './saved-track-playback-view-model';
 import { useDriveLibrary } from './use-drive-library';
 import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
+import { useSavedTrackPlayback } from './use-saved-track-playback';
 
 type DriveLibrarySectionProps = {
   authState: DriveAuthorizationState;
@@ -57,6 +65,14 @@ export const DriveLibrarySection = ({
     savedSources,
     saveSource,
   } = useSavedRehearsalLibrary();
+  const {
+    activePlayableItem,
+    isPreparing: isPlaybackPreparing,
+    issue: playbackIssue,
+    playbackState,
+    progress,
+    toggleSourcePlayback,
+  } = useSavedTrackPlayback(authState);
   const statusCopy = getDriveLibraryStatusCopy({
     authState,
     activeSearchQuery,
@@ -90,7 +106,19 @@ export const DriveLibrarySection = ({
     issue: savedLibraryIssue,
     savedSources: savedLibrarySources,
   });
+  const savedTrackPlaybackStatusCopy = getSavedTrackPlaybackStatusCopy({
+    activePlayableItem,
+    durationSeconds: progress.duration,
+    isPreparing: isPlaybackPreparing,
+    issue: playbackIssue,
+    playbackState,
+    positionSeconds: progress.position,
+  });
   const isSavedLibraryMutating = pendingSourceId !== null;
+  const isSavedTrackPlaybackLoading = isSavedTrackPlaybackBusy({
+    isPreparing: isPlaybackPreparing,
+    playbackState,
+  });
   const savedSourceTitle = `Saved rehearsal tracks (${savedLibrarySources.length})`;
 
   return (
@@ -144,23 +172,56 @@ export const DriveLibrarySection = ({
           statusCopy={savedLibraryStatusCopy}
         />
 
-        <DriveLibrarySourceGroup
-          getAction={(source) => {
-            const isPending = pendingSourceId === source.id;
+        {savedTrackPlaybackStatusCopy ? (
+          <DriveLibraryStatusCard
+            isLoading={isSavedTrackPlaybackLoading}
+            loadingLabel="Starting track playback…"
+            statusCopy={savedTrackPlaybackStatusCopy}
+          />
+        ) : null}
 
-            return {
-              disabled: !canMutateLibrary || isSavedLibraryMutating,
-              label: isPending ? 'Removing…' : 'Remove',
-              onPress: () => {
-                void removeSource(source);
+        <DriveLibrarySourceGroup
+          getActions={(source) => {
+            const isPending = pendingSourceId === source.id;
+            const playbackAction = getSavedTrackPlaybackActionCopy({
+              activePlayableItem,
+              isPreparing: isPlaybackPreparing,
+              playbackState,
+              source,
+            });
+            const isPlaybackSourceActive = isSavedTrackPlaybackActive(
+              activePlayableItem,
+              source,
+            );
+
+            return [
+              {
+                disabled: isSavedLibraryMutating || playbackAction.disabled,
+                label: playbackAction.label,
+                onPress: () => {
+                  void toggleSourcePlayback(source);
+                },
+                tone: 'primary' as const,
               },
-            };
+              {
+                disabled:
+                  !canMutateLibrary ||
+                  isSavedLibraryMutating ||
+                  isPlaybackSourceActive,
+                label: isPending ? 'Removing…' : 'Remove',
+                onPress: () => {
+                  void removeSource(source);
+                },
+              },
+            ];
           }}
           getMessage={(source) => {
-            return getSavedRehearsalLibrarySourceIssue(
-              savedLibraryIssue,
-              source,
-              'remove',
+            return (
+              getSavedRehearsalLibrarySourceIssue(
+                savedLibraryIssue,
+                source,
+                'remove',
+              ) ?? getSavedTrackPlaybackSourceIssue(playbackIssue, source)
             );
           }}
           sources={savedLibrarySources}

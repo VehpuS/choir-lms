@@ -8,14 +8,18 @@ import {
   type DriveLibrarySource,
 } from './drive-library-view-model';
 
+export type DriveLibrarySourceAction = {
+  disabled?: boolean;
+  label: string;
+  onPress: () => void;
+  tone?: 'neutral' | 'primary';
+};
+
 type DriveLibrarySourceGroupProps = {
-  getAction?: (
+  getAction?: (source: DriveLibrarySource) => DriveLibrarySourceAction | null;
+  getActions?: (
     source: DriveLibrarySource,
-  ) => {
-    disabled?: boolean;
-    label: string;
-    onPress: () => void;
-  } | null;
+  ) => DriveLibrarySourceAction[] | null;
   getMessage?: (source: DriveLibrarySource) => string | undefined;
   sources: DriveLibrarySource[];
   title: string;
@@ -30,6 +34,18 @@ const READY_TEXT = '#1f5c40';
 const SECONDARY_TEXT = '#5f5647';
 const WARNING_SURFACE = '#fff4dd';
 const WARNING_TEXT = '#7f5b12';
+
+const getActionButtonStyle = (action: DriveLibrarySourceAction) => {
+  return action.tone === 'primary'
+    ? styles.actionButtonPrimary
+    : styles.actionButtonNeutral;
+};
+
+const getActionButtonLabelStyle = (action: DriveLibrarySourceAction) => {
+  return action.tone === 'primary'
+    ? styles.actionButtonPrimaryLabel
+    : styles.actionButtonNeutralLabel;
+};
 
 const getAvailabilityBadgeStyle = (source: DriveLibrarySource) => {
   if (source.availability.status === 'available') {
@@ -57,14 +73,17 @@ const getAvailabilityLabelStyle = (source: DriveLibrarySource) => {
 
 const DriveLibrarySourceCard = ({
   getAction,
+  getActions,
   getMessage,
   source,
 }: {
   getAction?: DriveLibrarySourceGroupProps['getAction'];
+  getActions?: DriveLibrarySourceGroupProps['getActions'];
   getMessage?: DriveLibrarySourceGroupProps['getMessage'];
   source: DriveLibrarySource;
 }) => {
-  const action = getAction?.(source) ?? null;
+  const singleAction = getAction?.(source) ?? null;
+  const actions = getActions?.(source) ?? (singleAction ? [singleAction] : []);
   const externalMessage = getMessage?.(source);
   const metadataLabel = getSourceMetadataLabels(source).join(' • ');
   const statusMessage = externalMessage ?? getSourceStatusMessage(source);
@@ -82,26 +101,41 @@ const DriveLibrarySourceCard = ({
               {getSourceAvailabilityLabel(source)}
             </Text>
           </View>
-          {action ? (
-            <Pressable
-              accessibilityRole="button"
-              disabled={action.disabled}
-              onPress={action.onPress}
-              style={({ pressed }) => [
-                styles.actionButton,
-                pressed && !action.disabled ? styles.actionButtonPressed : undefined,
-                action.disabled ? styles.actionButtonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.actionButtonLabel}>{action.label}</Text>
-            </Pressable>
-          ) : null}
+          {actions.map((action: DriveLibrarySourceAction, index: number) => {
+            return (
+              <Pressable
+                accessibilityRole="button"
+                disabled={action.disabled}
+                key={`${source.id}:${action.label}:${index}`}
+                onPress={action.onPress}
+                style={({ pressed }) => [
+                  styles.actionButton,
+                  getActionButtonStyle(action),
+                  pressed && !action.disabled
+                    ? styles.actionButtonPressed
+                    : undefined,
+                  action.disabled ? styles.actionButtonDisabled : undefined,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.actionButtonLabel,
+                    getActionButtonLabelStyle(action),
+                  ]}
+                >
+                  {action.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
       <Text style={styles.sourceMetadata}>{metadataLabel}</Text>
       {statusMessage ? (
         <Text
-          style={isErrorMessage ? styles.sourceErrorMessage : styles.sourceMessage}
+          style={
+            isErrorMessage ? styles.sourceErrorMessage : styles.sourceMessage
+          }
         >
           {statusMessage}
         </Text>
@@ -112,6 +146,7 @@ const DriveLibrarySourceCard = ({
 
 export const DriveLibrarySourceGroup = ({
   getAction,
+  getActions,
   getMessage,
   sources,
   title,
@@ -128,6 +163,7 @@ export const DriveLibrarySourceGroup = ({
           return (
             <DriveLibrarySourceCard
               getAction={getAction}
+              getActions={getActions}
               getMessage={getMessage}
               key={source.id}
               source={source}
@@ -223,9 +259,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: BORDER_COLOR,
     borderRadius: 999,
+  },
+  actionButtonNeutral: {
+    borderColor: BORDER_COLOR,
     backgroundColor: '#fffdf8',
+  },
+  actionButtonPrimary: {
+    borderColor: '#1f5c40',
+    backgroundColor: '#1f5c40',
   },
   actionButtonPressed: {
     opacity: 0.88,
@@ -234,8 +276,13 @@ const styles = StyleSheet.create({
     opacity: 0.56,
   },
   actionButtonLabel: {
-    color: PRIMARY_TEXT,
     fontSize: 13,
     fontWeight: '700',
+  },
+  actionButtonNeutralLabel: {
+    color: PRIMARY_TEXT,
+  },
+  actionButtonPrimaryLabel: {
+    color: '#fffdf8',
   },
 });
