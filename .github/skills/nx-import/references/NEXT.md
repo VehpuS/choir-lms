@@ -1,6 +1,6 @@
 ## Next.js
 
-Next.js-specific guidance for `nx import`. For generic import issues (pnpm globs, root deps, project references, name collisions, ESLint, frontend tsconfig base settings, `@nx/react` typings, Jest preset, target name prefixing, non-Nx source handling), see `SKILL.md`.
+Next.js-specific guidance for `nx import`. For generic import issues (workspace globs, root deps, project references, name collisions, ESLint, frontend tsconfig base settings, `@nx/react` typings, Jest preset, target name prefixing, non-Nx source handling), see `SKILL.md`.
 
 ---
 
@@ -33,10 +33,10 @@ Beyond the generic root deps issue (see SKILL.md), Next.js projects typically ne
 
 ### Next.js Auto-Installing Dependencies via Wrong Package Manager
 
-Next.js detects missing `@types/react` during `next build` and tries to install it using `yarn add` regardless of the actual package manager. In a pnpm workspace, this fails with a "nearest package directory isn't part of the project" error.
+Next.js detects missing `@types/react` during `next build` and may try to install it automatically with a package-manager-specific command. In this npm workspace, that can fail outright or dirty the repo with the wrong install flow.
 
 **Root cause**: `@types/react` is missing from root devDependencies.
-**Fix**: Install deps at the root before building: `pnpm add -wD @types/react @types/react-dom`
+**Fix**: Install deps at the root before building: `npm install -D @types/react @types/react-dom`
 
 ### Next.js TypeScript Config Specifics
 
@@ -142,8 +142,8 @@ No naming conflicts between frameworks.
 ## Fix Order — Nx Source (Subdirectory Import)
 
 1. Import Next.js apps into `apps/<name>` (see SKILL.md: "Application vs Library Detection")
-2. Generic fixes from SKILL.md (pnpm globs, root deps, `.gitkeep` removal, frontend tsconfig base settings, `@nx/react` typings)
-3. Install Next.js-specific deps: `pnpm add -wD @next/eslint-plugin-next`
+2. Generic fixes from SKILL.md (workspace globs, root deps, `.gitkeep` removal, frontend tsconfig base settings, `@nx/react` typings)
+3. Install Next.js-specific deps: `npm install -D @next/eslint-plugin-next`
 4. ESLint setup (see SKILL.md: "Root ESLint Config Missing")
 5. Jest setup (see SKILL.md: "Jest Preset Missing")
 6. `nx reset && nx sync --yes && nx run-many -t typecheck,build,test,lint`
@@ -151,7 +151,7 @@ No naming conflicts between frameworks.
 ## Fix Order — Non-Nx Source (create-next-app)
 
 1. Import into `apps/<name>` (see SKILL.md: "Application vs Library Detection")
-2. Generic fixes from SKILL.md (pnpm globs, stale files cleanup, script rewriting, target name prefixing)
+2. Generic fixes from SKILL.md (workspace globs, stale files cleanup, script rewriting, target name prefixing)
 3. (Optional) If app needs to export types for other workspace projects: fix `noEmit` → `composite` (see SKILL.md)
 4. `nx reset && nx run-many -t next:build,eslint:lint` (or unprefixed names if renamed)
 
@@ -165,11 +165,11 @@ No naming conflicts between frameworks.
 - Dest: CNW ts preset (Nx 23)
 - Import: subdirectory-at-a-time (apps, libs separately)
 - Errors found & fixed:
-  1. pnpm-workspace.yaml: `apps`/`libs` → `apps/*`/`libs/*`
+  1. Root `workspaces`: `apps`/`libs` → `apps/*`/`libs/*`
   2. Root tsconfig: `nodenext` → `bundler`, add `dom`/`dom.iterable` to `lib`, add `jsx: react-jsx`
   3. Missing `@nx/react` (for CSS module/image type defs in lib)
   4. Missing `@types/react`, `@types/react-dom`, `@types/node`
-  5. Next.js trying `yarn add @types/react` — fixed by installing at root
+  5. Next.js attempting an automatic `@types/react` install — fixed by installing at root
   6. Missing `@nx/eslint`, root `eslint.config.mjs`, ESLint plugins
   7. Missing `@nx/jest`, `jest.preset.js`, `jest-environment-jsdom`, `ts-jest`
 - All targets green: typecheck, build, test, lint
@@ -180,8 +180,8 @@ No naming conflicts between frameworks.
 - Dest: CNW ts preset (Nx 23)
 - Import: whole-repo into `apps/web`
 - Errors found & fixed:
-  1. pnpm-workspace.yaml: `apps/web` → `apps/*`
-  2. Stale files: `node_modules/`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.gitignore` — deleted
+  1. Root `workspaces`: `apps/web` → `apps/*`
+  2. Stale files: `node_modules/`, `package-lock.json`, `.gitignore` — deleted
   3. Nx-rewritten npm scripts (`"build": "nx next:build"`, etc.) — removed
 - No tsconfig changes needed — self-contained config with `noEmit: true`
 - ESLint self-contained via `eslint-config-next` — no root config needed
@@ -193,7 +193,7 @@ No naming conflicts between frameworks.
 - See VITE.md Scenario 6 for the full multi-import scenario
 - Next.js-specific findings:
   1. `@nx/next:init` rewrote all scripts to `nx next:*` format — removed all rewritten scripts
-  2. Stale files: `node_modules/`, `package-lock.json`, `.gitignore` — deleted (npm workspace, no pnpm files)
+  2. Stale files: `node_modules/`, `package-lock.json`, `.gitignore` — deleted
   3. ESLint self-contained via `eslint-config-next` — no root config needed
   4. No tsconfig changes needed — `noEmit: true` stays; `next build` handles type checking
 - Targets: `next:build`, `next:dev`, `next:start`, `eslint:lint`
@@ -205,9 +205,9 @@ No naming conflicts between frameworks.
 - Dest: CNW ts preset (Nx 23)
 - Errors found & fixed:
   1. All Scenario 1 fixes for the Next.js app
-  2. Stale files from Vite source: `node_modules/`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.gitignore`, `nx.json`
+  2. Stale files from Vite source: `node_modules/`, `package-lock.json`, `.gitignore`, `nx.json`
   3. Removed rewritten scripts from Vite app's `package.json`
-  4. ESLint 8 vs 9 conflict — `@nx/eslint` peer on ESLint 8 resolved wrong version. Fixed with `pnpm.overrides`
+  4. ESLint 8 vs 9 conflict — `@nx/eslint` peer on ESLint 8 resolved wrong version. Fixed with root `overrides`
   5. Vite tsconfigs missing `composite: true`, `declaration: true` — needed for `tsc --build --emitDeclarationOnly`
   6. Vite `tsconfig.spec.json` `include` missing source files — specs import app code
   7. Vite tsconfig `moduleResolution: "node"` → `"bundler"`, added `extends: "../../tsconfig.base.json"`

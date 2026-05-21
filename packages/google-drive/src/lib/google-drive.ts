@@ -1,2 +1,2 @@
-export * from './google-drive-core.js';
-export * from './google-drive-discovery.js';
+export * from './google-drive-core';
+export * from './google-drive-discovery';

@@ -20,6 +20,11 @@ This repository is an Nx monorepo for a broader choir learning platform. See the
 - Use `openspec-checkpointed-implementation` for the one-subtask execution loop and `implementation-checkpoint` for the validated pause, feedback, manual verification, and commit handoff.
 - The user can explicitly opt out of checkpoints, commit boundaries, or the default test expectation for the current session. Otherwise, default to this slower, review-oriented loop.
 
+## Workspace Tooling
+
+- This workspace uses npm workspaces with the committed root `package-lock.json`.
+- When repo-specific guidance conflicts with generic Nx examples, prefer `npm exec -- nx ...` for workspace tasks and `npm ci` for install validation.
+
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
 
@@ -27,7 +32,7 @@ This repository is an Nx monorepo for a broader choir learning platform. See the
 
 - For navigating/exploring the workspace, invoke the `nx-workspace` skill first - it has patterns for querying projects, targets, and dependencies
 - When running tasks (for example build, lint, test, e2e, etc.), always prefer running the task through `nx` (i.e. `nx run`, `nx run-many`, `nx affected`) instead of using the underlying tooling directly
-- Prefix nx commands with the workspace's package manager (e.g., `pnpm nx build`, `npm exec nx test`) - avoids using globally installed CLI
+- Prefix nx commands with the workspace's package manager (in this repo, `npm exec -- nx ...`) - avoids using globally installed CLI
 - You have access to the Nx MCP server and its tools, use them to help the user
 - For Nx plugin best practices, check `node_modules/@nx/<plugin>/PLUGIN.md`. Not all plugins have this file - proceed without it if unavailable.
 - NEVER guess CLI flags - always check nx_docs or `--help` first when unsure

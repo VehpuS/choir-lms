@@ -3,7 +3,7 @@ import type { DriveAudioSource } from '@org/rehearsal-domain';
 import {
   mapDriveFileToAudioSource,
   type DriveFileMetadata,
-} from './google-drive-core.js';
+} from './google-drive-core';
 
 export type DriveLibrarySnapshot = {
   playableSources: DriveAudioSource[];

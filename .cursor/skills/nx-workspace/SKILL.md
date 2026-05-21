@@ -7,7 +7,7 @@ description: "Explore and understand Nx workspaces. USE WHEN answering questions
 
 This skill provides read-only exploration of Nx workspaces. Use it to understand workspace structure, project configuration, available targets, and dependencies.
 
-Keep in mind that you might have to prefix commands with `npx`/`pnpx`/`yarn` if nx isn't installed globally. Check the lockfile to determine the package manager in use.
+Prefer the workspace package manager instead of relying on a global Nx install. Check `package.json` and the lockfile to determine which command to use. In this repo, prefer `npm exec -- nx ...`.
 
 ## Listing Projects
 

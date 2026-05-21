@@ -129,16 +129,12 @@ When subagent returns `fix_available`, main agent compares `failedTaskIds` vs `v
 
 When verifiable (non-e2e) unverified tasks exist:
 
-1. **Detect package manager:**
-
-   - `pnpm-lock.yaml` exists → `pnpm nx`
-   - `yarn.lock` exists → `yarn nx`
-   - Otherwise → `npx nx`
+1. **Use the repo default task runner:**
+   - Run workspace tasks with `npm exec -- nx` in this repo
 
 2. **Run verifiable tasks in parallel:**
-
    - Spawn `general` subagents to run each task concurrently
-   - Each subagent runs: `<pm> nx run <taskId>`
+   - Each subagent runs: `npm exec -- nx run <taskId>`
    - Collect pass/fail results from all subagents
 
 3. **Evaluate results:**
@@ -149,7 +145,6 @@ When verifiable (non-e2e) unverified tasks exist:
 | ANY verifiable task fails | Apply-locally + enhance flow |
 
 1. **Apply-locally + enhance flow:**
-
    - Run `nx-cloud apply-locally <shortLink>`
    - Enhance the code to fix failing tasks
    - Run failing tasks again to verify fix
@@ -157,10 +152,8 @@ When verifiable (non-e2e) unverified tasks exist:
    - If passing → commit and push, record `expected_commit_sha`, spawn subagent in wait mode
 
 2. **Track attempts** (wraps step 4):
-
    - Increment `local_verify_count` after each enhance cycle
    - If `local_verify_count >= local_verify_attempts` (default: 3):
-
      - Get code in commit-able state
      - Commit and push with message indicating local verification failed
      - Report to user:
@@ -269,18 +262,17 @@ This means the expected CI Attempt was never created - CI likely failed before N
    ```
 
 2. **If user configured auto-fix attempts** (e.g., `--auto-fix-workflow`):
-
-   - Detect package manager: check for `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`
+   - Use npm in this workspace
    - Run install to update lockfile:
 
      ```bash
-     pnpm install   # or npm install / yarn install
+       npm install
      ```
 
    - If lockfile changed:
 
      ```bash
-     git add pnpm-lock.yaml  # or appropriate lockfile
+       git add package-lock.json
      git commit -m "chore: update lockfile"
      git push origin $(git branch --show-current)
      ```
@@ -319,7 +311,6 @@ This means the CI Attempt was created but no Nx tasks were recorded before it fa
 3. **Record `expected_commit_sha`, spawn subagent in wait mode**
 
 4. **If retry also returns `cipe_no_tasks`:**
-
    - Exit with failure
    - Provide guidance:
 

@@ -49,12 +49,16 @@ The first change proposal for this direction is `add-mobile-rehearsal-player` un
 
 ## Development
 
+This workspace uses npm workspaces with the committed root `package-lock.json`.
+Prefer `npm exec -- <tool>` for local CLIs, especially `npm exec -- nx ...` for
+workspace tasks.
+
 Useful Nx commands:
 
 ```sh
-npx nx show projects
-npx nx graph
-npx nx sync
+npm exec -- nx show projects
+npm exec -- nx graph
+npm exec -- nx sync
 ```
 
 ### Google OAuth for mobile manual testing
@@ -83,7 +87,7 @@ After filling the client ID for the platform you are testing, verify the Expo co
 
 ```sh
 cd packages/mobile-rehearsal-player
-npx expo config --type public
+npm exec -- expo config --type public
 ```
 
 ```sh

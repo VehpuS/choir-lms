@@ -19,7 +19,7 @@ Jest-specific guidance for `nx import`. For the basic "Jest Preset Missing" fix 
 }
 ```
 
-`npx nx add @nx/jest` does two things:
+`npm exec -- nx add @nx/jest` does two things:
 
 1. **Registers `@nx/jest/plugin` in `nx.json`** — without this, no `test` targets are inferred
 2. Updates `namedInputs.production` to exclude test files
@@ -60,7 +60,7 @@ The `preset` path is relative from the project root to the workspace root. Subdi
 #### Core (always needed)
 
 ```
-pnpm add -wD jest ts-jest @types/jest @nx/jest
+npm install -D jest ts-jest @types/jest @nx/jest
 ```
 
 #### Environment-specific
@@ -71,7 +71,7 @@ pnpm add -wD jest ts-jest @types/jest @nx/jest
 #### React testing
 
 ```
-pnpm add -wD @testing-library/react @testing-library/jest-dom
+npm install -D @testing-library/react @testing-library/jest-dom
 ```
 
 #### React with Babel (non-ts-jest transform)
@@ -79,7 +79,7 @@ pnpm add -wD @testing-library/react @testing-library/jest-dom
 Some React projects use Babel instead of ts-jest for JSX transformation:
 
 ```
-pnpm add -wD babel-jest @babel/core @babel/preset-env @babel/preset-react @babel/preset-typescript
+npm install -D babel-jest @babel/core @babel/preset-env @babel/preset-react @babel/preset-typescript
 ```
 
 **When**: Project `jest.config` has `transform` using `babel-jest` instead of `ts-jest`. Common in older Nx workspaces and CRA migrations.
@@ -87,7 +87,7 @@ pnpm add -wD babel-jest @babel/core @babel/preset-env @babel/preset-react @babel
 #### Vue testing
 
 ```
-pnpm add -wD @vue/test-utils
+npm install -D @vue/test-utils
 ```
 
 Vue projects typically use Vitest (not Jest) — see VITE.md.
@@ -194,7 +194,7 @@ This creates `test-ci--src/lib/foo.spec.ts` targets for each test file, enabling
 
 ### Common Post-Import Issues
 
-1. **"Cannot find target 'test'"**: `@nx/jest/plugin` not registered in `nx.json`. Run `npx nx add @nx/jest` or manually add the plugin entry.
+1. **"Cannot find target 'test'"**: `@nx/jest/plugin` not registered in `nx.json`. Run `npm exec -- nx add @nx/jest` or manually add the plugin entry.
 
 2. **"Cannot find module 'jest-preset'"**: `jest.preset.js` missing at workspace root. Create it (see SKILL.md).
 
@@ -210,9 +210,9 @@ This creates `test-ci--src/lib/foo.spec.ts` targets for each test file, enabling
 
 ### Subdirectory Import (Nx Source)
 
-1. `npx nx add @nx/jest` — registers plugin in `nx.json` (does NOT create `jest.preset.js`)
+1. `npm exec -- nx add @nx/jest` — registers plugin in `nx.json` (does NOT create `jest.preset.js`)
 2. Create `jest.preset.js` manually (see "Jest Preset" section above)
-3. Install deps: `pnpm add -wD jest jest-environment-jsdom ts-jest @types/jest`
+3. Install deps: `npm install -D jest jest-environment-jsdom ts-jest @types/jest`
 4. Install framework test deps: `@testing-library/react @testing-library/jest-dom` (React), `@vue/test-utils` (Vue)
 5. Verify `tsconfig.spec.json` has `"types": ["jest", "node"]`
 6. `nx run-many -t test`
@@ -220,7 +220,7 @@ This creates `test-ci--src/lib/foo.spec.ts` targets for each test file, enabling
 ### Whole-Repo Import (Non-Nx Source)
 
 1. Remove rewritten test scripts from `package.json`
-2. `npx nx add @nx/jest` — registers plugin (does NOT create preset)
+2. `npm exec -- nx add @nx/jest` — registers plugin (does NOT create preset)
 3. Create `jest.preset.js` manually
 4. Install deps (same as above)
 5. Verify/fix `jest.config.*` — ensure `preset` path points to root `jest.preset.js`
