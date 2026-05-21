@@ -10,8 +10,8 @@ import type {
 } from '@org/google-drive';
 
 import {
-  getFolderMetadataLabels,
   getDriveLibraryStatusCopy,
+  getFolderMetadataLabels,
   getSourceAvailabilityLabel,
   getSourceMetadataLabels,
   getSourceStatusMessage,
@@ -206,12 +206,10 @@ describe('presentation helpers', () => {
       '3:05',
       'Updated 2026-05-10',
     ]);
-    assert.deepEqual(getSourceMetadataLabels(SEARCH_SNAPSHOT.playableSources[0]), [
-      'MP3',
-      '3:05',
-      'Updated 2026-05-10',
-      'Shared with you',
-    ]);
+    assert.deepEqual(
+      getSourceMetadataLabels(SEARCH_SNAPSHOT.playableSources[0]),
+      ['MP3', '3:05', 'Updated 2026-05-10', 'Shared with you'],
+    );
     assert.equal(getSourceAvailabilityLabel(PLAYABLE_SOURCE), 'Playable');
     assert.equal(getSourceStatusMessage(PLAYABLE_SOURCE), undefined);
     assert.equal(

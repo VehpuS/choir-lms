@@ -66,8 +66,7 @@ const DRIVE_FILES_ENDPOINT = 'https://www.googleapis.com/drive/v3/files';
 
 const DRIVE_LIBRARY_QUERY = "trashed = false and mimeType contains 'audio/'";
 
-const DRIVE_FOLDER_OR_AUDIO_QUERY =
-  `(${`mimeType = '${DRIVE_FOLDER_MIME_TYPE}'`} or mimeType contains 'audio/')`;
+const DRIVE_FOLDER_OR_AUDIO_QUERY = `(${`mimeType = '${DRIVE_FOLDER_MIME_TYPE}'`} or mimeType contains 'audio/')`;
 
 const MY_DRIVE_ROOT_ID = 'root';
 const SHARED_FOLDERS_ROOT_ID = 'shared-with-me';
@@ -107,7 +106,9 @@ const sortByName = <Entity extends { name: string }>(values: Entity[]) => {
   return values;
 };
 
-const partitionSources = <Source extends DriveAudioSource>(sources: Source[]) => {
+const partitionSources = <Source extends DriveAudioSource>(
+  sources: Source[],
+) => {
   const playableSources: Source[] = [];
   const unavailableSources: Source[] = [];
 

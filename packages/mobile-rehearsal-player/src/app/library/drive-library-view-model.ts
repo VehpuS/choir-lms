@@ -229,7 +229,11 @@ export const getDriveLibraryStatusCopy = (
     };
   }
 
-  if (browseFolderCount === 0 && browsePlayableCount === 0 && browseUnavailableCount === 0) {
+  if (
+    browseFolderCount === 0 &&
+    browsePlayableCount === 0 &&
+    browseUnavailableCount === 0
+  ) {
     return {
       title: 'Nothing here yet',
       message: `No folders or supported audio are currently available in ${options.browseSnapshot.location.name}.`,

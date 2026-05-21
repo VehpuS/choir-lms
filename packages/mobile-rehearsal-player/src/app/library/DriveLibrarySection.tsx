@@ -166,7 +166,9 @@ export const DriveLibrarySection = ({
             style={({ pressed }) => [
               styles.searchButton,
               pressed ? styles.searchButtonPressed : undefined,
-              !canRefresh || isLoading ? styles.searchButtonDisabled : undefined,
+              !canRefresh || isLoading
+                ? styles.searchButtonDisabled
+                : undefined,
             ]}
           >
             <Text style={styles.searchButtonLabel}>Search</Text>
@@ -181,7 +183,9 @@ export const DriveLibrarySection = ({
               pressed ? styles.clearSearchButtonPressed : undefined,
             ]}
           >
-            <Text style={styles.clearSearchLabel}>Return to folder browsing</Text>
+            <Text style={styles.clearSearchLabel}>
+              Return to folder browsing
+            </Text>
           </Pressable>
         ) : null}
       </View>
@@ -223,7 +227,10 @@ export const DriveLibrarySection = ({
             const isCurrentLocation = index === navigationStack.length - 1;
 
             return (
-              <View key={`${location.kind}:${location.id}`} style={styles.breadcrumbItem}>
+              <View
+                key={`${location.kind}:${location.id}`}
+                style={styles.breadcrumbItem}
+              >
                 {index > 0 ? (
                   <Text style={styles.breadcrumbSeparator}>/</Text>
                 ) : null}
@@ -275,7 +282,8 @@ export const DriveLibrarySection = ({
           folders={browseSnapshot.folders}
           onOpenFolder={openFolder}
           title={
-            currentLocation.rootKind === 'shared' && currentLocation.kind === 'root'
+            currentLocation.rootKind === 'shared' &&
+            currentLocation.kind === 'root'
               ? `Shared folders (${browseSnapshot.folders.length})`
               : `Folders (${browseSnapshot.folders.length})`
           }

@@ -237,7 +237,10 @@ describe('listDriveLibrary', () => {
     assert.equal(requestCount, 2);
     assert.match(requestUrls[0] ?? '', /audioMediaMetadata%2FdurationMillis/);
     assert.match(requestUrls[0] ?? '', /supportsAllDrives=true/);
-    assert.doesNotMatch(requestUrls[1] ?? '', /audioMediaMetadata%2FdurationMillis/);
+    assert.doesNotMatch(
+      requestUrls[1] ?? '',
+      /audioMediaMetadata%2FdurationMillis/,
+    );
     assert.match(requestUrls[1] ?? '', /supportsAllDrives=true/);
     assert.equal(snapshot.playableSources.length, 1);
     assert.equal(snapshot.playableSources[0]?.name, 'Tenor Part.mp3');
@@ -361,15 +364,12 @@ describe('browseDriveLocation', () => {
     globalThis.fetch = async (input) => {
       requestUrl = String(input);
 
-      return new Response(
-        JSON.stringify({ files: [] }),
-        {
-          status: 200,
-          headers: {
-            'content-type': 'application/json',
-          },
+      return new Response(JSON.stringify({ files: [] }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
         },
-      );
+      });
     };
 
     await browseDriveLocation({

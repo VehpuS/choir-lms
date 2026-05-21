@@ -64,7 +64,8 @@ export const useDriveLibrary = (authState: DriveAuthorizationState) => {
   const [refreshCount, setRefreshCount] = useState(0);
 
   const currentLocation =
-    navigationStack[navigationStack.length - 1] ?? createRootLocation('my-drive');
+    navigationStack[navigationStack.length - 1] ??
+    createRootLocation('my-drive');
 
   useEffect(() => {
     const accessToken = authState.accessToken;
