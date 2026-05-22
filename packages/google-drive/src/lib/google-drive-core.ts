@@ -79,7 +79,7 @@ const resolveAvailabilityReason = (
 };
 
 export const buildDriveMediaUrl = (driveFileId: string) => {
-  return `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`;
+  return `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media&supportsAllDrives=true`;
 };
 
 export const getDriveAuthorizationState = (

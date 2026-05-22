@@ -2,10 +2,7 @@ import {
   buildDriveMediaUrl,
   type DriveAuthorizationState,
 } from '@org/google-drive';
-import {
-  createTrackPlayableItem,
-  type PlayableItem,
-} from '@org/rehearsal-domain';
+import { type PlayableItem } from '@org/rehearsal-domain';
 
 import {
   formatDurationLabel,
@@ -25,6 +22,7 @@ export type SavedTrackPlaybackState =
   | 'stopped';
 
 export type SavedTrackPlaybackIssue = {
+  playableItemId?: string;
   sourceId?: string;
   title: string;
   message: string;
@@ -48,8 +46,8 @@ export type SavedTrackPlaybackRequest = {
 type SavedTrackPlaybackActionOptions = {
   activePlayableItem: PlayableItem | null;
   isPreparing: boolean;
+  playableItem: PlayableItem;
   playbackState: SavedTrackPlaybackState | undefined;
-  source: DriveLibrarySource;
 };
 
 type SavedTrackPlaybackStatusOptions = {
@@ -65,6 +63,7 @@ const DEFAULT_UNAVAILABLE_MESSAGE =
   'This saved rehearsal track is not currently available for playback.';
 const DRIVE_ACCESS_REQUIRED_MESSAGE =
   'Reconnect Google Drive before starting full-track playback from the saved rehearsal library.';
+const LOOP_RANGE_END_TOLERANCE_MS = 250;
 
 const isLoadingState = (playbackState: SavedTrackPlaybackState | undefined) => {
   return playbackState === 'loading' || playbackState === 'buffering';
@@ -97,19 +96,41 @@ export const isSavedTrackPlaybackBusy = (options: {
   return options.isPreparing || isLoadingState(options.playbackState);
 };
 
+export const hasSavedTrackPlaybackReachedRangeEnd = (options: {
+  activePlayableItem: PlayableItem | null;
+  playbackState: SavedTrackPlaybackState | undefined;
+  positionSeconds: number;
+}) => {
+  if (
+    options.activePlayableItem?.kind !== 'loop' ||
+    options.playbackState !== 'playing' ||
+    options.activePlayableItem.range.endMs === null
+  ) {
+    return false;
+  }
+
+  return (
+    Math.round(options.positionSeconds * 1000) >=
+    options.activePlayableItem.range.endMs - LOOP_RANGE_END_TOLERANCE_MS
+  );
+};
+
 export const isSavedTrackPlaybackActive = (
   activePlayableItem: PlayableItem | null,
-  source: DriveLibrarySource,
+  playableItem: PlayableItem,
 ) => {
-  return activePlayableItem?.sourceId === source.id;
+  return activePlayableItem?.id === playableItem.id;
 };
 
 export const createSavedTrackPlaybackPreconditionIssue = (
   authState: DriveAuthorizationState,
-  source: DriveLibrarySource,
+  playableItem: PlayableItem,
 ) => {
+  const { source } = playableItem;
+
   if (source.availability.status !== 'available') {
     return {
+      playableItemId: playableItem.id,
       sourceId: source.id,
       title: 'Track unavailable',
       message: source.availability.message ?? DEFAULT_UNAVAILABLE_MESSAGE,
@@ -118,6 +139,7 @@ export const createSavedTrackPlaybackPreconditionIssue = (
 
   if (authState.status !== 'authorized' || !authState.accessToken) {
     return {
+      playableItemId: playableItem.id,
       sourceId: source.id,
       title: 'Google Drive access required',
       message: DRIVE_ACCESS_REQUIRED_MESSAGE,
@@ -129,22 +151,22 @@ export const createSavedTrackPlaybackPreconditionIssue = (
 
 export const createSavedTrackPlaybackRequest = (options: {
   accessToken: string;
-  source: DriveLibrarySource;
+  playableItem: PlayableItem;
 }): SavedTrackPlaybackRequest => {
-  const playableItem = createTrackPlayableItem(options.source);
+  const { playableItem } = options;
 
   return {
     playableItem,
     track: {
       id: playableItem.id,
-      url: buildDriveMediaUrl(options.source.driveFileId),
+      url: buildDriveMediaUrl(playableItem.source.driveFileId),
       title: playableItem.title,
       description: playableItem.description,
       duration:
-        options.source.durationMs !== undefined
-          ? options.source.durationMs / 1000
+        playableItem.source.durationMs !== undefined
+          ? playableItem.source.durationMs / 1000
           : undefined,
-      contentType: options.source.mimeType,
+      contentType: playableItem.source.mimeType,
       headers: {
         Authorization: `Bearer ${options.accessToken}`,
       },
@@ -153,14 +175,15 @@ export const createSavedTrackPlaybackRequest = (options: {
 };
 
 export const createSavedTrackPlaybackRuntimeIssue = (
-  source: DriveLibrarySource,
+  playableItem: PlayableItem,
   error: unknown,
 ) => {
   const detail = error instanceof Error ? error.message.trim() : '';
-  const fallbackMessage = `The saved rehearsal library could not play "${source.name}".`;
+  const fallbackMessage = `The saved rehearsal library could not play "${playableItem.title}".`;
 
   return {
-    sourceId: source.id,
+    playableItemId: playableItem.id,
+    sourceId: playableItem.sourceId,
     title: 'Playback failed',
     message: detail ? `${fallbackMessage} ${detail}` : fallbackMessage,
   } satisfies SavedTrackPlaybackIssue;
@@ -171,7 +194,7 @@ export const getSavedTrackPlaybackActionCopy = (
 ) => {
   const isActiveSource = isSavedTrackPlaybackActive(
     options.activePlayableItem,
-    options.source,
+    options.playableItem,
   );
 
   if (!isActiveSource) {
@@ -226,11 +249,11 @@ export const getSavedTrackPlaybackActionCopy = (
   };
 };
 
-export const getSavedTrackPlaybackSourceIssue = (
+export const getSavedTrackPlaybackItemIssue = (
   issue: SavedTrackPlaybackIssue | null,
-  source: DriveLibrarySource,
+  playableItem: PlayableItem,
 ) => {
-  if (issue?.sourceId !== source.id) {
+  if (issue?.playableItemId !== playableItem.id) {
     return undefined;
   }
 

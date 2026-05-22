@@ -22,7 +22,7 @@ export type SavedRehearsalLibraryIssue = {
 };
 
 const INITIAL_LOAD_ATTEMPTS = 2;
-const LOCAL_REHEARSAL_LIBRARY_OWNER_ID = 'local-device-user';
+export const LOCAL_REHEARSAL_LIBRARY_OWNER_ID = 'local-device-user';
 const SAVED_LIBRARY_STORAGE_PROBE_KEY = 'choirlms:practice:probe';
 const STORAGE_UNAVAILABLE_ISSUE: SavedRehearsalLibraryIssue = {
   kind: 'storage',

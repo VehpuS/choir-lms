@@ -1,6 +1,9 @@
 import { type DriveAuthorizationState } from '@org/google-drive';
-import { type PlayableItem } from '@org/rehearsal-domain';
-import { useState } from 'react';
+import {
+  createTrackPlayableItem,
+  type PlayableItem,
+} from '@org/rehearsal-domain';
+import { useEffect, useState } from 'react';
 import TrackPlayer, {
   Capability,
   Event,
@@ -15,6 +18,7 @@ import {
   createSavedTrackPlaybackPreconditionIssue,
   createSavedTrackPlaybackRequest,
   createSavedTrackPlaybackRuntimeIssue,
+  hasSavedTrackPlaybackReachedRangeEnd,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from './saved-track-playback-view-model';
@@ -49,9 +53,9 @@ const ensureSavedTrackPlayerReady = () => {
 
 const isActivePlaybackSource = (
   activePlayableItem: PlayableItem | null,
-  source: DriveLibrarySource,
+  playableItem: PlayableItem,
 ) => {
-  return activePlayableItem?.sourceId === source.id;
+  return activePlayableItem?.id === playableItem.id;
 };
 
 export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
@@ -69,6 +73,7 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
     (event) => {
       if (event.type === Event.PlaybackError && activePlayableItem) {
         setIssue({
+          playableItemId: activePlayableItem.id,
           sourceId: activePlayableItem.sourceId,
           title: 'Playback failed',
           message: `The saved rehearsal library could not continue "${activePlayableItem.title}". ${event.message}`,
@@ -83,79 +88,125 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
     },
   );
 
+  useEffect(() => {
+    if (
+      !hasSavedTrackPlaybackReachedRangeEnd({
+        activePlayableItem,
+        playbackState,
+        positionSeconds: progress.position,
+      }) ||
+      !activePlayableItem
+    ) {
+      return;
+    }
+
+    let isDisposed = false;
+
+    const stopLoopPlaybackAtRangeEnd = async () => {
+      try {
+        await TrackPlayer.pause();
+        await TrackPlayer.seekTo(activePlayableItem.range.startMs / 1000);
+      } catch (error) {
+        if (!isDisposed) {
+          setIssue(
+            createSavedTrackPlaybackRuntimeIssue(activePlayableItem, error),
+          );
+        }
+      }
+    };
+
+    void stopLoopPlaybackAtRangeEnd();
+
+    return () => {
+      isDisposed = true;
+    };
+  }, [activePlayableItem, playbackState, progress.position]);
+
+  const togglePlayableItemPlayback = async (playableItem: PlayableItem) => {
+    const isCurrentPlayableItem = isActivePlaybackSource(
+      activePlayableItem,
+      playableItem,
+    );
+    const blockingIssue = createSavedTrackPlaybackPreconditionIssue(
+      authState,
+      playableItem,
+    );
+
+    if (!isCurrentPlayableItem && blockingIssue) {
+      setIssue(blockingIssue);
+      return;
+    }
+
+    setIssue(null);
+
+    if (isCurrentPlayableItem && playbackState === State.Playing) {
+      try {
+        await TrackPlayer.pause();
+      } catch (error) {
+        setIssue(createSavedTrackPlaybackRuntimeIssue(playableItem, error));
+      }
+
+      return;
+    }
+
+    setIsPreparing(true);
+
+    try {
+      await ensureSavedTrackPlayerReady();
+
+      if (
+        isCurrentPlayableItem &&
+        playbackState !== undefined &&
+        playbackState !== State.Error &&
+        playbackState !== State.None
+      ) {
+        if (playbackState === State.Ended) {
+          await TrackPlayer.seekTo(playableItem.range.startMs / 1000);
+        }
+
+        await TrackPlayer.play();
+        return;
+      }
+
+      if (!authState.accessToken) {
+        setIssue(
+          createSavedTrackPlaybackPreconditionIssue(authState, playableItem),
+        );
+        return;
+      }
+
+      const playbackRequest = createSavedTrackPlaybackRequest({
+        accessToken: authState.accessToken,
+        playableItem,
+      });
+
+      await TrackPlayer.reset();
+      await TrackPlayer.add(playbackRequest.track);
+      setActivePlayableItem(playbackRequest.playableItem);
+
+      if (playbackRequest.playableItem.range.startMs > 0) {
+        await TrackPlayer.seekTo(
+          playbackRequest.playableItem.range.startMs / 1000,
+        );
+      }
+
+      await TrackPlayer.play();
+    } catch (error) {
+      setIssue(createSavedTrackPlaybackRuntimeIssue(playableItem, error));
+    } finally {
+      setIsPreparing(false);
+    }
+  };
+
   return {
     activePlayableItem,
     isPreparing,
     issue,
     playbackState,
     progress,
+    togglePlayableItemPlayback,
     async toggleSourcePlayback(source: DriveLibrarySource) {
-      const isCurrentSource = isActivePlaybackSource(
-        activePlayableItem,
-        source,
-      );
-      const blockingIssue = createSavedTrackPlaybackPreconditionIssue(
-        authState,
-        source,
-      );
-
-      if (!isCurrentSource && blockingIssue) {
-        setIssue(blockingIssue);
-        return;
-      }
-
-      setIssue(null);
-
-      if (isCurrentSource && playbackState === State.Playing) {
-        try {
-          await TrackPlayer.pause();
-        } catch (error) {
-          setIssue(createSavedTrackPlaybackRuntimeIssue(source, error));
-        }
-
-        return;
-      }
-
-      setIsPreparing(true);
-
-      try {
-        await ensureSavedTrackPlayerReady();
-
-        if (
-          isCurrentSource &&
-          playbackState !== undefined &&
-          playbackState !== State.Error &&
-          playbackState !== State.None
-        ) {
-          if (playbackState === State.Ended) {
-            await TrackPlayer.seekTo(0);
-          }
-
-          await TrackPlayer.play();
-          return;
-        }
-
-        if (!authState.accessToken) {
-          setIssue(
-            createSavedTrackPlaybackPreconditionIssue(authState, source),
-          );
-          return;
-        }
-
-        const playbackRequest = createSavedTrackPlaybackRequest({
-          accessToken: authState.accessToken,
-          source,
-        });
-
-        await TrackPlayer.reset();
-        await TrackPlayer.add(playbackRequest.track);
-        setActivePlayableItem(playbackRequest.playableItem);
-        await TrackPlayer.play();
-      } catch (error) {
-        setIssue(createSavedTrackPlaybackRuntimeIssue(source, error));
-      } finally {
-        setIsPreparing(false);
-      }
+      await togglePlayableItemPlayback(createTrackPlayableItem(source));
     },
   };
 };

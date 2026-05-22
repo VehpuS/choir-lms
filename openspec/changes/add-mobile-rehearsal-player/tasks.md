@@ -19,7 +19,7 @@
 
 ## 4. Loop and playlist workflows
 
-- [ ] 4.1 Implement loop marker selection, loop validation, and named loop creation from a saved rehearsal library track.
+- [x] 4.1 Implement loop marker selection, loop validation, and named loop creation from a saved rehearsal library track.
 - [ ] 4.2 Implement playlist creation and editing for saved full tracks and saved loops.
 - [ ] 4.3 Implement rehearsal queue behavior for ordered playback, repeat, and shuffle across playlist items.
 

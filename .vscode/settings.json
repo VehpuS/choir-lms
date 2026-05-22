@@ -70,6 +70,14 @@
     "/^npm exec -- nx run mobile-rehearsal-player:typecheck$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec -- nx test mobile-rehearsal-player$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- prettier --write/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }
