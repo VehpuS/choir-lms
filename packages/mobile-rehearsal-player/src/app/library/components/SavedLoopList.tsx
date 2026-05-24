@@ -1,13 +1,13 @@
 import { type PlayableItem } from '@org/rehearsal-domain';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { SavedLoopCard } from './saved-loop-view-model';
+import type { SavedLoopCard } from '../utils/saved-loop-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
-} from './saved-track-playback-view-model';
+} from '../utils/saved-track-playback-view-model';
 
 type SavedLoopListProps = {
   activePlayableItem: PlayableItem | null;

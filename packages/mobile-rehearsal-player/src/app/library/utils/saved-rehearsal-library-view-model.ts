@@ -5,7 +5,7 @@ import type {
   DriveLibrarySource,
   DriveLibraryStatusCopy,
 } from './drive-library-view-model';
-import type { SavedRehearsalLibraryIssue } from './use-saved-rehearsal-library';
+import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
 
 type SavedRehearsalLibraryStatusOptions = {
   authState: DriveAuthorizationState;

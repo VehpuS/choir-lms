@@ -2,7 +2,7 @@ import { type NamedLoop } from '@org/rehearsal-domain';
 import { AsyncStoragePracticeRepository } from '@org/rehearsal-playback';
 import { useEffect, useState } from 'react';
 
-import type { SavedLoopIssue } from './saved-loop-view-model';
+import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import {
   LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
   verifySavedRehearsalLibraryStorage,

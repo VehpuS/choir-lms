@@ -13,7 +13,7 @@ import TrackPlayer, {
   useTrackPlayerEvents,
 } from 'react-native-track-player';
 
-import type { DriveLibrarySource } from './drive-library-view-model';
+import type { DriveLibrarySource } from '../utils/drive-library-view-model';
 import {
   createSavedTrackPlaybackPreconditionIssue,
   createSavedTrackPlaybackRequest,
@@ -21,7 +21,7 @@ import {
   hasSavedTrackPlaybackReachedRangeEnd,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
-} from './saved-track-playback-view-model';
+} from '../utils/saved-track-playback-view-model';
 
 const PLAYER_CAPABILITIES = [
   Capability.Play,

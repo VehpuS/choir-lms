@@ -11,7 +11,7 @@ import {
 } from '@org/google-drive';
 import { useEffect, useState } from 'react';
 
-import { runtimeConfig } from '../../config/runtime';
+import { runtimeConfig } from '../../../config/runtime';
 
 const createRootLocation = (rootKind: DriveBrowseLocation['rootKind']) => {
   return {

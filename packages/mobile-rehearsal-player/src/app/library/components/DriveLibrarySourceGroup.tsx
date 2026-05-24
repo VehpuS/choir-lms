@@ -6,7 +6,7 @@ import {
   getSourceMetadataLabels,
   getSourceStatusMessage,
   type DriveLibrarySource,
-} from './drive-library-view-model';
+} from '../utils/drive-library-view-model';
 
 export type DriveLibrarySourceAction = {
   disabled?: boolean;

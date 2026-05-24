@@ -78,6 +78,10 @@
     "/^npm exec -- prettier --write/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^cd /Users/vehpus/git/choir-lms && npm exec -- nx run mobile-rehearsal-player:typecheck --outputStyle=static$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

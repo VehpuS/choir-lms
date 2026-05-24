@@ -3,11 +3,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import type { DriveLibrarySource } from './drive-library-view-model.js';
+import type { DriveLibrarySource } from '../utils/drive-library-view-model.js';
 import {
   loadSavedRehearsalLibrarySources,
   verifySavedRehearsalLibraryStorage,
-} from './use-saved-rehearsal-library.js';
+} from '../hooks/use-saved-rehearsal-library.js';
 
 const SAVED_SOURCE: DriveLibrarySource = {
   id: 'drive:warmup-track',

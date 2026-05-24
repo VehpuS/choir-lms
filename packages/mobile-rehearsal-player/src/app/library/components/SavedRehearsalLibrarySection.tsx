@@ -7,11 +7,11 @@ import { StyleSheet, View } from 'react-native';
 import {
   type DriveLibrarySource,
   type DriveLibraryStatusCopy,
-} from './drive-library-view-model';
+} from '../utils/drive-library-view-model';
 import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
 import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
-import { getSavedRehearsalLibrarySourceIssue } from './saved-rehearsal-library-view-model';
+import { getSavedRehearsalLibrarySourceIssue } from '../utils/saved-rehearsal-library-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -19,9 +19,9 @@ import {
   isSavedTrackPlaybackBusy,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
-} from './saved-track-playback-view-model';
+} from '../utils/saved-track-playback-view-model';
 import { SavedLoopSection } from './SavedLoopSection';
-import type { SavedRehearsalLibraryIssue } from './use-saved-rehearsal-library';
+import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
 
 type SavedRehearsalLibrarySectionProps = {
   activePlayableItem: PlayableItem | null;

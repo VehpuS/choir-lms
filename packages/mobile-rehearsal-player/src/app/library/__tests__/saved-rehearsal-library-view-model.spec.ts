@@ -7,12 +7,12 @@ import {
   AUTHORIZED_STATE,
   PLAYABLE_SOURCE,
   UNSUPPORTED_SOURCE,
-} from './library-test-fixtures.js';
+} from '../../test-utils/library-test-fixtures.js';
 import {
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
-} from './saved-rehearsal-library-view-model.js';
+} from '../utils/saved-rehearsal-library-view-model.js';
 
 describe('saved rehearsal library view-model', () => {
   it('marks saved tracks unavailable until Drive access is restored', () => {

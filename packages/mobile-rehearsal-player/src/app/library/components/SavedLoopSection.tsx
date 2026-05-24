@@ -2,21 +2,21 @@ import { type PlayableItem } from '@org/rehearsal-domain';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import type { DriveLibrarySource } from './drive-library-view-model';
+import type { DriveLibrarySource } from '../utils/drive-library-view-model';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import {
   buildNamedLoop,
   getSavedLoopsStatusCopy,
   resolveSavedLoopCards,
-} from './saved-loop-view-model';
+} from '../utils/saved-loop-view-model';
 import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
-} from './saved-track-playback-view-model';
+} from '../utils/saved-track-playback-view-model';
 import { SavedLoopBuilderCard } from './SavedLoopBuilderCard';
 import { SavedLoopList } from './SavedLoopList';
-import { useSavedLoops } from './use-saved-loops';
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from './use-saved-rehearsal-library';
+import { useSavedLoops } from '../hooks/use-saved-loops';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
 
 type SavedLoopSectionProps = {
   activePlayableItem: PlayableItem | null;

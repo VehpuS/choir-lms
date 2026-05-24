@@ -8,13 +8,16 @@ import {
   createTrackPlayableItem,
 } from '@org/rehearsal-domain';
 
-import { PLAYABLE_SOURCE, SAVED_LOOP } from './library-test-fixtures.js';
+import {
+  PLAYABLE_SOURCE,
+  SAVED_LOOP,
+} from '../../test-utils/library-test-fixtures.js';
 import {
   buildNamedLoop,
   getSavedLoopsStatusCopy,
   resolveLoopBuilderTrack,
   resolveSavedLoopCards,
-} from './saved-loop-view-model.js';
+} from '../utils/saved-loop-view-model.js';
 
 describe('saved loop view-model', () => {
   it('builds named loops from saved-track markers and resolves them for playback', () => {

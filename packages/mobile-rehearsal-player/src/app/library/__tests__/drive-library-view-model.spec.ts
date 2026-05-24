@@ -9,7 +9,7 @@ import {
   PLAYABLE_SOURCE,
   SEARCH_SNAPSHOT,
   UNSUPPORTED_SOURCE,
-} from './library-test-fixtures.js';
+} from '../../test-utils/library-test-fixtures.js';
 import './saved-loop-view-model.spec.js';
 import './saved-rehearsal-library-view-model.spec.js';
 import './saved-track-playback-view-model.spec.js';
@@ -20,7 +20,7 @@ import {
   getSourceAvailabilityLabel,
   getSourceMetadataLabels,
   getSourceStatusMessage,
-} from './drive-library-view-model.js';
+} from '../utils/drive-library-view-model.js';
 
 describe('getDriveLibraryStatusCopy', () => {
   it('summarizes the browse surface with folders and playable items', () => {

@@ -3,7 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import {
   type DriveLibraryStatusCopy,
   type DriveLibraryStatusTone,
-} from './drive-library-view-model';
+} from '../utils/drive-library-view-model';
 
 type DriveLibraryStatusCardProps = {
   isLoading: boolean;

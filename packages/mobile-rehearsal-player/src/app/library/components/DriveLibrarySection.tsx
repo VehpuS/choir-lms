@@ -10,17 +10,17 @@ import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
 import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import { SavedRehearsalLibrarySection } from './SavedRehearsalLibrarySection';
-import { getDriveLibraryStatusCopy } from './drive-library-view-model';
-import { resolveLoopBuilderTrack } from './saved-loop-view-model';
+import { getDriveLibraryStatusCopy } from '../utils/drive-library-view-model';
+import { resolveLoopBuilderTrack } from '../utils/saved-loop-view-model';
 import {
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
-} from './saved-rehearsal-library-view-model';
-import { getSavedTrackPlaybackStatusCopy } from './saved-track-playback-view-model';
-import { useDriveLibrary } from './use-drive-library';
-import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
-import { useSavedTrackPlayback } from './use-saved-track-playback';
+} from '../utils/saved-rehearsal-library-view-model';
+import { getSavedTrackPlaybackStatusCopy } from '../utils/saved-track-playback-view-model';
+import { useDriveLibrary } from '../hooks/use-drive-library';
+import { useSavedRehearsalLibrary } from '../hooks/use-saved-rehearsal-library';
+import { useSavedTrackPlayback } from '../hooks/use-saved-track-playback';
 
 type DriveLibrarySectionProps = {
   authState: DriveAuthorizationState;

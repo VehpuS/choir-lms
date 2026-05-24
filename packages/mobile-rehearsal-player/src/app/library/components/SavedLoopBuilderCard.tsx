@@ -1,7 +1,7 @@
 import { type PlayableItem } from '@org/rehearsal-domain';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { formatDurationLabel } from './drive-library-view-model';
+import { formatDurationLabel } from '../utils/drive-library-view-model';
 
 type SavedLoopBuilderCardProps = {
   builderIssue: {

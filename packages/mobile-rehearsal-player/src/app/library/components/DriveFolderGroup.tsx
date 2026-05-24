@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   getFolderMetadataLabels,
   type DriveLibraryFolder,
-} from './drive-library-view-model';
+} from '../utils/drive-library-view-model';
 
 type DriveFolderGroupProps = {
   folders: DriveLibraryFolder[];

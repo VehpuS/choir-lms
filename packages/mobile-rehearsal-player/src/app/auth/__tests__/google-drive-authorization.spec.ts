@@ -11,7 +11,7 @@ import {
   resolveDriveAuthorizationResult,
   restoreDriveAuthorizationState,
   type AuthorizationSessionStore,
-} from './google-drive-authorization.js';
+} from '../utils/google-drive-authorization.js';
 
 const DEFAULT_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
 

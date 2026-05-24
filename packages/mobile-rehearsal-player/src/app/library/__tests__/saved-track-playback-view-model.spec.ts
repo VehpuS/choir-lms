@@ -13,7 +13,7 @@ import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,
   UNSUPPORTED_SOURCE,
-} from './library-test-fixtures.js';
+} from '../../test-utils/library-test-fixtures.js';
 import {
   createSavedTrackPlaybackPreconditionIssue,
   createSavedTrackPlaybackRequest,
@@ -21,7 +21,7 @@ import {
   getSavedTrackPlaybackItemIssue,
   getSavedTrackPlaybackStatusCopy,
   hasSavedTrackPlaybackReachedRangeEnd,
-} from './saved-track-playback-view-model.js';
+} from '../utils/saved-track-playback-view-model.js';
 
 describe('saved track playback view-model', () => {
   it('creates a full-track playback request with a Drive media URL and bearer token', () => {
