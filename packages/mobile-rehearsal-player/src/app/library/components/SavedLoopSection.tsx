@@ -1,8 +1,10 @@
-import { type PlayableItem } from '@org/audio-library-models';
+import { type NamedLoop, type PlayableItem } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
+import type { SavedPlaylistLibraryActionCopy } from '../utils/saved-playlist-view-model';
+import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import {
   buildNamedLoop,
@@ -13,20 +15,27 @@ import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
-import { SavedPlaylistSection } from './SavedPlaylistSection';
 import { SavedLoopBuilderCard } from './SavedLoopBuilderCard';
 import { SavedLoopList } from './SavedLoopList';
-import { useSavedLoops } from '../hooks/use-saved-loops';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
 
 type SavedLoopSectionProps = {
   activePlayableItem: PlayableItem | null;
   isPlaybackPreparing: boolean;
+  canMutateLoops: boolean;
+  isSavedLoopsLoading: boolean;
+  pendingLoopId: string | null;
   playbackIssue: SavedTrackPlaybackIssue | null;
   playbackState: SavedTrackPlaybackState | undefined;
+  playlistActionCopy: SavedPlaylistLibraryActionCopy;
   positionSeconds: number;
+  removeLoop: (loop: NamedLoop) => void;
   savedSources: DriveLibrarySource[];
+  savedLoopIssue: SavedLoopIssue | null;
+  savedLoops: NamedLoop[];
+  saveLoop: (loop: NamedLoop) => Promise<boolean>;
   selectedTrack: PlayableItem | null;
+  addLoopToPlaylist: (loop: NamedLoop) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
 };
 
@@ -41,21 +50,22 @@ const SECONDARY_TEXT = '#5f5647';
 export const SavedLoopSection = ({
   activePlayableItem,
   isPlaybackPreparing,
+  canMutateLoops,
+  isSavedLoopsLoading,
+  pendingLoopId,
   playbackIssue,
   playbackState,
+  playlistActionCopy,
   positionSeconds,
+  removeLoop,
   savedSources,
+  savedLoopIssue,
+  savedLoops,
+  saveLoop,
   selectedTrack,
+  addLoopToPlaylist,
   togglePlayableItemPlayback,
 }: SavedLoopSectionProps) => {
-  const {
-    canMutateLoops,
-    isLoading,
-    issue,
-    pendingLoopId,
-    saveLoop,
-    savedLoops,
-  } = useSavedLoops();
   const [loopName, setLoopName] = useState('');
   const [startMs, setStartMs] = useState<number | null>(null);
   const [endMs, setEndMs] = useState<number | null>(null);
@@ -69,26 +79,26 @@ export const SavedLoopSection = ({
     return loopCard.message !== undefined || loopCard.playableItem === null;
   }).length;
   const statusCopy = getSavedLoopsStatusCopy({
-    isLoading,
-    issue,
+    isLoading: isSavedLoopsLoading,
+    issue: savedLoopIssue,
     savedLoopCount: savedLoopCards.length,
     unresolvedLoopCount,
   });
   const builderIssue =
     draftIssue ??
-    (issue?.kind === 'save'
+    (savedLoopIssue?.kind === 'save'
       ? {
-          title: issue.title,
-          message: issue.message,
+          title: savedLoopIssue.title,
+          message: savedLoopIssue.message,
         }
       : null);
-  const isSavingLoop = pendingLoopId !== null;
+  const isLoopMutating = pendingLoopId !== null;
   const canCaptureMarkers = isSelectedTrackActive;
   const canSaveLoop =
     selectedTrack !== null &&
     isSelectedTrackActive &&
     canMutateLoops &&
-    !isSavingLoop;
+    !isLoopMutating;
 
   useEffect(() => {
     setLoopName('');
@@ -150,7 +160,7 @@ export const SavedLoopSection = ({
       </View>
 
       <DriveLibraryStatusCard
-        isLoading={isLoading}
+        isLoading={isSavedLoopsLoading}
         loadingLabel="Refreshing saved loops…"
         statusCopy={statusCopy}
       />
@@ -161,7 +171,7 @@ export const SavedLoopSection = ({
         canSaveLoop={canSaveLoop}
         currentPositionMs={currentPositionMs}
         endMs={endMs}
-        isSavingLoop={isSavingLoop}
+        isSavingLoop={isLoopMutating}
         loopName={loopName}
         onLoopNameChange={(value) => {
           setLoopName(value);
@@ -182,16 +192,17 @@ export const SavedLoopSection = ({
 
       <SavedLoopList
         activePlayableItem={activePlayableItem}
+        addLoopToPlaylist={addLoopToPlaylist}
+        canMutateLoops={canMutateLoops}
         isPlaybackPreparing={isPlaybackPreparing}
         loopCards={savedLoopCards}
+        loopIssue={savedLoopIssue}
+        pendingLoopId={pendingLoopId}
         playbackIssue={playbackIssue}
         playbackState={playbackState}
+        playlistActionCopy={playlistActionCopy}
+        removeLoop={removeLoop}
         togglePlayableItemPlayback={togglePlayableItemPlayback}
-      />
-
-      <SavedPlaylistSection
-        savedLoops={savedLoops}
-        savedSources={savedSources}
       />
     </View>
   );

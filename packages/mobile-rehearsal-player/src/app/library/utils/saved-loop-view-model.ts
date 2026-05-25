@@ -14,10 +14,16 @@ import type {
 import { formatDurationLabel } from './drive-library-view-model';
 
 export type SavedLoopIssue = {
-  kind: 'save' | 'storage';
+  kind: 'delete' | 'save' | 'storage';
   title: string;
   message: string;
   loopId?: string;
+};
+
+export type SavedLoopRemovalCopy = {
+  confirmLabel: string;
+  message: string;
+  title: string;
 };
 
 export type SavedLoopCard = {
@@ -73,6 +79,18 @@ const formatLoopRangeLabel = (loop: Pick<NamedLoop, 'startMs' | 'endMs'>) => {
 
 const defaultCreateId = (sourceId: string, createdAt: string) => {
   return `loop:${sourceId}:${createdAt}`;
+};
+
+export const getSavedLoopRemovalCopy = (
+  loop: Pick<NamedLoop, 'name' | 'sourceName' | 'startMs' | 'endMs'>,
+): SavedLoopRemovalCopy => {
+  return {
+    confirmLabel: 'Remove loop',
+    message:
+      `"${loop.name}" (${loop.sourceName} • ${formatLoopRangeLabel(loop)}) ` +
+      'will be removed from your saved practice loops.',
+    title: 'Remove saved loop?',
+  };
 };
 
 export const buildNamedLoop = (options: BuildNamedLoopOptions) => {
@@ -188,6 +206,21 @@ export const resolveLoopBuilderTrack = (
     savedSourcesById[options.activePlayableItem.sourceId] ??
       options.activePlayableItem.source,
   );
+};
+
+export const getSavedLoopItemIssue = (
+  issue: SavedLoopIssue | null,
+  loopId: string,
+) => {
+  if (issue?.kind !== 'delete') {
+    return undefined;
+  }
+
+  if (issue.loopId !== loopId) {
+    return undefined;
+  }
+
+  return issue.message;
 };
 
 export const getSavedLoopsStatusCopy = (

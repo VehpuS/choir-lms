@@ -103,7 +103,11 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
 
   async deleteSource(ownerId: string, sourceId: string) {
     const sources = await this.listSources(ownerId);
+    const loops = await this.listLoops(ownerId);
     const nextSources = filter(sources, (source) => source.id !== sourceId);
+    const nextLoops = filter(loops, (loop) => loop.sourceId !== sourceId);
+
+    await writeCollection(storageKey('loops', ownerId), nextLoops);
 
     return writeCollection(storageKey('sources', ownerId), nextSources);
   }

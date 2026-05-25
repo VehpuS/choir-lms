@@ -45,18 +45,25 @@ export const LibraryScreen = ({
       <SavedRehearsalLibrarySection
         activePlayableItem={playback.activePlayableItem}
         canMutateLibrary={libraryController.savedLibrary.canMutateLibrary}
+        canMutateLoops={libraryController.savedLibrary.canMutateLoops}
         isPlaybackPreparing={playback.isPreparing}
         isSavedLibraryLoading={libraryController.savedLibrary.isLoading}
+        isSavedLoopsLoading={libraryController.savedLibrary.isSavedLoopsLoading}
         pendingSourceId={libraryController.savedLibrary.pendingSourceId}
+        pendingLoopId={libraryController.savedLibrary.pendingLoopId}
         playbackIssue={playback.issue}
         playbackState={playback.playbackState}
         positionSeconds={playback.progress.position}
+        removeLoop={libraryController.savedLibrary.removeLoop}
         removeSource={libraryController.savedLibrary.removeSource}
         savedLibraryIssue={libraryController.savedLibrary.savedLibraryIssue}
         savedLibrarySources={libraryController.savedLibrary.savedLibrarySources}
+        savedLoopIssue={libraryController.savedLibrary.savedLoopIssue}
+        savedLoops={libraryController.savedLibrary.savedLoops}
         savedLibraryStatusCopy={
           libraryController.savedLibrary.savedLibraryStatusCopy
         }
+        saveLoop={libraryController.savedLibrary.saveLoop}
         savedTrackPlaybackStatusCopy={
           libraryController.savedLibrary.savedTrackPlaybackStatusCopy
         }

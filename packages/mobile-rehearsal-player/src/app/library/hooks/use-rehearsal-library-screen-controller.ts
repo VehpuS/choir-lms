@@ -1,13 +1,20 @@
 import type { DriveAuthorizationState } from '@org/google-drive';
 import { useState } from 'react';
+import { Alert } from 'react-native';
 
 import type { DriveLibrarySourceAction } from '../components/DriveLibrarySourceGroup';
 import { useDriveLibrary } from './use-drive-library';
+import { useSavedLoops } from './use-saved-loops';
 import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
 import type { useSavedTrackPlayback } from './use-saved-track-playback';
 import { getDriveLibraryStatusCopy } from '../utils/drive-library-view-model';
-import { resolveLoopBuilderTrack } from '../utils/saved-loop-view-model';
 import {
+  getSavedLoopRemovalCopy,
+  resolveLoopBuilderTrack,
+} from '../utils/saved-loop-view-model';
+import {
+  getSavedRehearsalLibraryDependentLoops,
+  getSavedRehearsalLibraryRemovalCopy,
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
@@ -35,6 +42,7 @@ export const useRehearsalLibraryScreenController = ({
   >(null);
   const driveLibrary = useDriveLibrary(authState);
   const savedLibrary = useSavedRehearsalLibrary();
+  const savedLoops = useSavedLoops();
   const canRefresh = authState.status === 'authorized';
   const isSearchMode = driveLibrary.activeSearchQuery !== null;
   const discoveryStatusCopy = getDriveLibraryStatusCopy({
@@ -89,6 +97,62 @@ export const useRehearsalLibraryScreenController = ({
   });
   const isSavedLibraryMutating = savedLibrary.pendingSourceId !== null;
 
+  const confirmRemoveSource = (
+    source: (typeof savedLibrarySources)[number],
+  ) => {
+    const removalCopy = getSavedRehearsalLibraryRemovalCopy({
+      dependentLoops: getSavedRehearsalLibraryDependentLoops(
+        savedLoops.savedLoops,
+        source.id,
+      ),
+      source,
+    });
+
+    Alert.alert(removalCopy.title, removalCopy.message, [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: removalCopy.confirmLabel,
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            const didRemove = await savedLibrary.removeSource(source);
+
+            if (!didRemove) {
+              return;
+            }
+
+            if (selectedLoopSourceId === source.id) {
+              setSelectedLoopSourceId(null);
+            }
+
+            await savedLoops.refreshLoops();
+          })();
+        },
+      },
+    ]);
+  };
+
+  const confirmRemoveLoop = (loop: (typeof savedLoops.savedLoops)[number]) => {
+    const removalCopy = getSavedLoopRemovalCopy(loop);
+
+    Alert.alert(removalCopy.title, removalCopy.message, [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: removalCopy.confirmLabel,
+        style: 'destructive',
+        onPress: () => {
+          void savedLoops.deleteLoop(loop);
+        },
+      },
+    ]);
+  };
+
   const getSourceAction = (
     source: (typeof driveLibrary.browseSnapshot.playableSources)[number],
   ): DriveLibrarySourceAction => {
@@ -109,7 +173,7 @@ export const useRehearsalLibraryScreenController = ({
           : 'Save',
       onPress: () => {
         if (isSaved) {
-          void savedLibrary.removeSource(source);
+          confirmRemoveSource(source);
           return;
         }
 
@@ -152,12 +216,19 @@ export const useRehearsalLibraryScreenController = ({
     },
     savedLibrary: {
       canMutateLibrary: savedLibrary.canMutateLibrary,
+      canMutateLoops: savedLoops.canMutateLoops,
       isLoading: savedLibrary.isLoading,
+      isSavedLoopsLoading: savedLoops.isLoading,
+      pendingLoopId: savedLoops.pendingLoopId,
       pendingSourceId: savedLibrary.pendingSourceId,
-      removeSource: savedLibrary.removeSource,
+      removeLoop: confirmRemoveLoop,
+      removeSource: confirmRemoveSource,
       savedLibraryIssue: savedLibrary.issue,
       savedLibrarySources,
+      savedLoopIssue: savedLoops.issue,
+      savedLoops: savedLoops.savedLoops,
       savedLibraryStatusCopy,
+      saveLoop: savedLoops.saveLoop,
       savedSourceIds,
       savedTrackPlaybackStatusCopy,
       selectedLoopSourceId,

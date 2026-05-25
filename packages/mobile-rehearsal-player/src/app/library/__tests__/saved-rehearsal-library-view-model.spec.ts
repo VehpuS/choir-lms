@@ -9,10 +9,13 @@ import {
   UNSUPPORTED_SOURCE,
 } from '../../test-utils/library-test-fixtures.js';
 import {
+  getSavedRehearsalLibraryDependentLoops,
+  getSavedRehearsalLibraryRemovalCopy,
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
 } from '../utils/saved-rehearsal-library-view-model.js';
+import { SAVED_LOOP } from '../../test-utils/library-test-fixtures.js';
 
 describe('saved rehearsal library view-model', () => {
   it('marks saved tracks unavailable until Drive access is restored', () => {
@@ -156,6 +159,33 @@ describe('saved rehearsal library view-model', () => {
     assert.equal(
       getSavedRehearsalLibrarySourceIssue(issue, PLAYABLE_SOURCE, 'remove'),
       undefined,
+    );
+  });
+
+  it('builds destructive copy that lists dependent loops before track removal', () => {
+    const dependentLoops = getSavedRehearsalLibraryDependentLoops(
+      [
+        SAVED_LOOP,
+        {
+          ...SAVED_LOOP,
+          id: 'loop-2',
+          name: 'Cadence repeat',
+        },
+      ],
+      PLAYABLE_SOURCE.id,
+    );
+
+    assert.deepEqual(
+      getSavedRehearsalLibraryRemovalCopy({
+        dependentLoops,
+        source: PLAYABLE_SOURCE,
+      }),
+      {
+        confirmLabel: 'Remove track and loops',
+        message:
+          '"Alto Line.mp3" will be removed from your saved rehearsal library.\n\nThis will also remove 2 saved loops:\n• Entrance cue\n• Cadence repeat',
+        title: 'Remove saved track and loops?',
+      },
     );
   });
 });

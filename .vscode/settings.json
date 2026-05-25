@@ -106,6 +106,22 @@
     "/^npm install --package-lock-only$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec -- nx lint mobile-rehearsal-player$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^cd /Users/vehpus/git/choir-lms/packages/mobile-rehearsal-player && npx tsx --test src/app/library/__tests__/saved-playlist-view-model\\.spec\\.ts$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx test audio-library-runtime --outputStyle=static$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^cd /Users/vehpus/git/choir-lms/packages/mobile-rehearsal-player && npx tsx --test src/app/library/__tests__/saved-rehearsal-library-view-model\\.spec\\.ts src/app/library/__tests__/saved-loop-view-model\\.spec\\.ts$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

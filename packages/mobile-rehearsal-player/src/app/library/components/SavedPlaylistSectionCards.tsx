@@ -1,24 +1,14 @@
-import { type NamedLoop, type Playlist } from '@org/audio-library-models';
+import { type Playlist } from '@org/audio-library-models';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
-import type { DriveLibrarySource } from '../utils/drive-library-view-model';
-import { formatDurationLabel } from '../utils/drive-library-view-model';
 import type {
   PlaylistDraftIssue,
   SavedPlaylistCard,
 } from '../utils/saved-playlist-view-model';
-import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
   savedPlaylistSectionStyles as styles,
 } from './saved-playlist-section-styles';
-
-const formatLoopRangeLabel = (loop: Pick<NamedLoop, 'startMs' | 'endMs'>) => {
-  const startLabel = formatDurationLabel(loop.startMs) ?? '0:00';
-  const endLabel = formatDurationLabel(loop.endMs) ?? '0:00';
-
-  return `${startLabel} to ${endLabel}`;
-};
 
 export const SavedPlaylistIssueCard = ({
   issue,
@@ -49,7 +39,8 @@ export const SavedPlaylistCreateCard = (props: {
     <View style={styles.editorCard}>
       <Text style={styles.editorTitle}>Create playlist</Text>
       <Text style={styles.editorBody}>
-        Start with a name, then add saved tracks and loops below.
+        Start with a name, then select it as the active destination before
+        adding saved tracks and loops from Library.
       </Text>
       <TextInput
         autoCorrect={false}
@@ -137,12 +128,8 @@ export const SavedPlaylistEditorCard = (props: {
   isMutating: boolean;
   renameIssue: PlaylistDraftIssue | null;
   renamePlaylistName: string;
-  savedLoops: NamedLoop[];
-  savedSources: DriveLibrarySource[];
   selectedPlaylist: Playlist | null;
   selectedPlaylistIssue: PlaylistDraftIssue | null;
-  onAddLoop: (loop: NamedLoop) => void;
-  onAddSource: (source: DriveLibrarySource) => void;
   onDeletePlaylist: () => void;
   onMoveItem: (fromIndex: number, toIndex: number) => void;
   onRemoveItem: (entryId: string) => void;
@@ -159,8 +146,8 @@ export const SavedPlaylistEditorCard = (props: {
     <View style={styles.editorCard}>
       <Text style={styles.editorTitle}>Editing {selectedPlaylist.name}</Text>
       <Text style={styles.editorBody}>
-        Rename the playlist, add saved tracks or loops, and adjust the order
-        here before queue playback lands in the next slice.
+        Rename the playlist, then adjust item order here while the Library rows
+        above handle playlist population.
       </Text>
       <TextInput
         autoCorrect={false}
@@ -215,7 +202,8 @@ export const SavedPlaylistEditorCard = (props: {
         </Text>
         {selectedPlaylist.items.length === 0 ? (
           <Text style={styles.emptyMessage}>
-            This playlist is empty. Add saved tracks or loops below to build the
+            This playlist is empty. Choose it as the active destination above,
+            then add saved tracks or loops from the Library rows to build the
             running order.
           </Text>
         ) : (
@@ -298,60 +286,6 @@ export const SavedPlaylistEditorCard = (props: {
           </View>
         )}
       </View>
-
-      <DriveLibrarySourceGroup
-        getAction={(source) => {
-          return {
-            disabled: !props.canMutatePlaylists || props.isMutating,
-            label: 'Add to playlist',
-            onPress: () => {
-              props.onAddSource(source);
-            },
-          };
-        }}
-        sources={props.savedSources}
-        title={`Add saved tracks (${props.savedSources.length})`}
-      />
-
-      {props.savedLoops.length > 0 ? (
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>
-            Add saved loops ({props.savedLoops.length})
-          </Text>
-          <View style={styles.groupItems}>
-            {props.savedLoops.map((loop) => {
-              return (
-                <View key={loop.id} style={styles.itemCard}>
-                  <Text style={styles.itemTitle}>{loop.name}</Text>
-                  <Text style={styles.itemMetadata}>
-                    {loop.sourceName} • {formatLoopRangeLabel(loop)}
-                  </Text>
-                  <Pressable
-                    accessibilityRole="button"
-                    disabled={!props.canMutatePlaylists || props.isMutating}
-                    onPress={() => {
-                      props.onAddLoop(loop);
-                    }}
-                    style={({ pressed }) => [
-                      styles.secondaryButton,
-                      pressed && props.canMutatePlaylists && !props.isMutating
-                        ? styles.actionButtonPressed
-                        : undefined,
-                      !props.canMutatePlaylists || props.isMutating
-                        ? styles.actionButtonDisabled
-                        : undefined,
-                    ]}
-                  >
-                    <Text style={styles.secondaryButtonLabel}>
-                      Add to playlist
-                    </Text>
-                  </Pressable>
-                </View>
-              );
-            })}
-          </View>
-        </View>
-      ) : null}
     </View>
   );
 };

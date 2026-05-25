@@ -1,20 +1,32 @@
 import { type PlayableItem } from '@org/audio-library-models';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { SavedLoopCard } from '../utils/saved-loop-view-model';
+import {
+  getSavedLoopItemIssue,
+  type SavedLoopCard,
+  type SavedLoopIssue,
+} from '../utils/saved-loop-view-model';
+import type { SavedPlaylistLibraryActionCopy } from '../utils/saved-playlist-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
+  isSavedTrackPlaybackActive,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
 
 type SavedLoopListProps = {
   activePlayableItem: PlayableItem | null;
+  canMutateLoops: boolean;
   isPlaybackPreparing: boolean;
   loopCards: SavedLoopCard[];
+  loopIssue: SavedLoopIssue | null;
+  pendingLoopId: string | null;
   playbackIssue: SavedTrackPlaybackIssue | null;
   playbackState: SavedTrackPlaybackState | undefined;
+  playlistActionCopy: SavedPlaylistLibraryActionCopy;
+  addLoopToPlaylist: (loop: SavedLoopCard['loop']) => void;
+  removeLoop: (loop: SavedLoopCard['loop']) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
 };
 
@@ -25,10 +37,16 @@ const SECONDARY_TEXT = '#5f5647';
 
 export const SavedLoopList = ({
   activePlayableItem,
+  canMutateLoops,
   isPlaybackPreparing,
   loopCards,
+  loopIssue,
+  pendingLoopId,
   playbackIssue,
   playbackState,
+  playlistActionCopy,
+  addLoopToPlaylist,
+  removeLoop,
   togglePlayableItemPlayback,
 }: SavedLoopListProps) => {
   if (loopCards.length === 0) {
@@ -53,7 +71,11 @@ export const SavedLoopList = ({
               disabled: true,
               label: 'Unavailable',
             };
+        const isPlaybackLoopActive =
+          loopCard.playableItem !== null &&
+          isSavedTrackPlaybackActive(activePlayableItem, loopCard.playableItem);
         const loopMessage =
+          getSavedLoopItemIssue(loopIssue, loopCard.loop.id) ??
           loopCard.message ??
           (loopCard.playableItem
             ? getSavedTrackPlaybackItemIssue(
@@ -66,30 +88,83 @@ export const SavedLoopList = ({
           <View key={loopCard.loop.id} style={styles.loopCard}>
             <View style={styles.loopHeader}>
               <Text style={styles.loopName}>{loopCard.loop.name}</Text>
-              <Pressable
-                accessibilityRole="button"
-                disabled={playbackAction.disabled}
-                onPress={() => {
-                  if (!loopCard.playableItem) {
-                    return;
-                  }
+              <View style={styles.actionRow}>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={playbackAction.disabled}
+                  onPress={() => {
+                    if (!loopCard.playableItem) {
+                      return;
+                    }
 
-                  void togglePlayableItemPlayback(loopCard.playableItem);
-                }}
-                style={({ pressed }) => [
-                  styles.playButton,
-                  pressed && !playbackAction.disabled
-                    ? styles.actionButtonPressed
-                    : undefined,
-                  playbackAction.disabled
-                    ? styles.actionButtonDisabled
-                    : undefined,
-                ]}
-              >
-                <Text style={styles.playButtonLabel}>
-                  {playbackAction.label}
-                </Text>
-              </Pressable>
+                    void togglePlayableItemPlayback(loopCard.playableItem);
+                  }}
+                  style={({ pressed }) => [
+                    styles.playButton,
+                    pressed && !playbackAction.disabled
+                      ? styles.actionButtonPressed
+                      : undefined,
+                    playbackAction.disabled
+                      ? styles.actionButtonDisabled
+                      : undefined,
+                  ]}
+                >
+                  <Text style={styles.playButtonLabel}>
+                    {playbackAction.label}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={playlistActionCopy.disabled}
+                  onPress={() => {
+                    addLoopToPlaylist(loopCard.loop);
+                  }}
+                  style={({ pressed }) => [
+                    styles.secondaryButton,
+                    pressed && !playlistActionCopy.disabled
+                      ? styles.actionButtonPressed
+                      : undefined,
+                    playlistActionCopy.disabled
+                      ? styles.actionButtonDisabled
+                      : undefined,
+                  ]}
+                >
+                  <Text style={styles.secondaryButtonLabel}>
+                    {playlistActionCopy.label}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={
+                    !canMutateLoops ||
+                    pendingLoopId !== null ||
+                    isPlaybackLoopActive
+                  }
+                  onPress={() => {
+                    removeLoop(loopCard.loop);
+                  }}
+                  style={({ pressed }) => [
+                    styles.secondaryButton,
+                    pressed &&
+                    canMutateLoops &&
+                    pendingLoopId === null &&
+                    !isPlaybackLoopActive
+                      ? styles.actionButtonPressed
+                      : undefined,
+                    !canMutateLoops ||
+                    pendingLoopId !== null ||
+                    isPlaybackLoopActive
+                      ? styles.actionButtonDisabled
+                      : undefined,
+                  ]}
+                >
+                  <Text style={styles.secondaryButtonLabel}>
+                    {pendingLoopId === loopCard.loop.id
+                      ? 'Removing…'
+                      : 'Remove'}
+                  </Text>
+                </Pressable>
+              </View>
             </View>
 
             <Text style={styles.loopMetadata}>{loopCard.metadataLabel}</Text>
@@ -123,6 +198,12 @@ const styles = StyleSheet.create({
   loopHeader: {
     gap: 12,
   },
+  actionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    alignItems: 'center',
+  },
   loopName: {
     color: PRIMARY_TEXT,
     fontSize: 15,
@@ -148,6 +229,20 @@ const styles = StyleSheet.create({
   },
   playButtonLabel: {
     color: PRIMARY_ACTION_TEXT,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  secondaryButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#d6d1c4',
+    borderRadius: 999,
+    backgroundColor: '#fffdf8',
+  },
+  secondaryButtonLabel: {
+    color: PRIMARY_TEXT,
     fontSize: 13,
     fontWeight: '700',
   },

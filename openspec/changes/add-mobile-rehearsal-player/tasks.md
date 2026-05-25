@@ -23,7 +23,7 @@
 - [x] 4.2 Implement the destination-based mobile shell with Home, Search, Library, and a persistent mini-player around the already-working discovery and saved-library flows.
 - [x] 4.3 Implement browse, search, and personal library screens that separate discovery from saved tracks and saved loops while preserving fast rehearsal actions for the current slice.
 - [x] 4.4 Implement playlist creation and editing for saved full tracks and saved loops.
-- [ ] 4.5 Move playlist-building actions out of the in-playlist editor cards and into the saved track / saved loop library surfaces so Library drives playlist population while playlist detail stays focused on order and playback intent.
+- [x] 4.5 Move playlist-building actions out of the in-playlist editor cards and into the saved track / saved loop library surfaces so Library drives playlist population while playlist detail stays focused on order and playback intent.
 - [ ] 4.6 Wire playlist playback in the mobile app to the shared queue helpers so rehearsal sessions can start from saved playlists and honor ordered playback, shuffle, and repeat off / one / all across track and loop items.
 
 ## 5. Native playback integration and validation

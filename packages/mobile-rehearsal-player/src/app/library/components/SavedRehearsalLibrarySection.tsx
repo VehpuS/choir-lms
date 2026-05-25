@@ -1,9 +1,15 @@
 import {
+  addLoopToPlaylist,
+  addTrackToPlaylist,
   createTrackPlayableItem,
+  type NamedLoop,
+  type Playlist,
   type PlayableItem,
 } from '@org/audio-library-models';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useSavedPlaylists } from '../hooks/use-saved-playlists';
 import {
   type DriveLibrarySource,
   type DriveLibraryStatusCopy,
@@ -13,6 +19,12 @@ import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import { getSavedRehearsalLibrarySourceIssue } from '../utils/saved-rehearsal-library-view-model';
 import {
+  getSavedPlaylistLibraryActionCopy,
+  getSavedPlaylistSelectionCopy,
+  resolveSavedPlaylistCards,
+  resolveSelectedPlaylist,
+} from '../utils/saved-playlist-view-model';
+import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
   isSavedTrackPlaybackActive,
@@ -21,21 +33,31 @@ import {
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
 import { SavedLoopSection } from './SavedLoopSection';
+import { SavedPlaylistCardsList } from './SavedPlaylistSectionCards';
+import { SavedPlaylistSection } from './SavedPlaylistSection';
+import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
 
 type SavedRehearsalLibrarySectionProps = {
   activePlayableItem: PlayableItem | null;
   canMutateLibrary: boolean;
+  canMutateLoops: boolean;
   isPlaybackPreparing: boolean;
   isSavedLibraryLoading: boolean;
+  isSavedLoopsLoading: boolean;
   pendingSourceId: string | null;
+  pendingLoopId: string | null;
   playbackIssue: SavedTrackPlaybackIssue | null;
   playbackState: SavedTrackPlaybackState | undefined;
   positionSeconds: number;
-  removeSource: (source: DriveLibrarySource) => Promise<void>;
+  removeLoop: (loop: NamedLoop) => void;
+  removeSource: (source: DriveLibrarySource) => void;
   savedLibraryIssue: SavedRehearsalLibraryIssue | null;
   savedLibrarySources: DriveLibrarySource[];
+  savedLoopIssue: SavedLoopIssue | null;
+  savedLoops: NamedLoop[];
   savedLibraryStatusCopy: DriveLibraryStatusCopy;
+  saveLoop: (loop: NamedLoop) => Promise<boolean>;
   savedTrackPlaybackStatusCopy: DriveLibraryStatusCopy | null;
   selectedLoopSourceId: string | null;
   selectedTrack: PlayableItem | null;
@@ -49,16 +71,23 @@ const BORDER_COLOR = '#d6d1c4';
 export const SavedRehearsalLibrarySection = ({
   activePlayableItem,
   canMutateLibrary,
+  canMutateLoops,
   isPlaybackPreparing,
   isSavedLibraryLoading,
+  isSavedLoopsLoading,
   pendingSourceId,
+  pendingLoopId,
   playbackIssue,
   playbackState,
   positionSeconds,
+  removeLoop,
   removeSource,
   savedLibraryIssue,
   savedLibrarySources,
+  savedLoopIssue,
+  savedLoops,
   savedLibraryStatusCopy,
+  saveLoop,
   savedTrackPlaybackStatusCopy,
   selectedLoopSourceId,
   selectedTrack,
@@ -66,12 +95,73 @@ export const SavedRehearsalLibrarySection = ({
   togglePlayableItemPlayback,
   toggleSourcePlayback,
 }: SavedRehearsalLibrarySectionProps) => {
+  const {
+    canMutatePlaylists,
+    createPlaylist,
+    deletePlaylist,
+    isLoading: isPlaylistsLoading,
+    issue: playlistIssue,
+    pendingPlaylistId,
+    savedPlaylists,
+    updatePlaylist,
+  } = useSavedPlaylists();
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (savedPlaylists.length === 0) {
+      setSelectedPlaylistId(null);
+      return;
+    }
+
+    const hasSelectedPlaylist = savedPlaylists.some((playlist) => {
+      return playlist.id === selectedPlaylistId;
+    });
+
+    if (!hasSelectedPlaylist) {
+      setSelectedPlaylistId(savedPlaylists[0]?.id ?? null);
+    }
+  }, [savedPlaylists, selectedPlaylistId]);
+
+  const selectedPlaylist = resolveSelectedPlaylist(
+    savedPlaylists,
+    selectedPlaylistId,
+  );
   const isSavedLibraryMutating = pendingSourceId !== null;
   const isSavedTrackPlaybackLoading = isSavedTrackPlaybackBusy({
     isPreparing: isPlaybackPreparing,
     playbackState,
   });
+  const isPlaylistMutating = pendingPlaylistId !== null;
+  const playlistCards = resolveSavedPlaylistCards(savedPlaylists);
+  const playlistActionCopy = getSavedPlaylistLibraryActionCopy({
+    canMutatePlaylists,
+    isMutating: isPlaylistMutating,
+    selectedPlaylist,
+  });
+  const playlistSelectionCopy = getSavedPlaylistSelectionCopy({
+    savedPlaylistCount: savedPlaylists.length,
+    selectedPlaylist,
+  });
   const savedSourceTitle = `Saved rehearsal tracks (${savedLibrarySources.length})`;
+  const isLoopMutating = pendingLoopId !== null;
+
+  const persistSelectedPlaylist = async (
+    buildNextPlaylist: (playlist: Playlist) => Playlist,
+  ) => {
+    if (!selectedPlaylist) {
+      return;
+    }
+
+    const persistedPlaylist = await updatePlaylist(
+      buildNextPlaylist(selectedPlaylist),
+    );
+
+    if (persistedPlaylist) {
+      setSelectedPlaylistId(persistedPlaylist.id);
+    }
+  };
 
   return (
     <View style={styles.savedLibrarySection}>
@@ -95,6 +185,18 @@ export const SavedRehearsalLibrarySection = ({
           statusCopy={savedTrackPlaybackStatusCopy}
         />
       ) : null}
+      {playlistSelectionCopy ? (
+        <DriveLibraryStatusCard
+          isLoading={isPlaylistsLoading}
+          loadingLabel="Refreshing playlist destinations…"
+          statusCopy={playlistSelectionCopy}
+        />
+      ) : null}
+      <SavedPlaylistCardsList
+        onSelectPlaylist={setSelectedPlaylistId}
+        playlistCards={playlistCards}
+        selectedPlaylistId={selectedPlaylist?.id ?? null}
+      />
       <DriveLibrarySourceGroup
         getActions={(source) => {
           const isPending = pendingSourceId === source.id;
@@ -133,13 +235,23 @@ export const SavedRehearsalLibrarySection = ({
               },
             },
             {
+              disabled: playlistActionCopy.disabled,
+              label: playlistActionCopy.label,
+              onPress: () => {
+                void persistSelectedPlaylist((playlist) => {
+                  return addTrackToPlaylist(playlist, source);
+                });
+              },
+            },
+            {
               disabled:
                 !canMutateLibrary ||
                 isSavedLibraryMutating ||
-                isPlaybackSourceActive,
+                isPlaybackSourceActive ||
+                isLoopMutating,
               label: isPending ? 'Removing…' : 'Remove',
               onPress: () => {
-                void removeSource(source);
+                removeSource(source);
               },
             },
           ];
@@ -162,13 +274,40 @@ export const SavedRehearsalLibrarySection = ({
       />
       <SavedLoopSection
         activePlayableItem={activePlayableItem}
+        addLoopToPlaylist={(loop) => {
+          void persistSelectedPlaylist((playlist) => {
+            return addLoopToPlaylist(playlist, loop);
+          });
+        }}
+        canMutateLoops={canMutateLoops}
         isPlaybackPreparing={isPlaybackPreparing}
+        isSavedLoopsLoading={isSavedLoopsLoading}
+        pendingLoopId={pendingLoopId}
         playbackIssue={playbackIssue}
         playbackState={playbackState}
+        playlistActionCopy={playlistActionCopy}
         positionSeconds={positionSeconds}
+        removeLoop={removeLoop}
         savedSources={savedLibrarySources}
+        savedLoopIssue={savedLoopIssue}
+        savedLoops={savedLoops}
+        saveLoop={saveLoop}
         selectedTrack={selectedTrack}
         togglePlayableItemPlayback={togglePlayableItemPlayback}
+      />
+
+      <SavedPlaylistSection
+        canMutatePlaylists={canMutatePlaylists}
+        createPlaylist={createPlaylist}
+        deletePlaylist={deletePlaylist}
+        isLoading={isPlaylistsLoading}
+        issue={playlistIssue}
+        pendingPlaylistId={pendingPlaylistId}
+        savedPlaylists={savedPlaylists}
+        selectedPlaylist={selectedPlaylist}
+        setSelectedPlaylistId={setSelectedPlaylistId}
+        showPlaylistCards={false}
+        updatePlaylist={updatePlaylist}
       />
     </View>
   );

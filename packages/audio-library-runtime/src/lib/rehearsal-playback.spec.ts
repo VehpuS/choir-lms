@@ -161,6 +161,45 @@ describe('AsyncStoragePracticeRepository', () => {
     ]);
   });
 
+  it('removes dependent loops when a saved source is deleted', async () => {
+    const storage = new Map<string, string>();
+    const repository = new AsyncStoragePracticeRepository();
+    const secondarySource = {
+      ...AVAILABLE_SOURCE,
+      id: 'drive:drive-file-3',
+      driveFileId: 'drive-file-3',
+      name: 'Amen.mp3',
+    };
+    const secondaryLoop: NamedLoop = {
+      ...SAVED_LOOP,
+      id: 'loop-2',
+      name: 'Amen entrance',
+      sourceId: secondarySource.id,
+      sourceName: secondarySource.name,
+    };
+
+    mutableAsyncStorage.getItem = async (key) => {
+      return storage.get(key) ?? null;
+    };
+    mutableAsyncStorage.removeItem = async (key) => {
+      storage.delete(key);
+    };
+    mutableAsyncStorage.setItem = async (key, value) => {
+      storage.set(key, value);
+    };
+
+    await repository.saveSource('user-1', AVAILABLE_SOURCE);
+    await repository.saveSource('user-1', secondarySource);
+    await repository.saveLoop(SAVED_LOOP);
+    await repository.saveLoop(secondaryLoop);
+
+    assert.deepEqual(
+      await repository.deleteSource('user-1', secondarySource.id),
+      [AVAILABLE_SOURCE],
+    );
+    assert.deepEqual(await repository.listLoops('user-1'), [SAVED_LOOP]);
+  });
+
   it('drops malformed saved-source storage and treats it as empty', async () => {
     const storage = new Map<string, string>([
       ['choirlms:practice:sources:user-1', '{not-json'],

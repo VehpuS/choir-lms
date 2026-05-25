@@ -1,3 +1,4 @@
+import type { NamedLoop } from '@org/audio-library-models';
 import type { DriveAuthorizationState } from '@org/google-drive';
 import { keyBy } from 'es-toolkit/compat';
 
@@ -25,6 +26,12 @@ const CONNECT_SAVED_TRACK_MESSAGE =
 const RECONNECT_SAVED_TRACK_MESSAGE =
   'Reconnect Google Drive to restore this saved rehearsal track.';
 
+export type SavedRehearsalLibraryRemovalCopy = {
+  confirmLabel: string;
+  message: string;
+  title: string;
+};
+
 const pluralize = (count: number, noun: string) => {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 };
@@ -49,6 +56,45 @@ const markSavedSourceUnavailable = (
       reason,
       message,
     },
+  };
+};
+
+const formatLoopRemovalList = (loops: Array<Pick<NamedLoop, 'name'>>) => {
+  return loops
+    .map((loop) => {
+      return `• ${loop.name}`;
+    })
+    .join('\n');
+};
+
+export const getSavedRehearsalLibraryDependentLoops = (
+  loops: Array<Pick<NamedLoop, 'id' | 'name' | 'sourceId'>>,
+  sourceId: string,
+) => {
+  return loops.filter((loop) => {
+    return loop.sourceId === sourceId;
+  });
+};
+
+export const getSavedRehearsalLibraryRemovalCopy = (options: {
+  dependentLoops: Array<Pick<NamedLoop, 'name'>>;
+  source: Pick<DriveLibrarySource, 'name'>;
+}): SavedRehearsalLibraryRemovalCopy => {
+  if (options.dependentLoops.length === 0) {
+    return {
+      confirmLabel: 'Remove track',
+      message: `"${options.source.name}" will be removed from your saved rehearsal library.`,
+      title: 'Remove saved track?',
+    };
+  }
+
+  return {
+    confirmLabel: 'Remove track and loops',
+    message:
+      `"${options.source.name}" will be removed from your saved rehearsal library.\n\n` +
+      `This will also remove ${pluralize(options.dependentLoops.length, 'saved loop')}:\n` +
+      formatLoopRemovalList(options.dependentLoops),
+    title: 'Remove saved track and loops?',
   };
 };
 

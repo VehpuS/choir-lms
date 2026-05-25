@@ -19,17 +19,21 @@ const STORAGE_UNAVAILABLE_ISSUE: SavedLoopIssue = {
 };
 const practiceRepository = new AsyncStoragePracticeRepository();
 
-const createSaveIssue = (
+const createMutationIssue = (
+  kind: 'delete' | 'save',
   loop: Pick<NamedLoop, 'id' | 'name'>,
   error: unknown,
 ): SavedLoopIssue => {
   const detail = error instanceof Error ? error.message.trim() : '';
-  const fallbackMessage = `The rehearsal library could not save the loop "${loop.name}".`;
+  const fallbackMessage =
+    kind === 'delete'
+      ? `The rehearsal library could not remove the loop "${loop.name}".`
+      : `The rehearsal library could not save the loop "${loop.name}".`;
 
   return {
-    kind: 'save',
+    kind,
     loopId: loop.id,
-    title: 'Could not save loop',
+    title: kind === 'delete' ? 'Could not remove loop' : 'Could not save loop',
     message: detail ? `${fallbackMessage} ${detail}` : fallbackMessage,
   };
 };
@@ -56,6 +60,17 @@ export const useSavedLoops = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [issue, setIssue] = useState<SavedLoopIssue | null>(null);
   const [pendingLoopId, setPendingLoopId] = useState<string | null>(null);
+
+  const refreshLoops = async () => {
+    const nextLoops = await loadSavedLoops(
+      practiceRepository,
+      LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+    );
+
+    setSavedLoops(nextLoops);
+    setIssue(null);
+    setIsLoading(false);
+  };
 
   useEffect(() => {
     let isDisposed = false;
@@ -96,9 +111,35 @@ export const useSavedLoops = () => {
 
   return {
     canMutateLoops: issue?.kind !== 'storage',
+    async deleteLoop(loop: NamedLoop) {
+      if (issue?.kind === 'storage') {
+        return false;
+      }
+
+      setPendingLoopId(loop.id);
+      setIssue(null);
+
+      try {
+        const nextLoops = await practiceRepository.deleteLoop(
+          loop.ownerId,
+          loop.id,
+        );
+
+        setSavedLoops(nextLoops);
+        return true;
+      } catch (error) {
+        setIssue(createMutationIssue('delete', loop, error));
+        return false;
+      } finally {
+        setPendingLoopId((currentLoopId) => {
+          return currentLoopId === loop.id ? null : currentLoopId;
+        });
+      }
+    },
     isLoading,
     issue,
     pendingLoopId,
+    refreshLoops,
     savedLoops,
     async saveLoop(loop: NamedLoop) {
       if (issue?.kind === 'storage') {
@@ -114,7 +155,7 @@ export const useSavedLoops = () => {
         setSavedLoops(nextLoops);
         return true;
       } catch (error) {
-        setIssue(createSaveIssue(loop, error));
+        setIssue(createMutationIssue('save', loop, error));
         return false;
       } finally {
         setPendingLoopId((currentLoopId) => {

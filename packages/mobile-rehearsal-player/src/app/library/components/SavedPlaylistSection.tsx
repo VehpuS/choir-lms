@@ -1,25 +1,22 @@
 import {
-  addLoopToPlaylist,
-  addTrackToPlaylist,
   movePlaylistEntry,
   removePlaylistEntry,
   renamePlaylist,
-  type NamedLoop,
   type Playlist,
 } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
-import { useSavedPlaylists } from '../hooks/use-saved-playlists';
-import type { DriveLibrarySource } from '../utils/drive-library-view-model';
 import {
   buildSavedPlaylist,
+  getSavedPlaylistRemovalCopy,
   getSelectedPlaylistIssue,
   getSavedPlaylistsStatusCopy,
   resolveSavedPlaylistCards,
-  validatePlaylistName,
   type PlaylistDraftIssue,
+  type SavedPlaylistIssue,
+  validatePlaylistName,
 } from '../utils/saved-playlist-view-model';
 import {
   SavedPlaylistCardsList,
@@ -27,44 +24,36 @@ import {
   SavedPlaylistEditorCard,
 } from './SavedPlaylistSectionCards';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
+import { Alert } from 'react-native';
 import { savedPlaylistSectionStyles as styles } from './saved-playlist-section-styles';
 
 type SavedPlaylistSectionProps = {
-  savedLoops: NamedLoop[];
-  savedSources: DriveLibrarySource[];
-};
-
-const getSelectedPlaylist = (
-  playlists: Playlist[],
-  selectedPlaylistId: string | null,
-) => {
-  if (!selectedPlaylistId) {
-    return playlists[0] ?? null;
-  }
-
-  return (
-    playlists.find((playlist) => {
-      return playlist.id === selectedPlaylistId;
-    }) ??
-    playlists[0] ??
-    null
-  );
+  canMutatePlaylists: boolean;
+  createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
+  deletePlaylist: (playlist: Playlist) => Promise<boolean>;
+  isLoading: boolean;
+  issue: SavedPlaylistIssue | null;
+  pendingPlaylistId: string | null;
+  savedPlaylists: Playlist[];
+  selectedPlaylist: Playlist | null;
+  setSelectedPlaylistId: (playlistId: string) => void;
+  showPlaylistCards?: boolean;
+  updatePlaylist: (playlist: Playlist) => Promise<Playlist | null>;
 };
 
 export const SavedPlaylistSection = ({
-  savedLoops,
-  savedSources,
+  canMutatePlaylists,
+  createPlaylist,
+  deletePlaylist,
+  isLoading,
+  issue,
+  pendingPlaylistId,
+  savedPlaylists,
+  selectedPlaylist,
+  setSelectedPlaylistId,
+  showPlaylistCards = true,
+  updatePlaylist,
 }: SavedPlaylistSectionProps) => {
-  const {
-    canMutatePlaylists,
-    createPlaylist,
-    deletePlaylist,
-    isLoading,
-    issue,
-    pendingPlaylistId,
-    savedPlaylists,
-    updatePlaylist,
-  } = useSavedPlaylists();
   const [creationIssue, setCreationIssue] = useState<PlaylistDraftIssue | null>(
     null,
   );
@@ -73,29 +62,6 @@ export const SavedPlaylistSection = ({
     null,
   );
   const [renamePlaylistName, setRenamePlaylistName] = useState('');
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(
-    null,
-  );
-
-  useEffect(() => {
-    if (savedPlaylists.length === 0) {
-      setSelectedPlaylistId(null);
-      return;
-    }
-
-    const hasSelectedPlaylist = savedPlaylists.some((playlist) => {
-      return playlist.id === selectedPlaylistId;
-    });
-
-    if (!hasSelectedPlaylist) {
-      setSelectedPlaylistId(savedPlaylists[0]?.id ?? null);
-    }
-  }, [savedPlaylists, selectedPlaylistId]);
-
-  const selectedPlaylist = getSelectedPlaylist(
-    savedPlaylists,
-    selectedPlaylistId,
-  );
 
   useEffect(() => {
     setRenamePlaylistName(selectedPlaylist?.name ?? '');
@@ -171,14 +137,37 @@ export const SavedPlaylistSection = ({
     });
   };
 
+  const handleDeletePlaylist = () => {
+    if (!selectedPlaylist) {
+      return;
+    }
+
+    const removalCopy = getSavedPlaylistRemovalCopy(selectedPlaylist);
+
+    Alert.alert(removalCopy.title, removalCopy.message, [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: removalCopy.confirmLabel,
+        style: 'destructive',
+        onPress: () => {
+          void deletePlaylist(selectedPlaylist);
+        },
+      },
+    ]);
+  };
+
   return (
     <View style={styles.section}>
       <View style={styles.sectionCopy}>
         <Text style={styles.eyebrow}>Saved playlists</Text>
         <Text style={styles.sectionTitle}>Build rehearsal running orders</Text>
         <Text style={styles.sectionBody}>
-          Create playlists, add saved full tracks and loops, then reorder or
-          trim the running order without leaving Library.
+          Create and edit playlists here. The active playlist selector now sits
+          above the Library rows so saved tracks and loops can target the right
+          rehearsal set before you add them.
         </Text>
       </View>
 
@@ -202,32 +191,18 @@ export const SavedPlaylistSection = ({
         }}
       />
 
-      <SavedPlaylistCardsList
-        onSelectPlaylist={setSelectedPlaylistId}
-        playlistCards={playlistCards}
-        selectedPlaylistId={selectedPlaylist?.id ?? null}
-      />
+      {showPlaylistCards ? (
+        <SavedPlaylistCardsList
+          onSelectPlaylist={setSelectedPlaylistId}
+          playlistCards={playlistCards}
+          selectedPlaylistId={selectedPlaylist?.id ?? null}
+        />
+      ) : null}
 
       <SavedPlaylistEditorCard
         canMutatePlaylists={canMutatePlaylists}
         isMutating={isMutating}
-        onAddLoop={(loop) => {
-          void persistSelectedPlaylist((playlist) => {
-            return addLoopToPlaylist(playlist, loop);
-          });
-        }}
-        onAddSource={(source) => {
-          void persistSelectedPlaylist((playlist) => {
-            return addTrackToPlaylist(playlist, source);
-          });
-        }}
-        onDeletePlaylist={() => {
-          if (!selectedPlaylist) {
-            return;
-          }
-
-          void deletePlaylist(selectedPlaylist);
-        }}
+        onDeletePlaylist={handleDeletePlaylist}
         onMoveItem={(fromIndex, toIndex) => {
           void persistSelectedPlaylist((playlist) => {
             return movePlaylistEntry(playlist, fromIndex, toIndex);
@@ -247,8 +222,6 @@ export const SavedPlaylistSection = ({
         }}
         renameIssue={renameIssue}
         renamePlaylistName={renamePlaylistName}
-        savedLoops={savedLoops}
-        savedSources={savedSources}
         selectedPlaylist={selectedPlaylist}
         selectedPlaylistIssue={selectedPlaylistIssue}
       />

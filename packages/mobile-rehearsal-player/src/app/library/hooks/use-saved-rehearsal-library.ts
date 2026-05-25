@@ -140,7 +140,7 @@ export const useSavedRehearsalLibrary = () => {
     pendingSourceId,
     async removeSource(source: DriveLibrarySource) {
       if (issue?.kind === 'storage') {
-        return;
+        return false;
       }
 
       const sourceId = source.id;
@@ -155,8 +155,10 @@ export const useSavedRehearsalLibrary = () => {
         );
 
         setSavedSources(nextSources);
+        return true;
       } catch (error) {
         setIssue(createMutationIssue('remove', sourceId, source.name, error));
+        return false;
       } finally {
         setPendingSourceId((currentSourceId) => {
           return currentSourceId === sourceId ? null : currentSourceId;

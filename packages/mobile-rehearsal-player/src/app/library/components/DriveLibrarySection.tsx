@@ -1,6 +1,6 @@
 import type { DriveAuthorizationState } from '@org/google-drive';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import type { useSavedTrackPlayback } from '../hooks/use-saved-track-playback';
 
 import { DriveFolderGroup } from './DriveFolderGroup';
@@ -12,14 +12,20 @@ import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import { SavedRehearsalLibrarySection } from './SavedRehearsalLibrarySection';
 import { getDriveLibraryStatusCopy } from '../utils/drive-library-view-model';
-import { resolveLoopBuilderTrack } from '../utils/saved-loop-view-model';
 import {
+  getSavedLoopRemovalCopy,
+  resolveLoopBuilderTrack,
+} from '../utils/saved-loop-view-model';
+import {
+  getSavedRehearsalLibraryDependentLoops,
+  getSavedRehearsalLibraryRemovalCopy,
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
 } from '../utils/saved-rehearsal-library-view-model';
 import { getSavedTrackPlaybackStatusCopy } from '../utils/saved-track-playback-view-model';
 import { useDriveLibrary } from '../hooks/use-drive-library';
+import { useSavedLoops } from '../hooks/use-saved-loops';
 import { useSavedRehearsalLibrary } from '../hooks/use-saved-rehearsal-library';
 
 type SavedTrackPlaybackController = Pick<
@@ -83,6 +89,16 @@ export const DriveLibrarySection = ({
     savedSources,
     saveSource,
   } = useSavedRehearsalLibrary();
+  const {
+    canMutateLoops,
+    deleteLoop,
+    isLoading: isSavedLoopsLoading,
+    issue: savedLoopIssue,
+    pendingLoopId,
+    refreshLoops,
+    saveLoop,
+    savedLoops,
+  } = useSavedLoops();
   const statusCopy = getDriveLibraryStatusCopy({
     authState,
     activeSearchQuery,
@@ -131,6 +147,62 @@ export const DriveLibrarySection = ({
     selectedSourceId: selectedLoopSourceId,
   });
 
+  const confirmRemoveSource = (
+    source: (typeof savedLibrarySources)[number],
+  ) => {
+    const removalCopy = getSavedRehearsalLibraryRemovalCopy({
+      dependentLoops: getSavedRehearsalLibraryDependentLoops(
+        savedLoops,
+        source.id,
+      ),
+      source,
+    });
+
+    Alert.alert(removalCopy.title, removalCopy.message, [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: removalCopy.confirmLabel,
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            const didRemove = await removeSource(source);
+
+            if (!didRemove) {
+              return;
+            }
+
+            if (selectedLoopSourceId === source.id) {
+              setSelectedLoopSourceId(null);
+            }
+
+            await refreshLoops();
+          })();
+        },
+      },
+    ]);
+  };
+
+  const confirmRemoveLoop = (loop: (typeof savedLoops)[number]) => {
+    const removalCopy = getSavedLoopRemovalCopy(loop);
+
+    Alert.alert(removalCopy.title, removalCopy.message, [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: removalCopy.confirmLabel,
+        style: 'destructive',
+        onPress: () => {
+          void deleteLoop(loop);
+        },
+      },
+    ]);
+  };
+
   return (
     <View style={styles.section}>
       <DriveLibrarySectionHeader
@@ -162,16 +234,23 @@ export const DriveLibrarySection = ({
       <SavedRehearsalLibrarySection
         activePlayableItem={activePlayableItem}
         canMutateLibrary={canMutateLibrary}
+        canMutateLoops={canMutateLoops}
         isPlaybackPreparing={isPlaybackPreparing}
         isSavedLibraryLoading={isSavedLibraryLoading}
+        isSavedLoopsLoading={isSavedLoopsLoading}
         pendingSourceId={pendingSourceId}
+        pendingLoopId={pendingLoopId}
         playbackIssue={playbackIssue}
         playbackState={playbackState}
         positionSeconds={progress.position}
-        removeSource={removeSource}
+        removeLoop={confirmRemoveLoop}
+        removeSource={confirmRemoveSource}
         savedLibraryIssue={savedLibraryIssue}
         savedLibrarySources={savedLibrarySources}
+        savedLoopIssue={savedLoopIssue}
+        savedLoops={savedLoops}
         savedLibraryStatusCopy={savedLibraryStatusCopy}
+        saveLoop={saveLoop}
         savedTrackPlaybackStatusCopy={savedTrackPlaybackStatusCopy}
         selectedLoopSourceId={selectedLoopSourceId}
         selectedTrack={selectedLoopTrack}
@@ -205,7 +284,7 @@ export const DriveLibrarySection = ({
                 : 'Save',
             onPress: () => {
               if (isSaved) {
-                void removeSource(source);
+                confirmRemoveSource(source);
                 return;
               }
               void saveSource(source);

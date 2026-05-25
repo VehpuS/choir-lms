@@ -14,6 +14,8 @@ import {
 } from '../../test-utils/library-test-fixtures.js';
 import {
   buildNamedLoop,
+  getSavedLoopItemIssue,
+  getSavedLoopRemovalCopy,
   getSavedLoopsStatusCopy,
   resolveLoopBuilderTrack,
   resolveSavedLoopCards,
@@ -98,5 +100,41 @@ describe('saved loop view-model', () => {
 
     assert.equal(copy.tone, 'warning');
     assert.equal(copy.title, 'Saved loops need attention');
+  });
+
+  it('builds destructive copy and maps delete failures to the affected loop', () => {
+    assert.deepEqual(getSavedLoopRemovalCopy(SAVED_LOOP), {
+      confirmLabel: 'Remove loop',
+      message:
+        '"Entrance cue" (Alto Line.mp3 • 0:12 to 0:18) will be removed from your saved practice loops.',
+      title: 'Remove saved loop?',
+    });
+
+    assert.equal(
+      getSavedLoopItemIssue(
+        {
+          kind: 'delete',
+          loopId: SAVED_LOOP.id,
+          title: 'Could not remove loop',
+          message:
+            'The rehearsal library could not remove the loop "Entrance cue".',
+        },
+        SAVED_LOOP.id,
+      ),
+      'The rehearsal library could not remove the loop "Entrance cue".',
+    );
+    assert.equal(
+      getSavedLoopItemIssue(
+        {
+          kind: 'delete',
+          loopId: SAVED_LOOP.id,
+          title: 'Could not remove loop',
+          message:
+            'The rehearsal library could not remove the loop "Entrance cue".',
+        },
+        'missing-loop',
+      ),
+      undefined,
+    );
   });
 });
