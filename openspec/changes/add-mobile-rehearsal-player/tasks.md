@@ -20,8 +20,8 @@
 ## 4. Loop workflows and early UI alignment
 
 - [x] 4.1 Implement loop marker selection, loop validation, and named loop creation from a saved rehearsal library track.
-- [ ] 4.2 Implement the destination-based mobile shell with Home, Search, Library, and a persistent mini-player around the already-working discovery and saved-library flows.
-- [ ] 4.3 Implement browse, search, and personal library screens that separate discovery from saved tracks and saved loops while preserving fast rehearsal actions for the current slice.
+- [x] 4.2 Implement the destination-based mobile shell with Home, Search, Library, and a persistent mini-player around the already-working discovery and saved-library flows.
+- [x] 4.3 Implement browse, search, and personal library screens that separate discovery from saved tracks and saved loops while preserving fast rehearsal actions for the current slice.
 - [ ] 4.4 Implement playlist creation and editing for saved full tracks and saved loops.
 - [ ] 4.5 Implement rehearsal queue behavior for ordered playback, repeat, and shuffle across playlist items.
 

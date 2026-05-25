@@ -7,6 +7,8 @@ import {
   clearDriveAuthorizationState,
   createAuthorizedDriveState,
   getDriveAuthorizationStatusCopy,
+  getDriveSessionDetails,
+  getDriveSessionTriggerCopy,
   persistDriveAuthorizationState,
   resolveDriveAuthorizationResult,
   restoreDriveAuthorizationState,
@@ -122,6 +124,33 @@ describe('resolveDriveAuthorizationResult', () => {
       failedSignInCopy.message,
       'The sign-in popup was closed before authorization finished.',
     );
+  });
+
+  it('derives shell session trigger copy and session details from auth state', () => {
+    const readyCopy = getDriveSessionTriggerCopy({
+      actionLabel: 'Refresh authorization',
+      message: 'This device has an active Drive session.',
+      title: 'Google Drive is connected',
+      tone: 'ready',
+    });
+    const details = getDriveSessionDetails(
+      {
+        accessToken: 'drive-token',
+        expiresAt: '2026-05-25T10:30:00.000Z',
+        scope: DEFAULT_SCOPE,
+        status: 'authorized',
+      },
+      true,
+    );
+
+    assert.deepEqual(readyCopy, {
+      body: 'Renew access or clear the saved session without leaving the current screen.',
+      status: 'Connected',
+      title: 'Drive connected',
+    });
+    assert.equal(details.status, 'Connected');
+    assert.equal(details.request, 'Prepared');
+    assert.match(details.expiry, /\d{4}|\//);
   });
 });
 

@@ -70,7 +70,7 @@
         ],
         "options": {
           "cwd": "packages/mobile-rehearsal-player",
-          "command": "tsx --test src/app/auth/__tests__/google-drive-authorization.spec.ts src/app/library/__tests__/drive-library-view-model.spec.ts src/app/library/__tests__/use-saved-rehearsal-library.spec.ts"
+          "command": "tsx --test src/app/auth/__tests__/google-drive-authorization.spec.ts src/app/library/__tests__/drive-library-view-model.spec.ts src/app/library/__tests__/use-saved-rehearsal-library.spec.ts src/app/routing/__tests__/app-router.spec.tsx src/app/screens/__tests__/screen-copy.spec.ts"
         }
       },
       "lint": {

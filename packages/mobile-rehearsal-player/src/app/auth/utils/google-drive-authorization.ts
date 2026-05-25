@@ -18,6 +18,12 @@ export type DriveAuthorizationStatusCopy = {
   tone: 'neutral' | 'warning' | 'error' | 'ready';
 };
 
+export type DriveSessionTriggerCopy = {
+  body: string;
+  status: string;
+  title: string;
+};
+
 type PersistedDriveAuthorizationState = {
   accessToken: string;
   expiresAt?: string;
@@ -294,5 +300,71 @@ export const getDriveAuthorizationStatusCopy = (
       'Sign in with Google and grant read-only Drive access to unlock your rehearsal library.',
     actionLabel: 'Connect Google Drive',
     tone: 'neutral',
+  };
+};
+
+const formatExpirationLabel = (expiresAt?: string) => {
+  if (!expiresAt) {
+    return 'Managed by token lifetime';
+  }
+
+  const parsedDate = new Date(expiresAt);
+
+  if (Number.isNaN(parsedDate.valueOf())) {
+    return 'Managed by token lifetime';
+  }
+
+  return parsedDate.toLocaleString();
+};
+
+export const getDriveSessionTriggerCopy = (
+  statusCopy: DriveAuthorizationStatusCopy,
+): DriveSessionTriggerCopy => {
+  if (statusCopy.tone === 'ready') {
+    return {
+      body: 'Renew access or clear the saved session without leaving the current screen.',
+      status: 'Connected',
+      title: 'Drive connected',
+    };
+  }
+
+  if (statusCopy.tone === 'warning') {
+    return {
+      body: 'Reconnect here to restore browsing, search, and playback that depend on Google Drive.',
+      status: 'Needs attention',
+      title: 'Session needs attention',
+    };
+  }
+
+  if (statusCopy.tone === 'error') {
+    return {
+      body: 'This build still needs Google setup before Drive access can be used anywhere in the app shell.',
+      status: 'Setup required',
+      title: 'Drive unavailable',
+    };
+  }
+
+  return {
+    body: 'Connect Google Drive here to unlock discovery, search, and saved library flows everywhere.',
+    status: 'Connect',
+    title: 'Connect Drive',
+  };
+};
+
+export const getDriveSessionDetails = (
+  state: DriveAuthorizationState,
+  requestReady: boolean,
+) => {
+  return {
+    expiry: formatExpirationLabel(state.expiresAt),
+    request: requestReady ? 'Prepared' : 'Preparing',
+    status:
+      state.status === 'authorized'
+        ? 'Connected'
+        : state.status === 'expired'
+          ? 'Expired'
+          : state.status === 'attention-required'
+            ? 'Needs attention'
+            : 'Not connected',
   };
 };

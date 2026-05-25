@@ -1,6 +1,7 @@
 import type { DriveAuthorizationState } from '@org/google-drive';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import type { useSavedTrackPlayback } from '../hooks/use-saved-track-playback';
 
 import { DriveFolderGroup } from './DriveFolderGroup';
 import { DriveLibraryBreadcrumbs } from './DriveLibraryBreadcrumbs';
@@ -20,19 +21,36 @@ import {
 import { getSavedTrackPlaybackStatusCopy } from '../utils/saved-track-playback-view-model';
 import { useDriveLibrary } from '../hooks/use-drive-library';
 import { useSavedRehearsalLibrary } from '../hooks/use-saved-rehearsal-library';
-import { useSavedTrackPlayback } from '../hooks/use-saved-track-playback';
+
+type SavedTrackPlaybackController = Pick<
+  ReturnType<typeof useSavedTrackPlayback>,
+  | 'activePlayableItem'
+  | 'isPreparing'
+  | 'issue'
+  | 'playbackState'
+  | 'progress'
+  | 'togglePlayableItemPlayback'
+  | 'toggleSourcePlayback'
+>;
 
 type DriveLibrarySectionProps = {
   authState: DriveAuthorizationState;
   googleAuthConfigured: boolean;
-};
+} & SavedTrackPlaybackController;
 
 const BORDER_COLOR = '#d6d1c4';
 const CARD_BACKGROUND = '#fffdf8';
 
 export const DriveLibrarySection = ({
+  activePlayableItem,
   authState,
   googleAuthConfigured,
+  isPreparing: isPlaybackPreparing,
+  issue: playbackIssue,
+  playbackState,
+  progress,
+  togglePlayableItemPlayback,
+  toggleSourcePlayback,
 }: DriveLibrarySectionProps) => {
   const [selectedLoopSourceId, setSelectedLoopSourceId] = useState<
     string | null
@@ -65,15 +83,6 @@ export const DriveLibrarySection = ({
     savedSources,
     saveSource,
   } = useSavedRehearsalLibrary();
-  const {
-    activePlayableItem,
-    isPreparing: isPlaybackPreparing,
-    issue: playbackIssue,
-    playbackState,
-    progress,
-    togglePlayableItemPlayback,
-    toggleSourcePlayback,
-  } = useSavedTrackPlayback(authState);
   const statusCopy = getDriveLibraryStatusCopy({
     authState,
     activeSearchQuery,
