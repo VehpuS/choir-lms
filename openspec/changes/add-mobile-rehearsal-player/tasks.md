@@ -23,13 +23,14 @@
 - [x] 4.2 Implement the destination-based mobile shell with Home, Search, Library, and a persistent mini-player around the already-working discovery and saved-library flows.
 - [x] 4.3 Implement browse, search, and personal library screens that separate discovery from saved tracks and saved loops while preserving fast rehearsal actions for the current slice.
 - [x] 4.4 Implement playlist creation and editing for saved full tracks and saved loops.
-- [ ] 4.5 Implement rehearsal queue behavior for ordered playback, repeat, and shuffle across playlist items.
+- [ ] 4.5 Move playlist-building actions out of the in-playlist editor cards and into the saved track / saved loop library surfaces so Library drives playlist population while playlist detail stays focused on order and playback intent.
+- [ ] 4.6 Wire playlist playback in the mobile app to the shared queue helpers so rehearsal sessions can start from saved playlists and honor ordered playback, shuffle, and repeat off / one / all across track and loop items.
 
 ## 5. Native playback integration and validation
 
-- [ ] 5.1 Implement playlist detail, now-playing, and queue surfaces that prioritize playback intent, item order, repeat and shuffle state, and loop context once playlist and queue behavior exist.
-- [ ] 5.2 Integrate background playback and supported native transport controls with the active rehearsal queue.
-- [ ] 5.3 Remove unnecessary or redundant UI elements and text from the different screens to let each screen and ui element focus on its unique value proposition and the core rehearsal actions it enables.
-- [ ] 5.4 Validate playback behavior on supported mobile platforms using representative Google Drive audio files and loop ranges.
-- [ ] 5.5 Add automated and manual verification coverage for the core MVP scenarios defined in the mobile-practice-library, practice-loops-and-playlists, and mobile-rehearsal-player-ui specs.
-- [ ] 5.6 Validate the new interaction model against the `mobile-rehearsal-player-ui` spec mockups on representative phone-sized screens before additional feature expansion.
+- [ ] 5.1 Replace the temporary mini-player summary and editor-first playlist flow with dedicated playlist detail, now-playing, and Up Next surfaces that surface active item order, repeat / shuffle state, and saved-loop context.
+- [ ] 5.2 Extend the TrackPlayer integration so background playback plus supported native play / pause / next / previous controls operate on the active rehearsal queue instead of single-item playback.
+- [ ] 5.3 Remove placeholder copy and redundant controls that still point to a later playback slice or duplicate nearby actions so each screen keeps one clear rehearsal job.
+- [ ] 5.4 Validate ordered, shuffled, repeated, and loop-bounded playback on supported mobile platforms using representative Google Drive audio from both personal and shared Drive contexts.
+- [ ] 5.5 Add automated coverage for shared queue construction / navigation and app-level playback view-model helpers, then add a manual regression checklist for the core MVP flows in the mobile-practice-library, practice-loops-and-playlists, and mobile-rehearsal-player-ui specs.
+- [ ] 5.6 Compare the final Home, Search, Library, playlist detail, now-playing, and queue interactions against the mobile-rehearsal-player-ui mockups on representative phone-sized screens, and record any intentional spec deltas before more feature work.
