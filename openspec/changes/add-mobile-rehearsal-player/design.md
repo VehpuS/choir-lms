@@ -12,6 +12,7 @@ The main constraint is that media behavior matters more than broad platform cove
 - Support browsing and searching across personal and shared Drive folders so users can discover candidate rehearsal tracks before saving them.
 - Model saved full tracks and named loops as first-class playable items that can be queued together in playlists.
 - Support playlist playback modes needed for rehearsal practice: ordered playback, repeat, and shuffle.
+- Establish a music-app-inspired mobile UI shell that makes discovery, saved collections, playlists, and active playback feel cohesive on a phone.
 - Preserve native mobile playback affordances where practical for MVP, including background playback and lock-screen transport controls.
 - Keep domain and package boundaries clean enough to support future choir LMS applications in the same Nx workspace.
 
@@ -78,12 +79,32 @@ Alternatives considered:
 
 - Shared-by-default rehearsal structures: rejected for MVP because permissions and collaboration would become part of the critical path.
 
+### 7. Use a music-app-inspired navigation shell instead of a utility-first form flow
+
+The mobile player should feel closer to a dedicated listening product than a settings-heavy tool. A destination-based shell with Home, Search, and Library surfaces, paired with a persistent mini-player and a focused now-playing view, gives users the interaction patterns they already understand from consumer audio apps while leaving room for rehearsal-specific concepts such as loops and choir-source labels.
+
+Alternatives considered:
+
+- Single long-scroll utility screen: rejected because it collapses browsing, saved collections, and playback into one dense surface that does not scale to playlists or queue management.
+- File-browser-first navigation everywhere: rejected because it over-exposes Drive structure and makes the day-to-day practice experience feel like source management instead of rehearsal.
+
+## UI / UX Direction
+
+- Keep discovery separate from ownership: Drive browsing and search help users find material, while Library focuses on saved tracks, loops, and playlists.
+- Preserve playback context with a persistent mini-player that survives destination changes.
+- Favor scan-first sections, segmented collections, and strong playback hierarchy over dense form controls.
+- Keep queue state close to playback through a dedicated Up Next surface reachable from now playing.
+- Encode rehearsal context directly in the UI through loop badges, source labels, and playlist provenance.
+
+Companion wireframes for these surfaces live in `specs/mobile-rehearsal-player-ui/mockups.md`.
+
 ## Risks / Trade-offs
 
 - [Google Drive streaming behavior may be inconsistent across file types or permissions] → Validate supported formats and access patterns early with representative Drive content.
 - [Drive browsing and search across large personal and shared libraries may feel noisy or slow] → Keep the saved rehearsal library app-owned so discovery and repeated practice remain separate surfaces.
 - [Loop boundaries may feel imprecise for musically sensitive excerpts] → Define loop markers as millisecond offsets and test acceptability with real rehearsal audio before expanding scope.
 - [Native playback integration may behave differently across iOS and Android] → Keep queue semantics app-defined and use native controls as a transport surface, not as the source of truth.
+- [A music-app-inspired shell could accidentally hide rehearsal-specific actions behind polished visuals] → Keep save, loop, add-to-playlist, and queue actions explicit in the main interaction surfaces rather than burying them in overflow menus.
 - [Deferring offline support may limit use in poor-network environments] → Keep the scope explicit in product messaging and design persistence so offline can be added later without changing domain objects.
 - [A narrow MVP may under-serve conductors who want shared structures immediately] → Optimize first for singer rehearsal value and add publishing workflows only after the core player is validated.
 
@@ -93,8 +114,10 @@ Alternatives considered:
 2. Implement Google authentication plus Drive browsing and search for the supported MVP file set.
 3. Implement saving and loading of app-owned Drive source references for the rehearsal library.
 4. Implement the playback engine around the playable-item abstraction.
-5. Add loop creation, loop persistence, and playlist management on top of the same playback model.
-6. Enable native mobile transport integration and validate behavior on both supported mobile platforms.
+5. Add the destination-based mobile shell and align discovery, search, saved-library, and loop-builder surfaces around the already-working playback model.
+6. Add playlist management and queue behavior on top of the same playback model.
+7. Layer playlist detail, now-playing, queue, and native transport integration onto those behaviors.
+8. Validate the staged interaction model and playback behavior on supported mobile platforms.
 
 Rollback is low risk because this is the first product slice in a greenfield repository. If the chosen media stack proves insufficient, the client implementation can change without invalidating the proposed domain model.
 

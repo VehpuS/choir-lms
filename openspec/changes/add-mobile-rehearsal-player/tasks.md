@@ -27,4 +27,11 @@
 
 - [ ] 5.1 Integrate background playback and supported native transport controls with the active rehearsal queue.
 - [ ] 5.2 Validate playback behavior on supported mobile platforms using representative Google Drive audio files and loop ranges.
-- [ ] 5.3 Add automated and manual verification coverage for the core MVP scenarios defined in the mobile-practice-library and practice-loops-and-playlists specs.
+- [ ] 5.3 Add automated and manual verification coverage for the core MVP scenarios defined in the mobile-practice-library, practice-loops-and-playlists, and mobile-rehearsal-player-ui specs.
+
+## 6. Music-app-style UI / UX shell
+
+- [ ] 6.1 Implement the destination-based mobile shell with Home, Search, Library, and a persistent mini-player that opens the full now-playing experience.
+- [ ] 6.2 Implement browse, search, and personal library screens that separate discovery from saved tracks, loops, and playlists while preserving fast rehearsal actions.
+- [ ] 6.3 Implement playlist detail, now-playing, and queue surfaces that prioritize playback intent, item order, repeat and shuffle state, and loop context.
+- [ ] 6.4 Validate the new interaction model against the `mobile-rehearsal-player-ui` spec mockups on representative phone-sized screens before additional feature expansion.
