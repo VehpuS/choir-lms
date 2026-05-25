@@ -84,7 +84,7 @@
   "dependencies": {
     "@expo/metro-config": "*",
     "@org/google-drive": "^0.0.1",
-    "@org/rehearsal-playback": "^0.0.1",
+    "@org/audio-library-runtime": "^0.0.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@testing-library/react-native": "*",
     "es-toolkit": "^1.46.1",

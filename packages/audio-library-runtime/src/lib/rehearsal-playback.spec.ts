@@ -7,7 +7,7 @@ import {
   createPlaylistEntryFromTrack,
   type NamedLoop,
   type Playlist,
-} from '@org/rehearsal-domain';
+} from '@org/audio-library-models';
 import AsyncStorage, {
   type AsyncStorageStatic,
 } from '@react-native-async-storage/async-storage';

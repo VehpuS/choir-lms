@@ -32,7 +32,7 @@
     }
   },
   "dependencies": {
-    "@org/rehearsal-domain": "^0.0.1",
+    "@org/audio-library-models": "^0.0.1",
     "es-toolkit": "^1.46.1"
   }
 }

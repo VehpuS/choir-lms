@@ -6,7 +6,7 @@ import { describe, it } from 'node:test';
 import {
   createPlaylistEntryFromLoop,
   createPlaylistEntryFromTrack,
-} from '@org/rehearsal-domain';
+} from '@org/audio-library-models';
 import type { DriveLibrarySource } from '../utils/drive-library-view-model.js';
 import { loadSavedPlaylists } from '../hooks/use-saved-playlists.js';
 import {
@@ -204,7 +204,10 @@ describe('saved playlist view-model', () => {
       id: 'playlist-1',
       name: 'Wednesday rehearsal',
       items: [
-        createPlaylistEntryFromTrack(PLAYABLE_SOURCE, '2026-05-11T00:01:00.000Z'),
+        createPlaylistEntryFromTrack(
+          PLAYABLE_SOURCE,
+          '2026-05-11T00:01:00.000Z',
+        ),
         createPlaylistEntryFromLoop(SAVED_LOOP, '2026-05-11T00:02:00.000Z'),
       ],
       ownershipScope: 'user' as const,

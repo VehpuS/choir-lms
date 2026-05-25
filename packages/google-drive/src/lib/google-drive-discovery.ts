@@ -1,4 +1,4 @@
-import type { DriveAudioSource } from '@org/rehearsal-domain';
+import type { DriveAudioSource } from '@org/audio-library-models';
 
 import {
   mapDriveFileToAudioSource,

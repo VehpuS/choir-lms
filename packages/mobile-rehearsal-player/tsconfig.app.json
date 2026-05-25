@@ -39,7 +39,7 @@
       "path": "../google-drive/tsconfig.lib.json"
     },
     {
-      "path": "../rehearsal-playback/tsconfig.lib.json"
+      "path": "../audio-library-runtime/tsconfig.lib.json"
     }
   ]
 }

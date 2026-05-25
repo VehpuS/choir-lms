@@ -1,4 +1,4 @@
-import type { PlayableItem } from '@org/rehearsal-domain';
+import type { PlayableItem } from '@org/audio-library-models';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { join, map, toUpper } from 'es-toolkit/compat';
 

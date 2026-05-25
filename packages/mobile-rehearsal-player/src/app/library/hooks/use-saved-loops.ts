@@ -1,5 +1,5 @@
-import { type NamedLoop } from '@org/rehearsal-domain';
-import { AsyncStoragePracticeRepository } from '@org/rehearsal-playback';
+import { type NamedLoop } from '@org/audio-library-models';
+import { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
 import { useEffect, useState } from 'react';
 
 import type { SavedLoopIssue } from '../utils/saved-loop-view-model';

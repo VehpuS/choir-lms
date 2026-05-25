@@ -6,13 +6,11 @@ import {
   renamePlaylist,
   type NamedLoop,
   type Playlist,
-} from '@org/rehearsal-domain';
+} from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 
-import {
-  LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-} from '../hooks/use-saved-rehearsal-library';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
 import { useSavedPlaylists } from '../hooks/use-saved-playlists';
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
 import {
@@ -47,7 +45,9 @@ const getSelectedPlaylist = (
   return (
     playlists.find((playlist) => {
       return playlist.id === selectedPlaylistId;
-    }) ?? playlists[0] ?? null
+    }) ??
+    playlists[0] ??
+    null
   );
 };
 
@@ -65,8 +65,9 @@ export const SavedPlaylistSection = ({
     savedPlaylists,
     updatePlaylist,
   } = useSavedPlaylists();
-  const [creationIssue, setCreationIssue] =
-    useState<PlaylistDraftIssue | null>(null);
+  const [creationIssue, setCreationIssue] = useState<PlaylistDraftIssue | null>(
+    null,
+  );
   const [createPlaylistName, setCreatePlaylistName] = useState('');
   const [renameIssue, setRenameIssue] = useState<PlaylistDraftIssue | null>(
     null,
@@ -91,7 +92,10 @@ export const SavedPlaylistSection = ({
     }
   }, [savedPlaylists, selectedPlaylistId]);
 
-  const selectedPlaylist = getSelectedPlaylist(savedPlaylists, selectedPlaylistId);
+  const selectedPlaylist = getSelectedPlaylist(
+    savedPlaylists,
+    selectedPlaylistId,
+  );
 
   useEffect(() => {
     setRenamePlaylistName(selectedPlaylist?.name ?? '');

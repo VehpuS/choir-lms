@@ -1,5 +1,5 @@
-import type { Playlist } from '@org/rehearsal-domain';
-import { AsyncStoragePracticeRepository } from '@org/rehearsal-playback';
+import type { Playlist } from '@org/audio-library-models';
+import { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
 import { useEffect, useState } from 'react';
 
 import type { SavedPlaylistIssue } from '../utils/saved-playlist-view-model';
@@ -8,7 +8,10 @@ import {
   verifySavedRehearsalLibraryStorage,
 } from './use-saved-rehearsal-library';
 
-type SavedPlaylistReader = Pick<AsyncStoragePracticeRepository, 'listPlaylists'>;
+type SavedPlaylistReader = Pick<
+  AsyncStoragePracticeRepository,
+  'listPlaylists'
+>;
 
 const INITIAL_LOAD_ATTEMPTS = 2;
 const STORAGE_UNAVAILABLE_ISSUE: SavedPlaylistIssue = {
@@ -34,7 +37,9 @@ const createMutationIssue = (
     kind,
     playlistId: playlist.id,
     title:
-      kind === 'delete' ? 'Could not remove playlist' : 'Could not save playlist',
+      kind === 'delete'
+        ? 'Could not remove playlist'
+        : 'Could not save playlist',
     message: detail ? `${fallbackMessage} ${detail}` : fallbackMessage,
   };
 };
@@ -113,9 +118,11 @@ export const useSavedPlaylists = () => {
       const nextPlaylists = await practiceRepository.savePlaylist(playlist);
 
       setSavedPlaylists(nextPlaylists);
-      return nextPlaylists.find((currentPlaylist) => {
-        return currentPlaylist.id === playlist.id;
-      }) ?? playlist;
+      return (
+        nextPlaylists.find((currentPlaylist) => {
+          return currentPlaylist.id === playlist.id;
+        }) ?? playlist
+      );
     } catch (error) {
       setIssue(createMutationIssue('save', playlist, error));
       return null;

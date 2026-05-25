@@ -2,7 +2,7 @@ import {
   buildDriveMediaUrl,
   type DriveAuthorizationState,
 } from '@org/google-drive';
-import { type PlayableItem } from '@org/rehearsal-domain';
+import { type PlayableItem } from '@org/audio-library-models';
 
 import {
   formatDurationLabel,

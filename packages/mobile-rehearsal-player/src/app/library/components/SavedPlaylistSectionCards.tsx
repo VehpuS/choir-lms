@@ -1,7 +1,4 @@
-import {
-  type NamedLoop,
-  type Playlist,
-} from '@org/rehearsal-domain';
+import { type NamedLoop, type Playlist } from '@org/audio-library-models';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
@@ -102,7 +99,8 @@ export const SavedPlaylistCardsList = (props: {
       </Text>
       <View style={styles.groupItems}>
         {props.playlistCards.map((playlistCard) => {
-          const isSelected = playlistCard.playlist.id === props.selectedPlaylistId;
+          const isSelected =
+            playlistCard.playlist.id === props.selectedPlaylistId;
 
           return (
             <Pressable
@@ -117,9 +115,15 @@ export const SavedPlaylistCardsList = (props: {
                 pressed ? styles.actionButtonPressed : undefined,
               ]}
             >
-              <Text style={styles.playlistName}>{playlistCard.playlist.name}</Text>
-              <Text style={styles.playlistMetadata}>{playlistCard.detailLabel}</Text>
-              <Text style={styles.playlistPreview}>{playlistCard.previewLabel}</Text>
+              <Text style={styles.playlistName}>
+                {playlistCard.playlist.name}
+              </Text>
+              <Text style={styles.playlistMetadata}>
+                {playlistCard.detailLabel}
+              </Text>
+              <Text style={styles.playlistPreview}>
+                {playlistCard.previewLabel}
+              </Text>
             </Pressable>
           );
         })}
@@ -167,7 +171,9 @@ export const SavedPlaylistEditorCard = (props: {
         style={styles.nameInput}
         value={props.renamePlaylistName}
       />
-      <SavedPlaylistIssueCard issue={props.renameIssue ?? props.selectedPlaylistIssue} />
+      <SavedPlaylistIssueCard
+        issue={props.renameIssue ?? props.selectedPlaylistIssue}
+      />
       <View style={styles.actionRow}>
         <Pressable
           accessibilityRole="button"
@@ -278,7 +284,9 @@ export const SavedPlaylistEditorCard = (props: {
                         pressed && !props.isMutating
                           ? styles.actionButtonPressed
                           : undefined,
-                        props.isMutating ? styles.actionButtonDisabled : undefined,
+                        props.isMutating
+                          ? styles.actionButtonDisabled
+                          : undefined,
                       ]}
                     >
                       <Text style={styles.secondaryButtonLabel}>Remove</Text>
@@ -334,7 +342,9 @@ export const SavedPlaylistEditorCard = (props: {
                         : undefined,
                     ]}
                   >
-                    <Text style={styles.secondaryButtonLabel}>Add to playlist</Text>
+                    <Text style={styles.secondaryButtonLabel}>
+                      Add to playlist
+                    </Text>
                   </Pressable>
                 </View>
               );

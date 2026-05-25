@@ -1,5 +1,5 @@
 {
-  "name": "@org/rehearsal-playback",
+  "name": "@org/audio-library-models",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -14,7 +14,7 @@
     "./package.json": "./package.json"
   },
   "nx": {
-    "name": "rehearsal-playback",
+    "name": "audio-library-models",
     "targets": {
       "test": {
         "executor": "nx:run-commands",
@@ -25,15 +25,11 @@
           "{workspaceRoot}/package-lock.json"
         ],
         "options": {
-          "cwd": "packages/rehearsal-playback",
-          "command": "tsx --test src/lib/rehearsal-playback.spec.ts"
+          "cwd": "packages/audio-library-models",
+          "command": "tsx --test src/lib/rehearsal-domain.spec.ts"
         }
       }
     }
   },
-  "dependencies": {
-    "@org/rehearsal-domain": "^0.0.1",
-    "@react-native-async-storage/async-storage": "2.2.0",
-    "es-toolkit": "^1.46.1"
-  }
+  "dependencies": {}
 }

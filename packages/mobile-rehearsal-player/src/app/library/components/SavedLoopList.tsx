@@ -1,4 +1,4 @@
-import { type PlayableItem } from '@org/rehearsal-domain';
+import { type PlayableItem } from '@org/audio-library-models';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { SavedLoopCard } from '../utils/saved-loop-view-model';

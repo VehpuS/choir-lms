@@ -143,7 +143,10 @@ describe('playlist helpers', () => {
     );
 
     assert.equal(createdPlaylist.name, 'Wednesday rehearsal');
-    assert.equal(createdPlaylist.id, 'playlist:user-1:2026-05-11T00:00:00.000Z');
+    assert.equal(
+      createdPlaylist.id,
+      'playlist:user-1:2026-05-11T00:00:00.000Z',
+    );
     assert.deepEqual(
       loopPlaylist.items.map((entry) => ({
         description: entry.description,

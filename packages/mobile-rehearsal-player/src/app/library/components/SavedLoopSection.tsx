@@ -1,4 +1,4 @@
-import { type PlayableItem } from '@org/rehearsal-domain';
+import { type PlayableItem } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 

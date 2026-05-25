@@ -1,4 +1,4 @@
-import { createPlaylist, type Playlist } from '@org/rehearsal-domain';
+import { createPlaylist, type Playlist } from '@org/audio-library-models';
 
 import type { DriveLibraryStatusCopy } from './drive-library-view-model';
 

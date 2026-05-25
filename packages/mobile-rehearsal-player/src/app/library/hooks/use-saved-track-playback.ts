@@ -2,7 +2,7 @@ import { type DriveAuthorizationState } from '@org/google-drive';
 import {
   createTrackPlayableItem,
   type PlayableItem,
-} from '@org/rehearsal-domain';
+} from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import TrackPlayer, {
   Capability,

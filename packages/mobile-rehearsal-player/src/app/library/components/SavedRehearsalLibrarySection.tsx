@@ -1,7 +1,7 @@
 import {
   createTrackPlayableItem,
   type PlayableItem,
-} from '@org/rehearsal-domain';
+} from '@org/audio-library-models';
 import { StyleSheet, View } from 'react-native';
 
 import {

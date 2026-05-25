@@ -102,6 +102,10 @@
     "/^npm exec -- nx run rehearsal-playback:test --outputStyle=static$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm install --package-lock-only$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

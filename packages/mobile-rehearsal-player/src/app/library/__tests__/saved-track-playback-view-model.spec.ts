@@ -6,7 +6,7 @@ import { describe, it } from 'node:test';
 import {
   createLoopPlayableItem,
   createTrackPlayableItem,
-} from '@org/rehearsal-domain';
+} from '@org/audio-library-models';
 
 import {
   AUTHORIZED_STATE,

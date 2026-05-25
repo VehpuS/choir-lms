@@ -1,4 +1,4 @@
-import { AsyncStoragePracticeRepository } from '@org/rehearsal-playback';
+import { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 

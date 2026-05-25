@@ -3,7 +3,7 @@ import {
   updateSourceAvailability,
   type DriveAudioSource,
   type SourceAvailabilityReason,
-} from '@org/rehearsal-domain';
+} from '@org/audio-library-models';
 
 export type DriveAuthorizationStatus =
   | 'unconfigured'

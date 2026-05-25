@@ -1,4 +1,4 @@
-import type { PlayableItem } from '@org/rehearsal-domain';
+import type { PlayableItem } from '@org/audio-library-models';
 
 import { formatDurationLabel } from '../library/utils/drive-library-view-model';
 import type { SavedTrackPlaybackState } from '../library/utils/saved-track-playback-view-model';

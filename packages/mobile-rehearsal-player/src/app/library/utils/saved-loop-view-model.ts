@@ -4,7 +4,7 @@ import {
   type NamedLoop,
   type PlayableItem,
   validateLoopRange,
-} from '@org/rehearsal-domain';
+} from '@org/audio-library-models';
 import { keyBy } from 'es-toolkit/compat';
 
 import type {

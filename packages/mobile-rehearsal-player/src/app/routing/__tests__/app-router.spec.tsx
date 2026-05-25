@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createTrackPlayableItem } from '@org/rehearsal-domain';
+import { createTrackPlayableItem } from '@org/audio-library-models';
 
 import { PLAYABLE_SOURCE } from '../../test-utils/library-test-fixtures.js';
 import { SHELL_DESTINATIONS, getMiniPlayerSummary } from '../shell-model.js';
