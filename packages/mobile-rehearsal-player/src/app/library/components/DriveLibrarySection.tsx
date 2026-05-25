@@ -30,12 +30,16 @@ import { useSavedRehearsalLibrary } from '../hooks/use-saved-rehearsal-library';
 
 type SavedTrackPlaybackController = Pick<
   ReturnType<typeof useSavedTrackPlayback>,
+  | 'activePlaylistSession'
   | 'activePlayableItem'
   | 'isPreparing'
   | 'issue'
   | 'playbackState'
+  | 'playlistRepeatMode'
   | 'progress'
+  | 'setPlaylistRepeatMode'
   | 'togglePlayableItemPlayback'
+  | 'togglePlaylistPlayback'
   | 'toggleSourcePlayback'
 >;
 
@@ -48,14 +52,18 @@ const BORDER_COLOR = '#d6d1c4';
 const CARD_BACKGROUND = '#fffdf8';
 
 export const DriveLibrarySection = ({
+  activePlaylistSession,
   activePlayableItem,
   authState,
   googleAuthConfigured,
   isPreparing: isPlaybackPreparing,
   issue: playbackIssue,
+  playlistRepeatMode,
   playbackState,
   progress,
+  setPlaylistRepeatMode,
   togglePlayableItemPlayback,
+  togglePlaylistPlayback,
   toggleSourcePlayback,
 }: DriveLibrarySectionProps) => {
   const [selectedLoopSourceId, setSelectedLoopSourceId] = useState<
@@ -233,6 +241,7 @@ export const DriveLibrarySection = ({
       <DriveLibraryStatusCard isLoading={isLoading} statusCopy={statusCopy} />
       <SavedRehearsalLibrarySection
         activePlayableItem={activePlayableItem}
+        activePlaylistSession={activePlaylistSession}
         canMutateLibrary={canMutateLibrary}
         canMutateLoops={canMutateLoops}
         isPlaybackPreparing={isPlaybackPreparing}
@@ -242,6 +251,7 @@ export const DriveLibrarySection = ({
         pendingLoopId={pendingLoopId}
         playbackIssue={playbackIssue}
         playbackState={playbackState}
+        playlistRepeatMode={playlistRepeatMode}
         positionSeconds={progress.position}
         removeLoop={confirmRemoveLoop}
         removeSource={confirmRemoveSource}
@@ -251,11 +261,13 @@ export const DriveLibrarySection = ({
         savedLoops={savedLoops}
         savedLibraryStatusCopy={savedLibraryStatusCopy}
         saveLoop={saveLoop}
+        setPlaylistRepeatMode={setPlaylistRepeatMode}
         savedTrackPlaybackStatusCopy={savedTrackPlaybackStatusCopy}
         selectedLoopSourceId={selectedLoopSourceId}
         selectedTrack={selectedLoopTrack}
         setSelectedLoopSourceId={setSelectedLoopSourceId}
         togglePlayableItemPlayback={togglePlayableItemPlayback}
+        togglePlaylistPlayback={togglePlaylistPlayback}
         toggleSourcePlayback={toggleSourcePlayback}
       />
       {!isSearchMode ? (

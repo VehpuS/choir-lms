@@ -6,6 +6,7 @@ import { DriveSessionMenu } from '../auth/components/DriveSessionMenu';
 import { useGoogleDriveAuthorization } from '../auth/hooks/use-google-drive-authorization';
 import { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
 import { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback';
+import type { PlaylistPlaybackSession } from '../library/utils/saved-playlist-playback-view-model';
 import type { SavedTrackPlaybackState } from '../library/utils/saved-track-playback-view-model';
 import { HomeScreen } from '../screens/HomeScreen';
 import { LibraryScreen } from '../screens/LibraryScreen';
@@ -21,6 +22,7 @@ type MobileShellProps = {
   activePlayableItem: ReturnType<
     typeof useSavedTrackPlayback
   >['activePlayableItem'];
+  activePlaylistSession: PlaylistPlaybackSession | null;
   authorization: ReturnType<typeof useGoogleDriveAuthorization>;
   homeScreen: ReactNode;
   isPlaybackPreparing: boolean;
@@ -41,6 +43,7 @@ const PANEL_BY_DESTINATION: Record<
 
 export const MobileShell = ({
   activePlayableItem,
+  activePlaylistSession,
   authorization,
   homeScreen,
   isPlaybackPreparing,
@@ -56,6 +59,7 @@ export const MobileShell = ({
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
   const miniPlayerSummary = getMiniPlayerSummary({
     activePlayableItem,
+    activePlaylistSession,
     isPlaybackPreparing,
     playbackPositionSeconds,
     playbackState,
@@ -229,6 +233,7 @@ export const AppRouter = () => {
   return (
     <MobileShell
       activePlayableItem={playback.activePlayableItem}
+      activePlaylistSession={playback.activePlaylistSession}
       authorization={authorization}
       homeScreen={
         <HomeScreen

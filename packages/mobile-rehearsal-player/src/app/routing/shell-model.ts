@@ -1,6 +1,10 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
 import { formatDurationLabel } from '../library/utils/drive-library-view-model';
+import {
+  getPlaylistPlaybackSessionSummary,
+  type PlaylistPlaybackSession,
+} from '../library/utils/saved-playlist-playback-view-model';
 import type { SavedTrackPlaybackState } from '../library/utils/saved-track-playback-view-model';
 
 export type ShellDestinationKey = 'home' | 'search' | 'library';
@@ -71,6 +75,7 @@ const getPlaybackStatusLabel = (options: {
 
 export const getMiniPlayerSummary = (options: {
   activePlayableItem: PlayableItem | null;
+  activePlaylistSession?: PlaylistPlaybackSession | null;
   isPlaybackPreparing: boolean;
   playbackPositionSeconds: number;
   playbackState: SavedTrackPlaybackState | undefined;
@@ -87,6 +92,8 @@ export const getMiniPlayerSummary = (options: {
   return {
     title: options.activePlayableItem.title,
     status: `${status} • ${positionLabel}`,
-    detail: `${status} stays available while you move between Home, Search, and Library. Focused now-playing and queue controls land in the later playback slice.`,
+    detail: options.activePlaylistSession
+      ? `${getPlaylistPlaybackSessionSummary(options.activePlaylistSession)} Focused now-playing and queue controls land in the later playback slice.`
+      : `${status} stays available while you move between Home, Search, and Library. Focused now-playing and queue controls land in the later playback slice.`,
   };
 };

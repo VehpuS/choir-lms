@@ -9,12 +9,16 @@ import { getLibraryScreenSummaryCopy } from './screen-copy';
 
 type SavedTrackPlaybackController = Pick<
   ReturnType<typeof useSavedTrackPlayback>,
+  | 'activePlaylistSession'
   | 'activePlayableItem'
   | 'isPreparing'
   | 'issue'
   | 'playbackState'
+  | 'playlistRepeatMode'
   | 'progress'
+  | 'setPlaylistRepeatMode'
   | 'togglePlayableItemPlayback'
+  | 'togglePlaylistPlayback'
   | 'toggleSourcePlayback'
 >;
 
@@ -44,6 +48,7 @@ export const LibraryScreen = ({
       />
       <SavedRehearsalLibrarySection
         activePlayableItem={playback.activePlayableItem}
+        activePlaylistSession={playback.activePlaylistSession}
         canMutateLibrary={libraryController.savedLibrary.canMutateLibrary}
         canMutateLoops={libraryController.savedLibrary.canMutateLoops}
         isPlaybackPreparing={playback.isPreparing}
@@ -53,6 +58,7 @@ export const LibraryScreen = ({
         pendingLoopId={libraryController.savedLibrary.pendingLoopId}
         playbackIssue={playback.issue}
         playbackState={playback.playbackState}
+        playlistRepeatMode={playback.playlistRepeatMode}
         positionSeconds={playback.progress.position}
         removeLoop={libraryController.savedLibrary.removeLoop}
         removeSource={libraryController.savedLibrary.removeSource}
@@ -64,6 +70,7 @@ export const LibraryScreen = ({
           libraryController.savedLibrary.savedLibraryStatusCopy
         }
         saveLoop={libraryController.savedLibrary.saveLoop}
+        setPlaylistRepeatMode={playback.setPlaylistRepeatMode}
         savedTrackPlaybackStatusCopy={
           libraryController.savedLibrary.savedTrackPlaybackStatusCopy
         }
@@ -75,6 +82,7 @@ export const LibraryScreen = ({
           libraryController.savedLibrary.setSelectedLoopSourceId
         }
         togglePlayableItemPlayback={playback.togglePlayableItemPlayback}
+        togglePlaylistPlayback={playback.togglePlaylistPlayback}
         toggleSourcePlayback={playback.toggleSourcePlayback}
       />
     </ScrollView>

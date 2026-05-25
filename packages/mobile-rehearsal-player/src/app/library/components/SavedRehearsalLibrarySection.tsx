@@ -24,6 +24,7 @@ import {
   resolveSavedPlaylistCards,
   resolveSelectedPlaylist,
 } from '../utils/saved-playlist-view-model';
+import type { PlaylistPlaybackSession } from '../utils/saved-playlist-playback-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -40,6 +41,7 @@ import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-li
 
 type SavedRehearsalLibrarySectionProps = {
   activePlayableItem: PlayableItem | null;
+  activePlaylistSession: PlaylistPlaybackSession | null;
   canMutateLibrary: boolean;
   canMutateLoops: boolean;
   isPlaybackPreparing: boolean;
@@ -49,6 +51,7 @@ type SavedRehearsalLibrarySectionProps = {
   pendingLoopId: string | null;
   playbackIssue: SavedTrackPlaybackIssue | null;
   playbackState: SavedTrackPlaybackState | undefined;
+  playlistRepeatMode: 'off' | 'one' | 'all';
   positionSeconds: number;
   removeLoop: (loop: NamedLoop) => void;
   removeSource: (source: DriveLibrarySource) => void;
@@ -58,11 +61,18 @@ type SavedRehearsalLibrarySectionProps = {
   savedLoops: NamedLoop[];
   savedLibraryStatusCopy: DriveLibraryStatusCopy;
   saveLoop: (loop: NamedLoop) => Promise<boolean>;
+  setPlaylistRepeatMode: (repeatMode: 'off' | 'one' | 'all') => void;
   savedTrackPlaybackStatusCopy: DriveLibraryStatusCopy | null;
   selectedLoopSourceId: string | null;
   selectedTrack: PlayableItem | null;
   setSelectedLoopSourceId: (sourceId: string) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
+  togglePlaylistPlayback: (options: {
+    loops: NamedLoop[];
+    mode: 'ordered' | 'shuffle';
+    playlist: Playlist;
+    sources: DriveLibrarySource[];
+  }) => Promise<void>;
   toggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
 };
 
@@ -70,6 +80,7 @@ const BORDER_COLOR = '#d6d1c4';
 
 export const SavedRehearsalLibrarySection = ({
   activePlayableItem,
+  activePlaylistSession,
   canMutateLibrary,
   canMutateLoops,
   isPlaybackPreparing,
@@ -79,6 +90,7 @@ export const SavedRehearsalLibrarySection = ({
   pendingLoopId,
   playbackIssue,
   playbackState,
+  playlistRepeatMode,
   positionSeconds,
   removeLoop,
   removeSource,
@@ -88,11 +100,13 @@ export const SavedRehearsalLibrarySection = ({
   savedLoops,
   savedLibraryStatusCopy,
   saveLoop,
+  setPlaylistRepeatMode,
   savedTrackPlaybackStatusCopy,
   selectedLoopSourceId,
   selectedTrack,
   setSelectedLoopSourceId,
   togglePlayableItemPlayback,
+  togglePlaylistPlayback,
   toggleSourcePlayback,
 }: SavedRehearsalLibrarySectionProps) => {
   const {
@@ -297,16 +311,24 @@ export const SavedRehearsalLibrarySection = ({
       />
 
       <SavedPlaylistSection
+        activePlaylistSession={activePlaylistSession}
         canMutatePlaylists={canMutatePlaylists}
         createPlaylist={createPlaylist}
         deletePlaylist={deletePlaylist}
         isLoading={isPlaylistsLoading}
+        isPlaybackPreparing={isPlaybackPreparing}
         issue={playlistIssue}
         pendingPlaylistId={pendingPlaylistId}
+        playbackState={playbackState}
+        playlistRepeatMode={playlistRepeatMode}
         savedPlaylists={savedPlaylists}
+        savedLoops={savedLoops}
+        savedSources={savedLibrarySources}
         selectedPlaylist={selectedPlaylist}
+        setPlaylistRepeatMode={setPlaylistRepeatMode}
         setSelectedPlaylistId={setSelectedPlaylistId}
         showPlaylistCards={false}
+        togglePlaylistPlayback={togglePlaylistPlayback}
         updatePlaylist={updatePlaylist}
       />
     </View>

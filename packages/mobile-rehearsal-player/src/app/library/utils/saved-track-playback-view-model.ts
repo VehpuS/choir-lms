@@ -22,6 +22,7 @@ export type SavedTrackPlaybackState =
   | 'stopped';
 
 export type SavedTrackPlaybackIssue = {
+  playlistId?: string;
   playableItemId?: string;
   sourceId?: string;
   title: string;
@@ -41,6 +42,11 @@ export type SavedTrackPlayerTrack = {
 export type SavedTrackPlaybackRequest = {
   playableItem: PlayableItem;
   track: SavedTrackPlayerTrack;
+};
+
+type TrackPlayerSetupError = {
+  code?: string;
+  message?: string;
 };
 
 type SavedTrackPlaybackActionOptions = {
@@ -64,9 +70,27 @@ const DEFAULT_UNAVAILABLE_MESSAGE =
 const DRIVE_ACCESS_REQUIRED_MESSAGE =
   'Reconnect Google Drive before starting full-track playback from the saved rehearsal library.';
 const LOOP_RANGE_END_TOLERANCE_MS = 250;
+const TRACK_PLAYER_ALREADY_INITIALIZED_CODE = 'player_already_initialized';
+const TRACK_PLAYER_ALREADY_INITIALIZED_MESSAGE =
+  'already been initialized via setupPlayer';
 
 const isLoadingState = (playbackState: SavedTrackPlaybackState | undefined) => {
   return playbackState === 'loading' || playbackState === 'buffering';
+};
+
+export const isTrackPlayerAlreadyInitializedError = (error: unknown) => {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const trackPlayerSetupError = error as TrackPlayerSetupError;
+
+  return (
+    trackPlayerSetupError.code === TRACK_PLAYER_ALREADY_INITIALIZED_CODE ||
+    trackPlayerSetupError.message?.includes(
+      TRACK_PLAYER_ALREADY_INITIALIZED_MESSAGE,
+    ) === true
+  );
 };
 
 const getPlaybackSummary = (

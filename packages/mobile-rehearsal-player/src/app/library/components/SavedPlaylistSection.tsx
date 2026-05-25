@@ -2,12 +2,20 @@ import {
   movePlaylistEntry,
   removePlaylistEntry,
   renamePlaylist,
+  type NamedLoop,
   type Playlist,
+  type RepeatMode,
 } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
+import type { DriveLibrarySource } from '../utils/drive-library-view-model';
+import {
+  getPlaylistPlaybackActionCopy,
+  getPlaylistPlaybackSessionSummary,
+  type PlaylistPlaybackSession,
+} from '../utils/saved-playlist-playback-view-model';
 import {
   buildSavedPlaylist,
   getSavedPlaylistRemovalCopy,
@@ -18,40 +26,61 @@ import {
   type SavedPlaylistIssue,
   validatePlaylistName,
 } from '../utils/saved-playlist-view-model';
+import type { SavedTrackPlaybackState } from '../utils/saved-track-playback-view-model';
 import {
   SavedPlaylistCardsList,
   SavedPlaylistCreateCard,
   SavedPlaylistEditorCard,
 } from './SavedPlaylistSectionCards';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
-import { Alert } from 'react-native';
 import { savedPlaylistSectionStyles as styles } from './saved-playlist-section-styles';
 
 type SavedPlaylistSectionProps = {
+  activePlaylistSession: PlaylistPlaybackSession | null;
   canMutatePlaylists: boolean;
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
   deletePlaylist: (playlist: Playlist) => Promise<boolean>;
   isLoading: boolean;
+  isPlaybackPreparing: boolean;
   issue: SavedPlaylistIssue | null;
   pendingPlaylistId: string | null;
+  playbackState: SavedTrackPlaybackState | undefined;
+  playlistRepeatMode: RepeatMode;
   savedPlaylists: Playlist[];
+  savedLoops: NamedLoop[];
+  savedSources: DriveLibrarySource[];
   selectedPlaylist: Playlist | null;
+  setPlaylistRepeatMode: (repeatMode: RepeatMode) => void;
   setSelectedPlaylistId: (playlistId: string) => void;
   showPlaylistCards?: boolean;
+  togglePlaylistPlayback: (options: {
+    loops: NamedLoop[];
+    mode: 'ordered' | 'shuffle';
+    playlist: Playlist;
+    sources: DriveLibrarySource[];
+  }) => Promise<void>;
   updatePlaylist: (playlist: Playlist) => Promise<Playlist | null>;
 };
 
 export const SavedPlaylistSection = ({
+  activePlaylistSession,
   canMutatePlaylists,
   createPlaylist,
   deletePlaylist,
   isLoading,
+  isPlaybackPreparing,
   issue,
   pendingPlaylistId,
+  playbackState,
+  playlistRepeatMode,
   savedPlaylists,
+  savedLoops,
+  savedSources,
   selectedPlaylist,
+  setPlaylistRepeatMode,
   setSelectedPlaylistId,
   showPlaylistCards = true,
+  togglePlaylistPlayback,
   updatePlaylist,
 }: SavedPlaylistSectionProps) => {
   const [creationIssue, setCreationIssue] = useState<PlaylistDraftIssue | null>(
@@ -75,6 +104,27 @@ export const SavedPlaylistSection = ({
     issue,
     savedPlaylistCount: savedPlaylists.length,
   });
+  const selectedPlaybackSession =
+    activePlaylistSession?.playlistId === selectedPlaylist?.id
+      ? activePlaylistSession
+      : null;
+  const orderedPlaybackAction = getPlaylistPlaybackActionCopy({
+    activeSession: selectedPlaybackSession,
+    isPreparing: isPlaybackPreparing,
+    mode: 'ordered',
+    playbackState,
+    selectedPlaylist,
+  });
+  const shufflePlaybackAction = getPlaylistPlaybackActionCopy({
+    activeSession: selectedPlaybackSession,
+    isPreparing: isPlaybackPreparing,
+    mode: 'shuffle',
+    playbackState,
+    selectedPlaylist,
+  });
+  const playbackContextLabel = selectedPlaybackSession
+    ? getPlaylistPlaybackSessionSummary(selectedPlaybackSession)
+    : 'Start this playlist in saved order or a one-session shuffle. Repeat applies to the active queue once playback begins.';
   const selectedPlaylistIssue = getSelectedPlaylistIssue(
     issue,
     selectedPlaylist?.id ?? null,
@@ -165,9 +215,9 @@ export const SavedPlaylistSection = ({
         <Text style={styles.eyebrow}>Saved playlists</Text>
         <Text style={styles.sectionTitle}>Build rehearsal running orders</Text>
         <Text style={styles.sectionBody}>
-          Create and edit playlists here. The active playlist selector now sits
-          above the Library rows so saved tracks and loops can target the right
-          rehearsal set before you add them.
+          Create and edit playlists here, then start the selected set in saved
+          order or a one-session shuffle while Library rows keep feeding the
+          right tracks and loops into the queue.
         </Text>
       </View>
 
@@ -220,10 +270,40 @@ export const SavedPlaylistSection = ({
           setRenamePlaylistName(value);
           setRenameIssue(null);
         }}
+        onPlayOrderedPlaylist={() => {
+          if (!selectedPlaylist) {
+            return;
+          }
+
+          void togglePlaylistPlayback({
+            loops: savedLoops,
+            mode: 'ordered',
+            playlist: selectedPlaylist,
+            sources: savedSources,
+          });
+        }}
+        onSelectRepeatMode={setPlaylistRepeatMode}
+        onShufflePlayPlaylist={() => {
+          if (!selectedPlaylist) {
+            return;
+          }
+
+          void togglePlaylistPlayback({
+            loops: savedLoops,
+            mode: 'shuffle',
+            playlist: selectedPlaylist,
+            sources: savedSources,
+          });
+        }}
+        orderedPlaybackAction={orderedPlaybackAction}
+        playbackContextLabel={playbackContextLabel}
+        playlistRepeatMode={playlistRepeatMode}
         renameIssue={renameIssue}
         renamePlaylistName={renamePlaylistName}
+        selectedQueueMode={selectedPlaybackSession?.queue.mode ?? null}
         selectedPlaylist={selectedPlaylist}
         selectedPlaylistIssue={selectedPlaylistIssue}
+        shufflePlaybackAction={shufflePlaybackAction}
       />
     </View>
   );

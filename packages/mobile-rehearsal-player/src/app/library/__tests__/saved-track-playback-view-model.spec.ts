@@ -21,6 +21,7 @@ import {
   getSavedTrackPlaybackItemIssue,
   getSavedTrackPlaybackStatusCopy,
   hasSavedTrackPlaybackReachedRangeEnd,
+  isTrackPlayerAlreadyInitializedError,
 } from '../utils/saved-track-playback-view-model.js';
 
 describe('saved track playback view-model', () => {
@@ -212,6 +213,25 @@ describe('saved track playback view-model', () => {
         playbackState: 'playing',
         positionSeconds: 18.5,
       }),
+      false,
+    );
+  });
+
+  it('recognizes TrackPlayer already-initialized setup errors', () => {
+    assert.equal(
+      isTrackPlayerAlreadyInitializedError({
+        code: 'player_already_initialized',
+      }),
+      true,
+    );
+    assert.equal(
+      isTrackPlayerAlreadyInitializedError({
+        message: 'The player has already been initialized via setupPlayer.',
+      }),
+      true,
+    );
+    assert.equal(
+      isTrackPlayerAlreadyInitializedError(new Error('network timeout')),
       false,
     );
   });

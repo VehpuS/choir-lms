@@ -1,6 +1,15 @@
-import { type Playlist } from '@org/audio-library-models';
+import {
+  type Playlist,
+  type RehearsalQueueMode,
+  type RepeatMode,
+} from '@org/audio-library-models';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
+import {
+  getPlaylistRepeatModeLabel,
+  PLAYLIST_REPEAT_MODES,
+  type PlaylistPlaybackActionCopy,
+} from '../utils/saved-playlist-playback-view-model';
 import type {
   PlaylistDraftIssue,
   SavedPlaylistCard,
@@ -126,15 +135,23 @@ export const SavedPlaylistCardsList = (props: {
 export const SavedPlaylistEditorCard = (props: {
   canMutatePlaylists: boolean;
   isMutating: boolean;
+  orderedPlaybackAction: PlaylistPlaybackActionCopy;
+  playbackContextLabel: string;
+  playlistRepeatMode: RepeatMode;
   renameIssue: PlaylistDraftIssue | null;
   renamePlaylistName: string;
+  selectedQueueMode: RehearsalQueueMode | null;
   selectedPlaylist: Playlist | null;
   selectedPlaylistIssue: PlaylistDraftIssue | null;
   onDeletePlaylist: () => void;
   onMoveItem: (fromIndex: number, toIndex: number) => void;
+  onPlayOrderedPlaylist: () => void;
   onRemoveItem: (entryId: string) => void;
   onRenamePlaylist: () => void;
   onRenamePlaylistNameChange: (value: string) => void;
+  onSelectRepeatMode: (repeatMode: RepeatMode) => void;
+  onShufflePlayPlaylist: () => void;
+  shufflePlaybackAction: PlaylistPlaybackActionCopy;
 }) => {
   const { selectedPlaylist } = props;
 
@@ -194,6 +211,102 @@ export const SavedPlaylistEditorCard = (props: {
         >
           <Text style={styles.secondaryButtonLabel}>Remove playlist</Text>
         </Pressable>
+      </View>
+
+      <View style={styles.group}>
+        <Text style={styles.groupTitle}>Playback</Text>
+        <Text style={styles.editorBody}>{props.playbackContextLabel}</Text>
+        <View style={styles.actionRow}>
+          <Pressable
+            accessibilityRole="button"
+            disabled={props.isMutating || props.orderedPlaybackAction.disabled}
+            onPress={props.onPlayOrderedPlaylist}
+            style={({ pressed }) => [
+              props.selectedQueueMode === 'ordered'
+                ? styles.primaryButton
+                : styles.secondaryButton,
+              pressed &&
+              !props.isMutating &&
+              !props.orderedPlaybackAction.disabled
+                ? styles.actionButtonPressed
+                : undefined,
+              props.isMutating || props.orderedPlaybackAction.disabled
+                ? styles.actionButtonDisabled
+                : undefined,
+            ]}
+          >
+            <Text
+              style={
+                props.selectedQueueMode === 'ordered'
+                  ? styles.primaryButtonLabel
+                  : styles.secondaryButtonLabel
+              }
+            >
+              {props.orderedPlaybackAction.label}
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            disabled={props.isMutating || props.shufflePlaybackAction.disabled}
+            onPress={props.onShufflePlayPlaylist}
+            style={({ pressed }) => [
+              props.selectedQueueMode === 'shuffle'
+                ? styles.primaryButton
+                : styles.secondaryButton,
+              pressed &&
+              !props.isMutating &&
+              !props.shufflePlaybackAction.disabled
+                ? styles.actionButtonPressed
+                : undefined,
+              props.isMutating || props.shufflePlaybackAction.disabled
+                ? styles.actionButtonDisabled
+                : undefined,
+            ]}
+          >
+            <Text
+              style={
+                props.selectedQueueMode === 'shuffle'
+                  ? styles.primaryButtonLabel
+                  : styles.secondaryButtonLabel
+              }
+            >
+              {props.shufflePlaybackAction.label}
+            </Text>
+          </Pressable>
+        </View>
+        <View style={styles.actionRow}>
+          {PLAYLIST_REPEAT_MODES.map((repeatMode) => {
+            const isSelected = props.playlistRepeatMode === repeatMode;
+
+            return (
+              <Pressable
+                accessibilityRole="button"
+                key={repeatMode}
+                disabled={props.isMutating}
+                onPress={() => {
+                  props.onSelectRepeatMode(repeatMode);
+                }}
+                style={({ pressed }) => [
+                  isSelected ? styles.primaryButton : styles.secondaryButton,
+                  pressed && !props.isMutating
+                    ? styles.actionButtonPressed
+                    : undefined,
+                  props.isMutating ? styles.actionButtonDisabled : undefined,
+                ]}
+              >
+                <Text
+                  style={
+                    isSelected
+                      ? styles.primaryButtonLabel
+                      : styles.secondaryButtonLabel
+                  }
+                >
+                  {getPlaylistRepeatModeLabel(repeatMode)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
 
       <View style={styles.group}>
