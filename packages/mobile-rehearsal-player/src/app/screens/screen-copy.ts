@@ -57,7 +57,7 @@ export const getLibraryScreenSummaryCopy = (options: {
   }
 
   return {
-    body: `${options.savedTrackCount} saved rehearsal ${options.savedTrackCount === 1 ? 'track is' : 'tracks are'} ready for full-track playback and loop capture here. Playlist editing lands next, but the personal library is now separated from discovery and search.`,
+    body: `${options.savedTrackCount} saved rehearsal ${options.savedTrackCount === 1 ? 'track is' : 'tracks are'} ready for full-track playback, loop capture, and playlist editing here. Tracks, loops, and playlists now stay grouped inside the same personal library destination.`,
     title: 'Your saved practice material lives here',
   };
 };

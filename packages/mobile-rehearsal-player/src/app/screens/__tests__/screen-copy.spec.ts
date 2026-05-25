@@ -66,7 +66,7 @@ describe('getSearchScreenSummaryCopy', () => {
 describe('getLibraryScreenSummaryCopy', () => {
   it('points at the dedicated library destination once tracks are saved', () => {
     assert.deepEqual(getLibraryScreenSummaryCopy({ savedTrackCount: 1 }), {
-      body: '1 saved rehearsal track is ready for full-track playback and loop capture here. Playlist editing lands next, but the personal library is now separated from discovery and search.',
+      body: '1 saved rehearsal track is ready for full-track playback, loop capture, and playlist editing here. Tracks, loops, and playlists now stay grouped inside the same personal library destination.',
       title: 'Your saved practice material lives here',
     });
   });

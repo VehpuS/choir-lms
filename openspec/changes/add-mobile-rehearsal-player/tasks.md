@@ -22,13 +22,14 @@
 - [x] 4.1 Implement loop marker selection, loop validation, and named loop creation from a saved rehearsal library track.
 - [x] 4.2 Implement the destination-based mobile shell with Home, Search, Library, and a persistent mini-player around the already-working discovery and saved-library flows.
 - [x] 4.3 Implement browse, search, and personal library screens that separate discovery from saved tracks and saved loops while preserving fast rehearsal actions for the current slice.
-- [ ] 4.4 Implement playlist creation and editing for saved full tracks and saved loops.
+- [x] 4.4 Implement playlist creation and editing for saved full tracks and saved loops.
 - [ ] 4.5 Implement rehearsal queue behavior for ordered playback, repeat, and shuffle across playlist items.
 
 ## 5. Native playback integration and validation
 
 - [ ] 5.1 Implement playlist detail, now-playing, and queue surfaces that prioritize playback intent, item order, repeat and shuffle state, and loop context once playlist and queue behavior exist.
 - [ ] 5.2 Integrate background playback and supported native transport controls with the active rehearsal queue.
-- [ ] 5.3 Validate playback behavior on supported mobile platforms using representative Google Drive audio files and loop ranges.
-- [ ] 5.4 Add automated and manual verification coverage for the core MVP scenarios defined in the mobile-practice-library, practice-loops-and-playlists, and mobile-rehearsal-player-ui specs.
-- [ ] 5.5 Validate the new interaction model against the `mobile-rehearsal-player-ui` spec mockups on representative phone-sized screens before additional feature expansion.
+- [ ] 5.3 Remove unnecessary or redundant UI elements and text from the different screens to let each screen and ui element focus on its unique value proposition and the core rehearsal actions it enables.
+- [ ] 5.4 Validate playback behavior on supported mobile platforms using representative Google Drive audio files and loop ranges.
+- [ ] 5.5 Add automated and manual verification coverage for the core MVP scenarios defined in the mobile-practice-library, practice-loops-and-playlists, and mobile-rehearsal-player-ui specs.
+- [ ] 5.6 Validate the new interaction model against the `mobile-rehearsal-player-ui` spec mockups on representative phone-sized screens before additional feature expansion.

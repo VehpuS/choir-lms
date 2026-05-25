@@ -9,7 +9,9 @@ import {
   type RehearsalQueueMode,
   type RepeatMode,
 } from '@org/rehearsal-domain';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage, {
+  type AsyncStorageStatic,
+} from '@react-native-async-storage/async-storage';
 import { filter, flatMap, keyBy, size, sortBy } from 'es-toolkit/compat';
 
 export type PracticeRepository = {
@@ -34,6 +36,8 @@ export type PlaybackQueue = {
   items: PlayableItem[];
 };
 
+const asyncStorage = AsyncStorage as unknown as AsyncStorageStatic;
+
 const storageKey = (
   entity: 'sources' | 'loops' | 'playlists',
   ownerId: string,
@@ -42,7 +46,7 @@ const storageKey = (
 };
 
 const readCollection = async <Entity>(key: string): Promise<Entity[]> => {
-  const value = await AsyncStorage.getItem(key);
+  const value = await asyncStorage.getItem(key);
 
   if (!value) {
     return [];
@@ -53,13 +57,13 @@ const readCollection = async <Entity>(key: string): Promise<Entity[]> => {
 
     return Array.isArray(parsedValue) ? parsedValue : [];
   } catch {
-    await AsyncStorage.removeItem(key);
+    await asyncStorage.removeItem(key);
     return [];
   }
 };
 
 const writeCollection = async <Entity>(key: string, values: Entity[]) => {
-  await AsyncStorage.setItem(key, JSON.stringify(values));
+  await asyncStorage.setItem(key, JSON.stringify(values));
   return values;
 };
 

@@ -7,6 +7,14 @@ import {
   createTrackPlayableItem,
   validateLoopRange,
 } from './rehearsal-domain.js';
+import {
+  addLoopToPlaylist,
+  addTrackToPlaylist,
+  createPlaylist,
+  movePlaylistEntry,
+  removePlaylistEntry,
+  renamePlaylist,
+} from './rehearsal-playlists.js';
 
 const TEST_SOURCE = createDriveAudioSource({
   driveFileId: 'drive-file-123',
@@ -101,5 +109,115 @@ describe('playable item factories', () => {
       playlistId: 'playlist-1',
       description: 'Soprano Warmup.mp3 loop',
     });
+  });
+});
+
+describe('playlist helpers', () => {
+  it('creates a trimmed playlist and appends track and loop entries in order', () => {
+    const createdPlaylist = createPlaylist({
+      name: '  Wednesday rehearsal  ',
+      ownerId: 'user-1',
+      createdAt: '2026-05-11T00:00:00.000Z',
+    });
+
+    const trackPlaylist = addTrackToPlaylist(
+      createdPlaylist,
+      TEST_SOURCE,
+      '2026-05-11T00:01:00.000Z',
+    );
+    const loopPlaylist = addLoopToPlaylist(
+      trackPlaylist,
+      {
+        id: 'loop-42',
+        name: 'Entrance cue',
+        sourceId: TEST_SOURCE.id,
+        sourceName: TEST_SOURCE.name,
+        startMs: 12000,
+        endMs: 18500,
+        ownershipScope: 'user',
+        ownerId: 'user-1',
+        createdAt: '2026-05-10T00:00:00.000Z',
+        updatedAt: '2026-05-10T00:00:00.000Z',
+      },
+      '2026-05-11T00:02:00.000Z',
+    );
+
+    assert.equal(createdPlaylist.name, 'Wednesday rehearsal');
+    assert.equal(createdPlaylist.id, 'playlist:user-1:2026-05-11T00:00:00.000Z');
+    assert.deepEqual(
+      loopPlaylist.items.map((entry) => ({
+        description: entry.description,
+        kind: entry.kind,
+        title: entry.title,
+      })),
+      [
+        {
+          description: 'Full track',
+          kind: 'track',
+          title: 'Soprano Warmup.mp3',
+        },
+        {
+          description: 'Soprano Warmup.mp3 loop',
+          kind: 'loop',
+          title: 'Entrance cue',
+        },
+      ],
+    );
+    assert.equal(loopPlaylist.updatedAt, '2026-05-11T00:02:00.000Z');
+  });
+
+  it('renames, reorders, and removes playlist entries while updating timestamps', () => {
+    const createdPlaylist = createPlaylist({
+      items: [
+        {
+          id: 'entry-1',
+          kind: 'track',
+          sourceId: TEST_SOURCE.id,
+          title: 'First',
+          description: 'Full track',
+          createdAt: '2026-05-11T00:01:00.000Z',
+        },
+        {
+          id: 'entry-2',
+          kind: 'loop',
+          sourceId: TEST_SOURCE.id,
+          loopId: 'loop-42',
+          title: 'Second',
+          description: 'Loop',
+          createdAt: '2026-05-11T00:02:00.000Z',
+        },
+      ],
+      name: 'Morning run',
+      ownerId: 'user-1',
+      createdAt: '2026-05-11T00:00:00.000Z',
+    });
+
+    const renamedPlaylist = renamePlaylist(
+      createdPlaylist,
+      '  Evening rehearsal ',
+      '2026-05-11T00:03:00.000Z',
+    );
+    const movedPlaylist = movePlaylistEntry(
+      renamedPlaylist,
+      1,
+      0,
+      '2026-05-11T00:04:00.000Z',
+    );
+    const trimmedPlaylist = removePlaylistEntry(
+      movedPlaylist,
+      'entry-1',
+      '2026-05-11T00:05:00.000Z',
+    );
+
+    assert.equal(renamedPlaylist.name, 'Evening rehearsal');
+    assert.deepEqual(
+      movedPlaylist.items.map((entry) => entry.id),
+      ['entry-2', 'entry-1'],
+    );
+    assert.deepEqual(
+      trimmedPlaylist.items.map((entry) => entry.id),
+      ['entry-2'],
+    );
+    assert.equal(trimmedPlaylist.updatedAt, '2026-05-11T00:05:00.000Z');
   });
 });

@@ -13,6 +13,7 @@ import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
+import { SavedPlaylistSection } from './SavedPlaylistSection';
 import { SavedLoopBuilderCard } from './SavedLoopBuilderCard';
 import { SavedLoopList } from './SavedLoopList';
 import { useSavedLoops } from '../hooks/use-saved-loops';
@@ -186,6 +187,11 @@ export const SavedLoopSection = ({
         playbackIssue={playbackIssue}
         playbackState={playbackState}
         togglePlayableItemPlayback={togglePlayableItemPlayback}
+      />
+
+      <SavedPlaylistSection
+        savedLoops={savedLoops}
+        savedSources={savedSources}
       />
     </View>
   );

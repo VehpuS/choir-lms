@@ -8,7 +8,9 @@ import {
   type NamedLoop,
   type Playlist,
 } from '@org/rehearsal-domain';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage, {
+  type AsyncStorageStatic,
+} from '@react-native-async-storage/async-storage';
 
 import {
   AsyncStoragePracticeRepository,
@@ -18,11 +20,7 @@ import {
   resolvePreviousQueueIndex,
 } from './rehearsal-playback.js';
 
-const mutableAsyncStorage = AsyncStorage as {
-  getItem: (key: string) => Promise<string | null>;
-  removeItem: (key: string) => Promise<void>;
-  setItem: (key: string, value: string) => Promise<void>;
-};
+const mutableAsyncStorage = AsyncStorage as unknown as AsyncStorageStatic;
 
 const ORIGINAL_ASYNC_STORAGE = {
   getItem: mutableAsyncStorage.getItem,

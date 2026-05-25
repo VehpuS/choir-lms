@@ -3,11 +3,26 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import {
+  createPlaylistEntryFromLoop,
+  createPlaylistEntryFromTrack,
+} from '@org/rehearsal-domain';
 import type { DriveLibrarySource } from '../utils/drive-library-view-model.js';
+import { loadSavedPlaylists } from '../hooks/use-saved-playlists.js';
 import {
   loadSavedRehearsalLibrarySources,
   verifySavedRehearsalLibraryStorage,
 } from '../hooks/use-saved-rehearsal-library.js';
+import {
+  buildSavedPlaylist,
+  getSelectedPlaylistIssue,
+  getSavedPlaylistsStatusCopy,
+  resolveSavedPlaylistCards,
+} from '../utils/saved-playlist-view-model.js';
+import {
+  PLAYABLE_SOURCE,
+  SAVED_LOOP,
+} from '../../test-utils/library-test-fixtures.js';
 
 const SAVED_SOURCE: DriveLibrarySource = {
   id: 'drive:warmup-track',
@@ -110,5 +125,155 @@ describe('verifySavedRehearsalLibraryStorage', () => {
     });
 
     assert.equal(result, false);
+  });
+});
+
+describe('loadSavedPlaylists', () => {
+  it('returns saved playlists on the first successful bootstrap read', async () => {
+    const playlist = {
+      id: 'playlist-1',
+      name: 'Wednesday rehearsal',
+      items: [],
+      ownershipScope: 'user' as const,
+      ownerId: 'local-device-user',
+      createdAt: '2026-05-11T00:00:00.000Z',
+      updatedAt: '2026-05-11T00:00:00.000Z',
+    };
+
+    const result = await loadSavedPlaylists(
+      {
+        async listPlaylists() {
+          return [playlist];
+        },
+      },
+      'local-device-user',
+    );
+
+    assert.deepEqual(result, [playlist]);
+  });
+
+  it('falls back to an empty bootstrap playlist state when setup never succeeds', async () => {
+    let attemptCount = 0;
+
+    const result = await loadSavedPlaylists(
+      {
+        async listPlaylists() {
+          attemptCount += 1;
+          throw new Error('storage unavailable');
+        },
+      },
+      'local-device-user',
+    );
+
+    assert.equal(attemptCount, 2);
+    assert.deepEqual(result, []);
+  });
+});
+
+describe('saved playlist view-model', () => {
+  it('requires a playlist name and trims the saved name once provided', () => {
+    const emptyResult = buildSavedPlaylist({
+      name: '   ',
+      ownerId: 'local-device-user',
+    });
+
+    assert.deepEqual(emptyResult, {
+      issue: {
+        title: 'Playlist name required',
+        message: 'Provide a playlist name before saving this rehearsal set.',
+      },
+      playlist: null,
+    });
+
+    const validResult = buildSavedPlaylist({
+      name: '  Wednesday rehearsal  ',
+      now: '2026-05-11T00:00:00.000Z',
+      ownerId: 'local-device-user',
+    });
+
+    assert.equal(validResult.issue, null);
+    assert.equal(validResult.playlist?.name, 'Wednesday rehearsal');
+    assert.equal(
+      validResult.playlist?.id,
+      'playlist:local-device-user:2026-05-11T00:00:00.000Z',
+    );
+  });
+
+  it('summarizes playlist cards and ready-state copy for saved playlists', () => {
+    const playlist = {
+      id: 'playlist-1',
+      name: 'Wednesday rehearsal',
+      items: [
+        createPlaylistEntryFromTrack(PLAYABLE_SOURCE, '2026-05-11T00:01:00.000Z'),
+        createPlaylistEntryFromLoop(SAVED_LOOP, '2026-05-11T00:02:00.000Z'),
+      ],
+      ownershipScope: 'user' as const,
+      ownerId: 'local-device-user',
+      createdAt: '2026-05-11T00:00:00.000Z',
+      updatedAt: '2026-05-11T00:02:00.000Z',
+    };
+
+    assert.deepEqual(resolveSavedPlaylistCards([playlist]), [
+      {
+        detailLabel: '2 items • 1 track • 1 loop',
+        playlist,
+        previewLabel: 'Alto Line.mp3 • Entrance cue',
+      },
+    ]);
+
+    assert.deepEqual(
+      getSavedPlaylistsStatusCopy({
+        isLoading: false,
+        issue: null,
+        savedPlaylistCount: 1,
+      }),
+      {
+        title: 'Saved playlists ready',
+        message: '1 playlist ready for saved tracks and loops.',
+        tone: 'ready',
+      },
+    );
+  });
+
+  it('only maps a playlist issue when both ids are present and equal', () => {
+    assert.equal(getSelectedPlaylistIssue(null, null), null);
+    assert.equal(
+      getSelectedPlaylistIssue(
+        {
+          kind: 'save',
+          title: 'Could not save playlist',
+          message: 'Playlist storage is unavailable.',
+        },
+        null,
+      ),
+      null,
+    );
+    assert.equal(
+      getSelectedPlaylistIssue(
+        {
+          kind: 'save',
+          playlistId: 'playlist-1',
+          title: 'Could not save playlist',
+          message: 'Playlist storage is unavailable.',
+        },
+        'playlist-2',
+      ),
+      null,
+    );
+    assert.deepEqual(
+      getSelectedPlaylistIssue(
+        {
+          kind: 'save',
+          playlistId: 'playlist-1',
+          title: 'Could not save playlist',
+          message: 'Playlist storage is unavailable.',
+        },
+        'playlist-1',
+      ),
+      {
+        title: 'Could not save playlist',
+        message: 'Playlist storage is unavailable.',
+      },
+    );
   });
 });
