@@ -1,6 +1,6 @@
 ## Why
 
-The current product slice is mobile-first, but choirs also need browser-based access for desktop rehearsal, quick link-based onboarding, and lower-friction evaluation by directors who may not install a native app first. Without an intentional web strategy, the platform risks duplicating logic later or shipping inconsistent behavior between clients.
+The current product slice is mobile-first, but choirs also need browser-based access for desktop rehearsal, quick link-based onboarding, and lower-friction evaluation by directors. Many directors and singers will not install a native app first, so the platform needs an intentional web strategy to avoid duplicated logic and inconsistent behavior between clients.
 
 ## What Changes
 

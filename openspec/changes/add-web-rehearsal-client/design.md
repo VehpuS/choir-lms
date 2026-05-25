@@ -64,6 +64,8 @@ Alternatives considered:
 
 ## Risks / Trade-offs
 
+Identified risks to validate during implementation:
+
 - [Browser playback constraints differ by device and browser] → Validate formats, seek precision, and background/tab behavior early in the spike.
 - [OAuth behavior differs between native and browser redirect flows] → Define explicit web callback and token-lifecycle handling before feature completion.
 - [Shared-core extraction may temporarily slow feature throughput] → Prioritize extracting high-reuse modules first and defer low-value refactors.
