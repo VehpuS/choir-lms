@@ -32,19 +32,23 @@ The system SHALL present Google Drive discovery as a public practice library sur
 
 The system SHALL provide a search experience that allows a user to quickly find supported rehearsal audio and act on results without leaving the search context.
 
+Companion mockup states: Screen 3 shows the row-level More Options affordance that can launch the playlist add flow without leaving search context.
+
 #### Scenario: Search results are grouped for fast scanning
 
 - **WHEN** a user searches for a rehearsal item
 - **THEN** the system returns results in a scan-friendly layout with clear grouping or filtering for tracks, loops, playlists, folders, or other relevant result types supported in the current product slice
 
-#### Scenario: Search results expose immediate rehearsal actions
+#### Scenario: Search and library rows expose immediate rehearsal actions
 
-- **WHEN** a user views a search result for a supported playable item
-- **THEN** the system provides direct actions such as play, save, or add to playlist from the search surface without forcing the user to open a separate management screen first
+- **WHEN** a user views a supported track row or other playable item on Search or Library surfaces
+- **THEN** the system provides direct actions such as play, save, or a More Options affordance that can open item-specific management without forcing the user to open a separate management screen first
 
 ### Requirement: The personal library organizes saved tracks, loops, and playlists as adjacent collections
 
 The system SHALL provide a personal rehearsal library that keeps saved tracks, saved loops, and playlists in separate but closely related collection views.
+
+Companion mockup states: Screen 4 shows the library collection layout and row-level More Options affordances that feed the playlist-management flow.
 
 #### Scenario: Users can move between collection types without leaving the library destination
 
@@ -55,6 +59,32 @@ The system SHALL provide a personal rehearsal library that keeps saved tracks, s
 
 - **WHEN** a user views an item in the personal library
 - **THEN** the system shows management actions appropriate to that item type such as play, rename, remove, add to playlist, or edit without overwhelming the row with secondary controls
+
+### Requirement: Track rows use a context-menu playlist add flow
+
+The system SHALL let a user start playlist assignment from a `TrackListItem` via a local context menu that behaves like a mobile music-app bottom sheet.
+
+Companion mockup states: Screen 4A is the Track Context Sheet, Screen 4B is the Playlist Selector Modal, and Screen 4C is the New Playlist Prompt used by this flow.
+
+#### Scenario: Open the track context menu from a row
+
+- **WHEN** a user taps the More Options icon on a `TrackListItem`
+- **THEN** the system runs `openTrackContextMenu` and presents a bottom sheet that shows the track metadata and an `initiateAddToPlaylist` action
+
+#### Scenario: Open the playlist selector overlay from the context menu
+
+- **WHEN** a user chooses `initiateAddToPlaylist` from the track context menu
+- **THEN** the system opens a playlist selector modal as an overlay with a vertically scrolling list of available `Playlist` entities
+
+#### Scenario: Assign the track to an existing playlist from the selector modal
+
+- **WHEN** a user selects a playlist in the selector modal
+- **THEN** the system runs `assignToExistingPlaylist`, dismisses the modal, and shows a success toast while keeping the user in the originating library or search context
+
+#### Scenario: Create a playlist during the add flow
+
+- **WHEN** a user chooses `createNewPlaylist`, enters a `PlaylistName`, and submits
+- **THEN** the system creates the playlist, assigns the selected track, dismisses the modal, and shows a success toast
 
 ### Requirement: Loop creation uses a playback-aware marker selection flow
 
@@ -72,7 +102,7 @@ The system SHALL provide a loop creation flow that lets a user select a saved tr
 
 #### Scenario: Loop builder range selection is touch-driven
 
-- **WHEN** a user adjusts the loop builder range selector
+- **WHEN** a user adjusts the loop builder dual-thumb range slider
 - **THEN** the system provides two thumbs for start and end, visible time labels for the selected range, and nearby actions to preview or save the loop from the same surface
 
 #### Scenario: Incomplete or invalid loop markers receive immediate feedback
@@ -80,19 +110,57 @@ The system SHALL provide a loop creation flow that lets a user select a saved tr
 - **WHEN** a user attempts to save a loop without both markers or with an invalid range
 - **THEN** the system keeps the user in the loop creation flow and presents inline guidance explaining how to complete or correct the range
 
-### Requirement: Playlist views support queue-oriented rehearsal management
+### Requirement: Playlist detail uses queue-first mobile management patterns
 
-The system SHALL present playlists through a detail view that makes playback intent, item order, and editing actions easy to understand.
+The system SHALL present each playlist through a detail view that foregrounds `PlaylistName`, `TotalTrackCount`, a primary `PlayAll` floating action button, the ordered item list, and the local actions needed to manage rehearsal playback.
 
-#### Scenario: Playlist detail emphasizes playback and editing
+Companion mockup states: Screen 6 State A shows the playback-first detail view, Screen 6 State B shows the playlist item menu plus undo snackbar feedback, and Screen 6 State C shows the dedicated edit mode.
+
+#### Scenario: Playlist header emphasizes playback intent
 
 - **WHEN** a user opens a playlist detail view
-- **THEN** the system shows playlist metadata, primary playback actions, and the ordered item list before secondary settings or metadata
+- **THEN** the system shows `PlaylistName`, `TotalTrackCount`, and a primary `PlayAll` floating action button before secondary playlist metadata or settings
 
-#### Scenario: Users can edit playlist order from the playlist detail view
+#### Scenario: Tapping a playlist row starts playback from that position
 
-- **WHEN** a user enters playlist editing mode
-- **THEN** the system allows reordering or removing items directly from the playlist detail view without requiring a separate administrative workflow
+- **WHEN** a user taps a `TrackListItem` in the playlist detail view
+- **THEN** the system starts playback from that item and keeps the subsequent items from that playlist queued according to that playlist's saved indexes
+
+#### Scenario: Remove a playlist item from its local context menu
+
+- **WHEN** a user triggers `removeFromPlaylist` from a track's local context menu in the playlist detail view
+- **THEN** the system removes the item immediately from the visible playlist and shows a `Snackbar` with an `undoAction` that can restore the removed item without leaving the detail view
+
+#### Scenario: Enter playlist edit mode from the header
+
+- **WHEN** a user chooses `enableEditMode` from the playlist detail header
+- **THEN** the list transitions into `EditState` without leaving the playlist detail view
+
+#### Scenario: Edit mode swaps playback affordances for reorder and removal controls
+
+- **WHEN** the playlist detail view is in `EditState`
+- **THEN** the system replaces row playback icons with drag handles that run `updateTrackIndex` and destructive controls that run `removeTrack`
+
+#### Scenario: Save playlist edits and exit edit mode
+
+- **WHEN** a user runs `saveEdits`
+- **THEN** the system commits the updated playlist order, exits `EditState`, and returns the list to its playback-oriented presentation
+
+### Requirement: Playlist management UI state remains decoupled from playback transport
+
+The system SHALL keep bottom sheets, selector overlays, `EditState`, toasts, and snackbars in UI-local state models that call playlist-domain operations without storing presentation state inside the core audio playback engine.
+
+Companion mockup states: Screen 4A through Screen 4C and Screen 6 State B through State C represent UI-local management states that should remain separate from persisted playback transport state.
+
+#### Scenario: Playlist management surfaces do not hijack active playback
+
+- **WHEN** a user opens a context menu, selector modal, or edit mode while playback is already active
+- **THEN** the system preserves the current transport state and scopes the management UI to the current screen until the user explicitly starts a new playback action or commits a playlist mutation
+
+#### Scenario: Playback is rebuilt from persisted playlist order, not transient UI state
+
+- **WHEN** a user taps `PlayAll`, taps a playlist item, or reopens a playlist after dismissing its management surfaces
+- **THEN** the system builds playback from the persisted playlist membership order instead of from temporary bottom-sheet, modal, toast, snackbar, or `EditState` values
 
 ### Requirement: The now-playing experience prioritizes transport, progress, and rehearsal context
 
@@ -101,22 +169,43 @@ The system SHALL provide a full now-playing view that foregrounds the active ite
 #### Scenario: Mini-player expands into a focused playback view
 
 - **WHEN** a user opens the full now-playing experience from the mini-player or another playback entry point
-- **THEN** the system expands into a focused view that clearly shows the active item title, source context, artwork or placeholder artwork, progress, and primary transport controls
+- **THEN** the system expands into a focused view that clearly shows the active item title, source context, a waveform visualization or simple waveform placeholder, progress, and primary transport controls
 
 #### Scenario: Users can scrub the active timeline from now playing
 
-- **WHEN** a user drags the progress control in the now-playing experience
+- **WHEN** a user drags the progress scrubber slider in the now-playing experience
 - **THEN** the system seeks within the active track or saved-loop bounds and updates the visible playback progress without leaving the playback surface
 
 #### Scenario: Users can adjust playback volume without leaving now playing
 
-- **WHEN** a user changes the in-app volume control from the now-playing experience
-- **THEN** the system updates the active playback volume while keeping the current rehearsal context visible
+- **WHEN** a user changes the speaker-annotated volume slider from the now-playing experience
+- **THEN** the system updates the active playback volume and the visible speaker or mute state while keeping the current rehearsal context visible
 
 #### Scenario: Loop context is visible during loop playback
 
 - **WHEN** the active item is a saved loop
 - **THEN** the now-playing experience shows that the item is a loop and surfaces its saved range or other loop-identifying context so the user understands why playback is constrained
+
+### Requirement: Playback and library controls use consistent music icon semantics
+
+The system SHALL use a consistent, platform-familiar music icon vocabulary across transport, queue, library management, and playback state surfaces.
+
+Companion mockup states: Screen 3 and Screen 4 show row-level More Options affordances, Screen 6 State C shows drag handles replacing playback icons during edit mode, Screen 7 shows transport, queue, and volume controls, and Screen 8 shows repeat and shuffle state.
+
+#### Scenario: Transport and queue controls use familiar music-player icons
+
+- **WHEN** a user views the mini-player, now-playing, or queue controls
+- **THEN** the system uses platform-standard icons for play or pause, previous, next, queue, shuffle, repeat, and speaker volume or mute states, and only the icon matching the current state is shown as active
+
+#### Scenario: Icon-only controls remain understandable and accessible
+
+- **WHEN** a control relies on an icon without adjacent body text
+- **THEN** the system provides an accessible action label and exposes selected, disabled, or muted state through visible styling or nearby state text instead of color alone
+
+#### Scenario: Playback, management, and destructive actions stay visually distinct
+
+- **WHEN** a user views rows on Search, Library, playlist detail, or queue surfaces
+- **THEN** the system uses distinct icons for playback, More Options, drag handles, and destructive removal so management actions do not visually masquerade as transport controls
 
 ### Requirement: The queue is visible and controllable without leaving playback
 

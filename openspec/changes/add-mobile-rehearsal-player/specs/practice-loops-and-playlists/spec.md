@@ -14,15 +14,44 @@ The system SHALL allow a user to define a start marker and end marker on a saved
 - **WHEN** a user chooses to make a loop from a saved rehearsal library track
 - **THEN** the system opens a dedicated loop-creation surface for that track instead of keeping a persistent inline builder visible in the library
 
-#### Scenario: Users define loop boundaries with a dual-thumb range control
+#### Scenario: Users define loop boundaries with a dual-thumb range slider
 
-- **WHEN** a user adjusts the loop-creation range selector
-- **THEN** the system updates the proposed start and end boundaries from the two thumb positions while keeping the selected track and range summary visible before save
+- **WHEN** a user adjusts the loop-creation range slider
+- **THEN** the system updates the proposed start and end boundaries from the two thumb positions, keeps visible time labels for the selected range, and preserves the selected track and range summary before save
 
 #### Scenario: Reject an invalid loop range
 
 - **WHEN** a user attempts to save a loop whose end marker is not after its start marker
 - **THEN** the system prevents the loop from being saved and explains that the selected range is invalid
+
+### Requirement: Playlist membership persists through ordered playlist entries
+
+The system SHALL persist playlist membership through app-owned ordered playlist-entry relationships between a playlist and a saved rehearsal item so saved tracks and saved loops can participate in many-to-many playlist assignments while each playlist keeps its own explicit sort order.
+
+#### Scenario: Add to an existing playlist creates an ordered membership
+
+- **WHEN** a user completes `assignToExistingPlaylist` for a saved track or saved loop
+- **THEN** the system creates a playlist-entry relationship at the next available index in the selected playlist without duplicating the underlying saved item
+
+#### Scenario: Create a playlist during add flow also creates the first membership
+
+- **WHEN** a user completes `createNewPlaylist` with a `PlaylistName` during playlist assignment
+- **THEN** the system creates the playlist and its first ordered playlist-entry relationship for the selected saved item
+
+#### Scenario: A saved item can belong to multiple playlists with independent order
+
+- **WHEN** the same saved track or saved loop is added to more than one playlist
+- **THEN** each playlist stores its own explicit index values for that item's playlist entries without affecting the ordering of any other playlist
+
+#### Scenario: Save reordered playlist indexes
+
+- **WHEN** a user completes `saveEdits` after running `updateTrackIndex`
+- **THEN** the system persists the updated index array for that playlist's entries and leaves the order of other playlists unchanged
+
+#### Scenario: Remove a playlist membership without deleting the source item
+
+- **WHEN** a user runs `removeFromPlaylist` for an item in a playlist
+- **THEN** the system removes only that playlist-entry relationship and keeps the underlying saved track or saved loop available in the rehearsal library and any other playlists
 
 ### Requirement: Saved tracks and loops can both be used as playlist items
 
@@ -46,6 +75,11 @@ The system SHALL allow a user to add either a saved full source track or a saved
 ### Requirement: Playlist playback supports rehearsal-oriented queue control
 
 The system SHALL play playlist items in sequence and support repeat and shuffle modes suitable for rehearsal practice.
+
+#### Scenario: Start playback from a selected playlist position
+
+- **WHEN** a user taps a track or loop row within a playlist detail view
+- **THEN** the system starts playback from that row's persisted playlist index and queues the remaining items from that same playlist in order after it
 
 #### Scenario: Ordered playlist playback
 

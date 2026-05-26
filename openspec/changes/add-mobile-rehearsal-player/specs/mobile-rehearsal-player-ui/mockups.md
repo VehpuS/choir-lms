@@ -1,6 +1,6 @@
 # Mobile Rehearsal Player UI Mockups
 
-These original low-fidelity wireframes describe a rehearsal-first mobile interface that borrows proven interaction patterns from modern music apps without copying any single product's layout or styling.
+These low-fidelity wireframes describe a rehearsal-first mobile interface that borrows proven interaction patterns from modern music apps without copying any single product's layout or styling.
 
 ## UX Principles
 
@@ -11,6 +11,12 @@ These original low-fidelity wireframes describe a rehearsal-first mobile interfa
 - Favor scan-first layouts: short sections, segmented collections, and strong hierarchy beat dense settings-heavy screens.
 - Keep loop capture audible: users should mark loop boundaries from real playback context, not from raw timestamp fields alone.
 - Preserve rehearsal cues: loop badges, source labels, and playlist context should stay visible when they affect playback behavior.
+
+## Control and Icon Notes
+
+- Continuous audio adjustments use sliders: a dual-thumb range slider in Loop Builder, a scrubber slider in Now Playing, and a speaker-annotated volume slider in Now Playing.
+- ASCII placeholders such as `[queue]`, `[shuffle]`, `[prev]`, `[pause]`, `[next]`, `[repeat]`, `[speaker]`, `[wave]`, and `[...]` represent platform system symbols or simple waveform placeholders with explicit active, muted, disabled, or destructive states.
+- Use one icon vocabulary across mini-player, queue, playlist, and library rows so playback, management, and removal affordances stay visually distinct.
 
 ## Screen 1: Home / Discovery
 
@@ -31,7 +37,7 @@ These original low-fidelity wireframes describe a rehearsal-first mobile interfa
 | Psalm 42 full mix              [>]   |
 | Amen cadence rehearsal         [+]   |
 |                                      |
-| [art] Gloria - Alto guide      [||]  |
+| [wave] Gloria - Alto guide     [||]  |
 | Home        Search      Library      |
 +--------------------------------------+
 ```
@@ -59,7 +65,7 @@ Why: This screen opens with a browse-first surface, gives quick pivots into Driv
 | Notes.pdf                       --   |
 | Legacy stream link              --   |
 |                                      |
-| [art] Warmup vowels             [>]  |
+| [wave] Warmup vowels            [>]  |
 | Home        Search      Library      |
 +--------------------------------------+
 ```
@@ -75,8 +81,8 @@ Why: Source context stays visible through breadcrumbs and section labels so user
 | [Tracks] [Loops] [Playlists] [All]   |
 |                                      |
 | Top results                          |
-| Kyrie - Alto rehearsal         [>]   |
-| Kyrie - Alto entrance loop     [+]   |
+| Kyrie - Alto rehearsal   [>]  [...]  |
+| Kyrie - Alto entrance loop [>] [...] |
 | Kyrie sectional playlist       [>]   |
 |                                      |
 | Matching folders                      |
@@ -85,12 +91,12 @@ Why: Source context stays visible through breadcrumbs and section labels so user
 | Recent searches                       |
 | kyrie | amen cadence | vowels        |
 |                                      |
-| [art] Kyrie - Alto rehearsal   [||]  |
+| [wave] Kyrie - Alto rehearsal  [||]  |
 | Home        Search      Library      |
 +--------------------------------------+
 ```
 
-Why: Search prioritizes low-friction scanning and immediate action, with filters that reduce noise for rehearsal-specific queries.
+Why: Search prioritizes low-friction scanning and immediate action, with row-level More Options affordances that can open playlist-management flows without leaving the results context.
 
 ## Screen 4: Library
 
@@ -101,24 +107,83 @@ Why: Search prioritizes low-friction scanning and immediate action, with filters
 | Sort: Recently used             [v]  |
 |                                      |
 | Saved tracks                         |
-| Gloria - Alto guide            [>]   |
-| Psalm 42 full mix              [...] |
-| Warmup vowels                  [...] |
+| Gloria - Alto guide      [>]  [...]  |
+| Psalm 42 full mix        [>]  [...]  |
+| Warmup vowels            [>]  [...]  |
 |                                      |
 | Saved loops                          |
-| Kyrie entrance (0:42-1:06)    [>]    |
-| Amen cadence (2:10-2:28)      [>]    |
+| Kyrie entrance (0:42-1:06) [>] [...] |
+| Amen cadence (2:10-2:28)   [>] [...] |
 |                                      |
 | Playlists                            |
 | Wednesday rehearsal            [>]   |
 | Easter service set             [>]   |
 |                                      |
-| [art] Wednesday rehearsal      [>]   |
+| [wave] Wednesday rehearsal     [>]   |
 | Home        Search      Library      |
 +--------------------------------------+
 ```
 
-Why: Tracks, loops, and playlists stay adjacent but distinct, which mirrors how music apps separate collection types while keeping a single library destination.
+Why: Tracks, loops, and playlists stay adjacent but distinct, while the row-level More Options affordance gives saved items a clear path into playlist management without forcing a dedicated editor screen.
+
+## Screen 4A: Track Context Sheet
+
+```text
++--------------------------------------+
+| Your Library                         |
+| ... dimmed track list ...            |
+|                                      |
+| ------------------------------       |
+| Gloria - Alto guide                  |
+| Saved track • 3:42 • Alto section    |
+| Spring Concert / Full Mixes          |
+|                                      |
+| Add to playlist                 >    |
+| Cancel                               |
++--------------------------------------+
+```
+
+Why: The context sheet keeps the row lightweight until the user asks for management actions, then confirms the selected track before starting the add flow.
+
+## Screen 4B: Playlist Selector Modal
+
+```text
++--------------------------------------+
+| Your Library                         |
+| ... dimmed behind overlay ...        |
+|                                      |
+| +------------------------------+     |
+| | Add to playlist              |     |
+| | Wednesday rehearsal      >   |     |
+| | Easter service set       >   |     |
+| | Alto warmups             >   |     |
+| |                              |     |
+| | + New playlist               |     |
+| | Cancel                       |     |
+| +------------------------------+     |
++--------------------------------------+
+```
+
+Why: The selector behaves like a familiar mobile overlay with a scrollable playlist list, which lets the user finish the add action without losing the surrounding library or search context.
+
+## Screen 4C: New Playlist Prompt
+
+```text
++--------------------------------------+
+| Your Library                         |
+| ... dimmed behind prompt ...         |
+|                                      |
+| +------------------------------+     |
+| | New playlist                 |     |
+| | [ Wednesday rehearsal 2___ ] |     |
+| |                              |     |
+| | Create                       |     |
+| | Cancel                       |     |
+| +------------------------------+     |
++--------------------------------------+
+```
+
+Why: A lightweight text prompt keeps playlist creation inside the add flow so the user can name the playlist, assign the track, and return to browsing in one step.
 
 ## Screen 5: Loop Builder
 
@@ -129,10 +194,13 @@ Why: Tracks, loops, and playlists stay adjacent but distinct, which mirrors how 
 | < Loop Builder                 Save  |
 | Source: Gloria - Alto guide          |
 |                                      |
-|           [ cover art ]              |
+|         [ waveform view ]            |
 |                                      |
 | Current time                    1:24 |
+| Playhead slider                      |
 | 0:00 -------o------------- 3:42      |
+| Loop range slider                    |
+| 0:00 ----|=====|---------- 3:42      |
 |                                      |
 | [ Play ] [ Pause ] [ Set start ]     |
 | [ Replay ] [ Set end ] [ Preview ]   |
@@ -150,7 +218,7 @@ Why: Tracks, loops, and playlists stay adjacent but distinct, which mirrors how 
 +--------------------------------------+
 ```
 
-Why: This state makes loop creation a playback-first interaction. The user hears the track, captures the current playhead as start or end, then names the segment without leaving context.
+Why: This state makes loop creation a playback-first interaction. The user hears the track, captures the current playhead as start or end, then refines the saved bounds on a dual-thumb slider and names the segment without leaving context.
 
 ### State B: Validation / Correction
 
@@ -163,7 +231,8 @@ Why: This state makes loop creation a playback-first interaction. The user hears
 | End marker                      1:12 |
 | LOOP LENGTH                       -- |
 |                                      |
-| 1:12 ---- end ----- start ---- 1:28  |
+| Loop range slider                    |
+| 0:00 ---- end -- start ---- 3:42     |
 |                                      |
 | Current time                    1:24 |
 | Play the source again to capture a   |
@@ -177,31 +246,72 @@ Why: This state makes loop creation a playback-first interaction. The user hears
 +--------------------------------------+
 ```
 
-Why: This validation state shows that loop creation is not only about happy-path capture. The user needs immediate feedback when the range is incomplete or invalid and a fast path back to correction.
+Why: This validation state shows that loop creation is not only about happy-path capture. The user needs immediate feedback when the slider range is incomplete or invalid and a fast path back to correction.
 
 ## Screen 6: Playlist Detail
 
+### State A: Playback-First Detail View
+
 ```text
 +--------------------------------------+
-| < Wednesday rehearsal          [...] |
-| 12 items | 34 min | Personal         |
-| [ Play ] [ Shuffle ] [ Add items ]   |
+| < Wednesday rehearsal          Edit  |
+| 12 tracks | 34 min | Personal        |
 |                                      |
-| Up first                              |
-| 1. Warmup vowels                [=]  |
-| 2. Kyrie entrance loop          [=]  |
-| 3. Gloria - Alto guide          [=]  |
-| 4. Psalm 42 full mix            [=]  |
+| 1. Warmup vowels               [...] |
+| 2. Kyrie entrance loop         [...] |
+| 3. Gloria - Alto guide         [...] |
+| 4. Psalm 42 full mix           [...] |
 |                                      |
-| Edit mode                             |
-| Remove, reorder, rename              |
+|                            (PlayAll) |
 |                                      |
-| [art] Warmup vowels             [>]  |
+| [wave] Kyrie entrance loop     [||]  |
 | Home        Search      Library      |
 +--------------------------------------+
 ```
 
-Why: The playlist detail page centers play intent and item order, which is the core mental model for rehearsal queues.
+Why: The default playlist view treats the playlist as a queue first: the title and count frame the session, row taps can start playback from a chosen index, and a floating primary action keeps full-playlist playback prominent without crowding the header.
+
+### State B: Playlist Item Menu and Undo Feedback
+
+```text
++--------------------------------------+
+| < Wednesday rehearsal          Edit  |
+| 12 tracks | 34 min | Personal        |
+|                                      |
+| 3. Gloria - Alto guide         [...] |
+| ------------------------------       |
+| Gloria - Alto guide                  |
+| In Wednesday rehearsal               |
+| Remove from playlist           !     |
+| Cancel                               |
+|                                      |
+| Gloria - Alto guide removed   [Undo] |
+| [wave] Kyrie entrance loop     [||]  |
++--------------------------------------+
+```
+
+Why: Removal stays local to the playlist detail surface. The row menu exposes a destructive action for that playlist membership only, and the snackbar keeps undo close at hand without kicking the user into a separate editor.
+
+### State C: Edit Mode
+
+```text
++--------------------------------------+
+| < Wednesday rehearsal          Save  |
+| Edit playlist                        |
+|                                      |
+| [x] Warmup vowels               [=]  |
+| [x] Kyrie entrance loop         [=]  |
+| [x] Gloria - Alto guide         [=]  |
+| [x] Psalm 42 full mix           [=]  |
+|                                      |
+| Drag to reorder. Remove affects      |
+| this playlist only.                  |
+|                                      |
+| Home        Search      Library      |
++--------------------------------------+
+```
+
+Why: Edit mode is clearly separate from playback mode. Playback affordances disappear, drag handles and destructive controls take over, and save becomes the explicit exit that commits the new ordered playlist indexes.
 
 ## Screen 7: Now Playing
 
@@ -209,15 +319,17 @@ Why: The playlist detail page centers play intent and item order, which is the c
 +--------------------------------------+
 | v                            [queue] |
 |                                      |
-|           [ cover art ]              |
+|         [ waveform view ]            |
 |                                      |
 | Kyrie entrance loop                  |
 | From Wednesday rehearsal             |
 | LOOP 0:42 - 1:06                     |
 |                                      |
+| Progress slider                      |
 | 0:51 -----------o--------- 1:06      |
 |                                      |
 | [shuffle] [prev] [pause] [next] [rpt]|
+| [speaker] ----o------------- [max]   |
 |                                      |
 | [ Save ] [ Add to playlist ] [ Share]|
 |                                      |
@@ -225,7 +337,7 @@ Why: The playlist detail page centers play intent and item order, which is the c
 +--------------------------------------+
 ```
 
-Why: The full playback view gives the active item a strong emotional center while keeping loop context and the next queue decision visible.
+Why: The full playback view gives the active item a strong emotional center while keeping loop context, a scrubber slider, a speaker-annotated volume slider, and the next queue decision visible.
 
 ## Screen 8: Queue / Up Next Sheet
 
