@@ -52,15 +52,34 @@ type DriveApiErrorPayload = {
 
 const DRIVE_FOLDER_MIME_TYPE = 'application/vnd.google-apps.folder';
 
+const DRIVE_AUDIO_FILE_FIELDS = [
+  'id',
+  'name',
+  'mimeType',
+  'fileExtension',
+  'size',
+  'modifiedTime',
+  'webViewLink',
+  'iconLink',
+  'shared',
+].join(',');
+
 const DEFAULT_FIELDS = [
-  'files(id,name,mimeType,fileExtension,size,modifiedTime,webViewLink,iconLink,shared,audioMediaMetadata/durationMillis)',
+  `files(${DRIVE_AUDIO_FILE_FIELDS},audioMediaMetadata/durationMillis)`,
   'nextPageToken',
 ].join(',');
 
 const FALLBACK_FIELDS = [
-  'files(id,name,mimeType,fileExtension,size,modifiedTime,webViewLink,iconLink,shared)',
+  `files(${DRIVE_AUDIO_FILE_FIELDS})`,
   'nextPageToken',
 ].join(',');
+
+const DEFAULT_FILE_FIELDS = [
+  DRIVE_AUDIO_FILE_FIELDS,
+  'audioMediaMetadata/durationMillis',
+].join(',');
+
+const FALLBACK_FILE_FIELDS = DRIVE_AUDIO_FILE_FIELDS;
 
 const DRIVE_FILES_ENDPOINT = 'https://www.googleapis.com/drive/v3/files';
 
@@ -201,6 +220,21 @@ const createDriveFileSearchParams = (options: {
   return searchParams;
 };
 
+const createDriveFileMetadataSearchParams = (options: {
+  fields: string;
+  includeSharedDrives: boolean;
+}) => {
+  const searchParams = new URLSearchParams({
+    fields: options.fields,
+  });
+
+  if (options.includeSharedDrives) {
+    searchParams.set('supportsAllDrives', 'true');
+  }
+
+  return searchParams;
+};
+
 const readDriveErrorMessage = async (response: Response) => {
   const rawBody = (await response.text()).trim();
 
@@ -246,6 +280,30 @@ const requestDriveFiles = async (options: {
       fields: options.fields,
       includeSharedDrives: options.includeSharedDrives,
     })}`,
+    {
+      method: 'GET',
+      signal: options.signal,
+      headers: {
+        Authorization: `Bearer ${options.accessToken}`,
+      },
+    },
+  );
+};
+
+const requestDriveFileMetadata = async (options: {
+  accessToken: string;
+  driveFileId: string;
+  fields: string;
+  includeSharedDrives: boolean;
+  signal?: AbortSignal;
+}) => {
+  return fetch(
+    `${DRIVE_FILES_ENDPOINT}/${encodeURIComponent(options.driveFileId)}?${createDriveFileMetadataSearchParams(
+      {
+        fields: options.fields,
+        includeSharedDrives: options.includeSharedDrives,
+      },
+    )}`,
     {
       method: 'GET',
       signal: options.signal,
@@ -307,6 +365,55 @@ const requestDriveFilesWithFallback = async (options: {
   }
 
   throw new Error('Drive library request failed unexpectedly.');
+};
+
+const requestDriveFileMetadataWithFallback = async (options: {
+  accessToken: string;
+  driveFileId: string;
+  signal?: AbortSignal;
+}) => {
+  const attempts = [
+    {
+      fields: DEFAULT_FILE_FIELDS,
+      includeSharedDrives: true,
+    },
+    {
+      fields: FALLBACK_FILE_FIELDS,
+      includeSharedDrives: true,
+    },
+    {
+      fields: FALLBACK_FILE_FIELDS,
+      includeSharedDrives: false,
+    },
+  ];
+
+  let lastResponse: Response | null = null;
+
+  for (const attempt of attempts) {
+    const response = await requestDriveFileMetadata({
+      accessToken: options.accessToken,
+      driveFileId: options.driveFileId,
+      fields: attempt.fields,
+      includeSharedDrives: attempt.includeSharedDrives,
+      signal: options.signal,
+    });
+
+    if (response.ok) {
+      return response;
+    }
+
+    lastResponse = response;
+
+    if (response.status !== 400) {
+      throw await createDriveRequestError(response);
+    }
+  }
+
+  if (lastResponse) {
+    throw await createDriveRequestError(lastResponse);
+  }
+
+  throw new Error('Drive metadata request failed unexpectedly.');
 };
 
 const parseDriveLibrarySnapshot = async (
@@ -434,6 +541,27 @@ export const listDriveLibrary = async (options: {
 
   return parseDriveLibrarySnapshot(
     response,
+    options.supportedMimeTypes,
+    options.supportedExtensions,
+  );
+};
+
+export const getDriveAudioSource = async (options: {
+  accessToken: string;
+  driveFileId: string;
+  supportedMimeTypes: string[];
+  supportedExtensions: string[];
+  signal?: AbortSignal;
+}) => {
+  const response = await requestDriveFileMetadataWithFallback({
+    accessToken: options.accessToken,
+    driveFileId: options.driveFileId,
+    signal: options.signal,
+  });
+  const file = (await response.json()) as DriveFileMetadata;
+
+  return mapDriveFileToAudioSource(
+    file,
     options.supportedMimeTypes,
     options.supportedExtensions,
   );

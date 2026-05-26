@@ -9,6 +9,7 @@ import type {
 import {
   createPlaybackQueue,
   resolveNextQueueIndex,
+  resolvePreviousQueueIndex,
   type PlaybackQueue,
 } from '@org/audio-library-runtime';
 
@@ -183,6 +184,38 @@ export const resolvePlaylistPlaybackAdvance = (
     nextSession: {
       ...session,
       currentIndex: nextIndex,
+      hasCompleted: false,
+    },
+  };
+};
+
+export const resolvePlaylistPlaybackRewind = (
+  session: PlaylistPlaybackSession,
+): {
+  previousPlayableItem: PlayableItem | null;
+  previousSession: PlaylistPlaybackSession;
+} => {
+  const previousIndex = resolvePreviousQueueIndex(
+    session.currentIndex,
+    session.queue.items.length,
+    session.queue.repeatMode,
+  );
+
+  if (previousIndex === null) {
+    return {
+      previousPlayableItem: null,
+      previousSession: {
+        ...session,
+        hasCompleted: false,
+      },
+    };
+  }
+
+  return {
+    previousPlayableItem: session.queue.items[previousIndex] ?? null,
+    previousSession: {
+      ...session,
+      currentIndex: previousIndex,
       hasCompleted: false,
     },
   };

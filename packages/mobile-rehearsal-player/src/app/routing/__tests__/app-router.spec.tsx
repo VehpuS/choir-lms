@@ -2,14 +2,24 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  addLoopToPlaylist,
   addTrackToPlaylist,
+  createLoopPlayableItem,
   createPlaylist,
   createTrackPlayableItem,
 } from '@org/audio-library-models';
 
-import { PLAYABLE_SOURCE } from '../../test-utils/library-test-fixtures.js';
+import {
+  PLAYABLE_SOURCE,
+  SAVED_LOOP,
+} from '../../test-utils/library-test-fixtures.js';
 import { buildPlaylistPlaybackSession } from '../../library/utils/saved-playlist-playback-view-model.js';
-import { SHELL_DESTINATIONS, getMiniPlayerSummary } from '../shell-model.js';
+import {
+  SHELL_DESTINATIONS,
+  getMiniPlayerSummary,
+  getNowPlayingSurfaceSummary,
+  getUpNextSurfaceSummary,
+} from '../shell-model.js';
 
 describe('SHELL_DESTINATIONS', () => {
   it('defines the Home, Search, and Library shell order', () => {
@@ -42,9 +52,8 @@ describe('getMiniPlayerSummary', () => {
     });
 
     assert.deepEqual(summary, {
-      detail:
-        'Playing stays available while you move between Home, Search, and Library. Focused now-playing and queue controls land in the later playback slice.',
-      status: 'Playing • 0:18',
+      detail: 'Saved rehearsal library • Single item playback',
+      status: 'Playing • 0:18 of 3:05',
       title: 'Alto Line.mp3',
     });
   });
@@ -57,7 +66,7 @@ describe('getMiniPlayerSummary', () => {
       playbackState: 'paused',
     });
 
-    assert.equal(summary?.status, 'Loading • 0:04');
+    assert.equal(summary?.status, 'Loading • 0:04 of 3:05');
   });
 
   it('includes active playlist queue context when playback started from a playlist', () => {
@@ -91,7 +100,147 @@ describe('getMiniPlayerSummary', () => {
 
     assert.equal(
       summary?.detail,
-      'Active session • Warmups • item 1 of 1 • Shuffle • Repeat all. Focused now-playing and queue controls land in the later playback slice.',
+      'Warmups • Item 1 of 1 • Shuffle • Repeat all',
+    );
+  });
+
+  it('builds now-playing copy with loop context and the next queue item', () => {
+    const playlistSession = buildPlaylistPlaybackSession({
+      loops: [SAVED_LOOP],
+      mode: 'ordered',
+      playlist: addLoopToPlaylist(
+        addTrackToPlaylist(
+          createPlaylist({
+            createdAt: '2026-05-12T00:00:00.000Z',
+            name: 'Warmups',
+            ownerId: 'user-1',
+          }),
+          PLAYABLE_SOURCE,
+          '2026-05-12T00:01:00.000Z',
+        ),
+        SAVED_LOOP,
+        '2026-05-12T00:02:00.000Z',
+      ),
+      repeatMode: 'all',
+      sources: [PLAYABLE_SOURCE],
+    }).session;
+
+    if (!playlistSession) {
+      throw new Error('Expected a playlist session.');
+    }
+
+    const summary = getNowPlayingSurfaceSummary({
+      activePlayableItem: createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE),
+      activePlaylistSession: {
+        ...playlistSession,
+        currentIndex: 1,
+      },
+      isPlaybackPreparing: false,
+      playbackPositionSeconds: 51,
+      playbackState: 'playing',
+    });
+
+    assert.deepEqual(summary, {
+      collectionLabel: 'Warmups • Item 2 of 2',
+      playbackLabel:
+        'Active session • Warmups • item 2 of 2 • Ordered • Repeat all.',
+      progressLabel: '0:51 of 0:18',
+      queueLabel: 'Ordered • Repeat all',
+      rangeLabel: 'Loop 0:12 - 0:18',
+      statusLabel: 'Playing',
+      title: 'Entrance cue',
+      upNextLabel: 'Alto Line.mp3',
+    });
+  });
+
+  it('builds queue rows from the active playlist session', () => {
+    const playlistSession = buildPlaylistPlaybackSession({
+      loops: [SAVED_LOOP],
+      mode: 'ordered',
+      playlist: addLoopToPlaylist(
+        addTrackToPlaylist(
+          createPlaylist({
+            createdAt: '2026-05-12T00:00:00.000Z',
+            name: 'Warmups',
+            ownerId: 'user-1',
+          }),
+          PLAYABLE_SOURCE,
+          '2026-05-12T00:01:00.000Z',
+        ),
+        SAVED_LOOP,
+        '2026-05-12T00:02:00.000Z',
+      ),
+      repeatMode: 'all',
+      sources: [PLAYABLE_SOURCE],
+    }).session;
+
+    if (!playlistSession) {
+      throw new Error('Expected a playlist session.');
+    }
+
+    const summary = getUpNextSurfaceSummary({
+      activePlaylistSession: {
+        ...playlistSession,
+        currentIndex: 1,
+      },
+    });
+
+    assert.deepEqual(summary, {
+      collectionLabel:
+        'Warmups • Active session • Warmups • item 2 of 2 • Ordered • Repeat all.',
+      items: [
+        {
+          detail: 'Full track • 3:05',
+          isCurrent: false,
+          key: 'entry:track:drive:alto-line:2026-05-12T00:01:00.000Z',
+          title: 'Alto Line.mp3',
+        },
+        {
+          detail: 'Loop 0:12 - 0:18 • Alto Line.mp3',
+          isCurrent: true,
+          key: 'entry:loop:loop-1:2026-05-12T00:02:00.000Z',
+          title: 'Entrance cue',
+        },
+      ],
+      queueLabel: 'Ordered • Repeat all',
+    });
+  });
+
+  it('builds distinct queue row keys for repeated playlist items', () => {
+    const playlistSession = buildPlaylistPlaybackSession({
+      loops: [],
+      mode: 'ordered',
+      playlist: addTrackToPlaylist(
+        addTrackToPlaylist(
+          createPlaylist({
+            createdAt: '2026-05-12T00:00:00.000Z',
+            name: 'Repeats',
+            ownerId: 'user-1',
+          }),
+          PLAYABLE_SOURCE,
+          '2026-05-12T00:01:00.000Z',
+        ),
+        PLAYABLE_SOURCE,
+        '2026-05-12T00:02:00.000Z',
+      ),
+      repeatMode: 'off',
+      sources: [PLAYABLE_SOURCE],
+    }).session;
+
+    if (!playlistSession) {
+      throw new Error('Expected a playlist session.');
+    }
+
+    const summary = getUpNextSurfaceSummary({
+      activePlaylistSession: playlistSession,
+    });
+
+    assert.deepEqual(
+      summary?.items.map((item) => item.key),
+      [
+        'entry:track:drive:alto-line:2026-05-12T00:01:00.000Z',
+        'entry:track:drive:alto-line:2026-05-12T00:02:00.000Z',
+      ],
     );
   });
 });

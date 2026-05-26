@@ -185,7 +185,7 @@ export const resolvePlaylistItems = (
     }
 
     if (entry.kind === 'track') {
-      return [createTrackPlayableItem(source, playlist.id)];
+      return [createTrackPlayableItem(source, playlist.id, entry.id)];
     }
 
     if (!entry.loopId) {
@@ -198,7 +198,7 @@ export const resolvePlaylistItems = (
       return [];
     }
 
-    return [createLoopPlayableItem(loop, source, playlist.id)];
+    return [createLoopPlayableItem(loop, source, playlist.id, entry.id)];
   });
 
   return playableItems;

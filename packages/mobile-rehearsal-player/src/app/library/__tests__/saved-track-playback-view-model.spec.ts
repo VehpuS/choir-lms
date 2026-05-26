@@ -22,7 +22,11 @@ import {
   getSavedTrackPlaybackStatusCopy,
   hasSavedTrackPlaybackReachedRangeEnd,
   isTrackPlayerAlreadyInitializedError,
+  normalizePlaybackVolumeLevel,
+  resolvePlaybackScrubPositionSeconds,
+  resolvePlaybackSeekPositionSeconds,
 } from '../utils/saved-track-playback-view-model.js';
+import { resolveSavedTrackDurationFromPlayer } from '../utils/saved-track-player-runtime.js';
 
 describe('saved track playback view-model', () => {
   it('creates a full-track playback request with a Drive media URL and bearer token', () => {
@@ -55,6 +59,20 @@ describe('saved track playback view-model', () => {
         Authorization: 'Bearer drive-token',
       },
     });
+  });
+
+  it('uses a distinct TrackPlayer id for playlist queue entries', () => {
+    const playbackRequest = createSavedTrackPlaybackRequest({
+      accessToken: 'drive-token',
+      playableItem: createTrackPlayableItem(
+        PLAYABLE_SOURCE,
+        'playlist-1',
+        'entry-1',
+      ),
+    });
+
+    assert.equal(playbackRequest.track.id, 'track:drive:alto-line:entry-1');
+    assert.equal(playbackRequest.playableItem.playlistEntryId, 'entry-1');
   });
 
   it('blocks full-track playback when a saved source is unavailable', () => {
@@ -217,6 +235,65 @@ describe('saved track playback view-model', () => {
     );
   });
 
+  it('bounds seek jumps within the active item range', () => {
+    assert.equal(
+      resolvePlaybackSeekPositionSeconds({
+        activePlayableItem: createTrackPlayableItem(PLAYABLE_SOURCE),
+        currentPositionSeconds: 30,
+        deltaSeconds: -45,
+      }),
+      0,
+    );
+    assert.equal(
+      resolvePlaybackSeekPositionSeconds({
+        activePlayableItem: createTrackPlayableItem(PLAYABLE_SOURCE),
+        currentPositionSeconds: 180,
+        deltaSeconds: 15,
+      }),
+      185,
+    );
+    assert.equal(
+      resolvePlaybackSeekPositionSeconds({
+        activePlayableItem: createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE),
+        currentPositionSeconds: 15,
+        deltaSeconds: -10,
+      }),
+      12,
+    );
+    assert.equal(
+      resolvePlaybackSeekPositionSeconds({
+        activePlayableItem: createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE),
+        currentPositionSeconds: 15,
+        deltaSeconds: 10,
+      }),
+      18.5,
+    );
+  });
+
+  it('bounds scrub positions within the active item range', () => {
+    assert.equal(
+      resolvePlaybackScrubPositionSeconds({
+        activePlayableItem: createTrackPlayableItem(PLAYABLE_SOURCE),
+        requestedPositionSeconds: -8,
+      }),
+      0,
+    );
+    assert.equal(
+      resolvePlaybackScrubPositionSeconds({
+        activePlayableItem: createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE),
+        requestedPositionSeconds: 30,
+      }),
+      18.5,
+    );
+  });
+
+  it('normalizes playback volume levels into the supported range', () => {
+    assert.equal(normalizePlaybackVolumeLevel(-0.2), 0);
+    assert.equal(normalizePlaybackVolumeLevel(0.45), 0.45);
+    assert.equal(normalizePlaybackVolumeLevel(1.8), 1);
+    assert.equal(normalizePlaybackVolumeLevel(Number.NaN), 1);
+  });
+
   it('recognizes TrackPlayer already-initialized setup errors', () => {
     assert.equal(
       isTrackPlayerAlreadyInitializedError({
@@ -234,5 +311,82 @@ describe('saved track playback view-model', () => {
       isTrackPlayerAlreadyInitializedError(new Error('network timeout')),
       false,
     );
+  });
+
+  it('probes duration from TrackPlayer without keeping the muted probe active', async () => {
+    const playerCalls: string[] = [];
+    let progressReadCount = 0;
+
+    const resolvedDurationMs = await resolveSavedTrackDurationFromPlayer(
+      {
+        accessToken: 'drive-token',
+        playableItem: createTrackPlayableItem({
+          ...PLAYABLE_SOURCE,
+          durationMs: undefined,
+        }),
+      },
+      {
+        async ensurePlayerReady() {
+          playerCalls.push('ensurePlayerReady');
+        },
+        player: {
+          async add() {
+            playerCalls.push('add');
+          },
+          async getProgress() {
+            progressReadCount += 1;
+
+            return {
+              buffered: 0,
+              duration: progressReadCount >= 3 ? 93 : 0,
+              position: 0,
+            };
+          },
+          async getVolume() {
+            return 0.75;
+          },
+          async pause() {
+            playerCalls.push('pause');
+          },
+          async play() {
+            playerCalls.push('play');
+          },
+          async reset() {
+            playerCalls.push('reset');
+          },
+          async setPlayWhenReady(playWhenReady) {
+            playerCalls.push(`setPlayWhenReady:${String(playWhenReady)}`);
+            return playWhenReady;
+          },
+          async setVolume(volumeLevel) {
+            playerCalls.push(`setVolume:${String(volumeLevel)}`);
+          },
+          async setupPlayer() {
+            playerCalls.push('setupPlayer');
+          },
+          async updateOptions() {
+            playerCalls.push('updateOptions');
+          },
+        },
+        async wait() {
+          playerCalls.push('wait');
+        },
+      },
+    );
+
+    assert.equal(resolvedDurationMs, 93000);
+    assert.deepEqual(playerCalls, [
+      'ensurePlayerReady',
+      'reset',
+      'add',
+      'setPlayWhenReady:false',
+      'setVolume:0',
+      'play',
+      'wait',
+      'pause',
+      'setPlayWhenReady:false',
+      'setVolume:0.75',
+      'reset',
+    ]);
   });
 });

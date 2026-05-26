@@ -21,9 +21,12 @@ import {
   getPlaylistQueueModeLabel,
   getPlaylistRepeatModeLabel,
   resolvePlaylistPlaybackAdvance,
+  resolvePlaylistPlaybackRewind,
   updatePlaylistPlaybackRepeatMode,
 } from '../utils/saved-playlist-playback-view-model.js';
 import {
+  getSavedPlaylistDetailSummary,
+  getSavedPlaylistEntryDetailLabel,
   getSavedPlaylistLibraryActionCopy,
   getSavedPlaylistRemovalCopy,
   getSavedPlaylistSelectionCopy,
@@ -203,6 +206,63 @@ describe('saved playlist view-model', () => {
     ]);
   });
 
+  it('builds dedicated playlist detail copy and item labels', () => {
+    const playlist = addLoopToPlaylist(
+      addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-05-12T00:00:00.000Z',
+          name: 'Warmups',
+          ownerId: 'user-1',
+        }),
+        PLAYABLE_SOURCE,
+        '2026-05-12T00:01:00.000Z',
+      ),
+      SAVED_LOOP,
+      '2026-05-12T00:02:00.000Z',
+    );
+    const session = buildPlaylistPlaybackSession({
+      loops: [SAVED_LOOP],
+      mode: 'ordered',
+      playlist,
+      repeatMode: 'all',
+      sources: [PLAYABLE_SOURCE],
+    }).session;
+
+    if (!session) {
+      throw new Error('Expected a playlist session.');
+    }
+
+    assert.deepEqual(
+      getSavedPlaylistDetailSummary({
+        activeSession: session,
+        playlist,
+        savedLoops: [SAVED_LOOP],
+        savedSources: [PLAYABLE_SOURCE],
+      }),
+      {
+        body: 'Active session • Warmups • item 1 of 2 • Ordered • Repeat all.',
+        metadataLabel: '2 items • 3:11 total • Personal',
+        title: 'Warmups',
+      },
+    );
+    assert.equal(
+      getSavedPlaylistEntryDetailLabel({
+        entry: playlist.items[0],
+        savedLoops: [SAVED_LOOP],
+        savedSources: [PLAYABLE_SOURCE],
+      }),
+      'Full track • 3:05',
+    );
+    assert.equal(
+      getSavedPlaylistEntryDetailLabel({
+        entry: playlist.items[1],
+        savedLoops: [SAVED_LOOP],
+        savedSources: [PLAYABLE_SOURCE],
+      }),
+      'Loop 0:12 - 0:18 • Alto Line.mp3',
+    );
+  });
+
   it('builds playlist playback sessions from saved tracks and loops', () => {
     const queuePlaylist = addLoopToPlaylist(
       addTrackToPlaylist(
@@ -227,22 +287,25 @@ describe('saved playlist view-model', () => {
     });
 
     assert.equal(result.issue, null);
-    assert.deepEqual(result.session && {
-      currentItemId: getPlaylistPlaybackCurrentItem(result.session)?.id,
-      itemIds: result.session.queue.items.map((item) => item.id),
-      mode: result.session.queue.mode,
-      repeatMode: result.session.queue.repeatMode,
-      requestedItemCount: result.session.requestedItemCount,
-      summary: getPlaylistPlaybackSessionSummary(result.session),
-    }, {
-      currentItemId: 'track:drive:alto-line',
-      itemIds: ['track:drive:alto-line', 'loop:loop-1'],
-      mode: 'ordered',
-      repeatMode: 'all',
-      requestedItemCount: 2,
-      summary:
-        'Active session • Warmups • item 1 of 2 • Ordered • Repeat all.',
-    });
+    assert.deepEqual(
+      result.session && {
+        currentItemId: getPlaylistPlaybackCurrentItem(result.session)?.id,
+        itemIds: result.session.queue.items.map((item) => item.id),
+        mode: result.session.queue.mode,
+        repeatMode: result.session.queue.repeatMode,
+        requestedItemCount: result.session.requestedItemCount,
+        summary: getPlaylistPlaybackSessionSummary(result.session),
+      },
+      {
+        currentItemId: 'track:drive:alto-line',
+        itemIds: ['track:drive:alto-line', 'loop:loop-1'],
+        mode: 'ordered',
+        repeatMode: 'all',
+        requestedItemCount: 2,
+        summary:
+          'Active session • Warmups • item 1 of 2 • Ordered • Repeat all.',
+      },
+    );
   });
 
   it('advances playlist playback using the shared repeat semantics', () => {
@@ -286,10 +349,60 @@ describe('saved playlist view-model', () => {
 
     assert.equal(offAdvance.nextPlayableItem, null);
     assert.equal(offAdvance.nextSession.hasCompleted, true);
-    assert.equal(repeatOneAdvance.nextPlayableItem?.id, 'track:drive:alto-line');
+    assert.equal(
+      repeatOneAdvance.nextPlayableItem?.id,
+      'track:drive:alto-line',
+    );
     assert.equal(repeatOneAdvance.nextSession.currentIndex, 0);
-    assert.equal(repeatAllAdvance.nextPlayableItem?.id, 'track:drive:alto-line');
+    assert.equal(
+      repeatAllAdvance.nextPlayableItem?.id,
+      'track:drive:alto-line',
+    );
     assert.equal(repeatAllAdvance.nextSession.currentIndex, 0);
+  });
+
+  it('rewinds playlist playback using the shared previous-item semantics', () => {
+    const queuePlaylist = addLoopToPlaylist(
+      addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-05-12T00:00:00.000Z',
+          name: 'Warmups',
+          ownerId: 'user-1',
+        }),
+        PLAYABLE_SOURCE,
+        '2026-05-12T00:01:00.000Z',
+      ),
+      SAVED_LOOP,
+      '2026-05-12T00:02:00.000Z',
+    );
+
+    const builtSession = buildPlaylistPlaybackSession({
+      loops: [SAVED_LOOP],
+      mode: 'ordered',
+      playlist: queuePlaylist,
+      repeatMode: 'off',
+      sources: [PLAYABLE_SOURCE],
+    }).session;
+
+    if (!builtSession) {
+      throw new Error('Expected a playlist playback session.');
+    }
+
+    const laterSession = {
+      ...builtSession,
+      currentIndex: 1,
+      hasCompleted: true,
+    };
+    const offRewind = resolvePlaylistPlaybackRewind(laterSession);
+    const repeatAllRewind = resolvePlaylistPlaybackRewind(
+      updatePlaylistPlaybackRepeatMode(builtSession, 'all'),
+    );
+
+    assert.equal(offRewind.previousPlayableItem?.id, 'track:drive:alto-line');
+    assert.equal(offRewind.previousSession.currentIndex, 0);
+    assert.equal(offRewind.previousSession.hasCompleted, false);
+    assert.equal(repeatAllRewind.previousPlayableItem?.id, 'loop:loop-1');
+    assert.equal(repeatAllRewind.previousSession.currentIndex, 1);
   });
 
   it('keeps ordered and shuffled playback controls as fresh start actions', () => {

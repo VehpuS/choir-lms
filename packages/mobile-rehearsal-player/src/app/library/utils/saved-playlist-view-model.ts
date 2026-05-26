@@ -1,6 +1,18 @@
-import { createPlaylist, type Playlist } from '@org/audio-library-models';
+import {
+  createPlaylist,
+  type NamedLoop,
+  type Playlist,
+} from '@org/audio-library-models';
 
-import type { DriveLibraryStatusCopy } from './drive-library-view-model';
+import {
+  formatDurationLabel,
+  type DriveLibrarySource,
+  type DriveLibraryStatusCopy,
+} from './drive-library-view-model';
+import {
+  getPlaylistPlaybackSessionSummary,
+  type PlaylistPlaybackSession,
+} from './saved-playlist-playback-view-model';
 
 export type SavedPlaylistIssue = {
   kind: 'delete' | 'save' | 'storage';
@@ -33,6 +45,12 @@ export type SavedPlaylistCard = {
   previewLabel: string;
 };
 
+export type SavedPlaylistDetailSummary = {
+  body: string;
+  metadataLabel: string;
+  title: string;
+};
+
 const PLAYLIST_NAME_REQUIRED_ISSUE: PlaylistDraftIssue = {
   title: 'Playlist name required',
   message: 'Provide a playlist name before saving this rehearsal set.',
@@ -40,6 +58,65 @@ const PLAYLIST_NAME_REQUIRED_ISSUE: PlaylistDraftIssue = {
 
 const pluralize = (count: number, noun: string) => {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
+};
+
+const getOwnershipLabel = (ownershipScope: Playlist['ownershipScope']) => {
+  if (ownershipScope === 'choir') {
+    return 'Choir';
+  }
+
+  if (ownershipScope === 'section') {
+    return 'Section';
+  }
+
+  return 'Personal';
+};
+
+const getPlaylistEntryDurationMs = (options: {
+  entry: Playlist['items'][number];
+  savedLoops: NamedLoop[];
+  savedSources: DriveLibrarySource[];
+}) => {
+  if (options.entry.kind === 'loop') {
+    const loop = options.savedLoops.find((savedLoop) => {
+      return savedLoop.id === options.entry.loopId;
+    });
+
+    return loop ? Math.max(0, loop.endMs - loop.startMs) : undefined;
+  }
+
+  return options.savedSources.find((source) => {
+    return source.id === options.entry.sourceId;
+  })?.durationMs;
+};
+
+const getPlaylistDurationLabel = (options: {
+  playlist: Playlist;
+  savedLoops: NamedLoop[];
+  savedSources: DriveLibrarySource[];
+}) => {
+  const totalDurationMs = options.playlist.items.reduce(
+    (totalDuration, entry) => {
+      return (
+        totalDuration +
+        (getPlaylistEntryDurationMs({
+          entry,
+          savedLoops: options.savedLoops,
+          savedSources: options.savedSources,
+        }) ?? 0)
+      );
+    },
+    0,
+  );
+
+  return totalDurationMs > 0 ? formatDurationLabel(totalDurationMs) : undefined;
+};
+
+const getLoopEntryRangeLabel = (loop: NamedLoop) => {
+  const startLabel = formatDurationLabel(loop.startMs) ?? '0:00';
+  const endLabel = formatDurationLabel(loop.endMs) ?? '0:00';
+
+  return `Loop ${startLabel} - ${endLabel} • ${loop.sourceName}`;
 };
 
 const getPlaylistDetailLabel = (playlist: Playlist) => {
@@ -111,6 +188,56 @@ export const resolveSelectedPlaylist = (
     playlists[0] ??
     null
   );
+};
+
+export const getSavedPlaylistDetailSummary = (options: {
+  activeSession: PlaylistPlaybackSession | null;
+  playlist: Playlist;
+  savedLoops: NamedLoop[];
+  savedSources: DriveLibrarySource[];
+}): SavedPlaylistDetailSummary => {
+  const durationLabel = getPlaylistDurationLabel({
+    playlist: options.playlist,
+    savedLoops: options.savedLoops,
+    savedSources: options.savedSources,
+  });
+  const metadataParts = [
+    pluralize(options.playlist.items.length, 'item'),
+    durationLabel ? `${durationLabel} total` : null,
+    getOwnershipLabel(options.playlist.ownershipScope),
+  ].filter((part): part is string => Boolean(part));
+
+  return {
+    title: options.playlist.name,
+    metadataLabel: metadataParts.join(' • '),
+    body: options.activeSession
+      ? getPlaylistPlaybackSessionSummary(options.activeSession)
+      : 'Add saved tracks and loops from Library, then keep this detail surface focused on order, repeat, and playback intent.',
+  };
+};
+
+export const getSavedPlaylistEntryDetailLabel = (options: {
+  entry: Playlist['items'][number];
+  savedLoops: NamedLoop[];
+  savedSources: DriveLibrarySource[];
+}) => {
+  if (options.entry.kind === 'loop') {
+    const loop = options.savedLoops.find((savedLoop) => {
+      return savedLoop.id === options.entry.loopId;
+    });
+
+    if (loop) {
+      return getLoopEntryRangeLabel(loop);
+    }
+
+    return options.entry.description ?? 'Saved loop';
+  }
+
+  const durationLabel = getPlaylistEntryDurationMs(options);
+
+  return durationLabel
+    ? `Full track • ${formatDurationLabel(durationLabel)}`
+    : (options.entry.description ?? 'Saved track');
 };
 
 export const getSavedPlaylistLibraryActionCopy = (options: {

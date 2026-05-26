@@ -5,6 +5,7 @@ import {
   MY_DRIVE_ROOT_LOCATION,
   SHARED_FOLDERS_ROOT_LOCATION,
   browseDriveLocation,
+  getDriveAudioSource,
   getDriveAuthorizationState,
   handleDriveSourceError,
   listDriveLibrary,
@@ -119,6 +120,57 @@ describe('mapDriveFileToAudioSource', () => {
       source.availability.message,
       'This Drive file format is outside the MVP audio set.',
     );
+  });
+});
+
+describe('getDriveAudioSource', () => {
+  it('reads a single Drive audio file by id without requiring playback metadata from the player', async () => {
+    let requestUrl = '';
+    let authorizationHeader = '';
+
+    globalThis.fetch = async (input, init) => {
+      requestUrl = String(input);
+      authorizationHeader = String(
+        init?.headers
+          ? (init.headers as Record<string, string>).Authorization
+          : '',
+      );
+
+      return new Response(
+        JSON.stringify({
+          id: 'drive-file-7',
+          name: 'Choir entrance.mp3',
+          mimeType: 'audio/mpeg',
+          fileExtension: 'mp3',
+          audioMediaMetadata: {
+            durationMillis: '93000',
+          },
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+        },
+      );
+    };
+
+    const source = await getDriveAudioSource({
+      accessToken: 'drive-token',
+      driveFileId: 'drive-file-7',
+      supportedMimeTypes: SUPPORTED_MIME_TYPES,
+      supportedExtensions: SUPPORTED_EXTENSIONS,
+    });
+
+    assert.match(
+      requestUrl,
+      /https:\/\/www\.googleapis\.com\/drive\/v3\/files\/drive-file-7\?/,
+    );
+    assert.match(requestUrl, /audioMediaMetadata%2FdurationMillis/);
+    assert.match(requestUrl, /supportsAllDrives=true/);
+    assert.equal(authorizationHeader, 'Bearer drive-token');
+    assert.equal(source.id, 'drive:drive-file-7');
+    assert.equal(source.durationMs, 93000);
   });
 });
 

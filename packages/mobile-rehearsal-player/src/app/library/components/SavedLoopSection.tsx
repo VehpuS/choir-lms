@@ -1,4 +1,8 @@
-import { type NamedLoop, type PlayableItem } from '@org/audio-library-models';
+import {
+  type NamedLoop,
+  validateLoopRange,
+  type PlayableItem,
+} from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -8,14 +12,17 @@ import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import {
   buildNamedLoop,
+  createLoopPreviewPlayableItem,
   getSavedLoopsStatusCopy,
+  resolveLoopBuilderRangeSelection,
   resolveSavedLoopCards,
 } from '../utils/saved-loop-view-model';
 import {
+  getSavedTrackPlaybackActionCopy,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
-import { SavedLoopBuilderCard } from './SavedLoopBuilderCard';
+import { LoopRangeSelectorSurface } from './LoopRangeSelectorSurface';
 import { SavedLoopList } from './SavedLoopList';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
 
@@ -28,7 +35,7 @@ type SavedLoopSectionProps = {
   playbackIssue: SavedTrackPlaybackIssue | null;
   playbackState: SavedTrackPlaybackState | undefined;
   playlistActionCopy: SavedPlaylistLibraryActionCopy;
-  positionSeconds: number;
+  onCloseLoopBuilder: () => void;
   removeLoop: (loop: NamedLoop) => void;
   savedSources: DriveLibrarySource[];
   savedLoopIssue: SavedLoopIssue | null;
@@ -56,7 +63,7 @@ export const SavedLoopSection = ({
   playbackIssue,
   playbackState,
   playlistActionCopy,
-  positionSeconds,
+  onCloseLoopBuilder,
   removeLoop,
   savedSources,
   savedLoopIssue,
@@ -67,13 +74,10 @@ export const SavedLoopSection = ({
   togglePlayableItemPlayback,
 }: SavedLoopSectionProps) => {
   const [loopName, setLoopName] = useState('');
-  const [startMs, setStartMs] = useState<number | null>(null);
-  const [endMs, setEndMs] = useState<number | null>(null);
+  const [startMs, setStartMs] = useState(0);
+  const [endMs, setEndMs] = useState(0);
   const [draftIssue, setDraftIssue] = useState<DraftIssue | null>(null);
 
-  const isSelectedTrackActive =
-    selectedTrack !== null && activePlayableItem?.id === selectedTrack.id;
-  const currentPositionMs = Math.max(0, Math.round(positionSeconds * 1000));
   const savedLoopCards = resolveSavedLoopCards(savedLoops, savedSources);
   const unresolvedLoopCount = savedLoopCards.filter((loopCard) => {
     return loopCard.message !== undefined || loopCard.playableItem === null;
@@ -84,39 +88,75 @@ export const SavedLoopSection = ({
     savedLoopCount: savedLoopCards.length,
     unresolvedLoopCount,
   });
-  const builderIssue =
-    draftIssue ??
-    (savedLoopIssue?.kind === 'save'
+  const saveIssue =
+    savedLoopIssue?.kind === 'save'
       ? {
           title: savedLoopIssue.title,
           message: savedLoopIssue.message,
         }
-      : null);
+      : null;
   const isLoopMutating = pendingLoopId !== null;
-  const canCaptureMarkers = isSelectedTrackActive;
+  const selectedTrackDurationMs =
+    selectedTrack?.range.endMs ?? selectedTrack?.source.durationMs ?? null;
+  const rangeValidation = validateLoopRange(
+    startMs,
+    endMs,
+    selectedTrackDurationMs ?? undefined,
+  );
+  const previewPlayableItem =
+    selectedTrack && rangeValidation.isValid
+      ? createLoopPreviewPlayableItem({
+          endMs: rangeValidation.normalizedEndMs,
+          selectedTrack,
+          startMs: rangeValidation.normalizedStartMs,
+        })
+      : null;
+  const previewActionCopy = previewPlayableItem
+    ? getSavedTrackPlaybackActionCopy({
+        activePlayableItem,
+        isPreparing: isPlaybackPreparing,
+        playableItem: previewPlayableItem,
+        playbackState,
+      })
+    : {
+        disabled: true,
+        label: 'Preview',
+      };
+  const durationIssue =
+    selectedTrack && selectedTrackDurationMs === null
+      ? {
+          title: 'Track duration unavailable',
+          message:
+            'Google Drive did not provide a track length for this saved rehearsal track, so the loop range cannot be set yet.',
+        }
+      : null;
+  const builderIssue = draftIssue ?? durationIssue ?? saveIssue;
   const canSaveLoop =
     selectedTrack !== null &&
-    isSelectedTrackActive &&
+    selectedTrackDurationMs !== null &&
     canMutateLoops &&
-    !isLoopMutating;
+    !isLoopMutating &&
+    rangeValidation.isValid;
 
   useEffect(() => {
-    setLoopName('');
-    setStartMs(null);
-    setEndMs(null);
-    setDraftIssue(null);
-  }, [selectedTrack?.id]);
-
-  const captureMarker = (marker: 'start' | 'end') => {
-    setDraftIssue(null);
-
-    if (marker === 'start') {
-      setStartMs(currentPositionMs);
+    if (!selectedTrack) {
+      setLoopName('');
+      setStartMs(0);
+      setEndMs(0);
+      setDraftIssue(null);
       return;
     }
 
-    setEndMs(currentPositionMs);
-  };
+    const nextEndMs =
+      selectedTrack.range.endMs ??
+      selectedTrack.source.durationMs ??
+      selectedTrack.range.startMs;
+
+    setLoopName('');
+    setStartMs(selectedTrack.range.startMs);
+    setEndMs(nextEndMs);
+    setDraftIssue(null);
+  }, [selectedTrack?.id]);
 
   const handleSaveLoop = async () => {
     if (!selectedTrack) {
@@ -143,9 +183,22 @@ export const SavedLoopSection = ({
     }
 
     setLoopName('');
-    setStartMs(null);
-    setEndMs(null);
+    setStartMs(selectedTrack.range.startMs);
+    setEndMs(selectedTrackDurationMs ?? selectedTrack.range.startMs);
     setDraftIssue(null);
+    onCloseLoopBuilder();
+  };
+
+  const getPreviewActionLabel = (label: string) => {
+    if (label === 'Play') {
+      return 'Preview';
+    }
+
+    if (label === 'Loading…') {
+      return label;
+    }
+
+    return `${label} preview`;
   };
 
   return (
@@ -154,8 +207,9 @@ export const SavedLoopSection = ({
         <Text style={styles.eyebrow}>Saved loops</Text>
         <Text style={styles.sectionTitle}>Capture named practice segments</Text>
         <Text style={styles.sectionBody}>
-          Use the active saved track to mark a start and end position, then save
-          that range for direct playback without redefining the markers.
+          Choose Make loop on a saved rehearsal track to open a focused range
+          selector, preview the phrase, and save the segment for direct playback
+          without a persistent builder taking over the library view.
         </Text>
       </View>
 
@@ -165,27 +219,43 @@ export const SavedLoopSection = ({
         statusCopy={statusCopy}
       />
 
-      <SavedLoopBuilderCard
+      <LoopRangeSelectorSurface
         builderIssue={builderIssue}
-        canCaptureMarkers={canCaptureMarkers}
         canSaveLoop={canSaveLoop}
-        currentPositionMs={currentPositionMs}
         endMs={endMs}
         isSavingLoop={isLoopMutating}
+        isVisible={selectedTrack !== null}
         loopName={loopName}
+        onClose={onCloseLoopBuilder}
         onLoopNameChange={(value) => {
           setLoopName(value);
           setDraftIssue(null);
         }}
+        onRangeChange={(sliderValue) => {
+          const nextRange = resolveLoopBuilderRangeSelection({
+            durationMs: selectedTrackDurationMs ?? undefined,
+            sliderValue,
+          });
+
+          setDraftIssue(null);
+          setStartMs(nextRange.startMs);
+          setEndMs(nextRange.endMs);
+        }}
         onSaveLoop={() => {
           void handleSaveLoop();
         }}
-        onSetEndMarker={() => {
-          captureMarker('end');
+        onTogglePreview={() => {
+          if (!previewPlayableItem) {
+            return;
+          }
+
+          void togglePlayableItemPlayback(previewPlayableItem);
         }}
-        onSetStartMarker={() => {
-          captureMarker('start');
-        }}
+        previewActionLabel={getPreviewActionLabel(previewActionCopy.label)}
+        previewDisabled={
+          previewActionCopy.disabled || previewPlayableItem === null
+        }
+        rangeMaximumMs={selectedTrackDurationMs}
         selectedTrack={selectedTrack}
         startMs={startMs}
       />

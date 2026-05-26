@@ -50,6 +50,7 @@ export type PlayableItem = {
   range: PlayableRange;
   loopId?: string;
   playlistId?: string;
+  playlistEntryId?: string;
   description?: string;
 };
 
@@ -168,6 +169,7 @@ export const validateLoopRange = (
 export const createTrackPlayableItem = (
   source: DriveAudioSource,
   playlistId?: string,
+  playlistEntryId?: string,
 ): PlayableItem => {
   return {
     id: `track:${source.id}`,
@@ -180,6 +182,7 @@ export const createTrackPlayableItem = (
       endMs: source.durationMs ?? null,
     },
     playlistId,
+    ...(playlistEntryId ? { playlistEntryId } : {}),
     description: 'Full track',
   };
 };
@@ -188,6 +191,7 @@ export const createLoopPlayableItem = (
   loop: NamedLoop,
   source: DriveAudioSource,
   playlistId?: string,
+  playlistEntryId?: string,
 ): PlayableItem => {
   return {
     id: `loop:${loop.id}`,
@@ -201,6 +205,7 @@ export const createLoopPlayableItem = (
     },
     loopId: loop.id,
     playlistId,
+    ...(playlistEntryId ? { playlistEntryId } : {}),
     description: `${loop.sourceName} loop`,
   };
 };

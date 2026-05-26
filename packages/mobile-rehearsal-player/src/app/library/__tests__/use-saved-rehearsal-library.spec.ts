@@ -11,6 +11,7 @@ import type { DriveLibrarySource } from '../utils/drive-library-view-model.js';
 import { loadSavedPlaylists } from '../hooks/use-saved-playlists.js';
 import {
   loadSavedRehearsalLibrarySources,
+  resolveSavedSourceDurationUpdate,
   verifySavedRehearsalLibraryStorage,
 } from '../hooks/use-saved-rehearsal-library.js';
 import {
@@ -125,6 +126,47 @@ describe('verifySavedRehearsalLibraryStorage', () => {
     });
 
     assert.equal(result, false);
+  });
+});
+
+describe('resolveSavedSourceDurationUpdate', () => {
+  it('returns a saved source with a learned duration when metadata was missing', () => {
+    assert.deepEqual(
+      resolveSavedSourceDurationUpdate(
+        [
+          {
+            ...SAVED_SOURCE,
+            durationMs: undefined,
+          },
+        ],
+        SAVED_SOURCE.id,
+        93000,
+      ),
+      {
+        ...SAVED_SOURCE,
+        durationMs: 93000,
+      },
+    );
+  });
+
+  it('skips updates when the saved source is missing or already has that duration', () => {
+    assert.equal(
+      resolveSavedSourceDurationUpdate([], SAVED_SOURCE.id, 93000),
+      null,
+    );
+    assert.equal(
+      resolveSavedSourceDurationUpdate(
+        [
+          {
+            ...SAVED_SOURCE,
+            durationMs: 93000,
+          },
+        ],
+        SAVED_SOURCE.id,
+        93000,
+      ),
+      null,
+    );
   });
 });
 

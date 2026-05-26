@@ -60,7 +60,11 @@ describe('validateLoopRange', () => {
 
 describe('playable item factories', () => {
   it('creates full-track playable items that span the source duration', () => {
-    const playableItem = createTrackPlayableItem(TEST_SOURCE, 'playlist-1');
+    const playableItem = createTrackPlayableItem(
+      TEST_SOURCE,
+      'playlist-1',
+      'entry-1',
+    );
 
     assert.deepEqual(playableItem, {
       id: 'track:drive:drive-file-123',
@@ -73,6 +77,7 @@ describe('playable item factories', () => {
         endMs: 180000,
       },
       playlistId: 'playlist-1',
+      playlistEntryId: 'entry-1',
       description: 'Full track',
     });
   });
@@ -93,6 +98,7 @@ describe('playable item factories', () => {
       },
       TEST_SOURCE,
       'playlist-1',
+      'entry-2',
     );
 
     assert.deepEqual(playableItem, {
@@ -107,6 +113,7 @@ describe('playable item factories', () => {
       },
       loopId: 'loop-42',
       playlistId: 'playlist-1',
+      playlistEntryId: 'entry-2',
       description: 'Soprano Warmup.mp3 loop',
     });
   });

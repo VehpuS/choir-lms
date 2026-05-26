@@ -12,10 +12,7 @@ import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import { SavedRehearsalLibrarySection } from './SavedRehearsalLibrarySection';
 import { getDriveLibraryStatusCopy } from '../utils/drive-library-view-model';
-import {
-  getSavedLoopRemovalCopy,
-  resolveLoopBuilderTrack,
-} from '../utils/saved-loop-view-model';
+import { getSavedLoopRemovalCopy } from '../utils/saved-loop-view-model';
 import {
   getSavedRehearsalLibraryDependentLoops,
   getSavedRehearsalLibraryRemovalCopy,
@@ -25,6 +22,7 @@ import {
 } from '../utils/saved-rehearsal-library-view-model';
 import { getSavedTrackPlaybackStatusCopy } from '../utils/saved-track-playback-view-model';
 import { useDriveLibrary } from '../hooks/use-drive-library';
+import { usePreparedLoopBuilderTrack } from '../hooks/use-prepared-loop-builder-track';
 import { useSavedLoops } from '../hooks/use-saved-loops';
 import { useSavedRehearsalLibrary } from '../hooks/use-saved-rehearsal-library';
 
@@ -37,6 +35,7 @@ type SavedTrackPlaybackController = Pick<
   | 'playbackState'
   | 'playlistRepeatMode'
   | 'progress'
+  | 'resolveTrackDuration'
   | 'setPlaylistRepeatMode'
   | 'togglePlayableItemPlayback'
   | 'togglePlaylistPlayback'
@@ -61,6 +60,7 @@ export const DriveLibrarySection = ({
   playlistRepeatMode,
   playbackState,
   progress,
+  resolveTrackDuration,
   setPlaylistRepeatMode,
   togglePlayableItemPlayback,
   togglePlaylistPlayback,
@@ -95,6 +95,7 @@ export const DriveLibrarySection = ({
     pendingSourceId,
     removeSource,
     savedSources,
+    saveResolvedSourceDuration,
     saveSource,
   } = useSavedRehearsalLibrary();
   const {
@@ -149,11 +150,28 @@ export const DriveLibrarySection = ({
     positionSeconds: progress.position,
   });
   const isSavedLibraryMutating = pendingSourceId !== null;
-  const selectedLoopTrack = resolveLoopBuilderTrack({
+  const {
+    pendingSourceId: pendingLoopBuilderSourceId,
+    prepareLoopBuilderTrack,
+    selectedTrack: selectedLoopTrack,
+  } = usePreparedLoopBuilderTrack({
     activePlayableItem,
+    authState,
+    playbackDurationSeconds: progress.duration,
+    persistResolvedSourceDuration: saveResolvedSourceDuration,
+    resolveTrackDuration,
     savedSources: savedLibrarySources,
     selectedSourceId: selectedLoopSourceId,
   });
+
+  const openLoopBuilderForSource = (
+    source: (typeof savedLibrarySources)[number],
+  ) => {
+    void (async () => {
+      await prepareLoopBuilderTrack(source);
+      setSelectedLoopSourceId(source.id);
+    })();
+  };
 
   const confirmRemoveSource = (
     source: (typeof savedLibrarySources)[number],
@@ -252,7 +270,6 @@ export const DriveLibrarySection = ({
         playbackIssue={playbackIssue}
         playbackState={playbackState}
         playlistRepeatMode={playlistRepeatMode}
-        positionSeconds={progress.position}
         removeLoop={confirmRemoveLoop}
         removeSource={confirmRemoveSource}
         savedLibraryIssue={savedLibraryIssue}
@@ -263,7 +280,8 @@ export const DriveLibrarySection = ({
         saveLoop={saveLoop}
         setPlaylistRepeatMode={setPlaylistRepeatMode}
         savedTrackPlaybackStatusCopy={savedTrackPlaybackStatusCopy}
-        selectedLoopSourceId={selectedLoopSourceId}
+        openLoopBuilderForSource={openLoopBuilderForSource}
+        pendingLoopBuilderSourceId={pendingLoopBuilderSourceId}
         selectedTrack={selectedLoopTrack}
         setSelectedLoopSourceId={setSelectedLoopSourceId}
         togglePlayableItemPlayback={togglePlayableItemPlayback}

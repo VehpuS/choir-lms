@@ -13,6 +13,7 @@ import {
 import type {
   PlaylistDraftIssue,
   SavedPlaylistCard,
+  SavedPlaylistDetailSummary,
 } from '../utils/saved-playlist-view-model';
 import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
@@ -132,17 +133,19 @@ export const SavedPlaylistCardsList = (props: {
   );
 };
 
-export const SavedPlaylistEditorCard = (props: {
+export const SavedPlaylistDetailCard = (props: {
   canMutatePlaylists: boolean;
+  detailSummary: SavedPlaylistDetailSummary | null;
+  getItemDetailLabel: (entry: Playlist['items'][number]) => string;
   isMutating: boolean;
   orderedPlaybackAction: PlaylistPlaybackActionCopy;
-  playbackContextLabel: string;
   playlistRepeatMode: RepeatMode;
   renameIssue: PlaylistDraftIssue | null;
   renamePlaylistName: string;
   selectedQueueMode: RehearsalQueueMode | null;
   selectedPlaylist: Playlist | null;
   selectedPlaylistIssue: PlaylistDraftIssue | null;
+  onCloseDetail: () => void;
   onDeletePlaylist: () => void;
   onMoveItem: (fromIndex: number, toIndex: number) => void;
   onPlayOrderedPlaylist: () => void;
@@ -153,19 +156,28 @@ export const SavedPlaylistEditorCard = (props: {
   onShufflePlayPlaylist: () => void;
   shufflePlaybackAction: PlaylistPlaybackActionCopy;
 }) => {
-  const { selectedPlaylist } = props;
+  const { detailSummary, selectedPlaylist } = props;
 
-  if (!selectedPlaylist) {
+  if (!selectedPlaylist || !detailSummary) {
     return null;
   }
 
   return (
     <View style={styles.editorCard}>
-      <Text style={styles.editorTitle}>Editing {selectedPlaylist.name}</Text>
-      <Text style={styles.editorBody}>
-        Rename the playlist, then adjust item order here while the Library rows
-        above handle playlist population.
-      </Text>
+      <Pressable
+        accessibilityRole="button"
+        onPress={props.onCloseDetail}
+        style={({ pressed }) => [
+          styles.secondaryButton,
+          pressed ? styles.actionButtonPressed : undefined,
+        ]}
+      >
+        <Text style={styles.secondaryButtonLabel}>Back to Library</Text>
+      </Pressable>
+      <Text style={styles.eyebrow}>Playlist detail</Text>
+      <Text style={styles.sectionTitle}>{detailSummary.title}</Text>
+      <Text style={styles.sectionBody}>{detailSummary.metadataLabel}</Text>
+      <Text style={styles.editorBody}>{detailSummary.body}</Text>
       <TextInput
         autoCorrect={false}
         onChangeText={props.onRenamePlaylistNameChange}
@@ -215,7 +227,10 @@ export const SavedPlaylistEditorCard = (props: {
 
       <View style={styles.group}>
         <Text style={styles.groupTitle}>Playback</Text>
-        <Text style={styles.editorBody}>{props.playbackContextLabel}</Text>
+        <Text style={styles.editorBody}>
+          Start this playlist in saved order or a one-session shuffle. Repeat
+          applies to the active rehearsal queue.
+        </Text>
         <View style={styles.actionRow}>
           <Pressable
             accessibilityRole="button"
@@ -315,9 +330,8 @@ export const SavedPlaylistEditorCard = (props: {
         </Text>
         {selectedPlaylist.items.length === 0 ? (
           <Text style={styles.emptyMessage}>
-            This playlist is empty. Choose it as the active destination above,
-            then add saved tracks or loops from the Library rows to build the
-            running order.
+            This playlist is empty. Return to Library, add saved tracks or loops
+            there, then come back here to review the running order.
           </Text>
         ) : (
           <View style={styles.groupItems}>
@@ -328,8 +342,7 @@ export const SavedPlaylistEditorCard = (props: {
                     {index + 1}. {entry.title}
                   </Text>
                   <Text style={styles.itemMetadata}>
-                    {entry.description ??
-                      (entry.kind === 'loop' ? 'Saved loop' : 'Saved track')}
+                    {props.getItemDetailLabel(entry)}
                   </Text>
                   <View style={styles.actionRow}>
                     <Pressable

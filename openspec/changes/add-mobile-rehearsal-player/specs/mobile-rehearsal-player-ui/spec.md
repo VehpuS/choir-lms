@@ -65,6 +65,16 @@ The system SHALL provide a loop creation flow that lets a user select a saved tr
 - **WHEN** a user chooses to create a loop from a saved track
 - **THEN** the system presents the active track context, current playback time, marker controls, and a visible summary of the selected start and end positions before the loop is saved
 
+#### Scenario: Loop creation uses a dedicated builder surface
+
+- **WHEN** a user starts loop creation from a saved track row in Library
+- **THEN** the system opens a dedicated loop-builder surface for that track so the user can focus on range selection and naming without a persistent builder card taking space in the main library layout
+
+#### Scenario: Loop builder range selection is touch-driven
+
+- **WHEN** a user adjusts the loop builder range selector
+- **THEN** the system provides two thumbs for start and end, visible time labels for the selected range, and nearby actions to preview or save the loop from the same surface
+
 #### Scenario: Incomplete or invalid loop markers receive immediate feedback
 
 - **WHEN** a user attempts to save a loop without both markers or with an invalid range
@@ -92,6 +102,16 @@ The system SHALL provide a full now-playing view that foregrounds the active ite
 
 - **WHEN** a user opens the full now-playing experience from the mini-player or another playback entry point
 - **THEN** the system expands into a focused view that clearly shows the active item title, source context, artwork or placeholder artwork, progress, and primary transport controls
+
+#### Scenario: Users can scrub the active timeline from now playing
+
+- **WHEN** a user drags the progress control in the now-playing experience
+- **THEN** the system seeks within the active track or saved-loop bounds and updates the visible playback progress without leaving the playback surface
+
+#### Scenario: Users can adjust playback volume without leaving now playing
+
+- **WHEN** a user changes the in-app volume control from the now-playing experience
+- **THEN** the system updates the active playback volume while keeping the current rehearsal context visible
 
 #### Scenario: Loop context is visible during loop playback
 

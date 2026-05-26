@@ -90,6 +90,25 @@ export const loadSavedRehearsalLibrarySources = async (
   return [] as DriveLibrarySource[];
 };
 
+export const resolveSavedSourceDurationUpdate = (
+  savedSources: DriveLibrarySource[],
+  sourceId: string,
+  durationMs: number,
+) => {
+  for (const source of savedSources) {
+    if (source.id !== sourceId || source.durationMs === durationMs) {
+      continue;
+    }
+
+    return {
+      ...source,
+      durationMs,
+    } satisfies DriveLibrarySource;
+  }
+
+  return null;
+};
+
 export const useSavedRehearsalLibrary = () => {
   const [savedSources, setSavedSources] = useState<DriveLibrarySource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -133,6 +152,45 @@ export const useSavedRehearsalLibrary = () => {
     };
   }, []);
 
+  const persistSource = async (
+    source: DriveLibrarySource,
+    options?: {
+      clearIssue?: boolean;
+      trackPending?: boolean;
+    },
+  ) => {
+    if (issue?.kind === 'storage') {
+      return false;
+    }
+
+    if (options?.trackPending) {
+      setPendingSourceId(source.id);
+    }
+
+    if (options?.clearIssue) {
+      setIssue(null);
+    }
+
+    try {
+      const nextSources = await practiceRepository.saveSource(
+        LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+        source,
+      );
+
+      setSavedSources(nextSources);
+      return true;
+    } catch (error) {
+      setIssue(createMutationIssue('save', source.id, source.name, error));
+      return false;
+    } finally {
+      if (options?.trackPending) {
+        setPendingSourceId((currentSourceId) => {
+          return currentSourceId === source.id ? null : currentSourceId;
+        });
+      }
+    }
+  };
+
   return {
     canMutateLibrary: issue?.kind !== 'storage',
     issue,
@@ -166,28 +224,24 @@ export const useSavedRehearsalLibrary = () => {
       }
     },
     savedSources,
+    async saveResolvedSourceDuration(sourceId: string, durationMs: number) {
+      const updatedSource = resolveSavedSourceDurationUpdate(
+        savedSources,
+        sourceId,
+        durationMs,
+      );
+
+      if (!updatedSource) {
+        return false;
+      }
+
+      return persistSource(updatedSource);
+    },
     async saveSource(source: DriveLibrarySource) {
-      if (issue?.kind === 'storage') {
-        return;
-      }
-
-      setPendingSourceId(source.id);
-      setIssue(null);
-
-      try {
-        const nextSources = await practiceRepository.saveSource(
-          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-          source,
-        );
-
-        setSavedSources(nextSources);
-      } catch (error) {
-        setIssue(createMutationIssue('save', source.id, source.name, error));
-      } finally {
-        setPendingSourceId((currentSourceId) => {
-          return currentSourceId === source.id ? null : currentSourceId;
-        });
-      }
+      return persistSource(source, {
+        clearIssue: true,
+        trackPending: true,
+      });
     },
   };
 };

@@ -7,16 +7,24 @@ import { useGoogleDriveAuthorization } from '../auth/hooks/use-google-drive-auth
 import { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
 import { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback';
 import type { PlaylistPlaybackSession } from '../library/utils/saved-playlist-playback-view-model';
-import type { SavedTrackPlaybackState } from '../library/utils/saved-track-playback-view-model';
+import {
+  getSavedTrackPlaybackActionCopy,
+  type SavedTrackPlaybackState,
+} from '../library/utils/saved-track-playback-view-model';
 import { HomeScreen } from '../screens/HomeScreen';
 import { LibraryScreen } from '../screens/LibraryScreen';
 import { SearchScreen } from '../screens/SearchScreen';
 import { appTheme } from '../utils/theme';
+import { PlaybackSurface } from './PlaybackSurface';
 import {
   SHELL_DESTINATIONS,
   getMiniPlayerSummary,
+  getNowPlayingSurfaceSummary,
+  getUpNextSurfaceSummary,
   type ShellDestinationKey,
 } from './shell-model';
+
+type PlaybackSurfaceKey = 'now-playing' | 'queue';
 
 type MobileShellProps = {
   activePlayableItem: ReturnType<
@@ -24,10 +32,21 @@ type MobileShellProps = {
   >['activePlayableItem'];
   activePlaylistSession: PlaylistPlaybackSession | null;
   authorization: ReturnType<typeof useGoogleDriveAuthorization>;
+  canSeekActivePlayback: boolean;
+  canSkipNextItem: boolean;
+  canSkipPreviousItem: boolean;
   homeScreen: ReactNode;
   isPlaybackPreparing: boolean;
+  isPlaybackToggleDisabled: boolean;
   libraryScreen: ReactNode;
+  onSeekToPosition: (positionSeconds: number) => void;
+  onSetPlaybackVolume: (volumeLevel: number) => void;
+  onSkipNextItem: () => void;
+  onSkipPreviousItem: () => void;
+  onTogglePlayback: () => void;
   playbackPositionSeconds: number;
+  playbackToggleLabel: string;
+  playbackVolumeLevel: number;
   playbackState: SavedTrackPlaybackState | undefined;
   searchScreen: ReactNode;
 };
@@ -45,17 +64,28 @@ export const MobileShell = ({
   activePlayableItem,
   activePlaylistSession,
   authorization,
+  canSeekActivePlayback,
+  canSkipNextItem,
+  canSkipPreviousItem,
   homeScreen,
   isPlaybackPreparing,
+  isPlaybackToggleDisabled,
   libraryScreen,
+  onSeekToPosition,
+  onSetPlaybackVolume,
+  onSkipNextItem,
+  onSkipPreviousItem,
+  onTogglePlayback,
   playbackPositionSeconds,
+  playbackToggleLabel,
+  playbackVolumeLevel,
   playbackState,
   searchScreen,
 }: MobileShellProps) => {
   const [activeDestination, setActiveDestination] =
     useState<ShellDestinationKey>('home');
-  const [isPlaybackPreviewVisible, setIsPlaybackPreviewVisible] =
-    useState(false);
+  const [activePlaybackSurface, setActivePlaybackSurface] =
+    useState<PlaybackSurfaceKey | null>(null);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
   const miniPlayerSummary = getMiniPlayerSummary({
     activePlayableItem,
@@ -64,6 +94,16 @@ export const MobileShell = ({
     playbackPositionSeconds,
     playbackState,
   });
+  const nowPlayingSummary = getNowPlayingSurfaceSummary({
+    activePlayableItem,
+    activePlaylistSession,
+    isPlaybackPreparing,
+    playbackPositionSeconds,
+    playbackState,
+  });
+  const upNextSummary = getUpNextSurfaceSummary({
+    activePlaylistSession,
+  });
   const activeDestinationConfig =
     SHELL_DESTINATIONS.find(
       (destination) => destination.key === activeDestination,
@@ -71,7 +111,7 @@ export const MobileShell = ({
 
   useEffect(() => {
     if (!miniPlayerSummary) {
-      setIsPlaybackPreviewVisible(false);
+      setActivePlaybackSurface(null);
     }
   }, [miniPlayerSummary]);
 
@@ -108,7 +148,7 @@ export const MobileShell = ({
             }}
             onToggleVisibility={() => {
               setIsSessionMenuVisible((currentValue) => !currentValue);
-              setIsPlaybackPreviewVisible(false);
+              setActivePlaybackSurface(null);
             }}
             requestReady={authorization.requestReady}
             statusCopy={authorization.statusCopy}
@@ -149,19 +189,10 @@ export const MobileShell = ({
 
       {miniPlayerSummary ? (
         <View style={styles.miniPlayerSection}>
-          {isPlaybackPreviewVisible ? (
-            <View style={styles.playbackPreviewCard}>
-              <SummaryCard
-                body={miniPlayerSummary.detail}
-                eyebrow="Playback summary"
-                title={miniPlayerSummary.title}
-              />
-            </View>
-          ) : null}
           <Pressable
             accessibilityRole="button"
             onPress={() => {
-              setIsPlaybackPreviewVisible((currentValue) => !currentValue);
+              setActivePlaybackSurface('now-playing');
               setIsSessionMenuVisible(false);
             }}
             style={({ pressed }) => [
@@ -178,10 +209,11 @@ export const MobileShell = ({
               <Text style={styles.miniPlayerStatus}>
                 {miniPlayerSummary.status}
               </Text>
+              <Text style={styles.miniPlayerDetail}>
+                {miniPlayerSummary.detail}
+              </Text>
             </View>
-            <Text style={styles.miniPlayerAction}>
-              {isPlaybackPreviewVisible ? 'Hide' : 'Open'}
-            </Text>
+            <Text style={styles.miniPlayerAction}>Open</Text>
           </Pressable>
         </View>
       ) : null}
@@ -217,6 +249,34 @@ export const MobileShell = ({
           );
         })}
       </View>
+
+      <PlaybackSurface
+        activePlayableItem={activePlayableItem}
+        canSeekActivePlayback={canSeekActivePlayback}
+        canSkipNextItem={canSkipNextItem}
+        canSkipPreviousItem={canSkipPreviousItem}
+        isPlaybackToggleDisabled={isPlaybackToggleDisabled}
+        nowPlayingSummary={nowPlayingSummary}
+        onAdjustPlaybackVolume={onSetPlaybackVolume}
+        onClose={() => {
+          setActivePlaybackSurface(null);
+        }}
+        onSeekToPosition={onSeekToPosition}
+        onShowNowPlaying={() => {
+          setActivePlaybackSurface('now-playing');
+        }}
+        onShowQueue={() => {
+          setActivePlaybackSurface('queue');
+        }}
+        onSkipNextItem={onSkipNextItem}
+        onSkipPreviousItem={onSkipPreviousItem}
+        onTogglePlayback={onTogglePlayback}
+        playbackPositionSeconds={playbackPositionSeconds}
+        playbackToggleLabel={playbackToggleLabel}
+        playbackVolumeLevel={playbackVolumeLevel}
+        queueSummary={upNextSummary}
+        surface={activePlaybackSurface}
+      />
     </SafeAreaView>
   );
 };
@@ -229,12 +289,29 @@ export const AppRouter = () => {
     googleAuthConfigured: authorization.googleAuthConfigured,
     playback,
   });
+  const playbackActionCopy = playback.activePlayableItem
+    ? getSavedTrackPlaybackActionCopy({
+        activePlayableItem: playback.activePlayableItem,
+        isPreparing: playback.isPreparing,
+        playableItem: playback.activePlayableItem,
+        playbackState: playback.playbackState,
+      })
+    : null;
 
   return (
     <MobileShell
       activePlayableItem={playback.activePlayableItem}
       activePlaylistSession={playback.activePlaylistSession}
       authorization={authorization}
+      canSeekActivePlayback={
+        playback.activePlayableItem !== null && !playback.isPreparing
+      }
+      canSkipNextItem={
+        playback.activePlaylistSession !== null && !playback.isPreparing
+      }
+      canSkipPreviousItem={
+        playback.activePlayableItem !== null && !playback.isPreparing
+      }
       homeScreen={
         <HomeScreen
           activePlayableItem={playback.activePlayableItem}
@@ -243,13 +320,31 @@ export const AppRouter = () => {
         />
       }
       isPlaybackPreparing={playback.isPreparing}
+      isPlaybackToggleDisabled={playbackActionCopy?.disabled ?? true}
       libraryScreen={
         <LibraryScreen
           libraryController={libraryController}
           playback={playback}
         />
       }
+      onSeekToPosition={(positionSeconds) => {
+        void playback.seekActivePlaybackToPosition(positionSeconds);
+      }}
+      onSetPlaybackVolume={(volumeLevel) => {
+        void playback.setPlaybackVolume(volumeLevel);
+      }}
+      onSkipNextItem={() => {
+        void playback.skipToNextItem();
+      }}
+      onSkipPreviousItem={() => {
+        void playback.skipToPreviousItem();
+      }}
+      onTogglePlayback={() => {
+        void playback.toggleActivePlayback();
+      }}
       playbackPositionSeconds={playback.progress.position}
+      playbackToggleLabel={playbackActionCopy?.label ?? 'Play'}
+      playbackVolumeLevel={playback.volumeLevel}
       playbackState={playback.playbackState}
       searchScreen={<SearchScreen libraryController={libraryController} />}
     />
@@ -322,10 +417,6 @@ const styles = StyleSheet.create({
   miniPlayerSection: {
     gap: 10,
   },
-  playbackPreviewCard: {
-    overflow: 'hidden',
-    borderRadius: 20,
-  },
   miniPlayer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -361,6 +452,11 @@ const styles = StyleSheet.create({
     color: '#dce7e1',
     fontSize: 13,
     lineHeight: 18,
+  },
+  miniPlayerDetail: {
+    color: '#b7d3c7',
+    fontSize: 12,
+    lineHeight: 16,
   },
   miniPlayerAction: {
     color: '#fff8ef',

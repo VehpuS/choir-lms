@@ -59,7 +59,6 @@ export const LibraryScreen = ({
         playbackIssue={playback.issue}
         playbackState={playback.playbackState}
         playlistRepeatMode={playback.playlistRepeatMode}
-        positionSeconds={playback.progress.position}
         removeLoop={libraryController.savedLibrary.removeLoop}
         removeSource={libraryController.savedLibrary.removeSource}
         savedLibraryIssue={libraryController.savedLibrary.savedLibraryIssue}
@@ -74,8 +73,11 @@ export const LibraryScreen = ({
         savedTrackPlaybackStatusCopy={
           libraryController.savedLibrary.savedTrackPlaybackStatusCopy
         }
-        selectedLoopSourceId={
-          libraryController.savedLibrary.selectedLoopSourceId
+        openLoopBuilderForSource={
+          libraryController.savedLibrary.openLoopBuilderForSource
+        }
+        pendingLoopBuilderSourceId={
+          libraryController.savedLibrary.pendingLoopBuilderSourceId
         }
         selectedTrack={libraryController.savedLibrary.selectedLoopTrack}
         setSelectedLoopSourceId={

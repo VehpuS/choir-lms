@@ -73,6 +73,13 @@ const LOOP_RANGE_END_TOLERANCE_MS = 250;
 const TRACK_PLAYER_ALREADY_INITIALIZED_CODE = 'player_already_initialized';
 const TRACK_PLAYER_ALREADY_INITIALIZED_MESSAGE =
   'already been initialized via setupPlayer';
+const DEFAULT_PLAYBACK_VOLUME_LEVEL = 1;
+
+const getTrackPlayerPlayableItemId = (playableItem: PlayableItem) => {
+  return playableItem.playlistEntryId
+    ? `${playableItem.id}:${playableItem.playlistEntryId}`
+    : playableItem.id;
+};
 
 const isLoadingState = (playbackState: SavedTrackPlaybackState | undefined) => {
   return playbackState === 'loading' || playbackState === 'buffering';
@@ -139,6 +146,46 @@ export const hasSavedTrackPlaybackReachedRangeEnd = (options: {
   );
 };
 
+export const resolvePlaybackSeekPositionSeconds = (options: {
+  activePlayableItem: PlayableItem;
+  currentPositionSeconds: number;
+  deltaSeconds: number;
+}) => {
+  return resolvePlaybackScrubPositionSeconds({
+    activePlayableItem: options.activePlayableItem,
+    requestedPositionSeconds:
+      options.currentPositionSeconds + options.deltaSeconds,
+  });
+};
+
+export const resolvePlaybackScrubPositionSeconds = (options: {
+  activePlayableItem: PlayableItem;
+  requestedPositionSeconds: number;
+}) => {
+  const minPositionSeconds = options.activePlayableItem.range.startMs / 1000;
+  const rangeEndMs =
+    options.activePlayableItem.range.endMs ??
+    options.activePlayableItem.source.durationMs;
+  const boundedPositionSeconds = Math.max(
+    minPositionSeconds,
+    options.requestedPositionSeconds,
+  );
+
+  if (rangeEndMs === undefined) {
+    return boundedPositionSeconds;
+  }
+
+  return Math.min(boundedPositionSeconds, rangeEndMs / 1000);
+};
+
+export const normalizePlaybackVolumeLevel = (volumeLevel: number) => {
+  if (!Number.isFinite(volumeLevel)) {
+    return DEFAULT_PLAYBACK_VOLUME_LEVEL;
+  }
+
+  return Math.min(1, Math.max(0, volumeLevel));
+};
+
 export const isSavedTrackPlaybackActive = (
   activePlayableItem: PlayableItem | null,
   playableItem: PlayableItem,
@@ -182,7 +229,7 @@ export const createSavedTrackPlaybackRequest = (options: {
   return {
     playableItem,
     track: {
-      id: playableItem.id,
+      id: getTrackPlayerPlayableItemId(playableItem),
       url: buildDriveMediaUrl(playableItem.source.driveFileId),
       title: playableItem.title,
       description: playableItem.description,

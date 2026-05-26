@@ -1,8 +1,6 @@
 import {
   createLoopPlayableItem,
-  createTrackPlayableItem,
   type NamedLoop,
-  type PlayableItem,
   validateLoopRange,
 } from '@org/audio-library-models';
 import { keyBy } from 'es-toolkit/compat';
@@ -12,6 +10,15 @@ import type {
   DriveLibraryStatusCopy,
 } from './drive-library-view-model';
 import { formatDurationLabel } from './drive-library-view-model';
+
+export {
+  createLoopPreviewPlayableItem,
+  hydrateLoopBuilderTrackDuration,
+  resolveLoopBuilderRangeSelection,
+  resolveSourcesMissingLoopBuilderDuration,
+  resolveLoopBuilderTrack,
+  resolveLoopBuilderTrackDuration,
+} from './saved-loop-builder-view-model';
 
 export type SavedLoopIssue = {
   kind: 'delete' | 'save' | 'storage';
@@ -48,12 +55,6 @@ type SavedLoopStatusOptions = {
   issue: SavedLoopIssue | null;
   savedLoopCount: number;
   unresolvedLoopCount: number;
-};
-
-type ResolveLoopBuilderTrackOptions = {
-  activePlayableItem: PlayableItem | null;
-  savedSources: DriveLibrarySource[];
-  selectedSourceId: string | null;
 };
 
 const DEFAULT_UNAVAILABLE_LOOP_MESSAGE =
@@ -182,32 +183,6 @@ export const resolveSavedLoopCards = (
   });
 };
 
-export const resolveLoopBuilderTrack = (
-  options: ResolveLoopBuilderTrackOptions,
-) => {
-  const savedSourcesById: Partial<Record<string, DriveLibrarySource>> = keyBy(
-    options.savedSources,
-    (source) => source.id,
-  );
-
-  if (options.selectedSourceId) {
-    const selectedSource = savedSourcesById[options.selectedSourceId];
-
-    if (selectedSource) {
-      return createTrackPlayableItem(selectedSource);
-    }
-  }
-
-  if (options.activePlayableItem?.kind !== 'track') {
-    return null;
-  }
-
-  return createTrackPlayableItem(
-    savedSourcesById[options.activePlayableItem.sourceId] ??
-      options.activePlayableItem.source,
-  );
-};
-
 export const getSavedLoopItemIssue = (
   issue: SavedLoopIssue | null,
   loopId: string,
@@ -246,7 +221,7 @@ export const getSavedLoopsStatusCopy = (
     return {
       title: 'No saved loops yet',
       message:
-        'Play a saved rehearsal track, capture start and end markers, and save the segment for direct playback.',
+        'Choose Make loop on a saved rehearsal track, adjust the loop range, and save the segment for direct playback.',
       tone: 'neutral',
     };
   }

@@ -83,9 +83,11 @@
   },
   "dependencies": {
     "@expo/metro-config": "*",
-    "@org/google-drive": "^0.0.1",
+    "@miblanchard/react-native-slider": "^2.6.0",
     "@org/audio-library-runtime": "^0.0.1",
+    "@org/google-drive": "^0.0.1",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/slider": "5.0.1",
     "@testing-library/react-native": "*",
     "es-toolkit": "^1.46.1",
     "expo": "*",

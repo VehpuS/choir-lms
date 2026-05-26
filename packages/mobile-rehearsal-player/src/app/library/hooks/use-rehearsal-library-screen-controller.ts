@@ -4,14 +4,12 @@ import { Alert } from 'react-native';
 
 import type { DriveLibrarySourceAction } from '../components/DriveLibrarySourceGroup';
 import { useDriveLibrary } from './use-drive-library';
+import { usePreparedLoopBuilderTrack } from './use-prepared-loop-builder-track';
 import { useSavedLoops } from './use-saved-loops';
 import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
 import type { useSavedTrackPlayback } from './use-saved-track-playback';
 import { getDriveLibraryStatusCopy } from '../utils/drive-library-view-model';
-import {
-  getSavedLoopRemovalCopy,
-  resolveLoopBuilderTrack,
-} from '../utils/saved-loop-view-model';
+import { getSavedLoopRemovalCopy } from '../utils/saved-loop-view-model';
 import {
   getSavedRehearsalLibraryDependentLoops,
   getSavedRehearsalLibraryRemovalCopy,
@@ -23,7 +21,12 @@ import { getSavedTrackPlaybackStatusCopy } from '../utils/saved-track-playback-v
 
 type SavedTrackPlaybackController = Pick<
   ReturnType<typeof useSavedTrackPlayback>,
-  'activePlayableItem' | 'isPreparing' | 'issue' | 'playbackState' | 'progress'
+  | 'activePlayableItem'
+  | 'isPreparing'
+  | 'issue'
+  | 'playbackState'
+  | 'progress'
+  | 'resolveTrackDuration'
 >;
 
 type RehearsalLibraryScreenControllerOptions = {
@@ -90,12 +93,29 @@ export const useRehearsalLibraryScreenController = ({
     playbackState: playback.playbackState,
     positionSeconds: playback.progress.position,
   });
-  const selectedLoopTrack = resolveLoopBuilderTrack({
+  const {
+    pendingSourceId: pendingLoopBuilderSourceId,
+    prepareLoopBuilderTrack,
+    selectedTrack: selectedLoopTrack,
+  } = usePreparedLoopBuilderTrack({
     activePlayableItem: playback.activePlayableItem,
+    authState,
+    playbackDurationSeconds: playback.progress.duration,
+    persistResolvedSourceDuration: savedLibrary.saveResolvedSourceDuration,
+    resolveTrackDuration: playback.resolveTrackDuration,
     savedSources: savedLibrarySources,
     selectedSourceId: selectedLoopSourceId,
   });
   const isSavedLibraryMutating = savedLibrary.pendingSourceId !== null;
+
+  const openLoopBuilderForSource = (
+    source: (typeof savedLibrarySources)[number],
+  ) => {
+    void (async () => {
+      await prepareLoopBuilderTrack(source);
+      setSelectedLoopSourceId(source.id);
+    })();
+  };
 
   const confirmRemoveSource = (
     source: (typeof savedLibrarySources)[number],
@@ -231,6 +251,8 @@ export const useRehearsalLibraryScreenController = ({
       saveLoop: savedLoops.saveLoop,
       savedSourceIds,
       savedTrackPlaybackStatusCopy,
+      openLoopBuilderForSource,
+      pendingLoopBuilderSourceId,
       selectedLoopSourceId,
       selectedLoopTrack,
       setSelectedLoopSourceId,

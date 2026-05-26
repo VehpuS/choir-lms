@@ -20,6 +20,7 @@
 ## 4. Loop workflows and early UI alignment
 
 - [x] 4.1 Implement loop marker selection, loop validation, and named loop creation from a saved rehearsal library track.
+- [x] 4.1b Replace the persistent library loop builder with a track-launched loop creation surface that uses a dual-thumb range control and focused save flow.
 - [x] 4.2 Implement the destination-based mobile shell with Home, Search, Library, and a persistent mini-player around the already-working discovery and saved-library flows.
 - [x] 4.3 Implement browse, search, and personal library screens that separate discovery from saved tracks and saved loops while preserving fast rehearsal actions for the current slice.
 - [x] 4.4 Implement playlist creation and editing for saved full tracks and saved loops.
@@ -28,7 +29,8 @@
 
 ## 5. Native playback integration and validation
 
-- [ ] 5.1 Replace the temporary mini-player summary and editor-first playlist flow with dedicated playlist detail, now-playing, and Up Next surfaces that surface active item order, repeat / shuffle state, and saved-loop context.
+- [x] 5.1 Replace the temporary mini-player summary and editor-first playlist flow with dedicated playlist detail, now-playing, and Up Next surfaces that surface active item order, repeat / shuffle state, and saved-loop context.
+- [x] 5.1a Extend now-playing and playlist queue behavior with a draggable scrubber, an in-app volume control, and duplicate-safe queue positions for repeated playlist items.
 - [ ] 5.2 Extend the TrackPlayer integration so background playback plus supported native play / pause / next / previous controls operate on the active rehearsal queue instead of single-item playback.
 - [ ] 5.3 Remove placeholder copy and redundant controls that still point to a later playback slice or duplicate nearby actions so each screen keeps one clear rehearsal job.
 - [ ] 5.4 Validate ordered, shuffled, repeated, and loop-bounded playback on supported mobile platforms using representative Google Drive audio from both personal and shared Drive contexts.

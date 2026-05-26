@@ -256,6 +256,47 @@ describe('resolvePlaylistItems', () => {
       ],
     );
   });
+
+  it('keeps repeated playlist entries as distinct queue positions', () => {
+    const duplicatePlaylist: Playlist = {
+      ...PLAYLIST,
+      items: [
+        createPlaylistEntryFromTrack(
+          AVAILABLE_SOURCE,
+          '2026-05-10T01:00:00.000Z',
+        ),
+        createPlaylistEntryFromTrack(
+          AVAILABLE_SOURCE,
+          '2026-05-10T01:01:00.000Z',
+        ),
+      ],
+    };
+
+    const items = resolvePlaylistItems(
+      duplicatePlaylist,
+      [SAVED_LOOP],
+      [AVAILABLE_SOURCE],
+    );
+
+    assert.deepEqual(
+      items.map((item) => ({
+        id: item.id,
+        playlistEntryId: item.playlistEntryId,
+      })),
+      [
+        {
+          id: 'track:drive:drive-file-1',
+          playlistEntryId:
+            'entry:track:drive:drive-file-1:2026-05-10T01:00:00.000Z',
+        },
+        {
+          id: 'track:drive:drive-file-1',
+          playlistEntryId:
+            'entry:track:drive:drive-file-1:2026-05-10T01:01:00.000Z',
+        },
+      ],
+    );
+  });
 });
 
 describe('createPlaybackQueue', () => {

@@ -13,24 +13,23 @@ import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-l
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
 import {
   getPlaylistPlaybackActionCopy,
-  getPlaylistPlaybackSessionSummary,
   type PlaylistPlaybackSession,
 } from '../utils/saved-playlist-playback-view-model';
 import {
   buildSavedPlaylist,
+  getSavedPlaylistDetailSummary,
+  getSavedPlaylistEntryDetailLabel,
   getSavedPlaylistRemovalCopy,
   getSelectedPlaylistIssue,
   getSavedPlaylistsStatusCopy,
-  resolveSavedPlaylistCards,
   type PlaylistDraftIssue,
   type SavedPlaylistIssue,
   validatePlaylistName,
 } from '../utils/saved-playlist-view-model';
 import type { SavedTrackPlaybackState } from '../utils/saved-track-playback-view-model';
 import {
-  SavedPlaylistCardsList,
   SavedPlaylistCreateCard,
-  SavedPlaylistEditorCard,
+  SavedPlaylistDetailCard,
 } from './SavedPlaylistSectionCards';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import { savedPlaylistSectionStyles as styles } from './saved-playlist-section-styles';
@@ -40,9 +39,11 @@ type SavedPlaylistSectionProps = {
   canMutatePlaylists: boolean;
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
   deletePlaylist: (playlist: Playlist) => Promise<boolean>;
+  isDetailVisible?: boolean;
   isLoading: boolean;
   isPlaybackPreparing: boolean;
   issue: SavedPlaylistIssue | null;
+  onCloseDetail?: () => void;
   pendingPlaylistId: string | null;
   playbackState: SavedTrackPlaybackState | undefined;
   playlistRepeatMode: RepeatMode;
@@ -52,7 +53,6 @@ type SavedPlaylistSectionProps = {
   selectedPlaylist: Playlist | null;
   setPlaylistRepeatMode: (repeatMode: RepeatMode) => void;
   setSelectedPlaylistId: (playlistId: string) => void;
-  showPlaylistCards?: boolean;
   togglePlaylistPlayback: (options: {
     loops: NamedLoop[];
     mode: 'ordered' | 'shuffle';
@@ -67,9 +67,11 @@ export const SavedPlaylistSection = ({
   canMutatePlaylists,
   createPlaylist,
   deletePlaylist,
+  isDetailVisible = false,
   isLoading,
   isPlaybackPreparing,
   issue,
+  onCloseDetail,
   pendingPlaylistId,
   playbackState,
   playlistRepeatMode,
@@ -79,7 +81,6 @@ export const SavedPlaylistSection = ({
   selectedPlaylist,
   setPlaylistRepeatMode,
   setSelectedPlaylistId,
-  showPlaylistCards = true,
   togglePlaylistPlayback,
   updatePlaylist,
 }: SavedPlaylistSectionProps) => {
@@ -98,7 +99,6 @@ export const SavedPlaylistSection = ({
   }, [selectedPlaylist?.id, selectedPlaylist?.name]);
 
   const isMutating = pendingPlaylistId !== null;
-  const playlistCards = resolveSavedPlaylistCards(savedPlaylists);
   const statusCopy = getSavedPlaylistsStatusCopy({
     isLoading,
     issue,
@@ -122,13 +122,18 @@ export const SavedPlaylistSection = ({
     playbackState,
     selectedPlaylist,
   });
-  const playbackContextLabel = selectedPlaybackSession
-    ? getPlaylistPlaybackSessionSummary(selectedPlaybackSession)
-    : 'Start this playlist in saved order or a one-session shuffle. Repeat applies to the active queue once playback begins.';
   const selectedPlaylistIssue = getSelectedPlaylistIssue(
     issue,
     selectedPlaylist?.id ?? null,
   );
+  const detailSummary = selectedPlaylist
+    ? getSavedPlaylistDetailSummary({
+        activeSession: selectedPlaybackSession,
+        playlist: selectedPlaylist,
+        savedLoops,
+        savedSources,
+      })
+    : null;
 
   const persistSelectedPlaylist = async (
     buildNextPlaylist: (playlist: Playlist) => Playlist,
@@ -211,15 +216,19 @@ export const SavedPlaylistSection = ({
 
   return (
     <View style={styles.section}>
-      <View style={styles.sectionCopy}>
-        <Text style={styles.eyebrow}>Saved playlists</Text>
-        <Text style={styles.sectionTitle}>Build rehearsal running orders</Text>
-        <Text style={styles.sectionBody}>
-          Create and edit playlists here, then start the selected set in saved
-          order or a one-session shuffle while Library rows keep feeding the
-          right tracks and loops into the queue.
-        </Text>
-      </View>
+      {!isDetailVisible ? (
+        <View style={styles.sectionCopy}>
+          <Text style={styles.eyebrow}>Saved playlists</Text>
+          <Text style={styles.sectionTitle}>
+            Build rehearsal running orders
+          </Text>
+          <Text style={styles.sectionBody}>
+            Create playlists here, then let Library rows add saved tracks and
+            loops before opening a dedicated playlist detail surface for order
+            and playback.
+          </Text>
+        </View>
+      ) : null}
 
       <DriveLibraryStatusCard
         isLoading={isLoading}
@@ -227,84 +236,90 @@ export const SavedPlaylistSection = ({
         statusCopy={statusCopy}
       />
 
-      <SavedPlaylistCreateCard
-        canMutatePlaylists={canMutatePlaylists}
-        createPlaylistName={createPlaylistName}
-        creationIssue={creationIssue}
-        isMutating={isMutating}
-        onCreatePlaylist={() => {
-          void handleCreatePlaylist();
-        }}
-        onCreatePlaylistNameChange={(value) => {
-          setCreatePlaylistName(value);
-          setCreationIssue(null);
-        }}
-      />
+      {isDetailVisible ? (
+        <SavedPlaylistDetailCard
+          canMutatePlaylists={canMutatePlaylists}
+          detailSummary={detailSummary}
+          getItemDetailLabel={(entry) => {
+            return getSavedPlaylistEntryDetailLabel({
+              entry,
+              savedLoops,
+              savedSources,
+            });
+          }}
+          isMutating={isMutating}
+          onCloseDetail={() => {
+            onCloseDetail?.();
+          }}
+          onDeletePlaylist={handleDeletePlaylist}
+          onMoveItem={(fromIndex, toIndex) => {
+            void persistSelectedPlaylist((playlist) => {
+              return movePlaylistEntry(playlist, fromIndex, toIndex);
+            });
+          }}
+          onRemoveItem={(entryId) => {
+            void persistSelectedPlaylist((playlist) => {
+              return removePlaylistEntry(playlist, entryId);
+            });
+          }}
+          onRenamePlaylist={() => {
+            void handleRenamePlaylist();
+          }}
+          onRenamePlaylistNameChange={(value) => {
+            setRenamePlaylistName(value);
+            setRenameIssue(null);
+          }}
+          onPlayOrderedPlaylist={() => {
+            if (!selectedPlaylist) {
+              return;
+            }
 
-      {showPlaylistCards ? (
-        <SavedPlaylistCardsList
-          onSelectPlaylist={setSelectedPlaylistId}
-          playlistCards={playlistCards}
-          selectedPlaylistId={selectedPlaylist?.id ?? null}
+            void togglePlaylistPlayback({
+              loops: savedLoops,
+              mode: 'ordered',
+              playlist: selectedPlaylist,
+              sources: savedSources,
+            });
+          }}
+          onSelectRepeatMode={setPlaylistRepeatMode}
+          onShufflePlayPlaylist={() => {
+            if (!selectedPlaylist) {
+              return;
+            }
+
+            void togglePlaylistPlayback({
+              loops: savedLoops,
+              mode: 'shuffle',
+              playlist: selectedPlaylist,
+              sources: savedSources,
+            });
+          }}
+          orderedPlaybackAction={orderedPlaybackAction}
+          playlistRepeatMode={playlistRepeatMode}
+          renameIssue={renameIssue}
+          renamePlaylistName={renamePlaylistName}
+          selectedQueueMode={selectedPlaybackSession?.queue.mode ?? null}
+          selectedPlaylist={selectedPlaylist}
+          selectedPlaylistIssue={selectedPlaylistIssue}
+          shufflePlaybackAction={shufflePlaybackAction}
         />
-      ) : null}
-
-      <SavedPlaylistEditorCard
-        canMutatePlaylists={canMutatePlaylists}
-        isMutating={isMutating}
-        onDeletePlaylist={handleDeletePlaylist}
-        onMoveItem={(fromIndex, toIndex) => {
-          void persistSelectedPlaylist((playlist) => {
-            return movePlaylistEntry(playlist, fromIndex, toIndex);
-          });
-        }}
-        onRemoveItem={(entryId) => {
-          void persistSelectedPlaylist((playlist) => {
-            return removePlaylistEntry(playlist, entryId);
-          });
-        }}
-        onRenamePlaylist={() => {
-          void handleRenamePlaylist();
-        }}
-        onRenamePlaylistNameChange={(value) => {
-          setRenamePlaylistName(value);
-          setRenameIssue(null);
-        }}
-        onPlayOrderedPlaylist={() => {
-          if (!selectedPlaylist) {
-            return;
-          }
-
-          void togglePlaylistPlayback({
-            loops: savedLoops,
-            mode: 'ordered',
-            playlist: selectedPlaylist,
-            sources: savedSources,
-          });
-        }}
-        onSelectRepeatMode={setPlaylistRepeatMode}
-        onShufflePlayPlaylist={() => {
-          if (!selectedPlaylist) {
-            return;
-          }
-
-          void togglePlaylistPlayback({
-            loops: savedLoops,
-            mode: 'shuffle',
-            playlist: selectedPlaylist,
-            sources: savedSources,
-          });
-        }}
-        orderedPlaybackAction={orderedPlaybackAction}
-        playbackContextLabel={playbackContextLabel}
-        playlistRepeatMode={playlistRepeatMode}
-        renameIssue={renameIssue}
-        renamePlaylistName={renamePlaylistName}
-        selectedQueueMode={selectedPlaybackSession?.queue.mode ?? null}
-        selectedPlaylist={selectedPlaylist}
-        selectedPlaylistIssue={selectedPlaylistIssue}
-        shufflePlaybackAction={shufflePlaybackAction}
-      />
+      ) : (
+        <>
+          <SavedPlaylistCreateCard
+            canMutatePlaylists={canMutatePlaylists}
+            createPlaylistName={createPlaylistName}
+            creationIssue={creationIssue}
+            isMutating={isMutating}
+            onCreatePlaylist={() => {
+              void handleCreatePlaylist();
+            }}
+            onCreatePlaylistNameChange={(value) => {
+              setCreatePlaylistName(value);
+              setCreationIssue(null);
+            }}
+          />
+        </>
+      )}
     </View>
   );
 };

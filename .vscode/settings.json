@@ -130,6 +130,30 @@
     "/^cd /Users/vehpus/git/choir-lms/packages/mobile-rehearsal-player && npx tsx --test src/app/library/__tests__/saved-track-playback-view-model\\.spec\\.ts$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec -- tsx --test packages/audio-library-models/src/lib/rehearsal-domain\\.spec\\.ts packages/audio-library-runtime/src/lib/rehearsal-playback\\.spec\\.ts packages/mobile-rehearsal-player/src/app/library/__tests__/saved-track-playback-view-model\\.spec\\.ts$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- tsx --test packages/mobile-rehearsal-player/src/app/library/__tests__/saved-track-playback-view-model\\.spec\\.ts packages/mobile-rehearsal-player/src/app/routing/__tests__/app-router\\.spec\\.tsx$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- tsx --test src/app/library/__tests__/saved-track-playback-view-model\\.spec\\.ts src/app/routing/__tests__/app-router\\.spec\\.tsx$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^cd /Users/vehpus/git/choir-lms && npm exec -- nx run mobile-rehearsal-player:typecheck$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^cd /Users/vehpus/git/choir-lms/packages/mobile-rehearsal-player && npm exec -- tsx --test src/app/library/__tests__/saved-loop-view-model\\.spec\\.ts$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^cd \\S+ && npx tsx --test \\S+(?: \\S+)*$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

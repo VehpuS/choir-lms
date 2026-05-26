@@ -9,6 +9,16 @@ The system SHALL allow a user to define a start marker and end marker on a saved
 - **WHEN** a user sets valid start and end markers on a saved playable source track and provides a loop name
 - **THEN** the system saves a named loop that can be played directly without redefining the markers
 
+#### Scenario: Loop creation opens from a saved track
+
+- **WHEN** a user chooses to make a loop from a saved rehearsal library track
+- **THEN** the system opens a dedicated loop-creation surface for that track instead of keeping a persistent inline builder visible in the library
+
+#### Scenario: Users define loop boundaries with a dual-thumb range control
+
+- **WHEN** a user adjusts the loop-creation range selector
+- **THEN** the system updates the proposed start and end boundaries from the two thumb positions while keeping the selected track and range summary visible before save
+
 #### Scenario: Reject an invalid loop range
 
 - **WHEN** a user attempts to save a loop whose end marker is not after its start marker
@@ -27,6 +37,11 @@ The system SHALL allow a user to add either a saved full source track or a saved
 
 - **WHEN** a user adds a saved loop to a playlist
 - **THEN** the playlist contains that loop as an item that plays only within the saved marker range
+
+#### Scenario: Add the same saved rehearsal item more than once
+
+- **WHEN** a user adds the same saved track or saved loop to a playlist multiple times
+- **THEN** the playlist preserves each insertion as a separate queue item and playback keeps each occurrence in its own ordered or shuffled position
 
 ### Requirement: Playlist playback supports rehearsal-oriented queue control
 

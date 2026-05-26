@@ -9,9 +9,7 @@ import {
 } from '@org/audio-library-models';
 import { useEffect, useRef, useState } from 'react';
 import TrackPlayer, {
-  Capability,
   Event,
-  State,
   usePlaybackState,
   useProgress,
   useTrackPlayerEvents,
@@ -21,62 +19,21 @@ import type { DriveLibrarySource } from '../utils/drive-library-view-model';
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
-  resolvePlaylistPlaybackAdvance,
   updatePlaylistPlaybackRepeatMode,
   type PlaylistPlaybackIssue,
   type PlaylistPlaybackSession,
 } from '../utils/saved-playlist-playback-view-model';
 import {
-  createSavedTrackPlaybackPreconditionIssue,
-  createSavedTrackPlaybackRequest,
   createSavedTrackPlaybackRuntimeIssue,
   hasSavedTrackPlaybackReachedRangeEnd,
-  isTrackPlayerAlreadyInitializedError,
+  normalizePlaybackVolumeLevel,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
+import { createSavedTrackPlaybackController } from '../utils/saved-track-playback-controller';
+import { ensureSavedTrackPlayerReady } from '../utils/saved-track-player-runtime';
 
-const PLAYER_CAPABILITIES = [
-  Capability.Play,
-  Capability.Pause,
-  Capability.Stop,
-  Capability.SeekTo,
-];
-
-let playerSetupPromise: Promise<void> | null = null;
-
-const ensureSavedTrackPlayerReady = () => {
-  if (!playerSetupPromise) {
-    playerSetupPromise = TrackPlayer.setupPlayer()
-      .catch((error) => {
-        if (isTrackPlayerAlreadyInitializedError(error)) {
-          return;
-        }
-
-        throw error;
-      })
-      .then(async () => {
-        await TrackPlayer.updateOptions({
-          capabilities: PLAYER_CAPABILITIES,
-          compactCapabilities: [Capability.Play, Capability.Pause],
-          notificationCapabilities: PLAYER_CAPABILITIES,
-        });
-      })
-      .catch((error) => {
-        playerSetupPromise = null;
-        throw error;
-      });
-  }
-
-  return playerSetupPromise;
-};
-
-const isActivePlaybackSource = (
-  activePlayableItem: PlayableItem | null,
-  playableItem: PlayableItem,
-) => {
-  return activePlayableItem?.id === playableItem.id;
-};
+const DEFAULT_PLAYBACK_VOLUME_LEVEL = 1;
 
 const mapPlaylistPlaybackIssue = (issue: PlaylistPlaybackIssue) => {
   return {
@@ -95,9 +52,11 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
   const [issue, setIssue] = useState<SavedTrackPlaybackIssue | null>(null);
   const [playlistRepeatMode, setPlaylistRepeatModeState] =
     useState<RepeatMode>('off');
+  const [volumeLevel, setVolumeLevel] = useState(DEFAULT_PLAYBACK_VOLUME_LEVEL);
   const activePlayableItemRef = useRef<PlayableItem | null>(null);
   const activePlaylistSessionRef = useRef<PlaylistPlaybackSession | null>(null);
   const isAdvancingPlaylistRef = useRef(false);
+  const volumeLevelRef = useRef(DEFAULT_PLAYBACK_VOLUME_LEVEL);
   const playbackState = usePlaybackState().state as
     | SavedTrackPlaybackState
     | undefined;
@@ -111,120 +70,64 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
     activePlaylistSessionRef.current = activePlaylistSession;
   }, [activePlaylistSession]);
 
-  const loadPlayableItem = async (playableItem: PlayableItem) => {
-    const blockingIssue = createSavedTrackPlaybackPreconditionIssue(
-      authState,
-      playableItem,
-    );
+  useEffect(() => {
+    volumeLevelRef.current = volumeLevel;
+  }, [volumeLevel]);
 
-    if (blockingIssue) {
-      setIssue(blockingIssue);
-      return false;
-    }
-
-    const accessToken = authState.accessToken;
-
-    if (!accessToken) {
-      return false;
-    }
-
-    await ensureSavedTrackPlayerReady();
-
-    const playbackRequest = createSavedTrackPlaybackRequest({
-      accessToken,
-      playableItem,
-    });
-
-    await TrackPlayer.reset();
-    await TrackPlayer.add(playbackRequest.track);
-    setActivePlayableItem(playbackRequest.playableItem);
-
-    if (playbackRequest.playableItem.range.startMs > 0) {
-      await TrackPlayer.seekTo(playbackRequest.playableItem.range.startMs / 1000);
-    }
-
-    await TrackPlayer.play();
-    return true;
-  };
-
-  const pausePlayableItem = async (playableItem: PlayableItem) => {
-    try {
-      await TrackPlayer.pause();
-    } catch (error) {
-      setIssue(createSavedTrackPlaybackRuntimeIssue(playableItem, error));
-    }
-  };
-
-  const resumePlayableItem = async (playableItem: PlayableItem) => {
-    setIssue(null);
-    setIsPreparing(true);
-
-    try {
-      await ensureSavedTrackPlayerReady();
-
-      if (
-        playbackState === State.Ended ||
-        activePlaylistSessionRef.current?.hasCompleted
-      ) {
-        await TrackPlayer.seekTo(playableItem.range.startMs / 1000);
-        setActivePlaylistSession((currentSession) => {
-          return currentSession
-            ? {
-                ...currentSession,
-                hasCompleted: false,
-              }
-            : currentSession;
-        });
-      }
-
-      await TrackPlayer.play();
-    } catch (error) {
-      setIssue(createSavedTrackPlaybackRuntimeIssue(playableItem, error));
-    } finally {
-      setIsPreparing(false);
-    }
-  };
-
-  const advancePlaylistPlayback = async () => {
-    const currentSession = activePlaylistSessionRef.current;
-    const currentPlayableItem = activePlayableItemRef.current;
-
-    if (
-      !currentSession ||
-      !currentPlayableItem ||
-      isAdvancingPlaylistRef.current
-    ) {
+  useEffect(() => {
+    if (!activePlayableItem) {
       return;
     }
 
-    isAdvancingPlaylistRef.current = true;
-    setIssue(null);
+    let isDisposed = false;
 
-    try {
-      const { nextPlayableItem, nextSession } =
-        resolvePlaylistPlaybackAdvance(currentSession);
+    const syncPlaybackVolumeLevel = async () => {
+      try {
+        await ensureSavedTrackPlayerReady();
 
-      if (!nextPlayableItem) {
-        setActivePlaylistSession(nextSession);
-        await TrackPlayer.pause();
-        await TrackPlayer.seekTo(currentPlayableItem.range.startMs / 1000);
-        return;
+        const currentVolumeLevel = normalizePlaybackVolumeLevel(
+          await TrackPlayer.getVolume(),
+        );
+
+        if (isDisposed) {
+          return;
+        }
+
+        volumeLevelRef.current = currentVolumeLevel;
+        setVolumeLevel(currentVolumeLevel);
+      } catch {
+        if (isDisposed) {
+          return;
+        }
+
+        volumeLevelRef.current = DEFAULT_PLAYBACK_VOLUME_LEVEL;
+        setVolumeLevel(DEFAULT_PLAYBACK_VOLUME_LEVEL);
       }
+    };
 
-      setIsPreparing(true);
+    void syncPlaybackVolumeLevel();
 
-      const didStart = await loadPlayableItem(nextPlayableItem);
+    return () => {
+      isDisposed = true;
+    };
+  }, [activePlayableItem?.id, activePlayableItem?.playlistEntryId]);
 
-      if (didStart) {
-        setActivePlaylistSession(nextSession);
-      }
-    } catch (error) {
-      setIssue(createSavedTrackPlaybackRuntimeIssue(currentPlayableItem, error));
-    } finally {
-      setIsPreparing(false);
-      isAdvancingPlaylistRef.current = false;
-    }
-  };
+  const playbackController = createSavedTrackPlaybackController({
+    authState,
+    activePlayableItemRef,
+    activePlaylistSessionRef,
+    isAdvancingPlaylistRef,
+    isPreparing,
+    playbackState,
+    progressDurationSeconds: progress.duration,
+    progressPositionSeconds: progress.position,
+    setActivePlayableItem,
+    setActivePlaylistSession,
+    setIsPreparing,
+    setIssue,
+    setVolumeLevel,
+    volumeLevelRef,
+  });
 
   useTrackPlayerEvents(
     [Event.PlaybackError, Event.PlaybackQueueEnded],
@@ -240,7 +143,7 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
 
       if (event.type === Event.PlaybackQueueEnded) {
         if (activePlaylistSessionRef.current) {
-          void advancePlaylistPlayback();
+          void playbackController.advancePlaylistPlayback();
           return;
         }
 
@@ -268,12 +171,15 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
     const stopLoopPlaybackAtRangeEnd = async () => {
       try {
         if (activePlaylistSessionRef.current) {
-          await advancePlaylistPlayback();
+          await playbackController.advancePlaylistPlayback();
           return;
         }
 
         await TrackPlayer.pause();
-        await TrackPlayer.seekTo(activePlayableItem.range.startMs / 1000);
+        await playbackController.seekActivePlayableItemTo(
+          activePlayableItem,
+          activePlayableItem.range.startMs / 1000,
+        );
       } catch (error) {
         if (!isDisposed) {
           setIssue(
@@ -290,53 +196,6 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
     };
   }, [activePlayableItem, playbackState, progress.position]);
 
-  const togglePlayableItemPlayback = async (playableItem: PlayableItem) => {
-    const isCurrentPlayableItem = isActivePlaybackSource(
-      activePlayableItemRef.current,
-      playableItem,
-    );
-    const blockingIssue = createSavedTrackPlaybackPreconditionIssue(
-      authState,
-      playableItem,
-    );
-
-    if (!isCurrentPlayableItem && blockingIssue) {
-      setIssue(blockingIssue);
-      return;
-    }
-
-    setIssue(null);
-
-    if (isCurrentPlayableItem && playbackState === State.Playing) {
-      await pausePlayableItem(playableItem);
-      return;
-    }
-
-    if (
-      isCurrentPlayableItem &&
-      playbackState !== undefined &&
-      playbackState !== State.Error &&
-      playbackState !== State.None
-    ) {
-      await resumePlayableItem(playableItem);
-      return;
-    }
-
-    setIsPreparing(true);
-
-    try {
-      const didStart = await loadPlayableItem(playableItem);
-
-      if (didStart) {
-        setActivePlaylistSession(null);
-      }
-    } catch (error) {
-      setIssue(createSavedTrackPlaybackRuntimeIssue(playableItem, error));
-    } finally {
-      setIsPreparing(false);
-    }
-  };
-
   return {
     activePlayableItem,
     activePlaylistSession,
@@ -345,6 +204,8 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
     playbackState,
     playlistRepeatMode,
     progress,
+    resolveTrackDuration: playbackController.resolveTrackDuration,
+    volumeLevel,
     setPlaylistRepeatMode(repeatMode: RepeatMode) {
       setPlaylistRepeatModeState(repeatMode);
       setActivePlaylistSession((currentSession) => {
@@ -353,7 +214,31 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
           : currentSession;
       });
     },
-    togglePlayableItemPlayback,
+    async seekActivePlaybackBySeconds(deltaSeconds: number) {
+      await playbackController.seekActivePlaybackBySeconds(deltaSeconds);
+    },
+    async seekActivePlaybackToPosition(positionSeconds: number) {
+      await playbackController.seekActivePlaybackToPosition(positionSeconds);
+    },
+    async setPlaybackVolume(nextVolumeLevel: number) {
+      await playbackController.setPlaybackVolume(nextVolumeLevel);
+    },
+    async toggleActivePlayback() {
+      if (!activePlayableItemRef.current) {
+        return;
+      }
+
+      await playbackController.togglePlayableItemPlayback(
+        activePlayableItemRef.current,
+      );
+    },
+    togglePlayableItemPlayback: playbackController.togglePlayableItemPlayback,
+    async skipToNextItem() {
+      await playbackController.playNextQueueItem();
+    },
+    async skipToPreviousItem() {
+      await playbackController.playPreviousQueueItem();
+    },
     async togglePlaylistPlayback(options: {
       loops: NamedLoop[];
       mode: RehearsalQueueMode;
@@ -371,7 +256,9 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
       if (nextSession.issue || !nextSession.session) {
         setActivePlaylistSession(null);
         setIssue(
-          nextSession.issue ? mapPlaylistPlaybackIssue(nextSession.issue) : null,
+          nextSession.issue
+            ? mapPlaylistPlaybackIssue(nextSession.issue)
+            : null,
         );
         return;
       }
@@ -397,19 +284,21 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
       setIsPreparing(true);
 
       try {
-        const didStart = await loadPlayableItem(firstPlayableItem);
-
-        if (didStart) {
+        if (await playbackController.loadPlayableItem(firstPlayableItem)) {
           setActivePlaylistSession(nextSession.session);
         }
       } catch (error) {
-        setIssue(createSavedTrackPlaybackRuntimeIssue(firstPlayableItem, error));
+        setIssue(
+          createSavedTrackPlaybackRuntimeIssue(firstPlayableItem, error),
+        );
       } finally {
         setIsPreparing(false);
       }
     },
     async toggleSourcePlayback(source: DriveLibrarySource) {
-      await togglePlayableItemPlayback(createTrackPlayableItem(source));
+      await playbackController.togglePlayableItemPlayback(
+        createTrackPlayableItem(source),
+      );
     },
   };
 };

@@ -52,7 +52,6 @@ type SavedRehearsalLibrarySectionProps = {
   playbackIssue: SavedTrackPlaybackIssue | null;
   playbackState: SavedTrackPlaybackState | undefined;
   playlistRepeatMode: 'off' | 'one' | 'all';
-  positionSeconds: number;
   removeLoop: (loop: NamedLoop) => void;
   removeSource: (source: DriveLibrarySource) => void;
   savedLibraryIssue: SavedRehearsalLibraryIssue | null;
@@ -63,9 +62,10 @@ type SavedRehearsalLibrarySectionProps = {
   saveLoop: (loop: NamedLoop) => Promise<boolean>;
   setPlaylistRepeatMode: (repeatMode: 'off' | 'one' | 'all') => void;
   savedTrackPlaybackStatusCopy: DriveLibraryStatusCopy | null;
-  selectedLoopSourceId: string | null;
+  openLoopBuilderForSource: (source: DriveLibrarySource) => void;
+  pendingLoopBuilderSourceId: string | null;
   selectedTrack: PlayableItem | null;
-  setSelectedLoopSourceId: (sourceId: string) => void;
+  setSelectedLoopSourceId: (sourceId: string | null) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   togglePlaylistPlayback: (options: {
     loops: NamedLoop[];
@@ -91,7 +91,6 @@ export const SavedRehearsalLibrarySection = ({
   playbackIssue,
   playbackState,
   playlistRepeatMode,
-  positionSeconds,
   removeLoop,
   removeSource,
   savedLibraryIssue,
@@ -102,7 +101,8 @@ export const SavedRehearsalLibrarySection = ({
   saveLoop,
   setPlaylistRepeatMode,
   savedTrackPlaybackStatusCopy,
-  selectedLoopSourceId,
+  openLoopBuilderForSource,
+  pendingLoopBuilderSourceId,
   selectedTrack,
   setSelectedLoopSourceId,
   togglePlayableItemPlayback,
@@ -122,10 +122,12 @@ export const SavedRehearsalLibrarySection = ({
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(
     null,
   );
+  const [isPlaylistDetailVisible, setIsPlaylistDetailVisible] = useState(false);
 
   useEffect(() => {
     if (savedPlaylists.length === 0) {
       setSelectedPlaylistId(null);
+      setIsPlaylistDetailVisible(false);
       return;
     }
 
@@ -142,6 +144,13 @@ export const SavedRehearsalLibrarySection = ({
     savedPlaylists,
     selectedPlaylistId,
   );
+
+  useEffect(() => {
+    if (!selectedPlaylist) {
+      setIsPlaylistDetailVisible(false);
+    }
+  }, [selectedPlaylist]);
+
   const isSavedLibraryMutating = pendingSourceId !== null;
   const isSavedTrackPlaybackLoading = isSavedTrackPlaybackBusy({
     isPreparing: isPlaybackPreparing,
@@ -199,125 +208,143 @@ export const SavedRehearsalLibrarySection = ({
           statusCopy={savedTrackPlaybackStatusCopy}
         />
       ) : null}
-      {playlistSelectionCopy ? (
+      {playlistSelectionCopy && !isPlaylistDetailVisible ? (
         <DriveLibraryStatusCard
           isLoading={isPlaylistsLoading}
           loadingLabel="Refreshing playlist destinations…"
           statusCopy={playlistSelectionCopy}
         />
       ) : null}
-      <SavedPlaylistCardsList
-        onSelectPlaylist={setSelectedPlaylistId}
-        playlistCards={playlistCards}
-        selectedPlaylistId={selectedPlaylist?.id ?? null}
-      />
-      <DriveLibrarySourceGroup
-        getActions={(source) => {
-          const isPending = pendingSourceId === source.id;
-          const trackPlayableItem = createTrackPlayableItem(source);
-          const playbackAction = getSavedTrackPlaybackActionCopy({
-            activePlayableItem,
-            isPreparing: isPlaybackPreparing,
-            playableItem: trackPlayableItem,
-            playbackState,
-          });
-          const isPlaybackSourceActive = isSavedTrackPlaybackActive(
-            activePlayableItem,
-            trackPlayableItem,
-          );
+      {!isPlaylistDetailVisible ? (
+        <>
+          <SavedPlaylistCardsList
+            onSelectPlaylist={(playlistId) => {
+              setSelectedPlaylistId(playlistId);
+              setIsPlaylistDetailVisible(true);
+            }}
+            playlistCards={playlistCards}
+            selectedPlaylistId={selectedPlaylist?.id ?? null}
+          />
+          <DriveLibrarySourceGroup
+            getActions={(source) => {
+              const isPending = pendingSourceId === source.id;
+              const trackPlayableItem = createTrackPlayableItem(source);
+              const playbackAction = getSavedTrackPlaybackActionCopy({
+                activePlayableItem,
+                isPreparing: isPlaybackPreparing,
+                playableItem: trackPlayableItem,
+                playbackState,
+              });
+              const isPlaybackSourceActive = isSavedTrackPlaybackActive(
+                activePlayableItem,
+                trackPlayableItem,
+              );
+              const isLoopBuilderPreparing =
+                pendingLoopBuilderSourceId !== null;
+              const isPreparingLoopSource =
+                pendingLoopBuilderSourceId === source.id;
 
-          return [
-            {
-              disabled: isSavedLibraryMutating || playbackAction.disabled,
-              label: playbackAction.label,
-              onPress: () => {
-                setSelectedLoopSourceId(source.id);
-                void toggleSourcePlayback(source);
-              },
-              tone: 'primary' as const,
-            },
-            {
-              disabled:
-                isSavedLibraryMutating ||
-                source.availability.status !== 'available',
-              label:
-                selectedLoopSourceId === source.id
-                  ? 'Selected for loop'
-                  : 'Use for loop',
-              onPress: () => {
-                setSelectedLoopSourceId(source.id);
-              },
-            },
-            {
-              disabled: playlistActionCopy.disabled,
-              label: playlistActionCopy.label,
-              onPress: () => {
-                void persistSelectedPlaylist((playlist) => {
-                  return addTrackToPlaylist(playlist, source);
-                });
-              },
-            },
-            {
-              disabled:
-                !canMutateLibrary ||
-                isSavedLibraryMutating ||
-                isPlaybackSourceActive ||
-                isLoopMutating,
-              label: isPending ? 'Removing…' : 'Remove',
-              onPress: () => {
-                removeSource(source);
-              },
-            },
-          ];
-        }}
-        getMessage={(source) => {
-          return (
-            getSavedRehearsalLibrarySourceIssue(
-              savedLibraryIssue,
-              source,
-              'remove',
-            ) ??
-            getSavedTrackPlaybackItemIssue(
-              playbackIssue,
-              createTrackPlayableItem(source),
-            )
-          );
-        }}
-        sources={savedLibrarySources}
-        title={savedSourceTitle}
-      />
-      <SavedLoopSection
-        activePlayableItem={activePlayableItem}
-        addLoopToPlaylist={(loop) => {
-          void persistSelectedPlaylist((playlist) => {
-            return addLoopToPlaylist(playlist, loop);
-          });
-        }}
-        canMutateLoops={canMutateLoops}
-        isPlaybackPreparing={isPlaybackPreparing}
-        isSavedLoopsLoading={isSavedLoopsLoading}
-        pendingLoopId={pendingLoopId}
-        playbackIssue={playbackIssue}
-        playbackState={playbackState}
-        playlistActionCopy={playlistActionCopy}
-        positionSeconds={positionSeconds}
-        removeLoop={removeLoop}
-        savedSources={savedLibrarySources}
-        savedLoopIssue={savedLoopIssue}
-        savedLoops={savedLoops}
-        saveLoop={saveLoop}
-        selectedTrack={selectedTrack}
-        togglePlayableItemPlayback={togglePlayableItemPlayback}
-      />
+              return [
+                {
+                  disabled: isSavedLibraryMutating || playbackAction.disabled,
+                  label: playbackAction.label,
+                  onPress: () => {
+                    void toggleSourcePlayback(source);
+                  },
+                  tone: 'primary' as const,
+                },
+                {
+                  disabled:
+                    !canMutateLoops ||
+                    isLoopMutating ||
+                    isLoopBuilderPreparing ||
+                    isSavedLibraryMutating ||
+                    source.availability.status !== 'available',
+                  label: isPreparingLoopSource
+                    ? 'Preparing loop…'
+                    : 'Make loop',
+                  onPress: () => {
+                    openLoopBuilderForSource(source);
+                  },
+                },
+                {
+                  disabled: playlistActionCopy.disabled,
+                  label: playlistActionCopy.label,
+                  onPress: () => {
+                    void persistSelectedPlaylist((playlist) => {
+                      return addTrackToPlaylist(playlist, source);
+                    });
+                  },
+                },
+                {
+                  disabled:
+                    !canMutateLibrary ||
+                    isSavedLibraryMutating ||
+                    isPlaybackSourceActive ||
+                    isLoopMutating,
+                  label: isPending ? 'Removing…' : 'Remove',
+                  onPress: () => {
+                    removeSource(source);
+                  },
+                },
+              ];
+            }}
+            getMessage={(source) => {
+              return (
+                getSavedRehearsalLibrarySourceIssue(
+                  savedLibraryIssue,
+                  source,
+                  'remove',
+                ) ??
+                getSavedTrackPlaybackItemIssue(
+                  playbackIssue,
+                  createTrackPlayableItem(source),
+                )
+              );
+            }}
+            sources={savedLibrarySources}
+            title={savedSourceTitle}
+          />
+          <SavedLoopSection
+            activePlayableItem={activePlayableItem}
+            addLoopToPlaylist={(loop) => {
+              void persistSelectedPlaylist((playlist) => {
+                return addLoopToPlaylist(playlist, loop);
+              });
+            }}
+            canMutateLoops={canMutateLoops}
+            isPlaybackPreparing={isPlaybackPreparing}
+            isSavedLoopsLoading={isSavedLoopsLoading}
+            pendingLoopId={pendingLoopId}
+            playbackIssue={playbackIssue}
+            playbackState={playbackState}
+            playlistActionCopy={playlistActionCopy}
+            onCloseLoopBuilder={() => {
+              setSelectedLoopSourceId(null);
+            }}
+            removeLoop={removeLoop}
+            savedSources={savedLibrarySources}
+            savedLoopIssue={savedLoopIssue}
+            savedLoops={savedLoops}
+            saveLoop={saveLoop}
+            selectedTrack={selectedTrack}
+            togglePlayableItemPlayback={togglePlayableItemPlayback}
+          />
+        </>
+      ) : null}
 
       <SavedPlaylistSection
         activePlaylistSession={activePlaylistSession}
         canMutatePlaylists={canMutatePlaylists}
         createPlaylist={createPlaylist}
         deletePlaylist={deletePlaylist}
+        isDetailVisible={isPlaylistDetailVisible}
         isLoading={isPlaylistsLoading}
         isPlaybackPreparing={isPlaybackPreparing}
         issue={playlistIssue}
+        onCloseDetail={() => {
+          setIsPlaylistDetailVisible(false);
+        }}
         pendingPlaylistId={pendingPlaylistId}
         playbackState={playbackState}
         playlistRepeatMode={playlistRepeatMode}
@@ -327,7 +354,6 @@ export const SavedRehearsalLibrarySection = ({
         selectedPlaylist={selectedPlaylist}
         setPlaylistRepeatMode={setPlaylistRepeatMode}
         setSelectedPlaylistId={setSelectedPlaylistId}
-        showPlaylistCards={false}
         togglePlaylistPlayback={togglePlaylistPlayback}
         updatePlaylist={updatePlaylist}
       />
