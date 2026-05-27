@@ -229,6 +229,11 @@ Companion mockup states: Screen 7 shows the dedicated playback modal with a swip
 - **WHEN** the active item belongs to a playlist or other queued playback context
 - **THEN** the dedicated playback modal or adjacent queue surface exposes repeat and shuffle controls for the active queue so the user can change session behavior after playback has already started
 
+#### Scenario: Standalone playback keeps current-item repeat available
+
+- **WHEN** the active item is playing outside any playlist or queue
+- **THEN** the dedicated playback screen exposes repeat controls for the current track or saved loop so the user can keep repeating that item without requiring playlist context
+
 #### Scenario: Standalone playback hides queue-only controls
 
 - **WHEN** the active item is playing outside any playlist or queue
