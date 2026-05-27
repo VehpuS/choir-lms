@@ -15,6 +15,7 @@ type SavedTrackPlaybackController = Pick<
   | 'issue'
   | 'playbackState'
   | 'progress'
+  | 'syncActivePlaylistContext'
   | 'togglePlayableItemPlayback'
   | 'togglePlaylistPlayback'
   | 'toggleSourcePlayback'
@@ -69,6 +70,7 @@ export const LibraryScreen = ({
         savedTrackPlaybackStatusCopy={
           libraryController.savedLibrary.savedTrackPlaybackStatusCopy
         }
+        syncActivePlaylistContext={playback.syncActivePlaylistContext}
         openLoopBuilderForSource={
           libraryController.savedLibrary.openLoopBuilderForSource
         }

@@ -13,7 +13,10 @@ import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,
 } from '../../test-utils/library-test-fixtures.js';
-import { rebuildPlaylistPlaybackSessionForMode } from '../../library/utils/playlist-session-mode.js';
+import {
+  rebuildPlaylistPlaybackSessionForMode,
+  syncActivePlaylistContext,
+} from '../../library/utils/playlist-session-mode.js';
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
@@ -304,5 +307,68 @@ describe('rebuildPlaylistPlaybackSessionForMode', () => {
 
     assert.equal(restoredSession?.queue.mode, 'ordered');
     assert.equal(restoredSession?.currentIndex, 1);
+  });
+
+  it('uses the latest persisted playlist when queue mode rebuilds', () => {
+    const originalPlaylist = addLoopToPlaylist(
+      addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-05-12T00:00:00.000Z',
+          name: 'Warmups',
+          ownerId: 'user-1',
+        }),
+        PLAYABLE_SOURCE,
+        '2026-05-12T00:01:00.000Z',
+      ),
+      SAVED_LOOP,
+      '2026-05-12T00:02:00.000Z',
+    );
+    const activeSession = buildPlaylistPlaybackSession({
+      loops: [SAVED_LOOP],
+      mode: 'ordered',
+      playlist: originalPlaylist,
+      repeatMode: 'all',
+      sources: [PLAYABLE_SOURCE],
+      startEntryId: originalPlaylist.items[1].id,
+    }).session;
+
+    if (!activeSession) {
+      throw new Error('Expected an active playlist session.');
+    }
+
+    const persistedPlaylist = addTrackToPlaylist(
+      originalPlaylist,
+      PLAYABLE_SOURCE,
+      '2026-05-12T00:03:00.000Z',
+    );
+    const syncedContext = syncActivePlaylistContext({
+      currentContext: {
+        loops: [SAVED_LOOP],
+        playlist: originalPlaylist,
+        sources: [PLAYABLE_SOURCE],
+      },
+      loops: [SAVED_LOOP],
+      playlists: [persistedPlaylist],
+      session: activeSession,
+      sources: [PLAYABLE_SOURCE],
+    });
+
+    const rebuiltSession = syncedContext
+      ? rebuildPlaylistPlaybackSessionForMode({
+          loops: syncedContext.loops,
+          mode: 'shuffle',
+          playlist: syncedContext.playlist,
+          random: () => 0,
+          session: activeSession,
+          sources: syncedContext.sources,
+        }).session
+      : null;
+
+    assert.equal(rebuiltSession?.queue.items.length, 3);
+    assert.equal(
+      rebuiltSession &&
+        getPlaylistPlaybackCurrentItem(rebuiltSession)?.playlistEntryId,
+      originalPlaylist.items[1].id,
+    );
   });
 });

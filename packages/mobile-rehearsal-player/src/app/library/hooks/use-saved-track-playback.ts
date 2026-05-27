@@ -16,7 +16,11 @@ import TrackPlayer, {
 } from 'react-native-track-player';
 
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
-import { rebuildPlaylistPlaybackSessionForMode } from '../utils/playlist-session-mode';
+import {
+  rebuildPlaylistPlaybackSessionForMode,
+  syncActivePlaylistContext,
+  type ActivePlaylistContext,
+} from '../utils/playlist-session-mode';
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
@@ -35,12 +39,6 @@ import { createSavedTrackPlaybackController } from '../utils/saved-track-playbac
 import { ensureSavedTrackPlayerReady } from '../utils/saved-track-player-runtime';
 
 const DEFAULT_PLAYBACK_VOLUME_LEVEL = 1;
-
-type ActivePlaylistContext = {
-  loops: NamedLoop[];
-  playlist: Playlist;
-  sources: DriveLibrarySource[];
-};
 
 const mapPlaylistPlaybackIssue = (issue: PlaylistPlaybackIssue) => {
   return {
@@ -254,6 +252,19 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
         }
 
         return nextSession.session;
+      });
+    },
+    syncActivePlaylistContext(options: {
+      loops: NamedLoop[];
+      playlists: Playlist[];
+      sources: DriveLibrarySource[];
+    }) {
+      activePlaylistContextRef.current = syncActivePlaylistContext({
+        currentContext: activePlaylistContextRef.current,
+        loops: options.loops,
+        playlists: options.playlists,
+        session: activePlaylistSessionRef.current,
+        sources: options.sources,
       });
     },
     async seekActivePlaybackBySeconds(deltaSeconds: number) {

@@ -68,6 +68,11 @@ type SavedRehearsalLibrarySectionProps = {
   savedLibraryStatusCopy: DriveLibraryStatusCopy;
   saveLoop: (loop: NamedLoop) => Promise<boolean>;
   savedTrackPlaybackStatusCopy: DriveLibraryStatusCopy | null;
+  syncActivePlaylistContext: (options: {
+    loops: NamedLoop[];
+    playlists: Playlist[];
+    sources: DriveLibrarySource[];
+  }) => void;
   openLoopBuilderForSource: (source: DriveLibrarySource) => void;
   pendingLoopBuilderSourceId: string | null;
   selectedTrack: PlayableItem | null;
@@ -106,6 +111,7 @@ export const SavedRehearsalLibrarySection = ({
   savedLibraryStatusCopy,
   saveLoop,
   savedTrackPlaybackStatusCopy,
+  syncActivePlaylistContext,
   openLoopBuilderForSource,
   pendingLoopBuilderSourceId,
   selectedTrack,
@@ -166,6 +172,14 @@ export const SavedRehearsalLibrarySection = ({
       setIsPlaylistDetailVisible(false);
     }
   }, [selectedPlaylist]);
+
+  useEffect(() => {
+    syncActivePlaylistContext({
+      loops: savedLoops,
+      playlists: savedPlaylists,
+      sources: savedLibrarySources,
+    });
+  }, [savedLibrarySources, savedLoops, savedPlaylists, syncActivePlaylistContext]);
 
   useEffect(() => {
     if (!trackPlaylistMenuState.selectedSourceId || selectedTrackMenuSource) {
