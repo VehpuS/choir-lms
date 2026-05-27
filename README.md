@@ -112,6 +112,16 @@ openspec status --change "add-mobile-rehearsal-player"
 - `openspec-checkpointed-implementation` runs the one-subtask execution loop
 - `implementation-checkpoint` handles the validated pause for feedback, manual verification, and commit decisions
 
+### Workspace agent skills
+
+The repo carries workspace-local GitHub Copilot skills under `.github/skills/`
+with mirrored agent copies under `.agents/skills/` for repeated mobile design
+and implementation work:
+
+- `expo-liquid-glass` for guarded glass or translucent UI work in the mobile shell, mini-player, playback sheet, and modal surfaces
+- `design-audit` for phased UI and UX audits of the mobile rehearsal player before broader visual refactors
+- `apple-hig-ios` and `music-ui-iconography` for iOS pattern decisions and playback icon semantics
+
 ## Status
 
 The repository is still in early setup. The product direction and first implementation slice are defined in OpenSpec, and the next step is implementation of the mobile rehearsal player foundations.

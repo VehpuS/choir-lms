@@ -1,0 +1,14 @@
+{
+    "version": "1.0.0",
+    "organization": "Choir LMS",
+    "date": "May 2026",
+    "abstract": "Workspace skill for adding Liquid Glass style UI to the Expo-based mobile rehearsal player. It maps glass decisions to the app's current shell, mini-player, playback sheet, and modal surfaces, and emphasizes guarded runtime paths, readable fallbacks, and Apple-aligned composition.",
+    "references": [
+        "https://docs.expo.dev/versions/latest/sdk/glass-effect/",
+        "https://docs.expo.dev/versions/latest/sdk/blur-view/",
+        "https://docs.expo.dev/versions/latest/sdk/ui/",
+        "https://developer.apple.com/design/human-interface-guidelines/materials",
+        "https://developer.apple.com/design/human-interface-guidelines/tab-bars",
+        "https://developer.apple.com/design/human-interface-guidelines/playing-audio"
+    ]
+}

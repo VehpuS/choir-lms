@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "organization": "Choir LMS",
+  "date": "May 2026",
+  "abstract": "Workspace skill for auditing and improving the mobile rehearsal player UI with a structured, approval-gated design review flow. It focuses on the repo's shared shell, playback surfaces, discovery and library screens, and ties recommendations back to local files, tokens, and accessibility expectations.",
+  "references": [
+    "https://developer.apple.com/design/human-interface-guidelines/",
+    "https://www.w3.org/WAI/WCAG21/quickref/",
+    "https://www.interaction-design.org/literature/article/dieter-rams-10-timeless-commandments-for-good-design"
+  ]
+}
