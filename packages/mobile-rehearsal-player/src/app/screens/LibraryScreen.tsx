@@ -95,7 +95,8 @@ const styles = StyleSheet.create({
     backgroundColor: appTheme.colors.pageBackground,
   },
   content: {
-    padding: 24,
-    gap: 16,
+    gap: 14,
+    paddingTop: 12,
+    paddingBottom: 20,
   },
 });

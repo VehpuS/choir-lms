@@ -45,14 +45,15 @@ export const HomeScreen = ({
           A focused practice surface for choir members to find rehearsal audio,
           save repeatable loops, and build session playlists.
         </Text>
-        <View style={styles.statusRow}>
-          <View style={styles.statusPill}>
+        <View style={styles.statusGroup}>
+          <View style={styles.statusRow}>
             <Text style={styles.statusLabel}>Saved tracks</Text>
             <Text style={styles.statusValue}>{savedTrackCount}</Text>
           </View>
-          <View style={styles.statusPill}>
+          <View style={styles.statusDivider} />
+          <View style={styles.statusBlock}>
             <Text style={styles.statusLabel}>Audio support</Text>
-            <Text style={styles.statusValue}>{AUDIO_FORMAT_LABEL}</Text>
+            <Text style={styles.statusValueList}>{AUDIO_FORMAT_LABEL}</Text>
           </View>
         </View>
       </View>
@@ -80,52 +81,75 @@ const styles = StyleSheet.create({
     backgroundColor: appTheme.colors.pageBackground,
   },
   content: {
-    padding: 24,
-    gap: 16,
+    gap: 12,
+    paddingTop: 10,
+    paddingBottom: 18,
   },
   hero: {
     gap: 12,
-    padding: 24,
-    borderRadius: 24,
-    backgroundColor: appTheme.colors.heroBackground,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: appTheme.colors.border,
+    borderRadius: 16,
+    backgroundColor: appTheme.colors.surfaceBackground,
   },
   kicker: {
-    color: '#d1e8dd',
-    fontSize: 13,
+    color: appTheme.colors.heroBackground,
+    fontSize: 12,
     fontWeight: '700',
-    letterSpacing: 1.4,
+    letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
   title: {
-    color: '#fff8ef',
-    fontSize: 32,
+    color: appTheme.colors.primaryText,
+    fontSize: 26,
     fontWeight: '700',
-    lineHeight: 38,
+    lineHeight: 32,
   },
   subtitle: {
-    color: '#dce7e1',
-    fontSize: 16,
-    lineHeight: 24,
+    color: appTheme.colors.secondaryText,
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  statusGroup: {
+    borderWidth: 1,
+    borderColor: '#e1dccf',
+    borderRadius: 14,
+    backgroundColor: '#f5f1e8',
+    overflow: 'hidden',
   },
   statusRow: {
-    gap: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
-  statusPill: {
-    gap: 4,
-    padding: 16,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 248, 239, 0.12)',
+  statusDivider: {
+    height: 1,
+    backgroundColor: '#e1dccf',
+  },
+  statusBlock: {
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   statusLabel: {
-    color: '#dce7e1',
-    fontSize: 12,
+    color: appTheme.colors.heroBackground,
+    fontSize: 11,
     fontWeight: '600',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
   statusValue: {
-    color: '#fff8ef',
-    fontSize: 16,
+    color: appTheme.colors.primaryText,
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  statusValueList: {
+    color: appTheme.colors.primaryText,
+    fontSize: 15,
     fontWeight: '600',
+    lineHeight: 22,
   },
 });

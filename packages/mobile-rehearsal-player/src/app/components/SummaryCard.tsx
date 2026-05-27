@@ -20,11 +20,11 @@ export const SummaryCard = ({ body, eyebrow, title }: SummaryCardProps) => {
 
 const styles = StyleSheet.create({
   card: {
-    gap: 8,
-    padding: 20,
+    gap: 6,
+    padding: 18,
     borderWidth: 1,
     borderColor: appTheme.colors.border,
-    borderRadius: 20,
+    borderRadius: 16,
     backgroundColor: appTheme.colors.cardBackground,
   },
   eyebrow: {
