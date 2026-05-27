@@ -68,12 +68,7 @@ export const SavedTrackPlaylistMenuSurface = ({
 
   if (step === 'menu') {
     return (
-      <Modal
-        animationType="slide"
-        onRequestClose={onClose}
-        transparent
-        visible
-      >
+      <Modal animationType="slide" onRequestClose={onClose} transparent visible>
         <View style={styles.sheetOverlay}>
           <Pressable
             accessibilityRole="button"
@@ -188,7 +183,9 @@ export const SavedTrackPlaylistMenuSurface = ({
                     isMutating ? styles.buttonDisabled : undefined,
                   ]}
                 >
-                  <Text style={styles.secondaryActionLabel}>+ New playlist</Text>
+                  <Text style={styles.secondaryActionLabel}>
+                    + New playlist
+                  </Text>
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"

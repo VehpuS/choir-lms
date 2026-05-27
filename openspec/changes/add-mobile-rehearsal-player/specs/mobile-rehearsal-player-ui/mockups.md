@@ -1,22 +1,35 @@
 # Mobile Rehearsal Player UI Mockups
 
-These low-fidelity wireframes describe a rehearsal-first mobile interface that borrows proven interaction patterns from modern music apps without copying any single product's layout or styling.
+These low-fidelity wireframes describe a rehearsal-first mobile interface that borrows proven interaction patterns from modern music apps without copying any single product's layout or styling. Because the core media is metadata-poor rehearsal stems, the playback UI uses SoundCloud-style waveforms instead of square album artwork.
 
 ## UX Principles
 
 - Keep discovery and ownership separate: Google Drive browsing is for finding material, while Library is for saved rehearsal structures.
-- Preserve playback context: a persistent mini-player keeps the current session visible across destinations.
+- Preserve playback context: a global audio engine and persistent mini-player keep the current session visible across destinations.
 - Make action density intentional: each row should expose the next likely action without turning into a control panel.
-- Keep queue state close to playback: users should reach Up Next in one tap from now playing.
+- Treat the waveform as the hero: stems do not rely on square artwork, so simplified and interactive waveforms carry playback identity and progress.
+- Keep queue state close to playback: users should reach Up Next in one tap from the dedicated playback modal.
 - Favor scan-first layouts: short sections, segmented collections, and strong hierarchy beat dense settings-heavy screens.
 - Keep loop capture audible: users should mark loop boundaries from real playback context, not from raw timestamp fields alone.
 - Preserve rehearsal cues: loop badges, source labels, and playlist context should stay visible when they affect playback behavior.
 
 ## Control and Icon Notes
 
-- Continuous audio adjustments use sliders: a dual-thumb range slider in Loop Builder, a scrubber slider in Now Playing, and a speaker-annotated volume slider in Now Playing.
-- ASCII placeholders such as `[queue]`, `[shuffle]`, `[prev]`, `[pause]`, `[next]`, `[repeat]`, `[speaker]`, `[wave]`, and `[...]` represent platform system symbols or simple waveform placeholders with explicit active, muted, disabled, or destructive states.
+- Continuous audio adjustments use a dual-thumb range slider in Loop Builder, direct horizontal scrubbing across the waveform in the dedicated playback modal, and a speaker-annotated volume slider when in-app volume is shown.
+- ASCII placeholders such as `[queue]`, `[prev]`, `[skip-15]`, `[pause]`, `[skip+15]`, `[next]`, `[repeat]`, `[speaker]`, `[wave]`, `[marquee]`, and `[...]` represent platform system symbols or waveform states with explicit active, muted, disabled, or destructive states.
 - Use one icon vocabulary across mini-player, queue, playlist, and library rows so playback, management, and removal affordances stay visually distinct.
+
+## Component A: Global Mini-Player
+
+```text
++--------------------------------------+
+| [wave~~~~] Gloria - Alto g...  [||]  |
+| Tenor 1 Stem                         |
+| Home        Search      Library      |
++--------------------------------------+
+```
+
+Why: The mini-player stays visible above bottom navigation whenever the audio engine has an active item. The waveform replaces square artwork, the compact body opens the dedicated playback modal, and overflow text can switch from truncation to marquee only while audio is actively playing.
 
 ## Screen 1: Home / Discovery
 
@@ -37,12 +50,12 @@ These low-fidelity wireframes describe a rehearsal-first mobile interface that b
 | Psalm 42 full mix              [>]   |
 | Amen cadence rehearsal         [+]   |
 |                                      |
-| [wave] Gloria - Alto guide     [||]  |
+| [wave~~~~] Gloria - Alto g...  [||]  |
 | Home        Search      Library      |
 +--------------------------------------+
 ```
 
-Why: This screen opens with a browse-first surface, gives quick pivots into Drive roots, and keeps the active listening session present through the mini-player.
+Why: This screen opens with a browse-first surface, gives quick pivots into Drive roots, and keeps the active listening session present through the global mini-player above navigation.
 
 ## Screen 2: Source Browser
 
@@ -65,7 +78,7 @@ Why: This screen opens with a browse-first surface, gives quick pivots into Driv
 | Notes.pdf                       --   |
 | Legacy stream link              --   |
 |                                      |
-| [wave] Warmup vowels            [>]  |
+| [wave~~~~] Warmup vowels        [>]  |
 | Home        Search      Library      |
 +--------------------------------------+
 ```
@@ -91,7 +104,7 @@ Why: Source context stays visible through breadcrumbs and section labels so user
 | Recent searches                       |
 | kyrie | amen cadence | vowels        |
 |                                      |
-| [wave] Kyrie - Alto rehearsal  [||]  |
+| [wave~~~~] Kyrie - Alto ...    [||]  |
 | Home        Search      Library      |
 +--------------------------------------+
 ```
@@ -119,7 +132,7 @@ Why: Search prioritizes low-friction scanning and immediate action, with row-lev
 | Wednesday rehearsal            [>]   |
 | Easter service set             [>]   |
 |                                      |
-| [wave] Wednesday rehearsal     [>]   |
+| [wave~~~~] Wednesday reh...    [>]   |
 | Home        Search      Library      |
 +--------------------------------------+
 ```
@@ -264,7 +277,7 @@ Why: This validation state shows that loop creation is not only about happy-path
 |                                      |
 |                            (PlayAll) |
 |                                      |
-| [wave] Kyrie entrance loop     [||]  |
+| [wave~~~~] Kyrie entrance...   [||]  |
 | Home        Search      Library      |
 +--------------------------------------+
 ```
@@ -286,7 +299,7 @@ Why: The default playlist view treats the playlist as a queue first: the title a
 | Cancel                               |
 |                                      |
 | Gloria - Alto guide removed   [Undo] |
-| [wave] Kyrie entrance loop     [||]  |
+| [wave~~~~] Kyrie entrance...   [||]  |
 +--------------------------------------+
 ```
 
@@ -313,31 +326,56 @@ Why: Removal stays local to the playlist detail surface. The row menu exposes a 
 
 Why: Edit mode is clearly separate from playback mode. Playback affordances disappear, drag handles and destructive controls take over, and save becomes the explicit exit that commits the new ordered playlist indexes.
 
-## Screen 7: Now Playing
+## Screen 7: Dedicated Playback Modal (Now Playing)
+
+### State A: Individual Track Playback
 
 ```text
 +--------------------------------------+
-| v                            [queue] |
+|                [pill]                |
+| Rehearsing: Kyrie                    |
 |                                      |
-|         [ waveform view ]            |
+| [wave active======== mute-----]      |
 |                                      |
 | Kyrie entrance loop                  |
-| From Wednesday rehearsal             |
+| Tenor 1 Stem                         |
 | LOOP 0:42 - 1:06                     |
 |                                      |
-| Progress slider                      |
-| 0:51 -----------o--------- 1:06      |
+| 0:51                          1:06   |
 |                                      |
-| [shuffle] [prev] [pause] [next] [rpt]|
+|      [skip-15] [pause] [skip+15]     |
+|                                      |
+| Repeat: Loop                         |
 | [speaker] ----o------------- [max]   |
-|                                      |
-| [ Save ] [ Add to playlist ] [ Share]|
-|                                      |
-| Up next: Gloria - Alto guide         |
 +--------------------------------------+
 ```
 
-Why: The full playback view gives the active item a strong emotional center while keeping loop context, a scrubber slider, a speaker-annotated volume slider, and the next queue decision visible.
+Why: Standalone playback keeps the modal focused on the current stem or loop. Rehearsal skip jumps stay close to play / pause, while queue-only controls stay hidden because there is no playlist context to move through.
+
+### State B: Playlist / Queued Playback
+
+```text
++--------------------------------------+
+|                [pill]                |
+| Rehearsing: Kyrie             [queue]|
+|                                      |
+| [wave active======== mute-----]      |
+|                                      |
+| Kyrie entrance loop                  |
+| 3 of 12 • Tenor 1 Stem               |
+| From Wednesday rehearsal             |
+|                                      |
+| 0:51                          1:06   |
+|                                      |
+| [prev]                    [next]     |
+|      [skip-15] [pause] [skip+15]     |
+|                                      |
+| Repeat: Playlist   Shuffle: Off      |
+| [speaker] ----o------------- [max]   |
++--------------------------------------+
+```
+
+Why: Queued playback keeps the same current-item skip controls for rehearsal work, but adds previous / next item navigation and a queue affordance because playlist context is now relevant. This keeps both interactions available without showing queue navigation on standalone tracks.
 
 ## Screen 8: Queue / Up Next Sheet
 
@@ -346,7 +384,7 @@ Why: The full playback view gives the active item a strong emotional center whil
 | Up Next                        Done  |
 | Repeat: Playlist   Shuffle: On       |
 |                                      |
-| Now playing                           |
+| Now rehearsing                        |
 | Kyrie entrance loop             ||   |
 |                                      |
 | Next                                  |
@@ -359,4 +397,4 @@ Why: The full playback view gives the active item a strong emotional center whil
 +--------------------------------------+
 ```
 
-Why: Queue control belongs close to now playing, preferably as a sheet or adjacent screen, so users can adjust the session without abandoning playback context.
+Why: Queue control belongs close to the dedicated playback modal, preferably as a sheet or adjacent screen, so users can adjust the session without abandoning playback context or overloading the main transport row.

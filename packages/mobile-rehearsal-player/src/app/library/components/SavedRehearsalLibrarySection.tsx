@@ -131,9 +131,8 @@ export const SavedRehearsalLibrarySection = ({
     null,
   );
   const [isPlaylistDetailVisible, setIsPlaylistDetailVisible] = useState(false);
-  const [trackPlaylistCreationIssue, setTrackPlaylistCreationIssue] = useState<
-    PlaylistDraftIssue | null
-  >(null);
+  const [trackPlaylistCreationIssue, setTrackPlaylistCreationIssue] =
+    useState<PlaylistDraftIssue | null>(null);
   const [trackPlaylistMenuState, dispatchTrackPlaylistMenu] = useReducer(
     reduceSavedTrackPlaylistMenuState,
     undefined,
@@ -232,9 +231,12 @@ export const SavedRehearsalLibrarySection = ({
       return;
     }
 
-    const persistedPlaylist = await persistPlaylist(playlist, (nextPlaylist) => {
-      return addTrackToPlaylist(nextPlaylist, selectedTrackMenuSource);
-    });
+    const persistedPlaylist = await persistPlaylist(
+      playlist,
+      (nextPlaylist) => {
+        return addTrackToPlaylist(nextPlaylist, selectedTrackMenuSource);
+      },
+    );
 
     if (persistedPlaylist) {
       closeTrackPlaylistMenu();

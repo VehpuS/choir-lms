@@ -21,7 +21,7 @@
 
 - [x] 4.1 Implement loop marker selection, loop validation, and named loop creation from a saved rehearsal library track.
 - [x] 4.1b Replace the persistent library loop builder with a track-launched loop creation surface that uses a dual-thumb range slider and focused save flow.
-- [x] 4.2 Implement the destination-based mobile shell with Home, Search, Library, and a persistent mini-player around the already-working discovery and saved-library flows.
+- [x] 4.2 Implement the destination-based mobile shell with Home, Search, Library, and a persistent mini-player anchored above bottom navigation around the already-working discovery and saved-library flows.
 - [x] 4.3 Implement browse, search, and personal library screens that separate discovery from saved tracks and saved loops while preserving fast rehearsal actions for the current slice.
 - [x] 4.4 Implement playlist creation and editing for saved full tracks and saved loops.
 - [x] 4.5 Move playlist-building actions out of the in-playlist editor cards and into the saved track / saved loop library surfaces so Library drives playlist population while playlist detail stays focused on order and playback intent.
@@ -35,8 +35,9 @@
 - [x] 5.1a Extend now-playing and playlist queue behavior with a draggable scrubber slider, an in-app volume slider, and duplicate-safe queue positions for repeated playlist items.
 - [ ] 5.1b Update playlist detail interactions to use a `PlayAll` FAB, row-tap playback from the tapped playlist index, row-local `removeFromPlaylist` with undo snackbar feedback, and a header-triggered edit mode that swaps playback icons for drag handles plus destructive controls.
 - [ ] 5.1c Keep playlist context menus, selector overlays, toast / snackbar feedback, and playlist `EditState` in UI-local models so the playback engine rebuilds queues from persisted playlist-entry order instead of transient screen state.
+- [ ] 5.1d Align the mini-player and dedicated playback screen with the waveform-first rehearsal UX by anchoring the mini-player above bottom navigation, replacing artwork with waveform treatments, adding playing-only marquee behavior, and introducing a slide-up / swipe-down playback modal that always keeps rehearsal-oriented skip-back / skip-forward controls while conditionally exposing previous / next item controls only for playlist or queued playback.
 - [ ] 5.2 Extend the TrackPlayer integration so background playback plus supported native play / pause / next / previous controls operate on the active rehearsal queue instead of single-item playback.
 - [ ] 5.3 Remove placeholder copy and redundant controls that still point to a later playback slice or duplicate nearby actions so each screen keeps one clear rehearsal job.
 - [ ] 5.4 Validate ordered, shuffled, repeated, and loop-bounded playback on supported mobile platforms using representative Google Drive audio from both personal and shared Drive contexts.
 - [ ] 5.5 Add automated coverage for shared queue construction / navigation and app-level playback view-model helpers, then add a manual regression checklist for the core MVP flows in the mobile-practice-library, practice-loops-and-playlists, and mobile-rehearsal-player-ui specs.
-- [ ] 5.6 Compare the final Home, Search, Library, playlist detail, now-playing, and queue interactions against the mobile-rehearsal-player-ui mockups on representative phone-sized screens, including slider treatments for loop selection, progress, and volume plus music-icon semantics, and record any intentional spec deltas before more feature work.
+- [ ] 5.6 Compare the final Home, Search, Library, playlist detail, playback modal, and queue interactions against the mobile-rehearsal-player-ui mockups on representative phone-sized screens, including mini-player persistence, waveform-first playback treatments, loop selection, volume, and music-icon semantics, and record any intentional spec deltas before more feature work.

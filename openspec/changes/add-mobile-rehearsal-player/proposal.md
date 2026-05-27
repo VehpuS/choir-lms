@@ -18,7 +18,7 @@ Choir members need a dependable mobile practice experience that turns existing r
 
 - `mobile-practice-library`: Browse and search accessible Google Drive audio, save source references into a personal rehearsal library, and use saved full tracks as playable rehearsal material.
 - `practice-loops-and-playlists`: Create named loops from source audio, add tracks and loops to playlists through mobile-first add flows, persist ordered playlist entries, and control playback with repeat, shuffle, and native mobile transport integration.
-- `mobile-rehearsal-player-ui`: Present discovery, search, library management, playlists, and now-playing flows through a rehearsal-first mobile UI modeled on strong consumer music app interaction patterns.
+- `mobile-rehearsal-player-ui`: Present discovery, search, library management, playlists, and waveform-first playback flows through a rehearsal-first mobile UI modeled on strong consumer music app interaction patterns and adapted for metadata-poor rehearsal stems.
 
 ### Modified Capabilities
 
@@ -30,5 +30,5 @@ Choir members need a dependable mobile practice experience that turns existing r
 - Requires Google authentication plus Drive browse and search access for audio metadata and streaming.
 - Requires a mobile-oriented React client, audio playback infrastructure, and app-owned persistence for saved library references, loop definitions, and playlists.
 - Requires app-owned persistence for ordered playlist-entry relationships and screen-local playlist-management state that remains decoupled from the core playback transport engine.
-- Requires a destination-based mobile navigation shell, persistent mini-player behavior, and queue-oriented playback UX so the product can support repeated listening sessions without feeling like a raw file browser.
+- Requires a destination-based mobile navigation shell, global audio-engine playback state, a persistent waveform mini-player anchored above the bottom navigation bar, and a queue-aware playback modal so the product can support repeated listening sessions without feeling like a raw file browser.
 - Constrains MVP scope to online audio playback only, reducing complexity from offline sync, document tooling, and advanced collaborative media workflows.

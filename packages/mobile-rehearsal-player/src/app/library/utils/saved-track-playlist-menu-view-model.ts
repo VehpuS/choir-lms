@@ -41,13 +41,14 @@ export type SavedTrackContextMenuCopy = {
   title: string;
 };
 
-export const getSavedTrackPlaylistMenuInitialState = (): SavedTrackPlaylistMenuState => {
-  return {
-    draftName: '',
-    selectedSourceId: null,
-    step: 'hidden',
+export const getSavedTrackPlaylistMenuInitialState =
+  (): SavedTrackPlaylistMenuState => {
+    return {
+      draftName: '',
+      selectedSourceId: null,
+      step: 'hidden',
+    };
   };
-};
 
 export const reduceSavedTrackPlaylistMenuState = (
   state: SavedTrackPlaylistMenuState,

@@ -2,17 +2,48 @@
 
 ### Requirement: The mobile rehearsal player uses a destination-based shell with persistent playback context
 
-The system SHALL present the mobile rehearsal player through a destination-based navigation shell that keeps discovery, personal library management, and active playback one tap away.
+The system SHALL present the mobile rehearsal player through a destination-based navigation shell that keeps discovery, personal library management, and active playback one tap away while a shared audio engine persists playback state across the app.
 
 #### Scenario: Active playback remains visible while browsing the app
 
-- **WHEN** playback is active and the user moves between top-level destinations such as Home, Search, or Library
-- **THEN** the system keeps a persistent mini-player visible with the current item title, playback state, and a direct entry point into the full now-playing view
+- **WHEN** an active track or saved loop is loaded in the audio engine and the user moves between top-level destinations such as Home, Search, or Library
+- **THEN** the system keeps a persistent mini-player visible above the bottom navigation bar with the current item identity, current playback state, and a direct entry point into the dedicated playback screen
+
+#### Scenario: Playback state stays shared across entry points
+
+- **WHEN** playback changes to playing, paused, or buffering from any screen or transport entry point
+- **THEN** the mini-player, dedicated playback screen, and any queue surfaces reflect the same shared audio-engine state without unloading or restarting the active item
 
 #### Scenario: Top-level navigation preserves user context
 
 - **WHEN** a user moves between top-level destinations and returns to a previous destination
 - **THEN** the system restores the last meaningful state for that destination such as scroll position, active filters, or the current folder path when practical for the active session
+
+### Requirement: The mini-player uses a waveform-first rehearsal summary
+
+The system SHALL present the mini-player as a horizontal container fixed above the main navigation bar whenever the audio engine has an active track or loop loaded.
+
+Companion mockup states: Component A shows the global mini-player treatment that also appears at the bottom of Screens 1 through 4 and Screen 6.
+
+#### Scenario: Waveform replaces square artwork in the mini-player
+
+- **WHEN** the mini-player renders the active item
+- **THEN** the system shows a simplified, non-interactive waveform for the current stem instead of a square artwork thumbnail, truncates the track title with an ellipsis, and shows part or section metadata only when it is available
+
+#### Scenario: Overflowing mini-player titles animate only during active playback
+
+- **WHEN** the active title exceeds the available mini-player text width
+- **THEN** the system keeps the title statically truncated unless playback is actively playing, and only then may it use a marquee treatment
+
+#### Scenario: Mini-player body opens the dedicated playback screen
+
+- **WHEN** a user taps anywhere on the mini-player outside the play / pause control
+- **THEN** the system opens the dedicated playback screen with a modal slide-up transition
+
+#### Scenario: Mini-player transport stays local to the compact surface
+
+- **WHEN** a user taps the right-aligned play / pause control in the mini-player
+- **THEN** the system toggles playback without leaving the current route
 
 ### Requirement: The public library separates discovery from saved practice materials
 
@@ -162,29 +193,56 @@ Companion mockup states: Screen 4A through Screen 4C and Screen 6 State B throug
 - **WHEN** a user taps `PlayAll`, taps a playlist item, or reopens a playlist after dismissing its management surfaces
 - **THEN** the system builds playback from the persisted playlist membership order instead of from temporary bottom-sheet, modal, toast, snackbar, or `EditState` values
 
-### Requirement: The now-playing experience prioritizes transport, progress, and rehearsal context
+### Requirement: The dedicated playback screen prioritizes waveform scrubbing, transport, and rehearsal context
 
-The system SHALL provide a full now-playing view that foregrounds the active item, playback progress, transport controls, and contextual actions relevant to rehearsal use.
+The system SHALL provide a full-screen playback modal that slides up from the bottom and foregrounds a SoundCloud-style waveform, rehearsal-oriented transport controls, and contextual track information for metadata-poor stems.
 
-#### Scenario: Mini-player expands into a focused playback view
+Companion mockup states: Screen 7 shows the dedicated playback modal with a swipe-down handle, contextual header, waveform hero, and rehearsal-oriented transport row. Screen 8 shows the queue sheet reachable from that playback surface.
 
-- **WHEN** a user opens the full now-playing experience from the mini-player or another playback entry point
-- **THEN** the system expands into a focused view that clearly shows the active item title, source context, a waveform visualization or simple waveform placeholder, progress, and primary transport controls
+#### Scenario: Mini-player expands into a slide-up playback modal
 
-#### Scenario: Users can scrub the active timeline from now playing
+- **WHEN** a user opens the dedicated playback screen from the mini-player or another playback entry point
+- **THEN** the system presents a full-screen modal that slides up from the bottom, includes a swipe-down chevron or pill plus contextual header text such as `Rehearsing: [Song Name]`, and keeps audio playback uninterrupted during the transition
 
-- **WHEN** a user drags the progress scrubber slider in the now-playing experience
-- **THEN** the system seeks within the active track or saved-loop bounds and updates the visible playback progress without leaving the playback surface
+#### Scenario: Waveform is the dominant interactive hero
 
-#### Scenario: Users can adjust playback volume without leaving now playing
+- **WHEN** the dedicated playback screen is visible
+- **THEN** the system shows a large interactive waveform for the entire active item instead of square artwork, colors the played portion with an active state from left to right, renders the unplayed portion in a muted state, and lets the user scrub by dragging horizontally across the waveform itself
 
-- **WHEN** a user changes the speaker-annotated volume slider from the now-playing experience
+#### Scenario: Playback controls keep rehearsal skip jumps available
+
+- **WHEN** a user views the primary transport row on the dedicated playback screen
+- **THEN** the system keeps skip-back and skip-forward controls for rehearsal jumps such as 10 or 15 seconds adjacent to play / pause so current-item rehearsal navigation remains available
+
+#### Scenario: Queued playback exposes both current-item and queue navigation
+
+- **WHEN** the active item belongs to a playlist or other queued playback context
+- **THEN** the dedicated playback screen additionally shows previous-item and next-item controls while keeping skip-back / play-pause / skip-forward controls available for the current item
+
+#### Scenario: Standalone playback hides queue-only controls
+
+- **WHEN** the active item is playing outside any playlist or queue
+- **THEN** the dedicated playback screen omits previous-item, next-item, and other queue-only controls while keeping current-item rehearsal skip controls available
+
+#### Scenario: Track identity stays legible without album artwork
+
+- **WHEN** the dedicated playback screen renders the active item
+- **THEN** the system shows a large track title and subtitle such as the stem part or section name, plus loop or source context when relevant, without relying on square artwork to identify the item
+
+#### Scenario: Users can adjust playback volume without leaving the dedicated playback screen
+
+- **WHEN** a user changes the speaker-annotated volume slider from the dedicated playback screen
 - **THEN** the system updates the active playback volume and the visible speaker or mute state while keeping the current rehearsal context visible
 
 #### Scenario: Loop context is visible during loop playback
 
 - **WHEN** the active item is a saved loop
-- **THEN** the now-playing experience shows that the item is a loop and surfaces its saved range or other loop-identifying context so the user understands why playback is constrained
+- **THEN** the dedicated playback screen shows that the item is a loop and surfaces its saved range or other loop-identifying context so the user understands why playback is constrained
+
+#### Scenario: Swiping down dismisses playback without interrupting audio
+
+- **WHEN** a user swipes down anywhere on the dedicated playback screen
+- **THEN** the system dismisses the modal back to the mini-player while preserving the current playback state and active item
 
 ### Requirement: Playback and library controls use consistent music icon semantics
 
@@ -194,8 +252,8 @@ Companion mockup states: Screen 3 and Screen 4 show row-level More Options affor
 
 #### Scenario: Transport and queue controls use familiar music-player icons
 
-- **WHEN** a user views the mini-player, now-playing, or queue controls
-- **THEN** the system uses platform-standard icons for play or pause, previous, next, queue, shuffle, repeat, and speaker volume or mute states, and only the icon matching the current state is shown as active
+- **WHEN** a user views the mini-player, dedicated playback screen, or queue controls
+- **THEN** the system uses platform-standard icons for play or pause, skip backward, skip forward, previous item, next item, queue, shuffle, repeat, and speaker volume or mute states, keeps current-item skip controls visually distinct from queue-navigation controls, and only shows previous-item, next-item, or queue affordances when the active playback context actually supports queued navigation
 
 #### Scenario: Icon-only controls remain understandable and accessible
 
@@ -209,11 +267,11 @@ Companion mockup states: Screen 3 and Screen 4 show row-level More Options affor
 
 ### Requirement: The queue is visible and controllable without leaving playback
 
-The system SHALL provide an up-next or queue surface that lets the user inspect and manage upcoming playback items while staying close to the active playback experience.
+The system SHALL provide an up-next or queue surface that lets the user inspect and manage upcoming playback items while staying close to the active playback modal.
 
-#### Scenario: Users can inspect upcoming playback from now playing
+#### Scenario: Users can inspect upcoming playback from the dedicated playback screen
 
-- **WHEN** a user opens the queue from the now-playing experience
+- **WHEN** a user opens the queue from the dedicated playback screen
 - **THEN** the system shows the current item, the upcoming items in order, and the active repeat or shuffle state in a queue-oriented layout
 
 #### Scenario: Users can adjust queue order during a rehearsal session
