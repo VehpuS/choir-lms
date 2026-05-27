@@ -6,6 +6,7 @@ import {
   type OwnershipScope,
   type Playlist,
   type PlaylistEntry,
+  type PlaylistEntryInput,
 } from './rehearsal-domain.ts';
 
 const defaultPlaylistId = (ownerId: string, createdAt: string) => {
@@ -35,17 +36,82 @@ const moveItem = <Entity>(
   return nextValues;
 };
 
+const getNormalizedSortIndex = (
+  entry: PlaylistEntryInput,
+  fallbackIndex: number,
+) => {
+  return Number.isFinite(entry.sortIndex) ? entry.sortIndex : fallbackIndex;
+};
+
+const normalizePlaylistItems = (
+  playlistId: string,
+  items: PlaylistEntryInput[],
+): PlaylistEntry[] => {
+  return [...items]
+    .map((entry, originalIndex) => ({
+      entry,
+      originalIndex,
+      sortIndex: getNormalizedSortIndex(entry, originalIndex),
+    }))
+    .sort((left, right) => {
+      if (left.sortIndex !== right.sortIndex) {
+        return left.sortIndex - right.sortIndex;
+      }
+
+      return left.originalIndex - right.originalIndex;
+    })
+    .map(({ entry }, sortIndex) => ({
+      ...entry,
+      playlistId,
+      sortIndex,
+    }));
+};
+
+const reindexPlaylistItems = (
+  playlistId: string,
+  items: PlaylistEntryInput[],
+): PlaylistEntry[] => {
+  return items.map((entry, sortIndex) => ({
+    ...entry,
+    playlistId,
+    sortIndex,
+  }));
+};
+
+export const normalizePlaylist = (
+  playlist: Omit<Playlist, 'items'> & {
+    items: PlaylistEntryInput[];
+  },
+): Playlist => {
+  return {
+    ...playlist,
+    items: normalizePlaylistItems(playlist.id, playlist.items),
+  };
+};
+
+const updatePlaylistItems = (
+  playlist: Playlist,
+  items: PlaylistEntryInput[],
+  updatedAt: string,
+): Playlist => {
+  return {
+    ...playlist,
+    items: reindexPlaylistItems(playlist.id, items),
+    updatedAt,
+  };
+};
+
 export const createPlaylist = (options: {
   createId?: (ownerId: string, createdAt: string) => string;
   createdAt?: string;
-  items?: PlaylistEntry[];
+  items?: PlaylistEntryInput[];
   name: string;
   ownerId: string;
   ownershipScope?: OwnershipScope;
 }): Playlist => {
   const createdAt = options.createdAt ?? new Date().toISOString();
 
-  return {
+  return normalizePlaylist({
     id:
       options.createId?.(options.ownerId, createdAt) ??
       defaultPlaylistId(options.ownerId, createdAt),
@@ -55,7 +121,7 @@ export const createPlaylist = (options: {
     ownerId: options.ownerId,
     createdAt,
     updatedAt: createdAt,
-  };
+  });
 };
 
 export const renamePlaylist = (
@@ -63,11 +129,11 @@ export const renamePlaylist = (
   name: string,
   updatedAt: string = new Date().toISOString(),
 ): Playlist => {
-  return {
+  return normalizePlaylist({
     ...playlist,
     name: name.trim(),
     updatedAt,
-  };
+  });
 };
 
 export const addTrackToPlaylist = (
@@ -75,11 +141,17 @@ export const addTrackToPlaylist = (
   source: DriveAudioSource,
   updatedAt: string = new Date().toISOString(),
 ): Playlist => {
-  return {
-    ...playlist,
-    items: [...playlist.items, createPlaylistEntryFromTrack(source, updatedAt)],
+  return updatePlaylistItems(
+    playlist,
+    [
+      ...playlist.items,
+      createPlaylistEntryFromTrack(source, updatedAt, {
+        playlistId: playlist.id,
+        sortIndex: playlist.items.length,
+      }),
+    ],
     updatedAt,
-  };
+  );
 };
 
 export const addLoopToPlaylist = (
@@ -87,11 +159,17 @@ export const addLoopToPlaylist = (
   loop: NamedLoop,
   updatedAt: string = new Date().toISOString(),
 ): Playlist => {
-  return {
-    ...playlist,
-    items: [...playlist.items, createPlaylistEntryFromLoop(loop, updatedAt)],
+  return updatePlaylistItems(
+    playlist,
+    [
+      ...playlist.items,
+      createPlaylistEntryFromLoop(loop, updatedAt, {
+        playlistId: playlist.id,
+        sortIndex: playlist.items.length,
+      }),
+    ],
     updatedAt,
-  };
+  );
 };
 
 export const removePlaylistEntry = (
@@ -99,11 +177,11 @@ export const removePlaylistEntry = (
   entryId: string,
   updatedAt: string = new Date().toISOString(),
 ): Playlist => {
-  return {
-    ...playlist,
-    items: playlist.items.filter((entry) => entry.id !== entryId),
+  return updatePlaylistItems(
+    playlist,
+    playlist.items.filter((entry) => entry.id !== entryId),
     updatedAt,
-  };
+  );
 };
 
 export const movePlaylistEntry = (
@@ -112,9 +190,9 @@ export const movePlaylistEntry = (
   toIndex: number,
   updatedAt: string = new Date().toISOString(),
 ): Playlist => {
-  return {
-    ...playlist,
-    items: moveItem(playlist.items, fromIndex, toIndex),
+  return updatePlaylistItems(
+    playlist,
+    moveItem(playlist.items, fromIndex, toIndex),
     updatedAt,
-  };
+  );
 };

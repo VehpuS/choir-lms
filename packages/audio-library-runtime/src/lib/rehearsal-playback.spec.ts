@@ -20,6 +20,8 @@ import {
   resolvePreviousQueueIndex,
 } from './rehearsal-playback.js';
 
+const PLAYLIST_ID = 'playlist-1';
+
 const mutableAsyncStorage = AsyncStorage as unknown as AsyncStorageStatic;
 
 const ORIGINAL_ASYNC_STORAGE = {
@@ -62,14 +64,24 @@ const SAVED_LOOP: NamedLoop = {
 };
 
 const PLAYLIST: Playlist = {
-  id: 'playlist-1',
+  id: PLAYLIST_ID,
   name: 'Morning rehearsal',
   items: [
-    createPlaylistEntryFromTrack(AVAILABLE_SOURCE, '2026-05-10T01:00:00.000Z'),
-    createPlaylistEntryFromLoop(SAVED_LOOP, '2026-05-10T01:05:00.000Z'),
+    createPlaylistEntryFromTrack(AVAILABLE_SOURCE, '2026-05-10T01:00:00.000Z', {
+      playlistId: PLAYLIST_ID,
+      sortIndex: 0,
+    }),
+    createPlaylistEntryFromLoop(SAVED_LOOP, '2026-05-10T01:05:00.000Z', {
+      playlistId: PLAYLIST_ID,
+      sortIndex: 1,
+    }),
     createPlaylistEntryFromTrack(
       UNAVAILABLE_SOURCE,
       '2026-05-10T01:10:00.000Z',
+      {
+        playlistId: PLAYLIST_ID,
+        sortIndex: 2,
+      },
     ),
   ],
   ownershipScope: 'user',
@@ -150,6 +162,30 @@ describe('AsyncStoragePracticeRepository', () => {
       ['Morning rehearsal', 'Z Finales'],
     );
     assert.deepEqual(
+      (await repository.listPlaylists('user-1'))[0]?.items.map((entry) => ({
+        id: entry.id,
+        playlistId: entry.playlistId,
+        sortIndex: entry.sortIndex,
+      })),
+      [
+        {
+          id: 'entry:track:drive:drive-file-1:2026-05-10T01:00:00.000Z',
+          playlistId: PLAYLIST_ID,
+          sortIndex: 0,
+        },
+        {
+          id: 'entry:loop:loop-1:2026-05-10T01:05:00.000Z',
+          playlistId: PLAYLIST_ID,
+          sortIndex: 1,
+        },
+        {
+          id: 'entry:track:drive:drive-file-2:2026-05-10T01:10:00.000Z',
+          playlistId: PLAYLIST_ID,
+          sortIndex: 2,
+        },
+      ],
+    );
+    assert.deepEqual(
       await repository.deleteSource('user-1', 'drive:drive-file-3'),
       [AVAILABLE_SOURCE],
     );
@@ -159,6 +195,77 @@ describe('AsyncStoragePracticeRepository', () => {
     assert.deepEqual(await repository.deletePlaylist('user-1', 'playlist-2'), [
       PLAYLIST,
     ]);
+  });
+
+  it('migrates legacy stored playlists to explicit entry relationships on read', async () => {
+    const storage = new Map<string, string>([
+      [
+        'choirlms:practice:playlists:user-1',
+        JSON.stringify([
+          {
+            ...PLAYLIST,
+            items: [
+              {
+                id: 'entry-2',
+                kind: 'loop',
+                sourceId: AVAILABLE_SOURCE.id,
+                loopId: SAVED_LOOP.id,
+                title: SAVED_LOOP.name,
+                description: `${SAVED_LOOP.sourceName} loop`,
+                createdAt: '2026-05-10T01:05:00.000Z',
+                sortIndex: 9,
+              },
+              {
+                id: 'entry-1',
+                kind: 'track',
+                sourceId: AVAILABLE_SOURCE.id,
+                title: AVAILABLE_SOURCE.name,
+                description: 'Full track',
+                createdAt: '2026-05-10T01:00:00.000Z',
+                sortIndex: 3,
+              },
+            ],
+          },
+        ]),
+      ],
+    ]);
+    const repository = new AsyncStoragePracticeRepository();
+
+    mutableAsyncStorage.getItem = async (key) => {
+      return storage.get(key) ?? null;
+    };
+    mutableAsyncStorage.removeItem = async (key) => {
+      storage.delete(key);
+    };
+    mutableAsyncStorage.setItem = async (key, value) => {
+      storage.set(key, value);
+    };
+
+    const playlists = await repository.listPlaylists('user-1');
+
+    assert.deepEqual(
+      playlists[0]?.items.map((entry) => ({
+        id: entry.id,
+        playlistId: entry.playlistId,
+        sortIndex: entry.sortIndex,
+      })),
+      [
+        {
+          id: 'entry-1',
+          playlistId: PLAYLIST_ID,
+          sortIndex: 0,
+        },
+        {
+          id: 'entry-2',
+          playlistId: PLAYLIST_ID,
+          sortIndex: 1,
+        },
+      ],
+    );
+    assert.match(
+      storage.get('choirlms:practice:playlists:user-1') ?? '',
+      /"playlistId":"playlist-1"/,
+    );
   });
 
   it('removes dependent loops when a saved source is deleted', async () => {
@@ -264,10 +371,18 @@ describe('resolvePlaylistItems', () => {
         createPlaylistEntryFromTrack(
           AVAILABLE_SOURCE,
           '2026-05-10T01:00:00.000Z',
+          {
+            playlistId: PLAYLIST_ID,
+            sortIndex: 0,
+          },
         ),
         createPlaylistEntryFromTrack(
           AVAILABLE_SOURCE,
           '2026-05-10T01:01:00.000Z',
+          {
+            playlistId: PLAYLIST_ID,
+            sortIndex: 1,
+          },
         ),
       ],
     };

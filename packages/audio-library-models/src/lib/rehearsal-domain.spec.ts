@@ -158,22 +158,77 @@ describe('playlist helpers', () => {
       loopPlaylist.items.map((entry) => ({
         description: entry.description,
         kind: entry.kind,
+        playlistId: entry.playlistId,
+        sortIndex: entry.sortIndex,
         title: entry.title,
       })),
       [
         {
           description: 'Full track',
           kind: 'track',
+          playlistId: createdPlaylist.id,
+          sortIndex: 0,
           title: 'Soprano Warmup.mp3',
         },
         {
           description: 'Soprano Warmup.mp3 loop',
           kind: 'loop',
+          playlistId: createdPlaylist.id,
+          sortIndex: 1,
           title: 'Entrance cue',
         },
       ],
     );
     assert.equal(loopPlaylist.updatedAt, '2026-05-11T00:02:00.000Z');
+  });
+
+  it('normalizes legacy playlist entries onto the owning playlist relationship', () => {
+    const playlist = createPlaylist({
+      items: [
+        {
+          id: 'entry-2',
+          kind: 'loop',
+          sourceId: TEST_SOURCE.id,
+          loopId: 'loop-42',
+          title: 'Second',
+          description: 'Loop',
+          createdAt: '2026-05-11T00:02:00.000Z',
+          sortIndex: 4,
+        },
+        {
+          id: 'entry-1',
+          kind: 'track',
+          sourceId: TEST_SOURCE.id,
+          title: 'First',
+          description: 'Full track',
+          createdAt: '2026-05-11T00:01:00.000Z',
+          sortIndex: 2,
+        },
+      ],
+      name: 'Morning run',
+      ownerId: 'user-1',
+      createdAt: '2026-05-11T00:00:00.000Z',
+    });
+
+    assert.deepEqual(
+      playlist.items.map((entry) => ({
+        id: entry.id,
+        playlistId: entry.playlistId,
+        sortIndex: entry.sortIndex,
+      })),
+      [
+        {
+          id: 'entry-1',
+          playlistId: playlist.id,
+          sortIndex: 0,
+        },
+        {
+          id: 'entry-2',
+          playlistId: playlist.id,
+          sortIndex: 1,
+        },
+      ],
+    );
   });
 
   it('renames, reorders, and removes playlist entries while updating timestamps', () => {
@@ -221,12 +276,34 @@ describe('playlist helpers', () => {
 
     assert.equal(renamedPlaylist.name, 'Evening rehearsal');
     assert.deepEqual(
-      movedPlaylist.items.map((entry) => entry.id),
-      ['entry-2', 'entry-1'],
+      movedPlaylist.items.map((entry) => ({
+        id: entry.id,
+        sortIndex: entry.sortIndex,
+      })),
+      [
+        {
+          id: 'entry-2',
+          sortIndex: 0,
+        },
+        {
+          id: 'entry-1',
+          sortIndex: 1,
+        },
+      ],
     );
     assert.deepEqual(
-      trimmedPlaylist.items.map((entry) => entry.id),
-      ['entry-2'],
+      trimmedPlaylist.items.map((entry) => ({
+        id: entry.id,
+        playlistId: entry.playlistId,
+        sortIndex: entry.sortIndex,
+      })),
+      [
+        {
+          id: 'entry-2',
+          playlistId: trimmedPlaylist.id,
+          sortIndex: 0,
+        },
+      ],
     );
     assert.equal(trimmedPlaylist.updatedAt, '2026-05-11T00:05:00.000Z');
   });

@@ -27,7 +27,7 @@
 - [x] 4.5 Move playlist-building actions out of the in-playlist editor cards and into the saved track / saved loop library surfaces so Library drives playlist population while playlist detail stays focused on order and playback intent.
 - [x] 4.5a Replace generic add-to-playlist affordances on saved track rows with a More Options context menu that opens a track metadata bottom sheet, then a playlist selector overlay for existing-playlist assignment or in-flow playlist creation.
 - [x] 4.6 Wire playlist playback in the mobile app to the shared queue helpers so rehearsal sessions can start from saved playlists and honor ordered playback, shuffle, and repeat off / one / all across track and loop items.
-- [ ] 4.6a Persist playlist membership through ordered playlist-entry relationships so saved tracks and saved loops can belong to multiple playlists with independent explicit sort indexes and duplicate-safe queue positions.
+- [x] 4.6a Persist playlist membership through ordered playlist-entry relationships so saved tracks and saved loops can belong to multiple playlists with independent explicit sort indexes and duplicate-safe queue positions.
 
 ## 5. Native playback integration and validation
 

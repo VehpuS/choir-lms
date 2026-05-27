@@ -162,6 +162,10 @@
     "/^cd \\S+ && npm exec -- nx run \\S+:typecheck$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec -- nx test audio-library-models --outputStyle=static && npm exec -- nx test audio-library-runtime --outputStyle=static$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

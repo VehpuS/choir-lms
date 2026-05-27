@@ -2,6 +2,7 @@ import {
   createLoopPlayableItem,
   createTrackPlayableItem,
   isSourcePlayable,
+  normalizePlaylist,
   type DriveAudioSource,
   type NamedLoop,
   type PlayableItem,
@@ -135,19 +136,33 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
   }
 
   async listPlaylists(ownerId: string) {
-    return readCollection<Playlist>(storageKey('playlists', ownerId));
+    const key = storageKey('playlists', ownerId);
+    const playlists = await readCollection<Playlist>(key);
+    const normalizedPlaylists = playlists.map((playlist) => {
+      return normalizePlaylist(playlist);
+    });
+
+    if (JSON.stringify(playlists) !== JSON.stringify(normalizedPlaylists)) {
+      await writeCollection(key, normalizedPlaylists);
+    }
+
+    return normalizedPlaylists;
   }
 
   async savePlaylist(playlist: Playlist) {
+    const normalizedPlaylist = normalizePlaylist(playlist);
     const playlists = await this.listPlaylists(playlist.ownerId);
     const otherPlaylists = filter(
       playlists,
-      (existingPlaylist) => existingPlaylist.id !== playlist.id,
+      (existingPlaylist) => existingPlaylist.id !== normalizedPlaylist.id,
     );
-    const nextPlaylists = sortBy([...otherPlaylists, playlist], ['name']);
+    const nextPlaylists = sortBy(
+      [...otherPlaylists, normalizedPlaylist],
+      ['name'],
+    );
 
     return writeCollection(
-      storageKey('playlists', playlist.ownerId),
+      storageKey('playlists', normalizedPlaylist.ownerId),
       nextPlaylists,
     );
   }
@@ -168,6 +183,7 @@ export const resolvePlaylistItems = (
   loops: NamedLoop[],
   sources: DriveAudioSource[],
 ) => {
+  const normalizedPlaylist = normalizePlaylist(playlist);
   const loopsById: Partial<Record<string, NamedLoop>> = keyBy(
     loops,
     (loop) => loop.id,
@@ -177,7 +193,7 @@ export const resolvePlaylistItems = (
     (source) => source.id,
   );
 
-  const playableItems = flatMap(playlist.items, (entry) => {
+  const playableItems = flatMap(normalizedPlaylist.items, (entry) => {
     const source = sourcesById[entry.sourceId];
 
     if (!source || !isSourcePlayable(source)) {
@@ -185,7 +201,7 @@ export const resolvePlaylistItems = (
     }
 
     if (entry.kind === 'track') {
-      return [createTrackPlayableItem(source, playlist.id, entry.id)];
+      return [createTrackPlayableItem(source, normalizedPlaylist.id, entry.id)];
     }
 
     if (!entry.loopId) {
@@ -198,7 +214,9 @@ export const resolvePlaylistItems = (
       return [];
     }
 
-    return [createLoopPlayableItem(loop, source, playlist.id, entry.id)];
+    return [
+      createLoopPlayableItem(loop, source, normalizedPlaylist.id, entry.id),
+    ];
   });
 
   return playableItems;

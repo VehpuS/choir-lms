@@ -69,12 +69,22 @@ export type NamedLoop = {
 
 export type PlaylistEntry = {
   id: string;
+  playlistId: string;
+  sortIndex: number;
   kind: PlayableItemKind;
   sourceId: string;
   loopId?: string;
   title: string;
   description?: string;
   createdAt: string;
+};
+
+export type PlaylistEntryInput = Omit<
+  PlaylistEntry,
+  'playlistId' | 'sortIndex'
+> & {
+  playlistId?: string;
+  sortIndex?: number;
 };
 
 export type Playlist = {
@@ -213,9 +223,15 @@ export const createLoopPlayableItem = (
 export const createPlaylistEntryFromTrack = (
   source: DriveAudioSource,
   createdAt: string,
+  options?: {
+    playlistId?: string;
+    sortIndex?: number;
+  },
 ): PlaylistEntry => {
   return {
     id: `entry:track:${source.id}:${createdAt}`,
+    playlistId: options?.playlistId ?? '',
+    sortIndex: options?.sortIndex ?? 0,
     kind: 'track',
     sourceId: source.id,
     title: source.name,
@@ -227,9 +243,15 @@ export const createPlaylistEntryFromTrack = (
 export const createPlaylistEntryFromLoop = (
   loop: NamedLoop,
   createdAt: string,
+  options?: {
+    playlistId?: string;
+    sortIndex?: number;
+  },
 ): PlaylistEntry => {
   return {
     id: `entry:loop:${loop.id}:${createdAt}`,
+    playlistId: options?.playlistId ?? '',
+    sortIndex: options?.sortIndex ?? 0,
     kind: 'loop',
     sourceId: loop.sourceId,
     loopId: loop.id,
