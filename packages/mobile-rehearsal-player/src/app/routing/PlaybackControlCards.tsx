@@ -6,12 +6,14 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { formatDurationLabel } from '../library/utils/drive-library-view-model';
 import { appTheme } from '../utils/theme';
+import { PlaybackWaveform } from './PlaybackWaveform';
 
 type PlaybackTimelineCardProps = {
   activePlayableItem: PlayableItem;
   canSeekActivePlayback: boolean;
   onSeekToPosition: (positionSeconds: number) => void;
   playbackPositionSeconds: number;
+  progressRatio: number;
 };
 
 type PlaybackVolumeCardProps = {
@@ -58,69 +60,38 @@ export const PlaybackTimelineCard = ({
   canSeekActivePlayback,
   onSeekToPosition,
   playbackPositionSeconds,
+  progressRatio,
 }: PlaybackTimelineCardProps) => {
   const {
     currentPositionSeconds,
     maximumPositionSeconds,
     minimumPositionSeconds,
   } = getTimelineBounds(activePlayableItem, playbackPositionSeconds);
-  const [draftPositionSeconds, setDraftPositionSeconds] = useState(
-    currentPositionSeconds,
+  const elapsedPositionSeconds = Math.max(
+    0,
+    currentPositionSeconds - minimumPositionSeconds,
   );
-  const [isDragging, setIsDragging] = useState(false);
-
-  useEffect(() => {
-    if (isDragging) {
-      return;
-    }
-
-    setDraftPositionSeconds(currentPositionSeconds);
-  }, [
-    activePlayableItem.id,
-    activePlayableItem.playlistEntryId,
-    currentPositionSeconds,
-    isDragging,
-  ]);
-
-  const displayedPositionSeconds = isDragging
-    ? draftPositionSeconds
-    : currentPositionSeconds;
-  const isSliderDisabled =
-    !canSeekActivePlayback || maximumPositionSeconds <= minimumPositionSeconds;
+  const totalDurationSeconds = Math.max(
+    0,
+    maximumPositionSeconds - minimumPositionSeconds,
+  );
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.valueLabel}>
-        {getLabelForSeconds(displayedPositionSeconds)}
-      </Text>
-      <Slider
-        disabled={isSliderDisabled}
-        maximumTrackTintColor="#d5ddd7"
-        maximumValue={maximumPositionSeconds}
-        minimumTrackTintColor="#305c4d"
-        minimumValue={minimumPositionSeconds}
-        onSlidingComplete={(nextPositionSeconds) => {
-          const resolvedPositionSeconds = getSliderNumber(nextPositionSeconds);
-
-          setIsDragging(false);
-          setDraftPositionSeconds(resolvedPositionSeconds);
-          onSeekToPosition(resolvedPositionSeconds);
-        }}
-        onValueChange={(nextPositionSeconds) => {
-          const resolvedPositionSeconds = getSliderNumber(nextPositionSeconds);
-
-          setIsDragging(true);
-          setDraftPositionSeconds(resolvedPositionSeconds);
-        }}
-        thumbTintColor="#305c4d"
-        value={displayedPositionSeconds}
+    <View style={[styles.card, styles.timelineCard]}>
+      <PlaybackWaveform
+        activePlayableItem={activePlayableItem}
+        interactive={canSeekActivePlayback}
+        onScrubToPosition={onSeekToPosition}
+        progressRatio={progressRatio}
+        style={styles.embeddedWaveform}
+        variant="hero"
       />
       <View style={styles.scaleRow}>
         <Text style={styles.scaleLabel}>
-          {getLabelForSeconds(minimumPositionSeconds)}
+          {getLabelForSeconds(elapsedPositionSeconds)}
         </Text>
         <Text style={styles.scaleLabel}>
-          {getLabelForSeconds(maximumPositionSeconds)}
+          {getLabelForSeconds(totalDurationSeconds)}
         </Text>
       </View>
     </View>
@@ -189,11 +160,16 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#fffdf8',
   },
-  valueLabel: {
-    color: '#2d584a',
-    fontSize: 14,
-    fontWeight: '700',
-    textAlign: 'right',
+  timelineCard: {
+    gap: 6,
+  },
+  embeddedWaveform: {
+    minHeight: 96,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    borderWidth: 0,
+    borderRadius: 0,
+    backgroundColor: 'transparent',
   },
   scaleRow: {
     flexDirection: 'row',
