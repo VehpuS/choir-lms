@@ -33,6 +33,11 @@ import {
   resolveSavedPlaylistCards,
   resolveSelectedPlaylist,
 } from '../utils/saved-playlist-view-model.js';
+import {
+  getSavedTrackContextMenuCopy,
+  getSavedTrackPlaylistMenuInitialState,
+  reduceSavedTrackPlaylistMenuState,
+} from '../utils/saved-track-playlist-menu-view-model.js';
 
 describe('saved playlist view-model', () => {
   it('falls back to the first saved playlist when no selection is active', () => {
@@ -90,9 +95,9 @@ describe('saved playlist view-model', () => {
         selectedPlaylist: playlist,
       }),
       {
-        title: 'Adding to Warmups',
+        title: 'Adding loops to Warmups',
         message:
-          'Choose a different playlist below any time you want Library actions to add into another rehearsal set.',
+          'Choose a different playlist below any time you want saved loop actions to change destination. Saved tracks can still choose a playlist from More Options on demand.',
         tone: 'ready',
       },
     );
@@ -107,8 +112,68 @@ describe('saved playlist view-model', () => {
       {
         title: 'Choose a playlist destination',
         message:
-          'Select a playlist below before adding saved tracks or loops from Library.',
+          'Select a playlist below for saved loop adds, or open More Options on a saved track to choose a playlist when you need it.',
         tone: 'neutral',
+      },
+    );
+  });
+
+  it('tracks the saved track playlist menu flow in UI-local state', () => {
+    const initialState = getSavedTrackPlaylistMenuInitialState();
+    const menuState = reduceSavedTrackPlaylistMenuState(initialState, {
+      type: 'open',
+      sourceId: PLAYABLE_SOURCE.id,
+    });
+    const selectorState = reduceSavedTrackPlaylistMenuState(menuState, {
+      type: 'open-selector',
+    });
+    const createState = reduceSavedTrackPlaylistMenuState(selectorState, {
+      type: 'open-create',
+    });
+    const draftedState = reduceSavedTrackPlaylistMenuState(createState, {
+      type: 'update-draft',
+      value: 'Wednesday rehearsal 2',
+    });
+    const canceledState = reduceSavedTrackPlaylistMenuState(draftedState, {
+      type: 'cancel-create',
+    });
+    const closedState = reduceSavedTrackPlaylistMenuState(canceledState, {
+      type: 'close',
+    });
+
+    assert.deepEqual(menuState, {
+      draftName: '',
+      selectedSourceId: PLAYABLE_SOURCE.id,
+      step: 'menu',
+    });
+    assert.deepEqual(selectorState, {
+      draftName: '',
+      selectedSourceId: PLAYABLE_SOURCE.id,
+      step: 'selector',
+    });
+    assert.deepEqual(draftedState, {
+      draftName: 'Wednesday rehearsal 2',
+      selectedSourceId: PLAYABLE_SOURCE.id,
+      step: 'create',
+    });
+    assert.deepEqual(canceledState, {
+      draftName: '',
+      selectedSourceId: PLAYABLE_SOURCE.id,
+      step: 'selector',
+    });
+    assert.deepEqual(closedState, initialState);
+  });
+
+  it('builds track context sheet copy without repeating the location label', () => {
+    assert.deepEqual(
+      getSavedTrackContextMenuCopy({
+        ...PLAYABLE_SOURCE,
+        locationLabel: 'Spring Concert / Alto folder',
+      }),
+      {
+        detailLabel: 'Saved track • MP3 • 3:05',
+        locationLabel: 'Spring Concert / Alto folder',
+        title: 'Alto Line.mp3',
       },
     );
   });

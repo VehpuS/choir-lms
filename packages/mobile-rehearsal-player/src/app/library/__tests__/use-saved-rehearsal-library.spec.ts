@@ -16,10 +16,12 @@ import {
 } from '../hooks/use-saved-rehearsal-library.js';
 import {
   buildSavedPlaylist,
-  getSelectedPlaylistIssue,
-  getSavedPlaylistsStatusCopy,
   resolveSavedPlaylistCards,
 } from '../utils/saved-playlist-view-model.js';
+import {
+  getSelectedPlaylistIssue,
+  getSavedPlaylistsStatusCopy,
+} from '../utils/saved-playlist-status-view-model.js';
 import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,

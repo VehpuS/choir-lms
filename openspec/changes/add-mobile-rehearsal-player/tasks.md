@@ -25,7 +25,7 @@
 - [x] 4.3 Implement browse, search, and personal library screens that separate discovery from saved tracks and saved loops while preserving fast rehearsal actions for the current slice.
 - [x] 4.4 Implement playlist creation and editing for saved full tracks and saved loops.
 - [x] 4.5 Move playlist-building actions out of the in-playlist editor cards and into the saved track / saved loop library surfaces so Library drives playlist population while playlist detail stays focused on order and playback intent.
-- [ ] 4.5a Replace generic add-to-playlist affordances on saved track rows with a More Options context menu that opens a track metadata bottom sheet, then a playlist selector overlay for existing-playlist assignment or in-flow playlist creation.
+- [x] 4.5a Replace generic add-to-playlist affordances on saved track rows with a More Options context menu that opens a track metadata bottom sheet, then a playlist selector overlay for existing-playlist assignment or in-flow playlist creation.
 - [x] 4.6 Wire playlist playback in the mobile app to the shared queue helpers so rehearsal sessions can start from saved playlists and honor ordered playback, shuffle, and repeat off / one / all across track and loop items.
 - [ ] 4.6a Persist playlist membership through ordered playlist-entry relationships so saved tracks and saved loops can belong to multiple playlists with independent explicit sort indexes and duplicate-safe queue positions.
 

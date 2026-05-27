@@ -9,10 +9,12 @@ import {
 } from '../utils/drive-library-view-model';
 
 export type DriveLibrarySourceAction = {
+  accessibilityLabel?: string;
   disabled?: boolean;
   label: string;
   onPress: () => void;
   tone?: 'neutral' | 'primary';
+  variant?: 'button' | 'icon';
 };
 
 type DriveLibrarySourceGroupProps = {
@@ -36,12 +38,20 @@ const WARNING_SURFACE = '#fff4dd';
 const WARNING_TEXT = '#7f5b12';
 
 const getActionButtonStyle = (action: DriveLibrarySourceAction) => {
+  if (action.variant === 'icon') {
+    return styles.actionButtonIcon;
+  }
+
   return action.tone === 'primary'
     ? styles.actionButtonPrimary
     : styles.actionButtonNeutral;
 };
 
 const getActionButtonLabelStyle = (action: DriveLibrarySourceAction) => {
+  if (action.variant === 'icon') {
+    return styles.actionButtonIconLabel;
+  }
+
   return action.tone === 'primary'
     ? styles.actionButtonPrimaryLabel
     : styles.actionButtonNeutralLabel;
@@ -104,9 +114,10 @@ const DriveLibrarySourceCard = ({
           {actions.map((action: DriveLibrarySourceAction, index: number) => {
             return (
               <Pressable
+                accessibilityLabel={action.accessibilityLabel ?? action.label}
                 accessibilityRole="button"
                 disabled={action.disabled}
-                key={`${source.id}:${action.label}:${index}`}
+                key={`${source.id}:${action.accessibilityLabel ?? action.label}:${index}`}
                 onPress={action.onPress}
                 style={({ pressed }) => [
                   styles.actionButton,
@@ -261,6 +272,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 999,
   },
+  actionButtonIcon: {
+    minWidth: 38,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    borderColor: BORDER_COLOR,
+    backgroundColor: '#fffdf8',
+  },
   actionButtonNeutral: {
     borderColor: BORDER_COLOR,
     backgroundColor: '#fffdf8',
@@ -278,6 +296,12 @@ const styles = StyleSheet.create({
   actionButtonLabel: {
     fontSize: 13,
     fontWeight: '700',
+  },
+  actionButtonIconLabel: {
+    color: PRIMARY_TEXT,
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 18,
   },
   actionButtonNeutralLabel: {
     color: PRIMARY_TEXT,

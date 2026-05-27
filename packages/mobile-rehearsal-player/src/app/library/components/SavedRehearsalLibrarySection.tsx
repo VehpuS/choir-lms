@@ -6,9 +6,10 @@ import {
   type Playlist,
   type PlayableItem,
 } from '@org/audio-library-models';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
 import { useSavedPlaylists } from '../hooks/use-saved-playlists';
 import {
   type DriveLibrarySource,
@@ -19,11 +20,17 @@ import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import { getSavedRehearsalLibrarySourceIssue } from '../utils/saved-rehearsal-library-view-model';
 import {
+  buildSavedPlaylist,
   getSavedPlaylistLibraryActionCopy,
   getSavedPlaylistSelectionCopy,
   resolveSavedPlaylistCards,
   resolveSelectedPlaylist,
+  type PlaylistDraftIssue,
 } from '../utils/saved-playlist-view-model';
+import {
+  getSavedTrackPlaylistMenuInitialState,
+  reduceSavedTrackPlaylistMenuState,
+} from '../utils/saved-track-playlist-menu-view-model';
 import type { PlaylistPlaybackSession } from '../utils/saved-playlist-playback-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
@@ -36,6 +43,7 @@ import {
 import { SavedLoopSection } from './SavedLoopSection';
 import { SavedPlaylistCardsList } from './SavedPlaylistSectionCards';
 import { SavedPlaylistSection } from './SavedPlaylistSection';
+import { SavedTrackPlaylistMenuSurface } from './SavedTrackPlaylistMenuSurface';
 import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
 
@@ -123,6 +131,14 @@ export const SavedRehearsalLibrarySection = ({
     null,
   );
   const [isPlaylistDetailVisible, setIsPlaylistDetailVisible] = useState(false);
+  const [trackPlaylistCreationIssue, setTrackPlaylistCreationIssue] = useState<
+    PlaylistDraftIssue | null
+  >(null);
+  const [trackPlaylistMenuState, dispatchTrackPlaylistMenu] = useReducer(
+    reduceSavedTrackPlaylistMenuState,
+    undefined,
+    getSavedTrackPlaylistMenuInitialState,
+  );
 
   useEffect(() => {
     if (savedPlaylists.length === 0) {
@@ -144,12 +160,25 @@ export const SavedRehearsalLibrarySection = ({
     savedPlaylists,
     selectedPlaylistId,
   );
+  const selectedTrackMenuSource =
+    savedLibrarySources.find((source) => {
+      return source.id === trackPlaylistMenuState.selectedSourceId;
+    }) ?? null;
 
   useEffect(() => {
     if (!selectedPlaylist) {
       setIsPlaylistDetailVisible(false);
     }
   }, [selectedPlaylist]);
+
+  useEffect(() => {
+    if (!trackPlaylistMenuState.selectedSourceId || selectedTrackMenuSource) {
+      return;
+    }
+
+    dispatchTrackPlaylistMenu({ type: 'close' });
+    setTrackPlaylistCreationIssue(null);
+  }, [selectedTrackMenuSource, trackPlaylistMenuState.selectedSourceId]);
 
   const isSavedLibraryMutating = pendingSourceId !== null;
   const isSavedTrackPlaybackLoading = isSavedTrackPlaybackBusy({
@@ -170,20 +199,73 @@ export const SavedRehearsalLibrarySection = ({
   const savedSourceTitle = `Saved rehearsal tracks (${savedLibrarySources.length})`;
   const isLoopMutating = pendingLoopId !== null;
 
-  const persistSelectedPlaylist = async (
+  const persistPlaylist = async (
+    playlist: Playlist,
     buildNextPlaylist: (playlist: Playlist) => Playlist,
   ) => {
-    if (!selectedPlaylist) {
-      return;
-    }
-
-    const persistedPlaylist = await updatePlaylist(
-      buildNextPlaylist(selectedPlaylist),
-    );
+    const persistedPlaylist = await updatePlaylist(buildNextPlaylist(playlist));
 
     if (persistedPlaylist) {
       setSelectedPlaylistId(persistedPlaylist.id);
     }
+
+    return persistedPlaylist;
+  };
+
+  const persistSelectedPlaylist = async (
+    buildNextPlaylist: (playlist: Playlist) => Playlist,
+  ) => {
+    if (!selectedPlaylist) {
+      return null;
+    }
+
+    return persistPlaylist(selectedPlaylist, buildNextPlaylist);
+  };
+
+  const closeTrackPlaylistMenu = () => {
+    dispatchTrackPlaylistMenu({ type: 'close' });
+    setTrackPlaylistCreationIssue(null);
+  };
+
+  const handleSelectTrackPlaylist = async (playlist: Playlist) => {
+    if (!selectedTrackMenuSource) {
+      return;
+    }
+
+    const persistedPlaylist = await persistPlaylist(playlist, (nextPlaylist) => {
+      return addTrackToPlaylist(nextPlaylist, selectedTrackMenuSource);
+    });
+
+    if (persistedPlaylist) {
+      closeTrackPlaylistMenu();
+    }
+  };
+
+  const handleCreateTrackPlaylist = async () => {
+    if (!selectedTrackMenuSource) {
+      return;
+    }
+
+    const result = buildSavedPlaylist({
+      name: trackPlaylistMenuState.draftName,
+      ownerId: LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+    });
+
+    if (result.issue || !result.playlist) {
+      setTrackPlaylistCreationIssue(result.issue);
+      return;
+    }
+
+    const createdPlaylist = await createPlaylist(
+      addTrackToPlaylist(result.playlist, selectedTrackMenuSource),
+    );
+
+    if (!createdPlaylist) {
+      return;
+    }
+
+    setSelectedPlaylistId(createdPlaylist.id);
+    closeTrackPlaylistMenu();
   };
 
   return (
@@ -268,13 +350,20 @@ export const SavedRehearsalLibrarySection = ({
                   },
                 },
                 {
-                  disabled: playlistActionCopy.disabled,
-                  label: playlistActionCopy.label,
+                  accessibilityLabel: 'More options',
+                  disabled:
+                    !canMutatePlaylists ||
+                    isPlaylistMutating ||
+                    isSavedLibraryMutating,
+                  label: '...',
                   onPress: () => {
-                    void persistSelectedPlaylist((playlist) => {
-                      return addTrackToPlaylist(playlist, source);
+                    setTrackPlaylistCreationIssue(null);
+                    dispatchTrackPlaylistMenu({
+                      type: 'open',
+                      sourceId: source.id,
                     });
                   },
+                  variant: 'icon' as const,
                 },
                 {
                   disabled:
@@ -356,6 +445,41 @@ export const SavedRehearsalLibrarySection = ({
         setSelectedPlaylistId={setSelectedPlaylistId}
         togglePlaylistPlayback={togglePlaylistPlayback}
         updatePlaylist={updatePlaylist}
+      />
+
+      <SavedTrackPlaylistMenuSurface
+        createPlaylistIssue={trackPlaylistCreationIssue}
+        draftName={trackPlaylistMenuState.draftName}
+        isMutating={isPlaylistMutating}
+        onClose={closeTrackPlaylistMenu}
+        onDraftNameChange={(value) => {
+          setTrackPlaylistCreationIssue(null);
+          dispatchTrackPlaylistMenu({
+            type: 'update-draft',
+            value,
+          });
+        }}
+        onSelectPlaylist={(playlist) => {
+          void handleSelectTrackPlaylist(playlist);
+        }}
+        onShowCreatePlaylist={() => {
+          setTrackPlaylistCreationIssue(null);
+          dispatchTrackPlaylistMenu({ type: 'open-create' });
+        }}
+        onShowPlaylistSelector={() => {
+          setTrackPlaylistCreationIssue(null);
+          dispatchTrackPlaylistMenu(
+            trackPlaylistMenuState.step === 'create'
+              ? { type: 'cancel-create' }
+              : { type: 'open-selector' },
+          );
+        }}
+        onSubmitNewPlaylist={() => {
+          void handleCreateTrackPlaylist();
+        }}
+        playlists={savedPlaylists}
+        selectedSource={selectedTrackMenuSource}
+        step={trackPlaylistMenuState.step}
       />
     </View>
   );

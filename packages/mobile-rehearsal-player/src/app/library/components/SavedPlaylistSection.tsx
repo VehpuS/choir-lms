@@ -20,12 +20,14 @@ import {
   getSavedPlaylistDetailSummary,
   getSavedPlaylistEntryDetailLabel,
   getSavedPlaylistRemovalCopy,
-  getSelectedPlaylistIssue,
-  getSavedPlaylistsStatusCopy,
   type PlaylistDraftIssue,
   type SavedPlaylistIssue,
   validatePlaylistName,
 } from '../utils/saved-playlist-view-model';
+import {
+  getSelectedPlaylistIssue,
+  getSavedPlaylistsStatusCopy,
+} from '../utils/saved-playlist-status-view-model';
 import type { SavedTrackPlaybackState } from '../utils/saved-track-playback-view-model';
 import {
   SavedPlaylistCreateCard,

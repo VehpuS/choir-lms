@@ -304,24 +304,24 @@ export const getSavedPlaylistSelectionCopy = (options: {
     return {
       title: 'Choose a playlist destination',
       message:
-        'Select a playlist below before adding saved tracks or loops from Library.',
+        'Select a playlist below for saved loop adds, or open More Options on a saved track to choose a playlist when you need it.',
       tone: 'neutral',
     };
   }
 
   if (options.savedPlaylistCount === 1) {
     return {
-      title: `Adding to ${options.selectedPlaylist.name}`,
+      title: `Adding loops to ${options.selectedPlaylist.name}`,
       message:
-        'Saved track and loop actions add directly into this playlist while you build the running order.',
+        'Saved loop actions add directly into this playlist. Saved tracks open More Options so you can choose a destination without leaving Library.',
       tone: 'ready',
     };
   }
 
   return {
-    title: `Adding to ${options.selectedPlaylist.name}`,
+    title: `Adding loops to ${options.selectedPlaylist.name}`,
     message:
-      'Choose a different playlist below any time you want Library actions to add into another rehearsal set.',
+      'Choose a different playlist below any time you want saved loop actions to change destination. Saved tracks can still choose a playlist from More Options on demand.',
     tone: 'ready',
   };
 };
@@ -336,59 +336,4 @@ export const resolveSavedPlaylistCards = (
       previewLabel: getPlaylistPreviewLabel(playlist),
     };
   });
-};
-
-export const getSelectedPlaylistIssue = (
-  issue: SavedPlaylistIssue | null,
-  selectedPlaylistId: string | null,
-): PlaylistDraftIssue | null => {
-  if (!issue?.playlistId || !selectedPlaylistId) {
-    return null;
-  }
-
-  if (issue.playlistId !== selectedPlaylistId) {
-    return null;
-  }
-
-  return {
-    title: issue.title,
-    message: issue.message,
-  };
-};
-
-export const getSavedPlaylistsStatusCopy = (options: {
-  isLoading: boolean;
-  issue: SavedPlaylistIssue | null;
-  savedPlaylistCount: number;
-}): DriveLibraryStatusCopy => {
-  if (options.issue) {
-    return {
-      title: options.issue.title,
-      message: options.issue.message,
-      tone: 'error',
-    };
-  }
-
-  if (options.isLoading && options.savedPlaylistCount === 0) {
-    return {
-      title: 'Loading saved playlists',
-      message: 'Reading saved rehearsal playlists stored on this device.',
-      tone: 'neutral',
-    };
-  }
-
-  if (options.savedPlaylistCount === 0) {
-    return {
-      title: 'No playlists yet',
-      message:
-        'Create a playlist, then add saved tracks and loops to shape a repeatable rehearsal set.',
-      tone: 'neutral',
-    };
-  }
-
-  return {
-    title: 'Saved playlists ready',
-    message: `${pluralize(options.savedPlaylistCount, 'playlist')} ready for saved tracks and loops.`,
-    tone: 'ready',
-  };
 };
