@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
@@ -16,6 +17,8 @@ import { LibraryScreen } from '../screens/LibraryScreen';
 import { SearchScreen } from '../screens/SearchScreen';
 import { appTheme } from '../utils/theme';
 import { PlaybackSurface } from './PlaybackSurface';
+import { PlaybackMarqueeText } from './PlaybackMarqueeText';
+import { PlaybackWaveform } from './PlaybackWaveform';
 import {
   SHELL_DESTINATIONS,
   getMiniPlayerSummary,
@@ -25,6 +28,8 @@ import {
 } from './shell-model';
 
 type PlaybackSurfaceKey = 'now-playing' | 'queue';
+
+const PLAYBACK_SEEK_STEP_SECONDS = 15;
 
 type MobileShellProps = {
   activePlayableItem: ReturnType<
@@ -41,6 +46,8 @@ type MobileShellProps = {
   isPlaybackPreparing: boolean;
   isPlaybackToggleDisabled: boolean;
   libraryScreen: ReactNode;
+  onSeekBackward: () => void;
+  onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
   onSelectQueueMode: (mode: PlaylistPlaybackSession['queue']['mode']) => void;
   onSelectRepeatMode: (
@@ -79,6 +86,8 @@ export const MobileShell = ({
   isPlaybackPreparing,
   isPlaybackToggleDisabled,
   libraryScreen,
+  onSeekBackward,
+  onSeekForward,
   onSeekToPosition,
   onSelectQueueMode,
   onSelectRepeatMode,
@@ -199,32 +208,64 @@ export const MobileShell = ({
 
       {miniPlayerSummary ? (
         <View style={styles.miniPlayerSection}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => {
-              setActivePlaybackSurface('now-playing');
-              setIsSessionMenuVisible(false);
-            }}
-            style={({ pressed }) => [
-              styles.miniPlayer,
-              pressed ? styles.miniPlayerPressed : null,
-            ]}
-            testID="mini-player"
-          >
-            <View style={styles.miniPlayerCopy}>
-              <Text style={styles.miniPlayerLabel}>Now playing</Text>
-              <Text style={styles.miniPlayerTitle} testID="mini-player-title">
-                {miniPlayerSummary.title}
-              </Text>
-              <Text style={styles.miniPlayerStatus}>
-                {miniPlayerSummary.status}
-              </Text>
-              <Text style={styles.miniPlayerDetail}>
-                {miniPlayerSummary.detail}
-              </Text>
-            </View>
-            <Text style={styles.miniPlayerAction}>Open</Text>
-          </Pressable>
+          <View style={styles.miniPlayer}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                setActivePlaybackSurface('now-playing');
+                setIsSessionMenuVisible(false);
+              }}
+              style={({ pressed }) => [
+                styles.miniPlayerBody,
+                pressed ? styles.miniPlayerPressed : null,
+              ]}
+              testID="mini-player"
+            >
+              {activePlayableItem ? (
+                <PlaybackWaveform
+                  activePlayableItem={activePlayableItem}
+                  appearance="dark"
+                  progressRatio={miniPlayerSummary.waveformProgressRatio}
+                  style={styles.miniPlayerWaveform}
+                  variant="compact"
+                />
+              ) : null}
+              <View style={styles.miniPlayerCopy}>
+                <Text style={styles.miniPlayerLabel}>Now playing</Text>
+                <PlaybackMarqueeText
+                  containerStyle={styles.miniPlayerTitleWrap}
+                  enabled={playbackState === 'playing'}
+                  style={styles.miniPlayerTitle}
+                  text={miniPlayerSummary.title}
+                />
+                <Text numberOfLines={1} style={styles.miniPlayerStatus}>
+                  {miniPlayerSummary.status}
+                </Text>
+                <Text numberOfLines={1} style={styles.miniPlayerDetail}>
+                  {miniPlayerSummary.detail}
+                </Text>
+              </View>
+            </Pressable>
+            <Pressable
+              accessibilityLabel={playbackToggleLabel}
+              accessibilityRole="button"
+              disabled={isPlaybackToggleDisabled}
+              onPress={onTogglePlayback}
+              style={({ pressed }) => [
+                styles.miniPlayerActionButton,
+                pressed && !isPlaybackToggleDisabled
+                  ? styles.miniPlayerPressed
+                  : null,
+                isPlaybackToggleDisabled ? styles.miniPlayerActionDisabled : null,
+              ]}
+            >
+              <MaterialCommunityIcons
+                color="#fff8ef"
+                name={playbackToggleLabel === 'Pause' ? 'pause' : 'play'}
+                size={24}
+              />
+            </Pressable>
+          </View>
         </View>
       ) : null}
 
@@ -273,6 +314,8 @@ export const MobileShell = ({
         onClose={() => {
           setActivePlaybackSurface(null);
         }}
+        onSeekBackward={onSeekBackward}
+        onSeekForward={onSeekForward}
         onSeekToPosition={onSeekToPosition}
         onSelectQueueMode={onSelectQueueMode}
         onSelectRepeatMode={onSelectRepeatMode}
@@ -328,7 +371,7 @@ export const AppRouter = () => {
         playback.activePlaylistSession !== null && !playback.isPreparing
       }
       canSkipPreviousItem={
-        playback.activePlayableItem !== null && !playback.isPreparing
+        playback.activePlaylistSession !== null && !playback.isPreparing
       }
       homeScreen={
         <HomeScreen
@@ -345,6 +388,12 @@ export const AppRouter = () => {
           playback={playback}
         />
       }
+      onSeekBackward={() => {
+        void playback.seekActivePlaybackBySeconds(-PLAYBACK_SEEK_STEP_SECONDS);
+      }}
+      onSeekForward={() => {
+        void playback.seekActivePlaybackBySeconds(PLAYBACK_SEEK_STEP_SECONDS);
+      }}
       onSeekToPosition={(positionSeconds) => {
         void playback.seekActivePlaybackToPosition(positionSeconds);
       }}
@@ -445,16 +494,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 16,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
+    gap: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderWidth: 1,
     borderColor: '#2d584a',
-    borderRadius: 22,
+    borderRadius: 24,
     backgroundColor: '#173229',
+  },
+  miniPlayerBody: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   miniPlayerPressed: {
     opacity: 0.9,
+  },
+  miniPlayerWaveform: {
+    width: 74,
   },
   miniPlayerCopy: {
     flex: 1,
@@ -472,6 +530,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
+  miniPlayerTitleWrap: {
+    minHeight: 22,
+  },
   miniPlayerStatus: {
     color: '#dce7e1',
     fontSize: 13,
@@ -482,10 +543,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
   },
-  miniPlayerAction: {
-    color: '#fff8ef',
-    fontSize: 14,
-    fontWeight: '700',
+  miniPlayerActionButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 999,
+    backgroundColor: '#305c4d',
+  },
+  miniPlayerActionDisabled: {
+    opacity: 0.5,
   },
   tabBar: {
     flexDirection: 'row',

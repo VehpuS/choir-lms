@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { PlayableItem } from '@org/audio-library-models';
 import { Slider } from '@miblanchard/react-native-slider';
 import { useEffect, useState } from 'react';
@@ -89,12 +90,9 @@ export const PlaybackTimelineCard = ({
 
   return (
     <View style={styles.card}>
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>Timeline</Text>
-        <Text style={styles.valueLabel}>
-          {getLabelForSeconds(displayedPositionSeconds)}
-        </Text>
-      </View>
+      <Text style={styles.valueLabel}>
+        {getLabelForSeconds(displayedPositionSeconds)}
+      </Text>
       <Slider
         disabled={isSliderDisabled}
         maximumTrackTintColor="#d5ddd7"
@@ -142,12 +140,9 @@ export const PlaybackVolumeCard = ({
 
   return (
     <View style={styles.card}>
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>Volume</Text>
-        <Text style={styles.valueLabel}>
-          {Math.round(draftVolumeLevel * 100)}%
-        </Text>
-      </View>
+      <Text style={styles.valueLabel}>
+        {Math.round(draftVolumeLevel * 100)}%
+      </Text>
       <Slider
         disabled={isDisabled}
         maximumTrackTintColor="#d5ddd7"
@@ -164,8 +159,22 @@ export const PlaybackVolumeCard = ({
         value={draftVolumeLevel}
       />
       <View style={styles.scaleRow}>
-        <Text style={styles.scaleLabel}>Mute</Text>
-        <Text style={styles.scaleLabel}>Full</Text>
+        <View style={styles.scaleEndpoint}>
+          <MaterialCommunityIcons
+            color={appTheme.colors.secondaryText}
+            name={draftVolumeLevel <= 0.01 ? 'volume-off' : 'volume-low'}
+            size={16}
+          />
+          <Text style={styles.scaleLabel}>Mute</Text>
+        </View>
+        <View style={styles.scaleEndpoint}>
+          <MaterialCommunityIcons
+            color={appTheme.colors.secondaryText}
+            name="volume-high"
+            size={16}
+          />
+          <Text style={styles.scaleLabel}>Full</Text>
+        </View>
       </View>
     </View>
   );
@@ -173,34 +182,29 @@ export const PlaybackVolumeCard = ({
 
 const styles = StyleSheet.create({
   card: {
-    gap: 10,
-    padding: 16,
+    gap: 8,
+    padding: 14,
     borderWidth: 1,
     borderColor: appTheme.colors.border,
-    borderRadius: 22,
+    borderRadius: 20,
     backgroundColor: '#fffdf8',
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  title: {
-    color: appTheme.colors.primaryText,
-    fontSize: 15,
-    fontWeight: '700',
   },
   valueLabel: {
     color: '#2d584a',
     fontSize: 14,
     fontWeight: '700',
+    textAlign: 'right',
   },
   scaleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
+  },
+  scaleEndpoint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   scaleLabel: {
     color: appTheme.colors.secondaryText,

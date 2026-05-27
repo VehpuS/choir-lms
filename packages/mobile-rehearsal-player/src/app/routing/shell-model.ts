@@ -23,6 +23,7 @@ export type MiniPlayerSummary = {
   detail: string;
   status: string;
   title: string;
+  waveformProgressRatio: number;
 };
 
 export type NowPlayingSurfaceSummary = {
@@ -32,8 +33,10 @@ export type NowPlayingSurfaceSummary = {
   queueLabel: string;
   rangeLabel: string | null;
   statusLabel: string;
+  supportsQueueNavigation: boolean;
   title: string;
   upNextLabel: string | null;
+  waveformProgressRatio: number;
 };
 
 export type UpNextSurfaceItem = {
@@ -104,15 +107,53 @@ const getProgressLabel = (options: {
   activePlayableItem: PlayableItem;
   playbackPositionSeconds: number;
 }) => {
-  const positionLabel =
-    formatDurationLabel(Math.round(options.playbackPositionSeconds * 1000)) ??
-    '0:00';
+  const rangeStartMs = options.activePlayableItem.range.startMs;
   const totalDurationMs =
     options.activePlayableItem.range.endMs ??
     options.activePlayableItem.source.durationMs;
-  const durationLabel = formatDurationLabel(totalDurationMs);
+  const boundedPositionMs = Math.max(
+    rangeStartMs,
+    Math.round(options.playbackPositionSeconds * 1000),
+  );
+  const clampedPositionMs =
+    totalDurationMs === undefined
+      ? boundedPositionMs
+      : Math.min(boundedPositionMs, totalDurationMs);
+  const relativePositionMs = Math.max(0, clampedPositionMs - rangeStartMs);
+  const positionLabel = formatDurationLabel(relativePositionMs) ?? '0:00';
+  const durationLabel = formatDurationLabel(
+    totalDurationMs === undefined ? totalDurationMs : totalDurationMs - rangeStartMs,
+  );
 
   return durationLabel ? `${positionLabel} of ${durationLabel}` : positionLabel;
+};
+
+export const getPlaybackProgressRatio = (options: {
+  activePlayableItem: PlayableItem;
+  playbackPositionSeconds: number;
+}) => {
+  const startSeconds = options.activePlayableItem.range.startMs / 1000;
+  const rangeEndMs =
+    options.activePlayableItem.range.endMs ??
+    options.activePlayableItem.source.durationMs;
+
+  if (rangeEndMs === undefined) {
+    return 0;
+  }
+
+  const durationSeconds = rangeEndMs / 1000 - startSeconds;
+
+  if (durationSeconds <= 0) {
+    return 0;
+  }
+
+  return Math.min(
+    1,
+    Math.max(
+      0,
+      (options.playbackPositionSeconds - startSeconds) / durationSeconds,
+    ),
+  );
 };
 
 const getPlaybackCollectionLabel = (options: {
@@ -194,6 +235,10 @@ export const getMiniPlayerSummary = (options: {
     title: options.activePlayableItem.title,
     status: `${status} • ${progressLabel}`,
     detail: compactDetailLabels([collectionLabel, queueLabel, loopLabel]),
+    waveformProgressRatio: getPlaybackProgressRatio({
+      activePlayableItem: options.activePlayableItem,
+      playbackPositionSeconds: options.playbackPositionSeconds,
+    }),
   };
 };
 
@@ -228,10 +273,15 @@ export const getNowPlayingSurfaceSummary = (options: {
       : 'Keep the current rehearsal item audible while moving between Home, Search, and Library.',
     queueLabel: getPlaybackQueueLabel(options.activePlaylistSession),
     rangeLabel: getPlayableItemRangeLabel(options.activePlayableItem),
+    supportsQueueNavigation: Boolean(options.activePlaylistSession),
     upNextLabel: options.activePlaylistSession
       ? (resolvePlaylistPlaybackAdvance(options.activePlaylistSession)
           .nextPlayableItem?.title ?? null)
       : null,
+    waveformProgressRatio: getPlaybackProgressRatio({
+      activePlayableItem: options.activePlayableItem,
+      playbackPositionSeconds: options.playbackPositionSeconds,
+    }),
   };
 };
 

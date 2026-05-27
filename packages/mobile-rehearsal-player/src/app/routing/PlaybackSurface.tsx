@@ -1,15 +1,25 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type {
   PlayableItem,
   RehearsalQueueMode,
   RepeatMode,
 } from '@org/audio-library-models';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useRef, type ComponentProps } from 'react';
+import {
+  Animated,
+  PanResponder,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { appTheme } from '../utils/theme';
 import {
   PlaybackTimelineCard,
   PlaybackVolumeCard,
 } from './PlaybackControlCards';
+import { PlaybackWaveform } from './PlaybackWaveform';
 import { PlaybackSessionModeCard } from './PlaybackSessionModeCard';
 import type {
   NowPlayingSurfaceSummary,
@@ -29,6 +39,8 @@ type PlaybackSurfaceProps = {
   nowPlayingSummary: NowPlayingSurfaceSummary | null;
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
   onClose: () => void;
+  onSeekBackward: () => void;
+  onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
@@ -71,21 +83,26 @@ const PlaybackPill = ({
   );
 };
 
-const TransportButton = ({
+const SurfaceIconButton = ({
+  accessibilityLabel,
   disabled = false,
-  label,
+  icon,
   onPress,
+  size = 22,
   tone = 'secondary',
 }: {
+  accessibilityLabel: string;
   disabled?: boolean;
-  label: string;
+  icon: ComponentProps<typeof MaterialCommunityIcons>['name'];
   onPress: () => void;
+  size?: number;
   tone?: 'primary' | 'secondary';
 }) => {
   const isPrimary = tone === 'primary';
 
   return (
     <Pressable
+      accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       disabled={disabled}
       onPress={onPress}
@@ -97,15 +114,11 @@ const TransportButton = ({
         disabled ? styles.headerActionDisabled : null,
       ]}
     >
-      <Text
-        style={
-          isPrimary
-            ? styles.transportButtonPrimaryLabel
-            : styles.transportButtonSecondaryLabel
-        }
-      >
-        {label}
-      </Text>
+      <MaterialCommunityIcons
+        color={isPrimary ? '#fff8ef' : appTheme.colors.primaryText}
+        name={icon}
+        size={size}
+      />
     </Pressable>
   );
 };
@@ -120,6 +133,8 @@ const NowPlayingSurface = ({
   isPlaybackToggleDisabled,
   onAdjustPlaybackVolume,
   onClose,
+  onSeekBackward,
+  onSeekForward,
   onSeekToPosition,
   onSelectQueueMode,
   onSelectRepeatMode,
@@ -142,6 +157,8 @@ const NowPlayingSurface = ({
   isPlaybackToggleDisabled: boolean;
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
   onClose: () => void;
+  onSeekBackward: () => void;
+  onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
@@ -155,52 +172,115 @@ const NowPlayingSurface = ({
   queueSummary: UpNextSurfaceSummary | null;
   summary: NowPlayingSurfaceSummary;
 }) => {
+  const transportIconSize = summary.supportsQueueNavigation ? 22 : 24;
+
   return (
     <View style={styles.sheetCard}>
-      <View style={styles.sheetHeader}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onClose}
-          style={({ pressed }) => [
-            styles.headerAction,
-            pressed ? styles.headerActionPressed : null,
-          ]}
-        >
-          <Text style={styles.headerActionLabel}>Close</Text>
-        </Pressable>
-        <Text style={styles.sheetEyebrow}>Now playing</Text>
-        <Pressable
-          accessibilityRole="button"
-          disabled={!queueSummary}
-          onPress={onShowQueue}
-          style={({ pressed }) => [
-            styles.headerAction,
-            pressed && queueSummary ? styles.headerActionPressed : null,
-            !queueSummary ? styles.headerActionDisabled : null,
-          ]}
-        >
-          <Text style={styles.headerActionLabel}>Up Next</Text>
-        </Pressable>
+      <View style={styles.surfaceHandle} />
+
+      <View style={styles.sheetHeaderRow}>
+        <Text style={styles.sheetEyebrow}>
+          {summary.supportsQueueNavigation ? 'Rehearsing queue' : 'Rehearsing'}
+        </Text>
+        <View style={styles.headerActionRow}>
+          {queueSummary ? (
+            <SurfaceIconButton
+              accessibilityLabel="Show queue"
+              icon="view-list"
+              onPress={onShowQueue}
+            />
+          ) : null}
+          <SurfaceIconButton
+            accessibilityLabel="Dismiss playback"
+            icon="chevron-down"
+            onPress={onClose}
+          />
+        </View>
       </View>
 
-      <View style={styles.heroArtwork}>
-        <Text style={styles.heroArtworkLabel}>
-          {summary.rangeLabel ? 'Saved loop' : 'Saved track'}
-        </Text>
-      </View>
+      <PlaybackWaveform
+        activePlayableItem={activePlayableItem}
+        interactive={canSeekActivePlayback}
+        onScrubToPosition={onSeekToPosition}
+        progressRatio={summary.waveformProgressRatio}
+        style={styles.heroWaveform}
+        variant="hero"
+      />
 
       <View style={styles.summaryGroup}>
-        <Text style={styles.title}>{summary.title}</Text>
-        <Text style={styles.subtitle}>{summary.collectionLabel}</Text>
+        <View style={styles.summaryMetaRow}>
+          <Text style={styles.statusCaption}>{summary.statusLabel}</Text>
+          {summary.supportsQueueNavigation ? (
+            <Text style={styles.summaryMetaText}>{summary.queueLabel}</Text>
+          ) : null}
+        </View>
+        <Text numberOfLines={2} style={styles.title}>
+          {summary.title}
+        </Text>
+        <Text numberOfLines={1} style={styles.subtitle}>
+          {summary.collectionLabel}
+        </Text>
         {summary.rangeLabel ? (
-          <Text style={styles.rangeLabel}>{summary.rangeLabel}</Text>
+          <Text numberOfLines={1} style={styles.rangeLabel}>
+            {summary.rangeLabel}
+          </Text>
         ) : null}
         <Text style={styles.progressLabel}>{summary.progressLabel}</Text>
+        {summary.upNextLabel ? (
+          <Text numberOfLines={1} style={styles.inlineContextText}>
+            Next • {summary.upNextLabel}
+          </Text>
+        ) : null}
       </View>
 
-      <View style={styles.pillRow}>
-        <PlaybackPill label={summary.statusLabel} tone="primary" />
-        <PlaybackPill label={summary.queueLabel} />
+      <PlaybackTimelineCard
+        activePlayableItem={activePlayableItem}
+        canSeekActivePlayback={canSeekActivePlayback}
+        onSeekToPosition={onSeekToPosition}
+        playbackPositionSeconds={playbackPositionSeconds}
+      />
+
+      <View style={styles.transportRow}>
+        {summary.supportsQueueNavigation ? (
+          <SurfaceIconButton
+            accessibilityLabel="Previous queue item"
+            disabled={!canSkipPreviousItem}
+            icon="skip-previous"
+            onPress={onSkipPreviousItem}
+            size={transportIconSize}
+          />
+        ) : null}
+        <SurfaceIconButton
+          accessibilityLabel="Back 15 seconds"
+          disabled={!canSeekActivePlayback}
+          icon="rewind-15"
+          onPress={onSeekBackward}
+          size={transportIconSize}
+        />
+        <SurfaceIconButton
+          accessibilityLabel={playbackToggleLabel}
+          disabled={isPlaybackToggleDisabled}
+          icon={playbackToggleLabel === 'Pause' ? 'pause' : 'play'}
+          onPress={onTogglePlayback}
+          size={32}
+          tone="primary"
+        />
+        <SurfaceIconButton
+          accessibilityLabel="Forward 15 seconds"
+          disabled={!canSeekActivePlayback}
+          icon="fast-forward-15"
+          onPress={onSeekForward}
+          size={transportIconSize}
+        />
+        {summary.supportsQueueNavigation ? (
+          <SurfaceIconButton
+            accessibilityLabel="Next queue item"
+            disabled={!canSkipNextItem}
+            icon="skip-next"
+            onPress={onSkipNextItem}
+            size={transportIconSize}
+          />
+        ) : null}
       </View>
 
       {activeQueueMode && activeRepeatMode ? (
@@ -211,44 +291,6 @@ const NowPlayingSurface = ({
           queueMode={activeQueueMode}
           repeatMode={activeRepeatMode}
         />
-      ) : null}
-
-      <PlaybackTimelineCard
-        activePlayableItem={activePlayableItem}
-        canSeekActivePlayback={canSeekActivePlayback}
-        onSeekToPosition={onSeekToPosition}
-        playbackPositionSeconds={playbackPositionSeconds}
-      />
-
-      <View style={styles.transportRow}>
-        <TransportButton
-          disabled={!canSkipPreviousItem}
-          label="Prev"
-          onPress={onSkipPreviousItem}
-        />
-        <TransportButton
-          disabled={isPlaybackToggleDisabled}
-          label={playbackToggleLabel}
-          onPress={onTogglePlayback}
-          tone="primary"
-        />
-        <TransportButton
-          disabled={!canSkipNextItem}
-          label="Next"
-          onPress={onSkipNextItem}
-        />
-      </View>
-
-      <View style={styles.contextCard}>
-        <Text style={styles.contextTitle}>Rehearsal context</Text>
-        <Text style={styles.contextBody}>{summary.playbackLabel}</Text>
-      </View>
-
-      {summary.upNextLabel ? (
-        <View style={styles.contextCard}>
-          <Text style={styles.contextTitle}>Up next</Text>
-          <Text style={styles.contextBody}>{summary.upNextLabel}</Text>
-        </View>
       ) : null}
 
       <PlaybackVolumeCard
@@ -281,32 +323,26 @@ const QueueSurface = ({
 }) => {
   return (
     <View style={styles.sheetCard}>
-      <View style={styles.sheetHeader}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onShowNowPlaying}
-          style={({ pressed }) => [
-            styles.headerAction,
-            pressed ? styles.headerActionPressed : null,
-          ]}
-        >
-          <Text style={styles.headerActionLabel}>Now playing</Text>
-        </Pressable>
+      <View style={styles.surfaceHandle} />
+
+      <View style={styles.sheetHeaderRow}>
         <Text style={styles.sheetEyebrow}>Up Next</Text>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onClose}
-          style={({ pressed }) => [
-            styles.headerAction,
-            pressed ? styles.headerActionPressed : null,
-          ]}
-        >
-          <Text style={styles.headerActionLabel}>Done</Text>
-        </Pressable>
+        <View style={styles.headerActionRow}>
+          <SurfaceIconButton
+            accessibilityLabel="Show now playing"
+            icon="play-circle-outline"
+            onPress={onShowNowPlaying}
+          />
+          <SurfaceIconButton
+            accessibilityLabel="Dismiss queue"
+            icon="chevron-down"
+            onPress={onClose}
+          />
+        </View>
       </View>
 
       <View style={styles.summaryGroup}>
-        <Text style={styles.title}>Active rehearsal queue</Text>
+        <Text style={styles.queueSurfaceTitle}>Active rehearsal queue</Text>
         <Text style={styles.subtitle}>{summary.collectionLabel}</Text>
       </View>
 
@@ -356,6 +392,8 @@ export const PlaybackSurface = ({
   nowPlayingSummary,
   onAdjustPlaybackVolume,
   onClose,
+  onSeekBackward,
+  onSeekForward,
   onSeekToPosition,
   onSelectQueueMode,
   onSelectRepeatMode,
@@ -370,12 +408,73 @@ export const PlaybackSurface = ({
   queueSummary,
   surface,
 }: PlaybackSurfaceProps) => {
+  const translateY = useRef(new Animated.Value(32)).current;
+  const canRenderQueue = surface === 'queue' && queueSummary;
+  const canRenderNowPlaying = surface === 'now-playing' && nowPlayingSummary;
+
+  const dismissSurface = () => {
+    Animated.timing(translateY, {
+      toValue: 420,
+      duration: 180,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) {
+        translateY.setValue(32);
+        onClose();
+      }
+    });
+  };
+
+  const resetSurfacePosition = () => {
+    Animated.spring(translateY, {
+      damping: 20,
+      mass: 0.9,
+      stiffness: 220,
+      toValue: 0,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  useEffect(() => {
+    translateY.setValue(32);
+
+    Animated.spring(translateY, {
+      damping: 18,
+      mass: 0.9,
+      stiffness: 210,
+      toValue: 0,
+      useNativeDriver: true,
+    }).start();
+  }, [surface, translateY]);
+
+  const panResponder = useMemo(() => {
+    return PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return (
+          gestureState.dy > 8 &&
+          Math.abs(gestureState.dy) > Math.abs(gestureState.dx)
+        );
+      },
+      onPanResponderMove: (_, gestureState) => {
+        translateY.setValue(Math.max(0, gestureState.dy));
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 120 || gestureState.vy > 1.1) {
+          dismissSurface();
+          return;
+        }
+
+        resetSurfacePosition();
+      },
+      onPanResponderTerminate: () => {
+        resetSurfacePosition();
+      },
+    });
+  }, [translateY]);
+
   if (!surface) {
     return null;
   }
-
-  const canRenderQueue = surface === 'queue' && queueSummary;
-  const canRenderNowPlaying = surface === 'now-playing' && nowPlayingSummary;
 
   if (!canRenderQueue && !canRenderNowPlaying) {
     return null;
@@ -385,47 +484,54 @@ export const PlaybackSurface = ({
     <View pointerEvents="box-none" style={styles.overlay}>
       <Pressable
         accessibilityRole="button"
-        onPress={onClose}
+        onPress={dismissSurface}
         style={styles.backdrop}
       />
       <View style={styles.sheetContainer}>
-        {canRenderQueue && queueSummary ? (
-          <QueueSurface
-            activeQueueMode={activeQueueMode ?? 'ordered'}
-            activeRepeatMode={activeRepeatMode ?? 'off'}
-            isPlaybackToggleDisabled={isPlaybackToggleDisabled}
-            onClose={onClose}
-            onSelectQueueMode={onSelectQueueMode}
-            onSelectRepeatMode={onSelectRepeatMode}
-            onShowNowPlaying={onShowNowPlaying}
-            summary={queueSummary}
-          />
-        ) : null}
-        {canRenderNowPlaying && nowPlayingSummary && activePlayableItem ? (
-          <NowPlayingSurface
-            activePlayableItem={activePlayableItem}
-            activeQueueMode={activeQueueMode}
-            activeRepeatMode={activeRepeatMode}
-            canSeekActivePlayback={canSeekActivePlayback}
-            canSkipNextItem={canSkipNextItem}
-            canSkipPreviousItem={canSkipPreviousItem}
-            isPlaybackToggleDisabled={isPlaybackToggleDisabled}
-            onAdjustPlaybackVolume={onAdjustPlaybackVolume}
-            onClose={onClose}
-            onSeekToPosition={onSeekToPosition}
-            onSelectQueueMode={onSelectQueueMode}
-            onSelectRepeatMode={onSelectRepeatMode}
-            onShowQueue={onShowQueue}
-            onSkipNextItem={onSkipNextItem}
-            onSkipPreviousItem={onSkipPreviousItem}
-            onTogglePlayback={onTogglePlayback}
-            playbackPositionSeconds={playbackPositionSeconds}
-            playbackToggleLabel={playbackToggleLabel}
-            playbackVolumeLevel={playbackVolumeLevel}
-            queueSummary={queueSummary}
-            summary={nowPlayingSummary}
-          />
-        ) : null}
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={[styles.sheetFrame, { transform: [{ translateY }] }]}
+        >
+          {canRenderQueue && queueSummary ? (
+            <QueueSurface
+              activeQueueMode={activeQueueMode ?? 'ordered'}
+              activeRepeatMode={activeRepeatMode ?? 'off'}
+              isPlaybackToggleDisabled={isPlaybackToggleDisabled}
+              onClose={dismissSurface}
+              onSelectQueueMode={onSelectQueueMode}
+              onSelectRepeatMode={onSelectRepeatMode}
+              onShowNowPlaying={onShowNowPlaying}
+              summary={queueSummary}
+            />
+          ) : null}
+          {canRenderNowPlaying && nowPlayingSummary && activePlayableItem ? (
+            <NowPlayingSurface
+              activePlayableItem={activePlayableItem}
+              activeQueueMode={activeQueueMode}
+              activeRepeatMode={activeRepeatMode}
+              canSeekActivePlayback={canSeekActivePlayback}
+              canSkipNextItem={canSkipNextItem}
+              canSkipPreviousItem={canSkipPreviousItem}
+              isPlaybackToggleDisabled={isPlaybackToggleDisabled}
+              onAdjustPlaybackVolume={onAdjustPlaybackVolume}
+              onClose={dismissSurface}
+              onSeekBackward={onSeekBackward}
+              onSeekForward={onSeekForward}
+              onSeekToPosition={onSeekToPosition}
+              onSelectQueueMode={onSelectQueueMode}
+              onSelectRepeatMode={onSelectRepeatMode}
+              onShowQueue={onShowQueue}
+              onSkipNextItem={onSkipNextItem}
+              onSkipPreviousItem={onSkipPreviousItem}
+              onTogglePlayback={onTogglePlayback}
+              playbackPositionSeconds={playbackPositionSeconds}
+              playbackToggleLabel={playbackToggleLabel}
+              playbackVolumeLevel={playbackVolumeLevel}
+              queueSummary={queueSummary}
+              summary={nowPlayingSummary}
+            />
+          ) : null}
+        </Animated.View>
       </View>
     </View>
   );
@@ -450,24 +556,39 @@ const styles = StyleSheet.create({
   },
   sheetContainer: {
     flex: 1,
+    justifyContent: 'flex-end',
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 16,
+    paddingTop: 56,
+    paddingBottom: 12,
+  },
+  sheetFrame: {
+    width: '100%',
   },
   sheetCard: {
-    flex: 1,
-    gap: 16,
-    padding: 20,
+    gap: 12,
+    padding: 18,
     borderWidth: 1,
     borderColor: appTheme.colors.border,
-    borderRadius: 28,
+    borderRadius: 32,
     backgroundColor: appTheme.colors.surfaceBackground,
   },
-  sheetHeader: {
+  surfaceHandle: {
+    alignSelf: 'center',
+    width: 56,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: '#d0d8d2',
+  },
+  sheetHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
+  },
+  headerActionRow: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
   },
   sheetEyebrow: {
     color: appTheme.colors.secondaryText,
@@ -476,62 +597,62 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
-  headerAction: {
-    minWidth: 84,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: '#f3ecdf',
-  },
   headerActionPressed: {
     opacity: 0.84,
   },
   headerActionDisabled: {
     opacity: 0.5,
   },
-  headerActionLabel: {
-    color: appTheme.colors.primaryText,
-    fontSize: 13,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  heroArtwork: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 200,
-    borderRadius: 24,
-    backgroundColor: appTheme.colors.heroBackground,
-  },
-  heroArtworkLabel: {
-    color: '#fff8ef',
-    fontSize: 20,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
+  heroWaveform: {
+    marginTop: 2,
   },
   summaryGroup: {
-    gap: 6,
+    gap: 4,
+  },
+  summaryMetaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statusCaption: {
+    color: '#2d584a',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  summaryMetaText: {
+    color: appTheme.colors.secondaryText,
+    fontSize: 12,
+    fontWeight: '600',
   },
   title: {
     color: appTheme.colors.primaryText,
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
-    lineHeight: 34,
+    lineHeight: 30,
   },
   subtitle: {
     color: appTheme.colors.secondaryText,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 14,
+    lineHeight: 20,
   },
   rangeLabel: {
     color: '#2d584a',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
-    lineHeight: 22,
+    lineHeight: 20,
   },
   progressLabel: {
     color: appTheme.colors.primaryText,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
+  },
+  inlineContextText: {
+    color: appTheme.colors.secondaryText,
+    fontSize: 13,
+    lineHeight: 18,
   },
   pillRow: {
     flexDirection: 'row',
@@ -540,9 +661,10 @@ const styles = StyleSheet.create({
   },
   transportRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    justifyContent: 'flex-start',
+    gap: 8,
+    flexWrap: 'nowrap',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   pill: {
     paddingHorizontal: 14,
@@ -566,53 +688,31 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   transportButtonPrimary: {
-    minWidth: 84,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    width: 70,
+    height: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 999,
     backgroundColor: '#305c4d',
   },
   transportButtonSecondary: {
-    minWidth: 68,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    width: 46,
+    height: 46,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 999,
     backgroundColor: '#fffdf8',
   },
-  transportButtonPrimaryLabel: {
-    color: '#fff8ef',
-    fontSize: 14,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  transportButtonSecondaryLabel: {
-    color: appTheme.colors.primaryText,
-    fontSize: 14,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  contextCard: {
-    gap: 6,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 18,
-    backgroundColor: '#faf6ee',
-  },
-  contextTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  contextBody: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 14,
-    lineHeight: 20,
-  },
   queueList: {
     gap: 12,
+  },
+  queueSurfaceTitle: {
+    color: appTheme.colors.primaryText,
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 26,
   },
   queueCard: {
     gap: 6,

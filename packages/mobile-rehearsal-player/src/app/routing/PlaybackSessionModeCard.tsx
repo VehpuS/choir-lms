@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   type RehearsalQueueMode,
   type RepeatMode,
@@ -7,33 +8,40 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { appTheme } from '../utils/theme';
 
 const QUEUE_MODE_OPTIONS: Array<{
-  label: string;
+  accessibilityLabel: string;
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
   mode: RehearsalQueueMode;
 }> = [
   {
-    label: 'Ordered',
+    accessibilityLabel: 'Play in saved order',
+    icon: 'format-list-numbered',
     mode: 'ordered',
   },
   {
-    label: 'Shuffle',
+    accessibilityLabel: 'Shuffle playback',
+    icon: 'shuffle',
     mode: 'shuffle',
   },
 ];
 
 const REPEAT_MODE_OPTIONS: Array<{
-  label: string;
+  accessibilityLabel: string;
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
   mode: RepeatMode;
 }> = [
   {
-    label: 'Off',
+    accessibilityLabel: 'Repeat off',
+    icon: 'repeat-off',
     mode: 'off',
   },
   {
-    label: 'One',
+    accessibilityLabel: 'Repeat one',
+    icon: 'repeat-once',
     mode: 'one',
   },
   {
-    label: 'All',
+    accessibilityLabel: 'Repeat all',
+    icon: 'repeat',
     mode: 'all',
   },
 ];
@@ -41,7 +49,7 @@ const REPEAT_MODE_OPTIONS: Array<{
 const ModeButton = (props: {
   accessibilityLabel: string;
   disabled?: boolean;
-  label: string;
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
   onPress: () => void;
   selected: boolean;
 }) => {
@@ -61,15 +69,11 @@ const ModeButton = (props: {
         props.disabled ? styles.modeButtonDisabled : null,
       ]}
     >
-      <Text
-        style={
-          props.selected
-            ? styles.modeButtonSelectedLabel
-            : styles.modeButtonLabel
-        }
-      >
-        {props.label}
-      </Text>
+      <MaterialCommunityIcons
+        color={props.selected ? '#fff8ef' : appTheme.colors.primaryText}
+        name={props.icon}
+        size={22}
+      />
     </Pressable>
   );
 };
@@ -83,44 +87,40 @@ export const PlaybackSessionModeCard = (props: {
 }) => {
   return (
     <View style={styles.card}>
-      <View style={styles.group}>
-        <Text style={styles.title}>Queue mode</Text>
-        <View style={styles.row}>
-          {QUEUE_MODE_OPTIONS.map((option) => {
-            return (
-              <ModeButton
-                accessibilityLabel={`${option.label} playback`}
-                disabled={props.isDisabled}
-                key={option.mode}
-                label={option.label}
-                onPress={() => {
-                  props.onSelectQueueMode(option.mode);
-                }}
-                selected={props.queueMode === option.mode}
-              />
-            );
-          })}
-        </View>
+      <View style={styles.groupRow}>
+        {QUEUE_MODE_OPTIONS.map((option) => {
+          return (
+            <ModeButton
+              accessibilityLabel={option.accessibilityLabel}
+              disabled={props.isDisabled}
+              icon={option.icon}
+              key={option.mode}
+              onPress={() => {
+                props.onSelectQueueMode(option.mode);
+              }}
+              selected={props.queueMode === option.mode}
+            />
+          );
+        })}
       </View>
 
-      <View style={styles.group}>
-        <Text style={styles.title}>Repeat</Text>
-        <View style={styles.row}>
-          {REPEAT_MODE_OPTIONS.map((option) => {
-            return (
-              <ModeButton
-                accessibilityLabel={`Repeat ${option.label}`}
-                disabled={props.isDisabled}
-                key={option.mode}
-                label={option.label}
-                onPress={() => {
-                  props.onSelectRepeatMode(option.mode);
-                }}
-                selected={props.repeatMode === option.mode}
-              />
-            );
-          })}
-        </View>
+      <View style={styles.divider} />
+
+      <View style={styles.groupRow}>
+        {REPEAT_MODE_OPTIONS.map((option) => {
+          return (
+            <ModeButton
+              accessibilityLabel={option.accessibilityLabel}
+              disabled={props.isDisabled}
+              icon={option.icon}
+              key={option.mode}
+              onPress={() => {
+                props.onSelectRepeatMode(option.mode);
+              }}
+              selected={props.repeatMode === option.mode}
+            />
+          );
+        })}
       </View>
     </View>
   );
@@ -128,39 +128,42 @@ export const PlaybackSessionModeCard = (props: {
 
 const styles = StyleSheet.create({
   card: {
-    gap: 14,
-    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 18,
     backgroundColor: '#faf6ee',
   },
-  group: {
-    gap: 8,
-  },
-  title: {
-    color: appTheme.colors.primaryText,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  row: {
+  groupRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: 8,
+  },
+  divider: {
+    width: 1,
+    alignSelf: 'stretch',
+    backgroundColor: appTheme.colors.border,
   },
   modeButton: {
-    minWidth: 76,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 999,
     backgroundColor: '#fffdf8',
   },
   modeButtonSelected: {
-    minWidth: 76,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 999,
     backgroundColor: '#305c4d',
   },
@@ -169,17 +172,5 @@ const styles = StyleSheet.create({
   },
   modeButtonDisabled: {
     opacity: 0.5,
-  },
-  modeButtonLabel: {
-    color: appTheme.colors.primaryText,
-    fontSize: 13,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  modeButtonSelectedLabel: {
-    color: '#fff8ef',
-    fontSize: 13,
-    fontWeight: '700',
-    textAlign: 'center',
   },
 });
