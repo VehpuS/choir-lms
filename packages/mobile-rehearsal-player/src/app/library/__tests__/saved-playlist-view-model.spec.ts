@@ -14,6 +14,15 @@ import {
   SAVED_LOOP,
 } from '../../test-utils/library-test-fixtures.js';
 import {
+  buildSavedPlaylistDetailDraftPlaylist,
+  getSavedPlaylistDetailInitialState,
+  isSavedPlaylistEntryPlayable,
+  moveSavedPlaylistDetailEntry,
+  reduceSavedPlaylistDetailState,
+  removeSavedPlaylistDetailEntry,
+  restoreSavedPlaylistDetailEntry,
+} from '../utils/saved-playlist-detail-view-model.js';
+import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackActionCopy,
   getPlaylistPlaybackCurrentItem,
@@ -162,6 +171,97 @@ describe('saved playlist view-model', () => {
       step: 'selector',
     });
     assert.deepEqual(closedState, initialState);
+  });
+
+  it('keeps playlist detail edit state and undo feedback in UI-local helpers', () => {
+    const playlist = addLoopToPlaylist(
+      addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-05-12T00:00:00.000Z',
+          name: 'Warmups',
+          ownerId: 'user-1',
+        }),
+        PLAYABLE_SOURCE,
+        '2026-05-12T00:01:00.000Z',
+      ),
+      SAVED_LOOP,
+      '2026-05-12T00:02:00.000Z',
+    );
+    const initialState = getSavedPlaylistDetailInitialState();
+    const editingState = reduceSavedPlaylistDetailState(initialState, {
+      type: 'enter-edit-mode',
+      entries: playlist.items,
+    });
+    const reorderedEntries = moveSavedPlaylistDetailEntry(
+      editingState.draftEntries,
+      1,
+      0,
+    );
+    const removal = removeSavedPlaylistDetailEntry(reorderedEntries, 'missing');
+    const removedTrack = removeSavedPlaylistDetailEntry(
+      reorderedEntries,
+      playlist.items[0].id,
+    );
+
+    assert.equal(editingState.isEditing, true);
+    assert.deepEqual(
+      reorderedEntries.map((entry) => entry.id),
+      [playlist.items[1].id, playlist.items[0].id],
+    );
+    assert.equal(removal, null);
+
+    if (!removedTrack) {
+      throw new Error('Expected a removed track snapshot.');
+    }
+
+    assert.deepEqual(
+      restoreSavedPlaylistDetailEntry(removedTrack.nextEntries, {
+        entry: removedTrack.entry,
+        previousIndex: removedTrack.previousIndex,
+      }).map((entry) => entry.id),
+      [playlist.items[1].id, playlist.items[0].id],
+    );
+    assert.deepEqual(
+      buildSavedPlaylistDetailDraftPlaylist(
+        playlist,
+        reorderedEntries,
+      ).items.map((entry) => ({
+        id: entry.id,
+        sortIndex: entry.sortIndex,
+      })),
+      [
+        {
+          id: playlist.items[1].id,
+          sortIndex: 0,
+        },
+        {
+          id: playlist.items[0].id,
+          sortIndex: 1,
+        },
+      ],
+    );
+  });
+
+  it('keeps pre-playback playlist detail copy focused on order and playback intent', () => {
+    const playlist = createPlaylist({
+      createdAt: '2026-05-12T00:00:00.000Z',
+      name: 'Warmups',
+      ownerId: 'user-1',
+    });
+
+    assert.deepEqual(
+      getSavedPlaylistDetailSummary({
+        activeSession: null,
+        playlist,
+        savedLoops: [],
+        savedSources: [],
+      }),
+      {
+        body: 'Add saved tracks and loops from Library, then keep this detail surface focused on order and playback intent.',
+        metadataLabel: '0 items • Personal',
+        title: 'Warmups',
+      },
+    );
   });
 
   it('builds track context sheet copy without repeating the location label', () => {
@@ -326,6 +426,14 @@ describe('saved playlist view-model', () => {
       }),
       'Loop 0:12 - 0:18 • Alto Line.mp3',
     );
+    assert.equal(
+      isSavedPlaylistEntryPlayable({
+        entry: playlist.items[0],
+        savedLoops: [SAVED_LOOP],
+        savedSources: [PLAYABLE_SOURCE],
+      }),
+      true,
+    );
   });
 
   it('builds playlist playback sessions from saved tracks and loops', () => {
@@ -370,6 +478,38 @@ describe('saved playlist view-model', () => {
         summary:
           'Active session • Warmups • item 1 of 2 • Ordered • Repeat all.',
       },
+    );
+  });
+
+  it('starts ordered playlist playback from a tapped playlist entry', () => {
+    const queuePlaylist = addLoopToPlaylist(
+      addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-05-12T00:00:00.000Z',
+          name: 'Warmups',
+          ownerId: 'user-1',
+        }),
+        PLAYABLE_SOURCE,
+        '2026-05-12T00:01:00.000Z',
+      ),
+      SAVED_LOOP,
+      '2026-05-12T00:02:00.000Z',
+    );
+
+    const result = buildPlaylistPlaybackSession({
+      loops: [SAVED_LOOP],
+      mode: 'ordered',
+      playlist: queuePlaylist,
+      repeatMode: 'off',
+      sources: [PLAYABLE_SOURCE],
+      startEntryId: queuePlaylist.items[1].id,
+    });
+
+    assert.equal(result.issue, null);
+    assert.equal(result.session?.currentIndex, 1);
+    assert.equal(
+      result.session && getPlaylistPlaybackCurrentItem(result.session)?.id,
+      'loop:loop-1',
     );
   });
 

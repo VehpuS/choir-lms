@@ -54,6 +54,15 @@ export const savedPlaylistSectionStyles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  headerRow: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  headerCopy: {
+    flex: 1,
+    gap: 4,
+  },
   nameInput: {
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -110,11 +119,55 @@ export const savedPlaylistSectionStyles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: '#faf6ee',
   },
+  itemCardActive: {
+    borderColor: PRIMARY_ACTION_BACKGROUND,
+    backgroundColor: '#f1f7f3',
+  },
+  itemCardUnavailable: {
+    opacity: 0.72,
+  },
+  itemPressable: {
+    gap: 8,
+  },
+  itemHeaderRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'space-between',
+  },
   itemTitle: {
+    flex: 1,
     color: PRIMARY_TEXT,
     fontSize: 15,
     fontWeight: '700',
     lineHeight: 21,
+  },
+  itemStatusActive: {
+    color: PRIMARY_ACTION_BACKGROUND,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+  itemStatusReady: {
+    color: SECONDARY_TEXT,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+  itemStatusUnavailable: {
+    color: ERROR_TEXT,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+  dragHandleLabel: {
+    color: SECONDARY_TEXT,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
   },
   itemMetadata: {
     color: SECONDARY_TEXT,
@@ -138,6 +191,13 @@ export const savedPlaylistSectionStyles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: PRIMARY_ACTION_BACKGROUND,
   },
+  fabButton: {
+    alignSelf: 'flex-end',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 999,
+    backgroundColor: PRIMARY_ACTION_BACKGROUND,
+  },
   primaryButtonLabel: {
     color: PRIMARY_ACTION_TEXT,
     fontSize: 14,
@@ -152,8 +212,22 @@ export const savedPlaylistSectionStyles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: '#fffdf8',
   },
+  destructiveButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: ERROR_TEXT,
+    borderRadius: 999,
+    backgroundColor: ERROR_SURFACE,
+  },
   secondaryButtonLabel: {
     color: PRIMARY_TEXT,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  destructiveButtonLabel: {
+    color: ERROR_TEXT,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -178,5 +252,19 @@ export const savedPlaylistSectionStyles = StyleSheet.create({
   },
   actionButtonDisabled: {
     opacity: 0.56,
+  },
+  playbackActionRow: {
+    alignItems: 'flex-end',
+  },
+  snackbarCard: {
+    gap: 10,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: '#efe9db',
+  },
+  snackbarMessage: {
+    color: PRIMARY_TEXT,
+    fontSize: 13,
+    lineHeight: 18,
   },
 });

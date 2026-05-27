@@ -118,6 +118,7 @@ Alternatives considered:
 - Use More Options bottom sheets and selector overlays for add-to-playlist flows so track rows can stay lightweight while still exposing the expected music-app management actions.
 - Favor scan-first sections, segmented collections, and strong playback hierarchy over dense form controls.
 - Keep playlist detail playback-first with a visible `PlayAll` action, row-tap playback from the tapped position, and an explicit edit mode for reorder and removal work.
+- Keep session-mode controls such as repeat and shuffle tied to the active playback context. Playlist detail should start queue playback, but ongoing queue-mode changes belong to the dedicated playback modal and Up Next surfaces so users can adjust them after playback starts.
 - Keep queue state close to playback through a dedicated Up Next surface reachable from the playback modal. The dedicated playback screen should always keep skip-back / play-pause / skip-forward controls available for the current item, and when playback comes from a playlist or queue it should additionally expose previous / next item controls without showing queue navigation for standalone track playback.
 - Prefer toast and snackbar feedback for playlist assignment and removal so the user can stay in context and undo destructive changes without route changes.
 - Encode rehearsal context directly in the UI through loop badges, source labels, and playlist provenance.

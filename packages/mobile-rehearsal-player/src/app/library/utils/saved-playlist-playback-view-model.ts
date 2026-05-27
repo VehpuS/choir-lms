@@ -42,6 +42,7 @@ type BuildPlaylistPlaybackSessionOptions = {
   random?: () => number;
   repeatMode: RepeatMode;
   sources: DriveAudioSource[];
+  startEntryId?: string;
 };
 
 const ORDERED_BUTTON_LABEL = 'Play ordered';
@@ -131,10 +132,28 @@ export const buildPlaylistPlaybackSession = (
     };
   }
 
+  const startIndex = options.startEntryId
+    ? queue.items.findIndex((item) => {
+        return item.playlistEntryId === options.startEntryId;
+      })
+    : 0;
+
+  if (options.startEntryId && startIndex < 0) {
+    return {
+      issue: {
+        message:
+          'The selected playlist item is not currently playable. Choose another row or remove the unavailable item from this rehearsal set.',
+        playlistId: options.playlist.id,
+        title: 'Playlist item unavailable',
+      } satisfies PlaylistPlaybackIssue,
+      session: null,
+    };
+  }
+
   return {
     issue: null,
     session: {
-      currentIndex: 0,
+      currentIndex: startIndex,
       hasCompleted: false,
       playlistId: options.playlist.id,
       playlistName: options.playlist.name,

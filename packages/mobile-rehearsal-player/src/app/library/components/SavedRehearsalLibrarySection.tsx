@@ -59,7 +59,6 @@ type SavedRehearsalLibrarySectionProps = {
   pendingLoopId: string | null;
   playbackIssue: SavedTrackPlaybackIssue | null;
   playbackState: SavedTrackPlaybackState | undefined;
-  playlistRepeatMode: 'off' | 'one' | 'all';
   removeLoop: (loop: NamedLoop) => void;
   removeSource: (source: DriveLibrarySource) => void;
   savedLibraryIssue: SavedRehearsalLibraryIssue | null;
@@ -68,7 +67,6 @@ type SavedRehearsalLibrarySectionProps = {
   savedLoops: NamedLoop[];
   savedLibraryStatusCopy: DriveLibraryStatusCopy;
   saveLoop: (loop: NamedLoop) => Promise<boolean>;
-  setPlaylistRepeatMode: (repeatMode: 'off' | 'one' | 'all') => void;
   savedTrackPlaybackStatusCopy: DriveLibraryStatusCopy | null;
   openLoopBuilderForSource: (source: DriveLibrarySource) => void;
   pendingLoopBuilderSourceId: string | null;
@@ -80,6 +78,7 @@ type SavedRehearsalLibrarySectionProps = {
     mode: 'ordered' | 'shuffle';
     playlist: Playlist;
     sources: DriveLibrarySource[];
+    startEntryId?: string;
   }) => Promise<void>;
   toggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
 };
@@ -98,7 +97,6 @@ export const SavedRehearsalLibrarySection = ({
   pendingLoopId,
   playbackIssue,
   playbackState,
-  playlistRepeatMode,
   removeLoop,
   removeSource,
   savedLibraryIssue,
@@ -107,7 +105,6 @@ export const SavedRehearsalLibrarySection = ({
   savedLoops,
   savedLibraryStatusCopy,
   saveLoop,
-  setPlaylistRepeatMode,
   savedTrackPlaybackStatusCopy,
   openLoopBuilderForSource,
   pendingLoopBuilderSourceId,
@@ -438,12 +435,10 @@ export const SavedRehearsalLibrarySection = ({
         }}
         pendingPlaylistId={pendingPlaylistId}
         playbackState={playbackState}
-        playlistRepeatMode={playlistRepeatMode}
         savedPlaylists={savedPlaylists}
         savedLoops={savedLoops}
         savedSources={savedLibrarySources}
         selectedPlaylist={selectedPlaylist}
-        setPlaylistRepeatMode={setPlaylistRepeatMode}
         setSelectedPlaylistId={setSelectedPlaylistId}
         togglePlaylistPlayback={togglePlaylistPlayback}
         updatePlaylist={updatePlaylist}

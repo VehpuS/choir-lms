@@ -282,7 +282,7 @@ Why: This validation state shows that loop creation is not only about happy-path
 +--------------------------------------+
 ```
 
-Why: The default playlist view treats the playlist as a queue first: the title and count frame the session, row taps can start playback from a chosen index, and a floating primary action keeps full-playlist playback prominent without crowding the header.
+Why: The default playlist view treats the playlist as a queue first: the title and count frame the session, row taps can start playback from a chosen index, and a floating primary action keeps full-playlist playback prominent without crowding the header. Repeat and shuffle stay off this screen so users change them from playback context after the queue is already running.
 
 ### State B: Playlist Item Menu and Undo Feedback
 
@@ -375,7 +375,7 @@ Why: Standalone playback keeps the modal focused on the current stem or loop. Re
 +--------------------------------------+
 ```
 
-Why: Queued playback keeps the same current-item skip controls for rehearsal work, but adds previous / next item navigation and a queue affordance because playlist context is now relevant. This keeps both interactions available without showing queue navigation on standalone tracks.
+Why: Queued playback keeps the same current-item skip controls for rehearsal work, but adds previous / next item navigation and a queue affordance because playlist context is now relevant. This keeps both interactions available without showing queue navigation on standalone tracks, and it keeps repeat and shuffle close to the active session instead of burying them back on playlist detail.
 
 ## Screen 8: Queue / Up Next Sheet
 
@@ -397,4 +397,4 @@ Why: Queued playback keeps the same current-item skip controls for rehearsal wor
 +--------------------------------------+
 ```
 
-Why: Queue control belongs close to the dedicated playback modal, preferably as a sheet or adjacent screen, so users can adjust the session without abandoning playback context or overloading the main transport row.
+Why: Queue control belongs close to the dedicated playback modal, preferably as a sheet or adjacent screen, so users can adjust the session without abandoning playback context or overloading the main transport row. That includes seeing and changing the active repeat and shuffle mode while playback is already in progress.

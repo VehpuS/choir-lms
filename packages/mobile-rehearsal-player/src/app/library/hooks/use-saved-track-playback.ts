@@ -16,6 +16,7 @@ import TrackPlayer, {
 } from 'react-native-track-player';
 
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
+import { rebuildPlaylistPlaybackSessionForMode } from '../utils/playlist-session-mode';
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
@@ -34,6 +35,12 @@ import { createSavedTrackPlaybackController } from '../utils/saved-track-playbac
 import { ensureSavedTrackPlayerReady } from '../utils/saved-track-player-runtime';
 
 const DEFAULT_PLAYBACK_VOLUME_LEVEL = 1;
+
+type ActivePlaylistContext = {
+  loops: NamedLoop[];
+  playlist: Playlist;
+  sources: DriveLibrarySource[];
+};
 
 const mapPlaylistPlaybackIssue = (issue: PlaylistPlaybackIssue) => {
   return {
@@ -54,6 +61,7 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
     useState<RepeatMode>('off');
   const [volumeLevel, setVolumeLevel] = useState(DEFAULT_PLAYBACK_VOLUME_LEVEL);
   const activePlayableItemRef = useRef<PlayableItem | null>(null);
+  const activePlaylistContextRef = useRef<ActivePlaylistContext | null>(null);
   const activePlaylistSessionRef = useRef<PlaylistPlaybackSession | null>(null);
   const isAdvancingPlaylistRef = useRef(false);
   const volumeLevelRef = useRef(DEFAULT_PLAYBACK_VOLUME_LEVEL);
@@ -68,6 +76,12 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
 
   useEffect(() => {
     activePlaylistSessionRef.current = activePlaylistSession;
+  }, [activePlaylistSession]);
+
+  useEffect(() => {
+    if (!activePlaylistSession) {
+      activePlaylistContextRef.current = null;
+    }
   }, [activePlaylistSession]);
 
   useEffect(() => {
@@ -214,6 +228,34 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
           : currentSession;
       });
     },
+    setPlaylistQueueMode(mode: RehearsalQueueMode) {
+      setActivePlaylistSession((currentSession) => {
+        const activePlaylistContext = activePlaylistContextRef.current;
+
+        if (!currentSession || !activePlaylistContext) {
+          return currentSession;
+        }
+
+        const nextSession = rebuildPlaylistPlaybackSessionForMode({
+          loops: activePlaylistContext.loops,
+          mode,
+          playlist: activePlaylistContext.playlist,
+          session: currentSession,
+          sources: activePlaylistContext.sources,
+        });
+
+        if (nextSession.issue || !nextSession.session) {
+          setIssue(
+            nextSession.issue
+              ? mapPlaylistPlaybackIssue(nextSession.issue)
+              : null,
+          );
+          return currentSession;
+        }
+
+        return nextSession.session;
+      });
+    },
     async seekActivePlaybackBySeconds(deltaSeconds: number) {
       await playbackController.seekActivePlaybackBySeconds(deltaSeconds);
     },
@@ -232,7 +274,10 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
         activePlayableItemRef.current,
       );
     },
-    togglePlayableItemPlayback: playbackController.togglePlayableItemPlayback,
+    async togglePlayableItemPlayback(playableItem: PlayableItem) {
+      activePlaylistContextRef.current = null;
+      await playbackController.togglePlayableItemPlayback(playableItem);
+    },
     async skipToNextItem() {
       await playbackController.playNextQueueItem();
     },
@@ -244,6 +289,7 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
       mode: RehearsalQueueMode;
       playlist: Playlist;
       sources: DriveLibrarySource[];
+      startEntryId?: string;
     }) {
       const nextSession = buildPlaylistPlaybackSession({
         loops: options.loops,
@@ -251,6 +297,7 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
         playlist: options.playlist,
         repeatMode: playlistRepeatMode,
         sources: options.sources,
+        startEntryId: options.startEntryId,
       });
 
       if (nextSession.issue || !nextSession.session) {
@@ -285,6 +332,11 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
 
       try {
         if (await playbackController.loadPlayableItem(firstPlayableItem)) {
+          activePlaylistContextRef.current = {
+            loops: options.loops,
+            playlist: options.playlist,
+            sources: options.sources,
+          };
           setActivePlaylistSession(nextSession.session);
         }
       } catch (error) {
@@ -296,6 +348,7 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
       }
     },
     async toggleSourcePlayback(source: DriveLibrarySource) {
+      activePlaylistContextRef.current = null;
       await playbackController.togglePlayableItemPlayback(
         createTrackPlayableItem(source),
       );

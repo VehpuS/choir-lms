@@ -212,7 +212,7 @@ export const getSavedPlaylistDetailSummary = (options: {
     metadataLabel: metadataParts.join(' • '),
     body: options.activeSession
       ? getPlaylistPlaybackSessionSummary(options.activeSession)
-      : 'Add saved tracks and loops from Library, then keep this detail surface focused on order, repeat, and playback intent.',
+      : 'Add saved tracks and loops from Library, then keep this detail surface focused on order and playback intent.',
   };
 };
 

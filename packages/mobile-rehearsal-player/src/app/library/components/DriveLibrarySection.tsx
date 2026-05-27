@@ -33,10 +33,8 @@ type SavedTrackPlaybackController = Pick<
   | 'isPreparing'
   | 'issue'
   | 'playbackState'
-  | 'playlistRepeatMode'
   | 'progress'
   | 'resolveTrackDuration'
-  | 'setPlaylistRepeatMode'
   | 'togglePlayableItemPlayback'
   | 'togglePlaylistPlayback'
   | 'toggleSourcePlayback'
@@ -57,11 +55,9 @@ export const DriveLibrarySection = ({
   googleAuthConfigured,
   isPreparing: isPlaybackPreparing,
   issue: playbackIssue,
-  playlistRepeatMode,
   playbackState,
   progress,
   resolveTrackDuration,
-  setPlaylistRepeatMode,
   togglePlayableItemPlayback,
   togglePlaylistPlayback,
   toggleSourcePlayback,
@@ -269,7 +265,6 @@ export const DriveLibrarySection = ({
         pendingLoopId={pendingLoopId}
         playbackIssue={playbackIssue}
         playbackState={playbackState}
-        playlistRepeatMode={playlistRepeatMode}
         removeLoop={confirmRemoveLoop}
         removeSource={confirmRemoveSource}
         savedLibraryIssue={savedLibraryIssue}
@@ -278,7 +273,6 @@ export const DriveLibrarySection = ({
         savedLoops={savedLoops}
         savedLibraryStatusCopy={savedLibraryStatusCopy}
         saveLoop={saveLoop}
-        setPlaylistRepeatMode={setPlaylistRepeatMode}
         savedTrackPlaybackStatusCopy={savedTrackPlaybackStatusCopy}
         openLoopBuilderForSource={openLoopBuilderForSource}
         pendingLoopBuilderSourceId={pendingLoopBuilderSourceId}

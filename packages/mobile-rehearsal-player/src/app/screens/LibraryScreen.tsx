@@ -14,9 +14,7 @@ type SavedTrackPlaybackController = Pick<
   | 'isPreparing'
   | 'issue'
   | 'playbackState'
-  | 'playlistRepeatMode'
   | 'progress'
-  | 'setPlaylistRepeatMode'
   | 'togglePlayableItemPlayback'
   | 'togglePlaylistPlayback'
   | 'toggleSourcePlayback'
@@ -58,7 +56,6 @@ export const LibraryScreen = ({
         pendingLoopId={libraryController.savedLibrary.pendingLoopId}
         playbackIssue={playback.issue}
         playbackState={playback.playbackState}
-        playlistRepeatMode={playback.playlistRepeatMode}
         removeLoop={libraryController.savedLibrary.removeLoop}
         removeSource={libraryController.savedLibrary.removeSource}
         savedLibraryIssue={libraryController.savedLibrary.savedLibraryIssue}
@@ -69,7 +66,6 @@ export const LibraryScreen = ({
           libraryController.savedLibrary.savedLibraryStatusCopy
         }
         saveLoop={libraryController.savedLibrary.saveLoop}
-        setPlaylistRepeatMode={playback.setPlaylistRepeatMode}
         savedTrackPlaybackStatusCopy={
           libraryController.savedLibrary.savedTrackPlaybackStatusCopy
         }

@@ -1,13 +1,10 @@
 import {
   type Playlist,
-  type RehearsalQueueMode,
-  type RepeatMode,
 } from '@org/audio-library-models';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
+import type { SavedPlaylistDetailRemovalNotice } from '../utils/saved-playlist-detail-view-model';
 import {
-  getPlaylistRepeatModeLabel,
-  PLAYLIST_REPEAT_MODES,
   type PlaylistPlaybackActionCopy,
 } from '../utils/saved-playlist-playback-view-model';
 import type {
@@ -19,6 +16,8 @@ import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
   savedPlaylistSectionStyles as styles,
 } from './saved-playlist-section-styles';
+
+type PlaylistEntry = Playlist['items'][number];
 
 export const SavedPlaylistIssueCard = ({
   issue,
@@ -133,28 +132,47 @@ export const SavedPlaylistCardsList = (props: {
   );
 };
 
+const getRowStatusLabel = (options: {
+  isCurrentEntry: boolean;
+  isPlayable: boolean;
+}) => {
+  if (options.isCurrentEntry) {
+    return 'Playing';
+  }
+
+  if (options.isPlayable) {
+    return 'Tap to play';
+  }
+
+  return 'Unavailable';
+};
+
 export const SavedPlaylistDetailCard = (props: {
   canMutatePlaylists: boolean;
+  currentPlaylistEntryId: string | null;
   detailSummary: SavedPlaylistDetailSummary | null;
-  getItemDetailLabel: (entry: Playlist['items'][number]) => string;
+  detailEntries: PlaylistEntry[];
+  getItemDetailLabel: (entry: PlaylistEntry) => string;
+  isEditMode: boolean;
+  isItemPlayable: (entry: PlaylistEntry) => boolean;
   isMutating: boolean;
   orderedPlaybackAction: PlaylistPlaybackActionCopy;
-  playlistRepeatMode: RepeatMode;
   renameIssue: PlaylistDraftIssue | null;
   renamePlaylistName: string;
-  selectedQueueMode: RehearsalQueueMode | null;
+  removalNotice: SavedPlaylistDetailRemovalNotice | null;
   selectedPlaylist: Playlist | null;
   selectedPlaylistIssue: PlaylistDraftIssue | null;
   onCloseDetail: () => void;
   onDeletePlaylist: () => void;
+  onDismissRemovalNotice: () => void;
   onMoveItem: (fromIndex: number, toIndex: number) => void;
   onPlayOrderedPlaylist: () => void;
+  onPlayPlaylistEntry: (entryId: string) => void;
   onRemoveItem: (entryId: string) => void;
   onRenamePlaylist: () => void;
   onRenamePlaylistNameChange: (value: string) => void;
-  onSelectRepeatMode: (repeatMode: RepeatMode) => void;
-  onShufflePlayPlaylist: () => void;
-  shufflePlaybackAction: PlaylistPlaybackActionCopy;
+  onToggleEditMode: () => void;
+  onUndoRemoveItem: () => void;
 }) => {
   const { detailSummary, selectedPlaylist } = props;
 
@@ -174,29 +192,20 @@ export const SavedPlaylistDetailCard = (props: {
       >
         <Text style={styles.secondaryButtonLabel}>Back to Library</Text>
       </Pressable>
-      <Text style={styles.eyebrow}>Playlist detail</Text>
-      <Text style={styles.sectionTitle}>{detailSummary.title}</Text>
-      <Text style={styles.sectionBody}>{detailSummary.metadataLabel}</Text>
-      <Text style={styles.editorBody}>{detailSummary.body}</Text>
-      <TextInput
-        autoCorrect={false}
-        onChangeText={props.onRenamePlaylistNameChange}
-        placeholder="Rename this playlist"
-        placeholderTextColor={SAVED_PLAYLIST_PLACEHOLDER_TEXT}
-        returnKeyType="done"
-        style={styles.nameInput}
-        value={props.renamePlaylistName}
-      />
-      <SavedPlaylistIssueCard
-        issue={props.renameIssue ?? props.selectedPlaylistIssue}
-      />
-      <View style={styles.actionRow}>
+
+      <View style={styles.headerRow}>
+        <View style={styles.headerCopy}>
+          <Text style={styles.eyebrow}>Playlist detail</Text>
+          <Text style={styles.sectionTitle}>{detailSummary.title}</Text>
+          <Text style={styles.sectionBody}>{detailSummary.metadataLabel}</Text>
+          <Text style={styles.editorBody}>{detailSummary.body}</Text>
+        </View>
         <Pressable
           accessibilityRole="button"
           disabled={!props.canMutatePlaylists || props.isMutating}
-          onPress={props.onRenamePlaylist}
+          onPress={props.onToggleEditMode}
           style={({ pressed }) => [
-            styles.primaryButton,
+            props.isEditMode ? styles.primaryButton : styles.secondaryButton,
             pressed && props.canMutatePlaylists && !props.isMutating
               ? styles.actionButtonPressed
               : undefined,
@@ -205,213 +214,321 @@ export const SavedPlaylistDetailCard = (props: {
               : undefined,
           ]}
         >
-          <Text style={styles.primaryButtonLabel}>Save name</Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          disabled={!props.canMutatePlaylists || props.isMutating}
-          onPress={props.onDeletePlaylist}
-          style={({ pressed }) => [
-            styles.secondaryButton,
-            pressed && props.canMutatePlaylists && !props.isMutating
-              ? styles.actionButtonPressed
-              : undefined,
-            !props.canMutatePlaylists || props.isMutating
-              ? styles.actionButtonDisabled
-              : undefined,
-          ]}
-        >
-          <Text style={styles.secondaryButtonLabel}>Remove playlist</Text>
+          <Text
+            style={
+              props.isEditMode
+                ? styles.primaryButtonLabel
+                : styles.secondaryButtonLabel
+            }
+          >
+            {props.isEditMode ? 'Save' : 'Edit'}
+          </Text>
         </Pressable>
       </View>
 
-      <View style={styles.group}>
-        <Text style={styles.groupTitle}>Playback</Text>
+      {!props.isEditMode ? (
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Playback</Text>
+          <Text style={styles.editorBody}>
+            Start this playlist in saved order, or tap a row to jump into the
+            queue from that saved position.
+          </Text>
+          <View style={styles.playbackActionRow}>
+            <Pressable
+              accessibilityRole="button"
+              disabled={
+                props.isMutating || props.orderedPlaybackAction.disabled
+              }
+              onPress={props.onPlayOrderedPlaylist}
+              style={({ pressed }) => [
+                styles.fabButton,
+                pressed &&
+                !props.isMutating &&
+                !props.orderedPlaybackAction.disabled
+                  ? styles.actionButtonPressed
+                  : undefined,
+                props.isMutating || props.orderedPlaybackAction.disabled
+                  ? styles.actionButtonDisabled
+                  : undefined,
+              ]}
+            >
+              <Text style={styles.primaryButtonLabel}>
+                {props.orderedPlaybackAction.label}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : (
         <Text style={styles.editorBody}>
-          Start this playlist in saved order or a one-session shuffle. Repeat
-          applies to the active rehearsal queue.
+          Reorder this running order before saving. Destructive controls in edit
+          mode only affect this playlist.
         </Text>
-        <View style={styles.actionRow}>
-          <Pressable
-            accessibilityRole="button"
-            disabled={props.isMutating || props.orderedPlaybackAction.disabled}
-            onPress={props.onPlayOrderedPlaylist}
-            style={({ pressed }) => [
-              props.selectedQueueMode === 'ordered'
-                ? styles.primaryButton
-                : styles.secondaryButton,
-              pressed &&
-              !props.isMutating &&
-              !props.orderedPlaybackAction.disabled
-                ? styles.actionButtonPressed
-                : undefined,
-              props.isMutating || props.orderedPlaybackAction.disabled
-                ? styles.actionButtonDisabled
-                : undefined,
-            ]}
-          >
-            <Text
-              style={
-                props.selectedQueueMode === 'ordered'
-                  ? styles.primaryButtonLabel
-                  : styles.secondaryButtonLabel
-              }
-            >
-              {props.orderedPlaybackAction.label}
-            </Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            disabled={props.isMutating || props.shufflePlaybackAction.disabled}
-            onPress={props.onShufflePlayPlaylist}
-            style={({ pressed }) => [
-              props.selectedQueueMode === 'shuffle'
-                ? styles.primaryButton
-                : styles.secondaryButton,
-              pressed &&
-              !props.isMutating &&
-              !props.shufflePlaybackAction.disabled
-                ? styles.actionButtonPressed
-                : undefined,
-              props.isMutating || props.shufflePlaybackAction.disabled
-                ? styles.actionButtonDisabled
-                : undefined,
-            ]}
-          >
-            <Text
-              style={
-                props.selectedQueueMode === 'shuffle'
-                  ? styles.primaryButtonLabel
-                  : styles.secondaryButtonLabel
-              }
-            >
-              {props.shufflePlaybackAction.label}
-            </Text>
-          </Pressable>
-        </View>
-        <View style={styles.actionRow}>
-          {PLAYLIST_REPEAT_MODES.map((repeatMode) => {
-            const isSelected = props.playlistRepeatMode === repeatMode;
-
-            return (
-              <Pressable
-                accessibilityRole="button"
-                key={repeatMode}
-                disabled={props.isMutating}
-                onPress={() => {
-                  props.onSelectRepeatMode(repeatMode);
-                }}
-                style={({ pressed }) => [
-                  isSelected ? styles.primaryButton : styles.secondaryButton,
-                  pressed && !props.isMutating
-                    ? styles.actionButtonPressed
-                    : undefined,
-                  props.isMutating ? styles.actionButtonDisabled : undefined,
-                ]}
-              >
-                <Text
-                  style={
-                    isSelected
-                      ? styles.primaryButtonLabel
-                      : styles.secondaryButtonLabel
-                  }
-                >
-                  {getPlaylistRepeatModeLabel(repeatMode)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
+      )}
 
       <View style={styles.group}>
         <Text style={styles.groupTitle}>
-          Current items ({selectedPlaylist.items.length})
+          {props.isEditMode ? 'Edit items' : 'Current items'} (
+          {props.detailEntries.length})
         </Text>
-        {selectedPlaylist.items.length === 0 ? (
+        {props.detailEntries.length === 0 ? (
           <Text style={styles.emptyMessage}>
             This playlist is empty. Return to Library, add saved tracks or loops
             there, then come back here to review the running order.
           </Text>
         ) : (
           <View style={styles.groupItems}>
-            {selectedPlaylist.items.map((entry, index) => {
+            {props.detailEntries.map((entry, index) => {
+              const isCurrentEntry = props.currentPlaylistEntryId === entry.id;
+              const isPlayable = props.isItemPlayable(entry);
+
               return (
-                <View key={entry.id} style={styles.itemCard}>
-                  <Text style={styles.itemTitle}>
-                    {index + 1}. {entry.title}
-                  </Text>
-                  <Text style={styles.itemMetadata}>
-                    {props.getItemDetailLabel(entry)}
-                  </Text>
-                  <View style={styles.actionRow}>
-                    <Pressable
-                      accessibilityRole="button"
-                      disabled={props.isMutating || index === 0}
-                      onPress={() => {
-                        props.onMoveItem(index, index - 1);
-                      }}
-                      style={({ pressed }) => [
-                        styles.secondaryButton,
-                        pressed && !props.isMutating && index > 0
-                          ? styles.actionButtonPressed
-                          : undefined,
-                        props.isMutating || index === 0
-                          ? styles.actionButtonDisabled
-                          : undefined,
-                      ]}
-                    >
-                      <Text style={styles.secondaryButtonLabel}>Move up</Text>
-                    </Pressable>
-                    <Pressable
-                      accessibilityRole="button"
-                      disabled={
-                        props.isMutating ||
-                        index === selectedPlaylist.items.length - 1
-                      }
-                      onPress={() => {
-                        props.onMoveItem(index, index + 1);
-                      }}
-                      style={({ pressed }) => [
-                        styles.secondaryButton,
-                        pressed &&
-                        !props.isMutating &&
-                        index < selectedPlaylist.items.length - 1
-                          ? styles.actionButtonPressed
-                          : undefined,
-                        props.isMutating ||
-                        index === selectedPlaylist.items.length - 1
-                          ? styles.actionButtonDisabled
-                          : undefined,
-                      ]}
-                    >
-                      <Text style={styles.secondaryButtonLabel}>Move down</Text>
-                    </Pressable>
-                    <Pressable
-                      accessibilityRole="button"
-                      disabled={props.isMutating}
-                      onPress={() => {
-                        props.onRemoveItem(entry.id);
-                      }}
-                      style={({ pressed }) => [
-                        styles.secondaryButton,
-                        pressed && !props.isMutating
-                          ? styles.actionButtonPressed
-                          : undefined,
-                        props.isMutating
-                          ? styles.actionButtonDisabled
-                          : undefined,
-                      ]}
-                    >
-                      <Text style={styles.secondaryButtonLabel}>Remove</Text>
-                    </Pressable>
-                  </View>
+                <View
+                  key={entry.id}
+                  style={[
+                    styles.itemCard,
+                    isCurrentEntry ? styles.itemCardActive : undefined,
+                    !isPlayable ? styles.itemCardUnavailable : undefined,
+                  ]}
+                >
+                  {props.isEditMode ? (
+                    <>
+                      <View style={styles.itemHeaderRow}>
+                        <Text style={styles.itemTitle}>
+                          {index + 1}. {entry.title}
+                        </Text>
+                        <Text style={styles.dragHandleLabel}>|||</Text>
+                      </View>
+                      <Text style={styles.itemMetadata}>
+                        {props.getItemDetailLabel(entry)}
+                      </Text>
+                      <View style={styles.actionRow}>
+                        <Pressable
+                          accessibilityRole="button"
+                          disabled={props.isMutating || index === 0}
+                          onPress={() => {
+                            props.onMoveItem(index, index - 1);
+                          }}
+                          style={({ pressed }) => [
+                            styles.secondaryButton,
+                            pressed && !props.isMutating && index > 0
+                              ? styles.actionButtonPressed
+                              : undefined,
+                            props.isMutating || index === 0
+                              ? styles.actionButtonDisabled
+                              : undefined,
+                          ]}
+                        >
+                          <Text style={styles.secondaryButtonLabel}>
+                            Move up
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          accessibilityRole="button"
+                          disabled={
+                            props.isMutating ||
+                            index === props.detailEntries.length - 1
+                          }
+                          onPress={() => {
+                            props.onMoveItem(index, index + 1);
+                          }}
+                          style={({ pressed }) => [
+                            styles.secondaryButton,
+                            pressed &&
+                            !props.isMutating &&
+                            index < props.detailEntries.length - 1
+                              ? styles.actionButtonPressed
+                              : undefined,
+                            props.isMutating ||
+                            index === props.detailEntries.length - 1
+                              ? styles.actionButtonDisabled
+                              : undefined,
+                          ]}
+                        >
+                          <Text style={styles.secondaryButtonLabel}>
+                            Move down
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          accessibilityRole="button"
+                          disabled={props.isMutating}
+                          onPress={() => {
+                            props.onRemoveItem(entry.id);
+                          }}
+                          style={({ pressed }) => [
+                            styles.destructiveButton,
+                            pressed && !props.isMutating
+                              ? styles.actionButtonPressed
+                              : undefined,
+                            props.isMutating
+                              ? styles.actionButtonDisabled
+                              : undefined,
+                          ]}
+                        >
+                          <Text style={styles.destructiveButtonLabel}>
+                            Remove
+                          </Text>
+                        </Pressable>
+                      </View>
+                    </>
+                  ) : (
+                    <>
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={props.isMutating || !isPlayable}
+                        onPress={() => {
+                          props.onPlayPlaylistEntry(entry.id);
+                        }}
+                        style={({ pressed }) => [
+                          styles.itemPressable,
+                          pressed && !props.isMutating && isPlayable
+                            ? styles.actionButtonPressed
+                            : undefined,
+                        ]}
+                      >
+                        <View style={styles.itemHeaderRow}>
+                          <Text style={styles.itemTitle}>
+                            {index + 1}. {entry.title}
+                          </Text>
+                          <Text
+                            style={
+                              isCurrentEntry
+                                ? styles.itemStatusActive
+                                : isPlayable
+                                  ? styles.itemStatusReady
+                                  : styles.itemStatusUnavailable
+                            }
+                          >
+                            {getRowStatusLabel({
+                              isCurrentEntry,
+                              isPlayable,
+                            })}
+                          </Text>
+                        </View>
+                        <Text style={styles.itemMetadata}>
+                          {props.getItemDetailLabel(entry)}
+                        </Text>
+                      </Pressable>
+                      <View style={styles.actionRow}>
+                        <Pressable
+                          accessibilityRole="button"
+                          disabled={props.isMutating}
+                          onPress={() => {
+                            props.onRemoveItem(entry.id);
+                          }}
+                          style={({ pressed }) => [
+                            styles.secondaryButton,
+                            pressed && !props.isMutating
+                              ? styles.actionButtonPressed
+                              : undefined,
+                            props.isMutating
+                              ? styles.actionButtonDisabled
+                              : undefined,
+                          ]}
+                        >
+                          <Text style={styles.secondaryButtonLabel}>
+                            Remove
+                          </Text>
+                        </Pressable>
+                      </View>
+                    </>
+                  )}
                 </View>
               );
             })}
           </View>
         )}
       </View>
+
+      {!props.isEditMode ? (
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Manage playlist</Text>
+          <TextInput
+            autoCorrect={false}
+            onChangeText={props.onRenamePlaylistNameChange}
+            placeholder="Rename this playlist"
+            placeholderTextColor={SAVED_PLAYLIST_PLACEHOLDER_TEXT}
+            returnKeyType="done"
+            style={styles.nameInput}
+            value={props.renamePlaylistName}
+          />
+          <SavedPlaylistIssueCard
+            issue={props.renameIssue ?? props.selectedPlaylistIssue}
+          />
+          <View style={styles.actionRow}>
+            <Pressable
+              accessibilityRole="button"
+              disabled={!props.canMutatePlaylists || props.isMutating}
+              onPress={props.onRenamePlaylist}
+              style={({ pressed }) => [
+                styles.primaryButton,
+                pressed && props.canMutatePlaylists && !props.isMutating
+                  ? styles.actionButtonPressed
+                  : undefined,
+                !props.canMutatePlaylists || props.isMutating
+                  ? styles.actionButtonDisabled
+                  : undefined,
+              ]}
+            >
+              <Text style={styles.primaryButtonLabel}>Save name</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              disabled={!props.canMutatePlaylists || props.isMutating}
+              onPress={props.onDeletePlaylist}
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                pressed && props.canMutatePlaylists && !props.isMutating
+                  ? styles.actionButtonPressed
+                  : undefined,
+                !props.canMutatePlaylists || props.isMutating
+                  ? styles.actionButtonDisabled
+                  : undefined,
+              ]}
+            >
+              <Text style={styles.secondaryButtonLabel}>Remove playlist</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
+
+      {props.removalNotice ? (
+        <View style={styles.snackbarCard}>
+          <Text style={styles.snackbarMessage}>
+            {props.removalNotice.entry.title} removed from {detailSummary.title}
+            .
+          </Text>
+          <View style={styles.actionRow}>
+            <Pressable
+              accessibilityRole="button"
+              disabled={props.isMutating}
+              onPress={props.onUndoRemoveItem}
+              style={({ pressed }) => [
+                styles.primaryButton,
+                pressed && !props.isMutating
+                  ? styles.actionButtonPressed
+                  : undefined,
+                props.isMutating ? styles.actionButtonDisabled : undefined,
+              ]}
+            >
+              <Text style={styles.primaryButtonLabel}>Undo</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              disabled={props.isMutating}
+              onPress={props.onDismissRemovalNotice}
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                pressed && !props.isMutating
+                  ? styles.actionButtonPressed
+                  : undefined,
+                props.isMutating ? styles.actionButtonDisabled : undefined,
+              ]}
+            >
+              <Text style={styles.secondaryButtonLabel}>Dismiss</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 };

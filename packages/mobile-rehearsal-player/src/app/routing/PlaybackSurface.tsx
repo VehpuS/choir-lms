@@ -1,4 +1,8 @@
-import type { PlayableItem } from '@org/audio-library-models';
+import type {
+  PlayableItem,
+  RehearsalQueueMode,
+  RepeatMode,
+} from '@org/audio-library-models';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../utils/theme';
@@ -6,6 +10,7 @@ import {
   PlaybackTimelineCard,
   PlaybackVolumeCard,
 } from './PlaybackControlCards';
+import { PlaybackSessionModeCard } from './PlaybackSessionModeCard';
 import type {
   NowPlayingSurfaceSummary,
   UpNextSurfaceSummary,
@@ -15,6 +20,8 @@ type PlaybackSurfaceMode = 'now-playing' | 'queue';
 
 type PlaybackSurfaceProps = {
   activePlayableItem: PlayableItem | null;
+  activeQueueMode: RehearsalQueueMode | null;
+  activeRepeatMode: RepeatMode | null;
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
@@ -23,6 +30,8 @@ type PlaybackSurfaceProps = {
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
   onClose: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
+  onSelectQueueMode: (mode: RehearsalQueueMode) => void;
+  onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
   onShowQueue: () => void;
   onSkipNextItem: () => void;
@@ -103,6 +112,8 @@ const TransportButton = ({
 
 const NowPlayingSurface = ({
   activePlayableItem,
+  activeQueueMode,
+  activeRepeatMode,
   canSeekActivePlayback,
   canSkipNextItem,
   canSkipPreviousItem,
@@ -110,6 +121,8 @@ const NowPlayingSurface = ({
   onAdjustPlaybackVolume,
   onClose,
   onSeekToPosition,
+  onSelectQueueMode,
+  onSelectRepeatMode,
   onShowQueue,
   onSkipNextItem,
   onSkipPreviousItem,
@@ -121,6 +134,8 @@ const NowPlayingSurface = ({
   summary,
 }: {
   activePlayableItem: PlayableItem;
+  activeQueueMode: RehearsalQueueMode | null;
+  activeRepeatMode: RepeatMode | null;
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
@@ -128,6 +143,8 @@ const NowPlayingSurface = ({
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
   onClose: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
+  onSelectQueueMode: (mode: RehearsalQueueMode) => void;
+  onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowQueue: () => void;
   onSkipNextItem: () => void;
   onSkipPreviousItem: () => void;
@@ -186,6 +203,16 @@ const NowPlayingSurface = ({
         <PlaybackPill label={summary.queueLabel} />
       </View>
 
+      {activeQueueMode && activeRepeatMode ? (
+        <PlaybackSessionModeCard
+          isDisabled={isPlaybackToggleDisabled}
+          onSelectQueueMode={onSelectQueueMode}
+          onSelectRepeatMode={onSelectRepeatMode}
+          queueMode={activeQueueMode}
+          repeatMode={activeRepeatMode}
+        />
+      ) : null}
+
       <PlaybackTimelineCard
         activePlayableItem={activePlayableItem}
         canSeekActivePlayback={canSeekActivePlayback}
@@ -234,11 +261,21 @@ const NowPlayingSurface = ({
 };
 
 const QueueSurface = ({
+  activeQueueMode,
+  activeRepeatMode,
+  isPlaybackToggleDisabled,
   onClose,
+  onSelectQueueMode,
+  onSelectRepeatMode,
   onShowNowPlaying,
   summary,
 }: {
+  activeQueueMode: RehearsalQueueMode;
+  activeRepeatMode: RepeatMode;
+  isPlaybackToggleDisabled: boolean;
   onClose: () => void;
+  onSelectQueueMode: (mode: RehearsalQueueMode) => void;
+  onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
   summary: UpNextSurfaceSummary;
 }) => {
@@ -277,6 +314,14 @@ const QueueSurface = ({
         <PlaybackPill label={summary.queueLabel} tone="primary" />
       </View>
 
+      <PlaybackSessionModeCard
+        isDisabled={isPlaybackToggleDisabled}
+        onSelectQueueMode={onSelectQueueMode}
+        onSelectRepeatMode={onSelectRepeatMode}
+        queueMode={activeQueueMode}
+        repeatMode={activeRepeatMode}
+      />
+
       <View style={styles.queueList}>
         {summary.items.map((item) => {
           return (
@@ -302,6 +347,8 @@ const QueueSurface = ({
 
 export const PlaybackSurface = ({
   activePlayableItem,
+  activeQueueMode,
+  activeRepeatMode,
   canSeekActivePlayback,
   canSkipNextItem,
   canSkipPreviousItem,
@@ -310,6 +357,8 @@ export const PlaybackSurface = ({
   onAdjustPlaybackVolume,
   onClose,
   onSeekToPosition,
+  onSelectQueueMode,
+  onSelectRepeatMode,
   onShowNowPlaying,
   onShowQueue,
   onSkipNextItem,
@@ -342,7 +391,12 @@ export const PlaybackSurface = ({
       <View style={styles.sheetContainer}>
         {canRenderQueue && queueSummary ? (
           <QueueSurface
+            activeQueueMode={activeQueueMode ?? 'ordered'}
+            activeRepeatMode={activeRepeatMode ?? 'off'}
+            isPlaybackToggleDisabled={isPlaybackToggleDisabled}
             onClose={onClose}
+            onSelectQueueMode={onSelectQueueMode}
+            onSelectRepeatMode={onSelectRepeatMode}
             onShowNowPlaying={onShowNowPlaying}
             summary={queueSummary}
           />
@@ -350,6 +404,8 @@ export const PlaybackSurface = ({
         {canRenderNowPlaying && nowPlayingSummary && activePlayableItem ? (
           <NowPlayingSurface
             activePlayableItem={activePlayableItem}
+            activeQueueMode={activeQueueMode}
+            activeRepeatMode={activeRepeatMode}
             canSeekActivePlayback={canSeekActivePlayback}
             canSkipNextItem={canSkipNextItem}
             canSkipPreviousItem={canSkipPreviousItem}
@@ -357,6 +413,8 @@ export const PlaybackSurface = ({
             onAdjustPlaybackVolume={onAdjustPlaybackVolume}
             onClose={onClose}
             onSeekToPosition={onSeekToPosition}
+            onSelectQueueMode={onSelectQueueMode}
+            onSelectRepeatMode={onSelectRepeatMode}
             onShowQueue={onShowQueue}
             onSkipNextItem={onSkipNextItem}
             onSkipPreviousItem={onSkipPreviousItem}

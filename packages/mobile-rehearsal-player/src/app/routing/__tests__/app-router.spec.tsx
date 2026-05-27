@@ -13,7 +13,11 @@ import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,
 } from '../../test-utils/library-test-fixtures.js';
-import { buildPlaylistPlaybackSession } from '../../library/utils/saved-playlist-playback-view-model.js';
+import { rebuildPlaylistPlaybackSessionForMode } from '../../library/utils/playlist-session-mode.js';
+import {
+  buildPlaylistPlaybackSession,
+  getPlaylistPlaybackCurrentItem,
+} from '../../library/utils/saved-playlist-playback-view-model.js';
 import {
   SHELL_DESTINATIONS,
   getMiniPlayerSummary,
@@ -242,5 +246,63 @@ describe('getMiniPlayerSummary', () => {
         'entry:track:drive:alto-line:2026-05-12T00:02:00.000Z',
       ],
     );
+  });
+});
+
+describe('rebuildPlaylistPlaybackSessionForMode', () => {
+  it('rebuilds the queue around the current playlist entry when mode changes', () => {
+    const playlist = addLoopToPlaylist(
+      addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-05-12T00:00:00.000Z',
+          name: 'Warmups',
+          ownerId: 'user-1',
+        }),
+        PLAYABLE_SOURCE,
+        '2026-05-12T00:01:00.000Z',
+      ),
+      SAVED_LOOP,
+      '2026-05-12T00:02:00.000Z',
+    );
+    const orderedSession = buildPlaylistPlaybackSession({
+      loops: [SAVED_LOOP],
+      mode: 'ordered',
+      playlist,
+      repeatMode: 'all',
+      sources: [PLAYABLE_SOURCE],
+      startEntryId: playlist.items[1].id,
+    }).session;
+
+    if (!orderedSession) {
+      throw new Error('Expected an ordered playlist session.');
+    }
+
+    const shuffledSession = rebuildPlaylistPlaybackSessionForMode({
+      loops: [SAVED_LOOP],
+      mode: 'shuffle',
+      playlist,
+      random: () => 0,
+      session: orderedSession,
+      sources: [PLAYABLE_SOURCE],
+    }).session;
+
+    assert.equal(shuffledSession?.queue.mode, 'shuffle');
+    assert.equal(
+      shuffledSession && getPlaylistPlaybackCurrentItem(shuffledSession)?.id,
+      'loop:loop-1',
+    );
+
+    const restoredSession =
+      shuffledSession &&
+      rebuildPlaylistPlaybackSessionForMode({
+        loops: [SAVED_LOOP],
+        mode: 'ordered',
+        playlist,
+        session: shuffledSession,
+        sources: [PLAYABLE_SOURCE],
+      }).session;
+
+    assert.equal(restoredSession?.queue.mode, 'ordered');
+    assert.equal(restoredSession?.currentIndex, 1);
   });
 });

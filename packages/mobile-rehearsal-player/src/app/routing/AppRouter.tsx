@@ -31,6 +31,8 @@ type MobileShellProps = {
     typeof useSavedTrackPlayback
   >['activePlayableItem'];
   activePlaylistSession: PlaylistPlaybackSession | null;
+  activeQueueMode: PlaylistPlaybackSession['queue']['mode'] | null;
+  activeRepeatMode: PlaylistPlaybackSession['queue']['repeatMode'] | null;
   authorization: ReturnType<typeof useGoogleDriveAuthorization>;
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
@@ -40,6 +42,10 @@ type MobileShellProps = {
   isPlaybackToggleDisabled: boolean;
   libraryScreen: ReactNode;
   onSeekToPosition: (positionSeconds: number) => void;
+  onSelectQueueMode: (mode: PlaylistPlaybackSession['queue']['mode']) => void;
+  onSelectRepeatMode: (
+    mode: PlaylistPlaybackSession['queue']['repeatMode'],
+  ) => void;
   onSetPlaybackVolume: (volumeLevel: number) => void;
   onSkipNextItem: () => void;
   onSkipPreviousItem: () => void;
@@ -63,6 +69,8 @@ const PANEL_BY_DESTINATION: Record<
 export const MobileShell = ({
   activePlayableItem,
   activePlaylistSession,
+  activeQueueMode,
+  activeRepeatMode,
   authorization,
   canSeekActivePlayback,
   canSkipNextItem,
@@ -72,6 +80,8 @@ export const MobileShell = ({
   isPlaybackToggleDisabled,
   libraryScreen,
   onSeekToPosition,
+  onSelectQueueMode,
+  onSelectRepeatMode,
   onSetPlaybackVolume,
   onSkipNextItem,
   onSkipPreviousItem,
@@ -252,6 +262,8 @@ export const MobileShell = ({
 
       <PlaybackSurface
         activePlayableItem={activePlayableItem}
+        activeQueueMode={activeQueueMode}
+        activeRepeatMode={activeRepeatMode}
         canSeekActivePlayback={canSeekActivePlayback}
         canSkipNextItem={canSkipNextItem}
         canSkipPreviousItem={canSkipPreviousItem}
@@ -262,6 +274,8 @@ export const MobileShell = ({
           setActivePlaybackSurface(null);
         }}
         onSeekToPosition={onSeekToPosition}
+        onSelectQueueMode={onSelectQueueMode}
+        onSelectRepeatMode={onSelectRepeatMode}
         onShowNowPlaying={() => {
           setActivePlaybackSurface('now-playing');
         }}
@@ -302,6 +316,10 @@ export const AppRouter = () => {
     <MobileShell
       activePlayableItem={playback.activePlayableItem}
       activePlaylistSession={playback.activePlaylistSession}
+      activeQueueMode={playback.activePlaylistSession?.queue.mode ?? null}
+      activeRepeatMode={
+        playback.activePlaylistSession?.queue.repeatMode ?? null
+      }
       authorization={authorization}
       canSeekActivePlayback={
         playback.activePlayableItem !== null && !playback.isPreparing
@@ -329,6 +347,12 @@ export const AppRouter = () => {
       }
       onSeekToPosition={(positionSeconds) => {
         void playback.seekActivePlaybackToPosition(positionSeconds);
+      }}
+      onSelectQueueMode={(mode) => {
+        playback.setPlaylistQueueMode(mode);
+      }}
+      onSelectRepeatMode={(mode) => {
+        playback.setPlaylistRepeatMode(mode);
       }}
       onSetPlaybackVolume={(volumeLevel) => {
         void playback.setPlaybackVolume(volumeLevel);

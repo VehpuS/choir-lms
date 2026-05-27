@@ -1,20 +1,27 @@
 import {
-  movePlaylistEntry,
-  removePlaylistEntry,
   renamePlaylist,
   type NamedLoop,
   type Playlist,
-  type RepeatMode,
 } from '@org/audio-library-models';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { Alert, Text, View } from 'react-native';
 
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
 import {
+  getPlaylistPlaybackCurrentItem,
   getPlaylistPlaybackActionCopy,
   type PlaylistPlaybackSession,
 } from '../utils/saved-playlist-playback-view-model';
+import {
+  buildSavedPlaylistDetailDraftPlaylist,
+  getSavedPlaylistDetailInitialState,
+  isSavedPlaylistEntryPlayable,
+  moveSavedPlaylistDetailEntry,
+  reduceSavedPlaylistDetailState,
+  removeSavedPlaylistDetailEntry,
+  restoreSavedPlaylistDetailEntry,
+} from '../utils/saved-playlist-detail-view-model';
 import {
   buildSavedPlaylist,
   getSavedPlaylistDetailSummary,
@@ -48,18 +55,17 @@ type SavedPlaylistSectionProps = {
   onCloseDetail?: () => void;
   pendingPlaylistId: string | null;
   playbackState: SavedTrackPlaybackState | undefined;
-  playlistRepeatMode: RepeatMode;
   savedPlaylists: Playlist[];
   savedLoops: NamedLoop[];
   savedSources: DriveLibrarySource[];
   selectedPlaylist: Playlist | null;
-  setPlaylistRepeatMode: (repeatMode: RepeatMode) => void;
   setSelectedPlaylistId: (playlistId: string) => void;
   togglePlaylistPlayback: (options: {
     loops: NamedLoop[];
     mode: 'ordered' | 'shuffle';
     playlist: Playlist;
     sources: DriveLibrarySource[];
+    startEntryId?: string;
   }) => Promise<void>;
   updatePlaylist: (playlist: Playlist) => Promise<Playlist | null>;
 };
@@ -76,12 +82,10 @@ export const SavedPlaylistSection = ({
   onCloseDetail,
   pendingPlaylistId,
   playbackState,
-  playlistRepeatMode,
   savedPlaylists,
   savedLoops,
   savedSources,
   selectedPlaylist,
-  setPlaylistRepeatMode,
   setSelectedPlaylistId,
   togglePlaylistPlayback,
   updatePlaylist,
@@ -94,11 +98,23 @@ export const SavedPlaylistSection = ({
     null,
   );
   const [renamePlaylistName, setRenamePlaylistName] = useState('');
+  const [detailState, dispatchDetailAction] = useReducer(
+    reduceSavedPlaylistDetailState,
+    undefined,
+    getSavedPlaylistDetailInitialState,
+  );
 
   useEffect(() => {
     setRenamePlaylistName(selectedPlaylist?.name ?? '');
     setRenameIssue(null);
   }, [selectedPlaylist?.id, selectedPlaylist?.name]);
+
+  useEffect(() => {
+    dispatchDetailAction({
+      type: 'reset',
+      entries: isDetailVisible ? (selectedPlaylist?.items ?? []) : [],
+    });
+  }, [isDetailVisible, selectedPlaylist?.id]);
 
   const isMutating = pendingPlaylistId !== null;
   const statusCopy = getSavedPlaylistsStatusCopy({
@@ -117,24 +133,29 @@ export const SavedPlaylistSection = ({
     playbackState,
     selectedPlaylist,
   });
-  const shufflePlaybackAction = getPlaylistPlaybackActionCopy({
-    activeSession: selectedPlaybackSession,
-    isPreparing: isPlaybackPreparing,
-    mode: 'shuffle',
-    playbackState,
-    selectedPlaylist,
-  });
   const selectedPlaylistIssue = getSelectedPlaylistIssue(
     issue,
     selectedPlaylist?.id ?? null,
   );
-  const detailSummary = selectedPlaylist
+  const detailPlaylist =
+    selectedPlaylist && detailState.isEditing
+      ? buildSavedPlaylistDetailDraftPlaylist(
+          selectedPlaylist,
+          detailState.draftEntries,
+          selectedPlaylist.updatedAt,
+        )
+      : selectedPlaylist;
+  const detailSummary = detailPlaylist
     ? getSavedPlaylistDetailSummary({
         activeSession: selectedPlaybackSession,
-        playlist: selectedPlaylist,
+        playlist: detailPlaylist,
         savedLoops,
         savedSources,
       })
+    : null;
+  const currentPlaylistEntryId = selectedPlaybackSession
+    ? (getPlaylistPlaybackCurrentItem(selectedPlaybackSession)
+        ?.playlistEntryId ?? null)
     : null;
 
   const persistSelectedPlaylist = async (
@@ -151,6 +172,8 @@ export const SavedPlaylistSection = ({
     if (persistedPlaylist) {
       setSelectedPlaylistId(persistedPlaylist.id);
     }
+
+    return persistedPlaylist;
   };
 
   const handleCreatePlaylist = async () => {
@@ -216,6 +239,109 @@ export const SavedPlaylistSection = ({
     ]);
   };
 
+  const handleToggleDetailEditMode = async () => {
+    if (!selectedPlaylist) {
+      return;
+    }
+
+    if (!detailState.isEditing) {
+      dispatchDetailAction({
+        type: 'enter-edit-mode',
+        entries: selectedPlaylist.items,
+      });
+      return;
+    }
+
+    const persistedPlaylist = await persistSelectedPlaylist((playlist) => {
+      return buildSavedPlaylistDetailDraftPlaylist(
+        playlist,
+        detailState.draftEntries,
+      );
+    });
+
+    if (!persistedPlaylist) {
+      return;
+    }
+
+    dispatchDetailAction({
+      type: 'reset',
+      entries: persistedPlaylist.items,
+    });
+  };
+
+  const handleRemovePlaylistItem = async (entryId: string) => {
+    if (!selectedPlaylist) {
+      return;
+    }
+
+    if (detailState.isEditing) {
+      const removalResult = removeSavedPlaylistDetailEntry(
+        detailState.draftEntries,
+        entryId,
+      );
+
+      if (!removalResult) {
+        return;
+      }
+
+      dispatchDetailAction({
+        type: 'update-draft-entries',
+        entries: removalResult.nextEntries,
+      });
+      return;
+    }
+
+    const removalResult = removeSavedPlaylistDetailEntry(
+      selectedPlaylist.items,
+      entryId,
+    );
+
+    if (!removalResult) {
+      return;
+    }
+
+    const persistedPlaylist = await persistSelectedPlaylist((playlist) => {
+      return buildSavedPlaylistDetailDraftPlaylist(
+        playlist,
+        removalResult.nextEntries,
+      );
+    });
+
+    if (!persistedPlaylist) {
+      return;
+    }
+
+    dispatchDetailAction({
+      type: 'show-removal-notice',
+      removalNotice: {
+        entry: removalResult.entry,
+        previousIndex: removalResult.previousIndex,
+      },
+    });
+  };
+
+  const handleUndoPlaylistRemoval = async () => {
+    if (!selectedPlaylist || !detailState.removalNotice) {
+      return;
+    }
+
+    const restoredEntries = restoreSavedPlaylistDetailEntry(
+      selectedPlaylist.items,
+      detailState.removalNotice,
+    );
+    const persistedPlaylist = await persistSelectedPlaylist((playlist) => {
+      return buildSavedPlaylistDetailDraftPlaylist(playlist, restoredEntries);
+    });
+
+    if (!persistedPlaylist) {
+      return;
+    }
+
+    dispatchDetailAction({
+      type: 'clear-removal-notice',
+    });
+  };
+
   return (
     <View style={styles.section}>
       {!isDetailVisible ? (
@@ -241,7 +367,13 @@ export const SavedPlaylistSection = ({
       {isDetailVisible ? (
         <SavedPlaylistDetailCard
           canMutatePlaylists={canMutatePlaylists}
+          currentPlaylistEntryId={currentPlaylistEntryId}
           detailSummary={detailSummary}
+          detailEntries={
+            detailState.isEditing
+              ? detailState.draftEntries
+              : (detailPlaylist?.items ?? [])
+          }
           getItemDetailLabel={(entry) => {
             return getSavedPlaylistEntryDetailLabel({
               entry,
@@ -249,20 +381,44 @@ export const SavedPlaylistSection = ({
               savedSources,
             });
           }}
+          isEditMode={detailState.isEditing}
+          isItemPlayable={(entry) => {
+            return isSavedPlaylistEntryPlayable({
+              entry,
+              savedLoops,
+              savedSources,
+            });
+          }}
           isMutating={isMutating}
           onCloseDetail={() => {
+            dispatchDetailAction({
+              type: 'reset',
+              entries: [],
+            });
             onCloseDetail?.();
+          }}
+          onDismissRemovalNotice={() => {
+            dispatchDetailAction({
+              type: 'clear-removal-notice',
+            });
           }}
           onDeletePlaylist={handleDeletePlaylist}
           onMoveItem={(fromIndex, toIndex) => {
-            void persistSelectedPlaylist((playlist) => {
-              return movePlaylistEntry(playlist, fromIndex, toIndex);
+            if (!detailState.isEditing) {
+              return;
+            }
+
+            dispatchDetailAction({
+              type: 'update-draft-entries',
+              entries: moveSavedPlaylistDetailEntry(
+                detailState.draftEntries,
+                fromIndex,
+                toIndex,
+              ),
             });
           }}
           onRemoveItem={(entryId) => {
-            void persistSelectedPlaylist((playlist) => {
-              return removePlaylistEntry(playlist, entryId);
-            });
+            void handleRemovePlaylistItem(entryId);
           }}
           onRenamePlaylist={() => {
             void handleRenamePlaylist();
@@ -283,27 +439,31 @@ export const SavedPlaylistSection = ({
               sources: savedSources,
             });
           }}
-          onSelectRepeatMode={setPlaylistRepeatMode}
-          onShufflePlayPlaylist={() => {
+          onPlayPlaylistEntry={(entryId) => {
             if (!selectedPlaylist) {
               return;
             }
 
             void togglePlaylistPlayback({
               loops: savedLoops,
-              mode: 'shuffle',
+              mode: 'ordered',
               playlist: selectedPlaylist,
               sources: savedSources,
+              startEntryId: entryId,
             });
           }}
+          onToggleEditMode={() => {
+            void handleToggleDetailEditMode();
+          }}
+          onUndoRemoveItem={() => {
+            void handleUndoPlaylistRemoval();
+          }}
           orderedPlaybackAction={orderedPlaybackAction}
-          playlistRepeatMode={playlistRepeatMode}
           renameIssue={renameIssue}
           renamePlaylistName={renamePlaylistName}
-          selectedQueueMode={selectedPlaybackSession?.queue.mode ?? null}
+          removalNotice={detailState.removalNotice}
           selectedPlaylist={selectedPlaylist}
           selectedPlaylistIssue={selectedPlaylistIssue}
-          shufflePlaybackAction={shufflePlaybackAction}
         />
       ) : (
         <>

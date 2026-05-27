@@ -143,7 +143,7 @@ The system SHALL provide a loop creation flow that lets a user select a saved tr
 
 ### Requirement: Playlist detail uses queue-first mobile management patterns
 
-The system SHALL present each playlist through a detail view that foregrounds `PlaylistName`, `TotalTrackCount`, a primary `PlayAll` floating action button, the ordered item list, and the local actions needed to manage rehearsal playback.
+The system SHALL present each playlist through a detail view that foregrounds `PlaylistName`, `TotalTrackCount`, a primary `PlayAll` floating action button, the ordered item list, and the local actions needed to start playback or manage playlist membership. Ongoing queue-mode controls such as repeat and shuffle belong to the dedicated playback and queue surfaces once playback is active.
 
 Companion mockup states: Screen 6 State A shows the playback-first detail view, Screen 6 State B shows the playlist item menu plus undo snackbar feedback, and Screen 6 State C shows the dedicated edit mode.
 
@@ -156,6 +156,11 @@ Companion mockup states: Screen 6 State A shows the playback-first detail view, 
 
 - **WHEN** a user taps a `TrackListItem` in the playlist detail view
 - **THEN** the system starts playback from that item and keeps the subsequent items from that playlist queued according to that playlist's saved indexes
+
+#### Scenario: Playlist detail defers queue-mode controls to playback surfaces
+
+- **WHEN** a user is viewing playlist detail before or during queued playback
+- **THEN** the system keeps repeat and shuffle controls on the dedicated playback modal or queue surface instead of treating playlist detail as the place to change the active queue mode
 
 #### Scenario: Remove a playlist item from its local context menu
 
@@ -219,6 +224,11 @@ Companion mockup states: Screen 7 shows the dedicated playback modal with a swip
 - **WHEN** the active item belongs to a playlist or other queued playback context
 - **THEN** the dedicated playback screen additionally shows previous-item and next-item controls while keeping skip-back / play-pause / skip-forward controls available for the current item
 
+#### Scenario: Queued playback keeps repeat and shuffle adjustable after playback starts
+
+- **WHEN** the active item belongs to a playlist or other queued playback context
+- **THEN** the dedicated playback modal or adjacent queue surface exposes repeat and shuffle controls for the active queue so the user can change session behavior after playback has already started
+
 #### Scenario: Standalone playback hides queue-only controls
 
 - **WHEN** the active item is playing outside any playlist or queue
@@ -273,6 +283,11 @@ The system SHALL provide an up-next or queue surface that lets the user inspect 
 
 - **WHEN** a user opens the queue from the dedicated playback screen
 - **THEN** the system shows the current item, the upcoming items in order, and the active repeat or shuffle state in a queue-oriented layout
+
+#### Scenario: Users can update queue mode from playback context
+
+- **WHEN** a user changes repeat or shuffle while viewing the queue surface for an active playlist session
+- **THEN** the system applies that mode change to the active queue without requiring the user to return to playlist detail
 
 #### Scenario: Users can adjust queue order during a rehearsal session
 
