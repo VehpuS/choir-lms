@@ -114,3 +114,11 @@ The system SHALL expose the active playback session through supported native mob
 
 - **WHEN** a user uses a supported native transport control such as play, pause, next, or previous
 - **THEN** the system applies that command to the active rehearsal playback queue
+
+## Manual Regression Checklist
+
+- [ ] Create a loop from a saved track by capturing markers from playback, then verify invalid ranges are blocked with inline guidance.
+- [ ] Add saved tracks and loops to a playlist, including adding the same item more than once, and confirm duplicate entries keep distinct queue positions.
+- [ ] Reorder playlist items, save edits, reopen the playlist, and verify persisted index order is preserved.
+- [ ] Start playback from a tapped playlist row and verify ordered mode, shuffle mode, and repeat modes (`off`, `one`, `all`) behave as expected.
+- [ ] Confirm background and lock-screen transport controls (play/pause/next/previous) continue to control the active rehearsal queue.

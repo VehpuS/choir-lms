@@ -80,6 +80,17 @@ describe('getMiniPlayerSummary', () => {
     assert.equal(summary?.status, 'Loading • 0:04 of 3:05');
   });
 
+  it('shows needs-attention status when playback reports an error', () => {
+    const summary = getMiniPlayerSummary({
+      activePlayableItem: createTrackPlayableItem(PLAYABLE_SOURCE),
+      isPlaybackPreparing: false,
+      playbackPositionSeconds: 4,
+      playbackState: 'error',
+    });
+
+    assert.equal(summary?.status, 'Needs attention • 0:04 of 3:05');
+  });
+
   it('includes active playlist queue context when playback started from a playlist', () => {
     const playlistSession = buildPlaylistPlaybackSession({
       loops: [],
@@ -163,6 +174,29 @@ describe('getMiniPlayerSummary', () => {
       title: 'Entrance cue',
       upNextLabel: 'Alto Line.mp3',
       waveformProgressRatio: 1,
+    });
+  });
+
+  it('builds standalone now-playing copy without queue navigation', () => {
+    const summary = getNowPlayingSurfaceSummary({
+      activePlayableItem: createTrackPlayableItem(PLAYABLE_SOURCE),
+      isPlaybackPreparing: false,
+      playbackPositionSeconds: 20,
+      playbackState: 'paused',
+    });
+
+    assert.deepEqual(summary, {
+      collectionLabel: 'Saved rehearsal library',
+      playbackLabel:
+        'Keep the current rehearsal item audible while moving between Home, Search, and Library.',
+      progressLabel: '0:20 of 3:05',
+      queueLabel: 'Single item playback',
+      rangeLabel: null,
+      statusLabel: 'Paused',
+      supportsQueueNavigation: false,
+      title: 'Alto Line.mp3',
+      upNextLabel: null,
+      waveformProgressRatio: 20 / 185,
     });
   });
 

@@ -218,6 +218,10 @@
     "/^npm exec -- nx run audio-library-runtime:test --outputStyle=static$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec -- nx test audio-library-runtime$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

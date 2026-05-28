@@ -60,3 +60,11 @@ The system SHALL allow a user to start playback of a full saved Google Drive aud
 
 - **WHEN** a user attempts to play a library track whose Google Drive source can no longer be accessed
 - **THEN** the system does not start playback and informs the user that the source file is unavailable
+
+## Manual Regression Checklist
+
+- [ ] Connect a Google account, authorize Drive access, and confirm My Drive plus shared folders are reachable.
+- [ ] Browse a Drive folder with mixed file types and verify supported audio appears as playable while unsupported items show unavailable treatment.
+- [ ] Search for rehearsal audio and verify results include location context across personal and shared Drive content.
+- [ ] Save a Drive track into the rehearsal library, then remove it, and confirm the library list updates immediately in both directions.
+- [ ] Attempt playback of a saved source after revoking access (or simulating unavailable state) and verify playback is blocked with recovery guidance.

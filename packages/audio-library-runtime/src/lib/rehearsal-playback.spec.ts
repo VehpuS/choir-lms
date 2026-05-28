@@ -436,6 +436,42 @@ describe('createPlaybackQueue', () => {
       ['loop:loop-1', 'track:drive:drive-file-1'],
     );
   });
+
+  it('normalizes playlist order before building an ordered queue', () => {
+    const unorderedPlaylist: Playlist = {
+      ...PLAYLIST,
+      items: [PLAYLIST.items[1], PLAYLIST.items[0]],
+    };
+
+    const queue = createPlaybackQueue(
+      unorderedPlaylist,
+      [SAVED_LOOP],
+      [AVAILABLE_SOURCE],
+      {
+        mode: 'ordered',
+        repeatMode: 'off',
+      },
+    );
+
+    assert.equal(queue.mode, 'ordered');
+    assert.deepEqual(
+      queue.items.map((item) => ({
+        id: item.id,
+        playlistEntryId: item.playlistEntryId,
+      })),
+      [
+        {
+          id: 'track:drive:drive-file-1',
+          playlistEntryId:
+            'entry:track:drive:drive-file-1:2026-05-10T01:00:00.000Z',
+        },
+        {
+          id: 'loop:loop-1',
+          playlistEntryId: 'entry:loop:loop-1:2026-05-10T01:05:00.000Z',
+        },
+      ],
+    );
+  });
 });
 
 describe('queue navigation', () => {

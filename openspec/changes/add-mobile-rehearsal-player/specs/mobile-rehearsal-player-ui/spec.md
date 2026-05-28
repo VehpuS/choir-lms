@@ -312,3 +312,11 @@ The system SHALL use mobile interaction patterns that stay legible during rehear
 
 - **WHEN** a user encounters an empty library, unavailable track, or no-result search state
 - **THEN** the system presents recovery-oriented guidance and a nearby next action such as browse, reconnect, save tracks, or clear filters
+
+## Manual Regression Checklist
+
+- [ ] Verify Home, Search, and Library are reachable from the bottom navigation and preserve meaningful in-session context when switching destinations.
+- [ ] Start playback and confirm the mini-player stays anchored above bottom navigation across destinations with waveform-first treatment.
+- [ ] Open now playing from the mini-player, scrub on the waveform, adjust in-app volume, and swipe down to dismiss while audio continues.
+- [ ] In queued playback, verify previous/next item controls and queue-mode controls appear; in standalone playback, verify queue-only controls are hidden while single-item repeat remains available.
+- [ ] Validate icon semantics and accessibility labels for transport, queue, More Options, drag handles, and destructive actions on representative phone-sized screens.
