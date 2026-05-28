@@ -1,6 +1,5 @@
 import type { PlayableItem } from '@org/audio-library-models';
 import type { Dispatch, SetStateAction } from 'react';
-import TrackPlayer, { State } from 'react-native-track-player';
 
 import {
   createSavedTrackPlaybackRuntimeIssue,
@@ -8,7 +7,13 @@ import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from './saved-track-playback-view-model';
+import {
+  getSavedTrackPlayer,
+  getSavedTrackPlayerStateMap,
+} from './saved-track-player-interop';
 import { resolveSavedTrackDurationFromPlayer } from './saved-track-player-runtime';
+
+const trackPlayerState = getSavedTrackPlayerStateMap();
 
 export type LoadPlayableItemIntoPlayer = (
   playableItem: PlayableItem,
@@ -57,9 +62,9 @@ export const resolveSavedTrackDuration = async (
   const shouldRestorePlayback =
     currentPlayableItem !== null && !options.isPreparing;
   const shouldResumePlayback =
-    options.playbackState === State.Playing ||
-    options.playbackState === State.Buffering ||
-    options.playbackState === State.Loading;
+    options.playbackState === trackPlayerState.Playing ||
+    options.playbackState === trackPlayerState.Buffering ||
+    options.playbackState === trackPlayerState.Loading;
 
   try {
     return await resolveSavedTrackDurationFromPlayer({
@@ -85,7 +90,7 @@ export const resolveSavedTrackDuration = async (
         );
 
         if (!shouldResumePlayback) {
-          await TrackPlayer.pause();
+          await getSavedTrackPlayer().pause();
         }
       } catch (error) {
         options.setIssue(

@@ -8,12 +8,6 @@ import {
   type RepeatMode,
 } from '@org/audio-library-models';
 import { useEffect, useRef, useState } from 'react';
-import TrackPlayer, {
-  Event,
-  usePlaybackState,
-  useProgress,
-  useTrackPlayerEvents,
-} from 'react-native-track-player';
 
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
 import {
@@ -36,9 +30,23 @@ import {
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
 import { createSavedTrackPlaybackController } from '../utils/saved-track-playback-controller';
-import { ensureSavedTrackPlayerReady } from '../utils/saved-track-player-runtime';
+import {
+  ensureSavedTrackPlayerReady,
+  syncSavedTrackPlayerCapabilities,
+} from '../utils/saved-track-player-runtime';
+import { registerSavedTrackPlaybackRemoteCommandHandlers } from '../utils/saved-track-playback-remote-controls';
+import {
+  getSavedTrackPlayer,
+  getSavedTrackPlayerEventMap,
+  getSavedTrackPlayerStateMap,
+  useSavedTrackPlayerEvents,
+  useSavedTrackPlayerPlaybackState,
+  useSavedTrackPlayerProgress,
+} from '../utils/saved-track-player-interop';
 
 const DEFAULT_PLAYBACK_VOLUME_LEVEL = 1;
+const trackPlayerEvent = getSavedTrackPlayerEventMap();
+const trackPlayerState = getSavedTrackPlayerStateMap();
 
 const mapPlaylistPlaybackIssue = (issue: PlaylistPlaybackIssue) => {
   return {
@@ -63,10 +71,10 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
   const activePlaylistSessionRef = useRef<PlaylistPlaybackSession | null>(null);
   const isAdvancingPlaylistRef = useRef(false);
   const volumeLevelRef = useRef(DEFAULT_PLAYBACK_VOLUME_LEVEL);
-  const playbackState = usePlaybackState().state as
+  const playbackState = useSavedTrackPlayerPlaybackState().state as
     | SavedTrackPlaybackState
     | undefined;
-  const progress = useProgress(500);
+  const progress = useSavedTrackPlayerProgress(500);
 
   useEffect(() => {
     activePlayableItemRef.current = activePlayableItem;
@@ -96,9 +104,10 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
     const syncPlaybackVolumeLevel = async () => {
       try {
         await ensureSavedTrackPlayerReady();
+        const trackPlayer = getSavedTrackPlayer();
 
         const currentVolumeLevel = normalizePlaybackVolumeLevel(
-          await TrackPlayer.getVolume(),
+          await trackPlayer.getVolume(),
         );
 
         if (isDisposed) {
@@ -141,10 +150,58 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
     volumeLevelRef,
   });
 
-  useTrackPlayerEvents(
-    [Event.PlaybackError, Event.PlaybackQueueEnded],
+  useEffect(() => {
+    return registerSavedTrackPlaybackRemoteCommandHandlers({
+      async next() {
+        await playbackController.playNextQueueItem();
+      },
+      async pause() {
+        if (
+          !activePlayableItemRef.current ||
+          playbackState === trackPlayerState.Paused
+        ) {
+          return;
+        }
+
+        await playbackController.pauseActivePlayback();
+      },
+      async play() {
+        if (
+          !activePlayableItemRef.current ||
+          playbackState === trackPlayerState.Playing
+        ) {
+          return;
+        }
+
+        await playbackController.playActivePlayback();
+      },
+      async previous() {
+        await playbackController.playPreviousQueueItem();
+      },
+    });
+  }, [playbackController, playbackState]);
+
+  useEffect(() => {
+    if (!activePlayableItem) {
+      return;
+    }
+
+    void syncSavedTrackPlayerCapabilities({
+      supportsQueueNavigation: activePlaylistSession !== null,
+    }).catch(() => undefined);
+  }, [
+    activePlayableItem?.id,
+    activePlayableItem?.playlistEntryId,
+    activePlaylistSession,
+  ]);
+
+  useSavedTrackPlayerEvents(
+    [trackPlayerEvent.PlaybackError, trackPlayerEvent.PlaybackQueueEnded],
     (event) => {
-      if (event.type === Event.PlaybackError && activePlayableItem) {
+      if (
+        event.type === trackPlayerEvent.PlaybackError &&
+        activePlayableItem
+      ) {
         setIssue({
           playableItemId: activePlayableItem.id,
           sourceId: activePlayableItem.sourceId,
@@ -153,7 +210,7 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
         });
       }
 
-      if (event.type === Event.PlaybackQueueEnded) {
+      if (event.type === trackPlayerEvent.PlaybackQueueEnded) {
         if (activePlaylistSessionRef.current) {
           void playbackController.advancePlaylistPlayback();
           return;
@@ -187,7 +244,7 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
           return;
         }
 
-        await TrackPlayer.pause();
+        await getSavedTrackPlayer().pause();
         await playbackController.seekActivePlayableItemTo(
           activePlayableItem,
           activePlayableItem.range.startMs / 1000,

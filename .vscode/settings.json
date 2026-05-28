@@ -170,6 +170,18 @@
     "/^cd /Users/vehpus/git/choir-lms && npm exec -- nx run mobile-rehearsal-player:test$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec -- nx test mobile-rehearsal-player --outputStyle=static$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run mobile-rehearsal-player:build --outputStyle=static$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^cd /Users/vehpus/git/choir-lms && npm exec -- nx test mobile-rehearsal-player --outputStyle=static$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

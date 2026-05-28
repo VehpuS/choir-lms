@@ -6,14 +6,17 @@ import {
   normalizePlaybackVolumeLevel,
   type SavedTrackPlayerTrack,
 } from './saved-track-playback-view-model';
+import {
+  getSavedTrackPlayer,
+  getSavedTrackPlayerModule,
+  type SavedTrackPlayerModule,
+} from './saved-track-player-interop';
 
 const DEFAULT_PLAYBACK_VOLUME_LEVEL = 1;
 const DURATION_PROBE_ATTEMPT_COUNT = 24;
 const DURATION_PROBE_INTERVAL_MS = 250;
 
 let playerSetupPromise: Promise<void> | null = null;
-
-type TrackPlayerModule = typeof import('react-native-track-player');
 
 type SavedTrackPlayerRuntime = Pick<
   TrackPlayerModule['default'],
@@ -29,18 +32,67 @@ type SavedTrackPlayerRuntime = Pick<
   | 'updateOptions'
 >;
 
+type SavedTrackPlayerCapabilityModule = Pick<TrackPlayerModule, 'Capability'>;
+
+type SavedTrackPlayerCapabilityOptions = {
+  supportsQueueNavigation: boolean;
+};
+
+type SavedTrackPlayerCapabilityRuntime = Pick<
+  SavedTrackPlayerRuntime,
+  'updateOptions'
+>;
+
 type ResolveSavedTrackDurationFromPlayerDependencies = {
   ensurePlayerReady?: () => Promise<void>;
   player?: SavedTrackPlayerRuntime;
   wait?: (ms: number) => Promise<void>;
 };
 
+type SyncSavedTrackPlayerCapabilitiesDependencies = {
+  ensurePlayerReady?: () => Promise<void>;
+  player?: SavedTrackPlayerCapabilityRuntime;
+  trackPlayerModule?: SavedTrackPlayerCapabilityModule;
+};
+
 const getTrackPlayerModule = () => {
-  return require('react-native-track-player') as TrackPlayerModule;
+  return getSavedTrackPlayerModule();
 };
 
 const getDefaultSavedTrackPlayerRuntime = () => {
-  return getTrackPlayerModule().default;
+  return getSavedTrackPlayer();
+};
+
+const createSavedTrackPlayerOptionSet = (
+  trackPlayerModule: SavedTrackPlayerCapabilityModule,
+  options: SavedTrackPlayerCapabilityOptions,
+) => {
+  const { Capability } = trackPlayerModule;
+  const baseCapabilities = [
+    Capability.Play,
+    Capability.Pause,
+    Capability.Stop,
+    Capability.SeekTo,
+  ];
+  const queueCapabilities = options.supportsQueueNavigation
+    ? [Capability.SkipToNext, Capability.SkipToPrevious]
+    : [];
+
+  return {
+    capabilities: [...baseCapabilities, ...queueCapabilities],
+    compactCapabilities: [Capability.Play, Capability.Pause],
+    notificationCapabilities: [...baseCapabilities, ...queueCapabilities],
+  };
+};
+
+const applySavedTrackPlayerCapabilities = async (
+  trackPlayerModule: SavedTrackPlayerCapabilityModule,
+  player: SavedTrackPlayerCapabilityRuntime,
+  options: SavedTrackPlayerCapabilityOptions,
+) => {
+  await player.updateOptions(
+    createSavedTrackPlayerOptionSet(trackPlayerModule, options),
+  );
 };
 
 const waitForDurationProbeTick = async (ms: number) => {
@@ -74,22 +126,8 @@ export const ensureSavedTrackPlayerReady = async () => {
         throw error;
       })
       .then(async () => {
-        const { Capability } = trackPlayerModule;
-
-        await player.updateOptions({
-          capabilities: [
-            Capability.Play,
-            Capability.Pause,
-            Capability.Stop,
-            Capability.SeekTo,
-          ],
-          compactCapabilities: [Capability.Play, Capability.Pause],
-          notificationCapabilities: [
-            Capability.Play,
-            Capability.Pause,
-            Capability.Stop,
-            Capability.SeekTo,
-          ],
+        await applySavedTrackPlayerCapabilities(trackPlayerModule, player, {
+          supportsQueueNavigation: false,
         });
       })
       .catch((error) => {
@@ -99,6 +137,19 @@ export const ensureSavedTrackPlayerReady = async () => {
   }
 
   return playerSetupPromise;
+};
+
+export const syncSavedTrackPlayerCapabilities = async (
+  options: SavedTrackPlayerCapabilityOptions,
+  dependencies: SyncSavedTrackPlayerCapabilitiesDependencies = {},
+) => {
+  const trackPlayerModule = dependencies.trackPlayerModule ?? getTrackPlayerModule();
+  const player = dependencies.player ?? getDefaultSavedTrackPlayerRuntime();
+  const ensurePlayerReady =
+    dependencies.ensurePlayerReady ?? (() => ensureSavedTrackPlayerReady());
+
+  await ensurePlayerReady();
+  await applySavedTrackPlayerCapabilities(trackPlayerModule, player, options);
 };
 
 export const resolveSavedTrackDurationFromPlayer = async (

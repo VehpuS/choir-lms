@@ -1,7 +1,6 @@
 import { type DriveAuthorizationState } from '@org/google-drive';
 import type { PlayableItem } from '@org/audio-library-models';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import TrackPlayer, { State } from 'react-native-track-player';
 
 import {
   resolvePlaylistPlaybackAdvance,
@@ -20,9 +19,15 @@ import {
 } from './saved-track-playback-view-model';
 import { ensureSavedTrackPlayerReady } from './saved-track-player-runtime';
 import {
+  getSavedTrackPlayer,
+  getSavedTrackPlayerStateMap,
+} from './saved-track-player-interop';
+import {
   resolveSavedTrackDuration,
   type LoadPlayableItemIntoPlayer,
 } from './saved-track-duration-resolution';
+
+const trackPlayerState = getSavedTrackPlayerStateMap();
 
 const isActivePlaybackSource = (
   activePlayableItem: PlayableItem | null,
@@ -71,6 +76,7 @@ export const createSavedTrackPlaybackController = (
     loadOptions,
   ) => {
     await ensureSavedTrackPlayerReady();
+    const trackPlayer = getSavedTrackPlayer();
 
     const playbackRequest = createSavedTrackPlaybackRequest({
       accessToken,
@@ -80,20 +86,20 @@ export const createSavedTrackPlaybackController = (
       loadOptions?.initialPositionSeconds ??
       playbackRequest.playableItem.range.startMs / 1000;
 
-    await TrackPlayer.reset();
-    await TrackPlayer.add(playbackRequest.track);
-    await TrackPlayer.setVolume(options.volumeLevelRef.current);
+    await trackPlayer.reset();
+    await trackPlayer.add(playbackRequest.track);
+    await trackPlayer.setVolume(options.volumeLevelRef.current);
 
     if (loadOptions?.syncActivePlayableItem !== false) {
       options.setActivePlayableItem(playbackRequest.playableItem);
     }
 
     if (initialPositionSeconds > 0) {
-      await TrackPlayer.seekTo(initialPositionSeconds);
+      await trackPlayer.seekTo(initialPositionSeconds);
     }
 
     if (loadOptions?.shouldPlay ?? true) {
-      await TrackPlayer.play();
+      await trackPlayer.play();
     }
 
     return playbackRequest.playableItem;
@@ -104,10 +110,10 @@ export const createSavedTrackPlaybackController = (
     positionSeconds: number,
   ) => {
     await ensureSavedTrackPlayerReady();
-    await TrackPlayer.seekTo(positionSeconds);
+    await getSavedTrackPlayer().seekTo(positionSeconds);
 
     if (
-      options.playbackState === State.Ended ||
+      options.playbackState === trackPlayerState.Ended ||
       options.activePlaylistSessionRef.current?.hasCompleted
     ) {
       options.setActivePlaylistSession((currentSession) => {
@@ -146,7 +152,7 @@ export const createSavedTrackPlaybackController = (
 
   const pausePlayableItem = async (playableItem: PlayableItem) => {
     try {
-      await TrackPlayer.pause();
+      await getSavedTrackPlayer().pause();
     } catch (error) {
       options.setIssue(
         createSavedTrackPlaybackRuntimeIssue(playableItem, error),
@@ -162,7 +168,7 @@ export const createSavedTrackPlaybackController = (
       await ensureSavedTrackPlayerReady();
 
       if (
-        options.playbackState === State.Ended ||
+        options.playbackState === trackPlayerState.Ended ||
         options.activePlaylistSessionRef.current?.hasCompleted
       ) {
         await seekActivePlayableItemTo(
@@ -171,10 +177,51 @@ export const createSavedTrackPlaybackController = (
         );
       }
 
-      await TrackPlayer.play();
+      await getSavedTrackPlayer().play();
     } catch (error) {
       options.setIssue(
         createSavedTrackPlaybackRuntimeIssue(playableItem, error),
+      );
+    } finally {
+      options.setIsPreparing(false);
+    }
+  };
+
+  const pauseActivePlayback = async () => {
+    const currentPlayableItem = options.activePlayableItemRef.current;
+
+    if (!currentPlayableItem) {
+      return;
+    }
+
+    await pausePlayableItem(currentPlayableItem);
+  };
+
+  const playActivePlayback = async () => {
+    const currentPlayableItem = options.activePlayableItemRef.current;
+
+    if (!currentPlayableItem) {
+      return;
+    }
+
+    options.setIssue(null);
+
+    if (
+      options.playbackState !== undefined &&
+      options.playbackState !== trackPlayerState.Error &&
+      options.playbackState !== trackPlayerState.None
+    ) {
+      await resumePlayableItem(currentPlayableItem);
+      return;
+    }
+
+    options.setIsPreparing(true);
+
+    try {
+      await loadPlayableItem(currentPlayableItem);
+    } catch (error) {
+      options.setIssue(
+        createSavedTrackPlaybackRuntimeIssue(currentPlayableItem, error),
       );
     } finally {
       options.setIsPreparing(false);
@@ -202,8 +249,10 @@ export const createSavedTrackPlaybackController = (
 
       if (!nextPlayableItem) {
         options.setActivePlaylistSession(nextSession);
-        await TrackPlayer.pause();
-        await TrackPlayer.seekTo(currentPlayableItem.range.startMs / 1000);
+        const trackPlayer = getSavedTrackPlayer();
+
+        await trackPlayer.pause();
+        await trackPlayer.seekTo(currentPlayableItem.range.startMs / 1000);
         return;
       }
 
@@ -239,7 +288,10 @@ export const createSavedTrackPlaybackController = (
 
     options.setIssue(null);
 
-    if (isCurrentPlayableItem && options.playbackState === State.Playing) {
+    if (
+      isCurrentPlayableItem &&
+      options.playbackState === trackPlayerState.Playing
+    ) {
       await pausePlayableItem(playableItem);
       return;
     }
@@ -247,8 +299,8 @@ export const createSavedTrackPlaybackController = (
     if (
       isCurrentPlayableItem &&
       options.playbackState !== undefined &&
-      options.playbackState !== State.Error &&
-      options.playbackState !== State.None
+      options.playbackState !== trackPlayerState.Error &&
+      options.playbackState !== trackPlayerState.None
     ) {
       await resumePlayableItem(playableItem);
       return;
@@ -334,6 +386,8 @@ export const createSavedTrackPlaybackController = (
 
   return {
     advancePlaylistPlayback,
+    pauseActivePlayback,
+    playActivePlayback,
     async playNextQueueItem() {
       if (!options.activePlaylistSessionRef.current) {
         return;
@@ -415,7 +469,7 @@ export const createSavedTrackPlaybackController = (
 
       try {
         await ensureSavedTrackPlayerReady();
-        await TrackPlayer.setVolume(normalizedVolumeLevel);
+        await getSavedTrackPlayer().setVolume(normalizedVolumeLevel);
       } catch (error) {
         const currentPlayableItem = options.activePlayableItemRef.current;
 

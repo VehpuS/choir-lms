@@ -2,12 +2,14 @@
 
 import { compact, isEmpty, map, split } from 'es-toolkit/compat';
 import type { ConfigContext, ExpoConfig } from 'expo/config';
+import path from 'node:path';
 
 // Expo CLI evaluates app.config.ts directly in Node, so these defaults stay
 // in this file instead of importing TypeScript modules from src/.
 const DEFAULT_APP_SCHEME = 'choirlms';
 const DEFAULT_ANDROID_PACKAGE = 'com.choirlms.mobile';
 const DEFAULT_IOS_BUNDLE_IDENTIFIER = 'com.choirlms.mobile';
+const DEFAULT_EAS_PROJECT_ID = 'b4ff1edf-46a7-4c71-a903-0a39ad6f7375';
 const DEFAULT_GOOGLE_DRIVE_SCOPE =
   'https://www.googleapis.com/auth/drive.readonly';
 
@@ -30,6 +32,10 @@ const DEFAULT_SUPPORTED_AUDIO_EXTENSIONS = [
   'flac',
   'ogg',
 ];
+
+const resolveAppAssetPath = (...pathSegments: string[]) => {
+  return path.resolve(__dirname, ...pathSegments);
+};
 
 const parseCsv = (value: string | undefined, fallback: string[]) => {
   if (isEmpty(value)) {
@@ -63,7 +69,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     slug: 'mobile-rehearsal-player',
     version: '1.0.0',
     orientation: 'portrait',
-    icon: './assets/images/icon.png',
+    icon: resolveAppAssetPath('assets', 'images', 'icon.png'),
     scheme,
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
@@ -77,7 +83,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       package: androidPackage,
       adaptiveIcon: {
-        foregroundImage: './assets/images/adaptive-icon.png',
+        foregroundImage: resolveAppAssetPath(
+          'assets',
+          'images',
+          'adaptive-icon.png',
+        ),
         backgroundColor: '#ffffff',
       },
       edgeToEdgeEnabled: true,
@@ -89,10 +99,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     web: {
       bundler: 'metro',
-      favicon: './assets/images/favicon.png',
+      favicon: resolveAppAssetPath('assets', 'images', 'favicon.png'),
     },
     extra: {
       ...config.extra,
+      eas: {
+        ...config.extra?.eas,
+        projectId: DEFAULT_EAS_PROJECT_ID,
+      },
       mobileRehearsalPlayer: {
         scheme,
         iosBundleIdentifier,
@@ -112,7 +126,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         'expo-splash-screen',
         {
-          image: './assets/images/splash-icon.png',
+          image: resolveAppAssetPath('assets', 'images', 'splash-icon.png'),
           imageWidth: 200,
           resizeMode: 'contain',
           backgroundColor: '#ffffff',
