@@ -31,9 +31,7 @@ export const AppRouter = () => {
       activePlayableItem={playback.activePlayableItem}
       activePlaylistSession={playback.activePlaylistSession}
       activeQueueMode={playback.activePlaylistSession?.queue.mode ?? null}
-      activeRepeatMode={
-        playback.activePlaylistSession?.queue.repeatMode ?? null
-      }
+      activeRepeatMode={playback.playlistRepeatMode}
       authorization={authorization}
       canSeekActivePlayback={
         playback.activePlayableItem !== null && !playback.isPreparing

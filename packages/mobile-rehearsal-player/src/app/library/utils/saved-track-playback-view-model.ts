@@ -2,7 +2,7 @@ import {
   buildDriveMediaUrl,
   type DriveAuthorizationState,
 } from '@org/google-drive';
-import { type PlayableItem } from '@org/audio-library-models';
+import { type PlayableItem, type RepeatMode } from '@org/audio-library-models';
 
 import {
   formatDurationLabel,
@@ -184,6 +184,10 @@ export const normalizePlaybackVolumeLevel = (volumeLevel: number) => {
   }
 
   return Math.min(1, Math.max(0, volumeLevel));
+};
+
+export const shouldRepeatSingleItemPlayback = (repeatMode: RepeatMode) => {
+  return repeatMode === 'one';
 };
 
 export const isSavedTrackPlaybackActive = (

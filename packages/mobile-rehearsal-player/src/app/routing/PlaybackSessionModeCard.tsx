@@ -3,7 +3,7 @@ import {
   type RehearsalQueueMode,
   type RepeatMode,
 } from '@org/audio-library-models';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { appTheme } from '../utils/theme';
 
@@ -84,30 +84,40 @@ export const PlaybackSessionModeCard = (props: {
   onSelectRepeatMode: (mode: RepeatMode) => void;
   queueMode: RehearsalQueueMode;
   repeatMode: RepeatMode;
+  repeatModes?: RepeatMode[];
+  showQueueModeControls?: boolean;
 }) => {
+  const showQueueModeControls = props.showQueueModeControls ?? true;
+  const repeatModes = props.repeatModes ?? ['off', 'one', 'all'];
+  const visibleRepeatOptions = REPEAT_MODE_OPTIONS.filter((option) =>
+    repeatModes.includes(option.mode),
+  );
+
   return (
     <View style={styles.card}>
-      <View style={styles.groupRow}>
-        {QUEUE_MODE_OPTIONS.map((option) => {
-          return (
-            <ModeButton
-              accessibilityLabel={option.accessibilityLabel}
-              disabled={props.isDisabled}
-              icon={option.icon}
-              key={option.mode}
-              onPress={() => {
-                props.onSelectQueueMode(option.mode);
-              }}
-              selected={props.queueMode === option.mode}
-            />
-          );
-        })}
-      </View>
+      {showQueueModeControls ? (
+        <View style={styles.groupRow}>
+          {QUEUE_MODE_OPTIONS.map((option) => {
+            return (
+              <ModeButton
+                accessibilityLabel={option.accessibilityLabel}
+                disabled={props.isDisabled}
+                icon={option.icon}
+                key={option.mode}
+                onPress={() => {
+                  props.onSelectQueueMode(option.mode);
+                }}
+                selected={props.queueMode === option.mode}
+              />
+            );
+          })}
+        </View>
+      ) : null}
 
-      <View style={styles.divider} />
+      {showQueueModeControls ? <View style={styles.divider} /> : null}
 
       <View style={styles.groupRow}>
-        {REPEAT_MODE_OPTIONS.map((option) => {
+        {visibleRepeatOptions.map((option) => {
           return (
             <ModeButton
               accessibilityLabel={option.accessibilityLabel}

@@ -13,9 +13,7 @@ import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,
 } from '../../test-utils/library-test-fixtures.js';
-import {
-  buildPlaylistPlaybackSession,
-} from '../../library/utils/saved-playlist-playback-view-model.js';
+import { buildPlaylistPlaybackSession } from '../../library/utils/saved-playlist-playback-view-model.js';
 import {
   SHELL_DESTINATIONS,
   getPlaybackProgressRatio,
@@ -23,6 +21,7 @@ import {
   getNowPlayingSurfaceSummary,
   getUpNextSurfaceSummary,
 } from '../shell-model.js';
+import { resolveVisibleRepeatModes } from '../playback-session-mode-options.js';
 
 describe('SHELL_DESTINATIONS', () => {
   it('defines the Home, Search, and Library shell order', () => {
@@ -34,6 +33,14 @@ describe('SHELL_DESTINATIONS', () => {
 });
 
 describe('getMiniPlayerSummary', () => {
+  it('shows only single-item repeat controls when playback is standalone', () => {
+    assert.deepEqual(resolveVisibleRepeatModes(false), ['off', 'one']);
+  });
+
+  it('shows full repeat controls when queued playback is active', () => {
+    assert.deepEqual(resolveVisibleRepeatModes(true), ['off', 'one', 'all']);
+  });
+
   it('returns null when no rehearsal item is active', () => {
     assert.equal(
       getMiniPlayerSummary({

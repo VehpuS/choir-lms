@@ -228,6 +228,31 @@ export const createSavedTrackPlaybackController = (
     }
   };
 
+  const restartActivePlaybackFromRangeStart = async () => {
+    const currentPlayableItem = options.activePlayableItemRef.current;
+
+    if (!currentPlayableItem) {
+      return;
+    }
+
+    options.setIssue(null);
+    options.setIsPreparing(true);
+
+    try {
+      await seekActivePlayableItemTo(
+        currentPlayableItem,
+        currentPlayableItem.range.startMs / 1000,
+      );
+      await getSavedTrackPlayer().play();
+    } catch (error) {
+      options.setIssue(
+        createSavedTrackPlaybackRuntimeIssue(currentPlayableItem, error),
+      );
+    } finally {
+      options.setIsPreparing(false);
+    }
+  };
+
   const advancePlaylistPlayback = async () => {
     const currentSession = options.activePlaylistSessionRef.current;
     const currentPlayableItem = options.activePlayableItemRef.current;
@@ -388,6 +413,7 @@ export const createSavedTrackPlaybackController = (
     advancePlaylistPlayback,
     pauseActivePlayback,
     playActivePlayback,
+    restartActivePlaybackFromRangeStart,
     async playNextQueueItem() {
       if (!options.activePlaylistSessionRef.current) {
         return;

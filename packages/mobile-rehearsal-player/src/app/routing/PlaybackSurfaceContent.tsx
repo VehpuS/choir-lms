@@ -13,6 +13,7 @@ import {
   PlaybackVolumeCard,
 } from './PlaybackControlCards';
 import { PlaybackSessionModeCard } from './PlaybackSessionModeCard';
+import { resolveVisibleRepeatModes } from './playback-session-mode-options';
 import type {
   NowPlayingSurfaceSummary,
   UpNextSurfaceSummary,
@@ -249,13 +250,15 @@ export const NowPlayingSurface = ({
         ) : null}
       </View>
 
-      {activeQueueMode && activeRepeatMode ? (
+      {activeRepeatMode ? (
         <PlaybackSessionModeCard
           isDisabled={isPlaybackToggleDisabled}
           onSelectQueueMode={onSelectQueueMode}
           onSelectRepeatMode={onSelectRepeatMode}
-          queueMode={activeQueueMode}
+          queueMode={activeQueueMode ?? 'ordered'}
           repeatMode={activeRepeatMode}
+          repeatModes={resolveVisibleRepeatModes(Boolean(activeQueueMode))}
+          showQueueModeControls={Boolean(activeQueueMode)}
         />
       ) : null}
 

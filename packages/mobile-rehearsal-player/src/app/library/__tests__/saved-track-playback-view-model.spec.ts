@@ -25,6 +25,7 @@ import {
   normalizePlaybackVolumeLevel,
   resolvePlaybackScrubPositionSeconds,
   resolvePlaybackSeekPositionSeconds,
+  shouldRepeatSingleItemPlayback,
 } from '../utils/saved-track-playback-view-model.js';
 import { resolveSavedTrackDurationFromPlayer } from '../utils/saved-track-player-runtime.js';
 
@@ -292,6 +293,12 @@ describe('saved track playback view-model', () => {
     assert.equal(normalizePlaybackVolumeLevel(0.45), 0.45);
     assert.equal(normalizePlaybackVolumeLevel(1.8), 1);
     assert.equal(normalizePlaybackVolumeLevel(Number.NaN), 1);
+  });
+
+  it('only repeats standalone playback when repeat-one mode is active', () => {
+    assert.equal(shouldRepeatSingleItemPlayback('off'), false);
+    assert.equal(shouldRepeatSingleItemPlayback('one'), true);
+    assert.equal(shouldRepeatSingleItemPlayback('all'), false);
   });
 
   it('recognizes TrackPlayer already-initialized setup errors', () => {

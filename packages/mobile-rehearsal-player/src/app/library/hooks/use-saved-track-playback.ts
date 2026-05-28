@@ -26,6 +26,7 @@ import {
   createSavedTrackPlaybackRuntimeIssue,
   hasSavedTrackPlaybackReachedRangeEnd,
   normalizePlaybackVolumeLevel,
+  shouldRepeatSingleItemPlayback,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
@@ -71,6 +72,7 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
   const activePlaylistSessionRef = useRef<PlaylistPlaybackSession | null>(null);
   const isAdvancingPlaylistRef = useRef(false);
   const volumeLevelRef = useRef(DEFAULT_PLAYBACK_VOLUME_LEVEL);
+  const repeatModeRef = useRef<RepeatMode>('off');
   const playbackState = useSavedTrackPlayerPlaybackState().state as
     | SavedTrackPlaybackState
     | undefined;
@@ -93,6 +95,10 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
   useEffect(() => {
     volumeLevelRef.current = volumeLevel;
   }, [volumeLevel]);
+
+  useEffect(() => {
+    repeatModeRef.current = playlistRepeatMode;
+  }, [playlistRepeatMode]);
 
   useEffect(() => {
     if (!activePlayableItem) {
@@ -213,6 +219,14 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
           return;
         }
 
+        if (
+          activePlayableItemRef.current &&
+          shouldRepeatSingleItemPlayback(repeatModeRef.current)
+        ) {
+          void playbackController.restartActivePlaybackFromRangeStart();
+          return;
+        }
+
         setIssue(null);
       }
 
@@ -238,6 +252,14 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
       try {
         if (activePlaylistSessionRef.current) {
           await playbackController.advancePlaylistPlayback();
+          return;
+        }
+
+        if (shouldRepeatSingleItemPlayback(repeatModeRef.current)) {
+          await playbackController.seekActivePlayableItemTo(
+            activePlayableItem,
+            activePlayableItem.range.startMs / 1000,
+          );
           return;
         }
 
