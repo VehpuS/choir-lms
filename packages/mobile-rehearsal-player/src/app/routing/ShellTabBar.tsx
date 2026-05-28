@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import type { ComponentProps } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { appTheme } from '../utils/theme';
@@ -12,12 +13,15 @@ type ShellTabBarProps = {
 
 const ACTIVE_TAB_ICON_COLOR = '#fff8ef';
 const INACTIVE_TAB_ICON_COLOR = appTheme.colors.secondaryText;
+type MaterialCommunityIconName = ComponentProps<
+  typeof MaterialCommunityIcons
+>['name'];
 
 const TAB_ICONS: Record<
   ShellDestinationKey,
   {
-    active: string;
-    inactive: string;
+    active: MaterialCommunityIconName;
+    inactive: MaterialCommunityIconName;
   }
 > = {
   home: {

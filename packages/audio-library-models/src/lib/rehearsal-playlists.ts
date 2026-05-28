@@ -39,8 +39,10 @@ const moveItem = <Entity>(
 const getNormalizedSortIndex = (
   entry: PlaylistEntryInput,
   fallbackIndex: number,
-) => {
-  return Number.isFinite(entry.sortIndex) ? entry.sortIndex : fallbackIndex;
+): number => {
+  return typeof entry.sortIndex === 'number' && Number.isFinite(entry.sortIndex)
+    ? entry.sortIndex
+    : fallbackIndex;
 };
 
 const normalizePlaylistItems = (

@@ -36,6 +36,9 @@
   ],
   "references": [
     {
+      "path": "../audio-library-models/tsconfig.lib.json"
+    },
+    {
       "path": "../google-drive/tsconfig.lib.json"
     },
     {

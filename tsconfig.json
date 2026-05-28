@@ -7,13 +7,13 @@
       "path": "./packages/mobile-rehearsal-player"
     },
     {
-      "path": "./packages/rehearsal-domain"
-    },
-    {
-      "path": "./packages/rehearsal-playback"
-    },
-    {
       "path": "./packages/google-drive"
+    },
+    {
+      "path": "./packages/audio-library-runtime"
+    },
+    {
+      "path": "./packages/audio-library-models"
     }
   ]
 }

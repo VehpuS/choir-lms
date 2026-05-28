@@ -35,6 +35,7 @@ type SavedTrackPlaybackController = Pick<
   | 'playbackState'
   | 'progress'
   | 'resolveTrackDuration'
+  | 'syncActivePlaylistContext'
   | 'togglePlayableItemPlayback'
   | 'togglePlaylistPlayback'
   | 'toggleSourcePlayback'
@@ -58,6 +59,7 @@ export const DriveLibrarySection = ({
   playbackState,
   progress,
   resolveTrackDuration,
+  syncActivePlaylistContext,
   togglePlayableItemPlayback,
   togglePlaylistPlayback,
   toggleSourcePlayback,
@@ -274,6 +276,7 @@ export const DriveLibrarySection = ({
         savedLibraryStatusCopy={savedLibraryStatusCopy}
         saveLoop={saveLoop}
         savedTrackPlaybackStatusCopy={savedTrackPlaybackStatusCopy}
+        syncActivePlaylistContext={syncActivePlaylistContext}
         openLoopBuilderForSource={openLoopBuilderForSource}
         pendingLoopBuilderSourceId={pendingLoopBuilderSourceId}
         selectedTrack={selectedLoopTrack}

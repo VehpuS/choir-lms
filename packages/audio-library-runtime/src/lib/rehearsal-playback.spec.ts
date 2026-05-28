@@ -162,11 +162,13 @@ describe('AsyncStoragePracticeRepository', () => {
       ['Morning rehearsal', 'Z Finales'],
     );
     assert.deepEqual(
-      (await repository.listPlaylists('user-1'))[0]?.items.map((entry) => ({
-        id: entry.id,
-        playlistId: entry.playlistId,
-        sortIndex: entry.sortIndex,
-      })),
+      (await repository.listPlaylists('user-1'))[0]?.items.map(
+        (entry: Playlist['items'][number]) => ({
+          id: entry.id,
+          playlistId: entry.playlistId,
+          sortIndex: entry.sortIndex,
+        }),
+      ),
       [
         {
           id: 'entry:track:drive:drive-file-1:2026-05-10T01:00:00.000Z',
@@ -244,7 +246,7 @@ describe('AsyncStoragePracticeRepository', () => {
     const playlists = await repository.listPlaylists('user-1');
 
     assert.deepEqual(
-      playlists[0]?.items.map((entry) => ({
+      playlists[0]?.items.map((entry: Playlist['items'][number]) => ({
         id: entry.id,
         playlistId: entry.playlistId,
         sortIndex: entry.sortIndex,

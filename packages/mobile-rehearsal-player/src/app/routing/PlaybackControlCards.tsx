@@ -187,4 +187,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  valueLabel: {
+    color: appTheme.colors.primaryText,
+    fontSize: 18,
+    fontWeight: '700',
+  },
 });

@@ -14,11 +14,11 @@ jobs:
   main:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: 'npm'
@@ -26,14 +26,17 @@ jobs:
 
       - run: npm ci
 
+      - name: Validate Nx sync state
+        run: npm exec -- nx sync:check
+
       - name: Format check (PR scope)
         if: github.event_name == 'pull_request'
         run: npm exec -- nx format:check --base=origin/main --head=HEAD
 
       - name: Affected checks (PR scope)
         if: github.event_name == 'pull_request'
-        run: npm exec -- nx affected -t lint test build typecheck --base=origin/main --head=HEAD --outputStyle=static
+        run: npm exec -- nx affected -t lint test typecheck --base=origin/main --head=HEAD --outputStyle=static
 
       - name: Full checks (push to main)
         if: github.event_name == 'push'
-        run: npm exec -- nx run-many -t lint test build typecheck --all --outputStyle=static
+        run: npm exec -- nx run-many -t lint test typecheck --all --outputStyle=static

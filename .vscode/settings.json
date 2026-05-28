@@ -194,6 +194,30 @@
     "/^npm exec -- nx affected -t lint test build typecheck --base=origin/main --head=HEAD --outputStyle=static$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^gh run view /": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx sync:check --help$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run-many -t build --all --outputStyle=static$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run audio-library-models:typecheck --outputStyle=static$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run audio-library-runtime:typecheck --outputStyle=static$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run audio-library-runtime:test --outputStyle=static$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

@@ -1,6 +1,10 @@
 ---
 name: ci-workflow-maintenance
 description: Maintain GitHub Actions CI for this Nx + Expo monorepo when installs or CI targets fail. USE WHEN user mentions ci.yml, GitHub Actions failures, npm ci failures, target not found, or wants CI hardening for Nx/Expo without Nx Cloud.
+license: MIT
+metadata:
+  author: choir-lms
+  version: '1.0'
 ---
 
 # CI Workflow Maintenance (Nx + Expo, No Nx Cloud)

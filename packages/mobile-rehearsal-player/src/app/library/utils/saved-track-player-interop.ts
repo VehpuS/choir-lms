@@ -43,19 +43,23 @@ const FALLBACK_EVENTS = {
   RemotePrevious: 'remote-previous',
 } as const;
 
+type ExpoRuntimeMetadata = {
+  appOwnership?: string | null;
+  executionEnvironment?: string | null;
+};
+
 const loadTrackPlayerModule = () => {
   return require('react-native-track-player') as TrackPlayerModule;
 };
 
 const getExpoRuntimeMetadata = () => {
   try {
-    const expoConstantsModule = require('expo-constants') as {
-      default?: {
-        appOwnership?: string | null;
-        executionEnvironment?: string | null;
-      };
-    };
-    const expoConstants = expoConstantsModule.default ?? expoConstantsModule;
+    const expoConstantsModule = require('expo-constants') as
+      | ExpoRuntimeMetadata
+      | { default?: ExpoRuntimeMetadata };
+    const expoConstants: ExpoRuntimeMetadata =
+      (expoConstantsModule as { default?: ExpoRuntimeMetadata }).default ??
+      (expoConstantsModule as ExpoRuntimeMetadata);
 
     return {
       appOwnership: expoConstants.appOwnership ?? null,

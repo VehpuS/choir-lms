@@ -19,7 +19,7 @@ const DURATION_PROBE_INTERVAL_MS = 250;
 let playerSetupPromise: Promise<void> | null = null;
 
 type SavedTrackPlayerRuntime = Pick<
-  TrackPlayerModule['default'],
+  SavedTrackPlayerModule['default'],
   | 'add'
   | 'getProgress'
   | 'getVolume'
@@ -32,7 +32,10 @@ type SavedTrackPlayerRuntime = Pick<
   | 'updateOptions'
 >;
 
-type SavedTrackPlayerCapabilityModule = Pick<TrackPlayerModule, 'Capability'>;
+type SavedTrackPlayerCapabilityModule = Pick<
+  SavedTrackPlayerModule,
+  'Capability'
+>;
 
 type SavedTrackPlayerCapabilityOptions = {
   supportsQueueNavigation: boolean;
