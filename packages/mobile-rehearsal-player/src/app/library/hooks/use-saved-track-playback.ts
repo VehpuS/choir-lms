@@ -198,10 +198,7 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
   useSavedTrackPlayerEvents(
     [trackPlayerEvent.PlaybackError, trackPlayerEvent.PlaybackQueueEnded],
     (event) => {
-      if (
-        event.type === trackPlayerEvent.PlaybackError &&
-        activePlayableItem
-      ) {
+      if (event.type === trackPlayerEvent.PlaybackError && activePlayableItem) {
         setIssue({
           playableItemId: activePlayableItem.id,
           sourceId: activePlayableItem.sourceId,

@@ -224,7 +224,7 @@ describe('saved playlist view-model', () => {
     assert.deepEqual(emptyResult, {
       issue: {
         title: 'Playlist name required',
-        message: 'Provide a playlist name before saving this rehearsal set.',
+        message: 'Enter a playlist name.',
       },
       playlist: null,
     });

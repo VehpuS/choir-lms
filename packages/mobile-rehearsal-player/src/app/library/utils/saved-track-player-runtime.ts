@@ -143,7 +143,8 @@ export const syncSavedTrackPlayerCapabilities = async (
   options: SavedTrackPlayerCapabilityOptions,
   dependencies: SyncSavedTrackPlayerCapabilitiesDependencies = {},
 ) => {
-  const trackPlayerModule = dependencies.trackPlayerModule ?? getTrackPlayerModule();
+  const trackPlayerModule =
+    dependencies.trackPlayerModule ?? getTrackPlayerModule();
   const player = dependencies.player ?? getDefaultSavedTrackPlayerRuntime();
   const ensurePlayerReady =
     dependencies.ensurePlayerReady ?? (() => ensureSavedTrackPlayerReady());

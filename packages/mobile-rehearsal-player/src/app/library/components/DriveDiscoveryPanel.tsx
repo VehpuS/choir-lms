@@ -18,12 +18,11 @@ export const DriveDiscoveryPanel = ({
   return (
     <View style={styles.section}>
       <DriveLibrarySectionHeader
-        body="Browse My Drive and shared folders without mixing those discovery results into the personal rehearsal library tab."
         canRefresh={controller.discovery.canRefresh}
-        eyebrow="Browse choir spaces"
+        eyebrow="Discovery"
         isLoading={controller.discovery.isLoading}
         onRefresh={controller.discovery.refresh}
-        title="Discovery stays focused on finding source tracks"
+        title="Browse Drive"
       />
       <DriveLibraryRootSelector
         currentRootKind={controller.discovery.currentLocation.rootKind}

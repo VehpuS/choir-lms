@@ -29,7 +29,6 @@ export const DriveLibrarySearchPanel = ({
 }: DriveLibrarySearchPanelProps) => {
   return (
     <View style={styles.searchPanel}>
-      <Text style={styles.searchLabel}>Track search</Text>
       <View style={styles.searchRow}>
         <TextInput
           autoCapitalize="none"
@@ -64,7 +63,7 @@ export const DriveLibrarySearchPanel = ({
             pressed ? styles.clearSearchButtonPressed : undefined,
           ]}
         >
-          <Text style={styles.clearSearchLabel}>Return to folder browsing</Text>
+          <Text style={styles.clearSearchLabel}>Browse folders</Text>
         </Pressable>
       ) : null}
     </View>
@@ -74,11 +73,6 @@ export const DriveLibrarySearchPanel = ({
 const styles = StyleSheet.create({
   searchPanel: {
     gap: 12,
-  },
-  searchLabel: {
-    color: PRIMARY_TEXT,
-    fontSize: 14,
-    fontWeight: '700',
   },
   searchRow: {
     gap: 12,

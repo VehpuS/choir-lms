@@ -126,6 +126,27 @@ describe('resolveDriveAuthorizationResult', () => {
     );
   });
 
+  it('describes an authorized Drive session with current-tense library copy', () => {
+    const authorizedCopy = getDriveAuthorizationStatusCopy(
+      {
+        accessToken: 'drive-token',
+        expiresAt: '2026-05-25T10:30:00.000Z',
+        scope: DEFAULT_SCOPE,
+        status: 'authorized',
+      },
+      {
+        googleAuthConfigured: true,
+      },
+    );
+
+    assert.equal(authorizedCopy.title, 'Google Drive is connected');
+    assert.equal(
+      authorizedCopy.message,
+      'This device has an active read-only Drive session, so browsing, search, and saved-library playback are ready.',
+    );
+    assert.equal(authorizedCopy.actionLabel, 'Refresh authorization');
+  });
+
   it('derives shell session trigger copy and session details from auth state', () => {
     const readyCopy = getDriveSessionTriggerCopy({
       actionLabel: 'Refresh authorization',
@@ -144,7 +165,7 @@ describe('resolveDriveAuthorizationResult', () => {
     );
 
     assert.deepEqual(readyCopy, {
-      body: 'Renew access or clear the saved session without leaving the current screen.',
+      body: 'Renew or forget this session here.',
       status: 'Connected',
       title: 'Drive connected',
     });

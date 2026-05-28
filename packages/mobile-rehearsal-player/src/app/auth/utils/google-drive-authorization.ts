@@ -258,7 +258,7 @@ export const getDriveAuthorizationStatusCopy = (
     return {
       title: 'Google Drive is connected',
       message:
-        'This device has an active read-only Drive session and can proceed to library loading in the next slice.',
+        'This device has an active read-only Drive session, so browsing, search, and saved-library playback are ready.',
       actionLabel: 'Refresh authorization',
       tone: 'ready',
     };
@@ -322,7 +322,7 @@ export const getDriveSessionTriggerCopy = (
 ): DriveSessionTriggerCopy => {
   if (statusCopy.tone === 'ready') {
     return {
-      body: 'Renew access or clear the saved session without leaving the current screen.',
+      body: 'Renew or forget this session here.',
       status: 'Connected',
       title: 'Drive connected',
     };
@@ -330,7 +330,7 @@ export const getDriveSessionTriggerCopy = (
 
   if (statusCopy.tone === 'warning') {
     return {
-      body: 'Reconnect here to restore browsing, search, and playback that depend on Google Drive.',
+      body: 'Reconnect Google Drive here.',
       status: 'Needs attention',
       title: 'Session needs attention',
     };
@@ -338,14 +338,14 @@ export const getDriveSessionTriggerCopy = (
 
   if (statusCopy.tone === 'error') {
     return {
-      body: 'This build still needs Google setup before Drive access can be used anywhere in the app shell.',
+      body: 'Finish Google setup for this build.',
       status: 'Setup required',
       title: 'Drive unavailable',
     };
   }
 
   return {
-    body: 'Connect Google Drive here to unlock discovery, search, and saved library flows everywhere.',
+    body: 'Connect Google Drive.',
     status: 'Connect',
     title: 'Connect Drive',
   };

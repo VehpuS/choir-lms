@@ -27,10 +27,12 @@ export const HomeScreen = ({
   libraryController,
   savedTrackCount,
 }: HomeScreenProps) => {
-  const continuePracticingCopy = getHomeContinuePracticingCopy({
-    activePlayableItemTitle: activePlayableItem?.title ?? null,
-    savedTrackCount,
-  });
+  const continuePracticingCopy = activePlayableItem
+    ? getHomeContinuePracticingCopy({
+        activePlayableItemTitle: activePlayableItem.title,
+        savedTrackCount,
+      })
+    : null;
 
   return (
     <ScrollView
@@ -40,10 +42,9 @@ export const HomeScreen = ({
     >
       <View style={styles.hero}>
         <Text style={styles.kicker}>Choir LMS</Text>
-        <Text style={styles.title}>Mobile rehearsal player foundation</Text>
+        <Text style={styles.title}>Rehearsal at a glance</Text>
         <Text style={styles.subtitle}>
-          A focused practice surface for choir members to find rehearsal audio,
-          save repeatable loops, and build session playlists.
+          Saved tracks and supported formats for quick practice starts.
         </Text>
         <View style={styles.statusGroup}>
           <View style={styles.statusRow}>
@@ -58,17 +59,13 @@ export const HomeScreen = ({
         </View>
       </View>
 
-      <SummaryCard
-        body={continuePracticingCopy.body}
-        eyebrow="Home"
-        title={continuePracticingCopy.title}
-      />
-
-      <SummaryCard
-        body={`Scheme ${runtimeConfig.scheme} keeps Drive session controls in the shared header while discovery stays in Home, result scanning stays in Search, and saved practice material stays in Library across the iOS bundle ${runtimeConfig.iosBundleIdentifier} and Android package ${runtimeConfig.androidPackage}.`}
-        eyebrow="Navigation"
-        title="Session controls now follow every destination"
-      />
+      {continuePracticingCopy ? (
+        <SummaryCard
+          body={continuePracticingCopy.body}
+          eyebrow="Home"
+          title={continuePracticingCopy.title}
+        />
+      ) : null}
 
       <DriveDiscoveryPanel controller={libraryController} />
     </ScrollView>

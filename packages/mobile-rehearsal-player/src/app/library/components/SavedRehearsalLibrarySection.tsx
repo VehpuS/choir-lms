@@ -22,7 +22,6 @@ import { getSavedRehearsalLibrarySourceIssue } from '../utils/saved-rehearsal-li
 import {
   buildSavedPlaylist,
   getSavedPlaylistLibraryActionCopy,
-  getSavedPlaylistSelectionCopy,
   resolveSavedPlaylistCards,
   resolveSelectedPlaylist,
   type PlaylistDraftIssue,
@@ -202,12 +201,13 @@ export const SavedRehearsalLibrarySection = ({
     isMutating: isPlaylistMutating,
     selectedPlaylist,
   });
-  const playlistSelectionCopy = getSavedPlaylistSelectionCopy({
-    savedPlaylistCount: savedPlaylists.length,
-    selectedPlaylist,
-  });
   const savedSourceTitle = `Saved rehearsal tracks (${savedLibrarySources.length})`;
   const isLoopMutating = pendingLoopId !== null;
+  const shouldShowSavedLibraryStatus =
+    isSavedLibraryLoading || savedLibraryStatusCopy.tone !== 'ready';
+  const shouldShowPlaybackStatus =
+    savedTrackPlaybackStatusCopy !== null &&
+    (isSavedTrackPlaybackLoading || savedTrackPlaybackStatusCopy.tone !== 'ready');
 
   const persistPlaylist = async (
     playlist: Playlist,
@@ -287,27 +287,21 @@ export const SavedRehearsalLibrarySection = ({
         canRefresh={false}
         isLoading={false}
         onRefresh={() => undefined}
-        title="Saved rehearsal library"
-        body="Keep explicit Google Drive references ready for full-track playback, loops, and playlists without copying the source media."
+        title="Saved tracks"
         eyebrow="Saved tracks"
       />
-      <DriveLibraryStatusCard
-        isLoading={isSavedLibraryLoading}
-        loadingLabel="Refreshing saved rehearsal tracks…"
-        statusCopy={savedLibraryStatusCopy}
-      />
-      {savedTrackPlaybackStatusCopy ? (
+      {shouldShowSavedLibraryStatus ? (
+        <DriveLibraryStatusCard
+          isLoading={isSavedLibraryLoading}
+          loadingLabel="Refreshing saved rehearsal tracks…"
+          statusCopy={savedLibraryStatusCopy}
+        />
+      ) : null}
+      {savedTrackPlaybackStatusCopy && shouldShowPlaybackStatus ? (
         <DriveLibraryStatusCard
           isLoading={isSavedTrackPlaybackLoading}
           loadingLabel="Starting track playback…"
           statusCopy={savedTrackPlaybackStatusCopy}
-        />
-      ) : null}
-      {playlistSelectionCopy && !isPlaylistDetailVisible ? (
-        <DriveLibraryStatusCard
-          isLoading={isPlaylistsLoading}
-          loadingLabel="Refreshing playlist destinations…"
-          statusCopy={playlistSelectionCopy}
         />
       ) : null}
       {!isPlaylistDetailVisible ? (

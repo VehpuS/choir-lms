@@ -9,9 +9,8 @@ export type SavedTrackPlaybackRemoteCommandHandlers = Record<
   () => Promise<void>
 >;
 
-let savedTrackPlaybackRemoteCommandHandlers:
-  | SavedTrackPlaybackRemoteCommandHandlers
-  | null = null;
+let savedTrackPlaybackRemoteCommandHandlers: SavedTrackPlaybackRemoteCommandHandlers | null =
+  null;
 
 export const registerSavedTrackPlaybackRemoteCommandHandlers = (
   handlers: SavedTrackPlaybackRemoteCommandHandlers,

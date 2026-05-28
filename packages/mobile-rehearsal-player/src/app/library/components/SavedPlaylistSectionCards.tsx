@@ -47,10 +47,6 @@ export const SavedPlaylistCreateCard = (props: {
   return (
     <View style={styles.editorCard}>
       <Text style={styles.editorTitle}>Create playlist</Text>
-      <Text style={styles.editorBody}>
-        Start with a name, then select it as the active destination before
-        adding saved tracks and loops from Library.
-      </Text>
       <TextInput
         autoCorrect={false}
         onChangeText={props.onCreatePlaylistNameChange}
@@ -190,7 +186,7 @@ export const SavedPlaylistDetailCard = (props: {
           pressed ? styles.actionButtonPressed : undefined,
         ]}
       >
-        <Text style={styles.secondaryButtonLabel}>Back to Library</Text>
+        <Text style={styles.secondaryButtonLabel}>Back</Text>
       </Pressable>
 
       <View style={styles.headerRow}>
@@ -198,7 +194,9 @@ export const SavedPlaylistDetailCard = (props: {
           <Text style={styles.eyebrow}>Playlist detail</Text>
           <Text style={styles.sectionTitle}>{detailSummary.title}</Text>
           <Text style={styles.sectionBody}>{detailSummary.metadataLabel}</Text>
-          <Text style={styles.editorBody}>{detailSummary.body}</Text>
+          {detailSummary.body ? (
+            <Text style={styles.editorBody}>{detailSummary.body}</Text>
+          ) : null}
         </View>
         <Pressable
           accessibilityRole="button"
@@ -229,10 +227,6 @@ export const SavedPlaylistDetailCard = (props: {
       {!props.isEditMode ? (
         <View style={styles.group}>
           <Text style={styles.groupTitle}>Playback</Text>
-          <Text style={styles.editorBody}>
-            Start this playlist in saved order, or tap a row to jump into the
-            queue from that saved position.
-          </Text>
           <View style={styles.playbackActionRow}>
             <Pressable
               accessibilityRole="button"

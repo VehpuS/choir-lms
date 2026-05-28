@@ -55,8 +55,7 @@ const getExpoRuntimeMetadata = () => {
         executionEnvironment?: string | null;
       };
     };
-    const expoConstants =
-      expoConstantsModule.default ?? expoConstantsModule;
+    const expoConstants = expoConstantsModule.default ?? expoConstantsModule;
 
     return {
       appOwnership: expoConstants.appOwnership ?? null,
@@ -141,15 +140,18 @@ export const getSavedTrackPlayer = (
 export const getSavedTrackPlayerEventMap = (
   dependencies: ResolveSavedTrackPlayerSupportDependencies = {},
 ) => {
-  return resolveSavedTrackPlayerSupport(dependencies).module?.Event ??
-    FALLBACK_EVENTS;
+  return (
+    resolveSavedTrackPlayerSupport(dependencies).module?.Event ??
+    FALLBACK_EVENTS
+  );
 };
 
 export const getSavedTrackPlayerStateMap = (
   dependencies: ResolveSavedTrackPlayerSupportDependencies = {},
 ) => {
-  return resolveSavedTrackPlayerSupport(dependencies).module?.State ??
-    FALLBACK_STATE;
+  return (
+    resolveSavedTrackPlayerSupport(dependencies).module?.State ?? FALLBACK_STATE
+  );
 };
 
 export const registerSavedTrackPlayerPlaybackService = (
@@ -200,10 +202,7 @@ export const useSavedTrackPlayerEvents = (
     return;
   }
 
-  support.module.useTrackPlayerEvents(
-    eventTypes as never[],
-    handler as never,
-  );
+  support.module.useTrackPlayerEvents(eventTypes as never[], handler as never);
 };
 
 export type SavedTrackPlayerModule = TrackPlayerModule;

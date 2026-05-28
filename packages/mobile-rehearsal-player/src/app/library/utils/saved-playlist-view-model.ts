@@ -7,7 +7,6 @@ import {
 import {
   formatDurationLabel,
   type DriveLibrarySource,
-  type DriveLibraryStatusCopy,
 } from './drive-library-view-model';
 import {
   getPlaylistPlaybackSessionSummary,
@@ -37,8 +36,6 @@ export type SavedPlaylistRemovalCopy = {
   title: string;
 };
 
-export type SavedPlaylistSelectionCopy = DriveLibraryStatusCopy;
-
 export type SavedPlaylistCard = {
   detailLabel: string;
   playlist: Playlist;
@@ -46,14 +43,14 @@ export type SavedPlaylistCard = {
 };
 
 export type SavedPlaylistDetailSummary = {
-  body: string;
+  body: string | null;
   metadataLabel: string;
   title: string;
 };
 
 const PLAYLIST_NAME_REQUIRED_ISSUE: PlaylistDraftIssue = {
   title: 'Playlist name required',
-  message: 'Provide a playlist name before saving this rehearsal set.',
+  message: 'Enter a playlist name.',
 };
 
 const pluralize = (count: number, noun: string) => {
@@ -134,7 +131,7 @@ const getPlaylistDetailLabel = (playlist: Playlist) => {
 
 const getPlaylistPreviewLabel = (playlist: Playlist) => {
   if (playlist.items.length === 0) {
-    return 'No playlist items yet. Add saved tracks or loops below.';
+    return 'No items yet';
   }
 
   return playlist.items
@@ -212,7 +209,7 @@ export const getSavedPlaylistDetailSummary = (options: {
     metadataLabel: metadataParts.join(' • '),
     body: options.activeSession
       ? getPlaylistPlaybackSessionSummary(options.activeSession)
-      : 'Add saved tracks and loops from Library, then keep this detail surface focused on order and playback intent.',
+      : null,
   };
 };
 
@@ -289,40 +286,6 @@ export const getSavedPlaylistRemovalCopy = (
       `"${playlist.name}" will be removed from your saved playlists.\n\n` +
       `This will remove ${pluralize(playlist.items.length, 'item')} from this playlist only. Saved tracks and loops will stay in Library.`,
     title: 'Remove saved playlist?',
-  };
-};
-
-export const getSavedPlaylistSelectionCopy = (options: {
-  savedPlaylistCount: number;
-  selectedPlaylist: Playlist | null;
-}): SavedPlaylistSelectionCopy | null => {
-  if (options.savedPlaylistCount === 0) {
-    return null;
-  }
-
-  if (!options.selectedPlaylist) {
-    return {
-      title: 'Choose a playlist destination',
-      message:
-        'Select a playlist below for saved loop adds, or open More Options on a saved track to choose a playlist when you need it.',
-      tone: 'neutral',
-    };
-  }
-
-  if (options.savedPlaylistCount === 1) {
-    return {
-      title: `Adding loops to ${options.selectedPlaylist.name}`,
-      message:
-        'Saved loop actions add directly into this playlist. Saved tracks open More Options so you can choose a destination without leaving Library.',
-      tone: 'ready',
-    };
-  }
-
-  return {
-    title: `Adding loops to ${options.selectedPlaylist.name}`,
-    message:
-      'Choose a different playlist below any time you want saved loop actions to change destination. Saved tracks can still choose a playlist from More Options on demand.',
-    tone: 'ready',
   };
 };
 

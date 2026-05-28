@@ -22,6 +22,7 @@ import {
   removeSavedPlaylistDetailEntry,
   restoreSavedPlaylistDetailEntry,
 } from '../utils/saved-playlist-detail-view-model.js';
+import { getSavedPlaylistsStatusCopy } from '../utils/saved-playlist-status-view-model.js';
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackActionCopy,
@@ -38,7 +39,6 @@ import {
   getSavedPlaylistEntryDetailLabel,
   getSavedPlaylistLibraryActionCopy,
   getSavedPlaylistRemovalCopy,
-  getSavedPlaylistSelectionCopy,
   resolveSavedPlaylistCards,
   resolveSelectedPlaylist,
 } from '../utils/saved-playlist-view-model.js';
@@ -91,37 +91,17 @@ describe('saved playlist view-model', () => {
     );
   });
 
-  it('surfaces selection guidance when multiple playlists exist', () => {
-    const playlist = createPlaylist({
-      createdAt: '2026-05-12T00:00:00.000Z',
-      name: 'Warmups',
-      ownerId: 'user-1',
-    });
-
+  it('keeps empty playlist status focused on the running-order job', () => {
     assert.deepEqual(
-      getSavedPlaylistSelectionCopy({
-        savedPlaylistCount: 2,
-        selectedPlaylist: playlist,
+      getSavedPlaylistsStatusCopy({
+        isLoading: false,
+        issue: null,
+        savedPlaylistCount: 0,
       }),
       {
-        title: 'Adding loops to Warmups',
+        title: 'No playlists yet',
         message:
-          'Choose a different playlist below any time you want saved loop actions to change destination. Saved tracks can still choose a playlist from More Options on demand.',
-        tone: 'ready',
-      },
-    );
-  });
-
-  it('asks for a destination before Library add actions run', () => {
-    assert.deepEqual(
-      getSavedPlaylistSelectionCopy({
-        savedPlaylistCount: 2,
-        selectedPlaylist: null,
-      }),
-      {
-        title: 'Choose a playlist destination',
-        message:
-          'Select a playlist below for saved loop adds, or open More Options on a saved track to choose a playlist when you need it.',
+          'Create a playlist, then add saved tracks or loops from Library to build a rehearsal running order.',
         tone: 'neutral',
       },
     );
@@ -257,7 +237,7 @@ describe('saved playlist view-model', () => {
         savedSources: [],
       }),
       {
-        body: 'Add saved tracks and loops from Library, then keep this detail surface focused on order and playback intent.',
+        body: null,
         metadataLabel: '0 items • Personal',
         title: 'Warmups',
       },

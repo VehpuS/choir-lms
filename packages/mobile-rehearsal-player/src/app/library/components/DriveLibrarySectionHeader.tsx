@@ -15,19 +15,19 @@ const PRIMARY_TEXT = '#1f1c17';
 const SECONDARY_TEXT = '#5f5647';
 
 export const DriveLibrarySectionHeader = ({
-  body = 'Find supported tracks across My Drive and shared folders, inspect unavailable or unsupported items, and prepare the sources that will later be saved into the app-owned rehearsal library.',
+  body,
   canRefresh,
-  eyebrow = 'Drive discovery',
+  eyebrow = 'Drive',
   isLoading,
   onRefresh,
-  title = 'Browse folders and search for practice tracks',
+  title = 'Browse Drive',
 }: DriveLibrarySectionHeaderProps) => {
   return (
     <View style={styles.sectionHeader}>
       <View style={styles.sectionCopy}>
         <Text style={styles.eyebrow}>{eyebrow}</Text>
         <Text style={styles.sectionTitle}>{title}</Text>
-        <Text style={styles.sectionBody}>{body}</Text>
+        {body ? <Text style={styles.sectionBody}>{body}</Text> : null}
       </View>
       {canRefresh ? (
         <Pressable

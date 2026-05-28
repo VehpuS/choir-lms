@@ -15,7 +15,7 @@ describe('getHomeContinuePracticingCopy', () => {
         savedTrackCount: 2,
       }),
       {
-        body: 'Kyrie Alto.mp3 is still active in the mini-player, and 2 saved rehearsal tracks are ready in Library for loops and playlist work.',
+        body: 'Resume Kyrie Alto.mp3 from the mini-player.',
         title: 'Continue practicing',
       },
     );
@@ -28,7 +28,7 @@ describe('getHomeContinuePracticingCopy', () => {
         savedTrackCount: 0,
       }),
       {
-        body: 'Browse My Drive or shared folders below, then save a track to start building loops and playlists in your personal rehearsal library.',
+        body: 'Browse My Drive or shared folders below, then save a track to start full-track playback, loop capture, and playlists in your personal rehearsal library.',
         title: 'Start your library',
       },
     );
@@ -64,9 +64,16 @@ describe('getSearchScreenSummaryCopy', () => {
 });
 
 describe('getLibraryScreenSummaryCopy', () => {
+  it('guides an empty library toward current playback work instead of future slices', () => {
+    assert.deepEqual(getLibraryScreenSummaryCopy({ savedTrackCount: 0 }), {
+      body: 'Save a track from Home or Search to start full-track playback, loops, and playlists in your rehearsal library.',
+      title: 'Library is ready for your first track',
+    });
+  });
+
   it('points at the dedicated library destination once tracks are saved', () => {
     assert.deepEqual(getLibraryScreenSummaryCopy({ savedTrackCount: 1 }), {
-      body: '1 saved rehearsal track is ready for full-track playback, loop capture, and playlist editing here. Tracks, loops, and playlists now stay grouped inside the same personal library destination.',
+      body: '1 saved rehearsal track is ready for playback, loop capture, and playlist work here. Tracks, loops, and playlists stay grouped inside the same personal library destination.',
       title: 'Your saved practice material lives here',
     });
   });

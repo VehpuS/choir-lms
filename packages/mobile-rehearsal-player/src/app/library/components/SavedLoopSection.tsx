@@ -137,6 +137,8 @@ export const SavedLoopSection = ({
     canMutateLoops &&
     !isLoopMutating &&
     rangeValidation.isValid;
+  const shouldShowStatusCard =
+    isSavedLoopsLoading || statusCopy.tone !== 'ready';
 
   useEffect(() => {
     if (!selectedTrack) {
@@ -205,19 +207,16 @@ export const SavedLoopSection = ({
     <View style={styles.section}>
       <View style={styles.sectionCopy}>
         <Text style={styles.eyebrow}>Saved loops</Text>
-        <Text style={styles.sectionTitle}>Capture named practice segments</Text>
-        <Text style={styles.sectionBody}>
-          Choose Make loop on a saved rehearsal track to open a focused range
-          selector, preview the phrase, and save the segment for direct playback
-          without a persistent builder taking over the library view.
-        </Text>
+        <Text style={styles.sectionTitle}>Saved loops</Text>
       </View>
 
-      <DriveLibraryStatusCard
-        isLoading={isSavedLoopsLoading}
-        loadingLabel="Refreshing saved loops…"
-        statusCopy={statusCopy}
-      />
+      {shouldShowStatusCard ? (
+        <DriveLibraryStatusCard
+          isLoading={isSavedLoopsLoading}
+          loadingLabel="Refreshing saved loops…"
+          statusCopy={statusCopy}
+        />
+      ) : null}
 
       <LoopRangeSelectorSurface
         builderIssue={builderIssue}

@@ -1,5 +1,6 @@
 import { Slider } from '@miblanchard/react-native-slider';
 import { type PlayableItem } from '@org/audio-library-models';
+import { useState } from 'react';
 import {
   Modal,
   Pressable,
@@ -67,6 +68,8 @@ export const LoopRangeSelectorSurface = ({
   selectedTrack,
   startMs,
 }: LoopRangeSelectorSurfaceProps) => {
+  const [isTipsVisible, setIsTipsVisible] = useState(false);
+
   if (!selectedTrack || !isVisible) {
     return null;
   }
@@ -93,7 +96,7 @@ export const LoopRangeSelectorSurface = ({
         <View style={styles.sheet}>
           <View style={styles.headerRow}>
             <View style={styles.headerCopy}>
-              <Text style={styles.eyebrow}>Loop builder</Text>
+              <Text style={styles.eyebrow}>New loop</Text>
               <Text style={styles.title}>{selectedTrack.source.name}</Text>
             </View>
             <Pressable
@@ -108,10 +111,29 @@ export const LoopRangeSelectorSurface = ({
             </Pressable>
           </View>
 
-          <Text style={styles.bodyCopy}>
-            Drag both handles to frame the exact entrance or cutoff, preview the
-            phrase, then save the loop without leaving the library flow.
-          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: isTipsVisible }}
+            onPress={() => {
+              setIsTipsVisible((currentValue) => !currentValue);
+            }}
+            style={({ pressed }) => [
+              styles.helpToggle,
+              pressed ? styles.buttonPressed : undefined,
+            ]}
+          >
+            <Text style={styles.helpToggleLabel}>
+              {isTipsVisible ? 'Hide loop tips' : 'Show loop tips'}
+            </Text>
+          </Pressable>
+
+          {isTipsVisible ? (
+            <View style={styles.helpCard}>
+              <Text style={styles.helpText}>
+                Move the handles, preview the phrase, then save the loop.
+              </Text>
+            </View>
+          ) : null}
 
           <View style={styles.rangeCard}>
             <View style={styles.rangeSummaryRow}>
@@ -266,10 +288,27 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
-  bodyCopy: {
+  helpToggle: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: SECONDARY_ACTION_BACKGROUND,
+  },
+  helpToggleLabel: {
+    color: PRIMARY_TEXT,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  helpCard: {
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: INPUT_BACKGROUND,
+  },
+  helpText: {
     color: SECONDARY_TEXT,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
   },
   rangeCard: {
     gap: 12,

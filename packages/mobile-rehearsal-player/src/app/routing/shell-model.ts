@@ -57,22 +57,19 @@ export const SHELL_DESTINATIONS: ShellDestination[] = [
     key: 'home',
     label: 'Home',
     title: 'Practice home base',
-    description:
-      'Start from Drive discovery, keep the Google connection visible, and stay close to the active rehearsal session without mixing in the full saved library.',
+    description: 'Browse Drive, save tracks, and jump back into the current session.',
   },
   {
     key: 'search',
     label: 'Search',
     title: 'Search rehearsal audio',
-    description:
-      'Search across accessible rehearsal audio, scan results quickly, and save promising tracks into Library without leaving the result flow.',
+    description: 'Find tracks in My Drive and shared folders.',
   },
   {
     key: 'library',
     label: 'Library',
     title: 'Your rehearsal library',
-    description:
-      'Keep saved tracks and loops separate from discovery so personal practice material stays focused and playback actions remain close at hand.',
+    description: 'Play saved tracks, loops, and playlists.',
   },
 ];
 

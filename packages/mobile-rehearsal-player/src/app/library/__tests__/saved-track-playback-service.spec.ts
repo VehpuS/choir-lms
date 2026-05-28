@@ -135,12 +135,10 @@ describe('saved track playback service', () => {
       },
     });
 
-    assert.deepEqual([...listeners.keys()], [
-      'remote-play',
-      'remote-pause',
-      'remote-next',
-      'remote-previous',
-    ]);
+    assert.deepEqual(
+      [...listeners.keys()],
+      ['remote-play', 'remote-pause', 'remote-next', 'remote-previous'],
+    );
 
     await listeners.get('remote-next')?.();
     await listeners.get('remote-previous')?.();

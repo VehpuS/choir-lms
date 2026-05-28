@@ -1,11 +1,9 @@
 import { ScrollView, StyleSheet } from 'react-native';
 import type { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback';
 
-import { SummaryCard } from '../components/SummaryCard';
 import { SavedRehearsalLibrarySection } from '../library/components/SavedRehearsalLibrarySection';
 import type { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
 import { appTheme } from '../utils/theme';
-import { getLibraryScreenSummaryCopy } from './screen-copy';
 
 type SavedTrackPlaybackController = Pick<
   ReturnType<typeof useSavedTrackPlayback>,
@@ -30,21 +28,12 @@ export const LibraryScreen = ({
   libraryController,
   playback,
 }: LibraryScreenProps) => {
-  const summaryCopy = getLibraryScreenSummaryCopy({
-    savedTrackCount: libraryController.savedLibrary.trackCount,
-  });
-
   return (
     <ScrollView
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       style={styles.screen}
     >
-      <SummaryCard
-        body={summaryCopy.body}
-        eyebrow="Your library"
-        title={summaryCopy.title}
-      />
       <SavedRehearsalLibrarySection
         activePlayableItem={playback.activePlayableItem}
         activePlaylistSession={playback.activePlaylistSession}

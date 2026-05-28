@@ -2,7 +2,6 @@ import { StyleSheet, View } from 'react-native';
 
 import type { useRehearsalLibraryScreenController } from '../hooks/use-rehearsal-library-screen-controller';
 import { DriveLibrarySearchPanel } from './DriveLibrarySearchPanel';
-import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
 import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 
@@ -15,14 +14,6 @@ export const DriveSearchResultsPanel = ({
 }: DriveSearchResultsPanelProps) => {
   return (
     <View style={styles.section}>
-      <DriveLibrarySectionHeader
-        body="Search across the accessible rehearsal catalog, then save matching tracks straight into Library without dropping the current query."
-        canRefresh={false}
-        eyebrow="Search"
-        isLoading={false}
-        onRefresh={() => undefined}
-        title="Low-friction search belongs on its own screen"
-      />
       <DriveLibrarySearchPanel
         canSearch={controller.search.canSearch}
         isLoading={controller.search.isLoading}

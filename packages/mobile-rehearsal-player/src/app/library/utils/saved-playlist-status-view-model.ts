@@ -51,7 +51,7 @@ export const getSavedPlaylistsStatusCopy = (options: {
     return {
       title: 'No playlists yet',
       message:
-        'Create a playlist, then add saved tracks and loops to shape a repeatable rehearsal set.',
+        'Create a playlist, then add saved tracks or loops from Library to build a rehearsal running order.',
       tone: 'neutral',
     };
   }

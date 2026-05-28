@@ -127,10 +127,6 @@ export const SavedTrackPlaylistMenuSurface = ({
           {step === 'selector' ? (
             <>
               <Text style={styles.dialogTitle}>Add to playlist</Text>
-              <Text style={styles.dialogBody}>
-                Choose a rehearsal set for {menuCopy.title} without leaving
-                Library.
-              </Text>
 
               {playlists.length > 0 ? (
                 <ScrollView
@@ -165,10 +161,7 @@ export const SavedTrackPlaylistMenuSurface = ({
               ) : (
                 <View style={styles.emptyStateCard}>
                   <Text style={styles.emptyStateTitle}>No playlists yet</Text>
-                  <Text style={styles.emptyStateBody}>
-                    Create a playlist to keep this saved track in a rehearsal
-                    running order.
-                  </Text>
+                  <Text style={styles.emptyStateBody}>Create one to add this track.</Text>
                 </View>
               )}
 
@@ -204,9 +197,6 @@ export const SavedTrackPlaylistMenuSurface = ({
           ) : (
             <>
               <Text style={styles.dialogTitle}>New playlist</Text>
-              <Text style={styles.dialogBody}>
-                Name the playlist, then save {menuCopy.title} as its first item.
-              </Text>
               <TextInput
                 autoCapitalize="words"
                 autoCorrect={false}

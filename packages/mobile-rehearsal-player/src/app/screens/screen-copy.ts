@@ -4,20 +4,20 @@ export const getHomeContinuePracticingCopy = (options: {
 }) => {
   if (options.activePlayableItemTitle) {
     return {
-      body: `${options.activePlayableItemTitle} is still active in the mini-player, and ${options.savedTrackCount} saved rehearsal ${options.savedTrackCount === 1 ? 'track is' : 'tracks are'} ready in Library for loops and playlist work.`,
+      body: `Resume ${options.activePlayableItemTitle} from the mini-player.`,
       title: 'Continue practicing',
     };
   }
 
   if (options.savedTrackCount === 0) {
     return {
-      body: 'Browse My Drive or shared folders below, then save a track to start building loops and playlists in your personal rehearsal library.',
+      body: 'Browse My Drive or shared folders below, then save a track to start full-track playback, loop capture, and playlists in your personal rehearsal library.',
       title: 'Start your library',
     };
   }
 
   return {
-    body: `${options.savedTrackCount} saved rehearsal ${options.savedTrackCount === 1 ? 'track is' : 'tracks are'} waiting in Library for full-track playback, loop capture, and upcoming playlist management.`,
+    body: `${options.savedTrackCount} saved rehearsal ${options.savedTrackCount === 1 ? 'track is' : 'tracks are'} waiting in Library for full-track playback, loop capture, and playlist playback.`,
     title: 'Continue practicing',
   };
 };
@@ -51,13 +51,13 @@ export const getLibraryScreenSummaryCopy = (options: {
 }) => {
   if (options.savedTrackCount === 0) {
     return {
-      body: 'Save a track from Home or Search to start building loops and the playlist-ready library this app is growing toward.',
+      body: 'Save a track from Home or Search to start full-track playback, loops, and playlists in your rehearsal library.',
       title: 'Library is ready for your first track',
     };
   }
 
   return {
-    body: `${options.savedTrackCount} saved rehearsal ${options.savedTrackCount === 1 ? 'track is' : 'tracks are'} ready for full-track playback, loop capture, and playlist editing here. Tracks, loops, and playlists now stay grouped inside the same personal library destination.`,
+    body: `${options.savedTrackCount} saved rehearsal ${options.savedTrackCount === 1 ? 'track is' : 'tracks are'} ready for playback, loop capture, and playlist work here. Tracks, loops, and playlists stay grouped inside the same personal library destination.`,
     title: 'Your saved practice material lives here',
   };
 };

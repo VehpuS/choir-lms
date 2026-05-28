@@ -157,6 +157,7 @@ export const SavedPlaylistSection = ({
     ? (getPlaylistPlaybackCurrentItem(selectedPlaybackSession)
         ?.playlistEntryId ?? null)
     : null;
+  const shouldShowStatusCard = isLoading || statusCopy.tone !== 'ready';
 
   const persistSelectedPlaylist = async (
     buildNextPlaylist: (playlist: Playlist) => Playlist,
@@ -347,22 +348,17 @@ export const SavedPlaylistSection = ({
       {!isDetailVisible ? (
         <View style={styles.sectionCopy}>
           <Text style={styles.eyebrow}>Saved playlists</Text>
-          <Text style={styles.sectionTitle}>
-            Build rehearsal running orders
-          </Text>
-          <Text style={styles.sectionBody}>
-            Create playlists here, then let Library rows add saved tracks and
-            loops before opening a dedicated playlist detail surface for order
-            and playback.
-          </Text>
+          <Text style={styles.sectionTitle}>Playlists</Text>
         </View>
       ) : null}
 
-      <DriveLibraryStatusCard
-        isLoading={isLoading}
-        loadingLabel="Refreshing saved playlists…"
-        statusCopy={statusCopy}
-      />
+      {shouldShowStatusCard ? (
+        <DriveLibraryStatusCard
+          isLoading={isLoading}
+          loadingLabel="Refreshing saved playlists…"
+          statusCopy={statusCopy}
+        />
+      ) : null}
 
       {isDetailVisible ? (
         <SavedPlaylistDetailCard

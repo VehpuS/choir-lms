@@ -49,10 +49,7 @@ const getSavedTrackPlaybackRemoteEvents = () => {
     pause: Event.RemotePause,
     next: Event.RemoteNext,
     previous: Event.RemotePrevious,
-  } satisfies Record<
-    SavedTrackPlaybackRemoteCommand,
-    TrackPlayerEventName
-  >;
+  } satisfies Record<SavedTrackPlaybackRemoteCommand, TrackPlayerEventName>;
 };
 
 export const registerSavedTrackPlaybackRemoteEventListeners = (
