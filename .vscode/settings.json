@@ -182,6 +182,18 @@
     "/^cd /Users/vehpus/git/choir-lms && npm exec -- nx test mobile-rehearsal-player --outputStyle=static$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm --version && node --version$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx format:check --base=origin/main --head=HEAD$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx affected -t lint test build typecheck --base=origin/main --head=HEAD --outputStyle=static$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }
