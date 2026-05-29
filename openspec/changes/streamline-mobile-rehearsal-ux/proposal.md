@@ -11,6 +11,7 @@ The current mobile rehearsal player already delivers core playback and playlist 
 - Make loops track-context-first (managed from their parent tracks) while allowing optional promotion to first-class library objects in user-managed folders.
 - Add practical organization tools for saved library content: filters, tags, and optional folders.
 - Improve consistency and accessibility of icon semantics, touch targets, feedback, and empty-state guidance across playback and library surfaces.
+- Formalize a reusable row-action architecture (explicit inline-vs-menu placement, shared overflow trigger, shared menu/dialog shells, and shared interaction style tokens) so consistency improvements can ship safely across multiple commits.
 
 ## Capabilities
 

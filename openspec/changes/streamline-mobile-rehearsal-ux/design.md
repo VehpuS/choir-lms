@@ -318,6 +318,22 @@ Alternatives considered:
 
 Recents and Search should bias toward immediate action over explanatory copy when users already have saved content.
 
+### 5. Standardize overflow actions with a shared menu surface
+
+Adopt one reusable overflow action pattern across library/search cards instead of one-off menu implementations.
+
+Implemented delta in this change:
+
+- Shared `OptionsMenuSheet` now powers playlist management menus and track-context menu entry points.
+- Playlist list cards and playlist detail cards use pinned top-right vertical-ellipsis triggers for overflow actions.
+- `DriveLibrarySourceGroup` now uses the same overflow trigger and routes secondary/destructive actions (for example remove) into the shared menu.
+
+Follow-on rollout direction:
+
+- Extend the same overflow grouping to loop row actions when queue-acceleration actions (`Play next`, `Add to Up Next`) are introduced.
+- Keep one primary inline action per row when useful for speed (for example immediate playback), and place lower-frequency or destructive controls in the overflow menu.
+- Keep icon semantics and touch target sizing aligned with playlist/search/library patterns as additional surfaces adopt this UI.
+
 Alternatives considered:
 
 - Keep dense explanatory cards universally visible: rejected because repeat users need speed more than onboarding copy.
@@ -400,6 +416,34 @@ This slice will align icon behavior, accessibility labels, and state visibility 
 Alternatives considered:
 
 - Keep current per-surface icon conventions: rejected due to learnability cost.
+
+### 14. Replace heuristic action grouping with an explicit placement contract
+
+Row-action surfaces should classify actions using explicit placement metadata (`inline` vs `menu`) rather than label- or tone-derived heuristics so behavior remains stable as labels, localization, and future actions evolve.
+
+Implementation guidance:
+
+- Add backward-compatible fallback logic initially, then migrate each caller to explicit placement metadata.
+- Keep one primary quick action inline where speed matters (for example playback) and route secondary/destructive actions into overflow.
+- Validate placement behavior with focused tests before removing fallback logic.
+
+Alternatives considered:
+
+- Keep heuristic placement rules: rejected because action placement can change unintentionally when copy or tone changes.
+
+### 15. Introduce shared UI primitives for overflow and modal consistency
+
+To reduce visual drift while preserving existing behavior, extract shared primitives for recurring interaction surfaces.
+
+Implementation guidance:
+
+- Shared overflow trigger primitive: one top-right vertical-ellipsis button component with consistent accessibility, hit target, and pressed/disabled feedback.
+- Shared dialog-card shell primitive: reusable centered modal scaffold for rename/create/select dialogs, with existing content and actions preserved.
+- Shared interaction style tokens: centralize repeated card, button, chip, and disabled/pressed tokens used by playlist, source, and menu surfaces.
+
+Alternatives considered:
+
+- Continue duplicating per-surface style primitives: rejected because duplication increases drift risk and slows iterative UI updates.
 
 ## Risks / Trade-offs
 

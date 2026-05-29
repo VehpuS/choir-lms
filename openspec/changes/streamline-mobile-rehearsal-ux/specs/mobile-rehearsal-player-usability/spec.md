@@ -89,3 +89,55 @@ The system SHALL keep transport, list-row, and menu interactions touch-friendly 
 
 - **WHEN** users interact with playback transport, list-row actions, and menu affordances on phone-sized screens
 - **THEN** the system provides touch target sizing and press feedback that support fast one-handed use
+
+### Requirement: Row-level secondary actions use a shared overflow menu pattern
+
+The system SHALL use a consistent overflow-menu interaction for secondary and destructive row actions across playlist and source-list surfaces.
+
+#### Scenario: Playlist cards and detail views use a fixed top-right overflow trigger
+
+- **WHEN** a user views playlist list cards or playlist detail
+- **THEN** each surface exposes a fixed top-right vertical-ellipsis trigger that opens the shared options menu for non-primary management actions
+
+#### Scenario: Saved source rows keep primary actions inline and move secondary/destructive actions into overflow
+
+- **WHEN** a user views saved source rows in Library or Search contexts
+- **THEN** the system keeps playback-first actions inline and places lower-frequency or destructive actions (for example remove) in the shared overflow menu
+
+#### Scenario: New row-action capabilities adopt the same overflow grouping rules
+
+- **WHEN** new row-level actions are added in this change (for example queue acceleration actions)
+- **THEN** those actions follow the same shared overflow menu pattern unless they are designated as the row's primary quick action
+
+### Requirement: Row-action placement remains explicit and stable across UI updates
+
+The system SHALL determine row-action placement from explicit action metadata so action location stays stable when copy, tone, or localization changes.
+
+#### Scenario: Explicit placement metadata controls action location
+
+- **WHEN** a row action is configured with explicit placement metadata (`inline` or `menu`)
+- **THEN** the system places that action in the requested location regardless of display label changes
+
+#### Scenario: Fallback behavior remains backward-compatible during migration
+
+- **WHEN** legacy row actions do not yet provide explicit placement metadata
+- **THEN** the system applies backward-compatible placement behavior until migration is complete
+
+#### Scenario: Post-migration behavior no longer depends on heuristic labels
+
+- **WHEN** all migrated row-action callers provide explicit placement metadata
+- **THEN** row-action placement no longer depends on label-based heuristics
+
+### Requirement: Shared row-action primitives preserve consistency without reducing usability
+
+The system SHALL use shared overflow-trigger and dialog-shell primitives so related surfaces remain visually and behaviorally consistent without reducing access to primary rehearsal actions.
+
+#### Scenario: Overflow trigger affordance is consistent across row-action surfaces
+
+- **WHEN** playlist, source, or loop rows expose overflow actions
+- **THEN** each surface uses a shared top-right vertical-ellipsis trigger with consistent hit target sizing, accessibility labeling, and pressed/disabled feedback
+
+#### Scenario: Shared dialog shell keeps existing workflow semantics intact
+
+- **WHEN** rename/create/select flows adopt a shared dialog-card shell
+- **THEN** existing workflow steps, confirmation actions, and cancellation behavior remain functionally unchanged
