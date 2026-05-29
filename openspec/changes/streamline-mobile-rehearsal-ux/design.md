@@ -4,11 +4,111 @@ The mobile rehearsal player currently satisfies the MVP contract for discovery, 
 
 The product intent for this iteration is to improve speed-to-rehearsal without destabilizing playback correctness. The architecture already separates transport logic from UI state, so this iteration should remain UI-forward and additive, with minimal queue or domain changes.
 
+## Current IA Baseline (Task 1.1)
+
+Current top-level tabs are ordered as Home, Search, and Library.
+In this change, the Home destination is renamed to Recents to match its optional acceleration role.
+
+### Home (to be renamed Recents)
+
+- Hero and current app status summary: current Home tab root (`HomeScreen` hero block), which will be relabeled Recents.
+- Continue practicing shortcut (when an active item exists): current Home tab summary card (`SummaryCard`), which will move under Recents label.
+- Google Drive discovery panel container: current Home tab (`DriveDiscoveryPanel`), which will be relocated per target IA.
+- Drive root switching (My Drive vs Shared): Home -> `DriveLibraryRootSelector`.
+- Drive folder drill-down: Home -> `DriveFolderGroup` row tap.
+- Drive breadcrumbs and jump navigation: Home -> `DriveLibraryBreadcrumbs`.
+- Drive browse status and unavailable/support messaging: Home -> `DriveLibraryStatusCard` and unavailable source group.
+- Save/Remove source action from Drive browse list: Home -> playable source rows (`DriveLibrarySourceGroup` with `getSourceAction`).
+
+### Search
+
+- Drive search query input and submit/clear flow: Search tab (`DriveLibrarySearchPanel`).
+- Drive search result list (playable + unavailable): Search tab (`DriveSearchResultsPanel` source groups).
+- Save/Remove source action from search results: Search tab source rows (`DriveLibrarySourceGroup` with `getSourceAction`).
+- Search status/issue/loading messaging for Drive context: Search tab (`DriveLibraryStatusCard` in search panel).
+
+### Library
+
+- Saved tracks list and playback-first row actions: Library tab (`SavedRehearsalLibrarySection` -> `DriveLibrarySourceGroup`).
+- Remove saved track action: Library tab track row action (`Remove`).
+- Saved loops list and loop playback controls: Library tab (`SavedLoopSection`).
+- Loop creation entry point from saved track row: Library tab track row action (`Make loop`, opens loop builder prep).
+- Loop save/remove flows: Library tab (`SavedLoopSection` + saved loop handlers).
+- Playlist browse cards and detail entry: Library tab (`SavedPlaylistCardsList` to `SavedPlaylistSection`).
+- Playlist playback start/toggle from playlist surfaces: Library tab (`SavedPlaylistSection` -> `togglePlaylistPlayback`).
+- Add track to playlist from row "more options" menu: Library tab (`SavedTrackPlaylistMenuSurface`).
+
+### Cross-Surface / Shell-Level
+
+- Top-level tab switching: shell tab bar (`ShellTabBar` with current destinations Home/Search/Library, target label Recents/Search/Library).
+- Session/account actions (authorize/clear Drive auth): header menu (`DriveSessionMenu`).
+- Mini-player persistence across tab switches: bottom dock mini-player (`MobileShell`).
+- Now Playing surface entry point: tap mini-player body.
+- Queue/Up Next surface entry point: playback surface toggle from now playing view (`PlaybackSurface` queue surface).
+- Global playback transport (play/pause/seek/skip/volume): playback surface controls wired from `MobileShell` callbacks.
+
+This baseline map is the non-regression reference for IA reorder work and feature continuity checks in section 6 validation tasks.
+
+## Target IA Arrangement (Task 1.2)
+
+Target top-level tabs are ordered as Library, Search, and Recents.
+
+### Library Tab (primary, rehearsal-first)
+
+Section order within Library:
+
+1. Library search entry (app-owned corpus only)
+2. Filter and organization controls (entity type, availability, tags, optional folders)
+3. Saved playlists quick-access cards
+4. Saved tracks list (playback-first row actions)
+5. Saved loops list (parent-track provenance visible)
+
+Placement rules:
+
+- App-library search is anchored at the top of Library as a first-class entry point and never mixed with raw Drive discovery results.
+- Playlist, track, and loop rows retain direct playback affordances and lightweight management actions.
+
+### Search Tab (Drive discovery-first)
+
+Section order within Search:
+
+1. Drive context header (active corpus label + scope chip)
+2. Drive search input and recent queries
+3. Drive root selector (My Drive / Shared) and current-scope indicator
+4. Breadcrumbs for current folder path
+5. Search results (playable first, unavailable grouped second)
+
+Placement rules:
+
+- Drive search remains first-class in this tab and is explicitly labeled as Google Drive discovery.
+- Scope behavior is explicit: users can search current folder scope or broader Drive scope with visible state.
+- Drive browse/navigation controls (root switching, folder path, breadcrumbs) stay available in the same surface as Drive search.
+
+### Recents Tab (optional acceleration)
+
+Section order within Recents:
+
+1. Continue rehearsal shortcut (resume current or most recent context)
+2. Compact recents module
+3. Optional quick shortcuts (for example popular tags)
+4. Concise fallback guidance for empty-history state
+
+Placement rules:
+
+- Recents is never required to access Drive discovery or app-library search.
+- Recents modules remain compact and skimmable; discovery and library workflows remain fully accessible from Search and Library tabs directly.
+
+### Cross-Tab Placement Guarantees
+
+- Google Drive browse/navigation placement: Search tab contains root selector, breadcrumbs, and folder-aware context controls adjacent to Drive discovery search.
+- Drive search placement: Search tab top section with explicit Drive labeling and scope indicators.
+- App-library search placement: Library tab top section with organization filters and no Drive-result mixing.
+
 ## Goals / Non-Goals
 
 **Goals:**
 
-- Reduce tap count and decision overhead for common rehearsal actions across Home, Search, Library, playlist detail, and queue.
+- Reduce tap count and decision overhead for common rehearsal actions across Recents, Search, Library, playlist detail, and queue.
 - Distinguish source discovery search (Google Drive scoped/global) from app-library search so users understand which corpus is being queried.
 - Improve interaction affordances so list manipulation and playback actions feel closer to modern mobile music app standards.
 - Add low-risk usability wins that increase daily-use efficiency (resume, add-next actions, stronger defaults, and better feedback).
@@ -22,7 +122,7 @@ The product intent for this iteration is to improve speed-to-rehearsal without d
 - Introduce offline mode, collaboration, or new external integrations.
 - Replace the shell architecture with new navigation frameworks.
 - Redesign brand/theme foundations beyond targeted hierarchy and density refinements.
-- Make Home mandatory for core rehearsal flows; all essential discovery and library actions should remain available without Home.
+- Make Recents mandatory for core rehearsal flows; all essential discovery and library actions should remain available without Recents.
 
 ## Decisions
 
@@ -55,7 +155,7 @@ Alternatives considered:
 
 ### 4. Tighten hierarchy by reducing non-critical copy and surface weight in steady-state screens
 
-Home and Search should bias toward immediate action over explanatory copy when users already have saved content.
+Recents and Search should bias toward immediate action over explanatory copy when users already have saved content.
 
 Alternatives considered:
 
@@ -71,18 +171,18 @@ Alternatives considered:
 - Keep one combined search surface over all sources: rejected because mixed results hide ownership context and recovery paths.
 - Keep separate surfaces but without explicit scope state: rejected because users cannot reliably predict result sets.
 
-### 6. Treat Home as optional acceleration, not a required workflow step
+### 6. Rename Home to Recents and keep it optional, not a required workflow step
 
-Home can provide recents and shortcuts (for example recent playback and popular tags), but the IA should not depend on Home for core tasks.
+Recents provides recent-session shortcuts (for example recent playback and popular tags), but the IA should not depend on Recents for core tasks.
 
 Alternatives considered:
 
-- Make Home the required entry for discovery and resume: rejected because it adds an avoidable navigation hop.
-- Remove Home entirely in this slice: rejected because there is still value in an optional dashboard for frequent users.
+- Keep Home naming even when not default: rejected because label clarity drops once the tab is primarily recency shortcuts.
+- Remove the Recents tab entirely in this slice: rejected because there is still value in an optional acceleration surface for frequent users.
 
-### 7. Validate compact Home composition with mockups before implementation
+### 7. Validate compact Recents composition with mockups before implementation
 
-Home should surface multiple useful shortcut modules (for example recent rehearsal items and popular tags) only when the layout remains compact and scannable on representative phone sizes. A mockup review checkpoint is required before implementation.
+Recents should surface multiple useful shortcut modules (for example recent rehearsal items and popular tags) only when the layout remains compact and scannable on representative phone sizes. A mockup review checkpoint is required before implementation.
 
 Alternatives considered:
 
@@ -154,7 +254,7 @@ Alternatives considered:
 ## Migration Plan
 
 1. Implement shell and list-hierarchy refinements that do not change playback semantics.
-2. Produce compact Home mockups that include multiple shortcut modules and complete a design sign-off checkpoint.
+2. Produce compact Recents mockups that include multiple shortcut modules and complete a design sign-off checkpoint.
 3. Add quick-win actions and defaults behind current UI-local state models.
 4. Add explicit dual-search context and scoping behavior (Drive search vs library search) with clear active-state indicators in both surfaces.
 5. Add organization baseline features (tags, filters, lightweight folders) while preserving existing library behavior.
@@ -164,4 +264,4 @@ Alternatives considered:
 
 ## Open Questions
 
-- None currently. Decisions for queue actions, reorder interactions, Home composition, search entry points, and organization baseline are resolved in this design.
+- None currently. Decisions for queue actions, reorder interactions, Recents composition and naming, search entry points, and organization baseline are resolved in this design.

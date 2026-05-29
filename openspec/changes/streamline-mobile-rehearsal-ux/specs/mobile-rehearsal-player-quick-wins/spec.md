@@ -19,24 +19,24 @@ The system SHALL provide quick queue actions from track-focused contexts so user
 - **WHEN** a user runs an ad-hoc queue quick action
 - **THEN** the system applies the queue update without interrupting current playback
 
-### Requirement: Home provides fast recent rehearsal entry points
+### Requirement: Recents provides fast recent rehearsal entry points
 
 The system SHALL provide direct shortcuts to recent rehearsal context so users can restart common practice flows in one step.
 
-#### Scenario: Resume last rehearsal source from Home
+#### Scenario: Resume last rehearsal source from Recents
 
 - **WHEN** a user has recent playback history
-- **THEN** Home shows a direct shortcut to resume the most relevant recent rehearsal item or playlist context
+- **THEN** Recents shows a direct shortcut to resume the most relevant recent rehearsal item or playlist context
 
 #### Scenario: Empty recent context falls back to discovery guidance
 
 - **WHEN** no recent rehearsal context exists
-- **THEN** Home shows a concise guidance path to discovery and saving the first practice item
+- **THEN** Recents shows a concise guidance path to discovery and saving the first practice item
 
-#### Scenario: Home can surface shortcut metadata such as popular tags
+#### Scenario: Recents can surface shortcut metadata such as popular tags
 
-- **WHEN** Home is enabled as an acceleration surface
-- **THEN** the system may show shortcut metadata such as popular tags without making Home a required step for core discovery or playback
+- **WHEN** Recents is enabled as an acceleration surface
+- **THEN** the system may show shortcut metadata such as popular tags without making Recents a required step for core discovery or playback
 
 ### Requirement: Loop creation uses smart naming defaults
 

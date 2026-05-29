@@ -19,18 +19,18 @@ The system SHALL present playlist detail as playback-first by default, with dest
 - **WHEN** a user enters playlist edit mode
 - **THEN** the system supports drag-and-drop reordering and explicit icon-based move controls while keeping destructive controls visually distinct from playback controls
 
-### Requirement: Home and Search optimize for immediate rehearsal actions
+### Requirement: Recents and Search optimize for immediate rehearsal actions
 
-The system SHALL reduce steady-state interface weight on Home and Search so users can resume playback, find tracks, and take primary actions with minimal scanning.
+The system SHALL reduce steady-state interface weight on Recents and Search so users can resume playback, find tracks, and take primary actions with minimal scanning.
 
-#### Scenario: Home remains an optional acceleration surface
+#### Scenario: Recents remains an optional acceleration surface
 
-- **WHEN** Home is present in navigation
-- **THEN** the system treats Home as optional for recents and shortcut actions and keeps core discovery and library actions available without requiring Home as an entry step
+- **WHEN** Recents is present in navigation
+- **THEN** the system treats Recents as optional for recents and shortcut actions and keeps core discovery and library actions available without requiring Recents as an entry step
 
-#### Scenario: Home promotes immediate resume or next action when used
+#### Scenario: Recents promotes immediate resume or next action when used
 
-- **WHEN** a user with recent or active rehearsal context opens Home
+- **WHEN** a user with recent or active rehearsal context opens Recents
 - **THEN** the system prioritizes a direct resume or continue-practice action before secondary explanatory content
 
 #### Scenario: Search prioritizes result actionability
