@@ -18,6 +18,7 @@ import {
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
+  queuePlayableItemAsNext,
   updatePlaylistPlaybackRepeatMode,
   type PlaylistPlaybackIssue,
   type PlaylistPlaybackSession,
@@ -364,6 +365,15 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
     async togglePlayableItemPlayback(playableItem: PlayableItem) {
       activePlaylistContextRef.current = null;
       await playbackController.togglePlayableItemPlayback(playableItem);
+    },
+    queuePlayableItemNext(playableItem: PlayableItem) {
+      setActivePlaylistSession((currentSession) => {
+        if (!currentSession) {
+          return currentSession;
+        }
+
+        return queuePlayableItemAsNext(currentSession, playableItem);
+      });
     },
     async skipToNextItem() {
       await playbackController.playNextQueueItem();

@@ -176,6 +176,29 @@ export const updatePlaylistPlaybackRepeatMode = (
   };
 };
 
+export const queuePlayableItemAsNext = (
+  session: PlaylistPlaybackSession,
+  playableItem: PlayableItem,
+): PlaylistPlaybackSession => {
+  const insertionIndex = Math.min(
+    session.currentIndex + 1,
+    session.queue.items.length,
+  );
+
+  return {
+    ...session,
+    queue: {
+      ...session.queue,
+      items: [
+        ...session.queue.items.slice(0, insertionIndex),
+        playableItem,
+        ...session.queue.items.slice(insertionIndex),
+      ],
+    },
+    requestedItemCount: session.requestedItemCount + 1,
+  };
+};
+
 export const resolvePlaylistPlaybackAdvance = (
   session: PlaylistPlaybackSession,
 ): {

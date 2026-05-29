@@ -80,6 +80,7 @@ type SavedRehearsalLibrarySectionProps = {
   selectedTrack: PlayableItem | null;
   setSelectedLoopSourceId: (sourceId: string | null) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
+  queuePlayableItemNext: (playableItem: PlayableItem) => void;
   togglePlaylistPlayback: (options: {
     loops: NamedLoop[];
     mode: 'ordered' | 'shuffle';
@@ -122,6 +123,7 @@ export const SavedRehearsalLibrarySection = ({
   selectedTrack,
   setSelectedLoopSourceId,
   togglePlayableItemPlayback,
+  queuePlayableItemNext,
   togglePlaylistPlayback,
   toggleSourcePlayback,
 }: SavedRehearsalLibrarySectionProps) => {
@@ -344,6 +346,7 @@ export const SavedRehearsalLibrarySection = ({
                 pendingLoopBuilderSourceId !== null;
               const isPreparingLoopSource =
                 pendingLoopBuilderSourceId === source.id;
+              const canQueueAsNext = activePlaylistSession !== null;
 
               return [
                 {
@@ -368,6 +371,20 @@ export const SavedRehearsalLibrarySection = ({
                     openLoopBuilderForSource(source);
                   },
                 },
+                ...(canQueueAsNext
+                  ? [
+                      {
+                        disabled:
+                          isSavedLibraryMutating ||
+                          source.availability.status !== 'available',
+                        label: 'Play next',
+                        onPress: () => {
+                          queuePlayableItemNext(trackPlayableItem);
+                        },
+                        variant: 'menu' as const,
+                      },
+                    ]
+                  : []),
                 {
                   accessibilityLabel: 'More options',
                   disabled:
@@ -421,6 +438,7 @@ export const SavedRehearsalLibrarySection = ({
               });
             }}
             canMutateLoops={canMutateLoops}
+            canQueueAsNext={activePlaylistSession !== null}
             isPlaybackPreparing={isPlaybackPreparing}
             isSavedLoopsLoading={isSavedLoopsLoading}
             pendingLoopId={pendingLoopId}
@@ -437,6 +455,7 @@ export const SavedRehearsalLibrarySection = ({
             saveLoop={saveLoop}
             selectedTrack={selectedTrack}
             togglePlayableItemPlayback={togglePlayableItemPlayback}
+            queuePlayableItemNext={queuePlayableItemNext}
           />
         </>
       ) : null}

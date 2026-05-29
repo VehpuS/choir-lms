@@ -18,10 +18,10 @@ import {
   getSavedPlaylistDetailInitialState,
   isSavedPlaylistEntryPlayable,
   moveSavedPlaylistDetailEntry,
-  resolveSavedPlaylistDetailEdgeAutoscrollDelta,
-  resolveSavedPlaylistDetailDragTargetIndex,
   reduceSavedPlaylistDetailState,
   removeSavedPlaylistDetailEntry,
+  resolveSavedPlaylistDetailDragTargetIndex,
+  resolveSavedPlaylistDetailEdgeAutoscrollDelta,
   restoreSavedPlaylistDetailEntry,
 } from '../utils/saved-playlist-detail-view-model.js';
 import {
@@ -31,6 +31,7 @@ import {
   getPlaylistPlaybackSessionSummary,
   getPlaylistQueueModeLabel,
   getPlaylistRepeatModeLabel,
+  queuePlayableItemAsNext,
   resolvePlaylistPlaybackAdvance,
   resolvePlaylistPlaybackRewind,
   updatePlaylistPlaybackRepeatMode,
@@ -671,6 +672,55 @@ describe('saved playlist view-model', () => {
     assert.equal(offRewind.previousSession.hasCompleted, false);
     assert.equal(repeatAllRewind.previousPlayableItem?.id, 'loop:loop-1');
     assert.equal(repeatAllRewind.previousSession.currentIndex, 1);
+  });
+
+  it('inserts Play next items directly after the active queue item', () => {
+    const queuePlaylist = addLoopToPlaylist(
+      addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-05-12T00:00:00.000Z',
+          name: 'Warmups',
+          ownerId: 'user-1',
+        }),
+        PLAYABLE_SOURCE,
+        '2026-05-12T00:01:00.000Z',
+      ),
+      SAVED_LOOP,
+      '2026-05-12T00:02:00.000Z',
+    );
+    const builtSession = buildPlaylistPlaybackSession({
+      loops: [SAVED_LOOP],
+      mode: 'ordered',
+      playlist: queuePlaylist,
+      repeatMode: 'off',
+      sources: [PLAYABLE_SOURCE],
+    }).session;
+
+    if (!builtSession) {
+      throw new Error('Expected a playlist playback session.');
+    }
+
+    const currentItem = getPlaylistPlaybackCurrentItem(builtSession);
+
+    if (!currentItem) {
+      throw new Error('Expected an active queue item.');
+    }
+
+    const insertedTrack = {
+      ...currentItem,
+      id: 'track:drive:soprano-line',
+      sourceId: 'drive:soprano-line',
+      title: 'Soprano Line.mp3',
+      playlistEntryId: undefined,
+    };
+
+    const queuedSession = queuePlayableItemAsNext(builtSession, insertedTrack);
+
+    assert.equal(queuedSession.currentIndex, builtSession.currentIndex);
+    assert.equal(queuedSession.queue.items[0]?.id, 'track:drive:alto-line');
+    assert.equal(queuedSession.queue.items[1]?.id, 'track:drive:soprano-line');
+    assert.equal(queuedSession.queue.items[2]?.id, 'loop:loop-1');
+    assert.equal(queuedSession.requestedItemCount, 3);
   });
 
   it('keeps ordered and shuffled playback controls as fresh start actions', () => {

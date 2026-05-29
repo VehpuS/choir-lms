@@ -30,6 +30,7 @@ type SavedLoopSectionProps = {
   activePlayableItem: PlayableItem | null;
   isPlaybackPreparing: boolean;
   canMutateLoops: boolean;
+  canQueueAsNext: boolean;
   isSavedLoopsLoading: boolean;
   pendingLoopId: string | null;
   playbackIssue: SavedTrackPlaybackIssue | null;
@@ -44,6 +45,7 @@ type SavedLoopSectionProps = {
   selectedTrack: PlayableItem | null;
   addLoopToPlaylist: (loop: NamedLoop) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
+  queuePlayableItemNext: (playableItem: PlayableItem) => void;
 };
 
 type DraftIssue = {
@@ -58,6 +60,7 @@ export const SavedLoopSection = ({
   activePlayableItem,
   isPlaybackPreparing,
   canMutateLoops,
+  canQueueAsNext,
   isSavedLoopsLoading,
   pendingLoopId,
   playbackIssue,
@@ -72,6 +75,7 @@ export const SavedLoopSection = ({
   selectedTrack,
   addLoopToPlaylist,
   togglePlayableItemPlayback,
+  queuePlayableItemNext,
 }: SavedLoopSectionProps) => {
   const [loopName, setLoopName] = useState('');
   const [startMs, setStartMs] = useState(0);
@@ -270,6 +274,8 @@ export const SavedLoopSection = ({
         playbackIssue={playbackIssue}
         playbackState={playbackState}
         playlistActionCopy={playlistActionCopy}
+        canQueueAsNext={canQueueAsNext}
+        queuePlayableItemNext={queuePlayableItemNext}
         removeLoop={removeLoop}
         togglePlayableItemPlayback={togglePlayableItemPlayback}
       />

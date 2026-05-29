@@ -3,14 +3,10 @@ import { useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import type { useSavedTrackPlayback } from '../hooks/use-saved-track-playback';
 
-import { DriveFolderGroup } from './DriveFolderGroup';
-import { DriveLibraryBreadcrumbs } from './DriveLibraryBreadcrumbs';
-import { DriveLibraryRootSelector } from './DriveLibraryRootSelector';
-import { DriveLibrarySearchPanel } from './DriveLibrarySearchPanel';
-import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
-import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
-import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
-import { SavedRehearsalLibrarySection } from './SavedRehearsalLibrarySection';
+import { useDriveLibrary } from '../hooks/use-drive-library';
+import { usePreparedLoopBuilderTrack } from '../hooks/use-prepared-loop-builder-track';
+import { useSavedLoops } from '../hooks/use-saved-loops';
+import { useSavedRehearsalLibrary } from '../hooks/use-saved-rehearsal-library';
 import { getDriveLibraryStatusCopy } from '../utils/drive-library-view-model';
 import { getSavedLoopRemovalCopy } from '../utils/saved-loop-view-model';
 import {
@@ -21,10 +17,14 @@ import {
   resolveSavedRehearsalLibrarySources,
 } from '../utils/saved-rehearsal-library-view-model';
 import { getSavedTrackPlaybackStatusCopy } from '../utils/saved-track-playback-view-model';
-import { useDriveLibrary } from '../hooks/use-drive-library';
-import { usePreparedLoopBuilderTrack } from '../hooks/use-prepared-loop-builder-track';
-import { useSavedLoops } from '../hooks/use-saved-loops';
-import { useSavedRehearsalLibrary } from '../hooks/use-saved-rehearsal-library';
+import { DriveFolderGroup } from './DriveFolderGroup';
+import { DriveLibraryBreadcrumbs } from './DriveLibraryBreadcrumbs';
+import { DriveLibraryRootSelector } from './DriveLibraryRootSelector';
+import { DriveLibrarySearchPanel } from './DriveLibrarySearchPanel';
+import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
+import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
+import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
+import { SavedRehearsalLibrarySection } from './SavedRehearsalLibrarySection';
 
 type SavedTrackPlaybackController = Pick<
   ReturnType<typeof useSavedTrackPlayback>,
@@ -36,6 +36,7 @@ type SavedTrackPlaybackController = Pick<
   | 'progress'
   | 'resolveTrackDuration'
   | 'syncActivePlaylistContext'
+  | 'queuePlayableItemNext'
   | 'togglePlayableItemPlayback'
   | 'togglePlaylistPlayback'
   | 'toggleSourcePlayback'
@@ -60,6 +61,7 @@ export const DriveLibrarySection = ({
   progress,
   resolveTrackDuration,
   syncActivePlaylistContext,
+  queuePlayableItemNext,
   togglePlayableItemPlayback,
   togglePlaylistPlayback,
   toggleSourcePlayback,
@@ -281,6 +283,7 @@ export const DriveLibrarySection = ({
         pendingLoopBuilderSourceId={pendingLoopBuilderSourceId}
         selectedTrack={selectedLoopTrack}
         setSelectedLoopSourceId={setSelectedLoopSourceId}
+        queuePlayableItemNext={queuePlayableItemNext}
         togglePlayableItemPlayback={togglePlayableItemPlayback}
         togglePlaylistPlayback={togglePlaylistPlayback}
         toggleSourcePlayback={toggleSourcePlayback}
