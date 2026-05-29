@@ -3,22 +3,21 @@ import {
   addTrackToPlaylist,
   createTrackPlayableItem,
   type NamedLoop,
-  type Playlist,
   type PlayableItem,
+  type Playlist,
 } from '@org/audio-library-models';
 import { useEffect, useReducer, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
 import { useSavedPlaylists } from '../hooks/use-saved-playlists';
+import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
 import {
   type DriveLibrarySource,
   type DriveLibraryStatusCopy,
 } from '../utils/drive-library-view-model';
-import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
-import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
-import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
-import { getSavedRehearsalLibrarySourceIssue } from '../utils/saved-rehearsal-library-view-model';
+import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
+import type { PlaylistPlaybackSession } from '../utils/saved-playlist-playback-view-model';
 import {
   buildSavedPlaylist,
   getSavedPlaylistLibraryActionCopy,
@@ -26,11 +25,7 @@ import {
   resolveSelectedPlaylist,
   type PlaylistDraftIssue,
 } from '../utils/saved-playlist-view-model';
-import {
-  getSavedTrackPlaylistMenuInitialState,
-  reduceSavedTrackPlaylistMenuState,
-} from '../utils/saved-track-playlist-menu-view-model';
-import type { PlaylistPlaybackSession } from '../utils/saved-playlist-playback-view-model';
+import { getSavedRehearsalLibrarySourceIssue } from '../utils/saved-rehearsal-library-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -39,12 +34,17 @@ import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
+import {
+  getSavedTrackPlaylistMenuInitialState,
+  reduceSavedTrackPlaylistMenuState,
+} from '../utils/saved-track-playlist-menu-view-model';
+import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
+import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
+import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import { SavedLoopSection } from './SavedLoopSection';
-import { SavedPlaylistCardsList } from './SavedPlaylistSectionCards';
 import { SavedPlaylistSection } from './SavedPlaylistSection';
+import { SavedPlaylistCardsList } from './SavedPlaylistSectionCards';
 import { SavedTrackPlaylistMenuSurface } from './SavedTrackPlaylistMenuSurface';
-import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
-import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
 
 type SavedRehearsalLibrarySectionProps = {
   activePlayableItem: PlayableItem | null;
@@ -178,7 +178,12 @@ export const SavedRehearsalLibrarySection = ({
       playlists: savedPlaylists,
       sources: savedLibrarySources,
     });
-  }, [savedLibrarySources, savedLoops, savedPlaylists, syncActivePlaylistContext]);
+  }, [
+    savedLibrarySources,
+    savedLoops,
+    savedPlaylists,
+    syncActivePlaylistContext,
+  ]);
 
   useEffect(() => {
     if (!trackPlaylistMenuState.selectedSourceId || selectedTrackMenuSource) {
@@ -207,7 +212,8 @@ export const SavedRehearsalLibrarySection = ({
     isSavedLibraryLoading || savedLibraryStatusCopy.tone !== 'ready';
   const shouldShowPlaybackStatus =
     savedTrackPlaybackStatusCopy !== null &&
-    (isSavedTrackPlaybackLoading || savedTrackPlaybackStatusCopy.tone !== 'ready');
+    (isSavedTrackPlaybackLoading ||
+      savedTrackPlaybackStatusCopy.tone !== 'ready');
 
   const persistPlaylist = async (
     playlist: Playlist,

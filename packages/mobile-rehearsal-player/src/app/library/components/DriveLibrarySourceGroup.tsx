@@ -1,5 +1,7 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { map } from 'es-toolkit/compat';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 
 import {
   getSourceAvailabilityLabel,
@@ -7,14 +9,19 @@ import {
   getSourceStatusMessage,
   type DriveLibrarySource,
 } from '../utils/drive-library-view-model';
+import { OptionsMenuSheet } from './OptionsMenuSheet';
+import {
+  DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT,
+  driveLibrarySourceGroupStyles as styles,
+} from './drive-library-source-group-styles';
 
 export type DriveLibrarySourceAction = {
   accessibilityLabel?: string;
   disabled?: boolean;
   label: string;
   onPress: () => void;
-  tone?: 'neutral' | 'primary';
-  variant?: 'button' | 'icon';
+  tone?: 'destructive' | 'neutral' | 'primary';
+  variant?: 'button' | 'icon' | 'menu';
 };
 
 type DriveLibrarySourceGroupProps = {
@@ -27,34 +34,47 @@ type DriveLibrarySourceGroupProps = {
   title: string;
 };
 
-const BORDER_COLOR = '#d6d1c4';
-const ERROR_SURFACE = '#fff1ed';
-const ERROR_TEXT = '#8a2d1f';
-const PRIMARY_TEXT = '#1f1c17';
-const READY_SURFACE = '#e7f2ec';
-const READY_TEXT = '#1f5c40';
-const SECONDARY_TEXT = '#5f5647';
-const WARNING_SURFACE = '#fff4dd';
-const WARNING_TEXT = '#7f5b12';
-
 const getActionButtonStyle = (action: DriveLibrarySourceAction) => {
-  if (action.variant === 'icon') {
-    return styles.actionButtonIcon;
-  }
-
   return action.tone === 'primary'
     ? styles.actionButtonPrimary
     : styles.actionButtonNeutral;
 };
 
 const getActionButtonLabelStyle = (action: DriveLibrarySourceAction) => {
-  if (action.variant === 'icon') {
-    return styles.actionButtonIconLabel;
-  }
-
   return action.tone === 'primary'
     ? styles.actionButtonPrimaryLabel
     : styles.actionButtonNeutralLabel;
+};
+
+const getMenuTone = (tone: DriveLibrarySourceAction['tone']) => {
+  if (tone === 'primary') {
+    return 'primary' as const;
+  }
+
+  if (tone === 'destructive') {
+    return 'destructive' as const;
+  }
+
+  return 'secondary' as const;
+};
+
+const REMOVE_LABEL_MATCHER = /^remove/i;
+
+const isMenuAction = (action: DriveLibrarySourceAction) => {
+  return (
+    action.variant === 'menu' ||
+    action.variant === 'icon' ||
+    action.tone === 'destructive' ||
+    REMOVE_LABEL_MATCHER.test(action.label)
+  );
+};
+
+const getMenuActionLabel = (action: DriveLibrarySourceAction) => {
+  if (action.label === '...' && action.accessibilityLabel) {
+    return action.accessibilityLabel;
+  }
+
+  return action.label;
 };
 
 const getAvailabilityBadgeStyle = (source: DriveLibrarySource) => {
@@ -94,6 +114,14 @@ const DriveLibrarySourceCard = ({
 }) => {
   const singleAction = getAction?.(source) ?? null;
   const actions = getActions?.(source) ?? (singleAction ? [singleAction] : []);
+  const inlineActions = useMemo(() => {
+    return actions.filter((action) => !isMenuAction(action));
+  }, [actions]);
+  const menuActions = useMemo(() => {
+    return actions.filter((action) => isMenuAction(action));
+  }, [actions]);
+  const [isOptionsMenuVisible, setIsOptionsMenuVisible] = useState(false);
+
   const externalMessage = getMessage?.(source);
   const metadataLabel = getSourceMetadataLabels(source).join(' • ');
   const statusMessage = externalMessage ?? getSourceStatusMessage(source);
@@ -101,6 +129,26 @@ const DriveLibrarySourceCard = ({
 
   return (
     <View style={styles.sourceCard}>
+      {menuActions.length > 0 ? (
+        <Pressable
+          accessibilityLabel="Source options"
+          accessibilityRole="button"
+          onPress={() => {
+            setIsOptionsMenuVisible(true);
+          }}
+          style={({ pressed }) => [
+            styles.iconButton,
+            styles.topRightMenuButton,
+            pressed ? styles.actionButtonPressed : undefined,
+          ]}
+        >
+          <MaterialCommunityIcons
+            color={DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT}
+            name="dots-vertical"
+            size={18}
+          />
+        </Pressable>
+      ) : null}
       <View style={styles.sourceHeader}>
         <Text style={styles.sourceName}>{source.name}</Text>
         <View style={styles.sourceControls}>
@@ -111,34 +159,36 @@ const DriveLibrarySourceCard = ({
               {getSourceAvailabilityLabel(source)}
             </Text>
           </View>
-          {actions.map((action: DriveLibrarySourceAction, index: number) => {
-            return (
-              <Pressable
-                accessibilityLabel={action.accessibilityLabel ?? action.label}
-                accessibilityRole="button"
-                disabled={action.disabled}
-                key={`${source.id}:${action.accessibilityLabel ?? action.label}:${index}`}
-                onPress={action.onPress}
-                style={({ pressed }) => [
-                  styles.actionButton,
-                  getActionButtonStyle(action),
-                  pressed && !action.disabled
-                    ? styles.actionButtonPressed
-                    : undefined,
-                  action.disabled ? styles.actionButtonDisabled : undefined,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.actionButtonLabel,
-                    getActionButtonLabelStyle(action),
+          {inlineActions.map(
+            (action: DriveLibrarySourceAction, index: number) => {
+              return (
+                <Pressable
+                  accessibilityLabel={action.accessibilityLabel ?? action.label}
+                  accessibilityRole="button"
+                  disabled={action.disabled}
+                  key={`${source.id}:${action.accessibilityLabel ?? action.label}:${index}`}
+                  onPress={action.onPress}
+                  style={({ pressed }) => [
+                    styles.actionButton,
+                    getActionButtonStyle(action),
+                    pressed && !action.disabled
+                      ? styles.actionButtonPressed
+                      : undefined,
+                    action.disabled ? styles.actionButtonDisabled : undefined,
                   ]}
                 >
-                  {action.label}
-                </Text>
-              </Pressable>
-            );
-          })}
+                  <Text
+                    style={[
+                      styles.actionButtonLabel,
+                      getActionButtonLabelStyle(action),
+                    ]}
+                  >
+                    {action.label}
+                  </Text>
+                </Pressable>
+              );
+            },
+          )}
         </View>
       </View>
       <Text style={styles.sourceMetadata}>{metadataLabel}</Text>
@@ -151,6 +201,25 @@ const DriveLibrarySourceCard = ({
           {statusMessage}
         </Text>
       ) : null}
+      <OptionsMenuSheet
+        actions={menuActions.map((action, index) => {
+          return {
+            disabled: action.disabled,
+            id: `${source.id}:${action.accessibilityLabel ?? action.label}:${index}`,
+            label: getMenuActionLabel(action),
+            onPress: () => {
+              setIsOptionsMenuVisible(false);
+              action.onPress();
+            },
+            tone: getMenuTone(action.tone),
+          };
+        })}
+        isVisible={isOptionsMenuVisible}
+        onClose={() => {
+          setIsOptionsMenuVisible(false);
+        }}
+        title={source.name}
+      />
     </View>
   );
 };
@@ -185,128 +254,3 @@ export const DriveLibrarySourceGroup = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  group: {
-    gap: 12,
-  },
-  groupTitle: {
-    color: PRIMARY_TEXT,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  groupItems: {
-    gap: 12,
-  },
-  sourceCard: {
-    gap: 8,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
-    borderRadius: 16,
-    backgroundColor: '#faf6ee',
-  },
-  sourceHeader: {
-    gap: 12,
-  },
-  sourceControls: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    alignItems: 'center',
-  },
-  sourceName: {
-    color: PRIMARY_TEXT,
-    fontSize: 15,
-    fontWeight: '700',
-    lineHeight: 21,
-  },
-  sourceMetadata: {
-    color: SECONDARY_TEXT,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  sourceMessage: {
-    color: SECONDARY_TEXT,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  sourceErrorMessage: {
-    color: ERROR_TEXT,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  badge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  badgeLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-  },
-  badgeReady: {
-    backgroundColor: READY_SURFACE,
-  },
-  badgeReadyLabel: {
-    color: READY_TEXT,
-  },
-  badgeWarning: {
-    backgroundColor: WARNING_SURFACE,
-  },
-  badgeWarningLabel: {
-    color: WARNING_TEXT,
-  },
-  badgeError: {
-    backgroundColor: ERROR_SURFACE,
-  },
-  badgeErrorLabel: {
-    color: ERROR_TEXT,
-  },
-  actionButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderRadius: 999,
-  },
-  actionButtonIcon: {
-    minWidth: 38,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    borderColor: BORDER_COLOR,
-    backgroundColor: '#fffdf8',
-  },
-  actionButtonNeutral: {
-    borderColor: BORDER_COLOR,
-    backgroundColor: '#fffdf8',
-  },
-  actionButtonPrimary: {
-    borderColor: '#1f5c40',
-    backgroundColor: '#1f5c40',
-  },
-  actionButtonPressed: {
-    opacity: 0.88,
-  },
-  actionButtonDisabled: {
-    opacity: 0.56,
-  },
-  actionButtonLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  actionButtonIconLabel: {
-    color: PRIMARY_TEXT,
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 18,
-  },
-  actionButtonNeutralLabel: {
-    color: PRIMARY_TEXT,
-  },
-  actionButtonPrimaryLabel: {
-    color: '#fffdf8',
-  },
-});

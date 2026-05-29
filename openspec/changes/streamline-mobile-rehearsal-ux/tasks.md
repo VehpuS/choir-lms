@@ -9,7 +9,7 @@
 
 ## 2. Playlist and Queue Interaction Streamlining
 
-- [ ] 2.1 Refine playlist detail hierarchy so playback actions stay primary and non-critical management actions move to lighter affordances.
+- [x] 2.1 Refine playlist detail hierarchy so playback actions stay primary and non-critical management actions move to lighter affordances.
 - [ ] 2.2 Implement low-friction playlist item removal interaction in default playlist detail mode while preserving undo snackbar recovery.
 - [ ] 2.3 Implement dual reorder support in playlist edit mode: drag-and-drop plus explicit icon-based move controls, with destructive actions visually distinct from playback actions.
 - [ ] 2.4 Add `Play next` queue quick-action support for saved track and loop rows without interrupting active playback.

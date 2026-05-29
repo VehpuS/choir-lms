@@ -1,0 +1,184 @@
+import type { Playlist } from '@org/audio-library-models';
+import { Pressable, Text, View } from 'react-native';
+
+import { savedPlaylistSectionStyles as styles } from './saved-playlist-section-styles';
+
+type PlaylistEntry = Playlist['items'][number];
+
+const getRowStatusLabel = (options: {
+  isCurrentEntry: boolean;
+  isPlayable: boolean;
+}) => {
+  if (options.isCurrentEntry) {
+    return 'Playing';
+  }
+
+  if (options.isPlayable) {
+    return 'Tap to play';
+  }
+
+  return 'Unavailable';
+};
+
+export const SavedPlaylistDetailItemsList = (props: {
+  currentPlaylistEntryId: string | null;
+  detailEntries: PlaylistEntry[];
+  getItemDetailLabel: (entry: PlaylistEntry) => string;
+  isEditMode: boolean;
+  isItemPlayable: (entry: PlaylistEntry) => boolean;
+  isMutating: boolean;
+  onMoveItem: (fromIndex: number, toIndex: number) => void;
+  onPlayPlaylistEntry: (entryId: string) => void;
+  onRemoveItem: (entryId: string) => void;
+}) => {
+  return (
+    <View style={styles.group}>
+      <Text style={styles.groupTitle}>
+        {props.isEditMode ? 'Edit items' : 'Current items'} (
+        {props.detailEntries.length})
+      </Text>
+      {props.detailEntries.length === 0 ? (
+        <Text style={styles.emptyMessage}>
+          This playlist is empty. Return to Library, add saved tracks or loops
+          there, then come back here to review the running order.
+        </Text>
+      ) : (
+        <View style={styles.groupItems}>
+          {props.detailEntries.map((entry, index) => {
+            const isCurrentEntry = props.currentPlaylistEntryId === entry.id;
+            const isPlayable = props.isItemPlayable(entry);
+
+            return (
+              <View
+                key={entry.id}
+                style={[
+                  styles.itemCard,
+                  isCurrentEntry ? styles.itemCardActive : undefined,
+                  !isPlayable ? styles.itemCardUnavailable : undefined,
+                ]}
+              >
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={props.isMutating || !isPlayable}
+                  onPress={() => {
+                    if (props.isEditMode) {
+                      return;
+                    }
+
+                    props.onPlayPlaylistEntry(entry.id);
+                  }}
+                  style={({ pressed }) => [
+                    styles.itemPressable,
+                    pressed && !props.isMutating && isPlayable
+                      ? styles.actionButtonPressed
+                      : undefined,
+                  ]}
+                >
+                  <View style={styles.itemHeaderRow}>
+                    <Text style={styles.itemTitle}>
+                      {index + 1}. {entry.title}
+                    </Text>
+                    <Text
+                      style={
+                        isCurrentEntry
+                          ? styles.itemStatusActive
+                          : isPlayable
+                            ? styles.itemStatusReady
+                            : styles.itemStatusUnavailable
+                      }
+                    >
+                      {props.isEditMode
+                        ? 'Edit'
+                        : getRowStatusLabel({ isCurrentEntry, isPlayable })}
+                    </Text>
+                  </View>
+                  <Text style={styles.itemMetadata}>
+                    {props.getItemDetailLabel(entry)}
+                  </Text>
+                </Pressable>
+                <View style={styles.actionRow}>
+                  {props.isEditMode ? (
+                    <>
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={props.isMutating || index === 0}
+                        onPress={() => {
+                          props.onMoveItem(index, index - 1);
+                        }}
+                        style={({ pressed }) => [
+                          styles.secondaryButton,
+                          pressed && !props.isMutating && index > 0
+                            ? styles.actionButtonPressed
+                            : undefined,
+                          props.isMutating || index === 0
+                            ? styles.actionButtonDisabled
+                            : undefined,
+                        ]}
+                      >
+                        <Text style={styles.secondaryButtonLabel}>Move up</Text>
+                      </Pressable>
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={
+                          props.isMutating ||
+                          index === props.detailEntries.length - 1
+                        }
+                        onPress={() => {
+                          props.onMoveItem(index, index + 1);
+                        }}
+                        style={({ pressed }) => [
+                          styles.secondaryButton,
+                          pressed &&
+                          !props.isMutating &&
+                          index < props.detailEntries.length - 1
+                            ? styles.actionButtonPressed
+                            : undefined,
+                          props.isMutating ||
+                          index === props.detailEntries.length - 1
+                            ? styles.actionButtonDisabled
+                            : undefined,
+                        ]}
+                      >
+                        <Text style={styles.secondaryButtonLabel}>
+                          Move down
+                        </Text>
+                      </Pressable>
+                    </>
+                  ) : null}
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={props.isMutating}
+                    onPress={() => {
+                      props.onRemoveItem(entry.id);
+                    }}
+                    style={({ pressed }) => [
+                      props.isEditMode
+                        ? styles.destructiveButton
+                        : styles.secondaryButton,
+                      pressed && !props.isMutating
+                        ? styles.actionButtonPressed
+                        : undefined,
+                      props.isMutating
+                        ? styles.actionButtonDisabled
+                        : undefined,
+                    ]}
+                  >
+                    <Text
+                      style={
+                        props.isEditMode
+                          ? styles.destructiveButtonLabel
+                          : styles.secondaryButtonLabel
+                      }
+                    >
+                      Remove
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      )}
+    </View>
+  );
+};

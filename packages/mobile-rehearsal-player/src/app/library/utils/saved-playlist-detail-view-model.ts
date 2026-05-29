@@ -213,3 +213,19 @@ export const isSavedPlaylistEntryPlayable = (options: {
     return savedLoop.id === options.entry.loopId;
   });
 };
+
+let pendingPlaylistRenameRequestId: string | null = null;
+
+export const queueSavedPlaylistRenameRequest = (playlistId: string) => {
+  pendingPlaylistRenameRequestId = playlistId;
+};
+
+export const consumeSavedPlaylistRenameRequest = (playlistId: string) => {
+  if (pendingPlaylistRenameRequestId !== playlistId) {
+    return false;
+  }
+
+  pendingPlaylistRenameRequestId = null;
+
+  return true;
+};

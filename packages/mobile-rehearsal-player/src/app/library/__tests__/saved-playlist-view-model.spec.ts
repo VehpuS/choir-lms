@@ -22,7 +22,6 @@ import {
   removeSavedPlaylistDetailEntry,
   restoreSavedPlaylistDetailEntry,
 } from '../utils/saved-playlist-detail-view-model.js';
-import { getSavedPlaylistsStatusCopy } from '../utils/saved-playlist-status-view-model.js';
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackActionCopy,
@@ -34,6 +33,7 @@ import {
   resolvePlaylistPlaybackRewind,
   updatePlaylistPlaybackRepeatMode,
 } from '../utils/saved-playlist-playback-view-model.js';
+import { getSavedPlaylistsStatusCopy } from '../utils/saved-playlist-status-view-model.js';
 import {
   getSavedPlaylistDetailSummary,
   getSavedPlaylistEntryDetailLabel,
