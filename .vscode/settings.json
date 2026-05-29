@@ -250,6 +250,18 @@
     "/^cd /Users/vehpus/git/choir-lms && npm exec -- nx typecheck mobile-rehearsal-player && npm exec -- nx test mobile-rehearsal-player$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^cd /Users/vehpus/git/choir-lms/packages/mobile-rehearsal-player && tsx --test /": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^cd /Users/vehpus/git/choir-lms/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^cd /Users/vehpus/git/choir-lms && npm exec -- nx test /": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

@@ -175,6 +175,73 @@ export const moveSavedPlaylistDetailEntry = (
   return moveItem(entries, fromIndex, toIndex);
 };
 
+const DRAG_REORDER_STEP_DISTANCE_PX = 52;
+const DRAG_REORDER_DOWNWARD_ACTIVATION_DISTANCE_PX = 24;
+const DRAG_REORDER_UPWARD_ACTIVATION_DISTANCE_PX = 34;
+const EDGE_AUTOSCROLL_ZONE_PX = 96;
+const MAX_EDGE_AUTOSCROLL_DELTA_PX = 22;
+
+export const resolveSavedPlaylistDetailDragTargetIndex = (options: {
+  deltaY: number;
+  fromIndex: number;
+  itemCount: number;
+}) => {
+  const { deltaY, fromIndex, itemCount } = options;
+
+  if (itemCount < 2 || fromIndex < 0 || fromIndex >= itemCount) {
+    return fromIndex;
+  }
+
+  const activationDistance =
+    deltaY < 0
+      ? DRAG_REORDER_UPWARD_ACTIVATION_DISTANCE_PX
+      : DRAG_REORDER_DOWNWARD_ACTIVATION_DISTANCE_PX;
+
+  if (Math.abs(deltaY) < activationDistance) {
+    return fromIndex;
+  }
+
+  const normalizedDistance = Math.abs(deltaY) - activationDistance;
+  const indexShift =
+    1 + Math.floor(normalizedDistance / DRAG_REORDER_STEP_DISTANCE_PX);
+  const normalizedShift = Math.sign(deltaY) * indexShift;
+
+  return Math.min(
+    Math.max(fromIndex + normalizedShift, 0),
+    itemCount - 1,
+  );
+};
+
+export const resolveSavedPlaylistDetailEdgeAutoscrollDelta = (options: {
+  moveY: number;
+  viewportHeight: number;
+}) => {
+  if (options.viewportHeight <= 0) {
+    return 0;
+  }
+
+  const topEdge = EDGE_AUTOSCROLL_ZONE_PX;
+  const bottomEdge = Math.max(
+    options.viewportHeight - EDGE_AUTOSCROLL_ZONE_PX,
+    topEdge,
+  );
+
+  if (options.moveY < topEdge) {
+    const proximity = (topEdge - options.moveY) / EDGE_AUTOSCROLL_ZONE_PX;
+
+    return -Math.max(1, Math.round(proximity * MAX_EDGE_AUTOSCROLL_DELTA_PX));
+  }
+
+  if (options.moveY > bottomEdge) {
+    const proximity =
+      (options.moveY - bottomEdge) / EDGE_AUTOSCROLL_ZONE_PX;
+
+    return Math.max(1, Math.round(proximity * MAX_EDGE_AUTOSCROLL_DELTA_PX));
+  }
+
+  return 0;
+};
+
 export const removeSavedPlaylistDetailEntry = (
   entries: PlaylistEntry[],
   entryId: string,

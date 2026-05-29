@@ -26,6 +26,7 @@ export const SavedPlaylistDetailCard = (props: {
   currentPlaylistEntryId: string | null;
   detailSummary: SavedPlaylistDetailSummary | null;
   detailEntries: PlaylistEntry[];
+  getCurrentScrollOffsetY: () => number;
   getItemDetailLabel: (entry: PlaylistEntry) => string;
   isEditMode: boolean;
   isItemPlayable: (entry: PlaylistEntry) => boolean;
@@ -45,6 +46,8 @@ export const SavedPlaylistDetailCard = (props: {
   onRemoveItem: (entryId: string) => void;
   onRenamePlaylist: () => void;
   onRenamePlaylistNameChange: (value: string) => void;
+  onReorderDragActiveChange: (isActive: boolean) => void;
+  onReorderDragMove: (moveY: number) => void;
   onToggleEditMode: () => void;
   onUndoRemoveItem: () => void;
 }) => {
@@ -183,12 +186,15 @@ export const SavedPlaylistDetailCard = (props: {
       <SavedPlaylistDetailItemsList
         currentPlaylistEntryId={props.currentPlaylistEntryId}
         detailEntries={props.detailEntries}
+        getCurrentScrollOffsetY={props.getCurrentScrollOffsetY}
         getItemDetailLabel={props.getItemDetailLabel}
         isEditMode={props.isEditMode}
         isItemPlayable={props.isItemPlayable}
         isMutating={props.isMutating}
         onMoveItem={props.onMoveItem}
         onPlayPlaylistEntry={props.onPlayPlaylistEntry}
+        onReorderDragActiveChange={props.onReorderDragActiveChange}
+        onReorderDragMove={props.onReorderDragMove}
         onRemoveItem={props.onRemoveItem}
       />
 

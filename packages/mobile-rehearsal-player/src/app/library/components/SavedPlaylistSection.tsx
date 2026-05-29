@@ -49,6 +49,7 @@ type SavedPlaylistSectionProps = {
   canMutatePlaylists: boolean;
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
   deletePlaylist: (playlist: Playlist) => Promise<boolean>;
+  getCurrentScrollOffsetY: () => number;
   isDetailVisible?: boolean;
   isLoading: boolean;
   isPlaybackPreparing: boolean;
@@ -61,6 +62,8 @@ type SavedPlaylistSectionProps = {
   savedSources: DriveLibrarySource[];
   selectedPlaylist: Playlist | null;
   setSelectedPlaylistId: (playlistId: string) => void;
+  setIsReorderDragActive: (isActive: boolean) => void;
+  setReorderDragMoveY: (moveY: number) => void;
   togglePlaylistPlayback: (options: {
     loops: NamedLoop[];
     mode: 'ordered' | 'shuffle';
@@ -76,6 +79,7 @@ export const SavedPlaylistSection = ({
   canMutatePlaylists,
   createPlaylist,
   deletePlaylist,
+  getCurrentScrollOffsetY,
   isDetailVisible = false,
   isLoading,
   isPlaybackPreparing,
@@ -88,6 +92,8 @@ export const SavedPlaylistSection = ({
   savedSources,
   selectedPlaylist,
   setSelectedPlaylistId,
+  setIsReorderDragActive,
+  setReorderDragMoveY,
   togglePlaylistPlayback,
   updatePlaylist,
 }: SavedPlaylistSectionProps) => {
@@ -381,6 +387,7 @@ export const SavedPlaylistSection = ({
               ? detailState.draftEntries
               : (detailPlaylist?.items ?? [])
           }
+          getCurrentScrollOffsetY={getCurrentScrollOffsetY}
           getItemDetailLabel={(entry) => {
             return getSavedPlaylistEntryDetailLabel({
               entry,
@@ -398,6 +405,7 @@ export const SavedPlaylistSection = ({
           }}
           isMutating={isMutating}
           onCloseDetail={() => {
+            setIsReorderDragActive(false);
             dispatchDetailAction({
               type: 'reset',
               entries: [],
@@ -460,8 +468,13 @@ export const SavedPlaylistSection = ({
             });
           }}
           onToggleEditMode={() => {
+            if (detailState.isEditing) {
+              setIsReorderDragActive(false);
+            }
             void handleToggleDetailEditMode();
           }}
+          onReorderDragActiveChange={setIsReorderDragActive}
+          onReorderDragMove={setReorderDragMoveY}
           onUndoRemoveItem={() => {
             void handleUndoPlaylistRemoval();
           }}

@@ -66,7 +66,10 @@ type SavedRehearsalLibrarySectionProps = {
   savedLoops: NamedLoop[];
   savedLibraryStatusCopy: DriveLibraryStatusCopy;
   saveLoop: (loop: NamedLoop) => Promise<boolean>;
+  getCurrentScrollOffsetY: () => number;
   savedTrackPlaybackStatusCopy: DriveLibraryStatusCopy | null;
+  setIsPlaylistReorderDragActive: (isActive: boolean) => void;
+  setPlaylistReorderDragMoveY: (moveY: number) => void;
   syncActivePlaylistContext: (options: {
     loops: NamedLoop[];
     playlists: Playlist[];
@@ -109,7 +112,10 @@ export const SavedRehearsalLibrarySection = ({
   savedLoops,
   savedLibraryStatusCopy,
   saveLoop,
+  getCurrentScrollOffsetY,
   savedTrackPlaybackStatusCopy,
+  setIsPlaylistReorderDragActive,
+  setPlaylistReorderDragMoveY,
   syncActivePlaylistContext,
   openLoopBuilderForSource,
   pendingLoopBuilderSourceId,
@@ -440,6 +446,7 @@ export const SavedRehearsalLibrarySection = ({
         canMutatePlaylists={canMutatePlaylists}
         createPlaylist={createPlaylist}
         deletePlaylist={deletePlaylist}
+        getCurrentScrollOffsetY={getCurrentScrollOffsetY}
         isDetailVisible={isPlaylistDetailVisible}
         isLoading={isPlaylistsLoading}
         isPlaybackPreparing={isPlaybackPreparing}
@@ -454,6 +461,8 @@ export const SavedRehearsalLibrarySection = ({
         savedSources={savedLibrarySources}
         selectedPlaylist={selectedPlaylist}
         setSelectedPlaylistId={setSelectedPlaylistId}
+        setIsReorderDragActive={setIsPlaylistReorderDragActive}
+        setReorderDragMoveY={setPlaylistReorderDragMoveY}
         togglePlaylistPlayback={togglePlaylistPlayback}
         updatePlaylist={updatePlaylist}
       />

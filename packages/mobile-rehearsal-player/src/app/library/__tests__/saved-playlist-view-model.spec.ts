@@ -18,6 +18,8 @@ import {
   getSavedPlaylistDetailInitialState,
   isSavedPlaylistEntryPlayable,
   moveSavedPlaylistDetailEntry,
+  resolveSavedPlaylistDetailEdgeAutoscrollDelta,
+  resolveSavedPlaylistDetailDragTargetIndex,
   reduceSavedPlaylistDetailState,
   removeSavedPlaylistDetailEntry,
   restoreSavedPlaylistDetailEntry,
@@ -219,6 +221,87 @@ describe('saved playlist view-model', () => {
           sortIndex: 1,
         },
       ],
+    );
+  });
+
+  it('resolves drag reorder targets from row distance with clamped bounds', () => {
+    assert.equal(
+      resolveSavedPlaylistDetailDragTargetIndex({
+        deltaY: 18,
+        fromIndex: 2,
+        itemCount: 5,
+      }),
+      2,
+    );
+    assert.equal(
+      resolveSavedPlaylistDetailDragTargetIndex({
+        deltaY: 62,
+        fromIndex: 2,
+        itemCount: 5,
+      }),
+      3,
+    );
+    assert.equal(
+      resolveSavedPlaylistDetailDragTargetIndex({
+        deltaY: -112,
+        fromIndex: 2,
+        itemCount: 5,
+      }),
+      0,
+    );
+    assert.equal(
+      resolveSavedPlaylistDetailDragTargetIndex({
+        deltaY: -24,
+        fromIndex: 2,
+        itemCount: 5,
+      }),
+      2,
+    );
+    assert.equal(
+      resolveSavedPlaylistDetailDragTargetIndex({
+        deltaY: -36,
+        fromIndex: 2,
+        itemCount: 5,
+      }),
+      1,
+    );
+    assert.equal(
+      resolveSavedPlaylistDetailDragTargetIndex({
+        deltaY: 500,
+        fromIndex: 2,
+        itemCount: 5,
+      }),
+      4,
+    );
+  });
+
+  it('scales edge auto-scroll speed by proximity to viewport edges', () => {
+    assert.equal(
+      resolveSavedPlaylistDetailEdgeAutoscrollDelta({
+        moveY: 400,
+        viewportHeight: 800,
+      }),
+      0,
+    );
+    assert.ok(
+      resolveSavedPlaylistDetailEdgeAutoscrollDelta({
+        moveY: 20,
+        viewportHeight: 800,
+      }) <
+        resolveSavedPlaylistDetailEdgeAutoscrollDelta({
+          moveY: 80,
+          viewportHeight: 800,
+        }),
+    );
+    assert.ok(
+      resolveSavedPlaylistDetailEdgeAutoscrollDelta({
+        moveY: 780,
+        viewportHeight: 800,
+      }) >
+        resolveSavedPlaylistDetailEdgeAutoscrollDelta({
+          moveY: 730,
+          viewportHeight: 800,
+        }),
     );
   });
 
