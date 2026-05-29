@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Playlist } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View } from 'react-native';
 
 import {
   consumeSavedPlaylistRenameRequest,
@@ -220,44 +220,51 @@ export const SavedPlaylistDetailCard = (props: {
         playlistName={detailSummary.title}
       />
 
-      {props.removalNotice ? (
-        <View style={styles.snackbarCard}>
-          <Text style={styles.snackbarMessage}>
-            {props.removalNotice.entry.title} removed from {detailSummary.title}
-            .
-          </Text>
-          <View style={styles.actionRow}>
-            <Pressable
-              accessibilityRole="button"
-              disabled={props.isMutating}
-              onPress={props.onUndoRemoveItem}
-              style={({ pressed }) => [
-                styles.primaryButton,
-                pressed && !props.isMutating
-                  ? styles.actionButtonPressed
-                  : undefined,
-                props.isMutating ? styles.actionButtonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.primaryButtonLabel}>Undo</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              disabled={props.isMutating}
-              onPress={props.onDismissRemovalNotice}
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                pressed && !props.isMutating
-                  ? styles.actionButtonPressed
-                  : undefined,
-                props.isMutating ? styles.actionButtonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.secondaryButtonLabel}>Dismiss</Text>
-            </Pressable>
+      <Modal
+        animationType="fade"
+        onRequestClose={props.onDismissRemovalNotice}
+        transparent
+        visible={props.removalNotice !== null}
+      >
+        <View style={styles.snackbarModalOverlay} pointerEvents="box-none">
+          <View style={[styles.snackbarCard, styles.modalSnackbarCard]}>
+            <Text style={styles.snackbarMessage}>
+              {props.removalNotice?.entry.title} removed from{' '}
+              {detailSummary.title}.
+            </Text>
+            <View style={styles.actionRow}>
+              <Pressable
+                accessibilityRole="button"
+                disabled={props.isMutating}
+                onPress={props.onUndoRemoveItem}
+                style={({ pressed }) => [
+                  styles.primaryButton,
+                  pressed && !props.isMutating
+                    ? styles.actionButtonPressed
+                    : undefined,
+                  props.isMutating ? styles.actionButtonDisabled : undefined,
+                ]}
+              >
+                <Text style={styles.primaryButtonLabel}>Undo</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                disabled={props.isMutating}
+                onPress={props.onDismissRemovalNotice}
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  pressed && !props.isMutating
+                    ? styles.actionButtonPressed
+                    : undefined,
+                  props.isMutating ? styles.actionButtonDisabled : undefined,
+                ]}
+              >
+                <Text style={styles.secondaryButtonLabel}>Dismiss</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
-      ) : null}
+      </Modal>
     </View>
   );
 };

@@ -19,6 +19,17 @@ export type SavedPlaylistDetailState = {
   removalNotice: SavedPlaylistDetailRemovalNotice | null;
 };
 
+export type SavedPlaylistDetailRemoveActionPresentation = {
+  isIconOnly: boolean;
+  tone: 'neutral' | 'destructive';
+};
+
+export type SavedPlaylistDetailItemRemovalCopy = {
+  confirmLabel: string;
+  message: string;
+  title: string;
+};
+
 export type SavedPlaylistDetailAction =
   | {
       type: 'clear-removal-notice';
@@ -212,6 +223,33 @@ export const isSavedPlaylistEntryPlayable = (options: {
   return options.savedLoops.some((savedLoop) => {
     return savedLoop.id === options.entry.loopId;
   });
+};
+
+export const getSavedPlaylistDetailRemoveActionPresentation = (
+  isEditMode: boolean,
+): SavedPlaylistDetailRemoveActionPresentation => {
+  if (isEditMode) {
+    return {
+      isIconOnly: false,
+      tone: 'destructive',
+    };
+  }
+
+  return {
+    isIconOnly: true,
+    tone: 'neutral',
+  };
+};
+
+export const getSavedPlaylistDetailItemRemovalCopy = (options: {
+  entryTitle: string;
+  playlistTitle: string;
+}): SavedPlaylistDetailItemRemovalCopy => {
+  return {
+    confirmLabel: 'Remove item',
+    message: `"${options.entryTitle}" will be removed from ${options.playlistTitle}. You can undo after removal.`,
+    title: 'Remove playlist item?',
+  };
 };
 
 let pendingPlaylistRenameRequestId: string | null = null;

@@ -134,6 +134,14 @@ export const savedPlaylistSectionStyles = StyleSheet.create({
   itemPressable: {
     gap: 8,
   },
+  itemPressableContent: {
+    flex: 1,
+  },
+  itemTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
   itemHeaderRow: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -244,6 +252,20 @@ export const savedPlaylistSectionStyles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: ERROR_SURFACE,
   },
+  destructiveIconButton: {
+    alignSelf: 'flex-start',
+    minWidth: 36,
+    minHeight: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    borderRadius: 999,
+    backgroundColor: '#fffdf8',
+  },
+  inlineRowIconButton: {
+    marginTop: 1,
+  },
   secondaryButtonLabel: {
     color: PRIMARY_TEXT,
     fontSize: 13,
@@ -284,6 +306,22 @@ export const savedPlaylistSectionStyles = StyleSheet.create({
     padding: 12,
     borderRadius: 14,
     backgroundColor: '#efe9db',
+  },
+  modalSnackbarCard: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    shadowColor: '#1f1c17',
+    shadowOpacity: 0.16,
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  snackbarModalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
   },
   snackbarMessage: {
     color: PRIMARY_TEXT,

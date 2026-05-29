@@ -15,6 +15,7 @@ import {
 } from '../utils/saved-playlist-playback-view-model';
 import {
   buildSavedPlaylistDetailDraftPlaylist,
+  getSavedPlaylistDetailItemRemovalCopy,
   getSavedPlaylistDetailInitialState,
   isSavedPlaylistEntryPlayable,
   moveSavedPlaylistDetailEntry,
@@ -275,25 +276,8 @@ export const SavedPlaylistSection = ({
       return;
     }
 
-    if (detailState.isEditing) {
-      const removalResult = removeSavedPlaylistDetailEntry(
-        detailState.draftEntries,
-        entryId,
-      );
-
-      if (!removalResult) {
-        return;
-      }
-
-      dispatchDetailAction({
-        type: 'update-draft-entries',
-        entries: removalResult.nextEntries,
-      });
-      return;
-    }
-
     const removalResult = removeSavedPlaylistDetailEntry(
-      selectedPlaylist.items,
+      detailState.isEditing ? detailState.draftEntries : selectedPlaylist.items,
       entryId,
     );
 
@@ -301,24 +285,51 @@ export const SavedPlaylistSection = ({
       return;
     }
 
-    const persistedPlaylist = await persistSelectedPlaylist((playlist) => {
-      return buildSavedPlaylistDetailDraftPlaylist(
-        playlist,
-        removalResult.nextEntries,
-      );
-    });
-
-    if (!persistedPlaylist) {
+    if (detailState.isEditing) {
+      dispatchDetailAction({
+        type: 'update-draft-entries',
+        entries: removalResult.nextEntries,
+      });
       return;
     }
 
-    dispatchDetailAction({
-      type: 'show-removal-notice',
-      removalNotice: {
-        entry: removalResult.entry,
-        previousIndex: removalResult.previousIndex,
-      },
+    const removalCopy = getSavedPlaylistDetailItemRemovalCopy({
+      entryTitle: removalResult.entry.title,
+      playlistTitle: selectedPlaylist.name,
     });
+
+    Alert.alert(removalCopy.title, removalCopy.message, [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: removalCopy.confirmLabel,
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            const persistedPlaylist = await persistSelectedPlaylist((playlist) => {
+              return buildSavedPlaylistDetailDraftPlaylist(
+                playlist,
+                removalResult.nextEntries,
+              );
+            });
+
+            if (!persistedPlaylist) {
+              return;
+            }
+
+            dispatchDetailAction({
+              type: 'show-removal-notice',
+              removalNotice: {
+                entry: removalResult.entry,
+                previousIndex: removalResult.previousIndex,
+              },
+            });
+          })();
+        },
+      },
+    ]);
   };
 
   const handleUndoPlaylistRemoval = async () => {
