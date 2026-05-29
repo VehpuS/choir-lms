@@ -277,12 +277,17 @@ export const DriveLibrarySection = ({
         savedLoops={savedLoops}
         savedLibraryStatusCopy={savedLibraryStatusCopy}
         saveLoop={saveLoop}
+        getCurrentScrollOffsetY={() => {
+          return 0;
+        }}
         savedTrackPlaybackStatusCopy={savedTrackPlaybackStatusCopy}
         syncActivePlaylistContext={syncActivePlaylistContext}
         openLoopBuilderForSource={openLoopBuilderForSource}
         pendingLoopBuilderSourceId={pendingLoopBuilderSourceId}
         selectedTrack={selectedLoopTrack}
         setSelectedLoopSourceId={setSelectedLoopSourceId}
+        setIsPlaylistReorderDragActive={() => undefined}
+        setPlaylistReorderDragMoveY={() => undefined}
         queuePlayableItemNext={queuePlayableItemNext}
         togglePlayableItemPlayback={togglePlayableItemPlayback}
         togglePlaylistPlayback={togglePlaylistPlayback}

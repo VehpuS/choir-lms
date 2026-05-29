@@ -27,6 +27,12 @@ type LibraryScreenProps = {
   playback: SavedTrackPlaybackController;
 };
 
+type MeasurableScrollView = ScrollView & {
+  measureInWindow: (
+    callback: (x: number, y: number, width: number, height: number) => void,
+  ) => void;
+};
+
 export const LibraryScreen = ({
   libraryController,
   playback,
@@ -40,7 +46,10 @@ export const LibraryScreen = ({
   const viewportHeightRef = useRef(0);
 
   const refreshViewportBounds = useCallback(() => {
-    scrollViewRef.current?.measureInWindow((_, y, __, height) => {
+    const measurableScrollView =
+      scrollViewRef.current as MeasurableScrollView | null;
+
+    measurableScrollView?.measureInWindow((_x, y, _width, height) => {
       viewportTopInWindowRef.current = y;
       viewportHeightRef.current = height;
     });

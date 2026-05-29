@@ -64,6 +64,7 @@ export const SavedLoopList = ({
       </Text>
 
       {loopCards.map((loopCard) => {
+        const playableItem = loopCard.playableItem;
         const playbackAction = loopCard.playableItem
           ? getSavedTrackPlaybackActionCopy({
               activePlayableItem,
@@ -137,11 +138,11 @@ export const SavedLoopList = ({
                     {playlistActionCopy.label}
                   </Text>
                 </Pressable>
-                {canQueueAsNext && loopCard.playableItem ? (
+                {canQueueAsNext && playableItem ? (
                   <Pressable
                     accessibilityRole="button"
                     onPress={() => {
-                      queuePlayableItemNext(loopCard.playableItem);
+                      queuePlayableItemNext(playableItem);
                     }}
                     style={({ pressed }) => [
                       styles.secondaryButton,
