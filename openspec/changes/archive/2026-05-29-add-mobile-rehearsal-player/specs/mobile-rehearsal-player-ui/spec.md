@@ -320,3 +320,10 @@ The system SHALL use mobile interaction patterns that stay legible during rehear
 - [ ] Open now playing from the mini-player, scrub on the waveform, adjust in-app volume, and swipe down to dismiss while audio continues.
 - [ ] In queued playback, verify previous/next item controls and queue-mode controls appear; in standalone playback, verify queue-only controls are hidden while single-item repeat remains available.
 - [ ] Validate icon semantics and accessibility labels for transport, queue, More Options, drag handles, and destructive actions on representative phone-sized screens.
+
+## Intentional Spec Deltas (2026-05-29)
+
+- Queue and Up Next currently ship as inspection and mode-control surfaces only. Reorder and remove actions from the queue sheet mockup are intentionally deferred to a later queue-editing slice.
+- Playlist detail keeps remove actions directly on each row in playback mode instead of opening a dedicated row context menu first. Undo snackbar behavior remains unchanged.
+- Playlist edit mode currently uses explicit Move up and Move down actions with drag-handle affordance text, instead of gesture drag-and-drop, to keep interactions reliable on phone-sized touch targets for this MVP slice.
+- Home and Search prioritize production discovery and Drive result surfaces over decorative quick-access chips from low-fidelity mockups, while preserving the required destination shell, mini-player persistence, waveform-first playback, loop builder slider flow, in-app volume slider, and music-icon semantics.

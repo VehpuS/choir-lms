@@ -222,6 +222,22 @@
     "/^npm exec -- nx test audio-library-runtime$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^openspec list --json$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^openspec --help$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^openspec archive --help$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^openspec validate/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }
