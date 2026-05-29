@@ -33,6 +33,11 @@ The system SHALL provide direct shortcuts to recent rehearsal context so users c
 - **WHEN** no recent rehearsal context exists
 - **THEN** Recents shows a concise guidance path to discovery and saving the first practice item
 
+#### Scenario: New user with empty library can reach first playback quickly
+
+- **WHEN** a user has no saved tracks, loops, or playlists
+- **THEN** the system provides a clear path from empty-state guidance to Drive discovery, first save, and playback start without requiring pre-existing library content
+
 #### Scenario: Recents can surface shortcut metadata such as popular tags
 
 - **WHEN** Recents is enabled as an acceleration surface

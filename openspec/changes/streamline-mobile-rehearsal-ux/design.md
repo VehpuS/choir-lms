@@ -104,6 +104,167 @@ Placement rules:
 - Drive search placement: Search tab top section with explicit Drive labeling and scope indicators.
 - App-library search placement: Library tab top section with organization filters and no Drive-result mixing.
 
+## Non-Regression Acceptance Criteria (Task 1.3)
+
+IA reorder work cannot be considered acceptable unless every critical capability below is explicitly preserved.
+
+### Capability: Drive root switching
+
+- Entry point remains first-class in the Drive discovery surface.
+- User can switch between My Drive and Shared roots without leaving the active tab.
+- After switching roots, folder and source lists refresh to the selected root context.
+
+### Capability: Folder navigation
+
+- User can open folders from current Drive discovery results.
+- Navigation depth changes update visible folder/source collections for the active path.
+- User can return upward through the hierarchy without resetting active root unexpectedly.
+
+### Capability: Breadcrumb navigation
+
+- Breadcrumbs are visible while browsing nested Drive folders.
+- Tapping any breadcrumb segment returns directly to that level.
+- Breadcrumb state remains consistent after search scope changes or root switching.
+
+### Capability: Source save/remove
+
+- Save action remains available on Drive discovery/search rows for supported playable sources.
+- Remove action remains available on saved-library rows with current safety messaging/confirmation behavior intact.
+- Save/remove updates reflected state in both discovery/search and library surfaces without requiring app restart.
+
+### Capability: Track playback
+
+- User can start and toggle playback from saved track rows.
+- Mini-player remains visible and accurate during tab changes while playback is active.
+- Playback controls (toggle, seek, skip where applicable) continue to function with no IA-coupled regression.
+
+### Capability: Loop creation
+
+- Loop creation entry remains reachable from track context in saved library.
+- Prepared loop-builder source state resolves correctly before edit/save actions.
+- Saved loop appears in loop surfaces with parent-track linkage preserved.
+
+### Capability: Playlist playback
+
+- User can launch playlist playback from playlist surfaces.
+- Queue session metadata (mode, repeat, current item) remains coherent while navigating between tabs.
+- Up Next/now-playing surfaces stay synchronized with playlist session state after IA changes.
+
+### Acceptance Gate
+
+- All seven capabilities above must pass manual verification in section 6 tasks before this change is considered implementation-complete.
+- Any failed capability blocks final sign-off until either fixed or documented as an intentional, approved delta.
+
+## UI Context Labels And Helper Copy Rules (Task 1.4)
+
+To prevent Drive features from being hidden or mislabeled after IA updates, all search and browse surfaces must use explicit context labels and approved helper-copy patterns.
+
+### Context Label Taxonomy
+
+- Google Drive context label: Google Drive
+- App-owned library context label: Library
+- Acceleration context label: Recents
+
+These labels are user-facing defaults for headers, chips, and empty-state copy. Alternate synonyms such as Source, Cloud, or Files are not permitted for primary context labels in this slice.
+
+### Required Visibility Rules
+
+- Every search entry point must show the active context label adjacent to input affordances.
+- Drive discovery surfaces must display active root and folder scope near search/browse controls.
+- Library search surfaces must display that results are from saved library entities only.
+- Recents surfaces must not present Drive-discovery copy as if Recents were a Drive browser.
+
+### Approved Helper Copy Patterns
+
+- Drive search helper: Search Google Drive
+- Drive scope helper: Scope: This folder or Scope: My Drive / Shared
+- Drive browse helper: Browse Google Drive folders and audio
+- Library search helper: Search saved library
+- Library corpus helper: Tracks, loops, playlists, folders, and tags
+- Recents empty helper: No recent rehearsal yet. Start in Search or Library.
+
+### Mislabelling Prevention Rules
+
+- If results come from Drive discovery, helper copy must include Google Drive.
+- If results come from saved entities, helper copy must include saved library or Library.
+- Mixed-source result sets are not allowed in a single context view for this IA revision.
+- Context switches must update labels and helper copy in the same render cycle as result changes.
+
+### UX Review Checklist For Labels
+
+- Verify context label appears in Search and Library headers at rest and during active query.
+- Verify Drive root-switch UI does not lose Google Drive labeling after tab reorder.
+- Verify breadcrumbs remain visually tied to Google Drive context copy.
+- Verify empty, loading, and error states use matching context terminology.
+
+## Representative Flow Validation And Refinements (Task 1.5)
+
+Validated flow: discover in Drive -> save -> add to playlist -> play.
+
+Validated flow: first-use empty library -> discover -> save first track -> optionally create playlist -> play.
+
+### Flow Walkthrough Against Target IA
+
+1. Discover in Drive
+   - User opens Search tab (Google Drive context is explicit).
+   - User searches or browses within Drive scope (root selector + breadcrumbs visible).
+   - User identifies playable source row in Drive results.
+
+2. Save
+   - User taps Save on Drive result row.
+   - Row state confirms save and source becomes available in Library saved-track surfaces.
+
+3. Add to playlist
+   - User moves to Library tab.
+   - User opens row-level more-options for the saved track and adds the track to a selected playlist (or creates one).
+
+4. Play
+   - User opens playlist detail and starts playback from playlist controls.
+   - Mini-player and now-playing/queue surfaces reflect active playlist session state.
+
+### Validation Outcome
+
+- Flow is viable under target IA without requiring Recents as an entry step.
+- Context boundaries remain understandable when labels from task 1.4 are applied.
+- Existing save -> playlist -> playback chain remains reachable in 2-tab handoff (Search -> Library).
+
+### New-User Empty-Library Flow Walkthrough
+
+1. First launch with no saved entities
+   - User opens Recents and sees first-use helper guidance (no recent rehearsal yet).
+   - Guidance points to Search and Library as primary next actions.
+
+2. Discover first source in Drive
+   - User opens Search tab and stays in explicit Google Drive context.
+   - User browses or searches Drive and finds an available playable source.
+
+3. Save first source
+   - User taps Save from Drive results.
+   - Save confirmation is visible and source is now present in Library saved tracks.
+
+4. Optional playlist creation path
+   - User opens Library and may add the newly saved track to a new or existing playlist.
+
+5. Start playback
+   - User starts playback from saved track row or playlist detail.
+   - Mini-player appears and remains persistent during tab switches.
+
+### Empty-Library Pass Criteria
+
+- A first-time user can reach audible playback without pre-existing library content.
+- No step in the first-use flow depends on Recents being populated.
+- Empty states in Recents and Library provide explicit next-action guidance (Search and/or save-first actions).
+- Drive discovery controls (root selector, breadcrumbs, scope) remain visible and understandable for first-time users.
+
+### Refinements Before Component Implementation
+
+- Keep a persistent success acknowledgement after save action long enough to support the Search -> Library handoff.
+- Ensure Library tab lands on saved-track content with playlist actions immediately reachable (no hidden management mode required).
+- Keep playlist quick-access cards above saved-track rows so add-to-playlist and playback-start paths stay short.
+- Preserve mini-player continuity through the full flow so users can verify playback state while navigating.
+- Include this validated flow in manual regression checks as a required pass scenario before sign-off.
+- Ensure empty-library states include CTA copy that is action-oriented (for example Open Search or Save your first track).
+
 ## Goals / Non-Goals
 
 **Goals:**
