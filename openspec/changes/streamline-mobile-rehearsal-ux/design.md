@@ -423,6 +423,29 @@ Alternatives considered:
 7. Run manual regression on rehearsal-critical flows: start playback from playlist row, loop save/preview, queue mode changes, mini-player persistence, and both search contexts.
 8. If regressions are found, fall back to existing explicit controls while keeping non-breaking hierarchy improvements.
 
+## Task 1.6 Mockup Package
+
+- Mockup artifact: `openspec/changes/streamline-mobile-rehearsal-ux/mockups/recents-compact.md`
+- Included states: first-use empty history and active-user recent history.
+- Included modules: Continue from last item, compact recent tracks/loops/playlists list, and popular tags shortcuts.
+- Density fallback guidance included for constrained phone heights.
+
+## Task 1.6 Design Confirmation Status
+
+- Status: Ready for review.
+- Confirmation checkpoint: pending reviewer sign-off that the Recents composition remains compact and scannable while keeping Search and Library as explicit alternatives.
+
+## Task 1.6 Terminology Rule
+
+- Prefer explicit app entity language in Recents copy: tracks, loops, and playlists.
+- Avoid introducing generic labels like "rehearsal" in user-facing Recents module titles and empty-state text.
+
+## Task 1.6 Recents Density Decision
+
+- Recents recent-items module supports vertical scrolling.
+- Compact viewport shows 3 rows by default and 2 rows on smallest supported phone heights.
+- Recent-items module cap is set to 50 entries.
+
 ## Open Questions
 
-- None currently. Decisions for queue actions, reorder interactions, Recents composition and naming, search entry points, and organization baseline are resolved in this design.
+- None for Task 1.6.
