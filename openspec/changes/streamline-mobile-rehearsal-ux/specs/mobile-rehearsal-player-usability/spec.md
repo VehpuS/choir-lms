@@ -122,6 +122,7 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 
 - **WHEN** a user views playlist list cards or playlist detail
 - **THEN** each surface exposes a fixed top-right vertical-ellipsis trigger that opens the shared options menu for non-primary management actions
+- **AND** playlist list cards keep `Open playlist` separate from the overflow menu while offering playlist management actions such as rename and remove from that menu
 
 #### Scenario: Saved source rows keep primary actions inline and move secondary/destructive actions into overflow
 
