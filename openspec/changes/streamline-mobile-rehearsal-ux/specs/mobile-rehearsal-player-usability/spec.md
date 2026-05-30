@@ -15,6 +15,12 @@ The system SHALL present playlist detail as playback-first by default, with dest
 - **THEN** each card provides a top-level icon-only play action that starts playback for that playlist without first opening playlist detail
 - **AND** the card preserves `Open playlist` as a separate detail-navigation action
 
+#### Scenario: Playlist card rename stays in Library context
+
+- **WHEN** a user chooses `Rename playlist` from a saved playlist card overflow menu in Library
+- **THEN** the system opens the rename flow without navigating into playlist detail
+- **AND** after submit or cancel, the user remains in the Library surface with their current list context preserved
+
 #### Scenario: Playlist item removal is fast and recoverable
 
 - **WHEN** a user removes a playlist item from the default playlist detail mode
@@ -123,6 +129,7 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 - **WHEN** a user views playlist list cards or playlist detail
 - **THEN** each surface exposes a fixed top-right vertical-ellipsis trigger that opens the shared options menu for non-primary management actions
 - **AND** playlist list cards keep `Open playlist` separate from the overflow menu while offering playlist management actions such as rename and remove from that menu
+- **AND** choosing `Rename playlist` from a playlist list card does not implicitly navigate to playlist detail before showing the rename flow
 
 #### Scenario: Saved source rows keep primary actions inline and move secondary/destructive actions into overflow
 

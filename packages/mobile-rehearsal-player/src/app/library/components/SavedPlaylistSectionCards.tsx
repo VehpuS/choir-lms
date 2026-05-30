@@ -2,13 +2,18 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
-import { getSavedPlaylistCardPlayAction } from '../utils/saved-playlist-card-view-model';
-import { queueSavedPlaylistRenameRequest } from '../utils/saved-playlist-detail-view-model';
+import {
+  getSavedPlaylistCardPlayAction,
+  resolveSavedPlaylistCardRenameTarget,
+} from '../utils/saved-playlist-card-view-model';
 import type {
   PlaylistDraftIssue,
   SavedPlaylistCard,
 } from '../utils/saved-playlist-view-model';
-import { PlaylistOptionsMenuSurface } from './PlaylistRenameDialog';
+import {
+  PlaylistOptionsMenuSurface,
+  PlaylistRenameDialog,
+} from './PlaylistRenameDialog';
 import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
   savedPlaylistSectionStyles as styles,
@@ -75,9 +80,16 @@ export const SavedPlaylistCreateCard = (props: {
 };
 
 export const SavedPlaylistCardsList = (props: {
+  cardRenameIssue: PlaylistDraftIssue | null;
+  cardRenamePlaylistId: string | null;
+  cardRenamePlaylistName: string;
   canMutatePlaylists: boolean;
   isMutating: boolean;
+  onBeginRenamePlaylist: (playlistId: string) => void;
+  onCancelRenamePlaylist: () => void;
   onDeletePlaylist: (playlistId: string) => void;
+  onRenamePlaylistNameChange: (value: string) => void;
+  onSubmitRenamePlaylist: () => void;
   playlistCards: SavedPlaylistCard[];
   selectedPlaylistId?: string | null;
   onPlayPlaylist: (playlistId: string) => void;
@@ -94,6 +106,10 @@ export const SavedPlaylistCardsList = (props: {
   const selectedOptionsPlaylist = props.playlistCards.find((playlistCard) => {
     return playlistCard.playlist.id === optionsPlaylistId;
   });
+  const selectedCardRenameTarget = resolveSavedPlaylistCardRenameTarget(
+    props.playlistCards,
+    props.cardRenamePlaylistId,
+  );
 
   return (
     <View style={styles.group}>
@@ -201,11 +217,20 @@ export const SavedPlaylistCardsList = (props: {
             return;
           }
 
-          queueSavedPlaylistRenameRequest(selectedOptionsPlaylist.playlist.id);
           setOptionsPlaylistId(null);
-          props.onSelectPlaylist(selectedOptionsPlaylist.playlist.id);
+          props.onBeginRenamePlaylist(selectedOptionsPlaylist.playlist.id);
         }}
         playlistName={selectedOptionsPlaylist?.playlist.name ?? ''}
+      />
+      <PlaylistRenameDialog
+        isMutating={props.isMutating}
+        isVisible={selectedCardRenameTarget !== null}
+        issue={props.cardRenameIssue}
+        onCancel={props.onCancelRenamePlaylist}
+        onChange={props.onRenamePlaylistNameChange}
+        onSubmit={props.onSubmitRenamePlaylist}
+        playlistName={selectedCardRenameTarget?.playlistName ?? ''}
+        value={props.cardRenamePlaylistName}
       />
     </View>
   );

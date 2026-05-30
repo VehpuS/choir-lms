@@ -345,6 +345,7 @@ Follow-on rollout direction:
 - Converge saved track and saved loop rows on one inline icon-only `Play` action plus a shared overflow trigger, while keeping `Make loop` as a saved-track-only overflow action.
 - Replace text-labeled `Play` buttons with icon-first playback affordances wherever the control performs an immediate playback action and standard music-player iconography is sufficient.
 - Add a top-level play icon on playlist cards for immediate playback start while preserving `Open playlist` for detail navigation and the existing overflow trigger for management actions such as rename and remove.
+- Keep playlist-card rename in the Library surface: selecting `Rename playlist` from a playlist card overflow menu opens the rename dialog in place and preserves the user's current Library context, rather than navigating into playlist detail as an implementation shortcut.
 - Use the same icon-first play treatment for Recents resume shortcuts and other shortcut cards that directly start playback.
 - Keep one primary inline action per row when useful for speed (for example immediate playback), and place lower-frequency or destructive controls in the overflow menu.
 - Keep icon semantics and touch target sizing aligned with playlist/search/library patterns as additional surfaces adopt this UI.

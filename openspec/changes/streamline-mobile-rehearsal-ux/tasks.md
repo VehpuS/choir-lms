@@ -20,6 +20,7 @@
 - [x] 2.7 Standardize saved loop cards with saved track cards for add-to-playlist affordances, including consistent action placement, labels, and feedback.
 - [x] 2.8 Add a top-level play icon on playlist cards while preserving `Open playlist` navigation and existing overflow management actions. Do not use a text-labeled `Play` button.
 - [x] 2.8.1 Add `Remove playlist` to the shared playlist-card overflow menu so saved playlists can be deleted without opening playlist detail.
+- [x] 2.8.2 Keep playlist-card rename in Library context by opening the rename flow in place instead of routing through playlist detail.
 
 ## 3. Top-Level Tab Reordering and Search Contexts
 

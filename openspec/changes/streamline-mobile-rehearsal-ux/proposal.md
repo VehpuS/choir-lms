@@ -12,6 +12,7 @@ The current mobile rehearsal player already delivers core playback and playlist 
 - Keep `Make loop` as the intentional exception on saved tracks only, surfaced from the same overflow menu rather than a dedicated inline button.
 - Replace text-labeled `Play` buttons with standard playback icons wherever the action is direct playback entry, including playlist cards, library/search rows, Recents shortcuts, and any remaining shell playback controls that do not need a text label.
 - Add an immediate top-level play affordance on playlist cards while keeping `Open playlist` for detail navigation and moving playlist removal into the shared overflow menu.
+- Keep playlist-card rename context-preserving by opening the rename flow in Library instead of routing through playlist detail.
 - Make loops track-context-first (managed from their parent tracks) while allowing optional promotion to first-class library objects in user-managed folders.
 - Add practical organization tools for saved library content: filters, tags, and optional folders.
 - Improve consistency and accessibility of icon semantics, touch targets, feedback, and empty-state guidance across playback and library surfaces.
