@@ -29,6 +29,18 @@ The system SHALL provide direct shortcuts to recent rehearsal context so users c
 - **THEN** Recents shows a direct shortcut to resume the most relevant recent rehearsal item or playlist context
 - **AND** any direct playback control in that shortcut uses a standard play icon rather than a text-labeled `Play` button
 
+#### Scenario: Resume controls map to one explicit recent item
+
+- **WHEN** Recents shows a resume row for a recent rehearsal item
+- **THEN** the row labels the exact target item title that will play
+- **AND** the row play icon resumes that labeled item only (not a generic or ambiguous card-level target)
+
+#### Scenario: Multiple recents are presented as per-item rows
+
+- **WHEN** more than one recent rehearsal item exists
+- **THEN** Recents renders a compact recent-items list with one row per item
+- **AND** each row exposes its own icon-only play control so users can resume a specific item directly
+
 #### Scenario: Empty recent context falls back to discovery guidance
 
 - **WHEN** no recent rehearsal context exists

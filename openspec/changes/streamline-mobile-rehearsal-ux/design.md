@@ -397,9 +397,15 @@ Alternatives considered:
 
 Recents should surface multiple useful shortcut modules (for example recent rehearsal items and popular tags) only when the layout remains compact and scannable on representative phone sizes. A mockup review checkpoint is required before implementation.
 
+Implementation status note:
+
+- The current implementation slice ships a concrete per-item resume row (icon-only play action bound to a labeled recent item) to avoid ambiguous card-level play behavior.
+- Compact multi-item recent history remains a follow-on implementation step tracked as task `3.3.3`.
+
 Alternatives considered:
 
-- Ship a single resume card only: rejected because users benefit from richer shortcut coverage.
+- Ship a single resume card only as the final state: rejected because users benefit from richer shortcut coverage.
+- Ship a single explicit per-item resume row as an interim step before multi-item history: accepted as a low-risk transition to remove ambiguous playback affordances.
 - Implement multiple modules without design validation: rejected due to high risk of visual crowding.
 
 ### 8. Reorder tab and component IA with a feature-preservation contract
@@ -519,6 +525,7 @@ Alternatives considered:
 
 - Status: Ready for review.
 - Confirmation checkpoint: pending reviewer sign-off that the Recents composition remains compact and scannable while keeping Search and Library as explicit alternatives.
+- Implementation rollout note: current Recents implementation includes explicit single-item per-row resume plus popular tags shortcuts, with compact multi-item recent history queued as follow-on task `3.3.3`.
 
 ## Task 1.6 Terminology Rule
 
