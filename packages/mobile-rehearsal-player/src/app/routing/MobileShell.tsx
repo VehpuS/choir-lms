@@ -93,7 +93,7 @@ export const MobileShell = ({
   searchScreen,
 }: MobileShellProps) => {
   const [activeDestination, setActiveDestination] =
-    useState<ShellDestinationKey>('home');
+    useState<ShellDestinationKey>('library');
   const [activePlaybackSurface, setActivePlaybackSurface] =
     useState<PlaybackSurfaceKey | null>(null);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);

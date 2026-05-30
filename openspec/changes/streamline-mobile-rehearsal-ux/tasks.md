@@ -24,7 +24,7 @@
 
 ## 3. Top-Level Tab Reordering and Search Contexts
 
-- [ ] 3.1 Reorder top-level tab composition and within-tab sections according to the IA plan while preserving current feature coverage.
+- [x] 3.1 Reorder top-level tab composition and within-tab sections according to the IA plan while preserving current feature coverage.
 - [ ] 3.2 Rebalance Recents hierarchy so Recents stays optional and non-blocking while still supporting recents and shortcut use cases.
 - [ ] 3.3 Add recent rehearsal entry points on Recents with concise fallback guidance for first-use or empty-history states, and optional shortcut metadata (for example popular tags).
 - [ ] 3.3.1 Use icon-first playback entry on Recents resume and shortcut cards, replacing any text-labeled `Play` button with a standard play icon while keeping descriptive copy outside the control.

@@ -54,23 +54,23 @@ export type UpNextSurfaceSummary = {
 
 export const SHELL_DESTINATIONS: ShellDestination[] = [
   {
-    key: 'home',
-    label: 'Home',
-    title: 'Practice home base',
-    description:
-      'Browse Drive, save tracks, and jump back into the current session.',
+    key: 'library',
+    label: 'Library',
+    title: 'Your rehearsal library',
+    description: 'Play saved tracks, loops, and playlists.',
   },
   {
     key: 'search',
     label: 'Search',
     title: 'Search rehearsal audio',
-    description: 'Find tracks in My Drive and shared folders.',
+    description: 'Browse and search Google Drive folders and tracks.',
   },
   {
-    key: 'library',
-    label: 'Library',
-    title: 'Your rehearsal library',
-    description: 'Play saved tracks, loops, and playlists.',
+    key: 'home',
+    label: 'Recents',
+    title: 'Recent rehearsal shortcuts',
+    description:
+      'Resume current playback and jump back into recent practice context.',
   },
 ];
 
@@ -270,7 +270,7 @@ export const getNowPlayingSurfaceSummary = (options: {
     }),
     playbackLabel: options.activePlaylistSession
       ? getPlaylistPlaybackSessionSummary(options.activePlaylistSession)
-      : 'Keep the current rehearsal item audible while moving between Home, Search, and Library.',
+      : 'Keep the current rehearsal item audible while moving between Library, Search, and Recents.',
     queueLabel: getPlaybackQueueLabel(options.activePlaylistSession),
     rangeLabel: getPlayableItemRangeLabel(options.activePlayableItem),
     supportsQueueNavigation: Boolean(options.activePlaylistSession),

@@ -274,6 +274,10 @@
     "/^npm exec -- tsx --test /": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec -- nx test mobile-rehearsal-player -- --runInBand app-router\\.spec\\.tsx$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

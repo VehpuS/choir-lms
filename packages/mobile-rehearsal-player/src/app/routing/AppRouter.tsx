@@ -45,7 +45,6 @@ export const AppRouter = () => {
       homeScreen={
         <HomeScreen
           activePlayableItem={playback.activePlayableItem}
-          libraryController={libraryController}
           savedTrackCount={libraryController.savedLibrary.trackCount}
         />
       }

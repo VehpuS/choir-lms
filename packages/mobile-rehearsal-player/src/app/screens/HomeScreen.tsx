@@ -4,14 +4,11 @@ import { join, map, toUpper } from 'es-toolkit/compat';
 
 import { runtimeConfig } from '../../config/runtime';
 import { SummaryCard } from '../components/SummaryCard';
-import { DriveDiscoveryPanel } from '../library/components/DriveDiscoveryPanel';
-import type { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
 import { appTheme } from '../utils/theme';
 import { getHomeContinuePracticingCopy } from './screen-copy';
 
 export type HomeScreenProps = {
   activePlayableItem: PlayableItem | null;
-  libraryController: ReturnType<typeof useRehearsalLibraryScreenController>;
   savedTrackCount: number;
 };
 
@@ -24,7 +21,6 @@ const AUDIO_FORMAT_LABEL = join(
 
 export const HomeScreen = ({
   activePlayableItem,
-  libraryController,
   savedTrackCount,
 }: HomeScreenProps) => {
   const continuePracticingCopy = activePlayableItem
@@ -62,12 +58,10 @@ export const HomeScreen = ({
       {continuePracticingCopy ? (
         <SummaryCard
           body={continuePracticingCopy.body}
-          eyebrow="Home"
+          eyebrow="Recents"
           title={continuePracticingCopy.title}
         />
       ) : null}
-
-      <DriveDiscoveryPanel controller={libraryController} />
     </ScrollView>
   );
 };

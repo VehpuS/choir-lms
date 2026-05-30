@@ -25,8 +25,8 @@ const TAB_ICONS: Record<
   }
 > = {
   home: {
-    active: 'home',
-    inactive: 'home-outline',
+    active: 'history',
+    inactive: 'history',
   },
   search: {
     active: 'magnify',

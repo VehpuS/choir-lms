@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet } from 'react-native';
 
+import { DriveDiscoveryPanel } from '../library/components/DriveDiscoveryPanel';
 import { DriveSearchResultsPanel } from '../library/components/DriveSearchResultsPanel';
 import type { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
 import { appTheme } from '../utils/theme';
@@ -16,6 +17,7 @@ export const SearchScreen = ({ libraryController }: SearchScreenProps) => {
       style={styles.screen}
     >
       <DriveSearchResultsPanel controller={libraryController} />
+      <DriveDiscoveryPanel controller={libraryController} />
     </ScrollView>
   );
 };
