@@ -6,11 +6,11 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { runtimeConfig } from '../../config/runtime';
 import { appTheme } from '../utils/theme';
 import {
-  getHomeContinuePracticingCopy,
+  getRecentsContinuePracticingCopy,
   getRecentsShortcutPlayActionCopy,
 } from './screen-copy';
 
-export type HomeScreenProps = {
+export type RecentsScreenProps = {
   activePlayableItem: PlayableItem | null;
   onPlayRecentShortcut: (shortcutTag: string) => void;
   onResumeRecentPlayback: () => void;
@@ -26,13 +26,13 @@ const AUDIO_FORMAT_LABEL = join(
   ', ',
 );
 
-export const HomeScreen = ({
+export const RecentsScreen = ({
   activePlayableItem,
   onPlayRecentShortcut,
   onResumeRecentPlayback,
   savedTrackCount,
-}: HomeScreenProps) => {
-  const continuePracticingCopy = getHomeContinuePracticingCopy({
+}: RecentsScreenProps) => {
+  const continuePracticingCopy = getRecentsContinuePracticingCopy({
     activePlayableItemTitle: activePlayableItem?.title ?? null,
     savedTrackCount,
   });
@@ -218,62 +218,47 @@ const styles = StyleSheet.create({
   },
   resumeCardEyebrow: {
     color: appTheme.colors.secondaryText,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.6,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
   resumeCardTitle: {
     color: appTheme.colors.primaryText,
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '700',
-    lineHeight: 26,
   },
   resumeCardBody: {
     color: appTheme.colors.secondaryText,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  shortcutsHeader: {
-    flexDirection: 'row',
-    gap: 12,
+    fontSize: 14,
+    lineHeight: 20,
   },
   recentItemRow: {
-    marginTop: 4,
+    marginTop: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'space-between',
+    gap: 12,
   },
   recentItemTitle: {
     flex: 1,
     color: appTheme.colors.primaryText,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
-    lineHeight: 20,
+  },
+  shortcutsHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
   },
   shortcutsCopy: {
     flex: 1,
     gap: 4,
   },
-  iconActionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    backgroundColor: appTheme.colors.surfaceBackground,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconActionButtonPressed: {
-    opacity: 0.85,
-  },
-  iconActionButtonDisabled: {
-    opacity: 0.55,
-  },
   shortcutsTitle: {
     color: appTheme.colors.primaryText,
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
   },
   shortcutsBody: {
@@ -285,35 +270,53 @@ const styles = StyleSheet.create({
     color: appTheme.colors.secondaryText,
     fontSize: 12,
     fontWeight: '600',
-    letterSpacing: 0.2,
-    textTransform: 'uppercase',
   },
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
   },
   tagChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    gap: 10,
+    paddingVertical: 8,
+    paddingLeft: 12,
+    paddingRight: 8,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#ddd5c6',
-    backgroundColor: '#f5f1e8',
-  },
-  tagPlayButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: appTheme.colors.border,
+    backgroundColor: appTheme.colors.pageBackground,
   },
   tagLabel: {
     color: appTheme.colors.primaryText,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
+  },
+  tagPlayButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: appTheme.colors.surfaceBackground,
+    borderWidth: 1,
+    borderColor: appTheme.colors.border,
+  },
+  iconActionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: appTheme.colors.surfaceBackground,
+    borderWidth: 1,
+    borderColor: appTheme.colors.border,
+  },
+  iconActionButtonPressed: {
+    opacity: 0.75,
+  },
+  iconActionButtonDisabled: {
+    opacity: 0.45,
   },
 });

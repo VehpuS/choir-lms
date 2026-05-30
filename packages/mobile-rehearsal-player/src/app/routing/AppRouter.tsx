@@ -2,7 +2,7 @@ import { useGoogleDriveAuthorization } from '../auth/hooks/use-google-drive-auth
 import { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
 import { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackActionCopy } from '../library/utils/saved-track-playback-view-model';
-import { HomeScreen } from '../screens/HomeScreen';
+import { RecentsScreen } from '../screens/RecentsScreen';
 import { LibraryScreen } from '../screens/LibraryScreen';
 import { SearchScreen } from '../screens/SearchScreen';
 import { MobileShell } from './MobileShell';
@@ -42,8 +42,8 @@ export const AppRouter = () => {
       canSkipPreviousItem={
         playback.activePlaylistSession !== null && !playback.isPreparing
       }
-      homeScreen={
-        <HomeScreen
+      recentsScreen={
+        <RecentsScreen
           activePlayableItem={playback.activePlayableItem}
           onPlayRecentShortcut={() => {
             void playback.toggleActivePlayback();

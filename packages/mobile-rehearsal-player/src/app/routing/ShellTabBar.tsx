@@ -24,7 +24,7 @@ const TAB_ICONS: Record<
     inactive: MaterialCommunityIconName;
   }
 > = {
-  home: {
+  recents: {
     active: 'history',
     inactive: 'history',
   },

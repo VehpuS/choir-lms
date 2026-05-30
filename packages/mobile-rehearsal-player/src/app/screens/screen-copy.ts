@@ -1,4 +1,4 @@
-export const getHomeContinuePracticingCopy = (options: {
+export const getRecentsContinuePracticingCopy = (options: {
   activePlayableItemTitle: string | null;
   savedTrackCount: number;
 }) => {
@@ -61,7 +61,7 @@ export const getLibraryScreenSummaryCopy = (options: {
 }) => {
   if (options.savedTrackCount === 0) {
     return {
-      body: 'Save a track from Home or Search to start full-track playback, loops, and playlists in your rehearsal library.',
+      body: 'Save a track from Search to start full-track playback, loops, and playlists in your rehearsal library.',
       title: 'Library is ready for your first track',
     };
   }

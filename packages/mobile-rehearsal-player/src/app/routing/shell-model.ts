@@ -10,7 +10,7 @@ import {
 } from '../library/utils/saved-playlist-playback-view-model';
 import type { SavedTrackPlaybackState } from '../library/utils/saved-track-playback-view-model';
 
-export type ShellDestinationKey = 'home' | 'search' | 'library';
+export type ShellDestinationKey = 'recents' | 'search' | 'library';
 
 export type ShellDestination = {
   description: string;
@@ -66,7 +66,7 @@ export const SHELL_DESTINATIONS: ShellDestination[] = [
     description: 'Browse and search Google Drive folders and tracks.',
   },
   {
-    key: 'home',
+    key: 'recents',
     label: 'Recents',
     title: 'Recent rehearsal shortcuts',
     description:

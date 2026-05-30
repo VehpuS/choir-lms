@@ -2,16 +2,16 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-  getHomeContinuePracticingCopy,
+  getRecentsContinuePracticingCopy,
   getLibraryScreenSummaryCopy,
   getRecentsShortcutPlayActionCopy,
   getSearchScreenSummaryCopy,
 } from '../screen-copy.js';
 
-describe('getHomeContinuePracticingCopy', () => {
+describe('getRecentsContinuePracticingCopy', () => {
   it('promotes the active item when playback is already in progress', () => {
     assert.deepEqual(
-      getHomeContinuePracticingCopy({
+      getRecentsContinuePracticingCopy({
         activePlayableItemTitle: 'Kyrie Alto.mp3',
         savedTrackCount: 2,
       }),
@@ -24,7 +24,7 @@ describe('getHomeContinuePracticingCopy', () => {
 
   it('guides the user to save a first track when the library is empty', () => {
     assert.deepEqual(
-      getHomeContinuePracticingCopy({
+      getRecentsContinuePracticingCopy({
         activePlayableItemTitle: null,
         savedTrackCount: 0,
       }),
@@ -37,7 +37,7 @@ describe('getHomeContinuePracticingCopy', () => {
 
   it('points users with saved tracks toward Library when no active item exists', () => {
     assert.deepEqual(
-      getHomeContinuePracticingCopy({
+      getRecentsContinuePracticingCopy({
         activePlayableItemTitle: null,
         savedTrackCount: 3,
       }),
@@ -108,7 +108,7 @@ describe('getRecentsShortcutPlayActionCopy', () => {
 describe('getLibraryScreenSummaryCopy', () => {
   it('guides an empty library toward current playback work instead of future slices', () => {
     assert.deepEqual(getLibraryScreenSummaryCopy({ savedTrackCount: 0 }), {
-      body: 'Save a track from Home or Search to start full-track playback, loops, and playlists in your rehearsal library.',
+      body: 'Save a track from Search to start full-track playback, loops, and playlists in your rehearsal library.',
       title: 'Library is ready for your first track',
     });
   });

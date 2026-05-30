@@ -33,7 +33,7 @@ export type MobileShellProps = {
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
-  homeScreen: ReactNode;
+  recentsScreen: ReactNode;
   isPlaybackPreparing: boolean;
   isPlaybackToggleDisabled: boolean;
   libraryScreen: ReactNode;
@@ -57,9 +57,12 @@ export type MobileShellProps = {
 
 const PANEL_BY_DESTINATION: Record<
   ShellDestinationKey,
-  keyof Pick<MobileShellProps, 'homeScreen' | 'libraryScreen' | 'searchScreen'>
+  keyof Pick<
+    MobileShellProps,
+    'recentsScreen' | 'libraryScreen' | 'searchScreen'
+  >
 > = {
-  home: 'homeScreen',
+  recents: 'recentsScreen',
   search: 'searchScreen',
   library: 'libraryScreen',
 };
@@ -73,7 +76,7 @@ export const MobileShell = ({
   canSeekActivePlayback,
   canSkipNextItem,
   canSkipPreviousItem,
-  homeScreen,
+  recentsScreen,
   isPlaybackPreparing,
   isPlaybackToggleDisabled,
   libraryScreen,
@@ -176,7 +179,7 @@ export const MobileShell = ({
         {SHELL_DESTINATIONS.map((destination) => {
           const panelKey = PANEL_BY_DESTINATION[destination.key];
           const panel = {
-            homeScreen,
+            recentsScreen,
             libraryScreen,
             searchScreen,
           }[panelKey];
