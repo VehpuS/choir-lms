@@ -28,6 +28,7 @@
 - [x] 3.2 Rebalance Recents hierarchy so Recents stays optional and non-blocking while still supporting recents and shortcut use cases.
 - [x] 3.3 Add recent rehearsal entry points on Recents with concise fallback guidance for first-use or empty-history states, and optional shortcut metadata (for example popular tags).
 - [ ] 3.3.1 Use icon-first playback entry on Recents resume and shortcut cards, replacing any text-labeled `Play` button with a standard play icon while keeping descriptive copy outside the control.
+- [ ] 3.3.2 Rename remaining legacy `Home` file/component/constant identifiers to `Recents` equivalents (for example `HomeScreen`, `homeScreen`, and shell destination key naming) while preserving behavior and destination order.
 - [ ] 3.4 Implement explicit dual search contexts: Google Drive discovery search (including folder scoping) and dedicated app-library search.
 - [ ] 3.5 Add clear active-context and scope indicators so users always know which corpus (Drive vs library) is being searched.
 - [ ] 3.6 Ensure search entry points are first-class in both the Google Drive navigation surface and the app-library surface.
