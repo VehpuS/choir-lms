@@ -15,6 +15,10 @@ type DriveDiscoveryPanelProps = {
 export const DriveDiscoveryPanel = ({
   controller,
 }: DriveDiscoveryPanelProps) => {
+  const shouldShowStatusCard =
+    controller.discovery.isLoading ||
+    controller.discovery.statusCopy.tone !== 'ready';
+
   return (
     <View style={styles.section}>
       <DriveLibrarySectionHeader
@@ -33,10 +37,12 @@ export const DriveDiscoveryPanel = ({
         navigationStack={controller.discovery.navigationStack}
         onGoToLocation={controller.discovery.goToLocation}
       />
-      <DriveLibraryStatusCard
-        isLoading={controller.discovery.isLoading}
-        statusCopy={controller.discovery.statusCopy}
-      />
+      {shouldShowStatusCard ? (
+        <DriveLibraryStatusCard
+          isLoading={controller.discovery.isLoading}
+          statusCopy={controller.discovery.statusCopy}
+        />
+      ) : null}
       <DriveFolderGroup
         folders={controller.discovery.browseSnapshot.folders}
         onOpenFolder={controller.discovery.openFolder}

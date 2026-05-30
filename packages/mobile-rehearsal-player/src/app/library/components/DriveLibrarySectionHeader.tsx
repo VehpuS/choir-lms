@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 type DriveLibrarySectionHeaderProps = {
@@ -31,6 +32,7 @@ export const DriveLibrarySectionHeader = ({
       </View>
       {canRefresh ? (
         <Pressable
+          accessibilityLabel={isLoading ? 'Refreshing Drive' : 'Refresh Drive'}
           accessibilityRole="button"
           disabled={isLoading}
           onPress={onRefresh}
@@ -40,9 +42,11 @@ export const DriveLibrarySectionHeader = ({
             isLoading ? styles.refreshButtonDisabled : undefined,
           ]}
         >
-          <Text style={styles.refreshButtonLabel}>
-            {isLoading ? 'Refreshing' : 'Refresh'}
-          </Text>
+          <MaterialCommunityIcons
+            color={PRIMARY_ACTION_TEXT}
+            name={isLoading ? 'progress-clock' : 'refresh'}
+            size={18}
+          />
         </Pressable>
       ) : null}
     </View>
@@ -51,9 +55,13 @@ export const DriveLibrarySectionHeader = ({
 
 const styles = StyleSheet.create({
   sectionHeader: {
-    gap: 16,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
   },
   sectionCopy: {
+    flex: 1,
     gap: 8,
   },
   eyebrow: {
@@ -76,20 +84,17 @@ const styles = StyleSheet.create({
   },
   refreshButton: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    width: 40,
+    height: 40,
     borderRadius: 999,
     backgroundColor: PRIMARY_ACTION_BACKGROUND,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   refreshButtonPressed: {
     opacity: 0.88,
   },
   refreshButtonDisabled: {
     opacity: 0.56,
-  },
-  refreshButtonLabel: {
-    color: PRIMARY_ACTION_TEXT,
-    fontSize: 14,
-    fontWeight: '600',
   },
 });

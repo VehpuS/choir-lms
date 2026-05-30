@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 type DriveLibrarySearchPanelProps = {
@@ -42,6 +43,7 @@ export const DriveLibrarySearchPanel = ({
           value={searchQuery}
         />
         <Pressable
+          accessibilityLabel="Search Google Drive"
           accessibilityRole="button"
           disabled={!canSearch || isLoading}
           onPress={onSearch}
@@ -51,7 +53,11 @@ export const DriveLibrarySearchPanel = ({
             !canSearch || isLoading ? styles.searchButtonDisabled : undefined,
           ]}
         >
-          <Text style={styles.searchButtonLabel}>Search</Text>
+          <MaterialCommunityIcons
+            color={PRIMARY_ACTION_TEXT}
+            name="magnify"
+            size={18}
+          />
         </Pressable>
       </View>
       {isSearchMode ? (
@@ -75,9 +81,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
   },
   searchInput: {
+    flex: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderWidth: 1,
@@ -89,21 +98,18 @@ const styles = StyleSheet.create({
   },
   searchButton: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    width: 40,
+    height: 40,
     borderRadius: 999,
     backgroundColor: PRIMARY_ACTION_BACKGROUND,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchButtonPressed: {
     opacity: 0.88,
   },
   searchButtonDisabled: {
     opacity: 0.56,
-  },
-  searchButtonLabel: {
-    color: PRIMARY_ACTION_TEXT,
-    fontSize: 14,
-    fontWeight: '600',
   },
   clearSearchButton: {
     alignSelf: 'flex-start',

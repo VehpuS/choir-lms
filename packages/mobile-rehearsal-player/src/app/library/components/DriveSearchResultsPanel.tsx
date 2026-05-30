@@ -12,6 +12,9 @@ type DriveSearchResultsPanelProps = {
 export const DriveSearchResultsPanel = ({
   controller,
 }: DriveSearchResultsPanelProps) => {
+  const shouldShowStatusCard =
+    controller.search.isLoading || controller.search.statusCopy.tone !== 'ready';
+
   return (
     <View style={styles.section}>
       <DriveLibrarySearchPanel
@@ -23,11 +26,13 @@ export const DriveSearchResultsPanel = ({
         onSearchQueryChange={controller.search.setSearchQuery}
         searchQuery={controller.search.searchQuery}
       />
-      <DriveLibraryStatusCard
-        isLoading={controller.search.isLoading}
-        loadingLabel="Searching Google Drive…"
-        statusCopy={controller.search.statusCopy}
-      />
+      {shouldShowStatusCard ? (
+        <DriveLibraryStatusCard
+          isLoading={controller.search.isLoading}
+          loadingLabel="Searching Google Drive…"
+          statusCopy={controller.search.statusCopy}
+        />
+      ) : null}
       <DriveLibrarySourceGroup
         getAction={controller.getSourceAction}
         getMessage={controller.getSourceMessage}
