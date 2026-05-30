@@ -7,22 +7,27 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { appTheme } from '../utils/theme';
 
-const QUEUE_MODE_OPTIONS: Array<{
+const getQueueToggleAction = (
+  mode: RehearsalQueueMode,
+): {
   accessibilityLabel: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  mode: RehearsalQueueMode;
-}> = [
-  {
-    accessibilityLabel: 'Play in saved order',
-    icon: 'format-list-numbered',
-    mode: 'ordered',
-  },
-  {
-    accessibilityLabel: 'Shuffle playback',
-    icon: 'shuffle',
-    mode: 'shuffle',
-  },
-];
+  nextMode: RehearsalQueueMode;
+  selected: boolean;
+} => {
+  if (mode === 'shuffle') {
+    return {
+      accessibilityLabel: 'Disable shuffle playback',
+      nextMode: 'ordered',
+      selected: true,
+    };
+  }
+
+  return {
+    accessibilityLabel: 'Enable shuffle playback',
+    nextMode: 'shuffle',
+    selected: false,
+  };
+};
 
 const REPEAT_MODE_OPTIONS: Array<{
   accessibilityLabel: string;
@@ -88,6 +93,7 @@ export const PlaybackSessionModeCard = (props: {
   showQueueModeControls?: boolean;
 }) => {
   const showQueueModeControls = props.showQueueModeControls ?? true;
+  const queueToggleAction = getQueueToggleAction(props.queueMode);
   const repeatModes = props.repeatModes ?? ['off', 'one', 'all'];
   const visibleRepeatOptions = REPEAT_MODE_OPTIONS.filter((option) =>
     repeatModes.includes(option.mode),
@@ -97,20 +103,15 @@ export const PlaybackSessionModeCard = (props: {
     <View style={styles.card}>
       {showQueueModeControls ? (
         <View style={styles.groupRow}>
-          {QUEUE_MODE_OPTIONS.map((option) => {
-            return (
-              <ModeButton
-                accessibilityLabel={option.accessibilityLabel}
-                disabled={props.isDisabled}
-                icon={option.icon}
-                key={option.mode}
-                onPress={() => {
-                  props.onSelectQueueMode(option.mode);
-                }}
-                selected={props.queueMode === option.mode}
-              />
-            );
-          })}
+          <ModeButton
+            accessibilityLabel={queueToggleAction.accessibilityLabel}
+            disabled={props.isDisabled}
+            icon="shuffle"
+            onPress={() => {
+              props.onSelectQueueMode(queueToggleAction.nextMode);
+            }}
+            selected={queueToggleAction.selected}
+          />
         </View>
       ) : null}
 

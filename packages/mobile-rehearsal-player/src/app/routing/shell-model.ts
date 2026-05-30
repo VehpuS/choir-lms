@@ -2,9 +2,9 @@ import type { PlayableItem } from '@org/audio-library-models';
 
 import { formatDurationLabel } from '../library/utils/drive-library-view-model';
 import {
+  getPlaylistPlaybackSessionSummary,
   getPlaylistQueueModeLabel,
   getPlaylistRepeatModeLabel,
-  getPlaylistPlaybackSessionSummary,
   resolvePlaylistPlaybackAdvance,
   type PlaylistPlaybackSession,
 } from '../library/utils/saved-playlist-playback-view-model';
@@ -57,7 +57,8 @@ export const SHELL_DESTINATIONS: ShellDestination[] = [
     key: 'home',
     label: 'Home',
     title: 'Practice home base',
-    description: 'Browse Drive, save tracks, and jump back into the current session.',
+    description:
+      'Browse Drive, save tracks, and jump back into the current session.',
   },
   {
     key: 'search',
@@ -119,7 +120,9 @@ const getProgressLabel = (options: {
   const relativePositionMs = Math.max(0, clampedPositionMs - rangeStartMs);
   const positionLabel = formatDurationLabel(relativePositionMs) ?? '0:00';
   const durationLabel = formatDurationLabel(
-    totalDurationMs === undefined ? totalDurationMs : totalDurationMs - rangeStartMs,
+    totalDurationMs === undefined
+      ? totalDurationMs
+      : totalDurationMs - rangeStartMs,
   );
 
   return durationLabel ? `${positionLabel} of ${durationLabel}` : positionLabel;

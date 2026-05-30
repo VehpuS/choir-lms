@@ -159,7 +159,7 @@ export const NowPlayingSurface = ({
           {summary.supportsQueueNavigation ? 'Rehearsing queue' : 'Rehearsing'}
         </Text>
         <View style={styles.headerActionRow}>
-          {queueSummary ? (
+          {summary.supportsQueueNavigation && queueSummary ? (
             <SurfaceIconButton
               accessibilityLabel="Show queue"
               icon="view-list"
