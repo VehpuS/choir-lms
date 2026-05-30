@@ -9,6 +9,12 @@ The system SHALL present playlist detail as playback-first by default, with dest
 - **WHEN** a user opens playlist detail
 - **THEN** the system shows playback actions and current running order before secondary management controls such as rename or delete playlist
 
+#### Scenario: Playlist cards expose immediate playback entry
+
+- **WHEN** a user views saved playlist cards in Library
+- **THEN** each card provides a top-level `Play` action that starts playback for that playlist without first opening playlist detail
+- **AND** the card preserves `Open playlist` as a separate detail-navigation action
+
 #### Scenario: Playlist item removal is fast and recoverable
 
 - **WHEN** a user removes a playlist item from the default playlist detail mode
@@ -103,6 +109,11 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 
 - **WHEN** a user views saved source rows in Library or Search contexts
 - **THEN** the system keeps playback-first actions inline and places lower-frequency or destructive actions (for example remove) in the shared overflow menu
+
+#### Scenario: Saved loop rows align with saved track rows for playlist-add affordances
+
+- **WHEN** a user views saved loop rows and saved track rows in Library surfaces
+- **THEN** both row types provide equivalent add-to-playlist affordances with consistent labels, placement, and state feedback
 
 #### Scenario: New row-action capabilities adopt the same overflow grouping rules
 

@@ -331,6 +331,8 @@ Implemented delta in this change:
 Follow-on rollout direction:
 
 - Extend the same overflow grouping to loop row actions when queue-acceleration actions (`Play next`, `Add to queue`) are introduced.
+- Standardize saved loop cards with saved track cards for add-to-playlist affordances so both surfaces keep equivalent action placement, labels, and feedback behavior.
+- Add a top-level `Play` action on playlist cards for immediate playback start while preserving `Open playlist` for detail navigation and the existing overflow trigger for management actions.
 - Keep one primary inline action per row when useful for speed (for example immediate playback), and place lower-frequency or destructive controls in the overflow menu.
 - Keep icon semantics and touch target sizing aligned with playlist/search/library patterns as additional surfaces adopt this UI.
 
