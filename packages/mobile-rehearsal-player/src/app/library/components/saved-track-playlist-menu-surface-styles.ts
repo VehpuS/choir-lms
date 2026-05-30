@@ -1,7 +1,5 @@
 import { StyleSheet } from 'react-native';
 
-const BACKDROP = 'rgba(20, 18, 13, 0.42)';
-const CARD_BACKGROUND = '#fffdf8';
 const INPUT_BACKGROUND = '#fff9f0';
 const PRIMARY_ACTION_BACKGROUND = '#305c4d';
 const PRIMARY_ACTION_TEXT = '#fff8ef';
@@ -10,35 +8,6 @@ const SECONDARY_ACTION_BACKGROUND = '#f2ece1';
 const SECONDARY_TEXT = '#5f5647';
 
 export const savedTrackPlaylistMenuSurfaceStyles = StyleSheet.create({
-  dialogOverlay: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: BACKDROP,
-  },
-  dialogBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  dialogCard: {
-    gap: 16,
-    width: '100%',
-    maxWidth: 420,
-    padding: 20,
-    borderRadius: 24,
-    backgroundColor: CARD_BACKGROUND,
-  },
-  dialogTitle: {
-    color: PRIMARY_TEXT,
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 24,
-  },
-  dialogBody: {
-    color: SECONDARY_TEXT,
-    fontSize: 14,
-    lineHeight: 20,
-  },
   playlistList: {
     maxHeight: 240,
   },

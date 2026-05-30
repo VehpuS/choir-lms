@@ -17,8 +17,8 @@
 - [x] 2.4 Add `Play next` queue quick-action support for saved track and loop rows without interrupting active playback.
 - [x] 2.5 Add `Add to queue` queue quick-action support for saved track and loop rows without interrupting active playback.
 - [x] 2.6 Update queue and now-playing control presentation so mode-aware controls remain explicit and queue-only controls stay hidden in standalone playback.
-- [ ] 2.7 Standardize saved loop cards with saved track cards for add-to-playlist affordances, including consistent action placement, labels, and feedback.
-- [ ] 2.8 Add a top-level `Play` action on playlist cards while preserving `Open playlist` navigation and existing overflow management actions.
+- [x] 2.7 Standardize saved loop cards with saved track cards for add-to-playlist affordances, including consistent action placement, labels, and feedback.
+- [ ] 2.8 Add a top-level `Play` action on playlist cards while preserving `Open playlist` navigation and existing overflow management actions. Use the "Play" icon rather than a button with a text label.
 
 ## 3. Top-Level Tab Reordering and Search Contexts
 

@@ -109,11 +109,13 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 
 - **WHEN** a user views saved source rows in Library or Search contexts
 - **THEN** the system keeps playback-first actions inline and places lower-frequency or destructive actions (for example remove) in the shared overflow menu
+- **AND** overflow actions are presented directly in the first options menu surface without a nested "More options" step
 
 #### Scenario: Saved loop rows align with saved track rows for playlist-add affordances
 
 - **WHEN** a user views saved loop rows and saved track rows in Library surfaces
 - **THEN** both row types provide equivalent add-to-playlist affordances with consistent labels, placement, and state feedback
+- **AND** both row types open an explicit playlist selection menu before adding the item to the chosen playlist
 
 #### Scenario: New row-action capabilities adopt the same overflow grouping rules
 
@@ -152,3 +154,8 @@ The system SHALL use shared overflow-trigger and dialog-shell primitives so rela
 
 - **WHEN** rename/create/select flows adopt a shared dialog-card shell
 - **THEN** existing workflow steps, confirmation actions, and cancellation behavior remain functionally unchanged
+
+#### Scenario: Overflow and selector surfaces share one sheet style
+
+- **WHEN** users open overflow menus and follow-up selection flows (for example add-to-playlist selectors)
+- **THEN** those flows use one shared sheet-surface visual style and interaction pattern across the app

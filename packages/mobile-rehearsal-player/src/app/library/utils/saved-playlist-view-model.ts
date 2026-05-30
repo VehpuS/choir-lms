@@ -25,11 +25,6 @@ export type PlaylistDraftIssue = {
   message: string;
 };
 
-export type SavedPlaylistLibraryActionCopy = {
-  disabled: boolean;
-  label: string;
-};
-
 export type SavedPlaylistRemovalCopy = {
   confirmLabel: string;
   message: string;
@@ -235,38 +230,6 @@ export const getSavedPlaylistEntryDetailLabel = (options: {
   return durationLabel
     ? `Full track • ${formatDurationLabel(durationLabel)}`
     : (options.entry.description ?? 'Saved track');
-};
-
-export const getSavedPlaylistLibraryActionCopy = (options: {
-  canMutatePlaylists: boolean;
-  isMutating: boolean;
-  selectedPlaylist: Playlist | null;
-}): SavedPlaylistLibraryActionCopy => {
-  if (!options.canMutatePlaylists) {
-    return {
-      disabled: true,
-      label: 'Playlists unavailable',
-    };
-  }
-
-  if (options.isMutating) {
-    return {
-      disabled: true,
-      label: 'Updating playlist…',
-    };
-  }
-
-  if (!options.selectedPlaylist) {
-    return {
-      disabled: true,
-      label: 'Select playlist',
-    };
-  }
-
-  return {
-    disabled: false,
-    label: `Add to ${options.selectedPlaylist.name}`,
-  };
 };
 
 export const getSavedPlaylistRemovalCopy = (

@@ -1,12 +1,13 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { type PlayableItem } from '@org/audio-library-models';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 
 import {
   getSavedLoopItemIssue,
   type SavedLoopCard,
   type SavedLoopIssue,
 } from '../utils/saved-loop-view-model';
-import type { SavedPlaylistLibraryActionCopy } from '../utils/saved-playlist-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -14,6 +15,11 @@ import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
+import { OptionsMenuSheet } from './OptionsMenuSheet';
+import {
+  SAVED_LOOP_PRIMARY_TEXT,
+  savedLoopListStyles as styles,
+} from './saved-loop-list-styles';
 
 type SavedLoopListProps = {
   activePlayableItem: PlayableItem | null;
@@ -24,19 +30,15 @@ type SavedLoopListProps = {
   pendingLoopId: string | null;
   playbackIssue: SavedTrackPlaybackIssue | null;
   playbackState: SavedTrackPlaybackState | undefined;
-  playlistActionCopy: SavedPlaylistLibraryActionCopy;
+  canMutatePlaylists: boolean;
+  isPlaylistMutating: boolean;
   canQueueAsNext: boolean;
-  addLoopToPlaylist: (loop: SavedLoopCard['loop']) => void;
+  onOpenLoopPlaylistSelector: (loopId: string) => void;
   queuePlayableItemNext: (playableItem: PlayableItem) => void;
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   removeLoop: (loop: SavedLoopCard['loop']) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
 };
-
-const PRIMARY_ACTION_BACKGROUND = '#305c4d';
-const PRIMARY_ACTION_TEXT = '#fff8ef';
-const PRIMARY_TEXT = '#1f1c17';
-const SECONDARY_TEXT = '#5f5647';
 
 export const SavedLoopList = ({
   activePlayableItem,
@@ -47,14 +49,19 @@ export const SavedLoopList = ({
   pendingLoopId,
   playbackIssue,
   playbackState,
-  playlistActionCopy,
+  canMutatePlaylists,
+  isPlaylistMutating,
   canQueueAsNext,
-  addLoopToPlaylist,
+  onOpenLoopPlaylistSelector,
   queuePlayableItemNext,
   queuePlayableItemUpNext,
   removeLoop,
   togglePlayableItemPlayback,
 }: SavedLoopListProps) => {
+  const [activeOptionsLoopId, setActiveOptionsLoopId] = useState<string | null>(
+    null,
+  );
+
   if (loopCards.length === 0) {
     return null;
   }
@@ -94,7 +101,26 @@ export const SavedLoopList = ({
         return (
           <View key={loopCard.loop.id} style={styles.loopCard}>
             <View style={styles.loopHeader}>
-              <Text style={styles.loopName}>{loopCard.loop.name}</Text>
+              <View style={styles.loopTitleRow}>
+                <Text style={styles.loopName}>{loopCard.loop.name}</Text>
+                <Pressable
+                  accessibilityLabel="Loop options"
+                  accessibilityRole="button"
+                  onPress={() => {
+                    setActiveOptionsLoopId(loopCard.loop.id);
+                  }}
+                  style={({ pressed }) => [
+                    styles.iconButton,
+                    pressed ? styles.actionButtonPressed : undefined,
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    color={SAVED_LOOP_PRIMARY_TEXT}
+                    name="dots-vertical"
+                    size={18}
+                  />
+                </Pressable>
+              </View>
               <View style={styles.actionRow}>
                 <Pressable
                   accessibilityRole="button"
@@ -118,26 +144,6 @@ export const SavedLoopList = ({
                 >
                   <Text style={styles.playButtonLabel}>
                     {playbackAction.label}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={playlistActionCopy.disabled}
-                  onPress={() => {
-                    addLoopToPlaylist(loopCard.loop);
-                  }}
-                  style={({ pressed }) => [
-                    styles.secondaryButton,
-                    pressed && !playlistActionCopy.disabled
-                      ? styles.actionButtonPressed
-                      : undefined,
-                    playlistActionCopy.disabled
-                      ? styles.actionButtonDisabled
-                      : undefined,
-                  ]}
-                >
-                  <Text style={styles.secondaryButtonLabel}>
-                    {playlistActionCopy.label}
                   </Text>
                 </Pressable>
                 {canQueueAsNext && playableItem ? (
@@ -210,85 +216,32 @@ export const SavedLoopList = ({
             {loopMessage ? (
               <Text style={styles.loopMessage}>{loopMessage}</Text>
             ) : null}
+            <OptionsMenuSheet
+              actions={[
+                {
+                  disabled: !canMutatePlaylists || isPlaylistMutating,
+                  id: `loop:${loopCard.loop.id}:add-to-playlist`,
+                  label: !canMutatePlaylists
+                    ? 'Playlists unavailable'
+                    : isPlaylistMutating
+                      ? 'Updating playlist…'
+                      : 'Add to playlist',
+                  onPress: () => {
+                    setActiveOptionsLoopId(null);
+                    onOpenLoopPlaylistSelector(loopCard.loop.id);
+                  },
+                  tone: 'primary',
+                },
+              ]}
+              isVisible={activeOptionsLoopId === loopCard.loop.id}
+              onClose={() => {
+                setActiveOptionsLoopId(null);
+              }}
+              title={loopCard.loop.name}
+            />
           </View>
         );
       })}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  loopGroup: {
-    gap: 12,
-  },
-  loopGroupTitle: {
-    color: PRIMARY_TEXT,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  loopCard: {
-    gap: 8,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#d6d1c4',
-    borderRadius: 16,
-    backgroundColor: '#fffdf8',
-  },
-  loopHeader: {
-    gap: 12,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    alignItems: 'center',
-  },
-  loopName: {
-    color: PRIMARY_TEXT,
-    fontSize: 15,
-    fontWeight: '700',
-    lineHeight: 21,
-  },
-  loopMetadata: {
-    color: SECONDARY_TEXT,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  loopMessage: {
-    color: SECONDARY_TEXT,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  playButton: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: PRIMARY_ACTION_BACKGROUND,
-  },
-  playButtonLabel: {
-    color: PRIMARY_ACTION_TEXT,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  secondaryButton: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#d6d1c4',
-    borderRadius: 999,
-    backgroundColor: '#fffdf8',
-  },
-  secondaryButtonLabel: {
-    color: PRIMARY_TEXT,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  actionButtonPressed: {
-    opacity: 0.88,
-  },
-  actionButtonDisabled: {
-    opacity: 0.56,
-  },
-});

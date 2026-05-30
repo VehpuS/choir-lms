@@ -20,7 +20,6 @@ import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import type { PlaylistPlaybackSession } from '../utils/saved-playlist-playback-view-model';
 import {
   buildSavedPlaylist,
-  getSavedPlaylistLibraryActionCopy,
   resolveSavedPlaylistCards,
   resolveSelectedPlaylist,
   type PlaylistDraftIssue,
@@ -175,6 +174,10 @@ export const SavedRehearsalLibrarySection = ({
     savedLibrarySources.find((source) => {
       return source.id === trackPlaylistMenuState.selectedSourceId;
     }) ?? null;
+  const selectedTrackMenuLoop =
+    savedLoops.find((loop) => {
+      return loop.id === trackPlaylistMenuState.selectedLoopId;
+    }) ?? null;
 
   useEffect(() => {
     if (!selectedPlaylist) {
@@ -196,13 +199,30 @@ export const SavedRehearsalLibrarySection = ({
   ]);
 
   useEffect(() => {
-    if (!trackPlaylistMenuState.selectedSourceId || selectedTrackMenuSource) {
+    if (trackPlaylistMenuState.selectedSourceId && !selectedTrackMenuSource) {
+      dispatchTrackPlaylistMenu({ type: 'close' });
+      setTrackPlaylistCreationIssue(null);
       return;
     }
 
-    dispatchTrackPlaylistMenu({ type: 'close' });
-    setTrackPlaylistCreationIssue(null);
-  }, [selectedTrackMenuSource, trackPlaylistMenuState.selectedSourceId]);
+    if (trackPlaylistMenuState.selectedLoopId && !selectedTrackMenuLoop) {
+      dispatchTrackPlaylistMenu({ type: 'close' });
+      setTrackPlaylistCreationIssue(null);
+      return;
+    }
+
+    if (
+      !trackPlaylistMenuState.selectedSourceId &&
+      !trackPlaylistMenuState.selectedLoopId
+    ) {
+      return;
+    }
+  }, [
+    selectedTrackMenuLoop,
+    selectedTrackMenuSource,
+    trackPlaylistMenuState.selectedLoopId,
+    trackPlaylistMenuState.selectedSourceId,
+  ]);
 
   const isSavedLibraryMutating = pendingSourceId !== null;
   const isSavedTrackPlaybackLoading = isSavedTrackPlaybackBusy({
@@ -211,11 +231,6 @@ export const SavedRehearsalLibrarySection = ({
   });
   const isPlaylistMutating = pendingPlaylistId !== null;
   const playlistCards = resolveSavedPlaylistCards(savedPlaylists);
-  const playlistActionCopy = getSavedPlaylistLibraryActionCopy({
-    canMutatePlaylists,
-    isMutating: isPlaylistMutating,
-    selectedPlaylist,
-  });
   const savedSourceTitle = `Saved rehearsal tracks (${savedLibrarySources.length})`;
   const isLoopMutating = pendingLoopId !== null;
   const shouldShowSavedLibraryStatus =
@@ -238,30 +253,35 @@ export const SavedRehearsalLibrarySection = ({
     return persistedPlaylist;
   };
 
-  const persistSelectedPlaylist = async (
-    buildNextPlaylist: (playlist: Playlist) => Playlist,
-  ) => {
-    if (!selectedPlaylist) {
-      return null;
-    }
-
-    return persistPlaylist(selectedPlaylist, buildNextPlaylist);
-  };
-
   const closeTrackPlaylistMenu = () => {
     dispatchTrackPlaylistMenu({ type: 'close' });
     setTrackPlaylistCreationIssue(null);
   };
 
-  const handleSelectTrackPlaylist = async (playlist: Playlist) => {
-    if (!selectedTrackMenuSource) {
+  const handleSelectPlaylistForAddTarget = async (playlist: Playlist) => {
+    if (selectedTrackMenuSource) {
+      const persistedPlaylist = await persistPlaylist(
+        playlist,
+        (nextPlaylist) => {
+          return addTrackToPlaylist(nextPlaylist, selectedTrackMenuSource);
+        },
+      );
+
+      if (persistedPlaylist) {
+        closeTrackPlaylistMenu();
+      }
+
+      return;
+    }
+
+    if (!selectedTrackMenuLoop) {
       return;
     }
 
     const persistedPlaylist = await persistPlaylist(
       playlist,
       (nextPlaylist) => {
-        return addTrackToPlaylist(nextPlaylist, selectedTrackMenuSource);
+        return addLoopToPlaylist(nextPlaylist, selectedTrackMenuLoop);
       },
     );
 
@@ -270,8 +290,8 @@ export const SavedRehearsalLibrarySection = ({
     }
   };
 
-  const handleCreateTrackPlaylist = async () => {
-    if (!selectedTrackMenuSource) {
+  const handleCreatePlaylistForAddTarget = async () => {
+    if (!selectedTrackMenuSource && !selectedTrackMenuLoop) {
       return;
     }
 
@@ -285,9 +305,25 @@ export const SavedRehearsalLibrarySection = ({
       return;
     }
 
-    const createdPlaylist = await createPlaylist(
-      addTrackToPlaylist(result.playlist, selectedTrackMenuSource),
-    );
+    let playlistWithTarget: Playlist;
+
+    if (selectedTrackMenuSource) {
+      playlistWithTarget = addTrackToPlaylist(
+        result.playlist,
+        selectedTrackMenuSource,
+      );
+    } else {
+      if (!selectedTrackMenuLoop) {
+        return;
+      }
+
+      playlistWithTarget = addLoopToPlaylist(
+        result.playlist,
+        selectedTrackMenuLoop,
+      );
+    }
+
+    const createdPlaylist = await createPlaylist(playlistWithTarget);
 
     if (!createdPlaylist) {
       return;
@@ -398,12 +434,15 @@ export const SavedRehearsalLibrarySection = ({
                     ]
                   : []),
                 {
-                  accessibilityLabel: 'More options',
                   disabled:
                     !canMutatePlaylists ||
                     isPlaylistMutating ||
                     isSavedLibraryMutating,
-                  label: '...',
+                  label: !canMutatePlaylists
+                    ? 'Playlists unavailable'
+                    : isPlaylistMutating
+                      ? 'Updating playlist…'
+                      : 'Add to playlist',
                   onPress: () => {
                     setTrackPlaylistCreationIssue(null);
                     dispatchTrackPlaylistMenu({
@@ -411,7 +450,6 @@ export const SavedRehearsalLibrarySection = ({
                       sourceId: source.id,
                     });
                   },
-                  variant: 'icon' as const,
                 },
                 {
                   disabled:
@@ -444,19 +482,22 @@ export const SavedRehearsalLibrarySection = ({
           />
           <SavedLoopSection
             activePlayableItem={activePlayableItem}
-            addLoopToPlaylist={(loop) => {
-              void persistSelectedPlaylist((playlist) => {
-                return addLoopToPlaylist(playlist, loop);
-              });
-            }}
             canMutateLoops={canMutateLoops}
+            canMutatePlaylists={canMutatePlaylists}
+            isPlaylistMutating={isPlaylistMutating}
             canQueueAsNext={activePlaylistSession !== null}
             isPlaybackPreparing={isPlaybackPreparing}
             isSavedLoopsLoading={isSavedLoopsLoading}
             pendingLoopId={pendingLoopId}
             playbackIssue={playbackIssue}
             playbackState={playbackState}
-            playlistActionCopy={playlistActionCopy}
+            onOpenLoopPlaylistSelector={(loopId) => {
+              setTrackPlaylistCreationIssue(null);
+              dispatchTrackPlaylistMenu({
+                type: 'open-loop-selector',
+                loopId,
+              });
+            }}
             onCloseLoopBuilder={() => {
               setSelectedLoopSourceId(null);
             }}
@@ -512,7 +553,7 @@ export const SavedRehearsalLibrarySection = ({
           });
         }}
         onSelectPlaylist={(playlist) => {
-          void handleSelectTrackPlaylist(playlist);
+          void handleSelectPlaylistForAddTarget(playlist);
         }}
         onShowCreatePlaylist={() => {
           setTrackPlaylistCreationIssue(null);
@@ -527,8 +568,9 @@ export const SavedRehearsalLibrarySection = ({
           );
         }}
         onSubmitNewPlaylist={() => {
-          void handleCreateTrackPlaylist();
+          void handleCreatePlaylistForAddTarget();
         }}
+        selectedLoop={selectedTrackMenuLoop}
         playlists={savedPlaylists}
         selectedSource={selectedTrackMenuSource}
         step={trackPlaylistMenuState.step}

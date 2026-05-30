@@ -216,7 +216,7 @@ Validated flow: first-use empty library -> discover -> save first track -> optio
 
 3. Add to playlist
    - User moves to Library tab.
-   - User opens row-level more-options for the saved track and adds the track to a selected playlist (or creates one).
+   - User opens row-level more-options for the saved track or loop, opens the playlist selection menu, and adds the item to the chosen playlist (or creates one).
 
 4. Play
    - User opens playlist detail and starts playback from playlist controls.

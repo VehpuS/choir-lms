@@ -1,14 +1,11 @@
 import type { DriveLibrarySource } from './drive-library-view-model';
 import { getSourceMetadataLabels } from './drive-library-view-model';
 
-export type SavedTrackPlaylistMenuStep =
-  | 'hidden'
-  | 'menu'
-  | 'selector'
-  | 'create';
+export type SavedTrackPlaylistMenuStep = 'hidden' | 'selector' | 'create';
 
 export type SavedTrackPlaylistMenuState = {
   draftName: string;
+  selectedLoopId: string | null;
   selectedSourceId: string | null;
   step: SavedTrackPlaylistMenuStep;
 };
@@ -17,6 +14,10 @@ export type SavedTrackPlaylistMenuAction =
   | {
       type: 'open';
       sourceId: string;
+    }
+  | {
+      type: 'open-loop-selector';
+      loopId: string;
     }
   | {
       type: 'close';
@@ -45,6 +46,7 @@ export const getSavedTrackPlaylistMenuInitialState =
   (): SavedTrackPlaylistMenuState => {
     return {
       draftName: '',
+      selectedLoopId: null,
       selectedSourceId: null,
       step: 'hidden',
     };
@@ -58,8 +60,18 @@ export const reduceSavedTrackPlaylistMenuState = (
     case 'open': {
       return {
         draftName: '',
+        selectedLoopId: null,
         selectedSourceId: action.sourceId,
-        step: 'menu',
+        step: 'selector',
+      };
+    }
+
+    case 'open-loop-selector': {
+      return {
+        draftName: '',
+        selectedLoopId: action.loopId,
+        selectedSourceId: null,
+        step: 'selector',
       };
     }
 
@@ -68,7 +80,7 @@ export const reduceSavedTrackPlaylistMenuState = (
     }
 
     case 'open-selector': {
-      if (!state.selectedSourceId) {
+      if (!state.selectedSourceId && !state.selectedLoopId) {
         return getSavedTrackPlaylistMenuInitialState();
       }
 
@@ -80,7 +92,7 @@ export const reduceSavedTrackPlaylistMenuState = (
     }
 
     case 'open-create': {
-      if (!state.selectedSourceId) {
+      if (!state.selectedSourceId && !state.selectedLoopId) {
         return state;
       }
 
@@ -92,7 +104,7 @@ export const reduceSavedTrackPlaylistMenuState = (
     }
 
     case 'cancel-create': {
-      if (!state.selectedSourceId) {
+      if (!state.selectedSourceId && !state.selectedLoopId) {
         return getSavedTrackPlaylistMenuInitialState();
       }
 

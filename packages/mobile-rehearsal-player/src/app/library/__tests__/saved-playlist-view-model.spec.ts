@@ -41,7 +41,6 @@ import { getSavedPlaylistsStatusCopy } from '../utils/saved-playlist-status-view
 import {
   getSavedPlaylistDetailSummary,
   getSavedPlaylistEntryDetailLabel,
-  getSavedPlaylistLibraryActionCopy,
   getSavedPlaylistRemovalCopy,
   resolveSavedPlaylistCards,
   resolveSelectedPlaylist,
@@ -75,26 +74,6 @@ describe('saved playlist view-model', () => {
     );
   });
 
-  it('describes the selected playlist as the Library add target', () => {
-    const playlist = createPlaylist({
-      createdAt: '2026-05-12T00:00:00.000Z',
-      name: 'Warmups',
-      ownerId: 'user-1',
-    });
-
-    assert.deepEqual(
-      getSavedPlaylistLibraryActionCopy({
-        canMutatePlaylists: true,
-        isMutating: false,
-        selectedPlaylist: playlist,
-      }),
-      {
-        disabled: false,
-        label: 'Add to Warmups',
-      },
-    );
-  });
-
   it('keeps empty playlist status focused on the running-order job', () => {
     assert.deepEqual(
       getSavedPlaylistsStatusCopy({
@@ -117,10 +96,7 @@ describe('saved playlist view-model', () => {
       type: 'open',
       sourceId: PLAYABLE_SOURCE.id,
     });
-    const selectorState = reduceSavedTrackPlaylistMenuState(menuState, {
-      type: 'open-selector',
-    });
-    const createState = reduceSavedTrackPlaylistMenuState(selectorState, {
+    const createState = reduceSavedTrackPlaylistMenuState(menuState, {
       type: 'open-create',
     });
     const draftedState = reduceSavedTrackPlaylistMenuState(createState, {
@@ -136,25 +112,38 @@ describe('saved playlist view-model', () => {
 
     assert.deepEqual(menuState, {
       draftName: '',
-      selectedSourceId: PLAYABLE_SOURCE.id,
-      step: 'menu',
-    });
-    assert.deepEqual(selectorState, {
-      draftName: '',
+      selectedLoopId: null,
       selectedSourceId: PLAYABLE_SOURCE.id,
       step: 'selector',
     });
     assert.deepEqual(draftedState, {
       draftName: 'Wednesday rehearsal 2',
+      selectedLoopId: null,
       selectedSourceId: PLAYABLE_SOURCE.id,
       step: 'create',
     });
     assert.deepEqual(canceledState, {
       draftName: '',
+      selectedLoopId: null,
       selectedSourceId: PLAYABLE_SOURCE.id,
       step: 'selector',
     });
     assert.deepEqual(closedState, initialState);
+  });
+
+  it('opens playlist selector directly for loop add targets', () => {
+    const initialState = getSavedTrackPlaylistMenuInitialState();
+    const selectorState = reduceSavedTrackPlaylistMenuState(initialState, {
+      type: 'open-loop-selector',
+      loopId: SAVED_LOOP.id,
+    });
+
+    assert.deepEqual(selectorState, {
+      draftName: '',
+      selectedLoopId: SAVED_LOOP.id,
+      selectedSourceId: null,
+      step: 'selector',
+    });
   });
 
   it('keeps playlist detail edit state and undo feedback in UI-local helpers', () => {
@@ -376,38 +365,6 @@ describe('saved playlist view-model', () => {
         '"Warmups" will be removed from your saved playlists.\n\nThis will remove 1 item from this playlist only. Saved tracks and loops will stay in Library.',
       title: 'Remove saved playlist?',
     });
-  });
-
-  it('disables Library add actions until a playlist is selected and while mutations run', () => {
-    const playlist = createPlaylist({
-      createdAt: '2026-05-12T00:00:00.000Z',
-      name: 'Warmups',
-      ownerId: 'user-1',
-    });
-
-    assert.deepEqual(
-      getSavedPlaylistLibraryActionCopy({
-        canMutatePlaylists: true,
-        isMutating: false,
-        selectedPlaylist: null,
-      }),
-      {
-        disabled: true,
-        label: 'Select playlist',
-      },
-    );
-
-    assert.deepEqual(
-      getSavedPlaylistLibraryActionCopy({
-        canMutatePlaylists: true,
-        isMutating: true,
-        selectedPlaylist: playlist,
-      }),
-      {
-        disabled: true,
-        label: 'Updating playlist…',
-      },
-    );
   });
 
   it('summarizes playlist cards without add-from-editor copy', () => {

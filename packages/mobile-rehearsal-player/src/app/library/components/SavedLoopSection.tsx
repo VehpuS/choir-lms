@@ -16,7 +16,6 @@ import {
   resolveLoopBuilderRangeSelection,
   resolveSavedLoopCards,
 } from '../utils/saved-loop-view-model';
-import type { SavedPlaylistLibraryActionCopy } from '../utils/saved-playlist-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
   type SavedTrackPlaybackIssue,
@@ -35,7 +34,8 @@ type SavedLoopSectionProps = {
   pendingLoopId: string | null;
   playbackIssue: SavedTrackPlaybackIssue | null;
   playbackState: SavedTrackPlaybackState | undefined;
-  playlistActionCopy: SavedPlaylistLibraryActionCopy;
+  canMutatePlaylists: boolean;
+  isPlaylistMutating: boolean;
   onCloseLoopBuilder: () => void;
   removeLoop: (loop: NamedLoop) => void;
   savedSources: DriveLibrarySource[];
@@ -43,7 +43,7 @@ type SavedLoopSectionProps = {
   savedLoops: NamedLoop[];
   saveLoop: (loop: NamedLoop) => Promise<boolean>;
   selectedTrack: PlayableItem | null;
-  addLoopToPlaylist: (loop: NamedLoop) => void;
+  onOpenLoopPlaylistSelector: (loopId: string) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   queuePlayableItemNext: (playableItem: PlayableItem) => void;
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
@@ -66,7 +66,8 @@ export const SavedLoopSection = ({
   pendingLoopId,
   playbackIssue,
   playbackState,
-  playlistActionCopy,
+  canMutatePlaylists,
+  isPlaylistMutating,
   onCloseLoopBuilder,
   removeLoop,
   savedSources,
@@ -74,7 +75,7 @@ export const SavedLoopSection = ({
   savedLoops,
   saveLoop,
   selectedTrack,
-  addLoopToPlaylist,
+  onOpenLoopPlaylistSelector,
   togglePlayableItemPlayback,
   queuePlayableItemNext,
   queuePlayableItemUpNext,
@@ -267,16 +268,17 @@ export const SavedLoopSection = ({
 
       <SavedLoopList
         activePlayableItem={activePlayableItem}
-        addLoopToPlaylist={addLoopToPlaylist}
         canMutateLoops={canMutateLoops}
+        canMutatePlaylists={canMutatePlaylists}
+        isPlaylistMutating={isPlaylistMutating}
         isPlaybackPreparing={isPlaybackPreparing}
         loopCards={savedLoopCards}
         loopIssue={savedLoopIssue}
         pendingLoopId={pendingLoopId}
         playbackIssue={playbackIssue}
         playbackState={playbackState}
-        playlistActionCopy={playlistActionCopy}
         canQueueAsNext={canQueueAsNext}
+        onOpenLoopPlaylistSelector={onOpenLoopPlaylistSelector}
         queuePlayableItemNext={queuePlayableItemNext}
         queuePlayableItemUpNext={queuePlayableItemUpNext}
         removeLoop={removeLoop}
