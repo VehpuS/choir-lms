@@ -9,14 +9,9 @@ import { Alert, Text, View } from 'react-native';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
 import {
-  getPlaylistPlaybackCurrentItem,
-  getPlaylistPlaybackActionCopy,
-  type PlaylistPlaybackSession,
-} from '../utils/saved-playlist-playback-view-model';
-import {
   buildSavedPlaylistDetailDraftPlaylist,
-  getSavedPlaylistDetailItemRemovalCopy,
   getSavedPlaylistDetailInitialState,
+  getSavedPlaylistDetailItemRemovalCopy,
   isSavedPlaylistEntryPlayable,
   moveSavedPlaylistDetailEntry,
   reduceSavedPlaylistDetailState,
@@ -24,25 +19,30 @@ import {
   restoreSavedPlaylistDetailEntry,
 } from '../utils/saved-playlist-detail-view-model';
 import {
+  getPlaylistPlaybackActionCopy,
+  getPlaylistPlaybackCurrentItem,
+  type PlaylistPlaybackSession,
+} from '../utils/saved-playlist-playback-view-model';
+import {
+  getSavedPlaylistsStatusCopy,
+  getSelectedPlaylistIssue,
+} from '../utils/saved-playlist-status-view-model';
+import {
   buildSavedPlaylist,
   getSavedPlaylistDetailSummary,
   getSavedPlaylistEntryDetailLabel,
   getSavedPlaylistRemovalCopy,
+  validatePlaylistName,
   type PlaylistDraftIssue,
   type SavedPlaylistIssue,
-  validatePlaylistName,
 } from '../utils/saved-playlist-view-model';
-import {
-  getSelectedPlaylistIssue,
-  getSavedPlaylistsStatusCopy,
-} from '../utils/saved-playlist-status-view-model';
 import type { SavedTrackPlaybackState } from '../utils/saved-track-playback-view-model';
+import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
+import { savedPlaylistSectionStyles as styles } from './saved-playlist-section-styles';
 import {
   SavedPlaylistCreateCard,
   SavedPlaylistDetailCard,
 } from './SavedPlaylistSectionCards';
-import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
-import { savedPlaylistSectionStyles as styles } from './saved-playlist-section-styles';
 
 type SavedPlaylistSectionProps = {
   activePlaylistSession: PlaylistPlaybackSession | null;
@@ -314,12 +314,14 @@ export const SavedPlaylistSection = ({
         style: 'destructive',
         onPress: () => {
           void (async () => {
-            const persistedPlaylist = await persistSelectedPlaylist((playlist) => {
-              return buildSavedPlaylistDetailDraftPlaylist(
-                playlist,
-                removalResult.nextEntries,
-              );
-            });
+            const persistedPlaylist = await persistSelectedPlaylist(
+              (playlist) => {
+                return buildSavedPlaylistDetailDraftPlaylist(
+                  playlist,
+                  removalResult.nextEntries,
+                );
+              },
+            );
 
             if (!persistedPlaylist) {
               return;

@@ -66,6 +66,9 @@ Section order within Library:
 Placement rules:
 
 - App-library search is anchored at the top of Library as a first-class entry point and never mixed with raw Drive discovery results.
+- Saved track and saved loop rows use the same visual action layout: one inline icon-only play control plus one vertical-ellipsis overflow trigger.
+- All non-primary saved track and saved loop actions move into the overflow menu, including playlist-add and queue actions.
+- `Make loop` remains available only from saved track overflow menus and is not mirrored onto saved loop rows.
 - Playlist, track, and loop rows retain direct playback affordances and lightweight management actions.
 
 ### Search Tab (Drive discovery-first)
@@ -134,15 +137,21 @@ IA reorder work cannot be considered acceptable unless every critical capability
 
 ### Capability: Track playback
 
-- User can start and toggle playback from saved track rows.
+- User can start and toggle playback from saved track rows through the shared inline icon-only play control.
 - Mini-player remains visible and accurate during tab changes while playback is active.
 - Playback controls (toggle, seek, skip where applicable) continue to function with no IA-coupled regression.
 
 ### Capability: Loop creation
 
-- Loop creation entry remains reachable from track context in saved library.
+- Loop creation entry remains reachable from track context in saved library through the same overflow menu pattern used by other secondary row actions.
 - Prepared loop-builder source state resolves correctly before edit/save actions.
 - Saved loop appears in loop surfaces with parent-track linkage preserved.
+
+### Capability: Track and loop row parity
+
+- Saved track and saved loop rows share the same card shell, inline action count, and overflow trigger placement.
+- The only intentional action-set difference is that saved tracks expose `Make loop` and saved loops do not.
+- Applicable shared actions such as add to playlist, play next, add to queue, and remove remain reachable from the first overflow menu level on both row types.
 
 ### Capability: Playlist playback
 
@@ -216,7 +225,7 @@ Validated flow: first-use empty library -> discover -> save first track -> optio
 
 3. Add to playlist
    - User moves to Library tab.
-   - User opens row-level more-options for the saved track or loop, opens the playlist selection menu, and adds the item to the chosen playlist (or creates one).
+   - User opens the shared row-level vertical-ellipsis menu for the saved track or loop, opens the playlist selection menu, and adds the item to the chosen playlist (or creates one).
 
 4. Play
    - User opens playlist detail and starts playback from playlist controls.
@@ -264,6 +273,7 @@ Validated flow: first-use empty library -> discover -> save first track -> optio
 - Preserve mini-player continuity through the full flow so users can verify playback state while navigating.
 - Include this validated flow in manual regression checks as a required pass scenario before sign-off.
 - Ensure empty-library states include CTA copy that is action-oriented (for example Open Search or Save your first track).
+- Ensure saved track and saved loop cards remain visually parallel in steady state: same inline icon-only play affordance, same overflow trigger position, and no extra inline secondary buttons.
 
 ## Goals / Non-Goals
 
@@ -332,7 +342,10 @@ Follow-on rollout direction:
 
 - Extend the same overflow grouping to loop row actions when queue-acceleration actions (`Play next`, `Add to queue`) are introduced.
 - Standardize saved loop cards with saved track cards for add-to-playlist affordances so both surfaces keep equivalent action placement, labels, and feedback behavior.
-- Add a top-level `Play` action on playlist cards for immediate playback start while preserving `Open playlist` for detail navigation and the existing overflow trigger for management actions.
+- Converge saved track and saved loop rows on one inline icon-only `Play` action plus a shared overflow trigger, while keeping `Make loop` as a saved-track-only overflow action.
+- Replace text-labeled `Play` buttons with icon-first playback affordances wherever the control performs an immediate playback action and standard music-player iconography is sufficient.
+- Add a top-level play icon on playlist cards for immediate playback start while preserving `Open playlist` for detail navigation and the existing overflow trigger for management actions.
+- Use the same icon-first play treatment for Recents resume shortcuts and other shortcut cards that directly start playback.
 - Keep one primary inline action per row when useful for speed (for example immediate playback), and place lower-frequency or destructive controls in the overflow menu.
 - Keep icon semantics and touch target sizing aligned with playlist/search/library patterns as additional surfaces adopt this UI.
 
@@ -414,6 +427,11 @@ Alternatives considered:
 ### 13. Standardize icon and accessibility semantics across shell, playback, and library actions
 
 This slice will align icon behavior, accessibility labels, and state visibility for transport, queue, more-options, reorder, and destructive actions.
+
+Implementation guidance:
+
+- Treat direct playback-start actions as icon-first by default; avoid text-labeled `Play` buttons when a standard play glyph is sufficient for the context.
+- Preserve descriptive copy as supporting metadata or adjacent labels when needed, but keep the actionable playback control itself icon-based across playlist cards, row quick actions, Recents shortcuts, and shell playback controls.
 
 Alternatives considered:
 

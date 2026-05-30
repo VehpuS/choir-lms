@@ -359,6 +359,22 @@ export const SavedRehearsalLibrarySection = ({
       {!isPlaylistDetailVisible ? (
         <>
           <SavedPlaylistCardsList
+            onPlayPlaylist={(playlistId) => {
+              const playlist = savedPlaylists.find((currentPlaylist) => {
+                return currentPlaylist.id === playlistId;
+              });
+
+              if (!playlist) {
+                return;
+              }
+
+              void togglePlaylistPlayback({
+                loops: savedLoops,
+                mode: 'ordered',
+                playlist,
+                sources: savedLibrarySources,
+              });
+            }}
             onSelectPlaylist={(playlistId) => {
               setSelectedPlaylistId(playlistId);
               setIsPlaylistDetailVisible(true);

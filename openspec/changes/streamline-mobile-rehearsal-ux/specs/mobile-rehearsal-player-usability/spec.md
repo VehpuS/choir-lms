@@ -12,7 +12,7 @@ The system SHALL present playlist detail as playback-first by default, with dest
 #### Scenario: Playlist cards expose immediate playback entry
 
 - **WHEN** a user views saved playlist cards in Library
-- **THEN** each card provides a top-level `Play` action that starts playback for that playlist without first opening playlist detail
+- **THEN** each card provides a top-level icon-only play action that starts playback for that playlist without first opening playlist detail
 - **AND** the card preserves `Open playlist` as a separate detail-navigation action
 
 #### Scenario: Playlist item removal is fast and recoverable
@@ -38,6 +38,12 @@ The system SHALL reduce steady-state interface weight on Recents and Search so u
 
 - **WHEN** a user with recent or active rehearsal context opens Recents
 - **THEN** the system prioritizes a direct resume or continue-practice action before secondary explanatory content
+
+#### Scenario: Direct playback entry avoids text-labeled Play buttons
+
+- **WHEN** a surface offers a direct playback-start control in a playlist card, playable row, Recents shortcut, or shell playback affordance
+- **THEN** the system uses a standard play icon for the actionable control instead of a text-labeled `Play` button where the meaning is already clear from context
+- **AND** any supporting description remains outside the control itself
 
 #### Scenario: Search prioritizes result actionability
 
@@ -91,6 +97,11 @@ The system SHALL keep transport, list-row, and menu interactions touch-friendly 
 - **WHEN** an interaction relies on icon-only controls
 - **THEN** the system provides accessible labels and clear selected or disabled state treatment beyond color alone
 
+#### Scenario: Standard playback iconography stays consistent across contexts
+
+- **WHEN** the app exposes direct playback entry in playlist cards, playable rows, Recents shortcuts, mini-player controls, or now-playing transport
+- **THEN** the system uses consistent play-icon semantics across those contexts rather than mixing icon buttons and text-labeled `Play` buttons for the same action type
+
 #### Scenario: Rehearsal-critical controls remain easy to target
 
 - **WHEN** users interact with playback transport, list-row actions, and menu affordances on phone-sized screens
@@ -100,6 +111,13 @@ The system SHALL keep transport, list-row, and menu interactions touch-friendly 
 
 The system SHALL use a consistent overflow-menu interaction for secondary and destructive row actions across playlist and source-list surfaces.
 
+#### Scenario: Saved track and saved loop rows share one primary action model
+
+- **WHEN** a user views saved track rows and saved loop rows in Library surfaces
+- **THEN** each row exposes exactly one inline primary action, an icon-only `Play` control
+- **AND** each row exposes one vertical-ellipsis overflow trigger in the same visual position
+- **AND** no additional secondary text buttons are shown inline on either row type
+
 #### Scenario: Playlist cards and detail views use a fixed top-right overflow trigger
 
 - **WHEN** a user views playlist list cards or playlist detail
@@ -108,14 +126,15 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 #### Scenario: Saved source rows keep primary actions inline and move secondary/destructive actions into overflow
 
 - **WHEN** a user views saved source rows in Library or Search contexts
-- **THEN** the system keeps playback-first actions inline and places lower-frequency or destructive actions (for example remove) in the shared overflow menu
+- **THEN** the system keeps only the playback-first icon action inline and places lower-frequency or destructive actions (for example add to playlist, play next, add to queue, and remove) in the shared overflow menu
 - **AND** overflow actions are presented directly in the first options menu surface without a nested "More options" step
 
-#### Scenario: Saved loop rows align with saved track rows for playlist-add affordances
+#### Scenario: Saved loop rows align with saved track rows for shared applicable actions
 
 - **WHEN** a user views saved loop rows and saved track rows in Library surfaces
-- **THEN** both row types provide equivalent add-to-playlist affordances with consistent labels, placement, and state feedback
+- **THEN** both row types provide equivalent applicable actions with consistent labels, placement, and state feedback, including add to playlist and queue actions
 - **AND** both row types open an explicit playlist selection menu before adding the item to the chosen playlist
+- **AND** the only intentional action difference is that saved tracks include `Make loop` in overflow and saved loops do not
 
 #### Scenario: New row-action capabilities adopt the same overflow grouping rules
 

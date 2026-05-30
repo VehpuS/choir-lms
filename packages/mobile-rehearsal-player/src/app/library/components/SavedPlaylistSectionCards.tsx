@@ -7,6 +7,7 @@ import type {
   PlaylistDraftIssue,
   SavedPlaylistCard,
 } from '../utils/saved-playlist-view-model';
+import { getSavedPlaylistCardPlayAction } from '../utils/saved-playlist-card-view-model';
 import { PlaylistOptionsMenuSurface } from './PlaylistRenameDialog';
 import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
@@ -76,6 +77,7 @@ export const SavedPlaylistCreateCard = (props: {
 export const SavedPlaylistCardsList = (props: {
   playlistCards: SavedPlaylistCard[];
   selectedPlaylistId?: string | null;
+  onPlayPlaylist: (playlistId: string) => void;
   onSelectPlaylist: (playlistId: string) => void;
 }) => {
   const [optionsPlaylistId, setOptionsPlaylistId] = useState<string | null>(
@@ -97,6 +99,10 @@ export const SavedPlaylistCardsList = (props: {
       </Text>
       <View style={styles.groupItems}>
         {props.playlistCards.map((playlistCard) => {
+          const playAction = getSavedPlaylistCardPlayAction(
+            playlistCard.playlist,
+          );
+
           return (
             <View key={playlistCard.playlist.id} style={styles.playlistCard}>
               <Pressable
@@ -124,18 +130,43 @@ export const SavedPlaylistCardsList = (props: {
               <Text numberOfLines={1} style={styles.playlistPreview}>
                 {playlistCard.previewLabel}
               </Text>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => {
-                  props.onSelectPlaylist(playlistCard.playlist.id);
-                }}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed ? styles.actionButtonPressed : undefined,
-                ]}
-              >
-                <Text style={styles.secondaryButtonLabel}>Open playlist</Text>
-              </Pressable>
+              <View style={styles.actionRow}>
+                <Pressable
+                  accessibilityLabel={playAction.accessibilityLabel}
+                  accessibilityRole="button"
+                  disabled={playAction.disabled}
+                  onPress={() => {
+                    props.onPlayPlaylist(playlistCard.playlist.id);
+                  }}
+                  style={({ pressed }) => [
+                    styles.compactIconButton,
+                    pressed && !playAction.disabled
+                      ? styles.actionButtonPressed
+                      : undefined,
+                    playAction.disabled ? styles.actionButtonDisabled : undefined,
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    color="#1f1c17"
+                    name="play"
+                    size={18}
+                  />
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => {
+                    props.onSelectPlaylist(playlistCard.playlist.id);
+                  }}
+                  style={({ pressed }) => [
+                    styles.secondaryButton,
+                    pressed ? styles.actionButtonPressed : undefined,
+                  ]}
+                >
+                  <Text style={styles.secondaryButtonLabel}>
+                    Open playlist
+                  </Text>
+                </Pressable>
+              </View>
             </View>
           );
         })}

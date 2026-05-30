@@ -270,6 +270,10 @@
     "/^npm exec -- nx test mobile-rehearsal-player -- --runTestsByPath packages/mobile-rehearsal-player/src/app/library/__tests__/saved-playlist-view-model\\.spec\\.ts$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec -- tsx --test /": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

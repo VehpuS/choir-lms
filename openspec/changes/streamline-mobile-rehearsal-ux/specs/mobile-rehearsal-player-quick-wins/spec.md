@@ -27,6 +27,7 @@ The system SHALL provide direct shortcuts to recent rehearsal context so users c
 
 - **WHEN** a user has recent playback history
 - **THEN** Recents shows a direct shortcut to resume the most relevant recent rehearsal item or playlist context
+- **AND** any direct playback control in that shortcut uses a standard play icon rather than a text-labeled `Play` button
 
 #### Scenario: Empty recent context falls back to discovery guidance
 
@@ -84,6 +85,12 @@ The system SHALL keep loop management anchored to parent tracks while allowing u
 
 - **WHEN** a user opens a saved track context that owns one or more loops
 - **THEN** the system provides loop creation and management actions in that track context with visible parent-track provenance
+
+#### Scenario: Loop creation stays as the only saved-track-specific row action
+
+- **WHEN** a user compares saved track rows and saved loop rows in the Library
+- **THEN** the system keeps their row-level action model aligned except that only saved tracks expose `Make loop`
+- **AND** `Make loop` is offered from the shared overflow menu rather than as a dedicated inline button
 
 #### Scenario: Loops can be promoted to first-class organized items
 
