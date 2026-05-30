@@ -8,7 +8,11 @@ import {
   registerSavedTrackPlaybackRemoteCommandHandlers,
 } from '../utils/saved-track-playback-remote-controls.js';
 import { registerSavedTrackPlaybackRemoteEventListeners } from '../utils/saved-track-playback-service.js';
-import { resolveSavedTrackPlayerSupport } from '../utils/saved-track-player-interop.js';
+import {
+  getSavedTrackPlayerEventMap,
+  resolveSavedTrackPlayerSupport,
+  type SavedTrackPlayerModule,
+} from '../utils/saved-track-player-interop.js';
 import { syncSavedTrackPlayerCapabilities } from '../utils/saved-track-player-runtime.js';
 
 describe('saved track playback service', () => {
@@ -108,8 +112,28 @@ describe('saved track playback service', () => {
   });
 
   it('registers remote transport listeners that dispatch queue commands', async () => {
-    const listeners = new Map<string, () => Promise<void> | void>();
-    const removedEvents: string[] = [];
+    const fallbackEventMap = getSavedTrackPlayerEventMap({
+      appOwnership: 'expo',
+      executionEnvironment: 'storeClient',
+    });
+    type RemoteEvents = NonNullable<
+      NonNullable<
+        Parameters<typeof registerSavedTrackPlaybackRemoteEventListeners>[0]
+      >['remoteEvents']
+    >;
+    const remoteEvents: RemoteEvents = {
+      play: fallbackEventMap.RemotePlay as RemoteEvents['play'],
+      pause: fallbackEventMap.RemotePause as RemoteEvents['pause'],
+      next: fallbackEventMap.RemoteNext as RemoteEvents['next'],
+      previous: fallbackEventMap.RemotePrevious as RemoteEvents['previous'],
+    };
+    const listeners = new Map<
+      (typeof remoteEvents)[keyof typeof remoteEvents],
+      () => Promise<void> | void
+    >();
+    const removedEvents: Array<
+      (typeof remoteEvents)[keyof typeof remoteEvents]
+    > = [];
     const receivedCommands: string[] = [];
     const cleanup = registerSavedTrackPlaybackRemoteEventListeners({
       async dispatchRemoteCommand(command) {
@@ -118,44 +142,57 @@ describe('saved track playback service', () => {
       },
       player: {
         addEventListener(eventName, handler) {
-          listeners.set(eventName, handler);
+          listeners.set(
+            eventName as (typeof remoteEvents)[keyof typeof remoteEvents],
+            handler,
+          );
 
           return {
             remove() {
-              removedEvents.push(eventName);
+              removedEvents.push(
+                eventName as (typeof remoteEvents)[keyof typeof remoteEvents],
+              );
             },
           };
         },
       },
-      remoteEvents: {
-        play: 'remote-play',
-        pause: 'remote-pause',
-        next: 'remote-next',
-        previous: 'remote-previous',
-      },
+      remoteEvents,
     });
 
     assert.deepEqual(
       [...listeners.keys()],
-      ['remote-play', 'remote-pause', 'remote-next', 'remote-previous'],
+      [
+        remoteEvents.play,
+        remoteEvents.pause,
+        remoteEvents.next,
+        remoteEvents.previous,
+      ],
     );
 
-    await listeners.get('remote-next')?.();
-    await listeners.get('remote-previous')?.();
+    await listeners.get(remoteEvents.next)?.();
+    await listeners.get(remoteEvents.previous)?.();
     cleanup();
 
     assert.deepEqual(receivedCommands, ['next', 'previous']);
     assert.deepEqual(removedEvents, [
-      'remote-play',
-      'remote-pause',
-      'remote-next',
-      'remote-previous',
+      remoteEvents.play,
+      remoteEvents.pause,
+      remoteEvents.next,
+      remoteEvents.previous,
     ]);
   });
 
   it('adds queue navigation capabilities when a playlist session is active', async () => {
     const appliedOptions: unknown[] = [];
     const lifecycleCalls: string[] = [];
+    const capability = {
+      Pause: 'pause',
+      Play: 'play',
+      SeekTo: 'seek-to',
+      SkipToNext: 'skip-to-next',
+      SkipToPrevious: 'skip-to-previous',
+      Stop: 'stop',
+    } as unknown as SavedTrackPlayerModule['Capability'];
 
     await syncSavedTrackPlayerCapabilities(
       {
@@ -171,14 +208,7 @@ describe('saved track playback service', () => {
           },
         },
         trackPlayerModule: {
-          Capability: {
-            Pause: 'pause',
-            Play: 'play',
-            SeekTo: 'seek-to',
-            SkipToNext: 'skip-to-next',
-            SkipToPrevious: 'skip-to-previous',
-            Stop: 'stop',
-          },
+          Capability: capability,
         },
       },
     );
@@ -187,21 +217,21 @@ describe('saved track playback service', () => {
     assert.deepEqual(appliedOptions, [
       {
         capabilities: [
-          'play',
-          'pause',
-          'stop',
-          'seek-to',
-          'skip-to-next',
-          'skip-to-previous',
+          capability.Play,
+          capability.Pause,
+          capability.Stop,
+          capability.SeekTo,
+          capability.SkipToNext,
+          capability.SkipToPrevious,
         ],
-        compactCapabilities: ['play', 'pause'],
+        compactCapabilities: [capability.Play, capability.Pause],
         notificationCapabilities: [
-          'play',
-          'pause',
-          'stop',
-          'seek-to',
-          'skip-to-next',
-          'skip-to-previous',
+          capability.Play,
+          capability.Pause,
+          capability.Stop,
+          capability.SeekTo,
+          capability.SkipToNext,
+          capability.SkipToPrevious,
         ],
       },
     ]);

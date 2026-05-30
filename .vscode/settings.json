@@ -6,6 +6,8 @@
     "openspec",
     "Pressable"
   ],
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
   "chat.tools.terminal.autoApprove": {
     "/^npx nx show/": {
       "approve": true,
@@ -276,6 +278,14 @@
       "matchCommandLine": true
     },
     "/^npm exec -- nx test mobile-rehearsal-player -- --runInBand app-router\\.spec\\.tsx$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run mobile-rehearsal-player:typecheck-tests$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run mobile-rehearsal-player:lint$/": {
       "approve": true,
       "matchCommandLine": true
     }
