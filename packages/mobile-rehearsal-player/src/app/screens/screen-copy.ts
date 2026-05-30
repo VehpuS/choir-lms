@@ -22,6 +22,16 @@ export const getHomeContinuePracticingCopy = (options: {
   };
 };
 
+export const getRecentsShortcutPlayActionCopy = (options: {
+  isResumePlaybackAvailable: boolean;
+  shortcutTag: string;
+}) => {
+  return {
+    accessibilityLabel: `Play ${options.shortcutTag} shortcut`,
+    disabled: !options.isResumePlaybackAvailable,
+  };
+};
+
 export const getSearchScreenSummaryCopy = (options: {
   activeSearchQuery: string | null;
   resultCount: number;

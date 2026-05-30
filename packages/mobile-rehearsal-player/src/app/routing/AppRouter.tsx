@@ -45,6 +45,12 @@ export const AppRouter = () => {
       homeScreen={
         <HomeScreen
           activePlayableItem={playback.activePlayableItem}
+          onPlayRecentShortcut={() => {
+            void playback.toggleActivePlayback();
+          }}
+          onResumeRecentPlayback={() => {
+            void playback.toggleActivePlayback();
+          }}
           savedTrackCount={libraryController.savedLibrary.trackCount}
         />
       }

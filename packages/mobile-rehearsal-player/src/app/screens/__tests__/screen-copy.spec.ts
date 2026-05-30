@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
   getHomeContinuePracticingCopy,
   getLibraryScreenSummaryCopy,
+  getRecentsShortcutPlayActionCopy,
   getSearchScreenSummaryCopy,
 } from '../screen-copy.js';
 
@@ -71,6 +72,34 @@ describe('getSearchScreenSummaryCopy', () => {
       {
         body: 'No supported rehearsal audio matched "amen cadence" yet. Try a shorter choir, section, or piece name, or clear the search to start over.',
         title: 'No matching rehearsal tracks yet',
+      },
+    );
+  });
+});
+
+describe('getRecentsShortcutPlayActionCopy', () => {
+  it('builds shortcut-specific play icon labels', () => {
+    assert.deepEqual(
+      getRecentsShortcutPlayActionCopy({
+        isResumePlaybackAvailable: true,
+        shortcutTag: 'Alto',
+      }),
+      {
+        accessibilityLabel: 'Play Alto shortcut',
+        disabled: false,
+      },
+    );
+  });
+
+  it('keeps shortcut icon actions disabled when playback is not available', () => {
+    assert.deepEqual(
+      getRecentsShortcutPlayActionCopy({
+        isResumePlaybackAvailable: false,
+        shortcutTag: 'Bass',
+      }),
+      {
+        accessibilityLabel: 'Play Bass shortcut',
+        disabled: true,
       },
     );
   });
