@@ -6,6 +6,7 @@ The current mobile rehearsal player already delivers core playback and playlist 
 
 - Streamline playlist and queue interaction patterns to feel more native on phone-sized touch surfaces.
 - Clarify information architecture by separating Google Drive discovery search from app-owned library search, including explicit source-scoped search behavior.
+- Support direct preview playback from Google Drive search results without requiring users to save the source first.
 - Rename the current Home tab to Recents and keep it as an optional acceleration surface for recent rehearsal shortcuts rather than a mandatory workflow step.
 - Add low-friction rehearsal productivity actions such as ad-hoc queue actions, stronger resume shortcuts, and smarter defaults in loop and playlist flows.
 - Standardize saved loop and saved track cards around one shared row-action contract: one inline icon-only `Play` affordance, one shared vertical-ellipsis overflow trigger, and parity for all other applicable actions.
@@ -32,7 +33,7 @@ The current mobile rehearsal player already delivers core playback and playlist 
 
 ## Impact
 
-- Affected app areas: mobile shell, Recents/Search/Library screens, playlist detail interactions, queue and now-playing surfaces, loop-builder naming and feedback flows, and saved-library browse/search tooling.
+- Affected app areas: mobile shell, Recents/Search/Library screens, playlist detail interactions, queue and now-playing surfaces, loop-builder naming and feedback flows, Drive search-result preview interactions, and saved-library browse/search tooling.
 - Affected code locations: `packages/mobile-rehearsal-player/src/app/routing/*`, `packages/mobile-rehearsal-player/src/app/screens/*`, and `packages/mobile-rehearsal-player/src/app/library/components/*`.
 - Platform and design constraints: maintain waveform-first playback, persistent mini-player, existing playback engine semantics, and platform-familiar music iconography while making source-vs-library search context explicit.
 - Risk profile: low-to-medium; primarily UI and interaction changes with limited domain-model impact if queue quick actions are kept additive.

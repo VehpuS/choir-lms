@@ -56,6 +56,12 @@ The system SHALL reduce steady-state interface weight on Recents and Search so u
 - **WHEN** search results are shown
 - **THEN** the system keeps primary row actions visible and quickly reachable without requiring navigation into additional management views
 
+#### Scenario: Drive search results support preview playback without save
+
+- **WHEN** a user views playable Google Drive search results
+- **THEN** each playable row exposes a direct playback-preview action that starts audio without requiring the source to be saved first
+- **AND** Save remains available as a separate action for promoting the source into Library-managed workflows
+
 ### Requirement: Search contexts are explicitly separated between source discovery and app library
 
 The system SHALL provide explicit search context separation so users can search Google Drive content independently from app-owned rehearsal library content.
@@ -79,6 +85,12 @@ The system SHALL provide explicit search context separation so users can search 
 
 - **WHEN** a user is in the Google Drive navigation workflow or in the app-library workflow
 - **THEN** the system provides a first-class search entry point in that active surface without requiring a context switch first
+
+#### Scenario: Preview playback stays in Drive context until user chooses save
+
+- **WHEN** a user starts preview playback from a Google Drive search result row
+- **THEN** the system keeps the item in Google Drive discovery context unless the user explicitly saves it
+- **AND** preview playback state is visible through existing mini-player and now-playing affordances
 
 ### Requirement: Queue and playback surfaces keep controls legible and mode-appropriate
 

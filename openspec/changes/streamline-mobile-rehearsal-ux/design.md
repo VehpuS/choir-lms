@@ -86,6 +86,8 @@ Placement rules:
 - Drive search remains first-class in this tab and is explicitly labeled as Google Drive discovery.
 - Scope behavior is explicit: users can search current folder scope or broader Drive scope with visible state.
 - Drive browse/navigation controls (root switching, folder path, breadcrumbs) stay available in the same surface as Drive search.
+- Playable Drive search rows provide direct preview playback without requiring a save-first step.
+- Save remains a separate row action for users who want to promote a previewed source into Library-managed workflows.
 
 ### Recents Tab (optional acceleration)
 
@@ -210,6 +212,8 @@ These labels are user-facing defaults for headers, chips, and empty-state copy. 
 
 Validated flow: discover in Drive -> save -> add to playlist -> play.
 
+Validated flow: discover in Drive -> preview playback -> optionally save -> continue rehearsal.
+
 Validated flow: first-use empty library -> discover -> save first track -> optionally create playlist -> play.
 
 ### Flow Walkthrough Against Target IA
@@ -231,11 +235,27 @@ Validated flow: first-use empty library -> discover -> save first track -> optio
    - User opens playlist detail and starts playback from playlist controls.
    - Mini-player and now-playing/queue surfaces reflect active playlist session state.
 
+### Preview-First Flow Walkthrough
+
+1. Discover in Drive
+   - User opens Search tab and finds a playable Google Drive source.
+
+2. Preview without save
+   - User taps inline play on the Drive result row.
+   - Playback starts immediately and mini-player reflects the active preview item.
+
+3. Optional save
+   - User can save the source after previewing if they want Library-managed actions later.
+
+4. Continue rehearsal
+   - User can keep previewing additional Drive results, or switch to saved-library flows without ambiguity about current source context.
+
 ### Validation Outcome
 
 - Flow is viable under target IA without requiring Recents as an entry step.
 - Context boundaries remain understandable when labels from task 1.4 are applied.
 - Existing save -> playlist -> playback chain remains reachable in 2-tab handoff (Search -> Library).
+- Preview-first audition is viable in Search: users can play Drive results immediately before deciding to save.
 
 ### New-User Empty-Library Flow Walkthrough
 

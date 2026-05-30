@@ -33,6 +33,7 @@
 - [ ] 3.6 Ensure search entry points are first-class in both the Google Drive navigation surface and the app-library surface.
 - [ ] 3.7 Add recent-search suggestion interactions for the active search context that allow tap-to-run query execution.
 - [ ] 3.8 Verify Google Drive navigation remains first-class after tab/section reorder: root selector, folder drill-down, breadcrumbs, and unavailable/source status visibility.
+- [ ] 3.9 Add Drive search-result preview playback so playable Google Drive sources can be auditioned without saving first, while keeping Save available as a separate action.
 
 ## 4. Loop and Action Defaults
 
@@ -62,6 +63,6 @@
 - [ ] 6.1 Add or update focused automated coverage for new view-model or helper behavior introduced by queue quick actions, dual search contexts, library organization, loop default naming, and tab/section reordering.
 - [ ] 6.1.1 Add focused automated coverage for row-action placement behavior (explicit placement precedence, fallback behavior, and menu mapping).
 - [ ] 6.1.2 Add UI-focused coverage for shared overflow trigger behavior (visibility, accessibility label semantics, disabled/pressed states, and menu open/close).
-- [ ] 6.2 Run manual regression for rehearsal-critical flows: playlist row-start playback, playlist-card play icon behavior, Recents shortcut play icon behavior, playable row parity across Library and Search, track-only `Make loop` visibility, undoable removal, queue-mode transitions, loop save/preview, mini-player persistence, Drive search scoping, app-library search/filter behavior, and Drive navigation continuity.
+- [ ] 6.2 Run manual regression for rehearsal-critical flows: playlist row-start playback, playlist-card play icon behavior, Recents shortcut play icon behavior, playable row parity across Library and Search, track-only `Make loop` visibility, undoable removal, queue-mode transitions, loop save/preview, mini-player persistence, Drive search-result preview playback without save, Drive search scoping, app-library search/filter behavior, and Drive navigation continuity.
 - [ ] 6.3 Explicitly verify no existing critical feature was lost during IA reorder using the baseline mapping from 1.1 and record pass/fail per feature.
 - [ ] 6.4 Compare final Recents, Search, Library, playlist detail, now-playing, and queue surfaces against this change's specs and capture any intentional deltas before completing implementation.
