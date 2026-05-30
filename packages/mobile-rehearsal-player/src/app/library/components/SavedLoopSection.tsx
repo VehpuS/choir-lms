@@ -1,15 +1,14 @@
 import {
-  type NamedLoop,
   validateLoopRange,
+  type NamedLoop,
   type PlayableItem,
 } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
-import type { SavedPlaylistLibraryActionCopy } from '../utils/saved-playlist-view-model';
 import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
-import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import {
   buildNamedLoop,
   createLoopPreviewPlayableItem,
@@ -17,14 +16,15 @@ import {
   resolveLoopBuilderRangeSelection,
   resolveSavedLoopCards,
 } from '../utils/saved-loop-view-model';
+import type { SavedPlaylistLibraryActionCopy } from '../utils/saved-playlist-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
+import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import { LoopRangeSelectorSurface } from './LoopRangeSelectorSurface';
 import { SavedLoopList } from './SavedLoopList';
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
 
 type SavedLoopSectionProps = {
   activePlayableItem: PlayableItem | null;
@@ -46,6 +46,7 @@ type SavedLoopSectionProps = {
   addLoopToPlaylist: (loop: NamedLoop) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   queuePlayableItemNext: (playableItem: PlayableItem) => void;
+  queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
 };
 
 type DraftIssue = {
@@ -76,6 +77,7 @@ export const SavedLoopSection = ({
   addLoopToPlaylist,
   togglePlayableItemPlayback,
   queuePlayableItemNext,
+  queuePlayableItemUpNext,
 }: SavedLoopSectionProps) => {
   const [loopName, setLoopName] = useState('');
   const [startMs, setStartMs] = useState(0);
@@ -276,6 +278,7 @@ export const SavedLoopSection = ({
         playlistActionCopy={playlistActionCopy}
         canQueueAsNext={canQueueAsNext}
         queuePlayableItemNext={queuePlayableItemNext}
+        queuePlayableItemUpNext={queuePlayableItemUpNext}
         removeLoop={removeLoop}
         togglePlayableItemPlayback={togglePlayableItemPlayback}
       />

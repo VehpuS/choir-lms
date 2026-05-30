@@ -1,12 +1,12 @@
-import { type DriveAuthorizationState } from '@org/google-drive';
 import {
   createTrackPlayableItem,
   type NamedLoop,
-  type Playlist,
   type PlayableItem,
+  type Playlist,
   type RehearsalQueueMode,
   type RepeatMode,
 } from '@org/audio-library-models';
+import { type DriveAuthorizationState } from '@org/google-drive';
 import { useEffect, useRef, useState } from 'react';
 
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
@@ -19,10 +19,13 @@ import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
   queuePlayableItemAsNext,
+  queuePlayableItemAsUpNext,
   updatePlaylistPlaybackRepeatMode,
   type PlaylistPlaybackIssue,
   type PlaylistPlaybackSession,
 } from '../utils/saved-playlist-playback-view-model';
+import { createSavedTrackPlaybackController } from '../utils/saved-track-playback-controller';
+import { registerSavedTrackPlaybackRemoteCommandHandlers } from '../utils/saved-track-playback-remote-controls';
 import {
   createSavedTrackPlaybackRuntimeIssue,
   hasSavedTrackPlaybackReachedRangeEnd,
@@ -31,12 +34,6 @@ import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
-import { createSavedTrackPlaybackController } from '../utils/saved-track-playback-controller';
-import {
-  ensureSavedTrackPlayerReady,
-  syncSavedTrackPlayerCapabilities,
-} from '../utils/saved-track-player-runtime';
-import { registerSavedTrackPlaybackRemoteCommandHandlers } from '../utils/saved-track-playback-remote-controls';
 import {
   getSavedTrackPlayer,
   getSavedTrackPlayerEventMap,
@@ -45,6 +42,10 @@ import {
   useSavedTrackPlayerPlaybackState,
   useSavedTrackPlayerProgress,
 } from '../utils/saved-track-player-interop';
+import {
+  ensureSavedTrackPlayerReady,
+  syncSavedTrackPlayerCapabilities,
+} from '../utils/saved-track-player-runtime';
 
 const DEFAULT_PLAYBACK_VOLUME_LEVEL = 1;
 const trackPlayerEvent = getSavedTrackPlayerEventMap();
@@ -373,6 +374,15 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
         }
 
         return queuePlayableItemAsNext(currentSession, playableItem);
+      });
+    },
+    queuePlayableItemUpNext(playableItem: PlayableItem) {
+      setActivePlaylistSession((currentSession) => {
+        if (!currentSession) {
+          return currentSession;
+        }
+
+        return queuePlayableItemAsUpNext(currentSession, playableItem);
       });
     },
     async skipToNextItem() {

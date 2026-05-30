@@ -9,10 +9,10 @@ The system SHALL provide quick queue actions from track-focused contexts so user
 - **WHEN** a user opens row actions for a playable saved track or loop during an active session
 - **THEN** the system offers a `Play next` style action that inserts that item immediately after the current item in the active session queue
 
-#### Scenario: Add a saved item to up-next from row-level actions
+#### Scenario: Add a saved item to queue from row-level actions
 
 - **WHEN** a user opens row actions for a playable saved track or loop during an active session
-- **THEN** the system offers an `Add to Up Next` style action that appends that item to the active upcoming queue without interrupting current playback
+- **THEN** the system offers an `Add to queue` style action that appends that item to the active upcoming queue without interrupting current playback
 
 #### Scenario: Queue quick actions preserve active playback continuity
 

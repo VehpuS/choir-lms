@@ -32,6 +32,7 @@ import {
   getPlaylistQueueModeLabel,
   getPlaylistRepeatModeLabel,
   queuePlayableItemAsNext,
+  queuePlayableItemAsUpNext,
   resolvePlaylistPlaybackAdvance,
   resolvePlaylistPlaybackRewind,
   updatePlaylistPlaybackRepeatMode,
@@ -720,6 +721,51 @@ describe('saved playlist view-model', () => {
     assert.equal(queuedSession.queue.items[0]?.id, 'track:drive:alto-line');
     assert.equal(queuedSession.queue.items[1]?.id, 'track:drive:soprano-line');
     assert.equal(queuedSession.queue.items[2]?.id, 'loop:loop-1');
+    assert.equal(queuedSession.requestedItemCount, 3);
+  });
+
+  it('appends Add to queue items to the end of the queue', () => {
+    const queuePlaylist = addLoopToPlaylist(
+      addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-05-12T00:00:00.000Z',
+          name: 'Warmups',
+          ownerId: 'user-1',
+        }),
+        PLAYABLE_SOURCE,
+        '2026-05-12T00:01:00.000Z',
+      ),
+      SAVED_LOOP,
+      '2026-05-12T00:02:00.000Z',
+    );
+    const builtSession = buildPlaylistPlaybackSession({
+      loops: [SAVED_LOOP],
+      mode: 'ordered',
+      playlist: queuePlaylist,
+      repeatMode: 'off',
+      sources: [PLAYABLE_SOURCE],
+    }).session;
+
+    if (!builtSession) {
+      throw new Error('Expected a playlist playback session.');
+    }
+
+    const appendedTrack = {
+      ...builtSession.queue.items[0],
+      id: 'track:drive:tenor-line',
+      sourceId: 'drive:tenor-line',
+      title: 'Tenor Line.mp3',
+      playlistEntryId: undefined,
+    };
+    const queuedSession = queuePlayableItemAsUpNext(
+      builtSession,
+      appendedTrack,
+    );
+
+    assert.equal(queuedSession.currentIndex, builtSession.currentIndex);
+    assert.equal(queuedSession.queue.items[0]?.id, 'track:drive:alto-line');
+    assert.equal(queuedSession.queue.items[1]?.id, 'loop:loop-1');
+    assert.equal(queuedSession.queue.items[2]?.id, 'track:drive:tenor-line');
     assert.equal(queuedSession.requestedItemCount, 3);
   });
 

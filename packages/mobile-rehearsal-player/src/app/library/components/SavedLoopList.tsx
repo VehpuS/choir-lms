@@ -28,6 +28,7 @@ type SavedLoopListProps = {
   canQueueAsNext: boolean;
   addLoopToPlaylist: (loop: SavedLoopCard['loop']) => void;
   queuePlayableItemNext: (playableItem: PlayableItem) => void;
+  queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   removeLoop: (loop: SavedLoopCard['loop']) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
 };
@@ -50,6 +51,7 @@ export const SavedLoopList = ({
   canQueueAsNext,
   addLoopToPlaylist,
   queuePlayableItemNext,
+  queuePlayableItemUpNext,
   removeLoop,
   togglePlayableItemPlayback,
 }: SavedLoopListProps) => {
@@ -149,7 +151,25 @@ export const SavedLoopList = ({
                       pressed ? styles.actionButtonPressed : undefined,
                     ]}
                   >
-                    <Text style={styles.secondaryButtonLabel}>Play next</Text>
+                    <Text style={styles.secondaryButtonLabel}>
+                      Play after current
+                    </Text>
+                  </Pressable>
+                ) : null}
+                {canQueueAsNext && playableItem ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => {
+                      queuePlayableItemUpNext(playableItem);
+                    }}
+                    style={({ pressed }) => [
+                      styles.secondaryButton,
+                      pressed ? styles.actionButtonPressed : undefined,
+                    ]}
+                  >
+                    <Text style={styles.secondaryButtonLabel}>
+                      Add to queue
+                    </Text>
                   </Pressable>
                 ) : null}
                 <Pressable

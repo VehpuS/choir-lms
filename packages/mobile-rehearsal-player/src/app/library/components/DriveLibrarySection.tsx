@@ -35,6 +35,7 @@ type SavedTrackPlaybackController = Pick<
   | 'playbackState'
   | 'progress'
   | 'resolveTrackDuration'
+  | 'queuePlayableItemUpNext'
   | 'syncActivePlaylistContext'
   | 'queuePlayableItemNext'
   | 'togglePlayableItemPlayback'
@@ -62,6 +63,7 @@ export const DriveLibrarySection = ({
   resolveTrackDuration,
   syncActivePlaylistContext,
   queuePlayableItemNext,
+  queuePlayableItemUpNext,
   togglePlayableItemPlayback,
   togglePlaylistPlayback,
   toggleSourcePlayback,
@@ -289,6 +291,7 @@ export const DriveLibrarySection = ({
         setIsPlaylistReorderDragActive={() => undefined}
         setPlaylistReorderDragMoveY={() => undefined}
         queuePlayableItemNext={queuePlayableItemNext}
+        queuePlayableItemUpNext={queuePlayableItemUpNext}
         togglePlayableItemPlayback={togglePlayableItemPlayback}
         togglePlaylistPlayback={togglePlaylistPlayback}
         toggleSourcePlayback={toggleSourcePlayback}

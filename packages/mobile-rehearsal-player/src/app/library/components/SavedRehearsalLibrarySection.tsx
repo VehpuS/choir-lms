@@ -81,6 +81,7 @@ type SavedRehearsalLibrarySectionProps = {
   setSelectedLoopSourceId: (sourceId: string | null) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   queuePlayableItemNext: (playableItem: PlayableItem) => void;
+  queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   togglePlaylistPlayback: (options: {
     loops: NamedLoop[];
     mode: 'ordered' | 'shuffle';
@@ -124,6 +125,7 @@ export const SavedRehearsalLibrarySection = ({
   setSelectedLoopSourceId,
   togglePlayableItemPlayback,
   queuePlayableItemNext,
+  queuePlayableItemUpNext,
   togglePlaylistPlayback,
   toggleSourcePlayback,
 }: SavedRehearsalLibrarySectionProps) => {
@@ -377,9 +379,19 @@ export const SavedRehearsalLibrarySection = ({
                         disabled:
                           isSavedLibraryMutating ||
                           source.availability.status !== 'available',
-                        label: 'Play next',
+                        label: 'Play after current',
                         onPress: () => {
                           queuePlayableItemNext(trackPlayableItem);
+                        },
+                        variant: 'menu' as const,
+                      },
+                      {
+                        disabled:
+                          isSavedLibraryMutating ||
+                          source.availability.status !== 'available',
+                        label: 'Add to queue',
+                        onPress: () => {
+                          queuePlayableItemUpNext(trackPlayableItem);
                         },
                         variant: 'menu' as const,
                       },
@@ -456,6 +468,7 @@ export const SavedRehearsalLibrarySection = ({
             selectedTrack={selectedTrack}
             togglePlayableItemPlayback={togglePlayableItemPlayback}
             queuePlayableItemNext={queuePlayableItemNext}
+            queuePlayableItemUpNext={queuePlayableItemUpNext}
           />
         </>
       ) : null}

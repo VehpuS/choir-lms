@@ -199,6 +199,20 @@ export const queuePlayableItemAsNext = (
   };
 };
 
+export const queuePlayableItemAsUpNext = (
+  session: PlaylistPlaybackSession,
+  playableItem: PlayableItem,
+): PlaylistPlaybackSession => {
+  return {
+    ...session,
+    queue: {
+      ...session.queue,
+      items: [...session.queue.items, playableItem],
+    },
+    requestedItemCount: session.requestedItemCount + 1,
+  };
+};
+
 export const resolvePlaylistPlaybackAdvance = (
   session: PlaylistPlaybackSession,
 ): {

@@ -15,7 +15,7 @@
 - [x] 2.2 Implement low-friction playlist item removal interaction in default playlist detail mode while preserving undo snackbar recovery.
 - [x] 2.3 Implement dual reorder support in playlist edit mode: drag-and-drop plus explicit icon-based move controls, with destructive actions visually distinct from playback actions.
 - [x] 2.4 Add `Play next` queue quick-action support for saved track and loop rows without interrupting active playback.
-- [ ] 2.5 Add `Add to Up Next` queue quick-action support for saved track and loop rows without interrupting active playback.
+- [x] 2.5 Add `Add to queue` queue quick-action support for saved track and loop rows without interrupting active playback.
 - [ ] 2.6 Update queue and now-playing control presentation so mode-aware controls remain explicit and queue-only controls stay hidden in standalone playback.
 
 ## 3. Top-Level Tab Reordering and Search Contexts

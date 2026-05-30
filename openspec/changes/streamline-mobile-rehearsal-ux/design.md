@@ -307,7 +307,7 @@ Alternatives considered:
 
 ### 3. Keep queue improvements additive and defer full queue editing if risk rises
 
-Add both high-value queue conveniences (`Play next` and `Add to Up Next`) while preserving existing queue ownership and playback consistency. Full queue reorder/remove can remain deferred if validation indicates too much complexity for this slice.
+Add both high-value queue conveniences (`Play next` and `Add to queue`) while preserving existing queue ownership and playback consistency. Full queue reorder/remove can remain deferred if validation indicates too much complexity for this slice.
 
 Alternatives considered:
 
@@ -330,7 +330,7 @@ Implemented delta in this change:
 
 Follow-on rollout direction:
 
-- Extend the same overflow grouping to loop row actions when queue-acceleration actions (`Play next`, `Add to Up Next`) are introduced.
+- Extend the same overflow grouping to loop row actions when queue-acceleration actions (`Play next`, `Add to queue`) are introduced.
 - Keep one primary inline action per row when useful for speed (for example immediate playback), and place lower-frequency or destructive controls in the overflow menu.
 - Keep icon semantics and touch target sizing aligned with playlist/search/library patterns as additional surfaces adopt this UI.
 
