@@ -25,12 +25,12 @@ export const HomeScreen = ({
   activePlayableItem,
   savedTrackCount,
 }: HomeScreenProps) => {
-  const continuePracticingCopy = activePlayableItem
-    ? getHomeContinuePracticingCopy({
-        activePlayableItemTitle: activePlayableItem.title,
-        savedTrackCount,
-      })
-    : null;
+  const continuePracticingCopy = getHomeContinuePracticingCopy({
+    activePlayableItemTitle: activePlayableItem?.title ?? null,
+    savedTrackCount,
+  });
+
+  const shortcutMetadata = `${RECENTS_SHORTCUT_TAGS.length} optional shortcut tags`;
 
   return (
     <ScrollView
@@ -49,19 +49,18 @@ export const HomeScreen = ({
         <Text style={styles.statusValueList}>{AUDIO_FORMAT_LABEL}</Text>
       </View>
 
-      {continuePracticingCopy ? (
-        <SummaryCard
-          body={continuePracticingCopy.body}
-          eyebrow="Recents"
-          title={continuePracticingCopy.title}
-        />
-      ) : null}
+      <SummaryCard
+        body={continuePracticingCopy.body}
+        eyebrow="Recents"
+        title={continuePracticingCopy.title}
+      />
 
       <View style={styles.shortcutsCard}>
         <Text style={styles.shortcutsTitle}>Popular shortcuts</Text>
         <Text style={styles.shortcutsBody}>
           Optional tag shortcuts for fast recents scanning.
         </Text>
+        <Text style={styles.shortcutsMeta}>{shortcutMetadata}</Text>
         <View style={styles.tagRow}>
           {RECENTS_SHORTCUT_TAGS.map((tag) => (
             <View key={tag} style={styles.tagChip}>
@@ -150,6 +149,13 @@ const styles = StyleSheet.create({
     color: appTheme.colors.secondaryText,
     fontSize: 13,
     lineHeight: 18,
+  },
+  shortcutsMeta: {
+    color: appTheme.colors.secondaryText,
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
   },
   tagRow: {
     flexDirection: 'row',

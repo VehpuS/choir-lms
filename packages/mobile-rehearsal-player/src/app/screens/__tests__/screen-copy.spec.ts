@@ -15,8 +15,8 @@ describe('getHomeContinuePracticingCopy', () => {
         savedTrackCount: 2,
       }),
       {
-        body: 'Resume Kyrie Alto.mp3 from the mini-player.',
-        title: 'Continue practicing',
+        body: 'Resume Kyrie Alto.mp3 or jump to Library for another saved rehearsal item.',
+        title: 'Resume recent rehearsal',
       },
     );
   });
@@ -28,8 +28,21 @@ describe('getHomeContinuePracticingCopy', () => {
         savedTrackCount: 0,
       }),
       {
-        body: 'Start in Search, then save a track to unlock full-track playback, loop capture, and playlists in your personal rehearsal library.',
-        title: 'Start your library',
+        body: 'No recent rehearsal yet. Start in Search or Library.',
+        title: 'No recent rehearsal yet',
+      },
+    );
+  });
+
+  it('points users with saved tracks toward Library when no active item exists', () => {
+    assert.deepEqual(
+      getHomeContinuePracticingCopy({
+        activePlayableItemTitle: null,
+        savedTrackCount: 3,
+      }),
+      {
+        body: '3 saved rehearsal tracks are ready in Library. Open Library to continue practicing.',
+        title: 'Recent rehearsal entry points',
       },
     );
   });

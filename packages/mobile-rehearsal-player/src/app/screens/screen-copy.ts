@@ -4,21 +4,21 @@ export const getHomeContinuePracticingCopy = (options: {
 }) => {
   if (options.activePlayableItemTitle) {
     return {
-      body: `Resume ${options.activePlayableItemTitle} from the mini-player.`,
-      title: 'Continue practicing',
+      body: `Resume ${options.activePlayableItemTitle} or jump to Library for another saved rehearsal item.`,
+      title: 'Resume recent rehearsal',
     };
   }
 
   if (options.savedTrackCount === 0) {
     return {
-      body: 'Start in Search, then save a track to unlock full-track playback, loop capture, and playlists in your personal rehearsal library.',
-      title: 'Start your library',
+      body: 'No recent rehearsal yet. Start in Search or Library.',
+      title: 'No recent rehearsal yet',
     };
   }
 
   return {
-    body: `${options.savedTrackCount} saved rehearsal ${options.savedTrackCount === 1 ? 'track is' : 'tracks are'} waiting in Library for full-track playback, loop capture, and playlist playback.`,
-    title: 'Continue practicing',
+    body: `${options.savedTrackCount} saved rehearsal ${options.savedTrackCount === 1 ? 'track is' : 'tracks are'} ready in Library. Open Library to continue practicing.`,
+    title: 'Recent rehearsal entry points',
   };
 };
 
