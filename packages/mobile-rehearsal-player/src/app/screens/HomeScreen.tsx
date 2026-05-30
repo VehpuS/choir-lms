@@ -1,6 +1,6 @@
 import type { PlayableItem } from '@org/audio-library-models';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { join, map, toUpper } from 'es-toolkit/compat';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { runtimeConfig } from '../../config/runtime';
 import { SummaryCard } from '../components/SummaryCard';
@@ -11,6 +11,8 @@ export type HomeScreenProps = {
   activePlayableItem: PlayableItem | null;
   savedTrackCount: number;
 };
+
+const RECENTS_SHORTCUT_TAGS = ['Soprano', 'Alto', 'Tenor', 'Bass', 'Warmup'];
 
 const AUDIO_FORMAT_LABEL = join(
   map(runtimeConfig.supportedAudioExtensions, (extension) =>
@@ -37,22 +39,14 @@ export const HomeScreen = ({
       style={styles.screen}
     >
       <View style={styles.hero}>
-        <Text style={styles.kicker}>Choir LMS</Text>
-        <Text style={styles.title}>Rehearsal at a glance</Text>
-        <Text style={styles.subtitle}>
-          Saved tracks and supported formats for quick practice starts.
-        </Text>
-        <View style={styles.statusGroup}>
-          <View style={styles.statusRow}>
-            <Text style={styles.statusLabel}>Saved tracks</Text>
-            <Text style={styles.statusValue}>{savedTrackCount}</Text>
-          </View>
-          <View style={styles.statusDivider} />
-          <View style={styles.statusBlock}>
-            <Text style={styles.statusLabel}>Audio support</Text>
-            <Text style={styles.statusValueList}>{AUDIO_FORMAT_LABEL}</Text>
-          </View>
+        <Text style={styles.kicker}>Recents</Text>
+        <Text style={styles.title}>Resume your latest practice</Text>
+        <Text style={styles.subtitle}>Jump back into practice here.</Text>
+        <View style={styles.statusRow}>
+          <Text style={styles.statusLabel}>Saved tracks</Text>
+          <Text style={styles.statusValue}>{savedTrackCount}</Text>
         </View>
+        <Text style={styles.statusValueList}>{AUDIO_FORMAT_LABEL}</Text>
       </View>
 
       {continuePracticingCopy ? (
@@ -62,6 +56,20 @@ export const HomeScreen = ({
           title={continuePracticingCopy.title}
         />
       ) : null}
+
+      <View style={styles.shortcutsCard}>
+        <Text style={styles.shortcutsTitle}>Popular shortcuts</Text>
+        <Text style={styles.shortcutsBody}>
+          Optional tag shortcuts for fast recents scanning.
+        </Text>
+        <View style={styles.tagRow}>
+          {RECENTS_SHORTCUT_TAGS.map((tag) => (
+            <View key={tag} style={styles.tagChip}>
+              <Text style={styles.tagLabel}>{tag}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
     </ScrollView>
   );
 };
@@ -77,7 +85,7 @@ const styles = StyleSheet.create({
     paddingBottom: 18,
   },
   hero: {
-    gap: 12,
+    gap: 10,
     padding: 18,
     borderWidth: 1,
     borderColor: appTheme.colors.border,
@@ -93,37 +101,19 @@ const styles = StyleSheet.create({
   },
   title: {
     color: appTheme.colors.primaryText,
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '700',
-    lineHeight: 32,
+    lineHeight: 30,
   },
   subtitle: {
     color: appTheme.colors.secondaryText,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  statusGroup: {
-    borderWidth: 1,
-    borderColor: '#e1dccf',
-    borderRadius: 14,
-    backgroundColor: '#f5f1e8',
-    overflow: 'hidden',
+    fontSize: 14,
+    lineHeight: 20,
   },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  statusDivider: {
-    height: 1,
-    backgroundColor: '#e1dccf',
-  },
-  statusBlock: {
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
   },
   statusLabel: {
     color: appTheme.colors.heroBackground,
@@ -134,13 +124,49 @@ const styles = StyleSheet.create({
   },
   statusValue: {
     color: appTheme.colors.primaryText,
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
   },
   statusValueList: {
-    color: appTheme.colors.primaryText,
-    fontSize: 15,
+    color: appTheme.colors.secondaryText,
+    fontSize: 13,
     fontWeight: '600',
-    lineHeight: 22,
+    lineHeight: 18,
+  },
+  shortcutsCard: {
+    gap: 8,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: appTheme.colors.border,
+    borderRadius: 14,
+    backgroundColor: appTheme.colors.surfaceBackground,
+  },
+  shortcutsTitle: {
+    color: appTheme.colors.primaryText,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  shortcutsBody: {
+    color: appTheme.colors.secondaryText,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  tagRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  tagChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#ddd5c6',
+    backgroundColor: '#f5f1e8',
+  },
+  tagLabel: {
+    color: appTheme.colors.primaryText,
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

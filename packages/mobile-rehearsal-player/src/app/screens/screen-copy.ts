@@ -11,7 +11,7 @@ export const getHomeContinuePracticingCopy = (options: {
 
   if (options.savedTrackCount === 0) {
     return {
-      body: 'Browse My Drive or shared folders below, then save a track to start full-track playback, loop capture, and playlists in your personal rehearsal library.',
+      body: 'Start in Search, then save a track to unlock full-track playback, loop capture, and playlists in your personal rehearsal library.',
       title: 'Start your library',
     };
   }
