@@ -7,7 +7,10 @@ import {
   View,
 } from 'react-native';
 
-import type { PlaylistDraftIssue } from '../utils/saved-playlist-view-model';
+import {
+  getPlaylistOptionsMenuActions,
+  type PlaylistDraftIssue,
+} from '../utils/saved-playlist-view-model';
 import { OptionsMenuSheet } from './OptionsMenuSheet';
 import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
@@ -30,6 +33,7 @@ type PlaylistOptionsMenuSurfaceProps = {
   isVisible: boolean;
   playlistName: string;
   onClose: () => void;
+  onRemove?: () => void;
   onRename: () => void;
 };
 
@@ -111,19 +115,16 @@ export const PlaylistOptionsMenuSurface = ({
   isVisible,
   playlistName,
   onClose,
+  onRemove,
   onRename,
 }: PlaylistOptionsMenuSurfaceProps) => {
   return (
     <OptionsMenuSheet
-      actions={[
-        {
-          disabled: isMutating,
-          id: 'rename-playlist',
-          label: 'Rename playlist',
-          onPress: onRename,
-          tone: 'primary',
-        },
-      ]}
+      actions={getPlaylistOptionsMenuActions({
+        isMutating,
+        onRemove,
+        onRename,
+      })}
       isSecondaryDisabled={isMutating}
       isVisible={isVisible}
       onClose={onClose}

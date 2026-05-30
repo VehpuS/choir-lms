@@ -2,12 +2,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
+import { getSavedPlaylistCardPlayAction } from '../utils/saved-playlist-card-view-model';
 import { queueSavedPlaylistRenameRequest } from '../utils/saved-playlist-detail-view-model';
 import type {
   PlaylistDraftIssue,
   SavedPlaylistCard,
 } from '../utils/saved-playlist-view-model';
-import { getSavedPlaylistCardPlayAction } from '../utils/saved-playlist-card-view-model';
 import { PlaylistOptionsMenuSurface } from './PlaylistRenameDialog';
 import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
@@ -75,6 +75,9 @@ export const SavedPlaylistCreateCard = (props: {
 };
 
 export const SavedPlaylistCardsList = (props: {
+  canMutatePlaylists: boolean;
+  isMutating: boolean;
+  onDeletePlaylist: (playlistId: string) => void;
   playlistCards: SavedPlaylistCard[];
   selectedPlaylistId?: string | null;
   onPlayPlaylist: (playlistId: string) => void;
@@ -108,13 +111,19 @@ export const SavedPlaylistCardsList = (props: {
               <Pressable
                 accessibilityLabel="Playlist options"
                 accessibilityRole="button"
+                disabled={!props.canMutatePlaylists || props.isMutating}
                 onPress={() => {
                   setOptionsPlaylistId(playlistCard.playlist.id);
                 }}
                 style={({ pressed }) => [
                   styles.compactIconButton,
                   styles.topRightMenuButton,
-                  pressed ? styles.actionButtonPressed : undefined,
+                  pressed && props.canMutatePlaylists && !props.isMutating
+                    ? styles.actionButtonPressed
+                    : undefined,
+                  !props.canMutatePlaylists || props.isMutating
+                    ? styles.actionButtonDisabled
+                    : undefined,
                 ]}
               >
                 <MaterialCommunityIcons
@@ -123,7 +132,9 @@ export const SavedPlaylistCardsList = (props: {
                   size={18}
                 />
               </Pressable>
-              <Text style={styles.playlistName}>{playlistCard.playlist.name}</Text>
+              <Text style={styles.playlistName}>
+                {playlistCard.playlist.name}
+              </Text>
               <Text numberOfLines={1} style={styles.playlistMetadata}>
                 {playlistCard.detailLabel}
               </Text>
@@ -143,7 +154,9 @@ export const SavedPlaylistCardsList = (props: {
                     pressed && !playAction.disabled
                       ? styles.actionButtonPressed
                       : undefined,
-                    playAction.disabled ? styles.actionButtonDisabled : undefined,
+                    playAction.disabled
+                      ? styles.actionButtonDisabled
+                      : undefined,
                   ]}
                 >
                   <MaterialCommunityIcons
@@ -162,9 +175,7 @@ export const SavedPlaylistCardsList = (props: {
                     pressed ? styles.actionButtonPressed : undefined,
                   ]}
                 >
-                  <Text style={styles.secondaryButtonLabel}>
-                    Open playlist
-                  </Text>
+                  <Text style={styles.secondaryButtonLabel}>Open playlist</Text>
                 </Pressable>
               </View>
             </View>
@@ -172,10 +183,18 @@ export const SavedPlaylistCardsList = (props: {
         })}
       </View>
       <PlaylistOptionsMenuSurface
-        isMutating={false}
+        isMutating={props.isMutating || !props.canMutatePlaylists}
         isVisible={selectedOptionsPlaylist !== undefined}
         onClose={() => {
           setOptionsPlaylistId(null);
+        }}
+        onRemove={() => {
+          if (!selectedOptionsPlaylist) {
+            return;
+          }
+
+          setOptionsPlaylistId(null);
+          props.onDeletePlaylist(selectedOptionsPlaylist.playlist.id);
         }}
         onRename={() => {
           if (!selectedOptionsPlaylist) {

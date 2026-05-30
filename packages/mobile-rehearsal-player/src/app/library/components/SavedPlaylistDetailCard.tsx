@@ -219,6 +219,10 @@ export const SavedPlaylistDetailCard = (props: {
         onClose={() => {
           setIsOptionsMenuVisible(false);
         }}
+        onRemove={() => {
+          setIsOptionsMenuVisible(false);
+          props.onDeletePlaylist();
+        }}
         onRename={() => {
           setIsOptionsMenuVisible(false);
           setIsRenameDialogVisible(true);

@@ -7,7 +7,7 @@ import {
   type Playlist,
 } from '@org/audio-library-models';
 import { useEffect, useReducer, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
 import { useSavedPlaylists } from '../hooks/use-saved-playlists';
 import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
@@ -20,6 +20,7 @@ import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import type { PlaylistPlaybackSession } from '../utils/saved-playlist-playback-view-model';
 import {
   buildSavedPlaylist,
+  getSavedPlaylistRemovalCopy,
   resolveSavedPlaylistCards,
   resolveSelectedPlaylist,
   type PlaylistDraftIssue,
@@ -333,6 +334,32 @@ export const SavedRehearsalLibrarySection = ({
     closeTrackPlaylistMenu();
   };
 
+  const handleDeletePlaylist = (playlistId: string) => {
+    const playlist = savedPlaylists.find((currentPlaylist) => {
+      return currentPlaylist.id === playlistId;
+    });
+
+    if (!playlist) {
+      return;
+    }
+
+    const removalCopy = getSavedPlaylistRemovalCopy(playlist);
+
+    Alert.alert(removalCopy.title, removalCopy.message, [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: removalCopy.confirmLabel,
+        style: 'destructive',
+        onPress: () => {
+          void deletePlaylist(playlist);
+        },
+      },
+    ]);
+  };
+
   return (
     <View style={styles.savedLibrarySection}>
       <DriveLibrarySectionHeader
@@ -359,6 +386,9 @@ export const SavedRehearsalLibrarySection = ({
       {!isPlaylistDetailVisible ? (
         <>
           <SavedPlaylistCardsList
+            canMutatePlaylists={canMutatePlaylists}
+            isMutating={isPlaylistMutating}
+            onDeletePlaylist={handleDeletePlaylist}
             onPlayPlaylist={(playlistId) => {
               const playlist = savedPlaylists.find((currentPlaylist) => {
                 return currentPlaylist.id === playlistId;

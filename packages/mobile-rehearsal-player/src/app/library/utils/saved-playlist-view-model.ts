@@ -8,6 +8,7 @@ import {
   formatDurationLabel,
   type DriveLibrarySource,
 } from './drive-library-view-model';
+import type { OptionsMenuAction } from './options-menu-sheet-view-model';
 import {
   getPlaylistPlaybackSessionSummary,
   type PlaylistPlaybackSession,
@@ -250,6 +251,34 @@ export const getSavedPlaylistRemovalCopy = (
       `This will remove ${pluralize(playlist.items.length, 'item')} from this playlist only. Saved tracks and loops will stay in Library.`,
     title: 'Remove saved playlist?',
   };
+};
+
+export const getPlaylistOptionsMenuActions = (options: {
+  isMutating: boolean;
+  onRemove?: () => void;
+  onRename: () => void;
+}): OptionsMenuAction[] => {
+  const actions: OptionsMenuAction[] = [
+    {
+      disabled: options.isMutating,
+      id: 'rename-playlist',
+      label: 'Rename playlist',
+      onPress: options.onRename,
+      tone: 'primary',
+    },
+  ];
+
+  if (options.onRemove) {
+    actions.push({
+      disabled: options.isMutating,
+      id: 'remove-playlist',
+      label: 'Remove playlist',
+      onPress: options.onRemove,
+      tone: 'destructive',
+    });
+  }
+
+  return actions;
 };
 
 export const resolveSavedPlaylistCards = (

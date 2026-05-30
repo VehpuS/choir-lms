@@ -39,6 +39,7 @@ import {
 } from '../utils/saved-playlist-playback-view-model.js';
 import { getSavedPlaylistsStatusCopy } from '../utils/saved-playlist-status-view-model.js';
 import {
+  getPlaylistOptionsMenuActions,
   getSavedPlaylistDetailSummary,
   getSavedPlaylistEntryDetailLabel,
   getSavedPlaylistRemovalCopy,
@@ -365,6 +366,37 @@ describe('saved playlist view-model', () => {
         '"Warmups" will be removed from your saved playlists.\n\nThis will remove 1 item from this playlist only. Saved tracks and loops will stay in Library.',
       title: 'Remove saved playlist?',
     });
+  });
+
+  it('includes remove in shared playlist overflow actions when requested', () => {
+    const actions = getPlaylistOptionsMenuActions({
+      isMutating: false,
+      onRemove: () => undefined,
+      onRename: () => undefined,
+    });
+
+    assert.deepEqual(
+      actions.map((action) => ({
+        disabled: action.disabled ?? false,
+        id: action.id,
+        label: action.label,
+        tone: action.tone,
+      })),
+      [
+        {
+          disabled: false,
+          id: 'rename-playlist',
+          label: 'Rename playlist',
+          tone: 'primary',
+        },
+        {
+          disabled: false,
+          id: 'remove-playlist',
+          label: 'Remove playlist',
+          tone: 'destructive',
+        },
+      ],
+    );
   });
 
   it('summarizes playlist cards without add-from-editor copy', () => {
