@@ -386,7 +386,7 @@ Alternatives considered:
 
 ### 6. Rename Home to Recents and keep it optional, not a required workflow step
 
-Recents provides recent-session shortcuts (for example recent playback and popular tags), but the IA should not depend on Recents for core tasks.
+Recents provides persisted recent-session shortcuts (for example recent playback history and popular tags), but the IA should not depend on Recents for core tasks.
 
 Alternatives considered:
 
@@ -400,7 +400,7 @@ Recents should surface multiple useful shortcut modules (for example recent rehe
 Implementation status note:
 
 - The current implementation slice ships a concrete per-item resume row (icon-only play action bound to a labeled recent item) to avoid ambiguous card-level play behavior.
-- Compact multi-item recent history remains a follow-on implementation step tracked as task `3.3.3`.
+- Persisted recent playback history across app relaunches and compact multi-item recent history remain a follow-on implementation step tracked as task `3.3.3`.
 
 Alternatives considered:
 
@@ -526,6 +526,7 @@ Alternatives considered:
 - Status: Ready for review.
 - Confirmation checkpoint: pending reviewer sign-off that the Recents composition remains compact and scannable while keeping Search and Library as explicit alternatives.
 - Implementation rollout note: current Recents implementation includes explicit single-item per-row resume plus popular tags shortcuts, with compact multi-item recent history queued as follow-on task `3.3.3`.
+- Implementation rollout note: current Recents implementation includes explicit single-item per-row resume plus popular tags shortcuts, with persisted recent history and compact multi-item recent history queued as follow-on task `3.3.3`.
 
 ## Task 1.6 Terminology Rule
 

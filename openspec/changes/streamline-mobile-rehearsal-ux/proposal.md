@@ -7,7 +7,7 @@ The current mobile rehearsal player already delivers core playback and playlist 
 - Streamline playlist and queue interaction patterns to feel more native on phone-sized touch surfaces.
 - Clarify information architecture by separating Google Drive discovery search from app-owned library search, including explicit source-scoped search behavior.
 - Support direct preview playback from Google Drive search results without requiring users to save the source first.
-- Rename the current Home tab to Recents and keep it as an optional acceleration surface for recent rehearsal shortcuts rather than a mandatory workflow step.
+- Rename the current Home tab to Recents and keep it as an optional acceleration surface for persisted recent rehearsal shortcuts rather than a mandatory workflow step.
 - Add low-friction rehearsal productivity actions such as ad-hoc queue actions, stronger resume shortcuts, and smarter defaults in loop and playlist flows.
 - Standardize saved loop and saved track cards around one shared row-action contract: one inline icon-only `Play` affordance, one shared vertical-ellipsis overflow trigger, and parity for all other applicable actions.
 - Keep `Make loop` as the intentional exception on saved tracks only, surfaced from the same overflow menu rather than a dedicated inline button.

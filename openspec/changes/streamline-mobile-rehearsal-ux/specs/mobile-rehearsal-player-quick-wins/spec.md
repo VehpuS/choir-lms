@@ -29,6 +29,12 @@ The system SHALL provide direct shortcuts to recent rehearsal context so users c
 - **THEN** Recents shows a direct shortcut to resume the most relevant recent rehearsal item or playlist context
 - **AND** any direct playback control in that shortcut uses a standard play icon rather than a text-labeled `Play` button
 
+#### Scenario: Recent playback history persists across app sessions
+
+- **WHEN** a user restarts the app after playing one or more rehearsal items
+- **THEN** the system restores recent playback history needed to populate Recents
+- **AND** Recents does not depend solely on in-memory active playback state to determine whether recent items exist
+
 #### Scenario: Resume controls map to one explicit recent item
 
 - **WHEN** Recents shows a resume row for a recent rehearsal item
@@ -40,6 +46,7 @@ The system SHALL provide direct shortcuts to recent rehearsal context so users c
 - **WHEN** more than one recent rehearsal item exists
 - **THEN** Recents renders a compact recent-items list with one row per item
 - **AND** each row exposes its own icon-only play control so users can resume a specific item directly
+- **AND** those recent items remain available after app relaunch until replaced or evicted by the recents history policy
 
 #### Scenario: Empty recent context falls back to discovery guidance
 
