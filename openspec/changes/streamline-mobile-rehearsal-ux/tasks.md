@@ -59,6 +59,7 @@
 - [ ] 4.5 Audit shell, playback, and queue surfaces for remaining text-labeled `Play` buttons, replace them with standard playback icons where appropriate, and update icon-only control labels, selected/disabled states, and touch-target sizing.
 - [ ] 4.6 Extract shared interaction style tokens for card shells, action buttons, chips, and pressed/disabled states used by playlist/source/menu surfaces.
 - [ ] 4.7 Extract a shared centered dialog-card shell for rename/create/select flows and migrate existing playlist dialogs without changing workflow behavior.
+- [ ] 4.7.1 Move create-playlist entry into the Library Playlists section header with a right-aligned `+` trigger that opens the shared create modal with playlist name input, replacing any persistent bottom-of-Library creation component.
 
 ## 5. Library Organization (Tags, Filters, Optional Folders)
 

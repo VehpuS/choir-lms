@@ -303,6 +303,7 @@ Validated flow: first-use empty library -> discover -> save first track -> optio
 - Keep a persistent success acknowledgement after save action long enough to support the Add -> Library handoff.
 - Ensure Library tab lands on saved-track content with playlist actions immediately reachable (no hidden management mode required).
 - Keep playlist quick-access cards above saved-track rows so add-to-playlist and playback-start paths stay short.
+- Keep playlist creation anchored to the Playlists section header in Library so the create action is discoverable without a persistent bottom-of-Library component.
 - Preserve mini-player continuity through the full flow so users can verify playback state while navigating.
 - Include this validated flow in manual regression checks as a required pass scenario before sign-off.
 - Ensure empty-library states include CTA copy that is action-oriented (for example Open Add or Save your first track).
@@ -534,6 +535,8 @@ Implementation guidance:
 - Shared overflow trigger primitive: one top-right vertical-ellipsis button component with consistent accessibility, hit target, and pressed/disabled feedback.
 - Shared dialog-card shell primitive: reusable centered modal scaffold for rename/create/select dialogs, with existing content and actions preserved.
 - Shared interaction style tokens: centralize repeated card, button, chip, and disabled/pressed tokens used by playlist, source, and menu surfaces.
+
+Library playlist creation should use the shared dialog-card shell: the Playlists section header exposes a right-aligned `+` action that opens the create-playlist modal with playlist name input, create/confirm, and cancel behavior.
 
 Alternatives considered:
 

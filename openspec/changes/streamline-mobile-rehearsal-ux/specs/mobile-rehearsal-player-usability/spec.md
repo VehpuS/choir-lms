@@ -15,6 +15,13 @@ The system SHALL present playlist detail as playback-first by default, with dest
 - **THEN** each card provides a top-level icon-only play action that starts playback for that playlist without first opening playlist detail
 - **AND** the card preserves `Open playlist` as a separate detail-navigation action
 
+#### Scenario: Playlist creation opens from the Playlists section header
+
+- **WHEN** a user views the Playlists section in Library
+- **THEN** the section header exposes a right-aligned `+` action for creating a new playlist
+- **AND** selecting that action opens a modal with playlist name input and create/cancel controls
+- **AND** playlist creation does not rely on a persistent component anchored to the bottom of the Library screen
+
 #### Scenario: Playlist card rename stays in Library context
 
 - **WHEN** a user chooses `Rename playlist` from a saved playlist card overflow menu in Library

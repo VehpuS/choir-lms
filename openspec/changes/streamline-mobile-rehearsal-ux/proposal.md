@@ -13,6 +13,7 @@ The current mobile rehearsal player already delivers core playback and playlist 
 - Rename the current Home tab to Recents and keep it as an optional acceleration surface for persisted recent rehearsal shortcuts rather than a mandatory workflow step.
 - Add low-friction rehearsal productivity actions such as ad-hoc queue actions that can promote single-track playback into a transient queue, stronger resume shortcuts, and smarter defaults in loop and playlist flows.
 - Add queue-view playlist capture actions so users can save a transient Up Next queue as a new playlist or update an existing playlist with currently enqueued items from Now Playing.
+- Move create-playlist entry into the Library Playlists section header via a right-aligned `+` trigger that opens a modal for naming the new playlist, instead of keeping playlist creation as a persistent bottom-of-Library component.
 - Add Recents row overflow actions (vertical ellipsis) for queue acceleration (`Play next`, `Add to queue`) and a `View in library` handoff so users can jump from recency shortcuts into full library context without extra search steps.
 - Standardize saved loop and saved track cards around one shared row-action contract: one inline icon-only `Play` affordance, one shared vertical-ellipsis overflow trigger, and parity for all other applicable actions.
 - Keep `Make loop` as the intentional exception on saved tracks only, surfaced from the same overflow menu rather than a dedicated inline button.
