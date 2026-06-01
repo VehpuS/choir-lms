@@ -7,7 +7,7 @@ Goal: Validate that Recents can show multiple shortcut modules (recent tracks/lo
 State intent:
 
 - Recents remains optional and non-blocking.
-- User gets immediate next-step guidance to Search or Library.
+- User gets immediate next-step guidance to Add or Library.
 
 ```text
 +------------------------------------------------+
@@ -15,8 +15,8 @@ State intent:
 | Optional shortcuts for faster playback         |
 +------------------------------------------------+
 | No recent tracks, loops, or playlists yet      |
-| Start in Search or Library                     |
-| [Open Search]   [Open Library]                 |
+| Start in Add or Library                        |
+| [Open Add]      [Open Library]                 |
 +------------------------------------------------+
 | Popular tags                                   |
 | [Soprano] [Alto] [Tenor] [Bass] [Warmup]       |
@@ -81,7 +81,7 @@ If vertical space is constrained:
 ## Design confirmation checklist
 
 - Continue from last item remains the first actionable block in active state.
-- Search and Library CTAs remain explicit in first-use empty state.
+- Add and Library CTAs remain explicit in first-use empty state.
 - Popular tags are present but secondary to Continue and recents.
 - Layout stays scannable at one-handed reading distance.
 - Recents remains optional and does not duplicate Drive browse controls.

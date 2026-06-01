@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  getAddScreenSummaryCopy,
   getRecentsContinuePracticingCopy,
   getLibraryScreenSummaryCopy,
   getRecentsShortcutPlayActionCopy,
-  getSearchScreenSummaryCopy,
 } from '../screen-copy.js';
 
 describe('getRecentsContinuePracticingCopy', () => {
@@ -29,7 +29,7 @@ describe('getRecentsContinuePracticingCopy', () => {
         savedTrackCount: 0,
       }),
       {
-        body: 'No recent rehearsal yet. Start in Search or Library.',
+        body: 'No recent rehearsal yet. Start in Add or Library.',
         title: 'No recent rehearsal yet',
       },
     );
@@ -49,23 +49,23 @@ describe('getRecentsContinuePracticingCopy', () => {
   });
 });
 
-describe('getSearchScreenSummaryCopy', () => {
+describe('getAddScreenSummaryCopy', () => {
   it('shows a search prompt before a query runs', () => {
     assert.deepEqual(
-      getSearchScreenSummaryCopy({
+      getAddScreenSummaryCopy({
         activeSearchQuery: null,
         resultCount: 0,
       }),
       {
-        body: 'Search across My Drive and shared folders, then save promising tracks into Library without leaving this result view.',
-        title: 'Search the rehearsal catalog',
+        body: 'Browse or search My Drive and shared folders, then save promising tracks into Library without leaving this view.',
+        title: 'Add from Google Drive',
       },
     );
   });
 
   it('explains how to recover when a query returns no supported results', () => {
     assert.deepEqual(
-      getSearchScreenSummaryCopy({
+      getAddScreenSummaryCopy({
         activeSearchQuery: 'amen cadence',
         resultCount: 0,
       }),
@@ -108,7 +108,7 @@ describe('getRecentsShortcutPlayActionCopy', () => {
 describe('getLibraryScreenSummaryCopy', () => {
   it('guides an empty library toward current playback work instead of future slices', () => {
     assert.deepEqual(getLibraryScreenSummaryCopy({ savedTrackCount: 0 }), {
-      body: 'Save a track from Search to start full-track playback, loops, and playlists in your rehearsal library.',
+      body: 'Save a track from Add to start full-track playback, loops, and playlists in your rehearsal library.',
       title: 'Library is ready for your first track',
     });
   });

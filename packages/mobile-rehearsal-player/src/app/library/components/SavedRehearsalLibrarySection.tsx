@@ -7,7 +7,7 @@ import {
   type PlayableItem,
   type Playlist,
 } from '@org/audio-library-models';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 
 import { useSavedPlaylists } from '../hooks/use-saved-playlists';
@@ -17,6 +17,12 @@ import {
   type DriveLibrarySource,
   type DriveLibraryStatusCopy,
 } from '../utils/drive-library-view-model';
+import {
+  filterSavedLibrarySourcesByQuery,
+  filterSavedLoopsByQuery,
+  filterSavedPlaylistsByQuery,
+  resolveActiveLibrarySearchQuery,
+} from '../utils/saved-library-search-view-model';
 import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import type { PlaylistPlaybackSession } from '../utils/saved-playlist-playback-view-model';
 import { getSelectedPlaylistIssue } from '../utils/saved-playlist-status-view-model';
@@ -44,6 +50,7 @@ import {
 import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
 import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
+import { LibrarySearchPanel } from './LibrarySearchPanel';
 import { SavedLoopSection } from './SavedLoopSection';
 import { SavedPlaylistSection } from './SavedPlaylistSection';
 import { SavedPlaylistCardsList } from './SavedPlaylistSectionCards';
@@ -159,6 +166,10 @@ export const SavedRehearsalLibrarySection = ({
     undefined,
     getSavedTrackPlaylistMenuInitialState,
   );
+  const [librarySearchQuery, setLibrarySearchQuery] = useState('');
+  const [activeLibrarySearchQuery, setActiveLibrarySearchQuery] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     if (savedPlaylists.length === 0) {
@@ -240,11 +251,33 @@ export const SavedRehearsalLibrarySection = ({
     playbackState,
   });
   const isPlaylistMutating = pendingPlaylistId !== null;
-  const playlistCards = resolveSavedPlaylistCards(savedPlaylists);
+  const visibleSavedLibrarySources = useMemo(() => {
+    return filterSavedLibrarySourcesByQuery({
+      activeSearchQuery: activeLibrarySearchQuery,
+      sources: savedLibrarySources,
+    });
+  }, [activeLibrarySearchQuery, savedLibrarySources]);
+  const visibleSavedLoops = useMemo(() => {
+    return filterSavedLoopsByQuery({
+      activeSearchQuery: activeLibrarySearchQuery,
+      loops: savedLoops,
+    });
+  }, [activeLibrarySearchQuery, savedLoops]);
+  const visiblePlaylistCards = useMemo(() => {
+    return resolveSavedPlaylistCards(
+      filterSavedPlaylistsByQuery({
+        activeSearchQuery: activeLibrarySearchQuery,
+        playlists: savedPlaylists,
+      }),
+    );
+  }, [activeLibrarySearchQuery, savedPlaylists]);
+  const isLibrarySearchMode = activeLibrarySearchQuery !== null;
   const selectedCardRenameIssue =
     cardRenameIssue ??
     getSelectedPlaylistIssue(playlistIssue, cardRenamePlaylistId);
-  const savedSourceTitle = `Saved rehearsal tracks (${savedLibrarySources.length})`;
+  const savedSourceTitle = isLibrarySearchMode
+    ? `Matching saved rehearsal tracks (${visibleSavedLibrarySources.length})`
+    : `Saved rehearsal tracks (${savedLibrarySources.length})`;
   const isLoopMutating = pendingLoopId !== null;
   const shouldShowSavedLibraryStatus =
     isSavedLibraryLoading || savedLibraryStatusCopy.tone !== 'ready';
@@ -269,6 +302,17 @@ export const SavedRehearsalLibrarySection = ({
   const closeTrackPlaylistMenu = () => {
     dispatchTrackPlaylistMenu({ type: 'close' });
     setTrackPlaylistCreationIssue(null);
+  };
+
+  const submitLibrarySearch = () => {
+    setActiveLibrarySearchQuery(
+      resolveActiveLibrarySearchQuery(librarySearchQuery),
+    );
+  };
+
+  const clearLibrarySearch = () => {
+    setLibrarySearchQuery('');
+    setActiveLibrarySearchQuery(null);
   };
 
   const handleSelectPlaylistForAddTarget = async (playlist: Playlist) => {
@@ -435,6 +479,13 @@ export const SavedRehearsalLibrarySection = ({
         title="Saved tracks"
         eyebrow="Saved tracks"
       />
+      <LibrarySearchPanel
+        isSearchMode={isLibrarySearchMode}
+        onClearSearch={clearLibrarySearch}
+        onSearch={submitLibrarySearch}
+        onSearchQueryChange={setLibrarySearchQuery}
+        searchQuery={librarySearchQuery}
+      />
       {shouldShowSavedLibraryStatus ? (
         <DriveLibraryStatusCard
           isLoading={isSavedLibraryLoading}
@@ -487,7 +538,7 @@ export const SavedRehearsalLibrarySection = ({
             onSubmitRenamePlaylist={() => {
               void handleRenamePlaylistCard();
             }}
-            playlistCards={playlistCards}
+            playlistCards={visiblePlaylistCards}
             selectedPlaylistId={selectedPlaylist?.id ?? null}
           />
           <DriveLibrarySourceGroup
@@ -601,7 +652,7 @@ export const SavedRehearsalLibrarySection = ({
                 )
               );
             }}
-            sources={savedLibrarySources}
+            sources={visibleSavedLibrarySources}
             title={savedSourceTitle}
           />
           <SavedLoopSection
@@ -628,7 +679,7 @@ export const SavedRehearsalLibrarySection = ({
             removeLoop={removeLoop}
             savedSources={savedLibrarySources}
             savedLoopIssue={savedLoopIssue}
-            savedLoops={savedLoops}
+            savedLoops={visibleSavedLoops}
             saveLoop={saveLoop}
             selectedTrack={selectedTrack}
             togglePlayableItemPlayback={togglePlayableItemPlayback}

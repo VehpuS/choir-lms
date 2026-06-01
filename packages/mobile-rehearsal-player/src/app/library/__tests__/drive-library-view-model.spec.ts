@@ -3,6 +3,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { createPlaylist } from '@org/audio-library-models';
+
 import {
   AUTHORIZED_STATE,
   BROWSE_SNAPSHOT,
@@ -21,6 +23,12 @@ import {
   getSourceMetadataLabels,
   getSourceStatusMessage,
 } from '../utils/drive-library-view-model.js';
+import {
+  filterSavedLibrarySourcesByQuery as filterSavedLibrarySourcesByLibraryQuery,
+  filterSavedLoopsByQuery as filterSavedLoopsByLibraryQuery,
+  filterSavedPlaylistsByQuery as filterSavedPlaylistsByLibraryQuery,
+  resolveActiveLibrarySearchQuery as resolveActiveLibraryQuery,
+} from '../utils/saved-library-search-view-model.js';
 
 describe('getDriveLibraryStatusCopy', () => {
   it('summarizes the browse surface with folders and playable items', () => {
@@ -161,5 +169,83 @@ describe('presentation helpers', () => {
       'Folder',
       'Updated 2026-05-10',
     ]);
+  });
+});
+
+describe('saved library search helpers', () => {
+  it('normalizes an active library search query from user input', () => {
+    assert.equal(resolveActiveLibraryQuery('  Kyrie  '), 'Kyrie');
+    assert.equal(resolveActiveLibraryQuery('   '), null);
+  });
+
+  it('filters saved entities by the active library query', () => {
+    const sources = [
+      PLAYABLE_SOURCE,
+      {
+        ...PLAYABLE_SOURCE,
+        id: 'drive:bass-line',
+        name: 'Bass Line.mp3',
+      },
+    ];
+    const loops = [
+      {
+        createdAt: '2026-05-12T00:00:00.000Z',
+        endMs: 18000,
+        id: 'loop-1',
+        name: 'Entrance cue',
+        ownerId: 'user-1',
+        ownershipScope: 'user' as const,
+        sourceId: PLAYABLE_SOURCE.id,
+        sourceName: PLAYABLE_SOURCE.name,
+        startMs: 12000,
+        updatedAt: '2026-05-12T00:00:00.000Z',
+      },
+      {
+        createdAt: '2026-05-12T00:00:00.000Z',
+        endMs: 47000,
+        id: 'loop-2',
+        name: 'Bass cadence',
+        ownerId: 'user-1',
+        ownershipScope: 'user' as const,
+        sourceId: 'drive:bass-line',
+        sourceName: 'Bass Line.mp3',
+        startMs: 35000,
+        updatedAt: '2026-05-12T00:00:00.000Z',
+      },
+    ];
+    const playlists = [
+      createPlaylist({
+        createdAt: '2026-05-12T00:00:00.000Z',
+        name: 'Kyrie Warmups',
+        ownerId: 'user-1',
+      }),
+      createPlaylist({
+        createdAt: '2026-05-12T00:00:00.000Z',
+        name: 'Bass Focus',
+        ownerId: 'user-1',
+      }),
+    ];
+
+    assert.deepEqual(
+      filterSavedLibrarySourcesByLibraryQuery({
+        activeSearchQuery: 'bass',
+        sources,
+      }).map((source) => source.name),
+      ['Bass Line.mp3'],
+    );
+    assert.deepEqual(
+      filterSavedLoopsByLibraryQuery({
+        activeSearchQuery: 'bass',
+        loops,
+      }).map((loop) => loop.name),
+      ['Bass cadence'],
+    );
+    assert.deepEqual(
+      filterSavedPlaylistsByLibraryQuery({
+        activeSearchQuery: 'kyrie',
+        playlists,
+      }).map((playlist) => playlist.name),
+      ['Kyrie Warmups'],
+    );
   });
 });

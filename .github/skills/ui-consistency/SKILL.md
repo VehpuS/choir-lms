@@ -1,13 +1,15 @@
 ---
 name: ui-consistency
-description: "Enforce cross-screen UI consistency in the mobile rehearsal player. USE WHEN requests mention consistency, standardization, parity, unifying button order/text/style, overflow menu alignment, icon semantics, or matching behavior across Recents/Search/Library/playlist/queue surfaces. TRIGGERS: 'consistent UI', 'make this match', 'standardize buttons', 'same labels everywhere', 'cross-screen parity', 'overflow menu consistency', 'button order', 'icon consistency'."
+description: "Enforce cross-screen UI consistency in the mobile rehearsal player. USE WHEN requests mention consistency, standardization, parity, unifying button order/text/style, overflow menu alignment, icon semantics, or matching behavior across Recents/Add/Library/playlist/queue surfaces. TRIGGERS: 'consistent UI', 'make this match', 'standardize buttons', 'same labels everywhere', 'cross-screen parity', 'overflow menu consistency', 'button order', 'icon consistency'."
 ---
 
 # UI Consistency (Mobile Rehearsal Player)
 
 Use this skill to keep interaction patterns, copy, and visual treatment consistent across related components and screens in `packages/mobile-rehearsal-player`.
 
-Primary goal: users should not relearn controls when moving between Recents, Library, Search, playlists, and queue surfaces.
+Primary goal: users should not relearn controls when moving between Recents, Library, Add, playlists, and queue surfaces.
+
+Treat `Add` as the middle destination label and reserve `Search` for search actions within Add and Library.
 
 ## Scope
 

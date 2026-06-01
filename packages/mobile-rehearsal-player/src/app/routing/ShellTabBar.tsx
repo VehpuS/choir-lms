@@ -28,9 +28,9 @@ const TAB_ICONS: Record<
     active: 'history',
     inactive: 'history',
   },
-  search: {
-    active: 'magnify',
-    inactive: 'magnify',
+  add: {
+    active: 'folder-plus',
+    inactive: 'folder-plus-outline',
   },
   library: {
     active: 'music-note',

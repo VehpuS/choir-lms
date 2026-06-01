@@ -7,7 +7,8 @@ The product intent for this iteration is to improve speed-to-rehearsal without d
 ## Current IA Baseline (Task 1.1)
 
 Current top-level tabs are ordered as Home, Search, and Library.
-In this change, the Home destination is renamed to Recents to match its optional acceleration role.
+In this change, the Home destination is renamed to Recents to match its optional acceleration role, and the current Search destination is renamed to Add so the middle tab describes Google Drive browse/search/add-to-library work.
+Search is reserved as an operation name that remains available within both Add and Library.
 
 ### Home (to be renamed Recents)
 
@@ -20,12 +21,12 @@ In this change, the Home destination is renamed to Recents to match its optional
 - Drive browse status and unavailable/support messaging: Home -> `DriveLibraryStatusCard` and unavailable source group.
 - Save/Remove source action from Drive browse list: Home -> playable source rows (`DriveLibrarySourceGroup` with `getSourceAction`).
 
-### Search
+### Search (to be renamed Add)
 
-- Drive search query input and submit/clear flow: Search tab (`DriveLibrarySearchPanel`).
-- Drive search result list (playable + unavailable): Search tab (`DriveSearchResultsPanel` source groups).
-- Save/Remove source action from search results: Search tab source rows (`DriveLibrarySourceGroup` with `getSourceAction`).
-- Search status/issue/loading messaging for Drive context: Search tab (`DriveLibraryStatusCard` in search panel).
+- Drive search query input and submit/clear flow: current Search tab (`DriveLibrarySearchPanel`), which will be renamed Add while keeping Google Drive search inside it.
+- Drive search result list (playable + unavailable): current Search tab (`DriveSearchResultsPanel` source groups).
+- Save/Remove source action from search results: current Search tab source rows (`DriveLibrarySourceGroup` with `getSourceAction`).
+- Search status/issue/loading messaging for Drive context: current Search tab (`DriveLibraryStatusCard` in search panel).
 
 ### Library
 
@@ -40,7 +41,7 @@ In this change, the Home destination is renamed to Recents to match its optional
 
 ### Cross-Surface / Shell-Level
 
-- Top-level tab switching: shell tab bar (`ShellTabBar` with current destinations Home/Search/Library, target label Recents/Search/Library).
+- Top-level tab switching: shell tab bar (`ShellTabBar` with current destinations Home/Search/Library, target labels Recents/Add/Library after rename).
 - Session/account actions (authorize/clear Drive auth): header menu (`DriveSessionMenu`).
 - Mini-player persistence across tab switches: bottom dock mini-player (`MobileShell`).
 - Now Playing surface entry point: tap mini-player body.
@@ -51,7 +52,7 @@ This baseline map is the non-regression reference for IA reorder work and featur
 
 ## Target IA Arrangement (Task 1.2)
 
-Target top-level tabs are ordered as Library, Search, and Recents.
+Target top-level tabs are ordered as Library, Add, and Recents.
 
 ### Library Tab (primary, rehearsal-first)
 
@@ -71,9 +72,9 @@ Placement rules:
 - `Make loop` remains available only from saved track overflow menus and is not mirrored onto saved loop rows.
 - Playlist, track, and loop rows retain direct playback affordances and lightweight management actions.
 
-### Search Tab (Drive discovery-first)
+### Add Tab (Drive discovery-first)
 
-Section order within Search:
+Section order within Add:
 
 1. Drive context header (active corpus label + scope chip)
 2. Drive search input and recent queries
@@ -83,7 +84,7 @@ Section order within Search:
 
 Placement rules:
 
-- Drive search remains first-class in this tab and is explicitly labeled as Google Drive discovery.
+- Add is the destination label for the Google Drive discovery surface; Search remains a first-class operation inside Add and is explicitly labeled as Google Drive discovery.
 - Scope behavior is explicit: users can search current folder scope or broader Drive scope with visible state.
 - Drive browse/navigation controls (root switching, folder path, breadcrumbs) stay available in the same surface as Drive search.
 - Playable Drive search rows provide direct preview playback without requiring a save-first step.
@@ -101,12 +102,12 @@ Section order within Recents:
 Placement rules:
 
 - Recents is never required to access Drive discovery or app-library search.
-- Recents modules remain compact and skimmable; discovery and library workflows remain fully accessible from Search and Library tabs directly.
+- Recents modules remain compact and skimmable; discovery and library workflows remain fully accessible from Add and Library tabs directly.
 
 ### Cross-Tab Placement Guarantees
 
-- Google Drive browse/navigation placement: Search tab contains root selector, breadcrumbs, and folder-aware context controls adjacent to Drive discovery search.
-- Drive search placement: Search tab top section with explicit Drive labeling and scope indicators.
+- Google Drive browse/navigation placement: Add tab contains root selector, breadcrumbs, and folder-aware context controls adjacent to Drive discovery search.
+- Drive search placement: Add tab top section with explicit Drive labeling and scope indicators.
 - App-library search placement: Library tab top section with organization filters and no Drive-result mixing.
 
 ## Non-Regression Acceptance Criteria (Task 1.3)
@@ -178,9 +179,12 @@ To prevent Drive features from being hidden or mislabeled after IA updates, all 
 
 ### Context Label Taxonomy
 
-- Google Drive context label: Google Drive
-- App-owned library context label: Library
-- Acceleration context label: Recents
+- Google Drive discovery destination label: Add
+- Google Drive search context label: Google Drive
+- App-owned library destination and context label: Library
+- Acceleration destination label: Recents
+
+`Search` is reserved for the operation itself in this slice and is not used as the middle top-level destination label.
 
 These labels are user-facing defaults for headers, chips, and empty-state copy. Alternate synonyms such as Source, Cloud, or Files are not permitted for primary context labels in this slice.
 
@@ -193,12 +197,13 @@ These labels are user-facing defaults for headers, chips, and empty-state copy. 
 
 ### Approved Helper Copy Patterns
 
+- Add destination helper: Browse or search Google Drive to add tracks
 - Drive search helper: Search Google Drive
 - Drive scope helper: Scope: This folder or Scope: My Drive / Shared
 - Drive browse helper: Browse Google Drive folders and audio
 - Library search helper: Search saved library
 - Library corpus helper: Tracks, loops, playlists, folders, and tags
-- Recents empty helper: No recent rehearsal yet. Start in Search or Library.
+- Recents empty helper: No recent rehearsal yet. Start in Add or Library.
 
 ### Mislabelling Prevention Rules
 
@@ -209,7 +214,8 @@ These labels are user-facing defaults for headers, chips, and empty-state copy. 
 
 ### UX Review Checklist For Labels
 
-- Verify context label appears in Search and Library headers at rest and during active query.
+- Verify the Add destination keeps Google Drive labeling visible at rest and during active query.
+- Verify Library search surfaces clearly indicate saved-library context.
 - Verify Drive root-switch UI does not lose Google Drive labeling after tab reorder.
 - Verify breadcrumbs remain visually tied to Google Drive context copy.
 - Verify empty, loading, and error states use matching context terminology.
@@ -225,7 +231,7 @@ Validated flow: first-use empty library -> discover -> save first track -> optio
 ### Flow Walkthrough Against Target IA
 
 1. Discover in Drive
-   - User opens Search tab (Google Drive context is explicit).
+   - User opens Add tab (Google Drive context is explicit).
    - User searches or browses within Drive scope (root selector + breadcrumbs visible).
    - User identifies playable source row in Drive results.
 
@@ -244,7 +250,7 @@ Validated flow: first-use empty library -> discover -> save first track -> optio
 ### Preview-First Flow Walkthrough
 
 1. Discover in Drive
-   - User opens Search tab and finds a playable Google Drive source.
+   - User opens Add tab and finds a playable Google Drive source.
 
 2. Preview without save
    - User taps inline play on the Drive result row.
@@ -260,17 +266,17 @@ Validated flow: first-use empty library -> discover -> save first track -> optio
 
 - Flow is viable under target IA without requiring Recents as an entry step.
 - Context boundaries remain understandable when labels from task 1.4 are applied.
-- Existing save -> playlist -> playback chain remains reachable in 2-tab handoff (Search -> Library).
-- Preview-first audition is viable in Search: users can play Drive results immediately before deciding to save.
+- Existing save -> playlist -> playback chain remains reachable in 2-tab handoff (Add -> Library).
+- Preview-first audition is viable in Add: users can play Drive results immediately before deciding to save.
 
 ### New-User Empty-Library Flow Walkthrough
 
 1. First launch with no saved entities
    - User opens Recents and sees first-use helper guidance (no recent rehearsal yet).
-   - Guidance points to Search and Library as primary next actions.
+   - Guidance points to Add and Library as primary next actions.
 
 2. Discover first source in Drive
-   - User opens Search tab and stays in explicit Google Drive context.
+   - User opens Add tab and stays in explicit Google Drive context.
    - User browses or searches Drive and finds an available playable source.
 
 3. Save first source
@@ -288,25 +294,25 @@ Validated flow: first-use empty library -> discover -> save first track -> optio
 
 - A first-time user can reach audible playback without pre-existing library content.
 - No step in the first-use flow depends on Recents being populated.
-- Empty states in Recents and Library provide explicit next-action guidance (Search and/or save-first actions).
+- Empty states in Recents and Library provide explicit next-action guidance (Add and/or save-first actions).
 - Drive discovery controls (root selector, breadcrumbs, scope) remain visible and understandable for first-time users.
 
 ### Refinements Before Component Implementation
 
-- Keep a persistent success acknowledgement after save action long enough to support the Search -> Library handoff.
+- Keep a persistent success acknowledgement after save action long enough to support the Add -> Library handoff.
 - Ensure Library tab lands on saved-track content with playlist actions immediately reachable (no hidden management mode required).
 - Keep playlist quick-access cards above saved-track rows so add-to-playlist and playback-start paths stay short.
 - Preserve mini-player continuity through the full flow so users can verify playback state while navigating.
 - Include this validated flow in manual regression checks as a required pass scenario before sign-off.
-- Ensure empty-library states include CTA copy that is action-oriented (for example Open Search or Save your first track).
+- Ensure empty-library states include CTA copy that is action-oriented (for example Open Add or Save your first track).
 - Ensure saved track and saved loop cards remain visually parallel in steady state: same inline icon-only play affordance, same overflow trigger position, and no extra inline secondary buttons.
 
 ## Goals / Non-Goals
 
 **Goals:**
 
-- Reduce tap count and decision overhead for common rehearsal actions across Recents, Search, Library, playlist detail, and queue.
-- Distinguish source discovery search (Google Drive scoped/global) from app-library search so users understand which corpus is being queried.
+- Reduce tap count and decision overhead for common rehearsal actions across Recents, Add, Library, playlist detail, and queue.
+- Distinguish source discovery search (Google Drive scoped/global within Add) from app-library search in Library so users understand which corpus is being queried.
 - Improve interaction affordances so list manipulation and playback actions feel closer to modern mobile music app standards.
 - Add low-risk usability wins that increase daily-use efficiency (resume, add-next actions, stronger defaults, and better feedback).
 - Make loop management parent-track-first while supporting optional first-class library placement when users choose to organize loops independently.
@@ -363,7 +369,7 @@ Transient queue rules for this change:
 
 ### 4. Tighten hierarchy by reducing non-critical copy and surface weight in steady-state screens
 
-Recents and Search should bias toward immediate action over explanatory copy when users already have saved content.
+Recents and Add should bias toward immediate action over explanatory copy when users already have saved content.
 
 ### 5. Standardize overflow actions with a shared menu surface
 
@@ -458,9 +464,9 @@ Alternatives considered:
 - Drag-and-drop only: rejected because explicit controls improve accessibility and precision.
 - Explicit move controls only: rejected because drag-and-drop is faster for most reordering.
 
-### 11. Provide search entry points in both Drive discovery and app-library surfaces
+### 11. Provide search entry points in both Add and Library surfaces
 
-Search should be available in both contexts as a first-class function: Drive search attached to Google Drive navigation and app-library search attached to saved library management.
+Search should be available in both contexts as a first-class function: Drive search attached to Google Drive navigation inside Add and app-library search attached to saved library management inside Library.
 
 Alternatives considered:
 
@@ -531,11 +537,12 @@ Alternatives considered:
 1. Implement shell and list-hierarchy refinements that do not change playback semantics.
 2. Produce compact Recents mockups that include multiple shortcut modules and complete a design sign-off checkpoint.
 3. Add quick-win actions and defaults behind current UI-local state models.
-4. Add explicit dual-search context and scoping behavior (Drive search vs library search) with clear active-state indicators in both surfaces.
-5. Add organization baseline features (tags, filters, lightweight folders) while preserving existing library behavior.
-6. Add or update automated tests for view-model and interaction helpers where behavior changes.
-7. Run manual regression on rehearsal-critical flows: start playback from playlist row, loop save/preview, queue mode changes, mini-player persistence, and both search contexts.
-8. If regressions are found, fall back to existing explicit controls while keeping non-breaking hierarchy improvements.
+4. Rename the middle destination from Search to Add across shell labels, file and component names, and repo guidance or skills that describe the destination.
+5. Add explicit dual-search context and scoping behavior (Drive search vs library search) with clear active-state indicators in both surfaces.
+6. Add organization baseline features (tags, filters, lightweight folders) while preserving existing library behavior.
+7. Add or update automated tests for view-model and interaction helpers where behavior changes.
+8. Run manual regression on rehearsal-critical flows: start playback from playlist row, loop save/preview, queue mode changes, mini-player persistence, and both search contexts.
+9. If regressions are found, fall back to existing explicit controls while keeping non-breaking hierarchy improvements.
 
 ## Task 1.6 Mockup Package
 
@@ -547,7 +554,7 @@ Alternatives considered:
 ## Task 1.6 Design Confirmation Status
 
 - Status: Ready for review.
-- Confirmation checkpoint: pending reviewer sign-off that the Recents composition remains compact and scannable while keeping Search and Library as explicit alternatives.
+- Confirmation checkpoint: pending reviewer sign-off that the Recents composition remains compact and scannable while keeping Add and Library as explicit alternatives.
 - Implementation rollout note: current Recents implementation includes explicit single-item per-row resume plus popular tags shortcuts, with compact multi-item recent history queued as follow-on task `3.3.3`.
 - Implementation rollout note: current Recents implementation includes explicit single-item per-row resume plus popular tags shortcuts, with persisted recent history and compact multi-item recent history queued as follow-on task `3.3.3`.
 

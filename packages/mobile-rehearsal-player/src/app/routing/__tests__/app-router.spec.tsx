@@ -24,10 +24,10 @@ import {
 import { resolveVisibleRepeatModes } from '../playback-session-mode-options.js';
 
 describe('SHELL_DESTINATIONS', () => {
-  it('defines the Library, Search, and Recents shell order', () => {
+  it('defines the Library, Add, and Recents shell order', () => {
     assert.deepEqual(
       SHELL_DESTINATIONS.map((destination) => destination.label),
-      ['Library', 'Search', 'Recents'],
+      ['Library', 'Add', 'Recents'],
     );
   });
 });
@@ -188,7 +188,7 @@ describe('getMiniPlayerSummary', () => {
     assert.deepEqual(summary, {
       collectionLabel: 'Saved rehearsal library',
       playbackLabel:
-        'Keep the current rehearsal item audible while moving between Library, Search, and Recents.',
+        'Keep the current rehearsal item audible while moving between Library, Add, and Recents.',
       progressLabel: '0:20 of 3:05',
       queueLabel: 'Single item playback',
       rangeLabel: null,

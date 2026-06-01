@@ -3,7 +3,7 @@ name: design-audit
 description: >
   UI and UX design audit for the mobile rehearsal player in this repo. Use when
   tasks mention auditing the design, improving visual hierarchy, simplifying the
-  interface, polishing Home, Search, Library, the mini-player, playback sheet,
+  interface, polishing Recents, Add, Library, the mini-player, playback sheet,
   or playlist and loop flows, or when the app should feel more native and
   intentional without changing core behavior.
 ---
@@ -30,8 +30,8 @@ Read these first when they exist and are relevant:
 - `packages/mobile-rehearsal-player/src/app/utils/theme.ts`
 - `packages/mobile-rehearsal-player/src/app/routing/mobile-shell-styles.ts`
 - `packages/mobile-rehearsal-player/src/app/routing/MobileShell.tsx`
-- `packages/mobile-rehearsal-player/src/app/screens/HomeScreen.tsx`
-- `packages/mobile-rehearsal-player/src/app/screens/SearchScreen.tsx`
+- `packages/mobile-rehearsal-player/src/app/screens/RecentsScreen.tsx`
+- `packages/mobile-rehearsal-player/src/app/screens/AddScreen.tsx`
 - `packages/mobile-rehearsal-player/src/app/screens/LibraryScreen.tsx`
 - `packages/mobile-rehearsal-player/src/app/screens/screen-copy.ts`
 - `packages/mobile-rehearsal-player/src/app/components/SummaryCard.tsx`
@@ -57,9 +57,9 @@ If Tier 1 is incomplete, search for these patterns:
 
 If the app is running, inspect at least these states:
 
-- Home with no active mini-player
-- Home with an active mini-player
-- Search empty and populated
+- Recents with no active mini-player
+- Recents with an active mini-player
+- Add empty and populated
 - Library with saved tracks and loops
 - Now Playing sheet
 - Queue sheet
@@ -81,8 +81,8 @@ Review each screen or surface against the 15 audit dimensions.
 Recommended audit units for this repo:
 
 - shared shell
-- Home
-- Search
+- Recents
+- Add
 - Library
 - Now Playing
 - Queue

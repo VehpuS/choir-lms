@@ -11,7 +11,7 @@ export const getRecentsContinuePracticingCopy = (options: {
 
   if (options.savedTrackCount === 0) {
     return {
-      body: 'No recent rehearsal yet. Start in Search or Library.',
+      body: 'No recent rehearsal yet. Start in Add or Library.',
       title: 'No recent rehearsal yet',
     };
   }
@@ -32,14 +32,14 @@ export const getRecentsShortcutPlayActionCopy = (options: {
   };
 };
 
-export const getSearchScreenSummaryCopy = (options: {
+export const getAddScreenSummaryCopy = (options: {
   activeSearchQuery: string | null;
   resultCount: number;
 }) => {
   if (!options.activeSearchQuery) {
     return {
-      body: 'Search across My Drive and shared folders, then save promising tracks into Library without leaving this result view.',
-      title: 'Search the rehearsal catalog',
+      body: 'Browse or search My Drive and shared folders, then save promising tracks into Library without leaving this view.',
+      title: 'Add from Google Drive',
     };
   }
 
@@ -61,7 +61,7 @@ export const getLibraryScreenSummaryCopy = (options: {
 }) => {
   if (options.savedTrackCount === 0) {
     return {
-      body: 'Save a track from Search to start full-track playback, loops, and playlists in your rehearsal library.',
+      body: 'Save a track from Add to start full-track playback, loops, and playlists in your rehearsal library.',
       title: 'Library is ready for your first track',
     };
   }

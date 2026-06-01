@@ -14,7 +14,7 @@ Scoped to iOS surfaces in `packages/mobile-rehearsal-player`.
 
 **Reference:** [HIG: Tab bars](https://developer.apple.com/design/human-interface-guidelines/tab-bars)
 
-The app currently uses a Home / Library / Search tab structure.
+The app currently uses a Library / Add / Recents tab structure.
 
 - Use tab bar for **navigation between top-level sections only** — not as a toolbar for actions.
 - Keep all tab items **always enabled** even when a section has empty content; explain the empty state inline instead of disabling the tab.
@@ -22,7 +22,8 @@ The app currently uses a Home / Library / Search tab structure.
 - Prefer **SF Symbols** (or the closest React Native equivalent) for tab icons; use the filled variant for the selected state.
 - On iOS, the tab bar **floats above content** at the bottom on a Liquid Glass background; keep content scrollable behind it rather than clipping.
 - For the MiniPlayer / PlaybackSurface accessory attached to the tab bar, support **tab bar minimize behavior**: hide the full tab bar when the user scrolls down within a tab and restore it when they scroll back to the top.
-- A Search tab at the **trailing end** of the tab bar is an iOS-idiomatic placement.
+- Keep `Add` as a destination for Google Drive browse, search, and add-to-library work; do not rename the destination back to `Search`.
+- Reserve the magnifier for search actions within Add and Library rather than using it as the destination label.
 
 ---
 
@@ -108,15 +109,15 @@ Applies to `SavedTrackPlaylistMenuSurface` and any long-press / three-dot menus 
 
 **Reference:** [HIG: Search fields](https://developer.apple.com/design/human-interface-guidelines/search-fields)
 
-Applies to `DriveLibrarySearchPanel`, `SearchScreen`.
+Applies to `DriveLibrarySearchPanel`, `LibrarySearchPanel`, `AddScreen`.
 
-- The dedicated Search tab at the **trailing end of the tab bar** is the correct iOS pattern for this app — it provides a persistent, always-available entry point, which suits a large music library.
-- When entering the Search tab, **focus the field immediately** so the keyboard appears and the user can start typing right away. This gives a transient "quick-search" experience and returns the user to the previous tab on cancel.
+- Search is an operation in this app, not the destination label. Keep search entry points visible inside Add and Library without reintroducing a dedicated Search tab.
+- When entering Add, do not steal focus from Drive browsing controls by default; only focus the field immediately when the user explicitly chose a search-first affordance.
 - Show **search results as the user types** (live search), not only on submit. This makes search feel more responsive.
 - Display **placeholder text** that describes the scope: e.g., "Songs, folders, playlists…" — not just "Search".
 - If search has scope categories (e.g., All / Songs / Playlists), use a **segmented scope control** directly below the search field.
 - Show **recent searches or suggestions** before the user types to help discoverability.
-- For the inline library filter (`DriveLibrarySearchPanel`), position the field **above the list it filters** and pin it to the top toolbar when scrolling.
+- For the inline library filter (`LibrarySearchPanel`), position the field **above the list it filters** and pin it to the top toolbar when scrolling.
 
 ---
 

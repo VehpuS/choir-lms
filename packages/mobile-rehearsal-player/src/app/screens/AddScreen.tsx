@@ -5,11 +5,11 @@ import { DriveSearchResultsPanel } from '../library/components/DriveSearchResult
 import type { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
 import { appTheme } from '../utils/theme';
 
-type SearchScreenProps = {
+type AddScreenProps = {
   libraryController: ReturnType<typeof useRehearsalLibraryScreenController>;
 };
 
-export const SearchScreen = ({ libraryController }: SearchScreenProps) => {
+export const AddScreen = ({ libraryController }: AddScreenProps) => {
   return (
     <ScrollView
       contentContainerStyle={styles.content}

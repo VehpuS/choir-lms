@@ -32,10 +32,10 @@ The system SHALL provide quick queue actions from track-focused contexts so user
 - **THEN** the system creates a new playlist from the current queue ordering
 - **AND** playback continues uninterrupted in the current queue session
 
-#### Scenario: Up Next can append enqueued items to an existing playlist
+#### Scenario: Up Next can update an existing playlist with currently enqueued items
 
-- **WHEN** a user opens Up Next and chooses to add currently enqueued items to an existing playlist
-- **THEN** the system appends those enqueued items to the selected playlist in queue order
+- **WHEN** a user opens Up Next and chooses to update an existing playlist with currently enqueued items
+- **THEN** the system updates the selected playlist with those enqueued items in queue order
 - **AND** playback continues uninterrupted in the current queue session
 
 ### Requirement: Recents provides fast recent rehearsal entry points
@@ -121,11 +121,11 @@ The system SHALL prefill loop naming with a meaningful default that users can ke
 
 ### Requirement: Search supports quick re-entry through recent queries
 
-The system SHALL expose recent search terms to reduce repeated typing in frequent rehearsal sessions.
+The system SHALL expose recent search terms to reduce repeated typing in frequent rehearsal sessions, with search available from both Add and Library.
 
 #### Scenario: Search shows recent queries before typing
 
-- **WHEN** a user opens Search without an active query
+- **WHEN** a user opens Add or Library without an active query in the visible search entry point
 - **THEN** the system presents recent search terms as tap-to-run suggestions
 
 #### Scenario: Selecting a recent query executes search immediately

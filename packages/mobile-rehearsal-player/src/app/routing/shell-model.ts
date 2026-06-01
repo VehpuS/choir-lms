@@ -10,7 +10,7 @@ import {
 } from '../library/utils/saved-playlist-playback-view-model';
 import type { SavedTrackPlaybackState } from '../library/utils/saved-track-playback-view-model';
 
-export type ShellDestinationKey = 'recents' | 'search' | 'library';
+export type ShellDestinationKey = 'recents' | 'add' | 'library';
 
 export type ShellDestination = {
   description: string;
@@ -60,10 +60,10 @@ export const SHELL_DESTINATIONS: ShellDestination[] = [
     description: 'Play saved tracks, loops, and playlists.',
   },
   {
-    key: 'search',
-    label: 'Search',
-    title: 'Search rehearsal audio',
-    description: 'Browse and search Google Drive folders and tracks.',
+    key: 'add',
+    label: 'Add',
+    title: 'Add from Google Drive',
+    description: 'Browse and search Google Drive folders and tracks to add.',
   },
   {
     key: 'recents',
@@ -270,7 +270,7 @@ export const getNowPlayingSurfaceSummary = (options: {
     }),
     playbackLabel: options.activePlaylistSession
       ? getPlaylistPlaybackSessionSummary(options.activePlaylistSession)
-      : 'Keep the current rehearsal item audible while moving between Library, Search, and Recents.',
+      : 'Keep the current rehearsal item audible while moving between Library, Add, and Recents.',
     queueLabel: getPlaybackQueueLabel(options.activePlaylistSession),
     rangeLabel: getPlayableItemRangeLabel(options.activePlayableItem),
     supportsQueueNavigation: Boolean(options.activePlaylistSession),

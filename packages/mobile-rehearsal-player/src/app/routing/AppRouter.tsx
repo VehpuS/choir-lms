@@ -3,9 +3,9 @@ import { useGoogleDriveAuthorization } from '../auth/hooks/use-google-drive-auth
 import { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
 import { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackActionCopy } from '../library/utils/saved-track-playback-view-model';
+import { AddScreen } from '../screens/AddScreen';
 import { LibraryScreen } from '../screens/LibraryScreen';
 import { RecentsScreen } from '../screens/RecentsScreen';
-import { SearchScreen } from '../screens/SearchScreen';
 import {
   appendRecentRehearsalItem,
   buildRecentRehearsalItem,
@@ -202,7 +202,7 @@ export const AppRouter = () => {
       playbackToggleLabel={playbackActionCopy?.label ?? 'Play'}
       playbackVolumeLevel={playback.volumeLevel}
       playbackState={playback.playbackState}
-      searchScreen={<SearchScreen libraryController={libraryController} />}
+      addScreen={<AddScreen libraryController={libraryController} />}
     />
   );
 };

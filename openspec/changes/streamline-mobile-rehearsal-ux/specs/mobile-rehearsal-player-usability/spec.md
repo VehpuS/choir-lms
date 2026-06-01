@@ -31,9 +31,9 @@ The system SHALL present playlist detail as playback-first by default, with dest
 - **WHEN** a user enters playlist edit mode
 - **THEN** the system supports drag-and-drop reordering and explicit icon-based move controls while keeping destructive controls visually distinct from playback controls
 
-### Requirement: Recents and Search optimize for immediate rehearsal actions
+### Requirement: Recents and Add optimize for immediate rehearsal actions
 
-The system SHALL reduce steady-state interface weight on Recents and Search so users can resume playback, find tracks, and take primary actions with minimal scanning.
+The system SHALL reduce steady-state interface weight on Recents and Add so users can resume playback, browse Google Drive, and take primary actions with minimal scanning.
 
 #### Scenario: Recents remains an optional acceleration surface
 
@@ -66,6 +66,12 @@ The system SHALL reduce steady-state interface weight on Recents and Search so u
 
 The system SHALL provide explicit search context separation so users can search Google Drive content independently from app-owned rehearsal library content.
 
+#### Scenario: Google Drive discovery destination is labeled Add
+
+- **WHEN** a user views the top-level navigation
+- **THEN** the destination that contains Google Drive browse, search, and add-to-library workflow is labeled `Add`
+- **AND** `Search` is not used as the destination label for that surface
+
 #### Scenario: Drive search context is visible and scope-aware
 
 - **WHEN** a user performs search in Google Drive discovery
@@ -83,7 +89,7 @@ The system SHALL provide explicit search context separation so users can search 
 
 #### Scenario: Search entry points are available in both working surfaces
 
-- **WHEN** a user is in the Google Drive navigation workflow or in the app-library workflow
+- **WHEN** a user is in Add or in the app-library workflow
 - **THEN** the system provides a first-class search entry point in that active surface without requiring a context switch first
 
 #### Scenario: Preview playback stays in Drive context until user chooses save
@@ -169,7 +175,7 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 
 #### Scenario: Saved source rows keep primary actions inline and move secondary/destructive actions into overflow
 
-- **WHEN** a user views saved source rows in Library or Search contexts
+- **WHEN** a user views saved source rows in Library or Add surfaces
 - **THEN** the system keeps only the playback-first icon action inline and places lower-frequency or destructive actions (for example add to playlist, play next, add to queue, and remove) in the shared overflow menu
 - **AND** overflow actions are presented directly in the first options menu surface without a nested "More options" step
 - **AND** queue actions remain available whenever the surface supports queue operations, including the case where invoking them would create a transient queue from the currently playing standalone item
@@ -188,7 +194,7 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 
 #### Scenario: Queue-capable surfaces share the same transient-queue behavior
 
-- **WHEN** a user invokes `Play next` or `Add to queue` from Library, Search, Recents, or another surface that exposes queue operations
+- **WHEN** a user invokes `Play next` or `Add to queue` from Library, Add, Recents, or another surface that exposes queue operations
 - **THEN** the system applies the same queue mutation rules regardless of surface origin
 - **AND** if playback was previously single-item, the action creates a transient queue rather than failing or hiding the queue option
 
