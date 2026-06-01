@@ -2,12 +2,15 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { join, map, toUpper } from 'es-toolkit/compat';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { useState } from 'react';
 import { runtimeConfig } from '../../config/runtime';
+import { OptionsMenuSheet } from '../library/components/OptionsMenuSheet';
 import { appTheme } from '../utils/theme';
 import {
   getRecentRehearsalLastPlayedLabel,
   type RecentRehearsalItem,
 } from './recents-history';
+import { getRecentsOverflowActionState } from './recents-overflow-actions';
 import {
   getRecentsContinuePracticingCopy,
   getRecentsShortcutPlayActionCopy,
@@ -15,10 +18,15 @@ import {
 
 export type RecentsScreenProps = {
   activePlayableItemId: string | null;
+  canQueueAsNext: boolean;
   isPlaybackActive: boolean;
+  isRecentItemInLibrary: (recentRehearsal: RecentRehearsalItem) => boolean;
   recentRehearsalHistory: RecentRehearsalItem[];
+  onQueueRecentPlaybackNext: (recentRehearsal: RecentRehearsalItem) => void;
+  onQueueRecentPlaybackUpNext: (recentRehearsal: RecentRehearsalItem) => void;
   onPlayRecentShortcut: (shortcutTag: string) => void;
   onResumeRecentPlayback: (recentRehearsal: RecentRehearsalItem) => void;
+  onViewRecentInLibrary: (recentRehearsal: RecentRehearsalItem) => void;
   savedTrackCount: number;
 };
 
@@ -33,12 +41,20 @@ const AUDIO_FORMAT_LABEL = join(
 
 export const RecentsScreen = ({
   activePlayableItemId,
+  canQueueAsNext,
   isPlaybackActive,
+  isRecentItemInLibrary,
   recentRehearsalHistory,
+  onQueueRecentPlaybackNext,
+  onQueueRecentPlaybackUpNext,
   onPlayRecentShortcut,
   onResumeRecentPlayback,
+  onViewRecentInLibrary,
   savedTrackCount,
 }: RecentsScreenProps) => {
+  const [activeOptionsRecentId, setActiveOptionsRecentId] = useState<
+    string | null
+  >(null);
   const latestRecentRehearsal = recentRehearsalHistory[0] ?? null;
   const continuePracticingCopy = getRecentsContinuePracticingCopy({
     activePlayableItemTitle: latestRecentRehearsal?.title ?? null,
@@ -87,6 +103,23 @@ export const RecentsScreen = ({
                 </Text>
               </View>
               <Pressable
+                accessibilityLabel={`More actions for ${recentRehearsal.title}`}
+                accessibilityRole="button"
+                onPress={() => {
+                  setActiveOptionsRecentId(recentRehearsal.id);
+                }}
+                style={({ pressed }) => [
+                  styles.iconActionButton,
+                  pressed ? styles.iconActionButtonPressed : undefined,
+                ]}
+              >
+                <MaterialCommunityIcons
+                  color={appTheme.colors.primaryText}
+                  name="dots-vertical"
+                  size={20}
+                />
+              </Pressable>
+              <Pressable
                 accessibilityLabel={`Play ${recentRehearsal.title}`}
                 accessibilityRole="button"
                 accessibilityState={{
@@ -116,6 +149,46 @@ export const RecentsScreen = ({
                   size={22}
                 />
               </Pressable>
+              <OptionsMenuSheet
+                actions={getRecentsOverflowActionState({
+                  canQueueAsNext,
+                  isViewInLibraryAvailable:
+                    isRecentItemInLibrary(recentRehearsal),
+                }).map((action) => {
+                  if (action.id === 'play-next') {
+                    return {
+                      ...action,
+                      onPress: () => {
+                        setActiveOptionsRecentId(null);
+                        onQueueRecentPlaybackNext(recentRehearsal);
+                      },
+                    };
+                  }
+
+                  if (action.id === 'add-to-queue') {
+                    return {
+                      ...action,
+                      onPress: () => {
+                        setActiveOptionsRecentId(null);
+                        onQueueRecentPlaybackUpNext(recentRehearsal);
+                      },
+                    };
+                  }
+
+                  return {
+                    ...action,
+                    onPress: () => {
+                      setActiveOptionsRecentId(null);
+                      onViewRecentInLibrary(recentRehearsal);
+                    },
+                  };
+                })}
+                isVisible={activeOptionsRecentId === recentRehearsal.id}
+                onClose={() => {
+                  setActiveOptionsRecentId(null);
+                }}
+                title={recentRehearsal.title}
+              />
             </View>
           );
         })}

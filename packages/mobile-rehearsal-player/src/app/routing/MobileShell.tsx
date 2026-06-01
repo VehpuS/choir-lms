@@ -33,6 +33,8 @@ export type MobileShellProps = {
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
+  requestedDestination?: ShellDestinationKey;
+  requestedDestinationRequestId?: number;
   recentsScreen: ReactNode;
   isPlaybackPreparing: boolean;
   isPlaybackToggleDisabled: boolean;
@@ -76,6 +78,8 @@ export const MobileShell = ({
   canSeekActivePlayback,
   canSkipNextItem,
   canSkipPreviousItem,
+  requestedDestination,
+  requestedDestinationRequestId,
   recentsScreen,
   isPlaybackPreparing,
   isPlaybackToggleDisabled,
@@ -127,6 +131,14 @@ export const MobileShell = ({
       setActivePlaybackSurface(null);
     }
   }, [miniPlayerSummary]);
+
+  useEffect(() => {
+    if (!requestedDestination || requestedDestinationRequestId === undefined) {
+      return;
+    }
+
+    setActiveDestination(requestedDestination);
+  }, [requestedDestination, requestedDestinationRequestId]);
 
   return (
     <SafeAreaView style={styles.screen}>

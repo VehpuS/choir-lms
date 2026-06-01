@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/hooks/use-google-drive-authorization';
 import { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
 import { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback';
@@ -22,6 +22,8 @@ export const AppRouter = () => {
   const [recentRehearsalHistory, setRecentRehearsalHistory] = useState(
     [] as Awaited<ReturnType<typeof restoreRecentRehearsalHistory>>,
   );
+  const [requestedDestinationRequestId, setRequestedDestinationRequestId] =
+    useState(0);
   const [isRecentRehearsalHistoryReady, setIsRecentRehearsalHistoryReady] =
     useState(false);
   const libraryController = useRehearsalLibraryScreenController({
@@ -37,6 +39,20 @@ export const AppRouter = () => {
         playbackState: playback.playbackState,
       })
     : null;
+  const savedSourceIds = useMemo(() => {
+    return new Set(
+      libraryController.savedLibrary.savedLibrarySources.map((source) => {
+        return source.id;
+      }),
+    );
+  }, [libraryController.savedLibrary.savedLibrarySources]);
+  const savedLoopIds = useMemo(() => {
+    return new Set(
+      libraryController.savedLibrary.savedLoops.map((loop) => {
+        return loop.id;
+      }),
+    );
+  }, [libraryController.savedLibrary.savedLoops]);
 
   useEffect(() => {
     let isDisposed = false;
@@ -102,11 +118,31 @@ export const AppRouter = () => {
       canSkipPreviousItem={
         playback.activePlaylistSession !== null && !playback.isPreparing
       }
+      requestedDestination="library"
+      requestedDestinationRequestId={requestedDestinationRequestId}
       recentsScreen={
         <RecentsScreen
           activePlayableItemId={playback.activePlayableItem?.id ?? null}
+          canQueueAsNext={playback.activePlaylistSession !== null}
           isPlaybackActive={playback.playbackState === 'playing'}
+          isRecentItemInLibrary={(recentRehearsal) => {
+            if (recentRehearsal.playableItem.kind === 'loop') {
+              if (!recentRehearsal.playableItem.loopId) {
+                return false;
+              }
+
+              return savedLoopIds.has(recentRehearsal.playableItem.loopId);
+            }
+
+            return savedSourceIds.has(recentRehearsal.playableItem.sourceId);
+          }}
           recentRehearsalHistory={recentRehearsalHistory}
+          onQueueRecentPlaybackNext={(recentRehearsal) => {
+            playback.queuePlayableItemNext(recentRehearsal.playableItem);
+          }}
+          onQueueRecentPlaybackUpNext={(recentRehearsal) => {
+            playback.queuePlayableItemUpNext(recentRehearsal.playableItem);
+          }}
           onPlayRecentShortcut={() => {
             const mostRecentItem = recentRehearsalHistory[0];
 
@@ -118,6 +154,11 @@ export const AppRouter = () => {
           }}
           onResumeRecentPlayback={(recentRehearsal) => {
             void playback.playPlayableItem(recentRehearsal.playableItem);
+          }}
+          onViewRecentInLibrary={() => {
+            setRequestedDestinationRequestId((currentId) => {
+              return currentId + 1;
+            });
           }}
           savedTrackCount={libraryController.savedLibrary.trackCount}
         />
