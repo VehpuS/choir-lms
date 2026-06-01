@@ -18,6 +18,7 @@ import {
 export type DriveLibrarySourceAction = {
   accessibilityLabel?: string;
   disabled?: boolean;
+  iconName?: 'pause' | 'play';
   label: string;
   onPress: () => void;
   tone?: 'destructive' | 'neutral' | 'primary';
@@ -161,6 +162,36 @@ const DriveLibrarySourceCard = ({
           </View>
           {inlineActions.map(
             (action: DriveLibrarySourceAction, index: number) => {
+              if (action.iconName) {
+                return (
+                  <Pressable
+                    accessibilityLabel={
+                      action.accessibilityLabel ?? action.label
+                    }
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      disabled: action.disabled,
+                    }}
+                    disabled={action.disabled}
+                    key={`${source.id}:${action.accessibilityLabel ?? action.label}:${index}`}
+                    onPress={action.onPress}
+                    style={({ pressed }) => [
+                      styles.iconButton,
+                      pressed && !action.disabled
+                        ? styles.actionButtonPressed
+                        : undefined,
+                      action.disabled ? styles.actionButtonDisabled : undefined,
+                    ]}
+                  >
+                    <MaterialCommunityIcons
+                      color={DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT}
+                      name={action.iconName}
+                      size={18}
+                    />
+                  </Pressable>
+                );
+              }
+
               return (
                 <Pressable
                   accessibilityLabel={action.accessibilityLabel ?? action.label}

@@ -1,7 +1,6 @@
 import { ScrollView, StyleSheet } from 'react-native';
 
 import { DriveDiscoveryPanel } from '../library/components/DriveDiscoveryPanel';
-import { DriveSearchResultsPanel } from '../library/components/DriveSearchResultsPanel';
 import type { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
 import { ADD_SCREEN_PANEL_ORDER } from '../library/utils/add-drive-layout';
 import { appTheme } from '../utils/theme';
@@ -12,14 +11,8 @@ type AddScreenProps = {
 
 export const AddScreen = ({ libraryController }: AddScreenProps) => {
   const renderedPanels = ADD_SCREEN_PANEL_ORDER.map((panelKey) => {
-    if (panelKey === 'discovery') {
-      return (
-        <DriveDiscoveryPanel controller={libraryController} key={panelKey} />
-      );
-    }
-
     return (
-      <DriveSearchResultsPanel controller={libraryController} key={panelKey} />
+      <DriveDiscoveryPanel controller={libraryController} key={panelKey} />
     );
   });
 

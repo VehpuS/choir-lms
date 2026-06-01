@@ -12,6 +12,7 @@ import { DriveLibrarySearchPanel } from './DriveLibrarySearchPanel';
 import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
 import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
+import { DriveSearchResultsPanel } from './DriveSearchResultsPanel';
 
 type DriveDiscoveryPanelProps = {
   controller: ReturnType<typeof useRehearsalLibraryScreenController>;
@@ -56,30 +57,35 @@ export const DriveDiscoveryPanel = ({
         recentSearchTerms={controller.search.recentSearchTerms}
         searchQuery={controller.search.searchQuery}
       />
-      {shouldShowStatusCard ? (
-        <DriveLibraryStatusCard
-          isLoading={controller.discovery.isLoading}
-          statusCopy={controller.discovery.statusCopy}
-        />
-      ) : null}
-      <DriveFolderGroup
-        folders={controller.discovery.browseSnapshot.folders}
-        onOpenFolder={controller.discovery.openFolder}
-        title={controller.discovery.folderTitle}
-      />
-      <DriveLibrarySourceGroup
-        getAction={controller.getSourceAction}
-        getMessage={controller.getSourceMessage}
-        sources={controller.discovery.playableSources}
-        title={controller.discovery.playableSourceTitle}
-      />
-      {shouldShowUnavailableSources(
-        controller.discovery.unavailableSources.length,
-      ) ? (
-        <DriveLibrarySourceGroup
-          sources={controller.discovery.unavailableSources}
-          title={controller.discovery.unavailableSourceTitle}
-        />
+      <DriveSearchResultsPanel controller={controller} />
+      {!controller.search.isSearchMode ? (
+        <>
+          {shouldShowStatusCard ? (
+            <DriveLibraryStatusCard
+              isLoading={controller.discovery.isLoading}
+              statusCopy={controller.discovery.statusCopy}
+            />
+          ) : null}
+          <DriveFolderGroup
+            folders={controller.discovery.browseSnapshot.folders}
+            onOpenFolder={controller.discovery.openFolder}
+            title={controller.discovery.folderTitle}
+          />
+          <DriveLibrarySourceGroup
+            getActions={controller.getDriveSourceActions}
+            getMessage={controller.getSourceMessage}
+            sources={controller.discovery.playableSources}
+            title={controller.discovery.playableSourceTitle}
+          />
+          {shouldShowUnavailableSources(
+            controller.discovery.unavailableSources.length,
+          ) ? (
+            <DriveLibrarySourceGroup
+              sources={controller.discovery.unavailableSources}
+              title={controller.discovery.unavailableSourceTitle}
+            />
+          ) : null}
+        </>
       ) : null}
     </View>
   );

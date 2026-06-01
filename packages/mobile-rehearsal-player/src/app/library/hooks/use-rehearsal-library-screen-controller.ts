@@ -2,7 +2,7 @@ import type { DriveAuthorizationState } from '@org/google-drive';
 import { useState } from 'react';
 import { Alert } from 'react-native';
 
-import type { DriveLibrarySourceAction } from '../components/DriveLibrarySourceGroup';
+import { resolveDriveSourceActions } from '../utils/drive-search-preview-actions';
 import {
   getDriveLibraryStatusCopy,
   getDriveSearchContextCopy,
@@ -30,6 +30,7 @@ type SavedTrackPlaybackController = Pick<
   | 'playbackState'
   | 'progress'
   | 'resolveTrackDuration'
+  | 'toggleSourcePlayback'
 >;
 
 type RehearsalLibraryScreenControllerOptions = {
@@ -177,33 +178,32 @@ export const useRehearsalLibraryScreenController = ({
     ]);
   };
 
-  const getSourceAction = (
+  const getDriveSourceActions = (
     source: (typeof driveLibrary.browseSnapshot.playableSources)[number],
-  ): DriveLibrarySourceAction => {
+  ) => {
     const isSaved = savedSourceIds.has(source.id);
     const isPending = savedLibrary.pendingSourceId === source.id;
 
-    return {
-      disabled:
-        !savedLibrary.canMutateLibrary ||
-        savedLibrary.isLoading ||
-        isSavedLibraryMutating,
-      label: isPending
-        ? isSaved
-          ? 'Removing…'
-          : 'Saving…'
-        : isSaved
-          ? 'Remove'
-          : 'Save',
-      onPress: () => {
-        if (isSaved) {
-          confirmRemoveSource(source);
-          return;
-        }
-
+    return resolveDriveSourceActions({
+      activePlayableItem: playback.activePlayableItem,
+      canMutateLibrary: savedLibrary.canMutateLibrary,
+      isLibraryLoading: savedLibrary.isLoading,
+      isLibraryMutating: isSavedLibraryMutating,
+      isPreparingPlayback: playback.isPreparing,
+      isSaved,
+      isSavePending: isPending,
+      onPreviewPlayback: () => {
+        void playback.toggleSourcePlayback(source);
+      },
+      onRemoveSource: () => {
+        confirmRemoveSource(source);
+      },
+      onSaveSource: () => {
         void savedLibrary.saveSource(source);
       },
-    };
+      playbackState: playback.playbackState,
+      source,
+    });
   };
 
   return {
@@ -228,7 +228,7 @@ export const useRehearsalLibraryScreenController = ({
       unavailableSourceTitle: `Unavailable or unsupported in ${driveLibrary.currentLocation.name} (${driveLibrary.browseSnapshot.unavailableSources.length})`,
       unavailableSources: driveLibrary.browseSnapshot.unavailableSources,
     },
-    getSourceAction,
+    getDriveSourceActions,
     getSourceMessage(
       source: (typeof driveLibrary.browseSnapshot.playableSources)[number],
     ) {

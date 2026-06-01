@@ -37,7 +37,7 @@
 - [x] 3.6 Scope Add Drive search to navigation context after folder drill-down: keep root-level search at selected-root scope, and default to current-folder-path scope after users enter folders.
 - [x] 3.7 Add recent-search suggestion interactions for the active search context that allow tap-to-run query execution.
 - [x] 3.8 Verify Google Drive navigation remains first-class after tab/section reorder inside Add: root selector, folder drill-down, breadcrumbs, search-control placement under breadcrumbs, and unavailable/source status visibility.
-- [ ] 3.9 Add Drive search-result preview playback so playable Google Drive sources can be auditioned without saving first, while keeping Save available as a separate action.
+- [x] 3.9 Add Drive search-result preview playback so playable Google Drive sources can be auditioned without saving first, while keeping Save available as a separate action.
 - [ ] 3.10 Highlight matched query substrings in visible search-result text for both Add (Google Drive) and Library contexts, using the same normalized match semantics as result filtering.
 
 ## 4. Loop and Action Defaults

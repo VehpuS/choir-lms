@@ -21,6 +21,7 @@ import {
   getSavedTrackPlaybackItemIssue,
   getSavedTrackPlaybackStatusCopy,
   hasSavedTrackPlaybackReachedRangeEnd,
+  hydratePlayableItemDuration,
   isTrackPlayerAlreadyInitializedError,
   normalizePlaybackVolumeLevel,
   resolvePlaybackScrubPositionSeconds,
@@ -233,6 +234,54 @@ describe('saved track playback view-model', () => {
         positionSeconds: 18.5,
       }),
       false,
+    );
+  });
+
+  it('hydrates missing full-track duration from player progress for preview playback', () => {
+    const playableItem = createTrackPlayableItem({
+      ...PLAYABLE_SOURCE,
+      durationMs: undefined,
+    });
+
+    assert.deepEqual(
+      hydratePlayableItemDuration({
+        durationSeconds: 185,
+        playableItem,
+      }),
+      {
+        ...playableItem,
+        source: {
+          ...playableItem.source,
+          durationMs: 185000,
+        },
+        range: {
+          ...playableItem.range,
+          endMs: 185000,
+        },
+      },
+    );
+  });
+
+  it('leaves resolved or loop durations unchanged when hydrating progress', () => {
+    const resolvedTrack = createTrackPlayableItem(PLAYABLE_SOURCE);
+    const loopPlayableItem = createLoopPlayableItem(
+      SAVED_LOOP,
+      PLAYABLE_SOURCE,
+    );
+
+    assert.equal(
+      hydratePlayableItemDuration({
+        durationSeconds: 185,
+        playableItem: resolvedTrack,
+      }),
+      resolvedTrack,
+    );
+    assert.equal(
+      hydratePlayableItemDuration({
+        durationSeconds: 185,
+        playableItem: loopPlayableItem,
+      }),
+      loopPlayableItem,
     );
   });
 

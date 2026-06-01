@@ -25,6 +25,7 @@ import {
   getSourceMetadataLabels,
   getSourceStatusMessage,
 } from '../utils/drive-library-view-model.js';
+import { resolveDriveSourceActions } from '../utils/drive-search-preview-actions.js';
 import {
   filterSavedLibrarySourcesByQuery as filterSavedLibrarySourcesByLibraryQuery,
   filterSavedLoopsByQuery as filterSavedLoopsByLibraryQuery,
@@ -213,6 +214,74 @@ describe('presentation helpers', () => {
   });
 });
 
+describe('resolveDriveSourceActions', () => {
+  it('returns separate preview playback and save actions for unsaved Drive search rows', () => {
+    const actions = resolveDriveSourceActions({
+      activePlayableItem: null,
+      canMutateLibrary: true,
+      isLibraryLoading: false,
+      isLibraryMutating: false,
+      isPreparingPlayback: false,
+      isSaved: false,
+      isSavePending: false,
+      onPreviewPlayback: () => undefined,
+      onRemoveSource: () => undefined,
+      onSaveSource: () => undefined,
+      playbackState: undefined,
+      source: PLAYABLE_SOURCE,
+    });
+
+    assert.equal(actions.length, 2);
+    assert.deepEqual(actions[0], {
+      accessibilityLabel: 'Play Alto Line.mp3',
+      disabled: false,
+      iconName: 'play',
+      label: 'Play',
+      onPress: actions[0]?.onPress,
+      tone: 'primary',
+    });
+    assert.deepEqual(actions[1], {
+      disabled: false,
+      label: 'Save',
+      onPress: actions[1]?.onPress,
+    });
+  });
+
+  it('maps playback and save state labels for active and saved Drive search rows', () => {
+    const actions = resolveDriveSourceActions({
+      activePlayableItem: {
+        description: 'Full track',
+        id: 'track:drive:alto-line',
+        kind: 'track',
+        playlistEntryId: undefined,
+        playlistId: undefined,
+        range: {
+          endMs: 185000,
+          startMs: 0,
+        },
+        source: PLAYABLE_SOURCE,
+        sourceId: PLAYABLE_SOURCE.id,
+        title: PLAYABLE_SOURCE.name,
+      },
+      canMutateLibrary: true,
+      isLibraryLoading: false,
+      isLibraryMutating: false,
+      isPreparingPlayback: false,
+      isSaved: true,
+      isSavePending: true,
+      onPreviewPlayback: () => undefined,
+      onRemoveSource: () => undefined,
+      onSaveSource: () => undefined,
+      playbackState: 'playing',
+      source: PLAYABLE_SOURCE,
+    });
+
+    assert.equal(actions[0]?.label, 'Pause');
+    assert.equal(actions[0]?.iconName, 'pause');
+    assert.equal(actions[1]?.label, 'Removing…');
+  });
+});
+
 describe('saved library search helpers', () => {
   it('normalizes an active library search query from user input', () => {
     assert.equal(resolveActiveLibraryQuery('  Kyrie  '), 'Kyrie');
@@ -347,8 +416,8 @@ describe('recent search helpers', () => {
 });
 
 describe('Add surface layout contract', () => {
-  it('keeps discovery before search results in Add', () => {
-    assert.deepEqual(ADD_SCREEN_PANEL_ORDER, ['discovery', 'search-results']);
+  it('keeps Add focused on a single discovery surface', () => {
+    assert.deepEqual(ADD_SCREEN_PANEL_ORDER, ['discovery']);
   });
 
   it('keeps search controls directly below breadcrumbs in discovery', () => {

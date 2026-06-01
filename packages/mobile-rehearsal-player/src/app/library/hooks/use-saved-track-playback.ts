@@ -29,6 +29,7 @@ import { registerSavedTrackPlaybackRemoteCommandHandlers } from '../utils/saved-
 import {
   createSavedTrackPlaybackRuntimeIssue,
   hasSavedTrackPlaybackReachedRangeEnd,
+  hydratePlayableItemDuration,
   normalizePlaybackVolumeLevel,
   shouldRepeatSingleItemPlayback,
   type SavedTrackPlaybackIssue,
@@ -140,6 +141,26 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
       isDisposed = true;
     };
   }, [activePlayableItem?.id, activePlayableItem?.playlistEntryId]);
+
+  useEffect(() => {
+    if (!activePlayableItem || progress.duration <= 0) {
+      return;
+    }
+
+    setActivePlayableItem((currentPlayableItem) => {
+      if (
+        !currentPlayableItem ||
+        currentPlayableItem.id !== activePlayableItem.id
+      ) {
+        return currentPlayableItem;
+      }
+
+      return hydratePlayableItemDuration({
+        durationSeconds: progress.duration,
+        playableItem: currentPlayableItem,
+      });
+    });
+  }, [activePlayableItem, progress.duration]);
 
   const playbackController = createSavedTrackPlaybackController({
     authState,

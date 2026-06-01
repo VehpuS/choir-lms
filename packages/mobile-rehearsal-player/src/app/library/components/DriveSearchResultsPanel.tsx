@@ -15,6 +15,10 @@ type DriveSearchResultsPanelProps = {
 export const DriveSearchResultsPanel = ({
   controller,
 }: DriveSearchResultsPanelProps) => {
+  if (!controller.search.isSearchMode) {
+    return null;
+  }
+
   const shouldShowStatusCard = shouldShowDriveStatusCard(
     controller.search.isLoading,
     controller.search.statusCopy.tone,
@@ -30,7 +34,7 @@ export const DriveSearchResultsPanel = ({
         />
       ) : null}
       <DriveLibrarySourceGroup
-        getAction={controller.getSourceAction}
+        getActions={controller.getDriveSourceActions}
         getMessage={controller.getSourceMessage}
         sources={controller.search.playableSources}
         title={controller.search.playableSourceTitle}
@@ -50,10 +54,10 @@ export const DriveSearchResultsPanel = ({
 const styles = StyleSheet.create({
   section: {
     gap: 16,
-    padding: 20,
+    padding: 16,
     borderWidth: 1,
     borderColor: '#d6d1c4',
-    borderRadius: 20,
-    backgroundColor: '#fffdf8',
+    borderRadius: 16,
+    backgroundColor: '#fffcf4',
   },
 });

@@ -186,6 +186,44 @@ export const normalizePlaybackVolumeLevel = (volumeLevel: number) => {
   return Math.min(1, Math.max(0, volumeLevel));
 };
 
+export const hydratePlayableItemDuration = (options: {
+  durationSeconds: number;
+  playableItem: PlayableItem;
+}) => {
+  if (
+    options.playableItem.kind !== 'track' ||
+    !Number.isFinite(options.durationSeconds) ||
+    options.durationSeconds <= 0
+  ) {
+    return options.playableItem;
+  }
+
+  const durationMs = Math.round(options.durationSeconds * 1000);
+  const hasResolvedSourceDuration =
+    options.playableItem.source.durationMs === durationMs;
+  const hasResolvedRangeEnd = options.playableItem.range.endMs === durationMs;
+
+  if (hasResolvedSourceDuration && hasResolvedRangeEnd) {
+    return options.playableItem;
+  }
+
+  return {
+    ...options.playableItem,
+    source: hasResolvedSourceDuration
+      ? options.playableItem.source
+      : {
+          ...options.playableItem.source,
+          durationMs,
+        },
+    range: hasResolvedRangeEnd
+      ? options.playableItem.range
+      : {
+          ...options.playableItem.range,
+          endMs: durationMs,
+        },
+  } satisfies PlayableItem;
+};
+
 export const shouldRepeatSingleItemPlayback = (repeatMode: RepeatMode) => {
   return repeatMode === 'one';
 };
