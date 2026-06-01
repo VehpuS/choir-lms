@@ -34,9 +34,9 @@
 - [x] 3.3.4 Add a vertical-ellipsis overflow menu on Recents recent-item rows with `Play next`, `Add to queue`, and `View in library` actions while keeping inline icon-only `Play` as the primary action.
 - [x] 3.4 Implement explicit dual search contexts: Google Drive discovery search (including folder scoping) and dedicated app-library search.
 - [x] 3.5 Add clear active-context and scope indicators so users always know which corpus (Google Drive in Add vs library in Library) is being searched.
-- [ ] 3.6 Ensure search entry points are first-class in both the Google Drive navigation surface and the app-library surface.
+- [ ] 3.6 Scope Add Drive search to navigation context after folder drill-down: keep root-level search at selected-root scope, and default to current-folder-path scope after users enter folders.
 - [ ] 3.7 Add recent-search suggestion interactions for the active search context that allow tap-to-run query execution.
-- [ ] 3.8 Verify Google Drive navigation remains first-class after tab/section reorder inside Add: root selector, folder drill-down, breadcrumbs, and unavailable/source status visibility.
+- [ ] 3.8 Verify Google Drive navigation remains first-class after tab/section reorder inside Add: root selector, folder drill-down, breadcrumbs, search-control placement under breadcrumbs, and unavailable/source status visibility.
 - [ ] 3.9 Add Drive search-result preview playback so playable Google Drive sources can be auditioned without saving first, while keeping Save available as a separate action.
 - [ ] 3.10 Highlight matched query substrings in visible search-result text for both Add (Google Drive) and Library contexts, using the same normalized match semantics as result filtering.
 
@@ -77,5 +77,6 @@
 - [ ] 6.2.1 Manually verify transient queue creation from standalone playback across queue-capable surfaces: start a single track, invoke `Play next` and `Add to queue` from Library/Add/Recents where available, confirm Up Next becomes visible, and confirm the current item remains first in the resulting queue.
 - [ ] 6.2.2 Manually verify queue-to-playlist capture from Up Next: save a transient queue as a new playlist, update an existing playlist with currently enqueued items, confirm resulting playlist item order, and confirm current playback item and position remain uninterrupted.
 - [ ] 6.2.3 Manually verify search-result match highlighting in both Add and Library: run representative queries, confirm only matched substrings are emphasized, and confirm highlights update correctly after query edits, filter changes, and context switches.
+- [ ] 6.2.4 Manually verify Drive search scoping in Add: at root, confirm search spans selected root; after folder drill-down, confirm search defaults to current-folder scope and breadcrumb changes update that scope before rerunning search.
 - [ ] 6.3 Explicitly verify no existing critical feature was lost during IA reorder using the baseline mapping from 1.1 and record pass/fail per feature.
 - [ ] 6.4 Compare final Recents, Add, Library, playlist detail, now-playing, and queue surfaces against this change's specs and capture any intentional deltas before completing implementation.

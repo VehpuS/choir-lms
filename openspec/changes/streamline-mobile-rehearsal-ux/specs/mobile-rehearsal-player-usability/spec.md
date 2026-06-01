@@ -87,7 +87,15 @@ The system SHALL provide explicit search context separation so users can search 
 #### Scenario: Drive search context is visible and scope-aware
 
 - **WHEN** a user performs search in Google Drive discovery
-- **THEN** the system indicates Drive search as the active context and shows whether search is globally scoped or constrained to the current folder path
+- **THEN** the system indicates Drive search as the active context
+- **AND** at root level, search scope is shown as the selected Drive root
+- **AND** after navigating into a folder, search defaults to the currently browsed folder path and shows that folder-path scope explicitly
+
+#### Scenario: Drive search control stays coupled to folder navigation context
+
+- **WHEN** a user is browsing Google Drive folders in Add
+- **THEN** the search control appears directly below breadcrumbs so search scope follows the visible navigation context
+- **AND** moving between breadcrumbs segments updates the folder-scoped search context before the next query runs
 
 #### Scenario: Library search context targets app-owned rehearsal entities
 

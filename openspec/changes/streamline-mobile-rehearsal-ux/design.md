@@ -77,16 +77,17 @@ Placement rules:
 Section order within Add:
 
 1. Drive context header (active corpus label + scope chip)
-2. Drive search input and recent queries
-3. Drive root selector (My Drive / Shared) and current-scope indicator
-4. Breadcrumbs for current folder path
+2. Drive root selector (My Drive / Shared) and current-scope indicator
+3. Breadcrumbs for current folder path
+4. Drive search input and recent queries (placed directly under breadcrumbs)
 5. Search results (playable first, unavailable grouped second)
 
 Placement rules:
 
 - Add is the destination label for the Google Drive discovery surface; Search remains a first-class operation inside Add and is explicitly labeled as Google Drive discovery.
-- Scope behavior is explicit: users can search current folder scope or broader Drive scope with visible state.
+- Scope behavior is explicit: at root level, search runs across the selected Drive root; once users drill into a folder, search defaults to the current folder path context with visible scope state.
 - Drive browse/navigation controls (root switching, folder path, breadcrumbs) stay available in the same surface as Drive search.
+- Drive search control is positioned immediately below breadcrumbs so the currently browsed folder context is visually coupled to search scope.
 - Playable Drive search rows provide direct preview playback without requiring a save-first step.
 - Save remains a separate row action for users who want to promote a previewed source into Library-managed workflows.
 
