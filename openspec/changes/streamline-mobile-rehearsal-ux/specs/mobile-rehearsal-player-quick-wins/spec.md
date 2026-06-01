@@ -48,6 +48,23 @@ The system SHALL provide direct shortcuts to recent rehearsal context so users c
 - **AND** each row exposes its own icon-only play control so users can resume a specific item directly
 - **AND** those recent items remain available after app relaunch until replaced or evicted by the recents history policy
 
+#### Scenario: Recent-item overflow includes queue acceleration and library handoff actions
+
+- **WHEN** a user opens the vertical-ellipsis menu on a recent rehearsal row
+- **THEN** the menu includes `Play next` and `Add to queue` actions for queue acceleration
+- **AND** the menu includes a `View in library` action to open the same item in Library context
+
+#### Scenario: Recent-item overflow queue actions preserve active playback continuity
+
+- **WHEN** a user chooses `Play next` or `Add to queue` from a recent-item overflow menu
+- **THEN** the system updates the active queue without interrupting current playback
+
+#### Scenario: View in library keeps playback uninterrupted while changing context
+
+- **WHEN** a user chooses `View in library` from a recent-item overflow menu
+- **THEN** the app navigates to Library with the related saved item context visible when available
+- **AND** active playback state remains uninterrupted during the context switch
+
 #### Scenario: Empty recent context falls back to discovery guidance
 
 - **WHEN** no recent rehearsal context exists

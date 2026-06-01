@@ -361,6 +361,7 @@ Implemented delta in this change:
 Follow-on rollout direction:
 
 - Extend the same overflow grouping to loop row actions when queue-acceleration actions (`Play next`, `Add to queue`) are introduced.
+- Extend the same overflow grouping to Recents history rows so each recent item keeps an inline icon-only `Play` action plus a vertical-ellipsis menu for queue acceleration (`Play next`, `Add to queue`) and a `View in library` navigation handoff.
 - Standardize saved loop cards with saved track cards for add-to-playlist affordances so both surfaces keep equivalent action placement, labels, and feedback behavior.
 - Converge saved track and saved loop rows on one inline icon-only `Play` action plus a shared overflow trigger, while keeping `Make loop` as a saved-track-only overflow action.
 - Replace text-labeled `Play` buttons with icon-first playback affordances wherever the control performs an immediate playback action and standard music-player iconography is sufficient.
@@ -369,6 +370,10 @@ Follow-on rollout direction:
 - Use the same icon-first play treatment for Recents resume shortcuts and other shortcut cards that directly start playback.
 - Keep one primary inline action per row when useful for speed (for example immediate playback), and place lower-frequency or destructive controls in the overflow menu.
 - Keep icon semantics and touch target sizing aligned with playlist/search/library patterns as additional surfaces adopt this UI.
+
+Recents handoff rule:
+
+- `View in library` from a recent-item overflow menu should navigate to Library and focus the matching saved entity context when available, without interrupting active playback.
 
 Alternatives considered:
 

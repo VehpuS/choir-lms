@@ -161,6 +161,13 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 - **WHEN** new row-level actions are added in this change (for example queue acceleration actions)
 - **THEN** those actions follow the same shared overflow menu pattern unless they are designated as the row's primary quick action
 
+#### Scenario: Recents recent-item rows adopt the shared overflow model
+
+- **WHEN** a user views recent rehearsal rows on Recents
+- **THEN** each row keeps one inline icon-only `Play` primary action
+- **AND** each row exposes one vertical-ellipsis overflow trigger for secondary actions
+- **AND** the first overflow level includes `Play next`, `Add to queue`, and `View in library` actions
+
 ### Requirement: Row-action placement remains explicit and stable across UI updates
 
 The system SHALL determine row-action placement from explicit action metadata so action location stays stable when copy, tone, or localization changes.
