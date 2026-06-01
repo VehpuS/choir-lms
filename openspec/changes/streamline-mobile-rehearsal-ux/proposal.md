@@ -8,7 +8,8 @@ The current mobile rehearsal player already delivers core playback and playlist 
 - Clarify information architecture by separating Google Drive discovery search from app-owned library search, including explicit source-scoped search behavior.
 - Support direct preview playback from Google Drive search results without requiring users to save the source first.
 - Rename the current Home tab to Recents and keep it as an optional acceleration surface for persisted recent rehearsal shortcuts rather than a mandatory workflow step.
-- Add low-friction rehearsal productivity actions such as ad-hoc queue actions, stronger resume shortcuts, and smarter defaults in loop and playlist flows.
+- Add low-friction rehearsal productivity actions such as ad-hoc queue actions that can promote single-track playback into a transient queue, stronger resume shortcuts, and smarter defaults in loop and playlist flows.
+- Add queue-view playlist capture actions so users can save a transient Up Next queue as a new playlist or update an existing playlist with currently enqueued items from Now Playing.
 - Add Recents row overflow actions (vertical ellipsis) for queue acceleration (`Play next`, `Add to queue`) and a `View in library` handoff so users can jump from recency shortcuts into full library context without extra search steps.
 - Standardize saved loop and saved track cards around one shared row-action contract: one inline icon-only `Play` affordance, one shared vertical-ellipsis overflow trigger, and parity for all other applicable actions.
 - Keep `Make loop` as the intentional exception on saved tracks only, surfaced from the same overflow menu rather than a dedicated inline button.
@@ -34,7 +35,7 @@ The current mobile rehearsal player already delivers core playback and playlist 
 
 ## Impact
 
-- Affected app areas: mobile shell, Recents/Search/Library screens, playlist detail interactions, queue and now-playing surfaces, loop-builder naming and feedback flows, Drive search-result preview interactions, and saved-library browse/search tooling.
+- Affected app areas: mobile shell, Recents/Search/Library screens, playlist detail interactions, queue and now-playing surfaces (including queue-to-playlist capture actions), loop-builder naming and feedback flows, Drive search-result preview interactions, and saved-library browse/search tooling.
 - Affected code locations: `packages/mobile-rehearsal-player/src/app/routing/*`, `packages/mobile-rehearsal-player/src/app/screens/*`, and `packages/mobile-rehearsal-player/src/app/library/components/*`.
 - Platform and design constraints: maintain waveform-first playback, persistent mini-player, existing playback engine semantics, and platform-familiar music iconography while making source-vs-library search context explicit.
-- Risk profile: low-to-medium; primarily UI and interaction changes with limited domain-model impact if queue quick actions are kept additive.
+- Risk profile: low-to-medium; primarily UI and interaction changes with modest playback-state impact because queue quick actions now need to create and surface transient queues in addition to persisted playlist sessions, plus queue-view actions that persist queued items into playlists.

@@ -161,9 +161,15 @@ IA reorder work cannot be considered acceptable unless every critical capability
 - Queue session metadata (mode, repeat, current item) remains coherent while navigating between tabs.
 - Up Next/now-playing surfaces stay synchronized with playlist session state after IA changes.
 
+### Capability: Queue-to-playlist persistence from Now Playing
+
+- User can save the active transient queue from Up Next as a new playlist without interrupting playback.
+- User can update an existing playlist with currently enqueued items from Up Next while preserving queue order.
+- Queue-to-playlist actions keep active playback and queue position stable after the save/update completes.
+
 ### Acceptance Gate
 
-- All seven capabilities above must pass manual verification in section 6 tasks before this change is considered implementation-complete.
+- All capabilities above must pass manual verification in section 6 tasks before this change is considered implementation-complete.
 - Any failed capability blocks final sign-off until either fixed or documented as an intentional, approved delta.
 
 ## UI Context Labels And Helper Copy Rules (Task 1.4)
@@ -337,12 +343,23 @@ Alternatives considered:
 
 ### 3. Keep queue improvements additive and defer full queue editing if risk rises
 
-Add both high-value queue conveniences (`Play next` and `Add to queue`) while preserving existing queue ownership and playback consistency. Full queue reorder/remove can remain deferred if validation indicates too much complexity for this slice.
+Add both high-value queue conveniences (`Play next` and `Add to queue`) while preserving existing queue ownership and playback consistency. Queue actions must work whether playback started from a playlist or from a single track: if the user is playing one item outside playlist context and then invokes a queue action, the system should promote that playback into a transient queue whose first item is the currently playing track and whose subsequent items reflect the ad-hoc queue action. Full queue reorder/remove can remain deferred if validation indicates too much complexity for this slice.
 
 Alternatives considered:
 
 - Ship full queue reordering in the same slice by default: rejected as potentially higher regression risk around active playback transitions.
 - Leave queue fully unchanged: rejected because users need at least one faster ad-hoc flow for rehearsal sequencing.
+- Require users to start from a saved playlist before queue actions appear: rejected because it blocks common rehearsal behavior where singers audition one track first and decide what should play next only after playback has already started.
+
+Transient queue rules for this change:
+
+- Standalone single-item playback remains valid as the initial playback mode.
+- `Play next` or `Add to queue` from any queue-capable surface during standalone playback promotes the current item into a transient queue session.
+- The transient queue keeps the currently playing item as position 1 and adds subsequent items according to the invoked action (`Play next` inserts immediately after the current item; `Add to queue` appends to the end).
+- Once a transient queue exists, now-playing and Up Next surfaces expose the same queue-management affordances used for playlist-backed queue sessions.
+- Up Next includes queue-to-playlist actions: save active transient queue as a new playlist, and update an existing playlist with currently enqueued items.
+- Queue-to-playlist actions persist queue ordering into playlists but do not mutate the active queue session as a side effect.
+- Queue affordances stay hidden only when playback is truly single-item with no queued follow-up items yet.
 
 ### 4. Tighten hierarchy by reducing non-critical copy and surface weight in steady-state screens
 
@@ -362,6 +379,7 @@ Follow-on rollout direction:
 
 - Extend the same overflow grouping to loop row actions when queue-acceleration actions (`Play next`, `Add to queue`) are introduced.
 - Extend the same overflow grouping to Recents history rows so each recent item keeps an inline icon-only `Play` action plus a vertical-ellipsis menu for queue acceleration (`Play next`, `Add to queue`) and a `View in library` navigation handoff.
+- Ensure queue-capable surfaces do not gate queue actions on persisted playlist mode alone; the same overflow actions must remain available while a transient queue can be created from the currently playing standalone item.
 - Standardize saved loop cards with saved track cards for add-to-playlist affordances so both surfaces keep equivalent action placement, labels, and feedback behavior.
 - Converge saved track and saved loop rows on one inline icon-only `Play` action plus a shared overflow trigger, while keeping `Make loop` as a saved-track-only overflow action.
 - Replace text-labeled `Play` buttons with icon-first playback affordances wherever the control performs an immediate playback action and standard music-player iconography is sufficient.

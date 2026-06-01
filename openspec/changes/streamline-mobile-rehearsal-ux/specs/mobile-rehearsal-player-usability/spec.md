@@ -101,9 +101,33 @@ The system SHALL keep queue and now-playing controls mode-aware, visually clear,
 - **WHEN** a user opens Up Next during an active queue session
 - **THEN** the system shows current and upcoming items with clearly reachable queue-mode controls and explicit state visibility
 
-#### Scenario: Standalone playback hides queue-only controls
+#### Scenario: Up Next offers queue-to-playlist actions for transient queues
+
+- **WHEN** a user opens Up Next while a transient queue is active
+- **THEN** the system exposes actions to save the queue as a new playlist and to append enqueued items to an existing playlist
+
+#### Scenario: Saving transient queue to playlist preserves playback continuity
+
+- **WHEN** a user saves a transient queue as a new playlist from Up Next
+- **THEN** the playlist is created from the queue's current item order
+- **AND** the current playback item and position continue without restart
+
+#### Scenario: Appending enqueued items from Up Next preserves playback continuity
+
+- **WHEN** a user appends currently enqueued items from Up Next to an existing playlist
+- **THEN** the selected playlist gains the enqueued items in queue order
+- **AND** the active queue session remains in place and playback continues without interruption
+
+#### Scenario: Standalone playback can be promoted into a transient queue
+
+- **WHEN** a user is playing a single item outside playlist context and performs `Play next` or `Add to queue` from a queue-capable item surface
+- **THEN** the system promotes playback into a transient queue session without restarting the current item
+- **AND** queue surfaces and controls become available for the resulting transient queue
+
+#### Scenario: True standalone playback hides queue-only controls
 
 - **WHEN** a user plays a standalone item outside queue context
+- **AND** no follow-up items have been queued yet
 - **THEN** the system omits queue-only controls while preserving current-item rehearsal controls and repeat behavior
 
 ### Requirement: Core playback and list actions meet touch and accessibility expectations
@@ -148,6 +172,7 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 - **WHEN** a user views saved source rows in Library or Search contexts
 - **THEN** the system keeps only the playback-first icon action inline and places lower-frequency or destructive actions (for example add to playlist, play next, add to queue, and remove) in the shared overflow menu
 - **AND** overflow actions are presented directly in the first options menu surface without a nested "More options" step
+- **AND** queue actions remain available whenever the surface supports queue operations, including the case where invoking them would create a transient queue from the currently playing standalone item
 
 #### Scenario: Saved loop rows align with saved track rows for shared applicable actions
 
@@ -160,6 +185,12 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 
 - **WHEN** new row-level actions are added in this change (for example queue acceleration actions)
 - **THEN** those actions follow the same shared overflow menu pattern unless they are designated as the row's primary quick action
+
+#### Scenario: Queue-capable surfaces share the same transient-queue behavior
+
+- **WHEN** a user invokes `Play next` or `Add to queue` from Library, Search, Recents, or another surface that exposes queue operations
+- **THEN** the system applies the same queue mutation rules regardless of surface origin
+- **AND** if playback was previously single-item, the action creates a transient queue rather than failing or hiding the queue option
 
 #### Scenario: Recents recent-item rows adopt the shared overflow model
 

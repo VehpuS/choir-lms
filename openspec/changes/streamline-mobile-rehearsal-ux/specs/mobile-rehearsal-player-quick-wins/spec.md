@@ -6,18 +6,37 @@ The system SHALL provide quick queue actions from track-focused contexts so user
 
 #### Scenario: Add a saved item to play next from row-level actions
 
-- **WHEN** a user opens row actions for a playable saved track or loop during an active session
-- **THEN** the system offers a `Play next` style action that inserts that item immediately after the current item in the active session queue
+- **WHEN** a user opens row actions for a playable saved track or loop while playback is active on any queue-capable surface
+- **THEN** the system offers a `Play next` style action that inserts that item immediately after the current item in the active queue
 
 #### Scenario: Add a saved item to queue from row-level actions
 
-- **WHEN** a user opens row actions for a playable saved track or loop during an active session
+- **WHEN** a user opens row actions for a playable saved track or loop while playback is active on any queue-capable surface
 - **THEN** the system offers an `Add to queue` style action that appends that item to the active upcoming queue without interrupting current playback
+
+#### Scenario: Queue actions create a transient queue from standalone playback
+
+- **WHEN** a user is playing a single track outside a playlist-backed queue and then chooses `Play next` or `Add to queue` for another playable item
+- **THEN** the system converts the current playback session into a transient queue
+- **AND** the currently playing track remains the first queue item
+- **AND** the newly selected item is inserted or appended according to the chosen queue action
 
 #### Scenario: Queue quick actions preserve active playback continuity
 
 - **WHEN** a user runs an ad-hoc queue quick action
 - **THEN** the system applies the queue update without interrupting current playback
+
+#### Scenario: Up Next can save a transient queue as a new playlist
+
+- **WHEN** a user opens Up Next for an active transient queue and chooses to save that queue as a playlist
+- **THEN** the system creates a new playlist from the current queue ordering
+- **AND** playback continues uninterrupted in the current queue session
+
+#### Scenario: Up Next can append enqueued items to an existing playlist
+
+- **WHEN** a user opens Up Next and chooses to add currently enqueued items to an existing playlist
+- **THEN** the system appends those enqueued items to the selected playlist in queue order
+- **AND** playback continues uninterrupted in the current queue session
 
 ### Requirement: Recents provides fast recent rehearsal entry points
 
@@ -58,6 +77,12 @@ The system SHALL provide direct shortcuts to recent rehearsal context so users c
 
 - **WHEN** a user chooses `Play next` or `Add to queue` from a recent-item overflow menu
 - **THEN** the system updates the active queue without interrupting current playback
+
+#### Scenario: Recent-item overflow can seed a transient queue from standalone playback
+
+- **WHEN** a user is playing one standalone item and chooses `Play next` or `Add to queue` from a recent-item overflow menu
+- **THEN** the system creates the same transient queue behavior used on other queue-capable surfaces
+- **AND** Up Next reflects the newly created queued item without restarting the current track
 
 #### Scenario: View in library keeps playback uninterrupted while changing context
 

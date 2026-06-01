@@ -4,7 +4,8 @@
     "checkpointed",
     "LINTABLE",
     "openspec",
-    "Pressable"
+    "Pressable",
+    "Recents"
   ],
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
