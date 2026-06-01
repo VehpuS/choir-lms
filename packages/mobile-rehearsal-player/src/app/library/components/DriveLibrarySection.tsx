@@ -88,6 +88,8 @@ export const DriveLibrarySection = ({
     selectRoot,
     setSearchQuery,
     submitSearch,
+    submitSearchQuery,
+    recentSearchTerms,
     unavailableSources,
   } = useDriveLibrary(authState);
   const {
@@ -246,7 +248,9 @@ export const DriveLibrarySection = ({
         onClearSearch={clearSearch}
         onSearch={submitSearch}
         onSearchQueryChange={setSearchQuery}
+        onSelectRecentSearchTerm={submitSearchQuery}
         placeholderCopy="Search in My Drive"
+        recentSearchTerms={recentSearchTerms}
         searchQuery={searchQuery}
       />
       <DriveLibraryRootSelector

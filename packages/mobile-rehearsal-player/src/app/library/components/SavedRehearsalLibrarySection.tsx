@@ -23,6 +23,15 @@ import {
   filterSavedPlaylistsByQuery,
   resolveActiveLibrarySearchQuery,
 } from '../utils/saved-library-search-view-model';
+import {
+  normalizeRecentSearchTerm,
+  recordRecentSearchTerm,
+} from '../utils/search-history';
+import {
+  LIBRARY_RECENT_SEARCH_HISTORY_KEY,
+  persistRecentSearchHistory,
+  restoreRecentSearchHistory,
+} from '../utils/search-history-storage';
 import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import type { PlaylistPlaybackSession } from '../utils/saved-playlist-playback-view-model';
 import { getSelectedPlaylistIssue } from '../utils/saved-playlist-status-view-model';
@@ -167,9 +176,51 @@ export const SavedRehearsalLibrarySection = ({
     getSavedTrackPlaylistMenuInitialState,
   );
   const [librarySearchQuery, setLibrarySearchQuery] = useState('');
+  const [recentLibrarySearchTerms, setRecentLibrarySearchTerms] = useState<
+    string[]
+  >([]);
+  const [
+    hasLoadedRecentLibrarySearchTerms,
+    setHasLoadedRecentLibrarySearchTerms,
+  ] = useState(false);
   const [activeLibrarySearchQuery, setActiveLibrarySearchQuery] = useState<
     string | null
   >(null);
+
+  useEffect(() => {
+    let isUnrendered = false;
+
+    void restoreRecentSearchHistory(LIBRARY_RECENT_SEARCH_HISTORY_KEY)
+      .then((restoredRecentSearchTerms) => {
+        if (isUnrendered) {
+          return;
+        }
+
+        setRecentLibrarySearchTerms(restoredRecentSearchTerms);
+      })
+      .finally(() => {
+        if (isUnrendered) {
+          return;
+        }
+
+        setHasLoadedRecentLibrarySearchTerms(true);
+      });
+
+    return () => {
+      isUnrendered = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedRecentLibrarySearchTerms) {
+      return;
+    }
+
+    void persistRecentSearchHistory(
+      LIBRARY_RECENT_SEARCH_HISTORY_KEY,
+      recentLibrarySearchTerms,
+    );
+  }, [hasLoadedRecentLibrarySearchTerms, recentLibrarySearchTerms]);
 
   useEffect(() => {
     if (savedPlaylists.length === 0) {
@@ -304,10 +355,31 @@ export const SavedRehearsalLibrarySection = ({
     setTrackPlaylistCreationIssue(null);
   };
 
+  const runLibrarySearch = (query: string) => {
+    const nextQuery = normalizeRecentSearchTerm(query);
+
+    setLibrarySearchQuery(nextQuery ?? '');
+    setActiveLibrarySearchQuery(resolveActiveLibrarySearchQuery(query));
+
+    if (nextQuery) {
+      setRecentLibrarySearchTerms((currentSearchTerms) => {
+        return recordRecentSearchTerm(currentSearchTerms, nextQuery);
+      });
+    }
+  };
+
   const submitLibrarySearch = () => {
-    setActiveLibrarySearchQuery(
-      resolveActiveLibrarySearchQuery(librarySearchQuery),
-    );
+    runLibrarySearch(librarySearchQuery);
+  };
+
+  const handleLibrarySearchQueryChange = (value: string) => {
+    setLibrarySearchQuery(value);
+
+    if (resolveActiveLibrarySearchQuery(value)) {
+      return;
+    }
+
+    setActiveLibrarySearchQuery(null);
   };
 
   const clearLibrarySearch = () => {
@@ -483,7 +555,9 @@ export const SavedRehearsalLibrarySection = ({
         isSearchMode={isLibrarySearchMode}
         onClearSearch={clearLibrarySearch}
         onSearch={submitLibrarySearch}
-        onSearchQueryChange={setLibrarySearchQuery}
+        onSearchQueryChange={handleLibrarySearchQueryChange}
+        onSelectRecentSearchTerm={runLibrarySearch}
+        recentSearchTerms={recentLibrarySearchTerms}
         searchQuery={librarySearchQuery}
       />
       {shouldShowSavedLibraryStatus ? (

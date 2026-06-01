@@ -1,6 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { RecentSearchSuggestions } from './RecentSearchSuggestions';
+
 type DriveLibrarySearchPanelProps = {
   canSearch: boolean;
   helperCopy: string;
@@ -9,7 +11,9 @@ type DriveLibrarySearchPanelProps = {
   onClearSearch: () => void;
   onSearch: () => void;
   onSearchQueryChange: (value: string) => void;
+  onSelectRecentSearchTerm: (value: string) => void;
   placeholderCopy: string;
+  recentSearchTerms: string[];
   searchQuery: string;
 };
 
@@ -29,9 +33,17 @@ export const DriveLibrarySearchPanel = ({
   onClearSearch,
   onSearch,
   onSearchQueryChange,
+  onSelectRecentSearchTerm,
   placeholderCopy,
+  recentSearchTerms,
   searchQuery,
 }: DriveLibrarySearchPanelProps) => {
+  const shouldShowRecentSearchTerms =
+    canSearch &&
+    !isLoading &&
+    searchQuery.trim().length === 0 &&
+    recentSearchTerms.length > 0;
+
   return (
     <View style={styles.searchPanel}>
       <View style={styles.copyRow}>
@@ -67,6 +79,12 @@ export const DriveLibrarySearchPanel = ({
           />
         </Pressable>
       </View>
+      {shouldShowRecentSearchTerms ? (
+        <RecentSearchSuggestions
+          onSelectRecentSearchTerm={onSelectRecentSearchTerm}
+          recentSearchTerms={recentSearchTerms}
+        />
+      ) : null}
       {isSearchMode ? (
         <Pressable
           accessibilityRole="button"

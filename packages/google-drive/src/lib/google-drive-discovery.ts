@@ -227,7 +227,7 @@ const createAudioSearchQuery = (
     return `${DRIVE_LIBRARY_QUERY} and sharedWithMe and ${queryClause}`;
   }
 
-  return `${DRIVE_LIBRARY_QUERY} and not sharedWithMe and ${queryClause}`;
+  return `${DRIVE_LIBRARY_QUERY} and 'me' in owners and ${queryClause}`;
 };
 
 const createFolderDescendantQuery = (parentFolderIds: string[]) => {

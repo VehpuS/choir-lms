@@ -522,6 +522,32 @@ describe('searchDriveAudioFiles', () => {
     assert.doesNotMatch(requestUrl, /%27root%27\+in\+parents/);
   });
 
+  it('scopes root-level search to My Drive ownership', async () => {
+    let requestUrl = '';
+
+    globalThis.fetch = async (input) => {
+      requestUrl = String(input);
+
+      return new Response(JSON.stringify({ files: [] }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      });
+    };
+
+    await searchDriveAudioFiles({
+      accessToken: 'drive-token',
+      location: MY_DRIVE_ROOT_LOCATION,
+      query: 'Amen',
+      supportedMimeTypes: SUPPORTED_MIME_TYPES,
+      supportedExtensions: SUPPORTED_EXTENSIONS,
+    });
+
+    assert.match(requestUrl, /%27me%27\+in\+owners/);
+    assert.doesNotMatch(requestUrl, /sharedWithMe/);
+  });
+
   it('scopes folder search to the selected folder path', async () => {
     const requestUrls: string[] = [];
 

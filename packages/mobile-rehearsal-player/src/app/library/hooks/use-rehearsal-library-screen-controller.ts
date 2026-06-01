@@ -270,6 +270,7 @@ export const useRehearsalLibraryScreenController = ({
       isSearchMode,
       playableSourceTitle: `Matching audio (${driveLibrary.searchSnapshot.playableSources.length})`,
       playableSources: driveLibrary.searchSnapshot.playableSources,
+      recentSearchTerms: driveLibrary.recentSearchTerms,
       searchContextCopy: getDriveSearchContextCopy(
         driveLibrary.currentLocation,
       ),
@@ -277,6 +278,7 @@ export const useRehearsalLibraryScreenController = ({
       setSearchQuery: driveLibrary.setSearchQuery,
       statusCopy: searchStatusCopy,
       submitSearch: driveLibrary.submitSearch,
+      submitSearchQuery: driveLibrary.submitSearchQuery,
       totalResultCount:
         driveLibrary.searchSnapshot.playableSources.length +
         driveLibrary.searchSnapshot.unavailableSources.length,

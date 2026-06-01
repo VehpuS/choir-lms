@@ -27,7 +27,9 @@ export const DriveSearchResultsPanel = ({
         onClearSearch={controller.search.clearSearch}
         onSearch={controller.search.submitSearch}
         onSearchQueryChange={controller.search.setSearchQuery}
+        onSelectRecentSearchTerm={controller.search.submitSearchQuery}
         placeholderCopy={searchContextCopy.placeholder}
+        recentSearchTerms={controller.search.recentSearchTerms}
         searchQuery={controller.search.searchQuery}
       />
       {shouldShowStatusCard ? (

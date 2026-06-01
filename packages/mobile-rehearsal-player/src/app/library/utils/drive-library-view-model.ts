@@ -90,7 +90,8 @@ const getTotalSearchSourceCount = (snapshot: DriveSearchSnapshot) => {
 const getDriveSearchScopeCopy = (location?: DriveBrowseLocation) => {
   if (!location) {
     return {
-      loadingMessage: 'Looking for matching audio across My Drive and shared folders.',
+      loadingMessage:
+        'Looking for matching audio across My Drive and shared folders.',
       readySuffix: 'across My Drive and shared folders',
     };
   }
@@ -157,7 +158,9 @@ export const formatDurationLabel = (durationMs?: number) => {
 export const getDriveLibraryStatusCopy = (
   options: DriveLibraryStatusOptions,
 ): DriveLibraryStatusCopy => {
-  const searchScopeCopy = getDriveSearchScopeCopy(options.currentSearchLocation);
+  const searchScopeCopy = getDriveSearchScopeCopy(
+    options.currentSearchLocation,
+  );
   const browseFolderCount = options.browseSnapshot.folders.length;
   const browsePlayableCount = options.browseSnapshot.playableSources.length;
   const browseUnavailableCount =
@@ -325,6 +328,7 @@ export const getDriveSearchContextCopy = (
 export const getLibrarySearchContextCopy = (): SearchContextCopy => {
   return {
     helper: 'Search saved library (playlists, tracks, and loops)',
+    placeholder: 'Search saved library',
   };
 };
 

@@ -12,6 +12,15 @@ import {
 import { useEffect, useState } from 'react';
 
 import { runtimeConfig } from '../../../config/runtime';
+import {
+  normalizeRecentSearchTerm,
+  recordRecentSearchTerm,
+} from '../utils/search-history';
+import {
+  ADD_RECENT_SEARCH_HISTORY_KEY,
+  persistRecentSearchHistory,
+  restoreRecentSearchHistory,
+} from '../utils/search-history-storage';
 
 const createRootLocation = (rootKind: DriveBrowseLocation['rootKind']) => {
   return {
@@ -56,6 +65,9 @@ export const useDriveLibrary = (authState: DriveAuthorizationState) => {
   const [searchSnapshot, setSearchSnapshot] =
     useState<DriveSearchSnapshot>(EMPTY_SEARCH);
   const [searchQuery, setSearchQuery] = useState('');
+  const [recentSearchTerms, setRecentSearchTerms] = useState<string[]>([]);
+  const [hasLoadedRecentSearchTerms, setHasLoadedRecentSearchTerms] =
+    useState(false);
   const [activeSearchQuery, setActiveSearchQuery] = useState<string | null>(
     null,
   );
@@ -66,6 +78,80 @@ export const useDriveLibrary = (authState: DriveAuthorizationState) => {
   const currentLocation =
     navigationStack[navigationStack.length - 1] ??
     createRootLocation('my-drive');
+
+  const clearActiveSearch = () => {
+    setActiveSearchQuery(null);
+    setSearchSnapshot(EMPTY_SEARCH);
+    setIssue(null);
+  };
+
+  const updateSearchQuery = (value: string) => {
+    setSearchQuery(value);
+
+    if (normalizeRecentSearchTerm(value)) {
+      return;
+    }
+
+    clearActiveSearch();
+  };
+
+  const submitSearchQuery = (query: string) => {
+    const nextQuery = normalizeRecentSearchTerm(query);
+
+    if (!nextQuery) {
+      clearActiveSearch();
+      setSearchQuery('');
+      return;
+    }
+
+    setIssue(null);
+    setSearchQuery(nextQuery);
+    // Clear previous result counts while the next query is fetching.
+    setSearchSnapshot({
+      ...EMPTY_SEARCH,
+      query: nextQuery,
+    });
+    setActiveSearchQuery(nextQuery);
+    setRecentSearchTerms((currentSearchTerms) => {
+      return recordRecentSearchTerm(currentSearchTerms, nextQuery);
+    });
+    setRefreshCount((currentValue) => currentValue + 1);
+  };
+
+  useEffect(() => {
+    let isDisposed = false;
+
+    void restoreRecentSearchHistory(ADD_RECENT_SEARCH_HISTORY_KEY)
+      .then((restoredRecentSearchTerms) => {
+        if (isDisposed) {
+          return;
+        }
+
+        setRecentSearchTerms(restoredRecentSearchTerms);
+      })
+      .finally(() => {
+        if (isDisposed) {
+          return;
+        }
+
+        setHasLoadedRecentSearchTerms(true);
+      });
+
+    return () => {
+      isDisposed = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedRecentSearchTerms) {
+      return;
+    }
+
+    void persistRecentSearchHistory(
+      ADD_RECENT_SEARCH_HISTORY_KEY,
+      recentSearchTerms,
+    );
+  }, [hasLoadedRecentSearchTerms, recentSearchTerms]);
 
   useEffect(() => {
     const accessToken = authState.accessToken;
@@ -158,10 +244,8 @@ export const useDriveLibrary = (authState: DriveAuthorizationState) => {
     activeSearchQuery,
     browseSnapshot,
     clearSearch() {
-      setActiveSearchQuery(null);
-      setIssue(null);
+      clearActiveSearch();
       setSearchQuery('');
-      setSearchSnapshot(EMPTY_SEARCH);
     },
     currentLocation,
     goToLocation(index: number) {
@@ -200,30 +284,22 @@ export const useDriveLibrary = (authState: DriveAuthorizationState) => {
 
       setRefreshCount((currentValue) => currentValue + 1);
     },
+    recentSearchTerms,
     searchQuery,
     searchSnapshot,
     selectRoot(rootKind: DriveBrowseLocation['rootKind']) {
       const rootLocation = createRootLocation(rootKind);
 
-      setActiveSearchQuery(null);
-      setIssue(null);
+      clearActiveSearch();
       setNavigationStack([rootLocation]);
       setBrowseSnapshot(createEmptyBrowseSnapshot(rootLocation));
     },
-    setSearchQuery,
+    setSearchQuery: updateSearchQuery,
     submitSearch() {
-      const nextQuery = searchQuery.trim();
-
-      if (!nextQuery) {
-        setActiveSearchQuery(null);
-        setSearchSnapshot(EMPTY_SEARCH);
-        setIssue(null);
-        return;
-      }
-
-      setIssue(null);
-      setActiveSearchQuery(nextQuery);
-      setRefreshCount((currentValue) => currentValue + 1);
+      submitSearchQuery(searchQuery);
+    },
+    submitSearchQuery(query: string) {
+      submitSearchQuery(query);
     },
     unavailableSources:
       activeSearchQuery === null
