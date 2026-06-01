@@ -35,6 +35,12 @@ import {
   normalizeRecentSearchTerm,
   recordRecentSearchTerm,
 } from '../utils/search-history.js';
+import {
+  ADD_SCREEN_PANEL_ORDER,
+  DRIVE_DISCOVERY_NAVIGATION_ORDER,
+  shouldShowDriveStatusCard,
+  shouldShowUnavailableSources,
+} from '../utils/add-drive-layout.js';
 
 describe('getDriveLibraryStatusCopy', () => {
   it('summarizes the browse surface with folders and playable items', () => {
@@ -337,5 +343,30 @@ describe('recent search helpers', () => {
       recordRecentSearchTerm(['One', 'Two', 'Three', 'Four', 'Five'], 'Six'),
       ['Six', 'One', 'Two', 'Three', 'Four'],
     );
+  });
+});
+
+describe('Add surface layout contract', () => {
+  it('keeps discovery before search results in Add', () => {
+    assert.deepEqual(ADD_SCREEN_PANEL_ORDER, ['discovery', 'search-results']);
+  });
+
+  it('keeps search controls directly below breadcrumbs in discovery', () => {
+    assert.deepEqual(DRIVE_DISCOVERY_NAVIGATION_ORDER, [
+      'root-selector',
+      'breadcrumbs',
+      'search-control',
+    ]);
+  });
+
+  it('keeps status-card visibility tied to loading and non-ready states', () => {
+    assert.equal(shouldShowDriveStatusCard(false, 'ready'), false);
+    assert.equal(shouldShowDriveStatusCard(true, 'ready'), true);
+    assert.equal(shouldShowDriveStatusCard(false, 'warning'), true);
+  });
+
+  it('keeps unavailable groups visible only when unavailable sources exist', () => {
+    assert.equal(shouldShowUnavailableSources(0), false);
+    assert.equal(shouldShowUnavailableSources(1), true);
   });
 });

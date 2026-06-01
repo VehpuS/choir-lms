@@ -1,9 +1,14 @@
 import { StyleSheet, View } from 'react-native';
 
 import type { useRehearsalLibraryScreenController } from '../hooks/use-rehearsal-library-screen-controller';
+import {
+  shouldShowDriveStatusCard,
+  shouldShowUnavailableSources,
+} from '../utils/add-drive-layout';
 import { DriveFolderGroup } from './DriveFolderGroup';
 import { DriveLibraryBreadcrumbs } from './DriveLibraryBreadcrumbs';
 import { DriveLibraryRootSelector } from './DriveLibraryRootSelector';
+import { DriveLibrarySearchPanel } from './DriveLibrarySearchPanel';
 import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
 import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
@@ -15,9 +20,10 @@ type DriveDiscoveryPanelProps = {
 export const DriveDiscoveryPanel = ({
   controller,
 }: DriveDiscoveryPanelProps) => {
-  const shouldShowStatusCard =
-    controller.discovery.isLoading ||
-    controller.discovery.statusCopy.tone !== 'ready';
+  const shouldShowStatusCard = shouldShowDriveStatusCard(
+    controller.discovery.isLoading,
+    controller.discovery.statusCopy.tone,
+  );
 
   return (
     <View style={styles.section}>
@@ -37,6 +43,19 @@ export const DriveDiscoveryPanel = ({
         navigationStack={controller.discovery.navigationStack}
         onGoToLocation={controller.discovery.goToLocation}
       />
+      <DriveLibrarySearchPanel
+        canSearch={controller.search.canSearch}
+        helperCopy={controller.search.searchContextCopy.helper}
+        isLoading={controller.search.isLoading}
+        isSearchMode={controller.search.isSearchMode}
+        onClearSearch={controller.search.clearSearch}
+        onSearch={controller.search.submitSearch}
+        onSearchQueryChange={controller.search.setSearchQuery}
+        onSelectRecentSearchTerm={controller.search.submitSearchQuery}
+        placeholderCopy={controller.search.searchContextCopy.placeholder}
+        recentSearchTerms={controller.search.recentSearchTerms}
+        searchQuery={controller.search.searchQuery}
+      />
       {shouldShowStatusCard ? (
         <DriveLibraryStatusCard
           isLoading={controller.discovery.isLoading}
@@ -54,10 +73,14 @@ export const DriveDiscoveryPanel = ({
         sources={controller.discovery.playableSources}
         title={controller.discovery.playableSourceTitle}
       />
-      <DriveLibrarySourceGroup
-        sources={controller.discovery.unavailableSources}
-        title={controller.discovery.unavailableSourceTitle}
-      />
+      {shouldShowUnavailableSources(
+        controller.discovery.unavailableSources.length,
+      ) ? (
+        <DriveLibrarySourceGroup
+          sources={controller.discovery.unavailableSources}
+          title={controller.discovery.unavailableSourceTitle}
+        />
+      ) : null}
     </View>
   );
 };

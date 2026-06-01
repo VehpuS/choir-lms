@@ -1,7 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 
 import type { useRehearsalLibraryScreenController } from '../hooks/use-rehearsal-library-screen-controller';
-import { DriveLibrarySearchPanel } from './DriveLibrarySearchPanel';
+import {
+  shouldShowDriveStatusCard,
+  shouldShowUnavailableSources,
+} from '../utils/add-drive-layout';
 import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 
@@ -12,26 +15,13 @@ type DriveSearchResultsPanelProps = {
 export const DriveSearchResultsPanel = ({
   controller,
 }: DriveSearchResultsPanelProps) => {
-  const shouldShowStatusCard =
-    controller.search.isLoading ||
-    controller.search.statusCopy.tone !== 'ready';
-  const searchContextCopy = controller.search.searchContextCopy;
+  const shouldShowStatusCard = shouldShowDriveStatusCard(
+    controller.search.isLoading,
+    controller.search.statusCopy.tone,
+  );
 
   return (
     <View style={styles.section}>
-      <DriveLibrarySearchPanel
-        canSearch={controller.search.canSearch}
-        helperCopy={searchContextCopy.helper}
-        isLoading={controller.search.isLoading}
-        isSearchMode={controller.search.isSearchMode}
-        onClearSearch={controller.search.clearSearch}
-        onSearch={controller.search.submitSearch}
-        onSearchQueryChange={controller.search.setSearchQuery}
-        onSelectRecentSearchTerm={controller.search.submitSearchQuery}
-        placeholderCopy={searchContextCopy.placeholder}
-        recentSearchTerms={controller.search.recentSearchTerms}
-        searchQuery={controller.search.searchQuery}
-      />
       {shouldShowStatusCard ? (
         <DriveLibraryStatusCard
           isLoading={controller.search.isLoading}
@@ -45,10 +35,14 @@ export const DriveSearchResultsPanel = ({
         sources={controller.search.playableSources}
         title={controller.search.playableSourceTitle}
       />
-      <DriveLibrarySourceGroup
-        sources={controller.search.unavailableSources}
-        title={controller.search.unavailableSourceTitle}
-      />
+      {shouldShowUnavailableSources(
+        controller.search.unavailableSources.length,
+      ) ? (
+        <DriveLibrarySourceGroup
+          sources={controller.search.unavailableSources}
+          title={controller.search.unavailableSourceTitle}
+        />
+      ) : null}
     </View>
   );
 };

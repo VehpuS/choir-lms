@@ -27,7 +27,7 @@ const SECONDARY_ACTION_TEXT = '#305c4d';
 
 export const DriveLibrarySearchPanel = ({
   canSearch,
-  helperCopy,
+  helperCopy: _helperCopy,
   isLoading,
   isSearchMode,
   onClearSearch,
@@ -46,9 +46,6 @@ export const DriveLibrarySearchPanel = ({
 
   return (
     <View style={styles.searchPanel}>
-      <View style={styles.copyRow}>
-        <Text style={styles.helperCopy}>{helperCopy}</Text>
-      </View>
       <View style={styles.searchRow}>
         <TextInput
           autoCapitalize="none"
@@ -104,14 +101,6 @@ export const DriveLibrarySearchPanel = ({
 const styles = StyleSheet.create({
   searchPanel: {
     gap: 12,
-  },
-  copyRow: {
-    gap: 4,
-  },
-  helperCopy: {
-    color: '#5f5647',
-    fontSize: 13,
-    lineHeight: 18,
   },
   searchRow: {
     flexDirection: 'row',
