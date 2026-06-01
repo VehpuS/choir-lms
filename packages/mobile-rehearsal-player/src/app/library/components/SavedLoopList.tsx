@@ -157,9 +157,7 @@ export const SavedLoopList = ({
                       pressed ? styles.actionButtonPressed : undefined,
                     ]}
                   >
-                    <Text style={styles.secondaryButtonLabel}>
-                      Play after current
-                    </Text>
+                    <Text style={styles.secondaryButtonLabel}>Play next</Text>
                   </Pressable>
                 ) : null}
                 {canQueueAsNext && playableItem ? (

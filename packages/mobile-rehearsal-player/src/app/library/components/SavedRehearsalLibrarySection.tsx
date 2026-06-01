@@ -19,6 +19,7 @@ import {
 } from '../utils/drive-library-view-model';
 import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import type { PlaylistPlaybackSession } from '../utils/saved-playlist-playback-view-model';
+import { getSelectedPlaylistIssue } from '../utils/saved-playlist-status-view-model';
 import {
   buildSavedPlaylist,
   getSavedPlaylistRemovalCopy,
@@ -27,7 +28,6 @@ import {
   validatePlaylistName,
   type PlaylistDraftIssue,
 } from '../utils/saved-playlist-view-model';
-import { getSelectedPlaylistIssue } from '../utils/saved-playlist-status-view-model';
 import { getSavedRehearsalLibrarySourceIssue } from '../utils/saved-rehearsal-library-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
@@ -148,9 +148,9 @@ export const SavedRehearsalLibrarySection = ({
   const [isPlaylistDetailVisible, setIsPlaylistDetailVisible] = useState(false);
   const [cardRenameIssue, setCardRenameIssue] =
     useState<PlaylistDraftIssue | null>(null);
-  const [cardRenamePlaylistId, setCardRenamePlaylistId] = useState<string | null>(
-    null,
-  );
+  const [cardRenamePlaylistId, setCardRenamePlaylistId] = useState<
+    string | null
+  >(null);
   const [cardRenamePlaylistName, setCardRenamePlaylistName] = useState('');
   const [trackPlaylistCreationIssue, setTrackPlaylistCreationIssue] =
     useState<PlaylistDraftIssue | null>(null);
@@ -242,7 +242,8 @@ export const SavedRehearsalLibrarySection = ({
   const isPlaylistMutating = pendingPlaylistId !== null;
   const playlistCards = resolveSavedPlaylistCards(savedPlaylists);
   const selectedCardRenameIssue =
-    cardRenameIssue ?? getSelectedPlaylistIssue(playlistIssue, cardRenamePlaylistId);
+    cardRenameIssue ??
+    getSelectedPlaylistIssue(playlistIssue, cardRenamePlaylistId);
   const savedSourceTitle = `Saved rehearsal tracks (${savedLibrarySources.length})`;
   const isLoopMutating = pendingLoopId !== null;
   const shouldShowSavedLibraryStatus =
@@ -538,7 +539,7 @@ export const SavedRehearsalLibrarySection = ({
                         disabled:
                           isSavedLibraryMutating ||
                           source.availability.status !== 'available',
-                        label: 'Play after current',
+                        label: 'Play next',
                         onPress: () => {
                           queuePlayableItemNext(trackPlayableItem);
                         },
