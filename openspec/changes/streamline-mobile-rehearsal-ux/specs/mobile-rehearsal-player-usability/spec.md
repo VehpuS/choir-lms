@@ -253,12 +253,18 @@ The system SHALL determine row-action placement from explicit action metadata so
 
 ### Requirement: Shared row-action primitives preserve consistency without reducing usability
 
-The system SHALL use shared overflow-trigger and dialog-shell primitives so related surfaces remain visually and behaviorally consistent without reducing access to primary rehearsal actions.
+The system SHALL use shared overflow-trigger, playback-action, and dialog-shell primitives so related surfaces remain visually and behaviorally consistent without reducing access to primary rehearsal actions.
 
 #### Scenario: Overflow trigger affordance is consistent across row-action surfaces
 
 - **WHEN** playlist, source, or loop rows expose overflow actions
 - **THEN** each surface uses a shared top-right vertical-ellipsis trigger with consistent hit target sizing, accessibility labeling, and pressed/disabled feedback
+
+#### Scenario: Direct playback affordance is consistent across repeated row and card surfaces
+
+- **WHEN** Add source rows, Recents playback shortcuts, playlist cards, or similar compact surfaces expose a direct icon-only playback entry
+- **THEN** those surfaces use one shared playback-action primitive for that control
+- **AND** the primitive keeps glyph semantics, accessibility labels, hit target sizing, and pressed or disabled state treatment aligned across those surfaces
 
 #### Scenario: Shared dialog shell keeps existing workflow semantics intact
 

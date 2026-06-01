@@ -526,21 +526,34 @@ Alternatives considered:
 
 - Keep heuristic placement rules: rejected because action placement can change unintentionally when copy or tone changes.
 
-### 15. Introduce shared UI primitives for overflow and modal consistency
+### 15. Introduce shared UI primitives for overflow, playback, and modal consistency
 
 To reduce visual drift while preserving existing behavior, extract shared primitives for recurring interaction surfaces.
 
 Implementation guidance:
 
 - Shared overflow trigger primitive: one top-right vertical-ellipsis button component with consistent accessibility, hit target, and pressed/disabled feedback.
+- Shared playback-action primitive: one reusable icon-only direct-playback button for repeated list and card entry points (for example Add source rows, Recents rows and shortcut chips, and playlist cards) with consistent play/pause/replay glyph semantics, accessibility labels, hit target sizing, and pressed/disabled feedback.
+- Shared contextual search panel: one reusable search scaffold for Add and Library contexts that keeps input styling, submit affordance, recent-search suggestions, and a context-specific helper or clear-action slot aligned while preserving Drive-versus-library copy and disabled rules.
+- Shared section-heading primitive: reusable eyebrow, title, and body copy with an optional trailing action for Drive, Library, playlist, and modal entry surfaces that already share that structure.
+- Shared feedback-card family: reusable tone-aware status, issue, and empty-state cards with title, message, and optional loading treatment.
+- Shared chip family: reusable passive, selected, and action-chip variants for recent searches, Drive root selection, Recents shortcut tags, and future library tags and filters.
+- Shared playable-row shell: reusable compact row or card scaffold for playable entities that standardizes title, metadata, optional message, badge placement, inline playback placement, and overflow positioning once row-action placement metadata and quick-action semantics have converged.
 - Shared dialog-card shell primitive: reusable centered modal scaffold for rename/create/select dialogs, with existing content and actions preserved.
+- Shared modal-surface base: reusable backdrop, spacing, and dismiss behavior for bottom-sheet and centered-dialog variants so shared modal flows can reuse one foundation without forcing one presentation style everywhere.
 - Shared interaction style tokens: centralize repeated card, button, chip, and disabled/pressed tokens used by playlist, source, and menu surfaces.
+
+The shared playback-action primitive is intended for compact row and card entry points, not for full-size transport controls in the mini-player or now-playing surface where a different scale and emphasis model is still appropriate.
+
+Sequence these extractions after behavior convergence rather than before it: contextual search, section headings, and feedback cards can be extracted early; the playable-row shell should follow explicit row-action placement and compact playback-action convergence; chip variants should land alongside tags, filters, and search-scoping work; and the modal-surface base should land while playlist, selector, and loop-builder flows are already migrating onto shared dialog and sheet shells.
 
 Library playlist creation should use the shared dialog-card shell: the Playlists section header exposes a right-aligned `+` action that opens the create-playlist modal with playlist name input, create/confirm, and cancel behavior.
 
 Alternatives considered:
 
 - Continue duplicating per-surface style primitives: rejected because duplication increases drift risk and slows iterative UI updates.
+- Introduce one generic button or generic card primitive for all surfaces: rejected because current surfaces still differ more in semantics and hierarchy than in paint tokens, so the abstraction would be too leaky for this slice.
+- Merge compact row and card playback entry with full-size transport controls: rejected because mini-player and now-playing transport controls require separate scale, emphasis, and spacing rules.
 
 ## Risks / Trade-offs
 
