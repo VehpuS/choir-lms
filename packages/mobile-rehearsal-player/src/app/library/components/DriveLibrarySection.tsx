@@ -240,11 +240,13 @@ export const DriveLibrarySection = ({
       />
       <DriveLibrarySearchPanel
         canSearch={canRefresh}
+        helperCopy="Search in My Drive"
         isLoading={isLoading}
         isSearchMode={isSearchMode}
         onClearSearch={clearSearch}
         onSearch={submitSearch}
         onSearchQueryChange={setSearchQuery}
+        placeholderCopy="Search in My Drive"
         searchQuery={searchQuery}
       />
       <DriveLibraryRootSelector

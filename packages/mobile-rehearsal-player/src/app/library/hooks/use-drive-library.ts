@@ -88,6 +88,7 @@ export const useDriveLibrary = (authState: DriveAuthorizationState) => {
       if (activeSearchQuery) {
         const nextSearchSnapshot = await searchDriveAudioFiles({
           accessToken,
+          location: currentLocation,
           query: activeSearchQuery,
           supportedMimeTypes: runtimeConfig.supportedAudioMimeTypes,
           supportedExtensions: runtimeConfig.supportedAudioExtensions,

@@ -9,6 +9,7 @@ type DriveLibrarySearchPanelProps = {
   onClearSearch: () => void;
   onSearch: () => void;
   onSearchQueryChange: (value: string) => void;
+  placeholderCopy: string;
   searchQuery: string;
 };
 
@@ -28,6 +29,7 @@ export const DriveLibrarySearchPanel = ({
   onClearSearch,
   onSearch,
   onSearchQueryChange,
+  placeholderCopy,
   searchQuery,
 }: DriveLibrarySearchPanelProps) => {
   return (
@@ -41,7 +43,7 @@ export const DriveLibrarySearchPanel = ({
           autoCorrect={false}
           onChangeText={onSearchQueryChange}
           onSubmitEditing={onSearch}
-          placeholder="Search across all My Drive and shared folders"
+          placeholder={placeholderCopy}
           placeholderTextColor={PLACEHOLDER_TEXT}
           returnKeyType="search"
           style={styles.searchInput}

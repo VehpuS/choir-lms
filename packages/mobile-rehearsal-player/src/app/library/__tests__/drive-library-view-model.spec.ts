@@ -141,6 +141,35 @@ describe('getDriveLibraryStatusCopy', () => {
       '1 matching track found, plus 1 item needs attention.',
     );
   });
+
+  it('uses folder-scoped copy while Drive search is loading', () => {
+    const copy = getDriveLibraryStatusCopy({
+      authState: AUTHORIZED_STATE,
+      activeSearchQuery: 'Roxanne',
+      browseSnapshot: BROWSE_SNAPSHOT,
+      currentSearchLocation: {
+        id: 'folder-archive',
+        kind: 'folder',
+        name: 'Music Archive',
+        rootKind: 'my-drive',
+      },
+      googleAuthConfigured: true,
+      isLoading: true,
+      issue: null,
+      searchSnapshot: {
+        query: 'Roxanne',
+        playableSources: [],
+        unavailableSources: [],
+      },
+    });
+
+    assert.equal(copy.tone, 'neutral');
+    assert.equal(copy.title, 'Searching Google Drive');
+    assert.equal(
+      copy.message,
+      'Looking for matching audio in Music Archive and nested folders.',
+    );
+  });
 });
 
 describe('presentation helpers', () => {
@@ -253,10 +282,26 @@ describe('saved library search helpers', () => {
 });
 
 describe('search context copy helpers', () => {
-  it('shows concise Drive search context copy', () => {
-    assert.deepEqual(getDriveSearchContextCopy(), {
-      helper: 'Search across all My Drive and shared folders',
+  it('shows My Drive scoped search copy at root', () => {
+    assert.deepEqual(getDriveSearchContextCopy(BROWSE_SNAPSHOT.location), {
+      helper: 'Search in My Drive',
+      placeholder: 'Search in My Drive',
     });
+  });
+
+  it('shows folder-scoped search copy after drill-down', () => {
+    assert.deepEqual(
+      getDriveSearchContextCopy({
+        id: 'folder-1',
+        kind: 'folder',
+        name: 'Sectionals',
+        rootKind: 'my-drive',
+      }),
+      {
+        helper: 'Search in Sectionals',
+        placeholder: 'Search in Sectionals',
+      },
+    );
   });
 
   it('adds bracketed corpus detail in library search copy', () => {

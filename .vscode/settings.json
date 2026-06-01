@@ -293,6 +293,22 @@
     "/^npm exec -- nx test mobile-rehearsal-player -- --testPathPattern=recents-history\\.spec\\.ts$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec -- nx run google-drive:test --outputStyle=stream$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run mobile-rehearsal-player:test --outputStyle=stream$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run google-drive:test --skipNxCache --outputStyle=stream$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run mobile-rehearsal-player:test --skipNxCache --outputStyle=stream$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

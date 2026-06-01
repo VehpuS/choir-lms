@@ -1,7 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
 import type { useRehearsalLibraryScreenController } from '../hooks/use-rehearsal-library-screen-controller';
-import { getDriveSearchContextCopy } from '../utils/drive-library-view-model';
 import { DriveLibrarySearchPanel } from './DriveLibrarySearchPanel';
 import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
@@ -16,7 +15,7 @@ export const DriveSearchResultsPanel = ({
   const shouldShowStatusCard =
     controller.search.isLoading ||
     controller.search.statusCopy.tone !== 'ready';
-  const searchContextCopy = getDriveSearchContextCopy();
+  const searchContextCopy = controller.search.searchContextCopy;
 
   return (
     <View style={styles.section}>
@@ -28,6 +27,7 @@ export const DriveSearchResultsPanel = ({
         onClearSearch={controller.search.clearSearch}
         onSearch={controller.search.submitSearch}
         onSearchQueryChange={controller.search.setSearchQuery}
+        placeholderCopy={searchContextCopy.placeholder}
         searchQuery={controller.search.searchQuery}
       />
       {shouldShowStatusCard ? (

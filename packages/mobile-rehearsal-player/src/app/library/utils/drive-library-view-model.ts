@@ -1,5 +1,6 @@
 import type {
   DriveAuthorizationState,
+  DriveBrowseLocation,
   DriveBrowseSnapshot,
   DriveDiscoveredAudioSource,
   DriveFolder,
@@ -21,12 +22,14 @@ export type DriveLibraryStatusCopy = {
 
 export type SearchContextCopy = {
   helper: string;
+  placeholder: string;
 };
 
 type DriveLibraryStatusOptions = {
   authState: DriveAuthorizationState;
   activeSearchQuery: string | null;
   browseSnapshot: DriveBrowseSnapshot;
+  currentSearchLocation?: DriveBrowseLocation;
   googleAuthConfigured: boolean;
   isLoading: boolean;
   issue: string | null;
@@ -84,6 +87,34 @@ const getTotalSearchSourceCount = (snapshot: DriveSearchSnapshot) => {
   return snapshot.playableSources.length + snapshot.unavailableSources.length;
 };
 
+const getDriveSearchScopeCopy = (location?: DriveBrowseLocation) => {
+  if (!location) {
+    return {
+      loadingMessage: 'Looking for matching audio across My Drive and shared folders.',
+      readySuffix: 'across My Drive and shared folders',
+    };
+  }
+
+  if (location.kind === 'folder') {
+    return {
+      loadingMessage: `Looking for matching audio in ${location.name} and nested folders.`,
+      readySuffix: `in ${location.name} and nested folders`,
+    };
+  }
+
+  if (location.rootKind === 'shared') {
+    return {
+      loadingMessage: 'Looking for matching audio in Shared folders.',
+      readySuffix: 'in Shared folders',
+    };
+  }
+
+  return {
+    loadingMessage: 'Looking for matching audio in My Drive.',
+    readySuffix: 'in My Drive',
+  };
+};
+
 const normalizeIssueMessage = (issue: string) => {
   const detailedDriveFailure = issue.match(DETAILED_DRIVE_FAILURE_PATTERN)?.[1];
 
@@ -126,6 +157,7 @@ export const formatDurationLabel = (durationMs?: number) => {
 export const getDriveLibraryStatusCopy = (
   options: DriveLibraryStatusOptions,
 ): DriveLibraryStatusCopy => {
+  const searchScopeCopy = getDriveSearchScopeCopy(options.currentSearchLocation);
   const browseFolderCount = options.browseSnapshot.folders.length;
   const browsePlayableCount = options.browseSnapshot.playableSources.length;
   const browseUnavailableCount =
@@ -188,8 +220,7 @@ export const getDriveLibraryStatusCopy = (
     if (options.isLoading && searchTotalSourceCount === 0) {
       return {
         title: 'Searching Google Drive',
-        message:
-          'Looking for matching audio across My Drive and shared folders.',
+        message: searchScopeCopy.loadingMessage,
         tone: 'neutral',
       };
     }
@@ -213,7 +244,7 @@ export const getDriveLibraryStatusCopy = (
     if (searchUnavailableCount === 0) {
       return {
         title: 'Search results ready',
-        message: `${pluralize(searchPlayableCount, 'matching track')} found across My Drive and shared folders.`,
+        message: `${pluralize(searchPlayableCount, 'matching track')} found ${searchScopeCopy.readySuffix}.`,
         tone: 'ready',
       };
     }
@@ -268,9 +299,26 @@ export const getDriveLibraryStatusCopy = (
   };
 };
 
-export const getDriveSearchContextCopy = (): SearchContextCopy => {
+export const getDriveSearchContextCopy = (
+  location: DriveBrowseLocation,
+): SearchContextCopy => {
+  if (location.kind === 'folder') {
+    return {
+      helper: `Search in ${location.name}`,
+      placeholder: `Search in ${location.name}`,
+    };
+  }
+
+  if (location.rootKind === 'shared') {
+    return {
+      helper: 'Search in Shared folders',
+      placeholder: 'Search in Shared folders',
+    };
+  }
+
   return {
-    helper: 'Search across all My Drive and shared folders',
+    helper: 'Search in My Drive',
+    placeholder: 'Search in My Drive',
   };
 };
 

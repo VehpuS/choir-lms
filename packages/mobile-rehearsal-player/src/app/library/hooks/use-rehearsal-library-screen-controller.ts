@@ -3,7 +3,10 @@ import { useState } from 'react';
 import { Alert } from 'react-native';
 
 import type { DriveLibrarySourceAction } from '../components/DriveLibrarySourceGroup';
-import { getDriveLibraryStatusCopy } from '../utils/drive-library-view-model';
+import {
+  getDriveLibraryStatusCopy,
+  getDriveSearchContextCopy,
+} from '../utils/drive-library-view-model';
 import { getSavedLoopRemovalCopy } from '../utils/saved-loop-view-model';
 import {
   getSavedRehearsalLibraryDependentLoops,
@@ -61,6 +64,7 @@ export const useRehearsalLibraryScreenController = ({
     authState,
     activeSearchQuery: driveLibrary.activeSearchQuery,
     browseSnapshot: driveLibrary.browseSnapshot,
+    currentSearchLocation: driveLibrary.currentLocation,
     googleAuthConfigured,
     isLoading: isSearchMode && driveLibrary.isLoading,
     issue: isSearchMode ? driveLibrary.issue : null,
@@ -266,6 +270,9 @@ export const useRehearsalLibraryScreenController = ({
       isSearchMode,
       playableSourceTitle: `Matching audio (${driveLibrary.searchSnapshot.playableSources.length})`,
       playableSources: driveLibrary.searchSnapshot.playableSources,
+      searchContextCopy: getDriveSearchContextCopy(
+        driveLibrary.currentLocation,
+      ),
       searchQuery: driveLibrary.searchQuery,
       setSearchQuery: driveLibrary.setSearchQuery,
       statusCopy: searchStatusCopy,
