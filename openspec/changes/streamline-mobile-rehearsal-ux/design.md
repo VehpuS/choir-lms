@@ -472,6 +472,23 @@ Alternatives considered:
 
 - Default app-launch search to a single context: rejected because users need context-specific search where they are working.
 
+### 11a. Highlight matched query text in search results across both search contexts
+
+Search results in Add (Google Drive context) and Library (saved-entity context) should visually emphasize the exact text spans that match the active query so users can scan and validate relevance quickly.
+
+Implementation guidance:
+
+- Apply highlighting only when a non-empty normalized query is active in the current search context.
+- Use the same tokenization and case-folding semantics as the context's existing search match logic so highlight behavior and result inclusion do not diverge.
+- Highlight all matched spans in visible primary metadata (for example title and supporting subtitle fields when they contribute to matching), while keeping non-matching text unchanged.
+- Keep highlight styling accessible and readable in all states (default, selected, pressed, disabled) and avoid relying on color alone.
+- If a query changes or context switches between Add and Library, recompute highlighted spans in the same render cycle as result updates so stale highlights are not shown.
+
+Alternatives considered:
+
+- Show unhighlighted results only: rejected because users must infer relevance from dense text and scan time increases.
+- Use separate fuzzy highlight semantics from actual match logic: rejected because visual emphasis can become misleading.
+
 ### 12. Ship tags, filters, and lightweight folders together as the first organization baseline
 
 The initial organization baseline for this slice includes all three: tags, filters, and lightweight folders.

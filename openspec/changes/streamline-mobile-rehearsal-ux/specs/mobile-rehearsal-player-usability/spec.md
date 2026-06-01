@@ -56,6 +56,18 @@ The system SHALL reduce steady-state interface weight on Recents and Add so user
 - **WHEN** search results are shown
 - **THEN** the system keeps primary row actions visible and quickly reachable without requiring navigation into additional management views
 
+#### Scenario: Search results highlight matched query text
+
+- **WHEN** a user runs search in Add or Library with a non-empty active query
+- **THEN** the system visually highlights the exact matched text spans in each visible matching result row
+- **AND** highlighted spans update immediately when the query or active search context changes
+
+#### Scenario: Highlighting remains consistent with search matching behavior
+
+- **WHEN** a result row is included by search matching logic
+- **THEN** the highlighted spans reflect the same normalized match semantics used to include that row
+- **AND** the UI does not show highlight spans for text that did not contribute to the match
+
 #### Scenario: Drive search results support preview playback without save
 
 - **WHEN** a user views playable Google Drive search results

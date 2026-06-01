@@ -7,6 +7,7 @@ The current mobile rehearsal player already delivers core playback and playlist 
 - Streamline playlist and queue interaction patterns to feel more native on phone-sized touch surfaces.
 - Rename the current Search tab to Add so the destination communicates Google Drive browse/search/add-to-library work, while reserving Search as an operation available within both Add and Library.
 - Clarify information architecture by separating Google Drive discovery search from app-owned library search, including explicit source-scoped search behavior inside their respective surfaces.
+- Highlight matched query substrings in search results for both Add (Google Drive) and Library search so users can quickly see why each result matched.
 - Support direct preview playback from Google Drive search results without requiring users to save the source first.
 - Rename the current Home tab to Recents and keep it as an optional acceleration surface for persisted recent rehearsal shortcuts rather than a mandatory workflow step.
 - Add low-friction rehearsal productivity actions such as ad-hoc queue actions that can promote single-track playback into a transient queue, stronger resume shortcuts, and smarter defaults in loop and playlist flows.

@@ -14,6 +14,12 @@ The system SHALL provide a dedicated app-library search function for saved rehea
 - **WHEN** a user narrows app-library search
 - **THEN** the system supports filter controls for entity type and availability so users can quickly reduce large result sets
 
+#### Scenario: Library search highlights matched query text in results
+
+- **WHEN** a user runs app-library search with an active non-empty query
+- **THEN** each matching library result highlights the text segments that matched the query
+- **AND** highlighted segments refresh when filters or query text change so visual emphasis matches the current result set
+
 ### Requirement: Library entities support tag-based organization
 
 The system SHALL support tags for app-owned library entities so users can organize rehearsal material by choir part, context, or practice intent.
