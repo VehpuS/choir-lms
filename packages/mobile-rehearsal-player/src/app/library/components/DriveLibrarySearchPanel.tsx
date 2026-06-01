@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 type DriveLibrarySearchPanelProps = {
   canSearch: boolean;
+  helperCopy: string;
   isLoading: boolean;
   isSearchMode: boolean;
   onClearSearch: () => void;
@@ -21,6 +22,7 @@ const SECONDARY_ACTION_TEXT = '#305c4d';
 
 export const DriveLibrarySearchPanel = ({
   canSearch,
+  helperCopy,
   isLoading,
   isSearchMode,
   onClearSearch,
@@ -30,13 +32,16 @@ export const DriveLibrarySearchPanel = ({
 }: DriveLibrarySearchPanelProps) => {
   return (
     <View style={styles.searchPanel}>
+      <View style={styles.copyRow}>
+        <Text style={styles.helperCopy}>{helperCopy}</Text>
+      </View>
       <View style={styles.searchRow}>
         <TextInput
           autoCapitalize="none"
           autoCorrect={false}
           onChangeText={onSearchQueryChange}
           onSubmitEditing={onSearch}
-          placeholder="Search My Drive and shared folders"
+          placeholder="Search across all My Drive and shared folders"
           placeholderTextColor={PLACEHOLDER_TEXT}
           returnKeyType="search"
           style={styles.searchInput}
@@ -79,6 +84,14 @@ export const DriveLibrarySearchPanel = ({
 const styles = StyleSheet.create({
   searchPanel: {
     gap: 12,
+  },
+  copyRow: {
+    gap: 4,
+  },
+  helperCopy: {
+    color: '#5f5647',
+    fontSize: 13,
+    lineHeight: 18,
   },
   searchRow: {
     flexDirection: 'row',

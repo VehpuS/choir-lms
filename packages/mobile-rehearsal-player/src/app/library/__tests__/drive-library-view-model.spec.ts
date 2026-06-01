@@ -18,7 +18,9 @@ import './saved-track-playback-view-model.spec.js';
 
 import {
   getDriveLibraryStatusCopy,
+  getDriveSearchContextCopy,
   getFolderMetadataLabels,
+  getLibrarySearchContextCopy,
   getSourceAvailabilityLabel,
   getSourceMetadataLabels,
   getSourceStatusMessage,
@@ -247,5 +249,19 @@ describe('saved library search helpers', () => {
       }).map((playlist) => playlist.name),
       ['Kyrie Warmups'],
     );
+  });
+});
+
+describe('search context copy helpers', () => {
+  it('shows concise Drive search context copy', () => {
+    assert.deepEqual(getDriveSearchContextCopy(), {
+      helper: 'Search across all My Drive and shared folders',
+    });
+  });
+
+  it('adds bracketed corpus detail in library search copy', () => {
+    assert.deepEqual(getLibrarySearchContextCopy(), {
+      helper: 'Search saved library (playlists, tracks, and loops)',
+    });
   });
 });

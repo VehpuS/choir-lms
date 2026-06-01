@@ -33,7 +33,7 @@
 - [x] 3.3.3 Expand Recents from single-item resume to session-persisted compact multi-item history (tracks/loops/playlists) with explicit per-item play buttons and clear `Last played` labeling semantics.
 - [x] 3.3.4 Add a vertical-ellipsis overflow menu on Recents recent-item rows with `Play next`, `Add to queue`, and `View in library` actions while keeping inline icon-only `Play` as the primary action.
 - [x] 3.4 Implement explicit dual search contexts: Google Drive discovery search (including folder scoping) and dedicated app-library search.
-- [ ] 3.5 Add clear active-context and scope indicators so users always know which corpus (Google Drive in Add vs library in Library) is being searched.
+- [x] 3.5 Add clear active-context and scope indicators so users always know which corpus (Google Drive in Add vs library in Library) is being searched.
 - [ ] 3.6 Ensure search entry points are first-class in both the Google Drive navigation surface and the app-library surface.
 - [ ] 3.7 Add recent-search suggestion interactions for the active search context that allow tap-to-run query execution.
 - [ ] 3.8 Verify Google Drive navigation remains first-class after tab/section reorder inside Add: root selector, folder drill-down, breadcrumbs, and unavailable/source status visibility.

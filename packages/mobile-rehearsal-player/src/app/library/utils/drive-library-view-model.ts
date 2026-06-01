@@ -19,6 +19,10 @@ export type DriveLibraryStatusCopy = {
   tone: DriveLibraryStatusTone;
 };
 
+export type SearchContextCopy = {
+  helper: string;
+};
+
 type DriveLibraryStatusOptions = {
   authState: DriveAuthorizationState;
   activeSearchQuery: string | null;
@@ -261,6 +265,18 @@ export const getDriveLibraryStatusCopy = (
     title: 'Drive browser ready',
     message: `${pluralize(browseFolderCount, 'folder')}, ${pluralize(browsePlayableCount, 'playable track')}, and ${formatAttentionCount(browseUnavailableCount)} are available in ${options.browseSnapshot.location.name}.`,
     tone: 'ready',
+  };
+};
+
+export const getDriveSearchContextCopy = (): SearchContextCopy => {
+  return {
+    helper: 'Search across all My Drive and shared folders',
+  };
+};
+
+export const getLibrarySearchContextCopy = (): SearchContextCopy => {
+  return {
+    helper: 'Search saved library (playlists, tracks, and loops)',
   };
 };
 

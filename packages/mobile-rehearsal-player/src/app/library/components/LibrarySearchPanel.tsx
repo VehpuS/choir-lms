@@ -1,6 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { getLibrarySearchContextCopy } from '../utils/drive-library-view-model';
+
 type LibrarySearchPanelProps = {
   isSearchMode: boolean;
   onClearSearch: () => void;
@@ -15,7 +17,6 @@ const PLACEHOLDER_TEXT = '#857b6c';
 const PRIMARY_ACTION_BACKGROUND = '#305c4d';
 const PRIMARY_ACTION_TEXT = '#fff8ef';
 const PRIMARY_TEXT = '#1f1c17';
-const SECONDARY_TEXT = '#5f5647';
 const SECONDARY_ACTION_TEXT = '#305c4d';
 
 export const LibrarySearchPanel = ({
@@ -25,13 +26,12 @@ export const LibrarySearchPanel = ({
   onSearchQueryChange,
   searchQuery,
 }: LibrarySearchPanelProps) => {
+  const searchContextCopy = getLibrarySearchContextCopy();
+
   return (
     <View style={styles.searchPanel}>
       <View style={styles.copyRow}>
-        <Text style={styles.eyebrow}>Library</Text>
-        <Text style={styles.helperCopy}>
-          Search saved tracks, loops, and playlists.
-        </Text>
+        <Text style={styles.helperCopy}>{searchContextCopy.helper}</Text>
       </View>
       <View style={styles.searchRow}>
         <TextInput
@@ -84,15 +84,8 @@ const styles = StyleSheet.create({
   copyRow: {
     gap: 4,
   },
-  eyebrow: {
-    color: SECONDARY_TEXT,
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
-  },
   helperCopy: {
-    color: SECONDARY_TEXT,
+    color: '#5f5647',
     fontSize: 13,
     lineHeight: 18,
   },
