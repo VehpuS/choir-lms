@@ -1,19 +1,24 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import type { PlayableItem } from '@org/audio-library-models';
 import { join, map, toUpper } from 'es-toolkit/compat';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { runtimeConfig } from '../../config/runtime';
 import { appTheme } from '../utils/theme';
 import {
+  getRecentRehearsalLastPlayedLabel,
+  type RecentRehearsalItem,
+} from './recents-history';
+import {
   getRecentsContinuePracticingCopy,
   getRecentsShortcutPlayActionCopy,
 } from './screen-copy';
 
 export type RecentsScreenProps = {
-  activePlayableItem: PlayableItem | null;
+  activePlayableItemId: string | null;
+  isPlaybackActive: boolean;
+  recentRehearsalHistory: RecentRehearsalItem[];
   onPlayRecentShortcut: (shortcutTag: string) => void;
-  onResumeRecentPlayback: () => void;
+  onResumeRecentPlayback: (recentRehearsal: RecentRehearsalItem) => void;
   savedTrackCount: number;
 };
 
@@ -27,16 +32,19 @@ const AUDIO_FORMAT_LABEL = join(
 );
 
 export const RecentsScreen = ({
-  activePlayableItem,
+  activePlayableItemId,
+  isPlaybackActive,
+  recentRehearsalHistory,
   onPlayRecentShortcut,
   onResumeRecentPlayback,
   savedTrackCount,
 }: RecentsScreenProps) => {
+  const latestRecentRehearsal = recentRehearsalHistory[0] ?? null;
   const continuePracticingCopy = getRecentsContinuePracticingCopy({
-    activePlayableItemTitle: activePlayableItem?.title ?? null,
+    activePlayableItemTitle: latestRecentRehearsal?.title ?? null,
     savedTrackCount,
   });
-  const isRecentPlaybackAvailable = activePlayableItem !== null;
+  const isRecentPlaybackAvailable = latestRecentRehearsal !== null;
 
   const shortcutMetadata = `${RECENTS_SHORTCUT_TAGS.length} optional shortcut tags`;
 
@@ -63,28 +71,54 @@ export const RecentsScreen = ({
           {continuePracticingCopy.title}
         </Text>
         <Text style={styles.resumeCardBody}>{continuePracticingCopy.body}</Text>
-        {activePlayableItem ? (
-          <View style={styles.recentItemRow}>
-            <Text numberOfLines={1} style={styles.recentItemTitle}>
-              {activePlayableItem.title}
-            </Text>
-            <Pressable
-              accessibilityLabel={`Play ${activePlayableItem.title}`}
-              accessibilityRole="button"
-              onPress={onResumeRecentPlayback}
-              style={({ pressed }) => [
-                styles.iconActionButton,
-                pressed ? styles.iconActionButtonPressed : undefined,
-              ]}
-            >
-              <MaterialCommunityIcons
-                color={appTheme.colors.primaryText}
-                name="play"
-                size={22}
-              />
-            </Pressable>
-          </View>
-        ) : null}
+        {recentRehearsalHistory.map((recentRehearsal) => {
+          const isCurrentRowPlaying =
+            isPlaybackActive &&
+            recentRehearsal.playableItem.id === activePlayableItemId;
+
+          return (
+            <View key={recentRehearsal.id} style={styles.recentItemRow}>
+              <View style={styles.recentItemCopy}>
+                <Text numberOfLines={1} style={styles.recentItemTitle}>
+                  {recentRehearsal.title}
+                </Text>
+                <Text numberOfLines={1} style={styles.recentItemMeta}>
+                  {getRecentRehearsalLastPlayedLabel(recentRehearsal.playedAt)}
+                </Text>
+              </View>
+              <Pressable
+                accessibilityLabel={`Play ${recentRehearsal.title}`}
+                accessibilityRole="button"
+                accessibilityState={{
+                  disabled: isCurrentRowPlaying,
+                }}
+                disabled={isCurrentRowPlaying}
+                onPress={() => {
+                  onResumeRecentPlayback(recentRehearsal);
+                }}
+                style={({ pressed }) => [
+                  styles.iconActionButton,
+                  pressed && !isCurrentRowPlaying
+                    ? styles.iconActionButtonPressed
+                    : undefined,
+                  isCurrentRowPlaying
+                    ? styles.iconActionButtonDisabled
+                    : undefined,
+                ]}
+              >
+                <MaterialCommunityIcons
+                  color={
+                    isCurrentRowPlaying
+                      ? appTheme.colors.secondaryText
+                      : appTheme.colors.primaryText
+                  }
+                  name="play"
+                  size={22}
+                />
+              </Pressable>
+            </View>
+          );
+        })}
       </View>
 
       <View style={styles.shortcutsCard}>
@@ -241,10 +275,18 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   recentItemTitle: {
-    flex: 1,
     color: appTheme.colors.primaryText,
     fontSize: 15,
     fontWeight: '600',
+  },
+  recentItemCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  recentItemMeta: {
+    color: appTheme.colors.secondaryText,
+    fontSize: 12,
+    lineHeight: 16,
   },
   shortcutsHeader: {
     flexDirection: 'row',

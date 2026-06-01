@@ -367,6 +367,18 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
       activePlaylistContextRef.current = null;
       await playbackController.togglePlayableItemPlayback(playableItem);
     },
+    async playPlayableItem(playableItem: PlayableItem) {
+      activePlaylistContextRef.current = null;
+
+      if (
+        activePlayableItemRef.current?.id === playableItem.id &&
+        playbackState === trackPlayerState.Playing
+      ) {
+        return;
+      }
+
+      await playbackController.togglePlayableItemPlayback(playableItem);
+    },
     queuePlayableItemNext(playableItem: PlayableItem) {
       setActivePlaylistSession((currentSession) => {
         if (!currentSession) {
