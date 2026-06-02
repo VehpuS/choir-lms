@@ -10,7 +10,9 @@ import {
   View,
 } from 'react-native';
 
+import { PlaybackWaveform } from '../../routing/PlaybackWaveform';
 import { formatDurationLabel } from '../utils/drive-library-view-model';
+import type { LoopPreviewPlaybackTimeline } from '../utils/saved-loop-preview-playback-view-model';
 
 type LoopRangeSelectorSurfaceProps = {
   builderIssue: {
@@ -26,9 +28,12 @@ type LoopRangeSelectorSurfaceProps = {
   onLoopNameChange: (value: string) => void;
   onRangeChange: (sliderValue: number | number[]) => void;
   onSaveLoop: () => void;
+  onScrubPreview: (positionSeconds: number) => void;
   onTogglePreview: () => void;
   previewActionLabel: string;
   previewDisabled: boolean;
+  previewPlayableItem: PlayableItem | null;
+  previewTimeline: LoopPreviewPlaybackTimeline | null;
   rangeMaximumMs: number | null;
   selectedTrack: PlayableItem | null;
   startMs: number;
@@ -50,6 +55,10 @@ const formatRangeLabel = (value: number) => {
   return formatDurationLabel(value) ?? '0:00';
 };
 
+const formatPlaybackLabel = (seconds: number) => {
+  return formatDurationLabel(Math.round(seconds * 1000)) ?? '0:00';
+};
+
 export const LoopRangeSelectorSurface = ({
   builderIssue,
   canSaveLoop,
@@ -61,9 +70,12 @@ export const LoopRangeSelectorSurface = ({
   onLoopNameChange,
   onRangeChange,
   onSaveLoop,
+  onScrubPreview,
   onTogglePreview,
   previewActionLabel,
   previewDisabled,
+  previewPlayableItem,
+  previewTimeline,
   rangeMaximumMs,
   selectedTrack,
   startMs,
@@ -177,10 +189,40 @@ export const LoopRangeSelectorSurface = ({
                 {formatRangeLabel(selectedTrack.range.startMs)}
               </Text>
               <Text style={styles.scaleLabel}>
-                {formatRangeLabel(rangeMaximumMs ?? selectedTrack.range.startMs)}
+                {formatRangeLabel(
+                  rangeMaximumMs ?? selectedTrack.range.startMs,
+                )}
               </Text>
             </View>
           </View>
+
+          {previewPlayableItem && previewTimeline ? (
+            <View style={styles.previewCard}>
+              <Text style={styles.previewTitle}>Preview timeline</Text>
+              <PlaybackWaveform
+                activePlayableItem={previewPlayableItem}
+                interactive={previewTimeline.canScrub}
+                onScrubToPosition={
+                  previewTimeline.canScrub ? onScrubPreview : undefined
+                }
+                progressRatio={previewTimeline.progressRatio}
+                style={styles.previewWaveform}
+              />
+              <View style={styles.scaleRow}>
+                <Text style={styles.scaleLabel}>
+                  {formatPlaybackLabel(previewTimeline.elapsedSeconds)}
+                </Text>
+                <Text style={styles.scaleLabel}>
+                  {formatPlaybackLabel(previewTimeline.totalDurationSeconds)}
+                </Text>
+              </View>
+              <Text style={styles.previewHint}>
+                {previewTimeline.canScrub
+                  ? 'Drag across the waveform to skim the preview.'
+                  : 'Start preview playback to scrub through the selected loop.'}
+              </Text>
+            </View>
+          ) : null}
 
           <TextInput
             autoCorrect={false}
@@ -317,6 +359,27 @@ const styles = StyleSheet.create({
     borderColor: '#d6d1c4',
     borderRadius: 18,
     backgroundColor: '#fffaf2',
+  },
+  previewCard: {
+    gap: 10,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#d6d1c4',
+    borderRadius: 18,
+    backgroundColor: '#fffaf2',
+  },
+  previewTitle: {
+    color: PRIMARY_TEXT,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  previewWaveform: {
+    minHeight: 44,
+  },
+  previewHint: {
+    color: SECONDARY_TEXT,
+    fontSize: 12,
+    lineHeight: 18,
   },
   rangeSummaryRow: {
     flexDirection: 'row',

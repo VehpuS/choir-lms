@@ -8,13 +8,19 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
-import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
+import { resolveLoopPreviewPlaybackTimeline } from '../utils/saved-loop-preview-playback-view-model';
+import type {
+  LoopBuilderDraft,
+  SavedLoopIssue,
+} from '../utils/saved-loop-view-model';
 import {
   buildNamedLoop,
+  createLoopBuilderDraft,
   createLoopPreviewPlayableItem,
   getSavedLoopsStatusCopy,
   resolveLoopBuilderRangeSelection,
   resolveSavedLoopCards,
+  updateLoopBuilderDraftRange,
 } from '../utils/saved-loop-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
@@ -22,6 +28,7 @@ import {
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
+import { useLoopPreviewPlaybackContext } from './LoopPreviewPlaybackContext';
 import { LoopRangeSelectorSurface } from './LoopRangeSelectorSurface';
 import { SavedLoopList } from './SavedLoopList';
 
@@ -57,6 +64,12 @@ type DraftIssue = {
 
 const PRIMARY_TEXT = '#1f1c17';
 const SECONDARY_TEXT = '#5f5647';
+const EMPTY_LOOP_BUILDER_DRAFT: LoopBuilderDraft = {
+  endMs: 0,
+  loopName: '',
+  startMs: 0,
+  suggestedLoopName: '',
+};
 
 export const SavedLoopSection = ({
   activePlayableItem,
@@ -82,9 +95,11 @@ export const SavedLoopSection = ({
   queuePlayableItemNext,
   queuePlayableItemUpNext,
 }: SavedLoopSectionProps) => {
-  const [loopName, setLoopName] = useState('');
-  const [startMs, setStartMs] = useState(0);
-  const [endMs, setEndMs] = useState(0);
+  const { playbackPositionSeconds, seekActivePlaybackToPosition } =
+    useLoopPreviewPlaybackContext();
+  const [loopDraft, setLoopDraft] = useState<LoopBuilderDraft>(
+    EMPTY_LOOP_BUILDER_DRAFT,
+  );
   const [draftIssue, setDraftIssue] = useState<DraftIssue | null>(null);
 
   const savedLoopCards = resolveSavedLoopCards(savedLoops, savedSources);
@@ -108,8 +123,8 @@ export const SavedLoopSection = ({
   const selectedTrackDurationMs =
     selectedTrack?.range.endMs ?? selectedTrack?.source.durationMs ?? null;
   const rangeValidation = validateLoopRange(
-    startMs,
-    endMs,
+    loopDraft.startMs,
+    loopDraft.endMs,
     selectedTrackDurationMs ?? undefined,
   );
   const previewPlayableItem =
@@ -131,6 +146,11 @@ export const SavedLoopSection = ({
         disabled: true,
         label: 'Preview',
       };
+  const previewTimeline = resolveLoopPreviewPlaybackTimeline({
+    activePlayableItem,
+    playbackPositionSeconds,
+    previewPlayableItem,
+  });
   const durationIssue =
     selectedTrack && selectedTrackDurationMs === null
       ? {
@@ -151,9 +171,7 @@ export const SavedLoopSection = ({
 
   useEffect(() => {
     if (!selectedTrack) {
-      setLoopName('');
-      setStartMs(0);
-      setEndMs(0);
+      setLoopDraft(EMPTY_LOOP_BUILDER_DRAFT);
       setDraftIssue(null);
       return;
     }
@@ -163,9 +181,13 @@ export const SavedLoopSection = ({
       selectedTrack.source.durationMs ??
       selectedTrack.range.startMs;
 
-    setLoopName('');
-    setStartMs(selectedTrack.range.startMs);
-    setEndMs(nextEndMs);
+    setLoopDraft(
+      createLoopBuilderDraft({
+        endMs: nextEndMs,
+        sourceName: selectedTrack.source.name,
+        startMs: selectedTrack.range.startMs,
+      }),
+    );
     setDraftIssue(null);
   }, [selectedTrack?.id]);
 
@@ -175,11 +197,11 @@ export const SavedLoopSection = ({
     }
 
     const result = buildNamedLoop({
-      endMs,
-      loopName,
+      endMs: loopDraft.endMs,
+      loopName: loopDraft.loopName,
       ownerId: LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
       source: selectedTrack.source,
-      startMs,
+      startMs: loopDraft.startMs,
     });
 
     if (result.issue || !result.loop) {
@@ -193,9 +215,7 @@ export const SavedLoopSection = ({
       return;
     }
 
-    setLoopName('');
-    setStartMs(selectedTrack.range.startMs);
-    setEndMs(selectedTrackDurationMs ?? selectedTrack.range.startMs);
+    setLoopDraft(EMPTY_LOOP_BUILDER_DRAFT);
     setDraftIssue(null);
     onCloseLoopBuilder();
   };
@@ -230,13 +250,18 @@ export const SavedLoopSection = ({
       <LoopRangeSelectorSurface
         builderIssue={builderIssue}
         canSaveLoop={canSaveLoop}
-        endMs={endMs}
+        endMs={loopDraft.endMs}
         isSavingLoop={isLoopMutating}
         isVisible={selectedTrack !== null}
-        loopName={loopName}
+        loopName={loopDraft.loopName}
         onClose={onCloseLoopBuilder}
         onLoopNameChange={(value) => {
-          setLoopName(value);
+          setLoopDraft((currentDraft) => {
+            return {
+              ...currentDraft,
+              loopName: value,
+            };
+          });
           setDraftIssue(null);
         }}
         onRangeChange={(sliderValue) => {
@@ -245,12 +270,21 @@ export const SavedLoopSection = ({
             sliderValue,
           });
 
+          setLoopDraft((currentDraft) => {
+            return updateLoopBuilderDraftRange({
+              draft: currentDraft,
+              endMs: nextRange.endMs,
+              sourceName: selectedTrack?.source.name ?? '',
+              startMs: nextRange.startMs,
+            });
+          });
           setDraftIssue(null);
-          setStartMs(nextRange.startMs);
-          setEndMs(nextRange.endMs);
         }}
         onSaveLoop={() => {
           void handleSaveLoop();
+        }}
+        onScrubPreview={(positionSeconds) => {
+          void seekActivePlaybackToPosition(positionSeconds);
         }}
         onTogglePreview={() => {
           if (!previewPlayableItem) {
@@ -263,9 +297,11 @@ export const SavedLoopSection = ({
         previewDisabled={
           previewActionCopy.disabled || previewPlayableItem === null
         }
+        previewPlayableItem={previewPlayableItem}
+        previewTimeline={previewTimeline}
         rangeMaximumMs={selectedTrackDurationMs}
         selectedTrack={selectedTrack}
-        startMs={startMs}
+        startMs={loopDraft.startMs}
       />
 
       <SavedLoopList

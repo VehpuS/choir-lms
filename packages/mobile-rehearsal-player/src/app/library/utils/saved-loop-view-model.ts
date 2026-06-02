@@ -40,6 +40,13 @@ export type SavedLoopCard = {
   playableItem: ReturnType<typeof createLoopPlayableItem> | null;
 };
 
+export type LoopBuilderDraft = {
+  endMs: number;
+  loopName: string;
+  startMs: number;
+  suggestedLoopName: string;
+};
+
 type BuildNamedLoopOptions = {
   createId?: (sourceId: string, createdAt: string) => string;
   endMs: number | null;
@@ -48,6 +55,19 @@ type BuildNamedLoopOptions = {
   ownerId: string;
   source: DriveLibrarySource;
   startMs: number | null;
+};
+
+type DefaultLoopNameOptions = {
+  endMs: number;
+  sourceName: string;
+  startMs: number;
+};
+
+type UpdateLoopBuilderDraftRangeOptions = {
+  draft: LoopBuilderDraft;
+  endMs: number;
+  sourceName: string;
+  startMs: number;
 };
 
 type SavedLoopStatusOptions = {
@@ -78,6 +98,15 @@ const formatLoopRangeLabel = (loop: Pick<NamedLoop, 'startMs' | 'endMs'>) => {
   return `${startLabel} to ${endLabel}`;
 };
 
+const formatLoopNameRangeLabel = (
+  loop: Pick<DefaultLoopNameOptions, 'startMs' | 'endMs'>,
+) => {
+  const startLabel = formatDurationLabel(loop.startMs) ?? '0:00';
+  const endLabel = formatDurationLabel(loop.endMs) ?? '0:00';
+
+  return `${startLabel} - ${endLabel}`;
+};
+
 const defaultCreateId = (sourceId: string, createdAt: string) => {
   return `loop:${sourceId}:${createdAt}`;
 };
@@ -91,6 +120,44 @@ export const getSavedLoopRemovalCopy = (
       `"${loop.name}" (${loop.sourceName} • ${formatLoopRangeLabel(loop)}) ` +
       'will be removed from your saved practice loops.',
     title: 'Remove saved loop?',
+  };
+};
+
+export const getDefaultLoopName = (options: DefaultLoopNameOptions) => {
+  return `Loop ${formatLoopNameRangeLabel(options)} • ${options.sourceName}`;
+};
+
+export const createLoopBuilderDraft = (
+  options: DefaultLoopNameOptions,
+): LoopBuilderDraft => {
+  const suggestedLoopName = getDefaultLoopName(options);
+
+  return {
+    endMs: options.endMs,
+    loopName: suggestedLoopName,
+    startMs: options.startMs,
+    suggestedLoopName,
+  };
+};
+
+export const updateLoopBuilderDraftRange = (
+  options: UpdateLoopBuilderDraftRangeOptions,
+): LoopBuilderDraft => {
+  const suggestedLoopName = getDefaultLoopName({
+    endMs: options.endMs,
+    sourceName: options.sourceName,
+    startMs: options.startMs,
+  });
+  const followsSuggestedLoopName =
+    options.draft.loopName.trim() === options.draft.suggestedLoopName.trim();
+
+  return {
+    endMs: options.endMs,
+    loopName: followsSuggestedLoopName
+      ? suggestedLoopName
+      : options.draft.loopName,
+    startMs: options.startMs,
+    suggestedLoopName,
   };
 };
 

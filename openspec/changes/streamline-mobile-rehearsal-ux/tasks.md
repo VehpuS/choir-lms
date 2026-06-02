@@ -42,7 +42,7 @@
 
 ## 4. Loop and Action Defaults
 
-- [ ] 4.1 Add context-aware default loop naming in loop creation while preserving user override behavior before save.
+- [x] 4.1 Add context-aware default loop naming in loop creation while preserving user override behavior before save.
 - [ ] 4.2 Align row-level action menus to include new queue-acceleration actions and maintain consistent icon semantics across Library and Add, while keeping saved track and saved loop rows behaviorally identical except for track-only loop creation.
 - [x] 4.2.1 Apply the shared overflow menu UI to saved source rows (`DriveLibrarySourceGroup`) and route secondary/destructive actions into that menu.
 - [ ] 4.2.2 Introduce explicit row-action placement metadata (`inline` vs `menu`) with backward-compatible fallback logic and migrate current source/playlist callers.

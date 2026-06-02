@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import type { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback';
 
+import { LoopPreviewPlaybackContext } from '../library/components/LoopPreviewPlaybackContext';
 import { SavedRehearsalLibrarySection } from '../library/components/SavedRehearsalLibrarySection';
 import type { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
 import { resolveSavedPlaylistDetailEdgeAutoscrollDelta } from '../library/utils/saved-playlist-detail-view-model';
@@ -15,6 +16,7 @@ type SavedTrackPlaybackController = Pick<
   | 'issue'
   | 'playbackState'
   | 'progress'
+  | 'seekActivePlaybackToPosition'
   | 'syncActivePlaylistContext'
   | 'queuePlayableItemUpNext'
   | 'queuePlayableItemNext'
@@ -128,53 +130,64 @@ export const LibraryScreen = ({
       showsVerticalScrollIndicator={false}
       style={styles.screen}
     >
-      <SavedRehearsalLibrarySection
-        activePlayableItem={playback.activePlayableItem}
-        activePlaylistSession={playback.activePlaylistSession}
-        canMutateLibrary={libraryController.savedLibrary.canMutateLibrary}
-        canMutateLoops={libraryController.savedLibrary.canMutateLoops}
-        isPlaybackPreparing={playback.isPreparing}
-        isSavedLibraryLoading={libraryController.savedLibrary.isLoading}
-        isSavedLoopsLoading={libraryController.savedLibrary.isSavedLoopsLoading}
-        pendingSourceId={libraryController.savedLibrary.pendingSourceId}
-        pendingLoopId={libraryController.savedLibrary.pendingLoopId}
-        playbackIssue={playback.issue}
-        playbackState={playback.playbackState}
-        removeLoop={libraryController.savedLibrary.removeLoop}
-        removeSource={libraryController.savedLibrary.removeSource}
-        savedLibraryIssue={libraryController.savedLibrary.savedLibraryIssue}
-        savedLibrarySources={libraryController.savedLibrary.savedLibrarySources}
-        savedLoopIssue={libraryController.savedLibrary.savedLoopIssue}
-        savedLoops={libraryController.savedLibrary.savedLoops}
-        savedLibraryStatusCopy={
-          libraryController.savedLibrary.savedLibraryStatusCopy
-        }
-        saveLoop={libraryController.savedLibrary.saveLoop}
-        getCurrentScrollOffsetY={() => {
-          return scrollOffsetYRef.current;
+      <LoopPreviewPlaybackContext.Provider
+        value={{
+          playbackPositionSeconds: playback.progress.position,
+          seekActivePlaybackToPosition: playback.seekActivePlaybackToPosition,
         }}
-        savedTrackPlaybackStatusCopy={
-          libraryController.savedLibrary.savedTrackPlaybackStatusCopy
-        }
-        syncActivePlaylistContext={playback.syncActivePlaylistContext}
-        openLoopBuilderForSource={
-          libraryController.savedLibrary.openLoopBuilderForSource
-        }
-        pendingLoopBuilderSourceId={
-          libraryController.savedLibrary.pendingLoopBuilderSourceId
-        }
-        selectedTrack={libraryController.savedLibrary.selectedLoopTrack}
-        setSelectedLoopSourceId={
-          libraryController.savedLibrary.setSelectedLoopSourceId
-        }
-        setIsPlaylistReorderDragActive={setPlaylistReorderDragActive}
-        setPlaylistReorderDragMoveY={setPlaylistReorderDragMoveY}
-        queuePlayableItemNext={playback.queuePlayableItemNext}
-        queuePlayableItemUpNext={playback.queuePlayableItemUpNext}
-        togglePlayableItemPlayback={playback.togglePlayableItemPlayback}
-        togglePlaylistPlayback={playback.togglePlaylistPlayback}
-        toggleSourcePlayback={playback.toggleSourcePlayback}
-      />
+      >
+        <SavedRehearsalLibrarySection
+          activePlayableItem={playback.activePlayableItem}
+          activePlaylistSession={playback.activePlaylistSession}
+          canMutateLibrary={libraryController.savedLibrary.canMutateLibrary}
+          canMutateLoops={libraryController.savedLibrary.canMutateLoops}
+          isPlaybackPreparing={playback.isPreparing}
+          isSavedLibraryLoading={libraryController.savedLibrary.isLoading}
+          isSavedLoopsLoading={
+            libraryController.savedLibrary.isSavedLoopsLoading
+          }
+          pendingSourceId={libraryController.savedLibrary.pendingSourceId}
+          pendingLoopId={libraryController.savedLibrary.pendingLoopId}
+          playbackIssue={playback.issue}
+          playbackState={playback.playbackState}
+          removeLoop={libraryController.savedLibrary.removeLoop}
+          removeSource={libraryController.savedLibrary.removeSource}
+          savedLibraryIssue={libraryController.savedLibrary.savedLibraryIssue}
+          savedLibrarySources={
+            libraryController.savedLibrary.savedLibrarySources
+          }
+          savedLoopIssue={libraryController.savedLibrary.savedLoopIssue}
+          savedLoops={libraryController.savedLibrary.savedLoops}
+          savedLibraryStatusCopy={
+            libraryController.savedLibrary.savedLibraryStatusCopy
+          }
+          saveLoop={libraryController.savedLibrary.saveLoop}
+          getCurrentScrollOffsetY={() => {
+            return scrollOffsetYRef.current;
+          }}
+          savedTrackPlaybackStatusCopy={
+            libraryController.savedLibrary.savedTrackPlaybackStatusCopy
+          }
+          syncActivePlaylistContext={playback.syncActivePlaylistContext}
+          openLoopBuilderForSource={
+            libraryController.savedLibrary.openLoopBuilderForSource
+          }
+          pendingLoopBuilderSourceId={
+            libraryController.savedLibrary.pendingLoopBuilderSourceId
+          }
+          selectedTrack={libraryController.savedLibrary.selectedLoopTrack}
+          setSelectedLoopSourceId={
+            libraryController.savedLibrary.setSelectedLoopSourceId
+          }
+          setIsPlaylistReorderDragActive={setPlaylistReorderDragActive}
+          setPlaylistReorderDragMoveY={setPlaylistReorderDragMoveY}
+          queuePlayableItemNext={playback.queuePlayableItemNext}
+          queuePlayableItemUpNext={playback.queuePlayableItemUpNext}
+          togglePlayableItemPlayback={playback.togglePlayableItemPlayback}
+          togglePlaylistPlayback={playback.togglePlaylistPlayback}
+          toggleSourcePlayback={playback.toggleSourcePlayback}
+        />
+      </LoopPreviewPlaybackContext.Provider>
     </ScrollView>
   );
 };

@@ -13,8 +13,10 @@ import {
   SAVED_LOOP,
 } from '../../test-utils/library-test-fixtures.js';
 import {
+  createLoopBuilderDraft,
   buildNamedLoop,
   createLoopPreviewPlayableItem,
+  getDefaultLoopName,
   getSavedLoopItemIssue,
   getSavedLoopRemovalCopy,
   getSavedLoopsStatusCopy,
@@ -24,9 +26,115 @@ import {
   resolveLoopBuilderRangeSelection,
   resolveLoopBuilderTrack,
   resolveSavedLoopCards,
+  updateLoopBuilderDraftRange,
 } from '../utils/saved-loop-view-model.js';
+import { resolveLoopPreviewPlaybackTimeline } from '../utils/saved-loop-preview-playback-view-model.js';
 
 describe('saved loop view-model', () => {
+  it('prefills loop drafts with a source-aware suggested name', () => {
+    assert.equal(
+      getDefaultLoopName({
+        endMs: 18500,
+        sourceName: PLAYABLE_SOURCE.name,
+        startMs: 12000,
+      }),
+      'Loop 0:12 - 0:18 • Alto Line.mp3',
+    );
+
+    assert.deepEqual(
+      createLoopBuilderDraft({
+        endMs: 18500,
+        sourceName: PLAYABLE_SOURCE.name,
+        startMs: 12000,
+      }),
+      {
+        endMs: 18500,
+        loopName: 'Loop 0:12 - 0:18 • Alto Line.mp3',
+        startMs: 12000,
+        suggestedLoopName: 'Loop 0:12 - 0:18 • Alto Line.mp3',
+      },
+    );
+  });
+
+  it('keeps following the suggested loop name until the user overrides it', () => {
+    const initialDraft = createLoopBuilderDraft({
+      endMs: 18500,
+      sourceName: PLAYABLE_SOURCE.name,
+      startMs: 12000,
+    });
+
+    assert.deepEqual(
+      updateLoopBuilderDraftRange({
+        draft: initialDraft,
+        endMs: 47000,
+        sourceName: PLAYABLE_SOURCE.name,
+        startMs: 30000,
+      }),
+      {
+        endMs: 47000,
+        loopName: 'Loop 0:30 - 0:47 • Alto Line.mp3',
+        startMs: 30000,
+        suggestedLoopName: 'Loop 0:30 - 0:47 • Alto Line.mp3',
+      },
+    );
+
+    assert.deepEqual(
+      updateLoopBuilderDraftRange({
+        draft: {
+          ...initialDraft,
+          loopName: 'Entrance cue',
+        },
+        endMs: 47000,
+        sourceName: PLAYABLE_SOURCE.name,
+        startMs: 30000,
+      }),
+      {
+        endMs: 47000,
+        loopName: 'Entrance cue',
+        startMs: 30000,
+        suggestedLoopName: 'Loop 0:30 - 0:47 • Alto Line.mp3',
+      },
+    );
+  });
+
+  it('derives preview timeline progress and scrub availability from active preview playback', () => {
+    const previewPlayableItem = createLoopPreviewPlayableItem({
+      endMs: 18500,
+      selectedTrack: createTrackPlayableItem(PLAYABLE_SOURCE),
+      startMs: 12000,
+    });
+
+    assert.deepEqual(
+      resolveLoopPreviewPlaybackTimeline({
+        activePlayableItem: previewPlayableItem,
+        playbackPositionSeconds: 14,
+        previewPlayableItem,
+      }),
+      {
+        canScrub: true,
+        elapsedSeconds: 2,
+        positionSeconds: 14,
+        progressRatio: 2 / 6.5,
+        totalDurationSeconds: 6.5,
+      },
+    );
+
+    assert.deepEqual(
+      resolveLoopPreviewPlaybackTimeline({
+        activePlayableItem: createTrackPlayableItem(PLAYABLE_SOURCE),
+        playbackPositionSeconds: 40,
+        previewPlayableItem,
+      }),
+      {
+        canScrub: false,
+        elapsedSeconds: 0,
+        positionSeconds: 12,
+        progressRatio: 0,
+        totalDurationSeconds: 6.5,
+      },
+    );
+  });
+
   it('builds named loops from saved-track markers and resolves them for playback', () => {
     const result = buildNamedLoop({
       createId: () => 'loop-1',
