@@ -581,6 +581,7 @@ export const SavedRehearsalLibrarySection = ({
             cardRenamePlaylistId={cardRenamePlaylistId}
             cardRenamePlaylistName={cardRenamePlaylistName}
             canMutatePlaylists={canMutatePlaylists}
+            highlightQuery={activeLibrarySearchQuery}
             isMutating={isPlaylistMutating}
             onBeginRenamePlaylist={openCardRenameDialog}
             onCancelRenamePlaylist={closeCardRenameDialog}
@@ -726,6 +727,7 @@ export const SavedRehearsalLibrarySection = ({
                 )
               );
             }}
+            highlightQuery={activeLibrarySearchQuery}
             sources={visibleSavedLibrarySources}
             title={savedSourceTitle}
           />
@@ -735,6 +737,7 @@ export const SavedRehearsalLibrarySection = ({
             canMutatePlaylists={canMutatePlaylists}
             isPlaylistMutating={isPlaylistMutating}
             canQueueAsNext={activePlaylistSession !== null}
+            highlightQuery={activeLibrarySearchQuery}
             isPlaybackPreparing={isPlaybackPreparing}
             isSavedLoopsLoading={isSavedLoopsLoading}
             pendingLoopId={pendingLoopId}

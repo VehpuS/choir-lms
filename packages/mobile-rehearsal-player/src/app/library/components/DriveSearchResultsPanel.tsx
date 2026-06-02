@@ -36,6 +36,7 @@ export const DriveSearchResultsPanel = ({
       <DriveLibrarySourceGroup
         getActions={controller.getDriveSourceActions}
         getMessage={controller.getSourceMessage}
+        highlightQuery={controller.search.activeSearchQuery}
         sources={controller.search.playableSources}
         title={controller.search.playableSourceTitle}
       />
@@ -43,6 +44,7 @@ export const DriveSearchResultsPanel = ({
         controller.search.unavailableSources.length,
       ) ? (
         <DriveLibrarySourceGroup
+          highlightQuery={controller.search.activeSearchQuery}
           sources={controller.search.unavailableSources}
           title={controller.search.unavailableSourceTitle}
         />

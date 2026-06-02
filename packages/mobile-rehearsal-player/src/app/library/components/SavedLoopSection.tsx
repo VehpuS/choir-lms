@@ -30,6 +30,7 @@ type SavedLoopSectionProps = {
   isPlaybackPreparing: boolean;
   canMutateLoops: boolean;
   canQueueAsNext: boolean;
+  highlightQuery: string | null;
   isSavedLoopsLoading: boolean;
   pendingLoopId: string | null;
   playbackIssue: SavedTrackPlaybackIssue | null;
@@ -62,6 +63,7 @@ export const SavedLoopSection = ({
   isPlaybackPreparing,
   canMutateLoops,
   canQueueAsNext,
+  highlightQuery,
   isSavedLoopsLoading,
   pendingLoopId,
   playbackIssue,
@@ -270,6 +272,7 @@ export const SavedLoopSection = ({
         activePlayableItem={activePlayableItem}
         canMutateLoops={canMutateLoops}
         canMutatePlaylists={canMutatePlaylists}
+        highlightQuery={highlightQuery}
         isPlaylistMutating={isPlaylistMutating}
         isPlaybackPreparing={isPlaybackPreparing}
         loopCards={savedLoopCards}

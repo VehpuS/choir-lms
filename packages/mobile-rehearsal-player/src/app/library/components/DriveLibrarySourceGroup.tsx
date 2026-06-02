@@ -10,6 +10,7 @@ import {
   type DriveLibrarySource,
 } from '../utils/drive-library-view-model';
 import { OptionsMenuSheet } from './OptionsMenuSheet';
+import { SearchHighlightedText } from './SearchHighlightedText';
 import {
   DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT,
   driveLibrarySourceGroupStyles as styles,
@@ -31,6 +32,7 @@ type DriveLibrarySourceGroupProps = {
     source: DriveLibrarySource,
   ) => DriveLibrarySourceAction[] | null;
   getMessage?: (source: DriveLibrarySource) => string | undefined;
+  highlightQuery?: string | null;
   sources: DriveLibrarySource[];
   title: string;
 };
@@ -106,11 +108,13 @@ const DriveLibrarySourceCard = ({
   getAction,
   getActions,
   getMessage,
+  highlightQuery,
   source,
 }: {
   getAction?: DriveLibrarySourceGroupProps['getAction'];
   getActions?: DriveLibrarySourceGroupProps['getActions'];
   getMessage?: DriveLibrarySourceGroupProps['getMessage'];
+  highlightQuery?: string | null;
   source: DriveLibrarySource;
 }) => {
   const singleAction = getAction?.(source) ?? null;
@@ -151,7 +155,11 @@ const DriveLibrarySourceCard = ({
         </Pressable>
       ) : null}
       <View style={styles.sourceHeader}>
-        <Text style={styles.sourceName}>{source.name}</Text>
+        <SearchHighlightedText
+          query={highlightQuery ?? null}
+          style={styles.sourceName}
+          text={source.name}
+        />
         <View style={styles.sourceControls}>
           <View style={[styles.badge, getAvailabilityBadgeStyle(source)]}>
             <Text
@@ -259,6 +267,7 @@ export const DriveLibrarySourceGroup = ({
   getAction,
   getActions,
   getMessage,
+  highlightQuery,
   sources,
   title,
 }: DriveLibrarySourceGroupProps) => {
@@ -276,6 +285,7 @@ export const DriveLibrarySourceGroup = ({
               getAction={getAction}
               getActions={getActions}
               getMessage={getMessage}
+              highlightQuery={highlightQuery}
               key={source.id}
               source={source}
             />

@@ -14,6 +14,7 @@ import {
   PlaylistOptionsMenuSurface,
   PlaylistRenameDialog,
 } from './PlaylistRenameDialog';
+import { SearchHighlightedText } from './SearchHighlightedText';
 import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
   savedPlaylistSectionStyles as styles,
@@ -84,6 +85,7 @@ export const SavedPlaylistCardsList = (props: {
   cardRenamePlaylistId: string | null;
   cardRenamePlaylistName: string;
   canMutatePlaylists: boolean;
+  highlightQuery?: string | null;
   isMutating: boolean;
   onBeginRenamePlaylist: (playlistId: string) => void;
   onCancelRenamePlaylist: () => void;
@@ -148,9 +150,11 @@ export const SavedPlaylistCardsList = (props: {
                   size={18}
                 />
               </Pressable>
-              <Text style={styles.playlistName}>
-                {playlistCard.playlist.name}
-              </Text>
+              <SearchHighlightedText
+                query={props.highlightQuery ?? null}
+                style={styles.playlistName}
+                text={playlistCard.playlist.name}
+              />
               <Text numberOfLines={1} style={styles.playlistMetadata}>
                 {playlistCard.detailLabel}
               </Text>

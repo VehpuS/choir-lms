@@ -31,6 +31,7 @@ import {
   filterSavedLoopsByQuery as filterSavedLoopsByLibraryQuery,
   filterSavedPlaylistsByQuery as filterSavedPlaylistsByLibraryQuery,
   resolveActiveLibrarySearchQuery as resolveActiveLibraryQuery,
+  resolveSearchHighlightParts,
 } from '../utils/saved-library-search-view-model.js';
 import {
   normalizeRecentSearchTerm,
@@ -356,6 +357,64 @@ describe('saved library search helpers', () => {
         playlists,
       }).map((playlist) => playlist.name),
       ['Kyrie Warmups'],
+    );
+  });
+
+  it('returns highlight fragments for repeated case-insensitive matches', () => {
+    assert.deepEqual(
+      resolveSearchHighlightParts({
+        query: 'ky',
+        text: 'Kyrie Kyrie',
+      }),
+      [
+        {
+          isHighlighted: true,
+          text: 'Ky',
+        },
+        {
+          isHighlighted: false,
+          text: 'rie ',
+        },
+        {
+          isHighlighted: true,
+          text: 'Ky',
+        },
+        {
+          isHighlighted: false,
+          text: 'rie',
+        },
+      ],
+    );
+  });
+
+  it('highlights loop metadata only when the visible source label matches the active query', () => {
+    assert.deepEqual(
+      resolveSearchHighlightParts({
+        query: 'alto',
+        text: 'Alto Line.mp3 • 0:12 to 0:18',
+      }),
+      [
+        {
+          isHighlighted: true,
+          text: 'Alto',
+        },
+        {
+          isHighlighted: false,
+          text: ' Line.mp3 • 0:12 to 0:18',
+        },
+      ],
+    );
+    assert.deepEqual(
+      resolveSearchHighlightParts({
+        query: 'alto',
+        text: 'Bass Line.mp3 • 0:12 to 0:18',
+      }),
+      [
+        {
+          isHighlighted: false,
+          text: 'Bass Line.mp3 • 0:12 to 0:18',
+        },
+      ],
     );
   });
 });

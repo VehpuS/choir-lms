@@ -16,6 +16,7 @@ import {
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
 import { OptionsMenuSheet } from './OptionsMenuSheet';
+import { SearchHighlightedText } from './SearchHighlightedText';
 import {
   SAVED_LOOP_PRIMARY_TEXT,
   savedLoopListStyles as styles,
@@ -25,6 +26,7 @@ type SavedLoopListProps = {
   activePlayableItem: PlayableItem | null;
   canMutateLoops: boolean;
   isPlaybackPreparing: boolean;
+  highlightQuery: string | null;
   loopCards: SavedLoopCard[];
   loopIssue: SavedLoopIssue | null;
   pendingLoopId: string | null;
@@ -44,6 +46,7 @@ export const SavedLoopList = ({
   activePlayableItem,
   canMutateLoops,
   isPlaybackPreparing,
+  highlightQuery,
   loopCards,
   loopIssue,
   pendingLoopId,
@@ -102,7 +105,11 @@ export const SavedLoopList = ({
           <View key={loopCard.loop.id} style={styles.loopCard}>
             <View style={styles.loopHeader}>
               <View style={styles.loopTitleRow}>
-                <Text style={styles.loopName}>{loopCard.loop.name}</Text>
+                <SearchHighlightedText
+                  query={highlightQuery}
+                  style={styles.loopName}
+                  text={loopCard.loop.name}
+                />
                 <Pressable
                   accessibilityLabel="Loop options"
                   accessibilityRole="button"
@@ -210,7 +217,11 @@ export const SavedLoopList = ({
               </View>
             </View>
 
-            <Text style={styles.loopMetadata}>{loopCard.metadataLabel}</Text>
+            <SearchHighlightedText
+              query={highlightQuery}
+              style={styles.loopMetadata}
+              text={loopCard.metadataLabel}
+            />
             {loopMessage ? (
               <Text style={styles.loopMessage}>{loopMessage}</Text>
             ) : null}
