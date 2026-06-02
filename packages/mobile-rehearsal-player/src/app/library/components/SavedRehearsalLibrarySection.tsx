@@ -643,6 +643,7 @@ export const SavedRehearsalLibrarySection = ({
                   onPress: () => {
                     void toggleSourcePlayback(source);
                   },
+                  placement: 'inline' as const,
                   tone: 'primary' as const,
                 },
                 {
@@ -658,6 +659,7 @@ export const SavedRehearsalLibrarySection = ({
                   onPress: () => {
                     openLoopBuilderForSource(source);
                   },
+                  placement: 'inline' as const,
                 },
                 ...(canQueueAsNext
                   ? [
@@ -669,7 +671,7 @@ export const SavedRehearsalLibrarySection = ({
                         onPress: () => {
                           queuePlayableItemNext(trackPlayableItem);
                         },
-                        variant: 'menu' as const,
+                        placement: 'menu' as const,
                       },
                       {
                         disabled:
@@ -679,7 +681,7 @@ export const SavedRehearsalLibrarySection = ({
                         onPress: () => {
                           queuePlayableItemUpNext(trackPlayableItem);
                         },
-                        variant: 'menu' as const,
+                        placement: 'menu' as const,
                       },
                     ]
                   : []),
@@ -700,6 +702,7 @@ export const SavedRehearsalLibrarySection = ({
                       sourceId: source.id,
                     });
                   },
+                  placement: 'inline' as const,
                 },
                 {
                   disabled:
@@ -711,6 +714,7 @@ export const SavedRehearsalLibrarySection = ({
                   onPress: () => {
                     removeSource(source);
                   },
+                  placement: 'menu' as const,
                 },
               ];
             }}

@@ -3,7 +3,7 @@ import {
   type PlayableItem,
 } from '@org/audio-library-models';
 
-import type { DriveLibrarySourceAction } from '../components/DriveLibrarySourceGroup';
+import type { DriveLibrarySourceAction } from './drive-library-source-actions';
 import type { DriveLibrarySource } from './drive-library-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
@@ -55,6 +55,7 @@ export const resolveDriveSourceActions = (
       iconName: getPlaybackIconName(playbackAction.label),
       label: playbackAction.label,
       onPress: options.onPreviewPlayback,
+      placement: 'inline',
       tone: 'primary',
     },
     {
@@ -67,6 +68,7 @@ export const resolveDriveSourceActions = (
           ? 'Remove'
           : 'Save',
       onPress: options.isSaved ? options.onRemoveSource : options.onSaveSource,
+      placement: options.isSaved ? 'menu' : 'inline',
     },
   ];
 };

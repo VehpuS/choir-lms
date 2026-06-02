@@ -239,12 +239,14 @@ describe('resolveDriveSourceActions', () => {
       iconName: 'play',
       label: 'Play',
       onPress: actions[0]?.onPress,
+      placement: 'inline',
       tone: 'primary',
     });
     assert.deepEqual(actions[1], {
       disabled: false,
       label: 'Save',
       onPress: actions[1]?.onPress,
+      placement: 'inline',
     });
   });
 

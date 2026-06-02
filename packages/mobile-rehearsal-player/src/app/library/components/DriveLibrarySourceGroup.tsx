@@ -9,22 +9,16 @@ import {
   getSourceStatusMessage,
   type DriveLibrarySource,
 } from '../utils/drive-library-view-model';
+import {
+  resolveDriveLibrarySourceActionPlacement,
+  type DriveLibrarySourceAction,
+} from '../utils/drive-library-source-actions';
 import { OptionsMenuSheet } from './OptionsMenuSheet';
 import { SearchHighlightedText } from './SearchHighlightedText';
 import {
   DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT,
   driveLibrarySourceGroupStyles as styles,
 } from './drive-library-source-group-styles';
-
-export type DriveLibrarySourceAction = {
-  accessibilityLabel?: string;
-  disabled?: boolean;
-  iconName?: 'pause' | 'play';
-  label: string;
-  onPress: () => void;
-  tone?: 'destructive' | 'neutral' | 'primary';
-  variant?: 'button' | 'icon' | 'menu';
-};
 
 type DriveLibrarySourceGroupProps = {
   getAction?: (source: DriveLibrarySource) => DriveLibrarySourceAction | null;
@@ -59,17 +53,6 @@ const getMenuTone = (tone: DriveLibrarySourceAction['tone']) => {
   }
 
   return 'secondary' as const;
-};
-
-const REMOVE_LABEL_MATCHER = /^remove/i;
-
-const isMenuAction = (action: DriveLibrarySourceAction) => {
-  return (
-    action.variant === 'menu' ||
-    action.variant === 'icon' ||
-    action.tone === 'destructive' ||
-    REMOVE_LABEL_MATCHER.test(action.label)
-  );
 };
 
 const getMenuActionLabel = (action: DriveLibrarySourceAction) => {
@@ -120,10 +103,14 @@ const DriveLibrarySourceCard = ({
   const singleAction = getAction?.(source) ?? null;
   const actions = getActions?.(source) ?? (singleAction ? [singleAction] : []);
   const inlineActions = useMemo(() => {
-    return actions.filter((action) => !isMenuAction(action));
+    return actions.filter((action) => {
+      return resolveDriveLibrarySourceActionPlacement(action) === 'inline';
+    });
   }, [actions]);
   const menuActions = useMemo(() => {
-    return actions.filter((action) => isMenuAction(action));
+    return actions.filter((action) => {
+      return resolveDriveLibrarySourceActionPlacement(action) === 'menu';
+    });
   }, [actions]);
   const [isOptionsMenuVisible, setIsOptionsMenuVisible] = useState(false);
 
