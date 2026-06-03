@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { type PlayableItem } from '@org/audio-library-models';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
@@ -123,6 +124,7 @@ export const SavedLoopList = ({
           canMutatePlaylists,
           canQueueAsNext,
           hasPlayableItem: playableItem !== null,
+          itemName: loopCard.loop.name,
           isLoopActive: isPlaybackLoopActive,
           isLoopMutating: pendingLoopId !== null,
           isPendingRemoval: pendingLoopId === loopCard.loop.id,
@@ -191,6 +193,38 @@ export const SavedLoopList = ({
               />
               <View style={styles.actionRow}>
                 {inlineActions.map((action, index) => {
+                  if (action.iconName) {
+                    return (
+                      <Pressable
+                        accessibilityLabel={
+                          action.accessibilityLabel ?? action.label
+                        }
+                        accessibilityRole="button"
+                        accessibilityState={{
+                          disabled: action.disabled,
+                        }}
+                        disabled={action.disabled}
+                        key={`${loopCard.loop.id}:${action.accessibilityLabel ?? action.label}:${index}`}
+                        onPress={action.onPress}
+                        style={({ pressed }) => [
+                          styles.iconButton,
+                          pressed && !action.disabled
+                            ? styles.actionButtonPressed
+                            : undefined,
+                          action.disabled
+                            ? styles.actionButtonDisabled
+                            : undefined,
+                        ]}
+                      >
+                        <MaterialCommunityIcons
+                          color={SAVED_LOOP_PRIMARY_TEXT}
+                          name={action.iconName}
+                          size={18}
+                        />
+                      </Pressable>
+                    );
+                  }
+
                   return (
                     <Pressable
                       accessibilityLabel={

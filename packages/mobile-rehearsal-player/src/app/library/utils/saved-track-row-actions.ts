@@ -1,0 +1,104 @@
+import {
+  getCompactPlaybackActionIconName,
+  type DriveLibrarySourceAction,
+} from './drive-library-source-actions';
+
+type SavedTrackPlaybackAction = {
+  disabled: boolean;
+  label: string;
+};
+
+type ResolveSavedTrackRowActionsOptions = {
+  canMutateLibrary: boolean;
+  canMutateLoops: boolean;
+  canMutatePlaylists: boolean;
+  canQueueAsNext: boolean;
+  hasAvailableSource: boolean;
+  isLoopBuilderPreparing: boolean;
+  isLoopMutating: boolean;
+  isPendingLoopSource: boolean;
+  isPendingRemoval: boolean;
+  isPlaybackSourceActive: boolean;
+  isPlaylistMutating: boolean;
+  isSavedLibraryMutating: boolean;
+  onOpenLoopBuilder: () => void;
+  onOpenPlaylistSelector: () => void;
+  onQueueNext: () => void;
+  onQueueUpNext: () => void;
+  onRemove: () => void;
+  onTogglePlayback: () => void;
+  playbackAction: SavedTrackPlaybackAction;
+  sourceName: string;
+};
+
+export const resolveSavedTrackRowActions = (
+  options: ResolveSavedTrackRowActionsOptions,
+): DriveLibrarySourceAction[] => {
+  const canQueueSource =
+    !options.isSavedLibraryMutating && options.hasAvailableSource;
+
+  return [
+    {
+      accessibilityLabel: `${options.playbackAction.label} ${options.sourceName}`,
+      disabled:
+        options.isSavedLibraryMutating || options.playbackAction.disabled,
+      iconName: getCompactPlaybackActionIconName(options.playbackAction.label),
+      label: options.playbackAction.label,
+      onPress: options.onTogglePlayback,
+      placement: 'inline',
+      tone: 'primary',
+    },
+    {
+      disabled:
+        !options.canMutateLoops ||
+        options.isLoopMutating ||
+        options.isLoopBuilderPreparing ||
+        options.isSavedLibraryMutating ||
+        !options.hasAvailableSource,
+      label: options.isPendingLoopSource ? 'Preparing loop…' : 'Make loop',
+      onPress: options.onOpenLoopBuilder,
+      placement: 'menu',
+    },
+    ...(options.canQueueAsNext
+      ? [
+          {
+            disabled: !canQueueSource,
+            label: 'Play next',
+            onPress: options.onQueueNext,
+            placement: 'menu' as const,
+          },
+          {
+            disabled: !canQueueSource,
+            label: 'Add to queue',
+            onPress: options.onQueueUpNext,
+            placement: 'menu' as const,
+          },
+        ]
+      : []),
+    {
+      disabled:
+        !options.canMutatePlaylists ||
+        options.isPlaylistMutating ||
+        options.isSavedLibraryMutating,
+      label: !options.canMutatePlaylists
+        ? 'Playlists unavailable'
+        : options.isPlaylistMutating
+          ? 'Updating playlist…'
+          : 'Add to playlist',
+      onPress: options.onOpenPlaylistSelector,
+      placement: 'menu',
+      tone: 'primary',
+    },
+    {
+      disabled:
+        !options.canMutateLibrary ||
+        options.isSavedLibraryMutating ||
+        options.isPlaybackSourceActive ||
+        options.isLoopMutating,
+      label: options.isPendingRemoval ? 'Removing…' : 'Remove',
+      onPress: options.onRemove,
+      placement: 'menu',
+      tone: 'destructive',
+    },
+  ];
+};

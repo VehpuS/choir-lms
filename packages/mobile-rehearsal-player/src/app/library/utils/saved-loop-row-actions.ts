@@ -1,4 +1,7 @@
-import type { DriveLibrarySourceAction } from './drive-library-source-actions';
+import {
+  getCompactPlaybackActionIconName,
+  type DriveLibrarySourceAction,
+} from './drive-library-source-actions';
 
 type SavedLoopPlaybackAction = {
   disabled: boolean;
@@ -10,6 +13,7 @@ type ResolveSavedLoopRowActionsOptions = {
   canMutatePlaylists: boolean;
   canQueueAsNext: boolean;
   hasPlayableItem: boolean;
+  itemName: string;
   isLoopActive: boolean;
   isLoopMutating: boolean;
   isPendingRemoval: boolean;
@@ -27,7 +31,9 @@ export const resolveSavedLoopRowActions = (
 ): DriveLibrarySourceAction[] => {
   const actions: DriveLibrarySourceAction[] = [
     {
+      accessibilityLabel: `${options.playbackAction.label} ${options.itemName}`,
       disabled: options.playbackAction.disabled,
+      iconName: getCompactPlaybackActionIconName(options.playbackAction.label),
       label: options.playbackAction.label,
       onPress: options.onTogglePlayback,
       placement: 'inline',

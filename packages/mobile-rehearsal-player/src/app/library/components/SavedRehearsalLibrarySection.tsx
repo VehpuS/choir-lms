@@ -44,6 +44,7 @@ import {
   type PlaylistDraftIssue,
 } from '../utils/saved-playlist-view-model';
 import { getSavedRehearsalLibrarySourceIssue } from '../utils/saved-rehearsal-library-view-model';
+import { resolveSavedTrackRowActions } from '../utils/saved-track-row-actions';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -636,87 +637,44 @@ export const SavedRehearsalLibrarySection = ({
                 pendingLoopBuilderSourceId === source.id;
               const canQueueAsNext = activePlaylistSession !== null;
 
-              return [
-                {
-                  disabled: isSavedLibraryMutating || playbackAction.disabled,
-                  label: playbackAction.label,
-                  onPress: () => {
-                    void toggleSourcePlayback(source);
-                  },
-                  placement: 'inline' as const,
-                  tone: 'primary' as const,
+              return resolveSavedTrackRowActions({
+                canMutateLibrary,
+                canMutateLoops,
+                canMutatePlaylists,
+                canQueueAsNext,
+                hasAvailableSource: source.availability.status === 'available',
+                isLoopBuilderPreparing,
+                isLoopMutating,
+                isPendingLoopSource: isPreparingLoopSource,
+                isPendingRemoval: isPending,
+                isPlaybackSourceActive,
+                isPlaylistMutating,
+                isSavedLibraryMutating,
+                onOpenLoopBuilder: () => {
+                  openLoopBuilderForSource(source);
                 },
-                {
-                  disabled:
-                    !canMutateLoops ||
-                    isLoopMutating ||
-                    isLoopBuilderPreparing ||
-                    isSavedLibraryMutating ||
-                    source.availability.status !== 'available',
-                  label: isPreparingLoopSource
-                    ? 'Preparing loop…'
-                    : 'Make loop',
-                  onPress: () => {
-                    openLoopBuilderForSource(source);
-                  },
-                  placement: 'inline' as const,
+                onOpenPlaylistSelector: () => {
+                  setTrackPlaylistCreationIssue(null);
+                  dispatchTrackPlaylistMenu({
+                    type: 'open',
+                    sourceId: source.id,
+                  });
                 },
-                ...(canQueueAsNext
-                  ? [
-                      {
-                        disabled:
-                          isSavedLibraryMutating ||
-                          source.availability.status !== 'available',
-                        label: 'Play next',
-                        onPress: () => {
-                          queuePlayableItemNext(trackPlayableItem);
-                        },
-                        placement: 'menu' as const,
-                      },
-                      {
-                        disabled:
-                          isSavedLibraryMutating ||
-                          source.availability.status !== 'available',
-                        label: 'Add to queue',
-                        onPress: () => {
-                          queuePlayableItemUpNext(trackPlayableItem);
-                        },
-                        placement: 'menu' as const,
-                      },
-                    ]
-                  : []),
-                {
-                  disabled:
-                    !canMutatePlaylists ||
-                    isPlaylistMutating ||
-                    isSavedLibraryMutating,
-                  label: !canMutatePlaylists
-                    ? 'Playlists unavailable'
-                    : isPlaylistMutating
-                      ? 'Updating playlist…'
-                      : 'Add to playlist',
-                  onPress: () => {
-                    setTrackPlaylistCreationIssue(null);
-                    dispatchTrackPlaylistMenu({
-                      type: 'open',
-                      sourceId: source.id,
-                    });
-                  },
-                  placement: 'inline' as const,
+                onQueueNext: () => {
+                  queuePlayableItemNext(trackPlayableItem);
                 },
-                {
-                  disabled:
-                    !canMutateLibrary ||
-                    isSavedLibraryMutating ||
-                    isPlaybackSourceActive ||
-                    isLoopMutating,
-                  label: isPending ? 'Removing…' : 'Remove',
-                  onPress: () => {
-                    removeSource(source);
-                  },
-                  placement: 'menu' as const,
+                onQueueUpNext: () => {
+                  queuePlayableItemUpNext(trackPlayableItem);
                 },
-              ];
+                onRemove: () => {
+                  removeSource(source);
+                },
+                onTogglePlayback: () => {
+                  void toggleSourcePlayback(source);
+                },
+                playbackAction,
+                sourceName: source.name,
+              });
             }}
             getMessage={(source) => {
               return (

@@ -10,6 +10,12 @@ export type DriveLibrarySourceAction = {
   tone?: 'destructive' | 'neutral' | 'primary';
 };
 
+export const getCompactPlaybackActionIconName = (
+  label: string,
+): NonNullable<DriveLibrarySourceAction['iconName']> => {
+  return label === 'Pause' ? 'pause' : 'play';
+};
+
 export const resolveDriveLibrarySourceActionPlacement = (
   action: DriveLibrarySourceAction,
 ): DriveLibrarySourceActionPlacement => {

@@ -3,7 +3,10 @@ import {
   type PlayableItem,
 } from '@org/audio-library-models';
 
-import type { DriveLibrarySourceAction } from './drive-library-source-actions';
+import {
+  getCompactPlaybackActionIconName,
+  type DriveLibrarySourceAction,
+} from './drive-library-source-actions';
 import type { DriveLibrarySource } from './drive-library-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
@@ -23,10 +26,6 @@ type ResolveDriveSearchSourceActionsOptions = {
   onSaveSource: () => void;
   playbackState: SavedTrackPlaybackState | undefined;
   source: DriveLibrarySource;
-};
-
-const getPlaybackIconName = (label: string) => {
-  return label === 'Pause' ? 'pause' : 'play';
 };
 
 export const resolveDriveSourceActions = (
@@ -52,7 +51,7 @@ export const resolveDriveSourceActions = (
         options.isLibraryMutating ||
         options.source.availability.status !== 'available' ||
         playbackAction.disabled,
-      iconName: getPlaybackIconName(playbackAction.label),
+      iconName: getCompactPlaybackActionIconName(playbackAction.label),
       label: playbackAction.label,
       onPress: options.onPreviewPlayback,
       placement: 'inline',

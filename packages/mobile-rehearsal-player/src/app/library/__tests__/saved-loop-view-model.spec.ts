@@ -163,6 +163,7 @@ describe('saved loop view-model', () => {
       canMutatePlaylists: true,
       canQueueAsNext: true,
       hasPlayableItem: true,
+      itemName: SAVED_LOOP.name,
       isLoopActive: false,
       isLoopMutating: false,
       isPendingRemoval: false,
@@ -180,38 +181,50 @@ describe('saved loop view-model', () => {
 
     assert.deepEqual(
       actions.map((action) => ({
+        accessibilityLabel: action.accessibilityLabel,
         disabled: action.disabled ?? false,
+        iconName: action.iconName,
         label: action.label,
         placement: action.placement,
         tone: action.tone,
       })),
       [
         {
+          accessibilityLabel: 'Play Entrance cue',
           disabled: false,
+          iconName: 'play',
           label: 'Play',
           placement: 'inline',
           tone: 'primary',
         },
         {
+          accessibilityLabel: undefined,
           disabled: false,
+          iconName: undefined,
           label: 'Play next',
           placement: 'menu',
           tone: undefined,
         },
         {
+          accessibilityLabel: undefined,
           disabled: false,
+          iconName: undefined,
           label: 'Add to queue',
           placement: 'menu',
           tone: undefined,
         },
         {
+          accessibilityLabel: undefined,
           disabled: false,
+          iconName: undefined,
           label: 'Add to playlist',
           placement: 'menu',
           tone: 'primary',
         },
         {
+          accessibilityLabel: undefined,
           disabled: false,
+          iconName: undefined,
           label: 'Remove',
           placement: 'menu',
           tone: 'destructive',
@@ -226,6 +239,7 @@ describe('saved loop view-model', () => {
       canMutatePlaylists: false,
       canQueueAsNext: false,
       hasPlayableItem: false,
+      itemName: SAVED_LOOP.name,
       isLoopActive: true,
       isLoopMutating: true,
       isPendingRemoval: true,
@@ -243,23 +257,31 @@ describe('saved loop view-model', () => {
 
     assert.deepEqual(
       actions.map((action) => ({
+        accessibilityLabel: action.accessibilityLabel,
         disabled: action.disabled ?? false,
+        iconName: action.iconName,
         label: action.label,
         placement: action.placement,
       })),
       [
         {
+          accessibilityLabel: 'Unavailable Entrance cue',
           disabled: true,
+          iconName: 'play',
           label: 'Unavailable',
           placement: 'inline',
         },
         {
+          accessibilityLabel: undefined,
           disabled: true,
+          iconName: undefined,
           label: 'Playlists unavailable',
           placement: 'menu',
         },
         {
+          accessibilityLabel: undefined,
           disabled: true,
+          iconName: undefined,
           label: 'Removing…',
           placement: 'menu',
         },
