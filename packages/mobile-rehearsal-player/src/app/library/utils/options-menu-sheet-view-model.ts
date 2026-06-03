@@ -13,10 +13,22 @@ export type ResolvedOptionsMenuAction = Omit<OptionsMenuAction, 'tone'> & {
 export const resolveOptionsMenuSheetActions = (
   actions: OptionsMenuAction[],
 ): ResolvedOptionsMenuAction[] => {
-  return actions.map((action) => {
+  const resolvedActions = actions.map((action) => {
     return {
       ...action,
       tone: action.tone ?? 'secondary',
     };
   });
+
+  return [
+    ...resolvedActions.filter((action) => {
+      return action.tone === 'primary';
+    }),
+    ...resolvedActions.filter((action) => {
+      return action.tone === 'secondary';
+    }),
+    ...resolvedActions.filter((action) => {
+      return action.tone === 'destructive';
+    }),
+  ];
 };

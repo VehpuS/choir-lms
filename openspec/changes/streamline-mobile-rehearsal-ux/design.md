@@ -390,6 +390,7 @@ Follow-on rollout direction:
 - Ensure queue-capable surfaces do not gate queue actions on persisted playlist mode alone; the same overflow actions must remain available while a transient queue can be created from the currently playing standalone item.
 - Standardize saved loop cards with saved track cards for add-to-playlist affordances so both surfaces keep equivalent action placement, labels, and feedback behavior.
 - Converge saved track and saved loop rows on one inline icon-only `Play` action plus a shared overflow trigger, while keeping `Make loop` as a saved-track-only overflow action.
+- Keep overflow ordering predictable across row and card menus: primary actions first, then secondary or navigation actions, with destructive actions last while preserving declared order within each group.
 - Replace text-labeled `Play` buttons with icon-first playback affordances wherever the control performs an immediate playback action and standard music-player iconography is sufficient.
 - Add a top-level play icon on playlist cards for immediate playback start while preserving `Open playlist` for detail navigation and the existing overflow trigger for management actions such as rename and remove.
 - Keep playlist-card rename in the Library surface: selecting `Rename playlist` from a playlist card overflow menu opens the rename dialog in place and preserves the user's current Library context, rather than navigating into playlist detail as an implementation shortcut.
@@ -533,6 +534,7 @@ To reduce visual drift while preserving existing behavior, extract shared primit
 Implementation guidance:
 
 - Shared overflow trigger primitive: one top-right vertical-ellipsis button component with consistent accessibility, hit target, and pressed/disabled feedback.
+- Shared overflow ordering contract: reusable menu ordering that keeps primary actions first, preserves stable order within the same priority group, and places destructive actions last across Library, Add, Recents, and playlist surfaces.
 - Shared playback-action primitive: one reusable icon-only direct-playback button for repeated list and card entry points (for example Add source rows, Recents rows and shortcut chips, and playlist cards) with consistent play/pause/replay glyph semantics, accessibility labels, hit target sizing, and pressed/disabled feedback.
 - Shared contextual search panel: one reusable search scaffold for Add and Library contexts that keeps input styling, submit affordance, recent-search suggestions, and a context-specific helper or clear-action slot aligned while preserving Drive-versus-library copy and disabled rules.
 - Shared section-heading primitive: reusable eyebrow, title, and body copy with an optional trailing action for Drive, Library, playlist, and modal entry surfaces that already share that structure.

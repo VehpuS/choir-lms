@@ -4,8 +4,14 @@ import { describe, it } from 'node:test';
 import { resolveOptionsMenuSheetActions } from '../utils/options-menu-sheet-view-model.js';
 
 describe('options menu sheet actions', () => {
-  it('normalizes multiple actions with deterministic order and default tone', () => {
+  it('puts primary actions first, preserves relative tone-group order, and keeps destructive actions last', () => {
     const actions = resolveOptionsMenuSheetActions([
+      {
+        disabled: true,
+        id: 'share',
+        label: 'Share',
+        onPress: () => undefined,
+      },
       {
         id: 'rename',
         label: 'Rename playlist',
@@ -13,16 +19,15 @@ describe('options menu sheet actions', () => {
         tone: 'primary',
       },
       {
+        id: 'queue-next',
+        label: 'Play next',
+        onPress: () => undefined,
+      },
+      {
         id: 'remove',
         label: 'Remove playlist',
         onPress: () => undefined,
         tone: 'destructive',
-      },
-      {
-        disabled: true,
-        id: 'share',
-        label: 'Share',
-        onPress: () => undefined,
       },
     ]);
 
@@ -41,16 +46,22 @@ describe('options menu sheet actions', () => {
           tone: 'primary',
         },
         {
-          disabled: false,
-          id: 'remove',
-          label: 'Remove playlist',
-          tone: 'destructive',
-        },
-        {
           disabled: true,
           id: 'share',
           label: 'Share',
           tone: 'secondary',
+        },
+        {
+          disabled: false,
+          id: 'queue-next',
+          label: 'Play next',
+          tone: 'secondary',
+        },
+        {
+          disabled: false,
+          id: 'remove',
+          label: 'Remove playlist',
+          tone: 'destructive',
         },
       ],
     );

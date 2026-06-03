@@ -8,6 +8,7 @@ import {
   type SavedLoopCard,
   type SavedLoopIssue,
 } from '../utils/saved-loop-view-model';
+import { resolveSavedLoopRowActions } from '../utils/saved-loop-row-actions';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -40,6 +41,32 @@ type SavedLoopListProps = {
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   removeLoop: (loop: SavedLoopCard['loop']) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
+};
+
+const getInlineActionButtonStyle = (
+  tone?: 'destructive' | 'neutral' | 'primary',
+) => {
+  return tone === 'primary' ? styles.playButton : styles.secondaryButton;
+};
+
+const getInlineActionLabelStyle = (
+  tone?: 'destructive' | 'neutral' | 'primary',
+) => {
+  return tone === 'primary'
+    ? styles.playButtonLabel
+    : styles.secondaryButtonLabel;
+};
+
+const getMenuTone = (tone?: 'destructive' | 'neutral' | 'primary') => {
+  if (tone === 'primary') {
+    return 'primary' as const;
+  }
+
+  if (tone === 'destructive') {
+    return 'destructive' as const;
+  }
+
+  return 'secondary' as const;
 };
 
 export const SavedLoopList = ({
@@ -91,6 +118,51 @@ export const SavedLoopList = ({
         const isPlaybackLoopActive =
           loopCard.playableItem !== null &&
           isSavedTrackPlaybackActive(activePlayableItem, loopCard.playableItem);
+        const rowActions = resolveSavedLoopRowActions({
+          canMutateLoops,
+          canMutatePlaylists,
+          canQueueAsNext,
+          hasPlayableItem: playableItem !== null,
+          isLoopActive: isPlaybackLoopActive,
+          isLoopMutating: pendingLoopId !== null,
+          isPendingRemoval: pendingLoopId === loopCard.loop.id,
+          isPlaylistMutating,
+          onOpenPlaylistSelector: () => {
+            setActiveOptionsLoopId(null);
+            onOpenLoopPlaylistSelector(loopCard.loop.id);
+          },
+          onQueueNext: () => {
+            if (!playableItem) {
+              return;
+            }
+
+            queuePlayableItemNext(playableItem);
+          },
+          onQueueUpNext: () => {
+            if (!playableItem) {
+              return;
+            }
+
+            queuePlayableItemUpNext(playableItem);
+          },
+          onRemove: () => {
+            removeLoop(loopCard.loop);
+          },
+          onTogglePlayback: () => {
+            if (!loopCard.playableItem) {
+              return;
+            }
+
+            void togglePlayableItemPlayback(loopCard.playableItem);
+          },
+          playbackAction,
+        });
+        const inlineActions = rowActions.filter((action) => {
+          return action.placement === 'inline';
+        });
+        const menuActions = rowActions.filter((action) => {
+          return action.placement === 'menu';
+        });
         const loopMessage =
           getSavedLoopItemIssue(loopIssue, loopCard.loop.id) ??
           loopCard.message ??
@@ -110,110 +182,53 @@ export const SavedLoopList = ({
                   style={styles.loopName}
                   text={loopCard.loop.name}
                 />
-                <Pressable
-                  accessibilityLabel="Loop options"
-                  accessibilityRole="button"
-                  onPress={() => {
-                    setActiveOptionsLoopId(loopCard.loop.id);
-                  }}
-                  style={({ pressed }) => [
-                    styles.iconButton,
-                    pressed ? styles.actionButtonPressed : undefined,
-                  ]}
-                >
-                  <MaterialCommunityIcons
-                    color={SAVED_LOOP_PRIMARY_TEXT}
-                    name="dots-vertical"
-                    size={18}
-                  />
-                </Pressable>
+                {menuActions.length > 0 ? (
+                  <Pressable
+                    accessibilityLabel="Loop options"
+                    accessibilityRole="button"
+                    onPress={() => {
+                      setActiveOptionsLoopId(loopCard.loop.id);
+                    }}
+                    style={({ pressed }) => [
+                      styles.iconButton,
+                      pressed ? styles.actionButtonPressed : undefined,
+                    ]}
+                  >
+                    <MaterialCommunityIcons
+                      color={SAVED_LOOP_PRIMARY_TEXT}
+                      name="dots-vertical"
+                      size={18}
+                    />
+                  </Pressable>
+                ) : null}
               </View>
               <View style={styles.actionRow}>
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={playbackAction.disabled}
-                  onPress={() => {
-                    if (!loopCard.playableItem) {
-                      return;
-                    }
-
-                    void togglePlayableItemPlayback(loopCard.playableItem);
-                  }}
-                  style={({ pressed }) => [
-                    styles.playButton,
-                    pressed && !playbackAction.disabled
-                      ? styles.actionButtonPressed
-                      : undefined,
-                    playbackAction.disabled
-                      ? styles.actionButtonDisabled
-                      : undefined,
-                  ]}
-                >
-                  <Text style={styles.playButtonLabel}>
-                    {playbackAction.label}
-                  </Text>
-                </Pressable>
-                {canQueueAsNext && playableItem ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => {
-                      queuePlayableItemNext(playableItem);
-                    }}
-                    style={({ pressed }) => [
-                      styles.secondaryButton,
-                      pressed ? styles.actionButtonPressed : undefined,
-                    ]}
-                  >
-                    <Text style={styles.secondaryButtonLabel}>Play next</Text>
-                  </Pressable>
-                ) : null}
-                {canQueueAsNext && playableItem ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => {
-                      queuePlayableItemUpNext(playableItem);
-                    }}
-                    style={({ pressed }) => [
-                      styles.secondaryButton,
-                      pressed ? styles.actionButtonPressed : undefined,
-                    ]}
-                  >
-                    <Text style={styles.secondaryButtonLabel}>
-                      Add to queue
-                    </Text>
-                  </Pressable>
-                ) : null}
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={
-                    !canMutateLoops ||
-                    pendingLoopId !== null ||
-                    isPlaybackLoopActive
-                  }
-                  onPress={() => {
-                    removeLoop(loopCard.loop);
-                  }}
-                  style={({ pressed }) => [
-                    styles.secondaryButton,
-                    pressed &&
-                    canMutateLoops &&
-                    pendingLoopId === null &&
-                    !isPlaybackLoopActive
-                      ? styles.actionButtonPressed
-                      : undefined,
-                    !canMutateLoops ||
-                    pendingLoopId !== null ||
-                    isPlaybackLoopActive
-                      ? styles.actionButtonDisabled
-                      : undefined,
-                  ]}
-                >
-                  <Text style={styles.secondaryButtonLabel}>
-                    {pendingLoopId === loopCard.loop.id
-                      ? 'Removing…'
-                      : 'Remove'}
-                  </Text>
-                </Pressable>
+                {inlineActions.map((action, index) => {
+                  return (
+                    <Pressable
+                      accessibilityLabel={
+                        action.accessibilityLabel ?? action.label
+                      }
+                      accessibilityRole="button"
+                      disabled={action.disabled}
+                      key={`${loopCard.loop.id}:${action.accessibilityLabel ?? action.label}:${index}`}
+                      onPress={action.onPress}
+                      style={({ pressed }) => [
+                        getInlineActionButtonStyle(action.tone),
+                        pressed && !action.disabled
+                          ? styles.actionButtonPressed
+                          : undefined,
+                        action.disabled
+                          ? styles.actionButtonDisabled
+                          : undefined,
+                      ]}
+                    >
+                      <Text style={getInlineActionLabelStyle(action.tone)}>
+                        {action.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </View>
             </View>
 
@@ -226,22 +241,18 @@ export const SavedLoopList = ({
               <Text style={styles.loopMessage}>{loopMessage}</Text>
             ) : null}
             <OptionsMenuSheet
-              actions={[
-                {
-                  disabled: !canMutatePlaylists || isPlaylistMutating,
-                  id: `loop:${loopCard.loop.id}:add-to-playlist`,
-                  label: !canMutatePlaylists
-                    ? 'Playlists unavailable'
-                    : isPlaylistMutating
-                      ? 'Updating playlist…'
-                      : 'Add to playlist',
+              actions={menuActions.map((action, index) => {
+                return {
+                  disabled: action.disabled,
+                  id: `loop:${loopCard.loop.id}:${index}`,
+                  label: action.label,
                   onPress: () => {
                     setActiveOptionsLoopId(null);
-                    onOpenLoopPlaylistSelector(loopCard.loop.id);
+                    action.onPress();
                   },
-                  tone: 'primary',
-                },
-              ]}
+                  tone: getMenuTone(action.tone),
+                };
+              })}
               isVisible={activeOptionsLoopId === loopCard.loop.id}
               onClose={() => {
                 setActiveOptionsLoopId(null);

@@ -28,6 +28,7 @@ import {
   resolveSavedLoopCards,
   updateLoopBuilderDraftRange,
 } from '../utils/saved-loop-view-model.js';
+import { resolveSavedLoopRowActions } from '../utils/saved-loop-row-actions.js';
 import { resolveLoopPreviewPlaybackTimeline } from '../utils/saved-loop-preview-playback-view-model.js';
 
 describe('saved loop view-model', () => {
@@ -154,6 +155,116 @@ describe('saved loop view-model', () => {
     assert.equal(loopCard?.metadataLabel, 'Alto Line.mp3 • 0:12 to 0:18');
     assert.equal(loopCard?.playableItem?.id, 'loop:loop-1');
     assert.equal(loopCard?.message, undefined);
+  });
+
+  it('keeps loop playback inline and routes secondary actions through overflow', () => {
+    const actions = resolveSavedLoopRowActions({
+      canMutateLoops: true,
+      canMutatePlaylists: true,
+      canQueueAsNext: true,
+      hasPlayableItem: true,
+      isLoopActive: false,
+      isLoopMutating: false,
+      isPendingRemoval: false,
+      isPlaylistMutating: false,
+      onOpenPlaylistSelector: () => undefined,
+      onQueueNext: () => undefined,
+      onQueueUpNext: () => undefined,
+      onRemove: () => undefined,
+      onTogglePlayback: () => undefined,
+      playbackAction: {
+        disabled: false,
+        label: 'Play',
+      },
+    });
+
+    assert.deepEqual(
+      actions.map((action) => ({
+        disabled: action.disabled ?? false,
+        label: action.label,
+        placement: action.placement,
+        tone: action.tone,
+      })),
+      [
+        {
+          disabled: false,
+          label: 'Play',
+          placement: 'inline',
+          tone: 'primary',
+        },
+        {
+          disabled: false,
+          label: 'Play next',
+          placement: 'menu',
+          tone: undefined,
+        },
+        {
+          disabled: false,
+          label: 'Add to queue',
+          placement: 'menu',
+          tone: undefined,
+        },
+        {
+          disabled: false,
+          label: 'Add to playlist',
+          placement: 'menu',
+          tone: 'primary',
+        },
+        {
+          disabled: false,
+          label: 'Remove',
+          placement: 'menu',
+          tone: 'destructive',
+        },
+      ],
+    );
+  });
+
+  it('omits loop queue actions when playback queueing is unavailable', () => {
+    const actions = resolveSavedLoopRowActions({
+      canMutateLoops: true,
+      canMutatePlaylists: false,
+      canQueueAsNext: false,
+      hasPlayableItem: false,
+      isLoopActive: true,
+      isLoopMutating: true,
+      isPendingRemoval: true,
+      isPlaylistMutating: false,
+      onOpenPlaylistSelector: () => undefined,
+      onQueueNext: () => undefined,
+      onQueueUpNext: () => undefined,
+      onRemove: () => undefined,
+      onTogglePlayback: () => undefined,
+      playbackAction: {
+        disabled: true,
+        label: 'Unavailable',
+      },
+    });
+
+    assert.deepEqual(
+      actions.map((action) => ({
+        disabled: action.disabled ?? false,
+        label: action.label,
+        placement: action.placement,
+      })),
+      [
+        {
+          disabled: true,
+          label: 'Unavailable',
+          placement: 'inline',
+        },
+        {
+          disabled: true,
+          label: 'Playlists unavailable',
+          placement: 'menu',
+        },
+        {
+          disabled: true,
+          label: 'Removing…',
+          placement: 'menu',
+        },
+      ],
+    );
   });
 
   it('lets the loop builder follow an explicitly selected saved track', () => {

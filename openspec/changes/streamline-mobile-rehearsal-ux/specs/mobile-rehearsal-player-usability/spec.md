@@ -219,6 +219,13 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 - **WHEN** new row-level actions are added in this change (for example queue acceleration actions)
 - **THEN** those actions follow the same shared overflow menu pattern unless they are designated as the row's primary quick action
 
+#### Scenario: Overflow menus keep priority ordering predictable
+
+- **WHEN** a row, card, or recent-item overflow menu mixes primary, secondary, navigation, or destructive actions
+- **THEN** the first overflow level lists primary actions before secondary or navigation actions
+- **AND** destructive actions appear last
+- **AND** actions within the same priority group keep a stable relative order across Library, Add, and Recents surfaces
+
 #### Scenario: Queue-capable surfaces share the same transient-queue behavior
 
 - **WHEN** a user invokes `Play next` or `Add to queue` from Library, Add, Recents, or another surface that exposes queue operations
