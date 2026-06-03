@@ -45,8 +45,18 @@ type BuildPlaylistPlaybackSessionOptions = {
   startEntryId?: string;
 };
 
+type QueuePlayableItemDuringPlaybackOptions = {
+  activePlayableItem: PlayableItem | null;
+  playableItem: PlayableItem;
+  position: 'next' | 'up-next';
+  repeatMode: RepeatMode;
+  session: PlaylistPlaybackSession | null;
+};
+
 const ORDERED_BUTTON_LABEL = 'Play ordered';
 const SHUFFLE_BUTTON_LABEL = 'Shuffle play';
+const TRANSIENT_QUEUE_PLAYLIST_ID = 'transient-queue';
+const TRANSIENT_QUEUE_PLAYLIST_NAME = 'Current queue';
 
 const getBaseActionLabel = (mode: RehearsalQueueMode) => {
   return mode === 'ordered' ? ORDERED_BUTTON_LABEL : SHUFFLE_BUTTON_LABEL;
@@ -211,6 +221,46 @@ export const queuePlayableItemAsUpNext = (
     },
     requestedItemCount: session.requestedItemCount + 1,
   };
+};
+
+export const createTransientPlaybackSession = (options: {
+  activePlayableItem: PlayableItem;
+  repeatMode: RepeatMode;
+}): PlaylistPlaybackSession => {
+  return {
+    currentIndex: 0,
+    hasCompleted: false,
+    playlistId: TRANSIENT_QUEUE_PLAYLIST_ID,
+    playlistName: TRANSIENT_QUEUE_PLAYLIST_NAME,
+    queue: {
+      items: [options.activePlayableItem],
+      mode: 'ordered',
+      playlistId: TRANSIENT_QUEUE_PLAYLIST_ID,
+      repeatMode: options.repeatMode,
+    },
+    requestedItemCount: 1,
+  } satisfies PlaylistPlaybackSession;
+};
+
+export const queuePlayableItemDuringPlayback = (
+  options: QueuePlayableItemDuringPlaybackOptions,
+): PlaylistPlaybackSession | null => {
+  const session =
+    options.session ??
+    (options.activePlayableItem
+      ? createTransientPlaybackSession({
+          activePlayableItem: options.activePlayableItem,
+          repeatMode: options.repeatMode,
+        })
+      : null);
+
+  if (!session) {
+    return null;
+  }
+
+  return options.position === 'next'
+    ? queuePlayableItemAsNext(session, options.playableItem)
+    : queuePlayableItemAsUpNext(session, options.playableItem);
 };
 
 export const resolvePlaylistPlaybackAdvance = (

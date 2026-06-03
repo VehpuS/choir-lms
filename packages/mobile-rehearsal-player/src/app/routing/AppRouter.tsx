@@ -123,7 +123,7 @@ export const AppRouter = () => {
       recentsScreen={
         <RecentsScreen
           activePlayableItemId={playback.activePlayableItem?.id ?? null}
-          canQueueAsNext={playback.activePlaylistSession !== null}
+          canQueueAsNext={playback.activePlayableItem !== null}
           isPlaybackActive={playback.playbackState === 'playing'}
           isRecentItemInLibrary={(recentRehearsal) => {
             if (recentRehearsal.playableItem.kind === 'loop') {

@@ -6,6 +6,7 @@ import { describe, it } from 'node:test';
 import {
   addLoopToPlaylist,
   addTrackToPlaylist,
+  createTrackPlayableItem,
   createPlaylist,
 } from '@org/audio-library-models';
 
@@ -31,6 +32,7 @@ import {
   getPlaylistPlaybackSessionSummary,
   getPlaylistQueueModeLabel,
   getPlaylistRepeatModeLabel,
+  queuePlayableItemDuringPlayback,
   queuePlayableItemAsNext,
   queuePlayableItemAsUpNext,
   resolvePlaylistPlaybackAdvance,
@@ -756,6 +758,44 @@ describe('saved playlist view-model', () => {
     assert.equal(queuedSession.queue.items[1]?.id, 'loop:loop-1');
     assert.equal(queuedSession.queue.items[2]?.id, 'track:drive:tenor-line');
     assert.equal(queuedSession.requestedItemCount, 3);
+  });
+
+  it('promotes standalone playback into a transient queue for Play next', () => {
+    const activePlayableItem = createTrackPlayableItem(PLAYABLE_SOURCE);
+    const queuedTrack = {
+      ...activePlayableItem,
+      id: 'track:drive:soprano-line',
+      sourceId: 'drive:soprano-line',
+      title: 'Soprano Line.mp3',
+    };
+
+    const queuedSession = queuePlayableItemDuringPlayback({
+      activePlayableItem,
+      playableItem: queuedTrack,
+      position: 'next',
+      repeatMode: 'one',
+      session: null,
+    });
+
+    assert.equal(queuedSession?.currentIndex, 0);
+    assert.equal(queuedSession?.playlistId, 'transient-queue');
+    assert.equal(queuedSession?.playlistName, 'Current queue');
+    assert.equal(queuedSession?.queue.repeatMode, 'one');
+    assert.equal(queuedSession?.queue.items[0]?.id, activePlayableItem.id);
+    assert.equal(queuedSession?.queue.items[1]?.id, queuedTrack.id);
+    assert.equal(queuedSession?.requestedItemCount, 2);
+  });
+
+  it('returns null when queue actions run without an active item or queue session', () => {
+    const queuedSession = queuePlayableItemDuringPlayback({
+      activePlayableItem: null,
+      playableItem: createTrackPlayableItem(PLAYABLE_SOURCE),
+      position: 'up-next',
+      repeatMode: 'off',
+      session: null,
+    });
+
+    assert.equal(queuedSession, null);
   });
 
   it('keeps ordered and shuffled playback controls as fresh start actions', () => {

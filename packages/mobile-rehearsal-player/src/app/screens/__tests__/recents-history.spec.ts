@@ -29,6 +29,7 @@ describe('buildRecentRehearsalItem', () => {
         queue: {
           items: [playableItem],
           mode: 'ordered',
+          playlistId: 'playlist-1',
           repeatMode: 'off',
         },
         requestedItemCount: 1,

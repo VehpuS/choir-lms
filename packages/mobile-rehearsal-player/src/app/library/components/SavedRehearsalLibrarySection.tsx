@@ -303,6 +303,7 @@ export const SavedRehearsalLibrarySection = ({
     playbackState,
   });
   const isPlaylistMutating = pendingPlaylistId !== null;
+  const canQueueAsNext = activePlayableItem !== null;
   const visibleSavedLibrarySources = useMemo(() => {
     return filterSavedLibrarySourcesByQuery({
       activeSearchQuery: activeLibrarySearchQuery,
@@ -635,7 +636,6 @@ export const SavedRehearsalLibrarySection = ({
                 pendingLoopBuilderSourceId !== null;
               const isPreparingLoopSource =
                 pendingLoopBuilderSourceId === source.id;
-              const canQueueAsNext = activePlaylistSession !== null;
 
               return resolveSavedTrackRowActions({
                 canMutateLibrary,
@@ -698,7 +698,7 @@ export const SavedRehearsalLibrarySection = ({
             canMutateLoops={canMutateLoops}
             canMutatePlaylists={canMutatePlaylists}
             isPlaylistMutating={isPlaylistMutating}
-            canQueueAsNext={activePlaylistSession !== null}
+            canQueueAsNext={canQueueAsNext}
             highlightQuery={activeLibrarySearchQuery}
             isPlaybackPreparing={isPlaybackPreparing}
             isSavedLoopsLoading={isSavedLoopsLoading}

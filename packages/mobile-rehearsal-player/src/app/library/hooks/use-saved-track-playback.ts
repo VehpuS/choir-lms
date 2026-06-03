@@ -18,6 +18,7 @@ import {
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
+  queuePlayableItemDuringPlayback,
   queuePlayableItemAsNext,
   queuePlayableItemAsUpNext,
   updatePlaylistPlaybackRepeatMode,
@@ -402,20 +403,24 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
     },
     queuePlayableItemNext(playableItem: PlayableItem) {
       setActivePlaylistSession((currentSession) => {
-        if (!currentSession) {
-          return currentSession;
-        }
-
-        return queuePlayableItemAsNext(currentSession, playableItem);
+        return queuePlayableItemDuringPlayback({
+          activePlayableItem: activePlayableItemRef.current,
+          playableItem,
+          position: 'next',
+          repeatMode: repeatModeRef.current,
+          session: currentSession,
+        });
       });
     },
     queuePlayableItemUpNext(playableItem: PlayableItem) {
       setActivePlaylistSession((currentSession) => {
-        if (!currentSession) {
-          return currentSession;
-        }
-
-        return queuePlayableItemAsUpNext(currentSession, playableItem);
+        return queuePlayableItemDuringPlayback({
+          activePlayableItem: activePlayableItemRef.current,
+          playableItem,
+          position: 'up-next',
+          repeatMode: repeatModeRef.current,
+          session: currentSession,
+        });
       });
     },
     async skipToNextItem() {
