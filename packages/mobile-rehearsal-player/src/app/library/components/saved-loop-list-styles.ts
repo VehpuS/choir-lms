@@ -25,17 +25,7 @@ export const savedLoopListStyles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: '#fffdf8',
   },
-  loopHeader: {
-    gap: 12,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    alignItems: 'center',
-  },
   loopName: {
-    paddingRight: 44,
     color: SAVED_LOOP_PRIMARY_TEXT,
     fontSize: 15,
     fontWeight: '700',

@@ -4,6 +4,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { useState } from 'react';
 import { runtimeConfig } from '../../config/runtime';
+import { CompactPlayableRowShell } from '../components/CompactPlayableRowShell';
 import { OptionsMenuSheet } from '../library/components/OptionsMenuSheet';
 import { appTheme } from '../utils/theme';
 import {
@@ -94,64 +95,72 @@ export const RecentsScreen = ({
             recentRehearsal.playableItem.id === activePlayableItemId;
 
           return (
-            <View key={recentRehearsal.id} style={styles.recentItemRow}>
-              <View style={styles.recentItemCopy}>
-                <Text numberOfLines={1} style={styles.recentItemTitle}>
-                  {recentRehearsal.title}
-                </Text>
-                <Text numberOfLines={1} style={styles.recentItemMeta}>
-                  {getRecentRehearsalLastPlayedLabel(recentRehearsal.playedAt)}
-                </Text>
-              </View>
-              <View style={styles.recentItemActions}>
-                <Pressable
-                  accessibilityLabel={`Play ${recentRehearsal.title}`}
-                  accessibilityRole="button"
-                  accessibilityState={{
-                    disabled: isCurrentRowPlaying,
-                  }}
-                  disabled={isCurrentRowPlaying}
-                  onPress={() => {
-                    onResumeRecentPlayback(recentRehearsal);
-                  }}
-                  style={({ pressed }) => [
-                    styles.iconActionButton,
-                    pressed && !isCurrentRowPlaying
-                      ? styles.iconActionButtonPressed
-                      : undefined,
-                    isCurrentRowPlaying
-                      ? styles.iconActionButtonDisabled
-                      : undefined,
-                  ]}
-                >
-                  <MaterialCommunityIcons
-                    color={
+            <View key={recentRehearsal.id}>
+              <CompactPlayableRowShell
+                actions={
+                  <Pressable
+                    accessibilityLabel={`Play ${recentRehearsal.title}`}
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      disabled: isCurrentRowPlaying,
+                    }}
+                    disabled={isCurrentRowPlaying}
+                    onPress={() => {
+                      onResumeRecentPlayback(recentRehearsal);
+                    }}
+                    style={({ pressed }) => [
+                      styles.iconActionButton,
+                      pressed && !isCurrentRowPlaying
+                        ? styles.iconActionButtonPressed
+                        : undefined,
                       isCurrentRowPlaying
-                        ? appTheme.colors.secondaryText
-                        : appTheme.colors.primaryText
-                    }
-                    name="play"
-                    size={22}
-                  />
-                </Pressable>
-                <Pressable
-                  accessibilityLabel={`More actions for ${recentRehearsal.title}`}
-                  accessibilityRole="button"
-                  onPress={() => {
-                    setActiveOptionsRecentId(recentRehearsal.id);
-                  }}
-                  style={({ pressed }) => [
-                    styles.iconActionButton,
-                    pressed ? styles.iconActionButtonPressed : undefined,
-                  ]}
-                >
-                  <MaterialCommunityIcons
-                    color={appTheme.colors.primaryText}
-                    name="dots-vertical"
-                    size={20}
-                  />
-                </Pressable>
-              </View>
+                        ? styles.iconActionButtonDisabled
+                        : undefined,
+                    ]}
+                  >
+                    <MaterialCommunityIcons
+                      color={
+                        isCurrentRowPlaying
+                          ? appTheme.colors.secondaryText
+                          : appTheme.colors.primaryText
+                      }
+                      name="play"
+                      size={22}
+                    />
+                  </Pressable>
+                }
+                metadata={
+                  <Text numberOfLines={1} style={styles.recentItemMeta}>
+                    {getRecentRehearsalLastPlayedLabel(recentRehearsal.playedAt)}
+                  </Text>
+                }
+                overflowTrigger={
+                  <Pressable
+                    accessibilityLabel={`More actions for ${recentRehearsal.title}`}
+                    accessibilityRole="button"
+                    onPress={() => {
+                      setActiveOptionsRecentId(recentRehearsal.id);
+                    }}
+                    style={({ pressed }) => [
+                      styles.iconActionButton,
+                      pressed ? styles.iconActionButtonPressed : undefined,
+                    ]}
+                  >
+                    <MaterialCommunityIcons
+                      color={appTheme.colors.primaryText}
+                      name="dots-vertical"
+                      size={20}
+                    />
+                  </Pressable>
+                }
+                style={styles.recentItemRow}
+                title={
+                  <Text numberOfLines={1} style={styles.recentItemTitle}>
+                    {recentRehearsal.title}
+                  </Text>
+                }
+                variant="row"
+              />
               <OptionsMenuSheet
                 actions={getRecentsOverflowActionState({
                   canQueueAsNext,

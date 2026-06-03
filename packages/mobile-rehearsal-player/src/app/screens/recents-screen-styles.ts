@@ -96,29 +96,16 @@ export const recentsScreenStyles = StyleSheet.create({
   },
   recentItemRow: {
     marginTop: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
   },
   recentItemTitle: {
     color: appTheme.colors.primaryText,
     fontSize: 15,
     fontWeight: '600',
   },
-  recentItemCopy: {
-    flex: 1,
-    gap: 2,
-  },
   recentItemMeta: {
     color: appTheme.colors.secondaryText,
     fontSize: 12,
     lineHeight: 16,
-  },
-  recentItemActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
   },
   shortcutsHeader: {
     flexDirection: 'row',

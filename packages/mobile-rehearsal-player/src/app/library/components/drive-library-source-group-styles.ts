@@ -31,17 +31,7 @@ export const driveLibrarySourceGroupStyles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: '#faf6ee',
   },
-  sourceHeader: {
-    gap: 12,
-  },
-  sourceControls: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    alignItems: 'center',
-  },
   sourceName: {
-    paddingRight: 44,
     color: DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT,
     fontSize: 15,
     fontWeight: '700',

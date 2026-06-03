@@ -3,6 +3,7 @@ import { type PlayableItem } from '@org/audio-library-models';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
+import { CompactPlayableRowShell } from '../../components/CompactPlayableRowShell';
 import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
 import {
   getSavedLoopItemIssue,
@@ -174,93 +175,90 @@ export const SavedLoopList = ({
                 loopCard.playableItem,
               )
             : undefined);
+        const overflowTrigger =
+          menuActions.length > 0 ? (
+            <OverflowMenuTrigger
+              accessibilityLabel="Loop options"
+              onPress={() => {
+                setActiveOptionsLoopId(loopCard.loop.id);
+              }}
+            />
+          ) : null;
 
         return (
-          <View key={loopCard.loop.id} style={styles.loopCard}>
-            {menuActions.length > 0 ? (
-              <OverflowMenuTrigger
-                accessibilityLabel="Loop options"
-                onPress={() => {
-                  setActiveOptionsLoopId(loopCard.loop.id);
-                }}
-              />
-            ) : null}
-            <View style={styles.loopHeader}>
-              <SearchHighlightedText
-                query={highlightQuery}
-                style={styles.loopName}
-                text={loopCard.loop.name}
-              />
-              <View style={styles.actionRow}>
-                {inlineActions.map((action, index) => {
-                  if (action.iconName) {
-                    return (
-                      <Pressable
-                        accessibilityLabel={
-                          action.accessibilityLabel ?? action.label
-                        }
-                        accessibilityRole="button"
-                        accessibilityState={{
-                          disabled: action.disabled,
-                        }}
-                        disabled={action.disabled}
-                        key={`${loopCard.loop.id}:${action.accessibilityLabel ?? action.label}:${index}`}
-                        onPress={action.onPress}
-                        style={({ pressed }) => [
-                          styles.iconButton,
-                          pressed && !action.disabled
-                            ? styles.actionButtonPressed
-                            : undefined,
-                          action.disabled
-                            ? styles.actionButtonDisabled
-                            : undefined,
-                        ]}
-                      >
-                        <MaterialCommunityIcons
-                          color={SAVED_LOOP_PRIMARY_TEXT}
-                          name={action.iconName}
-                          size={18}
-                        />
-                      </Pressable>
-                    );
-                  }
-
+          <View key={loopCard.loop.id}>
+            <CompactPlayableRowShell
+              actions={inlineActions.map((action, index) => {
+                if (action.iconName) {
                   return (
                     <Pressable
-                      accessibilityLabel={
-                        action.accessibilityLabel ?? action.label
-                      }
+                      accessibilityLabel={action.accessibilityLabel ?? action.label}
                       accessibilityRole="button"
+                      accessibilityState={{
+                        disabled: action.disabled,
+                      }}
                       disabled={action.disabled}
                       key={`${loopCard.loop.id}:${action.accessibilityLabel ?? action.label}:${index}`}
                       onPress={action.onPress}
                       style={({ pressed }) => [
-                        getInlineActionButtonStyle(action.tone),
+                        styles.iconButton,
                         pressed && !action.disabled
                           ? styles.actionButtonPressed
                           : undefined,
-                        action.disabled
-                          ? styles.actionButtonDisabled
-                          : undefined,
+                        action.disabled ? styles.actionButtonDisabled : undefined,
                       ]}
                     >
-                      <Text style={getInlineActionLabelStyle(action.tone)}>
-                        {action.label}
-                      </Text>
+                      <MaterialCommunityIcons
+                        color={SAVED_LOOP_PRIMARY_TEXT}
+                        name={action.iconName}
+                        size={18}
+                      />
                     </Pressable>
                   );
-                })}
-              </View>
-            </View>
+                }
 
-            <SearchHighlightedText
-              query={highlightQuery}
-              style={styles.loopMetadata}
-              text={loopCard.metadataLabel}
+                return (
+                  <Pressable
+                    accessibilityLabel={action.accessibilityLabel ?? action.label}
+                    accessibilityRole="button"
+                    disabled={action.disabled}
+                    key={`${loopCard.loop.id}:${action.accessibilityLabel ?? action.label}:${index}`}
+                    onPress={action.onPress}
+                    style={({ pressed }) => [
+                      getInlineActionButtonStyle(action.tone),
+                      pressed && !action.disabled
+                        ? styles.actionButtonPressed
+                        : undefined,
+                      action.disabled ? styles.actionButtonDisabled : undefined,
+                    ]}
+                  >
+                    <Text style={getInlineActionLabelStyle(action.tone)}>
+                      {action.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+              metadata={
+                <SearchHighlightedText
+                  query={highlightQuery}
+                  style={styles.loopMetadata}
+                  text={loopCard.metadataLabel}
+                />
+              }
+              message={
+                loopMessage ? <Text style={styles.loopMessage}>{loopMessage}</Text> : null
+              }
+              overflowTrigger={overflowTrigger}
+              style={styles.loopCard}
+              title={
+                <SearchHighlightedText
+                  query={highlightQuery}
+                  style={styles.loopName}
+                  text={loopCard.loop.name}
+                />
+              }
+              variant="card"
             />
-            {loopMessage ? (
-              <Text style={styles.loopMessage}>{loopMessage}</Text>
-            ) : null}
             <OptionsMenuSheet
               actions={menuActions.map((action, index) => {
                 return {

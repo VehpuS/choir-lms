@@ -13,6 +13,7 @@ import {
   resolveDriveLibrarySourceActionPlacement,
   type DriveLibrarySourceAction,
 } from '../utils/drive-library-source-actions';
+import { CompactPlayableRowShell } from '../../components/CompactPlayableRowShell';
 import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
 import { OptionsMenuSheet } from './OptionsMenuSheet';
 import { SearchHighlightedText } from './SearchHighlightedText';
@@ -119,104 +120,108 @@ const DriveLibrarySourceCard = ({
   const metadataLabel = getSourceMetadataLabels(source).join(' • ');
   const statusMessage = externalMessage ?? getSourceStatusMessage(source);
   const isErrorMessage = externalMessage !== undefined;
+  const overflowTrigger =
+    menuActions.length > 0 ? (
+      <OverflowMenuTrigger
+        accessibilityLabel="Source options"
+        iconColor={DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT}
+        onPress={() => {
+          setIsOptionsMenuVisible(true);
+        }}
+      />
+    ) : null;
 
   return (
-    <View style={styles.sourceCard}>
-      {menuActions.length > 0 ? (
-        <OverflowMenuTrigger
-          accessibilityLabel="Source options"
-          iconColor={DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT}
-          onPress={() => {
-            setIsOptionsMenuVisible(true);
-          }}
-        />
-      ) : null}
-      <View style={styles.sourceHeader}>
-        <SearchHighlightedText
-          query={highlightQuery ?? null}
-          style={styles.sourceName}
-          text={source.name}
-        />
-        <View style={styles.sourceControls}>
-          <View style={[styles.badge, getAvailabilityBadgeStyle(source)]}>
-            <Text
-              style={[styles.badgeLabel, getAvailabilityLabelStyle(source)]}
-            >
-              {getSourceAvailabilityLabel(source)}
-            </Text>
-          </View>
-          {inlineActions.map(
-            (action: DriveLibrarySourceAction, index: number) => {
-              if (action.iconName) {
-                return (
-                  <Pressable
-                    accessibilityLabel={
-                      action.accessibilityLabel ?? action.label
-                    }
-                    accessibilityRole="button"
-                    accessibilityState={{
-                      disabled: action.disabled,
-                    }}
-                    disabled={action.disabled}
-                    key={`${source.id}:${action.accessibilityLabel ?? action.label}:${index}`}
-                    onPress={action.onPress}
-                    style={({ pressed }) => [
-                      styles.iconButton,
-                      pressed && !action.disabled
-                        ? styles.actionButtonPressed
-                        : undefined,
-                      action.disabled ? styles.actionButtonDisabled : undefined,
-                    ]}
-                  >
-                    <MaterialCommunityIcons
-                      color={DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT}
-                      name={action.iconName}
-                      size={18}
-                    />
-                  </Pressable>
-                );
-              }
-
+    <>
+      <CompactPlayableRowShell
+        actions={inlineActions.map(
+          (action: DriveLibrarySourceAction, index: number) => {
+            if (action.iconName) {
               return (
                 <Pressable
                   accessibilityLabel={action.accessibilityLabel ?? action.label}
                   accessibilityRole="button"
+                  accessibilityState={{
+                    disabled: action.disabled,
+                  }}
                   disabled={action.disabled}
                   key={`${source.id}:${action.accessibilityLabel ?? action.label}:${index}`}
                   onPress={action.onPress}
                   style={({ pressed }) => [
-                    styles.actionButton,
-                    getActionButtonStyle(action),
+                    styles.iconButton,
                     pressed && !action.disabled
                       ? styles.actionButtonPressed
                       : undefined,
                     action.disabled ? styles.actionButtonDisabled : undefined,
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.actionButtonLabel,
-                      getActionButtonLabelStyle(action),
-                    ]}
-                  >
-                    {action.label}
-                  </Text>
+                  <MaterialCommunityIcons
+                    color={DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT}
+                    name={action.iconName}
+                    size={18}
+                  />
                 </Pressable>
               );
-            },
-          )}
-        </View>
-      </View>
-      <Text style={styles.sourceMetadata}>{metadataLabel}</Text>
-      {statusMessage ? (
-        <Text
-          style={
-            isErrorMessage ? styles.sourceErrorMessage : styles.sourceMessage
-          }
-        >
-          {statusMessage}
-        </Text>
-      ) : null}
+            }
+
+            return (
+              <Pressable
+                accessibilityLabel={action.accessibilityLabel ?? action.label}
+                accessibilityRole="button"
+                disabled={action.disabled}
+                key={`${source.id}:${action.accessibilityLabel ?? action.label}:${index}`}
+                onPress={action.onPress}
+                style={({ pressed }) => [
+                  styles.actionButton,
+                  getActionButtonStyle(action),
+                  pressed && !action.disabled
+                    ? styles.actionButtonPressed
+                    : undefined,
+                  action.disabled ? styles.actionButtonDisabled : undefined,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.actionButtonLabel,
+                    getActionButtonLabelStyle(action),
+                  ]}
+                >
+                  {action.label}
+                </Text>
+              </Pressable>
+            );
+          },
+        )}
+        badge={
+          <View style={[styles.badge, getAvailabilityBadgeStyle(source)]}>
+            <Text style={[styles.badgeLabel, getAvailabilityLabelStyle(source)]}>
+              {getSourceAvailabilityLabel(source)}
+            </Text>
+          </View>
+        }
+        metadata={<Text style={styles.sourceMetadata}>{metadataLabel}</Text>}
+        message={
+          statusMessage ? (
+            <Text
+              style={
+                isErrorMessage ? styles.sourceErrorMessage : styles.sourceMessage
+              }
+            >
+              {statusMessage}
+            </Text>
+          ) : null
+        }
+        overflowTrigger={overflowTrigger}
+        style={styles.sourceCard}
+        title={
+          <SearchHighlightedText
+            query={highlightQuery ?? null}
+            style={styles.sourceName}
+            text={source.name}
+          />
+        }
+        variant="card"
+      />
       <OptionsMenuSheet
         actions={menuActions.map((action, index) => {
           return {
@@ -236,7 +241,7 @@ const DriveLibrarySourceCard = ({
         }}
         title={source.name}
       />
-    </View>
+    </>
   );
 };
 
