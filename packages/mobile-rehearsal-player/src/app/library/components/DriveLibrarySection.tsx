@@ -333,6 +333,7 @@ export const DriveLibrarySection = ({
               }
               void saveSource(source);
             },
+            placement: isSaved ? ('menu' as const) : ('inline' as const),
           };
         }}
         getMessage={(source) => {

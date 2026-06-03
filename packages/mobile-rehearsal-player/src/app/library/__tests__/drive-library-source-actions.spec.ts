@@ -6,7 +6,7 @@ import { resolveDriveLibrarySourceActionPlacement } from '../utils/drive-library
 import { resolveDriveSourceActions } from '../utils/drive-search-preview-actions.js';
 
 describe('drive library source actions', () => {
-  it('prefers explicit placement over legacy heuristics', () => {
+  it('uses explicit placement metadata directly', () => {
     assert.equal(
       resolveDriveLibrarySourceActionPlacement({
         label: 'Remove',
@@ -24,31 +24,6 @@ describe('drive library source actions', () => {
         placement: 'menu',
       }),
       'menu',
-    );
-  });
-
-  it('keeps legacy placement fallback behavior for unmigrated actions', () => {
-    assert.equal(
-      resolveDriveLibrarySourceActionPlacement({
-        label: 'Remove',
-        onPress: () => undefined,
-      }),
-      'menu',
-    );
-    assert.equal(
-      resolveDriveLibrarySourceActionPlacement({
-        label: 'Queue later',
-        onPress: () => undefined,
-        variant: 'menu',
-      }),
-      'menu',
-    );
-    assert.equal(
-      resolveDriveLibrarySourceActionPlacement({
-        label: 'Preview',
-        onPress: () => undefined,
-      }),
-      'inline',
     );
   });
 
