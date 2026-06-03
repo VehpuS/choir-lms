@@ -1,8 +1,8 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Playlist } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
 
+import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
 import {
   consumeSavedPlaylistRenameRequest,
   type SavedPlaylistDetailRemovalNotice,
@@ -122,30 +122,13 @@ export const SavedPlaylistDetailCard = (props: {
       </View>
 
       {!props.isEditMode ? (
-        <Pressable
+        <OverflowMenuTrigger
           accessibilityLabel="Playlist options"
-          accessibilityRole="button"
           disabled={!props.canMutatePlaylists || props.isMutating}
           onPress={() => {
             setIsOptionsMenuVisible(true);
           }}
-          style={({ pressed }) => [
-            styles.compactIconButton,
-            styles.topRightMenuButton,
-            pressed && props.canMutatePlaylists && !props.isMutating
-              ? styles.actionButtonPressed
-              : undefined,
-            !props.canMutatePlaylists || props.isMutating
-              ? styles.actionButtonDisabled
-              : undefined,
-          ]}
-        >
-          <MaterialCommunityIcons
-            color="#1f1c17"
-            name="dots-vertical"
-            size={18}
-          />
-        </Pressable>
+        />
       ) : null}
 
       {!props.isEditMode ? (

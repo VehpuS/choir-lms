@@ -1,8 +1,8 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { type PlayableItem } from '@org/audio-library-models';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
+import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
 import {
   getSavedLoopItemIssue,
   type SavedLoopCard,
@@ -175,33 +175,20 @@ export const SavedLoopList = ({
 
         return (
           <View key={loopCard.loop.id} style={styles.loopCard}>
+            {menuActions.length > 0 ? (
+              <OverflowMenuTrigger
+                accessibilityLabel="Loop options"
+                onPress={() => {
+                  setActiveOptionsLoopId(loopCard.loop.id);
+                }}
+              />
+            ) : null}
             <View style={styles.loopHeader}>
-              <View style={styles.loopTitleRow}>
-                <SearchHighlightedText
-                  query={highlightQuery}
-                  style={styles.loopName}
-                  text={loopCard.loop.name}
-                />
-                {menuActions.length > 0 ? (
-                  <Pressable
-                    accessibilityLabel="Loop options"
-                    accessibilityRole="button"
-                    onPress={() => {
-                      setActiveOptionsLoopId(loopCard.loop.id);
-                    }}
-                    style={({ pressed }) => [
-                      styles.iconButton,
-                      pressed ? styles.actionButtonPressed : undefined,
-                    ]}
-                  >
-                    <MaterialCommunityIcons
-                      color={SAVED_LOOP_PRIMARY_TEXT}
-                      name="dots-vertical"
-                      size={18}
-                    />
-                  </Pressable>
-                ) : null}
-              </View>
+              <SearchHighlightedText
+                query={highlightQuery}
+                style={styles.loopName}
+                text={loopCard.loop.name}
+              />
               <View style={styles.actionRow}>
                 {inlineActions.map((action, index) => {
                   return (

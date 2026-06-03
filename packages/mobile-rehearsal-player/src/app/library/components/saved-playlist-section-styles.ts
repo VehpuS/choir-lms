@@ -250,12 +250,6 @@ export const savedPlaylistSectionStyles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: '#fffdf8',
   },
-  topRightMenuButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 1,
-  },
   destructiveButton: {
     alignSelf: 'flex-start',
     paddingHorizontal: 14,

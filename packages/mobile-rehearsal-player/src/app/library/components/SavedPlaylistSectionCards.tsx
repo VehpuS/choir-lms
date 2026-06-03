@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
+import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
 import {
   getSavedPlaylistCardPlayAction,
   resolveSavedPlaylistCardRenameTarget,
@@ -126,30 +127,13 @@ export const SavedPlaylistCardsList = (props: {
 
           return (
             <View key={playlistCard.playlist.id} style={styles.playlistCard}>
-              <Pressable
+              <OverflowMenuTrigger
                 accessibilityLabel="Playlist options"
-                accessibilityRole="button"
                 disabled={!props.canMutatePlaylists || props.isMutating}
                 onPress={() => {
                   setOptionsPlaylistId(playlistCard.playlist.id);
                 }}
-                style={({ pressed }) => [
-                  styles.compactIconButton,
-                  styles.topRightMenuButton,
-                  pressed && props.canMutatePlaylists && !props.isMutating
-                    ? styles.actionButtonPressed
-                    : undefined,
-                  !props.canMutatePlaylists || props.isMutating
-                    ? styles.actionButtonDisabled
-                    : undefined,
-                ]}
-              >
-                <MaterialCommunityIcons
-                  color="#1f1c17"
-                  name="dots-vertical"
-                  size={18}
-                />
-              </Pressable>
+              />
               <SearchHighlightedText
                 query={props.highlightQuery ?? null}
                 style={styles.playlistName}

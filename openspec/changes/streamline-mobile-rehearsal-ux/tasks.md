@@ -48,7 +48,7 @@
 - [x] 4.2.2 Introduce explicit row-action placement metadata (`inline` vs `menu`) with backward-compatible fallback logic and migrate current source/playlist callers.
 - [x] 4.2.3 Replace heuristic action grouping rules with explicit placement-only behavior after caller migration and validation.
 - [x] 4.2.4 Expand the shared overflow menu pattern to remaining row-action surfaces (for example loop rows and future queue quick-action entry points) so saved track and saved loop rows converge on the same top-level menu structure and icon semantics.
-- [ ] 4.2.5 Extract a shared overflow-trigger primitive (top-right vertical-ellipsis affordance) and adopt it in playlist, source, and future row-action surfaces.
+- [x] 4.2.5 Extract a shared overflow-trigger primitive (top-right vertical-ellipsis affordance) and adopt it in playlist, source, and future row-action surfaces.
 - [ ] 4.2.6 Converge playable row surfaces in Library and Add on one inline icon-only `Play` action plus a shared overflow trigger, while keeping `Make loop` as a saved-track-only overflow action.
 - [ ] 4.2.6.1 After row-action placement and quick-action semantics stabilize, extract a shared compact playable-row shell and adopt it in Add, Library, loop, and Recents row-style surfaces without collapsing surface-specific metadata, badges, or availability messaging.
 - [ ] 4.2.7 Extend queue-action availability rules to every queue-capable item surface so users can create or grow a transient queue from standalone playback without first opening a playlist. Implement transient queue promotion when `Play next` or `Add to queue` is invoked during standalone single-track playback, keeping the current track as queue head and preserving uninterrupted playback.

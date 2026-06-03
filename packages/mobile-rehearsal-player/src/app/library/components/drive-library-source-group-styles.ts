@@ -109,12 +109,6 @@ export const driveLibrarySourceGroupStyles = StyleSheet.create({
     borderColor: BORDER_COLOR,
     backgroundColor: '#fffdf8',
   },
-  topRightMenuButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 1,
-  },
   actionButtonNeutral: {
     borderColor: BORDER_COLOR,
     backgroundColor: '#fffdf8',

@@ -13,6 +13,7 @@ import {
   resolveDriveLibrarySourceActionPlacement,
   type DriveLibrarySourceAction,
 } from '../utils/drive-library-source-actions';
+import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
 import { OptionsMenuSheet } from './OptionsMenuSheet';
 import { SearchHighlightedText } from './SearchHighlightedText';
 import {
@@ -122,24 +123,13 @@ const DriveLibrarySourceCard = ({
   return (
     <View style={styles.sourceCard}>
       {menuActions.length > 0 ? (
-        <Pressable
+        <OverflowMenuTrigger
           accessibilityLabel="Source options"
-          accessibilityRole="button"
+          iconColor={DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT}
           onPress={() => {
             setIsOptionsMenuVisible(true);
           }}
-          style={({ pressed }) => [
-            styles.iconButton,
-            styles.topRightMenuButton,
-            pressed ? styles.actionButtonPressed : undefined,
-          ]}
-        >
-          <MaterialCommunityIcons
-            color={DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT}
-            name="dots-vertical"
-            size={18}
-          />
-        </Pressable>
+        />
       ) : null}
       <View style={styles.sourceHeader}>
         <SearchHighlightedText

@@ -16,6 +16,7 @@ export const savedLoopListStyles = StyleSheet.create({
     fontWeight: '700',
   },
   loopCard: {
+    position: 'relative',
     gap: 8,
     padding: 16,
     borderWidth: 1,
@@ -26,12 +27,6 @@ export const savedLoopListStyles = StyleSheet.create({
   loopHeader: {
     gap: 12,
   },
-  loopTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
   actionRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -39,6 +34,7 @@ export const savedLoopListStyles = StyleSheet.create({
     alignItems: 'center',
   },
   loopName: {
+    paddingRight: 44,
     color: SAVED_LOOP_PRIMARY_TEXT,
     fontSize: 15,
     fontWeight: '700',
@@ -85,15 +81,5 @@ export const savedLoopListStyles = StyleSheet.create({
   },
   actionButtonDisabled: {
     opacity: 0.56,
-  },
-  iconButton: {
-    width: 36,
-    height: 36,
-    borderWidth: 1,
-    borderColor: '#d6d1c4',
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fffdf8',
   },
 });
