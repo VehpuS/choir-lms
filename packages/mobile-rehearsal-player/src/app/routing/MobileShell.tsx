@@ -46,7 +46,14 @@ export type MobileShellProps = {
   isSavingQueueAsPlaylist: boolean;
   isPlaybackToggleDisabled: boolean;
   libraryScreen: ReactNode;
-  onAppendQueueToPlaylist: (playlistId: string) => Promise<PlaylistDraftIssue | null>;
+  onAppendQueueToPlaylist: (
+    playlistId: string,
+  ) => Promise<PlaylistDraftIssue | null>;
+  onMoveQueueItem: (fromIndex: number, toIndex: number) => void;
+  onMoveQueueItemToEnd: (index: number) => void;
+  onMoveQueueItemToStart: (index: number) => void;
+  onPlayQueueItem: (index: number) => void;
+  onRemoveQueueItem: (index: number) => void;
   onSeekBackward: () => void;
   onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
@@ -94,6 +101,11 @@ export const MobileShell = ({
   isPlaybackToggleDisabled,
   libraryScreen,
   onAppendQueueToPlaylist,
+  onMoveQueueItem,
+  onMoveQueueItemToEnd,
+  onMoveQueueItemToStart,
+  onPlayQueueItem,
+  onRemoveQueueItem,
   onSeekBackward,
   onSeekForward,
   onSeekToPosition,
@@ -116,8 +128,10 @@ export const MobileShell = ({
     useState<PlaybackSurfaceKey | null>(null);
   const [isQueuePlaylistDialogVisible, setIsQueuePlaylistDialogVisible] =
     useState(false);
-  const [isQueuePlaylistAppendDialogVisible, setIsQueuePlaylistAppendDialogVisible] =
-    useState(false);
+  const [
+    isQueuePlaylistAppendDialogVisible,
+    setIsQueuePlaylistAppendDialogVisible,
+  ] = useState(false);
   const [queuePlaylistDraftName, setQueuePlaylistDraftName] = useState('');
   const [queuePlaylistIssue, setQueuePlaylistIssue] =
     useState<PlaylistDraftIssue | null>(null);
@@ -340,12 +354,17 @@ export const MobileShell = ({
           setIsQueuePlaylistDialogVisible(false);
           setIsQueuePlaylistAppendDialogVisible(true);
         }}
+        onMoveQueueItem={onMoveQueueItem}
+        onMoveQueueItemToEnd={onMoveQueueItemToEnd}
+        onMoveQueueItemToStart={onMoveQueueItemToStart}
         onClose={() => {
           setActivePlaybackSurface(null);
           setIsQueuePlaylistDialogVisible(false);
           setIsQueuePlaylistAppendDialogVisible(false);
           setQueuePlaylistIssue(null);
         }}
+        onPlayQueueItem={onPlayQueueItem}
+        onRemoveQueueItem={onRemoveQueueItem}
         onSeekBackward={onSeekBackward}
         onSeekForward={onSeekForward}
         onSeekToPosition={onSeekToPosition}

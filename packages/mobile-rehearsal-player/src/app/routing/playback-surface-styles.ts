@@ -141,6 +141,27 @@ export const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: '#fffdf8',
   },
+  queueRowShell: {
+    alignItems: 'flex-start',
+  },
+  queueRowDragHandle: {
+    width: 46,
+    height: 46,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: appTheme.colors.border,
+    borderRadius: 999,
+    backgroundColor: '#fffdf8',
+  },
+  queueRowDragHandleDisabled: {
+    opacity: 0.5,
+  },
+  queueOverflowTrigger: {
+    position: 'relative',
+    top: 0,
+    right: 0,
+  },
   queueList: {
     flexGrow: 0,
   },

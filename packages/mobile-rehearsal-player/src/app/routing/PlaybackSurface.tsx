@@ -12,7 +12,8 @@ import {
   View,
 } from 'react-native';
 
-import { NowPlayingSurface, QueueSurface } from './PlaybackSurfaceContent';
+import { NowPlayingSurface } from './PlaybackSurfaceContent';
+import { QueueSurface } from './QueueSurface';
 import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
 import type {
   NowPlayingSurfaceSummary,
@@ -33,7 +34,12 @@ type PlaybackSurfaceProps = {
   nowPlayingSummary: NowPlayingSurfaceSummary | null;
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
   onAppendQueueToPlaylist: () => void;
+  onMoveQueueItem: (fromIndex: number, toIndex: number) => void;
+  onMoveQueueItemToEnd: (index: number) => void;
+  onMoveQueueItemToStart: (index: number) => void;
   onClose: () => void;
+  onPlayQueueItem: (index: number) => void;
+  onRemoveQueueItem: (index: number) => void;
   onSeekBackward: () => void;
   onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
@@ -64,7 +70,12 @@ export const PlaybackSurface = ({
   nowPlayingSummary,
   onAdjustPlaybackVolume,
   onAppendQueueToPlaylist,
+  onMoveQueueItem,
+  onMoveQueueItemToEnd,
+  onMoveQueueItemToStart,
   onClose,
+  onPlayQueueItem,
+  onRemoveQueueItem,
   onSeekBackward,
   onSeekForward,
   onSeekToPosition,
@@ -177,6 +188,11 @@ export const PlaybackSurface = ({
               isPlaybackToggleDisabled={isPlaybackToggleDisabled}
               onAppendQueueToPlaylist={onAppendQueueToPlaylist}
               onClose={dismissSurface}
+              onMoveQueueItem={onMoveQueueItem}
+              onMoveQueueItemToEnd={onMoveQueueItemToEnd}
+              onMoveQueueItemToStart={onMoveQueueItemToStart}
+              onPlayQueueItem={onPlayQueueItem}
+              onRemoveQueueItem={onRemoveQueueItem}
               onSaveQueueAsPlaylist={onSaveQueueAsPlaylist}
               onSelectQueueMode={onSelectQueueMode}
               onSelectRepeatMode={onSelectRepeatMode}

@@ -18,9 +18,12 @@ import {
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
+  movePlaylistPlaybackQueueItem,
+  movePlaylistPlaybackQueueItemToEnd,
+  movePlaylistPlaybackQueueItemToStart,
   queuePlayableItemDuringPlayback,
-  queuePlayableItemAsNext,
-  queuePlayableItemAsUpNext,
+  removePlaylistPlaybackQueueItem,
+  selectPlaylistPlaybackQueueItem,
   updatePlaylistPlaybackRepeatMode,
   type PlaylistPlaybackIssue,
   type PlaylistPlaybackSession,
@@ -59,6 +62,22 @@ const mapPlaylistPlaybackIssue = (issue: PlaylistPlaybackIssue) => {
     playlistId: issue.playlistId,
     title: issue.title,
   } satisfies SavedTrackPlaybackIssue;
+};
+
+const hasSameQueuePosition = (
+  activePlayableItem: PlayableItem | null,
+  comparedPlayableItem: PlayableItem,
+) => {
+  if (!activePlayableItem) {
+    return false;
+  }
+
+  const activeQueuePositionId =
+    activePlayableItem.playlistEntryId ?? activePlayableItem.id;
+  const comparedQueuePositionId =
+    comparedPlayableItem.playlistEntryId ?? comparedPlayableItem.id;
+
+  return activeQueuePositionId === comparedQueuePositionId;
 };
 
 export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
@@ -422,6 +441,73 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
           session: currentSession,
         });
       });
+    },
+    moveQueueItem(fromIndex: number, toIndex: number) {
+      setActivePlaylistSession((currentSession) => {
+        return currentSession
+          ? movePlaylistPlaybackQueueItem(currentSession, fromIndex, toIndex)
+          : currentSession;
+      });
+    },
+    moveQueueItemToEnd(index: number) {
+      setActivePlaylistSession((currentSession) => {
+        return currentSession
+          ? movePlaylistPlaybackQueueItemToEnd(currentSession, index)
+          : currentSession;
+      });
+    },
+    moveQueueItemToStart(index: number) {
+      setActivePlaylistSession((currentSession) => {
+        return currentSession
+          ? movePlaylistPlaybackQueueItemToStart(currentSession, index)
+          : currentSession;
+      });
+    },
+    removeQueueItem(index: number) {
+      setActivePlaylistSession((currentSession) => {
+        return currentSession
+          ? removePlaylistPlaybackQueueItem(currentSession, index)
+          : currentSession;
+      });
+    },
+    async playQueueItem(index: number) {
+      const currentSession = activePlaylistSessionRef.current;
+
+      if (!currentSession) {
+        return;
+      }
+
+      const selection = selectPlaylistPlaybackQueueItem(currentSession, index);
+
+      if (!selection.playableItem) {
+        return;
+      }
+
+      if (
+        hasSameQueuePosition(
+          activePlayableItemRef.current,
+          selection.playableItem,
+        )
+      ) {
+        setActivePlaylistSession(selection.nextSession);
+        await playbackController.playActivePlayback();
+        return;
+      }
+
+      setIssue(null);
+      setIsPreparing(true);
+
+      try {
+        if (await playbackController.loadPlayableItem(selection.playableItem)) {
+          setActivePlaylistSession(selection.nextSession);
+        }
+      } catch (error) {
+        setIssue(
+          createSavedTrackPlaybackRuntimeIssue(selection.playableItem, error),
+        );
+      } finally {
+        setIsPreparing(false);
+      }
     },
     async skipToNextItem() {
       await playbackController.playNextQueueItem();

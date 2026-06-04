@@ -283,6 +283,21 @@ export const AppRouter = () => {
         void playback.seekActivePlaybackToPosition(positionSeconds);
       }}
       onAppendQueueToPlaylist={handleAppendQueueToPlaylist}
+      onMoveQueueItem={(fromIndex, toIndex) => {
+        playback.moveQueueItem(fromIndex, toIndex);
+      }}
+      onMoveQueueItemToEnd={(index) => {
+        playback.moveQueueItemToEnd(index);
+      }}
+      onMoveQueueItemToStart={(index) => {
+        playback.moveQueueItemToStart(index);
+      }}
+      onPlayQueueItem={(index) => {
+        void playback.playQueueItem(index);
+      }}
+      onRemoveQueueItem={(index) => {
+        playback.removeQueueItem(index);
+      }}
       onSaveQueueAsPlaylist={handleSaveQueueAsPlaylist}
       onSelectQueueMode={(mode) => {
         playback.setPlaylistQueueMode(mode);

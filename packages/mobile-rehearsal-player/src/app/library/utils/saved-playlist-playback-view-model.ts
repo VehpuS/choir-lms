@@ -14,6 +14,19 @@ import {
 } from '@org/audio-library-runtime';
 
 import type { SavedTrackPlaybackState } from './saved-track-playback-view-model';
+export {
+  canShowQueuePlaylistActions,
+  createTransientPlaybackSession,
+  isTransientQueueSession,
+  movePlaylistPlaybackQueueItem,
+  movePlaylistPlaybackQueueItemToEnd,
+  movePlaylistPlaybackQueueItemToStart,
+  queuePlayableItemAsNext,
+  queuePlayableItemAsUpNext,
+  queuePlayableItemDuringPlayback,
+  removePlaylistPlaybackQueueItem,
+  selectPlaylistPlaybackQueueItem,
+} from './playlist-playback-queue-state';
 
 export type PlaylistPlaybackActionCopy = {
   disabled: boolean;
@@ -45,18 +58,8 @@ type BuildPlaylistPlaybackSessionOptions = {
   startEntryId?: string;
 };
 
-type QueuePlayableItemDuringPlaybackOptions = {
-  activePlayableItem: PlayableItem | null;
-  playableItem: PlayableItem;
-  position: 'next' | 'up-next';
-  repeatMode: RepeatMode;
-  session: PlaylistPlaybackSession | null;
-};
-
 const ORDERED_BUTTON_LABEL = 'Play ordered';
 const SHUFFLE_BUTTON_LABEL = 'Shuffle play';
-const TRANSIENT_QUEUE_PLAYLIST_ID = 'transient-queue';
-const TRANSIENT_QUEUE_PLAYLIST_NAME = 'Current queue';
 
 const getBaseActionLabel = (mode: RehearsalQueueMode) => {
   return mode === 'ordered' ? ORDERED_BUTTON_LABEL : SHUFFLE_BUTTON_LABEL;
@@ -184,95 +187,6 @@ export const updatePlaylistPlaybackRepeatMode = (
       repeatMode,
     },
   };
-};
-
-export const queuePlayableItemAsNext = (
-  session: PlaylistPlaybackSession,
-  playableItem: PlayableItem,
-): PlaylistPlaybackSession => {
-  const insertionIndex = Math.min(
-    session.currentIndex + 1,
-    session.queue.items.length,
-  );
-
-  return {
-    ...session,
-    queue: {
-      ...session.queue,
-      items: [
-        ...session.queue.items.slice(0, insertionIndex),
-        playableItem,
-        ...session.queue.items.slice(insertionIndex),
-      ],
-    },
-    requestedItemCount: session.requestedItemCount + 1,
-  };
-};
-
-export const queuePlayableItemAsUpNext = (
-  session: PlaylistPlaybackSession,
-  playableItem: PlayableItem,
-): PlaylistPlaybackSession => {
-  return {
-    ...session,
-    queue: {
-      ...session.queue,
-      items: [...session.queue.items, playableItem],
-    },
-    requestedItemCount: session.requestedItemCount + 1,
-  };
-};
-
-export const createTransientPlaybackSession = (options: {
-  activePlayableItem: PlayableItem;
-  repeatMode: RepeatMode;
-}): PlaylistPlaybackSession => {
-  return {
-    currentIndex: 0,
-    hasCompleted: false,
-    playlistId: TRANSIENT_QUEUE_PLAYLIST_ID,
-    playlistName: TRANSIENT_QUEUE_PLAYLIST_NAME,
-    queue: {
-      items: [options.activePlayableItem],
-      mode: 'ordered',
-      playlistId: TRANSIENT_QUEUE_PLAYLIST_ID,
-      repeatMode: options.repeatMode,
-    },
-    requestedItemCount: 1,
-  } satisfies PlaylistPlaybackSession;
-};
-
-export const isTransientQueueSession = (
-  session: PlaylistPlaybackSession | null,
-) => {
-  return session?.playlistId === TRANSIENT_QUEUE_PLAYLIST_ID;
-};
-
-export const canShowQueuePlaylistActions = (
-  session: PlaylistPlaybackSession | null,
-) => {
-  return session !== null && session.queue.items.length > 0;
-};
-
-export const queuePlayableItemDuringPlayback = (
-  options: QueuePlayableItemDuringPlaybackOptions,
-): PlaylistPlaybackSession | null => {
-  const session =
-    options.session ??
-    (options.activePlayableItem
-      ? createTransientPlaybackSession({
-          activePlayableItem: options.activePlayableItem,
-          repeatMode: options.repeatMode,
-        })
-      : null);
-
-  if (!session) {
-    return null;
-  }
-
-  return options.position === 'next'
-    ? queuePlayableItemAsNext(session, options.playableItem)
-    : queuePlayableItemAsUpNext(session, options.playableItem);
 };
 
 export const resolvePlaylistPlaybackAdvance = (

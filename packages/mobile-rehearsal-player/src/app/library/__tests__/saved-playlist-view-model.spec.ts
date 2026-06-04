@@ -38,11 +38,16 @@ import {
   getPlaylistQueueModeLabel,
   getPlaylistRepeatModeLabel,
   canShowQueuePlaylistActions,
+  movePlaylistPlaybackQueueItem,
+  movePlaylistPlaybackQueueItemToEnd,
+  movePlaylistPlaybackQueueItemToStart,
   queuePlayableItemDuringPlayback,
   queuePlayableItemAsNext,
   queuePlayableItemAsUpNext,
+  removePlaylistPlaybackQueueItem,
   resolvePlaylistPlaybackAdvance,
   resolvePlaylistPlaybackRewind,
+  selectPlaylistPlaybackQueueItem,
   updatePlaylistPlaybackRepeatMode,
 } from '../utils/saved-playlist-playback-view-model.js';
 import { getSavedPlaylistsStatusCopy } from '../utils/saved-playlist-status-view-model.js';
@@ -59,6 +64,51 @@ import {
   getSavedTrackPlaylistMenuInitialState,
   reduceSavedTrackPlaylistMenuState,
 } from '../utils/saved-track-playlist-menu-view-model.js';
+
+const buildThreeItemQueueSession = () => {
+  const queuePlaylist = addTrackToPlaylist(
+    addLoopToPlaylist(
+      addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-05-12T00:00:00.000Z',
+          name: 'Warmups',
+          ownerId: 'user-1',
+        }),
+        PLAYABLE_SOURCE,
+        '2026-05-12T00:01:00.000Z',
+      ),
+      SAVED_LOOP,
+      '2026-05-12T00:02:00.000Z',
+    ),
+    {
+      ...PLAYABLE_SOURCE,
+      id: 'drive:tenor-line',
+      name: 'Tenor Line.mp3',
+    },
+    '2026-05-12T00:03:00.000Z',
+  );
+
+  const session = buildPlaylistPlaybackSession({
+    loops: [SAVED_LOOP],
+    mode: 'ordered',
+    playlist: queuePlaylist,
+    repeatMode: 'off',
+    sources: [
+      PLAYABLE_SOURCE,
+      {
+        ...PLAYABLE_SOURCE,
+        id: 'drive:tenor-line',
+        name: 'Tenor Line.mp3',
+      },
+    ],
+  }).session;
+
+  if (!session) {
+    throw new Error('Expected a playlist playback session.');
+  }
+
+  return session;
+};
 
 describe('saved playlist view-model', () => {
   it('falls back to the first saved playlist when no selection is active', () => {
@@ -880,6 +930,85 @@ describe('saved playlist view-model', () => {
     });
 
     assert.equal(queuedSession, null);
+  });
+
+  it('reorders non-current queue items without losing the active item', () => {
+    const builtSession = {
+      ...buildThreeItemQueueSession(),
+      currentIndex: 1,
+    };
+
+    const movedSession = movePlaylistPlaybackQueueItem(builtSession, 0, 2);
+
+    assert.equal(movedSession.currentIndex, 0);
+    assert.equal(
+      getPlaylistPlaybackCurrentItem(movedSession)?.id,
+      'loop:loop-1',
+    );
+    assert.deepEqual(
+      movedSession.queue.items.map((item) => item.id),
+      ['loop:loop-1', 'track:drive:tenor-line', 'track:drive:alto-line'],
+    );
+  });
+
+  it('moves the active queue item to the start or end and updates currentIndex', () => {
+    const builtSession = buildThreeItemQueueSession();
+    const movedToEndSession = movePlaylistPlaybackQueueItemToEnd(
+      builtSession,
+      0,
+    );
+    const movedToStartSession = movePlaylistPlaybackQueueItemToStart(
+      {
+        ...builtSession,
+        currentIndex: 2,
+      },
+      2,
+    );
+
+    assert.equal(movedToEndSession.currentIndex, 2);
+    assert.equal(
+      getPlaylistPlaybackCurrentItem(movedToEndSession)?.id,
+      'track:drive:alto-line',
+    );
+    assert.deepEqual(
+      movedToEndSession.queue.items.map((item) => item.id),
+      ['loop:loop-1', 'track:drive:tenor-line', 'track:drive:alto-line'],
+    );
+    assert.equal(movedToStartSession.currentIndex, 0);
+    assert.equal(
+      getPlaylistPlaybackCurrentItem(movedToStartSession)?.id,
+      'track:drive:tenor-line',
+    );
+  });
+
+  it('removes non-current queue items and keeps current-row removal stable', () => {
+    const builtSession = {
+      ...buildThreeItemQueueSession(),
+      currentIndex: 1,
+    };
+    const removedSession = removePlaylistPlaybackQueueItem(builtSession, 2);
+    const unchangedSession = removePlaylistPlaybackQueueItem(builtSession, 1);
+
+    assert.equal(removedSession.currentIndex, 1);
+    assert.equal(removedSession.requestedItemCount, 2);
+    assert.deepEqual(
+      removedSession.queue.items.map((item) => item.id),
+      ['track:drive:alto-line', 'loop:loop-1'],
+    );
+    assert.equal(unchangedSession, builtSession);
+  });
+
+  it('selects a queue item for direct playback without changing queue order', () => {
+    const builtSession = buildThreeItemQueueSession();
+    const selection = selectPlaylistPlaybackQueueItem(builtSession, 2);
+
+    assert.equal(selection.nextSession.currentIndex, 2);
+    assert.equal(selection.nextSession.hasCompleted, false);
+    assert.equal(selection.playableItem?.id, 'track:drive:tenor-line');
+    assert.deepEqual(
+      selection.nextSession.queue.items.map((item) => item.id),
+      builtSession.queue.items.map((item) => item.id),
+    );
   });
 
   it('captures queue items into a playlist and deduplicates unsaved repeated tracks', () => {

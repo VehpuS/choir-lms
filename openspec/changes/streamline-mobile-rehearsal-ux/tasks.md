@@ -56,7 +56,7 @@
 - [x] 4.2.9 Add a `Create new playlist` action in the Up Next queue summary area to save the current queue order as a new playlist while preserving uninterrupted playback.
 - [x] 4.2.10 Add an `Update playlist` action in the Up Next queue summary area to update an existing playlist with currently enqueued items in queue order, without mutating the active queue session.
 - [x] 4.2.11 Constrain the active rehearsal queue list to a scrollable maximum height so the queue summary, queue-mode controls, and transport remain visible for long queues.
-- [ ] 4.2.12 Add active queue row controls for direct playback and reordering: per-row play buttons, drag handles, and overflow actions for remove, move to start, move to end, and move to a specific queue position.
+- [x] 4.2.12 Add active queue row controls for direct playback and reordering: per-row play buttons, drag handles, and overflow actions for remove, move to start, move to end, and move to a specific queue position.
 - [ ] 4.2.13 Add a move-to-position modal for queue rows with a slider bounded from queue position `1` through the last queue position, and apply the selected position without restarting playback.
 - [ ] 4.2.14 Remove redundant `Up next` / `Now playing` row text from the active queue once direct play controls exist, and keep current-item state legible through row styling and control state.
 - [ ] 4.2.15 Add previous and next track transport controls directly to the active rehearsal queue view.
