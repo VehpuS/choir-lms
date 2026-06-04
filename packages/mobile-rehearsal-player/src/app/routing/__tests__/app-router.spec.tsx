@@ -170,11 +170,6 @@ describe('getMiniPlayerSummary', () => {
       playbackLabel:
         'Active session • Warmups • item 2 of 2 • Ordered • Repeat all.',
       progressLabel: '0:06 of 0:06',
-      queueLabel: 'Ordered • Repeat all',
-      queuePlaylistActions: {
-        saveLabel: 'Create new playlist',
-        updateLabel: 'Update playlist',
-      },
       rangeLabel: 'Loop 0:12 - 0:18',
       statusLabel: 'Playing',
       supportsQueueNavigation: true,
@@ -197,8 +192,6 @@ describe('getMiniPlayerSummary', () => {
       playbackLabel:
         'Keep the current rehearsal item audible while moving between Library, Add, and Recents.',
       progressLabel: '0:20 of 3:05',
-      queueLabel: 'Single item playback',
-      queuePlaylistActions: null,
       rangeLabel: null,
       statusLabel: 'Paused',
       supportsQueueNavigation: false,
@@ -254,11 +247,6 @@ describe('getMiniPlayerSummary', () => {
       playbackLabel:
         'Active session • Current queue • item 1 of 2 • Ordered • Repeat all.',
       progressLabel: '0:18 of 3:05',
-      queueLabel: 'Ordered • Repeat all',
-      queuePlaylistActions: {
-        saveLabel: 'Create new playlist',
-        updateLabel: 'Update playlist',
-      },
       rangeLabel: null,
       statusLabel: 'Playing',
       supportsQueueNavigation: true,
@@ -283,7 +271,10 @@ describe('getMiniPlayerSummary', () => {
           title: 'Tenor Line.mp3',
         },
       ],
-      queueLabel: 'Ordered • Repeat all',
+      queuePlaylistActions: {
+        saveLabel: 'Create new playlist',
+        updateLabel: 'Update playlist',
+      },
     });
   });
 
@@ -353,7 +344,10 @@ describe('getMiniPlayerSummary', () => {
           title: 'Entrance cue',
         },
       ],
-      queueLabel: 'Ordered • Repeat all',
+      queuePlaylistActions: {
+        saveLabel: 'Create new playlist',
+        updateLabel: 'Update playlist',
+      },
     });
   });
 

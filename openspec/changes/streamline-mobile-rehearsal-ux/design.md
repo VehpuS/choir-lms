@@ -163,11 +163,11 @@ IA reorder work cannot be considered acceptable unless every critical capability
 - Queue session metadata (mode, repeat, current item) remains coherent while navigating between tabs.
 - Up Next/now-playing surfaces stay synchronized with playlist session state after IA changes.
 
-### Capability: Queue-to-playlist persistence from Now Playing
+### Capability: Queue-to-playlist persistence from Up Next
 
-- User can use a single-row `Create new playlist` and `Update playlist` action group in Now Playing, adjacent to the current queue or playlist label and above the waveform.
-- User can create a new playlist from the active queue in Now Playing without interrupting playback.
-- User can update an existing playlist with currently enqueued items from Now Playing while preserving queue order.
+- User can use a single-row `Create new playlist` and `Update playlist` action group in Up Next, adjacent to the current queue or playlist summary and above the queue list.
+- User can create a new playlist from the active queue in Up Next without interrupting playback.
+- User can update an existing playlist with currently enqueued items from Up Next while preserving queue order.
 - Queue-to-playlist actions keep active playback and queue position stable after the save/update completes.
 
 ### Capability: Active rehearsal queue view remains actionable at long lengths
@@ -374,8 +374,8 @@ Transient queue rules for this change:
 - `Play next` or `Add to queue` from any queue-capable surface during standalone playback promotes the current item into a transient queue session.
 - The transient queue keeps the currently playing item as position 1 and adds subsequent items according to the invoked action (`Play next` inserts immediately after the current item; `Add to queue` appends to the end).
 - Once any active queue session exists, now-playing and Up Next surfaces expose consistent queue-management affordances for both transient and playlist-backed queues.
-- Now Playing includes a single-row `Create new playlist` and `Update playlist` action group adjacent to the current queue or playlist label and above the waveform.
-- The active rehearsal queue view keeps the Now Playing summary area visible by capping queue-list height and making the list itself scroll.
+- Up Next includes a single-row `Create new playlist` and `Update playlist` action group adjacent to the current queue or playlist summary and above the queue list.
+- The active rehearsal queue view keeps its queue summary area visible by capping queue-list height and making the list itself scroll.
 - Queue rows expose direct play buttons plus drag handles, and overflow actions cover remove, move to start, move to end, and move to a specific queue index.
 - Queue rows rely on control state and styling instead of redundant `Now playing` or `Up next` eyebrow text.
 - Queue view includes previous and next track transport alongside the existing queue-mode controls.

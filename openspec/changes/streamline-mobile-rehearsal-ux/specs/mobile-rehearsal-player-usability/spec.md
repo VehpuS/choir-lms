@@ -169,21 +169,21 @@ The system SHALL keep queue and now-playing controls mode-aware, visually clear,
 - **THEN** the system exposes previous-track and next-track transport controls in that same queue view
 - **AND** users do not need to return to Now Playing just to move backward or forward within the active queue
 
-#### Scenario: Now Playing offers queue-to-playlist actions for active queues
+#### Scenario: Up Next offers queue-to-playlist actions for active queues
 
-- **WHEN** a user opens Now Playing while an active queue session is present
+- **WHEN** a user opens Up Next while an active queue session is present
 - **THEN** the system exposes a single row of `Create new playlist` and `Update playlist` actions
-- **AND** that action row appears adjacent to the current queue or playlist label and above the waveform
+- **AND** that action row appears adjacent to the current queue or playlist summary and above the queue list
 
-#### Scenario: Creating a new playlist from Now Playing preserves playback continuity
+#### Scenario: Creating a new playlist from Up Next preserves playback continuity
 
-- **WHEN** a user creates a new playlist from the current queue in Now Playing
+- **WHEN** a user creates a new playlist from the current queue in Up Next
 - **THEN** the playlist is created from the queue's current item order
 - **AND** the current playback item and position continue without restart
 
-#### Scenario: Updating a playlist from Now Playing preserves playback continuity
+#### Scenario: Updating a playlist from Up Next preserves playback continuity
 
-- **WHEN** a user chooses `Update playlist` from Now Playing for an active queue session
+- **WHEN** a user chooses `Update playlist` from Up Next for an active queue session
 - **THEN** the selected playlist gains the enqueued items in queue order
 - **AND** the active queue session remains in place and playback continues without interruption
 

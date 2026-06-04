@@ -1,45 +1,27 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type {
   PlayableItem,
   RehearsalQueueMode,
   RepeatMode,
 } from '@org/audio-library-models';
 import { type ComponentProps } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
-import { appTheme } from '../utils/theme';
 import {
   PlaybackTimelineCard,
   PlaybackVolumeCard,
 } from './PlaybackControlCards';
+import {
+  QueuePlaylistActionRow,
+  SurfaceIconButton,
+} from './PlaybackSurfaceControls';
 import { PlaybackSessionModeCard } from './PlaybackSessionModeCard';
 import { resolveVisibleRepeatModes } from './playback-session-mode-options';
+import { styles } from './playback-surface-styles';
 import { getQueueListMaxHeight } from './queue-surface-layout';
 import type {
   NowPlayingSurfaceSummary,
   UpNextSurfaceSummary,
 } from './shell-model';
-
-type PlaybackPillProps = {
-  label: string;
-  tone?: 'primary' | 'secondary';
-};
-
-type SurfaceIconButtonProps = {
-  accessibilityLabel: string;
-  disabled?: boolean;
-  icon: ComponentProps<typeof MaterialCommunityIcons>['name'];
-  onPress: () => void;
-  size?: number;
-  tone?: 'primary' | 'secondary';
-};
 
 type NowPlayingSurfaceProps = {
   activePlayableItem: PlayableItem;
@@ -48,16 +30,13 @@ type NowPlayingSurfaceProps = {
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
-  isSavingQueueAsPlaylist: boolean;
   isPlaybackToggleDisabled: boolean;
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
-  onAppendQueueToPlaylist: () => void;
   onClose: () => void;
   onSeekBackward: () => void;
   onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
-  onSaveQueueAsPlaylist: () => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowQueue: () => void;
   onSkipNextItem: () => void;
@@ -74,66 +53,15 @@ type QueueSurfaceProps = {
   activeQueueMode: RehearsalQueueMode;
   activeRepeatMode: RepeatMode;
   dragHandleProps?: ComponentProps<typeof View>;
+  isSavingQueueAsPlaylist: boolean;
   isPlaybackToggleDisabled: boolean;
+  onAppendQueueToPlaylist: () => void;
   onClose: () => void;
+  onSaveQueueAsPlaylist: () => void;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
   summary: UpNextSurfaceSummary;
-};
-
-const PlaybackPill = ({ label, tone = 'secondary' }: PlaybackPillProps) => {
-  return (
-    <View
-      style={[
-        styles.pill,
-        tone === 'primary' ? styles.pillPrimary : styles.pillSecondary,
-      ]}
-    >
-      <Text
-        style={
-          tone === 'primary'
-            ? styles.pillPrimaryLabel
-            : styles.pillSecondaryLabel
-        }
-      >
-        {label}
-      </Text>
-    </View>
-  );
-};
-
-const SurfaceIconButton = ({
-  accessibilityLabel,
-  disabled = false,
-  icon,
-  onPress,
-  size = 22,
-  tone = 'secondary',
-}: SurfaceIconButtonProps) => {
-  const isPrimary = tone === 'primary';
-
-  return (
-    <Pressable
-      accessibilityLabel={accessibilityLabel}
-      accessibilityRole="button"
-      disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => [
-        isPrimary
-          ? styles.transportButtonPrimary
-          : styles.transportButtonSecondary,
-        pressed && !disabled ? styles.headerActionPressed : null,
-        disabled ? styles.headerActionDisabled : null,
-      ]}
-    >
-      <MaterialCommunityIcons
-        color={isPrimary ? '#fff8ef' : appTheme.colors.primaryText}
-        name={icon}
-        size={size}
-      />
-    </Pressable>
-  );
 };
 
 export const NowPlayingSurface = ({
@@ -143,16 +71,13 @@ export const NowPlayingSurface = ({
   canSeekActivePlayback,
   canSkipNextItem,
   canSkipPreviousItem,
-  isSavingQueueAsPlaylist,
   isPlaybackToggleDisabled,
   onAdjustPlaybackVolume,
-  onAppendQueueToPlaylist,
   onClose,
   onSeekBackward,
   onSeekForward,
   onSeekToPosition,
   onSelectQueueMode,
-  onSaveQueueAsPlaylist,
   onSelectRepeatMode,
   onShowQueue,
   onSkipNextItem,
@@ -192,9 +117,6 @@ export const NowPlayingSurface = ({
       <View style={styles.summaryGroup}>
         <View style={styles.summaryMetaRow}>
           <Text style={styles.statusCaption}>{summary.statusLabel}</Text>
-          {summary.supportsQueueNavigation ? (
-            <Text style={styles.summaryMetaText}>{summary.queueLabel}</Text>
-          ) : null}
         </View>
         <Text numberOfLines={2} style={styles.title}>
           {summary.title}
@@ -202,44 +124,6 @@ export const NowPlayingSurface = ({
         <Text numberOfLines={1} style={styles.subtitle}>
           {summary.collectionLabel}
         </Text>
-        {summary.queuePlaylistActions ? (
-          <View style={styles.queuePlaylistActionRow}>
-            <Pressable
-              accessibilityRole="button"
-              disabled={isSavingQueueAsPlaylist}
-              onPress={onSaveQueueAsPlaylist}
-              style={({ pressed }) => [
-                styles.queuePlaylistSecondaryAction,
-                pressed && !isSavingQueueAsPlaylist
-                  ? styles.headerActionPressed
-                  : null,
-                isSavingQueueAsPlaylist ? styles.headerActionDisabled : null,
-              ]}
-            >
-              <Text style={styles.queuePlaylistSecondaryActionLabel}>
-                {isSavingQueueAsPlaylist
-                  ? 'Saving queue…'
-                  : summary.queuePlaylistActions.saveLabel}
-              </Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              disabled={isSavingQueueAsPlaylist}
-              onPress={onAppendQueueToPlaylist}
-              style={({ pressed }) => [
-                styles.queuePlaylistPrimaryAction,
-                pressed && !isSavingQueueAsPlaylist
-                  ? styles.headerActionPressed
-                  : null,
-                isSavingQueueAsPlaylist ? styles.headerActionDisabled : null,
-              ]}
-            >
-              <Text style={styles.queuePlaylistPrimaryActionLabel}>
-                {summary.queuePlaylistActions.updateLabel}
-              </Text>
-            </Pressable>
-          </View>
-        ) : null}
         {summary.rangeLabel ? (
           <Text numberOfLines={1} style={styles.rangeLabel}>
             {summary.rangeLabel}
@@ -328,8 +212,11 @@ export const QueueSurface = ({
   activeQueueMode,
   activeRepeatMode,
   dragHandleProps,
+  isSavingQueueAsPlaylist,
   isPlaybackToggleDisabled,
+  onAppendQueueToPlaylist,
   onClose,
+  onSaveQueueAsPlaylist,
   onSelectQueueMode,
   onSelectRepeatMode,
   onShowNowPlaying,
@@ -364,9 +251,14 @@ export const QueueSurface = ({
         <Text style={styles.subtitle}>{summary.collectionLabel}</Text>
       </View>
 
-      <View style={styles.pillRow}>
-        <PlaybackPill label={summary.queueLabel} tone="primary" />
-      </View>
+      {summary.queuePlaylistActions ? (
+        <QueuePlaylistActionRow
+          actions={summary.queuePlaylistActions}
+          isMutating={isSavingQueueAsPlaylist}
+          onAppendQueueToPlaylist={onAppendQueueToPlaylist}
+          onSaveQueueAsPlaylist={onSaveQueueAsPlaylist}
+        />
+      ) : null}
 
       <PlaybackSessionModeCard
         isDisabled={isPlaybackToggleDisabled}
@@ -403,228 +295,3 @@ export const QueueSurface = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  sheetCard: {
-    gap: 12,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 32,
-    backgroundColor: appTheme.colors.surfaceBackground,
-  },
-  surfaceHandle: {
-    alignSelf: 'center',
-    width: 56,
-    height: 5,
-    borderRadius: 999,
-    backgroundColor: '#d0d8d2',
-  },
-  surfaceDragHandleRegion: {
-    gap: 12,
-  },
-  sheetHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  headerActionRow: {
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'center',
-  },
-  sheetEyebrow: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-  },
-  headerActionPressed: {
-    opacity: 0.84,
-  },
-  headerActionDisabled: {
-    opacity: 0.5,
-  },
-  summaryGroup: {
-    gap: 4,
-  },
-  summaryMetaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: 8,
-  },
-  statusCaption: {
-    color: '#2d584a',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
-  summaryMetaText: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  title: {
-    color: appTheme.colors.primaryText,
-    fontSize: 24,
-    fontWeight: '700',
-    lineHeight: 30,
-  },
-  subtitle: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  rangeLabel: {
-    color: '#2d584a',
-    fontSize: 14,
-    fontWeight: '700',
-    lineHeight: 20,
-  },
-  inlineContextText: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  pillRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  queuePlaylistActionRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 4,
-  },
-  queuePlaylistPrimaryAction: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 14,
-    paddingVertical: 12,
-    backgroundColor: '#305c4d',
-  },
-  queuePlaylistPrimaryActionLabel: {
-    color: '#fff8ef',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  queuePlaylistSecondaryAction: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 14,
-    paddingVertical: 12,
-    backgroundColor: '#fffdf8',
-  },
-  queuePlaylistSecondaryActionLabel: {
-    color: appTheme.colors.primaryText,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  transportRow: {
-    flexDirection: 'row',
-    gap: 8,
-    flexWrap: 'nowrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  pill: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 999,
-  },
-  pillPrimary: {
-    backgroundColor: '#305c4d',
-  },
-  pillSecondary: {
-    backgroundColor: '#f3ecdf',
-  },
-  pillPrimaryLabel: {
-    color: '#fff8ef',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  pillSecondaryLabel: {
-    color: appTheme.colors.primaryText,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  transportButtonPrimary: {
-    width: 70,
-    height: 70,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 999,
-    backgroundColor: '#305c4d',
-  },
-  transportButtonSecondary: {
-    width: 46,
-    height: 46,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 999,
-    backgroundColor: '#fffdf8',
-  },
-  queueList: {
-    flexGrow: 0,
-  },
-  queueListContent: {
-    gap: 12,
-  },
-  queueSurfaceTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 20,
-    fontWeight: '700',
-    lineHeight: 26,
-  },
-  queueCard: {
-    gap: 6,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 18,
-    backgroundColor: '#faf6ee',
-  },
-  queueCardCurrent: {
-    borderColor: '#305c4d',
-    backgroundColor: '#f1f7f3',
-  },
-  queueEyebrow: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.7,
-    textTransform: 'uppercase',
-  },
-  queueTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  queueDetail: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  queueActionButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 14,
-    paddingVertical: 12,
-    backgroundColor: '#305c4d',
-  },
-  queueActionButtonLabel: {
-    color: '#fff8ef',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-});

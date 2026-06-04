@@ -30,11 +30,6 @@ export type NowPlayingSurfaceSummary = {
   collectionLabel: string;
   playbackLabel: string;
   progressLabel: string;
-  queueLabel: string;
-  queuePlaylistActions: {
-    saveLabel: string;
-    updateLabel: string;
-  } | null;
   rangeLabel: string | null;
   statusLabel: string;
   supportsQueueNavigation: boolean;
@@ -53,7 +48,10 @@ export type UpNextSurfaceItem = {
 export type UpNextSurfaceSummary = {
   collectionLabel: string;
   items: UpNextSurfaceItem[];
-  queueLabel: string;
+  queuePlaylistActions: {
+    saveLabel: string;
+    updateLabel: string;
+  } | null;
 };
 
 export const SHELL_DESTINATIONS: ShellDestination[] = [
@@ -275,13 +273,6 @@ export const getNowPlayingSurfaceSummary = (options: {
     playbackLabel: options.activePlaylistSession
       ? getPlaylistPlaybackSessionSummary(options.activePlaylistSession)
       : 'Keep the current rehearsal item audible while moving between Library, Add, and Recents.',
-    queueLabel: getPlaybackQueueLabel(options.activePlaylistSession),
-    queuePlaylistActions: options.activePlaylistSession
-      ? {
-          saveLabel: 'Create new playlist',
-          updateLabel: 'Update playlist',
-        }
-      : null,
     rangeLabel: getPlayableItemRangeLabel(options.activePlayableItem),
     supportsQueueNavigation: Boolean(options.activePlaylistSession),
     upNextLabel: options.activePlaylistSession
@@ -304,7 +295,10 @@ export const getUpNextSurfaceSummary = (options: {
 
   return {
     collectionLabel: `${options.activePlaylistSession.playlistName} • ${getPlaylistPlaybackSessionSummary(options.activePlaylistSession)}`,
-    queueLabel: getPlaybackQueueLabel(options.activePlaylistSession),
+    queuePlaylistActions: {
+      saveLabel: 'Create new playlist',
+      updateLabel: 'Update playlist',
+    },
     items: options.activePlaylistSession.queue.items.map((item, index) => {
       return {
         title: item.title,

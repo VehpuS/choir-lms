@@ -26,15 +26,15 @@ The system SHALL provide quick queue actions from track-focused contexts so user
 - **WHEN** a user runs an ad-hoc queue quick action
 - **THEN** the system applies the queue update without interrupting current playback
 
-#### Scenario: Now Playing can create a new playlist from the active queue
+#### Scenario: Up Next can create a new playlist from the active queue
 
-- **WHEN** a user opens Now Playing for an active queue session and chooses `Create new playlist`
+- **WHEN** a user opens Up Next for an active queue session and chooses `Create new playlist`
 - **THEN** the system creates a new playlist from the current queue ordering
 - **AND** playback continues uninterrupted in the current queue session
 
-#### Scenario: Now Playing can update an existing playlist with currently enqueued items
+#### Scenario: Up Next can update an existing playlist with currently enqueued items
 
-- **WHEN** a user opens Now Playing for an active queue session and chooses `Update playlist`
+- **WHEN** a user opens Up Next for an active queue session and chooses `Update playlist`
 - **THEN** the system updates the selected playlist with those enqueued items in queue order
 - **AND** playback continues uninterrupted in the current queue session
 
