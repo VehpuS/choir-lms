@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
   addLoopToPlaylist,
   addTrackToPlaylist,
+  createTrackPlayableItem,
   createPlaylist,
 } from '@org/audio-library-models';
 
@@ -18,6 +19,7 @@ import {
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
+  queuePlayableItemDuringPlayback,
 } from '../utils/saved-playlist-playback-view-model.js';
 
 describe('rebuildPlaylistPlaybackSessionForMode', () => {
@@ -137,6 +139,127 @@ describe('rebuildPlaylistPlaybackSessionForMode', () => {
       rebuiltSession &&
         getPlaylistPlaybackCurrentItem(rebuiltSession)?.playlistEntryId,
       originalPlaylist.items[1].id,
+    );
+  });
+
+  it('preserves ad-hoc queued items when queue mode changes', () => {
+    const playlist = addTrackToPlaylist(
+      createPlaylist({
+        createdAt: '2026-05-12T00:00:00.000Z',
+        name: 'Warmups',
+        ownerId: 'user-1',
+      }),
+      PLAYABLE_SOURCE,
+      '2026-05-12T00:01:00.000Z',
+    );
+    const orderedSession = buildPlaylistPlaybackSession({
+      loops: [],
+      mode: 'ordered',
+      playlist,
+      repeatMode: 'all',
+      sources: [PLAYABLE_SOURCE],
+    }).session;
+
+    if (!orderedSession) {
+      throw new Error('Expected an ordered playlist session.');
+    }
+
+    const queuedSource = {
+      ...PLAYABLE_SOURCE,
+      id: 'drive:queued-tenor-line',
+      name: 'Tenor Line.mp3',
+    };
+    const queuedSession = queuePlayableItemDuringPlayback({
+      activePlayableItem: createTrackPlayableItem(PLAYABLE_SOURCE),
+      playableItem: createTrackPlayableItem(queuedSource),
+      position: 'next',
+      repeatMode: 'all',
+      session: orderedSession,
+    });
+
+    if (!queuedSession) {
+      throw new Error('Expected a queued playback session.');
+    }
+
+    const shuffledSession = rebuildPlaylistPlaybackSessionForMode({
+      loops: [],
+      mode: 'shuffle',
+      playlist,
+      random: () => 0,
+      session: queuedSession,
+      sources: [PLAYABLE_SOURCE, queuedSource],
+    }).session;
+
+    assert.equal(shuffledSession?.queue.items.length, 2);
+    assert.equal(
+      shuffledSession?.queue.items.some(
+        (item) => item.id === 'track:drive:queued-tenor-line',
+      ),
+      true,
+    );
+    assert.equal(
+      getPlaylistPlaybackCurrentItem(shuffledSession ?? queuedSession)?.id,
+      'track:drive:alto-line',
+    );
+  });
+
+  it('keeps an active ad-hoc queued item as the current item when queue mode changes', () => {
+    const playlist = addTrackToPlaylist(
+      createPlaylist({
+        createdAt: '2026-05-12T00:00:00.000Z',
+        name: 'Warmups',
+        ownerId: 'user-1',
+      }),
+      PLAYABLE_SOURCE,
+      '2026-05-12T00:01:00.000Z',
+    );
+    const orderedSession = buildPlaylistPlaybackSession({
+      loops: [],
+      mode: 'ordered',
+      playlist,
+      repeatMode: 'off',
+      sources: [PLAYABLE_SOURCE],
+    }).session;
+
+    if (!orderedSession) {
+      throw new Error('Expected an ordered playlist session.');
+    }
+
+    const queuedSource = {
+      ...PLAYABLE_SOURCE,
+      id: 'drive:queued-bass-line',
+      name: 'Bass Line.mp3',
+    };
+    const queuedSession = queuePlayableItemDuringPlayback({
+      activePlayableItem: createTrackPlayableItem(PLAYABLE_SOURCE),
+      playableItem: createTrackPlayableItem(queuedSource),
+      position: 'next',
+      repeatMode: 'off',
+      session: orderedSession,
+    });
+
+    if (!queuedSession) {
+      throw new Error('Expected a queued playback session.');
+    }
+
+    const activeQueuedItemSession = {
+      ...queuedSession,
+      currentIndex: 1,
+    };
+    const shuffledSession = rebuildPlaylistPlaybackSessionForMode({
+      loops: [],
+      mode: 'shuffle',
+      playlist,
+      random: () => 0,
+      session: activeQueuedItemSession,
+      sources: [PLAYABLE_SOURCE, queuedSource],
+    }).session;
+
+    assert.equal(shuffledSession?.queue.items.length, 2);
+    assert.equal(
+      getPlaylistPlaybackCurrentItem(shuffledSession ?? activeQueuedItemSession)
+        ?.id,
+      'track:drive:queued-bass-line',
     );
   });
 });

@@ -17,6 +17,90 @@ export type ActivePlaylistContext = {
   sources: DriveLibrarySource[];
 };
 
+const isAdHocQueuedItem = (
+  item: PlaylistPlaybackSession['queue']['items'][number],
+) => {
+  return item.playlistEntryId === undefined;
+};
+
+const mergeAdHocQueuedItemsIntoSession = (options: {
+  rebuiltSession: PlaylistPlaybackSession;
+  previousSession: PlaylistPlaybackSession;
+}) => {
+  const currentItem = getPlaylistPlaybackCurrentItem(options.previousSession);
+
+  if (!currentItem) {
+    return options.rebuiltSession;
+  }
+
+  const adHocItemsBeforeCurrent = options.previousSession.queue.items
+    .slice(0, options.previousSession.currentIndex)
+    .filter(isAdHocQueuedItem);
+  const adHocItemsAfterCurrent = options.previousSession.queue.items
+    .slice(options.previousSession.currentIndex + 1)
+    .filter(isAdHocQueuedItem);
+  const adHocItemCount =
+    adHocItemsBeforeCurrent.length + adHocItemsAfterCurrent.length;
+
+  if (currentItem.playlistEntryId) {
+    if (adHocItemCount === 0) {
+      return options.rebuiltSession;
+    }
+
+    const rebuiltCurrentItem = getPlaylistPlaybackCurrentItem(
+      options.rebuiltSession,
+    );
+
+    if (!rebuiltCurrentItem) {
+      return options.rebuiltSession;
+    }
+
+    const rebuiltItemsBeforeCurrent = options.rebuiltSession.queue.items.slice(
+      0,
+      options.rebuiltSession.currentIndex,
+    );
+    const rebuiltItemsAfterCurrent = options.rebuiltSession.queue.items.slice(
+      options.rebuiltSession.currentIndex + 1,
+    );
+
+    return {
+      ...options.rebuiltSession,
+      currentIndex:
+        rebuiltItemsBeforeCurrent.length + adHocItemsBeforeCurrent.length,
+      queue: {
+        ...options.rebuiltSession.queue,
+        items: [
+          ...rebuiltItemsBeforeCurrent,
+          ...adHocItemsBeforeCurrent,
+          rebuiltCurrentItem,
+          ...adHocItemsAfterCurrent,
+          ...rebuiltItemsAfterCurrent,
+        ],
+      },
+      requestedItemCount:
+        options.rebuiltSession.requestedItemCount + adHocItemCount,
+    };
+  }
+
+  return {
+    ...options.rebuiltSession,
+    currentIndex:
+      options.rebuiltSession.queue.items.length +
+      adHocItemsBeforeCurrent.length,
+    queue: {
+      ...options.rebuiltSession.queue,
+      items: [
+        ...options.rebuiltSession.queue.items,
+        ...adHocItemsBeforeCurrent,
+        currentItem,
+        ...adHocItemsAfterCurrent,
+      ],
+    },
+    requestedItemCount:
+      options.rebuiltSession.requestedItemCount + adHocItemCount + 1,
+  };
+};
+
 export const rebuildPlaylistPlaybackSessionForMode = (options: {
   loops: NamedLoop[];
   mode: RehearsalQueueMode;
@@ -27,7 +111,7 @@ export const rebuildPlaylistPlaybackSessionForMode = (options: {
 }) => {
   const currentItem = getPlaylistPlaybackCurrentItem(options.session);
 
-  return buildPlaylistPlaybackSession({
+  const rebuiltSession = buildPlaylistPlaybackSession({
     loops: options.loops,
     mode: options.mode,
     playlist: options.playlist,
@@ -36,6 +120,18 @@ export const rebuildPlaylistPlaybackSessionForMode = (options: {
     sources: options.sources,
     startEntryId: currentItem?.playlistEntryId,
   });
+
+  if (rebuiltSession.issue || !rebuiltSession.session) {
+    return rebuiltSession;
+  }
+
+  return {
+    issue: null,
+    session: mergeAdHocQueuedItemsIntoSession({
+      rebuiltSession: rebuiltSession.session,
+      previousSession: options.session,
+    }),
+  };
 };
 
 export const syncActivePlaylistContext = (options: {
