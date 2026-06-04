@@ -5,7 +5,14 @@ import type {
   RepeatMode,
 } from '@org/audio-library-models';
 import { type ComponentProps } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import { appTheme } from '../utils/theme';
 import {
@@ -14,6 +21,7 @@ import {
 } from './PlaybackControlCards';
 import { PlaybackSessionModeCard } from './PlaybackSessionModeCard';
 import { resolveVisibleRepeatModes } from './playback-session-mode-options';
+import { getQueueListMaxHeight } from './queue-surface-layout';
 import type {
   NowPlayingSurfaceSummary,
   UpNextSurfaceSummary,
@@ -65,6 +73,7 @@ type NowPlayingSurfaceProps = {
 type QueueSurfaceProps = {
   activeQueueMode: RehearsalQueueMode;
   activeRepeatMode: RepeatMode;
+  dragHandleProps?: ComponentProps<typeof View>;
   isPlaybackToggleDisabled: boolean;
   onClose: () => void;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
@@ -318,6 +327,7 @@ export const NowPlayingSurface = ({
 export const QueueSurface = ({
   activeQueueMode,
   activeRepeatMode,
+  dragHandleProps,
   isPlaybackToggleDisabled,
   onClose,
   onSelectQueueMode,
@@ -325,22 +335,27 @@ export const QueueSurface = ({
   onShowNowPlaying,
   summary,
 }: QueueSurfaceProps) => {
+  const { height: windowHeight } = useWindowDimensions();
+  const queueListMaxHeight = getQueueListMaxHeight(windowHeight);
+
   return (
     <View style={styles.sheetCard}>
-      <View style={styles.surfaceHandle} />
-      <View style={styles.sheetHeaderRow}>
-        <Text style={styles.sheetEyebrow}>Up Next</Text>
-        <View style={styles.headerActionRow}>
-          <SurfaceIconButton
-            accessibilityLabel="Show now playing"
-            icon="play-circle-outline"
-            onPress={onShowNowPlaying}
-          />
-          <SurfaceIconButton
-            accessibilityLabel="Dismiss queue"
-            icon="chevron-down"
-            onPress={onClose}
-          />
+      <View {...dragHandleProps} style={styles.surfaceDragHandleRegion}>
+        <View style={styles.surfaceHandle} />
+        <View style={styles.sheetHeaderRow}>
+          <Text style={styles.sheetEyebrow}>Up Next</Text>
+          <View style={styles.headerActionRow}>
+            <SurfaceIconButton
+              accessibilityLabel="Show now playing"
+              icon="play-circle-outline"
+              onPress={onShowNowPlaying}
+            />
+            <SurfaceIconButton
+              accessibilityLabel="Dismiss queue"
+              icon="chevron-down"
+              onPress={onClose}
+            />
+          </View>
         </View>
       </View>
 
@@ -361,7 +376,12 @@ export const QueueSurface = ({
         repeatMode={activeRepeatMode}
       />
 
-      <View style={styles.queueList}>
+      <ScrollView
+        bounces={false}
+        contentContainerStyle={styles.queueListContent}
+        showsVerticalScrollIndicator={summary.items.length > 4}
+        style={[styles.queueList, { maxHeight: queueListMaxHeight }]}
+      >
         {summary.items.map((item) => {
           return (
             <View
@@ -379,7 +399,7 @@ export const QueueSurface = ({
             </View>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -399,6 +419,9 @@ const styles = StyleSheet.create({
     height: 5,
     borderRadius: 999,
     backgroundColor: '#d0d8d2',
+  },
+  surfaceDragHandleRegion: {
+    gap: 12,
   },
   sheetHeaderRow: {
     flexDirection: 'row',
@@ -552,6 +575,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fffdf8',
   },
   queueList: {
+    flexGrow: 0,
+  },
+  queueListContent: {
     gap: 12,
   },
   queueSurfaceTitle: {

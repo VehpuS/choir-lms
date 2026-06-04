@@ -22,6 +22,8 @@ import {
   getUpNextSurfaceSummary,
 } from '../shell-model.js';
 import { resolveVisibleRepeatModes } from '../playback-session-mode-options.js';
+import { shouldStartPlaybackSurfaceDismissGesture } from '../playback-surface-gestures.js';
+import { getQueueListMaxHeight } from '../queue-surface-layout.js';
 import { queuePlayableItemDuringPlayback } from '../../library/utils/saved-playlist-playback-view-model.js';
 
 describe('SHELL_DESTINATIONS', () => {
@@ -390,6 +392,55 @@ describe('getMiniPlayerSummary', () => {
         'entry:track:drive:alto-line:2026-05-12T00:01:00.000Z',
         'entry:track:drive:alto-line:2026-05-12T00:02:00.000Z',
       ],
+    );
+  });
+});
+
+describe('getQueueListMaxHeight', () => {
+  it('keeps the queue list tall enough on compact screens', () => {
+    assert.equal(getQueueListMaxHeight(480), 220);
+  });
+
+  it('caps the queue list height on taller screens', () => {
+    assert.equal(getQueueListMaxHeight(1200), 320);
+  });
+
+  it('falls back to the minimum height when window size is invalid', () => {
+    assert.equal(getQueueListMaxHeight(Number.NaN), 220);
+  });
+});
+
+describe('shouldStartPlaybackSurfaceDismissGesture', () => {
+  it('starts a dismiss gesture when a downward drag begins near the handle', () => {
+    assert.equal(
+      shouldStartPlaybackSurfaceDismissGesture({
+        dx: 2,
+        dy: 18,
+        locationY: 48,
+      }),
+      true,
+    );
+  });
+
+  it('ignores downward drags that begin inside scrollable sheet content', () => {
+    assert.equal(
+      shouldStartPlaybackSurfaceDismissGesture({
+        dx: 1,
+        dy: 24,
+        locationY: 220,
+      }),
+      false,
+    );
+  });
+
+  it('ignores gestures that are mostly horizontal', () => {
+    assert.equal(
+      shouldStartPlaybackSurfaceDismissGesture({
+        dx: 22,
+        dy: 10,
+        locationY: 40,
+      }),
+      false,
     );
   });
 });

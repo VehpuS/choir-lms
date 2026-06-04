@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import { NowPlayingSurface, QueueSurface } from './PlaybackSurfaceContent';
+import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
 import type {
   NowPlayingSurfaceSummary,
   UpNextSurfaceSummary,
@@ -122,11 +123,12 @@ export const PlaybackSurface = ({
 
   const panResponder = useMemo(() => {
     return PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return (
-          gestureState.dy > 8 &&
-          Math.abs(gestureState.dy) > Math.abs(gestureState.dx)
-        );
+      onMoveShouldSetPanResponder: (event, gestureState) => {
+        return shouldStartPlaybackSurfaceDismissGesture({
+          dx: gestureState.dx,
+          dy: gestureState.dy,
+          locationY: event.nativeEvent.locationY,
+        });
       },
       onPanResponderMove: (_, gestureState) => {
         translateY.setValue(Math.max(0, gestureState.dy));
@@ -144,6 +146,7 @@ export const PlaybackSurface = ({
       },
     });
   }, [translateY]);
+  const sheetFramePanHandlers = canRenderQueue ? {} : panResponder.panHandlers;
 
   if (!surface) {
     return null;
@@ -162,12 +165,13 @@ export const PlaybackSurface = ({
       />
       <View style={styles.sheetContainer}>
         <Animated.View
-          {...panResponder.panHandlers}
+          {...sheetFramePanHandlers}
           style={[styles.sheetFrame, { transform: [{ translateY }] }]}
         >
           {canRenderQueue && queueSummary ? (
             <QueueSurface
               activeQueueMode={activeQueueMode ?? 'ordered'}
+              dragHandleProps={panResponder.panHandlers}
               activeRepeatMode={activeRepeatMode ?? 'off'}
               isPlaybackToggleDisabled={isPlaybackToggleDisabled}
               onClose={dismissSurface}
