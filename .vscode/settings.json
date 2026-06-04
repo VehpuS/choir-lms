@@ -309,6 +309,10 @@
     "/^npm exec -- nx run mobile-rehearsal-player:test --skipNxCache --outputStyle=stream$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec -- nx run mobile-rehearsal-player:typecheck && npm exec -- nx run mobile-rehearsal-player:typecheck-tests$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

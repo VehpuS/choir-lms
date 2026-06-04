@@ -23,6 +23,10 @@ import {
 } from '../shell-model.js';
 import { resolveVisibleRepeatModes } from '../playback-session-mode-options.js';
 import { shouldStartPlaybackSurfaceDismissGesture } from '../playback-surface-gestures.js';
+import {
+  clampQueuePosition,
+  resolveQueueMoveTargetIndex,
+} from '../queue-move-position-model.js';
 import { getQueueRowPlaybackAction } from '../queue-surface-row-model.js';
 import { getQueueListMaxHeight } from '../queue-surface-layout.js';
 import { queuePlayableItemDuringPlayback } from '../../library/utils/saved-playlist-playback-view-model.js';
@@ -79,6 +83,29 @@ describe('getQueueRowPlaybackAction', () => {
         iconName: 'play',
         pressBehavior: 'toggle-current',
       },
+    );
+  });
+});
+
+describe('queue move position helpers', () => {
+  it('clamps one-based queue positions to the available bounds', () => {
+    assert.equal(clampQueuePosition(-2, 4), 1);
+    assert.equal(clampQueuePosition(3.4, 4), 3);
+    assert.equal(clampQueuePosition(12, 4), 4);
+  });
+
+  it('maps slider values to bounded zero-based queue indexes', () => {
+    assert.equal(
+      resolveQueueMoveTargetIndex({ itemCount: 4, sliderValue: 1 }),
+      0,
+    );
+    assert.equal(
+      resolveQueueMoveTargetIndex({ itemCount: 4, sliderValue: [3] }),
+      2,
+    );
+    assert.equal(
+      resolveQueueMoveTargetIndex({ itemCount: 4, sliderValue: 9 }),
+      3,
     );
   });
 });

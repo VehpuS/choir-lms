@@ -6,6 +6,7 @@ import {
   QueuePlaylistActionRow,
   SurfaceIconButton,
 } from './PlaybackSurfaceControls';
+import { QueueMovePositionDialog } from './QueueMovePositionDialog';
 import { PlaybackSessionModeCard } from './PlaybackSessionModeCard';
 import { QueueSurfaceRow } from './QueueSurfaceRow';
 import { styles } from './playback-surface-styles';
@@ -60,6 +61,9 @@ export const QueueSurface = ({
   const [activeOptionsItemKey, setActiveOptionsItemKey] = useState<
     string | null
   >(null);
+  const [activeMovePositionItemKey, setActiveMovePositionItemKey] = useState<
+    string | null
+  >(null);
   const [isQueueRowDragActive, setIsQueueRowDragActive] = useState(false);
 
   useEffect(() => {
@@ -73,6 +77,27 @@ export const QueueSurface = ({
         : null;
     });
   }, [summary.items]);
+
+  useEffect(() => {
+    setActiveMovePositionItemKey((currentKey) => {
+      if (!currentKey) {
+        return currentKey;
+      }
+
+      return summary.items.some((item) => item.key === currentKey)
+        ? currentKey
+        : null;
+    });
+  }, [summary.items]);
+
+  const activeMovePositionItem = summary.items.find((item) => {
+    return item.key === activeMovePositionItemKey;
+  });
+  const activeMovePositionIndex = activeMovePositionItem
+    ? summary.items.findIndex((item) => {
+        return item.key === activeMovePositionItem.key;
+      })
+    : -1;
 
   return (
     <View style={styles.sheetCard}>
@@ -148,6 +173,9 @@ export const QueueSurface = ({
                 }
               }}
               onRemoveItem={onRemoveQueueItem}
+              onRequestMoveToPosition={() => {
+                setActiveMovePositionItemKey(item.key);
+              }}
               onSetDragActive={setIsQueueRowDragActive}
               onShowMenu={() => {
                 setActiveOptionsItemKey(item.key);
@@ -163,6 +191,28 @@ export const QueueSurface = ({
           );
         })}
       </ScrollView>
+
+      {activeMovePositionItem ? (
+        <QueueMovePositionDialog
+          currentIndex={activeMovePositionIndex}
+          isVisible
+          itemCount={summary.items.length}
+          itemTitle={activeMovePositionItem.title}
+          onCancel={() => {
+            setActiveMovePositionItemKey(null);
+          }}
+          onSubmit={(targetIndex) => {
+            if (
+              activeMovePositionIndex >= 0 &&
+              activeMovePositionIndex !== targetIndex
+            ) {
+              onMoveQueueItem(activeMovePositionIndex, targetIndex);
+            }
+
+            setActiveMovePositionItemKey(null);
+          }}
+        />
+      ) : null}
     </View>
   );
 };

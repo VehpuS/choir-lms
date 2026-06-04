@@ -22,6 +22,7 @@ export type QueueSurfaceRowProps = {
   onMoveItemToStart: (index: number) => void;
   onPlayItem: () => void;
   onRemoveItem: (index: number) => void;
+  onRequestMoveToPosition: () => void;
   onSetDragActive: (isActive: boolean) => void;
   onShowMenu: () => void;
   onToggleCurrentPlayback: () => void;
@@ -40,6 +41,7 @@ export const QueueSurfaceRow = ({
   onMoveItemToStart,
   onPlayItem,
   onRemoveItem,
+  onRequestMoveToPosition,
   onSetDragActive,
   onShowMenu,
   onToggleCurrentPlayback,
@@ -51,6 +53,7 @@ export const QueueSurfaceRow = ({
   const currentIndex = resolveItemIndex();
   const canMoveToStart = currentIndex > 0;
   const canMoveToEnd = currentIndex >= 0 && currentIndex < itemCount - 1;
+  const canMoveToPosition = itemCount > 1 && currentIndex >= 0;
   const canRemove = !item.isCurrent;
   const canDragReorder = itemCount > 1;
   const playbackAction = getQueueRowPlaybackAction({
@@ -212,10 +215,13 @@ export const QueueSurfaceRow = ({
             },
           },
           {
-            disabled: true,
+            disabled: !canMoveToPosition,
             id: `${item.key}:move-to-position`,
             label: 'Move to position',
-            onPress: onCloseMenu,
+            onPress: () => {
+              onCloseMenu();
+              onRequestMoveToPosition();
+            },
           },
           {
             disabled: !canRemove,
