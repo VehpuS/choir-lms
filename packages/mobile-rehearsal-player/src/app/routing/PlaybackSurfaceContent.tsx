@@ -62,9 +62,12 @@ type NowPlayingSurfaceProps = {
 type QueueSurfaceProps = {
   activeQueueMode: RehearsalQueueMode;
   activeRepeatMode: RepeatMode;
+  canSaveQueueAsPlaylist: boolean;
   isPlaybackToggleDisabled: boolean;
+  isSavingQueueAsPlaylist: boolean;
   onClose: () => void;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
+  onSaveQueueAsPlaylist: () => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
   summary: UpNextSurfaceSummary;
@@ -274,9 +277,12 @@ export const NowPlayingSurface = ({
 export const QueueSurface = ({
   activeQueueMode,
   activeRepeatMode,
+  canSaveQueueAsPlaylist,
   isPlaybackToggleDisabled,
+  isSavingQueueAsPlaylist,
   onClose,
   onSelectQueueMode,
+  onSaveQueueAsPlaylist,
   onSelectRepeatMode,
   onShowNowPlaying,
   summary,
@@ -316,6 +322,25 @@ export const QueueSurface = ({
         queueMode={activeQueueMode}
         repeatMode={activeRepeatMode}
       />
+
+      {canSaveQueueAsPlaylist ? (
+        <Pressable
+          accessibilityRole="button"
+          disabled={isSavingQueueAsPlaylist}
+          onPress={onSaveQueueAsPlaylist}
+          style={({ pressed }) => [
+            styles.queueActionButton,
+            pressed && !isSavingQueueAsPlaylist
+              ? styles.headerActionPressed
+              : null,
+            isSavingQueueAsPlaylist ? styles.headerActionDisabled : null,
+          ]}
+        >
+          <Text style={styles.queueActionButtonLabel}>
+            {isSavingQueueAsPlaylist ? 'Saving queue…' : 'Save as playlist'}
+          </Text>
+        </Pressable>
+      ) : null}
 
       <View style={styles.queueList}>
         {summary.items.map((item) => {
@@ -511,5 +536,17 @@ const styles = StyleSheet.create({
     color: appTheme.colors.secondaryText,
     fontSize: 13,
     lineHeight: 18,
+  },
+  queueActionButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    paddingVertical: 12,
+    backgroundColor: '#305c4d',
+  },
+  queueActionButtonLabel: {
+    color: '#fff8ef',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

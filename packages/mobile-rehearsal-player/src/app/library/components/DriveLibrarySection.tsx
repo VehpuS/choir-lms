@@ -6,6 +6,7 @@ import type { useSavedTrackPlayback } from '../hooks/use-saved-track-playback';
 import { useDriveLibrary } from '../hooks/use-drive-library';
 import { usePreparedLoopBuilderTrack } from '../hooks/use-prepared-loop-builder-track';
 import { useSavedLoops } from '../hooks/use-saved-loops';
+import { useSavedPlaylists } from '../hooks/use-saved-playlists';
 import { useSavedRehearsalLibrary } from '../hooks/use-saved-rehearsal-library';
 import { getDriveLibraryStatusCopy } from '../utils/drive-library-view-model';
 import { getSavedLoopRemovalCopy } from '../utils/saved-loop-view-model';
@@ -112,6 +113,16 @@ export const DriveLibrarySection = ({
     saveLoop,
     savedLoops,
   } = useSavedLoops();
+  const {
+    canMutatePlaylists,
+    createPlaylist,
+    deletePlaylist,
+    isLoading: isPlaylistsLoading,
+    issue: playlistIssue,
+    pendingPlaylistId,
+    savedPlaylists,
+    updatePlaylist,
+  } = useSavedPlaylists();
   const statusCopy = getDriveLibraryStatusCopy({
     authState,
     activeSearchQuery,
@@ -270,11 +281,17 @@ export const DriveLibrarySection = ({
         activePlaylistSession={activePlaylistSession}
         canMutateLibrary={canMutateLibrary}
         canMutateLoops={canMutateLoops}
+        canMutatePlaylists={canMutatePlaylists}
+        createPlaylist={createPlaylist}
+        deletePlaylist={deletePlaylist}
         isPlaybackPreparing={isPlaybackPreparing}
+        isPlaylistsLoading={isPlaylistsLoading}
         isSavedLibraryLoading={isSavedLibraryLoading}
         isSavedLoopsLoading={isSavedLoopsLoading}
+        pendingPlaylistId={pendingPlaylistId}
         pendingSourceId={pendingSourceId}
         pendingLoopId={pendingLoopId}
+        playlistIssue={playlistIssue}
         playbackIssue={playbackIssue}
         playbackState={playbackState}
         removeLoop={confirmRemoveLoop}
@@ -283,6 +300,7 @@ export const DriveLibrarySection = ({
         savedLibrarySources={savedLibrarySources}
         savedLoopIssue={savedLoopIssue}
         savedLoops={savedLoops}
+        savedPlaylists={savedPlaylists}
         savedLibraryStatusCopy={savedLibraryStatusCopy}
         saveLoop={saveLoop}
         getCurrentScrollOffsetY={() => {
@@ -301,6 +319,7 @@ export const DriveLibrarySection = ({
         togglePlayableItemPlayback={togglePlayableItemPlayback}
         togglePlaylistPlayback={togglePlaylistPlayback}
         toggleSourcePlayback={toggleSourcePlayback}
+        updatePlaylist={updatePlaylist}
       />
       {!isSearchMode ? (
         <DriveFolderGroup

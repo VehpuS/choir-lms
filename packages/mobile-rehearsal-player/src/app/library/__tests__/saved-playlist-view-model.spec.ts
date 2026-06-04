@@ -6,6 +6,7 @@ import { describe, it } from 'node:test';
 import {
   addLoopToPlaylist,
   addTrackToPlaylist,
+  createLoopPlayableItem,
   createTrackPlayableItem,
   createPlaylist,
 } from '@org/audio-library-models';
@@ -25,6 +26,7 @@ import {
   resolveSavedPlaylistDetailEdgeAutoscrollDelta,
   restoreSavedPlaylistDetailEntry,
 } from '../utils/saved-playlist-detail-view-model.js';
+import { buildSavedPlaylistFromQueue } from '../utils/queue-playlist-capture.js';
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackActionCopy,
@@ -796,6 +798,68 @@ describe('saved playlist view-model', () => {
     });
 
     assert.equal(queuedSession, null);
+  });
+
+  it('captures queue items into a playlist and deduplicates unsaved repeated tracks', () => {
+    const activePlayableItem = createTrackPlayableItem(PLAYABLE_SOURCE);
+    const transientSession = queuePlayableItemDuringPlayback({
+      activePlayableItem,
+      playableItem: activePlayableItem,
+      position: 'up-next',
+      repeatMode: 'off',
+      session: null,
+    });
+
+    const captureResult = buildSavedPlaylistFromQueue({
+      name: 'Warmup queue',
+      now: '2026-06-04T10:00:00.000Z',
+      ownerId: 'user-1',
+      savedLoops: [],
+      savedSources: [],
+      session: transientSession,
+    });
+
+    assert.equal(captureResult.issue, null);
+    assert.equal(captureResult.playlist?.items.length, 2);
+    assert.equal(captureResult.playlist?.items[0]?.title, 'Alto Line.mp3');
+    assert.equal(captureResult.playlist?.items[1]?.title, 'Alto Line.mp3');
+    assert.notEqual(
+      captureResult.playlist?.items[0]?.id,
+      captureResult.playlist?.items[1]?.id,
+    );
+    assert.deepEqual(
+      captureResult.unsavedSources.map((source) => source.id),
+      [PLAYABLE_SOURCE.id],
+    );
+  });
+
+  it('reports an issue when queued loop items cannot be resolved during queue capture', () => {
+    const transientSession = queuePlayableItemDuringPlayback({
+      activePlayableItem: createTrackPlayableItem(PLAYABLE_SOURCE),
+      playableItem: createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE),
+      position: 'next',
+      repeatMode: 'off',
+      session: null,
+    });
+
+    const captureResult = buildSavedPlaylistFromQueue({
+      name: 'Warmup queue',
+      now: '2026-06-04T10:00:00.000Z',
+      ownerId: 'user-1',
+      savedLoops: [],
+      savedSources: [PLAYABLE_SOURCE],
+      session: transientSession,
+    });
+
+    assert.deepEqual(captureResult, {
+      issue: {
+        title: 'Queued loop unavailable',
+        message:
+          'The queue item "Entrance cue" no longer has a saved loop source. Remove it from Up Next before saving this playlist.',
+      },
+      playlist: null,
+      unsavedSources: [],
+    });
   });
 
   it('keeps ordered and shuffled playback controls as fresh start actions', () => {

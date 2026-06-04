@@ -141,15 +141,21 @@ export const LibraryScreen = ({
           activePlaylistSession={playback.activePlaylistSession}
           canMutateLibrary={libraryController.savedLibrary.canMutateLibrary}
           canMutateLoops={libraryController.savedLibrary.canMutateLoops}
+          canMutatePlaylists={libraryController.playlists.canMutatePlaylists}
+          createPlaylist={libraryController.playlists.createPlaylist}
+          deletePlaylist={libraryController.playlists.deletePlaylist}
           isPlaybackPreparing={playback.isPreparing}
+          isPlaylistsLoading={libraryController.playlists.isLoading}
           isSavedLibraryLoading={libraryController.savedLibrary.isLoading}
           isSavedLoopsLoading={
             libraryController.savedLibrary.isSavedLoopsLoading
           }
           pendingSourceId={libraryController.savedLibrary.pendingSourceId}
+          pendingPlaylistId={libraryController.playlists.pendingPlaylistId}
           pendingLoopId={libraryController.savedLibrary.pendingLoopId}
           playbackIssue={playback.issue}
           playbackState={playback.playbackState}
+          playlistIssue={libraryController.playlists.issue}
           removeLoop={libraryController.savedLibrary.removeLoop}
           removeSource={libraryController.savedLibrary.removeSource}
           savedLibraryIssue={libraryController.savedLibrary.savedLibraryIssue}
@@ -158,6 +164,7 @@ export const LibraryScreen = ({
           }
           savedLoopIssue={libraryController.savedLibrary.savedLoopIssue}
           savedLoops={libraryController.savedLibrary.savedLoops}
+          savedPlaylists={libraryController.playlists.savedPlaylists}
           savedLibraryStatusCopy={
             libraryController.savedLibrary.savedLibraryStatusCopy
           }
@@ -186,6 +193,7 @@ export const LibraryScreen = ({
           togglePlayableItemPlayback={playback.togglePlayableItemPlayback}
           togglePlaylistPlayback={playback.togglePlaylistPlayback}
           toggleSourcePlayback={playback.toggleSourcePlayback}
+          updatePlaylist={libraryController.playlists.updatePlaylist}
         />
       </LoopPreviewPlaybackContext.Provider>
     </ScrollView>

@@ -5,11 +5,13 @@ import { Pressable, SafeAreaView, Text, View } from 'react-native';
 import { DriveSessionMenu } from '../auth/components/DriveSessionMenu';
 import { useGoogleDriveAuthorization } from '../auth/hooks/use-google-drive-authorization';
 import { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback';
+import type { PlaylistDraftIssue } from '../library/utils/saved-playlist-view-model';
 import type { PlaylistPlaybackSession } from '../library/utils/saved-playlist-playback-view-model';
 import type { SavedTrackPlaybackState } from '../library/utils/saved-track-playback-view-model';
 import { PlaybackMarqueeText } from './PlaybackMarqueeText';
 import { PlaybackSurface } from './PlaybackSurface';
 import { PlaybackWaveform } from './PlaybackWaveform';
+import { QueuePlaylistSaveDialog } from './QueuePlaylistSaveDialog';
 import { ShellTabBar } from './ShellTabBar';
 import { styles } from './mobile-shell-styles';
 import {
@@ -30,6 +32,7 @@ export type MobileShellProps = {
   activeQueueMode: PlaylistPlaybackSession['queue']['mode'] | null;
   activeRepeatMode: PlaylistPlaybackSession['queue']['repeatMode'] | null;
   authorization: ReturnType<typeof useGoogleDriveAuthorization>;
+  canSaveQueueAsPlaylist: boolean;
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
@@ -38,11 +41,13 @@ export type MobileShellProps = {
   addScreen: ReactNode;
   recentsScreen: ReactNode;
   isPlaybackPreparing: boolean;
+  isSavingQueueAsPlaylist: boolean;
   isPlaybackToggleDisabled: boolean;
   libraryScreen: ReactNode;
   onSeekBackward: () => void;
   onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
+  onSaveQueueAsPlaylist: (name: string) => Promise<PlaylistDraftIssue | null>;
   onSelectQueueMode: (mode: PlaylistPlaybackSession['queue']['mode']) => void;
   onSelectRepeatMode: (
     mode: PlaylistPlaybackSession['queue']['repeatMode'],
@@ -59,10 +64,7 @@ export type MobileShellProps = {
 
 const PANEL_BY_DESTINATION: Record<
   ShellDestinationKey,
-  keyof Pick<
-    MobileShellProps,
-    'recentsScreen' | 'libraryScreen' | 'addScreen'
-  >
+  keyof Pick<MobileShellProps, 'recentsScreen' | 'libraryScreen' | 'addScreen'>
 > = {
   recents: 'recentsScreen',
   add: 'addScreen',
@@ -75,6 +77,7 @@ export const MobileShell = ({
   activeQueueMode,
   activeRepeatMode,
   authorization,
+  canSaveQueueAsPlaylist,
   canSeekActivePlayback,
   canSkipNextItem,
   canSkipPreviousItem,
@@ -83,11 +86,13 @@ export const MobileShell = ({
   addScreen,
   recentsScreen,
   isPlaybackPreparing,
+  isSavingQueueAsPlaylist,
   isPlaybackToggleDisabled,
   libraryScreen,
   onSeekBackward,
   onSeekForward,
   onSeekToPosition,
+  onSaveQueueAsPlaylist,
   onSelectQueueMode,
   onSelectRepeatMode,
   onSetPlaybackVolume,
@@ -103,6 +108,11 @@ export const MobileShell = ({
     useState<ShellDestinationKey>('library');
   const [activePlaybackSurface, setActivePlaybackSurface] =
     useState<PlaybackSurfaceKey | null>(null);
+  const [isQueuePlaylistDialogVisible, setIsQueuePlaylistDialogVisible] =
+    useState(false);
+  const [queuePlaylistDraftName, setQueuePlaylistDraftName] = useState('');
+  const [queuePlaylistIssue, setQueuePlaylistIssue] =
+    useState<PlaylistDraftIssue | null>(null);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
   const miniPlayerSummary = getMiniPlayerSummary({
     activePlayableItem,
@@ -129,8 +139,21 @@ export const MobileShell = ({
   useEffect(() => {
     if (!miniPlayerSummary) {
       setActivePlaybackSurface(null);
+      setIsQueuePlaylistDialogVisible(false);
+      setQueuePlaylistDraftName('');
+      setQueuePlaylistIssue(null);
     }
   }, [miniPlayerSummary]);
+
+  useEffect(() => {
+    if (canSaveQueueAsPlaylist) {
+      return;
+    }
+
+    setIsQueuePlaylistDialogVisible(false);
+    setQueuePlaylistDraftName('');
+    setQueuePlaylistIssue(null);
+  }, [canSaveQueueAsPlaylist]);
 
   useEffect(() => {
     if (!requestedDestination || requestedDestinationRequestId === undefined) {
@@ -174,6 +197,7 @@ export const MobileShell = ({
             onToggleVisibility={() => {
               setIsSessionMenuVisible((currentValue) => !currentValue);
               setActivePlaybackSurface(null);
+              setIsQueuePlaylistDialogVisible(false);
             }}
             requestReady={authorization.requestReady}
             statusCopy={authorization.statusCopy}
@@ -293,18 +317,26 @@ export const MobileShell = ({
         activePlayableItem={activePlayableItem}
         activeQueueMode={activeQueueMode}
         activeRepeatMode={activeRepeatMode}
+        canSaveQueueAsPlaylist={canSaveQueueAsPlaylist}
         canSeekActivePlayback={canSeekActivePlayback}
         canSkipNextItem={canSkipNextItem}
         canSkipPreviousItem={canSkipPreviousItem}
         isPlaybackToggleDisabled={isPlaybackToggleDisabled}
+        isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
         nowPlayingSummary={nowPlayingSummary}
         onAdjustPlaybackVolume={onSetPlaybackVolume}
         onClose={() => {
           setActivePlaybackSurface(null);
+          setIsQueuePlaylistDialogVisible(false);
+          setQueuePlaylistIssue(null);
         }}
         onSeekBackward={onSeekBackward}
         onSeekForward={onSeekForward}
         onSeekToPosition={onSeekToPosition}
+        onSaveQueueAsPlaylist={() => {
+          setQueuePlaylistIssue(null);
+          setIsQueuePlaylistDialogVisible(true);
+        }}
         onSelectQueueMode={onSelectQueueMode}
         onSelectRepeatMode={onSelectRepeatMode}
         onShowNowPlaying={() => {
@@ -321,6 +353,35 @@ export const MobileShell = ({
         playbackVolumeLevel={playbackVolumeLevel}
         queueSummary={upNextSummary}
         surface={activePlaybackSurface}
+      />
+
+      <QueuePlaylistSaveDialog
+        isMutating={isSavingQueueAsPlaylist}
+        isVisible={isQueuePlaylistDialogVisible}
+        issue={queuePlaylistIssue}
+        onCancel={() => {
+          setIsQueuePlaylistDialogVisible(false);
+          setQueuePlaylistIssue(null);
+        }}
+        onChange={(value) => {
+          setQueuePlaylistDraftName(value);
+          setQueuePlaylistIssue(null);
+        }}
+        onSubmit={() => {
+          void (async () => {
+            const issue = await onSaveQueueAsPlaylist(queuePlaylistDraftName);
+
+            if (issue) {
+              setQueuePlaylistIssue(issue);
+              return;
+            }
+
+            setIsQueuePlaylistDialogVisible(false);
+            setQueuePlaylistDraftName('');
+            setQueuePlaylistIssue(null);
+          })();
+        }}
+        value={queuePlaylistDraftName}
       />
     </SafeAreaView>
   );

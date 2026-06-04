@@ -22,6 +22,7 @@ import {
   getUpNextSurfaceSummary,
 } from '../shell-model.js';
 import { resolveVisibleRepeatModes } from '../playback-session-mode-options.js';
+import { queuePlayableItemDuringPlayback } from '../../library/utils/saved-playlist-playback-view-model.js';
 
 describe('SHELL_DESTINATIONS', () => {
   it('defines the Library, Add, and Recents shell order', () => {
@@ -197,6 +198,81 @@ describe('getMiniPlayerSummary', () => {
       title: 'Alto Line.mp3',
       upNextLabel: null,
       waveformProgressRatio: 20 / 185,
+    });
+  });
+
+  it('surfaces transient queue affordances once standalone playback is promoted', () => {
+    const activePlayableItem = createTrackPlayableItem(PLAYABLE_SOURCE);
+    const queuedPlayableItem = createTrackPlayableItem({
+      ...PLAYABLE_SOURCE,
+      id: 'drive:tenor-line',
+      name: 'Tenor Line.mp3',
+    });
+    const transientSession = queuePlayableItemDuringPlayback({
+      activePlayableItem,
+      playableItem: queuedPlayableItem,
+      position: 'next',
+      repeatMode: 'all',
+      session: null,
+    });
+
+    if (!transientSession) {
+      throw new Error('Expected a transient queue session.');
+    }
+
+    const miniPlayerSummary = getMiniPlayerSummary({
+      activePlayableItem,
+      activePlaylistSession: transientSession,
+      isPlaybackPreparing: false,
+      playbackPositionSeconds: 18,
+      playbackState: 'playing',
+    });
+    const nowPlayingSummary = getNowPlayingSurfaceSummary({
+      activePlayableItem,
+      activePlaylistSession: transientSession,
+      isPlaybackPreparing: false,
+      playbackPositionSeconds: 18,
+      playbackState: 'playing',
+    });
+    const upNextSummary = getUpNextSurfaceSummary({
+      activePlaylistSession: transientSession,
+    });
+
+    assert.equal(
+      miniPlayerSummary?.detail,
+      'Current queue • Item 1 of 2 • Ordered • Repeat all',
+    );
+    assert.deepEqual(nowPlayingSummary, {
+      collectionLabel: 'Current queue • Item 1 of 2',
+      playbackLabel:
+        'Active session • Current queue • item 1 of 2 • Ordered • Repeat all.',
+      progressLabel: '0:18 of 3:05',
+      queueLabel: 'Ordered • Repeat all',
+      rangeLabel: null,
+      statusLabel: 'Playing',
+      supportsQueueNavigation: true,
+      title: 'Alto Line.mp3',
+      upNextLabel: 'Tenor Line.mp3',
+      waveformProgressRatio: 18 / 185,
+    });
+    assert.deepEqual(upNextSummary, {
+      collectionLabel:
+        'Current queue • Active session • Current queue • item 1 of 2 • Ordered • Repeat all.',
+      items: [
+        {
+          detail: 'Full track • 3:05',
+          isCurrent: true,
+          key: 'track:drive:alto-line:0',
+          title: 'Alto Line.mp3',
+        },
+        {
+          detail: 'Full track • 3:05',
+          isCurrent: false,
+          key: 'track:drive:tenor-line:1',
+          title: 'Tenor Line.mp3',
+        },
+      ],
+      queueLabel: 'Ordered • Repeat all',
     });
   });
 

@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/hooks/use-google-drive-authorization';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../library/hooks/use-saved-rehearsal-library';
 import { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
+import { buildSavedPlaylistFromQueue } from '../library/utils/queue-playlist-capture';
+import { isTransientQueueSession } from '../library/utils/saved-playlist-playback-view-model';
 import { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackActionCopy } from '../library/utils/saved-track-playback-view-model';
 import { AddScreen } from '../screens/AddScreen';
@@ -53,6 +56,44 @@ export const AppRouter = () => {
       }),
     );
   }, [libraryController.savedLibrary.savedLoops]);
+
+  const handleSaveQueueAsPlaylist = async (name: string) => {
+    const captureResult = buildSavedPlaylistFromQueue({
+      name,
+      ownerId: LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+      savedLoops: libraryController.savedLibrary.savedLoops,
+      savedSources: libraryController.savedLibrary.savedLibrarySources,
+      session: playback.activePlaylistSession,
+    });
+
+    if (captureResult.issue || !captureResult.playlist) {
+      return captureResult.issue;
+    }
+
+    for (const source of captureResult.unsavedSources) {
+      const didSave = await libraryController.savedLibrary.saveSource(source);
+
+      if (!didSave) {
+        return {
+          title: 'Could not save queued track',
+          message: `The queue could not be saved as a playlist because "${source.name}" could not be added to Library first.`,
+        };
+      }
+    }
+
+    const createdPlaylist = await libraryController.playlists.createPlaylist(
+      captureResult.playlist,
+    );
+
+    if (!createdPlaylist) {
+      return {
+        title: 'Could not save playlist',
+        message: `The queue could not be saved as the playlist "${captureResult.playlist.name}".`,
+      };
+    }
+
+    return null;
+  };
 
   useEffect(() => {
     let isDisposed = false;
@@ -109,6 +150,9 @@ export const AppRouter = () => {
       activeQueueMode={playback.activePlaylistSession?.queue.mode ?? null}
       activeRepeatMode={playback.playlistRepeatMode}
       authorization={authorization}
+      canSaveQueueAsPlaylist={isTransientQueueSession(
+        playback.activePlaylistSession,
+      )}
       canSeekActivePlayback={
         playback.activePlayableItem !== null && !playback.isPreparing
       }
@@ -164,6 +208,10 @@ export const AppRouter = () => {
         />
       }
       isPlaybackPreparing={playback.isPreparing}
+      isSavingQueueAsPlaylist={
+        libraryController.savedLibrary.pendingSourceId !== null ||
+        libraryController.playlists.pendingPlaylistId !== null
+      }
       isPlaybackToggleDisabled={playbackActionCopy?.disabled ?? true}
       libraryScreen={
         <LibraryScreen
@@ -180,6 +228,7 @@ export const AppRouter = () => {
       onSeekToPosition={(positionSeconds) => {
         void playback.seekActivePlaybackToPosition(positionSeconds);
       }}
+      onSaveQueueAsPlaylist={handleSaveQueueAsPlaylist}
       onSelectQueueMode={(mode) => {
         playback.setPlaylistQueueMode(mode);
       }}

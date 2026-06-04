@@ -24,10 +24,12 @@ type PlaybackSurfaceProps = {
   activePlayableItem: PlayableItem | null;
   activeQueueMode: RehearsalQueueMode | null;
   activeRepeatMode: RepeatMode | null;
+  canSaveQueueAsPlaylist: boolean;
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
   isPlaybackToggleDisabled: boolean;
+  isSavingQueueAsPlaylist: boolean;
   nowPlayingSummary: NowPlayingSurfaceSummary | null;
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
   onClose: () => void;
@@ -35,6 +37,7 @@ type PlaybackSurfaceProps = {
   onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
+  onSaveQueueAsPlaylist: () => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
   onShowQueue: () => void;
@@ -52,10 +55,12 @@ export const PlaybackSurface = ({
   activePlayableItem,
   activeQueueMode,
   activeRepeatMode,
+  canSaveQueueAsPlaylist,
   canSeekActivePlayback,
   canSkipNextItem,
   canSkipPreviousItem,
   isPlaybackToggleDisabled,
+  isSavingQueueAsPlaylist,
   nowPlayingSummary,
   onAdjustPlaybackVolume,
   onClose,
@@ -63,6 +68,7 @@ export const PlaybackSurface = ({
   onSeekForward,
   onSeekToPosition,
   onSelectQueueMode,
+  onSaveQueueAsPlaylist,
   onSelectRepeatMode,
   onShowNowPlaying,
   onShowQueue,
@@ -163,9 +169,12 @@ export const PlaybackSurface = ({
             <QueueSurface
               activeQueueMode={activeQueueMode ?? 'ordered'}
               activeRepeatMode={activeRepeatMode ?? 'off'}
+              canSaveQueueAsPlaylist={canSaveQueueAsPlaylist}
               isPlaybackToggleDisabled={isPlaybackToggleDisabled}
+              isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
               onClose={dismissSurface}
               onSelectQueueMode={onSelectQueueMode}
+              onSaveQueueAsPlaylist={onSaveQueueAsPlaylist}
               onSelectRepeatMode={onSelectRepeatMode}
               onShowNowPlaying={onShowNowPlaying}
               summary={queueSummary}

@@ -18,6 +18,7 @@ import {
 import { getSavedTrackPlaybackStatusCopy } from '../utils/saved-track-playback-view-model';
 import { useDriveLibrary } from './use-drive-library';
 import { usePreparedLoopBuilderTrack } from './use-prepared-loop-builder-track';
+import { useSavedPlaylists } from './use-saved-playlists';
 import { useSavedLoops } from './use-saved-loops';
 import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
 import type { useSavedTrackPlayback } from './use-saved-track-playback';
@@ -50,6 +51,7 @@ export const useRehearsalLibraryScreenController = ({
   const driveLibrary = useDriveLibrary(authState);
   const savedLibrary = useSavedRehearsalLibrary();
   const savedLoops = useSavedLoops();
+  const playlists = useSavedPlaylists();
   const canRefresh = authState.status === 'authorized';
   const isSearchMode = driveLibrary.activeSearchQuery !== null;
   const discoveryStatusCopy = getDriveLibraryStatusCopy({
@@ -253,6 +255,7 @@ export const useRehearsalLibraryScreenController = ({
       savedLoops: savedLoops.savedLoops,
       savedLibraryStatusCopy,
       saveLoop: savedLoops.saveLoop,
+      saveSource: savedLibrary.saveSource,
       savedSourceIds,
       savedTrackPlaybackStatusCopy,
       openLoopBuilderForSource,
@@ -262,6 +265,7 @@ export const useRehearsalLibraryScreenController = ({
       setSelectedLoopSourceId,
       trackCount: savedLibrarySources.length,
     },
+    playlists,
     search: {
       activeSearchQuery: driveLibrary.activeSearchQuery,
       canSearch: canRefresh,

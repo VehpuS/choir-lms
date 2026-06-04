@@ -10,7 +10,6 @@ import {
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 
-import { useSavedPlaylists } from '../hooks/use-saved-playlists';
 import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
 import {
@@ -33,7 +32,10 @@ import {
   restoreRecentSearchHistory,
 } from '../utils/search-history-storage';
 import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
-import type { PlaylistPlaybackSession } from '../utils/saved-playlist-playback-view-model';
+import type {
+  PlaylistPlaybackIssue,
+  PlaylistPlaybackSession,
+} from '../utils/saved-playlist-playback-view-model';
 import { getSelectedPlaylistIssue } from '../utils/saved-playlist-status-view-model';
 import {
   buildSavedPlaylist,
@@ -41,6 +43,7 @@ import {
   resolveSavedPlaylistCards,
   resolveSelectedPlaylist,
   validatePlaylistName,
+  type SavedPlaylistIssue,
   type PlaylistDraftIssue,
 } from '../utils/saved-playlist-view-model';
 import { getSavedRehearsalLibrarySourceIssue } from '../utils/saved-rehearsal-library-view-model';
@@ -71,11 +74,17 @@ type SavedRehearsalLibrarySectionProps = {
   activePlaylistSession: PlaylistPlaybackSession | null;
   canMutateLibrary: boolean;
   canMutateLoops: boolean;
+  canMutatePlaylists: boolean;
+  createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
+  deletePlaylist: (playlist: Playlist) => Promise<boolean>;
   isPlaybackPreparing: boolean;
+  isPlaylistsLoading: boolean;
   isSavedLibraryLoading: boolean;
   isSavedLoopsLoading: boolean;
+  pendingPlaylistId: string | null;
   pendingSourceId: string | null;
   pendingLoopId: string | null;
+  playlistIssue: SavedPlaylistIssue | null;
   playbackIssue: SavedTrackPlaybackIssue | null;
   playbackState: SavedTrackPlaybackState | undefined;
   removeLoop: (loop: NamedLoop) => void;
@@ -84,6 +93,7 @@ type SavedRehearsalLibrarySectionProps = {
   savedLibrarySources: DriveLibrarySource[];
   savedLoopIssue: SavedLoopIssue | null;
   savedLoops: NamedLoop[];
+  savedPlaylists: Playlist[];
   savedLibraryStatusCopy: DriveLibraryStatusCopy;
   saveLoop: (loop: NamedLoop) => Promise<boolean>;
   getCurrentScrollOffsetY: () => number;
@@ -110,6 +120,7 @@ type SavedRehearsalLibrarySectionProps = {
     startEntryId?: string;
   }) => Promise<void>;
   toggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
+  updatePlaylist: (playlist: Playlist) => Promise<Playlist | null>;
 };
 
 const BORDER_COLOR = '#d6d1c4';
@@ -119,11 +130,17 @@ export const SavedRehearsalLibrarySection = ({
   activePlaylistSession,
   canMutateLibrary,
   canMutateLoops,
+  canMutatePlaylists,
+  createPlaylist,
+  deletePlaylist,
   isPlaybackPreparing,
+  isPlaylistsLoading,
   isSavedLibraryLoading,
   isSavedLoopsLoading,
+  pendingPlaylistId,
   pendingSourceId,
   pendingLoopId,
+  playlistIssue,
   playbackIssue,
   playbackState,
   removeLoop,
@@ -132,6 +149,7 @@ export const SavedRehearsalLibrarySection = ({
   savedLibrarySources,
   savedLoopIssue,
   savedLoops,
+  savedPlaylists,
   savedLibraryStatusCopy,
   saveLoop,
   getCurrentScrollOffsetY,
@@ -148,17 +166,8 @@ export const SavedRehearsalLibrarySection = ({
   queuePlayableItemUpNext,
   togglePlaylistPlayback,
   toggleSourcePlayback,
+  updatePlaylist,
 }: SavedRehearsalLibrarySectionProps) => {
-  const {
-    canMutatePlaylists,
-    createPlaylist,
-    deletePlaylist,
-    isLoading: isPlaylistsLoading,
-    issue: playlistIssue,
-    pendingPlaylistId,
-    savedPlaylists,
-    updatePlaylist,
-  } = useSavedPlaylists();
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(
     null,
   );
