@@ -29,6 +29,8 @@ type QueueSurfaceProps = {
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
+  onTogglePlayback: () => void;
+  playbackToggleLabel: string;
   summary: UpNextSurfaceSummary;
 };
 
@@ -49,6 +51,8 @@ export const QueueSurface = ({
   onSelectQueueMode,
   onSelectRepeatMode,
   onShowNowPlaying,
+  onTogglePlayback,
+  playbackToggleLabel,
   summary,
 }: QueueSurfaceProps) => {
   const { height: windowHeight } = useWindowDimensions();
@@ -148,6 +152,8 @@ export const QueueSurface = ({
               onShowMenu={() => {
                 setActiveOptionsItemKey(item.key);
               }}
+              onToggleCurrentPlayback={onTogglePlayback}
+              playbackToggleLabel={playbackToggleLabel}
               resolveItemIndex={() => {
                 return summary.items.findIndex((queuedItem) => {
                   return queuedItem.key === item.key;

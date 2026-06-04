@@ -8,6 +8,7 @@ import { OptionsMenuSheet } from '../library/components/OptionsMenuSheet';
 
 import { SurfaceIconButton } from './PlaybackSurfaceControls';
 import { styles } from './playback-surface-styles';
+import { getQueueRowPlaybackAction } from './queue-surface-row-model';
 import type { UpNextSurfaceSummary } from './shell-model';
 
 export type QueueSurfaceRowProps = {
@@ -23,6 +24,8 @@ export type QueueSurfaceRowProps = {
   onRemoveItem: (index: number) => void;
   onSetDragActive: (isActive: boolean) => void;
   onShowMenu: () => void;
+  onToggleCurrentPlayback: () => void;
+  playbackToggleLabel: string;
   resolveItemIndex: () => number;
 };
 
@@ -39,6 +42,8 @@ export const QueueSurfaceRow = ({
   onRemoveItem,
   onSetDragActive,
   onShowMenu,
+  onToggleCurrentPlayback,
+  playbackToggleLabel,
   resolveItemIndex,
 }: QueueSurfaceRowProps) => {
   const dragAnchorMoveYRef = useRef<number | null>(null);
@@ -48,6 +53,11 @@ export const QueueSurfaceRow = ({
   const canMoveToEnd = currentIndex >= 0 && currentIndex < itemCount - 1;
   const canRemove = !item.isCurrent;
   const canDragReorder = itemCount > 1;
+  const playbackAction = getQueueRowPlaybackAction({
+    isCurrent: item.isCurrent,
+    playbackToggleLabel,
+    title: item.title,
+  });
 
   const panResponder = useMemo(() => {
     return PanResponder.create({
@@ -146,10 +156,14 @@ export const QueueSurfaceRow = ({
         actions={
           <>
             <SurfaceIconButton
-              accessibilityLabel={`Play ${item.title}`}
+              accessibilityLabel={playbackAction.accessibilityLabel}
               disabled={isPlaybackToggleDisabled}
-              icon="play"
-              onPress={onPlayItem}
+              icon={playbackAction.iconName}
+              onPress={
+                playbackAction.pressBehavior === 'toggle-current'
+                  ? onToggleCurrentPlayback
+                  : onPlayItem
+              }
               size={18}
             />
             <View

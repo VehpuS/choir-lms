@@ -23,6 +23,7 @@ import {
 } from '../shell-model.js';
 import { resolveVisibleRepeatModes } from '../playback-session-mode-options.js';
 import { shouldStartPlaybackSurfaceDismissGesture } from '../playback-surface-gestures.js';
+import { getQueueRowPlaybackAction } from '../queue-surface-row-model.js';
 import { getQueueListMaxHeight } from '../queue-surface-layout.js';
 import { queuePlayableItemDuringPlayback } from '../../library/utils/saved-playlist-playback-view-model.js';
 
@@ -31,6 +32,53 @@ describe('SHELL_DESTINATIONS', () => {
     assert.deepEqual(
       SHELL_DESTINATIONS.map((destination) => destination.label),
       ['Library', 'Add', 'Recents'],
+    );
+  });
+});
+
+describe('getQueueRowPlaybackAction', () => {
+  it('uses a pause button for the current playing queue item', () => {
+    assert.deepEqual(
+      getQueueRowPlaybackAction({
+        isCurrent: true,
+        playbackToggleLabel: 'Pause',
+        title: 'Alto Line.mp3',
+      }),
+      {
+        accessibilityLabel: 'Pause Alto Line.mp3',
+        iconName: 'pause',
+        pressBehavior: 'toggle-current',
+      },
+    );
+  });
+
+  it('keeps play semantics for non-current queue items', () => {
+    assert.deepEqual(
+      getQueueRowPlaybackAction({
+        isCurrent: false,
+        playbackToggleLabel: 'Pause',
+        title: 'Tenor Line.mp3',
+      }),
+      {
+        accessibilityLabel: 'Play Tenor Line.mp3',
+        iconName: 'play',
+        pressBehavior: 'play-item',
+      },
+    );
+  });
+
+  it('keeps the current row on toggle behavior even when playback is paused', () => {
+    assert.deepEqual(
+      getQueueRowPlaybackAction({
+        isCurrent: true,
+        playbackToggleLabel: 'Resume',
+        title: 'Entrance cue',
+      }),
+      {
+        accessibilityLabel: 'Resume Entrance cue',
+        iconName: 'play',
+        pressBehavior: 'toggle-current',
+      },
     );
   });
 });

@@ -197,6 +197,8 @@ export const PlaybackSurface = ({
               onSelectQueueMode={onSelectQueueMode}
               onSelectRepeatMode={onSelectRepeatMode}
               onShowNowPlaying={onShowNowPlaying}
+              onTogglePlayback={onTogglePlayback}
+              playbackToggleLabel={playbackToggleLabel}
               summary={queueSummary}
             />
           ) : null}
