@@ -36,7 +36,14 @@ The system SHALL present playlist detail as playback-first by default, with dest
 #### Scenario: Playlist edit mode supports drag-and-drop plus explicit icon controls
 
 - **WHEN** a user enters playlist edit mode
-- **THEN** the system supports drag-and-drop reordering and explicit icon-based move controls while keeping destructive controls visually distinct from playback controls
+- **THEN** the system supports drag-and-drop reordering, explicit icon-based move controls, and a `Move to position` option while keeping destructive controls visually distinct from playback controls
+
+#### Scenario: Playlist edit mode uses the same bounded move-to-position control as queue rows
+
+- **WHEN** a user chooses `Move to position` for a playlist item in edit mode
+- **THEN** the system opens the same modal and one-based slider treatment used by queue-row move-to-position
+- **AND** the slider is bounded from playlist position `1` through the last available playlist position
+- **AND** confirming the modal moves the selected item to that playlist position without leaving edit mode or restarting active playback
 
 ### Requirement: Recents and Add optimize for immediate rehearsal actions
 

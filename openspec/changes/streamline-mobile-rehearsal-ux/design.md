@@ -475,6 +475,12 @@ Alternatives considered:
 
 Playlist editing should support drag-and-drop reordering and explicit move controls simultaneously, with explicit controls represented by clear icons instead of text buttons.
 
+Implementation guidance:
+
+- Keep drag-and-drop and step-based move icons in playlist edit mode for quick local reordering.
+- Add a `Move to position` option in playlist edit mode that reuses the same modal surface, one-based slider bounds, and confirm or cancel semantics as the active queue control so precision reordering behaves identically across both surfaces.
+- Applying the selected playlist position should preserve edit mode context and avoid restarting active playback when the edited playlist is currently playing.
+
 Alternatives considered:
 
 - Drag-and-drop only: rejected because explicit controls improve accessibility and precision.
