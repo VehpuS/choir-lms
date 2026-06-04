@@ -24,7 +24,6 @@ type PlaybackSurfaceProps = {
   activePlayableItem: PlayableItem | null;
   activeQueueMode: RehearsalQueueMode | null;
   activeRepeatMode: RepeatMode | null;
-  canSaveQueueAsPlaylist: boolean;
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
@@ -32,6 +31,7 @@ type PlaybackSurfaceProps = {
   isSavingQueueAsPlaylist: boolean;
   nowPlayingSummary: NowPlayingSurfaceSummary | null;
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
+  onAppendQueueToPlaylist: () => void;
   onClose: () => void;
   onSeekBackward: () => void;
   onSeekForward: () => void;
@@ -55,7 +55,6 @@ export const PlaybackSurface = ({
   activePlayableItem,
   activeQueueMode,
   activeRepeatMode,
-  canSaveQueueAsPlaylist,
   canSeekActivePlayback,
   canSkipNextItem,
   canSkipPreviousItem,
@@ -63,6 +62,7 @@ export const PlaybackSurface = ({
   isSavingQueueAsPlaylist,
   nowPlayingSummary,
   onAdjustPlaybackVolume,
+  onAppendQueueToPlaylist,
   onClose,
   onSeekBackward,
   onSeekForward,
@@ -169,12 +169,9 @@ export const PlaybackSurface = ({
             <QueueSurface
               activeQueueMode={activeQueueMode ?? 'ordered'}
               activeRepeatMode={activeRepeatMode ?? 'off'}
-              canSaveQueueAsPlaylist={canSaveQueueAsPlaylist}
               isPlaybackToggleDisabled={isPlaybackToggleDisabled}
-              isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
               onClose={dismissSurface}
               onSelectQueueMode={onSelectQueueMode}
-              onSaveQueueAsPlaylist={onSaveQueueAsPlaylist}
               onSelectRepeatMode={onSelectRepeatMode}
               onShowNowPlaying={onShowNowPlaying}
               summary={queueSummary}
@@ -188,13 +185,16 @@ export const PlaybackSurface = ({
               canSeekActivePlayback={canSeekActivePlayback}
               canSkipNextItem={canSkipNextItem}
               canSkipPreviousItem={canSkipPreviousItem}
+              isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
               isPlaybackToggleDisabled={isPlaybackToggleDisabled}
               onAdjustPlaybackVolume={onAdjustPlaybackVolume}
+              onAppendQueueToPlaylist={onAppendQueueToPlaylist}
               onClose={dismissSurface}
               onSeekBackward={onSeekBackward}
               onSeekForward={onSeekForward}
               onSeekToPosition={onSeekToPosition}
               onSelectQueueMode={onSelectQueueMode}
+              onSaveQueueAsPlaylist={onSaveQueueAsPlaylist}
               onSelectRepeatMode={onSelectRepeatMode}
               onShowQueue={onShowQueue}
               onSkipNextItem={onSkipNextItem}

@@ -43,7 +43,7 @@
 ## 4. Loop and Action Defaults
 
 - [x] 4.1 Add context-aware default loop naming in loop creation while preserving user override behavior before save.
-- [ ] 4.2 Align row-level action menus to include new queue-acceleration actions and maintain consistent icon semantics across Library and Add, while keeping saved track and saved loop rows behaviorally identical except for track-only loop creation.
+- [x] 4.2 Align row-level action menus to include new queue-acceleration actions and maintain consistent icon semantics across Library and Add, while keeping saved track and saved loop rows behaviorally identical except for track-only loop creation.
 - [x] 4.2.1 Apply the shared overflow menu UI to saved source rows (`DriveLibrarySourceGroup`) and route secondary/destructive actions into that menu.
 - [x] 4.2.2 Introduce explicit row-action placement metadata (`inline` vs `menu`) with backward-compatible fallback logic and migrate current source/playlist callers.
 - [x] 4.2.3 Replace heuristic action grouping rules with explicit placement-only behavior after caller migration and validation.
@@ -54,7 +54,7 @@
 - [x] 4.2.7 Extend queue-action availability rules to every queue-capable item surface so users can create or grow a transient queue from standalone playback without first opening a playlist. Implement transient queue promotion when `Play next` or `Add to queue` is invoked during standalone single-track playback, keeping the current track as queue head and preserving uninterrupted playback.
 - [x] 4.2.8 Surface queue-management affordances across queue-capable item surfaces once a transient or playlist-backed queue exists, while keeping queue-only controls hidden during true single-item playback with no queued follow-up.
 - [x] 4.2.9 Add queue-view actions in Now Playing Up Next to save an active transient queue as a new playlist while preserving uninterrupted playback.
-- [ ] 4.2.10 Add queue-view actions in Now Playing Up Next to update an existing playlist with currently enqueued items in queue order, without mutating the active queue session.
+- [x] 4.2.10 Add queue-view actions in Now Playing Up Next to update an existing playlist with currently enqueued items in queue order, without mutating the active queue session.
 - [ ] 4.3 Ensure loop management remains parent-track-first while supporting optional promotion of loops to first-class organization surfaces.
 - [ ] 4.4 Add track-context loop management entry points (create, view, edit, remove) and preserve visible parent-track linkage in all loop surfaces, with `Make loop` living in saved track overflow only.
 - [ ] 4.5 Audit shell, playback, and queue surfaces for remaining text-labeled `Play` buttons, replace them with standard playback icons where appropriate, and update icon-only control labels, selected/disabled states, and touch-target sizing.

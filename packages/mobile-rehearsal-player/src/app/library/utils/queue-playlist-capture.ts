@@ -33,11 +33,9 @@ const getQueueEntryTimestamp = (baseTimestamp: string, itemIndex: number) => {
   return new Date(timestampMs).toISOString();
 };
 
-export const buildSavedPlaylistFromQueue = (options: {
-  createId?: (ownerId: string, createdAt: string) => string;
-  name: string;
-  now?: string;
-  ownerId: string;
+const captureQueueItemsIntoPlaylist = (options: {
+  baseTimestamp: string;
+  playlist: Playlist;
   savedLoops: NamedLoop[];
   savedSources: DriveLibrarySource[];
   session: PlaylistPlaybackSession | null;
@@ -54,21 +52,6 @@ export const buildSavedPlaylistFromQueue = (options: {
     };
   }
 
-  const playlistResult = buildSavedPlaylist({
-    createId: options.createId,
-    name: options.name,
-    now: options.now,
-    ownerId: options.ownerId,
-  });
-
-  if (playlistResult.issue || !playlistResult.playlist) {
-    return {
-      issue: playlistResult.issue,
-      playlist: null,
-      unsavedSources: [],
-    };
-  }
-
   const savedSourceIds = new Set(
     options.savedSources.map((source) => {
       return source.id;
@@ -76,11 +59,11 @@ export const buildSavedPlaylistFromQueue = (options: {
   );
   const trackedUnsavedSourceIds = new Set<string>();
   const unsavedSources: DriveLibrarySource[] = [];
-  let playlist = playlistResult.playlist;
+  let playlist = options.playlist;
 
   for (const [itemIndex, queueItem] of options.session.queue.items.entries()) {
     const entryTimestamp = getQueueEntryTimestamp(
-      playlist.createdAt,
+      options.baseTimestamp,
       itemIndex,
     );
 
@@ -117,4 +100,58 @@ export const buildSavedPlaylistFromQueue = (options: {
     playlist,
     unsavedSources,
   };
+};
+
+export const appendQueueItemsToPlaylist = (options: {
+  now?: string;
+  playlist: Playlist;
+  savedLoops: NamedLoop[];
+  savedSources: DriveLibrarySource[];
+  session: PlaylistPlaybackSession | null;
+}) => {
+  return captureQueueItemsIntoPlaylist({
+    baseTimestamp:
+      options.now ?? options.playlist.updatedAt ?? new Date().toISOString(),
+    playlist: options.playlist,
+    savedLoops: options.savedLoops,
+    savedSources: options.savedSources,
+    session: options.session,
+  });
+};
+
+export const buildSavedPlaylistFromQueue = (options: {
+  createId?: (ownerId: string, createdAt: string) => string;
+  name: string;
+  now?: string;
+  ownerId: string;
+  savedLoops: NamedLoop[];
+  savedSources: DriveLibrarySource[];
+  session: PlaylistPlaybackSession | null;
+}): {
+  issue: PlaylistDraftIssue | null;
+  playlist: Playlist | null;
+  unsavedSources: DriveLibrarySource[];
+} => {
+  const playlistResult = buildSavedPlaylist({
+    createId: options.createId,
+    name: options.name,
+    now: options.now,
+    ownerId: options.ownerId,
+  });
+
+  if (playlistResult.issue || !playlistResult.playlist) {
+    return {
+      issue: playlistResult.issue,
+      playlist: null,
+      unsavedSources: [],
+    };
+  }
+
+  return captureQueueItemsIntoPlaylist({
+    baseTimestamp: playlistResult.playlist.createdAt,
+    playlist: playlistResult.playlist,
+    savedLoops: options.savedLoops,
+    savedSources: options.savedSources,
+    session: options.session,
+  });
 };

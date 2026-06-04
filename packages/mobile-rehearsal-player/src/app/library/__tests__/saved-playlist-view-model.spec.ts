@@ -26,7 +26,10 @@ import {
   resolveSavedPlaylistDetailEdgeAutoscrollDelta,
   restoreSavedPlaylistDetailEntry,
 } from '../utils/saved-playlist-detail-view-model.js';
-import { buildSavedPlaylistFromQueue } from '../utils/queue-playlist-capture.js';
+import {
+  appendQueueItemsToPlaylist,
+  buildSavedPlaylistFromQueue,
+} from '../utils/queue-playlist-capture.js';
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackActionCopy,
@@ -34,6 +37,7 @@ import {
   getPlaylistPlaybackSessionSummary,
   getPlaylistQueueModeLabel,
   getPlaylistRepeatModeLabel,
+  canShowQueuePlaylistActions,
   queuePlayableItemDuringPlayback,
   queuePlayableItemAsNext,
   queuePlayableItemAsUpNext,
@@ -73,6 +77,51 @@ describe('saved playlist view-model', () => {
       resolveSelectedPlaylist([firstPlaylist, secondPlaylist], null)?.id,
       firstPlaylist.id,
     );
+    it('appends queue items to an existing playlist in queue order', () => {
+      const activePlayableItem = createTrackPlayableItem(PLAYABLE_SOURCE);
+      const transientSession = queuePlayableItemDuringPlayback({
+        activePlayableItem,
+        playableItem: activePlayableItem,
+        position: 'up-next',
+        repeatMode: 'off',
+        session: null,
+      });
+      const existingPlaylist = addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-06-04T09:00:00.000Z',
+          name: 'Sunday set',
+          ownerId: 'user-1',
+        }),
+        {
+          ...PLAYABLE_SOURCE,
+          id: 'drive:bass-line',
+          name: 'Bass Line.mp3',
+        },
+        '2026-06-04T09:05:00.000Z',
+      );
+
+      const captureResult = appendQueueItemsToPlaylist({
+        now: '2026-06-04T10:00:00.000Z',
+        playlist: existingPlaylist,
+        savedLoops: [],
+        savedSources: [],
+        session: transientSession,
+      });
+
+      assert.equal(captureResult.issue, null);
+      assert.deepEqual(
+        captureResult.playlist?.items.map((entry) => entry.title),
+        ['Bass Line.mp3', 'Alto Line.mp3', 'Alto Line.mp3'],
+      );
+      assert.deepEqual(
+        captureResult.unsavedSources.map((source) => source.id),
+        [PLAYABLE_SOURCE.id],
+      );
+      assert.notEqual(
+        captureResult.playlist?.items[1]?.id,
+        captureResult.playlist?.items[2]?.id,
+      );
+    });
     assert.equal(
       resolveSelectedPlaylist([firstPlaylist, secondPlaylist], 'missing')?.id,
       firstPlaylist.id,
@@ -786,6 +835,39 @@ describe('saved playlist view-model', () => {
     assert.equal(queuedSession?.queue.items[0]?.id, activePlayableItem.id);
     assert.equal(queuedSession?.queue.items[1]?.id, queuedTrack.id);
     assert.equal(queuedSession?.requestedItemCount, 2);
+  });
+
+  it('shows queue playlist actions for both transient and playlist-backed sessions', () => {
+    const transientSession = queuePlayableItemDuringPlayback({
+      activePlayableItem: createTrackPlayableItem(PLAYABLE_SOURCE),
+      playableItem: createTrackPlayableItem({
+        ...PLAYABLE_SOURCE,
+        id: 'drive:tenor-line',
+        name: 'Tenor Line.mp3',
+      }),
+      position: 'next',
+      repeatMode: 'off',
+      session: null,
+    });
+    const playlistSession = buildPlaylistPlaybackSession({
+      loops: [],
+      mode: 'ordered',
+      playlist: addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-05-12T00:00:00.000Z',
+          name: 'Warmups',
+          ownerId: 'user-1',
+        }),
+        PLAYABLE_SOURCE,
+        '2026-05-12T00:01:00.000Z',
+      ),
+      repeatMode: 'off',
+      sources: [PLAYABLE_SOURCE],
+    }).session;
+
+    assert.equal(canShowQueuePlaylistActions(null), false);
+    assert.equal(canShowQueuePlaylistActions(transientSession), true);
+    assert.equal(canShowQueuePlaylistActions(playlistSession), true);
   });
 
   it('returns null when queue actions run without an active item or queue session', () => {

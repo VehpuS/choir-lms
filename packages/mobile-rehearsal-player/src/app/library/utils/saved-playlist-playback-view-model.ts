@@ -248,6 +248,12 @@ export const isTransientQueueSession = (
   return session?.playlistId === TRANSIENT_QUEUE_PLAYLIST_ID;
 };
 
+export const canShowQueuePlaylistActions = (
+  session: PlaylistPlaybackSession | null,
+) => {
+  return session !== null && session.queue.items.length > 0;
+};
+
 export const queuePlayableItemDuringPlayback = (
   options: QueuePlayableItemDuringPlaybackOptions,
 ): PlaylistPlaybackSession | null => {

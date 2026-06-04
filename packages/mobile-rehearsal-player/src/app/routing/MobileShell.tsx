@@ -1,3 +1,4 @@
+import type { Playlist } from '@org/audio-library-models';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Pressable, SafeAreaView, Text, View } from 'react-native';
@@ -11,6 +12,7 @@ import type { SavedTrackPlaybackState } from '../library/utils/saved-track-playb
 import { PlaybackMarqueeText } from './PlaybackMarqueeText';
 import { PlaybackSurface } from './PlaybackSurface';
 import { PlaybackWaveform } from './PlaybackWaveform';
+import { QueuePlaylistAppendDialog } from './QueuePlaylistAppendDialog';
 import { QueuePlaylistSaveDialog } from './QueuePlaylistSaveDialog';
 import { ShellTabBar } from './ShellTabBar';
 import { styles } from './mobile-shell-styles';
@@ -32,7 +34,7 @@ export type MobileShellProps = {
   activeQueueMode: PlaylistPlaybackSession['queue']['mode'] | null;
   activeRepeatMode: PlaylistPlaybackSession['queue']['repeatMode'] | null;
   authorization: ReturnType<typeof useGoogleDriveAuthorization>;
-  canSaveQueueAsPlaylist: boolean;
+  canShowQueuePlaylistActions: boolean;
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
@@ -44,6 +46,7 @@ export type MobileShellProps = {
   isSavingQueueAsPlaylist: boolean;
   isPlaybackToggleDisabled: boolean;
   libraryScreen: ReactNode;
+  onAppendQueueToPlaylist: (playlistId: string) => Promise<PlaylistDraftIssue | null>;
   onSeekBackward: () => void;
   onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
@@ -60,6 +63,7 @@ export type MobileShellProps = {
   playbackToggleLabel: string;
   playbackVolumeLevel: number;
   playbackState: SavedTrackPlaybackState | undefined;
+  queuePlaylistTargets: Playlist[];
 };
 
 const PANEL_BY_DESTINATION: Record<
@@ -77,7 +81,7 @@ export const MobileShell = ({
   activeQueueMode,
   activeRepeatMode,
   authorization,
-  canSaveQueueAsPlaylist,
+  canShowQueuePlaylistActions,
   canSeekActivePlayback,
   canSkipNextItem,
   canSkipPreviousItem,
@@ -89,6 +93,7 @@ export const MobileShell = ({
   isSavingQueueAsPlaylist,
   isPlaybackToggleDisabled,
   libraryScreen,
+  onAppendQueueToPlaylist,
   onSeekBackward,
   onSeekForward,
   onSeekToPosition,
@@ -103,12 +108,15 @@ export const MobileShell = ({
   playbackToggleLabel,
   playbackVolumeLevel,
   playbackState,
+  queuePlaylistTargets,
 }: MobileShellProps) => {
   const [activeDestination, setActiveDestination] =
     useState<ShellDestinationKey>('library');
   const [activePlaybackSurface, setActivePlaybackSurface] =
     useState<PlaybackSurfaceKey | null>(null);
   const [isQueuePlaylistDialogVisible, setIsQueuePlaylistDialogVisible] =
+    useState(false);
+  const [isQueuePlaylistAppendDialogVisible, setIsQueuePlaylistAppendDialogVisible] =
     useState(false);
   const [queuePlaylistDraftName, setQueuePlaylistDraftName] = useState('');
   const [queuePlaylistIssue, setQueuePlaylistIssue] =
@@ -140,20 +148,22 @@ export const MobileShell = ({
     if (!miniPlayerSummary) {
       setActivePlaybackSurface(null);
       setIsQueuePlaylistDialogVisible(false);
+      setIsQueuePlaylistAppendDialogVisible(false);
       setQueuePlaylistDraftName('');
       setQueuePlaylistIssue(null);
     }
   }, [miniPlayerSummary]);
 
   useEffect(() => {
-    if (canSaveQueueAsPlaylist) {
+    if (canShowQueuePlaylistActions) {
       return;
     }
 
     setIsQueuePlaylistDialogVisible(false);
+    setIsQueuePlaylistAppendDialogVisible(false);
     setQueuePlaylistDraftName('');
     setQueuePlaylistIssue(null);
-  }, [canSaveQueueAsPlaylist]);
+  }, [canShowQueuePlaylistActions]);
 
   useEffect(() => {
     if (!requestedDestination || requestedDestinationRequestId === undefined) {
@@ -198,6 +208,7 @@ export const MobileShell = ({
               setIsSessionMenuVisible((currentValue) => !currentValue);
               setActivePlaybackSurface(null);
               setIsQueuePlaylistDialogVisible(false);
+              setIsQueuePlaylistAppendDialogVisible(false);
             }}
             requestReady={authorization.requestReady}
             statusCopy={authorization.statusCopy}
@@ -317,7 +328,6 @@ export const MobileShell = ({
         activePlayableItem={activePlayableItem}
         activeQueueMode={activeQueueMode}
         activeRepeatMode={activeRepeatMode}
-        canSaveQueueAsPlaylist={canSaveQueueAsPlaylist}
         canSeekActivePlayback={canSeekActivePlayback}
         canSkipNextItem={canSkipNextItem}
         canSkipPreviousItem={canSkipPreviousItem}
@@ -325,9 +335,15 @@ export const MobileShell = ({
         isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
         nowPlayingSummary={nowPlayingSummary}
         onAdjustPlaybackVolume={onSetPlaybackVolume}
+        onAppendQueueToPlaylist={() => {
+          setQueuePlaylistIssue(null);
+          setIsQueuePlaylistDialogVisible(false);
+          setIsQueuePlaylistAppendDialogVisible(true);
+        }}
         onClose={() => {
           setActivePlaybackSurface(null);
           setIsQueuePlaylistDialogVisible(false);
+          setIsQueuePlaylistAppendDialogVisible(false);
           setQueuePlaylistIssue(null);
         }}
         onSeekBackward={onSeekBackward}
@@ -335,6 +351,7 @@ export const MobileShell = ({
         onSeekToPosition={onSeekToPosition}
         onSaveQueueAsPlaylist={() => {
           setQueuePlaylistIssue(null);
+          setIsQueuePlaylistAppendDialogVisible(false);
           setIsQueuePlaylistDialogVisible(true);
         }}
         onSelectQueueMode={onSelectQueueMode}
@@ -382,6 +399,30 @@ export const MobileShell = ({
           })();
         }}
         value={queuePlaylistDraftName}
+      />
+
+      <QueuePlaylistAppendDialog
+        isMutating={isSavingQueueAsPlaylist}
+        isVisible={isQueuePlaylistAppendDialogVisible}
+        issue={queuePlaylistIssue}
+        onCancel={() => {
+          setIsQueuePlaylistAppendDialogVisible(false);
+          setQueuePlaylistIssue(null);
+        }}
+        onSelectPlaylist={(playlistId) => {
+          void (async () => {
+            const issue = await onAppendQueueToPlaylist(playlistId);
+
+            if (issue) {
+              setQueuePlaylistIssue(issue);
+              return;
+            }
+
+            setIsQueuePlaylistAppendDialogVisible(false);
+            setQueuePlaylistIssue(null);
+          })();
+        }}
+        playlists={queuePlaylistTargets}
       />
     </SafeAreaView>
   );

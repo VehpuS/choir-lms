@@ -31,6 +31,10 @@ export type NowPlayingSurfaceSummary = {
   playbackLabel: string;
   progressLabel: string;
   queueLabel: string;
+  queuePlaylistActions: {
+    saveLabel: string;
+    updateLabel: string;
+  } | null;
   rangeLabel: string | null;
   statusLabel: string;
   supportsQueueNavigation: boolean;
@@ -272,6 +276,12 @@ export const getNowPlayingSurfaceSummary = (options: {
       ? getPlaylistPlaybackSessionSummary(options.activePlaylistSession)
       : 'Keep the current rehearsal item audible while moving between Library, Add, and Recents.',
     queueLabel: getPlaybackQueueLabel(options.activePlaylistSession),
+    queuePlaylistActions: options.activePlaylistSession
+      ? {
+          saveLabel: 'Create new playlist',
+          updateLabel: 'Update playlist',
+        }
+      : null,
     rangeLabel: getPlayableItemRangeLabel(options.activePlayableItem),
     supportsQueueNavigation: Boolean(options.activePlaylistSession),
     upNextLabel: options.activePlaylistSession

@@ -38,7 +38,7 @@ export const QueuePlaylistSaveDialog = ({
     >
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <Text style={styles.title}>Save queue as playlist</Text>
+          <Text style={styles.title}>Create new playlist</Text>
           <Text style={styles.body}>
             Create a new playlist from the current Up Next order. Unsaved queued
             tracks will be added to Library first.
@@ -84,7 +84,7 @@ export const QueuePlaylistSaveDialog = ({
               ]}
             >
               <Text style={styles.primaryButtonLabel}>
-                {isMutating ? 'Saving…' : 'Save playlist'}
+                {isMutating ? 'Creating…' : 'Create playlist'}
               </Text>
             </Pressable>
           </View>

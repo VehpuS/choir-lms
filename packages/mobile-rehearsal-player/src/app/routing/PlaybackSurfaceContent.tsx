@@ -40,13 +40,16 @@ type NowPlayingSurfaceProps = {
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
+  isSavingQueueAsPlaylist: boolean;
   isPlaybackToggleDisabled: boolean;
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
+  onAppendQueueToPlaylist: () => void;
   onClose: () => void;
   onSeekBackward: () => void;
   onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
+  onSaveQueueAsPlaylist: () => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowQueue: () => void;
   onSkipNextItem: () => void;
@@ -62,12 +65,9 @@ type NowPlayingSurfaceProps = {
 type QueueSurfaceProps = {
   activeQueueMode: RehearsalQueueMode;
   activeRepeatMode: RepeatMode;
-  canSaveQueueAsPlaylist: boolean;
   isPlaybackToggleDisabled: boolean;
-  isSavingQueueAsPlaylist: boolean;
   onClose: () => void;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
-  onSaveQueueAsPlaylist: () => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
   summary: UpNextSurfaceSummary;
@@ -134,13 +134,16 @@ export const NowPlayingSurface = ({
   canSeekActivePlayback,
   canSkipNextItem,
   canSkipPreviousItem,
+  isSavingQueueAsPlaylist,
   isPlaybackToggleDisabled,
   onAdjustPlaybackVolume,
+  onAppendQueueToPlaylist,
   onClose,
   onSeekBackward,
   onSeekForward,
   onSeekToPosition,
   onSelectQueueMode,
+  onSaveQueueAsPlaylist,
   onSelectRepeatMode,
   onShowQueue,
   onSkipNextItem,
@@ -190,6 +193,44 @@ export const NowPlayingSurface = ({
         <Text numberOfLines={1} style={styles.subtitle}>
           {summary.collectionLabel}
         </Text>
+        {summary.queuePlaylistActions ? (
+          <View style={styles.queuePlaylistActionRow}>
+            <Pressable
+              accessibilityRole="button"
+              disabled={isSavingQueueAsPlaylist}
+              onPress={onSaveQueueAsPlaylist}
+              style={({ pressed }) => [
+                styles.queuePlaylistSecondaryAction,
+                pressed && !isSavingQueueAsPlaylist
+                  ? styles.headerActionPressed
+                  : null,
+                isSavingQueueAsPlaylist ? styles.headerActionDisabled : null,
+              ]}
+            >
+              <Text style={styles.queuePlaylistSecondaryActionLabel}>
+                {isSavingQueueAsPlaylist
+                  ? 'Saving queue…'
+                  : summary.queuePlaylistActions.saveLabel}
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              disabled={isSavingQueueAsPlaylist}
+              onPress={onAppendQueueToPlaylist}
+              style={({ pressed }) => [
+                styles.queuePlaylistPrimaryAction,
+                pressed && !isSavingQueueAsPlaylist
+                  ? styles.headerActionPressed
+                  : null,
+                isSavingQueueAsPlaylist ? styles.headerActionDisabled : null,
+              ]}
+            >
+              <Text style={styles.queuePlaylistPrimaryActionLabel}>
+                {summary.queuePlaylistActions.updateLabel}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
         {summary.rangeLabel ? (
           <Text numberOfLines={1} style={styles.rangeLabel}>
             {summary.rangeLabel}
@@ -277,12 +318,9 @@ export const NowPlayingSurface = ({
 export const QueueSurface = ({
   activeQueueMode,
   activeRepeatMode,
-  canSaveQueueAsPlaylist,
   isPlaybackToggleDisabled,
-  isSavingQueueAsPlaylist,
   onClose,
   onSelectQueueMode,
-  onSaveQueueAsPlaylist,
   onSelectRepeatMode,
   onShowNowPlaying,
   summary,
@@ -322,25 +360,6 @@ export const QueueSurface = ({
         queueMode={activeQueueMode}
         repeatMode={activeRepeatMode}
       />
-
-      {canSaveQueueAsPlaylist ? (
-        <Pressable
-          accessibilityRole="button"
-          disabled={isSavingQueueAsPlaylist}
-          onPress={onSaveQueueAsPlaylist}
-          style={({ pressed }) => [
-            styles.queueActionButton,
-            pressed && !isSavingQueueAsPlaylist
-              ? styles.headerActionPressed
-              : null,
-            isSavingQueueAsPlaylist ? styles.headerActionDisabled : null,
-          ]}
-        >
-          <Text style={styles.queueActionButtonLabel}>
-            {isSavingQueueAsPlaylist ? 'Saving queue…' : 'Save as playlist'}
-          </Text>
-        </Pressable>
-      ) : null}
 
       <View style={styles.queueList}>
         {summary.items.map((item) => {
@@ -452,6 +471,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
+  },
+  queuePlaylistActionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 4,
+  },
+  queuePlaylistPrimaryAction: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    paddingVertical: 12,
+    backgroundColor: '#305c4d',
+  },
+  queuePlaylistPrimaryActionLabel: {
+    color: '#fff8ef',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  queuePlaylistSecondaryAction: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: appTheme.colors.border,
+    borderRadius: 14,
+    paddingVertical: 12,
+    backgroundColor: '#fffdf8',
+  },
+  queuePlaylistSecondaryActionLabel: {
+    color: appTheme.colors.primaryText,
+    fontSize: 14,
+    fontWeight: '700',
   },
   transportRow: {
     flexDirection: 'row',

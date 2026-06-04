@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/hooks/use-google-drive-authorization';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../library/hooks/use-saved-rehearsal-library';
 import { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
-import { buildSavedPlaylistFromQueue } from '../library/utils/queue-playlist-capture';
-import { isTransientQueueSession } from '../library/utils/saved-playlist-playback-view-model';
+import {
+  appendQueueItemsToPlaylist,
+  buildSavedPlaylistFromQueue,
+} from '../library/utils/queue-playlist-capture';
+import { canShowQueuePlaylistActions } from '../library/utils/saved-playlist-playback-view-model';
 import { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackActionCopy } from '../library/utils/saved-track-playback-view-model';
 import { AddScreen } from '../screens/AddScreen';
@@ -95,6 +98,57 @@ export const AppRouter = () => {
     return null;
   };
 
+  const handleAppendQueueToPlaylist = async (playlistId: string) => {
+    const targetPlaylist = libraryController.playlists.savedPlaylists.find(
+      (playlist) => {
+        return playlist.id === playlistId;
+      },
+    );
+
+    if (!targetPlaylist) {
+      return {
+        title: 'Playlist unavailable',
+        message:
+          'Select a playlist that is still available in your saved Library.',
+      };
+    }
+
+    const captureResult = appendQueueItemsToPlaylist({
+      playlist: targetPlaylist,
+      savedLoops: libraryController.savedLibrary.savedLoops,
+      savedSources: libraryController.savedLibrary.savedLibrarySources,
+      session: playback.activePlaylistSession,
+    });
+
+    if (captureResult.issue || !captureResult.playlist) {
+      return captureResult.issue;
+    }
+
+    for (const source of captureResult.unsavedSources) {
+      const didSave = await libraryController.savedLibrary.saveSource(source);
+
+      if (!didSave) {
+        return {
+          title: 'Could not save queued track',
+          message: `The queue could not be appended to "${targetPlaylist.name}" because "${source.name}" could not be added to Library first.`,
+        };
+      }
+    }
+
+    const updatedPlaylist = await libraryController.playlists.updatePlaylist(
+      captureResult.playlist,
+    );
+
+    if (!updatedPlaylist) {
+      return {
+        title: 'Could not update playlist',
+        message: `The queue could not be appended to "${targetPlaylist.name}".`,
+      };
+    }
+
+    return null;
+  };
+
   useEffect(() => {
     let isDisposed = false;
 
@@ -150,7 +204,7 @@ export const AppRouter = () => {
       activeQueueMode={playback.activePlaylistSession?.queue.mode ?? null}
       activeRepeatMode={playback.playlistRepeatMode}
       authorization={authorization}
-      canSaveQueueAsPlaylist={isTransientQueueSession(
+      canShowQueuePlaylistActions={canShowQueuePlaylistActions(
         playback.activePlaylistSession,
       )}
       canSeekActivePlayback={
@@ -228,6 +282,7 @@ export const AppRouter = () => {
       onSeekToPosition={(positionSeconds) => {
         void playback.seekActivePlaybackToPosition(positionSeconds);
       }}
+      onAppendQueueToPlaylist={handleAppendQueueToPlaylist}
       onSaveQueueAsPlaylist={handleSaveQueueAsPlaylist}
       onSelectQueueMode={(mode) => {
         playback.setPlaylistQueueMode(mode);
@@ -251,6 +306,7 @@ export const AppRouter = () => {
       playbackToggleLabel={playbackActionCopy?.label ?? 'Play'}
       playbackVolumeLevel={playback.volumeLevel}
       playbackState={playback.playbackState}
+      queuePlaylistTargets={libraryController.playlists.savedPlaylists}
       addScreen={<AddScreen libraryController={libraryController} />}
     />
   );
