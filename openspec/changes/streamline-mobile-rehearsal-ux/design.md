@@ -165,9 +165,18 @@ IA reorder work cannot be considered acceptable unless every critical capability
 
 ### Capability: Queue-to-playlist persistence from Now Playing
 
-- User can save the active transient queue from Up Next as a new playlist without interrupting playback.
-- User can update an existing playlist with currently enqueued items from Up Next while preserving queue order.
+- User can use a single-row `Create new playlist` and `Update playlist` action group in Now Playing, adjacent to the current queue or playlist label and above the waveform.
+- User can create a new playlist from the active queue in Now Playing without interrupting playback.
+- User can update an existing playlist with currently enqueued items from Now Playing while preserving queue order.
 - Queue-to-playlist actions keep active playback and queue position stable after the save/update completes.
+
+### Capability: Active rehearsal queue view remains actionable at long lengths
+
+- The active rehearsal queue view keeps its summary, queue-mode controls, and transport visible by capping queue-list height and letting the list scroll internally when many items are queued.
+- Queue rows expose direct play controls and drag handles so users can jump playback or reorder without leaving the queue view.
+- Queue row overflow actions include remove, move to start, move to end, and move to a specific queue position through a dedicated move modal.
+- Current-item and upcoming-item state is communicated through row styling and play-control state rather than redundant `Now playing` or `Up next` eyebrow text.
+- Queue view includes previous and next track transport so users can navigate the active queue without switching back to Now Playing.
 
 ### Acceptance Gate
 
@@ -349,13 +358,13 @@ Alternatives considered:
 - Keep explicit utility controls only (Move up/Move down everywhere): rejected as slower and less native for repeated playlist edits.
 - Move all management actions into dedicated full-screen editors: rejected due to increased navigation overhead.
 
-### 3. Keep queue improvements additive and defer full queue editing if risk rises
+### 3. Keep queue improvements additive while bringing direct queue editing into the active queue view
 
-Add both high-value queue conveniences (`Play next` and `Add to queue`) while preserving existing queue ownership and playback consistency. Queue actions must work whether playback started from a playlist or from a single track: if the user is playing one item outside playlist context and then invokes a queue action, the system should promote that playback into a transient queue whose first item is the currently playing track and whose subsequent items reflect the ad-hoc queue action. Full queue reorder/remove can remain deferred if validation indicates too much complexity for this slice.
+Add both high-value queue conveniences (`Play next` and `Add to queue`) while preserving existing queue ownership and playback consistency. Queue actions must work whether playback started from a playlist or from a single track: if the user is playing one item outside playlist context and then invokes a queue action, the system should promote that playback into a transient queue whose first item is the currently playing track and whose subsequent items reflect the ad-hoc queue action. This slice also includes direct queue editing in the active rehearsal queue view through per-row play controls, drag reordering, overflow move/remove actions, and bounded move-to-position controls.
 
 Alternatives considered:
 
-- Ship full queue reordering in the same slice by default: rejected as potentially higher regression risk around active playback transitions.
+- Keep queue editing deferred outside this slice: rejected because long-queue usability and direct queue correction are now part of the requested workflow contract.
 - Leave queue fully unchanged: rejected because users need at least one faster ad-hoc flow for rehearsal sequencing.
 - Require users to start from a saved playlist before queue actions appear: rejected because it blocks common rehearsal behavior where singers audition one track first and decide what should play next only after playback has already started.
 
@@ -364,8 +373,12 @@ Transient queue rules for this change:
 - Standalone single-item playback remains valid as the initial playback mode.
 - `Play next` or `Add to queue` from any queue-capable surface during standalone playback promotes the current item into a transient queue session.
 - The transient queue keeps the currently playing item as position 1 and adds subsequent items according to the invoked action (`Play next` inserts immediately after the current item; `Add to queue` appends to the end).
-- Once a transient queue exists, now-playing and Up Next surfaces expose the same queue-management affordances used for playlist-backed queue sessions.
-- Up Next includes queue-to-playlist actions: save active transient queue as a new playlist, and update an existing playlist with currently enqueued items.
+- Once any active queue session exists, now-playing and Up Next surfaces expose consistent queue-management affordances for both transient and playlist-backed queues.
+- Now Playing includes a single-row `Create new playlist` and `Update playlist` action group adjacent to the current queue or playlist label and above the waveform.
+- The active rehearsal queue view keeps the Now Playing summary area visible by capping queue-list height and making the list itself scroll.
+- Queue rows expose direct play buttons plus drag handles, and overflow actions cover remove, move to start, move to end, and move to a specific queue index.
+- Queue rows rely on control state and styling instead of redundant `Now playing` or `Up next` eyebrow text.
+- Queue view includes previous and next track transport alongside the existing queue-mode controls.
 - Queue-to-playlist actions persist queue ordering into playlists but do not mutate the active queue session as a side effect.
 - Queue affordances stay hidden only when playback is truly single-item with no queued follow-up items yet.
 

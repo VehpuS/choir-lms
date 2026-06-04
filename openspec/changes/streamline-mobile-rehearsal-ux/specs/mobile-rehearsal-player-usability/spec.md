@@ -134,20 +134,56 @@ The system SHALL keep queue and now-playing controls mode-aware, visually clear,
 - **WHEN** a user opens Up Next during an active queue session
 - **THEN** the system shows current and upcoming items with clearly reachable queue-mode controls and explicit state visibility
 
-#### Scenario: Up Next offers queue-to-playlist actions for transient queues
+#### Scenario: Queue view stays visible when many items are queued
 
-- **WHEN** a user opens Up Next while a transient queue is active
-- **THEN** the system exposes actions to save the queue as a new playlist and to append enqueued items to an existing playlist
+- **WHEN** a user opens the active rehearsal queue with enough items to exceed the available sheet height
+- **THEN** the queue list scrolls within a capped maximum height
+- **AND** the queue summary, queue-mode controls, and queue transport remain visible without scrolling off-screen
 
-#### Scenario: Saving transient queue to playlist preserves playback continuity
+#### Scenario: Queue rows expose direct play and reorder controls
 
-- **WHEN** a user saves a transient queue as a new playlist from Up Next
+- **WHEN** a user views rows in the active rehearsal queue
+- **THEN** each row exposes a direct play button and a drag handle for reorder
+- **AND** selecting the play button jumps playback to that queue item without requiring a separate row-label affordance
+
+#### Scenario: Queue row overflow supports queue management actions
+
+- **WHEN** a user opens the overflow actions for a queue row
+- **THEN** the system offers `Remove from queue`, `Move to start`, `Move to end`, and `Move to position`
+
+#### Scenario: Move to position uses a bounded queue-position control
+
+- **WHEN** a user chooses `Move to position` for a queue row
+- **THEN** the system opens a modal with a slider bounded from queue position `1` through the last available queue position
+- **AND** confirming the modal moves the selected row to that position in the active queue order
+
+#### Scenario: Queue rows omit redundant status copy when direct playback exists
+
+- **WHEN** queue rows expose direct play controls
+- **THEN** the system does not repeat `Now playing` or `Up next` eyebrow text on those rows
+- **AND** current-item state remains understandable through row styling and play-control state
+
+#### Scenario: Queue view includes previous and next transport
+
+- **WHEN** a user is already in the active rehearsal queue view
+- **THEN** the system exposes previous-track and next-track transport controls in that same queue view
+- **AND** users do not need to return to Now Playing just to move backward or forward within the active queue
+
+#### Scenario: Now Playing offers queue-to-playlist actions for active queues
+
+- **WHEN** a user opens Now Playing while an active queue session is present
+- **THEN** the system exposes a single row of `Create new playlist` and `Update playlist` actions
+- **AND** that action row appears adjacent to the current queue or playlist label and above the waveform
+
+#### Scenario: Creating a new playlist from Now Playing preserves playback continuity
+
+- **WHEN** a user creates a new playlist from the current queue in Now Playing
 - **THEN** the playlist is created from the queue's current item order
 - **AND** the current playback item and position continue without restart
 
-#### Scenario: Appending enqueued items from Up Next preserves playback continuity
+#### Scenario: Updating a playlist from Now Playing preserves playback continuity
 
-- **WHEN** a user appends currently enqueued items from Up Next to an existing playlist
+- **WHEN** a user chooses `Update playlist` from Now Playing for an active queue session
 - **THEN** the selected playlist gains the enqueued items in queue order
 - **AND** the active queue session remains in place and playback continues without interruption
 
