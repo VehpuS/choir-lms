@@ -10,6 +10,7 @@ import {
 } from './queue-move-position-model';
 
 type QueueMovePositionDialogProps = {
+  bodyText?: string;
   currentIndex: number;
   isVisible: boolean;
   itemCount: number;
@@ -19,6 +20,7 @@ type QueueMovePositionDialogProps = {
 };
 
 export const QueueMovePositionDialog = ({
+  bodyText,
   currentIndex,
   isVisible,
   itemCount,
@@ -61,8 +63,8 @@ export const QueueMovePositionDialog = ({
         <View style={styles.card}>
           <Text style={styles.title}>Move to position</Text>
           <Text style={styles.body}>
-            Choose a new queue position for {itemTitle}. Playback continues
-            while Up Next updates.
+            {bodyText ??
+              `Choose a new queue position for ${itemTitle}. Playback continues while Up Next updates.`}
           </Text>
 
           <View style={styles.positionSummaryRow}>

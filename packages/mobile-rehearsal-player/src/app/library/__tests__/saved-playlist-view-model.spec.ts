@@ -16,6 +16,10 @@ import {
   SAVED_LOOP,
 } from '../../test-utils/library-test-fixtures.js';
 import {
+  clampQueuePosition,
+  resolveQueueMoveTargetIndex,
+} from '../../routing/queue-move-position-model.js';
+import {
   buildSavedPlaylistDetailDraftPlaylist,
   getSavedPlaylistDetailInitialState,
   isSavedPlaylistEntryPlayable,
@@ -367,6 +371,64 @@ describe('saved playlist view-model', () => {
         itemCount: 5,
       }),
       4,
+    );
+  });
+
+  it('reuses queue move-to-position bounds when reordering playlist drafts', () => {
+    const playlist = addLoopToPlaylist(
+      addTrackToPlaylist(
+        addTrackToPlaylist(
+          createPlaylist({
+            createdAt: '2026-05-12T00:00:00.000Z',
+            name: 'Warmups',
+            ownerId: 'user-1',
+          }),
+          PLAYABLE_SOURCE,
+          '2026-05-12T00:01:00.000Z',
+        ),
+        {
+          ...PLAYABLE_SOURCE,
+          id: 'source-2',
+          name: 'Tenor Line.mp3',
+        },
+        '2026-05-12T00:01:30.000Z',
+      ),
+      SAVED_LOOP,
+      '2026-05-12T00:02:00.000Z',
+    );
+
+    const firstTargetIndex = resolveQueueMoveTargetIndex({
+      itemCount: playlist.items.length,
+      sliderValue: -4,
+    });
+    const middleTargetIndex = resolveQueueMoveTargetIndex({
+      itemCount: playlist.items.length,
+      sliderValue: [2],
+    });
+    const lastTargetIndex = resolveQueueMoveTargetIndex({
+      itemCount: playlist.items.length,
+      sliderValue: 99,
+    });
+
+    assert.equal(clampQueuePosition(-4, playlist.items.length), 1);
+    assert.equal(clampQueuePosition(99, playlist.items.length), 3);
+    assert.deepEqual(
+      moveSavedPlaylistDetailEntry(playlist.items, 1, firstTargetIndex).map(
+        (entry) => entry.id,
+      ),
+      [playlist.items[1].id, playlist.items[0].id, playlist.items[2].id],
+    );
+    assert.deepEqual(
+      moveSavedPlaylistDetailEntry(playlist.items, 0, middleTargetIndex).map(
+        (entry) => entry.id,
+      ),
+      [playlist.items[1].id, playlist.items[0].id, playlist.items[2].id],
+    );
+    assert.deepEqual(
+      moveSavedPlaylistDetailEntry(playlist.items, 0, lastTargetIndex).map(
+        (entry) => entry.id,
+      ),
+      [playlist.items[1].id, playlist.items[2].id, playlist.items[0].id],
     );
   });
 

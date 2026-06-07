@@ -1,8 +1,9 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Playlist } from '@org/audio-library-models';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { PanResponder, Pressable, Text, View } from 'react-native';
 
+import { QueueMovePositionDialog } from '../../routing/QueueMovePositionDialog';
 import { getSavedPlaylistDetailRemoveActionPresentation } from '../utils/saved-playlist-detail-view-model';
 import { savedPlaylistSectionStyles as styles } from './saved-playlist-section-styles';
 
@@ -34,11 +35,13 @@ const PlaylistDetailEditControls = (props: {
   onReorderDragActiveChange: (isActive: boolean) => void;
   onReorderDragMove: (moveY: number) => void;
   onMoveItem: (fromIndex: number, toIndex: number) => void;
+  onRequestMoveToPosition: (entryId: string) => void;
   onRemoveItem: (entryId: string) => void;
   entryId: string;
 }) => {
   const canMoveUp = props.index > 0;
   const canMoveDown = props.index < props.itemCount - 1;
+  const canMoveToPosition = props.itemCount > 1;
   const dragAnchorMoveYRef = useRef<number | null>(null);
   const stepDistance = Math.max(props.itemHeight * 0.82, 44);
   const panResponder = useMemo(() => {
@@ -174,11 +177,31 @@ const PlaylistDetailEditControls = (props: {
             : undefined,
         ]}
       >
+        <MaterialCommunityIcons color="#1f1c17" name="arrow-down" size={16} />
+      </Pressable>
+      <Pressable
+        accessibilityLabel={`Move ${props.entryTitle} to a specific position`}
+        accessibilityRole="button"
+        disabled={props.isMutating || !canMoveToPosition}
+        onPress={() => {
+          props.onRequestMoveToPosition(props.entryId);
+        }}
+        style={({ pressed }) => [
+          styles.dragHandleButton,
+          pressed && !props.isMutating && canMoveToPosition
+            ? styles.actionButtonPressed
+            : undefined,
+          props.isMutating || !canMoveToPosition
+            ? styles.actionButtonDisabled
+            : undefined,
+        ]}
+      >
         <MaterialCommunityIcons
           color="#1f1c17"
-          name="arrow-down"
-          size={16}
+          name="format-list-numbered"
+          size={18}
         />
+        <Text style={styles.dragHandleLabel}>Position</Text>
       </Pressable>
       <Pressable
         accessibilityLabel={`Remove ${props.entryTitle} from playlist`}
@@ -219,16 +242,41 @@ export const SavedPlaylistDetailItemsList = (props: {
   onRemoveItem: (entryId: string) => void;
 }) => {
   const measuredItemHeightRef = useRef(102);
+  const [activeMovePositionEntryId, setActiveMovePositionEntryId] = useState<
+    string | null
+  >(null);
+
+  useEffect(() => {
+    setActiveMovePositionEntryId((currentEntryId) => {
+      if (!currentEntryId) {
+        return currentEntryId;
+      }
+
+      return props.detailEntries.some((entry) => entry.id === currentEntryId)
+        ? currentEntryId
+        : null;
+    });
+  }, [props.detailEntries]);
 
   useEffect(() => {
     if (!props.isEditMode) {
       props.onReorderDragActiveChange(false);
+      setActiveMovePositionEntryId(null);
     }
 
     return () => {
       props.onReorderDragActiveChange(false);
     };
   }, [props.isEditMode, props.onReorderDragActiveChange]);
+
+  const activeMovePositionEntry = props.detailEntries.find((entry) => {
+    return entry.id === activeMovePositionEntryId;
+  });
+  const activeMovePositionIndex = activeMovePositionEntry
+    ? props.detailEntries.findIndex((entry) => {
+        return entry.id === activeMovePositionEntry.id;
+      })
+    : -1;
 
   return (
     <View style={styles.group}>
@@ -349,11 +397,12 @@ export const SavedPlaylistDetailItemsList = (props: {
                     index={index}
                     isMutating={props.isMutating}
                     itemCount={props.detailEntries.length}
-                    onReorderDragActiveChange={
-                      props.onReorderDragActiveChange
-                    }
+                    onReorderDragActiveChange={props.onReorderDragActiveChange}
                     onReorderDragMove={props.onReorderDragMove}
                     onMoveItem={props.onMoveItem}
+                    onRequestMoveToPosition={(entryId) => {
+                      setActiveMovePositionEntryId(entryId);
+                    }}
                     onRemoveItem={props.onRemoveItem}
                   />
                 ) : null}
@@ -362,6 +411,29 @@ export const SavedPlaylistDetailItemsList = (props: {
           })}
         </View>
       )}
+
+      {activeMovePositionEntry ? (
+        <QueueMovePositionDialog
+          bodyText={`Choose a new playlist position for ${activeMovePositionEntry.title}. Edit mode stays active while this running order updates.`}
+          currentIndex={activeMovePositionIndex}
+          isVisible
+          itemCount={props.detailEntries.length}
+          itemTitle={activeMovePositionEntry.title}
+          onCancel={() => {
+            setActiveMovePositionEntryId(null);
+          }}
+          onSubmit={(targetIndex) => {
+            if (
+              activeMovePositionIndex >= 0 &&
+              activeMovePositionIndex !== targetIndex
+            ) {
+              props.onMoveItem(activeMovePositionIndex, targetIndex);
+            }
+
+            setActiveMovePositionEntryId(null);
+          }}
+        />
+      ) : null}
     </View>
   );
 };

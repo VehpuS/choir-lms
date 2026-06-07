@@ -14,7 +14,7 @@
 - [x] 2.1.2 Reuse a shared options-sheet surface for playlist management and track-context menus, replacing bespoke per-surface menu sheets.
 - [x] 2.2 Implement low-friction playlist item removal interaction in default playlist detail mode while preserving undo snackbar recovery.
 - [x] 2.3 Implement dual reorder support in playlist edit mode: drag-and-drop plus explicit icon-based move controls, with destructive actions visually distinct from playback actions.
-- [ ] 2.3.1 Add a playlist-edit `Move to position` control that reuses the same bounded slider modal and confirmation flow as the active queue control.
+- [x] 2.3.1 Add a playlist-edit `Move to position` control that reuses the same bounded slider modal and confirmation flow as the active queue control.
 - [x] 2.4 Add `Play next` queue quick-action support for saved track and loop rows without interrupting active playback.
 - [x] 2.5 Add `Add to queue` queue quick-action support for saved track and loop rows without interrupting active playback.
 - [x] 2.6 Update queue and now-playing control presentation so mode-aware controls remain explicit and queue-only controls stay hidden in standalone playback.
