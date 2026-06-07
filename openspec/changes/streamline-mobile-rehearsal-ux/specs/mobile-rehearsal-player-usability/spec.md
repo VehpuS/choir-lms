@@ -33,17 +33,27 @@ The system SHALL present playlist detail as playback-first by default, with dest
 - **WHEN** a user removes a playlist item from the default playlist detail mode
 - **THEN** the system removes the item using a low-friction row interaction and shows undo feedback without leaving the playlist detail screen
 
-#### Scenario: Playlist edit mode supports drag-and-drop plus explicit icon controls
+#### Scenario: Playlist detail rows expose always-available reorder controls
 
-- **WHEN** a user enters playlist edit mode
-- **THEN** the system supports drag-and-drop reordering, explicit icon-based move controls, and a `Move to position` option while keeping destructive controls visually distinct from playback controls
+- **WHEN** a user views playlist detail rows
+- **THEN** each row exposes a default-visible drag handle that follows iOS reorder conventions
+- **AND** each row places a standard play or pause control immediately after the drag affordance
+- **AND** each row places paired up and down controls on the trailing side immediately before the overflow trigger
+- **AND** the system does not require a separate edit mode to access reorder controls
 
-#### Scenario: Playlist edit mode uses the same bounded move-to-position control as queue rows
+#### Scenario: Playlist detail row overflow keeps lower-frequency actions secondary
 
-- **WHEN** a user chooses `Move to position` for a playlist item in edit mode
+- **WHEN** a user opens the overflow menu for a playlist detail row
+- **THEN** the menu includes `Move to position` and `Remove from playlist`
+- **AND** `Move to position` appears before `Remove from playlist`
+- **AND** destructive remove appears last instead of as a separate top-level row control
+
+#### Scenario: Playlist detail row move to position uses the same bounded control as queue rows
+
+- **WHEN** a user chooses `Move to position` for a playlist detail row
 - **THEN** the system opens the same modal and one-based slider treatment used by queue-row move-to-position
 - **AND** the slider is bounded from playlist position `1` through the last available playlist position
-- **AND** confirming the modal moves the selected item to that playlist position without leaving edit mode or restarting active playback
+- **AND** confirming the modal moves the selected item to that playlist position without leaving playlist detail or restarting active playback
 
 ### Requirement: Recents and Add optimize for immediate rehearsal actions
 
@@ -242,6 +252,13 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 - **THEN** each surface exposes a fixed top-right vertical-ellipsis trigger that opens the shared options menu for non-primary management actions
 - **AND** playlist list cards keep `Open playlist` separate from the overflow menu while offering playlist management actions such as rename and remove from that menu
 - **AND** choosing `Rename playlist` from a playlist list card does not implicitly navigate to playlist detail before showing the rename flow
+
+#### Scenario: Playlist detail rows keep lower-frequency actions in overflow
+
+- **WHEN** a user views rows inside playlist detail
+- **THEN** drag handle, play or pause, and grouped up/down controls remain inline on the row
+- **AND** `Move to position` and `Remove from playlist` appear in the shared overflow menu
+- **AND** lower-frequency row actions are not duplicated as extra top-level buttons outside the overflow menu
 
 #### Scenario: Saved source rows keep primary actions inline and move secondary/destructive actions into overflow
 

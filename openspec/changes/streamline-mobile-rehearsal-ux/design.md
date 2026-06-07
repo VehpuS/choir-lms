@@ -351,7 +351,7 @@ Alternatives considered:
 
 ### 2. Prioritize one-handed, native list interactions for playlist and library management
 
-Where possible, use fast list behaviors (row taps, swipe actions, concise menus, and clearer edit modes) over heavy management panels.
+Where possible, use fast list behaviors (row taps, swipe actions, visible reorder handles, and concise menus) over heavy management panels.
 
 Alternatives considered:
 
@@ -471,18 +471,21 @@ Alternatives considered:
 - Treat loops as independent-only objects: rejected because provenance and editing context become harder.
 - Keep loops only nested under tracks: rejected because power users need cross-track loop organization.
 
-### 10. Support both reorder interaction paths in playlists, with icon-based explicit controls
+### 10. Support both reorder interaction paths in playlists without a separate edit mode
 
-Playlist editing should support drag-and-drop reordering and explicit move controls simultaneously, with explicit controls represented by clear icons instead of text buttons.
+Playlist detail rows should support drag-and-drop reordering and explicit move controls simultaneously, with reorder affordances visible by default and lower-frequency mutations routed through overflow.
 
 Implementation guidance:
 
-- Keep drag-and-drop and step-based move icons in playlist edit mode for quick local reordering.
-- Add a `Move to position` option in playlist edit mode that reuses the same modal surface, one-based slider bounds, and confirm or cancel semantics as the active queue control so precision reordering behaves identically across both surfaces.
-- Applying the selected playlist position should preserve edit mode context and avoid restarting active playback when the edited playlist is currently playing.
+- Remove the dedicated playlist edit toggle; playlist detail rows should expose reorder controls in the default detail view.
+- Use a visible drag handle by default, following Apple-style reorder and drag-and-drop conventions so direct manipulation is discoverable without entering a separate mode.
+- Order playlist row controls as: drag handle, standard play or pause control, tightly grouped up and down step controls on the trailing side, then the overflow trigger.
+- Keep `Move to position` and `Remove` inside the shared overflow menu; `Move to position` reuses the same modal surface, one-based slider bounds, and confirm or cancel semantics as the active queue control so precision reordering behaves identically across both surfaces.
+- Applying the selected playlist position should preserve playlist detail context and avoid restarting active playback when the edited playlist is currently playing.
 
 Alternatives considered:
 
+- Separate edit mode with additional top-level controls: rejected because it duplicates row affordances, adds scanning cost, and pushes lower-frequency actions out of the shared overflow pattern.
 - Drag-and-drop only: rejected because explicit controls improve accessibility and precision.
 - Explicit move controls only: rejected because drag-and-drop is faster for most reordering.
 
