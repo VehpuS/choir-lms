@@ -13,8 +13,8 @@
 - [x] 2.1.1 Standardize playlist overflow affordances by pinning vertical-ellipsis triggers to top-right in playlist list cards and playlist detail cards.
 - [x] 2.1.2 Reuse a shared options-sheet surface for playlist management and track-context menus, replacing bespoke per-surface menu sheets.
 - [x] 2.2 Implement low-friction playlist item removal interaction in default playlist detail mode while preserving undo snackbar recovery.
-- [ ] 2.3 Remove the dedicated playlist edit mode and expose default-visible playlist row reorder controls that follow Apple-style drag affordances, keep play/pause inline, and group up/down controls beside the overflow trigger.
-- [ ] 2.3.1 Route playlist-row `Move to position` and `Remove` into the shared overflow menu while reusing the same bounded slider modal and confirmation flow as the active queue control.
+- [x] 2.3 Remove the dedicated playlist edit mode and expose default-visible playlist row reorder controls that follow Apple-style drag affordances, keep play/pause inline, and group up/down controls beside the overflow trigger.
+- [x] 2.3.1 Route playlist-row `Move to position` and `Remove` into the shared overflow menu while reusing the same bounded slider modal and confirmation flow as the active queue control.
 - [x] 2.4 Add `Play next` queue quick-action support for saved track and loop rows without interrupting active playback.
 - [x] 2.5 Add `Add to queue` queue quick-action support for saved track and loop rows without interrupting active playback.
 - [x] 2.6 Update queue and now-playing control presentation so mode-aware controls remain explicit and queue-only controls stay hidden in standalone playback.

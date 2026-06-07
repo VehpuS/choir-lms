@@ -3,8 +3,8 @@ import { describe, it } from 'node:test';
 
 import {
   consumeSavedPlaylistRenameRequest,
+  getSavedPlaylistDetailPlaybackAction,
   getSavedPlaylistDetailItemRemovalCopy,
-  getSavedPlaylistDetailRemoveActionPresentation,
   queueSavedPlaylistRenameRequest,
 } from '../utils/saved-playlist-detail-view-model.js';
 
@@ -17,18 +17,46 @@ describe('saved playlist detail rename request helpers', () => {
     assert.equal(consumeSavedPlaylistRenameRequest('playlist-1'), false);
   });
 
-  it('uses icon-only remove affordance in default detail mode', () => {
-    assert.deepEqual(getSavedPlaylistDetailRemoveActionPresentation(false), {
-      isIconOnly: true,
-      tone: 'neutral',
-    });
+  it('uses play semantics for non-current playlist rows', () => {
+    assert.deepEqual(
+      getSavedPlaylistDetailPlaybackAction({
+        isCurrentEntry: false,
+        playbackToggleLabel: 'Pause',
+        title: 'Alto Line.mp3',
+      }),
+      {
+        accessibilityLabel: 'Play Alto Line.mp3',
+        iconName: 'play',
+        pressBehavior: 'play-item',
+      },
+    );
   });
 
-  it('keeps destructive text remove affordance in detail edit mode', () => {
-    assert.deepEqual(getSavedPlaylistDetailRemoveActionPresentation(true), {
-      isIconOnly: false,
-      tone: 'destructive',
-    });
+  it('uses the current playback toggle label for the active playlist row', () => {
+    assert.deepEqual(
+      getSavedPlaylistDetailPlaybackAction({
+        isCurrentEntry: true,
+        playbackToggleLabel: 'Pause',
+        title: 'Alto Line.mp3',
+      }),
+      {
+        accessibilityLabel: 'Pause Alto Line.mp3',
+        iconName: 'pause',
+        pressBehavior: 'toggle-current',
+      },
+    );
+    assert.deepEqual(
+      getSavedPlaylistDetailPlaybackAction({
+        isCurrentEntry: true,
+        playbackToggleLabel: 'Resume',
+        title: 'Alto Line.mp3',
+      }),
+      {
+        accessibilityLabel: 'Resume Alto Line.mp3',
+        iconName: 'play',
+        pressBehavior: 'toggle-current',
+      },
+    );
   });
 
   it('builds confirmation copy for playlist item removal alerts', () => {

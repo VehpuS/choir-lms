@@ -3,7 +3,7 @@ import {
   type NamedLoop,
   type Playlist,
 } from '@org/audio-library-models';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { Alert, Text, View } from 'react-native';
 
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
@@ -11,6 +11,7 @@ import type { DriveLibrarySource } from '../utils/drive-library-view-model';
 import {
   buildSavedPlaylistDetailDraftPlaylist,
   getSavedPlaylistDetailInitialState,
+  hasSavedPlaylistDetailEntryOrderChanged,
   getSavedPlaylistDetailItemRemovalCopy,
   isSavedPlaylistEntryPlayable,
   moveSavedPlaylistDetailEntry,
@@ -64,6 +65,7 @@ type SavedPlaylistSectionProps = {
   setSelectedPlaylistId: (playlistId: string) => void;
   setIsReorderDragActive: (isActive: boolean) => void;
   setReorderDragMoveY: (moveY: number) => void;
+  toggleActivePlayback: () => Promise<void>;
   togglePlaylistPlayback: (options: {
     loops: NamedLoop[];
     mode: 'ordered' | 'shuffle';
@@ -73,6 +75,8 @@ type SavedPlaylistSectionProps = {
   }) => Promise<void>;
   updatePlaylist: (playlist: Playlist) => Promise<Playlist | null>;
 };
+
+type PlaylistEntry = Playlist['items'][number];
 
 export const SavedPlaylistSection = ({
   activePlaylistSession,
@@ -94,6 +98,7 @@ export const SavedPlaylistSection = ({
   setSelectedPlaylistId,
   setIsReorderDragActive,
   setReorderDragMoveY,
+  toggleActivePlayback,
   togglePlaylistPlayback,
   updatePlaylist,
 }: SavedPlaylistSectionProps) => {
@@ -110,6 +115,23 @@ export const SavedPlaylistSection = ({
     undefined,
     getSavedPlaylistDetailInitialState,
   );
+  const detailEntriesRef = useRef<PlaylistEntry[]>([]);
+
+  const resetDetailEntries = (entries: PlaylistEntry[]) => {
+    detailEntriesRef.current = [...entries];
+    dispatchDetailAction({
+      type: 'reset',
+      entries,
+    });
+  };
+
+  const setDraftEntries = (entries: PlaylistEntry[]) => {
+    detailEntriesRef.current = [...entries];
+    dispatchDetailAction({
+      type: 'update-draft-entries',
+      entries,
+    });
+  };
 
   useEffect(() => {
     setRenamePlaylistName(selectedPlaylist?.name ?? '');
@@ -117,10 +139,7 @@ export const SavedPlaylistSection = ({
   }, [selectedPlaylist?.id, selectedPlaylist?.name]);
 
   useEffect(() => {
-    dispatchDetailAction({
-      type: 'reset',
-      entries: isDetailVisible ? (selectedPlaylist?.items ?? []) : [],
-    });
+    resetDetailEntries(isDetailVisible ? (selectedPlaylist?.items ?? []) : []);
   }, [isDetailVisible, selectedPlaylist?.id]);
 
   const isMutating = pendingPlaylistId !== null;
@@ -144,14 +163,13 @@ export const SavedPlaylistSection = ({
     issue,
     selectedPlaylist?.id ?? null,
   );
-  const detailPlaylist =
-    selectedPlaylist && detailState.isEditing
-      ? buildSavedPlaylistDetailDraftPlaylist(
-          selectedPlaylist,
-          detailState.draftEntries,
-          selectedPlaylist.updatedAt,
-        )
-      : selectedPlaylist;
+  const detailPlaylist = selectedPlaylist
+    ? buildSavedPlaylistDetailDraftPlaylist(
+        selectedPlaylist,
+        detailState.draftEntries,
+        selectedPlaylist.updatedAt,
+      )
+    : null;
   const detailSummary = detailPlaylist
     ? getSavedPlaylistDetailSummary({
         activeSession: selectedPlaybackSession,
@@ -164,6 +182,17 @@ export const SavedPlaylistSection = ({
     ? (getPlaylistPlaybackCurrentItem(selectedPlaybackSession)
         ?.playlistEntryId ?? null)
     : null;
+  const playlistPlaybackToggleLabel = isPlaybackPreparing
+    ? 'Loading…'
+    : playbackState === 'playing'
+      ? 'Pause'
+      : playbackState === 'paused' ||
+          playbackState === 'ready' ||
+          playbackState === 'stopped'
+        ? 'Resume'
+        : playbackState === 'ended'
+          ? 'Replay'
+          : 'Play';
   const shouldShowStatusCard = isLoading || statusCopy.tone !== 'ready';
 
   const persistSelectedPlaylist = async (
@@ -247,34 +276,27 @@ export const SavedPlaylistSection = ({
     ]);
   };
 
-  const handleToggleDetailEditMode = async () => {
+  const persistPlaylistDetailEntries = async (entries: PlaylistEntry[]) => {
     if (!selectedPlaylist) {
       return;
     }
 
-    if (!detailState.isEditing) {
-      dispatchDetailAction({
-        type: 'enter-edit-mode',
-        entries: selectedPlaylist.items,
-      });
+    if (
+      !hasSavedPlaylistDetailEntryOrderChanged(entries, selectedPlaylist.items)
+    ) {
       return;
     }
 
     const persistedPlaylist = await persistSelectedPlaylist((playlist) => {
-      return buildSavedPlaylistDetailDraftPlaylist(
-        playlist,
-        detailState.draftEntries,
-      );
+      return buildSavedPlaylistDetailDraftPlaylist(playlist, entries);
     });
 
     if (!persistedPlaylist) {
+      resetDetailEntries(selectedPlaylist.items);
       return;
     }
 
-    dispatchDetailAction({
-      type: 'reset',
-      entries: persistedPlaylist.items,
-    });
+    resetDetailEntries(persistedPlaylist.items);
   };
 
   const handleRemovePlaylistItem = async (entryId: string) => {
@@ -283,19 +305,11 @@ export const SavedPlaylistSection = ({
     }
 
     const removalResult = removeSavedPlaylistDetailEntry(
-      detailState.isEditing ? detailState.draftEntries : selectedPlaylist.items,
+      detailState.draftEntries,
       entryId,
     );
 
     if (!removalResult) {
-      return;
-    }
-
-    if (detailState.isEditing) {
-      dispatchDetailAction({
-        type: 'update-draft-entries',
-        entries: removalResult.nextEntries,
-      });
       return;
     }
 
@@ -314,6 +328,8 @@ export const SavedPlaylistSection = ({
         style: 'destructive',
         onPress: () => {
           void (async () => {
+            setDraftEntries(removalResult.nextEntries);
+
             const persistedPlaylist = await persistSelectedPlaylist(
               (playlist) => {
                 return buildSavedPlaylistDetailDraftPlaylist(
@@ -324,8 +340,11 @@ export const SavedPlaylistSection = ({
             );
 
             if (!persistedPlaylist) {
+              resetDetailEntries(selectedPlaylist.items);
               return;
             }
+
+            resetDetailEntries(persistedPlaylist.items);
 
             dispatchDetailAction({
               type: 'show-removal-notice',
@@ -346,7 +365,7 @@ export const SavedPlaylistSection = ({
     }
 
     const restoredEntries = restoreSavedPlaylistDetailEntry(
-      selectedPlaylist.items,
+      detailState.draftEntries,
       detailState.removalNotice,
     );
     const persistedPlaylist = await persistSelectedPlaylist((playlist) => {
@@ -356,6 +375,8 @@ export const SavedPlaylistSection = ({
     if (!persistedPlaylist) {
       return;
     }
+
+    resetDetailEntries(persistedPlaylist.items);
 
     dispatchDetailAction({
       type: 'clear-removal-notice',
@@ -384,11 +405,7 @@ export const SavedPlaylistSection = ({
           canMutatePlaylists={canMutatePlaylists}
           currentPlaylistEntryId={currentPlaylistEntryId}
           detailSummary={detailSummary}
-          detailEntries={
-            detailState.isEditing
-              ? detailState.draftEntries
-              : (detailPlaylist?.items ?? [])
-          }
+          detailEntries={detailState.draftEntries}
           getCurrentScrollOffsetY={getCurrentScrollOffsetY}
           getItemDetailLabel={(entry) => {
             return getSavedPlaylistEntryDetailLabel({
@@ -397,7 +414,6 @@ export const SavedPlaylistSection = ({
               savedSources,
             });
           }}
-          isEditMode={detailState.isEditing}
           isItemPlayable={(entry) => {
             return isSavedPlaylistEntryPlayable({
               entry,
@@ -408,10 +424,7 @@ export const SavedPlaylistSection = ({
           isMutating={isMutating}
           onCloseDetail={() => {
             setIsReorderDragActive(false);
-            dispatchDetailAction({
-              type: 'reset',
-              entries: [],
-            });
+            resetDetailEntries([]);
             onCloseDetail?.();
           }}
           onDismissRemovalNotice={() => {
@@ -419,20 +432,26 @@ export const SavedPlaylistSection = ({
               type: 'clear-removal-notice',
             });
           }}
+          onCommitReorder={() => {
+            void persistPlaylistDetailEntries(detailEntriesRef.current);
+          }}
           onDeletePlaylist={handleDeletePlaylist}
-          onMoveItem={(fromIndex, toIndex) => {
-            if (!detailState.isEditing) {
+          onMoveItem={(fromIndex, toIndex, options) => {
+            const nextEntries = moveSavedPlaylistDetailEntry(
+              detailEntriesRef.current,
+              fromIndex,
+              toIndex,
+            );
+
+            if (nextEntries === detailEntriesRef.current) {
               return;
             }
 
-            dispatchDetailAction({
-              type: 'update-draft-entries',
-              entries: moveSavedPlaylistDetailEntry(
-                detailState.draftEntries,
-                fromIndex,
-                toIndex,
-              ),
-            });
+            setDraftEntries(nextEntries);
+
+            if (options?.persist) {
+              void persistPlaylistDetailEntries(nextEntries);
+            }
           }}
           onRemoveItem={(entryId) => {
             void handleRemovePlaylistItem(entryId);
@@ -469,11 +488,8 @@ export const SavedPlaylistSection = ({
               startEntryId: entryId,
             });
           }}
-          onToggleEditMode={() => {
-            if (detailState.isEditing) {
-              setIsReorderDragActive(false);
-            }
-            void handleToggleDetailEditMode();
+          onToggleCurrentPlayback={() => {
+            void toggleActivePlayback();
           }}
           onReorderDragActiveChange={setIsReorderDragActive}
           onReorderDragMove={setReorderDragMoveY}
@@ -481,6 +497,8 @@ export const SavedPlaylistSection = ({
             void handleUndoPlaylistRemoval();
           }}
           orderedPlaybackAction={orderedPlaybackAction}
+          playbackToggleDisabled={isPlaybackPreparing}
+          playbackToggleLabel={playlistPlaybackToggleLabel}
           renameIssue={renameIssue}
           renamePlaylistName={renamePlaylistName}
           removalNotice={detailState.removalNotice}

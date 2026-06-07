@@ -195,6 +195,53 @@ export const savedPlaylistSectionStyles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: '#fffdf8',
   },
+  playlistRowShell: {
+    gap: 12,
+  },
+  playlistRowControlRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  playlistRowCopy: {
+    gap: 6,
+  },
+  playlistRowControlSpacer: {
+    flex: 1,
+  },
+  playlistRowDragHandle: {
+    width: 46,
+    height: 46,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    borderRadius: 999,
+    backgroundColor: '#fffdf8',
+  },
+  playlistRowDragHandleDisabled: {
+    opacity: 0.56,
+  },
+  playlistRowStepControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  playlistRowStepButton: {
+    minWidth: 40,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    borderRadius: 999,
+    backgroundColor: '#fffdf8',
+  },
+  playlistRowOverflowTrigger: {
+    position: 'relative',
+    top: 0,
+    right: 0,
+  },
   itemMetadata: {
     color: SECONDARY_TEXT,
     fontSize: 13,

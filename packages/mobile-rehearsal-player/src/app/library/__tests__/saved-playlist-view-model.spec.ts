@@ -22,6 +22,7 @@ import {
 import {
   buildSavedPlaylistDetailDraftPlaylist,
   getSavedPlaylistDetailInitialState,
+  hasSavedPlaylistDetailEntryOrderChanged,
   isSavedPlaylistEntryPlayable,
   moveSavedPlaylistDetailEntry,
   reduceSavedPlaylistDetailState,
@@ -254,7 +255,7 @@ describe('saved playlist view-model', () => {
     });
   });
 
-  it('keeps playlist detail edit state and undo feedback in UI-local helpers', () => {
+  it('keeps playlist detail draft order and undo feedback in UI-local helpers', () => {
     const playlist = addLoopToPlaylist(
       addTrackToPlaylist(
         createPlaylist({
@@ -269,12 +270,12 @@ describe('saved playlist view-model', () => {
       '2026-05-12T00:02:00.000Z',
     );
     const initialState = getSavedPlaylistDetailInitialState();
-    const editingState = reduceSavedPlaylistDetailState(initialState, {
-      type: 'enter-edit-mode',
+    const detailState = reduceSavedPlaylistDetailState(initialState, {
+      type: 'reset',
       entries: playlist.items,
     });
     const reorderedEntries = moveSavedPlaylistDetailEntry(
-      editingState.draftEntries,
+      detailState.draftEntries,
       1,
       0,
     );
@@ -284,7 +285,10 @@ describe('saved playlist view-model', () => {
       playlist.items[0].id,
     );
 
-    assert.equal(editingState.isEditing, true);
+    assert.deepEqual(
+      detailState.draftEntries.map((entry) => entry.id),
+      playlist.items.map((entry) => entry.id),
+    );
     assert.deepEqual(
       reorderedEntries.map((entry) => entry.id),
       [playlist.items[1].id, playlist.items[0].id],
@@ -320,6 +324,32 @@ describe('saved playlist view-model', () => {
           sortIndex: 1,
         },
       ],
+    );
+  });
+
+  it('detects when playlist draft order diverges from the persisted playlist', () => {
+    const playlist = addLoopToPlaylist(
+      addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-05-12T00:00:00.000Z',
+          name: 'Warmups',
+          ownerId: 'user-1',
+        }),
+        PLAYABLE_SOURCE,
+        '2026-05-12T00:01:00.000Z',
+      ),
+      SAVED_LOOP,
+      '2026-05-12T00:02:00.000Z',
+    );
+    const reorderedEntries = moveSavedPlaylistDetailEntry(playlist.items, 1, 0);
+
+    assert.equal(
+      hasSavedPlaylistDetailEntryOrderChanged(playlist.items, playlist.items),
+      false,
+    );
+    assert.equal(
+      hasSavedPlaylistDetailEntryOrderChanged(reorderedEntries, playlist.items),
+      true,
     );
   });
 

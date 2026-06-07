@@ -15,13 +15,13 @@ export type SavedPlaylistDetailRemovalNotice = {
 
 export type SavedPlaylistDetailState = {
   draftEntries: PlaylistEntry[];
-  isEditing: boolean;
   removalNotice: SavedPlaylistDetailRemovalNotice | null;
 };
 
-export type SavedPlaylistDetailRemoveActionPresentation = {
-  isIconOnly: boolean;
-  tone: 'neutral' | 'destructive';
+export type SavedPlaylistDetailPlaybackAction = {
+  accessibilityLabel: string;
+  iconName: 'pause' | 'play';
+  pressBehavior: 'play-item' | 'toggle-current';
 };
 
 export type SavedPlaylistDetailItemRemovalCopy = {
@@ -33,13 +33,6 @@ export type SavedPlaylistDetailItemRemovalCopy = {
 export type SavedPlaylistDetailAction =
   | {
       type: 'clear-removal-notice';
-    }
-  | {
-      type: 'enter-edit-mode';
-      entries: PlaylistEntry[];
-    }
-  | {
-      type: 'exit-edit-mode';
     }
   | {
       type: 'reset';
@@ -94,7 +87,6 @@ export const getSavedPlaylistDetailInitialState =
   (): SavedPlaylistDetailState => {
     return {
       draftEntries: [],
-      isEditing: false,
       removalNotice: null,
     };
   };
@@ -111,26 +103,9 @@ export const reduceSavedPlaylistDetailState = (
       };
     }
 
-    case 'enter-edit-mode': {
-      return {
-        draftEntries: [...action.entries],
-        isEditing: true,
-        removalNotice: null,
-      };
-    }
-
-    case 'exit-edit-mode': {
-      return {
-        ...state,
-        draftEntries: [],
-        isEditing: false,
-      };
-    }
-
     case 'reset': {
       return {
         draftEntries: [...(action.entries ?? [])],
-        isEditing: false,
         removalNotice: null,
       };
     }
@@ -175,6 +150,19 @@ export const moveSavedPlaylistDetailEntry = (
   return moveItem(entries, fromIndex, toIndex);
 };
 
+export const hasSavedPlaylistDetailEntryOrderChanged = (
+  currentEntries: PlaylistEntry[],
+  persistedEntries: PlaylistEntry[],
+) => {
+  if (currentEntries.length !== persistedEntries.length) {
+    return true;
+  }
+
+  return currentEntries.some((entry, index) => {
+    return entry.id !== persistedEntries[index]?.id;
+  });
+};
+
 const DRAG_REORDER_STEP_DISTANCE_PX = 52;
 const DRAG_REORDER_DOWNWARD_ACTIVATION_DISTANCE_PX = 24;
 const DRAG_REORDER_UPWARD_ACTIVATION_DISTANCE_PX = 34;
@@ -206,10 +194,7 @@ export const resolveSavedPlaylistDetailDragTargetIndex = (options: {
     1 + Math.floor(normalizedDistance / DRAG_REORDER_STEP_DISTANCE_PX);
   const normalizedShift = Math.sign(deltaY) * indexShift;
 
-  return Math.min(
-    Math.max(fromIndex + normalizedShift, 0),
-    itemCount - 1,
-  );
+  return Math.min(Math.max(fromIndex + normalizedShift, 0), itemCount - 1);
 };
 
 export const resolveSavedPlaylistDetailEdgeAutoscrollDelta = (options: {
@@ -233,8 +218,7 @@ export const resolveSavedPlaylistDetailEdgeAutoscrollDelta = (options: {
   }
 
   if (options.moveY > bottomEdge) {
-    const proximity =
-      (options.moveY - bottomEdge) / EDGE_AUTOSCROLL_ZONE_PX;
+    const proximity = (options.moveY - bottomEdge) / EDGE_AUTOSCROLL_ZONE_PX;
 
     return Math.max(1, Math.round(proximity * MAX_EDGE_AUTOSCROLL_DELTA_PX));
   }
@@ -292,19 +276,25 @@ export const isSavedPlaylistEntryPlayable = (options: {
   });
 };
 
-export const getSavedPlaylistDetailRemoveActionPresentation = (
-  isEditMode: boolean,
-): SavedPlaylistDetailRemoveActionPresentation => {
-  if (isEditMode) {
+export const getSavedPlaylistDetailPlaybackAction = (options: {
+  isCurrentEntry: boolean;
+  playbackToggleLabel: string;
+  title: string;
+}): SavedPlaylistDetailPlaybackAction => {
+  if (!options.isCurrentEntry) {
     return {
-      isIconOnly: false,
-      tone: 'destructive',
+      accessibilityLabel: `Play ${options.title}`,
+      iconName: 'play',
+      pressBehavior: 'play-item',
     };
   }
 
+  const normalizedLabel = options.playbackToggleLabel.trim() || 'Play';
+
   return {
-    isIconOnly: true,
-    tone: 'neutral',
+    accessibilityLabel: `${normalizedLabel} ${options.title}`,
+    iconName: normalizedLabel === 'Pause' ? 'pause' : 'play',
+    pressBehavior: 'toggle-current',
   };
 };
 

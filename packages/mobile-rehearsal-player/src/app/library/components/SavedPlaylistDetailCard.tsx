@@ -28,19 +28,25 @@ export const SavedPlaylistDetailCard = (props: {
   detailEntries: PlaylistEntry[];
   getCurrentScrollOffsetY: () => number;
   getItemDetailLabel: (entry: PlaylistEntry) => string;
-  isEditMode: boolean;
   isItemPlayable: (entry: PlaylistEntry) => boolean;
   isMutating: boolean;
   orderedPlaybackAction: PlaylistPlaybackActionCopy;
+  playbackToggleDisabled: boolean;
+  playbackToggleLabel: string;
   renameIssue: PlaylistDraftIssue | null;
   renamePlaylistName: string;
   removalNotice: SavedPlaylistDetailRemovalNotice | null;
   selectedPlaylist: Playlist | null;
   selectedPlaylistIssue: PlaylistDraftIssue | null;
+  onCommitReorder: () => void;
   onCloseDetail: () => void;
   onDeletePlaylist: () => void;
   onDismissRemovalNotice: () => void;
-  onMoveItem: (fromIndex: number, toIndex: number) => void;
+  onMoveItem: (
+    fromIndex: number,
+    toIndex: number,
+    options?: { persist?: boolean },
+  ) => void;
   onPlayOrderedPlaylist: () => void;
   onPlayPlaylistEntry: (entryId: string) => void;
   onRemoveItem: (entryId: string) => void;
@@ -48,7 +54,7 @@ export const SavedPlaylistDetailCard = (props: {
   onRenamePlaylistNameChange: (value: string) => void;
   onReorderDragActiveChange: (isActive: boolean) => void;
   onReorderDragMove: (moveY: number) => void;
-  onToggleEditMode: () => void;
+  onToggleCurrentPlayback: () => void;
   onUndoRemoveItem: () => void;
 }) => {
   const { detailSummary, selectedPlaylist } = props;
@@ -93,92 +99,58 @@ export const SavedPlaylistDetailCard = (props: {
             <Text style={styles.editorBody}>{detailSummary.body}</Text>
           ) : null}
         </View>
-        <View style={styles.actionRow}>
+      </View>
+
+      <OverflowMenuTrigger
+        accessibilityLabel="Playlist options"
+        disabled={!props.canMutatePlaylists || props.isMutating}
+        onPress={() => {
+          setIsOptionsMenuVisible(true);
+        }}
+      />
+
+      <View style={styles.group}>
+        <Text style={styles.groupTitle}>Playback controls</Text>
+        <View style={styles.playbackActionRow}>
           <Pressable
             accessibilityRole="button"
-            disabled={!props.canMutatePlaylists || props.isMutating}
-            onPress={props.onToggleEditMode}
+            disabled={props.isMutating || props.orderedPlaybackAction.disabled}
+            onPress={props.onPlayOrderedPlaylist}
             style={({ pressed }) => [
-              props.isEditMode ? styles.primaryButton : styles.secondaryButton,
-              pressed && props.canMutatePlaylists && !props.isMutating
+              styles.fabButton,
+              pressed &&
+              !props.isMutating &&
+              !props.orderedPlaybackAction.disabled
                 ? styles.actionButtonPressed
                 : undefined,
-              !props.canMutatePlaylists || props.isMutating
+              props.isMutating || props.orderedPlaybackAction.disabled
                 ? styles.actionButtonDisabled
                 : undefined,
             ]}
           >
-            <Text
-              style={
-                props.isEditMode
-                  ? styles.primaryButtonLabel
-                  : styles.secondaryButtonLabel
-              }
-            >
-              {props.isEditMode ? '✓ Save' : '↕ Edit order'}
+            <Text style={styles.primaryButtonLabel}>
+              ▶ {props.orderedPlaybackAction.label}
             </Text>
           </Pressable>
         </View>
       </View>
-
-      {!props.isEditMode ? (
-        <OverflowMenuTrigger
-          accessibilityLabel="Playlist options"
-          disabled={!props.canMutatePlaylists || props.isMutating}
-          onPress={() => {
-            setIsOptionsMenuVisible(true);
-          }}
-        />
-      ) : null}
-
-      {!props.isEditMode ? (
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>Playback controls</Text>
-          <View style={styles.playbackActionRow}>
-            <Pressable
-              accessibilityRole="button"
-              disabled={
-                props.isMutating || props.orderedPlaybackAction.disabled
-              }
-              onPress={props.onPlayOrderedPlaylist}
-              style={({ pressed }) => [
-                styles.fabButton,
-                pressed &&
-                !props.isMutating &&
-                !props.orderedPlaybackAction.disabled
-                  ? styles.actionButtonPressed
-                  : undefined,
-                props.isMutating || props.orderedPlaybackAction.disabled
-                  ? styles.actionButtonDisabled
-                  : undefined,
-              ]}
-            >
-              <Text style={styles.primaryButtonLabel}>
-                ▶ {props.orderedPlaybackAction.label}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      ) : (
-        <Text style={styles.editorBody}>
-          Reorder this running order before saving. Destructive controls in edit
-          mode only affect this playlist.
-        </Text>
-      )}
 
       <SavedPlaylistDetailItemsList
         currentPlaylistEntryId={props.currentPlaylistEntryId}
         detailEntries={props.detailEntries}
         getCurrentScrollOffsetY={props.getCurrentScrollOffsetY}
         getItemDetailLabel={props.getItemDetailLabel}
-        isEditMode={props.isEditMode}
         isItemPlayable={props.isItemPlayable}
         isMutating={props.isMutating}
+        onCommitReorder={props.onCommitReorder}
         onMoveItem={props.onMoveItem}
         onPlayPlaylistEntry={props.onPlayPlaylistEntry}
         onReorderDragActiveChange={props.onReorderDragActiveChange}
         onReorderDragMove={props.onReorderDragMove}
         onRemoveItem={props.onRemoveItem}
+        onToggleCurrentPlayback={props.onToggleCurrentPlayback}
+        playbackToggleDisabled={props.playbackToggleDisabled}
+        playbackToggleLabel={props.playbackToggleLabel}
       />
 
       <PlaylistRenameDialog

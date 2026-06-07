@@ -20,6 +20,7 @@ type SavedTrackPlaybackController = Pick<
   | 'syncActivePlaylistContext'
   | 'queuePlayableItemUpNext'
   | 'queuePlayableItemNext'
+  | 'toggleActivePlayback'
   | 'togglePlayableItemPlayback'
   | 'togglePlaylistPlayback'
   | 'toggleSourcePlayback'
@@ -190,6 +191,7 @@ export const LibraryScreen = ({
           setPlaylistReorderDragMoveY={setPlaylistReorderDragMoveY}
           queuePlayableItemNext={playback.queuePlayableItemNext}
           queuePlayableItemUpNext={playback.queuePlayableItemUpNext}
+          toggleActivePlayback={playback.toggleActivePlayback}
           togglePlayableItemPlayback={playback.togglePlayableItemPlayback}
           togglePlaylistPlayback={playback.togglePlaylistPlayback}
           toggleSourcePlayback={playback.toggleSourcePlayback}

@@ -109,6 +109,7 @@ type SavedRehearsalLibrarySectionProps = {
   pendingLoopBuilderSourceId: string | null;
   selectedTrack: PlayableItem | null;
   setSelectedLoopSourceId: (sourceId: string | null) => void;
+  toggleActivePlayback: () => Promise<void>;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   queuePlayableItemNext: (playableItem: PlayableItem) => void;
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
@@ -161,6 +162,7 @@ export const SavedRehearsalLibrarySection = ({
   pendingLoopBuilderSourceId,
   selectedTrack,
   setSelectedLoopSourceId,
+  toggleActivePlayback,
   togglePlayableItemPlayback,
   queuePlayableItemNext,
   queuePlayableItemUpNext,
@@ -759,6 +761,7 @@ export const SavedRehearsalLibrarySection = ({
         setSelectedPlaylistId={setSelectedPlaylistId}
         setIsReorderDragActive={setIsPlaylistReorderDragActive}
         setReorderDragMoveY={setPlaylistReorderDragMoveY}
+        toggleActivePlayback={toggleActivePlayback}
         togglePlaylistPlayback={togglePlaylistPlayback}
         updatePlaylist={updatePlaylist}
       />
