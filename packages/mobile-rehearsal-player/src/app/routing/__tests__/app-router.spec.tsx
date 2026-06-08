@@ -27,6 +27,7 @@ import {
   clampQueuePosition,
   resolveQueueMoveTargetIndex,
 } from '../queue-move-position-model.js';
+import { getQueueSurfaceTransportActions } from '../queue-surface-transport-model.js';
 import {
   getQueueRowPlaybackAction,
   getQueueRowPresentation,
@@ -147,6 +148,31 @@ describe('queue move position helpers', () => {
     assert.equal(
       resolveQueueMoveTargetIndex({ itemCount: 4, sliderValue: 9 }),
       3,
+    );
+  });
+});
+
+describe('getQueueSurfaceTransportActions', () => {
+  it('keeps previous and next queue controls visible with disabled state from skip availability', () => {
+    assert.deepEqual(
+      getQueueSurfaceTransportActions({
+        canSkipNextItem: false,
+        canSkipPreviousItem: true,
+      }),
+      [
+        {
+          accessibilityLabel: 'Previous queue item',
+          disabled: false,
+          icon: 'skip-previous',
+          key: 'previous',
+        },
+        {
+          accessibilityLabel: 'Next queue item',
+          disabled: true,
+          icon: 'skip-next',
+          key: 'next',
+        },
+      ],
     );
   });
 });

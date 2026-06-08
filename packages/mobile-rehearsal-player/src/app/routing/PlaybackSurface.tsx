@@ -182,6 +182,8 @@ export const PlaybackSurface = ({
           {canRenderQueue && queueSummary ? (
             <QueueSurface
               activeQueueMode={activeQueueMode ?? 'ordered'}
+              canSkipNextItem={canSkipNextItem}
+              canSkipPreviousItem={canSkipPreviousItem}
               dragHandleProps={panResponder.panHandlers}
               activeRepeatMode={activeRepeatMode ?? 'off'}
               isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
@@ -197,6 +199,8 @@ export const PlaybackSurface = ({
               onSelectQueueMode={onSelectQueueMode}
               onSelectRepeatMode={onSelectRepeatMode}
               onShowNowPlaying={onShowNowPlaying}
+              onSkipNextItem={onSkipNextItem}
+              onSkipPreviousItem={onSkipPreviousItem}
               onTogglePlayback={onTogglePlayback}
               playbackToggleLabel={playbackToggleLabel}
               summary={queueSummary}

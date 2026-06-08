@@ -8,6 +8,7 @@ import {
 } from './PlaybackSurfaceControls';
 import { QueueMovePositionDialog } from './QueueMovePositionDialog';
 import { PlaybackSessionModeCard } from './PlaybackSessionModeCard';
+import { getQueueSurfaceTransportActions } from './queue-surface-transport-model';
 import { QueueSurfaceRow } from './QueueSurfaceRow';
 import { styles } from './playback-surface-styles';
 import { getQueueListMaxHeight } from './queue-surface-layout';
@@ -16,6 +17,8 @@ import type { UpNextSurfaceSummary } from './shell-model';
 type QueueSurfaceProps = {
   activeQueueMode: RehearsalQueueMode;
   activeRepeatMode: RepeatMode;
+  canSkipNextItem: boolean;
+  canSkipPreviousItem: boolean;
   dragHandleProps?: ComponentProps<typeof View>;
   isSavingQueueAsPlaylist: boolean;
   isPlaybackToggleDisabled: boolean;
@@ -30,6 +33,8 @@ type QueueSurfaceProps = {
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
+  onSkipNextItem: () => void;
+  onSkipPreviousItem: () => void;
   onTogglePlayback: () => void;
   playbackToggleLabel: string;
   summary: UpNextSurfaceSummary;
@@ -38,6 +43,8 @@ type QueueSurfaceProps = {
 export const QueueSurface = ({
   activeQueueMode,
   activeRepeatMode,
+  canSkipNextItem,
+  canSkipPreviousItem,
   dragHandleProps,
   isSavingQueueAsPlaylist,
   isPlaybackToggleDisabled,
@@ -52,6 +59,8 @@ export const QueueSurface = ({
   onSelectQueueMode,
   onSelectRepeatMode,
   onShowNowPlaying,
+  onSkipNextItem,
+  onSkipPreviousItem,
   onTogglePlayback,
   playbackToggleLabel,
   summary,
@@ -65,6 +74,10 @@ export const QueueSurface = ({
     string | null
   >(null);
   const [isQueueRowDragActive, setIsQueueRowDragActive] = useState(false);
+  const transportActions = getQueueSurfaceTransportActions({
+    canSkipNextItem,
+    canSkipPreviousItem,
+  });
 
   useEffect(() => {
     setActiveOptionsItemKey((currentKey) => {
@@ -141,6 +154,22 @@ export const QueueSurface = ({
         queueMode={activeQueueMode}
         repeatMode={activeRepeatMode}
       />
+
+      <View style={styles.transportRow}>
+        {transportActions.map((action) => {
+          return (
+            <SurfaceIconButton
+              accessibilityLabel={action.accessibilityLabel}
+              disabled={action.disabled}
+              icon={action.icon}
+              key={action.key}
+              onPress={
+                action.key === 'previous' ? onSkipPreviousItem : onSkipNextItem
+              }
+            />
+          );
+        })}
+      </View>
 
       <ScrollView
         bounces={false}
