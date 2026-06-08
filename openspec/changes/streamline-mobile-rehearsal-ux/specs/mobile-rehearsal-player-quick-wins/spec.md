@@ -138,9 +138,21 @@ The system SHALL expose recent search terms to reduce repeated typing in frequen
 - **WHEN** a user opens Drive search or app-library search without an active query
 - **THEN** the system shows recent-query suggestions relevant to that active search context
 
-### Requirement: Loops are managed in parent-track context with optional first-class organization
+### Requirement: Loops are managed in parent-track context while remaining independently accessible as library entities
 
-The system SHALL keep loop management anchored to parent tracks while allowing users to optionally organize loops as first-class library objects.
+The system SHALL keep default loop browsing and loop management anchored to parent tracks while keeping loops independently accessible in search and organization views.
+
+#### Scenario: Saved track overflow exposes track-loop navigation when loops exist
+
+- **WHEN** a saved track owns one or more saved loops
+- **THEN** the track overflow menu includes `View track loops`
+- **AND** selecting that action opens a track-scoped loop view for that parent track
+
+#### Scenario: Track-scoped loop view keeps loops as actionable as tracks
+
+- **WHEN** a user opens a track-scoped loop view from `View track loops`
+- **THEN** each loop remains directly available for playback, add to playlist, queue actions, and other applicable shared row actions
+- **AND** the loop view keeps the parent-track context visible
 
 #### Scenario: Loop actions remain available from parent track context
 
@@ -153,7 +165,8 @@ The system SHALL keep loop management anchored to parent tracks while allowing u
 - **THEN** the system keeps their row-level action model aligned except that only saved tracks expose `Make loop`
 - **AND** `Make loop` is offered from the shared overflow menu rather than as a dedicated inline button
 
-#### Scenario: Loops can be promoted to first-class organized items
+#### Scenario: Search and organization views surface loops as their own result category
 
-- **WHEN** a user chooses to organize loops independently
-- **THEN** the system allows loops to appear in first-class library organization surfaces without removing their parent-track linkage
+- **WHEN** a user views library search, tag, or folder results that include loops
+- **THEN** the system shows loops in their own visible result category without requiring any special surfacing step
+- **AND** those results retain parent-track linkage

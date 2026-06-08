@@ -29,6 +29,12 @@ The system SHALL support tags for app-owned library entities so users can organi
 - **WHEN** a user edits a saved track, loop, or playlist organization metadata
 - **THEN** the system allows adding and removing tags without affecting playback semantics
 
+#### Scenario: Loops remain independently taggable in track-context-first browsing
+
+- **WHEN** default Library browsing reaches a loop through its parent track context
+- **THEN** the system still allows tags to be assigned directly to that loop
+- **AND** the loop keeps those tags when shown in search, tag, or folder results
+
 #### Scenario: Filter by one or more tags
 
 - **WHEN** a user selects one or more tags in library organization controls
@@ -43,16 +49,34 @@ The system SHALL ship lightweight folder organization alongside tags and filters
 - **WHEN** a user creates or selects a folder for loops
 - **THEN** the system places chosen loops into that folder while preserving their parent-track association metadata
 
+#### Scenario: Folder views can surface loops directly
+
+- **WHEN** a folder contains one or more loops
+- **THEN** the folder view can display those loops directly without requiring navigation through the parent track first
+- **AND** each loop still shows parent-track linkage
+
 #### Scenario: Folderless workflow remains supported
 
 - **WHEN** a user does not use folders
 - **THEN** the system continues to support complete rehearsal workflows through default library collections, tags, and filters
 
-### Requirement: Loop provenance remains visible in first-class organization views
+#### Scenario: Default library browsing keeps loops grouped by parent track
 
-The system SHALL preserve and display loop parent-track provenance even when loops appear as first-class organized items.
+- **WHEN** a user is browsing Library outside explicit search, tag, or folder result contexts
+- **THEN** the system keeps loop discovery anchored to the parent-track context in the default browse presentation
+- **AND** tracks with loops expose a `View track loops` navigation affordance
 
-#### Scenario: First-class loop item shows parent linkage
+### Requirement: Loop provenance remains visible in standalone organization result views
+
+The system SHALL preserve and display loop parent-track provenance even when loops appear in standalone search, tag, or folder result groups.
+
+#### Scenario: Standalone loop result shows parent linkage
 
 - **WHEN** a loop is displayed in a folder, search result, or tag-filtered list
 - **THEN** the system shows that loop's parent track identity so users can recover source context quickly
+
+#### Scenario: Search and organization results keep loops visible as a top-level result category
+
+- **WHEN** library search, tag results, or folder results include loops
+- **THEN** the system displays loops in their own visible result category
+- **AND** the UI does not require a separate enablement step to surface them there
