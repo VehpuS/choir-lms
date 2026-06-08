@@ -33,8 +33,18 @@ export type SavedLoopRemovalCopy = {
   title: string;
 };
 
+export const SAVED_LOOP_SECTION_BODY_COPY =
+  'Create and manage loops from saved tracks. Each saved loop keeps its parent track context for playback and library navigation.';
+
+export type SavedLoopParentTrack = {
+  id: string;
+  name: string;
+};
+
 export type SavedLoopCard = {
   loop: NamedLoop;
+  parentTrack: SavedLoopParentTrack;
+  rangeLabel: string;
   metadataLabel: string;
   message?: string;
   playableItem: ReturnType<typeof createLoopPlayableItem> | null;
@@ -109,6 +119,35 @@ const formatLoopNameRangeLabel = (
 
 const defaultCreateId = (sourceId: string, createdAt: string) => {
   return `loop:${sourceId}:${createdAt}`;
+};
+
+const resolveSavedLoopParentTrack = (
+  loop: Pick<NamedLoop, 'sourceId' | 'sourceName'>,
+  source?: DriveLibrarySource,
+): SavedLoopParentTrack => {
+  return {
+    id: loop.sourceId,
+    name: source?.name ?? loop.sourceName,
+  };
+};
+
+const buildSavedLoopCard = (options: {
+  loop: NamedLoop;
+  message?: string;
+  playableItem: ReturnType<typeof createLoopPlayableItem> | null;
+  source?: DriveLibrarySource;
+}): SavedLoopCard => {
+  const parentTrack = resolveSavedLoopParentTrack(options.loop, options.source);
+  const rangeLabel = formatLoopRangeLabel(options.loop);
+
+  return {
+    loop: options.loop,
+    parentTrack,
+    rangeLabel,
+    metadataLabel: `${parentTrack.name} • ${rangeLabel}`,
+    message: options.message,
+    playableItem: options.playableItem,
+  };
 };
 
 export const getSavedLoopRemovalCopy = (
@@ -230,23 +269,22 @@ export const resolveSavedLoopCards = (
     const source = savedSourcesById[loop.sourceId];
 
     if (!source) {
-      return {
+      return buildSavedLoopCard({
         loop,
-        metadataLabel: `${loop.sourceName} • ${formatLoopRangeLabel(loop)}`,
         message: MISSING_SOURCE_MESSAGE,
         playableItem: null,
-      } satisfies SavedLoopCard;
+      });
     }
 
-    return {
+    return buildSavedLoopCard({
       loop,
-      metadataLabel: `${source.name} • ${formatLoopRangeLabel(loop)}`,
       message:
         source.availability.status === 'available'
           ? undefined
           : (source.availability.message ?? DEFAULT_UNAVAILABLE_LOOP_MESSAGE),
       playableItem: createLoopPlayableItem(loop, source),
-    } satisfies SavedLoopCard;
+      source,
+    });
   });
 };
 

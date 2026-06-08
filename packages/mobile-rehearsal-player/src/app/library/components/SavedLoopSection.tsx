@@ -20,6 +20,7 @@ import {
   getSavedLoopsStatusCopy,
   resolveLoopBuilderRangeSelection,
   resolveSavedLoopCards,
+  SAVED_LOOP_SECTION_BODY_COPY,
   updateLoopBuilderDraftRange,
 } from '../utils/saved-loop-view-model';
 import {
@@ -237,6 +238,7 @@ export const SavedLoopSection = ({
       <View style={styles.sectionCopy}>
         <Text style={styles.eyebrow}>Saved loops</Text>
         <Text style={styles.sectionTitle}>Saved loops</Text>
+        <Text style={styles.sectionBody}>{SAVED_LOOP_SECTION_BODY_COPY}</Text>
       </View>
 
       {shouldShowStatusCard ? (

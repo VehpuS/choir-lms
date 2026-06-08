@@ -153,7 +153,12 @@ describe('saved loop view-model', () => {
     const [loopCard] = resolveSavedLoopCards([SAVED_LOOP], [PLAYABLE_SOURCE]);
 
     assert.equal(loopCard?.metadataLabel, 'Alto Line.mp3 • 0:12 to 0:18');
+    assert.deepEqual(loopCard?.parentTrack, {
+      id: PLAYABLE_SOURCE.id,
+      name: PLAYABLE_SOURCE.name,
+    });
     assert.equal(loopCard?.playableItem?.id, 'loop:loop-1');
+    assert.equal(loopCard?.rangeLabel, '0:12 to 0:18');
     assert.equal(loopCard?.message, undefined);
   });
 
@@ -465,7 +470,12 @@ describe('saved loop view-model', () => {
 
     const [missingSourceLoopCard] = resolveSavedLoopCards([SAVED_LOOP], []);
 
+    assert.deepEqual(missingSourceLoopCard?.parentTrack, {
+      id: SAVED_LOOP.sourceId,
+      name: SAVED_LOOP.sourceName,
+    });
     assert.equal(missingSourceLoopCard?.playableItem, null);
+    assert.equal(missingSourceLoopCard?.rangeLabel, '0:12 to 0:18');
     assert.match(
       missingSourceLoopCard?.message ?? '',
       /Restore the saved source track/,

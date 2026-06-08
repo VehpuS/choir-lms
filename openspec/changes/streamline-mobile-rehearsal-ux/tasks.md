@@ -61,7 +61,7 @@
 - [x] 4.2.13 Add a move-to-position modal for queue rows with a slider bounded from queue position `1` through the last queue position, and apply the selected position without restarting playback.
 - [x] 4.2.14 Remove redundant `Up next` / `Now playing` row text from the active queue once direct play controls exist, and keep current-item state legible through row styling and control state.
 - [x] 4.2.15 Add previous and next track transport controls directly to the active rehearsal queue view.
-- [ ] 4.3 Ensure loop management remains parent-track-first while supporting optional promotion of loops to first-class organization surfaces.
+- [x] 4.3 Ensure loop management remains parent-track-first while supporting optional promotion of loops to first-class organization surfaces.
 - [ ] 4.4 Add track-context loop management entry points (create, view, edit, remove) and preserve visible parent-track linkage in all loop surfaces, with `Make loop` living in saved track overflow only.
 - [ ] 4.5 Audit shell, playback, and queue surfaces for remaining text-labeled `Play` buttons, replace them with standard playback icons where appropriate, and update icon-only control labels, selected/disabled states, and touch-target sizing.
 - [ ] 4.5.1 Extract a shared icon-only playback-action primitive for repeated compact playback entry points (for example Add source rows, Recents rows and shortcut chips, and playlist cards) while keeping larger transport controls on their existing surface-specific components.
