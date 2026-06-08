@@ -27,7 +27,10 @@ import {
   clampQueuePosition,
   resolveQueueMoveTargetIndex,
 } from '../queue-move-position-model.js';
-import { getQueueRowPlaybackAction } from '../queue-surface-row-model.js';
+import {
+  getQueueRowPlaybackAction,
+  getQueueRowPresentation,
+} from '../queue-surface-row-model.js';
 import { getQueueListMaxHeight } from '../queue-surface-layout.js';
 import { queuePlayableItemDuringPlayback } from '../../library/utils/saved-playlist-playback-view-model.js';
 
@@ -82,6 +85,44 @@ describe('getQueueRowPlaybackAction', () => {
         accessibilityLabel: 'Resume Entrance cue',
         iconName: 'play',
         pressBehavior: 'toggle-current',
+      },
+    );
+  });
+});
+
+describe('getQueueRowPresentation', () => {
+  it('uses current-row emphasis and control state instead of status copy', () => {
+    assert.deepEqual(
+      getQueueRowPresentation({
+        isCurrent: true,
+        playbackToggleLabel: 'Pause',
+        title: 'Entrance cue',
+      }),
+      {
+        emphasis: 'current',
+        playbackAction: {
+          accessibilityLabel: 'Pause Entrance cue',
+          iconName: 'pause',
+          pressBehavior: 'toggle-current',
+        },
+      },
+    );
+  });
+
+  it('keeps upcoming rows on default emphasis with direct play actions', () => {
+    assert.deepEqual(
+      getQueueRowPresentation({
+        isCurrent: false,
+        playbackToggleLabel: 'Pause',
+        title: 'Tenor Line.mp3',
+      }),
+      {
+        emphasis: 'upcoming',
+        playbackAction: {
+          accessibilityLabel: 'Play Tenor Line.mp3',
+          iconName: 'play',
+          pressBehavior: 'play-item',
+        },
       },
     );
   });

@@ -8,7 +8,7 @@ import { OptionsMenuSheet } from '../library/components/OptionsMenuSheet';
 
 import { SurfaceIconButton } from './PlaybackSurfaceControls';
 import { styles } from './playback-surface-styles';
-import { getQueueRowPlaybackAction } from './queue-surface-row-model';
+import { getQueueRowPresentation } from './queue-surface-row-model';
 import type { UpNextSurfaceSummary } from './shell-model';
 
 export type QueueSurfaceRowProps = {
@@ -56,7 +56,7 @@ export const QueueSurfaceRow = ({
   const canMoveToPosition = itemCount > 1 && currentIndex >= 0;
   const canRemove = !item.isCurrent;
   const canDragReorder = itemCount > 1;
-  const playbackAction = getQueueRowPlaybackAction({
+  const rowPresentation = getQueueRowPresentation({
     isCurrent: item.isCurrent,
     playbackToggleLabel,
     title: item.title,
@@ -149,21 +149,21 @@ export const QueueSurfaceRow = ({
       }}
       style={[
         styles.queueCard,
-        item.isCurrent ? styles.queueCardCurrent : null,
+        rowPresentation.emphasis === 'current'
+          ? styles.queueCardCurrent
+          : null,
       ]}
     >
-      <Text style={styles.queueEyebrow}>
-        {item.isCurrent ? 'Now playing' : 'Up next'}
-      </Text>
       <CompactPlayableRowShell
         actions={
           <>
             <SurfaceIconButton
-              accessibilityLabel={playbackAction.accessibilityLabel}
+              accessibilityLabel={rowPresentation.playbackAction.accessibilityLabel}
               disabled={isPlaybackToggleDisabled}
-              icon={playbackAction.iconName}
+              icon={rowPresentation.playbackAction.iconName}
               onPress={
-                playbackAction.pressBehavior === 'toggle-current'
+                rowPresentation.playbackAction.pressBehavior ===
+                'toggle-current'
                   ? onToggleCurrentPlayback
                   : onPlayItem
               }
