@@ -13,6 +13,7 @@ type ResolveSavedTrackRowActionsOptions = {
   canMutateLoops: boolean;
   canMutatePlaylists: boolean;
   canQueueAsNext: boolean;
+  hasSavedLoops: boolean;
   hasAvailableSource: boolean;
   isLoopBuilderPreparing: boolean;
   isLoopMutating: boolean;
@@ -27,6 +28,7 @@ type ResolveSavedTrackRowActionsOptions = {
   onQueueUpNext: () => void;
   onRemove: () => void;
   onTogglePlayback: () => void;
+  onViewTrackLoops: () => void;
   playbackAction: SavedTrackPlaybackAction;
   sourceName: string;
 };
@@ -59,6 +61,16 @@ export const resolveSavedTrackRowActions = (
       onPress: options.onOpenLoopBuilder,
       placement: 'menu',
     },
+    ...(options.hasSavedLoops
+      ? [
+          {
+            disabled: options.isSavedLibraryMutating,
+            label: 'View track loops',
+            onPress: options.onViewTrackLoops,
+            placement: 'menu' as const,
+          },
+        ]
+      : []),
     ...(options.canQueueAsNext
       ? [
           {

@@ -2,11 +2,11 @@ import type { NamedLoop } from '@org/audio-library-models';
 import type { DriveAuthorizationState } from '@org/google-drive';
 import { keyBy } from 'es-toolkit/compat';
 
+import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
 import type {
   DriveLibrarySource,
   DriveLibraryStatusCopy,
 } from './drive-library-view-model';
-import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
 
 type SavedRehearsalLibraryStatusOptions = {
   authState: DriveAuthorizationState;
@@ -67,8 +67,10 @@ const formatLoopRemovalList = (loops: Array<Pick<NamedLoop, 'name'>>) => {
     .join('\n');
 };
 
-export const getSavedRehearsalLibraryDependentLoops = (
-  loops: Array<Pick<NamedLoop, 'id' | 'name' | 'sourceId'>>,
+export const getSavedRehearsalLibraryDependentLoops = <
+  Loop extends Pick<NamedLoop, 'id' | 'name' | 'sourceId'>,
+>(
+  loops: Loop[],
   sourceId: string,
 ) => {
   return loops.filter((loop) => {

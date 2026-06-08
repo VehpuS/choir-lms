@@ -138,21 +138,31 @@ The system SHALL expose recent search terms to reduce repeated typing in frequen
 - **WHEN** a user opens Drive search or app-library search without an active query
 - **THEN** the system shows recent-query suggestions relevant to that active search context
 
-### Requirement: Loops are managed in parent-track context while remaining independently accessible as library entities
+### Requirement: Loops support track-scoped management while remaining independently accessible as library entities
 
-The system SHALL keep default loop browsing and loop management anchored to parent tracks while keeping loops independently accessible in search and organization views.
+The system SHALL provide track-scoped loop management from parent tracks while keeping saved loops accessible from the main Library section and from search and organization views.
 
 #### Scenario: Saved track overflow exposes track-loop navigation when loops exist
 
 - **WHEN** a saved track owns one or more saved loops
 - **THEN** the track overflow menu includes `View track loops`
 - **AND** selecting that action opens a track-scoped loop view for that parent track
+- **AND** that loop view replaces the main Library browse UI until the user returns with the provided back action
+
+#### Scenario: Top-level Saved loops section remains available in Library
+
+- **WHEN** a user is browsing Library outside explicit search, tag, or folder result contexts
+- **THEN** the system still shows a top-level Saved loops section for cross-track loop access
+- **AND** that section does not remove or replace the `View track loops` parent-track entry point
 
 #### Scenario: Track-scoped loop view keeps loops as actionable as tracks
 
 - **WHEN** a user opens a track-scoped loop view from `View track loops`
-- **THEN** each loop remains directly available for playback, add to playlist, queue actions, and other applicable shared row actions
-- **AND** the loop view keeps the parent-track context visible
+- **THEN** the view keeps the parent-track context visible
+- **AND** the view behaves like a dedicated Library detail surface rather than an inline section swap
+- **AND** each loop remains directly available for playback, add to playlist, queue actions, and other applicable shared row actions
+- **AND** the view provides ordered playback for the track's loops as a queued series, including starting from an individual loop row
+- **AND** the view includes a `Make new loop` action for that same parent track
 
 #### Scenario: Loop actions remain available from parent track context
 

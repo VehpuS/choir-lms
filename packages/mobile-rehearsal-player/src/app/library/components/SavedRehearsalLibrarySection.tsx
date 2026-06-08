@@ -22,20 +22,9 @@ import {
   filterSavedPlaylistsByQuery,
   resolveActiveLibrarySearchQuery,
 } from '../utils/saved-library-search-view-model';
-import {
-  normalizeRecentSearchTerm,
-  recordRecentSearchTerm,
-} from '../utils/search-history';
-import {
-  LIBRARY_RECENT_SEARCH_HISTORY_KEY,
-  persistRecentSearchHistory,
-  restoreRecentSearchHistory,
-} from '../utils/search-history-storage';
 import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
-import type {
-  PlaylistPlaybackIssue,
-  PlaylistPlaybackSession,
-} from '../utils/saved-playlist-playback-view-model';
+import type { PlaylistPlaybackSession } from '../utils/saved-playlist-playback-view-model';
+import { getPlaylistPlaybackActionCopy } from '../utils/saved-playlist-playback-view-model';
 import { getSelectedPlaylistIssue } from '../utils/saved-playlist-status-view-model';
 import {
   buildSavedPlaylist,
@@ -43,11 +32,14 @@ import {
   resolveSavedPlaylistCards,
   resolveSelectedPlaylist,
   validatePlaylistName,
-  type SavedPlaylistIssue,
   type PlaylistDraftIssue,
+  type SavedPlaylistIssue,
 } from '../utils/saved-playlist-view-model';
-import { getSavedRehearsalLibrarySourceIssue } from '../utils/saved-rehearsal-library-view-model';
-import { resolveSavedTrackRowActions } from '../utils/saved-track-row-actions';
+import { resolveSavedRehearsalLibraryDetailMode } from '../utils/saved-rehearsal-library-detail-view-model';
+import {
+  getSavedRehearsalLibraryDependentLoops,
+  getSavedRehearsalLibrarySourceIssue,
+} from '../utils/saved-rehearsal-library-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -60,6 +52,20 @@ import {
   getSavedTrackPlaylistMenuInitialState,
   reduceSavedTrackPlaylistMenuState,
 } from '../utils/saved-track-playlist-menu-view-model';
+import { resolveSavedTrackRowActions } from '../utils/saved-track-row-actions';
+import {
+  normalizeRecentSearchTerm,
+  recordRecentSearchTerm,
+} from '../utils/search-history';
+import {
+  LIBRARY_RECENT_SEARCH_HISTORY_KEY,
+  persistRecentSearchHistory,
+  restoreRecentSearchHistory,
+} from '../utils/search-history-storage';
+import {
+  buildTrackScopedLoopPlaybackPlaylist,
+  getTrackScopedLoopDetailCopy,
+} from '../utils/track-scoped-loop-view-model';
 import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
 import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
@@ -174,6 +180,9 @@ export const SavedRehearsalLibrarySection = ({
     null,
   );
   const [isPlaylistDetailVisible, setIsPlaylistDetailVisible] = useState(false);
+  const [selectedLoopViewSourceId, setSelectedLoopViewSourceId] = useState<
+    string | null
+  >(null);
   const [cardRenameIssue, setCardRenameIssue] =
     useState<PlaylistDraftIssue | null>(null);
   const [cardRenamePlaylistId, setCardRenamePlaylistId] = useState<
@@ -336,6 +345,35 @@ export const SavedRehearsalLibrarySection = ({
     );
   }, [activeLibrarySearchQuery, savedPlaylists]);
   const isLibrarySearchMode = activeLibrarySearchQuery !== null;
+  const selectedLoopViewSource =
+    savedLibrarySources.find((source) => {
+      return source.id === selectedLoopViewSourceId;
+    }) ?? null;
+  const selectedLoopViewLoops = useMemo(() => {
+    if (!selectedLoopViewSourceId) {
+      return [];
+    }
+
+    return getSavedRehearsalLibraryDependentLoops(
+      savedLoops,
+      selectedLoopViewSourceId,
+    );
+  }, [savedLoops, selectedLoopViewSourceId]);
+  const selectedTrackLoopPlaybackPlaylist = useMemo(() => {
+    if (!selectedLoopViewSource) {
+      return null;
+    }
+
+    return buildTrackScopedLoopPlaybackPlaylist({
+      loops: selectedLoopViewLoops,
+      source: selectedLoopViewSource,
+    });
+  }, [selectedLoopViewLoops, selectedLoopViewSource]);
+  const selectedTrackLoopSession =
+    selectedTrackLoopPlaybackPlaylist &&
+    activePlaylistSession?.playlistId === selectedTrackLoopPlaybackPlaylist.id
+      ? activePlaylistSession
+      : null;
   const selectedCardRenameIssue =
     cardRenameIssue ??
     getSelectedPlaylistIssue(playlistIssue, cardRenamePlaylistId);
@@ -349,6 +387,88 @@ export const SavedRehearsalLibrarySection = ({
     savedTrackPlaybackStatusCopy !== null &&
     (isSavedTrackPlaybackLoading ||
       savedTrackPlaybackStatusCopy.tone !== 'ready');
+  const currentLoopBuilderSourceId = selectedTrack?.source.id ?? null;
+  const selectedTrackLoopDetailCopy = selectedLoopViewSource
+    ? getTrackScopedLoopDetailCopy({
+        loopCount: selectedLoopViewLoops.length,
+        sourceName: selectedLoopViewSource.name,
+      })
+    : null;
+  const selectedTrackLoopPlaybackAction = getPlaylistPlaybackActionCopy({
+    activeSession: selectedTrackLoopSession,
+    isPreparing: isPlaybackPreparing,
+    mode: 'ordered',
+    playbackState,
+    selectedPlaylist: selectedTrackLoopPlaybackPlaylist,
+  });
+  const detailMode = resolveSavedRehearsalLibraryDetailMode({
+    isPlaylistDetailVisible,
+    selectedLoopViewSourceId,
+  });
+
+  useEffect(() => {
+    if (!isLibrarySearchMode || selectedLoopViewSourceId === null) {
+      return;
+    }
+
+    setSelectedLoopViewSourceId(null);
+  }, [isLibrarySearchMode, selectedLoopViewSourceId]);
+
+  useEffect(() => {
+    if (selectedLoopViewSourceId === null) {
+      return;
+    }
+
+    const hasSelectedSource = savedLibrarySources.some((source) => {
+      return source.id === selectedLoopViewSourceId;
+    });
+    const hasTrackScopedLoops =
+      getSavedRehearsalLibraryDependentLoops(
+        savedLoops,
+        selectedLoopViewSourceId,
+      ).length > 0;
+
+    if (
+      !hasSelectedSource ||
+      (!hasTrackScopedLoops &&
+        currentLoopBuilderSourceId !== selectedLoopViewSourceId)
+    ) {
+      setSelectedLoopViewSourceId(null);
+    }
+  }, [
+    currentLoopBuilderSourceId,
+    savedLibrarySources,
+    savedLoops,
+    selectedLoopViewSourceId,
+  ]);
+
+  const closeTrackLoopView = () => {
+    if (currentLoopBuilderSourceId === selectedLoopViewSourceId) {
+      setSelectedLoopSourceId(null);
+    }
+
+    setSelectedLoopViewSourceId(null);
+  };
+
+  const playTrackLoopSeries = (loopId?: string) => {
+    if (!selectedTrackLoopPlaybackPlaylist) {
+      return;
+    }
+
+    const startEntryId = loopId
+      ? selectedTrackLoopPlaybackPlaylist.items.find((entry) => {
+          return entry.loopId === loopId;
+        })?.id
+      : undefined;
+
+    void togglePlaylistPlayback({
+      loops: savedLoops,
+      mode: 'ordered',
+      playlist: selectedTrackLoopPlaybackPlaylist,
+      sources: savedLibrarySources,
+      startEntryId,
+    });
+  };
 
   const persistPlaylist = async (
     playlist: Playlist,
@@ -587,7 +707,7 @@ export const SavedRehearsalLibrarySection = ({
           statusCopy={savedTrackPlaybackStatusCopy}
         />
       ) : null}
-      {!isPlaylistDetailVisible ? (
+      {detailMode === 'browse' ? (
         <>
           <SavedPlaylistCardsList
             cardRenameIssue={selectedCardRenameIssue}
@@ -653,6 +773,9 @@ export const SavedRehearsalLibrarySection = ({
                 canMutateLoops,
                 canMutatePlaylists,
                 canQueueAsNext,
+                hasSavedLoops:
+                  getSavedRehearsalLibraryDependentLoops(savedLoops, source.id)
+                    .length > 0,
                 hasAvailableSource: source.availability.status === 'available',
                 isLoopBuilderPreparing,
                 isLoopMutating,
@@ -683,6 +806,9 @@ export const SavedRehearsalLibrarySection = ({
                 onTogglePlayback: () => {
                   void toggleSourcePlayback(source);
                 },
+                onViewTrackLoops: () => {
+                  setSelectedLoopViewSourceId(source.id);
+                },
                 playbackAction,
                 sourceName: source.name,
               });
@@ -712,6 +838,7 @@ export const SavedRehearsalLibrarySection = ({
             canQueueAsNext={canQueueAsNext}
             highlightQuery={activeLibrarySearchQuery}
             isPlaybackPreparing={isPlaybackPreparing}
+            isTrackLoopDetailVisible={false}
             isSavedLoopsLoading={isSavedLoopsLoading}
             pendingLoopId={pendingLoopId}
             playbackIssue={playbackIssue}
@@ -732,11 +859,73 @@ export const SavedRehearsalLibrarySection = ({
             savedLoops={visibleSavedLoops}
             saveLoop={saveLoop}
             selectedTrack={selectedTrack}
+            toggleActivePlayback={toggleActivePlayback}
             togglePlayableItemPlayback={togglePlayableItemPlayback}
             queuePlayableItemNext={queuePlayableItemNext}
             queuePlayableItemUpNext={queuePlayableItemUpNext}
+            trackLoopView={null}
           />
         </>
+      ) : null}
+
+      {detailMode === 'track-loop-detail' ? (
+        <SavedLoopSection
+          activePlayableItem={activePlayableItem}
+          canMutateLoops={canMutateLoops}
+          canMutatePlaylists={canMutatePlaylists}
+          isPlaylistMutating={isPlaylistMutating}
+          canQueueAsNext={canQueueAsNext}
+          highlightQuery={activeLibrarySearchQuery}
+          isPlaybackPreparing={isPlaybackPreparing}
+          isTrackLoopDetailVisible
+          isSavedLoopsLoading={isSavedLoopsLoading}
+          pendingLoopId={pendingLoopId}
+          playbackIssue={playbackIssue}
+          playbackState={playbackState}
+          onOpenLoopPlaylistSelector={(loopId) => {
+            setTrackPlaylistCreationIssue(null);
+            dispatchTrackPlaylistMenu({
+              type: 'open-loop-selector',
+              loopId,
+            });
+          }}
+          onCloseLoopBuilder={() => {
+            setSelectedLoopSourceId(null);
+          }}
+          removeLoop={removeLoop}
+          savedSources={savedLibrarySources}
+          savedLoopIssue={savedLoopIssue}
+          savedLoops={visibleSavedLoops}
+          saveLoop={saveLoop}
+          selectedTrack={selectedTrack}
+          toggleActivePlayback={toggleActivePlayback}
+          togglePlayableItemPlayback={togglePlayableItemPlayback}
+          queuePlayableItemNext={queuePlayableItemNext}
+          queuePlayableItemUpNext={queuePlayableItemUpNext}
+          trackLoopView={
+            selectedLoopViewSource && selectedTrackLoopDetailCopy
+              ? {
+                  detailCopy: selectedTrackLoopDetailCopy,
+                  isMakeNewLoopDisabled:
+                    !canMutateLoops ||
+                    isLoopMutating ||
+                    pendingLoopBuilderSourceId !== null ||
+                    selectedLoopViewSource.availability.status !== 'available',
+                  loops: selectedLoopViewLoops,
+                  makeNewLoopLabel:
+                    pendingLoopBuilderSourceId === selectedLoopViewSource.id
+                      ? 'Preparing loop…'
+                      : 'Make new loop',
+                  onClose: closeTrackLoopView,
+                  onMakeNewLoop: () => {
+                    openLoopBuilderForSource(selectedLoopViewSource);
+                  },
+                  onPlayLoopSeries: playTrackLoopSeries,
+                  orderedPlaybackAction: selectedTrackLoopPlaybackAction,
+                }
+              : null
+          }
+        />
       ) : null}
 
       <SavedPlaylistSection
@@ -745,7 +934,7 @@ export const SavedRehearsalLibrarySection = ({
         createPlaylist={createPlaylist}
         deletePlaylist={deletePlaylist}
         getCurrentScrollOffsetY={getCurrentScrollOffsetY}
-        isDetailVisible={isPlaylistDetailVisible}
+        isDetailVisible={detailMode === 'playlist-detail'}
         isLoading={isPlaylistsLoading}
         isPlaybackPreparing={isPlaybackPreparing}
         issue={playlistIssue}

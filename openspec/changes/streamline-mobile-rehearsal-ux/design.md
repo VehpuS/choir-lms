@@ -67,8 +67,9 @@ Section order within Library:
 Placement rules:
 
 - App-library search is anchored at the top of Library as a first-class entry point and never mixed with raw Drive discovery results.
-- Default Library browsing keeps saved loops attached to parent-track context rather than keeping a persistent flat Saved loops section.
-- Saved tracks that own one or more loops expose a `View track loops` overflow action so users can navigate to those loops from the parent track context.
+- Default Library browsing keeps a top-level Saved loops section available for cross-track access while also supporting parent-track loop management.
+- Saved tracks that own one or more loops expose a `View track loops` overflow action so users can open a track-scoped loop view from the parent track context.
+- The track-scoped loop view follows playlist-detail hierarchy: it replaces the main Library browse content while active, provides a back button to return, keeps the parent track visible, lists only that track's loops, supports ordered playback across those loops, and includes a `Make new loop` action for the same track.
 - Search, tag, and folder result surfaces may still show loops in their own top-level result group because loops remain independent library entities.
 - The track-scoped loop view keeps loops as actionable as saved tracks for playback, add-to-playlist, queue actions, and other applicable shared row actions.
 - Saved track and saved loop rows use the same visual action layout: one inline icon-only play control plus one vertical-ellipsis overflow trigger.
@@ -468,12 +469,13 @@ Alternatives considered:
 
 ### 9. Manage loops in track context first while preserving independent loop result surfaces
 
-Loop creation and editing should remain attached to parent tracks. Default Library browsing should keep loops in parent-track context, for example through a `View track loops` action on saved tracks that own loops, rather than through a permanent flat loop-only section. This is a UI organization choice, not a change to loops' status as library objects: loops remain independently searchable, taggable, folderable, and displayable as their own result category in search, tag, and folder views.
+Loop creation and editing should remain attached to parent tracks without removing the top-level Saved loops section from Library. `View track loops` should open a track-scoped detail view for one parent track, while the broader Saved loops section remains available for cross-track access. This is a UI organization choice, not a change to loops' status as library objects: loops remain independently searchable, taggable, folderable, and displayable as their own result category in search, tag, and folder views.
 
 Implementation guidance:
 
-- Replace the default flat saved-loops section in Library with track-scoped loop access from saved-track overflow.
+- Keep the default top-level saved-loops section in Library for cross-track access.
 - When a saved track owns one or more loops, expose `View track loops` in the track overflow menu.
+- The track-scoped loop view should behave like playlist detail for that track's loops: replace the main Library browse content while active, provide a back button that returns to the prior Library browse state, keep the parent track context visible, list only those loops, support ordered queued playback for the full set or an individual starting loop, and surface a `Make new loop` action for the same track.
 - The track-scoped loop view must keep loops easy to play, add to playlist, queue, and otherwise manage through the same shared row-action model used for saved tracks where applicable.
 - Search, tag, and folder result surfaces should continue to show loops in their own result group with visible parent-track linkage, without requiring any extra enablement step.
 - Tag and folder assignment apply directly to loops even when the default browse experience reaches them through parent-track context.

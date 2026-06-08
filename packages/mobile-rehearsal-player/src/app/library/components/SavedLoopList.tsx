@@ -5,12 +5,12 @@ import { Pressable, Text, View } from 'react-native';
 
 import { CompactPlayableRowShell } from '../../components/CompactPlayableRowShell';
 import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
+import { resolveSavedLoopRowActions } from '../utils/saved-loop-row-actions';
 import {
   getSavedLoopItemIssue,
   type SavedLoopCard,
   type SavedLoopIssue,
 } from '../utils/saved-loop-view-model';
-import { resolveSavedLoopRowActions } from '../utils/saved-loop-row-actions';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -39,9 +39,12 @@ type SavedLoopListProps = {
   isPlaylistMutating: boolean;
   canQueueAsNext: boolean;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
+  onPlayLoopSeries?: (loopId: string) => void;
+  onToggleCurrentPlayback?: () => void;
   queuePlayableItemNext: (playableItem: PlayableItem) => void;
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   removeLoop: (loop: SavedLoopCard['loop']) => void;
+  title?: string;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
 };
 
@@ -85,9 +88,12 @@ export const SavedLoopList = ({
   isPlaylistMutating,
   canQueueAsNext,
   onOpenLoopPlaylistSelector,
+  onPlayLoopSeries,
+  onToggleCurrentPlayback,
   queuePlayableItemNext,
   queuePlayableItemUpNext,
   removeLoop,
+  title,
   togglePlayableItemPlayback,
 }: SavedLoopListProps) => {
   const [activeOptionsLoopId, setActiveOptionsLoopId] = useState<string | null>(
@@ -101,7 +107,7 @@ export const SavedLoopList = ({
   return (
     <View style={styles.loopGroup}>
       <Text style={styles.loopGroupTitle}>
-        Saved loops ({loopCards.length})
+        {title ?? `Saved loops (${loopCards.length})`}
       </Text>
 
       {loopCards.map((loopCard) => {
@@ -156,6 +162,16 @@ export const SavedLoopList = ({
               return;
             }
 
+            if (isPlaybackLoopActive && onToggleCurrentPlayback) {
+              onToggleCurrentPlayback();
+              return;
+            }
+
+            if (onPlayLoopSeries) {
+              onPlayLoopSeries(loopCard.loop.id);
+              return;
+            }
+
             void togglePlayableItemPlayback(loopCard.playableItem);
           },
           playbackAction,
@@ -192,7 +208,9 @@ export const SavedLoopList = ({
                 if (action.iconName) {
                   return (
                     <Pressable
-                      accessibilityLabel={action.accessibilityLabel ?? action.label}
+                      accessibilityLabel={
+                        action.accessibilityLabel ?? action.label
+                      }
                       accessibilityRole="button"
                       accessibilityState={{
                         disabled: action.disabled,
@@ -205,7 +223,9 @@ export const SavedLoopList = ({
                         pressed && !action.disabled
                           ? styles.actionButtonPressed
                           : undefined,
-                        action.disabled ? styles.actionButtonDisabled : undefined,
+                        action.disabled
+                          ? styles.actionButtonDisabled
+                          : undefined,
                       ]}
                     >
                       <MaterialCommunityIcons
@@ -219,7 +239,9 @@ export const SavedLoopList = ({
 
                 return (
                   <Pressable
-                    accessibilityLabel={action.accessibilityLabel ?? action.label}
+                    accessibilityLabel={
+                      action.accessibilityLabel ?? action.label
+                    }
                     accessibilityRole="button"
                     disabled={action.disabled}
                     key={`${loopCard.loop.id}:${action.accessibilityLabel ?? action.label}:${index}`}
@@ -246,7 +268,9 @@ export const SavedLoopList = ({
                 />
               }
               message={
-                loopMessage ? <Text style={styles.loopMessage}>{loopMessage}</Text> : null
+                loopMessage ? (
+                  <Text style={styles.loopMessage}>{loopMessage}</Text>
+                ) : null
               }
               overflowTrigger={overflowTrigger}
               style={styles.loopCard}

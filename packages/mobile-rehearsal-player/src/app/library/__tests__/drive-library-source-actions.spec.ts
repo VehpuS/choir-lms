@@ -110,6 +110,7 @@ describe('drive library source actions', () => {
       canMutateLoops: true,
       canMutatePlaylists: true,
       canQueueAsNext: true,
+      hasSavedLoops: true,
       hasAvailableSource: true,
       isLoopBuilderPreparing: false,
       isLoopMutating: false,
@@ -124,6 +125,7 @@ describe('drive library source actions', () => {
       onQueueUpNext: () => undefined,
       onRemove: () => undefined,
       onTogglePlayback: () => undefined,
+      onViewTrackLoops: () => undefined,
       playbackAction: {
         disabled: false,
         label: 'Play',
@@ -161,6 +163,14 @@ describe('drive library source actions', () => {
           accessibilityLabel: undefined,
           disabled: false,
           iconName: undefined,
+          label: 'View track loops',
+          placement: 'menu',
+          tone: undefined,
+        },
+        {
+          accessibilityLabel: undefined,
+          disabled: false,
+          iconName: undefined,
           label: 'Play next',
           placement: 'menu',
           tone: undefined,
@@ -190,6 +200,41 @@ describe('drive library source actions', () => {
           tone: 'destructive',
         },
       ],
+    );
+  });
+
+  it('omits View track loops when the saved track has no loops yet', () => {
+    const actions = resolveSavedTrackRowActions({
+      canMutateLibrary: true,
+      canMutateLoops: true,
+      canMutatePlaylists: true,
+      canQueueAsNext: true,
+      hasSavedLoops: false,
+      hasAvailableSource: true,
+      isLoopBuilderPreparing: false,
+      isLoopMutating: false,
+      isPendingLoopSource: false,
+      isPendingRemoval: false,
+      isPlaybackSourceActive: false,
+      isPlaylistMutating: false,
+      isSavedLibraryMutating: false,
+      onOpenLoopBuilder: () => undefined,
+      onOpenPlaylistSelector: () => undefined,
+      onQueueNext: () => undefined,
+      onQueueUpNext: () => undefined,
+      onRemove: () => undefined,
+      onTogglePlayback: () => undefined,
+      onViewTrackLoops: () => undefined,
+      playbackAction: {
+        disabled: false,
+        label: 'Play',
+      },
+      sourceName: PLAYABLE_SOURCE.name,
+    });
+
+    assert.equal(
+      actions.some((action) => action.label === 'View track loops'),
+      false,
     );
   });
 });

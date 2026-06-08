@@ -23,19 +23,23 @@ import {
   SAVED_LOOP_SECTION_BODY_COPY,
   updateLoopBuilderDraftRange,
 } from '../utils/saved-loop-view-model';
+import type { PlaylistPlaybackActionCopy } from '../utils/saved-playlist-playback-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
+import type { TrackScopedLoopDetailCopy } from '../utils/track-scoped-loop-view-model';
 import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
 import { useLoopPreviewPlaybackContext } from './LoopPreviewPlaybackContext';
 import { LoopRangeSelectorSurface } from './LoopRangeSelectorSurface';
 import { SavedLoopList } from './SavedLoopList';
+import { TrackScopedLoopDetailCard } from './TrackScopedLoopDetailCard';
 
 type SavedLoopSectionProps = {
   activePlayableItem: PlayableItem | null;
   isPlaybackPreparing: boolean;
+  isTrackLoopDetailVisible: boolean;
   canMutateLoops: boolean;
   canQueueAsNext: boolean;
   highlightQuery: string | null;
@@ -46,12 +50,23 @@ type SavedLoopSectionProps = {
   canMutatePlaylists: boolean;
   isPlaylistMutating: boolean;
   onCloseLoopBuilder: () => void;
+  toggleActivePlayback: () => Promise<void>;
   removeLoop: (loop: NamedLoop) => void;
   savedSources: DriveLibrarySource[];
   savedLoopIssue: SavedLoopIssue | null;
   savedLoops: NamedLoop[];
   saveLoop: (loop: NamedLoop) => Promise<boolean>;
   selectedTrack: PlayableItem | null;
+  trackLoopView: {
+    detailCopy: TrackScopedLoopDetailCopy;
+    isMakeNewLoopDisabled: boolean;
+    loops: NamedLoop[];
+    makeNewLoopLabel: string;
+    onClose: () => void;
+    onMakeNewLoop: () => void;
+    onPlayLoopSeries: (loopId?: string) => void;
+    orderedPlaybackAction: PlaylistPlaybackActionCopy;
+  } | null;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   queuePlayableItemNext: (playableItem: PlayableItem) => void;
@@ -75,6 +90,7 @@ const EMPTY_LOOP_BUILDER_DRAFT: LoopBuilderDraft = {
 export const SavedLoopSection = ({
   activePlayableItem,
   isPlaybackPreparing,
+  isTrackLoopDetailVisible,
   canMutateLoops,
   canQueueAsNext,
   highlightQuery,
@@ -85,12 +101,14 @@ export const SavedLoopSection = ({
   canMutatePlaylists,
   isPlaylistMutating,
   onCloseLoopBuilder,
+  toggleActivePlayback,
   removeLoop,
   savedSources,
   savedLoopIssue,
   savedLoops,
   saveLoop,
   selectedTrack,
+  trackLoopView,
   onOpenLoopPlaylistSelector,
   togglePlayableItemPlayback,
   queuePlayableItemNext,
@@ -104,6 +122,9 @@ export const SavedLoopSection = ({
   const [draftIssue, setDraftIssue] = useState<DraftIssue | null>(null);
 
   const savedLoopCards = resolveSavedLoopCards(savedLoops, savedSources);
+  const trackLoopViewCards = trackLoopView
+    ? resolveSavedLoopCards(trackLoopView.loops, savedSources)
+    : [];
   const unresolvedLoopCount = savedLoopCards.filter((loopCard) => {
     return loopCard.message !== undefined || loopCard.playableItem === null;
   }).length;
@@ -235,18 +256,67 @@ export const SavedLoopSection = ({
 
   return (
     <View style={styles.section}>
-      <View style={styles.sectionCopy}>
-        <Text style={styles.eyebrow}>Saved loops</Text>
-        <Text style={styles.sectionTitle}>Saved loops</Text>
-        <Text style={styles.sectionBody}>{SAVED_LOOP_SECTION_BODY_COPY}</Text>
-      </View>
+      {!isTrackLoopDetailVisible ? (
+        <View style={styles.sectionCopy}>
+          <Text style={styles.eyebrow}>Saved loops</Text>
+          <Text style={styles.sectionTitle}>Saved loops</Text>
+          <Text style={styles.sectionBody}>{SAVED_LOOP_SECTION_BODY_COPY}</Text>
+        </View>
+      ) : null}
 
-      {shouldShowStatusCard ? (
+      {!isTrackLoopDetailVisible && shouldShowStatusCard ? (
         <DriveLibraryStatusCard
           isLoading={isSavedLoopsLoading}
           loadingLabel="Refreshing saved loops…"
           statusCopy={statusCopy}
         />
+      ) : null}
+
+      {isTrackLoopDetailVisible && trackLoopView ? (
+        <TrackScopedLoopDetailCard
+          detailCopy={trackLoopView.detailCopy}
+          isMakeNewLoopDisabled={trackLoopView.isMakeNewLoopDisabled}
+          makeNewLoopLabel={trackLoopView.makeNewLoopLabel}
+          onClose={trackLoopView.onClose}
+          onMakeNewLoop={trackLoopView.onMakeNewLoop}
+          onPlayOrderedTrackLoops={() => {
+            trackLoopView.onPlayLoopSeries();
+          }}
+          orderedPlaybackAction={trackLoopView.orderedPlaybackAction}
+        >
+          {trackLoopViewCards.length > 0 ? (
+            <SavedLoopList
+              activePlayableItem={activePlayableItem}
+              canMutateLoops={canMutateLoops}
+              canMutatePlaylists={canMutatePlaylists}
+              canQueueAsNext={canQueueAsNext}
+              highlightQuery={null}
+              isPlaybackPreparing={isPlaybackPreparing}
+              isPlaylistMutating={isPlaylistMutating}
+              loopCards={trackLoopViewCards}
+              loopIssue={savedLoopIssue}
+              onOpenLoopPlaylistSelector={onOpenLoopPlaylistSelector}
+              onPlayLoopSeries={(loopId) => {
+                trackLoopView.onPlayLoopSeries(loopId);
+              }}
+              onToggleCurrentPlayback={() => {
+                void toggleActivePlayback();
+              }}
+              pendingLoopId={pendingLoopId}
+              playbackIssue={playbackIssue}
+              playbackState={playbackState}
+              queuePlayableItemNext={queuePlayableItemNext}
+              queuePlayableItemUpNext={queuePlayableItemUpNext}
+              removeLoop={removeLoop}
+              title={`Track loops (${trackLoopViewCards.length})`}
+              togglePlayableItemPlayback={togglePlayableItemPlayback}
+            />
+          ) : (
+            <Text style={styles.sectionBody}>
+              {trackLoopView.detailCopy.emptyMessage}
+            </Text>
+          )}
+        </TrackScopedLoopDetailCard>
       ) : null}
 
       <LoopRangeSelectorSurface
@@ -306,25 +376,28 @@ export const SavedLoopSection = ({
         startMs={loopDraft.startMs}
       />
 
-      <SavedLoopList
-        activePlayableItem={activePlayableItem}
-        canMutateLoops={canMutateLoops}
-        canMutatePlaylists={canMutatePlaylists}
-        highlightQuery={highlightQuery}
-        isPlaylistMutating={isPlaylistMutating}
-        isPlaybackPreparing={isPlaybackPreparing}
-        loopCards={savedLoopCards}
-        loopIssue={savedLoopIssue}
-        pendingLoopId={pendingLoopId}
-        playbackIssue={playbackIssue}
-        playbackState={playbackState}
-        canQueueAsNext={canQueueAsNext}
-        onOpenLoopPlaylistSelector={onOpenLoopPlaylistSelector}
-        queuePlayableItemNext={queuePlayableItemNext}
-        queuePlayableItemUpNext={queuePlayableItemUpNext}
-        removeLoop={removeLoop}
-        togglePlayableItemPlayback={togglePlayableItemPlayback}
-      />
+      {!isTrackLoopDetailVisible ? (
+        <SavedLoopList
+          activePlayableItem={activePlayableItem}
+          canMutateLoops={canMutateLoops}
+          canMutatePlaylists={canMutatePlaylists}
+          highlightQuery={highlightQuery}
+          isPlaylistMutating={isPlaylistMutating}
+          isPlaybackPreparing={isPlaybackPreparing}
+          loopCards={savedLoopCards}
+          loopIssue={savedLoopIssue}
+          pendingLoopId={pendingLoopId}
+          playbackIssue={playbackIssue}
+          playbackState={playbackState}
+          canQueueAsNext={canQueueAsNext}
+          onOpenLoopPlaylistSelector={onOpenLoopPlaylistSelector}
+          queuePlayableItemNext={queuePlayableItemNext}
+          queuePlayableItemUpNext={queuePlayableItemUpNext}
+          removeLoop={removeLoop}
+          title={`Saved loops (${savedLoopCards.length})`}
+          togglePlayableItemPlayback={togglePlayableItemPlayback}
+        />
+      ) : null}
     </View>
   );
 };

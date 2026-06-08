@@ -60,11 +60,11 @@ The system SHALL ship lightweight folder organization alongside tags and filters
 - **WHEN** a user does not use folders
 - **THEN** the system continues to support complete rehearsal workflows through default library collections, tags, and filters
 
-#### Scenario: Default library browsing keeps loops grouped by parent track
+#### Scenario: Default library browsing keeps saved loops visible while preserving track entry points
 
 - **WHEN** a user is browsing Library outside explicit search, tag, or folder result contexts
-- **THEN** the system keeps loop discovery anchored to the parent-track context in the default browse presentation
-- **AND** tracks with loops expose a `View track loops` navigation affordance
+- **THEN** the system keeps a top-level Saved loops section available in the default browse presentation
+- **AND** tracks with loops expose a `View track loops` navigation affordance for parent-track-specific loop management
 
 ### Requirement: Loop provenance remains visible in standalone organization result views
 
