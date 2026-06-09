@@ -264,13 +264,6 @@ export const savedPlaylistSectionStyles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: PRIMARY_ACTION_BACKGROUND,
   },
-  fabButton: {
-    alignSelf: 'flex-end',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 999,
-    backgroundColor: PRIMARY_ACTION_BACKGROUND,
-  },
   primaryButtonLabel: {
     color: PRIMARY_ACTION_TEXT,
     fontSize: 14,
@@ -358,9 +351,6 @@ export const savedPlaylistSectionStyles = StyleSheet.create({
   },
   actionButtonDisabled: {
     opacity: 0.56,
-  },
-  playbackActionRow: {
-    alignItems: 'flex-end',
   },
   snackbarCard: {
     gap: 10,

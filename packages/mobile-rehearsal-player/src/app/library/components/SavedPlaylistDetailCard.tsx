@@ -17,6 +17,7 @@ import {
   PlaylistRenameDialog,
 } from './PlaylistRenameDialog';
 import { savedPlaylistSectionStyles as styles } from './saved-playlist-section-styles';
+import { SavedLibraryDetailCardShell } from './SavedLibraryDetailCardShell';
 import { SavedPlaylistDetailItemsList } from './SavedPlaylistDetailItemsList';
 
 type PlaylistEntry = Playlist['items'][number];
@@ -78,63 +79,29 @@ export const SavedPlaylistDetailCard = (props: {
   }
 
   return (
-    <View style={styles.editorCard}>
-      <Pressable
-        accessibilityRole="button"
-        onPress={props.onCloseDetail}
-        style={({ pressed }) => [
-          styles.compactIconButton,
-          pressed ? styles.actionButtonPressed : undefined,
-        ]}
-      >
-        <Text style={styles.secondaryButtonLabel}>←</Text>
-      </Pressable>
-
-      <View style={styles.headerRow}>
-        <View style={styles.headerCopy}>
-          <Text style={styles.eyebrow}>Playlist detail</Text>
-          <Text style={styles.sectionTitle}>{detailSummary.title}</Text>
-          <Text style={styles.sectionBody}>{detailSummary.metadataLabel}</Text>
-          {detailSummary.body ? (
-            <Text style={styles.editorBody}>{detailSummary.body}</Text>
-          ) : null}
-        </View>
-      </View>
-
-      <OverflowMenuTrigger
-        accessibilityLabel="Playlist options"
-        disabled={!props.canMutatePlaylists || props.isMutating}
-        onPress={() => {
-          setIsOptionsMenuVisible(true);
-        }}
-      />
-
-      <View style={styles.group}>
-        <Text style={styles.groupTitle}>Playback controls</Text>
-        <View style={styles.playbackActionRow}>
-          <Pressable
-            accessibilityRole="button"
-            disabled={props.isMutating || props.orderedPlaybackAction.disabled}
-            onPress={props.onPlayOrderedPlaylist}
-            style={({ pressed }) => [
-              styles.fabButton,
-              pressed &&
-              !props.isMutating &&
-              !props.orderedPlaybackAction.disabled
-                ? styles.actionButtonPressed
-                : undefined,
-              props.isMutating || props.orderedPlaybackAction.disabled
-                ? styles.actionButtonDisabled
-                : undefined,
-            ]}
-          >
-            <Text style={styles.primaryButtonLabel}>
-              ▶ {props.orderedPlaybackAction.label}
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-
+    <SavedLibraryDetailCardShell
+      body={detailSummary.body}
+      closeAccessibilityLabel="Close playlist detail"
+      eyebrow="Playlist detail"
+      headerAction={
+        <OverflowMenuTrigger
+          accessibilityLabel="Playlist options"
+          disabled={!props.canMutatePlaylists || props.isMutating}
+          onPress={() => {
+            setIsOptionsMenuVisible(true);
+          }}
+        />
+      }
+      metadataLabel={detailSummary.metadataLabel}
+      onClose={props.onCloseDetail}
+      primaryAction={{
+        disabled: props.isMutating || props.orderedPlaybackAction.disabled,
+        label: `▶ ${props.orderedPlaybackAction.label}`,
+        onPress: props.onPlayOrderedPlaylist,
+        tone: 'primary',
+      }}
+      title={detailSummary.title}
+    >
       <SavedPlaylistDetailItemsList
         currentPlaylistEntryId={props.currentPlaylistEntryId}
         detailEntries={props.detailEntries}
@@ -230,6 +197,6 @@ export const SavedPlaylistDetailCard = (props: {
           </View>
         </View>
       </Modal>
-    </View>
+    </SavedLibraryDetailCardShell>
   );
 };
