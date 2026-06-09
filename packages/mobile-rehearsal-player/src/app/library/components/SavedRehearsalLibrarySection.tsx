@@ -405,6 +405,8 @@ export const SavedRehearsalLibrarySection = ({
     isPlaylistDetailVisible,
     selectedLoopViewSourceId,
   });
+  const isTrackLoopDetailVisible = detailMode === 'track-loop-detail';
+  const isPlaylistDetailMode = detailMode === 'playlist-detail';
 
   useEffect(() => {
     if (!isLibrarySearchMode || selectedLoopViewSourceId === null) {
@@ -448,6 +450,22 @@ export const SavedRehearsalLibrarySection = ({
     }
 
     setSelectedLoopViewSourceId(null);
+  };
+
+  const closeLoopBuilder = () => {
+    setSelectedLoopSourceId(null);
+  };
+
+  const openLoopPlaylistSelector = (loopId: string) => {
+    setTrackPlaylistCreationIssue(null);
+    dispatchTrackPlaylistMenu({
+      type: 'open-loop-selector',
+      loopId,
+    });
+  };
+
+  const closePlaylistDetail = () => {
+    setIsPlaylistDetailVisible(false);
   };
 
   const playTrackLoopSeries = (loopId?: string) => {
@@ -675,6 +693,92 @@ export const SavedRehearsalLibrarySection = ({
     closeCardRenameDialog();
   };
 
+  const trackLoopView =
+    selectedLoopViewSource && selectedTrackLoopDetailCopy
+      ? {
+          detailCopy: selectedTrackLoopDetailCopy,
+          isMakeNewLoopDisabled:
+            !canMutateLoops ||
+            isLoopMutating ||
+            pendingLoopBuilderSourceId !== null ||
+            selectedLoopViewSource.availability.status !== 'available',
+          loops: selectedLoopViewLoops,
+          makeNewLoopLabel:
+            pendingLoopBuilderSourceId === selectedLoopViewSource.id
+              ? 'Preparing loop…'
+              : 'Make new loop',
+          onClose: closeTrackLoopView,
+          onMakeNewLoop: () => {
+            openLoopBuilderForSource(selectedLoopViewSource);
+          },
+          onPlayLoopSeries: playTrackLoopSeries,
+          orderedPlaybackAction: selectedTrackLoopPlaybackAction,
+        }
+      : null;
+
+  const loopSection = (
+    <SavedLoopSection
+      activePlayableItem={activePlayableItem}
+      canMutateLoops={canMutateLoops}
+      canMutatePlaylists={canMutatePlaylists}
+      isPlaylistMutating={isPlaylistMutating}
+      canQueueAsNext={canQueueAsNext}
+      highlightQuery={activeLibrarySearchQuery}
+      isPlaybackPreparing={isPlaybackPreparing}
+      isTrackLoopDetailVisible={isTrackLoopDetailVisible}
+      isSavedLoopsLoading={isSavedLoopsLoading}
+      pendingLoopId={pendingLoopId}
+      playbackIssue={playbackIssue}
+      playbackState={playbackState}
+      onOpenLoopPlaylistSelector={openLoopPlaylistSelector}
+      onCloseLoopBuilder={closeLoopBuilder}
+      removeLoop={removeLoop}
+      savedSources={savedLibrarySources}
+      savedLoopIssue={savedLoopIssue}
+      savedLoops={visibleSavedLoops}
+      saveLoop={saveLoop}
+      selectedTrack={selectedTrack}
+      toggleActivePlayback={toggleActivePlayback}
+      togglePlayableItemPlayback={togglePlayableItemPlayback}
+      queuePlayableItemNext={queuePlayableItemNext}
+      queuePlayableItemUpNext={queuePlayableItemUpNext}
+      trackLoopView={isTrackLoopDetailVisible ? trackLoopView : null}
+    />
+  );
+
+  const playlistSection = (
+    <SavedPlaylistSection
+      activePlaylistSession={activePlaylistSession}
+      canMutatePlaylists={canMutatePlaylists}
+      createPlaylist={createPlaylist}
+      deletePlaylist={deletePlaylist}
+      getCurrentScrollOffsetY={getCurrentScrollOffsetY}
+      isDetailVisible={isPlaylistDetailMode}
+      isLoading={isPlaylistsLoading}
+      isPlaybackPreparing={isPlaybackPreparing}
+      issue={playlistIssue}
+      onCloseDetail={closePlaylistDetail}
+      pendingPlaylistId={pendingPlaylistId}
+      playbackState={playbackState}
+      savedPlaylists={savedPlaylists}
+      savedLoops={savedLoops}
+      savedSources={savedLibrarySources}
+      selectedPlaylist={selectedPlaylist}
+      setSelectedPlaylistId={setSelectedPlaylistId}
+      setIsReorderDragActive={setIsPlaylistReorderDragActive}
+      setReorderDragMoveY={setPlaylistReorderDragMoveY}
+      toggleActivePlayback={toggleActivePlayback}
+      togglePlaylistPlayback={togglePlaylistPlayback}
+      updatePlaylist={updatePlaylist}
+    />
+  );
+
+  const detailSection = isPlaylistDetailMode
+    ? playlistSection
+    : isTrackLoopDetailVisible
+      ? loopSection
+      : null;
+
   return (
     <View style={styles.savedLibrarySection}>
       <DriveLibrarySectionHeader
@@ -830,130 +934,12 @@ export const SavedRehearsalLibrarySection = ({
             sources={visibleSavedLibrarySources}
             title={savedSourceTitle}
           />
-          <SavedLoopSection
-            activePlayableItem={activePlayableItem}
-            canMutateLoops={canMutateLoops}
-            canMutatePlaylists={canMutatePlaylists}
-            isPlaylistMutating={isPlaylistMutating}
-            canQueueAsNext={canQueueAsNext}
-            highlightQuery={activeLibrarySearchQuery}
-            isPlaybackPreparing={isPlaybackPreparing}
-            isTrackLoopDetailVisible={false}
-            isSavedLoopsLoading={isSavedLoopsLoading}
-            pendingLoopId={pendingLoopId}
-            playbackIssue={playbackIssue}
-            playbackState={playbackState}
-            onOpenLoopPlaylistSelector={(loopId) => {
-              setTrackPlaylistCreationIssue(null);
-              dispatchTrackPlaylistMenu({
-                type: 'open-loop-selector',
-                loopId,
-              });
-            }}
-            onCloseLoopBuilder={() => {
-              setSelectedLoopSourceId(null);
-            }}
-            removeLoop={removeLoop}
-            savedSources={savedLibrarySources}
-            savedLoopIssue={savedLoopIssue}
-            savedLoops={visibleSavedLoops}
-            saveLoop={saveLoop}
-            selectedTrack={selectedTrack}
-            toggleActivePlayback={toggleActivePlayback}
-            togglePlayableItemPlayback={togglePlayableItemPlayback}
-            queuePlayableItemNext={queuePlayableItemNext}
-            queuePlayableItemUpNext={queuePlayableItemUpNext}
-            trackLoopView={null}
-          />
+          {loopSection}
+          {playlistSection}
         </>
-      ) : null}
-
-      {detailMode === 'track-loop-detail' ? (
-        <SavedLoopSection
-          activePlayableItem={activePlayableItem}
-          canMutateLoops={canMutateLoops}
-          canMutatePlaylists={canMutatePlaylists}
-          isPlaylistMutating={isPlaylistMutating}
-          canQueueAsNext={canQueueAsNext}
-          highlightQuery={activeLibrarySearchQuery}
-          isPlaybackPreparing={isPlaybackPreparing}
-          isTrackLoopDetailVisible
-          isSavedLoopsLoading={isSavedLoopsLoading}
-          pendingLoopId={pendingLoopId}
-          playbackIssue={playbackIssue}
-          playbackState={playbackState}
-          onOpenLoopPlaylistSelector={(loopId) => {
-            setTrackPlaylistCreationIssue(null);
-            dispatchTrackPlaylistMenu({
-              type: 'open-loop-selector',
-              loopId,
-            });
-          }}
-          onCloseLoopBuilder={() => {
-            setSelectedLoopSourceId(null);
-          }}
-          removeLoop={removeLoop}
-          savedSources={savedLibrarySources}
-          savedLoopIssue={savedLoopIssue}
-          savedLoops={visibleSavedLoops}
-          saveLoop={saveLoop}
-          selectedTrack={selectedTrack}
-          toggleActivePlayback={toggleActivePlayback}
-          togglePlayableItemPlayback={togglePlayableItemPlayback}
-          queuePlayableItemNext={queuePlayableItemNext}
-          queuePlayableItemUpNext={queuePlayableItemUpNext}
-          trackLoopView={
-            selectedLoopViewSource && selectedTrackLoopDetailCopy
-              ? {
-                  detailCopy: selectedTrackLoopDetailCopy,
-                  isMakeNewLoopDisabled:
-                    !canMutateLoops ||
-                    isLoopMutating ||
-                    pendingLoopBuilderSourceId !== null ||
-                    selectedLoopViewSource.availability.status !== 'available',
-                  loops: selectedLoopViewLoops,
-                  makeNewLoopLabel:
-                    pendingLoopBuilderSourceId === selectedLoopViewSource.id
-                      ? 'Preparing loop…'
-                      : 'Make new loop',
-                  onClose: closeTrackLoopView,
-                  onMakeNewLoop: () => {
-                    openLoopBuilderForSource(selectedLoopViewSource);
-                  },
-                  onPlayLoopSeries: playTrackLoopSeries,
-                  orderedPlaybackAction: selectedTrackLoopPlaybackAction,
-                }
-              : null
-          }
-        />
-      ) : null}
-
-      <SavedPlaylistSection
-        activePlaylistSession={activePlaylistSession}
-        canMutatePlaylists={canMutatePlaylists}
-        createPlaylist={createPlaylist}
-        deletePlaylist={deletePlaylist}
-        getCurrentScrollOffsetY={getCurrentScrollOffsetY}
-        isDetailVisible={detailMode === 'playlist-detail'}
-        isLoading={isPlaylistsLoading}
-        isPlaybackPreparing={isPlaybackPreparing}
-        issue={playlistIssue}
-        onCloseDetail={() => {
-          setIsPlaylistDetailVisible(false);
-        }}
-        pendingPlaylistId={pendingPlaylistId}
-        playbackState={playbackState}
-        savedPlaylists={savedPlaylists}
-        savedLoops={savedLoops}
-        savedSources={savedLibrarySources}
-        selectedPlaylist={selectedPlaylist}
-        setSelectedPlaylistId={setSelectedPlaylistId}
-        setIsReorderDragActive={setIsPlaylistReorderDragActive}
-        setReorderDragMoveY={setPlaylistReorderDragMoveY}
-        toggleActivePlayback={toggleActivePlayback}
-        togglePlaylistPlayback={togglePlaylistPlayback}
-        updatePlaylist={updatePlaylist}
-      />
+      ) : (
+        detailSection
+      )}
 
       <SavedTrackPlaylistMenuSurface
         createPlaylistIssue={trackPlaylistCreationIssue}
