@@ -20,12 +20,14 @@ import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
   getSavedTrackPlaybackStatusCopy,
+  hasPlayableItemChanged,
   hasSavedTrackPlaybackReachedRangeEnd,
   hydratePlayableItemDuration,
   isTrackPlayerAlreadyInitializedError,
   normalizePlaybackVolumeLevel,
   resolvePlaybackScrubPositionSeconds,
   resolvePlaybackSeekPositionSeconds,
+  resolveSynchronizedPlayableItem,
   shouldRepeatSingleItemPlayback,
 } from '../utils/saved-track-playback-view-model.js';
 import { resolveSavedTrackDurationFromPlayer } from '../utils/saved-track-player-runtime.js';
@@ -235,6 +237,31 @@ describe('saved track playback view-model', () => {
       }),
       false,
     );
+  });
+
+  it('resolves updated playable item data from synced library state', () => {
+    const activeLoop = createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE);
+    const renamedLoop = {
+      ...SAVED_LOOP,
+      name: 'Entrance cue revised',
+      startMs: 15000,
+      endMs: 24000,
+    };
+    const syncedLoop = resolveSynchronizedPlayableItem({
+      loops: [renamedLoop],
+      playableItem: activeLoop,
+      sources: [PLAYABLE_SOURCE],
+    });
+
+    assert.deepEqual(syncedLoop, {
+      ...activeLoop,
+      title: 'Entrance cue revised',
+      range: {
+        startMs: 15000,
+        endMs: 24000,
+      },
+    });
+    assert.equal(hasPlayableItemChanged(activeLoop, syncedLoop), true);
   });
 
   it('hydrates missing full-track duration from player progress for preview playback', () => {

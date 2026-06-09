@@ -2,7 +2,13 @@ import {
   buildDriveMediaUrl,
   type DriveAuthorizationState,
 } from '@org/google-drive';
-import { type PlayableItem, type RepeatMode } from '@org/audio-library-models';
+import {
+  createLoopPlayableItem,
+  createTrackPlayableItem,
+  type NamedLoop,
+  type PlayableItem,
+  type RepeatMode,
+} from '@org/audio-library-models';
 
 import {
   formatDurationLabel,
@@ -63,6 +69,12 @@ type SavedTrackPlaybackStatusOptions = {
   issue: SavedTrackPlaybackIssue | null;
   playbackState: SavedTrackPlaybackState | undefined;
   positionSeconds: number;
+};
+
+type ResolveSynchronizedPlayableItemOptions = {
+  loops: NamedLoop[];
+  playableItem: PlayableItem | null;
+  sources: DriveLibrarySource[];
 };
 
 const DEFAULT_UNAVAILABLE_MESSAGE =
@@ -233,6 +245,73 @@ export const isSavedTrackPlaybackActive = (
   playableItem: PlayableItem,
 ) => {
   return activePlayableItem?.id === playableItem.id;
+};
+
+export const resolveSynchronizedPlayableItem = (
+  options: ResolveSynchronizedPlayableItemOptions,
+) => {
+  if (!options.playableItem) {
+    return null;
+  }
+
+  const nextSource = options.sources.find((source) => {
+    return source.id === options.playableItem?.sourceId;
+  });
+
+  if (!nextSource) {
+    return options.playableItem;
+  }
+
+  if (options.playableItem.kind === 'track') {
+    return createTrackPlayableItem(
+      nextSource,
+      options.playableItem.playlistId,
+      options.playableItem.playlistEntryId,
+    );
+  }
+
+  const nextLoop = options.loops.find((loop) => {
+    return loop.id === options.playableItem?.loopId;
+  });
+
+  if (!nextLoop) {
+    return options.playableItem;
+  }
+
+  return createLoopPlayableItem(
+    nextLoop,
+    nextSource,
+    options.playableItem.playlistId,
+    options.playableItem.playlistEntryId,
+  );
+};
+
+export const hasPlayableItemChanged = (
+  currentPlayableItem: PlayableItem | null,
+  nextPlayableItem: PlayableItem | null,
+) => {
+  if (currentPlayableItem === nextPlayableItem) {
+    return false;
+  }
+
+  if (!currentPlayableItem || !nextPlayableItem) {
+    return currentPlayableItem !== nextPlayableItem;
+  }
+
+  return (
+    currentPlayableItem.id !== nextPlayableItem.id ||
+    currentPlayableItem.kind !== nextPlayableItem.kind ||
+    currentPlayableItem.title !== nextPlayableItem.title ||
+    currentPlayableItem.description !== nextPlayableItem.description ||
+    currentPlayableItem.loopId !== nextPlayableItem.loopId ||
+    currentPlayableItem.playlistEntryId !== nextPlayableItem.playlistEntryId ||
+    currentPlayableItem.playlistId !== nextPlayableItem.playlistId ||
+    currentPlayableItem.source.id !== nextPlayableItem.source.id ||
+    currentPlayableItem.source.name !== nextPlayableItem.source.name ||
+    currentPlayableItem.source.durationMs !== nextPlayableItem.source.durationMs ||
+    currentPlayableItem.range.startMs !== nextPlayableItem.range.startMs ||
+    currentPlayableItem.range.endMs !== nextPlayableItem.range.endMs
+  );
 };
 
 export const createSavedTrackPlaybackPreconditionIssue = (

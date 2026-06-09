@@ -8,12 +8,22 @@ import type { DriveLibrarySource } from './drive-library-view-model';
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
+  isTransientQueueSession,
   type PlaylistPlaybackSession,
 } from './saved-playlist-playback-view-model';
+import { resolveSynchronizedPlayableItem } from './saved-track-playback-view-model';
 
 export type ActivePlaylistContext = {
   loops: NamedLoop[];
   playlist: Playlist;
+  sources: DriveLibrarySource[];
+};
+
+type SyncActivePlaylistPlaybackSessionOptions = {
+  currentContext: ActivePlaylistContext | null;
+  loops: NamedLoop[];
+  playlists: Playlist[];
+  session: PlaylistPlaybackSession | null;
   sources: DriveLibrarySource[];
 };
 
@@ -158,4 +168,70 @@ export const syncActivePlaylistContext = (options: {
     playlist: persistedPlaylist,
     sources: options.sources,
   } satisfies ActivePlaylistContext;
+};
+
+const syncPlaylistPlaybackQueueItems = (options: {
+  loops: NamedLoop[];
+  session: PlaylistPlaybackSession;
+  sources: DriveLibrarySource[];
+}) => {
+  return {
+    ...options.session,
+    queue: {
+      ...options.session.queue,
+      items: options.session.queue.items.map((playableItem) => {
+        return (
+          resolveSynchronizedPlayableItem({
+            loops: options.loops,
+            playableItem,
+            sources: options.sources,
+          }) ?? playableItem
+        );
+      }),
+    },
+  } satisfies PlaylistPlaybackSession;
+};
+
+export const syncActivePlaylistPlaybackSession = (
+  options: SyncActivePlaylistPlaybackSessionOptions,
+) => {
+  const nextContext = syncActivePlaylistContext(options);
+
+  if (!options.session) {
+    return {
+      context: nextContext,
+      issue: null,
+      session: null,
+    };
+  }
+
+  if (isTransientQueueSession(options.session) || !nextContext) {
+    return {
+      context: nextContext,
+      issue: null,
+      session: syncPlaylistPlaybackQueueItems({
+        loops: options.loops,
+        session: options.session,
+        sources: options.sources,
+      }),
+    };
+  }
+
+  const rebuiltSession = rebuildPlaylistPlaybackSessionForMode({
+    loops: nextContext.loops,
+    mode: options.session.queue.mode,
+    playlist: nextContext.playlist,
+    session: options.session,
+    sources: nextContext.sources,
+  });
+
+  return {
+    context: nextContext,
+    issue: rebuiltSession.issue,
+    session: syncPlaylistPlaybackQueueItems({
+      loops: options.loops,
+      session: rebuiltSession.session ?? options.session,
+      sources: options.sources,
+    }),
+  };
 };

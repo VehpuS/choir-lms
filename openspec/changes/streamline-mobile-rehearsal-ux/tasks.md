@@ -62,7 +62,7 @@
 - [x] 4.2.14 Remove redundant `Up next` / `Now playing` row text from the active queue once direct play controls exist, and keep current-item state legible through row styling and control state.
 - [x] 4.2.15 Add previous and next track transport controls directly to the active rehearsal queue view.
 - [x] 4.3 Ensure loop management remains parent-track-first while supporting optional promotion of loops to first-class organization surfaces.
-- [ ] 4.4 Add track-context loop management entry points (create, view, edit, remove) and preserve visible parent-track linkage in all loop surfaces, with `Make loop` living in saved track overflow only.
+- [x] 4.4 Add track-context loop management entry points (create, view, edit, remove) and preserve visible parent-track linkage in all loop surfaces, with `Make loop` living in saved track overflow only.
 - [x] 4.4.1 Keep the default top-level Saved loops Library section and add a `View track loops` saved-track overflow action that opens a full-screen Library detail view for that track's loops when loops exist, while preserving loop action parity for playback, add to playlist, queue, and remove flows.
 - [x] 4.4.2 Keep the track-scoped loop surface visibly tied to its parent track, make it replace the main Library browse UI with a back path while active, add ordered loop-series playback plus a `Make new loop` action for that track, and reuse the same shared loop row actions and metadata needed for fast playback and playlist workflows.
 - [ ] 4.5 Audit shell, playback, and queue surfaces for remaining text-labeled `Play` buttons, replace them with standard playback icons where appropriate, and update icon-only control labels, selected/disabled states, and touch-target sizing.

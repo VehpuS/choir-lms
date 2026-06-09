@@ -21,6 +21,7 @@ type LoopRangeSelectorSurfaceProps = {
   } | null;
   canSaveLoop: boolean;
   endMs: number;
+  eyebrowLabel: string;
   isSavingLoop: boolean;
   isVisible: boolean;
   loopName: string;
@@ -35,7 +36,9 @@ type LoopRangeSelectorSurfaceProps = {
   previewPlayableItem: PlayableItem | null;
   previewTimeline: LoopPreviewPlaybackTimeline | null;
   rangeMaximumMs: number | null;
+  saveActionLabel: string;
   selectedTrack: PlayableItem | null;
+  savingActionLabel: string;
   startMs: number;
 };
 
@@ -63,6 +66,7 @@ export const LoopRangeSelectorSurface = ({
   builderIssue,
   canSaveLoop,
   endMs,
+  eyebrowLabel,
   isSavingLoop,
   isVisible,
   loopName,
@@ -77,7 +81,9 @@ export const LoopRangeSelectorSurface = ({
   previewPlayableItem,
   previewTimeline,
   rangeMaximumMs,
+  saveActionLabel,
   selectedTrack,
+  savingActionLabel,
   startMs,
 }: LoopRangeSelectorSurfaceProps) => {
   const [isTipsVisible, setIsTipsVisible] = useState(false);
@@ -108,7 +114,7 @@ export const LoopRangeSelectorSurface = ({
         <View style={styles.sheet}>
           <View style={styles.headerRow}>
             <View style={styles.headerCopy}>
-              <Text style={styles.eyebrow}>New loop</Text>
+              <Text style={styles.eyebrow}>{eyebrowLabel}</Text>
               <Text style={styles.title}>{selectedTrack.source.name}</Text>
             </View>
             <Pressable
@@ -268,7 +274,7 @@ export const LoopRangeSelectorSurface = ({
               ]}
             >
               <Text style={styles.primaryActionLabel}>
-                {isSavingLoop ? 'Saving loop…' : 'Save loop'}
+                {isSavingLoop ? savingActionLabel : saveActionLabel}
               </Text>
             </Pressable>
           </View>

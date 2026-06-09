@@ -18,6 +18,7 @@ import {
   createLoopBuilderDraft,
   createLoopPreviewPlayableItem,
   getSavedLoopsStatusCopy,
+  resolveActiveLoopEditorId,
   resolveLoopBuilderRangeSelection,
   resolveSavedLoopCards,
   SAVED_LOOP_SECTION_BODY_COPY,
@@ -38,6 +39,7 @@ import { TrackScopedLoopDetailCard } from './TrackScopedLoopDetailCard';
 
 type SavedLoopSectionProps = {
   activePlayableItem: PlayableItem | null;
+  editingLoop: NamedLoop | null;
   isPlaybackPreparing: boolean;
   isTrackLoopDetailVisible: boolean;
   canMutateLoops: boolean;
@@ -50,6 +52,7 @@ type SavedLoopSectionProps = {
   canMutatePlaylists: boolean;
   isPlaylistMutating: boolean;
   onCloseLoopBuilder: () => void;
+  onEditLoop: (loop: NamedLoop) => void;
   toggleActivePlayback: () => Promise<void>;
   removeLoop: (loop: NamedLoop) => void;
   savedSources: DriveLibrarySource[];
@@ -89,6 +92,7 @@ const EMPTY_LOOP_BUILDER_DRAFT: LoopBuilderDraft = {
 
 export const SavedLoopSection = ({
   activePlayableItem,
+  editingLoop,
   isPlaybackPreparing,
   isTrackLoopDetailVisible,
   canMutateLoops,
@@ -101,6 +105,7 @@ export const SavedLoopSection = ({
   canMutatePlaylists,
   isPlaylistMutating,
   onCloseLoopBuilder,
+  onEditLoop,
   toggleActivePlayback,
   removeLoop,
   savedSources,
@@ -190,10 +195,30 @@ export const SavedLoopSection = ({
     rangeValidation.isValid;
   const shouldShowStatusCard =
     isSavedLoopsLoading || statusCopy.tone !== 'ready';
+  const isEditingLoop = editingLoop !== null;
+  const activeEditingLoopId = resolveActiveLoopEditorId({
+    editingLoopId: editingLoop?.id ?? null,
+    selectedTrack,
+  });
 
   useEffect(() => {
     if (!selectedTrack) {
       setLoopDraft(EMPTY_LOOP_BUILDER_DRAFT);
+      setDraftIssue(null);
+      return;
+    }
+
+    if (editingLoop) {
+      const nextDraft = createLoopBuilderDraft({
+        endMs: editingLoop.endMs,
+        sourceName: selectedTrack.source.name,
+        startMs: editingLoop.startMs,
+      });
+
+      setLoopDraft({
+        ...nextDraft,
+        loopName: editingLoop.name,
+      });
       setDraftIssue(null);
       return;
     }
@@ -211,7 +236,7 @@ export const SavedLoopSection = ({
       }),
     );
     setDraftIssue(null);
-  }, [selectedTrack?.id]);
+  }, [editingLoop?.id, selectedTrack?.id]);
 
   const handleSaveLoop = async () => {
     if (!selectedTrack) {
@@ -220,6 +245,12 @@ export const SavedLoopSection = ({
 
     const result = buildNamedLoop({
       endMs: loopDraft.endMs,
+      existingLoop: editingLoop
+        ? {
+            createdAt: editingLoop.createdAt,
+            id: editingLoop.id,
+          }
+        : undefined,
       loopName: loopDraft.loopName,
       ownerId: LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
       source: selectedTrack.source,
@@ -290,11 +321,13 @@ export const SavedLoopSection = ({
               canMutateLoops={canMutateLoops}
               canMutatePlaylists={canMutatePlaylists}
               canQueueAsNext={canQueueAsNext}
+              editingLoopId={activeEditingLoopId}
               highlightQuery={null}
               isPlaybackPreparing={isPlaybackPreparing}
               isPlaylistMutating={isPlaylistMutating}
               loopCards={trackLoopViewCards}
               loopIssue={savedLoopIssue}
+              onEditLoop={onEditLoop}
               onOpenLoopPlaylistSelector={onOpenLoopPlaylistSelector}
               onPlayLoopSeries={(loopId) => {
                 trackLoopView.onPlayLoopSeries(loopId);
@@ -323,6 +356,7 @@ export const SavedLoopSection = ({
         builderIssue={builderIssue}
         canSaveLoop={canSaveLoop}
         endMs={loopDraft.endMs}
+        eyebrowLabel={isEditingLoop ? 'Edit loop' : 'New loop'}
         isSavingLoop={isLoopMutating}
         isVisible={selectedTrack !== null}
         loopName={loopDraft.loopName}
@@ -372,7 +406,9 @@ export const SavedLoopSection = ({
         previewPlayableItem={previewPlayableItem}
         previewTimeline={previewTimeline}
         rangeMaximumMs={selectedTrackDurationMs}
+        saveActionLabel={isEditingLoop ? 'Save changes' : 'Save loop'}
         selectedTrack={selectedTrack}
+        savingActionLabel={isEditingLoop ? 'Saving changes…' : 'Saving loop…'}
         startMs={loopDraft.startMs}
       />
 
@@ -381,6 +417,7 @@ export const SavedLoopSection = ({
           activePlayableItem={activePlayableItem}
           canMutateLoops={canMutateLoops}
           canMutatePlaylists={canMutatePlaylists}
+          editingLoopId={activeEditingLoopId}
           highlightQuery={highlightQuery}
           isPlaylistMutating={isPlaylistMutating}
           isPlaybackPreparing={isPlaybackPreparing}
@@ -390,6 +427,7 @@ export const SavedLoopSection = ({
           playbackIssue={playbackIssue}
           playbackState={playbackState}
           canQueueAsNext={canQueueAsNext}
+          onEditLoop={onEditLoop}
           onOpenLoopPlaylistSelector={onOpenLoopPlaylistSelector}
           queuePlayableItemNext={queuePlayableItemNext}
           queuePlayableItemUpNext={queuePlayableItemUpNext}

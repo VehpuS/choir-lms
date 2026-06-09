@@ -9,15 +9,18 @@ type SavedLoopPlaybackAction = {
 };
 
 type ResolveSavedLoopRowActionsOptions = {
+  canEditLoop: boolean;
   canMutateLoops: boolean;
   canMutatePlaylists: boolean;
   canQueueAsNext: boolean;
   hasPlayableItem: boolean;
+  isEditingLoop: boolean;
   itemName: string;
   isLoopActive: boolean;
   isLoopMutating: boolean;
   isPendingRemoval: boolean;
   isPlaylistMutating: boolean;
+  onEdit: () => void;
   onOpenPlaylistSelector: () => void;
   onQueueNext: () => void;
   onQueueUpNext: () => void;
@@ -69,6 +72,15 @@ export const resolveSavedLoopRowActions = (
       onPress: options.onOpenPlaylistSelector,
       placement: 'menu',
       tone: 'primary',
+    },
+    {
+      disabled:
+        !options.canEditLoop ||
+        options.isEditingLoop ||
+        options.isLoopMutating,
+      label: options.isEditingLoop ? 'Editing…' : 'Edit loop',
+      onPress: options.onEdit,
+      placement: 'menu',
     },
     {
       disabled:

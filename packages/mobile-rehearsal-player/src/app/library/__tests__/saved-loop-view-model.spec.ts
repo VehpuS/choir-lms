@@ -23,6 +23,7 @@ import {
   getSavedLoopRemovalCopy,
   getSavedLoopsStatusCopy,
   hydrateLoopBuilderTrackDuration,
+  resolveActiveLoopEditorId,
   resolveLoopBuilderRangeSelection,
   resolveLoopBuilderTrack,
   resolveLoopBuilderTrackDuration,
@@ -263,15 +264,18 @@ describe('saved loop view-model', () => {
 
   it('keeps loop playback inline and routes secondary actions through overflow', () => {
     const actions = resolveSavedLoopRowActions({
+      canEditLoop: true,
       canMutateLoops: true,
       canMutatePlaylists: true,
       canQueueAsNext: true,
       hasPlayableItem: true,
+      isEditingLoop: false,
       itemName: SAVED_LOOP.name,
       isLoopActive: false,
       isLoopMutating: false,
       isPendingRemoval: false,
       isPlaylistMutating: false,
+      onEdit: () => undefined,
       onOpenPlaylistSelector: () => undefined,
       onQueueNext: () => undefined,
       onQueueUpNext: () => undefined,
@@ -329,6 +333,14 @@ describe('saved loop view-model', () => {
           accessibilityLabel: undefined,
           disabled: false,
           iconName: undefined,
+          label: 'Edit loop',
+          placement: 'menu',
+          tone: undefined,
+        },
+        {
+          accessibilityLabel: undefined,
+          disabled: false,
+          iconName: undefined,
           label: 'Remove',
           placement: 'menu',
           tone: 'destructive',
@@ -337,17 +349,48 @@ describe('saved loop view-model', () => {
     );
   });
 
+  it('keeps Edit loop available while the loop itself is the active playback item', () => {
+    const actions = resolveSavedLoopRowActions({
+      canEditLoop: true,
+      canMutateLoops: true,
+      canMutatePlaylists: true,
+      canQueueAsNext: false,
+      hasPlayableItem: true,
+      isEditingLoop: false,
+      itemName: SAVED_LOOP.name,
+      isLoopActive: true,
+      isLoopMutating: false,
+      isPendingRemoval: false,
+      isPlaylistMutating: false,
+      onEdit: () => undefined,
+      onOpenPlaylistSelector: () => undefined,
+      onQueueNext: () => undefined,
+      onQueueUpNext: () => undefined,
+      onRemove: () => undefined,
+      onTogglePlayback: () => undefined,
+      playbackAction: {
+        disabled: false,
+        label: 'Pause',
+      },
+    });
+
+    assert.equal(actions.find((action) => action.label === 'Edit loop')?.disabled, false);
+  });
+
   it('omits loop queue actions when playback queueing is unavailable', () => {
     const actions = resolveSavedLoopRowActions({
+      canEditLoop: false,
       canMutateLoops: true,
       canMutatePlaylists: false,
       canQueueAsNext: false,
       hasPlayableItem: false,
+      isEditingLoop: false,
       itemName: SAVED_LOOP.name,
       isLoopActive: true,
       isLoopMutating: true,
       isPendingRemoval: true,
       isPlaylistMutating: false,
+      onEdit: () => undefined,
       onOpenPlaylistSelector: () => undefined,
       onQueueNext: () => undefined,
       onQueueUpNext: () => undefined,
@@ -386,10 +429,59 @@ describe('saved loop view-model', () => {
           accessibilityLabel: undefined,
           disabled: true,
           iconName: undefined,
+          label: 'Edit loop',
+          placement: 'menu',
+        },
+        {
+          accessibilityLabel: undefined,
+          disabled: true,
+          iconName: undefined,
           label: 'Removing…',
           placement: 'menu',
         },
       ],
+    );
+  });
+
+  it('preserves loop identity and createdAt when saving an edited loop', () => {
+    const result = buildNamedLoop({
+      endMs: 24000,
+      existingLoop: {
+        createdAt: SAVED_LOOP.createdAt,
+        id: SAVED_LOOP.id,
+      },
+      loopName: '  Entrance cue reprise  ',
+      now: '2026-05-10T02:00:00.000Z',
+      ownerId: SAVED_LOOP.ownerId,
+      source: PLAYABLE_SOURCE,
+      startMs: 15000,
+    });
+
+    assert.equal(result.issue, null);
+    assert.deepEqual(result.loop, {
+      ...SAVED_LOOP,
+      name: 'Entrance cue reprise',
+      startMs: 15000,
+      endMs: 24000,
+      updatedAt: '2026-05-10T02:00:00.000Z',
+    });
+  });
+
+  it('only keeps a loop marked as editing while the loop builder has a selected track', () => {
+    assert.equal(
+      resolveActiveLoopEditorId({
+        editingLoopId: SAVED_LOOP.id,
+        selectedTrack: createTrackPlayableItem(PLAYABLE_SOURCE),
+      }),
+      SAVED_LOOP.id,
+    );
+
+    assert.equal(
+      resolveActiveLoopEditorId({
+        editingLoopId: SAVED_LOOP.id,
+        selectedTrack: null,
+      }),
+      null,
     );
   });
 

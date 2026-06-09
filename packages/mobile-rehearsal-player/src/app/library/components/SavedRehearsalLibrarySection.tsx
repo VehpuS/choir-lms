@@ -180,6 +180,9 @@ export const SavedRehearsalLibrarySection = ({
     null,
   );
   const [isPlaylistDetailVisible, setIsPlaylistDetailVisible] = useState(false);
+  const [selectedLoopEditId, setSelectedLoopEditId] = useState<string | null>(
+    null,
+  );
   const [selectedLoopViewSourceId, setSelectedLoopViewSourceId] = useState<
     string | null
   >(null);
@@ -271,12 +274,30 @@ export const SavedRehearsalLibrarySection = ({
     savedLoops.find((loop) => {
       return loop.id === trackPlaylistMenuState.selectedLoopId;
     }) ?? null;
+  const selectedLoopEdit =
+    savedLoops.find((loop) => {
+      return loop.id === selectedLoopEditId;
+    }) ?? null;
 
   useEffect(() => {
     if (!selectedPlaylist) {
       setIsPlaylistDetailVisible(false);
     }
   }, [selectedPlaylist]);
+
+  useEffect(() => {
+    if (selectedLoopEditId === null) {
+      return;
+    }
+
+    const hasSelectedLoop = savedLoops.some((loop) => {
+      return loop.id === selectedLoopEditId;
+    });
+
+    if (!hasSelectedLoop) {
+      setSelectedLoopEditId(null);
+    }
+  }, [savedLoops, selectedLoopEditId]);
 
   useEffect(() => {
     syncActivePlaylistContext({
@@ -449,11 +470,30 @@ export const SavedRehearsalLibrarySection = ({
       setSelectedLoopSourceId(null);
     }
 
+    setSelectedLoopEditId(null);
     setSelectedLoopViewSourceId(null);
   };
 
   const closeLoopBuilder = () => {
+    setSelectedLoopEditId(null);
     setSelectedLoopSourceId(null);
+  };
+
+  const openLoopEditor = (loop: NamedLoop) => {
+    const source = savedLibrarySources.find((savedSource) => {
+      return savedSource.id === loop.sourceId;
+    });
+
+    if (!source) {
+      return;
+    }
+
+    const beginLoopEdit = () => {
+      setSelectedLoopEditId(loop.id);
+      openLoopBuilderForSource(source);
+    };
+
+    beginLoopEdit();
   };
 
   const openLoopPlaylistSelector = (loopId: string) => {
@@ -709,6 +749,7 @@ export const SavedRehearsalLibrarySection = ({
               : 'Make new loop',
           onClose: closeTrackLoopView,
           onMakeNewLoop: () => {
+            setSelectedLoopEditId(null);
             openLoopBuilderForSource(selectedLoopViewSource);
           },
           onPlayLoopSeries: playTrackLoopSeries,
@@ -721,6 +762,7 @@ export const SavedRehearsalLibrarySection = ({
       activePlayableItem={activePlayableItem}
       canMutateLoops={canMutateLoops}
       canMutatePlaylists={canMutatePlaylists}
+      editingLoop={selectedLoopEdit}
       isPlaylistMutating={isPlaylistMutating}
       canQueueAsNext={canQueueAsNext}
       highlightQuery={activeLibrarySearchQuery}
@@ -730,6 +772,7 @@ export const SavedRehearsalLibrarySection = ({
       pendingLoopId={pendingLoopId}
       playbackIssue={playbackIssue}
       playbackState={playbackState}
+      onEditLoop={openLoopEditor}
       onOpenLoopPlaylistSelector={openLoopPlaylistSelector}
       onCloseLoopBuilder={closeLoopBuilder}
       removeLoop={removeLoop}
@@ -889,6 +932,7 @@ export const SavedRehearsalLibrarySection = ({
                 isPlaylistMutating,
                 isSavedLibraryMutating,
                 onOpenLoopBuilder: () => {
+                  setSelectedLoopEditId(null);
                   openLoopBuilderForSource(source);
                 },
                 onOpenPlaylistSelector: () => {
@@ -911,6 +955,7 @@ export const SavedRehearsalLibrarySection = ({
                   void toggleSourcePlayback(source);
                 },
                 onViewTrackLoops: () => {
+                  setSelectedLoopEditId(null);
                   setSelectedLoopViewSourceId(source.id);
                 },
                 playbackAction,

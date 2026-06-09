@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
 import {
   rebuildPlaylistPlaybackSessionForMode,
-  syncActivePlaylistContext,
+  syncActivePlaylistPlaybackSession,
   type ActivePlaylistContext,
 } from '../utils/playlist-session-mode';
 import {
@@ -32,9 +32,11 @@ import { createSavedTrackPlaybackController } from '../utils/saved-track-playbac
 import { registerSavedTrackPlaybackRemoteCommandHandlers } from '../utils/saved-track-playback-remote-controls';
 import {
   createSavedTrackPlaybackRuntimeIssue,
+  hasPlayableItemChanged,
   hasSavedTrackPlaybackReachedRangeEnd,
   hydratePlayableItemDuration,
   normalizePlaybackVolumeLevel,
+  resolveSynchronizedPlayableItem,
   shouldRepeatSingleItemPlayback,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
@@ -378,13 +380,54 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
       playlists: Playlist[];
       sources: DriveLibrarySource[];
     }) {
-      activePlaylistContextRef.current = syncActivePlaylistContext({
+      const syncResult = syncActivePlaylistPlaybackSession({
         currentContext: activePlaylistContextRef.current,
         loops: options.loops,
         playlists: options.playlists,
         session: activePlaylistSessionRef.current,
         sources: options.sources,
       });
+
+      activePlaylistContextRef.current = syncResult.context;
+
+      if (syncResult.issue) {
+        setIssue(mapPlaylistPlaybackIssue(syncResult.issue));
+      }
+
+      if (syncResult.session) {
+        setActivePlaylistSession(syncResult.session);
+      }
+
+      const currentPlayableItem = activePlayableItemRef.current;
+
+      if (!currentPlayableItem) {
+        return;
+      }
+
+      const rebuiltCurrentItem = syncResult.session
+        ? getPlaylistPlaybackCurrentItem(syncResult.session)
+        : null;
+      const nextActivePlayableItem =
+        rebuiltCurrentItem &&
+        hasSameQueuePosition(currentPlayableItem, rebuiltCurrentItem)
+          ? rebuiltCurrentItem
+          : resolveSynchronizedPlayableItem({
+              loops: options.loops,
+              playableItem: currentPlayableItem,
+              sources: options.sources,
+            });
+
+      if (
+        !hasPlayableItemChanged(currentPlayableItem, nextActivePlayableItem)
+      ) {
+        return;
+      }
+
+      setActivePlayableItem(nextActivePlayableItem);
+
+      if (nextActivePlayableItem) {
+        void playbackController.syncActivePlayableItem(nextActivePlayableItem);
+      }
     },
     async seekActivePlaybackBySeconds(deltaSeconds: number) {
       await playbackController.seekActivePlaybackBySeconds(deltaSeconds);
@@ -403,6 +446,9 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
       await playbackController.togglePlayableItemPlayback(
         activePlayableItemRef.current,
       );
+    },
+    async pauseActivePlayback() {
+      return playbackController.pauseActivePlayback();
     },
     async togglePlayableItemPlayback(playableItem: PlayableItem) {
       activePlaylistContextRef.current = null;

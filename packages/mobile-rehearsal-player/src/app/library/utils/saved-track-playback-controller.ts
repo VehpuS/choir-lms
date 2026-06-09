@@ -1,5 +1,5 @@
-import { type DriveAuthorizationState } from '@org/google-drive';
 import type { PlayableItem } from '@org/audio-library-models';
+import { type DriveAuthorizationState } from '@org/google-drive';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 
 import {
@@ -7,6 +7,10 @@ import {
   resolvePlaylistPlaybackRewind,
   type PlaylistPlaybackSession,
 } from './saved-playlist-playback-view-model';
+import {
+  resolveSavedTrackDuration,
+  type LoadPlayableItemIntoPlayer,
+} from './saved-track-duration-resolution';
 import {
   createSavedTrackPlaybackPreconditionIssue,
   createSavedTrackPlaybackRequest,
@@ -17,15 +21,11 @@ import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from './saved-track-playback-view-model';
-import { ensureSavedTrackPlayerReady } from './saved-track-player-runtime';
 import {
   getSavedTrackPlayer,
   getSavedTrackPlayerStateMap,
 } from './saved-track-player-interop';
-import {
-  resolveSavedTrackDuration,
-  type LoadPlayableItemIntoPlayer,
-} from './saved-track-duration-resolution';
+import { ensureSavedTrackPlayerReady } from './saved-track-player-runtime';
 
 const trackPlayerState = getSavedTrackPlayerStateMap();
 
@@ -153,10 +153,12 @@ export const createSavedTrackPlaybackController = (
   const pausePlayableItem = async (playableItem: PlayableItem) => {
     try {
       await getSavedTrackPlayer().pause();
+      return true;
     } catch (error) {
       options.setIssue(
         createSavedTrackPlaybackRuntimeIssue(playableItem, error),
       );
+      return false;
     }
   };
 
@@ -191,10 +193,57 @@ export const createSavedTrackPlaybackController = (
     const currentPlayableItem = options.activePlayableItemRef.current;
 
     if (!currentPlayableItem) {
-      return;
+      return false;
     }
 
-    await pausePlayableItem(currentPlayableItem);
+    return pausePlayableItem(currentPlayableItem);
+  };
+
+  const syncActivePlayableItem = async (playableItem: PlayableItem) => {
+    const blockingIssue = createSavedTrackPlaybackPreconditionIssue(
+      options.authState,
+      playableItem,
+    );
+
+    if (blockingIssue) {
+      options.setIssue(blockingIssue);
+      return false;
+    }
+
+    if (!options.authState.accessToken) {
+      return false;
+    }
+
+    const shouldResumePlayback =
+      options.playbackState === trackPlayerState.Playing ||
+      options.playbackState === trackPlayerState.Buffering ||
+      options.playbackState === trackPlayerState.Loading;
+    const nextPositionSeconds = resolvePlaybackScrubPositionSeconds({
+      activePlayableItem: playableItem,
+      requestedPositionSeconds: options.progressPositionSeconds,
+    });
+
+    options.setIssue(null);
+    options.setIsPreparing(true);
+
+    try {
+      await loadPlayableItemIntoPlayer(
+        playableItem,
+        options.authState.accessToken,
+        {
+          initialPositionSeconds: nextPositionSeconds,
+          shouldPlay: shouldResumePlayback,
+        },
+      );
+      return true;
+    } catch (error) {
+      options.setIssue(
+        createSavedTrackPlaybackRuntimeIssue(playableItem, error),
+      );
+      return false;
+    } finally {
+      options.setIsPreparing(false);
+    }
   };
 
   const playActivePlayback = async () => {
@@ -414,6 +463,7 @@ export const createSavedTrackPlaybackController = (
     pauseActivePlayback,
     playActivePlayback,
     restartActivePlaybackFromRangeStart,
+    syncActivePlayableItem,
     async playNextQueueItem() {
       if (!options.activePlaylistSessionRef.current) {
         return;

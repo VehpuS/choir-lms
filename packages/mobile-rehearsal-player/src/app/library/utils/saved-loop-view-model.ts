@@ -1,6 +1,7 @@
 import {
   createLoopPlayableItem,
   type NamedLoop,
+  type PlayableItem,
   validateLoopRange,
 } from '@org/audio-library-models';
 import { keyBy } from 'es-toolkit/compat';
@@ -60,6 +61,7 @@ export type LoopBuilderDraft = {
 type BuildNamedLoopOptions = {
   createId?: (sourceId: string, createdAt: string) => string;
   endMs: number | null;
+  existingLoop?: Pick<NamedLoop, 'createdAt' | 'id'>;
   loopName: string;
   now?: string;
   ownerId: string;
@@ -85,6 +87,11 @@ type SavedLoopStatusOptions = {
   issue: SavedLoopIssue | null;
   savedLoopCount: number;
   unresolvedLoopCount: number;
+};
+
+type ResolveActiveLoopEditorIdOptions = {
+  editingLoopId: string | null;
+  selectedTrack: PlayableItem | null;
 };
 
 const DEFAULT_UNAVAILABLE_LOOP_MESSAGE =
@@ -200,6 +207,16 @@ export const updateLoopBuilderDraftRange = (
   };
 };
 
+export const resolveActiveLoopEditorId = (
+  options: ResolveActiveLoopEditorIdOptions,
+) => {
+  if (options.editingLoopId === null) {
+    return null;
+  }
+
+  return options.selectedTrack === null ? null : options.editingLoopId;
+};
+
 export const buildNamedLoop = (options: BuildNamedLoopOptions) => {
   const trimmedLoopName = options.loopName.trim();
 
@@ -235,12 +252,14 @@ export const buildNamedLoop = (options: BuildNamedLoopOptions) => {
     };
   }
 
-  const createdAt = options.now ?? new Date().toISOString();
+  const updatedAt = options.now ?? new Date().toISOString();
+  const createdAt = options.existingLoop?.createdAt ?? updatedAt;
 
   return {
     issue: null,
     loop: {
       id:
+        options.existingLoop?.id ??
         options.createId?.(options.source.id, createdAt) ??
         defaultCreateId(options.source.id, createdAt),
       name: trimmedLoopName,
@@ -251,7 +270,7 @@ export const buildNamedLoop = (options: BuildNamedLoopOptions) => {
       ownershipScope: 'user' as const,
       ownerId: options.ownerId,
       createdAt,
-      updatedAt: createdAt,
+      updatedAt,
     },
   };
 };

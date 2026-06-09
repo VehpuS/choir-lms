@@ -29,6 +29,7 @@ type SavedLoopListProps = {
   activePlayableItem: PlayableItem | null;
   canMutateLoops: boolean;
   isPlaybackPreparing: boolean;
+  editingLoopId: string | null;
   highlightQuery: string | null;
   loopCards: SavedLoopCard[];
   loopIssue: SavedLoopIssue | null;
@@ -38,6 +39,7 @@ type SavedLoopListProps = {
   canMutatePlaylists: boolean;
   isPlaylistMutating: boolean;
   canQueueAsNext: boolean;
+  onEditLoop: (loop: SavedLoopCard['loop']) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
   onPlayLoopSeries?: (loopId: string) => void;
   onToggleCurrentPlayback?: () => void;
@@ -73,11 +75,11 @@ const getMenuTone = (tone?: 'destructive' | 'neutral' | 'primary') => {
 
   return 'secondary' as const;
 };
-
 export const SavedLoopList = ({
   activePlayableItem,
   canMutateLoops,
   isPlaybackPreparing,
+  editingLoopId,
   highlightQuery,
   loopCards,
   loopIssue,
@@ -87,6 +89,7 @@ export const SavedLoopList = ({
   canMutatePlaylists,
   isPlaylistMutating,
   canQueueAsNext,
+  onEditLoop,
   onOpenLoopPlaylistSelector,
   onPlayLoopSeries,
   onToggleCurrentPlayback,
@@ -103,7 +106,6 @@ export const SavedLoopList = ({
   if (loopCards.length === 0) {
     return null;
   }
-
   return (
     <View style={styles.loopGroup}>
       <Text style={styles.loopGroupTitle}>
@@ -127,15 +129,20 @@ export const SavedLoopList = ({
           loopCard.playableItem !== null &&
           isSavedTrackPlaybackActive(activePlayableItem, loopCard.playableItem);
         const rowActions = resolveSavedLoopRowActions({
+          canEditLoop: playableItem !== null,
           canMutateLoops,
           canMutatePlaylists,
           canQueueAsNext,
           hasPlayableItem: playableItem !== null,
+          isEditingLoop: editingLoopId === loopCard.loop.id,
           itemName: loopCard.loop.name,
           isLoopActive: isPlaybackLoopActive,
           isLoopMutating: pendingLoopId !== null,
           isPendingRemoval: pendingLoopId === loopCard.loop.id,
           isPlaylistMutating,
+          onEdit: () => {
+            onEditLoop(loopCard.loop);
+          },
           onOpenPlaylistSelector: () => {
             setActiveOptionsLoopId(null);
             onOpenLoopPlaylistSelector(loopCard.loop.id);
