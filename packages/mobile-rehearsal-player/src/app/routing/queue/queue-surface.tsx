@@ -2,17 +2,15 @@ import type { RehearsalQueueMode, RepeatMode } from '@org/audio-library-models';
 import { type ComponentProps, useEffect, useState } from 'react';
 import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
-import {
-  QueuePlaylistActionRow,
-  SurfaceIconButton,
-} from './PlaybackSurfaceControls';
-import { QueueMovePositionDialog } from './QueueMovePositionDialog';
-import { PlaybackSessionModeCard } from './PlaybackSessionModeCard';
+import { QueueMovePositionDialog } from '../../components/queue-move-position-dialog';
+import { SurfaceIconButton } from '../../components/surface-icon-button';
+import { PlaybackSessionModeCard } from '../playback/playback-session-mode-card';
+import { QueuePlaylistActionRow } from './queue-playlist-action-row';
 import { getQueueSurfaceTransportActions } from './queue-surface-transport-model';
-import { QueueSurfaceRow } from './QueueSurfaceRow';
-import { styles } from './playback-surface-styles';
+import { QueueSurfaceRow } from './queue-surface-row';
+import { styles } from '../playback/playback-surface-styles';
 import { getQueueListMaxHeight } from './queue-surface-layout';
-import type { UpNextSurfaceSummary } from './shell-model';
+import type { UpNextSurfaceSummary } from '../shell/shell-model';
 
 type QueueSurfaceProps = {
   activeQueueMode: RehearsalQueueMode;

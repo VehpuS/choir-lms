@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { appTheme } from '../utils/theme';
+import { appTheme } from '../../utils/theme';
 import { styles } from './mobile-shell-styles';
 import { SHELL_DESTINATIONS, type ShellDestinationKey } from './shell-model';
 

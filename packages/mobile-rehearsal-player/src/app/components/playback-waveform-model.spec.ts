@@ -6,7 +6,7 @@ import {
   isWaveformScrubReady,
   resolveWaveformCommitRatio,
   resolveWaveformRatioFromLocation,
-} from '../PlaybackWaveformModel.js';
+} from './playback-waveform-model.js';
 
 describe('PlaybackWaveformModel', () => {
   it('keeps waveform taps disabled until scrub layout is ready', () => {

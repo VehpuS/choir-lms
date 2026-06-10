@@ -8,8 +8,8 @@ import {
   View,
 } from 'react-native';
 
-import type { PlaylistDraftIssue } from '../library/utils/saved-playlist-view-model';
-import { appTheme } from '../utils/theme';
+import type { PlaylistDraftIssue } from '../../library/utils/saved-playlist-view-model';
+import { appTheme } from '../../utils/theme';
 
 type QueuePlaylistAppendDialogProps = {
   isMutating: boolean;

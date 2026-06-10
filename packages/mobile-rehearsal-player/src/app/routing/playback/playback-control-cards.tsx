@@ -4,9 +4,9 @@ import { Slider } from '@miblanchard/react-native-slider';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { formatDurationLabel } from '../library/utils/drive-library-view-model';
-import { appTheme } from '../utils/theme';
-import { PlaybackWaveform } from './PlaybackWaveform';
+import { formatDurationLabel } from '../../library/utils/drive-library-view-model';
+import { appTheme } from '../../utils/theme';
+import { PlaybackWaveform } from '../../components/playback-waveform';
 
 type PlaybackTimelineCardProps = {
   activePlayableItem: PlayableItem;

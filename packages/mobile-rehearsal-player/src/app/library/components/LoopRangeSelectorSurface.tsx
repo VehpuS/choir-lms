@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 
-import { PlaybackWaveform } from '../../routing/PlaybackWaveform';
+import { PlaybackWaveform } from '../../components/playback-waveform';
 import { formatDurationLabel } from '../utils/drive-library-view-model';
 import type { LoopPreviewPlaybackTimeline } from '../utils/saved-loop-preview-playback-view-model';
 

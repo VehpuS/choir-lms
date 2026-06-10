@@ -1,4 +1,4 @@
-import type { SurfaceIconButtonProps } from './PlaybackSurfaceControls';
+import type { SurfaceIconButtonProps } from '../../components/surface-icon-button';
 
 export type QueueSurfaceTransportAction = Pick<
   SurfaceIconButtonProps,

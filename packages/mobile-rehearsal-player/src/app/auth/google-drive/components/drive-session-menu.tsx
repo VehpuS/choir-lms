@@ -9,8 +9,8 @@ import {
 
 import type { DriveAuthorizationStatusCopy } from '../authorization';
 import {
-  getDriveSessionTriggerCopy,
   getDriveSessionDetails,
+  getDriveSessionTriggerCopy,
 } from '../authorization';
 
 type DriveSessionMenuProps = {

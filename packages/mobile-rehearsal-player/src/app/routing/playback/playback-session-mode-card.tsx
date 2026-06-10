@@ -5,7 +5,7 @@ import {
 } from '@org/audio-library-models';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { appTheme } from '../utils/theme';
+import { appTheme } from '../../utils/theme';
 
 const getQueueToggleAction = (
   mode: RehearsalQueueMode,

@@ -8,15 +8,15 @@ import { Text, View } from 'react-native';
 import {
   PlaybackTimelineCard,
   PlaybackVolumeCard,
-} from './PlaybackControlCards';
-import { SurfaceIconButton } from './PlaybackSurfaceControls';
-import { PlaybackSessionModeCard } from './PlaybackSessionModeCard';
+} from './playback-control-cards';
+import { SurfaceIconButton } from '../../components/surface-icon-button';
+import { PlaybackSessionModeCard } from './playback-session-mode-card';
 import { resolveVisibleRepeatModes } from './playback-session-mode-options';
 import { styles } from './playback-surface-styles';
 import type {
   NowPlayingSurfaceSummary,
   UpNextSurfaceSummary,
-} from './shell-model';
+} from '../shell/shell-model';
 
 type NowPlayingSurfaceProps = {
   activePlayableItem: PlayableItem;

@@ -1,14 +1,14 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
-import { formatDurationLabel } from '../library/utils/drive-library-view-model';
+import { formatDurationLabel } from '../../library/utils/drive-library-view-model';
 import {
   getPlaylistPlaybackSessionSummary,
   getPlaylistQueueModeLabel,
   getPlaylistRepeatModeLabel,
   resolvePlaylistPlaybackAdvance,
   type PlaylistPlaybackSession,
-} from '../library/utils/saved-playlist-playback-view-model';
-import type { SavedTrackPlaybackState } from '../library/utils/saved-track-playback-view-model';
+} from '../../library/utils/saved-playlist-playback-view-model';
+import type { SavedTrackPlaybackState } from '../../library/utils/saved-track-playback-view-model';
 
 export type ShellDestinationKey = 'recents' | 'add' | 'library';
 

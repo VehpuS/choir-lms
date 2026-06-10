@@ -16,7 +16,7 @@ import {
   isWaveformScrubReady,
   resolveWaveformCommitRatio,
   resolveWaveformRatioFromLocation,
-} from './PlaybackWaveformModel';
+} from './playback-waveform-model';
 
 const WAVEFORM_BARS = [
   0.22, 0.36, 0.54, 0.44, 0.68, 0.3, 0.58, 0.4, 0.74, 0.48, 0.62, 0.34, 0.72,

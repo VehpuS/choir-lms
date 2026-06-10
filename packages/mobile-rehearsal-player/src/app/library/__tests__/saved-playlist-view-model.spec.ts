@@ -18,7 +18,7 @@ import {
 import {
   clampQueuePosition,
   resolveQueueMoveTargetIndex,
-} from '../../routing/queue-move-position-model.js';
+} from '../../components/queue-move-position-model.js';
 import {
   buildSavedPlaylistDetailDraftPlaylist,
   getSavedPlaylistDetailInitialState,

@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { PanResponder, Pressable, Text, View } from 'react-native';
 
 import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
-import { QueueMovePositionDialog } from '../../routing/QueueMovePositionDialog';
-import { SurfaceIconButton } from '../../routing/PlaybackSurfaceControls';
+import { QueueMovePositionDialog } from '../../components/queue-move-position-dialog';
+import { SurfaceIconButton } from '../../components/surface-icon-button';
 import { OptionsMenuSheet } from './OptionsMenuSheet';
 import { savedPlaylistSectionStyles as styles } from './saved-playlist-section-styles';
 import { getSavedPlaylistDetailPlaybackAction } from '../utils/saved-playlist-detail-view-model';

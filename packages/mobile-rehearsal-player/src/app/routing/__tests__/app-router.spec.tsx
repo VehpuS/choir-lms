@@ -20,19 +20,19 @@ import {
   getMiniPlayerSummary,
   getNowPlayingSurfaceSummary,
   getUpNextSurfaceSummary,
-} from '../shell-model.js';
-import { resolveVisibleRepeatModes } from '../playback-session-mode-options.js';
-import { shouldStartPlaybackSurfaceDismissGesture } from '../playback-surface-gestures.js';
+} from '../shell/shell-model.js';
+import { resolveVisibleRepeatModes } from '../playback/playback-session-mode-options.js';
+import { shouldStartPlaybackSurfaceDismissGesture } from '../playback/playback-surface-gestures.js';
 import {
   clampQueuePosition,
   resolveQueueMoveTargetIndex,
-} from '../queue-move-position-model.js';
-import { getQueueSurfaceTransportActions } from '../queue-surface-transport-model.js';
+} from '../../components/queue-move-position-model.js';
+import { getQueueSurfaceTransportActions } from '../queue/queue-surface-transport-model.js';
 import {
   getQueueRowPlaybackAction,
   getQueueRowPresentation,
-} from '../queue-surface-row-model.js';
-import { getQueueListMaxHeight } from '../queue-surface-layout.js';
+} from '../queue/queue-surface-row-model.js';
+import { getQueueListMaxHeight } from '../queue/queue-surface-layout.js';
 import { queuePlayableItemDuringPlayback } from '../../library/utils/saved-playlist-playback-view-model.js';
 
 describe('SHELL_DESTINATIONS', () => {

@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/google-drive/use-authorization';
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../library/hooks/use-saved-rehearsal-library';
 import { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../library/hooks/use-saved-rehearsal-library';
+import { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback';
 import {
   appendQueueItemsToPlaylist,
   buildSavedPlaylistFromQueue,
 } from '../library/utils/queue-playlist-capture';
 import { canShowQueuePlaylistActions } from '../library/utils/saved-playlist-playback-view-model';
-import { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackActionCopy } from '../library/utils/saved-track-playback-view-model';
 import { AddScreen } from '../screens/add';
 import { LibraryScreen } from '../screens/library';
@@ -18,7 +18,7 @@ import {
   persistRecentRehearsalHistory,
   restoreRecentRehearsalHistory,
 } from '../screens/recents/history';
-import { MobileShell } from './MobileShell';
+import { MobileShell } from './shell/mobile-shell';
 
 const PLAYBACK_SEEK_STEP_SECONDS = 15;
 

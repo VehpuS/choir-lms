@@ -2,14 +2,14 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMemo, useRef } from 'react';
 import { PanResponder, Text, View } from 'react-native';
 
-import { CompactPlayableRowShell } from '../components/CompactPlayableRowShell';
-import { OverflowMenuTrigger } from '../components/OverflowMenuTrigger';
-import { OptionsMenuSheet } from '../library/components/OptionsMenuSheet';
+import { CompactPlayableRowShell } from '../../components/CompactPlayableRowShell';
+import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
+import { SurfaceIconButton } from '../../components/surface-icon-button';
+import { OptionsMenuSheet } from '../../library/components/OptionsMenuSheet';
 
-import { SurfaceIconButton } from './PlaybackSurfaceControls';
-import { styles } from './playback-surface-styles';
+import { styles } from '../playback/playback-surface-styles';
 import { getQueueRowPresentation } from './queue-surface-row-model';
-import type { UpNextSurfaceSummary } from './shell-model';
+import type { UpNextSurfaceSummary } from '../shell/shell-model';
 
 export type QueueSurfaceRowProps = {
   item: UpNextSurfaceSummary['items'][number];

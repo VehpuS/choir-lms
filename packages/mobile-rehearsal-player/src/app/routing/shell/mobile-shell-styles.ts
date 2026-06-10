@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-import { appTheme } from '../utils/theme';
+import { appTheme } from '../../utils/theme';
 
 const SHELL_CONTENT_HORIZONTAL_PADDING = 14;
 const HEADER_BOTTOM_RADIUS = 18;

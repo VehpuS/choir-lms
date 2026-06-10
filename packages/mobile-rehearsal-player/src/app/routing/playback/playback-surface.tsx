@@ -12,13 +12,13 @@ import {
   View,
 } from 'react-native';
 
-import { NowPlayingSurface } from './PlaybackSurfaceContent';
-import { QueueSurface } from './QueueSurface';
+import { NowPlayingSurface } from './playback-surface-content';
+import { QueueSurface } from '../queue/queue-surface';
 import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
 import type {
   NowPlayingSurfaceSummary,
   UpNextSurfaceSummary,
-} from './shell-model';
+} from '../shell/shell-model';
 
 type PlaybackSurfaceMode = 'now-playing' | 'queue';
 
