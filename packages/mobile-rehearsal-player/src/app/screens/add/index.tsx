@@ -1,9 +1,9 @@
 import { ScrollView, StyleSheet } from 'react-native';
 
-import { DriveDiscoveryPanel } from '../library/components/DriveDiscoveryPanel';
-import type { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
-import { ADD_SCREEN_PANEL_ORDER } from '../library/utils/add-drive-layout';
-import { appTheme } from '../utils/theme';
+import { DriveDiscoveryPanel } from '../../library/components/DriveDiscoveryPanel';
+import type { useRehearsalLibraryScreenController } from '../../library/hooks/use-rehearsal-library-screen-controller';
+import { ADD_SCREEN_PANEL_ORDER } from '../../library/utils/add-drive-layout';
+import { appTheme } from '../../utils/theme';
 
 type AddScreenProps = {
   libraryController: ReturnType<typeof useRehearsalLibraryScreenController>;

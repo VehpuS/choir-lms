@@ -10,7 +10,7 @@ import {
   getRecentRehearsalLastPlayedLabel,
   persistRecentRehearsalHistory,
   restoreRecentRehearsalHistory,
-} from '../recents-history.js';
+} from './history.js';
 
 describe('buildRecentRehearsalItem', () => {
   it('tags history entries as playlist items while playlist playback is active', () => {

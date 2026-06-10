@@ -15,7 +15,7 @@ import {
   resolveDriveAuthorizationResult,
   restoreDriveAuthorizationState,
   type AuthorizationSessionStore,
-} from '../utils/google-drive-authorization';
+} from './authorization';
 
 WebBrowser.maybeCompleteAuthSession();
 

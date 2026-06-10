@@ -3,8 +3,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Pressable, SafeAreaView, Text, View } from 'react-native';
 
-import { DriveSessionMenu } from '../auth/components/DriveSessionMenu';
-import { useGoogleDriveAuthorization } from '../auth/hooks/use-google-drive-authorization';
+import { DriveSessionMenu } from '../auth/google-drive/components/drive-session-menu';
+import { useGoogleDriveAuthorization } from '../auth/google-drive/use-authorization';
 import { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback';
 import type { PlaylistDraftIssue } from '../library/utils/saved-playlist-view-model';
 import type { PlaylistPlaybackSession } from '../library/utils/saved-playlist-playback-view-model';

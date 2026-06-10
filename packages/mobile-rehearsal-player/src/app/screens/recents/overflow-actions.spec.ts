@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { getRecentsOverflowActionState } from '../recents-overflow-actions.js';
+import { getRecentsOverflowActionState } from './overflow-actions.js';
 
 describe('getRecentsOverflowActionState', () => {
   it('enables queue and library actions when both capabilities are available', () => {

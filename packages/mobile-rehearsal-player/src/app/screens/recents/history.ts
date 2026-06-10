@@ -1,6 +1,6 @@
 import type { PlayableItem } from '@org/audio-library-models';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { PlaylistPlaybackSession } from '../library/utils/saved-playlist-playback-view-model';
+import type { PlaylistPlaybackSession } from '../../library/utils/saved-playlist-playback-view-model';
 
 export type RecentRehearsalKind = 'track' | 'loop' | 'playlist';
 

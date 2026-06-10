@@ -2,11 +2,9 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-  getAddScreenSummaryCopy,
   getRecentsContinuePracticingCopy,
-  getLibraryScreenSummaryCopy,
   getRecentsShortcutPlayActionCopy,
-} from '../screen-copy.js';
+} from './screen-copy.js';
 
 describe('getRecentsContinuePracticingCopy', () => {
   it('promotes the active item when playback is already in progress', () => {
@@ -49,34 +47,6 @@ describe('getRecentsContinuePracticingCopy', () => {
   });
 });
 
-describe('getAddScreenSummaryCopy', () => {
-  it('shows a search prompt before a query runs', () => {
-    assert.deepEqual(
-      getAddScreenSummaryCopy({
-        activeSearchQuery: null,
-        resultCount: 0,
-      }),
-      {
-        body: 'Browse or search My Drive and shared folders, then save promising tracks into Library without leaving this view.',
-        title: 'Add from Google Drive',
-      },
-    );
-  });
-
-  it('explains how to recover when a query returns no supported results', () => {
-    assert.deepEqual(
-      getAddScreenSummaryCopy({
-        activeSearchQuery: 'amen cadence',
-        resultCount: 0,
-      }),
-      {
-        body: 'No supported rehearsal audio matched "amen cadence" yet. Try a shorter choir, section, or piece name, or clear the search to start over.',
-        title: 'No matching rehearsal tracks yet',
-      },
-    );
-  });
-});
-
 describe('getRecentsShortcutPlayActionCopy', () => {
   it('builds shortcut-specific play icon labels', () => {
     assert.deepEqual(
@@ -102,21 +72,5 @@ describe('getRecentsShortcutPlayActionCopy', () => {
         disabled: true,
       },
     );
-  });
-});
-
-describe('getLibraryScreenSummaryCopy', () => {
-  it('guides an empty library toward current playback work instead of future slices', () => {
-    assert.deepEqual(getLibraryScreenSummaryCopy({ savedTrackCount: 0 }), {
-      body: 'Save a track from Add to start full-track playback, loops, and playlists in your rehearsal library.',
-      title: 'Library is ready for your first track',
-    });
-  });
-
-  it('points at the dedicated library destination once tracks are saved', () => {
-    assert.deepEqual(getLibraryScreenSummaryCopy({ savedTrackCount: 1 }), {
-      body: '1 saved rehearsal track is ready for playback, loop capture, and playlist work here. Tracks, loops, and playlists stay grouped inside the same personal library destination.',
-      title: 'Your saved practice material lives here',
-    });
   });
 });

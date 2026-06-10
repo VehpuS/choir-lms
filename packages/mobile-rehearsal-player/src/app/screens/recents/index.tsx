@@ -3,20 +3,20 @@ import { join, map, toUpper } from 'es-toolkit/compat';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { useState } from 'react';
-import { runtimeConfig } from '../../config/runtime';
-import { CompactPlayableRowShell } from '../components/CompactPlayableRowShell';
-import { OptionsMenuSheet } from '../library/components/OptionsMenuSheet';
-import { appTheme } from '../utils/theme';
+import { runtimeConfig } from '../../../config/runtime';
+import { CompactPlayableRowShell } from '../../components/CompactPlayableRowShell';
+import { OptionsMenuSheet } from '../../library/components/OptionsMenuSheet';
+import { appTheme } from '../../utils/theme';
 import {
   getRecentRehearsalLastPlayedLabel,
   type RecentRehearsalItem,
-} from './recents-history';
-import { getRecentsOverflowActionState } from './recents-overflow-actions';
-import { recentsScreenStyles as styles } from './recents-screen-styles';
+} from './history';
+import { getRecentsOverflowActionState } from './overflow-actions';
 import {
   getRecentsContinuePracticingCopy,
   getRecentsShortcutPlayActionCopy,
 } from './screen-copy';
+import { recentsScreenStyles as styles } from './styles';
 
 export type RecentsScreenProps = {
   activePlayableItemId: string | null;

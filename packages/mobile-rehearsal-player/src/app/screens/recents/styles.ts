@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-import { appTheme } from '../utils/theme';
+import { appTheme } from '../../utils/theme';
 
 export const recentsScreenStyles = StyleSheet.create({
   screen: {
