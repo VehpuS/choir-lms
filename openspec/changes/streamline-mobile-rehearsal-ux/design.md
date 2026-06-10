@@ -150,11 +150,13 @@ IA reorder work cannot be considered acceptable unless every critical capability
 - Mini-player remains visible and accurate during tab changes while playback is active.
 - Playback controls (toggle, seek, skip where applicable) continue to function with no IA-coupled regression.
 
-### Capability: Loop creation
+### Capability: Loop creation and editing
 
 - Loop creation entry remains reachable from track context in saved library through the same overflow menu pattern used by other secondary row actions.
 - Prepared loop-builder source state resolves correctly before edit/save actions.
 - Saved loop appears in loop surfaces with parent-track linkage preserved.
+- Saved loop rows expose `Edit loop` from the shared overflow menu in both top-level and track-scoped loop surfaces, including when the loop is currently active in playback.
+- Saving loop edits updates any active queue or current-item loop context to the edited definition without requiring the user to rebuild playback context manually.
 
 ### Capability: Track and loop row parity
 
@@ -469,7 +471,7 @@ Alternatives considered:
 
 ### 9. Manage loops in track context first while preserving independent loop result surfaces
 
-Loop creation and editing should remain attached to parent tracks without removing the top-level Saved loops section from Library. `View track loops` should open a track-scoped detail view for one parent track, while the broader Saved loops section remains available for cross-track access. This is a UI organization choice, not a change to loops' status as library objects: loops remain independently searchable, taggable, folderable, and displayable as their own result category in search, tag, and folder views.
+Loop creation and editing should remain attached to parent tracks without removing the top-level Saved loops section from Library. `View track loops` should open a track-scoped detail view for one parent track, while the broader Saved loops section remains available for cross-track access. Editing must remain available even when a saved loop is currently active in playback: opening edit should reuse the loop builder directly rather than forcing a separate pause-confirm step, and saving an edited active loop should resynchronize any affected queue or current-item playback context. This is a UI organization choice, not a change to loops' status as library objects: loops remain independently searchable, taggable, folderable, and displayable as their own result category in search, tag, and folder views.
 
 Implementation guidance:
 
@@ -477,6 +479,8 @@ Implementation guidance:
 - When a saved track owns one or more loops, expose `View track loops` in the track overflow menu.
 - The track-scoped loop view should behave like playlist detail for that track's loops: replace the main Library browse content while active, provide a back button that returns to the prior Library browse state, keep the parent track context visible, list only those loops, support ordered queued playback for the full set or an individual starting loop, and surface a `Make new loop` action for the same track.
 - The track-scoped loop view must keep loops easy to play, add to playlist, queue, and otherwise manage through the same shared row-action model used for saved tracks where applicable.
+- Saved loop rows in both the top-level and track-scoped loop surfaces should expose `Edit loop` and `Remove loop` from the shared overflow menu, and `Edit loop` should update the existing loop rather than creating a duplicate.
+- If an edited loop is the current item or part of the active queue, saving should refresh that playback context to the updated loop metadata and timing without asking the user to reconstruct the queue by hand.
 - Search, tag, and folder result surfaces should continue to show loops in their own result group with visible parent-track linkage, without requiring any extra enablement step.
 - Tag and folder assignment apply directly to loops even when the default browse experience reaches them through parent-track context.
 

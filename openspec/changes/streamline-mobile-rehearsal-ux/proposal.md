@@ -23,6 +23,7 @@ The current mobile rehearsal player already delivers core playback and playlist 
 - Add an immediate top-level play affordance on playlist cards while keeping `Open playlist` for detail navigation and moving playlist removal into the shared overflow menu.
 - Keep playlist-card rename context-preserving by opening the rename flow in Library instead of routing through playlist detail.
 - Keep loops easy to access like regular tracks by preserving the top-level Saved loops section in Library, adding a `View track loops` track-overflow entry that opens a full Library-detail loop view with back navigation when loops exist, and still surfacing loops as their own result category in search, tag, and folder views.
+- Keep saved-loop editing available from loop surfaces even during active playback, reusing the loop builder without a forced pause step and resynchronizing any active queue or current-item loop context after save.
 - Add practical organization tools for saved library content: filters, tags, and optional folders.
 - Improve consistency and accessibility of icon semantics, touch targets, feedback, and empty-state guidance across playback and library surfaces.
 - Formalize a reusable row-action architecture (explicit inline-vs-menu placement, shared overflow trigger, shared menu/dialog shells, and shared interaction style tokens) so consistency improvements can ship safely across multiple commits.
