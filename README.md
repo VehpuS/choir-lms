@@ -118,6 +118,7 @@ The repo carries workspace-local GitHub Copilot skills under `.github/skills/`
 with mirrored agent copies under `.agents/skills/` for repeated mobile design
 and implementation work:
 
+- `mobile-folder-structure` for Expo-inspired naming and folder-organization work in `packages/mobile-rehearsal-player`, especially when reducing flat directories or grouping files by feature ownership
 - `expo-liquid-glass` for guarded glass or translucent UI work in the mobile shell, mini-player, playback sheet, and modal surfaces
 - `design-audit` for phased UI and UX audits of the mobile rehearsal player before broader visual refactors
 - `apple-hig-ios` and `music-ui-iconography` for iOS pattern decisions and playback icon semantics
