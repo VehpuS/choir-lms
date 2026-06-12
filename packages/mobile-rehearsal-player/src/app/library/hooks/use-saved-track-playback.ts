@@ -9,7 +9,7 @@ import {
 import { type DriveAuthorizationState } from '@org/google-drive';
 import { useEffect, useRef, useState } from 'react';
 
-import type { DriveLibrarySource } from '../utils/drive-library-view-model';
+import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
 import {
   rebuildPlaylistPlaybackSessionForMode,
   syncActivePlaylistPlaybackSession,

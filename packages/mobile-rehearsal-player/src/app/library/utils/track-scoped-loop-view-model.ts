@@ -4,7 +4,7 @@ import {
   type Playlist,
 } from '@org/audio-library-models';
 
-import type { DriveLibrarySource } from './drive-library-view-model';
+import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
 
 export type TrackScopedLoopDetailCopy = {
   body: string;

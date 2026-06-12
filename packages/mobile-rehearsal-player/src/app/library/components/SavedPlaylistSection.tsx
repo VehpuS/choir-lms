@@ -7,7 +7,7 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import { Alert, Text, View } from 'react-native';
 
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
-import type { DriveLibrarySource } from '../utils/drive-library-view-model';
+import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
 import {
   buildSavedPlaylistDetailDraftPlaylist,
   getSavedPlaylistDetailInitialState,
@@ -38,7 +38,7 @@ import {
   type SavedPlaylistIssue,
 } from '../utils/saved-playlist-view-model';
 import type { SavedTrackPlaybackState } from '../utils/saved-track-playback-view-model';
-import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
+import { DriveLibraryStatusCard } from '../drive/components/drive-library-status-card';
 import { savedPlaylistSectionStyles as styles } from './saved-playlist-section-styles';
 import {
   SavedPlaylistCreateCard,

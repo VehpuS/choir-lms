@@ -13,10 +13,10 @@ import {
   resolveDriveLibrarySourceActionPlacement,
   type DriveLibrarySourceAction,
 } from '../utils/drive-library-source-actions';
-import { CompactPlayableRowShell } from '../../components/CompactPlayableRowShell';
-import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
-import { OptionsMenuSheet } from './OptionsMenuSheet';
-import { SearchHighlightedText } from './SearchHighlightedText';
+import { CompactPlayableRowShell } from '../../../components/CompactPlayableRowShell';
+import { OverflowMenuTrigger } from '../../../components/OverflowMenuTrigger';
+import { OptionsMenuSheet } from '../../components/OptionsMenuSheet';
+import { SearchHighlightedText } from '../../components/SearchHighlightedText';
 import {
   DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT,
   driveLibrarySourceGroupStyles as styles,

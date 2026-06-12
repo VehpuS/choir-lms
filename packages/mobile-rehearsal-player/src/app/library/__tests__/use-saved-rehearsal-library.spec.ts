@@ -7,7 +7,7 @@ import {
   createPlaylistEntryFromLoop,
   createPlaylistEntryFromTrack,
 } from '@org/audio-library-models';
-import type { DriveLibrarySource } from '../utils/drive-library-view-model.js';
+import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model.js';
 import { loadSavedPlaylists } from '../hooks/use-saved-playlists.js';
 import {
   loadSavedRehearsalLibrarySources,

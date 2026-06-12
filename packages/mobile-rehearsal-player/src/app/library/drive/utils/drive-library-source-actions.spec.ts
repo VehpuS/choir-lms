@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { PLAYABLE_SOURCE } from '../../test-utils/library-test-fixtures.js';
-import { resolveDriveLibrarySourceActionPlacement } from '../utils/drive-library-source-actions.js';
-import { resolveDriveSourceActions } from '../utils/drive-search-preview-actions.js';
-import { resolveSavedTrackRowActions } from '../utils/saved-track-row-actions.js';
+import { PLAYABLE_SOURCE } from '../../../test-utils/library-test-fixtures.js';
+import { resolveDriveLibrarySourceActionPlacement } from './drive-library-source-actions.js';
+import { resolveDriveSourceActions } from './drive-search-preview-actions.js';
+import { resolveSavedTrackRowActions } from '../../utils/saved-track-row-actions.js';
 
 describe('drive library source actions', () => {
   it('uses explicit placement metadata directly', () => {

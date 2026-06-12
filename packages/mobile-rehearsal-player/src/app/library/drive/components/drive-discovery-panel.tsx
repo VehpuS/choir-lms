@@ -1,18 +1,18 @@
 import { StyleSheet, View } from 'react-native';
 
-import type { useRehearsalLibraryScreenController } from '../hooks/use-rehearsal-library-screen-controller';
+import type { useRehearsalLibraryScreenController } from '../../hooks/use-rehearsal-library-screen-controller';
 import {
   shouldShowDriveStatusCard,
   shouldShowUnavailableSources,
 } from '../utils/add-drive-layout';
-import { DriveFolderGroup } from './DriveFolderGroup';
-import { DriveLibraryBreadcrumbs } from './DriveLibraryBreadcrumbs';
-import { DriveLibraryRootSelector } from './DriveLibraryRootSelector';
-import { DriveLibrarySearchPanel } from './DriveLibrarySearchPanel';
-import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
-import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
-import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
-import { DriveSearchResultsPanel } from './DriveSearchResultsPanel';
+import { DriveFolderGroup } from './drive-folder-group';
+import { DriveLibraryBreadcrumbs } from './drive-library-breadcrumbs';
+import { DriveLibraryRootSelector } from './drive-library-root-selector';
+import { DriveLibrarySearchPanel } from './drive-library-search-panel';
+import { DriveLibrarySectionHeader } from './drive-library-section-header';
+import { DriveLibrarySourceGroup } from './drive-library-source-group';
+import { DriveLibraryStatusCard } from './drive-library-status-card';
+import { DriveSearchResultsPanel } from './drive-search-results-panel';
 
 type DriveDiscoveryPanelProps = {
   controller: ReturnType<typeof useRehearsalLibraryScreenController>;

@@ -1,6 +1,6 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
-import { formatDurationLabel } from '../../library/utils/drive-library-view-model';
+import { formatDurationLabel } from '../../library/drive/utils/drive-library-view-model';
 import {
   getPlaylistPlaybackSessionSummary,
   getPlaylistQueueModeLabel,

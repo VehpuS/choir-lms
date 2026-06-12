@@ -11,11 +11,32 @@ import {
   PLAYABLE_SOURCE,
   SEARCH_SNAPSHOT,
   UNSUPPORTED_SOURCE,
-} from '../../test-utils/library-test-fixtures.js';
-import './saved-loop-view-model.spec.js';
-import './saved-rehearsal-library-view-model.spec.js';
-import './saved-track-playback-view-model.spec.js';
+} from '../../../test-utils/library-test-fixtures.js';
+import '../../__tests__/saved-loop-view-model.spec.js';
+import '../../__tests__/saved-rehearsal-library-view-model.spec.js';
+import '../../__tests__/saved-track-playback-view-model.spec.js';
 
+import {
+  COMPACT_PLAYABLE_ROW_CARD_TITLE_TRAILING_PADDING,
+  getCompactPlayableRowShellLayout,
+} from '../../../components/compact-playable-row-shell-model.js';
+import {
+  filterSavedLibrarySourcesByQuery as filterSavedLibrarySourcesByLibraryQuery,
+  filterSavedLoopsByQuery as filterSavedLoopsByLibraryQuery,
+  filterSavedPlaylistsByQuery as filterSavedPlaylistsByLibraryQuery,
+  resolveActiveLibrarySearchQuery as resolveActiveLibraryQuery,
+  resolveSearchHighlightParts,
+} from '../../utils/saved-library-search-view-model.js';
+import {
+  normalizeRecentSearchTerm,
+  recordRecentSearchTerm,
+} from '../../utils/search-history.js';
+import {
+  ADD_SCREEN_PANEL_ORDER,
+  DRIVE_DISCOVERY_NAVIGATION_ORDER,
+  shouldShowDriveStatusCard,
+  shouldShowUnavailableSources,
+} from './add-drive-layout.js';
 import {
   getDriveLibraryStatusCopy,
   getDriveSearchContextCopy,
@@ -24,29 +45,8 @@ import {
   getSourceAvailabilityLabel,
   getSourceMetadataLabels,
   getSourceStatusMessage,
-} from '../utils/drive-library-view-model.js';
-import { resolveDriveSourceActions } from '../utils/drive-search-preview-actions.js';
-import {
-  filterSavedLibrarySourcesByQuery as filterSavedLibrarySourcesByLibraryQuery,
-  filterSavedLoopsByQuery as filterSavedLoopsByLibraryQuery,
-  filterSavedPlaylistsByQuery as filterSavedPlaylistsByLibraryQuery,
-  resolveActiveLibrarySearchQuery as resolveActiveLibraryQuery,
-  resolveSearchHighlightParts,
-} from '../utils/saved-library-search-view-model.js';
-import {
-  normalizeRecentSearchTerm,
-  recordRecentSearchTerm,
-} from '../utils/search-history.js';
-import {
-  ADD_SCREEN_PANEL_ORDER,
-  DRIVE_DISCOVERY_NAVIGATION_ORDER,
-  shouldShowDriveStatusCard,
-  shouldShowUnavailableSources,
-} from '../utils/add-drive-layout.js';
-import {
-  COMPACT_PLAYABLE_ROW_CARD_TITLE_TRAILING_PADDING,
-  getCompactPlayableRowShellLayout,
-} from '../../components/compact-playable-row-shell-model.js';
+} from './drive-library-view-model.js';
+import { resolveDriveSourceActions } from './drive-search-preview-actions.js';
 
 describe('getDriveLibraryStatusCopy', () => {
   it('summarizes the browse surface with folders and playable items', () => {
@@ -514,8 +514,7 @@ describe('compact playable row shell layout', () => {
       }),
       {
         overflowPlacement: 'top-right',
-        titleTrailingPadding:
-          COMPACT_PLAYABLE_ROW_CARD_TITLE_TRAILING_PADDING,
+        titleTrailingPadding: COMPACT_PLAYABLE_ROW_CARD_TITLE_TRAILING_PADDING,
       },
     );
     assert.deepEqual(

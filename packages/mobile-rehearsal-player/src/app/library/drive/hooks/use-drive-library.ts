@@ -11,16 +11,16 @@ import {
 } from '@org/google-drive';
 import { useEffect, useState } from 'react';
 
-import { runtimeConfig } from '../../../config/runtime';
+import { runtimeConfig } from '../../../../config/runtime';
 import {
   normalizeRecentSearchTerm,
   recordRecentSearchTerm,
-} from '../utils/search-history';
+} from '../../utils/search-history';
 import {
   ADD_RECENT_SEARCH_HISTORY_KEY,
   persistRecentSearchHistory,
   restoreRecentSearchHistory,
-} from '../utils/search-history-storage';
+} from '../../utils/search-history-storage';
 
 const createRootLocation = (rootKind: DriveBrowseLocation['rootKind']) => {
   return {

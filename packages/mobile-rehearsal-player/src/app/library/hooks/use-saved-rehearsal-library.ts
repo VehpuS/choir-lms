@@ -2,7 +2,7 @@ import { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 
-import type { DriveLibrarySource } from '../utils/drive-library-view-model';
+import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
 
 type SavedRehearsalLibraryReader = Pick<
   AsyncStoragePracticeRepository,

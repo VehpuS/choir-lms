@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
-import type { DriveLibrarySource } from '../utils/drive-library-view-model';
+import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
 import { resolveLoopPreviewPlaybackTimeline } from '../utils/saved-loop-preview-playback-view-model';
 import type {
   LoopBuilderDraft,
@@ -31,7 +31,7 @@ import {
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
 import type { TrackScopedLoopDetailCopy } from '../utils/track-scoped-loop-view-model';
-import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
+import { DriveLibraryStatusCard } from '../drive/components/drive-library-status-card';
 import { useLoopPreviewPlaybackContext } from './LoopPreviewPlaybackContext';
 import { LoopRangeSelectorSurface } from './LoopRangeSelectorSurface';
 import { SavedLoopList } from './SavedLoopList';

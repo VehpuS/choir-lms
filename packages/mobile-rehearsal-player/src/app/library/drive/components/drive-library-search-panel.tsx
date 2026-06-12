@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { RecentSearchSuggestions } from './RecentSearchSuggestions';
+import { RecentSearchSuggestions } from '../../components/RecentSearchSuggestions';
 
 type DriveLibrarySearchPanelProps = {
   canSearch: boolean;

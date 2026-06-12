@@ -2,11 +2,11 @@ import type { DriveAuthorizationState } from '@org/google-drive';
 import { useState } from 'react';
 import { Alert } from 'react-native';
 
-import { resolveDriveSourceActions } from '../utils/drive-search-preview-actions';
+import { resolveDriveSourceActions } from '../drive/utils/drive-search-preview-actions';
 import {
   getDriveLibraryStatusCopy,
   getDriveSearchContextCopy,
-} from '../utils/drive-library-view-model';
+} from '../drive/utils/drive-library-view-model';
 import { getSavedLoopRemovalCopy } from '../utils/saved-loop-view-model';
 import {
   getSavedRehearsalLibraryDependentLoops,
@@ -16,7 +16,7 @@ import {
   resolveSavedRehearsalLibrarySources,
 } from '../utils/saved-rehearsal-library-view-model';
 import { getSavedTrackPlaybackStatusCopy } from '../utils/saved-track-playback-view-model';
-import { useDriveLibrary } from './use-drive-library';
+import { useDriveLibrary } from '../drive/hooks/use-drive-library';
 import { usePreparedLoopBuilderTrack } from './use-prepared-loop-builder-track';
 import { useSavedPlaylists } from './use-saved-playlists';
 import { useSavedLoops } from './use-saved-loops';

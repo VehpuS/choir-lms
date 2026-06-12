@@ -1,4 +1,4 @@
-import type { DriveLibraryStatusCopy } from './drive-library-view-model';
+import type { DriveLibraryStatusCopy } from '../drive/utils/drive-library-view-model';
 import type {
   PlaylistDraftIssue,
   SavedPlaylistIssue,

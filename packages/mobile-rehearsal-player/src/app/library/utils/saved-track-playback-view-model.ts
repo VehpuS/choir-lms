@@ -14,7 +14,7 @@ import {
   formatDurationLabel,
   type DriveLibrarySource,
   type DriveLibraryStatusCopy,
-} from './drive-library-view-model';
+} from '../drive/utils/drive-library-view-model';
 
 export type SavedTrackPlaybackState =
   | 'buffering'

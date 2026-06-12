@@ -5,8 +5,8 @@ import {
 } from '@org/audio-library-models';
 import { keyBy } from 'es-toolkit/compat';
 
-import type { DriveLibrarySource } from './drive-library-view-model';
-import { formatDurationLabel } from './drive-library-view-model';
+import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
+import { formatDurationLabel } from '../drive/utils/drive-library-view-model';
 
 type ResolveLoopBuilderTrackOptions = {
   savedSources: DriveLibrarySource[];

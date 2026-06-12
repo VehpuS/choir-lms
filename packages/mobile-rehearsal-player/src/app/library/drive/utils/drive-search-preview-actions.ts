@@ -11,7 +11,7 @@ import type { DriveLibrarySource } from './drive-library-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
   type SavedTrackPlaybackState,
-} from './saved-track-playback-view-model';
+} from '../../utils/saved-track-playback-view-model';
 
 type ResolveDriveSearchSourceActionsOptions = {
   activePlayableItem: PlayableItem | null;

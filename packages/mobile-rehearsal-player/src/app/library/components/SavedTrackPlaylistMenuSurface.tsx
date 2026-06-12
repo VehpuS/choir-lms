@@ -1,7 +1,7 @@
 import type { NamedLoop, Playlist } from '@org/audio-library-models';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
-import type { DriveLibrarySource } from '../utils/drive-library-view-model';
+import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
 import type { PlaylistDraftIssue } from '../utils/saved-playlist-view-model';
 import {
   getSavedTrackContextMenuCopy,

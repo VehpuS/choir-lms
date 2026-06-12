@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { PlaybackWaveform } from '../../components/playback-waveform';
-import { formatDurationLabel } from '../../library/utils/drive-library-view-model';
+import { formatDurationLabel } from '../../library/drive/utils/drive-library-view-model';
 import { appTheme } from '../../utils/theme';
 
 type PlaybackTimelineCardProps = {

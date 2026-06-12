@@ -1,12 +1,12 @@
 import { StyleSheet, View } from 'react-native';
 
-import type { useRehearsalLibraryScreenController } from '../hooks/use-rehearsal-library-screen-controller';
+import type { useRehearsalLibraryScreenController } from '../../hooks/use-rehearsal-library-screen-controller';
 import {
   shouldShowDriveStatusCard,
   shouldShowUnavailableSources,
 } from '../utils/add-drive-layout';
-import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
-import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
+import { DriveLibrarySourceGroup } from './drive-library-source-group';
+import { DriveLibraryStatusCard } from './drive-library-status-card';
 
 type DriveSearchResultsPanelProps = {
   controller: ReturnType<typeof useRehearsalLibraryScreenController>;

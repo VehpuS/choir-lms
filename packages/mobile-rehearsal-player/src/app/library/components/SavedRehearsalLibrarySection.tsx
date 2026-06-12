@@ -15,7 +15,7 @@ import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-l
 import {
   type DriveLibrarySource,
   type DriveLibraryStatusCopy,
-} from '../utils/drive-library-view-model';
+} from '../drive/utils/drive-library-view-model';
 import {
   filterSavedLibrarySourcesByQuery,
   filterSavedLoopsByQuery,
@@ -66,9 +66,9 @@ import {
   buildTrackScopedLoopPlaybackPlaylist,
   getTrackScopedLoopDetailCopy,
 } from '../utils/track-scoped-loop-view-model';
-import { DriveLibrarySectionHeader } from './DriveLibrarySectionHeader';
-import { DriveLibrarySourceGroup } from './DriveLibrarySourceGroup';
-import { DriveLibraryStatusCard } from './DriveLibraryStatusCard';
+import { DriveLibrarySectionHeader } from '../drive/components/drive-library-section-header';
+import { DriveLibrarySourceGroup } from '../drive/components/drive-library-source-group';
+import { DriveLibraryStatusCard } from '../drive/components/drive-library-status-card';
 import { LibrarySearchPanel } from './LibrarySearchPanel';
 import { SavedLoopSection } from './SavedLoopSection';
 import { SavedPlaylistSection } from './SavedPlaylistSection';
