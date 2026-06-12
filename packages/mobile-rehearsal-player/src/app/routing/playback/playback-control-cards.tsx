@@ -1,12 +1,12 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import type { PlayableItem } from '@org/audio-library-models';
 import { Slider } from '@miblanchard/react-native-slider';
+import type { PlayableItem } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { PlaybackWaveform } from '../../components/playback-waveform';
 import { formatDurationLabel } from '../../library/utils/drive-library-view-model';
 import { appTheme } from '../../utils/theme';
-import { PlaybackWaveform } from '../../components/playback-waveform';
 
 type PlaybackTimelineCardProps = {
   activePlayableItem: PlayableItem;

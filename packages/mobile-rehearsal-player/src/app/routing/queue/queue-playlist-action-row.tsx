@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 
-import type { UpNextSurfaceSummary } from '../shell/shell-model';
 import { styles } from '../playback/playback-surface-styles';
+import type { UpNextSurfaceSummary } from '../shell/shell-model';
 
 type QueuePlaylistActionRowProps = {
   actions: NonNullable<UpNextSurfaceSummary['queuePlaylistActions']>;

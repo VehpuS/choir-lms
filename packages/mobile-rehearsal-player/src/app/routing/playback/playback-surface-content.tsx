@@ -5,18 +5,18 @@ import type {
 } from '@org/audio-library-models';
 import { Text, View } from 'react-native';
 
-import {
-  PlaybackTimelineCard,
-  PlaybackVolumeCard,
-} from './playback-control-cards';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
-import { PlaybackSessionModeCard } from './playback-session-mode-card';
-import { resolveVisibleRepeatModes } from './playback-session-mode-options';
-import { styles } from './playback-surface-styles';
 import type {
   NowPlayingSurfaceSummary,
   UpNextSurfaceSummary,
 } from '../shell/shell-model';
+import {
+  PlaybackTimelineCard,
+  PlaybackVolumeCard,
+} from './playback-control-cards';
+import { PlaybackSessionModeCard } from './playback-session-mode-card';
+import { resolveVisibleRepeatModes } from './playback-session-mode-options';
+import { styles } from './playback-surface-styles';
 
 type NowPlayingSurfaceProps = {
   activePlayableItem: PlayableItem;

@@ -5,12 +5,12 @@ import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { QueueMovePositionDialog } from '../../components/queue-move-position-dialog';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
 import { PlaybackSessionModeCard } from '../playback/playback-session-mode-card';
-import { QueuePlaylistActionRow } from './queue-playlist-action-row';
-import { getQueueSurfaceTransportActions } from './queue-surface-transport-model';
-import { QueueSurfaceRow } from './queue-surface-row';
 import { styles } from '../playback/playback-surface-styles';
-import { getQueueListMaxHeight } from './queue-surface-layout';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
+import { QueuePlaylistActionRow } from './queue-playlist-action-row';
+import { getQueueListMaxHeight } from './queue-surface-layout';
+import { QueueSurfaceRow } from './queue-surface-row';
+import { getQueueSurfaceTransportActions } from './queue-surface-transport-model';
 
 type QueueSurfaceProps = {
   activeQueueMode: RehearsalQueueMode;

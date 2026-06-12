@@ -5,17 +5,16 @@ import { Pressable, SafeAreaView, Text, View } from 'react-native';
 
 import { DriveSessionMenu } from '../../auth/google-drive/components/drive-session-menu';
 import { useGoogleDriveAuthorization } from '../../auth/google-drive/use-authorization';
+import { PlaybackWaveform } from '../../components/playback-waveform';
 import { useSavedTrackPlayback } from '../../library/hooks/use-saved-track-playback';
 import type { PlaylistPlaybackSession } from '../../library/utils/saved-playlist-playback-view-model';
 import type { PlaylistDraftIssue } from '../../library/utils/saved-playlist-view-model';
 import type { SavedTrackPlaybackState } from '../../library/utils/saved-track-playback-view-model';
-import { PlaybackMarqueeText } from './playback-marquee-text';
 import { PlaybackSurface } from '../playback/playback-surface';
-import { PlaybackWaveform } from '../../components/playback-waveform';
 import { QueuePlaylistAppendDialog } from '../queue/queue-playlist-append-dialog';
 import { QueuePlaylistSaveDialog } from '../queue/queue-playlist-save-dialog';
-import { ShellTabBar } from './shell-tab-bar';
 import { styles } from './mobile-shell-styles';
+import { PlaybackMarqueeText } from './playback-marquee-text';
 import {
   SHELL_DESTINATIONS,
   getMiniPlayerSummary,
@@ -23,6 +22,7 @@ import {
   getUpNextSurfaceSummary,
   type ShellDestinationKey,
 } from './shell-model';
+import { ShellTabBar } from './shell-tab-bar';
 
 type PlaybackSurfaceKey = 'now-playing' | 'queue';
 

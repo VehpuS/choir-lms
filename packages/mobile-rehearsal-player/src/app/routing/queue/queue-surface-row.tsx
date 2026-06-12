@@ -8,8 +8,8 @@ import { SurfaceIconButton } from '../../components/surface-icon-button';
 import { OptionsMenuSheet } from '../../library/components/OptionsMenuSheet';
 
 import { styles } from '../playback/playback-surface-styles';
-import { getQueueRowPresentation } from './queue-surface-row-model';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
+import { getQueueRowPresentation } from './queue-surface-row-model';
 
 export type QueueSurfaceRowProps = {
   item: UpNextSurfaceSummary['items'][number];
@@ -149,16 +149,16 @@ export const QueueSurfaceRow = ({
       }}
       style={[
         styles.queueCard,
-        rowPresentation.emphasis === 'current'
-          ? styles.queueCardCurrent
-          : null,
+        rowPresentation.emphasis === 'current' ? styles.queueCardCurrent : null,
       ]}
     >
       <CompactPlayableRowShell
         actions={
           <>
             <SurfaceIconButton
-              accessibilityLabel={rowPresentation.playbackAction.accessibilityLabel}
+              accessibilityLabel={
+                rowPresentation.playbackAction.accessibilityLabel
+              }
               disabled={isPlaybackToggleDisabled}
               icon={rowPresentation.playbackAction.iconName}
               onPress={
