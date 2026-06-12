@@ -2,12 +2,9 @@ import { Slider } from '@miblanchard/react-native-slider';
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { appTheme } from '../utils/theme';
+import { appTheme } from '../../utils/theme';
 
-import {
-  clampQueuePosition,
-  resolveQueueMoveTargetIndex,
-} from './queue-move-position-model';
+import { clampQueuePosition, resolveQueueMoveTargetIndex } from './model';
 
 type QueueMovePositionDialogProps = {
   bodyText?: string;

@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
-import { OverflowMenuTrigger } from '../../../components/OverflowMenuTrigger';
+import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
   savedPlaylistSectionStyles as styles,

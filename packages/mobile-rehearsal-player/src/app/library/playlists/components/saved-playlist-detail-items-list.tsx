@@ -3,7 +3,7 @@ import type { Playlist } from '@org/audio-library-models';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PanResponder, Pressable, Text, View } from 'react-native';
 
-import { OverflowMenuTrigger } from '../../../components/OverflowMenuTrigger';
+import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { QueueMovePositionDialog } from '../../../components/queue-move-position-dialog';
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { OptionsMenuSheet } from '../../components/options-menu-sheet';

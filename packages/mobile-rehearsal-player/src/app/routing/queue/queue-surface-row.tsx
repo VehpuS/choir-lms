@@ -2,8 +2,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMemo, useRef } from 'react';
 import { PanResponder, Text, View } from 'react-native';
 
-import { CompactPlayableRowShell } from '../../components/CompactPlayableRowShell';
-import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
+import { CompactPlayableRowShell } from '../../components/compact-playable-row-shell';
+import { OverflowMenuTrigger } from '../../components/overflow-menu-trigger';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
 

@@ -2,7 +2,7 @@ import type { Playlist } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
 
-import { OverflowMenuTrigger } from '../../../components/OverflowMenuTrigger';
+import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { SavedLibraryDetailCardShell } from '../../components/saved-library-detail-card-shell';
 import { savedPlaylistSectionStyles as styles } from '../../components/saved-playlist-section-styles';
 import {

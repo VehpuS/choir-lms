@@ -16,7 +16,7 @@ import {
 import {
   COMPACT_PLAYABLE_ROW_CARD_TITLE_TRAILING_PADDING,
   getCompactPlayableRowShellLayout,
-} from '../../../components/compact-playable-row-shell-model.js';
+} from '../../../components/compact-playable-row-shell/model.js';
 import {
   filterSavedLibrarySourcesByQuery as filterSavedLibrarySourcesByLibraryQuery,
   filterSavedLoopsByQuery as filterSavedLoopsByLibraryQuery,

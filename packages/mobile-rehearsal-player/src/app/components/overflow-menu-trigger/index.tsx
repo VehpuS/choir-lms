@@ -18,7 +18,7 @@ import {
   OVERFLOW_MENU_TRIGGER_TOP,
   getOverflowMenuTriggerAccessibilityState,
   getOverflowMenuTriggerVisualState,
-} from './overflow-menu-trigger-model';
+} from './model';
 
 type OverflowMenuTriggerProps = {
   accessibilityLabel: string;

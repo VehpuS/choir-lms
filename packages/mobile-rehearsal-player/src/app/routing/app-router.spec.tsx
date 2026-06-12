@@ -12,7 +12,7 @@ import {
 import {
   clampQueuePosition,
   resolveQueueMoveTargetIndex,
-} from '../components/queue-move-position-model.js';
+} from '../components/queue-move-position-dialog/model.js';
 import {
   buildPlaylistPlaybackSession,
   queuePlayableItemDuringPlayback,

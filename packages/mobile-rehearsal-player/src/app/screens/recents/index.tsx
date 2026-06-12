@@ -4,7 +4,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { useState } from 'react';
 import { runtimeConfig } from '../../../config/runtime';
-import { CompactPlayableRowShell } from '../../components/CompactPlayableRowShell';
+import { CompactPlayableRowShell } from '../../components/compact-playable-row-shell';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
 import { appTheme } from '../../utils/theme';
 import {

@@ -4,7 +4,7 @@ import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import {
   getCompactPlayableRowShellLayout,
   type CompactPlayableRowShellVariant,
-} from './compact-playable-row-shell-model';
+} from './model';
 
 type CompactPlayableRowShellProps = {
   actions?: ReactNode;
@@ -27,7 +27,8 @@ export const CompactPlayableRowShell = ({
   title,
   variant,
 }: CompactPlayableRowShellProps) => {
-  const hasOverflowTrigger = overflowTrigger !== null && overflowTrigger !== undefined;
+  const hasOverflowTrigger =
+    overflowTrigger !== null && overflowTrigger !== undefined;
   const layout = getCompactPlayableRowShellLayout({
     hasOverflowTrigger,
     variant,

@@ -14,7 +14,7 @@ import {
 import {
   clampQueuePosition,
   resolveQueueMoveTargetIndex,
-} from '../../../components/queue-move-position-model.js';
+} from '../../../components/queue-move-position-dialog/model.js';
 import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,

@@ -3,8 +3,8 @@ import { map } from 'es-toolkit/compat';
 import { useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { CompactPlayableRowShell } from '../../../components/CompactPlayableRowShell';
-import { OverflowMenuTrigger } from '../../../components/OverflowMenuTrigger';
+import { CompactPlayableRowShell } from '../../../components/compact-playable-row-shell';
+import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { OptionsMenuSheet } from '../../components/options-menu-sheet';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import {
