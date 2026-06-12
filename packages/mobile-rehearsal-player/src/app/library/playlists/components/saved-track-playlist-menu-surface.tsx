@@ -1,7 +1,7 @@
 import type { NamedLoop, Playlist } from '@org/audio-library-models';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
-import { BottomSheetSurface } from '../../components/BottomSheetSurface';
+import { BottomSheetSurface } from '../../components/bottom-sheet-surface';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { PlaylistDraftIssue } from '../utils/saved-playlist-view-model';
 import {

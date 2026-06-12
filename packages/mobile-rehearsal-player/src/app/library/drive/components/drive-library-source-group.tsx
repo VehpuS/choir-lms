@@ -5,7 +5,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import { CompactPlayableRowShell } from '../../../components/CompactPlayableRowShell';
 import { OverflowMenuTrigger } from '../../../components/OverflowMenuTrigger';
-import { OptionsMenuSheet } from '../../components/OptionsMenuSheet';
+import { OptionsMenuSheet } from '../../components/options-menu-sheet';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import {
   resolveDriveLibrarySourceActionPlacement,

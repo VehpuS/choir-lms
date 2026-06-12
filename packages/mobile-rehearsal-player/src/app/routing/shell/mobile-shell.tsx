@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Pressable, SafeAreaView, Text, View } from 'react-native';
 
 import { DriveSessionMenu } from '../../auth/google-drive/components/drive-session-menu';
-import { useGoogleDriveAuthorization } from '../../auth/google-drive/use-authorization';
+import { useGoogleDriveAuthorization } from '../../auth/google-drive/hooks/use-authorization';
 import { PlaybackWaveform } from '../../components/playback-waveform';
 import { useSavedTrackPlayback } from '../../library/playback/hooks/use-saved-track-playback';
 import type { SavedTrackPlaybackState } from '../../library/playback/utils/saved-track-playback-view-model';

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useGoogleDriveAuthorization } from '../auth/google-drive/use-authorization';
+import { useGoogleDriveAuthorization } from '../auth/google-drive/hooks/use-authorization';
 import { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../library/hooks/use-saved-rehearsal-library';
 import { useSavedTrackPlayback } from '../library/playback/hooks/use-saved-track-playback';

@@ -7,7 +7,10 @@ import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useState } from 'react';
 
-import { getGoogleAuthClientId, runtimeConfig } from '../../../config/runtime';
+import {
+  getGoogleAuthClientId,
+  runtimeConfig,
+} from '../../../../config/runtime';
 import {
   clearDriveAuthorizationState,
   getDriveAuthorizationStatusCopy,
@@ -15,7 +18,7 @@ import {
   resolveDriveAuthorizationResult,
   restoreDriveAuthorizationState,
   type AuthorizationSessionStore,
-} from './authorization';
+} from '../utils/authorization';
 
 WebBrowser.maybeCompleteAuthSession();
 

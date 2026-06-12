@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
 
 import { OverflowMenuTrigger } from '../../../components/OverflowMenuTrigger';
+import { SavedLibraryDetailCardShell } from '../../components/saved-library-detail-card-shell';
 import { savedPlaylistSectionStyles as styles } from '../../components/saved-playlist-section-styles';
-import { SavedLibraryDetailCardShell } from '../../components/SavedLibraryDetailCardShell';
 import {
   consumeSavedPlaylistRenameRequest,
   type SavedPlaylistDetailRemovalNotice,

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import type { useSavedTrackPlayback } from '../../playback/hooks/use-saved-track-playback';
 
-import { SavedRehearsalLibrarySection } from '../../components/SavedRehearsalLibrarySection';
+import { SavedRehearsalLibrarySection } from '../../components/saved-rehearsal-library-section';
 import { useSavedRehearsalLibrary } from '../../hooks/use-saved-rehearsal-library';
 import { usePreparedLoopBuilderTrack } from '../../loops/hooks/use-prepared-loop-builder-track';
 import { useSavedLoops } from '../../loops/hooks/use-saved-loops';

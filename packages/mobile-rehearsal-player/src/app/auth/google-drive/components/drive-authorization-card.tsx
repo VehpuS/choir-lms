@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 
-import type { DriveAuthorizationStatusCopy } from '../authorization';
+import type { DriveAuthorizationStatusCopy } from '../utils/authorization';
 
 type DriveAuthorizationCardProps = {
   authState: DriveAuthorizationState;

@@ -5,7 +5,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useState } from 'react';
 import { runtimeConfig } from '../../../config/runtime';
 import { CompactPlayableRowShell } from '../../components/CompactPlayableRowShell';
-import { OptionsMenuSheet } from '../../library/components/OptionsMenuSheet';
+import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
 import { appTheme } from '../../utils/theme';
 import {
   getRecentRehearsalLastPlayedLabel,
@@ -131,7 +131,9 @@ export const RecentsScreen = ({
                 }
                 metadata={
                   <Text numberOfLines={1} style={styles.recentItemMeta}>
-                    {getRecentRehearsalLastPlayedLabel(recentRehearsal.playedAt)}
+                    {getRecentRehearsalLastPlayedLabel(
+                      recentRehearsal.playedAt,
+                    )}
                   </Text>
                 }
                 overflowTrigger={

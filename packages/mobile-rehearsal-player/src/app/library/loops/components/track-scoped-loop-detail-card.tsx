@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { SavedLibraryDetailCardShell } from '../../components/SavedLibraryDetailCardShell';
+import { SavedLibraryDetailCardShell } from '../../components/saved-library-detail-card-shell';
 import type { PlaylistPlaybackActionCopy } from '../../playlists/utils/saved-playlist-playback-view-model';
 import type { TrackScopedLoopDetailCopy } from '../utils/track-scoped-loop-view-model';
 

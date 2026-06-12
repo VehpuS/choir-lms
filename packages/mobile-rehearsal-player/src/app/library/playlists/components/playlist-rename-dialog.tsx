@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 
-import { OptionsMenuSheet } from '../../components/OptionsMenuSheet';
+import { OptionsMenuSheet } from '../../components/options-menu-sheet';
 import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
   savedPlaylistSectionStyles as styles,

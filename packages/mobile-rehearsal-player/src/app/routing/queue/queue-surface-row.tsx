@@ -5,7 +5,7 @@ import { PanResponder, Text, View } from 'react-native';
 import { CompactPlayableRowShell } from '../../components/CompactPlayableRowShell';
 import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
-import { OptionsMenuSheet } from '../../library/components/OptionsMenuSheet';
+import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
 
 import { styles } from '../playback/playback-surface-styles';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';

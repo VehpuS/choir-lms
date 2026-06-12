@@ -6,7 +6,7 @@ import { PanResponder, Pressable, Text, View } from 'react-native';
 import { OverflowMenuTrigger } from '../../../components/OverflowMenuTrigger';
 import { QueueMovePositionDialog } from '../../../components/queue-move-position-dialog';
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
-import { OptionsMenuSheet } from '../../components/OptionsMenuSheet';
+import { OptionsMenuSheet } from '../../components/options-menu-sheet';
 import { savedPlaylistSectionStyles as styles } from '../../components/saved-playlist-section-styles';
 import { getSavedPlaylistDetailPlaybackAction } from '../utils/saved-playlist-detail-view-model';
 

@@ -7,11 +7,11 @@ import {
   View,
 } from 'react-native';
 
-import type { DriveAuthorizationStatusCopy } from '../authorization';
+import type { DriveAuthorizationStatusCopy } from '../utils/authorization';
 import {
   getDriveSessionDetails,
   getDriveSessionTriggerCopy,
-} from '../authorization';
+} from '../utils/authorization';
 
 type DriveSessionMenuProps = {
   authState: DriveAuthorizationState;

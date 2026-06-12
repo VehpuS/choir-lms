@@ -5,7 +5,7 @@ import {
   type OptionsMenuAction,
   type ResolvedOptionsMenuAction,
 } from '../utils/options-menu-sheet-view-model';
-import { BottomSheetSurface } from './BottomSheetSurface';
+import { BottomSheetSurface } from './bottom-sheet-surface';
 
 type OptionsMenuSheetProps = {
   actions: OptionsMenuAction[];
