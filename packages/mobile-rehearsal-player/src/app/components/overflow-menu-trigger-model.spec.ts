@@ -10,7 +10,7 @@ import {
   OVERFLOW_MENU_TRIGGER_TOP,
   getOverflowMenuTriggerAccessibilityState,
   getOverflowMenuTriggerVisualState,
-} from '../overflow-menu-trigger-model.js';
+} from './overflow-menu-trigger-model.js';
 
 describe('OverflowMenuTrigger', () => {
   it('returns a stable accessibility state for enabled and disabled triggers', () => {

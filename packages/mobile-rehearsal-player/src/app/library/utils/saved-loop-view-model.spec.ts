@@ -13,8 +13,8 @@ import {
   SAVED_LOOP,
 } from '../../test-utils/library-test-fixtures.js';
 import { buildPlaylistPlaybackSession } from '../playlists/utils/saved-playlist-playback-view-model.js';
-import { resolveLoopPreviewPlaybackTimeline } from '../utils/saved-loop-preview-playback-view-model.js';
-import { resolveSavedLoopRowActions } from '../utils/saved-loop-row-actions.js';
+import { resolveLoopPreviewPlaybackTimeline } from './saved-loop-preview-playback-view-model.js';
+import { resolveSavedLoopRowActions } from './saved-loop-row-actions.js';
 import {
   buildNamedLoop,
   createLoopBuilderDraft,
@@ -31,11 +31,11 @@ import {
   resolveSavedLoopCards,
   resolveSourcesMissingLoopBuilderDuration,
   updateLoopBuilderDraftRange,
-} from '../utils/saved-loop-view-model.js';
+} from './saved-loop-view-model.js';
 import {
   buildTrackScopedLoopPlaybackPlaylist,
   getTrackScopedLoopDetailCopy,
-} from '../utils/track-scoped-loop-view-model.js';
+} from './track-scoped-loop-view-model.js';
 
 describe('saved loop view-model', () => {
   it('prefills loop drafts with a source-aware suggested name', () => {

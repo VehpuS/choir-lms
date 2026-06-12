@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { resolveOptionsMenuSheetActions } from '../utils/options-menu-sheet-view-model.js';
+import { resolveOptionsMenuSheetActions } from './options-menu-sheet-view-model.js';
 
 describe('options menu sheet actions', () => {
   it('puts primary actions first, preserves relative tone-group order, and keeps destructive actions last', () => {

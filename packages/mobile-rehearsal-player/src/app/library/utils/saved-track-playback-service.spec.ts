@@ -6,14 +6,14 @@ import { describe, it } from 'node:test';
 import {
   dispatchSavedTrackPlaybackRemoteCommand,
   registerSavedTrackPlaybackRemoteCommandHandlers,
-} from '../utils/saved-track-playback-remote-controls.js';
-import { registerSavedTrackPlaybackRemoteEventListeners } from '../utils/saved-track-playback-service.js';
+} from './saved-track-playback-remote-controls.js';
+import { registerSavedTrackPlaybackRemoteEventListeners } from './saved-track-playback-service.js';
 import {
   getSavedTrackPlayerEventMap,
   resolveSavedTrackPlayerSupport,
   type SavedTrackPlayerModule,
-} from '../utils/saved-track-player-interop.js';
-import { syncSavedTrackPlayerCapabilities } from '../utils/saved-track-player-runtime.js';
+} from './saved-track-player-interop.js';
+import { syncSavedTrackPlayerCapabilities } from './saved-track-player-runtime.js';
 
 describe('saved track playback service', () => {
   it('reports Expo Go as unsupported without loading TrackPlayer', () => {

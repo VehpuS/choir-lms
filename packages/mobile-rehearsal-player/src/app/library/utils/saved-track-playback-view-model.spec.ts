@@ -29,8 +29,8 @@ import {
   resolvePlaybackSeekPositionSeconds,
   resolveSynchronizedPlayableItem,
   shouldRepeatSingleItemPlayback,
-} from '../utils/saved-track-playback-view-model.js';
-import { resolveSavedTrackDurationFromPlayer } from '../utils/saved-track-player-runtime.js';
+} from './saved-track-playback-view-model.js';
+import { resolveSavedTrackDurationFromPlayer } from './saved-track-player-runtime.js';
 
 describe('saved track playback view-model', () => {
   it('creates a full-track playback request with a Drive media URL and bearer token', () => {

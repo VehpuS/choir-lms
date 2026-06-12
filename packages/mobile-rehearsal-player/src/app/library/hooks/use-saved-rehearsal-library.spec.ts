@@ -16,7 +16,7 @@ import {
   loadSavedRehearsalLibrarySources,
   resolveSavedSourceDurationUpdate,
   verifySavedRehearsalLibraryStorage,
-} from '../hooks/use-saved-rehearsal-library.js';
+} from './use-saved-rehearsal-library.js';
 import { loadSavedPlaylists } from '../playlists/hooks/use-saved-playlists.js';
 import {
   getSavedPlaylistsStatusCopy,

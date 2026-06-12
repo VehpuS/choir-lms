@@ -48,8 +48,6 @@
           "{projectRoot}/tsconfig.json",
           "{projectRoot}/src/**/*.spec.ts",
           "{projectRoot}/src/**/*.spec.tsx",
-          "{projectRoot}/src/**/*.test.ts",
-          "{projectRoot}/src/**/*.test.tsx",
           "{workspaceRoot}/package-lock.json"
         ],
         "options": {
@@ -88,7 +86,7 @@
         ],
         "options": {
           "cwd": "packages/mobile-rehearsal-player",
-          "command": "tsx --test 'src/**/*.spec.ts' 'src/**/*.spec.tsx' 'src/**/*.test.ts' 'src/**/*.test.tsx'"
+          "command": "tsx --test 'src/**/*.spec.ts' 'src/**/*.spec.tsx'"
         }
       },
       "lint": {

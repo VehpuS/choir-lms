@@ -1,6 +1,6 @@
 ---
 name: mobile-folder-structure
-description: "Apply Expo-inspired folder structure conventions in the mobile rehearsal player. USE WHEN requests mention folder structure, naming conventions, file organization, moving files, reducing flat directories, grouping related files, colocating tests, standardization passes, or cleaning up packages/mobile-rehearsal-player. TRIGGERS: 'folder structure', 'organize files', 'rename files', 'kebab-case', 'flat directory', 'group these files', 'colocate tests', 'screen folder', 'mobile architecture', 'standardization pass'."
+description: "Apply Expo-inspired folder structure conventions in the mobile rehearsal player. USE WHEN requests mention folder structure, naming conventions, test naming, file organization, moving files, reducing flat directories, grouping related files, colocating tests, standardization passes, or cleaning up packages/mobile-rehearsal-player. TRIGGERS: 'folder structure', 'organize files', 'rename files', 'test names', 'kebab-case', 'flat directory', 'group these files', 'colocate tests', 'screen folder', 'mobile architecture', 'standardization pass'."
 ---
 
 # Mobile Folder Structure (Expo-Inspired)
@@ -87,11 +87,12 @@ Use surface-oriented groupings when a slice grows past a single file. In the cur
 - Extract a separate style module only when multiple files in the same feature share it and the shared file improves readability.
 - Avoid creating new `*-styles.ts` files for one component by default.
 
-### 8. Colocate tests, but update explicit runners when needed
+### 8. Colocate tests with one filename standard
 
-- Prefer colocated `*.spec.ts` or `*.spec.tsx` files for new tests.
-- This package's `typecheck-tests` target already picks up colocated specs under `src/**`.
-- The `mobile-rehearsal-player:test` target currently enumerates test files manually. If a reorganization moves runtime tests or adds new ones that should run there, update that target in the same change.
+- Use colocated kebab-case `*.spec.ts` or `*.spec.tsx` files for mobile tests.
+- Do not introduce `*.test.*` files or new `__tests__` directories in `packages/mobile-rehearsal-player/src/`.
+- When you are already reorganizing a legacy surface, migrate its tests toward colocated `*.spec.*` files.
+- This package's `typecheck-tests` and `mobile-rehearsal-player:test` targets discover colocated `*.spec.*` files under `src/**` automatically.
 
 ### 9. Isolate platform-specific implementations cleanly
 
@@ -118,6 +119,7 @@ Use surface-oriented groupings when a slice grows past a single file. In the cur
 4. Normalize naming inside the touched slice.
 
 - Use kebab-case for new files.
+- Use colocated `*.spec.ts` or `*.spec.tsx` names for mobile tests.
 - Rename existing files when the refactor clearly improves coherence.
 - If the user requested a standardization pass, treat legacy naming cleanup as part of the task rather than something to avoid.
 - If the targeted area is still hard to read after a small move, keep going until the ownership and naming are actually clearer.
