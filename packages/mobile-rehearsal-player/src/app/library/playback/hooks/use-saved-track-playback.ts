@@ -54,6 +54,12 @@ import {
   syncSavedTrackPlayerCapabilities,
 } from '../utils/saved-track-player-runtime';
 
+type SyncActivePlaylistContextOptions = {
+  loops: NamedLoop[];
+  playlists: Playlist[];
+  sources: DriveLibrarySource[];
+};
+
 const DEFAULT_PLAYBACK_VOLUME_LEVEL = 1;
 const trackPlayerEvent = getSavedTrackPlayerEventMap();
 const trackPlayerState = getSavedTrackPlayerStateMap();
@@ -96,6 +102,12 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
   const activePlaylistContextRef = useRef<ActivePlaylistContext | null>(null);
   const activePlaylistSessionRef = useRef<PlaylistPlaybackSession | null>(null);
   const isAdvancingPlaylistRef = useRef(false);
+  const playbackControllerRef = useRef<ReturnType<
+    typeof createSavedTrackPlaybackController
+  > | null>(null);
+  const syncActivePlaylistContextRef = useRef<
+    ((options: SyncActivePlaylistContextOptions) => void) | null
+  >(null);
   const volumeLevelRef = useRef(DEFAULT_PLAYBACK_VOLUME_LEVEL);
   const repeatModeRef = useRef<RepeatMode>('off');
   const playbackState = useSavedTrackPlayerPlaybackState().state as
@@ -200,6 +212,65 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
     setVolumeLevel,
     volumeLevelRef,
   });
+
+  playbackControllerRef.current = playbackController;
+
+  if (!syncActivePlaylistContextRef.current) {
+    syncActivePlaylistContextRef.current = (
+      options: SyncActivePlaylistContextOptions,
+    ) => {
+      const syncResult = syncActivePlaylistPlaybackSession({
+        currentContext: activePlaylistContextRef.current,
+        loops: options.loops,
+        playlists: options.playlists,
+        session: activePlaylistSessionRef.current,
+        sources: options.sources,
+      });
+
+      activePlaylistContextRef.current = syncResult.context;
+
+      if (syncResult.issue) {
+        setIssue(mapPlaylistPlaybackIssue(syncResult.issue));
+      }
+
+      if (syncResult.session) {
+        setActivePlaylistSession(syncResult.session);
+      }
+
+      const currentPlayableItem = activePlayableItemRef.current;
+
+      if (!currentPlayableItem) {
+        return;
+      }
+
+      const rebuiltCurrentItem = syncResult.session
+        ? getPlaylistPlaybackCurrentItem(syncResult.session)
+        : null;
+      const nextActivePlayableItem =
+        rebuiltCurrentItem &&
+        hasSameQueuePosition(currentPlayableItem, rebuiltCurrentItem)
+          ? rebuiltCurrentItem
+          : resolveSynchronizedPlayableItem({
+              loops: options.loops,
+              playableItem: currentPlayableItem,
+              sources: options.sources,
+            });
+
+      if (
+        !hasPlayableItemChanged(currentPlayableItem, nextActivePlayableItem)
+      ) {
+        return;
+      }
+
+      setActivePlayableItem(nextActivePlayableItem);
+
+      if (nextActivePlayableItem) {
+        void playbackControllerRef.current?.syncActivePlayableItem(
+          nextActivePlayableItem,
+        );
+      }
+    };
+  }
 
   useEffect(() => {
     return registerSavedTrackPlaybackRemoteCommandHandlers({
@@ -375,60 +446,7 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
         return nextSession.session;
       });
     },
-    syncActivePlaylistContext(options: {
-      loops: NamedLoop[];
-      playlists: Playlist[];
-      sources: DriveLibrarySource[];
-    }) {
-      const syncResult = syncActivePlaylistPlaybackSession({
-        currentContext: activePlaylistContextRef.current,
-        loops: options.loops,
-        playlists: options.playlists,
-        session: activePlaylistSessionRef.current,
-        sources: options.sources,
-      });
-
-      activePlaylistContextRef.current = syncResult.context;
-
-      if (syncResult.issue) {
-        setIssue(mapPlaylistPlaybackIssue(syncResult.issue));
-      }
-
-      if (syncResult.session) {
-        setActivePlaylistSession(syncResult.session);
-      }
-
-      const currentPlayableItem = activePlayableItemRef.current;
-
-      if (!currentPlayableItem) {
-        return;
-      }
-
-      const rebuiltCurrentItem = syncResult.session
-        ? getPlaylistPlaybackCurrentItem(syncResult.session)
-        : null;
-      const nextActivePlayableItem =
-        rebuiltCurrentItem &&
-        hasSameQueuePosition(currentPlayableItem, rebuiltCurrentItem)
-          ? rebuiltCurrentItem
-          : resolveSynchronizedPlayableItem({
-              loops: options.loops,
-              playableItem: currentPlayableItem,
-              sources: options.sources,
-            });
-
-      if (
-        !hasPlayableItemChanged(currentPlayableItem, nextActivePlayableItem)
-      ) {
-        return;
-      }
-
-      setActivePlayableItem(nextActivePlayableItem);
-
-      if (nextActivePlayableItem) {
-        void playbackController.syncActivePlayableItem(nextActivePlayableItem);
-      }
-    },
+    syncActivePlaylistContext: syncActivePlaylistContextRef.current,
     async seekActivePlaybackBySeconds(deltaSeconds: number) {
       await playbackController.seekActivePlaybackBySeconds(deltaSeconds);
     },

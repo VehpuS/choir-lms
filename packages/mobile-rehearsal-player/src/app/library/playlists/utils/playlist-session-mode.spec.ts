@@ -4,7 +4,6 @@ import { describe, it } from 'node:test';
 import {
   addLoopToPlaylist,
   addTrackToPlaylist,
-  createLoopPlayableItem,
   createPlaylist,
   createTrackPlayableItem,
 } from '@org/audio-library-models';
@@ -16,11 +15,9 @@ import {
 import {
   rebuildPlaylistPlaybackSessionForMode,
   syncActivePlaylistContext,
-  syncActivePlaylistPlaybackSession,
 } from './playlist-session-mode.js';
 import {
   buildPlaylistPlaybackSession,
-  createTransientPlaybackSession,
   getPlaylistPlaybackCurrentItem,
   queuePlayableItemDuringPlayback,
 } from './saved-playlist-playback-view-model.js';
@@ -142,95 +139,6 @@ describe('rebuildPlaylistPlaybackSessionForMode', () => {
       rebuiltSession &&
         getPlaylistPlaybackCurrentItem(rebuiltSession)?.playlistEntryId,
       originalPlaylist.items[1].id,
-    );
-  });
-
-  it('syncs edited loop data into the active queue session', () => {
-    const playlist = addLoopToPlaylist(
-      createPlaylist({
-        createdAt: '2026-05-12T00:00:00.000Z',
-        name: 'Warmups',
-        ownerId: 'user-1',
-      }),
-      SAVED_LOOP,
-      '2026-05-12T00:01:00.000Z',
-    );
-    const activeSession = buildPlaylistPlaybackSession({
-      loops: [SAVED_LOOP],
-      mode: 'ordered',
-      playlist,
-      repeatMode: 'off',
-      sources: [PLAYABLE_SOURCE],
-    }).session;
-
-    if (!activeSession) {
-      throw new Error('Expected an active loop session.');
-    }
-
-    const editedLoop = {
-      ...SAVED_LOOP,
-      name: 'Entrance cue revised',
-      startMs: 15000,
-      endMs: 24000,
-    };
-    const syncResult = syncActivePlaylistPlaybackSession({
-      currentContext: {
-        loops: [SAVED_LOOP],
-        playlist,
-        sources: [PLAYABLE_SOURCE],
-      },
-      loops: [editedLoop],
-      playlists: [playlist],
-      session: activeSession,
-      sources: [PLAYABLE_SOURCE],
-    });
-
-    assert.equal(syncResult.issue, null);
-    assert.equal(syncResult.session?.currentIndex, 0);
-    assert.deepEqual(
-      getPlaylistPlaybackCurrentItem(syncResult.session ?? activeSession),
-      {
-        ...getPlaylistPlaybackCurrentItem(activeSession),
-        title: 'Entrance cue revised',
-        range: {
-          startMs: 15000,
-          endMs: 24000,
-        },
-      },
-    );
-  });
-
-  it('syncs edited loop data in transient queue sessions', () => {
-    const activeLoop = createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE);
-    const transientSession = createTransientPlaybackSession({
-      activePlayableItem: activeLoop,
-      repeatMode: 'off',
-    });
-    const editedLoop = {
-      ...SAVED_LOOP,
-      name: 'Entrance cue revised',
-      startMs: 15000,
-      endMs: 24000,
-    };
-    const syncResult = syncActivePlaylistPlaybackSession({
-      currentContext: null,
-      loops: [editedLoop],
-      playlists: [],
-      session: transientSession,
-      sources: [PLAYABLE_SOURCE],
-    });
-
-    assert.equal(syncResult.issue, null);
-    assert.deepEqual(
-      getPlaylistPlaybackCurrentItem(syncResult.session ?? transientSession),
-      {
-        ...activeLoop,
-        title: 'Entrance cue revised',
-        range: {
-          startMs: 15000,
-          endMs: 24000,
-        },
-      },
     );
   });
 

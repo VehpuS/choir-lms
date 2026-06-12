@@ -1,5 +1,5 @@
 import type { DriveAuthorizationState } from '@org/google-drive';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert } from 'react-native';
 
 import { useDriveLibrary } from '../drive/hooks/use-drive-library';
@@ -73,16 +73,26 @@ export const useRehearsalLibraryScreenController = ({
     issue: isSearchMode ? driveLibrary.issue : null,
     searchSnapshot: driveLibrary.searchSnapshot,
   });
-  const savedLibrarySources = resolveSavedRehearsalLibrarySources({
-    authState,
-    savedSources: savedLibrary.savedSources,
-    visibleSources: [
+  const visibleSources = useMemo(() => {
+    return [
       ...driveLibrary.browseSnapshot.playableSources,
       ...driveLibrary.browseSnapshot.unavailableSources,
       ...driveLibrary.searchSnapshot.playableSources,
       ...driveLibrary.searchSnapshot.unavailableSources,
-    ],
-  });
+    ];
+  }, [
+    driveLibrary.browseSnapshot.playableSources,
+    driveLibrary.browseSnapshot.unavailableSources,
+    driveLibrary.searchSnapshot.playableSources,
+    driveLibrary.searchSnapshot.unavailableSources,
+  ]);
+  const savedLibrarySources = useMemo(() => {
+    return resolveSavedRehearsalLibrarySources({
+      authState,
+      savedSources: savedLibrary.savedSources,
+      visibleSources,
+    });
+  }, [authState, savedLibrary.savedSources, visibleSources]);
   const savedSourceIds = new Set(
     savedLibrary.savedSources.map((source) => source.id),
   );

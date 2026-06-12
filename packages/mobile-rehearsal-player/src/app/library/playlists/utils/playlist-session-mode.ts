@@ -5,7 +5,10 @@ import type {
 } from '@org/audio-library-models';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
-import { resolveSynchronizedPlayableItem } from '../../playback/utils/saved-track-playback-view-model';
+import {
+  hasPlayableItemChanged,
+  resolveSynchronizedPlayableItem,
+} from '../../playback/utils/saved-track-playback-view-model';
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
@@ -175,21 +178,67 @@ const syncPlaylistPlaybackQueueItems = (options: {
   session: PlaylistPlaybackSession;
   sources: DriveLibrarySource[];
 }) => {
+  let hasQueueItemChanged = false;
+
+  const synchronizedQueueItems = options.session.queue.items.map(
+    (playableItem) => {
+      const synchronizedPlayableItem =
+        resolveSynchronizedPlayableItem({
+          loops: options.loops,
+          playableItem,
+          sources: options.sources,
+        }) ?? playableItem;
+
+      hasQueueItemChanged ||= hasPlayableItemChanged(
+        playableItem,
+        synchronizedPlayableItem,
+      );
+
+      return synchronizedPlayableItem;
+    },
+  );
+
+  if (!hasQueueItemChanged) {
+    return options.session;
+  }
+
   return {
     ...options.session,
     queue: {
       ...options.session.queue,
-      items: options.session.queue.items.map((playableItem) => {
-        return (
-          resolveSynchronizedPlayableItem({
-            loops: options.loops,
-            playableItem,
-            sources: options.sources,
-          }) ?? playableItem
-        );
-      }),
+      items: synchronizedQueueItems,
     },
   } satisfies PlaylistPlaybackSession;
+};
+
+const hasPlaylistPlaybackSessionChanged = (
+  currentSession: PlaylistPlaybackSession,
+  nextSession: PlaylistPlaybackSession,
+) => {
+  if (currentSession === nextSession) {
+    return false;
+  }
+
+  if (
+    currentSession.currentIndex !== nextSession.currentIndex ||
+    currentSession.hasCompleted !== nextSession.hasCompleted ||
+    currentSession.playlistId !== nextSession.playlistId ||
+    currentSession.playlistName !== nextSession.playlistName ||
+    currentSession.requestedItemCount !== nextSession.requestedItemCount ||
+    currentSession.queue.playlistId !== nextSession.queue.playlistId ||
+    currentSession.queue.mode !== nextSession.queue.mode ||
+    currentSession.queue.repeatMode !== nextSession.queue.repeatMode ||
+    currentSession.queue.items.length !== nextSession.queue.items.length
+  ) {
+    return true;
+  }
+
+  return nextSession.queue.items.some((playableItem, index) => {
+    return hasPlayableItemChanged(
+      currentSession.queue.items[index] ?? null,
+      playableItem,
+    );
+  });
 };
 
 export const syncActivePlaylistPlaybackSession = (
@@ -225,13 +274,20 @@ export const syncActivePlaylistPlaybackSession = (
     sources: nextContext.sources,
   });
 
+  const synchronizedSession = syncPlaylistPlaybackQueueItems({
+    loops: options.loops,
+    session: rebuiltSession.session ?? options.session,
+    sources: options.sources,
+  });
+
   return {
     context: nextContext,
     issue: rebuiltSession.issue,
-    session: syncPlaylistPlaybackQueueItems({
-      loops: options.loops,
-      session: rebuiltSession.session ?? options.session,
-      sources: options.sources,
-    }),
+    session: hasPlaylistPlaybackSessionChanged(
+      options.session,
+      synchronizedSession,
+    )
+      ? synchronizedSession
+      : options.session,
   };
 };
