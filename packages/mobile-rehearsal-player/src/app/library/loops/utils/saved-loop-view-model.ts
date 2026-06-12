@@ -9,15 +9,15 @@ import { keyBy } from 'es-toolkit/compat';
 import type {
   DriveLibrarySource,
   DriveLibraryStatusCopy,
-} from '../drive/utils/drive-library-view-model';
-import { formatDurationLabel } from '../drive/utils/drive-library-view-model';
+} from '../../drive/utils/drive-library-view-model';
+import { formatDurationLabel } from '../../drive/utils/drive-library-view-model';
 
 export {
   createLoopPreviewPlayableItem,
   hydrateLoopBuilderTrackDuration,
+  resolveLoopBuilderRangeSelection,
   resolveLoopBuilderTrack,
   resolveLoopBuilderTrackDuration,
-  resolveLoopBuilderRangeSelection,
   resolveSourcesMissingLoopBuilderDuration,
 } from './saved-loop-builder-view-model';
 

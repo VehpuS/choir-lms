@@ -10,8 +10,8 @@ import {
   View,
 } from 'react-native';
 
-import { PlaybackWaveform } from '../../components/playback-waveform';
-import { formatDurationLabel } from '../drive/utils/drive-library-view-model';
+import { PlaybackWaveform } from '../../../components/playback-waveform';
+import { formatDurationLabel } from '../../drive/utils/drive-library-view-model';
 import type { LoopPreviewPlaybackTimeline } from '../utils/saved-loop-preview-playback-view-model';
 
 type LoopRangeSelectorSurfaceProps = {

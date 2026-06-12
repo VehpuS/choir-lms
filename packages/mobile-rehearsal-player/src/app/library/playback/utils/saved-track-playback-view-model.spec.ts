@@ -13,7 +13,7 @@ import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,
   UNSUPPORTED_SOURCE,
-} from '../../test-utils/library-test-fixtures.js';
+} from '../../../test-utils/library-test-fixtures.js';
 import {
   createSavedTrackPlaybackPreconditionIssue,
   createSavedTrackPlaybackRequest,

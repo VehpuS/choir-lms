@@ -2,11 +2,11 @@ import { type NamedLoop } from '@org/audio-library-models';
 import { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
 import { useEffect, useState } from 'react';
 
-import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import {
   LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
   verifySavedRehearsalLibraryStorage,
-} from './use-saved-rehearsal-library';
+} from '../../hooks/use-saved-rehearsal-library';
+import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 
 type SavedLoopReader = Pick<AsyncStoragePracticeRepository, 'listLoops'>;
 

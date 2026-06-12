@@ -10,7 +10,7 @@ import { savedPlaylistSectionStyles as styles } from '../../components/saved-pla
 import { DriveLibraryStatusCard } from '../../drive/components/drive-library-status-card';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../hooks/use-saved-rehearsal-library';
-import type { SavedTrackPlaybackState } from '../../utils/saved-track-playback-view-model';
+import type { SavedTrackPlaybackState } from '../../playback/utils/saved-track-playback-view-model';
 import {
   buildSavedPlaylistDetailDraftPlaylist,
   getSavedPlaylistDetailInitialState,

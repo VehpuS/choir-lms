@@ -3,11 +3,11 @@ import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
 import { OverflowMenuTrigger } from '../../../components/OverflowMenuTrigger';
-import { SearchHighlightedText } from '../../components/SearchHighlightedText';
 import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
   savedPlaylistSectionStyles as styles,
 } from '../../components/saved-playlist-section-styles';
+import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import {
   getSavedPlaylistCardPlayAction,
   resolveSavedPlaylistCardRenameTarget,

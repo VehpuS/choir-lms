@@ -1,7 +1,7 @@
 import {
   getCompactPlaybackActionIconName,
   type DriveLibrarySourceAction,
-} from '../drive/utils/drive-library-source-actions';
+} from '../../drive/utils/drive-library-source-actions';
 
 type SavedTrackPlaybackAction = {
   disabled: boolean;

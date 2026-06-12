@@ -1,10 +1,10 @@
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import type { useSavedTrackPlayback } from '../../library/hooks/use-saved-track-playback';
+import type { useSavedTrackPlayback } from '../../library/playback/hooks/use-saved-track-playback';
 
-import { LoopPreviewPlaybackContext } from '../../library/components/LoopPreviewPlaybackContext';
 import { SavedRehearsalLibrarySection } from '../../library/components/SavedRehearsalLibrarySection';
 import type { useRehearsalLibraryScreenController } from '../../library/hooks/use-rehearsal-library-screen-controller';
+import { LoopPreviewPlaybackContext } from '../../library/loops/components/loop-preview-playback-context';
 import { resolveSavedPlaylistDetailEdgeAutoscrollDelta } from '../../library/playlists/utils/saved-playlist-detail-view-model';
 import { appTheme } from '../../utils/theme';
 

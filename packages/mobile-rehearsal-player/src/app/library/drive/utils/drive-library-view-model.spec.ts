@@ -23,11 +23,11 @@ import {
   filterSavedPlaylistsByQuery as filterSavedPlaylistsByLibraryQuery,
   resolveActiveLibrarySearchQuery as resolveActiveLibraryQuery,
   resolveSearchHighlightParts,
-} from '../../utils/saved-library-search-view-model.js';
+} from '../../search/utils/saved-library-search-view-model.js';
 import {
   normalizeRecentSearchTerm,
   recordRecentSearchTerm,
-} from '../../utils/search-history.js';
+} from '../../search/utils/search-history.js';
 import {
   ADD_SCREEN_PANEL_ORDER,
   DRIVE_DISCOVERY_NAVIGATION_ORDER,

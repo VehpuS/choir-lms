@@ -6,7 +6,7 @@ import {
   resolvePlaylistPlaybackAdvance,
   resolvePlaylistPlaybackRewind,
   type PlaylistPlaybackSession,
-} from '../playlists/utils/saved-playlist-playback-view-model';
+} from '../../playlists/utils/saved-playlist-playback-view-model';
 import {
   resolveSavedTrackDuration,
   type LoadPlayableItemIntoPlayer,

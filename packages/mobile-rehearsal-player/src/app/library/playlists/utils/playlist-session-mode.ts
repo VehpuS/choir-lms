@@ -5,7 +5,7 @@ import type {
 } from '@org/audio-library-models';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
-import { resolveSynchronizedPlayableItem } from '../../utils/saved-track-playback-view-model';
+import { resolveSynchronizedPlayableItem } from '../../playback/utils/saved-track-playback-view-model';
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,

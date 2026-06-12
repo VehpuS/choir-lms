@@ -1,8 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { getLibrarySearchContextCopy } from '../drive/utils/drive-library-view-model';
-import { RecentSearchSuggestions } from './RecentSearchSuggestions';
+import { getLibrarySearchContextCopy } from '../../drive/utils/drive-library-view-model';
+import { RecentSearchSuggestions } from './recent-search-suggestions';
 
 type LibrarySearchPanelProps = {
   isSearchMode: boolean;

@@ -1,7 +1,7 @@
 import {
   getCompactPlaybackActionIconName,
   type DriveLibrarySourceAction,
-} from '../drive/utils/drive-library-source-actions';
+} from '../../drive/utils/drive-library-source-actions';
 
 type SavedLoopPlaybackAction = {
   disabled: boolean;
@@ -75,9 +75,7 @@ export const resolveSavedLoopRowActions = (
     },
     {
       disabled:
-        !options.canEditLoop ||
-        options.isEditingLoop ||
-        options.isLoopMutating,
+        !options.canEditLoop || options.isEditingLoop || options.isLoopMutating,
       label: options.isEditingLoop ? 'Editing…' : 'Edit loop',
       onPress: options.onEdit,
       placement: 'menu',

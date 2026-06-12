@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 
-import type { PlaylistPlaybackActionCopy } from '../playlists/utils/saved-playlist-playback-view-model';
+import { SavedLibraryDetailCardShell } from '../../components/SavedLibraryDetailCardShell';
+import type { PlaylistPlaybackActionCopy } from '../../playlists/utils/saved-playlist-playback-view-model';
 import type { TrackScopedLoopDetailCopy } from '../utils/track-scoped-loop-view-model';
-import { SavedLibraryDetailCardShell } from './SavedLibraryDetailCardShell';
 
 type TrackScopedLoopDetailCardProps = {
   children: ReactNode;

@@ -1,20 +1,20 @@
 import {
-  buildDriveMediaUrl,
-  type DriveAuthorizationState,
-} from '@org/google-drive';
-import {
   createLoopPlayableItem,
   createTrackPlayableItem,
   type NamedLoop,
   type PlayableItem,
   type RepeatMode,
 } from '@org/audio-library-models';
+import {
+  buildDriveMediaUrl,
+  type DriveAuthorizationState,
+} from '@org/google-drive';
 
 import {
   formatDurationLabel,
   type DriveLibrarySource,
   type DriveLibraryStatusCopy,
-} from '../drive/utils/drive-library-view-model';
+} from '../../drive/utils/drive-library-view-model';
 
 export type SavedTrackPlaybackState =
   | 'buffering'
@@ -308,7 +308,8 @@ export const hasPlayableItemChanged = (
     currentPlayableItem.playlistId !== nextPlayableItem.playlistId ||
     currentPlayableItem.source.id !== nextPlayableItem.source.id ||
     currentPlayableItem.source.name !== nextPlayableItem.source.name ||
-    currentPlayableItem.source.durationMs !== nextPlayableItem.source.durationMs ||
+    currentPlayableItem.source.durationMs !==
+      nextPlayableItem.source.durationMs ||
     currentPlayableItem.range.startMs !== nextPlayableItem.range.startMs ||
     currentPlayableItem.range.endMs !== nextPlayableItem.range.endMs
   );

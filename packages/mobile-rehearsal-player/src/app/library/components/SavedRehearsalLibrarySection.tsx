@@ -19,6 +19,21 @@ import {
 } from '../drive/utils/drive-library-view-model';
 import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
+import { SavedLoopSection } from '../loops/components/saved-loop-section';
+import type { SavedLoopIssue } from '../loops/utils/saved-loop-view-model';
+import {
+  buildTrackScopedLoopPlaybackPlaylist,
+  getTrackScopedLoopDetailCopy,
+} from '../loops/utils/track-scoped-loop-view-model';
+import {
+  getSavedTrackPlaybackActionCopy,
+  getSavedTrackPlaybackItemIssue,
+  isSavedTrackPlaybackActive,
+  isSavedTrackPlaybackBusy,
+  type SavedTrackPlaybackIssue,
+  type SavedTrackPlaybackState,
+} from '../playback/utils/saved-track-playback-view-model';
+import { resolveSavedTrackRowActions } from '../playback/utils/saved-track-row-actions';
 import { SavedPlaylistSection } from '../playlists/components/saved-playlist-section';
 import { SavedPlaylistCardsList } from '../playlists/components/saved-playlist-section-cards';
 import { SavedTrackPlaylistMenuSurface } from '../playlists/components/saved-track-playlist-menu-surface';
@@ -38,42 +53,27 @@ import {
   getSavedTrackPlaylistMenuInitialState,
   reduceSavedTrackPlaylistMenuState,
 } from '../playlists/utils/saved-track-playlist-menu-view-model';
+import { LibrarySearchPanel } from '../search/components/library-search-panel';
 import {
   filterSavedLibrarySourcesByQuery,
   filterSavedLoopsByQuery,
   filterSavedPlaylistsByQuery,
   resolveActiveLibrarySearchQuery,
-} from '../utils/saved-library-search-view-model';
-import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
+} from '../search/utils/saved-library-search-view-model';
+import {
+  normalizeRecentSearchTerm,
+  recordRecentSearchTerm,
+} from '../search/utils/search-history';
+import {
+  LIBRARY_RECENT_SEARCH_HISTORY_KEY,
+  persistRecentSearchHistory,
+  restoreRecentSearchHistory,
+} from '../search/utils/search-history-storage';
 import { resolveSavedRehearsalLibraryDetailMode } from '../utils/saved-rehearsal-library-detail-view-model';
 import {
   getSavedRehearsalLibraryDependentLoops,
   getSavedRehearsalLibrarySourceIssue,
 } from '../utils/saved-rehearsal-library-view-model';
-import {
-  getSavedTrackPlaybackActionCopy,
-  getSavedTrackPlaybackItemIssue,
-  isSavedTrackPlaybackActive,
-  isSavedTrackPlaybackBusy,
-  type SavedTrackPlaybackIssue,
-  type SavedTrackPlaybackState,
-} from '../utils/saved-track-playback-view-model';
-import { resolveSavedTrackRowActions } from '../utils/saved-track-row-actions';
-import {
-  normalizeRecentSearchTerm,
-  recordRecentSearchTerm,
-} from '../utils/search-history';
-import {
-  LIBRARY_RECENT_SEARCH_HISTORY_KEY,
-  persistRecentSearchHistory,
-  restoreRecentSearchHistory,
-} from '../utils/search-history-storage';
-import {
-  buildTrackScopedLoopPlaybackPlaylist,
-  getTrackScopedLoopDetailCopy,
-} from '../utils/track-scoped-loop-view-model';
-import { LibrarySearchPanel } from './LibrarySearchPanel';
-import { SavedLoopSection } from './SavedLoopSection';
 
 type SavedRehearsalLibrarySectionProps = {
   activePlayableItem: PlayableItem | null;

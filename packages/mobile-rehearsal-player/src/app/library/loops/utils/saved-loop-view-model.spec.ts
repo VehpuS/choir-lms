@@ -11,8 +11,8 @@ import {
 import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,
-} from '../../test-utils/library-test-fixtures.js';
-import { buildPlaylistPlaybackSession } from '../playlists/utils/saved-playlist-playback-view-model.js';
+} from '../../../test-utils/library-test-fixtures.js';
+import { buildPlaylistPlaybackSession } from '../../playlists/utils/saved-playlist-playback-view-model.js';
 import { resolveLoopPreviewPlaybackTimeline } from './saved-loop-preview-playback-view-model.js';
 import { resolveSavedLoopRowActions } from './saved-loop-row-actions.js';
 import {

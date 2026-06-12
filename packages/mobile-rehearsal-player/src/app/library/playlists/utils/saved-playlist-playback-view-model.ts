@@ -13,7 +13,7 @@ import {
   type PlaybackQueue,
 } from '@org/audio-library-runtime';
 
-import type { SavedTrackPlaybackState } from '../../utils/saved-track-playback-view-model';
+import type { SavedTrackPlaybackState } from '../../playback/utils/saved-track-playback-view-model';
 export {
   canShowQueuePlaylistActions,
   createTransientPlaybackSession,

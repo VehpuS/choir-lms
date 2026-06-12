@@ -3,20 +3,20 @@ import { map } from 'es-toolkit/compat';
 import { useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
+import { CompactPlayableRowShell } from '../../../components/CompactPlayableRowShell';
+import { OverflowMenuTrigger } from '../../../components/OverflowMenuTrigger';
+import { OptionsMenuSheet } from '../../components/OptionsMenuSheet';
+import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
+import {
+  resolveDriveLibrarySourceActionPlacement,
+  type DriveLibrarySourceAction,
+} from '../utils/drive-library-source-actions';
 import {
   getSourceAvailabilityLabel,
   getSourceMetadataLabels,
   getSourceStatusMessage,
   type DriveLibrarySource,
 } from '../utils/drive-library-view-model';
-import {
-  resolveDriveLibrarySourceActionPlacement,
-  type DriveLibrarySourceAction,
-} from '../utils/drive-library-source-actions';
-import { CompactPlayableRowShell } from '../../../components/CompactPlayableRowShell';
-import { OverflowMenuTrigger } from '../../../components/OverflowMenuTrigger';
-import { OptionsMenuSheet } from '../../components/OptionsMenuSheet';
-import { SearchHighlightedText } from '../../components/SearchHighlightedText';
 import {
   DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT,
   driveLibrarySourceGroupStyles as styles,
@@ -194,7 +194,9 @@ const DriveLibrarySourceCard = ({
         )}
         badge={
           <View style={[styles.badge, getAvailabilityBadgeStyle(source)]}>
-            <Text style={[styles.badgeLabel, getAvailabilityLabelStyle(source)]}>
+            <Text
+              style={[styles.badgeLabel, getAvailabilityLabelStyle(source)]}
+            >
               {getSourceAvailabilityLabel(source)}
             </Text>
           </View>
@@ -204,7 +206,9 @@ const DriveLibrarySourceCard = ({
           statusMessage ? (
             <Text
               style={
-                isErrorMessage ? styles.sourceErrorMessage : styles.sourceMessage
+                isErrorMessage
+                  ? styles.sourceErrorMessage
+                  : styles.sourceMessage
               }
             >
               {statusMessage}

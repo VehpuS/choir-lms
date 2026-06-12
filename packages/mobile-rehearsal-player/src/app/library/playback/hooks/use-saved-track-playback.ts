@@ -9,12 +9,12 @@ import {
 import { type DriveAuthorizationState } from '@org/google-drive';
 import { useEffect, useRef, useState } from 'react';
 
-import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
+import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import {
   rebuildPlaylistPlaybackSessionForMode,
   syncActivePlaylistPlaybackSession,
   type ActivePlaylistContext,
-} from '../playlists/utils/playlist-session-mode';
+} from '../../playlists/utils/playlist-session-mode';
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
@@ -27,7 +27,7 @@ import {
   updatePlaylistPlaybackRepeatMode,
   type PlaylistPlaybackIssue,
   type PlaylistPlaybackSession,
-} from '../playlists/utils/saved-playlist-playback-view-model';
+} from '../../playlists/utils/saved-playlist-playback-view-model';
 import { createSavedTrackPlaybackController } from '../utils/saved-track-playback-controller';
 import { registerSavedTrackPlaybackRemoteCommandHandlers } from '../utils/saved-track-playback-remote-controls';
 import {

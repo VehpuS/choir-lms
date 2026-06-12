@@ -1,6 +1,7 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
 import { formatDurationLabel } from '../../library/drive/utils/drive-library-view-model';
+import type { SavedTrackPlaybackState } from '../../library/playback/utils/saved-track-playback-view-model';
 import {
   getPlaylistPlaybackSessionSummary,
   getPlaylistQueueModeLabel,
@@ -8,7 +9,6 @@ import {
   resolvePlaylistPlaybackAdvance,
   type PlaylistPlaybackSession,
 } from '../../library/playlists/utils/saved-playlist-playback-view-model';
-import type { SavedTrackPlaybackState } from '../../library/utils/saved-track-playback-view-model';
 
 export type ShellDestinationKey = 'recents' | 'add' | 'library';
 

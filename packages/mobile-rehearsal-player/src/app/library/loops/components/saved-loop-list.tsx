@@ -3,23 +3,23 @@ import { type PlayableItem } from '@org/audio-library-models';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { CompactPlayableRowShell } from '../../components/CompactPlayableRowShell';
-import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
-import { resolveSavedLoopRowActions } from '../utils/saved-loop-row-actions';
-import {
-  getSavedLoopItemIssue,
-  type SavedLoopCard,
-  type SavedLoopIssue,
-} from '../utils/saved-loop-view-model';
+import { CompactPlayableRowShell } from '../../../components/CompactPlayableRowShell';
+import { OverflowMenuTrigger } from '../../../components/OverflowMenuTrigger';
+import { OptionsMenuSheet } from '../../components/OptionsMenuSheet';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
   isSavedTrackPlaybackActive,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
-} from '../utils/saved-track-playback-view-model';
-import { OptionsMenuSheet } from './OptionsMenuSheet';
-import { SearchHighlightedText } from './SearchHighlightedText';
+} from '../../playback/utils/saved-track-playback-view-model';
+import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
+import { resolveSavedLoopRowActions } from '../utils/saved-loop-row-actions';
+import {
+  getSavedLoopItemIssue,
+  type SavedLoopCard,
+  type SavedLoopIssue,
+} from '../utils/saved-loop-view-model';
 import {
   SAVED_LOOP_PRIMARY_TEXT,
   savedLoopListStyles as styles,
