@@ -7,25 +7,25 @@ import {
   createPlaylistEntryFromLoop,
   createPlaylistEntryFromTrack,
 } from '@org/audio-library-models';
+import {
+  PLAYABLE_SOURCE,
+  SAVED_LOOP,
+} from '../../test-utils/library-test-fixtures.js';
 import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model.js';
-import { loadSavedPlaylists } from '../hooks/use-saved-playlists.js';
 import {
   loadSavedRehearsalLibrarySources,
   resolveSavedSourceDurationUpdate,
   verifySavedRehearsalLibraryStorage,
 } from '../hooks/use-saved-rehearsal-library.js';
+import { loadSavedPlaylists } from '../playlists/hooks/use-saved-playlists.js';
+import {
+  getSavedPlaylistsStatusCopy,
+  getSelectedPlaylistIssue,
+} from '../playlists/utils/saved-playlist-status-view-model.js';
 import {
   buildSavedPlaylist,
   resolveSavedPlaylistCards,
-} from '../utils/saved-playlist-view-model.js';
-import {
-  getSelectedPlaylistIssue,
-  getSavedPlaylistsStatusCopy,
-} from '../utils/saved-playlist-status-view-model.js';
-import {
-  PLAYABLE_SOURCE,
-  SAVED_LOOP,
-} from '../../test-utils/library-test-fixtures.js';
+} from '../playlists/utils/saved-playlist-view-model.js';
 
 const SAVED_SOURCE: DriveLibrarySource = {
   id: 'drive:warmup-track',

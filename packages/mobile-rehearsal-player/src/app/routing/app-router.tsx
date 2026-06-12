@@ -6,8 +6,8 @@ import { useSavedTrackPlayback } from '../library/hooks/use-saved-track-playback
 import {
   appendQueueItemsToPlaylist,
   buildSavedPlaylistFromQueue,
-} from '../library/utils/queue-playlist-capture';
-import { canShowQueuePlaylistActions } from '../library/utils/saved-playlist-playback-view-model';
+} from '../library/playlists/utils/queue-playlist-capture';
+import { canShowQueuePlaylistActions } from '../library/playlists/utils/saved-playlist-playback-view-model';
 import { getSavedTrackPlaybackActionCopy } from '../library/utils/saved-track-playback-view-model';
 import { AddScreen } from '../screens/add';
 import { LibraryScreen } from '../screens/library';

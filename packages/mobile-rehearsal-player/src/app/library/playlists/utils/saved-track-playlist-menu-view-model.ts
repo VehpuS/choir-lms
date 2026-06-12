@@ -1,5 +1,5 @@
-import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
-import { getSourceMetadataLabels } from '../drive/utils/drive-library-view-model';
+import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
+import { getSourceMetadataLabels } from '../../drive/utils/drive-library-view-model';
 
 export type SavedTrackPlaylistMenuStep = 'hidden' | 'selector' | 'create';
 

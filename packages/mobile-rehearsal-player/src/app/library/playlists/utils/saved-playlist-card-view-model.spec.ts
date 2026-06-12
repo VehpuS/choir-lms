@@ -3,12 +3,12 @@ import { describe, it } from 'node:test';
 
 import { addTrackToPlaylist, createPlaylist } from '@org/audio-library-models';
 
-import { PLAYABLE_SOURCE } from '../../test-utils/library-test-fixtures.js';
+import { PLAYABLE_SOURCE } from '../../../test-utils/library-test-fixtures.js';
 import {
   getSavedPlaylistCardPlayAction,
   resolveSavedPlaylistCardRenameTarget,
-} from '../utils/saved-playlist-card-view-model.js';
-import { resolveSavedPlaylistCards } from '../utils/saved-playlist-view-model.js';
+} from './saved-playlist-card-view-model.js';
+import { resolveSavedPlaylistCards } from './saved-playlist-view-model.js';
 
 describe('getSavedPlaylistCardPlayAction', () => {
   it('labels playable cards and disables empty ones', () => {

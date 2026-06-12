@@ -10,22 +10,21 @@ import {
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 
-import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
+import { DriveLibrarySectionHeader } from '../drive/components/drive-library-section-header';
+import { DriveLibrarySourceGroup } from '../drive/components/drive-library-source-group';
+import { DriveLibraryStatusCard } from '../drive/components/drive-library-status-card';
 import {
   type DriveLibrarySource,
   type DriveLibraryStatusCopy,
 } from '../drive/utils/drive-library-view-model';
-import {
-  filterSavedLibrarySourcesByQuery,
-  filterSavedLoopsByQuery,
-  filterSavedPlaylistsByQuery,
-  resolveActiveLibrarySearchQuery,
-} from '../utils/saved-library-search-view-model';
-import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
-import type { PlaylistPlaybackSession } from '../utils/saved-playlist-playback-view-model';
-import { getPlaylistPlaybackActionCopy } from '../utils/saved-playlist-playback-view-model';
-import { getSelectedPlaylistIssue } from '../utils/saved-playlist-status-view-model';
+import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../hooks/use-saved-rehearsal-library';
+import { SavedPlaylistSection } from '../playlists/components/saved-playlist-section';
+import { SavedPlaylistCardsList } from '../playlists/components/saved-playlist-section-cards';
+import { SavedTrackPlaylistMenuSurface } from '../playlists/components/saved-track-playlist-menu-surface';
+import type { PlaylistPlaybackSession } from '../playlists/utils/saved-playlist-playback-view-model';
+import { getPlaylistPlaybackActionCopy } from '../playlists/utils/saved-playlist-playback-view-model';
+import { getSelectedPlaylistIssue } from '../playlists/utils/saved-playlist-status-view-model';
 import {
   buildSavedPlaylist,
   getSavedPlaylistRemovalCopy,
@@ -34,7 +33,18 @@ import {
   validatePlaylistName,
   type PlaylistDraftIssue,
   type SavedPlaylistIssue,
-} from '../utils/saved-playlist-view-model';
+} from '../playlists/utils/saved-playlist-view-model';
+import {
+  getSavedTrackPlaylistMenuInitialState,
+  reduceSavedTrackPlaylistMenuState,
+} from '../playlists/utils/saved-track-playlist-menu-view-model';
+import {
+  filterSavedLibrarySourcesByQuery,
+  filterSavedLoopsByQuery,
+  filterSavedPlaylistsByQuery,
+  resolveActiveLibrarySearchQuery,
+} from '../utils/saved-library-search-view-model';
+import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import { resolveSavedRehearsalLibraryDetailMode } from '../utils/saved-rehearsal-library-detail-view-model';
 import {
   getSavedRehearsalLibraryDependentLoops,
@@ -48,10 +58,6 @@ import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../utils/saved-track-playback-view-model';
-import {
-  getSavedTrackPlaylistMenuInitialState,
-  reduceSavedTrackPlaylistMenuState,
-} from '../utils/saved-track-playlist-menu-view-model';
 import { resolveSavedTrackRowActions } from '../utils/saved-track-row-actions';
 import {
   normalizeRecentSearchTerm,
@@ -66,14 +72,8 @@ import {
   buildTrackScopedLoopPlaybackPlaylist,
   getTrackScopedLoopDetailCopy,
 } from '../utils/track-scoped-loop-view-model';
-import { DriveLibrarySectionHeader } from '../drive/components/drive-library-section-header';
-import { DriveLibrarySourceGroup } from '../drive/components/drive-library-source-group';
-import { DriveLibraryStatusCard } from '../drive/components/drive-library-status-card';
 import { LibrarySearchPanel } from './LibrarySearchPanel';
 import { SavedLoopSection } from './SavedLoopSection';
-import { SavedPlaylistSection } from './SavedPlaylistSection';
-import { SavedPlaylistCardsList } from './SavedPlaylistSectionCards';
-import { SavedTrackPlaylistMenuSurface } from './SavedTrackPlaylistMenuSurface';
 
 type SavedRehearsalLibrarySectionProps = {
   activePlayableItem: PlayableItem | null;

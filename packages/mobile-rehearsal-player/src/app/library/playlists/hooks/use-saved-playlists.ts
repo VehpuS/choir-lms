@@ -2,11 +2,11 @@ import type { Playlist } from '@org/audio-library-models';
 import { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
 import { useEffect, useState } from 'react';
 
-import type { SavedPlaylistIssue } from '../utils/saved-playlist-view-model';
 import {
   LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
   verifySavedRehearsalLibraryStorage,
-} from './use-saved-rehearsal-library';
+} from '../../hooks/use-saved-rehearsal-library';
+import type { SavedPlaylistIssue } from '../utils/saved-playlist-view-model';
 
 type SavedPlaylistReader = Pick<
   AsyncStoragePracticeRepository,

@@ -16,7 +16,7 @@ import {
 import {
   buildPlaylistPlaybackSession,
   queuePlayableItemDuringPlayback,
-} from '../../library/utils/saved-playlist-playback-view-model.js';
+} from '../../library/playlists/utils/saved-playlist-playback-view-model.js';
 import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,

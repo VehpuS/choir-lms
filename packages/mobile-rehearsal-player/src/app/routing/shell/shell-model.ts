@@ -7,7 +7,7 @@ import {
   getPlaylistRepeatModeLabel,
   resolvePlaylistPlaybackAdvance,
   type PlaylistPlaybackSession,
-} from '../../library/utils/saved-playlist-playback-view-model';
+} from '../../library/playlists/utils/saved-playlist-playback-view-model';
 import type { SavedTrackPlaybackState } from '../../library/utils/saved-track-playback-view-model';
 
 export type ShellDestinationKey = 'recents' | 'add' | 'library';

@@ -14,15 +14,15 @@ import {
 import {
   clampQueuePosition,
   resolveQueueMoveTargetIndex,
-} from '../../components/queue-move-position-model.js';
+} from '../../../components/queue-move-position-model.js';
 import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,
-} from '../../test-utils/library-test-fixtures.js';
+} from '../../../test-utils/library-test-fixtures.js';
 import {
   appendQueueItemsToPlaylist,
   buildSavedPlaylistFromQueue,
-} from '../utils/queue-playlist-capture.js';
+} from './queue-playlist-capture.js';
 import {
   buildSavedPlaylistDetailDraftPlaylist,
   getSavedPlaylistDetailInitialState,
@@ -34,7 +34,7 @@ import {
   resolveSavedPlaylistDetailDragTargetIndex,
   resolveSavedPlaylistDetailEdgeAutoscrollDelta,
   restoreSavedPlaylistDetailEntry,
-} from '../utils/saved-playlist-detail-view-model.js';
+} from './saved-playlist-detail-view-model.js';
 import {
   buildPlaylistPlaybackSession,
   canShowQueuePlaylistActions,
@@ -54,8 +54,8 @@ import {
   resolvePlaylistPlaybackRewind,
   selectPlaylistPlaybackQueueItem,
   updatePlaylistPlaybackRepeatMode,
-} from '../utils/saved-playlist-playback-view-model.js';
-import { getSavedPlaylistsStatusCopy } from '../utils/saved-playlist-status-view-model.js';
+} from './saved-playlist-playback-view-model.js';
+import { getSavedPlaylistsStatusCopy } from './saved-playlist-status-view-model.js';
 import {
   getPlaylistOptionsMenuActions,
   getSavedPlaylistDetailSummary,
@@ -63,12 +63,12 @@ import {
   getSavedPlaylistRemovalCopy,
   resolveSavedPlaylistCards,
   resolveSelectedPlaylist,
-} from '../utils/saved-playlist-view-model.js';
+} from './saved-playlist-view-model.js';
 import {
   getSavedTrackContextMenuCopy,
   getSavedTrackPlaylistMenuInitialState,
   reduceSavedTrackPlaylistMenuState,
-} from '../utils/saved-track-playlist-menu-view-model.js';
+} from './saved-track-playlist-menu-view-model.js';
 
 const buildThreeItemQueueSession = () => {
   const queuePlaylist = addTrackToPlaylist(

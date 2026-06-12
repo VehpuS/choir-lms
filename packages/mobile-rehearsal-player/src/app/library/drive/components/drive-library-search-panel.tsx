@@ -27,7 +27,6 @@ const SECONDARY_ACTION_TEXT = '#305c4d';
 
 export const DriveLibrarySearchPanel = ({
   canSearch,
-  helperCopy: _helperCopy,
   isLoading,
   isSearchMode,
   onClearSearch,

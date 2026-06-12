@@ -7,8 +7,8 @@ import {
 import {
   formatDurationLabel,
   type DriveLibrarySource,
-} from '../drive/utils/drive-library-view-model';
-import type { OptionsMenuAction } from './options-menu-sheet-view-model';
+} from '../../drive/utils/drive-library-view-model';
+import type { OptionsMenuAction } from '../../utils/options-menu-sheet-view-model';
 import {
   getPlaylistPlaybackSessionSummary,
   type PlaylistPlaybackSession,

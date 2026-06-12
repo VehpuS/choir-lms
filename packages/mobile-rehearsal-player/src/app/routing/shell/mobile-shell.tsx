@@ -7,8 +7,8 @@ import { DriveSessionMenu } from '../../auth/google-drive/components/drive-sessi
 import { useGoogleDriveAuthorization } from '../../auth/google-drive/use-authorization';
 import { PlaybackWaveform } from '../../components/playback-waveform';
 import { useSavedTrackPlayback } from '../../library/hooks/use-saved-track-playback';
-import type { PlaylistPlaybackSession } from '../../library/utils/saved-playlist-playback-view-model';
-import type { PlaylistDraftIssue } from '../../library/utils/saved-playlist-view-model';
+import type { PlaylistPlaybackSession } from '../../library/playlists/utils/saved-playlist-playback-view-model';
+import type { PlaylistDraftIssue } from '../../library/playlists/utils/saved-playlist-view-model';
 import type { SavedTrackPlaybackState } from '../../library/utils/saved-track-playback-view-model';
 import { PlaybackSurface } from '../playback/playback-surface';
 import { QueuePlaylistAppendDialog } from '../queue/queue-playlist-append-dialog';

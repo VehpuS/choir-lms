@@ -12,6 +12,7 @@ import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,
 } from '../../test-utils/library-test-fixtures.js';
+import { buildPlaylistPlaybackSession } from '../playlists/utils/saved-playlist-playback-view-model.js';
 import { resolveLoopPreviewPlaybackTimeline } from '../utils/saved-loop-preview-playback-view-model.js';
 import { resolveSavedLoopRowActions } from '../utils/saved-loop-row-actions.js';
 import {
@@ -31,7 +32,6 @@ import {
   resolveSourcesMissingLoopBuilderDuration,
   updateLoopBuilderDraftRange,
 } from '../utils/saved-loop-view-model.js';
-import { buildPlaylistPlaybackSession } from '../utils/saved-playlist-playback-view-model.js';
 import {
   buildTrackScopedLoopPlaybackPlaylist,
   getTrackScopedLoopDetailCopy,
@@ -374,7 +374,10 @@ describe('saved loop view-model', () => {
       },
     });
 
-    assert.equal(actions.find((action) => action.label === 'Edit loop')?.disabled, false);
+    assert.equal(
+      actions.find((action) => action.label === 'Edit loop')?.disabled,
+      false,
+    );
   });
 
   it('omits loop queue actions when playback queueing is unavailable', () => {

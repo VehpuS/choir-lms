@@ -3,10 +3,10 @@ import { describe, it } from 'node:test';
 
 import {
   consumeSavedPlaylistRenameRequest,
-  getSavedPlaylistDetailPlaybackAction,
   getSavedPlaylistDetailItemRemovalCopy,
+  getSavedPlaylistDetailPlaybackAction,
   queueSavedPlaylistRenameRequest,
-} from '../utils/saved-playlist-detail-view-model.js';
+} from './saved-playlist-detail-view-model.js';
 
 describe('saved playlist detail rename request helpers', () => {
   it('queues and consumes rename requests for the matching playlist only', () => {

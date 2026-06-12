@@ -4,14 +4,14 @@ import type {
   RehearsalQueueMode,
 } from '@org/audio-library-models';
 
-import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
+import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
+import { resolveSynchronizedPlayableItem } from '../../utils/saved-track-playback-view-model';
 import {
   buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
   isTransientQueueSession,
   type PlaylistPlaybackSession,
 } from './saved-playlist-playback-view-model';
-import { resolveSynchronizedPlayableItem } from './saved-track-playback-view-model';
 
 export type ActivePlaylistContext = {
   loops: NamedLoop[];

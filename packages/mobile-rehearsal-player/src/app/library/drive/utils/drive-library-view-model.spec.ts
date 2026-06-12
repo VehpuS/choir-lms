@@ -12,9 +12,6 @@ import {
   SEARCH_SNAPSHOT,
   UNSUPPORTED_SOURCE,
 } from '../../../test-utils/library-test-fixtures.js';
-import '../../__tests__/saved-loop-view-model.spec.js';
-import '../../__tests__/saved-rehearsal-library-view-model.spec.js';
-import '../../__tests__/saved-track-playback-view-model.spec.js';
 
 import {
   COMPACT_PLAYABLE_ROW_CARD_TITLE_TRAILING_PADDING,

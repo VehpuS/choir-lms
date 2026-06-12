@@ -7,15 +7,15 @@ import {
   View,
 } from 'react-native';
 
+import { OptionsMenuSheet } from '../../components/OptionsMenuSheet';
+import {
+  SAVED_PLAYLIST_PLACEHOLDER_TEXT,
+  savedPlaylistSectionStyles as styles,
+} from '../../components/saved-playlist-section-styles';
 import {
   getPlaylistOptionsMenuActions,
   type PlaylistDraftIssue,
 } from '../utils/saved-playlist-view-model';
-import { OptionsMenuSheet } from './OptionsMenuSheet';
-import {
-  SAVED_PLAYLIST_PLACEHOLDER_TEXT,
-  savedPlaylistSectionStyles as styles,
-} from './saved-playlist-section-styles';
 
 type PlaylistRenameDialogProps = {
   isMutating: boolean;

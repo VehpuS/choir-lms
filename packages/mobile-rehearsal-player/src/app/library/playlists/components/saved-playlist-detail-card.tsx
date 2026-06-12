@@ -2,7 +2,9 @@ import type { Playlist } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
 
-import { OverflowMenuTrigger } from '../../components/OverflowMenuTrigger';
+import { OverflowMenuTrigger } from '../../../components/OverflowMenuTrigger';
+import { savedPlaylistSectionStyles as styles } from '../../components/saved-playlist-section-styles';
+import { SavedLibraryDetailCardShell } from '../../components/SavedLibraryDetailCardShell';
 import {
   consumeSavedPlaylistRenameRequest,
   type SavedPlaylistDetailRemovalNotice,
@@ -15,10 +17,8 @@ import type {
 import {
   PlaylistOptionsMenuSurface,
   PlaylistRenameDialog,
-} from './PlaylistRenameDialog';
-import { savedPlaylistSectionStyles as styles } from './saved-playlist-section-styles';
-import { SavedLibraryDetailCardShell } from './SavedLibraryDetailCardShell';
-import { SavedPlaylistDetailItemsList } from './SavedPlaylistDetailItemsList';
+} from './playlist-rename-dialog';
+import { SavedPlaylistDetailItemsList } from './saved-playlist-detail-items-list';
 
 type PlaylistEntry = Playlist['items'][number];
 

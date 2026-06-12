@@ -5,7 +5,7 @@ import type { useSavedTrackPlayback } from '../../library/hooks/use-saved-track-
 import { LoopPreviewPlaybackContext } from '../../library/components/LoopPreviewPlaybackContext';
 import { SavedRehearsalLibrarySection } from '../../library/components/SavedRehearsalLibrarySection';
 import type { useRehearsalLibraryScreenController } from '../../library/hooks/use-rehearsal-library-screen-controller';
-import { resolveSavedPlaylistDetailEdgeAutoscrollDelta } from '../../library/utils/saved-playlist-detail-view-model';
+import { resolveSavedPlaylistDetailEdgeAutoscrollDelta } from '../../library/playlists/utils/saved-playlist-detail-view-model';
 import { appTheme } from '../../utils/theme';
 
 type SavedTrackPlaybackController = Pick<

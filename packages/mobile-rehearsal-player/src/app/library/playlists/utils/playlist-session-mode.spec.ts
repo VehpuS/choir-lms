@@ -12,18 +12,18 @@ import {
 import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,
-} from '../../test-utils/library-test-fixtures.js';
+} from '../../../test-utils/library-test-fixtures.js';
 import {
   rebuildPlaylistPlaybackSessionForMode,
   syncActivePlaylistContext,
   syncActivePlaylistPlaybackSession,
-} from '../utils/playlist-session-mode.js';
+} from './playlist-session-mode.js';
 import {
   buildPlaylistPlaybackSession,
   createTransientPlaybackSession,
   getPlaylistPlaybackCurrentItem,
   queuePlayableItemDuringPlayback,
-} from '../utils/saved-playlist-playback-view-model.js';
+} from './saved-playlist-playback-view-model.js';
 
 describe('rebuildPlaylistPlaybackSessionForMode', () => {
   it('rebuilds the queue around the current playlist entry when mode changes', () => {
