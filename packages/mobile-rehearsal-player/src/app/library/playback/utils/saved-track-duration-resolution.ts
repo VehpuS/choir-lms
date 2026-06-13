@@ -3,10 +3,10 @@ import type { Dispatch, SetStateAction } from 'react';
 
 import {
   createSavedTrackPlaybackRuntimeIssue,
-  resolvePlaybackScrubPositionSeconds,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from './saved-track-playback-view-model';
+import { resolvePlaybackScrubPositionSeconds } from './saved-track-playback-timeline';
 import {
   getSavedTrackPlayer,
   getSavedTrackPlayerStateMap,

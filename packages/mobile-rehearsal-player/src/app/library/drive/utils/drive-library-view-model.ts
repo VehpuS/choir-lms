@@ -6,7 +6,19 @@ import type {
   DriveFolder,
   DriveSearchSnapshot,
 } from '@org/google-drive';
-import { compact } from 'es-toolkit/compat';
+
+export {
+  formatDurationLabel,
+  getDriveSearchContextCopy,
+  getFolderMetadataLabels,
+  getLibrarySearchContextCopy,
+  getSourceAvailabilityLabel,
+  getSourceMetadataLabels,
+  getSourceStatusMessage,
+} from './drive-library-metadata';
+export type { SearchContextCopy } from './drive-library-metadata';
+
+import { getDriveSearchContextCopy } from './drive-library-metadata';
 
 export type DriveLibrarySource = DriveDiscoveredAudioSource;
 
@@ -18,11 +30,6 @@ export type DriveLibraryStatusCopy = {
   title: string;
   message: string;
   tone: DriveLibraryStatusTone;
-};
-
-export type SearchContextCopy = {
-  helper: string;
-  placeholder: string;
 };
 
 type DriveLibraryStatusOptions = {
@@ -53,32 +60,6 @@ const formatAttentionCount = (count: number) => {
   return `${count} items need attention`;
 };
 
-const formatDurationSegment = (value: number) => {
-  return value.toString().padStart(2, '0');
-};
-
-const formatUpdatedLabel = (modifiedTime?: string) => {
-  if (!modifiedTime) {
-    return undefined;
-  }
-
-  const parsedDate = new Date(modifiedTime);
-
-  if (Number.isNaN(parsedDate.valueOf())) {
-    return undefined;
-  }
-
-  return `Updated ${parsedDate.toISOString().slice(0, 10)}`;
-};
-
-const formatFormatLabel = (source: DriveLibrarySource) => {
-  if (source.extension) {
-    return source.extension.toUpperCase();
-  }
-
-  return source.mimeType;
-};
-
 const getTotalBrowseSourceCount = (snapshot: DriveBrowseSnapshot) => {
   return snapshot.playableSources.length + snapshot.unavailableSources.length;
 };
@@ -96,6 +77,8 @@ const getDriveSearchScopeCopy = (location?: DriveBrowseLocation) => {
     };
   }
 
+  const searchContext = getDriveSearchContextCopy(location);
+
   if (location.kind === 'folder') {
     return {
       loadingMessage: `Looking for matching audio in ${location.name} and nested folders.`,
@@ -103,16 +86,9 @@ const getDriveSearchScopeCopy = (location?: DriveBrowseLocation) => {
     };
   }
 
-  if (location.rootKind === 'shared') {
-    return {
-      loadingMessage: 'Looking for matching audio in Shared folders.',
-      readySuffix: 'in Shared folders',
-    };
-  }
-
   return {
-    loadingMessage: 'Looking for matching audio in My Drive.',
-    readySuffix: 'in My Drive',
+    loadingMessage: `Looking for matching audio ${searchContext.helper.replace('Search ', '').toLowerCase()}.`,
+    readySuffix: searchContext.helper.replace('Search ', '').toLowerCase(),
   };
 };
 
@@ -132,27 +108,6 @@ const normalizeIssueMessage = (issue: string) => {
   }
 
   return 'Drive audio could not be loaded right now. Retry after checking the Google connection and network state.';
-};
-
-export const formatDurationLabel = (durationMs?: number) => {
-  if (
-    durationMs === undefined ||
-    !Number.isFinite(durationMs) ||
-    durationMs < 0
-  ) {
-    return undefined;
-  }
-
-  const totalSeconds = Math.floor(durationMs / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  if (hours > 0) {
-    return `${hours}:${formatDurationSegment(minutes)}:${formatDurationSegment(seconds)}`;
-  }
-
-  return `${minutes}:${formatDurationSegment(seconds)}`;
 };
 
 export const getDriveLibraryStatusCopy = (
@@ -300,97 +255,4 @@ export const getDriveLibraryStatusCopy = (
     message: `${pluralize(browseFolderCount, 'folder')}, ${pluralize(browsePlayableCount, 'playable track')}, and ${formatAttentionCount(browseUnavailableCount)} are available in ${options.browseSnapshot.location.name}.`,
     tone: 'ready',
   };
-};
-
-export const getDriveSearchContextCopy = (
-  location: DriveBrowseLocation,
-): SearchContextCopy => {
-  if (location.kind === 'folder') {
-    return {
-      helper: `Search in ${location.name}`,
-      placeholder: `Search in ${location.name}`,
-    };
-  }
-
-  if (location.rootKind === 'shared') {
-    return {
-      helper: 'Search in Shared folders',
-      placeholder: 'Search in Shared folders',
-    };
-  }
-
-  return {
-    helper: 'Search in My Drive',
-    placeholder: 'Search in My Drive',
-  };
-};
-
-export const getLibrarySearchContextCopy = (): SearchContextCopy => {
-  return {
-    helper: 'Search saved library (playlists, tracks, and loops)',
-    placeholder: 'Search saved library',
-  };
-};
-
-export const getFolderMetadataLabels = (folder: DriveLibraryFolder) => {
-  const labels = compact([
-    folder.shared || folder.rootKind === 'shared' ? 'Shared folder' : 'Folder',
-    formatUpdatedLabel(folder.modifiedTime),
-  ]);
-
-  if (labels.length > 0) {
-    return labels;
-  }
-
-  return ['Folder'];
-};
-
-export const getSourceAvailabilityLabel = (source: DriveLibrarySource) => {
-  if (source.availability.status === 'available') {
-    return 'Playable';
-  }
-
-  if (
-    source.availability.status === 'unsupported' &&
-    source.availability.reason === 'unsupported-format'
-  ) {
-    return 'Unsupported format';
-  }
-
-  if (source.availability.status === 'unsupported') {
-    return 'Unsupported';
-  }
-
-  return 'Unavailable';
-};
-
-export const getSourceMetadataLabels = (source: DriveLibrarySource) => {
-  const labels = compact([
-    formatFormatLabel(source),
-    formatDurationLabel(source.durationMs),
-    formatUpdatedLabel(source.modifiedTime),
-    source.locationLabel,
-  ]);
-
-  if (labels.length > 0) {
-    return labels;
-  }
-
-  return ['Metadata unavailable'];
-};
-
-export const getSourceStatusMessage = (source: DriveLibrarySource) => {
-  if (source.availability.status === 'available') {
-    return undefined;
-  }
-
-  if (source.availability.message) {
-    return source.availability.message;
-  }
-
-  if (source.availability.status === 'unsupported') {
-    return 'This source is outside the supported audio set.';
-  }
-
-  return 'This source is currently unavailable.';
 };

@@ -3,9 +3,9 @@ import type { PlayableItem } from '@org/audio-library-models';
 import {
   createSavedTrackPlaybackRequest,
   isTrackPlayerAlreadyInitializedError,
-  normalizePlaybackVolumeLevel,
   type SavedTrackPlayerTrack,
 } from './saved-track-playback-view-model';
+import { normalizePlaybackVolumeLevel } from './saved-track-playback-timeline';
 import {
   getSavedTrackPlayer,
   getSavedTrackPlayerModule,

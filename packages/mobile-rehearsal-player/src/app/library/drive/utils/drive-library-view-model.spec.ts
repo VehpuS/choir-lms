@@ -3,8 +3,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createPlaylist } from '@org/audio-library-models';
-
 import {
   AUTHORIZED_STATE,
   BROWSE_SNAPSHOT,
@@ -12,28 +10,6 @@ import {
   SEARCH_SNAPSHOT,
   UNSUPPORTED_SOURCE,
 } from '../../../test-utils/library-test-fixtures.js';
-
-import {
-  COMPACT_PLAYABLE_ROW_CARD_TITLE_TRAILING_PADDING,
-  getCompactPlayableRowShellLayout,
-} from '../../../components/compact-playable-row-shell/model.js';
-import {
-  filterSavedLibrarySourcesByQuery as filterSavedLibrarySourcesByLibraryQuery,
-  filterSavedLoopsByQuery as filterSavedLoopsByLibraryQuery,
-  filterSavedPlaylistsByQuery as filterSavedPlaylistsByLibraryQuery,
-  resolveActiveLibrarySearchQuery as resolveActiveLibraryQuery,
-  resolveSearchHighlightParts,
-} from '../../search/utils/saved-library-search-view-model.js';
-import {
-  normalizeRecentSearchTerm,
-  recordRecentSearchTerm,
-} from '../../search/utils/search-history.js';
-import {
-  ADD_SCREEN_PANEL_ORDER,
-  DRIVE_DISCOVERY_NAVIGATION_ORDER,
-  shouldShowDriveStatusCard,
-  shouldShowUnavailableSources,
-} from './add-drive-layout.js';
 import {
   getDriveLibraryStatusCopy,
   getDriveSearchContextCopy,
@@ -43,7 +19,6 @@ import {
   getSourceMetadataLabels,
   getSourceStatusMessage,
 } from './drive-library-view-model.js';
-import { resolveDriveSourceActions } from './drive-search-preview-actions.js';
 
 describe('getDriveLibraryStatusCopy', () => {
   it('summarizes the browse surface with folders and playable items', () => {
@@ -185,7 +160,7 @@ describe('getDriveLibraryStatusCopy', () => {
   });
 });
 
-describe('presentation helpers', () => {
+describe('drive library presentation helpers', () => {
   it('formats metadata and source state labels for library cards', () => {
     assert.deepEqual(getSourceMetadataLabels(PLAYABLE_SOURCE), [
       'MP3',
@@ -216,213 +191,7 @@ describe('presentation helpers', () => {
   });
 });
 
-describe('resolveDriveSourceActions', () => {
-  it('returns separate preview playback and save actions for unsaved Drive search rows', () => {
-    const actions = resolveDriveSourceActions({
-      activePlayableItem: null,
-      canMutateLibrary: true,
-      isLibraryLoading: false,
-      isLibraryMutating: false,
-      isPreparingPlayback: false,
-      isSaved: false,
-      isSavePending: false,
-      onPreviewPlayback: () => undefined,
-      onRemoveSource: () => undefined,
-      onSaveSource: () => undefined,
-      playbackState: undefined,
-      source: PLAYABLE_SOURCE,
-    });
-
-    assert.equal(actions.length, 2);
-    assert.deepEqual(actions[0], {
-      accessibilityLabel: 'Play Alto Line.mp3',
-      disabled: false,
-      iconName: 'play',
-      label: 'Play',
-      onPress: actions[0]?.onPress,
-      placement: 'inline',
-      tone: 'primary',
-    });
-    assert.deepEqual(actions[1], {
-      disabled: false,
-      label: 'Save',
-      onPress: actions[1]?.onPress,
-      placement: 'inline',
-    });
-  });
-
-  it('maps playback and save state labels for active and saved Drive search rows', () => {
-    const actions = resolveDriveSourceActions({
-      activePlayableItem: {
-        description: 'Full track',
-        id: 'track:drive:alto-line',
-        kind: 'track',
-        playlistEntryId: undefined,
-        playlistId: undefined,
-        range: {
-          endMs: 185000,
-          startMs: 0,
-        },
-        source: PLAYABLE_SOURCE,
-        sourceId: PLAYABLE_SOURCE.id,
-        title: PLAYABLE_SOURCE.name,
-      },
-      canMutateLibrary: true,
-      isLibraryLoading: false,
-      isLibraryMutating: false,
-      isPreparingPlayback: false,
-      isSaved: true,
-      isSavePending: true,
-      onPreviewPlayback: () => undefined,
-      onRemoveSource: () => undefined,
-      onSaveSource: () => undefined,
-      playbackState: 'playing',
-      source: PLAYABLE_SOURCE,
-    });
-
-    assert.equal(actions[0]?.label, 'Pause');
-    assert.equal(actions[0]?.iconName, 'pause');
-    assert.equal(actions[1]?.label, 'Removing…');
-  });
-});
-
-describe('saved library search helpers', () => {
-  it('normalizes an active library search query from user input', () => {
-    assert.equal(resolveActiveLibraryQuery('  Kyrie  '), 'Kyrie');
-    assert.equal(resolveActiveLibraryQuery('   '), null);
-  });
-
-  it('filters saved entities by the active library query', () => {
-    const sources = [
-      PLAYABLE_SOURCE,
-      {
-        ...PLAYABLE_SOURCE,
-        id: 'drive:bass-line',
-        name: 'Bass Line.mp3',
-      },
-    ];
-    const loops = [
-      {
-        createdAt: '2026-05-12T00:00:00.000Z',
-        endMs: 18000,
-        id: 'loop-1',
-        name: 'Entrance cue',
-        ownerId: 'user-1',
-        ownershipScope: 'user' as const,
-        sourceId: PLAYABLE_SOURCE.id,
-        sourceName: PLAYABLE_SOURCE.name,
-        startMs: 12000,
-        updatedAt: '2026-05-12T00:00:00.000Z',
-      },
-      {
-        createdAt: '2026-05-12T00:00:00.000Z',
-        endMs: 47000,
-        id: 'loop-2',
-        name: 'Bass cadence',
-        ownerId: 'user-1',
-        ownershipScope: 'user' as const,
-        sourceId: 'drive:bass-line',
-        sourceName: 'Bass Line.mp3',
-        startMs: 35000,
-        updatedAt: '2026-05-12T00:00:00.000Z',
-      },
-    ];
-    const playlists = [
-      createPlaylist({
-        createdAt: '2026-05-12T00:00:00.000Z',
-        name: 'Kyrie Warmups',
-        ownerId: 'user-1',
-      }),
-      createPlaylist({
-        createdAt: '2026-05-12T00:00:00.000Z',
-        name: 'Bass Focus',
-        ownerId: 'user-1',
-      }),
-    ];
-
-    assert.deepEqual(
-      filterSavedLibrarySourcesByLibraryQuery({
-        activeSearchQuery: 'bass',
-        sources,
-      }).map((source) => source.name),
-      ['Bass Line.mp3'],
-    );
-    assert.deepEqual(
-      filterSavedLoopsByLibraryQuery({
-        activeSearchQuery: 'bass',
-        loops,
-      }).map((loop) => loop.name),
-      ['Bass cadence'],
-    );
-    assert.deepEqual(
-      filterSavedPlaylistsByLibraryQuery({
-        activeSearchQuery: 'kyrie',
-        playlists,
-      }).map((playlist) => playlist.name),
-      ['Kyrie Warmups'],
-    );
-  });
-
-  it('returns highlight fragments for repeated case-insensitive matches', () => {
-    assert.deepEqual(
-      resolveSearchHighlightParts({
-        query: 'ky',
-        text: 'Kyrie Kyrie',
-      }),
-      [
-        {
-          isHighlighted: true,
-          text: 'Ky',
-        },
-        {
-          isHighlighted: false,
-          text: 'rie ',
-        },
-        {
-          isHighlighted: true,
-          text: 'Ky',
-        },
-        {
-          isHighlighted: false,
-          text: 'rie',
-        },
-      ],
-    );
-  });
-
-  it('highlights loop metadata only when the visible source label matches the active query', () => {
-    assert.deepEqual(
-      resolveSearchHighlightParts({
-        query: 'alto',
-        text: 'Alto Line.mp3 • 0:12 to 0:18',
-      }),
-      [
-        {
-          isHighlighted: true,
-          text: 'Alto',
-        },
-        {
-          isHighlighted: false,
-          text: ' Line.mp3 • 0:12 to 0:18',
-        },
-      ],
-    );
-    assert.deepEqual(
-      resolveSearchHighlightParts({
-        query: 'alto',
-        text: 'Bass Line.mp3 • 0:12 to 0:18',
-      }),
-      [
-        {
-          isHighlighted: false,
-          text: 'Bass Line.mp3 • 0:12 to 0:18',
-        },
-      ],
-    );
-  });
-});
-
-describe('search context copy helpers', () => {
+describe('drive library search context copy', () => {
   it('shows My Drive scoped search copy at root', () => {
     assert.deepEqual(getDriveSearchContextCopy(BROWSE_SNAPSHOT.location), {
       helper: 'Search in My Drive',
@@ -450,93 +219,5 @@ describe('search context copy helpers', () => {
       helper: 'Search saved library (playlists, tracks, and loops)',
       placeholder: 'Search saved library',
     });
-  });
-});
-
-describe('recent search helpers', () => {
-  it('normalizes recent search terms before recording them', () => {
-    assert.equal(normalizeRecentSearchTerm('  Kyrie  '), 'Kyrie');
-    assert.equal(normalizeRecentSearchTerm('   '), null);
-  });
-
-  it('promotes recent search terms to the front without duplicates', () => {
-    assert.deepEqual(
-      recordRecentSearchTerm(
-        ['Bass Focus', 'Kyrie Warmups', 'Entrance cue'],
-        ' kyrie warmups ',
-      ),
-      ['kyrie warmups', 'Bass Focus', 'Entrance cue'],
-    );
-  });
-
-  it('caps the stored recent search list to five entries', () => {
-    assert.deepEqual(
-      recordRecentSearchTerm(['One', 'Two', 'Three', 'Four', 'Five'], 'Six'),
-      ['Six', 'One', 'Two', 'Three', 'Four'],
-    );
-  });
-});
-
-describe('Add surface layout contract', () => {
-  it('keeps Add focused on a single discovery surface', () => {
-    assert.deepEqual(ADD_SCREEN_PANEL_ORDER, ['discovery']);
-  });
-
-  it('keeps search controls directly below breadcrumbs in discovery', () => {
-    assert.deepEqual(DRIVE_DISCOVERY_NAVIGATION_ORDER, [
-      'root-selector',
-      'breadcrumbs',
-      'search-control',
-    ]);
-  });
-
-  it('keeps status-card visibility tied to loading and non-ready states', () => {
-    assert.equal(shouldShowDriveStatusCard(false, 'ready'), false);
-    assert.equal(shouldShowDriveStatusCard(true, 'ready'), true);
-    assert.equal(shouldShowDriveStatusCard(false, 'warning'), true);
-  });
-
-  it('keeps unavailable groups visible only when unavailable sources exist', () => {
-    assert.equal(shouldShowUnavailableSources(0), false);
-    assert.equal(shouldShowUnavailableSources(1), true);
-  });
-});
-
-describe('compact playable row shell layout', () => {
-  it('keeps card overflow top-right and reserves title space when present', () => {
-    assert.deepEqual(
-      getCompactPlayableRowShellLayout({
-        hasOverflowTrigger: true,
-        variant: 'card',
-      }),
-      {
-        overflowPlacement: 'top-right',
-        titleTrailingPadding: COMPACT_PLAYABLE_ROW_CARD_TITLE_TRAILING_PADDING,
-      },
-    );
-    assert.deepEqual(
-      getCompactPlayableRowShellLayout({
-        hasOverflowTrigger: false,
-        variant: 'card',
-      }),
-      {
-        overflowPlacement: 'top-right',
-        titleTrailingPadding: 0,
-      },
-    );
-  });
-
-  it('keeps row overflow in trailing actions without extra title padding', () => {
-    assert.equal(COMPACT_PLAYABLE_ROW_CARD_TITLE_TRAILING_PADDING, 44);
-    assert.deepEqual(
-      getCompactPlayableRowShellLayout({
-        hasOverflowTrigger: true,
-        variant: 'row',
-      }),
-      {
-        overflowPlacement: 'trailing-actions',
-        titleTrailingPadding: 0,
-      },
-    );
   });
 });

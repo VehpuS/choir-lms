@@ -181,7 +181,7 @@ export const AppRouter = () => {
       const nextHistory = appendRecentRehearsalItem(
         currentHistory,
         buildRecentRehearsalItem({
-          activePlayableItem: activePlayableItem!,
+          activePlayableItem,
           activePlaylistSession: playback.activePlaylistSession,
           playedAt: new Date().toISOString(),
         }),

@@ -1,0 +1,9 @@
+export const PLAYLIST_BORDER_COLOR = '#d6d1c4';
+export const PLAYLIST_ERROR_SURFACE = '#fff1ed';
+export const PLAYLIST_ERROR_TEXT = '#8a2d1f';
+export const PLAYLIST_INPUT_BACKGROUND = '#fff9f0';
+export const PLAYLIST_PRIMARY_ACTION_BACKGROUND = '#305c4d';
+export const PLAYLIST_PRIMARY_ACTION_TEXT = '#fff8ef';
+export const PLAYLIST_PRIMARY_TEXT = '#1f1c17';
+export const PLAYLIST_SECONDARY_TEXT = '#5f5647';
+export const SAVED_PLAYLIST_PLACEHOLDER_TEXT = '#857b6c';

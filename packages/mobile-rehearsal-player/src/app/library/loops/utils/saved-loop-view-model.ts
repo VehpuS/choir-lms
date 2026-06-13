@@ -1,7 +1,6 @@
 import {
   createLoopPlayableItem,
   type NamedLoop,
-  type PlayableItem,
   validateLoopRange,
 } from '@org/audio-library-models';
 import { keyBy } from 'es-toolkit/compat';
@@ -13,13 +12,18 @@ import type {
 import { formatDurationLabel } from '../../drive/utils/drive-library-view-model';
 
 export {
+  createLoopBuilderDraft,
   createLoopPreviewPlayableItem,
+  getDefaultLoopName,
   hydrateLoopBuilderTrackDuration,
+  resolveActiveLoopEditorId,
   resolveLoopBuilderRangeSelection,
   resolveLoopBuilderTrack,
   resolveLoopBuilderTrackDuration,
   resolveSourcesMissingLoopBuilderDuration,
+  updateLoopBuilderDraftRange,
 } from './saved-loop-builder-view-model';
+export type { LoopBuilderDraft } from './saved-loop-builder-view-model';
 
 export type SavedLoopIssue = {
   kind: 'delete' | 'save' | 'storage';
@@ -51,13 +55,6 @@ export type SavedLoopCard = {
   playableItem: ReturnType<typeof createLoopPlayableItem> | null;
 };
 
-export type LoopBuilderDraft = {
-  endMs: number;
-  loopName: string;
-  startMs: number;
-  suggestedLoopName: string;
-};
-
 type BuildNamedLoopOptions = {
   createId?: (sourceId: string, createdAt: string) => string;
   endMs: number | null;
@@ -69,29 +66,11 @@ type BuildNamedLoopOptions = {
   startMs: number | null;
 };
 
-type DefaultLoopNameOptions = {
-  endMs: number;
-  sourceName: string;
-  startMs: number;
-};
-
-type UpdateLoopBuilderDraftRangeOptions = {
-  draft: LoopBuilderDraft;
-  endMs: number;
-  sourceName: string;
-  startMs: number;
-};
-
 type SavedLoopStatusOptions = {
   isLoading: boolean;
   issue: SavedLoopIssue | null;
   savedLoopCount: number;
   unresolvedLoopCount: number;
-};
-
-type ResolveActiveLoopEditorIdOptions = {
-  editingLoopId: string | null;
-  selectedTrack: PlayableItem | null;
 };
 
 const DEFAULT_UNAVAILABLE_LOOP_MESSAGE =
@@ -113,15 +92,6 @@ const formatLoopRangeLabel = (loop: Pick<NamedLoop, 'startMs' | 'endMs'>) => {
   const endLabel = formatDurationLabel(loop.endMs) ?? '0:00';
 
   return `${startLabel} to ${endLabel}`;
-};
-
-const formatLoopNameRangeLabel = (
-  loop: Pick<DefaultLoopNameOptions, 'startMs' | 'endMs'>,
-) => {
-  const startLabel = formatDurationLabel(loop.startMs) ?? '0:00';
-  const endLabel = formatDurationLabel(loop.endMs) ?? '0:00';
-
-  return `${startLabel} - ${endLabel}`;
 };
 
 const defaultCreateId = (sourceId: string, createdAt: string) => {
@@ -167,54 +137,6 @@ export const getSavedLoopRemovalCopy = (
       'will be removed from your saved practice loops.',
     title: 'Remove saved loop?',
   };
-};
-
-export const getDefaultLoopName = (options: DefaultLoopNameOptions) => {
-  return `Loop ${formatLoopNameRangeLabel(options)} • ${options.sourceName}`;
-};
-
-export const createLoopBuilderDraft = (
-  options: DefaultLoopNameOptions,
-): LoopBuilderDraft => {
-  const suggestedLoopName = getDefaultLoopName(options);
-
-  return {
-    endMs: options.endMs,
-    loopName: suggestedLoopName,
-    startMs: options.startMs,
-    suggestedLoopName,
-  };
-};
-
-export const updateLoopBuilderDraftRange = (
-  options: UpdateLoopBuilderDraftRangeOptions,
-): LoopBuilderDraft => {
-  const suggestedLoopName = getDefaultLoopName({
-    endMs: options.endMs,
-    sourceName: options.sourceName,
-    startMs: options.startMs,
-  });
-  const followsSuggestedLoopName =
-    options.draft.loopName.trim() === options.draft.suggestedLoopName.trim();
-
-  return {
-    endMs: options.endMs,
-    loopName: followsSuggestedLoopName
-      ? suggestedLoopName
-      : options.draft.loopName,
-    startMs: options.startMs,
-    suggestedLoopName,
-  };
-};
-
-export const resolveActiveLoopEditorId = (
-  options: ResolveActiveLoopEditorIdOptions,
-) => {
-  if (options.editingLoopId === null) {
-    return null;
-  }
-
-  return options.selectedTrack === null ? null : options.editingLoopId;
 };
 
 export const buildNamedLoop = (options: BuildNamedLoopOptions) => {

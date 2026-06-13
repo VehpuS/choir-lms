@@ -18,6 +18,31 @@ type ResolveLoopBuilderRangeSelectionOptions = {
   sliderValue: number | number[];
 };
 
+type DefaultLoopNameOptions = {
+  endMs: number;
+  sourceName: string;
+  startMs: number;
+};
+
+export type LoopBuilderDraft = {
+  endMs: number;
+  loopName: string;
+  startMs: number;
+  suggestedLoopName: string;
+};
+
+type UpdateLoopBuilderDraftRangeOptions = {
+  draft: LoopBuilderDraft;
+  endMs: number;
+  sourceName: string;
+  startMs: number;
+};
+
+type ResolveActiveLoopEditorIdOptions = {
+  editingLoopId: string | null;
+  selectedTrack: PlayableItem | null;
+};
+
 type ResolveLoopBuilderTrackDurationOptions = {
   activePlayableItem: PlayableItem | null;
   playbackDurationSeconds: number;
@@ -29,6 +54,63 @@ type ResolveSourcesMissingLoopBuilderDurationOptions = {
   resolvedDurationsBySourceId: Partial<Record<string, number | null>>;
   retryFailedLookup?: boolean;
   savedSources: DriveLibrarySource[];
+};
+
+const formatLoopNameRangeLabel = (
+  loop: Pick<DefaultLoopNameOptions, 'startMs' | 'endMs'>,
+) => {
+  const startLabel = formatDurationLabel(loop.startMs) ?? '0:00';
+  const endLabel = formatDurationLabel(loop.endMs) ?? '0:00';
+
+  return `${startLabel} - ${endLabel}`;
+};
+
+export const getDefaultLoopName = (options: DefaultLoopNameOptions) => {
+  return `Loop ${formatLoopNameRangeLabel(options)} • ${options.sourceName}`;
+};
+
+export const createLoopBuilderDraft = (
+  options: DefaultLoopNameOptions,
+): LoopBuilderDraft => {
+  const suggestedLoopName = getDefaultLoopName(options);
+
+  return {
+    endMs: options.endMs,
+    loopName: suggestedLoopName,
+    startMs: options.startMs,
+    suggestedLoopName,
+  };
+};
+
+export const updateLoopBuilderDraftRange = (
+  options: UpdateLoopBuilderDraftRangeOptions,
+): LoopBuilderDraft => {
+  const suggestedLoopName = getDefaultLoopName({
+    endMs: options.endMs,
+    sourceName: options.sourceName,
+    startMs: options.startMs,
+  });
+  const followsSuggestedLoopName =
+    options.draft.loopName.trim() === options.draft.suggestedLoopName.trim();
+
+  return {
+    endMs: options.endMs,
+    loopName: followsSuggestedLoopName
+      ? suggestedLoopName
+      : options.draft.loopName,
+    startMs: options.startMs,
+    suggestedLoopName,
+  };
+};
+
+export const resolveActiveLoopEditorId = (
+  options: ResolveActiveLoopEditorIdOptions,
+) => {
+  if (options.editingLoopId === null) {
+    return null;
+  }
+
+  return options.selectedTrack === null ? null : options.editingLoopId;
 };
 
 export const resolveLoopBuilderTrack = (
