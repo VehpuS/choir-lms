@@ -1,14 +1,12 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { INTERACTION_CHIP_TOKENS } from '../../components/interaction-style-tokens';
+
 type RecentSearchSuggestionsProps = {
   recentSearchTerms: string[];
   onSelectRecentSearchTerm: (value: string) => void;
   title?: string;
 };
-
-const CHIP_BACKGROUND = '#f2ece1';
-const CHIP_BACKGROUND_PRESSED = '#e3dac9';
-const CHIP_TEXT = '#2f5a4b';
 
 export const RecentSearchSuggestions = ({
   recentSearchTerms,
@@ -67,15 +65,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 999,
-    backgroundColor: CHIP_BACKGROUND,
+    backgroundColor: INTERACTION_CHIP_TOKENS.passiveBackground,
     alignItems: 'center',
     justifyContent: 'center',
   },
   chipPressed: {
-    backgroundColor: CHIP_BACKGROUND_PRESSED,
+    backgroundColor: INTERACTION_CHIP_TOKENS.passivePressedBackground,
   },
   chipLabel: {
-    color: CHIP_TEXT,
+    color: INTERACTION_CHIP_TOKENS.actionText,
     fontSize: 13,
     fontWeight: '700',
   },

@@ -1,6 +1,11 @@
 import type { DriveBrowseLocation } from '@org/google-drive';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import {
+  INTERACTION_CHIP_TOKENS,
+  INTERACTION_STATE_OPACITY,
+} from '../../components/interaction-style-tokens';
+
 type DriveLibraryRootSelectorProps = {
   currentRootKind: DriveBrowseLocation['rootKind'];
   isSearchMode: boolean;
@@ -20,11 +25,6 @@ const ROOT_OPTIONS: ReadonlyArray<{
     rootKind: 'shared',
   },
 ];
-
-const PRIMARY_ACTION_BACKGROUND = '#173229';
-const PRIMARY_ACTION_TEXT = '#fff8ef';
-const SECONDARY_TEXT = '#5f5647';
-const SURFACE_BACKGROUND = '#f6f1e7';
 
 export const DriveLibraryRootSelector = ({
   currentRootKind,
@@ -74,21 +74,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 999,
-    backgroundColor: SURFACE_BACKGROUND,
+    backgroundColor: INTERACTION_CHIP_TOKENS.passiveBackground,
   },
   rootSelectorButtonSelected: {
-    backgroundColor: PRIMARY_ACTION_BACKGROUND,
+    backgroundColor: INTERACTION_CHIP_TOKENS.selectedBackground,
   },
   rootSelectorButtonPressed: {
-    opacity: 0.88,
+    opacity: INTERACTION_STATE_OPACITY.pressed,
   },
   rootSelectorLabel: {
-    color: SECONDARY_TEXT,
+    color: INTERACTION_CHIP_TOKENS.passiveText,
     fontSize: 13,
     fontWeight: '700',
     textTransform: 'uppercase',
   },
   rootSelectorLabelSelected: {
-    color: PRIMARY_ACTION_TEXT,
+    color: INTERACTION_CHIP_TOKENS.selectedText,
   },
 });

@@ -6,6 +6,10 @@ import {
   type ResolvedOptionsMenuAction,
 } from './model';
 import { BottomSheetSurface } from '../bottom-sheet-surface';
+import {
+  INTERACTION_ACTION_BUTTON_TOKENS,
+  INTERACTION_STATE_OPACITY,
+} from '../interaction-style-tokens';
 
 type OptionsMenuSheetProps = {
   actions: OptionsMenuAction[];
@@ -17,12 +21,7 @@ type OptionsMenuSheetProps = {
   isSecondaryDisabled?: boolean;
 };
 
-const PRIMARY_ACTION_BACKGROUND = '#305c4d';
-const PRIMARY_ACTION_TEXT = '#fff8ef';
 const PRIMARY_TEXT = '#1f1c17';
-const SECONDARY_ACTION_BACKGROUND = '#f2ece1';
-const DESTRUCTIVE_ACTION_BACKGROUND = '#fff1ed';
-const DESTRUCTIVE_ACTION_TEXT = '#8a2d1f';
 
 const getActionContainerStyle = (tone: ResolvedOptionsMenuAction['tone']) => {
   switch (tone) {
@@ -112,20 +111,20 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   buttonDisabled: {
-    opacity: 0.56,
+    opacity: INTERACTION_STATE_OPACITY.disabled,
   },
   buttonPressed: {
-    opacity: 0.88,
+    opacity: INTERACTION_STATE_OPACITY.pressed,
   },
   primaryAction: {
     alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderRadius: 999,
-    backgroundColor: PRIMARY_ACTION_BACKGROUND,
+    backgroundColor: INTERACTION_ACTION_BUTTON_TOKENS.primary.background,
   },
   primaryActionLabel: {
-    color: PRIMARY_ACTION_TEXT,
+    color: INTERACTION_ACTION_BUTTON_TOKENS.primary.text,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -134,10 +133,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderRadius: 999,
-    backgroundColor: DESTRUCTIVE_ACTION_BACKGROUND,
+    backgroundColor: INTERACTION_ACTION_BUTTON_TOKENS.destructive.background,
   },
   destructiveActionLabel: {
-    color: DESTRUCTIVE_ACTION_TEXT,
+    color: INTERACTION_ACTION_BUTTON_TOKENS.destructive.text,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -146,7 +145,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderRadius: 999,
-    backgroundColor: SECONDARY_ACTION_BACKGROUND,
+    backgroundColor: INTERACTION_ACTION_BUTTON_TOKENS.secondary.background,
   },
   secondaryActionLabel: {
     color: PRIMARY_TEXT,

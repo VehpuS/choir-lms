@@ -1,6 +1,11 @@
 import { StyleSheet } from 'react-native';
 
-const BORDER_COLOR = '#d6d1c4';
+import {
+  INTERACTION_CARD_SHELL_TOKENS,
+  INTERACTION_STATE_OPACITY,
+} from '../../components/interaction-style-tokens';
+
+const BORDER_COLOR = INTERACTION_CARD_SHELL_TOKENS.borderColor;
 const ERROR_SURFACE = '#fff1ed';
 const ERROR_TEXT = '#8a2d1f';
 export const DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT = '#1f1c17';
@@ -29,7 +34,7 @@ export const driveLibrarySourceGroupStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: BORDER_COLOR,
     borderRadius: 16,
-    backgroundColor: '#faf6ee',
+    backgroundColor: INTERACTION_CARD_SHELL_TOKENS.mutedBackground,
   },
   sourceName: {
     color: DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT,
@@ -90,17 +95,17 @@ export const driveLibrarySourceGroupStyles = StyleSheet.create({
   },
   actionButtonNeutral: {
     borderColor: BORDER_COLOR,
-    backgroundColor: '#fffdf8',
+    backgroundColor: INTERACTION_CARD_SHELL_TOKENS.surfaceBackground,
   },
   actionButtonPrimary: {
     borderColor: '#1f5c40',
     backgroundColor: '#1f5c40',
   },
   actionButtonPressed: {
-    opacity: 0.88,
+    opacity: INTERACTION_STATE_OPACITY.pressed,
   },
   actionButtonDisabled: {
-    opacity: 0.56,
+    opacity: INTERACTION_STATE_OPACITY.disabled,
   },
   actionButtonLabel: {
     fontSize: 13,

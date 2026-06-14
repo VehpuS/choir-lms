@@ -1,10 +1,13 @@
 import { StyleSheet } from 'react-native';
 
+import {
+  INTERACTION_ACTION_BUTTON_TOKENS,
+  INTERACTION_CARD_SHELL_TOKENS,
+  INTERACTION_STATE_OPACITY,
+} from '../../components/interaction-style-tokens';
+
 const INPUT_BACKGROUND = '#fff9f0';
-const PRIMARY_ACTION_BACKGROUND = '#305c4d';
-const PRIMARY_ACTION_TEXT = '#fff8ef';
 const PRIMARY_TEXT = '#1f1c17';
-const SECONDARY_ACTION_BACKGROUND = '#f2ece1';
 const SECONDARY_TEXT = '#5f5647';
 
 export const savedTrackPlaylistMenuSurfaceStyles = StyleSheet.create({
@@ -19,9 +22,9 @@ export const savedTrackPlaylistMenuSurfaceStyles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#d6d1c4',
+    borderColor: INTERACTION_CARD_SHELL_TOKENS.borderColor,
     borderRadius: 16,
-    backgroundColor: '#fffaf2',
+    backgroundColor: INTERACTION_CARD_SHELL_TOKENS.mutedBackground,
   },
   playlistName: {
     color: PRIMARY_TEXT,
@@ -38,9 +41,9 @@ export const savedTrackPlaylistMenuSurfaceStyles = StyleSheet.create({
     gap: 6,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#d6d1c4',
+    borderColor: INTERACTION_CARD_SHELL_TOKENS.borderColor,
     borderRadius: 16,
-    backgroundColor: '#fffaf2',
+    backgroundColor: INTERACTION_CARD_SHELL_TOKENS.mutedBackground,
   },
   emptyStateTitle: {
     color: PRIMARY_TEXT,
@@ -57,7 +60,7 @@ export const savedTrackPlaylistMenuSurfaceStyles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#d6d1c4',
+    borderColor: INTERACTION_CARD_SHELL_TOKENS.borderColor,
     borderRadius: 16,
     backgroundColor: INPUT_BACKGROUND,
     color: PRIMARY_TEXT,
@@ -89,10 +92,10 @@ export const savedTrackPlaylistMenuSurfaceStyles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderRadius: 999,
-    backgroundColor: PRIMARY_ACTION_BACKGROUND,
+    backgroundColor: INTERACTION_ACTION_BUTTON_TOKENS.primary.background,
   },
   primaryActionLabel: {
-    color: PRIMARY_ACTION_TEXT,
+    color: INTERACTION_ACTION_BUTTON_TOKENS.primary.text,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -101,7 +104,7 @@ export const savedTrackPlaylistMenuSurfaceStyles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderRadius: 999,
-    backgroundColor: SECONDARY_ACTION_BACKGROUND,
+    backgroundColor: INTERACTION_ACTION_BUTTON_TOKENS.secondary.background,
   },
   secondaryActionLabel: {
     color: PRIMARY_TEXT,
@@ -109,9 +112,9 @@ export const savedTrackPlaylistMenuSurfaceStyles = StyleSheet.create({
     fontWeight: '700',
   },
   buttonPressed: {
-    opacity: 0.88,
+    opacity: INTERACTION_STATE_OPACITY.pressed,
   },
   buttonDisabled: {
-    opacity: 0.56,
+    opacity: INTERACTION_STATE_OPACITY.disabled,
   },
 });
