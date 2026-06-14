@@ -13,6 +13,7 @@ import {
 } from './saved-playlist-test-fixtures.js';
 import {
   canShowQueuePlaylistActions,
+  canUpdateQueuePlaylist,
   getPlaylistPlaybackCurrentItem,
   movePlaylistPlaybackQueueItem,
   movePlaylistPlaybackQueueItemToEnd,
@@ -116,6 +117,9 @@ describe('playlist playback queue state', () => {
     assert.equal(canShowQueuePlaylistActions(null), false);
     assert.equal(canShowQueuePlaylistActions(transientSession), true);
     assert.equal(canShowQueuePlaylistActions(playlistSession), true);
+    assert.equal(canUpdateQueuePlaylist(null), false);
+    assert.equal(canUpdateQueuePlaylist(transientSession), false);
+    assert.equal(canUpdateQueuePlaylist(playlistSession), true);
   });
 
   it('returns null when queue actions run without an active item or queue session', () => {

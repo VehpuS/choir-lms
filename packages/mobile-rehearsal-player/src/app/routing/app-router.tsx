@@ -3,12 +3,15 @@ import { useGoogleDriveAuthorization } from '../auth/google-drive/hooks/use-auth
 import { useSavedTrackPlayback } from '../library/playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackActionCopy } from '../library/playback/utils/saved-track-playback-view-model';
 import {
-  appendQueueItemsToPlaylist,
   buildSavedPlaylistFromQueue,
+  replaceQueueItemsInPlaylist,
 } from '../library/playlists/utils/queue-playlist-capture';
 import { useRehearsalLibraryController } from '../library/saved-rehearsal-library/use-rehearsal-library-controller';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../library/storage/local-library-storage';
-import { canShowQueuePlaylistActions } from '../library/playlists/utils/saved-playlist-playback-view-model';
+import {
+  canShowQueuePlaylistActions,
+  canUpdateQueuePlaylist,
+} from '../library/playlists/utils/saved-playlist-playback-view-model';
 import { AddScreen } from '../screens/add';
 import { LibraryScreen } from '../screens/library';
 import { RecentsScreen } from '../screens/recents';
@@ -95,13 +98,27 @@ export const AppRouter = () => {
       };
     }
 
+    playback.bindActiveQueueToPlaylist({
+      loops: libraryController.savedLibrary.savedLoops,
+      playlist: createdPlaylist,
+      sources: libraryController.savedLibrary.savedLibrarySources,
+    });
+
     return null;
   };
 
-  const handleAppendQueueToPlaylist = async (playlistId: string) => {
+  const handleUpdateQueuePlaylist = async () => {
+    if (!canUpdateQueuePlaylist(playback.activePlaylistSession)) {
+      return {
+        title: 'Playlist unavailable',
+        message:
+          'Start playback from a saved playlist before updating it from Up Next.',
+      };
+    }
+
     const targetPlaylist = libraryController.playlists.savedPlaylists.find(
       (playlist) => {
-        return playlist.id === playlistId;
+        return playlist.id === playback.activePlaylistSession?.playlistId;
       },
     );
 
@@ -109,11 +126,11 @@ export const AppRouter = () => {
       return {
         title: 'Playlist unavailable',
         message:
-          'Select a playlist that is still available in your saved Library.',
+          'The playlist for this active queue is no longer available in your saved Library.',
       };
     }
 
-    const captureResult = appendQueueItemsToPlaylist({
+    const captureResult = replaceQueueItemsInPlaylist({
       playlist: targetPlaylist,
       savedLoops: libraryController.savedLibrary.savedLoops,
       savedSources: libraryController.savedLibrary.savedLibrarySources,
@@ -130,7 +147,7 @@ export const AppRouter = () => {
       if (!didSave) {
         return {
           title: 'Could not save queued track',
-          message: `The queue could not be appended to "${targetPlaylist.name}" because "${source.name}" could not be added to Library first.`,
+          message: `The queue could not update "${targetPlaylist.name}" because "${source.name}" could not be added to Library first.`,
         };
       }
     }
@@ -142,7 +159,7 @@ export const AppRouter = () => {
     if (!updatedPlaylist) {
       return {
         title: 'Could not update playlist',
-        message: `The queue could not be appended to "${targetPlaylist.name}".`,
+        message: `The current Up Next order could not replace "${targetPlaylist.name}".`,
       };
     }
 
@@ -282,7 +299,6 @@ export const AppRouter = () => {
       onSeekToPosition={(positionSeconds) => {
         void playback.seekActivePlaybackToPosition(positionSeconds);
       }}
-      onAppendQueueToPlaylist={handleAppendQueueToPlaylist}
       onMoveQueueItem={(fromIndex, toIndex) => {
         playback.moveQueueItem(fromIndex, toIndex);
       }}
@@ -299,6 +315,7 @@ export const AppRouter = () => {
         playback.removeQueueItem(index);
       }}
       onSaveQueueAsPlaylist={handleSaveQueueAsPlaylist}
+      onUpdateQueuePlaylist={handleUpdateQueuePlaylist}
       onSelectQueueMode={(mode) => {
         playback.setPlaylistQueueMode(mode);
       }}
@@ -321,7 +338,6 @@ export const AppRouter = () => {
       playbackToggleLabel={playbackActionCopy?.label ?? 'Play'}
       playbackVolumeLevel={playback.volumeLevel}
       playbackState={playback.playbackState}
-      queuePlaylistTargets={libraryController.playlists.savedPlaylists}
       addScreen={<AddScreen libraryController={libraryController} />}
     />
   );

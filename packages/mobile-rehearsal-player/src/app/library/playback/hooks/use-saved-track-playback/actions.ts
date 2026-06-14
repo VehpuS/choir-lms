@@ -10,11 +10,11 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 
 import type { DriveLibrarySource } from '../../../drive/utils/drive-library-view-model';
 import {
+  bindQueueToPlaylistPlaybackSession,
   rebuildPlaylistPlaybackSessionForMode,
   type ActivePlaylistContext,
 } from '../../../playlists/utils/playlist-session-mode';
 import {
-  buildPlaylistPlaybackSession,
   getPlaylistPlaybackCurrentItem,
   movePlaylistPlaybackQueueItem,
   movePlaylistPlaybackQueueItemToEnd,
@@ -28,9 +28,11 @@ import {
 import type { SavedTrackPlaybackController } from '../../utils/saved-track-playback-controller';
 import {
   createSavedTrackPlaybackRuntimeIssue,
+  hasPlayableItemChanged,
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../../utils/saved-track-playback-view-model';
+import { startPlaylistPlayback } from './playlist-playback-actions';
 import {
   hasSameQueuePosition,
   mapPlaylistPlaybackIssue,
@@ -45,6 +47,7 @@ type CreateSavedTrackPlaybackActionsOptions = {
   playbackState: SavedTrackPlaybackState | undefined;
   playlistRepeatMode: RepeatMode;
   repeatModeRef: MutableRefObject<RepeatMode>;
+  setActivePlayableItem: Dispatch<SetStateAction<PlayableItem | null>>;
   setActivePlaylistSession: Dispatch<
     SetStateAction<PlaylistPlaybackSession | null>
   >;
@@ -61,12 +64,47 @@ export const createSavedTrackPlaybackActions = ({
   playbackState,
   playlistRepeatMode,
   repeatModeRef,
+  setActivePlayableItem,
   setActivePlaylistSession,
   setIsPreparing,
   setIssue,
   setPlaylistRepeatModeState,
 }: CreateSavedTrackPlaybackActionsOptions) => {
   return {
+    bindActiveQueueToPlaylist(options: {
+      loops: NamedLoop[];
+      playlist: Playlist;
+      sources: DriveLibrarySource[];
+    }) {
+      const reboundSession = bindQueueToPlaylistPlaybackSession({
+        playlist: options.playlist,
+        session: activePlaylistSessionRef.current,
+      });
+
+      if (!reboundSession) {
+        return false;
+      }
+
+      const reboundCurrentItem = getPlaylistPlaybackCurrentItem(reboundSession);
+
+      activePlaylistContextRef.current = {
+        loops: options.loops,
+        playlist: options.playlist,
+        sources: options.sources,
+      };
+      setActivePlaylistSession(reboundSession);
+
+      if (
+        hasPlayableItemChanged(
+          activePlayableItemRef.current,
+          reboundCurrentItem,
+        )
+      ) {
+        setActivePlayableItem(reboundCurrentItem);
+      }
+
+      return true;
+    },
     setPlaylistRepeatMode(repeatMode: RepeatMode) {
       setPlaylistRepeatModeState(repeatMode);
       setActivePlaylistSession((currentSession) => {
@@ -242,61 +280,19 @@ export const createSavedTrackPlaybackActions = ({
       sources: DriveLibrarySource[];
       startEntryId?: string;
     }) {
-      const nextSession = buildPlaylistPlaybackSession({
+      await startPlaylistPlayback({
+        activePlaylistContextRef,
         loops: options.loops,
         mode: options.mode,
+        playbackController,
         playlist: options.playlist,
-        repeatMode: playlistRepeatMode,
+        playlistRepeatMode,
+        setActivePlaylistSession,
+        setIsPreparing,
+        setIssue,
         sources: options.sources,
         startEntryId: options.startEntryId,
       });
-
-      if (nextSession.issue || !nextSession.session) {
-        setActivePlaylistSession(null);
-        setIssue(
-          nextSession.issue
-            ? mapPlaylistPlaybackIssue(nextSession.issue)
-            : null,
-        );
-        return;
-      }
-
-      const firstPlayableItem = getPlaylistPlaybackCurrentItem(
-        nextSession.session,
-      );
-
-      if (!firstPlayableItem) {
-        setActivePlaylistSession(null);
-        setIssue(
-          mapPlaylistPlaybackIssue({
-            message:
-              'This rehearsal playlist does not currently contain any playable saved tracks or loops.',
-            playlistId: options.playlist.id,
-            title: 'Playlist has no playable items',
-          }),
-        );
-        return;
-      }
-
-      setIssue(null);
-      setIsPreparing(true);
-
-      try {
-        if (await playbackController.loadPlayableItem(firstPlayableItem)) {
-          activePlaylistContextRef.current = {
-            loops: options.loops,
-            playlist: options.playlist,
-            sources: options.sources,
-          };
-          setActivePlaylistSession(nextSession.session);
-        }
-      } catch (error) {
-        setIssue(
-          createSavedTrackPlaybackRuntimeIssue(firstPlayableItem, error),
-        );
-      } finally {
-        setIsPreparing(false);
-      }
     },
     async toggleSourcePlayback(source: DriveLibrarySource) {
       activePlaylistContextRef.current = null;

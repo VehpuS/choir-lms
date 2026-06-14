@@ -15,6 +15,7 @@ import {
   buildPlaylistPlaybackSession,
   queuePlayableItemDuringPlayback,
 } from '../../library/playlists/utils/saved-playlist-playback-view-model.js';
+import { bindQueueToPlaylistPlaybackSession } from '../../library/playlists/utils/playlist-session-mode.js';
 import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,
@@ -150,7 +151,7 @@ describe('shell playback summaries', () => {
         ],
         queuePlaylistActions: {
           saveLabel: 'Create new playlist',
-          updateLabel: 'Update playlist',
+          updateAction: null,
         },
       },
     );
@@ -186,9 +187,73 @@ describe('shell playback summaries', () => {
       ],
       queuePlaylistActions: {
         saveLabel: 'Create new playlist',
-        updateLabel: 'Update playlist',
+        updateAction: {
+          confirmLabel: 'Update playlist',
+          confirmationMessage:
+            'Replace the saved items and order in Warmups with the current Up Next order. Unsaved queued tracks will be added to Library first, and current playback keeps running.',
+          confirmationTitle: 'Update Warmups?',
+          label: 'Update current playlist',
+        },
       },
     });
+  });
+
+  it('shows update current playlist after saving a transient queue as a new playlist', () => {
+    const activePlayableItem = createTrackPlayableItem(PLAYABLE_SOURCE);
+    const queuedPlayableItem = createTrackPlayableItem({
+      ...PLAYABLE_SOURCE,
+      id: 'drive:tenor-line',
+      name: 'Tenor Line.mp3',
+    });
+    const transientSession = queuePlayableItemDuringPlayback({
+      activePlayableItem,
+      playableItem: queuedPlayableItem,
+      position: 'next',
+      repeatMode: 'off',
+      session: null,
+    });
+
+    if (!transientSession) {
+      throw new Error('Expected a transient queue session.');
+    }
+
+    const savedPlaylist = addTrackToPlaylist(
+      addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-06-14T20:48:00.000Z',
+          name: 'Wednesday rehearsal',
+          ownerId: 'user-1',
+        }),
+        PLAYABLE_SOURCE,
+        '2026-06-14T20:49:00.000Z',
+      ),
+      {
+        ...PLAYABLE_SOURCE,
+        id: 'drive:tenor-line',
+        name: 'Tenor Line.mp3',
+      },
+      '2026-06-14T20:50:00.000Z',
+    );
+    const reboundSession = bindQueueToPlaylistPlaybackSession({
+      playlist: savedPlaylist,
+      session: transientSession,
+    });
+
+    assert.deepEqual(
+      getUpNextSurfaceSummary({
+        activePlaylistSession: reboundSession,
+      })?.queuePlaylistActions,
+      {
+        saveLabel: 'Create new playlist',
+        updateAction: {
+          confirmLabel: 'Update playlist',
+          confirmationMessage:
+            'Replace the saved items and order in Wednesday rehearsal with the current Up Next order. Unsaved queued tracks will be added to Library first, and current playback keeps running.',
+          confirmationTitle: 'Update Wednesday rehearsal?',
+          label: 'Update current playlist',
+        },
+      },
+    );
   });
 
   it('builds distinct queue row keys for repeated playlist items', () => {

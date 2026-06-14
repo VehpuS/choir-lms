@@ -3,6 +3,7 @@ import { type ComponentProps, useEffect, useState } from 'react';
 import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
 import { QueueMovePositionDialog } from '../../components/queue-move-position-dialog';
+import type { PlaylistDraftIssue } from '../../library/playlists/utils/saved-playlist-view-model';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
 import { PlaybackSessionModeCard } from '../playback/playback-session-mode-card';
 import { styles } from '../playback/playback-surface-styles';
@@ -20,7 +21,6 @@ type QueueSurfaceProps = {
   dragHandleProps?: ComponentProps<typeof View>;
   isSavingQueueAsPlaylist: boolean;
   isPlaybackToggleDisabled: boolean;
-  onAppendQueueToPlaylist: () => void;
   onClose: () => void;
   onMoveQueueItem: (fromIndex: number, toIndex: number) => void;
   onMoveQueueItemToEnd: (index: number) => void;
@@ -28,6 +28,7 @@ type QueueSurfaceProps = {
   onPlayQueueItem: (index: number) => void;
   onRemoveQueueItem: (index: number) => void;
   onSaveQueueAsPlaylist: () => void;
+  onUpdateQueuePlaylist: () => Promise<PlaylistDraftIssue | null>;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
@@ -46,7 +47,6 @@ export const QueueSurface = ({
   dragHandleProps,
   isSavingQueueAsPlaylist,
   isPlaybackToggleDisabled,
-  onAppendQueueToPlaylist,
   onClose,
   onMoveQueueItem,
   onMoveQueueItemToEnd,
@@ -54,6 +54,7 @@ export const QueueSurface = ({
   onPlayQueueItem,
   onRemoveQueueItem,
   onSaveQueueAsPlaylist,
+  onUpdateQueuePlaylist,
   onSelectQueueMode,
   onSelectRepeatMode,
   onShowNowPlaying,
@@ -140,8 +141,8 @@ export const QueueSurface = ({
         <QueuePlaylistActionRow
           actions={summary.queuePlaylistActions}
           isMutating={isSavingQueueAsPlaylist}
-          onAppendQueueToPlaylist={onAppendQueueToPlaylist}
           onSaveQueueAsPlaylist={onSaveQueueAsPlaylist}
+          onUpdateQueuePlaylist={onUpdateQueuePlaylist}
         />
       ) : null}
 

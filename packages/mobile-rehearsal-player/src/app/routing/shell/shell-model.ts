@@ -3,6 +3,7 @@ import type { PlayableItem } from '@org/audio-library-models';
 import { formatDurationLabel } from '../../library/drive/utils/drive-library-view-model';
 import type { SavedTrackPlaybackState } from '../../library/playback/utils/saved-track-playback-view-model';
 import {
+  canUpdateQueuePlaylist,
   getPlaylistPlaybackSessionSummary,
   getPlaylistQueueModeLabel,
   getPlaylistRepeatModeLabel,
@@ -50,7 +51,12 @@ export type UpNextSurfaceSummary = {
   items: UpNextSurfaceItem[];
   queuePlaylistActions: {
     saveLabel: string;
-    updateLabel: string;
+    updateAction: {
+      confirmLabel: string;
+      confirmationMessage: string;
+      confirmationTitle: string;
+      label: string;
+    } | null;
   } | null;
 };
 
@@ -293,11 +299,20 @@ export const getUpNextSurfaceSummary = (options: {
     return null;
   }
 
+  const updateAction = canUpdateQueuePlaylist(options.activePlaylistSession)
+    ? {
+        confirmLabel: 'Update playlist',
+        confirmationMessage: `Replace the saved items and order in ${options.activePlaylistSession.playlistName} with the current Up Next order. Unsaved queued tracks will be added to Library first, and current playback keeps running.`,
+        confirmationTitle: `Update ${options.activePlaylistSession.playlistName}?`,
+        label: 'Update current playlist',
+      }
+    : null;
+
   return {
     collectionLabel: `${options.activePlaylistSession.playlistName} • ${getPlaylistPlaybackSessionSummary(options.activePlaylistSession)}`,
     queuePlaylistActions: {
       saveLabel: 'Create new playlist',
-      updateLabel: 'Update playlist',
+      updateAction,
     },
     items: options.activePlaylistSession.queue.items.map((item, index) => {
       return {

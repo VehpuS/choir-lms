@@ -5,15 +5,11 @@ import type { PlaylistDraftIssue } from '../../../library/playlists/utils/saved-
 type UseMobileShellQueuePlaylistStateOptions = {
   canShowQueuePlaylistActions: boolean;
   hasMiniPlayerSummary: boolean;
-  onAppendQueueToPlaylist: (
-    playlistId: string,
-  ) => Promise<PlaylistDraftIssue | null>;
   onSaveQueueAsPlaylist: (name: string) => Promise<PlaylistDraftIssue | null>;
 };
 
 const createQueuePlaylistState = () => {
   return {
-    isAppendDialogVisible: false,
     isSaveDialogVisible: false,
     issue: null as PlaylistDraftIssue | null,
     queuePlaylistDraftName: '',
@@ -23,7 +19,6 @@ const createQueuePlaylistState = () => {
 export const useMobileShellQueuePlaylistState = ({
   canShowQueuePlaylistActions,
   hasMiniPlayerSummary,
-  onAppendQueueToPlaylist,
   onSaveQueueAsPlaylist,
 }: UseMobileShellQueuePlaylistStateOptions) => {
   const [queuePlaylistState, setQueuePlaylistState] = useState(
@@ -52,23 +47,6 @@ export const useMobileShellQueuePlaylistState = ({
 
   return {
     ...queuePlaylistState,
-    clearQueuePlaylistIssue() {
-      setQueuePlaylistState((currentValue) => {
-        return {
-          ...currentValue,
-          issue: null,
-        };
-      });
-    },
-    closeAppendDialog() {
-      setQueuePlaylistState((currentValue) => {
-        return {
-          ...currentValue,
-          isAppendDialogVisible: false,
-          issue: null,
-        };
-      });
-    },
     closeQueueDialogs() {
       resetQueuePlaylistState();
     },
@@ -104,29 +82,7 @@ export const useMobileShellQueuePlaylistState = ({
       setQueuePlaylistState((currentValue) => {
         return {
           ...currentValue,
-          isAppendDialogVisible: false,
           isSaveDialogVisible: true,
-          issue: null,
-        };
-      });
-    },
-    async selectPlaylist(playlistId: string) {
-      const issue = await onAppendQueueToPlaylist(playlistId);
-
-      if (issue) {
-        setQueuePlaylistState((currentValue) => {
-          return {
-            ...currentValue,
-            issue,
-          };
-        });
-        return;
-      }
-
-      setQueuePlaylistState((currentValue) => {
-        return {
-          ...currentValue,
-          isAppendDialogVisible: false,
           issue: null,
         };
       });

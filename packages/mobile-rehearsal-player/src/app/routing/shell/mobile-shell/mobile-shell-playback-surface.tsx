@@ -1,5 +1,6 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
+import type { PlaylistDraftIssue } from '../../../library/playlists/utils/saved-playlist-view-model';
 import type { PlaylistPlaybackSession } from '../../../library/playlists/utils/saved-playlist-playback-view-model';
 import { PlaybackSurface } from '../../playback/playback-surface';
 import type {
@@ -20,7 +21,6 @@ type MobileShellPlaybackSurfaceProps = {
   isSavingQueueAsPlaylist: boolean;
   nowPlayingSummary: NowPlayingSurfaceSummary | null;
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
-  onAppendQueueToPlaylist: () => void;
   onClose: () => void;
   onMoveQueueItem: (fromIndex: number, toIndex: number) => void;
   onMoveQueueItemToEnd: (index: number) => void;
@@ -28,6 +28,7 @@ type MobileShellPlaybackSurfaceProps = {
   onPlayQueueItem: (index: number) => void;
   onRemoveQueueItem: (index: number) => void;
   onSaveQueueAsPlaylist: () => void;
+  onUpdateQueuePlaylist: () => Promise<PlaylistDraftIssue | null>;
   onSeekBackward: () => void;
   onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
@@ -62,7 +63,6 @@ export const MobileShellPlaybackSurface = (
       isSavingQueueAsPlaylist={props.isSavingQueueAsPlaylist}
       nowPlayingSummary={props.nowPlayingSummary}
       onAdjustPlaybackVolume={props.onAdjustPlaybackVolume}
-      onAppendQueueToPlaylist={props.onAppendQueueToPlaylist}
       onClose={props.onClose}
       onMoveQueueItem={props.onMoveQueueItem}
       onMoveQueueItemToEnd={props.onMoveQueueItemToEnd}
@@ -70,6 +70,7 @@ export const MobileShellPlaybackSurface = (
       onPlayQueueItem={props.onPlayQueueItem}
       onRemoveQueueItem={props.onRemoveQueueItem}
       onSaveQueueAsPlaylist={props.onSaveQueueAsPlaylist}
+      onUpdateQueuePlaylist={props.onUpdateQueuePlaylist}
       onSeekBackward={props.onSeekBackward}
       onSeekForward={props.onSeekForward}
       onSeekToPosition={props.onSeekToPosition}

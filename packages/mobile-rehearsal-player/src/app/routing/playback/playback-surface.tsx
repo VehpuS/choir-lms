@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 
+import type { PlaylistDraftIssue } from '../../library/playlists/utils/saved-playlist-view-model';
 import { QueueSurface } from '../queue/queue-surface';
 import type {
   NowPlayingSurfaceSummary,
@@ -33,7 +34,6 @@ type PlaybackSurfaceProps = {
   isSavingQueueAsPlaylist: boolean;
   nowPlayingSummary: NowPlayingSurfaceSummary | null;
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
-  onAppendQueueToPlaylist: () => void;
   onMoveQueueItem: (fromIndex: number, toIndex: number) => void;
   onMoveQueueItemToEnd: (index: number) => void;
   onMoveQueueItemToStart: (index: number) => void;
@@ -45,6 +45,7 @@ type PlaybackSurfaceProps = {
   onSeekToPosition: (positionSeconds: number) => void;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
   onSaveQueueAsPlaylist: () => void;
+  onUpdateQueuePlaylist: () => Promise<PlaylistDraftIssue | null>;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
   onShowQueue: () => void;
@@ -69,7 +70,6 @@ export const PlaybackSurface = ({
   isSavingQueueAsPlaylist,
   nowPlayingSummary,
   onAdjustPlaybackVolume,
-  onAppendQueueToPlaylist,
   onMoveQueueItem,
   onMoveQueueItemToEnd,
   onMoveQueueItemToStart,
@@ -81,6 +81,7 @@ export const PlaybackSurface = ({
   onSeekToPosition,
   onSelectQueueMode,
   onSaveQueueAsPlaylist,
+  onUpdateQueuePlaylist,
   onSelectRepeatMode,
   onShowNowPlaying,
   onShowQueue,
@@ -188,7 +189,6 @@ export const PlaybackSurface = ({
               activeRepeatMode={activeRepeatMode ?? 'off'}
               isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
               isPlaybackToggleDisabled={isPlaybackToggleDisabled}
-              onAppendQueueToPlaylist={onAppendQueueToPlaylist}
               onClose={dismissSurface}
               onMoveQueueItem={onMoveQueueItem}
               onMoveQueueItemToEnd={onMoveQueueItemToEnd}
@@ -196,6 +196,7 @@ export const PlaybackSurface = ({
               onPlayQueueItem={onPlayQueueItem}
               onRemoveQueueItem={onRemoveQueueItem}
               onSaveQueueAsPlaylist={onSaveQueueAsPlaylist}
+              onUpdateQueuePlaylist={onUpdateQueuePlaylist}
               onSelectQueueMode={onSelectQueueMode}
               onSelectRepeatMode={onSelectRepeatMode}
               onShowNowPlaying={onShowNowPlaying}

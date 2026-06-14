@@ -16,6 +16,7 @@ import {
 import type { SavedTrackPlaybackState } from '../../playback/utils/saved-track-playback-view-model';
 export {
   canShowQueuePlaylistActions,
+  canUpdateQueuePlaylist,
   createTransientPlaybackSession,
   isTransientQueueSession,
   movePlaylistPlaybackQueueItem,

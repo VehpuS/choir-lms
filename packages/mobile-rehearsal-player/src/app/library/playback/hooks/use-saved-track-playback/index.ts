@@ -101,6 +101,7 @@ export const useSavedTrackPlayback = (authState: DriveAuthorizationState) => {
     playbackState,
     playlistRepeatMode,
     repeatModeRef,
+    setActivePlayableItem,
     setActivePlaylistSession,
     setIsPreparing,
     setIssue,

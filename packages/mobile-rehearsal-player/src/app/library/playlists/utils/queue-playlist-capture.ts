@@ -119,6 +119,28 @@ export const appendQueueItemsToPlaylist = (options: {
   });
 };
 
+export const replaceQueueItemsInPlaylist = (options: {
+  now?: string;
+  playlist: Playlist;
+  savedLoops: NamedLoop[];
+  savedSources: DriveLibrarySource[];
+  session: PlaylistPlaybackSession | null;
+}) => {
+  const baseTimestamp = options.now ?? new Date().toISOString();
+
+  return captureQueueItemsIntoPlaylist({
+    baseTimestamp,
+    playlist: {
+      ...options.playlist,
+      items: [],
+      updatedAt: baseTimestamp,
+    },
+    savedLoops: options.savedLoops,
+    savedSources: options.savedSources,
+    session: options.session,
+  });
+};
+
 export const buildSavedPlaylistFromQueue = (options: {
   createId?: (ownerId: string, createdAt: string) => string;
   name: string;

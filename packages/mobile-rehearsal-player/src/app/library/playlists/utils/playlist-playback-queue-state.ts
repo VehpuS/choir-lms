@@ -239,6 +239,12 @@ export const canShowQueuePlaylistActions = (
   return session !== null && session.queue.items.length > 0;
 };
 
+export const canUpdateQueuePlaylist = (
+  session: PlaylistPlaybackSession | null,
+) => {
+  return canShowQueuePlaylistActions(session) && !isTransientQueueSession(session);
+};
+
 export const queuePlayableItemDuringPlayback = (
   options: QueuePlayableItemDuringPlaybackOptions,
 ): PlaylistPlaybackSession | null => {

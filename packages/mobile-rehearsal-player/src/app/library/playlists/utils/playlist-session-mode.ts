@@ -114,6 +114,36 @@ const mergeAdHocQueuedItemsIntoSession = (options: {
   };
 };
 
+export const bindQueueToPlaylistPlaybackSession = (options: {
+  playlist: Playlist;
+  session: PlaylistPlaybackSession | null;
+}): PlaylistPlaybackSession | null => {
+  if (
+    !options.session ||
+    options.session.queue.items.length !== options.playlist.items.length ||
+    options.session.currentIndex >= options.playlist.items.length
+  ) {
+    return null;
+  }
+
+  return {
+    ...options.session,
+    playlistId: options.playlist.id,
+    playlistName: options.playlist.name,
+    queue: {
+      ...options.session.queue,
+      items: options.session.queue.items.map((item, index) => {
+        return {
+          ...item,
+          playlistEntryId: options.playlist.items[index]?.id,
+          playlistId: options.playlist.id,
+        };
+      }),
+      playlistId: options.playlist.id,
+    },
+  } satisfies PlaylistPlaybackSession;
+};
+
 export const rebuildPlaylistPlaybackSessionForMode = (options: {
   loops: NamedLoop[];
   mode: RehearsalQueueMode;

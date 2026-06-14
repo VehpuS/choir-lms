@@ -189,19 +189,21 @@ The system SHALL keep queue and now-playing controls mode-aware, visually clear,
 #### Scenario: Up Next offers queue-to-playlist actions for active queues
 
 - **WHEN** a user opens Up Next while an active queue session is present
-- **THEN** the system exposes a single row of `Create new playlist` and `Update playlist` actions
+- **THEN** the system exposes a single row with a `Create new playlist` action
+- **AND** when that active queue session is backed by a saved playlist, the same row also exposes `Update current playlist`
 - **AND** that action row appears adjacent to the current queue or playlist summary and above the queue list
 
 #### Scenario: Creating a new playlist from Up Next preserves playback continuity
 
 - **WHEN** a user creates a new playlist from the current queue in Up Next
 - **THEN** the playlist is created from the queue's current item order
+- **AND** the active queue session immediately becomes associated with that newly created playlist so `Update current playlist` is available for follow-up queue edits
 - **AND** the current playback item and position continue without restart
 
 #### Scenario: Updating a playlist from Up Next preserves playback continuity
 
-- **WHEN** a user chooses `Update playlist` from Up Next for an active queue session
-- **THEN** the selected playlist gains the enqueued items in queue order
+- **WHEN** a user chooses `Update current playlist` from Up Next for an active queue session backed by a saved playlist
+- **THEN** the system asks for confirmation before replacing that playlist's saved items and order with the current queue order
 - **AND** the active queue session remains in place and playback continues without interruption
 
 #### Scenario: Standalone playback can be promoted into a transient queue

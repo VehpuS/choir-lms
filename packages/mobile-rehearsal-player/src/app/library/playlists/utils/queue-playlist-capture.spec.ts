@@ -15,8 +15,8 @@ import {
   SAVED_LOOP,
 } from '../../../test-utils/library-test-fixtures.js';
 import {
-  appendQueueItemsToPlaylist,
   buildSavedPlaylistFromQueue,
+  replaceQueueItemsInPlaylist,
 } from './queue-playlist-capture.js';
 import { queuePlayableItemDuringPlayback } from './saved-playlist-playback-view-model.js';
 
@@ -54,7 +54,7 @@ describe('queue playlist capture', () => {
     );
   });
 
-  it('appends queue items to an existing playlist in queue order', () => {
+  it('replaces an existing playlist with queue items in queue order', () => {
     const activePlayableItem = createTrackPlayableItem(PLAYABLE_SOURCE);
     const transientSession = queuePlayableItemDuringPlayback({
       activePlayableItem,
@@ -77,7 +77,7 @@ describe('queue playlist capture', () => {
       '2026-06-04T09:05:00.000Z',
     );
 
-    const captureResult = appendQueueItemsToPlaylist({
+    const captureResult = replaceQueueItemsInPlaylist({
       now: '2026-06-04T10:00:00.000Z',
       playlist: existingPlaylist,
       savedLoops: [],
@@ -88,7 +88,7 @@ describe('queue playlist capture', () => {
     assert.equal(captureResult.issue, null);
     assert.deepEqual(
       captureResult.playlist?.items.map((entry) => entry.title),
-      ['Bass Line.mp3', 'Alto Line.mp3', 'Alto Line.mp3'],
+      ['Alto Line.mp3', 'Alto Line.mp3'],
     );
     assert.deepEqual(
       captureResult.unsavedSources.map((source) => source.id),

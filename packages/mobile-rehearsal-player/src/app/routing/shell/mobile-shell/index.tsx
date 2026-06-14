@@ -43,9 +43,6 @@ export type MobileShellProps = {
   isSavingQueueAsPlaylist: boolean;
   isPlaybackToggleDisabled: boolean;
   libraryScreen: ReactNode;
-  onAppendQueueToPlaylist: (
-    playlistId: string,
-  ) => Promise<PlaylistDraftIssue | null>;
   onMoveQueueItem: (fromIndex: number, toIndex: number) => void;
   onMoveQueueItemToEnd: (index: number) => void;
   onMoveQueueItemToStart: (index: number) => void;
@@ -55,6 +52,7 @@ export type MobileShellProps = {
   onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
   onSaveQueueAsPlaylist: (name: string) => Promise<PlaylistDraftIssue | null>;
+  onUpdateQueuePlaylist: () => Promise<PlaylistDraftIssue | null>;
   onSelectQueueMode: (mode: PlaylistPlaybackSession['queue']['mode']) => void;
   onSelectRepeatMode: (
     mode: PlaylistPlaybackSession['queue']['repeatMode'],
@@ -67,7 +65,6 @@ export type MobileShellProps = {
   playbackToggleLabel: string;
   playbackVolumeLevel: number;
   playbackState: SavedTrackPlaybackState | undefined;
-  queuePlaylistTargets: Playlist[];
 };
 
 const PANEL_BY_DESTINATION: Record<
@@ -97,7 +94,6 @@ export const MobileShell = ({
   isSavingQueueAsPlaylist,
   isPlaybackToggleDisabled,
   libraryScreen,
-  onAppendQueueToPlaylist,
   onMoveQueueItem,
   onMoveQueueItemToEnd,
   onMoveQueueItemToStart,
@@ -107,6 +103,7 @@ export const MobileShell = ({
   onSeekForward,
   onSeekToPosition,
   onSaveQueueAsPlaylist,
+  onUpdateQueuePlaylist,
   onSelectQueueMode,
   onSelectRepeatMode,
   onSetPlaybackVolume,
@@ -117,7 +114,6 @@ export const MobileShell = ({
   playbackToggleLabel,
   playbackVolumeLevel,
   playbackState,
-  queuePlaylistTargets,
 }: MobileShellProps) => {
   const [activeDestination, setActiveDestination] =
     useState<ShellDestinationKey>('library');
@@ -144,7 +140,6 @@ export const MobileShell = ({
   const queuePlaylistState = useMobileShellQueuePlaylistState({
     canShowQueuePlaylistActions,
     hasMiniPlayerSummary: miniPlayerSummary !== null,
-    onAppendQueueToPlaylist,
     onSaveQueueAsPlaylist,
   });
   const activeDestinationConfig =
@@ -253,9 +248,6 @@ export const MobileShell = ({
         isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
         nowPlayingSummary={nowPlayingSummary}
         onAdjustPlaybackVolume={onSetPlaybackVolume}
-        onAppendQueueToPlaylist={() => {
-          queuePlaylistState.openAppendDialog();
-        }}
         onMoveQueueItem={onMoveQueueItem}
         onMoveQueueItemToEnd={onMoveQueueItemToEnd}
         onMoveQueueItemToStart={onMoveQueueItemToStart}
@@ -271,6 +263,7 @@ export const MobileShell = ({
         onSaveQueueAsPlaylist={() => {
           queuePlaylistState.openSaveDialog();
         }}
+        onUpdateQueuePlaylist={onUpdateQueuePlaylist}
         onSelectQueueMode={onSelectQueueMode}
         onSelectRepeatMode={onSelectRepeatMode}
         onShowNowPlaying={() => {
@@ -290,24 +283,16 @@ export const MobileShell = ({
       />
 
       <MobileShellQueuePlaylistDialogs
-        isAppendDialogVisible={queuePlaylistState.isAppendDialogVisible}
         isMutating={isSavingQueueAsPlaylist}
         isSaveDialogVisible={queuePlaylistState.isSaveDialogVisible}
         issue={queuePlaylistState.issue}
-        onCancelAppend={queuePlaylistState.closeAppendDialog}
         onCancelSave={queuePlaylistState.closeSaveDialog}
         onChangeDraftName={queuePlaylistState.onDraftNameChange}
-        onSelectPlaylist={(playlistId) => {
-          void (async () => {
-            await queuePlaylistState.selectPlaylist(playlistId);
-          })();
-        }}
         onSubmitSave={() => {
           void (async () => {
             await queuePlaylistState.submitSave();
           })();
         }}
-        playlists={queuePlaylistTargets}
         queuePlaylistDraftName={queuePlaylistState.queuePlaylistDraftName}
       />
     </SafeAreaView>

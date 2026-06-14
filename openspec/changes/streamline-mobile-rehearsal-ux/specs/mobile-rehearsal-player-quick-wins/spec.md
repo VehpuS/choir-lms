@@ -30,12 +30,13 @@ The system SHALL provide quick queue actions from track-focused contexts so user
 
 - **WHEN** a user opens Up Next for an active queue session and chooses `Create new playlist`
 - **THEN** the system creates a new playlist from the current queue ordering
+- **AND** that active queue session immediately targets the new playlist for subsequent `Update current playlist` actions
 - **AND** playback continues uninterrupted in the current queue session
 
 #### Scenario: Up Next can update an existing playlist with currently enqueued items
 
-- **WHEN** a user opens Up Next for an active queue session and chooses `Update playlist`
-- **THEN** the system updates the selected playlist with those enqueued items in queue order
+- **WHEN** a user opens Up Next for an active queue session backed by a saved playlist and chooses `Update current playlist`
+- **THEN** the system asks for confirmation before replacing that playlist's saved items and order with the current queue order
 - **AND** playback continues uninterrupted in the current queue session
 
 ### Requirement: Recents provides fast recent rehearsal entry points
