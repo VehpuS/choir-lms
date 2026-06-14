@@ -134,8 +134,8 @@ export const styles = StyleSheet.create({
     lineHeight: 16,
   },
   miniPlayerActionButton: {
-    width: 42,
-    height: 42,
+    width: 46,
+    height: 46,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 999,

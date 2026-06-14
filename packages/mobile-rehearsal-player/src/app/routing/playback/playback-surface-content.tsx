@@ -14,6 +14,7 @@ import {
   PlaybackTimelineCard,
   PlaybackVolumeCard,
 } from './playback-control-cards';
+import { getPlaybackToggleControlModel } from './playback-toggle-control-model';
 import { PlaybackSessionModeCard } from './playback-session-mode-card';
 import { resolveVisibleRepeatModes } from './playback-session-mode-options';
 import { styles } from './playback-surface-styles';
@@ -70,6 +71,10 @@ export const NowPlayingSurface = ({
   summary,
 }: NowPlayingSurfaceProps) => {
   const transportIconSize = summary.supportsQueueNavigation ? 22 : 24;
+  const playbackToggleControl = getPlaybackToggleControlModel({
+    playbackToggleLabel,
+    title: summary.title,
+  });
 
   return (
     <View style={styles.sheetCard}>
@@ -142,10 +147,11 @@ export const NowPlayingSurface = ({
           size={transportIconSize}
         />
         <SurfaceIconButton
-          accessibilityLabel={playbackToggleLabel}
+          accessibilityLabel={playbackToggleControl.accessibilityLabel}
           disabled={isPlaybackToggleDisabled}
-          icon={playbackToggleLabel === 'Pause' ? 'pause' : 'play'}
+          icon={playbackToggleControl.iconName}
           onPress={onTogglePlayback}
+          selected={playbackToggleControl.selected}
           size={32}
           tone="primary"
         />

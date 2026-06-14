@@ -20,6 +20,7 @@ describe('queue surface row model', () => {
         accessibilityLabel: 'Pause Alto Line.mp3',
         iconName: 'pause',
         pressBehavior: 'toggle-current',
+        selected: true,
       },
     );
   });
@@ -35,6 +36,7 @@ describe('queue surface row model', () => {
         accessibilityLabel: 'Play Tenor Line.mp3',
         iconName: 'play',
         pressBehavior: 'play-item',
+        selected: false,
       },
     );
   });
@@ -50,6 +52,7 @@ describe('queue surface row model', () => {
         accessibilityLabel: 'Resume Entrance cue',
         iconName: 'play',
         pressBehavior: 'toggle-current',
+        selected: false,
       },
     );
   });
@@ -67,6 +70,7 @@ describe('queue surface row model', () => {
           accessibilityLabel: 'Pause Entrance cue',
           iconName: 'pause',
           pressBehavior: 'toggle-current',
+          selected: true,
         },
       },
     );
@@ -85,6 +89,7 @@ describe('queue surface row model', () => {
           accessibilityLabel: 'Play Tenor Line.mp3',
           iconName: 'play',
           pressBehavior: 'play-item',
+          selected: false,
         },
       },
     );

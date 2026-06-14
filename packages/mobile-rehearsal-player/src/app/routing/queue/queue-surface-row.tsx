@@ -167,6 +167,7 @@ export const QueueSurfaceRow = ({
                   ? onToggleCurrentPlayback
                   : onPlayItem
               }
+              selected={rowPresentation.playbackAction.selected}
               size={18}
             />
             <View

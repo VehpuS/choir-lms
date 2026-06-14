@@ -9,6 +9,7 @@ export type SurfaceIconButtonProps = {
   disabled?: boolean;
   icon: ComponentProps<typeof MaterialCommunityIcons>['name'];
   onPress: () => void;
+  selected?: boolean;
   size?: number;
   tone?: 'primary' | 'secondary';
 };
@@ -18,6 +19,7 @@ export const SurfaceIconButton = ({
   disabled = false,
   icon,
   onPress,
+  selected = false,
   size = 22,
   tone = 'secondary',
 }: SurfaceIconButtonProps) => {
@@ -27,6 +29,10 @@ export const SurfaceIconButton = ({
     <Pressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
+      accessibilityState={{
+        disabled,
+        selected,
+      }}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [

@@ -1,7 +1,10 @@
+import { getPlaybackToggleControlModel } from '../playback/playback-toggle-control-model';
+
 export type QueueRowPlaybackAction = {
   accessibilityLabel: string;
   iconName: 'pause' | 'play';
   pressBehavior: 'play-item' | 'toggle-current';
+  selected: boolean;
 };
 
 export type QueueRowPresentation = {
@@ -19,15 +22,20 @@ export const getQueueRowPlaybackAction = (options: {
       accessibilityLabel: `Play ${options.title}`,
       iconName: 'play',
       pressBehavior: 'play-item',
+      selected: false,
     };
   }
 
-  const normalizedLabel = options.playbackToggleLabel.trim() || 'Play';
+  const playbackToggleControl = getPlaybackToggleControlModel({
+    playbackToggleLabel: options.playbackToggleLabel,
+    title: options.title,
+  });
 
   return {
-    accessibilityLabel: `${normalizedLabel} ${options.title}`,
-    iconName: normalizedLabel === 'Pause' ? 'pause' : 'play',
+    accessibilityLabel: playbackToggleControl.accessibilityLabel,
+    iconName: playbackToggleControl.iconName,
     pressBehavior: 'toggle-current',
+    selected: playbackToggleControl.selected,
   };
 };
 

@@ -4,6 +4,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import { PlaybackWaveform } from '../../../components/playback-waveform';
 import type { SavedTrackPlaybackState } from '../../../library/playback/utils/saved-track-playback-view-model';
+import { getPlaybackToggleControlModel } from '../../playback/playback-toggle-control-model';
 import { styles } from '../mobile-shell-styles';
 import { PlaybackMarqueeText } from '../playback-marquee-text';
 import { type MiniPlayerSummary, type ShellDestinationKey } from '../shell-model';
@@ -32,6 +33,13 @@ export const MobileShellMiniPlayerDock = ({
   playbackState,
   playbackToggleLabel,
 }: MobileShellMiniPlayerDockProps) => {
+  const playbackToggleControl = miniPlayerSummary
+    ? getPlaybackToggleControlModel({
+        playbackToggleLabel,
+        title: miniPlayerSummary.title,
+      })
+    : null;
+
   return (
     <View
       style={[
@@ -76,8 +84,15 @@ export const MobileShellMiniPlayerDock = ({
             </View>
           </Pressable>
           <Pressable
-            accessibilityLabel={playbackToggleLabel}
+            accessibilityLabel={
+              playbackToggleControl?.accessibilityLabel ??
+              'Play current playback'
+            }
             accessibilityRole="button"
+            accessibilityState={{
+              disabled: isPlaybackToggleDisabled,
+              selected: playbackToggleControl?.selected ?? false,
+            }}
             disabled={isPlaybackToggleDisabled}
             onPress={onTogglePlayback}
             style={({ pressed }) => [
@@ -92,7 +107,7 @@ export const MobileShellMiniPlayerDock = ({
           >
             <MaterialCommunityIcons
               color="#fff8ef"
-              name={playbackToggleLabel === 'Pause' ? 'pause' : 'play'}
+              name={playbackToggleControl?.iconName ?? 'play'}
               size={24}
             />
           </Pressable>
