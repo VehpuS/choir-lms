@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { INTERACTION_CHIP_TOKENS } from '../../components/interaction-style-tokens';
+import { InteractionChip } from '../../components/interaction-chip';
 
 type RecentSearchSuggestionsProps = {
   recentSearchTerms: string[];
@@ -23,20 +23,15 @@ export const RecentSearchSuggestions = ({
       <View style={styles.chipRow}>
         {recentSearchTerms.map((searchTerm) => {
           return (
-            <Pressable
-              key={searchTerm.toLocaleLowerCase()}
+            <InteractionChip
               accessibilityLabel={`Run recent search ${searchTerm}`}
-              accessibilityRole="button"
+              key={searchTerm.toLocaleLowerCase()}
+              label={searchTerm}
               onPress={() => {
                 onSelectRecentSearchTerm(searchTerm);
               }}
-              style={({ pressed }) => [
-                styles.chip,
-                pressed ? styles.chipPressed : undefined,
-              ]}
-            >
-              <Text style={styles.chipLabel}>{searchTerm}</Text>
-            </Pressable>
+              variant="action"
+            />
           );
         })}
       </View>
@@ -59,22 +54,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-  },
-  chip: {
-    minHeight: 36,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: INTERACTION_CHIP_TOKENS.passiveBackground,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chipPressed: {
-    backgroundColor: INTERACTION_CHIP_TOKENS.passivePressedBackground,
-  },
-  chipLabel: {
-    color: INTERACTION_CHIP_TOKENS.actionText,
-    fontSize: 13,
-    fontWeight: '700',
   },
 });

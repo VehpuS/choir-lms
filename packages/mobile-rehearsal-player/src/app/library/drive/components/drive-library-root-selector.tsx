@@ -1,10 +1,7 @@
 import type { DriveBrowseLocation } from '@org/google-drive';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import {
-  INTERACTION_CHIP_TOKENS,
-  INTERACTION_STATE_OPACITY,
-} from '../../components/interaction-style-tokens';
+import { InteractionChip } from '../../components/interaction-chip';
 
 type DriveLibraryRootSelectorProps = {
   currentRootKind: DriveBrowseLocation['rootKind'];
@@ -37,27 +34,17 @@ export const DriveLibraryRootSelector = ({
         const isSelected = !isSearchMode && currentRootKind === option.rootKind;
 
         return (
-          <Pressable
+          <InteractionChip
+            accessibilityLabel={`Select ${option.label}`}
             key={option.rootKind}
-            accessibilityRole="button"
             onPress={() => {
               onSelectRoot(option.rootKind);
             }}
-            style={({ pressed }) => [
-              styles.rootSelectorButton,
-              isSelected ? styles.rootSelectorButtonSelected : undefined,
-              pressed ? styles.rootSelectorButtonPressed : undefined,
-            ]}
-          >
-            <Text
-              style={[
-                styles.rootSelectorLabel,
-                isSelected ? styles.rootSelectorLabelSelected : undefined,
-              ]}
-            >
-              {option.label}
-            </Text>
-          </Pressable>
+            style={styles.rootSelectorButton}
+            label={option.label}
+            labelStyle={styles.rootSelectorLabel}
+            variant={isSelected ? 'selected' : 'passive'}
+          />
         );
       })}
     </View>
@@ -71,24 +58,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   rootSelectorButton: {
-    paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 999,
-    backgroundColor: INTERACTION_CHIP_TOKENS.passiveBackground,
-  },
-  rootSelectorButtonSelected: {
-    backgroundColor: INTERACTION_CHIP_TOKENS.selectedBackground,
-  },
-  rootSelectorButtonPressed: {
-    opacity: INTERACTION_STATE_OPACITY.pressed,
   },
   rootSelectorLabel: {
-    color: INTERACTION_CHIP_TOKENS.passiveText,
-    fontSize: 13,
-    fontWeight: '700',
     textTransform: 'uppercase',
-  },
-  rootSelectorLabelSelected: {
-    color: INTERACTION_CHIP_TOKENS.selectedText,
   },
 });

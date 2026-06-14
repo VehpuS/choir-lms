@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { runtimeConfig } from '../../../config/runtime';
 import { CompactPlaybackAction } from '../../components/compact-playback-action';
 import { CompactPlayableRowShell } from '../../components/compact-playable-row-shell';
+import { InteractionChip } from '../../library/components/interaction-chip';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
 import { appTheme } from '../../utils/theme';
 import {
@@ -201,8 +202,13 @@ export const RecentsScreen = ({
         <Text style={styles.shortcutsMeta}>{shortcutMetadata}</Text>
         <View style={styles.tagRow}>
           {RECENTS_SHORTCUT_TAGS.map((tag) => (
-            <View key={tag} style={styles.tagChip}>
-              <Text style={styles.tagLabel}>{tag}</Text>
+            <InteractionChip
+              key={tag}
+              label={tag}
+              labelStyle={styles.tagLabel}
+              style={styles.tagChip}
+              variant="passive"
+            >
               <CompactPlaybackAction
                 accessibilityLabel={
                   getRecentsShortcutPlayActionCopy({
@@ -218,7 +224,7 @@ export const RecentsScreen = ({
                 }}
                 variant="chip"
               />
-            </View>
+            </InteractionChip>
           ))}
         </View>
       </View>

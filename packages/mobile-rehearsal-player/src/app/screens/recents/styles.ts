@@ -138,21 +138,14 @@ export const recentsScreenStyles = StyleSheet.create({
     gap: 10,
   },
   tagChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 8,
-    paddingLeft: 12,
-    paddingRight: 8,
-    borderRadius: 999,
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     backgroundColor: appTheme.colors.pageBackground,
+    paddingLeft: 12,
+    paddingRight: 8,
   },
   tagLabel: {
     color: appTheme.colors.primaryText,
-    fontSize: 13,
-    fontWeight: '600',
   },
   iconActionButton: {
     width: 40,
