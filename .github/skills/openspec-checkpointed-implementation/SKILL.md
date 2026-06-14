@@ -26,7 +26,7 @@ This skill turns OpenSpec implementation into a reviewed loop instead of a rapid
 4. If unresolved decisions affect public API shape, naming, UX, styling, data model, or architecture, ask the user before editing. Do not ask about trivial local choices already decided by nearby code.
 5. Implement the smallest slice that can satisfy the subtask.
 6. Add or update automated tests for new behavior in the same slice. Prefer the narrowest existing test surface. If no practical automated test exists, explain why and record the manual verification that will be needed.
-7. Run focused validation immediately after the edit. Prefer narrow behavior checks, then narrow tests, then targeted build, lint, or typecheck commands.
+7. Run focused validation immediately after the edit. Prefer narrow behavior checks, then narrow tests, then a targeted typecheck and lint pass for the touched slice when those targets exist, then targeted build commands when they are still needed.
 8. If validation fails but the defect is still local to the slice, repair it and rerun the same validation before expanding scope.
 9. Once the slice passes:
    - update only the completed checkbox in `tasks.md`
@@ -38,5 +38,6 @@ This skill turns OpenSpec implementation into a reviewed loop instead of a rapid
 
 - Default to one commit per completed numbered subtask.
 - Do not mark a task complete before code, tests, and validation line up.
+- Do not treat tests alone as sufficient when the touched slice has relevant typecheck or lint targets; run those targeted passes before marking the task complete.
 - Do not batch task checkboxes to save time unless the user explicitly overrides the default workflow.
 - If the artifacts conflict with the code reality, pause and recommend artifact updates before continuing.

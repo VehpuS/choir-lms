@@ -317,6 +317,14 @@
     "/^npm exec -- nx run mobile-rehearsal-player:typecheck --outputStyle=static && npm exec -- nx run mobile-rehearsal-player:typecheck-tests --outputStyle=static$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec -- nx run mobile-rehearsal-player:lint --outputStyle=static$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx run mobile-rehearsal-player:typecheck-tests --outputStyle=static$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

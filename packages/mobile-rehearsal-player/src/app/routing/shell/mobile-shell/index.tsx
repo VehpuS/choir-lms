@@ -1,4 +1,3 @@
-import type { Playlist } from '@org/audio-library-models';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Pressable, SafeAreaView, View } from 'react-native';
 

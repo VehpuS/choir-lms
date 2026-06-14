@@ -14,7 +14,7 @@ import {
 } from '../library/playlists/utils/saved-playlist-playback-view-model';
 import { AddScreen } from '../screens/add';
 import { LibraryScreen } from '../screens/library';
-import { RecentsScreen } from '../screens/recents';
+import { AppRouterRecentsScreen } from '../screens/recents/app-router-recents-screen';
 import {
   appendRecentRehearsalItem,
   buildRecentRehearsalItem,
@@ -236,45 +236,16 @@ export const AppRouter = () => {
       requestedDestination="library"
       requestedDestinationRequestId={requestedDestinationRequestId}
       recentsScreen={
-        <RecentsScreen
-          activePlayableItemId={playback.activePlayableItem?.id ?? null}
-          canQueueAsNext={playback.activePlayableItem !== null}
-          isPlaybackActive={playback.playbackState === 'playing'}
-          isRecentItemInLibrary={(recentRehearsal) => {
-            if (recentRehearsal.playableItem.kind === 'loop') {
-              if (!recentRehearsal.playableItem.loopId) {
-                return false;
-              }
-
-              return savedLoopIds.has(recentRehearsal.playableItem.loopId);
-            }
-
-            return savedSourceIds.has(recentRehearsal.playableItem.sourceId);
-          }}
-          recentRehearsalHistory={recentRehearsalHistory}
-          onQueueRecentPlaybackNext={(recentRehearsal) => {
-            playback.queuePlayableItemNext(recentRehearsal.playableItem);
-          }}
-          onQueueRecentPlaybackUpNext={(recentRehearsal) => {
-            playback.queuePlayableItemUpNext(recentRehearsal.playableItem);
-          }}
-          onPlayRecentShortcut={() => {
-            const mostRecentItem = recentRehearsalHistory[0];
-
-            if (!mostRecentItem) {
-              return;
-            }
-
-            void playback.playPlayableItem(mostRecentItem.playableItem);
-          }}
-          onResumeRecentPlayback={(recentRehearsal) => {
-            void playback.playPlayableItem(recentRehearsal.playableItem);
-          }}
-          onViewRecentInLibrary={() => {
+        <AppRouterRecentsScreen
+          onRequestLibraryDestination={() => {
             setRequestedDestinationRequestId((currentId) => {
               return currentId + 1;
             });
           }}
+          playback={playback}
+          recentRehearsalHistory={recentRehearsalHistory}
+          savedLoopIds={savedLoopIds}
+          savedSourceIds={savedSourceIds}
           savedTrackCount={libraryController.savedLibrary.trackCount}
         />
       }
