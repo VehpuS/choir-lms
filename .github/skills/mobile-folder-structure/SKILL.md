@@ -27,7 +27,7 @@ Primary goals:
 
 ### 2. Respect the current app architecture
 
-- `src/app/App.tsx` and `src/app/routing/AppRouter.tsx` are the entry path.
+- `src/app/App.tsx` and `src/app/routing/app-router.tsx` are the entry path.
 - Keep routing files thin. If a routing surface accumulates view logic, extract that logic into a feature folder and leave the router or shell file as the composition boundary.
 - Do not introduce Expo Router-style route files unless the task explicitly includes a routing migration.
 
@@ -55,7 +55,8 @@ Prefer the smallest folder boundary that gives the files one clear owner.
   - `src/app/routing/`
   - `src/app/screens/`
   - `src/app/library/components/`
-  - `src/app/library/utils/`
+  - `src/app/library/saved-rehearsal-library/`
+  - `src/app/library/storage/`
 
 Use surface-oriented groupings when a slice grows past a single file. In the current app that usually means folders such as:
 
@@ -136,7 +137,7 @@ These are good candidates when the user asks for cleanup:
 
 - `src/app/routing/` into playback, queue, and shell-oriented folders
 - `src/app/screens/` into per-screen folders such as `recents/`
-- `src/app/library/components/` and `src/app/library/utils/` into drive, playlists, loops, and search subfolders
+- root `src/app/library/components/` and leftover top-level library files into drive, playlists, loops, search, saved-rehearsal-library, or storage-owned folders
 - `src/app/auth/` into provider-specific folders when auth logic expands
 
 ## Done Criteria

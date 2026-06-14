@@ -30,7 +30,7 @@ This skill is for UI work in the current app architecture, which uses a custom
 
 - Reserve glass for navigation chrome, transient controls, and sheet framing. In this app that usually means the bottom dock, mini-player, header accessories, playback sheet frame, or modal headers.
 - Keep dense rehearsal content readable. Discovery cards, library rows, playlist items, and status panels should normally stay opaque or only lightly translucent.
-- The current app uses a custom shell in `src/app/routing/MobileShell.tsx` and `src/app/routing/ShellTabBar.tsx`. Treat a switch to native tabs or router-driven navigation as a scope change, not a styling tweak.
+- The current app uses a custom shell in `src/app/routing/shell/mobile-shell/index.tsx` and `src/app/routing/shell/shell-tab-bar.tsx`. Treat a switch to native tabs or router-driven navigation as a scope change, not a styling tweak.
 - If the task must work in Expo Go, prefer `expo-blur` or plain translucent fallback views. Advanced iOS-native glass should assume a dev build.
 - Check the current Expo SDK docs before finalizing API syntax if the task adds or upgrades a glass-related dependency.
 - Keep new glass code isolated behind a wrapper component so non-glass fallback behavior is explicit and testable.
@@ -115,10 +115,10 @@ export const AdaptiveGlassSurface = ({ children, style }) => {
 
 Start with the shell surfaces that benefit most from glass:
 
-- `src/app/routing/mobile-shell-styles.ts`: bottom dock, tab bar container, mini-player frame
-- `src/app/routing/PlaybackSurface.tsx`: sheet frame and backdrop layering
-- `src/app/library/components/LoopRangeSelectorSurface.tsx`: sheet header or action row, not the full loop editor body
-- `src/app/library/components/SavedTrackPlaylistMenuSurface.tsx`: modal shell or header, not the full playlist list
+- `src/app/routing/shell/mobile-shell-styles.ts`: bottom dock, tab bar container, mini-player frame
+- `src/app/routing/playback/playback-surface.tsx`: sheet frame and backdrop layering
+- `src/app/library/loops/components/loop-range-selector-surface/index.tsx`: sheet header or action row, not the full loop editor body
+- `src/app/library/playlists/components/saved-track-playlist-menu-surface.tsx`: modal shell or header, not the full playlist list
 
 ### Pattern C: Keep The Content Card Opaque
 

@@ -6,47 +6,47 @@ The product intent for this iteration is to improve speed-to-rehearsal without d
 
 ## Current IA Baseline (Task 1.1)
 
-Current top-level tabs are ordered as Home, Search, and Library.
-In this change, the Home destination is renamed to Recents to match its optional acceleration role, and the current Search destination is renamed to Add so the middle tab describes Google Drive browse/search/add-to-library work.
-Search is reserved as an operation name that remains available within both Add and Library.
+The historical baseline before this change was ordered as Home, Search, and Library.
+In the current repo, those destinations are now Library, Add, and Recents.
+The notes below preserve the original IA rationale while pointing to the current module names and paths.
 
-### Home (to be renamed Recents)
+### Recents (implemented rename from Home)
 
-- Hero and current app status summary: current Home tab root (`HomeScreen` hero block), which will be relabeled Recents.
-- Continue practicing shortcut (when an active item exists): current Home tab summary card (`SummaryCard`), which will move under Recents label.
-- Google Drive discovery panel container: current Home tab (`DriveDiscoveryPanel`), which will be relocated per target IA.
-- Drive root switching (My Drive vs Shared): Home -> `DriveLibraryRootSelector`.
-- Drive folder drill-down: Home -> `DriveFolderGroup` row tap.
-- Drive breadcrumbs and jump navigation: Home -> `DriveLibraryBreadcrumbs`.
-- Drive browse status and unavailable/support messaging: Home -> `DriveLibraryStatusCard` and unavailable source group.
-- Save/Remove source action from Drive browse list: Home -> playable source rows (`DriveLibrarySourceGroup` with `getSourceAction`).
+- Hero and current app status summary: current Recents tab root (`src/app/screens/recents/index.tsx` hero block).
+- Continue practicing shortcut (when an active item exists): current Recents summary card (`src/app/components/summary-card.tsx`).
+- Google Drive discovery panel container: current Add surface (`src/app/library/drive/components/drive-discovery-panel.tsx`), relocated out of Recents.
+- Drive root switching (My Drive vs Shared): Add -> `DriveLibraryRootSelector`.
+- Drive folder drill-down: Add -> `DriveFolderGroup` row tap.
+- Drive breadcrumbs and jump navigation: Add -> `DriveLibraryBreadcrumbs`.
+- Drive browse status and unavailable/support messaging: Add -> `DriveLibraryStatusCard` and unavailable source group.
+- Save/Remove source action from Drive browse list: Add -> playable source rows (`DriveLibrarySourceGroup` with `getSourceAction`).
 
-### Search (to be renamed Add)
+### Add (implemented rename from Search)
 
-- Drive search query input and submit/clear flow: current Search tab (`DriveLibrarySearchPanel`), which will be renamed Add while keeping Google Drive search inside it.
-- Drive search result list (playable + unavailable): current Search tab (`DriveSearchResultsPanel` source groups).
-- Save/Remove source action from search results: current Search tab source rows (`DriveLibrarySourceGroup` with `getSourceAction`).
-- Search status/issue/loading messaging for Drive context: current Search tab (`DriveLibraryStatusCard` in search panel).
+- Drive search query input and submit/clear flow: current Add tab (`DriveLibrarySearchPanel` inside `src/app/library/drive/components/drive-discovery-panel.tsx`).
+- Drive search result list (playable + unavailable): current Add tab (`src/app/library/drive/components/drive-search-results-panel.tsx` source groups).
+- Save/Remove source action from search results: current Add tab source rows (`DriveLibrarySourceGroup` with `getSourceAction`).
+- Search status/issue/loading messaging for Drive context: current Add tab (`DriveLibraryStatusCard` in the search and discovery panels).
 
 ### Library
 
-- Saved tracks list and playback-first row actions: Library tab (`SavedRehearsalLibrarySection` -> `DriveLibrarySourceGroup`).
+- Saved tracks list and playback-first row actions: Library tab (`src/app/library/components/saved-rehearsal-library-section/index.tsx` -> `DriveLibrarySourceGroup`).
 - Remove saved track action: Library tab track row action (`Remove`).
 - Saved loops list and loop playback controls: Library tab (`SavedLoopSection`).
 - Loop creation entry point from saved track row: Library tab track row action (`Make loop`, opens loop builder prep).
 - Loop save/remove flows: Library tab (`SavedLoopSection` + saved loop handlers).
 - Playlist browse cards and detail entry: Library tab (`SavedPlaylistCardsList` to `SavedPlaylistSection`).
 - Playlist playback start/toggle from playlist surfaces: Library tab (`SavedPlaylistSection` -> `togglePlaylistPlayback`).
-- Add track to playlist from row "more options" menu: Library tab (`SavedTrackPlaylistMenuSurface`).
+- Add track to playlist from row "more options" menu: Library tab (`src/app/library/playlists/components/saved-track-playlist-menu-surface.tsx`).
 
 ### Cross-Surface / Shell-Level
 
-- Top-level tab switching: shell tab bar (`ShellTabBar` with current destinations Home/Search/Library, target labels Recents/Add/Library after rename).
+- Top-level tab switching: shell tab bar (`src/app/routing/shell/shell-tab-bar.tsx`, now showing Library/Add/Recents in the repo).
 - Session/account actions (authorize/clear Drive auth): header menu (`DriveSessionMenu`).
-- Mini-player persistence across tab switches: bottom dock mini-player (`MobileShell`).
+- Mini-player persistence across tab switches: bottom dock mini-player (`src/app/routing/shell/mobile-shell/index.tsx`).
 - Now Playing surface entry point: tap mini-player body.
-- Queue/Up Next surface entry point: playback surface toggle from now playing view (`PlaybackSurface` queue surface).
-- Global playback transport (play/pause/seek/skip/volume): playback surface controls wired from `MobileShell` callbacks.
+- Queue/Up Next surface entry point: playback surface toggle from now playing view (`src/app/routing/playback/playback-surface.tsx` queue surface).
+- Global playback transport (play/pause/seek/skip/volume): playback surface controls wired from `src/app/routing/shell/mobile-shell/index.tsx` callbacks.
 
 This baseline map is the non-regression reference for IA reorder work and feature continuity checks in section 6 validation tasks.
 

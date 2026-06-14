@@ -28,17 +28,19 @@ Read these first when they exist and are relevant:
 - `README.md`
 - `AGENTS.md`
 - `packages/mobile-rehearsal-player/src/app/utils/theme.ts`
-- `packages/mobile-rehearsal-player/src/app/routing/mobile-shell-styles.ts`
-- `packages/mobile-rehearsal-player/src/app/routing/MobileShell.tsx`
-- `packages/mobile-rehearsal-player/src/app/screens/RecentsScreen.tsx`
-- `packages/mobile-rehearsal-player/src/app/screens/AddScreen.tsx`
-- `packages/mobile-rehearsal-player/src/app/screens/LibraryScreen.tsx`
-- `packages/mobile-rehearsal-player/src/app/screens/screen-copy.ts`
-- `packages/mobile-rehearsal-player/src/app/components/SummaryCard.tsx`
-- `packages/mobile-rehearsal-player/src/app/routing/PlaybackSurfaceContent.tsx`
-- `packages/mobile-rehearsal-player/src/app/library/components/LoopRangeSelectorSurface.tsx`
-- `packages/mobile-rehearsal-player/src/app/library/components/SavedTrackPlaylistMenuSurface.tsx`
-- `openspec/changes/add-mobile-rehearsal-player/design.md`
+- `packages/mobile-rehearsal-player/src/app/routing/shell/mobile-shell-styles.ts`
+- `packages/mobile-rehearsal-player/src/app/routing/shell/mobile-shell/index.tsx`
+- `packages/mobile-rehearsal-player/src/app/screens/recents/index.tsx`
+- `packages/mobile-rehearsal-player/src/app/screens/add/index.tsx`
+- `packages/mobile-rehearsal-player/src/app/screens/library/index.tsx`
+- `packages/mobile-rehearsal-player/src/app/screens/recents/screen-copy.ts`
+- `packages/mobile-rehearsal-player/src/app/screens/add/screen-copy.ts`
+- `packages/mobile-rehearsal-player/src/app/screens/library/screen-copy.ts`
+- `packages/mobile-rehearsal-player/src/app/components/summary-card.tsx`
+- `packages/mobile-rehearsal-player/src/app/routing/playback/playback-surface-content.tsx`
+- `packages/mobile-rehearsal-player/src/app/library/loops/components/loop-range-selector-surface/index.tsx`
+- `packages/mobile-rehearsal-player/src/app/library/playlists/components/saved-track-playlist-menu-surface.tsx`
+- `openspec/changes/streamline-mobile-rehearsal-ux/design.md`
 
 ### Tier 2: Pattern Fallback
 
@@ -46,10 +48,10 @@ If Tier 1 is incomplete, search for these patterns:
 
 - `packages/mobile-rehearsal-player/src/app/**/*theme*`
 - `packages/mobile-rehearsal-player/src/app/**/*styles*`
-- `packages/mobile-rehearsal-player/src/app/**/*Screen*`
-- `packages/mobile-rehearsal-player/src/app/**/*Surface*`
-- `packages/mobile-rehearsal-player/src/app/**/*Card*`
-- `packages/mobile-rehearsal-player/src/app/**/*Panel*`
+- `packages/mobile-rehearsal-player/src/app/screens/**/index.tsx`
+- `packages/mobile-rehearsal-player/src/app/**/*surface*`
+- `packages/mobile-rehearsal-player/src/app/**/*card*`
+- `packages/mobile-rehearsal-player/src/app/**/*panel*`
 - `CLAUDE.md`
 - the existing skills `apple-hig-ios` and `music-ui-iconography`
 

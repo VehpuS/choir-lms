@@ -13,7 +13,7 @@ Keep design work visually focused unless the user expands the scope.
 
 ## Do Not Touch
 
-- hooks under `library/hooks/` unless the visual design truly requires new UI state
+- feature-owned library state in `library/saved-rehearsal-library/` or `library/**/hooks/` unless the visual design truly requires new UI state
 - playback runtime in `use-saved-track-playback`
 - domain logic in `@org/audio-library-models` or `@org/audio-library-runtime`
 - Drive discovery or auth behavior
