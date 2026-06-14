@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/google-drive/hooks/use-authorization';
-import { useRehearsalLibraryScreenController } from '../library/hooks/use-rehearsal-library-screen-controller';
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../library/hooks/use-saved-rehearsal-library';
 import { useSavedTrackPlayback } from '../library/playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackActionCopy } from '../library/playback/utils/saved-track-playback-view-model';
 import {
   appendQueueItemsToPlaylist,
   buildSavedPlaylistFromQueue,
 } from '../library/playlists/utils/queue-playlist-capture';
+import { useRehearsalLibraryController } from '../library/saved-rehearsal-library/use-rehearsal-library-controller';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../library/storage/local-library-storage';
 import { canShowQueuePlaylistActions } from '../library/playlists/utils/saved-playlist-playback-view-model';
 import { AddScreen } from '../screens/add';
 import { LibraryScreen } from '../screens/library';
@@ -32,7 +32,7 @@ export const AppRouter = () => {
     useState(0);
   const [isRecentRehearsalHistoryReady, setIsRecentRehearsalHistoryReady] =
     useState(false);
-  const libraryController = useRehearsalLibraryScreenController({
+  const libraryController = useRehearsalLibraryController({
     authState: authorization.authState,
     googleAuthConfigured: authorization.googleAuthConfigured,
     playback,

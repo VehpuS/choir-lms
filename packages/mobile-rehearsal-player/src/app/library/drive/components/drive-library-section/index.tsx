@@ -1,7 +1,6 @@
 import type { DriveAuthorizationState } from '@org/google-drive';
 import type { useSavedTrackPlayback } from '../../../playback/hooks/use-saved-track-playback';
 
-import { useSavedRehearsalLibrary } from '../../../hooks/use-saved-rehearsal-library';
 import { usePreparedLoopBuilderTrack } from '../../../loops/hooks/use-prepared-loop-builder-track';
 import { useSavedLoops } from '../../../loops/hooks/use-saved-loops';
 import { getSavedTrackPlaybackStatusCopy } from '../../../playback/utils/saved-track-playback-view-model';
@@ -10,7 +9,8 @@ import {
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
-} from '../../../utils/saved-rehearsal-library-view-model';
+} from '../../../saved-rehearsal-library/view-model';
+import { useSavedRehearsalLibrary } from '../../../saved-rehearsal-library/use-saved-rehearsal-library';
 import { useDriveLibrary } from '../../hooks/use-drive-library';
 import { getDriveLibraryStatusCopy } from '../../utils/drive-library-view-model';
 import { DriveLibraryContent } from './drive-library-content';

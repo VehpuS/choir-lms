@@ -7,8 +7,8 @@ import { useEffect, useState } from 'react';
 
 import type { SavedTrackPlaybackState } from '../../playback/utils/saved-track-playback-view-model';
 import { getSavedTrackPlaybackActionCopy } from '../../playback/utils/saved-track-playback-view-model';
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../hooks/use-saved-rehearsal-library';
 import { resolveLoopPreviewPlaybackTimeline } from '../utils/saved-loop-preview-playback-view-model';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../storage/local-library-storage';
 import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import {
   buildNamedLoop,

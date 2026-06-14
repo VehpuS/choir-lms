@@ -9,13 +9,12 @@ import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,
 } from '../../../test-utils/library-test-fixtures.js';
-import { getSavedPlaylistsStatusCopy } from './saved-playlist-status-view-model.js';
 import {
+  buildSavedPlaylist,
   getPlaylistOptionsMenuActions,
   getSavedPlaylistDetailSummary,
   getSavedPlaylistEntryDetailLabel,
   getSavedPlaylistRemovalCopy,
-  resolveSavedPlaylistCards,
   resolveSelectedPlaylist,
 } from './saved-playlist-view-model.js';
 import {
@@ -47,19 +46,34 @@ describe('saved playlist view-model', () => {
     );
   });
 
-  it('keeps empty playlist status focused on the running-order job', () => {
+  it('requires a playlist name and trims the saved name once provided', () => {
+    const emptyResult = buildSavedPlaylist({
+      name: '   ',
+      ownerId: 'local-device-user',
+    });
+
     assert.deepEqual(
-      getSavedPlaylistsStatusCopy({
-        isLoading: false,
-        issue: null,
-        savedPlaylistCount: 0,
-      }),
+      emptyResult,
       {
-        title: 'No playlists yet',
-        message:
-          'Create a playlist, then add saved tracks or loops from Library to build a rehearsal running order.',
-        tone: 'neutral',
+        issue: {
+          title: 'Playlist name required',
+          message: 'Enter a playlist name.',
+        },
+        playlist: null,
       },
+    );
+
+    const validResult = buildSavedPlaylist({
+      name: '  Wednesday rehearsal  ',
+      now: '2026-05-11T00:00:00.000Z',
+      ownerId: 'local-device-user',
+    });
+
+    assert.equal(validResult.issue, null);
+    assert.equal(validResult.playlist?.name, 'Wednesday rehearsal');
+    assert.equal(
+      validResult.playlist?.id,
+      'playlist:local-device-user:2026-05-11T00:00:00.000Z',
     );
   });
 
@@ -113,18 +127,6 @@ describe('saved playlist view-model', () => {
         },
       ],
     );
-  });
-
-  it('summarizes playlist cards without add-from-editor copy', () => {
-    const playlist = buildTrackOnlyWarmupsPlaylist();
-
-    assert.deepEqual(resolveSavedPlaylistCards([playlist]), [
-      {
-        detailLabel: '1 item • 1 track • 0 loops',
-        playlist,
-        previewLabel: 'Alto Line.mp3',
-      },
-    ]);
   });
 
   it('keeps pre-playback playlist detail copy focused on order and playback intent', () => {

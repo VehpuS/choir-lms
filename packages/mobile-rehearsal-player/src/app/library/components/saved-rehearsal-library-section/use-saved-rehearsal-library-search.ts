@@ -2,7 +2,7 @@ import { type NamedLoop, type Playlist } from '@org/audio-library-models';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
-import { resolveSavedPlaylistCards } from '../../playlists/utils/saved-playlist-view-model';
+import { resolveSavedPlaylistCards } from '../../playlists/utils/saved-playlist-card-view-model';
 import {
   filterSavedLibrarySourcesByQuery,
   filterSavedLoopsByQuery,

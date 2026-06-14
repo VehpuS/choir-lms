@@ -14,7 +14,7 @@ import {
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
-} from './saved-rehearsal-library-view-model.js';
+} from './view-model.js';
 import { SAVED_LOOP } from '../../test-utils/library-test-fixtures.js';
 
 describe('saved rehearsal library view-model', () => {

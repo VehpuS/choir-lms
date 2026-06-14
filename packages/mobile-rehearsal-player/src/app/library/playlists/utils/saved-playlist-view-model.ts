@@ -8,7 +8,7 @@ import {
   formatDurationLabel,
   type DriveLibrarySource,
 } from '../../drive/utils/drive-library-view-model';
-import type { OptionsMenuAction } from '../../utils/options-menu-sheet-view-model';
+import type { OptionsMenuAction } from '../../components/options-menu-sheet/model';
 import {
   getPlaylistPlaybackSessionSummary,
   type PlaylistPlaybackSession,
@@ -30,12 +30,6 @@ export type SavedPlaylistRemovalCopy = {
   confirmLabel: string;
   message: string;
   title: string;
-};
-
-export type SavedPlaylistCard = {
-  detailLabel: string;
-  playlist: Playlist;
-  previewLabel: string;
 };
 
 export type SavedPlaylistDetailSummary = {
@@ -110,30 +104,6 @@ const getLoopEntryRangeLabel = (loop: NamedLoop) => {
   const endLabel = formatDurationLabel(loop.endMs) ?? '0:00';
 
   return `Loop ${startLabel} - ${endLabel} • ${loop.sourceName}`;
-};
-
-const getPlaylistDetailLabel = (playlist: Playlist) => {
-  const trackCount = playlist.items.filter((entry) => {
-    return entry.kind === 'track';
-  }).length;
-  const loopCount = playlist.items.length - trackCount;
-
-  return [
-    pluralize(playlist.items.length, 'item'),
-    pluralize(trackCount, 'track'),
-    pluralize(loopCount, 'loop'),
-  ].join(' • ');
-};
-
-const getPlaylistPreviewLabel = (playlist: Playlist) => {
-  if (playlist.items.length === 0) {
-    return 'No items yet';
-  }
-
-  return playlist.items
-    .slice(0, 3)
-    .map((entry) => entry.title)
-    .join(' • ');
 };
 
 export const validatePlaylistName = (name: string) => {
@@ -279,16 +249,4 @@ export const getPlaylistOptionsMenuActions = (options: {
   }
 
   return actions;
-};
-
-export const resolveSavedPlaylistCards = (
-  playlists: Playlist[],
-): SavedPlaylistCard[] => {
-  return playlists.map((playlist) => {
-    return {
-      detailLabel: getPlaylistDetailLabel(playlist),
-      playlist,
-      previewLabel: getPlaylistPreviewLabel(playlist),
-    };
-  });
 };

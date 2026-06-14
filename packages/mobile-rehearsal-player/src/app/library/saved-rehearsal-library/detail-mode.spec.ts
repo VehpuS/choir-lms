@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { resolveSavedRehearsalLibraryDetailMode } from './saved-rehearsal-library-detail-view-model.js';
+import { resolveSavedRehearsalLibraryDetailMode } from './detail-mode.js';
 
 describe('saved rehearsal library detail view-model', () => {
   it('stays in browse mode when no detail surface is active', () => {

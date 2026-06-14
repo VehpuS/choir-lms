@@ -3,9 +3,9 @@ import { ScrollView, StyleSheet } from 'react-native';
 import type { useSavedTrackPlayback } from '../../library/playback/hooks/use-saved-track-playback';
 
 import { SavedRehearsalLibrarySection } from '../../library/components/saved-rehearsal-library-section';
-import type { useRehearsalLibraryScreenController } from '../../library/hooks/use-rehearsal-library-screen-controller';
 import { LoopPreviewPlaybackContext } from '../../library/loops/components/loop-preview-playback-context';
 import { resolveSavedPlaylistDetailEdgeAutoscrollDelta } from '../../library/playlists/utils/saved-playlist-detail-view-model';
+import type { useRehearsalLibraryController } from '../../library/saved-rehearsal-library/use-rehearsal-library-controller';
 import { appTheme } from '../../utils/theme';
 
 type SavedTrackPlaybackController = Pick<
@@ -27,7 +27,7 @@ type SavedTrackPlaybackController = Pick<
 >;
 
 type LibraryScreenProps = {
-  libraryController: ReturnType<typeof useRehearsalLibraryScreenController>;
+  libraryController: ReturnType<typeof useRehearsalLibraryController>;
   playback: SavedTrackPlaybackController;
 };
 

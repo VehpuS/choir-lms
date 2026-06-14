@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 
 import {
   LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-  verifySavedRehearsalLibraryStorage,
-} from '../../hooks/use-saved-rehearsal-library';
+  verifyLocalLibraryStorage,
+} from '../../storage/local-library-storage';
 import type { SavedPlaylistIssue } from '../utils/saved-playlist-view-model';
 
 type SavedPlaylistReader = Pick<
@@ -73,7 +73,7 @@ export const useSavedPlaylists = () => {
     let isDisposed = false;
 
     const loadPlaylists = async () => {
-      const storageReady = await verifySavedRehearsalLibraryStorage();
+      const storageReady = await verifyLocalLibraryStorage();
 
       if (isDisposed) {
         return;

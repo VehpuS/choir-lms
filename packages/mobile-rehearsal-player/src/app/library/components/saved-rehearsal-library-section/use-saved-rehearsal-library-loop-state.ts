@@ -10,7 +10,7 @@ import {
   getPlaylistPlaybackActionCopy,
   type PlaylistPlaybackSession,
 } from '../../playlists/utils/saved-playlist-playback-view-model';
-import { getSavedRehearsalLibraryDependentLoops } from '../../utils/saved-rehearsal-library-view-model';
+import { getSavedRehearsalLibraryDependentLoops } from '../../saved-rehearsal-library/view-model';
 
 type UseSavedRehearsalLibraryLoopStateOptions = {
   activePlaylistSession: PlaylistPlaybackSession | null;

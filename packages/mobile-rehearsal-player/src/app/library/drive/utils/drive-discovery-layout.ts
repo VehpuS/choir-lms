@@ -1,4 +1,4 @@
-export const ADD_SCREEN_PANEL_ORDER = ['discovery'] as const;
+export const ADD_SCREEN_DRIVE_PANEL_ORDER = ['discovery'] as const;
 
 export const DRIVE_DISCOVERY_NAVIGATION_ORDER = [
   'root-selector',

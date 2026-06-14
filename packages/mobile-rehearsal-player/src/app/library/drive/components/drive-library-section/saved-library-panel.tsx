@@ -2,10 +2,10 @@ import { type ComponentProps } from 'react';
 import type { useSavedTrackPlayback } from '../../../playback/hooks/use-saved-track-playback';
 
 import { SavedRehearsalLibrarySection } from '../../../components/saved-rehearsal-library-section';
-import { useSavedRehearsalLibrary } from '../../../hooks/use-saved-rehearsal-library';
 import { usePreparedLoopBuilderTrack } from '../../../loops/hooks/use-prepared-loop-builder-track';
 import { useSavedLoops } from '../../../loops/hooks/use-saved-loops';
 import { useSavedPlaylists } from '../../../playlists/hooks/use-saved-playlists';
+import { useSavedRehearsalLibrary } from '../../../saved-rehearsal-library/use-saved-rehearsal-library';
 import { type DriveLibrarySource } from '../../utils/drive-library-view-model';
 import { useDriveLibrarySavedLibraryActions } from './use-drive-library-saved-library-actions';
 

@@ -2,7 +2,6 @@ import { renamePlaylist, type Playlist } from '@org/audio-library-models';
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../hooks/use-saved-rehearsal-library';
 import {
   buildSavedPlaylistDetailDraftPlaylist,
   getSavedPlaylistDetailInitialState,
@@ -19,6 +18,7 @@ import {
   validatePlaylistName,
   type PlaylistDraftIssue,
 } from '../utils/saved-playlist-view-model';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../storage/local-library-storage';
 
 type PlaylistEntry = Playlist['items'][number];
 

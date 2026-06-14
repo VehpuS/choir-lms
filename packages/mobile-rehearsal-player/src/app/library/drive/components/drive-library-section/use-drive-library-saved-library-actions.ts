@@ -6,7 +6,7 @@ import { getSavedLoopRemovalCopy } from '../../../loops/utils/saved-loop-view-mo
 import {
   getSavedRehearsalLibraryDependentLoops,
   getSavedRehearsalLibraryRemovalCopy,
-} from '../../../utils/saved-rehearsal-library-view-model';
+} from '../../../saved-rehearsal-library/view-model';
 import type { DriveLibrarySource } from '../../utils/drive-library-view-model';
 
 type UseDriveLibrarySavedLibraryActionsOptions = {

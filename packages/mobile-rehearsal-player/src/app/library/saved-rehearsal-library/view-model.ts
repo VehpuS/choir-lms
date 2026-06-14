@@ -2,11 +2,11 @@ import type { NamedLoop } from '@org/audio-library-models';
 import type { DriveAuthorizationState } from '@org/google-drive';
 import { keyBy } from 'es-toolkit/compat';
 
-import type { SavedRehearsalLibraryIssue } from '../hooks/use-saved-rehearsal-library';
 import type {
   DriveLibrarySource,
   DriveLibraryStatusCopy,
 } from '../drive/utils/drive-library-view-model';
+import type { SavedRehearsalLibraryIssue } from './use-saved-rehearsal-library';
 
 type SavedRehearsalLibraryStatusOptions = {
   authState: DriveAuthorizationState;

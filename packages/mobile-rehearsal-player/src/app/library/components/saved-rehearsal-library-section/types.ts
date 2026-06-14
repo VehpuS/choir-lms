@@ -8,7 +8,6 @@ import type {
   DriveLibrarySource,
   DriveLibraryStatusCopy,
 } from '../../drive/utils/drive-library-view-model';
-import type { SavedRehearsalLibraryIssue } from '../../hooks/use-saved-rehearsal-library';
 import type { SavedLoopIssue } from '../../loops/utils/saved-loop-view-model';
 import type {
   SavedTrackPlaybackIssue,
@@ -19,6 +18,7 @@ import type {
   PlaylistDraftIssue,
   SavedPlaylistIssue,
 } from '../../playlists/utils/saved-playlist-view-model';
+import type { SavedRehearsalLibraryIssue } from '../../saved-rehearsal-library/use-saved-rehearsal-library';
 
 export type SavedRehearsalLibrarySectionProps = {
   activePlayableItem: PlayableItem | null;

@@ -11,11 +11,9 @@ import { SearchHighlightedText } from '../../search/components/search-highlighte
 import {
   getSavedPlaylistCardPlayAction,
   resolveSavedPlaylistCardRenameTarget,
+  type SavedPlaylistCard,
 } from '../utils/saved-playlist-card-view-model';
-import type {
-  PlaylistDraftIssue,
-  SavedPlaylistCard,
-} from '../utils/saved-playlist-view-model';
+import type { PlaylistDraftIssue } from '../utils/saved-playlist-view-model';
 import {
   PlaylistOptionsMenuSurface,
   PlaylistRenameDialog,

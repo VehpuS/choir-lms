@@ -6,9 +6,9 @@ import { addTrackToPlaylist, createPlaylist } from '@org/audio-library-models';
 import { PLAYABLE_SOURCE } from '../../../test-utils/library-test-fixtures.js';
 import {
   getSavedPlaylistCardPlayAction,
+  resolveSavedPlaylistCards,
   resolveSavedPlaylistCardRenameTarget,
 } from './saved-playlist-card-view-model.js';
-import { resolveSavedPlaylistCards } from './saved-playlist-view-model.js';
 
 describe('getSavedPlaylistCardPlayAction', () => {
   it('labels playable cards and disables empty ones', () => {
@@ -36,6 +36,26 @@ describe('getSavedPlaylistCardPlayAction', () => {
       accessibilityLabel: 'Play Set list',
       disabled: true,
     });
+  });
+
+  it('summarizes playlist cards without add-from-editor copy', () => {
+    const playlist = addTrackToPlaylist(
+      createPlaylist({
+        createdAt: '2026-05-12T00:00:00.000Z',
+        name: 'Warmups',
+        ownerId: 'user-1',
+      }),
+      PLAYABLE_SOURCE,
+      '2026-05-12T00:01:00.000Z',
+    );
+
+    assert.deepEqual(resolveSavedPlaylistCards([playlist]), [
+      {
+        detailLabel: '1 item • 1 track • 0 loops',
+        playlist,
+        previewLabel: 'Alto Line.mp3',
+      },
+    ]);
   });
 
   it('resolves playlist-card rename targets without requiring detail selection', () => {

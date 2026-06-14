@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 
 import {
   LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-  verifySavedRehearsalLibraryStorage,
-} from '../../hooks/use-saved-rehearsal-library';
+  verifyLocalLibraryStorage,
+} from '../../storage/local-library-storage';
 import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 
 type SavedLoopReader = Pick<AsyncStoragePracticeRepository, 'listLoops'>;
@@ -76,7 +76,7 @@ export const useSavedLoops = () => {
     let isDisposed = false;
 
     const loadLoops = async () => {
-      const storageReady = await verifySavedRehearsalLibraryStorage();
+      const storageReady = await verifyLocalLibraryStorage();
 
       if (isDisposed) {
         return;

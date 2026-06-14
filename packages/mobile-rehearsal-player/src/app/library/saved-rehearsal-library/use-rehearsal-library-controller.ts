@@ -20,7 +20,7 @@ import {
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
-} from '../utils/saved-rehearsal-library-view-model';
+} from './view-model';
 import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
 
 type SavedTrackPlaybackController = Pick<
@@ -40,7 +40,7 @@ type RehearsalLibraryScreenControllerOptions = {
   playback: SavedTrackPlaybackController;
 };
 
-export const useRehearsalLibraryScreenController = ({
+export const useRehearsalLibraryController = ({
   authState,
   googleAuthConfigured,
   playback,

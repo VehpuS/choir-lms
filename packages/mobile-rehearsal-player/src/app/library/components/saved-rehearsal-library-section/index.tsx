@@ -6,8 +6,8 @@ import { DriveLibraryStatusCard } from '../../drive/components/drive-library-sta
 import { isSavedTrackPlaybackBusy } from '../../playback/utils/saved-track-playback-view-model';
 import { SavedPlaylistSection } from '../../playlists/components/saved-playlist-section';
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
+import { resolveSavedRehearsalLibraryDetailMode } from '../../saved-rehearsal-library/detail-mode';
 import { LibrarySearchPanel } from '../../search/components/library-search-panel';
-import { resolveSavedRehearsalLibraryDetailMode } from '../../utils/saved-rehearsal-library-detail-view-model';
 import { SavedLoopSection } from '../../loops/components/saved-loop-section';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
 import { useSavedRehearsalLibraryLoopState } from './use-saved-rehearsal-library-loop-state';

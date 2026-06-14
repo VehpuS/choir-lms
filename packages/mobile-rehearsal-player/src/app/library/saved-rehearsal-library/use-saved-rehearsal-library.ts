@@ -1,17 +1,15 @@
 import { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 
 import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
+import {
+  LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+  verifyLocalLibraryStorage,
+} from '../storage/local-library-storage';
 
 type SavedRehearsalLibraryReader = Pick<
   AsyncStoragePracticeRepository,
   'listSources'
->;
-
-type SavedRehearsalLibraryStorage = Pick<
-  typeof AsyncStorage,
-  'getItem' | 'removeItem' | 'setItem'
 >;
 
 export type SavedRehearsalLibraryIssue = {
@@ -22,8 +20,6 @@ export type SavedRehearsalLibraryIssue = {
 };
 
 const INITIAL_LOAD_ATTEMPTS = 2;
-export const LOCAL_REHEARSAL_LIBRARY_OWNER_ID = 'local-device-user';
-const SAVED_LIBRARY_STORAGE_PROBE_KEY = 'choirlms:practice:probe';
 const STORAGE_UNAVAILABLE_ISSUE: SavedRehearsalLibraryIssue = {
   kind: 'storage',
   title: 'Saved rehearsal storage unavailable',
@@ -50,27 +46,6 @@ const createMutationIssue = (
     message: detail ? `${fallbackMessage} ${detail}` : fallbackMessage,
     sourceId,
   };
-};
-
-export const verifySavedRehearsalLibraryStorage = async (
-  storage: SavedRehearsalLibraryStorage = AsyncStorage,
-) => {
-  try {
-    await storage.setItem(SAVED_LIBRARY_STORAGE_PROBE_KEY, '[]');
-    const storedValue = await storage.getItem(SAVED_LIBRARY_STORAGE_PROBE_KEY);
-
-    await storage.removeItem(SAVED_LIBRARY_STORAGE_PROBE_KEY);
-
-    return storedValue === '[]';
-  } catch {
-    try {
-      await storage.removeItem(SAVED_LIBRARY_STORAGE_PROBE_KEY);
-    } catch {
-      // Ignore cleanup failures; the probe already established that storage is unusable.
-    }
-
-    return false;
-  }
 };
 
 export const loadSavedRehearsalLibrarySources = async (
@@ -119,7 +94,7 @@ export const useSavedRehearsalLibrary = () => {
     let isDisposed = false;
 
     const loadSavedSources = async () => {
-      const storageReady = await verifySavedRehearsalLibraryStorage();
+      const storageReady = await verifyLocalLibraryStorage();
 
       if (isDisposed) {
         return;

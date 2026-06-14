@@ -4,15 +4,15 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-  ADD_SCREEN_PANEL_ORDER,
+  ADD_SCREEN_DRIVE_PANEL_ORDER,
   DRIVE_DISCOVERY_NAVIGATION_ORDER,
   shouldShowDriveStatusCard,
   shouldShowUnavailableSources,
-} from './add-drive-layout.js';
+} from './drive-discovery-layout.js';
 
-describe('add drive layout', () => {
+describe('drive discovery layout', () => {
   it('keeps Add focused on a single discovery surface', () => {
-    assert.deepEqual(ADD_SCREEN_PANEL_ORDER, ['discovery']);
+    assert.deepEqual(ADD_SCREEN_DRIVE_PANEL_ORDER, ['discovery']);
   });
 
   it('keeps search controls directly below breadcrumbs in discovery', () => {

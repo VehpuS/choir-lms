@@ -7,11 +7,11 @@ import {
 import { useEffect, useReducer, useState } from 'react';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../hooks/use-saved-rehearsal-library';
 import {
   buildSavedPlaylist,
   type PlaylistDraftIssue,
 } from '../../playlists/utils/saved-playlist-view-model';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../storage/local-library-storage';
 import {
   getSavedTrackPlaylistMenuInitialState,
   reduceSavedTrackPlaylistMenuState,

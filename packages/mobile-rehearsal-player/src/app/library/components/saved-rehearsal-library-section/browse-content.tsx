@@ -12,7 +12,7 @@ import { SavedPlaylistCardsList } from '../../playlists/components/saved-playlis
 import {
   getSavedRehearsalLibraryDependentLoops,
   getSavedRehearsalLibrarySourceIssue,
-} from '../../utils/saved-rehearsal-library-view-model';
+} from '../../saved-rehearsal-library/view-model';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 import { useSavedRehearsalLibraryLoopState } from './use-saved-rehearsal-library-loop-state';
 import { useSavedRehearsalLibraryPlaylistState } from './use-saved-rehearsal-library-playlist-state';
