@@ -3,6 +3,7 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 
 import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
+import { FeedbackCard } from '../../components/feedback-card';
 import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
   savedPlaylistSectionStyles as styles,
@@ -29,10 +30,12 @@ export const SavedPlaylistIssueCard = ({
   }
 
   return (
-    <View style={styles.issueCard}>
-      <Text style={styles.issueTitle}>{issue.title}</Text>
-      <Text style={styles.issueMessage}>{issue.message}</Text>
-    </View>
+    <FeedbackCard
+      message={issue.message}
+      size="compact"
+      title={issue.title}
+      tone="error"
+    />
   );
 };
 

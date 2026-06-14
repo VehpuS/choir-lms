@@ -37,25 +37,6 @@ export const savedTrackPlaylistMenuSurfaceStyles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
-  emptyStateCard: {
-    gap: 6,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: INTERACTION_CARD_SHELL_TOKENS.borderColor,
-    borderRadius: 16,
-    backgroundColor: INTERACTION_CARD_SHELL_TOKENS.mutedBackground,
-  },
-  emptyStateTitle: {
-    color: PRIMARY_TEXT,
-    fontSize: 15,
-    fontWeight: '700',
-    lineHeight: 21,
-  },
-  emptyStateBody: {
-    color: SECONDARY_TEXT,
-    fontSize: 13,
-    lineHeight: 18,
-  },
   nameInput: {
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -66,23 +47,6 @@ export const savedTrackPlaylistMenuSurfaceStyles = StyleSheet.create({
     color: PRIMARY_TEXT,
     fontSize: 15,
     fontWeight: '600',
-  },
-  issueCard: {
-    gap: 6,
-    padding: 14,
-    borderRadius: 16,
-    backgroundColor: '#fff1ed',
-  },
-  issueTitle: {
-    color: '#8a2d1f',
-    fontSize: 14,
-    fontWeight: '700',
-    lineHeight: 20,
-  },
-  issueMessage: {
-    color: '#8a2d1f',
-    fontSize: 13,
-    lineHeight: 18,
   },
   actionColumn: {
     gap: 10,

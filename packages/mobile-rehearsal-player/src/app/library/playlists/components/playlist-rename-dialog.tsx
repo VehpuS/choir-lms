@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 
+import { FeedbackCard } from '../../components/feedback-card';
 import { OptionsMenuSheet } from '../../components/options-menu-sheet';
 import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
@@ -71,10 +72,12 @@ export const PlaylistRenameDialog = ({
             value={value}
           />
           {issue ? (
-            <View style={styles.issueCard}>
-              <Text style={styles.issueTitle}>{issue.title}</Text>
-              <Text style={styles.issueMessage}>{issue.message}</Text>
-            </View>
+            <FeedbackCard
+              message={issue.message}
+              size="compact"
+              title={issue.title}
+              tone="error"
+            />
           ) : null}
           <View style={styles.actionRow}>
             <Pressable

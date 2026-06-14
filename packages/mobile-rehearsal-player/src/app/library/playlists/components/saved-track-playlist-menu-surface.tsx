@@ -2,6 +2,7 @@ import type { NamedLoop, Playlist } from '@org/audio-library-models';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { BottomSheetSurface } from '../../components/bottom-sheet-surface';
+import { FeedbackCard } from '../../components/feedback-card';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { PlaylistDraftIssue } from '../utils/saved-playlist-view-model';
 import {
@@ -95,12 +96,11 @@ export const SavedTrackPlaylistMenuSurface = ({
               })}
             </ScrollView>
           ) : (
-            <View style={styles.emptyStateCard}>
-              <Text style={styles.emptyStateTitle}>No playlists yet</Text>
-              <Text style={styles.emptyStateBody}>
-                Create one to add this item.
-              </Text>
-            </View>
+            <FeedbackCard
+              message="Create one to add this item."
+              size="compact"
+              title="No playlists yet"
+            />
           )}
 
           <View style={styles.actionColumn}>
@@ -144,12 +144,12 @@ export const SavedTrackPlaylistMenuSurface = ({
           />
 
           {createPlaylistIssue ? (
-            <View style={styles.issueCard}>
-              <Text style={styles.issueTitle}>{createPlaylistIssue.title}</Text>
-              <Text style={styles.issueMessage}>
-                {createPlaylistIssue.message}
-              </Text>
-            </View>
+            <FeedbackCard
+              message={createPlaylistIssue.message}
+              size="compact"
+              title={createPlaylistIssue.title}
+              tone="error"
+            />
           ) : null}
 
           <View style={styles.actionColumn}>

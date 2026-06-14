@@ -71,7 +71,7 @@
 - [x] 4.6 Extract shared interaction style tokens for card shells, action buttons, chips, and pressed/disabled states used by playlist/source/menu surfaces.
 - [x] 4.6.1 Extract a shared contextual search panel scaffold for Add and Library search surfaces, reusing the input row, submit affordance, recent-search suggestions, and helper or clear-action slots while preserving each search context's copy and disabled rules.
 - [x] 4.6.2 Extract a shared section-heading primitive with eyebrow, title, body copy, and optional trailing action, and adopt it in Drive, Library, playlist, and modal entry surfaces where that structure already repeats.
-- [ ] 4.6.3 Extract a shared feedback-card family for status, issue, and empty states, and adopt it in Drive status, playlist creation and rename issues, and empty playlist-selector flows without changing workflow semantics.
+- [x] 4.6.3 Extract a shared feedback-card family for status, issue, and empty states, and adopt it in Drive status, playlist creation and rename issues, and empty playlist-selector flows without changing workflow semantics.
 - [ ] 4.6.4 Extract a shared chip family for recent searches, Drive root selection, Recents shortcut tags, and future tag or filter surfaces with passive, selected, and action variants.
 - [ ] 4.7 Extract a shared centered dialog-card shell for rename/create/select flows and migrate existing playlist dialogs without changing workflow behavior.
 - [ ] 4.7.1 Move create-playlist entry into the Library Playlists section header with a right-aligned `+` trigger that opens the shared create modal with playlist name input, replacing any persistent bottom-of-Library creation component.
