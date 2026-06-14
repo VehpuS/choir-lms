@@ -130,6 +130,13 @@ export const SavedPlaylistSection = ({
     playbackState,
     selectedPlaylist,
   });
+  const shufflePlaybackAction = getPlaylistPlaybackActionCopy({
+    activeSession: selectedPlaybackSession,
+    isPreparing: isPlaybackPreparing,
+    mode: 'shuffle',
+    playbackState,
+    selectedPlaylist,
+  });
   const selectedPlaylistIssue = getSelectedPlaylistIssue(
     issue,
     selectedPlaylist?.id ?? null,
@@ -185,6 +192,7 @@ export const SavedPlaylistSection = ({
 
       {isDetailVisible ? (
         <SavedPlaylistDetailCard
+          activeQueueMode={selectedPlaybackSession?.queue.mode ?? null}
           canMutatePlaylists={canMutatePlaylists}
           currentPlaylistEntryId={currentPlaylistEntryId}
           detailSummary={detailSummary}
@@ -229,6 +237,18 @@ export const SavedPlaylistSection = ({
               sources: savedSources,
             });
           }}
+          onPlayShuffledPlaylist={() => {
+            if (!selectedPlaylist) {
+              return;
+            }
+
+            void togglePlaylistPlayback({
+              loops: savedLoops,
+              mode: 'shuffle',
+              playlist: selectedPlaylist,
+              sources: savedSources,
+            });
+          }}
           onPlayPlaylistEntry={(entryId) => {
             if (!selectedPlaylist) {
               return;
@@ -258,6 +278,7 @@ export const SavedPlaylistSection = ({
           removalNotice={removalNotice}
           selectedPlaylist={selectedPlaylist}
           selectedPlaylistIssue={selectedPlaylistIssue}
+          shufflePlaybackAction={shufflePlaybackAction}
         />
       ) : (
         <>

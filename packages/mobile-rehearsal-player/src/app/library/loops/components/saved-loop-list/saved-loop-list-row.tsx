@@ -1,7 +1,7 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { type PlayableItem } from '@org/audio-library-models';
 import { Pressable, Text, View } from 'react-native';
 
+import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
 import { CompactPlayableRowShell } from '../../../../components/compact-playable-row-shell';
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
 import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
@@ -20,7 +20,6 @@ import {
   type SavedLoopIssue,
 } from '../../utils/saved-loop-view-model';
 import {
-  SAVED_LOOP_PRIMARY_TEXT,
   savedLoopListStyles as styles,
 } from '../saved-loop-list-styles';
 
@@ -199,29 +198,14 @@ export const SavedLoopListRow = ({
         actions={inlineActions.map((action, index) => {
           if (action.iconName) {
             return (
-              <Pressable
+              <CompactPlaybackAction
                 accessibilityLabel={action.accessibilityLabel ?? action.label}
-                accessibilityRole="button"
-                accessibilityState={{
-                  disabled: action.disabled,
-                }}
                 disabled={action.disabled}
+                iconName={action.iconName}
                 key={`${loopCard.loop.id}:${action.accessibilityLabel ?? action.label}:${index}`}
                 onPress={action.onPress}
-                style={({ pressed }) => [
-                  styles.iconButton,
-                  pressed && !action.disabled
-                    ? styles.actionButtonPressed
-                    : undefined,
-                  action.disabled ? styles.actionButtonDisabled : undefined,
-                ]}
-              >
-                <MaterialCommunityIcons
-                  color={SAVED_LOOP_PRIMARY_TEXT}
-                  name={action.iconName}
-                  size={18}
-                />
-              </Pressable>
+                variant="inline"
+              />
             );
           }
 

@@ -154,16 +154,6 @@ export const recentsScreenStyles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
-  tagPlayButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: appTheme.colors.surfaceBackground,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-  },
   iconActionButton: {
     width: 40,
     height: 40,
@@ -176,8 +166,5 @@ export const recentsScreenStyles = StyleSheet.create({
   },
   iconActionButtonPressed: {
     opacity: 0.75,
-  },
-  iconActionButtonDisabled: {
-    opacity: 0.45,
   },
 });

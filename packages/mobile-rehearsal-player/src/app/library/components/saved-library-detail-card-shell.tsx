@@ -18,7 +18,8 @@ type SavedLibraryDetailCardShellProps = {
   headerAction?: ReactNode;
   metadataLabel: string;
   onClose: () => void;
-  primaryAction: DetailAction;
+  playbackControls?: ReactNode;
+  primaryAction?: DetailAction;
   secondaryAction?: DetailAction;
   title: string;
 };
@@ -41,6 +42,7 @@ export const SavedLibraryDetailCardShell = ({
   headerAction,
   metadataLabel,
   onClose,
+  playbackControls,
   primaryAction,
   secondaryAction,
   title,
@@ -48,6 +50,33 @@ export const SavedLibraryDetailCardShell = ({
   const actions = [primaryAction, secondaryAction].filter(
     (action): action is DetailAction => Boolean(action),
   );
+  const resolvedPlaybackControls =
+    playbackControls ??
+    (actions.length > 0 ? (
+      <View style={styles.actionRow}>
+        {actions.map((action) => {
+          return (
+            <Pressable
+              accessibilityRole="button"
+              disabled={action.disabled}
+              key={action.label}
+              onPress={action.onPress}
+              style={({ pressed }) => [
+                getActionStyle(action.tone),
+                pressed && !action.disabled
+                  ? styles.actionButtonPressed
+                  : undefined,
+                action.disabled ? styles.actionButtonDisabled : undefined,
+              ]}
+            >
+              <Text style={getActionLabelStyle(action.tone)}>
+                {action.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    ) : null);
 
   return (
     <View style={styles.editorCard}>
@@ -74,32 +103,12 @@ export const SavedLibraryDetailCardShell = ({
 
       {headerAction}
 
-      <View style={styles.group}>
-        <Text style={styles.groupTitle}>Playback controls</Text>
-        <View style={styles.actionRow}>
-          {actions.map((action) => {
-            return (
-              <Pressable
-                accessibilityRole="button"
-                disabled={action.disabled}
-                key={action.label}
-                onPress={action.onPress}
-                style={({ pressed }) => [
-                  getActionStyle(action.tone),
-                  pressed && !action.disabled
-                    ? styles.actionButtonPressed
-                    : undefined,
-                  action.disabled ? styles.actionButtonDisabled : undefined,
-                ]}
-              >
-                <Text style={getActionLabelStyle(action.tone)}>
-                  {action.label}
-                </Text>
-              </Pressable>
-            );
-          })}
+      {resolvedPlaybackControls ? (
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Playback controls</Text>
+          {resolvedPlaybackControls}
         </View>
-      </View>
+      ) : null}
 
       {children}
     </View>

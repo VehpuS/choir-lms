@@ -9,6 +9,14 @@ The system SHALL present playlist detail as playback-first by default, with dest
 - **WHEN** a user opens playlist detail
 - **THEN** the system shows playback actions and current running order before secondary management controls such as rename or delete playlist
 
+#### Scenario: Playlist detail fresh-start playback uses icon-first ordered and shuffle actions
+
+- **WHEN** a user views playlist detail playback controls
+- **THEN** the system exposes ordered and shuffle start actions as icon-first controls with visible mode labels
+- **AND** the UI does not render text-labeled `Play ordered` or `Shuffle play` buttons in playlist detail
+- **AND** selecting either control starts playback for that playlist in the chosen queue mode without leaving playlist detail
+- **AND** if ordered or shuffle playback for that playlist is already active, the current queue mode remains visually distinguishable in the control row
+
 #### Scenario: Playlist cards expose immediate playback entry
 
 - **WHEN** a user views saved playlist cards in Library
@@ -74,6 +82,11 @@ The system SHALL reduce steady-state interface weight on Recents and Add so user
 - **WHEN** a surface offers a direct playback-start control in a playlist card, playable row, Recents shortcut, or shell playback affordance
 - **THEN** the system uses a standard play icon for the actionable control instead of a text-labeled `Play` button where the meaning is already clear from context
 - **AND** any supporting description remains outside the control itself
+
+#### Scenario: Playlist detail mode actions stay icon-first while preserving mode clarity
+
+- **WHEN** playlist detail offers ordered and shuffle fresh-start playback actions
+- **THEN** those actions present their queue mode through supporting labels adjacent to the icon-first control rather than by prefixing the visible button copy with `Play`
 
 #### Scenario: Search prioritizes result actionability
 

@@ -1,7 +1,7 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
+import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import {
   SAVED_PLAYLIST_PLACEHOLDER_TEXT,
@@ -144,29 +144,15 @@ export const SavedPlaylistCardsList = (props: {
                 {playlistCard.previewLabel}
               </Text>
               <View style={styles.actionRow}>
-                <Pressable
+                <CompactPlaybackAction
                   accessibilityLabel={playAction.accessibilityLabel}
-                  accessibilityRole="button"
                   disabled={playAction.disabled}
+                  iconName="play"
                   onPress={() => {
                     props.onPlayPlaylist(playlistCard.playlist.id);
                   }}
-                  style={({ pressed }) => [
-                    styles.compactIconButton,
-                    pressed && !playAction.disabled
-                      ? styles.actionButtonPressed
-                      : undefined,
-                    playAction.disabled
-                      ? styles.actionButtonDisabled
-                      : undefined,
-                  ]}
-                >
-                  <MaterialCommunityIcons
-                    color="#1f1c17"
-                    name="play"
-                    size={18}
-                  />
-                </Pressable>
+                  variant="card"
+                />
                 <Pressable
                   accessibilityRole="button"
                   onPress={() => {

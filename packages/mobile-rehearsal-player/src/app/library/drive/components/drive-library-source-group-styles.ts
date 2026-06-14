@@ -88,17 +88,6 @@ export const driveLibrarySourceGroupStyles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 999,
   },
-  iconButton: {
-    minWidth: 38,
-    minHeight: 36,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderRadius: 999,
-    borderColor: BORDER_COLOR,
-    backgroundColor: '#fffdf8',
-  },
   actionButtonNeutral: {
     borderColor: BORDER_COLOR,
     backgroundColor: '#fffdf8',

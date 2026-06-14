@@ -4,6 +4,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { useState } from 'react';
 import { runtimeConfig } from '../../../config/runtime';
+import { CompactPlaybackAction } from '../../components/compact-playback-action';
 import { CompactPlayableRowShell } from '../../components/compact-playable-row-shell';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
 import { appTheme } from '../../utils/theme';
@@ -98,36 +99,16 @@ export const RecentsScreen = ({
             <View key={recentRehearsal.id}>
               <CompactPlayableRowShell
                 actions={
-                  <Pressable
+                  <CompactPlaybackAction
                     accessibilityLabel={`Play ${recentRehearsal.title}`}
-                    accessibilityRole="button"
-                    accessibilityState={{
-                      disabled: isCurrentRowPlaying,
-                    }}
                     disabled={isCurrentRowPlaying}
+                    disabledIconColor={appTheme.colors.secondaryText}
+                    iconName="play"
                     onPress={() => {
                       onResumeRecentPlayback(recentRehearsal);
                     }}
-                    style={({ pressed }) => [
-                      styles.iconActionButton,
-                      pressed && !isCurrentRowPlaying
-                        ? styles.iconActionButtonPressed
-                        : undefined,
-                      isCurrentRowPlaying
-                        ? styles.iconActionButtonDisabled
-                        : undefined,
-                    ]}
-                  >
-                    <MaterialCommunityIcons
-                      color={
-                        isCurrentRowPlaying
-                          ? appTheme.colors.secondaryText
-                          : appTheme.colors.primaryText
-                      }
-                      name="play"
-                      size={22}
-                    />
-                  </Pressable>
+                    variant="row"
+                  />
                 }
                 metadata={
                   <Text numberOfLines={1} style={styles.recentItemMeta}>
@@ -222,38 +203,21 @@ export const RecentsScreen = ({
           {RECENTS_SHORTCUT_TAGS.map((tag) => (
             <View key={tag} style={styles.tagChip}>
               <Text style={styles.tagLabel}>{tag}</Text>
-              <Pressable
+              <CompactPlaybackAction
                 accessibilityLabel={
                   getRecentsShortcutPlayActionCopy({
                     isResumePlaybackAvailable: isRecentPlaybackAvailable,
                     shortcutTag: tag,
                   }).accessibilityLabel
                 }
-                accessibilityRole="button"
                 disabled={!isRecentPlaybackAvailable}
+                disabledIconColor={appTheme.colors.secondaryText}
+                iconName="play"
                 onPress={() => {
                   onPlayRecentShortcut(tag);
                 }}
-                style={({ pressed }) => [
-                  styles.tagPlayButton,
-                  pressed && isRecentPlaybackAvailable
-                    ? styles.iconActionButtonPressed
-                    : undefined,
-                  !isRecentPlaybackAvailable
-                    ? styles.iconActionButtonDisabled
-                    : undefined,
-                ]}
-              >
-                <MaterialCommunityIcons
-                  color={
-                    !isRecentPlaybackAvailable
-                      ? appTheme.colors.secondaryText
-                      : appTheme.colors.primaryText
-                  }
-                  name="play"
-                  size={16}
-                />
-              </Pressable>
+                variant="chip"
+              />
             </View>
           ))}
         </View>

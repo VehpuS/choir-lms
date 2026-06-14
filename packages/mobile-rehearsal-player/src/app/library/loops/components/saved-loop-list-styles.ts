@@ -62,17 +62,6 @@ export const savedLoopListStyles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: '#fffdf8',
   },
-  iconButton: {
-    minWidth: 38,
-    minHeight: 36,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderRadius: 999,
-    borderColor: BORDER_COLOR,
-    backgroundColor: '#fffdf8',
-  },
   secondaryButtonLabel: {
     color: SAVED_LOOP_PRIMARY_TEXT,
     fontSize: 13,

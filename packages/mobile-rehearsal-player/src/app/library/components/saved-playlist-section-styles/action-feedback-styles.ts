@@ -17,6 +17,18 @@ export const playlistActionFeedbackStyles = {
     flexWrap: 'wrap',
     gap: 10,
   },
+  compactIconButton: {
+    alignSelf: 'flex-start',
+    minWidth: 44,
+    minHeight: 36,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: PLAYLIST_BORDER_COLOR,
+    borderRadius: 999,
+    backgroundColor: '#fffdf8',
+  },
   primaryButton: {
     alignSelf: 'flex-start',
     paddingHorizontal: 16,
@@ -38,17 +50,42 @@ export const playlistActionFeedbackStyles = {
     borderRadius: 999,
     backgroundColor: '#fffdf8',
   },
-  compactIconButton: {
+  detailPlaybackActionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  detailPlaybackAction: {
     alignSelf: 'flex-start',
-    minWidth: 44,
-    minHeight: 36,
-    paddingHorizontal: 12,
-    justifyContent: 'center',
+    minHeight: 44,
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderWidth: 1,
-    borderColor: PLAYLIST_BORDER_COLOR,
     borderRadius: 999,
+  },
+  detailPlaybackActionPrimary: {
+    borderColor: PLAYLIST_PRIMARY_ACTION_BACKGROUND,
+    backgroundColor: PLAYLIST_PRIMARY_ACTION_BACKGROUND,
+  },
+  detailPlaybackActionSecondary: {
+    borderColor: PLAYLIST_BORDER_COLOR,
     backgroundColor: '#fffdf8',
+  },
+  detailPlaybackActionSelected: {
+    borderWidth: 2,
+  },
+  detailPlaybackActionPrimaryLabel: {
+    color: PLAYLIST_PRIMARY_ACTION_TEXT,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  detailPlaybackActionSecondaryLabel: {
+    color: PLAYLIST_PRIMARY_TEXT,
+    fontSize: 14,
+    fontWeight: '700',
   },
   destructiveButton: {
     alignSelf: 'flex-start',

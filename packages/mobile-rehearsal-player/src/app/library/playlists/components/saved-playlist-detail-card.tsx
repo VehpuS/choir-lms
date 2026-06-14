@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Playlist } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
@@ -5,6 +6,11 @@ import { Modal, Pressable, Text, View } from 'react-native';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { SavedLibraryDetailCardShell } from '../../components/saved-library-detail-card-shell';
 import { savedPlaylistSectionStyles as styles } from '../../components/saved-playlist-section-styles';
+import {
+  PLAYLIST_PRIMARY_ACTION_TEXT,
+  PLAYLIST_PRIMARY_TEXT,
+} from '../../components/saved-playlist-section-styles/shared';
+import { getPlaylistDetailPlaybackControls } from '../utils/saved-playlist-detail-playback-controls';
 import {
   consumeSavedPlaylistRenameRequest,
   type SavedPlaylistDetailRemovalNotice,
@@ -23,6 +29,7 @@ import { SavedPlaylistDetailItemsList } from './saved-playlist-detail-items-list
 type PlaylistEntry = Playlist['items'][number];
 
 export const SavedPlaylistDetailCard = (props: {
+  activeQueueMode: 'ordered' | 'shuffle' | null;
   canMutatePlaylists: boolean;
   currentPlaylistEntryId: string | null;
   detailSummary: SavedPlaylistDetailSummary | null;
@@ -49,6 +56,7 @@ export const SavedPlaylistDetailCard = (props: {
     options?: { persist?: boolean },
   ) => void;
   onPlayOrderedPlaylist: () => void;
+  onPlayShuffledPlaylist: () => void;
   onPlayPlaylistEntry: (entryId: string) => void;
   onRemoveItem: (entryId: string) => void;
   onRenamePlaylist: () => void;
@@ -57,6 +65,7 @@ export const SavedPlaylistDetailCard = (props: {
   onReorderDragMove: (moveY: number) => void;
   onToggleCurrentPlayback: () => void;
   onUndoRemoveItem: () => void;
+  shufflePlaybackAction: PlaylistPlaybackActionCopy;
 }) => {
   const { detailSummary, selectedPlaylist } = props;
   const [isOptionsMenuVisible, setIsOptionsMenuVisible] = useState(false);
@@ -78,6 +87,12 @@ export const SavedPlaylistDetailCard = (props: {
     return null;
   }
 
+  const playbackControls = getPlaylistDetailPlaybackControls({
+    activeMode: props.activeQueueMode,
+    orderedAction: props.orderedPlaybackAction,
+    shuffleAction: props.shufflePlaybackAction,
+  });
+
   return (
     <SavedLibraryDetailCardShell
       body={detailSummary.body}
@@ -94,12 +109,65 @@ export const SavedPlaylistDetailCard = (props: {
       }
       metadataLabel={detailSummary.metadataLabel}
       onClose={props.onCloseDetail}
-      primaryAction={{
-        disabled: props.isMutating || props.orderedPlaybackAction.disabled,
-        label: `▶ ${props.orderedPlaybackAction.label}`,
-        onPress: props.onPlayOrderedPlaylist,
-        tone: 'primary',
-      }}
+      playbackControls={
+        <View style={styles.detailPlaybackActionRow}>
+          {playbackControls.map((control) => {
+            const isPrimaryTone = control.tone === 'primary';
+
+            return (
+              <Pressable
+                accessibilityLabel={control.accessibilityLabel}
+                accessibilityRole="button"
+                accessibilityState={{
+                  disabled: props.isMutating || control.disabled,
+                  selected: control.selected,
+                }}
+                disabled={props.isMutating || control.disabled}
+                key={control.mode}
+                onPress={
+                  control.mode === 'ordered'
+                    ? props.onPlayOrderedPlaylist
+                    : props.onPlayShuffledPlaylist
+                }
+                style={({ pressed }) => [
+                  styles.detailPlaybackAction,
+                  isPrimaryTone
+                    ? styles.detailPlaybackActionPrimary
+                    : styles.detailPlaybackActionSecondary,
+                  control.selected
+                    ? styles.detailPlaybackActionSelected
+                    : undefined,
+                  pressed && !(props.isMutating || control.disabled)
+                    ? styles.actionButtonPressed
+                    : undefined,
+                  props.isMutating || control.disabled
+                    ? styles.actionButtonDisabled
+                    : undefined,
+                ]}
+              >
+                <MaterialCommunityIcons
+                  color={
+                    isPrimaryTone
+                      ? PLAYLIST_PRIMARY_ACTION_TEXT
+                      : PLAYLIST_PRIMARY_TEXT
+                  }
+                  name={control.iconName}
+                  size={18}
+                />
+                <Text
+                  style={
+                    isPrimaryTone
+                      ? styles.detailPlaybackActionPrimaryLabel
+                      : styles.detailPlaybackActionSecondaryLabel
+                  }
+                >
+                  {control.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      }
       title={detailSummary.title}
     >
       <SavedPlaylistDetailItemsList

@@ -577,6 +577,7 @@ Implementation guidance:
 - Shared overflow trigger primitive: one top-right vertical-ellipsis button component with consistent accessibility, hit target, and pressed/disabled feedback.
 - Shared overflow ordering contract: reusable menu ordering that keeps primary actions first, preserves stable order within the same priority group, and places destructive actions last across Library, Add, Recents, and playlist surfaces.
 - Shared playback-action primitive: one reusable icon-only direct-playback button for repeated list and card entry points (for example Add source rows, Recents rows and shortcut chips, and playlist cards) with consistent play/pause/replay glyph semantics, accessibility labels, hit target sizing, and pressed/disabled feedback.
+- Playlist-detail playback mode actions: a surface-specific ordered/shuffle control row that uses icon-first buttons with adjacent mode labels, keeps ordered as the default-emphasis start action while idle, and highlights the active queue mode when that playlist is already running.
 - Shared contextual search panel: one reusable search scaffold for Add and Library contexts that keeps input styling, submit affordance, recent-search suggestions, and a context-specific helper or clear-action slot aligned while preserving Drive-versus-library copy and disabled rules.
 - Shared section-heading primitive: reusable eyebrow, title, and body copy with an optional trailing action for Drive, Library, playlist, and modal entry surfaces that already share that structure.
 - Shared feedback-card family: reusable tone-aware status, issue, and empty-state cards with title, message, and optional loading treatment.
@@ -586,7 +587,7 @@ Implementation guidance:
 - Shared modal-surface base: reusable backdrop, spacing, and dismiss behavior for bottom-sheet and centered-dialog variants so shared modal flows can reuse one foundation without forcing one presentation style everywhere.
 - Shared interaction style tokens: centralize repeated card, button, chip, and disabled/pressed tokens used by playlist, source, and menu surfaces.
 
-The shared playback-action primitive is intended for compact row and card entry points, not for full-size transport controls in the mini-player or now-playing surface where a different scale and emphasis model is still appropriate.
+The shared playback-action primitive is intended for compact row and card entry points, not for full-size transport controls in the mini-player or now-playing surface where a different scale and emphasis model is still appropriate. Playlist-detail ordered/shuffle start actions remain surface-specific for the same reason: they need larger mode-aware presentation than compact row-entry buttons, even though they should still be icon-first.
 
 Sequence these extractions after behavior convergence rather than before it: contextual search, section headings, and feedback cards can be extracted early; the playable-row shell should follow explicit row-action placement and compact playback-action convergence; chip variants should land alongside tags, filters, and search-scoping work; and the modal-surface base should land while playlist, selector, and loop-builder flows are already migrating onto shared dialog and sheet shells.
 

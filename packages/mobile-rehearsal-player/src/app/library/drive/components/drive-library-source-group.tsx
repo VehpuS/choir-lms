@@ -1,8 +1,8 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { map } from 'es-toolkit/compat';
 import { useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
+import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import { CompactPlayableRowShell } from '../../../components/compact-playable-row-shell';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { OptionsMenuSheet } from '../../components/options-menu-sheet';
@@ -138,29 +138,14 @@ const DriveLibrarySourceCard = ({
           (action: DriveLibrarySourceAction, index: number) => {
             if (action.iconName) {
               return (
-                <Pressable
+                <CompactPlaybackAction
                   accessibilityLabel={action.accessibilityLabel ?? action.label}
-                  accessibilityRole="button"
-                  accessibilityState={{
-                    disabled: action.disabled,
-                  }}
                   disabled={action.disabled}
+                  iconName={action.iconName}
                   key={`${source.id}:${action.accessibilityLabel ?? action.label}:${index}`}
                   onPress={action.onPress}
-                  style={({ pressed }) => [
-                    styles.iconButton,
-                    pressed && !action.disabled
-                      ? styles.actionButtonPressed
-                      : undefined,
-                    action.disabled ? styles.actionButtonDisabled : undefined,
-                  ]}
-                >
-                  <MaterialCommunityIcons
-                    color={DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT}
-                    name={action.iconName}
-                    size={18}
-                  />
-                </Pressable>
+                  variant="inline"
+                />
               );
             }
 
