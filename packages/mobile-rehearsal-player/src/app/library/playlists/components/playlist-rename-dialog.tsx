@@ -1,12 +1,6 @@
-import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 
+import { CenteredDialogCard } from '../../components/centered-dialog-card';
 import { FeedbackCard } from '../../components/feedback-card';
 import { OptionsMenuSheet } from '../../components/options-menu-sheet';
 import {
@@ -49,67 +43,58 @@ export const PlaylistRenameDialog = ({
   onSubmit,
 }: PlaylistRenameDialogProps) => {
   return (
-    <Modal
-      animationType="fade"
-      onRequestClose={onCancel}
-      transparent
-      visible={isVisible}
-    >
-      <View style={dialogStyles.overlay}>
-        <View style={dialogStyles.card}>
-          <Text style={styles.groupTitle}>Rename playlist</Text>
-          <Text style={styles.sectionBody}>
-            Update the title for {playlistName}.
+    <CenteredDialogCard isVisible={isVisible} onRequestClose={onCancel}>
+      <Text style={styles.groupTitle}>Rename playlist</Text>
+      <Text style={styles.sectionBody}>
+        Update the title for {playlistName}.
+      </Text>
+      <TextInput
+        autoCorrect={false}
+        autoFocus
+        onChangeText={onChange}
+        placeholder="Rename this playlist"
+        placeholderTextColor={SAVED_PLAYLIST_PLACEHOLDER_TEXT}
+        returnKeyType="done"
+        style={styles.nameInput}
+        value={value}
+      />
+      {issue ? (
+        <FeedbackCard
+          message={issue.message}
+          size="compact"
+          title={issue.title}
+          tone="error"
+        />
+      ) : null}
+      <View style={styles.actionRow}>
+        <Pressable
+          accessibilityRole="button"
+          disabled={isMutating}
+          onPress={onCancel}
+          style={({ pressed }) => [
+            styles.secondaryButton,
+            pressed && !isMutating ? styles.actionButtonPressed : undefined,
+            isMutating ? styles.actionButtonDisabled : undefined,
+          ]}
+        >
+          <Text style={styles.secondaryButtonLabel}>Cancel</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          disabled={isMutating}
+          onPress={onSubmit}
+          style={({ pressed }) => [
+            styles.primaryButton,
+            pressed && !isMutating ? styles.actionButtonPressed : undefined,
+            isMutating ? styles.actionButtonDisabled : undefined,
+          ]}
+        >
+          <Text style={styles.primaryButtonLabel}>
+            {isMutating ? 'Saving…' : 'Save name'}
           </Text>
-          <TextInput
-            autoCorrect={false}
-            autoFocus
-            onChangeText={onChange}
-            placeholder="Rename this playlist"
-            placeholderTextColor={SAVED_PLAYLIST_PLACEHOLDER_TEXT}
-            returnKeyType="done"
-            style={styles.nameInput}
-            value={value}
-          />
-          {issue ? (
-            <FeedbackCard
-              message={issue.message}
-              size="compact"
-              title={issue.title}
-              tone="error"
-            />
-          ) : null}
-          <View style={styles.actionRow}>
-            <Pressable
-              accessibilityRole="button"
-              disabled={isMutating}
-              onPress={onCancel}
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                pressed && !isMutating ? styles.actionButtonPressed : undefined,
-                isMutating ? styles.actionButtonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.secondaryButtonLabel}>Cancel</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              disabled={isMutating}
-              onPress={onSubmit}
-              style={({ pressed }) => [
-                styles.primaryButton,
-                pressed && !isMutating ? styles.actionButtonPressed : undefined,
-                isMutating ? styles.actionButtonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.primaryButtonLabel}>
-                {isMutating ? 'Saving…' : 'Save name'}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+        </Pressable>
       </View>
-    </Modal>
+    </CenteredDialogCard>
   );
 };
 
@@ -135,22 +120,3 @@ export const PlaylistOptionsMenuSurface = ({
     />
   );
 };
-
-const dialogStyles = StyleSheet.create({
-  card: {
-    gap: 12,
-    width: '92%',
-    borderWidth: 1,
-    borderColor: '#d6d1c4',
-    borderRadius: 16,
-    padding: 16,
-    backgroundColor: '#fffdf8',
-  },
-  overlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'rgba(31, 28, 23, 0.35)',
-  },
-});

@@ -337,6 +337,10 @@
     "/^npm exec -- nx test mobile-rehearsal-player --runInBand --testPathPattern=section-heading-model\\.spec\\.ts$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npx jest --config jest\\.config\\.cjs --runInBand src/app/library/playlists/components/playlist-dialogs\\.spec\\.tsx$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

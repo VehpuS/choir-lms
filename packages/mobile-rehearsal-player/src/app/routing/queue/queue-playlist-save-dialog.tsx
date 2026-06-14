@@ -1,12 +1,11 @@
-import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { CenteredDialogCard } from '../../library/components/centered-dialog-card';
+import { FeedbackCard } from '../../library/components/feedback-card';
+import {
+  SAVED_PLAYLIST_PLACEHOLDER_TEXT,
+  savedPlaylistSectionStyles as playlistStyles,
+} from '../../library/components/saved-playlist-section-styles';
 import type { PlaylistDraftIssue } from '../../library/playlists/utils/saved-playlist-view-model';
 import { appTheme } from '../../utils/theme';
 
@@ -30,112 +29,72 @@ export const QueuePlaylistSaveDialog = ({
   onSubmit,
 }: QueuePlaylistSaveDialogProps) => {
   return (
-    <Modal
-      animationType="fade"
-      onRequestClose={onCancel}
-      transparent
-      visible={isVisible}
-    >
-      <View style={styles.overlay}>
-        <View style={styles.card}>
-          <Text style={styles.title}>Create new playlist</Text>
-          <Text style={styles.body}>
-            Create a new playlist from the current Up Next order. Unsaved queued
-            tracks will be added to Library first.
+    <CenteredDialogCard isVisible={isVisible} onRequestClose={onCancel}>
+      <Text style={styles.title}>Create new playlist</Text>
+      <Text style={styles.body}>
+        Create a new playlist from the current Up Next order. Unsaved queued
+        tracks will be added to Library first.
+      </Text>
+      <TextInput
+        autoCapitalize="words"
+        autoCorrect={false}
+        autoFocus
+        onChangeText={onChange}
+        placeholder="Wednesday rehearsal"
+        placeholderTextColor={SAVED_PLAYLIST_PLACEHOLDER_TEXT}
+        returnKeyType="done"
+        style={styles.nameInput}
+        value={value}
+      />
+      {issue ? (
+        <FeedbackCard
+          message={issue.message}
+          size="compact"
+          title={issue.title}
+          tone="error"
+        />
+      ) : null}
+      <View style={playlistStyles.actionRow}>
+        <Pressable
+          accessibilityRole="button"
+          disabled={isMutating}
+          onPress={onCancel}
+          style={({ pressed }) => [
+            playlistStyles.secondaryButton,
+            pressed && !isMutating
+              ? playlistStyles.actionButtonPressed
+              : undefined,
+            isMutating ? playlistStyles.actionButtonDisabled : undefined,
+          ]}
+        >
+          <Text style={playlistStyles.secondaryButtonLabel}>Cancel</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          disabled={isMutating}
+          onPress={onSubmit}
+          style={({ pressed }) => [
+            playlistStyles.primaryButton,
+            pressed && !isMutating
+              ? playlistStyles.actionButtonPressed
+              : undefined,
+            isMutating ? playlistStyles.actionButtonDisabled : undefined,
+          ]}
+        >
+          <Text style={playlistStyles.primaryButtonLabel}>
+            {isMutating ? 'Creating…' : 'Create playlist'}
           </Text>
-          <TextInput
-            autoCapitalize="words"
-            autoCorrect={false}
-            autoFocus
-            onChangeText={onChange}
-            placeholder="Wednesday rehearsal"
-            placeholderTextColor="#857b6c"
-            returnKeyType="done"
-            style={styles.nameInput}
-            value={value}
-          />
-          {issue ? (
-            <View style={styles.issueCard}>
-              <Text style={styles.issueTitle}>{issue.title}</Text>
-              <Text style={styles.issueMessage}>{issue.message}</Text>
-            </View>
-          ) : null}
-          <View style={styles.actionRow}>
-            <Pressable
-              accessibilityRole="button"
-              disabled={isMutating}
-              onPress={onCancel}
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                pressed && !isMutating ? styles.buttonPressed : undefined,
-                isMutating ? styles.buttonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.secondaryButtonLabel}>Cancel</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              disabled={isMutating}
-              onPress={onSubmit}
-              style={({ pressed }) => [
-                styles.primaryButton,
-                pressed && !isMutating ? styles.buttonPressed : undefined,
-                isMutating ? styles.buttonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.primaryButtonLabel}>
-                {isMutating ? 'Creating…' : 'Create playlist'}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+        </Pressable>
       </View>
-    </Modal>
+    </CenteredDialogCard>
   );
 };
 
 const styles = StyleSheet.create({
-  actionRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
   body: {
     color: appTheme.colors.secondaryText,
     fontSize: 14,
     lineHeight: 20,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonPressed: {
-    opacity: 0.84,
-  },
-  card: {
-    gap: 12,
-    width: '92%',
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 16,
-    padding: 16,
-    backgroundColor: '#fffdf8',
-  },
-  issueCard: {
-    gap: 4,
-    borderWidth: 1,
-    borderColor: '#e5c7a4',
-    borderRadius: 14,
-    padding: 12,
-    backgroundColor: '#fff3e2',
-  },
-  issueMessage: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  issueTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 13,
-    fontWeight: '700',
   },
   nameInput: {
     borderWidth: 1,
@@ -144,42 +103,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     color: appTheme.colors.primaryText,
-    backgroundColor: '#fffdf8',
-  },
-  overlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'rgba(31, 28, 23, 0.35)',
-  },
-  primaryButton: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 14,
-    paddingVertical: 12,
-    backgroundColor: '#305c4d',
-  },
-  primaryButtonLabel: {
-    color: '#fff8ef',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  secondaryButton: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 14,
-    paddingVertical: 12,
-    backgroundColor: '#fffdf8',
-  },
-  secondaryButtonLabel: {
-    color: appTheme.colors.primaryText,
-    fontSize: 14,
-    fontWeight: '700',
+    backgroundColor: appTheme.colors.surfaceBackground,
   },
   title: {
     color: appTheme.colors.primaryText,
