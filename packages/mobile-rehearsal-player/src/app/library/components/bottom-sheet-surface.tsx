@@ -1,4 +1,6 @@
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
+
+import { SectionHeading } from './section-heading';
 
 type BottomSheetSurfaceProps = {
   children: React.ReactNode;
@@ -10,8 +12,6 @@ type BottomSheetSurfaceProps = {
 
 const BACKDROP = 'rgba(20, 18, 13, 0.42)';
 const CARD_BACKGROUND = '#fffdf8';
-const PRIMARY_TEXT = '#1f1c17';
-const SECONDARY_TEXT = '#5f5647';
 
 export const BottomSheetSurface = ({
   children,
@@ -34,14 +34,13 @@ export const BottomSheetSurface = ({
         />
         <View style={styles.sheet}>
           {eyebrow || title ? (
-            <View style={styles.copyGroup}>
-              {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
-              {title ? (
-                <Text numberOfLines={1} style={styles.title}>
-                  {title}
-                </Text>
-              ) : null}
-            </View>
+            <SectionHeading
+              eyebrow={eyebrow}
+              style={styles.copyGroup}
+              title={title}
+              titleNumberOfLines={1}
+              titleStyle={styles.title}
+            />
           ) : null}
           {children}
         </View>
@@ -56,13 +55,6 @@ const styles = StyleSheet.create({
   },
   copyGroup: {
     gap: 6,
-  },
-  eyebrow: {
-    color: SECONDARY_TEXT,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
   },
   overlay: {
     flex: 1,
@@ -79,7 +71,7 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_BACKGROUND,
   },
   title: {
-    color: PRIMARY_TEXT,
+    color: '#1f1c17',
     fontSize: 20,
     fontWeight: '700',
     lineHeight: 26,

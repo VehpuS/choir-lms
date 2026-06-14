@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { DriveLibraryStatusCard } from '../../drive/components/drive-library-status-card';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
+import { SectionHeading } from '../../components/section-heading';
 import { useSavedLoopSectionState } from '../hooks/use-saved-loop-section-state';
 import {
   type SavedTrackPlaybackIssue,
@@ -144,11 +145,12 @@ export const SavedLoopSection = ({
   return (
     <View style={styles.section}>
       {!isTrackLoopDetailVisible ? (
-        <View style={styles.sectionCopy}>
-          <Text style={styles.eyebrow}>Saved loops</Text>
-          <Text style={styles.sectionTitle}>Saved loops</Text>
-          <Text style={styles.sectionBody}>{SAVED_LOOP_SECTION_BODY_COPY}</Text>
-        </View>
+        <SectionHeading
+          body={SAVED_LOOP_SECTION_BODY_COPY}
+          eyebrow="Saved loops"
+          style={styles.sectionCopy}
+          title="Saved loops"
+        />
       ) : null}
 
       {!isTrackLoopDetailVisible && shouldShowStatusCard ? (
@@ -271,19 +273,6 @@ const styles = StyleSheet.create({
   },
   sectionCopy: {
     gap: 8,
-  },
-  eyebrow: {
-    color: SECONDARY_TEXT,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-  },
-  sectionTitle: {
-    color: PRIMARY_TEXT,
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 24,
   },
   sectionBody: {
     color: SECONDARY_TEXT,

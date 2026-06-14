@@ -1,6 +1,7 @@
 import { type NamedLoop, type Playlist } from '@org/audio-library-models';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
+import { SectionHeading } from '../../components/section-heading';
 import { savedPlaylistSectionStyles as styles } from '../../components/saved-playlist-section-styles';
 import { DriveLibraryStatusCard } from '../../drive/components/drive-library-status-card';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
@@ -176,10 +177,12 @@ export const SavedPlaylistSection = ({
   return (
     <View style={styles.section}>
       {!isDetailVisible ? (
-        <View style={styles.sectionCopy}>
-          <Text style={styles.eyebrow}>Saved playlists</Text>
-          <Text style={styles.sectionTitle}>Playlists</Text>
-        </View>
+        <SectionHeading
+          eyebrow="Saved playlists"
+          style={styles.sectionCopy}
+          title="Playlists"
+          titleStyle={styles.sectionTitle}
+        />
       ) : null}
 
       {shouldShowStatusCard ? (

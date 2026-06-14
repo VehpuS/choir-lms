@@ -329,6 +329,14 @@
     "/^npm exec -- nx run mobile-rehearsal-player:test --args=\"src/app/library/search/components/contextual-search-panel-model\\.spec\\.ts\"$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^npm exec -- nx test mobile-rehearsal-player --runInBand --testPathPattern=section-heading\\.spec\\.tsx$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm exec -- nx test mobile-rehearsal-player --runInBand --testPathPattern=section-heading-model\\.spec\\.ts$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }
