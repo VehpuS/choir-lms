@@ -1,5 +1,5 @@
-import { renamePlaylist, type Playlist } from '@org/audio-library-models';
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { type Playlist } from '@org/audio-library-models';
+import { useEffect, useReducer, useRef } from 'react';
 import { Alert } from 'react-native';
 
 import {
@@ -12,13 +12,9 @@ import {
   removeSavedPlaylistDetailEntry,
   restoreSavedPlaylistDetailEntry,
 } from '../utils/saved-playlist-detail-view-model';
-import {
-  buildSavedPlaylist,
-  getSavedPlaylistRemovalCopy,
-  validatePlaylistName,
-  type PlaylistDraftIssue,
-} from '../utils/saved-playlist-view-model';
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../storage/local-library-storage';
+import { getSavedPlaylistRemovalCopy } from '../utils/saved-playlist-view-model';
+import { useSavedPlaylistCreateDialogState } from './use-saved-playlist-create-dialog-state';
+import { useSavedPlaylistRenameState } from './use-saved-playlist-rename-state';
 
 type PlaylistEntry = Playlist['items'][number];
 
@@ -37,14 +33,6 @@ type UseSavedPlaylistSectionStateOptions = {
 export const useSavedPlaylistSectionState = (
   options: UseSavedPlaylistSectionStateOptions,
 ) => {
-  const [creationIssue, setCreationIssue] = useState<PlaylistDraftIssue | null>(
-    null,
-  );
-  const [createPlaylistName, setCreatePlaylistName] = useState('');
-  const [renameIssue, setRenameIssue] = useState<PlaylistDraftIssue | null>(
-    null,
-  );
-  const [renamePlaylistName, setRenamePlaylistName] = useState('');
   const [detailState, dispatchDetailAction] = useReducer(
     reduceSavedPlaylistDetailState,
     undefined,
@@ -69,17 +57,16 @@ export const useSavedPlaylistSectionState = (
   };
 
   useEffect(() => {
-    setRenamePlaylistName(options.selectedPlaylist?.name ?? '');
-    setRenameIssue(null);
-  }, [options.selectedPlaylist?.id, options.selectedPlaylist?.name]);
-
-  useEffect(() => {
     resetDetailEntries(
       options.isDetailVisible ? (options.selectedPlaylist?.items ?? []) : [],
     );
   }, [options.isDetailVisible, options.selectedPlaylist?.id]);
 
   const isMutating = options.pendingPlaylistId !== null;
+  const createDialogState = useSavedPlaylistCreateDialogState({
+    createPlaylist: options.createPlaylist,
+    setSelectedPlaylistId: options.setSelectedPlaylistId,
+  });
 
   const persistSelectedPlaylist = async (
     buildNextPlaylist: (playlist: Playlist) => Playlist,
@@ -124,47 +111,10 @@ export const useSavedPlaylistSectionState = (
 
     resetDetailEntries(persistedPlaylist.items);
   };
-
-  const handleCreatePlaylist = async () => {
-    const result = buildSavedPlaylist({
-      name: createPlaylistName,
-      ownerId: LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-    });
-
-    if (result.issue || !result.playlist) {
-      setCreationIssue(result.issue);
-      return;
-    }
-
-    const persistedPlaylist = await options.createPlaylist(result.playlist);
-
-    if (!persistedPlaylist) {
-      return;
-    }
-
-    setCreationIssue(null);
-    setCreatePlaylistName('');
-    options.setSelectedPlaylistId(persistedPlaylist.id);
-  };
-
-  const handleRenamePlaylist = async () => {
-    if (!options.selectedPlaylist) {
-      return;
-    }
-
-    const nextRenameIssue = validatePlaylistName(renamePlaylistName);
-
-    if (nextRenameIssue) {
-      setRenameIssue(nextRenameIssue);
-      return;
-    }
-
-    setRenameIssue(null);
-
-    await persistSelectedPlaylist((playlist) => {
-      return renamePlaylist(playlist, renamePlaylistName);
-    });
-  };
+  const renameState = useSavedPlaylistRenameState({
+    persistSelectedPlaylist,
+    selectedPlaylist: options.selectedPlaylist,
+  });
 
   const handleDeletePlaylist = () => {
     const selectedPlaylist = options.selectedPlaylist;
@@ -299,8 +249,8 @@ export const useSavedPlaylistSectionState = (
   };
 
   return {
-    createPlaylistName,
-    creationIssue,
+    ...createDialogState,
+    ...renameState,
     detailDraftEntries: detailState.draftEntries,
     handleCloseDetail: () => {
       options.setIsReorderDragActive(false);
@@ -310,11 +260,6 @@ export const useSavedPlaylistSectionState = (
     handleCommitReorder: () => {
       void persistPlaylistDetailEntries(detailEntriesRef.current);
     },
-    handleCreatePlaylist,
-    handleCreatePlaylistNameChange: (value: string) => {
-      setCreatePlaylistName(value);
-      setCreationIssue(null);
-    },
     handleDeletePlaylist,
     handleDismissRemovalNotice: () => {
       dispatchDetailAction({
@@ -323,15 +268,8 @@ export const useSavedPlaylistSectionState = (
     },
     handleMoveItem,
     handleRemovePlaylistItem,
-    handleRenamePlaylist,
-    handleRenamePlaylistNameChange: (value: string) => {
-      setRenamePlaylistName(value);
-      setRenameIssue(null);
-    },
     handleUndoPlaylistRemoval,
     isMutating,
     removalNotice: detailState.removalNotice,
-    renameIssue,
-    renamePlaylistName,
   };
 };

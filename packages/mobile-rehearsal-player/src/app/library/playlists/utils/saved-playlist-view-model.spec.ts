@@ -11,6 +11,7 @@ import {
 } from '../../../test-utils/library-test-fixtures.js';
 import {
   buildSavedPlaylist,
+  getSavedPlaylistCreateDialogCopy,
   getPlaylistOptionsMenuActions,
   getSavedPlaylistDetailSummary,
   getSavedPlaylistEntryDetailLabel,
@@ -95,6 +96,17 @@ describe('saved playlist view-model', () => {
       message:
         '"Warmups" will be removed from your saved playlists.\n\nThis will remove 1 item from this playlist only. Saved tracks and loops will stay in Library.',
       title: 'Remove saved playlist?',
+    });
+  });
+
+  it('provides shared copy for the create playlist dialog', () => {
+    assert.deepEqual(getSavedPlaylistCreateDialogCopy(), {
+      body: 'Create a new playlist from saved rehearsal material.',
+      cancelLabel: 'Cancel',
+      placeholder: 'Wednesday rehearsal',
+      savingLabel: 'Creating…',
+      submitLabel: 'Create playlist',
+      title: 'Create playlist',
     });
   });
 

@@ -38,6 +38,15 @@ export type SavedPlaylistDetailSummary = {
   title: string;
 };
 
+export type SavedPlaylistCreateDialogCopy = {
+  body: string;
+  cancelLabel: string;
+  placeholder: string;
+  savingLabel: string;
+  submitLabel: string;
+  title: string;
+};
+
 const PLAYLIST_NAME_REQUIRED_ISSUE: PlaylistDraftIssue = {
   title: 'Playlist name required',
   message: 'Enter a playlist name.',
@@ -220,6 +229,17 @@ export const getSavedPlaylistRemovalCopy = (
       `"${playlist.name}" will be removed from your saved playlists.\n\n` +
       `This will remove ${pluralize(playlist.items.length, 'item')} from this playlist only. Saved tracks and loops will stay in Library.`,
     title: 'Remove saved playlist?',
+  };
+};
+
+export const getSavedPlaylistCreateDialogCopy = (): SavedPlaylistCreateDialogCopy => {
+  return {
+    body: 'Create a new playlist from saved rehearsal material.',
+    cancelLabel: 'Cancel',
+    placeholder: 'Wednesday rehearsal',
+    savingLabel: 'Creating…',
+    submitLabel: 'Create playlist',
+    title: 'Create playlist',
   };
 };
 

@@ -1,7 +1,6 @@
 import { type NamedLoop, type Playlist } from '@org/audio-library-models';
 import { View } from 'react-native';
 
-import { SectionHeading } from '../../components/section-heading';
 import { savedPlaylistSectionStyles as styles } from '../../components/saved-playlist-section-styles';
 import { DriveLibraryStatusCard } from '../../drive/components/drive-library-status-card';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
@@ -11,6 +10,7 @@ import {
   buildSavedPlaylistDetailDraftPlaylist,
   isSavedPlaylistEntryPlayable,
 } from '../utils/saved-playlist-detail-view-model';
+import { getSavedPlaylistPlaybackToggleLabel } from '../utils/saved-playlist-playback-toggle-label';
 import {
   getPlaylistPlaybackActionCopy,
   getPlaylistPlaybackCurrentItem,
@@ -25,10 +25,9 @@ import {
   getSavedPlaylistEntryDetailLabel,
   type SavedPlaylistIssue,
 } from '../utils/saved-playlist-view-model';
-import {
-  SavedPlaylistCreateCard,
-  SavedPlaylistDetailCard,
-} from './saved-playlist-section-cards';
+import { SavedPlaylistCreateDialog } from './saved-playlist-create-dialog';
+import { SavedPlaylistDetailCard } from './saved-playlist-section-cards';
+import { SavedPlaylistSectionHeader } from './saved-playlist-section-header';
 
 type SavedPlaylistSectionProps = {
   activePlaylistSession: PlaylistPlaybackSession | null;
@@ -95,12 +94,15 @@ export const SavedPlaylistSection = ({
     handleCreatePlaylistNameChange,
     handleDeletePlaylist,
     handleDismissRemovalNotice,
+    closeCreatePlaylistDialog,
     handleMoveItem,
     handleRemovePlaylistItem,
     handleRenamePlaylist,
     handleRenamePlaylistNameChange,
     handleUndoPlaylistRemoval,
+    isCreatePlaylistDialogVisible,
     isMutating,
+    openCreatePlaylistDialog,
     removalNotice,
     renameIssue,
     renamePlaylistName,
@@ -161,27 +163,19 @@ export const SavedPlaylistSection = ({
     ? (getPlaylistPlaybackCurrentItem(selectedPlaybackSession)
         ?.playlistEntryId ?? null)
     : null;
-  const playlistPlaybackToggleLabel = isPlaybackPreparing
-    ? 'Loading…'
-    : playbackState === 'playing'
-      ? 'Pause'
-      : playbackState === 'paused' ||
-          playbackState === 'ready' ||
-          playbackState === 'stopped'
-        ? 'Resume'
-        : playbackState === 'ended'
-          ? 'Replay'
-          : 'Play';
+  const playlistPlaybackToggleLabel = getSavedPlaylistPlaybackToggleLabel({
+    isPlaybackPreparing,
+    playbackState,
+  });
   const shouldShowStatusCard = isLoading || statusCopy.tone !== 'ready';
 
   return (
     <View style={styles.section}>
       {!isDetailVisible ? (
-        <SectionHeading
-          eyebrow="Saved playlists"
-          style={styles.sectionCopy}
-          title="Playlists"
-          titleStyle={styles.sectionTitle}
+        <SavedPlaylistSectionHeader
+          canMutatePlaylists={canMutatePlaylists}
+          isMutating={isMutating}
+          onOpenCreateDialog={openCreatePlaylistDialog}
         />
       ) : null}
 
@@ -192,6 +186,18 @@ export const SavedPlaylistSection = ({
           statusCopy={statusCopy}
         />
       ) : null}
+
+      <SavedPlaylistCreateDialog
+        issue={creationIssue}
+        isMutating={isMutating}
+        isVisible={isCreatePlaylistDialogVisible}
+        onChange={handleCreatePlaylistNameChange}
+        onCancel={closeCreatePlaylistDialog}
+        onSubmit={() => {
+          void handleCreatePlaylist();
+        }}
+        value={createPlaylistName}
+      />
 
       {isDetailVisible ? (
         <SavedPlaylistDetailCard
@@ -283,20 +289,7 @@ export const SavedPlaylistSection = ({
           selectedPlaylistIssue={selectedPlaylistIssue}
           shufflePlaybackAction={shufflePlaybackAction}
         />
-      ) : (
-        <>
-          <SavedPlaylistCreateCard
-            canMutatePlaylists={canMutatePlaylists}
-            createPlaylistName={createPlaylistName}
-            creationIssue={creationIssue}
-            isMutating={isMutating}
-            onCreatePlaylist={() => {
-              void handleCreatePlaylist();
-            }}
-            onCreatePlaylistNameChange={handleCreatePlaylistNameChange}
-          />
-        </>
-      )}
+      ) : null}
     </View>
   );
 };

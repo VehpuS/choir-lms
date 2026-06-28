@@ -1,13 +1,10 @@
 import { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { FeedbackCard } from '../../components/feedback-card';
-import {
-  SAVED_PLAYLIST_PLACEHOLDER_TEXT,
-  savedPlaylistSectionStyles as styles,
-} from '../../components/saved-playlist-section-styles';
+import { savedPlaylistSectionStyles as styles } from '../../components/saved-playlist-section-styles';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import {
   getSavedPlaylistCardPlayAction,
@@ -36,49 +33,6 @@ export const SavedPlaylistIssueCard = ({
       title={issue.title}
       tone="error"
     />
-  );
-};
-
-export const SavedPlaylistCreateCard = (props: {
-  canMutatePlaylists: boolean;
-  createPlaylistName: string;
-  creationIssue: PlaylistDraftIssue | null;
-  isMutating: boolean;
-  onCreatePlaylist: () => void;
-  onCreatePlaylistNameChange: (value: string) => void;
-}) => {
-  return (
-    <View style={styles.editorCard}>
-      <Text style={styles.editorTitle}>Create playlist</Text>
-      <TextInput
-        autoCorrect={false}
-        onChangeText={props.onCreatePlaylistNameChange}
-        placeholder="Name this rehearsal set"
-        placeholderTextColor={SAVED_PLAYLIST_PLACEHOLDER_TEXT}
-        returnKeyType="done"
-        style={styles.nameInput}
-        value={props.createPlaylistName}
-      />
-      <SavedPlaylistIssueCard issue={props.creationIssue} />
-      <Pressable
-        accessibilityRole="button"
-        disabled={!props.canMutatePlaylists || props.isMutating}
-        onPress={props.onCreatePlaylist}
-        style={({ pressed }) => [
-          styles.primaryButton,
-          pressed && props.canMutatePlaylists && !props.isMutating
-            ? styles.actionButtonPressed
-            : undefined,
-          !props.canMutatePlaylists || props.isMutating
-            ? styles.actionButtonDisabled
-            : undefined,
-        ]}
-      >
-        <Text style={styles.primaryButtonLabel}>
-          {props.isMutating ? 'Saving playlist…' : 'Create playlist'}
-        </Text>
-      </Pressable>
-    </View>
   );
 };
 
