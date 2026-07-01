@@ -145,6 +145,7 @@ What would you like to do?
 - If implementation reveals issues, pause and suggest artifact updates
 - Keep code changes minimal and scoped to each task
 - Update task checkbox immediately after completing each task
+- Before each checkpoint-style pause after code generation or refactors, run a touched-files sweep (Problems + focused lint) and fix newly introduced issues
 - Pause on errors, blockers, or unclear requirements - don't guess
 - Use contextFiles from CLI output, don't assume specific file names
 
