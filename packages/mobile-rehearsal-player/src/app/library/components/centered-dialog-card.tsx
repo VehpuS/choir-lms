@@ -1,13 +1,8 @@
 import type { ReactNode } from 'react';
-import {
-  Modal,
-  StyleSheet,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { appTheme } from '../../utils/theme';
+import { ModalSurfaceBase } from './modal-surface-base';
 
 type CenteredDialogCardProps = {
   cardStyle?: StyleProp<ViewStyle>;
@@ -29,16 +24,16 @@ export const CenteredDialogCard = ({
   }
 
   return (
-    <Modal
-      animationType="fade"
+    <ModalSurfaceBase
+      backdropColor={BACKDROP}
+      dismissOnBackdropPress={false}
+      isVisible={isVisible}
       onRequestClose={onRequestClose}
-      transparent
-      visible
+      placement="center"
+      surfaceStyle={[styles.card, cardStyle]}
     >
-      <View style={styles.overlay}>
-        <View style={[styles.card, cardStyle]}>{children}</View>
-      </View>
-    </Modal>
+      {children}
+    </ModalSurfaceBase>
   );
 };
 
@@ -52,12 +47,5 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     backgroundColor: appTheme.colors.surfaceBackground,
-  },
-  overlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: BACKDROP,
   },
 });

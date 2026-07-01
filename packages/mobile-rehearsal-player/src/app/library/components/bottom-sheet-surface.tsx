@@ -1,5 +1,6 @@
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
+import { ModalSurfaceBase } from './modal-surface-base';
 import { SectionHeading } from './section-heading';
 
 type BottomSheetSurfaceProps = {
@@ -25,41 +26,30 @@ export const BottomSheetSurface = ({
   }
 
   return (
-    <Modal animationType="fade" onRequestClose={onClose} transparent visible>
-      <View style={styles.overlay}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onClose}
-          style={styles.backdrop}
+    <ModalSurfaceBase
+      backdropColor={BACKDROP}
+      isVisible={isVisible}
+      onRequestClose={onClose}
+      placement="bottom"
+      surfaceStyle={styles.sheet}
+    >
+      {eyebrow || title ? (
+        <SectionHeading
+          eyebrow={eyebrow}
+          style={styles.copyGroup}
+          title={title}
+          titleNumberOfLines={1}
+          titleStyle={styles.title}
         />
-        <View style={styles.sheet}>
-          {eyebrow || title ? (
-            <SectionHeading
-              eyebrow={eyebrow}
-              style={styles.copyGroup}
-              title={title}
-              titleNumberOfLines={1}
-              titleStyle={styles.title}
-            />
-          ) : null}
-          {children}
-        </View>
-      </View>
-    </Modal>
+      ) : null}
+      {children}
+    </ModalSurfaceBase>
   );
 };
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-  },
   copyGroup: {
     gap: 6,
-  },
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: BACKDROP,
   },
   sheet: {
     gap: 16,

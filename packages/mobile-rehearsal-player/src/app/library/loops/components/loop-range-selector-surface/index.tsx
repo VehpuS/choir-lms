@@ -1,15 +1,12 @@
 import { type PlayableItem } from '@org/audio-library-models';
 import { useState } from 'react';
-import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { ModalSurfaceBase } from '../../../components/modal-surface-base';
 import type { LoopPreviewPlaybackTimeline } from '../../utils/saved-loop-preview-playback-view-model';
+import { LoopRangeSelectorHeader } from './loop-range-selector-header';
+import { LoopRangeSelectorPreviewCard } from './loop-range-selector-preview-card';
+import { LoopRangeSelectorRangeCard } from './loop-range-selector-range-card';
 import {
   LOOP_SELECTOR_BACKDROP,
   LOOP_SELECTOR_CARD_BACKGROUND,
@@ -22,9 +19,6 @@ import {
   LOOP_SELECTOR_PRIMARY_TEXT,
   LOOP_SELECTOR_SECONDARY_ACTION_BACKGROUND,
 } from './shared';
-import { LoopRangeSelectorHeader } from './loop-range-selector-header';
-import { LoopRangeSelectorPreviewCard } from './loop-range-selector-preview-card';
-import { LoopRangeSelectorRangeCard } from './loop-range-selector-range-card';
 
 type LoopRangeSelectorSurfaceProps = {
   builderIssue: {
@@ -85,108 +79,91 @@ export const LoopRangeSelectorSurface = ({
   }
 
   return (
-    <Modal
+    <ModalSurfaceBase
       animationType="slide"
+      backdropColor={LOOP_SELECTOR_BACKDROP}
+      isVisible={isVisible}
       onRequestClose={onClose}
-      transparent
-      visible={isVisible}
+      placement="bottom"
+      surfaceStyle={styles.sheet}
     >
-      <View style={styles.overlay}>
+      <LoopRangeSelectorHeader
+        eyebrowLabel={eyebrowLabel}
+        isTipsVisible={isTipsVisible}
+        onClose={onClose}
+        onToggleTips={() => {
+          setIsTipsVisible((currentValue) => !currentValue);
+        }}
+        title={selectedTrack.source.name}
+      />
+
+      <LoopRangeSelectorRangeCard
+        endMs={endMs}
+        onRangeChange={onRangeChange}
+        rangeMaximumMs={rangeMaximumMs}
+        selectedTrack={selectedTrack}
+        startMs={startMs}
+      />
+
+      {previewPlayableItem && previewTimeline ? (
+        <LoopRangeSelectorPreviewCard
+          onScrubPreview={onScrubPreview}
+          previewPlayableItem={previewPlayableItem}
+          previewTimeline={previewTimeline}
+        />
+      ) : null}
+
+      <TextInput
+        autoCorrect={false}
+        onChangeText={onLoopNameChange}
+        placeholder="Name this practice loop"
+        placeholderTextColor={LOOP_SELECTOR_PLACEHOLDER_TEXT}
+        returnKeyType="done"
+        style={styles.nameInput}
+        value={loopName}
+      />
+
+      {builderIssue ? (
+        <View style={styles.issueCard}>
+          <Text style={styles.issueTitle}>{builderIssue.title}</Text>
+          <Text style={styles.issueMessage}>{builderIssue.message}</Text>
+        </View>
+      ) : null}
+
+      <View style={styles.actionRow}>
         <Pressable
           accessibilityRole="button"
-          onPress={onClose}
-          style={styles.backdrop}
-        />
-        <View style={styles.sheet}>
-          <LoopRangeSelectorHeader
-            eyebrowLabel={eyebrowLabel}
-            isTipsVisible={isTipsVisible}
-            onClose={onClose}
-            onToggleTips={() => {
-              setIsTipsVisible((currentValue) => !currentValue);
-            }}
-            title={selectedTrack.source.name}
-          />
+          disabled={previewDisabled}
+          onPress={onTogglePreview}
+          style={({ pressed }) => [
+            styles.secondaryAction,
+            pressed && !previewDisabled ? styles.buttonPressed : undefined,
+            previewDisabled ? styles.buttonDisabled : undefined,
+          ]}
+        >
+          <Text style={styles.secondaryActionLabel}>{previewActionLabel}</Text>
+        </Pressable>
 
-          <LoopRangeSelectorRangeCard
-            endMs={endMs}
-            onRangeChange={onRangeChange}
-            rangeMaximumMs={rangeMaximumMs}
-            selectedTrack={selectedTrack}
-            startMs={startMs}
-          />
-
-          {previewPlayableItem && previewTimeline ? (
-            <LoopRangeSelectorPreviewCard
-              onScrubPreview={onScrubPreview}
-              previewPlayableItem={previewPlayableItem}
-              previewTimeline={previewTimeline}
-            />
-          ) : null}
-
-          <TextInput
-            autoCorrect={false}
-            onChangeText={onLoopNameChange}
-            placeholder="Name this practice loop"
-            placeholderTextColor={LOOP_SELECTOR_PLACEHOLDER_TEXT}
-            returnKeyType="done"
-            style={styles.nameInput}
-            value={loopName}
-          />
-
-          {builderIssue ? (
-            <View style={styles.issueCard}>
-              <Text style={styles.issueTitle}>{builderIssue.title}</Text>
-              <Text style={styles.issueMessage}>{builderIssue.message}</Text>
-            </View>
-          ) : null}
-
-          <View style={styles.actionRow}>
-            <Pressable
-              accessibilityRole="button"
-              disabled={previewDisabled}
-              onPress={onTogglePreview}
-              style={({ pressed }) => [
-                styles.secondaryAction,
-                pressed && !previewDisabled ? styles.buttonPressed : undefined,
-                previewDisabled ? styles.buttonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.secondaryActionLabel}>
-                {previewActionLabel}
-              </Text>
-            </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              disabled={!canSaveLoop}
-              onPress={onSaveLoop}
-              style={({ pressed }) => [
-                styles.primaryAction,
-                pressed && canSaveLoop ? styles.buttonPressed : undefined,
-                !canSaveLoop ? styles.buttonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.primaryActionLabel}>
-                {isSavingLoop ? savingActionLabel : saveActionLabel}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+        <Pressable
+          accessibilityRole="button"
+          disabled={!canSaveLoop}
+          onPress={onSaveLoop}
+          style={({ pressed }) => [
+            styles.primaryAction,
+            pressed && canSaveLoop ? styles.buttonPressed : undefined,
+            !canSaveLoop ? styles.buttonDisabled : undefined,
+          ]}
+        >
+          <Text style={styles.primaryActionLabel}>
+            {isSavingLoop ? savingActionLabel : saveActionLabel}
+          </Text>
+        </Pressable>
       </View>
-    </Modal>
+    </ModalSurfaceBase>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: LOOP_SELECTOR_BACKDROP,
-  },
-  backdrop: {
-    flex: 1,
-  },
   sheet: {
     gap: 16,
     paddingHorizontal: 20,

@@ -61,7 +61,6 @@ type SavedLoopSectionProps = {
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
 };
 
-const PRIMARY_TEXT = '#1f1c17';
 const SECONDARY_TEXT = '#5f5647';
 
 export const SavedLoopSection = ({
