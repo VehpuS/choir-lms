@@ -112,6 +112,7 @@ export const TagEditorSheet = ({
           value={tagInput}
         />
         <Pressable
+          accessibilityLabel="Add tags"
           accessibilityRole="button"
           disabled={isSaving}
           onPress={handleAddTag}
@@ -121,7 +122,7 @@ export const TagEditorSheet = ({
             isSaving ? styles.disabledAction : undefined,
           ]}
         >
-          <Text style={styles.addTagButtonLabel}>Add</Text>
+          <Text style={styles.addTagButtonLabel}>+</Text>
         </Pressable>
       </View>
 
@@ -173,8 +174,9 @@ const styles = StyleSheet.create({
   },
   addTagButtonLabel: {
     color: '#fff8ef',
-    fontSize: 13,
+    fontSize: 22,
     fontWeight: '700',
+    lineHeight: 24,
   },
   bodyCopy: {
     color: appTheme.colors.secondaryText,
