@@ -8,7 +8,7 @@ import type {
   LibrarySearchEntityFilter,
 } from '../utils/saved-library-search-view-model';
 import { ContextualSearchPanel } from './contextual-search-panel';
-import type { LibrarySearchPanelVisibility } from './library-search-panel-visibility';
+import type { LibrarySearchControlsVisibility } from './library-search-controls-visibility';
 
 const ENTITY_FILTER_OPTIONS: {
   label: string;
@@ -39,7 +39,7 @@ type FilterOption<Value extends string> = {
   value: Value;
 };
 
-type LibrarySearchPanelProps = LibrarySearchPanelVisibility & {
+type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   availabilityFilter: LibrarySearchAvailabilityFilter;
   entityFilter: LibrarySearchEntityFilter;
   onClearSearch: () => void;
@@ -54,8 +54,8 @@ type LibrarySearchPanelProps = LibrarySearchPanelVisibility & {
   searchQuery: string;
 };
 
-type LibrarySearchPanelActionsProps = Pick<
-  LibrarySearchPanelProps,
+type LibrarySearchControlsActionsProps = Pick<
+  LibrarySearchControlsProps,
   | 'availabilityFilter'
   | 'entityFilter'
   | 'isFilterPopoverVisible'
@@ -130,14 +130,14 @@ const LibrarySearchActionButton = ({
   );
 };
 
-export const LibrarySearchPanelActions = ({
+export const LibrarySearchControlsActions = ({
   availabilityFilter,
   entityFilter,
   isFilterPopoverVisible,
   isSearchBarVisible,
   onFilterActionPress,
   onSearchActionPress,
-}: LibrarySearchPanelActionsProps) => {
+}: LibrarySearchControlsActionsProps) => {
   const hasActiveFilters =
     entityFilter !== 'all' || availabilityFilter !== 'all';
 
@@ -165,7 +165,7 @@ export const LibrarySearchPanelActions = ({
   );
 };
 
-export const LibrarySearchPanel = ({
+export const LibrarySearchControls = ({
   availabilityFilter,
   entityFilter,
   isFilterPopoverVisible,
@@ -179,7 +179,7 @@ export const LibrarySearchPanel = ({
   onSelectRecentSearchTerm,
   recentSearchTerms,
   searchQuery,
-}: LibrarySearchPanelProps) => {
+}: LibrarySearchControlsProps) => {
   const searchContextCopy = getLibrarySearchContextCopy();
 
   const searchPanel = isSearchBarVisible ? (

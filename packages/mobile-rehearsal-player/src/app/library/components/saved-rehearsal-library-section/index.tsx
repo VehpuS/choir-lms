@@ -9,14 +9,14 @@ import { SavedPlaylistSection } from '../../playlists/components/saved-playlist-
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
 import { resolveSavedRehearsalLibraryDetailMode } from '../../saved-rehearsal-library/detail-mode';
 import {
-  LibrarySearchPanel,
-  LibrarySearchPanelActions,
-} from '../../search/components/library-search-panel';
+  LibrarySearchControls,
+  LibrarySearchControlsActions,
+} from '../../search/components/library-search-controls';
 import {
-  DEFAULT_LIBRARY_SEARCH_PANEL_VISIBILITY,
-  resolveLibrarySearchActionVisibility,
-  toggleLibraryFilterPopoverVisibility,
-} from '../../search/components/library-search-panel-visibility';
+  DEFAULT_LIBRARY_SEARCH_CONTROLS_VISIBILITY,
+  toggleLibraryFilterVisibility,
+  toggleLibrarySearchVisibility,
+} from '../../search/components/library-search-controls-visibility';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 import { useSavedRehearsalLibraryLoopState } from './use-saved-rehearsal-library-loop-state';
@@ -71,7 +71,7 @@ export const SavedRehearsalLibrarySection = ({
   updatePlaylist,
 }: SavedRehearsalLibrarySectionProps) => {
   const [searchPanelVisibility, setSearchPanelVisibility] = useState(
-    DEFAULT_LIBRARY_SEARCH_PANEL_VISIBILITY,
+    DEFAULT_LIBRARY_SEARCH_CONTROLS_VISIBILITY,
   );
   const searchState = useSavedRehearsalLibrarySearch({
     savedLibrarySources,
@@ -151,12 +151,12 @@ export const SavedRehearsalLibrarySection = ({
 
   const handleFilterActionPress = () => {
     setSearchPanelVisibility(
-      toggleLibraryFilterPopoverVisibility(searchPanelVisibility),
+      toggleLibraryFilterVisibility(searchPanelVisibility),
     );
   };
 
   const handleSearchActionPress = () => {
-    const nextSearchPanelVisibility = resolveLibrarySearchActionVisibility(
+    const nextSearchPanelVisibility = toggleLibrarySearchVisibility(
       searchPanelVisibility,
     );
 
@@ -170,16 +170,13 @@ export const SavedRehearsalLibrarySection = ({
       searchState.submitLibrarySearch();
     }
 
-    if (
-      isSearchPanelVisible &&
-      !nextSearchPanelVisibility.isSearchBarVisible
-    ) {
+    if (isSearchPanelVisible && !nextSearchPanelVisibility.isSearchBarVisible) {
       searchState.deactivateLibrarySearch();
     }
   };
 
   const librarySearchPanel = (
-    <LibrarySearchPanel
+    <LibrarySearchControls
       availabilityFilter={searchState.availabilityFilter}
       entityFilter={searchState.entityFilter}
       isFilterPopoverVisible={searchPanelVisibility.isFilterPopoverVisible}
@@ -263,7 +260,7 @@ export const SavedRehearsalLibrarySection = ({
         isLoading={false}
         onRefresh={() => undefined}
         trailingAction={
-          <LibrarySearchPanelActions
+          <LibrarySearchControlsActions
             availabilityFilter={searchState.availabilityFilter}
             entityFilter={searchState.entityFilter}
             isFilterPopoverVisible={

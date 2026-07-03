@@ -4,15 +4,15 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-  DEFAULT_LIBRARY_SEARCH_PANEL_VISIBILITY,
-  resolveLibrarySearchActionVisibility,
-  toggleLibraryFilterPopoverVisibility,
-} from './library-search-panel-visibility.js';
+  DEFAULT_LIBRARY_SEARCH_CONTROLS_VISIBILITY,
+  toggleLibraryFilterVisibility,
+  toggleLibrarySearchVisibility,
+} from './library-search-controls-visibility.js';
 
-describe('librarySearchPanelVisibility', () => {
+describe('librarySearchControlsVisibility', () => {
   it('toggles the filter popover without changing search visibility', () => {
-    const filterVisible = toggleLibraryFilterPopoverVisibility(
-      DEFAULT_LIBRARY_SEARCH_PANEL_VISIBILITY,
+    const filterVisible = toggleLibraryFilterVisibility(
+      DEFAULT_LIBRARY_SEARCH_CONTROLS_VISIBILITY,
     );
 
     assert.deepEqual(filterVisible, {
@@ -21,14 +21,14 @@ describe('librarySearchPanelVisibility', () => {
     });
 
     assert.deepEqual(
-      toggleLibraryFilterPopoverVisibility(filterVisible),
-      DEFAULT_LIBRARY_SEARCH_PANEL_VISIBILITY,
+      toggleLibraryFilterVisibility(filterVisible),
+      DEFAULT_LIBRARY_SEARCH_CONTROLS_VISIBILITY,
     );
   });
 
   it('toggles search visibility without changing filter visibility', () => {
     assert.deepEqual(
-      resolveLibrarySearchActionVisibility({
+      toggleLibrarySearchVisibility({
         isFilterPopoverVisible: true,
         isSearchBarVisible: false,
       }),
@@ -39,7 +39,7 @@ describe('librarySearchPanelVisibility', () => {
     );
 
     assert.deepEqual(
-      resolveLibrarySearchActionVisibility({
+      toggleLibrarySearchVisibility({
         isFilterPopoverVisible: true,
         isSearchBarVisible: true,
       }),
@@ -51,8 +51,8 @@ describe('librarySearchPanelVisibility', () => {
   });
 
   it('toggles search visibility when no filter popover is active', () => {
-    const searchVisible = resolveLibrarySearchActionVisibility(
-      DEFAULT_LIBRARY_SEARCH_PANEL_VISIBILITY,
+    const searchVisible = toggleLibrarySearchVisibility(
+      DEFAULT_LIBRARY_SEARCH_CONTROLS_VISIBILITY,
     );
 
     assert.deepEqual(searchVisible, {
@@ -61,8 +61,8 @@ describe('librarySearchPanelVisibility', () => {
     });
 
     assert.deepEqual(
-      resolveLibrarySearchActionVisibility(searchVisible),
-      DEFAULT_LIBRARY_SEARCH_PANEL_VISIBILITY,
+      toggleLibrarySearchVisibility(searchVisible),
+      DEFAULT_LIBRARY_SEARCH_CONTROLS_VISIBILITY,
     );
   });
 });
