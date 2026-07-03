@@ -53,7 +53,7 @@ If Tier 1 is incomplete, search for these patterns:
 - `packages/mobile-rehearsal-player/src/app/**/*card*`
 - `packages/mobile-rehearsal-player/src/app/**/*panel*`
 - `CLAUDE.md`
-- the existing skills `apple-hig-ios` and `music-ui-iconography`
+- the existing skills `apple-hig-ios`, `music-ui-iconography`, and `laws-of-ux`
 
 ### Tier 3: Live App Walkthrough
 
@@ -165,8 +165,9 @@ Load references on demand:
 | Handling gray areas       | `references/scope-discipline.md`    |
 | Closing an approved phase | `references/post-implementation.md` |
 
-When the audit includes iOS pattern choices or playback icons, also consult the
-existing skills:
+When the audit includes iOS pattern choices, playback icons, or cognitive
+friction reduction, also consult the existing skills:
 
 - `apple-hig-ios`
 - `music-ui-iconography`
+- `laws-of-ux`
