@@ -2,6 +2,17 @@ import type { NamedLoop, Playlist } from '@org/audio-library-models';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 
+export type LibrarySearchEntityFilter =
+  | 'all'
+  | 'tracks'
+  | 'loops'
+  | 'playlists';
+
+export type LibrarySearchAvailabilityFilter =
+  | 'all'
+  | 'available'
+  | 'unavailable';
+
 export type SearchHighlightPart = {
   isHighlighted: boolean;
   text: string;
@@ -13,6 +24,32 @@ export const normalizeSearchQuery = (value: string) => {
 
 const includesNormalizedQuery = (value: string, query: string) => {
   return value.toLocaleLowerCase().includes(query);
+};
+
+const isSourceAvailable = (source: DriveLibrarySource) => {
+  return source.availability.status === 'available';
+};
+
+const matchesEntityFilter = (
+  entityFilter: LibrarySearchEntityFilter,
+  entityType: Exclude<LibrarySearchEntityFilter, 'all'>,
+) => {
+  return entityFilter === 'all' || entityFilter === entityType;
+};
+
+const matchesAvailabilityFilter = (options: {
+  availabilityFilter: LibrarySearchAvailabilityFilter;
+  isAvailable: boolean;
+}) => {
+  if (options.availabilityFilter === 'all') {
+    return true;
+  }
+
+  if (options.availabilityFilter === 'available') {
+    return options.isAvailable;
+  }
+
+  return !options.isAvailable;
 };
 
 export const resolveSearchHighlightParts = (options: {
@@ -81,30 +118,68 @@ export const resolveActiveLibrarySearchQuery = (query: string) => {
 
 export const filterSavedLibrarySourcesByQuery = (options: {
   activeSearchQuery: string | null;
+  availabilityFilter: LibrarySearchAvailabilityFilter;
+  entityFilter: LibrarySearchEntityFilter;
   sources: DriveLibrarySource[];
 }) => {
-  const normalizedQuery = normalizeSearchQuery(options.activeSearchQuery ?? '');
-
-  if (!normalizedQuery) {
-    return options.sources;
+  if (!matchesEntityFilter(options.entityFilter, 'tracks')) {
+    return [];
   }
 
+  const normalizedQuery = normalizeSearchQuery(options.activeSearchQuery ?? '');
+
   return options.sources.filter((source) => {
+    if (
+      !matchesAvailabilityFilter({
+        availabilityFilter: options.availabilityFilter,
+        isAvailable: isSourceAvailable(source),
+      })
+    ) {
+      return false;
+    }
+
+    if (!normalizedQuery) {
+      return true;
+    }
+
     return includesNormalizedQuery(source.name, normalizedQuery);
   });
 };
 
 export const filterSavedLoopsByQuery = (options: {
   activeSearchQuery: string | null;
+  availabilityFilter: LibrarySearchAvailabilityFilter;
+  entityFilter: LibrarySearchEntityFilter;
   loops: NamedLoop[];
+  sources: DriveLibrarySource[];
 }) => {
-  const normalizedQuery = normalizeSearchQuery(options.activeSearchQuery ?? '');
-
-  if (!normalizedQuery) {
-    return options.loops;
+  if (!matchesEntityFilter(options.entityFilter, 'loops')) {
+    return [];
   }
 
+  const normalizedQuery = normalizeSearchQuery(options.activeSearchQuery ?? '');
+  const sourceAvailabilityById = new Map(
+    options.sources.map((source) => {
+      return [source.id, isSourceAvailable(source)] as const;
+    }),
+  );
+
   return options.loops.filter((loop) => {
+    const isAvailable = sourceAvailabilityById.get(loop.sourceId) ?? false;
+
+    if (
+      !matchesAvailabilityFilter({
+        availabilityFilter: options.availabilityFilter,
+        isAvailable,
+      })
+    ) {
+      return false;
+    }
+
+    if (!normalizedQuery) {
+      return true;
+    }
+
     return (
       includesNormalizedQuery(loop.name, normalizedQuery) ||
       includesNormalizedQuery(loop.sourceName, normalizedQuery)
@@ -114,8 +189,18 @@ export const filterSavedLoopsByQuery = (options: {
 
 export const filterSavedPlaylistsByQuery = (options: {
   activeSearchQuery: string | null;
+  availabilityFilter: LibrarySearchAvailabilityFilter;
+  entityFilter: LibrarySearchEntityFilter;
   playlists: Playlist[];
 }) => {
+  if (!matchesEntityFilter(options.entityFilter, 'playlists')) {
+    return [];
+  }
+
+  if (options.availabilityFilter !== 'all') {
+    return [];
+  }
+
   const normalizedQuery = normalizeSearchQuery(options.activeSearchQuery ?? '');
 
   if (!normalizedQuery) {

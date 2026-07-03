@@ -3,18 +3,18 @@ import { StyleSheet, View } from 'react-native';
 
 import { DriveLibrarySectionHeader } from '../../drive/components/drive-library-section-header';
 import { DriveLibraryStatusCard } from '../../drive/components/drive-library-status-card';
+import { SavedLoopSection } from '../../loops/components/saved-loop-section';
 import { isSavedTrackPlaybackBusy } from '../../playback/utils/saved-track-playback-view-model';
 import { SavedPlaylistSection } from '../../playlists/components/saved-playlist-section';
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
 import { resolveSavedRehearsalLibraryDetailMode } from '../../saved-rehearsal-library/detail-mode';
 import { LibrarySearchPanel } from '../../search/components/library-search-panel';
-import { SavedLoopSection } from '../../loops/components/saved-loop-section';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
+import type { SavedRehearsalLibrarySectionProps } from './types';
 import { useSavedRehearsalLibraryLoopState } from './use-saved-rehearsal-library-loop-state';
 import { useSavedRehearsalLibraryPlaylistState } from './use-saved-rehearsal-library-playlist-state';
 import { useSavedRehearsalLibrarySearch } from './use-saved-rehearsal-library-search';
 import { useSavedRehearsalLibraryTrackPlaylistMenu } from './use-saved-rehearsal-library-track-playlist-menu';
-import type { SavedRehearsalLibrarySectionProps } from './types';
 
 const BORDER_COLOR = '#d6d1c4';
 
@@ -202,10 +202,14 @@ export const SavedRehearsalLibrarySection = ({
         title="Saved tracks"
       />
       <LibrarySearchPanel
+        availabilityFilter={searchState.availabilityFilter}
+        entityFilter={searchState.entityFilter}
         isSearchMode={searchState.isLibrarySearchMode}
         onClearSearch={searchState.clearLibrarySearch}
         onSearch={searchState.submitLibrarySearch}
         onSearchQueryChange={searchState.handleLibrarySearchQueryChange}
+        onSelectAvailabilityFilter={searchState.setAvailabilityFilter}
+        onSelectEntityFilter={searchState.setEntityFilter}
         onSelectRecentSearchTerm={searchState.runLibrarySearch}
         recentSearchTerms={searchState.recentLibrarySearchTerms}
         searchQuery={searchState.librarySearchQuery}

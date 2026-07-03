@@ -341,6 +341,10 @@
     "/^npx jest --config jest\\.config\\.cjs --runInBand src/app/library/playlists/components/playlist-dialogs\\.spec\\.tsx$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^cd packages/mobile-rehearsal-player && tsx --test src/app/library/search/utils/saved-library-search-view-model\\.spec\\.ts$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

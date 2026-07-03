@@ -71,6 +71,8 @@ describe('saved library search view-model', () => {
     assert.deepEqual(
       filterSavedLibrarySourcesByQuery({
         activeSearchQuery: 'bass',
+        availabilityFilter: 'all',
+        entityFilter: 'all',
         sources,
       }).map((source) => source.name),
       ['Bass Line.mp3'],
@@ -78,16 +80,108 @@ describe('saved library search view-model', () => {
     assert.deepEqual(
       filterSavedLoopsByQuery({
         activeSearchQuery: 'bass',
+        availabilityFilter: 'all',
+        entityFilter: 'all',
         loops,
+        sources,
       }).map((loop) => loop.name),
       ['Bass cadence'],
     );
     assert.deepEqual(
       filterSavedPlaylistsByQuery({
         activeSearchQuery: 'kyrie',
+        availabilityFilter: 'all',
+        entityFilter: 'all',
         playlists,
       }).map((playlist) => playlist.name),
       ['Kyrie Warmups'],
+    );
+  });
+
+  it('supports entity and availability filters for library search results', () => {
+    const sources = [
+      PLAYABLE_SOURCE,
+      {
+        ...PLAYABLE_SOURCE,
+        availability: {
+          message: 'Saved file is no longer playable.',
+          reason: 'missing' as const,
+          status: 'unavailable' as const,
+        },
+        id: 'drive:tenor-line',
+        name: 'Tenor Line.mp3',
+      },
+    ];
+    const loops = [
+      {
+        createdAt: '2026-05-12T00:00:00.000Z',
+        endMs: 18000,
+        id: 'loop-1',
+        name: 'Alto entrance',
+        ownerId: 'user-1',
+        ownershipScope: 'user' as const,
+        sourceId: PLAYABLE_SOURCE.id,
+        sourceName: PLAYABLE_SOURCE.name,
+        startMs: 12000,
+        updatedAt: '2026-05-12T00:00:00.000Z',
+      },
+      {
+        createdAt: '2026-05-12T00:00:00.000Z',
+        endMs: 47000,
+        id: 'loop-2',
+        name: 'Tenor cadence',
+        ownerId: 'user-1',
+        ownershipScope: 'user' as const,
+        sourceId: 'drive:tenor-line',
+        sourceName: 'Tenor Line.mp3',
+        startMs: 35000,
+        updatedAt: '2026-05-12T00:00:00.000Z',
+      },
+    ];
+    const playlists = [
+      createPlaylist({
+        createdAt: '2026-05-12T00:00:00.000Z',
+        name: 'Tenor Focus',
+        ownerId: 'user-1',
+      }),
+    ];
+
+    assert.deepEqual(
+      filterSavedLibrarySourcesByQuery({
+        activeSearchQuery: 'line',
+        availabilityFilter: 'unavailable',
+        entityFilter: 'tracks',
+        sources,
+      }).map((source) => source.name),
+      ['Tenor Line.mp3'],
+    );
+    assert.deepEqual(
+      filterSavedLoopsByQuery({
+        activeSearchQuery: 'tenor',
+        availabilityFilter: 'unavailable',
+        entityFilter: 'loops',
+        loops,
+        sources,
+      }).map((loop) => loop.name),
+      ['Tenor cadence'],
+    );
+    assert.deepEqual(
+      filterSavedPlaylistsByQuery({
+        activeSearchQuery: 'tenor',
+        availabilityFilter: 'all',
+        entityFilter: 'playlists',
+        playlists,
+      }).map((playlist) => playlist.name),
+      ['Tenor Focus'],
+    );
+    assert.deepEqual(
+      filterSavedPlaylistsByQuery({
+        activeSearchQuery: 'tenor',
+        availabilityFilter: 'available',
+        entityFilter: 'playlists',
+        playlists,
+      }),
+      [],
     );
   });
 

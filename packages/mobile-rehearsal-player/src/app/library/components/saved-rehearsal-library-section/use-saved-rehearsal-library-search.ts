@@ -7,6 +7,8 @@ import {
   filterSavedLibrarySourcesByQuery,
   filterSavedLoopsByQuery,
   filterSavedPlaylistsByQuery,
+  type LibrarySearchAvailabilityFilter,
+  type LibrarySearchEntityFilter,
   resolveActiveLibrarySearchQuery,
 } from '../../search/utils/saved-library-search-view-model';
 import {
@@ -30,6 +32,10 @@ export const useSavedRehearsalLibrarySearch = ({
   savedLoops,
   savedPlaylists,
 }: UseSavedRehearsalLibrarySearchOptions) => {
+  const [availabilityFilter, setAvailabilityFilter] =
+    useState<LibrarySearchAvailabilityFilter>('all');
+  const [entityFilter, setEntityFilter] =
+    useState<LibrarySearchEntityFilter>('all');
   const [librarySearchQuery, setLibrarySearchQuery] = useState('');
   const [recentLibrarySearchTerms, setRecentLibrarySearchTerms] = useState<
     string[]
@@ -80,23 +86,46 @@ export const useSavedRehearsalLibrarySearch = ({
   const visibleSavedLibrarySources = useMemo(() => {
     return filterSavedLibrarySourcesByQuery({
       activeSearchQuery: activeLibrarySearchQuery,
+      availabilityFilter,
+      entityFilter,
       sources: savedLibrarySources,
     });
-  }, [activeLibrarySearchQuery, savedLibrarySources]);
+  }, [
+    activeLibrarySearchQuery,
+    availabilityFilter,
+    entityFilter,
+    savedLibrarySources,
+  ]);
   const visibleSavedLoops = useMemo(() => {
     return filterSavedLoopsByQuery({
       activeSearchQuery: activeLibrarySearchQuery,
+      availabilityFilter,
+      entityFilter,
       loops: savedLoops,
+      sources: savedLibrarySources,
     });
-  }, [activeLibrarySearchQuery, savedLoops]);
+  }, [
+    activeLibrarySearchQuery,
+    availabilityFilter,
+    entityFilter,
+    savedLibrarySources,
+    savedLoops,
+  ]);
   const visiblePlaylistCards = useMemo(() => {
     return resolveSavedPlaylistCards(
       filterSavedPlaylistsByQuery({
         activeSearchQuery: activeLibrarySearchQuery,
+        availabilityFilter,
+        entityFilter,
         playlists: savedPlaylists,
       }),
     );
-  }, [activeLibrarySearchQuery, savedPlaylists]);
+  }, [
+    activeLibrarySearchQuery,
+    availabilityFilter,
+    entityFilter,
+    savedPlaylists,
+  ]);
 
   const runLibrarySearch = (query: string) => {
     const nextQuery = normalizeRecentSearchTerm(query);
@@ -113,10 +142,14 @@ export const useSavedRehearsalLibrarySearch = ({
 
   return {
     activeLibrarySearchQuery,
+    availabilityFilter,
     clearLibrarySearch() {
+      setAvailabilityFilter('all');
+      setEntityFilter('all');
       setLibrarySearchQuery('');
       setActiveLibrarySearchQuery(null);
     },
+    entityFilter,
     handleLibrarySearchQueryChange(value: string) {
       setLibrarySearchQuery(value);
 
@@ -124,6 +157,8 @@ export const useSavedRehearsalLibrarySearch = ({
         return;
       }
 
+      setAvailabilityFilter('all');
+      setEntityFilter('all');
       setActiveLibrarySearchQuery(null);
     },
     isLibrarySearchMode: activeLibrarySearchQuery !== null,
@@ -133,6 +168,8 @@ export const useSavedRehearsalLibrarySearch = ({
     submitLibrarySearch() {
       runLibrarySearch(librarySearchQuery);
     },
+    setAvailabilityFilter,
+    setEntityFilter,
     visiblePlaylistCards,
     visibleSavedLibrarySources,
     visibleSavedLoops,
