@@ -20,13 +20,6 @@ export const recentsScreenStyles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: appTheme.colors.surfaceBackground,
   },
-  kicker: {
-    color: appTheme.colors.heroBackground,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-  },
   title: {
     color: appTheme.colors.primaryText,
     fontSize: 24,
@@ -76,13 +69,6 @@ export const recentsScreenStyles = StyleSheet.create({
     borderColor: appTheme.colors.border,
     borderRadius: 14,
     backgroundColor: appTheme.colors.cardBackground,
-  },
-  resumeCardEyebrow: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
   },
   resumeCardTitle: {
     color: appTheme.colors.primaryText,

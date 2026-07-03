@@ -60,7 +60,6 @@ export const SavedTrackPlaylistMenuSurface = ({
 
   return (
     <BottomSheetSurface
-      eyebrow="More options"
       isVisible
       onClose={onClose}
       title={step === 'selector' ? menuCopy.title : 'New playlist'}

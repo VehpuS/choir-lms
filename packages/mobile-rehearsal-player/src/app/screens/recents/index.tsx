@@ -75,7 +75,6 @@ export const RecentsScreen = ({
       style={styles.screen}
     >
       <View style={styles.hero}>
-        <Text style={styles.kicker}>Recents</Text>
         <Text style={styles.title}>Resume your latest practice</Text>
         <Text style={styles.subtitle}>Jump back into practice here.</Text>
         <View style={styles.statusRow}>
@@ -86,7 +85,6 @@ export const RecentsScreen = ({
       </View>
 
       <View style={styles.resumeCard}>
-        <Text style={styles.resumeCardEyebrow}>Recents</Text>
         <Text style={styles.resumeCardTitle}>
           {continuePracticingCopy.title}
         </Text>

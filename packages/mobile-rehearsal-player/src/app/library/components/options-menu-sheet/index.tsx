@@ -1,15 +1,15 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import {
-  resolveOptionsMenuSheetActions,
-  type OptionsMenuAction,
-  type ResolvedOptionsMenuAction,
-} from './model';
 import { BottomSheetSurface } from '../bottom-sheet-surface';
 import {
   INTERACTION_ACTION_BUTTON_TOKENS,
   INTERACTION_STATE_OPACITY,
 } from '../interaction-style-tokens';
+import {
+  resolveOptionsMenuSheetActions,
+  type OptionsMenuAction,
+  type ResolvedOptionsMenuAction,
+} from './model';
 
 type OptionsMenuSheetProps = {
   actions: OptionsMenuAction[];

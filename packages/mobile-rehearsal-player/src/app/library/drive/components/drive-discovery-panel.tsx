@@ -30,7 +30,6 @@ export const DriveDiscoveryPanel = ({
     <View style={styles.section}>
       <DriveLibrarySectionHeader
         canRefresh={controller.discovery.canRefresh}
-        eyebrow="Discovery"
         isLoading={controller.discovery.isLoading}
         onRefresh={controller.discovery.refresh}
         title="Browse Drive"

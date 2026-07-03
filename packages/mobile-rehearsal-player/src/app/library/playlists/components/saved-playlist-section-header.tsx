@@ -16,7 +16,6 @@ export const SavedPlaylistSectionHeader = ({
 }: SavedPlaylistSectionHeaderProps) => {
   return (
     <SectionHeading
-      eyebrow="Saved playlists"
       style={styles.sectionCopy}
       title="Playlists"
       titleStyle={styles.sectionTitle}

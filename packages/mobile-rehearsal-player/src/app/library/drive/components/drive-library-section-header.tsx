@@ -19,7 +19,7 @@ const PRIMARY_TEXT = '#1f1c17';
 export const DriveLibrarySectionHeader = ({
   body,
   canRefresh,
-  eyebrow = 'Drive',
+  eyebrow,
   isLoading,
   onRefresh,
   title = 'Browse Drive',

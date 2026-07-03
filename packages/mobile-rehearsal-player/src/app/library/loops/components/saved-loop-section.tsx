@@ -146,7 +146,6 @@ export const SavedLoopSection = ({
       {!isTrackLoopDetailVisible ? (
         <SectionHeading
           body={SAVED_LOOP_SECTION_BODY_COPY}
-          eyebrow="Saved loops"
           style={styles.sectionCopy}
           title="Saved loops"
         />

@@ -41,7 +41,9 @@ export const SectionHeading = ({
   return (
     <View style={[styles.container, style]}>
       <View style={styles.copyGroup}>
-        {eyebrow ? <Text style={[styles.eyebrow, eyebrowStyle]}>{eyebrow}</Text> : null}
+        {eyebrow ? (
+          <Text style={[styles.eyebrow, eyebrowStyle]}>{eyebrow}</Text>
+        ) : null}
         {title ? (
           <Text numberOfLines={titleNumberOfLines} style={[styles.title, titleStyle]}>
             {title}

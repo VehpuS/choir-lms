@@ -196,7 +196,6 @@ export const SavedRehearsalLibrarySection = ({
     <View style={styles.savedLibrarySection}>
       <DriveLibrarySectionHeader
         canRefresh={false}
-        eyebrow="Saved tracks"
         isLoading={false}
         onRefresh={() => undefined}
         title="Saved tracks"
