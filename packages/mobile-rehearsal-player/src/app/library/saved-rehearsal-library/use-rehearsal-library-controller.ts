@@ -14,6 +14,7 @@ import { getSavedLoopRemovalCopy } from '../loops/utils/saved-loop-view-model';
 import type { useSavedTrackPlayback } from '../playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackStatusCopy } from '../playback/utils/saved-track-playback-view-model';
 import { useSavedPlaylists } from '../playlists/hooks/use-saved-playlists';
+import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
 import {
   getSavedRehearsalLibraryDependentLoops,
   getSavedRehearsalLibraryRemovalCopy,
@@ -21,7 +22,6 @@ import {
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
 } from './view-model';
-import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
 
 type SavedTrackPlaybackController = Pick<
   ReturnType<typeof useSavedTrackPlayback>,
@@ -280,6 +280,7 @@ export const useRehearsalLibraryController = ({
       activeSearchQuery: driveLibrary.activeSearchQuery,
       canSearch: canRefresh,
       clearSearch: driveLibrary.clearSearch,
+      deactivateSearch: driveLibrary.deactivateSearch,
       isLoading: isSearchMode && driveLibrary.isLoading,
       isSearchMode,
       playableSourceTitle: `Matching audio (${driveLibrary.searchSnapshot.playableSources.length})`,

@@ -1,8 +1,9 @@
 import { type NamedLoop, type Playlist } from '@org/audio-library-models';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import { resolveSavedPlaylistCards } from '../../playlists/utils/saved-playlist-card-view-model';
+import { createDebouncedSearchRunner } from '../../search/utils/debounced-search-runner';
 import {
   filterSavedLibrarySourcesByQuery,
   filterSavedLoopsByQuery,
@@ -26,6 +27,8 @@ type UseSavedRehearsalLibrarySearchOptions = {
   savedLoops: NamedLoop[];
   savedPlaylists: Playlist[];
 };
+
+const LIBRARY_SEARCH_DEBOUNCE_MS = 200;
 
 export const useSavedRehearsalLibrarySearch = ({
   savedLibrarySources,
@@ -83,6 +86,43 @@ export const useSavedRehearsalLibrarySearch = ({
     );
   }, [hasLoadedRecentLibrarySearchTerms, recentLibrarySearchTerms]);
 
+  const runLibrarySearch = useCallback(
+    (
+      query: string,
+      options: {
+        recordRecentSearch: boolean;
+      } = {
+        recordRecentSearch: true,
+      },
+    ) => {
+      const nextQuery = normalizeRecentSearchTerm(query);
+
+      setActiveLibrarySearchQuery(resolveActiveLibrarySearchQuery(query));
+
+      if (!options.recordRecentSearch || !nextQuery) {
+        return;
+      }
+
+      setRecentLibrarySearchTerms((currentSearchTerms) => {
+        return recordRecentSearchTerm(currentSearchTerms, nextQuery);
+      });
+    },
+    [],
+  );
+
+  const debouncedLibrarySearch = useMemo(() => {
+    return createDebouncedSearchRunner({
+      debounceMs: LIBRARY_SEARCH_DEBOUNCE_MS,
+      runSearch: runLibrarySearch,
+    });
+  }, [runLibrarySearch]);
+
+  useEffect(() => {
+    return () => {
+      debouncedLibrarySearch.cancel();
+    };
+  }, [debouncedLibrarySearch]);
+
   const visibleSavedLibrarySources = useMemo(() => {
     return filterSavedLibrarySourcesByQuery({
       activeSearchQuery: activeLibrarySearchQuery,
@@ -127,26 +167,18 @@ export const useSavedRehearsalLibrarySearch = ({
     savedPlaylists,
   ]);
 
-  const runLibrarySearch = (query: string) => {
-    const nextQuery = normalizeRecentSearchTerm(query);
-
-    setLibrarySearchQuery(nextQuery ?? '');
-    setActiveLibrarySearchQuery(resolveActiveLibrarySearchQuery(query));
-
-    if (nextQuery) {
-      setRecentLibrarySearchTerms((currentSearchTerms) => {
-        return recordRecentSearchTerm(currentSearchTerms, nextQuery);
-      });
-    }
-  };
-
   return {
     activeLibrarySearchQuery,
     availabilityFilter,
     clearLibrarySearch() {
+      debouncedLibrarySearch.cancel();
       setAvailabilityFilter('all');
       setEntityFilter('all');
       setLibrarySearchQuery('');
+      setActiveLibrarySearchQuery(null);
+    },
+    deactivateLibrarySearch() {
+      debouncedLibrarySearch.cancel();
       setActiveLibrarySearchQuery(null);
     },
     entityFilter,
@@ -154,9 +186,11 @@ export const useSavedRehearsalLibrarySearch = ({
       setLibrarySearchQuery(value);
 
       if (resolveActiveLibrarySearchQuery(value)) {
+        debouncedLibrarySearch.schedule(value);
         return;
       }
 
+      debouncedLibrarySearch.cancel();
       setAvailabilityFilter('all');
       setEntityFilter('all');
       setActiveLibrarySearchQuery(null);
@@ -164,9 +198,13 @@ export const useSavedRehearsalLibrarySearch = ({
     isLibrarySearchMode: activeLibrarySearchQuery !== null,
     librarySearchQuery,
     recentLibrarySearchTerms,
-    runLibrarySearch,
+    runLibrarySearch(query: string) {
+      debouncedLibrarySearch.cancel();
+      setLibrarySearchQuery(normalizeRecentSearchTerm(query) ?? '');
+      runLibrarySearch(query);
+    },
     submitLibrarySearch() {
-      runLibrarySearch(librarySearchQuery);
+      debouncedLibrarySearch.flush(librarySearchQuery);
     },
     setAvailabilityFilter,
     setEntityFilter,

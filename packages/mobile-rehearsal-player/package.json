@@ -116,6 +116,7 @@
     "expo-system-ui": "*",
     "expo-web-browser": "~15.0.11",
     "jest-expo": "*",
+    "lodash.debounce": "^4.0.8",
     "metro-config": "*",
     "metro-resolver": "*",
     "react": "19.1.0",
@@ -124,5 +125,8 @@
     "react-native-svg-transformer": "*",
     "react-native-track-player": "^4.1.2",
     "react-native-web": "*"
+  },
+  "devDependencies": {
+    "@types/lodash.debounce": "^4.0.9"
   }
 }

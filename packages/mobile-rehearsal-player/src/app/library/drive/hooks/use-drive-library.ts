@@ -9,9 +9,10 @@ import {
   type DriveFolder,
   type DriveSearchSnapshot,
 } from '@org/google-drive';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { runtimeConfig } from '../../../../config/runtime';
+import { createDebouncedSearchRunner } from '../../search/utils/debounced-search-runner';
 import {
   normalizeRecentSearchTerm,
   recordRecentSearchTerm,
@@ -48,6 +49,7 @@ const EMPTY_SEARCH: DriveSearchSnapshot = {
 };
 
 const DEFAULT_LIBRARY_ERROR = 'Drive library could not be loaded.';
+const DRIVE_SEARCH_DEBOUNCE_MS = 300;
 
 export const useDriveLibrary = (authState: DriveAuthorizationState) => {
   const [navigationStack, setNavigationStack] = useState<DriveBrowseLocation[]>(
@@ -85,17 +87,7 @@ export const useDriveLibrary = (authState: DriveAuthorizationState) => {
     setIssue(null);
   };
 
-  const updateSearchQuery = (value: string) => {
-    setSearchQuery(value);
-
-    if (normalizeRecentSearchTerm(value)) {
-      return;
-    }
-
-    clearActiveSearch();
-  };
-
-  const submitSearchQuery = (query: string) => {
+  const runSearchQuery = useCallback((query: string) => {
     const nextQuery = normalizeRecentSearchTerm(query);
 
     if (!nextQuery) {
@@ -116,6 +108,35 @@ export const useDriveLibrary = (authState: DriveAuthorizationState) => {
       return recordRecentSearchTerm(currentSearchTerms, nextQuery);
     });
     setRefreshCount((currentValue) => currentValue + 1);
+  }, []);
+
+  const debouncedSearch = useMemo(() => {
+    return createDebouncedSearchRunner({
+      debounceMs: DRIVE_SEARCH_DEBOUNCE_MS,
+      runSearch: runSearchQuery,
+    });
+  }, [runSearchQuery]);
+
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
+
+  const updateSearchQuery = (value: string) => {
+    setSearchQuery(value);
+
+    if (normalizeRecentSearchTerm(value)) {
+      debouncedSearch.schedule(value);
+      return;
+    }
+
+    debouncedSearch.cancel();
+    clearActiveSearch();
+  };
+
+  const submitSearchQuery = (query: string) => {
+    debouncedSearch.flush(query);
   };
 
   useEffect(() => {
@@ -244,11 +265,17 @@ export const useDriveLibrary = (authState: DriveAuthorizationState) => {
     activeSearchQuery,
     browseSnapshot,
     clearSearch() {
+      debouncedSearch.cancel();
       clearActiveSearch();
       setSearchQuery('');
     },
     currentLocation,
+    deactivateSearch() {
+      debouncedSearch.cancel();
+      clearActiveSearch();
+    },
     goToLocation(index: number) {
+      debouncedSearch.cancel();
       setActiveSearchQuery(null);
       setIssue(null);
       setNavigationStack((currentStack) => {
@@ -259,6 +286,7 @@ export const useDriveLibrary = (authState: DriveAuthorizationState) => {
     issue,
     navigationStack,
     openFolder(folder: DriveFolder) {
+      debouncedSearch.cancel();
       setActiveSearchQuery(null);
       setIssue(null);
       setNavigationStack((currentStack) => {
@@ -288,6 +316,7 @@ export const useDriveLibrary = (authState: DriveAuthorizationState) => {
     searchQuery,
     searchSnapshot,
     selectRoot(rootKind: DriveBrowseLocation['rootKind']) {
+      debouncedSearch.cancel();
       const rootLocation = createRootLocation(rootKind);
 
       clearActiveSearch();

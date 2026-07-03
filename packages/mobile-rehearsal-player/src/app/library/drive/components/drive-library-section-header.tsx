@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
 import { SectionHeading } from '../../components/section-heading';
@@ -10,6 +11,7 @@ type DriveLibrarySectionHeaderProps = {
   isLoading: boolean;
   onRefresh: () => void;
   title?: string;
+  trailingAction?: ReactNode;
 };
 
 const PRIMARY_ACTION_BACKGROUND = '#173229';
@@ -23,6 +25,7 @@ export const DriveLibrarySectionHeader = ({
   isLoading,
   onRefresh,
   title = 'Browse Drive',
+  trailingAction,
 }: DriveLibrarySectionHeaderProps) => {
   const refreshButton = canRefresh ? (
     <Pressable
@@ -43,6 +46,7 @@ export const DriveLibrarySectionHeader = ({
       />
     </Pressable>
   ) : null;
+  const resolvedTrailingAction = trailingAction ?? refreshButton;
 
   return (
     <SectionHeading
@@ -51,7 +55,7 @@ export const DriveLibrarySectionHeader = ({
       style={styles.sectionHeader}
       title={title}
       titleStyle={styles.sectionTitle}
-      trailingAction={refreshButton}
+      trailingAction={resolvedTrailingAction}
     />
   );
 };

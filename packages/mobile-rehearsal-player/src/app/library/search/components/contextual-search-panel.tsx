@@ -8,15 +8,18 @@ type ContextualSearchPanelProps = {
   canShowRecentSearchTerms?: boolean;
   clearActionLabel: string;
   helperCopy?: string;
+  isSearchBarVisible: boolean;
   isSubmitDisabled?: boolean;
   onClearSearch: () => void;
   onSearch: () => void;
   onSearchQueryChange: (value: string) => void;
+  onToggleSearchBar: () => void;
   onSelectRecentSearchTerm: (value: string) => void;
   placeholderCopy: string;
   recentSearchTerms: string[];
   searchAccessibilityLabel: string;
   searchQuery: string;
+  showInlineToggleButton?: boolean;
 };
 
 const BORDER_COLOR = '#d6d1c4';
@@ -31,22 +34,46 @@ export const ContextualSearchPanel = ({
   canShowRecentSearchTerms = true,
   clearActionLabel,
   helperCopy,
+  isSearchBarVisible,
   isSubmitDisabled = false,
   onClearSearch,
   onSearch,
   onSearchQueryChange,
+  onToggleSearchBar,
   onSelectRecentSearchTerm,
   placeholderCopy,
   recentSearchTerms,
   searchAccessibilityLabel,
   searchQuery,
+  showInlineToggleButton = true,
 }: ContextualSearchPanelProps) => {
   const shouldShowSuggestions = shouldShowRecentSearchSuggestions({
-    canShowRecentSearchTerms,
+    canShowRecentSearchTerms: canShowRecentSearchTerms && isSearchBarVisible,
     recentSearchTerms,
     searchQuery,
   });
-  const shouldShowClearButton = searchQuery.trim().length > 0;
+  const shouldShowClearButton =
+    isSearchBarVisible && searchQuery.trim().length > 0;
+
+  if (!isSearchBarVisible) {
+    return (
+      <Pressable
+        accessibilityLabel={searchAccessibilityLabel}
+        accessibilityRole="button"
+        onPress={onToggleSearchBar}
+        style={({ pressed }) => [
+          styles.searchButton,
+          pressed ? styles.searchButtonPressed : undefined,
+        ]}
+      >
+        <MaterialCommunityIcons
+          color={PRIMARY_ACTION_TEXT}
+          name="magnify"
+          size={18}
+        />
+      </Pressable>
+    );
+  }
 
   return (
     <View style={styles.searchPanel}>
@@ -86,23 +113,25 @@ export const ContextualSearchPanel = ({
             </Pressable>
           ) : null}
         </View>
-        <Pressable
-          accessibilityLabel={searchAccessibilityLabel}
-          accessibilityRole="button"
-          disabled={isSubmitDisabled}
-          onPress={onSearch}
-          style={({ pressed }) => [
-            styles.searchButton,
-            pressed ? styles.searchButtonPressed : undefined,
-            isSubmitDisabled ? styles.searchButtonDisabled : undefined,
-          ]}
-        >
-          <MaterialCommunityIcons
-            color={PRIMARY_ACTION_TEXT}
-            name="magnify"
-            size={18}
-          />
-        </Pressable>
+        {showInlineToggleButton ? (
+          <Pressable
+            accessibilityLabel="Close search"
+            accessibilityRole="button"
+            onPress={onToggleSearchBar}
+            style={({ pressed }) => [
+              styles.searchButton,
+              styles.searchButtonActive,
+              pressed ? styles.searchButtonPressed : undefined,
+              isSubmitDisabled ? styles.searchButtonDisabled : undefined,
+            ]}
+          >
+            <MaterialCommunityIcons
+              color={PRIMARY_ACTION_TEXT}
+              name="close"
+              size={18}
+            />
+          </Pressable>
+        ) : null}
       </View>
       {shouldShowSuggestions ? (
         <RecentSearchSuggestions
@@ -154,6 +183,9 @@ const styles = StyleSheet.create({
     backgroundColor: PRIMARY_ACTION_BACKGROUND,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  searchButtonActive: {
+    backgroundColor: '#214739',
   },
   searchButtonPressed: {
     opacity: 0.88,

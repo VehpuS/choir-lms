@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { DriveLibrarySectionHeader } from '../../drive/components/drive-library-section-header';
@@ -8,7 +8,11 @@ import { isSavedTrackPlaybackBusy } from '../../playback/utils/saved-track-playb
 import { SavedPlaylistSection } from '../../playlists/components/saved-playlist-section';
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
 import { resolveSavedRehearsalLibraryDetailMode } from '../../saved-rehearsal-library/detail-mode';
-import { LibrarySearchPanel } from '../../search/components/library-search-panel';
+import {
+  LibrarySearchPanel,
+  LibrarySearchPanelActions,
+  type LibrarySearchPanelMode,
+} from '../../search/components/library-search-panel';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 import { useSavedRehearsalLibraryLoopState } from './use-saved-rehearsal-library-loop-state';
@@ -62,6 +66,8 @@ export const SavedRehearsalLibrarySection = ({
   toggleSourcePlayback,
   updatePlaylist,
 }: SavedRehearsalLibrarySectionProps) => {
+  const [searchPanelMode, setSearchPanelMode] =
+    useState<LibrarySearchPanelMode>('collapsed');
   const searchState = useSavedRehearsalLibrarySearch({
     savedLibrarySources,
     savedLoops,
@@ -85,6 +91,7 @@ export const SavedRehearsalLibrarySection = ({
     isPreparing: isPlaybackPreparing,
     playbackState,
   });
+  const isSearchPanelVisible = searchPanelMode === 'search';
   const isPlaylistMutating = pendingPlaylistId !== null;
   const isLoopMutating = pendingLoopId !== null;
   const loopState = useSavedRehearsalLibraryLoopState({
@@ -124,14 +131,51 @@ export const SavedRehearsalLibrarySection = ({
   const isPlaylistDetailMode = detailMode === 'playlist-detail';
   const canQueueAsNext = activePlayableItem !== null;
   const shouldShowSavedLibraryStatus =
-    isSavedLibraryLoading || savedLibraryStatusCopy.tone !== 'ready';
+    !isSearchPanelVisible &&
+    (isSavedLibraryLoading || savedLibraryStatusCopy.tone !== 'ready');
   const shouldShowPlaybackStatus =
+    !isSearchPanelVisible &&
     savedTrackPlaybackStatusCopy !== null &&
     (isSavedTrackPlaybackLoading ||
       savedTrackPlaybackStatusCopy.tone !== 'ready');
-  const savedSourceTitle = searchState.isLibrarySearchMode
+  const shouldShowSearchResults =
+    isSearchPanelVisible && searchState.isLibrarySearchMode;
+  const savedSourceTitle = shouldShowSearchResults
     ? `Matching saved rehearsal tracks (${searchState.visibleSavedLibrarySources.length})`
     : `Saved rehearsal tracks (${savedLibrarySources.length})`;
+
+  const handleSearchPanelModeChange = (nextMode: LibrarySearchPanelMode) => {
+    setSearchPanelMode(nextMode);
+
+    if (nextMode === 'search') {
+      if (searchState.librarySearchQuery.trim().length > 0) {
+        searchState.submitLibrarySearch();
+      }
+
+      return;
+    }
+
+    if (searchPanelMode === 'search') {
+      searchState.deactivateLibrarySearch();
+    }
+  };
+
+  const librarySearchPanel = (
+    <LibrarySearchPanel
+      availabilityFilter={searchState.availabilityFilter}
+      entityFilter={searchState.entityFilter}
+      onClearSearch={searchState.clearLibrarySearch}
+      onPanelModeChange={handleSearchPanelModeChange}
+      onSearch={searchState.submitLibrarySearch}
+      onSearchQueryChange={searchState.handleLibrarySearchQueryChange}
+      onSelectAvailabilityFilter={searchState.setAvailabilityFilter}
+      onSelectEntityFilter={searchState.setEntityFilter}
+      onSelectRecentSearchTerm={searchState.runLibrarySearch}
+      panelMode={searchPanelMode}
+      recentSearchTerms={searchState.recentLibrarySearchTerms}
+      searchQuery={searchState.librarySearchQuery}
+    />
+  );
 
   const loopSection = (
     <SavedLoopSection
@@ -198,21 +242,17 @@ export const SavedRehearsalLibrarySection = ({
         canRefresh={false}
         isLoading={false}
         onRefresh={() => undefined}
+        trailingAction={
+          <LibrarySearchPanelActions
+            availabilityFilter={searchState.availabilityFilter}
+            entityFilter={searchState.entityFilter}
+            onPanelModeChange={handleSearchPanelModeChange}
+            panelMode={searchPanelMode}
+          />
+        }
         title="Saved tracks"
       />
-      <LibrarySearchPanel
-        availabilityFilter={searchState.availabilityFilter}
-        entityFilter={searchState.entityFilter}
-        isSearchMode={searchState.isLibrarySearchMode}
-        onClearSearch={searchState.clearLibrarySearch}
-        onSearch={searchState.submitLibrarySearch}
-        onSearchQueryChange={searchState.handleLibrarySearchQueryChange}
-        onSelectAvailabilityFilter={searchState.setAvailabilityFilter}
-        onSelectEntityFilter={searchState.setEntityFilter}
-        onSelectRecentSearchTerm={searchState.runLibrarySearch}
-        recentSearchTerms={searchState.recentLibrarySearchTerms}
-        searchQuery={searchState.librarySearchQuery}
-      />
+      {librarySearchPanel}
       {shouldShowSavedLibraryStatus ? (
         <DriveLibraryStatusCard
           isLoading={isSavedLibraryLoading}
@@ -227,7 +267,42 @@ export const SavedRehearsalLibrarySection = ({
           statusCopy={savedTrackPlaybackStatusCopy}
         />
       ) : null}
-      {detailMode === 'browse' ? (
+      {isSearchPanelVisible ? (
+        shouldShowSearchResults ? (
+          <SavedRehearsalLibraryBrowseContent
+            activePlayableItem={activePlayableItem}
+            canMutateLibrary={canMutateLibrary}
+            canMutateLoops={canMutateLoops}
+            canMutatePlaylists={canMutatePlaylists}
+            canQueueAsNext={canQueueAsNext}
+            isLoopMutating={isLoopMutating}
+            isPlaybackPreparing={isPlaybackPreparing}
+            isPlaylistMutating={isPlaylistMutating}
+            isSavedLibraryMutating={isSavedLibraryMutating}
+            loopSection={loopSection}
+            loopState={loopState}
+            openLoopBuilderForSource={openLoopBuilderForSource}
+            pendingLoopBuilderSourceId={pendingLoopBuilderSourceId}
+            pendingSourceId={pendingSourceId}
+            playbackIssue={playbackIssue}
+            playbackState={playbackState}
+            playlistSection={playlistSection}
+            playlistState={playlistState}
+            queuePlayableItemNext={queuePlayableItemNext}
+            queuePlayableItemUpNext={queuePlayableItemUpNext}
+            removeSource={removeSource}
+            savedLibraryIssue={savedLibraryIssue}
+            savedLibrarySources={savedLibrarySources}
+            savedLoops={savedLoops}
+            savedPlaylists={savedPlaylists}
+            savedSourceTitle={savedSourceTitle}
+            searchState={searchState}
+            togglePlaylistPlayback={togglePlaylistPlayback}
+            toggleSourcePlayback={toggleSourcePlayback}
+            trackPlaylistMenu={trackPlaylistMenu}
+          />
+        ) : null
+      ) : detailMode === 'browse' ? (
         <SavedRehearsalLibraryBrowseContent
           activePlayableItem={activePlayableItem}
           canMutateLibrary={canMutateLibrary}
@@ -276,6 +351,7 @@ export const SavedRehearsalLibrarySection = ({
 
 const styles = StyleSheet.create({
   savedLibrarySection: {
+    position: 'relative',
     gap: 12,
     padding: 16,
     borderWidth: 1,
