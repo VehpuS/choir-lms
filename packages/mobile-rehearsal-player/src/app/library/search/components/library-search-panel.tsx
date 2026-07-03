@@ -95,7 +95,6 @@ export const LibrarySearchPanel = ({
       <ContextualSearchPanel
         clearActionLabel="Show all saved items"
         helperCopy={searchContextCopy.helper}
-        isSearchMode={isSearchMode}
         onClearSearch={onClearSearch}
         onSearch={onSearch}
         onSearchQueryChange={onSearchQueryChange}

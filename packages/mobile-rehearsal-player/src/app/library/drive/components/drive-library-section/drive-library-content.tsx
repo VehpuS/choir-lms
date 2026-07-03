@@ -2,6 +2,12 @@ import { type DriveBrowseLocation } from '@org/google-drive';
 import { type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import type { DriveLibrarySourceAction } from '../../utils/drive-library-source-actions';
+import type {
+  DriveLibraryFolder,
+  DriveLibrarySource,
+  DriveLibraryStatusCopy,
+} from '../../utils/drive-library-view-model';
 import { DriveFolderGroup } from '../drive-folder-group';
 import { DriveLibraryBreadcrumbs } from '../drive-library-breadcrumbs';
 import { DriveLibraryRootSelector } from '../drive-library-root-selector';
@@ -9,12 +15,6 @@ import { DriveLibrarySearchPanel } from '../drive-library-search-panel';
 import { DriveLibrarySectionHeader } from '../drive-library-section-header';
 import { DriveLibrarySourceGroup } from '../drive-library-source-group';
 import { DriveLibraryStatusCard } from '../drive-library-status-card';
-import type {
-  DriveLibraryFolder,
-  DriveLibrarySource,
-  DriveLibraryStatusCopy,
-} from '../../utils/drive-library-view-model';
-import type { DriveLibrarySourceAction } from '../../utils/drive-library-source-actions';
 
 type DriveLibraryContentProps = {
   canRefresh: boolean;
@@ -87,7 +87,6 @@ export const DriveLibraryContent = ({
         canSearch={canRefresh}
         helperCopy="Search in My Drive"
         isLoading={isLoading}
-        isSearchMode={isSearchMode}
         onClearSearch={onClearSearch}
         onSearch={onSearch}
         onSearchQueryChange={onSearchQueryChange}

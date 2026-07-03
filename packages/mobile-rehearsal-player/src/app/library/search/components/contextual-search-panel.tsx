@@ -1,14 +1,13 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { RecentSearchSuggestions } from './recent-search-suggestions';
 import { shouldShowRecentSearchSuggestions } from './contextual-search-panel-model';
+import { RecentSearchSuggestions } from './recent-search-suggestions';
 
 type ContextualSearchPanelProps = {
   canShowRecentSearchTerms?: boolean;
   clearActionLabel: string;
   helperCopy?: string;
-  isSearchMode: boolean;
   isSubmitDisabled?: boolean;
   onClearSearch: () => void;
   onSearch: () => void;
@@ -26,14 +25,12 @@ const PLACEHOLDER_TEXT = '#857b6c';
 const PRIMARY_ACTION_BACKGROUND = '#305c4d';
 const PRIMARY_ACTION_TEXT = '#fff8ef';
 const PRIMARY_TEXT = '#1f1c17';
-const SECONDARY_ACTION_TEXT = '#305c4d';
 const HELPER_TEXT = '#5f5647';
 
 export const ContextualSearchPanel = ({
   canShowRecentSearchTerms = true,
   clearActionLabel,
   helperCopy,
-  isSearchMode,
   isSubmitDisabled = false,
   onClearSearch,
   onSearch,
@@ -49,6 +46,7 @@ export const ContextualSearchPanel = ({
     recentSearchTerms,
     searchQuery,
   });
+  const shouldShowClearButton = searchQuery.trim().length > 0;
 
   return (
     <View style={styles.searchPanel}>
@@ -58,17 +56,36 @@ export const ContextualSearchPanel = ({
         </View>
       ) : null}
       <View style={styles.searchRow}>
-        <TextInput
-          autoCapitalize="none"
-          autoCorrect={false}
-          onChangeText={onSearchQueryChange}
-          onSubmitEditing={onSearch}
-          placeholder={placeholderCopy}
-          placeholderTextColor={PLACEHOLDER_TEXT}
-          returnKeyType="search"
-          style={styles.searchInput}
-          value={searchQuery}
-        />
+        <View style={styles.searchInputContainer}>
+          <TextInput
+            autoCapitalize="none"
+            autoCorrect={false}
+            onChangeText={onSearchQueryChange}
+            onSubmitEditing={onSearch}
+            placeholder={placeholderCopy}
+            placeholderTextColor={PLACEHOLDER_TEXT}
+            returnKeyType="search"
+            style={styles.searchInput}
+            value={searchQuery}
+          />
+          {shouldShowClearButton ? (
+            <Pressable
+              accessibilityLabel={clearActionLabel}
+              accessibilityRole="button"
+              onPress={onClearSearch}
+              style={({ pressed }) => [
+                styles.clearSearchIconButton,
+                pressed ? styles.clearSearchIconButtonPressed : undefined,
+              ]}
+            >
+              <MaterialCommunityIcons
+                color={PLACEHOLDER_TEXT}
+                name="close-circle-outline"
+                size={18}
+              />
+            </Pressable>
+          ) : null}
+        </View>
         <Pressable
           accessibilityLabel={searchAccessibilityLabel}
           accessibilityRole="button"
@@ -93,18 +110,6 @@ export const ContextualSearchPanel = ({
           recentSearchTerms={recentSearchTerms}
         />
       ) : null}
-      {isSearchMode ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={onClearSearch}
-          style={({ pressed }) => [
-            styles.clearSearchButton,
-            pressed ? styles.clearSearchButtonPressed : undefined,
-          ]}
-        >
-          <Text style={styles.clearSearchLabel}>{clearActionLabel}</Text>
-        </Pressable>
-      ) : null}
     </View>
   );
 };
@@ -126,9 +131,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  searchInput: {
+  searchInputContainer: {
     flex: 1,
+    position: 'relative',
+  },
+  searchInput: {
     paddingHorizontal: 16,
+    paddingRight: 42,
     paddingVertical: 12,
     borderWidth: 1,
     borderColor: BORDER_COLOR,
@@ -152,16 +161,15 @@ const styles = StyleSheet.create({
   searchButtonDisabled: {
     opacity: 0.56,
   },
-  clearSearchButton: {
-    alignSelf: 'flex-start',
+  clearSearchIconButton: {
+    position: 'absolute',
+    top: 0,
+    right: 10,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  clearSearchButtonPressed: {
-    opacity: 0.75,
-  },
-  clearSearchLabel: {
-    color: SECONDARY_ACTION_TEXT,
-    fontSize: 13,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+  clearSearchIconButtonPressed: {
+    opacity: 0.72,
   },
 });

@@ -47,7 +47,6 @@ export const DriveDiscoveryPanel = ({
         canSearch={controller.search.canSearch}
         helperCopy={controller.search.searchContextCopy.helper}
         isLoading={controller.search.isLoading}
-        isSearchMode={controller.search.isSearchMode}
         onClearSearch={controller.search.clearSearch}
         onSearch={controller.search.submitSearch}
         onSearchQueryChange={controller.search.setSearchQuery}
