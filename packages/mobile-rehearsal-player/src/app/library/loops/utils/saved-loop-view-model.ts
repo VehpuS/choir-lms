@@ -58,7 +58,7 @@ export type SavedLoopCard = {
 type BuildNamedLoopOptions = {
   createId?: (sourceId: string, createdAt: string) => string;
   endMs: number | null;
-  existingLoop?: Pick<NamedLoop, 'createdAt' | 'id'>;
+  existingLoop?: Pick<NamedLoop, 'createdAt' | 'id' | 'tags'>;
   loopName: string;
   now?: string;
   ownerId: string;
@@ -187,6 +187,9 @@ export const buildNamedLoop = (options: BuildNamedLoopOptions) => {
       name: trimmedLoopName,
       sourceId: options.source.id,
       sourceName: options.source.name,
+      ...(options.existingLoop?.tags !== undefined
+        ? { tags: options.existingLoop.tags }
+        : {}),
       startMs: validation.normalizedStartMs,
       endMs: validation.normalizedEndMs,
       ownershipScope: 'user' as const,

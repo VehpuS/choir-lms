@@ -37,6 +37,7 @@ type SavedLoopListRowProps = {
   loopIssue: SavedLoopIssue | null;
   onCloseOptions: () => void;
   onEditLoop: (loop: SavedLoopCard['loop']) => void;
+  onEditLoopTags: (loop: SavedLoopCard['loop']) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
   onOpenOptions: () => void;
   onPlayLoopSeries?: (loopId: string) => void;
@@ -90,6 +91,7 @@ export const SavedLoopListRow = ({
   loopIssue,
   onCloseOptions,
   onEditLoop,
+  onEditLoopTags,
   onOpenLoopPlaylistSelector,
   onOpenOptions,
   onPlayLoopSeries,
@@ -131,6 +133,10 @@ export const SavedLoopListRow = ({
     isPlaylistMutating,
     onEdit: () => {
       onEditLoop(loopCard.loop);
+    },
+    onEditTags: () => {
+      onCloseOptions();
+      onEditLoopTags(loopCard.loop);
     },
     onOpenPlaylistSelector: () => {
       onCloseOptions();

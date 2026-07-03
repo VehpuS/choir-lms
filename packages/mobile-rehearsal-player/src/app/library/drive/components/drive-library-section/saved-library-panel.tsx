@@ -91,6 +91,7 @@ export const DriveLibrarySavedLibraryPanel = ({
       savedPlaylists={savedPlaylistsState.savedPlaylists}
       savedTrackPlaybackStatusCopy={savedTrackPlaybackStatusCopy}
       saveLoop={savedLoopsState.saveLoop}
+      saveSource={savedLibraryState.saveSource}
       selectedTrack={preparedLoopBuilderTrack.selectedTrack}
       setIsPlaylistReorderDragActive={() => undefined}
       setPlaylistReorderDragMoveY={() => undefined}

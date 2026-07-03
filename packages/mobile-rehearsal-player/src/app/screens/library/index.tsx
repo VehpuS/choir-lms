@@ -170,6 +170,7 @@ export const LibraryScreen = ({
             libraryController.savedLibrary.savedLibraryStatusCopy
           }
           saveLoop={libraryController.savedLibrary.saveLoop}
+          saveSource={libraryController.savedLibrary.saveSource}
           getCurrentScrollOffsetY={() => {
             return scrollOffsetYRef.current;
           }}

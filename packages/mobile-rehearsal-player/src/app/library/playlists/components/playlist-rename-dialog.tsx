@@ -28,6 +28,7 @@ type PlaylistOptionsMenuSurfaceProps = {
   isVisible: boolean;
   playlistName: string;
   onClose: () => void;
+  onEditTags?: () => void;
   onRemove?: () => void;
   onRename: () => void;
 };
@@ -103,6 +104,7 @@ export const PlaylistOptionsMenuSurface = ({
   isVisible,
   playlistName,
   onClose,
+  onEditTags,
   onRemove,
   onRename,
 }: PlaylistOptionsMenuSurfaceProps) => {
@@ -110,6 +112,7 @@ export const PlaylistOptionsMenuSurface = ({
     <OptionsMenuSheet
       actions={getPlaylistOptionsMenuActions({
         isMutating,
+        onEditTags,
         onRemove,
         onRename,
       })}

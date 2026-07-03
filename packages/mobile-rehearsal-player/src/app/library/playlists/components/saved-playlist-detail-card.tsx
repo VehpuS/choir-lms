@@ -50,6 +50,7 @@ export const SavedPlaylistDetailCard = (props: {
   onCloseDetail: () => void;
   onDeletePlaylist: () => void;
   onDismissRemovalNotice: () => void;
+  onEditPlaylistTags: () => void;
   onMoveItem: (
     fromIndex: number,
     toIndex: number,
@@ -208,6 +209,10 @@ export const SavedPlaylistDetailCard = (props: {
         isVisible={isOptionsMenuVisible}
         onClose={() => {
           setIsOptionsMenuVisible(false);
+        }}
+        onEditTags={() => {
+          setIsOptionsMenuVisible(false);
+          props.onEditPlaylistTags();
         }}
         onRemove={() => {
           setIsOptionsMenuVisible(false);

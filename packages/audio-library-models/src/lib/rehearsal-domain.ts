@@ -31,6 +31,7 @@ export type DriveAudioSource = {
   modifiedTime?: string;
   webViewLink?: string;
   iconLink?: string;
+  tags?: string[];
   availability: SourceAvailability;
 };
 
@@ -59,6 +60,7 @@ export type NamedLoop = {
   name: string;
   sourceId: string;
   sourceName: string;
+  tags?: string[];
   startMs: number;
   endMs: number;
   ownershipScope: OwnershipScope;
@@ -90,6 +92,7 @@ export type PlaylistEntryInput = Omit<
 export type Playlist = {
   id: string;
   name: string;
+  tags?: string[];
   items: PlaylistEntry[];
   ownershipScope: OwnershipScope;
   ownerId: string;

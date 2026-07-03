@@ -46,6 +46,7 @@ export const SavedPlaylistCardsList = (props: {
   onBeginRenamePlaylist: (playlistId: string) => void;
   onCancelRenamePlaylist: () => void;
   onDeletePlaylist: (playlistId: string) => void;
+  onEditPlaylistTags: (playlistId: string) => void;
   onRenamePlaylistNameChange: (value: string) => void;
   onSubmitRenamePlaylist: () => void;
   playlistCards: SavedPlaylistCard[];
@@ -132,6 +133,14 @@ export const SavedPlaylistCardsList = (props: {
         isVisible={selectedOptionsPlaylist !== undefined}
         onClose={() => {
           setOptionsPlaylistId(null);
+        }}
+        onEditTags={() => {
+          if (!selectedOptionsPlaylist) {
+            return;
+          }
+
+          setOptionsPlaylistId(null);
+          props.onEditPlaylistTags(selectedOptionsPlaylist.playlist.id);
         }}
         onRemove={() => {
           if (!selectedOptionsPlaylist) {

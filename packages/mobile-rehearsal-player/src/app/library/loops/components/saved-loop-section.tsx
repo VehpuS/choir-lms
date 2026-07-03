@@ -38,6 +38,7 @@ type SavedLoopSectionProps = {
   isPlaylistMutating: boolean;
   onCloseLoopBuilder: () => void;
   onEditLoop: (loop: NamedLoop) => void;
+  onEditLoopTags: (loop: NamedLoop) => void;
   toggleActivePlayback: () => Promise<void>;
   removeLoop: (loop: NamedLoop) => void;
   savedSources: DriveLibrarySource[];
@@ -79,6 +80,7 @@ export const SavedLoopSection = ({
   isPlaylistMutating,
   onCloseLoopBuilder,
   onEditLoop,
+  onEditLoopTags,
   toggleActivePlayback,
   removeLoop,
   savedSources,
@@ -184,6 +186,7 @@ export const SavedLoopSection = ({
               loopCards={trackLoopViewCards}
               loopIssue={savedLoopIssue}
               onEditLoop={onEditLoop}
+              onEditLoopTags={onEditLoopTags}
               onOpenLoopPlaylistSelector={onOpenLoopPlaylistSelector}
               onPlayLoopSeries={(loopId) => {
                 trackLoopView.onPlayLoopSeries(loopId);
@@ -253,6 +256,7 @@ export const SavedLoopSection = ({
           playbackState={playbackState}
           canQueueAsNext={canQueueAsNext}
           onEditLoop={onEditLoop}
+          onEditLoopTags={onEditLoopTags}
           onOpenLoopPlaylistSelector={onOpenLoopPlaylistSelector}
           queuePlayableItemNext={queuePlayableItemNext}
           queuePlayableItemUpNext={queuePlayableItemUpNext}

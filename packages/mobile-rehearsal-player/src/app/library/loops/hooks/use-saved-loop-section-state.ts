@@ -206,6 +206,7 @@ export const useSavedLoopSectionState = (
           ? {
               createdAt: options.editingLoop.createdAt,
               id: options.editingLoop.id,
+              tags: options.editingLoop.tags,
             }
           : undefined,
         loopName: loopDraft.loopName,

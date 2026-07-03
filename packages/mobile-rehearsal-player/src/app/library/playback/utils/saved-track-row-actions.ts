@@ -23,6 +23,7 @@ type ResolveSavedTrackRowActionsOptions = {
   isPlaylistMutating: boolean;
   isSavedLibraryMutating: boolean;
   onOpenLoopBuilder: () => void;
+  onOpenTagEditor: () => void;
   onOpenPlaylistSelector: () => void;
   onQueueNext: () => void;
   onQueueUpNext: () => void;
@@ -100,6 +101,12 @@ export const resolveSavedTrackRowActions = (
       onPress: options.onOpenPlaylistSelector,
       placement: 'menu',
       tone: 'primary',
+    },
+    {
+      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
+      label: 'Edit tags',
+      onPress: options.onOpenTagEditor,
+      placement: 'menu',
     },
     {
       disabled:

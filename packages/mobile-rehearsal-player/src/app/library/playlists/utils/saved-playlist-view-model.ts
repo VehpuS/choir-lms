@@ -245,6 +245,7 @@ export const getSavedPlaylistCreateDialogCopy = (): SavedPlaylistCreateDialogCop
 
 export const getPlaylistOptionsMenuActions = (options: {
   isMutating: boolean;
+  onEditTags?: () => void;
   onRemove?: () => void;
   onRename: () => void;
 }): OptionsMenuAction[] => {
@@ -257,6 +258,16 @@ export const getPlaylistOptionsMenuActions = (options: {
       tone: 'primary',
     },
   ];
+
+  if (options.onEditTags) {
+    actions.push({
+      disabled: options.isMutating,
+      id: 'edit-playlist-tags',
+      label: 'Edit tags',
+      onPress: options.onEditTags,
+      tone: 'secondary',
+    });
+  }
 
   if (options.onRemove) {
     actions.push({

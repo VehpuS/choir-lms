@@ -1,11 +1,15 @@
 {
   "cSpell.words": [
+    "affordances",
     "Agentic",
     "checkpointed",
     "LINTABLE",
+    "miblanchard",
     "openspec",
+    "opsx",
     "Pressable",
-    "Recents"
+    "Recents",
+    "undoable"
   ],
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,

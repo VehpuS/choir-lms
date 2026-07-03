@@ -79,6 +79,8 @@ type SavedRehearsalLibraryBrowseContentProps = Pick<
   playlistState: PlaylistState;
   savedSourceTitle: string;
   searchState: SearchState;
+  onOpenPlaylistTagEditor: (playlistId: string) => void;
+  onOpenSourceTagEditor: (source: SavedRehearsalLibrarySectionProps['savedLibrarySources'][number]) => void;
   trackPlaylistMenu: TrackPlaylistMenuState;
 };
 
@@ -110,6 +112,8 @@ export const SavedRehearsalLibraryBrowseContent = ({
   savedPlaylists,
   savedSourceTitle,
   searchState,
+  onOpenPlaylistTagEditor,
+  onOpenSourceTagEditor,
   togglePlaylistPlayback,
   toggleSourcePlayback,
   trackPlaylistMenu,
@@ -126,6 +130,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
         onBeginRenamePlaylist={playlistState.openCardRenameDialog}
         onCancelRenamePlaylist={playlistState.closeCardRenameDialog}
         onDeletePlaylist={playlistState.handleDeletePlaylist}
+        onEditPlaylistTags={onOpenPlaylistTagEditor}
         onPlayPlaylist={(playlistId) => {
           const playlist = savedPlaylists.find((currentPlaylist) => {
             return currentPlaylist.id === playlistId;
@@ -183,6 +188,9 @@ export const SavedRehearsalLibraryBrowseContent = ({
             isSavedLibraryMutating,
             onOpenLoopBuilder: () => {
               openLoopBuilderForSource(source);
+            },
+            onOpenTagEditor: () => {
+              onOpenSourceTagEditor(source);
             },
             onOpenPlaylistSelector: () => {
               trackPlaylistMenu.openSourcePlaylistSelector(source.id);

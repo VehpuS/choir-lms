@@ -112,6 +112,7 @@ describe('saved playlist view-model', () => {
 
   it('includes remove in shared playlist overflow actions when requested', () => {
     const actions = getPlaylistOptionsMenuActions({
+      onEditTags: () => undefined,
       isMutating: false,
       onRemove: () => undefined,
       onRename: () => undefined,
@@ -130,6 +131,12 @@ describe('saved playlist view-model', () => {
           id: 'rename-playlist',
           label: 'Rename playlist',
           tone: 'primary',
+        },
+        {
+          disabled: false,
+          id: 'edit-playlist-tags',
+          label: 'Edit tags',
+          tone: 'secondary',
         },
         {
           disabled: false,

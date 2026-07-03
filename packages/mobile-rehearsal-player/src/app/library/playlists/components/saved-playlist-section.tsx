@@ -40,6 +40,7 @@ type SavedPlaylistSectionProps = {
   isPlaybackPreparing: boolean;
   issue: SavedPlaylistIssue | null;
   onCloseDetail?: () => void;
+  onEditPlaylistTags: (playlistId: string) => void;
   pendingPlaylistId: string | null;
   playbackState: SavedTrackPlaybackState | undefined;
   savedPlaylists: Playlist[];
@@ -71,6 +72,7 @@ export const SavedPlaylistSection = ({
   isPlaybackPreparing,
   issue,
   onCloseDetail,
+  onEditPlaylistTags,
   pendingPlaylistId,
   playbackState,
   savedPlaylists,
@@ -224,6 +226,13 @@ export const SavedPlaylistSection = ({
           isMutating={isMutating}
           onCloseDetail={handleCloseDetail}
           onDismissRemovalNotice={handleDismissRemovalNotice}
+          onEditPlaylistTags={() => {
+            if (!selectedPlaylist) {
+              return;
+            }
+
+            onEditPlaylistTags(selectedPlaylist.id);
+          }}
           onCommitReorder={handleCommitReorder}
           onDeletePlaylist={handleDeletePlaylist}
           onMoveItem={handleMoveItem}

@@ -25,6 +25,7 @@ type SavedLoopListProps = {
   loopCards: SavedLoopCard[];
   loopIssue: SavedLoopIssue | null;
   onEditLoop: (loop: SavedLoopCard['loop']) => void;
+  onEditLoopTags: (loop: SavedLoopCard['loop']) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
   onPlayLoopSeries?: (loopId: string) => void;
   onToggleCurrentPlayback?: () => void;
@@ -50,6 +51,7 @@ export const SavedLoopList = ({
   loopCards,
   loopIssue,
   onEditLoop,
+  onEditLoopTags,
   onOpenLoopPlaylistSelector,
   onPlayLoopSeries,
   onToggleCurrentPlayback,
@@ -95,6 +97,7 @@ export const SavedLoopList = ({
               setActiveOptionsLoopId(null);
             }}
             onEditLoop={onEditLoop}
+            onEditLoopTags={onEditLoopTags}
             onOpenLoopPlaylistSelector={onOpenLoopPlaylistSelector}
             onOpenOptions={() => {
               setActiveOptionsLoopId(loopCard.loop.id);

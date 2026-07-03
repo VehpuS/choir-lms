@@ -53,6 +53,7 @@ export type SavedRehearsalLibrarySectionProps = {
   savedPlaylists: Playlist[];
   savedTrackPlaybackStatusCopy: DriveLibraryStatusCopy | null;
   saveLoop: (loop: NamedLoop) => Promise<boolean>;
+  saveSource: (source: DriveLibrarySource) => Promise<boolean>;
   selectedTrack: PlayableItem | null;
   setIsPlaylistReorderDragActive: (isActive: boolean) => void;
   setPlaylistReorderDragMoveY: (moveY: number) => void;

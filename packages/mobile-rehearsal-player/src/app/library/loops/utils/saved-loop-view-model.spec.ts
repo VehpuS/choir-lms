@@ -48,6 +48,7 @@ describe('saved loop view-model', () => {
       existingLoop: {
         createdAt: SAVED_LOOP.createdAt,
         id: SAVED_LOOP.id,
+        tags: ['Alto', 'Entrances'],
       },
       loopName: '  Entrance cue reprise  ',
       now: '2026-05-10T02:00:00.000Z',
@@ -60,6 +61,7 @@ describe('saved loop view-model', () => {
     assert.deepEqual(result.loop, {
       ...SAVED_LOOP,
       name: 'Entrance cue reprise',
+      tags: ['Alto', 'Entrances'],
       startMs: 15000,
       endMs: 24000,
       updatedAt: '2026-05-10T02:00:00.000Z',

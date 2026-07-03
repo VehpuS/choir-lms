@@ -7,6 +7,7 @@ import { SavedLoopSection } from '../../loops/components/saved-loop-section';
 import { isSavedTrackPlaybackBusy } from '../../playback/utils/saved-track-playback-view-model';
 import { SavedPlaylistSection } from '../../playlists/components/saved-playlist-section';
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
+import { TagEditorSheet } from '../../components/tag-editor-sheet';
 import { resolveSavedRehearsalLibraryDetailMode } from '../../saved-rehearsal-library/detail-mode';
 import {
   LibrarySearchControls,
@@ -25,6 +26,23 @@ import { useSavedRehearsalLibrarySearch } from './use-saved-rehearsal-library-se
 import { useSavedRehearsalLibraryTrackPlaylistMenu } from './use-saved-rehearsal-library-track-playlist-menu';
 
 const BORDER_COLOR = '#d6d1c4';
+
+type TagEditorTarget =
+  | {
+      kind: 'loop';
+      loop: SavedRehearsalLibrarySectionProps['savedLoops'][number];
+    }
+  | {
+      kind: 'playlist';
+      playlist: SavedRehearsalLibrarySectionProps['savedPlaylists'][number];
+    }
+  | {
+      kind: 'source';
+      source: SavedRehearsalLibrarySectionProps['savedLibrarySources'][number];
+    }
+  | {
+      kind: 'none';
+    };
 
 export const SavedRehearsalLibrarySection = ({
   activePlayableItem,
@@ -59,6 +77,7 @@ export const SavedRehearsalLibrarySection = ({
   savedPlaylists,
   savedTrackPlaybackStatusCopy,
   saveLoop,
+  saveSource,
   selectedTrack,
   setIsPlaylistReorderDragActive,
   setPlaylistReorderDragMoveY,
@@ -73,6 +92,10 @@ export const SavedRehearsalLibrarySection = ({
   const [searchPanelVisibility, setSearchPanelVisibility] = useState(
     DEFAULT_LIBRARY_SEARCH_CONTROLS_VISIBILITY,
   );
+  const [tagEditorTarget, setTagEditorTarget] = useState<TagEditorTarget>({
+    kind: 'none',
+  });
+  const [isTagEditorSaving, setIsTagEditorSaving] = useState(false);
   const searchState = useSavedRehearsalLibrarySearch({
     savedLibrarySources,
     savedLoops,
@@ -149,6 +172,48 @@ export const SavedRehearsalLibrarySection = ({
     ? `Matching saved rehearsal tracks (${searchState.visibleSavedLibrarySources.length})`
     : `Saved rehearsal tracks (${savedLibrarySources.length})`;
 
+  const closeTagEditor = () => {
+    if (isTagEditorSaving) {
+      return;
+    }
+
+    setTagEditorTarget({ kind: 'none' });
+  };
+
+  const saveTagEdits = async (tags: string[]) => {
+    if (tagEditorTarget.kind === 'none') {
+      return;
+    }
+
+    setIsTagEditorSaving(true);
+
+    let didSave = false;
+
+    if (tagEditorTarget.kind === 'source') {
+      didSave = await saveSource({
+        ...tagEditorTarget.source,
+        tags,
+      });
+    } else if (tagEditorTarget.kind === 'loop') {
+      didSave = await saveLoop({
+        ...tagEditorTarget.loop,
+        tags,
+      });
+    } else {
+      didSave =
+        (await updatePlaylist({
+          ...tagEditorTarget.playlist,
+          tags,
+        })) !== null;
+    }
+
+    setIsTagEditorSaving(false);
+
+    if (didSave) {
+      setTagEditorTarget({ kind: 'none' });
+    }
+  };
+
   const handleFilterActionPress = () => {
     setSearchPanelVisibility(
       toggleLibraryFilterVisibility(searchPanelVisibility),
@@ -208,6 +273,12 @@ export const SavedRehearsalLibrarySection = ({
       isTrackLoopDetailVisible={isTrackLoopDetailVisible}
       onCloseLoopBuilder={loopState.closeLoopBuilder}
       onEditLoop={loopState.openLoopEditor}
+      onEditLoopTags={(loop) => {
+        setTagEditorTarget({
+          kind: 'loop',
+          loop,
+        });
+      }}
       onOpenLoopPlaylistSelector={trackPlaylistMenu.openLoopPlaylistSelector}
       pendingLoopId={pendingLoopId}
       playbackIssue={playbackIssue}
@@ -238,6 +309,20 @@ export const SavedRehearsalLibrarySection = ({
       isPlaybackPreparing={isPlaybackPreparing}
       issue={playlistIssue}
       onCloseDetail={playlistState.closePlaylistDetail}
+      onEditPlaylistTags={(playlistId) => {
+        const playlist = savedPlaylists.find((currentPlaylist) => {
+          return currentPlaylist.id === playlistId;
+        });
+
+        if (!playlist) {
+          return;
+        }
+
+        setTagEditorTarget({
+          kind: 'playlist',
+          playlist,
+        });
+      }}
       pendingPlaylistId={pendingPlaylistId}
       playbackState={playbackState}
       savedLoops={savedLoops}
@@ -318,6 +403,26 @@ export const SavedRehearsalLibrarySection = ({
             savedPlaylists={savedPlaylists}
             savedSourceTitle={savedSourceTitle}
             searchState={searchState}
+            onOpenPlaylistTagEditor={(playlistId) => {
+              const playlist = savedPlaylists.find((currentPlaylist) => {
+                return currentPlaylist.id === playlistId;
+              });
+
+              if (!playlist) {
+                return;
+              }
+
+              setTagEditorTarget({
+                kind: 'playlist',
+                playlist,
+              });
+            }}
+            onOpenSourceTagEditor={(source) => {
+              setTagEditorTarget({
+                kind: 'source',
+                source,
+              });
+            }}
             togglePlaylistPlayback={togglePlaylistPlayback}
             toggleSourcePlayback={toggleSourcePlayback}
             trackPlaylistMenu={trackPlaylistMenu}
@@ -352,6 +457,26 @@ export const SavedRehearsalLibrarySection = ({
           savedPlaylists={savedPlaylists}
           savedSourceTitle={savedSourceTitle}
           searchState={searchState}
+          onOpenPlaylistTagEditor={(playlistId) => {
+            const playlist = savedPlaylists.find((currentPlaylist) => {
+              return currentPlaylist.id === playlistId;
+            });
+
+            if (!playlist) {
+              return;
+            }
+
+            setTagEditorTarget({
+              kind: 'playlist',
+              playlist,
+            });
+          }}
+          onOpenSourceTagEditor={(source) => {
+            setTagEditorTarget({
+              kind: 'source',
+              source,
+            });
+          }}
           togglePlaylistPlayback={togglePlaylistPlayback}
           toggleSourcePlayback={toggleSourcePlayback}
           trackPlaylistMenu={trackPlaylistMenu}
@@ -365,6 +490,32 @@ export const SavedRehearsalLibrarySection = ({
         {...trackPlaylistMenu.menuSurfaceProps}
         isMutating={isPlaylistMutating}
         playlists={savedPlaylists}
+      />
+      <TagEditorSheet
+        isSaving={isTagEditorSaving}
+        isVisible={tagEditorTarget.kind !== 'none'}
+        onClose={closeTagEditor}
+        onSave={(tags) => {
+          void saveTagEdits(tags);
+        }}
+        tags={
+          tagEditorTarget.kind === 'none'
+            ? []
+            : tagEditorTarget.kind === 'source'
+              ? (tagEditorTarget.source.tags ?? [])
+              : tagEditorTarget.kind === 'loop'
+                ? (tagEditorTarget.loop.tags ?? [])
+                : (tagEditorTarget.playlist.tags ?? [])
+        }
+        title={
+          tagEditorTarget.kind === 'none'
+            ? ''
+            : tagEditorTarget.kind === 'source'
+              ? `Track tags • ${tagEditorTarget.source.name}`
+              : tagEditorTarget.kind === 'loop'
+                ? `Loop tags • ${tagEditorTarget.loop.name}`
+                : `Playlist tags • ${tagEditorTarget.playlist.name}`
+        }
       />
     </View>
   );
