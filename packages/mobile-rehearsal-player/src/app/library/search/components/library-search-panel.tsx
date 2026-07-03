@@ -8,6 +8,7 @@ import type {
   LibrarySearchEntityFilter,
 } from '../utils/saved-library-search-view-model';
 import { ContextualSearchPanel } from './contextual-search-panel';
+import type { LibrarySearchPanelVisibility } from './library-search-panel-visibility';
 
 const ENTITY_FILTER_OPTIONS: {
   label: string;
@@ -28,8 +29,6 @@ const AVAILABILITY_FILTER_OPTIONS: {
   { label: 'Unavailable', value: 'unavailable' },
 ];
 
-export type LibrarySearchPanelMode = 'collapsed' | 'filter' | 'search';
-
 const ACTION_BUTTON_SIZE = 40;
 const ACTION_ROW_GAP = 12;
 const ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE * 2 + ACTION_ROW_GAP;
@@ -40,13 +39,13 @@ type FilterOption<Value extends string> = {
   value: Value;
 };
 
-type LibrarySearchPanelProps = {
+type LibrarySearchPanelProps = LibrarySearchPanelVisibility & {
   availabilityFilter: LibrarySearchAvailabilityFilter;
   entityFilter: LibrarySearchEntityFilter;
-  panelMode: LibrarySearchPanelMode;
   onClearSearch: () => void;
-  onPanelModeChange: (value: LibrarySearchPanelMode) => void;
+  onFilterActionPress: () => void;
   onSearch: () => void;
+  onSearchActionPress: () => void;
   onSearchQueryChange: (value: string) => void;
   onSelectAvailabilityFilter: (value: LibrarySearchAvailabilityFilter) => void;
   onSelectEntityFilter: (value: LibrarySearchEntityFilter) => void;
@@ -57,7 +56,12 @@ type LibrarySearchPanelProps = {
 
 type LibrarySearchPanelActionsProps = Pick<
   LibrarySearchPanelProps,
-  'availabilityFilter' | 'entityFilter' | 'onPanelModeChange' | 'panelMode'
+  | 'availabilityFilter'
+  | 'entityFilter'
+  | 'isFilterPopoverVisible'
+  | 'isSearchBarVisible'
+  | 'onFilterActionPress'
+  | 'onSearchActionPress'
 >;
 
 type LibrarySearchActionButtonProps = {
@@ -129,44 +133,34 @@ const LibrarySearchActionButton = ({
 export const LibrarySearchPanelActions = ({
   availabilityFilter,
   entityFilter,
-  onPanelModeChange,
-  panelMode,
+  isFilterPopoverVisible,
+  isSearchBarVisible,
+  onFilterActionPress,
+  onSearchActionPress,
 }: LibrarySearchPanelActionsProps) => {
   const hasActiveFilters =
     entityFilter !== 'all' || availabilityFilter !== 'all';
 
   return (
     <View style={styles.actionRow}>
-      {panelMode === 'search' ? (
-        <View style={styles.actionSpacer} />
-      ) : (
-        <LibrarySearchActionButton
-          accessibilityLabel={
-            panelMode === 'filter'
-              ? 'Hide library filters'
-              : 'Show library filters'
-          }
-          iconName="tune-variant"
-          isFilled={panelMode === 'filter' || hasActiveFilters}
-          onPress={() => {
-            onPanelModeChange(panelMode === 'filter' ? 'collapsed' : 'filter');
-          }}
-        />
-      )}
-      {panelMode === 'filter' ? (
-        <View style={styles.actionSpacer} />
-      ) : (
-        <LibrarySearchActionButton
-          accessibilityLabel={
-            panelMode === 'search' ? 'Close search' : 'Search saved library'
-          }
-          iconName={panelMode === 'search' ? 'close' : 'magnify'}
-          isFilled={true}
-          onPress={() => {
-            onPanelModeChange(panelMode === 'search' ? 'collapsed' : 'search');
-          }}
-        />
-      )}
+      <LibrarySearchActionButton
+        accessibilityLabel={
+          isFilterPopoverVisible
+            ? 'Hide library filters'
+            : 'Show library filters'
+        }
+        iconName="tune-variant"
+        isFilled={isFilterPopoverVisible || hasActiveFilters}
+        onPress={onFilterActionPress}
+      />
+      <LibrarySearchActionButton
+        accessibilityLabel={
+          isSearchBarVisible ? 'Close search' : 'Search saved library'
+        }
+        iconName={isSearchBarVisible ? 'close' : 'magnify'}
+        isFilled={true}
+        onPress={onSearchActionPress}
+      />
     </View>
   );
 };
@@ -174,10 +168,11 @@ export const LibrarySearchPanelActions = ({
 export const LibrarySearchPanel = ({
   availabilityFilter,
   entityFilter,
-  panelMode,
+  isFilterPopoverVisible,
+  isSearchBarVisible,
   onClearSearch,
-  onPanelModeChange,
   onSearch,
+  onSearchActionPress,
   onSearchQueryChange,
   onSelectAvailabilityFilter,
   onSelectEntityFilter,
@@ -187,48 +182,51 @@ export const LibrarySearchPanel = ({
 }: LibrarySearchPanelProps) => {
   const searchContextCopy = getLibrarySearchContextCopy();
 
-  if (panelMode === 'search') {
-    return (
-      <ContextualSearchPanel
-        clearActionLabel="Show all saved items"
-        helperCopy={searchContextCopy.helper}
-        isSearchBarVisible={true}
-        onClearSearch={onClearSearch}
-        onSearch={onSearch}
-        onSearchQueryChange={onSearchQueryChange}
-        onToggleSearchBar={() => {
-          onPanelModeChange('collapsed');
-        }}
-        onSelectRecentSearchTerm={onSelectRecentSearchTerm}
-        placeholderCopy={searchContextCopy.placeholder}
-        recentSearchTerms={recentSearchTerms}
-        searchAccessibilityLabel="Search saved library"
-        searchQuery={searchQuery}
-        showInlineToggleButton={false}
+  const searchPanel = isSearchBarVisible ? (
+    <ContextualSearchPanel
+      clearActionLabel="Show all saved items"
+      helperCopy={searchContextCopy.helper}
+      isSearchBarVisible={true}
+      onClearSearch={onClearSearch}
+      onSearch={onSearch}
+      onSearchQueryChange={onSearchQueryChange}
+      onToggleSearchBar={onSearchActionPress}
+      onSelectRecentSearchTerm={onSelectRecentSearchTerm}
+      placeholderCopy={searchContextCopy.placeholder}
+      recentSearchTerms={recentSearchTerms}
+      searchAccessibilityLabel="Search saved library"
+      searchQuery={searchQuery}
+      showInlineToggleButton={false}
+    />
+  ) : null;
+
+  const filterPopover = isFilterPopoverVisible ? (
+    <View style={styles.filterPopover}>
+      <FilterChipGroup
+        label="Show"
+        onSelectValue={onSelectEntityFilter}
+        options={ENTITY_FILTER_OPTIONS}
+        selectedValue={entityFilter}
       />
-    );
+      <FilterChipGroup
+        label="Availability"
+        onSelectValue={onSelectAvailabilityFilter}
+        options={AVAILABILITY_FILTER_OPTIONS}
+        selectedValue={availabilityFilter}
+      />
+    </View>
+  ) : null;
+
+  if (!searchPanel && !filterPopover) {
+    return null;
   }
 
-  if (panelMode === 'filter') {
-    return (
-      <View style={styles.filterPopover}>
-        <FilterChipGroup
-          label="Show"
-          onSelectValue={onSelectEntityFilter}
-          options={ENTITY_FILTER_OPTIONS}
-          selectedValue={entityFilter}
-        />
-        <FilterChipGroup
-          label="Availability"
-          onSelectValue={onSelectAvailabilityFilter}
-          options={AVAILABILITY_FILTER_OPTIONS}
-          selectedValue={availabilityFilter}
-        />
-      </View>
-    );
-  }
-
-  return null;
+  return (
+    <View style={styles.panelContent}>
+      {filterPopover}
+      {searchPanel}
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -237,10 +235,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  actionSpacer: {
-    width: ACTION_BUTTON_SIZE,
-    height: ACTION_BUTTON_SIZE,
   },
   actionButton: {
     width: ACTION_BUTTON_SIZE,
@@ -258,6 +252,9 @@ const styles = StyleSheet.create({
   },
   actionButtonPressed: {
     opacity: 0.8,
+  },
+  panelContent: {
+    gap: 12,
   },
   filterPopover: {
     alignSelf: 'flex-end',

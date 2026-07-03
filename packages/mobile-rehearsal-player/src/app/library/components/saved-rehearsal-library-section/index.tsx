@@ -11,8 +11,12 @@ import { resolveSavedRehearsalLibraryDetailMode } from '../../saved-rehearsal-li
 import {
   LibrarySearchPanel,
   LibrarySearchPanelActions,
-  type LibrarySearchPanelMode,
 } from '../../search/components/library-search-panel';
+import {
+  DEFAULT_LIBRARY_SEARCH_PANEL_VISIBILITY,
+  resolveLibrarySearchActionVisibility,
+  toggleLibraryFilterPopoverVisibility,
+} from '../../search/components/library-search-panel-visibility';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 import { useSavedRehearsalLibraryLoopState } from './use-saved-rehearsal-library-loop-state';
@@ -66,8 +70,9 @@ export const SavedRehearsalLibrarySection = ({
   toggleSourcePlayback,
   updatePlaylist,
 }: SavedRehearsalLibrarySectionProps) => {
-  const [searchPanelMode, setSearchPanelMode] =
-    useState<LibrarySearchPanelMode>('collapsed');
+  const [searchPanelVisibility, setSearchPanelVisibility] = useState(
+    DEFAULT_LIBRARY_SEARCH_PANEL_VISIBILITY,
+  );
   const searchState = useSavedRehearsalLibrarySearch({
     savedLibrarySources,
     savedLoops,
@@ -91,7 +96,7 @@ export const SavedRehearsalLibrarySection = ({
     isPreparing: isPlaybackPreparing,
     playbackState,
   });
-  const isSearchPanelVisible = searchPanelMode === 'search';
+  const isSearchPanelVisible = searchPanelVisibility.isSearchBarVisible;
   const isPlaylistMutating = pendingPlaylistId !== null;
   const isLoopMutating = pendingLoopId !== null;
   const loopState = useSavedRehearsalLibraryLoopState({
@@ -144,18 +149,31 @@ export const SavedRehearsalLibrarySection = ({
     ? `Matching saved rehearsal tracks (${searchState.visibleSavedLibrarySources.length})`
     : `Saved rehearsal tracks (${savedLibrarySources.length})`;
 
-  const handleSearchPanelModeChange = (nextMode: LibrarySearchPanelMode) => {
-    setSearchPanelMode(nextMode);
+  const handleFilterActionPress = () => {
+    setSearchPanelVisibility(
+      toggleLibraryFilterPopoverVisibility(searchPanelVisibility),
+    );
+  };
 
-    if (nextMode === 'search') {
-      if (searchState.librarySearchQuery.trim().length > 0) {
-        searchState.submitLibrarySearch();
-      }
+  const handleSearchActionPress = () => {
+    const nextSearchPanelVisibility = resolveLibrarySearchActionVisibility(
+      searchPanelVisibility,
+    );
 
-      return;
+    setSearchPanelVisibility(nextSearchPanelVisibility);
+
+    if (
+      !isSearchPanelVisible &&
+      nextSearchPanelVisibility.isSearchBarVisible &&
+      searchState.librarySearchQuery.trim().length > 0
+    ) {
+      searchState.submitLibrarySearch();
     }
 
-    if (searchPanelMode === 'search') {
+    if (
+      isSearchPanelVisible &&
+      !nextSearchPanelVisibility.isSearchBarVisible
+    ) {
       searchState.deactivateLibrarySearch();
     }
   };
@@ -164,14 +182,16 @@ export const SavedRehearsalLibrarySection = ({
     <LibrarySearchPanel
       availabilityFilter={searchState.availabilityFilter}
       entityFilter={searchState.entityFilter}
+      isFilterPopoverVisible={searchPanelVisibility.isFilterPopoverVisible}
+      isSearchBarVisible={searchPanelVisibility.isSearchBarVisible}
       onClearSearch={searchState.clearLibrarySearch}
-      onPanelModeChange={handleSearchPanelModeChange}
+      onFilterActionPress={handleFilterActionPress}
       onSearch={searchState.submitLibrarySearch}
+      onSearchActionPress={handleSearchActionPress}
       onSearchQueryChange={searchState.handleLibrarySearchQueryChange}
       onSelectAvailabilityFilter={searchState.setAvailabilityFilter}
       onSelectEntityFilter={searchState.setEntityFilter}
       onSelectRecentSearchTerm={searchState.runLibrarySearch}
-      panelMode={searchPanelMode}
       recentSearchTerms={searchState.recentLibrarySearchTerms}
       searchQuery={searchState.librarySearchQuery}
     />
@@ -246,8 +266,12 @@ export const SavedRehearsalLibrarySection = ({
           <LibrarySearchPanelActions
             availabilityFilter={searchState.availabilityFilter}
             entityFilter={searchState.entityFilter}
-            onPanelModeChange={handleSearchPanelModeChange}
-            panelMode={searchPanelMode}
+            isFilterPopoverVisible={
+              searchPanelVisibility.isFilterPopoverVisible
+            }
+            isSearchBarVisible={searchPanelVisibility.isSearchBarVisible}
+            onFilterActionPress={handleFilterActionPress}
+            onSearchActionPress={handleSearchActionPress}
           />
         }
         title="Saved tracks"
