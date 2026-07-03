@@ -1,5 +1,5 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
 import { BottomSheetSurface } from '../bottom-sheet-surface';

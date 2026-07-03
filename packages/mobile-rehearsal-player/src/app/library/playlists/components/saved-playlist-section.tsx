@@ -5,6 +5,7 @@ import { savedPlaylistSectionStyles as styles } from '../../components/saved-pla
 import { DriveLibraryStatusCard } from '../../drive/components/drive-library-status-card';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { SavedTrackPlaybackState } from '../../playback/utils/saved-track-playback-view-model';
+import { useSavedPlaylistDetailActions } from '../hooks/use-saved-playlist-detail-actions';
 import { useSavedPlaylistSectionState } from '../hooks/use-saved-playlist-section-state';
 import {
   buildSavedPlaylistDetailDraftPlaylist,
@@ -170,6 +171,14 @@ export const SavedPlaylistSection = ({
     playbackState,
   });
   const shouldShowStatusCard = isLoading || statusCopy.tone !== 'ready';
+  const detailActions = useSavedPlaylistDetailActions({
+    onEditPlaylistTags,
+    savedLoops,
+    savedSources,
+    selectedPlaylist,
+    toggleActivePlayback,
+    togglePlaylistPlayback,
+  });
 
   return (
     <View style={styles.section}>
@@ -226,13 +235,7 @@ export const SavedPlaylistSection = ({
           isMutating={isMutating}
           onCloseDetail={handleCloseDetail}
           onDismissRemovalNotice={handleDismissRemovalNotice}
-          onEditPlaylistTags={() => {
-            if (!selectedPlaylist) {
-              return;
-            }
-
-            onEditPlaylistTags(selectedPlaylist.id);
-          }}
+          onEditPlaylistTags={detailActions.editPlaylistTags}
           onCommitReorder={handleCommitReorder}
           onDeletePlaylist={handleDeletePlaylist}
           onMoveItem={handleMoveItem}
@@ -243,46 +246,10 @@ export const SavedPlaylistSection = ({
             void handleRenamePlaylist();
           }}
           onRenamePlaylistNameChange={handleRenamePlaylistNameChange}
-          onPlayOrderedPlaylist={() => {
-            if (!selectedPlaylist) {
-              return;
-            }
-
-            void togglePlaylistPlayback({
-              loops: savedLoops,
-              mode: 'ordered',
-              playlist: selectedPlaylist,
-              sources: savedSources,
-            });
-          }}
-          onPlayShuffledPlaylist={() => {
-            if (!selectedPlaylist) {
-              return;
-            }
-
-            void togglePlaylistPlayback({
-              loops: savedLoops,
-              mode: 'shuffle',
-              playlist: selectedPlaylist,
-              sources: savedSources,
-            });
-          }}
-          onPlayPlaylistEntry={(entryId) => {
-            if (!selectedPlaylist) {
-              return;
-            }
-
-            void togglePlaylistPlayback({
-              loops: savedLoops,
-              mode: 'ordered',
-              playlist: selectedPlaylist,
-              sources: savedSources,
-              startEntryId: entryId,
-            });
-          }}
-          onToggleCurrentPlayback={() => {
-            void toggleActivePlayback();
-          }}
+          onPlayOrderedPlaylist={detailActions.playOrderedPlaylist}
+          onPlayShuffledPlaylist={detailActions.playShuffledPlaylist}
+          onPlayPlaylistEntry={detailActions.playPlaylistEntry}
+          onToggleCurrentPlayback={detailActions.toggleCurrentPlayback}
           onReorderDragActiveChange={setIsReorderDragActive}
           onReorderDragMove={setReorderDragMoveY}
           onUndoRemoveItem={() => {

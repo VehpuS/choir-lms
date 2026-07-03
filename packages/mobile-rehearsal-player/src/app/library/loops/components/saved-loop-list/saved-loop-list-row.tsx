@@ -1,8 +1,8 @@
 import { type PlayableItem } from '@org/audio-library-models';
 import { Pressable, Text, View } from 'react-native';
 
-import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
 import { CompactPlayableRowShell } from '../../../../components/compact-playable-row-shell';
+import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
 import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
 import {
@@ -19,9 +19,7 @@ import {
   type SavedLoopCard,
   type SavedLoopIssue,
 } from '../../utils/saved-loop-view-model';
-import {
-  savedLoopListStyles as styles,
-} from '../saved-loop-list-styles';
+import { savedLoopListStyles as styles } from '../saved-loop-list-styles';
 
 type SavedLoopListRowProps = {
   activePlayableItem: PlayableItem | null;
@@ -244,7 +242,9 @@ export const SavedLoopListRow = ({
           />
         }
         message={
-          loopMessage ? <Text style={styles.loopMessage}>{loopMessage}</Text> : null
+          loopMessage ? (
+            <Text style={styles.loopMessage}>{loopMessage}</Text>
+          ) : null
         }
         overflowTrigger={overflowTrigger}
         style={styles.loopCard}

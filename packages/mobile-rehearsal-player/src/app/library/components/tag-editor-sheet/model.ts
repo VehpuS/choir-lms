@@ -39,7 +39,10 @@ export const parseLibraryTagInput = (value: string) => {
 };
 
 export const addLibraryEntityTag = (tags: string[], inputValue: string) => {
-  return normalizeLibraryEntityTags([...tags, ...parseLibraryTagInput(inputValue)]);
+  return normalizeLibraryEntityTags([
+    ...tags,
+    ...parseLibraryTagInput(inputValue),
+  ]);
 };
 
 export const removeLibraryEntityTag = (tags: string[], tagToRemove: string) => {

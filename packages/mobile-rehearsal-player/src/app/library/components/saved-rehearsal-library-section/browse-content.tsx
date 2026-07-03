@@ -2,9 +2,9 @@ import { createTrackPlayableItem } from '@org/audio-library-models';
 import { type ReactNode } from 'react';
 
 import { DriveLibrarySourceGroup } from '../../drive/components/drive-library-source-group';
-import { getSavedTrackPlaybackItemIssue } from '../../playback/utils/saved-track-playback-view-model';
 import {
   getSavedTrackPlaybackActionCopy,
+  getSavedTrackPlaybackItemIssue,
   isSavedTrackPlaybackActive,
 } from '../../playback/utils/saved-track-playback-view-model';
 import { resolveSavedTrackRowActions } from '../../playback/utils/saved-track-row-actions';
@@ -80,7 +80,9 @@ type SavedRehearsalLibraryBrowseContentProps = Pick<
   savedSourceTitle: string;
   searchState: SearchState;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
-  onOpenSourceTagEditor: (source: SavedRehearsalLibrarySectionProps['savedLibrarySources'][number]) => void;
+  onOpenSourceTagEditor: (
+    source: SavedRehearsalLibrarySectionProps['savedLibrarySources'][number],
+  ) => void;
   trackPlaylistMenu: TrackPlaylistMenuState;
 };
 

@@ -25,10 +25,11 @@ describe('tag editor model', () => {
   });
 
   it('parses comma-delimited input into normalized tags', () => {
-    assert.deepEqual(
-      parseLibraryTagInput(' alto, tenor , , warm  up '),
-      ['alto', 'tenor', 'warm up'],
-    );
+    assert.deepEqual(parseLibraryTagInput(' alto, tenor , , warm  up '), [
+      'alto',
+      'tenor',
+      'warm up',
+    ]);
   });
 
   it('adds parsed tags and keeps existing unique tags stable', () => {

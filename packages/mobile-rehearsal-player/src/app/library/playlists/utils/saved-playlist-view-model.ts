@@ -4,11 +4,11 @@ import {
   type Playlist,
 } from '@org/audio-library-models';
 
+import type { OptionsMenuAction } from '../../components/options-menu-sheet/model';
 import {
   formatDurationLabel,
   type DriveLibrarySource,
 } from '../../drive/utils/drive-library-view-model';
-import type { OptionsMenuAction } from '../../components/options-menu-sheet/model';
 import {
   getPlaylistPlaybackSessionSummary,
   type PlaylistPlaybackSession,
@@ -232,16 +232,17 @@ export const getSavedPlaylistRemovalCopy = (
   };
 };
 
-export const getSavedPlaylistCreateDialogCopy = (): SavedPlaylistCreateDialogCopy => {
-  return {
-    body: 'Create a new playlist from saved rehearsal material.',
-    cancelLabel: 'Cancel',
-    placeholder: 'Wednesday rehearsal',
-    savingLabel: 'Creating…',
-    submitLabel: 'Create playlist',
-    title: 'Create playlist',
+export const getSavedPlaylistCreateDialogCopy =
+  (): SavedPlaylistCreateDialogCopy => {
+    return {
+      body: 'Create a new playlist from saved rehearsal material.',
+      cancelLabel: 'Cancel',
+      placeholder: 'Wednesday rehearsal',
+      savingLabel: 'Creating…',
+      submitLabel: 'Create playlist',
+      title: 'Create playlist',
+    };
   };
-};
 
 export const getPlaylistOptionsMenuActions = (options: {
   isMutating: boolean;

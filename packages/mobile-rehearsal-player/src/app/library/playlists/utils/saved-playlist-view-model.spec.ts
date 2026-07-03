@@ -10,19 +10,19 @@ import {
   SAVED_LOOP,
 } from '../../../test-utils/library-test-fixtures.js';
 import {
+  buildTrackOnlyWarmupsPlaylist,
+  buildWarmupsPlaybackSession,
+  buildWarmupsPlaylist,
+} from './saved-playlist-test-fixtures.js';
+import {
   buildSavedPlaylist,
-  getSavedPlaylistCreateDialogCopy,
   getPlaylistOptionsMenuActions,
+  getSavedPlaylistCreateDialogCopy,
   getSavedPlaylistDetailSummary,
   getSavedPlaylistEntryDetailLabel,
   getSavedPlaylistRemovalCopy,
   resolveSelectedPlaylist,
 } from './saved-playlist-view-model.js';
-import {
-  buildTrackOnlyWarmupsPlaylist,
-  buildWarmupsPlaybackSession,
-  buildWarmupsPlaylist,
-} from './saved-playlist-test-fixtures.js';
 
 describe('saved playlist view-model', () => {
   it('falls back to the first saved playlist when no selection is active', () => {
@@ -53,16 +53,13 @@ describe('saved playlist view-model', () => {
       ownerId: 'local-device-user',
     });
 
-    assert.deepEqual(
-      emptyResult,
-      {
-        issue: {
-          title: 'Playlist name required',
-          message: 'Enter a playlist name.',
-        },
-        playlist: null,
+    assert.deepEqual(emptyResult, {
+      issue: {
+        title: 'Playlist name required',
+        message: 'Enter a playlist name.',
       },
-    );
+      playlist: null,
+    });
 
     const validResult = buildSavedPlaylist({
       name: '  Wednesday rehearsal  ',
