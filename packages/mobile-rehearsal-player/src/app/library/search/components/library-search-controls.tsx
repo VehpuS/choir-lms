@@ -33,13 +33,13 @@ const ACTION_BUTTON_SIZE = 40;
 const ACTION_ROW_GAP = 12;
 const ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE * 2 + ACTION_ROW_GAP;
 const FILTER_POPOVER_MAX_WIDTH = 360;
-
 type FilterOption<Value extends string> = {
   label: string;
   value: Value;
 };
 
 type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
+  availableTagFilters: string[];
   availabilityFilter: LibrarySearchAvailabilityFilter;
   entityFilter: LibrarySearchEntityFilter;
   onClearSearch: () => void;
@@ -50,7 +50,9 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   onSelectAvailabilityFilter: (value: LibrarySearchAvailabilityFilter) => void;
   onSelectEntityFilter: (value: LibrarySearchEntityFilter) => void;
   onSelectRecentSearchTerm: (value: string) => void;
+  onToggleTagFilter: (value: string) => void;
   recentSearchTerms: string[];
+  selectedTagFilters: string[];
   searchQuery: string;
 };
 
@@ -61,6 +63,7 @@ type LibrarySearchControlsActionsProps = Pick<
   | 'isFilterPopoverVisible'
   | 'isSearchBarVisible'
   | 'onFilterActionPress'
+  | 'selectedTagFilters'
   | 'onSearchActionPress'
 >;
 
@@ -137,9 +140,12 @@ export const LibrarySearchControlsActions = ({
   isSearchBarVisible,
   onFilterActionPress,
   onSearchActionPress,
+  selectedTagFilters,
 }: LibrarySearchControlsActionsProps) => {
   const hasActiveFilters =
-    entityFilter !== 'all' || availabilityFilter !== 'all';
+    entityFilter !== 'all' ||
+    availabilityFilter !== 'all' ||
+    selectedTagFilters.length > 0;
 
   return (
     <View style={styles.actionRow}>
@@ -166,6 +172,7 @@ export const LibrarySearchControlsActions = ({
 };
 
 export const LibrarySearchControls = ({
+  availableTagFilters,
   availabilityFilter,
   entityFilter,
   isFilterPopoverVisible,
@@ -177,7 +184,9 @@ export const LibrarySearchControls = ({
   onSelectAvailabilityFilter,
   onSelectEntityFilter,
   onSelectRecentSearchTerm,
+  onToggleTagFilter,
   recentSearchTerms,
+  selectedTagFilters,
   searchQuery,
 }: LibrarySearchControlsProps) => {
   const searchContextCopy = getLibrarySearchContextCopy();
@@ -214,6 +223,30 @@ export const LibrarySearchControls = ({
         options={AVAILABILITY_FILTER_OPTIONS}
         selectedValue={availabilityFilter}
       />
+      {availableTagFilters.length > 0 ? (
+        <View style={styles.filterGroup}>
+          <Text style={styles.filterLabel}>Tags</Text>
+          <View style={styles.filterRow}>
+            {availableTagFilters.map((tagFilter) => {
+              return (
+                <InteractionChip
+                  key={tagFilter}
+                  label={tagFilter}
+                  onPress={() => {
+                    onToggleTagFilter(tagFilter);
+                  }}
+                  style={styles.filterChip}
+                  variant={
+                    selectedTagFilters.includes(tagFilter)
+                      ? 'selected'
+                      : 'passive'
+                  }
+                />
+              );
+            })}
+          </View>
+        </View>
+      ) : null}
     </View>
   ) : null;
 
@@ -250,9 +283,7 @@ const styles = StyleSheet.create({
     borderColor: '#305c4d',
     backgroundColor: '#305c4d',
   },
-  actionButtonPressed: {
-    opacity: 0.8,
-  },
+  actionButtonPressed: { opacity: 0.8 },
   panelContent: {
     gap: 12,
   },

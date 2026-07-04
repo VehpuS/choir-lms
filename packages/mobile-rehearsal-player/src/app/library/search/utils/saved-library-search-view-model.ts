@@ -18,6 +18,51 @@ export type SearchHighlightPart = {
   text: string;
 };
 
+const normalizeTagToken = (value: string) => {
+  return value.trim().toLocaleLowerCase();
+};
+
+const normalizeSelectedTags = (tags: string[]) => {
+  const uniqueTags: string[] = [];
+  const seenTags = new Set<string>();
+
+  for (const tag of tags) {
+    const normalizedTag = normalizeTagToken(tag);
+
+    if (!normalizedTag || seenTags.has(normalizedTag)) {
+      continue;
+    }
+
+    seenTags.add(normalizedTag);
+    uniqueTags.push(normalizedTag);
+  }
+
+  return uniqueTags;
+};
+
+const matchesSelectedTags = (options: {
+  selectedTags: string[];
+  tags: string[] | undefined;
+}) => {
+  if (options.selectedTags.length === 0) {
+    return true;
+  }
+
+  if (!options.tags || options.tags.length === 0) {
+    return false;
+  }
+
+  const entityTags = new Set(
+    options.tags.map((tag) => {
+      return normalizeTagToken(tag);
+    }),
+  );
+
+  return options.selectedTags.every((tag) => {
+    return entityTags.has(tag);
+  });
+};
+
 export const normalizeSearchQuery = (value: string) => {
   return value.trim().toLocaleLowerCase();
 };
@@ -120,6 +165,7 @@ export const filterSavedLibrarySourcesByQuery = (options: {
   activeSearchQuery: string | null;
   availabilityFilter: LibrarySearchAvailabilityFilter;
   entityFilter: LibrarySearchEntityFilter;
+  selectedTagFilters?: string[];
   sources: DriveLibrarySource[];
 }) => {
   if (!matchesEntityFilter(options.entityFilter, 'tracks')) {
@@ -127,6 +173,7 @@ export const filterSavedLibrarySourcesByQuery = (options: {
   }
 
   const normalizedQuery = normalizeSearchQuery(options.activeSearchQuery ?? '');
+  const selectedTags = normalizeSelectedTags(options.selectedTagFilters ?? []);
 
   return options.sources.filter((source) => {
     if (
@@ -139,10 +186,20 @@ export const filterSavedLibrarySourcesByQuery = (options: {
     }
 
     if (!normalizedQuery) {
-      return true;
+      return matchesSelectedTags({
+        selectedTags,
+        tags: source.tags,
+      });
     }
 
-    return includesNormalizedQuery(source.name, normalizedQuery);
+    if (!includesNormalizedQuery(source.name, normalizedQuery)) {
+      return false;
+    }
+
+    return matchesSelectedTags({
+      selectedTags,
+      tags: source.tags,
+    });
   });
 };
 
@@ -151,6 +208,7 @@ export const filterSavedLoopsByQuery = (options: {
   availabilityFilter: LibrarySearchAvailabilityFilter;
   entityFilter: LibrarySearchEntityFilter;
   loops: NamedLoop[];
+  selectedTagFilters?: string[];
   sources: DriveLibrarySource[];
 }) => {
   if (!matchesEntityFilter(options.entityFilter, 'loops')) {
@@ -158,6 +216,7 @@ export const filterSavedLoopsByQuery = (options: {
   }
 
   const normalizedQuery = normalizeSearchQuery(options.activeSearchQuery ?? '');
+  const selectedTags = normalizeSelectedTags(options.selectedTagFilters ?? []);
   const sourceAvailabilityById = new Map(
     options.sources.map((source) => {
       return [source.id, isSourceAvailable(source)] as const;
@@ -177,13 +236,23 @@ export const filterSavedLoopsByQuery = (options: {
     }
 
     if (!normalizedQuery) {
-      return true;
+      return matchesSelectedTags({
+        selectedTags,
+        tags: loop.tags,
+      });
     }
 
-    return (
-      includesNormalizedQuery(loop.name, normalizedQuery) ||
-      includesNormalizedQuery(loop.sourceName, normalizedQuery)
-    );
+    if (
+      !includesNormalizedQuery(loop.name, normalizedQuery) &&
+      !includesNormalizedQuery(loop.sourceName, normalizedQuery)
+    ) {
+      return false;
+    }
+
+    return matchesSelectedTags({
+      selectedTags,
+      tags: loop.tags,
+    });
   });
 };
 
@@ -192,6 +261,7 @@ export const filterSavedPlaylistsByQuery = (options: {
   availabilityFilter: LibrarySearchAvailabilityFilter;
   entityFilter: LibrarySearchEntityFilter;
   playlists: Playlist[];
+  selectedTagFilters?: string[];
 }) => {
   if (!matchesEntityFilter(options.entityFilter, 'playlists')) {
     return [];
@@ -202,12 +272,19 @@ export const filterSavedPlaylistsByQuery = (options: {
   }
 
   const normalizedQuery = normalizeSearchQuery(options.activeSearchQuery ?? '');
-
-  if (!normalizedQuery) {
-    return options.playlists;
-  }
+  const selectedTags = normalizeSelectedTags(options.selectedTagFilters ?? []);
 
   return options.playlists.filter((playlist) => {
-    return includesNormalizedQuery(playlist.name, normalizedQuery);
+    if (
+      normalizedQuery &&
+      !includesNormalizedQuery(playlist.name, normalizedQuery)
+    ) {
+      return false;
+    }
+
+    return matchesSelectedTags({
+      selectedTags,
+      tags: playlist.tags,
+    });
   });
 };

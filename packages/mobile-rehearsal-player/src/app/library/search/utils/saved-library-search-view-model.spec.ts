@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createPlaylist } from '@org/audio-library-models';
+import { createPlaylist, type NamedLoop } from '@org/audio-library-models';
 
 import { PLAYABLE_SOURCE } from '../../../test-utils/library-test-fixtures.js';
 import {
@@ -14,6 +14,27 @@ import {
   resolveSearchHighlightParts,
 } from './saved-library-search-view-model.js';
 
+const CREATED_AT = '2026-05-12T00:00:00.000Z';
+const OWNER_ID = 'user-1';
+
+const makeLoop = (
+  overrides: Partial<NamedLoop> &
+    Pick<NamedLoop, 'id' | 'name' | 'sourceId' | 'sourceName'>,
+): NamedLoop => ({
+  createdAt: CREATED_AT,
+  endMs: 18000,
+  ownerId: OWNER_ID,
+  ownershipScope: 'user',
+  startMs: 12000,
+  updatedAt: CREATED_AT,
+  ...overrides,
+});
+
+const makePlaylist = (name: string, tags?: string[]) => ({
+  ...createPlaylist({ createdAt: CREATED_AT, name, ownerId: OWNER_ID }),
+  ...(tags ? { tags } : {}),
+});
+
 describe('saved library search view-model', () => {
   it('normalizes an active library search query from user input', () => {
     assert.equal(resolveActiveLibrarySearchQuery('  Kyrie  '), 'Kyrie');
@@ -23,49 +44,27 @@ describe('saved library search view-model', () => {
   it('filters saved entities by the active library query', () => {
     const sources = [
       PLAYABLE_SOURCE,
-      {
-        ...PLAYABLE_SOURCE,
-        id: 'drive:bass-line',
-        name: 'Bass Line.mp3',
-      },
+      { ...PLAYABLE_SOURCE, id: 'drive:bass-line', name: 'Bass Line.mp3' },
     ];
     const loops = [
-      {
-        createdAt: '2026-05-12T00:00:00.000Z',
-        endMs: 18000,
+      makeLoop({
         id: 'loop-1',
         name: 'Entrance cue',
-        ownerId: 'user-1',
-        ownershipScope: 'user' as const,
         sourceId: PLAYABLE_SOURCE.id,
         sourceName: PLAYABLE_SOURCE.name,
-        startMs: 12000,
-        updatedAt: '2026-05-12T00:00:00.000Z',
-      },
-      {
-        createdAt: '2026-05-12T00:00:00.000Z',
-        endMs: 47000,
+      }),
+      makeLoop({
         id: 'loop-2',
         name: 'Bass cadence',
-        ownerId: 'user-1',
-        ownershipScope: 'user' as const,
+        endMs: 47000,
+        startMs: 35000,
         sourceId: 'drive:bass-line',
         sourceName: 'Bass Line.mp3',
-        startMs: 35000,
-        updatedAt: '2026-05-12T00:00:00.000Z',
-      },
+      }),
     ];
     const playlists = [
-      createPlaylist({
-        createdAt: '2026-05-12T00:00:00.000Z',
-        name: 'Kyrie Warmups',
-        ownerId: 'user-1',
-      }),
-      createPlaylist({
-        createdAt: '2026-05-12T00:00:00.000Z',
-        name: 'Bass Focus',
-        ownerId: 'user-1',
-      }),
+      makePlaylist('Kyrie Warmups'),
+      makePlaylist('Bass Focus'),
     ];
 
     assert.deepEqual(
@@ -73,8 +72,9 @@ describe('saved library search view-model', () => {
         activeSearchQuery: 'bass',
         availabilityFilter: 'all',
         entityFilter: 'all',
+        selectedTagFilters: [],
         sources,
-      }).map((source) => source.name),
+      }).map((s) => s.name),
       ['Bass Line.mp3'],
     );
     assert.deepEqual(
@@ -83,8 +83,9 @@ describe('saved library search view-model', () => {
         availabilityFilter: 'all',
         entityFilter: 'all',
         loops,
+        selectedTagFilters: [],
         sources,
-      }).map((loop) => loop.name),
+      }).map((l) => l.name),
       ['Bass cadence'],
     );
     assert.deepEqual(
@@ -93,66 +94,50 @@ describe('saved library search view-model', () => {
         availabilityFilter: 'all',
         entityFilter: 'all',
         playlists,
-      }).map((playlist) => playlist.name),
+        selectedTagFilters: [],
+      }).map((p) => p.name),
       ['Kyrie Warmups'],
     );
   });
 
   it('supports entity and availability filters for library search results', () => {
-    const sources = [
-      PLAYABLE_SOURCE,
-      {
-        ...PLAYABLE_SOURCE,
-        availability: {
-          message: 'Saved file is no longer playable.',
-          reason: 'missing' as const,
-          status: 'unavailable' as const,
-        },
-        id: 'drive:tenor-line',
-        name: 'Tenor Line.mp3',
+    const unavailableSource = {
+      ...PLAYABLE_SOURCE,
+      availability: {
+        message: 'Saved file is no longer playable.',
+        reason: 'missing' as const,
+        status: 'unavailable' as const,
       },
-    ];
+      id: 'drive:tenor-line',
+      name: 'Tenor Line.mp3',
+    };
+    const sources = [PLAYABLE_SOURCE, unavailableSource];
     const loops = [
-      {
-        createdAt: '2026-05-12T00:00:00.000Z',
-        endMs: 18000,
+      makeLoop({
         id: 'loop-1',
         name: 'Alto entrance',
-        ownerId: 'user-1',
-        ownershipScope: 'user' as const,
         sourceId: PLAYABLE_SOURCE.id,
         sourceName: PLAYABLE_SOURCE.name,
-        startMs: 12000,
-        updatedAt: '2026-05-12T00:00:00.000Z',
-      },
-      {
-        createdAt: '2026-05-12T00:00:00.000Z',
-        endMs: 47000,
+      }),
+      makeLoop({
         id: 'loop-2',
         name: 'Tenor cadence',
-        ownerId: 'user-1',
-        ownershipScope: 'user' as const,
+        endMs: 47000,
+        startMs: 35000,
         sourceId: 'drive:tenor-line',
         sourceName: 'Tenor Line.mp3',
-        startMs: 35000,
-        updatedAt: '2026-05-12T00:00:00.000Z',
-      },
-    ];
-    const playlists = [
-      createPlaylist({
-        createdAt: '2026-05-12T00:00:00.000Z',
-        name: 'Tenor Focus',
-        ownerId: 'user-1',
       }),
     ];
+    const playlists = [makePlaylist('Tenor Focus')];
 
     assert.deepEqual(
       filterSavedLibrarySourcesByQuery({
         activeSearchQuery: 'line',
         availabilityFilter: 'unavailable',
         entityFilter: 'tracks',
+        selectedTagFilters: [],
         sources,
-      }).map((source) => source.name),
+      }).map((s) => s.name),
       ['Tenor Line.mp3'],
     );
     assert.deepEqual(
@@ -161,8 +146,9 @@ describe('saved library search view-model', () => {
         availabilityFilter: 'unavailable',
         entityFilter: 'loops',
         loops,
+        selectedTagFilters: [],
         sources,
-      }).map((loop) => loop.name),
+      }).map((l) => l.name),
       ['Tenor cadence'],
     );
     assert.deepEqual(
@@ -171,7 +157,8 @@ describe('saved library search view-model', () => {
         availabilityFilter: 'all',
         entityFilter: 'playlists',
         playlists,
-      }).map((playlist) => playlist.name),
+        selectedTagFilters: [],
+      }).map((p) => p.name),
       ['Tenor Focus'],
     );
     assert.deepEqual(
@@ -180,34 +167,91 @@ describe('saved library search view-model', () => {
         availabilityFilter: 'available',
         entityFilter: 'playlists',
         playlists,
+        selectedTagFilters: [],
       }),
       [],
     );
   });
 
+  it('filters tracks, loops, and playlists by one or more selected tags', () => {
+    const sources = [
+      {
+        ...PLAYABLE_SOURCE,
+        id: 'drive:alto-line',
+        name: 'Alto Line.mp3',
+        tags: ['Alto', 'Warmup'],
+      },
+      {
+        ...PLAYABLE_SOURCE,
+        id: 'drive:bass-line',
+        name: 'Bass Line.mp3',
+        tags: ['Bass'],
+      },
+    ];
+    const loops = [
+      makeLoop({
+        id: 'loop-1',
+        name: 'Alto entrance',
+        sourceId: 'drive:alto-line',
+        sourceName: 'Alto Line.mp3',
+        tags: ['Alto', 'Warmup'],
+      }),
+      makeLoop({
+        id: 'loop-2',
+        name: 'Bass cadence',
+        endMs: 47000,
+        startMs: 35000,
+        sourceId: 'drive:bass-line',
+        sourceName: 'Bass Line.mp3',
+        tags: ['Bass'],
+      }),
+    ];
+    const playlists = [
+      makePlaylist('Warmup Set', ['Warmup']),
+      makePlaylist('Bass Focus', ['Bass']),
+    ];
+
+    assert.deepEqual(
+      filterSavedLibrarySourcesByQuery({
+        activeSearchQuery: null,
+        availabilityFilter: 'all',
+        entityFilter: 'all',
+        selectedTagFilters: ['alto', 'warmup'],
+        sources,
+      }).map((s) => s.name),
+      ['Alto Line.mp3'],
+    );
+    assert.deepEqual(
+      filterSavedLoopsByQuery({
+        activeSearchQuery: null,
+        availabilityFilter: 'all',
+        entityFilter: 'all',
+        loops,
+        selectedTagFilters: ['bass'],
+        sources,
+      }).map((l) => l.name),
+      ['Bass cadence'],
+    );
+    assert.deepEqual(
+      filterSavedPlaylistsByQuery({
+        activeSearchQuery: null,
+        availabilityFilter: 'all',
+        entityFilter: 'all',
+        playlists,
+        selectedTagFilters: ['warmup'],
+      }).map((p) => p.name),
+      ['Warmup Set'],
+    );
+  });
+
   it('returns highlight fragments for repeated case-insensitive matches', () => {
     assert.deepEqual(
-      resolveSearchHighlightParts({
-        query: 'ky',
-        text: 'Kyrie Kyrie',
-      }),
+      resolveSearchHighlightParts({ query: 'ky', text: 'Kyrie Kyrie' }),
       [
-        {
-          isHighlighted: true,
-          text: 'Ky',
-        },
-        {
-          isHighlighted: false,
-          text: 'rie ',
-        },
-        {
-          isHighlighted: true,
-          text: 'Ky',
-        },
-        {
-          isHighlighted: false,
-          text: 'rie',
-        },
+        { isHighlighted: true, text: 'Ky' },
+        { isHighlighted: false, text: 'rie ' },
+        { isHighlighted: true, text: 'Ky' },
+        { isHighlighted: false, text: 'rie' },
       ],
     );
   });
@@ -216,30 +260,19 @@ describe('saved library search view-model', () => {
     assert.deepEqual(
       resolveSearchHighlightParts({
         query: 'alto',
-        text: 'Alto Line.mp3 • 0:12 to 0:18',
+        text: 'Alto Line.mp3 \u2022 0:12 to 0:18',
       }),
       [
-        {
-          isHighlighted: true,
-          text: 'Alto',
-        },
-        {
-          isHighlighted: false,
-          text: ' Line.mp3 • 0:12 to 0:18',
-        },
+        { isHighlighted: true, text: 'Alto' },
+        { isHighlighted: false, text: ' Line.mp3 \u2022 0:12 to 0:18' },
       ],
     );
     assert.deepEqual(
       resolveSearchHighlightParts({
         query: 'alto',
-        text: 'Bass Line.mp3 • 0:12 to 0:18',
+        text: 'Bass Line.mp3 \u2022 0:12 to 0:18',
       }),
-      [
-        {
-          isHighlighted: false,
-          text: 'Bass Line.mp3 • 0:12 to 0:18',
-        },
-      ],
+      [{ isHighlighted: false, text: 'Bass Line.mp3 \u2022 0:12 to 0:18' }],
     );
   });
 });

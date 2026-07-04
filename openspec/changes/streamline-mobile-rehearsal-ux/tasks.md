@@ -80,7 +80,7 @@
 ## 5. Library Organization (Tags, Filters, Optional Folders)
 
 - [x] 5.1 Add dedicated app-library search behavior over saved entities (tracks, loops, playlists, folders, tags) independent of Drive discovery search.
-- [ ] 5.2 Add tag assignment and tag-filter interactions for app-owned library entities without changing playback semantics.
+- [x] 5.2 Add tag assignment and tag-filter interactions for app-owned library entities without changing playback semantics.
 - [x] 5.2.1 Ensure loops remain independently taggable even when default Library browsing reaches them through `View track loops` parent-track navigation.
 - [ ] 5.3 Add lightweight folder organization flows for library entities, including loops, as part of the first organization baseline.
 - [ ] 5.3.1 Ensure folders can contain loops directly and folder views surface those loops without requiring navigation through the parent track first.

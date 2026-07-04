@@ -349,6 +349,7 @@
     "/^cd packages/mobile-rehearsal-player && tsx --test src/app/library/search/utils/saved-library-search-view-model\\.spec\\.ts$/": {
       "approve": true,
       "matchCommandLine": true
-    }
+    },
+    "npm exec": true
   }
 }

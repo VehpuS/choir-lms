@@ -41,11 +41,13 @@ export const SavedRehearsalLibrarySearchShell = ({
             isSearchBarVisible={searchPanelVisibility.isSearchBarVisible}
             onFilterActionPress={handleFilterActionPress}
             onSearchActionPress={handleSearchActionPress}
+            selectedTagFilters={searchState.selectedTagFilters}
           />
         }
         title="Saved tracks"
       />
       <LibrarySearchControls
+        availableTagFilters={searchState.availableTagFilters}
         availabilityFilter={searchState.availabilityFilter}
         entityFilter={searchState.entityFilter}
         isFilterPopoverVisible={searchPanelVisibility.isFilterPopoverVisible}
@@ -58,7 +60,9 @@ export const SavedRehearsalLibrarySearchShell = ({
         onSelectAvailabilityFilter={searchState.setAvailabilityFilter}
         onSelectEntityFilter={searchState.setEntityFilter}
         onSelectRecentSearchTerm={searchState.runLibrarySearch}
+        onToggleTagFilter={searchState.toggleTagFilter}
         recentSearchTerms={searchState.recentLibrarySearchTerms}
+        selectedTagFilters={searchState.selectedTagFilters}
         searchQuery={searchState.librarySearchQuery}
       />
     </Fragment>

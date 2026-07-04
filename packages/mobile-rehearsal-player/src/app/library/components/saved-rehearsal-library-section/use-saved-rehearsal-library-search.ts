@@ -30,6 +30,56 @@ type UseSavedRehearsalLibrarySearchOptions = {
 
 const LIBRARY_SEARCH_DEBOUNCE_MS = 200;
 
+const normalizeTagToken = (value: string) => {
+  return value.trim();
+};
+
+const resolveAvailableTagFilters = (options: {
+  savedLibrarySources: DriveLibrarySource[];
+  savedLoops: NamedLoop[];
+  savedPlaylists: Playlist[];
+}) => {
+  const uniqueTagsByKey = new Map<string, string>();
+
+  const collectTags = (tags: string[] | undefined) => {
+    if (!tags) {
+      return;
+    }
+
+    for (const tag of tags) {
+      const normalizedTag = normalizeTagToken(tag);
+
+      if (!normalizedTag) {
+        continue;
+      }
+
+      const tagKey = normalizedTag.toLocaleLowerCase();
+
+      if (!uniqueTagsByKey.has(tagKey)) {
+        uniqueTagsByKey.set(tagKey, normalizedTag);
+      }
+    }
+  };
+
+  for (const source of options.savedLibrarySources) {
+    collectTags(source.tags);
+  }
+
+  for (const loop of options.savedLoops) {
+    collectTags(loop.tags);
+  }
+
+  for (const playlist of options.savedPlaylists) {
+    collectTags(playlist.tags);
+  }
+
+  return [...uniqueTagsByKey.values()].sort((leftTag, rightTag) => {
+    return leftTag.localeCompare(rightTag, undefined, {
+      sensitivity: 'base',
+    });
+  });
+};
+
 export const useSavedRehearsalLibrarySearch = ({
   savedLibrarySources,
   savedLoops,
@@ -39,6 +89,7 @@ export const useSavedRehearsalLibrarySearch = ({
     useState<LibrarySearchAvailabilityFilter>('all');
   const [entityFilter, setEntityFilter] =
     useState<LibrarySearchEntityFilter>('all');
+  const [selectedTagFilters, setSelectedTagFilters] = useState<string[]>([]);
   const [librarySearchQuery, setLibrarySearchQuery] = useState('');
   const [recentLibrarySearchTerms, setRecentLibrarySearchTerms] = useState<
     string[]
@@ -128,6 +179,7 @@ export const useSavedRehearsalLibrarySearch = ({
       activeSearchQuery: activeLibrarySearchQuery,
       availabilityFilter,
       entityFilter,
+      selectedTagFilters,
       sources: savedLibrarySources,
     });
   }, [
@@ -135,6 +187,7 @@ export const useSavedRehearsalLibrarySearch = ({
     availabilityFilter,
     entityFilter,
     savedLibrarySources,
+    selectedTagFilters,
   ]);
   const visibleSavedLoops = useMemo(() => {
     return filterSavedLoopsByQuery({
@@ -142,6 +195,7 @@ export const useSavedRehearsalLibrarySearch = ({
       availabilityFilter,
       entityFilter,
       loops: savedLoops,
+      selectedTagFilters,
       sources: savedLibrarySources,
     });
   }, [
@@ -150,6 +204,7 @@ export const useSavedRehearsalLibrarySearch = ({
     entityFilter,
     savedLibrarySources,
     savedLoops,
+    selectedTagFilters,
   ]);
   const visiblePlaylistCards = useMemo(() => {
     return resolveSavedPlaylistCards(
@@ -158,6 +213,7 @@ export const useSavedRehearsalLibrarySearch = ({
         availabilityFilter,
         entityFilter,
         playlists: savedPlaylists,
+        selectedTagFilters,
       }),
     );
   }, [
@@ -165,15 +221,25 @@ export const useSavedRehearsalLibrarySearch = ({
     availabilityFilter,
     entityFilter,
     savedPlaylists,
+    selectedTagFilters,
   ]);
+  const availableTagFilters = useMemo(() => {
+    return resolveAvailableTagFilters({
+      savedLibrarySources,
+      savedLoops,
+      savedPlaylists,
+    });
+  }, [savedLibrarySources, savedLoops, savedPlaylists]);
 
   return {
     activeLibrarySearchQuery,
+    availableTagFilters,
     availabilityFilter,
     clearLibrarySearch() {
       debouncedLibrarySearch.cancel();
       setAvailabilityFilter('all');
       setEntityFilter('all');
+      setSelectedTagFilters([]);
       setLibrarySearchQuery('');
       setActiveLibrarySearchQuery(null);
     },
@@ -206,8 +272,18 @@ export const useSavedRehearsalLibrarySearch = ({
     submitLibrarySearch() {
       debouncedLibrarySearch.flush(librarySearchQuery);
     },
+    selectedTagFilters,
     setAvailabilityFilter,
     setEntityFilter,
+    toggleTagFilter(tag: string) {
+      setSelectedTagFilters((currentTagFilters) => {
+        return currentTagFilters.includes(tag)
+          ? currentTagFilters.filter((currentTagFilter) => {
+              return currentTagFilter !== tag;
+            })
+          : [...currentTagFilters, tag];
+      });
+    },
     visiblePlaylistCards,
     visibleSavedLibrarySources,
     visibleSavedLoops,
