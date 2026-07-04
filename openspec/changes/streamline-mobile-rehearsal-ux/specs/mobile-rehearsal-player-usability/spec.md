@@ -137,7 +137,14 @@ The system SHALL provide explicit search context separation so users can search 
 #### Scenario: Library search context targets app-owned rehearsal entities
 
 - **WHEN** a user performs search in the app library context
-- **THEN** the system searches saved tracks, loops, playlists, and organization metadata without mixing raw Google Drive discovery results
+- **THEN** the system searches saved tracks, loops, playlists, folders, and organization metadata without mixing raw Google Drive discovery results
+- **AND** the unified Files view can show mixed-entity results while dedicated Library views can keep entity-specific browsing focused inside the same saved-library context
+
+#### Scenario: Library offers unified and focused browsing modes
+
+- **WHEN** a user is browsing the saved library
+- **THEN** the system provides a first-class way to switch between a unified Files view and dedicated entity views
+- **AND** each dedicated view stays inside the Library context while keeping that entity's focused browse patterns intact
 
 #### Scenario: Switching contexts preserves query intent without ambiguity
 

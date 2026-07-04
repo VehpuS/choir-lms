@@ -25,7 +25,7 @@ The current mobile rehearsal player already delivers core playback and playlist 
 - Keep playlist-card rename context-preserving by opening the rename flow in Library instead of routing through playlist detail.
 - Keep loops easy to access like regular tracks by preserving the top-level Saved loops section in Library, adding a `View track loops` track-overflow entry that opens a full Library-detail loop view with back navigation when loops exist, and still surfacing loops as their own result category in search, tag, and folder views.
 - Keep saved-loop editing available from loop surfaces even during active playback, reusing the loop builder without a forced pause step and resynchronizing any active queue or current-item loop context after save.
-- Add practical organization tools for saved library content: filters, tags, and optional folders.
+- Add a unified Files view for saved library content so tracks, loops, playlists, and future entities can be managed as file-like items inside folders, while preserving dedicated Library views for focused entity browsing.
 - Improve consistency and accessibility of icon semantics, touch targets, feedback, and empty-state guidance across playback and library surfaces.
 - Formalize a reusable row-action architecture (explicit inline-vs-menu placement, shared overflow trigger, shared menu/dialog shells, and shared interaction style tokens) so consistency improvements can ship safely across multiple commits.
 
@@ -35,7 +35,7 @@ The current mobile rehearsal player already delivers core playback and playlist 
 
 - `mobile-rehearsal-player-usability`: Streamline shell, list, playlist-detail, and queue interactions for faster one-handed rehearsal workflows.
 - `mobile-rehearsal-player-quick-wins`: Add small, high-impact rehearsal utilities that reduce taps and improve daily repeat use.
-- `mobile-library-organization`: Introduce app-library search, tags, filters, and optional folder organization with track-context loop management.
+- `mobile-library-organization`: Introduce app-library search, a unified Files view, folder-based organization across saved entities, tags, filters, and track-context loop management.
 
 ### Modified Capabilities
 
@@ -43,7 +43,7 @@ The current mobile rehearsal player already delivers core playback and playlist 
 
 ## Impact
 
-- Affected app areas: mobile shell, Recents/Add/Library screens, playlist detail interactions, queue and now-playing surfaces (including queue-to-playlist capture actions), loop-builder naming and feedback flows, Drive search-result preview interactions, and saved-library browse/search tooling.
+- Affected app areas: mobile shell, Recents/Add/Library screens, playlist detail interactions, queue and now-playing surfaces (including queue-to-playlist capture actions), loop-builder naming and feedback flows, Drive search-result preview interactions, saved-library browse/search tooling, and the new Library Files-plus-dedicated-views information architecture.
 - Affected code and repo-doc locations: `packages/mobile-rehearsal-player/src/app/routing/shell/*`, `packages/mobile-rehearsal-player/src/app/routing/playback/*`, `packages/mobile-rehearsal-player/src/app/screens/*`, `packages/mobile-rehearsal-player/src/app/library/drive/*`, `packages/mobile-rehearsal-player/src/app/library/playlists/*`, `packages/mobile-rehearsal-player/src/app/library/components/saved-rehearsal-library-section/*`, `packages/mobile-rehearsal-player/src/app/library/saved-rehearsal-library/*`, `packages/mobile-rehearsal-player/src/app/library/storage/*`, and repo guidance or skill docs that currently describe the middle destination as Search.
 - Platform and design constraints: maintain waveform-first playback, persistent mini-player, existing playback engine semantics, and platform-familiar music iconography while making source-vs-library search context explicit.
 - Risk profile: low-to-medium; primarily UI and interaction changes with modest playback-state impact because queue quick actions now need to create and surface transient queues in addition to persisted playlist sessions, plus queue-view actions that persist queued items into playlists.

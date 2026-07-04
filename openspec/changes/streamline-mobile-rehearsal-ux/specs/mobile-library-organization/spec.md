@@ -40,9 +40,22 @@ The system SHALL support tags for app-owned library entities so users can organi
 - **WHEN** a user selects one or more tags in library organization controls
 - **THEN** the system filters visible saved entities to those matching the selected tags
 
-### Requirement: Lightweight folders are included in the first organization baseline
+### Requirement: Library includes a unified Files view with optional folder-based organization
 
-The system SHALL ship lightweight folder organization alongside tags and filters in the first organization baseline, while keeping folder usage optional for individual users.
+The system SHALL provide a unified Files view for app-owned library entities so users can manage tracks, loops, playlists, and folders in one file-oriented hierarchy while keeping folder usage optional and preserving focused entity browsing.
+
+#### Scenario: Files view manages mixed saved entities
+
+- **WHEN** a user opens the Library Files view
+- **THEN** the system shows tracks, loops, playlists, and folders in one unified folder-aware interface
+- **AND** those entities can be managed using consistent file-like organization affordances
+
+#### Scenario: Dedicated entity views remain available inside Library
+
+- **WHEN** a user wants to browse only tracks, only loops, or only playlists
+- **THEN** the system provides a first-class Library view selector for the unified Files view and dedicated entity views
+- **AND** switching views stays inside the Library context rather than routing through a separate destination
+- **AND** each dedicated view preserves the current focused UX patterns for that entity type rather than forcing navigation through Files
 
 #### Scenario: User organizes loops in folders by choice
 
@@ -52,18 +65,18 @@ The system SHALL ship lightweight folder organization alongside tags and filters
 #### Scenario: Folder views can surface loops directly
 
 - **WHEN** a folder contains one or more loops
-- **THEN** the folder view can display those loops directly without requiring navigation through the parent track first
+- **THEN** the Files view or a folder result view can display those loops directly without requiring navigation through the parent track first
 - **AND** each loop still shows parent-track linkage
 
 #### Scenario: Folderless workflow remains supported
 
 - **WHEN** a user does not use folders
-- **THEN** the system continues to support complete rehearsal workflows through default library collections, tags, and filters
+- **THEN** the system continues to support complete rehearsal workflows through dedicated library views, tags, and filters
 
-#### Scenario: Default library browsing keeps saved loops visible while preserving track entry points
+#### Scenario: Focused track browsing keeps saved loops visible while preserving track entry points
 
-- **WHEN** a user is browsing Library outside explicit search, tag, or folder result contexts
-- **THEN** the system keeps a top-level Saved loops section available in the default browse presentation
+- **WHEN** a user is browsing a focused track-oriented Library view outside explicit search, tag, or folder result contexts
+- **THEN** the system keeps a top-level Saved loops section available in that focused browse presentation
 - **AND** tracks with loops expose a `View track loops` navigation affordance for parent-track-specific loop management
 
 ### Requirement: Loop provenance remains visible in standalone organization result views
@@ -72,7 +85,7 @@ The system SHALL preserve and display loop parent-track provenance even when loo
 
 #### Scenario: Standalone loop result shows parent linkage
 
-- **WHEN** a loop is displayed in a folder, search result, or tag-filtered list
+- **WHEN** a loop is displayed in the Files view, a folder result, a search result, or a tag-filtered list
 - **THEN** the system shows that loop's parent track identity so users can recover source context quickly
 
 #### Scenario: Search and organization results keep loops visible as a top-level result category

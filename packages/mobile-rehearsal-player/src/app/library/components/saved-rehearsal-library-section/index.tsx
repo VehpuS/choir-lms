@@ -1,11 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { TagEditorSheet } from '../../components/tag-editor-sheet';
 import { DriveLibraryStatusCard } from '../../drive/components/drive-library-status-card';
 import { isSavedTrackPlaybackBusy } from '../../playback/utils/saved-track-playback-view-model';
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
-import { resolveSavedRehearsalLibraryDetailMode } from '../../saved-rehearsal-library/detail-mode';
+import {
+  resolveSavedRehearsalLibraryDetailMode,
+  resolveSavedRehearsalLibraryVisibleSections,
+  type SavedRehearsalLibraryView,
+} from '../../saved-rehearsal-library/detail-mode';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
 import {
   SavedRehearsalLibraryLoopSectionContent,
@@ -66,6 +70,8 @@ export const SavedRehearsalLibrarySection = ({
   toggleSourcePlayback,
   updatePlaylist,
 }: SavedRehearsalLibrarySectionProps) => {
+  const [selectedView, setSelectedView] =
+    useState<SavedRehearsalLibraryView>('files');
   const searchState = useSavedRehearsalLibrarySearch({
     savedLibrarySources,
     savedLoops,
@@ -150,6 +156,8 @@ export const SavedRehearsalLibrarySection = ({
   const savedSourceTitle = shouldShowSearchResults
     ? `Matching saved rehearsal tracks (${searchState.visibleSavedLibrarySources.length})`
     : `Saved rehearsal tracks (${savedLibrarySources.length})`;
+  const visibleSections =
+    resolveSavedRehearsalLibraryVisibleSections(selectedView);
 
   const loopSection = (
     <SavedRehearsalLibraryLoopSectionContent
@@ -216,8 +224,10 @@ export const SavedRehearsalLibrarySection = ({
       <SavedRehearsalLibrarySearchShell
         handleFilterActionPress={searchPanel.handleFilterActionPress}
         handleSearchActionPress={searchPanel.handleSearchActionPress}
+        onSelectView={setSelectedView}
         searchPanelVisibility={searchPanel.searchPanelVisibility}
         searchState={searchState}
+        selectedView={selectedView}
       />
       {shouldShowSavedLibraryStatus ? (
         <DriveLibraryStatusCard
@@ -262,6 +272,7 @@ export const SavedRehearsalLibrarySection = ({
           savedPlaylists={savedPlaylists}
           savedSourceTitle={savedSourceTitle}
           searchState={searchState}
+          visibleSections={visibleSections}
           onOpenPlaylistTagEditor={tagEditor.openPlaylistTagEditor}
           onOpenSourceTagEditor={tagEditor.openSourceTagEditor}
           togglePlaylistPlayback={togglePlaylistPlayback}

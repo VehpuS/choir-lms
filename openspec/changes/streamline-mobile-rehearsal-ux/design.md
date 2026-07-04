@@ -56,19 +56,38 @@ Target top-level tabs are ordered as Library, Add, and Recents.
 
 ### Library Tab (primary, rehearsal-first)
 
-Section order within Library:
+Shared Library chrome order:
 
 1. Library search entry (app-owned corpus only)
-2. Filter and organization controls (entity type, availability, tags, optional folders)
-3. Saved playlists quick-access cards
-4. Saved tracks list with track-loop navigation (playback-first row actions)
-5. Loop result groups in explicit search, tag, or folder contexts
+2. Library view switcher (top-level tabs or segmented controls)
+3. Active view content
+4. Contextual organization controls for the active view (entity type, availability, tags, folders)
+
+Top-level Library views:
+
+1. Files
+2. Tracks
+3. Loops
+4. Playlists
+
+View responsibilities:
+
+- Files: unified folder-aware browser for mixed saved entities. Tracks, loops, playlists, and folders are managed as file-like items inside one hierarchy.
+- Tracks: preserves the current saved-track-first browse flow, including playlist quick access and parent-track loop entry points.
+- Loops: preserves direct saved-loop browsing and playback without requiring parent-track navigation.
+- Playlists: preserves playlist-card and playlist-detail browsing patterns for focused playlist management.
 
 Placement rules:
 
+- `Files` is additive rather than replacing focused browsing; users can switch between the unified Files view and dedicated entity views without leaving Library.
+- The Library view switcher should feel like a top-level in-surface pivot similar to consumer music-library apps; exact component treatment may be tabs or segmented controls, but each view must remain equally first-class.
+- The Files view allows folders to contain tracks, loops, and playlists directly; loops remain independently addressable inside folders and do not require parent-track navigation first.
+- Dedicated entity views preserve current row/card patterns, quick playback entry, and empty-state guidance instead of forcing all browsing through the Files view.
+- App-library search remains separated from Add/Google Drive search and operates over the saved corpus; dedicated views may pre-apply their entity filter while Files remains the mixed-entity view.
 - App-library search is anchored at the top of Library as a first-class entry point and never mixed with raw Drive discovery results.
-- Default Library browsing keeps a top-level Saved loops section available for cross-track access while also supporting parent-track loop management.
+- Track-focused browsing keeps a top-level Saved loops section available for cross-track access while also supporting parent-track loop management.
 - Saved tracks that own one or more loops expose a `View track loops` overflow action so users can open a track-scoped loop view from the parent track context.
+- Track-focused browsing continues to expose `View track loops` so parent-track loop management remains fast even though loops are also manageable as first-class file-like items in Files and folder results.
 - The track-scoped loop view follows playlist-detail hierarchy: it replaces the main Library browse content while active, provides a back button to return, keeps the parent track visible, lists only that track's loops, supports ordered playback across those loops, and includes a `Make new loop` action for the same track.
 - Search, tag, and folder result surfaces may still show loops in their own top-level result group because loops remain independent library entities.
 - The track-scoped loop view keeps loops as actionable as saved tracks for playback, add-to-playlist, queue actions, and other applicable shared row actions.
@@ -199,6 +218,8 @@ To prevent Drive features from being hidden or mislabeled after IA updates, all 
 - Google Drive discovery destination label: Add
 - Google Drive search context label: Google Drive
 - App-owned library destination and context label: Library
+- Unified library view label: Files
+- Dedicated library view labels: Tracks, Loops, Playlists
 - Acceleration destination label: Recents
 
 `Search` is reserved for the operation itself in this slice and is not used as the middle top-level destination label.
@@ -219,6 +240,7 @@ These labels are user-facing defaults for headers, chips, and empty-state copy. 
 - Drive scope helper: Scope: This folder or Scope: My Drive / Shared
 - Drive browse helper: Browse Google Drive folders and audio
 - Library search helper: Search saved library
+- Files view helper: Manage saved items and folders
 - Library corpus helper: Tracks, loops, playlists, folders, and tags
 - Recents empty helper: No recent rehearsal yet. Start in Add or Library.
 
@@ -333,7 +355,7 @@ Validated flow: first-use empty library -> discover -> save first track -> optio
 - Distinguish source discovery search (Google Drive scoped/global within Add) from app-library search in Library so users understand which corpus is being queried.
 - Improve interaction affordances so list manipulation and playback actions feel closer to modern mobile music app standards.
 - Add low-risk usability wins that increase daily-use efficiency (resume, add-next actions, stronger defaults, and better feedback).
-- Keep loop browsing and management track-context-first in default Library navigation while preserving loops as independent library entities for search, tags, and folders.
+- Keep focused track and loop browsing fast while adding a unified Files view that can manage loops, tracks, and playlists as first-class folder items.
 - Reorder top-level tabs and within-tab components only when feature continuity is preserved for all existing critical capabilities.
 - Preserve existing playback semantics, queue correctness, and waveform-first identity.
 
@@ -397,6 +419,15 @@ Recents and Add should bias toward immediate action over explanatory copy when u
 ### 5. Standardize overflow actions with a shared menu surface
 
 Adopt one reusable overflow action pattern across library/search cards instead of one-off menu implementations.
+
+### 6. Add a first-class Files view without replacing focused entity views
+
+The library organization slice will introduce a unified Files view for mixed-entity folder management, while preserving dedicated Tracks, Loops, and Playlists views for the current focused browsing patterns.
+
+Alternatives considered:
+
+- Extend only the current track-first library surface with folders: rejected because mixed-entity folder management needs one shared surface that does not privilege a single entity type.
+- Replace focused library views with Files-only navigation: rejected because rehearsal workflows still benefit from fast dedicated track, loop, and playlist browsing patterns.
 
 Implemented delta in this change:
 
