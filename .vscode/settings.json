@@ -350,6 +350,7 @@
       "approve": true,
       "matchCommandLine": true
     },
-    "npm exec": true
+    "npm exec": true,
+    "npx tsx": true
   }
 }
