@@ -115,6 +115,13 @@ The system SHALL reduce steady-state interface weight on Recents and Add so user
 
 The system SHALL provide explicit search context separation so users can search Google Drive content independently from app-owned rehearsal library content.
 
+#### Scenario: Search-relevant working surfaces use compact header actions
+
+- **WHEN** a user is in Add or Library
+- **THEN** the compact header keeps the destination title on the leading side
+- **AND** when search is relevant, the trailing action cluster is ordered `Filters`, `Search`, and the Drive session menu trigger
+- **AND** the system does not render a separate large descriptive header block above that compact header row
+
 #### Scenario: Google Drive discovery destination is labeled Add
 
 - **WHEN** a user views the top-level navigation
@@ -131,7 +138,8 @@ The system SHALL provide explicit search context separation so users can search 
 #### Scenario: Drive search control stays coupled to folder navigation context
 
 - **WHEN** a user is browsing Google Drive folders in Add
-- **THEN** the search control appears directly below breadcrumbs so search scope follows the visible navigation context
+- **THEN** the search entry lives in the compact Add header immediately to the left of the Drive session menu trigger and immediately to the right of the `Filters` action
+- **AND** breadcrumbs and scope indicators remain visible below the header so search scope follows the visible navigation context
 - **AND** moving between breadcrumbs segments updates the folder-scoped search context before the next query runs
 
 #### Scenario: Library search context targets app-owned rehearsal entities
@@ -145,6 +153,7 @@ The system SHALL provide explicit search context separation so users can search 
 - **WHEN** a user is browsing the saved library
 - **THEN** the system provides a first-class way to switch between a unified Files view and dedicated entity views
 - **AND** each dedicated view stays inside the Library context while keeping that entity's focused browse patterns intact
+- **AND** the switcher is rendered as direct `Files`, `Tracks`, `Loops`, and `Playlists` buttons instead of descriptive header copy
 
 #### Scenario: Switching contexts preserves query intent without ambiguity
 
@@ -154,13 +163,54 @@ The system SHALL provide explicit search context separation so users can search 
 #### Scenario: Search entry points are available in both working surfaces
 
 - **WHEN** a user is in Add or in the app-library workflow
-- **THEN** the system provides a first-class search entry point in that active surface without requiring a context switch first
+- **THEN** the system provides a first-class header search entry point in that active surface without requiring a context switch first
+
+#### Scenario: Top-level working surfaces share one compact header pattern
+
+- **WHEN** a user views Recents, Add, or Library
+- **THEN** the system uses a compact destination header instead of a separate large descriptive header block
+- **AND** Add and Library keep `Filters` and `Search` together in the trailing action cluster when search is relevant
+- **AND** Recents omits `Filters` and `Search` when they are not relevant on that surface
 
 #### Scenario: Preview playback stays in Drive context until user chooses save
 
 - **WHEN** a user starts preview playback from a Google Drive search result row
 - **THEN** the system keeps the item in Google Drive discovery context unless the user explicitly saves it
 - **AND** preview playback state is visible through existing mini-player and now-playing affordances
+
+### Requirement: Add and Files use shared explorer navigation patterns
+
+The system SHALL present Google Drive browsing in Add and file browsing in Library Files using shared mobile file-explorer patterns instead of stacked cards or sectioned mixed-entity panels.
+
+#### Scenario: Explorer surfaces use one list at a time
+
+- **WHEN** a user is browsing Add or Library Files without an open detail view
+- **THEN** the active surface renders one vertically scrolling list for the current path context
+- **AND** folders and playable items appear in that same list rather than in separate stacked cards
+
+#### Scenario: Explorer rows share the same structural contract
+
+- **WHEN** a user views a row in Add or Library Files
+- **THEN** the row includes a leading type icon, primary text, optional supporting metadata, and a trailing more-options affordance when secondary actions are available
+- **AND** the row body remains the primary tap target for navigation or playback
+
+#### Scenario: Explorer navigation keeps current path visible
+
+- **WHEN** a user drills into folders in Add or Library Files
+- **THEN** the surface keeps a visible back path and breadcrumb path for the current location
+- **AND** moving backward or choosing a breadcrumb updates the same explorer stack instead of returning to a card hub or sectioned index
+
+#### Scenario: Folder activation follows file-explorer expectations
+
+- **WHEN** a user taps a folder row in Add or Library Files
+- **THEN** the system pushes the next folder level in the same explorer flow
+- **AND** the back action and breadcrumb path update to include that folder
+
+#### Scenario: Playlist detail opened from Files preserves a return path
+
+- **WHEN** a user opens a playlist from the Files explorer
+- **THEN** the system shows the existing playlist detail experience
+- **AND** the user can navigate back to the originating Files folder context without losing their path stack
 
 ### Requirement: Queue and playback surfaces keep controls legible and mode-appropriate
 
@@ -288,6 +338,12 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 - **THEN** the system keeps only the playback-first icon action inline and places lower-frequency or destructive actions (for example add to playlist, play next, add to queue, and remove) in the shared overflow menu
 - **AND** overflow actions are presented directly in the first options menu surface without a nested "More options" step
 - **AND** queue actions remain available whenever the surface supports queue operations, including the case where invoking them would create a transient queue from the currently playing standalone item
+
+#### Scenario: Files explorer rows prioritize standard file operations
+
+- **WHEN** a user opens the overflow menu for a row in the Library Files explorer
+- **THEN** the first menu level prioritizes standard file operations such as rename, move, and remove alongside existing rehearsal actions
+- **AND** destructive remove actions remain last in the menu ordering
 
 #### Scenario: Saved loop rows align with saved track rows for shared applicable actions
 

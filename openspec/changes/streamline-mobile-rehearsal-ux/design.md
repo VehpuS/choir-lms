@@ -7,46 +7,46 @@ The product intent for this iteration is to improve speed-to-rehearsal without d
 ## Current IA Baseline (Task 1.1)
 
 The historical baseline before this change was ordered as Home, Search, and Library.
-In the current repo, those destinations are now Library, Add, and Recents.
-The notes below preserve the original IA rationale while pointing to the current module names and paths.
+In the app today, those destinations are Library, Add, and Recents.
+The notes below preserve the original IA rationale while mapping each user-visible capability to the destination or entry point where it appears today.
 
-### Recents (implemented rename from Home)
+### Recents
 
-- Hero and current app status summary: current Recents tab root (`src/app/screens/recents/index.tsx` hero block).
-- Continue practicing shortcut (when an active item exists): current Recents summary card (`src/app/components/summary-card.tsx`).
-- Google Drive discovery panel container: current Add surface (`src/app/library/drive/components/drive-discovery-panel.tsx`), relocated out of Recents.
-- Drive root switching (My Drive vs Shared): Add -> `DriveLibraryRootSelector`.
-- Drive folder drill-down: Add -> `DriveFolderGroup` row tap.
-- Drive breadcrumbs and jump navigation: Add -> `DriveLibraryBreadcrumbs`.
-- Drive browse status and unavailable/support messaging: Add -> `DriveLibraryStatusCard` and unavailable source group.
-- Save/Remove source action from Drive browse list: Add -> playable source rows (`DriveLibrarySourceGroup` with `getSourceAction`).
+- Hero and current app status summary.
+- Continue practicing shortcut when an active item exists.
+- Google Drive discovery is no longer housed in this surface.
+- Drive root switching (My Drive vs Shared) now lives in Add.
+- Drive folder drill-down now lives in Add.
+- Drive breadcrumbs and jump navigation now live in Add.
+- Drive browse status and unavailable/support messaging now live in Add.
+- Save and remove source actions from Drive browse rows now live in Add.
 
-### Add (implemented rename from Search)
+### Add
 
-- Drive search query input and submit/clear flow: current Add tab (`DriveLibrarySearchPanel` inside `src/app/library/drive/components/drive-discovery-panel.tsx`).
-- Drive search result list (playable + unavailable): current Add tab (`src/app/library/drive/components/drive-search-results-panel.tsx` source groups).
-- Save/Remove source action from search results: current Add tab source rows (`DriveLibrarySourceGroup` with `getSourceAction`).
-- Search status/issue/loading messaging for Drive context: current Add tab (`DriveLibraryStatusCard` in the search and discovery panels).
+- Drive search query input and submit/clear flow.
+- Drive search result list (playable + unavailable).
+- Save/Remove source action from search results.
+- Search status, issue, and loading messaging for Drive context.
 
 ### Library
 
-- Saved tracks list and playback-first row actions: Library tab (`src/app/library/components/saved-rehearsal-library-section/index.tsx` -> `DriveLibrarySourceGroup`).
-- Remove saved track action: Library tab track row action (`Remove`).
-- Saved loops list and loop playback controls: Library tab (`SavedLoopSection`).
-- Loop creation entry point from saved track row: Library tab track row action (`Make loop`, opens loop builder prep).
-- Loop save/remove flows: Library tab (`SavedLoopSection` + saved loop handlers).
-- Playlist browse cards and detail entry: Library tab (`SavedPlaylistCardsList` to `SavedPlaylistSection`).
-- Playlist playback start/toggle from playlist surfaces: Library tab (`SavedPlaylistSection` -> `togglePlaylistPlayback`).
-- Add track to playlist from row "more options" menu: Library tab (`src/app/library/playlists/components/saved-track-playlist-menu-surface.tsx`).
+- Saved tracks list and playback-first row actions.
+- Remove saved track action.
+- Saved loops list and loop playback controls.
+- Loop creation entry point from a saved track row.
+- Loop save and remove flows.
+- Playlist browse cards and detail entry.
+- Playlist playback start and toggle from playlist surfaces.
+- Add track to playlist from a row overflow menu.
 
 ### Cross-Surface / Shell-Level
 
-- Top-level tab switching: shell tab bar (`src/app/routing/shell/shell-tab-bar.tsx`, now showing Library/Add/Recents in the repo).
-- Session/account actions (authorize/clear Drive auth): header menu (`DriveSessionMenu`).
-- Mini-player persistence across tab switches: bottom dock mini-player (`src/app/routing/shell/mobile-shell/index.tsx`).
+- Top-level tab switching.
+- Session and account actions through the Drive session menu.
+- Mini-player persistence across tab switches.
 - Now Playing surface entry point: tap mini-player body.
-- Queue/Up Next surface entry point: playback surface toggle from now playing view (`src/app/routing/playback/playback-surface.tsx` queue surface).
-- Global playback transport (play/pause/seek/skip/volume): playback surface controls wired from `src/app/routing/shell/mobile-shell/index.tsx` callbacks.
+- Queue and Up Next surface entry point from the playback surface toggle.
+- Global playback transport controls.
 
 This baseline map is the non-regression reference for IA reorder work and feature continuity checks in section 6 validation tasks.
 
@@ -58,10 +58,11 @@ Target top-level tabs are ordered as Library, Add, and Recents.
 
 Shared Library chrome order:
 
-1. Library search entry (app-owned corpus only)
-2. Library view switcher (top-level tabs or segmented controls)
-3. Active view content
-4. Contextual organization controls for the active view (entity type, availability, tags, folders)
+1. Compact screen header with destination title and contextual header actions
+2. Library view buttons (`Files`, `Tracks`, `Loops`, `Playlists`)
+3. Active-view chrome
+4. Active view content
+5. Contextual organization controls when the active view benefits from persistent filters
 
 Top-level Library views:
 
@@ -72,7 +73,7 @@ Top-level Library views:
 
 View responsibilities:
 
-- Files: unified folder-aware browser for mixed saved entities. Tracks, loops, playlists, and folders are managed as file-like items inside one hierarchy.
+- Files: unified explorer-style browser for mixed saved entities. Tracks, loops, playlists, folders, and future file-like items are managed inside one hierarchical file tree using standard mobile file-explorer navigation patterns.
 - Tracks: preserves the current saved-track-first browse flow, including playlist quick access and parent-track loop entry points.
 - Loops: preserves direct saved-loop browsing and playback without requiring parent-track navigation.
 - Playlists: preserves playlist-card and playlist-detail browsing patterns for focused playlist management.
@@ -80,38 +81,50 @@ View responsibilities:
 Placement rules:
 
 - `Files` is additive rather than replacing focused browsing; users can switch between the unified Files view and dedicated entity views without leaving Library.
-- The Library view switcher should feel like a top-level in-surface pivot similar to consumer music-library apps; exact component treatment may be tabs or segmented controls, but each view must remain equally first-class.
-- The Files view allows folders to contain tracks, loops, and playlists directly; loops remain independently addressable inside folders and do not require parent-track navigation first.
+- The compact top header keeps the destination title on the leading side. On surfaces where search is relevant in this slice, the trailing action cluster is ordered `Filters`, `Search`, and the Drive session menu trigger.
+- The Library view switcher replaces the former description block and should render as four compact, first-class buttons labeled `Files`, `Tracks`, `Loops`, and `Playlists`.
+- Do not render a separate large descriptive header block above the compact header row or the Library view buttons.
+- When `Files` is active, the view-specific chrome below the compact header and Library view buttons should use explorer chrome: a navigation bar with back button, current-folder title, and top-level add action; a horizontally scrollable breadcrumb path; and one vertically scrolling mixed-entity list below.
+- The Files view is backed by folder nodes plus entity-link nodes rather than by storing a single `folderId` on each saved entity. A file link stores its parent folder and optional local display-name override, while the canonical track, loop, or playlist entity remains the source of playback metadata and shared tags.
+- The Files view allows folders to contain tracks, loops, and playlists directly; one underlying entity may also appear in multiple folders through hard links, and loops remain independently addressable inside folders without requiring parent-track navigation first.
+- Renaming or moving a file link affects only that link; editing entity metadata such as tags affects the underlying track, loop, or playlist across every link that points to it.
 - Dedicated entity views preserve current row/card patterns, quick playback entry, and empty-state guidance instead of forcing all browsing through the Files view.
 - App-library search remains separated from Add/Google Drive search and operates over the saved corpus; dedicated views may pre-apply their entity filter while Files remains the mixed-entity view.
-- App-library search is anchored at the top of Library as a first-class entry point and never mixed with raw Drive discovery results.
+- App-library search remains first-class in Library, but its entry lives in the compact header action cluster rather than as a persistent panel stacked above the file list. Files browsing at rest should still prioritize explorer navigation.
+- Library filters are context-aware: the `Show` section appears only when the active Library view is `Files`, while Tracks, Loops, and Playlists omit that section because the view already fixes entity type.
 - Track-focused browsing keeps a top-level Saved loops section available for cross-track access while also supporting parent-track loop management.
 - Saved tracks that own one or more loops expose a `View track loops` overflow action so users can open a track-scoped loop view from the parent track context.
 - Track-focused browsing continues to expose `View track loops` so parent-track loop management remains fast even though loops are also manageable as first-class file-like items in Files and folder results.
 - The track-scoped loop view follows playlist-detail hierarchy: it replaces the main Library browse content while active, provides a back button to return, keeps the parent track visible, lists only that track's loops, supports ordered playback across those loops, and includes a `Make new loop` action for the same track.
 - Search, tag, and folder result surfaces may still show loops in their own top-level result group because loops remain independent library entities.
 - The track-scoped loop view keeps loops as actionable as saved tracks for playback, add-to-playlist, queue actions, and other applicable shared row actions.
-- Saved track and saved loop rows use the same visual action layout: one inline icon-only play control plus one vertical-ellipsis overflow trigger.
+- Every Files row uses one explorer row contract: a leading entity-type icon, primary name text, optional supporting metadata, a tappable row body that performs the primary navigation or playback action, and a trailing vertical-ellipsis overflow trigger.
+- Saved track and saved loop rows in dedicated views continue to use the same visual action layout: one inline icon-only play control plus one vertical-ellipsis overflow trigger.
 - All non-primary saved track and saved loop actions move into the overflow menu, including playlist-add and queue actions.
 - `Make loop` remains available only from saved track overflow menus and is not mirrored onto saved loop rows.
 - Playlist, track, and loop rows retain direct playback affordances and lightweight management actions.
+- The Files add action should follow familiar mobile file-explorer conventions: opening a lightweight menu anchored to the current folder with `Create folder`, `Add tracks from Drive`, and `Create playlist` actions.
 
 ### Add Tab (Drive discovery-first)
 
 Section order within Add:
 
-1. Drive context header (active corpus label + scope chip)
+1. Compact screen header with Add title and contextual header actions
 2. Drive root selector (My Drive / Shared) and current-scope indicator
-3. Breadcrumbs for current folder path
-4. Drive search input and recent queries (placed directly under breadcrumbs)
-5. Search results (playable first, unavailable grouped second)
+3. Explorer navigation bar for the active Drive folder/root
+4. Breadcrumbs and current search scope indicator for the active folder path
+5. One vertically scrolling explorer list for folders and sources
 
 Placement rules:
 
 - Add is the destination label for the Google Drive discovery surface; Search remains a first-class operation inside Add and is explicitly labeled as Google Drive discovery.
+- Add should use the same explorer-shell mental model as Library Files rather than a stack of cards or grouped management panels: one path-oriented browse/search surface, one current location, and one list at a time.
+- The compact Add header keeps the destination title on the leading side and, when search is relevant, a trailing action cluster ordered `Filters`, `Search`, and the Drive session menu trigger.
 - Scope behavior is explicit: at root level, search runs across the selected Drive root; once users drill into a folder, search defaults to the current folder path context with visible scope state.
 - Drive browse/navigation controls (root switching, folder path, breadcrumbs) stay available in the same surface as Drive search.
-- Drive search control is positioned immediately below breadcrumbs so the currently browsed folder context is visually coupled to search scope.
+- Breadcrumbs and scope indicators remain directly below the header so the currently browsed folder context stays visibly coupled to the header-launched search state.
+- Add rows should use the same leading-icon, primary-text, trailing-overflow pattern as Files where practical, while preserving Drive-specific primary actions such as preview playback and save.
+- Search results should render inside the same explorer shell and list treatment rather than swapping to a different card-based presentation mode.
 - Playable Drive search rows provide direct preview playback without requiring a save-first step.
 - Save remains a separate row action for users who want to promote a previewed source into Library-managed workflows.
 
@@ -127,13 +140,14 @@ Section order within Recents:
 Placement rules:
 
 - Recents is never required to access Drive discovery or app-library search.
+- Recents uses the same compact destination-header pattern as Add and Library, but omits `Filters` and `Search` because they are not relevant on that surface.
 - Recents modules remain compact and skimmable; discovery and library workflows remain fully accessible from Add and Library tabs directly.
 
 ### Cross-Tab Placement Guarantees
 
 - Google Drive browse/navigation placement: Add tab contains root selector, breadcrumbs, and folder-aware context controls adjacent to Drive discovery search.
-- Drive search placement: Add tab top section with explicit Drive labeling and scope indicators.
-- App-library search placement: Library tab top section with organization filters and no Drive-result mixing.
+- Drive search placement: Add header action cluster with explicit Drive labeling and breadcrumb or root-scope indicators directly below.
+- App-library search placement: Library header action cluster with saved-library labeling, context-aware filters, and no Drive-result mixing.
 
 ## Non-Regression Acceptance Criteria (Task 1.3)
 
@@ -224,7 +238,7 @@ To prevent Drive features from being hidden or mislabeled after IA updates, all 
 
 `Search` is reserved for the operation itself in this slice and is not used as the middle top-level destination label.
 
-These labels are user-facing defaults for headers, chips, and empty-state copy. Alternate synonyms such as Source, Cloud, or Files are not permitted for primary context labels in this slice.
+These labels are user-facing defaults for compact headers, chips, and empty-state copy. Alternate synonyms such as Source, Cloud, or Files are not permitted for primary context labels in this slice.
 
 ### Required Visibility Rules
 
@@ -422,18 +436,23 @@ Adopt one reusable overflow action pattern across library/search cards instead o
 
 ### 6. Add a first-class Files view without replacing focused entity views
 
-The library organization slice will introduce a unified Files view for mixed-entity folder management, while preserving dedicated Tracks, Loops, and Playlists views for the current focused browsing patterns.
+The library organization slice will introduce a unified Files view for mixed-entity folder management, while preserving dedicated Tracks, Loops, and Playlists views for the existing focused browsing patterns. Unlike a single-folder metadata approach, this Files surface should behave like a standard mobile file explorer and be backed by explicit file-tree nodes.
+
+Explorer data model for this change:
+
+- Canonical track, loop, and playlist entities remain the source of playback metadata, tags, and existing domain behavior.
+- Folder nodes represent containers in the Files hierarchy and may store local folder metadata such as name and tags.
+- Entity-link nodes represent one visible occurrence of a track, loop, or playlist inside the Files tree.
+- Entity-link nodes store their parent folder, entity kind/id, and optional local display-name override.
+- Multiple entity-link nodes may point to the same canonical entity, creating hard-link semantics across folders.
+- Removing a file link removes only that link unless it was the last remaining link to the canonical entity.
+- Renaming or moving a file link affects only that link; editing entity metadata affects every link pointing to that entity.
 
 Alternatives considered:
 
-- Extend only the current track-first library surface with folders: rejected because mixed-entity folder management needs one shared surface that does not privilege a single entity type.
+- Extend only the track-first library surface with folders: rejected because mixed-entity folder management needs one shared surface that does not privilege a single entity type.
+- Store a single `folderId` on the canonical entity: rejected because it cannot support multiple hard links, pointer-local rename, or last-link deletion semantics.
 - Replace focused library views with Files-only navigation: rejected because rehearsal workflows still benefit from fast dedicated track, loop, and playlist browsing patterns.
-
-Implemented delta in this change:
-
-- Shared `OptionsMenuSheet` now powers playlist management menus and track-context menu entry points.
-- Playlist list cards and playlist detail cards use pinned top-right vertical-ellipsis triggers for overflow actions.
-- `DriveLibrarySourceGroup` now uses the same overflow trigger and routes secondary/destructive actions (for example remove) into the shared menu.
 
 Follow-on rollout direction:
 
@@ -480,11 +499,6 @@ Alternatives considered:
 ### 7. Validate compact Recents composition with mockups before implementation
 
 Recents should surface multiple useful shortcut modules (for example recent rehearsal items and popular tags) only when the layout remains compact and scannable on representative phone sizes. A mockup review checkpoint is required before implementation.
-
-Implementation status note:
-
-- The current implementation slice ships a concrete per-item resume row (icon-only play action bound to a labeled recent item) to avoid ambiguous card-level play behavior.
-- Persisted recent playback history across app relaunches and compact multi-item recent history remain a follow-on implementation step tracked as task `3.3.3`.
 
 Alternatives considered:
 
@@ -541,7 +555,7 @@ Alternatives considered:
 
 ### 11. Provide search entry points in both Add and Library surfaces
 
-Search should be available in both contexts as a first-class function: Drive search attached to Google Drive navigation inside Add and app-library search attached to saved library management inside Library.
+Search should be available in both contexts as a first-class function through the compact header row: Drive search attached to Google Drive navigation inside Add and app-library search attached to saved library management inside Library. In both surfaces, a `Filters` action sits immediately to the left of `Search`, and the Drive session menu trigger sits to the right when search is relevant.
 
 Alternatives considered:
 
@@ -564,13 +578,13 @@ Alternatives considered:
 - Show unhighlighted results only: rejected because users must infer relevance from dense text and scan time increases.
 - Use separate fuzzy highlight semantics from actual match logic: rejected because visual emphasis can become misleading.
 
-### 12. Ship tags, filters, and lightweight folders together as the first organization baseline
+### 12. Ship tags, filters, and explorer-style file organization together as the first organization baseline
 
-The initial organization baseline for this slice includes all three: tags, filters, and lightweight folders.
+The initial organization baseline for this slice includes all three: tags, filters, and an explorer-style Files tree with hard links rather than lightweight single-folder metadata on canonical entities. In Library, the filter UI remains context-aware: the `Show` section appears only in Files because the dedicated Tracks, Loops, and Playlists views already imply entity type.
 
 Alternatives considered:
 
-- Tags+filters only for first ship: rejected because lightweight folders are also needed for user-controlled structure.
+- Tags+filters only for first ship: rejected because explicit file organization is also needed for user-controlled structure.
 
 ### 13. Standardize icon and accessibility semantics across shell, playback, and library actions
 
@@ -605,12 +619,13 @@ To reduce visual drift while preserving existing behavior, extract shared primit
 
 Implementation guidance:
 
+- Shared compact destination-header primitive: reusable top-of-screen header for Recents, Add, and Library with a leading destination title, optional trailing action slots, stable action ordering, and no large descriptive hero copy.
 - Shared overflow trigger primitive: one top-right vertical-ellipsis button component with consistent accessibility, hit target, and pressed/disabled feedback.
 - Shared overflow ordering contract: reusable menu ordering that keeps primary actions first, preserves stable order within the same priority group, and places destructive actions last across Library, Add, Recents, and playlist surfaces.
 - Shared playback-action primitive: one reusable icon-only direct-playback button for repeated list and card entry points (for example Add source rows, Recents rows and shortcut chips, and playlist cards) with consistent play/pause/replay glyph semantics, accessibility labels, hit target sizing, and pressed/disabled feedback.
 - Playlist-detail playback mode actions: a surface-specific ordered/shuffle control row that uses icon-first buttons with adjacent mode labels, keeps ordered as the default-emphasis start action while idle, and highlights the active queue mode when that playlist is already running.
-- Shared contextual search panel: one reusable search scaffold for Add and Library contexts that keeps input styling, submit affordance, recent-search suggestions, and a context-specific helper or clear-action slot aligned while preserving Drive-versus-library copy and disabled rules.
-- Shared section-heading primitive: reusable eyebrow, title, and body copy with an optional trailing action for Drive, Library, playlist, and modal entry surfaces that already share that structure.
+- Shared contextual search panel: one reusable header-launched search scaffold for Add and Library contexts that keeps input styling, submit affordance, recent-search suggestions, and a context-specific helper or clear-action slot aligned while preserving Drive-versus-library copy and disabled rules.
+- Shared section-heading primitive: reusable eyebrow, title, and body copy with an optional trailing action for in-content Drive, Library, playlist, and modal entry surfaces that already share that structure. Do not use this primitive for top-level compact destination headers.
 - Shared feedback-card family: reusable tone-aware status, issue, and empty-state cards with title, message, and optional loading treatment.
 - Shared chip family: reusable passive, selected, and action-chip variants for recent searches, Drive root selection, Recents shortcut tags, and future library tags and filters.
 - Shared playable-row shell: reusable compact row or card scaffold for playable entities that standardizes title, metadata, optional message, badge placement, inline playback placement, and overflow positioning once row-action placement metadata and quick-action semantics have converged.
@@ -620,7 +635,7 @@ Implementation guidance:
 
 The shared playback-action primitive is intended for compact row and card entry points, not for full-size transport controls in the mini-player or now-playing surface where a different scale and emphasis model is still appropriate. Playlist-detail ordered/shuffle start actions remain surface-specific for the same reason: they need larger mode-aware presentation than compact row-entry buttons, even though they should still be icon-first.
 
-Sequence these extractions after behavior convergence rather than before it: contextual search, section headings, and feedback cards can be extracted early; the playable-row shell should follow explicit row-action placement and compact playback-action convergence; chip variants should land alongside tags, filters, and search-scoping work; and the modal-surface base should land while playlist, selector, and loop-builder flows are already migrating onto shared dialog and sheet shells.
+Sequence these extractions after behavior convergence rather than before it: compact destination headers, contextual search, section headings, and feedback cards can be extracted early; the playable-row shell should follow explicit row-action placement and compact playback-action convergence; chip variants should land alongside tags, filters, and search-scoping work; and the modal-surface base should land while playlist, selector, and loop-builder flows are already migrating onto shared dialog and sheet shells.
 
 Library playlist creation should use the shared dialog-card shell: the Playlists section header exposes a right-aligned `+` action that opens the create-playlist modal with playlist name input, create/confirm, and cancel behavior.
 
@@ -638,7 +653,7 @@ Alternatives considered:
 - [UI polish-only slice may under-deliver if users expect larger feature additions] -> Include a focused quick-wins set with measurable interaction savings.
 - [Two search contexts may feel fragmented] -> Use explicit active-context labels, scoped chips, and predictable entry points.
 - [IA reorder may hide Drive discovery/navigation in secondary paths] -> Require feature mapping before reorder and non-regression verification after each IA pass.
-- [Optional folder organization could add metadata complexity] -> Keep folders additive and optional; baseline flows must work with tags/filters alone.
+- [Explorer-style file organization adds model complexity] -> Separate canonical entities from file-tree nodes, keep dedicated entity views intact, and validate hard-link/remove semantics before widening the UI rollout.
 - [Cross-platform differences for touch affordances] -> Validate on representative iOS and Android devices and keep behavior consistent where feasible.
 
 ## Migration Plan
@@ -648,7 +663,7 @@ Alternatives considered:
 3. Add quick-win actions and defaults behind current UI-local state models.
 4. Rename the middle destination from Search to Add across shell labels, file and component names, and repo guidance or skills that describe the destination.
 5. Add explicit dual-search context and scoping behavior (Drive search vs library search) with clear active-state indicators in both surfaces.
-6. Add organization baseline features (tags, filters, lightweight folders) while preserving existing library behavior.
+6. Replace the current single-folder experiment with file-tree nodes and hard links, then build the Files explorer and shared Add/Files explorer primitives while preserving existing library behavior.
 7. Add or update automated tests for view-model and interaction helpers where behavior changes.
 8. Run manual regression on rehearsal-critical flows: start playback from playlist row, loop save/preview, queue mode changes, mini-player persistence, and both search contexts.
 9. If regressions are found, fall back to existing explicit controls while keeping non-breaking hierarchy improvements.
@@ -664,8 +679,6 @@ Alternatives considered:
 
 - Status: Ready for review.
 - Confirmation checkpoint: pending reviewer sign-off that the Recents composition remains compact and scannable while keeping Add and Library as explicit alternatives.
-- Implementation rollout note: current Recents implementation includes explicit single-item per-row resume plus popular tags shortcuts, with compact multi-item recent history queued as follow-on task `3.3.3`.
-- Implementation rollout note: current Recents implementation includes explicit single-item per-row resume plus popular tags shortcuts, with persisted recent history and compact multi-item recent history queued as follow-on task `3.3.3`.
 
 ## Task 1.6 Terminology Rule
 

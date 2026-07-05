@@ -126,7 +126,7 @@ The system SHALL expose recent search terms to reduce repeated typing in frequen
 
 #### Scenario: Search shows recent queries before typing
 
-- **WHEN** a user opens Add or Library without an active query in the visible search entry point
+- **WHEN** a user opens the Add or Library search surface without an active query
 - **THEN** the system presents recent search terms as tap-to-run suggestions
 
 #### Scenario: Selecting a recent query executes search immediately

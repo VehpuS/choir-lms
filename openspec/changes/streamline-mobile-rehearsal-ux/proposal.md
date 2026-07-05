@@ -5,12 +5,14 @@ The current mobile rehearsal player already delivers core playback and playlist 
 ## What Changes
 
 - Streamline playlist and queue interaction patterns to feel more native on phone-sized touch surfaces.
-- Rename the current Search tab to Add so the destination communicates Google Drive browse/search/add-to-library work, while reserving Search as an operation available within both Add and Library.
+- Rename Search to Add so the destination communicates Google Drive browse/search/add-to-library work, while reserving Search as an operation available within both Add and Library.
 - Clarify information architecture by separating Google Drive discovery search from app-owned library search, including explicit source-scoped search behavior inside their respective surfaces.
-- Make Google Drive search follow navigation context once users drill into folders, and place the Add search control directly under breadcrumbs so scope remains obvious while browsing.
+- Make search a compact header-level action in Add and Library: place `Filters` immediately to the left of `Search`, keep the Drive session menu trigger to the right of search, and keep scope obvious through visible root or folder context plus breadcrumbs while browsing.
+- Refactor Recents, Add, and Library onto one shared compact destination-header pattern: remove large descriptive top-of-screen headers from the working surfaces and, in Library, replace the prior description text with direct `Files`, `Tracks`, `Loops`, and `Playlists` view buttons.
+- Recast both Add (Google Drive) and Library Files around standard mobile file-explorer paradigms: one path-oriented vertical list, folder drill-down, breadcrumb navigation, row-level overflow menus, and touch-friendly chrome modeled after Finder, Windows Explorer, and Google Drive.
 - Highlight matched query substrings in search results for both Add (Google Drive) and Library search so users can quickly see why each result matched.
 - Support direct preview playback from Google Drive search results without requiring users to save the source first.
-- Rename the current Home tab to Recents and keep it as an optional acceleration surface for persisted recent rehearsal shortcuts rather than a mandatory workflow step.
+- Rename Home to Recents and keep it as an optional acceleration surface for persisted recent rehearsal shortcuts rather than a mandatory workflow step.
 - Add low-friction rehearsal productivity actions such as ad-hoc queue actions that can promote single-track playback into a transient queue, stronger resume shortcuts, and smarter defaults in loop and playlist flows.
 - Add queue-to-playlist capture actions in Up Next so users can create a new playlist from any active queue session, immediately continue that queue as the newly saved playlist, and then update the currently playing saved playlist after further queue changes.
 - Refine the active rehearsal queue view so long queues scroll within a capped visible area, queue rows expose direct play and reorder controls, redundant `Up next`/`Now playing` row text is removed, and next or previous track transport remains available without leaving the queue view.
@@ -25,7 +27,9 @@ The current mobile rehearsal player already delivers core playback and playlist 
 - Keep playlist-card rename context-preserving by opening the rename flow in Library instead of routing through playlist detail.
 - Keep loops easy to access like regular tracks by preserving the top-level Saved loops section in Library, adding a `View track loops` track-overflow entry that opens a full Library-detail loop view with back navigation when loops exist, and still surfacing loops as their own result category in search, tag, and folder views.
 - Keep saved-loop editing available from loop surfaces even during active playback, reusing the loop builder without a forced pause step and resynchronizing any active queue or current-item loop context after save.
-- Add a unified Files view for saved library content so tracks, loops, playlists, and future entities can be managed as file-like items inside folders, while preserving dedicated Library views for focused entity browsing.
+- Replace lightweight single-folder metadata with a real file-tree model: folders and file links become tree nodes, while tracks, loops, and playlists remain canonical saved entities that can be referenced from multiple folders through hard links.
+- Add a unified Files view for saved library content so tracks, loops, playlists, folders, and future entities can be managed as file-like items inside that tree while preserving dedicated Library views for focused entity browsing.
+- Align file operations with standard explorer semantics: pointer-local rename and move, last-link deletion of underlying entities, folder deletion impact summaries, and a top-level `+` menu for create-folder, add-from-Drive, and create-playlist actions.
 - Improve consistency and accessibility of icon semantics, touch targets, feedback, and empty-state guidance across playback and library surfaces.
 - Formalize a reusable row-action architecture (explicit inline-vs-menu placement, shared overflow trigger, shared menu/dialog shells, and shared interaction style tokens) so consistency improvements can ship safely across multiple commits.
 
@@ -35,7 +39,7 @@ The current mobile rehearsal player already delivers core playback and playlist 
 
 - `mobile-rehearsal-player-usability`: Streamline shell, list, playlist-detail, and queue interactions for faster one-handed rehearsal workflows.
 - `mobile-rehearsal-player-quick-wins`: Add small, high-impact rehearsal utilities that reduce taps and improve daily repeat use.
-- `mobile-library-organization`: Introduce app-library search, a unified Files view, folder-based organization across saved entities, tags, filters, and track-context loop management.
+- `mobile-library-organization`: Introduce app-library search, an explorer-style Files view, hard-link-based file organization across saved entities, tags, filters, and track-context loop management.
 
 ### Modified Capabilities
 
@@ -45,5 +49,5 @@ The current mobile rehearsal player already delivers core playback and playlist 
 
 - Affected app areas: mobile shell, Recents/Add/Library screens, playlist detail interactions, queue and now-playing surfaces (including queue-to-playlist capture actions), loop-builder naming and feedback flows, Drive search-result preview interactions, saved-library browse/search tooling, and the new Library Files-plus-dedicated-views information architecture.
 - Affected code and repo-doc locations: `packages/mobile-rehearsal-player/src/app/routing/shell/*`, `packages/mobile-rehearsal-player/src/app/routing/playback/*`, `packages/mobile-rehearsal-player/src/app/screens/*`, `packages/mobile-rehearsal-player/src/app/library/drive/*`, `packages/mobile-rehearsal-player/src/app/library/playlists/*`, `packages/mobile-rehearsal-player/src/app/library/components/saved-rehearsal-library-section/*`, `packages/mobile-rehearsal-player/src/app/library/saved-rehearsal-library/*`, `packages/mobile-rehearsal-player/src/app/library/storage/*`, and repo guidance or skill docs that currently describe the middle destination as Search.
-- Platform and design constraints: maintain waveform-first playback, persistent mini-player, existing playback engine semantics, and platform-familiar music iconography while making source-vs-library search context explicit.
-- Risk profile: low-to-medium; primarily UI and interaction changes with modest playback-state impact because queue quick actions now need to create and surface transient queues in addition to persisted playlist sessions, plus queue-view actions that persist queued items into playlists.
+- Platform and design constraints: maintain waveform-first playback, persistent mini-player, existing playback engine semantics, platform-familiar music iconography, and standard OS-level file explorer paradigms adapted for touch/mobile use while making source-vs-library search context explicit.
+- Risk profile: medium; the change now includes an intentional UI refactor of both Add and Files plus a library-organization model shift away from single-folder entity metadata toward file nodes and hard links, in addition to the existing queue and playlist interaction work.
