@@ -6,10 +6,10 @@ The current mobile rehearsal player already delivers core playback and playlist 
 
 - Streamline playlist and queue interaction patterns to feel more native on phone-sized touch surfaces.
 - Rename Search to Add so the destination communicates Google Drive browse/search/add-to-library work, while reserving Search as an operation available within both Add and Library.
-- Clarify information architecture by separating Google Drive discovery search from app-owned library search, including explicit source-scoped search behavior inside their respective surfaces.
+- Clarify information architecture by separating Google Drive discovery search from app-owned library search, including explicit source-scoped search behavior inside their respective surfaces and current-folder-default search in Files with an explicit all-Files option.
 - Make search a compact header-level action in Add and Library: place `Filters` immediately to the left of `Search`, keep the Drive session menu trigger to the right of search, and keep scope obvious through visible root or folder context plus breadcrumbs while browsing.
 - Refactor Recents, Add, and Library onto one shared compact destination-header pattern: remove large descriptive top-of-screen headers from the working surfaces and, in Library, replace the prior description text with direct `Files`, `Tracks`, `Loops`, and `Playlists` view buttons.
-- Recast both Add (Google Drive) and Library Files around standard mobile file-explorer paradigms: one path-oriented vertical list, folder drill-down, breadcrumb navigation, row-level overflow menus, and touch-friendly chrome modeled after Finder, Windows Explorer, and Google Drive.
+- Recast both Add (Google Drive) and Library Files around standard mobile file-explorer paradigms: one path-oriented vertical list, pushed folder drill-down, scrollable breadcrumbs, row-level overflow menus, predictable row-body tap behavior by entity type, and touch-friendly chrome modeled after Finder, Windows Explorer, and Google Drive.
 - Highlight matched query substrings in search results for both Add (Google Drive) and Library search so users can quickly see why each result matched.
 - Support direct preview playback from Google Drive search results without requiring users to save the source first.
 - Rename Home to Recents and keep it as an optional acceleration surface for persisted recent rehearsal shortcuts rather than a mandatory workflow step.
@@ -29,7 +29,12 @@ The current mobile rehearsal player already delivers core playback and playlist 
 - Keep saved-loop editing available from loop surfaces even during active playback, reusing the loop builder without a forced pause step and resynchronizing any active queue or current-item loop context after save.
 - Replace lightweight single-folder metadata with a real file-tree model: folders and file links become tree nodes, while tracks, loops, and playlists remain canonical saved entities that can be referenced from multiple folders through hard links.
 - Add a unified Files view for saved library content so tracks, loops, playlists, folders, and future entities can be managed as file-like items inside that tree while preserving dedicated Library views for focused entity browsing.
-- Align file operations with standard explorer semantics: pointer-local rename and move, last-link deletion of underlying entities, folder deletion impact summaries, and a top-level `+` menu for create-folder, add-from-Drive, and create-playlist actions.
+- Expose hard-link creation through a user-facing `Create a copy` action that opens a move-style destination picker, creates another file link to the same underlying entity, and defaults same-folder copies to a case-insensitively unique `Copy` name.
+- Add standard explorer guardrails around case-insensitive naming, duplicate-name prevention, and invalid folder move targets.
+- Align file operations with standard explorer semantics: reuse the existing tag editor, playlist selector, and loop builder where applicable; keep rename and move pointer-local; confirm remove actions with last-link deletion messaging; provide folder deletion impact summaries; and expose a persistent floating `+` create button modeled after Google Drive for create-folder, add-from-Drive, and create-playlist actions.
+- Add explicit Files sort modes (`Name`, `Type`, `Date added`, `Date opened`) and preserve Files path, search scope/query, sort state, and list position when users switch Library views or tabs and return.
+- Keep Files sorting and search behavior explorer-consistent: folders stay grouped before playable items across sort modes, search stays scoped to the current folder subtree by default, and broad `All Files` results surface location context.
+- Prefer progressive library availability feedback: show one top-level connected/disconnected state first, then surface per-item broken-source recovery actions (`Reconnect` or `Remove from library`) only when connectivity is available.
 - Improve consistency and accessibility of icon semantics, touch targets, feedback, and empty-state guidance across playback and library surfaces.
 - Formalize a reusable row-action architecture (explicit inline-vs-menu placement, shared overflow trigger, shared menu/dialog shells, and shared interaction style tokens) so consistency improvements can ship safely across multiple commits.
 

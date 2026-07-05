@@ -147,6 +147,7 @@ The system SHALL provide explicit search context separation so users can search 
 - **WHEN** a user performs search in the app library context
 - **THEN** the system searches saved tracks, loops, playlists, folders, and organization metadata without mixing raw Google Drive discovery results
 - **AND** the unified Files view can show mixed-entity results while dedicated Library views can keep entity-specific browsing focused inside the same saved-library context
+- **AND** when Files is active, the default Library search scope is the current folder subtree with an explicit `All Files` option available
 
 #### Scenario: Library offers unified and focused browsing modes
 
@@ -185,8 +186,21 @@ The system SHALL present Google Drive browsing in Add and file browsing in Libra
 #### Scenario: Explorer surfaces use one list at a time
 
 - **WHEN** a user is browsing Add or Library Files without an open detail view
-- **THEN** the active surface renders one vertically scrolling list for the current path context
+- **THEN** the active surface renders one touch-first vertically scrolling list for the current path context
 - **AND** folders and playable items appear in that same list rather than in separate stacked cards
+
+#### Scenario: Explorer navigation bar exposes parent-folder context
+
+- **WHEN** a user is inside nested folders in Add or Library Files
+- **THEN** the current path chrome shows a back action that returns to the immediate parent folder
+- **AND** the title shows the current folder name or selected root name for the visible level
+- **AND** the platform's standard back gesture remains available when the active navigator supports it
+
+#### Scenario: Breadcrumb path stays usable at long depths
+
+- **WHEN** the current explorer path is wider than the available screen width
+- **THEN** the breadcrumb bar scrolls horizontally
+- **AND** the active current-folder breadcrumb remains visible while preserving access to earlier path segments
 
 #### Scenario: Explorer rows share the same structural contract
 
@@ -206,11 +220,29 @@ The system SHALL present Google Drive browsing in Add and file browsing in Libra
 - **THEN** the system pushes the next folder level in the same explorer flow
 - **AND** the back action and breadcrumb path update to include that folder
 
+#### Scenario: Track and loop rows play in place
+
+- **WHEN** a user taps the row body for a track or loop in Add or Library Files
+- **THEN** the system triggers the existing playback or preview behavior for that item
+- **AND** the surface does not navigate away from the current explorer path
+
 #### Scenario: Playlist detail opened from Files preserves a return path
 
 - **WHEN** a user opens a playlist from the Files explorer
-- **THEN** the system shows the existing playlist detail experience
-- **AND** the user can navigate back to the originating Files folder context without losing their path stack
+- **THEN** the system shows the existing playlist detail experience with a visible back action to the originating Files folder context
+- **AND** the user can navigate back to the originating Files folder context without losing their path stack or list position
+
+#### Scenario: Files explorer state restores when returning from another Library view or tab
+
+- **WHEN** a user leaves Files for another Library subview or a top-level tab and later returns within the same app session
+- **THEN** the system restores the prior Files folder path, breadcrumb state, search query, search scope, selected sort, and scroll position
+- **AND** Files does not reset to root unless the user explicitly navigates there or clears that state
+
+#### Scenario: Files search results keep location context and sort consistency
+
+- **WHEN** a user searches from Files and sees results outside the immediate visible folder list
+- **THEN** those results show containing-path metadata
+- **AND** the result list keeps the active Files sort behavior instead of switching to a different implicit ordering
 
 ### Requirement: Queue and playback surfaces keep controls legible and mode-appropriate
 
@@ -343,6 +375,8 @@ The system SHALL use a consistent overflow-menu interaction for secondary and de
 
 - **WHEN** a user opens the overflow menu for a row in the Library Files explorer
 - **THEN** the first menu level prioritizes standard file operations such as rename, move, and remove alongside existing rehearsal actions
+- **AND** playable Files links expose `Create a copy` alongside other file-management actions so hard-link creation lives in the same overflow contract as rename and move
+- **AND** playable Files links keep the same `Play next` and `Add to queue` overflow actions already available on other queue-capable library surfaces
 - **AND** destructive remove actions remain last in the menu ordering
 
 #### Scenario: Saved loop rows align with saved track rows for shared applicable actions

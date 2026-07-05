@@ -84,14 +84,22 @@ Placement rules:
 - The compact top header keeps the destination title on the leading side. On surfaces where search is relevant in this slice, the trailing action cluster is ordered `Filters`, `Search`, and the Drive session menu trigger.
 - The Library view switcher replaces the former description block and should render as four compact, first-class buttons labeled `Files`, `Tracks`, `Loops`, and `Playlists`.
 - Do not render a separate large descriptive header block above the compact header row or the Library view buttons.
-- When `Files` is active, the view-specific chrome below the compact header and Library view buttons should use explorer chrome: a navigation bar with back button, current-folder title, and top-level add action; a horizontally scrollable breadcrumb path; and one vertically scrolling mixed-entity list below.
+- When `Files` is active, the view-specific chrome below the compact header and Library view buttons should use explorer chrome: a standard current-folder navigation bar with a back-to-parent action and current-folder title; a horizontally scrollable breadcrumb path directly below; one vertically scrolling mixed-entity list below; and a separate floating create affordance scoped to the visible folder.
 - The Files view is backed by folder nodes plus entity-link nodes rather than by storing a single `folderId` on each saved entity. A file link stores its parent folder and optional local display-name override, while the canonical track, loop, or playlist entity remains the source of playback metadata and shared tags.
-- The Files view allows folders to contain tracks, loops, and playlists directly; one underlying entity may also appear in multiple folders through hard links, and loops remain independently addressable inside folders without requiring parent-track navigation first.
-- Renaming or moving a file link affects only that link; editing entity metadata such as tags affects the underlying track, loop, or playlist across every link that points to it.
+- The Files view allows folders to contain subfolders plus tracks, loops, and playlists in the same flat explorer list; one underlying entity may also appear in multiple folders through hard links, and loops remain independently addressable inside folders without requiring parent-track navigation first.
+- `Create a copy` is the user-facing hard-link creation action: it uses the same destination-picker pattern as `Move to folder`, creates a second file link instead of relocating the current one, and allows the current folder as a destination so users can keep multiple pointers to the same underlying entity.
+- Renaming or moving a file link affects only that link; pointer-local rename is implemented as a local display-name override, while the canonical imported-source identity, Drive path, and saved entity record remain unchanged until the last link is removed.
+- Standard explorer guardrails apply to every create, copy, rename, and move flow: name comparisons within the same parent folder are case-insensitive, case-only duplicates are rejected, same-folder copies default to a case-insensitively unique `Copy` suffix, and folders cannot be moved into themselves or any descendant.
+- Editing entity metadata such as tags affects the underlying track, loop, or playlist across every link that points to it, while folder tags remain local to the folder node itself.
 - Dedicated entity views preserve current row/card patterns, quick playback entry, and empty-state guidance instead of forcing all browsing through the Files view.
-- App-library search remains separated from Add/Google Drive search and operates over the saved corpus; dedicated views may pre-apply their entity filter while Files remains the mixed-entity view.
+- App-library search remains separated from Add/Google Drive search and operates over the saved corpus; when Files is active, search defaults to the current folder path context and exposes an explicit option to broaden to all Files in the saved corpus, while dedicated views may pre-apply their entity filter.
+- Files search should follow standard explorer behavior: current-folder scope means the current folder subtree by default, `All Files` broadens to the whole saved library corpus, and results outside the currently visible folder should show containing-path metadata so users can understand where each match lives.
 - App-library search remains first-class in Library, but its entry lives in the compact header action cluster rather than as a persistent panel stacked above the file list. Files browsing at rest should still prioritize explorer navigation.
 - Library filters are context-aware: the `Show` section appears only when the active Library view is `Files`, while Tracks, Loops, and Playlists omit that section because the view already fixes entity type.
+- Files organization controls should expose explicit sort choices for `Name`, `Type`, `Date added`, and `Date opened`. `Name` is the default browse sort and compares visible names case-insensitively.
+- Files sort should stay explorer-consistent across modes: folders remain grouped before non-folder items, `Type` groups by entity type after the folder group, `Date added` sorts newest-first within each folder/file grouping, and `Date opened` sorts most-recently-opened first within each grouping.
+- When Files search results are shown, they should continue to respect the active Files sort mode after scope filtering rather than switching to an unrelated implicit ordering.
+- When users leave Files for another Library view or top-level tab and return in the same app session, the explorer should restore its current folder path, breadcrumb state, search scope and query, selected sort, and scroll position instead of resetting to root.
 - Track-focused browsing keeps a top-level Saved loops section available for cross-track access while also supporting parent-track loop management.
 - Saved tracks that own one or more loops expose a `View track loops` overflow action so users can open a track-scoped loop view from the parent track context.
 - Track-focused browsing continues to expose `View track loops` so parent-track loop management remains fast even though loops are also manageable as first-class file-like items in Files and folder results.
@@ -99,11 +107,19 @@ Placement rules:
 - Search, tag, and folder result surfaces may still show loops in their own top-level result group because loops remain independent library entities.
 - The track-scoped loop view keeps loops as actionable as saved tracks for playback, add-to-playlist, queue actions, and other applicable shared row actions.
 - Every Files row uses one explorer row contract: a leading entity-type icon, primary name text, optional supporting metadata, a tappable row body that performs the primary navigation or playback action, and a trailing vertical-ellipsis overflow trigger.
+- Primary row tap behavior follows standard explorer expectations: tapping a folder pushes the next folder level onto the explorer stack, tapping a track or loop starts the existing playback behavior without navigation, and tapping a playlist opens the existing playlist detail with an explicit back path to the originating Files folder context.
+- Where the active navigator supports it, folder push navigation should preserve the platform-standard back-swipe gesture in addition to the visible back button.
 - Saved track and saved loop rows in dedicated views continue to use the same visual action layout: one inline icon-only play control plus one vertical-ellipsis overflow trigger.
 - All non-primary saved track and saved loop actions move into the overflow menu, including playlist-add and queue actions.
 - `Make loop` remains available only from saved track overflow menus and is not mirrored onto saved loop rows.
 - Playlist, track, and loop rows retain direct playback affordances and lightweight management actions.
-- The Files add action should follow familiar mobile file-explorer conventions: opening a lightweight menu anchored to the current folder with `Create folder`, `Add tracks from Drive`, and `Create playlist` actions.
+- Explorer overflow menus should keep one predictable ordering contract to reduce choice overload: row-specific rehearsal actions first (`Play next`, `Add to queue`, `Add to playlist`, and track-only `Make loop` where applicable), file-management actions next (`Create a copy`, `Edit tags`, `Rename`, `Move to folder`), destructive `Remove` last, and `Cancel` handled as the dismissal affordance of the action-sheet surface rather than as a peer domain action.
+- Files row actions should reuse existing Library flows where they already exist: the committed tag editor for `Edit tags`, the saved-item playlist selector for `Add to playlist`, and the current loop builder for track `Make loop`, rather than introducing file-specific duplicates of those surfaces.
+- Broken-source feedback in Library should stay progressive and connection-first: show one top-level connected/disconnected Drive state before surfacing per-item issue states, and once connected, offer `Reconnect` and `Remove from library` on items whose underlying Drive source has moved or been deleted.
+- Files track and loop links remain queue-capable item surfaces, so their overflow menus must keep the existing `Play next` and `Add to queue` actions in the first menu level alongside the new file operations rather than regressing to organization-only menus.
+- Every Files remove action should ask for confirmation. Last-link removal must explain whether the action only removes the visible pointer or also deletes the underlying saved entity, and non-empty folder removal must summarize folder contents plus allow inspection of orphaned underlying entities before confirmation.
+- The Files add action should follow familiar mobile file-explorer conventions: a persistent floating circular `+` button, visually modeled after the Google Drive create affordance, sits at the lower trailing edge above bottom safe-area chrome while Files is active rather than living in the header or breadcrumb bar.
+- The floating Files `+` button stays visible while the explorer list scrolls, remains clear of the tab bar and mini-player, and opens a lightweight current-folder-scoped menu with `Create folder`, `Add tracks from Drive`, and `Create playlist` actions.
 
 ### Add Tab (Drive discovery-first)
 
@@ -120,10 +136,12 @@ Placement rules:
 - Add is the destination label for the Google Drive discovery surface; Search remains a first-class operation inside Add and is explicitly labeled as Google Drive discovery.
 - Add should use the same explorer-shell mental model as Library Files rather than a stack of cards or grouped management panels: one path-oriented browse/search surface, one current location, and one list at a time.
 - The compact Add header keeps the destination title on the leading side and, when search is relevant, a trailing action cluster ordered `Filters`, `Search`, and the Drive session menu trigger.
+- Add explorer chrome should mirror Files: a current-scope navigation bar with a back-to-parent action and title, a horizontally scrollable breadcrumb path below it, and one touch-first list beneath.
 - Scope behavior is explicit: at root level, search runs across the selected Drive root; once users drill into a folder, search defaults to the current folder path context with visible scope state.
 - Drive browse/navigation controls (root switching, folder path, breadcrumbs) stay available in the same surface as Drive search.
 - Breadcrumbs and scope indicators remain directly below the header so the currently browsed folder context stays visibly coupled to the header-launched search state.
 - Add rows should use the same leading-icon, primary-text, trailing-overflow pattern as Files where practical, while preserving Drive-specific primary actions such as preview playback and save.
+- Folder taps in Add should push the next level onto the same explorer stack, preserve standard back navigation or gesture behavior where supported, and keep the active Drive root and current path visible throughout.
 - Search results should render inside the same explorer shell and list treatment rather than swapping to a different card-based presentation mode.
 - Playable Drive search rows provide direct preview playback without requiring a save-first step.
 - Save remains a separate row action for users who want to promote a previewed source into Library-managed workflows.
@@ -164,6 +182,12 @@ IA reorder work cannot be considered acceptable unless every critical capability
 - User can open folders from current Drive discovery results.
 - Navigation depth changes update visible folder/source collections for the active path.
 - User can return upward through the hierarchy without resetting active root unexpectedly.
+
+### Capability: Explorer row primary actions
+
+- Tapping a folder row pushes the next folder level and preserves a visible return path to the parent folder.
+- Tapping a track or loop row starts the existing playback or preview behavior without navigating away from the current explorer path.
+- Tapping a playlist row from Files opens playlist detail with a visible back path that returns to the originating Files folder context.
 
 ### Capability: Breadcrumb navigation
 

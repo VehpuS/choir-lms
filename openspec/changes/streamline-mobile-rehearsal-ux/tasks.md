@@ -1,4 +1,8 @@
-## 1. IA Foundation and Non-Regression Guardrails
+## 1. Completed Baseline
+
+These items already reflect the current app state. Treat them as the regression-sensitive baseline for the remaining work rather than as future implementation steps.
+
+### IA, Shell, and Search Context Baseline
 
 - [x] 1.1 Document the current top-level IA (Home/Search/Library baseline with Home -> Recents and Search -> Add rename intent) and map every existing user-visible feature to a destination or entry point before reordering work begins.
 - [x] 1.2 Define the next IA arrangement for top-level tabs and within-tab section order, including explicit placement for Google Drive browse/navigation, Drive search, and app-library search.
@@ -6,8 +10,26 @@
 - [x] 1.4 Add UI-level context labels and helper copy rules that prevent Drive features from being hidden or mislabeled after IA changes.
 - [x] 1.5 Validate proposed IA against representative flows (discover in Drive -> save -> add to playlist -> play) and refine before component implementation.
 - [x] 1.6 Build compact Recents mockups that include multiple shortcut modules (for example recents and popular tags) and capture design confirmation before implementation.
+- [x] 3.1 Reorder top-level tab composition and within-tab sections according to the IA plan while preserving current feature coverage.
+- [x] 3.1.1 Rename the middle destination from `Search` to `Add` across shell labels, file/component/constant identifiers, and repo guidance or skill docs so `Search` remains an operation rather than a destination name.
+- [x] 3.2 Rebalance Recents hierarchy so Recents stays optional and non-blocking while still supporting recents and shortcut use cases.
+- [x] 3.3 Add recent rehearsal entry points on Recents with concise fallback guidance for first-use or empty-history states, and optional shortcut metadata (for example popular tags).
+- [x] 3.3.1 Use icon-first playback entry on Recents resume and shortcut cards, replacing any text-labeled `Play` button with a standard play icon while keeping descriptive copy outside the control.
+- [x] 3.3.2 Rename remaining legacy `Home` file/component/constant identifiers to `Recents` equivalents while preserving behavior and destination order.
+- [x] 3.3.3 Expand Recents from single-item resume to session-persisted compact multi-item history (tracks/loops/playlists) with explicit per-item play buttons and clear `Last played` labeling semantics.
+- [x] 3.3.4 Add a vertical-ellipsis overflow menu on Recents recent-item rows with `Play next`, `Add to queue`, and `View in library` actions while keeping inline icon-only `Play` as the primary action.
+- [x] 3.4 Implement explicit dual search contexts: Google Drive discovery search (including folder scoping) and dedicated app-library search.
+- [x] 3.5 Add clear active-context and scope indicators so users always know which corpus (Google Drive in Add vs library in Library) is being searched.
+- [x] 3.6 Scope Add Drive search to navigation context after folder drill-down: keep root-level search at selected-root scope, and default to current-folder-path scope after users enter folders.
+- [x] 3.7 Add recent-search suggestion interactions for the active search context that allow tap-to-run query execution.
+- [x] 3.8 Verify Google Drive navigation remains first-class after tab/section reorder inside Add: root selector, folder drill-down, breadcrumbs, visible search-scope continuity, and unavailable/source status visibility.
+- [x] 3.9 Add Drive search-result preview playback so playable Google Drive sources can be auditioned without saving first, while keeping Save available as a separate action.
+- [x] 3.10 Highlight matched query substrings in visible search-result text for both Add (Google Drive) and Library contexts, using the same normalized match semantics as result filtering.
+- [x] 5.1 Add dedicated app-library search behavior over saved entities (tracks, loops, playlists, folders, tags) independent of Drive discovery search.
+- [x] 5.2 Add tag assignment and tag-filter interactions for app-owned library entities without changing playback semantics.
+- [x] 5.2.1 Ensure loops remain independently taggable even when default Library browsing reaches them through `View track loops` parent-track navigation.
 
-## 2. Playlist and Queue Interaction Streamlining
+### Playlist, Queue, and Playback Baseline
 
 - [x] 2.1 Refine playlist detail hierarchy so playback actions stay primary and non-critical management actions move to lighter affordances.
 - [x] 2.1.1 Standardize playlist overflow affordances by pinning vertical-ellipsis triggers to top-right in playlist list cards and playlist detail cards.
@@ -22,27 +44,17 @@
 - [x] 2.8 Add a top-level play icon on playlist cards while preserving `Open playlist` navigation and existing overflow management actions. Do not use a text-labeled `Play` button.
 - [x] 2.8.1 Add `Remove playlist` to the shared playlist-card overflow menu so saved playlists can be deleted without opening playlist detail.
 - [x] 2.8.2 Keep playlist-card rename in Library context by opening the rename flow in place instead of routing through playlist detail.
+- [x] 4.2.7 Extend queue-action availability rules to every queue-capable item surface so users can create or grow a transient queue from standalone playback without first opening a playlist. Implement transient queue promotion when `Play next` or `Add to queue` is invoked during standalone single-track playback, keeping the current track as queue head and preserving uninterrupted playback.
+- [x] 4.2.8 Surface queue-management affordances across queue-capable item surfaces once a transient or playlist-backed queue exists, while keeping queue-only controls hidden during true single-item playback with no queued follow-up.
+- [x] 4.2.9 Add a `Create new playlist` action in the Up Next queue summary area to save the current queue order as a new playlist while preserving uninterrupted playback, then immediately treat the active queue as that new playlist for follow-up updates.
+- [x] 4.2.10 Add an `Update current playlist` action in the Up Next queue summary area for playlist-backed queue sessions, confirm before replacing that playlist's saved items and order with the current queue order, and keep the active queue session unchanged.
+- [x] 4.2.11 Constrain the active rehearsal queue list to a scrollable maximum height so the queue summary, queue-mode controls, and transport remain visible for long queues.
+- [x] 4.2.12 Add active queue row controls for direct playback and reordering: per-row play buttons, drag handles, and overflow actions for remove, move to start, move to end, and move to a specific queue position.
+- [x] 4.2.13 Add a move-to-position modal for queue rows with a slider bounded from queue position `1` through the last queue position, and apply the selected position without restarting playback.
+- [x] 4.2.14 Remove redundant `Up next` / `Now playing` row text from the active queue once direct play controls exist, and keep current-item state legible through row styling and control state.
+- [x] 4.2.15 Add previous and next track transport controls directly to the active rehearsal queue view.
 
-## 3. Top-Level Tab Reordering and Search Contexts
-
-- [x] 3.1 Reorder top-level tab composition and within-tab sections according to the IA plan while preserving current feature coverage.
-- [x] 3.1.1 Rename the middle destination from `Search` to `Add` across shell labels, file/component/constant identifiers, and repo guidance or skill docs so `Search` remains an operation rather than a destination name.
-- [x] 3.2 Rebalance Recents hierarchy so Recents stays optional and non-blocking while still supporting recents and shortcut use cases.
-- [x] 3.3 Add recent rehearsal entry points on Recents with concise fallback guidance for first-use or empty-history states, and optional shortcut metadata (for example popular tags).
-- [x] 3.3.1 Use icon-first playback entry on Recents resume and shortcut cards, replacing any text-labeled `Play` button with a standard play icon while keeping descriptive copy outside the control.
-- [x] 3.3.2 Rename remaining legacy `Home` file/component/constant identifiers to `Recents` equivalents while preserving behavior and destination order.
-- [x] 3.3.3 Expand Recents from single-item resume to session-persisted compact multi-item history (tracks/loops/playlists) with explicit per-item play buttons and clear `Last played` labeling semantics.
-- [x] 3.3.4 Add a vertical-ellipsis overflow menu on Recents recent-item rows with `Play next`, `Add to queue`, and `View in library` actions while keeping inline icon-only `Play` as the primary action.
-- [x] 3.4 Implement explicit dual search contexts: Google Drive discovery search (including folder scoping) and dedicated app-library search.
-- [x] 3.5 Add clear active-context and scope indicators so users always know which corpus (Google Drive in Add vs library in Library) is being searched.
-- [x] 3.6 Scope Add Drive search to navigation context after folder drill-down: keep root-level search at selected-root scope, and default to current-folder-path scope after users enter folders.
-- [x] 3.7 Add recent-search suggestion interactions for the active search context that allow tap-to-run query execution.
-- [x] 3.8 Verify Google Drive navigation remains first-class after tab/section reorder inside Add: root selector, folder drill-down, breadcrumbs, visible search-scope continuity, and unavailable/source status visibility.
-- [ ] 3.8.1 Refactor Recents, Add, and Library onto a shared compact destination-header pattern: remove large descriptive headers, keep destination titles leading, keep `Filters` and `Search` adjacent in Add and Library, place the Drive session menu trigger to the right of search when present, and preserve surface-specific trailing actions where search is not relevant.
-- [x] 3.9 Add Drive search-result preview playback so playable Google Drive sources can be auditioned without saving first, while keeping Save available as a separate action.
-- [x] 3.10 Highlight matched query substrings in visible search-result text for both Add (Google Drive) and Library contexts, using the same normalized match semantics as result filtering.
-
-## 4. Loop and Action Defaults
+### Row-Action, Loop, and Shared UI Baseline
 
 - [x] 4.1 Add context-aware default loop naming in loop creation while preserving user override behavior before save.
 - [x] 4.2 Align row-level action menus to include new queue-acceleration actions and maintain consistent icon semantics across Library and Add, while keeping saved track and saved loop rows behaviorally identical except for track-only loop creation.
@@ -53,15 +65,6 @@
 - [x] 4.2.5 Extract a shared overflow-trigger primitive (top-right vertical-ellipsis affordance) and adopt it in playlist, source, and future row-action surfaces.
 - [x] 4.2.6 Converge playable row surfaces in Library and Add on one inline icon-only `Play` action plus a shared overflow trigger, while keeping `Make loop` as a saved-track-only overflow action.
 - [x] 4.2.6.1 After row-action placement and quick-action semantics stabilize, extract a shared compact playable-row shell and adopt it in Add, Library, loop, and Recents row-style surfaces without collapsing surface-specific metadata, badges, or availability messaging.
-- [x] 4.2.7 Extend queue-action availability rules to every queue-capable item surface so users can create or grow a transient queue from standalone playback without first opening a playlist. Implement transient queue promotion when `Play next` or `Add to queue` is invoked during standalone single-track playback, keeping the current track as queue head and preserving uninterrupted playback.
-- [x] 4.2.8 Surface queue-management affordances across queue-capable item surfaces once a transient or playlist-backed queue exists, while keeping queue-only controls hidden during true single-item playback with no queued follow-up.
-- [x] 4.2.9 Add a `Create new playlist` action in the Up Next queue summary area to save the current queue order as a new playlist while preserving uninterrupted playback, then immediately treat the active queue as that new playlist for follow-up updates.
-- [x] 4.2.10 Add an `Update current playlist` action in the Up Next queue summary area for playlist-backed queue sessions, confirm before replacing that playlist's saved items and order with the current queue order, and keep the active queue session unchanged.
-- [x] 4.2.11 Constrain the active rehearsal queue list to a scrollable maximum height so the queue summary, queue-mode controls, and transport remain visible for long queues.
-- [x] 4.2.12 Add active queue row controls for direct playback and reordering: per-row play buttons, drag handles, and overflow actions for remove, move to start, move to end, and move to a specific queue position.
-- [x] 4.2.13 Add a move-to-position modal for queue rows with a slider bounded from queue position `1` through the last queue position, and apply the selected position without restarting playback.
-- [x] 4.2.14 Remove redundant `Up next` / `Now playing` row text from the active queue once direct play controls exist, and keep current-item state legible through row styling and control state.
-- [x] 4.2.15 Add previous and next track transport controls directly to the active rehearsal queue view.
 - [x] 4.3 Ensure loop management remains parent-track-first while supporting optional promotion of loops to first-class organization surfaces.
 - [x] 4.4 Add track-context loop management entry points (create, view, edit, remove) and preserve visible parent-track linkage in all loop surfaces, with `Make loop` living in saved track overflow only.
 - [x] 4.4.1 Keep the default top-level Saved loops Library section and add a `View track loops` saved-track overflow action that opens a full-screen Library detail view for that track's loops when loops exist, while preserving loop action parity for playback, add to playlist, queue, and remove flows.
@@ -78,38 +81,60 @@
 - [x] 4.7.1 Move create-playlist entry into the Library Playlists section header with a right-aligned `+` trigger that opens the shared create modal with playlist name input, replacing any persistent bottom-of-Library creation component.
 - [x] 4.7.2 Extract a shared modal-surface base beneath bottom-sheet and centered-dialog variants, then migrate playlist, selector, and loop-builder flows onto it without forcing one modal presentation across all cases.
 
-## 5. Library Organization (Tags, Search, and Explorer-Style Files)
+## 2. Checkpointed Implementation Plan
 
-- [x] 5.1 Add dedicated app-library search behavior over saved entities (tracks, loops, playlists, folders, tags) independent of Drive discovery search.
-- [x] 5.2 Add tag assignment and tag-filter interactions for app-owned library entities without changing playback semantics.
-- [x] 5.2.1 Ensure loops remain independently taggable even when default Library browsing reaches them through `View track loops` parent-track navigation.
-- [ ] 5.3 Rebuild `Files` around a standard mobile file explorer paradigm instead of the current sectioned mixed-entity folder experiment.
-- [ ] 5.3.1 Replace single-folder entity metadata with file-tree nodes and hard links so one underlying track, loop, or playlist can appear in multiple folders with pointer-local rename and last-link deletion semantics.
-- [ ] 5.3.2 Refactor Library Files and Add Drive browsing onto shared explorer chrome and list primitives: back/title navigation bar, breadcrumb path, one vertical list, leading type icons, trailing more-options affordances, and a Files `+` add menu for create-folder/add-from-Drive/create-playlist actions.
-- [ ] 5.3.3 Implement explorer row operations for folders and saved-entity links: common edit-tags/rename/move/remove behavior, track/loop playlist actions, track-only `Make loop`, and non-empty folder removal summaries that explain orphaned underlying entities before confirmation.
-- [ ] 5.3.4 Keep dedicated Tracks, Loops, and Playlists views consistent with current playback-first row/card interactions while Files-driven organization coexists as the standard file-management surface.
-- [ ] 5.4 Preserve and display parent-track provenance when loops are shown in standalone Files, search, tag, or folder contexts.
-- [ ] 5.4.1 Keep dedicated track-context browsing fast while Files/search/tag/folder results still surface loops in their own top-level result category with parent linkage intact.
+Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` checkbox is the unit of execution to complete individually, and the original spec-task references are preserved in parentheses for traceability.
 
-## 6. Validation and Regression Safety
+### 2.1 Shared Compact Destination Header
 
-- [ ] 6.1 Add or update focused automated coverage for new view-model or helper behavior introduced by queue quick actions, dual search contexts, library organization, loop default naming, and tab/section reordering.
-- [ ] 6.1.1 Add focused automated coverage for row-action placement behavior (explicit placement precedence, fallback behavior, and menu mapping).
-- [ ] 6.1.2 Add UI-focused coverage for shared overflow trigger behavior (visibility, accessibility label semantics, disabled/pressed states, and menu open/close).
-- [ ] 6.1.3 Add focused automated coverage for search highlight rendering so highlighted spans match active query logic in both Add and Library contexts.
-- [ ] 6.1.4 Add UI-focused coverage for extracted shared UI primitives (compact destination header, contextual search, section heading, feedback card, chip variants, playable-row shell, and modal-surface base) so context-specific copy, state handling, action ordering, and layout variants remain stable across adopting surfaces.
-- [ ] 6.1.5 Add focused automated coverage for active queue view behavior, including queue-row play and reorder actions, move-to-position bounds, and row-state presentation without `Up next` / `Now playing` eyebrow text.
-- [ ] 6.1.5.1 Add focused automated coverage for default-visible playlist row controls and overflow behavior, including one-based `Move to position` bounds, play/pause and grouped up/down placement, and parity with the queue move-to-position mapping.
-- [ ] 6.1.6 Add focused automated coverage for file-tree and hard-link behavior (`View track loops` availability, multiple file links to one entity, pointer-local rename, move/remove semantics, folder-delete impact summaries, top-level Saved loops section preservation, track-scoped ordered loop playback behavior, `Make new loop` availability, unified Files view selection, mixed-entity folder behavior, and loop result-category behavior across search, tag, and folder contexts).
-- [ ] 6.2 Run manual regression for rehearsal-critical flows: playlist row-start playback, playlist-card play icon behavior, Recents shortcut play icon behavior, Recents history persistence after app relaunch, Recents recent-item overflow actions (`Play next`, `Add to queue`, `View in library`) and playback continuity, standalone single-track playback promoted into a transient queue via `Play next` and `Add to queue`, playable row parity across Library and Add, track-only `Make loop` visibility, undoable removal, default playlist row reorder and overflow behavior, queue-mode transitions, loop save/preview, mini-player persistence, Drive search-result preview playback without save, Drive search scoping, app-library search/filter behavior, and Drive navigation continuity.
-- [ ] 6.2.1 Manually verify transient queue creation from standalone playback across queue-capable surfaces: start a single track, invoke `Play next` and `Add to queue` from Library/Add/Recents where available, confirm Up Next becomes visible, and confirm the current item remains first in the resulting queue.
-- [ ] 6.2.2 Manually verify queue-to-playlist capture from Up Next: use `Create new playlist` from transient and playlist-backed queues, confirm `Update current playlist` appears immediately afterward and targets the newly created playlist, use `Update current playlist` from a playlist-backed queue, confirm the update confirmation appears before replacing saved order, confirm resulting playlist item order, and confirm current playback item and position remain uninterrupted.
-- [ ] 6.2.3 Manually verify active rehearsal queue view behavior: long queues stay scrollable within the visible sheet, queue-row play buttons jump playback correctly, drag and overflow reordering updates order without restarting playback, move-to-position slider respects queue bounds, row status text no longer repeats `Up next` / `Now playing`, and next/previous controls work from the queue view.
-- [ ] 6.2.3.1 Manually verify default playlist row controls: open playlist detail, confirm drag handles are visible by default, confirm play/pause follows the drag handle, confirm up/down controls sit together before the overflow trigger, confirm `Move to position` and `Remove from playlist` live in overflow, confirm the `Move to position` slider is bounded from playlist position `1` through the last playlist position, then move an item to first, middle, and last positions without leaving playlist detail or interrupting active playback.
-- [ ] 6.2.3.2 Manually verify playlist-detail playback mode controls: open playlist detail, confirm ordered and shuffle actions are icon-first with visible mode labels, confirm the active queue mode remains visually distinguishable when that playlist is already running, and confirm selecting ordered versus shuffle starts playback in the chosen mode without leaving playlist detail.
-- [ ] 6.2.4 Manually verify search-result match highlighting in both Add and Library: run representative queries, confirm only matched substrings are emphasized, and confirm highlights update correctly after query edits, filter changes, and context switches.
-- [ ] 6.2.5 Manually verify Drive explorer behavior in Add: at root, confirm the compact header keeps `Filters`, `Search`, and the Drive session menu trigger in one row with no large hero header, and confirm the surface shows one explorer list for the selected root; after folder drill-down, confirm back/breadcrumb navigation stays visible, confirm search defaults to current-folder scope, and confirm breadcrumb changes update that scope before rerunning search.
-- [ ] 6.2.6 Manually verify shared-primitives rollout preserves per-surface behavior: Recents versus Add versus Library compact header title alignment and trailing-action behavior, Add versus Library search copy and clear actions, recent-search and root-selector chip states, status or issue or empty feedback cards, compact row metadata and badge placement, overflow action ordering (primary first, destructive last), and centered-dialog versus bottom-sheet presentation differences.
-- [ ] 6.2.7 Manually verify loop navigation and file-organization intent: the Library header replaces descriptive copy with direct `Files` / `Tracks` / `Loops` / `Playlists` buttons; Add and Library search entry lives in the compact header action cluster with `Filters` to the left of `Search`; Library filters show the `Show` section only in `Files`; Files behaves like a standard explorer with back/title chrome, breadcrumbs, one mixed-entity list, and a Files `+` menu; files can represent multiple links to the same underlying track/loop/playlist with pointer-local rename; the top-level Saved loops section remains available in focused browsing; tracks with loops expose `View track loops`; the track-scoped loop view keeps parent-track context visible, supports ordered loop-series playback plus row-start playback, surfaces a `Make new loop` action for that track, keeps add-to-playlist, queue, and remove actions easy to reach; loops remain independently taggable and folder-addressable; search/tag/folder contexts show loops in their own visible result category with parent linkage; and `Make loop` remains a saved-track-only entry point.
-- [ ] 6.3 Explicitly verify no existing critical feature was lost during IA reorder using the baseline mapping from 1.1 and record pass/fail per feature.
-- [ ] 6.4 Compare final Recents, Add, Library, playlist detail, now-playing, and queue surfaces against this change's specs and capture any intentional deltas before completing implementation.
+- [ ] 2.1.1 Implement the remaining shared compact destination-header rollout across Recents, Add, and Library: remove large descriptive headers, keep destination titles leading, keep `Filters` and `Search` adjacent in Add and Library, place the Drive session menu trigger to the right of search when present, and preserve surface-specific trailing actions where search is not relevant (`3.8.1`).
+- [ ] 2.1.2 Add or finish UI coverage for compact destination-header and contextual-search adoption where this rollout changes behavior (`6.1.4` scoped to header and search-shell adoption).
+- [ ] 2.1.3 Manually verify Add and Library header action ordering, Drive session trigger placement, Recents title alignment, and shell-level non-regression for the touched surfaces (`6.2.5` and `6.2.6` scoped to header rollout).
+- [ ] 2.1.4 Create a tested checkpoint commit for the compact-header rollout before touching Files architecture.
+
+### 2.2 Stabilize the Already-Shipped Queue, Playlist, and Shared-Action Behavior
+
+- [ ] 2.2.1 Backfill focused automated coverage for row-action placement, shared overflow trigger behavior, search-result highlighting, active queue behavior, and default playlist row controls (`6.1.1`, `6.1.2`, `6.1.3`, `6.1.5`, and `6.1.5.1`).
+- [ ] 2.2.2 Run manual regression for playlist row-start playback, playlist-card play icon behavior, Recents shortcut playback, transient queue promotion, queue-to-playlist capture, active queue controls, playlist-detail playback controls, and search highlight updates (`6.2`, `6.2.1`, `6.2.2`, `6.2.3`, `6.2.3.1`, `6.2.3.2`, and `6.2.4` scoped to the already-implemented non-Files surfaces).
+- [ ] 2.2.3 Record pass/fail against the non-regression baseline from task `1.1` for the capabilities touched in this step (`6.3` scoped to queue, playlist, search, and Recents behavior).
+- [ ] 2.2.4 Create a tested checkpoint commit that locks the current non-Files interaction baseline before the Files refactor begins.
+
+### 2.3 Introduce the File-Tree Storage Foundation
+
+- [ ] 2.3.1 Replace the current single-folder entity metadata approach with a file-tree storage model and migration path: folder nodes, file-link nodes, hard-link support, pointer-local visible names, canonical entity persistence, and last-link lifecycle semantics (`5.3` and `5.3.1`).
+- [ ] 2.3.2 Implement the Files mutation guardrails in the storage and helper layer: case-insensitive same-parent naming, duplicate-name conflict handling, case-insensitively unique `Copy` suffix defaults for same-folder copies, and folder-move prevention for self or descendant targets (`5.3.1.1`).
+- [ ] 2.3.3 Preserve loop parent-track provenance in the underlying model so loops remain identifiable across Files, search, tags, and folder results as later UI work lands (`5.4` and `5.4.1` foundation work).
+- [ ] 2.3.4 Add focused model and helper coverage for tree mutations, hard-link behavior, naming guardrails, and loop provenance wiring (`6.1` and `6.1.6` scoped to the data layer foundation).
+- [ ] 2.3.5 Create a tested checkpoint commit for the file-tree storage foundation before swapping explorer UI surfaces onto it.
+
+### 2.4 Rebuild the Explorer Shell and Navigation Surfaces
+
+- [ ] 2.4.1 Rebuild Library Files around one mixed-list explorer shell with current-folder navigation chrome, horizontally scrollable breadcrumbs, leading type icons, row-body primary-action semantics, and a persistent Google Drive-style floating Files `+` create control (`5.3.2`).
+- [ ] 2.4.2 Align Add Drive browsing with the same explorer chrome and shared list primitives where the spec calls for parity, while preserving Drive-specific save and preview behavior (`5.3.2` on the Add surface).
+- [ ] 2.4.3 Ensure folder rows push onto a standard explorer stack, track and loop rows play in place, playlist rows preserve a back path to the originating Files folder, and dedicated Tracks, Loops, and Playlists views remain coherent beside Files (`5.3.2.1` and `5.3.4`).
+- [ ] 2.4.4 Extend UI coverage for the shared explorer and list primitives, then manually verify Add and Files explorer navigation, breadcrumb behavior, and playlist return-path behavior (`6.1.4`, `6.2.5`, and the navigation subset of `6.2.7`).
+- [ ] 2.4.5 Create a tested checkpoint commit once the new explorer shell is stable before adding the full Files action surface.
+
+### 2.5 Implement Files Actions, Copy Flows, and Availability Recovery
+
+- [ ] 2.5.1 Implement Files overflow operations for folders and saved-entity links, keeping queue actions in the first menu level and reusing the existing tag editor, playlist selector, and loop-builder flows where applicable (`5.3.3`).
+- [ ] 2.5.2 Standardize per-entity explorer menu contents and ordering, including action-sheet dismissal through `Cancel`, destructive ordering, and clear pointer-versus-entity deletion messaging (`5.3.3.1`).
+- [ ] 2.5.3 Add `Create a copy`, rename, move, remove, folder-delete impact summaries, and connection-first broken-source recovery through `Reconnect` and `Remove from library` (`5.3.3` and `5.3.3.2`).
+- [ ] 2.5.4 Add focused coverage for Files menus, hard-link copy semantics, removal messaging, and recovery actions, then manually verify entity-specific explorer menus and naming or move guardrails (`6.1.6`, `6.2.7.1`, and `6.2.7.2` scoped to Files actions).
+- [ ] 2.5.5 Create a tested checkpoint commit for Files actions and recovery before layering search, sort, and restoration state.
+
+### 2.6 Add Files Search, Sort, Restoration, and Loop-Result Integration
+
+- [ ] 2.6.1 Add Files search behavior that defaults to the current folder subtree, supports an explicit `All Files` option, and shows containing-path metadata when results come from outside the currently visible folder list (`5.1.1` and `5.1.1.1`).
+- [ ] 2.6.2 Add Files sort controls for `Name`, `Type`, `Date added`, and `Date opened`, including case-insensitive name sorting, folder-first grouping across modes, defined type/date ordering, and search results that continue to follow the active sort mode after filtering (`5.1.2` and `5.1.2.1`).
+- [ ] 2.6.3 Restore Files path, breadcrumb stack, search scope/query, selected sort, and scroll position when users leave Files for another Library subview or top-level tab and return in the same session (`5.3.4.1` and the remaining state-restoration portion of `5.3.4`).
+- [ ] 2.6.4 Finish loop provenance presentation in Files, search, tag, and folder results while keeping dedicated track-context loop browsing fast and clearly parent-linked (`5.4` and `5.4.1` UI integration).
+- [ ] 2.6.5 Add focused coverage for Files search, sort, restoration, and result-group behavior, then manually verify the full Files organization/search contract end to end (`6.1.6`, `6.2.7`, and `6.2.7.3`).
+- [ ] 2.6.6 Create a tested checkpoint commit for Files search, sort, restoration, and loop-result integration.
+
+### 2.7 Run Final Regression and Close Out the Change
+
+- [ ] 2.7.1 Run the full rehearsal-critical manual regression across Recents, Add, Library, playlist detail, now-playing, queue, Files organization, and loop browsing after all prior steps have landed together (`6.2` through `6.2.7.3` as a final sweep).
+- [ ] 2.7.2 Explicitly verify that no critical capability from the baseline mapping in task `1.1` regressed and record pass/fail by capability (`6.3` final pass).
+- [ ] 2.7.3 Compare the final app surfaces against the proposal, design, and delta specs, and capture any intentional implementation deltas before considering the change complete (`6.4`).
+- [ ] 2.7.4 Create the final tested checkpoint commit or release-candidate handoff after the full regression sweep.
