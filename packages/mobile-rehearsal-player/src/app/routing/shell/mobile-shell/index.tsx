@@ -1,7 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Pressable, SafeAreaView, View } from 'react-native';
+import { SafeAreaView, View } from 'react-native';
 
-import { useGoogleDriveAuthorization } from '../../../auth/google-drive/hooks/use-authorization';
 import { useSavedTrackPlayback } from '../../../library/playback/hooks/use-saved-track-playback';
 import type { SavedTrackPlaybackState } from '../../../library/playback/utils/saved-track-playback-view-model';
 import type { PlaylistPlaybackSession } from '../../../library/playlists/utils/saved-playlist-playback-view-model';
@@ -14,7 +13,6 @@ import {
   getUpNextSurfaceSummary,
   type ShellDestinationKey,
 } from '../shell-model';
-import { MobileShellHeaderCard } from './mobile-shell-header-card';
 import { MobileShellMiniPlayerDock } from './mobile-shell-mini-player-dock';
 import { MobileShellPlaybackSurface } from './mobile-shell-playback-surface';
 import { MobileShellQueuePlaylistDialogs } from './mobile-shell-queue-playlist-dialogs';
@@ -29,7 +27,6 @@ export type MobileShellProps = {
   activePlaylistSession: PlaylistPlaybackSession | null;
   activeQueueMode: PlaylistPlaybackSession['queue']['mode'] | null;
   activeRepeatMode: PlaylistPlaybackSession['queue']['repeatMode'] | null;
-  authorization: ReturnType<typeof useGoogleDriveAuthorization>;
   canShowQueuePlaylistActions: boolean;
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
@@ -80,7 +77,6 @@ export const MobileShell = ({
   activePlaylistSession,
   activeQueueMode,
   activeRepeatMode,
-  authorization,
   canShowQueuePlaylistActions,
   canSeekActivePlayback,
   canSkipNextItem,
@@ -118,7 +114,6 @@ export const MobileShell = ({
     useState<ShellDestinationKey>('library');
   const [activePlaybackSurface, setActivePlaybackSurface] =
     useState<PlaybackSurfaceKey | null>(null);
-  const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
   const miniPlayerSummary = getMiniPlayerSummary({
     activePlayableItem,
     activePlaylistSession,
@@ -141,10 +136,6 @@ export const MobileShell = ({
     hasMiniPlayerSummary: miniPlayerSummary !== null,
     onSaveQueueAsPlaylist,
   });
-  const activeDestinationConfig =
-    SHELL_DESTINATIONS.find(
-      (destination) => destination.key === activeDestination,
-    ) ?? SHELL_DESTINATIONS[0];
 
   useEffect(() => {
     if (!miniPlayerSummary) {
@@ -162,37 +153,6 @@ export const MobileShell = ({
 
   return (
     <SafeAreaView style={styles.screen}>
-      {isSessionMenuVisible ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => {
-            setIsSessionMenuVisible(false);
-          }}
-          style={styles.menuBackdrop}
-        />
-      ) : null}
-
-      <MobileShellHeaderCard
-        activeDestinationDescription={activeDestinationConfig.description}
-        activeDestinationLabel={activeDestinationConfig.label}
-        activeDestinationTitle={activeDestinationConfig.title}
-        authorization={authorization}
-        isSessionMenuVisible={isSessionMenuVisible}
-        onClearAuthorization={() => {
-          setIsSessionMenuVisible(false);
-          void authorization.clearAuthorization();
-        }}
-        onStartAuthorization={() => {
-          setIsSessionMenuVisible(false);
-          void authorization.startAuthorization();
-        }}
-        onToggleSessionMenu={() => {
-          setIsSessionMenuVisible((currentValue) => !currentValue);
-          setActivePlaybackSurface(null);
-          queuePlaylistState.closeQueueDialogs();
-        }}
-      />
-
       <View style={styles.contentViewport}>
         {SHELL_DESTINATIONS.map((destination) => {
           const panelKey = PANEL_BY_DESTINATION[destination.key];
@@ -225,10 +185,8 @@ export const MobileShell = ({
         miniPlayerSummary={miniPlayerSummary}
         onOpenNowPlaying={() => {
           setActivePlaybackSurface('now-playing');
-          setIsSessionMenuVisible(false);
         }}
         onSelectDestination={(destination) => {
-          setIsSessionMenuVisible(false);
           setActiveDestination(destination);
         }}
         onTogglePlayback={onTogglePlayback}

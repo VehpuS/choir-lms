@@ -4,7 +4,6 @@ const BORDER_COLOR = '#d6d1c4';
 
 export const savedRehearsalLibrarySectionStyles = StyleSheet.create({
   savedLibrarySection: {
-    position: 'relative',
     gap: 12,
     padding: 16,
     borderWidth: 1,

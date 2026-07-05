@@ -7,52 +7,21 @@ export const recentsScreenStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: appTheme.colors.pageBackground,
   },
+  destinationHeader: {
+    marginTop: 12,
+  },
+  menuBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 10,
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: appTheme.colors.pageBackground,
+  },
   content: {
     gap: 12,
     paddingTop: 10,
     paddingBottom: 18,
-  },
-  hero: {
-    gap: 10,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 16,
-    backgroundColor: appTheme.colors.surfaceBackground,
-  },
-  title: {
-    color: appTheme.colors.primaryText,
-    fontSize: 24,
-    fontWeight: '700',
-    lineHeight: 30,
-  },
-  subtitle: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  statusLabel: {
-    color: appTheme.colors.heroBackground,
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-  },
-  statusValue: {
-    color: appTheme.colors.primaryText,
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  statusValueList: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 13,
-    fontWeight: '600',
-    lineHeight: 18,
   },
   shortcutsCard: {
     gap: 8,

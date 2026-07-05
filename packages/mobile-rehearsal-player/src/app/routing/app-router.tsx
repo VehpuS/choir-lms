@@ -6,12 +6,12 @@ import {
   buildSavedPlaylistFromQueue,
   replaceQueueItemsInPlaylist,
 } from '../library/playlists/utils/queue-playlist-capture';
-import { useRehearsalLibraryController } from '../library/saved-rehearsal-library/use-rehearsal-library-controller';
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../library/storage/local-library-storage';
 import {
   canShowQueuePlaylistActions,
   canUpdateQueuePlaylist,
 } from '../library/playlists/utils/saved-playlist-playback-view-model';
+import { useRehearsalLibraryController } from '../library/saved-rehearsal-library/use-rehearsal-library-controller';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../library/storage/local-library-storage';
 import { AddScreen } from '../screens/add';
 import { LibraryScreen } from '../screens/library';
 import { AppRouterRecentsScreen } from '../screens/recents/app-router-recents-screen';
@@ -220,7 +220,6 @@ export const AppRouter = () => {
       activePlaylistSession={playback.activePlaylistSession}
       activeQueueMode={playback.activePlaylistSession?.queue.mode ?? null}
       activeRepeatMode={playback.playlistRepeatMode}
-      authorization={authorization}
       canShowQueuePlaylistActions={canShowQueuePlaylistActions(
         playback.activePlaylistSession,
       )}
@@ -237,6 +236,7 @@ export const AppRouter = () => {
       requestedDestinationRequestId={requestedDestinationRequestId}
       recentsScreen={
         <AppRouterRecentsScreen
+          authorization={authorization}
           onRequestLibraryDestination={() => {
             setRequestedDestinationRequestId((currentId) => {
               return currentId + 1;
@@ -257,6 +257,7 @@ export const AppRouter = () => {
       isPlaybackToggleDisabled={playbackActionCopy?.disabled ?? true}
       libraryScreen={
         <LibraryScreen
+          authorization={authorization}
           libraryController={libraryController}
           playback={playback}
         />
@@ -309,7 +310,12 @@ export const AppRouter = () => {
       playbackToggleLabel={playbackActionCopy?.label ?? 'Play'}
       playbackVolumeLevel={playback.volumeLevel}
       playbackState={playback.playbackState}
-      addScreen={<AddScreen libraryController={libraryController} />}
+      addScreen={
+        <AddScreen
+          authorization={authorization}
+          libraryController={libraryController}
+        />
+      }
     />
   );
 };

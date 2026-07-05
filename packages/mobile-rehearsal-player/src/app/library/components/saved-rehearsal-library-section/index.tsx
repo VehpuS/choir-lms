@@ -59,10 +59,14 @@ export const SavedRehearsalLibrarySection = ({
   savedTrackPlaybackStatusCopy,
   saveLoop,
   saveSource,
+  searchPanel: externalSearchPanel,
+  searchState: externalSearchState,
   selectedTrack,
+  selectedView: externalSelectedView,
   setIsPlaylistReorderDragActive,
   setPlaylistReorderDragMoveY,
   setSelectedLoopSourceId,
+  setSelectedView: externalSetSelectedView,
   syncActivePlaylistContext,
   toggleActivePlayback,
   togglePlayableItemPlayback,
@@ -70,22 +74,26 @@ export const SavedRehearsalLibrarySection = ({
   toggleSourcePlayback,
   updatePlaylist,
 }: SavedRehearsalLibrarySectionProps) => {
-  const [selectedView, setSelectedView] =
+  const [internalSelectedView, setInternalSelectedView] =
     useState<SavedRehearsalLibraryView>('files');
-  const searchState = useSavedRehearsalLibrarySearch({
+  const internalSearchState = useSavedRehearsalLibrarySearch({
     savedLibrarySources,
     savedLoops,
     savedPlaylists,
   });
+  const searchState = externalSearchState ?? internalSearchState;
   const playlistState = useSavedRehearsalLibraryPlaylistState({
     deletePlaylist,
     playlistIssue,
     savedPlaylists,
     updatePlaylist,
   });
-  const searchPanel = useSavedRehearsalLibrarySearchPanel({
+  const internalSearchPanel = useSavedRehearsalLibrarySearchPanel({
     searchState,
   });
+  const searchPanel = externalSearchPanel ?? internalSearchPanel;
+  const selectedView = externalSelectedView ?? internalSelectedView;
+  const setSelectedView = externalSetSelectedView ?? setInternalSelectedView;
   const trackPlaylistMenu = useSavedRehearsalLibraryTrackPlaylistMenu({
     createPlaylist,
     savedLibrarySources,
@@ -122,7 +130,6 @@ export const SavedRehearsalLibrarySection = ({
     setSelectedLoopSourceId,
     togglePlaylistPlayback,
   });
-
   useEffect(() => {
     syncActivePlaylistContext({
       loops: savedLoops,
@@ -135,7 +142,6 @@ export const SavedRehearsalLibrarySection = ({
     savedPlaylists,
     syncActivePlaylistContext,
   ]);
-
   const detailMode = resolveSavedRehearsalLibraryDetailMode({
     isPlaylistDetailVisible: playlistState.isPlaylistDetailVisible,
     selectedLoopViewSourceId: loopState.selectedLoopViewSourceId,
@@ -158,7 +164,6 @@ export const SavedRehearsalLibrarySection = ({
     : `Saved rehearsal tracks (${savedLibrarySources.length})`;
   const visibleSections =
     resolveSavedRehearsalLibraryVisibleSections(selectedView);
-
   const loopSection = (
     <SavedRehearsalLibraryLoopSectionContent
       activePlayableItem={activePlayableItem}
@@ -188,7 +193,6 @@ export const SavedRehearsalLibrarySection = ({
       togglePlayableItemPlayback={togglePlayableItemPlayback}
     />
   );
-
   const playlistSection = (
     <SavedRehearsalLibraryPlaylistSectionContent
       activePlaylistSession={activePlaylistSession}
@@ -214,7 +218,6 @@ export const SavedRehearsalLibrarySection = ({
       updatePlaylist={updatePlaylist}
     />
   );
-
   const shouldRenderBrowseContent = isSearchPanelVisible
     ? shouldShowSearchResults
     : detailMode === 'browse';

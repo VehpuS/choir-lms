@@ -74,20 +74,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   triggerNeutral: {
-    borderColor: 'rgba(255, 248, 239, 0.22)',
-    backgroundColor: 'rgba(255, 248, 239, 0.08)',
+    borderColor: 'rgba(255, 248, 239, 0.38)',
+    backgroundColor: 'rgba(255, 248, 239, 0.16)',
   },
   triggerReady: {
-    borderColor: 'rgba(209, 232, 221, 0.28)',
-    backgroundColor: 'rgba(209, 232, 221, 0.1)',
+    borderColor: 'rgba(209, 232, 221, 0.46)',
+    backgroundColor: 'rgba(209, 232, 221, 0.2)',
   },
   triggerWarning: {
-    borderColor: 'rgba(255, 214, 128, 0.35)',
-    backgroundColor: 'rgba(255, 214, 128, 0.12)',
+    borderColor: 'rgba(255, 214, 128, 0.48)',
+    backgroundColor: 'rgba(255, 214, 128, 0.22)',
   },
   triggerError: {
-    borderColor: 'rgba(248, 174, 150, 0.35)',
-    backgroundColor: 'rgba(248, 174, 150, 0.12)',
+    borderColor: 'rgba(248, 174, 150, 0.48)',
+    backgroundColor: 'rgba(248, 174, 150, 0.2)',
   },
   triggerPressed: {
     opacity: 0.88,

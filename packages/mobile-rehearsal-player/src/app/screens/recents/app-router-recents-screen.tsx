@@ -1,7 +1,8 @@
+import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import type { useSavedTrackPlayback } from '../../library/playback/hooks/use-saved-track-playback';
 
-import { RecentsScreen } from './index';
 import type { RecentRehearsalItem } from './history';
+import { RecentsScreen } from './index';
 
 type AppRouterRecentsPlayback = Pick<
   ReturnType<typeof useSavedTrackPlayback>,
@@ -13,6 +14,7 @@ type AppRouterRecentsPlayback = Pick<
 >;
 
 type AppRouterRecentsScreenProps = {
+  authorization: DriveSessionMenuController;
   onRequestLibraryDestination: () => void;
   playback: AppRouterRecentsPlayback;
   recentRehearsalHistory: RecentRehearsalItem[];
@@ -22,6 +24,7 @@ type AppRouterRecentsScreenProps = {
 };
 
 export const AppRouterRecentsScreen = ({
+  authorization,
   onRequestLibraryDestination,
   playback,
   recentRehearsalHistory,
@@ -32,6 +35,7 @@ export const AppRouterRecentsScreen = ({
   return (
     <RecentsScreen
       activePlayableItemId={playback.activePlayableItem?.id ?? null}
+      authorization={authorization}
       canQueueAsNext={playback.activePlayableItem !== null}
       isPlaybackActive={playback.playbackState === 'playing'}
       isRecentItemInLibrary={(recentRehearsal) => {

@@ -1,10 +1,11 @@
-import { Fragment } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { DriveLibrarySectionHeader } from '../../drive/components/drive-library-section-header';
+import { DriveSessionMenu } from '../../../auth/google-drive/components/drive-session-menu';
+import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
+import { DestinationHeader } from '../../../components/destination-header';
+import { getDestinationHeaderModel } from '../../../components/destination-header-model';
 import {
   SAVED_REHEARSAL_LIBRARY_VIEW_OPTIONS,
-  resolveSavedRehearsalLibraryViewCopy,
   type SavedRehearsalLibraryView,
 } from '../../saved-rehearsal-library/detail-mode';
 import {
@@ -17,6 +18,18 @@ import { useSavedRehearsalLibrarySearch } from './use-saved-rehearsal-library-se
 type SearchPanelVisibility = {
   isFilterPopoverVisible: boolean;
   isSearchBarVisible: boolean;
+};
+
+type SavedRehearsalLibraryHeaderProps = {
+  authorization?: DriveSessionMenuController;
+  handleFilterActionPress: () => void;
+  handleSearchActionPress: () => void;
+  isSessionMenuVisible: boolean;
+  onCloseSessionMenu: () => void;
+  onToggleSessionMenu: () => void;
+  searchPanelVisibility: SearchPanelVisibility;
+  searchState: ReturnType<typeof useSavedRehearsalLibrarySearch>;
+  style?: StyleProp<ViewStyle>;
 };
 
 type SavedRehearsalLibrarySearchShellProps = {
@@ -55,6 +68,69 @@ const SavedRehearsalLibraryViewSwitcher = ({
   );
 };
 
+export const SavedRehearsalLibraryHeader = ({
+  authorization,
+  handleFilterActionPress,
+  handleSearchActionPress,
+  isSessionMenuVisible,
+  onCloseSessionMenu,
+  onToggleSessionMenu,
+  searchPanelVisibility,
+  searchState,
+  style,
+}: SavedRehearsalLibraryHeaderProps) => {
+  const headerModel = getDestinationHeaderModel('library');
+
+  return (
+    <DestinationHeader
+      style={style}
+      trailingAction={
+        <View style={styles.headerActionRow}>
+          <LibrarySearchControlsActions
+            availabilityFilter={searchState.availabilityFilter}
+            entityFilter={searchState.entityFilter}
+            isFilterPopoverVisible={
+              searchPanelVisibility.isFilterPopoverVisible
+            }
+            isSearchBarVisible={searchPanelVisibility.isSearchBarVisible}
+            onFilterActionPress={() => {
+              onCloseSessionMenu();
+              handleFilterActionPress();
+            }}
+            onSearchActionPress={() => {
+              onCloseSessionMenu();
+              handleSearchActionPress();
+            }}
+            selectedTagFilters={searchState.selectedTagFilters}
+            tone="hero"
+          />
+          {authorization ? (
+            <DriveSessionMenu
+              authState={authorization.authState}
+              canClearAuthorization={authorization.canClearAuthorization}
+              canStartAuthorization={authorization.canStartAuthorization}
+              isBusy={authorization.isBusy}
+              isVisible={isSessionMenuVisible}
+              onClearAuthorization={() => {
+                onCloseSessionMenu();
+                void authorization.clearAuthorization();
+              }}
+              onStartAuthorization={() => {
+                onCloseSessionMenu();
+                void authorization.startAuthorization();
+              }}
+              onToggleVisibility={onToggleSessionMenu}
+              requestReady={authorization.requestReady}
+              statusCopy={authorization.statusCopy}
+            />
+          ) : null}
+        </View>
+      }
+      title={headerModel.title}
+    />
+  );
+};
+
 export const SavedRehearsalLibrarySearchShell = ({
   handleFilterActionPress,
   handleSearchActionPress,
@@ -63,31 +139,8 @@ export const SavedRehearsalLibrarySearchShell = ({
   searchState,
   selectedView,
 }: SavedRehearsalLibrarySearchShellProps) => {
-  const viewCopy = resolveSavedRehearsalLibraryViewCopy(selectedView);
-
   return (
-    <Fragment>
-      <DriveLibrarySectionHeader
-        body={viewCopy.body}
-        canRefresh={false}
-        eyebrow={viewCopy.eyebrow}
-        isLoading={false}
-        onRefresh={() => undefined}
-        trailingAction={
-          <LibrarySearchControlsActions
-            availabilityFilter={searchState.availabilityFilter}
-            entityFilter={searchState.entityFilter}
-            isFilterPopoverVisible={
-              searchPanelVisibility.isFilterPopoverVisible
-            }
-            isSearchBarVisible={searchPanelVisibility.isSearchBarVisible}
-            onFilterActionPress={handleFilterActionPress}
-            onSearchActionPress={handleSearchActionPress}
-            selectedTagFilters={searchState.selectedTagFilters}
-          />
-        }
-        title={viewCopy.title}
-      />
+    <View style={styles.shell}>
       <SavedRehearsalLibraryViewSwitcher
         onSelectView={onSelectView}
         selectedView={selectedView}
@@ -111,11 +164,19 @@ export const SavedRehearsalLibrarySearchShell = ({
         selectedTagFilters={searchState.selectedTagFilters}
         searchQuery={searchState.librarySearchQuery}
       />
-    </Fragment>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  headerActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  shell: {
+    gap: 12,
+  },
   viewChip: {
     minHeight: 34,
     paddingHorizontal: 12,

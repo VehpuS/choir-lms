@@ -4,8 +4,12 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { useState } from 'react';
 import { runtimeConfig } from '../../../config/runtime';
-import { CompactPlaybackAction } from '../../components/compact-playback-action';
+import { DriveSessionMenu } from '../../auth/google-drive/components/drive-session-menu';
+import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import { CompactPlayableRowShell } from '../../components/compact-playable-row-shell';
+import { CompactPlaybackAction } from '../../components/compact-playback-action';
+import { DestinationHeader } from '../../components/destination-header';
+import { getDestinationHeaderModel } from '../../components/destination-header-model';
 import { InteractionChip } from '../../library/components/interaction-chip';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
 import { appTheme } from '../../utils/theme';
@@ -22,6 +26,7 @@ import { recentsScreenStyles as styles } from './styles';
 
 export type RecentsScreenProps = {
   activePlayableItemId: string | null;
+  authorization: DriveSessionMenuController;
   canQueueAsNext: boolean;
   isPlaybackActive: boolean;
   isRecentItemInLibrary: (recentRehearsal: RecentRehearsalItem) => boolean;
@@ -45,6 +50,7 @@ const AUDIO_FORMAT_LABEL = join(
 
 export const RecentsScreen = ({
   activePlayableItemId,
+  authorization,
   canQueueAsNext,
   isPlaybackActive,
   isRecentItemInLibrary,
@@ -59,6 +65,8 @@ export const RecentsScreen = ({
   const [activeOptionsRecentId, setActiveOptionsRecentId] = useState<
     string | null
   >(null);
+  const headerModel = getDestinationHeaderModel('recents');
+  const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
   const latestRecentRehearsal = recentRehearsalHistory[0] ?? null;
   const continuePracticingCopy = getRecentsContinuePracticingCopy({
     activePlayableItemTitle: latestRecentRehearsal?.title ?? null,
@@ -66,166 +74,195 @@ export const RecentsScreen = ({
   });
   const isRecentPlaybackAvailable = latestRecentRehearsal !== null;
 
-  const shortcutMetadata = `${RECENTS_SHORTCUT_TAGS.length} optional shortcut tags`;
+  const shortcutMetadata = `${RECENTS_SHORTCUT_TAGS.length} optional shortcut tags - ${AUDIO_FORMAT_LABEL}`;
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-      style={styles.screen}
-    >
-      <View style={styles.hero}>
-        <Text style={styles.title}>Resume your latest practice</Text>
-        <Text style={styles.subtitle}>Jump back into practice here.</Text>
-        <View style={styles.statusRow}>
-          <Text style={styles.statusLabel}>Saved tracks</Text>
-          <Text style={styles.statusValue}>{savedTrackCount}</Text>
-        </View>
-        <Text style={styles.statusValueList}>{AUDIO_FORMAT_LABEL}</Text>
-      </View>
+    <View style={styles.screen}>
+      {isSessionMenuVisible ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            setIsSessionMenuVisible(false);
+          }}
+          style={styles.menuBackdrop}
+        />
+      ) : null}
+      <DestinationHeader
+        style={styles.destinationHeader}
+        title={headerModel.title}
+        trailingAction={
+          <DriveSessionMenu
+            authState={authorization.authState}
+            canClearAuthorization={authorization.canClearAuthorization}
+            canStartAuthorization={authorization.canStartAuthorization}
+            isBusy={authorization.isBusy}
+            isVisible={isSessionMenuVisible}
+            onClearAuthorization={() => {
+              setIsSessionMenuVisible(false);
+              void authorization.clearAuthorization();
+            }}
+            onStartAuthorization={() => {
+              setIsSessionMenuVisible(false);
+              void authorization.startAuthorization();
+            }}
+            onToggleVisibility={() => {
+              setIsSessionMenuVisible((currentValue) => !currentValue);
+            }}
+            requestReady={authorization.requestReady}
+            statusCopy={authorization.statusCopy}
+          />
+        }
+      />
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        style={styles.scrollView}
+      >
+        <View style={styles.resumeCard}>
+          <Text style={styles.resumeCardTitle}>
+            {continuePracticingCopy.title}
+          </Text>
+          <Text style={styles.resumeCardBody}>
+            {continuePracticingCopy.body}
+          </Text>
+          {recentRehearsalHistory.map((recentRehearsal) => {
+            const isCurrentRowPlaying =
+              isPlaybackActive &&
+              recentRehearsal.playableItem.id === activePlayableItemId;
 
-      <View style={styles.resumeCard}>
-        <Text style={styles.resumeCardTitle}>
-          {continuePracticingCopy.title}
-        </Text>
-        <Text style={styles.resumeCardBody}>{continuePracticingCopy.body}</Text>
-        {recentRehearsalHistory.map((recentRehearsal) => {
-          const isCurrentRowPlaying =
-            isPlaybackActive &&
-            recentRehearsal.playableItem.id === activePlayableItemId;
-
-          return (
-            <View key={recentRehearsal.id}>
-              <CompactPlayableRowShell
-                actions={
-                  <CompactPlaybackAction
-                    accessibilityLabel={`Play ${recentRehearsal.title}`}
-                    disabled={isCurrentRowPlaying}
-                    disabledIconColor={appTheme.colors.secondaryText}
-                    iconName="play"
-                    onPress={() => {
-                      onResumeRecentPlayback(recentRehearsal);
-                    }}
-                    variant="row"
-                  />
-                }
-                metadata={
-                  <Text numberOfLines={1} style={styles.recentItemMeta}>
-                    {getRecentRehearsalLastPlayedLabel(
-                      recentRehearsal.playedAt,
-                    )}
-                  </Text>
-                }
-                overflowTrigger={
-                  <Pressable
-                    accessibilityLabel={`More actions for ${recentRehearsal.title}`}
-                    accessibilityRole="button"
-                    onPress={() => {
-                      setActiveOptionsRecentId(recentRehearsal.id);
-                    }}
-                    style={({ pressed }) => [
-                      styles.iconActionButton,
-                      pressed ? styles.iconActionButtonPressed : undefined,
-                    ]}
-                  >
-                    <MaterialCommunityIcons
-                      color={appTheme.colors.primaryText}
-                      name="dots-vertical"
-                      size={20}
+            return (
+              <View key={recentRehearsal.id}>
+                <CompactPlayableRowShell
+                  actions={
+                    <CompactPlaybackAction
+                      accessibilityLabel={`Play ${recentRehearsal.title}`}
+                      disabled={isCurrentRowPlaying}
+                      disabledIconColor={appTheme.colors.secondaryText}
+                      iconName="play"
+                      onPress={() => {
+                        onResumeRecentPlayback(recentRehearsal);
+                      }}
+                      variant="row"
                     />
-                  </Pressable>
-                }
-                style={styles.recentItemRow}
-                title={
-                  <Text numberOfLines={1} style={styles.recentItemTitle}>
-                    {recentRehearsal.title}
-                  </Text>
-                }
-                variant="row"
-              />
-              <OptionsMenuSheet
-                actions={getRecentsOverflowActionState({
-                  canQueueAsNext,
-                  isViewInLibraryAvailable:
-                    isRecentItemInLibrary(recentRehearsal),
-                }).map((action) => {
-                  if (action.id === 'play-next') {
+                  }
+                  metadata={
+                    <Text numberOfLines={1} style={styles.recentItemMeta}>
+                      {getRecentRehearsalLastPlayedLabel(
+                        recentRehearsal.playedAt,
+                      )}
+                    </Text>
+                  }
+                  overflowTrigger={
+                    <Pressable
+                      accessibilityLabel={`More actions for ${recentRehearsal.title}`}
+                      accessibilityRole="button"
+                      onPress={() => {
+                        setActiveOptionsRecentId(recentRehearsal.id);
+                      }}
+                      style={({ pressed }) => [
+                        styles.iconActionButton,
+                        pressed ? styles.iconActionButtonPressed : undefined,
+                      ]}
+                    >
+                      <MaterialCommunityIcons
+                        color={appTheme.colors.primaryText}
+                        name="dots-vertical"
+                        size={20}
+                      />
+                    </Pressable>
+                  }
+                  style={styles.recentItemRow}
+                  title={
+                    <Text numberOfLines={1} style={styles.recentItemTitle}>
+                      {recentRehearsal.title}
+                    </Text>
+                  }
+                  variant="row"
+                />
+                <OptionsMenuSheet
+                  actions={getRecentsOverflowActionState({
+                    canQueueAsNext,
+                    isViewInLibraryAvailable:
+                      isRecentItemInLibrary(recentRehearsal),
+                  }).map((action) => {
+                    if (action.id === 'play-next') {
+                      return {
+                        ...action,
+                        onPress: () => {
+                          setActiveOptionsRecentId(null);
+                          onQueueRecentPlaybackNext(recentRehearsal);
+                        },
+                      };
+                    }
+
+                    if (action.id === 'add-to-queue') {
+                      return {
+                        ...action,
+                        onPress: () => {
+                          setActiveOptionsRecentId(null);
+                          onQueueRecentPlaybackUpNext(recentRehearsal);
+                        },
+                      };
+                    }
+
                     return {
                       ...action,
                       onPress: () => {
                         setActiveOptionsRecentId(null);
-                        onQueueRecentPlaybackNext(recentRehearsal);
+                        onViewRecentInLibrary(recentRehearsal);
                       },
                     };
-                  }
+                  })}
+                  isVisible={activeOptionsRecentId === recentRehearsal.id}
+                  onClose={() => {
+                    setActiveOptionsRecentId(null);
+                  }}
+                  title={recentRehearsal.title}
+                />
+              </View>
+            );
+          })}
+        </View>
 
-                  if (action.id === 'add-to-queue') {
-                    return {
-                      ...action,
-                      onPress: () => {
-                        setActiveOptionsRecentId(null);
-                        onQueueRecentPlaybackUpNext(recentRehearsal);
-                      },
-                    };
-                  }
-
-                  return {
-                    ...action,
-                    onPress: () => {
-                      setActiveOptionsRecentId(null);
-                      onViewRecentInLibrary(recentRehearsal);
-                    },
-                  };
-                })}
-                isVisible={activeOptionsRecentId === recentRehearsal.id}
-                onClose={() => {
-                  setActiveOptionsRecentId(null);
-                }}
-                title={recentRehearsal.title}
-              />
+        <View style={styles.shortcutsCard}>
+          <View style={styles.shortcutsHeader}>
+            <View style={styles.shortcutsCopy}>
+              <Text style={styles.shortcutsTitle}>Popular shortcuts</Text>
+              <Text style={styles.shortcutsBody}>
+                Optional tag shortcuts for fast recents scanning.
+              </Text>
             </View>
-          );
-        })}
-      </View>
-
-      <View style={styles.shortcutsCard}>
-        <View style={styles.shortcutsHeader}>
-          <View style={styles.shortcutsCopy}>
-            <Text style={styles.shortcutsTitle}>Popular shortcuts</Text>
-            <Text style={styles.shortcutsBody}>
-              Optional tag shortcuts for fast recents scanning.
-            </Text>
+          </View>
+          <Text style={styles.shortcutsMeta}>{shortcutMetadata}</Text>
+          <View style={styles.tagRow}>
+            {RECENTS_SHORTCUT_TAGS.map((tag) => (
+              <InteractionChip
+                key={tag}
+                label={tag}
+                labelStyle={styles.tagLabel}
+                style={styles.tagChip}
+                variant="passive"
+              >
+                <CompactPlaybackAction
+                  accessibilityLabel={
+                    getRecentsShortcutPlayActionCopy({
+                      isResumePlaybackAvailable: isRecentPlaybackAvailable,
+                      shortcutTag: tag,
+                    }).accessibilityLabel
+                  }
+                  disabled={!isRecentPlaybackAvailable}
+                  disabledIconColor={appTheme.colors.secondaryText}
+                  iconName="play"
+                  onPress={() => {
+                    onPlayRecentShortcut(tag);
+                  }}
+                  variant="chip"
+                />
+              </InteractionChip>
+            ))}
           </View>
         </View>
-        <Text style={styles.shortcutsMeta}>{shortcutMetadata}</Text>
-        <View style={styles.tagRow}>
-          {RECENTS_SHORTCUT_TAGS.map((tag) => (
-            <InteractionChip
-              key={tag}
-              label={tag}
-              labelStyle={styles.tagLabel}
-              style={styles.tagChip}
-              variant="passive"
-            >
-              <CompactPlaybackAction
-                accessibilityLabel={
-                  getRecentsShortcutPlayActionCopy({
-                    isResumePlaybackAvailable: isRecentPlaybackAvailable,
-                    shortcutTag: tag,
-                  }).accessibilityLabel
-                }
-                disabled={!isRecentPlaybackAvailable}
-                disabledIconColor={appTheme.colors.secondaryText}
-                iconName="play"
-                onPress={() => {
-                  onPlayRecentShortcut(tag);
-                }}
-                variant="chip"
-              />
-            </InteractionChip>
-          ))}
-        </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };

@@ -65,13 +65,16 @@ type LibrarySearchControlsActionsProps = Pick<
   | 'onFilterActionPress'
   | 'selectedTagFilters'
   | 'onSearchActionPress'
->;
+> & {
+  tone?: 'hero' | 'surface';
+};
 
 type LibrarySearchActionButtonProps = {
   accessibilityLabel: string;
   iconName: 'close' | 'magnify' | 'tune-variant';
   isFilled: boolean;
   onPress: () => void;
+  tone: 'hero' | 'surface';
 };
 
 const FilterChipGroup = <Value extends string>({
@@ -112,7 +115,10 @@ const LibrarySearchActionButton = ({
   iconName,
   isFilled,
   onPress,
+  tone,
 }: LibrarySearchActionButtonProps) => {
+  const isHeroTone = tone === 'hero';
+
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
@@ -120,12 +126,25 @@ const LibrarySearchActionButton = ({
       onPress={onPress}
       style={({ pressed }) => [
         styles.actionButton,
-        isFilled ? styles.actionButtonFilled : undefined,
+        isHeroTone ? styles.actionButtonHero : styles.actionButtonSurface,
+        isFilled
+          ? isHeroTone
+            ? styles.actionButtonFilledHero
+            : styles.actionButtonFilledSurface
+          : undefined,
         pressed ? styles.actionButtonPressed : undefined,
       ]}
     >
       <MaterialCommunityIcons
-        color={isFilled ? '#fff8ef' : '#305c4d'}
+        color={
+          isHeroTone
+            ? isFilled
+              ? '#173229'
+              : '#fff8ef'
+            : isFilled
+              ? '#fff8ef'
+              : '#305c4d'
+        }
         name={iconName}
         size={18}
       />
@@ -141,6 +160,7 @@ export const LibrarySearchControlsActions = ({
   onFilterActionPress,
   onSearchActionPress,
   selectedTagFilters,
+  tone = 'surface',
 }: LibrarySearchControlsActionsProps) => {
   const hasActiveFilters =
     entityFilter !== 'all' ||
@@ -158,6 +178,7 @@ export const LibrarySearchControlsActions = ({
         iconName="tune-variant"
         isFilled={isFilterPopoverVisible || hasActiveFilters}
         onPress={onFilterActionPress}
+        tone={tone}
       />
       <LibrarySearchActionButton
         accessibilityLabel={
@@ -166,6 +187,7 @@ export const LibrarySearchControlsActions = ({
         iconName={isSearchBarVisible ? 'close' : 'magnify'}
         isFilled={true}
         onPress={onSearchActionPress}
+        tone={tone}
       />
     </View>
   );
@@ -273,17 +295,27 @@ const styles = StyleSheet.create({
     width: ACTION_BUTTON_SIZE,
     height: ACTION_BUTTON_SIZE,
     borderRadius: 999,
-    borderWidth: 1,
-    borderColor: '#c8c0b2',
-    backgroundColor: '#f7f1e7',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
-  actionButtonFilled: {
+  actionButtonFilledHero: {
+    borderColor: '#fff8ef',
+    backgroundColor: '#fff8ef',
+  },
+  actionButtonFilledSurface: {
     borderColor: '#305c4d',
     backgroundColor: '#305c4d',
   },
+  actionButtonHero: {
+    borderColor: 'rgba(255, 248, 239, 0.26)',
+    backgroundColor: 'rgba(255, 248, 239, 0.08)',
+  },
   actionButtonPressed: { opacity: 0.8 },
+  actionButtonSurface: {
+    borderColor: '#c8c0b2',
+    backgroundColor: '#f7f1e7',
+  },
   panelContent: {
     gap: 12,
   },
