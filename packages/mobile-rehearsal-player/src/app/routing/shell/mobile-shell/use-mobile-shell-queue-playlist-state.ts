@@ -1,32 +1,36 @@
 import { useEffect, useState } from 'react';
 
 import type { PlaylistDraftIssue } from '../../../library/playlists/utils/saved-playlist-view-model';
+import {
+  closeQueuePlaylistSaveDialog,
+  closeQueuePlaylistUpdateDialog,
+  createQueuePlaylistDialogState,
+  openQueuePlaylistSaveDialog,
+  openQueuePlaylistUpdateDialog,
+  setQueuePlaylistDialogIssue,
+  setQueuePlaylistDraftName,
+  type QueuePlaylistUpdateAction,
+} from './queue-playlist-dialog-state';
 
 type UseMobileShellQueuePlaylistStateOptions = {
   canShowQueuePlaylistActions: boolean;
   hasMiniPlayerSummary: boolean;
   onSaveQueueAsPlaylist: (name: string) => Promise<PlaylistDraftIssue | null>;
-};
-
-const createQueuePlaylistState = () => {
-  return {
-    isSaveDialogVisible: false,
-    issue: null as PlaylistDraftIssue | null,
-    queuePlaylistDraftName: '',
-  };
+  onUpdateQueuePlaylist: () => Promise<PlaylistDraftIssue | null>;
 };
 
 export const useMobileShellQueuePlaylistState = ({
   canShowQueuePlaylistActions,
   hasMiniPlayerSummary,
   onSaveQueueAsPlaylist,
+  onUpdateQueuePlaylist,
 }: UseMobileShellQueuePlaylistStateOptions) => {
   const [queuePlaylistState, setQueuePlaylistState] = useState(
-    createQueuePlaylistState,
+    createQueuePlaylistDialogState,
   );
 
   const resetQueuePlaylistState = () => {
-    setQueuePlaylistState(createQueuePlaylistState());
+    setQueuePlaylistState(createQueuePlaylistDialogState());
   };
 
   useEffect(() => {
@@ -51,40 +55,24 @@ export const useMobileShellQueuePlaylistState = ({
       resetQueuePlaylistState();
     },
     closeSaveDialog() {
-      setQueuePlaylistState((currentValue) => {
-        return {
-          ...currentValue,
-          isSaveDialogVisible: false,
-          issue: null,
-        };
-      });
+      setQueuePlaylistState(closeQueuePlaylistSaveDialog);
+    },
+    closeUpdateDialog() {
+      setQueuePlaylistState(closeQueuePlaylistUpdateDialog);
     },
     onDraftNameChange(value: string) {
       setQueuePlaylistState((currentValue) => {
-        return {
-          ...currentValue,
-          issue: null,
-          queuePlaylistDraftName: value,
-        };
-      });
-    },
-    openAppendDialog() {
-      setQueuePlaylistState((currentValue) => {
-        return {
-          ...currentValue,
-          isAppendDialogVisible: true,
-          isSaveDialogVisible: false,
-          issue: null,
-        };
+        return setQueuePlaylistDraftName(currentValue, value);
       });
     },
     openSaveDialog() {
       setQueuePlaylistState((currentValue) => {
-        return {
-          ...currentValue,
-          isSaveDialogVisible: true,
-          issue: null,
-        };
+        return openQueuePlaylistSaveDialog(currentValue);
+      });
+    },
+    openUpdateDialog(updateAction: QueuePlaylistUpdateAction) {
+      setQueuePlaylistState((currentValue) => {
+        return openQueuePlaylistUpdateDialog(currentValue, updateAction);
       });
     },
     async submitSave() {
@@ -94,10 +82,19 @@ export const useMobileShellQueuePlaylistState = ({
 
       if (issue) {
         setQueuePlaylistState((currentValue) => {
-          return {
-            ...currentValue,
-            issue,
-          };
+          return setQueuePlaylistDialogIssue(currentValue, issue);
+        });
+        return;
+      }
+
+      resetQueuePlaylistState();
+    },
+    async submitUpdate() {
+      const issue = await onUpdateQueuePlaylist();
+
+      if (issue) {
+        setQueuePlaylistState((currentValue) => {
+          return setQueuePlaylistDialogIssue(currentValue, issue);
         });
         return;
       }

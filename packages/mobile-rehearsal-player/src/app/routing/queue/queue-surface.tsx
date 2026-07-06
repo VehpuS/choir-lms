@@ -3,7 +3,6 @@ import { type ComponentProps, useEffect, useState } from 'react';
 import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
 import { QueueMovePositionDialog } from '../../components/queue-move-position-dialog';
-import type { PlaylistDraftIssue } from '../../library/playlists/utils/saved-playlist-view-model';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
 import { PlaybackSessionModeCard } from '../playback/playback-session-mode-card';
 import { styles } from '../playback/playback-surface-styles';
@@ -27,8 +26,12 @@ type QueueSurfaceProps = {
   onMoveQueueItemToStart: (index: number) => void;
   onPlayQueueItem: (index: number) => void;
   onRemoveQueueItem: (index: number) => void;
+  onRequestUpdateQueuePlaylist: (
+    action: NonNullable<
+      NonNullable<UpNextSurfaceSummary['queuePlaylistActions']>['updateAction']
+    >,
+  ) => void;
   onSaveQueueAsPlaylist: () => void;
-  onUpdateQueuePlaylist: () => Promise<PlaylistDraftIssue | null>;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
@@ -53,8 +56,8 @@ export const QueueSurface = ({
   onMoveQueueItemToStart,
   onPlayQueueItem,
   onRemoveQueueItem,
+  onRequestUpdateQueuePlaylist,
   onSaveQueueAsPlaylist,
-  onUpdateQueuePlaylist,
   onSelectQueueMode,
   onSelectRepeatMode,
   onShowNowPlaying,
@@ -141,8 +144,8 @@ export const QueueSurface = ({
         <QueuePlaylistActionRow
           actions={summary.queuePlaylistActions}
           isMutating={isSavingQueueAsPlaylist}
+          onRequestUpdateQueuePlaylist={onRequestUpdateQueuePlaylist}
           onSaveQueueAsPlaylist={onSaveQueueAsPlaylist}
-          onUpdateQueuePlaylist={onUpdateQueuePlaylist}
         />
       ) : null}
 

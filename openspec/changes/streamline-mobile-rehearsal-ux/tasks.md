@@ -95,7 +95,7 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
 ### 2.2 Stabilize the Already-Shipped Queue, Playlist, and Shared-Action Behavior
 
 - [x] 2.2.1 Backfill focused automated coverage for row-action placement, shared overflow trigger behavior, search-result highlighting, active queue behavior, and default playlist row controls (`6.1.1`, `6.1.2`, `6.1.3`, `6.1.5`, and `6.1.5.1`).
-- [ ] 2.2.2 Run manual regression for playlist row-start playback, playlist-card play icon behavior, Recents shortcut playback, transient queue promotion, queue-to-playlist capture, active queue controls, playlist-detail playback controls, and search highlight updates (`6.2`, `6.2.1`, `6.2.2`, `6.2.3`, `6.2.3.1`, `6.2.3.2`, and `6.2.4` scoped to the already-implemented non-Files surfaces).
+- [x] 2.2.2 Run manual regression for playlist row-start playback, playlist-card play icon behavior, Recents shortcut playback, transient queue promotion, queue-to-playlist capture, active queue controls, playlist-detail playback controls, and search highlight updates (`6.2`, `6.2.1`, `6.2.2`, `6.2.3`, `6.2.3.1`, `6.2.3.2`, and `6.2.4` scoped to the already-implemented non-Files surfaces).
 - [ ] 2.2.3 Record pass/fail against the non-regression baseline from task `1.1` for the capabilities touched in this step (`6.3` scoped to queue, playlist, search, and Recents behavior).
 - [ ] 2.2.4 Create a tested checkpoint commit that locks the current non-Files interaction baseline before the Files refactor begins.
 

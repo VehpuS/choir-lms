@@ -1,52 +1,26 @@
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
-import type { PlaylistDraftIssue } from '../../library/playlists/utils/saved-playlist-view-model';
 import { styles } from '../playback/playback-surface-styles';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
 
 type QueuePlaylistActionRowProps = {
   actions: NonNullable<UpNextSurfaceSummary['queuePlaylistActions']>;
   isMutating: boolean;
-  onUpdateQueuePlaylist: () => Promise<PlaylistDraftIssue | null>;
   onSaveQueueAsPlaylist: () => void;
+  onRequestUpdateQueuePlaylist: (
+    action: NonNullable<
+      NonNullable<UpNextSurfaceSummary['queuePlaylistActions']>['updateAction']
+    >,
+  ) => void;
 };
 
 export const QueuePlaylistActionRow = ({
   actions,
   isMutating,
-  onUpdateQueuePlaylist,
   onSaveQueueAsPlaylist,
+  onRequestUpdateQueuePlaylist,
 }: QueuePlaylistActionRowProps) => {
   const hasUpdateAction = actions.updateAction !== null;
-
-  const handleConfirmUpdate = () => {
-    if (!actions.updateAction) {
-      return;
-    }
-
-    Alert.alert(
-      actions.updateAction.confirmationTitle,
-      actions.updateAction.confirmationMessage,
-      [
-        {
-          style: 'cancel',
-          text: 'Cancel',
-        },
-        {
-          text: actions.updateAction.confirmLabel,
-          onPress: () => {
-            void (async () => {
-              const issue = await onUpdateQueuePlaylist();
-
-              if (issue) {
-                Alert.alert(issue.title, issue.message);
-              }
-            })();
-          },
-        },
-      ],
-    );
-  };
 
   return (
     <View style={styles.queuePlaylistActionRow}>
@@ -76,7 +50,13 @@ export const QueuePlaylistActionRow = ({
         <Pressable
           accessibilityRole="button"
           disabled={isMutating}
-          onPress={handleConfirmUpdate}
+          onPress={() => {
+            if (!actions.updateAction) {
+              return;
+            }
+
+            onRequestUpdateQueuePlaylist(actions.updateAction);
+          }}
           style={({ pressed }) => [
             styles.queuePlaylistPrimaryAction,
             pressed && !isMutating ? styles.headerActionPressed : null,

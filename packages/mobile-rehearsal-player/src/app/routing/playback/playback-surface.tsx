@@ -12,7 +12,6 @@ import {
   View,
 } from 'react-native';
 
-import type { PlaylistDraftIssue } from '../../library/playlists/utils/saved-playlist-view-model';
 import { QueueSurface } from '../queue/queue-surface';
 import type {
   NowPlayingSurfaceSummary,
@@ -40,12 +39,16 @@ type PlaybackSurfaceProps = {
   onClose: () => void;
   onPlayQueueItem: (index: number) => void;
   onRemoveQueueItem: (index: number) => void;
+  onRequestUpdateQueuePlaylist: (
+    action: NonNullable<
+      NonNullable<UpNextSurfaceSummary['queuePlaylistActions']>['updateAction']
+    >,
+  ) => void;
   onSeekBackward: () => void;
   onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
   onSaveQueueAsPlaylist: () => void;
-  onUpdateQueuePlaylist: () => Promise<PlaylistDraftIssue | null>;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
   onShowQueue: () => void;
@@ -76,12 +79,12 @@ export const PlaybackSurface = ({
   onClose,
   onPlayQueueItem,
   onRemoveQueueItem,
+  onRequestUpdateQueuePlaylist,
   onSeekBackward,
   onSeekForward,
   onSeekToPosition,
   onSelectQueueMode,
   onSaveQueueAsPlaylist,
-  onUpdateQueuePlaylist,
   onSelectRepeatMode,
   onShowNowPlaying,
   onShowQueue,
@@ -195,8 +198,8 @@ export const PlaybackSurface = ({
               onMoveQueueItemToStart={onMoveQueueItemToStart}
               onPlayQueueItem={onPlayQueueItem}
               onRemoveQueueItem={onRemoveQueueItem}
+              onRequestUpdateQueuePlaylist={onRequestUpdateQueuePlaylist}
               onSaveQueueAsPlaylist={onSaveQueueAsPlaylist}
-              onUpdateQueuePlaylist={onUpdateQueuePlaylist}
               onSelectQueueMode={onSelectQueueMode}
               onSelectRepeatMode={onSelectRepeatMode}
               onShowNowPlaying={onShowNowPlaying}

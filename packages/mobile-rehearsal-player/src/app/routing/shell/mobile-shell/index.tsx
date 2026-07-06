@@ -135,6 +135,7 @@ export const MobileShell = ({
     canShowQueuePlaylistActions,
     hasMiniPlayerSummary: miniPlayerSummary !== null,
     onSaveQueueAsPlaylist,
+    onUpdateQueuePlaylist,
   });
 
   useEffect(() => {
@@ -214,13 +215,13 @@ export const MobileShell = ({
         }}
         onPlayQueueItem={onPlayQueueItem}
         onRemoveQueueItem={onRemoveQueueItem}
+        onRequestUpdateQueuePlaylist={queuePlaylistState.openUpdateDialog}
         onSeekBackward={onSeekBackward}
         onSeekForward={onSeekForward}
         onSeekToPosition={onSeekToPosition}
         onSaveQueueAsPlaylist={() => {
           queuePlaylistState.openSaveDialog();
         }}
-        onUpdateQueuePlaylist={onUpdateQueuePlaylist}
         onSelectQueueMode={onSelectQueueMode}
         onSelectRepeatMode={onSelectRepeatMode}
         onShowNowPlaying={() => {
@@ -242,15 +243,23 @@ export const MobileShell = ({
       <MobileShellQueuePlaylistDialogs
         isMutating={isSavingQueueAsPlaylist}
         isSaveDialogVisible={queuePlaylistState.isSaveDialogVisible}
+        isUpdateDialogVisible={queuePlaylistState.isUpdateDialogVisible}
         issue={queuePlaylistState.issue}
         onCancelSave={queuePlaylistState.closeSaveDialog}
+        onCancelUpdate={queuePlaylistState.closeUpdateDialog}
         onChangeDraftName={queuePlaylistState.onDraftNameChange}
         onSubmitSave={() => {
           void (async () => {
             await queuePlaylistState.submitSave();
           })();
         }}
+        onSubmitUpdate={() => {
+          void (async () => {
+            await queuePlaylistState.submitUpdate();
+          })();
+        }}
         queuePlaylistDraftName={queuePlaylistState.queuePlaylistDraftName}
+        updateAction={queuePlaylistState.updateAction}
       />
     </SafeAreaView>
   );

@@ -1,6 +1,5 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
-import type { PlaylistDraftIssue } from '../../../library/playlists/utils/saved-playlist-view-model';
 import type { PlaylistPlaybackSession } from '../../../library/playlists/utils/saved-playlist-playback-view-model';
 import { PlaybackSurface } from '../../playback/playback-surface';
 import type {
@@ -27,8 +26,12 @@ type MobileShellPlaybackSurfaceProps = {
   onMoveQueueItemToStart: (index: number) => void;
   onPlayQueueItem: (index: number) => void;
   onRemoveQueueItem: (index: number) => void;
+  onRequestUpdateQueuePlaylist: (
+    action: NonNullable<
+      NonNullable<UpNextSurfaceSummary['queuePlaylistActions']>['updateAction']
+    >,
+  ) => void;
   onSaveQueueAsPlaylist: () => void;
-  onUpdateQueuePlaylist: () => Promise<PlaylistDraftIssue | null>;
   onSeekBackward: () => void;
   onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
@@ -69,8 +72,8 @@ export const MobileShellPlaybackSurface = (
       onMoveQueueItemToStart={props.onMoveQueueItemToStart}
       onPlayQueueItem={props.onPlayQueueItem}
       onRemoveQueueItem={props.onRemoveQueueItem}
+      onRequestUpdateQueuePlaylist={props.onRequestUpdateQueuePlaylist}
       onSaveQueueAsPlaylist={props.onSaveQueueAsPlaylist}
-      onUpdateQueuePlaylist={props.onUpdateQueuePlaylist}
       onSeekBackward={props.onSeekBackward}
       onSeekForward={props.onSeekForward}
       onSeekToPosition={props.onSeekToPosition}
