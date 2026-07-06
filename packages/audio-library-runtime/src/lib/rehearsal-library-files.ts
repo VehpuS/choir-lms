@@ -287,3 +287,9 @@ export const removeRehearsalLibraryFileLinkNode = (
     fileLinks: tree.fileLinks.filter((fileLink) => fileLink.id !== fileLinkId),
   };
 };
+
+export {
+  assertValidRehearsalLibraryFileLinkMutation,
+  assertValidRehearsalLibraryFolderMutation,
+  resolveRehearsalLibraryCopyVisibleName,
+} from './rehearsal-library-file-guards';

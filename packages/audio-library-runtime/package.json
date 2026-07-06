@@ -26,7 +26,7 @@
         ],
         "options": {
           "cwd": "packages/audio-library-runtime",
-          "command": "tsx --test src/lib/rehearsal-playback.spec.ts"
+          "command": "tsx --test src/lib/*.spec.ts"
         }
       }
     }
