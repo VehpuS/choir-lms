@@ -57,6 +57,11 @@ type GoogleAuthSuccessPayload = {
   params: Record<string, string>;
 };
 
+type WebAuthLocation = {
+  origin?: string;
+  pathname?: string;
+};
+
 const DEFAULT_AUTH_FAILURE_MESSAGE = 'Google Drive authorization failed.';
 
 export const DRIVE_AUTH_SESSION_KEY = 'choirlms.google-drive.authorization';
@@ -67,6 +72,28 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 
 const readOptionalString = (value: unknown) => {
   return typeof value === 'string' && !isEmpty(value) ? value : undefined;
+};
+
+const normalizeWebPathname = (value: string) => {
+  if (isEmpty(value)) {
+    return '/';
+  }
+
+  return value.startsWith('/') ? value : `/${value}`;
+};
+
+export const resolveWebAuthRedirectUri = (
+  location: WebAuthLocation | null | undefined,
+) => {
+  if (typeof location?.origin !== 'string' || isEmpty(location.origin)) {
+    return undefined;
+  }
+
+  if (typeof location.pathname !== 'string') {
+    return undefined;
+  }
+
+  return `${location.origin}${normalizeWebPathname(location.pathname)}`;
 };
 
 const resolveExpiresAt = (authentication: {

@@ -16,6 +16,7 @@ import {
   clearDriveAuthorizationState,
   getDriveAuthorizationStatusCopy,
   persistDriveAuthorizationState,
+  resolveWebAuthRedirectUri,
   resolveDriveAuthorizationResult,
   restoreDriveAuthorizationState,
 } from '../utils/authorization';
@@ -50,6 +51,25 @@ const createInitialAuthorizationState = (): DriveAuthorizationState => {
   });
 };
 
+const resolveGoogleRedirectUri = () => {
+  if (Platform.OS !== 'web') {
+    return undefined;
+  }
+
+  try {
+    return resolveWebAuthRedirectUri(
+      (globalThis as {
+        location?: {
+          origin?: string;
+          pathname?: string;
+        };
+      }).location,
+    );
+  } catch {
+    return undefined;
+  }
+};
+
 export const useGoogleDriveAuthorization = () => {
   const [authState, setAuthState] = useState<DriveAuthorizationState>(
     createInitialAuthorizationState,
@@ -61,9 +81,11 @@ export const useGoogleDriveAuthorization = () => {
 
   const googleClientId = getGoogleAuthClientId();
   const googleAuthConfigured = Boolean(googleClientId);
+  const googleRedirectUri = resolveGoogleRedirectUri();
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: googleClientId ?? FALLBACK_GOOGLE_CLIENT_ID,
+    redirectUri: googleRedirectUri,
     scopes: [runtimeConfig.google.driveScope],
     selectAccount: true,
   });

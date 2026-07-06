@@ -11,6 +11,7 @@ import {
   getDriveSessionTriggerCopy,
   persistDriveAuthorizationState,
   resolveDriveAuthorizationResult,
+  resolveWebAuthRedirectUri,
   restoreDriveAuthorizationState,
   type AuthorizationSessionStore,
 } from './authorization.js';
@@ -172,6 +173,24 @@ describe('resolveDriveAuthorizationResult', () => {
     assert.equal(details.status, 'Connected');
     assert.equal(details.request, 'Prepared');
     assert.match(details.expiry, /\d{4}|\//);
+  });
+
+  it('preserves the current web pathname in the auth redirect uri', () => {
+    assert.equal(
+      resolveWebAuthRedirectUri({
+        origin: 'https://vehpus.github.io',
+        pathname: '/choir-lms/',
+      }),
+      'https://vehpus.github.io/choir-lms/',
+    );
+    assert.equal(
+      resolveWebAuthRedirectUri({
+        origin: 'https://vehpus.github.io',
+        pathname: '',
+      }),
+      'https://vehpus.github.io/',
+    );
+    assert.equal(resolveWebAuthRedirectUri(null), undefined);
   });
 });
 
