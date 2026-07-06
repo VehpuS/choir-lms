@@ -47,6 +47,20 @@ const parseCsv = (value: string | undefined, fallback: string[]) => {
   return isEmpty(items) ? fallback : items;
 };
 
+const normalizeBaseUrl = (value: string | undefined) => {
+  if (value == null) {
+    return undefined;
+  }
+
+  const trimmedValue = value.trim();
+
+  if (isEmpty(trimmedValue) || trimmedValue === '/') {
+    return undefined;
+  }
+
+  return trimmedValue.startsWith('/') ? trimmedValue : `/${trimmedValue}`;
+};
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const scheme = process.env.EXPO_PUBLIC_APP_SCHEME ?? DEFAULT_APP_SCHEME;
   const iosBundleIdentifier =
@@ -62,6 +76,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     process.env.EXPO_PUBLIC_GOOGLE_DRIVE_SUPPORTED_EXTENSIONS,
     DEFAULT_SUPPORTED_AUDIO_EXTENSIONS,
   );
+  const configuredBaseUrl =
+    normalizeBaseUrl(process.env.EXPO_BASE_URL) ??
+    normalizeBaseUrl(config.experiments?.baseUrl);
 
   return {
     ...config,
@@ -100,6 +117,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     web: {
       bundler: 'metro',
       favicon: resolveAppAssetPath('assets', 'images', 'favicon.png'),
+    },
+    experiments: {
+      ...config.experiments,
+      baseUrl: configuredBaseUrl,
     },
     extra: {
       ...config.extra,

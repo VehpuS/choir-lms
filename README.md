@@ -98,6 +98,20 @@ npm exec -- nx run mobile-rehearsal-player:run-android
 
 For deterministic local and CI validation, `npm exec -- nx run mobile-rehearsal-player:build` performs a local Expo export. Use `npm exec -- nx run mobile-rehearsal-player:eas-build` when you intentionally want to trigger an EAS build.
 
+### GitHub Pages deployment
+
+The repository includes [.github/workflows/deploy-mobile-web-pages.yml](.github/workflows/deploy-mobile-web-pages.yml) to export and deploy the mobile web app to GitHub Pages automatically after the `CI` workflow succeeds for `main`, and it can also be run manually with a `ref` input through `workflow_dispatch`.
+
+Before the workflow can publish, enable GitHub Pages for the repository and set the build source to GitHub Actions in the repository settings.
+
+The workflow reads the configured Pages base path from GitHub and passes it to Expo as `EXPO_BASE_URL`, so project sites such as `https://vehpus.github.io/choir-lms/` and custom domains export the correct asset URLs.
+
+To preview the same path handling locally for the current repository URL shape:
+
+```sh
+EXPO_BASE_URL=/choir-lms npm exec -- nx run mobile-rehearsal-player:build
+```
+
 OpenSpec workflow:
 
 ```sh

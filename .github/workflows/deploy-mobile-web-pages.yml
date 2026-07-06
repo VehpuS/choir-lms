@@ -1,0 +1,85 @@
+name: Deploy Mobile Web to GitHub Pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to deploy'
+        required: true
+        default: main
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha || github.event.inputs.ref || github.sha }}
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      - run: npm ci
+
+      - name: Export mobile web app
+        env:
+          EXPO_BASE_URL: ${{ steps.pages.outputs.base_path }}
+        run: npm exec -- nx run mobile-rehearsal-player:build
+
+      - name: Add single-page app fallback
+        run: cp packages/mobile-rehearsal-player/dist/index.html packages/mobile-rehearsal-player/dist/404.html
+
+      - name: Disable Jekyll processing
+        run: touch packages/mobile-rehearsal-player/dist/.nojekyll
+
+      - name: Archive Pages artifact
+        run: |
+          tar \
+            --dereference --hard-dereference \
+            --directory packages/mobile-rehearsal-player/dist \
+            -cvf "$RUNNER_TEMP/mobile-web-pages.tar" \
+            --exclude=.git \
+            --exclude=.github \
+            .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/mobile-web-pages.tar
+          retention-days: 1
+          if-no-files-found: error
+
+  deploy:
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
