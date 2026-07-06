@@ -12,8 +12,9 @@ This repository is an Nx monorepo for a broader choir learning platform. See the
 - For TypeScript and TSX work, follow the repo coding style guidance in `.github/instructions/typescript-coding-style-policy.instructions.md`.
 - For TypeScript and TSX work in `packages/mobile-rehearsal-player/src/`, also follow `.github/instructions/mobile-rehearsal-folder-structure.instructions.md`.
 - For automated test work, follow the repo testing guidance in `.github/instructions/testing-policy.instructions.md`.
-- For cross-screen UI consistency updates in the mobile rehearsal player, invoke the `ui-consistency` skill in `.agents/skills/ui-consistency/SKILL.md`.
-- For mobile rehearsal player naming, test naming, file moves, and folder-organization work, invoke the `mobile-folder-structure` skill in `.agents/skills/mobile-folder-structure/SKILL.md`.
+- For cross-screen UI consistency updates in the mobile rehearsal player, invoke the `ui-consistency` skill in `.github/skills/ui-consistency/SKILL.md`.
+- For mobile rehearsal player naming, test naming, file moves, and folder-organization work, invoke the `mobile-folder-structure` skill in `.github/skills/mobile-folder-structure/SKILL.md`.
+- For browser-only bugs or web playback failures in the mobile rehearsal player, invoke the `mobile-web-runtime-debugging` skill in `.github/skills/mobile-web-runtime-debugging/SKILL.md`.
 - When adding or materially expanding code in a language or framework without comparable repo coding style guidance, first draft a suggested policy in `.github/instructions/` and confirm it with the user before proceeding with broader implementation in that language or framework.
 - Before suggesting or creating a commit, clear VS Code Problems in every touched file. If Vscode is out of sync with repo configuration, help the user address this. Alternatively, if a touched file is outside the current lint or typecheck surface, extend project validation so `nx lint` or a lint dependency fails until that file is clean.
 
