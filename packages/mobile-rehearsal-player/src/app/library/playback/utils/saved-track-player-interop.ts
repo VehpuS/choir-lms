@@ -8,6 +8,7 @@ type ResolveSavedTrackPlayerSupportDependencies = {
   appOwnership?: string | null;
   executionEnvironment?: string | null;
   loadTrackPlayerModule?: () => TrackPlayerModule;
+  platformOs?: string | null;
 };
 
 type SavedTrackPlayerSupport = {
@@ -50,6 +51,12 @@ type ExpoRuntimeMetadata = {
   executionEnvironment?: string | null;
 };
 
+type ReactNativePlatformModule = {
+  Platform?: {
+    OS?: string | null;
+  };
+};
+
 type SavedTrackPlayerWebRuntime = {
   add?: (
     track:
@@ -78,6 +85,21 @@ const loadTrackPlayerModule = () => {
   return require('react-native-track-player') as TrackPlayerModule;
 };
 
+const getRuntimePlatformOs = () => {
+  try {
+    const reactNativeModule = require('react-native') as
+      | ReactNativePlatformModule
+      | { default?: ReactNativePlatformModule };
+    const reactNative: ReactNativePlatformModule =
+      (reactNativeModule as { default?: ReactNativePlatformModule }).default ??
+      (reactNativeModule as ReactNativePlatformModule);
+
+    return reactNative.Platform?.OS ?? null;
+  } catch {
+    return null;
+  }
+};
+
 const getSavedTrackPlayerWebWindow = () => {
   const globalObject = globalThis as typeof globalThis & {
     window?: SavedTrackPlayerWebWindow;
@@ -94,8 +116,11 @@ const hasSavedTrackPlayerWebWindow = () => {
   return typeof globalObject.window !== 'undefined';
 };
 
-const canPatchSavedTrackPlayerWebRuntime = () => {
+const canPatchSavedTrackPlayerWebRuntime = (options: {
+  platformOs: string | null;
+}) => {
   return (
+    options.platformOs === 'web' &&
     hasSavedTrackPlayerWebWindow() &&
     typeof fetch === 'function' &&
     typeof URL !== 'undefined' &&
@@ -104,8 +129,15 @@ const canPatchSavedTrackPlayerWebRuntime = () => {
   );
 };
 
-const patchSavedTrackPlayerModule = (trackPlayerModule: TrackPlayerModule) => {
-  if (!canPatchSavedTrackPlayerWebRuntime()) {
+const patchSavedTrackPlayerModule = (
+  trackPlayerModule: TrackPlayerModule,
+  options: {
+    platformOs: string | null;
+  },
+) => {
+  // React Native native runtimes expose enough browser-like globals to satisfy
+  // the web checks above, so gate this patch on the actual platform too.
+  if (!canPatchSavedTrackPlayerWebRuntime(options)) {
     return;
   }
 
@@ -166,6 +198,7 @@ export const resolveSavedTrackPlayerSupport = (
     dependencies.appOwnership ?? runtimeMetadata.appOwnership;
   const executionEnvironment =
     dependencies.executionEnvironment ?? runtimeMetadata.executionEnvironment;
+  const platformOs = dependencies.platformOs ?? getRuntimePlatformOs();
 
   if (
     isExpoGoRuntime({
@@ -185,7 +218,9 @@ export const resolveSavedTrackPlayerSupport = (
       dependencies.loadTrackPlayerModule ?? loadTrackPlayerModule;
     const trackPlayerModule = moduleLoader();
 
-    patchSavedTrackPlayerModule(trackPlayerModule);
+    patchSavedTrackPlayerModule(trackPlayerModule, {
+      platformOs,
+    });
 
     return {
       isSupported: true,
