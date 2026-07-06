@@ -351,6 +351,7 @@
       "matchCommandLine": true
     },
     "npm exec": true,
-    "npx tsx": true
+    "npx tsx": true,
+    "npm --workspace @org/mobile-rehearsal-player": true
   }
 }
