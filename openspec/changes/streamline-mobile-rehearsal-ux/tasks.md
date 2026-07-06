@@ -89,7 +89,7 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
 
 - [x] 2.1.1 Implement the remaining shared compact destination-header rollout across Recents, Add, and Library: remove large descriptive headers, keep destination titles leading, keep `Search` adjacent to the Drive session menu in Add, keep Add `Refresh` as the leading header action when the visible Drive context can refresh, keep `Filters` and `Search` adjacent in Library, place the Drive session menu trigger to the right of search when present, and preserve surface-specific trailing actions where search is not relevant (`3.8.1`).
 - [x] 2.1.2 Add or finish UI coverage for compact destination-header and contextual-search adoption where this rollout changes behavior (`6.1.4` scoped to header and search-shell adoption).
-- [ ] 2.1.3 Manually verify Add refresh/search/session-menu ordering, Library filters/search/session-menu ordering, Drive session trigger placement, Recents title alignment, and shell-level non-regression for the touched surfaces (`6.2.5` and `6.2.6` scoped to header rollout).
+- [x] 2.1.3 Manually verify Add refresh/search/session-menu ordering, Library filters/search/session-menu ordering, Drive session trigger placement, Recents title alignment, and shell-level non-regression for the touched surfaces (`6.2.5` and `6.2.6` scoped to header rollout).
 - [ ] 2.1.4 Create a tested checkpoint commit for the compact-header rollout before touching Files architecture.
 
 ### 2.2 Stabilize the Already-Shipped Queue, Playlist, and Shared-Action Behavior

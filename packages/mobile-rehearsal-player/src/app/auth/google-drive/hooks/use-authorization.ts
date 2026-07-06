@@ -6,6 +6,7 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 
 import {
   getGoogleAuthClientId,
@@ -17,24 +18,31 @@ import {
   persistDriveAuthorizationState,
   resolveDriveAuthorizationResult,
   restoreDriveAuthorizationState,
-  type AuthorizationSessionStore,
 } from '../utils/authorization';
+import {
+  createAuthorizationSessionStore,
+  type WebStorageLike,
+} from '../utils/authorization-session-store';
 
 WebBrowser.maybeCompleteAuthSession();
 
 const FALLBACK_GOOGLE_CLIENT_ID = 'missing-google-client-id';
 
-const secureStoreSessionStore: AuthorizationSessionStore = {
-  getItem(key) {
-    return SecureStore.getItemAsync(key);
-  },
-  setItem(key, value) {
-    return SecureStore.setItemAsync(key, value);
-  },
-  deleteItem(key) {
-    return SecureStore.deleteItemAsync(key);
-  },
+const resolveBrowserStorage = (): WebStorageLike | null => {
+  try {
+    return (
+      (globalThis as { localStorage?: WebStorageLike }).localStorage ?? null
+    );
+  } catch {
+    return null;
+  }
 };
+
+const authorizationSessionStore = createAuthorizationSessionStore({
+  platform: Platform.OS,
+  secureStore: SecureStore,
+  webStorage: resolveBrowserStorage(),
+});
 
 const createInitialAuthorizationState = (): DriveAuthorizationState => {
   return getDriveAuthorizationState({
@@ -66,7 +74,7 @@ export const useGoogleDriveAuthorization = () => {
     const restoreSession = async () => {
       try {
         const restoredState = await restoreDriveAuthorizationState(
-          secureStoreSessionStore,
+          authorizationSessionStore,
           runtimeConfig.google.driveScope,
         );
 
@@ -120,7 +128,7 @@ export const useGoogleDriveAuthorization = () => {
     setAuthState(outcome.state);
     setIsSavingSession(true);
     void persistDriveAuthorizationState(
-      secureStoreSessionStore,
+      authorizationSessionStore,
       outcome.state,
     ).finally(() => {
       setIsSavingSession(false);
@@ -168,7 +176,7 @@ export const useGoogleDriveAuthorization = () => {
 
     try {
       const nextState = await clearDriveAuthorizationState(
-        secureStoreSessionStore,
+        authorizationSessionStore,
         runtimeConfig.google.driveScope,
       );
       setAuthState(nextState);

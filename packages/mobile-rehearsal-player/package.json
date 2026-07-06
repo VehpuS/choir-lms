@@ -5,7 +5,8 @@
   "scripts": {
     "eas-build-post-install": "cd ../../ && node tools/scripts/eas-build-post-install.mjs . packages/mobile-rehearsal-player",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "web": "expo start --web --clear --localhost --port 19007"
   },
   "nx": {
     "name": "mobile-rehearsal-player",
@@ -124,7 +125,8 @@
     "react-native-svg": "*",
     "react-native-svg-transformer": "*",
     "react-native-track-player": "^4.1.2",
-    "react-native-web": "*"
+    "react-native-web": "*",
+    "shaka-player": "^4.16.39"
   },
   "devDependencies": {
     "@types/lodash.debounce": "^4.0.9"
