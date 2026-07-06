@@ -38,6 +38,7 @@ type RehearsalLibraryScreenControllerOptions = {
   authState: DriveAuthorizationState;
   googleAuthConfigured: boolean;
   onAuthorizationExpired?: () => void;
+  onAuthorizationRequired?: () => Promise<void> | void;
   playback: SavedTrackPlaybackController;
 };
 
@@ -45,16 +46,22 @@ export const useRehearsalLibraryController = ({
   authState,
   googleAuthConfigured,
   onAuthorizationExpired,
+  onAuthorizationRequired,
   playback,
 }: RehearsalLibraryScreenControllerOptions) => {
   const [selectedLoopSourceId, setSelectedLoopSourceId] = useState<
     string | null
   >(null);
-  const driveLibrary = useDriveLibrary(authState, onAuthorizationExpired);
+  const driveLibrary = useDriveLibrary(
+    authState,
+    onAuthorizationExpired,
+    onAuthorizationRequired,
+  );
   const savedLibrary = useSavedRehearsalLibrary();
   const savedLoops = useSavedLoops();
   const playlists = useSavedPlaylists();
-  const canRefresh = authState.status === 'authorized';
+  const canRefresh =
+    authState.status === 'authorized' || authState.status === 'expired';
   const isSearchMode = driveLibrary.activeSearchQuery !== null;
   const discoveryStatusCopy = getDriveLibraryStatusCopy({
     authState,

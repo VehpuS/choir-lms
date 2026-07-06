@@ -30,6 +30,7 @@ export const AppRouter = () => {
   const playback = useSavedTrackPlayback(
     authorization.authState,
     authorization.expireAuthorization,
+    authorization.startAuthorization,
   );
   const [recentRehearsalHistory, setRecentRehearsalHistory] = useState(
     [] as Awaited<ReturnType<typeof restoreRecentRehearsalHistory>>,
@@ -42,6 +43,7 @@ export const AppRouter = () => {
     authState: authorization.authState,
     googleAuthConfigured: authorization.googleAuthConfigured,
     onAuthorizationExpired: authorization.expireAuthorization,
+    onAuthorizationRequired: authorization.startAuthorization,
     playback,
   });
   const playbackActionCopy = playback.activePlayableItem

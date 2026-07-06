@@ -27,6 +27,7 @@ import { createSyncActivePlaylistContext } from './sync-playlist-context';
 export const useSavedTrackPlayback = (
   authState: DriveAuthorizationState,
   onAuthorizationExpired?: () => void,
+  onAuthorizationRequired?: () => Promise<void> | void,
 ) => {
   const [activePlayableItem, setActivePlayableItem] =
     useState<PlayableItem | null>(null);
@@ -160,12 +161,14 @@ export const useSavedTrackPlayback = (
   });
 
   const actions = createSavedTrackPlaybackActions({
+    authState,
     activePlayableItemRef,
     activePlaylistContextRef,
     activePlaylistSessionRef,
     playbackController,
     playbackState,
     playlistRepeatMode,
+    requestAuthorization: onAuthorizationRequired,
     repeatModeRef,
     setActivePlayableItem,
     setActivePlaylistSession,

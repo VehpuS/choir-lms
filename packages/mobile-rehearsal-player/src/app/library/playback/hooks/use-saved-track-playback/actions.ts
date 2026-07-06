@@ -6,6 +6,7 @@ import {
   type RehearsalQueueMode,
   type RepeatMode,
 } from '@org/audio-library-models';
+import type { DriveAuthorizationState } from '@org/google-drive';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 
 import type { DriveLibrarySource } from '../../../drive/utils/drive-library-view-model';
@@ -40,12 +41,14 @@ import {
 } from './shared';
 
 type CreateSavedTrackPlaybackActionsOptions = {
+  authState: DriveAuthorizationState;
   activePlayableItemRef: MutableRefObject<PlayableItem | null>;
   activePlaylistContextRef: MutableRefObject<ActivePlaylistContext | null>;
   activePlaylistSessionRef: MutableRefObject<PlaylistPlaybackSession | null>;
   playbackController: SavedTrackPlaybackController;
   playbackState: SavedTrackPlaybackState | undefined;
   playlistRepeatMode: RepeatMode;
+  requestAuthorization?: () => Promise<void> | void;
   repeatModeRef: MutableRefObject<RepeatMode>;
   setActivePlayableItem: Dispatch<SetStateAction<PlayableItem | null>>;
   setActivePlaylistSession: Dispatch<
@@ -57,12 +60,14 @@ type CreateSavedTrackPlaybackActionsOptions = {
 };
 
 export const createSavedTrackPlaybackActions = ({
+  authState,
   activePlayableItemRef,
   activePlaylistContextRef,
   activePlaylistSessionRef,
   playbackController,
   playbackState,
   playlistRepeatMode,
+  requestAuthorization,
   repeatModeRef,
   setActivePlayableItem,
   setActivePlaylistSession,
@@ -70,6 +75,17 @@ export const createSavedTrackPlaybackActions = ({
   setIssue,
   setPlaylistRepeatModeState,
 }: CreateSavedTrackPlaybackActionsOptions) => {
+  const requestAuthorizationIfExpired = async () => {
+    if (authState.status !== 'expired') {
+      return false;
+    }
+
+    setIssue(null);
+    await requestAuthorization?.();
+
+    return true;
+  };
+
   return {
     bindActiveQueueToPlaylist(options: {
       loops: NamedLoop[];
@@ -151,6 +167,10 @@ export const createSavedTrackPlaybackActions = ({
       await playbackController.setPlaybackVolume(nextVolumeLevel);
     },
     async toggleActivePlayback() {
+      if (await requestAuthorizationIfExpired()) {
+        return;
+      }
+
       if (!activePlayableItemRef.current) {
         return;
       }
@@ -163,10 +183,18 @@ export const createSavedTrackPlaybackActions = ({
       return playbackController.pauseActivePlayback();
     },
     async togglePlayableItemPlayback(playableItem: PlayableItem) {
+      if (await requestAuthorizationIfExpired()) {
+        return;
+      }
+
       activePlaylistContextRef.current = null;
       await playbackController.togglePlayableItemPlayback(playableItem);
     },
     async playPlayableItem(playableItem: PlayableItem) {
+      if (await requestAuthorizationIfExpired()) {
+        return;
+      }
+
       activePlaylistContextRef.current = null;
 
       if (
@@ -229,6 +257,10 @@ export const createSavedTrackPlaybackActions = ({
       });
     },
     async playQueueItem(index: number) {
+      if (await requestAuthorizationIfExpired()) {
+        return;
+      }
+
       const currentSession = activePlaylistSessionRef.current;
 
       if (!currentSession) {
@@ -268,9 +300,17 @@ export const createSavedTrackPlaybackActions = ({
       }
     },
     async skipToNextItem() {
+      if (await requestAuthorizationIfExpired()) {
+        return;
+      }
+
       await playbackController.playNextQueueItem();
     },
     async skipToPreviousItem() {
+      if (await requestAuthorizationIfExpired()) {
+        return;
+      }
+
       await playbackController.playPreviousQueueItem();
     },
     async togglePlaylistPlayback(options: {
@@ -280,6 +320,10 @@ export const createSavedTrackPlaybackActions = ({
       sources: DriveLibrarySource[];
       startEntryId?: string;
     }) {
+      if (await requestAuthorizationIfExpired()) {
+        return;
+      }
+
       await startPlaylistPlayback({
         activePlaylistContextRef,
         loops: options.loops,
@@ -295,6 +339,10 @@ export const createSavedTrackPlaybackActions = ({
       });
     },
     async toggleSourcePlayback(source: DriveLibrarySource) {
+      if (await requestAuthorizationIfExpired()) {
+        return;
+      }
+
       activePlaylistContextRef.current = null;
       await playbackController.togglePlayableItemPlayback(
         createTrackPlayableItem(source),

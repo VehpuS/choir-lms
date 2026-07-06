@@ -180,6 +180,24 @@ export const isDriveAuthorizationFailure = (error: unknown) => {
   return DRIVE_AUTHORIZATION_FAILURE_PATTERN.test(message);
 };
 
+export const shouldAttemptSilentDriveAuthorization = (options: {
+  authState: Pick<DriveAuthorizationState, 'status'>;
+  googleAuthConfigured: boolean;
+  isAuthorizing: boolean;
+  isRestoring: boolean;
+  isSavingSession: boolean;
+  requestReady: boolean;
+}) => {
+  return (
+    options.authState.status === 'expired' &&
+    options.googleAuthConfigured &&
+    options.requestReady &&
+    !options.isRestoring &&
+    !options.isAuthorizing &&
+    !options.isSavingSession
+  );
+};
+
 export const resolveDriveAuthorizationResult = (
   result: AuthSessionResult | null,
   defaultScope: string,

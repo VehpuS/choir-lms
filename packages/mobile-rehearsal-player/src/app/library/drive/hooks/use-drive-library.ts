@@ -55,6 +55,7 @@ const DRIVE_SEARCH_DEBOUNCE_MS = 300;
 export const useDriveLibrary = (
   authState: DriveAuthorizationState,
   onAuthorizationExpired?: () => void,
+  onAuthorizationRequired?: () => Promise<void> | void,
 ) => {
   const [navigationStack, setNavigationStack] = useState<DriveBrowseLocation[]>(
     () => {
@@ -141,6 +142,13 @@ export const useDriveLibrary = (
 
   const submitSearchQuery = (query: string) => {
     debouncedSearch.flush(query);
+
+    if (!normalizeRecentSearchTerm(query) || authState.status !== 'expired') {
+      return;
+    }
+
+    setIssue(null);
+    void onAuthorizationRequired?.();
   };
 
   useEffect(() => {
@@ -317,6 +325,12 @@ export const useDriveLibrary = (
         ? browseSnapshot.playableSources
         : searchSnapshot.playableSources,
     refresh() {
+      if (authState.status === 'expired') {
+        setIssue(null);
+        void onAuthorizationRequired?.();
+        return;
+      }
+
       if (authState.status !== 'authorized' || !authState.accessToken) {
         return;
       }
