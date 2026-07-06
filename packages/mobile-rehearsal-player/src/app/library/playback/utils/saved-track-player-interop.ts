@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 
+import { patchSavedTrackPlayerWebRuntime } from './saved-track-player-web-load';
+
 type TrackPlayerModule = typeof import('react-native-track-player');
 
 type ResolveSavedTrackPlayerSupportDependencies = {
@@ -48,8 +50,81 @@ type ExpoRuntimeMetadata = {
   executionEnvironment?: string | null;
 };
 
+type SavedTrackPlayerWebRuntime = {
+  add?: (
+    track:
+      | {
+          headers?: Record<string, string>;
+          url: string;
+        }
+      | Array<{
+          headers?: Record<string, string>;
+          url: string;
+        }>,
+    insertBeforeIndex?: number,
+  ) => Promise<unknown>;
+  load(track: {
+    headers?: Record<string, string>;
+    url: string;
+  }): Promise<unknown>;
+  setupPlayer?: () => Promise<unknown>;
+};
+
+type SavedTrackPlayerWebWindow = Parameters<
+  typeof patchSavedTrackPlayerWebRuntime
+>[1]['windowApi'];
+
 const loadTrackPlayerModule = () => {
   return require('react-native-track-player') as TrackPlayerModule;
+};
+
+const getSavedTrackPlayerWebWindow = () => {
+  const globalObject = globalThis as typeof globalThis & {
+    window?: SavedTrackPlayerWebWindow;
+  };
+
+  return globalObject.window ?? {};
+};
+
+const hasSavedTrackPlayerWebWindow = () => {
+  const globalObject = globalThis as typeof globalThis & {
+    window?: unknown;
+  };
+
+  return typeof globalObject.window !== 'undefined';
+};
+
+const canPatchSavedTrackPlayerWebRuntime = () => {
+  return (
+    hasSavedTrackPlayerWebWindow() &&
+    typeof fetch === 'function' &&
+    typeof URL !== 'undefined' &&
+    typeof URL.createObjectURL === 'function' &&
+    typeof URL.revokeObjectURL === 'function'
+  );
+};
+
+const patchSavedTrackPlayerModule = (trackPlayerModule: TrackPlayerModule) => {
+  if (!canPatchSavedTrackPlayerWebRuntime()) {
+    return;
+  }
+
+  const runtime =
+    trackPlayerModule.default as Partial<SavedTrackPlayerWebRuntime>;
+
+  if (
+    typeof runtime.add !== 'function' &&
+    typeof runtime.load !== 'function' &&
+    typeof runtime.setupPlayer !== 'function'
+  ) {
+    return;
+  }
+
+  patchSavedTrackPlayerWebRuntime(runtime as SavedTrackPlayerWebRuntime, {
+    fetch: globalThis.fetch.bind(globalThis),
+    urlApi: globalThis.URL,
+    windowApi: getSavedTrackPlayerWebWindow(),
+  });
 };
 
 const getExpoRuntimeMetadata = () => {
@@ -108,11 +183,14 @@ export const resolveSavedTrackPlayerSupport = (
   try {
     const moduleLoader =
       dependencies.loadTrackPlayerModule ?? loadTrackPlayerModule;
+    const trackPlayerModule = moduleLoader();
+
+    patchSavedTrackPlayerModule(trackPlayerModule);
 
     return {
       isSupported: true,
       message: null,
-      module: moduleLoader(),
+      module: trackPlayerModule,
     };
   } catch {
     return {
