@@ -106,6 +106,10 @@ Before the workflow can publish, enable GitHub Pages for the repository and set 
 
 The workflow reads the configured Pages base path from GitHub and passes it to Expo as `EXPO_BASE_URL`, so project sites such as `https://vehpus.github.io/choir-lms/` and custom domains export the correct asset URLs.
 
+For Google Drive sign-in to work in the deployed web build, add repository variables for `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, and `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`. The workflow also reads optional repository variables for `EXPO_PUBLIC_APP_SCHEME`, `EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER`, `EXPO_PUBLIC_ANDROID_PACKAGE`, `EXPO_PUBLIC_GOOGLE_DRIVE_SUPPORTED_MIME_TYPES`, and `EXPO_PUBLIC_GOOGLE_DRIVE_SUPPORTED_EXTENSIONS`.
+
+Do not add `GOOGLE_WEB_CLIENT_SECRET` to the repository or workflow for this frontend-only deployment.
+
 To preview the same path handling locally for the current repository URL shape:
 
 ```sh

@@ -26,6 +26,15 @@ jobs:
   build:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    env:
+      EXPO_PUBLIC_APP_SCHEME: ${{ vars['EXPO_PUBLIC_APP_SCHEME'] || 'choirlms' }}
+      EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER: ${{ vars['EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER'] || 'com.choirlms.mobile' }}
+      EXPO_PUBLIC_ANDROID_PACKAGE: ${{ vars['EXPO_PUBLIC_ANDROID_PACKAGE'] || 'com.choirlms.mobile' }}
+      EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: ${{ vars['EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID'] }}
+      EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID: ${{ vars['EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID'] }}
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ vars['EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID'] }}
+      EXPO_PUBLIC_GOOGLE_DRIVE_SUPPORTED_MIME_TYPES: ${{ vars['EXPO_PUBLIC_GOOGLE_DRIVE_SUPPORTED_MIME_TYPES'] || 'audio/mpeg,audio/mp4,audio/x-m4a,audio/wav,audio/x-wav,audio/aac,audio/flac,audio/ogg' }}
+      EXPO_PUBLIC_GOOGLE_DRIVE_SUPPORTED_EXTENSIONS: ${{ vars['EXPO_PUBLIC_GOOGLE_DRIVE_SUPPORTED_EXTENSIONS'] || 'mp3,m4a,wav,aac,flac,ogg' }}
     steps:
       - uses: actions/checkout@v5
         with:
