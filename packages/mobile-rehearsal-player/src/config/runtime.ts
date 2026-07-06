@@ -2,15 +2,15 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 import {
+  readExpoPublicRuntimeEnv,
   resolveRuntimeConfig,
   type RuntimeConfig,
   type RuntimeConfigShape,
-  type RuntimeEnv,
 } from './runtime-config-model';
 
 export const runtimeConfig: RuntimeConfig = {
   ...resolveRuntimeConfig({
-    env: process.env as RuntimeEnv,
+    env: readExpoPublicRuntimeEnv(),
     expoExtra: (Constants.expoConfig?.extra ?? undefined) as
       | RuntimeConfigShape
       | undefined,

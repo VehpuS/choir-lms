@@ -47,6 +47,28 @@ export type RuntimeEnv = {
   EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER?: string;
 };
 
+// Expo only inlines EXPO_PUBLIC_* values for direct property access. Building
+// this object with explicit reads keeps the web export from falling back to an
+// empty runtime process.env object in production.
+export const readExpoPublicRuntimeEnv = (): RuntimeEnv => {
+  return {
+    EXPO_PUBLIC_ANDROID_PACKAGE: process.env.EXPO_PUBLIC_ANDROID_PACKAGE,
+    EXPO_PUBLIC_APP_SCHEME: process.env.EXPO_PUBLIC_APP_SCHEME,
+    EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID:
+      process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    EXPO_PUBLIC_GOOGLE_DRIVE_SUPPORTED_EXTENSIONS:
+      process.env.EXPO_PUBLIC_GOOGLE_DRIVE_SUPPORTED_EXTENSIONS,
+    EXPO_PUBLIC_GOOGLE_DRIVE_SUPPORTED_MIME_TYPES:
+      process.env.EXPO_PUBLIC_GOOGLE_DRIVE_SUPPORTED_MIME_TYPES,
+    EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID:
+      process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID:
+      process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER:
+      process.env.EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER,
+  };
+};
+
 const DEFAULT_RUNTIME_CONFIG: RuntimeConfig = {
   scheme: DEFAULT_APP_SCHEME,
   iosBundleIdentifier: DEFAULT_IOS_BUNDLE_IDENTIFIER,

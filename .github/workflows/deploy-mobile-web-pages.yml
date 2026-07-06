@@ -50,6 +50,21 @@ jobs:
       - id: pages
         uses: actions/configure-pages@v5
 
+      - name: Validate required web environment variables
+        run: |
+          missing_variables=0
+
+          for variable_name in EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID; do
+            if [[ -z "${!variable_name:-}" ]]; then
+              echo "::error title=Missing required web environment variable::${variable_name} must be configured for the GitHub Pages export."
+              missing_variables=1
+            fi
+          done
+
+          if [[ "$missing_variables" -ne 0 ]]; then
+            exit 1
+          fi
+
       - run: npm ci
 
       - name: Export mobile web app
