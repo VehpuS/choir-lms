@@ -100,6 +100,30 @@ export type Playlist = {
   updatedAt: string;
 };
 
+export type RehearsalLibraryEntityKind = PlayableItemKind | 'playlist';
+
+export type RehearsalLibraryFolderNode = {
+  id: string;
+  name: string;
+  parentFolderId: string | null;
+  tags?: string[];
+};
+
+export type RehearsalLibraryFileLinkNode = {
+  id: string;
+  parentFolderId: string;
+  entityKind: RehearsalLibraryEntityKind;
+  entityId: string;
+  visibleName?: string;
+};
+
+export type RehearsalLibraryFileTree = {
+  version: 1;
+  rootFolderId: string;
+  folders: RehearsalLibraryFolderNode[];
+  fileLinks: RehearsalLibraryFileLinkNode[];
+};
+
 export type RehearsalQueueMode = 'ordered' | 'shuffle';
 
 export type RepeatMode = 'off' | 'one' | 'all';

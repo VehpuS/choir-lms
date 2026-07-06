@@ -12,6 +12,7 @@ import AsyncStorage, {
   type AsyncStorageStatic,
 } from '@react-native-async-storage/async-storage';
 
+import { REHEARSAL_LIBRARY_ROOT_FOLDER_ID } from './rehearsal-library-files';
 import {
   AsyncStoragePracticeRepository,
   createPlaybackQueue,
@@ -333,6 +334,142 @@ describe('AsyncStoragePracticeRepository', () => {
     assert.deepEqual(
       (await repository.listSources('user-1')).map((source) => source.name),
       ['Full Choir.mp3'],
+    );
+  });
+
+  it('migrates canonical library entities into a root folder file tree', async () => {
+    const storage = new Map<string, string>([
+      ['choirlms:practice:sources:user-1', JSON.stringify([AVAILABLE_SOURCE])],
+      ['choirlms:practice:loops:user-1', JSON.stringify([SAVED_LOOP])],
+      ['choirlms:practice:playlists:user-1', JSON.stringify([PLAYLIST])],
+    ]);
+    const repository = new AsyncStoragePracticeRepository();
+
+    mutableAsyncStorage.getItem = async (key) => {
+      return storage.get(key) ?? null;
+    };
+    mutableAsyncStorage.removeItem = async (key) => {
+      storage.delete(key);
+    };
+    mutableAsyncStorage.setItem = async (key, value) => {
+      storage.set(key, value);
+    };
+
+    assert.deepEqual(await repository.listLibraryFileTree('user-1'), {
+      version: 1,
+      rootFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+      folders: [
+        {
+          id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+          name: 'Library',
+          parentFolderId: null,
+        },
+      ],
+      fileLinks: [
+        {
+          id: `file-link:track:${AVAILABLE_SOURCE.id}`,
+          parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+          entityKind: 'track',
+          entityId: AVAILABLE_SOURCE.id,
+        },
+        {
+          id: `file-link:loop:${SAVED_LOOP.id}`,
+          parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+          entityKind: 'loop',
+          entityId: SAVED_LOOP.id,
+        },
+        {
+          id: `file-link:playlist:${PLAYLIST.id}`,
+          parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+          entityKind: 'playlist',
+          entityId: PLAYLIST.id,
+        },
+      ],
+    });
+    assert.equal(storage.has('choirlms:practice:library-tree:user-1'), true);
+  });
+
+  it('keeps canonical entities until the last file link is removed', async () => {
+    const storage = new Map<string, string>();
+    const repository = new AsyncStoragePracticeRepository();
+
+    mutableAsyncStorage.getItem = async (key) => {
+      return storage.get(key) ?? null;
+    };
+    mutableAsyncStorage.removeItem = async (key) => {
+      storage.delete(key);
+    };
+    mutableAsyncStorage.setItem = async (key, value) => {
+      storage.set(key, value);
+    };
+
+    await repository.saveSource('user-1', AVAILABLE_SOURCE);
+    await repository.saveLibraryFolderNode('user-1', {
+      id: 'folder-1',
+      name: 'Warmups',
+      parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+    });
+    await repository.saveLibraryFileLink('user-1', {
+      id: 'file-link:track:copy-1',
+      parentFolderId: 'folder-1',
+      entityKind: 'track',
+      entityId: AVAILABLE_SOURCE.id,
+      visibleName: 'Warmup copy',
+    });
+    await repository.saveSource('user-1', {
+      ...AVAILABLE_SOURCE,
+      name: 'Full Choir updated.mp3',
+    });
+
+    const treeWithHardLink = await repository.listLibraryFileTree('user-1');
+
+    assert.equal(
+      treeWithHardLink.fileLinks.filter((fileLink) => {
+        return (
+          fileLink.entityKind === 'track' &&
+          fileLink.entityId === AVAILABLE_SOURCE.id
+        );
+      }).length,
+      2,
+    );
+    assert.equal(
+      treeWithHardLink.fileLinks.find(
+        (fileLink) => fileLink.id === 'file-link:track:copy-1',
+      )?.visibleName,
+      'Warmup copy',
+    );
+    assert.deepEqual(
+      (await repository.listSources('user-1')).map((source) => source.name),
+      ['Full Choir updated.mp3'],
+    );
+
+    await repository.deleteLibraryFileLink('user-1', 'file-link:track:copy-1');
+
+    assert.deepEqual(
+      (await repository.listSources('user-1')).map((source) => source.name),
+      ['Full Choir updated.mp3'],
+    );
+    assert.equal(
+      (await repository.listLibraryFileTree('user-1')).fileLinks.filter(
+        (fileLink) => {
+          return (
+            fileLink.entityKind === 'track' &&
+            fileLink.entityId === AVAILABLE_SOURCE.id
+          );
+        },
+      ).length,
+      1,
+    );
+
+    await repository.deleteLibraryFileLink(
+      'user-1',
+      `file-link:track:${AVAILABLE_SOURCE.id}`,
+    );
+
+    assert.deepEqual(await repository.listSources('user-1'), []);
+    assert.deepEqual(
+      (await repository.listLibraryFileTree('user-1')).fileLinks,
+      [],
     );
   });
 });

@@ -90,22 +90,23 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
 - [x] 2.1.1 Implement the remaining shared compact destination-header rollout across Recents, Add, and Library: remove large descriptive headers, keep destination titles leading, keep `Search` adjacent to the Drive session menu in Add, keep Add `Refresh` as the leading header action when the visible Drive context can refresh, keep `Filters` and `Search` adjacent in Library, place the Drive session menu trigger to the right of search when present, and preserve surface-specific trailing actions where search is not relevant (`3.8.1`).
 - [x] 2.1.2 Add or finish UI coverage for compact destination-header and contextual-search adoption where this rollout changes behavior (`6.1.4` scoped to header and search-shell adoption).
 - [x] 2.1.3 Manually verify Add refresh/search/session-menu ordering, Library filters/search/session-menu ordering, Drive session trigger placement, Recents title alignment, and shell-level non-regression for the touched surfaces (`6.2.5` and `6.2.6` scoped to header rollout).
-- [x] 2.1.4 Create a tested checkpoint commit for the compact-header rollout before touching Files architecture.
 
 ### 2.2 Stabilize the Already-Shipped Queue, Playlist, and Shared-Action Behavior
 
 - [x] 2.2.1 Backfill focused automated coverage for row-action placement, shared overflow trigger behavior, search-result highlighting, active queue behavior, and default playlist row controls (`6.1.1`, `6.1.2`, `6.1.3`, `6.1.5`, and `6.1.5.1`).
 - [x] 2.2.2 Run manual regression for playlist row-start playback, playlist-card play icon behavior, Recents shortcut playback, transient queue promotion, queue-to-playlist capture, active queue controls, playlist-detail playback controls, and search highlight updates (`6.2`, `6.2.1`, `6.2.2`, `6.2.3`, `6.2.3.1`, `6.2.3.2`, and `6.2.4` scoped to the already-implemented non-Files surfaces).
-- [ ] 2.2.3 Record pass/fail against the non-regression baseline from task `1.1` for the capabilities touched in this step (`6.3` scoped to queue, playlist, search, and Recents behavior).
-- [ ] 2.2.4 Create a tested checkpoint commit that locks the current non-Files interaction baseline before the Files refactor begins.
+- [x] 2.2.3 Record pass/fail against the non-regression baseline from task `1.1` for the capabilities touched in this step (`6.3` scoped to queue, playlist, search, and Recents behavior).
+  - PASS: Recents live verification showed persisted recent rows, `Last played` labeling, inline icon-only play affordances, and the `Play next` / `Add to queue` / `View in library` overflow actions. The `View in library` handoff kept playback running.
+  - PASS: Library search live verification showed the explicit `Search saved library` context, recent-query re-entry, and visible substring highlighting (`light` highlighted in `03 Lightning Strikes Twice.mp3`).
+  - PASS: Playlist live verification showed icon-only playlist-card playback, playlist-detail ordered/shuffle playback controls, active-session detail copy, and default row-level reorder/playback controls.
+  - PASS: Queue live verification showed the Up Next `Create new playlist` / `Update current playlist` actions, previous/next transport, and row-level play / drag / overflow affordances. Focused automated coverage also passed via `npx tsx --test` for Recents, playlist, queue, and library-search specs.
 
 ### 2.3 Introduce the File-Tree Storage Foundation
 
-- [ ] 2.3.1 Replace the current single-folder entity metadata approach with a file-tree storage model and migration path: folder nodes, file-link nodes, hard-link support, pointer-local visible names, canonical entity persistence, and last-link lifecycle semantics (`5.3` and `5.3.1`).
+- [x] 2.3.1 Replace the current single-folder entity metadata approach with a file-tree storage model and migration path: folder nodes, file-link nodes, hard-link support, pointer-local visible names, canonical entity persistence, and last-link lifecycle semantics (`5.3` and `5.3.1`).
 - [ ] 2.3.2 Implement the Files mutation guardrails in the storage and helper layer: case-insensitive same-parent naming, duplicate-name conflict handling, case-insensitively unique `Copy` suffix defaults for same-folder copies, and folder-move prevention for self or descendant targets (`5.3.1.1`).
 - [ ] 2.3.3 Preserve loop parent-track provenance in the underlying model so loops remain identifiable across Files, search, tags, and folder results as later UI work lands (`5.4` and `5.4.1` foundation work).
 - [ ] 2.3.4 Add focused model and helper coverage for tree mutations, hard-link behavior, naming guardrails, and loop provenance wiring (`6.1` and `6.1.6` scoped to the data layer foundation).
-- [ ] 2.3.5 Create a tested checkpoint commit for the file-tree storage foundation before swapping explorer UI surfaces onto it.
 
 ### 2.4 Rebuild the Explorer Shell and Navigation Surfaces
 
@@ -113,7 +114,6 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
 - [ ] 2.4.2 Align Add Drive browsing with the same explorer chrome and shared list primitives where the spec calls for parity, while preserving Drive-specific save and preview behavior (`5.3.2` on the Add surface).
 - [ ] 2.4.3 Ensure folder rows push onto a standard explorer stack, track and loop rows play in place, playlist rows preserve a back path to the originating Files folder, and dedicated Tracks, Loops, and Playlists views remain coherent beside Files (`5.3.2.1` and `5.3.4`).
 - [ ] 2.4.4 Extend UI coverage for the shared explorer and list primitives, then manually verify Add and Files explorer navigation, breadcrumb behavior, and playlist return-path behavior (`6.1.4`, `6.2.5`, and the navigation subset of `6.2.7`).
-- [ ] 2.4.5 Create a tested checkpoint commit once the new explorer shell is stable before adding the full Files action surface.
 
 ### 2.5 Implement Files Actions, Copy Flows, and Availability Recovery
 
@@ -121,7 +121,6 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
 - [ ] 2.5.2 Standardize per-entity explorer menu contents and ordering, including action-sheet dismissal through `Cancel`, destructive ordering, and clear pointer-versus-entity deletion messaging (`5.3.3.1`).
 - [ ] 2.5.3 Add `Create a copy`, rename, move, remove, folder-delete impact summaries, and connection-first broken-source recovery through `Reconnect` and `Remove from library` (`5.3.3` and `5.3.3.2`).
 - [ ] 2.5.4 Add focused coverage for Files menus, hard-link copy semantics, removal messaging, and recovery actions, then manually verify entity-specific explorer menus and naming or move guardrails (`6.1.6`, `6.2.7.1`, and `6.2.7.2` scoped to Files actions).
-- [ ] 2.5.5 Create a tested checkpoint commit for Files actions and recovery before layering search, sort, and restoration state.
 
 ### 2.6 Add Files Search, Sort, Restoration, and Loop-Result Integration
 
@@ -130,7 +129,6 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
 - [ ] 2.6.3 Restore Files path, breadcrumb stack, search scope/query, selected sort, and scroll position when users leave Files for another Library subview or top-level tab and return in the same session (`5.3.4.1` and the remaining state-restoration portion of `5.3.4`).
 - [ ] 2.6.4 Finish loop provenance presentation in Files, search, tag, and folder results while keeping dedicated track-context loop browsing fast and clearly parent-linked (`5.4` and `5.4.1` UI integration).
 - [ ] 2.6.5 Add focused coverage for Files search, sort, restoration, and result-group behavior, then manually verify the full Files organization/search contract end to end (`6.1.6`, `6.2.7`, and `6.2.7.3`).
-- [ ] 2.6.6 Create a tested checkpoint commit for Files search, sort, restoration, and loop-result integration.
 
 ### 2.7 Run Final Regression and Close Out the Change
 

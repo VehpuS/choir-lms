@@ -7,6 +7,9 @@ import {
   type NamedLoop,
   type PlayableItem,
   type Playlist,
+  type RehearsalLibraryFileLinkNode,
+  type RehearsalLibraryFileTree,
+  type RehearsalLibraryFolderNode,
   type RehearsalQueueMode,
   type RepeatMode,
 } from '@org/audio-library-models';
@@ -14,6 +17,16 @@ import AsyncStorage, {
   type AsyncStorageStatic,
 } from '@react-native-async-storage/async-storage';
 import { filter, flatMap, keyBy, size, sortBy } from 'es-toolkit/compat';
+
+import {
+  parseStoredRehearsalLibraryFileTree,
+  REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+  removeRehearsalLibraryFileLinkNode,
+  syncRehearsalLibraryFileTree,
+  upsertRehearsalLibraryFileLinkNode,
+  upsertRehearsalLibraryFolderNode,
+  type RehearsalLibraryEntityCollections,
+} from './rehearsal-library-files';
 
 export type PracticeRepository = {
   listSources(ownerId: string): Promise<DriveAudioSource[]>;
@@ -28,6 +41,19 @@ export type PracticeRepository = {
   listPlaylists(ownerId: string): Promise<Playlist[]>;
   savePlaylist(playlist: Playlist): Promise<Playlist[]>;
   deletePlaylist(ownerId: string, playlistId: string): Promise<Playlist[]>;
+  listLibraryFileTree(ownerId: string): Promise<RehearsalLibraryFileTree>;
+  saveLibraryFolderNode(
+    ownerId: string,
+    folder: RehearsalLibraryFolderNode,
+  ): Promise<RehearsalLibraryFileTree>;
+  saveLibraryFileLink(
+    ownerId: string,
+    fileLink: RehearsalLibraryFileLinkNode,
+  ): Promise<RehearsalLibraryFileTree>;
+  deleteLibraryFileLink(
+    ownerId: string,
+    fileLinkId: string,
+  ): Promise<RehearsalLibraryFileTree>;
 };
 
 export type PlaybackQueue = {
@@ -44,6 +70,10 @@ const storageKey = (
   ownerId: string,
 ) => {
   return `choirlms:practice:${entity}:${ownerId}`;
+};
+
+const libraryFileTreeStorageKey = (ownerId: string) => {
+  return `choirlms:practice:library-tree:${ownerId}`;
 };
 
 const readCollection = async <Entity>(key: string): Promise<Entity[]> => {
@@ -66,6 +96,82 @@ const readCollection = async <Entity>(key: string): Promise<Entity[]> => {
 const writeCollection = async <Entity>(key: string, values: Entity[]) => {
   await asyncStorage.setItem(key, JSON.stringify(values));
   return values;
+};
+
+const readLibraryFileTree = async (ownerId: string) => {
+  const value = await asyncStorage.getItem(libraryFileTreeStorageKey(ownerId));
+
+  return parseStoredRehearsalLibraryFileTree(value);
+};
+
+const writeLibraryFileTree = async (
+  ownerId: string,
+  tree: RehearsalLibraryFileTree,
+) => {
+  await asyncStorage.setItem(
+    libraryFileTreeStorageKey(ownerId),
+    JSON.stringify(tree),
+  );
+
+  return tree;
+};
+
+const loadCanonicalCollections = async (
+  repository: Pick<
+    PracticeRepository,
+    'listLoops' | 'listPlaylists' | 'listSources'
+  >,
+  ownerId: string,
+): Promise<RehearsalLibraryEntityCollections> => {
+  return {
+    loops: await repository.listLoops(ownerId),
+    playlists: await repository.listPlaylists(ownerId),
+    sources: await repository.listSources(ownerId),
+  };
+};
+
+const hasCanonicalEntity = (
+  entityCollections: RehearsalLibraryEntityCollections,
+  fileLink: RehearsalLibraryFileLinkNode,
+) => {
+  if (fileLink.entityKind === 'track') {
+    return entityCollections.sources.some(
+      (source) => source.id === fileLink.entityId,
+    );
+  }
+
+  if (fileLink.entityKind === 'loop') {
+    return entityCollections.loops.some(
+      (loop) => loop.id === fileLink.entityId,
+    );
+  }
+
+  return entityCollections.playlists.some(
+    (playlist) => playlist.id === fileLink.entityId,
+  );
+};
+
+const persistSynchronizedLibraryFileTree = async (
+  repository: Pick<
+    PracticeRepository,
+    'listLoops' | 'listPlaylists' | 'listSources'
+  >,
+  ownerId: string,
+  entityCollections?: RehearsalLibraryEntityCollections,
+) => {
+  const storedTree = await readLibraryFileTree(ownerId);
+  const nextEntityCollections =
+    entityCollections ?? (await loadCanonicalCollections(repository, ownerId));
+  const nextTree = syncRehearsalLibraryFileTree({
+    existingTree: storedTree,
+    entityCollections: nextEntityCollections,
+  });
+
+  if (JSON.stringify(storedTree) !== JSON.stringify(nextTree)) {
+    await writeLibraryFileTree(ownerId, nextTree);
+  }
+
+  return nextTree;
 };
 
 const shuffleItems = <Entity>(
@@ -99,7 +205,14 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
     );
     const nextSources = sortBy([...otherSources, source], ['name']);
 
-    return writeCollection(storageKey('sources', ownerId), nextSources);
+    await writeCollection(storageKey('sources', ownerId), nextSources);
+    await persistSynchronizedLibraryFileTree(this, ownerId, {
+      loops: await this.listLoops(ownerId),
+      playlists: await this.listPlaylists(ownerId),
+      sources: nextSources,
+    });
+
+    return nextSources;
   }
 
   async deleteSource(ownerId: string, sourceId: string) {
@@ -109,8 +222,14 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
     const nextLoops = filter(loops, (loop) => loop.sourceId !== sourceId);
 
     await writeCollection(storageKey('loops', ownerId), nextLoops);
+    await writeCollection(storageKey('sources', ownerId), nextSources);
+    await persistSynchronizedLibraryFileTree(this, ownerId, {
+      loops: nextLoops,
+      playlists: await this.listPlaylists(ownerId),
+      sources: nextSources,
+    });
 
-    return writeCollection(storageKey('sources', ownerId), nextSources);
+    return nextSources;
   }
 
   async listLoops(ownerId: string) {
@@ -125,14 +244,28 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
     );
     const nextLoops = sortBy([...otherLoops, loop], ['name']);
 
-    return writeCollection(storageKey('loops', loop.ownerId), nextLoops);
+    await writeCollection(storageKey('loops', loop.ownerId), nextLoops);
+    await persistSynchronizedLibraryFileTree(this, loop.ownerId, {
+      loops: nextLoops,
+      playlists: await this.listPlaylists(loop.ownerId),
+      sources: await this.listSources(loop.ownerId),
+    });
+
+    return nextLoops;
   }
 
   async deleteLoop(ownerId: string, loopId: string) {
     const loops = await this.listLoops(ownerId);
     const nextLoops = filter(loops, (loop) => loop.id !== loopId);
 
-    return writeCollection(storageKey('loops', ownerId), nextLoops);
+    await writeCollection(storageKey('loops', ownerId), nextLoops);
+    await persistSynchronizedLibraryFileTree(this, ownerId, {
+      loops: nextLoops,
+      playlists: await this.listPlaylists(ownerId),
+      sources: await this.listSources(ownerId),
+    });
+
+    return nextLoops;
   }
 
   async listPlaylists(ownerId: string) {
@@ -161,10 +294,17 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
       ['name'],
     );
 
-    return writeCollection(
+    await writeCollection(
       storageKey('playlists', normalizedPlaylist.ownerId),
       nextPlaylists,
     );
+    await persistSynchronizedLibraryFileTree(this, normalizedPlaylist.ownerId, {
+      loops: await this.listLoops(normalizedPlaylist.ownerId),
+      playlists: nextPlaylists,
+      sources: await this.listSources(normalizedPlaylist.ownerId),
+    });
+
+    return nextPlaylists;
   }
 
   async deletePlaylist(ownerId: string, playlistId: string) {
@@ -174,7 +314,118 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
       (playlist) => playlist.id !== playlistId,
     );
 
-    return writeCollection(storageKey('playlists', ownerId), nextPlaylists);
+    await writeCollection(storageKey('playlists', ownerId), nextPlaylists);
+    await persistSynchronizedLibraryFileTree(this, ownerId, {
+      loops: await this.listLoops(ownerId),
+      playlists: nextPlaylists,
+      sources: await this.listSources(ownerId),
+    });
+
+    return nextPlaylists;
+  }
+
+  async listLibraryFileTree(ownerId: string) {
+    return persistSynchronizedLibraryFileTree(this, ownerId);
+  }
+
+  async saveLibraryFolderNode(
+    ownerId: string,
+    folder: RehearsalLibraryFolderNode,
+  ) {
+    if (folder.id === REHEARSAL_LIBRARY_ROOT_FOLDER_ID) {
+      throw new Error('The root library folder cannot be mutated.');
+    }
+
+    if (folder.parentFolderId === null) {
+      throw new Error(
+        'Non-root library folders must reference a parent folder.',
+      );
+    }
+
+    const tree = await this.listLibraryFileTree(ownerId);
+
+    if (
+      !tree.folders.some(
+        (existingFolder) => existingFolder.id === folder.parentFolderId,
+      )
+    ) {
+      throw new Error(
+        `The parent folder "${folder.parentFolderId}" does not exist.`,
+      );
+    }
+
+    return writeLibraryFileTree(
+      ownerId,
+      upsertRehearsalLibraryFolderNode(tree, folder),
+    );
+  }
+
+  async saveLibraryFileLink(
+    ownerId: string,
+    fileLink: RehearsalLibraryFileLinkNode,
+  ) {
+    const entityCollections = await loadCanonicalCollections(this, ownerId);
+    const tree = await persistSynchronizedLibraryFileTree(
+      this,
+      ownerId,
+      entityCollections,
+    );
+
+    if (!tree.folders.some((folder) => folder.id === fileLink.parentFolderId)) {
+      throw new Error(
+        `The parent folder "${fileLink.parentFolderId}" does not exist.`,
+      );
+    }
+
+    if (!hasCanonicalEntity(entityCollections, fileLink)) {
+      throw new Error(
+        `The ${fileLink.entityKind} entity "${fileLink.entityId}" is not available in the saved library.`,
+      );
+    }
+
+    return writeLibraryFileTree(
+      ownerId,
+      syncRehearsalLibraryFileTree({
+        existingTree: upsertRehearsalLibraryFileLinkNode(tree, fileLink),
+        entityCollections,
+      }),
+    );
+  }
+
+  async deleteLibraryFileLink(ownerId: string, fileLinkId: string) {
+    const tree = await this.listLibraryFileTree(ownerId);
+    const fileLink = tree.fileLinks.find(
+      (existingFileLink) => existingFileLink.id === fileLinkId,
+    );
+
+    if (!fileLink) {
+      return tree;
+    }
+
+    const hasAdditionalLinks = tree.fileLinks.some((existingFileLink) => {
+      return (
+        existingFileLink.id !== fileLinkId &&
+        existingFileLink.entityKind === fileLink.entityKind &&
+        existingFileLink.entityId === fileLink.entityId
+      );
+    });
+
+    if (hasAdditionalLinks) {
+      return writeLibraryFileTree(
+        ownerId,
+        removeRehearsalLibraryFileLinkNode(tree, fileLinkId),
+      );
+    }
+
+    if (fileLink.entityKind === 'track') {
+      await this.deleteSource(ownerId, fileLink.entityId);
+    } else if (fileLink.entityKind === 'loop') {
+      await this.deleteLoop(ownerId, fileLink.entityId);
+    } else {
+      await this.deletePlaylist(ownerId, fileLink.entityId);
+    }
+
+    return this.listLibraryFileTree(ownerId);
   }
 }
 
