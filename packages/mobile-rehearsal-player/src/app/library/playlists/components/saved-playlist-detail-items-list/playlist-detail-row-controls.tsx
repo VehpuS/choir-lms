@@ -6,23 +6,7 @@ import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigge
 import { SurfaceIconButton } from '../../../../components/surface-icon-button';
 import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
 import { savedPlaylistSectionStyles as styles } from '../../../components/saved-playlist-section-styles';
-import { getSavedPlaylistDetailPlaybackAction } from '../../utils/saved-playlist-detail-view-model';
-
-const getRowStatusLabel = (options: {
-  isCurrentEntry: boolean;
-  isPlayable: boolean;
-  playbackToggleLabel: string;
-}) => {
-  if (options.isCurrentEntry) {
-    return options.playbackToggleLabel === 'Pause' ? 'Playing' : 'Current';
-  }
-
-  if (options.isPlayable) {
-    return 'Ready';
-  }
-
-  return 'Unavailable';
-};
+import { getPlaylistDetailRowControlState } from './playlist-detail-row-controls-model';
 
 export const PlaylistDetailRowControls = (props: {
   entryId: string;
@@ -54,36 +38,34 @@ export const PlaylistDetailRowControls = (props: {
   playbackToggleDisabled: boolean;
   playbackToggleLabel: string;
 }) => {
-  const canMoveUp = props.index > 0;
-  const canMoveDown = props.index < props.itemCount - 1;
-  const canMoveToPosition = props.itemCount > 1;
-  const canDragReorder = props.itemCount > 1 && !props.isMutating;
   const dragAnchorMoveYRef = useRef<number | null>(null);
   const hasMovedDuringDragRef = useRef(false);
   const stepDistance = Math.max(props.itemHeight * 0.82, 44);
-  const playbackAction = getSavedPlaylistDetailPlaybackAction({
+  const controlState = getPlaylistDetailRowControlState({
+    entryId: props.entryId,
+    entryTitle: props.entryTitle,
+    index: props.index,
     isCurrentEntry: props.isCurrentEntry,
+    isItemPlayable: props.isItemPlayable,
+    isMutating: props.isMutating,
+    itemCount: props.itemCount,
+    playbackToggleDisabled: props.playbackToggleDisabled,
     playbackToggleLabel: props.playbackToggleLabel,
-    title: props.entryTitle,
   });
-  const isPlaybackButtonDisabled =
-    props.isMutating ||
-    props.playbackToggleDisabled ||
-    (!props.isCurrentEntry && !props.isItemPlayable);
 
   const panResponder = useMemo(() => {
     return PanResponder.create({
       onStartShouldSetPanResponder: () => {
-        return canDragReorder;
+        return controlState.canDragReorder;
       },
       onStartShouldSetPanResponderCapture: () => {
-        return canDragReorder;
+        return controlState.canDragReorder;
       },
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        return canDragReorder && Math.abs(gestureState.dy) > 5;
+        return controlState.canDragReorder && Math.abs(gestureState.dy) > 5;
       },
       onMoveShouldSetPanResponderCapture: (_, gestureState) => {
-        return canDragReorder && Math.abs(gestureState.dy) > 5;
+        return controlState.canDragReorder && Math.abs(gestureState.dy) > 5;
       },
       onPanResponderTerminationRequest: () => {
         return false;
@@ -99,7 +81,7 @@ export const PlaylistDetailRowControls = (props: {
       onPanResponderMove: (_, gestureState) => {
         props.onReorderDragMove(gestureState.moveY);
 
-        if (!canDragReorder) {
+        if (!controlState.canDragReorder) {
           return;
         }
 
@@ -154,7 +136,7 @@ export const PlaylistDetailRowControls = (props: {
       },
     });
   }, [
-    canDragReorder,
+    controlState.canDragReorder,
     props.getCurrentScrollOffsetY,
     props.getEntryIndex,
     props.itemCount,
@@ -175,18 +157,20 @@ export const PlaylistDetailRowControls = (props: {
             accessibilityRole="adjustable"
             style={[
               styles.playlistRowDragHandle,
-              !canDragReorder ? styles.playlistRowDragHandleDisabled : null,
+              !controlState.canDragReorder
+                ? styles.playlistRowDragHandleDisabled
+                : null,
             ]}
-            {...(canDragReorder ? panResponder.panHandlers : {})}
+            {...(controlState.canDragReorder ? panResponder.panHandlers : {})}
           >
             <MaterialCommunityIcons color="#5f5647" name="drag" size={18} />
           </View>
           <SurfaceIconButton
-            accessibilityLabel={playbackAction.accessibilityLabel}
-            disabled={isPlaybackButtonDisabled}
-            icon={playbackAction.iconName}
+            accessibilityLabel={controlState.playbackAction.accessibilityLabel}
+            disabled={controlState.isPlaybackButtonDisabled}
+            icon={controlState.playbackAction.iconName}
             onPress={
-              playbackAction.pressBehavior === 'toggle-current'
+              controlState.playbackAction.pressBehavior === 'toggle-current'
                 ? props.onToggleCurrentPlayback
                 : props.onPlayItem
             }
@@ -197,7 +181,7 @@ export const PlaylistDetailRowControls = (props: {
             <Pressable
               accessibilityLabel={`Move ${props.entryTitle} up`}
               accessibilityRole="button"
-              disabled={props.isMutating || !canMoveUp}
+              disabled={props.isMutating || !controlState.canMoveUp}
               onPress={() => {
                 props.onMoveItem(props.index, props.index - 1, {
                   persist: true,
@@ -205,10 +189,10 @@ export const PlaylistDetailRowControls = (props: {
               }}
               style={({ pressed }) => [
                 styles.playlistRowStepButton,
-                pressed && !props.isMutating && canMoveUp
+                pressed && !props.isMutating && controlState.canMoveUp
                   ? styles.actionButtonPressed
                   : undefined,
-                props.isMutating || !canMoveUp
+                props.isMutating || !controlState.canMoveUp
                   ? styles.actionButtonDisabled
                   : undefined,
               ]}
@@ -222,7 +206,7 @@ export const PlaylistDetailRowControls = (props: {
             <Pressable
               accessibilityLabel={`Move ${props.entryTitle} down`}
               accessibilityRole="button"
-              disabled={props.isMutating || !canMoveDown}
+              disabled={props.isMutating || !controlState.canMoveDown}
               onPress={() => {
                 props.onMoveItem(props.index, props.index + 1, {
                   persist: true,
@@ -230,10 +214,10 @@ export const PlaylistDetailRowControls = (props: {
               }}
               style={({ pressed }) => [
                 styles.playlistRowStepButton,
-                pressed && !props.isMutating && canMoveDown
+                pressed && !props.isMutating && controlState.canMoveDown
                   ? styles.actionButtonPressed
                   : undefined,
-                props.isMutating || !canMoveDown
+                props.isMutating || !controlState.canMoveDown
                   ? styles.actionButtonDisabled
                   : undefined,
               ]}
@@ -266,11 +250,7 @@ export const PlaylistDetailRowControls = (props: {
                     : styles.itemStatusUnavailable
               }
             >
-              {getRowStatusLabel({
-                isCurrentEntry: props.isCurrentEntry,
-                isPlayable: props.isItemPlayable,
-                playbackToggleLabel: props.playbackToggleLabel,
-              })}
+              {controlState.rowStatusLabel}
             </Text>
           </View>
           <Text style={styles.itemMetadata}>{props.metadataLabel}</Text>
@@ -278,27 +258,19 @@ export const PlaylistDetailRowControls = (props: {
       </View>
 
       <OptionsMenuSheet
-        actions={[
-          {
-            disabled: !canMoveToPosition,
-            id: `${props.entryId}:move-to-position`,
-            label: 'Move to position',
-            onPress: () => {
-              props.onCloseMenu();
+        actions={controlState.menuActions.map((action) => ({
+          ...action,
+          onPress: () => {
+            props.onCloseMenu();
+
+            if (action.kind === 'move-to-position') {
               props.onRequestMoveToPosition(props.entryId);
-            },
+              return;
+            }
+
+            props.onRemoveItem(props.entryId);
           },
-          {
-            disabled: props.isMutating,
-            id: `${props.entryId}:remove`,
-            label: 'Remove from playlist',
-            onPress: () => {
-              props.onCloseMenu();
-              props.onRemoveItem(props.entryId);
-            },
-            tone: 'destructive',
-          },
-        ]}
+        }))}
         isVisible={props.isMenuVisible}
         onClose={props.onCloseMenu}
         title={props.entryTitle}

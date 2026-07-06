@@ -90,11 +90,11 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
 - [x] 2.1.1 Implement the remaining shared compact destination-header rollout across Recents, Add, and Library: remove large descriptive headers, keep destination titles leading, keep `Search` adjacent to the Drive session menu in Add, keep Add `Refresh` as the leading header action when the visible Drive context can refresh, keep `Filters` and `Search` adjacent in Library, place the Drive session menu trigger to the right of search when present, and preserve surface-specific trailing actions where search is not relevant (`3.8.1`).
 - [x] 2.1.2 Add or finish UI coverage for compact destination-header and contextual-search adoption where this rollout changes behavior (`6.1.4` scoped to header and search-shell adoption).
 - [x] 2.1.3 Manually verify Add refresh/search/session-menu ordering, Library filters/search/session-menu ordering, Drive session trigger placement, Recents title alignment, and shell-level non-regression for the touched surfaces (`6.2.5` and `6.2.6` scoped to header rollout).
-- [ ] 2.1.4 Create a tested checkpoint commit for the compact-header rollout before touching Files architecture.
+- [x] 2.1.4 Create a tested checkpoint commit for the compact-header rollout before touching Files architecture.
 
 ### 2.2 Stabilize the Already-Shipped Queue, Playlist, and Shared-Action Behavior
 
-- [ ] 2.2.1 Backfill focused automated coverage for row-action placement, shared overflow trigger behavior, search-result highlighting, active queue behavior, and default playlist row controls (`6.1.1`, `6.1.2`, `6.1.3`, `6.1.5`, and `6.1.5.1`).
+- [x] 2.2.1 Backfill focused automated coverage for row-action placement, shared overflow trigger behavior, search-result highlighting, active queue behavior, and default playlist row controls (`6.1.1`, `6.1.2`, `6.1.3`, `6.1.5`, and `6.1.5.1`).
 - [ ] 2.2.2 Run manual regression for playlist row-start playback, playlist-card play icon behavior, Recents shortcut playback, transient queue promotion, queue-to-playlist capture, active queue controls, playlist-detail playback controls, and search highlight updates (`6.2`, `6.2.1`, `6.2.2`, `6.2.3`, `6.2.3.1`, `6.2.3.2`, and `6.2.4` scoped to the already-implemented non-Files surfaces).
 - [ ] 2.2.3 Record pass/fail against the non-regression baseline from task `1.1` for the capabilities touched in this step (`6.3` scoped to queue, playlist, search, and Recents behavior).
 - [ ] 2.2.4 Create a tested checkpoint commit that locks the current non-Files interaction baseline before the Files refactor begins.

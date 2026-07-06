@@ -352,6 +352,22 @@
     },
     "npm exec": true,
     "npx tsx": true,
-    "npm --workspace @org/mobile-rehearsal-player": true
+    "npm --workspace @org/mobile-rehearsal-player": true,
+    "/^git remote -v$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^gh api repos/VehpuS/choir-lms/pages \\|\\| true$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^gh run list --repo VehpuS/choir-lms --limit 10 --json databaseId,name,workflowName,status,conclusion,headSha,event,url$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^gh variable list --repo VehpuS/choir-lms$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
   }
 }
