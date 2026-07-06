@@ -12,6 +12,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { runtimeConfig } from '../../../../config/runtime';
+import { isDriveAuthorizationFailure } from '../../../auth/google-drive/utils/authorization';
 import { createDebouncedSearchRunner } from '../../search/utils/debounced-search-runner';
 import {
   normalizeRecentSearchTerm,
@@ -51,7 +52,10 @@ const EMPTY_SEARCH: DriveSearchSnapshot = {
 const DEFAULT_LIBRARY_ERROR = 'Drive library could not be loaded.';
 const DRIVE_SEARCH_DEBOUNCE_MS = 300;
 
-export const useDriveLibrary = (authState: DriveAuthorizationState) => {
+export const useDriveLibrary = (
+  authState: DriveAuthorizationState,
+  onAuthorizationExpired?: () => void,
+) => {
   const [navigationStack, setNavigationStack] = useState<DriveBrowseLocation[]>(
     () => {
       return [createRootLocation('my-drive')];
@@ -235,6 +239,12 @@ export const useDriveLibrary = (authState: DriveAuthorizationState) => {
           return;
         }
 
+        if (isDriveAuthorizationFailure(error)) {
+          onAuthorizationExpired?.();
+          setIssue(null);
+          return;
+        }
+
         setIssue(
           error instanceof Error ? error.message : DEFAULT_LIBRARY_ERROR,
         );
@@ -258,6 +268,7 @@ export const useDriveLibrary = (authState: DriveAuthorizationState) => {
     currentLocation.id,
     currentLocation.kind,
     currentLocation.rootKind,
+    onAuthorizationExpired,
     refreshCount,
   ]);
 

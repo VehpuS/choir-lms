@@ -1,6 +1,7 @@
 import type { PlayableItem, RepeatMode } from '@org/audio-library-models';
 import {
   useEffect,
+  useRef,
   type Dispatch,
   type MutableRefObject,
   type SetStateAction,
@@ -8,6 +9,7 @@ import {
 
 import type { PlaylistPlaybackSession } from '../../../playlists/utils/saved-playlist-playback-view-model';
 import type { SavedTrackPlaybackController } from '../../utils/saved-track-playback-controller';
+import type { SavedTrackPlaybackControllerOptions } from '../../utils/saved-track-playback-controller/shared';
 import { registerSavedTrackPlaybackRemoteCommandHandlers } from '../../utils/saved-track-playback-remote-controls';
 import {
   createSavedTrackPlaybackRuntimeIssue,
@@ -39,6 +41,7 @@ type UseSavedTrackPlaybackEffectsOptions = {
   activePlaylistSessionRef: MutableRefObject<PlaylistPlaybackSession | null>;
   playbackController: SavedTrackPlaybackController;
   playbackState: SavedTrackPlaybackState | undefined;
+  playbackStateRef: MutableRefObject<SavedTrackPlaybackControllerOptions>;
   playlistRepeatMode: RepeatMode;
   progressDurationSeconds: number;
   progressPositionSeconds: number;
@@ -58,6 +61,7 @@ export const useSavedTrackPlaybackEffects = ({
   activePlaylistSessionRef,
   playbackController,
   playbackState,
+  playbackStateRef,
   playlistRepeatMode,
   progressDurationSeconds,
   progressPositionSeconds,
@@ -84,6 +88,10 @@ export const useSavedTrackPlaybackEffects = ({
   useEffect(() => {
     repeatModeRef.current = playlistRepeatMode;
   }, [playlistRepeatMode, repeatModeRef]);
+
+  useEffect(() => {
+    playbackStateRef.current.playbackState = playbackState;
+  }, [playbackState, playbackStateRef]);
 
   useEffect(() => {
     if (!activePlayableItem) {
@@ -157,7 +165,7 @@ export const useSavedTrackPlaybackEffects = ({
       async pause() {
         if (
           !activePlayableItemRef.current ||
-          playbackState === trackPlayerState.Paused
+          playbackStateRef.current.playbackState === trackPlayerState.Paused
         ) {
           return;
         }
@@ -167,7 +175,7 @@ export const useSavedTrackPlaybackEffects = ({
       async play() {
         if (
           !activePlayableItemRef.current ||
-          playbackState === trackPlayerState.Playing
+          playbackStateRef.current.playbackState === trackPlayerState.Playing
         ) {
           return;
         }
@@ -178,7 +186,7 @@ export const useSavedTrackPlaybackEffects = ({
         await playbackController.playPreviousQueueItem();
       },
     });
-  }, [activePlayableItemRef, playbackController, playbackState]);
+  }, [activePlayableItemRef, playbackController, playbackStateRef]);
 
   useEffect(() => {
     if (!activePlayableItem) {
@@ -194,37 +202,50 @@ export const useSavedTrackPlaybackEffects = ({
     activePlaylistSession,
   ]);
 
+  const savedTrackPlayerEventHandlerRef = useRef<
+    (event: { type: string; message?: string }) => void
+  >(() => undefined);
+  const savedTrackPlayerEventDispatcherRef = useRef(
+    (event: { type: string; message?: string }) => {
+      savedTrackPlayerEventHandlerRef.current(event);
+    },
+  );
+
+  savedTrackPlayerEventHandlerRef.current = (event) => {
+    const currentPlayableItem = activePlayableItemRef.current;
+
+    if (event.type === trackPlayerEvent.PlaybackError && currentPlayableItem) {
+      setIssue({
+        playableItemId: currentPlayableItem.id,
+        sourceId: currentPlayableItem.sourceId,
+        title: 'Playback failed',
+        message: `The saved rehearsal library could not continue "${currentPlayableItem.title}". ${event.message}`,
+      });
+    }
+
+    if (event.type === trackPlayerEvent.PlaybackQueueEnded) {
+      if (activePlaylistSessionRef.current) {
+        void playbackController.advancePlaylistPlayback();
+        return;
+      }
+
+      if (
+        activePlayableItemRef.current &&
+        shouldRepeatSingleItemPlayback(repeatModeRef.current)
+      ) {
+        void playbackController.restartActivePlaybackFromRangeStart();
+        return;
+      }
+
+      setIssue(null);
+    }
+
+    setIsPreparing(false);
+  };
+
   useSavedTrackPlayerEvents(
     [trackPlayerEvent.PlaybackError, trackPlayerEvent.PlaybackQueueEnded],
-    (event) => {
-      if (event.type === trackPlayerEvent.PlaybackError && activePlayableItem) {
-        setIssue({
-          playableItemId: activePlayableItem.id,
-          sourceId: activePlayableItem.sourceId,
-          title: 'Playback failed',
-          message: `The saved rehearsal library could not continue "${activePlayableItem.title}". ${event.message}`,
-        });
-      }
-
-      if (event.type === trackPlayerEvent.PlaybackQueueEnded) {
-        if (activePlaylistSessionRef.current) {
-          void playbackController.advancePlaylistPlayback();
-          return;
-        }
-
-        if (
-          activePlayableItemRef.current &&
-          shouldRepeatSingleItemPlayback(repeatModeRef.current)
-        ) {
-          void playbackController.restartActivePlaybackFromRangeStart();
-          return;
-        }
-
-        setIssue(null);
-      }
-
-      setIsPreparing(false);
-    },
+    savedTrackPlayerEventDispatcherRef.current,
   );
 
   useEffect(() => {

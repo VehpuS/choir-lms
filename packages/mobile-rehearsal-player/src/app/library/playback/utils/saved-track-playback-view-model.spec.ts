@@ -15,6 +15,7 @@ import {
   UNSUPPORTED_SOURCE,
 } from '../../../test-utils/library-test-fixtures.js';
 import {
+  createSavedTrackPlaybackAuthorizationIssue,
   createSavedTrackPlaybackPreconditionIssue,
   createSavedTrackPlaybackRequest,
   getSavedTrackPlaybackActionCopy,
@@ -93,6 +94,22 @@ describe('saved track playback view-model', () => {
       title: 'Track unavailable',
       message: 'Reconnect Google Drive to restore this saved rehearsal track.',
     });
+  });
+
+  it('creates reconnect guidance for authorization failures during playback', () => {
+    assert.deepEqual(
+      createSavedTrackPlaybackAuthorizationIssue({
+        playableItemId: 'track:drive:alto-line',
+        sourceId: 'drive:alto-line',
+      }),
+      {
+        playableItemId: 'track:drive:alto-line',
+        sourceId: 'drive:alto-line',
+        title: 'Google Drive access required',
+        message:
+          'Reconnect Google Drive before saved-library playback can continue.',
+      },
+    );
   });
 
   it('computes play, pause, resume, and replay labels for saved-track playback', () => {

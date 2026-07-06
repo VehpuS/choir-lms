@@ -37,18 +37,20 @@ type SavedTrackPlaybackController = Pick<
 type RehearsalLibraryScreenControllerOptions = {
   authState: DriveAuthorizationState;
   googleAuthConfigured: boolean;
+  onAuthorizationExpired?: () => void;
   playback: SavedTrackPlaybackController;
 };
 
 export const useRehearsalLibraryController = ({
   authState,
   googleAuthConfigured,
+  onAuthorizationExpired,
   playback,
 }: RehearsalLibraryScreenControllerOptions) => {
   const [selectedLoopSourceId, setSelectedLoopSourceId] = useState<
     string | null
   >(null);
-  const driveLibrary = useDriveLibrary(authState);
+  const driveLibrary = useDriveLibrary(authState, onAuthorizationExpired);
   const savedLibrary = useSavedRehearsalLibrary();
   const savedLoops = useSavedLoops();
   const playlists = useSavedPlaylists();

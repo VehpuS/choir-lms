@@ -30,6 +30,55 @@ export type SavedTrackPlaybackControllerOptions = {
   volumeLevelRef: MutableRefObject<number>;
 };
 
+export const createSavedTrackPlaybackControllerOptionsProxy = (
+  optionsRef: MutableRefObject<SavedTrackPlaybackControllerOptions>,
+): SavedTrackPlaybackControllerOptions => {
+  return {
+    get authState() {
+      return optionsRef.current.authState;
+    },
+    get activePlayableItemRef() {
+      return optionsRef.current.activePlayableItemRef;
+    },
+    get activePlaylistSessionRef() {
+      return optionsRef.current.activePlaylistSessionRef;
+    },
+    get isAdvancingPlaylistRef() {
+      return optionsRef.current.isAdvancingPlaylistRef;
+    },
+    get isPreparing() {
+      return optionsRef.current.isPreparing;
+    },
+    get playbackState() {
+      return optionsRef.current.playbackState;
+    },
+    get progressDurationSeconds() {
+      return optionsRef.current.progressDurationSeconds;
+    },
+    get progressPositionSeconds() {
+      return optionsRef.current.progressPositionSeconds;
+    },
+    get setActivePlayableItem() {
+      return optionsRef.current.setActivePlayableItem;
+    },
+    get setActivePlaylistSession() {
+      return optionsRef.current.setActivePlaylistSession;
+    },
+    get setIsPreparing() {
+      return optionsRef.current.setIsPreparing;
+    },
+    get setIssue() {
+      return optionsRef.current.setIssue;
+    },
+    get setVolumeLevel() {
+      return optionsRef.current.setVolumeLevel;
+    },
+    get volumeLevelRef() {
+      return optionsRef.current.volumeLevelRef;
+    },
+  };
+};
+
 export const isActivePlaybackSource = (
   activePlayableItem: PlayableItem | null,
   playableItem: PlayableItem,

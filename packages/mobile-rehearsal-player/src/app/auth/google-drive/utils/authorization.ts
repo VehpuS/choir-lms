@@ -22,9 +22,10 @@ export type AuthorizationSessionStore = {
 };
 
 type PersistedDriveAuthorizationState = {
-  accessToken: string;
+  accessToken?: string;
   expiresAt?: string;
   scope?: string;
+  status?: 'expired';
 };
 
 type DriveAuthorizationOutcome =
@@ -63,6 +64,8 @@ type WebAuthLocation = {
 };
 
 const DEFAULT_AUTH_FAILURE_MESSAGE = 'Google Drive authorization failed.';
+const DRIVE_AUTHORIZATION_FAILURE_PATTERN =
+  /\b401\b|invalid[_\s-]?token|invalid authentication credentials/i;
 
 export const DRIVE_AUTH_SESSION_KEY = 'choirlms.google-drive.authorization';
 
@@ -152,6 +155,31 @@ export const createAuthorizedDriveState = (
   });
 };
 
+export const createExpiredDriveAuthorizationState = (
+  state: Pick<DriveAuthorizationState, 'expiresAt' | 'scope'>,
+): DriveAuthorizationState => {
+  return {
+    expiresAt: state.expiresAt ?? new Date().toISOString(),
+    scope: state.scope,
+    status: 'expired',
+  };
+};
+
+export const isDriveAuthorizationFailure = (error: unknown) => {
+  const message =
+    typeof error === 'string'
+      ? error
+      : error instanceof Error
+        ? error.message
+        : null;
+
+  if (!message) {
+    return false;
+  }
+
+  return DRIVE_AUTHORIZATION_FAILURE_PATTERN.test(message);
+};
+
 export const resolveDriveAuthorizationResult = (
   result: AuthSessionResult | null,
   defaultScope: string,
@@ -216,10 +244,21 @@ export const restoreDriveAuthorizationState = async (
       });
     }
 
+    const accessToken = readOptionalString(parsedValue.accessToken);
+    const expiresAt = readOptionalString(parsedValue.expiresAt);
+    const scope = readOptionalString(parsedValue.scope) ?? defaultScope;
+
+    if (parsedValue.status === 'expired' && !accessToken) {
+      return createExpiredDriveAuthorizationState({
+        expiresAt,
+        scope,
+      });
+    }
+
     return getDriveAuthorizationState({
-      accessToken: readOptionalString(parsedValue.accessToken),
-      expiresAt: readOptionalString(parsedValue.expiresAt),
-      scope: readOptionalString(parsedValue.scope) ?? defaultScope,
+      accessToken,
+      expiresAt,
+      scope,
     });
   } catch {
     return getDriveAuthorizationState({
@@ -232,6 +271,17 @@ export const persistDriveAuthorizationState = async (
   store: AuthorizationSessionStore,
   state: DriveAuthorizationState,
 ) => {
+  if (state.status === 'expired') {
+    const persistedState: PersistedDriveAuthorizationState = {
+      expiresAt: state.expiresAt,
+      scope: state.scope,
+      status: 'expired',
+    };
+
+    await store.setItem(DRIVE_AUTH_SESSION_KEY, JSON.stringify(persistedState));
+    return;
+  }
+
   if (!state.accessToken) {
     await store.deleteItem(DRIVE_AUTH_SESSION_KEY);
     return;

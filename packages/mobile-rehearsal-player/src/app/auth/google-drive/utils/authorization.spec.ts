@@ -6,9 +6,11 @@ import type { AuthSessionResult } from 'expo-auth-session';
 import {
   clearDriveAuthorizationState,
   createAuthorizedDriveState,
+  createExpiredDriveAuthorizationState,
   getDriveAuthorizationStatusCopy,
   getDriveSessionDetails,
   getDriveSessionTriggerCopy,
+  isDriveAuthorizationFailure,
   persistDriveAuthorizationState,
   resolveDriveAuthorizationResult,
   resolveWebAuthRedirectUri,
@@ -175,6 +177,25 @@ describe('resolveDriveAuthorizationResult', () => {
     assert.match(details.expiry, /\d{4}|\//);
   });
 
+  it('detects invalid Drive authorization failures from runtime error text', () => {
+    assert.equal(
+      isDriveAuthorizationFailure(
+        'Drive library request failed with 401: Request had invalid authentication credentials.',
+      ),
+      true,
+    );
+    assert.equal(
+      isDriveAuthorizationFailure(
+        new Error('Web playback media request failed with 401.'),
+      ),
+      true,
+    );
+    assert.equal(
+      isDriveAuthorizationFailure(new Error('network timeout')),
+      false,
+    );
+  });
+
   it('preserves the current web pathname in the auth redirect uri', () => {
     assert.equal(
       resolveWebAuthRedirectUri({
@@ -241,5 +262,29 @@ describe('authorization persistence', () => {
     assert.equal(memoryStore.read(), null);
     assert.equal(clearedState.status, 'unconfigured');
     assert.equal(clearedState.scope, DEFAULT_SCOPE);
+  });
+
+  it('persists and restores an expired session marker without the old token', async () => {
+    const memoryStore = createMemoryStore();
+    const expiredState = createExpiredDriveAuthorizationState({
+      expiresAt: '2026-07-06T14:47:07.000Z',
+      scope: DEFAULT_SCOPE,
+    });
+
+    await persistDriveAuthorizationState(memoryStore.store, expiredState);
+
+    const persistedValue = JSON.parse(memoryStore.read() ?? '{}') as {
+      accessToken?: string;
+      status?: string;
+    };
+    const restoredState = await restoreDriveAuthorizationState(
+      memoryStore.store,
+      DEFAULT_SCOPE,
+    );
+
+    assert.equal(persistedValue.accessToken, undefined);
+    assert.equal(persistedValue.status, 'expired');
+    assert.equal(restoredState.status, 'expired');
+    assert.equal(restoredState.accessToken, undefined);
   });
 });

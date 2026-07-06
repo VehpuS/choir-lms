@@ -10,14 +10,7 @@ import {
 } from '@org/google-drive';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
-export {
-  hasSavedTrackPlaybackReachedRangeEnd,
-  hydratePlayableItemDuration,
-  normalizePlaybackVolumeLevel,
-  resolvePlaybackScrubPositionSeconds,
-  resolvePlaybackSeekPositionSeconds,
-  shouldRepeatSingleItemPlayback,
-} from './saved-track-playback-timeline';
+import type { SavedTrackPlaybackIssue } from './saved-track-playback-presentation';
 export {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -29,7 +22,14 @@ export type {
   SavedTrackPlaybackIssue,
   SavedTrackPlaybackState,
 } from './saved-track-playback-presentation';
-import type { SavedTrackPlaybackIssue } from './saved-track-playback-presentation';
+export {
+  hasSavedTrackPlaybackReachedRangeEnd,
+  hydratePlayableItemDuration,
+  normalizePlaybackVolumeLevel,
+  resolvePlaybackScrubPositionSeconds,
+  resolvePlaybackSeekPositionSeconds,
+  shouldRepeatSingleItemPlayback,
+} from './saved-track-playback-timeline';
 
 export type SavedTrackPlayerTrack = {
   id: string;
@@ -61,6 +61,8 @@ const DEFAULT_UNAVAILABLE_MESSAGE =
   'This saved rehearsal track is not currently available for playback.';
 const DRIVE_ACCESS_REQUIRED_MESSAGE =
   'Reconnect Google Drive before starting full-track playback from the saved rehearsal library.';
+const DRIVE_PLAYBACK_CONTINUE_REQUIRED_MESSAGE =
+  'Reconnect Google Drive before saved-library playback can continue.';
 const TRACK_PLAYER_ALREADY_INITIALIZED_CODE = 'player_already_initialized';
 const TRACK_PLAYER_ALREADY_INITIALIZED_MESSAGE =
   'already been initialized via setupPlayer';
@@ -218,5 +220,18 @@ export const createSavedTrackPlaybackRuntimeIssue = (
     sourceId: playableItem.sourceId,
     title: 'Playback failed',
     message: detail ? `${fallbackMessage} ${detail}` : fallbackMessage,
+  } satisfies SavedTrackPlaybackIssue;
+};
+
+export const createSavedTrackPlaybackAuthorizationIssue = (
+  issue: Pick<
+    SavedTrackPlaybackIssue,
+    'playableItemId' | 'playlistId' | 'sourceId'
+  >,
+) => {
+  return {
+    ...issue,
+    title: 'Google Drive access required',
+    message: DRIVE_PLAYBACK_CONTINUE_REQUIRED_MESSAGE,
   } satisfies SavedTrackPlaybackIssue;
 };

@@ -5,7 +5,7 @@ import {
 import * as Google from 'expo-auth-session/providers/google';
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
 import {
@@ -14,10 +14,11 @@ import {
 } from '../../../../config/runtime';
 import {
   clearDriveAuthorizationState,
+  createExpiredDriveAuthorizationState,
   getDriveAuthorizationStatusCopy,
   persistDriveAuthorizationState,
-  resolveWebAuthRedirectUri,
   resolveDriveAuthorizationResult,
+  resolveWebAuthRedirectUri,
   restoreDriveAuthorizationState,
 } from '../utils/authorization';
 import {
@@ -58,12 +59,14 @@ const resolveGoogleRedirectUri = () => {
 
   try {
     return resolveWebAuthRedirectUri(
-      (globalThis as {
-        location?: {
-          origin?: string;
-          pathname?: string;
-        };
-      }).location,
+      (
+        globalThis as {
+          location?: {
+            origin?: string;
+            pathname?: string;
+          };
+        }
+      ).location,
     );
   } catch {
     return undefined;
@@ -207,6 +210,20 @@ export const useGoogleDriveAuthorization = () => {
     }
   };
 
+  const expireAuthorization = useCallback(() => {
+    const nextState = createExpiredDriveAuthorizationState(authState);
+
+    setLastIssue(null);
+    setAuthState(nextState);
+    setIsSavingSession(true);
+    void persistDriveAuthorizationState(
+      authorizationSessionStore,
+      nextState,
+    ).finally(() => {
+      setIsSavingSession(false);
+    });
+  }, [authState]);
+
   return {
     authState,
     canClearAuthorization:
@@ -221,6 +238,7 @@ export const useGoogleDriveAuthorization = () => {
       !isAuthorizing &&
       !isSavingSession,
     clearAuthorization,
+    expireAuthorization,
     googleAuthConfigured,
     isBusy: isRestoring || isAuthorizing || isSavingSession,
     requestReady: Boolean(request),

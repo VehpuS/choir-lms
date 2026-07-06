@@ -27,7 +27,10 @@ const PLAYBACK_SEEK_STEP_SECONDS = 15;
 
 export const AppRouter = () => {
   const authorization = useGoogleDriveAuthorization();
-  const playback = useSavedTrackPlayback(authorization.authState);
+  const playback = useSavedTrackPlayback(
+    authorization.authState,
+    authorization.expireAuthorization,
+  );
   const [recentRehearsalHistory, setRecentRehearsalHistory] = useState(
     [] as Awaited<ReturnType<typeof restoreRecentRehearsalHistory>>,
   );
@@ -38,6 +41,7 @@ export const AppRouter = () => {
   const libraryController = useRehearsalLibraryController({
     authState: authorization.authState,
     googleAuthConfigured: authorization.googleAuthConfigured,
+    onAuthorizationExpired: authorization.expireAuthorization,
     playback,
   });
   const playbackActionCopy = playback.activePlayableItem
