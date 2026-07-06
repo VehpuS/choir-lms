@@ -81,7 +81,7 @@ View responsibilities:
 Placement rules:
 
 - `Files` is additive rather than replacing focused browsing; users can switch between the unified Files view and dedicated entity views without leaving Library.
-- The compact top header keeps the destination title on the leading side. On surfaces where search is relevant in this slice, the trailing action cluster is ordered `Filters`, `Search`, and the Drive session menu trigger.
+- The compact Library header keeps the destination title on the leading side. When search is relevant in this slice, the trailing action cluster is ordered `Filters`, `Search`, and the Drive session menu trigger.
 - The Library view switcher replaces the former description block and should render as four compact, first-class buttons labeled `Files`, `Tracks`, `Loops`, and `Playlists`.
 - Do not render a separate large descriptive header block above the compact header row or the Library view buttons.
 - When `Files` is active, the view-specific chrome below the compact header and Library view buttons should use explorer chrome: a standard current-folder navigation bar with a back-to-parent action and current-folder title; a horizontally scrollable breadcrumb path directly below; one vertically scrolling mixed-entity list below; and a separate floating create affordance scoped to the visible folder.
@@ -135,7 +135,7 @@ Placement rules:
 
 - Add is the destination label for the Google Drive discovery surface; Search remains a first-class operation inside Add and is explicitly labeled as Google Drive discovery.
 - Add should use the same explorer-shell mental model as Library Files rather than a stack of cards or grouped management panels: one path-oriented browse/search surface, one current location, and one list at a time.
-- The compact Add header keeps the destination title on the leading side and, when search is relevant, a trailing action cluster ordered `Filters`, `Search`, and the Drive session menu trigger.
+- The compact Add header keeps the destination title on the leading side and keeps `Search` immediately to the left of the Drive session menu trigger. When the visible Drive context can refresh and search is not open, a leading `Refresh` action sits immediately to the left of `Search`.
 - Add explorer chrome should mirror Files: a current-scope navigation bar with a back-to-parent action and title, a horizontally scrollable breadcrumb path below it, and one touch-first list beneath.
 - Scope behavior is explicit: at root level, search runs across the selected Drive root; once users drill into a folder, search defaults to the current folder path context with visible scope state.
 - Drive browse/navigation controls (root switching, folder path, breadcrumbs) stay available in the same surface as Drive search.
@@ -158,13 +158,13 @@ Section order within Recents:
 Placement rules:
 
 - Recents is never required to access Drive discovery or app-library search.
-- Recents uses the same compact destination-header pattern as Add and Library, but omits `Filters` and `Search` because they are not relevant on that surface.
+- Recents uses the same compact destination-header pattern as Add and Library, but omits Add/Library-specific search and organization actions because they are not relevant on that surface.
 - Recents modules remain compact and skimmable; discovery and library workflows remain fully accessible from Add and Library tabs directly.
 
 ### Cross-Tab Placement Guarantees
 
 - Google Drive browse/navigation placement: Add tab contains root selector, breadcrumbs, and folder-aware context controls adjacent to Drive discovery search.
-- Drive search placement: Add header action cluster with explicit Drive labeling and breadcrumb or root-scope indicators directly below.
+- Drive search placement: Add header action cluster with explicit Drive labeling, a leading refresh affordance when the visible Drive context can refresh, and breadcrumb or root-scope indicators directly below.
 - App-library search placement: Library header action cluster with saved-library labeling, context-aware filters, and no Drive-result mixing.
 
 ## Non-Regression Acceptance Criteria (Task 1.3)
@@ -579,7 +579,7 @@ Alternatives considered:
 
 ### 11. Provide search entry points in both Add and Library surfaces
 
-Search should be available in both contexts as a first-class function through the compact header row: Drive search attached to Google Drive navigation inside Add and app-library search attached to saved library management inside Library. In both surfaces, a `Filters` action sits immediately to the left of `Search`, and the Drive session menu trigger sits to the right when search is relevant.
+Search should be available in both contexts as a first-class function through the compact header row: Drive search attached to Google Drive navigation inside Add and app-library search attached to saved library management inside Library. In Add, `Search` sits immediately to the left of the Drive session menu trigger and can be preceded by `Refresh` when the visible Drive context can refresh. In Library, `Filters` sits immediately to the left of `Search`, and the Drive session menu trigger sits to the right when search is relevant.
 
 Alternatives considered:
 

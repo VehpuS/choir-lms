@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { resolveHeaderSearchToggleOutcome } from '../../../components/header-search-toggle-model';
 import {
   DEFAULT_LIBRARY_SEARCH_CONTROLS_VISIBILITY,
   toggleLibraryFilterVisibility,
@@ -26,21 +27,21 @@ export const useSavedRehearsalLibrarySearchPanel = ({
   };
 
   const handleSearchActionPress = () => {
+    const toggleOutcome = resolveHeaderSearchToggleOutcome({
+      isSearchBarVisible: isSearchPanelVisible,
+      searchQuery: searchState.librarySearchQuery,
+    });
     const nextSearchPanelVisibility = toggleLibrarySearchVisibility(
       searchPanelVisibility,
     );
 
     setSearchPanelVisibility(nextSearchPanelVisibility);
 
-    if (
-      !isSearchPanelVisible &&
-      nextSearchPanelVisibility.isSearchBarVisible &&
-      searchState.librarySearchQuery.trim().length > 0
-    ) {
+    if (toggleOutcome.shouldSubmitSearch) {
       searchState.submitLibrarySearch();
     }
 
-    if (isSearchPanelVisible && !nextSearchPanelVisibility.isSearchBarVisible) {
+    if (toggleOutcome.shouldDeactivateSearch) {
       searchState.deactivateLibrarySearch();
     }
   };

@@ -6,6 +6,7 @@ import { DriveSessionMenu } from '../../auth/google-drive/components/drive-sessi
 import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import { DestinationHeader } from '../../components/destination-header';
 import { getDestinationHeaderModel } from '../../components/destination-header-model';
+import { resolveHeaderSearchToggleOutcome } from '../../components/header-search-toggle-model';
 import { DriveDiscoveryPanel } from '../../library/drive/components/drive-discovery-panel';
 import { ADD_SCREEN_DRIVE_PANEL_ORDER } from '../../library/drive/utils/drive-discovery-layout';
 import type { useRehearsalLibraryController } from '../../library/saved-rehearsal-library/use-rehearsal-library-controller';
@@ -67,17 +68,20 @@ export const AddScreen = ({
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
 
   const handleToggleSearchBar = () => {
+    const toggleOutcome = resolveHeaderSearchToggleOutcome({
+      isSearchBarVisible,
+      searchQuery: libraryController.search.searchQuery,
+    });
+
     setIsSessionMenuVisible(false);
 
-    if (isSearchBarVisible) {
+    if (toggleOutcome.shouldDeactivateSearch) {
       libraryController.search.deactivateSearch();
-      setIsSearchBarVisible(false);
-      return;
     }
 
-    setIsSearchBarVisible(true);
+    setIsSearchBarVisible(toggleOutcome.nextIsSearchBarVisible);
 
-    if (libraryController.search.searchQuery.trim().length > 0) {
+    if (toggleOutcome.shouldSubmitSearch) {
       libraryController.search.submitSearch();
     }
   };

@@ -119,7 +119,8 @@ The system SHALL provide explicit search context separation so users can search 
 
 - **WHEN** a user is in Add or Library
 - **THEN** the compact header keeps the destination title on the leading side
-- **AND** when search is relevant, the trailing action cluster is ordered `Filters`, `Search`, and the Drive session menu trigger
+- **AND** in Add, `Search` sits immediately to the left of the Drive session menu trigger and may be preceded by `Refresh` when the visible Drive context can refresh
+- **AND** in Library, the trailing action cluster is ordered `Filters`, `Search`, and the Drive session menu trigger
 - **AND** the system does not render a separate large descriptive header block above that compact header row
 
 #### Scenario: Google Drive discovery destination is labeled Add
@@ -138,7 +139,8 @@ The system SHALL provide explicit search context separation so users can search 
 #### Scenario: Drive search control stays coupled to folder navigation context
 
 - **WHEN** a user is browsing Google Drive folders in Add
-- **THEN** the search entry lives in the compact Add header immediately to the left of the Drive session menu trigger and immediately to the right of the `Filters` action
+- **THEN** the search entry lives in the compact Add header immediately to the left of the Drive session menu trigger
+- **AND** when the visible Drive context can refresh and search is not open, the compact Add header places `Refresh` immediately to the left of `Search`
 - **AND** breadcrumbs and scope indicators remain visible below the header so search scope follows the visible navigation context
 - **AND** moving between breadcrumbs segments updates the folder-scoped search context before the next query runs
 
@@ -170,8 +172,9 @@ The system SHALL provide explicit search context separation so users can search 
 
 - **WHEN** a user views Recents, Add, or Library
 - **THEN** the system uses a compact destination header instead of a separate large descriptive header block
-- **AND** Add and Library keep `Filters` and `Search` together in the trailing action cluster when search is relevant
-- **AND** Recents omits `Filters` and `Search` when they are not relevant on that surface
+- **AND** Add keeps `Search` adjacent to the Drive session menu trigger and uses a leading `Refresh` action when the visible Drive context can refresh
+- **AND** Library keeps `Filters` and `Search` together in the trailing action cluster when search is relevant
+- **AND** Recents omits the Add/Library-specific search and organization actions when they are not relevant on that surface
 
 #### Scenario: Preview playback stays in Drive context until user chooses save
 
