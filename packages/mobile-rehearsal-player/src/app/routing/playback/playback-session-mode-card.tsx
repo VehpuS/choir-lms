@@ -5,6 +5,10 @@ import {
 } from '@org/audio-library-models';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../components/interaction-guard';
 import { appTheme } from '../../utils/theme';
 
 const getQueueToggleAction = (
@@ -66,10 +70,12 @@ const ModeButton = (props: {
         disabled: props.disabled,
         selected: props.selected,
       }}
+      {...interactionGuardProps}
       disabled={props.disabled}
       onPress={props.onPress}
       style={({ pressed }) => [
         props.selected ? styles.modeButtonSelected : styles.modeButton,
+        buttonInteractionGuardStyle,
         pressed && !props.disabled ? styles.modeButtonPressed : null,
         props.disabled ? styles.modeButtonDisabled : null,
       ]}

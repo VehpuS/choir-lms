@@ -3,6 +3,11 @@ import { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../utils/theme';
+import {
+  buttonInteractionGuardStyle,
+  continuousInteractionGuardStyle,
+  interactionGuardProps,
+} from '../interaction-guard';
 
 import { clampQueuePosition, resolveQueueMoveTargetIndex } from './model';
 
@@ -79,34 +84,39 @@ export const QueueMovePositionDialog = ({
             </View>
           </View>
 
-          <Slider
-            animateTransitions={false}
-            maximumTrackTintColor="#d5ddd7"
-            maximumValue={itemCount}
-            minimumTrackTintColor="#305c4d"
-            minimumValue={1}
-            onSlidingComplete={(nextValue) => {
-              setDraftPosition(
-                resolveQueueMoveTargetIndex({
-                  itemCount,
-                  sliderValue: nextValue,
-                }) + 1,
-              );
-            }}
-            onValueChange={(nextValue) => {
-              setDraftPosition(
-                resolveQueueMoveTargetIndex({
-                  itemCount,
-                  sliderValue: nextValue,
-                }) + 1,
-              );
-            }}
-            step={1}
-            thumbTintColor="#305c4d"
-            thumbTouchSize={{ width: 36, height: 36 }}
-            trackClickable
-            value={draftPosition}
-          />
+          <View
+            {...interactionGuardProps}
+            style={continuousInteractionGuardStyle}
+          >
+            <Slider
+              animateTransitions={false}
+              maximumTrackTintColor="#d5ddd7"
+              maximumValue={itemCount}
+              minimumTrackTintColor="#305c4d"
+              minimumValue={1}
+              onSlidingComplete={(nextValue) => {
+                setDraftPosition(
+                  resolveQueueMoveTargetIndex({
+                    itemCount,
+                    sliderValue: nextValue,
+                  }) + 1,
+                );
+              }}
+              onValueChange={(nextValue) => {
+                setDraftPosition(
+                  resolveQueueMoveTargetIndex({
+                    itemCount,
+                    sliderValue: nextValue,
+                  }) + 1,
+                );
+              }}
+              step={1}
+              thumbTintColor="#305c4d"
+              thumbTouchSize={{ width: 36, height: 36 }}
+              trackClickable
+              value={draftPosition}
+            />
+          </View>
 
           <View style={styles.scaleRow}>
             <Text style={styles.scaleLabel}>1</Text>
@@ -116,9 +126,11 @@ export const QueueMovePositionDialog = ({
           <View style={styles.actionRow}>
             <Pressable
               accessibilityRole="button"
+              {...interactionGuardProps}
               onPress={onCancel}
               style={({ pressed }) => [
                 styles.secondaryButton,
+                buttonInteractionGuardStyle,
                 pressed ? styles.buttonPressed : undefined,
               ]}
             >
@@ -126,12 +138,14 @@ export const QueueMovePositionDialog = ({
             </Pressable>
             <Pressable
               accessibilityRole="button"
+              {...interactionGuardProps}
               disabled={isSubmittingDisabled}
               onPress={() => {
                 onSubmit(targetIndex);
               }}
               style={({ pressed }) => [
                 styles.primaryButton,
+                buttonInteractionGuardStyle,
                 pressed && !isSubmittingDisabled
                   ? styles.buttonPressed
                   : undefined,

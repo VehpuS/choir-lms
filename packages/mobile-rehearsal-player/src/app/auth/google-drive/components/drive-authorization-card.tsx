@@ -7,6 +7,10 @@ import {
   View,
 } from 'react-native';
 
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../../components/interaction-guard';
 import type { DriveAuthorizationStatusCopy } from '../utils/authorization';
 
 type DriveAuthorizationCardProps = {
@@ -58,11 +62,13 @@ const ActionButton = ({
   return (
     <Pressable
       accessibilityRole="button"
+      {...interactionGuardProps}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
         secondary ? styles.secondaryButton : styles.primaryButton,
+        buttonInteractionGuardStyle,
         disabled ? styles.buttonDisabled : null,
         pressed && !disabled ? styles.buttonPressed : null,
       ]}

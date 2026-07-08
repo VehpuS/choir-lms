@@ -7,6 +7,10 @@ import {
 } from 'react-native';
 
 import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../interaction-guard';
+import {
   OVERFLOW_MENU_TRIGGER_BACKGROUND,
   OVERFLOW_MENU_TRIGGER_BORDER,
   OVERFLOW_MENU_TRIGGER_HIT_SLOP,
@@ -68,6 +72,7 @@ export const OverflowMenuTrigger = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={getOverflowMenuTriggerAccessibilityState(disabled)}
+      {...interactionGuardProps}
       disabled={disabled}
       hitSlop={OVERFLOW_MENU_TRIGGER_HIT_SLOP}
       onPress={onPress}
@@ -79,6 +84,7 @@ export const OverflowMenuTrigger = ({
 
         return [
           styles.trigger,
+          buttonInteractionGuardStyle,
           style,
           visualState.pressed ? styles.pressed : undefined,
           visualState.disabled ? styles.disabled : undefined,

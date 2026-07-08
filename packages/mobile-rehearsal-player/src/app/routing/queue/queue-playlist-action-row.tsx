@@ -1,5 +1,9 @@
 import { Pressable, Text, View } from 'react-native';
 
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../components/interaction-guard';
 import { styles } from '../playback/playback-surface-styles';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
 
@@ -26,12 +30,14 @@ export const QueuePlaylistActionRow = ({
     <View style={styles.queuePlaylistActionRow}>
       <Pressable
         accessibilityRole="button"
+        {...interactionGuardProps}
         disabled={isMutating}
         onPress={onSaveQueueAsPlaylist}
         style={({ pressed }) => [
           hasUpdateAction
             ? styles.queuePlaylistSecondaryAction
             : styles.queuePlaylistPrimaryAction,
+          buttonInteractionGuardStyle,
           pressed && !isMutating ? styles.headerActionPressed : null,
           isMutating ? styles.headerActionDisabled : null,
         ]}
@@ -49,6 +55,7 @@ export const QueuePlaylistActionRow = ({
       {actions.updateAction ? (
         <Pressable
           accessibilityRole="button"
+          {...interactionGuardProps}
           disabled={isMutating}
           onPress={() => {
             if (!actions.updateAction) {
@@ -59,6 +66,7 @@ export const QueuePlaylistActionRow = ({
           }}
           style={({ pressed }) => [
             styles.queuePlaylistPrimaryAction,
+            buttonInteractionGuardStyle,
             pressed && !isMutating ? styles.headerActionPressed : null,
             isMutating ? styles.headerActionDisabled : null,
           ]}

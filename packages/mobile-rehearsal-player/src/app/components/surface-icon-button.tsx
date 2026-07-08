@@ -8,6 +8,10 @@ import {
 } from 'react-native';
 
 import { appTheme } from '../utils/theme';
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from './interaction-guard';
 
 export type SurfaceIconButtonProps = {
   accessibilityLabel: string;
@@ -40,10 +44,12 @@ export const SurfaceIconButton = ({
         disabled,
         selected,
       }}
+      {...interactionGuardProps}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         isPrimary ? styles.primaryButton : styles.secondaryButton,
+        buttonInteractionGuardStyle,
         style,
         pressed && !disabled ? styles.pressedButton : null,
         disabled ? styles.disabledButton : null,

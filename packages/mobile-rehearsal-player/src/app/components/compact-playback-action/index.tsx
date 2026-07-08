@@ -7,6 +7,10 @@ import {
 } from 'react-native';
 
 import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../interaction-guard';
+import {
   COMPACT_PLAYBACK_ACTION_BACKGROUND,
   COMPACT_PLAYBACK_ACTION_BORDER,
   COMPACT_PLAYBACK_ACTION_DISABLED_ICON,
@@ -99,6 +103,7 @@ export const CompactPlaybackAction = ({
         disabled,
         selected,
       })}
+      {...interactionGuardProps}
       disabled={disabled}
       hitSlop={COMPACT_PLAYBACK_ACTION_HIT_SLOP}
       onPress={onPress}
@@ -111,6 +116,7 @@ export const CompactPlaybackAction = ({
         return [
           styles.action,
           getVariantStyle(variant),
+          buttonInteractionGuardStyle,
           style,
           visualState.pressed ? { opacity: tokens.pressedOpacity } : undefined,
           visualState.disabled

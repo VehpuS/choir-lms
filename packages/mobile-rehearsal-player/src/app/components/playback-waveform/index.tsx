@@ -17,6 +17,10 @@ import {
   resolveWaveformCommitRatio,
   resolveWaveformRatioFromLocation,
 } from './model';
+import {
+  continuousInteractionGuardStyle,
+  interactionGuardProps,
+} from '../interaction-guard';
 
 const WAVEFORM_BARS = [
   0.22, 0.36, 0.54, 0.44, 0.68, 0.3, 0.58, 0.4, 0.74, 0.48, 0.62, 0.34, 0.72,
@@ -119,6 +123,7 @@ export const PlaybackWaveform = ({
       }
       accessibilityLabel={interactive ? 'Playback waveform' : undefined}
       accessible={interactive}
+      {...interactionGuardProps}
       onLayout={(event: LayoutChangeEvent) => {
         setLayoutWidth(event.nativeEvent.layout.width);
       }}
@@ -154,6 +159,7 @@ export const PlaybackWaveform = ({
       style={[
         styles.container,
         variant === 'hero' ? styles.heroContainer : styles.compactContainer,
+        interactive ? continuousInteractionGuardStyle : undefined,
         style,
       ]}
     >

@@ -1,5 +1,9 @@
 import { Pressable, Text, TextInput, View } from 'react-native';
 
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../../components/interaction-guard';
 import { CenteredDialogCard } from '../../components/centered-dialog-card';
 import { FeedbackCard } from '../../components/feedback-card';
 import { OptionsMenuSheet } from '../../components/options-menu-sheet';
@@ -70,10 +74,12 @@ export const PlaylistRenameDialog = ({
       <View style={styles.actionRow}>
         <Pressable
           accessibilityRole="button"
+          {...interactionGuardProps}
           disabled={isMutating}
           onPress={onCancel}
           style={({ pressed }) => [
             styles.secondaryButton,
+            buttonInteractionGuardStyle,
             pressed && !isMutating ? styles.actionButtonPressed : undefined,
             isMutating ? styles.actionButtonDisabled : undefined,
           ]}
@@ -82,10 +88,12 @@ export const PlaylistRenameDialog = ({
         </Pressable>
         <Pressable
           accessibilityRole="button"
+          {...interactionGuardProps}
           disabled={isMutating}
           onPress={onSubmit}
           style={({ pressed }) => [
             styles.primaryButton,
+            buttonInteractionGuardStyle,
             pressed && !isMutating ? styles.actionButtonPressed : undefined,
             isMutating ? styles.actionButtonDisabled : undefined,
           ]}

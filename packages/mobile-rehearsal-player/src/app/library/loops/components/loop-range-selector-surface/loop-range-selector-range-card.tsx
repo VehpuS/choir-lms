@@ -3,6 +3,10 @@ import { type PlayableItem } from '@org/audio-library-models';
 import { StyleSheet, Text, View } from 'react-native';
 
 import {
+  continuousInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../../../components/interaction-guard';
+import {
   LOOP_SELECTOR_PRIMARY_TEXT,
   LOOP_SELECTOR_SECONDARY_TEXT,
   formatRangeLabel,
@@ -48,20 +52,22 @@ export const LoopRangeSelectorRangeCard = ({
         </View>
       </View>
 
-      <Slider
-        animateTransitions={false}
-        maximumTrackTintColor="#d5ddd7"
-        maximumValue={maximumValueSeconds}
-        minimumTrackTintColor="#305c4d"
-        minimumValue={selectedTrack.range.startMs / 1000}
-        onSlidingComplete={onRangeChange}
-        onValueChange={onRangeChange}
-        step={1}
-        thumbTintColor="#305c4d"
-        thumbTouchSize={{ width: 36, height: 36 }}
-        trackClickable
-        value={[startMs / 1000, endMs / 1000]}
-      />
+      <View {...interactionGuardProps} style={continuousInteractionGuardStyle}>
+        <Slider
+          animateTransitions={false}
+          maximumTrackTintColor="#d5ddd7"
+          maximumValue={maximumValueSeconds}
+          minimumTrackTintColor="#305c4d"
+          minimumValue={selectedTrack.range.startMs / 1000}
+          onSlidingComplete={onRangeChange}
+          onValueChange={onRangeChange}
+          step={1}
+          thumbTintColor="#305c4d"
+          thumbTouchSize={{ width: 36, height: 36 }}
+          trackClickable
+          value={[startMs / 1000, endMs / 1000]}
+        />
+      </View>
 
       <View style={styles.scaleRow}>
         <Text style={styles.scaleLabel}>

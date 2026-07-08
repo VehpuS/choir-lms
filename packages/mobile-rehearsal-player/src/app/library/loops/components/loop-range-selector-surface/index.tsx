@@ -2,6 +2,10 @@ import { type PlayableItem } from '@org/audio-library-models';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../../../components/interaction-guard';
 import { ModalSurfaceBase } from '../../../components/modal-surface-base';
 import type { LoopPreviewPlaybackTimeline } from '../../utils/saved-loop-preview-playback-view-model';
 import { LoopRangeSelectorHeader } from './loop-range-selector-header';
@@ -133,10 +137,12 @@ export const LoopRangeSelectorSurface = ({
       <View style={styles.actionRow}>
         <Pressable
           accessibilityRole="button"
+          {...interactionGuardProps}
           disabled={previewDisabled}
           onPress={onTogglePreview}
           style={({ pressed }) => [
             styles.secondaryAction,
+            buttonInteractionGuardStyle,
             pressed && !previewDisabled ? styles.buttonPressed : undefined,
             previewDisabled ? styles.buttonDisabled : undefined,
           ]}
@@ -146,10 +152,12 @@ export const LoopRangeSelectorSurface = ({
 
         <Pressable
           accessibilityRole="button"
+          {...interactionGuardProps}
           disabled={!canSaveLoop}
           onPress={onSaveLoop}
           style={({ pressed }) => [
             styles.primaryAction,
+            buttonInteractionGuardStyle,
             pressed && canSaveLoop ? styles.buttonPressed : undefined,
             !canSaveLoop ? styles.buttonDisabled : undefined,
           ]}

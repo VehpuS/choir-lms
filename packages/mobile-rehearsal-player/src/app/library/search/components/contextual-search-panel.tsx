@@ -1,6 +1,10 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../../components/interaction-guard';
 import { shouldShowRecentSearchSuggestions } from './contextual-search-panel-model';
 import { RecentSearchSuggestions } from './recent-search-suggestions';
 
@@ -60,9 +64,11 @@ export const ContextualSearchPanel = ({
       <Pressable
         accessibilityLabel={searchAccessibilityLabel}
         accessibilityRole="button"
+        {...interactionGuardProps}
         onPress={onToggleSearchBar}
         style={({ pressed }) => [
           styles.searchButton,
+          buttonInteractionGuardStyle,
           pressed ? styles.searchButtonPressed : undefined,
         ]}
       >
@@ -99,9 +105,11 @@ export const ContextualSearchPanel = ({
             <Pressable
               accessibilityLabel={clearActionLabel}
               accessibilityRole="button"
+              {...interactionGuardProps}
               onPress={onClearSearch}
               style={({ pressed }) => [
                 styles.clearSearchIconButton,
+                buttonInteractionGuardStyle,
                 pressed ? styles.clearSearchIconButtonPressed : undefined,
               ]}
             >
@@ -117,10 +125,12 @@ export const ContextualSearchPanel = ({
           <Pressable
             accessibilityLabel="Close search"
             accessibilityRole="button"
+            {...interactionGuardProps}
             onPress={onToggleSearchBar}
             style={({ pressed }) => [
               styles.searchButton,
               styles.searchButtonActive,
+              buttonInteractionGuardStyle,
               pressed ? styles.searchButtonPressed : undefined,
               isSubmitDisabled ? styles.searchButtonDisabled : undefined,
             ]}

@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../../components/interaction-guard';
 import { appTheme } from '../../../utils/theme';
 import { BottomSheetSurface } from '../bottom-sheet-surface';
 import { FeedbackCard } from '../feedback-card';
@@ -77,12 +81,14 @@ export const TagEditorSheet = ({
                 <Pressable
                   accessibilityLabel={`Remove ${tag} tag`}
                   accessibilityRole="button"
+                  {...interactionGuardProps}
                   disabled={isSaving}
                   onPress={() => {
                     setDraftTags((currentTags) => {
                       return removeLibraryEntityTag(currentTags, tag);
                     });
                   }}
+                  style={buttonInteractionGuardStyle}
                 >
                   <Text style={styles.removeTagLabel}>×</Text>
                 </Pressable>
@@ -114,10 +120,12 @@ export const TagEditorSheet = ({
         <Pressable
           accessibilityLabel="Add tags"
           accessibilityRole="button"
+          {...interactionGuardProps}
           disabled={isSaving}
           onPress={handleAddTag}
           style={({ pressed }) => [
             styles.addTagButton,
+            buttonInteractionGuardStyle,
             pressed && !isSaving ? styles.pressedAction : undefined,
             isSaving ? styles.disabledAction : undefined,
           ]}
@@ -129,10 +137,12 @@ export const TagEditorSheet = ({
       <View style={styles.actionRow}>
         <Pressable
           accessibilityRole="button"
+          {...interactionGuardProps}
           disabled={isSaving}
           onPress={onClose}
           style={({ pressed }) => [
             styles.secondaryButton,
+            buttonInteractionGuardStyle,
             pressed && !isSaving ? styles.pressedAction : undefined,
             isSaving ? styles.disabledAction : undefined,
           ]}
@@ -141,12 +151,14 @@ export const TagEditorSheet = ({
         </Pressable>
         <Pressable
           accessibilityRole="button"
+          {...interactionGuardProps}
           disabled={isSaving}
           onPress={() => {
             onSave(draftTags);
           }}
           style={({ pressed }) => [
             styles.primaryButton,
+            buttonInteractionGuardStyle,
             pressed && !isSaving ? styles.pressedAction : undefined,
             isSaving ? styles.disabledAction : undefined,
           ]}

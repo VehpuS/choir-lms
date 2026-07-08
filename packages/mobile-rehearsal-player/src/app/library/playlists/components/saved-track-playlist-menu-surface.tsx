@@ -1,6 +1,10 @@
 import type { NamedLoop, Playlist } from '@org/audio-library-models';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../../components/interaction-guard';
 import { BottomSheetSurface } from '../../components/bottom-sheet-surface';
 import { FeedbackCard } from '../../components/feedback-card';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
@@ -69,12 +73,14 @@ export const SavedTrackPlaylistMenuSurface = ({
           {playlists.length > 0 ? (
             <ScrollView
               contentContainerStyle={styles.playlistListContent}
+              keyboardShouldPersistTaps="handled"
               style={styles.playlistList}
             >
               {playlists.map((playlist) => {
                 return (
                   <Pressable
                     accessibilityRole="button"
+                    {...interactionGuardProps}
                     disabled={isMutating}
                     key={playlist.id}
                     onPress={() => {
@@ -82,6 +88,7 @@ export const SavedTrackPlaylistMenuSurface = ({
                     }}
                     style={({ pressed }) => [
                       styles.playlistRow,
+                      buttonInteractionGuardStyle,
                       pressed && !isMutating ? styles.buttonPressed : undefined,
                       isMutating ? styles.buttonDisabled : undefined,
                     ]}
@@ -105,10 +112,12 @@ export const SavedTrackPlaylistMenuSurface = ({
           <View style={styles.actionColumn}>
             <Pressable
               accessibilityRole="button"
+              {...interactionGuardProps}
               disabled={isMutating}
               onPress={onShowCreatePlaylist}
               style={({ pressed }) => [
                 styles.secondaryAction,
+                buttonInteractionGuardStyle,
                 pressed && !isMutating ? styles.buttonPressed : undefined,
                 isMutating ? styles.buttonDisabled : undefined,
               ]}
@@ -117,10 +126,12 @@ export const SavedTrackPlaylistMenuSurface = ({
             </Pressable>
             <Pressable
               accessibilityRole="button"
+              {...interactionGuardProps}
               disabled={isMutating}
               onPress={onClose}
               style={({ pressed }) => [
                 styles.secondaryAction,
+                buttonInteractionGuardStyle,
                 pressed && !isMutating ? styles.buttonPressed : undefined,
                 isMutating ? styles.buttonDisabled : undefined,
               ]}
@@ -154,10 +165,12 @@ export const SavedTrackPlaylistMenuSurface = ({
           <View style={styles.actionColumn}>
             <Pressable
               accessibilityRole="button"
+              {...interactionGuardProps}
               disabled={isMutating}
               onPress={onSubmitNewPlaylist}
               style={({ pressed }) => [
                 styles.primaryAction,
+                buttonInteractionGuardStyle,
                 pressed && !isMutating ? styles.buttonPressed : undefined,
                 isMutating ? styles.buttonDisabled : undefined,
               ]}
@@ -168,10 +181,12 @@ export const SavedTrackPlaylistMenuSurface = ({
             </Pressable>
             <Pressable
               accessibilityRole="button"
+              {...interactionGuardProps}
               disabled={isMutating}
               onPress={onShowPlaylistSelector}
               style={({ pressed }) => [
                 styles.secondaryAction,
+                buttonInteractionGuardStyle,
                 pressed && !isMutating ? styles.buttonPressed : undefined,
                 isMutating ? styles.buttonDisabled : undefined,
               ]}

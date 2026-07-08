@@ -1,5 +1,9 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../components/interaction-guard';
 import { CenteredDialogCard } from '../../library/components/centered-dialog-card';
 import { FeedbackCard } from '../../library/components/feedback-card';
 import { savedPlaylistSectionStyles as playlistStyles } from '../../library/components/saved-playlist-section-styles';
@@ -45,10 +49,12 @@ export const QueuePlaylistUpdateDialog = ({
       <View style={playlistStyles.actionRow}>
         <Pressable
           accessibilityRole="button"
+          {...interactionGuardProps}
           disabled={isMutating}
           onPress={onCancel}
           style={({ pressed }) => [
             playlistStyles.secondaryButton,
+            buttonInteractionGuardStyle,
             pressed && !isMutating
               ? playlistStyles.actionButtonPressed
               : undefined,
@@ -59,10 +65,12 @@ export const QueuePlaylistUpdateDialog = ({
         </Pressable>
         <Pressable
           accessibilityRole="button"
+          {...interactionGuardProps}
           disabled={isMutating}
           onPress={onSubmit}
           style={({ pressed }) => [
             playlistStyles.primaryButton,
+            buttonInteractionGuardStyle,
             pressed && !isMutating
               ? playlistStyles.actionButtonPressed
               : undefined,

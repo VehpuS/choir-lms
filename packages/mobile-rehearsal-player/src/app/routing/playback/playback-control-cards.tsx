@@ -4,6 +4,10 @@ import type { PlayableItem } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import {
+  continuousInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../components/interaction-guard';
 import { PlaybackWaveform } from '../../components/playback-waveform';
 import { formatDurationLabel } from '../../library/drive/utils/drive-library-view-model';
 import { appTheme } from '../../utils/theme';
@@ -114,21 +118,23 @@ export const PlaybackVolumeCard = ({
       <Text style={styles.valueLabel}>
         {Math.round(draftVolumeLevel * 100)}%
       </Text>
-      <Slider
-        disabled={isDisabled}
-        maximumTrackTintColor="#d5ddd7"
-        maximumValue={1}
-        minimumTrackTintColor="#305c4d"
-        minimumValue={0}
-        onValueChange={(nextVolumeLevel) => {
-          const resolvedVolumeLevel = getSliderNumber(nextVolumeLevel);
+      <View {...interactionGuardProps} style={continuousInteractionGuardStyle}>
+        <Slider
+          disabled={isDisabled}
+          maximumTrackTintColor="#d5ddd7"
+          maximumValue={1}
+          minimumTrackTintColor="#305c4d"
+          minimumValue={0}
+          onValueChange={(nextVolumeLevel) => {
+            const resolvedVolumeLevel = getSliderNumber(nextVolumeLevel);
 
-          setDraftVolumeLevel(resolvedVolumeLevel);
-          onSetPlaybackVolume(resolvedVolumeLevel);
-        }}
-        thumbTintColor="#305c4d"
-        value={draftVolumeLevel}
-      />
+            setDraftVolumeLevel(resolvedVolumeLevel);
+            onSetPlaybackVolume(resolvedVolumeLevel);
+          }}
+          thumbTintColor="#305c4d"
+          value={draftVolumeLevel}
+        />
+      </View>
       <View style={styles.scaleRow}>
         <View style={styles.scaleEndpoint}>
           <MaterialCommunityIcons

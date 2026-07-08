@@ -1,5 +1,9 @@
 import { Pressable, Text, TextInput, View } from 'react-native';
 
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../../components/interaction-guard';
 import { CenteredDialogCard } from '../centered-dialog-card';
 import { FeedbackCard } from '../feedback-card';
 import {
@@ -61,10 +65,12 @@ export const LibraryFilesFolderCreateDialog = ({
       <View style={styles.actionRow}>
         <Pressable
           accessibilityRole="button"
+          {...interactionGuardProps}
           disabled={isMutating}
           onPress={onCancel}
           style={({ pressed }) => [
             styles.secondaryButton,
+            buttonInteractionGuardStyle,
             pressed && !isMutating ? styles.actionButtonPressed : undefined,
             isMutating ? styles.actionButtonDisabled : undefined,
           ]}
@@ -73,10 +79,12 @@ export const LibraryFilesFolderCreateDialog = ({
         </Pressable>
         <Pressable
           accessibilityRole="button"
+          {...interactionGuardProps}
           disabled={isMutating}
           onPress={onSubmit}
           style={({ pressed }) => [
             styles.primaryButton,
+            buttonInteractionGuardStyle,
             pressed && !isMutating ? styles.actionButtonPressed : undefined,
             isMutating ? styles.actionButtonDisabled : undefined,
           ]}
