@@ -1,4 +1,5 @@
 import {
+  isNamedLoop,
   normalizePlaylist,
   type DriveAudioSource,
   type NamedLoop,
@@ -25,6 +26,61 @@ import {
   upsertRehearsalLibraryFileLinkNode,
   upsertRehearsalLibraryFolderNode,
 } from './rehearsal-library-files';
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null;
+};
+
+const hasNonEmptyString = (value: unknown): value is string => {
+  return typeof value === 'string' && value.trim().length > 0;
+};
+
+const normalizeStoredLoop = (options: {
+  loop: unknown;
+  sourceNameById: ReadonlyMap<string, string>;
+}): NamedLoop | null => {
+  if (!isRecord(options.loop) || !hasNonEmptyString(options.loop.sourceId)) {
+    return null;
+  }
+
+  const sourceName =
+    options.sourceNameById.get(options.loop.sourceId) ??
+    (hasNonEmptyString(options.loop.sourceName)
+      ? options.loop.sourceName
+      : null);
+
+  if (!sourceName) {
+    return null;
+  }
+
+  const normalizedLoop = {
+    ...options.loop,
+    sourceId: options.loop.sourceId,
+    sourceName,
+  };
+
+  return isNamedLoop(normalizedLoop) ? normalizedLoop : null;
+};
+
+const normalizeStoredLoops = (options: {
+  loops: unknown[];
+  sources: DriveAudioSource[];
+}) => {
+  const sourceNameById = new Map(
+    options.sources.map((source) => {
+      return [source.id, source.name] as const;
+    }),
+  );
+
+  return options.loops.flatMap((loop) => {
+    const normalizedLoop = normalizeStoredLoop({
+      loop,
+      sourceNameById,
+    });
+
+    return normalizedLoop ? [normalizedLoop] : [];
+  });
+};
 
 export type PracticeRepository = {
   listSources(ownerId: string): Promise<DriveAudioSource[]>;
@@ -95,16 +151,37 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
   }
 
   async listLoops(ownerId: string) {
-    return readStoredCollection<NamedLoop>('loops', ownerId);
+    const storedLoops = await readStoredCollection<unknown>('loops', ownerId);
+    const normalizedLoops = normalizeStoredLoops({
+      loops: storedLoops,
+      sources: await this.listSources(ownerId),
+    });
+
+    if (JSON.stringify(storedLoops) !== JSON.stringify(normalizedLoops)) {
+      await writeStoredCollection('loops', ownerId, normalizedLoops);
+    }
+
+    return normalizedLoops;
   }
 
   async saveLoop(loop: NamedLoop) {
+    const normalizedLoop = normalizeStoredLoops({
+      loops: [loop],
+      sources: await this.listSources(loop.ownerId),
+    })[0];
+
+    if (!normalizedLoop) {
+      throw new Error(
+        'Saved loops must preserve parent-track provenance through sourceId and sourceName.',
+      );
+    }
+
     const loops = await this.listLoops(loop.ownerId);
     const otherLoops = filter(
       loops,
-      (existingLoop) => existingLoop.id !== loop.id,
+      (existingLoop) => existingLoop.id !== normalizedLoop.id,
     );
-    const nextLoops = sortBy([...otherLoops, loop], ['name']);
+    const nextLoops = sortBy([...otherLoops, normalizedLoop], ['name']);
 
     await writeStoredCollection('loops', loop.ownerId, nextLoops);
     await persistSynchronizedLibraryFileTree(this, loop.ownerId, {

@@ -69,6 +69,11 @@ export type NamedLoop = {
   updatedAt: string;
 };
 
+export type NamedLoopParentTrack = {
+  id: string;
+  name: string;
+};
+
 export type PlaylistEntry = {
   id: string;
   playlistId: string;
@@ -135,6 +140,20 @@ export type LoopValidationResult = {
   normalizedEndMs: number;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null;
+};
+
+const isStringArray = (value: unknown): value is string[] => {
+  return (
+    Array.isArray(value) && value.every((item) => typeof item === 'string')
+  );
+};
+
+const isOwnershipScope = (value: unknown): value is OwnershipScope => {
+  return value === 'user' || value === 'section' || value === 'choir';
+};
+
 const clampToDuration = (value: number, durationMs?: number) => {
   if (durationMs === undefined) {
     return value;
@@ -165,6 +184,35 @@ export const updateSourceAvailability = (
 
 export const isSourcePlayable = (source: DriveAudioSource) => {
   return source.availability.status === 'available';
+};
+
+export const isNamedLoop = (value: unknown): value is NamedLoop => {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    typeof value.id === 'string' &&
+    typeof value.name === 'string' &&
+    typeof value.sourceId === 'string' &&
+    typeof value.sourceName === 'string' &&
+    (value.tags === undefined || isStringArray(value.tags)) &&
+    typeof value.startMs === 'number' &&
+    typeof value.endMs === 'number' &&
+    isOwnershipScope(value.ownershipScope) &&
+    typeof value.ownerId === 'string' &&
+    typeof value.createdAt === 'string' &&
+    typeof value.updatedAt === 'string'
+  );
+};
+
+export const resolveNamedLoopParentTrack = (
+  loop: Pick<NamedLoop, 'sourceId' | 'sourceName'>,
+): NamedLoopParentTrack => {
+  return {
+    id: loop.sourceId,
+    name: loop.sourceName,
+  };
 };
 
 export const validateLoopRange = (
@@ -230,11 +278,13 @@ export const createLoopPlayableItem = (
   playlistId?: string,
   playlistEntryId?: string,
 ): PlayableItem => {
+  const parentTrack = resolveNamedLoopParentTrack(loop);
+
   return {
     id: `loop:${loop.id}`,
     kind: 'loop',
     title: loop.name,
-    sourceId: source.id,
+    sourceId: parentTrack.id,
     source,
     range: {
       startMs: loop.startMs,
@@ -243,7 +293,7 @@ export const createLoopPlayableItem = (
     loopId: loop.id,
     playlistId,
     ...(playlistEntryId ? { playlistEntryId } : {}),
-    description: `${loop.sourceName} loop`,
+    description: `${parentTrack.name} loop`,
   };
 };
 
@@ -275,15 +325,17 @@ export const createPlaylistEntryFromLoop = (
     sortIndex?: number;
   },
 ): PlaylistEntry => {
+  const parentTrack = resolveNamedLoopParentTrack(loop);
+
   return {
     id: `entry:loop:${loop.id}:${createdAt}`,
     playlistId: options?.playlistId ?? '',
     sortIndex: options?.sortIndex ?? 0,
     kind: 'loop',
-    sourceId: loop.sourceId,
+    sourceId: parentTrack.id,
     loopId: loop.id,
     title: loop.name,
-    description: `${loop.sourceName} loop`,
+    description: `${parentTrack.name} loop`,
     createdAt,
   };
 };

@@ -5,6 +5,7 @@ import {
   createDriveAudioSource,
   createLoopPlayableItem,
   createTrackPlayableItem,
+  resolveNamedLoopParentTrack,
   validateLoopRange,
 } from './rehearsal-domain.js';
 import {
@@ -59,6 +60,19 @@ describe('validateLoopRange', () => {
 });
 
 describe('playable item factories', () => {
+  it('resolves stable parent-track provenance from a saved loop', () => {
+    assert.deepEqual(
+      resolveNamedLoopParentTrack({
+        sourceId: TEST_SOURCE.id,
+        sourceName: TEST_SOURCE.name,
+      }),
+      {
+        id: TEST_SOURCE.id,
+        name: TEST_SOURCE.name,
+      },
+    );
+  });
+
   it('creates full-track playable items that span the source duration', () => {
     const playableItem = createTrackPlayableItem(
       TEST_SOURCE,
