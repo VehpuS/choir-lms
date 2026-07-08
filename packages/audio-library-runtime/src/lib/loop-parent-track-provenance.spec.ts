@@ -126,4 +126,29 @@ describe('AsyncStoragePracticeRepository loop parent-track provenance', () => {
       ]),
     );
   });
+
+  it('rejects saving a loop when parent-track provenance cannot be resolved', async () => {
+    const storage = new Map<string, string>();
+    const repository = new AsyncStoragePracticeRepository();
+
+    mutableAsyncStorage.getItem = async (key) => {
+      return storage.get(key) ?? null;
+    };
+    mutableAsyncStorage.removeItem = async (key) => {
+      storage.delete(key);
+    };
+    mutableAsyncStorage.setItem = async (key, value) => {
+      storage.set(key, value);
+    };
+
+    await assert.rejects(
+      repository.saveLoop({
+        ...SAVED_LOOP,
+        id: 'loop-missing-provenance',
+        sourceId: 'drive:missing-source',
+        sourceName: '',
+      }),
+      /must preserve parent-track provenance/,
+    );
+  });
 });

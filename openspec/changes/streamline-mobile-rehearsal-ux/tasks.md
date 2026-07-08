@@ -106,7 +106,7 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
 - [x] 2.3.1 Replace the current single-folder entity metadata approach with a file-tree storage model and migration path: folder nodes, file-link nodes, hard-link support, pointer-local visible names, canonical entity persistence, and last-link lifecycle semantics (`5.3` and `5.3.1`).
 - [x] 2.3.2 Implement the Files mutation guardrails in the storage and helper layer: case-insensitive same-parent naming, duplicate-name conflict handling, case-insensitively unique `Copy` suffix defaults for same-folder copies, and folder-move prevention for self or descendant targets (`5.3.1.1`).
 - [x] 2.3.3 Preserve loop parent-track provenance in the underlying model so loops remain identifiable across Files, search, tags, and folder results as later UI work lands (`5.4` and `5.4.1` foundation work).
-- [ ] 2.3.4 Add focused model and helper coverage for tree mutations, hard-link behavior, naming guardrails, and loop provenance wiring (`6.1` and `6.1.6` scoped to the data layer foundation).
+- [x] 2.3.4 Add focused model and helper coverage for tree mutations, hard-link behavior, naming guardrails, and loop provenance wiring (`6.1` and `6.1.6` scoped to the data layer foundation).
 
 ### 2.4 Rebuild the Explorer Shell and Navigation Surfaces
 
