@@ -1,6 +1,11 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { type ComponentProps } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
 import { appTheme } from '../utils/theme';
 
@@ -11,6 +16,7 @@ export type SurfaceIconButtonProps = {
   onPress: () => void;
   selected?: boolean;
   size?: number;
+  style?: StyleProp<ViewStyle>;
   tone?: 'primary' | 'secondary';
 };
 
@@ -21,6 +27,7 @@ export const SurfaceIconButton = ({
   onPress,
   selected = false,
   size = 22,
+  style,
   tone = 'secondary',
 }: SurfaceIconButtonProps) => {
   const isPrimary = tone === 'primary';
@@ -37,6 +44,7 @@ export const SurfaceIconButton = ({
       onPress={onPress}
       style={({ pressed }) => [
         isPrimary ? styles.primaryButton : styles.secondaryButton,
+        style,
         pressed && !disabled ? styles.pressedButton : null,
         disabled ? styles.disabledButton : null,
       ]}

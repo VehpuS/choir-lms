@@ -22,6 +22,7 @@ import {
   restoreRecentRehearsalHistory,
 } from '../screens/recents/history';
 import { MobileShell } from './shell/mobile-shell';
+import type { ShellDestinationKey } from './shell/shell-model';
 
 const PLAYBACK_SEEK_STEP_SECONDS = 15;
 
@@ -35,6 +36,8 @@ export const AppRouter = () => {
   const [recentRehearsalHistory, setRecentRehearsalHistory] = useState(
     [] as Awaited<ReturnType<typeof restoreRecentRehearsalHistory>>,
   );
+  const [requestedDestination, setRequestedDestination] =
+    useState<ShellDestinationKey>('library');
   const [requestedDestinationRequestId, setRequestedDestinationRequestId] =
     useState(0);
   const [isRecentRehearsalHistoryReady, setIsRecentRehearsalHistoryReady] =
@@ -220,6 +223,13 @@ export const AppRouter = () => {
     playback.activePlaylistSession,
   ]);
 
+  const requestDestination = (destination: ShellDestinationKey) => {
+    setRequestedDestination(destination);
+    setRequestedDestinationRequestId((currentId) => {
+      return currentId + 1;
+    });
+  };
+
   return (
     <MobileShell
       activePlayableItem={playback.activePlayableItem}
@@ -238,15 +248,13 @@ export const AppRouter = () => {
       canSkipPreviousItem={
         playback.activePlaylistSession !== null && !playback.isPreparing
       }
-      requestedDestination="library"
+      requestedDestination={requestedDestination}
       requestedDestinationRequestId={requestedDestinationRequestId}
       recentsScreen={
         <AppRouterRecentsScreen
           authorization={authorization}
           onRequestLibraryDestination={() => {
-            setRequestedDestinationRequestId((currentId) => {
-              return currentId + 1;
-            });
+            requestDestination('library');
           }}
           playback={playback}
           recentRehearsalHistory={recentRehearsalHistory}
@@ -265,6 +273,9 @@ export const AppRouter = () => {
         <LibraryScreen
           authorization={authorization}
           libraryController={libraryController}
+          onRequestAddDestination={() => {
+            requestDestination('add');
+          }}
           playback={playback}
         />
       }

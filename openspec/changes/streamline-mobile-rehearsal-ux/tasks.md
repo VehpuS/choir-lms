@@ -110,7 +110,7 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
 
 ### 2.4 Rebuild the Explorer Shell and Navigation Surfaces
 
-- [ ] 2.4.1 Rebuild Library Files around one mixed-list explorer shell with current-folder navigation chrome, horizontally scrollable breadcrumbs, leading type icons, row-body primary-action semantics, and a persistent Google Drive-style floating Files `+` create control (`5.3.2`).
+- [x] 2.4.1 Rebuild Library Files around one mixed-list explorer shell with current-folder navigation chrome, horizontally scrollable breadcrumbs, leading type icons, row-body primary-action semantics, and a persistent Google Drive-style floating Files `+` create control (`5.3.2`).
 - [ ] 2.4.2 Align Add Drive browsing with the same explorer chrome and shared list primitives where the spec calls for parity, while preserving Drive-specific save and preview behavior (`5.3.2` on the Add surface).
 - [ ] 2.4.3 Ensure folder rows push onto a standard explorer stack, track and loop rows play in place, playlist rows preserve a back path to the originating Files folder, and dedicated Tracks, Loops, and Playlists views remain coherent beside Files (`5.3.2.1` and `5.3.4`).
 - [ ] 2.4.4 Extend UI coverage for the shared explorer and list primitives, then manually verify Add and Files explorer navigation, breadcrumb behavior, and playlist return-path behavior (`6.1.4`, `6.2.5`, and the navigation subset of `6.2.7`).

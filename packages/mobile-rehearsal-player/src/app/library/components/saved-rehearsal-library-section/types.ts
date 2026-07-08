@@ -20,6 +20,7 @@ import type {
   SavedPlaylistIssue,
 } from '../../playlists/utils/saved-playlist-view-model';
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
+import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import type { SavedRehearsalLibraryIssue } from '../../saved-rehearsal-library/use-saved-rehearsal-library';
 import type { useSavedRehearsalLibrarySearch } from './use-saved-rehearsal-library-search';
 import type { useSavedRehearsalLibrarySearchPanel } from './use-saved-rehearsal-library-search-panel';
@@ -50,6 +51,8 @@ export type SavedRehearsalLibrarySectionProps = {
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   removeLoop: (loop: NamedLoop) => void;
   removeSource: (source: DriveLibrarySource) => void;
+  libraryFiles: UseLibraryFilesResult;
+  onFilesExplorerVisibilityChange?: (isVisible: boolean) => void;
   savedLibraryIssue: SavedRehearsalLibraryIssue | null;
   savedLibrarySources: DriveLibrarySource[];
   savedLibraryStatusCopy: DriveLibraryStatusCopy;

@@ -5,6 +5,7 @@ import { SavedRehearsalLibrarySection } from '../../../components/saved-rehearsa
 import { usePreparedLoopBuilderTrack } from '../../../loops/hooks/use-prepared-loop-builder-track';
 import { useSavedLoops } from '../../../loops/hooks/use-saved-loops';
 import { useSavedPlaylists } from '../../../playlists/hooks/use-saved-playlists';
+import { useLibraryFiles } from '../../../saved-rehearsal-library/use-library-files';
 import { useSavedRehearsalLibrary } from '../../../saved-rehearsal-library/use-saved-rehearsal-library';
 import { type DriveLibrarySource } from '../../utils/drive-library-view-model';
 import { useDriveLibrarySavedLibraryActions } from './use-drive-library-saved-library-actions';
@@ -55,6 +56,12 @@ export const DriveLibrarySavedLibraryPanel = ({
   savedPlaylistsState,
   savedTrackPlaybackStatusCopy,
 }: DriveLibrarySavedLibraryPanelProps) => {
+  const libraryFiles = useLibraryFiles({
+    savedLoops: savedLoopsState.savedLoops,
+    savedPlaylists: savedPlaylistsState.savedPlaylists,
+    savedSources: savedLibrarySources,
+  });
+
   return (
     <SavedRehearsalLibrarySection
       activePlayableItem={playback.activePlayableItem}
@@ -71,6 +78,7 @@ export const DriveLibrarySavedLibraryPanel = ({
       isPlaylistsLoading={savedPlaylistsState.isLoading}
       isSavedLibraryLoading={savedLibraryState.isLoading}
       isSavedLoopsLoading={savedLoopsState.isLoading}
+      libraryFiles={libraryFiles}
       openLoopBuilderForSource={openLoopBuilderForSource}
       pendingLoopBuilderSourceId={preparedLoopBuilderTrack.pendingSourceId}
       pendingLoopId={savedLoopsState.pendingLoopId}

@@ -38,7 +38,9 @@ export const SavedRehearsalLibrarySection = ({
   isPlaylistsLoading,
   isSavedLibraryLoading,
   isSavedLoopsLoading,
+  libraryFiles,
   openLoopBuilderForSource,
+  onFilesExplorerVisibilityChange,
   pendingLoopBuilderSourceId,
   pendingLoopId,
   pendingPlaylistId,
@@ -222,6 +224,19 @@ export const SavedRehearsalLibrarySection = ({
     ? shouldShowSearchResults
     : detailMode === 'browse';
 
+  useEffect(() => {
+    onFilesExplorerVisibilityChange?.(
+      selectedView === 'files' &&
+        detailMode === 'browse' &&
+        !isSearchPanelVisible,
+    );
+  }, [
+    detailMode,
+    isSearchPanelVisible,
+    onFilesExplorerVisibilityChange,
+    selectedView,
+  ]);
+
   return (
     <View style={styles.savedLibrarySection}>
       <SavedRehearsalLibrarySearchShell
@@ -253,6 +268,7 @@ export const SavedRehearsalLibrarySection = ({
           canMutateLoops={canMutateLoops}
           canMutatePlaylists={canMutatePlaylists}
           canQueueAsNext={canQueueAsNext}
+          libraryFiles={libraryFiles}
           isLoopMutating={isLoopMutating}
           isPlaybackPreparing={isPlaybackPreparing}
           isPlaylistMutating={isPlaylistMutating}
@@ -273,12 +289,14 @@ export const SavedRehearsalLibrarySection = ({
           savedLibrarySources={savedLibrarySources}
           savedLoops={savedLoops}
           savedPlaylists={savedPlaylists}
+          selectedView={selectedView}
           savedSourceTitle={savedSourceTitle}
           searchState={searchState}
           visibleSections={visibleSections}
           onOpenPlaylistTagEditor={tagEditor.openPlaylistTagEditor}
           onOpenSourceTagEditor={tagEditor.openSourceTagEditor}
           togglePlaylistPlayback={togglePlaylistPlayback}
+          togglePlayableItemPlayback={togglePlayableItemPlayback}
           toggleSourcePlayback={toggleSourcePlayback}
           trackPlaylistMenu={trackPlaylistMenu}
         />

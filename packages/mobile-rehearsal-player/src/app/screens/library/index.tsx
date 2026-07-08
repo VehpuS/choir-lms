@@ -2,15 +2,24 @@ import { useCallback, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
+import { SurfaceIconButton } from '../../components/surface-icon-button';
+import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
 import { SavedRehearsalLibrarySection } from '../../library/components/saved-rehearsal-library-section';
+import { LibraryFilesFolderCreateDialog } from '../../library/components/saved-rehearsal-library-section/library-files-folder-create-dialog';
 import { SavedRehearsalLibraryHeader } from '../../library/components/saved-rehearsal-library-section/search-shell';
 import { useSavedRehearsalLibrarySearch } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search';
 import { useSavedRehearsalLibrarySearchPanel } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search-panel';
 import { LoopPreviewPlaybackContext } from '../../library/loops/components/loop-preview-playback-context';
 import type { useSavedTrackPlayback } from '../../library/playback/hooks/use-saved-track-playback';
+import { SavedPlaylistCreateDialog } from '../../library/playlists/components/saved-playlist-create-dialog';
 import { resolveSavedPlaylistDetailEdgeAutoscrollDelta } from '../../library/playlists/utils/saved-playlist-detail-view-model';
+import {
+  buildSavedPlaylist,
+  type PlaylistDraftIssue,
+} from '../../library/playlists/utils/saved-playlist-view-model';
 import type { SavedRehearsalLibraryView } from '../../library/saved-rehearsal-library/detail-mode';
 import type { useRehearsalLibraryController } from '../../library/saved-rehearsal-library/use-rehearsal-library-controller';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../library/storage/local-library-storage';
 import { appTheme } from '../../utils/theme';
 
 type SavedTrackPlaybackController = Pick<
@@ -34,6 +43,7 @@ type SavedTrackPlaybackController = Pick<
 type LibraryScreenProps = {
   authorization: DriveSessionMenuController;
   libraryController: ReturnType<typeof useRehearsalLibraryController>;
+  onRequestAddDestination: () => void;
   playback: SavedTrackPlaybackController;
 };
 
@@ -46,10 +56,28 @@ type MeasurableScrollView = ScrollView & {
 export const LibraryScreen = ({
   authorization,
   libraryController,
+  onRequestAddDestination,
   playback,
 }: LibraryScreenProps) => {
   const [selectedView, setSelectedView] =
     useState<SavedRehearsalLibraryView>('files');
+  const [filesCreateIssue, setFilesCreateIssue] = useState<{
+    message: string;
+    title: string;
+  } | null>(null);
+  const [filesFolderDraftName, setFilesFolderDraftName] = useState('');
+  const [filesPlaylistDraftIssue, setFilesPlaylistDraftIssue] =
+    useState<PlaylistDraftIssue | null>(null);
+  const [filesPlaylistDraftName, setFilesPlaylistDraftName] = useState('');
+  const [isFilesCreateMenuVisible, setIsFilesCreateMenuVisible] =
+    useState(false);
+  const [isFilesExplorerVisible, setIsFilesExplorerVisible] = useState(false);
+  const [isFilesFolderDialogVisible, setIsFilesFolderDialogVisible] =
+    useState(false);
+  const [isFilesFolderMutating, setIsFilesFolderMutating] = useState(false);
+  const [isFilesPlaylistDialogVisible, setIsFilesPlaylistDialogVisible] =
+    useState(false);
+  const [isFilesPlaylistMutating, setIsFilesPlaylistMutating] = useState(false);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
   const [isPlaylistReorderDragActive, setIsPlaylistReorderDragActive] =
     useState(false);
@@ -66,6 +94,151 @@ export const LibraryScreen = ({
   const searchPanel = useSavedRehearsalLibrarySearchPanel({
     searchState,
   });
+  const filesExplorer = libraryController.savedLibrary.files.explorer;
+  const filesFolderLabel = filesExplorer?.currentFolder.name ?? 'Files';
+
+  const resetFilesCreateDialogs = useCallback(() => {
+    setFilesCreateIssue(null);
+    setFilesFolderDraftName('');
+    setFilesPlaylistDraftIssue(null);
+    setFilesPlaylistDraftName('');
+    setIsFilesFolderDialogVisible(false);
+    setIsFilesPlaylistDialogVisible(false);
+  }, []);
+
+  const handleSubmitFilesFolder = useCallback(() => {
+    const folderName = filesFolderDraftName.trim();
+
+    if (!folderName) {
+      setFilesCreateIssue({
+        message: 'Enter a folder name.',
+        title: 'Folder name required',
+      });
+      return;
+    }
+
+    setIsFilesFolderMutating(true);
+
+    void (async () => {
+      const didCreate =
+        await libraryController.savedLibrary.files.createFolder(folderName);
+
+      setIsFilesFolderMutating(false);
+
+      if (!didCreate) {
+        setFilesCreateIssue(
+          libraryController.savedLibrary.files.issue ?? {
+            message:
+              'The current Library Files folder could not be created right now.',
+            title: 'Could not create folder',
+          },
+        );
+        return;
+      }
+
+      setFilesCreateIssue(null);
+      setFilesFolderDraftName('');
+      setIsFilesFolderDialogVisible(false);
+    })();
+  }, [filesFolderDraftName, libraryController.savedLibrary.files]);
+
+  const handleSubmitFilesPlaylist = useCallback(() => {
+    const buildResult = buildSavedPlaylist({
+      name: filesPlaylistDraftName,
+      ownerId: LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+    });
+
+    if (buildResult.issue || !buildResult.playlist) {
+      setFilesPlaylistDraftIssue(buildResult.issue);
+      return;
+    }
+
+    setIsFilesPlaylistMutating(true);
+
+    void (async () => {
+      const createdPlaylist = await libraryController.playlists.createPlaylist(
+        buildResult.playlist,
+      );
+
+      if (!createdPlaylist) {
+        setFilesPlaylistDraftIssue(
+          libraryController.playlists.issue ?? {
+            message:
+              'The Library Files playlist could not be created right now.',
+            title: 'Could not create playlist',
+          },
+        );
+        setIsFilesPlaylistMutating(false);
+        return;
+      }
+
+      const currentFolderId =
+        libraryController.savedLibrary.files.explorer?.currentFolder.id ?? null;
+      const rootFolderId = libraryController.savedLibrary.files.rootFolderId;
+
+      if (currentFolderId && rootFolderId && currentFolderId !== rootFolderId) {
+        const didLink =
+          await libraryController.savedLibrary.files.linkEntityToCurrentFolder(
+            'playlist',
+            createdPlaylist.id,
+          );
+
+        if (!didLink) {
+          setFilesPlaylistDraftIssue(
+            libraryController.savedLibrary.files.issue ?? {
+              message:
+                'The new playlist was saved, but it could not be added to this Files folder.',
+              title: 'Playlist saved outside folder',
+            },
+          );
+          setIsFilesPlaylistMutating(false);
+          return;
+        }
+      }
+
+      setIsFilesPlaylistMutating(false);
+      setFilesPlaylistDraftIssue(null);
+      setFilesPlaylistDraftName('');
+      setIsFilesPlaylistDialogVisible(false);
+    })();
+  }, [
+    filesPlaylistDraftName,
+    libraryController.playlists,
+    libraryController.savedLibrary.files,
+  ]);
+
+  const filesCreateActions = [
+    {
+      id: 'create-folder',
+      label: 'Create folder',
+      onPress: () => {
+        setIsFilesCreateMenuVisible(false);
+        setFilesCreateIssue(null);
+        setIsFilesFolderDialogVisible(true);
+      },
+      tone: 'primary' as const,
+    },
+    {
+      id: 'add-tracks-from-drive',
+      label: 'Add tracks from Drive',
+      onPress: () => {
+        setIsFilesCreateMenuVisible(false);
+        libraryController.savedLibrary.files.stageDriveImportForCurrentFolder();
+        onRequestAddDestination();
+      },
+      tone: 'secondary' as const,
+    },
+    {
+      id: 'create-playlist',
+      label: 'Create playlist',
+      onPress: () => {
+        setIsFilesCreateMenuVisible(false);
+        setFilesPlaylistDraftIssue(null);
+        setIsFilesPlaylistDialogVisible(true);
+      },
+      tone: 'secondary' as const,
+    },
+  ];
 
   const refreshViewportBounds = useCallback(() => {
     const measurableScrollView =
@@ -158,7 +331,10 @@ export const LibraryScreen = ({
       />
       <ScrollView
         ref={scrollViewRef}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          isFilesExplorerVisible ? styles.contentWithFilesCreateDock : null,
+        ]}
         onContentSizeChange={(_, contentHeight) => {
           contentHeightRef.current = contentHeight;
         }}
@@ -197,9 +373,11 @@ export const LibraryScreen = ({
             isSavedLoopsLoading={
               libraryController.savedLibrary.isSavedLoopsLoading
             }
+            libraryFiles={libraryController.savedLibrary.files}
             openLoopBuilderForSource={
               libraryController.savedLibrary.openLoopBuilderForSource
             }
+            onFilesExplorerVisibilityChange={setIsFilesExplorerVisible}
             pendingLoopBuilderSourceId={
               libraryController.savedLibrary.pendingLoopBuilderSourceId
             }
@@ -247,6 +425,60 @@ export const LibraryScreen = ({
           />
         </LoopPreviewPlaybackContext.Provider>
       </ScrollView>
+      {isFilesExplorerVisible ? (
+        <View pointerEvents="box-none" style={styles.filesCreateDock}>
+          <SurfaceIconButton
+            accessibilityLabel={`Create in ${filesFolderLabel}`}
+            icon="plus"
+            onPress={() => {
+              setIsFilesCreateMenuVisible(true);
+            }}
+            size={24}
+            style={styles.filesCreateButton}
+            tone="primary"
+          />
+        </View>
+      ) : null}
+      <OptionsMenuSheet
+        actions={filesCreateActions}
+        isVisible={isFilesCreateMenuVisible}
+        onClose={() => {
+          setIsFilesCreateMenuVisible(false);
+        }}
+        title={`Create in ${filesFolderLabel}`}
+      />
+      <LibraryFilesFolderCreateDialog
+        isMutating={isFilesFolderMutating}
+        isVisible={isFilesFolderDialogVisible}
+        issue={filesCreateIssue}
+        onCancel={() => {
+          setFilesCreateIssue(null);
+          setFilesFolderDraftName('');
+          setIsFilesFolderDialogVisible(false);
+        }}
+        onChange={(value) => {
+          setFilesCreateIssue(null);
+          setFilesFolderDraftName(value);
+        }}
+        onSubmit={handleSubmitFilesFolder}
+        value={filesFolderDraftName}
+      />
+      <SavedPlaylistCreateDialog
+        isMutating={isFilesPlaylistMutating}
+        isVisible={isFilesPlaylistDialogVisible}
+        issue={filesPlaylistDraftIssue}
+        onCancel={() => {
+          setFilesPlaylistDraftIssue(null);
+          setFilesPlaylistDraftName('');
+          setIsFilesPlaylistDialogVisible(false);
+        }}
+        onChange={(value) => {
+          setFilesPlaylistDraftIssue(null);
+          setFilesPlaylistDraftName(value);
+        }}
+        onSubmit={handleSubmitFilesPlaylist}
+        value={filesPlaylistDraftName}
+      />
     </View>
   );
 };
@@ -261,8 +493,21 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 20,
   },
+  contentWithFilesCreateDock: {
+    paddingBottom: 188,
+  },
   destinationHeader: {
     marginTop: 12,
+  },
+  filesCreateButton: {
+    width: 58,
+    height: 58,
+  },
+  filesCreateDock: {
+    position: 'absolute',
+    right: 18,
+    bottom: 10,
+    zIndex: 15,
   },
   menuBackdrop: {
     ...StyleSheet.absoluteFillObject,

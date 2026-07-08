@@ -14,6 +14,7 @@ import {
   getSavedRehearsalLibraryDependentLoops,
   getSavedRehearsalLibrarySourceIssue,
 } from '../../saved-rehearsal-library/view-model';
+import { SavedRehearsalLibraryFilesView } from './files-view';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 import { useSavedRehearsalLibraryLoopState } from './use-saved-rehearsal-library-loop-state';
 import { useSavedRehearsalLibraryPlaylistState } from './use-saved-rehearsal-library-playlist-state';
@@ -54,6 +55,7 @@ type SavedRehearsalLibraryBrowseContentProps = Pick<
   | 'canMutateLibrary'
   | 'canMutateLoops'
   | 'canMutatePlaylists'
+  | 'libraryFiles'
   | 'isPlaybackPreparing'
   | 'openLoopBuilderForSource'
   | 'pendingLoopBuilderSourceId'
@@ -68,6 +70,7 @@ type SavedRehearsalLibraryBrowseContentProps = Pick<
   | 'savedLoops'
   | 'savedPlaylists'
   | 'togglePlaylistPlayback'
+  | 'togglePlayableItemPlayback'
   | 'toggleSourcePlayback'
 > & {
   canQueueAsNext: boolean;
@@ -78,6 +81,9 @@ type SavedRehearsalLibraryBrowseContentProps = Pick<
   loopState: LoopState;
   playlistSection: ReactNode;
   playlistState: PlaylistState;
+  selectedView: SavedRehearsalLibraryVisibleSections extends never
+    ? never
+    : 'files' | 'tracks' | 'loops' | 'playlists';
   savedSourceTitle: string;
   searchState: SearchState;
   visibleSections: SavedRehearsalLibraryVisibleSections;
@@ -94,6 +100,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
   canMutateLoops,
   canMutatePlaylists,
   canQueueAsNext,
+  libraryFiles,
   isLoopMutating,
   isPlaybackPreparing,
   isPlaylistMutating,
@@ -114,15 +121,29 @@ export const SavedRehearsalLibraryBrowseContent = ({
   savedLibrarySources,
   savedLoops,
   savedPlaylists,
+  selectedView,
   savedSourceTitle,
   searchState,
   visibleSections,
   onOpenPlaylistTagEditor,
   onOpenSourceTagEditor,
   togglePlaylistPlayback,
+  togglePlayableItemPlayback,
   toggleSourcePlayback,
   trackPlaylistMenu,
 }: SavedRehearsalLibraryBrowseContentProps) => {
+  if (selectedView === 'files' && !searchState.activeLibrarySearchQuery) {
+    return (
+      <SavedRehearsalLibraryFilesView
+        activePlayableItem={activePlayableItem}
+        files={libraryFiles}
+        onOpenPlaylist={playlistState.openPlaylistDetail}
+        onTogglePlayableItemPlayback={togglePlayableItemPlayback}
+        onToggleSourcePlayback={toggleSourcePlayback}
+      />
+    );
+  }
+
   return (
     <>
       {visibleSections.showPlaylistCards ? (

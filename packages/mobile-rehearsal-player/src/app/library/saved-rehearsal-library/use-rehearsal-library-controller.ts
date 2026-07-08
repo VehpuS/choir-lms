@@ -14,6 +14,7 @@ import { getSavedLoopRemovalCopy } from '../loops/utils/saved-loop-view-model';
 import type { useSavedTrackPlayback } from '../playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackStatusCopy } from '../playback/utils/saved-track-playback-view-model';
 import { useSavedPlaylists } from '../playlists/hooks/use-saved-playlists';
+import { useLibraryFiles } from './use-library-files';
 import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
 import {
   getSavedRehearsalLibraryDependentLoops,
@@ -111,6 +112,11 @@ export const useRehearsalLibraryController = ({
     issue: savedLibrary.issue,
     savedSources: savedLibrarySources,
   });
+  const libraryFiles = useLibraryFiles({
+    savedLoops: savedLoops.savedLoops,
+    savedPlaylists: playlists.savedPlaylists,
+    savedSources: savedLibrarySources,
+  });
   const savedTrackPlaybackStatusCopy = getSavedTrackPlaybackStatusCopy({
     activePlayableItem: playback.activePlayableItem,
     durationSeconds: playback.progress.duration,
@@ -205,6 +211,31 @@ export const useRehearsalLibraryController = ({
     const isSaved = savedSourceIds.has(source.id);
     const isPending = savedLibrary.pendingSourceId === source.id;
 
+    const saveDiscoveredSource = async () => {
+      const didSave = await savedLibrary.saveSource(source);
+
+      if (!didSave) {
+        return false;
+      }
+
+      const pendingFolderId = libraryFiles.consumePendingDriveImportFolderId();
+      const rootFolderId = libraryFiles.rootFolderId;
+
+      if (!pendingFolderId) {
+        return true;
+      }
+
+      if (!rootFolderId || pendingFolderId === rootFolderId) {
+        return true;
+      }
+
+      return libraryFiles.linkEntityToFolder({
+        entityId: source.id,
+        entityKind: 'track',
+        parentFolderId: pendingFolderId,
+      });
+    };
+
     return resolveDriveSourceActions({
       activePlayableItem: playback.activePlayableItem,
       canMutateLibrary: savedLibrary.canMutateLibrary,
@@ -220,7 +251,7 @@ export const useRehearsalLibraryController = ({
         confirmRemoveSource(source);
       },
       onSaveSource: () => {
-        void savedLibrary.saveSource(source);
+        void saveDiscoveredSource();
       },
       playbackState: playback.playbackState,
       source,
@@ -268,6 +299,7 @@ export const useRehearsalLibraryController = ({
       pendingSourceId: savedLibrary.pendingSourceId,
       removeLoop: confirmRemoveLoop,
       removeSource: confirmRemoveSource,
+      files: libraryFiles,
       savedLibraryIssue: savedLibrary.issue,
       savedLibrarySources,
       savedLoopIssue: savedLoops.issue,

@@ -1,0 +1,193 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import {
+  createDriveAudioSource,
+  type NamedLoop,
+  type Playlist,
+  type RehearsalLibraryFileTree,
+} from '@org/audio-library-models';
+
+import { buildLibraryFilesExplorerState } from './library-files-model';
+
+const AVAILABLE_SOURCE = createDriveAudioSource({
+  availability: {
+    status: 'available',
+  },
+  driveFileId: 'drive-file-1',
+  durationMs: 245000,
+  mimeType: 'audio/mpeg',
+  name: 'Full Choir.mp3',
+});
+
+const UNAVAILABLE_SOURCE = createDriveAudioSource({
+  availability: {
+    message: 'Reconnect Drive to restore this track.',
+    reason: 'access-revoked',
+    status: 'unavailable',
+  },
+  driveFileId: 'drive-file-2',
+  mimeType: 'audio/mpeg',
+  name: 'Section Notes.mp3',
+});
+
+const SAVED_LOOP: NamedLoop = {
+  createdAt: '2026-07-01T00:00:00.000Z',
+  endMs: 24000,
+  id: 'loop-1',
+  name: 'Verse entrance',
+  ownerId: 'user-1',
+  ownershipScope: 'user',
+  sourceId: AVAILABLE_SOURCE.id,
+  sourceName: AVAILABLE_SOURCE.name,
+  startMs: 12000,
+  updatedAt: '2026-07-01T00:00:00.000Z',
+};
+
+const PLAYLIST: Playlist = {
+  createdAt: '2026-07-01T00:00:00.000Z',
+  id: 'playlist-1',
+  items: [],
+  name: 'Evening Warmups',
+  ownerId: 'user-1',
+  ownershipScope: 'user',
+  updatedAt: '2026-07-01T00:00:00.000Z',
+};
+
+describe('library-files model', () => {
+  it('builds a mixed explorer list with folders first and canonical breadcrumb paths', () => {
+    const tree: RehearsalLibraryFileTree = {
+      fileLinks: [
+        {
+          entityId: AVAILABLE_SOURCE.id,
+          entityKind: 'track',
+          id: `file-link:track:${AVAILABLE_SOURCE.id}`,
+          parentFolderId: 'folder-1',
+          visibleName: 'Warmup copy',
+        },
+        {
+          entityId: SAVED_LOOP.id,
+          entityKind: 'loop',
+          id: `file-link:loop:${SAVED_LOOP.id}`,
+          parentFolderId: 'folder-1',
+        },
+        {
+          entityId: PLAYLIST.id,
+          entityKind: 'playlist',
+          id: `file-link:playlist:${PLAYLIST.id}`,
+          parentFolderId: 'folder-1',
+        },
+        {
+          entityId: UNAVAILABLE_SOURCE.id,
+          entityKind: 'track',
+          id: `file-link:track:${UNAVAILABLE_SOURCE.id}`,
+          parentFolderId: 'folder-1',
+        },
+      ],
+      folders: [
+        {
+          id: 'folder:library-root',
+          name: 'Library',
+          parentFolderId: null,
+        },
+        {
+          id: 'folder-1',
+          name: 'Warmups',
+          parentFolderId: 'folder:library-root',
+        },
+        {
+          id: 'folder-2',
+          name: 'Alto Entrances',
+          parentFolderId: 'folder-1',
+        },
+      ],
+      rootFolderId: 'folder:library-root',
+      version: 1,
+    };
+
+    const explorer = buildLibraryFilesExplorerState({
+      currentFolderId: 'folder-1',
+      savedLoops: [SAVED_LOOP],
+      savedPlaylists: [PLAYLIST],
+      savedSources: [AVAILABLE_SOURCE, UNAVAILABLE_SOURCE],
+      tree,
+    });
+
+    assert.deepEqual(explorer.breadcrumbs, [
+      {
+        folderId: 'folder:library-root',
+        label: 'Library',
+      },
+      {
+        folderId: 'folder-1',
+        label: 'Warmups',
+      },
+    ]);
+    assert.deepEqual(
+      explorer.rows.map((row) => {
+        return row.label;
+      }),
+      [
+        'Alto Entrances',
+        'Evening Warmups',
+        'Section Notes.mp3',
+        'Verse entrance',
+        'Warmup copy',
+      ],
+    );
+    assert.equal(explorer.rows[0]?.kind, 'folder');
+    assert.equal(explorer.rows[1]?.kind, 'playlist');
+    assert.equal(explorer.rows[2]?.kind, 'track');
+    assert.equal(explorer.rows[3]?.kind, 'loop');
+    assert.equal(explorer.rows[4]?.kind, 'track');
+  });
+
+  it('preserves visible-name overrides and exposes availability metadata on entity rows', () => {
+    const tree: RehearsalLibraryFileTree = {
+      fileLinks: [
+        {
+          entityId: AVAILABLE_SOURCE.id,
+          entityKind: 'track',
+          id: `file-link:track:${AVAILABLE_SOURCE.id}`,
+          parentFolderId: 'folder:library-root',
+          visibleName: 'Mass entry copy',
+        },
+        {
+          entityId: SAVED_LOOP.id,
+          entityKind: 'loop',
+          id: `file-link:loop:${SAVED_LOOP.id}`,
+          parentFolderId: 'folder:library-root',
+        },
+      ],
+      folders: [
+        {
+          id: 'folder:library-root',
+          name: 'Library',
+          parentFolderId: null,
+        },
+      ],
+      rootFolderId: 'folder:library-root',
+      version: 1,
+    };
+
+    const explorer = buildLibraryFilesExplorerState({
+      currentFolderId: 'folder:library-root',
+      savedLoops: [SAVED_LOOP],
+      savedPlaylists: [],
+      savedSources: [AVAILABLE_SOURCE],
+      tree,
+    });
+    const trackRow = explorer.rows.find((row) => {
+      return row.kind === 'track';
+    });
+    const loopRow = explorer.rows.find((row) => {
+      return row.kind === 'loop';
+    });
+
+    assert.equal(trackRow?.label, 'Mass entry copy');
+    assert.equal(trackRow?.kind, 'track');
+    assert.equal(trackRow?.supportingLabel, 'Track • 4:05');
+    assert.equal(loopRow?.kind, 'loop');
+    assert.equal(loopRow?.supportingLabel, 'Full Choir.mp3 • 0:12 to 0:24');
+  });
+});
