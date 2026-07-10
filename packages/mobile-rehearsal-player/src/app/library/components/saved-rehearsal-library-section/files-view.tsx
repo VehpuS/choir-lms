@@ -13,6 +13,7 @@ import {
   ExplorerNavigationBar,
 } from '../explorer';
 import { FeedbackCard } from '../feedback-card';
+import { buildSavedRehearsalLibraryFilesViewModel } from './files-view-model';
 
 type SavedRehearsalLibraryFilesViewProps = {
   activePlayableItem: PlayableItem | null;
@@ -35,35 +36,6 @@ const getRowIconName = (
     default:
       return 'music-note-outline' as const;
   }
-};
-
-const isRowActive = (
-  activePlayableItem: PlayableItem | null,
-  row: NonNullable<UseLibraryFilesResult['explorer']>['rows'][number],
-) => {
-  if (!activePlayableItem) {
-    return false;
-  }
-
-  if (row.kind === 'track') {
-    return (
-      activePlayableItem.kind === 'track' &&
-      activePlayableItem.sourceId === row.source.id
-    );
-  }
-
-  if (row.kind === 'loop') {
-    return (
-      activePlayableItem.kind === 'loop' &&
-      activePlayableItem.loopId === row.loop.id
-    );
-  }
-
-  if (row.kind === 'playlist') {
-    return activePlayableItem.playlistId === row.playlist.id;
-  }
-
-  return false;
 };
 
 export const SavedRehearsalLibraryFilesView = ({
@@ -99,6 +71,18 @@ export const SavedRehearsalLibraryFilesView = ({
     return null;
   }
 
+  const viewModel = buildSavedRehearsalLibraryFilesViewModel({
+    activePlayableItem,
+    files,
+    onOpenPlaylist,
+    onTogglePlayableItemPlayback,
+    onToggleSourcePlayback,
+  });
+
+  if (!viewModel) {
+    return null;
+  }
+
   return (
     <View style={styles.surface}>
       {files.issue ? (
@@ -110,82 +94,47 @@ export const SavedRehearsalLibraryFilesView = ({
         />
       ) : null}
       <ExplorerNavigationBar
-        canGoBack={Boolean(explorer.currentFolder.parentFolderId)}
+        canGoBack={viewModel.canGoBack}
         eyebrow="Current folder"
         onGoBack={() => {
           files.goToParentFolder();
         }}
-        title={explorer.currentFolder.name}
+        title={viewModel.currentFolderName}
       />
-      <ExplorerBreadcrumbBar
-        items={explorer.breadcrumbs.map((breadcrumb, index) => {
-          const isCurrent = index === explorer.breadcrumbs.length - 1;
-
-          return {
-            isCurrent,
-            key: breadcrumb.folderId,
-            label: breadcrumb.label,
-            onPress: isCurrent
-              ? undefined
-              : () => {
-                  files.goToFolder(breadcrumb.folderId);
-                },
-          };
-        })}
-      />
+      <ExplorerBreadcrumbBar items={viewModel.breadcrumbs} />
       <ExplorerListSurface>
-        {explorer.rows.map((row) => {
-          const active = isRowActive(activePlayableItem, row);
-          const disabled =
-            (row.kind === 'track' && !row.isPlayable) ||
-            (row.kind === 'loop' && row.playableItem === null);
+        {explorer.rows.map((row, index) => {
+          const viewModelRow = viewModel.rows[index];
 
           return (
             <ExplorerListRow
-              active={active}
-              disabled={disabled}
-              key={row.kind === 'folder' ? row.folder.id : row.fileLink.id}
+              active={viewModelRow.active}
+              disabled={viewModelRow.disabled}
+              key={viewModelRow.key}
               leadingIcon={
                 <MaterialCommunityIcons
-                  color={active ? '#173229' : appTheme.colors.secondaryText}
+                  color={
+                    viewModelRow.active
+                      ? '#173229'
+                      : appTheme.colors.secondaryText
+                  }
                   name={getRowIconName(row)}
                   size={22}
                 />
               }
               message={
-                'message' in row && row.message ? (
+                viewModelRow.message ? (
                   <Text numberOfLines={2} style={styles.rowMessage}>
-                    {row.message}
+                    {viewModelRow.message}
                   </Text>
                 ) : null
               }
               metadata={
                 <Text numberOfLines={1} style={styles.rowSupportingLabel}>
-                  {row.supportingLabel}
+                  {viewModelRow.supportingLabel}
                 </Text>
               }
-              onPress={() => {
-                if (row.kind === 'folder') {
-                  files.openFolder(row.folder.id);
-                  return;
-                }
-
-                if (row.kind === 'track') {
-                  void onToggleSourcePlayback(row.source);
-                  return;
-                }
-
-                if (row.kind === 'loop') {
-                  if (!row.playableItem) {
-                    return;
-                  }
-
-                  void onTogglePlayableItemPlayback(row.playableItem);
-                  return;
-                }
-
-                onOpenPlaylist(row.playlist.id);
-              }}
+              onPress={viewModelRow.onPress}
               overflowTrigger={
                 <View
                   accessible={false}
@@ -201,7 +150,7 @@ export const SavedRehearsalLibraryFilesView = ({
               }
               title={
                 <Text numberOfLines={1} style={styles.rowTitle}>
-                  {row.label}
+                  {viewModelRow.label}
                 </Text>
               }
             />

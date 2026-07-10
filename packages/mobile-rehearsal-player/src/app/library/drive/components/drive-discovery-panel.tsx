@@ -5,11 +5,7 @@ import {
   ExplorerNavigationBar,
 } from '../../components/explorer';
 import type { useRehearsalLibraryController } from '../../saved-rehearsal-library/use-rehearsal-library-controller';
-import { shouldShowDriveStatusCard } from '../utils/drive-discovery-layout';
-import {
-  buildDriveDiscoveryExplorerState,
-  type DriveDiscoveryExplorerState,
-} from './drive-discovery-panel-model';
+import { buildDriveDiscoveryPanelViewModel } from './drive-discovery-panel-view-model';
 import { DriveExplorerList } from './drive-explorer-list';
 import { DriveLibraryRootSelector } from './drive-library-root-selector';
 import { DriveLibrarySearchPanel } from './drive-library-search-panel';
@@ -26,28 +22,9 @@ export const DriveDiscoveryPanel = ({
   isSearchBarVisible,
   onToggleSearchBar,
 }: DriveDiscoveryPanelProps) => {
-  const isSearchMode = controller.search.isSearchMode;
-  const explorerState = buildDriveDiscoveryExplorerState({
-    browseFolders: controller.discovery.browseSnapshot.folders,
-    browsePlayableSources: controller.discovery.playableSources,
-    browseUnavailableSources: controller.discovery.unavailableSources,
-    currentLocation: controller.discovery.currentLocation,
-    isSearchMode,
-    navigationStack: controller.discovery.navigationStack,
-    searchPlayableSources: controller.search.playableSources,
-    searchUnavailableSources: controller.search.unavailableSources,
+  const viewModel = buildDriveDiscoveryPanelViewModel({
+    controller,
   });
-  const activeStatusCopy = isSearchMode
-    ? controller.search.statusCopy
-    : controller.discovery.statusCopy;
-  const isStatusLoading = isSearchMode
-    ? controller.search.isLoading
-    : controller.discovery.isLoading;
-  const shouldShowStatusCard = shouldShowDriveStatusCard(
-    isStatusLoading,
-    activeStatusCopy.tone,
-  );
-  const parentLocationIndex = controller.discovery.navigationStack.length - 2;
 
   const searchPanel = (
     <DriveLibrarySearchPanel
@@ -72,52 +49,31 @@ export const DriveDiscoveryPanel = ({
       {isSearchBarVisible ? searchPanel : null}
       <DriveLibraryRootSelector
         currentRootKind={controller.discovery.currentLocation.rootKind}
-        isSearchMode={isSearchMode}
+        isSearchMode={viewModel.isSearchMode}
         onSelectRoot={controller.discovery.selectRoot}
       />
       <ExplorerNavigationBar
-        canGoBack={explorerState.canGoBack}
-        eyebrow={isSearchMode ? 'Current search scope' : 'Current location'}
-        onGoBack={() => {
-          if (parentLocationIndex < 0) {
-            return;
-          }
-
-          controller.discovery.goToLocation(parentLocationIndex);
-        }}
-        title={explorerState.currentTitle}
+        canGoBack={controller.discovery.navigationStack.length > 1}
+        eyebrow={viewModel.navigationEyebrow}
+        onGoBack={viewModel.onGoBack}
+        title={viewModel.currentTitle}
       />
-      <ExplorerBreadcrumbBar
-        items={explorerState.breadcrumbs.map(
-          (breadcrumb: DriveDiscoveryExplorerState['breadcrumbs'][number]) => {
-            return {
-              isCurrent: breadcrumb.isCurrent,
-              key: breadcrumb.key,
-              label: breadcrumb.label,
-              onPress: breadcrumb.isCurrent
-                ? undefined
-                : () => {
-                    controller.discovery.goToLocation(breadcrumb.locationIndex);
-                  },
-            };
-          },
-        )}
-      />
-      {shouldShowStatusCard ? (
+      <ExplorerBreadcrumbBar items={viewModel.breadcrumbs} />
+      {viewModel.shouldShowStatusCard ? (
         <DriveLibraryStatusCard
-          isLoading={isStatusLoading}
-          loadingLabel={isSearchMode ? 'Searching Google Drive…' : undefined}
-          statusCopy={activeStatusCopy}
+          isLoading={viewModel.isStatusLoading}
+          loadingLabel={
+            viewModel.isSearchMode ? 'Searching Google Drive…' : undefined
+          }
+          statusCopy={viewModel.activeStatusCopy}
         />
       ) : null}
       <DriveExplorerList
         getActions={controller.getDriveSourceActions}
         getMessage={controller.getSourceMessage}
-        highlightQuery={
-          isSearchMode ? controller.search.activeSearchQuery : null
-        }
-        onOpenFolder={controller.discovery.openFolder}
-        rows={explorerState.rows}
+        highlightQuery={viewModel.highlightQuery}
+        onOpenFolder={viewModel.onOpenFolder}
+        rows={viewModel.explorerRows}
       />
     </View>
   );

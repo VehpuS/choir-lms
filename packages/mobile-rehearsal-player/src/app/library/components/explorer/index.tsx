@@ -10,14 +10,13 @@ import {
 } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
+import {
+  getExplorerBackAccessibilityLabel,
+  hasExplorerTrailingControls,
+  resolveExplorerBreadcrumbItems,
+  type ExplorerBreadcrumbItem,
+} from './model';
 import { explorerStyles as styles } from './styles';
-
-export type ExplorerBreadcrumbItem = {
-  isCurrent?: boolean;
-  key: string;
-  label: string;
-  onPress?: () => void;
-};
 
 type ExplorerBreadcrumbBarProps = {
   items: ExplorerBreadcrumbItem[];
@@ -57,9 +56,7 @@ export const ExplorerNavigationBar = ({
   return (
     <View style={styles.navigationBar}>
       <Pressable
-        accessibilityLabel={
-          canGoBack ? 'Go to parent folder' : 'Already at root'
-        }
+        accessibilityLabel={getExplorerBackAccessibilityLabel(canGoBack)}
         accessibilityRole="button"
         disabled={!canGoBack}
         onPress={onGoBack}
@@ -101,9 +98,7 @@ export const ExplorerBreadcrumbBar = ({
       showsHorizontalScrollIndicator={false}
       style={styles.breadcrumbBar}
     >
-      {items.map((item, index) => {
-        const isCurrent = item.isCurrent ?? index === items.length - 1;
-
+      {resolveExplorerBreadcrumbItems(items).map((item, index) => {
         return (
           <View key={item.key} style={styles.breadcrumbItem}>
             {index > 0 ? (
@@ -111,18 +106,18 @@ export const ExplorerBreadcrumbBar = ({
             ) : null}
             <Pressable
               accessibilityRole="button"
-              disabled={isCurrent || !item.onPress}
+              disabled={item.isDisabled}
               onPress={item.onPress}
               style={({ pressed }) => [
                 styles.breadcrumbChip,
-                isCurrent ? styles.breadcrumbChipCurrent : undefined,
-                pressed && !isCurrent ? styles.rowPressed : undefined,
+                item.isCurrent ? styles.breadcrumbChipCurrent : undefined,
+                pressed && !item.isCurrent ? styles.rowPressed : undefined,
               ]}
             >
               <Text
                 numberOfLines={1}
                 style={
-                  isCurrent
+                  item.isCurrent
                     ? styles.breadcrumbLabelCurrent
                     : styles.breadcrumbLabel
                 }
@@ -157,11 +152,10 @@ export const ExplorerListRow = ({
   title,
 }: ExplorerListRowProps) => {
   const isInteractive = !disabled && onPress !== undefined;
-  const hasTrailingControls =
-    actions !== null ||
-    actions !== undefined ||
-    overflowTrigger !== null ||
-    overflowTrigger !== undefined;
+  const hasTrailingControls = hasExplorerTrailingControls(
+    actions,
+    overflowTrigger,
+  );
 
   const rowBody = (
     <>
