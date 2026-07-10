@@ -27,6 +27,18 @@ on web or only becomes diagnosable through a live browser session.
 3. Reload before each serious repro attempt so preserved console events do not masquerade as current failures.
 4. Record the exact repro path before debugging. Prefer a minimal script such as `Add -> Search Google Drive -> query -> Play <track>`.
 
+## Authentication Checkpoint
+
+Before running any repro path that depends on authenticated app state (for example,
+Google Drive discovery/playback, account-linked library access, or token-backed media
+requests), pause and checkpoint with the user:
+
+1. Tell the user authentication is required for the next debugging step.
+2. Ask the user to authenticate in the app first.
+3. Wait for explicit user confirmation that authentication is complete before proceeding.
+
+Do not continue auth-dependent browser debugging until that confirmation is provided.
+
 ## Smart Routing
 
 Start from the nearest owning web surface:

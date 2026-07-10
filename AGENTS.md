@@ -17,6 +17,7 @@ This repository is an Nx monorepo for a broader choir learning platform. See the
 - For mobile rehearsal player naming, test naming, file moves, and folder-organization work, invoke the `mobile-folder-structure` skill in `.github/skills/mobile-folder-structure/SKILL.md`.
 - For code relocation tasks that need file-embedded progress markers and user checkpoints (instead of chat-context tracking), invoke the `code-move-checkpointed` skill in `.github/skills/code-move-checkpointed/SKILL.md`.
 - For browser-only bugs or web playback failures in the mobile rehearsal player, invoke the `mobile-web-runtime-debugging` skill in `.github/skills/mobile-web-runtime-debugging/SKILL.md`.
+- For debugging flows that require app authentication, checkpoint with the user and ask them to authenticate in the app before proceeding.
 - When adding or materially expanding code in a language or framework without comparable repo coding style guidance, first draft a suggested policy in `.github/instructions/` and confirm it with the user before proceeding with broader implementation in that language or framework.
 - Before suggesting or creating a commit, clear VS Code Problems in every touched file. If Vscode is out of sync with repo configuration, help the user address this. Alternatively, if a touched file is outside the current lint or typecheck surface, extend project validation so `nx lint` or a lint dependency fails until that file is clean.
 
