@@ -90,6 +90,22 @@
           "command": "tsx --test 'src/**/*.spec.ts' 'src/**/*.spec.tsx'"
         }
       },
+      "test-file": {
+        "executor": "nx:run-commands",
+        "cache": false,
+        "options": {
+          "cwd": "packages/mobile-rehearsal-player",
+          "command": "tsx --test {args.file}"
+        }
+      },
+      "test-pattern": {
+        "executor": "nx:run-commands",
+        "cache": false,
+        "options": {
+          "cwd": "packages/mobile-rehearsal-player",
+          "command": "tsx --test {args.pattern}"
+        }
+      },
       "lint": {
         "dependsOn": [
           "typecheck-config",

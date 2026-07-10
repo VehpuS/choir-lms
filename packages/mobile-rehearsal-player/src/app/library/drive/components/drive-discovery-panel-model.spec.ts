@@ -75,6 +75,36 @@ const SEARCH_RESULT = {
 } as DriveLibrarySource;
 
 describe('drive discovery panel model', () => {
+  it('keeps root explorer chrome and disables back navigation at root', () => {
+    const explorer = buildDriveDiscoveryExplorerState({
+      browseFolders: [CHILD_FOLDER],
+      browsePlayableSources: [PLAYABLE_SOURCE],
+      browseUnavailableSources: [],
+      currentLocation: ROOT_LOCATION,
+      isSearchMode: false,
+      navigationStack: [ROOT_LOCATION],
+      searchPlayableSources: [],
+      searchUnavailableSources: [],
+    });
+
+    assert.equal(explorer.canGoBack, false);
+    assert.equal(explorer.currentTitle, 'My Drive');
+    assert.deepEqual(explorer.breadcrumbs, [
+      {
+        isCurrent: true,
+        key: 'root:root:my-drive',
+        label: 'My Drive',
+        locationIndex: 0,
+      },
+    ]);
+    assert.deepEqual(
+      explorer.rows.map((row) => {
+        return row.kind === 'folder' ? row.folder.name : row.source.name;
+      }),
+      ['Alto Entrances', 'Tenor Warmup.mp3'],
+    );
+  });
+
   it('builds one browse list with folders first and current-path breadcrumbs', () => {
     const explorer = buildDriveDiscoveryExplorerState({
       browseFolders: [CHILD_FOLDER],

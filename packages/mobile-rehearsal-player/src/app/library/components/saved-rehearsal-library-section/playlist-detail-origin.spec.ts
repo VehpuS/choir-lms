@@ -17,6 +17,18 @@ describe('playlist detail origin', () => {
     );
   });
 
+  it('keeps Files view origin even when no specific folder id was captured', () => {
+    assert.deepEqual(
+      buildPlaylistDetailOrigin({
+        originView: 'files',
+      }),
+      {
+        filesFolderId: null,
+        view: 'files',
+      },
+    );
+  });
+
   it('drops files folder origin for non-files views', () => {
     assert.deepEqual(
       buildPlaylistDetailOrigin({

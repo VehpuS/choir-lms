@@ -32,6 +32,15 @@ This repository is an Nx monorepo for a broader choir learning platform. See the
 - This workspace uses npm workspaces with the committed root `package-lock.json`.
 - When repo-specific guidance conflicts with generic Nx examples, prefer `npm exec -- nx ...` for workspace tasks and `npm ci` for install validation.
 
+## Testing Baseline
+
+- The currently implemented automated tests use Node's built-in test runner via `tsx --test` behind Nx `test` targets.
+- Test files use `node:test` and `node:assert/strict` (not Jest or Vitest globals).
+- Prefer `npm exec -- nx run <project>:test` to run tests for a project.
+- For targeted mobile runs, use `npm exec -- nx run mobile-rehearsal-player:test-file -- --file=src/path/to/file.spec.ts` or `npm exec -- nx run mobile-rehearsal-player:test-pattern -- --pattern='src/**/*.spec.ts'`.
+- Do not introduce Jest or Vitest config/targets unless a change explicitly asks for a runner migration.
+- Some dependencies (for example `jest-expo`) may exist for ecosystem compatibility, but they are not the active test harness in this workspace.
+
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
 

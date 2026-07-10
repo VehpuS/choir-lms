@@ -55,6 +55,57 @@ const PLAYLIST: Playlist = {
 };
 
 describe('library-files model', () => {
+  it('falls back to Files root when the requested folder no longer exists', () => {
+    const tree: RehearsalLibraryFileTree = {
+      fileLinks: [
+        {
+          entityId: AVAILABLE_SOURCE.id,
+          entityKind: 'track',
+          id: `file-link:track:${AVAILABLE_SOURCE.id}`,
+          parentFolderId: 'folder:library-root',
+        },
+      ],
+      folders: [
+        {
+          id: 'folder:library-root',
+          name: 'Library',
+          parentFolderId: null,
+        },
+        {
+          id: 'folder-archive',
+          name: 'Archive',
+          parentFolderId: 'folder:library-root',
+        },
+      ],
+      rootFolderId: 'folder:library-root',
+      version: 1,
+    };
+
+    const explorer = buildLibraryFilesExplorerState({
+      currentFolderId: 'folder-missing',
+      savedLoops: [],
+      savedPlaylists: [],
+      savedSources: [AVAILABLE_SOURCE],
+      tree,
+    });
+
+    assert.equal(explorer.currentFolder.id, 'folder:library-root');
+    assert.deepEqual(explorer.breadcrumbs, [
+      {
+        folderId: 'folder:library-root',
+        label: 'Library',
+      },
+    ]);
+    assert.deepEqual(
+      explorer.rows.map((row) => {
+        return row.label;
+      }),
+      ['Archive', 'Full Choir.mp3'],
+    );
+    assert.equal(explorer.rows[0]?.kind, 'folder');
+    assert.equal(explorer.rows[1]?.kind, 'track');
+  });
+
   it('builds a mixed explorer list with folders first and canonical breadcrumb paths', () => {
     const tree: RehearsalLibraryFileTree = {
       fileLinks: [

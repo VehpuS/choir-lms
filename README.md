@@ -62,6 +62,17 @@ npm exec -- nx graph
 npm exec -- nx sync
 ```
 
+### Testing
+
+The currently implemented automated tests run through Nx `test` targets and execute with Node's built-in test runner using `tsx --test`.
+
+- Test sources use `node:test` plus `node:assert/strict`.
+- Primary command pattern: `npm exec -- nx run <project>:test`.
+- In this workspace, Jest and Vitest are not the active test harness for existing package tests.
+- For targeted mobile test runs, use:
+	- `npm exec -- nx run mobile-rehearsal-player:test-file -- --file=src/path/to/file.spec.ts`
+	- `npm exec -- nx run mobile-rehearsal-player:test-pattern -- --pattern='src/**/*.spec.ts'`
+
 ### Google OAuth for mobile manual testing
 
 The mobile rehearsal player reads Google Drive OAuth IDs from `packages/mobile-rehearsal-player/.env`.
