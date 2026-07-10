@@ -1,8 +1,10 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { PlayableItem } from '@org/audio-library-models';
 
+import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { appTheme } from '../../../utils/theme';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
@@ -13,12 +15,33 @@ import {
   ExplorerNavigationBar,
 } from '../explorer';
 import { FeedbackCard } from '../feedback-card';
+import { OptionsMenuSheet } from '../options-menu-sheet';
+import {
+  resolveFilesRowMenuActions,
+  resolveFilesRowMenuTitle,
+} from './files-row-actions';
 import { buildSavedRehearsalLibraryFilesViewModel } from './files-view-model';
 
 type SavedRehearsalLibraryFilesViewProps = {
   activePlayableItem: PlayableItem | null;
+  canMutateLibrary: boolean;
+  canMutateLoops: boolean;
+  canMutatePlaylists: boolean;
+  canQueueAsNext: boolean;
   files: UseLibraryFilesResult;
+  isLoopBuilderPreparing: boolean;
+  isLoopMutating: boolean;
+  isPlaylistMutating: boolean;
+  isSavedLibraryMutating: boolean;
+  onOpenLoopBuilderForSource: (source: DriveLibrarySource) => void;
+  onOpenLoopPlaylistSelector: (loopId: string) => void;
   onOpenPlaylist: (playlistId: string) => void;
+  onOpenPlaylistTagEditor: (playlistId: string) => void;
+  onOpenSourcePlaylistSelector: (sourceId: string) => void;
+  onOpenSourceTagEditor: (source: DriveLibrarySource) => void;
+  onOpenLoopTagEditor: (loopId: string) => void;
+  onQueuePlayableItemNext: (playableItem: PlayableItem) => void;
+  onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   onTogglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
 };
@@ -40,12 +63,29 @@ const getRowIconName = (
 
 export const SavedRehearsalLibraryFilesView = ({
   activePlayableItem,
+  canMutateLibrary,
+  canMutateLoops,
+  canMutatePlaylists,
+  canQueueAsNext,
   files,
+  isLoopBuilderPreparing,
+  isLoopMutating,
+  isPlaylistMutating,
+  isSavedLibraryMutating,
+  onOpenLoopBuilderForSource,
+  onOpenLoopPlaylistSelector,
   onOpenPlaylist,
+  onOpenPlaylistTagEditor,
+  onOpenSourcePlaylistSelector,
+  onOpenSourceTagEditor,
+  onOpenLoopTagEditor,
+  onQueuePlayableItemNext,
+  onQueuePlayableItemUpNext,
   onTogglePlayableItemPlayback,
   onToggleSourcePlayback,
 }: SavedRehearsalLibraryFilesViewProps) => {
   const explorer = files.explorer;
+  const [openMenuRowKey, setOpenMenuRowKey] = useState<string | null>(null);
 
   if (files.isLoading && !explorer) {
     return (
@@ -105,55 +145,106 @@ export const SavedRehearsalLibraryFilesView = ({
       <ExplorerListSurface>
         {explorer.rows.map((row, index) => {
           const viewModelRow = viewModel.rows[index];
+          const menuActions = resolveFilesRowMenuActions({
+            canMutateLibrary,
+            canMutateLoops,
+            canMutatePlaylists,
+            canQueueAsNext,
+            isLoopBuilderPreparing,
+            isLoopMutating,
+            isPlaylistMutating,
+            isSavedLibraryMutating,
+            onOpenFolder(folderId) {
+              files.openFolder(folderId);
+            },
+            onOpenLoopBuilder() {
+              if (row.kind !== 'track') {
+                return;
+              }
+
+              onOpenLoopBuilderForSource(row.source);
+            },
+            onOpenLoopPlaylistSelector,
+            onOpenLoopTagEditor,
+            onOpenPlaylistTagEditor,
+            onOpenSourcePlaylistSelector,
+            onOpenSourceTagEditor(sourceId) {
+              if (row.kind !== 'track' || row.source.id !== sourceId) {
+                return;
+              }
+
+              onOpenSourceTagEditor(row.source);
+            },
+            onQueuePlayableItemNext,
+            onQueuePlayableItemUpNext,
+            row,
+          });
+          const isOptionsVisible = openMenuRowKey === viewModelRow.key;
 
           return (
-            <ExplorerListRow
-              active={viewModelRow.active}
-              disabled={viewModelRow.disabled}
-              key={viewModelRow.key}
-              leadingIcon={
-                <MaterialCommunityIcons
-                  color={
-                    viewModelRow.active
-                      ? '#173229'
-                      : appTheme.colors.secondaryText
-                  }
-                  name={getRowIconName(row)}
-                  size={22}
-                />
-              }
-              message={
-                viewModelRow.message ? (
-                  <Text numberOfLines={2} style={styles.rowMessage}>
-                    {viewModelRow.message}
-                  </Text>
-                ) : null
-              }
-              metadata={
-                <Text numberOfLines={1} style={styles.rowSupportingLabel}>
-                  {viewModelRow.supportingLabel}
-                </Text>
-              }
-              onPress={viewModelRow.onPress}
-              overflowTrigger={
-                <View
-                  accessible={false}
-                  pointerEvents="none"
-                  style={styles.rowMenuPlaceholder}
-                >
+            <View key={viewModelRow.key}>
+              <ExplorerListRow
+                active={viewModelRow.active}
+                disabled={viewModelRow.disabled}
+                leadingIcon={
                   <MaterialCommunityIcons
-                    color={appTheme.colors.secondaryText}
-                    name="dots-vertical"
-                    size={20}
+                    color={
+                      viewModelRow.active
+                        ? '#173229'
+                        : appTheme.colors.secondaryText
+                    }
+                    name={getRowIconName(row)}
+                    size={22}
                   />
-                </View>
-              }
-              title={
-                <Text numberOfLines={1} style={styles.rowTitle}>
-                  {viewModelRow.label}
-                </Text>
-              }
-            />
+                }
+                message={
+                  viewModelRow.message ? (
+                    <Text numberOfLines={2} style={styles.rowMessage}>
+                      {viewModelRow.message}
+                    </Text>
+                  ) : null
+                }
+                metadata={
+                  <Text numberOfLines={1} style={styles.rowSupportingLabel}>
+                    {viewModelRow.supportingLabel}
+                  </Text>
+                }
+                onPress={viewModelRow.onPress}
+                overflowTrigger={
+                  menuActions.length > 0 ? (
+                    <OverflowMenuTrigger
+                      accessibilityLabel={`${resolveFilesRowMenuTitle(row)} options`}
+                      iconColor={appTheme.colors.secondaryText}
+                      onPress={() => {
+                        setOpenMenuRowKey(viewModelRow.key);
+                      }}
+                      style={styles.rowOverflowTrigger}
+                    />
+                  ) : null
+                }
+                title={
+                  <Text numberOfLines={1} style={styles.rowTitle}>
+                    {viewModelRow.label}
+                  </Text>
+                }
+              />
+              <OptionsMenuSheet
+                actions={menuActions.map((action) => {
+                  return {
+                    ...action,
+                    onPress: () => {
+                      setOpenMenuRowKey(null);
+                      action.onPress();
+                    },
+                  };
+                })}
+                isVisible={isOptionsVisible}
+                onClose={() => {
+                  setOpenMenuRowKey(null);
+                }}
+                title={resolveFilesRowMenuTitle(row)}
+              />
+            </View>
           );
         })}
       </ExplorerListSurface>
@@ -162,17 +253,10 @@ export const SavedRehearsalLibraryFilesView = ({
 };
 
 const styles = StyleSheet.create({
-  rowMenuPlaceholder: {
-    minWidth: 38,
-    minHeight: 38,
-    paddingHorizontal: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 999,
-    backgroundColor: '#fffdf8',
-    opacity: 0.56,
+  rowOverflowTrigger: {
+    position: 'relative',
+    top: 0,
+    right: 0,
   },
   rowMessage: {
     color: '#9a4d2d',

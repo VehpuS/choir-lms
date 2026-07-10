@@ -14,6 +14,7 @@ import {
   getSavedRehearsalLibraryDependentLoops,
   getSavedRehearsalLibrarySourceIssue,
 } from '../../saved-rehearsal-library/view-model';
+import { shouldRenderFilesLoopBuilder } from './browse-content-model';
 import { SavedRehearsalLibraryFilesView } from './files-view';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 import { useSavedRehearsalLibraryLoopState } from './use-saved-rehearsal-library-loop-state';
@@ -46,7 +47,7 @@ type LoopState = Pick<
 >;
 type TrackPlaylistMenuState = Pick<
   ReturnType<typeof useSavedRehearsalLibraryTrackPlaylistMenu>,
-  'openSourcePlaylistSelector'
+  'openLoopPlaylistSelector' | 'openSourcePlaylistSelector'
 >;
 
 type SavedRehearsalLibraryBrowseContentProps = Pick<
@@ -69,6 +70,7 @@ type SavedRehearsalLibraryBrowseContentProps = Pick<
   | 'savedLibrarySources'
   | 'savedLoops'
   | 'savedPlaylists'
+  | 'selectedTrack'
   | 'togglePlaylistPlayback'
   | 'togglePlayableItemPlayback'
   | 'toggleSourcePlayback'
@@ -88,6 +90,9 @@ type SavedRehearsalLibraryBrowseContentProps = Pick<
   searchState: SearchState;
   visibleSections: SavedRehearsalLibraryVisibleSections;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
+  onOpenLoopTagEditor: (
+    loop: SavedRehearsalLibrarySectionProps['savedLoops'][number],
+  ) => void;
   onOpenSourceTagEditor: (
     source: SavedRehearsalLibrarySectionProps['savedLibrarySources'][number],
   ) => void;
@@ -121,11 +126,13 @@ export const SavedRehearsalLibraryBrowseContent = ({
   savedLibrarySources,
   savedLoops,
   savedPlaylists,
+  selectedTrack,
   selectedView,
   savedSourceTitle,
   searchState,
   visibleSections,
   onOpenPlaylistTagEditor,
+  onOpenLoopTagEditor,
   onOpenSourceTagEditor,
   togglePlaylistPlayback,
   togglePlayableItemPlayback,
@@ -142,20 +149,59 @@ export const SavedRehearsalLibraryBrowseContent = ({
           originView: selectedView,
         };
 
+  const shouldRenderLoopSectionInFiles = shouldRenderFilesLoopBuilder({
+    activeLibrarySearchQuery: searchState.activeLibrarySearchQuery,
+    selectedTrack,
+    selectedView,
+  });
+
   if (selectedView === 'files' && !searchState.activeLibrarySearchQuery) {
     return (
-      <SavedRehearsalLibraryFilesView
-        activePlayableItem={activePlayableItem}
-        files={libraryFiles}
-        onOpenPlaylist={(playlistId) => {
-          playlistState.openPlaylistDetail(
-            playlistId,
-            playlistDetailOpenContext,
-          );
-        }}
-        onTogglePlayableItemPlayback={togglePlayableItemPlayback}
-        onToggleSourcePlayback={toggleSourcePlayback}
-      />
+      <>
+        <SavedRehearsalLibraryFilesView
+          activePlayableItem={activePlayableItem}
+          canMutateLibrary={canMutateLibrary}
+          canMutateLoops={canMutateLoops}
+          canMutatePlaylists={canMutatePlaylists}
+          canQueueAsNext={canQueueAsNext}
+          files={libraryFiles}
+          isLoopBuilderPreparing={pendingLoopBuilderSourceId !== null}
+          isLoopMutating={isLoopMutating}
+          isPlaylistMutating={isPlaylistMutating}
+          isSavedLibraryMutating={isSavedLibraryMutating}
+          onOpenLoopBuilderForSource={openLoopBuilderForSource}
+          onOpenLoopPlaylistSelector={
+            trackPlaylistMenu.openLoopPlaylistSelector
+          }
+          onOpenPlaylist={(playlistId) => {
+            playlistState.openPlaylistDetail(
+              playlistId,
+              playlistDetailOpenContext,
+            );
+          }}
+          onOpenPlaylistTagEditor={onOpenPlaylistTagEditor}
+          onOpenSourcePlaylistSelector={
+            trackPlaylistMenu.openSourcePlaylistSelector
+          }
+          onOpenSourceTagEditor={onOpenSourceTagEditor}
+          onOpenLoopTagEditor={(loopId) => {
+            const loop = savedLoops.find((currentLoop) => {
+              return currentLoop.id === loopId;
+            });
+
+            if (!loop) {
+              return;
+            }
+
+            onOpenLoopTagEditor(loop);
+          }}
+          onQueuePlayableItemNext={queuePlayableItemNext}
+          onQueuePlayableItemUpNext={queuePlayableItemUpNext}
+          onTogglePlayableItemPlayback={togglePlayableItemPlayback}
+          onToggleSourcePlayback={toggleSourcePlayback}
+        />
+        {shouldRenderLoopSectionInFiles ? loopSection : null}
+      </>
     );
   }
 
