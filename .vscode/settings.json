@@ -10,6 +10,7 @@
     "opsx",
     "Pressable",
     "Recents",
+    "subview",
     "undoable"
   ],
   "typescript.tsdk": "node_modules/typescript/lib",

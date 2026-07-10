@@ -1,29 +1,18 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { View } from 'react-native';
-
-import { TagEditorSheet } from '../../components/tag-editor-sheet';
-import { DriveLibraryStatusCard } from '../../drive/components/drive-library-status-card';
-import { isSavedTrackPlaybackBusy } from '../../playback/utils/saved-track-playback-view-model';
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
-import {
-  resolveSavedRehearsalLibraryDetailMode,
-  resolveSavedRehearsalLibraryVisibleSections,
-  type SavedRehearsalLibraryView,
-} from '../../saved-rehearsal-library/detail-mode';
+import { resolveSavedRehearsalLibraryVisibleSections } from '../../saved-rehearsal-library/detail-mode';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
 import {
   SavedRehearsalLibraryLoopSectionContent,
   SavedRehearsalLibraryPlaylistSectionContent,
 } from './detail-sections';
 import { SavedRehearsalLibrarySearchShell } from './search-shell';
+import { SavedRehearsalLibraryStatusCards } from './status-cards';
 import { savedRehearsalLibrarySectionStyles as styles } from './styles';
+import { SavedRehearsalLibraryTagEditorSheet } from './tag-editor-sheet';
 import type { SavedRehearsalLibrarySectionProps } from './types';
-import { useSavedRehearsalLibraryLoopState } from './use-saved-rehearsal-library-loop-state';
-import { useSavedRehearsalLibraryPlaylistState } from './use-saved-rehearsal-library-playlist-state';
-import { useSavedRehearsalLibrarySearch } from './use-saved-rehearsal-library-search';
-import { useSavedRehearsalLibrarySearchPanel } from './use-saved-rehearsal-library-search-panel';
-import { useSavedRehearsalLibraryTagEditor } from './use-saved-rehearsal-library-tag-editor';
-import { useSavedRehearsalLibraryTrackPlaylistMenu } from './use-saved-rehearsal-library-track-playlist-menu';
+import { useSavedRehearsalLibrarySectionState } from './use-saved-rehearsal-library-section-state';
 
 export const SavedRehearsalLibrarySection = ({
   activePlayableItem,
@@ -76,61 +65,47 @@ export const SavedRehearsalLibrarySection = ({
   toggleSourcePlayback,
   updatePlaylist,
 }: SavedRehearsalLibrarySectionProps) => {
-  const [internalSelectedView, setInternalSelectedView] =
-    useState<SavedRehearsalLibraryView>('files');
-  const internalSearchState = useSavedRehearsalLibrarySearch({
-    savedLibrarySources,
-    savedLoops,
-    savedPlaylists,
-  });
-  const searchState = externalSearchState ?? internalSearchState;
-  const playlistState = useSavedRehearsalLibraryPlaylistState({
-    deletePlaylist,
-    playlistIssue,
-    savedPlaylists,
-    updatePlaylist,
-  });
-  const internalSearchPanel = useSavedRehearsalLibrarySearchPanel({
+  const {
+    detailMode,
+    isLoopMutating,
+    isPlaylistMutating,
+    isSavedLibraryMutating,
+    isSavedTrackPlaybackLoading,
+    isSearchPanelVisible,
+    loopState,
+    playlistState,
+    searchPanel,
     searchState,
-  });
-  const searchPanel = externalSearchPanel ?? internalSearchPanel;
-  const selectedView = externalSelectedView ?? internalSelectedView;
-  const setSelectedView = externalSetSelectedView ?? setInternalSelectedView;
-  const trackPlaylistMenu = useSavedRehearsalLibraryTrackPlaylistMenu({
-    createPlaylist,
-    savedLibrarySources,
-    savedLoops,
-    setSelectedPlaylistId: playlistState.setSelectedPlaylistId,
-    updatePlaylist,
-  });
-  const tagEditor = useSavedRehearsalLibraryTagEditor({
-    saveLoop,
-    saveSource,
-    savedPlaylists,
-    updatePlaylist,
-  });
-  const isSavedLibraryMutating = pendingSourceId !== null;
-  const isSavedTrackPlaybackLoading = isSavedTrackPlaybackBusy({
-    isPreparing: isPlaybackPreparing,
-    playbackState,
-  });
-  const isSearchPanelVisible = searchPanel.isSearchPanelVisible;
-  const isPlaylistMutating = pendingPlaylistId !== null;
-  const isLoopMutating = pendingLoopId !== null;
-  const loopState = useSavedRehearsalLibraryLoopState({
+    selectedView,
+    setSelectedView,
+    tagEditor,
+    trackPlaylistMenu,
+  } = useSavedRehearsalLibrarySectionState({
     activePlaylistSession,
     canMutateLoops,
-    isLibrarySearchMode: searchState.isLibrarySearchMode,
-    isLoopMutating,
+    createPlaylist,
+    deletePlaylist,
     isPlaybackPreparing,
     openLoopBuilderForSource,
     pendingLoopBuilderSourceId,
+    pendingLoopId,
+    pendingPlaylistId,
+    pendingSourceId,
     playbackState,
+    playlistIssue,
+    saveLoop,
+    saveSource,
     savedLibrarySources,
     savedLoops,
+    savedPlaylists,
+    searchPanel: externalSearchPanel,
+    searchState: externalSearchState,
     selectedTrack,
+    selectedView: externalSelectedView,
     setSelectedLoopSourceId,
+    setSelectedView: externalSetSelectedView,
     togglePlaylistPlayback,
+    updatePlaylist,
   });
   useEffect(() => {
     syncActivePlaylistContext({
@@ -144,10 +119,6 @@ export const SavedRehearsalLibrarySection = ({
     savedPlaylists,
     syncActivePlaylistContext,
   ]);
-  const detailMode = resolveSavedRehearsalLibraryDetailMode({
-    isPlaylistDetailVisible: playlistState.isPlaylistDetailVisible,
-    selectedLoopViewSourceId: loopState.selectedLoopViewSourceId,
-  });
   const isTrackLoopDetailVisible = detailMode === 'track-loop-detail';
   const isPlaylistDetailMode = detailMode === 'playlist-detail';
   const canQueueAsNext = activePlayableItem !== null;
@@ -263,20 +234,14 @@ export const SavedRehearsalLibrarySection = ({
         searchState={searchState}
         selectedView={selectedView}
       />
-      {shouldShowSavedLibraryStatus ? (
-        <DriveLibraryStatusCard
-          isLoading={isSavedLibraryLoading}
-          loadingLabel="Refreshing saved rehearsal tracks…"
-          statusCopy={savedLibraryStatusCopy}
-        />
-      ) : null}
-      {savedTrackPlaybackStatusCopy && shouldShowPlaybackStatus ? (
-        <DriveLibraryStatusCard
-          isLoading={isSavedTrackPlaybackLoading}
-          loadingLabel="Starting track playback…"
-          statusCopy={savedTrackPlaybackStatusCopy}
-        />
-      ) : null}
+      <SavedRehearsalLibraryStatusCards
+        isSavedLibraryLoading={isSavedLibraryLoading}
+        isSavedTrackPlaybackLoading={isSavedTrackPlaybackLoading}
+        savedLibraryStatusCopy={savedLibraryStatusCopy}
+        savedTrackPlaybackStatusCopy={savedTrackPlaybackStatusCopy}
+        shouldShowPlaybackStatus={shouldShowPlaybackStatus}
+        shouldShowSavedLibraryStatus={shouldShowSavedLibraryStatus}
+      />
       {shouldRenderBrowseContent ? (
         <SavedRehearsalLibraryBrowseContent
           activePlayableItem={activePlayableItem}
@@ -328,16 +293,7 @@ export const SavedRehearsalLibrarySection = ({
         isMutating={isPlaylistMutating}
         playlists={savedPlaylists}
       />
-      <TagEditorSheet
-        isSaving={tagEditor.isTagEditorSaving}
-        isVisible={tagEditor.isTagEditorVisible}
-        onClose={tagEditor.closeTagEditor}
-        onSave={(tags) => {
-          void tagEditor.saveTagEdits(tags);
-        }}
-        tags={tagEditor.tags}
-        title={tagEditor.title}
-      />
+      <SavedRehearsalLibraryTagEditorSheet tagEditor={tagEditor} />
     </View>
   );
 };
