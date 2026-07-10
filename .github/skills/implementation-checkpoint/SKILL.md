@@ -19,6 +19,7 @@ Use this skill after a focused implementation slice is validated and before movi
 1. Run a post-generation quality sweep on touched files before checkpoint handoff:
    - verify VS Code Problems (or `get_errors`) is clean for every touched file
    - run focused lint for touched files (or the narrowest relevant project lint target)
+   - check whether touched files exceed the repo-recommended file length; if an overage requires code relocation, invoke `code-move-checkpointed` and complete that workflow before checkpoint handoff
    - if the slice is TypeScript-heavy or refactor-oriented, run a narrow typecheck target when available
    - fix any newly introduced issues before continuing
 2. Summarize the completed slice with:

@@ -116,6 +116,7 @@ Use surface-oriented groupings when a slice grows past a single file. In the cur
 - Prefer decisive regrouping over slow incremental shuffling when the current structure is hard to scan.
 - If clarity requires a broader folder split inside the targeted surface, do that instead of leaving the directory half-standardized.
 - Preserve import stability with an `index` entry when useful.
+- If the refactor requires moving substantive code blocks across files and you need resumable, marker-based tracking, invoke `code-move-checkpointed`.
 
 4. Normalize naming inside the touched slice.
 
@@ -147,3 +148,4 @@ These are good candidates when the user asks for cleanup:
 - Shared code is separated from feature-local code.
 - Routing files remain thinner than the surfaces they compose.
 - Validation covers any moved or newly added tests.
+- Code relocation work that needed resumable checkpoints used `code-move-checkpointed` instead of ad-hoc move tracking.

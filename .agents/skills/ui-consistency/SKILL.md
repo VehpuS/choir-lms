@@ -22,6 +22,11 @@ Focus on:
 - disabled/pressed/selected states
 - touch-target and accessibility parity
 
+Use companion skills when relevant:
+
+- Invoke `music-ui-iconography` when choosing or normalizing playback/library icon semantics.
+- Invoke `laws-of-ux` when consistency decisions involve reducing cognitive load, choice overload, or flow friction.
+
 Do not change business logic unless required to make inconsistent controls equivalent.
 
 ## Baseline Standards
@@ -70,6 +75,7 @@ Do not change business logic unless required to make inconsistent controls equiv
 
 - Pick the canonical ordering, labels, and visual treatment based on existing majority/shared patterns.
 - If the canonical choice is ambiguous, ask before broad changes.
+- If icon semantics are ambiguous, resolve them with `music-ui-iconography` before applying broad updates.
 
 3. Apply minimal edits.
 

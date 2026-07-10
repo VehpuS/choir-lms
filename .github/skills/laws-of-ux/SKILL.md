@@ -47,6 +47,10 @@ Do not change domain logic by default.
 
 - Prioritize the smallest set of edits that removes the highest-friction point.
 
+5. Route parity work to the consistency workflow.
+
+- If recommendations require cross-screen label/order/icon parity, invoke `ui-consistency` to enforce the shared canonical pattern.
+
 ## Law-to-Decision Mapping
 
 Use these mappings as a practical checklist.
@@ -108,6 +112,7 @@ Use these mappings as a practical checklist.
 - Solving every issue with more controls instead of fewer decisions.
 - Introducing inconsistent patterns across Recents/Add/Library for local gains.
 - Shipping broad visual rewrites without validating critical flows.
+- Treating cross-screen standardization as ad-hoc edits instead of routing parity updates through `ui-consistency`.
 
 ## Output Template
 

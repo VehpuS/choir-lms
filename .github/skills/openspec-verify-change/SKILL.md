@@ -103,9 +103,13 @@ Verify that an implementation matches the change artifacts (specs, tasks, design
    **Code Pattern Consistency**:
    - Review new code for consistency with project patterns
    - Check file naming, directory structure, coding style
+    - Check for files that exceed repo-recommended file length where extraction or relocation is needed
    - If significant deviations found:
      - Add SUGGESTION: "Code pattern deviation: <details>"
      - Recommendation: "Consider following project pattern: <example>"
+    - If file-length overages require moving code blocks across files:
+       - Add WARNING: "File-length overage needs relocation workflow: <file>"
+       - Recommendation: "Invoke `code-move-checkpointed` and complete its marker-driven move flow before archive"
 
 8. **Generate Verification Report**
 
@@ -140,6 +144,7 @@ Verify that an implementation matches the change artifacts (specs, tasks, design
 
    **Final Assessment**:
    - If CRITICAL issues: "X critical issue(s) found. Fix before archiving."
+   - If warnings include relocation-required file-length overages: "Relocation work pending. Run `code-move-checkpointed` before archive."
    - If only warnings: "No critical issues. Y warning(s) to consider. Ready for archive (with noted improvements)."
    - If all clear: "All checks passed. Ready for archive."
 

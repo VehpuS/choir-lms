@@ -30,6 +30,7 @@ This skill turns OpenSpec implementation into a reviewed loop instead of a rapid
 8. Before marking the task complete or handing off to checkpoint, run a touched-files quality sweep:
    - verify VS Code Problems (or `get_errors`) for every touched file
    - run focused eslint or the narrowest lint target covering touched files
+   - check whether any touched file exceeds the repo-recommended file length; if a file exceeds and the fix requires moving code, invoke `code-move-checkpointed` and complete its marker-driven move workflow before task completion
    - fix any newly introduced warnings or errors in touched files
    - if warnings remain only outside touched files, call that out explicitly
 9. If validation fails but the defect is still local to the slice, repair it and rerun the same validation before expanding scope.
@@ -45,6 +46,7 @@ This skill turns OpenSpec implementation into a reviewed loop instead of a rapid
 
 - Default to one commit per completed numbered subtask.
 - Do not mark a task complete before code, tests, and validation line up.
+- Do not leave file-length overages unresolved when extraction or relocation is required; use `code-move-checkpointed` instead of ad-hoc moves.
 - Do not treat tests alone as sufficient when the touched slice has relevant typecheck or lint targets; run those targeted passes before marking the task complete.
 - Do not checkpoint a slice until touched-file Problems and lint sweeps are complete.
 - Do not batch task checkboxes to save time unless the user explicitly overrides the default workflow.

@@ -66,6 +66,8 @@ Implement tasks from an OpenSpec change.
 
 6. **Implement tasks (loop until done or blocked)**
 
+   For execution discipline (one-subtask loop, checkpoint pauses, validation, and commit handoff), invoke `openspec-checkpointed-implementation` instead of running an ad-hoc multi-task sweep.
+
    For each pending task:
    - Show which task is being worked on
    - Make the code changes required
@@ -155,3 +157,4 @@ This skill supports the "actions on a change" model:
 
 - **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
 - **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly
+- **Execution pairing**: Pair with `openspec-checkpointed-implementation` for implementation and `implementation-checkpoint` for validated pauses before moving on
