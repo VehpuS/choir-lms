@@ -6,6 +6,11 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import {
+  resolveInteractionGuardTouchAction,
+  shouldStopTouchPropagation,
+} from './interaction-guard-model';
+
 type TouchActionStyle = ViewStyle & {
   touchAction?: 'manipulation' | 'none';
 };
@@ -19,25 +24,33 @@ const stopTouchPropagation = (event: GestureResponderEvent) => {
   event.stopPropagation();
 };
 
-const resolveWebTouchActionStyle = (
+const resolveInteractionGuardStyle = (
   touchAction: NonNullable<TouchActionStyle['touchAction']>,
 ): StyleProp<ViewStyle> | undefined => {
-  if (Platform.OS !== 'web') {
+  const resolvedTouchAction = resolveInteractionGuardTouchAction(
+    Platform.OS,
+    touchAction,
+  );
+
+  if (!resolvedTouchAction) {
     return undefined;
   }
 
-  return { touchAction } as TouchActionStyle;
+  return { touchAction: resolvedTouchAction } as TouchActionStyle;
 };
 
-export const interactionGuardProps: InteractionGuardProps = {
-  onTouchCancel: stopTouchPropagation,
-  onTouchEnd: stopTouchPropagation,
-  onTouchMove: stopTouchPropagation,
-  onTouchStart: stopTouchPropagation,
-};
+export const interactionGuardProps: InteractionGuardProps =
+  shouldStopTouchPropagation(Platform.OS)
+    ? {
+        onTouchCancel: stopTouchPropagation,
+        onTouchEnd: stopTouchPropagation,
+        onTouchMove: stopTouchPropagation,
+        onTouchStart: stopTouchPropagation,
+      }
+    : {};
 
 export const buttonInteractionGuardStyle =
-  resolveWebTouchActionStyle('manipulation');
+  resolveInteractionGuardStyle('manipulation');
 
 export const continuousInteractionGuardStyle =
-  resolveWebTouchActionStyle('none');
+  resolveInteractionGuardStyle('none');
