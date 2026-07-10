@@ -114,6 +114,7 @@ type SavedRehearsalLibraryPlaylistSectionContentProps = {
   isPlaylistsLoading: boolean;
   isPlaybackPreparing: boolean;
   isPlaylistDetailMode: boolean;
+  onClosePlaylistDetail: () => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   pendingPlaylistId: string | null;
   playbackState: SavedTrackPlaybackState | undefined;
@@ -138,6 +139,7 @@ export const SavedRehearsalLibraryPlaylistSectionContent = ({
   isPlaylistsLoading,
   isPlaybackPreparing,
   isPlaylistDetailMode,
+  onClosePlaylistDetail,
   onOpenPlaylistTagEditor,
   pendingPlaylistId,
   playbackState,
@@ -163,7 +165,7 @@ export const SavedRehearsalLibraryPlaylistSectionContent = ({
       isLoading={isPlaylistsLoading}
       isPlaybackPreparing={isPlaybackPreparing}
       issue={playlistIssue}
-      onCloseDetail={playlistState.closePlaylistDetail}
+      onCloseDetail={onClosePlaylistDetail}
       onEditPlaylistTags={onOpenPlaylistTagEditor}
       pendingPlaylistId={pendingPlaylistId}
       playbackState={playbackState}

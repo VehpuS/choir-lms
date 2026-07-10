@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { TagEditorSheet } from '../../components/tag-editor-sheet';
@@ -195,6 +195,21 @@ export const SavedRehearsalLibrarySection = ({
       togglePlayableItemPlayback={togglePlayableItemPlayback}
     />
   );
+  const handleClosePlaylistDetail = useCallback(() => {
+    const detailOrigin = playlistState.playlistDetailOrigin;
+
+    playlistState.closePlaylistDetail();
+
+    if (!detailOrigin) {
+      return;
+    }
+
+    setSelectedView(detailOrigin.view);
+
+    if (detailOrigin.view === 'files' && detailOrigin.filesFolderId) {
+      libraryFiles.goToFolder(detailOrigin.filesFolderId);
+    }
+  }, [libraryFiles, playlistState, setSelectedView]);
   const playlistSection = (
     <SavedRehearsalLibraryPlaylistSectionContent
       activePlaylistSession={activePlaylistSession}
@@ -205,6 +220,7 @@ export const SavedRehearsalLibrarySection = ({
       isPlaylistDetailMode={isPlaylistDetailMode}
       isPlaylistsLoading={isPlaylistsLoading}
       isPlaybackPreparing={isPlaybackPreparing}
+      onClosePlaylistDetail={handleClosePlaylistDetail}
       onOpenPlaylistTagEditor={tagEditor.openPlaylistTagEditor}
       pendingPlaylistId={pendingPlaylistId}
       playbackState={playbackState}

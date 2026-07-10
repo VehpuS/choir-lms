@@ -132,12 +132,27 @@ export const SavedRehearsalLibraryBrowseContent = ({
   toggleSourcePlayback,
   trackPlaylistMenu,
 }: SavedRehearsalLibraryBrowseContentProps) => {
+  const playlistDetailOpenContext =
+    selectedView === 'files'
+      ? {
+          originFilesFolderId: libraryFiles.explorer?.currentFolder.id ?? null,
+          originView: selectedView,
+        }
+      : {
+          originView: selectedView,
+        };
+
   if (selectedView === 'files' && !searchState.activeLibrarySearchQuery) {
     return (
       <SavedRehearsalLibraryFilesView
         activePlayableItem={activePlayableItem}
         files={libraryFiles}
-        onOpenPlaylist={playlistState.openPlaylistDetail}
+        onOpenPlaylist={(playlistId) => {
+          playlistState.openPlaylistDetail(
+            playlistId,
+            playlistDetailOpenContext,
+          );
+        }}
         onTogglePlayableItemPlayback={togglePlayableItemPlayback}
         onToggleSourcePlayback={toggleSourcePlayback}
       />
@@ -175,7 +190,12 @@ export const SavedRehearsalLibraryBrowseContent = ({
             });
           }}
           onRenamePlaylistNameChange={playlistState.setCardRenamePlaylistName}
-          onSelectPlaylist={playlistState.openPlaylistDetail}
+          onSelectPlaylist={(playlistId) => {
+            playlistState.openPlaylistDetail(
+              playlistId,
+              playlistDetailOpenContext,
+            );
+          }}
           onSubmitRenamePlaylist={() => {
             void playlistState.handleRenamePlaylistCard();
           }}

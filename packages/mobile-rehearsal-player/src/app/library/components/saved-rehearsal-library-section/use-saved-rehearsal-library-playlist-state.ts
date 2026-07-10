@@ -10,6 +10,10 @@ import {
   type PlaylistDraftIssue,
   type SavedPlaylistIssue,
 } from '../../playlists/utils/saved-playlist-view-model';
+import {
+  buildPlaylistDetailOrigin,
+  type PlaylistDetailOpenContext,
+} from './playlist-detail-origin';
 
 type UseSavedRehearsalLibraryPlaylistStateOptions = {
   deletePlaylist: (playlist: Playlist) => Promise<boolean>;
@@ -34,11 +38,14 @@ export const useSavedRehearsalLibraryPlaylistState = ({
     string | null
   >(null);
   const [cardRenamePlaylistName, setCardRenamePlaylistNameState] = useState('');
+  const [playlistDetailOrigin, setPlaylistDetailOrigin] =
+    useState<ReturnType<typeof buildPlaylistDetailOrigin>>(null);
 
   useEffect(() => {
     if (savedPlaylists.length === 0) {
       setSelectedPlaylistIdState(null);
       setIsPlaylistDetailVisible(false);
+      setPlaylistDetailOrigin(null);
       return;
     }
 
@@ -59,6 +66,7 @@ export const useSavedRehearsalLibraryPlaylistState = ({
   useEffect(() => {
     if (!selectedPlaylist) {
       setIsPlaylistDetailVisible(false);
+      setPlaylistDetailOrigin(null);
     }
   }, [selectedPlaylist]);
 
@@ -72,6 +80,7 @@ export const useSavedRehearsalLibraryPlaylistState = ({
     },
     closePlaylistDetail() {
       setIsPlaylistDetailVisible(false);
+      setPlaylistDetailOrigin(null);
     },
     handleDeletePlaylist(playlistId: string) {
       const playlist = savedPlaylists.find((currentPlaylist) => {
@@ -148,10 +157,15 @@ export const useSavedRehearsalLibraryPlaylistState = ({
       setCardRenamePlaylistId(playlist.id);
       setCardRenamePlaylistNameState(playlist.name);
     },
-    openPlaylistDetail(playlistId: string) {
+    openPlaylistDetail(
+      playlistId: string,
+      openContext?: PlaylistDetailOpenContext,
+    ) {
       setSelectedPlaylistIdState(playlistId);
+      setPlaylistDetailOrigin(buildPlaylistDetailOrigin(openContext));
       setIsPlaylistDetailVisible(true);
     },
+    playlistDetailOrigin,
     selectedCardRenameIssue:
       cardRenameIssue ??
       getSelectedPlaylistIssue(playlistIssue, cardRenamePlaylistId),
