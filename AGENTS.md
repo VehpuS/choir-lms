@@ -8,6 +8,7 @@ This repository is an Nx monorepo for a broader choir learning platform. See the
 - If a request materially changes scope or behavior, update or create the corresponding OpenSpec artifacts before implementation.
 - When creating apps or libraries, keep package boundaries reusable so future choir LMS apps can share domain, auth, media, and storage logic.
 - Keep the [README](README.md) updated with any changes to the development focus, repository structure, or workflow expectations.
+- For cross-platform playback changes in the mobile app, review `docs/mobile-cross-platform-audio-playback.md` first.
 - For workspace manifests, lockfiles, Nx target wiring, and CI-facing target behavior, follow `.github/instructions/workspace-install-and-target-policy.instructions.md`.
 - For TypeScript and TSX work, follow the repo coding style guidance in `.github/instructions/typescript-coding-style-policy.instructions.md`.
 - For TypeScript and TSX work in `packages/mobile-rehearsal-player/src/`, also follow `.github/instructions/mobile-rehearsal-folder-structure.instructions.md`.

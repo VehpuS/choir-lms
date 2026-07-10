@@ -46,6 +46,7 @@ The first change proposal for this direction is `add-mobile-rehearsal-player` un
 - `packages/` is the workspace home for future apps and shared libraries
 - `openspec/` contains proposals, designs, specs, and tasks for planned work
 - `nx.json` and the root TypeScript configuration provide workspace-level build and project settings
+- Cross-platform playback architecture details are documented in `docs/mobile-cross-platform-audio-playback.md`
 
 ## Development
 

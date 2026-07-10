@@ -2,6 +2,9 @@ This workspace uses npm workspaces with the committed root `package-lock.json`.
 When repo-specific guidance conflicts with generic Nx examples, prefer
 `npm exec -- nx ...` for workspace tasks and `npm ci` for install validation.
 
+For cross-platform playback changes in the mobile app, review
+`docs/mobile-cross-platform-audio-playback.md` first.
+
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
 
