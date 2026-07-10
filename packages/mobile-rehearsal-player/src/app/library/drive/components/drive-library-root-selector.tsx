@@ -31,7 +31,7 @@ export const DriveLibraryRootSelector = ({
   return (
     <View style={styles.rootSelector}>
       {ROOT_OPTIONS.map((option) => {
-        const isSelected = !isSearchMode && currentRootKind === option.rootKind;
+        const isSelected = currentRootKind === option.rootKind;
 
         return (
           <InteractionChip

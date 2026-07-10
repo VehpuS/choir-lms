@@ -205,4 +205,38 @@ describe('patchSavedTrackPlayerWebRuntime', () => {
     assert.equal(mediaElement.src, '');
     assert.equal(mediaElement.loadCallCount, 1);
   });
+
+  it('keeps blob urls alive across repeated load calls until reset', async () => {
+    const { loadCalls, revokedUrls, runtime } = createPatchedRuntime();
+
+    await runtime.setupPlayer();
+    await runtime.load({
+      headers: {
+        Authorization: 'Bearer token',
+      },
+      url: 'https://example.com/track-a.mp3',
+    });
+    await runtime.load({
+      headers: {
+        Authorization: 'Bearer token',
+      },
+      url: 'https://example.com/track-b.mp3',
+    });
+
+    assert.deepEqual(loadCalls, [
+      {
+        headers: {},
+        url: 'blob:track-1',
+      },
+      {
+        headers: {},
+        url: 'blob:track-2',
+      },
+    ]);
+    assert.deepEqual(revokedUrls, []);
+
+    await runtime.reset();
+
+    assert.deepEqual(revokedUrls, ['blob:track-1', 'blob:track-2']);
+  });
 });

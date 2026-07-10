@@ -152,6 +152,17 @@ const revokeSavedTrackBlobUrls = (
   }
 };
 
+const appendSavedTrackBlobUrls = (
+  activeBlobUrls: string[],
+  nextBlobUrls: string[],
+) => {
+  if (nextBlobUrls.length === 0) {
+    return activeBlobUrls;
+  }
+
+  return [...activeBlobUrls, ...nextBlobUrls];
+};
+
 const clearSavedTrackPlayerWebSource = (
   dependencies: SavedTrackPlayerWebDependencies,
 ) => {
@@ -249,7 +260,10 @@ export const patchSavedTrackPlayerWebRuntime = (
           insertBeforeIndex,
         );
 
-        activeBlobUrls = [...activeBlobUrls, ...patchedTracks.blobUrls];
+        activeBlobUrls = appendSavedTrackBlobUrls(
+          activeBlobUrls,
+          patchedTracks.blobUrls,
+        );
 
         return result;
       } catch (error) {
@@ -270,10 +284,14 @@ export const patchSavedTrackPlayerWebRuntime = (
 
       try {
         const result = await originalLoad(patchedTrack.track);
-        const previousBlobUrls = activeBlobUrls;
 
-        activeBlobUrls = patchedTrack.blobUrls;
-        revokeSavedTrackBlobUrls(previousBlobUrls, dependencies);
+        // TrackPlayer web can issue successive load calls before the media
+        // element has finished consuming the previous blob URL. Keep blob URLs
+        // alive until an explicit reset/stop clears the source.
+        activeBlobUrls = appendSavedTrackBlobUrls(
+          activeBlobUrls,
+          patchedTrack.blobUrls,
+        );
 
         return result;
       } catch (error) {

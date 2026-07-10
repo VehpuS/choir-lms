@@ -1,17 +1,19 @@
 import { StyleSheet, View } from 'react-native';
 
-import type { useRehearsalLibraryController } from '../../saved-rehearsal-library/use-rehearsal-library-controller';
 import {
-  shouldShowDriveStatusCard,
-  shouldShowUnavailableSources,
-} from '../utils/drive-discovery-layout';
-import { DriveFolderGroup } from './drive-folder-group';
-import { DriveLibraryBreadcrumbs } from './drive-library-breadcrumbs';
+  ExplorerBreadcrumbBar,
+  ExplorerNavigationBar,
+} from '../../components/explorer';
+import type { useRehearsalLibraryController } from '../../saved-rehearsal-library/use-rehearsal-library-controller';
+import { shouldShowDriveStatusCard } from '../utils/drive-discovery-layout';
+import {
+  buildDriveDiscoveryExplorerState,
+  type DriveDiscoveryExplorerState,
+} from './drive-discovery-panel-model';
+import { DriveExplorerList } from './drive-explorer-list';
 import { DriveLibraryRootSelector } from './drive-library-root-selector';
 import { DriveLibrarySearchPanel } from './drive-library-search-panel';
-import { DriveLibrarySourceGroup } from './drive-library-source-group';
 import { DriveLibraryStatusCard } from './drive-library-status-card';
-import { DriveSearchResultsPanel } from './drive-search-results-panel';
 
 type DriveDiscoveryPanelProps = {
   controller: ReturnType<typeof useRehearsalLibraryController>;
@@ -24,10 +26,28 @@ export const DriveDiscoveryPanel = ({
   isSearchBarVisible,
   onToggleSearchBar,
 }: DriveDiscoveryPanelProps) => {
+  const isSearchMode = controller.search.isSearchMode;
+  const explorerState = buildDriveDiscoveryExplorerState({
+    browseFolders: controller.discovery.browseSnapshot.folders,
+    browsePlayableSources: controller.discovery.playableSources,
+    browseUnavailableSources: controller.discovery.unavailableSources,
+    currentLocation: controller.discovery.currentLocation,
+    isSearchMode,
+    navigationStack: controller.discovery.navigationStack,
+    searchPlayableSources: controller.search.playableSources,
+    searchUnavailableSources: controller.search.unavailableSources,
+  });
+  const activeStatusCopy = isSearchMode
+    ? controller.search.statusCopy
+    : controller.discovery.statusCopy;
+  const isStatusLoading = isSearchMode
+    ? controller.search.isLoading
+    : controller.discovery.isLoading;
   const shouldShowStatusCard = shouldShowDriveStatusCard(
-    controller.discovery.isLoading,
-    controller.discovery.statusCopy.tone,
+    isStatusLoading,
+    activeStatusCopy.tone,
   );
+  const parentLocationIndex = controller.discovery.navigationStack.length - 2;
 
   const searchPanel = (
     <DriveLibrarySearchPanel
@@ -50,47 +70,55 @@ export const DriveDiscoveryPanel = ({
   return (
     <View style={styles.section}>
       {isSearchBarVisible ? searchPanel : null}
-      {isSearchBarVisible ? (
-        <DriveSearchResultsPanel controller={controller} />
+      <DriveLibraryRootSelector
+        currentRootKind={controller.discovery.currentLocation.rootKind}
+        isSearchMode={isSearchMode}
+        onSelectRoot={controller.discovery.selectRoot}
+      />
+      <ExplorerNavigationBar
+        canGoBack={explorerState.canGoBack}
+        eyebrow={isSearchMode ? 'Current search scope' : 'Current location'}
+        onGoBack={() => {
+          if (parentLocationIndex < 0) {
+            return;
+          }
+
+          controller.discovery.goToLocation(parentLocationIndex);
+        }}
+        title={explorerState.currentTitle}
+      />
+      <ExplorerBreadcrumbBar
+        items={explorerState.breadcrumbs.map(
+          (breadcrumb: DriveDiscoveryExplorerState['breadcrumbs'][number]) => {
+            return {
+              isCurrent: breadcrumb.isCurrent,
+              key: breadcrumb.key,
+              label: breadcrumb.label,
+              onPress: breadcrumb.isCurrent
+                ? undefined
+                : () => {
+                    controller.discovery.goToLocation(breadcrumb.locationIndex);
+                  },
+            };
+          },
+        )}
+      />
+      {shouldShowStatusCard ? (
+        <DriveLibraryStatusCard
+          isLoading={isStatusLoading}
+          loadingLabel={isSearchMode ? 'Searching Google Drive…' : undefined}
+          statusCopy={activeStatusCopy}
+        />
       ) : null}
-      {!isSearchBarVisible ? (
-        <>
-          <DriveLibraryRootSelector
-            currentRootKind={controller.discovery.currentLocation.rootKind}
-            isSearchMode={false}
-            onSelectRoot={controller.discovery.selectRoot}
-          />
-          <DriveLibraryBreadcrumbs
-            navigationStack={controller.discovery.navigationStack}
-            onGoToLocation={controller.discovery.goToLocation}
-          />
-          {shouldShowStatusCard ? (
-            <DriveLibraryStatusCard
-              isLoading={controller.discovery.isLoading}
-              statusCopy={controller.discovery.statusCopy}
-            />
-          ) : null}
-          <DriveFolderGroup
-            folders={controller.discovery.browseSnapshot.folders}
-            onOpenFolder={controller.discovery.openFolder}
-            title={controller.discovery.folderTitle}
-          />
-          <DriveLibrarySourceGroup
-            getActions={controller.getDriveSourceActions}
-            getMessage={controller.getSourceMessage}
-            sources={controller.discovery.playableSources}
-            title={controller.discovery.playableSourceTitle}
-          />
-          {shouldShowUnavailableSources(
-            controller.discovery.unavailableSources.length,
-          ) ? (
-            <DriveLibrarySourceGroup
-              sources={controller.discovery.unavailableSources}
-              title={controller.discovery.unavailableSourceTitle}
-            />
-          ) : null}
-        </>
-      ) : null}
+      <DriveExplorerList
+        getActions={controller.getDriveSourceActions}
+        getMessage={controller.getSourceMessage}
+        highlightQuery={
+          isSearchMode ? controller.search.activeSearchQuery : null
+        }
+        onOpenFolder={controller.discovery.openFolder}
+        rows={explorerState.rows}
+      />
     </View>
   );
 };
