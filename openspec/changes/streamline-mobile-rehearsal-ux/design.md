@@ -113,11 +113,11 @@ Placement rules:
 - All non-primary saved track and saved loop actions move into the overflow menu, including playlist-add and queue actions.
 - `Make loop` remains available only from saved track overflow menus and is not mirrored onto saved loop rows.
 - Playlist, track, and loop rows retain direct playback affordances and lightweight management actions.
-- Explorer overflow menus should keep one predictable ordering contract to reduce choice overload: row-specific rehearsal actions first (`Play next`, `Add to queue`, `Add to playlist`, and track-only `Make loop` where applicable), file-management actions next (`Create a copy`, `Edit tags`, `Rename`, `Move to folder`), destructive `Remove` last, and `Cancel` handled as the dismissal affordance of the action-sheet surface rather than as a peer domain action.
+- Explorer overflow menus should keep one predictable ordering contract to reduce choice overload: row-specific rehearsal actions first (`Play next`, `Add to queue`, `Add to playlist`, and track-only `Make loop` where applicable), file-management actions next (`Create a copy`, `Edit tags`, `Rename`, `Move to folder`), destructive `Delete from folder` last, and `Cancel` handled as the dismissal affordance of the action-sheet surface rather than as a peer domain action.
 - Files row actions should reuse existing Library flows where they already exist: the committed tag editor for `Edit tags`, the saved-item playlist selector for `Add to playlist`, and the current loop builder for track `Make loop`, rather than introducing file-specific duplicates of those surfaces.
 - Broken-source feedback in Library should stay progressive and connection-first: show one top-level connected/disconnected Drive state before surfacing per-item issue states, and once connected, offer `Reconnect` and `Remove from library` on items whose underlying Drive source has moved or been deleted.
 - Files track and loop links remain queue-capable item surfaces, so their overflow menus must keep the existing `Play next` and `Add to queue` actions in the first menu level alongside the new file operations rather than regressing to organization-only menus.
-- Every Files remove action should ask for confirmation. Last-link removal must explain whether the action only removes the visible pointer or also deletes the underlying saved entity, and non-empty folder removal must summarize folder contents plus allow inspection of orphaned underlying entities before confirmation.
+- Every Files `Delete from folder` action should ask for confirmation. Track-level `Remove from library` must remain available even when the track or one of its loops is currently playing and even when references exist in folders or playlists. Before confirming track-level removal, the dialog must summarize all affected loops, folder links, and playlist entries, and require explicit confirmation before the track entity and those dependent references are removed. Non-empty folder deletion must still summarize folder contents plus allow inspection of orphaned underlying entities before confirmation.
 - The Files add action should follow familiar mobile file-explorer conventions: a persistent floating circular `+` button, visually modeled after the Google Drive create affordance, sits at the lower trailing edge above bottom safe-area chrome while Files is active rather than living in the header or breadcrumb bar.
 - The floating Files `+` button stays visible while the explorer list scrolls, remains clear of the tab bar and mini-player, and opens a lightweight current-folder-scoped menu with `Create folder`, `Add tracks from Drive`, and `Create playlist` actions.
 
@@ -468,8 +468,9 @@ Explorer data model for this change:
 - Folder nodes represent containers in the Files hierarchy and may store local folder metadata such as name and tags.
 - Entity-link nodes represent one visible occurrence of a track, loop, or playlist inside the Files tree.
 - Entity-link nodes store their parent folder, entity kind/id, and optional local display-name override.
+- Every in-library track, loop, and playlist must have at least one entity-link node in the Files tree; when no explicit folder is chosen, that link belongs to Files root rather than creating a hidden/unlinked entity state.
 - Multiple entity-link nodes may point to the same canonical entity, creating hard-link semantics across folders.
-- Removing a file link removes only that link unless it was the last remaining link to the canonical entity.
+- `Delete from folder` removes only that link unless it was the last remaining link to the canonical entity.
 - Renaming or moving a file link affects only that link; editing entity metadata affects every link pointing to that entity.
 
 Alternatives considered:

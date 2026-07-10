@@ -193,22 +193,30 @@ The system SHALL represent Files hierarchy entries as file-tree nodes so saved t
 - **THEN** the system updates the file link's parent folder
 - **AND** the underlying saved entity remains unchanged
 
-#### Scenario: Removing a file link preserves the underlying entity while other links remain
+#### Scenario: Delete from folder preserves the underlying entity while other links remain
 
-- **WHEN** a user removes a track, loop, or playlist link from the current folder
+- **WHEN** a user chooses `Delete from folder` for a track, loop, or playlist link in the current folder
 - **AND** at least one other file link still points to the same underlying entity
-- **THEN** the system removes only the current file link
+- **THEN** the system deletes only the current file link from that folder context
 - **AND** the underlying saved entity remains in the library
 
-#### Scenario: Removing the last file link deletes the underlying entity
+#### Scenario: Delete from folder on the last file link deletes the underlying entity
 
-- **WHEN** a user removes the last remaining file link for a track, loop, or playlist
+- **WHEN** a user chooses `Delete from folder` for the last remaining file link of a track, loop, or playlist
+- **AND** the user explicitly confirms the deletion impact in the confirmation dialog
 - **THEN** the system removes that file link
 - **AND** the system also deletes the underlying saved entity from the library
 
-#### Scenario: Folder removal explains contents and last-link impact before confirmation
+#### Scenario: Saved entities always have a visible folder location
 
-- **WHEN** a user chooses `Remove` for a folder that is not empty
+- **WHEN** a track, loop, or playlist is saved without an explicit destination folder
+- **THEN** the system creates or keeps a file link for that entity in the Files root folder
+- **AND** the entity remains visible in Files browsing and search surfaces
+- **AND** the system does not allow an in-library entity to exist without at least one folder location
+
+#### Scenario: Folder deletion from parent explains contents and last-link impact before confirmation
+
+- **WHEN** a user chooses `Delete from folder` for a folder that is not empty
 - **THEN** the system summarizes how many subfolders, track links, loop links, and playlist links will be removed
 - **AND** the system reports how many underlying entities would be deleted because those links are their last remaining references
 - **AND** the user can inspect the affected underlying entities before confirming deletion
@@ -260,13 +268,13 @@ The system SHALL expose standard explorer operations through row-level overflow 
 #### Scenario: Track links expose explorer and rehearsal operations
 
 - **WHEN** a user opens the more-options menu for a track link in Files
-- **THEN** the menu includes `Play next`, `Add to queue`, `Add to playlist`, `Make loop`, `Create a copy`, `Edit tags`, `Rename`, `Move to folder`, and `Remove`
+- **THEN** the menu includes `Play next`, `Add to queue`, `Add to playlist`, `Make loop`, `Create a copy`, `Edit tags`, `Rename`, `Move to folder`, `Delete from folder`, and `Remove from library`
 - **AND** the action-sheet presentation exposes a separate `Cancel` dismissal affordance
 
 #### Scenario: Loop links expose shared loop operations
 
 - **WHEN** a user opens the more-options menu for a loop link in Files
-- **THEN** the menu includes `Play next`, `Add to queue`, `Add to playlist`, `Create a copy`, `Edit tags`, `Rename`, `Move to folder`, and `Remove`
+- **THEN** the menu includes `Play next`, `Add to queue`, `Add to playlist`, `Create a copy`, `Edit tags`, `Rename`, `Move to folder`, and `Delete from folder`
 - **AND** the action-sheet presentation exposes a separate `Cancel` dismissal affordance
 
 #### Scenario: Files queue actions keep existing playback continuity behavior
@@ -279,13 +287,13 @@ The system SHALL expose standard explorer operations through row-level overflow 
 #### Scenario: Playlist links expose shared organization operations
 
 - **WHEN** a user opens the more-options menu for a playlist link in Files
-- **THEN** the menu includes `Create a copy`, `Edit tags`, `Rename`, `Move to folder`, and `Remove`
+- **THEN** the menu includes `Create a copy`, `Edit tags`, `Rename`, `Move to folder`, and `Delete from folder`
 - **AND** the action-sheet presentation exposes a separate `Cancel` dismissal affordance
 
 #### Scenario: Folder rows expose shared file operations
 
 - **WHEN** a user opens the more-options menu for a folder in Files
-- **THEN** the menu includes `Edit tags`, `Rename`, `Move to folder`, and `Remove`
+- **THEN** the menu includes `Edit tags`, `Rename`, `Move to folder`, and `Delete from folder`
 - **AND** the action-sheet presentation exposes a separate `Cancel` dismissal affordance
 
 #### Scenario: Rename and move act on the visible file node or link
@@ -295,12 +303,39 @@ The system SHALL expose standard explorer operations through row-level overflow 
 - **AND** track, loop, and playlist rename or move changes only the current file link, not the underlying entity or sibling links
 - **AND** folder rename or move updates the folder node itself without rewriting metadata on linked tracks, loops, or playlists
 
-#### Scenario: Remove confirms pointer-versus-entity impact
+#### Scenario: Delete from folder confirms pointer-versus-entity impact
 
-- **WHEN** a user chooses `Remove` for a file link in Files
+- **WHEN** a user chooses `Delete from folder` for a file link in Files
 - **THEN** the system asks for confirmation before applying the removal
 - **AND** if other file links remain, the confirmation explains that only the current pointer will be removed
 - **AND** if the current link is the last remaining file link, the confirmation explains that the underlying saved entity will also be deleted from the library
+- **AND** last-link deletion does not proceed unless the user explicitly confirms that library-level deletion impact
+
+### Requirement: Track-level remove from library is always available and dependency-aware
+
+The system SHALL keep track-level `Remove from library` available from track contexts regardless of active playback or existing organization references, and SHALL require an explicit impact-aware confirmation before removal.
+
+#### Scenario: Remove from library remains available during active playback and active references
+
+- **WHEN** a user opens actions for a saved track that is currently playing, or whose derived loop is currently playing, and that track has loops, appears in folders, or appears in playlists
+- **THEN** the track-level `Remove from library` action is still available
+- **AND** the action is not hidden or disabled because of active playback or those references
+
+#### Scenario: Remove from library confirmation summarizes all affected references
+
+- **WHEN** a user chooses `Remove from library` for a saved track
+- **THEN** the system shows a confirmation dialog before applying changes
+- **AND** the confirmation summary lists affected dependent data including derived loops, folder links, and playlist entries
+- **AND** the user must explicitly confirm before removal occurs
+
+#### Scenario: Remove from library cascades cleanup of track dependencies
+
+- **WHEN** a user confirms `Remove from library` for a saved track
+- **THEN** the system removes the track entity from the library
+- **AND** the system removes all file links that point to that track
+- **AND** the system removes loops derived from that track
+- **AND** the system removes playlist entries that reference that track or any removed derived loop
+- **AND** active playback and queue state are updated immediately so removed items are no longer referenced, while playback continues with the next available queue item when possible
 
 ### Requirement: Availability feedback stays connection-first for Drive-backed library items
 
@@ -328,7 +363,7 @@ The system SHALL keep Drive-backed library availability feedback progressive: to
 
 - **WHEN** a user chooses `Remove from library` for a broken saved item
 - **THEN** the system removes the underlying saved entity and every file link that points to it
-- **AND** that action is clearly distinguished from the normal pointer-only `Remove` operation
+- **AND** that action is clearly distinguished from the normal pointer-level `Delete from folder` operation
 
 #### Scenario: Folderless workflow remains supported outside Files
 
