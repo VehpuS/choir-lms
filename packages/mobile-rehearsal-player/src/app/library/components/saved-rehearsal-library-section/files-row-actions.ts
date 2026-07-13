@@ -7,6 +7,19 @@ import { resolveSavedLoopRowActions } from '../../loops/utils/saved-loop-row-act
 import { resolveSavedTrackRowActions } from '../../playback/utils/saved-track-row-actions';
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
+import {
+  DISABLED_PLACEHOLDER_ACTIONS,
+  FOLDER_ACTION_ORDER,
+  LOOP_ACTION_LABELS,
+  LOOP_ACTION_ORDER,
+  PLAYLIST_ACTION_ORDER,
+  TRACK_ACTION_LABELS,
+  TRACK_ACTION_ORDER,
+  getDeleteFromFolderConfirmationCopy,
+  getTrackRemoveFromLibraryPlacementLabel,
+  sortActionsByLabelOrder,
+  toOptionsMenuAction,
+} from './files-row-actions-contract';
 
 type ResolveFilesRowMenuActionsBaseOptions = {
   canMutateLibrary: boolean;
@@ -28,54 +41,13 @@ type ResolveFilesRowMenuActionsBaseOptions = {
   onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;
 };
 
-const TRACK_ACTION_LABELS = new Set([
-  'Play next',
-  'Add to queue',
-  'Add to playlist',
-  'Make loop',
-  'Edit tags',
-]);
-
-const TRACK_ACTION_ORDER = new Map([
-  ['Play next', 0],
-  ['Add to queue', 1],
-  ['Make loop', 2],
-  ['Add to playlist', 3],
-  ['Edit tags', 4],
-]);
-
-const LOOP_ACTION_LABELS = new Set([
-  'Play next',
-  'Add to queue',
-  'Add to playlist',
-  'Edit tags',
-]);
-
-const toOptionsMenuAction = (options: {
-  action: {
-    disabled?: boolean;
-    label: string;
-    onPress: () => void;
-    tone?: 'destructive' | 'neutral' | 'primary';
-  };
-  id: string;
-}): OptionsMenuAction => {
-  return {
-    disabled: options.action.disabled,
-    id: options.id,
-    label: options.action.label,
-    onPress: options.action.onPress,
-    tone: options.action.tone === 'destructive' ? 'destructive' : 'secondary',
-  };
-};
-
 const resolveTrackMenuActions = (
   options: ResolveFilesRowMenuActionsBaseOptions,
   row: Extract<LibraryFilesRow, { kind: 'track' }>,
 ) => {
   const trackPlayableItem = createTrackPlayableItem(row.source);
 
-  return resolveSavedTrackRowActions({
+  const primaryTrackActions = resolveSavedTrackRowActions({
     canMutateLibrary: options.canMutateLibrary,
     canMutateLoops: options.canMutateLoops,
     canMutatePlaylists: options.canMutatePlaylists,
@@ -118,25 +90,45 @@ const resolveTrackMenuActions = (
         action.placement === 'menu' && TRACK_ACTION_LABELS.has(action.label)
       );
     })
-    .sort((left, right) => {
-      return (
-        (TRACK_ACTION_ORDER.get(left.label) ?? Number.MAX_SAFE_INTEGER) -
-        (TRACK_ACTION_ORDER.get(right.label) ?? Number.MAX_SAFE_INTEGER)
-      );
-    })
-    .map((action, index) => {
+    .map((action) => {
       return toOptionsMenuAction({
         action,
-        id: `track:${row.fileLink.id}:${index}`,
+        id: `track:${row.fileLink.id}:${action.label}`,
       });
     });
+
+  const actions = [
+    ...primaryTrackActions,
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.createCopy,
+      id: `track:${row.fileLink.id}:create-copy`,
+    },
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.rename,
+      id: `track:${row.fileLink.id}:rename`,
+    },
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.moveToFolder,
+      id: `track:${row.fileLink.id}:move-to-folder`,
+    },
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.deleteFromFolder,
+      id: `track:${row.fileLink.id}:delete-from-folder`,
+    },
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.removeFromLibrary,
+      id: `track:${row.fileLink.id}:remove-from-library`,
+    },
+  ];
+
+  return sortActionsByLabelOrder(actions, TRACK_ACTION_ORDER);
 };
 
 const resolveLoopMenuActions = (
   options: ResolveFilesRowMenuActionsBaseOptions,
   row: Extract<LibraryFilesRow, { kind: 'loop' }>,
 ) => {
-  return resolveSavedLoopRowActions({
+  const primaryLoopActions = resolveSavedLoopRowActions({
     canEditLoop: false,
     canMutateLoops: options.canMutateLoops,
     canMutatePlaylists: options.canMutatePlaylists,
@@ -181,19 +173,45 @@ const resolveLoopMenuActions = (
         action.placement === 'menu' && LOOP_ACTION_LABELS.has(action.label)
       );
     })
-    .map((action, index) => {
+    .map((action) => {
       return toOptionsMenuAction({
         action,
-        id: `loop:${row.fileLink.id}:${index}`,
+        id: `loop:${row.fileLink.id}:${action.label}`,
       });
     });
+
+  const actions = [
+    ...primaryLoopActions,
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.createCopy,
+      id: `loop:${row.fileLink.id}:create-copy`,
+    },
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.rename,
+      id: `loop:${row.fileLink.id}:rename`,
+    },
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.moveToFolder,
+      id: `loop:${row.fileLink.id}:move-to-folder`,
+    },
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.deleteFromFolder,
+      id: `loop:${row.fileLink.id}:delete-from-folder`,
+    },
+  ];
+
+  return sortActionsByLabelOrder(actions, LOOP_ACTION_ORDER);
 };
 
 const resolvePlaylistMenuActions = (
   options: ResolveFilesRowMenuActionsBaseOptions,
   row: Extract<LibraryFilesRow, { kind: 'playlist' }>,
 ) => {
-  return [
+  const actions = [
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.createCopy,
+      id: `playlist:${row.fileLink.id}:create-copy`,
+    },
     {
       disabled: !options.canMutatePlaylists || options.isPlaylistMutating,
       id: `playlist:${row.fileLink.id}:edit-tags`,
@@ -203,23 +221,50 @@ const resolvePlaylistMenuActions = (
       },
       tone: 'secondary' as const,
     },
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.rename,
+      id: `playlist:${row.fileLink.id}:rename`,
+    },
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.moveToFolder,
+      id: `playlist:${row.fileLink.id}:move-to-folder`,
+    },
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.deleteFromFolder,
+      id: `playlist:${row.fileLink.id}:delete-from-folder`,
+    },
   ];
+
+  return sortActionsByLabelOrder(actions, PLAYLIST_ACTION_ORDER);
 };
 
 const resolveFolderMenuActions = (
-  options: ResolveFilesRowMenuActionsBaseOptions,
+  _options: ResolveFilesRowMenuActionsBaseOptions,
   row: Extract<LibraryFilesRow, { kind: 'folder' }>,
 ) => {
-  return [
+  const actions = [
     {
-      id: `folder:${row.folder.id}:open`,
-      label: 'Open folder',
-      onPress: () => {
-        options.onOpenFolder(row.folder.id);
-      },
+      disabled: true,
+      id: `folder:${row.folder.id}:edit-tags`,
+      label: 'Edit tags',
+      onPress: () => undefined,
       tone: 'secondary' as const,
     },
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.rename,
+      id: `folder:${row.folder.id}:rename`,
+    },
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.moveToFolder,
+      id: `folder:${row.folder.id}:move-to-folder`,
+    },
+    {
+      ...DISABLED_PLACEHOLDER_ACTIONS.deleteFromFolder,
+      id: `folder:${row.folder.id}:delete-from-folder`,
+    },
   ];
+
+  return sortActionsByLabelOrder(actions, FOLDER_ACTION_ORDER);
 };
 
 export const resolveFilesRowMenuActions = (
@@ -245,4 +290,9 @@ export const resolveFilesRowMenuTitle = (row: LibraryFilesRow) => {
   }
 
   return row.label;
+};
+
+export {
+  getDeleteFromFolderConfirmationCopy,
+  getTrackRemoveFromLibraryPlacementLabel,
 };
