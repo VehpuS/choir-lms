@@ -18,7 +18,7 @@ import {
   getTrackRemoveFromLibraryAffectedSections,
 } from './library-files-delete-copy';
 import {
-  buildLibraryFilesDestinationActions,
+  buildLibraryFilesDestinationPicker,
   type PendingLibraryFilesDestinationAction,
 } from './library-files-destination-actions';
 import { LibraryFilesRenameDialog } from './library-files-rename-dialog';
@@ -70,6 +70,8 @@ export const useLibraryFilesRowActionFlows = ({
   const [isFileActionMutating, setIsFileActionMutating] = useState(false);
   const [pendingDestinationAction, setPendingDestinationAction] =
     useState<PendingLibraryFilesDestinationAction | null>(null);
+  const [currentDestinationPickerFolderId, setCurrentDestinationPickerFolderId] =
+    useState<string | null>(null);
   const [pendingRenameRow, setPendingRenameRow] =
     useState<LibraryFilesRow | null>(null);
   const [renameDraftName, setRenameDraftName] = useState('');
@@ -105,6 +107,7 @@ export const useLibraryFilesRowActionFlows = ({
 
       if (didComplete) {
         setPendingDestinationAction(null);
+        setCurrentDestinationPickerFolderId(null);
         files.openFolder(folderId);
       }
     })();
@@ -173,9 +176,13 @@ export const useLibraryFilesRowActionFlows = ({
     });
   };
 
-  const destinationActions = buildLibraryFilesDestinationActions({
+  const destinationPicker = buildLibraryFilesDestinationPicker({
+    currentPickerFolderId: currentDestinationPickerFolderId,
     files,
     isMutating: isFileActionMutating || confirmationFlow.isConfirming,
+    onOpenDestinationFolder(folderId) {
+      setCurrentDestinationPickerFolderId(folderId);
+    },
     onSubmitDestination: handleSubmitDestination,
     pendingAction: pendingDestinationAction,
   });
@@ -196,10 +203,16 @@ export const useLibraryFilesRowActionFlows = ({
         isSavedLibraryMutating,
         onCreateFileLinkCopy(rowToCopy: FileLinkLibraryFilesRow) {
           setPendingDestinationAction({ kind: 'copy', row: rowToCopy });
+          setCurrentDestinationPickerFolderId(
+            files.explorer?.currentFolder.id ?? null,
+          );
         },
         onDeleteFileNode: handleDeleteFileNode,
         onMoveFileNode(rowToMove) {
           setPendingDestinationAction({ kind: 'move', row: rowToMove });
+          setCurrentDestinationPickerFolderId(
+            files.explorer?.currentFolder.id ?? null,
+          );
         },
         onOpenFolder(folderId) {
           files.openFolder(folderId);
@@ -252,20 +265,17 @@ export const useLibraryFilesRowActionFlows = ({
     },
     destinationPicker: (
       <OptionsMenuSheet
-        actions={destinationActions}
+        actions={destinationPicker.actions}
         isSecondaryDisabled={isFileActionMutating}
         isVisible={pendingDestinationAction !== null}
         onClose={() => {
           if (!isFileActionMutating) {
             setPendingDestinationAction(null);
+            setCurrentDestinationPickerFolderId(null);
           }
         }}
         secondaryActionLabel="Cancel"
-        title={
-          pendingDestinationAction?.kind === 'copy'
-            ? 'Copy to folder'
-            : 'Move to folder'
-        }
+        title={destinationPicker.title}
       />
     ),
     renameDialog: (
