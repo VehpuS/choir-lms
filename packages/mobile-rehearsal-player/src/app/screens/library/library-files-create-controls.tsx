@@ -13,6 +13,7 @@ import {
 } from '../../library/playlists/utils/saved-playlist-view-model';
 import type { UseLibraryFilesResult } from '../../library/saved-rehearsal-library/use-library-files';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../library/storage/local-library-storage';
+import { createPlaylistWithFilesLocation } from './library-files-playlist-create';
 
 type LibraryFilesCreateControlsProps = {
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
@@ -96,7 +97,11 @@ export const LibraryFilesCreateControls = ({
     setIsFilesPlaylistMutating(true);
 
     void (async () => {
-      const createdPlaylist = await createPlaylist(buildResult.playlist);
+      const createdPlaylist = await createPlaylistWithFilesLocation({
+        createPlaylist,
+        files,
+        playlist: buildResult.playlist,
+      });
 
       if (!createdPlaylist) {
         setFilesPlaylistDraftIssue(
@@ -108,28 +113,6 @@ export const LibraryFilesCreateControls = ({
         );
         setIsFilesPlaylistMutating(false);
         return;
-      }
-
-      const currentFolderId = files.explorer?.currentFolder.id ?? null;
-      const rootFolderId = files.rootFolderId;
-
-      if (currentFolderId && rootFolderId && currentFolderId !== rootFolderId) {
-        const didLink = await files.linkEntityToCurrentFolder(
-          'playlist',
-          createdPlaylist.id,
-        );
-
-        if (!didLink) {
-          setFilesPlaylistDraftIssue(
-            files.issue ?? {
-              message:
-                'The new playlist was saved, but it could not be added to this Files folder.',
-              title: 'Playlist saved outside folder',
-            },
-          );
-          setIsFilesPlaylistMutating(false);
-          return;
-        }
       }
 
       setIsFilesPlaylistMutating(false);

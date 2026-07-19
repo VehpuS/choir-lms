@@ -141,6 +141,18 @@ describe('resolveFilesRowMenuActions', () => {
         ?.disabled,
       false,
     );
+
+    const disconnectedActions = resolveFilesRowMenuActions({
+      ...options,
+      canReconnectLibrarySource: false,
+      row,
+    });
+
+    assert.equal(
+      disconnectedActions.find((action) => action.label === 'Reconnect')
+        ?.disabled,
+      true,
+    );
   });
 
   it('keeps playlist links on the existing playlist tag editor flow', () => {

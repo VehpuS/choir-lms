@@ -8,6 +8,7 @@ import {
   SavedRehearsalLibraryPlaylistSectionContent,
 } from './detail-sections';
 import { SavedRehearsalLibrarySearchShell } from './search-shell';
+import { useLoopSaveWithFilesLocation } from './library-files-loop-save';
 import { SavedRehearsalLibraryStatusCards } from './status-cards';
 import { savedRehearsalLibrarySectionStyles as styles } from './styles';
 import { SavedRehearsalLibraryTagEditorSheet } from './tag-editor-sheet';
@@ -135,8 +136,8 @@ export const SavedRehearsalLibrarySection = ({
   const savedSourceTitle = shouldShowSearchResults
     ? `Matching saved rehearsal tracks (${searchState.visibleSavedLibrarySources.length})`
     : `Saved rehearsal tracks (${savedLibrarySources.length})`;
-  const visibleSections =
-    resolveSavedRehearsalLibraryVisibleSections(selectedView);
+  const visibleSections = resolveSavedRehearsalLibraryVisibleSections(selectedView);
+  const saveLoopForVisibleContext = useLoopSaveWithFilesLocation({ detailMode, isEditingLoop: loopState.selectedLoopEdit !== null, isSearchPanelVisible, libraryFiles, saveLoop, selectedView });
   const loopSection = (
     <SavedRehearsalLibraryLoopSectionContent
       activePlayableItem={activePlayableItem}
@@ -159,7 +160,7 @@ export const SavedRehearsalLibrarySection = ({
       savedLibrarySources={savedLibrarySources}
       savedLoopIssue={savedLoopIssue}
       savedLoops={searchState.visibleSavedLoops}
-      saveLoop={saveLoop}
+      saveLoop={saveLoopForVisibleContext}
       searchHighlightQuery={searchState.activeLibrarySearchQuery}
       selectedTrack={selectedTrack}
       toggleActivePlayback={toggleActivePlayback}
