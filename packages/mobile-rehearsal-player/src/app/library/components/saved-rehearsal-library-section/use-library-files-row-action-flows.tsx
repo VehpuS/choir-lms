@@ -12,7 +12,11 @@ import {
   resolveFilesRowMenuActions,
 } from './files-row-actions';
 import type { FileLinkLibraryFilesRow } from './files-row-actions-model';
-import { formatFolderDeleteImpactMessage } from './library-files-delete-copy';
+import {
+  formatFolderDeleteImpactMessage,
+  formatTrackRemoveFromLibraryImpactMessage,
+  getTrackRemoveFromLibraryAffectedSections,
+} from './library-files-delete-copy';
 import {
   buildLibraryFilesDestinationActions,
   type PendingLibraryFilesDestinationAction,
@@ -228,10 +232,14 @@ export const useLibraryFilesRowActionFlows = ({
             return;
           }
 
+          const impact = files.getTrackRemoveFromLibraryImpact(row.source.id);
+
           confirmationFlow.requestConfirmation({
             content: {
+              affectedSections:
+                getTrackRemoveFromLibraryAffectedSections(impact),
               confirmLabel: 'Remove from library',
-              message: `"${row.source.name}" will be removed from your saved rehearsal library and every Files folder link that points to it.`,
+              message: formatTrackRemoveFromLibraryImpactMessage(row, impact),
               title: 'Remove from library?',
             },
             onConfirm: () => {

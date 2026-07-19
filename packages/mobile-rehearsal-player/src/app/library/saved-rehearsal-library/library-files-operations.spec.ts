@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  addLoopToPlaylist,
+  addTrackToPlaylist,
   createDriveAudioSource,
+  createPlaylist,
+  type NamedLoop,
   type RehearsalLibraryFileLinkNode,
   type RehearsalLibraryFileTree,
 } from '@org/audio-library-models';
@@ -29,6 +33,19 @@ const ROOT_FILE_LINK: RehearsalLibraryFileLinkNode = {
   entityKind: 'track',
   id: `file-link:track:${SOURCE.id}`,
   parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+};
+
+const LOOP: NamedLoop = {
+  createdAt: '2026-07-01T00:00:00.000Z',
+  endMs: 24000,
+  id: 'loop-1',
+  name: 'Verse entrance',
+  ownerId: 'user-1',
+  ownershipScope: 'user',
+  sourceId: SOURCE.id,
+  sourceName: SOURCE.name,
+  startMs: 12000,
+  updatedAt: '2026-07-01T00:00:00.000Z',
 };
 
 const createTree = (
@@ -153,5 +170,59 @@ describe('library-files operations', () => {
     assert.equal(impact.folderCount, 1);
     assert.equal(impact.trackLinkCount, 1);
     assert.equal(impact.lastLinkCount, 1);
+  });
+
+  it('counts track remove impact across loops, links, and playlist entries', () => {
+    const playlist = addLoopToPlaylist(
+      addTrackToPlaylist(
+        createPlaylist({
+          createdAt: '2026-07-01T00:00:00.000Z',
+          name: 'Warmups',
+          ownerId: 'user-1',
+        }),
+        SOURCE,
+        '2026-07-01T00:01:00.000Z',
+      ),
+      LOOP,
+      '2026-07-01T00:02:00.000Z',
+    );
+    const repository = {} as AsyncStoragePracticeRepository;
+    const operations = createLibraryFilesOperations({
+      explorer: null,
+      options: {
+        savedLoops: [LOOP],
+        savedPlaylists: [playlist],
+        savedSources: [SOURCE],
+      },
+      practiceRepository: repository,
+      setCurrentFolderId: () => undefined,
+      setIssue: () => undefined,
+      setTree: () => undefined,
+      tree: createTree([
+        ROOT_FILE_LINK,
+        {
+          entityId: SOURCE.id,
+          entityKind: 'track',
+          id: 'file-link:track:copy',
+          parentFolderId: 'folder-warmups',
+          visibleName: `${SOURCE.name} Copy`,
+        },
+      ]),
+    });
+
+    assert.deepEqual(operations.getTrackRemoveFromLibraryImpact(SOURCE.id), {
+      fileLinkCount: 2,
+      fileLinkNames: [
+        'Full Choir.mp3 (Library)',
+        'Full Choir.mp3 Copy (Warmups)',
+      ],
+      loopCount: 1,
+      loopNames: ['Verse entrance'],
+      playlistEntryCount: 2,
+      playlistEntryTitles: [
+        'Warmups: Full Choir.mp3',
+        'Warmups: Verse entrance',
+      ],
+    });
   });
 });

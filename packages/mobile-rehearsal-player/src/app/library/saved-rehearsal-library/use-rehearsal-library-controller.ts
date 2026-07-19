@@ -1,6 +1,5 @@
 import type { DriveAuthorizationState } from '@org/google-drive';
-import { useMemo, useState } from 'react';
-import { Alert } from 'react-native';
+import { useMemo } from 'react';
 
 import { useDriveLibrary } from '../drive/hooks/use-drive-library';
 import {
@@ -10,15 +9,13 @@ import {
 import { resolveDriveSourceActions } from '../drive/utils/drive-search-preview-actions';
 import { usePreparedLoopBuilderTrack } from '../loops/hooks/use-prepared-loop-builder-track';
 import { useSavedLoops } from '../loops/hooks/use-saved-loops';
-import { getSavedLoopRemovalCopy } from '../loops/utils/saved-loop-view-model';
 import type { useSavedTrackPlayback } from '../playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackStatusCopy } from '../playback/utils/saved-track-playback-view-model';
 import { useSavedPlaylists } from '../playlists/hooks/use-saved-playlists';
 import { useLibraryFiles } from './use-library-files';
 import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
+import { useSavedRehearsalLibraryRemovalActions } from './use-saved-rehearsal-library-removal-actions';
 import {
-  getSavedRehearsalLibraryDependentLoops,
-  getSavedRehearsalLibraryRemovalCopy,
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
@@ -50,9 +47,6 @@ export const useRehearsalLibraryController = ({
   onAuthorizationRequired,
   playback,
 }: RehearsalLibraryScreenControllerOptions) => {
-  const [selectedLoopSourceId, setSelectedLoopSourceId] = useState<
-    string | null
-  >(null);
   const driveLibrary = useDriveLibrary(
     authState,
     onAuthorizationExpired,
@@ -61,6 +55,13 @@ export const useRehearsalLibraryController = ({
   const savedLibrary = useSavedRehearsalLibrary();
   const savedLoops = useSavedLoops();
   const playlists = useSavedPlaylists();
+  const savedLibraryRemovalActions = useSavedRehearsalLibraryRemovalActions({
+    deleteLoop: savedLoops.deleteLoop,
+    refreshLoops: savedLoops.refreshLoops,
+    refreshPlaylists: playlists.refreshPlaylists,
+    removeSource: savedLibrary.removeSource,
+    savedLoops: savedLoops.savedLoops,
+  });
   const canRefresh =
     authState.status === 'authorized' || authState.status === 'expired';
   const isSearchMode = driveLibrary.activeSearchQuery !== null;
@@ -136,7 +137,7 @@ export const useRehearsalLibraryController = ({
     persistResolvedSourceDuration: savedLibrary.saveResolvedSourceDuration,
     resolveTrackDuration: playback.resolveTrackDuration,
     savedSources: savedLibrarySources,
-    selectedSourceId: selectedLoopSourceId,
+    selectedSourceId: savedLibraryRemovalActions.selectedLoopSourceId,
   });
   const isSavedLibraryMutating = savedLibrary.pendingSourceId !== null;
 
@@ -145,64 +146,8 @@ export const useRehearsalLibraryController = ({
   ) => {
     void (async () => {
       await prepareLoopBuilderTrack(source);
-      setSelectedLoopSourceId(source.id);
+      savedLibraryRemovalActions.setSelectedLoopSourceId(source.id);
     })();
-  };
-
-  const confirmRemoveSource = (
-    source: (typeof savedLibrarySources)[number],
-  ) => {
-    const removalCopy = getSavedRehearsalLibraryRemovalCopy({
-      dependentLoops: getSavedRehearsalLibraryDependentLoops(
-        savedLoops.savedLoops,
-        source.id,
-      ),
-      source,
-    });
-
-    Alert.alert(removalCopy.title, removalCopy.message, [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: removalCopy.confirmLabel,
-        style: 'destructive',
-        onPress: () => {
-          void (async () => {
-            const didRemove = await savedLibrary.removeSource(source);
-
-            if (!didRemove) {
-              return;
-            }
-
-            if (selectedLoopSourceId === source.id) {
-              setSelectedLoopSourceId(null);
-            }
-
-            await savedLoops.refreshLoops();
-          })();
-        },
-      },
-    ]);
-  };
-
-  const confirmRemoveLoop = (loop: (typeof savedLoops.savedLoops)[number]) => {
-    const removalCopy = getSavedLoopRemovalCopy(loop);
-
-    Alert.alert(removalCopy.title, removalCopy.message, [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: removalCopy.confirmLabel,
-        style: 'destructive',
-        onPress: () => {
-          void savedLoops.deleteLoop(loop);
-        },
-      },
-    ]);
   };
 
   const getDriveSourceActions = (
@@ -248,7 +193,7 @@ export const useRehearsalLibraryController = ({
         void playback.toggleSourcePlayback(source);
       },
       onRemoveSource: () => {
-        confirmRemoveSource(source);
+        savedLibraryRemovalActions.confirmRemoveSource(source);
       },
       onSaveSource: () => {
         void saveDiscoveredSource();
@@ -297,8 +242,8 @@ export const useRehearsalLibraryController = ({
       isSavedLoopsLoading: savedLoops.isLoading,
       pendingLoopId: savedLoops.pendingLoopId,
       pendingSourceId: savedLibrary.pendingSourceId,
-      removeLoop: confirmRemoveLoop,
-      removeSource: confirmRemoveSource,
+      removeLoop: savedLibraryRemovalActions.confirmRemoveLoop,
+      removeSource: savedLibraryRemovalActions.confirmRemoveSource,
       files: libraryFiles,
       savedLibraryIssue: savedLibrary.issue,
       savedLibrarySources,
@@ -311,9 +256,10 @@ export const useRehearsalLibraryController = ({
       savedTrackPlaybackStatusCopy,
       openLoopBuilderForSource,
       pendingLoopBuilderSourceId,
-      selectedLoopSourceId,
+      selectedLoopSourceId: savedLibraryRemovalActions.selectedLoopSourceId,
       selectedLoopTrack,
-      setSelectedLoopSourceId,
+      setSelectedLoopSourceId:
+        savedLibraryRemovalActions.setSelectedLoopSourceId,
       trackCount: savedLibrarySources.length,
     },
     playlists,

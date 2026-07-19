@@ -5,17 +5,17 @@ import { usePreparedLoopBuilderTrack } from '../../../loops/hooks/use-prepared-l
 import { useSavedLoops } from '../../../loops/hooks/use-saved-loops';
 import { getSavedTrackPlaybackStatusCopy } from '../../../playback/utils/saved-track-playback-view-model';
 import { useSavedPlaylists } from '../../../playlists/hooks/use-saved-playlists';
+import { useSavedRehearsalLibrary } from '../../../saved-rehearsal-library/use-saved-rehearsal-library';
 import {
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
 } from '../../../saved-rehearsal-library/view-model';
-import { useSavedRehearsalLibrary } from '../../../saved-rehearsal-library/use-saved-rehearsal-library';
 import { useDriveLibrary } from '../../hooks/use-drive-library';
 import { getDriveLibraryStatusCopy } from '../../utils/drive-library-view-model';
 import { DriveLibraryContent } from './drive-library-content';
-import { resolveDriveLibrarySaveAction } from './saved-source-action';
 import { DriveLibrarySavedLibraryPanel } from './saved-library-panel';
+import { resolveDriveLibrarySaveAction } from './saved-source-action';
 import { useDriveLibrarySavedLibraryActions } from './use-drive-library-saved-library-actions';
 
 type SavedTrackPlaybackController = Pick<
@@ -107,12 +107,14 @@ export const DriveLibrarySection = ({
     isLoading: isPlaylistsLoading,
     issue: playlistIssue,
     pendingPlaylistId,
+    refreshPlaylists,
     savedPlaylists,
     updatePlaylist,
   } = useSavedPlaylists();
   const savedLibraryActions = useDriveLibrarySavedLibraryActions({
     deleteLoop,
     refreshLoops,
+    refreshPlaylists,
     removeSource,
     savedLoops,
   });
@@ -289,6 +291,7 @@ export const DriveLibrarySection = ({
             isLoading: isPlaylistsLoading,
             issue: playlistIssue,
             pendingPlaylistId,
+            refreshPlaylists,
             savedPlaylists,
             updatePlaylist,
           }}

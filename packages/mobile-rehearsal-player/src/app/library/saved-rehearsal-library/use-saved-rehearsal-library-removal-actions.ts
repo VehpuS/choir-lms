@@ -1,15 +1,15 @@
-import { type NamedLoop } from '@org/audio-library-models';
+import type { NamedLoop } from '@org/audio-library-models';
 import { useState } from 'react';
 import { Alert } from 'react-native';
 
-import { getSavedLoopRemovalCopy } from '../../../loops/utils/saved-loop-view-model';
+import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
+import { getSavedLoopRemovalCopy } from '../loops/utils/saved-loop-view-model';
 import {
   getSavedRehearsalLibraryDependentLoops,
   getSavedRehearsalLibraryRemovalCopy,
-} from '../../../saved-rehearsal-library/view-model';
-import type { DriveLibrarySource } from '../../utils/drive-library-view-model';
+} from './view-model';
 
-type UseDriveLibrarySavedLibraryActionsOptions = {
+type UseSavedRehearsalLibraryRemovalActionsOptions = {
   deleteLoop: (loop: NamedLoop) => void;
   refreshLoops: () => Promise<void>;
   refreshPlaylists: () => Promise<unknown>;
@@ -17,20 +17,18 @@ type UseDriveLibrarySavedLibraryActionsOptions = {
   savedLoops: NamedLoop[];
 };
 
-export const useDriveLibrarySavedLibraryActions = ({
+export const useSavedRehearsalLibraryRemovalActions = ({
   deleteLoop,
   refreshLoops,
   refreshPlaylists,
   removeSource,
   savedLoops,
-}: UseDriveLibrarySavedLibraryActionsOptions) => {
+}: UseSavedRehearsalLibraryRemovalActionsOptions) => {
   const [selectedLoopSourceId, setSelectedLoopSourceId] = useState<
     string | null
   >(null);
 
   return {
-    selectedLoopSourceId,
-    setSelectedLoopSourceId,
     confirmRemoveLoop(loop: NamedLoop) {
       const removalCopy = getSavedLoopRemovalCopy(loop);
 
@@ -84,5 +82,7 @@ export const useDriveLibrarySavedLibraryActions = ({
         },
       ]);
     },
+    selectedLoopSourceId,
+    setSelectedLoopSourceId,
   };
 };

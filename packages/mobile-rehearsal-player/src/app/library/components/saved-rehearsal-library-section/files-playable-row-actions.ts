@@ -116,10 +116,7 @@ export const resolveTrackMenuActions = (
       tone: 'destructive',
     },
     {
-      disabled:
-        row.source.availability.status === 'available' ||
-        !options.canMutateLibrary ||
-        options.isSavedLibraryMutating,
+      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
       id: `track:${row.fileLink.id}:remove-from-library`,
       label: 'Remove from library',
       onPress: () => {

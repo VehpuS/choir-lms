@@ -106,6 +106,16 @@ export const useSavedPlaylists = () => {
     };
   }, []);
 
+  const refreshPlaylists = async () => {
+    const nextPlaylists = await loadSavedPlaylists(
+      practiceRepository,
+      LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+    );
+
+    setSavedPlaylists(nextPlaylists);
+    return nextPlaylists;
+  };
+
   const persistPlaylist = async (playlist: Playlist) => {
     if (issue?.kind === 'storage') {
       return null;
@@ -164,6 +174,7 @@ export const useSavedPlaylists = () => {
     isLoading,
     issue,
     pendingPlaylistId,
+    refreshPlaylists,
     savedPlaylists,
     updatePlaylist: persistPlaylist,
   };

@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, it } from 'node:test';
 
-import { createDriveAudioSource } from '@org/audio-library-models';
+import {
+  addLoopToPlaylist,
+  addTrackToPlaylist,
+  createDriveAudioSource,
+  createPlaylist,
+  type NamedLoop,
+} from '@org/audio-library-models';
 import AsyncStorage, {
   type AsyncStorageStatic,
 } from '@react-native-async-storage/async-storage';
@@ -185,6 +191,67 @@ describe('AsyncStoragePracticeRepository file-tree guardrails', () => {
 
     assert.deepEqual(await repository.listSources('user-1'), []);
     assert.deepEqual(nextTree.fileLinks, []);
+  });
+
+  it('cascades source deletion through loops, file links, and playlist entries', async () => {
+    const storage = new Map<string, string>();
+    const repository = new AsyncStoragePracticeRepository();
+    const loop: NamedLoop = {
+      createdAt: '2026-07-01T00:00:00.000Z',
+      endMs: 24000,
+      id: 'loop-1',
+      name: 'Verse entrance',
+      ownerId: 'user-1',
+      ownershipScope: 'user',
+      sourceId: AVAILABLE_SOURCE.id,
+      sourceName: AVAILABLE_SOURCE.name,
+      startMs: 12000,
+      updatedAt: '2026-07-01T00:00:00.000Z',
+    };
+
+    configureTestStorage(storage);
+    await repository.saveSource('user-1', AVAILABLE_SOURCE);
+    await repository.saveLoop(loop);
+    await repository.saveLibraryFileLink('user-1', {
+      id: 'file-link:track:copy-1',
+      parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+      entityKind: 'track',
+      entityId: AVAILABLE_SOURCE.id,
+      visibleName: 'Practice copy',
+    });
+    await repository.savePlaylist(
+      addLoopToPlaylist(
+        addTrackToPlaylist(
+          createPlaylist({
+            createdAt: '2026-07-01T00:00:00.000Z',
+            name: 'Warmups',
+            ownerId: 'user-1',
+          }),
+          AVAILABLE_SOURCE,
+          '2026-07-01T00:01:00.000Z',
+        ),
+        loop,
+        '2026-07-01T00:02:00.000Z',
+      ),
+    );
+
+    await repository.deleteSource('user-1', AVAILABLE_SOURCE.id);
+
+    const [playlist] = await repository.listPlaylists('user-1');
+    const tree = await repository.listLibraryFileTree('user-1');
+
+    assert.deepEqual(await repository.listSources('user-1'), []);
+    assert.deepEqual(await repository.listLoops('user-1'), []);
+    assert.ok(playlist);
+    assert.deepEqual(playlist.items, []);
+    assert.deepEqual(tree.fileLinks, [
+      {
+        entityId: playlist.id,
+        entityKind: 'playlist',
+        id: `file-link:playlist:${playlist.id}`,
+        parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+      },
+    ]);
   });
 });
 

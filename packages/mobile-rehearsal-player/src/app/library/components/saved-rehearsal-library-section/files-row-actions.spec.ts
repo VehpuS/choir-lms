@@ -16,6 +16,10 @@ import {
   SOURCE,
   UNAVAILABLE_SOURCE,
 } from './files-row-actions-test-helpers';
+import {
+  formatTrackRemoveFromLibraryImpactMessage,
+  getTrackRemoveFromLibraryAffectedSections,
+} from './library-files-delete-copy';
 
 describe('resolveFilesRowMenuActions', () => {
   it('keeps Files track queue actions in the first menu level before playlist and tag flows', () => {
@@ -43,6 +47,7 @@ describe('resolveFilesRowMenuActions', () => {
     actions.find((action) => action.label === 'Rename')?.onPress();
     actions.find((action) => action.label === 'Move to folder')?.onPress();
     actions.find((action) => action.label === 'Delete from folder')?.onPress();
+    actions.find((action) => action.label === 'Remove from library')?.onPress();
 
     assert.deepEqual(
       actions.map((action) => action.label),
@@ -65,6 +70,12 @@ describe('resolveFilesRowMenuActions', () => {
     assert.deepEqual(calls.renames, ['track']);
     assert.deepEqual(calls.moves, ['track']);
     assert.deepEqual(calls.deletions, ['track']);
+    assert.deepEqual(calls.removals, [SOURCE.id]);
+    assert.equal(
+      actions.find((action) => action.label === 'Remove from library')
+        ?.disabled,
+      false,
+    );
   });
 
   it('routes loop menu actions into the existing queue, playlist, and tag flows', () => {
@@ -239,6 +250,66 @@ describe('resolveFilesRowMenuActions', () => {
     assert.match(
       getTrackRemoveFromLibraryPlacementLabel(),
       /final destructive action/,
+    );
+  });
+
+  it('summarizes track-level Remove from library dependency impact', () => {
+    const row: Extract<LibraryFilesRow, { kind: 'track' }> = {
+      fileLink: {
+        entityId: SOURCE.id,
+        entityKind: 'track',
+        id: `file-link:track:${SOURCE.id}`,
+        parentFolderId: 'folder:library-root',
+      },
+      isPlayable: true,
+      kind: 'track',
+      label: SOURCE.name,
+      source: SOURCE,
+      supportingLabel: 'Track • 4:05',
+    };
+    const message = formatTrackRemoveFromLibraryImpactMessage(row, {
+      fileLinkCount: 2,
+      fileLinkNames: ['Original track link', 'Practice copy'],
+      loopCount: 1,
+      loopNames: ['Verse entrance'],
+      playlistEntryCount: 3,
+      playlistEntryTitles: [
+        'Warmups: Full Choir.mp3',
+        'Warmups: Verse entrance',
+        'Sunday: Full Choir.mp3',
+      ],
+    });
+
+    assert.match(message, /Review affected items/);
+    assert.doesNotMatch(message, /Verse entrance/);
+    assert.deepEqual(
+      getTrackRemoveFromLibraryAffectedSections({
+        fileLinkCount: 2,
+        fileLinkNames: ['Original track link', 'Practice copy'],
+        loopCount: 1,
+        loopNames: ['Verse entrance'],
+        playlistEntryCount: 3,
+        playlistEntryTitles: [
+          'Warmups: Full Choir.mp3',
+          'Warmups: Verse entrance',
+          'Sunday: Full Choir.mp3',
+        ],
+      }),
+      [
+        { items: ['Verse entrance'], title: 'Saved loops (1)' },
+        {
+          items: ['Original track link', 'Practice copy'],
+          title: 'Folder links (2)',
+        },
+        {
+          items: [
+            'Warmups: Full Choir.mp3',
+            'Warmups: Verse entrance',
+            'Sunday: Full Choir.mp3',
+          ],
+          title: 'Playlist entries (3)',
+        },
+      ],
     );
   });
 });

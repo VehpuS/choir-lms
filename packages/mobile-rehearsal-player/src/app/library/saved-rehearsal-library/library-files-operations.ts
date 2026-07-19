@@ -55,6 +55,48 @@ export const createLibraryFilesOperations = ({
       setIssue,
       setTree,
     }),
+    getTrackRemoveFromLibraryImpact(sourceId: string) {
+      const foldersById = new Map(
+        tree?.folders.map((folder) => {
+          return [folder.id, folder] as const;
+        }) ?? [],
+      );
+      const source = options.savedSources.find((savedSource) => {
+        return savedSource.id === sourceId;
+      });
+      const fileLinks =
+        tree?.fileLinks.filter((fileLink) => {
+          return (
+            fileLink.entityKind === 'track' && fileLink.entityId === sourceId
+          );
+        }) ?? [];
+      const loops = options.savedLoops.filter((loop) => {
+        return loop.sourceId === sourceId;
+      });
+      const playlistEntries = options.savedPlaylists.flatMap((playlist) => {
+        return playlist.items
+          .filter((item) => {
+            return item.sourceId === sourceId;
+          })
+          .map((item) => {
+            return `${playlist.name}: ${item.title}`;
+          });
+      });
+
+      return {
+        fileLinkCount: fileLinks.length,
+        fileLinkNames: fileLinks.map((fileLink) => {
+          const displayName = fileLink.visibleName ?? source?.name ?? 'Track';
+          const folderName = foldersById.get(fileLink.parentFolderId)?.name;
+
+          return folderName ? `${displayName} (${folderName})` : displayName;
+        }),
+        loopCount: loops.length,
+        loopNames: loops.map((loop) => loop.name),
+        playlistEntryCount: playlistEntries.length,
+        playlistEntryTitles: playlistEntries,
+      };
+    },
     async createFolder(name: string) {
       if (!tree) {
         return false;

@@ -35,6 +35,32 @@ export const playlistSectionCardStyles = {
     fontSize: 14,
     lineHeight: 20,
   },
+  confirmationAffectedList: {
+    maxHeight: 176,
+    borderWidth: 1,
+    borderColor: PLAYLIST_BORDER_COLOR,
+    borderRadius: 12,
+    backgroundColor: '#fff9f0',
+  },
+  confirmationAffectedListContent: {
+    gap: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  confirmationAffectedGroup: {
+    gap: 6,
+  },
+  confirmationAffectedTitle: {
+    color: PLAYLIST_PRIMARY_TEXT,
+    fontSize: 13,
+    fontWeight: '700',
+    lineHeight: 18,
+  },
+  confirmationAffectedItem: {
+    color: PLAYLIST_SECONDARY_TEXT,
+    fontSize: 13,
+    lineHeight: 18,
+  },
   editorCard: {
     position: 'relative',
     gap: 12,

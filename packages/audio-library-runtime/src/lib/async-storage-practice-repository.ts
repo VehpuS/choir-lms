@@ -57,14 +57,22 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
   async deleteSource(ownerId: string, sourceId: string) {
     const sources = await this.listSources(ownerId);
     const loops = await this.listLoops(ownerId);
+    const playlists = await this.listPlaylists(ownerId);
     const nextSources = filter(sources, (source) => source.id !== sourceId);
     const nextLoops = filter(loops, (loop) => loop.sourceId !== sourceId);
+    const nextPlaylists = playlists.map((playlist) => {
+      return normalizePlaylist({
+        ...playlist,
+        items: playlist.items.filter((item) => item.sourceId !== sourceId),
+      });
+    });
 
     await writeStoredCollection('loops', ownerId, nextLoops);
+    await writeStoredCollection('playlists', ownerId, nextPlaylists);
     await writeStoredCollection('sources', ownerId, nextSources);
     await persistSynchronizedLibraryFileTree(this, ownerId, {
       loops: nextLoops,
-      playlists: await this.listPlaylists(ownerId),
+      playlists: nextPlaylists,
       sources: nextSources,
     });
 

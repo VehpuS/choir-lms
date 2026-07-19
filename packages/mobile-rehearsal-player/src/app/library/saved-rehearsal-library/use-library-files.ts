@@ -191,6 +191,7 @@ export const useLibraryFiles = (options: UseLibraryFilesOptions) => {
     explorer,
     getFileLinkDeleteImpact: operations.getFileLinkDeleteImpact,
     getFolderDeleteImpact: operations.getFolderDeleteImpact,
+    getTrackRemoveFromLibraryImpact: operations.getTrackRemoveFromLibraryImpact,
     goToFolder(folderId: string) {
       setCurrentFolderId(folderId);
     },
