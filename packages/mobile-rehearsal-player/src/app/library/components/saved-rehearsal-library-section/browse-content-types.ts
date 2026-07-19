@@ -41,6 +41,7 @@ export type TrackPlaylistMenuState = Pick<
 export type SavedRehearsalLibraryBrowseContentProps = Pick<
   SavedRehearsalLibrarySectionProps,
   | 'activePlayableItem'
+  | 'authorization'
   | 'canMutateLibrary'
   | 'canMutateLoops'
   | 'canMutatePlaylists'

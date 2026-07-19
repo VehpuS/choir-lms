@@ -1,12 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import {
-  createDriveAudioSource,
-  createLoopPlayableItem,
-  type NamedLoop,
-  type Playlist,
-} from '@org/audio-library-models';
+import { createLoopPlayableItem } from '@org/audio-library-models';
 
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import {
@@ -14,98 +9,17 @@ import {
   getTrackRemoveFromLibraryPlacementLabel,
   resolveFilesRowMenuActions,
 } from './files-row-actions';
-
-const SOURCE = createDriveAudioSource({
-  availability: {
-    status: 'available',
-  },
-  driveFileId: 'drive-file-1',
-  durationMs: 245000,
-  mimeType: 'audio/mpeg',
-  name: 'Full Choir.mp3',
-});
-
-const LOOP: NamedLoop = {
-  createdAt: '2026-07-01T00:00:00.000Z',
-  endMs: 24000,
-  id: 'loop-1',
-  name: 'Verse entrance',
-  ownerId: 'user-1',
-  ownershipScope: 'user',
-  sourceId: SOURCE.id,
-  sourceName: SOURCE.name,
-  startMs: 12000,
-  updatedAt: '2026-07-01T00:00:00.000Z',
-};
-
-const PLAYLIST: Playlist = {
-  createdAt: '2026-07-01T00:00:00.000Z',
-  id: 'playlist-1',
-  items: [],
-  name: 'Evening Warmups',
-  ownerId: 'user-1',
-  ownershipScope: 'user',
-  updatedAt: '2026-07-01T00:00:00.000Z',
-};
-
-const createBaseOptions = () => {
-  const calls = {
-    folders: [] as string[],
-    loopBuilders: [] as string[],
-    loopPlaylists: [] as string[],
-    loopTags: [] as string[],
-    next: [] as string[],
-    playlistTags: [] as string[],
-    sourcePlaylists: [] as string[],
-    sourceTags: [] as string[],
-    upNext: [] as string[],
-  };
-
-  return {
-    calls,
-    options: {
-      canMutateLibrary: true,
-      canMutateLoops: true,
-      canMutatePlaylists: true,
-      canQueueAsNext: true,
-      isLoopBuilderPreparing: false,
-      isLoopMutating: false,
-      isPlaylistMutating: false,
-      isSavedLibraryMutating: false,
-      onOpenFolder(folderId: string) {
-        calls.folders.push(folderId);
-      },
-      onOpenLoopBuilder(sourceId: string) {
-        calls.loopBuilders.push(sourceId);
-      },
-      onOpenLoopPlaylistSelector(loopId: string) {
-        calls.loopPlaylists.push(loopId);
-      },
-      onOpenLoopTagEditor(loopId: string) {
-        calls.loopTags.push(loopId);
-      },
-      onOpenPlaylistTagEditor(playlistId: string) {
-        calls.playlistTags.push(playlistId);
-      },
-      onOpenSourcePlaylistSelector(sourceId: string) {
-        calls.sourcePlaylists.push(sourceId);
-      },
-      onOpenSourceTagEditor(sourceId: string) {
-        calls.sourceTags.push(sourceId);
-      },
-      onQueuePlayableItemNext(playableItem: { kind: string }) {
-        calls.next.push(playableItem.kind);
-      },
-      onQueuePlayableItemUpNext(playableItem: { kind: string }) {
-        calls.upNext.push(playableItem.kind);
-      },
-    },
-  };
-};
+import {
+  createBaseOptions,
+  LOOP,
+  PLAYLIST,
+  SOURCE,
+  UNAVAILABLE_SOURCE,
+} from './files-row-actions-test-helpers';
 
 describe('resolveFilesRowMenuActions', () => {
   it('keeps Files track queue actions in the first menu level before playlist and tag flows', () => {
-    const { options } = createBaseOptions();
+    const { calls, options } = createBaseOptions();
     const row: LibraryFilesRow = {
       fileLink: {
         entityId: SOURCE.id,
@@ -125,6 +39,11 @@ describe('resolveFilesRowMenuActions', () => {
       row,
     });
 
+    actions.find((action) => action.label === 'Create a copy')?.onPress();
+    actions.find((action) => action.label === 'Rename')?.onPress();
+    actions.find((action) => action.label === 'Move to folder')?.onPress();
+    actions.find((action) => action.label === 'Delete from folder')?.onPress();
+
     assert.deepEqual(
       actions.map((action) => action.label),
       [
@@ -142,6 +61,10 @@ describe('resolveFilesRowMenuActions', () => {
     );
     assert.equal(actions.at(-2)?.tone, 'destructive');
     assert.equal(actions.at(-1)?.tone, 'destructive');
+    assert.deepEqual(calls.copies, ['track']);
+    assert.deepEqual(calls.renames, ['track']);
+    assert.deepEqual(calls.moves, ['track']);
+    assert.deepEqual(calls.deletions, ['track']);
   });
 
   it('routes loop menu actions into the existing queue, playlist, and tag flows', () => {
@@ -183,6 +106,40 @@ describe('resolveFilesRowMenuActions', () => {
         'Move to folder',
         'Delete from folder',
       ],
+    );
+  });
+
+  it('adds recovery actions for unavailable track links', () => {
+    const { calls, options } = createBaseOptions();
+    const row: LibraryFilesRow = {
+      fileLink: {
+        entityId: UNAVAILABLE_SOURCE.id,
+        entityKind: 'track',
+        id: `file-link:track:${UNAVAILABLE_SOURCE.id}`,
+        parentFolderId: 'folder:library-root',
+      },
+      isPlayable: false,
+      kind: 'track',
+      label: UNAVAILABLE_SOURCE.name,
+      message: UNAVAILABLE_SOURCE.availability.message,
+      source: UNAVAILABLE_SOURCE,
+      supportingLabel: 'Track unavailable',
+    };
+
+    const actions = resolveFilesRowMenuActions({
+      ...options,
+      row,
+    });
+
+    actions.find((action) => action.label === 'Reconnect')?.onPress();
+    actions.find((action) => action.label === 'Remove from library')?.onPress();
+
+    assert.deepEqual(calls.reconnects, [UNAVAILABLE_SOURCE.id]);
+    assert.deepEqual(calls.removals, [UNAVAILABLE_SOURCE.id]);
+    assert.equal(
+      actions.find((action) => action.label === 'Remove from library')
+        ?.disabled,
+      false,
     );
   });
 

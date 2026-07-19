@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import type { PlayableItem } from '@org/audio-library-models';
 
+import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { appTheme } from '../../../utils/theme';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
@@ -16,14 +17,13 @@ import {
 } from '../explorer';
 import { FeedbackCard } from '../feedback-card';
 import { OptionsMenuSheet } from '../options-menu-sheet';
-import {
-  resolveFilesRowMenuActions,
-  resolveFilesRowMenuTitle,
-} from './files-row-actions';
+import { resolveFilesRowMenuTitle } from './files-row-actions';
 import { buildSavedRehearsalLibraryFilesViewModel } from './files-view-model';
+import { useLibraryFilesRowActionFlows } from './use-library-files-row-action-flows';
 
 type SavedRehearsalLibraryFilesViewProps = {
   activePlayableItem: PlayableItem | null;
+  authorization?: DriveSessionMenuController;
   canMutateLibrary: boolean;
   canMutateLoops: boolean;
   canMutatePlaylists: boolean;
@@ -42,6 +42,7 @@ type SavedRehearsalLibraryFilesViewProps = {
   onOpenLoopTagEditor: (loopId: string) => void;
   onQueuePlayableItemNext: (playableItem: PlayableItem) => void;
   onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;
+  onRemoveSource: (source: DriveLibrarySource) => void;
   onTogglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
 };
@@ -63,6 +64,7 @@ const getRowIconName = (
 
 export const SavedRehearsalLibraryFilesView = ({
   activePlayableItem,
+  authorization,
   canMutateLibrary,
   canMutateLoops,
   canMutatePlaylists,
@@ -81,11 +83,33 @@ export const SavedRehearsalLibraryFilesView = ({
   onOpenLoopTagEditor,
   onQueuePlayableItemNext,
   onQueuePlayableItemUpNext,
+  onRemoveSource,
   onTogglePlayableItemPlayback,
   onToggleSourcePlayback,
 }: SavedRehearsalLibraryFilesViewProps) => {
   const explorer = files.explorer;
   const [openMenuRowKey, setOpenMenuRowKey] = useState<string | null>(null);
+  const rowActionFlows = useLibraryFilesRowActionFlows({
+    authorization,
+    canMutateLibrary,
+    canMutateLoops,
+    canMutatePlaylists,
+    canQueueAsNext,
+    files,
+    isLoopBuilderPreparing,
+    isLoopMutating,
+    isPlaylistMutating,
+    isSavedLibraryMutating,
+    onOpenLoopBuilderForSource,
+    onOpenLoopPlaylistSelector,
+    onOpenLoopTagEditor,
+    onOpenPlaylistTagEditor,
+    onOpenSourcePlaylistSelector,
+    onOpenSourceTagEditor,
+    onQueuePlayableItemNext,
+    onQueuePlayableItemUpNext,
+    onRemoveSource,
+  });
 
   if (files.isLoading && !explorer) {
     return (
@@ -145,40 +169,7 @@ export const SavedRehearsalLibraryFilesView = ({
       <ExplorerListSurface>
         {explorer.rows.map((row, index) => {
           const viewModelRow = viewModel.rows[index];
-          const menuActions = resolveFilesRowMenuActions({
-            canMutateLibrary,
-            canMutateLoops,
-            canMutatePlaylists,
-            canQueueAsNext,
-            isLoopBuilderPreparing,
-            isLoopMutating,
-            isPlaylistMutating,
-            isSavedLibraryMutating,
-            onOpenFolder(folderId) {
-              files.openFolder(folderId);
-            },
-            onOpenLoopBuilder() {
-              if (row.kind !== 'track') {
-                return;
-              }
-
-              onOpenLoopBuilderForSource(row.source);
-            },
-            onOpenLoopPlaylistSelector,
-            onOpenLoopTagEditor,
-            onOpenPlaylistTagEditor,
-            onOpenSourcePlaylistSelector,
-            onOpenSourceTagEditor(sourceId) {
-              if (row.kind !== 'track' || row.source.id !== sourceId) {
-                return;
-              }
-
-              onOpenSourceTagEditor(row.source);
-            },
-            onQueuePlayableItemNext,
-            onQueuePlayableItemUpNext,
-            row,
-          });
+          const menuActions = rowActionFlows.createMenuActions(row);
           const isOptionsVisible = openMenuRowKey === viewModelRow.key;
 
           return (
@@ -248,6 +239,8 @@ export const SavedRehearsalLibraryFilesView = ({
           );
         })}
       </ExplorerListSurface>
+      {rowActionFlows.destinationPicker}
+      {rowActionFlows.renameDialog}
     </View>
   );
 };

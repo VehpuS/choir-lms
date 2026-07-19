@@ -1,29 +1,22 @@
 import type {
-  NamedLoop,
-  Playlist,
   RehearsalLibraryEntityKind,
   RehearsalLibraryFileTree,
+  RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
 import { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
 import {
   LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
   verifyLocalLibraryStorage,
 } from '../storage/local-library-storage';
 import { buildLibraryFilesExplorerState } from './library-files-model';
-
-type LibraryFilesIssue = {
-  message: string;
-  title: string;
-};
-
-type UseLibraryFilesOptions = {
-  savedLoops: NamedLoop[];
-  savedPlaylists: Playlist[];
-  savedSources: DriveLibrarySource[];
-};
+import {
+  formatLibraryFilesIssue,
+  type LibraryFilesIssue,
+  type UseLibraryFilesOptions,
+} from './library-files-operation-helpers';
+import { createLibraryFilesOperations } from './library-files-operations';
 
 const practiceRepository = new AsyncStoragePracticeRepository();
 
@@ -31,23 +24,6 @@ const STORAGE_UNAVAILABLE_ISSUE: LibraryFilesIssue = {
   message:
     'This build could not access the device storage needed for Library Files.',
   title: 'Library Files unavailable',
-};
-
-const formatLibraryFilesIssue = (
-  fallbackTitle: string,
-  fallbackMessage: string,
-  error: unknown,
-): LibraryFilesIssue => {
-  const detail = error instanceof Error ? error.message.trim() : '';
-
-  return {
-    message: detail ? `${fallbackMessage} ${detail}` : fallbackMessage,
-    title: fallbackTitle,
-  };
-};
-
-const createUniqueNodeId = (prefix: string) => {
-  return `${prefix}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
 };
 
 const buildCanonicalIdsKey = (options: UseLibraryFilesOptions) => {
@@ -68,6 +44,27 @@ const buildCanonicalIdsKey = (options: UseLibraryFilesOptions) => {
       })
       .join('|'),
   ].join('::');
+};
+
+const buildFolderPathLabel = (
+  foldersById: ReadonlyMap<string, RehearsalLibraryFolderNode>,
+  folder: RehearsalLibraryFolderNode,
+) => {
+  const labels = [folder.name];
+  let parentFolderId = folder.parentFolderId;
+
+  while (parentFolderId) {
+    const parentFolder = foldersById.get(parentFolderId);
+
+    if (!parentFolder) {
+      break;
+    }
+
+    labels.unshift(parentFolder.name);
+    parentFolderId = parentFolder.parentFolderId;
+  }
+
+  return labels.join(' / ');
 };
 
 export type UseLibraryFilesResult = ReturnType<typeof useLibraryFiles>;
@@ -144,38 +141,34 @@ export const useLibraryFiles = (options: UseLibraryFilesOptions) => {
     });
   }, [currentFolderId, options, tree]);
 
-  const linkEntityToFolder = async (linkOptions: {
-    entityId: string;
-    entityKind: RehearsalLibraryEntityKind;
-    parentFolderId: string;
-  }) => {
-    try {
-      const nextTree = await practiceRepository.saveLibraryFileLink(
-        LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-        {
-          entityId: linkOptions.entityId,
-          entityKind: linkOptions.entityKind,
-          id: createUniqueNodeId(
-            `file-link:${linkOptions.entityKind}:${linkOptions.entityId}`,
-          ),
-          parentFolderId: linkOptions.parentFolderId,
-        },
-      );
-
-      setTree(nextTree);
-      setIssue(null);
-      return true;
-    } catch (error) {
-      setIssue(
-        formatLibraryFilesIssue(
-          'Could not add item to folder',
-          'The selected Library Files folder could not accept this item.',
-          error,
-        ),
-      );
-      return false;
+  const destinationFolders = useMemo(() => {
+    if (!tree) {
+      return [];
     }
-  };
+
+    const foldersById = new Map(
+      tree.folders.map((folder) => {
+        return [folder.id, folder] as const;
+      }),
+    );
+
+    return tree.folders.map((folder) => {
+      return {
+        folder,
+        label: buildFolderPathLabel(foldersById, folder),
+      };
+    });
+  }, [tree]);
+
+  const operations = createLibraryFilesOperations({
+    explorer,
+    options,
+    practiceRepository,
+    setCurrentFolderId,
+    setIssue,
+    setTree,
+    tree,
+  });
 
   return {
     clearPendingDriveImportFolderId() {
@@ -190,46 +183,14 @@ export const useLibraryFiles = (options: UseLibraryFilesOptions) => {
 
       return stagedFolderId;
     },
-    async createFolder(name: string) {
-      if (!tree) {
-        return false;
-      }
-
-      const trimmedName = name.trim();
-
-      if (!trimmedName) {
-        setIssue({
-          message: 'Enter a folder name.',
-          title: 'Folder name required',
-        });
-        return false;
-      }
-
-      try {
-        const nextTree = await practiceRepository.saveLibraryFolderNode(
-          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-          {
-            id: createUniqueNodeId('folder'),
-            name: trimmedName,
-            parentFolderId: explorer?.currentFolder.id ?? tree.rootFolderId,
-          },
-        );
-
-        setTree(nextTree);
-        setIssue(null);
-        return true;
-      } catch (error) {
-        setIssue(
-          formatLibraryFilesIssue(
-            'Could not create folder',
-            `The folder "${trimmedName}" could not be created in the current Library Files location.`,
-            error,
-          ),
-        );
-        return false;
-      }
-    },
+    createFileLinkCopy: operations.createFileLinkCopy,
+    createFolder: operations.createFolder,
+    deleteFileLink: operations.deleteFileLink,
+    deleteFolder: operations.deleteFolder,
+    destinationFolders,
     explorer,
+    getFileLinkDeleteImpact: operations.getFileLinkDeleteImpact,
+    getFolderDeleteImpact: operations.getFolderDeleteImpact,
     goToFolder(folderId: string) {
       setCurrentFolderId(folderId);
     },
@@ -254,19 +215,23 @@ export const useLibraryFiles = (options: UseLibraryFilesOptions) => {
         return false;
       }
 
-      return linkEntityToFolder({
+      return operations.linkEntityToFolder({
         entityId,
         entityKind,
         parentFolderId,
       });
     },
-    linkEntityToFolder,
+    linkEntityToFolder: operations.linkEntityToFolder,
+    moveFileLink: operations.moveFileLink,
+    moveFolder: operations.moveFolder,
     openFolder(folderId: string) {
       setCurrentFolderId(folderId);
     },
     pendingDriveImportFolderId,
     refresh,
     rootFolderId: tree?.rootFolderId ?? null,
+    renameFileLink: operations.renameFileLink,
+    renameFolder: operations.renameFolder,
     stageDriveImportForCurrentFolder() {
       const stagedFolderId =
         explorer?.currentFolder.id ?? tree?.rootFolderId ?? null;

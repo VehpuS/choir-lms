@@ -122,6 +122,70 @@ describe('AsyncStoragePracticeRepository file-tree guardrails', () => {
       /cannot be moved into itself or one of its descendants/,
     );
   });
+
+  it('deletes folder subtrees while preserving entities that still have links elsewhere', async () => {
+    const storage = new Map<string, string>();
+    const repository = new AsyncStoragePracticeRepository();
+
+    configureTestStorage(storage);
+    await repository.saveSource('user-1', AVAILABLE_SOURCE);
+    await repository.saveLibraryFolderNode('user-1', {
+      id: 'folder-1',
+      name: 'Warmups',
+      parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+    });
+    await repository.saveLibraryFileLink('user-1', {
+      id: 'file-link:track:copy-1',
+      parentFolderId: 'folder-1',
+      entityKind: 'track',
+      entityId: AVAILABLE_SOURCE.id,
+      visibleName: 'Warmup copy',
+    });
+
+    const nextTree = await repository.deleteLibraryFolderNode(
+      'user-1',
+      'folder-1',
+    );
+
+    assert.equal(
+      nextTree.folders.some((folder) => folder.id === 'folder-1'),
+      false,
+    );
+    assert.deepEqual(
+      nextTree.fileLinks.map((fileLink) => fileLink.id),
+      [`file-link:track:${AVAILABLE_SOURCE.id}`],
+    );
+    assert.deepEqual(await repository.listSources('user-1'), [
+      AVAILABLE_SOURCE,
+    ]);
+  });
+
+  it('deletes the underlying entity when folder deletion removes its last link', async () => {
+    const storage = new Map<string, string>();
+    const repository = new AsyncStoragePracticeRepository();
+
+    configureTestStorage(storage);
+    await repository.saveSource('user-1', AVAILABLE_SOURCE);
+    await repository.saveLibraryFolderNode('user-1', {
+      id: 'folder-1',
+      name: 'Warmups',
+      parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+    });
+    await repository.saveLibraryFileLink('user-1', {
+      id: `file-link:track:${AVAILABLE_SOURCE.id}`,
+      parentFolderId: 'folder-1',
+      entityKind: 'track',
+      entityId: AVAILABLE_SOURCE.id,
+    });
+
+    const nextTree = await repository.deleteLibraryFolderNode(
+      'user-1',
+      'folder-1',
+    );
+
+    assert.deepEqual(await repository.listSources('user-1'), []);
+    assert.deepEqual(nextTree.fileLinks, []);
+  });
 });
 
 describe('resolveRehearsalLibraryCopyVisibleName', () => {

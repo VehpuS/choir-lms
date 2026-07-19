@@ -119,9 +119,13 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
 
 - [x] 2.5.1 Implement Files overflow operations for folders and saved-entity links, keeping queue actions in the first menu level and reusing the existing tag editor, playlist selector, and loop-builder flows where applicable (`5.3.3`).
 - [x] 2.5.2 Standardize per-entity explorer menu contents and ordering, including action-sheet dismissal through `Cancel`, destructive ordering, clear pointer-versus-entity deletion messaging for pointer-level `Delete from folder`, and explicit track-level `Remove from library` placement (`5.3.3.1`).
-- [ ] 2.5.3 Add `Create a copy`, rename, move, `Delete from folder`, folder-delete impact summaries, and connection-first broken-source recovery through `Reconnect` and `Remove from library` (`5.3.3` and `5.3.3.2`).
+- [x] 2.5.3 Add `Create a copy`, rename, move, `Delete from folder`, folder-delete impact summaries, and connection-first broken-source recovery through `Reconnect` and `Remove from library` (`5.3.3` and `5.3.3.2`).
+  - Wire existing Files menu placeholders to file-tree mutations for copy, pointer-local rename, move, and delete confirmations.
+  - Add folder delete impact summaries and recovery actions for unavailable Drive-backed tracks without changing the dedicated entity views.
+  - Keep root-folder and connection-first guardrails explicit, and leave broader automated coverage to task `2.5.4` after this behavior lands.
 - [ ] 2.5.4 Add focused coverage for Files menus, hard-link copy semantics, `Delete from folder` messaging (including explicit last-link confirmation), root-folder default visibility invariants, and recovery actions, then manually verify entity-specific explorer menus and naming or move guardrails (`6.1.6`, `6.2.7.1`, and `6.2.7.2` scoped to Files actions).
 - [ ] 2.5.5 Implement and test always-available track-level `Remove from library`: keep the action available during active playback and while track dependencies exist, show an explicit impact summary of affected loops/folder links/playlist entries, require explicit confirmation, and verify cascade cleanup across library entities and active playback context (`5.3.3.1`, `6.1.6`, and `6.2.7.2`).
+- [ ] 2.5.6 Replace the temporary flat destination list for `Move to folder` and `Create a copy` with a proper folder-browser picker that supports navigating the Files hierarchy, selecting the target folder in context, preserving root/current-folder guardrails, and scaling beyond short folder lists (`5.3.3` and `6.2.7.1`).
 
 ### 2.6 Add Files Search, Sort, Restoration, and Loop-Result Integration
 

@@ -11,6 +11,7 @@ export const TRACK_ACTION_LABELS = new Set([
   'Add to queue',
   'Add to playlist',
   'Make loop',
+  'Reconnect',
   'Create a copy',
   'Edit tags',
   'Rename',
@@ -24,12 +25,13 @@ export const TRACK_ACTION_ORDER = new Map([
   ['Add to queue', 1],
   ['Make loop', 2],
   ['Add to playlist', 3],
-  ['Create a copy', 4],
-  ['Edit tags', 5],
-  ['Rename', 6],
-  ['Move to folder', 7],
-  ['Delete from folder', 8],
-  ['Remove from library', 9],
+  ['Reconnect', 4],
+  ['Create a copy', 5],
+  ['Edit tags', 6],
+  ['Rename', 7],
+  ['Move to folder', 8],
+  ['Delete from folder', 9],
+  ['Remove from library', 10],
 ]);
 
 export const LOOP_ACTION_LABELS = new Set([

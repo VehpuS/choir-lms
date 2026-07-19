@@ -6,6 +6,7 @@ import { SavedRehearsalLibraryFilesView } from './files-view';
 
 export const SavedRehearsalLibraryBrowseContent = ({
   activePlayableItem,
+  authorization,
   canMutateLibrary,
   canMutateLoops,
   canMutatePlaylists,
@@ -65,6 +66,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
       <>
         <SavedRehearsalLibraryFilesView
           activePlayableItem={activePlayableItem}
+          authorization={authorization}
           canMutateLibrary={canMutateLibrary}
           canMutateLoops={canMutateLoops}
           canMutatePlaylists={canMutatePlaylists}
@@ -102,6 +104,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
           }}
           onQueuePlayableItemNext={queuePlayableItemNext}
           onQueuePlayableItemUpNext={queuePlayableItemUpNext}
+          onRemoveSource={removeSource}
           onTogglePlayableItemPlayback={togglePlayableItemPlayback}
           onToggleSourcePlayback={toggleSourcePlayback}
         />

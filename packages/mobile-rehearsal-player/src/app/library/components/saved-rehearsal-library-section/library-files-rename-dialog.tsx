@@ -1,0 +1,99 @@
+import { Pressable, Text, TextInput, View } from 'react-native';
+
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../../components/interaction-guard';
+import { CenteredDialogCard } from '../centered-dialog-card';
+import { FeedbackCard } from '../feedback-card';
+import {
+  SAVED_PLAYLIST_PLACEHOLDER_TEXT,
+  savedPlaylistSectionStyles as styles,
+} from '../saved-playlist-section-styles';
+
+type LibraryFilesRenameDialogProps = {
+  isMutating: boolean;
+  isVisible: boolean;
+  issue: {
+    message: string;
+    title: string;
+  } | null;
+  value: string;
+  onCancel: () => void;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+};
+
+export const LibraryFilesRenameDialog = ({
+  isMutating,
+  isVisible,
+  issue,
+  value,
+  onCancel,
+  onChange,
+  onSubmit,
+}: LibraryFilesRenameDialogProps) => {
+  if (!isVisible) {
+    return null;
+  }
+
+  return (
+    <CenteredDialogCard isVisible={isVisible} onRequestClose={onCancel}>
+      <Text style={styles.groupTitle}>Rename</Text>
+      <Text style={styles.sectionBody}>
+        Update the visible name in this Library Files location.
+      </Text>
+      <TextInput
+        autoCapitalize="words"
+        autoCorrect={false}
+        autoFocus
+        onChangeText={onChange}
+        placeholder="Name"
+        placeholderTextColor={SAVED_PLAYLIST_PLACEHOLDER_TEXT}
+        returnKeyType="done"
+        style={styles.nameInput}
+        value={value}
+      />
+      {issue ? (
+        <FeedbackCard
+          message={issue.message}
+          size="compact"
+          title={issue.title}
+          tone="error"
+        />
+      ) : null}
+      <View style={styles.actionRow}>
+        <Pressable
+          accessibilityRole="button"
+          {...interactionGuardProps}
+          disabled={isMutating}
+          onPress={onCancel}
+          style={({ pressed }) => [
+            styles.secondaryButton,
+            buttonInteractionGuardStyle,
+            pressed && !isMutating ? styles.actionButtonPressed : undefined,
+            isMutating ? styles.actionButtonDisabled : undefined,
+          ]}
+        >
+          <Text style={styles.secondaryButtonLabel}>Cancel</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          {...interactionGuardProps}
+          disabled={isMutating}
+          onPress={onSubmit}
+          style={({ pressed }) => [
+            styles.primaryButton,
+            buttonInteractionGuardStyle,
+            pressed && !isMutating ? styles.actionButtonPressed : undefined,
+            isMutating ? styles.actionButtonDisabled : undefined,
+          ]}
+        >
+          <Text style={styles.primaryButtonLabel}>
+            {isMutating ? 'Renaming...' : 'Rename'}
+          </Text>
+        </Pressable>
+      </View>
+    </CenteredDialogCard>
+  );
+};

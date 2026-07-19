@@ -1,15 +1,20 @@
 import {
-  isNamedLoop,
   normalizePlaylist,
   type DriveAudioSource,
   type NamedLoop,
   type Playlist,
   type RehearsalLibraryFileLinkNode,
-  type RehearsalLibraryFileTree,
   type RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
 import { filter, sortBy } from 'es-toolkit/compat';
 
+import {
+  deleteLibraryFileLinkFromRepository,
+  deleteLibraryFolderNodeFromRepository,
+  normalizeStoredLoops,
+} from './async-storage-practice-repository-helpers';
+
+import type { PracticeRepository } from './practice-repository';
 import {
   hasCanonicalEntity,
   loadCanonicalCollections,
@@ -22,93 +27,9 @@ import {
   assertValidRehearsalLibraryFileLinkMutation,
   assertValidRehearsalLibraryFolderMutation,
   REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
-  removeRehearsalLibraryFileLinkNode,
   upsertRehearsalLibraryFileLinkNode,
   upsertRehearsalLibraryFolderNode,
 } from './rehearsal-library-files';
-
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === 'object' && value !== null;
-};
-
-const hasNonEmptyString = (value: unknown): value is string => {
-  return typeof value === 'string' && value.trim().length > 0;
-};
-
-const normalizeStoredLoop = (options: {
-  loop: unknown;
-  sourceNameById: ReadonlyMap<string, string>;
-}): NamedLoop | null => {
-  if (!isRecord(options.loop) || !hasNonEmptyString(options.loop.sourceId)) {
-    return null;
-  }
-
-  const sourceName =
-    options.sourceNameById.get(options.loop.sourceId) ??
-    (hasNonEmptyString(options.loop.sourceName)
-      ? options.loop.sourceName
-      : null);
-
-  if (!sourceName) {
-    return null;
-  }
-
-  const normalizedLoop = {
-    ...options.loop,
-    sourceId: options.loop.sourceId,
-    sourceName,
-  };
-
-  return isNamedLoop(normalizedLoop) ? normalizedLoop : null;
-};
-
-const normalizeStoredLoops = (options: {
-  loops: unknown[];
-  sources: DriveAudioSource[];
-}) => {
-  const sourceNameById = new Map(
-    options.sources.map((source) => {
-      return [source.id, source.name] as const;
-    }),
-  );
-
-  return options.loops.flatMap((loop) => {
-    const normalizedLoop = normalizeStoredLoop({
-      loop,
-      sourceNameById,
-    });
-
-    return normalizedLoop ? [normalizedLoop] : [];
-  });
-};
-
-export type PracticeRepository = {
-  listSources(ownerId: string): Promise<DriveAudioSource[]>;
-  saveSource(
-    ownerId: string,
-    source: DriveAudioSource,
-  ): Promise<DriveAudioSource[]>;
-  deleteSource(ownerId: string, sourceId: string): Promise<DriveAudioSource[]>;
-  listLoops(ownerId: string): Promise<NamedLoop[]>;
-  saveLoop(loop: NamedLoop): Promise<NamedLoop[]>;
-  deleteLoop(ownerId: string, loopId: string): Promise<NamedLoop[]>;
-  listPlaylists(ownerId: string): Promise<Playlist[]>;
-  savePlaylist(playlist: Playlist): Promise<Playlist[]>;
-  deletePlaylist(ownerId: string, playlistId: string): Promise<Playlist[]>;
-  listLibraryFileTree(ownerId: string): Promise<RehearsalLibraryFileTree>;
-  saveLibraryFolderNode(
-    ownerId: string,
-    folder: RehearsalLibraryFolderNode,
-  ): Promise<RehearsalLibraryFileTree>;
-  saveLibraryFileLink(
-    ownerId: string,
-    fileLink: RehearsalLibraryFileLinkNode,
-  ): Promise<RehearsalLibraryFileTree>;
-  deleteLibraryFileLink(
-    ownerId: string,
-    fileLinkId: string,
-  ): Promise<RehearsalLibraryFileTree>;
-};
 
 export class AsyncStoragePracticeRepository implements PracticeRepository {
   async listSources(ownerId: string) {
@@ -349,38 +270,10 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
   }
 
   async deleteLibraryFileLink(ownerId: string, fileLinkId: string) {
-    const tree = await this.listLibraryFileTree(ownerId);
-    const fileLink = tree.fileLinks.find(
-      (existingFileLink) => existingFileLink.id === fileLinkId,
-    );
+    return deleteLibraryFileLinkFromRepository(this, ownerId, fileLinkId);
+  }
 
-    if (!fileLink) {
-      return tree;
-    }
-
-    const hasAdditionalLinks = tree.fileLinks.some((existingFileLink) => {
-      return (
-        existingFileLink.id !== fileLinkId &&
-        existingFileLink.entityKind === fileLink.entityKind &&
-        existingFileLink.entityId === fileLink.entityId
-      );
-    });
-
-    if (hasAdditionalLinks) {
-      return writeStoredLibraryFileTree(
-        ownerId,
-        removeRehearsalLibraryFileLinkNode(tree, fileLinkId),
-      );
-    }
-
-    if (fileLink.entityKind === 'track') {
-      await this.deleteSource(ownerId, fileLink.entityId);
-    } else if (fileLink.entityKind === 'loop') {
-      await this.deleteLoop(ownerId, fileLink.entityId);
-    } else {
-      await this.deletePlaylist(ownerId, fileLink.entityId);
-    }
-
-    return this.listLibraryFileTree(ownerId);
+  async deleteLibraryFolderNode(ownerId: string, folderId: string) {
+    return deleteLibraryFolderNodeFromRepository(this, ownerId, folderId);
   }
 }

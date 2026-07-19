@@ -1,0 +1,264 @@
+import type {
+  RehearsalLibraryEntityKind,
+  RehearsalLibraryFileLinkNode,
+  RehearsalLibraryFileTree,
+  RehearsalLibraryFolderNode,
+} from '@org/audio-library-models';
+import {
+  AsyncStoragePracticeRepository,
+  resolveRehearsalLibraryCopyVisibleName,
+} from '@org/audio-library-runtime';
+import type { Dispatch, SetStateAction } from 'react';
+
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../storage/local-library-storage';
+import type { LibraryFilesExplorerState } from './library-files-model';
+import {
+  createLibraryFilesImpactReaders,
+  createUniqueNodeId,
+  formatLibraryFilesIssue,
+  type LibraryFilesIssue,
+  type UseLibraryFilesOptions,
+} from './library-files-operation-helpers';
+import { createLibraryFilesRenameOperations } from './library-files-rename-operations';
+
+type LibraryFilesOperationsOptions = {
+  explorer: LibraryFilesExplorerState | null;
+  options: UseLibraryFilesOptions;
+  practiceRepository: AsyncStoragePracticeRepository;
+  setCurrentFolderId: Dispatch<SetStateAction<string | null>>;
+  setIssue: Dispatch<SetStateAction<LibraryFilesIssue | null>>;
+  setTree: Dispatch<SetStateAction<RehearsalLibraryFileTree | null>>;
+  tree: RehearsalLibraryFileTree | null;
+};
+
+export const createLibraryFilesOperations = ({
+  explorer,
+  options,
+  practiceRepository,
+  setCurrentFolderId,
+  setIssue,
+  setTree,
+  tree,
+}: LibraryFilesOperationsOptions) => {
+  const setOperationIssue = (
+    title: string,
+    message: string,
+    error: unknown,
+  ) => {
+    setIssue(formatLibraryFilesIssue(title, message, error));
+  };
+
+  return {
+    ...createLibraryFilesImpactReaders(tree),
+    ...createLibraryFilesRenameOperations({
+      practiceRepository,
+      setIssue,
+      setTree,
+    }),
+    async createFolder(name: string) {
+      if (!tree) {
+        return false;
+      }
+
+      const trimmedName = name.trim();
+
+      if (!trimmedName) {
+        setIssue({
+          message: 'Enter a folder name.',
+          title: 'Folder name required',
+        });
+        return false;
+      }
+
+      try {
+        const nextTree = await practiceRepository.saveLibraryFolderNode(
+          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+          {
+            id: createUniqueNodeId('folder'),
+            name: trimmedName,
+            parentFolderId: explorer?.currentFolder.id ?? tree.rootFolderId,
+          },
+        );
+
+        setTree(nextTree);
+        setIssue(null);
+        return true;
+      } catch (error) {
+        setOperationIssue(
+          'Could not create folder',
+          `The folder "${trimmedName}" could not be created in the current Library Files location.`,
+          error,
+        );
+        return false;
+      }
+    },
+    async createFileLinkCopy(optionsForCopy: {
+      destinationFolderId: string;
+      fileLink: RehearsalLibraryFileLinkNode;
+      sourceName: string;
+    }) {
+      if (!tree) {
+        return false;
+      }
+
+      try {
+        const visibleName = resolveRehearsalLibraryCopyVisibleName({
+          entityCollections: {
+            loops: options.savedLoops,
+            playlists: options.savedPlaylists,
+            sources: options.savedSources,
+          },
+          parentFolderId: optionsForCopy.destinationFolderId,
+          sourceName: optionsForCopy.sourceName,
+          tree,
+        });
+        const nextTree = await practiceRepository.saveLibraryFileLink(
+          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+          {
+            entityId: optionsForCopy.fileLink.entityId,
+            entityKind: optionsForCopy.fileLink.entityKind,
+            id: createUniqueNodeId(
+              `file-link:${optionsForCopy.fileLink.entityKind}:${optionsForCopy.fileLink.entityId}:copy`,
+            ),
+            parentFolderId: optionsForCopy.destinationFolderId,
+            visibleName,
+          },
+        );
+
+        setTree(nextTree);
+        setIssue(null);
+        return true;
+      } catch (error) {
+        setOperationIssue(
+          'Could not create copy',
+          `The item "${optionsForCopy.sourceName}" could not be copied to the selected folder.`,
+          error,
+        );
+        return false;
+      }
+    },
+    async deleteFileLink(fileLinkId: string) {
+      try {
+        const nextTree = await practiceRepository.deleteLibraryFileLink(
+          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+          fileLinkId,
+        );
+
+        setTree(nextTree);
+        setIssue(null);
+        return true;
+      } catch (error) {
+        setOperationIssue(
+          'Could not delete from folder',
+          'The selected Library Files item could not be deleted from this folder.',
+          error,
+        );
+        return false;
+      }
+    },
+    async deleteFolder(folderId: string) {
+      try {
+        const nextTree = await practiceRepository.deleteLibraryFolderNode(
+          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+          folderId,
+        );
+
+        setTree(nextTree);
+        setIssue(null);
+        setCurrentFolderId((currentValue) => {
+          return currentValue === folderId
+            ? nextTree.rootFolderId
+            : currentValue;
+        });
+        return true;
+      } catch (error) {
+        setOperationIssue(
+          'Could not delete folder',
+          'The selected Library Files folder could not be deleted.',
+          error,
+        );
+        return false;
+      }
+    },
+    async linkEntityToFolder(linkOptions: {
+      entityId: string;
+      entityKind: RehearsalLibraryEntityKind;
+      parentFolderId: string;
+    }) {
+      try {
+        const nextTree = await practiceRepository.saveLibraryFileLink(
+          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+          {
+            entityId: linkOptions.entityId,
+            entityKind: linkOptions.entityKind,
+            id: createUniqueNodeId(
+              `file-link:${linkOptions.entityKind}:${linkOptions.entityId}`,
+            ),
+            parentFolderId: linkOptions.parentFolderId,
+          },
+        );
+
+        setTree(nextTree);
+        setIssue(null);
+        return true;
+      } catch (error) {
+        setOperationIssue(
+          'Could not add item to folder',
+          'The selected Library Files folder could not accept this item.',
+          error,
+        );
+        return false;
+      }
+    },
+    async moveFileLink(optionsForMove: {
+      destinationFolderId: string;
+      fileLink: RehearsalLibraryFileLinkNode;
+    }) {
+      try {
+        const nextTree = await practiceRepository.saveLibraryFileLink(
+          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+          {
+            ...optionsForMove.fileLink,
+            parentFolderId: optionsForMove.destinationFolderId,
+          },
+        );
+
+        setTree(nextTree);
+        setIssue(null);
+        return true;
+      } catch (error) {
+        setOperationIssue(
+          'Could not move item',
+          'The selected Library Files item could not be moved to that folder.',
+          error,
+        );
+        return false;
+      }
+    },
+    async moveFolder(optionsForMove: {
+      destinationFolderId: string;
+      folder: RehearsalLibraryFolderNode;
+    }) {
+      try {
+        const nextTree = await practiceRepository.saveLibraryFolderNode(
+          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+          {
+            ...optionsForMove.folder,
+            parentFolderId: optionsForMove.destinationFolderId,
+          },
+        );
+
+        setTree(nextTree);
+        setIssue(null);
+        return true;
+      } catch (error) {
+        setOperationIssue(
+          'Could not move folder',
+          'The selected Library Files folder could not be moved to that location.',
+          error,
+        );
+        return false;
+      }
+    },
+  };
+};
