@@ -8,24 +8,24 @@ export type FeedbackCardPalette = {
 
 const FEEDBACK_CARD_PALETTES: Record<FeedbackCardTone, FeedbackCardPalette> = {
   neutral: {
-    message: '#5f5647',
-    surface: '#f6f1e7',
-    title: '#1f1c17',
+    message: '#5f5647ee',
+    surface: '#f6f1e7ee',
+    title: '#1f1c17ee',
   },
   ready: {
-    message: '#5f5647',
-    surface: '#e7f2ec',
-    title: '#1f5c40',
+    message: '#5f5647ee',
+    surface: '#e7f2ecee',
+    title: '#1f5c40ee',
   },
   warning: {
-    message: '#5f5647',
-    surface: '#fff4dd',
-    title: '#7f5b12',
+    message: '#5f5647ee',
+    surface: '#fff4ddee',
+    title: '#7f5b12ee',
   },
   error: {
-    message: '#8a2d1f',
-    surface: '#fff1ed',
-    title: '#8a2d1f',
+    message: '#8a2d1fee',
+    surface: '#fff1edee',
+    title: '#8a2d1fee',
   },
 };
 

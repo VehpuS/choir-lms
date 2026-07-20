@@ -26,6 +26,8 @@ const createFilesController = (currentFolderId: string) => {
       explorer: {
         currentFolder: {
           id: currentFolderId,
+          name:
+            currentFolderId === 'folder:library-root' ? 'Library' : 'Warmups',
         },
       },
       moveFileLink: async (options: {
@@ -53,6 +55,7 @@ const createFilesController = (currentFolderId: string) => {
 describe('saveLoopWithFilesLocation', () => {
   it('moves a newly saved loop default link to the current non-root Files folder', async () => {
     const { files, movedFolders } = createFilesController('folder-warmups');
+    const feedbackMessages: string[] = [];
     const savedLoopIds: string[] = [];
 
     const didSave = await saveLoopWithFilesLocation({
@@ -61,6 +64,9 @@ describe('saveLoopWithFilesLocation', () => {
       isSearchPanelVisible: false,
       libraryFiles: files,
       loop: LOOP,
+      onShowFilesSuccessFeedback: (feedback) => {
+        feedbackMessages.push(`${feedback.title}: ${feedback.message}`);
+      },
       saveLoop: async (loop) => {
         savedLoopIds.push(loop.id);
         return true;
@@ -71,6 +77,9 @@ describe('saveLoopWithFilesLocation', () => {
     assert.equal(didSave, true);
     assert.deepEqual(savedLoopIds, [LOOP.id]);
     assert.deepEqual(movedFolders, ['folder-warmups']);
+    assert.deepEqual(feedbackMessages, [
+      'Loop saved: Folder loop was saved in Warmups.',
+    ]);
   });
 
   it('does not create extra file links when editing an existing loop', async () => {
@@ -94,6 +103,7 @@ describe('saveLoopWithFilesLocation', () => {
     const { files, movedFolders } = createFilesController(
       'folder:library-root',
     );
+    const feedbackMessages: string[] = [];
 
     const didSave = await saveLoopWithFilesLocation({
       detailMode: 'browse',
@@ -101,11 +111,17 @@ describe('saveLoopWithFilesLocation', () => {
       isSearchPanelVisible: false,
       libraryFiles: files,
       loop: LOOP,
+      onShowFilesSuccessFeedback: (feedback) => {
+        feedbackMessages.push(`${feedback.title}: ${feedback.message}`);
+      },
       saveLoop: async () => true,
       selectedView: 'files',
     });
 
     assert.equal(didSave, true);
     assert.deepEqual(movedFolders, []);
+    assert.deepEqual(feedbackMessages, [
+      'Loop saved: Folder loop was saved in Library.',
+    ]);
   });
 });

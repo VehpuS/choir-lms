@@ -22,6 +22,7 @@ import type {
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import type { SavedRehearsalLibraryIssue } from '../../saved-rehearsal-library/use-saved-rehearsal-library';
+import type { LibraryFilesSuccessFeedback } from './library-files-success-feedback';
 import type { useSavedRehearsalLibrarySearch } from './use-saved-rehearsal-library-search';
 import type { useSavedRehearsalLibrarySearchPanel } from './use-saved-rehearsal-library-search-panel';
 
@@ -52,7 +53,13 @@ export type SavedRehearsalLibrarySectionProps = {
   removeLoop: (loop: NamedLoop) => void;
   removeSource: (source: DriveLibrarySource) => void;
   libraryFiles: UseLibraryFilesResult;
+  libraryFilesSuccessFeedback: LibraryFilesSuccessFeedback | null;
+  onDismissLibraryFilesSuccessFeedback: () => void;
   onFilesExplorerVisibilityChange?: (isVisible: boolean) => void;
+  onOpenLibraryFilesSuccessFeedbackFolder: (folderId: string) => void;
+  onShowLibraryFilesSuccessFeedback: (
+    feedback: LibraryFilesSuccessFeedback,
+  ) => void;
   savedLibraryIssue: SavedRehearsalLibraryIssue | null;
   savedLibrarySources: DriveLibrarySource[];
   savedLibraryStatusCopy: DriveLibraryStatusCopy;

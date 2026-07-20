@@ -5,6 +5,10 @@ import type { Playlist } from '@org/audio-library-models';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
 import { LibraryFilesFolderCreateDialog } from '../../library/components/saved-rehearsal-library-section/library-files-folder-create-dialog';
+import {
+  createLibraryFilesSuccessFeedback,
+  type LibraryFilesSuccessFeedback,
+} from '../../library/components/saved-rehearsal-library-section/library-files-success-feedback';
 import { SavedPlaylistCreateDialog } from '../../library/playlists/components/saved-playlist-create-dialog';
 import {
   buildSavedPlaylist,
@@ -20,6 +24,7 @@ type LibraryFilesCreateControlsProps = {
   files: UseLibraryFilesResult;
   isVisible: boolean;
   onRequestAddDestination: () => void;
+  onShowSuccessFeedback: (feedback: LibraryFilesSuccessFeedback) => void;
   playlistIssue: SavedPlaylistIssue | null;
 };
 
@@ -28,6 +33,7 @@ export const LibraryFilesCreateControls = ({
   files,
   isVisible,
   onRequestAddDestination,
+  onShowSuccessFeedback,
   playlistIssue,
 }: LibraryFilesCreateControlsProps) => {
   const [filesCreateIssue, setFilesCreateIssue] = useState<{
@@ -80,8 +86,14 @@ export const LibraryFilesCreateControls = ({
       setFilesCreateIssue(null);
       setFilesFolderDraftName('');
       setIsFilesFolderDialogVisible(false);
+      onShowSuccessFeedback(
+        createLibraryFilesSuccessFeedback({
+          message: `${folderName} was created in ${filesFolderLabel}.`,
+          title: 'Folder created',
+        }),
+      );
     })();
-  }, [files, filesFolderDraftName]);
+  }, [files, filesFolderDraftName, filesFolderLabel, onShowSuccessFeedback]);
 
   const handleSubmitFilesPlaylist = useCallback(() => {
     const buildResult = buildSavedPlaylist({
@@ -119,6 +131,12 @@ export const LibraryFilesCreateControls = ({
       setFilesPlaylistDraftIssue(null);
       setFilesPlaylistDraftName('');
       setIsFilesPlaylistDialogVisible(false);
+      onShowSuccessFeedback(
+        createLibraryFilesSuccessFeedback({
+          message: `${createdPlaylist.name} was created in ${filesFolderLabel}.`,
+          title: 'Playlist created',
+        }),
+      );
     })();
   }, [createPlaylist, files, filesPlaylistDraftName, playlistIssue]);
 
@@ -137,8 +155,22 @@ export const LibraryFilesCreateControls = ({
       id: 'add-tracks-from-drive',
       label: 'Add tracks from Drive',
       onPress: () => {
+        const folderId = files.explorer?.currentFolder.id ?? null;
+
         setIsFilesCreateMenuVisible(false);
         files.stageDriveImportForCurrentFolder();
+        onShowSuccessFeedback(
+          createLibraryFilesSuccessFeedback({
+            action: folderId
+              ? {
+                  folderId,
+                  label: 'View in folder',
+                }
+              : undefined,
+            message: `Tracks added from Drive will be saved to ${filesFolderLabel}.`,
+            title: 'Files destination set',
+          }),
+        );
         onRequestAddDestination();
       },
       tone: 'secondary' as const,

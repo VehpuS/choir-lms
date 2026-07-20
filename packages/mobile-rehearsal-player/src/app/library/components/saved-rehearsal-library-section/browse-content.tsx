@@ -12,6 +12,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
   canMutatePlaylists,
   canQueueAsNext,
   libraryFiles,
+  libraryFilesSuccessFeedback,
   isLoopMutating,
   isPlaybackPreparing,
   isPlaylistMutating,
@@ -37,9 +38,12 @@ export const SavedRehearsalLibraryBrowseContent = ({
   savedSourceTitle,
   searchState,
   visibleSections,
+  onDismissLibraryFilesSuccessFeedback,
+  onOpenLibraryFilesSuccessFeedbackFolder,
   onOpenPlaylistTagEditor,
   onOpenLoopTagEditor,
   onOpenSourceTagEditor,
+  onShowLibraryFilesSuccessFeedback,
   togglePlaylistPlayback,
   togglePlayableItemPlayback,
   toggleSourcePlayback,
@@ -87,6 +91,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
             );
           }}
           onOpenPlaylistTagEditor={onOpenPlaylistTagEditor}
+          onDismissSuccessFeedback={onDismissLibraryFilesSuccessFeedback}
           onOpenSourcePlaylistSelector={
             trackPlaylistMenu.openSourcePlaylistSelector
           }
@@ -105,6 +110,9 @@ export const SavedRehearsalLibraryBrowseContent = ({
           onQueuePlayableItemNext={queuePlayableItemNext}
           onQueuePlayableItemUpNext={queuePlayableItemUpNext}
           onRemoveSource={removeSource}
+          onOpenSuccessFeedbackFolder={onOpenLibraryFilesSuccessFeedbackFolder}
+          onShowSuccessFeedback={onShowLibraryFilesSuccessFeedback}
+          successFeedback={libraryFilesSuccessFeedback}
           onTogglePlayableItemPlayback={togglePlayableItemPlayback}
           onToggleSourcePlayback={toggleSourcePlayback}
         />

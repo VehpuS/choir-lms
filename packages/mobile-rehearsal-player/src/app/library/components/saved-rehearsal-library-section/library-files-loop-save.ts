@@ -2,9 +2,13 @@ import type { NamedLoop } from '@org/audio-library-models';
 import { useCallback } from 'react';
 
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
+import {
+  createLibraryFilesSuccessFeedback,
+  type LibraryFilesSuccessFeedback,
+} from './library-files-success-feedback';
 
 type LibraryFilesLoopSaveController = {
-  explorer: { currentFolder: { id: string } } | null;
+  explorer: { currentFolder: { id: string; name: string } } | null;
   moveFileLink: (options: {
     destinationFolderId: string;
     fileLink: {
@@ -23,6 +27,7 @@ type SaveLoopWithFilesLocationOptions = {
   isSearchPanelVisible: boolean;
   libraryFiles: LibraryFilesLoopSaveController;
   loop: NamedLoop;
+  onShowFilesSuccessFeedback?: (feedback: LibraryFilesSuccessFeedback) => void;
   saveLoop: (loop: NamedLoop) => Promise<boolean>;
   selectedView: SavedRehearsalLibraryView;
 };
@@ -38,6 +43,7 @@ export const saveLoopWithFilesLocation = async ({
   isSearchPanelVisible,
   libraryFiles,
   loop,
+  onShowFilesSuccessFeedback,
   saveLoop,
   selectedView,
 }: SaveLoopWithFilesLocationOptions) => {
@@ -56,13 +62,21 @@ export const saveLoopWithFilesLocation = async ({
   }
 
   const currentFolderId = libraryFiles.explorer?.currentFolder.id ?? null;
+  const currentFolderName =
+    libraryFiles.explorer?.currentFolder.name ?? 'Files';
   const rootFolderId = libraryFiles.rootFolderId;
 
   if (!currentFolderId || !rootFolderId || currentFolderId === rootFolderId) {
+    onShowFilesSuccessFeedback?.(
+      createLibraryFilesSuccessFeedback({
+        message: `${loop.name} was saved in ${currentFolderName}.`,
+        title: 'Loop saved',
+      }),
+    );
     return true;
   }
 
-  return libraryFiles.moveFileLink({
+  const didMove = await libraryFiles.moveFileLink({
     destinationFolderId: currentFolderId,
     fileLink: {
       entityId: loop.id,
@@ -71,6 +85,17 @@ export const saveLoopWithFilesLocation = async ({
       parentFolderId: rootFolderId,
     },
   });
+
+  if (didMove) {
+    onShowFilesSuccessFeedback?.(
+      createLibraryFilesSuccessFeedback({
+        message: `${loop.name} was saved in ${currentFolderName}.`,
+        title: 'Loop saved',
+      }),
+    );
+  }
+
+  return didMove;
 };
 
 export const useLoopSaveWithFilesLocation = (
@@ -88,6 +113,7 @@ export const useLoopSaveWithFilesLocation = (
       options.isEditingLoop,
       options.isSearchPanelVisible,
       options.libraryFiles,
+      options.onShowFilesSuccessFeedback,
       options.saveLoop,
       options.selectedView,
     ],

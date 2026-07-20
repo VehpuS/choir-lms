@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { View } from 'react-native';
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
 import { resolveSavedRehearsalLibraryVisibleSections } from '../../saved-rehearsal-library/detail-mode';
@@ -7,12 +7,13 @@ import {
   SavedRehearsalLibraryLoopSectionContent,
   SavedRehearsalLibraryPlaylistSectionContent,
 } from './detail-sections';
-import { SavedRehearsalLibrarySearchShell } from './search-shell';
 import { useLoopSaveWithFilesLocation } from './library-files-loop-save';
+import { SavedRehearsalLibrarySearchShell } from './search-shell';
 import { SavedRehearsalLibraryStatusCards } from './status-cards';
 import { savedRehearsalLibrarySectionStyles as styles } from './styles';
 import { SavedRehearsalLibraryTagEditorSheet } from './tag-editor-sheet';
 import type { SavedRehearsalLibrarySectionProps } from './types';
+import { useSavedRehearsalLibrarySectionEffects } from './use-saved-rehearsal-library-section-effects';
 import { useSavedRehearsalLibrarySectionState } from './use-saved-rehearsal-library-section-state';
 
 export const SavedRehearsalLibrarySection = ({
@@ -29,8 +30,12 @@ export const SavedRehearsalLibrarySection = ({
   isSavedLibraryLoading,
   isSavedLoopsLoading,
   libraryFiles,
+  libraryFilesSuccessFeedback,
   openLoopBuilderForSource,
+  onDismissLibraryFilesSuccessFeedback,
   onFilesExplorerVisibilityChange,
+  onOpenLibraryFilesSuccessFeedbackFolder,
+  onShowLibraryFilesSuccessFeedback,
   pendingLoopBuilderSourceId,
   pendingLoopId,
   pendingPlaylistId,
@@ -108,18 +113,16 @@ export const SavedRehearsalLibrarySection = ({
     togglePlaylistPlayback,
     updatePlaylist,
   });
-  useEffect(() => {
-    syncActivePlaylistContext({
-      loops: savedLoops,
-      playlists: savedPlaylists,
-      sources: savedLibrarySources,
-    });
-  }, [
+  useSavedRehearsalLibrarySectionEffects({
+    detailMode,
+    isSearchPanelVisible,
+    onFilesExplorerVisibilityChange,
     savedLibrarySources,
     savedLoops,
     savedPlaylists,
+    selectedView,
     syncActivePlaylistContext,
-  ]);
+  });
   const isTrackLoopDetailVisible = detailMode === 'track-loop-detail';
   const isPlaylistDetailMode = detailMode === 'playlist-detail';
   const canQueueAsNext = activePlayableItem !== null;
@@ -136,8 +139,17 @@ export const SavedRehearsalLibrarySection = ({
   const savedSourceTitle = shouldShowSearchResults
     ? `Matching saved rehearsal tracks (${searchState.visibleSavedLibrarySources.length})`
     : `Saved rehearsal tracks (${savedLibrarySources.length})`;
-  const visibleSections = resolveSavedRehearsalLibraryVisibleSections(selectedView);
-  const saveLoopForVisibleContext = useLoopSaveWithFilesLocation({ detailMode, isEditingLoop: loopState.selectedLoopEdit !== null, isSearchPanelVisible, libraryFiles, saveLoop, selectedView });
+  const visibleSections =
+    resolveSavedRehearsalLibraryVisibleSections(selectedView);
+  const saveLoopForVisibleContext = useLoopSaveWithFilesLocation({
+    detailMode,
+    isEditingLoop: loopState.selectedLoopEdit !== null,
+    isSearchPanelVisible,
+    libraryFiles,
+    onShowFilesSuccessFeedback: onShowLibraryFilesSuccessFeedback,
+    saveLoop,
+    selectedView,
+  });
   const loopSection = (
     <SavedRehearsalLibraryLoopSectionContent
       activePlayableItem={activePlayableItem}
@@ -212,19 +224,6 @@ export const SavedRehearsalLibrarySection = ({
     ? shouldShowSearchResults
     : detailMode === 'browse';
 
-  useEffect(() => {
-    onFilesExplorerVisibilityChange?.(
-      selectedView === 'files' &&
-        detailMode === 'browse' &&
-        !isSearchPanelVisible,
-    );
-  }, [
-    detailMode,
-    isSearchPanelVisible,
-    onFilesExplorerVisibilityChange,
-    selectedView,
-  ]);
-
   return (
     <View style={styles.savedLibrarySection}>
       <SavedRehearsalLibrarySearchShell
@@ -255,6 +254,7 @@ export const SavedRehearsalLibrarySection = ({
           isPlaybackPreparing={isPlaybackPreparing}
           isPlaylistMutating={isPlaylistMutating}
           isSavedLibraryMutating={isSavedLibraryMutating}
+          libraryFilesSuccessFeedback={libraryFilesSuccessFeedback}
           loopSection={loopSection}
           loopState={loopState}
           openLoopBuilderForSource={openLoopBuilderForSource}
@@ -276,9 +276,16 @@ export const SavedRehearsalLibrarySection = ({
           savedSourceTitle={savedSourceTitle}
           searchState={searchState}
           visibleSections={visibleSections}
+          onDismissLibraryFilesSuccessFeedback={
+            onDismissLibraryFilesSuccessFeedback
+          }
+          onOpenLibraryFilesSuccessFeedbackFolder={
+            onOpenLibraryFilesSuccessFeedbackFolder
+          }
           onOpenLoopTagEditor={tagEditor.openLoopTagEditor}
           onOpenPlaylistTagEditor={tagEditor.openPlaylistTagEditor}
           onOpenSourceTagEditor={tagEditor.openSourceTagEditor}
+          onShowLibraryFilesSuccessFeedback={onShowLibraryFilesSuccessFeedback}
           togglePlaylistPlayback={togglePlaylistPlayback}
           togglePlayableItemPlayback={togglePlayableItemPlayback}
           toggleSourcePlayback={toggleSourcePlayback}

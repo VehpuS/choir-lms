@@ -7,21 +7,23 @@ import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-mo
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import { OptionsMenuSheet } from '../options-menu-sheet';
-import {
-  getDeleteFromFolderConfirmationCopy,
-  resolveFilesRowMenuActions,
-} from './files-row-actions';
+import { resolveFilesRowMenuActions } from './files-row-actions';
 import type { FileLinkLibraryFilesRow } from './files-row-actions-model';
 import {
-  formatFolderDeleteImpactMessage,
   formatTrackRemoveFromLibraryImpactMessage,
   getTrackRemoveFromLibraryAffectedSections,
 } from './library-files-delete-copy';
+import { requestLibraryFilesDeleteConfirmation } from './library-files-delete-flow';
 import {
   buildLibraryFilesDestinationPicker,
   type PendingLibraryFilesDestinationAction,
 } from './library-files-destination-actions';
 import { LibraryFilesRenameDialog } from './library-files-rename-dialog';
+import {
+  createLibraryFilesDestinationSuccessFeedback,
+  createLibraryFilesRenameSuccessFeedback,
+  type LibraryFilesSuccessFeedback,
+} from './library-files-success-feedback';
 import { useLibraryFilesConfirmationFlow } from './use-library-files-confirmation-flow';
 
 type UseLibraryFilesRowActionFlowsOptions = {
@@ -41,6 +43,7 @@ type UseLibraryFilesRowActionFlowsOptions = {
   onOpenSourcePlaylistSelector: (sourceId: string) => void;
   onOpenSourceTagEditor: (source: DriveLibrarySource) => void;
   onOpenLoopTagEditor: (loopId: string) => void;
+  onShowSuccessFeedback?: (feedback: LibraryFilesSuccessFeedback) => void;
   onQueuePlayableItemNext: (playableItem: PlayableItem) => void;
   onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   onRemoveSource: (source: DriveLibrarySource) => void;
@@ -63,6 +66,7 @@ export const useLibraryFilesRowActionFlows = ({
   onOpenSourcePlaylistSelector,
   onOpenSourceTagEditor,
   onOpenLoopTagEditor,
+  onShowSuccessFeedback,
   onQueuePlayableItemNext,
   onQueuePlayableItemUpNext,
   onRemoveSource,
@@ -70,12 +74,19 @@ export const useLibraryFilesRowActionFlows = ({
   const [isFileActionMutating, setIsFileActionMutating] = useState(false);
   const [pendingDestinationAction, setPendingDestinationAction] =
     useState<PendingLibraryFilesDestinationAction | null>(null);
-  const [currentDestinationPickerFolderId, setCurrentDestinationPickerFolderId] =
-    useState<string | null>(null);
+  const [
+    currentDestinationPickerFolderId,
+    setCurrentDestinationPickerFolderId,
+  ] = useState<string | null>(null);
   const [pendingRenameRow, setPendingRenameRow] =
     useState<LibraryFilesRow | null>(null);
   const [renameDraftName, setRenameDraftName] = useState('');
   const confirmationFlow = useLibraryFilesConfirmationFlow();
+  const getFolderName = (folderId: string) => {
+    return files.destinationFolders.find((destination) => {
+      return destination.folder.id === folderId;
+    })?.folder.name;
+  };
 
   const handleSubmitDestination = (folderId: string) => {
     if (!pendingDestinationAction) {
@@ -106,9 +117,19 @@ export const useLibraryFilesRowActionFlows = ({
       setIsFileActionMutating(false);
 
       if (didComplete) {
+        const destinationFolderName =
+          getFolderName(folderId) ?? 'the selected folder';
+
         setPendingDestinationAction(null);
         setCurrentDestinationPickerFolderId(null);
         files.openFolder(folderId);
+        onShowSuccessFeedback?.(
+          createLibraryFilesDestinationSuccessFeedback({
+            destinationFolderName,
+            kind: pendingDestinationAction.kind,
+            row,
+          }),
+        );
       }
     })();
   };
@@ -135,44 +156,26 @@ export const useLibraryFilesRowActionFlows = ({
       setIsFileActionMutating(false);
 
       if (didRename) {
+        const nextName = renameDraftName.trim();
+
         setPendingRenameRow(null);
         setRenameDraftName('');
+        onShowSuccessFeedback?.(
+          createLibraryFilesRenameSuccessFeedback({
+            nextName,
+            previousName: pendingRenameRow.label,
+          }),
+        );
       }
     })();
   };
 
   const handleDeleteFileNode = (row: LibraryFilesRow) => {
-    if (row.kind === 'folder') {
-      const impact = files.getFolderDeleteImpact(row.folder.id);
-
-      if (!impact || impact.isRootFolder) {
-        return;
-      }
-
-      confirmationFlow.requestConfirmation({
-        content: {
-          confirmLabel: 'Delete folder',
-          message: formatFolderDeleteImpactMessage(row, impact),
-          title: 'Delete folder?',
-        },
-        onConfirm: async () => {
-          await files.deleteFolder(row.folder.id);
-        },
-      });
-      return;
-    }
-
-    const impact = files.getFileLinkDeleteImpact(row.fileLink);
-    const copy = getDeleteFromFolderConfirmationCopy({
-      isLastLink: impact.isLastLink,
-      itemName: row.label,
-    });
-
-    confirmationFlow.requestConfirmation({
-      content: copy,
-      onConfirm: async () => {
-        await files.deleteFileLink(row.fileLink.id);
-      },
+    requestLibraryFilesDeleteConfirmation({
+      files,
+      onShowSuccessFeedback,
+      requestConfirmation: confirmationFlow.requestConfirmation,
+      row,
     });
   };
 

@@ -19,6 +19,8 @@ import { FeedbackCard } from '../feedback-card';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import { resolveFilesRowMenuTitle } from './files-row-actions';
 import { buildSavedRehearsalLibraryFilesViewModel } from './files-view-model';
+import type { LibraryFilesSuccessFeedback } from './library-files-success-feedback';
+import { LibraryFilesSuccessFeedbackCard } from './library-files-success-feedback-card';
 import { useLibraryFilesRowActionFlows } from './use-library-files-row-action-flows';
 
 type SavedRehearsalLibraryFilesViewProps = {
@@ -37,12 +39,16 @@ type SavedRehearsalLibraryFilesViewProps = {
   onOpenLoopPlaylistSelector: (loopId: string) => void;
   onOpenPlaylist: (playlistId: string) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
+  onDismissSuccessFeedback: () => void;
   onOpenSourcePlaylistSelector: (sourceId: string) => void;
   onOpenSourceTagEditor: (source: DriveLibrarySource) => void;
   onOpenLoopTagEditor: (loopId: string) => void;
+  onOpenSuccessFeedbackFolder: (folderId: string) => void;
+  onShowSuccessFeedback: (feedback: LibraryFilesSuccessFeedback) => void;
   onQueuePlayableItemNext: (playableItem: PlayableItem) => void;
   onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   onRemoveSource: (source: DriveLibrarySource) => void;
+  successFeedback: LibraryFilesSuccessFeedback | null;
   onTogglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
 };
@@ -78,12 +84,16 @@ export const SavedRehearsalLibraryFilesView = ({
   onOpenLoopPlaylistSelector,
   onOpenPlaylist,
   onOpenPlaylistTagEditor,
+  onDismissSuccessFeedback,
   onOpenSourcePlaylistSelector,
   onOpenSourceTagEditor,
   onOpenLoopTagEditor,
+  onOpenSuccessFeedbackFolder,
+  onShowSuccessFeedback,
   onQueuePlayableItemNext,
   onQueuePlayableItemUpNext,
   onRemoveSource,
+  successFeedback,
   onTogglePlayableItemPlayback,
   onToggleSourcePlayback,
 }: SavedRehearsalLibraryFilesViewProps) => {
@@ -109,6 +119,7 @@ export const SavedRehearsalLibraryFilesView = ({
     onQueuePlayableItemNext,
     onQueuePlayableItemUpNext,
     onRemoveSource,
+    onShowSuccessFeedback,
   });
 
   if (files.isLoading && !explorer) {
@@ -239,6 +250,15 @@ export const SavedRehearsalLibraryFilesView = ({
           );
         })}
       </ExplorerListSurface>
+      {successFeedback ? (
+        <View pointerEvents="box-none" style={styles.successFeedbackOverlay}>
+          <LibraryFilesSuccessFeedbackCard
+            feedback={successFeedback}
+            onDismiss={onDismissSuccessFeedback}
+            onOpenFolder={onOpenSuccessFeedbackFolder}
+          />
+        </View>
+      ) : null}
       {rowActionFlows.destinationPicker}
       {rowActionFlows.renameDialog}
     </View>
@@ -268,5 +288,13 @@ const styles = StyleSheet.create({
   },
   surface: {
     gap: 12,
+    position: 'relative',
+  },
+  successFeedbackOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
   },
 });

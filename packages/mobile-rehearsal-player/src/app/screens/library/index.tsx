@@ -1,18 +1,19 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import { SavedRehearsalLibrarySection } from '../../library/components/saved-rehearsal-library-section';
+import type { LibraryFilesSuccessFeedback } from '../../library/components/saved-rehearsal-library-section/library-files-success-feedback';
 import { SavedRehearsalLibraryHeader } from '../../library/components/saved-rehearsal-library-section/search-shell';
 import { useSavedRehearsalLibrarySearch } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search';
 import { useSavedRehearsalLibrarySearchPanel } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search-panel';
 import { LoopPreviewPlaybackContext } from '../../library/loops/components/loop-preview-playback-context';
 import type { useSavedTrackPlayback } from '../../library/playback/hooks/use-saved-track-playback';
-import { resolveSavedPlaylistDetailEdgeAutoscrollDelta } from '../../library/playlists/utils/saved-playlist-detail-view-model';
 import type { SavedRehearsalLibraryView } from '../../library/saved-rehearsal-library/detail-mode';
 import type { useRehearsalLibraryController } from '../../library/saved-rehearsal-library/use-rehearsal-library-controller';
 import { appTheme } from '../../utils/theme';
 import { LibraryFilesCreateControls } from './library-files-create-controls';
+import { useLibraryScreenScrollCoordination } from './use-library-screen-scroll-coordination';
 
 type SavedTrackPlaybackController = Pick<
   ReturnType<typeof useSavedTrackPlayback>,
@@ -39,12 +40,6 @@ type LibraryScreenProps = {
   playback: SavedTrackPlaybackController;
 };
 
-type MeasurableScrollView = ScrollView & {
-  measureInWindow: (
-    callback: (x: number, y: number, width: number, height: number) => void,
-  ) => void;
-};
-
 export const LibraryScreen = ({
   authorization,
   libraryController,
@@ -54,14 +49,10 @@ export const LibraryScreen = ({
   const [selectedView, setSelectedView] =
     useState<SavedRehearsalLibraryView>('files');
   const [isFilesExplorerVisible, setIsFilesExplorerVisible] = useState(false);
+  const [libraryFilesSuccessFeedback, setLibraryFilesSuccessFeedback] =
+    useState<LibraryFilesSuccessFeedback | null>(null);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
-  const [isPlaylistReorderDragActive, setIsPlaylistReorderDragActive] =
-    useState(false);
-  const scrollViewRef = useRef<ScrollView | null>(null);
-  const scrollOffsetYRef = useRef(0);
-  const contentHeightRef = useRef(0);
-  const viewportTopInWindowRef = useRef(0);
-  const viewportHeightRef = useRef(0);
+  const scrollCoordination = useLibraryScreenScrollCoordination();
   const searchState = useSavedRehearsalLibrarySearch({
     savedLibrarySources: libraryController.savedLibrary.savedLibrarySources,
     savedLoops: libraryController.savedLibrary.savedLoops,
@@ -70,69 +61,27 @@ export const LibraryScreen = ({
   const searchPanel = useSavedRehearsalLibrarySearchPanel({
     searchState,
   });
-  const refreshViewportBounds = useCallback(() => {
-    const measurableScrollView =
-      scrollViewRef.current as MeasurableScrollView | null;
-
-    measurableScrollView?.measureInWindow((_x, y, _width, height) => {
-      viewportTopInWindowRef.current = y;
-      viewportHeightRef.current = height;
-    });
+  const showLibraryFilesSuccessFeedback = useCallback(
+    (feedback: LibraryFilesSuccessFeedback) => {
+      setLibraryFilesSuccessFeedback(feedback);
+    },
+    [],
+  );
+  const dismissLibraryFilesSuccessFeedback = useCallback(() => {
+    setLibraryFilesSuccessFeedback(null);
   }, []);
-
-  const setPlaylistReorderDragActive = useCallback(
-    (isActive: boolean) => {
-      if (isActive) {
-        refreshViewportBounds();
+  const openLibraryFilesSuccessFeedbackFolder = useCallback(
+    (folderId: string) => {
+      if (!folderId) {
+        return;
       }
 
-      setIsPlaylistReorderDragActive(isActive);
+      setSelectedView('files');
+      libraryController.savedLibrary.files.openFolder(folderId);
+      setLibraryFilesSuccessFeedback(null);
     },
-    [refreshViewportBounds],
+    [libraryController.savedLibrary.files],
   );
-
-  const setPlaylistReorderDragMoveY = useCallback(
-    (moveY: number) => {
-      if (!isPlaylistReorderDragActive) {
-        return;
-      }
-
-      const viewportHeight = viewportHeightRef.current;
-      const viewportTop = viewportTopInWindowRef.current;
-      const moveYWithinViewport = moveY - viewportTop;
-
-      if (viewportHeight <= 0) {
-        return;
-      }
-
-      const scrollDelta = resolveSavedPlaylistDetailEdgeAutoscrollDelta({
-        moveY: moveYWithinViewport,
-        viewportHeight,
-      });
-
-      if (scrollDelta === 0) {
-        return;
-      }
-
-      const maxOffset = Math.max(contentHeightRef.current - viewportHeight, 0);
-      const nextOffset = Math.max(
-        0,
-        Math.min(scrollOffsetYRef.current + scrollDelta, maxOffset),
-      );
-
-      if (nextOffset === scrollOffsetYRef.current) {
-        return;
-      }
-
-      scrollOffsetYRef.current = nextOffset;
-      scrollViewRef.current?.scrollTo({
-        y: nextOffset,
-        animated: false,
-      });
-    },
-    [isPlaylistReorderDragActive],
-  );
-
   return (
     <View style={styles.screen}>
       {isSessionMenuVisible ? (
@@ -160,22 +109,15 @@ export const LibraryScreen = ({
         style={styles.destinationHeader}
       />
       <ScrollView
-        ref={scrollViewRef}
+        ref={scrollCoordination.scrollViewRef}
         contentContainerStyle={[
           styles.content,
           isFilesExplorerVisible ? styles.contentWithFilesCreateDock : null,
         ]}
-        onContentSizeChange={(_, contentHeight) => {
-          contentHeightRef.current = contentHeight;
-        }}
-        onLayout={(event) => {
-          viewportHeightRef.current = event.nativeEvent.layout.height;
-          refreshViewportBounds();
-        }}
-        onScroll={(event) => {
-          scrollOffsetYRef.current = event.nativeEvent.contentOffset.y;
-        }}
-        scrollEnabled={!isPlaylistReorderDragActive}
+        onContentSizeChange={scrollCoordination.handleContentSizeChange}
+        onLayout={scrollCoordination.handleLayout}
+        onScroll={scrollCoordination.handleScroll}
+        scrollEnabled={!scrollCoordination.isPlaylistReorderDragActive}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
@@ -195,9 +137,7 @@ export const LibraryScreen = ({
             canMutatePlaylists={libraryController.playlists.canMutatePlaylists}
             createPlaylist={libraryController.playlists.createPlaylist}
             deletePlaylist={libraryController.playlists.deletePlaylist}
-            getCurrentScrollOffsetY={() => {
-              return scrollOffsetYRef.current;
-            }}
+            getCurrentScrollOffsetY={scrollCoordination.getCurrentScrollOffsetY}
             isPlaybackPreparing={playback.isPreparing}
             isPlaylistsLoading={libraryController.playlists.isLoading}
             isSavedLibraryLoading={libraryController.savedLibrary.isLoading}
@@ -205,10 +145,18 @@ export const LibraryScreen = ({
               libraryController.savedLibrary.isSavedLoopsLoading
             }
             libraryFiles={libraryController.savedLibrary.files}
+            libraryFilesSuccessFeedback={libraryFilesSuccessFeedback}
             openLoopBuilderForSource={
               libraryController.savedLibrary.openLoopBuilderForSource
             }
+            onDismissLibraryFilesSuccessFeedback={
+              dismissLibraryFilesSuccessFeedback
+            }
             onFilesExplorerVisibilityChange={setIsFilesExplorerVisible}
+            onOpenLibraryFilesSuccessFeedbackFolder={
+              openLibraryFilesSuccessFeedbackFolder
+            }
+            onShowLibraryFilesSuccessFeedback={showLibraryFilesSuccessFeedback}
             pendingLoopBuilderSourceId={
               libraryController.savedLibrary.pendingLoopBuilderSourceId
             }
@@ -241,8 +189,12 @@ export const LibraryScreen = ({
             searchState={searchState}
             selectedTrack={libraryController.savedLibrary.selectedLoopTrack}
             selectedView={selectedView}
-            setIsPlaylistReorderDragActive={setPlaylistReorderDragActive}
-            setPlaylistReorderDragMoveY={setPlaylistReorderDragMoveY}
+            setIsPlaylistReorderDragActive={
+              scrollCoordination.setPlaylistReorderDragActive
+            }
+            setPlaylistReorderDragMoveY={
+              scrollCoordination.setPlaylistReorderDragMoveY
+            }
             setSelectedLoopSourceId={
               libraryController.savedLibrary.setSelectedLoopSourceId
             }
@@ -261,6 +213,7 @@ export const LibraryScreen = ({
         files={libraryController.savedLibrary.files}
         isVisible={isFilesExplorerVisible}
         onRequestAddDestination={onRequestAddDestination}
+        onShowSuccessFeedback={showLibraryFilesSuccessFeedback}
         playlistIssue={libraryController.playlists.issue}
       />
     </View>
