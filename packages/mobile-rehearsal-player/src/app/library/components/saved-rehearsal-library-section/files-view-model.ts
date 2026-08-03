@@ -11,7 +11,9 @@ import type { ExplorerBreadcrumbItem } from '../explorer/model';
 type LibraryFilesControllerLike = Pick<
   UseLibraryFilesResult,
   'goToFolder' | 'goToParentFolder' | 'openFolder'
->;
+> & {
+  explorer?: LibraryFilesExplorerState;
+};
 
 export type FilesPlaylistAddMode = {
   canMutatePlaylists: boolean;
@@ -123,7 +125,7 @@ const isRowActive = (
 
 export const buildSavedRehearsalLibraryFilesViewModel = (options: {
   activePlayableItem: PlayableItem | null;
-  explorer: LibraryFilesExplorerState;
+  explorer?: LibraryFilesExplorerState;
   files: LibraryFilesControllerLike;
   onOpenPlaylist: (playlistId: string) => void;
   onOpenRow?: (row: LibraryFilesExplorerState['rows'][number]) => void;
@@ -131,7 +133,11 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
   onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
   playlistAddMode?: FilesPlaylistAddMode;
 }): SavedRehearsalLibraryFilesViewModel => {
-  const explorer = options.explorer;
+  const explorer = options.explorer ?? options.files.explorer;
+
+  if (!explorer) {
+    throw new Error('Library files explorer state is required.');
+  }
 
   return {
     breadcrumbs: explorer.breadcrumbs.map((breadcrumb, index) => {
