@@ -87,11 +87,20 @@ const LOOP_NAME_REQUIRED_ISSUE = {
 const MISSING_SOURCE_MESSAGE =
   'Restore the saved source track in the rehearsal library before playing this loop.';
 
-const formatLoopRangeLabel = (loop: Pick<NamedLoop, 'startMs' | 'endMs'>) => {
+export const formatSavedLoopRangeLabel = (
+  loop: Pick<NamedLoop, 'startMs' | 'endMs'>,
+) => {
   const startLabel = formatDurationLabel(loop.startMs) ?? '0:00';
   const endLabel = formatDurationLabel(loop.endMs) ?? '0:00';
 
   return `${startLabel} to ${endLabel}`;
+};
+
+export const formatSavedLoopProvenanceLabel = (options: {
+  loop: Pick<NamedLoop, 'startMs' | 'endMs'>;
+  parentTrackName: string;
+}) => {
+  return `Parent track: ${options.parentTrackName} • ${formatSavedLoopRangeLabel(options.loop)}`;
 };
 
 const defaultCreateId = (sourceId: string, createdAt: string) => {
@@ -115,13 +124,16 @@ const buildSavedLoopCard = (options: {
   source?: DriveLibrarySource;
 }): SavedLoopCard => {
   const parentTrack = resolveSavedLoopParentTrack(options.loop, options.source);
-  const rangeLabel = formatLoopRangeLabel(options.loop);
+  const rangeLabel = formatSavedLoopRangeLabel(options.loop);
 
   return {
     loop: options.loop,
     parentTrack,
     rangeLabel,
-    metadataLabel: `${parentTrack.name} • ${rangeLabel}`,
+    metadataLabel: formatSavedLoopProvenanceLabel({
+      loop: options.loop,
+      parentTrackName: parentTrack.name,
+    }),
     message: options.message,
     playableItem: options.playableItem,
   };
@@ -133,7 +145,7 @@ export const getSavedLoopRemovalCopy = (
   return {
     confirmLabel: 'Remove loop',
     message:
-      `"${loop.name}" (${loop.sourceName} • ${formatLoopRangeLabel(loop)}) ` +
+      `"${loop.name}" (${loop.sourceName} • ${formatSavedLoopRangeLabel(loop)}) ` +
       'will be removed from your saved practice loops.',
     title: 'Remove saved loop?',
   };

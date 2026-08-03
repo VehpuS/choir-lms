@@ -251,6 +251,9 @@ describe('library-files model browse', () => {
     assert.equal(trackRow?.kind, 'track');
     assert.equal(trackRow?.supportingLabel, 'Track • 4:05');
     assert.equal(loopRow?.kind, 'loop');
-    assert.equal(loopRow?.supportingLabel, 'Full Choir.mp3 • 0:12 to 0:24');
+    assert.equal(
+      loopRow?.supportingLabel,
+      'Parent track: Full Choir.mp3 • 0:12 to 0:24',
+    );
   });
 });

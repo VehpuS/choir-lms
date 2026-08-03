@@ -89,7 +89,9 @@ describe('library-files model search', () => {
           visibleName: 'Warm loop',
         },
       ],
-      folders: [{ id: 'folder:library-root', name: 'Library', parentFolderId: null }],
+      folders: [
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+      ],
       rootFolderId: 'folder:library-root',
       version: 1,
     };
@@ -114,7 +116,12 @@ describe('library-files model search', () => {
         kind: row.kind,
         supportingLabel: row.supportingLabel,
       })),
-      [{ kind: 'loop', supportingLabel: 'Full Choir.mp3 • 0:12 to 0:24' }],
+      [
+        {
+          kind: 'loop',
+          supportingLabel: 'Parent track: Full Choir.mp3 • 0:12 to 0:24',
+        },
+      ],
     );
   });
 

@@ -170,7 +170,10 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
   - Capture a Files-only session snapshot at the Library screen boundary so Files folder path, search query/scope, selected sort, and screen scroll offset are not overwritten by non-Files Library browsing.
   - Restore that snapshot when users re-enter the Files view by reapplying the saved folder/search state and then scrolling the Library screen back to the prior Files offset after the view settles.
   - Cover the capture and restore boundary rules with a focused colocated spec before checking this slice complete.
-- [ ] 2.6.4 Finish loop provenance presentation in Files, search, tag, and folder results while keeping dedicated track-context loop browsing fast and clearly parent-linked (`5.4` and `5.4.1` UI integration).
+- [x] 2.6.4 Finish loop provenance presentation in Files, search, tag, and folder results while keeping dedicated track-context loop browsing fast and clearly parent-linked (`5.4` and `5.4.1` UI integration).
+  - Route standalone loop-result supporting copy through one shared provenance formatter so Files rows and saved-loop cards use the same parent-track wording.
+  - Make parent-track identity explicit in standalone Files/search/tag/folder results so containing-path metadata and source provenance stay distinguishable at a glance.
+  - Keep track-scoped loop browsing on the existing detail surface while backfilling focused assertions for standalone loop provenance before checking this slice complete.
 - [ ] 2.6.5 Add focused coverage for Files search, sort, restoration, and result-group behavior, then manually verify the full Files organization/search contract end to end (`6.1.6`, `6.2.7`, and `6.2.7.3`).
 
 ### 2.7 Simplify Copy, Metadata, and Visual Prominence

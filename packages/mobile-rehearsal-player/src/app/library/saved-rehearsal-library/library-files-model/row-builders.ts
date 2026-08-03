@@ -13,6 +13,7 @@ import {
   formatDurationLabel,
   type DriveLibrarySource,
 } from '../../drive/utils/drive-library-view-model';
+import { formatSavedLoopProvenanceLabel } from '../../loops/utils/saved-loop-view-model';
 
 import type {
   LibraryFilesFolderChildCounts,
@@ -39,9 +40,7 @@ const formatPluralizedItemCount = (count: number) => {
   return formatPluralizedCount(count, 'item');
 };
 
-const formatFolderSupportingLabel = (
-  counts: LibraryFilesFolderChildCounts,
-) => {
+const formatFolderSupportingLabel = (counts: LibraryFilesFolderChildCounts) => {
   if (counts.totalCount === 0) {
     return formatPluralizedItemCount(0);
   }
@@ -75,20 +74,6 @@ const formatFolderSupportingLabel = (
   }
 
   return musicSegments.join(' • ');
-};
-
-const formatLoopRangeLabel = (loop: Pick<NamedLoop, 'startMs' | 'endMs'>) => {
-  const startLabel = formatDurationLabel(loop.startMs) ?? '0:00';
-  const endLabel = formatDurationLabel(loop.endMs) ?? '0:00';
-
-  return `${startLabel} to ${endLabel}`;
-};
-
-const buildLoopSupportingLabel = (options: {
-  loop: Pick<NamedLoop, 'startMs' | 'endMs'>;
-  parentTrackName: string;
-}) => {
-  return `${options.parentTrackName} • ${formatLoopRangeLabel(options.loop)}`;
 };
 
 const createEntityReferenceKey = (
@@ -253,7 +238,7 @@ export const buildLoopRow = (options: {
           DEFAULT_UNAVAILABLE_LOOP_MESSAGE),
     playableItem,
     source: options.source,
-    supportingLabel: buildLoopSupportingLabel({
+    supportingLabel: formatSavedLoopProvenanceLabel({
       loop: options.loop,
       parentTrackName,
     }),
