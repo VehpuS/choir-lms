@@ -129,6 +129,7 @@ type SavedRehearsalLibraryPlaylistSectionContentProps = {
   savedPlaylists: Playlist[];
   setIsPlaylistReorderDragActive: (isActive: boolean) => void;
   setPlaylistReorderDragMoveY: (moveY: number) => void;
+  showBrowseHeader: boolean;
   toggleActivePlayback: () => Promise<void>;
   togglePlaylistPlayback: SavedRehearsalLibrarySectionProps['togglePlaylistPlayback'];
   updatePlaylist: (playlist: Playlist) => Promise<Playlist | null>;
@@ -155,6 +156,7 @@ export const SavedRehearsalLibraryPlaylistSectionContent = ({
   savedPlaylists,
   setIsPlaylistReorderDragActive,
   setPlaylistReorderDragMoveY,
+  showBrowseHeader,
   toggleActivePlayback,
   togglePlaylistPlayback,
   updatePlaylist,
@@ -192,6 +194,7 @@ export const SavedRehearsalLibraryPlaylistSectionContent = ({
       setIsReorderDragActive={setIsPlaylistReorderDragActive}
       setReorderDragMoveY={setPlaylistReorderDragMoveY}
       setSelectedPlaylistId={playlistState.setSelectedPlaylistId}
+      showBrowseHeader={showBrowseHeader}
       toggleActivePlayback={toggleActivePlayback}
       togglePlaylistPlayback={togglePlaylistPlayback}
       updatePlaylist={updatePlaylist}

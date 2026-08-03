@@ -1,44 +1,19 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import { SavedRehearsalLibrarySection } from '../../library/components/saved-rehearsal-library-section';
 import type { LibraryFilesSuccessFeedback } from '../../library/components/saved-rehearsal-library-section/library-files-success-feedback';
 import { SavedRehearsalLibraryHeader } from '../../library/components/saved-rehearsal-library-section/search-shell';
+import type { LibraryBrowseCreateDockMode } from '../../library/components/saved-rehearsal-library-section/types';
 import { useSavedRehearsalLibrarySearch } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search';
 import { useSavedRehearsalLibrarySearchPanel } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search-panel';
 import { LoopPreviewPlaybackContext } from '../../library/loops/components/loop-preview-playback-context';
-import type { useSavedTrackPlayback } from '../../library/playback/hooks/use-saved-track-playback';
 import type { SavedRehearsalLibraryView } from '../../library/saved-rehearsal-library/detail-mode';
-import type { useRehearsalLibraryController } from '../../library/saved-rehearsal-library/use-rehearsal-library-controller';
 import { appTheme } from '../../utils/theme';
 import { LibraryFilesCreateControls } from './library-files-create-controls';
+import { LibraryPlaylistCreateControls } from './library-playlist-create-controls';
+import type { LibraryScreenProps } from './library-screen-types';
 import { useLibraryScreenScrollCoordination } from './use-library-screen-scroll-coordination';
-
-type SavedTrackPlaybackController = Pick<
-  ReturnType<typeof useSavedTrackPlayback>,
-  | 'activePlaylistSession'
-  | 'activePlayableItem'
-  | 'isPreparing'
-  | 'issue'
-  | 'playbackState'
-  | 'progress'
-  | 'queuePlayableItemNext'
-  | 'queuePlayableItemUpNext'
-  | 'seekActivePlaybackToPosition'
-  | 'syncActivePlaylistContext'
-  | 'toggleActivePlayback'
-  | 'togglePlayableItemPlayback'
-  | 'togglePlaylistPlayback'
-  | 'toggleSourcePlayback'
->;
-
-type LibraryScreenProps = {
-  authorization: DriveSessionMenuController;
-  libraryController: ReturnType<typeof useRehearsalLibraryController>;
-  onRequestAddDestination: () => void;
-  playback: SavedTrackPlaybackController;
-};
 
 export const LibraryScreen = ({
   authorization,
@@ -48,10 +23,14 @@ export const LibraryScreen = ({
 }: LibraryScreenProps) => {
   const [selectedView, setSelectedView] =
     useState<SavedRehearsalLibraryView>('files');
-  const [isFilesExplorerVisible, setIsFilesExplorerVisible] = useState(false);
+  const [browseCreateDockMode, setBrowseCreateDockMode] =
+    useState<LibraryBrowseCreateDockMode>(null);
   const [libraryFilesSuccessFeedback, setLibraryFilesSuccessFeedback] =
     useState<LibraryFilesSuccessFeedback | null>(null);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
+  const playlistSelectionHandlerRef = useRef<
+    ((playlistId: string) => void) | null
+  >(null);
   const scrollCoordination = useLibraryScreenScrollCoordination();
   const searchState = useSavedRehearsalLibrarySearch({
     savedLibrarySources: libraryController.savedLibrary.savedLibrarySources,
@@ -69,6 +48,9 @@ export const LibraryScreen = ({
   );
   const dismissLibraryFilesSuccessFeedback = useCallback(() => {
     setLibraryFilesSuccessFeedback(null);
+  }, []);
+  const handlePlaylistCreated = useCallback((playlistId: string) => {
+    playlistSelectionHandlerRef.current?.(playlistId);
   }, []);
   const openLibraryFilesSuccessFeedbackFolder = useCallback(
     (folderId: string) => {
@@ -112,7 +94,7 @@ export const LibraryScreen = ({
         ref={scrollCoordination.scrollViewRef}
         contentContainerStyle={[
           styles.content,
-          isFilesExplorerVisible ? styles.contentWithFilesCreateDock : null,
+          browseCreateDockMode !== null ? styles.contentWithCreateDock : null,
         ]}
         onContentSizeChange={scrollCoordination.handleContentSizeChange}
         onLayout={scrollCoordination.handleLayout}
@@ -152,10 +134,13 @@ export const LibraryScreen = ({
             onDismissLibraryFilesSuccessFeedback={
               dismissLibraryFilesSuccessFeedback
             }
-            onFilesExplorerVisibilityChange={setIsFilesExplorerVisible}
+            onBrowseCreateDockChange={setBrowseCreateDockMode}
             onOpenLibraryFilesSuccessFeedbackFolder={
               openLibraryFilesSuccessFeedbackFolder
             }
+            onPlaylistSelectionHandlerChange={(handler) => {
+              playlistSelectionHandlerRef.current = handler;
+            }}
             onShowLibraryFilesSuccessFeedback={showLibraryFilesSuccessFeedback}
             pendingLoopBuilderSourceId={
               libraryController.savedLibrary.pendingLoopBuilderSourceId
@@ -211,9 +196,16 @@ export const LibraryScreen = ({
       <LibraryFilesCreateControls
         createPlaylist={libraryController.playlists.createPlaylist}
         files={libraryController.savedLibrary.files}
-        isVisible={isFilesExplorerVisible}
+        isVisible={browseCreateDockMode === 'files'}
         onRequestAddDestination={onRequestAddDestination}
         onShowSuccessFeedback={showLibraryFilesSuccessFeedback}
+        playlistIssue={libraryController.playlists.issue}
+      />
+      <LibraryPlaylistCreateControls
+        canMutatePlaylists={libraryController.playlists.canMutatePlaylists}
+        createPlaylist={libraryController.playlists.createPlaylist}
+        isVisible={browseCreateDockMode === 'playlists'}
+        onSelectPlaylist={handlePlaylistCreated}
         playlistIssue={libraryController.playlists.issue}
       />
     </View>
@@ -230,7 +222,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 20,
   },
-  contentWithFilesCreateDock: {
+  contentWithCreateDock: {
     paddingBottom: 188,
   },
   destinationHeader: {

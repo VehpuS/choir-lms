@@ -26,6 +26,8 @@ import type { LibraryFilesSuccessFeedback } from './library-files-success-feedba
 import type { useSavedRehearsalLibrarySearch } from './use-saved-rehearsal-library-search';
 import type { useSavedRehearsalLibrarySearchPanel } from './use-saved-rehearsal-library-search-panel';
 
+export type LibraryBrowseCreateDockMode = 'files' | 'playlists' | null;
+
 export type SavedRehearsalLibrarySectionProps = {
   activePlayableItem: PlayableItem | null;
   activePlaylistSession: PlaylistPlaybackSession | null;
@@ -55,8 +57,11 @@ export type SavedRehearsalLibrarySectionProps = {
   libraryFiles: UseLibraryFilesResult;
   libraryFilesSuccessFeedback: LibraryFilesSuccessFeedback | null;
   onDismissLibraryFilesSuccessFeedback: () => void;
-  onFilesExplorerVisibilityChange?: (isVisible: boolean) => void;
+  onBrowseCreateDockChange?: (mode: LibraryBrowseCreateDockMode) => void;
   onOpenLibraryFilesSuccessFeedbackFolder: (folderId: string) => void;
+  onPlaylistSelectionHandlerChange?: (
+    handler: ((playlistId: string) => void) | null,
+  ) => void;
   onShowLibraryFilesSuccessFeedback: (
     feedback: LibraryFilesSuccessFeedback,
   ) => void;

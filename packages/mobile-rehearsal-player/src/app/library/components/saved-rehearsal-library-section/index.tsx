@@ -34,8 +34,9 @@ export const SavedRehearsalLibrarySection = ({
   libraryFilesSuccessFeedback,
   openLoopBuilderForSource,
   onDismissLibraryFilesSuccessFeedback,
-  onFilesExplorerVisibilityChange,
+  onBrowseCreateDockChange,
   onOpenLibraryFilesSuccessFeedbackFolder,
+  onPlaylistSelectionHandlerChange,
   onShowLibraryFilesSuccessFeedback,
   pendingLoopBuilderSourceId,
   pendingLoopId,
@@ -117,11 +118,13 @@ export const SavedRehearsalLibrarySection = ({
   useSavedRehearsalLibrarySectionEffects({
     detailMode,
     isSearchPanelVisible,
-    onFilesExplorerVisibilityChange,
+    onBrowseCreateDockChange,
+    onPlaylistSelectionHandlerChange,
     savedLibrarySources,
     savedLoops,
     savedPlaylists,
     selectedView,
+    setSelectedPlaylistId: playlistState.setSelectedPlaylistId,
     syncActivePlaylistContext,
   });
   const isTrackLoopDetailVisible = detailMode === 'track-loop-detail';
@@ -212,6 +215,7 @@ export const SavedRehearsalLibrarySection = ({
       savedPlaylists={savedPlaylists}
       setIsPlaylistReorderDragActive={setIsPlaylistReorderDragActive}
       setPlaylistReorderDragMoveY={setPlaylistReorderDragMoveY}
+      showBrowseHeader={selectedView !== 'playlists'}
       toggleActivePlayback={toggleActivePlayback}
       togglePlaylistPlayback={togglePlaylistPlayback}
       updatePlaylist={updatePlaylist}

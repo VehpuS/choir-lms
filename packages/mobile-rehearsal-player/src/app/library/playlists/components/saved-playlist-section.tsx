@@ -54,6 +54,7 @@ type SavedPlaylistSectionProps = {
   setSelectedPlaylistId: (playlistId: string) => void;
   setIsReorderDragActive: (isActive: boolean) => void;
   setReorderDragMoveY: (moveY: number) => void;
+  showBrowseHeader?: boolean;
   toggleActivePlayback: () => Promise<void>;
   togglePlaylistPlayback: (options: {
     loops: NamedLoop[];
@@ -89,6 +90,7 @@ export const SavedPlaylistSection = ({
   setSelectedPlaylistId,
   setIsReorderDragActive,
   setReorderDragMoveY,
+  showBrowseHeader = true,
   toggleActivePlayback,
   togglePlaylistPlayback,
   updatePlaylist,
@@ -189,7 +191,7 @@ export const SavedPlaylistSection = ({
 
   return (
     <View style={styles.section}>
-      {!isDetailVisible ? (
+      {!isDetailVisible && showBrowseHeader ? (
         <SavedPlaylistSectionHeader
           canMutatePlaylists={canMutatePlaylists}
           isMutating={isMutating}

@@ -1,10 +1,15 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
+import { appTheme } from '../../../utils/theme';
+import {
+  ExplorerListRow,
+  ExplorerListSurface,
+} from '../../components/explorer';
 import { FeedbackCard } from '../../components/feedback-card';
-import { savedPlaylistSectionStyles as styles } from '../../components/saved-playlist-section-styles';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import {
   getSavedPlaylistCardPlayAction,
@@ -72,63 +77,74 @@ export const SavedPlaylistCardsList = (props: {
   );
 
   return (
-    <View style={styles.group}>
-      <Text style={styles.groupTitle}>
+    <View style={styles.surface}>
+      <Text style={styles.listTitle}>
         Playlists ({props.playlistCards.length})
       </Text>
-      <View style={styles.groupItems}>
+      <ExplorerListSurface>
         {props.playlistCards.map((playlistCard) => {
           const playAction = getSavedPlaylistCardPlayAction(
             playlistCard.playlist,
           );
 
           return (
-            <View key={playlistCard.playlist.id} style={styles.playlistCard}>
-              <OverflowMenuTrigger
-                accessibilityLabel="Playlist options"
-                disabled={!props.canMutatePlaylists || props.isMutating}
+            <View key={playlistCard.playlist.id}>
+              <ExplorerListRow
+                actions={
+                  <CompactPlaybackAction
+                    accessibilityLabel={playAction.accessibilityLabel}
+                    disabled={playAction.disabled}
+                    iconName="play"
+                    onPress={() => {
+                      props.onPlayPlaylist(playlistCard.playlist.id);
+                    }}
+                    variant="row"
+                  />
+                }
+                leadingIcon={
+                  <MaterialCommunityIcons
+                    color={appTheme.colors.secondaryText}
+                    name="playlist-music-outline"
+                    size={22}
+                  />
+                }
+                message={
+                  <Text numberOfLines={1} style={styles.rowPreviewLabel}>
+                    {playlistCard.previewLabel}
+                  </Text>
+                }
+                metadata={
+                  <Text numberOfLines={1} style={styles.rowSupportingLabel}>
+                    {playlistCard.detailLabel}
+                  </Text>
+                }
                 onPress={() => {
-                  setOptionsPlaylistId(playlistCard.playlist.id);
+                  props.onSelectPlaylist(playlistCard.playlist.id);
                 }}
+                overflowTrigger={
+                  <OverflowMenuTrigger
+                    accessibilityLabel={`${playlistCard.playlist.name} options`}
+                    disabled={!props.canMutatePlaylists || props.isMutating}
+                    iconColor={appTheme.colors.secondaryText}
+                    onPress={() => {
+                      setOptionsPlaylistId(playlistCard.playlist.id);
+                    }}
+                    style={styles.rowOverflowTrigger}
+                  />
+                }
+                title={
+                  <SearchHighlightedText
+                    numberOfLines={1}
+                    query={props.highlightQuery ?? null}
+                    style={styles.rowTitle}
+                    text={playlistCard.playlist.name}
+                  />
+                }
               />
-              <SearchHighlightedText
-                query={props.highlightQuery ?? null}
-                style={styles.playlistName}
-                text={playlistCard.playlist.name}
-              />
-              <Text numberOfLines={1} style={styles.playlistMetadata}>
-                {playlistCard.detailLabel}
-              </Text>
-              <Text numberOfLines={1} style={styles.playlistPreview}>
-                {playlistCard.previewLabel}
-              </Text>
-              <View style={styles.actionRow}>
-                <CompactPlaybackAction
-                  accessibilityLabel={playAction.accessibilityLabel}
-                  disabled={playAction.disabled}
-                  iconName="play"
-                  onPress={() => {
-                    props.onPlayPlaylist(playlistCard.playlist.id);
-                  }}
-                  variant="card"
-                />
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => {
-                    props.onSelectPlaylist(playlistCard.playlist.id);
-                  }}
-                  style={({ pressed }) => [
-                    styles.secondaryButton,
-                    pressed ? styles.actionButtonPressed : undefined,
-                  ]}
-                >
-                  <Text style={styles.secondaryButtonLabel}>Open playlist</Text>
-                </Pressable>
-              </View>
             </View>
           );
         })}
-      </View>
+      </ExplorerListSurface>
       <PlaylistOptionsMenuSurface
         isMutating={props.isMutating || !props.canMutatePlaylists}
         isVisible={selectedOptionsPlaylist !== undefined}
@@ -184,3 +200,34 @@ export const SavedPlaylistCardsList = (props: {
 };
 
 export { SavedPlaylistDetailCard } from './saved-playlist-detail-card';
+
+const styles = StyleSheet.create({
+  listTitle: {
+    color: appTheme.colors.primaryText,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  rowOverflowTrigger: {
+    position: 'relative',
+    top: 0,
+    right: 0,
+  },
+  rowPreviewLabel: {
+    color: appTheme.colors.secondaryText,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  rowSupportingLabel: {
+    color: appTheme.colors.secondaryText,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  rowTitle: {
+    color: appTheme.colors.primaryText,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  surface: {
+    gap: 12,
+  },
+});
