@@ -4,6 +4,7 @@ import {
   buttonInteractionGuardStyle,
   interactionGuardProps,
 } from '../../../components/interaction-guard';
+import type { LibraryFilesIssue } from '../../saved-rehearsal-library/library-files-operation-helpers';
 import { CenteredDialogCard } from '../centered-dialog-card';
 import { FeedbackCard } from '../feedback-card';
 import {
@@ -14,15 +15,7 @@ import {
 type LibraryFilesRenameDialogProps = {
   isMutating: boolean;
   isVisible: boolean;
-  issue: {
-    message: string;
-    recovery?: {
-      kind: 'use-suggested-name';
-      label: string;
-      suggestedName: string;
-    };
-    title: string;
-  } | null;
+  issue: LibraryFilesIssue | null;
   value: string;
   onCancel: () => void;
   onChange: (value: string) => void;

@@ -1,18 +1,11 @@
 import type { Playlist } from '@org/audio-library-models';
 
-type LibraryFilesPlaylistCreateController = {
-  explorer: { currentFolder: { id: string } } | null;
-  moveFileLink: (options: {
-    destinationFolderId: string;
-    fileLink: {
-      entityId: string;
-      entityKind: 'playlist';
-      id: string;
-      parentFolderId: string;
-    };
-  }) => Promise<boolean>;
-  rootFolderId: string | null;
-};
+import type { UseLibraryFilesResult } from '../../library/saved-rehearsal-library/use-library-files';
+
+type LibraryFilesPlaylistCreateController = Pick<
+  UseLibraryFilesResult,
+  'explorer' | 'moveFileLink' | 'rootFolderId'
+>;
 
 type CreatePlaylistWithFilesLocationOptions = {
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
@@ -38,7 +31,7 @@ export const createPlaylistWithFilesLocation = async ({
     return createdPlaylist;
   }
 
-  const didMove = await files.moveFileLink({
+  const moveResult = await files.moveFileLink({
     destinationFolderId: currentFolderId,
     fileLink: {
       entityId: createdPlaylist.id,
@@ -48,5 +41,5 @@ export const createPlaylistWithFilesLocation = async ({
     },
   });
 
-  return didMove ? createdPlaylist : null;
+  return moveResult.didComplete ? createdPlaylist : null;
 };

@@ -39,7 +39,10 @@ const createFilesController = (currentFolderId: string) => {
         assert.equal(options.fileLink.id, `file-link:playlist:${PLAYLIST.id}`);
         assert.equal(options.fileLink.parentFolderId, 'folder:library-root');
         movedFolders.push(options.destinationFolderId);
-        return true;
+        return {
+          didComplete: true,
+          issue: null,
+        };
       },
       rootFolderId: 'folder:library-root',
     },

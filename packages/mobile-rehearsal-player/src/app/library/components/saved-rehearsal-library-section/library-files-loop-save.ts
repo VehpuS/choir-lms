@@ -2,24 +2,16 @@ import type { NamedLoop } from '@org/audio-library-models';
 import { useCallback } from 'react';
 
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
+import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import {
   createLibraryFilesSuccessFeedback,
   type LibraryFilesSuccessFeedback,
 } from './library-files-success-feedback';
 
-type LibraryFilesLoopSaveController = {
-  explorer: { currentFolder: { id: string; name: string } } | null;
-  moveFileLink: (options: {
-    destinationFolderId: string;
-    fileLink: {
-      entityId: string;
-      entityKind: 'loop';
-      id: string;
-      parentFolderId: string;
-    };
-  }) => Promise<boolean>;
-  rootFolderId: string | null;
-};
+type LibraryFilesLoopSaveController = Pick<
+  UseLibraryFilesResult,
+  'explorer' | 'moveFileLink' | 'rootFolderId'
+>;
 
 type SaveLoopWithFilesLocationOptions = {
   detailMode: 'browse' | 'playlist-detail' | 'track-loop-detail';
@@ -76,7 +68,7 @@ export const saveLoopWithFilesLocation = async ({
     return true;
   }
 
-  const didMove = await libraryFiles.moveFileLink({
+  const moveResult = await libraryFiles.moveFileLink({
     destinationFolderId: currentFolderId,
     fileLink: {
       entityId: loop.id,
@@ -86,7 +78,7 @@ export const saveLoopWithFilesLocation = async ({
     },
   });
 
-  if (didMove) {
+  if (moveResult.didComplete) {
     onShowFilesSuccessFeedback?.(
       createLibraryFilesSuccessFeedback({
         message: `${loop.name} was saved in ${currentFolderName}.`,
@@ -95,7 +87,7 @@ export const saveLoopWithFilesLocation = async ({
     );
   }
 
-  return didMove;
+  return moveResult.didComplete;
 };
 
 export const useLoopSaveWithFilesLocation = (

@@ -33,9 +33,15 @@ const isSameRow = (left: LibraryFilesRow, right: LibraryFilesRow) => {
     return false;
   }
 
-  return left.kind === 'folder'
-    ? left.folder.id === right.folder.id
-    : left.fileLink.id === right.fileLink.id;
+  if (left.kind === 'folder' && right.kind === 'folder') {
+    return left.folder.id === right.folder.id;
+  }
+
+  if (left.kind !== 'folder' && right.kind !== 'folder') {
+    return left.fileLink.id === right.fileLink.id;
+  }
+
+  return false;
 };
 
 const applySuggestedNameToRow = (row: LibraryFilesRow, nextName: string) => {

@@ -106,6 +106,100 @@ describe('library-files model', () => {
     assert.equal(explorer.rows[1]?.kind, 'track');
   });
 
+  it('builds type-aware folder metadata for mixed music folders', () => {
+    const tree: RehearsalLibraryFileTree = {
+      fileLinks: [
+        {
+          entityId: AVAILABLE_SOURCE.id,
+          entityKind: 'track',
+          id: `file-link:track:${AVAILABLE_SOURCE.id}`,
+          parentFolderId: 'folder-warmups',
+        },
+        {
+          entityId: SAVED_LOOP.id,
+          entityKind: 'loop',
+          id: `file-link:loop:${SAVED_LOOP.id}`,
+          parentFolderId: 'folder-warmups',
+        },
+        {
+          entityId: PLAYLIST.id,
+          entityKind: 'playlist',
+          id: `file-link:playlist:${PLAYLIST.id}`,
+          parentFolderId: 'folder-warmups',
+        },
+        {
+          entityId: AVAILABLE_SOURCE.id,
+          entityKind: 'track',
+          id: `file-link:track:${AVAILABLE_SOURCE.id}:copy`,
+          parentFolderId: 'folder-anthems',
+        },
+      ],
+      folders: [
+        {
+          id: 'folder:library-root',
+          name: 'Library',
+          parentFolderId: null,
+        },
+        {
+          id: 'folder-anthems',
+          name: 'Anthems',
+          parentFolderId: 'folder:library-root',
+        },
+        {
+          id: 'folder-anthems-child',
+          name: 'Archive',
+          parentFolderId: 'folder-anthems',
+        },
+        {
+          id: 'folder-sections',
+          name: 'Sections',
+          parentFolderId: 'folder:library-root',
+        },
+        {
+          id: 'folder-sections-child',
+          name: 'Altos',
+          parentFolderId: 'folder-sections',
+        },
+        {
+          id: 'folder-warmups',
+          name: 'Warmups',
+          parentFolderId: 'folder:library-root',
+        },
+        {
+          id: 'folder-warmups-child',
+          name: 'Nested Warmups',
+          parentFolderId: 'folder-warmups',
+        },
+      ],
+      rootFolderId: 'folder:library-root',
+      version: 1,
+    };
+
+    const explorer = buildLibraryFilesExplorerState({
+      currentFolderId: 'folder:library-root',
+      savedLoops: [SAVED_LOOP],
+      savedPlaylists: [PLAYLIST],
+      savedSources: [AVAILABLE_SOURCE],
+      tree,
+    });
+    const folderRows = explorer.rows.filter((row) => {
+      return row.kind === 'folder';
+    });
+    const anthemsRow = folderRows.find((row) => {
+      return row.folder.id === 'folder-anthems';
+    });
+    const sectionsRow = folderRows.find((row) => {
+      return row.folder.id === 'folder-sections';
+    });
+    const warmupsRow = folderRows.find((row) => {
+      return row.folder.id === 'folder-warmups';
+    });
+
+    assert.equal(anthemsRow?.supportingLabel, '1 track • 1 folder');
+    assert.equal(sectionsRow?.supportingLabel, '1 folder');
+    assert.equal(warmupsRow?.supportingLabel, '1 track • 1 loop • 1 playlist');
+  });
+
   it('builds a mixed explorer list with folders first and canonical breadcrumb paths', () => {
     const tree: RehearsalLibraryFileTree = {
       fileLinks: [
