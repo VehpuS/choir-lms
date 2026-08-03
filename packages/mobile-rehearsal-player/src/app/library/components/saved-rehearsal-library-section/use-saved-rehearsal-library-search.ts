@@ -14,12 +14,16 @@ import {
   filterSavedLibrarySourcesByQuery,
   filterSavedLoopsByQuery,
   filterSavedPlaylistsByQuery,
+  resolveActiveLibrarySearchQuery,
   type LibrarySearchAvailabilityFilter,
   type LibrarySearchEntityFilter,
-  resolveActiveLibrarySearchQuery,
 } from '../../search/utils/saved-library-search-view-model';
 import { LIBRARY_RECENT_SEARCH_HISTORY_KEY } from '../../search/utils/search-history-storage';
 import { resolveSearchInputValue } from '../../search/utils/search-input-value';
+import {
+  restoreLibraryFilesSearchState,
+  type LibraryFilesSearchStateSnapshot,
+} from './library-files-search-state';
 
 type UseSavedRehearsalLibrarySearchOptions = {
   savedLibrarySources: DriveLibrarySource[];
@@ -265,8 +269,16 @@ export const useSavedRehearsalLibrarySearch = ({
       });
     },
     runLibrarySearch(query: string) {
-      runSubmittedLibrarySearchQuery(query, {
-        syncInputValue: true,
+      runSubmittedLibrarySearchQuery(query, { syncInputValue: true });
+    },
+    restoreLibraryFilesSearchState(options: LibraryFilesSearchStateSnapshot) {
+      restoreLibraryFilesSearchState({
+        ...options,
+        cancelPendingSearch: debouncedLibrarySearch.cancel,
+        setActiveLibrarySearchQuery,
+        setFilesSearchScope,
+        setFilesSortMode,
+        setLibrarySearchQuery,
       });
     },
     submitLibrarySearch() {

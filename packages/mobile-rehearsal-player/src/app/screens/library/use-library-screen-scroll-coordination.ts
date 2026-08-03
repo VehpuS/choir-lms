@@ -92,6 +92,19 @@ export const useLibraryScreenScrollCoordination = () => {
       scrollOffsetYRef.current = event.nativeEvent.contentOffset.y;
     },
     isPlaylistReorderDragActive,
+    restoreScrollOffsetY(offsetY: number) {
+      const maxOffset = Math.max(
+        contentHeightRef.current - viewportHeightRef.current,
+        0,
+      );
+      const nextOffset = Math.max(0, Math.min(offsetY, maxOffset));
+
+      scrollOffsetYRef.current = nextOffset;
+      scrollViewRef.current?.scrollTo({
+        animated: false,
+        y: nextOffset,
+      });
+    },
     scrollViewRef,
     setPlaylistReorderDragActive,
     setPlaylistReorderDragMoveY,

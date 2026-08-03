@@ -13,6 +13,7 @@ import { appTheme } from '../../utils/theme';
 import { LibraryFilesCreateControls } from './library-files-create-controls';
 import { LibraryPlaylistCreateControls } from './library-playlist-create-controls';
 import type { LibraryScreenProps } from './library-screen-types';
+import { useLibraryFilesSessionRestoration } from './use-library-files-session-restoration';
 import { useLibraryScreenScrollCoordination } from './use-library-screen-scroll-coordination';
 
 export const LibraryScreen = ({
@@ -36,6 +37,19 @@ export const LibraryScreen = ({
     savedLibrarySources: libraryController.savedLibrary.savedLibrarySources,
     savedLoops: libraryController.savedLibrary.savedLoops,
     savedPlaylists: libraryController.playlists.savedPlaylists,
+  });
+  useLibraryFilesSessionRestoration({
+    activeSearchQuery: searchState.activeLibrarySearchQuery,
+    currentFilesFolderId:
+      libraryController.savedLibrary.files.explorer?.currentFolder.id ?? null,
+    currentView: selectedView,
+    filesSearchScope: searchState.filesSearchScope,
+    filesSortMode: searchState.filesSortMode,
+    getCurrentScrollOffsetY: scrollCoordination.getCurrentScrollOffsetY,
+    librarySearchQuery: searchState.librarySearchQuery,
+    openFilesFolder: libraryController.savedLibrary.files.openFolder,
+    restoreLibraryFilesSearchState: searchState.restoreLibraryFilesSearchState,
+    restoreScrollOffsetY: scrollCoordination.restoreScrollOffsetY,
   });
   const searchPanel = useSavedRehearsalLibrarySearchPanel({
     searchState,
