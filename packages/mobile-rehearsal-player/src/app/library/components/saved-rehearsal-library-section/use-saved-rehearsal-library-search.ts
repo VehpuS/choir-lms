@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import { resolveSavedPlaylistCards } from '../../playlists/utils/saved-playlist-card-view-model';
 import type { LibraryFilesSearchScope } from '../../saved-rehearsal-library/library-files-model';
+import { useRecentSearchHistory } from '../../search/hooks/use-recent-search-history';
 import { createDebouncedSearchRunner } from '../../search/utils/debounced-search-runner';
 import {
   filterSavedLibrarySourcesByQuery,
@@ -13,15 +14,8 @@ import {
   type LibrarySearchEntityFilter,
   resolveActiveLibrarySearchQuery,
 } from '../../search/utils/saved-library-search-view-model';
-import {
-  normalizeRecentSearchTerm,
-  recordRecentSearchTerm,
-} from '../../search/utils/search-history';
-import {
-  LIBRARY_RECENT_SEARCH_HISTORY_KEY,
-  persistRecentSearchHistory,
-  restoreRecentSearchHistory,
-} from '../../search/utils/search-history-storage';
+import { LIBRARY_RECENT_SEARCH_HISTORY_KEY } from '../../search/utils/search-history-storage';
+import { resolveSearchInputValue } from '../../search/utils/search-input-value';
 
 type UseSavedRehearsalLibrarySearchOptions = {
   savedLibrarySources: DriveLibrarySource[];
@@ -92,82 +86,61 @@ export const useSavedRehearsalLibrarySearch = ({
     useState<LibrarySearchEntityFilter>('all');
   const [selectedTagFilters, setSelectedTagFilters] = useState<string[]>([]);
   const [librarySearchQuery, setLibrarySearchQuery] = useState('');
-  const [recentLibrarySearchTerms, setRecentLibrarySearchTerms] = useState<
-    string[]
-  >([]);
-  const [
-    hasLoadedRecentLibrarySearchTerms,
-    setHasLoadedRecentLibrarySearchTerms,
-  ] = useState(false);
   const [activeLibrarySearchQuery, setActiveLibrarySearchQuery] = useState<
     string | null
   >(null);
   const [filesSearchScope, setFilesSearchScope] =
     useState<LibraryFilesSearchScope>('current-folder');
-
-  useEffect(() => {
-    let isUnrendered = false;
-
-    void restoreRecentSearchHistory(LIBRARY_RECENT_SEARCH_HISTORY_KEY)
-      .then((restoredRecentSearchTerms) => {
-        if (isUnrendered) {
-          return;
-        }
-
-        setRecentLibrarySearchTerms(restoredRecentSearchTerms);
-      })
-      .finally(() => {
-        if (isUnrendered) {
-          return;
-        }
-
-        setHasLoadedRecentLibrarySearchTerms(true);
-      });
-
-    return () => {
-      isUnrendered = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!hasLoadedRecentLibrarySearchTerms) {
-      return;
-    }
-
-    void persistRecentSearchHistory(
-      LIBRARY_RECENT_SEARCH_HISTORY_KEY,
-      recentLibrarySearchTerms,
-    );
-  }, [hasLoadedRecentLibrarySearchTerms, recentLibrarySearchTerms]);
-
-  const commitLibrarySearchQuery = useCallback((query: string) => {
-    const nextQuery = normalizeRecentSearchTerm(query);
-
-    if (!nextQuery) {
-      return;
-    }
-
-    setRecentLibrarySearchTerms((currentSearchTerms) => {
-      return recordRecentSearchTerm(currentSearchTerms, nextQuery);
+  const { recentSearchTerms: recentLibrarySearchTerms, recordSearchTerm } =
+    useRecentSearchHistory({
+      storageKey: LIBRARY_RECENT_SEARCH_HISTORY_KEY,
     });
-  }, []);
 
-  const runLibrarySearch = useCallback((query: string) => {
+  const commitLibrarySearchQuery = useCallback(
+    (query: string) => {
+      recordSearchTerm(query);
+    },
+    [recordSearchTerm],
+  );
+
+  const applyLibrarySearchQuery = useCallback((query: string) => {
     setActiveLibrarySearchQuery(resolveActiveLibrarySearchQuery(query));
   }, []);
 
   const debouncedLibrarySearch = useMemo(() => {
     return createDebouncedSearchRunner({
       debounceMs: LIBRARY_SEARCH_DEBOUNCE_MS,
-      runSearch: runLibrarySearch,
+      runSearch: applyLibrarySearchQuery,
     });
-  }, [runLibrarySearch]);
+  }, [applyLibrarySearchQuery]);
 
   useEffect(() => {
     return () => {
       debouncedLibrarySearch.cancel();
     };
   }, [debouncedLibrarySearch]);
+
+  const runSubmittedLibrarySearchQuery = useCallback(
+    (
+      query: string,
+      options: {
+        syncInputValue?: boolean;
+      } = {},
+    ) => {
+      const nextSearchInputValue = resolveSearchInputValue({
+        currentInputValue: librarySearchQuery,
+        query,
+        syncInputValue: options.syncInputValue ?? false,
+      });
+
+      if (nextSearchInputValue !== librarySearchQuery) {
+        setLibrarySearchQuery(nextSearchInputValue);
+      }
+
+      debouncedLibrarySearch.flush(query);
+    },
+    [debouncedLibrarySearch, librarySearchQuery],
+  );
 
   const visibleSavedLibrarySources = useMemo(() => {
     return filterSavedLibrarySourcesByQuery({
@@ -265,12 +238,12 @@ export const useSavedRehearsalLibrarySearch = ({
     librarySearchQuery,
     recentLibrarySearchTerms,
     runLibrarySearch(query: string) {
-      debouncedLibrarySearch.cancel();
-      setLibrarySearchQuery(normalizeRecentSearchTerm(query) ?? '');
-      runLibrarySearch(query);
+      runSubmittedLibrarySearchQuery(query, {
+        syncInputValue: true,
+      });
     },
     submitLibrarySearch() {
-      debouncedLibrarySearch.flush(librarySearchQuery);
+      runSubmittedLibrarySearchQuery(librarySearchQuery);
     },
     selectedTagFilters,
     setAvailabilityFilter,

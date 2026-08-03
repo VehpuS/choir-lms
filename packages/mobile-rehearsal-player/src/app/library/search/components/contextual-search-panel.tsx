@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
@@ -58,6 +58,16 @@ export const ContextualSearchPanel = ({
   showInlineToggleButton = true,
 }: ContextualSearchPanelProps) => {
   const shouldSkipBlurCommitRef = useRef(false);
+  const isSearchBarVisibleRef = useRef(isSearchBarVisible);
+
+  useEffect(() => {
+    isSearchBarVisibleRef.current = isSearchBarVisible;
+  }, [isSearchBarVisible]);
+
+  const markNextBlurAsInternal = () => {
+    shouldSkipBlurCommitRef.current = true;
+  };
+
   const shouldShowSuggestions = shouldShowRecentSearchSuggestions({
     canShowRecentSearchTerms: canShowRecentSearchTerms && isSearchBarVisible,
     recentSearchTerms,
@@ -77,7 +87,13 @@ export const ContextualSearchPanel = ({
       return;
     }
 
-    onSearchInputBlur?.();
+    setTimeout(() => {
+      if (!isSearchBarVisibleRef.current) {
+        return;
+      }
+
+      onSearchInputBlur?.();
+    }, 0);
   };
 
   const handleClearSearch = () => {
@@ -139,9 +155,7 @@ export const ContextualSearchPanel = ({
               accessibilityRole="button"
               {...interactionGuardProps}
               onPress={handleClearSearch}
-              onPressIn={() => {
-                shouldSkipBlurCommitRef.current = true;
-              }}
+              onPressIn={markNextBlurAsInternal}
               style={({ pressed }) => [
                 styles.clearSearchIconButton,
                 buttonInteractionGuardStyle,
@@ -162,6 +176,7 @@ export const ContextualSearchPanel = ({
             accessibilityRole="button"
             {...interactionGuardProps}
             onPress={onToggleSearchBar}
+            onPressIn={markNextBlurAsInternal}
             style={({ pressed }) => [
               styles.searchButton,
               styles.searchButtonActive,
@@ -181,6 +196,7 @@ export const ContextualSearchPanel = ({
       {shouldShowSuggestions ? (
         <RecentSearchSuggestions
           onSelectRecentSearchTerm={onSelectRecentSearchTerm}
+          onSelectRecentSearchTermPressIn={markNextBlurAsInternal}
           recentSearchTerms={recentSearchTerms}
         />
       ) : null}

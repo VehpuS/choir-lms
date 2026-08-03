@@ -3,14 +3,16 @@ import { StyleSheet, Text, View } from 'react-native';
 import { InteractionChip } from '../../components/interaction-chip';
 
 type RecentSearchSuggestionsProps = {
-  recentSearchTerms: string[];
   onSelectRecentSearchTerm: (value: string) => void;
+  onSelectRecentSearchTermPressIn?: () => void;
+  recentSearchTerms: string[];
   title?: string;
 };
 
 export const RecentSearchSuggestions = ({
-  recentSearchTerms,
   onSelectRecentSearchTerm,
+  onSelectRecentSearchTermPressIn,
+  recentSearchTerms,
   title = 'Recent searches',
 }: RecentSearchSuggestionsProps) => {
   if (recentSearchTerms.length === 0) {
@@ -30,6 +32,7 @@ export const RecentSearchSuggestions = ({
               onPress={() => {
                 onSelectRecentSearchTerm(searchTerm);
               }}
+              onPressIn={onSelectRecentSearchTermPressIn}
               variant="action"
             />
           );

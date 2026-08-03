@@ -4,16 +4,10 @@ import {
 } from '@org/google-drive';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { useRecentSearchHistory } from '../../search/hooks/use-recent-search-history';
 import { createDebouncedSearchRunner } from '../../search/utils/debounced-search-runner';
-import {
-  normalizeRecentSearchTerm,
-  recordRecentSearchTerm,
-} from '../../search/utils/search-history';
-import {
-  ADD_RECENT_SEARCH_HISTORY_KEY,
-  persistRecentSearchHistory,
-  restoreRecentSearchHistory,
-} from '../../search/utils/search-history-storage';
+import { normalizeRecentSearchTerm } from '../../search/utils/search-history';
+import { ADD_RECENT_SEARCH_HISTORY_KEY } from '../../search/utils/search-history-storage';
 import { resolveSearchInputValue } from '../../search/utils/search-input-value';
 
 const DRIVE_SEARCH_DEBOUNCE_MS = 300;
@@ -41,12 +35,12 @@ export const useDriveLibrarySearch = ({
     EMPTY_DRIVE_SEARCH_SNAPSHOT,
   );
   const [searchQuery, setSearchQuery] = useState('');
-  const [recentSearchTerms, setRecentSearchTerms] = useState<string[]>([]);
-  const [hasLoadedRecentSearchTerms, setHasLoadedRecentSearchTerms] =
-    useState(false);
   const [activeSearchQuery, setActiveSearchQuery] = useState<string | null>(
     null,
   );
+  const { recentSearchTerms, recordSearchTerm } = useRecentSearchHistory({
+    storageKey: ADD_RECENT_SEARCH_HISTORY_KEY,
+  });
 
   const clearActiveSearch = useCallback(() => {
     setActiveSearchQuery(null);
@@ -54,17 +48,12 @@ export const useDriveLibrarySearch = ({
     onClearIssue();
   }, [onClearIssue]);
 
-  const commitSearchQuery = useCallback((query: string) => {
-    const nextQuery = normalizeRecentSearchTerm(query);
-
-    if (!nextQuery) {
-      return;
-    }
-
-    setRecentSearchTerms((currentSearchTerms) => {
-      return recordRecentSearchTerm(currentSearchTerms, nextQuery);
-    });
-  }, []);
+  const commitSearchQuery = useCallback(
+    (query: string) => {
+      recordSearchTerm(query);
+    },
+    [recordSearchTerm],
+  );
 
   const runSearchQuery = useCallback(
     (query: string) => {
@@ -148,41 +137,6 @@ export const useDriveLibrarySearch = ({
       searchQuery,
     ],
   );
-
-  useEffect(() => {
-    let isDisposed = false;
-
-    void restoreRecentSearchHistory(ADD_RECENT_SEARCH_HISTORY_KEY)
-      .then((restoredRecentSearchTerms) => {
-        if (isDisposed) {
-          return;
-        }
-
-        setRecentSearchTerms(restoredRecentSearchTerms);
-      })
-      .finally(() => {
-        if (isDisposed) {
-          return;
-        }
-
-        setHasLoadedRecentSearchTerms(true);
-      });
-
-    return () => {
-      isDisposed = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!hasLoadedRecentSearchTerms) {
-      return;
-    }
-
-    void persistRecentSearchHistory(
-      ADD_RECENT_SEARCH_HISTORY_KEY,
-      recentSearchTerms,
-    );
-  }, [hasLoadedRecentSearchTerms, recentSearchTerms]);
 
   return {
     activeSearchQuery,

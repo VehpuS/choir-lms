@@ -21,6 +21,7 @@ type InteractionChipProps = {
   label: string;
   labelStyle?: StyleProp<TextStyle>;
   onPress?: () => void;
+  onPressIn?: () => void;
   style?: StyleProp<ViewStyle>;
   variant?: InteractionChipVariant;
 };
@@ -31,6 +32,7 @@ export const InteractionChip = ({
   label,
   labelStyle,
   onPress,
+  onPressIn,
   style,
   variant = 'passive',
 }: InteractionChipProps) => {
@@ -75,6 +77,7 @@ export const InteractionChip = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       onPress={onPress}
+      onPressIn={onPressIn}
       style={({ pressed }) => [
         styles.base,
         {
