@@ -84,6 +84,13 @@ const formatLoopRangeLabel = (loop: Pick<NamedLoop, 'startMs' | 'endMs'>) => {
   return `${startLabel} to ${endLabel}`;
 };
 
+const buildLoopSupportingLabel = (options: {
+  loop: Pick<NamedLoop, 'startMs' | 'endMs'>;
+  parentTrackName: string;
+}) => {
+  return `${options.parentTrackName} • ${formatLoopRangeLabel(options.loop)}`;
+};
+
 const createEntityReferenceKey = (
   entityKind: RehearsalLibraryFileLinkNode['entityKind'],
   entityId: string,
@@ -231,6 +238,8 @@ export const buildLoopRow = (options: {
       ? createLoopPlayableItem(options.loop, options.source)
       : null;
 
+  const parentTrackName = options.source?.name ?? options.loop.sourceName;
+
   return {
     fileLink: options.fileLink,
     kind: 'loop',
@@ -244,7 +253,10 @@ export const buildLoopRow = (options: {
           DEFAULT_UNAVAILABLE_LOOP_MESSAGE),
     playableItem,
     source: options.source,
-    supportingLabel: `${options.loop.sourceName} • ${formatLoopRangeLabel(options.loop)}`,
+    supportingLabel: buildLoopSupportingLabel({
+      loop: options.loop,
+      parentTrackName,
+    }),
   };
 };
 

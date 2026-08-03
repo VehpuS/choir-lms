@@ -78,6 +78,46 @@ describe('library-files model search', () => {
     );
   });
 
+  it('shows loop parent-track provenance in Files search results', () => {
+    const tree: RehearsalLibraryFileTree = {
+      fileLinks: [
+        {
+          entityId: SAVED_LOOP.id,
+          entityKind: 'loop',
+          id: `file-link:loop:${SAVED_LOOP.id}`,
+          parentFolderId: 'folder:library-root',
+          visibleName: 'Warm loop',
+        },
+      ],
+      folders: [{ id: 'folder:library-root', name: 'Library', parentFolderId: null }],
+      rootFolderId: 'folder:library-root',
+      version: 1,
+    };
+
+    const explorer = buildLibraryFilesExplorerState({
+      currentFolderId: 'folder:library-root',
+      savedLoops: [SAVED_LOOP],
+      savedPlaylists: [],
+      savedSources: [AVAILABLE_SOURCE],
+      searchOptions: {
+        activeSearchQuery: 'warm',
+        availabilityFilter: 'all',
+        entityFilter: 'all',
+        searchScope: 'current-folder',
+        selectedTagFilters: [],
+      },
+      tree,
+    });
+
+    assert.deepEqual(
+      explorer.rows.map((row) => ({
+        kind: row.kind,
+        supportingLabel: row.supportingLabel,
+      })),
+      [{ kind: 'loop', supportingLabel: 'Full Choir.mp3 • 0:12 to 0:24' }],
+    );
+  });
+
   it('broadens Files search to All Files and adds containing-path metadata for out-of-folder matches', () => {
     const tree: RehearsalLibraryFileTree = {
       fileLinks: [
