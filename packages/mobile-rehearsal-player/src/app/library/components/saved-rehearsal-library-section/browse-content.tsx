@@ -164,7 +164,10 @@ export const SavedRehearsalLibraryBrowseContent = ({
             activeSearchQuery: searchState.activeLibrarySearchQuery,
             availabilityFilter: searchState.availabilityFilter,
             entityFilter: searchState.entityFilter,
+            filesOpenedAtByNodeKey: searchState.filesOpenedAtByNodeKey,
             filesSearchScope: searchState.filesSearchScope,
+            filesSortMode: searchState.filesSortMode,
+            recordFilesEntryOpened: searchState.recordFilesEntryOpened,
             selectedTagFilters: searchState.selectedTagFilters,
           }}
           successFeedback={libraryFilesSuccessFeedback}

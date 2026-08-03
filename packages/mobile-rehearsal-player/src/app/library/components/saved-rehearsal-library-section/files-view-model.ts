@@ -1,7 +1,10 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
-import type { LibraryFilesExplorerState } from '../../saved-rehearsal-library/library-files-model';
+import {
+  getLibraryFilesRowNodeKey,
+  type LibraryFilesExplorerState,
+} from '../../saved-rehearsal-library/library-files-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import type { ExplorerBreadcrumbItem } from '../explorer/model';
 
@@ -123,6 +126,7 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
   explorer: LibraryFilesExplorerState;
   files: LibraryFilesControllerLike;
   onOpenPlaylist: (playlistId: string) => void;
+  onOpenRow?: (row: LibraryFilesExplorerState['rows'][number]) => void;
   onTogglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
   playlistAddMode?: FilesPlaylistAddMode;
@@ -155,11 +159,13 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
         active: isRowActive(options.activePlayableItem, row),
         addAction: buildFilesPlaylistAddAction(row, options.playlistAddMode),
         disabled,
-        key: row.kind === 'folder' ? row.folder.id : row.fileLink.id,
+        key: getLibraryFilesRowNodeKey(row),
         kind: row.kind,
         label: row.label,
         message: 'message' in row ? row.message : undefined,
         onPress: () => {
+          options.onOpenRow?.(row);
+
           if (row.kind === 'folder') {
             options.files.openFolder(row.folder.id);
             return;

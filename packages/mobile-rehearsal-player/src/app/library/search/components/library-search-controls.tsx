@@ -4,7 +4,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { InteractionChip } from '../../components/interaction-chip';
 import { getLibrarySearchContextCopy } from '../../drive/utils/drive-library-view-model';
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
-import type { LibraryFilesSearchScope } from '../../saved-rehearsal-library/library-files-model';
+import type {
+  LibraryFilesSearchScope,
+  LibraryFilesSortMode,
+} from '../../saved-rehearsal-library/library-files-model';
 import type {
   LibrarySearchAvailabilityFilter,
   LibrarySearchEntityFilter,
@@ -29,6 +32,16 @@ const AVAILABILITY_FILTER_OPTIONS: {
   { label: 'Any status', value: 'all' },
   { label: 'Playable', value: 'available' },
   { label: 'Unavailable', value: 'unavailable' },
+];
+
+const FILES_SORT_OPTIONS: {
+  label: string;
+  value: LibraryFilesSortMode;
+}[] = [
+  { label: 'Name', value: 'name' },
+  { label: 'Type', value: 'type' },
+  { label: 'Date added', value: 'date-added' },
+  { label: 'Date opened', value: 'date-opened' },
 ];
 
 const buildFilesSearchScopeOptions = (
@@ -66,6 +79,7 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   currentFilesFolderName: string | null;
   entityFilter: LibrarySearchEntityFilter;
   filesSearchScope: LibraryFilesSearchScope;
+  filesSortMode: LibraryFilesSortMode;
   onClearSearch: () => void;
   onFilterActionPress: () => void;
   onSearch: () => void;
@@ -75,6 +89,7 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   onSelectAvailabilityFilter: (value: LibrarySearchAvailabilityFilter) => void;
   onSelectEntityFilter: (value: LibrarySearchEntityFilter) => void;
   onSelectFilesSearchScope: (value: LibraryFilesSearchScope) => void;
+  onSelectFilesSortMode: (value: LibraryFilesSortMode) => void;
   onSelectRecentSearchTerm: (value: string) => void;
   onToggleTagFilter: (value: string) => void;
   recentSearchTerms: string[];
@@ -226,6 +241,7 @@ export const LibrarySearchControls = ({
   currentFilesFolderName,
   entityFilter,
   filesSearchScope,
+  filesSortMode,
   isFilterPopoverVisible,
   isSearchBarVisible,
   onClearSearch,
@@ -236,6 +252,7 @@ export const LibrarySearchControls = ({
   onSelectAvailabilityFilter,
   onSelectEntityFilter,
   onSelectFilesSearchScope,
+  onSelectFilesSortMode,
   onSelectRecentSearchTerm,
   onToggleTagFilter,
   recentSearchTerms,
@@ -277,12 +294,20 @@ export const LibrarySearchControls = ({
   const filterPopover = isFilterPopoverVisible ? (
     <View style={styles.filterPopover}>
       {selectedView === 'files' ? (
-        <FilterChipGroup
-          label="Scope"
-          onSelectValue={onSelectFilesSearchScope}
-          options={buildFilesSearchScopeOptions(currentFilesFolderName)}
-          selectedValue={filesSearchScope}
-        />
+        <>
+          <FilterChipGroup
+            label="Scope"
+            onSelectValue={onSelectFilesSearchScope}
+            options={buildFilesSearchScopeOptions(currentFilesFolderName)}
+            selectedValue={filesSearchScope}
+          />
+          <FilterChipGroup
+            label="Sort"
+            onSelectValue={onSelectFilesSortMode}
+            options={FILES_SORT_OPTIONS}
+            selectedValue={filesSortMode}
+          />
+        </>
       ) : null}
       <FilterChipGroup
         label="Show"

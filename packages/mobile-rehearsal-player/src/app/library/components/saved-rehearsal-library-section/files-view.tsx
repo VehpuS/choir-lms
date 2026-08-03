@@ -12,7 +12,11 @@ import {
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { appTheme } from '../../../utils/theme';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
-import type { LibraryFilesSearchScope } from '../../saved-rehearsal-library/library-files-model';
+import {
+  getLibraryFilesRowNodeKey,
+  type LibraryFilesSearchScope,
+  type LibraryFilesSortMode,
+} from '../../saved-rehearsal-library/library-files-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import type {
   LibrarySearchAvailabilityFilter,
@@ -67,7 +71,10 @@ type SavedRehearsalLibraryFilesViewProps = {
     activeSearchQuery: string | null;
     availabilityFilter: LibrarySearchAvailabilityFilter;
     entityFilter: LibrarySearchEntityFilter;
+    filesOpenedAtByNodeKey: Readonly<Record<string, string>>;
     filesSearchScope: LibraryFilesSearchScope;
+    filesSortMode: LibraryFilesSortMode;
+    recordFilesEntryOpened: (nodeKey: string) => void;
     selectedTagFilters: string[];
   };
   successFeedback: LibraryFilesSuccessFeedback | null;
@@ -126,8 +133,10 @@ export const SavedRehearsalLibraryFilesView = ({
     activeSearchQuery: searchState.activeSearchQuery,
     availabilityFilter: searchState.availabilityFilter,
     entityFilter: searchState.entityFilter,
+    openedAtByNodeKey: searchState.filesOpenedAtByNodeKey,
     searchScope: searchState.filesSearchScope,
     selectedTagFilters: searchState.selectedTagFilters,
+    sortMode: searchState.filesSortMode,
   });
   const [openMenuRowKey, setOpenMenuRowKey] = useState<string | null>(null);
   const rowActionFlows = useLibraryFilesRowActionFlows({
@@ -183,6 +192,9 @@ export const SavedRehearsalLibraryFilesView = ({
     explorer,
     files,
     onOpenPlaylist,
+    onOpenRow: (row) => {
+      searchState.recordFilesEntryOpened(getLibraryFilesRowNodeKey(row));
+    },
     onTogglePlayableItemPlayback,
     onToggleSourcePlayback,
     playlistAddMode,

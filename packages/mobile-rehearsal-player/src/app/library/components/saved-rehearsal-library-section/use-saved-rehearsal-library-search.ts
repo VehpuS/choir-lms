@@ -3,7 +3,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import { resolveSavedPlaylistCards } from '../../playlists/utils/saved-playlist-card-view-model';
-import type { LibraryFilesSearchScope } from '../../saved-rehearsal-library/library-files-model';
+import {
+  DEFAULT_LIBRARY_FILES_SORT_MODE,
+  type LibraryFilesSearchScope,
+  type LibraryFilesSortMode,
+} from '../../saved-rehearsal-library/library-files-model';
 import { useRecentSearchHistory } from '../../search/hooks/use-recent-search-history';
 import { createDebouncedSearchRunner } from '../../search/utils/debounced-search-runner';
 import {
@@ -91,6 +95,12 @@ export const useSavedRehearsalLibrarySearch = ({
   >(null);
   const [filesSearchScope, setFilesSearchScope] =
     useState<LibraryFilesSearchScope>('current-folder');
+  const [filesSortMode, setFilesSortMode] = useState<LibraryFilesSortMode>(
+    DEFAULT_LIBRARY_FILES_SORT_MODE,
+  );
+  const [filesOpenedAtByNodeKey, setFilesOpenedAtByNodeKey] = useState<
+    Record<string, string>
+  >({});
   const { recentSearchTerms: recentLibrarySearchTerms, recordSearchTerm } =
     useRecentSearchHistory({
       storageKey: LIBRARY_RECENT_SEARCH_HISTORY_KEY,
@@ -220,7 +230,9 @@ export const useSavedRehearsalLibrarySearch = ({
       setActiveLibrarySearchQuery(null);
     },
     entityFilter,
+    filesOpenedAtByNodeKey,
     filesSearchScope,
+    filesSortMode,
     handleLibrarySearchQueryChange(value: string) {
       setLibrarySearchQuery(value);
 
@@ -237,6 +249,21 @@ export const useSavedRehearsalLibrarySearch = ({
     isLibrarySearchMode: activeLibrarySearchQuery !== null,
     librarySearchQuery,
     recentLibrarySearchTerms,
+    recordFilesEntryOpened(
+      nodeKey: string,
+      openedAt = new Date().toISOString(),
+    ) {
+      setFilesOpenedAtByNodeKey((currentValue) => {
+        if (currentValue[nodeKey] === openedAt) {
+          return currentValue;
+        }
+
+        return {
+          ...currentValue,
+          [nodeKey]: openedAt,
+        };
+      });
+    },
     runLibrarySearch(query: string) {
       runSubmittedLibrarySearchQuery(query, {
         syncInputValue: true,
@@ -249,6 +276,7 @@ export const useSavedRehearsalLibrarySearch = ({
     setAvailabilityFilter,
     setEntityFilter,
     setFilesSearchScope,
+    setFilesSortMode,
     toggleTagFilter(tag: string) {
       setSelectedTagFilters((currentTagFilters) => {
         return currentTagFilters.includes(tag)

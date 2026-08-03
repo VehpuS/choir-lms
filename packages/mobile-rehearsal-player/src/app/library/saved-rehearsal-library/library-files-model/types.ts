@@ -14,12 +14,20 @@ import type {
 
 export type LibraryFilesSearchScope = 'all-files' | 'current-folder';
 
+export type LibraryFilesSortMode =
+  | 'date-added'
+  | 'date-opened'
+  | 'name'
+  | 'type';
+
 export type LibraryFilesSearchOptions = {
   activeSearchQuery: string | null;
   availabilityFilter: LibrarySearchAvailabilityFilter;
   entityFilter: LibrarySearchEntityFilter;
+  openedAtByNodeKey?: Readonly<Record<string, string>>;
   searchScope: LibraryFilesSearchScope;
   selectedTagFilters: string[];
+  sortMode?: LibraryFilesSortMode;
 };
 
 export type LibraryFilesBreadcrumb = {
