@@ -87,14 +87,19 @@ const TREE: RehearsalLibraryFileTree = {
   version: 1,
 };
 
-const createFilesStub = () => {
-  const explorer = buildLibraryFilesExplorerState({
-    currentFolderId: 'folder-warmups',
-    savedLoops: [LOOP],
-    savedPlaylists: [PLAYLIST],
-    savedSources: [SOURCE],
-    tree: TREE,
-  });
+const createFilesStub = (
+  explorerOverride?: ReturnType<typeof buildLibraryFilesExplorerState> | null,
+) => {
+  const explorer =
+    explorerOverride === undefined
+      ? buildLibraryFilesExplorerState({
+          currentFolderId: 'folder-warmups',
+          savedLoops: [LOOP],
+          savedPlaylists: [PLAYLIST],
+          savedSources: [SOURCE],
+          tree: TREE,
+        })
+      : explorerOverride;
   const calls = {
     goToFolder: [] as string[],
     goToParentFolder: 0,
@@ -137,6 +142,22 @@ const createFilesStub = () => {
 };
 
 describe('SavedRehearsalLibraryFilesView', () => {
+  it('throws a clear error when no explorer state is available', () => {
+    const { files } = createFilesStub(null);
+
+    assert.throws(
+      () =>
+        buildSavedRehearsalLibraryFilesViewModel({
+          activePlayableItem: null,
+          files,
+          onOpenPlaylist: () => undefined,
+          onTogglePlayableItemPlayback: async () => undefined,
+          onToggleSourcePlayback: async () => undefined,
+        }),
+      /Library files explorer state is required\./,
+    );
+  });
+
   it('builds Files interactions for parent navigation, breadcrumb jumps, folder browsing, and playlist opening', async () => {
     const { calls, files } = createFilesStub();
     const openedPlaylists: string[] = [];

@@ -12,7 +12,7 @@ type LibraryFilesControllerLike = Pick<
   UseLibraryFilesResult,
   'goToFolder' | 'goToParentFolder' | 'openFolder'
 > & {
-  explorer?: LibraryFilesExplorerState;
+  explorer?: LibraryFilesExplorerState | null;
 };
 
 export type FilesPlaylistAddMode = {
