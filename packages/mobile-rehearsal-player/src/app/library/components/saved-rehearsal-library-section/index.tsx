@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { View } from 'react-native';
+
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
 import { resolveSavedRehearsalLibraryVisibleSections } from '../../saved-rehearsal-library/detail-mode';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
@@ -194,6 +195,32 @@ export const SavedRehearsalLibrarySection = ({
       libraryFiles.goToFolder(detailOrigin.filesFolderId);
     }
   }, [libraryFiles, playlistState, setSelectedView]);
+  const handleOpenFilesAddItemsFromEmptyState = useCallback(() => {
+    const detailOrigin = playlistState.playlistDetailOrigin;
+
+    if (detailOrigin?.view !== 'files') {
+      return;
+    }
+
+    playlistState.openFilesAddItems();
+    handleClosePlaylistDetail();
+  }, [handleClosePlaylistDetail, playlistState]);
+  const handleDoneAddingFilesPlaylistItems = useCallback(() => {
+    const currentFolder = libraryFiles.explorer?.currentFolder;
+    const selectedPlaylist = playlistState.selectedPlaylist;
+
+    playlistState.closeFilesAddItems();
+
+    if (!selectedPlaylist) {
+      return;
+    }
+
+    playlistState.openPlaylistDetail(selectedPlaylist.id, {
+      originFilesFolderId: currentFolder?.id ?? null,
+      originFilesFolderName: currentFolder?.name ?? null,
+      originView: 'files',
+    });
+  }, [libraryFiles.explorer, playlistState]);
   const playlistSection = (
     <SavedRehearsalLibraryPlaylistSectionContent
       activePlaylistSession={activePlaylistSession}
@@ -205,6 +232,9 @@ export const SavedRehearsalLibrarySection = ({
       isPlaylistsLoading={isPlaylistsLoading}
       isPlaybackPreparing={isPlaybackPreparing}
       onClosePlaylistDetail={handleClosePlaylistDetail}
+      onOpenFilesAddItemsFromEmptyState={
+        handleOpenFilesAddItemsFromEmptyState
+      }
       onOpenPlaylistTagEditor={tagEditor.openPlaylistTagEditor}
       pendingPlaylistId={pendingPlaylistId}
       playbackState={playbackState}
@@ -276,6 +306,7 @@ export const SavedRehearsalLibrarySection = ({
           savedSourceTitle={savedSourceTitle}
           searchState={searchState}
           visibleSections={visibleSections}
+          onDoneAddingFilesPlaylistItems={handleDoneAddingFilesPlaylistItems}
           onDismissLibraryFilesSuccessFeedback={
             onDismissLibraryFilesSuccessFeedback
           }

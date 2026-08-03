@@ -1,6 +1,6 @@
 import type { Playlist } from '@org/audio-library-models';
 import { useEffect, useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { QueueMovePositionDialog } from '../../../../components/queue-move-position-dialog';
 import { savedPlaylistSectionStyles as styles } from '../../../components/saved-playlist-section-styles';
@@ -11,10 +11,13 @@ type PlaylistEntry = Playlist['items'][number];
 export const SavedPlaylistDetailItemsList = (props: {
   currentPlaylistEntryId: string | null;
   detailEntries: PlaylistEntry[];
+  emptyStateActionLabel: string | null;
+  emptyStateMessage: string;
   getCurrentScrollOffsetY: () => number;
   getItemDetailLabel: (entry: PlaylistEntry) => string;
   isItemPlayable: (entry: PlaylistEntry) => boolean;
   isMutating: boolean;
+  onAddItemsFromEmptyState?: () => void;
   onCommitReorder: () => void;
   onMoveItem: (
     fromIndex: number,
@@ -80,10 +83,29 @@ export const SavedPlaylistDetailItemsList = (props: {
         Items ({props.detailEntries.length})
       </Text>
       {props.detailEntries.length === 0 ? (
-        <Text style={styles.emptyMessage}>
-          This playlist is empty. Return to Library, add saved tracks or loops
-          there, then come back here to review the running order.
-        </Text>
+        <View style={styles.playlistRowShell}>
+          <Text style={styles.emptyMessage}>{props.emptyStateMessage}</Text>
+          {props.emptyStateActionLabel && props.onAddItemsFromEmptyState ? (
+            <View style={styles.actionRow}>
+              <Pressable
+                accessibilityRole="button"
+                disabled={props.isMutating}
+                onPress={props.onAddItemsFromEmptyState}
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  pressed && !props.isMutating
+                    ? styles.actionButtonPressed
+                    : undefined,
+                  props.isMutating ? styles.actionButtonDisabled : undefined,
+                ]}
+              >
+                <Text style={styles.secondaryButtonLabel}>
+                  {props.emptyStateActionLabel}
+                </Text>
+              </Pressable>
+            </View>
+          ) : null}
+        </View>
       ) : (
         <View style={styles.groupItems}>
           {props.detailEntries.map((entry, index) => {

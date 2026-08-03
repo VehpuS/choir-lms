@@ -1,7 +1,14 @@
-import { renamePlaylist, type Playlist } from '@org/audio-library-models';
+import {
+  addLoopToPlaylist,
+  addTrackToPlaylist,
+  renamePlaylist,
+  type NamedLoop,
+  type Playlist,
+} from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 
+import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import { getSelectedPlaylistIssue } from '../../playlists/utils/saved-playlist-status-view-model';
 import {
   getSavedPlaylistRemovalCopy,
@@ -38,6 +45,9 @@ export const useSavedRehearsalLibraryPlaylistState = ({
     string | null
   >(null);
   const [cardRenamePlaylistName, setCardRenamePlaylistNameState] = useState('');
+  const [filesAddItemsPlaylistId, setFilesAddItemsPlaylistId] = useState<
+    string | null
+  >(null);
   const [playlistDetailOrigin, setPlaylistDetailOrigin] =
     useState<ReturnType<typeof buildPlaylistDetailOrigin>>(null);
 
@@ -56,7 +66,14 @@ export const useSavedRehearsalLibraryPlaylistState = ({
     if (!hasSelectedPlaylist) {
       setSelectedPlaylistIdState(savedPlaylists[0]?.id ?? null);
     }
-  }, [savedPlaylists, selectedPlaylistId]);
+
+    if (
+      filesAddItemsPlaylistId &&
+      !savedPlaylists.some((playlist) => playlist.id === filesAddItemsPlaylistId)
+    ) {
+      setFilesAddItemsPlaylistId(null);
+    }
+  }, [filesAddItemsPlaylistId, savedPlaylists, selectedPlaylistId]);
 
   const selectedPlaylist = resolveSelectedPlaylist(
     savedPlaylists,
@@ -66,17 +83,47 @@ export const useSavedRehearsalLibraryPlaylistState = ({
   useEffect(() => {
     if (!selectedPlaylist) {
       setIsPlaylistDetailVisible(false);
+      setFilesAddItemsPlaylistId(null);
       setPlaylistDetailOrigin(null);
     }
   }, [selectedPlaylist]);
 
+  const persistSelectedPlaylist = async (
+    buildNextPlaylist: (playlist: Playlist) => Playlist,
+  ) => {
+    if (!selectedPlaylist) {
+      return null;
+    }
+
+    const persistedPlaylist = await updatePlaylist(buildNextPlaylist(selectedPlaylist));
+
+    if (persistedPlaylist) {
+      setSelectedPlaylistIdState(persistedPlaylist.id);
+    }
+
+    return persistedPlaylist;
+  };
+
   return {
+    async addLoopToSelectedPlaylist(loop: NamedLoop) {
+      return persistSelectedPlaylist((playlist) => {
+        return addLoopToPlaylist(playlist, loop);
+      });
+    },
+    async addSourceToSelectedPlaylist(source: DriveLibrarySource) {
+      return persistSelectedPlaylist((playlist) => {
+        return addTrackToPlaylist(playlist, source);
+      });
+    },
     cardRenamePlaylistId,
     cardRenamePlaylistName,
     closeCardRenameDialog() {
       setCardRenameIssue(null);
       setCardRenamePlaylistId(null);
       setCardRenamePlaylistNameState('');
+    },
+    closeFilesAddItems() {
+      setFilesAddItemsPlaylistId(null);
     },
     closePlaylistDetail() {
       setIsPlaylistDetailVisible(false);
@@ -143,6 +190,9 @@ export const useSavedRehearsalLibraryPlaylistState = ({
       setCardRenamePlaylistId(null);
       setCardRenamePlaylistNameState('');
     },
+    isFilesAddItemsVisible:
+      selectedPlaylist !== null &&
+      filesAddItemsPlaylistId === selectedPlaylist.id,
     isPlaylistDetailVisible,
     openCardRenameDialog(playlistId: string) {
       const playlist = savedPlaylists.find((currentPlaylist) => {
@@ -161,9 +211,17 @@ export const useSavedRehearsalLibraryPlaylistState = ({
       playlistId: string,
       openContext?: PlaylistDetailOpenContext,
     ) {
+      setFilesAddItemsPlaylistId(null);
       setSelectedPlaylistIdState(playlistId);
       setPlaylistDetailOrigin(buildPlaylistDetailOrigin(openContext));
       setIsPlaylistDetailVisible(true);
+    },
+    openFilesAddItems() {
+      if (!selectedPlaylist) {
+        return;
+      }
+
+      setFilesAddItemsPlaylistId(selectedPlaylist.id);
     },
     playlistDetailOrigin,
     selectedCardRenameIssue:

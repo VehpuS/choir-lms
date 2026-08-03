@@ -10,6 +10,7 @@ import type {
 import { SavedPlaylistSection } from '../../playlists/components/saved-playlist-section';
 import type { PlaylistPlaybackSession } from '../../playlists/utils/saved-playlist-playback-view-model';
 import type { SavedPlaylistIssue } from '../../playlists/utils/saved-playlist-view-model';
+import { getPlaylistDetailEmptyStateCopy } from './playlist-detail-origin';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 import { useSavedRehearsalLibraryLoopState } from './use-saved-rehearsal-library-loop-state';
 import { useSavedRehearsalLibraryPlaylistState } from './use-saved-rehearsal-library-playlist-state';
@@ -115,6 +116,7 @@ type SavedRehearsalLibraryPlaylistSectionContentProps = {
   isPlaybackPreparing: boolean;
   isPlaylistDetailMode: boolean;
   onClosePlaylistDetail: () => void;
+  onOpenFilesAddItemsFromEmptyState: () => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   pendingPlaylistId: string | null;
   playbackState: SavedTrackPlaybackState | undefined;
@@ -140,6 +142,7 @@ export const SavedRehearsalLibraryPlaylistSectionContent = ({
   isPlaybackPreparing,
   isPlaylistDetailMode,
   onClosePlaylistDetail,
+  onOpenFilesAddItemsFromEmptyState,
   onOpenPlaylistTagEditor,
   pendingPlaylistId,
   playbackState,
@@ -154,17 +157,28 @@ export const SavedRehearsalLibraryPlaylistSectionContent = ({
   togglePlaylistPlayback,
   updatePlaylist,
 }: SavedRehearsalLibraryPlaylistSectionContentProps) => {
+  const detailEmptyStateCopy = getPlaylistDetailEmptyStateCopy(
+    playlistState.playlistDetailOrigin,
+  );
+
   return (
     <SavedPlaylistSection
       activePlaylistSession={activePlaylistSession}
       canMutatePlaylists={canMutatePlaylists}
       createPlaylist={createPlaylist}
       deletePlaylist={deletePlaylist}
+      detailEmptyStateActionLabel={detailEmptyStateCopy.actionLabel}
+      detailEmptyStateMessage={detailEmptyStateCopy.message}
       getCurrentScrollOffsetY={getCurrentScrollOffsetY}
       isDetailVisible={isPlaylistDetailMode}
       isLoading={isPlaylistsLoading}
       isPlaybackPreparing={isPlaybackPreparing}
       issue={playlistIssue}
+      onAddItemsFromEmptyState={
+        playlistState.playlistDetailOrigin?.view === 'files'
+          ? onOpenFilesAddItemsFromEmptyState
+          : undefined
+      }
       onCloseDetail={onClosePlaylistDetail}
       onEditPlaylistTags={onOpenPlaylistTagEditor}
       pendingPlaylistId={pendingPlaylistId}

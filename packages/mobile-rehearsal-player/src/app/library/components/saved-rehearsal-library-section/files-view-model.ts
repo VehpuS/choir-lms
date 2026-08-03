@@ -9,12 +9,33 @@ type LibraryFilesControllerLike = Pick<
   'explorer' | 'goToFolder' | 'goToParentFolder' | 'openFolder'
 >;
 
+export type FilesPlaylistAddMode = {
+  canMutatePlaylists: boolean;
+  isPlaylistMutating: boolean;
+  isSavedLibraryMutating: boolean;
+  onAddLoop: (loopId: string) => void;
+  onDone: () => void;
+  onAddSource: (sourceId: string) => void;
+  playlistName: string;
+};
+
+type FilesPlaylistAddAction = {
+  accessibilityLabel: string;
+  disabled: boolean;
+  label: string;
+  onPress: () => void;
+};
+
+const FILES_PLAYLIST_ADD_ACTION_LABEL = 'Add';
+const FILES_PLAYLIST_ADD_ACTION_PENDING_LABEL = 'Adding…';
+
 export type SavedRehearsalLibraryFilesViewModel = {
   breadcrumbs: ExplorerBreadcrumbItem[];
   canGoBack: boolean;
   currentFolderName: string;
   rows: Array<{
     active: boolean;
+    addAction?: FilesPlaylistAddAction;
     disabled: boolean;
     key: string;
     kind: NonNullable<
@@ -25,6 +46,48 @@ export type SavedRehearsalLibraryFilesViewModel = {
     onPress: () => void;
     supportingLabel: string;
   }>;
+};
+
+export const getFilesPlaylistAddModeCopy = (options: {
+  currentFolderName: string;
+  playlistName: string;
+}) => {
+  return {
+    message:
+      `Choose tracks or loops from ${options.currentFolderName}, then return to ` +
+      `${options.playlistName} when the running order looks right.`,
+    title: `Add items to ${options.playlistName}`,
+  };
+};
+
+const buildFilesPlaylistAddAction = (
+  row: NonNullable<LibraryFilesControllerLike['explorer']>['rows'][number],
+  playlistAddMode?: FilesPlaylistAddMode,
+): FilesPlaylistAddAction | undefined => {
+  if (!playlistAddMode || (row.kind !== 'track' && row.kind !== 'loop')) {
+    return undefined;
+  }
+
+  const disabled =
+    !playlistAddMode.canMutatePlaylists ||
+    playlistAddMode.isPlaylistMutating ||
+    playlistAddMode.isSavedLibraryMutating;
+
+  return {
+    accessibilityLabel: `Add ${row.label} to ${playlistAddMode.playlistName}`,
+    disabled,
+    label: playlistAddMode.isPlaylistMutating
+      ? FILES_PLAYLIST_ADD_ACTION_PENDING_LABEL
+      : FILES_PLAYLIST_ADD_ACTION_LABEL,
+    onPress: () => {
+      if (row.kind === 'track') {
+        playlistAddMode.onAddSource(row.source.id);
+        return;
+      }
+
+      playlistAddMode.onAddLoop(row.loop.id);
+    },
+  };
 };
 
 const isRowActive = (
@@ -62,6 +125,7 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
   onOpenPlaylist: (playlistId: string) => void;
   onTogglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
+  playlistAddMode?: FilesPlaylistAddMode;
 }): SavedRehearsalLibraryFilesViewModel | null => {
   const explorer = options.files.explorer;
 
@@ -93,6 +157,7 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
 
       return {
         active: isRowActive(options.activePlayableItem, row),
+        addAction: buildFilesPlaylistAddAction(row, options.playlistAddMode),
         disabled,
         key: row.kind === 'folder' ? row.folder.id : row.fileLink.id,
         kind: row.kind,

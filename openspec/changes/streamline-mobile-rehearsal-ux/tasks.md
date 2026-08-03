@@ -146,7 +146,11 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
   - Move Files folder supporting-label generation into a direct child-type summary helper in the explorer model so folder rows can distinguish tracks, loops, playlists, and child folders without changing the row shell.
   - Prefer music-entity counts in mixed folders, keep concise folder-aware fallback copy when only one music type is present alongside subfolders, and retain total-item fallback when the mix cannot be summarized clearly.
   - Add focused model coverage for mixed-content, folder-only, and compact fallback summaries before checking this slice complete.
-- [ ] 2.5.10 Improve empty playlist detail when opened from Files. Keep the existing playback-first playlist detail hierarchy, but make folder-origin context legible, update empty-state copy so it does not imply users must leave the current folder, and add an `Add items` path that can start from the originating Files folder.
+- [x] 2.5.10 Improve empty playlist detail when opened from Files. Keep the existing playback-first playlist detail hierarchy, but make folder-origin context legible, update empty-state copy so it does not imply users must leave the current folder, and add an `Add items` path that can start from the originating Files folder.
+  - Capture the originating Files folder name alongside the existing Files back-path state so empty playlist detail can reference the current folder explicitly.
+  - Replace the generic empty-playlist copy with a Files-aware variant when playlist detail was opened from Files, and expose an `Add items` action that opens a Files item-picking mode rooted in the originating folder instead of dropping users into generic browse.
+  - Keep the picker mode inside the existing Files explorer by surfacing direct `Add` actions on nearby track and loop rows plus a clear return path back to playlist detail, while preserving the existing row overflow `Add to playlist` path as the fallback elsewhere.
+  - Cover the empty-state copy and Files-origin action mapping with a focused playlist-origin spec before checking this slice complete.
 - [ ] 2.5.11 Add a low-friction set-building path after creating a playlist inside Files. Users should be able to add nearby folder tracks or loops to the newly created playlist without hunting through row overflow menus one item at a time, while preserving existing per-row `Add to playlist` behavior as a fallback.
 
 ### 2.6 Add Files Search, Sort, Restoration, and Loop-Result Integration

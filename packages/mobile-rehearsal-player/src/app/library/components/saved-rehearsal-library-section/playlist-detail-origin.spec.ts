@@ -1,17 +1,22 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { buildPlaylistDetailOrigin } from './playlist-detail-origin.js';
+import {
+  buildPlaylistDetailOrigin,
+  getPlaylistDetailEmptyStateCopy,
+} from './playlist-detail-origin.js';
 
 describe('playlist detail origin', () => {
   it('keeps files folder origin when opening playlist detail from Files', () => {
     assert.deepEqual(
       buildPlaylistDetailOrigin({
         originFilesFolderId: 'files-folder-warmups',
+        originFilesFolderName: 'Warmups',
         originView: 'files',
       }),
       {
         filesFolderId: 'files-folder-warmups',
+        filesFolderName: 'Warmups',
         view: 'files',
       },
     );
@@ -24,6 +29,7 @@ describe('playlist detail origin', () => {
       }),
       {
         filesFolderId: null,
+        filesFolderName: null,
         view: 'files',
       },
     );
@@ -33,10 +39,12 @@ describe('playlist detail origin', () => {
     assert.deepEqual(
       buildPlaylistDetailOrigin({
         originFilesFolderId: 'files-folder-warmups',
+        originFilesFolderName: 'Warmups',
         originView: 'playlists',
       }),
       {
         filesFolderId: null,
+        filesFolderName: null,
         view: 'playlists',
       },
     );
@@ -44,5 +52,50 @@ describe('playlist detail origin', () => {
 
   it('returns null when no playlist-detail open context was provided', () => {
     assert.equal(buildPlaylistDetailOrigin(undefined), null);
+  });
+
+  it('builds folder-aware empty-state copy for Files-origin playlist detail', () => {
+    assert.deepEqual(
+      getPlaylistDetailEmptyStateCopy({
+        filesFolderId: 'files-folder-warmups',
+        filesFolderName: 'Warmups',
+        view: 'files',
+      }),
+      {
+        actionLabel: 'Add items',
+        message:
+          'This playlist is empty. Add tracks or loops from Warmups, then come back here to review the running order.',
+      },
+    );
+  });
+
+  it('falls back to Files-folder copy when no Files folder name was captured', () => {
+    assert.deepEqual(
+      getPlaylistDetailEmptyStateCopy({
+        filesFolderId: 'files-root',
+        filesFolderName: null,
+        view: 'files',
+      }),
+      {
+        actionLabel: 'Add items',
+        message:
+          'This playlist is empty. Add tracks or loops from this Files folder, then come back here to review the running order.',
+      },
+    );
+  });
+
+  it('keeps generic empty-state copy outside Files origin', () => {
+    assert.deepEqual(
+      getPlaylistDetailEmptyStateCopy({
+        filesFolderId: null,
+        filesFolderName: null,
+        view: 'playlists',
+      }),
+      {
+        actionLabel: null,
+        message:
+          'This playlist is empty. Return to Library, add saved tracks or loops there, then come back here to review the running order.',
+      },
+    );
   });
 });

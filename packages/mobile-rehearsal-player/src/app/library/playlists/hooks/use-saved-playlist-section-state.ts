@@ -1,7 +1,7 @@
 import { type Playlist } from '@org/audio-library-models';
 import { useEffect, useReducer, useRef } from 'react';
-import { Alert } from 'react-native';
 
+import { useLibraryFilesConfirmationFlow } from '../../components/saved-rehearsal-library-section/use-library-files-confirmation-flow';
 import {
   buildSavedPlaylistDetailDraftPlaylist,
   getSavedPlaylistDetailInitialState,
@@ -39,6 +39,7 @@ export const useSavedPlaylistSectionState = (
     getSavedPlaylistDetailInitialState,
   );
   const detailEntriesRef = useRef<PlaylistEntry[]>([]);
+  const confirmationFlow = useLibraryFilesConfirmationFlow();
 
   const resetDetailEntries = (entries: PlaylistEntry[]) => {
     detailEntriesRef.current = [...entries];
@@ -125,19 +126,12 @@ export const useSavedPlaylistSectionState = (
 
     const removalCopy = getSavedPlaylistRemovalCopy(selectedPlaylist);
 
-    Alert.alert(removalCopy.title, removalCopy.message, [
-      {
-        text: 'Cancel',
-        style: 'cancel',
+    confirmationFlow.requestConfirmation({
+      content: removalCopy,
+      onConfirm: async () => {
+        await options.deletePlaylist(selectedPlaylist);
       },
-      {
-        text: removalCopy.confirmLabel,
-        style: 'destructive',
-        onPress: () => {
-          void options.deletePlaylist(selectedPlaylist);
-        },
-      },
-    ]);
+    });
   };
 
   const handleRemovePlaylistItem = async (entryId: string) => {
@@ -161,45 +155,34 @@ export const useSavedPlaylistSectionState = (
       playlistTitle: selectedPlaylist.name,
     });
 
-    Alert.alert(removalCopy.title, removalCopy.message, [
-      {
-        text: 'Cancel',
-        style: 'cancel',
+    confirmationFlow.requestConfirmation({
+      content: removalCopy,
+      onConfirm: async () => {
+        setDraftEntries(removalResult.nextEntries);
+
+        const persistedPlaylist = await persistSelectedPlaylist((playlist) => {
+          return buildSavedPlaylistDetailDraftPlaylist(
+            playlist,
+            removalResult.nextEntries,
+          );
+        });
+
+        if (!persistedPlaylist) {
+          resetDetailEntries(selectedPlaylist.items);
+          return;
+        }
+
+        resetDetailEntries(persistedPlaylist.items);
+
+        dispatchDetailAction({
+          type: 'show-removal-notice',
+          removalNotice: {
+            entry: removalResult.entry,
+            previousIndex: removalResult.previousIndex,
+          },
+        });
       },
-      {
-        text: removalCopy.confirmLabel,
-        style: 'destructive',
-        onPress: () => {
-          void (async () => {
-            setDraftEntries(removalResult.nextEntries);
-
-            const persistedPlaylist = await persistSelectedPlaylist(
-              (playlist) => {
-                return buildSavedPlaylistDetailDraftPlaylist(
-                  playlist,
-                  removalResult.nextEntries,
-                );
-              },
-            );
-
-            if (!persistedPlaylist) {
-              resetDetailEntries(selectedPlaylist.items);
-              return;
-            }
-
-            resetDetailEntries(persistedPlaylist.items);
-
-            dispatchDetailAction({
-              type: 'show-removal-notice',
-              removalNotice: {
-                entry: removalResult.entry,
-                previousIndex: removalResult.previousIndex,
-              },
-            });
-          })();
-        },
-      },
-    ]);
+    });
   };
 
   const handleUndoPlaylistRemoval = async () => {
@@ -250,9 +233,11 @@ export const useSavedPlaylistSectionState = (
 
   return {
     ...createDialogState,
+    confirmationDialog: confirmationFlow.confirmationDialog,
     ...renameState,
     detailDraftEntries: detailState.draftEntries,
     handleCloseDetail: () => {
+      confirmationFlow.requestConfirmation(null);
       options.setIsReorderDragActive(false);
       resetDetailEntries([]);
       options.onCloseDetail?.();

@@ -1,10 +1,14 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { PlayableItem } from '@org/audio-library-models';
 
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../../components/interaction-guard';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { appTheme } from '../../../utils/theme';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
@@ -18,7 +22,11 @@ import {
 import { FeedbackCard } from '../feedback-card';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import { resolveFilesRowMenuTitle } from './files-row-actions';
-import { buildSavedRehearsalLibraryFilesViewModel } from './files-view-model';
+import {
+  buildSavedRehearsalLibraryFilesViewModel,
+  getFilesPlaylistAddModeCopy,
+  type FilesPlaylistAddMode,
+} from './files-view-model';
 import type { LibraryFilesSuccessFeedback } from './library-files-success-feedback';
 import { LibraryFilesSuccessFeedbackCard } from './library-files-success-feedback-card';
 import { useLibraryFilesRowActionFlows } from './use-library-files-row-action-flows';
@@ -48,6 +56,7 @@ type SavedRehearsalLibraryFilesViewProps = {
   onQueuePlayableItemNext: (playableItem: PlayableItem) => void;
   onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   onRemoveSource: (source: DriveLibrarySource) => void;
+  playlistAddMode?: FilesPlaylistAddMode;
   successFeedback: LibraryFilesSuccessFeedback | null;
   onTogglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
@@ -93,6 +102,7 @@ export const SavedRehearsalLibraryFilesView = ({
   onQueuePlayableItemNext,
   onQueuePlayableItemUpNext,
   onRemoveSource,
+  playlistAddMode,
   successFeedback,
   onTogglePlayableItemPlayback,
   onToggleSourcePlayback,
@@ -152,11 +162,20 @@ export const SavedRehearsalLibraryFilesView = ({
     onOpenPlaylist,
     onTogglePlayableItemPlayback,
     onToggleSourcePlayback,
+    playlistAddMode,
   });
 
   if (!viewModel) {
     return null;
   }
+
+  const activePlaylistAddMode = playlistAddMode ?? null;
+  const playlistAddModeCopy = activePlaylistAddMode
+    ? getFilesPlaylistAddModeCopy({
+        currentFolderName: viewModel.currentFolderName,
+        playlistName: activePlaylistAddMode.playlistName,
+      })
+    : null;
 
   return (
     <View style={styles.surface}>
@@ -177,9 +196,42 @@ export const SavedRehearsalLibraryFilesView = ({
         title={viewModel.currentFolderName}
       />
       <ExplorerBreadcrumbBar items={viewModel.breadcrumbs} />
+      {playlistAddModeCopy && activePlaylistAddMode ? (
+        <FeedbackCard
+          footer={
+            <View style={styles.playlistAddModeActions}>
+              <Pressable
+                accessibilityRole="button"
+                {...interactionGuardProps}
+                disabled={activePlaylistAddMode.isPlaylistMutating}
+                onPress={activePlaylistAddMode.onDone}
+                style={({ pressed }) => [
+                  styles.playlistAddModePrimaryAction,
+                  buttonInteractionGuardStyle,
+                  pressed && !activePlaylistAddMode.isPlaylistMutating
+                    ? styles.playlistAddModePrimaryActionPressed
+                    : undefined,
+                  activePlaylistAddMode.isPlaylistMutating
+                    ? styles.playlistAddModePrimaryActionDisabled
+                    : undefined,
+                ]}
+              >
+                <Text style={styles.playlistAddModePrimaryActionLabel}>
+                  Back to playlist
+                </Text>
+              </Pressable>
+            </View>
+          }
+          message={playlistAddModeCopy.message}
+          size="compact"
+          title={playlistAddModeCopy.title}
+          tone="ready"
+        />
+      ) : null}
       <ExplorerListSurface>
         {explorer.rows.map((row, index) => {
           const viewModelRow = viewModel.rows[index];
+          const rowAddAction = viewModelRow.addAction;
           const menuActions = rowActionFlows.createMenuActions(row);
           const isOptionsVisible = openMenuRowKey === viewModelRow.key;
 
@@ -198,6 +250,31 @@ export const SavedRehearsalLibraryFilesView = ({
                     name={getRowIconName(row)}
                     size={22}
                   />
+                }
+                actions={
+                  rowAddAction ? (
+                    <Pressable
+                      accessibilityLabel={rowAddAction.accessibilityLabel}
+                      accessibilityRole="button"
+                      {...interactionGuardProps}
+                      disabled={rowAddAction.disabled}
+                      onPress={rowAddAction.onPress}
+                      style={({ pressed }) => [
+                        styles.rowActionButton,
+                        buttonInteractionGuardStyle,
+                        pressed && !rowAddAction.disabled
+                          ? styles.rowActionButtonPressed
+                          : undefined,
+                        rowAddAction.disabled
+                          ? styles.rowActionButtonDisabled
+                          : undefined,
+                      ]}
+                    >
+                      <Text style={styles.rowActionButtonLabel}>
+                        {rowAddAction.label}
+                      </Text>
+                    </Pressable>
+                  ) : null
                 }
                 message={
                   viewModelRow.message ? (
@@ -266,6 +343,47 @@ export const SavedRehearsalLibraryFilesView = ({
 };
 
 const styles = StyleSheet.create({
+  playlistAddModeActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  playlistAddModePrimaryAction: {
+    borderRadius: 999,
+    backgroundColor: '#1f5c40',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  playlistAddModePrimaryActionDisabled: {
+    opacity: 0.55,
+  },
+  playlistAddModePrimaryActionLabel: {
+    color: '#f8fbf7',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  playlistAddModePrimaryActionPressed: {
+    opacity: 0.88,
+  },
+  rowActionButton: {
+    alignSelf: 'center',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#abc8b6',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  rowActionButtonDisabled: {
+    opacity: 0.55,
+  },
+  rowActionButtonLabel: {
+    color: '#1f5c40',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  rowActionButtonPressed: {
+    backgroundColor: '#eef7f0',
+  },
   rowOverflowTrigger: {
     position: 'relative',
     top: 0,

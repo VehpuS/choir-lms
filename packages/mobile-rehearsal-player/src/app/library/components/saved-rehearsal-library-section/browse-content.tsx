@@ -38,6 +38,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
   savedSourceTitle,
   searchState,
   visibleSections,
+  onDoneAddingFilesPlaylistItems,
   onDismissLibraryFilesSuccessFeedback,
   onOpenLibraryFilesSuccessFeedbackFolder,
   onOpenPlaylistTagEditor,
@@ -53,6 +54,8 @@ export const SavedRehearsalLibraryBrowseContent = ({
     selectedView === 'files'
       ? {
           originFilesFolderId: libraryFiles.explorer?.currentFolder.id ?? null,
+          originFilesFolderName:
+            libraryFiles.explorer?.currentFolder.name ?? null,
           originView: selectedView,
         }
       : {
@@ -83,6 +86,40 @@ export const SavedRehearsalLibraryBrowseContent = ({
           onOpenLoopBuilderForSource={openLoopBuilderForSource}
           onOpenLoopPlaylistSelector={
             trackPlaylistMenu.openLoopPlaylistSelector
+          }
+          playlistAddMode={
+            playlistState.isFilesAddItemsVisible &&
+            playlistState.selectedPlaylist !== null
+              ? {
+                  canMutatePlaylists,
+                  isPlaylistMutating,
+                  isSavedLibraryMutating,
+                  onAddLoop: (loopId) => {
+                    const loop = savedLoops.find((currentLoop) => {
+                      return currentLoop.id === loopId;
+                    });
+
+                    if (!loop) {
+                      return;
+                    }
+
+                    void playlistState.addLoopToSelectedPlaylist(loop);
+                  },
+                  onAddSource: (sourceId) => {
+                    const source = savedLibrarySources.find((currentSource) => {
+                      return currentSource.id === sourceId;
+                    });
+
+                    if (!source) {
+                      return;
+                    }
+
+                    void playlistState.addSourceToSelectedPlaylist(source);
+                  },
+                  onDone: onDoneAddingFilesPlaylistItems,
+                  playlistName: playlistState.selectedPlaylist.name,
+                }
+              : undefined
           }
           onOpenPlaylist={(playlistId) => {
             playlistState.openPlaylistDetail(

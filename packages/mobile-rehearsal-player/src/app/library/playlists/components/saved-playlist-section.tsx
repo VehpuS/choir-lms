@@ -35,11 +35,14 @@ type SavedPlaylistSectionProps = {
   canMutatePlaylists: boolean;
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
   deletePlaylist: (playlist: Playlist) => Promise<boolean>;
+  detailEmptyStateActionLabel: string | null;
+  detailEmptyStateMessage: string;
   getCurrentScrollOffsetY: () => number;
   isDetailVisible?: boolean;
   isLoading: boolean;
   isPlaybackPreparing: boolean;
   issue: SavedPlaylistIssue | null;
+  onAddItemsFromEmptyState?: () => void;
   onCloseDetail?: () => void;
   onEditPlaylistTags: (playlistId: string) => void;
   pendingPlaylistId: string | null;
@@ -67,11 +70,14 @@ export const SavedPlaylistSection = ({
   canMutatePlaylists,
   createPlaylist,
   deletePlaylist,
+  detailEmptyStateActionLabel,
+  detailEmptyStateMessage,
   getCurrentScrollOffsetY,
   isDetailVisible = false,
   isLoading,
   isPlaybackPreparing,
   issue,
+  onAddItemsFromEmptyState,
   onCloseDetail,
   onEditPlaylistTags,
   pendingPlaylistId,
@@ -90,6 +96,7 @@ export const SavedPlaylistSection = ({
   const {
     createPlaylistName,
     creationIssue,
+    confirmationDialog,
     detailDraftEntries,
     handleCloseDetail,
     handleCommitReorder,
@@ -217,6 +224,8 @@ export const SavedPlaylistSection = ({
           currentPlaylistEntryId={currentPlaylistEntryId}
           detailSummary={detailSummary}
           detailEntries={detailDraftEntries}
+          emptyStateActionLabel={detailEmptyStateActionLabel}
+          emptyStateMessage={detailEmptyStateMessage}
           getCurrentScrollOffsetY={getCurrentScrollOffsetY}
           getItemDetailLabel={(entry) => {
             return getSavedPlaylistEntryDetailLabel({
@@ -233,6 +242,7 @@ export const SavedPlaylistSection = ({
             });
           }}
           isMutating={isMutating}
+          onAddItemsFromEmptyState={onAddItemsFromEmptyState}
           onCloseDetail={handleCloseDetail}
           onDismissRemovalNotice={handleDismissRemovalNotice}
           onEditPlaylistTags={detailActions.editPlaylistTags}
@@ -266,6 +276,8 @@ export const SavedPlaylistSection = ({
           shufflePlaybackAction={shufflePlaybackAction}
         />
       ) : null}
+
+      {confirmationDialog}
     </View>
   );
 };

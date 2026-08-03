@@ -34,10 +34,13 @@ export const SavedPlaylistDetailCard = (props: {
   currentPlaylistEntryId: string | null;
   detailSummary: SavedPlaylistDetailSummary | null;
   detailEntries: PlaylistEntry[];
+  emptyStateActionLabel: string | null;
+  emptyStateMessage: string;
   getCurrentScrollOffsetY: () => number;
   getItemDetailLabel: (entry: PlaylistEntry) => string;
   isItemPlayable: (entry: PlaylistEntry) => boolean;
   isMutating: boolean;
+  onAddItemsFromEmptyState?: () => void;
   orderedPlaybackAction: PlaylistPlaybackActionCopy;
   playbackToggleDisabled: boolean;
   playbackToggleLabel: string;
@@ -174,10 +177,13 @@ export const SavedPlaylistDetailCard = (props: {
       <SavedPlaylistDetailItemsList
         currentPlaylistEntryId={props.currentPlaylistEntryId}
         detailEntries={props.detailEntries}
+        emptyStateActionLabel={props.emptyStateActionLabel}
+        emptyStateMessage={props.emptyStateMessage}
         getCurrentScrollOffsetY={props.getCurrentScrollOffsetY}
         getItemDetailLabel={props.getItemDetailLabel}
         isItemPlayable={props.isItemPlayable}
         isMutating={props.isMutating}
+        onAddItemsFromEmptyState={props.onAddItemsFromEmptyState}
         onCommitReorder={props.onCommitReorder}
         onMoveItem={props.onMoveItem}
         onPlayPlaylistEntry={props.onPlayPlaylistEntry}

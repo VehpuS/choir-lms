@@ -18,10 +18,15 @@ export type PlaylistState = Pick<
   ReturnType<typeof useSavedRehearsalLibraryPlaylistState>,
   | 'cardRenamePlaylistId'
   | 'cardRenamePlaylistName'
+  | 'addLoopToSelectedPlaylist'
+  | 'addSourceToSelectedPlaylist'
+  | 'closeFilesAddItems'
   | 'closeCardRenameDialog'
   | 'handleDeletePlaylist'
   | 'handleRenamePlaylistCard'
+  | 'isFilesAddItemsVisible'
   | 'openCardRenameDialog'
+  | 'openFilesAddItems'
   | 'openPlaylistDetail'
   | 'selectedCardRenameIssue'
   | 'selectedPlaylist'
@@ -82,6 +87,7 @@ export type SavedRehearsalLibraryBrowseContentProps = Pick<
   savedSourceTitle: string;
   searchState: SearchState;
   visibleSections: SavedRehearsalLibraryVisibleSections;
+  onDoneAddingFilesPlaylistItems: () => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   onOpenLoopTagEditor: (
     loop: SavedRehearsalLibrarySectionProps['savedLoops'][number],
