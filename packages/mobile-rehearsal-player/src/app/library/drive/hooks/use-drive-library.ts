@@ -23,6 +23,7 @@ import {
   persistRecentSearchHistory,
   restoreRecentSearchHistory,
 } from '../../search/utils/search-history-storage';
+import { resolveSearchInputValue } from '../../search/utils/search-input-value';
 
 const createRootLocation = (rootKind: DriveBrowseLocation['rootKind']) => {
   return {
@@ -109,12 +110,10 @@ export const useDriveLibrary = (
 
     if (!nextQuery) {
       clearActiveSearch();
-      setSearchQuery('');
       return;
     }
 
     setIssue(null);
-    setSearchQuery(nextQuery);
     // Clear previous result counts while the next query is fetching.
     setSearchSnapshot({
       ...EMPTY_SEARCH,
@@ -149,7 +148,22 @@ export const useDriveLibrary = (
     clearActiveSearch();
   };
 
-  const submitSearchQuery = (query: string) => {
+  const runSubmittedSearchQuery = (
+    query: string,
+    options: {
+      syncInputValue?: boolean;
+    } = {},
+  ) => {
+    const nextSearchInputValue = resolveSearchInputValue({
+      currentInputValue: searchQuery,
+      query,
+      syncInputValue: options.syncInputValue ?? false,
+    });
+
+    if (nextSearchInputValue !== searchQuery) {
+      setSearchQuery(nextSearchInputValue);
+    }
+
     debouncedSearch.flush(query);
 
     if (!normalizeRecentSearchTerm(query) || authState.status !== 'expired') {
@@ -362,10 +376,12 @@ export const useDriveLibrary = (
     },
     setSearchQuery: updateSearchQuery,
     submitSearch() {
-      submitSearchQuery(searchQuery);
+      runSubmittedSearchQuery(searchQuery);
     },
     submitSearchQuery(query: string) {
-      submitSearchQuery(query);
+      runSubmittedSearchQuery(query, {
+        syncInputValue: true,
+      });
     },
     unavailableSources:
       activeSearchQuery === null
