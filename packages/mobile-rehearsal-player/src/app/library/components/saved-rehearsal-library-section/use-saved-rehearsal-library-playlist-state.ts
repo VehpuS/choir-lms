@@ -69,7 +69,9 @@ export const useSavedRehearsalLibraryPlaylistState = ({
 
     if (
       filesAddItemsPlaylistId &&
-      !savedPlaylists.some((playlist) => playlist.id === filesAddItemsPlaylistId)
+      !savedPlaylists.some(
+        (playlist) => playlist.id === filesAddItemsPlaylistId,
+      )
     ) {
       setFilesAddItemsPlaylistId(null);
     }
@@ -95,7 +97,9 @@ export const useSavedRehearsalLibraryPlaylistState = ({
       return null;
     }
 
-    const persistedPlaylist = await updatePlaylist(buildNextPlaylist(selectedPlaylist));
+    const persistedPlaylist = await updatePlaylist(
+      buildNextPlaylist(selectedPlaylist),
+    );
 
     if (persistedPlaylist) {
       setSelectedPlaylistIdState(persistedPlaylist.id);
@@ -216,7 +220,21 @@ export const useSavedRehearsalLibraryPlaylistState = ({
       setPlaylistDetailOrigin(buildPlaylistDetailOrigin(openContext));
       setIsPlaylistDetailVisible(true);
     },
-    openFilesAddItems() {
+    openFilesAddItems(playlistId?: string) {
+      if (playlistId) {
+        const playlist = savedPlaylists.find((currentPlaylist) => {
+          return currentPlaylist.id === playlistId;
+        });
+
+        if (!playlist) {
+          return;
+        }
+
+        setSelectedPlaylistIdState(playlist.id);
+        setFilesAddItemsPlaylistId(playlist.id);
+        return;
+      }
+
       if (!selectedPlaylist) {
         return;
       }

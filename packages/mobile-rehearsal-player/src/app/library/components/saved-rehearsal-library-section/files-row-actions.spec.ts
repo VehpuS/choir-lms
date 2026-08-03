@@ -166,7 +166,7 @@ describe('resolveFilesRowMenuActions', () => {
     );
   });
 
-  it('keeps playlist links on the existing playlist tag editor flow', () => {
+  it('keeps playlist links on the shared add-items and playlist tag editor flows', () => {
     const { calls, options } = createBaseOptions();
     const row: LibraryFilesRow = {
       fileLink: {
@@ -186,11 +186,13 @@ describe('resolveFilesRowMenuActions', () => {
       row,
     });
 
+    actions.find((action) => action.label === 'Add items')?.onPress();
     actions.find((action) => action.label === 'Edit tags')?.onPress();
 
     assert.deepEqual(
       actions.map((action) => action.label),
       [
+        'Add items',
         'Create a copy',
         'Edit tags',
         'Rename',
@@ -198,6 +200,7 @@ describe('resolveFilesRowMenuActions', () => {
         'Delete from folder',
       ],
     );
+    assert.deepEqual(calls.playlistAdds, [PLAYLIST.id]);
     assert.deepEqual(calls.playlistTags, [PLAYLIST.id]);
   });
 

@@ -26,6 +26,7 @@ export type ResolveFilesRowMenuActionsBaseOptions = {
   onOpenSourcePlaylistSelector: (sourceId: string) => void;
   onOpenSourceTagEditor: (sourceId: string) => void;
   onOpenLoopTagEditor: (loopId: string) => void;
+  onOpenPlaylistAddItems: (playlistId: string) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   onQueuePlayableItemNext: (playableItem: PlayableItem) => void;
   onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;

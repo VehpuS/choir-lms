@@ -35,14 +35,14 @@ type SavedPlaylistSectionProps = {
   canMutatePlaylists: boolean;
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
   deletePlaylist: (playlist: Playlist) => Promise<boolean>;
-  detailEmptyStateActionLabel: string | null;
+  detailAddItemsActionLabel: string | null;
   detailEmptyStateMessage: string;
   getCurrentScrollOffsetY: () => number;
   isDetailVisible?: boolean;
   isLoading: boolean;
   isPlaybackPreparing: boolean;
   issue: SavedPlaylistIssue | null;
-  onAddItemsFromEmptyState?: () => void;
+  onAddItems?: () => void;
   onCloseDetail?: () => void;
   onEditPlaylistTags: (playlistId: string) => void;
   pendingPlaylistId: string | null;
@@ -70,14 +70,14 @@ export const SavedPlaylistSection = ({
   canMutatePlaylists,
   createPlaylist,
   deletePlaylist,
-  detailEmptyStateActionLabel,
+  detailAddItemsActionLabel,
   detailEmptyStateMessage,
   getCurrentScrollOffsetY,
   isDetailVisible = false,
   isLoading,
   isPlaybackPreparing,
   issue,
-  onAddItemsFromEmptyState,
+  onAddItems,
   onCloseDetail,
   onEditPlaylistTags,
   pendingPlaylistId,
@@ -219,12 +219,12 @@ export const SavedPlaylistSection = ({
 
       {isDetailVisible ? (
         <SavedPlaylistDetailCard
+          addItemsActionLabel={detailAddItemsActionLabel}
           activeQueueMode={selectedPlaybackSession?.queue.mode ?? null}
           canMutatePlaylists={canMutatePlaylists}
           currentPlaylistEntryId={currentPlaylistEntryId}
           detailSummary={detailSummary}
           detailEntries={detailDraftEntries}
-          emptyStateActionLabel={detailEmptyStateActionLabel}
           emptyStateMessage={detailEmptyStateMessage}
           getCurrentScrollOffsetY={getCurrentScrollOffsetY}
           getItemDetailLabel={(entry) => {
@@ -242,7 +242,7 @@ export const SavedPlaylistSection = ({
             });
           }}
           isMutating={isMutating}
-          onAddItemsFromEmptyState={onAddItemsFromEmptyState}
+          onAddItems={onAddItems}
           onCloseDetail={handleCloseDetail}
           onDismissRemovalNotice={handleDismissRemovalNotice}
           onEditPlaylistTags={detailActions.editPlaylistTags}

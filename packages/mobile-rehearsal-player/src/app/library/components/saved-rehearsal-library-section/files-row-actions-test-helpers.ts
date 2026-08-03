@@ -61,6 +61,7 @@ export const createBaseOptions = () => {
     loopTags: [] as string[],
     moves: [] as string[],
     next: [] as string[],
+    playlistAdds: [] as string[],
     playlistTags: [] as string[],
     reconnects: [] as string[],
     renames: [] as string[],
@@ -102,6 +103,9 @@ export const createBaseOptions = () => {
       },
       onOpenLoopTagEditor(loopId: string) {
         calls.loopTags.push(loopId);
+      },
+      onOpenPlaylistAddItems(playlistId: string) {
+        calls.playlistAdds.push(playlistId);
       },
       onOpenPlaylistTagEditor(playlistId: string) {
         calls.playlistTags.push(playlistId);

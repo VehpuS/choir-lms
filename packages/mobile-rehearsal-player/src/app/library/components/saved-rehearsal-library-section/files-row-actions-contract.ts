@@ -57,11 +57,12 @@ export const LOOP_ACTION_ORDER = new Map([
 ]);
 
 export const PLAYLIST_ACTION_ORDER = new Map([
-  ['Create a copy', 0],
-  ['Edit tags', 1],
-  ['Rename', 2],
-  ['Move to folder', 3],
-  ['Delete from folder', 4],
+  ['Add items', 0],
+  ['Create a copy', 1],
+  ['Edit tags', 2],
+  ['Rename', 3],
+  ['Move to folder', 4],
+  ['Delete from folder', 5],
 ]);
 
 export const FOLDER_ACTION_ORDER = new Map([

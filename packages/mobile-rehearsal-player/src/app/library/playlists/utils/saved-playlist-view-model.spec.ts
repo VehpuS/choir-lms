@@ -107,8 +107,9 @@ describe('saved playlist view-model', () => {
     });
   });
 
-  it('includes remove in shared playlist overflow actions when requested', () => {
+  it('includes add items and remove in shared playlist overflow actions when requested', () => {
     const actions = getPlaylistOptionsMenuActions({
+      onAddItems: () => undefined,
       onEditTags: () => undefined,
       isMutating: false,
       onRemove: () => undefined,
@@ -123,6 +124,12 @@ describe('saved playlist view-model', () => {
         tone: action.tone,
       })),
       [
+        {
+          disabled: false,
+          id: 'add-playlist-items',
+          label: 'Add items',
+          tone: 'secondary',
+        },
         {
           disabled: false,
           id: 'rename-playlist',

@@ -29,18 +29,18 @@ import { SavedPlaylistDetailItemsList } from './saved-playlist-detail-items-list
 type PlaylistEntry = Playlist['items'][number];
 
 export const SavedPlaylistDetailCard = (props: {
+  addItemsActionLabel: string | null;
   activeQueueMode: 'ordered' | 'shuffle' | null;
   canMutatePlaylists: boolean;
   currentPlaylistEntryId: string | null;
   detailSummary: SavedPlaylistDetailSummary | null;
   detailEntries: PlaylistEntry[];
-  emptyStateActionLabel: string | null;
   emptyStateMessage: string;
   getCurrentScrollOffsetY: () => number;
   getItemDetailLabel: (entry: PlaylistEntry) => string;
   isItemPlayable: (entry: PlaylistEntry) => boolean;
   isMutating: boolean;
-  onAddItemsFromEmptyState?: () => void;
+  onAddItems?: () => void;
   orderedPlaybackAction: PlaylistPlaybackActionCopy;
   playbackToggleDisabled: boolean;
   playbackToggleLabel: string;
@@ -175,15 +175,15 @@ export const SavedPlaylistDetailCard = (props: {
       title={detailSummary.title}
     >
       <SavedPlaylistDetailItemsList
+        addItemsActionLabel={props.addItemsActionLabel}
         currentPlaylistEntryId={props.currentPlaylistEntryId}
         detailEntries={props.detailEntries}
-        emptyStateActionLabel={props.emptyStateActionLabel}
         emptyStateMessage={props.emptyStateMessage}
         getCurrentScrollOffsetY={props.getCurrentScrollOffsetY}
         getItemDetailLabel={props.getItemDetailLabel}
         isItemPlayable={props.isItemPlayable}
         isMutating={props.isMutating}
-        onAddItemsFromEmptyState={props.onAddItemsFromEmptyState}
+        onAddItems={props.onAddItems}
         onCommitReorder={props.onCommitReorder}
         onMoveItem={props.onMoveItem}
         onPlayPlaylistEntry={props.onPlayPlaylistEntry}
@@ -213,6 +213,14 @@ export const SavedPlaylistDetailCard = (props: {
       <PlaylistOptionsMenuSurface
         isMutating={props.isMutating}
         isVisible={isOptionsMenuVisible}
+        onAddItems={
+          props.addItemsActionLabel && props.onAddItems
+            ? () => {
+                setIsOptionsMenuVisible(false);
+                props.onAddItems?.();
+              }
+            : undefined
+        }
         onClose={() => {
           setIsOptionsMenuVisible(false);
         }}

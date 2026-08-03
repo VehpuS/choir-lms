@@ -8,16 +8,18 @@ import { PlaylistDetailRowControls } from './playlist-detail-row-controls';
 
 type PlaylistEntry = Playlist['items'][number];
 
+const DEFAULT_PLAYLIST_ADD_ITEMS_ACTION_LABEL = 'Add items';
+
 export const SavedPlaylistDetailItemsList = (props: {
+  addItemsActionLabel: string | null;
   currentPlaylistEntryId: string | null;
   detailEntries: PlaylistEntry[];
-  emptyStateActionLabel: string | null;
   emptyStateMessage: string;
   getCurrentScrollOffsetY: () => number;
   getItemDetailLabel: (entry: PlaylistEntry) => string;
   isItemPlayable: (entry: PlaylistEntry) => boolean;
   isMutating: boolean;
-  onAddItemsFromEmptyState?: () => void;
+  onAddItems?: () => void;
   onCommitReorder: () => void;
   onMoveItem: (
     fromIndex: number,
@@ -76,35 +78,37 @@ export const SavedPlaylistDetailItemsList = (props: {
         return entry.id === activeMovePositionEntry.id;
       })
     : -1;
+  const addItemsActionLabel =
+    props.addItemsActionLabel ?? DEFAULT_PLAYLIST_ADD_ITEMS_ACTION_LABEL;
 
   return (
     <View style={styles.group}>
-      <Text style={styles.groupTitle}>
-        Items ({props.detailEntries.length})
-      </Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.groupTitle}>
+          Items ({props.detailEntries.length})
+        </Text>
+        {props.onAddItems ? (
+          <Pressable
+            accessibilityRole="button"
+            disabled={props.isMutating}
+            onPress={props.onAddItems}
+            style={({ pressed }) => [
+              styles.secondaryButton,
+              pressed && !props.isMutating
+                ? styles.actionButtonPressed
+                : undefined,
+              props.isMutating ? styles.actionButtonDisabled : undefined,
+            ]}
+          >
+            <Text style={styles.secondaryButtonLabel}>
+              {addItemsActionLabel}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
       {props.detailEntries.length === 0 ? (
         <View style={styles.playlistRowShell}>
           <Text style={styles.emptyMessage}>{props.emptyStateMessage}</Text>
-          {props.emptyStateActionLabel && props.onAddItemsFromEmptyState ? (
-            <View style={styles.actionRow}>
-              <Pressable
-                accessibilityRole="button"
-                disabled={props.isMutating}
-                onPress={props.onAddItemsFromEmptyState}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && !props.isMutating
-                    ? styles.actionButtonPressed
-                    : undefined,
-                  props.isMutating ? styles.actionButtonDisabled : undefined,
-                ]}
-              >
-                <Text style={styles.secondaryButtonLabel}>
-                  {props.emptyStateActionLabel}
-                </Text>
-              </Pressable>
-            </View>
-          ) : null}
         </View>
       ) : (
         <View style={styles.groupItems}>

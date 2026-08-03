@@ -88,6 +88,10 @@ export type SavedRehearsalLibraryBrowseContentProps = Pick<
   searchState: SearchState;
   visibleSections: SavedRehearsalLibraryVisibleSections;
   onDoneAddingFilesPlaylistItems: () => void;
+  onOpenFilesAddItemsForPlaylist: (options: {
+    playlistId: string;
+    preferredFolderId?: string | null;
+  }) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   onOpenLoopTagEditor: (
     loop: SavedRehearsalLibrarySectionProps['savedLoops'][number],

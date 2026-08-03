@@ -43,6 +43,7 @@ export const SavedPlaylistCardsList = (props: {
   canMutatePlaylists: boolean;
   highlightQuery?: string | null;
   isMutating: boolean;
+  onAddItemsToPlaylist?: (playlistId: string) => void;
   onBeginRenamePlaylist: (playlistId: string) => void;
   onCancelRenamePlaylist: () => void;
   onDeletePlaylist: (playlistId: string) => void;
@@ -131,6 +132,14 @@ export const SavedPlaylistCardsList = (props: {
       <PlaylistOptionsMenuSurface
         isMutating={props.isMutating || !props.canMutatePlaylists}
         isVisible={selectedOptionsPlaylist !== undefined}
+        onAddItems={() => {
+          if (!selectedOptionsPlaylist || !props.onAddItemsToPlaylist) {
+            return;
+          }
+
+          setOptionsPlaylistId(null);
+          props.onAddItemsToPlaylist(selectedOptionsPlaylist.playlist.id);
+        }}
         onClose={() => {
           setOptionsPlaylistId(null);
         }}

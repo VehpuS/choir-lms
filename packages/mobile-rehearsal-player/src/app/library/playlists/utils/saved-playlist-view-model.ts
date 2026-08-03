@@ -246,19 +246,30 @@ export const getSavedPlaylistCreateDialogCopy =
 
 export const getPlaylistOptionsMenuActions = (options: {
   isMutating: boolean;
+  onAddItems?: () => void;
   onEditTags?: () => void;
   onRemove?: () => void;
   onRename: () => void;
 }): OptionsMenuAction[] => {
-  const actions: OptionsMenuAction[] = [
-    {
+  const actions: OptionsMenuAction[] = [];
+
+  if (options.onAddItems) {
+    actions.push({
       disabled: options.isMutating,
-      id: 'rename-playlist',
-      label: 'Rename playlist',
-      onPress: options.onRename,
-      tone: 'primary',
-    },
-  ];
+      id: 'add-playlist-items',
+      label: 'Add items',
+      onPress: options.onAddItems,
+      tone: 'secondary',
+    });
+  }
+
+  actions.push({
+    disabled: options.isMutating,
+    id: 'rename-playlist',
+    label: 'Rename playlist',
+    onPress: options.onRename,
+    tone: 'primary',
+  });
 
   if (options.onEditTags) {
     actions.push({

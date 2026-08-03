@@ -19,6 +19,15 @@ const resolvePlaylistMenuActions = (
 ) => {
   const actions = [
     {
+      disabled: !options.canMutatePlaylists || options.isPlaylistMutating,
+      id: `playlist:${row.fileLink.id}:add-items`,
+      label: 'Add items',
+      onPress: () => {
+        options.onOpenPlaylistAddItems(row.playlist.id);
+      },
+      tone: 'secondary' as const,
+    },
+    {
       disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
       id: `playlist:${row.fileLink.id}:create-copy`,
       label: 'Create a copy',

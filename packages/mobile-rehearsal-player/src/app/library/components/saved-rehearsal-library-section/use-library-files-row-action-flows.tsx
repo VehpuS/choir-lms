@@ -79,6 +79,7 @@ type UseLibraryFilesRowActionFlowsOptions = {
   isSavedLibraryMutating: boolean;
   onOpenLoopBuilderForSource: (source: DriveLibrarySource) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
+  onOpenPlaylistAddItems: (playlistId: string) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   onOpenSourcePlaylistSelector: (sourceId: string) => void;
   onOpenSourceTagEditor: (source: DriveLibrarySource) => void;
@@ -102,6 +103,7 @@ export const useLibraryFilesRowActionFlows = ({
   isSavedLibraryMutating,
   onOpenLoopBuilderForSource,
   onOpenLoopPlaylistSelector,
+  onOpenPlaylistAddItems,
   onOpenPlaylistTagEditor,
   onOpenSourcePlaylistSelector,
   onOpenSourceTagEditor,
@@ -323,6 +325,7 @@ export const useLibraryFilesRowActionFlows = ({
         },
         onOpenLoopPlaylistSelector,
         onOpenLoopTagEditor,
+        onOpenPlaylistAddItems,
         onOpenPlaylistTagEditor,
         onOpenSourcePlaylistSelector,
         onOpenSourceTagEditor(sourceId) {

@@ -7,6 +7,7 @@ type BrowsePlaylistCardsProps = {
   canMutatePlaylists: boolean;
   isPlaylistMutating: boolean;
   loops: SavedRehearsalLibrarySectionProps['savedLoops'];
+  onOpenFilesAddItemsForPlaylist: (playlistId: string) => void;
   openPlaylist: (playlistId: string) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   playlistCards: SavedPlaylistCard[];
@@ -33,6 +34,7 @@ export const BrowsePlaylistCards = ({
   canMutatePlaylists,
   isPlaylistMutating,
   loops,
+  onOpenFilesAddItemsForPlaylist,
   openPlaylist,
   onOpenPlaylistTagEditor,
   playlistCards,
@@ -50,6 +52,7 @@ export const BrowsePlaylistCards = ({
       canMutatePlaylists={canMutatePlaylists}
       highlightQuery={searchQuery}
       isMutating={isPlaylistMutating}
+      onAddItemsToPlaylist={onOpenFilesAddItemsForPlaylist}
       onBeginRenamePlaylist={playlistState.openCardRenameDialog}
       onCancelRenamePlaylist={playlistState.closeCardRenameDialog}
       onDeletePlaylist={playlistState.handleDeletePlaylist}

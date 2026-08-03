@@ -39,6 +39,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
   searchState,
   visibleSections,
   onDoneAddingFilesPlaylistItems,
+  onOpenFilesAddItemsForPlaylist,
   onDismissLibraryFilesSuccessFeedback,
   onOpenLibraryFilesSuccessFeedbackFolder,
   onOpenPlaylistTagEditor,
@@ -127,6 +128,13 @@ export const SavedRehearsalLibraryBrowseContent = ({
               playlistDetailOpenContext,
             );
           }}
+          onOpenPlaylistAddItems={(playlistId) => {
+            onOpenFilesAddItemsForPlaylist({
+              playlistId,
+              preferredFolderId:
+                libraryFiles.explorer?.currentFolder.id ?? null,
+            });
+          }}
           onOpenPlaylistTagEditor={onOpenPlaylistTagEditor}
           onDismissSuccessFeedback={onDismissLibraryFilesSuccessFeedback}
           onOpenSourcePlaylistSelector={
@@ -165,6 +173,11 @@ export const SavedRehearsalLibraryBrowseContent = ({
           canMutatePlaylists={canMutatePlaylists}
           isPlaylistMutating={isPlaylistMutating}
           loops={savedLoops}
+          onOpenFilesAddItemsForPlaylist={(playlistId) => {
+            onOpenFilesAddItemsForPlaylist({
+              playlistId,
+            });
+          }}
           onOpenPlaylistTagEditor={onOpenPlaylistTagEditor}
           openPlaylist={(playlistId) => {
             playlistState.openPlaylistDetail(

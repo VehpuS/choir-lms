@@ -151,7 +151,10 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
   - Replace the generic empty-playlist copy with a Files-aware variant when playlist detail was opened from Files, and expose an `Add items` action that opens a Files item-picking mode rooted in the originating folder instead of dropping users into generic browse.
   - Keep the picker mode inside the existing Files explorer by surfacing direct `Add` actions on nearby track and loop rows plus a clear return path back to playlist detail, while preserving the existing row overflow `Add to playlist` path as the fallback elsewhere.
   - Cover the empty-state copy and Files-origin action mapping with a focused playlist-origin spec before checking this slice complete.
-- [ ] 2.5.11 Add a low-friction set-building path after creating a playlist inside Files. Users should be able to add nearby folder tracks or loops to the newly created playlist without hunting through row overflow menus one item at a time, while preserving existing per-row `Add to playlist` behavior as a fallback.
+- [x] 2.5.11 Add a low-friction set-building path after creating a playlist inside Files. Users should be able to add nearby folder tracks or loops to the newly created playlist without hunting through row overflow menus one item at a time, while preserving existing per-row `Add to playlist` behavior as a fallback.
+  - Keep the Files add-items picker reachable after the first item is added by showing a persistent `Add items` control in playlist detail, not only in the empty state.
+  - Route playlist overflow affordances into the same Files add-items picker from playlist detail, playlist cards, and Files playlist rows, with current-folder context when available and root-folder fallback otherwise.
+  - Add focused coverage for shared playlist overflow action ordering plus Files playlist-row menu ordering after the new `Add items` entry is introduced.
 
 ### 2.6 Add Files Search, Sort, Restoration, and Loop-Result Integration
 
