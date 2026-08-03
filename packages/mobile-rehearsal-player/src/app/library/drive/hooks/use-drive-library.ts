@@ -7,23 +7,15 @@ import {
   type DriveBrowseLocation,
   type DriveBrowseSnapshot,
   type DriveFolder,
-  type DriveSearchSnapshot,
 } from '@org/google-drive';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { runtimeConfig } from '../../../../config/runtime';
 import { isDriveAuthorizationFailure } from '../../../auth/google-drive/utils/authorization';
-import { createDebouncedSearchRunner } from '../../search/utils/debounced-search-runner';
 import {
-  normalizeRecentSearchTerm,
-  recordRecentSearchTerm,
-} from '../../search/utils/search-history';
-import {
-  ADD_RECENT_SEARCH_HISTORY_KEY,
-  persistRecentSearchHistory,
-  restoreRecentSearchHistory,
-} from '../../search/utils/search-history-storage';
-import { resolveSearchInputValue } from '../../search/utils/search-input-value';
+  EMPTY_DRIVE_SEARCH_SNAPSHOT,
+  useDriveLibrarySearch,
+} from './use-drive-library-search';
 
 const createRootLocation = (rootKind: DriveBrowseLocation['rootKind']) => {
   return {
@@ -44,14 +36,7 @@ const createEmptyBrowseSnapshot = (
   };
 };
 
-const EMPTY_SEARCH: DriveSearchSnapshot = {
-  query: '',
-  playableSources: [],
-  unavailableSources: [],
-};
-
 const DEFAULT_LIBRARY_ERROR = 'Drive library could not be loaded.';
-const DRIVE_SEARCH_DEBOUNCE_MS = 300;
 
 export const useDriveLibrary = (
   authState: DriveAuthorizationState,
@@ -70,15 +55,6 @@ export const useDriveLibrary = (
       return createEmptyBrowseSnapshot(rootLocation);
     },
   );
-  const [searchSnapshot, setSearchSnapshot] =
-    useState<DriveSearchSnapshot>(EMPTY_SEARCH);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [recentSearchTerms, setRecentSearchTerms] = useState<string[]>([]);
-  const [hasLoadedRecentSearchTerms, setHasLoadedRecentSearchTerms] =
-    useState(false);
-  const [activeSearchQuery, setActiveSearchQuery] = useState<string | null>(
-    null,
-  );
   const [isLoading, setIsLoading] = useState(false);
   const [issue, setIssue] = useState<string | null>(null);
   const [refreshCount, setRefreshCount] = useState(0);
@@ -87,134 +63,37 @@ export const useDriveLibrary = (
     navigationStack[navigationStack.length - 1] ??
     createRootLocation('my-drive');
 
-  const clearActiveSearch = () => {
-    setActiveSearchQuery(null);
-    setSearchSnapshot(EMPTY_SEARCH);
+  const clearIssue = useCallback(() => {
     setIssue(null);
-  };
-
-  const commitSearchQuery = useCallback((query: string) => {
-    const nextQuery = normalizeRecentSearchTerm(query);
-
-    if (!nextQuery) {
-      return;
-    }
-
-    setRecentSearchTerms((currentSearchTerms) => {
-      return recordRecentSearchTerm(currentSearchTerms, nextQuery);
-    });
   }, []);
 
-  const runSearchQuery = useCallback((query: string) => {
-    const nextQuery = normalizeRecentSearchTerm(query);
-
-    if (!nextQuery) {
-      clearActiveSearch();
-      return;
-    }
-
-    setIssue(null);
-    // Clear previous result counts while the next query is fetching.
-    setSearchSnapshot({
-      ...EMPTY_SEARCH,
-      query: nextQuery,
-    });
-    setActiveSearchQuery(nextQuery);
-    setRefreshCount((currentValue) => currentValue + 1);
-  }, []);
-
-  const debouncedSearch = useMemo(() => {
-    return createDebouncedSearchRunner({
-      debounceMs: DRIVE_SEARCH_DEBOUNCE_MS,
-      runSearch: runSearchQuery,
-    });
-  }, [runSearchQuery]);
-
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [debouncedSearch]);
-
-  const updateSearchQuery = (value: string) => {
-    setSearchQuery(value);
-
-    if (normalizeRecentSearchTerm(value)) {
-      debouncedSearch.schedule(value);
-      return;
-    }
-
-    debouncedSearch.cancel();
-    clearActiveSearch();
-  };
-
-  const runSubmittedSearchQuery = (
-    query: string,
-    options: {
-      syncInputValue?: boolean;
-    } = {},
-  ) => {
-    const nextSearchInputValue = resolveSearchInputValue({
-      currentInputValue: searchQuery,
-      query,
-      syncInputValue: options.syncInputValue ?? false,
-    });
-
-    if (nextSearchInputValue !== searchQuery) {
-      setSearchQuery(nextSearchInputValue);
-    }
-
-    debouncedSearch.flush(query);
-
-    if (!normalizeRecentSearchTerm(query) || authState.status !== 'expired') {
-      return;
-    }
-
-    setIssue(null);
-    void onAuthorizationRequired?.();
-  };
-
-  useEffect(() => {
-    let isDisposed = false;
-
-    void restoreRecentSearchHistory(ADD_RECENT_SEARCH_HISTORY_KEY)
-      .then((restoredRecentSearchTerms) => {
-        if (isDisposed) {
-          return;
-        }
-
-        setRecentSearchTerms(restoredRecentSearchTerms);
-      })
-      .finally(() => {
-        if (isDisposed) {
-          return;
-        }
-
-        setHasLoadedRecentSearchTerms(true);
-      });
-
-    return () => {
-      isDisposed = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!hasLoadedRecentSearchTerms) {
-      return;
-    }
-
-    void persistRecentSearchHistory(
-      ADD_RECENT_SEARCH_HISTORY_KEY,
-      recentSearchTerms,
-    );
-  }, [hasLoadedRecentSearchTerms, recentSearchTerms]);
+  const {
+    activeSearchQuery,
+    clearSearch,
+    commitSearchQuery,
+    deactivateSearch,
+    recentSearchTerms,
+    replaceSearchSnapshot,
+    searchQuery,
+    searchSnapshot,
+    setSearchQuery,
+    submitSearch,
+    submitSearchQuery,
+  } = useDriveLibrarySearch({
+    authState,
+    onAuthorizationRequired,
+    onClearIssue: clearIssue,
+    onSearchRequested: () => {
+      setRefreshCount((currentValue) => currentValue + 1);
+    },
+  });
 
   useEffect(() => {
     const accessToken = authState.accessToken;
 
     if (authState.status !== 'authorized' || !accessToken) {
       setBrowseSnapshot(createEmptyBrowseSnapshot(currentLocation));
-      setSearchSnapshot(EMPTY_SEARCH);
+      replaceSearchSnapshot(EMPTY_DRIVE_SEARCH_SNAPSHOT);
       setIssue(null);
       setIsLoading(false);
       return;
@@ -241,7 +120,7 @@ export const useDriveLibrary = (
           return;
         }
 
-        setSearchSnapshot(nextSearchSnapshot);
+        replaceSearchSnapshot(nextSearchSnapshot);
         return;
       }
 
@@ -300,29 +179,19 @@ export const useDriveLibrary = (
     currentLocation.kind,
     currentLocation.rootKind,
     onAuthorizationExpired,
+    replaceSearchSnapshot,
     refreshCount,
   ]);
 
   return {
     activeSearchQuery,
     browseSnapshot,
-    clearSearch() {
-      debouncedSearch.cancel();
-      clearActiveSearch();
-      setSearchQuery('');
-    },
-    commitSearchQuery() {
-      commitSearchQuery(searchQuery);
-    },
+    clearSearch,
+    commitSearchQuery,
     currentLocation,
-    deactivateSearch() {
-      debouncedSearch.cancel();
-      clearActiveSearch();
-    },
+    deactivateSearch,
     goToLocation(index: number) {
-      debouncedSearch.cancel();
-      setActiveSearchQuery(null);
-      setIssue(null);
+      deactivateSearch();
       setNavigationStack((currentStack) => {
         return currentStack.slice(0, index + 1);
       });
@@ -331,9 +200,7 @@ export const useDriveLibrary = (
     issue,
     navigationStack,
     openFolder(folder: DriveFolder) {
-      debouncedSearch.cancel();
-      setActiveSearchQuery(null);
-      setIssue(null);
+      deactivateSearch();
       setNavigationStack((currentStack) => {
         return [
           ...currentStack,
@@ -367,22 +234,15 @@ export const useDriveLibrary = (
     searchQuery,
     searchSnapshot,
     selectRoot(rootKind: DriveBrowseLocation['rootKind']) {
-      debouncedSearch.cancel();
       const rootLocation = createRootLocation(rootKind);
 
-      clearActiveSearch();
+      deactivateSearch();
       setNavigationStack([rootLocation]);
       setBrowseSnapshot(createEmptyBrowseSnapshot(rootLocation));
     },
-    setSearchQuery: updateSearchQuery,
-    submitSearch() {
-      runSubmittedSearchQuery(searchQuery);
-    },
-    submitSearchQuery(query: string) {
-      runSubmittedSearchQuery(query, {
-        syncInputValue: true,
-      });
-    },
+    setSearchQuery,
+    submitSearch,
+    submitSearchQuery,
     unavailableSources:
       activeSearchQuery === null
         ? browseSnapshot.unavailableSources
