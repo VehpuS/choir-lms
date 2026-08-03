@@ -3,9 +3,34 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { shouldShowRecentSearchSuggestions } from './contextual-search-panel-model.js';
+import {
+  resolveSearchInputBlurOutcome,
+  shouldShowRecentSearchSuggestions,
+} from './contextual-search-panel-model.js';
 
 describe('contextualSearchPanelModel', () => {
+  it('skips recent-search commits for clear-action blur and resets the guard', () => {
+    assert.deepEqual(
+      resolveSearchInputBlurOutcome({
+        shouldSkipBlurCommit: true,
+      }),
+      {
+        nextShouldSkipBlurCommit: false,
+        shouldCommitRecentSearch: false,
+      },
+    );
+
+    assert.deepEqual(
+      resolveSearchInputBlurOutcome({
+        shouldSkipBlurCommit: false,
+      }),
+      {
+        nextShouldSkipBlurCommit: false,
+        shouldCommitRecentSearch: true,
+      },
+    );
+  });
+
   it('shows recent suggestions only when allowed and query is empty', () => {
     assert.equal(
       shouldShowRecentSearchSuggestions({

@@ -10,6 +10,7 @@ type DriveLibrarySearchPanelProps = {
   isLoading: boolean;
   onClearSearch: () => void;
   onSearch: () => void;
+  onSearchInputBlur: () => void;
   onSearchQueryChange: (value: string) => void;
   onToggleSearchBar?: () => void;
   onSelectRecentSearchTerm: (value: string) => void;
@@ -26,6 +27,7 @@ export const DriveLibrarySearchPanel = ({
   isLoading,
   onClearSearch,
   onSearch,
+  onSearchInputBlur,
   onSearchQueryChange,
   onToggleSearchBar,
   onSelectRecentSearchTerm,
@@ -57,6 +59,7 @@ export const DriveLibrarySearchPanel = ({
       isSubmitDisabled={isSubmitDisabled}
       onClearSearch={onClearSearch}
       onSearch={onSearch}
+      onSearchInputBlur={onSearchInputBlur}
       onSearchQueryChange={onSearchQueryChange}
       onToggleSearchBar={handleToggleSearchBar}
       onSelectRecentSearchTerm={onSelectRecentSearchTerm}

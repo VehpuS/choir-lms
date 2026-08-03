@@ -33,6 +33,7 @@ type DriveLibraryContentProps = {
   onOpenFolder: (folder: DriveLibraryFolder) => void;
   onRefresh: () => void;
   onSearch: () => void;
+  onSearchInputBlur: () => void;
   onSearchQueryChange: (value: string) => void;
   onSelectRecentSearchTerm: (query: string) => void;
   onSelectRoot: (rootKind: 'my-drive' | 'shared') => void;
@@ -64,6 +65,7 @@ export const DriveLibraryContent = ({
   onOpenFolder,
   onRefresh,
   onSearch,
+  onSearchInputBlur,
   onSearchQueryChange,
   onSelectRecentSearchTerm,
   onSelectRoot,
@@ -89,6 +91,7 @@ export const DriveLibraryContent = ({
         isLoading={isLoading}
         onClearSearch={onClearSearch}
         onSearch={onSearch}
+        onSearchInputBlur={onSearchInputBlur}
         onSearchQueryChange={onSearchQueryChange}
         onSelectRecentSearchTerm={onSelectRecentSearchTerm}
         placeholderCopy="Search in My Drive"

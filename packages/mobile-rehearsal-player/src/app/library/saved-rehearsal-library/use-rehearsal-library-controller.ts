@@ -267,6 +267,7 @@ export const useRehearsalLibraryController = ({
       activeSearchQuery: driveLibrary.activeSearchQuery,
       canSearch: canRefresh,
       clearSearch: driveLibrary.clearSearch,
+      commitSearchQuery: driveLibrary.commitSearchQuery,
       deactivateSearch: driveLibrary.deactivateSearch,
       isLoading: isSearchMode && driveLibrary.isLoading,
       isSearchMode,

@@ -34,6 +34,7 @@ export const DriveDiscoveryPanel = ({
       isSearchBarVisible={isSearchBarVisible}
       onClearSearch={controller.search.clearSearch}
       onSearch={controller.search.submitSearch}
+      onSearchInputBlur={controller.search.commitSearchQuery}
       onSearchQueryChange={controller.search.setSearchQuery}
       onSelectRecentSearchTerm={controller.search.submitSearchQuery}
       onToggleSearchBar={onToggleSearchBar}

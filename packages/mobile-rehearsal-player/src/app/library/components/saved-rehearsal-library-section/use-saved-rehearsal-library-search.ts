@@ -140,29 +140,21 @@ export const useSavedRehearsalLibrarySearch = ({
     );
   }, [hasLoadedRecentLibrarySearchTerms, recentLibrarySearchTerms]);
 
-  const runLibrarySearch = useCallback(
-    (
-      query: string,
-      options: {
-        recordRecentSearch: boolean;
-      } = {
-        recordRecentSearch: true,
-      },
-    ) => {
-      const nextQuery = normalizeRecentSearchTerm(query);
+  const commitLibrarySearchQuery = useCallback((query: string) => {
+    const nextQuery = normalizeRecentSearchTerm(query);
 
-      setActiveLibrarySearchQuery(resolveActiveLibrarySearchQuery(query));
+    if (!nextQuery) {
+      return;
+    }
 
-      if (!options.recordRecentSearch || !nextQuery) {
-        return;
-      }
+    setRecentLibrarySearchTerms((currentSearchTerms) => {
+      return recordRecentSearchTerm(currentSearchTerms, nextQuery);
+    });
+  }, []);
 
-      setRecentLibrarySearchTerms((currentSearchTerms) => {
-        return recordRecentSearchTerm(currentSearchTerms, nextQuery);
-      });
-    },
-    [],
-  );
+  const runLibrarySearch = useCallback((query: string) => {
+    setActiveLibrarySearchQuery(resolveActiveLibrarySearchQuery(query));
+  }, []);
 
   const debouncedLibrarySearch = useMemo(() => {
     return createDebouncedSearchRunner({
@@ -246,6 +238,9 @@ export const useSavedRehearsalLibrarySearch = ({
       setSelectedTagFilters([]);
       setLibrarySearchQuery('');
       setActiveLibrarySearchQuery(null);
+    },
+    commitLibrarySearchQuery() {
+      commitLibrarySearchQuery(librarySearchQuery);
     },
     deactivateLibrarySearch() {
       debouncedLibrarySearch.cancel();

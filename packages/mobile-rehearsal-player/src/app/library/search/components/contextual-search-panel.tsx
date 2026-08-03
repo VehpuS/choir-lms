@@ -1,11 +1,15 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRef } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
   buttonInteractionGuardStyle,
   interactionGuardProps,
 } from '../../../components/interaction-guard';
-import { shouldShowRecentSearchSuggestions } from './contextual-search-panel-model';
+import {
+  resolveSearchInputBlurOutcome,
+  shouldShowRecentSearchSuggestions,
+} from './contextual-search-panel-model';
 import { RecentSearchSuggestions } from './recent-search-suggestions';
 
 type ContextualSearchPanelProps = {
@@ -16,6 +20,7 @@ type ContextualSearchPanelProps = {
   isSubmitDisabled?: boolean;
   onClearSearch: () => void;
   onSearch: () => void;
+  onSearchInputBlur?: () => void;
   onSearchQueryChange: (value: string) => void;
   onToggleSearchBar: () => void;
   onSelectRecentSearchTerm: (value: string) => void;
@@ -42,6 +47,7 @@ export const ContextualSearchPanel = ({
   isSubmitDisabled = false,
   onClearSearch,
   onSearch,
+  onSearchInputBlur,
   onSearchQueryChange,
   onToggleSearchBar,
   onSelectRecentSearchTerm,
@@ -51,6 +57,7 @@ export const ContextualSearchPanel = ({
   searchQuery,
   showInlineToggleButton = true,
 }: ContextualSearchPanelProps) => {
+  const shouldSkipBlurCommitRef = useRef(false);
   const shouldShowSuggestions = shouldShowRecentSearchSuggestions({
     canShowRecentSearchTerms: canShowRecentSearchTerms && isSearchBarVisible,
     recentSearchTerms,
@@ -58,6 +65,27 @@ export const ContextualSearchPanel = ({
   });
   const shouldShowClearButton =
     isSearchBarVisible && searchQuery.trim().length > 0;
+
+  const handleSearchInputBlur = () => {
+    const blurOutcome = resolveSearchInputBlurOutcome({
+      shouldSkipBlurCommit: shouldSkipBlurCommitRef.current,
+    });
+
+    shouldSkipBlurCommitRef.current = blurOutcome.nextShouldSkipBlurCommit;
+
+    if (!blurOutcome.shouldCommitRecentSearch) {
+      return;
+    }
+
+    onSearchInputBlur?.();
+  };
+
+  const handleClearSearch = () => {
+    onClearSearch();
+    setTimeout(() => {
+      shouldSkipBlurCommitRef.current = false;
+    }, 0);
+  };
 
   if (!isSearchBarVisible) {
     return (
@@ -93,7 +121,11 @@ export const ContextualSearchPanel = ({
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}
+            onBlur={handleSearchInputBlur}
             onChangeText={onSearchQueryChange}
+            onFocus={() => {
+              shouldSkipBlurCommitRef.current = false;
+            }}
             onSubmitEditing={onSearch}
             placeholder={placeholderCopy}
             placeholderTextColor={PLACEHOLDER_TEXT}
@@ -106,7 +138,10 @@ export const ContextualSearchPanel = ({
               accessibilityLabel={clearActionLabel}
               accessibilityRole="button"
               {...interactionGuardProps}
-              onPress={onClearSearch}
+              onPress={handleClearSearch}
+              onPressIn={() => {
+                shouldSkipBlurCommitRef.current = true;
+              }}
               style={({ pressed }) => [
                 styles.clearSearchIconButton,
                 buttonInteractionGuardStyle,

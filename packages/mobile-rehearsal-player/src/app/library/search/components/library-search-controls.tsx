@@ -70,6 +70,7 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   onFilterActionPress: () => void;
   onSearch: () => void;
   onSearchActionPress: () => void;
+  onSearchInputBlur: () => void;
   onSearchQueryChange: (value: string) => void;
   onSelectAvailabilityFilter: (value: LibrarySearchAvailabilityFilter) => void;
   onSelectEntityFilter: (value: LibrarySearchEntityFilter) => void;
@@ -230,6 +231,7 @@ export const LibrarySearchControls = ({
   onClearSearch,
   onSearch,
   onSearchActionPress,
+  onSearchInputBlur,
   onSearchQueryChange,
   onSelectAvailabilityFilter,
   onSelectEntityFilter,
@@ -260,6 +262,7 @@ export const LibrarySearchControls = ({
       isSearchBarVisible={true}
       onClearSearch={onClearSearch}
       onSearch={onSearch}
+      onSearchInputBlur={onSearchInputBlur}
       onSearchQueryChange={onSearchQueryChange}
       onToggleSearchBar={onSearchActionPress}
       onSelectRecentSearchTerm={onSelectRecentSearchTerm}

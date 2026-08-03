@@ -159,6 +159,7 @@ export const SavedRehearsalLibrarySearchShell = ({
         onFilterActionPress={handleFilterActionPress}
         onSearch={searchState.submitLibrarySearch}
         onSearchActionPress={handleSearchActionPress}
+        onSearchInputBlur={searchState.commitLibrarySearchQuery}
         onSearchQueryChange={searchState.handleLibrarySearchQueryChange}
         onSelectAvailabilityFilter={searchState.setAvailabilityFilter}
         onSelectEntityFilter={searchState.setEntityFilter}

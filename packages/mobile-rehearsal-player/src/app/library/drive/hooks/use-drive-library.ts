@@ -92,6 +92,18 @@ export const useDriveLibrary = (
     setIssue(null);
   };
 
+  const commitSearchQuery = useCallback((query: string) => {
+    const nextQuery = normalizeRecentSearchTerm(query);
+
+    if (!nextQuery) {
+      return;
+    }
+
+    setRecentSearchTerms((currentSearchTerms) => {
+      return recordRecentSearchTerm(currentSearchTerms, nextQuery);
+    });
+  }, []);
+
   const runSearchQuery = useCallback((query: string) => {
     const nextQuery = normalizeRecentSearchTerm(query);
 
@@ -109,9 +121,6 @@ export const useDriveLibrary = (
       query: nextQuery,
     });
     setActiveSearchQuery(nextQuery);
-    setRecentSearchTerms((currentSearchTerms) => {
-      return recordRecentSearchTerm(currentSearchTerms, nextQuery);
-    });
     setRefreshCount((currentValue) => currentValue + 1);
   }, []);
 
@@ -287,6 +296,9 @@ export const useDriveLibrary = (
       debouncedSearch.cancel();
       clearActiveSearch();
       setSearchQuery('');
+    },
+    commitSearchQuery() {
+      commitSearchQuery(searchQuery);
     },
     currentLocation,
     deactivateSearch() {

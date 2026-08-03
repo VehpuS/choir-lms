@@ -63,6 +63,7 @@ export const DriveLibrarySection = ({
     activeSearchQuery,
     browseSnapshot,
     clearSearch,
+    commitSearchQuery,
     currentLocation,
     goToLocation,
     isLoading,
@@ -232,6 +233,7 @@ export const DriveLibrarySection = ({
       onOpenFolder={openFolder}
       onRefresh={refresh}
       onSearch={submitSearch}
+      onSearchInputBlur={commitSearchQuery}
       onSearchQueryChange={setSearchQuery}
       onSelectRecentSearchTerm={submitSearchQuery}
       onSelectRoot={selectRoot}

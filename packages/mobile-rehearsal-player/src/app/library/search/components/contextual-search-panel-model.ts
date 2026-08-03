@@ -4,6 +4,19 @@ type ShouldShowRecentSearchSuggestionsOptions = {
   searchQuery: string;
 };
 
+type ResolveSearchInputBlurOutcomeOptions = {
+  shouldSkipBlurCommit: boolean;
+};
+
+export const resolveSearchInputBlurOutcome = (
+  options: ResolveSearchInputBlurOutcomeOptions,
+) => {
+  return {
+    nextShouldSkipBlurCommit: false,
+    shouldCommitRecentSearch: !options.shouldSkipBlurCommit,
+  };
+};
+
 export const shouldShowRecentSearchSuggestions = (
   options: ShouldShowRecentSearchSuggestionsOptions,
 ) => {
