@@ -5,7 +5,9 @@ import type { PlayableItem } from '@org/audio-library-models';
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
+import type { LibraryFilesIssue } from '../../saved-rehearsal-library/library-files-operation-helpers';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
+import { FeedbackCard } from '../feedback-card';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import { resolveFilesRowMenuActions } from './files-row-actions';
 import type { FileLinkLibraryFilesRow } from './files-row-actions-model';
@@ -25,6 +27,38 @@ import {
   type LibraryFilesSuccessFeedback,
 } from './library-files-success-feedback';
 import { useLibraryFilesConfirmationFlow } from './use-library-files-confirmation-flow';
+
+const isSameRow = (left: LibraryFilesRow, right: LibraryFilesRow) => {
+  if (left.kind !== right.kind) {
+    return false;
+  }
+
+  return left.kind === 'folder'
+    ? left.folder.id === right.folder.id
+    : left.fileLink.id === right.fileLink.id;
+};
+
+const applySuggestedNameToRow = (row: LibraryFilesRow, nextName: string) => {
+  if (row.kind === 'folder') {
+    return {
+      ...row,
+      folder: {
+        ...row.folder,
+        name: nextName,
+      },
+      label: nextName,
+    };
+  }
+
+  return {
+    ...row,
+    fileLink: {
+      ...row.fileLink,
+      visibleName: nextName,
+    },
+    label: nextName,
+  };
+};
 
 type UseLibraryFilesRowActionFlowsOptions = {
   authorization?: DriveSessionMenuController;
@@ -80,7 +114,12 @@ export const useLibraryFilesRowActionFlows = ({
   ] = useState<string | null>(null);
   const [pendingRenameRow, setPendingRenameRow] =
     useState<LibraryFilesRow | null>(null);
+  const [destinationIssue, setDestinationIssue] =
+    useState<LibraryFilesIssue | null>(null);
   const [renameDraftName, setRenameDraftName] = useState('');
+  const [renameIssue, setRenameIssue] = useState<LibraryFilesIssue | null>(
+    null,
+  );
   const confirmationFlow = useLibraryFilesConfirmationFlow();
   const getFolderName = (folderId: string) => {
     return files.destinationFolders.find((destination) => {
@@ -88,21 +127,33 @@ export const useLibraryFilesRowActionFlows = ({
     })?.folder.name;
   };
 
-  const handleSubmitDestination = (folderId: string) => {
+  const clearDestinationIssue = () => {
+    setDestinationIssue(null);
+    files.clearIssue();
+  };
+
+  const clearRenameIssue = () => {
+    setRenameIssue(null);
+    files.clearIssue();
+  };
+
+  const handleSubmitDestination = (folderId: string, visibleName?: string) => {
     if (!pendingDestinationAction) {
       return;
     }
 
+    clearDestinationIssue();
     setIsFileActionMutating(true);
 
     void (async () => {
       const row = pendingDestinationAction.row;
-      const didComplete =
+      const result =
         pendingDestinationAction.kind === 'copy' && row.kind !== 'folder'
           ? await files.createFileLinkCopy({
               destinationFolderId: folderId,
               fileLink: row.fileLink,
               sourceName: row.label,
+              visibleName,
             })
           : row.kind === 'folder'
             ? await files.moveFolder({
@@ -116,12 +167,13 @@ export const useLibraryFilesRowActionFlows = ({
 
       setIsFileActionMutating(false);
 
-      if (didComplete) {
+      if (result.didComplete) {
         const destinationFolderName =
           getFolderName(folderId) ?? 'the selected folder';
 
         setPendingDestinationAction(null);
         setCurrentDestinationPickerFolderId(null);
+        clearDestinationIssue();
         files.openFolder(folderId);
         onShowSuccessFeedback?.(
           createLibraryFilesDestinationSuccessFeedback({
@@ -130,43 +182,67 @@ export const useLibraryFilesRowActionFlows = ({
             row,
           }),
         );
+
+        return;
       }
+
+      setDestinationIssue(result.issue);
+      files.clearIssue();
     })();
   };
 
-  const handleSubmitRename = () => {
+  const handleSubmitRename = (suggestedName?: string) => {
     if (!pendingRenameRow) {
       return;
     }
 
+    const nextDraftName = suggestedName ?? renameDraftName;
+
+    clearRenameIssue();
     setIsFileActionMutating(true);
 
     void (async () => {
-      const didRename =
+      const result =
         pendingRenameRow.kind === 'folder'
           ? await files.renameFolder({
               folder: pendingRenameRow.folder,
-              name: renameDraftName,
+              name: nextDraftName,
             })
           : await files.renameFileLink({
               fileLink: pendingRenameRow.fileLink,
-              name: renameDraftName,
+              name: nextDraftName,
             });
 
       setIsFileActionMutating(false);
 
-      if (didRename) {
-        const nextName = renameDraftName.trim();
+      if (result.didComplete) {
+        const nextName = nextDraftName.trim();
 
         setPendingRenameRow(null);
         setRenameDraftName('');
+        setPendingDestinationAction((currentValue) => {
+          if (!currentValue || !isSameRow(currentValue.row, pendingRenameRow)) {
+            return currentValue;
+          }
+
+          return {
+            ...currentValue,
+            row: applySuggestedNameToRow(currentValue.row, nextName),
+          };
+        });
+        clearRenameIssue();
         onShowSuccessFeedback?.(
           createLibraryFilesRenameSuccessFeedback({
             nextName,
             previousName: pendingRenameRow.label,
           }),
         );
+
+        return;
       }
+
+      setRenameIssue(result.issue);
+      files.clearIssue();
     })();
   };
 
@@ -182,11 +258,23 @@ export const useLibraryFilesRowActionFlows = ({
   const destinationPicker = buildLibraryFilesDestinationPicker({
     currentPickerFolderId: currentDestinationPickerFolderId,
     files,
+    issue: destinationIssue,
     isMutating: isFileActionMutating || confirmationFlow.isConfirming,
     onOpenDestinationFolder(folderId) {
+      clearDestinationIssue();
       setCurrentDestinationPickerFolderId(folderId);
     },
-    onSubmitDestination: handleSubmitDestination,
+    onRenameBeforeRetry(suggestedName) {
+      clearDestinationIssue();
+      setPendingRenameRow(pendingDestinationAction?.row ?? null);
+      setRenameDraftName(suggestedName);
+    },
+    onRetryCopyWithSuggestedName(folderId, suggestedName) {
+      handleSubmitDestination(folderId, suggestedName);
+    },
+    onSubmitDestination(folderId) {
+      handleSubmitDestination(folderId);
+    },
     pendingAction: pendingDestinationAction,
   });
 
@@ -205,6 +293,7 @@ export const useLibraryFilesRowActionFlows = ({
         isPlaylistMutating,
         isSavedLibraryMutating,
         onCreateFileLinkCopy(rowToCopy: FileLinkLibraryFilesRow) {
+          clearDestinationIssue();
           setPendingDestinationAction({ kind: 'copy', row: rowToCopy });
           setCurrentDestinationPickerFolderId(
             files.explorer?.currentFolder.id ?? null,
@@ -212,6 +301,7 @@ export const useLibraryFilesRowActionFlows = ({
         },
         onDeleteFileNode: handleDeleteFileNode,
         onMoveFileNode(rowToMove) {
+          clearDestinationIssue();
           setPendingDestinationAction({ kind: 'move', row: rowToMove });
           setCurrentDestinationPickerFolderId(
             files.explorer?.currentFolder.id ?? null,
@@ -240,6 +330,7 @@ export const useLibraryFilesRowActionFlows = ({
           void authorization?.startAuthorization();
         },
         onRenameFileNode(rowToRename) {
+          clearRenameIssue();
           setPendingRenameRow(rowToRename);
           setRenameDraftName(rowToRename.label);
         },
@@ -270,29 +361,48 @@ export const useLibraryFilesRowActionFlows = ({
       <OptionsMenuSheet
         actions={destinationPicker.actions}
         isSecondaryDisabled={isFileActionMutating}
-        isVisible={pendingDestinationAction !== null}
+        isVisible={
+          pendingDestinationAction !== null && pendingRenameRow === null
+        }
         onClose={() => {
           if (!isFileActionMutating) {
+            clearDestinationIssue();
             setPendingDestinationAction(null);
             setCurrentDestinationPickerFolderId(null);
           }
         }}
         secondaryActionLabel="Cancel"
         title={destinationPicker.title}
-      />
+      >
+        {destinationPicker.issue ? (
+          <FeedbackCard
+            message={destinationPicker.issue.message}
+            size="compact"
+            title={destinationPicker.issue.title}
+            tone="error"
+          />
+        ) : null}
+      </OptionsMenuSheet>
     ),
     renameDialog: (
       <>
         <LibraryFilesRenameDialog
           isMutating={isFileActionMutating}
           isVisible={pendingRenameRow !== null}
-          issue={files.issue}
+          issue={renameIssue}
           onCancel={() => {
+            clearRenameIssue();
             setPendingRenameRow(null);
             setRenameDraftName('');
           }}
-          onChange={setRenameDraftName}
-          onSubmit={handleSubmitRename}
+          onChange={(nextValue) => {
+            clearRenameIssue();
+            setRenameDraftName(nextValue);
+          }}
+          onRecoverSuggestedName={handleSubmitRename}
+          onSubmit={() => {
+            handleSubmitRename();
+          }}
           value={renameDraftName}
         />
         {confirmationFlow.confirmationDialog}

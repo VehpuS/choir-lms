@@ -171,6 +171,9 @@ export const useLibraryFiles = (options: UseLibraryFilesOptions) => {
   });
 
   return {
+    clearIssue() {
+      setIssue(null);
+    },
     clearPendingDriveImportFolderId() {
       pendingDriveImportFolderIdRef.current = null;
       setPendingDriveImportFolderId(null);

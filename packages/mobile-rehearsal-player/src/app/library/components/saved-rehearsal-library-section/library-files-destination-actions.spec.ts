@@ -8,6 +8,7 @@ const noop = () => undefined;
 
 const createFiles = (): UseLibraryFilesResult => {
   return {
+    clearIssue: noop,
     destinationFolders: [
       {
         folder: {
@@ -91,10 +92,13 @@ describe('buildLibraryFilesDestinationPicker', () => {
     const picker = buildLibraryFilesDestinationPicker({
       currentPickerFolderId: 'folder-current',
       files: createFiles(),
+      issue: null,
       isMutating: false,
       onOpenDestinationFolder(folderId) {
         openedFolderIds.push(folderId);
       },
+      onRenameBeforeRetry: noop,
+      onRetryCopyWithSuggestedName: noop,
       onSubmitDestination(folderId) {
         submittedFolderIds.push(folderId);
       },
@@ -122,10 +126,13 @@ describe('buildLibraryFilesDestinationPicker', () => {
     const picker = buildLibraryFilesDestinationPicker({
       currentPickerFolderId: 'folder-destination',
       files: createFiles(),
+      issue: null,
       isMutating: false,
       onOpenDestinationFolder(folderId) {
         openedFolderIds.push(folderId);
       },
+      onRenameBeforeRetry: noop,
+      onRetryCopyWithSuggestedName: noop,
       onSubmitDestination: noop,
       pendingAction: {
         kind: 'copy',
@@ -150,8 +157,11 @@ describe('buildLibraryFilesDestinationPicker', () => {
     const picker = buildLibraryFilesDestinationPicker({
       currentPickerFolderId: 'folder-destination',
       files: createFiles(),
+      issue: null,
       isMutating: false,
       onOpenDestinationFolder: noop,
+      onRenameBeforeRetry: noop,
+      onRetryCopyWithSuggestedName: noop,
       onSubmitDestination: noop,
       pendingAction: {
         kind: 'move',
@@ -176,5 +186,82 @@ describe('buildLibraryFilesDestinationPicker', () => {
       })?.disabled,
       true,
     );
+  });
+
+  it('adds a rename recovery action for duplicate move conflicts', () => {
+    const recoveredNames: string[] = [];
+    const picker = buildLibraryFilesDestinationPicker({
+      currentPickerFolderId: 'folder-destination',
+      files: createFiles(),
+      issue: {
+        message:
+          'The item could not move. An item named "Full Choir.mp3" already exists in the target folder.',
+        recovery: {
+          kind: 'rename-before-retry',
+          label: 'Rename to "Full Choir.mp3 Copy"',
+          suggestedName: 'Full Choir.mp3 Copy',
+        },
+        title: 'Could not move item',
+      },
+      isMutating: false,
+      onOpenDestinationFolder: noop,
+      onRenameBeforeRetry(suggestedName) {
+        recoveredNames.push(suggestedName);
+      },
+      onRetryCopyWithSuggestedName: noop,
+      onSubmitDestination: noop,
+      pendingAction: {
+        kind: 'move',
+        row: createTrackRow(),
+      },
+    });
+
+    picker.actions[0]?.onPress();
+
+    assert.equal(picker.actions[0]?.label, 'Rename to "Full Choir.mp3 Copy"');
+    assert.deepEqual(recoveredNames, ['Full Choir.mp3 Copy']);
+  });
+
+  it('adds a keep-both recovery action for duplicate copy conflicts', () => {
+    const retriedCopies: Array<{ folderId: string; suggestedName: string }> =
+      [];
+    const picker = buildLibraryFilesDestinationPicker({
+      currentPickerFolderId: 'folder-destination',
+      files: createFiles(),
+      issue: {
+        message:
+          'The item could not copy. An item named "Full Choir.mp3 Copy" already exists in the target folder.',
+        recovery: {
+          kind: 'retry-copy-with-suggested-name',
+          label: 'Keep both as "Full Choir.mp3 Copy 2"',
+          suggestedName: 'Full Choir.mp3 Copy 2',
+        },
+        title: 'Could not create copy',
+      },
+      isMutating: false,
+      onOpenDestinationFolder: noop,
+      onRenameBeforeRetry: noop,
+      onRetryCopyWithSuggestedName(folderId, suggestedName) {
+        retriedCopies.push({ folderId, suggestedName });
+      },
+      onSubmitDestination: noop,
+      pendingAction: {
+        kind: 'copy',
+        row: createTrackRow(),
+      },
+    });
+
+    picker.actions[0]?.onPress();
+
+    assert.equal(
+      picker.actions[0]?.label,
+      'Keep both as "Full Choir.mp3 Copy 2"',
+    );
+    assert.deepEqual(retriedCopies, [
+      {
+        folderId: 'folder-destination',
+        suggestedName: 'Full Choir.mp3 Copy 2',
+      },
+    ]);
   });
 });

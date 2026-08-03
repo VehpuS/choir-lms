@@ -7,7 +7,7 @@ import type {
 
 import type { RehearsalLibraryEntityCollections } from './rehearsal-library-files';
 
-const COPY_NAME_SUFFIX_PATTERN = /^(.*?)(?: Copy(?: (\d+))?)?$/i;
+const COPY_NAME_SUFFIX_PATTERN = /^(.*?)( Copy(?: (\d+))?)?$/i;
 
 const normalizeRehearsalLibraryNodeName = (value: string) => {
   return value.toLocaleLowerCase();
@@ -135,8 +135,9 @@ const buildCopyCandidateName = (baseName: string, copyIndex: number) => {
 const resolveCopyCandidateSeed = (sourceName: string) => {
   const matchedCopySuffix = COPY_NAME_SUFFIX_PATTERN.exec(sourceName);
   const baseName = matchedCopySuffix?.[1];
+  const matchedSuffix = matchedCopySuffix?.[2];
 
-  if (!matchedCopySuffix || !baseName) {
+  if (!matchedCopySuffix || !baseName || !matchedSuffix) {
     return {
       baseName: sourceName,
       nextCopyIndex: 1,
@@ -145,7 +146,7 @@ const resolveCopyCandidateSeed = (sourceName: string) => {
 
   return {
     baseName,
-    nextCopyIndex: matchedCopySuffix[2] ? Number(matchedCopySuffix[2]) + 1 : 2,
+    nextCopyIndex: matchedCopySuffix[3] ? Number(matchedCopySuffix[3]) + 1 : 2,
   };
 };
 

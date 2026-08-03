@@ -256,6 +256,39 @@ describe('AsyncStoragePracticeRepository file-tree guardrails', () => {
 });
 
 describe('resolveRehearsalLibraryCopyVisibleName', () => {
+  it('returns the first Copy suffix when no sibling copy exists yet', () => {
+    const copyName = resolveRehearsalLibraryCopyVisibleName({
+      tree: {
+        version: 1,
+        rootFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+        folders: [
+          {
+            id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+            name: 'Library',
+            parentFolderId: null,
+          },
+        ],
+        fileLinks: [
+          {
+            id: `file-link:track:${AVAILABLE_SOURCE.id}`,
+            parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+            entityKind: 'track',
+            entityId: AVAILABLE_SOURCE.id,
+          },
+        ],
+      },
+      entityCollections: {
+        loops: [],
+        playlists: [],
+        sources: [AVAILABLE_SOURCE],
+      },
+      parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+      sourceName: AVAILABLE_SOURCE.name,
+    });
+
+    assert.equal(copyName, `${AVAILABLE_SOURCE.name} Copy`);
+  });
+
   it('returns a case-insensitively unique Copy suffix for same-folder copies', () => {
     const copyName = resolveRehearsalLibraryCopyVisibleName({
       tree: {

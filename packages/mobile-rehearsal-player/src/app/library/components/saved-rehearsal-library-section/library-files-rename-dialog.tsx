@@ -16,11 +16,17 @@ type LibraryFilesRenameDialogProps = {
   isVisible: boolean;
   issue: {
     message: string;
+    recovery?: {
+      kind: 'use-suggested-name';
+      label: string;
+      suggestedName: string;
+    };
     title: string;
   } | null;
   value: string;
   onCancel: () => void;
   onChange: (value: string) => void;
+  onRecoverSuggestedName: (suggestedName: string) => void;
   onSubmit: () => void;
 };
 
@@ -31,6 +37,7 @@ export const LibraryFilesRenameDialog = ({
   value,
   onCancel,
   onChange,
+  onRecoverSuggestedName,
   onSubmit,
 }: LibraryFilesRenameDialogProps) => {
   if (!isVisible) {
@@ -56,6 +63,32 @@ export const LibraryFilesRenameDialog = ({
       />
       {issue ? (
         <FeedbackCard
+          footer={
+            issue.recovery?.kind === 'use-suggested-name' ? (
+              <Pressable
+                accessibilityRole="button"
+                {...interactionGuardProps}
+                disabled={isMutating}
+                onPress={() => {
+                  onRecoverSuggestedName(
+                    issue.recovery?.suggestedName ?? value,
+                  );
+                }}
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  buttonInteractionGuardStyle,
+                  pressed && !isMutating
+                    ? styles.actionButtonPressed
+                    : undefined,
+                  isMutating ? styles.actionButtonDisabled : undefined,
+                ]}
+              >
+                <Text style={styles.secondaryButtonLabel}>
+                  {issue.recovery.label}
+                </Text>
+              </Pressable>
+            ) : null
+          }
           message={issue.message}
           size="compact"
           title={issue.title}

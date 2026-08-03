@@ -1,4 +1,5 @@
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
+import type { LibraryFilesIssue } from '../../saved-rehearsal-library/library-files-operation-helpers';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
 
@@ -10,8 +11,14 @@ export type PendingLibraryFilesDestinationAction = {
 type BuildLibraryFilesDestinationActionsOptions = {
   currentPickerFolderId: string | null;
   files: UseLibraryFilesResult;
+  issue: LibraryFilesIssue | null;
   isMutating: boolean;
   onOpenDestinationFolder: (folderId: string) => void;
+  onRenameBeforeRetry: (suggestedName: string) => void;
+  onRetryCopyWithSuggestedName: (
+    folderId: string,
+    suggestedName: string,
+  ) => void;
   onSubmitDestination: (folderId: string) => void;
   pendingAction: PendingLibraryFilesDestinationAction | null;
 };
@@ -19,6 +26,7 @@ type BuildLibraryFilesDestinationActionsOptions = {
 export type LibraryFilesDestinationPickerState = {
   actions: OptionsMenuAction[];
   canGoToParent: boolean;
+  issue: LibraryFilesIssue | null;
   title: string;
 };
 
@@ -76,8 +84,11 @@ const getDestinationDisabledReason = (options: {
 export const buildLibraryFilesDestinationPicker = ({
   currentPickerFolderId,
   files,
+  issue,
   isMutating,
   onOpenDestinationFolder,
+  onRenameBeforeRetry,
+  onRetryCopyWithSuggestedName,
   onSubmitDestination,
   pendingAction,
 }: BuildLibraryFilesDestinationActionsOptions): LibraryFilesDestinationPickerState => {
@@ -85,6 +96,7 @@ export const buildLibraryFilesDestinationPicker = ({
     return {
       actions: [],
       canGoToParent: false,
+      issue: null,
       title: 'Choose folder',
     };
   }
@@ -106,9 +118,52 @@ export const buildLibraryFilesDestinationPicker = ({
     return {
       actions: [],
       canGoToParent: false,
+      issue: null,
       title: 'Choose folder',
     };
   }
+
+  const recoveryAction = (() => {
+    const recovery = issue?.recovery;
+
+    if (!recovery) {
+      return null;
+    }
+
+    if (
+      recovery.kind === 'retry-copy-with-suggested-name' &&
+      pendingAction.kind === 'copy' &&
+      pendingAction.row.kind !== 'folder'
+    ) {
+      return {
+        id: `${currentFolder.id}:retry-copy-with-suggested-name`,
+        label: recovery.label,
+        onPress: () => {
+          onRetryCopyWithSuggestedName(
+            currentFolder.id,
+            recovery.suggestedName,
+          );
+        },
+        tone: 'secondary' as const,
+      };
+    }
+
+    if (
+      recovery.kind === 'rename-before-retry' &&
+      pendingAction.kind === 'move'
+    ) {
+      return {
+        id: `${currentFolder.id}:rename-before-retry`,
+        label: recovery.label,
+        onPress: () => {
+          onRenameBeforeRetry(recovery.suggestedName);
+        },
+        tone: 'secondary' as const,
+      };
+    }
+
+    return null;
+  })();
 
   const selectDisabledReason = getDestinationDisabledReason({
     destinationFolderId: currentFolder.id,
@@ -130,6 +185,7 @@ export const buildLibraryFilesDestinationPicker = ({
 
   return {
     actions: [
+      ...(recoveryAction ? [recoveryAction] : []),
       {
         disabled: selectDisabledReason !== null,
         id: `${currentFolder.id}:select-destination`,
@@ -172,6 +228,7 @@ export const buildLibraryFilesDestinationPicker = ({
       }),
     ],
     canGoToParent: Boolean(currentFolder.parentFolderId),
+    issue,
     title,
   };
 };

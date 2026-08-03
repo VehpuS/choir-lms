@@ -15,6 +15,7 @@ import {
   type PlaylistDraftIssue,
   type SavedPlaylistIssue,
 } from '../../library/playlists/utils/saved-playlist-view-model';
+import type { LibraryFilesIssue } from '../../library/saved-rehearsal-library/library-files-operation-helpers';
 import type { UseLibraryFilesResult } from '../../library/saved-rehearsal-library/use-library-files';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../library/storage/local-library-storage';
 import { createPlaylistWithFilesLocation } from './library-files-playlist-create';
@@ -36,10 +37,8 @@ export const LibraryFilesCreateControls = ({
   onShowSuccessFeedback,
   playlistIssue,
 }: LibraryFilesCreateControlsProps) => {
-  const [filesCreateIssue, setFilesCreateIssue] = useState<{
-    message: string;
-    title: string;
-  } | null>(null);
+  const [filesCreateIssue, setFilesCreateIssue] =
+    useState<LibraryFilesIssue | null>(null);
   const [filesFolderDraftName, setFilesFolderDraftName] = useState('');
   const [filesPlaylistDraftIssue, setFilesPlaylistDraftIssue] =
     useState<PlaylistDraftIssue | null>(null);
@@ -54,46 +53,51 @@ export const LibraryFilesCreateControls = ({
   const [isFilesPlaylistMutating, setIsFilesPlaylistMutating] = useState(false);
   const filesFolderLabel = files.explorer?.currentFolder.name ?? 'Files';
 
-  const handleSubmitFilesFolder = useCallback(() => {
-    const folderName = filesFolderDraftName.trim();
+  const handleSubmitFilesFolder = useCallback(
+    (suggestedName?: string) => {
+      const folderName = (suggestedName ?? filesFolderDraftName).trim();
 
-    if (!folderName) {
-      setFilesCreateIssue({
-        message: 'Enter a folder name.',
-        title: 'Folder name required',
-      });
-      return;
-    }
-
-    setIsFilesFolderMutating(true);
-
-    void (async () => {
-      const didCreate = await files.createFolder(folderName);
-
-      setIsFilesFolderMutating(false);
-
-      if (!didCreate) {
-        setFilesCreateIssue(
-          files.issue ?? {
-            message:
-              'The current Library Files folder could not be created right now.',
-            title: 'Could not create folder',
-          },
-        );
+      if (!folderName) {
+        setFilesCreateIssue({
+          message: 'Enter a folder name.',
+          title: 'Folder name required',
+        });
         return;
       }
 
-      setFilesCreateIssue(null);
-      setFilesFolderDraftName('');
-      setIsFilesFolderDialogVisible(false);
-      onShowSuccessFeedback(
-        createLibraryFilesSuccessFeedback({
-          message: `${folderName} was created in ${filesFolderLabel}.`,
-          title: 'Folder created',
-        }),
-      );
-    })();
-  }, [files, filesFolderDraftName, filesFolderLabel, onShowSuccessFeedback]);
+      setIsFilesFolderMutating(true);
+
+      void (async () => {
+        const result = await files.createFolder(folderName);
+
+        setIsFilesFolderMutating(false);
+
+        if (!result.didComplete) {
+          setFilesCreateIssue(
+            result.issue ?? {
+              message:
+                'The current Library Files folder could not be created right now.',
+              title: 'Could not create folder',
+            },
+          );
+          files.clearIssue();
+          return;
+        }
+
+        files.clearIssue();
+        setFilesCreateIssue(null);
+        setFilesFolderDraftName('');
+        setIsFilesFolderDialogVisible(false);
+        onShowSuccessFeedback(
+          createLibraryFilesSuccessFeedback({
+            message: `${folderName} was created in ${filesFolderLabel}.`,
+            title: 'Folder created',
+          }),
+        );
+      })();
+    },
+    [files, filesFolderDraftName, filesFolderLabel, onShowSuccessFeedback],
+  );
 
   const handleSubmitFilesPlaylist = useCallback(() => {
     const buildResult = buildSavedPlaylist({
@@ -224,7 +228,10 @@ export const LibraryFilesCreateControls = ({
           setFilesCreateIssue(null);
           setFilesFolderDraftName(value);
         }}
-        onSubmit={handleSubmitFilesFolder}
+        onRecoverSuggestedName={handleSubmitFilesFolder}
+        onSubmit={() => {
+          handleSubmitFilesFolder();
+        }}
         value={filesFolderDraftName}
       />
       <SavedPlaylistCreateDialog

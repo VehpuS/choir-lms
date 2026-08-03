@@ -14,9 +14,10 @@ import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../storage/local-library-stora
 import type { LibraryFilesExplorerState } from './library-files-model';
 import {
   createLibraryFilesImpactReaders,
+  createLibraryFilesIssue,
   createUniqueNodeId,
-  formatLibraryFilesIssue,
   type LibraryFilesIssue,
+  resolveLibraryFilesSuggestedName,
   type UseLibraryFilesOptions,
 } from './library-files-operation-helpers';
 import { createLibraryFilesRenameOperations } from './library-files-rename-operations';
@@ -40,20 +41,47 @@ export const createLibraryFilesOperations = ({
   setTree,
   tree,
 }: LibraryFilesOperationsOptions) => {
+  const entityCollections = {
+    savedLoops: options.savedLoops,
+    savedPlaylists: options.savedPlaylists,
+    savedSources: options.savedSources,
+  } satisfies UseLibraryFilesOptions;
+
+  const buildSuggestedName = (parentFolderId: string, targetName: string) => {
+    if (!tree) {
+      return null;
+    }
+
+    return resolveLibraryFilesSuggestedName({
+      entityCollections,
+      parentFolderId,
+      targetName,
+      tree,
+    });
+  };
+
   const setOperationIssue = (
     title: string,
     message: string,
     error: unknown,
   ) => {
-    setIssue(formatLibraryFilesIssue(title, message, error));
+    setIssue(
+      createLibraryFilesIssue({
+        error,
+        fallbackMessage: message,
+        fallbackTitle: title,
+      }),
+    );
   };
 
   return {
     ...createLibraryFilesImpactReaders(tree),
     ...createLibraryFilesRenameOperations({
+      options,
       practiceRepository,
       setIssue,
       setTree,
+      tree,
     }),
     getTrackRemoveFromLibraryImpact(sourceId: string) {
       const foldersById = new Map(
@@ -99,17 +127,25 @@ export const createLibraryFilesOperations = ({
     },
     async createFolder(name: string) {
       if (!tree) {
-        return false;
+        return {
+          didComplete: false,
+          issue: null,
+        };
       }
 
       const trimmedName = name.trim();
 
       if (!trimmedName) {
-        setIssue({
+        const issue = {
           message: 'Enter a folder name.',
           title: 'Folder name required',
-        });
-        return false;
+        } satisfies LibraryFilesIssue;
+
+        setIssue(issue);
+        return {
+          didComplete: false,
+          issue,
+        };
       }
 
       try {
@@ -124,36 +160,64 @@ export const createLibraryFilesOperations = ({
 
         setTree(nextTree);
         setIssue(null);
-        return true;
+        return {
+          didComplete: true,
+          issue: null,
+        };
       } catch (error) {
-        setOperationIssue(
-          'Could not create folder',
-          `The folder "${trimmedName}" could not be created in the current Library Files location.`,
+        const issue = createLibraryFilesIssue({
           error,
-        );
-        return false;
+          fallbackMessage: `The folder "${trimmedName}" could not be created in the current Library Files location.`,
+          fallbackTitle: 'Could not create folder',
+          recovery(conflictingName) {
+            const suggestedName = buildSuggestedName(
+              explorer?.currentFolder.id ?? tree.rootFolderId,
+              conflictingName,
+            );
+
+            return suggestedName
+              ? {
+                  kind: 'use-suggested-name' as const,
+                  label: `Use "${suggestedName}"`,
+                  suggestedName,
+                }
+              : undefined;
+          },
+        });
+
+        setIssue(issue);
+        return {
+          didComplete: false,
+          issue,
+        };
       }
     },
     async createFileLinkCopy(optionsForCopy: {
       destinationFolderId: string;
       fileLink: RehearsalLibraryFileLinkNode;
       sourceName: string;
+      visibleName?: string;
     }) {
       if (!tree) {
-        return false;
+        return {
+          didComplete: false,
+          issue: null,
+        };
       }
 
       try {
-        const visibleName = resolveRehearsalLibraryCopyVisibleName({
-          entityCollections: {
-            loops: options.savedLoops,
-            playlists: options.savedPlaylists,
-            sources: options.savedSources,
-          },
-          parentFolderId: optionsForCopy.destinationFolderId,
-          sourceName: optionsForCopy.sourceName,
-          tree,
-        });
+        const visibleName =
+          optionsForCopy.visibleName ??
+          resolveRehearsalLibraryCopyVisibleName({
+            entityCollections: {
+              loops: options.savedLoops,
+              playlists: options.savedPlaylists,
+              sources: options.savedSources,
+            },
+            parentFolderId: optionsForCopy.destinationFolderId,
+            sourceName: optionsForCopy.sourceName,
+            tree,
+          });
         const nextTree = await practiceRepository.saveLibraryFileLink(
           LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
           {
@@ -169,14 +233,36 @@ export const createLibraryFilesOperations = ({
 
         setTree(nextTree);
         setIssue(null);
-        return true;
+        return {
+          didComplete: true,
+          issue: null,
+        };
       } catch (error) {
-        setOperationIssue(
-          'Could not create copy',
-          `The item "${optionsForCopy.sourceName}" could not be copied to the selected folder.`,
+        const issue = createLibraryFilesIssue({
           error,
-        );
-        return false;
+          fallbackMessage: `The item "${optionsForCopy.sourceName}" could not be copied to the selected folder.`,
+          fallbackTitle: 'Could not create copy',
+          recovery(conflictingName) {
+            const suggestedName = buildSuggestedName(
+              optionsForCopy.destinationFolderId,
+              conflictingName,
+            );
+
+            return suggestedName
+              ? {
+                  kind: 'retry-copy-with-suggested-name' as const,
+                  label: `Keep both as "${suggestedName}"`,
+                  suggestedName,
+                }
+              : undefined;
+          },
+        });
+
+        setIssue(issue);
+        return {
+          didComplete: false,
+          issue,
+        };
       }
     },
     async deleteFileLink(fileLinkId: string) {
@@ -267,14 +353,37 @@ export const createLibraryFilesOperations = ({
 
         setTree(nextTree);
         setIssue(null);
-        return true;
+        return {
+          didComplete: true,
+          issue: null,
+        };
       } catch (error) {
-        setOperationIssue(
-          'Could not move item',
-          'The selected Library Files item could not be moved to that folder.',
+        const issue = createLibraryFilesIssue({
           error,
-        );
-        return false;
+          fallbackMessage:
+            'The selected Library Files item could not be moved to that folder.',
+          fallbackTitle: 'Could not move item',
+          recovery(conflictingName) {
+            const suggestedName = buildSuggestedName(
+              optionsForMove.destinationFolderId,
+              conflictingName,
+            );
+
+            return suggestedName
+              ? {
+                  kind: 'rename-before-retry' as const,
+                  label: `Rename to "${suggestedName}"`,
+                  suggestedName,
+                }
+              : undefined;
+          },
+        });
+
+        setIssue(issue);
+        return {
+          didComplete: false,
+          issue,
+        };
       }
     },
     async moveFolder(optionsForMove: {
@@ -292,14 +401,37 @@ export const createLibraryFilesOperations = ({
 
         setTree(nextTree);
         setIssue(null);
-        return true;
+        return {
+          didComplete: true,
+          issue: null,
+        };
       } catch (error) {
-        setOperationIssue(
-          'Could not move folder',
-          'The selected Library Files folder could not be moved to that location.',
+        const issue = createLibraryFilesIssue({
           error,
-        );
-        return false;
+          fallbackMessage:
+            'The selected Library Files folder could not be moved to that location.',
+          fallbackTitle: 'Could not move folder',
+          recovery(conflictingName) {
+            const suggestedName = buildSuggestedName(
+              optionsForMove.destinationFolderId,
+              conflictingName,
+            );
+
+            return suggestedName
+              ? {
+                  kind: 'rename-before-retry' as const,
+                  label: `Rename to "${suggestedName}"`,
+                  suggestedName,
+                }
+              : undefined;
+          },
+        });
+
+        setIssue(issue);
+        return {
+          didComplete: false,
+          issue,
+        };
       }
     },
   };

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BottomSheetSurface } from '../bottom-sheet-surface';
@@ -13,6 +14,7 @@ import {
 
 type OptionsMenuSheetProps = {
   actions: OptionsMenuAction[];
+  children?: ReactNode;
   isVisible: boolean;
   title: string;
   secondaryActionLabel?: string;
@@ -47,6 +49,7 @@ const getActionLabelStyle = (tone: ResolvedOptionsMenuAction['tone']) => {
 
 export const OptionsMenuSheet = ({
   actions,
+  children,
   isVisible,
   title,
   secondaryActionLabel = 'Cancel',
@@ -67,40 +70,47 @@ export const OptionsMenuSheet = ({
       onClose={onClose}
       title={title}
     >
-      <View style={styles.actionColumn}>
-        {resolvedActions.map((action) => {
-          return (
-            <Pressable
-              accessibilityRole="button"
-              disabled={action.disabled}
-              key={action.id}
-              onPress={action.onPress}
-              style={({ pressed }) => [
-                getActionContainerStyle(action.tone),
-                pressed && !action.disabled ? styles.buttonPressed : undefined,
-                action.disabled ? styles.buttonDisabled : undefined,
-              ]}
-            >
-              <Text style={getActionLabelStyle(action.tone)}>
-                {action.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-        <Pressable
-          accessibilityRole="button"
-          disabled={isSecondaryDisabled}
-          onPress={onSecondaryAction ?? onClose}
-          style={({ pressed }) => [
-            styles.secondaryAction,
-            pressed && !isSecondaryDisabled ? styles.buttonPressed : undefined,
-            isSecondaryDisabled ? styles.buttonDisabled : undefined,
-          ]}
-        >
-          <Text style={styles.secondaryActionLabel}>
-            {secondaryActionLabel}
-          </Text>
-        </Pressable>
+      <View style={styles.contentColumn}>
+        {children ? <View>{children}</View> : null}
+        <View style={styles.actionColumn}>
+          {resolvedActions.map((action) => {
+            return (
+              <Pressable
+                accessibilityRole="button"
+                disabled={action.disabled}
+                key={action.id}
+                onPress={action.onPress}
+                style={({ pressed }) => [
+                  getActionContainerStyle(action.tone),
+                  pressed && !action.disabled
+                    ? styles.buttonPressed
+                    : undefined,
+                  action.disabled ? styles.buttonDisabled : undefined,
+                ]}
+              >
+                <Text style={getActionLabelStyle(action.tone)}>
+                  {action.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+          <Pressable
+            accessibilityRole="button"
+            disabled={isSecondaryDisabled}
+            onPress={onSecondaryAction ?? onClose}
+            style={({ pressed }) => [
+              styles.secondaryAction,
+              pressed && !isSecondaryDisabled
+                ? styles.buttonPressed
+                : undefined,
+              isSecondaryDisabled ? styles.buttonDisabled : undefined,
+            ]}
+          >
+            <Text style={styles.secondaryActionLabel}>
+              {secondaryActionLabel}
+            </Text>
+          </Pressable>
+        </View>
       </View>
     </BottomSheetSurface>
   );
@@ -109,6 +119,9 @@ export const OptionsMenuSheet = ({
 const styles = StyleSheet.create({
   actionColumn: {
     gap: 10,
+  },
+  contentColumn: {
+    gap: 12,
   },
   buttonDisabled: {
     opacity: INTERACTION_STATE_OPACITY.disabled,

@@ -109,13 +109,13 @@ describe('library-files operations', () => {
       tree: currentTree,
     });
 
-    const didCopy = await operations.createFileLinkCopy({
+    const result = await operations.createFileLinkCopy({
       destinationFolderId: 'folder-warmups',
       fileLink: ROOT_FILE_LINK,
       sourceName: SOURCE.name,
     });
 
-    assert.equal(didCopy, true);
+    assert.equal(result.didComplete, true);
     const copiedFileLink = currentTree.fileLinks.find((fileLink) => {
       return fileLink.visibleName === `${SOURCE.name} Copy 2`;
     });
@@ -223,6 +223,190 @@ describe('library-files operations', () => {
         'Warmups: Full Choir.mp3',
         'Warmups: Verse entrance',
       ],
+    });
+  });
+
+  it('suggests a unique folder name after a duplicate folder-create conflict', async () => {
+    const capturedIssues: unknown[] = [];
+    const repository = {
+      async saveLibraryFolderNode() {
+        throw new Error(
+          'An item named "Warmups" already exists in the target folder.',
+        );
+      },
+    } as unknown as AsyncStoragePracticeRepository;
+    const operations = createLibraryFilesOperations({
+      explorer: {
+        currentFolder: {
+          id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+          name: 'Library',
+          parentFolderId: null,
+        },
+      } as NonNullable<
+        ReturnType<typeof createLibraryFilesOperations>['explorer']
+      >,
+      options: {
+        savedLoops: [],
+        savedPlaylists: [],
+        savedSources: [SOURCE],
+      },
+      practiceRepository: repository,
+      setCurrentFolderId: () => undefined,
+      setIssue: (issue) => {
+        capturedIssues.push(issue);
+      },
+      setTree: () => undefined,
+      tree: createTree(),
+    });
+
+    const result = await operations.createFolder('Warmups');
+
+    assert.equal(result.didComplete, false);
+    assert.deepEqual(result.issue?.recovery, {
+      kind: 'use-suggested-name',
+      label: 'Use "Warmups Copy"',
+      suggestedName: 'Warmups Copy',
+    });
+    assert.equal(capturedIssues.length, 1);
+  });
+
+  it('suggests rename-before-retry after a duplicate move conflict', async () => {
+    const repository = {
+      async saveLibraryFileLink() {
+        throw new Error(
+          'An item named "Full Choir.mp3" already exists in the target folder.',
+        );
+      },
+    } as unknown as AsyncStoragePracticeRepository;
+    const operations = createLibraryFilesOperations({
+      explorer: null,
+      options: {
+        savedLoops: [],
+        savedPlaylists: [],
+        savedSources: [SOURCE],
+      },
+      practiceRepository: repository,
+      setCurrentFolderId: () => undefined,
+      setIssue: () => undefined,
+      setTree: () => undefined,
+      tree: createTree([
+        ROOT_FILE_LINK,
+        {
+          entityId: SOURCE.id,
+          entityKind: 'track',
+          id: 'file-link:track:copy-1',
+          parentFolderId: 'folder-warmups',
+          visibleName: `${SOURCE.name} Copy`,
+        },
+      ]),
+    });
+
+    const result = await operations.moveFileLink({
+      destinationFolderId: 'folder-warmups',
+      fileLink: ROOT_FILE_LINK,
+    });
+
+    assert.equal(result.didComplete, false);
+    assert.deepEqual(result.issue?.recovery, {
+      kind: 'rename-before-retry',
+      label: 'Rename to "Full Choir.mp3 Copy 2"',
+      suggestedName: 'Full Choir.mp3 Copy 2',
+    });
+  });
+
+  it('suggests keep-both copy retry after a duplicate copy conflict', async () => {
+    const repository = {
+      async saveLibraryFileLink() {
+        throw new Error(
+          'An item named "Full Choir.mp3 Copy" already exists in the target folder.',
+        );
+      },
+    } as unknown as AsyncStoragePracticeRepository;
+    const operations = createLibraryFilesOperations({
+      explorer: null,
+      options: {
+        savedLoops: [],
+        savedPlaylists: [],
+        savedSources: [SOURCE],
+      },
+      practiceRepository: repository,
+      setCurrentFolderId: () => undefined,
+      setIssue: () => undefined,
+      setTree: () => undefined,
+      tree: createTree([
+        ROOT_FILE_LINK,
+        {
+          entityId: SOURCE.id,
+          entityKind: 'track',
+          id: 'file-link:track:copy-1',
+          parentFolderId: 'folder-warmups',
+          visibleName: `${SOURCE.name} Copy`,
+        },
+      ]),
+    });
+
+    const result = await operations.createFileLinkCopy({
+      destinationFolderId: 'folder-warmups',
+      fileLink: ROOT_FILE_LINK,
+      sourceName: SOURCE.name,
+      visibleName: `${SOURCE.name} Copy`,
+    });
+
+    assert.equal(result.didComplete, false);
+    assert.deepEqual(result.issue?.recovery, {
+      kind: 'retry-copy-with-suggested-name',
+      label: 'Keep both as "Full Choir.mp3 Copy 2"',
+      suggestedName: 'Full Choir.mp3 Copy 2',
+    });
+  });
+
+  it('suggests a unique name after a duplicate rename conflict', async () => {
+    const repository = {
+      async saveLibraryFileLink() {
+        throw new Error(
+          'An item named "Practice Copy" already exists in the target folder.',
+        );
+      },
+    } as unknown as AsyncStoragePracticeRepository;
+    const operations = createLibraryFilesOperations({
+      explorer: null,
+      options: {
+        savedLoops: [],
+        savedPlaylists: [],
+        savedSources: [SOURCE],
+      },
+      practiceRepository: repository,
+      setCurrentFolderId: () => undefined,
+      setIssue: () => undefined,
+      setTree: () => undefined,
+      tree: createTree([
+        {
+          ...ROOT_FILE_LINK,
+          visibleName: 'Practice',
+        },
+        {
+          entityId: SOURCE.id,
+          entityKind: 'track',
+          id: 'file-link:track:copy-1',
+          parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+          visibleName: 'Practice Copy',
+        },
+      ]),
+    });
+
+    const result = await operations.renameFileLink({
+      fileLink: {
+        ...ROOT_FILE_LINK,
+        visibleName: 'Practice',
+      },
+      name: 'Practice Copy',
+    });
+
+    assert.equal(result.didComplete, false);
+    assert.deepEqual(result.issue?.recovery, {
+      kind: 'use-suggested-name',
+      label: 'Use "Practice Copy 2"',
+      suggestedName: 'Practice Copy 2',
     });
   });
 });
