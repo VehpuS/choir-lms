@@ -370,9 +370,9 @@ The system SHALL keep Drive-backed library availability feedback progressive: to
 - **WHEN** a user does not want to organize content into folders
 - **THEN** the system continues to support complete rehearsal workflows through dedicated library views, tags, and filters
 
-### Requirement: Loop provenance remains visible in standalone organization result views
+### Requirement: Loop parent-track context remains visible in standalone organization result views
 
-The system SHALL preserve and display loop parent-track provenance even when loops appear in standalone search, tag, or folder result groups.
+The system SHALL preserve and display loop parent-track context even when loops appear in standalone search, tag, or folder result groups.
 
 #### Scenario: Standalone loop result shows parent linkage
 

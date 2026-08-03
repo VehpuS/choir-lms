@@ -186,7 +186,7 @@ The system SHALL provide track-scoped loop management from parent tracks while k
 #### Scenario: Loop actions remain available from parent track context
 
 - **WHEN** a user opens a saved track context that owns one or more loops
-- **THEN** the system provides loop creation and management actions in that track context with visible parent-track provenance
+- **THEN** the system provides loop creation and management actions in that track context with visible parent-track context
 
 #### Scenario: Loop creation stays as the only saved-track-specific row action
 

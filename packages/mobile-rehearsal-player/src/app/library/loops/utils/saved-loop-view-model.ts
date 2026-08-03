@@ -96,7 +96,7 @@ export const formatSavedLoopRangeLabel = (
   return `${startLabel} to ${endLabel}`;
 };
 
-export const formatSavedLoopProvenanceLabel = (options: {
+export const formatSavedLoopParentTrackLabel = (options: {
   loop: Pick<NamedLoop, 'startMs' | 'endMs'>;
   parentTrackName: string;
 }) => {
@@ -130,7 +130,7 @@ const buildSavedLoopCard = (options: {
     loop: options.loop,
     parentTrack,
     rangeLabel,
-    metadataLabel: formatSavedLoopProvenanceLabel({
+    metadataLabel: formatSavedLoopParentTrackLabel({
       loop: options.loop,
       parentTrackName: parentTrack.name,
     }),

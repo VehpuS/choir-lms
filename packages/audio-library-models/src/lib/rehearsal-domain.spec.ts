@@ -22,9 +22,7 @@ const TEST_SOURCE = createDriveAudioSource({
   name: 'Soprano Warmup.mp3',
   mimeType: 'audio/mpeg',
   durationMs: 180000,
-  availability: {
-    status: 'available',
-  },
+  availability: { status: 'available' },
 });
 
 describe('validateLoopRange', () => {
@@ -60,7 +58,7 @@ describe('validateLoopRange', () => {
 });
 
 describe('playable item factories', () => {
-  it('resolves stable parent-track provenance from a saved loop', () => {
+  it('resolves stable parent-track context from a saved loop', () => {
     assert.deepEqual(
       resolveNamedLoopParentTrack({
         sourceId: TEST_SOURCE.id,
@@ -231,16 +229,8 @@ describe('playlist helpers', () => {
         sortIndex: entry.sortIndex,
       })),
       [
-        {
-          id: 'entry-1',
-          playlistId: playlist.id,
-          sortIndex: 0,
-        },
-        {
-          id: 'entry-2',
-          playlistId: playlist.id,
-          sortIndex: 1,
-        },
+        { id: 'entry-1', playlistId: playlist.id, sortIndex: 0 },
+        { id: 'entry-2', playlistId: playlist.id, sortIndex: 1 },
       ],
     );
   });
@@ -295,14 +285,8 @@ describe('playlist helpers', () => {
         sortIndex: entry.sortIndex,
       })),
       [
-        {
-          id: 'entry-2',
-          sortIndex: 0,
-        },
-        {
-          id: 'entry-1',
-          sortIndex: 1,
-        },
+        { id: 'entry-2', sortIndex: 0 },
+        { id: 'entry-1', sortIndex: 1 },
       ],
     );
     assert.deepEqual(
@@ -311,13 +295,7 @@ describe('playlist helpers', () => {
         playlistId: entry.playlistId,
         sortIndex: entry.sortIndex,
       })),
-      [
-        {
-          id: 'entry-2',
-          playlistId: trimmedPlaylist.id,
-          sortIndex: 0,
-        },
-      ],
+      [{ id: 'entry-2', playlistId: trimmedPlaylist.id, sortIndex: 0 }],
     );
     assert.equal(trimmedPlaylist.updatedAt, '2026-05-11T00:05:00.000Z');
   });

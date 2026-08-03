@@ -13,7 +13,7 @@ import {
   formatDurationLabel,
   type DriveLibrarySource,
 } from '../../drive/utils/drive-library-view-model';
-import { formatSavedLoopProvenanceLabel } from '../../loops/utils/saved-loop-view-model';
+import { formatSavedLoopParentTrackLabel } from '../../loops/utils/saved-loop-view-model';
 
 import type {
   LibraryFilesFolderChildCounts,
@@ -238,7 +238,7 @@ export const buildLoopRow = (options: {
           DEFAULT_UNAVAILABLE_LOOP_MESSAGE),
     playableItem,
     source: options.source,
-    supportingLabel: formatSavedLoopProvenanceLabel({
+    supportingLabel: formatSavedLoopParentTrackLabel({
       loop: options.loop,
       parentTrackName,
     }),

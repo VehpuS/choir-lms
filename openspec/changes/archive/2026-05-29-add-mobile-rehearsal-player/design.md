@@ -121,7 +121,7 @@ Alternatives considered:
 - Keep session-mode controls such as repeat and shuffle tied to the active playback context. Playlist detail should start queue playback, but ongoing queue-mode changes belong to the dedicated playback modal and Up Next surfaces so users can adjust them after playback starts.
 - Keep queue state close to playback through a dedicated Up Next surface reachable from the playback modal. The dedicated playback screen should always keep skip-back / play-pause / skip-forward controls available for the current item, and when playback comes from a playlist or queue it should additionally expose previous / next item controls without showing queue navigation for standalone track playback.
 - Prefer toast and snackbar feedback for playlist assignment and removal so the user can stay in context and undo destructive changes without route changes.
-- Encode rehearsal context directly in the UI through loop badges, source labels, and playlist provenance.
+- Encode rehearsal context directly in the UI through loop badges, source labels, and playlist context.
 
 Companion wireframes for these surfaces live in `specs/mobile-rehearsal-player-ui/mockups.md`.
 

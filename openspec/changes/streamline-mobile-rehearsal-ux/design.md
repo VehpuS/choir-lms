@@ -557,7 +557,7 @@ Implementation guidance:
 
 Alternatives considered:
 
-- Treat loops as independent-only objects: rejected because provenance and editing context become harder.
+- Treat loops as independent-only objects: rejected because parent-track context and editing context become harder.
 - Keep loops only nested under tracks: rejected because power users need cross-track loop organization.
 
 ### 10. Support both reorder interaction paths in playlists without a separate edit mode

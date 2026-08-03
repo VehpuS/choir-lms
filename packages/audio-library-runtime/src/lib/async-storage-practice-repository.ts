@@ -101,7 +101,7 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
 
     if (!normalizedLoop) {
       throw new Error(
-        'Saved loops must preserve parent-track provenance through sourceId and sourceName.',
+        'Saved loops must preserve parent-track context through sourceId and sourceName.',
       );
     }
 

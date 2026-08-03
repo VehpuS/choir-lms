@@ -78,7 +78,7 @@ describe('library-files model search', () => {
     );
   });
 
-  it('shows loop parent-track provenance in Files search results', () => {
+  it('shows loop parent-track context in Files search results', () => {
     const tree: RehearsalLibraryFileTree = {
       fileLinks: [
         {
