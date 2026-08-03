@@ -1,12 +1,13 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
+import type { LibraryFilesExplorerState } from '../../saved-rehearsal-library/library-files-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import type { ExplorerBreadcrumbItem } from '../explorer/model';
 
 type LibraryFilesControllerLike = Pick<
   UseLibraryFilesResult,
-  'explorer' | 'goToFolder' | 'goToParentFolder' | 'openFolder'
+  'goToFolder' | 'goToParentFolder' | 'openFolder'
 >;
 
 export type FilesPlaylistAddMode = {
@@ -38,9 +39,7 @@ export type SavedRehearsalLibraryFilesViewModel = {
     addAction?: FilesPlaylistAddAction;
     disabled: boolean;
     key: string;
-    kind: NonNullable<
-      LibraryFilesControllerLike['explorer']
-    >['rows'][number]['kind'];
+    kind: LibraryFilesExplorerState['rows'][number]['kind'];
     label: string;
     message?: string;
     onPress: () => void;
@@ -61,7 +60,7 @@ export const getFilesPlaylistAddModeCopy = (options: {
 };
 
 const buildFilesPlaylistAddAction = (
-  row: NonNullable<LibraryFilesControllerLike['explorer']>['rows'][number],
+  row: LibraryFilesExplorerState['rows'][number],
   playlistAddMode?: FilesPlaylistAddMode,
 ): FilesPlaylistAddAction | undefined => {
   if (!playlistAddMode || (row.kind !== 'track' && row.kind !== 'loop')) {
@@ -92,7 +91,7 @@ const buildFilesPlaylistAddAction = (
 
 const isRowActive = (
   activePlayableItem: PlayableItem | null,
-  row: NonNullable<LibraryFilesControllerLike['explorer']>['rows'][number],
+  row: LibraryFilesExplorerState['rows'][number],
 ) => {
   if (!activePlayableItem) {
     return false;
@@ -121,17 +120,14 @@ const isRowActive = (
 
 export const buildSavedRehearsalLibraryFilesViewModel = (options: {
   activePlayableItem: PlayableItem | null;
+  explorer: LibraryFilesExplorerState;
   files: LibraryFilesControllerLike;
   onOpenPlaylist: (playlistId: string) => void;
   onTogglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
   playlistAddMode?: FilesPlaylistAddMode;
-}): SavedRehearsalLibraryFilesViewModel | null => {
-  const explorer = options.files.explorer;
-
-  if (!explorer) {
-    return null;
-  }
+}): SavedRehearsalLibraryFilesViewModel => {
+  const explorer = options.explorer;
 
   return {
     breadcrumbs: explorer.breadcrumbs.map((breadcrumb, index) => {

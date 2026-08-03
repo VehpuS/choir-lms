@@ -158,7 +158,10 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
 
 ### 2.6 Add Files Search, Sort, Restoration, and Loop-Result Integration
 
-- [ ] 2.6.1 Add Files search behavior that defaults to the current folder subtree, supports an explicit `All Files` option, and shows containing-path metadata when results come from outside the currently visible folder list (`5.1.1` and `5.1.1.1`).
+- [x] 2.6.1 Add Files search behavior that defaults to the current folder subtree, supports an explicit `All Files` option, and shows containing-path metadata when results come from outside the currently visible folder list (`5.1.1` and `5.1.1.1`).
+  - Keep Files search inside the Files explorer shell instead of falling back to the grouped Library search results when `selectedView === 'files'`.
+  - Add Files-specific search scope state (`This folder` by default with an explicit `All Files` option) without changing the existing track, loop, and playlist search flow.
+  - Surface containing-path metadata on matching rows that come from outside the current visible folder list, and cover current-folder-vs-all-files behavior with focused Files model tests before checking this slice complete.
 - [ ] 2.6.2 Add Files sort controls for `Name`, `Type`, `Date added`, and `Date opened`, including case-insensitive name sorting, folder-first grouping across modes, defined type/date ordering, and search results that continue to follow the active sort mode after filtering (`5.1.2` and `5.1.2.1`).
 - [ ] 2.6.3 Restore Files path, breadcrumb stack, search scope/query, selected sort, and scroll position when users leave Files for another Library subview or top-level tab and return in the same session (`5.3.4.1` and the remaining state-restoration portion of `5.3.4`).
 - [ ] 2.6.4 Finish loop provenance presentation in Files, search, tag, and folder results while keeping dedicated track-context loop browsing fast and clearly parent-linked (`5.4` and `5.4.1` UI integration).

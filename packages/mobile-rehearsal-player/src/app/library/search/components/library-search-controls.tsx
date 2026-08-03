@@ -3,6 +3,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { InteractionChip } from '../../components/interaction-chip';
 import { getLibrarySearchContextCopy } from '../../drive/utils/drive-library-view-model';
+import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
+import type { LibraryFilesSearchScope } from '../../saved-rehearsal-library/library-files-model';
 import type {
   LibrarySearchAvailabilityFilter,
   LibrarySearchEntityFilter,
@@ -29,6 +31,26 @@ const AVAILABILITY_FILTER_OPTIONS: {
   { label: 'Unavailable', value: 'unavailable' },
 ];
 
+const buildFilesSearchScopeOptions = (
+  currentFilesFolderName: string | null,
+): Array<{
+  label: string;
+  value: LibraryFilesSearchScope;
+}> => {
+  return [
+    {
+      label: currentFilesFolderName
+        ? `This folder (${currentFilesFolderName})`
+        : 'This folder',
+      value: 'current-folder',
+    },
+    {
+      label: 'All Files',
+      value: 'all-files',
+    },
+  ];
+};
+
 const ACTION_BUTTON_SIZE = 40;
 const ACTION_ROW_GAP = 12;
 const ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE * 2 + ACTION_ROW_GAP;
@@ -41,7 +63,9 @@ type FilterOption<Value extends string> = {
 type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   availableTagFilters: string[];
   availabilityFilter: LibrarySearchAvailabilityFilter;
+  currentFilesFolderName: string | null;
   entityFilter: LibrarySearchEntityFilter;
+  filesSearchScope: LibraryFilesSearchScope;
   onClearSearch: () => void;
   onFilterActionPress: () => void;
   onSearch: () => void;
@@ -49,9 +73,11 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   onSearchQueryChange: (value: string) => void;
   onSelectAvailabilityFilter: (value: LibrarySearchAvailabilityFilter) => void;
   onSelectEntityFilter: (value: LibrarySearchEntityFilter) => void;
+  onSelectFilesSearchScope: (value: LibraryFilesSearchScope) => void;
   onSelectRecentSearchTerm: (value: string) => void;
   onToggleTagFilter: (value: string) => void;
   recentSearchTerms: string[];
+  selectedView: SavedRehearsalLibraryView;
   selectedTagFilters: string[];
   searchQuery: string;
 };
@@ -196,7 +222,9 @@ export const LibrarySearchControlsActions = ({
 export const LibrarySearchControls = ({
   availableTagFilters,
   availabilityFilter,
+  currentFilesFolderName,
   entityFilter,
+  filesSearchScope,
   isFilterPopoverVisible,
   isSearchBarVisible,
   onClearSearch,
@@ -205,18 +233,30 @@ export const LibrarySearchControls = ({
   onSearchQueryChange,
   onSelectAvailabilityFilter,
   onSelectEntityFilter,
+  onSelectFilesSearchScope,
   onSelectRecentSearchTerm,
   onToggleTagFilter,
   recentSearchTerms,
+  selectedView,
   selectedTagFilters,
   searchQuery,
 }: LibrarySearchControlsProps) => {
   const searchContextCopy = getLibrarySearchContextCopy();
+  const searchHelperCopy =
+    selectedView === 'files'
+      ? `${searchContextCopy.helper} Scope: ${
+          filesSearchScope === 'current-folder'
+            ? currentFilesFolderName
+              ? `This folder (${currentFilesFolderName})`
+              : 'This folder'
+            : 'All Files'
+        }`
+      : searchContextCopy.helper;
 
   const searchPanel = isSearchBarVisible ? (
     <ContextualSearchPanel
       clearActionLabel="Show all saved items"
-      helperCopy={searchContextCopy.helper}
+      helperCopy={searchHelperCopy}
       isSearchBarVisible={true}
       onClearSearch={onClearSearch}
       onSearch={onSearch}
@@ -233,6 +273,14 @@ export const LibrarySearchControls = ({
 
   const filterPopover = isFilterPopoverVisible ? (
     <View style={styles.filterPopover}>
+      {selectedView === 'files' ? (
+        <FilterChipGroup
+          label="Scope"
+          onSelectValue={onSelectFilesSearchScope}
+          options={buildFilesSearchScopeOptions(currentFilesFolderName)}
+          selectedValue={filesSearchScope}
+        />
+      ) : null}
       <FilterChipGroup
         label="Show"
         onSelectValue={onSelectEntityFilter}

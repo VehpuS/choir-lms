@@ -55,6 +55,160 @@ const PLAYLIST: Playlist = {
 };
 
 describe('library-files model', () => {
+  it('keeps Files search scoped to the current folder subtree by default', () => {
+    const tree: RehearsalLibraryFileTree = {
+      fileLinks: [
+        {
+          entityId: AVAILABLE_SOURCE.id,
+          entityKind: 'track',
+          id: `file-link:track:${AVAILABLE_SOURCE.id}`,
+          parentFolderId: 'folder-warmups-child',
+          visibleName: 'Warm entrance',
+        },
+        {
+          entityId: UNAVAILABLE_SOURCE.id,
+          entityKind: 'track',
+          id: `file-link:track:${UNAVAILABLE_SOURCE.id}`,
+          parentFolderId: 'folder-anthems',
+          visibleName: 'Warm ending',
+        },
+      ],
+      folders: [
+        {
+          id: 'folder:library-root',
+          name: 'Library',
+          parentFolderId: null,
+        },
+        {
+          id: 'folder-warmups',
+          name: 'Warmups',
+          parentFolderId: 'folder:library-root',
+        },
+        {
+          id: 'folder-warmups-child',
+          name: 'Entrances',
+          parentFolderId: 'folder-warmups',
+        },
+        {
+          id: 'folder-anthems',
+          name: 'Anthems',
+          parentFolderId: 'folder:library-root',
+        },
+      ],
+      rootFolderId: 'folder:library-root',
+      version: 1,
+    };
+
+    const explorer = buildLibraryFilesExplorerState({
+      currentFolderId: 'folder-warmups',
+      savedLoops: [],
+      savedPlaylists: [],
+      savedSources: [AVAILABLE_SOURCE, UNAVAILABLE_SOURCE],
+      searchOptions: {
+        activeSearchQuery: 'warm',
+        availabilityFilter: 'all',
+        entityFilter: 'all',
+        searchScope: 'current-folder',
+        selectedTagFilters: [],
+      },
+      tree,
+    });
+
+    assert.deepEqual(
+      explorer.rows.map((row) => {
+        return row.label;
+      }),
+      ['Warm entrance'],
+    );
+    assert.equal(explorer.rows[0]?.kind, 'track');
+    assert.equal(
+      explorer.rows[0]?.supportingLabel,
+      'Library / Warmups / Entrances • Track • 4:05',
+    );
+  });
+
+  it('broadens Files search to All Files and adds containing-path metadata for out-of-folder matches', () => {
+    const tree: RehearsalLibraryFileTree = {
+      fileLinks: [
+        {
+          entityId: AVAILABLE_SOURCE.id,
+          entityKind: 'track',
+          id: `file-link:track:${AVAILABLE_SOURCE.id}`,
+          parentFolderId: 'folder-warmups-child',
+          visibleName: 'Warm entrance',
+        },
+        {
+          entityId: UNAVAILABLE_SOURCE.id,
+          entityKind: 'track',
+          id: `file-link:track:${UNAVAILABLE_SOURCE.id}`,
+          parentFolderId: 'folder-anthems',
+          visibleName: 'Warm ending',
+        },
+      ],
+      folders: [
+        {
+          id: 'folder:library-root',
+          name: 'Library',
+          parentFolderId: null,
+        },
+        {
+          id: 'folder-warmups',
+          name: 'Warmups',
+          parentFolderId: 'folder:library-root',
+        },
+        {
+          id: 'folder-warmups-child',
+          name: 'Entrances',
+          parentFolderId: 'folder-warmups',
+        },
+        {
+          id: 'folder-anthems',
+          name: 'Anthems',
+          parentFolderId: 'folder:library-root',
+        },
+      ],
+      rootFolderId: 'folder:library-root',
+      version: 1,
+    };
+
+    const explorer = buildLibraryFilesExplorerState({
+      currentFolderId: 'folder-warmups',
+      savedLoops: [],
+      savedPlaylists: [],
+      savedSources: [AVAILABLE_SOURCE, UNAVAILABLE_SOURCE],
+      searchOptions: {
+        activeSearchQuery: 'warm',
+        availabilityFilter: 'all',
+        entityFilter: 'all',
+        searchScope: 'all-files',
+        selectedTagFilters: [],
+      },
+      tree,
+    });
+
+    assert.deepEqual(
+      explorer.rows.map((row) => {
+        return {
+          kind: row.kind,
+          label: row.label,
+          supportingLabel: row.supportingLabel,
+        };
+      }),
+      [
+        {
+          kind: 'track',
+          label: 'Warm ending',
+          supportingLabel: 'Library / Anthems • Track unavailable',
+        },
+        {
+          kind: 'track',
+          label: 'Warm entrance',
+          supportingLabel: 'Library / Warmups / Entrances • Track • 4:05',
+        },
+      ],
+    );
+  });
+
   it('falls back to Files root when the requested folder no longer exists', () => {
     const tree: RehearsalLibraryFileTree = {
       fileLinks: [

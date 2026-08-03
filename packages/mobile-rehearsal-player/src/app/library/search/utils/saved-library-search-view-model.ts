@@ -22,7 +22,7 @@ const normalizeTagToken = (value: string) => {
   return value.trim().toLocaleLowerCase();
 };
 
-const normalizeSelectedTags = (tags: string[]) => {
+export const normalizeSelectedTags = (tags: string[]) => {
   const uniqueTags: string[] = [];
   const seenTags = new Set<string>();
 
@@ -40,7 +40,7 @@ const normalizeSelectedTags = (tags: string[]) => {
   return uniqueTags;
 };
 
-const matchesSelectedTags = (options: {
+export const matchesSelectedTags = (options: {
   selectedTags: string[];
   tags: string[] | undefined;
 }) => {
@@ -75,14 +75,14 @@ const isSourceAvailable = (source: DriveLibrarySource) => {
   return source.availability.status === 'available';
 };
 
-const matchesEntityFilter = (
+export const matchesEntityFilter = (
   entityFilter: LibrarySearchEntityFilter,
   entityType: Exclude<LibrarySearchEntityFilter, 'all'>,
 ) => {
   return entityFilter === 'all' || entityFilter === entityType;
 };
 
-const matchesAvailabilityFilter = (options: {
+export const matchesAvailabilityFilter = (options: {
   availabilityFilter: LibrarySearchAvailabilityFilter;
   isAvailable: boolean;
 }) => {

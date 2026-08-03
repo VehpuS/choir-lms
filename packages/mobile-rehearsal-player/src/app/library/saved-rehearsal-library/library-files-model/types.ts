@@ -5,8 +5,22 @@ import type {
   RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
 
-import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { createLoopPlayableItem } from '@org/audio-library-models';
+import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
+import type {
+  LibrarySearchAvailabilityFilter,
+  LibrarySearchEntityFilter,
+} from '../../search/utils/saved-library-search-view-model';
+
+export type LibraryFilesSearchScope = 'all-files' | 'current-folder';
+
+export type LibraryFilesSearchOptions = {
+  activeSearchQuery: string | null;
+  availabilityFilter: LibrarySearchAvailabilityFilter;
+  entityFilter: LibrarySearchEntityFilter;
+  searchScope: LibraryFilesSearchScope;
+  selectedTagFilters: string[];
+};
 
 export type LibraryFilesBreadcrumb = {
   folderId: string;

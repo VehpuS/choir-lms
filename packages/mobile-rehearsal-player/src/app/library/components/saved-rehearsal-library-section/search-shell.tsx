@@ -33,6 +33,7 @@ type SavedRehearsalLibraryHeaderProps = {
 };
 
 type SavedRehearsalLibrarySearchShellProps = {
+  currentFilesFolderName: string | null;
   handleFilterActionPress: () => void;
   handleSearchActionPress: () => void;
   onSelectView: (view: SavedRehearsalLibraryView) => void;
@@ -132,6 +133,7 @@ export const SavedRehearsalLibraryHeader = ({
 };
 
 export const SavedRehearsalLibrarySearchShell = ({
+  currentFilesFolderName,
   handleFilterActionPress,
   handleSearchActionPress,
   onSelectView,
@@ -148,7 +150,9 @@ export const SavedRehearsalLibrarySearchShell = ({
       <LibrarySearchControls
         availableTagFilters={searchState.availableTagFilters}
         availabilityFilter={searchState.availabilityFilter}
+        currentFilesFolderName={currentFilesFolderName}
         entityFilter={searchState.entityFilter}
+        filesSearchScope={searchState.filesSearchScope}
         isFilterPopoverVisible={searchPanelVisibility.isFilterPopoverVisible}
         isSearchBarVisible={searchPanelVisibility.isSearchBarVisible}
         onClearSearch={searchState.clearLibrarySearch}
@@ -158,9 +162,11 @@ export const SavedRehearsalLibrarySearchShell = ({
         onSearchQueryChange={searchState.handleLibrarySearchQueryChange}
         onSelectAvailabilityFilter={searchState.setAvailabilityFilter}
         onSelectEntityFilter={searchState.setEntityFilter}
+        onSelectFilesSearchScope={searchState.setFilesSearchScope}
         onSelectRecentSearchTerm={searchState.runLibrarySearch}
         onToggleTagFilter={searchState.toggleTagFilter}
         recentSearchTerms={searchState.recentLibrarySearchTerms}
+        selectedView={selectedView}
         selectedTagFilters={searchState.selectedTagFilters}
         searchQuery={searchState.librarySearchQuery}
       />

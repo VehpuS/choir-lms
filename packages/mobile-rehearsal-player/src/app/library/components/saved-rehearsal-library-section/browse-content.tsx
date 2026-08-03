@@ -1,4 +1,7 @@
-import { shouldRenderFilesLoopBuilder } from './browse-content-model';
+import {
+  shouldRenderFilesExplorer,
+  shouldRenderFilesLoopBuilder,
+} from './browse-content-model';
 import type { SavedRehearsalLibraryBrowseContentProps } from './browse-content-types';
 import { BrowsePlaylistCards } from './browse-playlist-cards';
 import { BrowseSourceGroup } from './browse-source-group';
@@ -69,7 +72,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
     selectedView,
   });
 
-  if (selectedView === 'files' && !searchState.activeLibrarySearchQuery) {
+  if (shouldRenderFilesExplorer(selectedView)) {
     return (
       <>
         <SavedRehearsalLibraryFilesView
@@ -157,6 +160,13 @@ export const SavedRehearsalLibraryBrowseContent = ({
           onRemoveSource={removeSource}
           onOpenSuccessFeedbackFolder={onOpenLibraryFilesSuccessFeedbackFolder}
           onShowSuccessFeedback={onShowLibraryFilesSuccessFeedback}
+          searchState={{
+            activeSearchQuery: searchState.activeLibrarySearchQuery,
+            availabilityFilter: searchState.availabilityFilter,
+            entityFilter: searchState.entityFilter,
+            filesSearchScope: searchState.filesSearchScope,
+            selectedTagFilters: searchState.selectedTagFilters,
+          }}
           successFeedback={libraryFilesSuccessFeedback}
           onTogglePlayableItemPlayback={togglePlayableItemPlayback}
           onToggleSourcePlayback={toggleSourcePlayback}

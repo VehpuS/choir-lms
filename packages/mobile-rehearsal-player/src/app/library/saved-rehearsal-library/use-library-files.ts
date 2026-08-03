@@ -1,7 +1,6 @@
 import type {
   RehearsalLibraryEntityKind,
   RehearsalLibraryFileTree,
-  RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
 import { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -10,7 +9,11 @@ import {
   LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
   verifyLocalLibraryStorage,
 } from '../storage/local-library-storage';
-import { buildLibraryFilesExplorerState } from './library-files-model';
+import {
+  buildLibraryFilesExplorerState,
+  buildLibraryFolderPathLabel,
+  type LibraryFilesSearchOptions,
+} from './library-files-model';
 import {
   formatLibraryFilesIssue,
   type LibraryFilesIssue,
@@ -44,27 +47,6 @@ const buildCanonicalIdsKey = (options: UseLibraryFilesOptions) => {
       })
       .join('|'),
   ].join('::');
-};
-
-const buildFolderPathLabel = (
-  foldersById: ReadonlyMap<string, RehearsalLibraryFolderNode>,
-  folder: RehearsalLibraryFolderNode,
-) => {
-  const labels = [folder.name];
-  let parentFolderId = folder.parentFolderId;
-
-  while (parentFolderId) {
-    const parentFolder = foldersById.get(parentFolderId);
-
-    if (!parentFolder) {
-      break;
-    }
-
-    labels.unshift(parentFolder.name);
-    parentFolderId = parentFolder.parentFolderId;
-  }
-
-  return labels.join(' / ');
 };
 
 export type UseLibraryFilesResult = ReturnType<typeof useLibraryFiles>;
@@ -127,7 +109,7 @@ export const useLibraryFiles = (options: UseLibraryFilesOptions) => {
     void refresh();
   }, [canonicalIdsKey]);
 
-  const explorer = useMemo(() => {
+  const resolveExplorerState = (searchOptions?: LibraryFilesSearchOptions) => {
     if (!tree) {
       return null;
     }
@@ -137,8 +119,13 @@ export const useLibraryFiles = (options: UseLibraryFilesOptions) => {
       savedLoops: options.savedLoops,
       savedPlaylists: options.savedPlaylists,
       savedSources: options.savedSources,
+      searchOptions,
       tree,
     });
+  };
+
+  const explorer = useMemo(() => {
+    return resolveExplorerState();
   }, [currentFolderId, options, tree]);
 
   const destinationFolders = useMemo(() => {
@@ -155,7 +142,7 @@ export const useLibraryFiles = (options: UseLibraryFilesOptions) => {
     return tree.folders.map((folder) => {
       return {
         folder,
-        label: buildFolderPathLabel(foldersById, folder),
+        label: buildLibraryFolderPathLabel(foldersById, folder),
       };
     });
   }, [tree]);
@@ -192,6 +179,7 @@ export const useLibraryFiles = (options: UseLibraryFilesOptions) => {
     deleteFolder: operations.deleteFolder,
     destinationFolders,
     explorer,
+    resolveExplorerState,
     getFileLinkDeleteImpact: operations.getFileLinkDeleteImpact,
     getFolderDeleteImpact: operations.getFolderDeleteImpact,
     getTrackRemoveFromLibraryImpact: operations.getTrackRemoveFromLibraryImpact,

@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
 import { resolveSavedRehearsalLibraryVisibleSections } from '../../saved-rehearsal-library/detail-mode';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
+import { shouldRenderSavedLibraryBrowseContent } from './browse-content-model';
 import {
   SavedRehearsalLibraryLoopSectionContent,
   SavedRehearsalLibraryPlaylistSectionContent,
@@ -221,13 +222,19 @@ export const SavedRehearsalLibrarySection = ({
       updatePlaylist={updatePlaylist}
     />
   );
-  const shouldRenderBrowseContent = isSearchPanelVisible
-    ? shouldShowSearchResults
-    : detailMode === 'browse';
+  const shouldRenderBrowseContent = shouldRenderSavedLibraryBrowseContent({
+    detailMode,
+    isSearchPanelVisible,
+    isSearchResultsVisible: shouldShowSearchResults,
+    selectedView,
+  });
 
   return (
     <View style={styles.savedLibrarySection}>
       <SavedRehearsalLibrarySearchShell
+        currentFilesFolderName={
+          libraryFiles.explorer?.currentFolder.name ?? null
+        }
         handleFilterActionPress={searchPanel.handleFilterActionPress}
         handleSearchActionPress={searchPanel.handleSearchActionPress}
         onSelectView={setSelectedView}

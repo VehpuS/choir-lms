@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import { resolveSavedPlaylistCards } from '../../playlists/utils/saved-playlist-card-view-model';
+import type { LibraryFilesSearchScope } from '../../saved-rehearsal-library/library-files-model';
 import { createDebouncedSearchRunner } from '../../search/utils/debounced-search-runner';
 import {
   filterSavedLibrarySourcesByQuery,
@@ -101,6 +102,8 @@ export const useSavedRehearsalLibrarySearch = ({
   const [activeLibrarySearchQuery, setActiveLibrarySearchQuery] = useState<
     string | null
   >(null);
+  const [filesSearchScope, setFilesSearchScope] =
+    useState<LibraryFilesSearchScope>('current-folder');
 
   useEffect(() => {
     let isUnrendered = false;
@@ -239,6 +242,7 @@ export const useSavedRehearsalLibrarySearch = ({
       debouncedLibrarySearch.cancel();
       setAvailabilityFilter('all');
       setEntityFilter('all');
+      setFilesSearchScope('current-folder');
       setSelectedTagFilters([]);
       setLibrarySearchQuery('');
       setActiveLibrarySearchQuery(null);
@@ -248,6 +252,7 @@ export const useSavedRehearsalLibrarySearch = ({
       setActiveLibrarySearchQuery(null);
     },
     entityFilter,
+    filesSearchScope,
     handleLibrarySearchQueryChange(value: string) {
       setLibrarySearchQuery(value);
 
@@ -275,6 +280,7 @@ export const useSavedRehearsalLibrarySearch = ({
     selectedTagFilters,
     setAvailabilityFilter,
     setEntityFilter,
+    setFilesSearchScope,
     toggleTagFilter(tag: string) {
       setSelectedTagFilters((currentTagFilters) => {
         return currentTagFilters.includes(tag)

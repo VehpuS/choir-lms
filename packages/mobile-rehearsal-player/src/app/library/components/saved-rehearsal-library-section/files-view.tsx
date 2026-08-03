@@ -12,7 +12,12 @@ import {
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { appTheme } from '../../../utils/theme';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
+import type { LibraryFilesSearchScope } from '../../saved-rehearsal-library/library-files-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
+import type {
+  LibrarySearchAvailabilityFilter,
+  LibrarySearchEntityFilter,
+} from '../../search/utils/saved-library-search-view-model';
 import {
   ExplorerBreadcrumbBar,
   ExplorerListRow,
@@ -58,6 +63,13 @@ type SavedRehearsalLibraryFilesViewProps = {
   onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   onRemoveSource: (source: DriveLibrarySource) => void;
   playlistAddMode?: FilesPlaylistAddMode;
+  searchState: {
+    activeSearchQuery: string | null;
+    availabilityFilter: LibrarySearchAvailabilityFilter;
+    entityFilter: LibrarySearchEntityFilter;
+    filesSearchScope: LibraryFilesSearchScope;
+    selectedTagFilters: string[];
+  };
   successFeedback: LibraryFilesSuccessFeedback | null;
   onTogglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
@@ -105,11 +117,18 @@ export const SavedRehearsalLibraryFilesView = ({
   onQueuePlayableItemUpNext,
   onRemoveSource,
   playlistAddMode,
+  searchState,
   successFeedback,
   onTogglePlayableItemPlayback,
   onToggleSourcePlayback,
 }: SavedRehearsalLibraryFilesViewProps) => {
-  const explorer = files.explorer;
+  const explorer = files.resolveExplorerState({
+    activeSearchQuery: searchState.activeSearchQuery,
+    availabilityFilter: searchState.availabilityFilter,
+    entityFilter: searchState.entityFilter,
+    searchScope: searchState.filesSearchScope,
+    selectedTagFilters: searchState.selectedTagFilters,
+  });
   const [openMenuRowKey, setOpenMenuRowKey] = useState<string | null>(null);
   const rowActionFlows = useLibraryFilesRowActionFlows({
     authorization,
@@ -161,16 +180,13 @@ export const SavedRehearsalLibraryFilesView = ({
 
   const viewModel = buildSavedRehearsalLibraryFilesViewModel({
     activePlayableItem,
+    explorer,
     files,
     onOpenPlaylist,
     onTogglePlayableItemPlayback,
     onToggleSourcePlayback,
     playlistAddMode,
   });
-
-  if (!viewModel) {
-    return null;
-  }
 
   const activePlaylistAddMode = playlistAddMode ?? null;
   const playlistAddModeCopy = activePlaylistAddMode
