@@ -109,9 +109,11 @@ export const SavedPlaylistCardsList = (props: {
                   />
                 }
                 message={
-                  <Text numberOfLines={1} style={styles.rowPreviewLabel}>
-                    {playlistCard.previewLabel}
-                  </Text>
+                  playlistCard.previewLabel ? (
+                    <Text numberOfLines={1} style={styles.rowPreviewLabel}>
+                      {playlistCard.previewLabel}
+                    </Text>
+                  ) : null
                 }
                 metadata={
                   <Text numberOfLines={1} style={styles.rowSupportingLabel}>

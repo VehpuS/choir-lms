@@ -6,8 +6,8 @@ import { addTrackToPlaylist, createPlaylist } from '@org/audio-library-models';
 import { PLAYABLE_SOURCE } from '../../../test-utils/library-test-fixtures.js';
 import {
   getSavedPlaylistCardPlayAction,
-  resolveSavedPlaylistCards,
   resolveSavedPlaylistCardRenameTarget,
+  resolveSavedPlaylistCards,
 } from './saved-playlist-card-view-model.js';
 
 describe('getSavedPlaylistCardPlayAction', () => {
@@ -54,6 +54,22 @@ describe('getSavedPlaylistCardPlayAction', () => {
         detailLabel: '1 item • 1 track • 0 loops',
         playlist,
         previewLabel: 'Alto Line.mp3',
+      },
+    ]);
+  });
+
+  it('collapses empty playlist cards to one concise empty label', () => {
+    const emptyPlaylist = createPlaylist({
+      createdAt: '2026-05-12T00:00:00.000Z',
+      name: 'Set list',
+      ownerId: 'user-1',
+    });
+
+    assert.deepEqual(resolveSavedPlaylistCards([emptyPlaylist]), [
+      {
+        detailLabel: 'Empty playlist',
+        playlist: emptyPlaylist,
+        previewLabel: null,
       },
     ]);
   });

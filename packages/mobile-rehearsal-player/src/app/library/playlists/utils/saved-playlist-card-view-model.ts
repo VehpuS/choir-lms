@@ -3,7 +3,7 @@ import type { Playlist } from '@org/audio-library-models';
 export type SavedPlaylistCard = {
   detailLabel: string;
   playlist: Playlist;
-  previewLabel: string;
+  previewLabel: string | null;
 };
 
 export type SavedPlaylistCardPlayAction = {
@@ -21,7 +21,13 @@ const pluralize = (count: number, noun: string) => {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 };
 
+const EMPTY_PLAYLIST_DETAIL_LABEL = 'Empty playlist';
+
 const getPlaylistDetailLabel = (playlist: Playlist) => {
+  if (playlist.items.length === 0) {
+    return EMPTY_PLAYLIST_DETAIL_LABEL;
+  }
+
   const trackCount = playlist.items.filter((entry) => {
     return entry.kind === 'track';
   }).length;
@@ -36,7 +42,7 @@ const getPlaylistDetailLabel = (playlist: Playlist) => {
 
 const getPlaylistPreviewLabel = (playlist: Playlist) => {
   if (playlist.items.length === 0) {
-    return 'No items yet';
+    return null;
   }
 
   return playlist.items
