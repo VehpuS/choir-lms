@@ -3,10 +3,11 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 const ACTION_BUTTON_SIZE = 40;
 const ACTION_ROW_GAP = 12;
-const ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE * 2 + ACTION_ROW_GAP;
+const DOUBLE_ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE * 2 + ACTION_ROW_GAP;
+const SINGLE_ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE;
 
 type LibrarySearchControlsActionsProps = {
-  availabilityFilter: 'all' | 'available' | 'unavailable';
+  canShowFilters: boolean;
   entityFilter: 'all' | 'tracks' | 'loops' | 'playlists';
   isFilterPopoverVisible: boolean;
   isSearchBarVisible: boolean;
@@ -67,7 +68,7 @@ const LibrarySearchActionButton = ({
 };
 
 export const LibrarySearchControlsActions = ({
-  availabilityFilter,
+  canShowFilters,
   entityFilter,
   isFilterPopoverVisible,
   isSearchBarVisible,
@@ -77,23 +78,28 @@ export const LibrarySearchControlsActions = ({
   tone = 'surface',
 }: LibrarySearchControlsActionsProps) => {
   const hasActiveFilters =
-    entityFilter !== 'all' ||
-    availabilityFilter !== 'all' ||
-    selectedTagFilters.length > 0;
+    entityFilter !== 'all' || selectedTagFilters.length > 0;
 
   return (
-    <View style={styles.actionRow}>
-      <LibrarySearchActionButton
-        accessibilityLabel={
-          isFilterPopoverVisible
-            ? 'Hide library filters'
-            : 'Show library filters'
-        }
-        iconName="tune-variant"
-        isFilled={isFilterPopoverVisible || hasActiveFilters}
-        onPress={onFilterActionPress}
-        tone={tone}
-      />
+    <View
+      style={[
+        styles.actionRow,
+        canShowFilters ? styles.actionRowDouble : styles.actionRowSingle,
+      ]}
+    >
+      {canShowFilters ? (
+        <LibrarySearchActionButton
+          accessibilityLabel={
+            isFilterPopoverVisible
+              ? 'Hide library filters'
+              : 'Show library filters'
+          }
+          iconName="tune-variant"
+          isFilled={isFilterPopoverVisible || hasActiveFilters}
+          onPress={onFilterActionPress}
+          tone={tone}
+        />
+      ) : null}
       <LibrarySearchActionButton
         accessibilityLabel={
           isSearchBarVisible ? 'Close search' : 'Search saved library'
@@ -109,10 +115,15 @@ export const LibrarySearchControlsActions = ({
 
 const styles = StyleSheet.create({
   actionRow: {
-    width: ACTION_ROW_WIDTH,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  actionRowDouble: {
+    width: DOUBLE_ACTION_ROW_WIDTH,
+  },
+  actionRowSingle: {
+    width: SINGLE_ACTION_ROW_WIDTH,
   },
   actionButton: {
     width: ACTION_BUTTON_SIZE,

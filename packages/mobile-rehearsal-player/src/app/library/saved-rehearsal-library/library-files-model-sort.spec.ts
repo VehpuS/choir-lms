@@ -58,7 +58,6 @@ describe('library-files model sort', () => {
       savedSources: [AVAILABLE_SOURCE, UNAVAILABLE_SOURCE],
       searchOptions: {
         activeSearchQuery: null,
-        availabilityFilter: 'all',
         entityFilter: 'all',
         searchScope: 'current-folder',
         selectedTagFilters: [],
@@ -114,7 +113,6 @@ describe('library-files model sort', () => {
       savedSources: [AVAILABLE_SOURCE],
       searchOptions: {
         activeSearchQuery: null,
-        availabilityFilter: 'all',
         entityFilter: 'all',
         searchScope: 'current-folder',
         selectedTagFilters: [],
@@ -189,7 +187,6 @@ describe('library-files model sort', () => {
       savedSources: [AVAILABLE_SOURCE],
       searchOptions: {
         activeSearchQuery: null,
-        availabilityFilter: 'all',
         entityFilter: 'all',
         searchScope: 'current-folder',
         selectedTagFilters: [],
@@ -210,7 +207,6 @@ describe('library-files model sort', () => {
       savedSources: [AVAILABLE_SOURCE],
       searchOptions: {
         activeSearchQuery: null,
-        availabilityFilter: 'all',
         entityFilter: 'all',
         openedAtByNodeKey: {
           'folder-alpha': '2026-07-08T09:00:00.000Z',

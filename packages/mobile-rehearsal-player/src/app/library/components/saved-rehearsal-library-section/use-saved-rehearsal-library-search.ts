@@ -15,7 +15,6 @@ import {
   filterSavedLoopsByQuery,
   filterSavedPlaylistsByQuery,
   resolveActiveLibrarySearchQuery,
-  type LibrarySearchAvailabilityFilter,
   type LibrarySearchEntityFilter,
 } from '../../search/utils/saved-library-search-view-model';
 import { LIBRARY_RECENT_SEARCH_HISTORY_KEY } from '../../search/utils/search-history-storage';
@@ -88,8 +87,6 @@ export const useSavedRehearsalLibrarySearch = ({
   savedLoops,
   savedPlaylists,
 }: UseSavedRehearsalLibrarySearchOptions) => {
-  const [availabilityFilter, setAvailabilityFilter] =
-    useState<LibrarySearchAvailabilityFilter>('all');
   const [entityFilter, setEntityFilter] =
     useState<LibrarySearchEntityFilter>('all');
   const [selectedTagFilters, setSelectedTagFilters] = useState<string[]>([]);
@@ -159,14 +156,12 @@ export const useSavedRehearsalLibrarySearch = ({
   const visibleSavedLibrarySources = useMemo(() => {
     return filterSavedLibrarySourcesByQuery({
       activeSearchQuery: activeLibrarySearchQuery,
-      availabilityFilter,
       entityFilter,
       selectedTagFilters,
       sources: savedLibrarySources,
     });
   }, [
     activeLibrarySearchQuery,
-    availabilityFilter,
     entityFilter,
     savedLibrarySources,
     selectedTagFilters,
@@ -174,7 +169,6 @@ export const useSavedRehearsalLibrarySearch = ({
   const visibleSavedLoops = useMemo(() => {
     return filterSavedLoopsByQuery({
       activeSearchQuery: activeLibrarySearchQuery,
-      availabilityFilter,
       entityFilter,
       loops: savedLoops,
       selectedTagFilters,
@@ -182,7 +176,6 @@ export const useSavedRehearsalLibrarySearch = ({
     });
   }, [
     activeLibrarySearchQuery,
-    availabilityFilter,
     entityFilter,
     savedLibrarySources,
     savedLoops,
@@ -192,7 +185,6 @@ export const useSavedRehearsalLibrarySearch = ({
     return resolveSavedPlaylistCards(
       filterSavedPlaylistsByQuery({
         activeSearchQuery: activeLibrarySearchQuery,
-        availabilityFilter,
         entityFilter,
         playlists: savedPlaylists,
         selectedTagFilters,
@@ -200,7 +192,6 @@ export const useSavedRehearsalLibrarySearch = ({
     );
   }, [
     activeLibrarySearchQuery,
-    availabilityFilter,
     entityFilter,
     savedPlaylists,
     selectedTagFilters,
@@ -216,10 +207,8 @@ export const useSavedRehearsalLibrarySearch = ({
   return {
     activeLibrarySearchQuery,
     availableTagFilters,
-    availabilityFilter,
     clearLibrarySearch() {
       debouncedLibrarySearch.cancel();
-      setAvailabilityFilter('all');
       setEntityFilter('all');
       setFilesSearchScope('current-folder');
       setSelectedTagFilters([]);
@@ -246,7 +235,6 @@ export const useSavedRehearsalLibrarySearch = ({
       }
 
       debouncedLibrarySearch.cancel();
-      setAvailabilityFilter('all');
       setEntityFilter('all');
       setActiveLibrarySearchQuery(null);
     },
@@ -285,7 +273,6 @@ export const useSavedRehearsalLibrarySearch = ({
       runSubmittedLibrarySearchQuery(librarySearchQuery);
     },
     selectedTagFilters,
-    setAvailabilityFilter,
     setEntityFilter,
     setFilesSearchScope,
     setFilesSortMode,

@@ -8,11 +8,6 @@ export type LibrarySearchEntityFilter =
   | 'loops'
   | 'playlists';
 
-export type LibrarySearchAvailabilityFilter =
-  | 'all'
-  | 'available'
-  | 'unavailable';
-
 export type SearchHighlightPart = {
   isHighlighted: boolean;
   text: string;
@@ -71,30 +66,11 @@ const includesNormalizedQuery = (value: string, query: string) => {
   return value.toLocaleLowerCase().includes(query);
 };
 
-const isSourceAvailable = (source: DriveLibrarySource) => {
-  return source.availability.status === 'available';
-};
-
 export const matchesEntityFilter = (
   entityFilter: LibrarySearchEntityFilter,
   entityType: Exclude<LibrarySearchEntityFilter, 'all'>,
 ) => {
   return entityFilter === 'all' || entityFilter === entityType;
-};
-
-export const matchesAvailabilityFilter = (options: {
-  availabilityFilter: LibrarySearchAvailabilityFilter;
-  isAvailable: boolean;
-}) => {
-  if (options.availabilityFilter === 'all') {
-    return true;
-  }
-
-  if (options.availabilityFilter === 'available') {
-    return options.isAvailable;
-  }
-
-  return !options.isAvailable;
 };
 
 export const resolveSearchHighlightParts = (options: {
@@ -163,7 +139,6 @@ export const resolveActiveLibrarySearchQuery = (query: string) => {
 
 export const filterSavedLibrarySourcesByQuery = (options: {
   activeSearchQuery: string | null;
-  availabilityFilter: LibrarySearchAvailabilityFilter;
   entityFilter: LibrarySearchEntityFilter;
   selectedTagFilters?: string[];
   sources: DriveLibrarySource[];
@@ -176,15 +151,6 @@ export const filterSavedLibrarySourcesByQuery = (options: {
   const selectedTags = normalizeSelectedTags(options.selectedTagFilters ?? []);
 
   return options.sources.filter((source) => {
-    if (
-      !matchesAvailabilityFilter({
-        availabilityFilter: options.availabilityFilter,
-        isAvailable: isSourceAvailable(source),
-      })
-    ) {
-      return false;
-    }
-
     if (!normalizedQuery) {
       return matchesSelectedTags({
         selectedTags,
@@ -205,7 +171,6 @@ export const filterSavedLibrarySourcesByQuery = (options: {
 
 export const filterSavedLoopsByQuery = (options: {
   activeSearchQuery: string | null;
-  availabilityFilter: LibrarySearchAvailabilityFilter;
   entityFilter: LibrarySearchEntityFilter;
   loops: NamedLoop[];
   selectedTagFilters?: string[];
@@ -217,24 +182,8 @@ export const filterSavedLoopsByQuery = (options: {
 
   const normalizedQuery = normalizeSearchQuery(options.activeSearchQuery ?? '');
   const selectedTags = normalizeSelectedTags(options.selectedTagFilters ?? []);
-  const sourceAvailabilityById = new Map(
-    options.sources.map((source) => {
-      return [source.id, isSourceAvailable(source)] as const;
-    }),
-  );
 
   return options.loops.filter((loop) => {
-    const isAvailable = sourceAvailabilityById.get(loop.sourceId) ?? false;
-
-    if (
-      !matchesAvailabilityFilter({
-        availabilityFilter: options.availabilityFilter,
-        isAvailable,
-      })
-    ) {
-      return false;
-    }
-
     if (!normalizedQuery) {
       return matchesSelectedTags({
         selectedTags,
@@ -258,16 +207,11 @@ export const filterSavedLoopsByQuery = (options: {
 
 export const filterSavedPlaylistsByQuery = (options: {
   activeSearchQuery: string | null;
-  availabilityFilter: LibrarySearchAvailabilityFilter;
   entityFilter: LibrarySearchEntityFilter;
   playlists: Playlist[];
   selectedTagFilters?: string[];
 }) => {
   if (!matchesEntityFilter(options.entityFilter, 'playlists')) {
-    return [];
-  }
-
-  if (options.availabilityFilter !== 'all') {
     return [];
   }
 

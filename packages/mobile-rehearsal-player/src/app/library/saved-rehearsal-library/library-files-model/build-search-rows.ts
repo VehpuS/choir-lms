@@ -7,7 +7,6 @@ import type {
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import {
-  matchesAvailabilityFilter,
   matchesEntityFilter,
   matchesSelectedTags,
   normalizeSearchQuery,
@@ -80,8 +79,7 @@ export const buildSearchRows = (options: {
   );
 
   const folderRows =
-    options.searchOptions.entityFilter === 'all' &&
-    options.searchOptions.availabilityFilter === 'all'
+    options.searchOptions.entityFilter === 'all'
       ? options.tree.folders.flatMap((folder) => {
           if (
             folder.id === options.currentFolder.id ||
@@ -131,10 +129,6 @@ export const buildSearchRows = (options: {
 
       if (
         !source ||
-        !matchesAvailabilityFilter({
-          availabilityFilter: options.searchOptions.availabilityFilter,
-          isAvailable: source.availability.status === 'available',
-        }) ||
         !matchesSelectedTags({
           selectedTags,
           tags: source.tags,
@@ -178,10 +172,6 @@ export const buildSearchRows = (options: {
 
       if (
         !loop ||
-        !matchesAvailabilityFilter({
-          availabilityFilter: options.searchOptions.availabilityFilter,
-          isAvailable: source?.availability.status === 'available',
-        }) ||
         !matchesSelectedTags({
           selectedTags,
           tags: loop.tags,
@@ -221,10 +211,6 @@ export const buildSearchRows = (options: {
     }
 
     if (!matchesEntityFilter(options.searchOptions.entityFilter, 'playlists')) {
-      return [] as LibraryFilesRow[];
-    }
-
-    if (options.searchOptions.availabilityFilter !== 'all') {
       return [] as LibraryFilesRow[];
     }
 

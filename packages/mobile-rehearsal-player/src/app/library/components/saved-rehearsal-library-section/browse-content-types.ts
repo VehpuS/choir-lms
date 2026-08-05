@@ -10,7 +10,6 @@ import type { useSavedRehearsalLibraryTrackPlaylistMenu } from './use-saved-rehe
 export type SearchState = Pick<
   ReturnType<typeof useSavedRehearsalLibrarySearch>,
   | 'activeLibrarySearchQuery'
-  | 'availabilityFilter'
   | 'entityFilter'
   | 'filesOpenedAtByNodeKey'
   | 'filesSearchScope'

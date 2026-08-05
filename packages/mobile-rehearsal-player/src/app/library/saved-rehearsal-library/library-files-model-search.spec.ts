@@ -59,7 +59,6 @@ describe('library-files model search', () => {
       savedSources: [AVAILABLE_SOURCE, UNAVAILABLE_SOURCE],
       searchOptions: {
         activeSearchQuery: 'warm',
-        availabilityFilter: 'all',
         entityFilter: 'all',
         searchScope: 'current-folder',
         selectedTagFilters: [],
@@ -103,7 +102,6 @@ describe('library-files model search', () => {
       savedSources: [AVAILABLE_SOURCE],
       searchOptions: {
         activeSearchQuery: 'warm',
-        availabilityFilter: 'all',
         entityFilter: 'all',
         searchScope: 'current-folder',
         selectedTagFilters: [],
@@ -172,7 +170,6 @@ describe('library-files model search', () => {
       savedSources: [AVAILABLE_SOURCE, UNAVAILABLE_SOURCE],
       searchOptions: {
         activeSearchQuery: 'warm',
-        availabilityFilter: 'all',
         entityFilter: 'all',
         searchScope: 'all-files',
         selectedTagFilters: [],
@@ -231,7 +228,6 @@ describe('library-files model search', () => {
       savedSources: [AVAILABLE_SOURCE],
       searchOptions: {
         activeSearchQuery: 'warm',
-        availabilityFilter: 'all',
         entityFilter: 'all',
         searchScope: 'all-files',
         selectedTagFilters: [],
@@ -288,7 +284,6 @@ describe('library-files model search', () => {
       savedSources: [AVAILABLE_SOURCE],
       searchOptions: {
         activeSearchQuery: 'warm',
-        availabilityFilter: 'all',
         entityFilter: 'all',
         searchScope: 'current-folder',
         selectedTagFilters: [],

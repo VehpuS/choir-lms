@@ -7,14 +7,10 @@ import type {
   LibraryFilesSearchScope,
   LibraryFilesSortMode,
 } from '../../saved-rehearsal-library/library-files-model';
-import type {
-  LibrarySearchAvailabilityFilter,
-  LibrarySearchEntityFilter,
-} from '../utils/saved-library-search-view-model';
+import type { LibrarySearchEntityFilter } from '../utils/saved-library-search-view-model';
 import { ContextualSearchPanel } from './contextual-search-panel';
 import type { LibrarySearchControlsVisibility } from './library-search-controls-visibility';
 import {
-  AVAILABILITY_FILTER_OPTIONS,
   buildFilesSearchScopeOptions,
   ENTITY_FILTER_OPTIONS,
   FILES_SORT_OPTIONS,
@@ -27,7 +23,6 @@ const FILTER_POPOVER_MAX_WIDTH = 360;
 
 type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   availableTagFilters: string[];
-  availabilityFilter: LibrarySearchAvailabilityFilter;
   currentFilesFolderName: string | null;
   entityFilter: LibrarySearchEntityFilter;
   filesSearchScope: LibraryFilesSearchScope;
@@ -38,7 +33,6 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   onSearchActionPress: () => void;
   onSearchInputBlur: () => void;
   onSearchQueryChange: (value: string) => void;
-  onSelectAvailabilityFilter: (value: LibrarySearchAvailabilityFilter) => void;
   onSelectEntityFilter: (value: LibrarySearchEntityFilter) => void;
   onSelectFilesSearchScope: (value: LibraryFilesSearchScope) => void;
   onSelectFilesSortMode: (value: LibraryFilesSortMode) => void;
@@ -52,7 +46,6 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
 
 export const LibrarySearchControls = ({
   availableTagFilters,
-  availabilityFilter,
   currentFilesFolderName,
   entityFilter,
   filesSearchScope,
@@ -64,7 +57,6 @@ export const LibrarySearchControls = ({
   onSearchActionPress,
   onSearchInputBlur,
   onSearchQueryChange,
-  onSelectAvailabilityFilter,
   onSelectEntityFilter,
   onSelectFilesSearchScope,
   onSelectFilesSortMode,
@@ -130,28 +122,18 @@ export const LibrarySearchControls = ({
             options={FILES_SORT_OPTIONS}
             selectedValue={filesSortMode}
           />
+          <FilterChipGroup
+            filterChipStyle={styles.filterChip}
+            filterGroupStyle={styles.filterGroup}
+            filterLabelStyle={styles.filterLabel}
+            filterRowStyle={styles.filterRow}
+            label="Show"
+            onSelectValue={onSelectEntityFilter}
+            options={ENTITY_FILTER_OPTIONS}
+            selectedValue={entityFilter}
+          />
         </>
       ) : null}
-      <FilterChipGroup
-        filterChipStyle={styles.filterChip}
-        filterGroupStyle={styles.filterGroup}
-        filterLabelStyle={styles.filterLabel}
-        filterRowStyle={styles.filterRow}
-        label="Show"
-        onSelectValue={onSelectEntityFilter}
-        options={ENTITY_FILTER_OPTIONS}
-        selectedValue={entityFilter}
-      />
-      <FilterChipGroup
-        filterChipStyle={styles.filterChip}
-        filterGroupStyle={styles.filterGroup}
-        filterLabelStyle={styles.filterLabel}
-        filterRowStyle={styles.filterRow}
-        label="Availability"
-        onSelectValue={onSelectAvailabilityFilter}
-        options={AVAILABILITY_FILTER_OPTIONS}
-        selectedValue={availabilityFilter}
-      />
       {availableTagFilters.length > 0 ? (
         <View style={styles.filterGroup}>
           <Text style={styles.filterLabel}>Tags</Text>

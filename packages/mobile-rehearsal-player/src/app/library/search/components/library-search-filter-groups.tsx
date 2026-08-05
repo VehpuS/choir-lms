@@ -5,10 +5,7 @@ import type {
   LibraryFilesSearchScope,
   LibraryFilesSortMode,
 } from '../../saved-rehearsal-library/library-files-model';
-import type {
-  LibrarySearchAvailabilityFilter,
-  LibrarySearchEntityFilter,
-} from '../utils/saved-library-search-view-model';
+import type { LibrarySearchEntityFilter } from '../utils/saved-library-search-view-model';
 
 export const ENTITY_FILTER_OPTIONS: {
   label: string;
@@ -18,15 +15,6 @@ export const ENTITY_FILTER_OPTIONS: {
   { label: 'Tracks', value: 'tracks' },
   { label: 'Loops', value: 'loops' },
   { label: 'Playlists', value: 'playlists' },
-];
-
-export const AVAILABILITY_FILTER_OPTIONS: {
-  label: string;
-  value: LibrarySearchAvailabilityFilter;
-}[] = [
-  { label: 'Any status', value: 'all' },
-  { label: 'Playable', value: 'available' },
-  { label: 'Unavailable', value: 'unavailable' },
 ];
 
 export const FILES_SORT_OPTIONS: {

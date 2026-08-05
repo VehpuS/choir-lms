@@ -94,6 +94,7 @@ export const LibraryScreen = ({
         handleFilterActionPress={searchPanel.handleFilterActionPress}
         handleSearchActionPress={searchPanel.handleSearchActionPress}
         isSessionMenuVisible={isSessionMenuVisible}
+        isShowingFilesView={selectedView === 'files'}
         onCloseSessionMenu={() => {
           setIsSessionMenuVisible(false);
         }}

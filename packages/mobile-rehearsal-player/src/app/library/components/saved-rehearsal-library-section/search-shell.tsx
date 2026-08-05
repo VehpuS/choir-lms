@@ -25,6 +25,7 @@ type SavedRehearsalLibraryHeaderProps = {
   handleFilterActionPress: () => void;
   handleSearchActionPress: () => void;
   isSessionMenuVisible: boolean;
+  isShowingFilesView: boolean;
   onCloseSessionMenu: () => void;
   onToggleSessionMenu: () => void;
   searchPanelVisibility: SearchPanelVisibility;
@@ -74,6 +75,7 @@ export const SavedRehearsalLibraryHeader = ({
   handleFilterActionPress,
   handleSearchActionPress,
   isSessionMenuVisible,
+  isShowingFilesView,
   onCloseSessionMenu,
   onToggleSessionMenu,
   searchPanelVisibility,
@@ -88,7 +90,7 @@ export const SavedRehearsalLibraryHeader = ({
       trailingAction={
         <View style={styles.headerActionRow}>
           <LibrarySearchControlsActions
-            availabilityFilter={searchState.availabilityFilter}
+            canShowFilters={isShowingFilesView}
             entityFilter={searchState.entityFilter}
             isFilterPopoverVisible={
               searchPanelVisibility.isFilterPopoverVisible
@@ -149,7 +151,6 @@ export const SavedRehearsalLibrarySearchShell = ({
       />
       <LibrarySearchControls
         availableTagFilters={searchState.availableTagFilters}
-        availabilityFilter={searchState.availabilityFilter}
         currentFilesFolderName={currentFilesFolderName}
         entityFilter={searchState.entityFilter}
         filesSearchScope={searchState.filesSearchScope}
@@ -162,7 +163,6 @@ export const SavedRehearsalLibrarySearchShell = ({
         onSearchActionPress={handleSearchActionPress}
         onSearchInputBlur={searchState.commitLibrarySearchQuery}
         onSearchQueryChange={searchState.handleLibrarySearchQueryChange}
-        onSelectAvailabilityFilter={searchState.setAvailabilityFilter}
         onSelectEntityFilter={searchState.setEntityFilter}
         onSelectFilesSearchScope={searchState.setFilesSearchScope}
         onSelectFilesSortMode={searchState.setFilesSortMode}

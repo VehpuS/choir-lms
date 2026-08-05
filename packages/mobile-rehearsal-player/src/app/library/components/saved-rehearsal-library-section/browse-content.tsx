@@ -162,7 +162,6 @@ export const SavedRehearsalLibraryBrowseContent = ({
           onShowSuccessFeedback={onShowLibraryFilesSuccessFeedback}
           searchState={{
             activeSearchQuery: searchState.activeLibrarySearchQuery,
-            availabilityFilter: searchState.availabilityFilter,
             entityFilter: searchState.entityFilter,
             filesOpenedAtByNodeKey: searchState.filesOpenedAtByNodeKey,
             filesSearchScope: searchState.filesSearchScope,

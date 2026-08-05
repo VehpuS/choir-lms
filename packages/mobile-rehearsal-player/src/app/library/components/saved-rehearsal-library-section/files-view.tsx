@@ -15,10 +15,7 @@ import {
   type LibraryFilesSortMode,
 } from '../../saved-rehearsal-library/library-files-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
-import type {
-  LibrarySearchAvailabilityFilter,
-  LibrarySearchEntityFilter,
-} from '../../search/utils/saved-library-search-view-model';
+import type { LibrarySearchEntityFilter } from '../../search/utils/saved-library-search-view-model';
 import { ExplorerBreadcrumbBar, ExplorerNavigationBar } from '../explorer';
 import { FeedbackCard } from '../feedback-card';
 import { FilesExplorerList } from './files-explorer-list';
@@ -60,7 +57,6 @@ type SavedRehearsalLibraryFilesViewProps = {
   playlistAddMode?: FilesPlaylistAddMode;
   searchState: {
     activeSearchQuery: string | null;
-    availabilityFilter: LibrarySearchAvailabilityFilter;
     entityFilter: LibrarySearchEntityFilter;
     filesOpenedAtByNodeKey: Readonly<Record<string, string>>;
     filesSearchScope: LibraryFilesSearchScope;
@@ -107,7 +103,6 @@ export const SavedRehearsalLibraryFilesView = ({
 }: SavedRehearsalLibraryFilesViewProps) => {
   const explorer = files.resolveExplorerState({
     activeSearchQuery: searchState.activeSearchQuery,
-    availabilityFilter: searchState.availabilityFilter,
     entityFilter: searchState.entityFilter,
     openedAtByNodeKey: searchState.filesOpenedAtByNodeKey,
     searchScope: searchState.filesSearchScope,

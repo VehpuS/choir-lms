@@ -70,7 +70,6 @@ describe('saved library search view-model', () => {
     assert.deepEqual(
       filterSavedLibrarySourcesByQuery({
         activeSearchQuery: 'bass',
-        availabilityFilter: 'all',
         entityFilter: 'all',
         selectedTagFilters: [],
         sources,
@@ -80,7 +79,6 @@ describe('saved library search view-model', () => {
     assert.deepEqual(
       filterSavedLoopsByQuery({
         activeSearchQuery: 'bass',
-        availabilityFilter: 'all',
         entityFilter: 'all',
         loops,
         selectedTagFilters: [],
@@ -91,7 +89,6 @@ describe('saved library search view-model', () => {
     assert.deepEqual(
       filterSavedPlaylistsByQuery({
         activeSearchQuery: 'kyrie',
-        availabilityFilter: 'all',
         entityFilter: 'all',
         playlists,
         selectedTagFilters: [],
@@ -100,7 +97,7 @@ describe('saved library search view-model', () => {
     );
   });
 
-  it('supports entity and availability filters for library search results', () => {
+  it('supports entity filters for library search results without hiding unavailable items', () => {
     const unavailableSource = {
       ...PLAYABLE_SOURCE,
       availability: {
@@ -132,8 +129,7 @@ describe('saved library search view-model', () => {
 
     assert.deepEqual(
       filterSavedLibrarySourcesByQuery({
-        activeSearchQuery: 'line',
-        availabilityFilter: 'unavailable',
+        activeSearchQuery: 'tenor',
         entityFilter: 'tracks',
         selectedTagFilters: [],
         sources,
@@ -143,7 +139,6 @@ describe('saved library search view-model', () => {
     assert.deepEqual(
       filterSavedLoopsByQuery({
         activeSearchQuery: 'tenor',
-        availabilityFilter: 'unavailable',
         entityFilter: 'loops',
         loops,
         selectedTagFilters: [],
@@ -154,22 +149,11 @@ describe('saved library search view-model', () => {
     assert.deepEqual(
       filterSavedPlaylistsByQuery({
         activeSearchQuery: 'tenor',
-        availabilityFilter: 'all',
         entityFilter: 'playlists',
         playlists,
         selectedTagFilters: [],
       }).map((p) => p.name),
       ['Tenor Focus'],
-    );
-    assert.deepEqual(
-      filterSavedPlaylistsByQuery({
-        activeSearchQuery: 'tenor',
-        availabilityFilter: 'available',
-        entityFilter: 'playlists',
-        playlists,
-        selectedTagFilters: [],
-      }),
-      [],
     );
   });
 
@@ -214,7 +198,6 @@ describe('saved library search view-model', () => {
     assert.deepEqual(
       filterSavedLibrarySourcesByQuery({
         activeSearchQuery: null,
-        availabilityFilter: 'all',
         entityFilter: 'all',
         selectedTagFilters: ['alto', 'warmup'],
         sources,
@@ -224,7 +207,6 @@ describe('saved library search view-model', () => {
     assert.deepEqual(
       filterSavedLoopsByQuery({
         activeSearchQuery: null,
-        availabilityFilter: 'all',
         entityFilter: 'all',
         loops,
         selectedTagFilters: ['bass'],
@@ -235,7 +217,6 @@ describe('saved library search view-model', () => {
     assert.deepEqual(
       filterSavedPlaylistsByQuery({
         activeSearchQuery: null,
-        availabilityFilter: 'all',
         entityFilter: 'all',
         playlists,
         selectedTagFilters: ['warmup'],
