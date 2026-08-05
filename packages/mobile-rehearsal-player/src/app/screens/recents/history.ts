@@ -26,6 +26,9 @@ type BuildRecentRehearsalItemOptions = {
 
 const MAX_RECENT_REHEARSAL_ITEMS = 5;
 const RECENT_REHEARSAL_HISTORY_KEY = 'choirlms.recents.history';
+const MINUTE_IN_MS = 60 * 1000;
+const HOUR_IN_MS = 60 * MINUTE_IN_MS;
+const DAY_IN_MS = 24 * HOUR_IN_MS;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null;
@@ -182,12 +185,43 @@ export const persistRecentRehearsalHistory = async (
   );
 };
 
-export const getRecentRehearsalLastPlayedLabel = (playedAt: string) => {
+const getCalendarLastPlayedLabel = (playedAtDate: Date, now: Date) => {
+  const sameYear = playedAtDate.getFullYear() === now.getFullYear();
+
+  return new Intl.DateTimeFormat('en-US', {
+    day: 'numeric',
+    month: 'short',
+    ...(sameYear ? {} : { year: 'numeric' }),
+  }).format(playedAtDate);
+};
+
+export const getRecentRehearsalLastPlayedLabel = (
+  playedAt: string,
+  now: Date = new Date(),
+) => {
   const playedAtDate = new Date(playedAt);
 
-  if (Number.isNaN(playedAtDate.valueOf())) {
+  if (Number.isNaN(playedAtDate.valueOf()) || Number.isNaN(now.valueOf())) {
     return 'Last played recently';
   }
 
-  return `Last played ${playedAtDate.toLocaleString()}`;
+  const elapsedMs = now.getTime() - playedAtDate.getTime();
+
+  if (elapsedMs < 0) {
+    return `Last played ${getCalendarLastPlayedLabel(playedAtDate, now)}`;
+  }
+
+  if (elapsedMs < MINUTE_IN_MS) {
+    return 'Last played just now';
+  }
+
+  if (elapsedMs < HOUR_IN_MS) {
+    return `Last played ${Math.floor(elapsedMs / MINUTE_IN_MS)} min ago`;
+  }
+
+  if (elapsedMs < DAY_IN_MS) {
+    return `Last played ${Math.floor(elapsedMs / HOUR_IN_MS)} hr ago`;
+  }
+
+  return `Last played ${getCalendarLastPlayedLabel(playedAtDate, now)}`;
 };

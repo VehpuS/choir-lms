@@ -70,6 +70,7 @@ export const RecentsScreen = ({
   const latestRecentRehearsal = recentRehearsalHistory[0] ?? null;
   const continuePracticingCopy = getRecentsContinuePracticingCopy({
     activePlayableItemTitle: latestRecentRehearsal?.title ?? null,
+    hasRecentHistory: recentRehearsalHistory.length > 0,
     savedTrackCount,
   });
   const isRecentPlaybackAvailable = latestRecentRehearsal !== null;
@@ -122,9 +123,11 @@ export const RecentsScreen = ({
           <Text style={styles.resumeCardTitle}>
             {continuePracticingCopy.title}
           </Text>
-          <Text style={styles.resumeCardBody}>
-            {continuePracticingCopy.body}
-          </Text>
+          {continuePracticingCopy.body ? (
+            <Text style={styles.resumeCardBody}>
+              {continuePracticingCopy.body}
+            </Text>
+          ) : null}
           {recentRehearsalHistory.map((recentRehearsal) => {
             const isCurrentRowPlaying =
               isPlaybackActive &&
@@ -228,12 +231,16 @@ export const RecentsScreen = ({
           <View style={styles.shortcutsHeader}>
             <View style={styles.shortcutsCopy}>
               <Text style={styles.shortcutsTitle}>Popular shortcuts</Text>
-              <Text style={styles.shortcutsBody}>
-                Optional tag shortcuts for fast recents scanning.
-              </Text>
+              {!isRecentPlaybackAvailable ? (
+                <Text style={styles.shortcutsBody}>
+                  Optional tag shortcuts for fast recents scanning.
+                </Text>
+              ) : null}
             </View>
           </View>
-          <Text style={styles.shortcutsMeta}>{shortcutMetadata}</Text>
+          {!isRecentPlaybackAvailable ? (
+            <Text style={styles.shortcutsMeta}>{shortcutMetadata}</Text>
+          ) : null}
           <View style={styles.tagRow}>
             {RECENTS_SHORTCUT_TAGS.map((tag) => (
               <InteractionChip

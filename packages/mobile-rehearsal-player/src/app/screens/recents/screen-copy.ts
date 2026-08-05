@@ -1,11 +1,12 @@
 export const getRecentsContinuePracticingCopy = (options: {
   activePlayableItemTitle: string | null;
+  hasRecentHistory: boolean;
   savedTrackCount: number;
 }) => {
-  if (options.activePlayableItemTitle) {
+  if (options.hasRecentHistory) {
     return {
-      body: `Resume ${options.activePlayableItemTitle} or jump to Library for another saved rehearsal item.`,
-      title: 'Resume recent rehearsal',
+      body: null,
+      title: 'Recent rehearsal',
     };
   }
 

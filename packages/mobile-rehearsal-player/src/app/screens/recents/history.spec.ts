@@ -146,4 +146,30 @@ describe('getRecentRehearsalLastPlayedLabel', () => {
       'Last played recently',
     );
   });
+
+  it('uses compact relative labels for recent playback', () => {
+    const now = new Date('2026-08-05T15:00:00.000Z');
+
+    assert.equal(
+      getRecentRehearsalLastPlayedLabel('2026-08-05T14:15:00.000Z', now),
+      'Last played 45 min ago',
+    );
+    assert.equal(
+      getRecentRehearsalLastPlayedLabel('2026-08-05T12:00:00.000Z', now),
+      'Last played 3 hr ago',
+    );
+  });
+
+  it('uses date-only labels for older playback history', () => {
+    const now = new Date('2026-08-05T15:00:00.000Z');
+
+    assert.equal(
+      getRecentRehearsalLastPlayedLabel('2026-06-01T12:00:00.000Z', now),
+      'Last played Jun 1',
+    );
+    assert.equal(
+      getRecentRehearsalLastPlayedLabel('2025-06-01T12:00:00.000Z', now),
+      'Last played Jun 1, 2025',
+    );
+  });
 });

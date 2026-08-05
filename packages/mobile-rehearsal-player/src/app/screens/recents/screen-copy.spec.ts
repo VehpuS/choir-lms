@@ -7,15 +7,16 @@ import {
 } from './screen-copy.js';
 
 describe('getRecentsContinuePracticingCopy', () => {
-  it('promotes the active item when playback is already in progress', () => {
+  it('reduces steady-state copy when recent rows are already visible', () => {
     assert.deepEqual(
       getRecentsContinuePracticingCopy({
         activePlayableItemTitle: 'Kyrie Alto.mp3',
+        hasRecentHistory: true,
         savedTrackCount: 2,
       }),
       {
-        body: 'Resume Kyrie Alto.mp3 or jump to Library for another saved rehearsal item.',
-        title: 'Resume recent rehearsal',
+        body: null,
+        title: 'Recent rehearsal',
       },
     );
   });
@@ -24,6 +25,7 @@ describe('getRecentsContinuePracticingCopy', () => {
     assert.deepEqual(
       getRecentsContinuePracticingCopy({
         activePlayableItemTitle: null,
+        hasRecentHistory: false,
         savedTrackCount: 0,
       }),
       {
@@ -37,6 +39,7 @@ describe('getRecentsContinuePracticingCopy', () => {
     assert.deepEqual(
       getRecentsContinuePracticingCopy({
         activePlayableItemTitle: null,
+        hasRecentHistory: false,
         savedTrackCount: 3,
       }),
       {
