@@ -5,7 +5,10 @@ import type {
   LibraryFilesSearchScope,
   LibraryFilesSortMode,
 } from '../../library/saved-rehearsal-library/library-files-model';
-import { resolveLibraryFilesSessionTransition } from './library-files-session-state';
+import {
+  buildLibraryFilesSessionSnapshot,
+  resolveLibraryFilesSessionTransition,
+} from './library-files-session-state';
 
 type UseLibraryFilesSessionRestorationOptions = {
   activeSearchQuery: string | null;
