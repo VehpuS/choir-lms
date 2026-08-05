@@ -5,11 +5,7 @@ import type {
   LibraryFilesSearchScope,
   LibraryFilesSortMode,
 } from '../../library/saved-rehearsal-library/library-files-model';
-import {
-  buildLibraryFilesSessionSnapshot,
-  shouldCaptureLibraryFilesSession,
-  shouldRestoreLibraryFilesSession,
-} from './library-files-session-state';
+import { resolveLibraryFilesSessionTransition } from './library-files-session-state';
 
 type UseLibraryFilesSessionRestorationOptions = {
   activeSearchQuery: string | null;
@@ -50,40 +46,28 @@ export const useLibraryFilesSessionRestoration = ({
   useEffect(() => {
     const previousView = previousViewRef.current;
 
-    if (
-      shouldCaptureLibraryFilesSession({
-        currentView,
-        previousView,
-      })
-    ) {
-      snapshotRef.current = buildLibraryFilesSessionSnapshot({
-        activeSearchQuery,
-        currentFolderId: currentFilesFolderId,
-        librarySearchQuery,
-        scrollOffsetY: getCurrentScrollOffsetY(),
-        searchScope: filesSearchScope,
-        sortMode: filesSortMode,
-      });
-    }
+    const transition = resolveLibraryFilesSessionTransition({
+      activeSearchQuery,
+      currentFolderId: currentFilesFolderId,
+      currentView,
+      filesSearchScope,
+      filesSortMode,
+      librarySearchQuery,
+      previousView,
+      scrollOffsetY: getCurrentScrollOffsetY(),
+      snapshot: snapshotRef.current,
+    });
 
-    if (
-      shouldRestoreLibraryFilesSession({
-        currentView,
-        previousView,
-        snapshot: snapshotRef.current,
-      })
-    ) {
-      const snapshot = snapshotRef.current;
+    snapshotRef.current = transition.nextSnapshot;
 
-      if (snapshot) {
-        restoreLibraryFilesSearchState(snapshot);
+    if (transition.restoredSnapshot) {
+      restoreLibraryFilesSearchState(transition.restoredSnapshot);
 
-        if (snapshot.currentFolderId) {
-          openFilesFolder(snapshot.currentFolderId);
-        }
-
-        pendingScrollOffsetYRef.current = snapshot.scrollOffsetY;
+      if (transition.restoredSnapshot.currentFolderId) {
+        openFilesFolder(transition.restoredSnapshot.currentFolderId);
       }
+
+      pendingScrollOffsetYRef.current = transition.scrollOffsetYToRestore;
     }
 
     previousViewRef.current = currentView;

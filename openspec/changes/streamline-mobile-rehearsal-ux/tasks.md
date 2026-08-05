@@ -174,7 +174,12 @@ Complete these steps in order. Each `2.x` group is one checkpoint, each `2.x.y` 
   - Route standalone loop-result supporting copy through one shared parent-track label formatter so Files rows and saved-loop cards use the same parent-track wording.
   - Make parent-track identity explicit in standalone Files/search/tag/folder results so containing-path metadata and source context stay distinguishable at a glance.
   - Keep track-scoped loop browsing on the existing detail surface while backfilling focused assertions for standalone parent-track context before checking this slice complete.
-- [ ] 2.6.5 Add focused coverage for Files search, sort, restoration, and result-group behavior, then manually verify the full Files organization/search contract end to end (`6.1.6`, `6.2.7`, and `6.2.7.3`).
+- [x] 2.6.5 Add focused coverage for Files search, sort, restoration, and result-group behavior, then manually verify the full Files organization/search contract end to end (`6.1.6`, `6.2.7`, and `6.2.7.3`).
+  - Keep the existing focused model specs for Files search and sort as the base, then add the missing focused coverage for mixed search-result grouping and Files session restoration orchestration without widening into a broader UI harness.
+  - Extract only the smallest pure restoration-transition helper needed so the Files session capture and restore contract can be asserted deterministically with folder, query, sort, and scroll state preserved.
+  - Run the narrow mobile Files spec slice after the coverage lands, then use the integrated browser session to manually verify Files search scope switching, sort persistence, breadcrumb or folder restoration, and scroll restoration before checking this slice complete.
+  - Automated coverage added and focused specs pass for Files search result grouping and Files session restoration orchestration.
+  - PASS: Integrated browser verification from Browser Test Folder confirmed the active `twi` query, `All Files` scope label, containing-path metadata for out-of-folder results, Browser Test Folder breadcrumb or current-folder restoration, and `Type`-ordered Files results persisted after switching `Files -> Tracks -> Files` and `Library -> Add -> Library`.
 
 ### 2.7 Simplify Copy, Metadata, and Visual Prominence
 

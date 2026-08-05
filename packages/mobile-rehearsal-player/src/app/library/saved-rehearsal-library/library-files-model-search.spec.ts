@@ -201,6 +201,54 @@ describe('library-files model search', () => {
     );
   });
 
+  it('keeps folder matches grouped before file matches in mixed Files search results', () => {
+    const tree: RehearsalLibraryFileTree = {
+      fileLinks: [
+        {
+          entityId: AVAILABLE_SOURCE.id,
+          entityKind: 'track',
+          id: `file-link:track:${AVAILABLE_SOURCE.id}`,
+          parentFolderId: 'folder:library-root',
+          visibleName: 'Warm anthem',
+        },
+      ],
+      folders: [
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+        {
+          id: 'folder-warmups',
+          name: 'Warmups',
+          parentFolderId: 'folder:library-root',
+        },
+      ],
+      rootFolderId: 'folder:library-root',
+      version: 1,
+    };
+
+    const explorer = buildLibraryFilesExplorerState({
+      currentFolderId: 'folder:library-root',
+      savedLoops: [],
+      savedPlaylists: [],
+      savedSources: [AVAILABLE_SOURCE],
+      searchOptions: {
+        activeSearchQuery: 'warm',
+        availabilityFilter: 'all',
+        entityFilter: 'all',
+        searchScope: 'all-files',
+        selectedTagFilters: [],
+        sortMode: 'name',
+      },
+      tree,
+    });
+
+    assert.deepEqual(
+      explorer.rows.map((row) => ({ kind: row.kind, label: row.label })),
+      [
+        { kind: 'folder', label: 'Warmups' },
+        { kind: 'track', label: 'Warm anthem' },
+      ],
+    );
+  });
+
   it('keeps Files search results on the active sort mode after filtering', () => {
     const tree: RehearsalLibraryFileTree = {
       fileLinks: [
