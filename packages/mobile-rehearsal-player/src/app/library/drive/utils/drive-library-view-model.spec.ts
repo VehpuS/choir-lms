@@ -161,15 +161,25 @@ describe('getDriveLibraryStatusCopy', () => {
 });
 
 describe('drive library presentation helpers', () => {
-  it('formats metadata and source state labels for library cards', () => {
-    assert.deepEqual(getSourceMetadataLabels(PLAYABLE_SOURCE), [
-      'MP3',
-      '3:05',
-      'Updated 2026-05-10',
-    ]);
+  it('keeps default source metadata concise while preserving useful state', () => {
+    assert.deepEqual(getSourceMetadataLabels(PLAYABLE_SOURCE), ['3:05']);
     assert.deepEqual(
       getSourceMetadataLabels(SEARCH_SNAPSHOT.playableSources[0]),
-      ['MP3', '3:05', 'Updated 2026-05-10', 'Shared with you'],
+      ['3:05', 'Shared with you'],
+    );
+    assert.deepEqual(
+      getSourceMetadataLabels({
+        ...PLAYABLE_SOURCE,
+        name: 'Alto Line',
+      }),
+      ['MP3', '3:05'],
+    );
+    assert.deepEqual(
+      getSourceMetadataLabels({
+        ...PLAYABLE_SOURCE,
+        durationMs: undefined,
+      }),
+      [],
     );
     assert.equal(getSourceAvailabilityLabel(PLAYABLE_SOURCE), 'Playable');
     assert.equal(getSourceStatusMessage(PLAYABLE_SOURCE), undefined);
@@ -183,11 +193,27 @@ describe('drive library presentation helpers', () => {
     );
   });
 
-  it('formats folder metadata labels for the Drive browser', () => {
-    assert.deepEqual(getFolderMetadataLabels(BROWSE_SNAPSHOT.folders[0]), [
-      'Folder',
-      'Updated 2026-05-10',
-    ]);
+  it('includes updated dates only when the active context requests them', () => {
+    assert.deepEqual(getFolderMetadataLabels(BROWSE_SNAPSHOT.folders[0]), []);
+    assert.deepEqual(
+      getFolderMetadataLabels({
+        ...BROWSE_SNAPSHOT.folders[0],
+        shared: true,
+      }),
+      ['Shared folder'],
+    );
+    assert.deepEqual(
+      getFolderMetadataLabels(BROWSE_SNAPSHOT.folders[0], {
+        includeUpdatedDate: true,
+      }),
+      ['Updated 2026-05-10'],
+    );
+    assert.deepEqual(
+      getSourceMetadataLabels(PLAYABLE_SOURCE, {
+        includeUpdatedDate: true,
+      }),
+      ['3:05', 'Updated 2026-05-10'],
+    );
   });
 });
 

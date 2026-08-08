@@ -10,6 +10,10 @@ export type SearchContextCopy = {
   placeholder: string;
 };
 
+type DriveMetadataOptions = {
+  includeUpdatedDate?: boolean;
+};
+
 const formatDurationSegment = (value: number) => {
   return value.toString().padStart(2, '0');
 };
@@ -30,6 +34,12 @@ const formatUpdatedLabel = (modifiedTime?: string) => {
 
 const formatFormatLabel = (source: DriveDiscoveredAudioSource) => {
   if (source.extension) {
+    const normalizedExtension = source.extension.toLowerCase();
+
+    if (source.name.toLowerCase().endsWith(`.${normalizedExtension}`)) {
+      return undefined;
+    }
+
     return source.extension.toUpperCase();
   }
 
@@ -87,17 +97,18 @@ export const getLibrarySearchContextCopy = (): SearchContextCopy => {
   };
 };
 
-export const getFolderMetadataLabels = (folder: DriveFolder) => {
+export const getFolderMetadataLabels = (
+  folder: DriveFolder,
+  options: DriveMetadataOptions = {},
+) => {
   const labels = compact([
-    folder.shared || folder.rootKind === 'shared' ? 'Shared folder' : 'Folder',
-    formatUpdatedLabel(folder.modifiedTime),
+    folder.shared || folder.rootKind === 'shared' ? 'Shared folder' : undefined,
+    options.includeUpdatedDate
+      ? formatUpdatedLabel(folder.modifiedTime)
+      : undefined,
   ]);
 
-  if (labels.length > 0) {
-    return labels;
-  }
-
-  return ['Folder'];
+  return labels;
 };
 
 export const getSourceAvailabilityLabel = (
@@ -121,11 +132,16 @@ export const getSourceAvailabilityLabel = (
   return 'Unavailable';
 };
 
-export const getSourceMetadataLabels = (source: DriveDiscoveredAudioSource) => {
+export const getSourceMetadataLabels = (
+  source: DriveDiscoveredAudioSource,
+  options: DriveMetadataOptions = {},
+) => {
   const labels = compact([
     formatFormatLabel(source),
     formatDurationLabel(source.durationMs),
-    formatUpdatedLabel(source.modifiedTime),
+    options.includeUpdatedDate
+      ? formatUpdatedLabel(source.modifiedTime)
+      : undefined,
     source.locationLabel,
   ]);
 
@@ -133,7 +149,7 @@ export const getSourceMetadataLabels = (source: DriveDiscoveredAudioSource) => {
     return labels;
   }
 
-  return ['Metadata unavailable'];
+  return [];
 };
 
 export const getSourceStatusMessage = (source: DriveDiscoveredAudioSource) => {

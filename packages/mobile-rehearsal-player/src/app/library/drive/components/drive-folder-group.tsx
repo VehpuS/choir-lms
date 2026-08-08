@@ -23,6 +23,8 @@ const DriveFolderCard = ({
   folder: DriveLibraryFolder;
   onOpenFolder: (folder: DriveLibraryFolder) => void;
 }) => {
+  const metadataLabel = getFolderMetadataLabels(folder).join(' • ');
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -36,9 +38,9 @@ const DriveFolderCard = ({
     >
       <View style={styles.folderCopy}>
         <Text style={styles.folderName}>{folder.name}</Text>
-        <Text style={styles.folderMetadata}>
-          {getFolderMetadataLabels(folder).join(' • ')}
-        </Text>
+        {metadataLabel ? (
+          <Text style={styles.folderMetadata}>{metadataLabel}</Text>
+        ) : null}
       </View>
       <Text style={styles.folderAction}>Open folder</Text>
     </Pressable>

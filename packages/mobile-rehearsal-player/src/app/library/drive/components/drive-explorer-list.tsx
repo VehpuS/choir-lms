@@ -49,12 +49,6 @@ const getActionButtonStyle = (action: DriveLibrarySourceAction) => {
     : sourceGroupStyles.actionButtonNeutral;
 };
 
-const getActionButtonLabelStyle = (action: DriveLibrarySourceAction) => {
-  return action.tone === 'primary'
-    ? sourceGroupStyles.actionButtonPrimaryLabel
-    : sourceGroupStyles.actionButtonNeutralLabel;
-};
-
 const getMenuActionLabel = (action: DriveLibrarySourceAction) => {
   if (action.label === '...' && action.accessibilityLabel) {
     return action.accessibilityLabel;
@@ -82,6 +76,7 @@ const DriveExplorerFolderRow = ({
   folder: DriveLibraryFolder;
   onOpenFolder: (folder: DriveLibraryFolder) => void;
 }) => {
+  const metadataLabel = getFolderMetadataLabels(folder).join(' • ');
   return (
     <ExplorerListRow
       leadingIcon={
@@ -92,9 +87,11 @@ const DriveExplorerFolderRow = ({
         />
       }
       metadata={
-        <Text numberOfLines={1} style={styles.folderMetadata}>
-          {getFolderMetadataLabels(folder).join(' • ')}
-        </Text>
+        metadataLabel ? (
+          <Text numberOfLines={1} style={styles.folderMetadata}>
+            {metadataLabel}
+          </Text>
+        ) : null
       }
       onPress={() => {
         onOpenFolder(folder);
@@ -139,7 +136,9 @@ const DriveExplorerSourceRow = ({
   });
   const externalMessage = isPlayable ? getMessage(source) : undefined;
   const sourceMessage = externalMessage ?? getSourceStatusMessage(source);
-  const metadataLabel = getSourceMetadataLabels(source).join(' • ');
+  const metadataLabel = getSourceMetadataLabels(source, {
+    includeUpdatedDate: Boolean(highlightQuery),
+  }).join(' • ');
 
   return (
     <>
@@ -181,7 +180,9 @@ const DriveExplorerSourceRow = ({
               <Text
                 style={[
                   sourceGroupStyles.actionButtonLabel,
-                  getActionButtonLabelStyle(action),
+                  action.tone === 'primary'
+                    ? sourceGroupStyles.actionButtonPrimaryLabel
+                    : sourceGroupStyles.actionButtonNeutralLabel,
                 ]}
               >
                 {action.label}
@@ -212,9 +213,11 @@ const DriveExplorerSourceRow = ({
           ) : null
         }
         metadata={
-          <Text numberOfLines={1} style={styles.sourceMetadata}>
-            {metadataLabel}
-          </Text>
+          metadataLabel ? (
+            <Text numberOfLines={1} style={styles.sourceMetadata}>
+              {metadataLabel}
+            </Text>
+          ) : null
         }
         onPress={
           primaryPlaybackAction && !primaryPlaybackAction.disabled

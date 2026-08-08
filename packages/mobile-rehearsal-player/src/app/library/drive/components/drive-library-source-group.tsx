@@ -186,7 +186,11 @@ const DriveLibrarySourceCard = ({
             </Text>
           </View>
         }
-        metadata={<Text style={styles.sourceMetadata}>{metadataLabel}</Text>}
+        metadata={
+          metadataLabel ? (
+            <Text style={styles.sourceMetadata}>{metadataLabel}</Text>
+          ) : null
+        }
         message={
           statusMessage ? (
             <Text
