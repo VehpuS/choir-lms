@@ -8,6 +8,7 @@ import {
 } from '../interaction-style-tokens';
 import {
   resolveOptionsMenuSheetActions,
+  resolveOptionsMenuSheetHeading,
   type OptionsMenuAction,
   type ResolvedOptionsMenuAction,
 } from './model';
@@ -62,13 +63,14 @@ export const OptionsMenuSheet = ({
   }
 
   const resolvedActions = resolveOptionsMenuSheetActions(actions);
+  const heading = resolveOptionsMenuSheetHeading(title);
 
   return (
     <BottomSheetSurface
-      eyebrow="More options"
+      eyebrow={heading.eyebrow}
       isVisible
       onClose={onClose}
-      title={title}
+      title={heading.title}
     >
       <View style={styles.contentColumn}>
         {children ? <View>{children}</View> : null}

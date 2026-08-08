@@ -10,6 +10,13 @@ export type ResolvedOptionsMenuAction = Omit<OptionsMenuAction, 'tone'> & {
   tone: 'destructive' | 'primary' | 'secondary';
 };
 
+export const resolveOptionsMenuSheetHeading = (title: string) => {
+  return {
+    eyebrow: undefined,
+    title,
+  };
+};
+
 export const resolveOptionsMenuSheetActions = (
   actions: OptionsMenuAction[],
 ): ResolvedOptionsMenuAction[] => {

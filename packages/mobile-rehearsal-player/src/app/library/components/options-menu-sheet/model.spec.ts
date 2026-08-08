@@ -1,9 +1,19 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { resolveOptionsMenuSheetActions } from './model.js';
+import {
+  resolveOptionsMenuSheetActions,
+  resolveOptionsMenuSheetHeading,
+} from './model.js';
 
 describe('options menu sheet actions', () => {
+  it('keeps the affected item as the only visible sheet heading', () => {
+    assert.deepEqual(resolveOptionsMenuSheetHeading('Browser Test Folder'), {
+      eyebrow: undefined,
+      title: 'Browser Test Folder',
+    });
+  });
+
   it('puts primary actions first, preserves relative tone-group order, and keeps destructive actions last', () => {
     const actions = resolveOptionsMenuSheetActions([
       {
