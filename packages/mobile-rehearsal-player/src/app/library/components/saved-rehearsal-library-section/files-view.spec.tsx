@@ -112,7 +112,10 @@ const createFilesStub = (
     consumePendingDriveImportFolderId() {
       return null;
     },
-    createFolder: async () => false,
+    createFolder: async () => ({
+      didComplete: false,
+      issue: null,
+    }),
     explorer,
     goToFolder(folderId: string) {
       calls.goToFolder.push(folderId);
@@ -137,7 +140,7 @@ const createFilesStub = (
 
   return {
     calls,
-    files: files as UseLibraryFilesResult,
+    files: files as unknown as UseLibraryFilesResult,
   };
 };
 
@@ -172,15 +175,30 @@ describe('SavedRehearsalLibraryFilesView', () => {
     });
 
     assert.ok(viewModel);
+    assert.deepEqual(
+      viewModel.breadcrumbs.map((breadcrumb) => {
+        return {
+          isCurrent: breadcrumb.isCurrent,
+          label: breadcrumb.label,
+        };
+      }),
+      [
+        {
+          isCurrent: false,
+          label: 'Library',
+        },
+      ],
+    );
+    assert.equal(viewModel.currentFolderName, 'Warmups');
 
     files.goToParentFolder();
-    viewModel?.breadcrumbs[0]?.onPress?.();
-    viewModel?.rows
+    viewModel.breadcrumbs[0]?.onPress?.();
+    viewModel.rows
       .find((row) => {
         return row.label === 'Alto Section';
       })
       ?.onPress();
-    viewModel?.rows
+    viewModel.rows
       .find((row) => {
         return row.label === 'Evening Warmups';
       })
@@ -208,6 +226,9 @@ describe('SavedRehearsalLibraryFilesView', () => {
         isSavedLibraryMutating: false,
         onAddLoop(loopId: string) {
           addedLoopIds.push(loopId);
+        },
+        onDone() {
+          return undefined;
         },
         onAddSource(sourceId: string) {
           addedSourceIds.push(sourceId);

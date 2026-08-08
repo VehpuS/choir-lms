@@ -140,18 +140,14 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
   }
 
   return {
-    breadcrumbs: explorer.breadcrumbs.map((breadcrumb, index) => {
-      const isCurrent = index === explorer.breadcrumbs.length - 1;
-
+    breadcrumbs: explorer.breadcrumbs.slice(0, -1).map((breadcrumb) => {
       return {
-        isCurrent,
+        isCurrent: false,
         key: breadcrumb.folderId,
         label: breadcrumb.label,
-        onPress: isCurrent
-          ? undefined
-          : () => {
-              options.files.goToFolder(breadcrumb.folderId);
-            },
+        onPress: () => {
+          options.files.goToFolder(breadcrumb.folderId);
+        },
       };
     }),
     canGoBack: Boolean(explorer.currentFolder.parentFolderId),
