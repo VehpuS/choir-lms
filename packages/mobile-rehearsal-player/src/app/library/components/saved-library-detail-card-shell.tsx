@@ -14,7 +14,7 @@ type SavedLibraryDetailCardShellProps = {
   body?: string | null;
   children: ReactNode;
   closeAccessibilityLabel?: string;
-  eyebrow: string;
+  eyebrow?: string | null;
   headerAction?: ReactNode;
   metadataLabel: string;
   onClose: () => void;
@@ -94,7 +94,7 @@ export const SavedLibraryDetailCardShell = ({
 
       <View style={styles.headerRow}>
         <View style={styles.headerCopy}>
-          <Text style={styles.eyebrow}>{eyebrow}</Text>
+          {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
           <Text style={styles.sectionTitle}>{title}</Text>
           <Text style={styles.sectionBody}>{metadataLabel}</Text>
           {body ? <Text style={styles.editorBody}>{body}</Text> : null}

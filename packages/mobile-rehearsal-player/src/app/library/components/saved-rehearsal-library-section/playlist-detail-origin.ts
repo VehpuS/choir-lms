@@ -18,7 +18,7 @@ export type PlaylistDetailEmptyStateCopy = {
 };
 
 const DEFAULT_EMPTY_PLAYLIST_MESSAGE =
-  'This playlist is empty. Return to Library, add saved tracks or loops there, then come back here to review the running order.';
+  'This playlist is empty. Add tracks or loops to start the running order.';
 const FILES_EMPTY_PLAYLIST_ACTION_LABEL = 'Add items';
 const FILES_EMPTY_PLAYLIST_FALLBACK_FOLDER_LABEL = 'this Files folder';
 
@@ -61,7 +61,7 @@ export const getPlaylistDetailEmptyStateCopy = (
   return {
     actionLabel: FILES_EMPTY_PLAYLIST_ACTION_LABEL,
     message:
-      `This playlist is empty. Add tracks or loops from ${getFilesFolderLabel(origin)}, ` +
-      'then come back here to review the running order.',
+      `This playlist is empty. Add tracks or loops from ${getFilesFolderLabel(origin)} ` +
+      'to start the running order.',
   };
 };

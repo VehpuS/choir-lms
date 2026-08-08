@@ -64,7 +64,7 @@ describe('playlist detail origin', () => {
       {
         actionLabel: 'Add items',
         message:
-          'This playlist is empty. Add tracks or loops from Warmups, then come back here to review the running order.',
+          'This playlist is empty. Add tracks or loops from Warmups to start the running order.',
       },
     );
   });
@@ -79,7 +79,7 @@ describe('playlist detail origin', () => {
       {
         actionLabel: 'Add items',
         message:
-          'This playlist is empty. Add tracks or loops from this Files folder, then come back here to review the running order.',
+          'This playlist is empty. Add tracks or loops from this Files folder to start the running order.',
       },
     );
   });
@@ -94,7 +94,7 @@ describe('playlist detail origin', () => {
       {
         actionLabel: null,
         message:
-          'This playlist is empty. Return to Library, add saved tracks or loops there, then come back here to review the running order.',
+          'This playlist is empty. Add tracks or loops to start the running order.',
       },
     );
   });

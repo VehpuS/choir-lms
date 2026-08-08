@@ -101,7 +101,6 @@ export const SavedPlaylistDetailCard = (props: {
     <SavedLibraryDetailCardShell
       body={detailSummary.body}
       closeAccessibilityLabel="Close playlist detail"
-      eyebrow="Playlist detail"
       headerAction={
         <OverflowMenuTrigger
           accessibilityLabel="Playlist options"
