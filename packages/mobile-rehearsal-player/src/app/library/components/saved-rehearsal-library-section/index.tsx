@@ -79,7 +79,6 @@ export const SavedRehearsalLibrarySection = ({
     isLoopMutating,
     isPlaylistMutating,
     isSavedLibraryMutating,
-    isSavedTrackPlaybackLoading,
     isSearchPanelVisible,
     loopState,
     playlistState,
@@ -128,20 +127,9 @@ export const SavedRehearsalLibrarySection = ({
     setSelectedPlaylistId: playlistState.setSelectedPlaylistId,
     syncActivePlaylistContext,
   });
-  const isTrackLoopDetailVisible = detailMode === 'track-loop-detail';
-  const isPlaylistDetailMode = detailMode === 'playlist-detail';
-  const canQueueAsNext = activePlayableItem !== null;
-  const shouldShowSavedLibraryStatus =
-    !isSearchPanelVisible &&
-    (isSavedLibraryLoading || savedLibraryStatusCopy.tone !== 'ready');
-  const shouldShowPlaybackStatus =
-    !isSearchPanelVisible &&
-    savedTrackPlaybackStatusCopy !== null &&
-    (isSavedTrackPlaybackLoading ||
-      savedTrackPlaybackStatusCopy.tone !== 'ready');
-  const shouldShowSearchResults =
+  const showSearchResults =
     isSearchPanelVisible && searchState.isLibrarySearchMode;
-  const savedSourceTitle = shouldShowSearchResults
+  const savedSourceTitle = showSearchResults
     ? `Matching saved rehearsal tracks (${searchState.visibleSavedLibrarySources.length})`
     : `Saved rehearsal tracks (${savedLibrarySources.length})`;
   const visibleSections =
@@ -170,11 +158,11 @@ export const SavedRehearsalLibrarySection = ({
       activePlayableItem={activePlayableItem}
       canMutateLoops={canMutateLoops}
       canMutatePlaylists={canMutatePlaylists}
-      canQueueAsNext={canQueueAsNext}
+      canQueueAsNext={activePlayableItem !== null}
       isPlaybackPreparing={isPlaybackPreparing}
       isPlaylistMutating={isPlaylistMutating}
       isSavedLoopsLoading={isSavedLoopsLoading}
-      isTrackLoopDetailVisible={isTrackLoopDetailVisible}
+      isTrackLoopDetailVisible={detailMode === 'track-loop-detail'}
       loopState={loopState}
       onOpenLoopTagEditor={tagEditor.openLoopTagEditor}
       openLoopPlaylistSelector={trackPlaylistMenu.openLoopPlaylistSelector}
@@ -201,7 +189,7 @@ export const SavedRehearsalLibrarySection = ({
       createPlaylist={createPlaylist}
       deletePlaylist={deletePlaylist}
       getCurrentScrollOffsetY={getCurrentScrollOffsetY}
-      isPlaylistDetailMode={isPlaylistDetailMode}
+      isPlaylistDetailMode={detailMode === 'playlist-detail'}
       isPlaylistsLoading={isPlaylistsLoading}
       isPlaybackPreparing={isPlaybackPreparing}
       onClosePlaylistDetail={handleClosePlaylistDetail}
@@ -225,7 +213,7 @@ export const SavedRehearsalLibrarySection = ({
   const shouldRenderBrowseContent = shouldRenderSavedLibraryBrowseContent({
     detailMode,
     isSearchPanelVisible,
-    isSearchResultsVisible: shouldShowSearchResults,
+    isSearchResultsVisible: showSearchResults,
     selectedView,
   });
 
@@ -244,11 +232,10 @@ export const SavedRehearsalLibrarySection = ({
       />
       <SavedRehearsalLibraryStatusCards
         isSavedLibraryLoading={isSavedLibraryLoading}
-        isSavedTrackPlaybackLoading={isSavedTrackPlaybackLoading}
+        isSearchPanelVisible={isSearchPanelVisible}
+        savedSourceCount={savedLibrarySources.length}
         savedLibraryStatusCopy={savedLibraryStatusCopy}
         savedTrackPlaybackStatusCopy={savedTrackPlaybackStatusCopy}
-        shouldShowPlaybackStatus={shouldShowPlaybackStatus}
-        shouldShowSavedLibraryStatus={shouldShowSavedLibraryStatus}
       />
       {shouldRenderBrowseContent ? (
         <SavedRehearsalLibraryBrowseContent
@@ -256,7 +243,7 @@ export const SavedRehearsalLibrarySection = ({
           canMutateLibrary={canMutateLibrary}
           canMutateLoops={canMutateLoops}
           canMutatePlaylists={canMutatePlaylists}
-          canQueueAsNext={canQueueAsNext}
+          canQueueAsNext={activePlayableItem !== null}
           libraryFiles={libraryFiles}
           isLoopMutating={isLoopMutating}
           isPlaybackPreparing={isPlaybackPreparing}
@@ -301,7 +288,7 @@ export const SavedRehearsalLibrarySection = ({
           toggleSourcePlayback={toggleSourcePlayback}
           trackPlaylistMenu={trackPlaylistMenu}
         />
-      ) : isPlaylistDetailMode ? (
+      ) : detailMode === 'playlist-detail' ? (
         playlistSection
       ) : (
         loopSection
