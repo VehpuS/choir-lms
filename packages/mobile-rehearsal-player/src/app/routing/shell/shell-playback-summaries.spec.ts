@@ -6,16 +6,16 @@ import { describe, it } from 'node:test';
 import {
   addTrackToPlaylist,
   createLoopPlayableItem,
-  createTrackPlayableItem,
   createPlaylist,
+  createTrackPlayableItem,
 } from '@org/audio-library-models';
 
-import { buildWarmupsPlaybackSession } from '../../library/playlists/utils/saved-playlist-test-fixtures.js';
+import { bindQueueToPlaylistPlaybackSession } from '../../library/playlists/utils/playlist-session-mode.js';
 import {
   buildPlaylistPlaybackSession,
   queuePlayableItemDuringPlayback,
 } from '../../library/playlists/utils/saved-playlist-playback-view-model.js';
-import { bindQueueToPlaylistPlaybackSession } from '../../library/playlists/utils/playlist-session-mode.js';
+import { buildWarmupsPlaybackSession } from '../../library/playlists/utils/saved-playlist-test-fixtures.js';
 import {
   PLAYABLE_SOURCE,
   SAVED_LOOP,
@@ -27,6 +27,40 @@ import {
 } from './shell-model.js';
 
 describe('shell playback summaries', () => {
+  it('keeps loop mini-player copy compact without losing accessible context', () => {
+    const playableLoop = createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE);
+    const customNameSummary = getMiniPlayerSummary({
+      activePlayableItem: playableLoop,
+      isPlaybackPreparing: false,
+      playbackPositionSeconds: 15,
+      playbackState: 'playing',
+    });
+
+    assert.equal(
+      customNameSummary?.context,
+      'Playing • Loop from Alto Line.mp3',
+    );
+    assert.equal(
+      customNameSummary?.accessibilityLabel,
+      'Now playing: Entrance cue. Playing • 0:03 of 0:06 • Saved loop from Alto Line.mp3 • Single item playback • Loop 0:12 - 0:18',
+    );
+    const autoNameSummary = getMiniPlayerSummary({
+      activePlayableItem: {
+        ...playableLoop,
+        title: `Loop 0:12 - 0:18 • ${PLAYABLE_SOURCE.name}`,
+      },
+      isPlaybackPreparing: false,
+      playbackPositionSeconds: 15,
+      playbackState: 'playing',
+    });
+
+    assert.equal(autoNameSummary?.context, 'Playing • Saved loop');
+    assert.match(
+      autoNameSummary?.accessibilityLabel ?? '',
+      /Saved loop from Alto Line\.mp3/,
+    );
+  });
+
   it('builds now-playing copy with loop context and the next queue item', () => {
     const summary = getNowPlayingSurfaceSummary({
       activePlayableItem: createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE),
@@ -104,8 +138,8 @@ describe('shell playback summaries', () => {
         isPlaybackPreparing: false,
         playbackPositionSeconds: 18,
         playbackState: 'playing',
-      })?.detail,
-      'Current queue • Item 1 of 2 • Ordered • Repeat all',
+      })?.context,
+      'Playing • Current queue • 1 of 2',
     );
     assert.deepEqual(
       getNowPlayingSurfaceSummary({

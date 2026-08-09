@@ -45,8 +45,9 @@ describe('shell model', () => {
     });
 
     assert.deepEqual(summary, {
-      detail: 'Saved rehearsal library • Single item playback',
-      status: 'Playing • 0:18 of 3:05',
+      accessibilityLabel:
+        'Now playing: Alto Line.mp3. Playing • 0:18 of 3:05 • Saved rehearsal library • Single item playback',
+      context: 'Playing • 0:18 of 3:05',
       title: 'Alto Line.mp3',
       waveformProgressRatio: 18 / 185,
     });
@@ -60,7 +61,7 @@ describe('shell model', () => {
       playbackState: 'paused',
     });
 
-    assert.equal(summary?.status, 'Loading • 0:04 of 3:05');
+    assert.equal(summary?.context, 'Loading • 0:04 of 3:05');
   });
 
   it('shows needs-attention status when playback reports an error', () => {
@@ -71,7 +72,7 @@ describe('shell model', () => {
       playbackState: 'error',
     });
 
-    assert.equal(summary?.status, 'Needs attention • 0:04 of 3:05');
+    assert.equal(summary?.context, 'Needs attention • 0:04 of 3:05');
   });
 
   it('includes active playlist queue context when playback started from a playlist', () => {
@@ -90,8 +91,12 @@ describe('shell model', () => {
     });
 
     assert.equal(
-      summary?.detail,
-      'Warmups • Item 1 of 1 • Shuffle • Repeat all',
+      summary?.context,
+      'Playing • Warmups • 1 of 1',
+    );
+    assert.equal(
+      summary?.accessibilityLabel,
+      'Now playing: Alto Line.mp3. Playing • 0:18 of 3:05 • Warmups • Item 1 of 1 • Shuffle • Repeat all',
     );
   });
 

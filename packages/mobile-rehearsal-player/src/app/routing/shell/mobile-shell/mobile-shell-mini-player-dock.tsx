@@ -50,6 +50,7 @@ export const MobileShellMiniPlayerDock = ({
       {miniPlayerSummary ? (
         <View style={styles.miniPlayer}>
           <Pressable
+            accessibilityLabel={miniPlayerSummary.accessibilityLabel}
             accessibilityRole="button"
             onPress={onOpenNowPlaying}
             style={({ pressed }) => [
@@ -68,18 +69,14 @@ export const MobileShellMiniPlayerDock = ({
               />
             ) : null}
             <View style={styles.miniPlayerCopy}>
-              <Text style={styles.miniPlayerLabel}>Now playing</Text>
               <PlaybackMarqueeText
                 containerStyle={styles.miniPlayerTitleWrap}
                 enabled={playbackState === 'playing'}
                 style={styles.miniPlayerTitle}
                 text={miniPlayerSummary.title}
               />
-              <Text numberOfLines={1} style={styles.miniPlayerStatus}>
-                {miniPlayerSummary.status}
-              </Text>
-              <Text numberOfLines={1} style={styles.miniPlayerDetail}>
-                {miniPlayerSummary.detail}
+              <Text numberOfLines={1} style={styles.miniPlayerContext}>
+                {miniPlayerSummary.context}
               </Text>
             </View>
           </Pressable>

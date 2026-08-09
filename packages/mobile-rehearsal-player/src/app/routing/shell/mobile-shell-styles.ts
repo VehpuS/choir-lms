@@ -108,13 +108,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
-  miniPlayerLabel: {
-    color: '#d1e8dd',
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-  },
   miniPlayerTitle: {
     color: '#fff8ef',
     fontSize: 16,
@@ -123,15 +116,10 @@ export const styles = StyleSheet.create({
   miniPlayerTitleWrap: {
     minHeight: 22,
   },
-  miniPlayerStatus: {
+  miniPlayerContext: {
     color: '#dce7e1',
     fontSize: 13,
     lineHeight: 18,
-  },
-  miniPlayerDetail: {
-    color: '#b7d3c7',
-    fontSize: 12,
-    lineHeight: 16,
   },
   miniPlayerActionButton: {
     width: 46,
