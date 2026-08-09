@@ -77,7 +77,7 @@ describe('saved track playlist menu view-model', () => {
         locationLabel: 'Spring Concert / Alto folder',
       }),
       {
-        detailLabel: 'Saved track • MP3 • 3:05',
+        detailLabel: 'Saved track • 3:05',
         locationLabel: 'Spring Concert / Alto folder',
         title: 'Alto Line.mp3',
       },

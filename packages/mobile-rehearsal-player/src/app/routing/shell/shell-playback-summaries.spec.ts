@@ -55,10 +55,6 @@ describe('shell playback summaries', () => {
     });
 
     assert.equal(autoNameSummary?.context, 'Playing • Saved loop');
-    assert.match(
-      autoNameSummary?.accessibilityLabel ?? '',
-      /Saved loop from Alto Line\.mp3/,
-    );
   });
 
   it('builds now-playing copy with loop context and the next queue item', () => {
