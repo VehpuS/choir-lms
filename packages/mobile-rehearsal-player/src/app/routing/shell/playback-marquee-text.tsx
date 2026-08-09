@@ -1,18 +1,21 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
   StyleSheet,
   Text,
   View,
+  type LayoutChangeEvent,
   type StyleProp,
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
 
-const MARQUEE_CHARACTER_THRESHOLD = 24;
-const MARQUEE_CHARACTER_WIDTH_PX = 8;
-const MARQUEE_GAP_PX = 28;
+import {
+  getPlaybackMarqueeDistancePx,
+  PLAYBACK_MARQUEE_GAP_PX,
+  shouldAnimatePlaybackMarquee,
+} from './playback-marquee-model';
 
 type PlaybackMarqueeTextProps = {
   containerStyle?: StyleProp<ViewStyle>;
@@ -28,19 +31,32 @@ export const PlaybackMarqueeText = ({
   text,
 }: PlaybackMarqueeTextProps) => {
   const translateX = useRef(new Animated.Value(0)).current;
-  const overflowCharacterCount = Math.max(
-    0,
-    text.length - MARQUEE_CHARACTER_THRESHOLD,
-  );
-  const shouldAnimate = enabled && overflowCharacterCount > 0;
-  const distancePx =
-    overflowCharacterCount * MARQUEE_CHARACTER_WIDTH_PX + MARQUEE_GAP_PX;
+  const [measurement, setMeasurement] = useState({ text: '', width: 0 });
+  const shouldAnimate = shouldAnimatePlaybackMarquee({ enabled, text });
+  const distancePx = getPlaybackMarqueeDistancePx({
+    measuredTextWidth: measurement.text === text ? measurement.width : 0,
+    text,
+  });
+  const handleTextLayout = (event: LayoutChangeEvent) => {
+    const width = event.nativeEvent.layout.width;
+
+    setMeasurement((currentMeasurement) => {
+      if (
+        currentMeasurement.text === text &&
+        currentMeasurement.width === width
+      ) {
+        return currentMeasurement;
+      }
+
+      return { text, width };
+    });
+  };
 
   useEffect(() => {
     translateX.stopAnimation();
     translateX.setValue(0);
 
-    if (!shouldAnimate || distancePx <= MARQUEE_GAP_PX) {
+    if (!shouldAnimate || distancePx <= PLAYBACK_MARQUEE_GAP_PX) {
       return;
     }
 
@@ -80,10 +96,10 @@ export const PlaybackMarqueeText = ({
   return (
     <View style={[styles.container, containerStyle]}>
       <Animated.View style={[styles.row, { transform: [{ translateX }] }]}>
-        <Text numberOfLines={1} style={style}>
+        <Text onLayout={handleTextLayout} style={[style, styles.scrollingText]}>
           {text}
         </Text>
-        <Text numberOfLines={1} style={[style, styles.duplicateText]}>
+        <Text style={[style, styles.scrollingText, styles.duplicateText]}>
           {text}
         </Text>
       </Animated.View>
@@ -99,7 +115,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  scrollingText: {
+    flexShrink: 0,
+  },
   duplicateText: {
-    paddingLeft: MARQUEE_GAP_PX,
+    paddingLeft: PLAYBACK_MARQUEE_GAP_PX,
   },
 });

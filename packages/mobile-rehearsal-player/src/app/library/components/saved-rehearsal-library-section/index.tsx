@@ -127,9 +127,8 @@ export const SavedRehearsalLibrarySection = ({
     setSelectedPlaylistId: playlistState.setSelectedPlaylistId,
     syncActivePlaylistContext,
   });
-  const showSearchResults =
-    isSearchPanelVisible && searchState.isLibrarySearchMode;
-  const savedSourceTitle = showSearchResults
+  const showResults = isSearchPanelVisible && searchState.isLibrarySearchMode;
+  const savedSourceTitle = showResults
     ? `Matching saved rehearsal tracks (${searchState.visibleSavedLibrarySources.length})`
     : `Saved rehearsal tracks (${savedLibrarySources.length})`;
   const visibleSections =
@@ -213,7 +212,7 @@ export const SavedRehearsalLibrarySection = ({
   const shouldRenderBrowseContent = shouldRenderSavedLibraryBrowseContent({
     detailMode,
     isSearchPanelVisible,
-    isSearchResultsVisible: showSearchResults,
+    isSearchResultsVisible: showResults,
     selectedView,
   });
 
