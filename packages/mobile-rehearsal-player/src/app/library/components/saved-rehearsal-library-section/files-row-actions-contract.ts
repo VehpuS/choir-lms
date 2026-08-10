@@ -38,6 +38,7 @@ export const LOOP_ACTION_LABELS = new Set([
   'Play next',
   'Add to queue',
   'Add to playlist',
+  'Edit loop',
   'Create a copy',
   'Edit tags',
   'Rename',
@@ -49,11 +50,12 @@ export const LOOP_ACTION_ORDER = new Map([
   ['Play next', 0],
   ['Add to queue', 1],
   ['Add to playlist', 2],
-  ['Create a copy', 3],
-  ['Edit tags', 4],
-  ['Rename', 5],
-  ['Move to folder', 6],
-  ['Delete from folder', 7],
+  ['Edit loop', 3],
+  ['Create a copy', 4],
+  ['Edit tags', 5],
+  ['Rename', 6],
+  ['Move to folder', 7],
+  ['Delete from folder', 8],
 ]);
 
 export const PLAYLIST_ACTION_ORDER = new Map([

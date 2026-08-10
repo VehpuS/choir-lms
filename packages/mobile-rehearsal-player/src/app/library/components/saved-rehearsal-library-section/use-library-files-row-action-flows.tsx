@@ -318,8 +318,13 @@ export const useLibraryFilesRowActionFlows = ({
         onOpenFolder(folderId) {
           files.openFolder(folderId);
         },
-        onOpenLoopBuilder() {
-          if (row.kind === 'track') {
+        onOpenLoopBuilder(sourceId) {
+          if (row.kind === 'track' && row.source.id === sourceId) {
+            onOpenLoopBuilderForSource(row.source);
+            return;
+          }
+
+          if (row.kind === 'loop' && row.source?.id === sourceId) {
             onOpenLoopBuilderForSource(row.source);
           }
         },

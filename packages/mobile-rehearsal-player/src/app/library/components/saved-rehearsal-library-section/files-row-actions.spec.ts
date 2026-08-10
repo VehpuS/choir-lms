@@ -100,9 +100,11 @@ describe('resolveFilesRowMenuActions', () => {
       row,
     });
 
+    actions.find((action) => action.label === 'Edit loop')?.onPress();
     actions.find((action) => action.label === 'Add to playlist')?.onPress();
     actions.find((action) => action.label === 'Edit tags')?.onPress();
 
+    assert.deepEqual(calls.loopBuilders, [SOURCE.id]);
     assert.deepEqual(calls.loopPlaylists, [LOOP.id]);
     assert.deepEqual(calls.loopTags, [LOOP.id]);
     assert.deepEqual(
@@ -111,6 +113,7 @@ describe('resolveFilesRowMenuActions', () => {
         'Play next',
         'Add to queue',
         'Add to playlist',
+        'Edit loop',
         'Create a copy',
         'Edit tags',
         'Rename',

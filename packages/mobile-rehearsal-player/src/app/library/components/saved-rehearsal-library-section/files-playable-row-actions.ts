@@ -134,7 +134,7 @@ export const resolveLoopMenuActions = (
   row: Extract<LibraryFilesRow, { kind: 'loop' }>,
 ): OptionsMenuAction[] => {
   const primaryLoopActions = resolveSavedLoopRowActions({
-    canEditLoop: false,
+    canEditLoop: row.source !== null,
     canMutateLoops: options.canMutateLoops,
     canMutatePlaylists: options.canMutatePlaylists,
     canQueueAsNext: options.canQueueAsNext,
@@ -145,7 +145,11 @@ export const resolveLoopMenuActions = (
     isPendingRemoval: false,
     isPlaylistMutating: options.isPlaylistMutating,
     itemName: row.loop.name,
-    onEdit: () => undefined,
+    onEdit: () => {
+      if (row.source) {
+        options.onOpenLoopBuilder(row.source.id);
+      }
+    },
     onEditTags: () => {
       options.onOpenLoopTagEditor(row.loop.id);
     },
