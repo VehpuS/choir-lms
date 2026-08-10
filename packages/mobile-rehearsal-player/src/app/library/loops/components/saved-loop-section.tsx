@@ -103,9 +103,12 @@ export const SavedLoopSection = ({
     activeEditingLoopId,
     builderIssue,
     canSaveLoop,
+    canSetBoundaryFromPosition,
     handleLoopNameChange,
+    handleNudgeBoundary,
     handleRangeChange,
     handleSaveLoop,
+    handleSetBoundaryToCurrentPosition,
     handleTogglePreview,
     isEditingLoop,
     loopDraft,
@@ -221,6 +224,7 @@ export const SavedLoopSection = ({
       <LoopRangeSelectorSurface
         builderIssue={builderIssue}
         canSaveLoop={canSaveLoop}
+        canSetBoundaryFromPosition={canSetBoundaryFromPosition}
         endMs={loopDraft.endMs}
         eyebrowLabel={isEditingLoop ? 'Edit loop' : 'New loop'}
         isSavingLoop={isLoopMutating}
@@ -228,6 +232,7 @@ export const SavedLoopSection = ({
         loopName={loopDraft.loopName}
         onClose={onCloseLoopBuilder}
         onLoopNameChange={handleLoopNameChange}
+        onNudgeBoundary={handleNudgeBoundary}
         onRangeChange={handleRangeChange}
         onSaveLoop={() => {
           void handleSaveLoop();
@@ -235,6 +240,7 @@ export const SavedLoopSection = ({
         onScrubPreview={(positionSeconds) => {
           void seekActivePlaybackToPosition(positionSeconds);
         }}
+        onSetBoundaryFromPosition={handleSetBoundaryToCurrentPosition}
         onTogglePreview={handleTogglePreview}
         previewActionLabel={previewActionLabel}
         previewDisabled={previewDisabled}

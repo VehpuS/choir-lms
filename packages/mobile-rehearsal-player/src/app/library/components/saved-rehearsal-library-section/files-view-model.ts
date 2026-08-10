@@ -43,6 +43,7 @@ export type SavedRehearsalLibraryFilesViewModel = {
     active: boolean;
     addAction?: FilesPlaylistAddAction;
     disabled: boolean;
+    isPreparingLoop: boolean;
     key: string;
     kind: LibraryFilesExplorerState['rows'][number]['kind'];
     label: string;
@@ -94,6 +95,25 @@ const buildFilesPlaylistAddAction = (
   };
 };
 
+export const isRowPreparingLoop = (
+  pendingLoopBuilderSourceId: string | null,
+  row: LibraryFilesExplorerState['rows'][number],
+) => {
+  if (pendingLoopBuilderSourceId === null) {
+    return false;
+  }
+
+  if (row.kind === 'track') {
+    return row.source.id === pendingLoopBuilderSourceId;
+  }
+
+  if (row.kind === 'loop') {
+    return row.source?.id === pendingLoopBuilderSourceId;
+  }
+
+  return false;
+};
+
 const isRowActive = (
   activePlayableItem: PlayableItem | null,
   row: LibraryFilesExplorerState['rows'][number],
@@ -131,6 +151,7 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
   onOpenRow?: (row: LibraryFilesExplorerState['rows'][number]) => void;
   onTogglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
+  pendingLoopBuilderSourceId: string | null;
   playlistAddMode?: FilesPlaylistAddMode;
 }): SavedRehearsalLibraryFilesViewModel => {
   const explorer = options.explorer ?? options.files.explorer;
@@ -161,6 +182,10 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
         active: isRowActive(options.activePlayableItem, row),
         addAction: buildFilesPlaylistAddAction(row, options.playlistAddMode),
         disabled,
+        isPreparingLoop: isRowPreparingLoop(
+          options.pendingLoopBuilderSourceId,
+          row,
+        ),
         key: getLibraryFilesRowNodeKey(row),
         kind: row.kind,
         label: row.label,

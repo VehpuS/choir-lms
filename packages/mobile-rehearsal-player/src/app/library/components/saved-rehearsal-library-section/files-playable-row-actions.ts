@@ -28,7 +28,7 @@ export const resolveTrackMenuActions = (
     hasSavedLoops: false,
     isLoopBuilderPreparing: options.isLoopBuilderPreparing,
     isLoopMutating: options.isLoopMutating,
-    isPendingLoopSource: false,
+    isPendingLoopSource: options.pendingLoopBuilderSourceId === row.source.id,
     isPendingRemoval: false,
     isPlaybackSourceActive: false,
     isPlaylistMutating: options.isPlaylistMutating,

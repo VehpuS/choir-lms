@@ -83,6 +83,7 @@ export const createBaseOptions = () => {
       isLoopMutating: false,
       isPlaylistMutating: false,
       isSavedLibraryMutating: false,
+      pendingLoopBuilderSourceId: null as string | null,
       onCreateFileLinkCopy(row: LibraryFilesRow) {
         calls.copies.push(row.kind);
       },

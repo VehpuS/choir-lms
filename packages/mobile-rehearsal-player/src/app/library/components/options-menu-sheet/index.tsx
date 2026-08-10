@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../../components/interaction-guard';
 import { BottomSheetSurface } from '../bottom-sheet-surface';
 import {
   INTERACTION_ACTION_BUTTON_TOKENS,
@@ -79,11 +83,13 @@ export const OptionsMenuSheet = ({
             return (
               <Pressable
                 accessibilityRole="button"
+                {...interactionGuardProps}
                 disabled={action.disabled}
                 key={action.id}
                 onPress={action.onPress}
                 style={({ pressed }) => [
                   getActionContainerStyle(action.tone),
+                  buttonInteractionGuardStyle,
                   pressed && !action.disabled
                     ? styles.buttonPressed
                     : undefined,
@@ -98,10 +104,12 @@ export const OptionsMenuSheet = ({
           })}
           <Pressable
             accessibilityRole="button"
+            {...interactionGuardProps}
             disabled={isSecondaryDisabled}
             onPress={onSecondaryAction ?? onClose}
             style={({ pressed }) => [
               styles.secondaryAction,
+              buttonInteractionGuardStyle,
               pressed && !isSecondaryDisabled
                 ? styles.buttonPressed
                 : undefined,

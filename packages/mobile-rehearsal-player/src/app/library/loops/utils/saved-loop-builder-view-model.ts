@@ -56,6 +56,26 @@ type ResolveSourcesMissingLoopBuilderDurationOptions = {
   savedSources: DriveLibrarySource[];
 };
 
+export type LoopBuilderBoundary = 'start' | 'end';
+
+type NudgeLoopBuilderBoundaryOptions = {
+  boundary: LoopBuilderBoundary;
+  currentEndMs: number;
+  currentStartMs: number;
+  direction: 'earlier' | 'later';
+  durationMs?: number;
+  stepMs?: number;
+};
+
+type ResolveLoopBuilderBoundaryFromPlaybackPositionOptions = {
+  boundary: LoopBuilderBoundary;
+  currentEndMs: number;
+  currentStartMs: number;
+  durationMs?: number;
+  minimumGapMs?: number;
+  positionSeconds: number;
+};
+
 const formatLoopNameRangeLabel = (
   loop: Pick<DefaultLoopNameOptions, 'startMs' | 'endMs'>,
 ) => {
@@ -232,6 +252,64 @@ export const resolveLoopBuilderRangeSelection = (
   return {
     endMs: validation.normalizedEndMs,
     startMs: validation.normalizedStartMs,
+  };
+};
+
+export const LOOP_BUILDER_NUDGE_STEP_MS = 250;
+
+export const nudgeLoopBuilderBoundary = (
+  options: NudgeLoopBuilderBoundaryOptions,
+): { endMs: number; startMs: number } => {
+  const stepMs = options.stepMs ?? LOOP_BUILDER_NUDGE_STEP_MS;
+  const signedStepMs = options.direction === 'later' ? stepMs : -stepMs;
+
+  if (options.boundary === 'start') {
+    const upperBoundMs = Math.max(0, options.currentEndMs - stepMs);
+    const candidateMs = options.currentStartMs + signedStepMs;
+
+    return {
+      endMs: options.currentEndMs,
+      startMs: Math.min(Math.max(0, candidateMs), upperBoundMs),
+    };
+  }
+
+  const lowerBoundMs = options.currentStartMs + stepMs;
+  const upperBoundMs =
+    options.durationMs !== undefined
+      ? Math.max(lowerBoundMs, options.durationMs)
+      : Number.POSITIVE_INFINITY;
+  const candidateMs = options.currentEndMs + signedStepMs;
+
+  return {
+    endMs: Math.min(Math.max(lowerBoundMs, candidateMs), upperBoundMs),
+    startMs: options.currentStartMs,
+  };
+};
+
+export const resolveLoopBuilderBoundaryFromPlaybackPosition = (
+  options: ResolveLoopBuilderBoundaryFromPlaybackPositionOptions,
+): { endMs: number; startMs: number } => {
+  const minimumGapMs = options.minimumGapMs ?? LOOP_BUILDER_NUDGE_STEP_MS;
+  const positionMs = Math.max(0, Math.round(options.positionSeconds * 1000));
+
+  if (options.boundary === 'start') {
+    const upperBoundMs = Math.max(0, options.currentEndMs - minimumGapMs);
+
+    return {
+      endMs: options.currentEndMs,
+      startMs: Math.min(positionMs, upperBoundMs),
+    };
+  }
+
+  const lowerBoundMs = options.currentStartMs + minimumGapMs;
+  const upperBoundMs =
+    options.durationMs !== undefined
+      ? Math.max(lowerBoundMs, options.durationMs)
+      : Number.POSITIVE_INFINITY;
+
+  return {
+    endMs: Math.min(Math.max(lowerBoundMs, positionMs), upperBoundMs),
+    startMs: options.currentStartMs,
   };
 };
 

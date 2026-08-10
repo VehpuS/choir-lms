@@ -15,6 +15,7 @@ export type ResolveFilesRowMenuActionsBaseOptions = {
   canReconnectLibrarySource: boolean;
   isLoopBuilderPreparing: boolean;
   isLoopMutating: boolean;
+  pendingLoopBuilderSourceId: string | null;
   isPlaylistMutating: boolean;
   isSavedLibraryMutating: boolean;
   onCreateFileLinkCopy: (row: FileLinkLibraryFilesRow) => void;

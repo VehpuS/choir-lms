@@ -5,6 +5,7 @@ import { Pressable, Text, View } from 'react-native';
 import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import { CompactPlayableRowShell } from '../../../components/compact-playable-row-shell';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
+import { RowPreparingIndicator } from '../../../components/row-preparing-indicator';
 import { OptionsMenuSheet } from '../../components/options-menu-sheet';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import {
@@ -29,6 +30,7 @@ type DriveLibrarySourceGroupProps = {
   ) => DriveLibrarySourceAction[] | null;
   getMessage?: (source: DriveLibrarySource) => string | undefined;
   highlightQuery?: string | null;
+  isSourcePreparingLoop?: (source: DriveLibrarySource) => boolean;
   sources: DriveLibrarySource[];
   title: string;
 };
@@ -94,12 +96,14 @@ const DriveLibrarySourceCard = ({
   getActions,
   getMessage,
   highlightQuery,
+  isSourcePreparingLoop,
   source,
 }: {
   getAction?: DriveLibrarySourceGroupProps['getAction'];
   getActions?: DriveLibrarySourceGroupProps['getActions'];
   getMessage?: DriveLibrarySourceGroupProps['getMessage'];
   highlightQuery?: string | null;
+  isSourcePreparingLoop?: DriveLibrarySourceGroupProps['isSourcePreparingLoop'];
   source: DriveLibrarySource;
 }) => {
   const singleAction = getAction?.(source) ?? null;
@@ -120,6 +124,7 @@ const DriveLibrarySourceCard = ({
   const metadataLabel = getSourceMetadataLabels(source).join(' • ');
   const statusMessage = externalMessage ?? getSourceStatusMessage(source);
   const isErrorMessage = externalMessage !== undefined;
+  const isPreparingLoop = isSourcePreparingLoop?.(source) ?? false;
   const overflowTrigger =
     menuActions.length > 0 ? (
       <OverflowMenuTrigger
@@ -192,7 +197,9 @@ const DriveLibrarySourceCard = ({
           ) : null
         }
         message={
-          statusMessage ? (
+          isPreparingLoop ? (
+            <RowPreparingIndicator label="Preparing loop…" />
+          ) : statusMessage ? (
             <Text
               style={
                 isErrorMessage
@@ -243,6 +250,7 @@ export const DriveLibrarySourceGroup = ({
   getActions,
   getMessage,
   highlightQuery,
+  isSourcePreparingLoop,
   sources,
   title,
 }: DriveLibrarySourceGroupProps) => {
@@ -261,6 +269,7 @@ export const DriveLibrarySourceGroup = ({
               getActions={getActions}
               getMessage={getMessage}
               highlightQuery={highlightQuery}
+              isSourcePreparingLoop={isSourcePreparingLoop}
               key={source.id}
               source={source}
             />

@@ -7,6 +7,7 @@ import {
   interactionGuardProps,
 } from '../../../../components/interaction-guard';
 import { ModalSurfaceBase } from '../../../components/modal-surface-base';
+import type { LoopBuilderBoundary } from '../../utils/saved-loop-view-model';
 import type { LoopPreviewPlaybackTimeline } from '../../utils/saved-loop-preview-playback-view-model';
 import { LoopRangeSelectorHeader } from './loop-range-selector-header';
 import { LoopRangeSelectorPreviewCard } from './loop-range-selector-preview-card';
@@ -30,6 +31,7 @@ type LoopRangeSelectorSurfaceProps = {
     message: string;
   } | null;
   canSaveLoop: boolean;
+  canSetBoundaryFromPosition: boolean;
   endMs: number;
   eyebrowLabel: string;
   isSavingLoop: boolean;
@@ -37,9 +39,14 @@ type LoopRangeSelectorSurfaceProps = {
   loopName: string;
   onClose: () => void;
   onLoopNameChange: (value: string) => void;
+  onNudgeBoundary: (
+    boundary: LoopBuilderBoundary,
+    direction: 'earlier' | 'later',
+  ) => void;
   onRangeChange: (sliderValue: number | number[]) => void;
   onSaveLoop: () => void;
   onScrubPreview: (positionSeconds: number) => void;
+  onSetBoundaryFromPosition: (boundary: LoopBuilderBoundary) => void;
   onTogglePreview: () => void;
   previewActionLabel: string;
   previewDisabled: boolean;
@@ -55,6 +62,7 @@ type LoopRangeSelectorSurfaceProps = {
 export const LoopRangeSelectorSurface = ({
   builderIssue,
   canSaveLoop,
+  canSetBoundaryFromPosition,
   endMs,
   eyebrowLabel,
   isSavingLoop,
@@ -62,9 +70,11 @@ export const LoopRangeSelectorSurface = ({
   loopName,
   onClose,
   onLoopNameChange,
+  onNudgeBoundary,
   onRangeChange,
   onSaveLoop,
   onScrubPreview,
+  onSetBoundaryFromPosition,
   onTogglePreview,
   previewActionLabel,
   previewDisabled,
@@ -103,6 +113,7 @@ export const LoopRangeSelectorSurface = ({
 
       <LoopRangeSelectorRangeCard
         endMs={endMs}
+        onNudgeBoundary={onNudgeBoundary}
         onRangeChange={onRangeChange}
         rangeMaximumMs={rangeMaximumMs}
         selectedTrack={selectedTrack}
@@ -111,7 +122,9 @@ export const LoopRangeSelectorSurface = ({
 
       {previewPlayableItem && previewTimeline ? (
         <LoopRangeSelectorPreviewCard
+          canSetBoundaryFromPosition={canSetBoundaryFromPosition}
           onScrubPreview={onScrubPreview}
+          onSetBoundaryFromPosition={onSetBoundaryFromPosition}
           previewPlayableItem={previewPlayableItem}
           previewTimeline={previewTimeline}
         />

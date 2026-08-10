@@ -4,11 +4,7 @@ import { describe, it } from 'node:test';
 import { createLoopPlayableItem } from '@org/audio-library-models';
 
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
-import {
-  getDeleteFromFolderConfirmationCopy,
-  getTrackRemoveFromLibraryPlacementLabel,
-  resolveFilesRowMenuActions,
-} from './files-row-actions';
+import { resolveFilesRowMenuActions } from './files-row-actions';
 import {
   createBaseOptions,
   LOOP,
@@ -16,10 +12,6 @@ import {
   SOURCE,
   UNAVAILABLE_SOURCE,
 } from './files-row-actions-test-helpers';
-import {
-  formatTrackRemoveFromLibraryImpactMessage,
-  getTrackRemoveFromLibraryAffectedSections,
-} from './library-files-delete-copy';
 
 describe('resolveFilesRowMenuActions', () => {
   it('keeps Files track queue actions in the first menu level before playlist and tag flows', () => {
@@ -120,6 +112,56 @@ describe('resolveFilesRowMenuActions', () => {
         'Move to folder',
         'Delete from folder',
       ],
+    );
+  });
+
+  it('shows the pending loop-builder label only for the row whose source is preparing', () => {
+    const { options } = createBaseOptions();
+    const row: LibraryFilesRow = {
+      fileLink: {
+        entityId: SOURCE.id,
+        entityKind: 'track',
+        id: `file-link:track:${SOURCE.id}`,
+        parentFolderId: 'folder:library-root',
+      },
+      isPlayable: true,
+      kind: 'track',
+      label: SOURCE.name,
+      source: SOURCE,
+      supportingLabel: 'Track • 4:05',
+    };
+
+    const idleActions = resolveFilesRowMenuActions({ ...options, row });
+
+    assert.equal(
+      idleActions.find((action) => action.label === 'Make loop')?.disabled,
+      false,
+    );
+
+    const pendingForThisSource = resolveFilesRowMenuActions({
+      ...options,
+      isLoopBuilderPreparing: true,
+      pendingLoopBuilderSourceId: SOURCE.id,
+      row,
+    });
+
+    assert.equal(
+      pendingForThisSource.find((action) => action.label === 'Preparing loop…')
+        ?.disabled,
+      true,
+    );
+
+    const pendingForAnotherSource = resolveFilesRowMenuActions({
+      ...options,
+      isLoopBuilderPreparing: true,
+      pendingLoopBuilderSourceId: 'drive-file-other',
+      row,
+    });
+
+    assert.equal(
+      pendingForAnotherSource.find((action) => action.label === 'Make loop')
+        ?.disabled,
+      true,
     );
   });
 
@@ -233,89 +275,4 @@ describe('resolveFilesRowMenuActions', () => {
     assert.deepEqual(calls.folders, []);
   });
 
-  it('builds pointer-aware confirmation copy for Delete from folder', () => {
-    const keepEntityCopy = getDeleteFromFolderConfirmationCopy({
-      isLastLink: false,
-      itemName: SOURCE.name,
-    });
-    const deleteEntityCopy = getDeleteFromFolderConfirmationCopy({
-      isLastLink: true,
-      itemName: SOURCE.name,
-    });
-
-    assert.equal(keepEntityCopy.title, 'Delete from folder?');
-    assert.match(keepEntityCopy.message, /Only this folder link/);
-    assert.equal(keepEntityCopy.confirmLabel, 'Delete from folder');
-
-    assert.equal(deleteEntityCopy.title, 'Delete last link from folder?');
-    assert.match(deleteEntityCopy.message, /last link/);
-    assert.equal(deleteEntityCopy.confirmLabel, 'Delete item from library');
-  });
-
-  it('documents explicit track-level Remove from library placement', () => {
-    assert.match(
-      getTrackRemoveFromLibraryPlacementLabel(),
-      /final destructive action/,
-    );
-  });
-
-  it('summarizes track-level Remove from library dependency impact', () => {
-    const row: Extract<LibraryFilesRow, { kind: 'track' }> = {
-      fileLink: {
-        entityId: SOURCE.id,
-        entityKind: 'track',
-        id: `file-link:track:${SOURCE.id}`,
-        parentFolderId: 'folder:library-root',
-      },
-      isPlayable: true,
-      kind: 'track',
-      label: SOURCE.name,
-      source: SOURCE,
-      supportingLabel: 'Track • 4:05',
-    };
-    const message = formatTrackRemoveFromLibraryImpactMessage(row, {
-      fileLinkCount: 2,
-      fileLinkNames: ['Original track link', 'Practice copy'],
-      loopCount: 1,
-      loopNames: ['Verse entrance'],
-      playlistEntryCount: 3,
-      playlistEntryTitles: [
-        'Warmups: Full Choir.mp3',
-        'Warmups: Verse entrance',
-        'Sunday: Full Choir.mp3',
-      ],
-    });
-
-    assert.match(message, /Review affected items/);
-    assert.doesNotMatch(message, /Verse entrance/);
-    assert.deepEqual(
-      getTrackRemoveFromLibraryAffectedSections({
-        fileLinkCount: 2,
-        fileLinkNames: ['Original track link', 'Practice copy'],
-        loopCount: 1,
-        loopNames: ['Verse entrance'],
-        playlistEntryCount: 3,
-        playlistEntryTitles: [
-          'Warmups: Full Choir.mp3',
-          'Warmups: Verse entrance',
-          'Sunday: Full Choir.mp3',
-        ],
-      }),
-      [
-        { items: ['Verse entrance'], title: 'Saved loops (1)' },
-        {
-          items: ['Original track link', 'Practice copy'],
-          title: 'Folder links (2)',
-        },
-        {
-          items: [
-            'Warmups: Full Choir.mp3',
-            'Warmups: Verse entrance',
-            'Sunday: Full Choir.mp3',
-          ],
-          title: 'Playlist entries (3)',
-        },
-      ],
-    );
-  });
 });

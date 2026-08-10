@@ -148,6 +148,9 @@ export const BrowseSourceGroup = ({
         );
       }}
       highlightQuery={searchQuery}
+      isSourcePreparingLoop={(source) => {
+        return pendingLoopBuilderSourceId === source.id;
+      }}
       sources={sources}
       title={savedSourceTitle}
     />

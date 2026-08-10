@@ -77,6 +77,7 @@ type UseLibraryFilesRowActionFlowsOptions = {
   isLoopMutating: boolean;
   isPlaylistMutating: boolean;
   isSavedLibraryMutating: boolean;
+  pendingLoopBuilderSourceId: string | null;
   onOpenLoopBuilderForSource: (source: DriveLibrarySource) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
   onOpenPlaylistAddItems: (playlistId: string) => void;
@@ -101,6 +102,7 @@ export const useLibraryFilesRowActionFlows = ({
   isLoopMutating,
   isPlaylistMutating,
   isSavedLibraryMutating,
+  pendingLoopBuilderSourceId,
   onOpenLoopBuilderForSource,
   onOpenLoopPlaylistSelector,
   onOpenPlaylistAddItems,
@@ -300,6 +302,7 @@ export const useLibraryFilesRowActionFlows = ({
         isLoopMutating,
         isPlaylistMutating,
         isSavedLibraryMutating,
+        pendingLoopBuilderSourceId,
         onCreateFileLinkCopy(rowToCopy: FileLinkLibraryFilesRow) {
           clearDestinationIssue();
           setPendingDestinationAction({ kind: 'copy', row: rowToCopy });

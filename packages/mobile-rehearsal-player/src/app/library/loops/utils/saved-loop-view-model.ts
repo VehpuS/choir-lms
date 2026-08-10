@@ -16,14 +16,20 @@ export {
   createLoopPreviewPlayableItem,
   getDefaultLoopName,
   hydrateLoopBuilderTrackDuration,
+  LOOP_BUILDER_NUDGE_STEP_MS,
+  nudgeLoopBuilderBoundary,
   resolveActiveLoopEditorId,
+  resolveLoopBuilderBoundaryFromPlaybackPosition,
   resolveLoopBuilderRangeSelection,
   resolveLoopBuilderTrack,
   resolveLoopBuilderTrackDuration,
   resolveSourcesMissingLoopBuilderDuration,
   updateLoopBuilderDraftRange,
 } from './saved-loop-builder-view-model';
-export type { LoopBuilderDraft } from './saved-loop-builder-view-model';
+export type {
+  LoopBuilderBoundary,
+  LoopBuilderDraft,
+} from './saved-loop-builder-view-model';
 
 export type SavedLoopIssue = {
   kind: 'delete' | 'save' | 'storage';

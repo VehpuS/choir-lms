@@ -6,6 +6,7 @@ import {
   interactionGuardProps,
 } from '../../../components/interaction-guard';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
+import { RowPreparingIndicator } from '../../../components/row-preparing-indicator';
 import { appTheme } from '../../../utils/theme';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import { ExplorerListRow, ExplorerListSurface } from '../explorer';
@@ -88,7 +89,9 @@ export const FilesExplorerList = (options: {
                 ) : null
               }
               message={
-                viewModelRow.message ? (
+                viewModelRow.isPreparingLoop ? (
+                  <RowPreparingIndicator label="Preparing loop…" />
+                ) : viewModelRow.message ? (
                   <Text numberOfLines={2} style={styles.rowMessage}>
                     {viewModelRow.message}
                   </Text>

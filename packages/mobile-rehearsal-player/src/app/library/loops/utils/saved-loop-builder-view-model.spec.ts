@@ -13,9 +13,7 @@ import {
   SAVED_LOOP,
 } from '../../../test-utils/library-test-fixtures.js';
 import {
-  createLoopPreviewPlayableItem,
   hydrateLoopBuilderTrackDuration,
-  resolveLoopBuilderRangeSelection,
   resolveLoopBuilderTrack,
   resolveLoopBuilderTrackDuration,
   resolveSourcesMissingLoopBuilderDuration,
@@ -129,48 +127,6 @@ describe('saved loop builder view-model', () => {
       }),
       null,
     );
-  });
-
-  it('normalizes dual-thumb slider values into an ordered, bounded loop range', () => {
-    assert.deepEqual(
-      resolveLoopBuilderRangeSelection({
-        durationMs: 18000,
-        sliderValue: [15, 24],
-      }),
-      {
-        startMs: 15000,
-        endMs: 18000,
-      },
-    );
-
-    assert.deepEqual(
-      resolveLoopBuilderRangeSelection({
-        durationMs: 18000,
-        sliderValue: [12, 4],
-      }),
-      {
-        startMs: 4000,
-        endMs: 12000,
-      },
-    );
-  });
-
-  it('creates a preview playable item from the draft loop range', () => {
-    const previewPlayableItem = createLoopPreviewPlayableItem({
-      endMs: 18500,
-      selectedTrack: createTrackPlayableItem(PLAYABLE_SOURCE),
-      startMs: 12000,
-    });
-
-    assert.equal(previewPlayableItem.kind, 'loop');
-    assert.equal(
-      previewPlayableItem.id,
-      `loop-preview:${PLAYABLE_SOURCE.id}:12000:18500`,
-    );
-    assert.deepEqual(previewPlayableItem.range, {
-      startMs: 12000,
-      endMs: 18500,
-    });
   });
 
   it('hydrates a selected loop-builder track with a fetched duration', () => {

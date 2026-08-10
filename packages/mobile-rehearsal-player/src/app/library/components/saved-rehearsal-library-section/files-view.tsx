@@ -40,6 +40,7 @@ type SavedRehearsalLibraryFilesViewProps = {
   isLoopMutating: boolean;
   isPlaylistMutating: boolean;
   isSavedLibraryMutating: boolean;
+  pendingLoopBuilderSourceId: string | null;
   onOpenLoopBuilderForSource: (source: DriveLibrarySource) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
   onOpenPlaylistAddItems: (playlistId: string) => void;
@@ -81,6 +82,7 @@ export const SavedRehearsalLibraryFilesView = ({
   isLoopMutating,
   isPlaylistMutating,
   isSavedLibraryMutating,
+  pendingLoopBuilderSourceId,
   onOpenLoopBuilderForSource,
   onOpenLoopPlaylistSelector,
   onOpenPlaylistAddItems,
@@ -121,6 +123,7 @@ export const SavedRehearsalLibraryFilesView = ({
     isLoopMutating,
     isPlaylistMutating,
     isSavedLibraryMutating,
+    pendingLoopBuilderSourceId,
     onOpenLoopBuilderForSource,
     onOpenLoopPlaylistSelector,
     onOpenLoopTagEditor,
@@ -163,6 +166,7 @@ export const SavedRehearsalLibraryFilesView = ({
     explorer,
     files,
     onOpenPlaylist,
+    pendingLoopBuilderSourceId,
     onOpenRow: (row) => {
       searchState.recordFilesEntryOpened(getLibraryFilesRowNodeKey(row));
     },

@@ -14,8 +14,11 @@ import {
   buildNamedLoop,
   createLoopBuilderDraft,
   createLoopPreviewPlayableItem,
+  nudgeLoopBuilderBoundary,
   resolveActiveLoopEditorId,
+  resolveLoopBuilderBoundaryFromPlaybackPosition,
   resolveLoopBuilderRangeSelection,
+  type LoopBuilderBoundary,
   type LoopBuilderDraft,
 } from '../utils/saved-loop-view-model';
 import { updateLoopBuilderDraftRange } from '../utils/saved-loop-view-model';
@@ -166,10 +169,25 @@ export const useSavedLoopSectionState = (
     setDraftIssue(null);
   }, [options.editingLoop?.id, options.selectedTrack?.id]);
 
+  const applyRange = (nextRange: { endMs: number; startMs: number }) => {
+    setLoopDraft((currentDraft) => {
+      return updateLoopBuilderDraftRange({
+        draft: currentDraft,
+        endMs: nextRange.endMs,
+        sourceName: options.selectedTrack?.source.name ?? '',
+        startMs: nextRange.startMs,
+      });
+    });
+    setDraftIssue(null);
+  };
+
+  const canSetBoundaryFromPosition = previewTimeline?.canScrub ?? false;
+
   return {
     activeEditingLoopId,
     builderIssue,
     canSaveLoop,
+    canSetBoundaryFromPosition,
     handleLoopNameChange: (value: string) => {
       setLoopDraft((currentDraft) => {
         return {
@@ -179,21 +197,42 @@ export const useSavedLoopSectionState = (
       });
       setDraftIssue(null);
     },
+    handleNudgeBoundary: (
+      boundary: LoopBuilderBoundary,
+      direction: 'earlier' | 'later',
+    ) => {
+      applyRange(
+        nudgeLoopBuilderBoundary({
+          boundary,
+          currentEndMs: loopDraft.endMs,
+          currentStartMs: loopDraft.startMs,
+          direction,
+          durationMs: selectedTrackDurationMs ?? undefined,
+        }),
+      );
+    },
     handleRangeChange: (sliderValue: number | number[]) => {
-      const nextRange = resolveLoopBuilderRangeSelection({
-        durationMs: selectedTrackDurationMs ?? undefined,
-        sliderValue,
-      });
+      applyRange(
+        resolveLoopBuilderRangeSelection({
+          durationMs: selectedTrackDurationMs ?? undefined,
+          sliderValue,
+        }),
+      );
+    },
+    handleSetBoundaryToCurrentPosition: (boundary: LoopBuilderBoundary) => {
+      if (!canSetBoundaryFromPosition || !previewTimeline) {
+        return;
+      }
 
-      setLoopDraft((currentDraft) => {
-        return updateLoopBuilderDraftRange({
-          draft: currentDraft,
-          endMs: nextRange.endMs,
-          sourceName: options.selectedTrack?.source.name ?? '',
-          startMs: nextRange.startMs,
-        });
-      });
-      setDraftIssue(null);
+      applyRange(
+        resolveLoopBuilderBoundaryFromPlaybackPosition({
+          boundary,
+          currentEndMs: loopDraft.endMs,
+          currentStartMs: loopDraft.startMs,
+          durationMs: selectedTrackDurationMs ?? undefined,
+          positionSeconds: previewTimeline.positionSeconds,
+        }),
+      );
     },
     handleSaveLoop: async () => {
       if (!options.selectedTrack) {
