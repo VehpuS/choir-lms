@@ -166,7 +166,7 @@ export const LoopRangeSelectorRangeCard = ({
           minimumValue={selectedTrack.range.startMs / 1000}
           onSlidingComplete={onRangeChange}
           onValueChange={onRangeChange}
-          step={1}
+          step={LOOP_BUILDER_NUDGE_STEP_MS / 1000}
           thumbTintColor="#305c4d"
           thumbTouchSize={{ width: 36, height: 36 }}
           trackClickable
