@@ -89,6 +89,56 @@ const ModeButton = (props: {
   );
 };
 
+const RepeatModeSegmentedControl = (props: {
+  disabled?: boolean;
+  onSelect: (mode: RepeatMode) => void;
+  options: typeof REPEAT_MODE_OPTIONS;
+  selectedMode: RepeatMode;
+}) => {
+  return (
+    <View
+      accessibilityLabel="Repeat mode"
+      accessibilityRole="radiogroup"
+      style={styles.segmentedControl}
+    >
+      {props.options.map((option, index) => {
+        const selected = props.selectedMode === option.mode;
+
+        return (
+          <View key={option.mode} style={styles.segmentGroup}>
+            {index > 0 ? <View style={styles.segmentDivider} /> : null}
+            <Pressable
+              accessibilityLabel={option.accessibilityLabel}
+              accessibilityRole="radio"
+              accessibilityState={{
+                disabled: props.disabled,
+                selected,
+              }}
+              {...interactionGuardProps}
+              disabled={props.disabled}
+              onPress={() => {
+                props.onSelect(option.mode);
+              }}
+              style={({ pressed }) => [
+                styles.segment,
+                selected ? styles.segmentSelected : null,
+                pressed && !props.disabled ? styles.modeButtonPressed : null,
+                props.disabled ? styles.modeButtonDisabled : null,
+              ]}
+            >
+              <MaterialCommunityIcons
+                color={selected ? '#fff8ef' : appTheme.colors.primaryText}
+                name={option.icon}
+                size={22}
+              />
+            </Pressable>
+          </View>
+        );
+      })}
+    </View>
+  );
+};
+
 export const PlaybackSessionModeCard = (props: {
   isDisabled?: boolean;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
@@ -123,22 +173,12 @@ export const PlaybackSessionModeCard = (props: {
 
       {showQueueModeControls ? <View style={styles.divider} /> : null}
 
-      <View style={styles.groupRow}>
-        {visibleRepeatOptions.map((option) => {
-          return (
-            <ModeButton
-              accessibilityLabel={option.accessibilityLabel}
-              disabled={props.isDisabled}
-              icon={option.icon}
-              key={option.mode}
-              onPress={() => {
-                props.onSelectRepeatMode(option.mode);
-              }}
-              selected={props.repeatMode === option.mode}
-            />
-          );
-        })}
-      </View>
+      <RepeatModeSegmentedControl
+        disabled={props.isDisabled}
+        onSelect={props.onSelectRepeatMode}
+        options={visibleRepeatOptions}
+        selectedMode={props.repeatMode}
+      />
     </View>
   );
 };
@@ -182,6 +222,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 999,
+    backgroundColor: '#305c4d',
+  },
+  segmentedControl: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    borderWidth: 1,
+    borderColor: appTheme.colors.border,
+    borderRadius: 999,
+    overflow: 'hidden',
+    backgroundColor: '#fffdf8',
+  },
+  segmentGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  segmentDivider: {
+    width: StyleSheet.hairlineWidth,
+    alignSelf: 'stretch',
+    backgroundColor: appTheme.colors.border,
+  },
+  segment: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  segmentSelected: {
     backgroundColor: '#305c4d',
   },
   modeButtonPressed: {
