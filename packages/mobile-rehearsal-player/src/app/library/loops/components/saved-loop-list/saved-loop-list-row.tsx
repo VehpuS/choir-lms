@@ -5,6 +5,7 @@ import { CompactPlayableRowShell } from '../../../../components/compact-playable
 import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
 import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
+import { attachRowActionSections } from '../../../components/options-menu-sheet/row-action-sections';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -258,18 +259,20 @@ export const SavedLoopListRow = ({
         variant="card"
       />
       <OptionsMenuSheet
-        actions={menuActions.map((action, index) => {
-          return {
-            disabled: action.disabled,
-            id: `loop:${loopCard.loop.id}:${index}`,
-            label: action.label,
-            onPress: () => {
-              onCloseOptions();
-              action.onPress();
-            },
-            tone: getMenuTone(action.tone),
-          };
-        })}
+        actions={attachRowActionSections(
+          menuActions.map((action, index) => {
+            return {
+              disabled: action.disabled,
+              id: `loop:${loopCard.loop.id}:${index}`,
+              label: action.label,
+              onPress: () => {
+                onCloseOptions();
+                action.onPress();
+              },
+              tone: getMenuTone(action.tone),
+            };
+          }),
+        )}
         isVisible={isOptionsVisible}
         onClose={onCloseOptions}
         title={loopCard.loop.name}

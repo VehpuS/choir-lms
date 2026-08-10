@@ -1,5 +1,6 @@
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
+import { attachRowActionSections } from '../options-menu-sheet/row-action-sections';
 import {
   resolveLoopMenuActions,
   resolveTrackMenuActions,
@@ -7,7 +8,6 @@ import {
 import {
   FOLDER_ACTION_ORDER,
   PLAYLIST_ACTION_ORDER,
-  attachFilesRowActionSections,
   getDeleteFromFolderConfirmationCopy,
   getTrackRemoveFromLibraryPlacementLabel,
   sortActionsByLabelOrder,
@@ -72,7 +72,7 @@ const resolvePlaylistMenuActions = (
     },
   ];
 
-  return attachFilesRowActionSections(
+  return attachRowActionSections(
     sortActionsByLabelOrder(actions, PLAYLIST_ACTION_ORDER),
   );
 };
@@ -116,7 +116,7 @@ const resolveFolderMenuActions = (
     },
   ];
 
-  return attachFilesRowActionSections(
+  return attachRowActionSections(
     sortActionsByLabelOrder(actions, FOLDER_ACTION_ORDER),
   );
 };

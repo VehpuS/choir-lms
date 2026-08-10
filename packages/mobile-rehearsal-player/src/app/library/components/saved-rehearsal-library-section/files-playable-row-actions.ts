@@ -4,12 +4,12 @@ import { resolveSavedLoopRowActions } from '../../loops/utils/saved-loop-row-act
 import { resolveSavedTrackRowActions } from '../../playback/utils/saved-track-row-actions';
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
+import { attachRowActionSections } from '../options-menu-sheet/row-action-sections';
 import {
   LOOP_ACTION_LABELS,
   LOOP_ACTION_ORDER,
   TRACK_ACTION_LABELS,
   TRACK_ACTION_ORDER,
-  attachFilesRowActionSections,
   sortActionsByLabelOrder,
   toOptionsMenuAction,
 } from './files-row-actions-contract';
@@ -127,7 +127,7 @@ export const resolveTrackMenuActions = (
     },
   ];
 
-  return attachFilesRowActionSections(
+  return attachRowActionSections(
     sortActionsByLabelOrder(actions, TRACK_ACTION_ORDER),
   );
 };
@@ -224,7 +224,7 @@ export const resolveLoopMenuActions = (
     },
   ];
 
-  return attachFilesRowActionSections(
+  return attachRowActionSections(
     sortActionsByLabelOrder(actions, LOOP_ACTION_ORDER),
   );
 };

@@ -76,45 +76,6 @@ export const FOLDER_ACTION_ORDER = new Map([
   ['Delete from folder', 3],
 ]);
 
-export type FilesRowActionSection = 'destructive' | 'organize' | 'rehearsal';
-
-const FILES_ROW_ACTION_SECTION_BY_LABEL = new Map<
-  string,
-  FilesRowActionSection
->([
-  ['Play next', 'rehearsal'],
-  ['Add to queue', 'rehearsal'],
-  ['Add to playlist', 'rehearsal'],
-  ['Add items', 'rehearsal'],
-  ['Make loop', 'rehearsal'],
-  ['Preparing loop…', 'rehearsal'],
-  ['Edit loop', 'rehearsal'],
-  ['Reconnect', 'organize'],
-  ['Create a copy', 'organize'],
-  ['Edit tags', 'organize'],
-  ['Rename', 'organize'],
-  ['Move to folder', 'organize'],
-  ['Delete from folder', 'destructive'],
-  ['Remove from library', 'destructive'],
-]);
-
-/**
- * Groups Files row-menu actions into the rehearsal/organize/destructive
- * bands from the row-action ordering contract so long menus (especially
- * track menus) can render lightweight section dividers without changing
- * the canonical action order.
- */
-export const attachFilesRowActionSections = (
-  actions: OptionsMenuAction[],
-): OptionsMenuAction[] => {
-  return actions.map((action) => {
-    return {
-      ...action,
-      section: FILES_ROW_ACTION_SECTION_BY_LABEL.get(action.label),
-    };
-  });
-};
-
 export const DISABLED_PLACEHOLDER_ACTIONS = {
   createCopy: {
     disabled: true,

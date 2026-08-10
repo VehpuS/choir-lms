@@ -7,6 +7,7 @@ import { CompactPlayableRowShell } from '../../../components/compact-playable-ro
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { RowPreparingIndicator } from '../../../components/row-preparing-indicator';
 import { OptionsMenuSheet } from '../../components/options-menu-sheet';
+import { attachRowActionSections } from '../../components/options-menu-sheet/row-action-sections';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import {
   resolveDriveLibrarySourceActionPlacement,
@@ -223,18 +224,20 @@ const DriveLibrarySourceCard = ({
         variant="card"
       />
       <OptionsMenuSheet
-        actions={menuActions.map((action, index) => {
-          return {
-            disabled: action.disabled,
-            id: `${source.id}:${action.accessibilityLabel ?? action.label}:${index}`,
-            label: getMenuActionLabel(action),
-            onPress: () => {
-              setIsOptionsMenuVisible(false);
-              action.onPress();
-            },
-            tone: getMenuTone(action.tone),
-          };
-        })}
+        actions={attachRowActionSections(
+          menuActions.map((action, index) => {
+            return {
+              disabled: action.disabled,
+              id: `${source.id}:${action.accessibilityLabel ?? action.label}:${index}`,
+              label: getMenuActionLabel(action),
+              onPress: () => {
+                setIsOptionsMenuVisible(false);
+                action.onPress();
+              },
+              tone: getMenuTone(action.tone),
+            };
+          }),
+        )}
         isVisible={isOptionsMenuVisible}
         onClose={() => {
           setIsOptionsMenuVisible(false);
