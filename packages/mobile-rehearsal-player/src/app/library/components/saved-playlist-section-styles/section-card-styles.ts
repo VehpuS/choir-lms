@@ -142,11 +142,11 @@ export const playlistSectionCardStyles = {
     lineHeight: 16,
   },
   itemCard: {
-    gap: 8,
-    padding: 16,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
-    borderRadius: 16,
+    borderRadius: 12,
     backgroundColor: '#faf6ee',
   },
   itemCardActive: {
@@ -167,28 +167,14 @@ export const playlistSectionCardStyles = {
     alignItems: 'flex-start',
     gap: 10,
   },
-  itemHeaderRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    justifyContent: 'space-between',
-  },
   itemTitle: {
-    flex: 1,
     color: PLAYLIST_PRIMARY_TEXT,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
-    lineHeight: 21,
+    lineHeight: 19,
   },
   itemStatusActive: {
     color: PLAYLIST_PRIMARY_ACTION_BACKGROUND,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-  },
-  itemStatusReady: {
-    color: PLAYLIST_SECONDARY_TEXT,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.3,
@@ -203,8 +189,8 @@ export const playlistSectionCardStyles = {
   },
   itemMetadata: {
     color: PLAYLIST_SECONDARY_TEXT,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 16,
   },
   emptyMessage: {
     color: PLAYLIST_SECONDARY_TEXT,

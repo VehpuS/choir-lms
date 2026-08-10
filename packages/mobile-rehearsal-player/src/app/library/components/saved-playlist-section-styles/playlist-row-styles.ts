@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native';
 import type { ImageStyle, TextStyle, ViewStyle } from 'react-native';
 
 import {
@@ -29,51 +30,52 @@ export const playlistRowStyles = {
     backgroundColor: '#fffdf8',
   },
   playlistRowShell: {
-    gap: 12,
-  },
-  playlistRowControlRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  playlistRowCopy: {
-    gap: 6,
-  },
-  playlistRowControlSpacer: {
-    flex: 1,
+    gap: 4,
   },
   playlistRowDragHandle: {
-    width: 46,
-    height: 46,
+    width: 20,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: PLAYLIST_BORDER_COLOR,
-    borderRadius: 999,
-    backgroundColor: '#fffdf8',
   },
   playlistRowDragHandleDisabled: {
     opacity: 0.56,
   },
-  playlistRowStepControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
+  playlistRowPlayButton: {
+    width: 30,
+    height: 30,
   },
-  playlistRowStepButton: {
-    minWidth: 40,
-    minHeight: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+  playlistRowCopy: {
+    flex: 1,
+    minWidth: 0,
+    gap: 1,
+  },
+  playlistRowStepper: {
+    width: 22,
+    height: 38,
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
-    borderRadius: 999,
-    backgroundColor: '#fffdf8',
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  playlistRowStepperButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playlistRowStepperDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: PLAYLIST_BORDER_COLOR,
   },
   playlistRowOverflowTrigger: {
     position: 'relative',
     top: 0,
     right: 0,
+    minWidth: 28,
+    minHeight: 30,
+    paddingHorizontal: 0,
   },
   secondaryButtonLabel: {
     color: PLAYLIST_PRIMARY_TEXT,
