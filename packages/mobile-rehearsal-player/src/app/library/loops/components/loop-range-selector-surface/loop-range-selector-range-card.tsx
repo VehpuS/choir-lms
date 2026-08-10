@@ -8,6 +8,7 @@ import {
   continuousInteractionGuardStyle,
   interactionGuardProps,
 } from '../../../../components/interaction-guard';
+import { useLongPressRepeat } from '../../hooks/use-long-press-repeat';
 import {
   LOOP_BUILDER_NUDGE_STEP_MS,
   type LoopBuilderBoundary,
@@ -44,6 +45,11 @@ const NudgeButton = ({
   icon: 'minus' | 'plus';
   onPress: () => void;
 }) => {
+  const longPressRepeat = useLongPressRepeat({
+    disabled,
+    onTrigger: onPress,
+  });
+
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
@@ -52,7 +58,9 @@ const NudgeButton = ({
       {...interactionGuardProps}
       disabled={disabled}
       hitSlop={NUDGE_HIT_SLOP}
-      onPress={onPress}
+      onPress={longPressRepeat.onPress}
+      onPressIn={longPressRepeat.onPressIn}
+      onPressOut={longPressRepeat.onPressOut}
       style={({ pressed }) => [
         styles.nudgeButton,
         buttonInteractionGuardStyle,
