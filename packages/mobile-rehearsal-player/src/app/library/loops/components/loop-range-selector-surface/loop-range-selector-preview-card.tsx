@@ -1,6 +1,8 @@
 import { type PlayableItem } from '@org/audio-library-models';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
+import type { CompactPlaybackActionIconName } from '../../../../components/compact-playback-action/model';
 import {
   buttonInteractionGuardStyle,
   interactionGuardProps,
@@ -19,6 +21,10 @@ type LoopRangeSelectorPreviewCardProps = {
   canSetBoundaryFromPosition: boolean;
   onScrubPreview: (positionSeconds: number) => void;
   onSetBoundaryFromPosition: (boundary: LoopBuilderBoundary) => void;
+  onTogglePreview: () => void;
+  previewActionLabel: string;
+  previewDisabled: boolean;
+  previewIconName: CompactPlaybackActionIconName;
   previewPlayableItem: PlayableItem;
   previewTimeline: LoopPreviewPlaybackTimeline;
 };
@@ -27,12 +33,25 @@ export const LoopRangeSelectorPreviewCard = ({
   canSetBoundaryFromPosition,
   onScrubPreview,
   onSetBoundaryFromPosition,
+  onTogglePreview,
+  previewActionLabel,
+  previewDisabled,
+  previewIconName,
   previewPlayableItem,
   previewTimeline,
 }: LoopRangeSelectorPreviewCardProps) => {
   return (
     <View style={styles.previewCard}>
-      <Text style={styles.previewTitle}>Preview timeline</Text>
+      <View style={styles.previewTitleRow}>
+        <CompactPlaybackAction
+          accessibilityLabel={previewActionLabel}
+          disabled={previewDisabled}
+          iconName={previewIconName}
+          onPress={onTogglePreview}
+          variant="chip"
+        />
+        <Text style={styles.previewTitle}>Preview loop</Text>
+      </View>
       <PlaybackWaveform
         activePlayableItem={previewPlayableItem}
         interactive={previewTimeline.canScrub}
@@ -52,7 +71,10 @@ export const LoopRangeSelectorPreviewCard = ({
       </View>
       <View style={styles.setFromPositionRow}>
         <Pressable
+          accessibilityHint="Sets the loop start to the current preview position"
+          accessibilityLabel="Set start here"
           accessibilityRole="button"
+          accessibilityState={{ disabled: !canSetBoundaryFromPosition }}
           {...interactionGuardProps}
           disabled={!canSetBoundaryFromPosition}
           onPress={() => {
@@ -70,7 +92,10 @@ export const LoopRangeSelectorPreviewCard = ({
           <Text style={styles.setFromPositionLabel}>Set start here</Text>
         </Pressable>
         <Pressable
+          accessibilityHint="Sets the loop end to the current preview position"
+          accessibilityLabel="Set end here"
           accessibilityRole="button"
+          accessibilityState={{ disabled: !canSetBoundaryFromPosition }}
           {...interactionGuardProps}
           disabled={!canSetBoundaryFromPosition}
           onPress={() => {
@@ -88,11 +113,6 @@ export const LoopRangeSelectorPreviewCard = ({
           <Text style={styles.setFromPositionLabel}>Set end here</Text>
         </Pressable>
       </View>
-      <Text style={styles.previewHint}>
-        {previewTimeline.canScrub
-          ? 'Drag across the waveform to skim the preview.'
-          : 'Start preview playback to scrub through the selected loop.'}
-      </Text>
     </View>
   );
 };
@@ -106,6 +126,11 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: '#fffaf2',
   },
+  previewTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   previewTitle: {
     color: LOOP_SELECTOR_PRIMARY_TEXT,
     fontSize: 14,
@@ -113,11 +138,6 @@ const styles = StyleSheet.create({
   },
   previewWaveform: {
     minHeight: 44,
-  },
-  previewHint: {
-    color: LOOP_SELECTOR_SECONDARY_TEXT,
-    fontSize: 12,
-    lineHeight: 18,
   },
   setFromPositionRow: {
     flexDirection: 'row',
@@ -127,6 +147,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 44,
     paddingVertical: 8,
     borderRadius: 10,
     backgroundColor: LOOP_SELECTOR_SECONDARY_ACTION_BACKGROUND,

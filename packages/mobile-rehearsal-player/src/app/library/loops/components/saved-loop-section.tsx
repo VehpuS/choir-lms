@@ -114,6 +114,7 @@ export const SavedLoopSection = ({
     loopDraft,
     previewActionLabel,
     previewDisabled,
+    previewIconName,
     previewPlayableItem,
     previewTimeline,
     selectedTrackDurationMs,
@@ -244,6 +245,7 @@ export const SavedLoopSection = ({
         onTogglePreview={handleTogglePreview}
         previewActionLabel={previewActionLabel}
         previewDisabled={previewDisabled}
+        previewIconName={previewIconName}
         previewPlayableItem={previewPlayableItem}
         previewTimeline={previewTimeline}
         rangeMaximumMs={selectedTrackDurationMs}

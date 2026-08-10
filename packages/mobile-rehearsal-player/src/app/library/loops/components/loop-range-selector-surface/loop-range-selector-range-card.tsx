@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Slider } from '@miblanchard/react-native-slider';
 import { type PlayableItem } from '@org/audio-library-models';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -14,6 +15,7 @@ import {
 import {
   LOOP_SELECTOR_PRIMARY_TEXT,
   LOOP_SELECTOR_SECONDARY_TEXT,
+  formatPreciseRangeLabel,
   formatRangeLabel,
 } from './shared';
 
@@ -29,23 +31,27 @@ type LoopRangeSelectorRangeCardProps = {
   startMs: number;
 };
 
+const NUDGE_HIT_SLOP = { top: 8, bottom: 8, left: 6, right: 6 };
+
 const NudgeButton = ({
   accessibilityLabel,
   disabled,
-  label,
+  icon,
   onPress,
 }: {
   accessibilityLabel: string;
   disabled: boolean;
-  label: string;
+  icon: 'minus' | 'plus';
   onPress: () => void;
 }) => {
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
+      accessibilityState={{ disabled }}
       {...interactionGuardProps}
       disabled={disabled}
+      hitSlop={NUDGE_HIT_SLOP}
       onPress={onPress}
       style={({ pressed }) => [
         styles.nudgeButton,
@@ -54,7 +60,11 @@ const NudgeButton = ({
         disabled ? styles.buttonDisabled : undefined,
       ]}
     >
-      <Text style={styles.nudgeButtonLabel}>{label}</Text>
+      <MaterialCommunityIcons
+        color={LOOP_SELECTOR_PRIMARY_TEXT}
+        name={icon}
+        size={16}
+      />
     </Pressable>
   );
 };
@@ -83,14 +93,16 @@ export const LoopRangeSelectorRangeCard = ({
   return (
     <View style={styles.rangeCard}>
       <View style={styles.rangeSummaryRow}>
-        <View style={styles.rangeChip}>
-          <Text style={styles.rangeChipLabel}>Start</Text>
-          <Text style={styles.rangeChipValue}>{formatRangeLabel(startMs)}</Text>
+        <View style={styles.edgeGroup}>
+          <Text style={styles.groupLabel}>Start</Text>
+          <Text style={styles.groupValue}>
+            {formatPreciseRangeLabel(startMs)}
+          </Text>
           <View style={styles.nudgeRow}>
             <NudgeButton
               accessibilityLabel="Move loop start earlier"
               disabled={isStartNudgeEarlierDisabled}
-              label="−"
+              icon="minus"
               onPress={() => {
                 onNudgeBoundary('start', 'earlier');
               }}
@@ -98,21 +110,29 @@ export const LoopRangeSelectorRangeCard = ({
             <NudgeButton
               accessibilityLabel="Move loop start later"
               disabled={isStartNudgeLaterDisabled}
-              label="+"
+              icon="plus"
               onPress={() => {
                 onNudgeBoundary('start', 'later');
               }}
             />
           </View>
         </View>
-        <View style={styles.rangeChip}>
-          <Text style={styles.rangeChipLabel}>End</Text>
-          <Text style={styles.rangeChipValue}>{formatRangeLabel(endMs)}</Text>
+
+        <View style={styles.lengthGroup}>
+          <Text style={styles.groupLabel}>Length</Text>
+          <Text style={styles.groupValue}>
+            {formatPreciseRangeLabel(rangeDurationMs)}
+          </Text>
+        </View>
+
+        <View style={[styles.edgeGroup, styles.edgeGroupEnd]}>
+          <Text style={styles.groupLabel}>End</Text>
+          <Text style={styles.groupValue}>{formatPreciseRangeLabel(endMs)}</Text>
           <View style={styles.nudgeRow}>
             <NudgeButton
               accessibilityLabel="Move loop end earlier"
               disabled={isEndNudgeEarlierDisabled}
-              label="−"
+              icon="minus"
               onPress={() => {
                 onNudgeBoundary('end', 'earlier');
               }}
@@ -120,18 +140,12 @@ export const LoopRangeSelectorRangeCard = ({
             <NudgeButton
               accessibilityLabel="Move loop end later"
               disabled={isEndNudgeLaterDisabled}
-              label="+"
+              icon="plus"
               onPress={() => {
                 onNudgeBoundary('end', 'later');
               }}
             />
           </View>
-        </View>
-        <View style={styles.rangeChip}>
-          <Text style={styles.rangeChipLabel}>Length</Text>
-          <Text style={styles.rangeChipValue}>
-            {formatRangeLabel(rangeDurationMs)}
-          </Text>
         </View>
       </View>
 
@@ -175,47 +189,45 @@ const styles = StyleSheet.create({
   },
   rangeSummaryRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 8,
   },
-  rangeChip: {
-    gap: 4,
-    minWidth: 92,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: '#f4eee2',
+  edgeGroup: {
+    alignItems: 'flex-start',
+    gap: 2,
   },
-  rangeChipLabel: {
+  edgeGroupEnd: {
+    alignItems: 'flex-end',
+  },
+  lengthGroup: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  groupLabel: {
     color: LOOP_SELECTOR_SECONDARY_TEXT,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.4,
     textTransform: 'uppercase',
   },
-  rangeChipValue: {
+  groupValue: {
     color: LOOP_SELECTOR_PRIMARY_TEXT,
     fontSize: 14,
     fontWeight: '700',
   },
   nudgeRow: {
     flexDirection: 'row',
-    gap: 6,
-    marginTop: 2,
+    gap: 16,
+    marginTop: 4,
   },
   nudgeButton: {
-    width: 26,
-    height: 26,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
+    borderRadius: 10,
     backgroundColor: '#e7e0d2',
-  },
-  nudgeButtonLabel: {
-    color: LOOP_SELECTOR_PRIMARY_TEXT,
-    fontSize: 15,
-    fontWeight: '700',
-    lineHeight: 18,
   },
   buttonPressed: {
     opacity: 0.86,

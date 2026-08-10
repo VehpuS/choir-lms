@@ -2,6 +2,7 @@ import { type PlayableItem } from '@org/audio-library-models';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import type { CompactPlaybackActionIconName } from '../../../../components/compact-playback-action/model';
 import {
   buttonInteractionGuardStyle,
   interactionGuardProps,
@@ -22,7 +23,6 @@ import {
   LOOP_SELECTOR_PRIMARY_ACTION_BACKGROUND,
   LOOP_SELECTOR_PRIMARY_ACTION_TEXT,
   LOOP_SELECTOR_PRIMARY_TEXT,
-  LOOP_SELECTOR_SECONDARY_ACTION_BACKGROUND,
 } from './shared';
 
 type LoopRangeSelectorSurfaceProps = {
@@ -50,6 +50,7 @@ type LoopRangeSelectorSurfaceProps = {
   onTogglePreview: () => void;
   previewActionLabel: string;
   previewDisabled: boolean;
+  previewIconName: CompactPlaybackActionIconName;
   previewPlayableItem: PlayableItem | null;
   previewTimeline: LoopPreviewPlaybackTimeline | null;
   rangeMaximumMs: number | null;
@@ -78,6 +79,7 @@ export const LoopRangeSelectorSurface = ({
   onTogglePreview,
   previewActionLabel,
   previewDisabled,
+  previewIconName,
   previewPlayableItem,
   previewTimeline,
   rangeMaximumMs,
@@ -125,6 +127,10 @@ export const LoopRangeSelectorSurface = ({
           canSetBoundaryFromPosition={canSetBoundaryFromPosition}
           onScrubPreview={onScrubPreview}
           onSetBoundaryFromPosition={onSetBoundaryFromPosition}
+          onTogglePreview={onTogglePreview}
+          previewActionLabel={previewActionLabel}
+          previewDisabled={previewDisabled}
+          previewIconName={previewIconName}
           previewPlayableItem={previewPlayableItem}
           previewTimeline={previewTimeline}
         />
@@ -148,21 +154,6 @@ export const LoopRangeSelectorSurface = ({
       ) : null}
 
       <View style={styles.actionRow}>
-        <Pressable
-          accessibilityRole="button"
-          {...interactionGuardProps}
-          disabled={previewDisabled}
-          onPress={onTogglePreview}
-          style={({ pressed }) => [
-            styles.secondaryAction,
-            buttonInteractionGuardStyle,
-            pressed && !previewDisabled ? styles.buttonPressed : undefined,
-            previewDisabled ? styles.buttonDisabled : undefined,
-          ]}
-        >
-          <Text style={styles.secondaryActionLabel}>{previewActionLabel}</Text>
-        </Pressable>
-
         <Pressable
           accessibilityRole="button"
           {...interactionGuardProps}
@@ -224,21 +215,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
-  },
-  secondaryAction: {
-    flex: 1,
-    minWidth: 140,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 14,
-    backgroundColor: LOOP_SELECTOR_SECONDARY_ACTION_BACKGROUND,
-  },
-  secondaryActionLabel: {
-    color: LOOP_SELECTOR_PRIMARY_TEXT,
-    fontSize: 14,
-    fontWeight: '700',
   },
   primaryAction: {
     flex: 1,

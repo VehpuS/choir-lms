@@ -5,6 +5,7 @@ import {
 } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 
+import { getCompactPlaybackActionIconName } from '../../drive/utils/drive-library-source-actions';
 import type { SavedTrackPlaybackState } from '../../playback/utils/saved-track-playback-view-model';
 import { getSavedTrackPlaybackActionCopy } from '../../playback/utils/saved-track-playback-view-model';
 import { resolveLoopPreviewPlaybackTimeline } from '../utils/saved-loop-preview-playback-view-model';
@@ -280,6 +281,7 @@ export const useSavedLoopSectionState = (
     loopDraft,
     previewActionLabel: getPreviewActionLabel(previewActionCopy.label),
     previewDisabled: previewActionCopy.disabled || previewPlayableItem === null,
+    previewIconName: getCompactPlaybackActionIconName(previewActionCopy.label),
     previewPlayableItem,
     previewTimeline,
     selectedTrackDurationMs,

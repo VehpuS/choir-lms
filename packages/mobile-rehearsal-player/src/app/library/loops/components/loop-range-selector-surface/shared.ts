@@ -16,6 +16,20 @@ export const formatRangeLabel = (value: number) => {
   return formatDurationLabel(value) ?? '0:00';
 };
 
+const formatSecondsSegment = (value: number) => {
+  return value.toString().padStart(2, '0');
+};
+
+export const formatPreciseRangeLabel = (valueMs: number) => {
+  const totalTenths = Math.round(Math.max(0, valueMs) / 100);
+  const wholeSeconds = Math.floor(totalTenths / 10);
+  const tenths = totalTenths % 10;
+  const minutes = Math.floor(wholeSeconds / 60);
+  const seconds = wholeSeconds % 60;
+
+  return `${minutes}:${formatSecondsSegment(seconds)}.${tenths}`;
+};
+
 export const formatPlaybackLabel = (seconds: number) => {
   return formatDurationLabel(Math.round(seconds * 1000)) ?? '0:00';
 };

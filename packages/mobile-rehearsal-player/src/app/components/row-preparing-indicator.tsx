@@ -8,7 +8,12 @@ type RowPreparingIndicatorProps = {
 
 export const RowPreparingIndicator = ({ label }: RowPreparingIndicatorProps) => {
   return (
-    <View style={styles.row}>
+    <View
+      accessibilityLabel={label}
+      accessibilityLiveRegion="polite"
+      accessible
+      style={styles.row}
+    >
       <ActivityIndicator color={appTheme.colors.secondaryText} size="small" />
       <Text style={styles.label}>{label}</Text>
     </View>
