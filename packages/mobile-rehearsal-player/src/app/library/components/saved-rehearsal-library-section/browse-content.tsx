@@ -1,3 +1,5 @@
+import { cloneElement } from 'react';
+
 import {
   shouldRenderFilesExplorer,
   shouldRenderFilesLoopBuilder,
@@ -173,7 +175,9 @@ export const SavedRehearsalLibraryBrowseContent = ({
           onTogglePlayableItemPlayback={togglePlayableItemPlayback}
           onToggleSourcePlayback={toggleSourcePlayback}
         />
-        {shouldRenderLoopSectionInFiles ? loopSection : null}
+        {shouldRenderLoopSectionInFiles
+          ? cloneElement(loopSection, { isBuilderFocused: true })
+          : null}
       </>
     );
   }

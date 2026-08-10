@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 
 import type { SavedRehearsalLibraryVisibleSections } from '../../saved-rehearsal-library/detail-mode';
 import type { SavedRehearsalLibrarySectionProps } from './types';
@@ -83,7 +83,7 @@ export type SavedRehearsalLibraryBrowseContentProps = Pick<
   isLoopMutating: boolean;
   isPlaylistMutating: boolean;
   isSavedLibraryMutating: boolean;
-  loopSection: ReactNode;
+  loopSection: ReactElement<{ isBuilderFocused?: boolean }>;
   loopState: LoopState;
   playlistSection: ReactNode;
   playlistState: PlaylistState;

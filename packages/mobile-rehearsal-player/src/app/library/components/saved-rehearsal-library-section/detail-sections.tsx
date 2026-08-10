@@ -22,6 +22,7 @@ type SavedRehearsalLibraryLoopSectionContentProps = {
   canMutateLoops: boolean;
   canMutatePlaylists: boolean;
   canQueueAsNext: boolean;
+  isBuilderFocused?: boolean;
   isPlaybackPreparing: boolean;
   isPlaylistMutating: boolean;
   isSavedLoopsLoading: boolean;
@@ -52,6 +53,7 @@ export const SavedRehearsalLibraryLoopSectionContent = ({
   canMutateLoops,
   canMutatePlaylists,
   canQueueAsNext,
+  isBuilderFocused,
   isPlaybackPreparing,
   isPlaylistMutating,
   isSavedLoopsLoading,
@@ -82,6 +84,7 @@ export const SavedRehearsalLibraryLoopSectionContent = ({
       canQueueAsNext={canQueueAsNext}
       editingLoop={loopState.selectedLoopEdit}
       highlightQuery={searchHighlightQuery}
+      isBuilderFocused={isBuilderFocused}
       isPlaybackPreparing={isPlaybackPreparing}
       isPlaylistMutating={isPlaylistMutating}
       isSavedLoopsLoading={isSavedLoopsLoading}

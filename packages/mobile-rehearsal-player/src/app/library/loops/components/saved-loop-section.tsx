@@ -10,6 +10,7 @@ import {
 } from '../../playback/utils/saved-track-playback-view-model';
 import type { PlaylistPlaybackActionCopy } from '../../playlists/utils/saved-playlist-playback-view-model';
 import { useSavedLoopSectionState } from '../hooks/use-saved-loop-section-state';
+import { shouldShowSavedLoopBrowseContent } from '../utils/saved-loop-section-model';
 import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import {
   getSavedLoopsStatusCopy,
@@ -30,6 +31,7 @@ type SavedLoopSectionProps = {
   canMutateLoops: boolean;
   canQueueAsNext: boolean;
   highlightQuery: string | null;
+  isBuilderFocused?: boolean;
   isSavedLoopsLoading: boolean;
   pendingLoopId: string | null;
   playbackIssue: SavedTrackPlaybackIssue | null;
@@ -72,6 +74,7 @@ export const SavedLoopSection = ({
   canMutateLoops,
   canQueueAsNext,
   highlightQuery,
+  isBuilderFocused = false,
   isSavedLoopsLoading,
   pendingLoopId,
   playbackIssue,
@@ -142,10 +145,14 @@ export const SavedLoopSection = ({
   const isLoopMutating = pendingLoopId !== null;
   const shouldShowStatusCard =
     isSavedLoopsLoading || statusCopy.tone !== 'ready';
+  const shouldShowBrowseContent = shouldShowSavedLoopBrowseContent({
+    isBuilderFocused,
+    isTrackLoopDetailVisible,
+  });
 
   return (
     <View style={styles.section}>
-      {!isTrackLoopDetailVisible ? (
+      {shouldShowBrowseContent ? (
         <SectionHeading
           body={SAVED_LOOP_SECTION_BODY_COPY}
           style={styles.sectionCopy}
@@ -153,7 +160,7 @@ export const SavedLoopSection = ({
         />
       ) : null}
 
-      {!isTrackLoopDetailVisible && shouldShowStatusCard ? (
+      {shouldShowBrowseContent && shouldShowStatusCard ? (
         <DriveLibraryStatusCard
           isLoading={isSavedLoopsLoading}
           loadingLabel="Refreshing saved loops…"
@@ -240,7 +247,7 @@ export const SavedLoopSection = ({
         startMs={loopDraft.startMs}
       />
 
-      {!isTrackLoopDetailVisible ? (
+      {shouldShowBrowseContent ? (
         <SavedLoopList
           activePlayableItem={activePlayableItem}
           canMutateLoops={canMutateLoops}
