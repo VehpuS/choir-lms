@@ -58,6 +58,21 @@ describe('resolveFilesRowMenuActions', () => {
     );
     assert.equal(actions.at(-2)?.tone, 'destructive');
     assert.equal(actions.at(-1)?.tone, 'destructive');
+    assert.deepEqual(
+      actions.map((action) => action.section),
+      [
+        'rehearsal',
+        'rehearsal',
+        'rehearsal',
+        'rehearsal',
+        'organize',
+        'organize',
+        'organize',
+        'organize',
+        'destructive',
+        'destructive',
+      ],
+    );
     assert.deepEqual(calls.copies, ['track']);
     assert.deepEqual(calls.renames, ['track']);
     assert.deepEqual(calls.moves, ['track']);

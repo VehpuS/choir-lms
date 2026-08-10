@@ -13,6 +13,7 @@ import {
 import {
   resolveOptionsMenuSheetActions,
   resolveOptionsMenuSheetHeading,
+  resolveOptionsMenuSheetSectionDividers,
   type OptionsMenuAction,
   type ResolvedOptionsMenuAction,
 } from './model';
@@ -68,6 +69,9 @@ export const OptionsMenuSheet = ({
 
   const resolvedActions = resolveOptionsMenuSheetActions(actions);
   const heading = resolveOptionsMenuSheetHeading(title);
+  const sectionDividers = resolveOptionsMenuSheetSectionDividers(
+    resolvedActions,
+  );
 
   return (
     <BottomSheetSurface
@@ -79,27 +83,31 @@ export const OptionsMenuSheet = ({
       <View style={styles.contentColumn}>
         {children ? <View>{children}</View> : null}
         <View style={styles.actionColumn}>
-          {resolvedActions.map((action) => {
+          {resolvedActions.map((action, index) => {
             return (
-              <Pressable
-                accessibilityRole="button"
-                {...interactionGuardProps}
-                disabled={action.disabled}
-                key={action.id}
-                onPress={action.onPress}
-                style={({ pressed }) => [
-                  getActionContainerStyle(action.tone),
-                  buttonInteractionGuardStyle,
-                  pressed && !action.disabled
-                    ? styles.buttonPressed
-                    : undefined,
-                  action.disabled ? styles.buttonDisabled : undefined,
-                ]}
-              >
-                <Text style={getActionLabelStyle(action.tone)}>
-                  {action.label}
-                </Text>
-              </Pressable>
+              <View key={action.id}>
+                {sectionDividers[index] ? (
+                  <View style={styles.sectionDivider} />
+                ) : null}
+                <Pressable
+                  accessibilityRole="button"
+                  {...interactionGuardProps}
+                  disabled={action.disabled}
+                  onPress={action.onPress}
+                  style={({ pressed }) => [
+                    getActionContainerStyle(action.tone),
+                    buttonInteractionGuardStyle,
+                    pressed && !action.disabled
+                      ? styles.buttonPressed
+                      : undefined,
+                    action.disabled ? styles.buttonDisabled : undefined,
+                  ]}
+                >
+                  <Text style={getActionLabelStyle(action.tone)}>
+                    {action.label}
+                  </Text>
+                </Pressable>
+              </View>
             );
           })}
           <Pressable
@@ -174,5 +182,10 @@ const styles = StyleSheet.create({
     color: PRIMARY_TEXT,
     fontSize: 13,
     fontWeight: '700',
+  },
+  sectionDivider: {
+    backgroundColor: 'rgba(31, 28, 23, 0.1)',
+    height: StyleSheet.hairlineWidth,
+    marginBottom: 10,
   },
 });

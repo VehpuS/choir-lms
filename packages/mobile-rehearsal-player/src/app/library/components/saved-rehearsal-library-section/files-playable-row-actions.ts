@@ -9,6 +9,7 @@ import {
   LOOP_ACTION_ORDER,
   TRACK_ACTION_LABELS,
   TRACK_ACTION_ORDER,
+  attachFilesRowActionSections,
   sortActionsByLabelOrder,
   toOptionsMenuAction,
 } from './files-row-actions-contract';
@@ -126,7 +127,9 @@ export const resolveTrackMenuActions = (
     },
   ];
 
-  return sortActionsByLabelOrder(actions, TRACK_ACTION_ORDER);
+  return attachFilesRowActionSections(
+    sortActionsByLabelOrder(actions, TRACK_ACTION_ORDER),
+  );
 };
 
 export const resolveLoopMenuActions = (
@@ -221,5 +224,7 @@ export const resolveLoopMenuActions = (
     },
   ];
 
-  return sortActionsByLabelOrder(actions, LOOP_ACTION_ORDER);
+  return attachFilesRowActionSections(
+    sortActionsByLabelOrder(actions, LOOP_ACTION_ORDER),
+  );
 };

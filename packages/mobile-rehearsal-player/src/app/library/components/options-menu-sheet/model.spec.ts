@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
   resolveOptionsMenuSheetActions,
   resolveOptionsMenuSheetHeading,
+  resolveOptionsMenuSheetSectionDividers,
 } from './model.js';
 
 describe('options menu sheet actions', () => {
@@ -75,5 +76,27 @@ describe('options menu sheet actions', () => {
         },
       ],
     );
+  });
+
+  it('marks a divider only where a declared section changes', () => {
+    const dividers = resolveOptionsMenuSheetSectionDividers([
+      { id: 'a', label: 'Play next', onPress: () => undefined, section: 'rehearsal', tone: 'secondary' },
+      { id: 'b', label: 'Add to queue', onPress: () => undefined, section: 'rehearsal', tone: 'secondary' },
+      { id: 'c', label: 'Rename', onPress: () => undefined, section: 'organize', tone: 'secondary' },
+      { id: 'd', label: 'Move to folder', onPress: () => undefined, section: 'organize', tone: 'secondary' },
+      { id: 'e', label: 'Delete from folder', onPress: () => undefined, section: 'destructive', tone: 'destructive' },
+    ]);
+
+    assert.deepEqual(dividers, [false, false, true, false, true]);
+  });
+
+  it('never shows a divider for actions without a declared section', () => {
+    const dividers = resolveOptionsMenuSheetSectionDividers([
+      { id: 'a', label: 'Rename playlist', onPress: () => undefined, tone: 'primary' },
+      { id: 'b', label: 'Share', onPress: () => undefined, tone: 'secondary' },
+      { id: 'c', label: 'Remove playlist', onPress: () => undefined, tone: 'destructive' },
+    ]);
+
+    assert.deepEqual(dividers, [false, false, false]);
   });
 });

@@ -7,6 +7,7 @@ import {
 import {
   FOLDER_ACTION_ORDER,
   PLAYLIST_ACTION_ORDER,
+  attachFilesRowActionSections,
   getDeleteFromFolderConfirmationCopy,
   getTrackRemoveFromLibraryPlacementLabel,
   sortActionsByLabelOrder,
@@ -71,7 +72,9 @@ const resolvePlaylistMenuActions = (
     },
   ];
 
-  return sortActionsByLabelOrder(actions, PLAYLIST_ACTION_ORDER);
+  return attachFilesRowActionSections(
+    sortActionsByLabelOrder(actions, PLAYLIST_ACTION_ORDER),
+  );
 };
 
 const resolveFolderMenuActions = (
@@ -113,7 +116,9 @@ const resolveFolderMenuActions = (
     },
   ];
 
-  return sortActionsByLabelOrder(actions, FOLDER_ACTION_ORDER);
+  return attachFilesRowActionSections(
+    sortActionsByLabelOrder(actions, FOLDER_ACTION_ORDER),
+  );
 };
 
 export const resolveFilesRowMenuActions = (
