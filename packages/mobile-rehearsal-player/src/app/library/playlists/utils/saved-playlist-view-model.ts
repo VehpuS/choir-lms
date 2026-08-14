@@ -232,17 +232,22 @@ export const getSavedPlaylistRemovalCopy = (
   };
 };
 
-export const getSavedPlaylistCreateDialogCopy =
-  (): SavedPlaylistCreateDialogCopy => {
-    return {
-      body: 'Create a new playlist from saved rehearsal material.',
-      cancelLabel: 'Cancel',
-      placeholder: 'Wednesday rehearsal',
-      savingLabel: 'Creating…',
-      submitLabel: 'Create playlist',
-      title: 'Create playlist',
-    };
+export const getSavedPlaylistCreateDialogCopy = (options?: {
+  destinationFolderName?: string | null;
+}): SavedPlaylistCreateDialogCopy => {
+  const destinationFolderName = options?.destinationFolderName;
+
+  return {
+    body: 'Create a new playlist from saved rehearsal material.',
+    cancelLabel: 'Cancel',
+    placeholder: 'Wednesday rehearsal',
+    savingLabel: 'Creating…',
+    submitLabel: 'Create playlist',
+    title: destinationFolderName
+      ? `Create a playlist in ${destinationFolderName}`
+      : 'Create playlist',
   };
+};
 
 export const getPlaylistOptionsMenuActions = (options: {
   isMutating: boolean;

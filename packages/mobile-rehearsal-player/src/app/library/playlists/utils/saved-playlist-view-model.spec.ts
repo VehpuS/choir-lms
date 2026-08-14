@@ -107,6 +107,23 @@ describe('saved playlist view-model', () => {
     });
   });
 
+  it('adds destination folder context to the create playlist dialog title when provided', () => {
+    assert.deepEqual(
+      getSavedPlaylistCreateDialogCopy({
+        destinationFolderName: 'Browser Test Folder',
+      }).title,
+      'Create a playlist in Browser Test Folder',
+    );
+  });
+
+  it('falls back to the generic create playlist dialog title when no destination folder is given', () => {
+    assert.equal(
+      getSavedPlaylistCreateDialogCopy({ destinationFolderName: null })
+        .title,
+      'Create playlist',
+    );
+  });
+
   it('includes add items and remove in shared playlist overflow actions when requested', () => {
     const actions = getPlaylistOptionsMenuActions({
       onAddItems: () => undefined,

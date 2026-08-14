@@ -16,6 +16,7 @@ import {
 } from '../utils/saved-playlist-view-model';
 
 type SavedPlaylistCreateDialogProps = {
+  destinationFolderName?: string | null;
   isMutating: boolean;
   isVisible: boolean;
   issue: PlaylistDraftIssue | null;
@@ -26,6 +27,7 @@ type SavedPlaylistCreateDialogProps = {
 };
 
 export const SavedPlaylistCreateDialog = ({
+  destinationFolderName,
   isMutating,
   isVisible,
   issue,
@@ -34,7 +36,9 @@ export const SavedPlaylistCreateDialog = ({
   onChange,
   onSubmit,
 }: SavedPlaylistCreateDialogProps) => {
-  const createCopy = getSavedPlaylistCreateDialogCopy();
+  const createCopy = getSavedPlaylistCreateDialogCopy({
+    destinationFolderName,
+  });
 
   if (!isVisible) {
     return null;

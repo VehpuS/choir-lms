@@ -235,6 +235,7 @@ export const LibraryFilesCreateControls = ({
         value={filesFolderDraftName}
       />
       <SavedPlaylistCreateDialog
+        destinationFolderName={filesFolderLabel}
         isMutating={isFilesPlaylistMutating}
         isVisible={isFilesPlaylistDialogVisible}
         issue={filesPlaylistDraftIssue}
