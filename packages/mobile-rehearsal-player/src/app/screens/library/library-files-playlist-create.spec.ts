@@ -11,7 +11,6 @@ const PLAYLIST: Playlist = {
   items: [],
   name: 'Folder playlist',
   ownerId: 'user-1',
-  ownershipScope: 'user',
   updatedAt: '2026-07-19T00:00:00.000Z',
 };
 

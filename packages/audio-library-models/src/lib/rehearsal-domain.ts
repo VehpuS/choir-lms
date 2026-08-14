@@ -1,5 +1,3 @@
-export type OwnershipScope = 'user' | 'section' | 'choir';
-
 export type SourceAvailabilityStatus =
   | 'available'
   | 'unsupported'
@@ -63,7 +61,6 @@ export type NamedLoop = {
   tags?: string[];
   startMs: number;
   endMs: number;
-  ownershipScope: OwnershipScope;
   ownerId: string;
   createdAt: string;
   updatedAt: string;
@@ -99,7 +96,6 @@ export type Playlist = {
   name: string;
   tags?: string[];
   items: PlaylistEntry[];
-  ownershipScope: OwnershipScope;
   ownerId: string;
   createdAt: string;
   updatedAt: string;
@@ -150,10 +146,6 @@ const isStringArray = (value: unknown): value is string[] => {
   );
 };
 
-const isOwnershipScope = (value: unknown): value is OwnershipScope => {
-  return value === 'user' || value === 'section' || value === 'choir';
-};
-
 const clampToDuration = (value: number, durationMs?: number) => {
   if (durationMs === undefined) {
     return value;
@@ -199,7 +191,6 @@ export const isNamedLoop = (value: unknown): value is NamedLoop => {
     (value.tags === undefined || isStringArray(value.tags)) &&
     typeof value.startMs === 'number' &&
     typeof value.endMs === 'number' &&
-    isOwnershipScope(value.ownershipScope) &&
     typeof value.ownerId === 'string' &&
     typeof value.createdAt === 'string' &&
     typeof value.updatedAt === 'string'

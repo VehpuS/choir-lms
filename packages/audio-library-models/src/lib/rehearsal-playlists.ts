@@ -3,7 +3,6 @@ import {
   createPlaylistEntryFromTrack,
   type DriveAudioSource,
   type NamedLoop,
-  type OwnershipScope,
   type Playlist,
   type PlaylistEntry,
   type PlaylistEntryInput,
@@ -109,7 +108,6 @@ export const createPlaylist = (options: {
   items?: PlaylistEntryInput[];
   name: string;
   ownerId: string;
-  ownershipScope?: OwnershipScope;
 }): Playlist => {
   const createdAt = options.createdAt ?? new Date().toISOString();
 
@@ -119,7 +117,6 @@ export const createPlaylist = (options: {
       defaultPlaylistId(options.ownerId, createdAt),
     name: options.name.trim(),
     items: options.items ?? [],
-    ownershipScope: options.ownershipScope ?? 'user',
     ownerId: options.ownerId,
     createdAt,
     updatedAt: createdAt,

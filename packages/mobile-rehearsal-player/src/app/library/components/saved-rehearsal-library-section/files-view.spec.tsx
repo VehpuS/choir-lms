@@ -28,7 +28,6 @@ const PLAYLIST: Playlist = {
   items: [],
   name: 'Evening Warmups',
   ownerId: 'user-1',
-  ownershipScope: 'user',
   updatedAt: '2026-07-01T00:00:00.000Z',
 };
 
@@ -38,7 +37,6 @@ const LOOP: NamedLoop = {
   id: 'loop-1',
   name: 'Kyrie entrance',
   ownerId: 'user-1',
-  ownershipScope: 'user',
   sourceId: SOURCE.id,
   sourceName: SOURCE.name,
   startMs: 12000,

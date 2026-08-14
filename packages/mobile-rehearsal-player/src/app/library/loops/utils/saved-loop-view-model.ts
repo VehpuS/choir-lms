@@ -210,7 +210,6 @@ export const buildNamedLoop = (options: BuildNamedLoopOptions) => {
         : {}),
       startMs: validation.normalizedStartMs,
       endMs: validation.normalizedEndMs,
-      ownershipScope: 'user' as const,
       ownerId: options.ownerId,
       createdAt,
       updatedAt,

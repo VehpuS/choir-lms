@@ -41,7 +41,6 @@ const LOOP: NamedLoop = {
   id: 'loop-1',
   name: 'Verse entrance',
   ownerId: 'user-1',
-  ownershipScope: 'user',
   sourceId: SOURCE.id,
   sourceName: SOURCE.name,
   startMs: 12000,

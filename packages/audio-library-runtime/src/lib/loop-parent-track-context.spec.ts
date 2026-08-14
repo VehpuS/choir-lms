@@ -36,7 +36,6 @@ const SAVED_LOOP: NamedLoop = {
   sourceName: AVAILABLE_SOURCE.name,
   startMs: 12000,
   endMs: 24000,
-  ownershipScope: 'user',
   ownerId: 'user-1',
   createdAt: '2026-05-10T00:00:00.000Z',
   updatedAt: '2026-05-10T00:00:00.000Z',

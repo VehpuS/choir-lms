@@ -11,7 +11,6 @@ const LOOP: NamedLoop = {
   id: 'loop-1',
   name: 'Folder loop',
   ownerId: 'user-1',
-  ownershipScope: 'user',
   sourceId: 'source-1',
   sourceName: 'Full Choir.mp3',
   startMs: 10000,
