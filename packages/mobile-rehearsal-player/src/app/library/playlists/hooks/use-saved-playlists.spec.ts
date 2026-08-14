@@ -11,7 +11,6 @@ describe('loadSavedPlaylists', () => {
       id: 'playlist-1',
       name: 'Wednesday rehearsal',
       items: [],
-      ownershipScope: 'user' as const,
       ownerId: 'local-device-user',
       createdAt: '2026-05-11T00:00:00.000Z',
       updatedAt: '2026-05-11T00:00:00.000Z',

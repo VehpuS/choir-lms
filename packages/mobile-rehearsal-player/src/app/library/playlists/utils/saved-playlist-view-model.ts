@@ -56,18 +56,6 @@ const pluralize = (count: number, noun: string) => {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 };
 
-const getOwnershipLabel = (ownershipScope: Playlist['ownershipScope']) => {
-  if (ownershipScope === 'choir') {
-    return 'Choir';
-  }
-
-  if (ownershipScope === 'section') {
-    return 'Section';
-  }
-
-  return 'Personal';
-};
-
 const getPlaylistEntryDurationMs = (options: {
   entry: Playlist['items'][number];
   savedLoops: NamedLoop[];
@@ -176,7 +164,6 @@ export const getSavedPlaylistDetailSummary = (options: {
   const metadataParts = [
     pluralize(options.playlist.items.length, 'item'),
     durationLabel ? `${durationLabel} total` : null,
-    getOwnershipLabel(options.playlist.ownershipScope),
   ].filter((part): part is string => Boolean(part));
 
   return {

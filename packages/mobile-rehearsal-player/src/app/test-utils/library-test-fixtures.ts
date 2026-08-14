@@ -83,7 +83,6 @@ export const SAVED_LOOP = {
   sourceName: PLAYABLE_SOURCE.name,
   startMs: 12000,
   endMs: 18500,
-  ownershipScope: 'user' as const,
   ownerId: 'user-1',
   createdAt: '2026-05-10T00:00:00.000Z',
   updatedAt: '2026-05-10T00:00:00.000Z',

@@ -70,7 +70,6 @@ describe('track scoped loop view-model', () => {
           createdAt: '2026-05-10T01:00:00.000Z',
         },
       ],
-      ownershipScope: 'user',
       ownerId: 'drive:alto-line',
       createdAt: '2026-05-10T00:00:00.000Z',
       updatedAt: '2026-05-10T01:05:00.000Z',

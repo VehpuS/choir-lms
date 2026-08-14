@@ -41,7 +41,6 @@ export const buildTrackScopedLoopPlaybackPlaylist = (options: {
         sortIndex,
       });
     }),
-    ownershipScope: 'user',
     ownerId: options.source.id,
     createdAt: referenceTimestamp,
     updatedAt: lastLoop?.updatedAt ?? referenceTimestamp,

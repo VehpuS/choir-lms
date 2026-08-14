@@ -34,7 +34,6 @@ export const LOOP: NamedLoop = {
   id: 'loop-1',
   name: 'Verse entrance',
   ownerId: 'user-1',
-  ownershipScope: 'user',
   sourceId: SOURCE.id,
   sourceName: SOURCE.name,
   startMs: 12000,
@@ -47,7 +46,6 @@ export const PLAYLIST: Playlist = {
   items: [],
   name: 'Evening Warmups',
   ownerId: 'user-1',
-  ownershipScope: 'user',
   updatedAt: '2026-07-01T00:00:00.000Z',
 };
 

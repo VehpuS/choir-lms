@@ -202,7 +202,6 @@ describe('AsyncStoragePracticeRepository file-tree guardrails', () => {
       id: 'loop-1',
       name: 'Verse entrance',
       ownerId: 'user-1',
-      ownershipScope: 'user',
       sourceId: AVAILABLE_SOURCE.id,
       sourceName: AVAILABLE_SOURCE.name,
       startMs: 12000,

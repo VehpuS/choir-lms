@@ -24,7 +24,6 @@ const makeLoop = (
   createdAt: CREATED_AT,
   endMs: 18000,
   ownerId: OWNER_ID,
-  ownershipScope: 'user',
   startMs: 12000,
   updatedAt: CREATED_AT,
   ...overrides,
