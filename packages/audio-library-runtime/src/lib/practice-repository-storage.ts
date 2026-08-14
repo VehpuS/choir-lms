@@ -25,6 +25,34 @@ type CanonicalCollectionReader = {
 
 const asyncStorage = AsyncStorage as unknown as AsyncStorageStatic;
 
+const libraryFileTreeQueueByOwnerId = new Map<string, Promise<unknown>>();
+
+/**
+ * Serializes read-modify-write access to one owner's library file tree.
+ * Without this, a `refresh()`-style read racing against an explicit
+ * mutation (e.g. moving a file link) can read a stale snapshot and later
+ * overwrite the mutation's result, silently reverting it in memory even
+ * though the mutation's own write already landed in storage.
+ */
+const runSerializedLibraryFileTreeOperation = <Result>(
+  ownerId: string,
+  operation: () => Promise<Result>,
+): Promise<Result> => {
+  const previousTurn =
+    libraryFileTreeQueueByOwnerId.get(ownerId) ?? Promise.resolve();
+  const thisTurn = previousTurn.then(operation, operation);
+
+  libraryFileTreeQueueByOwnerId.set(
+    ownerId,
+    thisTurn.then(
+      () => undefined,
+      () => undefined,
+    ),
+  );
+
+  return thisTurn;
+};
+
 const storageKey = (entity: StoredCollectionKind, ownerId: string) => {
   return `choirlms:practice:${entity}:${ownerId}`;
 };
@@ -71,7 +99,7 @@ export const writeStoredCollection = async <Entity>(
   return values;
 };
 
-export const writeStoredLibraryFileTree = async (
+const writeStoredLibraryFileTreeRaw = async (
   ownerId: string,
   tree: RehearsalLibraryFileTree,
 ) => {
@@ -81,6 +109,15 @@ export const writeStoredLibraryFileTree = async (
   );
 
   return tree;
+};
+
+export const writeStoredLibraryFileTree = (
+  ownerId: string,
+  tree: RehearsalLibraryFileTree,
+) => {
+  return runSerializedLibraryFileTreeOperation(ownerId, () => {
+    return writeStoredLibraryFileTreeRaw(ownerId, tree);
+  });
 };
 
 export const loadCanonicalCollections = async (
@@ -115,22 +152,25 @@ export const hasCanonicalEntity = (
   );
 };
 
-export const persistSynchronizedLibraryFileTree = async (
+export const persistSynchronizedLibraryFileTree = (
   repository: CanonicalCollectionReader,
   ownerId: string,
   entityCollections?: RehearsalLibraryEntityCollections,
 ) => {
-  const storedTree = await readStoredLibraryFileTree(ownerId);
-  const nextEntityCollections =
-    entityCollections ?? (await loadCanonicalCollections(repository, ownerId));
-  const nextTree = syncRehearsalLibraryFileTree({
-    existingTree: storedTree,
-    entityCollections: nextEntityCollections,
+  return runSerializedLibraryFileTreeOperation(ownerId, async () => {
+    const storedTree = await readStoredLibraryFileTree(ownerId);
+    const nextEntityCollections =
+      entityCollections ??
+      (await loadCanonicalCollections(repository, ownerId));
+    const nextTree = syncRehearsalLibraryFileTree({
+      existingTree: storedTree,
+      entityCollections: nextEntityCollections,
+    });
+
+    if (JSON.stringify(storedTree) !== JSON.stringify(nextTree)) {
+      await writeStoredLibraryFileTreeRaw(ownerId, nextTree);
+    }
+
+    return nextTree;
   });
-
-  if (JSON.stringify(storedTree) !== JSON.stringify(nextTree)) {
-    await writeStoredLibraryFileTree(ownerId, nextTree);
-  }
-
-  return nextTree;
 };
