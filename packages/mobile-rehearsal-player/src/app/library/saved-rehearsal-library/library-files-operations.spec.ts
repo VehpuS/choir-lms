@@ -47,6 +47,14 @@ const LOOP: NamedLoop = {
   updatedAt: '2026-07-01T00:00:00.000Z',
 };
 
+const createNoopRefreshCallbacks = () => {
+  return {
+    refreshSavedLoops: async () => undefined,
+    refreshSavedPlaylists: async () => undefined,
+    refreshSavedSources: async () => undefined,
+  };
+};
+
 const createTree = (
   fileLinks: RehearsalLibraryFileLinkNode[] = [ROOT_FILE_LINK],
 ): RehearsalLibraryFileTree => {
@@ -95,6 +103,7 @@ describe('library-files operations', () => {
     const operations = createLibraryFilesOperations({
       explorer: null,
       options: {
+        ...createNoopRefreshCallbacks(),
         savedLoops: [],
         savedPlaylists: [],
         savedSources: [SOURCE],
@@ -189,6 +198,7 @@ describe('library-files operations', () => {
     const operations = createLibraryFilesOperations({
       explorer: null,
       options: {
+        ...createNoopRefreshCallbacks(),
         savedLoops: [LOOP],
         savedPlaylists: [playlist],
         savedSources: [SOURCE],
@@ -245,6 +255,7 @@ describe('library-files operations', () => {
         ReturnType<typeof createLibraryFilesOperations>['explorer']
       >,
       options: {
+        ...createNoopRefreshCallbacks(),
         savedLoops: [],
         savedPlaylists: [],
         savedSources: [SOURCE],
@@ -280,6 +291,7 @@ describe('library-files operations', () => {
     const operations = createLibraryFilesOperations({
       explorer: null,
       options: {
+        ...createNoopRefreshCallbacks(),
         savedLoops: [],
         savedPlaylists: [],
         savedSources: [SOURCE],
@@ -324,6 +336,7 @@ describe('library-files operations', () => {
     const operations = createLibraryFilesOperations({
       explorer: null,
       options: {
+        ...createNoopRefreshCallbacks(),
         savedLoops: [],
         savedPlaylists: [],
         savedSources: [SOURCE],
@@ -359,6 +372,108 @@ describe('library-files operations', () => {
     });
   });
 
+  it('refreshes saved sources, loops, and playlists after a last-link track delete', async () => {
+    let currentTree = createTree([ROOT_FILE_LINK]);
+    const repository = {
+      async deleteLibraryFileLink(_ownerId: string, fileLinkId: string) {
+        currentTree = {
+          ...currentTree,
+          fileLinks: currentTree.fileLinks.filter((fileLink) => {
+            return fileLink.id !== fileLinkId;
+          }),
+        };
+
+        return currentTree;
+      },
+    } as unknown as AsyncStoragePracticeRepository;
+    const refreshedCollections: string[] = [];
+    const operations = createLibraryFilesOperations({
+      explorer: null,
+      options: {
+        async refreshSavedLoops() {
+          refreshedCollections.push('loops');
+        },
+        async refreshSavedPlaylists() {
+          refreshedCollections.push('playlists');
+        },
+        async refreshSavedSources() {
+          refreshedCollections.push('sources');
+        },
+        savedLoops: [],
+        savedPlaylists: [],
+        savedSources: [SOURCE],
+      },
+      practiceRepository: repository,
+      setCurrentFolderId: () => undefined,
+      setIssue: () => undefined,
+      setTree: (nextTree) => {
+        currentTree = nextTree as RehearsalLibraryFileTree;
+      },
+      tree: currentTree,
+    });
+
+    const didDelete = await operations.deleteFileLink(ROOT_FILE_LINK.id);
+
+    assert.equal(didDelete, true);
+    assert.deepEqual(new Set(refreshedCollections), new Set([
+      'sources',
+      'loops',
+      'playlists',
+    ]));
+  });
+
+  it('does not refresh saved entity caches when another link to the entity remains', async () => {
+    const copyFileLink: RehearsalLibraryFileLinkNode = {
+      entityId: SOURCE.id,
+      entityKind: 'track',
+      id: 'file-link:track:copy',
+      parentFolderId: 'folder-warmups',
+    };
+    let currentTree = createTree([ROOT_FILE_LINK, copyFileLink]);
+    const repository = {
+      async deleteLibraryFileLink(_ownerId: string, fileLinkId: string) {
+        currentTree = {
+          ...currentTree,
+          fileLinks: currentTree.fileLinks.filter((fileLink) => {
+            return fileLink.id !== fileLinkId;
+          }),
+        };
+
+        return currentTree;
+      },
+    } as unknown as AsyncStoragePracticeRepository;
+    const refreshedCollections: string[] = [];
+    const operations = createLibraryFilesOperations({
+      explorer: null,
+      options: {
+        async refreshSavedLoops() {
+          refreshedCollections.push('loops');
+        },
+        async refreshSavedPlaylists() {
+          refreshedCollections.push('playlists');
+        },
+        async refreshSavedSources() {
+          refreshedCollections.push('sources');
+        },
+        savedLoops: [],
+        savedPlaylists: [],
+        savedSources: [SOURCE],
+      },
+      practiceRepository: repository,
+      setCurrentFolderId: () => undefined,
+      setIssue: () => undefined,
+      setTree: (nextTree) => {
+        currentTree = nextTree as RehearsalLibraryFileTree;
+      },
+      tree: currentTree,
+    });
+
+    const didDelete = await operations.deleteFileLink(copyFileLink.id);
+
+    assert.equal(didDelete, true);
+    assert.deepEqual(refreshedCollections, []);
+  });
+
   it('suggests a unique name after a duplicate rename conflict', async () => {
     const repository = {
       async saveLibraryFileLink() {
@@ -370,6 +485,7 @@ describe('library-files operations', () => {
     const operations = createLibraryFilesOperations({
       explorer: null,
       options: {
+        ...createNoopRefreshCallbacks(),
         savedLoops: [],
         savedPlaylists: [],
         savedSources: [SOURCE],

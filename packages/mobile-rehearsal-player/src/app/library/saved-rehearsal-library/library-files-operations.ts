@@ -16,6 +16,7 @@ import {
   createLibraryFilesImpactReaders,
   createLibraryFilesIssue,
   createUniqueNodeId,
+  type LibraryFilesEntityRefreshCallbacks,
   type LibraryFilesIssue,
   resolveLibraryFilesSuggestedName,
   type UseLibraryFilesOptions,
@@ -24,12 +25,33 @@ import { createLibraryFilesRenameOperations } from './library-files-rename-opera
 
 type LibraryFilesOperationsOptions = {
   explorer: LibraryFilesExplorerState | null;
-  options: UseLibraryFilesOptions;
+  options: UseLibraryFilesOptions & LibraryFilesEntityRefreshCallbacks;
   practiceRepository: AsyncStoragePracticeRepository;
   setCurrentFolderId: Dispatch<SetStateAction<string | null>>;
   setIssue: Dispatch<SetStateAction<LibraryFilesIssue | null>>;
   setTree: Dispatch<SetStateAction<RehearsalLibraryFileTree | null>>;
   tree: RehearsalLibraryFileTree | null;
+};
+
+const refreshSavedEntityCollectionAfterLastLinkDelete = async (
+  options: LibraryFilesEntityRefreshCallbacks,
+  entityKind: RehearsalLibraryEntityKind,
+) => {
+  if (entityKind === 'track') {
+    await Promise.all([
+      options.refreshSavedSources(),
+      options.refreshSavedLoops(),
+      options.refreshSavedPlaylists(),
+    ]);
+    return;
+  }
+
+  if (entityKind === 'loop') {
+    await options.refreshSavedLoops();
+    return;
+  }
+
+  await options.refreshSavedPlaylists();
 };
 
 export const createLibraryFilesOperations = ({
@@ -266,6 +288,16 @@ export const createLibraryFilesOperations = ({
       }
     },
     async deleteFileLink(fileLinkId: string) {
+      const fileLink =
+        tree?.fileLinks.find((existingFileLink) => {
+          return existingFileLink.id === fileLinkId;
+        }) ?? null;
+      const isLastLink = fileLink
+        ? createLibraryFilesImpactReaders(tree).getFileLinkDeleteImpact(
+            fileLink,
+          ).isLastLink
+        : false;
+
       try {
         const nextTree = await practiceRepository.deleteLibraryFileLink(
           LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
@@ -274,6 +306,14 @@ export const createLibraryFilesOperations = ({
 
         setTree(nextTree);
         setIssue(null);
+
+        if (isLastLink && fileLink) {
+          await refreshSavedEntityCollectionAfterLastLinkDelete(
+            options,
+            fileLink.entityKind,
+          );
+        }
+
         return true;
       } catch (error) {
         setOperationIssue(

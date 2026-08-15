@@ -57,6 +57,9 @@ export const DriveLibrarySavedLibraryPanel = ({
   savedTrackPlaybackStatusCopy,
 }: DriveLibrarySavedLibraryPanelProps) => {
   const libraryFiles = useLibraryFiles({
+    refreshSavedLoops: savedLoopsState.refreshLoops,
+    refreshSavedPlaylists: savedPlaylistsState.refreshPlaylists,
+    refreshSavedSources: savedLibraryState.refreshSources,
     savedLoops: savedLoopsState.savedLoops,
     savedPlaylists: savedPlaylistsState.savedPlaylists,
     savedSources: savedLibrarySources,

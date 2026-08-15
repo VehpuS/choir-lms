@@ -114,6 +114,9 @@ export const useRehearsalLibraryController = ({
     savedSources: savedLibrarySources,
   });
   const libraryFiles = useLibraryFiles({
+    refreshSavedLoops: savedLoops.refreshLoops,
+    refreshSavedPlaylists: playlists.refreshPlaylists,
+    refreshSavedSources: savedLibrary.refreshSources,
     savedLoops: savedLoops.savedLoops,
     savedPlaylists: playlists.savedPlaylists,
     savedSources: savedLibrarySources,

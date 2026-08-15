@@ -16,6 +16,7 @@ import {
 } from './library-files-model';
 import {
   formatLibraryFilesIssue,
+  type LibraryFilesEntityRefreshCallbacks,
   type LibraryFilesIssue,
   type UseLibraryFilesOptions,
 } from './library-files-operation-helpers';
@@ -51,7 +52,9 @@ const buildCanonicalIdsKey = (options: UseLibraryFilesOptions) => {
 
 export type UseLibraryFilesResult = ReturnType<typeof useLibraryFiles>;
 
-export const useLibraryFiles = (options: UseLibraryFilesOptions) => {
+export const useLibraryFiles = (
+  options: UseLibraryFilesOptions & LibraryFilesEntityRefreshCallbacks,
+) => {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [issue, setIssue] = useState<LibraryFilesIssue | null>(null);

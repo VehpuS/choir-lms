@@ -171,6 +171,15 @@ export const useSavedRehearsalLibrary = () => {
     issue,
     isLoading,
     pendingSourceId,
+    async refreshSources() {
+      const nextSources = await loadSavedRehearsalLibrarySources(
+        practiceRepository,
+        LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+      );
+
+      setSavedSources(nextSources);
+      setIssue(null);
+    },
     async removeSource(source: DriveLibrarySource) {
       if (issue?.kind === 'storage') {
         return false;

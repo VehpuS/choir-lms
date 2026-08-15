@@ -19,6 +19,12 @@ export type UseLibraryFilesOptions = {
   savedSources: DriveLibrarySource[];
 };
 
+export type LibraryFilesEntityRefreshCallbacks = {
+  refreshSavedLoops: () => Promise<void>;
+  refreshSavedPlaylists: () => Promise<unknown>;
+  refreshSavedSources: () => Promise<void>;
+};
+
 export type LibraryFilesIssueRecovery =
   | {
       kind: 'rename-before-retry';
