@@ -40,6 +40,7 @@ describe('saved rehearsal library detail view-model', () => {
 
   it('keeps Files as the mixed browse view', () => {
     assert.deepEqual(resolveSavedRehearsalLibraryVisibleSections('files'), {
+      showLoopBrowseList: true,
       showLoopSection: true,
       showPlaylistCards: true,
       showPlaylistSection: true,
@@ -52,10 +53,11 @@ describe('saved rehearsal library detail view-model', () => {
     });
   });
 
-  it('keeps Tracks focused on saved-track-first browsing', () => {
+  it('keeps Tracks focused on saved tracks only, hiding the Saved loops browse list and playlist cards while still hosting the loop builder', () => {
     assert.deepEqual(resolveSavedRehearsalLibraryVisibleSections('tracks'), {
+      showLoopBrowseList: false,
       showLoopSection: true,
-      showPlaylistCards: true,
+      showPlaylistCards: false,
       showPlaylistSection: false,
       showSourceGroup: true,
     });
@@ -63,6 +65,7 @@ describe('saved rehearsal library detail view-model', () => {
 
   it('lets Loops focus on loop playback and management only', () => {
     assert.deepEqual(resolveSavedRehearsalLibraryVisibleSections('loops'), {
+      showLoopBrowseList: true,
       showLoopSection: true,
       showPlaylistCards: false,
       showPlaylistSection: false,
@@ -72,6 +75,7 @@ describe('saved rehearsal library detail view-model', () => {
 
   it('keeps Playlists focused on playlist surfaces', () => {
     assert.deepEqual(resolveSavedRehearsalLibraryVisibleSections('playlists'), {
+      showLoopBrowseList: false,
       showLoopSection: false,
       showPlaylistCards: true,
       showPlaylistSection: true,

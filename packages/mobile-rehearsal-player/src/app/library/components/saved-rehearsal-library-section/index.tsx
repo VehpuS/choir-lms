@@ -158,6 +158,7 @@ export const SavedRehearsalLibrarySection = ({
       canMutateLoops={canMutateLoops}
       canMutatePlaylists={canMutatePlaylists}
       canQueueAsNext={activePlayableItem !== null}
+      isBrowseListSuppressed={!visibleSections.showLoopBrowseList}
       isPlaybackPreparing={isPlaybackPreparing}
       isPlaylistMutating={isPlaylistMutating}
       isSavedLoopsLoading={isSavedLoopsLoading}

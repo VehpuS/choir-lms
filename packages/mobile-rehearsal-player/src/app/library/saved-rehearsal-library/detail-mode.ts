@@ -15,6 +15,13 @@ export type SavedRehearsalLibraryViewOption = {
 };
 
 export type SavedRehearsalLibraryVisibleSections = {
+  /**
+   * Whether the Saved loops heading/status/list render inside the mounted
+   * loop section. Kept separate from `showLoopSection` so a view can still
+   * mount the loop section (hosting the loop-builder modal for track-row
+   * `Make loop`) while hiding its browse list, as the Tracks view does.
+   */
+  showLoopBrowseList: boolean;
   showLoopSection: boolean;
   showPlaylistCards: boolean;
   showPlaylistSection: boolean;
@@ -55,7 +62,7 @@ const SAVED_REHEARSAL_LIBRARY_VIEW_COPY: Record<
     title: 'Playlists',
   },
   tracks: {
-    body: 'Browse saved tracks with quick playlist access and track-linked loops.',
+    body: 'Browse saved tracks, with track-linked loops one tap away via View track loops.',
     eyebrow: 'Library',
     title: 'Tracks',
   },
@@ -66,26 +73,33 @@ const SAVED_REHEARSAL_LIBRARY_VISIBLE_SECTIONS: Record<
   SavedRehearsalLibraryVisibleSections
 > = {
   files: {
+    showLoopBrowseList: true,
     showLoopSection: true,
     showPlaylistCards: true,
     showPlaylistSection: true,
     showSourceGroup: true,
   },
   loops: {
+    showLoopBrowseList: true,
     showLoopSection: true,
     showPlaylistCards: false,
     showPlaylistSection: false,
     showSourceGroup: false,
   },
   playlists: {
+    showLoopBrowseList: false,
     showLoopSection: false,
     showPlaylistCards: true,
     showPlaylistSection: true,
     showSourceGroup: false,
   },
   tracks: {
+    // Tracks stays mounted (showLoopSection) so track-row `Make loop` still
+    // has the loop-builder modal to render into, but its browse list is
+    // hidden: this view shows saved tracks only (task 2.9.5).
+    showLoopBrowseList: false,
     showLoopSection: true,
-    showPlaylistCards: true,
+    showPlaylistCards: false,
     showPlaylistSection: false,
     showSourceGroup: true,
   },

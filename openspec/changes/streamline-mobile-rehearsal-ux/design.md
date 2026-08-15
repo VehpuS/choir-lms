@@ -74,7 +74,7 @@ Top-level Library views:
 View responsibilities:
 
 - Files: unified explorer-style browser for mixed saved entities. Tracks, loops, playlists, folders, and future file-like items are managed inside one hierarchical file tree using standard mobile file-explorer navigation patterns.
-- Tracks: preserves the current saved-track-first browse flow, including playlist quick access and parent-track loop entry points.
+- Tracks: preserves the current saved-track-first browse flow with parent-track loop entry points (`View track loops`), narrowed to saved tracks only — no playlist cards or Saved loops browse list (task `2.9.5`).
 - Loops: preserves direct saved-loop browsing and playback without requiring parent-track navigation.
 - Playlists: preserves playlist-card and playlist-detail browsing patterns for focused playlist management.
 
@@ -100,7 +100,7 @@ Placement rules:
 - Files sort should stay explorer-consistent across modes: folders remain grouped before non-folder items, `Type` groups by entity type after the folder group, `Date added` sorts newest-first within each folder/file grouping, and `Date opened` sorts most-recently-opened first within each grouping.
 - When Files search results are shown, they should continue to respect the active Files sort mode after scope filtering rather than switching to an unrelated implicit ordering.
 - When users leave Files for another Library view or top-level tab and return in the same app session, the explorer should restore its current folder path, breadcrumb state, search scope and query, selected sort, and scroll position instead of resetting to root.
-- Track-focused browsing keeps a top-level Saved loops section available for cross-track access while also supporting parent-track loop management.
+- The dedicated Loops view remains the cross-track Saved loops surface. The dedicated Tracks view shows saved tracks only and does not embed its own Saved loops browse list, relying on the track-scoped `View track loops` overflow action for track-linked loop access instead (task `2.9.5`); Files continues to mix all saved entity types, including loops, per the `1.2`/`3.1` IA plan.
 - Saved tracks that own one or more loops expose a `View track loops` overflow action so users can open a track-scoped loop view from the parent track context.
 - Track-focused browsing continues to expose `View track loops` so parent-track loop management remains fast even though loops are also manageable as first-class file-like items in Files and folder results.
 - The track-scoped loop view follows playlist-detail hierarchy: it replaces the main Library browse content while active, provides a back button to return, keeps the parent track visible, lists only that track's loops, supports ordered playback across those loops, and includes a `Make new loop` action for the same track.
@@ -378,7 +378,7 @@ Validated flow: first-use empty library -> discover -> save first track -> optio
 
 - Keep a persistent success acknowledgement after save action long enough to support the Add -> Library handoff.
 - Ensure Library tab lands on saved-track content with playlist actions immediately reachable (no hidden management mode required).
-- Keep playlist quick-access cards above saved-track rows so add-to-playlist and playback-start paths stay short.
+- Keep per-row `Add to playlist` reachable from saved-track overflow menus so the add-to-playlist path stays short; playlist quick-access cards no longer appear on the Tracks view itself, since Tracks now shows saved tracks only (task `2.9.5`) and the dedicated Playlists view is the quick-access surface for playlist cards.
 - Keep playlist creation anchored to the Playlists section header in Library so the create action is discoverable without a persistent bottom-of-Library component.
 - Preserve mini-player continuity through the full flow so users can verify playback state while navigating.
 - Include this validated flow in manual regression checks as a required pass scenario before sign-off.
@@ -542,11 +542,11 @@ Alternatives considered:
 
 ### 9. Manage loops in track context first while preserving independent loop result surfaces
 
-Loop creation and editing should remain attached to parent tracks without removing the top-level Saved loops section from Library. `View track loops` should open a track-scoped detail view for one parent track, while the broader Saved loops section remains available for cross-track access. Editing must remain available even when a saved loop is currently active in playback: opening edit should reuse the loop builder directly rather than forcing a separate pause-confirm step, and saving an edited active loop should resynchronize any affected queue or current-item playback context. This is a UI organization choice, not a change to loops' status as library objects: loops remain independently searchable, taggable, folderable, and displayable as their own result category in search, tag, and folder views.
+Loop creation and editing should remain attached to parent tracks. The dedicated Loops view remains Library's cross-track Saved loops surface; the dedicated Tracks view narrows to saved tracks only and no longer embeds its own Saved loops browse list there, relying on the track-scoped `View track loops` overflow action instead (task `2.9.5`, which reverses this section's earlier "keep the default top-level Saved loops Library section available for cross-track access" language). `View track loops` opens a track-scoped detail view for one parent track. Editing must remain available even when a saved loop is currently active in playback: opening edit should reuse the loop builder directly rather than forcing a separate pause-confirm step, and saving an edited active loop should resynchronize any affected queue or current-item playback context. This is a UI organization choice, not a change to loops' status as library objects: loops remain independently searchable, taggable, folderable, and displayable as their own result category in search, tag, and folder views.
 
 Implementation guidance:
 
-- Keep the default top-level saved-loops section in Library for cross-track access.
+- Keep the dedicated Loops view as the cross-track Saved loops surface; the dedicated Tracks view omits its own Saved loops browse list and relies on `View track loops` instead (task `2.9.5`). The loop-builder modal launched from a Tracks-view track row's `Make loop` action still renders normally — only the Saved loops heading/status/list are hidden on Tracks, not the builder host.
 - When a saved track owns one or more loops, expose `View track loops` in the track overflow menu.
 - The track-scoped loop view should behave like playlist detail for that track's loops: replace the main Library browse content while active, provide a back button that returns to the prior Library browse state, keep the parent track context visible, list only those loops, support ordered queued playback for the full set or an individual starting loop, and surface a `Make new loop` action for the same track.
 - The track-scoped loop view must keep loops easy to play, add to playlist, queue, and otherwise manage through the same shared row-action model used for saved tracks where applicable.

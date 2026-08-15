@@ -26,6 +26,7 @@ import { TrackScopedLoopDetailCard } from './track-scoped-loop-detail-card';
 type SavedLoopSectionProps = {
   activePlayableItem: PlayableItem | null;
   editingLoop: NamedLoop | null;
+  isBrowseListSuppressed?: boolean;
   isPlaybackPreparing: boolean;
   isTrackLoopDetailVisible: boolean;
   canMutateLoops: boolean;
@@ -69,6 +70,7 @@ const SECONDARY_TEXT = '#5f5647';
 export const SavedLoopSection = ({
   activePlayableItem,
   editingLoop,
+  isBrowseListSuppressed = false,
   isPlaybackPreparing,
   isTrackLoopDetailVisible,
   canMutateLoops,
@@ -150,6 +152,7 @@ export const SavedLoopSection = ({
   const shouldShowStatusCard =
     isSavedLoopsLoading || statusCopy.tone !== 'ready';
   const shouldShowBrowseContent = shouldShowSavedLoopBrowseContent({
+    isBrowseListSuppressed,
     isBuilderFocused,
     isTrackLoopDetailVisible,
   });
