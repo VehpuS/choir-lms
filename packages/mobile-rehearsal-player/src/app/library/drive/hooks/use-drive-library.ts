@@ -236,7 +236,6 @@ export const useDriveLibrary = (
     selectRoot(rootKind: DriveBrowseLocation['rootKind']) {
       const rootLocation = createRootLocation(rootKind);
 
-      deactivateSearch();
       setNavigationStack([rootLocation]);
       setBrowseSnapshot(createEmptyBrowseSnapshot(rootLocation));
     },
