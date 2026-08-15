@@ -11,6 +11,7 @@ import { attachRowActionSections } from '../../components/options-menu-sheet/row
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import {
   resolveDriveLibrarySourceActionPlacement,
+  resolveDriveLibrarySourceMenuTone,
   type DriveLibrarySourceAction,
 } from '../utils/drive-library-source-actions';
 import {
@@ -46,18 +47,6 @@ const getActionButtonLabelStyle = (action: DriveLibrarySourceAction) => {
   return action.tone === 'primary'
     ? styles.actionButtonPrimaryLabel
     : styles.actionButtonNeutralLabel;
-};
-
-const getMenuTone = (tone: DriveLibrarySourceAction['tone']) => {
-  if (tone === 'primary') {
-    return 'primary' as const;
-  }
-
-  if (tone === 'destructive') {
-    return 'destructive' as const;
-  }
-
-  return 'secondary' as const;
 };
 
 const getMenuActionLabel = (action: DriveLibrarySourceAction) => {
@@ -234,7 +223,7 @@ const DriveLibrarySourceCard = ({
                 setIsOptionsMenuVisible(false);
                 action.onPress();
               },
-              tone: getMenuTone(action.tone),
+              tone: resolveDriveLibrarySourceMenuTone(action.tone),
             };
           }),
         )}

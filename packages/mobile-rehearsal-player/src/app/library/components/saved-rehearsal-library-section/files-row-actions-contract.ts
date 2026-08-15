@@ -26,6 +26,7 @@ export const TRACK_ACTION_ORDER = new Map([
   ['Add to queue', 1],
   ['Make loop', 2],
   ['Preparing loop…', 2],
+  ['View track loops', 2],
   ['Add to playlist', 3],
   ['Reconnect', 4],
   ['Create a copy', 5],
@@ -126,8 +127,8 @@ export const toOptionsMenuAction = (options: {
   };
 };
 
-export const sortActionsByLabelOrder = (
-  actions: OptionsMenuAction[],
+export const sortActionsByLabelOrder = <T extends { label: string }>(
+  actions: T[],
   order: ReadonlyMap<string, number>,
 ) => {
   return actions.sort((left, right) => {

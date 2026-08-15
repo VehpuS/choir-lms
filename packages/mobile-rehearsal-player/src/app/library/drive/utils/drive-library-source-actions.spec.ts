@@ -3,7 +3,10 @@ import { describe, it } from 'node:test';
 
 import { PLAYABLE_SOURCE } from '../../../test-utils/library-test-fixtures.js';
 import { resolveSavedTrackRowActions } from '../../playback/utils/saved-track-row-actions.js';
-import { resolveDriveLibrarySourceActionPlacement } from './drive-library-source-actions.js';
+import {
+  resolveDriveLibrarySourceActionPlacement,
+  resolveDriveLibrarySourceMenuTone,
+} from './drive-library-source-actions.js';
 import { resolveDriveSourceActions } from './drive-search-preview-actions.js';
 
 describe('drive library source actions', () => {
@@ -245,6 +248,16 @@ describe('drive library source actions', () => {
     assert.equal(
       actions.some((action) => action.label === 'View track loops'),
       false,
+    );
+  });
+
+  it('downgrades primary-tone menu items to secondary so overflow menus never highlight one action', () => {
+    assert.equal(resolveDriveLibrarySourceMenuTone('primary'), 'secondary');
+    assert.equal(resolveDriveLibrarySourceMenuTone(undefined), 'secondary');
+    assert.equal(resolveDriveLibrarySourceMenuTone('neutral'), 'secondary');
+    assert.equal(
+      resolveDriveLibrarySourceMenuTone('destructive'),
+      'destructive',
     );
   });
 });
