@@ -2,6 +2,7 @@ import { type PlayableItem } from '@org/audio-library-models';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 
+import { ExplorerListSurface } from '../../../components/explorer';
 import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
@@ -78,42 +79,44 @@ export const SavedLoopList = ({
         {title ?? `Saved loops (${loopCards.length})`}
       </Text>
 
-      {loopCards.map((loopCard) => {
-        return (
-          <SavedLoopListRow
-            activePlayableItem={activePlayableItem}
-            canMutateLoops={canMutateLoops}
-            canMutatePlaylists={canMutatePlaylists}
-            canQueueAsNext={canQueueAsNext}
-            editingLoopId={editingLoopId}
-            highlightQuery={highlightQuery}
-            isOptionsVisible={activeOptionsLoopId === loopCard.loop.id}
-            isPlaybackPreparing={isPlaybackPreparing}
-            isPlaylistMutating={isPlaylistMutating}
-            key={loopCard.loop.id}
-            loopCard={loopCard}
-            loopIssue={loopIssue}
-            onCloseOptions={() => {
-              setActiveOptionsLoopId(null);
-            }}
-            onEditLoop={onEditLoop}
-            onEditLoopTags={onEditLoopTags}
-            onOpenLoopPlaylistSelector={onOpenLoopPlaylistSelector}
-            onOpenOptions={() => {
-              setActiveOptionsLoopId(loopCard.loop.id);
-            }}
-            onPlayLoopSeries={onPlayLoopSeries}
-            onToggleCurrentPlayback={onToggleCurrentPlayback}
-            pendingLoopId={pendingLoopId}
-            playbackIssue={playbackIssue}
-            playbackState={playbackState}
-            queuePlayableItemNext={queuePlayableItemNext}
-            queuePlayableItemUpNext={queuePlayableItemUpNext}
-            removeLoop={removeLoop}
-            togglePlayableItemPlayback={togglePlayableItemPlayback}
-          />
-        );
-      })}
+      <ExplorerListSurface>
+        {loopCards.map((loopCard) => {
+          return (
+            <SavedLoopListRow
+              activePlayableItem={activePlayableItem}
+              canMutateLoops={canMutateLoops}
+              canMutatePlaylists={canMutatePlaylists}
+              canQueueAsNext={canQueueAsNext}
+              editingLoopId={editingLoopId}
+              highlightQuery={highlightQuery}
+              isOptionsVisible={activeOptionsLoopId === loopCard.loop.id}
+              isPlaybackPreparing={isPlaybackPreparing}
+              isPlaylistMutating={isPlaylistMutating}
+              key={loopCard.loop.id}
+              loopCard={loopCard}
+              loopIssue={loopIssue}
+              onCloseOptions={() => {
+                setActiveOptionsLoopId(null);
+              }}
+              onEditLoop={onEditLoop}
+              onEditLoopTags={onEditLoopTags}
+              onOpenLoopPlaylistSelector={onOpenLoopPlaylistSelector}
+              onOpenOptions={() => {
+                setActiveOptionsLoopId(loopCard.loop.id);
+              }}
+              onPlayLoopSeries={onPlayLoopSeries}
+              onToggleCurrentPlayback={onToggleCurrentPlayback}
+              pendingLoopId={pendingLoopId}
+              playbackIssue={playbackIssue}
+              playbackState={playbackState}
+              queuePlayableItemNext={queuePlayableItemNext}
+              queuePlayableItemUpNext={queuePlayableItemUpNext}
+              removeLoop={removeLoop}
+              togglePlayableItemPlayback={togglePlayableItemPlayback}
+            />
+          );
+        })}
+      </ExplorerListSurface>
     </View>
   );
 };

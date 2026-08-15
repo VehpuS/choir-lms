@@ -1,11 +1,13 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { type PlayableItem } from '@org/audio-library-models';
-import { Pressable, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
-import { CompactPlayableRowShell } from '../../../../components/compact-playable-row-shell';
-import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
+import { appTheme } from '../../../../utils/theme';
+import { ExplorerListRow } from '../../../components/explorer';
 import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
 import { attachRowActionSections } from '../../../components/options-menu-sheet/row-action-sections';
+import { toOptionsMenuAction } from '../../../components/saved-rehearsal-library-section/files-row-actions-contract';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -20,7 +22,6 @@ import {
   type SavedLoopCard,
   type SavedLoopIssue,
 } from '../../utils/saved-loop-view-model';
-import { savedLoopListStyles as styles } from '../saved-loop-list-styles';
 
 type SavedLoopListRowProps = {
   activePlayableItem: PlayableItem | null;
@@ -48,32 +49,6 @@ type SavedLoopListRowProps = {
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   removeLoop: (loop: SavedLoopCard['loop']) => void;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
-};
-
-const getInlineActionButtonStyle = (
-  tone?: 'destructive' | 'neutral' | 'primary',
-) => {
-  return tone === 'primary' ? styles.playButton : styles.secondaryButton;
-};
-
-const getInlineActionLabelStyle = (
-  tone?: 'destructive' | 'neutral' | 'primary',
-) => {
-  return tone === 'primary'
-    ? styles.playButtonLabel
-    : styles.secondaryButtonLabel;
-};
-
-const getMenuTone = (tone?: 'destructive' | 'neutral' | 'primary') => {
-  if (tone === 'primary') {
-    return 'primary' as const;
-  }
-
-  if (tone === 'destructive') {
-    return 'destructive' as const;
-  }
-
-  return 'secondary' as const;
 };
 
 export const SavedLoopListRow = ({
@@ -104,11 +79,11 @@ export const SavedLoopListRow = ({
   togglePlayableItemPlayback,
 }: SavedLoopListRowProps) => {
   const playableItem = loopCard.playableItem;
-  const playbackAction = loopCard.playableItem
+  const playbackAction = playableItem
     ? getSavedTrackPlaybackActionCopy({
         activePlayableItem,
         isPreparing: isPlaybackPreparing,
-        playableItem: loopCard.playableItem,
+        playableItem,
         playbackState,
       })
     : {
@@ -116,8 +91,25 @@ export const SavedLoopListRow = ({
         label: 'Unavailable',
       };
   const isPlaybackLoopActive =
-    loopCard.playableItem !== null &&
-    isSavedTrackPlaybackActive(activePlayableItem, loopCard.playableItem);
+    playableItem !== null &&
+    isSavedTrackPlaybackActive(activePlayableItem, playableItem);
+  const handleTogglePlayback = () => {
+    if (!playableItem) {
+      return;
+    }
+
+    if (isPlaybackLoopActive && onToggleCurrentPlayback) {
+      onToggleCurrentPlayback();
+      return;
+    }
+
+    if (onPlayLoopSeries) {
+      onPlayLoopSeries(loopCard.loop.id);
+      return;
+    }
+
+    void togglePlayableItemPlayback(playableItem);
+  };
   const rowActions = resolveSavedLoopRowActions({
     canEditLoop: playableItem !== null,
     canMutateLoops,
@@ -158,125 +150,115 @@ export const SavedLoopListRow = ({
     onRemove: () => {
       removeLoop(loopCard.loop);
     },
-    onTogglePlayback: () => {
-      if (!loopCard.playableItem) {
-        return;
-      }
-
-      if (isPlaybackLoopActive && onToggleCurrentPlayback) {
-        onToggleCurrentPlayback();
-        return;
-      }
-
-      if (onPlayLoopSeries) {
-        onPlayLoopSeries(loopCard.loop.id);
-        return;
-      }
-
-      void togglePlayableItemPlayback(loopCard.playableItem);
-    },
+    onTogglePlayback: handleTogglePlayback,
     playbackAction,
-  });
-  const inlineActions = rowActions.filter((action) => {
-    return action.placement === 'inline';
   });
   const menuActions = rowActions.filter((action) => {
     return action.placement === 'menu';
   });
+  const sheetActions = attachRowActionSections(
+    menuActions.map((action, index) => {
+      return toOptionsMenuAction({
+        action,
+        id: `loop:${loopCard.loop.id}:${index}`,
+      });
+    }),
+  );
   const loopMessage =
     getSavedLoopItemIssue(loopIssue, loopCard.loop.id) ??
     loopCard.message ??
-    (loopCard.playableItem
-      ? getSavedTrackPlaybackItemIssue(playbackIssue, loopCard.playableItem)
+    (playableItem
+      ? getSavedTrackPlaybackItemIssue(playbackIssue, playableItem)
       : undefined);
-  const overflowTrigger =
-    menuActions.length > 0 ? (
-      <OverflowMenuTrigger
-        accessibilityLabel="Loop options"
-        onPress={onOpenOptions}
-      />
-    ) : null;
 
   return (
-    <View>
-      <CompactPlayableRowShell
-        actions={inlineActions.map((action, index) => {
-          if (action.iconName) {
-            return (
-              <CompactPlaybackAction
-                accessibilityLabel={action.accessibilityLabel ?? action.label}
-                disabled={action.disabled}
-                iconName={action.iconName}
-                key={`${loopCard.loop.id}:${action.accessibilityLabel ?? action.label}:${index}`}
-                onPress={action.onPress}
-                variant="inline"
-              />
-            );
-          }
-
-          return (
-            <Pressable
-              accessibilityLabel={action.accessibilityLabel ?? action.label}
-              accessibilityRole="button"
-              disabled={action.disabled}
-              key={`${loopCard.loop.id}:${action.accessibilityLabel ?? action.label}:${index}`}
-              onPress={action.onPress}
-              style={({ pressed }) => [
-                getInlineActionButtonStyle(action.tone),
-                pressed && !action.disabled
-                  ? styles.actionButtonPressed
-                  : undefined,
-                action.disabled ? styles.actionButtonDisabled : undefined,
-              ]}
-            >
-              <Text style={getInlineActionLabelStyle(action.tone)}>
-                {action.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-        metadata={
-          <SearchHighlightedText
-            query={highlightQuery}
-            style={styles.loopMetadata}
-            text={loopCard.metadataLabel}
+    <>
+      <ExplorerListRow
+        active={isPlaybackLoopActive}
+        disabled={playbackAction.disabled}
+        leadingIcon={
+          <MaterialCommunityIcons
+            color={
+              isPlaybackLoopActive
+                ? '#173229'
+                : appTheme.colors.secondaryText
+            }
+            name="repeat"
+            size={22}
           />
         }
         message={
           loopMessage ? (
-            <Text style={styles.loopMessage}>{loopMessage}</Text>
+            <Text numberOfLines={2} style={styles.rowMessage}>
+              {loopMessage}
+            </Text>
           ) : null
         }
-        overflowTrigger={overflowTrigger}
-        style={styles.loopCard}
+        metadata={
+          <SearchHighlightedText
+            numberOfLines={1}
+            query={highlightQuery}
+            style={styles.rowSupportingLabel}
+            text={loopCard.metadataLabel}
+          />
+        }
+        onPress={handleTogglePlayback}
+        overflowTrigger={
+          menuActions.length > 0 ? (
+            <OverflowMenuTrigger
+              accessibilityLabel={`${loopCard.loop.name} options`}
+              iconColor={appTheme.colors.secondaryText}
+              onPress={onOpenOptions}
+              style={styles.rowOverflowTrigger}
+            />
+          ) : null
+        }
         title={
           <SearchHighlightedText
+            numberOfLines={1}
             query={highlightQuery}
-            style={styles.loopName}
+            style={styles.rowTitle}
             text={loopCard.loop.name}
           />
         }
-        variant="card"
       />
       <OptionsMenuSheet
-        actions={attachRowActionSections(
-          menuActions.map((action, index) => {
-            return {
-              disabled: action.disabled,
-              id: `loop:${loopCard.loop.id}:${index}`,
-              label: action.label,
-              onPress: () => {
-                onCloseOptions();
-                action.onPress();
-              },
-              tone: getMenuTone(action.tone),
-            };
-          }),
-        )}
+        actions={sheetActions.map((action) => {
+          return {
+            ...action,
+            onPress: () => {
+              onCloseOptions();
+              action.onPress();
+            },
+          };
+        })}
         isVisible={isOptionsVisible}
         onClose={onCloseOptions}
         title={loopCard.loop.name}
       />
-    </View>
+    </>
   );
 };
+
+const styles = StyleSheet.create({
+  rowMessage: {
+    color: '#9a4d2d',
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  rowOverflowTrigger: {
+    position: 'relative',
+    right: 0,
+    top: 0,
+  },
+  rowSupportingLabel: {
+    color: appTheme.colors.secondaryText,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  rowTitle: {
+    color: appTheme.colors.primaryText,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+});
