@@ -61,6 +61,7 @@ export type MobileShellProps = {
   playbackToggleLabel: string;
   playbackVolumeLevel: number;
   playbackState: SavedTrackPlaybackState | undefined;
+  savedLibraryConfirmationDialog: ReactNode;
 };
 
 const PANEL_BY_DESTINATION: Record<
@@ -109,6 +110,7 @@ export const MobileShell = ({
   playbackToggleLabel,
   playbackVolumeLevel,
   playbackState,
+  savedLibraryConfirmationDialog,
 }: MobileShellProps) => {
   const [activeDestination, setActiveDestination] =
     useState<ShellDestinationKey>('library');
@@ -261,6 +263,8 @@ export const MobileShell = ({
         queuePlaylistDraftName={queuePlaylistState.queuePlaylistDraftName}
         updateAction={queuePlaylistState.updateAction}
       />
+
+      {savedLibraryConfirmationDialog}
     </SafeAreaView>
   );
 };

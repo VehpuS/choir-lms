@@ -6,7 +6,6 @@ import {
   type Playlist,
 } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import { getSelectedPlaylistIssue } from '../../playlists/utils/saved-playlist-status-view-model';
@@ -21,6 +20,7 @@ import {
   buildPlaylistDetailOrigin,
   type PlaylistDetailOpenContext,
 } from './playlist-detail-origin';
+import { useLibraryFilesConfirmationFlow } from './use-library-files-confirmation-flow';
 
 type UseSavedRehearsalLibraryPlaylistStateOptions = {
   deletePlaylist: (playlist: Playlist) => Promise<boolean>;
@@ -50,6 +50,7 @@ export const useSavedRehearsalLibraryPlaylistState = ({
   >(null);
   const [playlistDetailOrigin, setPlaylistDetailOrigin] =
     useState<ReturnType<typeof buildPlaylistDetailOrigin>>(null);
+  const confirmationFlow = useLibraryFilesConfirmationFlow();
 
   useEffect(() => {
     if (savedPlaylists.length === 0) {
@@ -133,6 +134,7 @@ export const useSavedRehearsalLibraryPlaylistState = ({
       setIsPlaylistDetailVisible(false);
       setPlaylistDetailOrigin(null);
     },
+    confirmationDialog: confirmationFlow.confirmationDialog,
     handleDeletePlaylist(playlistId: string) {
       const playlist = savedPlaylists.find((currentPlaylist) => {
         return currentPlaylist.id === playlistId;
@@ -144,19 +146,12 @@ export const useSavedRehearsalLibraryPlaylistState = ({
 
       const removalCopy = getSavedPlaylistRemovalCopy(playlist);
 
-      Alert.alert(removalCopy.title, removalCopy.message, [
-        {
-          text: 'Cancel',
-          style: 'cancel',
+      confirmationFlow.requestConfirmation({
+        content: removalCopy,
+        onConfirm: async () => {
+          await deletePlaylist(playlist);
         },
-        {
-          text: removalCopy.confirmLabel,
-          style: 'destructive',
-          onPress: () => {
-            void deletePlaylist(playlist);
-          },
-        },
-      ]);
+      });
     },
     async handleRenamePlaylistCard() {
       if (!cardRenamePlaylistId) {

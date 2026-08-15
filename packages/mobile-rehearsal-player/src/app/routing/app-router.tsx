@@ -327,6 +327,7 @@ export const AppRouter = () => {
       playbackToggleLabel={playbackActionCopy?.label ?? 'Play'}
       playbackVolumeLevel={playback.volumeLevel}
       playbackState={playback.playbackState}
+      savedLibraryConfirmationDialog={libraryController.confirmationDialog}
       addScreen={
         <AddScreen
           authorization={authorization}

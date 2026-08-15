@@ -204,6 +204,7 @@ export const useRehearsalLibraryController = ({
   };
 
   return {
+    confirmationDialog: savedLibraryRemovalActions.confirmationDialog,
     discovery: {
       browseSnapshot: driveLibrary.browseSnapshot,
       canRefresh,

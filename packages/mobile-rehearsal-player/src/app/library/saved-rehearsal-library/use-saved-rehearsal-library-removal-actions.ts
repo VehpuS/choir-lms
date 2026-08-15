@@ -1,7 +1,7 @@
 import type { NamedLoop } from '@org/audio-library-models';
 import { useState } from 'react';
-import { Alert } from 'react-native';
 
+import { useLibraryFilesConfirmationFlow } from '../components/saved-rehearsal-library-section/use-library-files-confirmation-flow';
 import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
 import { getSavedLoopRemovalCopy } from '../loops/utils/saved-loop-view-model';
 import {
@@ -27,24 +27,19 @@ export const useSavedRehearsalLibraryRemovalActions = ({
   const [selectedLoopSourceId, setSelectedLoopSourceId] = useState<
     string | null
   >(null);
+  const confirmationFlow = useLibraryFilesConfirmationFlow();
 
   return {
+    confirmationDialog: confirmationFlow.confirmationDialog,
     confirmRemoveLoop(loop: NamedLoop) {
       const removalCopy = getSavedLoopRemovalCopy(loop);
 
-      Alert.alert(removalCopy.title, removalCopy.message, [
-        {
-          text: 'Cancel',
-          style: 'cancel',
+      confirmationFlow.requestConfirmation({
+        content: removalCopy,
+        onConfirm: () => {
+          deleteLoop(loop);
         },
-        {
-          text: removalCopy.confirmLabel,
-          style: 'destructive',
-          onPress: () => {
-            void deleteLoop(loop);
-          },
-        },
-      ]);
+      });
     },
     confirmRemoveSource(source: DriveLibrarySource) {
       const removalCopy = getSavedRehearsalLibraryRemovalCopy({
@@ -55,32 +50,23 @@ export const useSavedRehearsalLibraryRemovalActions = ({
         source,
       });
 
-      Alert.alert(removalCopy.title, removalCopy.message, [
-        {
-          text: 'Cancel',
-          style: 'cancel',
+      confirmationFlow.requestConfirmation({
+        content: removalCopy,
+        onConfirm: async () => {
+          const didRemove = await removeSource(source);
+
+          if (!didRemove) {
+            return;
+          }
+
+          setSelectedLoopSourceId((currentValue) => {
+            return currentValue === source.id ? null : currentValue;
+          });
+
+          await refreshLoops();
+          await refreshPlaylists();
         },
-        {
-          text: removalCopy.confirmLabel,
-          style: 'destructive',
-          onPress: () => {
-            void (async () => {
-              const didRemove = await removeSource(source);
-
-              if (!didRemove) {
-                return;
-              }
-
-              setSelectedLoopSourceId((currentValue) => {
-                return currentValue === source.id ? null : currentValue;
-              });
-
-              await refreshLoops();
-              await refreshPlaylists();
-            })();
-          },
-        },
-      ]);
+      });
     },
     selectedLoopSourceId,
     setSelectedLoopSourceId,

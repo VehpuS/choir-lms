@@ -298,6 +298,7 @@ export const SavedRehearsalLibrarySection = ({
         playlists={savedPlaylists}
       />
       <SavedRehearsalLibraryTagEditorSheet tagEditor={tagEditor} />
+      {playlistState.confirmationDialog}
     </View>
   );
 };
