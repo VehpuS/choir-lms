@@ -22,6 +22,35 @@ The system SHALL replace the static placeholder shortcut chips on Recents with a
 - **THEN** the module shows the most-used tags first, up to the cap, ordered by number of tagged entities with an alphabetical tie-break
 - **AND** the module exposes a path to the full tag list rather than silently hiding the remaining tags
 
+### Requirement: Library provides a dedicated Tags view listing every in-use tag with usage counts
+
+The system SHALL add a Tags view to Library's existing Files/Tracks/Loops/Playlists view-switcher that lists every distinct in-use tag with its usage count, lets the user sort that list by tag name or usage count in ascending or descending order, and lets the user search the list by tag name. This view SHALL be independently reachable from Library at any time, not only via the Recents overflow action.
+
+#### Scenario: Library Tags view lists every distinct tag with usage counts
+
+- **WHEN** a user selects the Tags view in Library
+- **THEN** the system lists every distinct tag present across saved tracks, loops, playlists, and folders, each row showing the tag name and the number of entities carrying it
+
+#### Scenario: Sorting the Library Tags view
+
+- **WHEN** a user selects a sort option (name or usage count, ascending or descending) on the Library Tags view
+- **THEN** the list reorders according to the selected sort option
+
+#### Scenario: Searching the Library Tags view
+
+- **WHEN** a user enters a search query on the Library Tags view
+- **THEN** the visible list narrows to tags whose name contains the query
+
+#### Scenario: Opening a tag from the Library Tags view
+
+- **WHEN** a user taps a tag row on the Library Tags view
+- **THEN** the system opens the tag detail view for that tag
+
+#### Scenario: Recents overflow opens the Library Tags view
+
+- **WHEN** a user taps the Recents tag module's overflow action
+- **THEN** the system opens the Library Tags view
+
 ### Requirement: Tapping a tag opens a filterable list of everything tagged with it
 
 The system SHALL provide a tag detail view that lists every saved track, loop, playlist, and folder carrying the selected tag, and SHALL let the user narrow that list by entity type and by text search.

@@ -30,13 +30,28 @@ Compute the set of in-use tags on demand by scanning `tags` across saved tracks,
 
 **Alternative considered:** a dedicated `Tag` entity with its own id, persisted separately and referenced by id from tracks/loops/playlists/folders. Rejected for this change as a bigger data-model migration than the requested feature needs; the existing free-text-tag model works for aggregation as long as normalization is consistent, and it avoids a schema/storage migration for `streamline-mobile-rehearsal-ux`-era saved libraries.
 
-### Recents shows a capped, most-used-first tag list; a "see all" path handles overflow
+### Recents shows a capped, most-used-first tag list; a "see all" path opens a dedicated Library Tags view
 
-Cap the Recents module to a small number of tags (e.g. 6, matching the current chip module's compactness goal from design.md's Recents section), ordered by how many entities carry each tag (most-used first, alphabetical tiebreak). If more tags exist than the cap, the module's trailing action opens a full tag list (reusing the Library search/filter surface's existing tag-list affordance rather than inventing a new "all tags" screen). Recents stays "optional acceleration," per its existing design contract — it is never the only way to reach a tag.
+Cap the Recents module to 6 tags (confirmed with user, matching the current chip module's compactness goal from design.md's Recents section), ordered by how many entities carry each tag (most-used first, alphabetical tiebreak). If more tags exist than the cap, the module's trailing action opens a new **Tags** view added to Library's Files/Tracks/Loops/Playlists view-switcher — not a Recents-owned screen. That view lists every in-use tag with its usage count, sortable by name or count (ascending/descending), and searchable by tag name; tapping a row opens the tag detail screen (below). Recents stays "optional acceleration," per its existing design contract — it is never the only way to reach a tag, and the Library Tags view is independently reachable from Library at any time, not only via the Recents overflow action.
+
+**Alternative considered (superseded):** reuse Library's existing Files-scoped tag-filter popover (`LibrarySearchControls`) instead of building a new view. Rejected on confirmation with the user — that popover is gated behind Files view and a private "show filters" toggle with no sort/search of its own over the tag list itself, is not reachable via any existing router/state plumbing from outside `LibraryScreen`, and switching to Library while leaving it wherever the user last left it does not actually satisfy "see all tags, sorted and searchable" the way a dedicated view does.
+
+**Alternative considered:** a standalone router destination (like the tag detail screen) rather than a five view-switcher entry. Rejected on confirmation with the user in favor of the view-switcher integration, so the Tags view is a first-class, permanently-reachable Library surface rather than something only reachable via Recents' overflow action, and reuses the view-switcher's existing lock/session-state conventions instead of introducing a second navigation pattern.
+
+### Library gains a fifth "Tags" view, integrated into the existing view-switcher
+
+Add `'tags'` as a new member of `SavedRehearsalLibraryView` (alongside `'files' | 'tracks' | 'loops' | 'playlists'`), and wire it into every place that union already branches on view: the view-switcher chip row, `detail-mode.ts`'s per-view visible-sections table, and the existing view-switcher lock machinery (`view-switcher-lock-model.ts`, task `2.9.6`'s lock signals) — the same integration points each of the four existing views already goes through, so the Tags view inherits identical conventions (lock-while-editing, consistent chip styling) for free instead of a bespoke implementation.
+
+The view's content is a plain list, one row per tag from `aggregateRehearsalLibraryTags`, showing the tag name and its usage count, with:
+- A sort control (Name / Count, each ascending or descending), defaulting to the same most-used-first-then-alphabetical order the aggregation query already returns.
+- A search input scoped to this list only (reusing the shared contextual search panel scaffold, matching the tag detail screen's own search below), filtering by tag name substring.
+- Tapping a row navigates to the tag detail screen (below) for that tag.
+
+**Alternative considered:** compute and cache a separate "all tags" list distinct from `aggregateRehearsalLibraryTags`. Rejected — the existing aggregation query already returns exactly `{ tag, count }[]`; the Library Tags view only adds presentation-level sorting/search on top of the same data Recents already consumes, so both surfaces share one source of truth with no risk of drift.
 
 ### One new tag detail screen, reusing existing shared primitives
 
-Add one new screen (new router destination, not a new top-level tab) that both the Recents chip and a future "see all tags" entry point navigate to, taking a tag string as its parameter. It reuses:
+Add one new screen (new router destination, not a new top-level tab) that both a Recents chip and the Library Tags view navigate to, taking a tag string as its parameter. It reuses:
 
 - The shared compact destination-header primitive for its title (the tag name) and back action.
 - The shared contextual search panel scaffold (task `4.6.1`) for the text-search input, scoped to this tag's matches only.
@@ -56,7 +71,7 @@ A folder or playlist that itself carries the tag is one row in the match list (t
 
 - A tagged track or loop contributes itself.
 - A tagged playlist contributes its saved items in playlist order (same source as `buildPlaylistPlaybackSession` already uses for normal playlist playback).
-- A tagged folder contributes every track/loop reachable from it, including through nested subfolders, in the same order the Files explorer would list them (reusing the Files explorer's existing folder-listing resolution rather than writing a second folder-walk).
+- A tagged folder contributes every track/loop reachable from it, including through nested subfolders, in the same order the Files explorer would list them (reusing the Files explorer's existing folder-listing resolution rather than writing a second folder-walk). `RehearsalLibraryFolderNode.parentFolderId` forms a single-parent tree (each folder has exactly one parent), so a cycle should not be constructible through normal folder operations, but the walk still tracks visited folder ids defensively (matching the existing `buildScopedFolderIds` precedent) so a corrupted/cyclic tree degrades to "stop expanding," never an infinite loop.
 - Nested tagging is not required to double-count: if a folder is tagged and a track inside it is _also_ directly tagged with the same tag, that track's presence via the folder expansion and its own direct match should not produce two queue entries for the same track — see the dedupe open question below.
 
 ### Tag playback reuses the transient-queue session type via a new multi-item constructor

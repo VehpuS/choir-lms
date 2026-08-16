@@ -17,6 +17,14 @@
   - Decision (confirmed with user): copy is "No tags yet. Tag a track, loop, playlist, or folder in Library to see it here." — matches the existing tag-editor-sheet empty-state convention.
   - Implementation: new pure `getRecentsTagModuleCopy({ hasSavedTagUsage })` in `screen-copy.ts` returning `{ body }`, unit-tested in `screen-copy.spec.ts` now (same slice), ahead of task `2.5`'s broader test sweep. In `index.tsx`, derive `hasSavedTagUsage = libraryTagUsage.length > 0`; show the body text when `!hasSavedTagUsage || !isRecentPlaybackAvailable` (empty-state guidance always shows regardless of recent-playback state; the existing "optional shortcuts" hint keeps its prior recent-playback-gated behavior when tags do exist); only render `shortcutsMeta` and the chip `tagRow` when `hasSavedTagUsage` is true — no placeholder chips.
 - [ ] 2.3 Add an overflow entry point to a full tag list when more tags exist than the Recents module's compact display cap.
+  - Decision (confirmed with user, supersedes design.md's originally-considered "reuse Library's filter surface" alternative): build a dedicated **Tags** view as a fifth entry in Library's existing Files/Tracks/Loops/Playlists view-switcher, listing every in-use tag with its usage count, sortable by name or count (ascending/descending), and searchable. The Recents overflow action navigates there. See subtasks `2.3.1`-`2.3.7` and the updated design.md/proposal.md/spec.md.
+- [ ] 2.3.1 Add `'tags'` to the `SavedRehearsalLibraryView` union and wire it into the view-switcher chip row, `detail-mode.ts`'s visible-sections table, and the existing view-switcher lock machinery (`view-switcher-lock-model.ts`), matching the integration pattern already used for Files/Tracks/Loops/Playlists.
+- [ ] 2.3.2 Build the Tags list: render `aggregateRehearsalLibraryTags` output as rows (tag name + usage count) using the existing row shell conventions.
+- [ ] 2.3.3 Add a sort control (Name / Count, ascending/descending) for the Tags list.
+- [ ] 2.3.4 Add a search input scoped to the Tags list, reusing the shared contextual search panel scaffold.
+- [ ] 2.3.5 Wire Tags-list row taps to navigate to the tag detail screen (task `3.1`) with the selected tag.
+- [ ] 2.3.6 Wire the Recents tag module's overflow action (from `2.3`) to navigate to the new Library Tags view.
+- [ ] 2.3.7 Add focused tests for the Tags view-model: sort orders (name asc/desc, count asc/desc, tie-break) and search filtering.
 - [ ] 2.4 Wire tag chip taps to navigate to the new tag detail screen (task `3.1`) with the selected tag, instead of the current no-op shortcut handler.
 - [ ] 2.5 Update the existing Recents `screen-copy`/`overflow-actions` focused tests for the new tag-driven module, and add coverage for the empty-state and overflow-entry-point branches.
 
