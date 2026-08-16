@@ -7,6 +7,7 @@ import {
   shouldRenderFilesExplorer,
   shouldRenderFilesLoopBuilder,
   shouldRenderSavedLibraryBrowseContent,
+  shouldRenderSavedTagsList,
 } from './browse-content-model';
 
 const SOURCE = {
@@ -45,6 +46,12 @@ describe('shouldRenderFilesLoopBuilder', () => {
   it('keeps Files search inside the explorer surface', () => {
     assert.equal(shouldRenderFilesExplorer('files'), true);
     assert.equal(shouldRenderFilesExplorer('tracks'), false);
+  });
+
+  it('renders the Tags list only for the Tags view', () => {
+    assert.equal(shouldRenderSavedTagsList('tags'), true);
+    assert.equal(shouldRenderSavedTagsList('files'), false);
+    assert.equal(shouldRenderSavedTagsList('tracks'), false);
   });
 
   it('keeps the loop builder mounted when Files starts a loop from a selected track', () => {

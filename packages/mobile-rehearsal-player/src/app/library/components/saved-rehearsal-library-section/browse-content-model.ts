@@ -28,6 +28,12 @@ export const shouldRenderFilesExplorer = (
   return selectedView === 'files';
 };
 
+export const shouldRenderSavedTagsList = (
+  selectedView: SavedRehearsalLibraryView,
+) => {
+  return selectedView === 'tags';
+};
+
 export const shouldRenderFilesLoopBuilder = (options: {
   activeLibrarySearchQuery: string | null;
   selectedTrack: PlayableItem | null;

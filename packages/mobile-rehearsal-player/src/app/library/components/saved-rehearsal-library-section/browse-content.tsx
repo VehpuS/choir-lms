@@ -1,8 +1,11 @@
-import { cloneElement } from 'react';
+import { aggregateRehearsalLibraryTags } from '@org/audio-library-runtime';
+import { cloneElement, useMemo } from 'react';
 
+import { SavedTagsList } from '../../tags/components/saved-tags-list';
 import {
   shouldRenderFilesExplorer,
   shouldRenderFilesLoopBuilder,
+  shouldRenderSavedTagsList,
 } from './browse-content-model';
 import type { SavedRehearsalLibraryBrowseContentProps } from './browse-content-types';
 import { BrowsePlaylistCards } from './browse-playlist-cards';
@@ -74,6 +77,21 @@ export const SavedRehearsalLibraryBrowseContent = ({
     selectedTrack,
     selectedView,
   });
+
+  const tagUsage = useMemo(() => {
+    return aggregateRehearsalLibraryTags({
+      entityCollections: {
+        loops: savedLoops,
+        playlists: savedPlaylists,
+        sources: savedLibrarySources,
+      },
+      folders: libraryFiles.folders,
+    });
+  }, [libraryFiles.folders, savedLibrarySources, savedLoops, savedPlaylists]);
+
+  if (shouldRenderSavedTagsList(selectedView)) {
+    return <SavedTagsList tagUsage={tagUsage} />;
+  }
 
   if (shouldRenderFilesExplorer(selectedView)) {
     return (
