@@ -12,3 +12,54 @@ export const getSavedTagUsageMetadataLabel = (
 ) => {
   return pluralize(usage.count, 'item');
 };
+
+export type SavedTagsListSortField = 'count' | 'name';
+export type SavedTagsListSortDirection = 'asc' | 'desc';
+
+export type SavedTagsListSortState = {
+  direction: SavedTagsListSortDirection;
+  field: SavedTagsListSortField;
+};
+
+export const DEFAULT_SAVED_TAGS_LIST_SORT_STATE: SavedTagsListSortState = {
+  direction: 'desc',
+  field: 'count',
+};
+
+export const SAVED_TAGS_LIST_SORT_FIELD_OPTIONS: {
+  label: string;
+  value: SavedTagsListSortField;
+}[] = [
+  { label: 'Name', value: 'name' },
+  { label: 'Count', value: 'count' },
+];
+
+const compareTagUsageByName = (
+  left: RehearsalLibraryTagUsage,
+  right: RehearsalLibraryTagUsage,
+) => {
+  return left.tag.localeCompare(right.tag, undefined, { sensitivity: 'base' });
+};
+
+export const sortSavedTagUsage = (
+  tagUsage: RehearsalLibraryTagUsage[],
+  sortState: SavedTagsListSortState,
+) => {
+  const directionMultiplier = sortState.direction === 'asc' ? 1 : -1;
+
+  return [...tagUsage].sort((left, right) => {
+    if (sortState.field === 'count') {
+      return left.count !== right.count
+        ? (left.count - right.count) * directionMultiplier
+        : compareTagUsageByName(left, right);
+    }
+
+    return compareTagUsageByName(left, right) * directionMultiplier;
+  });
+};
+
+export const getSavedTagsListSortDirectionToggleLabel = (
+  currentDirection: SavedTagsListSortDirection,
+) => {
+  return currentDirection === 'asc' ? 'Sort descending' : 'Sort ascending';
+};
