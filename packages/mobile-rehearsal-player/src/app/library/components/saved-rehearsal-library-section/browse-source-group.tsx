@@ -144,7 +144,6 @@ export const BrowseSourceGroup = ({
               isLoopMutating,
               isPendingLoopSource: pendingLoopBuilderSourceId === source.id,
               isPendingRemoval: isPending,
-              isPlaybackSourceActive,
               isPlaylistMutating,
               isSavedLibraryMutating,
               onOpenLoopBuilder: () => {

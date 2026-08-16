@@ -16,7 +16,6 @@ type ResolveSavedLoopRowActionsOptions = {
   hasPlayableItem: boolean;
   isEditingLoop: boolean;
   itemName: string;
-  isLoopActive: boolean;
   isLoopMutating: boolean;
   isPendingRemoval: boolean;
   isPlaylistMutating: boolean;
@@ -88,10 +87,7 @@ export const resolveSavedLoopRowActions = (
       placement: 'menu',
     },
     {
-      disabled:
-        !options.canMutateLoops ||
-        options.isLoopMutating ||
-        options.isLoopActive,
+      disabled: !options.canMutateLoops || options.isLoopMutating,
       label: options.isPendingRemoval ? 'Removing…' : 'Remove',
       onPress: options.onRemove,
       placement: 'menu',

@@ -19,7 +19,6 @@ type ResolveSavedTrackRowActionsOptions = {
   isLoopMutating: boolean;
   isPendingLoopSource: boolean;
   isPendingRemoval: boolean;
-  isPlaybackSourceActive: boolean;
   isPlaylistMutating: boolean;
   isSavedLibraryMutating: boolean;
   onOpenLoopBuilder: () => void;
@@ -112,7 +111,6 @@ export const resolveSavedTrackRowActions = (
       disabled:
         !options.canMutateLibrary ||
         options.isSavedLibraryMutating ||
-        options.isPlaybackSourceActive ||
         options.isLoopMutating,
       label: options.isPendingRemoval ? 'Removing…' : 'Remove',
       onPress: options.onRemove,

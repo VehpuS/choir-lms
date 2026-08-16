@@ -84,6 +84,8 @@ export const createSyncActivePlaylistContext = (
       void options.playbackControllerRef.current?.syncActivePlayableItem(
         nextActivePlayableItem,
       );
+    } else {
+      void options.playbackControllerRef.current?.pauseActivePlayback();
     }
   };
 };

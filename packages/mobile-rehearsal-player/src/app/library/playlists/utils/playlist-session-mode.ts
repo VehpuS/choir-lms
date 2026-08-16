@@ -210,33 +210,48 @@ const syncPlaylistPlaybackQueueItems = (options: {
 }) => {
   let hasQueueItemChanged = false;
 
-  const synchronizedQueueItems = options.session.queue.items.map(
-    (playableItem) => {
-      const synchronizedPlayableItem =
-        resolveSynchronizedPlayableItem({
-          loops: options.loops,
-          playableItem,
-          sources: options.sources,
-        }) ?? playableItem;
+  const resolvedItems = options.session.queue.items.map((playableItem) => {
+    const synchronizedPlayableItem = resolveSynchronizedPlayableItem({
+      loops: options.loops,
+      playableItem,
+      sources: options.sources,
+    });
 
-      hasQueueItemChanged ||= hasPlayableItemChanged(
-        playableItem,
-        synchronizedPlayableItem,
-      );
+    hasQueueItemChanged ||=
+      synchronizedPlayableItem === null ||
+      hasPlayableItemChanged(playableItem, synchronizedPlayableItem);
 
-      return synchronizedPlayableItem;
-    },
-  );
+    return synchronizedPlayableItem;
+  });
 
   if (!hasQueueItemChanged) {
     return options.session;
   }
 
+  const survivingIndices: number[] = [];
+  const survivingItems: PlaylistPlaybackSession['queue']['items'] = [];
+
+  resolvedItems.forEach((resolvedItem, index) => {
+    if (resolvedItem !== null) {
+      survivingIndices.push(index);
+      survivingItems.push(resolvedItem);
+    }
+  });
+
+  const survivingCurrentIndex = survivingIndices.indexOf(
+    options.session.currentIndex,
+  );
+  const nextCurrentIndex =
+    survivingCurrentIndex !== -1
+      ? survivingCurrentIndex
+      : Math.max(0, Math.min(options.session.currentIndex, survivingItems.length - 1));
+
   return {
     ...options.session,
+    currentIndex: nextCurrentIndex,
     queue: {
       ...options.session.queue,
-      items: synchronizedQueueItems,
+      items: survivingItems,
     },
   } satisfies PlaylistPlaybackSession;
 };

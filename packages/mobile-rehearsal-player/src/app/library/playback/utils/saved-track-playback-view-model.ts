@@ -100,7 +100,7 @@ export const resolveSynchronizedPlayableItem = (
   });
 
   if (!nextSource) {
-    return options.playableItem;
+    return null;
   }
 
   if (options.playableItem.kind === 'track') {
@@ -116,7 +116,7 @@ export const resolveSynchronizedPlayableItem = (
   });
 
   if (!nextLoop) {
-    return options.playableItem;
+    return null;
   }
 
   return createLoopPlayableItem(

@@ -256,6 +256,32 @@ describe('saved track playback view-model', () => {
     assert.equal(hasPlayableItemChanged(activeLoop, syncedLoop), true);
   });
 
+  it('resolves to null when the active track source has been removed from the library', () => {
+    const activeTrack = createTrackPlayableItem(PLAYABLE_SOURCE);
+
+    const syncedTrack = resolveSynchronizedPlayableItem({
+      loops: [],
+      playableItem: activeTrack,
+      sources: [],
+    });
+
+    assert.equal(syncedTrack, null);
+    assert.equal(hasPlayableItemChanged(activeTrack, syncedTrack), true);
+  });
+
+  it('resolves to null when the active loop has been removed from the library', () => {
+    const activeLoop = createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE);
+
+    const syncedLoop = resolveSynchronizedPlayableItem({
+      loops: [],
+      playableItem: activeLoop,
+      sources: [PLAYABLE_SOURCE],
+    });
+
+    assert.equal(syncedLoop, null);
+    assert.equal(hasPlayableItemChanged(activeLoop, syncedLoop), true);
+  });
+
   it('only repeats standalone playback when repeat-one mode is active', () => {
     assert.equal(shouldRepeatSingleItemPlayback('off'), false);
     assert.equal(shouldRepeatSingleItemPlayback('one'), true);

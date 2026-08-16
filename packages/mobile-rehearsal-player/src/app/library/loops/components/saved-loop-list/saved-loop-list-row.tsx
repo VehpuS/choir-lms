@@ -118,7 +118,6 @@ export const SavedLoopListRow = ({
     hasPlayableItem: playableItem !== null,
     isEditingLoop: editingLoopId === loopCard.loop.id,
     itemName: loopCard.loop.name,
-    isLoopActive: isPlaybackLoopActive,
     isLoopMutating: pendingLoopId !== null,
     isPendingRemoval: pendingLoopId === loopCard.loop.id,
     isPlaylistMutating,

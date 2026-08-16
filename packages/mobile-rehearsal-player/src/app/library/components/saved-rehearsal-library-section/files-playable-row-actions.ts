@@ -31,7 +31,6 @@ export const resolveTrackMenuActions = (
     isLoopMutating: options.isLoopMutating,
     isPendingLoopSource: options.pendingLoopBuilderSourceId === row.source.id,
     isPendingRemoval: false,
-    isPlaybackSourceActive: false,
     isPlaylistMutating: options.isPlaylistMutating,
     isSavedLibraryMutating: options.isSavedLibraryMutating,
     onOpenLoopBuilder: () => {
@@ -143,7 +142,6 @@ export const resolveLoopMenuActions = (
     canQueueAsNext: options.canQueueAsNext,
     hasPlayableItem: row.playableItem !== null,
     isEditingLoop: false,
-    isLoopActive: false,
     isLoopMutating: options.isLoopMutating,
     isPendingRemoval: false,
     isPlaylistMutating: options.isPlaylistMutating,

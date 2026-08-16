@@ -16,7 +16,6 @@ describe('saved loop row actions', () => {
       hasPlayableItem: true,
       isEditingLoop: false,
       itemName: SAVED_LOOP.name,
-      isLoopActive: false,
       isLoopMutating: false,
       isPendingRemoval: false,
       isPlaylistMutating: false,
@@ -112,7 +111,6 @@ describe('saved loop row actions', () => {
       hasPlayableItem: true,
       isEditingLoop: false,
       itemName: SAVED_LOOP.name,
-      isLoopActive: true,
       isLoopMutating: false,
       isPendingRemoval: false,
       isPlaylistMutating: false,
@@ -135,6 +133,37 @@ describe('saved loop row actions', () => {
     );
   });
 
+  it('keeps Remove available while the loop itself is the active playback item', () => {
+    const actions = resolveSavedLoopRowActions({
+      canEditLoop: true,
+      canMutateLoops: true,
+      canMutatePlaylists: true,
+      canQueueAsNext: false,
+      hasPlayableItem: true,
+      isEditingLoop: false,
+      itemName: SAVED_LOOP.name,
+      isLoopMutating: false,
+      isPendingRemoval: false,
+      isPlaylistMutating: false,
+      onEdit: () => undefined,
+      onEditTags: () => undefined,
+      onOpenPlaylistSelector: () => undefined,
+      onQueueNext: () => undefined,
+      onQueueUpNext: () => undefined,
+      onRemove: () => undefined,
+      onTogglePlayback: () => undefined,
+      playbackAction: {
+        disabled: false,
+        label: 'Pause',
+      },
+    });
+
+    assert.equal(
+      actions.find((action) => action.label === 'Remove')?.disabled,
+      false,
+    );
+  });
+
   it('omits loop queue actions when playback queueing is unavailable', () => {
     const actions = resolveSavedLoopRowActions({
       canEditLoop: false,
@@ -144,7 +173,6 @@ describe('saved loop row actions', () => {
       hasPlayableItem: false,
       isEditingLoop: false,
       itemName: SAVED_LOOP.name,
-      isLoopActive: true,
       isLoopMutating: true,
       isPendingRemoval: true,
       isPlaylistMutating: false,
