@@ -1,3 +1,5 @@
+import type { RehearsalLibraryTagUsage } from '@org/audio-library-runtime';
+
 import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import type { useSavedTrackPlayback } from '../../library/playback/hooks/use-saved-track-playback';
 
@@ -15,6 +17,7 @@ type AppRouterRecentsPlayback = Pick<
 
 type AppRouterRecentsScreenProps = {
   authorization: DriveSessionMenuController;
+  libraryTagUsage: RehearsalLibraryTagUsage[];
   onRequestLibraryDestination: () => void;
   playback: AppRouterRecentsPlayback;
   recentRehearsalHistory: RecentRehearsalItem[];
@@ -25,6 +28,7 @@ type AppRouterRecentsScreenProps = {
 
 export const AppRouterRecentsScreen = ({
   authorization,
+  libraryTagUsage,
   onRequestLibraryDestination,
   playback,
   recentRehearsalHistory,
@@ -49,6 +53,7 @@ export const AppRouterRecentsScreen = ({
 
         return savedSourceIds.has(recentRehearsal.playableItem.sourceId);
       }}
+      libraryTagUsage={libraryTagUsage}
       recentRehearsalHistory={recentRehearsalHistory}
       onPlayRecentShortcut={() => {
         const mostRecentItem = recentRehearsalHistory[0];

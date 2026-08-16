@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import type { RehearsalLibraryTagUsage } from '@org/audio-library-runtime';
 import { join, map, toUpper } from 'es-toolkit/compat';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
@@ -30,6 +31,7 @@ export type RecentsScreenProps = {
   canQueueAsNext: boolean;
   isPlaybackActive: boolean;
   isRecentItemInLibrary: (recentRehearsal: RecentRehearsalItem) => boolean;
+  libraryTagUsage: RehearsalLibraryTagUsage[];
   recentRehearsalHistory: RecentRehearsalItem[];
   onQueueRecentPlaybackNext: (recentRehearsal: RecentRehearsalItem) => void;
   onQueueRecentPlaybackUpNext: (recentRehearsal: RecentRehearsalItem) => void;
@@ -39,7 +41,7 @@ export type RecentsScreenProps = {
   savedTrackCount: number;
 };
 
-const RECENTS_SHORTCUT_TAGS = ['Soprano', 'Alto', 'Tenor', 'Bass', 'Warmup'];
+const RECENTS_SHORTCUT_TAG_CAP = 6;
 
 const AUDIO_FORMAT_LABEL = join(
   map(runtimeConfig.supportedAudioExtensions, (extension) =>
@@ -54,6 +56,7 @@ export const RecentsScreen = ({
   canQueueAsNext,
   isPlaybackActive,
   isRecentItemInLibrary,
+  libraryTagUsage,
   recentRehearsalHistory,
   onQueueRecentPlaybackNext,
   onQueueRecentPlaybackUpNext,
@@ -74,8 +77,11 @@ export const RecentsScreen = ({
     savedTrackCount,
   });
   const isRecentPlaybackAvailable = latestRecentRehearsal !== null;
+  const shortcutTags = libraryTagUsage
+    .slice(0, RECENTS_SHORTCUT_TAG_CAP)
+    .map((tagUsage) => tagUsage.tag);
 
-  const shortcutMetadata = `${RECENTS_SHORTCUT_TAGS.length} optional shortcut tags - ${AUDIO_FORMAT_LABEL}`;
+  const shortcutMetadata = `${shortcutTags.length} optional shortcut tags - ${AUDIO_FORMAT_LABEL}`;
 
   return (
     <View style={styles.screen}>
@@ -242,7 +248,7 @@ export const RecentsScreen = ({
             <Text style={styles.shortcutsMeta}>{shortcutMetadata}</Text>
           ) : null}
           <View style={styles.tagRow}>
-            {RECENTS_SHORTCUT_TAGS.map((tag) => (
+            {shortcutTags.map((tag) => (
               <InteractionChip
                 key={tag}
                 label={tag}

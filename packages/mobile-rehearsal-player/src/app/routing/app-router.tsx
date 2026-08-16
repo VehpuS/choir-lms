@@ -1,17 +1,10 @@
+import { aggregateRehearsalLibraryTags } from '@org/audio-library-runtime';
 import { useEffect, useMemo, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/google-drive/hooks/use-authorization';
 import { useSavedTrackPlayback } from '../library/playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackActionCopy } from '../library/playback/utils/saved-track-playback-view-model';
-import {
-  buildSavedPlaylistFromQueue,
-  replaceQueueItemsInPlaylist,
-} from '../library/playlists/utils/queue-playlist-capture';
-import {
-  canShowQueuePlaylistActions,
-  canUpdateQueuePlaylist,
-} from '../library/playlists/utils/saved-playlist-playback-view-model';
+import { canShowQueuePlaylistActions } from '../library/playlists/utils/saved-playlist-playback-view-model';
 import { useRehearsalLibraryController } from '../library/saved-rehearsal-library/use-rehearsal-library-controller';
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../library/storage/local-library-storage';
 import { AddScreen } from '../screens/add';
 import { LibraryScreen } from '../screens/library';
 import { AppRouterRecentsScreen } from '../screens/recents/app-router-recents-screen';
@@ -23,6 +16,7 @@ import {
 } from '../screens/recents/history';
 import { MobileShell } from './shell/mobile-shell';
 import type { ShellDestinationKey } from './shell/shell-model';
+import { useAppRouterQueuePlaylistActions } from './use-app-router-queue-playlist-actions';
 
 const PLAYBACK_SEEK_STEP_SECONDS = 15;
 
@@ -71,109 +65,24 @@ export const AppRouter = () => {
       }),
     );
   }, [libraryController.savedLibrary.savedLoops]);
-
-  const handleSaveQueueAsPlaylist = async (name: string) => {
-    const captureResult = buildSavedPlaylistFromQueue({
-      name,
-      ownerId: LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-      savedLoops: libraryController.savedLibrary.savedLoops,
-      savedSources: libraryController.savedLibrary.savedLibrarySources,
-      session: playback.activePlaylistSession,
-    });
-
-    if (captureResult.issue || !captureResult.playlist) {
-      return captureResult.issue;
-    }
-
-    for (const source of captureResult.unsavedSources) {
-      const didSave = await libraryController.savedLibrary.saveSource(source);
-
-      if (!didSave) {
-        return {
-          title: 'Could not save queued track',
-          message: `The queue could not be saved as a playlist because "${source.name}" could not be added to Library first.`,
-        };
-      }
-    }
-
-    const createdPlaylist = await libraryController.playlists.createPlaylist(
-      captureResult.playlist,
-    );
-
-    if (!createdPlaylist) {
-      return {
-        title: 'Could not save playlist',
-        message: `The queue could not be saved as the playlist "${captureResult.playlist.name}".`,
-      };
-    }
-
-    playback.bindActiveQueueToPlaylist({
-      loops: libraryController.savedLibrary.savedLoops,
-      playlist: createdPlaylist,
-      sources: libraryController.savedLibrary.savedLibrarySources,
-    });
-
-    return null;
-  };
-
-  const handleUpdateQueuePlaylist = async () => {
-    if (!canUpdateQueuePlaylist(playback.activePlaylistSession)) {
-      return {
-        title: 'Playlist unavailable',
-        message:
-          'Start playback from a saved playlist before updating it from Up Next.',
-      };
-    }
-
-    const targetPlaylist = libraryController.playlists.savedPlaylists.find(
-      (playlist) => {
-        return playlist.id === playback.activePlaylistSession?.playlistId;
+  const libraryTagUsage = useMemo(() => {
+    return aggregateRehearsalLibraryTags({
+      entityCollections: {
+        loops: libraryController.savedLibrary.savedLoops,
+        playlists: libraryController.playlists.savedPlaylists,
+        sources: libraryController.savedLibrary.savedLibrarySources,
       },
-    );
-
-    if (!targetPlaylist) {
-      return {
-        title: 'Playlist unavailable',
-        message:
-          'The playlist for this active queue is no longer available in your saved Library.',
-      };
-    }
-
-    const captureResult = replaceQueueItemsInPlaylist({
-      playlist: targetPlaylist,
-      savedLoops: libraryController.savedLibrary.savedLoops,
-      savedSources: libraryController.savedLibrary.savedLibrarySources,
-      session: playback.activePlaylistSession,
+      folders: libraryController.savedLibrary.files.folders,
     });
+  }, [
+    libraryController.savedLibrary.files.folders,
+    libraryController.savedLibrary.savedLibrarySources,
+    libraryController.savedLibrary.savedLoops,
+    libraryController.playlists.savedPlaylists,
+  ]);
 
-    if (captureResult.issue || !captureResult.playlist) {
-      return captureResult.issue;
-    }
-
-    for (const source of captureResult.unsavedSources) {
-      const didSave = await libraryController.savedLibrary.saveSource(source);
-
-      if (!didSave) {
-        return {
-          title: 'Could not save queued track',
-          message: `The queue could not update "${targetPlaylist.name}" because "${source.name}" could not be added to Library first.`,
-        };
-      }
-    }
-
-    const updatedPlaylist = await libraryController.playlists.updatePlaylist(
-      captureResult.playlist,
-    );
-
-    if (!updatedPlaylist) {
-      return {
-        title: 'Could not update playlist',
-        message: `The current Up Next order could not replace "${targetPlaylist.name}".`,
-      };
-    }
-
-    return null;
-  };
+  const { handleSaveQueueAsPlaylist, handleUpdateQueuePlaylist } =
+    useAppRouterQueuePlaylistActions({ libraryController, playback });
 
   useEffect(() => {
     let isDisposed = false;
@@ -253,6 +162,7 @@ export const AppRouter = () => {
       recentsScreen={
         <AppRouterRecentsScreen
           authorization={authorization}
+          libraryTagUsage={libraryTagUsage}
           onRequestLibraryDestination={() => {
             requestDestination('library');
           }}

@@ -182,6 +182,7 @@ export const useLibraryFiles = (
     deleteFolder: operations.deleteFolder,
     destinationFolders,
     explorer,
+    folders: tree?.folders ?? [],
     resolveExplorerState,
     getFileLinkDeleteImpact: operations.getFileLinkDeleteImpact,
     getFolderDeleteImpact: operations.getFolderDeleteImpact,
