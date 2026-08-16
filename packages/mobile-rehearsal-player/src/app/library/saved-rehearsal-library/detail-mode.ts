@@ -7,7 +7,8 @@ export type SavedRehearsalLibraryView =
   | 'files'
   | 'tracks'
   | 'loops'
-  | 'playlists';
+  | 'playlists'
+  | 'tags';
 
 export type SavedRehearsalLibraryViewOption = {
   label: string;
@@ -40,6 +41,7 @@ export const SAVED_REHEARSAL_LIBRARY_VIEW_OPTIONS: readonly SavedRehearsalLibrar
     { label: 'Tracks', value: 'tracks' },
     { label: 'Loops', value: 'loops' },
     { label: 'Playlists', value: 'playlists' },
+    { label: 'Tags', value: 'tags' },
   ];
 
 const SAVED_REHEARSAL_LIBRARY_VIEW_COPY: Record<
@@ -60,6 +62,11 @@ const SAVED_REHEARSAL_LIBRARY_VIEW_COPY: Record<
     body: 'Open, create, and manage saved rehearsal playlists in one place.',
     eyebrow: 'Library',
     title: 'Playlists',
+  },
+  tags: {
+    body: 'Browse every tag in use across your saved library, with usage counts, sorting, and search.',
+    eyebrow: 'Library',
+    title: 'Tags',
   },
   tracks: {
     body: 'Browse saved tracks, with track-linked loops one tap away via View track loops.',
@@ -91,6 +98,15 @@ const SAVED_REHEARSAL_LIBRARY_VISIBLE_SECTIONS: Record<
     showLoopSection: false,
     showPlaylistCards: true,
     showPlaylistSection: true,
+    showSourceGroup: false,
+  },
+  tags: {
+    // Stub for 2.3.1: the Tags view's own list renders separately (task
+    // 2.3.2), so none of the shared browse sections mount for this view.
+    showLoopBrowseList: false,
+    showLoopSection: false,
+    showPlaylistCards: false,
+    showPlaylistSection: false,
     showSourceGroup: false,
   },
   tracks: {

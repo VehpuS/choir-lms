@@ -87,4 +87,19 @@ describe('saved rehearsal library detail view-model', () => {
       title: 'Playlists',
     });
   });
+
+  it('keeps Tags free of the shared browse sections, since it renders its own tag list', () => {
+    assert.deepEqual(resolveSavedRehearsalLibraryVisibleSections('tags'), {
+      showLoopBrowseList: false,
+      showLoopSection: false,
+      showPlaylistCards: false,
+      showPlaylistSection: false,
+      showSourceGroup: false,
+    });
+    assert.deepEqual(resolveSavedRehearsalLibraryViewCopy('tags'), {
+      body: 'Browse every tag in use across your saved library, with usage counts, sorting, and search.',
+      eyebrow: 'Library',
+      title: 'Tags',
+    });
+  });
 });

@@ -1,4 +1,10 @@
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
 import { DriveSessionMenu } from '../../../auth/google-drive/components/drive-session-menu';
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
@@ -53,7 +59,12 @@ const SavedRehearsalLibraryViewSwitcher = ({
   'isViewSwitcherLocked' | 'onSelectView' | 'selectedView'
 >) => {
   return (
-    <View style={styles.viewRow}>
+    <ScrollView
+      contentContainerStyle={styles.viewRowContent}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.viewRow}
+    >
       {SAVED_REHEARSAL_LIBRARY_VIEW_OPTIONS.map((option) => {
         return (
           <InteractionChip
@@ -69,7 +80,7 @@ const SavedRehearsalLibraryViewSwitcher = ({
           />
         );
       })}
-    </View>
+    </ScrollView>
   );
 };
 
@@ -197,8 +208,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   viewRow: {
+    maxHeight: 48,
+  },
+  viewRowContent: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 8,
+    paddingRight: 4,
   },
 });

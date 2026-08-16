@@ -1,6 +1,9 @@
 import type { ReactElement, ReactNode } from 'react';
 
-import type { SavedRehearsalLibraryVisibleSections } from '../../saved-rehearsal-library/detail-mode';
+import type {
+  SavedRehearsalLibraryView,
+  SavedRehearsalLibraryVisibleSections,
+} from '../../saved-rehearsal-library/detail-mode';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 import type { useSavedRehearsalLibraryLoopState } from './use-saved-rehearsal-library-loop-state';
 import type { useSavedRehearsalLibraryPlaylistState } from './use-saved-rehearsal-library-playlist-state';
@@ -87,9 +90,7 @@ export type SavedRehearsalLibraryBrowseContentProps = Pick<
   loopState: LoopState;
   playlistSection: ReactNode;
   playlistState: PlaylistState;
-  selectedView: SavedRehearsalLibraryVisibleSections extends never
-    ? never
-    : 'files' | 'tracks' | 'loops' | 'playlists';
+  selectedView: SavedRehearsalLibraryView;
   savedSourceTitle: string;
   searchState: SearchState;
   visibleSections: SavedRehearsalLibraryVisibleSections;
