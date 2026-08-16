@@ -129,7 +129,15 @@ export const resolveSavedRehearsalLibrarySources = (
   );
 
   return options.savedSources.map((source) => {
-    return visibleSourcesById[source.id] ?? source;
+    const visibleSource = visibleSourcesById[source.id];
+
+    if (!visibleSource) {
+      return source;
+    }
+
+    return source.tags
+      ? { ...visibleSource, tags: source.tags }
+      : visibleSource;
   });
 };
 

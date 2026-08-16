@@ -60,6 +60,24 @@ describe('saved rehearsal library view-model', () => {
     assert.deepEqual(savedSources, [refreshedSource]);
   });
 
+  it('preserves saved tags when Drive refreshes visible source metadata', () => {
+    const taggedSource = { ...PLAYABLE_SOURCE, tags: ['Soprano'] };
+    const refreshedSource = {
+      ...PLAYABLE_SOURCE,
+      modifiedTime: '2026-05-11T10:00:00.000Z',
+    };
+
+    const savedSources = resolveSavedRehearsalLibrarySources({
+      authState: AUTHORIZED_STATE,
+      savedSources: [taggedSource],
+      visibleSources: [refreshedSource],
+    });
+
+    assert.deepEqual(savedSources, [
+      { ...refreshedSource, tags: ['Soprano'] },
+    ]);
+  });
+
   it('summarizes saved-library readiness and access warnings', () => {
     const readyCopy = getSavedRehearsalLibraryStatusCopy({
       authState: AUTHORIZED_STATE,

@@ -236,7 +236,7 @@ export const RecentsScreen = ({
         <View style={styles.shortcutsCard}>
           <View style={styles.shortcutsHeader}>
             <View style={styles.shortcutsCopy}>
-              <Text style={styles.shortcutsTitle}>Popular shortcuts</Text>
+              <Text style={styles.shortcutsTitle}>Popular tags</Text>
               {!isRecentPlaybackAvailable ? (
                 <Text style={styles.shortcutsBody}>
                   Optional tag shortcuts for fast recents scanning.
