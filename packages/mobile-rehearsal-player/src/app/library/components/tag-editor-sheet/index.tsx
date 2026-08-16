@@ -1,3 +1,4 @@
+import { normalizeLibraryEntityTags } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -9,11 +10,7 @@ import { appTheme } from '../../../utils/theme';
 import { BottomSheetSurface } from '../bottom-sheet-surface';
 import { FeedbackCard } from '../feedback-card';
 import { InteractionChip } from '../interaction-chip';
-import {
-  addLibraryEntityTag,
-  normalizeLibraryEntityTags,
-  removeLibraryEntityTag,
-} from './model';
+import { addLibraryEntityTag, removeLibraryEntityTag } from './model';
 
 type TagEditorSheetProps = {
   isSaving: boolean;

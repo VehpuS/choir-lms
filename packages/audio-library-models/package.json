@@ -26,7 +26,7 @@
         ],
         "options": {
           "cwd": "packages/audio-library-models",
-          "command": "tsx --test src/lib/rehearsal-domain.spec.ts"
+          "command": "tsx --test src/lib/rehearsal-domain.spec.ts src/lib/rehearsal-tags.spec.ts"
         }
       }
     }

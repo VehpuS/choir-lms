@@ -1,7 +1,9 @@
 ## 1. Tag Aggregation Foundation
 
-- [ ] 1.1 Add a library-wide tag aggregation query (likely in `audio-library-runtime`) that scans saved tracks, loops, playlists, and folders and returns the deduped, normalized set of in-use tags with per-tag usage counts, reusing `normalizeLibraryEntityTags`'s trim/whitespace/case-insensitive dedupe rule rather than reimplementing it.
-- [ ] 1.2 Add focused unit tests for the aggregation query: cross-entity dedupe with mixed casing/whitespace, usage counts, and the empty-library (no tags) case.
+- [x] 1.1 Add a library-wide tag aggregation query (likely in `audio-library-runtime`) that scans saved tracks, loops, playlists, and folders and returns the deduped, normalized set of in-use tags with per-tag usage counts, reusing `normalizeLibraryEntityTags`'s trim/whitespace/case-insensitive dedupe rule rather than reimplementing it.
+  - Decision (confirmed with user): `normalizeLibraryEntityTags` currently lives app-side (`tag-editor-sheet/model.ts`), but `audio-library-runtime` cannot depend on the app. Move `normalizeLibraryEntityTags` into `@org/audio-library-models` (new `src/lib/rehearsal-tags.ts`, exported from the package `index.ts`) so both the app's tag editor and the new runtime aggregation query share one implementation. `parseLibraryTagInput`/`addLibraryEntityTag`/`removeLibraryEntityTag` stay in the app's `model.ts` and import the moved function from `@org/audio-library-models`.
+  - New query: `aggregateRehearsalLibraryTags` in `packages/audio-library-runtime/src/lib/rehearsal-library-tags.ts`, taking `{ entityCollections: RehearsalLibraryEntityCollections; folders: RehearsalLibraryFolderNode[] }` and returning `RehearsalLibraryTagUsage[]` (`{ tag, count }`), pre-sorted most-used-first with an alphabetical tie-break (case-insensitive) so task `2.1`'s Recents cap can simply slice the result. `count` = number of distinct entities carrying the tag (post per-entity dedupe). Exported from the package root (`index.ts`) for app consumption.
+- [x] 1.2 Add focused unit tests for the aggregation query: cross-entity dedupe with mixed casing/whitespace, usage counts, and the empty-library (no tags) case.
 
 ## 2. Recents Tag Module
 
