@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { PlayableItem } from '@org/audio-library-models';
@@ -46,6 +46,7 @@ type SavedRehearsalLibraryFilesViewProps = {
   onOpenPlaylistAddItems: (playlistId: string) => void;
   onOpenPlaylist: (playlistId: string) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
+  onPlaylistRenameVisibilityChange?: (isVisible: boolean) => void;
   onDismissSuccessFeedback: () => void;
   onOpenSourcePlaylistSelector: (sourceId: string) => void;
   onOpenSourceTagEditor: (source: DriveLibrarySource) => void;
@@ -88,6 +89,7 @@ export const SavedRehearsalLibraryFilesView = ({
   onOpenPlaylistAddItems,
   onOpenPlaylist,
   onOpenPlaylistTagEditor,
+  onPlaylistRenameVisibilityChange,
   onDismissSuccessFeedback,
   onOpenSourcePlaylistSelector,
   onOpenSourceTagEditor,
@@ -136,6 +138,10 @@ export const SavedRehearsalLibraryFilesView = ({
     onRemoveSource,
     onShowSuccessFeedback,
   });
+
+  useEffect(() => {
+    onPlaylistRenameVisibilityChange?.(rowActionFlows.isRenamingPlaylist);
+  }, [onPlaylistRenameVisibilityChange, rowActionFlows.isRenamingPlaylist]);
 
   if (files.isLoading && !explorer) {
     return (

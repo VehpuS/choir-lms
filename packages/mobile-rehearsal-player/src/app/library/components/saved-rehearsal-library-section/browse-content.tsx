@@ -48,6 +48,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
   onDismissLibraryFilesSuccessFeedback,
   onOpenLibraryFilesSuccessFeedbackFolder,
   onOpenPlaylistTagEditor,
+  onPlaylistRenameVisibilityChange,
   onOpenLoopTagEditor,
   onOpenSourceTagEditor,
   onShowLibraryFilesSuccessFeedback,
@@ -142,6 +143,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
             });
           }}
           onOpenPlaylistTagEditor={onOpenPlaylistTagEditor}
+          onPlaylistRenameVisibilityChange={onPlaylistRenameVisibilityChange}
           onDismissSuccessFeedback={onDismissLibraryFilesSuccessFeedback}
           onOpenSourcePlaylistSelector={
             trackPlaylistMenu.openSourcePlaylistSelector

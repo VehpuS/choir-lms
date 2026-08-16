@@ -45,6 +45,7 @@ type SavedPlaylistSectionProps = {
   onAddItems?: () => void;
   onCloseDetail?: () => void;
   onEditPlaylistTags: (playlistId: string) => void;
+  onRenameDialogVisibilityChange?: (isVisible: boolean) => void;
   pendingPlaylistId: string | null;
   playbackState: SavedTrackPlaybackState | undefined;
   savedPlaylists: Playlist[];
@@ -81,6 +82,7 @@ export const SavedPlaylistSection = ({
   onAddItems,
   onCloseDetail,
   onEditPlaylistTags,
+  onRenameDialogVisibilityChange,
   pendingPlaylistId,
   playbackState,
   savedPlaylists,
@@ -251,6 +253,7 @@ export const SavedPlaylistSection = ({
           onCommitReorder={handleCommitReorder}
           onDeletePlaylist={handleDeletePlaylist}
           onMoveItem={handleMoveItem}
+          onRenameDialogVisibilityChange={onRenameDialogVisibilityChange}
           onRemoveItem={(entryId) => {
             void handleRemovePlaylistItem(entryId);
           }}

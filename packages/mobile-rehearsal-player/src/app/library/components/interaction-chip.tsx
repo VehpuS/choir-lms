@@ -18,6 +18,7 @@ import {
 type InteractionChipProps = {
   accessibilityLabel?: string;
   children?: ReactNode;
+  disabled?: boolean;
   label: string;
   labelStyle?: StyleProp<TextStyle>;
   onPress?: () => void;
@@ -29,6 +30,7 @@ type InteractionChipProps = {
 export const InteractionChip = ({
   accessibilityLabel,
   children,
+  disabled = false,
   label,
   labelStyle,
   onPress,
@@ -63,6 +65,7 @@ export const InteractionChip = ({
           styles.base,
           {
             backgroundColor: palette.background,
+            opacity: disabled ? INTERACTION_STATE_OPACITY.disabled : 1,
           },
           style,
         ]}
@@ -76,15 +79,20 @@ export const InteractionChip = ({
     <Pressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      disabled={disabled}
       onPress={onPress}
       onPressIn={onPressIn}
       style={({ pressed }) => [
         styles.base,
         {
-          backgroundColor: pressed
-            ? palette.pressedBackground
-            : palette.background,
-          opacity: pressed ? INTERACTION_STATE_OPACITY.pressed : 1,
+          backgroundColor:
+            pressed && !disabled ? palette.pressedBackground : palette.background,
+          opacity: disabled
+            ? INTERACTION_STATE_OPACITY.disabled
+            : pressed
+              ? INTERACTION_STATE_OPACITY.pressed
+              : 1,
         },
         style,
       ]}

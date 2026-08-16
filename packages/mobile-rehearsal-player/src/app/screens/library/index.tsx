@@ -29,6 +29,12 @@ export const LibraryScreen = ({
   const [libraryFilesSuccessFeedback, setLibraryFilesSuccessFeedback] =
     useState<LibraryFilesSuccessFeedback | null>(null);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
+  const [isFilesPlaylistCreateDialogVisible, setIsFilesPlaylistCreateDialogVisible] =
+    useState(false);
+  const [
+    isPlaylistsDockCreateDialogVisible,
+    setIsPlaylistsDockCreateDialogVisible,
+  ] = useState(false);
   const playlistSelectionHandlerRef = useRef<
     ((playlistId: string) => void) | null
   >(null);
@@ -136,6 +142,10 @@ export const LibraryScreen = ({
             deletePlaylist={libraryController.playlists.deletePlaylist}
             getCurrentScrollOffsetY={scrollCoordination.getCurrentScrollOffsetY}
             isPlaybackPreparing={playback.isPreparing}
+            isPlaylistCreateDialogVisible={
+              isFilesPlaylistCreateDialogVisible ||
+              isPlaylistsDockCreateDialogVisible
+            }
             isPlaylistsLoading={libraryController.playlists.isLoading}
             isSavedLibraryLoading={libraryController.savedLibrary.isLoading}
             isSavedLoopsLoading={
@@ -212,6 +222,9 @@ export const LibraryScreen = ({
         createPlaylist={libraryController.playlists.createPlaylist}
         files={libraryController.savedLibrary.files}
         isVisible={browseCreateDockMode === 'files'}
+        onPlaylistCreateDialogVisibilityChange={
+          setIsFilesPlaylistCreateDialogVisible
+        }
         onRequestAddDestination={onRequestAddDestination}
         onShowSuccessFeedback={showLibraryFilesSuccessFeedback}
         playlistIssue={libraryController.playlists.issue}
@@ -220,6 +233,9 @@ export const LibraryScreen = ({
         canMutatePlaylists={libraryController.playlists.canMutatePlaylists}
         createPlaylist={libraryController.playlists.createPlaylist}
         isVisible={browseCreateDockMode === 'playlists'}
+        onPlaylistCreateDialogVisibilityChange={
+          setIsPlaylistsDockCreateDialogVisible
+        }
         onSelectPlaylist={handlePlaylistCreated}
         playlistIssue={libraryController.playlists.issue}
       />

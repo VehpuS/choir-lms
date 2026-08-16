@@ -12,6 +12,7 @@ import { useSavedRehearsalLibrarySearch } from './use-saved-rehearsal-library-se
 import { useSavedRehearsalLibrarySearchPanel } from './use-saved-rehearsal-library-search-panel';
 import { useSavedRehearsalLibraryTagEditor } from './use-saved-rehearsal-library-tag-editor';
 import { useSavedRehearsalLibraryTrackPlaylistMenu } from './use-saved-rehearsal-library-track-playlist-menu';
+import { resolveIsViewSwitcherLocked } from './view-switcher-lock-model';
 
 type UseSavedRehearsalLibrarySectionStateParams = Pick<
   SavedRehearsalLibrarySectionProps,
@@ -20,6 +21,7 @@ type UseSavedRehearsalLibrarySectionStateParams = Pick<
   | 'createPlaylist'
   | 'deletePlaylist'
   | 'isPlaybackPreparing'
+  | 'isPlaylistCreateDialogVisible'
   | 'pendingLoopBuilderSourceId'
   | 'pendingLoopId'
   | 'pendingPlaylistId'
@@ -48,6 +50,7 @@ export const useSavedRehearsalLibrarySectionState = ({
   createPlaylist,
   deletePlaylist,
   isPlaybackPreparing,
+  isPlaylistCreateDialogVisible = false,
   openLoopBuilderForSource,
   pendingLoopBuilderSourceId,
   pendingLoopId,
@@ -71,6 +74,14 @@ export const useSavedRehearsalLibrarySectionState = ({
 }: UseSavedRehearsalLibrarySectionStateParams) => {
   const [internalSelectedView, setInternalSelectedView] =
     useState<SavedRehearsalLibraryView>('files');
+  const [
+    isFilesPlaylistRenameDialogVisible,
+    setIsFilesPlaylistRenameDialogVisible,
+  ] = useState(false);
+  const [
+    isPlaylistDetailRenameDialogVisible,
+    setIsPlaylistDetailRenameDialogVisible,
+  ] = useState(false);
   const internalSearchState = useSavedRehearsalLibrarySearch({
     savedLibrarySources,
     savedLoops,
@@ -129,6 +140,15 @@ export const useSavedRehearsalLibrarySectionState = ({
     isPlaylistDetailVisible: playlistState.isPlaylistDetailVisible,
     selectedLoopViewSourceId: loopState.selectedLoopViewSourceId,
   });
+  const isViewSwitcherLocked = resolveIsViewSwitcherLocked({
+    isDetailViewOpen: detailMode !== 'browse',
+    isFilesPlaylistRenameOpen: isFilesPlaylistRenameDialogVisible,
+    isLoopBuilderOpen: selectedTrack !== null,
+    isPlaylistCardRenameOpen: playlistState.cardRenamePlaylistId !== null,
+    isPlaylistCreateDialogOpen: isPlaylistCreateDialogVisible,
+    isPlaylistDetailRenameOpen: isPlaylistDetailRenameDialogVisible,
+    isTagEditorOpen: tagEditor.isTagEditorVisible,
+  });
 
   return {
     detailMode,
@@ -137,11 +157,14 @@ export const useSavedRehearsalLibrarySectionState = ({
     isSavedLibraryMutating,
     isSavedTrackPlaybackLoading,
     isSearchPanelVisible,
+    isViewSwitcherLocked,
     loopState,
     playlistState,
     searchPanel,
     searchState,
     selectedView,
+    setIsFilesPlaylistRenameDialogVisible,
+    setIsPlaylistDetailRenameDialogVisible,
     setSelectedView,
     tagEditor,
     trackPlaylistMenu,

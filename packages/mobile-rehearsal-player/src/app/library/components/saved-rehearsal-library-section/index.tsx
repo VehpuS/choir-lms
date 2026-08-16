@@ -28,6 +28,7 @@ export const SavedRehearsalLibrarySection = ({
   deletePlaylist,
   getCurrentScrollOffsetY,
   isPlaybackPreparing,
+  isPlaylistCreateDialogVisible = false,
   isPlaylistsLoading,
   isSavedLibraryLoading,
   isSavedLoopsLoading,
@@ -80,11 +81,14 @@ export const SavedRehearsalLibrarySection = ({
     isPlaylistMutating,
     isSavedLibraryMutating,
     isSearchPanelVisible,
+    isViewSwitcherLocked,
     loopState,
     playlistState,
     searchPanel,
     searchState,
     selectedView,
+    setIsFilesPlaylistRenameDialogVisible,
+    setIsPlaylistDetailRenameDialogVisible,
     setSelectedView,
     tagEditor,
     trackPlaylistMenu,
@@ -94,6 +98,7 @@ export const SavedRehearsalLibrarySection = ({
     createPlaylist,
     deletePlaylist,
     isPlaybackPreparing,
+    isPlaylistCreateDialogVisible,
     openLoopBuilderForSource,
     pendingLoopBuilderSourceId,
     pendingLoopId,
@@ -195,6 +200,7 @@ export const SavedRehearsalLibrarySection = ({
       onClosePlaylistDetail={handleClosePlaylistDetail}
       onOpenFilesAddItems={handleOpenFilesAddItems}
       onOpenPlaylistTagEditor={tagEditor.openPlaylistTagEditor}
+      onRenameDialogVisibilityChange={setIsPlaylistDetailRenameDialogVisible}
       pendingPlaylistId={pendingPlaylistId}
       playbackState={playbackState}
       playlistIssue={playlistIssue}
@@ -225,6 +231,7 @@ export const SavedRehearsalLibrarySection = ({
         }
         handleFilterActionPress={searchPanel.handleFilterActionPress}
         handleSearchActionPress={searchPanel.handleSearchActionPress}
+        isViewSwitcherLocked={isViewSwitcherLocked}
         onSelectView={setSelectedView}
         searchPanelVisibility={searchPanel.searchPanelVisibility}
         searchState={searchState}
@@ -281,6 +288,9 @@ export const SavedRehearsalLibrarySection = ({
           }
           onOpenLoopTagEditor={tagEditor.openLoopTagEditor}
           onOpenPlaylistTagEditor={tagEditor.openPlaylistTagEditor}
+          onPlaylistRenameVisibilityChange={
+            setIsFilesPlaylistRenameDialogVisible
+          }
           onOpenSourceTagEditor={tagEditor.openSourceTagEditor}
           onShowLibraryFilesSuccessFeedback={onShowLibraryFilesSuccessFeedback}
           togglePlaylistPlayback={togglePlaylistPlayback}

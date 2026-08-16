@@ -39,6 +39,7 @@ export type SavedRehearsalLibrarySectionProps = {
   deletePlaylist: (playlist: Playlist) => Promise<boolean>;
   getCurrentScrollOffsetY: () => number;
   isPlaybackPreparing: boolean;
+  isPlaylistCreateDialogVisible?: boolean;
   isPlaylistsLoading: boolean;
   isSavedLibraryLoading: boolean;
   isSavedLoopsLoading: boolean;

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import type { Playlist } from '@org/audio-library-models';
@@ -24,6 +24,7 @@ type LibraryFilesCreateControlsProps = {
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
   files: UseLibraryFilesResult;
   isVisible: boolean;
+  onPlaylistCreateDialogVisibilityChange?: (isVisible: boolean) => void;
   onRequestAddDestination: () => void;
   onShowSuccessFeedback: (feedback: LibraryFilesSuccessFeedback) => void;
   playlistIssue: SavedPlaylistIssue | null;
@@ -33,6 +34,7 @@ export const LibraryFilesCreateControls = ({
   createPlaylist,
   files,
   isVisible,
+  onPlaylistCreateDialogVisibilityChange,
   onRequestAddDestination,
   onShowSuccessFeedback,
   playlistIssue,
@@ -52,6 +54,10 @@ export const LibraryFilesCreateControls = ({
     useState(false);
   const [isFilesPlaylistMutating, setIsFilesPlaylistMutating] = useState(false);
   const filesFolderLabel = files.explorer?.currentFolder.name ?? 'Files';
+
+  useEffect(() => {
+    onPlaylistCreateDialogVisibilityChange?.(isFilesPlaylistDialogVisible);
+  }, [isFilesPlaylistDialogVisible, onPlaylistCreateDialogVisibilityChange]);
 
   const handleSubmitFilesFolder = useCallback(
     (suggestedName?: string) => {

@@ -99,6 +99,7 @@ export type SavedRehearsalLibraryBrowseContentProps = Pick<
     preferredFolderId?: string | null;
   }) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
+  onPlaylistRenameVisibilityChange?: (isVisible: boolean) => void;
   onOpenLoopTagEditor: (
     loop: SavedRehearsalLibrarySectionProps['savedLoops'][number],
   ) => void;

@@ -37,6 +37,7 @@ type SavedRehearsalLibrarySearchShellProps = {
   currentFilesFolderName: string | null;
   handleFilterActionPress: () => void;
   handleSearchActionPress: () => void;
+  isViewSwitcherLocked: boolean;
   onSelectView: (view: SavedRehearsalLibraryView) => void;
   searchPanelVisibility: SearchPanelVisibility;
   searchState: ReturnType<typeof useSavedRehearsalLibrarySearch>;
@@ -44,11 +45,12 @@ type SavedRehearsalLibrarySearchShellProps = {
 };
 
 const SavedRehearsalLibraryViewSwitcher = ({
+  isViewSwitcherLocked,
   onSelectView,
   selectedView,
 }: Pick<
   SavedRehearsalLibrarySearchShellProps,
-  'onSelectView' | 'selectedView'
+  'isViewSwitcherLocked' | 'onSelectView' | 'selectedView'
 >) => {
   return (
     <View style={styles.viewRow}>
@@ -57,6 +59,7 @@ const SavedRehearsalLibraryViewSwitcher = ({
           <InteractionChip
             key={option.value}
             accessibilityLabel={`Show ${option.label} library view`}
+            disabled={isViewSwitcherLocked}
             label={option.label}
             onPress={() => {
               onSelectView(option.value);
@@ -138,6 +141,7 @@ export const SavedRehearsalLibrarySearchShell = ({
   currentFilesFolderName,
   handleFilterActionPress,
   handleSearchActionPress,
+  isViewSwitcherLocked,
   onSelectView,
   searchPanelVisibility,
   searchState,
@@ -146,6 +150,7 @@ export const SavedRehearsalLibrarySearchShell = ({
   return (
     <View style={styles.shell}>
       <SavedRehearsalLibraryViewSwitcher
+        isViewSwitcherLocked={isViewSwitcherLocked}
         onSelectView={onSelectView}
         selectedView={selectedView}
       />

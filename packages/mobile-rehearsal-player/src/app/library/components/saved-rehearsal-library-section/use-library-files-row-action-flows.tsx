@@ -401,6 +401,7 @@ export const useLibraryFilesRowActionFlows = ({
         ) : null}
       </OptionsMenuSheet>
     ),
+    isRenamingPlaylist: pendingRenameRow?.kind === 'playlist',
     renameDialog: (
       <>
         <LibraryFilesRenameDialog

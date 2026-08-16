@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import type { Playlist } from '@org/audio-library-models';
@@ -16,6 +16,7 @@ type LibraryPlaylistCreateControlsProps = {
   canMutatePlaylists: boolean;
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
   isVisible: boolean;
+  onPlaylistCreateDialogVisibilityChange?: (isVisible: boolean) => void;
   onSelectPlaylist?: (playlistId: string) => void;
   playlistIssue: SavedPlaylistIssue | null;
 };
@@ -24,6 +25,7 @@ export const LibraryPlaylistCreateControls = ({
   canMutatePlaylists,
   createPlaylist,
   isVisible,
+  onPlaylistCreateDialogVisibilityChange,
   onSelectPlaylist,
   playlistIssue,
 }: LibraryPlaylistCreateControlsProps) => {
@@ -32,6 +34,10 @@ export const LibraryPlaylistCreateControls = ({
   const [playlistDraftIssue, setPlaylistDraftIssue] =
     useState<PlaylistDraftIssue | null>(null);
   const [playlistDraftName, setPlaylistDraftName] = useState('');
+
+  useEffect(() => {
+    onPlaylistCreateDialogVisibilityChange?.(isPlaylistDialogVisible);
+  }, [isPlaylistDialogVisible, onPlaylistCreateDialogVisibilityChange]);
 
   const handleSubmitPlaylist = useCallback(() => {
     const buildResult = buildSavedPlaylist({

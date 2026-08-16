@@ -54,6 +54,7 @@ export const SavedPlaylistDetailCard = (props: {
   onDeletePlaylist: () => void;
   onDismissRemovalNotice: () => void;
   onEditPlaylistTags: () => void;
+  onRenameDialogVisibilityChange?: (isVisible: boolean) => void;
   onMoveItem: (
     fromIndex: number,
     toIndex: number,
@@ -86,6 +87,10 @@ export const SavedPlaylistDetailCard = (props: {
       setIsRenameDialogVisible(true);
     }
   }, [selectedPlaylist?.id]);
+
+  useEffect(() => {
+    props.onRenameDialogVisibilityChange?.(isRenameDialogVisible);
+  }, [isRenameDialogVisible, props.onRenameDialogVisibilityChange]);
 
   if (!selectedPlaylist || !detailSummary) {
     return null;
