@@ -23,6 +23,20 @@ export const getRecentsContinuePracticingCopy = (options: {
   };
 };
 
+export const getRecentsTagModuleCopy = (options: {
+  hasSavedTagUsage: boolean;
+}) => {
+  if (!options.hasSavedTagUsage) {
+    return {
+      body: 'No tags yet. Tag a track, loop, playlist, or folder in Library to see it here.',
+    };
+  }
+
+  return {
+    body: 'Optional tag shortcuts for fast recents scanning.',
+  };
+};
+
 export const getRecentsShortcutPlayActionCopy = (options: {
   isResumePlaybackAvailable: boolean;
   shortcutTag: string;

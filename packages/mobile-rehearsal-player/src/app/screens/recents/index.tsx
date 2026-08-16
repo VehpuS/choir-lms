@@ -22,6 +22,7 @@ import { getRecentsOverflowActionState } from './overflow-actions';
 import {
   getRecentsContinuePracticingCopy,
   getRecentsShortcutPlayActionCopy,
+  getRecentsTagModuleCopy,
 } from './screen-copy';
 import { recentsScreenStyles as styles } from './styles';
 
@@ -77,9 +78,11 @@ export const RecentsScreen = ({
     savedTrackCount,
   });
   const isRecentPlaybackAvailable = latestRecentRehearsal !== null;
+  const hasSavedTagUsage = libraryTagUsage.length > 0;
   const shortcutTags = libraryTagUsage
     .slice(0, RECENTS_SHORTCUT_TAG_CAP)
     .map((tagUsage) => tagUsage.tag);
+  const tagModuleCopy = getRecentsTagModuleCopy({ hasSavedTagUsage });
 
   const shortcutMetadata = `${shortcutTags.length} optional shortcut tags - ${AUDIO_FORMAT_LABEL}`;
 
@@ -237,43 +240,43 @@ export const RecentsScreen = ({
           <View style={styles.shortcutsHeader}>
             <View style={styles.shortcutsCopy}>
               <Text style={styles.shortcutsTitle}>Popular tags</Text>
-              {!isRecentPlaybackAvailable ? (
-                <Text style={styles.shortcutsBody}>
-                  Optional tag shortcuts for fast recents scanning.
-                </Text>
+              {!hasSavedTagUsage || !isRecentPlaybackAvailable ? (
+                <Text style={styles.shortcutsBody}>{tagModuleCopy.body}</Text>
               ) : null}
             </View>
           </View>
-          {!isRecentPlaybackAvailable ? (
+          {hasSavedTagUsage && !isRecentPlaybackAvailable ? (
             <Text style={styles.shortcutsMeta}>{shortcutMetadata}</Text>
           ) : null}
-          <View style={styles.tagRow}>
-            {shortcutTags.map((tag) => (
-              <InteractionChip
-                key={tag}
-                label={tag}
-                labelStyle={styles.tagLabel}
-                style={styles.tagChip}
-                variant="passive"
-              >
-                <CompactPlaybackAction
-                  accessibilityLabel={
-                    getRecentsShortcutPlayActionCopy({
-                      isResumePlaybackAvailable: isRecentPlaybackAvailable,
-                      shortcutTag: tag,
-                    }).accessibilityLabel
-                  }
-                  disabled={!isRecentPlaybackAvailable}
-                  disabledIconColor={appTheme.colors.secondaryText}
-                  iconName="play"
-                  onPress={() => {
-                    onPlayRecentShortcut(tag);
-                  }}
-                  variant="chip"
-                />
-              </InteractionChip>
-            ))}
-          </View>
+          {hasSavedTagUsage ? (
+            <View style={styles.tagRow}>
+              {shortcutTags.map((tag) => (
+                <InteractionChip
+                  key={tag}
+                  label={tag}
+                  labelStyle={styles.tagLabel}
+                  style={styles.tagChip}
+                  variant="passive"
+                >
+                  <CompactPlaybackAction
+                    accessibilityLabel={
+                      getRecentsShortcutPlayActionCopy({
+                        isResumePlaybackAvailable: isRecentPlaybackAvailable,
+                        shortcutTag: tag,
+                      }).accessibilityLabel
+                    }
+                    disabled={!isRecentPlaybackAvailable}
+                    disabledIconColor={appTheme.colors.secondaryText}
+                    iconName="play"
+                    onPress={() => {
+                      onPlayRecentShortcut(tag);
+                    }}
+                    variant="chip"
+                  />
+                </InteractionChip>
+              ))}
+            </View>
+          ) : null}
         </View>
       </ScrollView>
     </View>
