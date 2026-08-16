@@ -100,6 +100,7 @@ export const styles = StyleSheet.create({
     color: '#fff8ef',
     fontSize: 14,
     fontWeight: '700',
+    textAlign: 'center',
   },
   queuePlaylistSecondaryAction: {
     flex: 1,
@@ -115,6 +116,7 @@ export const styles = StyleSheet.create({
     color: appTheme.colors.primaryText,
     fontSize: 14,
     fontWeight: '700',
+    textAlign: 'center',
   },
   transportRow: {
     flexDirection: 'row',
