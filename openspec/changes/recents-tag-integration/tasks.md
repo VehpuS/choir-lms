@@ -11,6 +11,7 @@
 - [ ] 1.6 Add `tagAddedAt?: Record<string, string>` (tag → ISO date) alongside `tags?: string[]` on all four entity types (`@org/audio-library-models`), maintained by the tag-write path: newly-added tags are stamped with the current time, removed tags drop their entry. Backfill missing entries (tags present in `tags[]` with no recorded add date) using the entity's own `createdAt` during the same normalize-on-read pass as `1.5`.
   - Decision (confirmed with user): a `Record` sidecar was chosen over changing `tags` to `{tag, addedAt}[]` to avoid touching the roughly dozen existing `tags: string[]` read sites across `audio-library-models`/`audio-library-runtime`/the app's tag editor, search, and loop utilities. See design.md's "Sources and folders gain creation timestamps..." decision for the full rationale.
 - [ ] 1.7 Add focused unit tests for `1.3`-`1.6`: stamp-on-create, preserve-on-edit, and backfill-on-read for source/folder `createdAt`, and stamp/drop/backfill behavior for `tagAddedAt`.
+- [ ] 1.8 Extend `aggregateRehearsalLibraryTags` to include each tag's creation date (the earliest `tagAddedAt` across every entity carrying that tag, from `1.6`) in its returned `RehearsalLibraryTagUsage` shape, so tag-list sorting by creation date (task `2.6`) has real data to sort on. Add focused unit tests alongside `1.7`/existing aggregation tests.
 
 ## 2. Recents Tag Module
 
@@ -77,6 +78,8 @@
   - Tests: 5 new cases in `screen-copy.spec.ts` — empty-state guidance shown with no tags, guidance still shown with tags but no recent playback yet, guidance hidden once both tags and recent playback exist, overflow trigger hidden at exactly the cap (6), overflow trigger shown one past the cap (7).
   - Manually verified in the integrated browser: with tag usage exceeding the cap, the overflow chevron renders and the guidance body correctly hides once both gating conditions are satisfied — same behavior as before the refactor, confirming it's a pure extraction with no behavior change.
   - Validation: `nx run mobile-rehearsal-player:typecheck`, `eslint` on touched files, and `nx run mobile-rehearsal-player:test` (406/406 passing) all pass.
+- [ ] 2.6 Add "Date" as a third sort field (alongside Name/Count) to the Library Tags view's sort control (`SavedTagsListSortField` in `saved-tags-list/model.ts`), once `1.8`'s aggregation exposes each tag's creation date. Extend `sortSavedTagUsage` and `SAVED_TAGS_LIST_SORT_FIELD_OPTIONS`; add matching test cases (date asc/desc, tie-break) alongside the existing Name/Count coverage from `2.3.7`.
+  - Decision (confirmed with user): requested after `2.3.7` was marked done, once tag creation dates became available via `1.6`/`1.8` — the Tags view's sort control should offer the same date-sort capability as the tag detail screen's match-list sort (task `3.2`), not just Name/Count.
 
 ## 3. Tag Detail Screen
 
