@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  filterSavedTagUsageByQuery,
   getSavedTagsListSortDirectionToggleLabel,
   getSavedTagUsageMetadataLabel,
   sortSavedTagUsage,
@@ -90,5 +91,35 @@ describe('getSavedTagsListSortDirectionToggleLabel', () => {
 
   it('offers to switch to ascending order while descending', () => {
     assert.equal(getSavedTagsListSortDirectionToggleLabel('desc'), 'Sort ascending');
+  });
+});
+
+describe('filterSavedTagUsageByQuery', () => {
+  const tagUsage = [
+    { count: 2, tag: 'Soprano' },
+    { count: 5, tag: 'Bass' },
+    { count: 1, tag: 'sop2' },
+  ];
+
+  it('returns every tag when the query is empty or whitespace-only', () => {
+    assert.deepEqual(filterSavedTagUsageByQuery(tagUsage, ''), tagUsage);
+    assert.deepEqual(filterSavedTagUsageByQuery(tagUsage, '   '), tagUsage);
+  });
+
+  it('matches tag names case-insensitively by substring', () => {
+    assert.deepEqual(filterSavedTagUsageByQuery(tagUsage, 'SOP'), [
+      { count: 2, tag: 'Soprano' },
+      { count: 1, tag: 'sop2' },
+    ]);
+  });
+
+  it('trims surrounding whitespace from the query', () => {
+    assert.deepEqual(filterSavedTagUsageByQuery(tagUsage, '  bass  '), [
+      { count: 5, tag: 'Bass' },
+    ]);
+  });
+
+  it('returns an empty array when nothing matches', () => {
+    assert.deepEqual(filterSavedTagUsageByQuery(tagUsage, 'alto'), []);
   });
 });

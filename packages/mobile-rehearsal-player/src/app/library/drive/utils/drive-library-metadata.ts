@@ -92,7 +92,7 @@ export const getDriveSearchContextCopy = (
 
 export const getLibrarySearchContextCopy = (): SearchContextCopy => {
   return {
-    helper: 'Search saved library (playlists, tracks, and loops)',
+    helper: 'Search saved library (playlists, tracks, loops, and tags)',
     placeholder: 'Search saved library',
   };
 };

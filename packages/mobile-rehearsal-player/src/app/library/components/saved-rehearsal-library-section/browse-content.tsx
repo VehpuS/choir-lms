@@ -90,7 +90,12 @@ export const SavedRehearsalLibraryBrowseContent = ({
   }, [libraryFiles.folders, savedLibrarySources, savedLoops, savedPlaylists]);
 
   if (shouldRenderSavedTagsList(selectedView)) {
-    return <SavedTagsList tagUsage={tagUsage} />;
+    return (
+      <SavedTagsList
+        searchQuery={searchState.activeLibrarySearchQuery}
+        tagUsage={tagUsage}
+      />
+    );
   }
 
   if (shouldRenderFilesExplorer(selectedView)) {

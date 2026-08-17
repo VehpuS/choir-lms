@@ -1,11 +1,15 @@
 import type { RehearsalLibraryTagUsage } from '@org/audio-library-runtime';
 
+import { normalizeSearchQuery } from '../../../search/utils/saved-library-search-view-model';
+
 const pluralize = (count: number, noun: string) => {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 };
 
 export const EMPTY_SAVED_TAGS_MESSAGE =
   'No tags yet. Tag a track, loop, playlist, or folder in Library to see it here.';
+
+export const NO_SAVED_TAGS_SEARCH_RESULTS_MESSAGE = 'No tags match your search.';
 
 export const getSavedTagUsageMetadataLabel = (
   usage: RehearsalLibraryTagUsage,
@@ -62,4 +66,19 @@ export const getSavedTagsListSortDirectionToggleLabel = (
   currentDirection: SavedTagsListSortDirection,
 ) => {
   return currentDirection === 'asc' ? 'Sort descending' : 'Sort ascending';
+};
+
+export const filterSavedTagUsageByQuery = (
+  tagUsage: RehearsalLibraryTagUsage[],
+  query: string,
+) => {
+  const normalizedQuery = normalizeSearchQuery(query);
+
+  if (!normalizedQuery) {
+    return tagUsage;
+  }
+
+  return tagUsage.filter((usage) => {
+    return usage.tag.toLocaleLowerCase().includes(normalizedQuery);
+  });
 };

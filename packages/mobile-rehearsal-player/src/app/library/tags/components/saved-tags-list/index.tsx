@@ -7,24 +7,31 @@ import { SurfaceIconButton } from '../../../../components/surface-icon-button';
 import { appTheme } from '../../../../utils/theme';
 import { InteractionChip } from '../../../components/interaction-chip';
 import { ExplorerListRow, ExplorerListSurface } from '../../../components/explorer';
+import { SearchHighlightedText } from '../../../search/components/search-highlighted-text';
 import {
   DEFAULT_SAVED_TAGS_LIST_SORT_STATE,
   EMPTY_SAVED_TAGS_MESSAGE,
+  NO_SAVED_TAGS_SEARCH_RESULTS_MESSAGE,
   SAVED_TAGS_LIST_SORT_FIELD_OPTIONS,
+  filterSavedTagUsageByQuery,
   getSavedTagsListSortDirectionToggleLabel,
   getSavedTagUsageMetadataLabel,
   sortSavedTagUsage,
 } from './model';
 
 type SavedTagsListProps = {
+  searchQuery: string | null;
   tagUsage: RehearsalLibraryTagUsage[];
 };
 
-export const SavedTagsList = ({ tagUsage }: SavedTagsListProps) => {
+export const SavedTagsList = ({ searchQuery, tagUsage }: SavedTagsListProps) => {
   const [sortState, setSortState] = useState(DEFAULT_SAVED_TAGS_LIST_SORT_STATE);
+  const filteredTagUsage = useMemo(() => {
+    return filterSavedTagUsageByQuery(tagUsage, searchQuery ?? '');
+  }, [tagUsage, searchQuery]);
   const sortedTagUsage = useMemo(() => {
-    return sortSavedTagUsage(tagUsage, sortState);
-  }, [tagUsage, sortState]);
+    return sortSavedTagUsage(filteredTagUsage, sortState);
+  }, [filteredTagUsage, sortState]);
 
   if (tagUsage.length === 0) {
     return <Text style={styles.emptyMessage}>{EMPTY_SAVED_TAGS_MESSAGE}</Text>;
@@ -72,28 +79,40 @@ export const SavedTagsList = ({ tagUsage }: SavedTagsListProps) => {
           size={20}
         />
       </View>
-      <ExplorerListSurface>
-        {sortedTagUsage.map((usage) => {
-          return (
-            <ExplorerListRow
-              key={usage.tag}
-              leadingIcon={
-                <MaterialCommunityIcons
-                  color={appTheme.colors.secondaryText}
-                  name="tag-outline"
-                  size={22}
-                />
-              }
-              metadata={
-                <Text style={styles.rowSupportingLabel}>
-                  {getSavedTagUsageMetadataLabel(usage)}
-                </Text>
-              }
-              title={<Text style={styles.rowTitle}>{usage.tag}</Text>}
-            />
-          );
-        })}
-      </ExplorerListSurface>
+      {sortedTagUsage.length === 0 ? (
+        <Text style={styles.emptyMessage}>
+          {NO_SAVED_TAGS_SEARCH_RESULTS_MESSAGE}
+        </Text>
+      ) : (
+        <ExplorerListSurface>
+          {sortedTagUsage.map((usage) => {
+            return (
+              <ExplorerListRow
+                key={usage.tag}
+                leadingIcon={
+                  <MaterialCommunityIcons
+                    color={appTheme.colors.secondaryText}
+                    name="tag-outline"
+                    size={22}
+                  />
+                }
+                metadata={
+                  <Text style={styles.rowSupportingLabel}>
+                    {getSavedTagUsageMetadataLabel(usage)}
+                  </Text>
+                }
+                title={
+                  <SearchHighlightedText
+                    query={searchQuery}
+                    style={styles.rowTitle}
+                    text={usage.tag}
+                  />
+                }
+              />
+            );
+          })}
+        </ExplorerListSurface>
+      )}
     </View>
   );
 };

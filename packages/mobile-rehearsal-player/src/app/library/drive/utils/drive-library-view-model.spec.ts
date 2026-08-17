@@ -242,7 +242,7 @@ describe('drive library search context copy', () => {
 
   it('adds bracketed corpus detail in library search copy', () => {
     assert.deepEqual(getLibrarySearchContextCopy(), {
-      helper: 'Search saved library (playlists, tracks, and loops)',
+      helper: 'Search saved library (playlists, tracks, loops, and tags)',
       placeholder: 'Search saved library',
     });
   });
