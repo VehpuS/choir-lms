@@ -197,6 +197,9 @@ export const AppRouter = () => {
           onRequestAddDestination={() => {
             requestDestination('add');
           }}
+          onSelectTag={(tag) => {
+            setSelectedTag(tag);
+          }}
           playback={playback}
         />
       }

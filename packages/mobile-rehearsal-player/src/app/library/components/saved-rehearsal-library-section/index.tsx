@@ -39,6 +39,7 @@ export const SavedRehearsalLibrarySection = ({
   onBrowseCreateDockChange,
   onOpenLibraryFilesSuccessFeedbackFolder,
   onPlaylistSelectionHandlerChange,
+  onSelectTag,
   onShowLibraryFilesSuccessFeedback,
   pendingLoopBuilderSourceId,
   pendingLoopId,
@@ -292,6 +293,7 @@ export const SavedRehearsalLibrarySection = ({
             setIsFilesPlaylistRenameDialogVisible
           }
           onOpenSourceTagEditor={tagEditor.openSourceTagEditor}
+          onSelectTag={onSelectTag}
           onShowLibraryFilesSuccessFeedback={onShowLibraryFilesSuccessFeedback}
           togglePlaylistPlayback={togglePlaylistPlayback}
           togglePlayableItemPlayback={togglePlayableItemPlayback}

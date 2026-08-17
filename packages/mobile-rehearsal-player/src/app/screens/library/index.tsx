@@ -20,6 +20,7 @@ export const LibraryScreen = ({
   authorization,
   libraryController,
   onRequestAddDestination,
+  onSelectTag,
   playback,
 }: LibraryScreenProps) => {
   const [selectedView, setSelectedView] =
@@ -166,6 +167,7 @@ export const LibraryScreen = ({
             onPlaylistSelectionHandlerChange={(handler) => {
               playlistSelectionHandlerRef.current = handler;
             }}
+            onSelectTag={onSelectTag}
             onShowLibraryFilesSuccessFeedback={showLibraryFilesSuccessFeedback}
             pendingLoopBuilderSourceId={
               libraryController.savedLibrary.pendingLoopBuilderSourceId

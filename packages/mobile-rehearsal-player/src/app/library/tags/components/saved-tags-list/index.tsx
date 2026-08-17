@@ -20,11 +20,16 @@ import {
 } from './model';
 
 type SavedTagsListProps = {
+  onSelectTag: (tag: string) => void;
   searchQuery: string | null;
   tagUsage: RehearsalLibraryTagUsage[];
 };
 
-export const SavedTagsList = ({ searchQuery, tagUsage }: SavedTagsListProps) => {
+export const SavedTagsList = ({
+  onSelectTag,
+  searchQuery,
+  tagUsage,
+}: SavedTagsListProps) => {
   const [sortState, setSortState] = useState(DEFAULT_SAVED_TAGS_LIST_SORT_STATE);
   const filteredTagUsage = useMemo(() => {
     return filterSavedTagUsageByQuery(tagUsage, searchQuery ?? '');
@@ -101,6 +106,9 @@ export const SavedTagsList = ({ searchQuery, tagUsage }: SavedTagsListProps) => 
                     {getSavedTagUsageMetadataLabel(usage)}
                   </Text>
                 }
+                onPress={() => {
+                  onSelectTag(usage.tag);
+                }}
                 title={
                   <SearchHighlightedText
                     query={searchQuery}

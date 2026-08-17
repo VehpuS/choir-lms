@@ -24,5 +24,6 @@ export type LibraryScreenProps = {
   authorization: DriveSessionMenuController;
   libraryController: ReturnType<typeof useRehearsalLibraryController>;
   onRequestAddDestination: () => void;
+  onSelectTag: (tag: string) => void;
   playback: SavedTrackPlaybackController;
 };

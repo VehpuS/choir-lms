@@ -54,6 +54,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
   onPlaylistRenameVisibilityChange,
   onOpenLoopTagEditor,
   onOpenSourceTagEditor,
+  onSelectTag,
   onShowLibraryFilesSuccessFeedback,
   togglePlaylistPlayback,
   togglePlayableItemPlayback,
@@ -92,6 +93,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
   if (shouldRenderSavedTagsList(selectedView)) {
     return (
       <SavedTagsList
+        onSelectTag={onSelectTag}
         searchQuery={searchState.activeLibrarySearchQuery}
         tagUsage={tagUsage}
       />

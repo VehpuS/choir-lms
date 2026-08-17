@@ -66,6 +66,7 @@ export type SavedRehearsalLibrarySectionProps = {
   onShowLibraryFilesSuccessFeedback: (
     feedback: LibraryFilesSuccessFeedback,
   ) => void;
+  onSelectTag: (tag: string) => void;
   savedLibraryIssue: SavedRehearsalLibraryIssue | null;
   savedLibrarySources: DriveLibrarySource[];
   savedLibraryStatusCopy: DriveLibraryStatusCopy;

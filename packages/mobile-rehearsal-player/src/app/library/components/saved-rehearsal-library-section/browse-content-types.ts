@@ -64,6 +64,7 @@ export type SavedRehearsalLibraryBrowseContentProps = Pick<
   | 'onDismissLibraryFilesSuccessFeedback'
   | 'isPlaybackPreparing'
   | 'onOpenLibraryFilesSuccessFeedbackFolder'
+  | 'onSelectTag'
   | 'onShowLibraryFilesSuccessFeedback'
   | 'openLoopBuilderForSource'
   | 'pendingLoopBuilderSourceId'
