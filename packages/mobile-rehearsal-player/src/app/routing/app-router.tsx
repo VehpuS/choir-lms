@@ -5,6 +5,7 @@ import { useSavedTrackPlayback } from '../library/playback/hooks/use-saved-track
 import { getSavedTrackPlaybackActionCopy } from '../library/playback/utils/saved-track-playback-view-model';
 import { canShowQueuePlaylistActions } from '../library/playlists/utils/saved-playlist-playback-view-model';
 import { useRehearsalLibraryController } from '../library/saved-rehearsal-library/use-rehearsal-library-controller';
+import { TagDetailScreen } from '../library/tags/components/tag-detail-screen';
 import { AddScreen } from '../screens/add';
 import { LibraryScreen } from '../screens/library';
 import { AppRouterRecentsScreen } from '../screens/recents/app-router-recents-screen';
@@ -34,6 +35,7 @@ export const AppRouter = () => {
     useState<ShellDestinationKey>('library');
   const [requestedDestinationRequestId, setRequestedDestinationRequestId] =
     useState(0);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [isRecentRehearsalHistoryReady, setIsRecentRehearsalHistoryReady] =
     useState(false);
   const libraryController = useRehearsalLibraryController({
@@ -139,6 +141,15 @@ export const AppRouter = () => {
     });
   };
 
+  const tagDetailScreen = selectedTag ? (
+    <TagDetailScreen
+      onClose={() => {
+        setSelectedTag(null);
+      }}
+      tag={selectedTag}
+    />
+  ) : null;
+
   return (
     <MobileShell
       activePlayableItem={playback.activePlayableItem}
@@ -189,6 +200,7 @@ export const AppRouter = () => {
           playback={playback}
         />
       }
+      tagDetailScreen={tagDetailScreen}
       onSeekBackward={() => {
         void playback.seekActivePlaybackBySeconds(-PLAYBACK_SEEK_STEP_SECONDS);
       }}
