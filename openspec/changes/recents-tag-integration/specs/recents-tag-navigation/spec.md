@@ -53,12 +53,17 @@ The system SHALL add a Tags view to Library's existing Files/Tracks/Loops/Playli
 
 ### Requirement: Tapping a tag opens a filterable list of everything tagged with it
 
-The system SHALL provide a tag detail view that lists every saved track, loop, playlist, and folder carrying the selected tag, and SHALL let the user narrow that list by entity type and by text search.
+The system SHALL provide a tag detail view that lists every saved track, loop, playlist, and folder carrying the selected tag, and SHALL let the user sort, narrow by entity type, and narrow by text search.
 
 #### Scenario: Tag detail lists all directly tagged entities
 
 - **WHEN** a user opens a tag with tagged tracks, loops, playlists, and folders
-- **THEN** the tag detail view lists each of those items using the same row presentation as its native view (saved-track row, saved-loop row, playlist card, Files folder row)
+- **THEN** the tag detail view lists each of those items using the same row presentation as its native view (saved-track row, saved-loop row, playlist card, Files folder row), in a single flat list not grouped by entity type
+
+#### Scenario: Sorting the tag detail match list
+
+- **WHEN** a user selects a sort option (name, type, or date added, ascending or descending) on the tag detail view
+- **THEN** the visible match list reorders according to the selected sort option
 
 #### Scenario: Type filter narrows the visible matches
 
