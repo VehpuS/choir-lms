@@ -74,6 +74,7 @@ const createTrackRow = () => {
     label: 'Full Choir.mp3',
     source: {
       availability: { status: 'available' as const },
+      createdAt: '2026-05-10T10:00:00.000Z',
       driveFileId: 'drive-file-1',
       durationMs: 240000,
       id: 'source-1',

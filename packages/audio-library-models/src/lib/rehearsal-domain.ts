@@ -30,6 +30,7 @@ export type DriveAudioSource = {
   webViewLink?: string;
   iconLink?: string;
   tags?: string[];
+  createdAt: string;
   availability: SourceAvailability;
 };
 
@@ -155,12 +156,15 @@ const clampToDuration = (value: number, durationMs?: number) => {
 };
 
 export const createDriveAudioSource = (
-  source: Omit<DriveAudioSource, 'id' | 'provider'>,
+  source: Omit<DriveAudioSource, 'id' | 'provider' | 'createdAt'> & {
+    createdAt?: string;
+  },
 ): DriveAudioSource => {
   return {
     ...source,
     id: `drive:${source.driveFileId}`,
     provider: 'google-drive',
+    createdAt: source.createdAt ?? new Date().toISOString(),
   };
 };
 

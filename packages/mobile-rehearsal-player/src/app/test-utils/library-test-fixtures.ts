@@ -19,6 +19,7 @@ export const PLAYABLE_SOURCE: DriveBrowseSnapshot['playableSources'][number] = {
   extension: 'mp3',
   durationMs: 185000,
   modifiedTime: '2026-05-10T10:00:00.000Z',
+  createdAt: '2026-05-10T10:00:00.000Z',
   availability: {
     status: 'available',
   },
@@ -33,6 +34,7 @@ export const UNSUPPORTED_SOURCE: DriveBrowseSnapshot['unavailableSources'][numbe
     mimeType: 'audio/aiff',
     extension: 'aiff',
     modifiedTime: '2026-05-10T10:00:00.000Z',
+    createdAt: '2026-05-10T10:00:00.000Z',
     availability: {
       status: 'unsupported',
       reason: 'unsupported-format',

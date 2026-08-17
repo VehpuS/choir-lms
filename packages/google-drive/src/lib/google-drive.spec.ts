@@ -84,7 +84,10 @@ describe('mapDriveFileToAudioSource', () => {
       SUPPORTED_EXTENSIONS,
     );
 
-    assert.deepEqual(source, {
+    const { createdAt, ...sourceWithoutCreatedAt } = source;
+
+    assert.equal(Number.isNaN(Date.parse(createdAt)), false);
+    assert.deepEqual(sourceWithoutCreatedAt, {
       id: 'drive:drive-file-1',
       provider: 'google-drive',
       driveFileId: 'drive-file-1',

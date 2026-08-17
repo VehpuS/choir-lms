@@ -38,11 +38,18 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
 
   async saveSource(ownerId: string, source: DriveAudioSource) {
     const sources = await this.listSources(ownerId);
+    const priorSource = sources.find(
+      (existingSource) => existingSource.id === source.id,
+    );
+    const sourceToSave: DriveAudioSource = {
+      ...source,
+      createdAt: priorSource?.createdAt ?? source.createdAt,
+    };
     const otherSources = filter(
       sources,
       (existingSource) => existingSource.id !== source.id,
     );
-    const nextSources = sortBy([...otherSources, source], ['name']);
+    const nextSources = sortBy([...otherSources, sourceToSave], ['name']);
 
     await writeStoredCollection('sources', ownerId, nextSources);
     await persistSynchronizedLibraryFileTree(this, ownerId, {

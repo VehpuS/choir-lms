@@ -17,6 +17,7 @@ const SAVED_SOURCE: DriveLibrarySource = {
   mimeType: 'audio/mpeg',
   extension: 'mp3',
   durationMs: 92000,
+  createdAt: '2026-05-10T10:00:00.000Z',
   availability: {
     status: 'available',
   },
