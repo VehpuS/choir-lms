@@ -20,6 +20,7 @@ type AppRouterRecentsScreenProps = {
   libraryTagUsage: RehearsalLibraryTagUsage[];
   onRequestLibraryDestination: () => void;
   onSelectTag: (tag: string) => void;
+  onViewAllTags: () => void;
   playback: AppRouterRecentsPlayback;
   recentRehearsalHistory: RecentRehearsalItem[];
   savedLoopIds: Set<string>;
@@ -32,6 +33,7 @@ export const AppRouterRecentsScreen = ({
   libraryTagUsage,
   onRequestLibraryDestination,
   onSelectTag,
+  onViewAllTags,
   playback,
   recentRehearsalHistory,
   savedLoopIds,
@@ -67,6 +69,7 @@ export const AppRouterRecentsScreen = ({
         void playback.playPlayableItem(recentRehearsal.playableItem);
       }}
       onSelectRecentShortcutTag={onSelectTag}
+      onViewAllTags={onViewAllTags}
       onViewRecentInLibrary={() => {
         onRequestLibraryDestination();
       }}

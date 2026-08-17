@@ -11,6 +11,7 @@ import { CompactPlayableRowShell } from '../../components/compact-playable-row-s
 import { CompactPlaybackAction } from '../../components/compact-playback-action';
 import { DestinationHeader } from '../../components/destination-header';
 import { getDestinationHeaderModel } from '../../components/destination-header-model';
+import { SurfaceIconButton } from '../../components/surface-icon-button';
 import { InteractionChip } from '../../library/components/interaction-chip';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
 import { appTheme } from '../../utils/theme';
@@ -37,6 +38,7 @@ export type RecentsScreenProps = {
   onQueueRecentPlaybackUpNext: (recentRehearsal: RecentRehearsalItem) => void;
   onResumeRecentPlayback: (recentRehearsal: RecentRehearsalItem) => void;
   onSelectRecentShortcutTag: (shortcutTag: string) => void;
+  onViewAllTags: () => void;
   onViewRecentInLibrary: (recentRehearsal: RecentRehearsalItem) => void;
   savedTrackCount: number;
 };
@@ -62,6 +64,7 @@ export const RecentsScreen = ({
   onQueueRecentPlaybackUpNext,
   onResumeRecentPlayback,
   onSelectRecentShortcutTag,
+  onViewAllTags,
   onViewRecentInLibrary,
   savedTrackCount,
 }: RecentsScreenProps) => {
@@ -78,6 +81,7 @@ export const RecentsScreen = ({
   });
   const isRecentPlaybackAvailable = latestRecentRehearsal !== null;
   const hasSavedTagUsage = libraryTagUsage.length > 0;
+  const hasOverflowTags = libraryTagUsage.length > RECENTS_SHORTCUT_TAG_CAP;
   const shortcutTags = libraryTagUsage
     .slice(0, RECENTS_SHORTCUT_TAG_CAP)
     .map((tagUsage) => tagUsage.tag);
@@ -243,6 +247,14 @@ export const RecentsScreen = ({
                 <Text style={styles.shortcutsBody}>{tagModuleCopy.body}</Text>
               ) : null}
             </View>
+            {hasOverflowTags ? (
+              <SurfaceIconButton
+                accessibilityLabel="See all tags"
+                icon="chevron-right"
+                onPress={onViewAllTags}
+                size={20}
+              />
+            ) : null}
           </View>
           {hasSavedTagUsage && !isRecentPlaybackAvailable ? (
             <Text style={styles.shortcutsMeta}>{shortcutMetadata}</Text>

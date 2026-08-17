@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { SavedRehearsalLibrarySection } from '../../library/components/saved-rehearsal-library-section';
@@ -22,9 +22,19 @@ export const LibraryScreen = ({
   onRequestAddDestination,
   onSelectTag,
   playback,
+  requestedView,
+  requestedViewRequestId,
 }: LibraryScreenProps) => {
   const [selectedView, setSelectedView] =
     useState<SavedRehearsalLibraryView>('files');
+
+  useEffect(() => {
+    if (!requestedView || requestedViewRequestId === undefined) {
+      return;
+    }
+
+    setSelectedView(requestedView);
+  }, [requestedView, requestedViewRequestId]);
   const [browseCreateDockMode, setBrowseCreateDockMode] =
     useState<LibraryBrowseCreateDockMode>(null);
   const [libraryFilesSuccessFeedback, setLibraryFilesSuccessFeedback] =

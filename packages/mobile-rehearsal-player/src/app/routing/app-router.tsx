@@ -4,6 +4,7 @@ import { useGoogleDriveAuthorization } from '../auth/google-drive/hooks/use-auth
 import { useSavedTrackPlayback } from '../library/playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackActionCopy } from '../library/playback/utils/saved-track-playback-view-model';
 import { canShowQueuePlaylistActions } from '../library/playlists/utils/saved-playlist-playback-view-model';
+import type { SavedRehearsalLibraryView } from '../library/saved-rehearsal-library/detail-mode';
 import { useRehearsalLibraryController } from '../library/saved-rehearsal-library/use-rehearsal-library-controller';
 import { TagDetailScreen } from '../library/tags/components/tag-detail-screen';
 import { AddScreen } from '../screens/add';
@@ -36,6 +37,10 @@ export const AppRouter = () => {
   const [requestedDestinationRequestId, setRequestedDestinationRequestId] =
     useState(0);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [requestedLibraryView, setRequestedLibraryView] =
+    useState<SavedRehearsalLibraryView>('files');
+  const [requestedLibraryViewRequestId, setRequestedLibraryViewRequestId] =
+    useState(0);
   const [isRecentRehearsalHistoryReady, setIsRecentRehearsalHistoryReady] =
     useState(false);
   const libraryController = useRehearsalLibraryController({
@@ -141,6 +146,13 @@ export const AppRouter = () => {
     });
   };
 
+  const requestLibraryView = (view: SavedRehearsalLibraryView) => {
+    setRequestedLibraryView(view);
+    setRequestedLibraryViewRequestId((currentId) => {
+      return currentId + 1;
+    });
+  };
+
   const tagDetailScreen = selectedTag ? (
     <TagDetailScreen
       onClose={() => {
@@ -180,6 +192,10 @@ export const AppRouter = () => {
           onSelectTag={(tag) => {
             setSelectedTag(tag);
           }}
+          onViewAllTags={() => {
+            requestDestination('library');
+            requestLibraryView('tags');
+          }}
           playback={playback}
           recentRehearsalHistory={recentRehearsalHistory}
           savedLoopIds={savedLoopIds}
@@ -204,6 +220,8 @@ export const AppRouter = () => {
             setSelectedTag(tag);
           }}
           playback={playback}
+          requestedView={requestedLibraryView}
+          requestedViewRequestId={requestedLibraryViewRequestId}
         />
       }
       tagDetailScreen={tagDetailScreen}

@@ -1,5 +1,6 @@
 import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import type { useSavedTrackPlayback } from '../../library/playback/hooks/use-saved-track-playback';
+import type { SavedRehearsalLibraryView } from '../../library/saved-rehearsal-library/detail-mode';
 import type { useRehearsalLibraryController } from '../../library/saved-rehearsal-library/use-rehearsal-library-controller';
 
 type SavedTrackPlaybackController = Pick<
@@ -26,4 +27,6 @@ export type LibraryScreenProps = {
   onRequestAddDestination: () => void;
   onSelectTag: (tag: string) => void;
   playback: SavedTrackPlaybackController;
+  requestedView?: SavedRehearsalLibraryView;
+  requestedViewRequestId?: number;
 };
