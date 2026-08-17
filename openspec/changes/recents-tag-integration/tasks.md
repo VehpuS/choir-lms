@@ -63,7 +63,13 @@
   - Tests: no new automated test — the chip wiring is a single-line pass-through (`onPress={() => onSelectRecentShortcutTag(tag)}`) with no branching; removed the now-dead `getRecentsShortcutPlayActionCopy` tests instead of adding new ones.
   - Manually verified in the integrated browser: from the Recents tab (a different shell tab than Library), tapping the "Soprano" chip opens the tag detail overlay with the correct tag name; back returns to Recents with the chip row unchanged. No new console errors.
   - Validation: `nx run mobile-rehearsal-player:typecheck`, `eslint` on touched files, and `nx run mobile-rehearsal-player:test` (401/401 passing, 2 fewer than before from the retired copy tests) all pass.
-- [ ] 2.5 Update the existing Recents `screen-copy`/`overflow-actions` focused tests for the new tag-driven module, and add coverage for the empty-state and overflow-entry-point branches.
+- [x] 2.5 Update the existing Recents `screen-copy`/`overflow-actions` focused tests for the new tag-driven module, and add coverage for the empty-state and overflow-entry-point branches.
+  - `overflow-actions.ts`/`overflow-actions.spec.ts` (the per-recent-row "Play next/Add to queue/View in library" menu) is unrelated to the tag module and untouched by this change — confirmed its 3 existing tests still pass unmodified, no update needed.
+  - `screen-copy.spec.ts`'s stale `getRecentsShortcutPlayActionCopy` tests were already removed in task `2.4` when that copy helper was retired.
+  - The empty-state and overflow-entry-point branches were previously inline JSX booleans in `index.tsx` (`!hasSavedTagUsage || !isRecentPlaybackAvailable` and `libraryTagUsage.length > RECENTS_SHORTCUT_TAG_CAP`) with no testable seam. Extracted both into a new pure `getRecentsTagModuleVisibility` in `screen-copy.ts` (returning `{ showGuidanceBody, showOverflowTrigger }`), alongside the exported `RECENTS_SHORTCUT_TAG_CAP` constant (moved out of `index.tsx`), matching this codebase's existing `shouldRenderX`-predicate convention (e.g. `shouldRenderSavedTagsList` in `browse-content-model.ts`). `index.tsx` now derives `tagModuleVisibility` from this function instead of inline conditions.
+  - Tests: 5 new cases in `screen-copy.spec.ts` — empty-state guidance shown with no tags, guidance still shown with tags but no recent playback yet, guidance hidden once both tags and recent playback exist, overflow trigger hidden at exactly the cap (6), overflow trigger shown one past the cap (7).
+  - Manually verified in the integrated browser: with tag usage exceeding the cap, the overflow chevron renders and the guidance body correctly hides once both gating conditions are satisfied — same behavior as before the refactor, confirming it's a pure extraction with no behavior change.
+  - Validation: `nx run mobile-rehearsal-player:typecheck`, `eslint` on touched files, and `nx run mobile-rehearsal-player:test` (406/406 passing) all pass.
 
 ## 3. Tag Detail Screen
 

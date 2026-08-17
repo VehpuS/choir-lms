@@ -36,3 +36,18 @@ export const getRecentsTagModuleCopy = (options: {
     body: 'Optional tag shortcuts for fast recents scanning.',
   };
 };
+
+export const RECENTS_SHORTCUT_TAG_CAP = 6;
+
+export const getRecentsTagModuleVisibility = (options: {
+  hasSavedTagUsage: boolean;
+  isRecentPlaybackAvailable: boolean;
+  libraryTagUsageCount: number;
+}) => {
+  return {
+    showGuidanceBody:
+      !options.hasSavedTagUsage || !options.isRecentPlaybackAvailable,
+    showOverflowTrigger:
+      options.libraryTagUsageCount > RECENTS_SHORTCUT_TAG_CAP,
+  };
+};

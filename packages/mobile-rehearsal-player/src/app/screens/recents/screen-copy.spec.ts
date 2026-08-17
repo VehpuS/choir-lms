@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
   getRecentsContinuePracticingCopy,
   getRecentsTagModuleCopy,
+  getRecentsTagModuleVisibility,
 } from './screen-copy.js';
 
 describe('getRecentsContinuePracticingCopy', () => {
@@ -66,6 +67,63 @@ describe('getRecentsTagModuleCopy', () => {
       {
         body: 'Optional tag shortcuts for fast recents scanning.',
       },
+    );
+  });
+});
+
+describe('getRecentsTagModuleVisibility', () => {
+  it('shows the empty-state guidance body when no saved entity carries a tag yet', () => {
+    assert.equal(
+      getRecentsTagModuleVisibility({
+        hasSavedTagUsage: false,
+        isRecentPlaybackAvailable: true,
+        libraryTagUsageCount: 0,
+      }).showGuidanceBody,
+      true,
+    );
+  });
+
+  it('keeps the guidance body visible before any recent playback exists, even with real tags', () => {
+    assert.equal(
+      getRecentsTagModuleVisibility({
+        hasSavedTagUsage: true,
+        isRecentPlaybackAvailable: false,
+        libraryTagUsageCount: 2,
+      }).showGuidanceBody,
+      true,
+    );
+  });
+
+  it('hides the guidance body once real tags exist and recent playback is available', () => {
+    assert.equal(
+      getRecentsTagModuleVisibility({
+        hasSavedTagUsage: true,
+        isRecentPlaybackAvailable: true,
+        libraryTagUsageCount: 2,
+      }).showGuidanceBody,
+      false,
+    );
+  });
+
+  it('hides the overflow trigger when tag usage is within the compact display cap', () => {
+    assert.equal(
+      getRecentsTagModuleVisibility({
+        hasSavedTagUsage: true,
+        isRecentPlaybackAvailable: true,
+        libraryTagUsageCount: 6,
+      }).showOverflowTrigger,
+      false,
+    );
+  });
+
+  it('shows the overflow trigger once more tags exist than the compact display cap', () => {
+    assert.equal(
+      getRecentsTagModuleVisibility({
+        hasSavedTagUsage: true,
+        isRecentPlaybackAvailable: true,
+        libraryTagUsageCount: 7,
+      }).showOverflowTrigger,
+      true,
     );
   });
 });

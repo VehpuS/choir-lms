@@ -21,8 +21,10 @@ import {
 } from './history';
 import { getRecentsOverflowActionState } from './overflow-actions';
 import {
+  RECENTS_SHORTCUT_TAG_CAP,
   getRecentsContinuePracticingCopy,
   getRecentsTagModuleCopy,
+  getRecentsTagModuleVisibility,
 } from './screen-copy';
 import { recentsScreenStyles as styles } from './styles';
 
@@ -42,8 +44,6 @@ export type RecentsScreenProps = {
   onViewRecentInLibrary: (recentRehearsal: RecentRehearsalItem) => void;
   savedTrackCount: number;
 };
-
-const RECENTS_SHORTCUT_TAG_CAP = 6;
 
 const AUDIO_FORMAT_LABEL = join(
   map(runtimeConfig.supportedAudioExtensions, (extension) =>
@@ -81,11 +81,15 @@ export const RecentsScreen = ({
   });
   const isRecentPlaybackAvailable = latestRecentRehearsal !== null;
   const hasSavedTagUsage = libraryTagUsage.length > 0;
-  const hasOverflowTags = libraryTagUsage.length > RECENTS_SHORTCUT_TAG_CAP;
   const shortcutTags = libraryTagUsage
     .slice(0, RECENTS_SHORTCUT_TAG_CAP)
     .map((tagUsage) => tagUsage.tag);
   const tagModuleCopy = getRecentsTagModuleCopy({ hasSavedTagUsage });
+  const tagModuleVisibility = getRecentsTagModuleVisibility({
+    hasSavedTagUsage,
+    isRecentPlaybackAvailable,
+    libraryTagUsageCount: libraryTagUsage.length,
+  });
 
   const shortcutMetadata = `${shortcutTags.length} optional shortcut tags - ${AUDIO_FORMAT_LABEL}`;
 
@@ -243,11 +247,11 @@ export const RecentsScreen = ({
           <View style={styles.shortcutsHeader}>
             <View style={styles.shortcutsCopy}>
               <Text style={styles.shortcutsTitle}>Popular tags</Text>
-              {!hasSavedTagUsage || !isRecentPlaybackAvailable ? (
+              {tagModuleVisibility.showGuidanceBody ? (
                 <Text style={styles.shortcutsBody}>{tagModuleCopy.body}</Text>
               ) : null}
             </View>
-            {hasOverflowTags ? (
+            {tagModuleVisibility.showOverflowTrigger ? (
               <SurfaceIconButton
                 accessibilityLabel="See all tags"
                 icon="chevron-right"
