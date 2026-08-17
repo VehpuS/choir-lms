@@ -36,13 +36,3 @@ export const getRecentsTagModuleCopy = (options: {
     body: 'Optional tag shortcuts for fast recents scanning.',
   };
 };
-
-export const getRecentsShortcutPlayActionCopy = (options: {
-  isResumePlaybackAvailable: boolean;
-  shortcutTag: string;
-}) => {
-  return {
-    accessibilityLabel: `Play ${options.shortcutTag} shortcut`,
-    disabled: !options.isResumePlaybackAvailable,
-  };
-};

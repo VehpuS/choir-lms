@@ -3,7 +3,6 @@ import { describe, it } from 'node:test';
 
 import {
   getRecentsContinuePracticingCopy,
-  getRecentsShortcutPlayActionCopy,
   getRecentsTagModuleCopy,
 } from './screen-copy.js';
 
@@ -66,34 +65,6 @@ describe('getRecentsTagModuleCopy', () => {
       getRecentsTagModuleCopy({ hasSavedTagUsage: true }),
       {
         body: 'Optional tag shortcuts for fast recents scanning.',
-      },
-    );
-  });
-});
-
-describe('getRecentsShortcutPlayActionCopy', () => {
-  it('builds shortcut-specific play icon labels', () => {
-    assert.deepEqual(
-      getRecentsShortcutPlayActionCopy({
-        isResumePlaybackAvailable: true,
-        shortcutTag: 'Alto',
-      }),
-      {
-        accessibilityLabel: 'Play Alto shortcut',
-        disabled: false,
-      },
-    );
-  });
-
-  it('keeps shortcut icon actions disabled when playback is not available', () => {
-    assert.deepEqual(
-      getRecentsShortcutPlayActionCopy({
-        isResumePlaybackAvailable: false,
-        shortcutTag: 'Bass',
-      }),
-      {
-        accessibilityLabel: 'Play Bass shortcut',
-        disabled: true,
       },
     );
   });

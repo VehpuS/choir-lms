@@ -21,7 +21,6 @@ import {
 import { getRecentsOverflowActionState } from './overflow-actions';
 import {
   getRecentsContinuePracticingCopy,
-  getRecentsShortcutPlayActionCopy,
   getRecentsTagModuleCopy,
 } from './screen-copy';
 import { recentsScreenStyles as styles } from './styles';
@@ -36,8 +35,8 @@ export type RecentsScreenProps = {
   recentRehearsalHistory: RecentRehearsalItem[];
   onQueueRecentPlaybackNext: (recentRehearsal: RecentRehearsalItem) => void;
   onQueueRecentPlaybackUpNext: (recentRehearsal: RecentRehearsalItem) => void;
-  onPlayRecentShortcut: (shortcutTag: string) => void;
   onResumeRecentPlayback: (recentRehearsal: RecentRehearsalItem) => void;
+  onSelectRecentShortcutTag: (shortcutTag: string) => void;
   onViewRecentInLibrary: (recentRehearsal: RecentRehearsalItem) => void;
   savedTrackCount: number;
 };
@@ -61,8 +60,8 @@ export const RecentsScreen = ({
   recentRehearsalHistory,
   onQueueRecentPlaybackNext,
   onQueueRecentPlaybackUpNext,
-  onPlayRecentShortcut,
   onResumeRecentPlayback,
+  onSelectRecentShortcutTag,
   onViewRecentInLibrary,
   savedTrackCount,
 }: RecentsScreenProps) => {
@@ -252,28 +251,16 @@ export const RecentsScreen = ({
             <View style={styles.tagRow}>
               {shortcutTags.map((tag) => (
                 <InteractionChip
+                  accessibilityLabel={`Open ${tag} tag`}
                   key={tag}
                   label={tag}
                   labelStyle={styles.tagLabel}
+                  onPress={() => {
+                    onSelectRecentShortcutTag(tag);
+                  }}
                   style={styles.tagChip}
                   variant="passive"
-                >
-                  <CompactPlaybackAction
-                    accessibilityLabel={
-                      getRecentsShortcutPlayActionCopy({
-                        isResumePlaybackAvailable: isRecentPlaybackAvailable,
-                        shortcutTag: tag,
-                      }).accessibilityLabel
-                    }
-                    disabled={!isRecentPlaybackAvailable}
-                    disabledIconColor={appTheme.colors.secondaryText}
-                    iconName="play"
-                    onPress={() => {
-                      onPlayRecentShortcut(tag);
-                    }}
-                    variant="chip"
-                  />
-                </InteractionChip>
+                />
               ))}
             </View>
           ) : null}

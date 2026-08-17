@@ -19,6 +19,7 @@ type AppRouterRecentsScreenProps = {
   authorization: DriveSessionMenuController;
   libraryTagUsage: RehearsalLibraryTagUsage[];
   onRequestLibraryDestination: () => void;
+  onSelectTag: (tag: string) => void;
   playback: AppRouterRecentsPlayback;
   recentRehearsalHistory: RecentRehearsalItem[];
   savedLoopIds: Set<string>;
@@ -30,6 +31,7 @@ export const AppRouterRecentsScreen = ({
   authorization,
   libraryTagUsage,
   onRequestLibraryDestination,
+  onSelectTag,
   playback,
   recentRehearsalHistory,
   savedLoopIds,
@@ -55,15 +57,6 @@ export const AppRouterRecentsScreen = ({
       }}
       libraryTagUsage={libraryTagUsage}
       recentRehearsalHistory={recentRehearsalHistory}
-      onPlayRecentShortcut={() => {
-        const mostRecentItem = recentRehearsalHistory[0];
-
-        if (!mostRecentItem) {
-          return;
-        }
-
-        void playback.playPlayableItem(mostRecentItem.playableItem);
-      }}
       onQueueRecentPlaybackNext={(recentRehearsal) => {
         playback.queuePlayableItemNext(recentRehearsal.playableItem);
       }}
@@ -73,6 +66,7 @@ export const AppRouterRecentsScreen = ({
       onResumeRecentPlayback={(recentRehearsal) => {
         void playback.playPlayableItem(recentRehearsal.playableItem);
       }}
+      onSelectRecentShortcutTag={onSelectTag}
       onViewRecentInLibrary={() => {
         onRequestLibraryDestination();
       }}

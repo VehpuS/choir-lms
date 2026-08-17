@@ -177,6 +177,9 @@ export const AppRouter = () => {
           onRequestLibraryDestination={() => {
             requestDestination('library');
           }}
+          onSelectTag={(tag) => {
+            setSelectedTag(tag);
+          }}
           playback={playback}
           recentRehearsalHistory={recentRehearsalHistory}
           savedLoopIds={savedLoopIds}

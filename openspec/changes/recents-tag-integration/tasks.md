@@ -49,7 +49,12 @@
   - Validation: `nx run mobile-rehearsal-player:typecheck`, `eslint` on touched files (clean except the pre-existing file-length warning noted above), and `nx run mobile-rehearsal-player:test` (403/403 passing) all pass.
 - [ ] 2.3.6 Wire the Recents tag module's overflow action (from `2.3`) to navigate to the new Library Tags view.
 - [ ] 2.3.7 Add focused tests for the Tags view-model: sort orders (name asc/desc, count asc/desc, tie-break) and search filtering.
-- [ ] 2.4 Wire tag chip taps to navigate to the new tag detail screen (task `3.1`) with the selected tag, instead of the current no-op shortcut handler.
+- [x] 2.4 Wire tag chip taps to navigate to the new tag detail screen (task `3.1`) with the selected tag, instead of the current no-op shortcut handler.
+  - Decision (confirmed with user): the pre-existing chip only had one tap target — a nested "play" icon (`CompactPlaybackAction`) disabled unless a recent-playback item existed to resume — while the `InteractionChip` itself wasn't pressable. Since tapping a tag now opens tag detail (a browse action) rather than playing anything, and that's independent of whether recent playback exists, made the whole chip pressable via `InteractionChip`'s own `onPress` and removed the nested play icon entirely, rather than repurposing it. This also retired `getRecentsShortcutPlayActionCopy` (its accessibility copy/disabled-state was written specifically for a "play" action) and its 2 tests.
+  - Implementation: `RecentsScreenProps.onPlayRecentShortcut` renamed to `onSelectRecentShortcutTag` (no longer play-shaped) and threaded straight through from `AppRouter`'s `onSelectTag={(tag) => setSelectedTag(tag)}` (task `3.1`'s state) via `AppRouterRecentsScreen`'s new `onSelectTag` prop, replacing the previous no-op "resume most-recent item" handler.
+  - Tests: no new automated test — the chip wiring is a single-line pass-through (`onPress={() => onSelectRecentShortcutTag(tag)}`) with no branching; removed the now-dead `getRecentsShortcutPlayActionCopy` tests instead of adding new ones.
+  - Manually verified in the integrated browser: from the Recents tab (a different shell tab than Library), tapping the "Soprano" chip opens the tag detail overlay with the correct tag name; back returns to Recents with the chip row unchanged. No new console errors.
+  - Validation: `nx run mobile-rehearsal-player:typecheck`, `eslint` on touched files, and `nx run mobile-rehearsal-player:test` (401/401 passing, 2 fewer than before from the retired copy tests) all pass.
 - [ ] 2.5 Update the existing Recents `screen-copy`/`overflow-actions` focused tests for the new tag-driven module, and add coverage for the empty-state and overflow-entry-point branches.
 
 ## 3. Tag Detail Screen
