@@ -17,7 +17,30 @@ export const getSavedTagUsageMetadataLabel = (
   return pluralize(usage.count, 'item');
 };
 
-export type SavedTagsListSortField = 'count' | 'name';
+export const getSavedTagUsageAddedDateLabel = (
+  usage: RehearsalLibraryTagUsage,
+  now: Date = new Date(),
+) => {
+  const addedDate = new Date(usage.createdAt);
+  const isSameYear = addedDate.getFullYear() === now.getFullYear();
+
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    day: 'numeric',
+    month: 'short',
+    ...(isSameYear ? {} : { year: 'numeric' }),
+  }).format(addedDate);
+
+  return `Added ${formattedDate}`;
+};
+
+export const getSavedTagUsageRowMetadataLabel = (
+  usage: RehearsalLibraryTagUsage,
+  now: Date = new Date(),
+) => {
+  return `${getSavedTagUsageMetadataLabel(usage)} · ${getSavedTagUsageAddedDateLabel(usage, now)}`;
+};
+
+export type SavedTagsListSortField = 'count' | 'date' | 'name';
 export type SavedTagsListSortDirection = 'asc' | 'desc';
 
 export type SavedTagsListSortState = {
@@ -36,6 +59,7 @@ export const SAVED_TAGS_LIST_SORT_FIELD_OPTIONS: {
 }[] = [
   { label: 'Name', value: 'name' },
   { label: 'Count', value: 'count' },
+  { label: 'Date added', value: 'date' },
 ];
 
 const compareTagUsageByName = (
@@ -55,6 +79,12 @@ export const sortSavedTagUsage = (
     if (sortState.field === 'count') {
       return left.count !== right.count
         ? (left.count - right.count) * directionMultiplier
+        : compareTagUsageByName(left, right);
+    }
+
+    if (sortState.field === 'date') {
+      return left.createdAt !== right.createdAt
+        ? (left.createdAt < right.createdAt ? -1 : 1) * directionMultiplier
         : compareTagUsageByName(left, right);
     }
 

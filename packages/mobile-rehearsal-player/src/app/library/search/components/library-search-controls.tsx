@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { InteractionChip } from '../../components/interaction-chip';
 import { getLibrarySearchContextCopy } from '../../drive/utils/drive-library-view-model';
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
@@ -7,6 +8,12 @@ import type {
   LibraryFilesSearchScope,
   LibraryFilesSortMode,
 } from '../../saved-rehearsal-library/library-files-model';
+import {
+  SAVED_TAGS_LIST_SORT_FIELD_OPTIONS,
+  getSavedTagsListSortDirectionToggleLabel,
+  type SavedTagsListSortField,
+  type SavedTagsListSortState,
+} from '../../tags/components/saved-tags-list/model';
 import type { LibrarySearchEntityFilter } from '../utils/saved-library-search-view-model';
 import { ContextualSearchPanel } from './contextual-search-panel';
 import type { LibrarySearchControlsVisibility } from './library-search-controls-visibility';
@@ -37,11 +44,14 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   onSelectFilesSearchScope: (value: LibraryFilesSearchScope) => void;
   onSelectFilesSortMode: (value: LibraryFilesSortMode) => void;
   onSelectRecentSearchTerm: (value: string) => void;
+  onSelectTagsSortField: (value: SavedTagsListSortField) => void;
   onToggleTagFilter: (value: string) => void;
+  onToggleTagsSortDirection: () => void;
   recentSearchTerms: string[];
   selectedView: SavedRehearsalLibraryView;
   selectedTagFilters: string[];
   searchQuery: string;
+  tagsSortState: SavedTagsListSortState;
 };
 
 export const LibrarySearchControls = ({
@@ -61,11 +71,14 @@ export const LibrarySearchControls = ({
   onSelectFilesSearchScope,
   onSelectFilesSortMode,
   onSelectRecentSearchTerm,
+  onSelectTagsSortField,
   onToggleTagFilter,
+  onToggleTagsSortDirection,
   recentSearchTerms,
   selectedView,
   selectedTagFilters,
   searchQuery,
+  tagsSortState,
 }: LibrarySearchControlsProps) => {
   const searchContextCopy = getLibrarySearchContextCopy();
   const searchHelperCopy =
@@ -134,6 +147,33 @@ export const LibrarySearchControls = ({
           />
         </>
       ) : null}
+      {selectedView === 'tags' ? (
+        <FilterChipGroup
+          filterChipStyle={styles.filterChip}
+          filterGroupStyle={styles.filterGroup}
+          filterLabelRowStyle={styles.filterLabelRow}
+          filterLabelStyle={styles.filterLabel}
+          filterRowStyle={styles.filterRow}
+          label="Sort"
+          onSelectValue={onSelectTagsSortField}
+          options={SAVED_TAGS_LIST_SORT_FIELD_OPTIONS}
+          selectedValue={tagsSortState.field}
+          trailingAction={
+            <SurfaceIconButton
+              accessibilityLabel={getSavedTagsListSortDirectionToggleLabel(
+                tagsSortState.direction,
+              )}
+              icon={
+                tagsSortState.direction === 'asc'
+                  ? 'sort-ascending'
+                  : 'sort-descending'
+              }
+              onPress={onToggleTagsSortDirection}
+              size={20}
+            />
+          }
+        />
+      ) : null}
       {availableTagFilters.length > 0 ? (
         <View style={styles.filterGroup}>
           <Text style={styles.filterLabel}>Tags</Text>
@@ -194,6 +234,11 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   filterGroup: { gap: 8 },
+  filterLabelRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   filterLabel: {
     color: '#5f5647',
     fontSize: 12,

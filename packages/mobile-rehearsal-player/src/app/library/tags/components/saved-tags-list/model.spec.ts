@@ -4,7 +4,9 @@ import { describe, it } from 'node:test';
 import {
   filterSavedTagUsageByQuery,
   getSavedTagsListSortDirectionToggleLabel,
+  getSavedTagUsageAddedDateLabel,
   getSavedTagUsageMetadataLabel,
+  getSavedTagUsageRowMetadataLabel,
   sortSavedTagUsage,
 } from './model';
 
@@ -20,6 +22,42 @@ describe('getSavedTagUsageMetadataLabel', () => {
     assert.equal(
       getSavedTagUsageMetadataLabel({ count: 4, tag: 'Warmup', createdAt: '2026-01-01T00:00:00.000Z' }),
       '4 items',
+    );
+  });
+});
+
+describe('getSavedTagUsageAddedDateLabel', () => {
+  const now = new Date('2026-06-15T00:00:00.000Z');
+
+  it('omits the year when the added date falls in the current year', () => {
+    assert.equal(
+      getSavedTagUsageAddedDateLabel(
+        { count: 1, tag: 'Soprano', createdAt: '2026-01-05T00:00:00.000Z' },
+        now,
+      ),
+      'Added Jan 5',
+    );
+  });
+
+  it('includes the year when the added date falls in a different year', () => {
+    assert.equal(
+      getSavedTagUsageAddedDateLabel(
+        { count: 1, tag: 'Soprano', createdAt: '2025-01-05T00:00:00.000Z' },
+        now,
+      ),
+      'Added Jan 5, 2025',
+    );
+  });
+});
+
+describe('getSavedTagUsageRowMetadataLabel', () => {
+  it('combines the item count and added-date labels', () => {
+    assert.equal(
+      getSavedTagUsageRowMetadataLabel(
+        { count: 4, tag: 'Warmup', createdAt: '2026-01-05T00:00:00.000Z' },
+        new Date('2026-06-15T00:00:00.000Z'),
+      ),
+      '4 items · Added Jan 5',
     );
   });
 });
@@ -81,6 +119,34 @@ describe('sortSavedTagUsage', () => {
     sortSavedTagUsage(tagUsage, { direction: 'asc', field: 'name' });
 
     assert.deepEqual(tagUsage, original);
+  });
+
+  const tagUsageWithDistinctDates = [
+    { count: 2, tag: 'Alto', createdAt: '2026-01-05T00:00:00.000Z' },
+    { count: 5, tag: 'Bass', createdAt: '2026-01-01T00:00:00.000Z' },
+    { count: 2, tag: 'zebra', createdAt: '2026-01-01T00:00:00.000Z' },
+  ];
+
+  it('sorts by date ascending with an alphabetical tie-break for equal dates', () => {
+    assert.deepEqual(
+      sortSavedTagUsage(tagUsageWithDistinctDates, { direction: 'asc', field: 'date' }),
+      [
+        { count: 5, tag: 'Bass', createdAt: '2026-01-01T00:00:00.000Z' },
+        { count: 2, tag: 'zebra', createdAt: '2026-01-01T00:00:00.000Z' },
+        { count: 2, tag: 'Alto', createdAt: '2026-01-05T00:00:00.000Z' },
+      ],
+    );
+  });
+
+  it('sorts by date descending while keeping the tie-break alphabetical, not reversed', () => {
+    assert.deepEqual(
+      sortSavedTagUsage(tagUsageWithDistinctDates, { direction: 'desc', field: 'date' }),
+      [
+        { count: 2, tag: 'Alto', createdAt: '2026-01-05T00:00:00.000Z' },
+        { count: 5, tag: 'Bass', createdAt: '2026-01-01T00:00:00.000Z' },
+        { count: 2, tag: 'zebra', createdAt: '2026-01-01T00:00:00.000Z' },
+      ],
+    );
   });
 });
 

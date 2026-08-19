@@ -8,6 +8,10 @@ import {
   type LibraryFilesSearchScope,
   type LibraryFilesSortMode,
 } from '../../saved-rehearsal-library/library-files-model';
+import {
+  DEFAULT_SAVED_TAGS_LIST_SORT_STATE,
+  type SavedTagsListSortField,
+} from '../../tags/components/saved-tags-list/model';
 import { useRecentSearchHistory } from '../../search/hooks/use-recent-search-history';
 import { createDebouncedSearchRunner } from '../../search/utils/debounced-search-runner';
 import {
@@ -23,6 +27,7 @@ import {
   restoreLibraryFilesSearchState,
   type LibraryFilesSearchStateSnapshot,
 } from './library-files-search-state';
+import { resolveAvailableTagFilters } from './saved-rehearsal-library-tag-filters';
 
 type UseSavedRehearsalLibrarySearchOptions = {
   savedLibrarySources: DriveLibrarySource[];
@@ -31,56 +36,6 @@ type UseSavedRehearsalLibrarySearchOptions = {
 };
 
 const LIBRARY_SEARCH_DEBOUNCE_MS = 200;
-
-const normalizeTagToken = (value: string) => {
-  return value.trim();
-};
-
-const resolveAvailableTagFilters = (options: {
-  savedLibrarySources: DriveLibrarySource[];
-  savedLoops: NamedLoop[];
-  savedPlaylists: Playlist[];
-}) => {
-  const uniqueTagsByKey = new Map<string, string>();
-
-  const collectTags = (tags: string[] | undefined) => {
-    if (!tags) {
-      return;
-    }
-
-    for (const tag of tags) {
-      const normalizedTag = normalizeTagToken(tag);
-
-      if (!normalizedTag) {
-        continue;
-      }
-
-      const tagKey = normalizedTag.toLocaleLowerCase();
-
-      if (!uniqueTagsByKey.has(tagKey)) {
-        uniqueTagsByKey.set(tagKey, normalizedTag);
-      }
-    }
-  };
-
-  for (const source of options.savedLibrarySources) {
-    collectTags(source.tags);
-  }
-
-  for (const loop of options.savedLoops) {
-    collectTags(loop.tags);
-  }
-
-  for (const playlist of options.savedPlaylists) {
-    collectTags(playlist.tags);
-  }
-
-  return [...uniqueTagsByKey.values()].sort((leftTag, rightTag) => {
-    return leftTag.localeCompare(rightTag, undefined, {
-      sensitivity: 'base',
-    });
-  });
-};
 
 export const useSavedRehearsalLibrarySearch = ({
   savedLibrarySources,
@@ -98,6 +53,9 @@ export const useSavedRehearsalLibrarySearch = ({
     useState<LibraryFilesSearchScope>('current-folder');
   const [filesSortMode, setFilesSortMode] = useState<LibraryFilesSortMode>(
     DEFAULT_LIBRARY_FILES_SORT_MODE,
+  );
+  const [tagsSortState, setTagsSortState] = useState(
+    DEFAULT_SAVED_TAGS_LIST_SORT_STATE,
   );
   const [filesOpenedAtByNodeKey, setFilesOpenedAtByNodeKey] = useState<
     Record<string, string>
@@ -276,6 +234,12 @@ export const useSavedRehearsalLibrarySearch = ({
     setEntityFilter,
     setFilesSearchScope,
     setFilesSortMode,
+    setTagsSortField(field: SavedTagsListSortField) {
+      setTagsSortState((currentSortState) => {
+        return { ...currentSortState, field };
+      });
+    },
+    tagsSortState,
     toggleTagFilter(tag: string) {
       setSelectedTagFilters((currentTagFilters) => {
         return currentTagFilters.includes(tag)
@@ -283,6 +247,14 @@ export const useSavedRehearsalLibrarySearch = ({
               return currentTagFilter !== tag;
             })
           : [...currentTagFilters, tag];
+      });
+    },
+    toggleTagsSortDirection() {
+      setTagsSortState((currentSortState) => {
+        return {
+          ...currentSortState,
+          direction: currentSortState.direction === 'asc' ? 'desc' : 'asc',
+        };
       });
     },
     visiblePlaylistCards,

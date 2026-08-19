@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 
 import { InteractionChip } from '../../components/interaction-chip';
@@ -55,12 +56,14 @@ type FilterOption<Value extends string> = {
 export const FilterChipGroup = <Value extends string>({
   filterChipStyle,
   filterGroupStyle,
+  filterLabelRowStyle,
   filterLabelStyle,
   filterRowStyle,
   label,
   onSelectValue,
   options,
   selectedValue,
+  trailingAction,
 }: {
   filterChipStyle: {
     minHeight: number;
@@ -69,6 +72,11 @@ export const FilterChipGroup = <Value extends string>({
   };
   filterGroupStyle: {
     gap: number;
+  };
+  filterLabelRowStyle?: {
+    alignItems: 'center';
+    flexDirection: 'row';
+    justifyContent: 'space-between';
   };
   filterLabelStyle: {
     color: string;
@@ -86,10 +94,20 @@ export const FilterChipGroup = <Value extends string>({
   onSelectValue: (value: Value) => void;
   options: ReadonlyArray<FilterOption<Value>>;
   selectedValue: Value;
+  trailingAction?: ReactNode;
 }) => {
+  const labelText = <Text style={filterLabelStyle}>{label}</Text>;
+
   return (
     <View style={filterGroupStyle}>
-      <Text style={filterLabelStyle}>{label}</Text>
+      {trailingAction && filterLabelRowStyle ? (
+        <View style={filterLabelRowStyle}>
+          {labelText}
+          {trailingAction}
+        </View>
+      ) : (
+        labelText
+      )}
       <View style={filterRowStyle}>
         {options.map((option) => {
           return (

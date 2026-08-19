@@ -108,10 +108,12 @@ export const LibraryScreen = ({
       ) : null}
       <SavedRehearsalLibraryHeader
         authorization={authorization}
+        canShowFilterPopover={
+          selectedView === 'files' || selectedView === 'tags'
+        }
         handleFilterActionPress={searchPanel.handleFilterActionPress}
         handleSearchActionPress={searchPanel.handleSearchActionPress}
         isSessionMenuVisible={isSessionMenuVisible}
-        isShowingFilesView={selectedView === 'files'}
         onCloseSessionMenu={() => {
           setIsSessionMenuVisible(false);
         }}

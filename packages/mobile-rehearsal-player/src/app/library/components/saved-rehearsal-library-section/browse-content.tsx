@@ -96,6 +96,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
       <SavedTagsList
         onSelectTag={onSelectTag}
         searchQuery={searchState.activeLibrarySearchQuery}
+        sortState={searchState.tagsSortState}
         tagUsage={tagUsage}
       />
     );

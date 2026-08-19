@@ -28,10 +28,10 @@ type SearchPanelVisibility = {
 
 type SavedRehearsalLibraryHeaderProps = {
   authorization?: DriveSessionMenuController;
+  canShowFilterPopover: boolean;
   handleFilterActionPress: () => void;
   handleSearchActionPress: () => void;
   isSessionMenuVisible: boolean;
-  isShowingFilesView: boolean;
   onCloseSessionMenu: () => void;
   onToggleSessionMenu: () => void;
   searchPanelVisibility: SearchPanelVisibility;
@@ -86,10 +86,10 @@ const SavedRehearsalLibraryViewSwitcher = ({
 
 export const SavedRehearsalLibraryHeader = ({
   authorization,
+  canShowFilterPopover,
   handleFilterActionPress,
   handleSearchActionPress,
   isSessionMenuVisible,
-  isShowingFilesView,
   onCloseSessionMenu,
   onToggleSessionMenu,
   searchPanelVisibility,
@@ -104,7 +104,7 @@ export const SavedRehearsalLibraryHeader = ({
       trailingAction={
         <View style={styles.headerActionRow}>
           <LibrarySearchControlsActions
-            canShowFilters={isShowingFilesView}
+            canShowFilters={canShowFilterPopover}
             entityFilter={searchState.entityFilter}
             isFilterPopoverVisible={
               searchPanelVisibility.isFilterPopoverVisible
@@ -183,11 +183,14 @@ export const SavedRehearsalLibrarySearchShell = ({
         onSelectFilesSearchScope={searchState.setFilesSearchScope}
         onSelectFilesSortMode={searchState.setFilesSortMode}
         onSelectRecentSearchTerm={searchState.runLibrarySearch}
+        onSelectTagsSortField={searchState.setTagsSortField}
         onToggleTagFilter={searchState.toggleTagFilter}
+        onToggleTagsSortDirection={searchState.toggleTagsSortDirection}
         recentSearchTerms={searchState.recentLibrarySearchTerms}
         selectedView={selectedView}
         selectedTagFilters={searchState.selectedTagFilters}
         searchQuery={searchState.librarySearchQuery}
+        tagsSortState={searchState.tagsSortState}
       />
     </View>
   );
