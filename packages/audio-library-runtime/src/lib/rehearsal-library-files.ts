@@ -1,11 +1,12 @@
-import type {
-  DriveAudioSource,
-  NamedLoop,
-  Playlist,
-  RehearsalLibraryEntityKind,
-  RehearsalLibraryFileLinkNode,
-  RehearsalLibraryFileTree,
-  RehearsalLibraryFolderNode,
+import {
+  withResolvedTagAddedAt,
+  type DriveAudioSource,
+  type NamedLoop,
+  type Playlist,
+  type RehearsalLibraryEntityKind,
+  type RehearsalLibraryFileLinkNode,
+  type RehearsalLibraryFileTree,
+  type RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
 
 export type RehearsalLibraryEntityCollections = {
@@ -26,6 +27,13 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 const isStringArray = (value: unknown): value is string[] => {
   return (
     Array.isArray(value) && value.every((item) => typeof item === 'string')
+  );
+};
+
+const isStringRecord = (value: unknown): value is Record<string, string> => {
+  return (
+    isRecord(value) &&
+    Object.values(value).every((entry) => typeof entry === 'string')
   );
 };
 
@@ -55,7 +63,8 @@ const isRehearsalLibraryFolderNode = (
     typeof value.name === 'string' &&
     (typeof value.parentFolderId === 'string' ||
       value.parentFolderId === null) &&
-    (value.tags === undefined || isStringArray(value.tags))
+    (value.tags === undefined || isStringArray(value.tags)) &&
+    (value.tagAddedAt === undefined || isStringRecord(value.tagAddedAt))
   );
 };
 
@@ -196,13 +205,15 @@ export const syncRehearsalLibraryFileTree = (options: {
       continue;
     }
 
+    const folderCreatedAt = resolveBackfilledCreatedAt(folder.createdAt);
+
     normalizedFolders.push({
-      ...folder,
+      ...withResolvedTagAddedAt(folder, folder.tagAddedAt, folderCreatedAt),
       parentFolderId:
         folder.parentFolderId && folder.parentFolderId !== folder.id
           ? folder.parentFolderId
           : rootFolder.id,
-      createdAt: resolveBackfilledCreatedAt(folder.createdAt),
+      createdAt: folderCreatedAt,
     });
     seenFolderIds.add(folder.id);
   }

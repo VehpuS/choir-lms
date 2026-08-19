@@ -33,3 +33,44 @@ export const normalizeLibraryEntityTags = (tags: string[]) => {
 
   return uniqueTags;
 };
+
+export const resolveTagAddedAt = (
+  tags: string[] | undefined,
+  priorTagAddedAt: Record<string, string> | undefined,
+  fallbackAddedAt: string,
+): Record<string, string> | undefined => {
+  if (!tags || tags.length === 0) {
+    return undefined;
+  }
+
+  const nextTagAddedAt: Record<string, string> = {};
+
+  for (const tag of tags) {
+    nextTagAddedAt[tag] = priorTagAddedAt?.[tag] ?? fallbackAddedAt;
+  }
+
+  return nextTagAddedAt;
+};
+
+export const withResolvedTagAddedAt = <
+  Entity extends { tags?: string[]; tagAddedAt?: Record<string, string> },
+>(
+  entity: Entity,
+  priorTagAddedAt: Record<string, string> | undefined,
+  fallbackAddedAt: string,
+): Entity => {
+  const tagAddedAt = resolveTagAddedAt(
+    entity.tags,
+    priorTagAddedAt,
+    fallbackAddedAt,
+  );
+  const nextEntity: Entity = { ...entity };
+
+  if (tagAddedAt) {
+    nextEntity.tagAddedAt = tagAddedAt;
+  } else {
+    delete nextEntity.tagAddedAt;
+  }
+
+  return nextEntity;
+};

@@ -1,5 +1,6 @@
 import {
   isNamedLoop,
+  withResolvedTagAddedAt,
   type DriveAudioSource,
   type NamedLoop,
   type RehearsalLibraryFileTree,
@@ -62,9 +63,11 @@ export const normalizeStoredSources = (
   sources: DriveAudioSource[],
 ): DriveAudioSource[] => {
   return sources.map((source) => {
+    const createdAt = resolveBackfilledCreatedAt(source.createdAt);
+
     return {
-      ...source,
-      createdAt: resolveBackfilledCreatedAt(source.createdAt),
+      ...withResolvedTagAddedAt(source, source.tagAddedAt, createdAt),
+      createdAt,
     };
   });
 };

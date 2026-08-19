@@ -30,6 +30,7 @@ export type DriveAudioSource = {
   webViewLink?: string;
   iconLink?: string;
   tags?: string[];
+  tagAddedAt?: Record<string, string>;
   createdAt: string;
   availability: SourceAvailability;
 };
@@ -60,6 +61,7 @@ export type NamedLoop = {
   sourceId: string;
   sourceName: string;
   tags?: string[];
+  tagAddedAt?: Record<string, string>;
   startMs: number;
   endMs: number;
   ownerId: string;
@@ -96,6 +98,7 @@ export type Playlist = {
   id: string;
   name: string;
   tags?: string[];
+  tagAddedAt?: Record<string, string>;
   items: PlaylistEntry[];
   ownerId: string;
   createdAt: string;
@@ -109,6 +112,7 @@ export type RehearsalLibraryFolderNode = {
   name: string;
   parentFolderId: string | null;
   tags?: string[];
+  tagAddedAt?: Record<string, string>;
   createdAt: string;
 };
 
@@ -145,6 +149,13 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 const isStringArray = (value: unknown): value is string[] => {
   return (
     Array.isArray(value) && value.every((item) => typeof item === 'string')
+  );
+};
+
+const isStringRecord = (value: unknown): value is Record<string, string> => {
+  return (
+    isRecord(value) &&
+    Object.values(value).every((entry) => typeof entry === 'string')
   );
 };
 
@@ -194,6 +205,7 @@ export const isNamedLoop = (value: unknown): value is NamedLoop => {
     typeof value.sourceId === 'string' &&
     typeof value.sourceName === 'string' &&
     (value.tags === undefined || isStringArray(value.tags)) &&
+    (value.tagAddedAt === undefined || isStringRecord(value.tagAddedAt)) &&
     typeof value.startMs === 'number' &&
     typeof value.endMs === 'number' &&
     typeof value.ownerId === 'string' &&
