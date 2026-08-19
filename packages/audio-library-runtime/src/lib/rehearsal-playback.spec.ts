@@ -425,6 +425,80 @@ describe('AsyncStoragePracticeRepository', () => {
     assert.equal(storedBackfilledFolder?.createdAt, backfilledFolder.createdAt);
   });
 
+  it('stamps createdAt on a new source and preserves it across edits with a different incoming value', async () => {
+    const storage = new Map<string, string>();
+    const repository = new AsyncStoragePracticeRepository();
+
+    mutableAsyncStorage.getItem = async (key) => {
+      return storage.get(key) ?? null;
+    };
+    mutableAsyncStorage.removeItem = async (key) => {
+      storage.delete(key);
+    };
+    mutableAsyncStorage.setItem = async (key, value) => {
+      storage.set(key, value);
+    };
+
+    const [firstSaved] = await repository.saveSource('user-1', {
+      ...AVAILABLE_SOURCE,
+      createdAt: '2026-01-01T00:00:00.000Z',
+    });
+
+    assert.ok(firstSaved);
+    assert.equal(firstSaved.createdAt, '2026-01-01T00:00:00.000Z');
+
+    const [secondSaved] = await repository.saveSource('user-1', {
+      ...firstSaved,
+      name: 'Full Choir (renamed).mp3',
+      createdAt: '2099-01-01T00:00:00.000Z',
+    });
+
+    assert.ok(secondSaved);
+    assert.equal(secondSaved.createdAt, '2026-01-01T00:00:00.000Z');
+    assert.equal(secondSaved.name, 'Full Choir (renamed).mp3');
+  });
+
+  it('stamps createdAt on a new folder and preserves it across edits with a different incoming value', async () => {
+    const storage = new Map<string, string>();
+    const repository = new AsyncStoragePracticeRepository();
+
+    mutableAsyncStorage.getItem = async (key) => {
+      return storage.get(key) ?? null;
+    };
+    mutableAsyncStorage.removeItem = async (key) => {
+      storage.delete(key);
+    };
+    mutableAsyncStorage.setItem = async (key, value) => {
+      storage.set(key, value);
+    };
+
+    const firstTree = await repository.saveLibraryFolderNode('user-1', {
+      id: 'folder-1',
+      name: 'Warmups',
+      parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+      createdAt: '2026-01-01T00:00:00.000Z',
+    });
+    const firstFolder = firstTree.folders.find(
+      (folder) => folder.id === 'folder-1',
+    );
+
+    assert.ok(firstFolder);
+    assert.equal(firstFolder.createdAt, '2026-01-01T00:00:00.000Z');
+
+    const secondTree = await repository.saveLibraryFolderNode('user-1', {
+      ...firstFolder,
+      name: 'Warmups (renamed)',
+      createdAt: '2099-01-01T00:00:00.000Z',
+    });
+    const secondFolder = secondTree.folders.find(
+      (folder) => folder.id === 'folder-1',
+    );
+
+    assert.ok(secondFolder);
+    assert.equal(secondFolder.createdAt, '2026-01-01T00:00:00.000Z');
+    assert.equal(secondFolder.name, 'Warmups (renamed)');
+  });
+
   it('stamps, preserves, and drops tagAddedAt entries on saveSource', async () => {
     const storage = new Map<string, string>();
     const repository = new AsyncStoragePracticeRepository();
