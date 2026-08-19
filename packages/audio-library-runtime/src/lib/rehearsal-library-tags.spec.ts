@@ -16,6 +16,10 @@ const SOPRANO_SOURCE = createDriveAudioSource({
   mimeType: 'audio/mpeg',
   availability: { status: 'available' },
   tags: [' Soprano ', 'Warmup'],
+  tagAddedAt: {
+    Soprano: '2026-01-05T00:00:00.000Z',
+    Warmup: '2026-01-06T00:00:00.000Z',
+  },
 });
 
 const ALTO_LOOP: NamedLoop = {
@@ -29,6 +33,10 @@ const ALTO_LOOP: NamedLoop = {
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   tags: ['alto', 'warmup'],
+  tagAddedAt: {
+    alto: '2026-01-02T00:00:00.000Z',
+    warmup: '2026-01-03T00:00:00.000Z',
+  },
 };
 
 const PLAYLIST: Playlist = {
@@ -39,6 +47,10 @@ const PLAYLIST: Playlist = {
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   tags: ['Soprano', 'Rehearsal'],
+  tagAddedAt: {
+    Soprano: '2026-01-04T00:00:00.000Z',
+    Rehearsal: '2026-01-07T00:00:00.000Z',
+  },
 };
 
 const FOLDER: RehearsalLibraryFolderNode = {
@@ -46,6 +58,7 @@ const FOLDER: RehearsalLibraryFolderNode = {
   name: 'Altos',
   parentFolderId: null,
   tags: ['Alto'],
+  tagAddedAt: { Alto: '2026-01-01T00:00:00.000Z' },
   createdAt: '2026-01-01T00:00:00.000Z',
 };
 
@@ -61,10 +74,10 @@ describe('aggregateRehearsalLibraryTags', () => {
     });
 
     assert.deepEqual(result, [
-      { tag: 'alto', count: 2 },
-      { tag: 'Soprano', count: 2 },
-      { tag: 'Warmup', count: 2 },
-      { tag: 'Rehearsal', count: 1 },
+      { tag: 'alto', count: 2, createdAt: '2026-01-01T00:00:00.000Z' },
+      { tag: 'Soprano', count: 2, createdAt: '2026-01-04T00:00:00.000Z' },
+      { tag: 'Warmup', count: 2, createdAt: '2026-01-03T00:00:00.000Z' },
+      { tag: 'Rehearsal', count: 1, createdAt: '2026-01-07T00:00:00.000Z' },
     ]);
   });
 
@@ -75,5 +88,62 @@ describe('aggregateRehearsalLibraryTags', () => {
     });
 
     assert.deepEqual(result, []);
+  });
+
+  it("computes createdAt as the earliest tagAddedAt across every entity carrying the tag, not the first-seen entity's date", () => {
+    const olderSource = createDriveAudioSource({
+      driveFileId: 'drive:older',
+      name: 'Older Track',
+      mimeType: 'audio/mpeg',
+      availability: { status: 'available' },
+      tags: ['Warmup'],
+      tagAddedAt: { Warmup: '2020-01-01T00:00:00.000Z' },
+    });
+    const newerSource = createDriveAudioSource({
+      driveFileId: 'drive:newer',
+      name: 'Newer Track',
+      mimeType: 'audio/mpeg',
+      availability: { status: 'available' },
+      tags: ['Warmup'],
+      tagAddedAt: { Warmup: '2026-01-01T00:00:00.000Z' },
+    });
+
+    const result = aggregateRehearsalLibraryTags({
+      entityCollections: {
+        sources: [newerSource, olderSource],
+        loops: [],
+        playlists: [],
+      },
+      folders: [],
+    });
+
+    assert.deepEqual(result, [
+      { tag: 'Warmup', count: 2, createdAt: '2020-01-01T00:00:00.000Z' },
+    ]);
+  });
+
+  it('falls back to a valid current timestamp when a tag has no recorded tagAddedAt entry', () => {
+    const sourceMissingTagAddedAt = createDriveAudioSource({
+      driveFileId: 'drive:legacy',
+      name: 'Legacy Track',
+      mimeType: 'audio/mpeg',
+      availability: { status: 'available' },
+      tags: ['Legacy'],
+    });
+
+    const result = aggregateRehearsalLibraryTags({
+      entityCollections: {
+        sources: [sourceMissingTagAddedAt],
+        loops: [],
+        playlists: [],
+      },
+      folders: [],
+    });
+
+    assert.equal(result.length, 1);
+    assert.equal(
+      Number.isNaN(Date.parse(result[0]?.createdAt ?? '')),
+      false,
+    );
   });
 });

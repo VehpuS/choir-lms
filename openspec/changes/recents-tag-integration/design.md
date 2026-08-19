@@ -17,7 +17,7 @@ The queue system already supports building a playback queue from an arbitrary in
 
 **Non-Goals:**
 
-- No new tag-authoring UI — creating/removing tags on entities continues through the existing tag editor; this change only adds a way to browse and play by the tags that already exist.
+- No new tag-editing *component* — tag authoring for all four entity types (including folders, added per the scope change below) continues through the one existing shared `TagEditorSheet`; this change does not introduce a different tag-editing UI paradigm.
 - No tag hierarchy, tag colors, tag descriptions, or any tag metadata beyond the existing plain string.
 - No changes to how folder or playlist contents are browsed in Files/Playlists themselves — only how they're resolved when queued from a tag.
 - Not responsible for fixing the defects tracked in `streamline-mobile-rehearsal-ux`'s `2.9` follow-up tasks (e.g. the `Alert.alert` web no-op); this change should land after those land, since it adds more surface area that depends on working removal/tag-editor flows.
@@ -29,6 +29,17 @@ The queue system already supports building a playback queue from an arbitrary in
 Compute the set of in-use tags on demand by scanning `tags` across saved tracks, loops, playlists, and folders, using the existing `normalizeLibraryEntityTags` dedupe rule (case-insensitive, first-seen casing wins) so the aggregation matches what the tag editor already considers "the same tag." No new persisted "tags" collection — this keeps a single source of truth (the entities' own `tags` fields) and avoids a sync problem between a cached tag list and per-entity edits.
 
 **Alternative considered:** a dedicated `Tag` entity with its own id, persisted separately and referenced by id from tracks/loops/playlists/folders. Rejected for this change as a bigger data-model migration than the requested feature needs; the existing free-text-tag model works for aggregation as long as normalization is consistent, and it avoids a schema/storage migration for `streamline-mobile-rehearsal-ux`-era saved libraries.
+
+### Folder tag editing is added, reusing the existing tag editor sheet
+
+**Superseded scope decision (confirmed with user):** this change originally treated folder tag *editing* as a non-goal — the proposal was scoped to browsing/playing by tags that already exist, not authoring them, since `streamline-mobile-rehearsal-ux` already shipped a tag editor for tracks/loops/playlists and folder tag editing seemed like a separate concern. Implementing task `1.6` (per-tag add dates) surfaced that this left a real gap: folders are the only one of the four taggable entity types with no live UI write path at all — `files-row-actions.ts`'s `resolveFolderMenuActions` has always rendered "Edit tags" as a permanently `disabled: true` stub with a no-op `onPress`. That meant `1.6`'s `tagAddedAt` stamping for folders (fully implemented and tested at the repository level) had no way to be exercised end-to-end through the app, and folders could never accumulate real tag data to browse/play by — undermining the feature's own goal for that entity type.
+
+**Resolution (confirmed with user):** add folder tag editing in this change, task `1.9`, reusing the existing shared `TagEditorSheet` component and `useSavedRehearsalLibraryTagEditor` hook exactly as tracks/loops/playlists already do — no new UI component, no new interaction pattern. Concretely:
+- A new `saveFolderTags` operation in `library-files-operations.ts`, mirroring `moveFolder`'s exact shape (calls `practiceRepository.saveLibraryFolderNode` with updated `tags`, updates `setTree`, same issue/recovery error handling), exposed from `useLibraryFiles()` alongside `moveFolder`/`renameFolder`.
+- A `folder` variant added to `TagEditorTarget` in `use-saved-rehearsal-library-tag-editor.ts`, with `openFolderTagEditor(folder)` taking the full folder object directly (matching `openSourceTagEditor`'s pattern, since folder rows already carry the full `RehearsalLibraryFolderNode` — no id-lookup step needed, unlike loop/playlist).
+- The folder-row "Edit tags" action enabled (guarded by the same `canMutateLibrary`/`isSavedLibraryMutating` condition every other folder mutation action already uses) and threaded through the same explicit-prop chain (`files-row-actions-model.ts` → `use-library-files-row-action-flows.tsx` → `files-view.tsx` → `browse-content-types.ts`/`browse-content.tsx` → `saved-rehearsal-library-section/index.tsx`) the other three tag editors already use.
+
+**Alternative considered:** leave folder tag editing out of this change and file it as a separate follow-up. Rejected on confirmation with the user — the gap directly undermines this change's own foundation work (`1.6`), and the fix is a small, low-risk mirror of an already-established, four-times-repeated pattern (tracks/loops/playlists already prove the pattern out) rather than new design work.
 
 ### Sources and folders gain creation timestamps; tags gain per-tag add dates
 
