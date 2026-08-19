@@ -1,8 +1,19 @@
 import { useState } from 'react';
 
+import type { RehearsalLibraryFolderNode } from '@org/audio-library-models';
+
 import type { SavedRehearsalLibrarySectionProps } from './types';
 
-type TagEditorTarget =
+type SaveFolderTags = (options: {
+  folder: RehearsalLibraryFolderNode;
+  tags: string[];
+}) => Promise<{ didComplete: boolean }>;
+
+export type TagEditorTarget =
+  | {
+      kind: 'folder';
+      folder: RehearsalLibraryFolderNode;
+    }
   | {
       kind: 'loop';
       loop: SavedRehearsalLibrarySectionProps['savedLoops'][number];
@@ -20,13 +31,44 @@ type TagEditorTarget =
     };
 
 type UseSavedRehearsalLibraryTagEditorOptions = {
+  saveFolderTags: SaveFolderTags;
   saveLoop: SavedRehearsalLibrarySectionProps['saveLoop'];
   saveSource: SavedRehearsalLibrarySectionProps['saveSource'];
   savedPlaylists: SavedRehearsalLibrarySectionProps['savedPlaylists'];
   updatePlaylist: SavedRehearsalLibrarySectionProps['updatePlaylist'];
 };
 
+export const resolveTagEditorTagsAndTitle = (
+  target: TagEditorTarget,
+): { tags: string[]; title: string } => {
+  switch (target.kind) {
+    case 'source':
+      return {
+        tags: target.source.tags ?? [],
+        title: `Track tags • ${target.source.name}`,
+      };
+    case 'loop':
+      return {
+        tags: target.loop.tags ?? [],
+        title: `Loop tags • ${target.loop.name}`,
+      };
+    case 'playlist':
+      return {
+        tags: target.playlist.tags ?? [],
+        title: `Playlist tags • ${target.playlist.name}`,
+      };
+    case 'folder':
+      return {
+        tags: target.folder.tags ?? [],
+        title: `Folder tags • ${target.folder.name}`,
+      };
+    case 'none':
+      return { tags: [], title: '' };
+  }
+};
+
 export const useSavedRehearsalLibraryTagEditor = ({
+  saveFolderTags,
   saveLoop,
   saveSource,
   savedPlaylists,
@@ -43,6 +85,13 @@ export const useSavedRehearsalLibraryTagEditor = ({
     }
 
     setTagEditorTarget({ kind: 'none' });
+  };
+
+  const openFolderTagEditor = (folder: RehearsalLibraryFolderNode) => {
+    setTagEditorTarget({
+      kind: 'folder',
+      folder,
+    });
   };
 
   const openLoopTagEditor = (
@@ -97,6 +146,13 @@ export const useSavedRehearsalLibraryTagEditor = ({
         ...tagEditorTarget.loop,
         tags,
       });
+    } else if (tagEditorTarget.kind === 'folder') {
+      didSave = (
+        await saveFolderTags({
+          folder: tagEditorTarget.folder,
+          tags,
+        })
+      ).didComplete;
     } else {
       didSave =
         (await updatePlaylist({
@@ -112,27 +168,13 @@ export const useSavedRehearsalLibraryTagEditor = ({
     }
   };
 
-  const tags =
-    tagEditorTarget.kind === 'none'
-      ? []
-      : tagEditorTarget.kind === 'source'
-        ? (tagEditorTarget.source.tags ?? [])
-        : tagEditorTarget.kind === 'loop'
-          ? (tagEditorTarget.loop.tags ?? [])
-          : (tagEditorTarget.playlist.tags ?? []);
-  const title =
-    tagEditorTarget.kind === 'none'
-      ? ''
-      : tagEditorTarget.kind === 'source'
-        ? `Track tags • ${tagEditorTarget.source.name}`
-        : tagEditorTarget.kind === 'loop'
-          ? `Loop tags • ${tagEditorTarget.loop.name}`
-          : `Playlist tags • ${tagEditorTarget.playlist.name}`;
+  const { tags, title } = resolveTagEditorTagsAndTitle(tagEditorTarget);
 
   return {
     closeTagEditor,
     isTagEditorSaving,
     isTagEditorVisible: tagEditorTarget.kind !== 'none',
+    openFolderTagEditor,
     openLoopTagEditor,
     openPlaylistTagEditor,
     openSourceTagEditor,

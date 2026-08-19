@@ -475,5 +475,39 @@ export const createLibraryFilesOperations = ({
         };
       }
     },
+    async saveFolderTags(optionsForTags: {
+      folder: RehearsalLibraryFolderNode;
+      tags: string[];
+    }) {
+      try {
+        const nextTree = await practiceRepository.saveLibraryFolderNode(
+          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+          {
+            ...optionsForTags.folder,
+            tags: optionsForTags.tags,
+          },
+        );
+
+        setTree(nextTree);
+        setIssue(null);
+        return {
+          didComplete: true,
+          issue: null,
+        };
+      } catch (error) {
+        const issue = createLibraryFilesIssue({
+          error,
+          fallbackMessage:
+            "The selected Library Files folder's tags could not be saved.",
+          fallbackTitle: 'Could not save folder tags',
+        });
+
+        setIssue(issue);
+        return {
+          didComplete: false,
+          issue,
+        };
+      }
+    },
   };
 };

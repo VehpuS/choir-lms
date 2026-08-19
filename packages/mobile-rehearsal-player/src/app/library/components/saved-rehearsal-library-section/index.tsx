@@ -100,6 +100,7 @@ export const SavedRehearsalLibrarySection = ({
     deletePlaylist,
     isPlaybackPreparing,
     isPlaylistCreateDialogVisible,
+    libraryFiles,
     openLoopBuilderForSource,
     pendingLoopBuilderSourceId,
     pendingLoopId,
@@ -287,6 +288,7 @@ export const SavedRehearsalLibrarySection = ({
           onOpenLibraryFilesSuccessFeedbackFolder={
             onOpenLibraryFilesSuccessFeedbackFolder
           }
+          onOpenFolderTagEditor={tagEditor.openFolderTagEditor}
           onOpenLoopTagEditor={tagEditor.openLoopTagEditor}
           onOpenPlaylistTagEditor={tagEditor.openPlaylistTagEditor}
           onPlaylistRenameVisibilityChange={

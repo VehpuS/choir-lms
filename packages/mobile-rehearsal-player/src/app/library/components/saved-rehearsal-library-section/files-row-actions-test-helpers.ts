@@ -54,6 +54,7 @@ export const createBaseOptions = () => {
     copies: [] as string[],
     deletions: [] as string[],
     folders: [] as string[],
+    folderTags: [] as string[],
     loopBuilders: [] as string[],
     loopPlaylists: [] as string[],
     loopTags: [] as string[],
@@ -93,6 +94,9 @@ export const createBaseOptions = () => {
       },
       onOpenFolder(folderId: string) {
         calls.folders.push(folderId);
+      },
+      onOpenFolderTagEditor(folderId: string) {
+        calls.folderTags.push(folderId);
       },
       onOpenLoopBuilder(sourceId: string) {
         calls.loopBuilders.push(sourceId);

@@ -11,14 +11,14 @@ import {
 describe('getSavedTagUsageMetadataLabel', () => {
   it('uses the singular noun for a single-entity tag', () => {
     assert.equal(
-      getSavedTagUsageMetadataLabel({ count: 1, tag: 'Soprano' }),
+      getSavedTagUsageMetadataLabel({ count: 1, tag: 'Soprano', createdAt: '2026-01-01T00:00:00.000Z' }),
       '1 item',
     );
   });
 
   it('uses the plural noun for a multi-entity tag', () => {
     assert.equal(
-      getSavedTagUsageMetadataLabel({ count: 4, tag: 'Warmup' }),
+      getSavedTagUsageMetadataLabel({ count: 4, tag: 'Warmup', createdAt: '2026-01-01T00:00:00.000Z' }),
       '4 items',
     );
   });
@@ -26,18 +26,18 @@ describe('getSavedTagUsageMetadataLabel', () => {
 
 describe('sortSavedTagUsage', () => {
   const tagUsage = [
-    { count: 2, tag: 'Alto' },
-    { count: 5, tag: 'Bass' },
-    { count: 2, tag: 'zebra' },
+    { count: 2, tag: 'Alto', createdAt: '2026-01-01T00:00:00.000Z' },
+    { count: 5, tag: 'Bass', createdAt: '2026-01-01T00:00:00.000Z' },
+    { count: 2, tag: 'zebra', createdAt: '2026-01-01T00:00:00.000Z' },
   ];
 
   it('sorts by count descending with an alphabetical tie-break, matching the default aggregation order', () => {
     assert.deepEqual(
       sortSavedTagUsage(tagUsage, { direction: 'desc', field: 'count' }),
       [
-        { count: 5, tag: 'Bass' },
-        { count: 2, tag: 'Alto' },
-        { count: 2, tag: 'zebra' },
+        { count: 5, tag: 'Bass', createdAt: '2026-01-01T00:00:00.000Z' },
+        { count: 2, tag: 'Alto', createdAt: '2026-01-01T00:00:00.000Z' },
+        { count: 2, tag: 'zebra', createdAt: '2026-01-01T00:00:00.000Z' },
       ],
     );
   });
@@ -46,9 +46,9 @@ describe('sortSavedTagUsage', () => {
     assert.deepEqual(
       sortSavedTagUsage(tagUsage, { direction: 'asc', field: 'count' }),
       [
-        { count: 2, tag: 'Alto' },
-        { count: 2, tag: 'zebra' },
-        { count: 5, tag: 'Bass' },
+        { count: 2, tag: 'Alto', createdAt: '2026-01-01T00:00:00.000Z' },
+        { count: 2, tag: 'zebra', createdAt: '2026-01-01T00:00:00.000Z' },
+        { count: 5, tag: 'Bass', createdAt: '2026-01-01T00:00:00.000Z' },
       ],
     );
   });
@@ -57,9 +57,9 @@ describe('sortSavedTagUsage', () => {
     assert.deepEqual(
       sortSavedTagUsage(tagUsage, { direction: 'asc', field: 'name' }),
       [
-        { count: 2, tag: 'Alto' },
-        { count: 5, tag: 'Bass' },
-        { count: 2, tag: 'zebra' },
+        { count: 2, tag: 'Alto', createdAt: '2026-01-01T00:00:00.000Z' },
+        { count: 5, tag: 'Bass', createdAt: '2026-01-01T00:00:00.000Z' },
+        { count: 2, tag: 'zebra', createdAt: '2026-01-01T00:00:00.000Z' },
       ],
     );
   });
@@ -68,9 +68,9 @@ describe('sortSavedTagUsage', () => {
     assert.deepEqual(
       sortSavedTagUsage(tagUsage, { direction: 'desc', field: 'name' }),
       [
-        { count: 2, tag: 'zebra' },
-        { count: 5, tag: 'Bass' },
-        { count: 2, tag: 'Alto' },
+        { count: 2, tag: 'zebra', createdAt: '2026-01-01T00:00:00.000Z' },
+        { count: 5, tag: 'Bass', createdAt: '2026-01-01T00:00:00.000Z' },
+        { count: 2, tag: 'Alto', createdAt: '2026-01-01T00:00:00.000Z' },
       ],
     );
   });
@@ -96,9 +96,9 @@ describe('getSavedTagsListSortDirectionToggleLabel', () => {
 
 describe('filterSavedTagUsageByQuery', () => {
   const tagUsage = [
-    { count: 2, tag: 'Soprano' },
-    { count: 5, tag: 'Bass' },
-    { count: 1, tag: 'sop2' },
+    { count: 2, tag: 'Soprano', createdAt: '2026-01-01T00:00:00.000Z' },
+    { count: 5, tag: 'Bass', createdAt: '2026-01-01T00:00:00.000Z' },
+    { count: 1, tag: 'sop2', createdAt: '2026-01-01T00:00:00.000Z' },
   ];
 
   it('returns every tag when the query is empty or whitespace-only', () => {
@@ -108,14 +108,14 @@ describe('filterSavedTagUsageByQuery', () => {
 
   it('matches tag names case-insensitively by substring', () => {
     assert.deepEqual(filterSavedTagUsageByQuery(tagUsage, 'SOP'), [
-      { count: 2, tag: 'Soprano' },
-      { count: 1, tag: 'sop2' },
+      { count: 2, tag: 'Soprano', createdAt: '2026-01-01T00:00:00.000Z' },
+      { count: 1, tag: 'sop2', createdAt: '2026-01-01T00:00:00.000Z' },
     ]);
   });
 
   it('trims surrounding whitespace from the query', () => {
     assert.deepEqual(filterSavedTagUsageByQuery(tagUsage, '  bass  '), [
-      { count: 5, tag: 'Bass' },
+      { count: 5, tag: 'Bass', createdAt: '2026-01-01T00:00:00.000Z' },
     ]);
   });
 

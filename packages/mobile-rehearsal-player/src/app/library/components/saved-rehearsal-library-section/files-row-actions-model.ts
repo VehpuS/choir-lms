@@ -22,6 +22,7 @@ export type ResolveFilesRowMenuActionsBaseOptions = {
   onDeleteFileNode: (row: LibraryFilesRow) => void;
   onMoveFileNode: (row: LibraryFilesRow) => void;
   onOpenFolder: (folderId: string) => void;
+  onOpenFolderTagEditor: (folderId: string) => void;
   onOpenLoopBuilder: (sourceId: string) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
   onOpenSourcePlaylistSelector: (sourceId: string) => void;

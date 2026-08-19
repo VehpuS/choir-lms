@@ -1,5 +1,7 @@
 import type { ReactElement, ReactNode } from 'react';
 
+import type { RehearsalLibraryFolderNode } from '@org/audio-library-models';
+
 import type {
   SavedRehearsalLibraryView,
   SavedRehearsalLibraryVisibleSections,
@@ -100,6 +102,7 @@ export type SavedRehearsalLibraryBrowseContentProps = Pick<
     playlistId: string;
     preferredFolderId?: string | null;
   }) => void;
+  onOpenFolderTagEditor: (folder: RehearsalLibraryFolderNode) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   onPlaylistRenameVisibilityChange?: (isVisible: boolean) => void;
   onOpenLoopTagEditor: (

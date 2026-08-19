@@ -22,6 +22,7 @@ type UseSavedRehearsalLibrarySectionStateParams = Pick<
   | 'deletePlaylist'
   | 'isPlaybackPreparing'
   | 'isPlaylistCreateDialogVisible'
+  | 'libraryFiles'
   | 'pendingLoopBuilderSourceId'
   | 'pendingLoopId'
   | 'pendingPlaylistId'
@@ -51,6 +52,7 @@ export const useSavedRehearsalLibrarySectionState = ({
   deletePlaylist,
   isPlaybackPreparing,
   isPlaylistCreateDialogVisible = false,
+  libraryFiles,
   openLoopBuilderForSource,
   pendingLoopBuilderSourceId,
   pendingLoopId,
@@ -108,6 +110,7 @@ export const useSavedRehearsalLibrarySectionState = ({
     updatePlaylist,
   });
   const tagEditor = useSavedRehearsalLibraryTagEditor({
+    saveFolderTags: libraryFiles.saveFolderTags,
     saveLoop,
     saveSource,
     savedPlaylists,

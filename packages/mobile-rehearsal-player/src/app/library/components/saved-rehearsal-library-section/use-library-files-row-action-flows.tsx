@@ -1,6 +1,9 @@
 import { useState } from 'react';
 
-import type { PlayableItem } from '@org/audio-library-models';
+import type {
+  PlayableItem,
+  RehearsalLibraryFolderNode,
+} from '@org/audio-library-models';
 
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
@@ -80,6 +83,7 @@ type UseLibraryFilesRowActionFlowsOptions = {
   pendingLoopBuilderSourceId: string | null;
   onOpenLoopBuilderForSource: (source: DriveLibrarySource) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
+  onOpenFolderTagEditor: (folder: RehearsalLibraryFolderNode) => void;
   onOpenPlaylistAddItems: (playlistId: string) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   onOpenSourcePlaylistSelector: (sourceId: string) => void;
@@ -105,6 +109,7 @@ export const useLibraryFilesRowActionFlows = ({
   pendingLoopBuilderSourceId,
   onOpenLoopBuilderForSource,
   onOpenLoopPlaylistSelector,
+  onOpenFolderTagEditor,
   onOpenPlaylistAddItems,
   onOpenPlaylistTagEditor,
   onOpenSourcePlaylistSelector,
@@ -320,6 +325,11 @@ export const useLibraryFilesRowActionFlows = ({
         },
         onOpenFolder(folderId) {
           files.openFolder(folderId);
+        },
+        onOpenFolderTagEditor(folderId) {
+          if (row.kind === 'folder' && row.folder.id === folderId) {
+            onOpenFolderTagEditor(row.folder);
+          }
         },
         onOpenLoopBuilder(sourceId) {
           if (row.kind === 'track' && row.source.id === sourceId) {

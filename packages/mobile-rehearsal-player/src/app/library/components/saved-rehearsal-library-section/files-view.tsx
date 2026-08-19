@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { PlayableItem } from '@org/audio-library-models';
+import type {
+  PlayableItem,
+  RehearsalLibraryFolderNode,
+} from '@org/audio-library-models';
 
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import {
@@ -43,6 +46,7 @@ type SavedRehearsalLibraryFilesViewProps = {
   pendingLoopBuilderSourceId: string | null;
   onOpenLoopBuilderForSource: (source: DriveLibrarySource) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
+  onOpenFolderTagEditor: (folder: RehearsalLibraryFolderNode) => void;
   onOpenPlaylistAddItems: (playlistId: string) => void;
   onOpenPlaylist: (playlistId: string) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
@@ -86,6 +90,7 @@ export const SavedRehearsalLibraryFilesView = ({
   pendingLoopBuilderSourceId,
   onOpenLoopBuilderForSource,
   onOpenLoopPlaylistSelector,
+  onOpenFolderTagEditor,
   onOpenPlaylistAddItems,
   onOpenPlaylist,
   onOpenPlaylistTagEditor,
@@ -129,6 +134,7 @@ export const SavedRehearsalLibraryFilesView = ({
     onOpenLoopBuilderForSource,
     onOpenLoopPlaylistSelector,
     onOpenLoopTagEditor,
+    onOpenFolderTagEditor,
     onOpenPlaylistAddItems,
     onOpenPlaylistTagEditor,
     onOpenSourcePlaylistSelector,

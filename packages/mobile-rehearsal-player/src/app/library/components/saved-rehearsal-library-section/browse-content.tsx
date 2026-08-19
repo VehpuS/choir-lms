@@ -49,6 +49,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
   onDoneAddingFilesPlaylistItems,
   onOpenFilesAddItemsForPlaylist,
   onDismissLibraryFilesSuccessFeedback,
+  onOpenFolderTagEditor,
   onOpenLibraryFilesSuccessFeedbackFolder,
   onOpenPlaylistTagEditor,
   onPlaylistRenameVisibilityChange,
@@ -167,6 +168,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
                 libraryFiles.explorer?.currentFolder.id ?? null,
             });
           }}
+          onOpenFolderTagEditor={onOpenFolderTagEditor}
           onOpenPlaylistTagEditor={onOpenPlaylistTagEditor}
           onPlaylistRenameVisibilityChange={onPlaylistRenameVisibilityChange}
           onDismissSuccessFeedback={onDismissLibraryFilesSuccessFeedback}

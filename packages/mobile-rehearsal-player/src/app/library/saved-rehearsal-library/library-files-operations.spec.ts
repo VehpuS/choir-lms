@@ -9,6 +9,7 @@ import {
   type NamedLoop,
   type RehearsalLibraryFileLinkNode,
   type RehearsalLibraryFileTree,
+  type RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
 import {
   AsyncStoragePracticeRepository,
@@ -279,6 +280,90 @@ describe('library-files operations', () => {
       label: 'Use "Warmups Copy"',
       suggestedName: 'Warmups Copy',
     });
+    assert.equal(capturedIssues.length, 1);
+  });
+
+  it('saves updated folder tags and refreshes the tree', async () => {
+    const savedFolders: unknown[] = [];
+    const nextTree = createTree();
+    const repository = {
+      async saveLibraryFolderNode(
+        _ownerId: string,
+        folder: RehearsalLibraryFolderNode,
+      ) {
+        savedFolders.push(folder);
+        return nextTree;
+      },
+    } as unknown as AsyncStoragePracticeRepository;
+    let capturedTree: RehearsalLibraryFileTree | null = null;
+    const operations = createLibraryFilesOperations({
+      explorer: null,
+      options: {
+        ...createNoopRefreshCallbacks(),
+        savedLoops: [],
+        savedPlaylists: [],
+        savedSources: [SOURCE],
+      },
+      practiceRepository: repository,
+      setCurrentFolderId: () => undefined,
+      setIssue: () => undefined,
+      setTree: (updater) => {
+        capturedTree =
+          typeof updater === 'function' ? updater(null) : updater;
+      },
+      tree: createTree(),
+    });
+    const folder = createTree().folders[1];
+
+    if (!folder) {
+      throw new Error('Expected the Warmups fixture folder to exist.');
+    }
+
+    const result = await operations.saveFolderTags({
+      folder,
+      tags: ['Alto', 'Warmup'],
+    });
+
+    assert.equal(result.didComplete, true);
+    assert.deepEqual(savedFolders, [{ ...folder, tags: ['Alto', 'Warmup'] }]);
+    assert.deepEqual(capturedTree, nextTree);
+  });
+
+  it('surfaces an issue when saving folder tags fails', async () => {
+    const capturedIssues: unknown[] = [];
+    const repository = {
+      async saveLibraryFolderNode() {
+        throw new Error('storage unavailable');
+      },
+    } as unknown as AsyncStoragePracticeRepository;
+    const operations = createLibraryFilesOperations({
+      explorer: null,
+      options: {
+        ...createNoopRefreshCallbacks(),
+        savedLoops: [],
+        savedPlaylists: [],
+        savedSources: [SOURCE],
+      },
+      practiceRepository: repository,
+      setCurrentFolderId: () => undefined,
+      setIssue: (issue) => {
+        capturedIssues.push(issue);
+      },
+      setTree: () => undefined,
+      tree: createTree(),
+    });
+    const folder = createTree().folders[1];
+
+    if (!folder) {
+      throw new Error('Expected the Warmups fixture folder to exist.');
+    }
+
+    const result = await operations.saveFolderTags({
+      folder,
+      tags: ['Alto'],
+    });
+
+    assert.equal(result.didComplete, false);
     assert.equal(capturedIssues.length, 1);
   });
 

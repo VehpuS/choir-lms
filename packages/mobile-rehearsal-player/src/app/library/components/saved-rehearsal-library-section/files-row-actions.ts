@@ -83,10 +83,12 @@ const resolveFolderMenuActions = (
 ) => {
   const actions = [
     {
-      disabled: true,
+      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
       id: `folder:${row.folder.id}:edit-tags`,
       label: 'Edit tags',
-      onPress: () => undefined,
+      onPress: () => {
+        options.onOpenFolderTagEditor(row.folder.id);
+      },
       tone: 'secondary' as const,
     },
     {

@@ -289,6 +289,17 @@ describe('resolveFilesRowMenuActions', () => {
       ['Edit tags', 'Rename', 'Move to folder', 'Delete from folder'],
     );
     assert.deepEqual(calls.folders, []);
+
+    const editTagsAction = actions.find(
+      (action) => action.label === 'Edit tags',
+    );
+
+    assert.ok(editTagsAction);
+    assert.equal(editTagsAction.disabled, false);
+
+    editTagsAction.onPress();
+
+    assert.deepEqual(calls.folderTags, ['folder-warmups']);
   });
 
 });

@@ -228,6 +228,7 @@ export const useLibraryFiles = (
     rootFolderId: tree?.rootFolderId ?? null,
     renameFileLink: operations.renameFileLink,
     renameFolder: operations.renameFolder,
+    saveFolderTags: operations.saveFolderTags,
     stageDriveImportForCurrentFolder() {
       const stagedFolderId =
         explorer?.currentFolder.id ?? tree?.rootFolderId ?? null;
