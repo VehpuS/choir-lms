@@ -29,6 +29,14 @@ const isStringArray = (value: unknown): value is string[] => {
   );
 };
 
+const hasNonEmptyString = (value: unknown): value is string => {
+  return typeof value === 'string' && value.trim().length > 0;
+};
+
+export const resolveBackfilledCreatedAt = (createdAt: unknown): string => {
+  return hasNonEmptyString(createdAt) ? createdAt : new Date().toISOString();
+};
+
 const isRehearsalLibraryEntityKind = (
   value: unknown,
 ): value is RehearsalLibraryEntityKind => {
@@ -194,6 +202,7 @@ export const syncRehearsalLibraryFileTree = (options: {
         folder.parentFolderId && folder.parentFolderId !== folder.id
           ? folder.parentFolderId
           : rootFolder.id,
+      createdAt: resolveBackfilledCreatedAt(folder.createdAt),
     });
     seenFolderIds.add(folder.id);
   }

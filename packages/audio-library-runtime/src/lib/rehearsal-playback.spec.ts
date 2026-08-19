@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, it } from 'node:test';
 
+import { omit } from 'es-toolkit/compat';
+
 import {
   createDriveAudioSource,
   createPlaylistEntryFromLoop,
@@ -333,6 +335,94 @@ describe('AsyncStoragePracticeRepository', () => {
       (await repository.listSources('user-1')).map((source) => source.name),
       ['Full Choir.mp3'],
     );
+  });
+
+  it('backfills createdAt for sources saved before the field existed', async () => {
+    const legacySource = omit(AVAILABLE_SOURCE, ['createdAt']);
+    const storage = new Map<string, string>([
+      ['choirlms:practice:sources:user-1', JSON.stringify([legacySource])],
+    ]);
+    const repository = new AsyncStoragePracticeRepository();
+
+    mutableAsyncStorage.getItem = async (key) => {
+      return storage.get(key) ?? null;
+    };
+    mutableAsyncStorage.removeItem = async (key) => {
+      storage.delete(key);
+    };
+    mutableAsyncStorage.setItem = async (key, value) => {
+      storage.set(key, value);
+    };
+
+    const [backfilledSource] = await repository.listSources('user-1');
+
+    assert.ok(backfilledSource);
+    assert.equal(Number.isNaN(Date.parse(backfilledSource.createdAt)), false);
+
+    const storedSources = JSON.parse(
+      storage.get('choirlms:practice:sources:user-1') ?? '[]',
+    ) as { createdAt?: string }[];
+
+    assert.equal(storedSources[0]?.createdAt, backfilledSource.createdAt);
+  });
+
+  it('backfills createdAt for folders saved before the field existed', async () => {
+    const legacyFolder = {
+      id: 'folder-1',
+      name: 'Warmups',
+      parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+    };
+    const storage = new Map<string, string>([
+      [
+        'choirlms:practice:library-tree:user-1',
+        JSON.stringify({
+          version: 1,
+          rootFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+          folders: [
+            {
+              id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+              name: 'Library',
+              parentFolderId: null,
+            },
+            legacyFolder,
+          ],
+          fileLinks: [],
+        }),
+      ],
+    ]);
+    const repository = new AsyncStoragePracticeRepository();
+
+    mutableAsyncStorage.getItem = async (key) => {
+      return storage.get(key) ?? null;
+    };
+    mutableAsyncStorage.removeItem = async (key) => {
+      storage.delete(key);
+    };
+    mutableAsyncStorage.setItem = async (key, value) => {
+      storage.set(key, value);
+    };
+
+    const tree = await repository.listLibraryFileTree('user-1');
+    const rootFolder = tree.folders.find(
+      (folder) => folder.id === REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+    );
+    const backfilledFolder = tree.folders.find(
+      (folder) => folder.id === 'folder-1',
+    );
+
+    assert.ok(rootFolder);
+    assert.ok(backfilledFolder);
+    assert.equal(Number.isNaN(Date.parse(rootFolder.createdAt)), false);
+    assert.equal(Number.isNaN(Date.parse(backfilledFolder.createdAt)), false);
+
+    const storedTree = JSON.parse(
+      storage.get('choirlms:practice:library-tree:user-1') ?? '{}',
+    ) as { folders: { id: string; createdAt?: string }[] };
+    const storedBackfilledFolder = storedTree.folders.find(
+      (folder) => folder.id === 'folder-1',
+    );
+
+    assert.equal(storedBackfilledFolder?.createdAt, backfilledFolder.createdAt);
   });
 
   it('migrates canonical library entities into a root folder file tree', async () => {

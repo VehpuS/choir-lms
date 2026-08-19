@@ -12,6 +12,7 @@ import {
   deleteLibraryFileLinkFromRepository,
   deleteLibraryFolderNodeFromRepository,
   normalizeStoredLoops,
+  normalizeStoredSources,
 } from './async-storage-practice-repository-helpers';
 
 import type { PracticeRepository } from './practice-repository';
@@ -33,7 +34,17 @@ import {
 
 export class AsyncStoragePracticeRepository implements PracticeRepository {
   async listSources(ownerId: string) {
-    return readStoredCollection<DriveAudioSource>('sources', ownerId);
+    const storedSources = await readStoredCollection<DriveAudioSource>(
+      'sources',
+      ownerId,
+    );
+    const normalizedSources = normalizeStoredSources(storedSources);
+
+    if (JSON.stringify(storedSources) !== JSON.stringify(normalizedSources)) {
+      await writeStoredCollection('sources', ownerId, normalizedSources);
+    }
+
+    return normalizedSources;
   }
 
   async saveSource(ownerId: string, source: DriveAudioSource) {

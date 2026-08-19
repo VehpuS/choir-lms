@@ -9,6 +9,7 @@ import { writeStoredLibraryFileTree } from './practice-repository-storage';
 import {
   REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
   removeRehearsalLibraryFileLinkNode,
+  resolveBackfilledCreatedAt,
 } from './rehearsal-library-files';
 
 type LibraryFolderDeletionRepository = {
@@ -55,6 +56,17 @@ const normalizeStoredLoop = (options: {
   };
 
   return isNamedLoop(normalizedLoop) ? normalizedLoop : null;
+};
+
+export const normalizeStoredSources = (
+  sources: DriveAudioSource[],
+): DriveAudioSource[] => {
+  return sources.map((source) => {
+    return {
+      ...source,
+      createdAt: resolveBackfilledCreatedAt(source.createdAt),
+    };
+  });
 };
 
 export const normalizeStoredLoops = (options: {
