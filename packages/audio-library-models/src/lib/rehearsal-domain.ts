@@ -109,6 +109,7 @@ export type RehearsalLibraryFolderNode = {
   name: string;
   parentFolderId: string | null;
   tags?: string[];
+  createdAt: string;
 };
 
 export type RehearsalLibraryFileLinkNode = {

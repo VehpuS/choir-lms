@@ -92,14 +92,16 @@ const replaceOrAppendById = <Entity extends { id: string }>(
   return nextValues;
 };
 
-export const createRehearsalLibraryRootFolderNode =
-  (): RehearsalLibraryFolderNode => {
-    return {
-      id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
-      name: REHEARSAL_LIBRARY_ROOT_FOLDER_NAME,
-      parentFolderId: null,
-    };
+export const createRehearsalLibraryRootFolderNode = (options?: {
+  createdAt?: string;
+}): RehearsalLibraryFolderNode => {
+  return {
+    id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+    name: REHEARSAL_LIBRARY_ROOT_FOLDER_NAME,
+    parentFolderId: null,
+    createdAt: options?.createdAt ?? new Date().toISOString(),
   };
+};
 
 export const createRehearsalLibraryDefaultFileLinkNode = (
   entityKind: RehearsalLibraryEntityKind,
@@ -172,7 +174,12 @@ export const syncRehearsalLibraryFileTree = (options: {
   entityCollections: RehearsalLibraryEntityCollections;
   existingTree?: RehearsalLibraryFileTree | null;
 }): RehearsalLibraryFileTree => {
-  const rootFolder = createRehearsalLibraryRootFolderNode();
+  const priorRootFolder = options.existingTree?.folders.find(
+    (folder) => folder.id === REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+  );
+  const rootFolder = createRehearsalLibraryRootFolderNode({
+    createdAt: priorRootFolder?.createdAt,
+  });
   const normalizedFolders = [rootFolder];
   const seenFolderIds = new Set<string>([rootFolder.id]);
 

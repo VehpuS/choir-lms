@@ -35,16 +35,18 @@ describe('library-files model sort', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
         {
           id: 'folder-zeta',
           name: 'zeta folder',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
         {
           id: 'folder-alpha',
           name: 'Alpha folder',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
       ],
       rootFolderId: 'folder:library-root',
@@ -95,11 +97,12 @@ describe('library-files model sort', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
         {
           id: 'folder-warmups',
           name: 'Warmups',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
       ],
       rootFolderId: 'folder:library-root',
@@ -169,11 +172,12 @@ describe('library-files model sort', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
         {
           id: 'folder-alpha',
           name: 'Archive',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
       ],
       rootFolderId: 'folder:library-root',

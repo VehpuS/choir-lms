@@ -65,11 +65,13 @@ const createTree = (
         id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
         name: 'Library',
         parentFolderId: null,
+        createdAt: '2026-05-10T10:00:00.000Z',
       },
       {
         id: 'folder-warmups',
         name: 'Warmups',
         parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+        createdAt: '2026-05-10T10:00:00.000Z',
       },
     ],
     rootFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,

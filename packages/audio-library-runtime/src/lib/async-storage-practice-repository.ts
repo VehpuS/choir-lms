@@ -243,9 +243,17 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
       folder,
     });
 
+    const priorFolder = tree.folders.find(
+      (existingFolder) => existingFolder.id === folder.id,
+    );
+    const folderToSave: RehearsalLibraryFolderNode = {
+      ...folder,
+      createdAt: priorFolder?.createdAt ?? folder.createdAt,
+    };
+
     return writeStoredLibraryFileTree(
       ownerId,
-      upsertRehearsalLibraryFolderNode(tree, folder),
+      upsertRehearsalLibraryFolderNode(tree, folderToSave),
     );
   }
 

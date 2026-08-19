@@ -353,7 +353,12 @@ describe('AsyncStoragePracticeRepository', () => {
       storage.set(key, value);
     };
 
-    assert.deepEqual(await repository.listLibraryFileTree('user-1'), {
+    const migratedTree = await repository.listLibraryFileTree('user-1');
+    const [rootFolder] = migratedTree.folders;
+
+    assert.ok(rootFolder);
+    assert.equal(Number.isNaN(Date.parse(rootFolder.createdAt)), false);
+    assert.deepEqual(migratedTree, {
       version: 1,
       rootFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
       folders: [
@@ -361,6 +366,7 @@ describe('AsyncStoragePracticeRepository', () => {
           id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
           name: 'Library',
           parentFolderId: null,
+          createdAt: rootFolder.createdAt,
         },
       ],
       fileLinks: [
@@ -406,6 +412,7 @@ describe('AsyncStoragePracticeRepository', () => {
       id: 'folder-1',
       name: 'Warmups',
       parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+      createdAt: '2026-05-10T10:00:00.000Z',
     });
     await repository.saveLibraryFileLink('user-1', {
       id: 'file-link:track:copy-1',

@@ -41,6 +41,7 @@ describe('isRowPreparingLoop', () => {
       id: 'folder-warmups',
       name: 'Warmups',
       parentFolderId: 'folder:library-root',
+      createdAt: '2026-05-10T10:00:00.000Z',
     },
     kind: 'folder',
     label: 'Warmups',

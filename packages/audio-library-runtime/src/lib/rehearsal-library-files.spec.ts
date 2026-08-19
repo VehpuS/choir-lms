@@ -67,6 +67,7 @@ describe('AsyncStoragePracticeRepository file-tree guardrails', () => {
         id: 'folder-1',
         name: AVAILABLE_SOURCE.name.toLocaleLowerCase(),
         parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+        createdAt: '2026-05-10T10:00:00.000Z',
       }),
       /already exists in the target folder/,
     );
@@ -82,6 +83,7 @@ describe('AsyncStoragePracticeRepository file-tree guardrails', () => {
       id: 'folder-1',
       name: 'Warmups',
       parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+      createdAt: '2026-05-10T10:00:00.000Z',
     });
     await repository.saveLibraryFileLink('user-1', {
       id: 'file-link:track:copy-1',
@@ -112,11 +114,13 @@ describe('AsyncStoragePracticeRepository file-tree guardrails', () => {
       id: 'folder-1',
       name: 'Warmups',
       parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+      createdAt: '2026-05-10T10:00:00.000Z',
     });
     await repository.saveLibraryFolderNode('user-1', {
       id: 'folder-2',
       name: 'Soprano',
       parentFolderId: 'folder-1',
+      createdAt: '2026-05-10T10:00:00.000Z',
     });
 
     await assert.rejects(
@@ -124,6 +128,7 @@ describe('AsyncStoragePracticeRepository file-tree guardrails', () => {
         id: 'folder-1',
         name: 'Warmups',
         parentFolderId: 'folder-2',
+        createdAt: '2026-05-10T10:00:00.000Z',
       }),
       /cannot be moved into itself or one of its descendants/,
     );
@@ -139,6 +144,7 @@ describe('AsyncStoragePracticeRepository file-tree guardrails', () => {
       id: 'folder-1',
       name: 'Warmups',
       parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+      createdAt: '2026-05-10T10:00:00.000Z',
     });
     await repository.saveLibraryFileLink('user-1', {
       id: 'file-link:track:copy-1',
@@ -176,6 +182,7 @@ describe('AsyncStoragePracticeRepository file-tree guardrails', () => {
       id: 'folder-1',
       name: 'Warmups',
       parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+      createdAt: '2026-05-10T10:00:00.000Z',
     });
     await repository.saveLibraryFileLink('user-1', {
       id: `file-link:track:${AVAILABLE_SOURCE.id}`,
@@ -265,6 +272,7 @@ describe('resolveRehearsalLibraryCopyVisibleName', () => {
             id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
             name: 'Library',
             parentFolderId: null,
+            createdAt: '2026-05-10T10:00:00.000Z',
           },
         ],
         fileLinks: [
@@ -298,6 +306,7 @@ describe('resolveRehearsalLibraryCopyVisibleName', () => {
             id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
             name: 'Library',
             parentFolderId: null,
+            createdAt: '2026-05-10T10:00:00.000Z',
           },
         ],
         fileLinks: [

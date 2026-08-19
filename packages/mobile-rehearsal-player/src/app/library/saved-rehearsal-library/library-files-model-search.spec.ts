@@ -31,21 +31,24 @@ describe('library-files model search', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
         {
           id: 'folder-warmups',
           name: 'Warmups',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
         {
           id: 'folder-warmups-child',
           name: 'Entrances',
           parentFolderId: 'folder-warmups',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
         {
           id: 'folder-anthems',
           name: 'Anthems',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
       ],
       rootFolderId: 'folder:library-root',
@@ -89,7 +92,7 @@ describe('library-files model search', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
       ],
       rootFolderId: 'folder:library-root',
       version: 1,
@@ -142,21 +145,24 @@ describe('library-files model search', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
         {
           id: 'folder-warmups',
           name: 'Warmups',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
         {
           id: 'folder-warmups-child',
           name: 'Entrances',
           parentFolderId: 'folder-warmups',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
         {
           id: 'folder-anthems',
           name: 'Anthems',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
       ],
       rootFolderId: 'folder:library-root',
@@ -210,11 +216,12 @@ describe('library-files model search', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
         {
           id: 'folder-warmups',
           name: 'Warmups',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
       ],
       rootFolderId: 'folder:library-root',
@@ -271,7 +278,7 @@ describe('library-files model search', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
       ],
       rootFolderId: 'folder:library-root',
       version: 1,

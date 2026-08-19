@@ -149,7 +149,12 @@ describe('practice-repository-storage library file tree serialization', () => {
       ...baseTree,
       folders: [
         ...baseTree.folders,
-        { id: nestedFolderId, name: 'Nested', parentFolderId: baseTree.rootFolderId },
+        {
+          id: nestedFolderId,
+          name: 'Nested',
+          parentFolderId: baseTree.rootFolderId,
+          createdAt: '2026-05-10T10:00:00.000Z',
+        },
       ],
     };
     const movedTreeWithLink = {

@@ -57,11 +57,13 @@ describe('rehearsal-library file-tree helpers', () => {
             id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
             name: 'Old root name',
             parentFolderId: null,
+            createdAt: '2026-01-01T00:00:00.000Z',
           },
           {
             id: 'folder-1',
             name: 'Warmups',
             parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+            createdAt: '2026-01-02T00:00:00.000Z',
           },
         ],
         fileLinks: [
@@ -101,11 +103,13 @@ describe('rehearsal-library file-tree helpers', () => {
           id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
           name: 'Library',
           parentFolderId: null,
+          createdAt: '2026-01-01T00:00:00.000Z',
         },
         {
           id: 'folder-1',
           name: 'Warmups',
           parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+          createdAt: '2026-01-02T00:00:00.000Z',
         },
       ],
       fileLinks: [
@@ -148,6 +152,7 @@ describe('rehearsal-library file-tree helpers', () => {
             id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
             name: 'Library',
             parentFolderId: null,
+            createdAt: '2026-01-01T00:00:00.000Z',
           },
         ],
         fileLinks: [
@@ -163,6 +168,7 @@ describe('rehearsal-library file-tree helpers', () => {
         id: 'folder-1',
         name: 'Warmups',
         parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+        createdAt: '2026-01-02T00:00:00.000Z',
       },
     );
 
@@ -172,6 +178,7 @@ describe('rehearsal-library file-tree helpers', () => {
         id: 'folder-1',
         name: 'Updated warmups',
         parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+        createdAt: '2026-01-02T00:00:00.000Z',
       },
     );
 
@@ -207,6 +214,7 @@ describe('rehearsal-library file-tree helpers', () => {
       id: 'folder-1',
       name: 'Updated warmups',
       parentFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+      createdAt: '2026-01-02T00:00:00.000Z',
     });
     assert.equal(treeWithRenamedHardLink.fileLinks.length, 2);
     assert.equal(

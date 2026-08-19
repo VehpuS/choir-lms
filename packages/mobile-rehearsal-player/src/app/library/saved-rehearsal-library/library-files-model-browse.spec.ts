@@ -23,11 +23,12 @@ describe('library-files model browse', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
         {
           id: 'folder-archive',
           name: 'Archive',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
       ],
       rootFolderId: 'folder:library-root',
@@ -83,36 +84,42 @@ describe('library-files model browse', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
         {
           id: 'folder-anthems',
           name: 'Anthems',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
         {
           id: 'folder-anthems-child',
           name: 'Archive',
           parentFolderId: 'folder-anthems',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
         {
           id: 'folder-sections',
           name: 'Sections',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
         {
           id: 'folder-sections-child',
           name: 'Altos',
           parentFolderId: 'folder-sections',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
         {
           id: 'folder-warmups',
           name: 'Warmups',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
         {
           id: 'folder-warmups-child',
           name: 'Nested Warmups',
           parentFolderId: 'folder-warmups',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
       ],
       rootFolderId: 'folder:library-root',
@@ -172,13 +179,14 @@ describe('library-files model browse', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
         {
           id: 'folder-1',
           name: 'Warmups',
           parentFolderId: 'folder:library-root',
+          createdAt: '2026-05-10T10:00:00.000Z',
         },
-        { id: 'folder-2', name: 'Alto Entrances', parentFolderId: 'folder-1' },
+        { id: 'folder-2', name: 'Alto Entrances', parentFolderId: 'folder-1', createdAt: '2026-05-10T10:00:00.000Z' },
       ],
       rootFolderId: 'folder:library-root',
       version: 1,
@@ -231,7 +239,7 @@ describe('library-files model browse', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null },
+        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
       ],
       rootFolderId: 'folder:library-root',
       version: 1,

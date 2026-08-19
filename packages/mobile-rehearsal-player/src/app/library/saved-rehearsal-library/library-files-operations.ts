@@ -177,6 +177,7 @@ export const createLibraryFilesOperations = ({
             id: createUniqueNodeId('folder'),
             name: trimmedName,
             parentFolderId: explorer?.currentFolder.id ?? tree.rootFolderId,
+            createdAt: new Date().toISOString(),
           },
         );
 
