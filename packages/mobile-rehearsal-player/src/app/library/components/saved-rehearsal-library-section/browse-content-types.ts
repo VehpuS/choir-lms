@@ -18,6 +18,7 @@ export type SearchState = Pick<
   | 'entityFilter'
   | 'filesOpenedAtByNodeKey'
   | 'filesSearchScope'
+  | 'filesSortDirection'
   | 'filesSortMode'
   | 'recordFilesEntryOpened'
   | 'selectedTagFilters'

@@ -198,6 +198,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
             entityFilter: searchState.entityFilter,
             filesOpenedAtByNodeKey: searchState.filesOpenedAtByNodeKey,
             filesSearchScope: searchState.filesSearchScope,
+            filesSortDirection: searchState.filesSortDirection,
             filesSortMode: searchState.filesSortMode,
             recordFilesEntryOpened: searchState.recordFilesEntryOpened,
             selectedTagFilters: searchState.selectedTagFilters,

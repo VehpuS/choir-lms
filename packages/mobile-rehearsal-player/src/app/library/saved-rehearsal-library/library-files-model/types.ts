@@ -17,12 +17,15 @@ export type LibraryFilesSortMode =
   | 'name'
   | 'type';
 
+export type LibraryFilesSortDirection = 'asc' | 'desc';
+
 export type LibraryFilesSearchOptions = {
   activeSearchQuery: string | null;
   entityFilter: LibrarySearchEntityFilter;
   openedAtByNodeKey?: Readonly<Record<string, string>>;
   searchScope: LibraryFilesSearchScope;
   selectedTagFilters: string[];
+  sortDirection?: LibraryFilesSortDirection;
   sortMode?: LibraryFilesSortMode;
 };
 

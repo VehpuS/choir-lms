@@ -14,6 +14,7 @@ import {
 } from './pathing';
 import { buildEntityNameByKey } from './row-builders';
 import {
+  DEFAULT_LIBRARY_FILES_SORT_DIRECTION,
   DEFAULT_LIBRARY_FILES_SORT_MODE,
   getLibraryFilesRowNodeKey,
 } from './sort';
@@ -59,6 +60,7 @@ export const buildLibraryFilesExplorerState = (options: {
         savedLoops: options.savedLoops,
         savedPlaylists: options.savedPlaylists,
         savedSources: options.savedSources,
+        sortDirection: options.searchOptions?.sortDirection,
         sortMode: options.searchOptions?.sortMode,
         tree: options.tree,
       });
@@ -82,12 +84,14 @@ export type {
   LibraryFilesRow,
   LibraryFilesSearchOptions,
   LibraryFilesSearchScope,
+  LibraryFilesSortDirection,
   LibraryFilesSortMode,
   LibraryFilesTrackRow,
 } from './types';
 
 export {
   buildLibraryFolderPathLabel,
+  DEFAULT_LIBRARY_FILES_SORT_DIRECTION,
   DEFAULT_LIBRARY_FILES_SORT_MODE,
   getLibraryFilesRowNodeKey,
 };

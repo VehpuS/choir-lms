@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import type { SavedRehearsalLibraryView } from '../../library/saved-rehearsal-library/detail-mode';
 import type {
   LibraryFilesSearchScope,
+  LibraryFilesSortDirection,
   LibraryFilesSortMode,
 } from '../../library/saved-rehearsal-library/library-files-model';
 import {
@@ -15,6 +16,7 @@ type UseLibraryFilesSessionRestorationOptions = {
   currentFilesFolderId: string | null;
   currentView: SavedRehearsalLibraryView;
   filesSearchScope: LibraryFilesSearchScope;
+  filesSortDirection: LibraryFilesSortDirection;
   filesSortMode: LibraryFilesSortMode;
   getCurrentScrollOffsetY: () => number;
   librarySearchQuery: string;
@@ -23,6 +25,7 @@ type UseLibraryFilesSessionRestorationOptions = {
     activeSearchQuery: string | null;
     librarySearchQuery: string;
     searchScope: LibraryFilesSearchScope;
+    sortDirection: LibraryFilesSortDirection;
     sortMode: LibraryFilesSortMode;
   }) => void;
   restoreScrollOffsetY: (offsetY: number) => void;
@@ -33,6 +36,7 @@ export const useLibraryFilesSessionRestoration = ({
   currentFilesFolderId,
   currentView,
   filesSearchScope,
+  filesSortDirection,
   filesSortMode,
   getCurrentScrollOffsetY,
   librarySearchQuery,
@@ -54,6 +58,7 @@ export const useLibraryFilesSessionRestoration = ({
       currentFolderId: currentFilesFolderId,
       currentView,
       filesSearchScope,
+      filesSortDirection,
       filesSortMode,
       librarySearchQuery,
       previousView,
@@ -79,6 +84,7 @@ export const useLibraryFilesSessionRestoration = ({
     currentFilesFolderId,
     currentView,
     filesSearchScope,
+    filesSortDirection,
     filesSortMode,
     getCurrentScrollOffsetY,
     librarySearchQuery,
@@ -104,6 +110,7 @@ export const useLibraryFilesSessionRestoration = ({
     currentFilesFolderId,
     currentView,
     filesSearchScope,
+    filesSortDirection,
     filesSortMode,
     librarySearchQuery,
     restoreScrollOffsetY,

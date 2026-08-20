@@ -4,8 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import { resolveSavedPlaylistCards } from '../../playlists/utils/saved-playlist-card-view-model';
 import {
+  DEFAULT_LIBRARY_FILES_SORT_DIRECTION,
   DEFAULT_LIBRARY_FILES_SORT_MODE,
   type LibraryFilesSearchScope,
+  type LibraryFilesSortDirection,
   type LibraryFilesSortMode,
 } from '../../saved-rehearsal-library/library-files-model';
 import {
@@ -54,6 +56,8 @@ export const useSavedRehearsalLibrarySearch = ({
   const [filesSortMode, setFilesSortMode] = useState<LibraryFilesSortMode>(
     DEFAULT_LIBRARY_FILES_SORT_MODE,
   );
+  const [filesSortDirection, setFilesSortDirection] =
+    useState<LibraryFilesSortDirection>(DEFAULT_LIBRARY_FILES_SORT_DIRECTION);
   const [tagsSortState, setTagsSortState] = useState(
     DEFAULT_SAVED_TAGS_LIST_SORT_STATE,
   );
@@ -223,6 +227,7 @@ export const useSavedRehearsalLibrarySearch = ({
         cancelPendingSearch: debouncedLibrarySearch.cancel,
         setActiveLibrarySearchQuery,
         setFilesSearchScope,
+        setFilesSortDirection,
         setFilesSortMode,
         setLibrarySearchQuery,
       });
@@ -233,13 +238,20 @@ export const useSavedRehearsalLibrarySearch = ({
     selectedTagFilters,
     setEntityFilter,
     setFilesSearchScope,
+    setFilesSortDirection,
     setFilesSortMode,
     setTagsSortField(field: SavedTagsListSortField) {
       setTagsSortState((currentSortState) => {
         return { ...currentSortState, field };
       });
     },
+    filesSortDirection,
     tagsSortState,
+    toggleFilesSortDirection() {
+      setFilesSortDirection((currentDirection) => {
+        return currentDirection === 'asc' ? 'desc' : 'asc';
+      });
+    },
     toggleTagFilter(tag: string) {
       setSelectedTagFilters((currentTagFilters) => {
         return currentTagFilters.includes(tag)

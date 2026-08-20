@@ -6,6 +6,7 @@ import { getLibrarySearchContextCopy } from '../../drive/utils/drive-library-vie
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
 import type {
   LibraryFilesSearchScope,
+  LibraryFilesSortDirection,
   LibraryFilesSortMode,
 } from '../../saved-rehearsal-library/library-files-model';
 import {
@@ -33,6 +34,7 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   currentFilesFolderName: string | null;
   entityFilter: LibrarySearchEntityFilter;
   filesSearchScope: LibraryFilesSearchScope;
+  filesSortDirection: LibraryFilesSortDirection;
   filesSortMode: LibraryFilesSortMode;
   onClearSearch: () => void;
   onFilterActionPress: () => void;
@@ -45,6 +47,7 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   onSelectFilesSortMode: (value: LibraryFilesSortMode) => void;
   onSelectRecentSearchTerm: (value: string) => void;
   onSelectTagsSortField: (value: SavedTagsListSortField) => void;
+  onToggleFilesSortDirection: () => void;
   onToggleTagFilter: (value: string) => void;
   onToggleTagsSortDirection: () => void;
   recentSearchTerms: string[];
@@ -59,6 +62,7 @@ export const LibrarySearchControls = ({
   currentFilesFolderName,
   entityFilter,
   filesSearchScope,
+  filesSortDirection,
   filesSortMode,
   isFilterPopoverVisible,
   isSearchBarVisible,
@@ -72,6 +76,7 @@ export const LibrarySearchControls = ({
   onSelectFilesSortMode,
   onSelectRecentSearchTerm,
   onSelectTagsSortField,
+  onToggleFilesSortDirection,
   onToggleTagFilter,
   onToggleTagsSortDirection,
   recentSearchTerms,
@@ -128,12 +133,28 @@ export const LibrarySearchControls = ({
           <FilterChipGroup
             filterChipStyle={styles.filterChip}
             filterGroupStyle={styles.filterGroup}
+            filterLabelRowStyle={styles.filterLabelRow}
             filterLabelStyle={styles.filterLabel}
             filterRowStyle={styles.filterRow}
             label="Sort"
             onSelectValue={onSelectFilesSortMode}
             options={FILES_SORT_OPTIONS}
             selectedValue={filesSortMode}
+            trailingAction={
+              <SurfaceIconButton
+                accessibilityLabel={getSavedTagsListSortDirectionToggleLabel(
+                  filesSortDirection,
+                )}
+                icon={
+                  filesSortDirection === 'asc'
+                    ? 'sort-ascending'
+                    : 'sort-descending'
+                }
+                onPress={onToggleFilesSortDirection}
+                size={16}
+                style={styles.sortDirectionToggle}
+              />
+            }
           />
           <FilterChipGroup
             filterChipStyle={styles.filterChip}
@@ -169,7 +190,8 @@ export const LibrarySearchControls = ({
                   : 'sort-descending'
               }
               onPress={onToggleTagsSortDirection}
-              size={20}
+              size={16}
+              style={styles.sortDirectionToggle}
             />
           }
         />
@@ -248,4 +270,5 @@ const styles = StyleSheet.create({
   },
   filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   filterChip: { minHeight: 32, paddingHorizontal: 12, paddingVertical: 6 },
+  sortDirectionToggle: { width: 32, height: 32 },
 });

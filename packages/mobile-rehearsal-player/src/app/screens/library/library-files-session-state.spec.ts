@@ -17,6 +17,7 @@ describe('library files session state', () => {
         librarySearchQuery: 'alto entrance ',
         scrollOffsetY: 184,
         searchScope: 'all-files',
+        sortDirection: 'desc',
         sortMode: 'date-opened',
       }),
       {
@@ -25,6 +26,7 @@ describe('library files session state', () => {
         librarySearchQuery: 'alto entrance ',
         scrollOffsetY: 184,
         searchScope: 'all-files',
+        sortDirection: 'desc',
         sortMode: 'date-opened',
       },
     );
@@ -37,6 +39,7 @@ describe('library files session state', () => {
       librarySearchQuery: 'warm',
       scrollOffsetY: 96,
       searchScope: 'current-folder',
+      sortDirection: 'asc',
       sortMode: 'name',
     });
 
@@ -86,6 +89,7 @@ describe('library files session state', () => {
       currentFolderId: 'folder-warmups',
       currentView: 'tracks',
       filesSearchScope: 'all-files',
+      filesSortDirection: 'desc',
       filesSortMode: 'date-opened',
       librarySearchQuery: 'alto entrance ',
       previousView: 'files',
@@ -100,6 +104,7 @@ describe('library files session state', () => {
         librarySearchQuery: 'alto entrance ',
         scrollOffsetY: 184,
         searchScope: 'all-files',
+        sortDirection: 'desc',
         sortMode: 'date-opened',
       },
       restoredSnapshot: null,
@@ -111,6 +116,7 @@ describe('library files session state', () => {
       currentFolderId: null,
       currentView: 'files',
       filesSearchScope: 'current-folder',
+      filesSortDirection: 'asc',
       filesSortMode: 'name',
       librarySearchQuery: '',
       previousView: 'playlists',

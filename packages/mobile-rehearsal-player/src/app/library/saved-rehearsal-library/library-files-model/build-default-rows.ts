@@ -15,7 +15,11 @@ import {
   buildTrackRow,
 } from './row-builders';
 import { sortRows } from './sort';
-import type { LibraryFilesRow, LibraryFilesSortMode } from './types';
+import type {
+  LibraryFilesRow,
+  LibraryFilesSortDirection,
+  LibraryFilesSortMode,
+} from './types';
 
 export const buildDefaultRows = (options: {
   currentFolder: RehearsalLibraryFolderNode;
@@ -24,6 +28,7 @@ export const buildDefaultRows = (options: {
   savedLoops: NamedLoop[];
   savedPlaylists: Playlist[];
   savedSources: DriveLibrarySource[];
+  sortDirection?: LibraryFilesSortDirection;
   sortMode?: LibraryFilesSortMode;
   tree: RehearsalLibraryFileTree;
 }) => {
@@ -105,6 +110,7 @@ export const buildDefaultRows = (options: {
   return sortRows({
     openedAtByNodeKey: options.openedAtByNodeKey,
     rows: [...childFolders, ...entityRows],
+    sortDirection: options.sortDirection,
     sortMode: options.sortMode,
   });
 };

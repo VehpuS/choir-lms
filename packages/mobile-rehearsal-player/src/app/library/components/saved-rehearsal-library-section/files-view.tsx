@@ -15,6 +15,7 @@ import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-mo
 import {
   getLibraryFilesRowNodeKey,
   type LibraryFilesSearchScope,
+  type LibraryFilesSortDirection,
   type LibraryFilesSortMode,
 } from '../../saved-rehearsal-library/library-files-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
@@ -66,6 +67,7 @@ type SavedRehearsalLibraryFilesViewProps = {
     entityFilter: LibrarySearchEntityFilter;
     filesOpenedAtByNodeKey: Readonly<Record<string, string>>;
     filesSearchScope: LibraryFilesSearchScope;
+    filesSortDirection: LibraryFilesSortDirection;
     filesSortMode: LibraryFilesSortMode;
     recordFilesEntryOpened: (nodeKey: string) => void;
     selectedTagFilters: string[];
@@ -116,6 +118,7 @@ export const SavedRehearsalLibraryFilesView = ({
     openedAtByNodeKey: searchState.filesOpenedAtByNodeKey,
     searchScope: searchState.filesSearchScope,
     selectedTagFilters: searchState.selectedTagFilters,
+    sortDirection: searchState.filesSortDirection,
     sortMode: searchState.filesSortMode,
   });
   const [openMenuRowKey, setOpenMenuRowKey] = useState<string | null>(null);

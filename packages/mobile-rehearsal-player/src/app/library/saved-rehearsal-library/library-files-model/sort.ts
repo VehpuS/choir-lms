@@ -1,6 +1,12 @@
-import type { LibraryFilesRow, LibraryFilesSortMode } from './types';
+import type {
+  LibraryFilesRow,
+  LibraryFilesSortDirection,
+  LibraryFilesSortMode,
+} from './types';
 
 export const DEFAULT_LIBRARY_FILES_SORT_MODE: LibraryFilesSortMode = 'name';
+export const DEFAULT_LIBRARY_FILES_SORT_DIRECTION: LibraryFilesSortDirection =
+  'asc';
 
 const NON_FOLDER_TYPE_ORDER: Record<
   Exclude<LibraryFilesRow['kind'], 'folder'>,
@@ -60,25 +66,27 @@ const compareRowsByName = (left: LibraryFilesRow, right: LibraryFilesRow) => {
 const compareRowsByType = (
   left: Exclude<LibraryFilesRow, { kind: 'folder' }>,
   right: Exclude<LibraryFilesRow, { kind: 'folder' }>,
+  directionMultiplier: number,
 ) => {
   const leftTypeOrder = NON_FOLDER_TYPE_ORDER[left.kind];
   const rightTypeOrder = NON_FOLDER_TYPE_ORDER[right.kind];
 
   if (leftTypeOrder !== rightTypeOrder) {
-    return leftTypeOrder - rightTypeOrder;
+    return (leftTypeOrder - rightTypeOrder) * directionMultiplier;
   }
 
   return compareRowsByName(left, right);
 };
 
-const compareRowsByDescendingTimestamp = (
+const compareRowsByTimestamp = (
   leftTimestamp: number,
   rightTimestamp: number,
   left: LibraryFilesRow,
   right: LibraryFilesRow,
+  directionMultiplier: number,
 ) => {
   if (leftTimestamp !== rightTimestamp) {
-    return rightTimestamp - leftTimestamp;
+    return (leftTimestamp - rightTimestamp) * directionMultiplier;
   }
 
   return compareRowsByName(left, right);
@@ -87,9 +95,13 @@ const compareRowsByDescendingTimestamp = (
 export const sortRows = (options: {
   openedAtByNodeKey?: Readonly<Record<string, string>>;
   rows: LibraryFilesRow[];
+  sortDirection?: LibraryFilesSortDirection;
   sortMode?: LibraryFilesSortMode;
 }) => {
   const sortMode = options.sortMode ?? DEFAULT_LIBRARY_FILES_SORT_MODE;
+  const sortDirection =
+    options.sortDirection ?? DEFAULT_LIBRARY_FILES_SORT_DIRECTION;
+  const directionMultiplier = sortDirection === 'asc' ? 1 : -1;
   const openedAtByNodeKey = options.openedAtByNodeKey ?? {};
   const folderRows = options.rows.filter((row) => {
     return row.kind === 'folder';
@@ -101,25 +113,27 @@ export const sortRows = (options: {
     switch (sortMode) {
       case 'type':
         return left.kind === 'folder' || right.kind === 'folder'
-          ? compareRowsByName(left, right)
-          : compareRowsByType(left, right);
+          ? compareRowsByName(left, right) * directionMultiplier
+          : compareRowsByType(left, right, directionMultiplier);
       case 'date-added':
-        return compareRowsByDescendingTimestamp(
+        return compareRowsByTimestamp(
           resolveRowDateAddedTimestamp(left),
           resolveRowDateAddedTimestamp(right),
           left,
           right,
+          directionMultiplier,
         );
       case 'date-opened':
-        return compareRowsByDescendingTimestamp(
+        return compareRowsByTimestamp(
           resolveRowDateOpenedTimestamp(left, openedAtByNodeKey),
           resolveRowDateOpenedTimestamp(right, openedAtByNodeKey),
           left,
           right,
+          directionMultiplier,
         );
       case 'name':
       default:
-        return compareRowsByName(left, right);
+        return compareRowsByName(left, right) * directionMultiplier;
     }
   };
 

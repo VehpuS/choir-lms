@@ -15,43 +15,101 @@ import {
   UNAVAILABLE_SOURCE,
 } from './library-files-model-test-fixtures';
 
+const buildDateModeFixtures = () => {
+  const newerLoop: NamedLoop = {
+    ...SAVED_LOOP,
+    createdAt: '2026-07-06T09:00:00.000Z',
+    id: 'loop-2',
+    name: 'Crescendo cue',
+    updatedAt: '2026-07-06T09:00:00.000Z',
+  };
+  const newerPlaylist: Playlist = {
+    ...PLAYLIST,
+    createdAt: '2026-07-04T09:00:00.000Z',
+    id: 'playlist-2',
+    name: 'Festival Set',
+    updatedAt: '2026-07-04T09:00:00.000Z',
+  };
+  const tree: RehearsalLibraryFileTree = {
+    fileLinks: [
+      {
+        entityId: newerPlaylist.id,
+        entityKind: 'playlist',
+        id: `file-link:playlist:${newerPlaylist.id}`,
+        parentFolderId: 'folder:library-root',
+      },
+      {
+        entityId: newerLoop.id,
+        entityKind: 'loop',
+        id: `file-link:loop:${newerLoop.id}`,
+        parentFolderId: 'folder:library-root',
+      },
+      {
+        entityId: AVAILABLE_SOURCE.id,
+        entityKind: 'track',
+        id: `file-link:track:${AVAILABLE_SOURCE.id}`,
+        parentFolderId: 'folder:library-root',
+      },
+    ],
+    folders: [
+      { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
+      {
+        id: 'folder-alpha',
+        name: 'Archive',
+        parentFolderId: 'folder:library-root',
+        createdAt: '2026-05-10T10:00:00.000Z',
+      },
+    ],
+    rootFolderId: 'folder:library-root',
+    version: 1,
+  };
+
+  return { newerLoop, newerPlaylist, tree };
+};
+
+const buildNameModeTree = (options: {
+  withVisibleNames: boolean;
+}): RehearsalLibraryFileTree => {
+  return {
+    fileLinks: [
+      {
+        entityId: AVAILABLE_SOURCE.id,
+        entityKind: 'track',
+        id: `file-link:track:${AVAILABLE_SOURCE.id}`,
+        parentFolderId: 'folder:library-root',
+        ...(options.withVisibleNames ? { visibleName: 'bravo track' } : {}),
+      },
+      {
+        entityId: UNAVAILABLE_SOURCE.id,
+        entityKind: 'track',
+        id: `file-link:track:${UNAVAILABLE_SOURCE.id}`,
+        parentFolderId: 'folder:library-root',
+        ...(options.withVisibleNames ? { visibleName: 'Alpha track' } : {}),
+      },
+    ],
+    folders: [
+      { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
+      {
+        id: 'folder-zeta',
+        name: 'zeta folder',
+        parentFolderId: 'folder:library-root',
+        createdAt: '2026-05-10T10:00:00.000Z',
+      },
+      {
+        id: 'folder-alpha',
+        name: 'Alpha folder',
+        parentFolderId: 'folder:library-root',
+        createdAt: '2026-05-10T10:00:00.000Z',
+      },
+    ],
+    rootFolderId: 'folder:library-root',
+    version: 1,
+  };
+};
+
 describe('library-files model sort', () => {
   it('sorts Files names case-insensitively when name sort is active', () => {
-    const tree: RehearsalLibraryFileTree = {
-      fileLinks: [
-        {
-          entityId: AVAILABLE_SOURCE.id,
-          entityKind: 'track',
-          id: `file-link:track:${AVAILABLE_SOURCE.id}`,
-          parentFolderId: 'folder:library-root',
-          visibleName: 'bravo track',
-        },
-        {
-          entityId: UNAVAILABLE_SOURCE.id,
-          entityKind: 'track',
-          id: `file-link:track:${UNAVAILABLE_SOURCE.id}`,
-          parentFolderId: 'folder:library-root',
-          visibleName: 'Alpha track',
-        },
-      ],
-      folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
-        {
-          id: 'folder-zeta',
-          name: 'zeta folder',
-          parentFolderId: 'folder:library-root',
-          createdAt: '2026-05-10T10:00:00.000Z',
-        },
-        {
-          id: 'folder-alpha',
-          name: 'Alpha folder',
-          parentFolderId: 'folder:library-root',
-          createdAt: '2026-05-10T10:00:00.000Z',
-        },
-      ],
-      rootFolderId: 'folder:library-root',
-      version: 1,
-    };
+    const tree = buildNameModeTree({ withVisibleNames: true });
 
     const explorer = buildLibraryFilesExplorerState({
       currentFolderId: 'folder:library-root',
@@ -135,54 +193,8 @@ describe('library-files model sort', () => {
     );
   });
 
-  it('sorts Files rows newest-first for date-added and date-opened modes', () => {
-    const newerLoop: NamedLoop = {
-      ...SAVED_LOOP,
-      createdAt: '2026-07-06T09:00:00.000Z',
-      id: 'loop-2',
-      name: 'Crescendo cue',
-      updatedAt: '2026-07-06T09:00:00.000Z',
-    };
-    const newerPlaylist: Playlist = {
-      ...PLAYLIST,
-      createdAt: '2026-07-04T09:00:00.000Z',
-      id: 'playlist-2',
-      name: 'Festival Set',
-      updatedAt: '2026-07-04T09:00:00.000Z',
-    };
-    const tree: RehearsalLibraryFileTree = {
-      fileLinks: [
-        {
-          entityId: newerPlaylist.id,
-          entityKind: 'playlist',
-          id: `file-link:playlist:${newerPlaylist.id}`,
-          parentFolderId: 'folder:library-root',
-        },
-        {
-          entityId: newerLoop.id,
-          entityKind: 'loop',
-          id: `file-link:loop:${newerLoop.id}`,
-          parentFolderId: 'folder:library-root',
-        },
-        {
-          entityId: AVAILABLE_SOURCE.id,
-          entityKind: 'track',
-          id: `file-link:track:${AVAILABLE_SOURCE.id}`,
-          parentFolderId: 'folder:library-root',
-        },
-      ],
-      folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
-        {
-          id: 'folder-alpha',
-          name: 'Archive',
-          parentFolderId: 'folder:library-root',
-          createdAt: '2026-05-10T10:00:00.000Z',
-        },
-      ],
-      rootFolderId: 'folder:library-root',
-      version: 1,
-    };
+  it('sorts Files rows newest-first for date-added and date-opened modes when direction is descending', () => {
+    const { newerLoop, newerPlaylist, tree } = buildDateModeFixtures();
 
     const dateAddedExplorer = buildLibraryFilesExplorerState({
       currentFolderId: 'folder:library-root',
@@ -194,6 +206,7 @@ describe('library-files model sort', () => {
         entityFilter: 'all',
         searchScope: 'current-folder',
         selectedTagFilters: [],
+        sortDirection: 'desc',
         sortMode: 'date-added',
       },
       tree,
@@ -221,6 +234,7 @@ describe('library-files model sort', () => {
         },
         searchScope: 'current-folder',
         selectedTagFilters: [],
+        sortDirection: 'desc',
         sortMode: 'date-opened',
       },
       tree,
@@ -229,6 +243,55 @@ describe('library-files model sort', () => {
     assert.deepEqual(
       dateOpenedExplorer.rows.map((row) => row.label),
       ['Archive', 'Full Choir.mp3', 'Festival Set', 'Crescendo cue'],
+    );
+  });
+
+  it('sorts Files rows oldest-first for date-added and date-opened modes by default (ascending)', () => {
+    const { newerLoop, newerPlaylist, tree } = buildDateModeFixtures();
+
+    const dateAddedExplorer = buildLibraryFilesExplorerState({
+      currentFolderId: 'folder:library-root',
+      savedLoops: [newerLoop],
+      savedPlaylists: [newerPlaylist],
+      savedSources: [AVAILABLE_SOURCE],
+      searchOptions: {
+        activeSearchQuery: null,
+        entityFilter: 'all',
+        searchScope: 'current-folder',
+        selectedTagFilters: [],
+        sortMode: 'date-added',
+      },
+      tree,
+    });
+
+    assert.deepEqual(
+      dateAddedExplorer.rows.map((row) => row.label),
+      ['Archive', 'Festival Set', 'Full Choir.mp3', 'Crescendo cue'],
+    );
+  });
+
+  it('reverses name sort order when direction is descending', () => {
+    const tree = buildNameModeTree({ withVisibleNames: false });
+
+    const explorer = buildLibraryFilesExplorerState({
+      currentFolderId: 'folder:library-root',
+      savedLoops: [],
+      savedPlaylists: [],
+      savedSources: [AVAILABLE_SOURCE, UNAVAILABLE_SOURCE],
+      searchOptions: {
+        activeSearchQuery: null,
+        entityFilter: 'all',
+        searchScope: 'current-folder',
+        selectedTagFilters: [],
+        sortDirection: 'desc',
+        sortMode: 'name',
+      },
+      tree,
+    });
+
+    assert.deepEqual(
+      explorer.rows.map((row) => row.label),
+      ['zeta folder', 'Alpha folder', 'Section Notes.mp3', 'Full Choir.mp3'],
     );
   });
 });

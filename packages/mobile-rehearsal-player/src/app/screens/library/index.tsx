@@ -61,6 +61,7 @@ export const LibraryScreen = ({
       libraryController.savedLibrary.files.explorer?.currentFolder.id ?? null,
     currentView: selectedView,
     filesSearchScope: searchState.filesSearchScope,
+    filesSortDirection: searchState.filesSortDirection,
     filesSortMode: searchState.filesSortMode,
     getCurrentScrollOffsetY: scrollCoordination.getCurrentScrollOffsetY,
     librarySearchQuery: searchState.librarySearchQuery,

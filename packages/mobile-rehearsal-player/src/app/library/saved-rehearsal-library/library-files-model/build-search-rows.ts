@@ -252,6 +252,7 @@ export const buildSearchRows = (options: {
   return sortRows({
     openedAtByNodeKey: options.searchOptions.openedAtByNodeKey,
     rows: [...folderRows, ...entityRows],
+    sortDirection: options.searchOptions.sortDirection,
     sortMode: options.searchOptions.sortMode,
   });
 };
