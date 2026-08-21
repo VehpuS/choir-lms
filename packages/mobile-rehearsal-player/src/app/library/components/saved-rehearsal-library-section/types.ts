@@ -14,7 +14,10 @@ import type {
   SavedTrackPlaybackIssue,
   SavedTrackPlaybackState,
 } from '../../playback/utils/saved-track-playback-view-model';
-import type { PlaylistPlaybackSession } from '../../playlists/utils/saved-playlist-playback-view-model';
+import type {
+  PlaylistDetailHeaderPlaybackAction,
+  PlaylistPlaybackSession,
+} from '../../playlists/utils/saved-playlist-playback-view-model';
 import type {
   PlaylistDraftIssue,
   SavedPlaylistIssue,
@@ -61,6 +64,9 @@ export type SavedRehearsalLibrarySectionProps = {
   libraryFilesSuccessFeedback: LibraryFilesSuccessFeedback | null;
   onDismissLibraryFilesSuccessFeedback: () => void;
   onBrowseCreateDockChange?: (mode: LibraryBrowseCreateDockMode) => void;
+  onDetailPlaybackChange?: (
+    action: PlaylistDetailHeaderPlaybackAction | null,
+  ) => void;
   onOpenLibraryFilesSuccessFeedbackFolder: (folderId: string) => void;
   onPlaylistSelectionHandlerChange?: (
     handler: ((playlistId: string) => void) | null,

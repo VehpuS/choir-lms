@@ -35,6 +35,12 @@ export type PlaylistPlaybackActionCopy = {
   label: string;
 };
 
+export type PlaylistDetailHeaderPlaybackAction = {
+  accessibilityLabel: string;
+  disabled: boolean;
+  onPress: () => void;
+};
+
 export type PlaylistPlaybackIssue = {
   message: string;
   playlistId: string;

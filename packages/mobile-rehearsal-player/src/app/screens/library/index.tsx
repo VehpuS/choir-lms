@@ -8,6 +8,7 @@ import type { LibraryBrowseCreateDockMode } from '../../library/components/saved
 import { useSavedRehearsalLibrarySearch } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search';
 import { useSavedRehearsalLibrarySearchPanel } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search-panel';
 import { LoopPreviewPlaybackContext } from '../../library/loops/components/loop-preview-playback-context';
+import type { PlaylistDetailHeaderPlaybackAction } from '../../library/playlists/utils/saved-playlist-playback-view-model';
 import type { SavedRehearsalLibraryView } from '../../library/saved-rehearsal-library/detail-mode';
 import { appTheme } from '../../utils/theme';
 import { LibraryFilesCreateControls } from './library-files-create-controls';
@@ -42,6 +43,8 @@ export const LibraryScreen = ({
   const [libraryFilesSuccessFeedback, setLibraryFilesSuccessFeedback] =
     useState<LibraryFilesSuccessFeedback | null>(null);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
+  const [playlistDetailPlayback, setPlaylistDetailPlayback] =
+    useState<PlaylistDetailHeaderPlaybackAction | null>(null);
   const [isFilesPlaylistCreateDialogVisible, setIsFilesPlaylistCreateDialogVisible] =
     useState(false);
   const [
@@ -123,6 +126,7 @@ export const LibraryScreen = ({
         onToggleSessionMenu={() => {
           setIsSessionMenuVisible((currentValue) => !currentValue);
         }}
+        headerPlaybackAction={playlistDetailPlayback}
         searchPanelVisibility={searchPanel.searchPanelVisibility}
         searchState={searchState}
         style={styles.destinationHeader}
@@ -176,6 +180,7 @@ export const LibraryScreen = ({
               dismissLibraryFilesSuccessFeedback
             }
             onBrowseCreateDockChange={setBrowseCreateDockMode}
+            onDetailPlaybackChange={setPlaylistDetailPlayback}
             onOpenLibraryFilesSuccessFeedbackFolder={
               openLibraryFilesSuccessFeedbackFolder
             }

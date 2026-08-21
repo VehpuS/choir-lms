@@ -46,19 +46,6 @@ export const useSavedPlaylistDetailActions = ({
     });
   };
 
-  const playShuffledPlaylist = () => {
-    if (!selectedPlaylist) {
-      return;
-    }
-
-    void togglePlaylistPlayback({
-      loops: savedLoops,
-      mode: 'shuffle',
-      playlist: selectedPlaylist,
-      sources: savedSources,
-    });
-  };
-
   const playPlaylistEntry = (entryId: string) => {
     if (!selectedPlaylist) {
       return;
@@ -77,7 +64,6 @@ export const useSavedPlaylistDetailActions = ({
     editPlaylistTags,
     playOrderedPlaylist,
     playPlaylistEntry,
-    playShuffledPlaylist,
     toggleCurrentPlayback() {
       void toggleActivePlayback();
     },

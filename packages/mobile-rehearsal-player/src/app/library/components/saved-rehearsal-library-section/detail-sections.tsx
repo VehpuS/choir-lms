@@ -8,7 +8,10 @@ import type {
   SavedTrackPlaybackState,
 } from '../../playback/utils/saved-track-playback-view-model';
 import { SavedPlaylistSection } from '../../playlists/components/saved-playlist-section';
-import type { PlaylistPlaybackSession } from '../../playlists/utils/saved-playlist-playback-view-model';
+import type {
+  PlaylistDetailHeaderPlaybackAction,
+  PlaylistPlaybackSession,
+} from '../../playlists/utils/saved-playlist-playback-view-model';
 import type { SavedPlaylistIssue } from '../../playlists/utils/saved-playlist-view-model';
 import { getPlaylistDetailEmptyStateCopy } from './playlist-detail-origin';
 import type { SavedRehearsalLibrarySectionProps } from './types';
@@ -125,6 +128,9 @@ type SavedRehearsalLibraryPlaylistSectionContentProps = {
   isPlaylistDetailMode: boolean;
   onOpenFilesAddItems: () => void;
   onClosePlaylistDetail: () => void;
+  onDetailPlaybackChange?: (
+    action: PlaylistDetailHeaderPlaybackAction | null,
+  ) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   onRenameDialogVisibilityChange?: (isVisible: boolean) => void;
   pendingPlaylistId: string | null;
@@ -153,6 +159,7 @@ export const SavedRehearsalLibraryPlaylistSectionContent = ({
   isPlaylistDetailMode,
   onOpenFilesAddItems,
   onClosePlaylistDetail,
+  onDetailPlaybackChange,
   onOpenPlaylistTagEditor,
   onRenameDialogVisibilityChange,
   pendingPlaylistId,
@@ -192,6 +199,7 @@ export const SavedRehearsalLibraryPlaylistSectionContent = ({
       issue={playlistIssue}
       onAddItems={canMutatePlaylists ? onOpenFilesAddItems : undefined}
       onCloseDetail={onClosePlaylistDetail}
+      onDetailPlaybackChange={onDetailPlaybackChange}
       onEditPlaylistTags={onOpenPlaylistTagEditor}
       onRenameDialogVisibilityChange={onRenameDialogVisibilityChange}
       pendingPlaylistId={pendingPlaylistId}

@@ -5,6 +5,7 @@ import { savedPlaylistSectionStyles as styles } from '../../components/saved-pla
 import { DriveLibraryStatusCard } from '../../drive/components/drive-library-status-card';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { SavedTrackPlaybackState } from '../../playback/utils/saved-track-playback-view-model';
+import { usePlaylistDetailHeaderPlayback } from '../hooks/use-playlist-detail-header-playback';
 import { useSavedPlaylistDetailActions } from '../hooks/use-saved-playlist-detail-actions';
 import { useSavedPlaylistSectionState } from '../hooks/use-saved-playlist-section-state';
 import {
@@ -15,6 +16,7 @@ import { getSavedPlaylistPlaybackToggleLabel } from '../utils/saved-playlist-pla
 import {
   getPlaylistPlaybackActionCopy,
   getPlaylistPlaybackCurrentItem,
+  type PlaylistDetailHeaderPlaybackAction,
   type PlaylistPlaybackSession,
 } from '../utils/saved-playlist-playback-view-model';
 import {
@@ -44,6 +46,9 @@ type SavedPlaylistSectionProps = {
   issue: SavedPlaylistIssue | null;
   onAddItems?: () => void;
   onCloseDetail?: () => void;
+  onDetailPlaybackChange?: (
+    action: PlaylistDetailHeaderPlaybackAction | null,
+  ) => void;
   onEditPlaylistTags: (playlistId: string) => void;
   onRenameDialogVisibilityChange?: (isVisible: boolean) => void;
   pendingPlaylistId: string | null;
@@ -81,6 +86,7 @@ export const SavedPlaylistSection = ({
   issue,
   onAddItems,
   onCloseDetail,
+  onDetailPlaybackChange,
   onEditPlaylistTags,
   onRenameDialogVisibilityChange,
   pendingPlaylistId,
@@ -147,13 +153,6 @@ export const SavedPlaylistSection = ({
     playbackState,
     selectedPlaylist,
   });
-  const shufflePlaybackAction = getPlaylistPlaybackActionCopy({
-    activeSession: selectedPlaybackSession,
-    isPreparing: isPlaybackPreparing,
-    mode: 'shuffle',
-    playbackState,
-    selectedPlaylist,
-  });
   const selectedPlaylistIssue = getSelectedPlaylistIssue(
     issue,
     selectedPlaylist?.id ?? null,
@@ -191,6 +190,16 @@ export const SavedPlaylistSection = ({
     togglePlaylistPlayback,
   });
 
+  usePlaylistDetailHeaderPlayback({
+    isDetailVisible,
+    isMutating,
+    onDetailPlaybackChange,
+    orderedPlaybackActionDisabled: orderedPlaybackAction.disabled,
+    orderedPlaybackActionLabel: orderedPlaybackAction.label,
+    playOrderedPlaylist: detailActions.playOrderedPlaylist,
+    playlistTitle: detailSummary?.title,
+  });
+
   return (
     <View style={styles.section}>
       {!isDetailVisible && showBrowseHeader ? (
@@ -224,7 +233,6 @@ export const SavedPlaylistSection = ({
       {isDetailVisible ? (
         <SavedPlaylistDetailCard
           addItemsActionLabel={detailAddItemsActionLabel}
-          activeQueueMode={selectedPlaybackSession?.queue.mode ?? null}
           canMutatePlaylists={canMutatePlaylists}
           currentPlaylistEntryId={currentPlaylistEntryId}
           detailSummary={detailSummary}
@@ -261,8 +269,6 @@ export const SavedPlaylistSection = ({
             void handleRenamePlaylist();
           }}
           onRenamePlaylistNameChange={handleRenamePlaylistNameChange}
-          onPlayOrderedPlaylist={detailActions.playOrderedPlaylist}
-          onPlayShuffledPlaylist={detailActions.playShuffledPlaylist}
           onPlayPlaylistEntry={detailActions.playPlaylistEntry}
           onToggleCurrentPlayback={detailActions.toggleCurrentPlayback}
           onReorderDragActiveChange={setIsReorderDragActive}
@@ -270,7 +276,6 @@ export const SavedPlaylistSection = ({
           onUndoRemoveItem={() => {
             void handleUndoPlaylistRemoval();
           }}
-          orderedPlaybackAction={orderedPlaybackAction}
           playbackToggleDisabled={isPlaybackPreparing}
           playbackToggleLabel={playlistPlaybackToggleLabel}
           renameIssue={renameIssue}
@@ -278,7 +283,6 @@ export const SavedPlaylistSection = ({
           removalNotice={removalNotice}
           selectedPlaylist={selectedPlaylist}
           selectedPlaylistIssue={selectedPlaylistIssue}
-          shufflePlaybackAction={shufflePlaybackAction}
         />
       ) : null}
 

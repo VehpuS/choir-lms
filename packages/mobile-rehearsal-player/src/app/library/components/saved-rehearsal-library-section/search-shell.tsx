@@ -8,8 +8,10 @@ import {
 
 import { DriveSessionMenu } from '../../../auth/google-drive/components/drive-session-menu';
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
+import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import { DestinationHeader } from '../../../components/destination-header';
 import { getDestinationHeaderModel } from '../../../components/destination-header-model';
+import type { PlaylistDetailHeaderPlaybackAction } from '../../playlists/utils/saved-playlist-playback-view-model';
 import {
   SAVED_REHEARSAL_LIBRARY_VIEW_OPTIONS,
   type SavedRehearsalLibraryView,
@@ -31,6 +33,7 @@ type SavedRehearsalLibraryHeaderProps = {
   canShowFilterPopover: boolean;
   handleFilterActionPress: () => void;
   handleSearchActionPress: () => void;
+  headerPlaybackAction?: PlaylistDetailHeaderPlaybackAction | null;
   isSessionMenuVisible: boolean;
   onCloseSessionMenu: () => void;
   onToggleSessionMenu: () => void;
@@ -89,6 +92,7 @@ export const SavedRehearsalLibraryHeader = ({
   canShowFilterPopover,
   handleFilterActionPress,
   handleSearchActionPress,
+  headerPlaybackAction,
   isSessionMenuVisible,
   onCloseSessionMenu,
   onToggleSessionMenu,
@@ -103,6 +107,15 @@ export const SavedRehearsalLibraryHeader = ({
       style={style}
       trailingAction={
         <View style={styles.headerActionRow}>
+          {headerPlaybackAction ? (
+            <CompactPlaybackAction
+              accessibilityLabel={headerPlaybackAction.accessibilityLabel}
+              disabled={headerPlaybackAction.disabled}
+              iconName="play"
+              onPress={headerPlaybackAction.onPress}
+              variant="row"
+            />
+          ) : null}
           <LibrarySearchControlsActions
             canShowFilters={canShowFilterPopover}
             hasActiveFilters={
