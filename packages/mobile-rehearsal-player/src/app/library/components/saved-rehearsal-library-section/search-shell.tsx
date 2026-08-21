@@ -105,7 +105,10 @@ export const SavedRehearsalLibraryHeader = ({
         <View style={styles.headerActionRow}>
           <LibrarySearchControlsActions
             canShowFilters={canShowFilterPopover}
-            entityFilter={searchState.entityFilter}
+            hasActiveFilters={
+              searchState.entityFilter !== 'all' ||
+              searchState.selectedTagFilters.length > 0
+            }
             isFilterPopoverVisible={
               searchPanelVisibility.isFilterPopoverVisible
             }
@@ -118,7 +121,6 @@ export const SavedRehearsalLibraryHeader = ({
               onCloseSessionMenu();
               handleSearchActionPress();
             }}
-            selectedTagFilters={searchState.selectedTagFilters}
             tone="hero"
           />
           {authorization ? (

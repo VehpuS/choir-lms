@@ -1,5 +1,6 @@
 import type { RehearsalLibraryTagMatch } from '@org/audio-library-runtime';
 
+import { normalizeSearchQuery } from '../../../search/utils/saved-library-search-view-model';
 import { formatDurationLabel } from '../../../drive/utils/drive-library-view-model';
 import { getSavedTagsListSortDirectionToggleLabel } from '../saved-tags-list/model';
 
@@ -11,6 +12,9 @@ const pluralize = (count: number, noun: string) => {
 
 export const EMPTY_TAG_MATCH_LIST_MESSAGE =
   'Nothing is tagged with this yet.';
+
+export const NO_TAG_MATCH_RESULTS_MESSAGE =
+  'No matches for the selected filters.';
 
 const TAG_MATCH_TYPE_LABELS: Record<RehearsalLibraryTagMatch['kind'], string> =
   {
@@ -130,5 +134,43 @@ export const sortTagMatches = (
     }
 
     return compareMatchesByName(left, right) * directionMultiplier;
+  });
+};
+
+export type TagMatchTypeFilterValue = RehearsalLibraryTagMatch['kind'];
+
+export const TAG_MATCH_TYPE_FILTER_OPTIONS: {
+  label: string;
+  value: TagMatchTypeFilterValue;
+}[] = [
+  { label: 'Tracks', value: 'track' },
+  { label: 'Loops', value: 'loop' },
+  { label: 'Playlists', value: 'playlist' },
+  { label: 'Folders', value: 'folder' },
+];
+
+export const filterTagMatchesByType = (
+  matches: RehearsalLibraryTagMatch[],
+  selectedTypes: TagMatchTypeFilterValue[],
+) => {
+  if (selectedTypes.length === 0) {
+    return matches;
+  }
+
+  return matches.filter((match) => selectedTypes.includes(match.kind));
+};
+
+export const filterTagMatchesByQuery = (
+  matches: RehearsalLibraryTagMatch[],
+  query: string,
+) => {
+  const normalizedQuery = normalizeSearchQuery(query);
+
+  if (!normalizedQuery) {
+    return matches;
+  }
+
+  return matches.filter((match) => {
+    return getTagMatchTitle(match).toLocaleLowerCase().includes(normalizedQuery);
   });
 };

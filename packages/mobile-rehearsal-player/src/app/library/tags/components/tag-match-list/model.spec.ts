@@ -5,6 +5,8 @@ import { createDriveAudioSource } from '@org/audio-library-models';
 import type { RehearsalLibraryTagMatch } from '@org/audio-library-runtime';
 
 import {
+  filterTagMatchesByQuery,
+  filterTagMatchesByType,
   getTagMatchIconName,
   getTagMatchKey,
   getTagMatchMetadataLabel,
@@ -142,6 +144,53 @@ describe('tag match list model', () => {
       sortTagMatches(matches, { field: 'name', direction: 'asc' });
 
       assert.deepEqual(matches, originalOrder);
+    });
+  });
+
+  describe('filterTagMatchesByType', () => {
+    const matches = [PLAYLIST_MATCH, TRACK_MATCH, LOOP_MATCH, FOLDER_MATCH];
+
+    it('returns every match when no type is selected', () => {
+      assert.deepEqual(filterTagMatchesByType(matches, []), matches);
+    });
+
+    it('keeps only matches of the selected types', () => {
+      assert.deepEqual(filterTagMatchesByType(matches, ['track', 'folder']), [
+        TRACK_MATCH,
+        FOLDER_MATCH,
+      ]);
+    });
+
+    it('returns an empty array when no match has a selected type', () => {
+      const trackOnlyMatches = [TRACK_MATCH];
+
+      assert.deepEqual(filterTagMatchesByType(trackOnlyMatches, ['folder']), []);
+    });
+  });
+
+  describe('filterTagMatchesByQuery', () => {
+    const matches = [PLAYLIST_MATCH, TRACK_MATCH, LOOP_MATCH, FOLDER_MATCH];
+
+    it('returns every match for an empty or whitespace-only query', () => {
+      assert.deepEqual(filterTagMatchesByQuery(matches, ''), matches);
+      assert.deepEqual(filterTagMatchesByQuery(matches, '   '), matches);
+    });
+
+    it('matches by name case-insensitively', () => {
+      assert.deepEqual(filterTagMatchesByQuery(matches, 'ZEBRA'), [
+        TRACK_MATCH,
+      ]);
+    });
+
+    it('trims the query before matching', () => {
+      assert.deepEqual(filterTagMatchesByQuery(matches, '  alto  '), [
+        LOOP_MATCH,
+        FOLDER_MATCH,
+      ]);
+    });
+
+    it('returns an empty array when nothing matches', () => {
+      assert.deepEqual(filterTagMatchesByQuery(matches, 'nonexistent'), []);
     });
   });
 });

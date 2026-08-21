@@ -12,10 +12,16 @@ import { DestinationHeader } from '../../../../components/destination-header';
 import { getDestinationHeaderModel } from '../../../../components/destination-header-model';
 import { appTheme } from '../../../../utils/theme';
 import { ExplorerNavigationBar } from '../../../components/explorer';
+import { ContextualSearchPanel } from '../../../search/components/contextual-search-panel';
+import { LibrarySearchControlsActions } from '../../../search/components/library-search-controls-actions';
+import { TagMatchControlsPanel } from '../tag-match-list/controls-panel';
 import { TagMatchList } from '../tag-match-list';
 import {
   DEFAULT_TAG_MATCH_LIST_SORT_STATE,
+  filterTagMatchesByQuery,
+  filterTagMatchesByType,
   type TagMatchListSortState,
+  type TagMatchTypeFilterValue,
 } from '../tag-match-list/model';
 
 const TAG_DETAIL_EYEBROW = 'Tag';
@@ -28,6 +34,14 @@ type TagDetailScreenProps = {
   tag: string;
 };
 
+const getTagSearchHelperCopy = (tag: string) => {
+  return `Search tracks, loops, playlists, and folders tagged "${tag}".`;
+};
+
+const getTagSearchPlaceholderCopy = (tag: string) => {
+  return `Search "${tag}" matches`;
+};
+
 export const TagDetailScreen = ({
   authorization,
   entityCollections,
@@ -36,13 +50,26 @@ export const TagDetailScreen = ({
   tag,
 }: TagDetailScreenProps) => {
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
+  const [isFilterPopoverVisible, setIsFilterPopoverVisible] = useState(false);
+  const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTypeFilters, setSelectedTypeFilters] = useState<
+    TagMatchTypeFilterValue[]
+  >([]);
   const [sortState, setSortState] = useState<TagMatchListSortState>(
     DEFAULT_TAG_MATCH_LIST_SORT_STATE,
   );
   const matches = useMemo(() => {
     return resolveRehearsalLibraryTagMatches(tag, { entityCollections, folders });
   }, [tag, entityCollections, folders]);
+  const visibleMatches = useMemo(() => {
+    return filterTagMatchesByQuery(
+      filterTagMatchesByType(matches, selectedTypeFilters),
+      searchQuery,
+    );
+  }, [matches, selectedTypeFilters, searchQuery]);
   const headerModel = getDestinationHeaderModel('library');
+  const hasActiveFilters = selectedTypeFilters.length > 0;
 
   return (
     <View style={styles.surface}>
@@ -59,26 +86,47 @@ export const TagDetailScreen = ({
         style={styles.destinationHeader}
         title={headerModel.title}
         trailingAction={
-          <DriveSessionMenu
-            authState={authorization.authState}
-            canClearAuthorization={authorization.canClearAuthorization}
-            canStartAuthorization={authorization.canStartAuthorization}
-            isBusy={authorization.isBusy}
-            isVisible={isSessionMenuVisible}
-            onClearAuthorization={() => {
-              setIsSessionMenuVisible(false);
-              void authorization.clearAuthorization();
-            }}
-            onStartAuthorization={() => {
-              setIsSessionMenuVisible(false);
-              void authorization.startAuthorization();
-            }}
-            onToggleVisibility={() => {
-              setIsSessionMenuVisible((currentValue) => !currentValue);
-            }}
-            requestReady={authorization.requestReady}
-            statusCopy={authorization.statusCopy}
-          />
+          <View style={styles.headerActionRow}>
+            <LibrarySearchControlsActions
+              canShowFilters
+              closeSearchAccessibilityLabel="Close search"
+              hasActiveFilters={hasActiveFilters}
+              hideFiltersAccessibilityLabel="Hide sort and filter controls"
+              isFilterPopoverVisible={isFilterPopoverVisible}
+              isSearchBarVisible={isSearchBarVisible}
+              onFilterActionPress={() => {
+                setIsSessionMenuVisible(false);
+                setIsFilterPopoverVisible((currentValue) => !currentValue);
+              }}
+              onSearchActionPress={() => {
+                setIsSessionMenuVisible(false);
+                setIsSearchBarVisible((currentValue) => !currentValue);
+              }}
+              searchAccessibilityLabel="Search this tag's matches"
+              showFiltersAccessibilityLabel="Show sort and filter controls"
+              tone="hero"
+            />
+            <DriveSessionMenu
+              authState={authorization.authState}
+              canClearAuthorization={authorization.canClearAuthorization}
+              canStartAuthorization={authorization.canStartAuthorization}
+              isBusy={authorization.isBusy}
+              isVisible={isSessionMenuVisible}
+              onClearAuthorization={() => {
+                setIsSessionMenuVisible(false);
+                void authorization.clearAuthorization();
+              }}
+              onStartAuthorization={() => {
+                setIsSessionMenuVisible(false);
+                void authorization.startAuthorization();
+              }}
+              onToggleVisibility={() => {
+                setIsSessionMenuVisible((currentValue) => !currentValue);
+              }}
+              requestReady={authorization.requestReady}
+              statusCopy={authorization.statusCopy}
+            />
+          </View>
         }
       />
       <ExplorerNavigationBar
@@ -87,10 +135,46 @@ export const TagDetailScreen = ({
         onGoBack={onClose}
         title={tag}
       />
+      {isSearchBarVisible ? (
+        <ContextualSearchPanel
+          canShowRecentSearchTerms={false}
+          clearActionLabel="Clear search"
+          helperCopy={getTagSearchHelperCopy(tag)}
+          isSearchBarVisible
+          onClearSearch={() => {
+            setSearchQuery('');
+          }}
+          onSearch={() => undefined}
+          onSearchQueryChange={setSearchQuery}
+          onSelectRecentSearchTerm={() => undefined}
+          onToggleSearchBar={() => {
+            setIsSearchBarVisible(false);
+          }}
+          placeholderCopy={getTagSearchPlaceholderCopy(tag)}
+          recentSearchTerms={[]}
+          searchAccessibilityLabel="Search this tag's matches"
+          searchQuery={searchQuery}
+          showInlineToggleButton={false}
+        />
+      ) : null}
+      {isFilterPopoverVisible ? (
+        <TagMatchControlsPanel
+          onChangeSortState={setSortState}
+          onToggleTypeFilter={(value) => {
+            setSelectedTypeFilters((currentValue) => {
+              return currentValue.includes(value)
+                ? currentValue.filter((filterValue) => filterValue !== value)
+                : [...currentValue, value];
+            });
+          }}
+          selectedTypeFilters={selectedTypeFilters}
+          sortState={sortState}
+        />
+      ) : null}
       <View style={styles.body}>
         <TagMatchList
-          matches={matches}
-          onChangeSortState={setSortState}
+          hasUnfilteredMatches={matches.length > 0}
+          matches={visibleMatches}
           sortState={sortState}
         />
       </View>
@@ -110,6 +194,11 @@ const styles = StyleSheet.create({
   },
   destinationHeader: {
     marginTop: 12,
+  },
+  headerActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   body: {
     flex: 1,

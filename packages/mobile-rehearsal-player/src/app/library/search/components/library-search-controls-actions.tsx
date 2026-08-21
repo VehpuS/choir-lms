@@ -8,12 +8,15 @@ const SINGLE_ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE;
 
 type LibrarySearchControlsActionsProps = {
   canShowFilters: boolean;
-  entityFilter: 'all' | 'tracks' | 'loops' | 'playlists';
+  closeSearchAccessibilityLabel?: string;
+  hasActiveFilters: boolean;
+  hideFiltersAccessibilityLabel?: string;
   isFilterPopoverVisible: boolean;
   isSearchBarVisible: boolean;
   onFilterActionPress: () => void;
   onSearchActionPress: () => void;
-  selectedTagFilters: string[];
+  searchAccessibilityLabel?: string;
+  showFiltersAccessibilityLabel?: string;
   tone?: 'hero' | 'surface';
 };
 
@@ -69,17 +72,17 @@ const LibrarySearchActionButton = ({
 
 export const LibrarySearchControlsActions = ({
   canShowFilters,
-  entityFilter,
+  closeSearchAccessibilityLabel = 'Close search',
+  hasActiveFilters,
+  hideFiltersAccessibilityLabel = 'Hide library filters',
   isFilterPopoverVisible,
   isSearchBarVisible,
   onFilterActionPress,
   onSearchActionPress,
-  selectedTagFilters,
+  searchAccessibilityLabel = 'Search saved library',
+  showFiltersAccessibilityLabel = 'Show library filters',
   tone = 'surface',
 }: LibrarySearchControlsActionsProps) => {
-  const hasActiveFilters =
-    entityFilter !== 'all' || selectedTagFilters.length > 0;
-
   return (
     <View
       style={[
@@ -91,8 +94,8 @@ export const LibrarySearchControlsActions = ({
         <LibrarySearchActionButton
           accessibilityLabel={
             isFilterPopoverVisible
-              ? 'Hide library filters'
-              : 'Show library filters'
+              ? hideFiltersAccessibilityLabel
+              : showFiltersAccessibilityLabel
           }
           iconName="tune-variant"
           isFilled={isFilterPopoverVisible || hasActiveFilters}
@@ -102,7 +105,9 @@ export const LibrarySearchControlsActions = ({
       ) : null}
       <LibrarySearchActionButton
         accessibilityLabel={
-          isSearchBarVisible ? 'Close search' : 'Search saved library'
+          isSearchBarVisible
+            ? closeSearchAccessibilityLabel
+            : searchAccessibilityLabel
         }
         iconName={isSearchBarVisible ? 'close' : 'magnify'}
         isFilled={true}
