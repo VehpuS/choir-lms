@@ -6,7 +6,6 @@ import { getSavedTrackPlaybackActionCopy } from '../library/playback/utils/saved
 import { canShowQueuePlaylistActions } from '../library/playlists/utils/saved-playlist-playback-view-model';
 import type { SavedRehearsalLibraryView } from '../library/saved-rehearsal-library/detail-mode';
 import { useRehearsalLibraryController } from '../library/saved-rehearsal-library/use-rehearsal-library-controller';
-import { AppRouterTagDetailScreen } from '../library/tags/components/tag-detail-screen/app-router-tag-detail-screen';
 import { AddScreen } from '../screens/add';
 import { LibraryScreen } from '../screens/library';
 import { AppRouterRecentsScreen } from '../screens/recents/app-router-recents-screen';
@@ -36,16 +35,13 @@ export const AppRouter = () => {
     useState<ShellDestinationKey>('library');
   const [requestedDestinationRequestId, setRequestedDestinationRequestId] =
     useState(0);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [requestedLibraryView, setRequestedLibraryView] =
     useState<SavedRehearsalLibraryView>('files');
   const [requestedLibraryViewRequestId, setRequestedLibraryViewRequestId] =
     useState(0);
-  const [requestedPlaylistId, setRequestedPlaylistId] = useState<
-    string | null
-  >(null);
-  const [requestedPlaylistIdRequestId, setRequestedPlaylistIdRequestId] =
-    useState(0);
+  const [requestedTag, setRequestedTag] = useState<string | null>(null);
+  const [requestedTagRequestId, setRequestedTagRequestId] = useState(0);
+  const [closeTagDetailRequestId, setCloseTagDetailRequestId] = useState(0);
   const [isRecentRehearsalHistoryReady, setIsRecentRehearsalHistoryReady] =
     useState(false);
   const libraryController = useRehearsalLibraryController({
@@ -158,34 +154,18 @@ export const AppRouter = () => {
     });
   };
 
-  const requestPlaylistDetail = (playlistId: string) => {
-    setRequestedPlaylistId(playlistId);
-    setRequestedPlaylistIdRequestId((currentId) => {
+  const requestTagDetail = (tag: string) => {
+    setRequestedTag(tag);
+    setRequestedTagRequestId((currentId) => {
       return currentId + 1;
     });
   };
 
-  const tagDetailScreen = selectedTag ? (
-    <AppRouterTagDetailScreen
-      authorization={authorization}
-      entityCollections={{
-        loops: libraryController.savedLibrary.savedLoops,
-        playlists: libraryController.playlists.savedPlaylists,
-        sources: libraryController.savedLibrary.savedLibrarySources,
-      }}
-      fileLinks={libraryController.savedLibrary.files.fileLinks}
-      folders={libraryController.savedLibrary.files.folders}
-      onOpenLibraryFolder={libraryController.savedLibrary.files.openFolder}
-      onPlayItems={(items) => {
-        void playback.toggleItemQueuePlayback(items);
-      }}
-      onSelectTag={setSelectedTag}
-      requestDestination={requestDestination}
-      requestLibraryView={requestLibraryView}
-      requestPlaylistDetail={requestPlaylistDetail}
-      tag={selectedTag}
-    />
-  ) : null;
+  const closeTagDetail = () => {
+    setCloseTagDetailRequestId((currentId) => {
+      return currentId + 1;
+    });
+  };
 
   return (
     <MobileShell
@@ -215,7 +195,8 @@ export const AppRouter = () => {
             requestDestination('library');
           }}
           onSelectTag={(tag) => {
-            setSelectedTag(tag);
+            requestTagDetail(tag);
+            requestDestination('library');
           }}
           onViewAllTags={() => {
             requestDestination('library');
@@ -237,24 +218,19 @@ export const AppRouter = () => {
       libraryScreen={
         <LibraryScreen
           authorization={authorization}
+          closeTagDetailRequestId={closeTagDetailRequestId}
           libraryController={libraryController}
           onRequestAddDestination={() => {
             requestDestination('add');
           }}
-          onSelectTag={(tag) => {
-            setSelectedTag(tag);
-          }}
           playback={playback}
-          requestedPlaylistId={requestedPlaylistId}
-          requestedPlaylistIdRequestId={requestedPlaylistIdRequestId}
+          requestedTag={requestedTag}
+          requestedTagRequestId={requestedTagRequestId}
           requestedView={requestedLibraryView}
           requestedViewRequestId={requestedLibraryViewRequestId}
         />
       }
-      tagDetailScreen={tagDetailScreen}
-      onCloseTagDetailScreen={() => {
-        setSelectedTag(null);
-      }}
+      onCloseTagDetail={closeTagDetail}
       onSeekBackward={() => {
         void playback.seekActivePlaybackBySeconds(-PLAYBACK_SEEK_STEP_SECONDS);
       }}

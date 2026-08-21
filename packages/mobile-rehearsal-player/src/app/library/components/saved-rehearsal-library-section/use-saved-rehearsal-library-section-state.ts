@@ -10,6 +10,7 @@ import { useSavedRehearsalLibraryLoopState } from './use-saved-rehearsal-library
 import { useSavedRehearsalLibraryPlaylistState } from './use-saved-rehearsal-library-playlist-state';
 import { useSavedRehearsalLibrarySearch } from './use-saved-rehearsal-library-search';
 import { useSavedRehearsalLibrarySearchPanel } from './use-saved-rehearsal-library-search-panel';
+import { useSavedRehearsalLibraryTagDetailState } from './use-saved-rehearsal-library-tag-detail-state';
 import { useSavedRehearsalLibraryTagEditor } from './use-saved-rehearsal-library-tag-editor';
 import { useSavedRehearsalLibraryTrackPlaylistMenu } from './use-saved-rehearsal-library-track-playlist-menu';
 import { resolveIsViewSwitcherLocked } from './view-switcher-lock-model';
@@ -109,6 +110,7 @@ export const useSavedRehearsalLibrarySectionState = ({
     setSelectedPlaylistId: playlistState.setSelectedPlaylistId,
     updatePlaylist,
   });
+  const tagDetailState = useSavedRehearsalLibraryTagDetailState();
   const tagEditor = useSavedRehearsalLibraryTagEditor({
     saveFolderTags: libraryFiles.saveFolderTags,
     saveLoop,
@@ -141,6 +143,7 @@ export const useSavedRehearsalLibrarySectionState = ({
   });
   const detailMode = resolveSavedRehearsalLibraryDetailMode({
     isPlaylistDetailVisible: playlistState.isPlaylistDetailVisible,
+    isTagDetailVisible: tagDetailState.isTagDetailVisible,
     selectedLoopViewSourceId: loopState.selectedLoopViewSourceId,
   });
   const isViewSwitcherLocked = resolveIsViewSwitcherLocked({
@@ -169,6 +172,7 @@ export const useSavedRehearsalLibrarySectionState = ({
     setIsFilesPlaylistRenameDialogVisible,
     setIsPlaylistDetailRenameDialogVisible,
     setSelectedView,
+    tagDetailState,
     tagEditor,
     trackPlaylistMenu,
   };

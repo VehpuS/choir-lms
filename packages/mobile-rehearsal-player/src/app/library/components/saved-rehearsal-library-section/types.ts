@@ -25,6 +25,7 @@ import type {
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import type { SavedRehearsalLibraryIssue } from '../../saved-rehearsal-library/use-saved-rehearsal-library';
+import type { TagDetailHeaderSearchActions } from '../../tags/hooks/use-tag-detail-header-search-actions';
 import type { LibraryFilesSuccessFeedback } from './library-files-success-feedback';
 import type { useSavedRehearsalLibrarySearch } from './use-saved-rehearsal-library-search';
 import type { useSavedRehearsalLibrarySearchPanel } from './use-saved-rehearsal-library-search-panel';
@@ -38,6 +39,7 @@ export type SavedRehearsalLibrarySectionProps = {
   canMutateLibrary: boolean;
   canMutateLoops: boolean;
   canMutatePlaylists: boolean;
+  closeTagDetailRequestId?: number;
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
   deletePlaylist: (playlist: Playlist) => Promise<boolean>;
   getCurrentScrollOffsetY: () => number;
@@ -58,14 +60,17 @@ export type SavedRehearsalLibrarySectionProps = {
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   removeLoop: (loop: NamedLoop) => void;
   removeSource: (source: DriveLibrarySource) => void;
-  requestedPlaylistId?: string | null;
-  requestedPlaylistIdRequestId?: number;
+  requestedTag?: string | null;
+  requestedTagRequestId?: number;
   libraryFiles: UseLibraryFilesResult;
   libraryFilesSuccessFeedback: LibraryFilesSuccessFeedback | null;
   onDismissLibraryFilesSuccessFeedback: () => void;
   onBrowseCreateDockChange?: (mode: LibraryBrowseCreateDockMode) => void;
   onDetailPlaybackChange?: (
     action: PlaylistDetailHeaderPlaybackAction | null,
+  ) => void;
+  onDetailSearchActionsChange?: (
+    actions: TagDetailHeaderSearchActions | null,
   ) => void;
   onOpenLibraryFilesSuccessFeedbackFolder: (folderId: string) => void;
   onPlaylistSelectionHandlerChange?: (
@@ -74,7 +79,6 @@ export type SavedRehearsalLibrarySectionProps = {
   onShowLibraryFilesSuccessFeedback: (
     feedback: LibraryFilesSuccessFeedback,
   ) => void;
-  onSelectTag: (tag: string) => void;
   savedLibraryIssue: SavedRehearsalLibraryIssue | null;
   savedLibrarySources: DriveLibrarySource[];
   savedLibraryStatusCopy: DriveLibraryStatusCopy;
@@ -98,6 +102,7 @@ export type SavedRehearsalLibrarySectionProps = {
     sources: DriveLibrarySource[];
   }) => void;
   toggleActivePlayback: () => Promise<void>;
+  toggleItemQueuePlayback: (items: PlayableItem[]) => Promise<void>;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   togglePlaylistPlayback: (options: {
     loops: NamedLoop[];

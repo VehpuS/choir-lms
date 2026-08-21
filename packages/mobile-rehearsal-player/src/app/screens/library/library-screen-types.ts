@@ -16,6 +16,7 @@ type SavedTrackPlaybackController = Pick<
   | 'seekActivePlaybackToPosition'
   | 'syncActivePlaylistContext'
   | 'toggleActivePlayback'
+  | 'toggleItemQueuePlayback'
   | 'togglePlayableItemPlayback'
   | 'togglePlaylistPlayback'
   | 'toggleSourcePlayback'
@@ -23,12 +24,12 @@ type SavedTrackPlaybackController = Pick<
 
 export type LibraryScreenProps = {
   authorization: DriveSessionMenuController;
+  closeTagDetailRequestId?: number;
   libraryController: ReturnType<typeof useRehearsalLibraryController>;
   onRequestAddDestination: () => void;
-  onSelectTag: (tag: string) => void;
   playback: SavedTrackPlaybackController;
-  requestedPlaylistId?: string | null;
-  requestedPlaylistIdRequestId?: number;
+  requestedTag?: string | null;
+  requestedTagRequestId?: number;
   requestedView?: SavedRehearsalLibraryView;
   requestedViewRequestId?: number;
 };

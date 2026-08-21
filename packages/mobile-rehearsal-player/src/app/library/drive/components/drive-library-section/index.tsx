@@ -31,6 +31,7 @@ type SavedTrackPlaybackController = Pick<
   | 'syncActivePlaylistContext'
   | 'queuePlayableItemNext'
   | 'toggleActivePlayback'
+  | 'toggleItemQueuePlayback'
   | 'togglePlayableItemPlayback'
   | 'togglePlaylistPlayback'
   | 'toggleSourcePlayback'
@@ -55,6 +56,7 @@ export const DriveLibrarySection = ({
   queuePlayableItemNext,
   queuePlayableItemUpNext,
   toggleActivePlayback,
+  toggleItemQueuePlayback,
   togglePlayableItemPlayback,
   togglePlaylistPlayback,
   toggleSourcePlayback,
@@ -255,6 +257,7 @@ export const DriveLibrarySection = ({
             queuePlayableItemUpNext,
             syncActivePlaylistContext,
             toggleActivePlayback,
+            toggleItemQueuePlayback,
             togglePlayableItemPlayback,
             togglePlaylistPlayback,
             toggleSourcePlayback,

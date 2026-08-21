@@ -1,4 +1,10 @@
-import { type NamedLoop, type Playlist } from '@org/audio-library-models';
+import {
+  type NamedLoop,
+  type PlayableItem,
+  type Playlist,
+  type RehearsalLibraryFileLinkNode,
+  type RehearsalLibraryFolderNode,
+} from '@org/audio-library-models';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import { SavedLoopSection } from '../../loops/components/saved-loop-section';
@@ -13,6 +19,9 @@ import type {
   PlaylistPlaybackSession,
 } from '../../playlists/utils/saved-playlist-playback-view-model';
 import type { SavedPlaylistIssue } from '../../playlists/utils/saved-playlist-view-model';
+import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
+import { TagDetailSection } from '../../tags/components/tag-detail-section';
+import type { TagDetailHeaderSearchActions } from '../../tags/hooks/use-tag-detail-header-search-actions';
 import { getPlaylistDetailEmptyStateCopy } from './playlist-detail-origin';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 import { useSavedRehearsalLibraryLoopState } from './use-saved-rehearsal-library-loop-state';
@@ -215,6 +224,77 @@ export const SavedRehearsalLibraryPlaylistSectionContent = ({
       toggleActivePlayback={toggleActivePlayback}
       togglePlaylistPlayback={togglePlaylistPlayback}
       updatePlaylist={updatePlaylist}
+    />
+  );
+};
+
+type SavedRehearsalLibraryTagDetailSectionContentProps = {
+  closeTagDetail: () => void;
+  fileLinks: RehearsalLibraryFileLinkNode[];
+  folders: RehearsalLibraryFolderNode[];
+  onDetailPlaybackChange?: (
+    action: PlaylistDetailHeaderPlaybackAction | null,
+  ) => void;
+  onDetailSearchActionsChange?: (
+    actions: TagDetailHeaderSearchActions | null,
+  ) => void;
+  openFolder: (folderId: string) => void;
+  openPlaylistDetail: (playlistId: string) => void;
+  savedLibrarySources: DriveLibrarySource[];
+  savedLoops: NamedLoop[];
+  savedPlaylists: Playlist[];
+  setSelectedView: (view: SavedRehearsalLibraryView) => void;
+  tag: string | null;
+  toggleItemQueuePlayback: (items: PlayableItem[]) => Promise<void>;
+};
+
+export const SavedRehearsalLibraryTagDetailSectionContent = ({
+  closeTagDetail,
+  fileLinks,
+  folders,
+  onDetailPlaybackChange,
+  onDetailSearchActionsChange,
+  openFolder,
+  openPlaylistDetail,
+  savedLibrarySources,
+  savedLoops,
+  savedPlaylists,
+  setSelectedView,
+  tag,
+  toggleItemQueuePlayback,
+}: SavedRehearsalLibraryTagDetailSectionContentProps) => {
+  if (!tag) {
+    return null;
+  }
+
+  return (
+    <TagDetailSection
+      // Remount per tag so local search/filter/sort state can't leak
+      // across a tag switch (the component instance is otherwise reused).
+      key={tag}
+      entityCollections={{
+        loops: savedLoops,
+        playlists: savedPlaylists,
+        sources: savedLibrarySources,
+      }}
+      fileLinks={fileLinks}
+      folders={folders}
+      onClose={closeTagDetail}
+      onDetailPlaybackChange={onDetailPlaybackChange}
+      onDetailSearchActionsChange={onDetailSearchActionsChange}
+      onOpenFolder={(folderId) => {
+        closeTagDetail();
+        openFolder(folderId);
+        setSelectedView('files');
+      }}
+      onOpenPlaylist={(playlistId) => {
+        closeTagDetail();
+        openPlaylistDetail(playlistId);
+      }}
+      onPlayMatches={(items) => {
+        void toggleItemQueuePlayback(items);
+      }}
+      tag={tag}
     />
   );
 };

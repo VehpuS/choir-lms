@@ -14,7 +14,7 @@ type LibraryFilesLoopSaveController = Pick<
 >;
 
 type SaveLoopWithFilesLocationOptions = {
-  detailMode: 'browse' | 'playlist-detail' | 'track-loop-detail';
+  detailMode: 'browse' | 'playlist-detail' | 'tag-detail' | 'track-loop-detail';
   isEditingLoop: boolean;
   isSearchPanelVisible: boolean;
   libraryFiles: LibraryFilesLoopSaveController;

@@ -22,6 +22,7 @@ type PlaybackController = Pick<
   | 'queuePlayableItemUpNext'
   | 'syncActivePlaylistContext'
   | 'toggleActivePlayback'
+  | 'toggleItemQueuePlayback'
   | 'togglePlayableItemPlayback'
   | 'togglePlaylistPlayback'
   | 'toggleSourcePlayback'
@@ -86,7 +87,6 @@ export const DriveLibrarySavedLibraryPanel = ({
       openLoopBuilderForSource={openLoopBuilderForSource}
       onDismissLibraryFilesSuccessFeedback={() => undefined}
       onOpenLibraryFilesSuccessFeedbackFolder={() => undefined}
-      onSelectTag={() => undefined}
       onShowLibraryFilesSuccessFeedback={() => undefined}
       pendingLoopBuilderSourceId={preparedLoopBuilderTrack.pendingSourceId}
       pendingLoopId={savedLoopsState.pendingLoopId}
@@ -114,6 +114,7 @@ export const DriveLibrarySavedLibraryPanel = ({
       setSelectedLoopSourceId={savedLibraryActions.setSelectedLoopSourceId}
       syncActivePlaylistContext={playback.syncActivePlaylistContext}
       toggleActivePlayback={playback.toggleActivePlayback}
+      toggleItemQueuePlayback={playback.toggleItemQueuePlayback}
       togglePlayableItemPlayback={playback.togglePlayableItemPlayback}
       togglePlaylistPlayback={playback.togglePlaylistPlayback}
       toggleSourcePlayback={playback.toggleSourcePlayback}

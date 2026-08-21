@@ -39,8 +39,7 @@ export type MobileShellProps = {
   isSavingQueueAsPlaylist: boolean;
   isPlaybackToggleDisabled: boolean;
   libraryScreen: ReactNode;
-  tagDetailScreen: ReactNode;
-  onCloseTagDetailScreen: () => void;
+  onCloseTagDetail: () => void;
   onMoveQueueItem: (fromIndex: number, toIndex: number) => void;
   onMoveQueueItemToEnd: (index: number) => void;
   onMoveQueueItemToStart: (index: number) => void;
@@ -92,8 +91,7 @@ export const MobileShell = ({
   isSavingQueueAsPlaylist,
   isPlaybackToggleDisabled,
   libraryScreen,
-  tagDetailScreen,
-  onCloseTagDetailScreen,
+  onCloseTagDetail,
   onMoveQueueItem,
   onMoveQueueItemToEnd,
   onMoveQueueItemToStart,
@@ -174,7 +172,7 @@ export const MobileShell = ({
               key={destination.key}
               style={[
                 styles.destinationPanel,
-                activeDestination === destination.key && !tagDetailScreen
+                activeDestination === destination.key
                   ? styles.destinationPanelActive
                   : styles.destinationPanelHidden,
               ]}
@@ -183,11 +181,6 @@ export const MobileShell = ({
             </View>
           );
         })}
-        {tagDetailScreen ? (
-          <View style={[styles.destinationPanel, styles.destinationPanelActive]}>
-            {tagDetailScreen}
-          </View>
-        ) : null}
       </View>
 
       <MobileShellMiniPlayerDock
@@ -199,10 +192,7 @@ export const MobileShell = ({
           setActivePlaybackSurface('now-playing');
         }}
         onSelectDestination={(destination) => {
-          if (tagDetailScreen) {
-            onCloseTagDetailScreen();
-          }
-
+          onCloseTagDetail();
           setActiveDestination(destination);
         }}
         onTogglePlayback={onTogglePlayback}

@@ -68,7 +68,6 @@ export type SavedRehearsalLibraryBrowseContentProps = Pick<
   | 'onDismissLibraryFilesSuccessFeedback'
   | 'isPlaybackPreparing'
   | 'onOpenLibraryFilesSuccessFeedbackFolder'
-  | 'onSelectTag'
   | 'onShowLibraryFilesSuccessFeedback'
   | 'openLoopBuilderForSource'
   | 'pendingLoopBuilderSourceId'
@@ -107,6 +106,7 @@ export type SavedRehearsalLibraryBrowseContentProps = Pick<
   onOpenFolderTagEditor: (folder: RehearsalLibraryFolderNode) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   onPlaylistRenameVisibilityChange?: (isVisible: boolean) => void;
+  onSelectTag: (tag: string) => void;
   onOpenLoopTagEditor: (
     loop: SavedRehearsalLibrarySectionProps['savedLoops'][number],
   ) => void;

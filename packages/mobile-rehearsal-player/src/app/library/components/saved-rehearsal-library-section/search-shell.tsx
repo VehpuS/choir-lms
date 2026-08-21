@@ -23,7 +23,7 @@ import {
 import { InteractionChip } from '../interaction-chip';
 import { useSavedRehearsalLibrarySearch } from './use-saved-rehearsal-library-search';
 
-type SearchPanelVisibility = {
+export type SearchPanelVisibility = {
   isFilterPopoverVisible: boolean;
   isSearchBarVisible: boolean;
 };
@@ -31,14 +31,19 @@ type SearchPanelVisibility = {
 type SavedRehearsalLibraryHeaderProps = {
   authorization?: DriveSessionMenuController;
   canShowFilterPopover: boolean;
+  canShowSearch: boolean;
+  closeSearchAccessibilityLabel?: string;
   handleFilterActionPress: () => void;
   handleSearchActionPress: () => void;
+  hasActiveFilters: boolean;
   headerPlaybackAction?: PlaylistDetailHeaderPlaybackAction | null;
+  hideFiltersAccessibilityLabel?: string;
   isSessionMenuVisible: boolean;
   onCloseSessionMenu: () => void;
   onToggleSessionMenu: () => void;
+  searchAccessibilityLabel?: string;
   searchPanelVisibility: SearchPanelVisibility;
-  searchState: ReturnType<typeof useSavedRehearsalLibrarySearch>;
+  showFiltersAccessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -53,7 +58,7 @@ type SavedRehearsalLibrarySearchShellProps = {
   selectedView: SavedRehearsalLibraryView;
 };
 
-const SavedRehearsalLibraryViewSwitcher = ({
+export const SavedRehearsalLibraryViewSwitcher = ({
   isViewSwitcherLocked,
   onSelectView,
   selectedView,
@@ -90,14 +95,19 @@ const SavedRehearsalLibraryViewSwitcher = ({
 export const SavedRehearsalLibraryHeader = ({
   authorization,
   canShowFilterPopover,
+  canShowSearch,
+  closeSearchAccessibilityLabel,
   handleFilterActionPress,
   handleSearchActionPress,
+  hasActiveFilters,
   headerPlaybackAction,
+  hideFiltersAccessibilityLabel,
   isSessionMenuVisible,
   onCloseSessionMenu,
   onToggleSessionMenu,
+  searchAccessibilityLabel,
   searchPanelVisibility,
-  searchState,
+  showFiltersAccessibilityLabel,
   style,
 }: SavedRehearsalLibraryHeaderProps) => {
   const headerModel = getDestinationHeaderModel('library');
@@ -118,11 +128,10 @@ export const SavedRehearsalLibraryHeader = ({
           ) : null}
           <LibrarySearchControlsActions
             canShowFilters={canShowFilterPopover}
-            canShowSearch={!headerPlaybackAction}
-            hasActiveFilters={
-              searchState.entityFilter !== 'all' ||
-              searchState.selectedTagFilters.length > 0
-            }
+            canShowSearch={canShowSearch}
+            closeSearchAccessibilityLabel={closeSearchAccessibilityLabel}
+            hasActiveFilters={hasActiveFilters}
+            hideFiltersAccessibilityLabel={hideFiltersAccessibilityLabel}
             isFilterPopoverVisible={
               searchPanelVisibility.isFilterPopoverVisible
             }
@@ -135,6 +144,8 @@ export const SavedRehearsalLibraryHeader = ({
               onCloseSessionMenu();
               handleSearchActionPress();
             }}
+            searchAccessibilityLabel={searchAccessibilityLabel}
+            showFiltersAccessibilityLabel={showFiltersAccessibilityLabel}
             tone="hero"
           />
           {authorization ? (

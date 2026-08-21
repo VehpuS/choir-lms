@@ -1,30 +1,32 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { SavedRehearsalLibrarySection } from '../../library/components/saved-rehearsal-library-section';
 import type { LibraryFilesSuccessFeedback } from '../../library/components/saved-rehearsal-library-section/library-files-success-feedback';
-import { SavedRehearsalLibraryHeader } from '../../library/components/saved-rehearsal-library-section/search-shell';
 import type { LibraryBrowseCreateDockMode } from '../../library/components/saved-rehearsal-library-section/types';
 import { useSavedRehearsalLibrarySearch } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search';
 import { useSavedRehearsalLibrarySearchPanel } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search-panel';
 import { LoopPreviewPlaybackContext } from '../../library/loops/components/loop-preview-playback-context';
 import type { PlaylistDetailHeaderPlaybackAction } from '../../library/playlists/utils/saved-playlist-playback-view-model';
 import type { SavedRehearsalLibraryView } from '../../library/saved-rehearsal-library/detail-mode';
+import type { TagDetailHeaderSearchActions } from '../../library/tags/hooks/use-tag-detail-header-search-actions';
 import { appTheme } from '../../utils/theme';
 import { LibraryFilesCreateControls } from './library-files-create-controls';
+import { resolveLibraryHeaderSearchProps } from './library-header-search-props';
 import { LibraryPlaylistCreateControls } from './library-playlist-create-controls';
+import { LibraryScreenHeader } from './library-screen-header';
 import type { LibraryScreenProps } from './library-screen-types';
 import { useLibraryFilesSessionRestoration } from './use-library-files-session-restoration';
 import { useLibraryScreenScrollCoordination } from './use-library-screen-scroll-coordination';
 
 export const LibraryScreen = ({
   authorization,
+  closeTagDetailRequestId,
   libraryController,
   onRequestAddDestination,
-  onSelectTag,
   playback,
-  requestedPlaylistId,
-  requestedPlaylistIdRequestId,
+  requestedTag,
+  requestedTagRequestId,
   requestedView,
   requestedViewRequestId,
 }: LibraryScreenProps) => {
@@ -45,6 +47,8 @@ export const LibraryScreen = ({
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
   const [playlistDetailPlayback, setPlaylistDetailPlayback] =
     useState<PlaylistDetailHeaderPlaybackAction | null>(null);
+  const [detailSearchActions, setDetailSearchActions] =
+    useState<TagDetailHeaderSearchActions | null>(null);
   const [isFilesPlaylistCreateDialogVisible, setIsFilesPlaylistCreateDialogVisible] =
     useState(false);
   const [
@@ -101,24 +105,19 @@ export const LibraryScreen = ({
     },
     [libraryController.savedLibrary.files],
   );
+  const headerSearchProps = resolveLibraryHeaderSearchProps({
+    detailSearchActions,
+    playlistDetailPlayback,
+    searchPanel,
+    searchState,
+    selectedView,
+  });
   return (
     <View style={styles.screen}>
-      {isSessionMenuVisible ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => {
-            setIsSessionMenuVisible(false);
-          }}
-          style={styles.menuBackdrop}
-        />
-      ) : null}
-      <SavedRehearsalLibraryHeader
+      <LibraryScreenHeader
         authorization={authorization}
-        canShowFilterPopover={
-          selectedView === 'files' || selectedView === 'tags'
-        }
-        handleFilterActionPress={searchPanel.handleFilterActionPress}
-        handleSearchActionPress={searchPanel.handleSearchActionPress}
+        detailSearchActions={detailSearchActions}
+        headerSearchProps={headerSearchProps}
         isSessionMenuVisible={isSessionMenuVisible}
         onCloseSessionMenu={() => {
           setIsSessionMenuVisible(false);
@@ -126,10 +125,7 @@ export const LibraryScreen = ({
         onToggleSessionMenu={() => {
           setIsSessionMenuVisible((currentValue) => !currentValue);
         }}
-        headerPlaybackAction={playlistDetailPlayback}
-        searchPanelVisibility={searchPanel.searchPanelVisibility}
-        searchState={searchState}
-        style={styles.destinationHeader}
+        playlistDetailPlayback={playlistDetailPlayback}
       />
       <ScrollView
         ref={scrollCoordination.scrollViewRef}
@@ -179,15 +175,16 @@ export const LibraryScreen = ({
             onDismissLibraryFilesSuccessFeedback={
               dismissLibraryFilesSuccessFeedback
             }
+            closeTagDetailRequestId={closeTagDetailRequestId}
             onBrowseCreateDockChange={setBrowseCreateDockMode}
             onDetailPlaybackChange={setPlaylistDetailPlayback}
+            onDetailSearchActionsChange={setDetailSearchActions}
             onOpenLibraryFilesSuccessFeedbackFolder={
               openLibraryFilesSuccessFeedbackFolder
             }
             onPlaylistSelectionHandlerChange={(handler) => {
               playlistSelectionHandlerRef.current = handler;
             }}
-            onSelectTag={onSelectTag}
             onShowLibraryFilesSuccessFeedback={showLibraryFilesSuccessFeedback}
             pendingLoopBuilderSourceId={
               libraryController.savedLibrary.pendingLoopBuilderSourceId
@@ -202,8 +199,8 @@ export const LibraryScreen = ({
             queuePlayableItemUpNext={playback.queuePlayableItemUpNext}
             removeLoop={libraryController.savedLibrary.removeLoop}
             removeSource={libraryController.savedLibrary.removeSource}
-            requestedPlaylistId={requestedPlaylistId}
-            requestedPlaylistIdRequestId={requestedPlaylistIdRequestId}
+            requestedTag={requestedTag}
+            requestedTagRequestId={requestedTagRequestId}
             savedLibraryIssue={libraryController.savedLibrary.savedLibraryIssue}
             savedLibrarySources={
               libraryController.savedLibrary.savedLibrarySources
@@ -235,6 +232,7 @@ export const LibraryScreen = ({
             setSelectedView={setSelectedView}
             syncActivePlaylistContext={playback.syncActivePlaylistContext}
             toggleActivePlayback={playback.toggleActivePlayback}
+            toggleItemQueuePlayback={playback.toggleItemQueuePlayback}
             togglePlayableItemPlayback={playback.togglePlayableItemPlayback}
             togglePlaylistPlayback={playback.togglePlaylistPlayback}
             toggleSourcePlayback={playback.toggleSourcePlayback}
@@ -279,13 +277,6 @@ const styles = StyleSheet.create({
   },
   contentWithCreateDock: {
     paddingBottom: 188,
-  },
-  destinationHeader: {
-    marginTop: 12,
-  },
-  menuBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 10,
   },
   scrollView: {
     flex: 1,

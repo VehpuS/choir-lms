@@ -7,6 +7,7 @@ import { shouldRenderSavedLibraryBrowseContent } from './browse-content-model';
 import {
   SavedRehearsalLibraryLoopSectionContent,
   SavedRehearsalLibraryPlaylistSectionContent,
+  SavedRehearsalLibraryTagDetailSectionContent,
 } from './detail-sections';
 import { useLoopSaveWithFilesLocation } from './library-files-loop-save';
 import { SavedRehearsalLibrarySearchShell } from './search-shell';
@@ -24,6 +25,7 @@ export const SavedRehearsalLibrarySection = ({
   canMutateLibrary,
   canMutateLoops,
   canMutatePlaylists,
+  closeTagDetailRequestId,
   createPlaylist,
   deletePlaylist,
   getCurrentScrollOffsetY,
@@ -38,9 +40,9 @@ export const SavedRehearsalLibrarySection = ({
   onDismissLibraryFilesSuccessFeedback,
   onBrowseCreateDockChange,
   onDetailPlaybackChange,
+  onDetailSearchActionsChange,
   onOpenLibraryFilesSuccessFeedbackFolder,
   onPlaylistSelectionHandlerChange,
-  onSelectTag,
   onShowLibraryFilesSuccessFeedback,
   pendingLoopBuilderSourceId,
   pendingLoopId,
@@ -53,8 +55,8 @@ export const SavedRehearsalLibrarySection = ({
   queuePlayableItemUpNext,
   removeLoop,
   removeSource,
-  requestedPlaylistId,
-  requestedPlaylistIdRequestId,
+  requestedTag,
+  requestedTagRequestId,
   savedLibraryIssue,
   savedLibrarySources,
   savedLibraryStatusCopy,
@@ -74,6 +76,7 @@ export const SavedRehearsalLibrarySection = ({
   setSelectedView: externalSetSelectedView,
   syncActivePlaylistContext,
   toggleActivePlayback,
+  toggleItemQueuePlayback,
   togglePlayableItemPlayback,
   togglePlaylistPlayback,
   toggleSourcePlayback,
@@ -94,6 +97,7 @@ export const SavedRehearsalLibrarySection = ({
     setIsFilesPlaylistRenameDialogVisible,
     setIsPlaylistDetailRenameDialogVisible,
     setSelectedView,
+    tagDetailState,
     tagEditor,
     trackPlaylistMenu,
   } = useSavedRehearsalLibrarySectionState({
@@ -126,13 +130,15 @@ export const SavedRehearsalLibrarySection = ({
     updatePlaylist,
   });
   useSavedRehearsalLibrarySectionEffects({
+    closeTagDetail: tagDetailState.closeTagDetail,
+    closeTagDetailRequestId,
     detailMode,
     isSearchPanelVisible,
     onBrowseCreateDockChange,
     onPlaylistSelectionHandlerChange,
-    openPlaylistDetail: playlistState.openPlaylistDetail,
-    requestedPlaylistId,
-    requestedPlaylistIdRequestId,
+    openTagDetail: tagDetailState.openTagDetail,
+    requestedTag,
+    requestedTagRequestId,
     savedLibrarySources,
     savedLoops,
     savedPlaylists,
@@ -225,6 +231,23 @@ export const SavedRehearsalLibrarySection = ({
       updatePlaylist={updatePlaylist}
     />
   );
+  const tagDetailSection = (
+    <SavedRehearsalLibraryTagDetailSectionContent
+      closeTagDetail={tagDetailState.closeTagDetail}
+      fileLinks={libraryFiles.fileLinks}
+      folders={libraryFiles.folders}
+      onDetailPlaybackChange={onDetailPlaybackChange}
+      onDetailSearchActionsChange={onDetailSearchActionsChange}
+      openFolder={libraryFiles.openFolder}
+      openPlaylistDetail={playlistState.openPlaylistDetail}
+      savedLibrarySources={savedLibrarySources}
+      savedLoops={savedLoops}
+      savedPlaylists={savedPlaylists}
+      setSelectedView={setSelectedView}
+      tag={tagDetailState.selectedTag}
+      toggleItemQueuePlayback={toggleItemQueuePlayback}
+    />
+  );
   const shouldRenderBrowseContent = shouldRenderSavedLibraryBrowseContent({
     detailMode,
     isSearchPanelVisible,
@@ -302,7 +325,7 @@ export const SavedRehearsalLibrarySection = ({
             setIsFilesPlaylistRenameDialogVisible
           }
           onOpenSourceTagEditor={tagEditor.openSourceTagEditor}
-          onSelectTag={onSelectTag}
+          onSelectTag={tagDetailState.openTagDetail}
           onShowLibraryFilesSuccessFeedback={onShowLibraryFilesSuccessFeedback}
           togglePlaylistPlayback={togglePlaylistPlayback}
           togglePlayableItemPlayback={togglePlayableItemPlayback}
@@ -311,6 +334,8 @@ export const SavedRehearsalLibrarySection = ({
         />
       ) : detailMode === 'playlist-detail' ? (
         playlistSection
+      ) : detailMode === 'tag-detail' ? (
+        tagDetailSection
       ) : (
         loopSection
       )}

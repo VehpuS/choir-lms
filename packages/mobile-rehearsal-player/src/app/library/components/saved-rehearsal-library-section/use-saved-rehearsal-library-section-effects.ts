@@ -7,13 +7,15 @@ import type {
 } from './types';
 
 type UseSavedRehearsalLibrarySectionEffectsOptions = {
-  detailMode: 'browse' | 'playlist-detail' | 'track-loop-detail';
+  closeTagDetail: () => void;
+  closeTagDetailRequestId?: SavedRehearsalLibrarySectionProps['closeTagDetailRequestId'];
+  detailMode: 'browse' | 'playlist-detail' | 'tag-detail' | 'track-loop-detail';
   isSearchPanelVisible: boolean;
   onBrowseCreateDockChange?: (mode: LibraryBrowseCreateDockMode) => void;
   onPlaylistSelectionHandlerChange?: SavedRehearsalLibrarySectionProps['onPlaylistSelectionHandlerChange'];
-  openPlaylistDetail: (playlistId: string) => void;
-  requestedPlaylistId?: SavedRehearsalLibrarySectionProps['requestedPlaylistId'];
-  requestedPlaylistIdRequestId?: SavedRehearsalLibrarySectionProps['requestedPlaylistIdRequestId'];
+  openTagDetail: (tag: string) => void;
+  requestedTag?: SavedRehearsalLibrarySectionProps['requestedTag'];
+  requestedTagRequestId?: SavedRehearsalLibrarySectionProps['requestedTagRequestId'];
   savedLibrarySources: SavedRehearsalLibrarySectionProps['savedLibrarySources'];
   savedLoops: SavedRehearsalLibrarySectionProps['savedLoops'];
   savedPlaylists: SavedRehearsalLibrarySectionProps['savedPlaylists'];
@@ -23,13 +25,15 @@ type UseSavedRehearsalLibrarySectionEffectsOptions = {
 };
 
 export const useSavedRehearsalLibrarySectionEffects = ({
+  closeTagDetail,
+  closeTagDetailRequestId,
   detailMode,
   isSearchPanelVisible,
   onBrowseCreateDockChange,
   onPlaylistSelectionHandlerChange,
-  openPlaylistDetail,
-  requestedPlaylistId,
-  requestedPlaylistIdRequestId,
+  openTagDetail,
+  requestedTag,
+  requestedTagRequestId,
   savedLibrarySources,
   savedLoops,
   savedPlaylists,
@@ -37,24 +41,35 @@ export const useSavedRehearsalLibrarySectionEffects = ({
   setSelectedPlaylistId,
   syncActivePlaylistContext,
 }: UseSavedRehearsalLibrarySectionEffectsOptions) => {
-  const handledPlaylistRequestIdRef = useRef<number | undefined>(undefined);
+  const handledTagRequestIdRef = useRef<number | undefined>(undefined);
+  const handledCloseTagDetailRequestIdRef = useRef<number | undefined>(
+    closeTagDetailRequestId,
+  );
 
   useEffect(() => {
     if (
-      !requestedPlaylistId ||
-      requestedPlaylistIdRequestId === undefined ||
-      handledPlaylistRequestIdRef.current === requestedPlaylistIdRequestId
+      !requestedTag ||
+      requestedTagRequestId === undefined ||
+      handledTagRequestIdRef.current === requestedTagRequestId
     ) {
       return;
     }
 
-    handledPlaylistRequestIdRef.current = requestedPlaylistIdRequestId;
-    openPlaylistDetail(requestedPlaylistId);
-  }, [
-    openPlaylistDetail,
-    requestedPlaylistId,
-    requestedPlaylistIdRequestId,
-  ]);
+    handledTagRequestIdRef.current = requestedTagRequestId;
+    openTagDetail(requestedTag);
+  }, [openTagDetail, requestedTag, requestedTagRequestId]);
+
+  useEffect(() => {
+    if (
+      closeTagDetailRequestId === undefined ||
+      handledCloseTagDetailRequestIdRef.current === closeTagDetailRequestId
+    ) {
+      return;
+    }
+
+    handledCloseTagDetailRequestIdRef.current = closeTagDetailRequestId;
+    closeTagDetail();
+  }, [closeTagDetail, closeTagDetailRequestId]);
 
   useEffect(() => {
     syncActivePlaylistContext({

@@ -12,6 +12,7 @@ describe('saved rehearsal library detail view-model', () => {
     assert.equal(
       resolveSavedRehearsalLibraryDetailMode({
         isPlaylistDetailVisible: false,
+        isTagDetailVisible: false,
         selectedLoopViewSourceId: null,
       }),
       'browse',
@@ -22,9 +23,21 @@ describe('saved rehearsal library detail view-model', () => {
     assert.equal(
       resolveSavedRehearsalLibraryDetailMode({
         isPlaylistDetailVisible: false,
+        isTagDetailVisible: false,
         selectedLoopViewSourceId: 'drive:alto-line',
       }),
       'track-loop-detail',
+    );
+  });
+
+  it('switches to tag detail when a tag is selected', () => {
+    assert.equal(
+      resolveSavedRehearsalLibraryDetailMode({
+        isPlaylistDetailVisible: false,
+        isTagDetailVisible: true,
+        selectedLoopViewSourceId: null,
+      }),
+      'tag-detail',
     );
   });
 
@@ -32,9 +45,21 @@ describe('saved rehearsal library detail view-model', () => {
     assert.equal(
       resolveSavedRehearsalLibraryDetailMode({
         isPlaylistDetailVisible: true,
+        isTagDetailVisible: true,
         selectedLoopViewSourceId: 'drive:alto-line',
       }),
       'playlist-detail',
+    );
+  });
+
+  it('prefers tag detail over track loop detail', () => {
+    assert.equal(
+      resolveSavedRehearsalLibraryDetailMode({
+        isPlaylistDetailVisible: false,
+        isTagDetailVisible: true,
+        selectedLoopViewSourceId: 'drive:alto-line',
+      }),
+      'tag-detail',
     );
   });
 

@@ -1,6 +1,7 @@
 export type SavedRehearsalLibraryDetailMode =
   | 'browse'
   | 'playlist-detail'
+  | 'tag-detail'
   | 'track-loop-detail';
 
 export type SavedRehearsalLibraryView =
@@ -123,10 +124,15 @@ const SAVED_REHEARSAL_LIBRARY_VISIBLE_SECTIONS: Record<
 
 export const resolveSavedRehearsalLibraryDetailMode = (options: {
   isPlaylistDetailVisible: boolean;
+  isTagDetailVisible: boolean;
   selectedLoopViewSourceId: string | null;
 }): SavedRehearsalLibraryDetailMode => {
   if (options.isPlaylistDetailVisible) {
     return 'playlist-detail';
+  }
+
+  if (options.isTagDetailVisible) {
+    return 'tag-detail';
   }
 
   if (options.selectedLoopViewSourceId !== null) {
