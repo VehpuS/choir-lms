@@ -161,14 +161,10 @@ export const getSavedPlaylistDetailSummary = (options: {
     savedLoops: options.savedLoops,
     savedSources: options.savedSources,
   });
-  const metadataParts = [
-    pluralize(options.playlist.items.length, 'item'),
-    durationLabel ? `${durationLabel} total` : null,
-  ].filter((part): part is string => Boolean(part));
 
   return {
     title: options.playlist.name,
-    metadataLabel: metadataParts.join(' • '),
+    metadataLabel: durationLabel ? `${durationLabel} total` : '',
     body: options.activeSession
       ? getPlaylistPlaybackSessionSummary(options.activeSession)
       : null,

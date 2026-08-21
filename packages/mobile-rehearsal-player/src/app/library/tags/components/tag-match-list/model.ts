@@ -16,6 +16,10 @@ export const EMPTY_TAG_MATCH_LIST_MESSAGE =
 export const NO_TAG_MATCH_RESULTS_MESSAGE =
   'No matches for the selected filters.';
 
+export const getTagMatchListSectionTitle = (count: number): string => {
+  return `Items (${count})`;
+};
+
 const TAG_MATCH_TYPE_LABELS: Record<RehearsalLibraryTagMatch['kind'], string> =
   {
     track: 'Track',

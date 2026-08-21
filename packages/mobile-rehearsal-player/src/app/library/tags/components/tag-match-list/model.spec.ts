@@ -9,6 +9,7 @@ import {
   filterTagMatchesByType,
   getTagMatchIconName,
   getTagMatchKey,
+  getTagMatchListSectionTitle,
   getTagMatchMetadataLabel,
   getTagMatchNavigationTarget,
   getTagMatchTitle,
@@ -214,5 +215,12 @@ describe('tag match list model', () => {
     it('returns an empty array when nothing matches', () => {
       assert.deepEqual(filterTagMatchesByQuery(matches, 'nonexistent'), []);
     });
+  });
+});
+
+describe('getTagMatchListSectionTitle', () => {
+  it('wraps the count in the shared "Items (N)" label', () => {
+    assert.equal(getTagMatchListSectionTitle(0), 'Items (0)');
+    assert.equal(getTagMatchListSectionTitle(3), 'Items (3)');
   });
 });

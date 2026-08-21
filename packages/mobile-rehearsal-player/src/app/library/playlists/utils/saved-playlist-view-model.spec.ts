@@ -185,7 +185,7 @@ describe('saved playlist view-model', () => {
       }),
       {
         body: null,
-        metadataLabel: '0 items',
+        metadataLabel: '',
         title: 'Warmups',
       },
     );
@@ -208,7 +208,7 @@ describe('saved playlist view-model', () => {
       }),
       {
         body: 'Active session • Warmups • item 1 of 2 • Ordered • Repeat all.',
-        metadataLabel: '2 items • 3:11 total',
+        metadataLabel: '3:11 total',
         title: 'Warmups',
       },
     );
