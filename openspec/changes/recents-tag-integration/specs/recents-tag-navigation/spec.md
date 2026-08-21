@@ -115,3 +115,38 @@ The system SHALL let a user open a tagged folder or tagged playlist from the tag
 
 - **WHEN** a user taps a playlist row in a tag detail view, outside of the play action
 - **THEN** the system opens that playlist's detail view, the same as opening it from the Playlists view directly
+
+### Requirement: The tag editor suggests popular and matching existing tags
+
+The system SHALL show the user a row of suggested tags inside the tag editor for tracks, loops, playlists, and folders: the library's most-used tags when no tag is currently being typed, and existing tags matching the tag currently being typed once the user starts typing, always excluding tags already applied to the entity being edited. This SHALL remain consistent with the tag input's existing support for entering multiple tags at once, separated by commas.
+
+#### Scenario: Popular tags are suggested when no tag is being typed
+
+- **WHEN** a user opens the tag editor for any entity and the tag input is empty
+- **THEN** the system shows a row of suggested tag chips populated with the library's most-used tags, ranked by usage
+- **AND** tags already applied to the entity being edited do not appear as suggestions
+
+#### Scenario: Suggestions narrow to matching existing tags while typing
+
+- **WHEN** a user types text into the tag input
+- **THEN** the suggestion row narrows to existing library tags whose name contains the typed text
+- **AND** the suggestion row updates live as the typed text changes
+
+#### Scenario: Suggestions reflect only the tag currently being typed when entering multiple tags at once
+
+- **WHEN** a user has already typed one or more complete tags separated by commas in the tag input, and is now typing another tag after the most recent comma
+- **THEN** the suggestion row filters based only on the text typed since that last comma, not the full input
+- **AND** the tags already typed earlier in that same input are unaffected by the suggestion row
+
+#### Scenario: Selecting a suggested tag completes only the tag currently being typed
+
+- **WHEN** a user taps a suggested tag chip
+- **THEN** the text of the tag currently being typed is replaced with the selected tag
+- **AND** any tags already typed earlier in the same input, before the most recent comma, remain in the input unchanged
+- **AND** the tapped tag no longer appears in the suggestion row
+- **AND** the tag is not added to the entity's draft tags until the user submits the input, the same as any other typed tag
+
+#### Scenario: No suggestions available
+
+- **WHEN** there are no existing library tags to suggest, or every eligible tag is already applied to the entity being edited
+- **THEN** the suggestion row does not render
