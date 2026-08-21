@@ -252,6 +252,9 @@ export const AppRouter = () => {
         />
       }
       tagDetailScreen={tagDetailScreen}
+      onCloseTagDetailScreen={() => {
+        setSelectedTag(null);
+      }}
       onSeekBackward={() => {
         void playback.seekActivePlaybackBySeconds(-PLAYBACK_SEEK_STEP_SECONDS);
       }}

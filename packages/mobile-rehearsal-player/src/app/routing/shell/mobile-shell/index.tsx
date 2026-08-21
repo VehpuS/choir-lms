@@ -40,6 +40,7 @@ export type MobileShellProps = {
   isPlaybackToggleDisabled: boolean;
   libraryScreen: ReactNode;
   tagDetailScreen: ReactNode;
+  onCloseTagDetailScreen: () => void;
   onMoveQueueItem: (fromIndex: number, toIndex: number) => void;
   onMoveQueueItemToEnd: (index: number) => void;
   onMoveQueueItemToStart: (index: number) => void;
@@ -92,6 +93,7 @@ export const MobileShell = ({
   isPlaybackToggleDisabled,
   libraryScreen,
   tagDetailScreen,
+  onCloseTagDetailScreen,
   onMoveQueueItem,
   onMoveQueueItemToEnd,
   onMoveQueueItemToStart,
@@ -197,6 +199,10 @@ export const MobileShell = ({
           setActivePlaybackSurface('now-playing');
         }}
         onSelectDestination={(destination) => {
+          if (tagDetailScreen) {
+            onCloseTagDetailScreen();
+          }
+
           setActiveDestination(destination);
         }}
         onTogglePlayback={onTogglePlayback}
