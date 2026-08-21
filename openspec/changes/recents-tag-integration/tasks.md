@@ -230,7 +230,14 @@
   - No new automated test — `mobile-shell/index.tsx` has no existing spec file and follows this codebase's established convention (noted repeatedly elsewhere in this file, e.g. task `3.1`) of not unit-testing top-level wiring/render components; covered by manual verification instead.
   - Manually verified in the integrated browser: opened tag "a", tapped Recents — overlay closed, Recents screen shown correctly; reopened tag "a" from the Recents chip, tapped Add — overlay closed, Add/Drive browser shown; reopened tag "a" again, tapped Library (the already-active underlying tab) — overlay closed, Library's Tags view shown (its last-displayed state). No new console errors in any case (only the pre-existing Drive/auth 400/COOP noise documented elsewhere in this file).
   - Validation: `nx run mobile-rehearsal-player:typecheck` clean, `nx run mobile-rehearsal-player:test --skip-nx-cache` (455/455, unchanged — no new test), `eslint` clean on both touched files (`mobile-shell/index.tsx`, `app-router.tsx`).
-- [ ] 4.6 Add focused tests for folder expansion, playlist expansion, cross-path dedupe, and the new multi-item session constructor.
+- [x] 4.6 Add focused tests for folder expansion, playlist expansion, cross-path dedupe, and the new multi-item session constructor.
+  - Coverage audit (same "satisfied incrementally" precedent as tasks `3.6`/`4.2`): re-read this task's exact wording against existing coverage added during `4.1`-`4.5` and found no gap.
+    - Folder expansion: `playback-queue.spec.ts`'s `resolveRehearsalLibraryFolderSubtreeIds`/`resolveFolderPlayableItems` suites (nested descendants, sibling exclusion, availability gating, playlist-file-link non-expansion, empty-subtree case) — added in `4.1`.
+    - Playlist expansion: `rehearsal-playback.spec.ts`'s pre-existing `resolvePlaylistItems` suite (playlist-order resolution, playable-only filtering, repeated-entry handling) — confirmed sufficient in `4.2`, no new code/tests needed there.
+    - Cross-path dedupe: covered at two levels — the general-purpose `dedupePlayableItems` suite in `playlist-playback-queue-state.spec.ts` (`4.3`: cross-path duplicate collapse, order preservation, empty input, no-mutation), and `tag-queue-playback.spec.ts`'s dedicated end-to-end case "queues a track exactly once when reachable both directly and via a tagged folder" (`4.5`) — the exact scenario named by both this task and the spec.
+    - Multi-item session constructor: `createTransientPlaybackSessionFromItems` suite in `playlist-playback-queue-state.spec.ts` (`4.4`: seeds queue in order from index 0, recognized by `isTransientQueueSession`, empty-items case).
+  - No new code or test files added — verified by re-running the relevant suites rather than assuming the prior notes were accurate.
+  - Validation: `nx run audio-library-runtime:test` (50/50 passing), `nx run mobile-rehearsal-player:test-pattern -- --pattern='src/app/library/{tags,playlists}/**/*.spec.ts'` (73/73 passing).
 
 ## 5. Tag Editor Suggestions
 
