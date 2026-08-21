@@ -242,6 +242,25 @@ export const createTransientPlaybackSession = (options: {
   } satisfies PlaylistPlaybackSession;
 };
 
+export const createTransientPlaybackSessionFromItems = (options: {
+  items: PlayableItem[];
+  repeatMode: RepeatMode;
+}): PlaylistPlaybackSession => {
+  return {
+    currentIndex: 0,
+    hasCompleted: false,
+    playlistId: TRANSIENT_QUEUE_PLAYLIST_ID,
+    playlistName: TRANSIENT_QUEUE_PLAYLIST_NAME,
+    queue: {
+      items: options.items,
+      mode: 'ordered',
+      playlistId: TRANSIENT_QUEUE_PLAYLIST_ID,
+      repeatMode: options.repeatMode,
+    },
+    requestedItemCount: options.items.length,
+  } satisfies PlaylistPlaybackSession;
+};
+
 export const isTransientQueueSession = (
   session: PlaylistPlaybackSession | null,
 ) => {

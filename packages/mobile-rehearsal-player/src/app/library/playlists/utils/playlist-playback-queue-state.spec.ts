@@ -6,7 +6,11 @@ import { describe, it } from 'node:test';
 import { createTrackPlayableItem } from '@org/audio-library-models';
 
 import { PLAYABLE_SOURCE } from '../../../test-utils/library-test-fixtures.js';
-import { dedupePlayableItems } from './playlist-playback-queue-state.js';
+import {
+  createTransientPlaybackSessionFromItems,
+  dedupePlayableItems,
+  isTransientQueueSession,
+} from './playlist-playback-queue-state.js';
 import {
   buildThreeItemQueueSession,
   buildTrackOnlyWarmupsPlaylist,
@@ -262,5 +266,43 @@ describe('dedupePlayableItems', () => {
     dedupePlayableItems(items);
 
     assert.equal(items.length, 2);
+  });
+});
+
+describe('createTransientPlaybackSessionFromItems', () => {
+  it('seeds the queue with every resolved item in order, starting at index 0', () => {
+    const trackA = { ...createTrackPlayableItem(PLAYABLE_SOURCE), id: 'track:a' };
+    const trackB = { ...createTrackPlayableItem(PLAYABLE_SOURCE), id: 'track:b' };
+
+    const session = createTransientPlaybackSessionFromItems({
+      items: [trackA, trackB],
+      repeatMode: 'off',
+    });
+
+    assert.equal(session.currentIndex, 0);
+    assert.equal(session.hasCompleted, false);
+    assert.equal(session.requestedItemCount, 2);
+    assert.deepEqual(session.queue.items, [trackA, trackB]);
+    assert.equal(session.queue.mode, 'ordered');
+    assert.equal(session.queue.repeatMode, 'off');
+  });
+
+  it('is recognized as a transient queue session', () => {
+    const session = createTransientPlaybackSessionFromItems({
+      items: [{ ...createTrackPlayableItem(PLAYABLE_SOURCE), id: 'track:a' }],
+      repeatMode: 'off',
+    });
+
+    assert.equal(isTransientQueueSession(session), true);
+  });
+
+  it('builds an empty-queue session when given no items', () => {
+    const session = createTransientPlaybackSessionFromItems({
+      items: [],
+      repeatMode: 'off',
+    });
+
+    assert.deepEqual(session.queue.items, []);
+    assert.equal(session.requestedItemCount, 0);
   });
 });

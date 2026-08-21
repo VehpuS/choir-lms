@@ -18,6 +18,7 @@ export {
   canShowQueuePlaylistActions,
   canUpdateQueuePlaylist,
   createTransientPlaybackSession,
+  createTransientPlaybackSessionFromItems,
   isTransientQueueSession,
   movePlaylistPlaybackQueueItem,
   movePlaylistPlaybackQueueItemToEnd,
