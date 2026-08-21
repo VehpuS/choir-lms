@@ -22,6 +22,8 @@ export const LibraryScreen = ({
   onRequestAddDestination,
   onSelectTag,
   playback,
+  requestedPlaylistId,
+  requestedPlaylistIdRequestId,
   requestedView,
   requestedViewRequestId,
 }: LibraryScreenProps) => {
@@ -195,6 +197,8 @@ export const LibraryScreen = ({
             queuePlayableItemUpNext={playback.queuePlayableItemUpNext}
             removeLoop={libraryController.savedLibrary.removeLoop}
             removeSource={libraryController.savedLibrary.removeSource}
+            requestedPlaylistId={requestedPlaylistId}
+            requestedPlaylistIdRequestId={requestedPlaylistIdRequestId}
             savedLibraryIssue={libraryController.savedLibrary.savedLibraryIssue}
             savedLibrarySources={
               libraryController.savedLibrary.savedLibrarySources

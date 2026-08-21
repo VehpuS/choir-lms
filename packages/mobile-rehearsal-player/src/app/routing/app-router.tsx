@@ -41,6 +41,11 @@ export const AppRouter = () => {
     useState<SavedRehearsalLibraryView>('files');
   const [requestedLibraryViewRequestId, setRequestedLibraryViewRequestId] =
     useState(0);
+  const [requestedPlaylistId, setRequestedPlaylistId] = useState<
+    string | null
+  >(null);
+  const [requestedPlaylistIdRequestId, setRequestedPlaylistIdRequestId] =
+    useState(0);
   const [isRecentRehearsalHistoryReady, setIsRecentRehearsalHistoryReady] =
     useState(false);
   const libraryController = useRehearsalLibraryController({
@@ -153,6 +158,13 @@ export const AppRouter = () => {
     });
   };
 
+  const requestPlaylistDetail = (playlistId: string) => {
+    setRequestedPlaylistId(playlistId);
+    setRequestedPlaylistIdRequestId((currentId) => {
+      return currentId + 1;
+    });
+  };
+
   const tagDetailScreen = selectedTag ? (
     <TagDetailScreen
       authorization={authorization}
@@ -164,6 +176,17 @@ export const AppRouter = () => {
       folders={libraryController.savedLibrary.files.folders}
       onClose={() => {
         setSelectedTag(null);
+      }}
+      onOpenFolder={(folderId) => {
+        setSelectedTag(null);
+        libraryController.savedLibrary.files.openFolder(folderId);
+        requestDestination('library');
+        requestLibraryView('files');
+      }}
+      onOpenPlaylist={(playlistId) => {
+        setSelectedTag(null);
+        requestDestination('library');
+        requestPlaylistDetail(playlistId);
       }}
       tag={selectedTag}
     />
@@ -227,6 +250,8 @@ export const AppRouter = () => {
             setSelectedTag(tag);
           }}
           playback={playback}
+          requestedPlaylistId={requestedPlaylistId}
+          requestedPlaylistIdRequestId={requestedPlaylistIdRequestId}
           requestedView={requestedLibraryView}
           requestedViewRequestId={requestedLibraryViewRequestId}
         />

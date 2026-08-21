@@ -55,6 +55,8 @@ export type SavedRehearsalLibrarySectionProps = {
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   removeLoop: (loop: NamedLoop) => void;
   removeSource: (source: DriveLibrarySource) => void;
+  requestedPlaylistId?: string | null;
+  requestedPlaylistIdRequestId?: number;
   libraryFiles: UseLibraryFilesResult;
   libraryFilesSuccessFeedback: LibraryFilesSuccessFeedback | null;
   onDismissLibraryFilesSuccessFeedback: () => void;

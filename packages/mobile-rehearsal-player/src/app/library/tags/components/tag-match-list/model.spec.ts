@@ -10,6 +10,7 @@ import {
   getTagMatchIconName,
   getTagMatchKey,
   getTagMatchMetadataLabel,
+  getTagMatchNavigationTarget,
   getTagMatchTitle,
   getTagMatchTypeLabel,
   sortTagMatches,
@@ -82,6 +83,27 @@ describe('tag match list model', () => {
     assert.equal(getTagMatchIconName(PLAYLIST_MATCH), 'playlist-music-outline');
     assert.equal(getTagMatchIconName(FOLDER_MATCH), 'folder-outline');
     assert.equal(getTagMatchKey(TRACK_MATCH), `track:${TRACK_MATCH.item.id}`);
+  });
+
+  describe('getTagMatchNavigationTarget', () => {
+    it('resolves a folder target for a folder match', () => {
+      assert.deepEqual(getTagMatchNavigationTarget(FOLDER_MATCH), {
+        folderId: FOLDER_MATCH.item.id,
+        kind: 'folder',
+      });
+    });
+
+    it('resolves a playlist target for a playlist match', () => {
+      assert.deepEqual(getTagMatchNavigationTarget(PLAYLIST_MATCH), {
+        kind: 'playlist',
+        playlistId: PLAYLIST_MATCH.item.id,
+      });
+    });
+
+    it('returns null for track and loop matches', () => {
+      assert.equal(getTagMatchNavigationTarget(TRACK_MATCH), null);
+      assert.equal(getTagMatchNavigationTarget(LOOP_MATCH), null);
+    });
   });
 
   it('formats type-specific metadata labels', () => {

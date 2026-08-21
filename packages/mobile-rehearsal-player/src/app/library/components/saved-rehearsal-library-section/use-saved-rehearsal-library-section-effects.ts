@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
 import type {
@@ -11,6 +11,9 @@ type UseSavedRehearsalLibrarySectionEffectsOptions = {
   isSearchPanelVisible: boolean;
   onBrowseCreateDockChange?: (mode: LibraryBrowseCreateDockMode) => void;
   onPlaylistSelectionHandlerChange?: SavedRehearsalLibrarySectionProps['onPlaylistSelectionHandlerChange'];
+  openPlaylistDetail: (playlistId: string) => void;
+  requestedPlaylistId?: SavedRehearsalLibrarySectionProps['requestedPlaylistId'];
+  requestedPlaylistIdRequestId?: SavedRehearsalLibrarySectionProps['requestedPlaylistIdRequestId'];
   savedLibrarySources: SavedRehearsalLibrarySectionProps['savedLibrarySources'];
   savedLoops: SavedRehearsalLibrarySectionProps['savedLoops'];
   savedPlaylists: SavedRehearsalLibrarySectionProps['savedPlaylists'];
@@ -24,6 +27,9 @@ export const useSavedRehearsalLibrarySectionEffects = ({
   isSearchPanelVisible,
   onBrowseCreateDockChange,
   onPlaylistSelectionHandlerChange,
+  openPlaylistDetail,
+  requestedPlaylistId,
+  requestedPlaylistIdRequestId,
   savedLibrarySources,
   savedLoops,
   savedPlaylists,
@@ -31,6 +37,25 @@ export const useSavedRehearsalLibrarySectionEffects = ({
   setSelectedPlaylistId,
   syncActivePlaylistContext,
 }: UseSavedRehearsalLibrarySectionEffectsOptions) => {
+  const handledPlaylistRequestIdRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (
+      !requestedPlaylistId ||
+      requestedPlaylistIdRequestId === undefined ||
+      handledPlaylistRequestIdRef.current === requestedPlaylistIdRequestId
+    ) {
+      return;
+    }
+
+    handledPlaylistRequestIdRef.current = requestedPlaylistIdRequestId;
+    openPlaylistDetail(requestedPlaylistId);
+  }, [
+    openPlaylistDetail,
+    requestedPlaylistId,
+    requestedPlaylistIdRequestId,
+  ]);
+
   useEffect(() => {
     syncActivePlaylistContext({
       loops: savedLoops,

@@ -31,6 +31,8 @@ type TagDetailScreenProps = {
   entityCollections: RehearsalLibraryEntityCollections;
   folders: RehearsalLibraryFolderNode[];
   onClose: () => void;
+  onOpenFolder: (folderId: string) => void;
+  onOpenPlaylist: (playlistId: string) => void;
   tag: string;
 };
 
@@ -47,6 +49,8 @@ export const TagDetailScreen = ({
   entityCollections,
   folders,
   onClose,
+  onOpenFolder,
+  onOpenPlaylist,
   tag,
 }: TagDetailScreenProps) => {
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
@@ -175,6 +179,8 @@ export const TagDetailScreen = ({
         <TagMatchList
           hasUnfilteredMatches={matches.length > 0}
           matches={visibleMatches}
+          onOpenFolder={onOpenFolder}
+          onOpenPlaylist={onOpenPlaylist}
           sortState={sortState}
         />
       </View>

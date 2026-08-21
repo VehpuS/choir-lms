@@ -61,6 +61,24 @@ export const getTagMatchCreatedAt = (match: RehearsalLibraryTagMatch) => {
   return match.item.createdAt;
 };
 
+export type TagMatchNavigationTarget =
+  | { folderId: string; kind: 'folder' }
+  | { kind: 'playlist'; playlistId: string };
+
+export const getTagMatchNavigationTarget = (
+  match: RehearsalLibraryTagMatch,
+): TagMatchNavigationTarget | null => {
+  if (match.kind === 'folder') {
+    return { folderId: match.item.id, kind: 'folder' };
+  }
+
+  if (match.kind === 'playlist') {
+    return { kind: 'playlist', playlistId: match.item.id };
+  }
+
+  return null;
+};
+
 export const getTagMatchMetadataLabel = (match: RehearsalLibraryTagMatch) => {
   switch (match.kind) {
     case 'track':

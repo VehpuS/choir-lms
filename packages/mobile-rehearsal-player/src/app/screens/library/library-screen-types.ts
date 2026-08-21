@@ -27,6 +27,8 @@ export type LibraryScreenProps = {
   onRequestAddDestination: () => void;
   onSelectTag: (tag: string) => void;
   playback: SavedTrackPlaybackController;
+  requestedPlaylistId?: string | null;
+  requestedPlaylistIdRequestId?: number;
   requestedView?: SavedRehearsalLibraryView;
   requestedViewRequestId?: number;
 };
