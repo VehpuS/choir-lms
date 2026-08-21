@@ -208,6 +208,21 @@ export const selectPlaylistPlaybackQueueItem = (
   };
 };
 
+export const dedupePlayableItems = (
+  items: PlayableItem[],
+): PlayableItem[] => {
+  const seenItemIds = new Set<string>();
+
+  return items.filter((item) => {
+    if (seenItemIds.has(item.id)) {
+      return false;
+    }
+
+    seenItemIds.add(item.id);
+    return true;
+  });
+};
+
 export const createTransientPlaybackSession = (options: {
   activePlayableItem: PlayableItem;
   repeatMode: RepeatMode;

@@ -6,6 +6,7 @@ import { describe, it } from 'node:test';
 import { createTrackPlayableItem } from '@org/audio-library-models';
 
 import { PLAYABLE_SOURCE } from '../../../test-utils/library-test-fixtures.js';
+import { dedupePlayableItems } from './playlist-playback-queue-state.js';
 import {
   buildThreeItemQueueSession,
   buildTrackOnlyWarmupsPlaylist,
@@ -210,5 +211,56 @@ describe('playlist playback queue state', () => {
       selection.nextSession.queue.items.map((item) => item.id),
       builtSession.queue.items.map((item) => item.id),
     );
+  });
+});
+
+describe('dedupePlayableItems', () => {
+  it('keeps only the first occurrence of a track reachable through multiple matched paths', () => {
+    const directTrackMatch = createTrackPlayableItem(PLAYABLE_SOURCE);
+    const sameTrackViaFolderExpansion = createTrackPlayableItem(
+      PLAYABLE_SOURCE,
+    );
+    const otherTrack = {
+      ...directTrackMatch,
+      id: 'track:drive:other-track',
+      sourceId: 'drive:other-track',
+    };
+
+    const result = dedupePlayableItems([
+      directTrackMatch,
+      otherTrack,
+      sameTrackViaFolderExpansion,
+    ]);
+
+    assert.deepEqual(
+      result.map((item) => item.id),
+      [directTrackMatch.id, otherTrack.id],
+    );
+  });
+
+  it('preserves the original relative order of the surviving items', () => {
+    const trackA = { ...createTrackPlayableItem(PLAYABLE_SOURCE), id: 'track:a' };
+    const trackB = { ...createTrackPlayableItem(PLAYABLE_SOURCE), id: 'track:b' };
+    const trackC = { ...createTrackPlayableItem(PLAYABLE_SOURCE), id: 'track:c' };
+
+    const result = dedupePlayableItems([trackC, trackA, trackB, trackA]);
+
+    assert.deepEqual(
+      result.map((item) => item.id),
+      ['track:c', 'track:a', 'track:b'],
+    );
+  });
+
+  it('returns an empty list unchanged', () => {
+    assert.deepEqual(dedupePlayableItems([]), []);
+  });
+
+  it('does not mutate the input array', () => {
+    const trackA = { ...createTrackPlayableItem(PLAYABLE_SOURCE), id: 'track:a' };
+    const items = [trackA, trackA];
+
+    dedupePlayableItems(items);
+
+    assert.equal(items.length, 2);
   });
 });
