@@ -6,7 +6,7 @@ import { getSavedTrackPlaybackActionCopy } from '../library/playback/utils/saved
 import { canShowQueuePlaylistActions } from '../library/playlists/utils/saved-playlist-playback-view-model';
 import type { SavedRehearsalLibraryView } from '../library/saved-rehearsal-library/detail-mode';
 import { useRehearsalLibraryController } from '../library/saved-rehearsal-library/use-rehearsal-library-controller';
-import { TagDetailScreen } from '../library/tags/components/tag-detail-screen';
+import { AppRouterTagDetailScreen } from '../library/tags/components/tag-detail-screen/app-router-tag-detail-screen';
 import { AddScreen } from '../screens/add';
 import { LibraryScreen } from '../screens/library';
 import { AppRouterRecentsScreen } from '../screens/recents/app-router-recents-screen';
@@ -166,28 +166,23 @@ export const AppRouter = () => {
   };
 
   const tagDetailScreen = selectedTag ? (
-    <TagDetailScreen
+    <AppRouterTagDetailScreen
       authorization={authorization}
       entityCollections={{
         loops: libraryController.savedLibrary.savedLoops,
         playlists: libraryController.playlists.savedPlaylists,
         sources: libraryController.savedLibrary.savedLibrarySources,
       }}
+      fileLinks={libraryController.savedLibrary.files.fileLinks}
       folders={libraryController.savedLibrary.files.folders}
-      onClose={() => {
-        setSelectedTag(null);
+      onOpenLibraryFolder={libraryController.savedLibrary.files.openFolder}
+      onPlayItems={(items) => {
+        void playback.toggleItemQueuePlayback(items);
       }}
-      onOpenFolder={(folderId) => {
-        setSelectedTag(null);
-        libraryController.savedLibrary.files.openFolder(folderId);
-        requestDestination('library');
-        requestLibraryView('files');
-      }}
-      onOpenPlaylist={(playlistId) => {
-        setSelectedTag(null);
-        requestDestination('library');
-        requestPlaylistDetail(playlistId);
-      }}
+      onSelectTag={setSelectedTag}
+      requestDestination={requestDestination}
+      requestLibraryView={requestLibraryView}
+      requestPlaylistDetail={requestPlaylistDetail}
       tag={selectedTag}
     />
   ) : null;

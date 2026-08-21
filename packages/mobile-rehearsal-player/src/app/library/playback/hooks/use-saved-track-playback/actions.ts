@@ -33,6 +33,7 @@ import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../../utils/saved-track-playback-view-model';
+import { startItemQueuePlayback } from './item-queue-playback-actions';
 import { startPlaylistPlayback } from './playlist-playback-actions';
 import {
   hasSameQueuePosition,
@@ -347,6 +348,21 @@ export const createSavedTrackPlaybackActions = ({
       await playbackController.togglePlayableItemPlayback(
         createTrackPlayableItem(source),
       );
+    },
+    async toggleItemQueuePlayback(items: PlayableItem[]) {
+      if (await requestAuthorizationIfExpired()) {
+        return;
+      }
+
+      await startItemQueuePlayback({
+        activePlaylistContextRef,
+        items,
+        playbackController,
+        repeatMode: playlistRepeatMode,
+        setActivePlaylistSession,
+        setIsPreparing,
+        setIssue,
+      });
     },
   };
 };

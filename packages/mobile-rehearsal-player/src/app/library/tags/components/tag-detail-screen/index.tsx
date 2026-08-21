@@ -1,4 +1,8 @@
-import type { RehearsalLibraryFolderNode } from '@org/audio-library-models';
+import type {
+  PlayableItem,
+  RehearsalLibraryFileLinkNode,
+  RehearsalLibraryFolderNode,
+} from '@org/audio-library-models';
 import {
   resolveRehearsalLibraryTagMatches,
   type RehearsalLibraryEntityCollections,
@@ -8,6 +12,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { DriveSessionMenu } from '../../../../auth/google-drive/components/drive-session-menu';
 import type { DriveSessionMenuController } from '../../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
+import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
 import { DestinationHeader } from '../../../../components/destination-header';
 import { getDestinationHeaderModel } from '../../../../components/destination-header-model';
 import { appTheme } from '../../../../utils/theme';
@@ -23,17 +28,24 @@ import {
   type TagMatchListSortState,
   type TagMatchTypeFilterValue,
 } from '../tag-match-list/model';
+import { resolveTagQueuePlayableItems } from '../../utils/tag-queue-playback';
 
 const TAG_DETAIL_EYEBROW = 'Tag';
 
 type TagDetailScreenProps = {
   authorization: DriveSessionMenuController;
   entityCollections: RehearsalLibraryEntityCollections;
+  fileLinks: RehearsalLibraryFileLinkNode[];
   folders: RehearsalLibraryFolderNode[];
   onClose: () => void;
   onOpenFolder: (folderId: string) => void;
   onOpenPlaylist: (playlistId: string) => void;
+  onPlayMatches: (items: PlayableItem[]) => void;
   tag: string;
+};
+
+const getTagPlayAccessibilityLabel = (tag: string) => {
+  return `Play everything tagged "${tag}"`;
 };
 
 const getTagSearchHelperCopy = (tag: string) => {
@@ -47,10 +59,12 @@ const getTagSearchPlaceholderCopy = (tag: string) => {
 export const TagDetailScreen = ({
   authorization,
   entityCollections,
+  fileLinks,
   folders,
   onClose,
   onOpenFolder,
   onOpenPlaylist,
+  onPlayMatches,
   tag,
 }: TagDetailScreenProps) => {
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
@@ -72,6 +86,14 @@ export const TagDetailScreen = ({
       searchQuery,
     );
   }, [matches, selectedTypeFilters, searchQuery]);
+  const playableItems = useMemo(() => {
+    return resolveTagQueuePlayableItems(visibleMatches, {
+      fileLinks,
+      folders,
+      loops: entityCollections.loops,
+      sources: entityCollections.sources,
+    });
+  }, [visibleMatches, fileLinks, folders, entityCollections]);
   const headerModel = getDestinationHeaderModel('library');
   const hasActiveFilters = selectedTypeFilters.length > 0;
 
@@ -91,6 +113,15 @@ export const TagDetailScreen = ({
         title={headerModel.title}
         trailingAction={
           <View style={styles.headerActionRow}>
+            <CompactPlaybackAction
+              accessibilityLabel={getTagPlayAccessibilityLabel(tag)}
+              disabled={playableItems.length === 0}
+              iconName="play"
+              onPress={() => {
+                onPlayMatches(playableItems);
+              }}
+              variant="row"
+            />
             <LibrarySearchControlsActions
               canShowFilters
               closeSearchAccessibilityLabel="Close search"
