@@ -8,6 +8,7 @@ const SINGLE_ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE;
 
 type LibrarySearchControlsActionsProps = {
   canShowFilters: boolean;
+  canShowSearch?: boolean;
   closeSearchAccessibilityLabel?: string;
   hasActiveFilters: boolean;
   hideFiltersAccessibilityLabel?: string;
@@ -72,6 +73,7 @@ const LibrarySearchActionButton = ({
 
 export const LibrarySearchControlsActions = ({
   canShowFilters,
+  canShowSearch = true,
   closeSearchAccessibilityLabel = 'Close search',
   hasActiveFilters,
   hideFiltersAccessibilityLabel = 'Hide library filters',
@@ -83,11 +85,19 @@ export const LibrarySearchControlsActions = ({
   showFiltersAccessibilityLabel = 'Show library filters',
   tone = 'surface',
 }: LibrarySearchControlsActionsProps) => {
+  const visibleActionCount = Number(canShowFilters) + Number(canShowSearch);
+
+  if (visibleActionCount === 0) {
+    return null;
+  }
+
   return (
     <View
       style={[
         styles.actionRow,
-        canShowFilters ? styles.actionRowDouble : styles.actionRowSingle,
+        visibleActionCount > 1
+          ? styles.actionRowDouble
+          : styles.actionRowSingle,
       ]}
     >
       {canShowFilters ? (
@@ -103,17 +113,19 @@ export const LibrarySearchControlsActions = ({
           tone={tone}
         />
       ) : null}
-      <LibrarySearchActionButton
-        accessibilityLabel={
-          isSearchBarVisible
-            ? closeSearchAccessibilityLabel
-            : searchAccessibilityLabel
-        }
-        iconName={isSearchBarVisible ? 'close' : 'magnify'}
-        isFilled={true}
-        onPress={onSearchActionPress}
-        tone={tone}
-      />
+      {canShowSearch ? (
+        <LibrarySearchActionButton
+          accessibilityLabel={
+            isSearchBarVisible
+              ? closeSearchAccessibilityLabel
+              : searchAccessibilityLabel
+          }
+          iconName={isSearchBarVisible ? 'close' : 'magnify'}
+          isFilled={true}
+          onPress={onSearchActionPress}
+          tone={tone}
+        />
+      ) : null}
     </View>
   );
 };

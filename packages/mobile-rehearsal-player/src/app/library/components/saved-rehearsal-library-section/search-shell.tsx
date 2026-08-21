@@ -118,6 +118,7 @@ export const SavedRehearsalLibraryHeader = ({
           ) : null}
           <LibrarySearchControlsActions
             canShowFilters={canShowFilterPopover}
+            canShowSearch={!headerPlaybackAction}
             hasActiveFilters={
               searchState.entityFilter !== 'all' ||
               searchState.selectedTagFilters.length > 0
