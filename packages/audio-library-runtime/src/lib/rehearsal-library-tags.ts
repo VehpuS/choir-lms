@@ -40,6 +40,52 @@ const collectEntityTagInfos = (options: {
   ];
 };
 
+export type RehearsalLibraryTagMatch =
+  | { kind: 'track'; item: RehearsalLibraryEntityCollections['sources'][number] }
+  | { kind: 'loop'; item: RehearsalLibraryEntityCollections['loops'][number] }
+  | {
+      kind: 'playlist';
+      item: RehearsalLibraryEntityCollections['playlists'][number];
+    }
+  | { kind: 'folder'; item: RehearsalLibraryFolderNode };
+
+const entityCarriesTag = (
+  tags: string[] | undefined,
+  normalizedTagKey: string,
+): boolean => {
+  return normalizeLibraryEntityTags(tags ?? []).some((candidateTag) => {
+    return candidateTag.toLocaleLowerCase() === normalizedTagKey;
+  });
+};
+
+export const resolveRehearsalLibraryTagMatches = (
+  tag: string,
+  options: {
+    entityCollections: RehearsalLibraryEntityCollections;
+    folders: RehearsalLibraryFolderNode[];
+  },
+): RehearsalLibraryTagMatch[] => {
+  const normalizedTagKey = tag.trim().toLocaleLowerCase();
+
+  const trackMatches: RehearsalLibraryTagMatch[] =
+    options.entityCollections.sources
+      .filter((source) => entityCarriesTag(source.tags, normalizedTagKey))
+      .map((item) => ({ kind: 'track', item }));
+  const loopMatches: RehearsalLibraryTagMatch[] =
+    options.entityCollections.loops
+      .filter((loop) => entityCarriesTag(loop.tags, normalizedTagKey))
+      .map((item) => ({ kind: 'loop', item }));
+  const playlistMatches: RehearsalLibraryTagMatch[] =
+    options.entityCollections.playlists
+      .filter((playlist) => entityCarriesTag(playlist.tags, normalizedTagKey))
+      .map((item) => ({ kind: 'playlist', item }));
+  const folderMatches: RehearsalLibraryTagMatch[] = options.folders
+    .filter((folder) => entityCarriesTag(folder.tags, normalizedTagKey))
+    .map((item) => ({ kind: 'folder', item }));
+
+  return [...trackMatches, ...loopMatches, ...playlistMatches, ...folderMatches];
+};
+
 export const aggregateRehearsalLibraryTags = (options: {
   entityCollections: RehearsalLibraryEntityCollections;
   folders: RehearsalLibraryFolderNode[];

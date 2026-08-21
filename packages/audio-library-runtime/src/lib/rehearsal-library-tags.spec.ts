@@ -8,7 +8,10 @@ import {
   type RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
 
-import { aggregateRehearsalLibraryTags } from './rehearsal-library-tags.ts';
+import {
+  aggregateRehearsalLibraryTags,
+  resolveRehearsalLibraryTagMatches,
+} from './rehearsal-library-tags.ts';
 
 const SOPRANO_SOURCE = createDriveAudioSource({
   driveFileId: 'drive:soprano',
@@ -145,5 +148,48 @@ describe('aggregateRehearsalLibraryTags', () => {
       Number.isNaN(Date.parse(result[0]?.createdAt ?? '')),
       false,
     );
+  });
+});
+
+describe('resolveRehearsalLibraryTagMatches', () => {
+  it('returns every entity carrying the tag, ordered tracks/loops/playlists/folders', () => {
+    const result = resolveRehearsalLibraryTagMatches('soprano', {
+      entityCollections: {
+        sources: [SOPRANO_SOURCE],
+        loops: [ALTO_LOOP],
+        playlists: [PLAYLIST],
+      },
+      folders: [FOLDER],
+    });
+
+    assert.deepEqual(result, [
+      { kind: 'track', item: SOPRANO_SOURCE },
+      { kind: 'playlist', item: PLAYLIST },
+    ]);
+  });
+
+  it('matches case-insensitively and ignores surrounding whitespace on the queried tag', () => {
+    const result = resolveRehearsalLibraryTagMatches('  ALTO  ', {
+      entityCollections: { sources: [], loops: [ALTO_LOOP], playlists: [] },
+      folders: [FOLDER],
+    });
+
+    assert.deepEqual(result, [
+      { kind: 'loop', item: ALTO_LOOP },
+      { kind: 'folder', item: FOLDER },
+    ]);
+  });
+
+  it('returns an empty list when no entity carries the tag', () => {
+    const result = resolveRehearsalLibraryTagMatches('nonexistent', {
+      entityCollections: {
+        sources: [SOPRANO_SOURCE],
+        loops: [ALTO_LOOP],
+        playlists: [PLAYLIST],
+      },
+      folders: [FOLDER],
+    });
+
+    assert.deepEqual(result, []);
   });
 });

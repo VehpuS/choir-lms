@@ -155,6 +155,13 @@ export const AppRouter = () => {
 
   const tagDetailScreen = selectedTag ? (
     <TagDetailScreen
+      authorization={authorization}
+      entityCollections={{
+        loops: libraryController.savedLibrary.savedLoops,
+        playlists: libraryController.playlists.savedPlaylists,
+        sources: libraryController.savedLibrary.savedLibrarySources,
+      }}
+      folders={libraryController.savedLibrary.files.folders}
       onClose={() => {
         setSelectedTag(null);
       }}
