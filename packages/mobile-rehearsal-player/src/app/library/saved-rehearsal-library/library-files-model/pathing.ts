@@ -2,6 +2,7 @@ import type {
   RehearsalLibraryFileTree,
   RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
+import { resolveRehearsalLibraryFolderSubtreeIds } from '@org/audio-library-runtime';
 
 import type {
   LibraryFilesBreadcrumb,
@@ -72,26 +73,10 @@ export const buildScopedFolderIds = (options: {
     );
   }
 
-  const scopedFolderIds = new Set<string>();
-  const pendingFolderIds = [options.currentFolder.id];
-
-  while (pendingFolderIds.length > 0) {
-    const nextFolderId = pendingFolderIds.pop();
-
-    if (!nextFolderId || scopedFolderIds.has(nextFolderId)) {
-      continue;
-    }
-
-    scopedFolderIds.add(nextFolderId);
-
-    for (const folder of options.tree.folders) {
-      if (folder.parentFolderId === nextFolderId) {
-        pendingFolderIds.push(folder.id);
-      }
-    }
-  }
-
-  return scopedFolderIds;
+  return resolveRehearsalLibraryFolderSubtreeIds(
+    options.currentFolder.id,
+    options.tree.folders,
+  );
 };
 
 export const prefixContainingPath = (options: {

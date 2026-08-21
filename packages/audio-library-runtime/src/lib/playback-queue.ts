@@ -7,6 +7,8 @@ import {
   type NamedLoop,
   type PlayableItem,
   type Playlist,
+  type RehearsalLibraryFileLinkNode,
+  type RehearsalLibraryFolderNode,
   type RehearsalQueueMode,
   type RepeatMode,
 } from '@org/audio-library-models';
@@ -76,6 +78,84 @@ export const resolvePlaylistItems = (
     return [
       createLoopPlayableItem(loop, source, normalizedPlaylist.id, entry.id),
     ];
+  });
+};
+
+export const resolveRehearsalLibraryFolderSubtreeIds = (
+  folderId: string,
+  folders: RehearsalLibraryFolderNode[],
+): Set<string> => {
+  const subtreeFolderIds = new Set<string>();
+  const pendingFolderIds = [folderId];
+
+  while (pendingFolderIds.length > 0) {
+    const nextFolderId = pendingFolderIds.pop();
+
+    if (!nextFolderId || subtreeFolderIds.has(nextFolderId)) {
+      continue;
+    }
+
+    subtreeFolderIds.add(nextFolderId);
+
+    for (const folder of folders) {
+      if (folder.parentFolderId === nextFolderId) {
+        pendingFolderIds.push(folder.id);
+      }
+    }
+  }
+
+  return subtreeFolderIds;
+};
+
+export const resolveFolderPlayableItems = (
+  folder: RehearsalLibraryFolderNode,
+  folders: RehearsalLibraryFolderNode[],
+  fileLinks: RehearsalLibraryFileLinkNode[],
+  loops: NamedLoop[],
+  sources: DriveAudioSource[],
+): PlayableItem[] => {
+  const subtreeFolderIds = resolveRehearsalLibraryFolderSubtreeIds(
+    folder.id,
+    folders,
+  );
+  const loopsById: Partial<Record<string, NamedLoop>> = keyBy(
+    loops,
+    (loop) => loop.id,
+  );
+  const sourcesById: Partial<Record<string, DriveAudioSource>> = keyBy(
+    sources,
+    (source) => source.id,
+  );
+
+  const items = flatMap(fileLinks, (fileLink) => {
+    if (!subtreeFolderIds.has(fileLink.parentFolderId)) {
+      return [];
+    }
+
+    if (fileLink.entityKind === 'track') {
+      const source = sourcesById[fileLink.entityId];
+
+      return source && isSourcePlayable(source)
+        ? [createTrackPlayableItem(source)]
+        : [];
+    }
+
+    if (fileLink.entityKind === 'loop') {
+      const loop = loopsById[fileLink.entityId];
+      const source = loop ? sourcesById[loop.sourceId] : undefined;
+
+      return loop && source && isSourcePlayable(source)
+        ? [createLoopPlayableItem(loop, source)]
+        : [];
+    }
+
+    return [];
+  });
+
+  return [...items].sort((left, right) => {
+    return left.title.localeCompare(right.title, undefined, {
+      sensitivity: 'base',
+    });
   });
 };
 
