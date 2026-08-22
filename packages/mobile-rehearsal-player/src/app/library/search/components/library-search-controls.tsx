@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { InteractionChip } from '../../components/interaction-chip';
+import { SortFieldChipRow } from '../../components/sort-field-chip-row';
 import { getLibrarySearchContextCopy } from '../../drive/utils/drive-library-view-model';
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
 import type {
@@ -169,31 +170,15 @@ export const LibrarySearchControls = ({
         </>
       ) : null}
       {selectedView === 'tags' ? (
-        <FilterChipGroup
-          filterChipStyle={styles.filterChip}
-          filterGroupStyle={styles.filterGroup}
-          filterLabelRowStyle={styles.filterLabelRow}
-          filterLabelStyle={styles.filterLabel}
-          filterRowStyle={styles.filterRow}
-          label="Sort"
-          onSelectValue={onSelectTagsSortField}
-          options={SAVED_TAGS_LIST_SORT_FIELD_OPTIONS}
-          selectedValue={tagsSortState.field}
-          trailingAction={
-            <SurfaceIconButton
-              accessibilityLabel={getSavedTagsListSortDirectionToggleLabel(
-                tagsSortState.direction,
-              )}
-              icon={
-                tagsSortState.direction === 'asc'
-                  ? 'sort-ascending'
-                  : 'sort-descending'
-              }
-              onPress={onToggleTagsSortDirection}
-              size={16}
-              style={styles.sortDirectionToggle}
-            />
-          }
+        <SortFieldChipRow
+          direction={tagsSortState.direction}
+          directionToggleAccessibilityLabel={getSavedTagsListSortDirectionToggleLabel(
+            tagsSortState.direction,
+          )}
+          fieldOptions={SAVED_TAGS_LIST_SORT_FIELD_OPTIONS}
+          onSelectField={onSelectTagsSortField}
+          onToggleDirection={onToggleTagsSortDirection}
+          selectedField={tagsSortState.field}
         />
       ) : null}
       {availableTagFilters.length > 0 ? (

@@ -1,9 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { SurfaceIconButton } from '../../../../components/surface-icon-button';
 import { appTheme } from '../../../../utils/theme';
 import { InteractionChip } from '../../../components/interaction-chip';
-import { FilterChipGroup } from '../../../search/components/library-search-filter-groups';
+import { SortFieldChipRow } from '../../../components/sort-field-chip-row';
 import {
   TAG_MATCH_LIST_SORT_FIELD_OPTIONS,
   TAG_MATCH_TYPE_FILTER_OPTIONS,
@@ -27,36 +26,22 @@ export const TagMatchControlsPanel = ({
 }: TagMatchControlsPanelProps) => {
   return (
     <View style={styles.panel}>
-      <FilterChipGroup
-        filterChipStyle={styles.filterChip}
-        filterGroupStyle={styles.filterGroup}
-        filterLabelRowStyle={styles.filterLabelRow}
-        filterLabelStyle={styles.filterLabel}
-        filterRowStyle={styles.filterRow}
-        label="Sort"
-        onSelectValue={(field) => {
+      <SortFieldChipRow
+        direction={sortState.direction}
+        directionToggleAccessibilityLabel={getTagMatchListSortDirectionToggleLabel(
+          sortState.direction,
+        )}
+        fieldOptions={TAG_MATCH_LIST_SORT_FIELD_OPTIONS}
+        onSelectField={(field) => {
           onChangeSortState({ ...sortState, field });
         }}
-        options={TAG_MATCH_LIST_SORT_FIELD_OPTIONS}
-        selectedValue={sortState.field}
-        trailingAction={
-          <SurfaceIconButton
-            accessibilityLabel={getTagMatchListSortDirectionToggleLabel(
-              sortState.direction,
-            )}
-            icon={
-              sortState.direction === 'asc' ? 'sort-ascending' : 'sort-descending'
-            }
-            onPress={() => {
-              onChangeSortState({
-                ...sortState,
-                direction: sortState.direction === 'asc' ? 'desc' : 'asc',
-              });
-            }}
-            size={16}
-            style={styles.sortDirectionToggle}
-          />
-        }
+        onToggleDirection={() => {
+          onChangeSortState({
+            ...sortState,
+            direction: sortState.direction === 'asc' ? 'desc' : 'asc',
+          });
+        }}
+        selectedField={sortState.field}
       />
       <View style={styles.filterGroup}>
         <Text style={styles.filterLabel}>Type</Text>
@@ -97,11 +82,5 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     textTransform: 'uppercase',
   },
-  filterLabelRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
   filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  sortDirectionToggle: { width: 32, height: 32 },
 });

@@ -3,7 +3,7 @@
 **Corrected per design.md's "Sort control placement" and "Extract a shared `SortFieldChipRow`" decisions (updated after finding Tags' sort already lives behind the filter popover, not inline in `SavedTagsList`):**
 
 - [x] 1.1 Add a `SortFieldChipRow` presentational component to `packages/mobile-rehearsal-player/src/app/library/components/`, wrapping the existing generic `FilterChipGroup<Value>` (`library/search/components/library-search-filter-groups.tsx`) plus a direction-toggle `SurfaceIconButton`, per design.md's `SortFieldChipRowProps<Field>` shape, owning its own default styles matching the values currently duplicated across the existing call sites.
-- [ ] 1.2 Refactor the Tags `Sort` block in `library-search-controls.tsx` and the tag-detail screen's `Sort` block in `tags/components/tag-match-list/controls-panel.tsx` to render the new shared `SortFieldChipRow` instead of independently composing `FilterChipGroup` + `SurfaceIconButton`, keeping `sortSavedTagUsage`/`SavedTagsListSortState`, `TagMatchListSortState`, and all existing behavior unchanged. Files' own `Sort` block is left untouched (non-goal).
+- [x] 1.2 Refactor the Tags `Sort` block in `library-search-controls.tsx` and the tag-detail screen's `Sort` block in `tags/components/tag-match-list/controls-panel.tsx` to render the new shared `SortFieldChipRow` instead of independently composing `FilterChipGroup` + `SurfaceIconButton`, keeping `sortSavedTagUsage`/`SavedTagsListSortState`, `TagMatchListSortState`, and all existing behavior unchanged. Files' own `Sort` block is left untouched (non-goal).
 - [ ] 1.3 Add focused tests for `SortFieldChipRow` and re-run the existing Tags-list and tag-detail sort tests/behavior to confirm no regression from the refactor.
 
 ## 2. Tracks View Sort
