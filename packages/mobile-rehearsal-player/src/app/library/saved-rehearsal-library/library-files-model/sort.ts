@@ -25,7 +25,7 @@ const compareLabels = (leftLabel: string, rightLabel: string) => {
   return normalizeName(leftLabel).localeCompare(normalizeName(rightLabel));
 };
 
-const parseTimestamp = (value?: string) => {
+export const parseTimestamp = (value?: string) => {
   if (!value) {
     return Number.NEGATIVE_INFINITY;
   }

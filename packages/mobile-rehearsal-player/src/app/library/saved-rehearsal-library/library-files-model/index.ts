@@ -17,6 +17,7 @@ import {
   DEFAULT_LIBRARY_FILES_SORT_DIRECTION,
   DEFAULT_LIBRARY_FILES_SORT_MODE,
   getLibraryFilesRowNodeKey,
+  parseTimestamp,
 } from './sort';
 import type {
   LibraryFilesExplorerState,
@@ -94,4 +95,5 @@ export {
   DEFAULT_LIBRARY_FILES_SORT_DIRECTION,
   DEFAULT_LIBRARY_FILES_SORT_MODE,
   getLibraryFilesRowNodeKey,
+  parseTimestamp,
 };
