@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 export type TagDetailHeaderSearchActions = {
   canShowFilters: boolean;
@@ -39,6 +39,17 @@ export const useTagDetailHeaderSearchActions = ({
   onToggleFilterPopover,
   onToggleSearchBar,
 }: UseTagDetailHeaderSearchActionsOptions) => {
+  const onToggleFilterPopoverRef = useRef(onToggleFilterPopover);
+  onToggleFilterPopoverRef.current = onToggleFilterPopover;
+  const onToggleSearchBarRef = useRef(onToggleSearchBar);
+  onToggleSearchBarRef.current = onToggleSearchBar;
+  const handleFilterActionPress = useCallback(() => {
+    onToggleFilterPopoverRef.current();
+  }, []);
+  const handleSearchActionPress = useCallback(() => {
+    onToggleSearchBarRef.current();
+  }, []);
+
   useEffect(() => {
     if (!onDetailSearchActionsChange) {
       return;
@@ -51,8 +62,8 @@ export const useTagDetailHeaderSearchActions = ({
       hideFiltersAccessibilityLabel: TAG_DETAIL_HIDE_FILTERS_ACCESSIBILITY_LABEL,
       isFilterPopoverVisible,
       isSearchBarVisible,
-      onFilterActionPress: onToggleFilterPopover,
-      onSearchActionPress: onToggleSearchBar,
+      onFilterActionPress: handleFilterActionPress,
+      onSearchActionPress: handleSearchActionPress,
       searchAccessibilityLabel: TAG_DETAIL_SEARCH_ACCESSIBILITY_LABEL,
       showFiltersAccessibilityLabel: TAG_DETAIL_SHOW_FILTERS_ACCESSIBILITY_LABEL,
     });
@@ -61,11 +72,11 @@ export const useTagDetailHeaderSearchActions = ({
       onDetailSearchActionsChange(null);
     };
   }, [
+    handleFilterActionPress,
+    handleSearchActionPress,
     hasActiveFilters,
     isFilterPopoverVisible,
     isSearchBarVisible,
     onDetailSearchActionsChange,
-    onToggleFilterPopover,
-    onToggleSearchBar,
   ]);
 };
