@@ -28,8 +28,13 @@ export const resolveLibraryHeaderSearchProps = (options: {
   searchState: ReturnType<typeof useSavedRehearsalLibrarySearch>;
   selectedView: SavedRehearsalLibraryView;
 }): LibraryHeaderSearchProps => {
-  const { detailSearchActions, playlistDetailPlayback, searchPanel, searchState, selectedView } =
-    options;
+  const {
+    detailSearchActions,
+    playlistDetailPlayback,
+    searchPanel,
+    searchState,
+    selectedView,
+  } = options;
 
   if (detailSearchActions) {
     return {
@@ -46,7 +51,10 @@ export const resolveLibraryHeaderSearchProps = (options: {
   }
 
   return {
-    canShowFilterPopover: selectedView === 'files' || selectedView === 'tags',
+    canShowFilterPopover:
+      selectedView === 'files' ||
+      selectedView === 'tags' ||
+      selectedView === 'tracks',
     canShowSearch: !playlistDetailPlayback,
     handleFilterActionPress: searchPanel.handleFilterActionPress,
     handleSearchActionPress: searchPanel.handleSearchActionPress,

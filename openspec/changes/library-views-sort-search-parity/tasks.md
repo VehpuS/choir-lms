@@ -9,7 +9,7 @@
 ## 2. Tracks View Sort
 
 - [x] 2.1 Add a `sortSavedSourcesBy`-style comparator and sort state/options (`Name`/`Date added`, using `source.modifiedTime` for `Date added` to match Files' existing semantics) in a colocated model file for the Tracks browse surface.
-- [ ] 2.2 Extend `canShowFilterPopover` (`screens/library/library-header-search-props.ts`) to include the Tracks view, add a Tracks `Sort` block (via the shared `SortFieldChipRow`) to `library-search-controls.tsx`'s filter popover, own the sort state in `use-saved-rehearsal-library-search.ts`, and apply the sort on top of `searchState.visibleSavedLibrarySources` before rendering rows in `BrowseSourceGroup`.
+- [x] 2.2 Extend `canShowFilterPopover` (`screens/library/library-header-search-props.ts`) to include the Tracks view, add a Tracks `Sort` block (via the shared `SortFieldChipRow`) to `library-search-controls.tsx`'s filter popover, own the sort state in `use-saved-rehearsal-library-search.ts`, and apply the sort on top of `searchState.visibleSavedLibrarySources` before rendering rows in `BrowseSourceGroup`.
 - [ ] 2.3 Add focused tests for the Tracks sort comparator (name case-insensitivity, date-added ordering, default state) and update/add a `browse-content`-level test if the render-branch wiring needs one, matching the existing test-coverage convention for this surface.
 
 ## 3. Loops View Sort

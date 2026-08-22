@@ -211,14 +211,17 @@ export const SavedRehearsalLibrarySearchShell = ({
         onSelectFilesSearchScope={searchState.setFilesSearchScope}
         onSelectFilesSortMode={searchState.setFilesSortMode}
         onSelectRecentSearchTerm={searchState.runLibrarySearch}
+        onSelectSourcesSortField={searchState.setSourcesSortField}
         onSelectTagsSortField={searchState.setTagsSortField}
         onToggleFilesSortDirection={searchState.toggleFilesSortDirection}
+        onToggleSourcesSortDirection={searchState.toggleSourcesSortDirection}
         onToggleTagFilter={searchState.toggleTagFilter}
         onToggleTagsSortDirection={searchState.toggleTagsSortDirection}
         recentSearchTerms={searchState.recentLibrarySearchTerms}
         selectedView={selectedView}
         selectedTagFilters={searchState.selectedTagFilters}
         searchQuery={searchState.librarySearchQuery}
+        sourcesSortState={searchState.sourcesSortState}
         tagsSortState={searchState.tagsSortState}
       />
     </View>

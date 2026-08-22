@@ -1,6 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
+import {
+  SAVED_SOURCE_SORT_FIELD_OPTIONS,
+  type SavedSourceSortField,
+  type SavedSourceSortState,
+} from '../../components/saved-rehearsal-library-section/browse-source-group-model';
 import { InteractionChip } from '../../components/interaction-chip';
 import { SortFieldChipRow } from '../../components/sort-field-chip-row';
 import { getLibrarySearchContextCopy } from '../../drive/utils/drive-library-view-model';
@@ -47,14 +52,17 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   onSelectFilesSearchScope: (value: LibraryFilesSearchScope) => void;
   onSelectFilesSortMode: (value: LibraryFilesSortMode) => void;
   onSelectRecentSearchTerm: (value: string) => void;
+  onSelectSourcesSortField: (value: SavedSourceSortField) => void;
   onSelectTagsSortField: (value: SavedTagsListSortField) => void;
   onToggleFilesSortDirection: () => void;
+  onToggleSourcesSortDirection: () => void;
   onToggleTagFilter: (value: string) => void;
   onToggleTagsSortDirection: () => void;
   recentSearchTerms: string[];
   selectedView: SavedRehearsalLibraryView;
   selectedTagFilters: string[];
   searchQuery: string;
+  sourcesSortState: SavedSourceSortState;
   tagsSortState: SavedTagsListSortState;
 };
 
@@ -76,14 +84,17 @@ export const LibrarySearchControls = ({
   onSelectFilesSearchScope,
   onSelectFilesSortMode,
   onSelectRecentSearchTerm,
+  onSelectSourcesSortField,
   onSelectTagsSortField,
   onToggleFilesSortDirection,
+  onToggleSourcesSortDirection,
   onToggleTagFilter,
   onToggleTagsSortDirection,
   recentSearchTerms,
   selectedView,
   selectedTagFilters,
   searchQuery,
+  sourcesSortState,
   tagsSortState,
 }: LibrarySearchControlsProps) => {
   const searchContextCopy = getLibrarySearchContextCopy();
@@ -168,6 +179,18 @@ export const LibrarySearchControls = ({
             selectedValue={entityFilter}
           />
         </>
+      ) : null}
+      {selectedView === 'tracks' ? (
+        <SortFieldChipRow
+          direction={sourcesSortState.direction}
+          directionToggleAccessibilityLabel={getSavedTagsListSortDirectionToggleLabel(
+            sourcesSortState.direction,
+          )}
+          fieldOptions={SAVED_SOURCE_SORT_FIELD_OPTIONS}
+          onSelectField={onSelectSourcesSortField}
+          onToggleDirection={onToggleSourcesSortDirection}
+          selectedField={sourcesSortState.field}
+        />
       ) : null}
       {selectedView === 'tags' ? (
         <SortFieldChipRow

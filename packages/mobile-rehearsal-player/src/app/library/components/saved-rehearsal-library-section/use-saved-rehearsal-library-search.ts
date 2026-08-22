@@ -4,6 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import { resolveSavedPlaylistCards } from '../../playlists/utils/saved-playlist-card-view-model';
 import {
+  DEFAULT_SAVED_SOURCE_SORT_STATE,
+  sortSavedSourcesBy,
+  type SavedSourceSortField,
+} from './browse-source-group-model';
+import {
   DEFAULT_LIBRARY_FILES_SORT_DIRECTION,
   DEFAULT_LIBRARY_FILES_SORT_MODE,
   type LibraryFilesSearchScope,
@@ -61,6 +66,9 @@ export const useSavedRehearsalLibrarySearch = ({
   const [tagsSortState, setTagsSortState] = useState(
     DEFAULT_SAVED_TAGS_LIST_SORT_STATE,
   );
+  const [sourcesSortState, setSourcesSortState] = useState(
+    DEFAULT_SAVED_SOURCE_SORT_STATE,
+  );
   const [filesOpenedAtByNodeKey, setFilesOpenedAtByNodeKey] = useState<
     Record<string, string>
   >({});
@@ -116,17 +124,21 @@ export const useSavedRehearsalLibrarySearch = ({
   );
 
   const visibleSavedLibrarySources = useMemo(() => {
-    return filterSavedLibrarySourcesByQuery({
-      activeSearchQuery: activeLibrarySearchQuery,
-      entityFilter,
-      selectedTagFilters,
-      sources: savedLibrarySources,
-    });
+    return sortSavedSourcesBy(
+      filterSavedLibrarySourcesByQuery({
+        activeSearchQuery: activeLibrarySearchQuery,
+        entityFilter,
+        selectedTagFilters,
+        sources: savedLibrarySources,
+      }),
+      sourcesSortState,
+    );
   }, [
     activeLibrarySearchQuery,
     entityFilter,
     savedLibrarySources,
     selectedTagFilters,
+    sourcesSortState,
   ]);
   const visibleSavedLoops = useMemo(() => {
     return filterSavedLoopsByQuery({
@@ -240,16 +252,30 @@ export const useSavedRehearsalLibrarySearch = ({
     setFilesSearchScope,
     setFilesSortDirection,
     setFilesSortMode,
+    setSourcesSortField(field: SavedSourceSortField) {
+      setSourcesSortState((currentSortState) => {
+        return { ...currentSortState, field };
+      });
+    },
     setTagsSortField(field: SavedTagsListSortField) {
       setTagsSortState((currentSortState) => {
         return { ...currentSortState, field };
       });
     },
     filesSortDirection,
+    sourcesSortState,
     tagsSortState,
     toggleFilesSortDirection() {
       setFilesSortDirection((currentDirection) => {
         return currentDirection === 'asc' ? 'desc' : 'asc';
+      });
+    },
+    toggleSourcesSortDirection() {
+      setSourcesSortState((currentSortState) => {
+        return {
+          ...currentSortState,
+          direction: currentSortState.direction === 'asc' ? 'desc' : 'asc',
+        };
       });
     },
     toggleTagFilter(tag: string) {
