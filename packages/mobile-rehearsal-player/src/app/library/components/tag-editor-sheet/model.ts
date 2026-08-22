@@ -46,8 +46,25 @@ export const resolveTagEditorSuggestions = (
         return false;
       }
 
-      return !normalizedSegment || normalizedTag.includes(normalizedSegment);
+      if (!normalizedSegment) {
+        return true;
+      }
+
+      return (
+        normalizedTag.includes(normalizedSegment) &&
+        normalizedTag !== normalizedSegment
+      );
     })
     .slice(0, TAG_EDITOR_SUGGESTION_CAP)
     .map((usage) => usage.tag);
+};
+
+export const removeTagEditorInputActiveSegment = (tagInput: string) => {
+  const lastCommaIndex = tagInput.lastIndexOf(',');
+
+  if (lastCommaIndex === -1) {
+    return '';
+  }
+
+  return tagInput.slice(0, lastCommaIndex);
 };

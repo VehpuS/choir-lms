@@ -1,3 +1,5 @@
+import { aggregateRehearsalLibraryTags } from '@org/audio-library-runtime';
+import { useMemo } from 'react';
 import { View } from 'react-native';
 
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
@@ -254,6 +256,16 @@ export const SavedRehearsalLibrarySection = ({
     isSearchResultsVisible: showResults,
     selectedView,
   });
+  const availableTagUsage = useMemo(() => {
+    return aggregateRehearsalLibraryTags({
+      entityCollections: {
+        loops: savedLoops,
+        playlists: savedPlaylists,
+        sources: savedLibrarySources,
+      },
+      folders: libraryFiles.folders,
+    });
+  }, [libraryFiles.folders, savedLibrarySources, savedLoops, savedPlaylists]);
 
   return (
     <View style={styles.savedLibrarySection}>
@@ -344,7 +356,10 @@ export const SavedRehearsalLibrarySection = ({
         isMutating={isPlaylistMutating}
         playlists={savedPlaylists}
       />
-      <SavedRehearsalLibraryTagEditorSheet tagEditor={tagEditor} />
+      <SavedRehearsalLibraryTagEditorSheet
+        availableTagUsage={availableTagUsage}
+        tagEditor={tagEditor}
+      />
       {playlistState.confirmationDialog}
     </View>
   );

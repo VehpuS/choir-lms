@@ -138,13 +138,13 @@ The system SHALL show the user a row of suggested tags inside the tag editor for
 - **THEN** the suggestion row filters based only on the text typed since that last comma, not the full input
 - **AND** the tags already typed earlier in that same input are unaffected by the suggestion row
 
-#### Scenario: Selecting a suggested tag completes only the tag currently being typed
+#### Scenario: Selecting a suggested tag commits only the tag currently being typed
 
 - **WHEN** a user taps a suggested tag chip
-- **THEN** the text of the tag currently being typed is replaced with the selected tag
-- **AND** any tags already typed earlier in the same input, before the most recent comma, remain in the input unchanged
+- **THEN** the selected tag is added to the entity's draft tags immediately, without requiring a separate submit action
+- **AND** the text of the tag currently being typed is cleared from the tag input
+- **AND** any tags already typed earlier in the same input, before the most recent comma, remain in the input unchanged and still uncommitted, the same as before the tap
 - **AND** the tapped tag no longer appears in the suggestion row
-- **AND** the tag is not added to the entity's draft tags until the user submits the input, the same as any other typed tag
 
 #### Scenario: No suggestions available
 

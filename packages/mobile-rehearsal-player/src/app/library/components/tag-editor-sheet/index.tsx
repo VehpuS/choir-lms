@@ -1,4 +1,5 @@
 import { normalizeLibraryEntityTags } from '@org/audio-library-models';
+import type { RehearsalLibraryTagUsage } from '@org/audio-library-runtime';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -10,9 +11,17 @@ import { appTheme } from '../../../utils/theme';
 import { BottomSheetSurface } from '../bottom-sheet-surface';
 import { FeedbackCard } from '../feedback-card';
 import { InteractionChip } from '../interaction-chip';
-import { addLibraryEntityTag, removeLibraryEntityTag } from './model';
+import {
+  addLibraryEntityTag,
+  getActiveTagEditorInputSegment,
+  removeLibraryEntityTag,
+  removeTagEditorInputActiveSegment,
+  resolveTagEditorSuggestions,
+} from './model';
+import { TagSuggestionRow } from './tag-suggestion-row';
 
 type TagEditorSheetProps = {
+  availableTagUsage: RehearsalLibraryTagUsage[];
   isSaving: boolean;
   isVisible: boolean;
   tags: string[];
@@ -24,6 +33,7 @@ type TagEditorSheetProps = {
 const TAG_INPUT_PLACEHOLDER = 'Add tags (comma-separated)';
 
 export const TagEditorSheet = ({
+  availableTagUsage,
   isSaving,
   isVisible,
   tags,
@@ -53,6 +63,13 @@ export const TagEditorSheet = ({
     });
     setTagInput('');
   };
+
+  const activeSegment = getActiveTagEditorInputSegment(tagInput);
+  const suggestions = resolveTagEditorSuggestions(
+    availableTagUsage,
+    draftTags,
+    activeSegment,
+  );
 
   return (
     <BottomSheetSurface
@@ -130,6 +147,19 @@ export const TagEditorSheet = ({
           <Text style={styles.addTagButtonLabel}>+</Text>
         </Pressable>
       </View>
+
+      <TagSuggestionRow
+        isSaving={isSaving}
+        onSelectSuggestion={(suggestion) => {
+          setDraftTags((currentTags) => {
+            return addLibraryEntityTag(currentTags, suggestion);
+          });
+          setTagInput((currentInput) => {
+            return removeTagEditorInputActiveSegment(currentInput);
+          });
+        }}
+        suggestions={suggestions}
+      />
 
       <View style={styles.actionRow}>
         <Pressable

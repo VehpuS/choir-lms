@@ -10,6 +10,7 @@ import {
   getActiveTagEditorInputSegment,
   parseLibraryTagInput,
   removeLibraryEntityTag,
+  removeTagEditorInputActiveSegment,
   resolveTagEditorSuggestions,
   TAG_EDITOR_SUGGESTION_CAP,
 } from './model.js';
@@ -114,5 +115,33 @@ describe('resolveTagEditorSuggestions', () => {
       resolveTagEditorSuggestions(AVAILABLE_TAG_USAGE, [], 'nonexistent'),
       [],
     );
+  });
+
+  it('excludes a tag that exactly matches the active segment, case-insensitively', () => {
+    assert.deepEqual(
+      resolveTagEditorSuggestions(AVAILABLE_TAG_USAGE, [], 'warmup'),
+      [],
+    );
+  });
+});
+
+describe('removeTagEditorInputActiveSegment', () => {
+  it('clears the whole input when there is no comma yet', () => {
+    assert.equal(removeTagEditorInputActiveSegment('Sop'), '');
+  });
+
+  it('drops only the active segment, preserving one earlier typed tag', () => {
+    assert.equal(removeTagEditorInputActiveSegment('Alto, Sop'), 'Alto');
+  });
+
+  it('preserves multiple earlier typed tags before the last comma', () => {
+    assert.equal(
+      removeTagEditorInputActiveSegment('Alto, Tenor, War'),
+      'Alto, Tenor',
+    );
+  });
+
+  it('drops a trailing comma with an empty active segment', () => {
+    assert.equal(removeTagEditorInputActiveSegment('Alto, '), 'Alto');
   });
 });
