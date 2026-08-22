@@ -3,10 +3,14 @@ import { StyleSheet } from 'react-native';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
 import { appTheme } from '../../utils/theme';
 import { FilterChipGroup } from '../search/components/library-search-filter-groups';
+import {
+  resolveSortDirectionIcon,
+  type SortFieldChipRowDirection,
+} from './sort-field-chip-row-model';
 
 type SortFieldChipRowProps<Field extends string> = {
   directionToggleAccessibilityLabel: string;
-  direction: 'asc' | 'desc';
+  direction: SortFieldChipRowDirection;
   fieldOptions: { label: string; value: Field }[];
   label?: string;
   onSelectField: (field: Field) => void;
@@ -37,7 +41,7 @@ export const SortFieldChipRow = <Field extends string>({
       trailingAction={
         <SurfaceIconButton
           accessibilityLabel={directionToggleAccessibilityLabel}
-          icon={direction === 'asc' ? 'sort-ascending' : 'sort-descending'}
+          icon={resolveSortDirectionIcon(direction)}
           onPress={onToggleDirection}
           size={16}
           style={styles.sortDirectionToggle}
