@@ -1,25 +1,27 @@
 ## 1. Shared Sort Control Extraction
 
-- [ ] 1.1 Extract a generic `SortFieldChipRow` presentational component (field chips + ascending/descending direction toggle) out of `SavedTagsList`'s existing inline sort row into `packages/mobile-rehearsal-player/src/app/library/components/`, parameterized over the field type per design.md's `SortFieldChipRowProps<Field>` shape.
-- [ ] 1.2 Refactor `SavedTagsList` to render the new shared `SortFieldChipRow` instead of its bespoke chip/toggle JSX, keeping `sortSavedTagUsage`/`SavedTagsListSortState` and all existing Tags-specific behavior unchanged.
-- [ ] 1.3 Add/port focused tests for `SortFieldChipRow` (or its accessibility-label/interaction model helpers) and re-run the existing `SavedTagsList` sort tests to confirm no behavior regression from the refactor.
+**Corrected per design.md's "Sort control placement" and "Extract a shared `SortFieldChipRow`" decisions (updated after finding Tags' sort already lives behind the filter popover, not inline in `SavedTagsList`):**
+
+- [x] 1.1 Add a `SortFieldChipRow` presentational component to `packages/mobile-rehearsal-player/src/app/library/components/`, wrapping the existing generic `FilterChipGroup<Value>` (`library/search/components/library-search-filter-groups.tsx`) plus a direction-toggle `SurfaceIconButton`, per design.md's `SortFieldChipRowProps<Field>` shape, owning its own default styles matching the values currently duplicated across the existing call sites.
+- [ ] 1.2 Refactor the Tags `Sort` block in `library-search-controls.tsx` and the tag-detail screen's `Sort` block in `tags/components/tag-match-list/controls-panel.tsx` to render the new shared `SortFieldChipRow` instead of independently composing `FilterChipGroup` + `SurfaceIconButton`, keeping `sortSavedTagUsage`/`SavedTagsListSortState`, `TagMatchListSortState`, and all existing behavior unchanged. Files' own `Sort` block is left untouched (non-goal).
+- [ ] 1.3 Add focused tests for `SortFieldChipRow` and re-run the existing Tags-list and tag-detail sort tests/behavior to confirm no regression from the refactor.
 
 ## 2. Tracks View Sort
 
 - [ ] 2.1 Add a `sortSavedSourcesBy`-style comparator and sort state/options (`Name`/`Date added`, using `source.modifiedTime` for `Date added` to match Files' existing semantics) in a colocated model file for the Tracks browse surface.
-- [ ] 2.2 Wire local sort state and the shared `SortFieldChipRow` into `BrowseSourceGroup` (or its containing Tracks view composition), applying the sort on top of `searchState.visibleSavedLibrarySources` before rendering rows.
+- [ ] 2.2 Extend `canShowFilterPopover` (`screens/library/library-header-search-props.ts`) to include the Tracks view, add a Tracks `Sort` block (via the shared `SortFieldChipRow`) to `library-search-controls.tsx`'s filter popover, own the sort state in `use-saved-rehearsal-library-search.ts`, and apply the sort on top of `searchState.visibleSavedLibrarySources` before rendering rows in `BrowseSourceGroup`.
 - [ ] 2.3 Add focused tests for the Tracks sort comparator (name case-insensitivity, date-added ordering, default state) and update/add a `browse-content`-level test if the render-branch wiring needs one, matching the existing test-coverage convention for this surface.
 
 ## 3. Loops View Sort
 
 - [ ] 3.1 Add a `sortSavedLoopsBy`-style comparator and sort state/options (`Name`/`Date added`, using `loop.createdAt` for `Date added`) in a colocated model file for the Loops browse surface.
-- [ ] 3.2 Wire local sort state and the shared `SortFieldChipRow` into the Loops section/list component, applying the sort on top of `searchState.visibleSavedLoops` before rendering rows.
+- [ ] 3.2 Extend `canShowFilterPopover` to include the Loops view, add a Loops `Sort` block (via the shared `SortFieldChipRow`) to `library-search-controls.tsx`'s filter popover, own the sort state in `use-saved-rehearsal-library-search.ts`, and apply the sort on top of `searchState.visibleSavedLoops` before rendering rows in the Loops section/list component.
 - [ ] 3.3 Add focused tests for the Loops sort comparator, matching task 2.3's coverage shape.
 
 ## 4. Playlists View Sort
 
 - [ ] 4.1 Add a `sortSavedPlaylistsBy`-style comparator and sort state/options (`Name`/`Date added`, using `playlist.createdAt` for `Date added`) in a colocated model file for the Playlists browse surface.
-- [ ] 4.2 Wire local sort state and the shared `SortFieldChipRow` into `BrowsePlaylistCards` (or its containing Playlists view composition), applying the sort on top of `searchState.visiblePlaylistCards` before rendering cards.
+- [ ] 4.2 Extend `canShowFilterPopover` to include the Playlists view, add a Playlists `Sort` block (via the shared `SortFieldChipRow`) to `library-search-controls.tsx`'s filter popover, own the sort state in `use-saved-rehearsal-library-search.ts`, and apply the sort on top of `searchState.visiblePlaylistCards` before rendering cards in `BrowsePlaylistCards`.
 - [ ] 4.3 Add focused tests for the Playlists sort comparator, matching task 2.3's coverage shape.
 
 ## 5. Entity Filter Reset Fix

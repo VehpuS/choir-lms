@@ -3,8 +3,8 @@
 Library's view-switcher has five views: Files, Tracks, Loops, Playlists, Tags. Sort coverage today is uneven:
 
 - **Files** has a full sort control (`Name`/`Type`/`Date added`/`Date opened`) behind the header's filter-popover (funnel icon), defined in `library/search/components/library-search-filter-groups.tsx`'s `FILES_SORT_OPTIONS` and applied by `library-files-model/sort.ts`'s `sortRows`.
-- **Tags** (built in `recents-tag-integration`, not yet archived) has its own inline sort control directly in `SavedTagsList` — two `InteractionChip`s for the field (`Name`/`Count`) plus a `SurfaceIconButton` that toggles ascending/descending, backed by `sortSavedTagUsage` in `library/tags/components/saved-tags-list/model.ts`.
-- **Tracks, Loops, Playlists** have no sort control anywhere. Their filter popover is hidden entirely (`canShowFilters={isShowingFilesView}` in `screens/library/index.tsx`), so there is no UI surface for sort even if one existed. Rows render in whatever order `AsyncStoragePracticeRepository` persisted them (`sortBy([...], ['name'])` on every save — alphabetical ascending, non-locale-aware, and not something the user chose).
+- **Tags** (built in `recents-tag-integration`, now archived) sort is **also** behind that same filter-popover mechanism, not an inline row: `library-search-controls.tsx`'s `filterPopover` renders a `Sort` `FilterChipGroup` (`Name`/`Count`) plus a `SurfaceIconButton` ascending/descending toggle when `selectedView === 'tags'`, gated by `canShowFilterPopover: selectedView === 'files' || selectedView === 'tags'` in `screens/library/library-header-search-props.ts`. `SavedTagsList` itself renders no sort UI at all — it only consumes the resulting `SavedTagsListSortState` to order rows. A second, independent instance of the identical `FilterChipGroup` + `SurfaceIconButton` pattern already exists for the tag-detail screen's own sort (`tags/components/tag-match-list/controls-panel.tsx`), also gated behind that screen's own filter-popover toggle. **Correction from an earlier draft of this document:** there is no existing "inline, always-visible" sort row anywhere in the app to mirror — every sort control in the codebase today is hidden behind a filter-popover-style toggle. `library-search-filter-groups.tsx`'s `FilterChipGroup<Value>` is already the generic, reusable component this pattern is built on; nothing bespoke needs to be "extracted" out of `SavedTagsList`.
+- **Tracks, Loops, Playlists** have no sort control anywhere. Their filter popover is hidden entirely (`canShowFilterPopover` is `false` for these three views), so there is no UI surface for sort even if one existed. Rows render in whatever order `AsyncStoragePracticeRepository` persisted them (`sortBy([...], ['name'])` on every save — alphabetical ascending, non-locale-aware, and not something the user chose).
 
 Search, by contrast, already works uniformly: `useSavedRehearsalLibrarySearch` filters `visibleSavedLibrarySources`/`visibleSavedLoops`/`visiblePlaylistCards` from `activeLibrarySearchQuery` regardless of `selectedView`, and each view already renders its own filtered list. This change is therefore scoped to sort, plus one small correctness fix (entity-filter reset) surfaced while auditing search.
 
@@ -25,9 +25,17 @@ Search, by contrast, already works uniformly: `useSavedRehearsalLibrarySearch` f
 
 ## Decisions
 
-### Extract Tags' inline sort-row UI into a shared, reusable component
+### Sort control placement: reuse the existing filter-popover mechanism, not a new inline row
 
-Tags' current sort row (`SavedTagsList`, two `InteractionChip`s + a `SurfaceIconButton` direction toggle, driven by a local `{ field, direction }` state) is already generic in shape — it doesn't know anything about tags specifically beyond its field option labels. Extract it into a new shared component, e.g. `SortFieldChipRow` in `library/components/` (cross-feature, following the same convention as the existing `FilterChipGroup<Value>` generic component), parameterized by:
+**Corrected after implementation review (confirmed with user):** an earlier draft of this document assumed Tags already had an always-visible inline sort row, and planned to extract it and move all four views (Tags/Tracks/Loops/Playlists) onto that new inline pattern, away from Files' "hidden" popover. That assumption was wrong — Tags' sort (and the tag-detail screen's separate sort) already live behind the same filter-popover funnel-icon toggle Files uses, via the existing generic `FilterChipGroup<Value>` component. There is no inline convention anywhere in the app to converge on, and building one now would mean inventing a brand-new, unprecedented placement and moving Tags' already-shipped, working sort UI to it for no functional reason.
+
+Instead: extend `canShowFilterPopover` (`screens/library/library-header-search-props.ts`) to also return `true` for the Tracks, Loops, and Playlists views (alongside Files and Tags — these five are the complete `SavedRehearsalLibraryView` set, so this branch becomes unconditionally `true` when not in a detail view), and add a `Sort`-only `FilterChipGroup` block to `library-search-controls.tsx`'s `filterPopover` for each of the three new views, following the exact shape of the existing Tags block (no `Scope`/`Show` groups, since those are Files-specific and out of scope here). This is the smallest possible diff, touches no already-shipped Tags behavior, and does not introduce a second UI convention — it is the same one every other sort control in the app already uses.
+
+### Extract a shared `SortFieldChipRow` to stop duplicating the `FilterChipGroup` + direction-toggle pairing
+
+`FilterChipGroup<Value>` is already generic, but every one of its three current sort call sites (Files, Tags, tag-detail) separately re-composes the same `trailingAction={<SurfaceIconButton accessibilityLabel={...} icon={direction === 'asc' ? 'sort-ascending' : 'sort-descending'} onPress={...} size={16} style={...} />}` wiring and re-declares an identical set of `filterChip`/`filterGroup`/`filterLabelRow`/`filterLabel`/`filterRow`/`sortDirectionToggle` style objects in each file's own `StyleSheet.create`. Adding three more call sites (Tracks/Loops/Playlists) without factoring this out would make `library-search-controls.tsx` both very repetitive and push it over the repo's 300-line file guidance.
+
+Extract a `SortFieldChipRow` component into `library/components/` (cross-feature, since it will be used by `library/search/`, `library/tags/`, and the three new view surfaces), wrapping `FilterChipGroup` + the direction-toggle `SurfaceIconButton` and owning its own default styles (matching the values already duplicated today) so callers only pass the sort-specific data:
 
 ```ts
 type SortFieldChipRowProps<Field extends string> = {
@@ -40,15 +48,11 @@ type SortFieldChipRowProps<Field extends string> = {
 };
 ```
 
-Tags, Tracks, Loops, and Playlists each keep their own `{ field, direction }` state and comparator (`sortSaved<Entity>By(...)`) in their own local `model.ts`/view-model, but all render the same `SortFieldChipRow`. This is a small refactor of already-shipped Tags code, done as its own early task in this change, so Tags doesn't end up as a permanently-diverging one-off.
+Refactor the two existing Tags-related call sites (`library-search-controls.tsx`'s Tags `Sort` block and `tag-match-list/controls-panel.tsx`'s `Sort` block) onto this component to prove it generalizes, then use it for the three new Tracks/Loops/Playlists blocks. **Files' own `Sort` block is left untouched**, per this change's explicit non-goal of not touching Files' sort mechanism or filter-popover UI — refactoring it is not required for Tracks/Loops/Playlists to gain sort, and doing so anyway would risk an already-working, non-goal-protected surface for zero functional benefit.
 
-**Alternative considered:** leave Tags' sort row as bespoke JSX and copy-paste the pattern into Tracks/Loops/Playlists. Rejected — three more near-identical copies of the same chip-row-plus-toggle markup is exactly the kind of duplication the repo's coding-style policy asks to avoid, and any future visual tweak (e.g. spacing, accessibility label wording) would need four synchronized edits instead of one.
+Tags, Tracks, Loops, and Playlists each keep their own `{ field, direction }` state and comparator (`sortSaved<Entity>By(...)`) in their own local `model.ts`/view-model; only the presentational chip-row-plus-toggle widget is shared.
 
-### Sort control placement: inline in each view, not the Files filter-popover
-
-Mirror Tags exactly: render the sort row inline at the top of each view's own content (Tracks/Loops/Playlists), not behind the header's funnel icon the way Files' sort is. This matches the proposal's explicit direction ("the same features implemented for tags") and avoids introducing a second, hidden way to reach sort for these three views when they currently have no filter-popover trigger at all.
-
-**Alternative considered:** extend `canShowFilters`/the filter popover to also appear for Tracks/Loops/Playlists, adding a `Sort` `FilterChipGroup` there (mirroring Files' own mechanism instead of Tags'). Rejected — this would mean two different sort UI conventions live in Library at once (Files' hidden popover vs. Tags' inline row) instead of Tracks/Loops/Playlists converging on the newer, already-visible pattern; it would also modify the existing spec'd scenario "`Show` filter section appears only when the active Library view is Files" in a way not requested here (that scenario governs `Show`, not `Sort`, but conflating the two mechanisms revives the same "hidden filter surface" trade-off `recents-tag-integration`'s design.md already rejected for Tags).
+**Alternative considered:** leave every sort call site as independently-composed `FilterChipGroup` + `SurfaceIconButton` JSX and add three more that way. Rejected — six near-identical copies (three existing plus three new) of the same wiring and style objects is exactly the kind of duplication the repo's coding-style policy asks to avoid, and it would push `library-search-controls.tsx` past the file-length guidance once three more blocks are inlined into it.
 
 ### `Date added` field mapping matches Files' existing semantics
 
@@ -64,7 +68,7 @@ Add a reset in the existing view-switch handler path (`setSelectedView` call sit
 
 ## Risks / Trade-offs
 
-- [Extracting `SortFieldChipRow` touches already-shipped, working Tags code] → Low risk: purely a presentational extraction with no behavior change, covered by re-running Tags' existing manual verification steps after the refactor, before adding any new view's sort on top of it.
+- [Refactoring the two existing Tags-related `Sort` blocks onto `SortFieldChipRow` touches already-shipped, working code] → Low risk: purely a presentational extraction with no behavior change, covered by re-running Tags' and the tag-detail screen's existing manual verification steps after the refactor, before adding any new view's sort on top of it.
 - [Four views' worth of sort state, none persisted] → Acceptable per Non-Goals; if user feedback after shipping asks for persistence, that's a separate, small follow-up (mirroring however Files' `filesSortMode` persistence/restoration is later extended, if ever).
 - [`Date added` semantics could read as unintuitive if toggeable both ways when Files fixes it one way] → Flagged as an open question above; cheap to change the default/toggleability during implementation once it's on screen.
 
