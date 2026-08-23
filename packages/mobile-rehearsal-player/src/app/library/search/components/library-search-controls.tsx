@@ -9,6 +9,11 @@ import {
 import { InteractionChip } from '../../components/interaction-chip';
 import { SortFieldChipRow } from '../../components/sort-field-chip-row';
 import { getLibrarySearchContextCopy } from '../../drive/utils/drive-library-view-model';
+import {
+  SAVED_LOOP_SORT_FIELD_OPTIONS,
+  type SavedLoopSortField,
+  type SavedLoopSortState,
+} from '../../loops/utils/saved-loop-sort-model';
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
 import type {
   LibraryFilesSearchScope,
@@ -51,13 +56,16 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   onSelectEntityFilter: (value: LibrarySearchEntityFilter) => void;
   onSelectFilesSearchScope: (value: LibraryFilesSearchScope) => void;
   onSelectFilesSortMode: (value: LibraryFilesSortMode) => void;
+  onSelectLoopsSortField: (value: SavedLoopSortField) => void;
   onSelectRecentSearchTerm: (value: string) => void;
   onSelectSourcesSortField: (value: SavedSourceSortField) => void;
   onSelectTagsSortField: (value: SavedTagsListSortField) => void;
   onToggleFilesSortDirection: () => void;
+  onToggleLoopsSortDirection: () => void;
   onToggleSourcesSortDirection: () => void;
   onToggleTagFilter: (value: string) => void;
   onToggleTagsSortDirection: () => void;
+  loopsSortState: SavedLoopSortState;
   recentSearchTerms: string[];
   selectedView: SavedRehearsalLibraryView;
   selectedTagFilters: string[];
@@ -83,13 +91,16 @@ export const LibrarySearchControls = ({
   onSelectEntityFilter,
   onSelectFilesSearchScope,
   onSelectFilesSortMode,
+  onSelectLoopsSortField,
   onSelectRecentSearchTerm,
   onSelectSourcesSortField,
   onSelectTagsSortField,
   onToggleFilesSortDirection,
+  onToggleLoopsSortDirection,
   onToggleSourcesSortDirection,
   onToggleTagFilter,
   onToggleTagsSortDirection,
+  loopsSortState,
   recentSearchTerms,
   selectedView,
   selectedTagFilters,
@@ -190,6 +201,18 @@ export const LibrarySearchControls = ({
           onSelectField={onSelectSourcesSortField}
           onToggleDirection={onToggleSourcesSortDirection}
           selectedField={sourcesSortState.field}
+        />
+      ) : null}
+      {selectedView === 'loops' ? (
+        <SortFieldChipRow
+          direction={loopsSortState.direction}
+          directionToggleAccessibilityLabel={getSavedTagsListSortDirectionToggleLabel(
+            loopsSortState.direction,
+          )}
+          fieldOptions={SAVED_LOOP_SORT_FIELD_OPTIONS}
+          onSelectField={onSelectLoopsSortField}
+          onToggleDirection={onToggleLoopsSortDirection}
+          selectedField={loopsSortState.field}
         />
       ) : null}
       {selectedView === 'tags' ? (

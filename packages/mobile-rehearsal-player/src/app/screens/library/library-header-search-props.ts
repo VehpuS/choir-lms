@@ -53,6 +53,7 @@ export const resolveLibraryHeaderSearchProps = (options: {
   return {
     canShowFilterPopover:
       selectedView === 'files' ||
+      selectedView === 'loops' ||
       selectedView === 'tags' ||
       selectedView === 'tracks',
     canShowSearch: !playlistDetailPlayback,

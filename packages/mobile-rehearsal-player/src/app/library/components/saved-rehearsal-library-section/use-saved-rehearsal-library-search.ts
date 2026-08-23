@@ -9,6 +9,11 @@ import {
   type SavedSourceSortField,
 } from './browse-source-group-model';
 import {
+  DEFAULT_SAVED_LOOP_SORT_STATE,
+  sortSavedLoopsBy,
+  type SavedLoopSortField,
+} from '../../loops/utils/saved-loop-sort-model';
+import {
   DEFAULT_LIBRARY_FILES_SORT_DIRECTION,
   DEFAULT_LIBRARY_FILES_SORT_MODE,
   type LibraryFilesSearchScope,
@@ -68,6 +73,9 @@ export const useSavedRehearsalLibrarySearch = ({
   );
   const [sourcesSortState, setSourcesSortState] = useState(
     DEFAULT_SAVED_SOURCE_SORT_STATE,
+  );
+  const [loopsSortState, setLoopsSortState] = useState(
+    DEFAULT_SAVED_LOOP_SORT_STATE,
   );
   const [filesOpenedAtByNodeKey, setFilesOpenedAtByNodeKey] = useState<
     Record<string, string>
@@ -141,16 +149,20 @@ export const useSavedRehearsalLibrarySearch = ({
     sourcesSortState,
   ]);
   const visibleSavedLoops = useMemo(() => {
-    return filterSavedLoopsByQuery({
-      activeSearchQuery: activeLibrarySearchQuery,
-      entityFilter,
-      loops: savedLoops,
-      selectedTagFilters,
-      sources: savedLibrarySources,
-    });
+    return sortSavedLoopsBy(
+      filterSavedLoopsByQuery({
+        activeSearchQuery: activeLibrarySearchQuery,
+        entityFilter,
+        loops: savedLoops,
+        selectedTagFilters,
+        sources: savedLibrarySources,
+      }),
+      loopsSortState,
+    );
   }, [
     activeLibrarySearchQuery,
     entityFilter,
+    loopsSortState,
     savedLibrarySources,
     savedLoops,
     selectedTagFilters,
@@ -252,6 +264,11 @@ export const useSavedRehearsalLibrarySearch = ({
     setFilesSearchScope,
     setFilesSortDirection,
     setFilesSortMode,
+    setLoopsSortField(field: SavedLoopSortField) {
+      setLoopsSortState((currentSortState) => {
+        return { ...currentSortState, field };
+      });
+    },
     setSourcesSortField(field: SavedSourceSortField) {
       setSourcesSortState((currentSortState) => {
         return { ...currentSortState, field };
@@ -263,11 +280,20 @@ export const useSavedRehearsalLibrarySearch = ({
       });
     },
     filesSortDirection,
+    loopsSortState,
     sourcesSortState,
     tagsSortState,
     toggleFilesSortDirection() {
       setFilesSortDirection((currentDirection) => {
         return currentDirection === 'asc' ? 'desc' : 'asc';
+      });
+    },
+    toggleLoopsSortDirection() {
+      setLoopsSortState((currentSortState) => {
+        return {
+          ...currentSortState,
+          direction: currentSortState.direction === 'asc' ? 'desc' : 'asc',
+        };
       });
     },
     toggleSourcesSortDirection() {
