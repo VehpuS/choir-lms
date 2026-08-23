@@ -12,6 +12,7 @@ import {
   sortSavedSourcesBy,
 } from './browse-source-group-model';
 import { useFieldSortState } from '../use-field-sort-state';
+import { resolveEntityFilterOnViewChange } from './entity-filter-view-change';
 import {
   DEFAULT_SAVED_LOOP_SORT_STATE,
   sortSavedLoopsBy,
@@ -108,11 +109,12 @@ export const useSavedRehearsalLibrarySearch = ({
   }, [debouncedLibrarySearch]);
 
   useEffect(() => {
-    if (activeLibrarySearchQuery !== null) {
-      return;
-    }
-
-    setEntityFilter('all');
+    setEntityFilter((currentEntityFilter) => {
+      return resolveEntityFilterOnViewChange(
+        activeLibrarySearchQuery,
+        currentEntityFilter,
+      );
+    });
   }, [selectedView]);
 
   const runSubmittedLibrarySearchQuery = useCallback(
