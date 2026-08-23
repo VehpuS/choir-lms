@@ -11,8 +11,8 @@
 
 ## 3. Search toggle active-state parity
 
-- [ ] 3.1 In `library-search-controls-actions.tsx`, change the search `LibrarySearchActionButton`'s `isFilled` from the hardcoded `true` to `isSearchBarVisible`, matching the filter button's active-state pattern.
-- [ ] 3.2 Add or update a focused test confirming the resolved fill state for the search button tracks `isSearchBarVisible` (open → filled, closed → not filled), matching the existing test-coverage convention for this file/surface.
+- [x] 3.1 In `library-search-controls-actions.tsx`, change the search `LibrarySearchActionButton`'s `isFilled` from the hardcoded `true` to `isSearchBarVisible`, matching the filter button's active-state pattern.
+- [x] 3.2 Add or update a focused test confirming the resolved fill state for the search button tracks `isSearchBarVisible` (open → filled, closed → not filled), matching the existing test-coverage convention for this file/surface.
 
 ## 4. Active-filter dot indicator and summary chip
 

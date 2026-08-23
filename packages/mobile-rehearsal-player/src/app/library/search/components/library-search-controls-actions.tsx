@@ -1,6 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { resolveSearchToggleIsFilled } from './library-search-controls-actions-model';
+
 const ACTION_BUTTON_SIZE = 40;
 const ACTION_ROW_GAP = 12;
 const DOUBLE_ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE * 2 + ACTION_ROW_GAP;
@@ -109,7 +111,7 @@ export const LibrarySearchControlsActions = ({
               : searchAccessibilityLabel
           }
           iconName={isSearchBarVisible ? 'close' : 'magnify'}
-          isFilled={true}
+          isFilled={resolveSearchToggleIsFilled(isSearchBarVisible)}
           onPress={onSearchActionPress}
           tone={tone}
         />
