@@ -50,6 +50,7 @@ type SavedRehearsalLibrarySearchShellProps = {
   currentFilesFolderName: string | null;
   handleFilterActionPress: () => void;
   handleSearchActionPress: () => void;
+  hasActiveFilters: boolean;
   isViewSwitcherLocked: boolean;
   onSelectView: (view: SavedRehearsalLibraryView) => void;
   searchPanelVisibility: SearchPanelVisibility;
@@ -176,6 +177,7 @@ export const SavedRehearsalLibrarySearchShell = ({
   currentFilesFolderName,
   handleFilterActionPress,
   handleSearchActionPress,
+  hasActiveFilters,
   isViewSwitcherLocked,
   onSelectView,
   searchPanelVisibility,
@@ -196,6 +198,7 @@ export const SavedRehearsalLibrarySearchShell = ({
         filesSearchScope={searchState.filesSearchScope}
         filesSortDirection={searchState.filesSortDirection}
         filesSortMode={searchState.filesSortMode}
+        hasActiveFilters={hasActiveFilters}
         isFilterPopoverVisible={searchPanelVisibility.isFilterPopoverVisible}
         isSearchBarVisible={searchPanelVisibility.isSearchBarVisible}
         onClearSearch={searchState.clearLibrarySearch}

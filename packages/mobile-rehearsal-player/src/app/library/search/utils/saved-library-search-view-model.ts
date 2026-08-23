@@ -13,6 +13,13 @@ export type SearchHighlightPart = {
   text: string;
 };
 
+export const resolveHasActiveLibraryFilters = (
+  entityFilter: LibrarySearchEntityFilter,
+  selectedTagFilters: string[],
+) => {
+  return entityFilter !== 'all' || selectedTagFilters.length > 0;
+};
+
 const normalizeTagToken = (value: string) => {
   return value.trim().toLocaleLowerCase();
 };

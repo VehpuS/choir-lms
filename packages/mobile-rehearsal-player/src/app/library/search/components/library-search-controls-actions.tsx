@@ -27,6 +27,7 @@ type LibrarySearchActionButtonProps = {
   iconName: 'close' | 'magnify' | 'tune-variant';
   isFilled: boolean;
   onPress: () => void;
+  showActiveIndicator?: boolean;
   tone: 'hero' | 'surface';
 };
 
@@ -35,6 +36,7 @@ const LibrarySearchActionButton = ({
   iconName,
   isFilled,
   onPress,
+  showActiveIndicator = false,
   tone,
 }: LibrarySearchActionButtonProps) => {
   const isHeroTone = tone === 'hero';
@@ -68,6 +70,16 @@ const LibrarySearchActionButton = ({
         name={iconName}
         size={18}
       />
+      {showActiveIndicator ? (
+        <View
+          style={[
+            styles.activeIndicatorDot,
+            isHeroTone
+              ? styles.activeIndicatorDotHero
+              : styles.activeIndicatorDotSurface,
+          ]}
+        />
+      ) : null}
     </Pressable>
   );
 };
@@ -99,8 +111,9 @@ export const LibrarySearchControlsActions = ({
             : showFiltersAccessibilityLabel
         }
         iconName="tune-variant"
-        isFilled={isFilterPopoverVisible || hasActiveFilters}
+        isFilled={isFilterPopoverVisible}
         onPress={onFilterActionPress}
+        showActiveIndicator={hasActiveFilters}
         tone={tone}
       />
       {canShowSearch ? (
@@ -121,6 +134,22 @@ export const LibrarySearchControlsActions = ({
 };
 
 const styles = StyleSheet.create({
+  activeIndicatorDot: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    backgroundColor: '#ffd27d',
+  },
+  activeIndicatorDotHero: {
+    borderColor: '#173229',
+  },
+  activeIndicatorDotSurface: {
+    borderColor: '#f7f1e7',
+  },
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',

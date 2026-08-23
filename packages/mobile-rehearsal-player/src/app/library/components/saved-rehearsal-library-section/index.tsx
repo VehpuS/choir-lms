@@ -4,6 +4,7 @@ import { View } from 'react-native';
 
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
 import { resolveSavedRehearsalLibraryVisibleSections } from '../../saved-rehearsal-library/detail-mode';
+import { resolveHasActiveLibraryFilters } from '../../search/utils/saved-library-search-view-model';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
 import { shouldRenderSavedLibraryBrowseContent } from './browse-content-model';
 import {
@@ -275,6 +276,10 @@ export const SavedRehearsalLibrarySection = ({
         }
         handleFilterActionPress={searchPanel.handleFilterActionPress}
         handleSearchActionPress={searchPanel.handleSearchActionPress}
+        hasActiveFilters={resolveHasActiveLibraryFilters(
+          searchState.entityFilter,
+          searchState.selectedTagFilters,
+        )}
         isViewSwitcherLocked={isViewSwitcherLocked}
         onSelectView={setSelectedView}
         searchPanelVisibility={searchPanel.searchPanelVisibility}

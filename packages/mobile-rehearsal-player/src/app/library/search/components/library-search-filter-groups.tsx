@@ -6,17 +6,8 @@ import type {
   LibraryFilesSearchScope,
   LibraryFilesSortMode,
 } from '../../saved-rehearsal-library/library-files-model';
-import type { LibrarySearchEntityFilter } from '../utils/saved-library-search-view-model';
 
-export const ENTITY_FILTER_OPTIONS: {
-  label: string;
-  value: LibrarySearchEntityFilter;
-}[] = [
-  { label: 'All', value: 'all' },
-  { label: 'Tracks', value: 'tracks' },
-  { label: 'Loops', value: 'loops' },
-  { label: 'Playlists', value: 'playlists' },
-];
+export { ENTITY_FILTER_OPTIONS } from './library-search-entity-filter-options';
 
 export const FILES_SORT_OPTIONS: {
   label: string;

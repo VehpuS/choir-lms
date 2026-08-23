@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
+import { InteractionChip } from '../../components/interaction-chip';
 import type {
   SavedPlaylistSortField,
   SavedPlaylistSortState,
@@ -24,6 +25,7 @@ import type {
   SavedTagsListSortState,
 } from '../../tags/components/saved-tags-list/model';
 import type { LibrarySearchEntityFilter } from '../utils/saved-library-search-view-model';
+import { resolveActiveFiltersSummaryLabel } from './library-search-active-filters-model';
 import { ContextualSearchPanel } from './contextual-search-panel';
 import { LibrarySearchFilterPopover } from './library-search-filter-popover';
 import type { LibrarySearchControlsVisibility } from './library-search-controls-visibility';
@@ -37,6 +39,7 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   filesSearchScope: LibraryFilesSearchScope;
   filesSortDirection: LibraryFilesSortDirection;
   filesSortMode: LibraryFilesSortMode;
+  hasActiveFilters: boolean;
   onClearSearch: () => void;
   onFilterActionPress: () => void;
   onSearch: () => void;
@@ -74,9 +77,11 @@ export const LibrarySearchControls = ({
   filesSearchScope,
   filesSortDirection,
   filesSortMode,
+  hasActiveFilters,
   isFilterPopoverVisible,
   isSearchBarVisible,
   onClearSearch,
+  onFilterActionPress,
   onSearch,
   onSearchActionPress,
   onSearchInputBlur,
@@ -165,12 +170,27 @@ export const LibrarySearchControls = ({
     />
   ) : null;
 
-  if (!searchPanel && !filterPopover) {
+  const activeFiltersLabel = hasActiveFilters
+    ? resolveActiveFiltersSummaryLabel(entityFilter, selectedTagFilters)
+    : null;
+
+  const activeFiltersChip = activeFiltersLabel ? (
+    <InteractionChip
+      accessibilityLabel={`Filters active: ${activeFiltersLabel}. Tap to edit filters.`}
+      label={activeFiltersLabel}
+      onPress={onFilterActionPress}
+      style={styles.activeFiltersChip}
+      variant="selected"
+    />
+  ) : null;
+
+  if (!searchPanel && !filterPopover && !activeFiltersChip) {
     return null;
   }
 
   return (
     <View style={styles.panelContent}>
+      {activeFiltersChip}
       {filterPopover}
       {searchPanel}
     </View>
@@ -178,6 +198,9 @@ export const LibrarySearchControls = ({
 };
 
 const styles = StyleSheet.create({
+  activeFiltersChip: {
+    alignSelf: 'flex-start',
+  },
   panelContent: {
     gap: 12,
   },

@@ -2,6 +2,7 @@ import type { SearchPanelVisibility } from '../../library/components/saved-rehea
 import type { useSavedRehearsalLibrarySearch } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search';
 import type { useSavedRehearsalLibrarySearchPanel } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search-panel';
 import type { PlaylistDetailHeaderPlaybackAction } from '../../library/playlists/utils/saved-playlist-playback-view-model';
+import { resolveHasActiveLibraryFilters } from '../../library/search/utils/saved-library-search-view-model';
 import type { TagDetailHeaderSearchActions } from '../../library/tags/hooks/use-tag-detail-header-search-actions';
 
 export type LibraryHeaderSearchProps = {
@@ -49,9 +50,10 @@ export const resolveLibraryHeaderSearchProps = (options: {
     canShowSearch: !playlistDetailPlayback,
     handleFilterActionPress: searchPanel.handleFilterActionPress,
     handleSearchActionPress: searchPanel.handleSearchActionPress,
-    hasActiveFilters:
-      searchState.entityFilter !== 'all' ||
-      searchState.selectedTagFilters.length > 0,
+    hasActiveFilters: resolveHasActiveLibraryFilters(
+      searchState.entityFilter,
+      searchState.selectedTagFilters,
+    ),
     searchPanelVisibility: searchPanel.searchPanelVisibility,
   };
 };
