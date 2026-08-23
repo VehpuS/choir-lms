@@ -7,6 +7,13 @@ import type {
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import {
+  matchesEntityFilter,
+  matchesSelectedTags,
+  normalizeSelectedTags,
+  type LibrarySearchEntityFilter,
+} from '../../search/utils/saved-library-search-view-model';
+import { folderContainsMatchingEntity } from './folder-contains-matching-entity';
+import {
   buildEntityNameByKey,
   buildFolderChildCounts,
   buildFolderRow,
@@ -23,15 +30,20 @@ import type {
 
 export const buildDefaultRows = (options: {
   currentFolder: RehearsalLibraryFolderNode;
+  entityFilter?: LibrarySearchEntityFilter;
   entityNameByKey: ReturnType<typeof buildEntityNameByKey>;
   openedAtByNodeKey?: Readonly<Record<string, string>>;
   savedLoops: NamedLoop[];
   savedPlaylists: Playlist[];
   savedSources: DriveLibrarySource[];
+  selectedTagFilters?: string[];
   sortDirection?: LibraryFilesSortDirection;
   sortMode?: LibraryFilesSortMode;
   tree: RehearsalLibraryFileTree;
 }) => {
+  const entityFilter = options.entityFilter ?? 'all';
+  const selectedTags = normalizeSelectedTags(options.selectedTagFilters ?? []);
+  const hasActiveFilter = entityFilter !== 'all' || selectedTags.length > 0;
   const savedSourcesById = new Map(
     options.savedSources.map((source) => {
       return [source.id, source] as const;
@@ -51,6 +63,28 @@ export const buildDefaultRows = (options: {
     .filter((folder) => {
       return folder.parentFolderId === options.currentFolder.id;
     })
+    .filter((folder) => {
+      if (!hasActiveFilter) {
+        return true;
+      }
+
+      if (
+        selectedTags.length > 0 &&
+        matchesSelectedTags({ selectedTags, tags: folder.tags })
+      ) {
+        return true;
+      }
+
+      return folderContainsMatchingEntity({
+        entityFilter,
+        folderId: folder.id,
+        savedLoopsById,
+        savedPlaylistsById,
+        savedSourcesById,
+        selectedTags,
+        tree: options.tree,
+      });
+    })
     .map((folder) => {
       return buildFolderRow({
         childCounts: buildFolderChildCounts({
@@ -66,45 +100,75 @@ export const buildDefaultRows = (options: {
     }
 
     if (fileLink.entityKind === 'track') {
+      if (hasActiveFilter && !matchesEntityFilter(entityFilter, 'tracks')) {
+        return [] as LibraryFilesRow[];
+      }
+
       const source = savedSourcesById.get(fileLink.entityId);
 
-      return source
-        ? [
-            buildTrackRow({
-              entityNameByKey: options.entityNameByKey,
-              fileLink,
-              source,
-            }),
-          ]
-        : [];
+      if (
+        !source ||
+        (hasActiveFilter &&
+          !matchesSelectedTags({ selectedTags, tags: source.tags }))
+      ) {
+        return [] as LibraryFilesRow[];
+      }
+
+      return [
+        buildTrackRow({
+          entityNameByKey: options.entityNameByKey,
+          fileLink,
+          source,
+        }),
+      ];
     }
 
     if (fileLink.entityKind === 'loop') {
+      if (hasActiveFilter && !matchesEntityFilter(entityFilter, 'loops')) {
+        return [] as LibraryFilesRow[];
+      }
+
       const loop = savedLoopsById.get(fileLink.entityId);
 
-      return loop
-        ? [
-            buildLoopRow({
-              entityNameByKey: options.entityNameByKey,
-              fileLink,
-              loop,
-              source: savedSourcesById.get(loop.sourceId) ?? null,
-            }),
-          ]
-        : [];
+      if (
+        !loop ||
+        (hasActiveFilter &&
+          !matchesSelectedTags({ selectedTags, tags: loop.tags }))
+      ) {
+        return [] as LibraryFilesRow[];
+      }
+
+      return [
+        buildLoopRow({
+          entityNameByKey: options.entityNameByKey,
+          fileLink,
+          loop,
+          source: savedSourcesById.get(loop.sourceId) ?? null,
+        }),
+      ];
+    }
+
+    if (hasActiveFilter && !matchesEntityFilter(entityFilter, 'playlists')) {
+      return [] as LibraryFilesRow[];
     }
 
     const playlist = savedPlaylistsById.get(fileLink.entityId);
 
-    return playlist
-      ? [
-          buildPlaylistRow({
-            entityNameByKey: options.entityNameByKey,
-            fileLink,
-            playlist,
-          }),
-        ]
-      : [];
+    if (
+      !playlist ||
+      (hasActiveFilter &&
+        !matchesSelectedTags({ selectedTags, tags: playlist.tags }))
+    ) {
+      return [] as LibraryFilesRow[];
+    }
+
+    return [
+      buildPlaylistRow({
+        entityNameByKey: options.entityNameByKey,
+        fileLink,
+        playlist,
+      }),
+    ];
   });
 
   return sortRows({

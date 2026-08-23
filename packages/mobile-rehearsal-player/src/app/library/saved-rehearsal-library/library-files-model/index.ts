@@ -56,11 +56,13 @@ export const buildLibraryFilesExplorerState = (options: {
       })
     : buildDefaultRows({
         currentFolder,
+        entityFilter: options.searchOptions?.entityFilter,
         entityNameByKey,
         openedAtByNodeKey: options.searchOptions?.openedAtByNodeKey,
         savedLoops: options.savedLoops,
         savedPlaylists: options.savedPlaylists,
         savedSources: options.savedSources,
+        selectedTagFilters: options.searchOptions?.selectedTagFilters,
         sortDirection: options.searchOptions?.sortDirection,
         sortMode: options.searchOptions?.sortMode,
         tree: options.tree,
