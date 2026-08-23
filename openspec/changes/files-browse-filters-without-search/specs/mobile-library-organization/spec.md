@@ -54,6 +54,19 @@ The system SHALL provide a dedicated app-library search function for saved rehea
 - **AND** the system hides a subfolder that meets neither condition
 - **AND** a subfolder that remains visible still opens and lists its own contents under the same active filter(s)
 
+#### Scenario: Active filter state remains visible after closing the filter popover
+
+- **WHEN** a user selects a non-default `Show` filter value or one or more `Tags` filters and then closes the filter popover
+- **THEN** the system continues to indicate that a filter is active, both on the filter control itself and via a summary control shown in the browse view
+- **AND** this indication is shown regardless of which Library view is currently active, since the underlying filter selection is shared across views
+- **AND** selecting the summary control reopens the filter popover
+
+#### Scenario: The search toggle's active-state indication matches the filter toggle's pattern
+
+- **WHEN** a user opens or closes Library search
+- **THEN** the search toggle control's filled/active visual state reflects only whether the search bar is currently open
+- **AND** this matches how the filter toggle control already varies its filled/active state by whether the filter popover is open or a filter is active
+
 ### Requirement: Library entities support tag-based organization
 
 The system SHALL support tags for app-owned library entities so users can organize rehearsal material by choir part, context, or practice intent.
