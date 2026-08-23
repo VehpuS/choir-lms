@@ -14,7 +14,7 @@
 
 ## 3. Loops View Sort
 
-- [ ] 3.1 Add a `sortSavedLoopsBy`-style comparator and sort state/options (`Name`/`Date added`, using `loop.createdAt` for `Date added`) in a colocated model file for the Loops browse surface.
+- [x] 3.1 Add a `sortSavedLoopsBy`-style comparator and sort state/options (`Name`/`Date added`, using `loop.createdAt` for `Date added`) in a colocated model file for the Loops browse surface. (Added `loops/utils/saved-loop-sort-model.ts`, mirroring `browse-source-group-model.ts`'s shape and reusing the shared `parseTimestamp` helper from `saved-rehearsal-library/library-files-model`; placed in `loops/utils/` to match this feature's existing model-file convention, e.g. `saved-loop-section-model.ts`, rather than colocating in `loops/components/` — `saved-loop-view-model.ts` is already at the 300-line guideline so a new file was needed regardless. 7/7 tests passing.)
 - [ ] 3.2 Extend `canShowFilterPopover` to include the Loops view, add a Loops `Sort` block (via the shared `SortFieldChipRow`) to `library-search-controls.tsx`'s filter popover, own the sort state in `use-saved-rehearsal-library-search.ts`, and apply the sort on top of `searchState.visibleSavedLoops` before rendering rows in the Loops section/list component.
 - [ ] 3.3 Add focused tests for the Loops sort comparator, matching task 2.3's coverage shape.
 
