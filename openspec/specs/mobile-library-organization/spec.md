@@ -43,6 +43,12 @@ The system SHALL provide a dedicated app-library search function for saved rehea
 - **THEN** each such result shows supporting location metadata for its containing folder path
 - **AND** users do not need to open the item first just to understand where it lives in the file tree
 
+#### Scenario: The Files-only Show filter resets when switching views without an active search
+
+- **WHEN** a user has selected a non-default `Show` filter value while Files is the active Library view, has no active search query, and then switches to a different Library view
+- **THEN** the system resets the `Show` filter back to its default value
+- **AND** a stale `Show` filter value from Files cannot silently suppress results in Tracks, Loops, or Playlists
+
 ### Requirement: Library entities support tag-based organization
 
 The system SHALL support tags for app-owned library entities so users can organize rehearsal material by choir part, context, or practice intent.
@@ -166,6 +172,38 @@ The system SHALL expose explicit Files sort controls so users can understand and
 - **WHEN** a user is viewing Files search results
 - **THEN** the visible result ordering continues to follow the currently selected Files sort mode after search filtering
 - **AND** the app does not silently switch to a hidden alternate ordering model
+
+### Requirement: Tracks, Loops, and Playlists browse order is explicit and user-controlled
+
+The system SHALL expose explicit sort controls for the Tracks, Loops, and Playlists Library views so users can understand and change browse order in each dedicated view, using the same interaction pattern the Tags view's sort control already uses.
+
+#### Scenario: Each dedicated view exposes explicit sort options
+
+- **WHEN** a user opens the Tracks, Loops, or Playlists view
+- **THEN** the system offers `Name` and `Date added` as sort fields for that view
+- **AND** the default sort is `Name` ascending
+
+#### Scenario: Name sorting is case-insensitive
+
+- **WHEN** Tracks, Loops, or Playlists is sorted by `Name`
+- **THEN** the system compares visible names case-insensitively rather than treating case-only differences as distinct alphabetical groups
+
+#### Scenario: Date added sorting reflects when each entity was saved
+
+- **WHEN** Tracks, Loops, or Playlists is sorted by `Date added`
+- **THEN** the system orders visible items by the same underlying saved date Files' own `Date added` sort already uses for that entity type
+- **AND** the user can toggle between ascending and descending order for that sort field
+
+#### Scenario: Sort applies on top of active search results
+
+- **WHEN** a user has an active search query while viewing Tracks, Loops, or Playlists
+- **THEN** the visible, filtered result ordering continues to follow the currently selected sort field and direction for that view
+- **AND** the app does not silently switch to a hidden alternate ordering model
+
+#### Scenario: Sort selection does not persist across view switches
+
+- **WHEN** a user changes sort field or direction in Tracks, Loops, or Playlists and then switches to a different Library view and back
+- **THEN** the sort control for that view resets to its default (`Name` ascending)
 
 ### Requirement: Files organization separates file-tree nodes from underlying saved entities
 
