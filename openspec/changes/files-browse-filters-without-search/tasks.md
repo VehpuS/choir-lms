@@ -1,7 +1,7 @@
 ## 1. Recursive folder-match helper
 
-- [ ] 1.1 Add a `folderContainsMatchingEntity`-style helper (colocated in `library-files-model/`, e.g. `build-default-rows.ts` or a small sibling file) that, given a folder id, the file tree, the saved entity maps, and the active `entityFilter`/`selectedTagFilters`, uses `resolveRehearsalLibraryFolderSubtreeIds` to find the folder's full descendant-folder-id set and returns whether any file link in that set resolves to an entity matching both `matchesEntityFilter` and `matchesSelectedTags`, mirroring `buildSearchRows`'s per-item matching.
-- [ ] 1.2 Add focused tests for the helper: no filter active (trivially true or bypassed), matching entity one level down, matching entity several levels down, no matching entity anywhere in the subtree, entity-filter and tag-filter combined (both must pass), and a folder whose own tags match but contains no matching entity.
+- [x] 1.1 Add a `folderContainsMatchingEntity`-style helper (colocated in `library-files-model/`, e.g. `build-default-rows.ts` or a small sibling file) that, given a folder id, the file tree, the saved entity maps, and the active `entityFilter`/`selectedTagFilters`, uses `resolveRehearsalLibraryFolderSubtreeIds` to find the folder's full descendant-folder-id set and returns whether any file link in that set resolves to an entity matching both `matchesEntityFilter` and `matchesSelectedTags`, mirroring `buildSearchRows`'s per-item matching.
+- [x] 1.2 Add focused tests for the helper: no filter active (trivially true or bypassed), matching entity one level down, matching entity several levels down, no matching entity anywhere in the subtree, entity-filter and tag-filter combined (both must pass), and a folder whose own tags match but contains no matching entity.
 
 ## 2. Apply filters during plain browsing
 
