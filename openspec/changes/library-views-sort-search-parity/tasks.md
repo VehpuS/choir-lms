@@ -26,7 +26,7 @@
 
 ## 5. Entity Filter Reset Fix
 
-- [ ] 5.1 Reset `entityFilter` to `'all'` when `selectedView` changes while `isLibrarySearchMode` is false, in `use-saved-rehearsal-library-search.ts` or an adjacent effects hook, per design.md's scoping (only reset when no active search, to avoid discarding an in-progress filtered search).
+- [x] 5.1 Reset `entityFilter` to `'all'` when `selectedView` changes while `isLibrarySearchMode` is false, in `use-saved-rehearsal-library-search.ts` or an adjacent effects hook, per design.md's scoping (only reset when no active search, to avoid discarding an in-progress filtered search). (Added `selectedView` to `UseSavedRehearsalLibrarySearchOptions` and a `useEffect` keyed strictly on `[selectedView]` that resets `entityFilter` to `'all'` unless `activeLibrarySearchQuery !== null` — no `react-hooks/exhaustive-deps` lint rule is configured in this repo, so omitting `activeLibrarySearchQuery` from deps is safe and intentional: it keeps the effect firing only on an actual view change, not merely when search starts/stops, matching design.md's literal scoping. Wired both call sites — `screens/library/index.tsx` (external `selectedView`) and `use-saved-rehearsal-library-section-state.ts`'s internal fallback path (its own `internalSelectedView`). Full suite 494/494 passing, app typecheck and lint clean.)
 - [ ] 5.2 Add a focused test covering the reset-on-view-change behavior and confirming it does not fire while a search is active.
 
 ## 6. Final Validation

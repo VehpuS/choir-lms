@@ -89,6 +89,7 @@ export const useSavedRehearsalLibrarySectionState = ({
     savedLibrarySources,
     savedLoops,
     savedPlaylists,
+    selectedView: internalSelectedView,
   });
   const searchState = externalSearchState ?? internalSearchState;
   const playlistState = useSavedRehearsalLibraryPlaylistState({

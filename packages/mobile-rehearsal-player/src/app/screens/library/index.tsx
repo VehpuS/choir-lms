@@ -65,6 +65,7 @@ export const LibraryScreen = ({
     savedLibrarySources: libraryController.savedLibrary.savedLibrarySources,
     savedLoops: libraryController.savedLibrary.savedLoops,
     savedPlaylists: libraryController.playlists.savedPlaylists,
+    selectedView,
   });
   useLibraryFilesSessionRestoration({
     activeSearchQuery: searchState.activeLibrarySearchQuery,

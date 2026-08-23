@@ -23,6 +23,7 @@ import {
   type LibraryFilesSortDirection,
   type LibraryFilesSortMode,
 } from '../../saved-rehearsal-library/library-files-model';
+import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
 import { DEFAULT_SAVED_TAGS_LIST_SORT_STATE } from '../../tags/components/saved-tags-list/model';
 import { useRecentSearchHistory } from '../../search/hooks/use-recent-search-history';
 import { createDebouncedSearchRunner } from '../../search/utils/debounced-search-runner';
@@ -45,6 +46,7 @@ type UseSavedRehearsalLibrarySearchOptions = {
   savedLibrarySources: DriveLibrarySource[];
   savedLoops: NamedLoop[];
   savedPlaylists: Playlist[];
+  selectedView: SavedRehearsalLibraryView;
 };
 
 const LIBRARY_SEARCH_DEBOUNCE_MS = 200;
@@ -53,6 +55,7 @@ export const useSavedRehearsalLibrarySearch = ({
   savedLibrarySources,
   savedLoops,
   savedPlaylists,
+  selectedView,
 }: UseSavedRehearsalLibrarySearchOptions) => {
   const [entityFilter, setEntityFilter] =
     useState<LibrarySearchEntityFilter>('all');
@@ -103,6 +106,14 @@ export const useSavedRehearsalLibrarySearch = ({
       debouncedLibrarySearch.cancel();
     };
   }, [debouncedLibrarySearch]);
+
+  useEffect(() => {
+    if (activeLibrarySearchQuery !== null) {
+      return;
+    }
+
+    setEntityFilter('all');
+  }, [selectedView]);
 
   const runSubmittedLibrarySearchQuery = useCallback(
     (
