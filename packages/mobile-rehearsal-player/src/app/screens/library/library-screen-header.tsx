@@ -36,7 +36,6 @@ export const LibraryScreenHeader = ({
       ) : null}
       <SavedRehearsalLibraryHeader
         authorization={authorization}
-        canShowFilterPopover={headerSearchProps.canShowFilterPopover}
         canShowSearch={headerSearchProps.canShowSearch}
         closeSearchAccessibilityLabel={
           detailSearchActions?.closeSearchAccessibilityLabel

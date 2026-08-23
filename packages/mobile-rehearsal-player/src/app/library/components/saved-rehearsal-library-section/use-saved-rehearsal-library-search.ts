@@ -4,14 +4,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import { resolveSavedPlaylistCards } from '../../playlists/utils/saved-playlist-card-view-model';
 import {
+  DEFAULT_SAVED_PLAYLIST_SORT_STATE,
+  sortSavedPlaylistsBy,
+} from './browse-playlist-cards-model';
+import {
   DEFAULT_SAVED_SOURCE_SORT_STATE,
   sortSavedSourcesBy,
-  type SavedSourceSortField,
 } from './browse-source-group-model';
+import { useFieldSortState } from '../use-field-sort-state';
 import {
   DEFAULT_SAVED_LOOP_SORT_STATE,
   sortSavedLoopsBy,
-  type SavedLoopSortField,
 } from '../../loops/utils/saved-loop-sort-model';
 import {
   DEFAULT_LIBRARY_FILES_SORT_DIRECTION,
@@ -20,10 +23,7 @@ import {
   type LibraryFilesSortDirection,
   type LibraryFilesSortMode,
 } from '../../saved-rehearsal-library/library-files-model';
-import {
-  DEFAULT_SAVED_TAGS_LIST_SORT_STATE,
-  type SavedTagsListSortField,
-} from '../../tags/components/saved-tags-list/model';
+import { DEFAULT_SAVED_TAGS_LIST_SORT_STATE } from '../../tags/components/saved-tags-list/model';
 import { useRecentSearchHistory } from '../../search/hooks/use-recent-search-history';
 import { createDebouncedSearchRunner } from '../../search/utils/debounced-search-runner';
 import {
@@ -68,15 +68,10 @@ export const useSavedRehearsalLibrarySearch = ({
   );
   const [filesSortDirection, setFilesSortDirection] =
     useState<LibraryFilesSortDirection>(DEFAULT_LIBRARY_FILES_SORT_DIRECTION);
-  const [tagsSortState, setTagsSortState] = useState(
-    DEFAULT_SAVED_TAGS_LIST_SORT_STATE,
-  );
-  const [sourcesSortState, setSourcesSortState] = useState(
-    DEFAULT_SAVED_SOURCE_SORT_STATE,
-  );
-  const [loopsSortState, setLoopsSortState] = useState(
-    DEFAULT_SAVED_LOOP_SORT_STATE,
-  );
+  const tagsSort = useFieldSortState(DEFAULT_SAVED_TAGS_LIST_SORT_STATE);
+  const sourcesSort = useFieldSortState(DEFAULT_SAVED_SOURCE_SORT_STATE);
+  const loopsSort = useFieldSortState(DEFAULT_SAVED_LOOP_SORT_STATE);
+  const playlistsSort = useFieldSortState(DEFAULT_SAVED_PLAYLIST_SORT_STATE);
   const [filesOpenedAtByNodeKey, setFilesOpenedAtByNodeKey] = useState<
     Record<string, string>
   >({});
@@ -139,14 +134,14 @@ export const useSavedRehearsalLibrarySearch = ({
         selectedTagFilters,
         sources: savedLibrarySources,
       }),
-      sourcesSortState,
+      sourcesSort.sortState,
     );
   }, [
     activeLibrarySearchQuery,
     entityFilter,
     savedLibrarySources,
     selectedTagFilters,
-    sourcesSortState,
+    sourcesSort.sortState,
   ]);
   const visibleSavedLoops = useMemo(() => {
     return sortSavedLoopsBy(
@@ -157,28 +152,32 @@ export const useSavedRehearsalLibrarySearch = ({
         selectedTagFilters,
         sources: savedLibrarySources,
       }),
-      loopsSortState,
+      loopsSort.sortState,
     );
   }, [
     activeLibrarySearchQuery,
     entityFilter,
-    loopsSortState,
+    loopsSort.sortState,
     savedLibrarySources,
     savedLoops,
     selectedTagFilters,
   ]);
   const visiblePlaylistCards = useMemo(() => {
-    return resolveSavedPlaylistCards(
-      filterSavedPlaylistsByQuery({
-        activeSearchQuery: activeLibrarySearchQuery,
-        entityFilter,
-        playlists: savedPlaylists,
-        selectedTagFilters,
-      }),
+    return sortSavedPlaylistsBy(
+      resolveSavedPlaylistCards(
+        filterSavedPlaylistsByQuery({
+          activeSearchQuery: activeLibrarySearchQuery,
+          entityFilter,
+          playlists: savedPlaylists,
+          selectedTagFilters,
+        }),
+      ),
+      playlistsSort.sortState,
     );
   }, [
     activeLibrarySearchQuery,
     entityFilter,
+    playlistsSort.sortState,
     savedPlaylists,
     selectedTagFilters,
   ]);
@@ -264,46 +263,23 @@ export const useSavedRehearsalLibrarySearch = ({
     setFilesSearchScope,
     setFilesSortDirection,
     setFilesSortMode,
-    setLoopsSortField(field: SavedLoopSortField) {
-      setLoopsSortState((currentSortState) => {
-        return { ...currentSortState, field };
-      });
-    },
-    setSourcesSortField(field: SavedSourceSortField) {
-      setSourcesSortState((currentSortState) => {
-        return { ...currentSortState, field };
-      });
-    },
-    setTagsSortField(field: SavedTagsListSortField) {
-      setTagsSortState((currentSortState) => {
-        return { ...currentSortState, field };
-      });
-    },
+    setLoopsSortField: loopsSort.setField,
+    setPlaylistsSortField: playlistsSort.setField,
+    setSourcesSortField: sourcesSort.setField,
+    setTagsSortField: tagsSort.setField,
     filesSortDirection,
-    loopsSortState,
-    sourcesSortState,
-    tagsSortState,
+    loopsSortState: loopsSort.sortState,
+    playlistsSortState: playlistsSort.sortState,
+    sourcesSortState: sourcesSort.sortState,
+    tagsSortState: tagsSort.sortState,
     toggleFilesSortDirection() {
       setFilesSortDirection((currentDirection) => {
         return currentDirection === 'asc' ? 'desc' : 'asc';
       });
     },
-    toggleLoopsSortDirection() {
-      setLoopsSortState((currentSortState) => {
-        return {
-          ...currentSortState,
-          direction: currentSortState.direction === 'asc' ? 'desc' : 'asc',
-        };
-      });
-    },
-    toggleSourcesSortDirection() {
-      setSourcesSortState((currentSortState) => {
-        return {
-          ...currentSortState,
-          direction: currentSortState.direction === 'asc' ? 'desc' : 'asc',
-        };
-      });
-    },
+    toggleLoopsSortDirection: loopsSort.toggleDirection,
+    togglePlaylistsSortDirection: playlistsSort.toggleDirection,
+    toggleSourcesSortDirection: sourcesSort.toggleDirection,
     toggleTagFilter(tag: string) {
       setSelectedTagFilters((currentTagFilters) => {
         return currentTagFilters.includes(tag)
@@ -313,14 +289,7 @@ export const useSavedRehearsalLibrarySearch = ({
           : [...currentTagFilters, tag];
       });
     },
-    toggleTagsSortDirection() {
-      setTagsSortState((currentSortState) => {
-        return {
-          ...currentSortState,
-          direction: currentSortState.direction === 'asc' ? 'desc' : 'asc',
-        };
-      });
-    },
+    toggleTagsSortDirection: tagsSort.toggleDirection,
     visiblePlaylistCards,
     visibleSavedLibrarySources,
     visibleSavedLoops,

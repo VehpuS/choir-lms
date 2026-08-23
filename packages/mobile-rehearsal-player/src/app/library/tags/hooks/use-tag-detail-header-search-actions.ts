@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 export type TagDetailHeaderSearchActions = {
-  canShowFilters: boolean;
   closeSearchAccessibilityLabel: string;
   hasActiveFilters: boolean;
   hideFiltersAccessibilityLabel: string;
@@ -56,16 +55,18 @@ export const useTagDetailHeaderSearchActions = ({
     }
 
     onDetailSearchActionsChange({
-      canShowFilters: true,
-      closeSearchAccessibilityLabel: TAG_DETAIL_CLOSE_SEARCH_ACCESSIBILITY_LABEL,
+      closeSearchAccessibilityLabel:
+        TAG_DETAIL_CLOSE_SEARCH_ACCESSIBILITY_LABEL,
       hasActiveFilters,
-      hideFiltersAccessibilityLabel: TAG_DETAIL_HIDE_FILTERS_ACCESSIBILITY_LABEL,
+      hideFiltersAccessibilityLabel:
+        TAG_DETAIL_HIDE_FILTERS_ACCESSIBILITY_LABEL,
       isFilterPopoverVisible,
       isSearchBarVisible,
       onFilterActionPress: handleFilterActionPress,
       onSearchActionPress: handleSearchActionPress,
       searchAccessibilityLabel: TAG_DETAIL_SEARCH_ACCESSIBILITY_LABEL,
-      showFiltersAccessibilityLabel: TAG_DETAIL_SHOW_FILTERS_ACCESSIBILITY_LABEL,
+      showFiltersAccessibilityLabel:
+        TAG_DETAIL_SHOW_FILTERS_ACCESSIBILITY_LABEL,
     });
 
     return () => {

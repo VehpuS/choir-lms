@@ -7,7 +7,6 @@ const DOUBLE_ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE * 2 + ACTION_ROW_GAP;
 const SINGLE_ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE;
 
 type LibrarySearchControlsActionsProps = {
-  canShowFilters: boolean;
   canShowSearch?: boolean;
   closeSearchAccessibilityLabel?: string;
   hasActiveFilters: boolean;
@@ -72,7 +71,6 @@ const LibrarySearchActionButton = ({
 };
 
 export const LibrarySearchControlsActions = ({
-  canShowFilters,
   canShowSearch = true,
   closeSearchAccessibilityLabel = 'Close search',
   hasActiveFilters,
@@ -85,34 +83,24 @@ export const LibrarySearchControlsActions = ({
   showFiltersAccessibilityLabel = 'Show library filters',
   tone = 'surface',
 }: LibrarySearchControlsActionsProps) => {
-  const visibleActionCount = Number(canShowFilters) + Number(canShowSearch);
-
-  if (visibleActionCount === 0) {
-    return null;
-  }
-
   return (
     <View
       style={[
         styles.actionRow,
-        visibleActionCount > 1
-          ? styles.actionRowDouble
-          : styles.actionRowSingle,
+        canShowSearch ? styles.actionRowDouble : styles.actionRowSingle,
       ]}
     >
-      {canShowFilters ? (
-        <LibrarySearchActionButton
-          accessibilityLabel={
-            isFilterPopoverVisible
-              ? hideFiltersAccessibilityLabel
-              : showFiltersAccessibilityLabel
-          }
-          iconName="tune-variant"
-          isFilled={isFilterPopoverVisible || hasActiveFilters}
-          onPress={onFilterActionPress}
-          tone={tone}
-        />
-      ) : null}
+      <LibrarySearchActionButton
+        accessibilityLabel={
+          isFilterPopoverVisible
+            ? hideFiltersAccessibilityLabel
+            : showFiltersAccessibilityLabel
+        }
+        iconName="tune-variant"
+        isFilled={isFilterPopoverVisible || hasActiveFilters}
+        onPress={onFilterActionPress}
+        tone={tone}
+      />
       {canShowSearch ? (
         <LibrarySearchActionButton
           accessibilityLabel={

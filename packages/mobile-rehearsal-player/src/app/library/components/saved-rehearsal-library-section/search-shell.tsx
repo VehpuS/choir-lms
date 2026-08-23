@@ -30,7 +30,6 @@ export type SearchPanelVisibility = {
 
 type SavedRehearsalLibraryHeaderProps = {
   authorization?: DriveSessionMenuController;
-  canShowFilterPopover: boolean;
   canShowSearch: boolean;
   closeSearchAccessibilityLabel?: string;
   handleFilterActionPress: () => void;
@@ -94,7 +93,6 @@ export const SavedRehearsalLibraryViewSwitcher = ({
 
 export const SavedRehearsalLibraryHeader = ({
   authorization,
-  canShowFilterPopover,
   canShowSearch,
   closeSearchAccessibilityLabel,
   handleFilterActionPress,
@@ -127,7 +125,6 @@ export const SavedRehearsalLibraryHeader = ({
             />
           ) : null}
           <LibrarySearchControlsActions
-            canShowFilters={canShowFilterPopover}
             canShowSearch={canShowSearch}
             closeSearchAccessibilityLabel={closeSearchAccessibilityLabel}
             hasActiveFilters={hasActiveFilters}
@@ -211,15 +208,20 @@ export const SavedRehearsalLibrarySearchShell = ({
         onSelectFilesSearchScope={searchState.setFilesSearchScope}
         onSelectFilesSortMode={searchState.setFilesSortMode}
         onSelectLoopsSortField={searchState.setLoopsSortField}
+        onSelectPlaylistsSortField={searchState.setPlaylistsSortField}
         onSelectRecentSearchTerm={searchState.runLibrarySearch}
         onSelectSourcesSortField={searchState.setSourcesSortField}
         onSelectTagsSortField={searchState.setTagsSortField}
         onToggleFilesSortDirection={searchState.toggleFilesSortDirection}
         onToggleLoopsSortDirection={searchState.toggleLoopsSortDirection}
+        onTogglePlaylistsSortDirection={
+          searchState.togglePlaylistsSortDirection
+        }
         onToggleSourcesSortDirection={searchState.toggleSourcesSortDirection}
         onToggleTagFilter={searchState.toggleTagFilter}
         onToggleTagsSortDirection={searchState.toggleTagsSortDirection}
         loopsSortState={searchState.loopsSortState}
+        playlistsSortState={searchState.playlistsSortState}
         recentSearchTerms={searchState.recentLibrarySearchTerms}
         selectedView={selectedView}
         selectedTagFilters={searchState.selectedTagFilters}

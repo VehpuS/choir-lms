@@ -49,8 +49,10 @@ export const LibraryScreen = ({
     useState<PlaylistDetailHeaderPlaybackAction | null>(null);
   const [detailSearchActions, setDetailSearchActions] =
     useState<TagDetailHeaderSearchActions | null>(null);
-  const [isFilesPlaylistCreateDialogVisible, setIsFilesPlaylistCreateDialogVisible] =
-    useState(false);
+  const [
+    isFilesPlaylistCreateDialogVisible,
+    setIsFilesPlaylistCreateDialogVisible,
+  ] = useState(false);
   const [
     isPlaylistsDockCreateDialogVisible,
     setIsPlaylistsDockCreateDialogVisible,
@@ -110,7 +112,6 @@ export const LibraryScreen = ({
     playlistDetailPlayback,
     searchPanel,
     searchState,
-    selectedView,
   });
   return (
     <View style={styles.screen}>
