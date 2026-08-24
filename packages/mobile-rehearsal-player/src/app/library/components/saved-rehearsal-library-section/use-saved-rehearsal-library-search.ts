@@ -195,6 +195,7 @@ export const useSavedRehearsalLibrarySearch = ({
       setEntityFilter('all');
       filesSearchState.setFilesSearchScope('current-folder');
       setSelectedTagFilters([]);
+      setTagFilterMatchMode('all');
       setLibrarySearchQuery('');
       setActiveLibrarySearchQuery(null);
     },
