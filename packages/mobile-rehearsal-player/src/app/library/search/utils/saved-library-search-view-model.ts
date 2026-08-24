@@ -156,6 +156,7 @@ export const filterSavedLibrarySourcesByQuery = (options: {
   entityFilter: LibrarySearchEntityFilter;
   selectedTagFilters?: string[];
   sources: DriveLibrarySource[];
+  tagFilterMatchMode: TagFilterMatchMode;
 }) => {
   if (!matchesEntityFilter(options.entityFilter, 'tracks')) {
     return [];
@@ -167,7 +168,7 @@ export const filterSavedLibrarySourcesByQuery = (options: {
   return options.sources.filter((source) => {
     if (!normalizedQuery) {
       return matchesSelectedTags({
-        matchMode: 'all',
+        matchMode: options.tagFilterMatchMode,
         selectedTags,
         tags: source.tags,
       });
@@ -178,7 +179,7 @@ export const filterSavedLibrarySourcesByQuery = (options: {
     }
 
     return matchesSelectedTags({
-      matchMode: 'all',
+      matchMode: options.tagFilterMatchMode,
       selectedTags,
       tags: source.tags,
     });
@@ -191,6 +192,7 @@ export const filterSavedLoopsByQuery = (options: {
   loops: NamedLoop[];
   selectedTagFilters?: string[];
   sources: DriveLibrarySource[];
+  tagFilterMatchMode: TagFilterMatchMode;
 }) => {
   if (!matchesEntityFilter(options.entityFilter, 'loops')) {
     return [];
@@ -202,7 +204,7 @@ export const filterSavedLoopsByQuery = (options: {
   return options.loops.filter((loop) => {
     if (!normalizedQuery) {
       return matchesSelectedTags({
-        matchMode: 'all',
+        matchMode: options.tagFilterMatchMode,
         selectedTags,
         tags: loop.tags,
       });
@@ -216,7 +218,7 @@ export const filterSavedLoopsByQuery = (options: {
     }
 
     return matchesSelectedTags({
-      matchMode: 'all',
+      matchMode: options.tagFilterMatchMode,
       selectedTags,
       tags: loop.tags,
     });
@@ -228,6 +230,7 @@ export const filterSavedPlaylistsByQuery = (options: {
   entityFilter: LibrarySearchEntityFilter;
   playlists: Playlist[];
   selectedTagFilters?: string[];
+  tagFilterMatchMode: TagFilterMatchMode;
 }) => {
   if (!matchesEntityFilter(options.entityFilter, 'playlists')) {
     return [];
@@ -245,7 +248,7 @@ export const filterSavedPlaylistsByQuery = (options: {
     }
 
     return matchesSelectedTags({
-      matchMode: 'all',
+      matchMode: options.tagFilterMatchMode,
       selectedTags,
       tags: playlist.tags,
     });

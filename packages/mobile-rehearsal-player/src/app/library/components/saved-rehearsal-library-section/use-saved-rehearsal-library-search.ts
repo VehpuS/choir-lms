@@ -131,6 +131,7 @@ export const useSavedRehearsalLibrarySearch = ({
         entityFilter,
         selectedTagFilters,
         sources: savedLibrarySources,
+        tagFilterMatchMode,
       }),
       sourcesSort.sortState,
     );
@@ -140,6 +141,7 @@ export const useSavedRehearsalLibrarySearch = ({
     savedLibrarySources,
     selectedTagFilters,
     sourcesSort.sortState,
+    tagFilterMatchMode,
   ]);
   const visibleSavedLoops = useMemo(() => {
     return sortSavedLoopsBy(
@@ -149,6 +151,7 @@ export const useSavedRehearsalLibrarySearch = ({
         loops: savedLoops,
         selectedTagFilters,
         sources: savedLibrarySources,
+        tagFilterMatchMode,
       }),
       loopsSort.sortState,
     );
@@ -159,6 +162,7 @@ export const useSavedRehearsalLibrarySearch = ({
     savedLibrarySources,
     savedLoops,
     selectedTagFilters,
+    tagFilterMatchMode,
   ]);
   const visiblePlaylistCards = useMemo(() => {
     return sortSavedPlaylistsBy(
@@ -168,6 +172,7 @@ export const useSavedRehearsalLibrarySearch = ({
           entityFilter,
           playlists: savedPlaylists,
           selectedTagFilters,
+          tagFilterMatchMode,
         }),
       ),
       playlistsSort.sortState,
@@ -178,6 +183,7 @@ export const useSavedRehearsalLibrarySearch = ({
     playlistsSort.sortState,
     savedPlaylists,
     selectedTagFilters,
+    tagFilterMatchMode,
   ]);
   const availableTagFilters = useMemo(() => {
     return resolveAvailableTagFilters({

@@ -72,6 +72,7 @@ describe('saved library search view-model', () => {
         entityFilter: 'all',
         selectedTagFilters: [],
         sources,
+        tagFilterMatchMode: 'all',
       }).map((s) => s.name),
       ['Bass Line.mp3'],
     );
@@ -82,6 +83,7 @@ describe('saved library search view-model', () => {
         loops,
         selectedTagFilters: [],
         sources,
+        tagFilterMatchMode: 'all',
       }).map((l) => l.name),
       ['Bass cadence'],
     );
@@ -91,6 +93,7 @@ describe('saved library search view-model', () => {
         entityFilter: 'all',
         playlists,
         selectedTagFilters: [],
+        tagFilterMatchMode: 'all',
       }).map((p) => p.name),
       ['Kyrie Warmups'],
     );
@@ -132,6 +135,7 @@ describe('saved library search view-model', () => {
         entityFilter: 'tracks',
         selectedTagFilters: [],
         sources,
+        tagFilterMatchMode: 'all',
       }).map((s) => s.name),
       ['Tenor Line.mp3'],
     );
@@ -142,6 +146,7 @@ describe('saved library search view-model', () => {
         loops,
         selectedTagFilters: [],
         sources,
+        tagFilterMatchMode: 'all',
       }).map((l) => l.name),
       ['Tenor cadence'],
     );
@@ -151,6 +156,7 @@ describe('saved library search view-model', () => {
         entityFilter: 'playlists',
         playlists,
         selectedTagFilters: [],
+        tagFilterMatchMode: 'all',
       }).map((p) => p.name),
       ['Tenor Focus'],
     );
@@ -200,6 +206,7 @@ describe('saved library search view-model', () => {
         entityFilter: 'all',
         selectedTagFilters: ['alto', 'warmup'],
         sources,
+        tagFilterMatchMode: 'all',
       }).map((s) => s.name),
       ['Alto Line.mp3'],
     );
@@ -210,6 +217,7 @@ describe('saved library search view-model', () => {
         loops,
         selectedTagFilters: ['bass'],
         sources,
+        tagFilterMatchMode: 'all',
       }).map((l) => l.name),
       ['Bass cadence'],
     );
@@ -219,6 +227,7 @@ describe('saved library search view-model', () => {
         entityFilter: 'all',
         playlists,
         selectedTagFilters: ['warmup'],
+        tagFilterMatchMode: 'all',
       }).map((p) => p.name),
       ['Warmup Set'],
     );
