@@ -86,7 +86,7 @@ export const buildSearchRows = (options: {
             !scopedFolderIds.has(folder.id) ||
             !matchesSearchText(normalizedQuery, [folder.name]) ||
             !matchesSelectedTags({
-              matchMode: 'all',
+              matchMode: options.searchOptions.tagFilterMatchMode,
               selectedTags,
               tags: folder.tags,
             })
@@ -131,7 +131,7 @@ export const buildSearchRows = (options: {
       if (
         !source ||
         !matchesSelectedTags({
-          matchMode: 'all',
+          matchMode: options.searchOptions.tagFilterMatchMode,
           selectedTags,
           tags: source.tags,
         })
@@ -175,7 +175,7 @@ export const buildSearchRows = (options: {
       if (
         !loop ||
         !matchesSelectedTags({
-          matchMode: 'all',
+          matchMode: options.searchOptions.tagFilterMatchMode,
           selectedTags,
           tags: loop.tags,
         })
@@ -222,7 +222,7 @@ export const buildSearchRows = (options: {
     if (
       !playlist ||
       !matchesSelectedTags({
-        matchMode: 'all',
+        matchMode: options.searchOptions.tagFilterMatchMode,
         selectedTags,
         tags: playlist.tags,
       })
