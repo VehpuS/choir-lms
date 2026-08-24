@@ -45,6 +45,7 @@ export const buildDefaultRows = (options: {
 }) => {
   const entityFilter = options.entityFilter ?? 'all';
   const selectedTags = normalizeSelectedTags(options.selectedTagFilters ?? []);
+  const tagFilterMatchMode = options.tagFilterMatchMode ?? 'all';
   const hasActiveFilter = entityFilter !== 'all' || selectedTags.length > 0;
   const savedSourcesById = new Map(
     options.savedSources.map((source) => {
@@ -73,7 +74,7 @@ export const buildDefaultRows = (options: {
       if (
         selectedTags.length > 0 &&
         matchesSelectedTags({
-          matchMode: 'all',
+          matchMode: tagFilterMatchMode,
           selectedTags,
           tags: folder.tags,
         })
@@ -84,6 +85,7 @@ export const buildDefaultRows = (options: {
       return folderContainsMatchingEntity({
         entityFilter,
         folderId: folder.id,
+        matchMode: tagFilterMatchMode,
         savedLoopsById,
         savedPlaylistsById,
         savedSourcesById,
@@ -116,7 +118,7 @@ export const buildDefaultRows = (options: {
         !source ||
         (hasActiveFilter &&
           !matchesSelectedTags({
-            matchMode: 'all',
+            matchMode: tagFilterMatchMode,
             selectedTags,
             tags: source.tags,
           }))
@@ -144,7 +146,7 @@ export const buildDefaultRows = (options: {
         !loop ||
         (hasActiveFilter &&
           !matchesSelectedTags({
-            matchMode: 'all',
+            matchMode: tagFilterMatchMode,
             selectedTags,
             tags: loop.tags,
           }))
@@ -172,7 +174,7 @@ export const buildDefaultRows = (options: {
       !playlist ||
       (hasActiveFilter &&
         !matchesSelectedTags({
-          matchMode: 'all',
+          matchMode: tagFilterMatchMode,
           selectedTags,
           tags: playlist.tags,
         }))

@@ -10,11 +10,13 @@ import {
   matchesEntityFilter,
   matchesSelectedTags,
   type LibrarySearchEntityFilter,
+  type TagFilterMatchMode,
 } from '../../search/utils/saved-library-search-view-model';
 
 export const folderContainsMatchingEntity = (options: {
   entityFilter: LibrarySearchEntityFilter;
   folderId: string;
+  matchMode: TagFilterMatchMode;
   savedLoopsById: ReadonlyMap<string, NamedLoop>;
   savedPlaylistsById: ReadonlyMap<string, Playlist>;
   savedSourcesById: ReadonlyMap<string, DriveLibrarySource>;
@@ -41,7 +43,7 @@ export const folderContainsMatchingEntity = (options: {
       return (
         !!source &&
         matchesSelectedTags({
-          matchMode: 'all',
+          matchMode: options.matchMode,
           selectedTags: options.selectedTags,
           tags: source.tags,
         })
@@ -58,7 +60,7 @@ export const folderContainsMatchingEntity = (options: {
       return (
         !!loop &&
         matchesSelectedTags({
-          matchMode: 'all',
+          matchMode: options.matchMode,
           selectedTags: options.selectedTags,
           tags: loop.tags,
         })
@@ -74,7 +76,7 @@ export const folderContainsMatchingEntity = (options: {
     return (
       !!playlist &&
       matchesSelectedTags({
-        matchMode: 'all',
+        matchMode: options.matchMode,
         selectedTags: options.selectedTags,
         tags: playlist.tags,
       })

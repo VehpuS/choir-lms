@@ -66,6 +66,7 @@ describe('folderContainsMatchingEntity', () => {
     const result = folderContainsMatchingEntity({
       entityFilter: 'all',
       folderId: ROOT_FOLDER.id,
+      matchMode: 'all',
       savedLoopsById: new Map(),
       savedPlaylistsById: new Map(),
       savedSourcesById: new Map([[UNTAGGED_SOURCE.id, UNTAGGED_SOURCE]]),
@@ -100,6 +101,7 @@ describe('folderContainsMatchingEntity', () => {
     const result = folderContainsMatchingEntity({
       entityFilter: 'tracks',
       folderId: ROOT_FOLDER.id,
+      matchMode: 'all',
       savedLoopsById: new Map(),
       savedPlaylistsById: new Map(),
       savedSourcesById: new Map([[UNTAGGED_SOURCE.id, UNTAGGED_SOURCE]]),
@@ -140,6 +142,7 @@ describe('folderContainsMatchingEntity', () => {
     const result = folderContainsMatchingEntity({
       entityFilter: 'loops',
       folderId: ROOT_FOLDER.id,
+      matchMode: 'all',
       savedLoopsById: new Map([[SAVED_LOOP.id, SAVED_LOOP]]),
       savedPlaylistsById: new Map(),
       savedSourcesById: new Map(),
@@ -174,6 +177,7 @@ describe('folderContainsMatchingEntity', () => {
     const result = folderContainsMatchingEntity({
       entityFilter: 'loops',
       folderId: ROOT_FOLDER.id,
+      matchMode: 'all',
       savedLoopsById: new Map(),
       savedPlaylistsById: new Map(),
       savedSourcesById: new Map([[UNTAGGED_SOURCE.id, UNTAGGED_SOURCE]]),
@@ -212,6 +216,7 @@ describe('folderContainsMatchingEntity', () => {
     const matchesTypeOnly = folderContainsMatchingEntity({
       entityFilter: 'tracks',
       folderId: ROOT_FOLDER.id,
+      matchMode: 'all',
       savedLoopsById: new Map(),
       savedPlaylistsById: new Map(),
       savedSourcesById,
@@ -224,6 +229,7 @@ describe('folderContainsMatchingEntity', () => {
     const matchesBoth = folderContainsMatchingEntity({
       entityFilter: 'tracks',
       folderId: ROOT_FOLDER.id,
+      matchMode: 'all',
       savedLoopsById: new Map(),
       savedPlaylistsById: new Map(),
       savedSourcesById,
@@ -259,6 +265,7 @@ describe('folderContainsMatchingEntity', () => {
     const result = folderContainsMatchingEntity({
       entityFilter: 'all',
       folderId: taggedChildFolder.id,
+      matchMode: 'all',
       savedLoopsById: new Map(),
       savedPlaylistsById: new Map(),
       savedSourcesById: new Map([[UNTAGGED_SOURCE.id, UNTAGGED_SOURCE]]),
