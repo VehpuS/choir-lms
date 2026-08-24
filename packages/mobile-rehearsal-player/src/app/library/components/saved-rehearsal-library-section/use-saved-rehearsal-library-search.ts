@@ -17,13 +17,6 @@ import {
   DEFAULT_SAVED_LOOP_SORT_STATE,
   sortSavedLoopsBy,
 } from '../../loops/utils/saved-loop-sort-model';
-import {
-  DEFAULT_LIBRARY_FILES_SORT_DIRECTION,
-  DEFAULT_LIBRARY_FILES_SORT_MODE,
-  type LibraryFilesSearchScope,
-  type LibraryFilesSortDirection,
-  type LibraryFilesSortMode,
-} from '../../saved-rehearsal-library/library-files-model';
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
 import { DEFAULT_SAVED_TAGS_LIST_SORT_STATE } from '../../tags/components/saved-tags-list/model';
 import { useRecentSearchHistory } from '../../search/hooks/use-recent-search-history';
@@ -34,14 +27,13 @@ import {
   filterSavedPlaylistsByQuery,
   resolveActiveLibrarySearchQuery,
   type LibrarySearchEntityFilter,
+  type TagFilterMatchMode,
 } from '../../search/utils/saved-library-search-view-model';
 import { LIBRARY_RECENT_SEARCH_HISTORY_KEY } from '../../search/utils/search-history-storage';
 import { resolveSearchInputValue } from '../../search/utils/search-input-value';
-import {
-  restoreLibraryFilesSearchState,
-  type LibraryFilesSearchStateSnapshot,
-} from './library-files-search-state';
+import type { LibraryFilesSearchStateSnapshot } from './library-files-search-state';
 import { resolveAvailableTagFilters } from './saved-rehearsal-library-tag-filters';
+import { useLibraryFilesSearchState } from './use-library-files-search-state';
 
 type UseSavedRehearsalLibrarySearchOptions = {
   savedLibrarySources: DriveLibrarySource[];
@@ -61,24 +53,17 @@ export const useSavedRehearsalLibrarySearch = ({
   const [entityFilter, setEntityFilter] =
     useState<LibrarySearchEntityFilter>('all');
   const [selectedTagFilters, setSelectedTagFilters] = useState<string[]>([]);
+  const [tagFilterMatchMode, setTagFilterMatchMode] =
+    useState<TagFilterMatchMode>('all');
   const [librarySearchQuery, setLibrarySearchQuery] = useState('');
   const [activeLibrarySearchQuery, setActiveLibrarySearchQuery] = useState<
     string | null
   >(null);
-  const [filesSearchScope, setFilesSearchScope] =
-    useState<LibraryFilesSearchScope>('current-folder');
-  const [filesSortMode, setFilesSortMode] = useState<LibraryFilesSortMode>(
-    DEFAULT_LIBRARY_FILES_SORT_MODE,
-  );
-  const [filesSortDirection, setFilesSortDirection] =
-    useState<LibraryFilesSortDirection>(DEFAULT_LIBRARY_FILES_SORT_DIRECTION);
+  const filesSearchState = useLibraryFilesSearchState();
   const tagsSort = useFieldSortState(DEFAULT_SAVED_TAGS_LIST_SORT_STATE);
   const sourcesSort = useFieldSortState(DEFAULT_SAVED_SOURCE_SORT_STATE);
   const loopsSort = useFieldSortState(DEFAULT_SAVED_LOOP_SORT_STATE);
   const playlistsSort = useFieldSortState(DEFAULT_SAVED_PLAYLIST_SORT_STATE);
-  const [filesOpenedAtByNodeKey, setFilesOpenedAtByNodeKey] = useState<
-    Record<string, string>
-  >({});
   const { recentSearchTerms: recentLibrarySearchTerms, recordSearchTerm } =
     useRecentSearchHistory({
       storageKey: LIBRARY_RECENT_SEARCH_HISTORY_KEY,
@@ -208,7 +193,7 @@ export const useSavedRehearsalLibrarySearch = ({
     clearLibrarySearch() {
       debouncedLibrarySearch.cancel();
       setEntityFilter('all');
-      setFilesSearchScope('current-folder');
+      filesSearchState.setFilesSearchScope('current-folder');
       setSelectedTagFilters([]);
       setLibrarySearchQuery('');
       setActiveLibrarySearchQuery(null);
@@ -221,9 +206,7 @@ export const useSavedRehearsalLibrarySearch = ({
       setActiveLibrarySearchQuery(null);
     },
     entityFilter,
-    filesOpenedAtByNodeKey,
-    filesSearchScope,
-    filesSortMode,
+    ...filesSearchState,
     handleLibrarySearchQueryChange(value: string) {
       setLibrarySearchQuery(value);
 
@@ -239,32 +222,14 @@ export const useSavedRehearsalLibrarySearch = ({
     isLibrarySearchMode: activeLibrarySearchQuery !== null,
     librarySearchQuery,
     recentLibrarySearchTerms,
-    recordFilesEntryOpened(
-      nodeKey: string,
-      openedAt = new Date().toISOString(),
-    ) {
-      setFilesOpenedAtByNodeKey((currentValue) => {
-        if (currentValue[nodeKey] === openedAt) {
-          return currentValue;
-        }
-
-        return {
-          ...currentValue,
-          [nodeKey]: openedAt,
-        };
-      });
-    },
     runLibrarySearch(query: string) {
       runSubmittedLibrarySearchQuery(query, { syncInputValue: true });
     },
     restoreLibraryFilesSearchState(options: LibraryFilesSearchStateSnapshot) {
-      restoreLibraryFilesSearchState({
+      filesSearchState.restoreLibraryFilesSearchState({
         ...options,
         cancelPendingSearch: debouncedLibrarySearch.cancel,
         setActiveLibrarySearchQuery,
-        setFilesSearchScope,
-        setFilesSortDirection,
-        setFilesSortMode,
         setLibrarySearchQuery,
       });
     },
@@ -273,23 +238,15 @@ export const useSavedRehearsalLibrarySearch = ({
     },
     selectedTagFilters,
     setEntityFilter,
-    setFilesSearchScope,
-    setFilesSortDirection,
-    setFilesSortMode,
     setLoopsSortField: loopsSort.setField,
     setPlaylistsSortField: playlistsSort.setField,
     setSourcesSortField: sourcesSort.setField,
     setTagsSortField: tagsSort.setField,
-    filesSortDirection,
+    tagFilterMatchMode,
     loopsSortState: loopsSort.sortState,
     playlistsSortState: playlistsSort.sortState,
     sourcesSortState: sourcesSort.sortState,
     tagsSortState: tagsSort.sortState,
-    toggleFilesSortDirection() {
-      setFilesSortDirection((currentDirection) => {
-        return currentDirection === 'asc' ? 'desc' : 'asc';
-      });
-    },
     toggleLoopsSortDirection: loopsSort.toggleDirection,
     togglePlaylistsSortDirection: playlistsSort.toggleDirection,
     toggleSourcesSortDirection: sourcesSort.toggleDirection,
@@ -300,6 +257,11 @@ export const useSavedRehearsalLibrarySearch = ({
               return currentTagFilter !== tag;
             })
           : [...currentTagFilters, tag];
+      });
+    },
+    toggleTagFilterMatchMode() {
+      setTagFilterMatchMode((currentMatchMode) => {
+        return currentMatchMode === 'all' ? 'any' : 'all';
       });
     },
     toggleTagsSortDirection: tagsSort.toggleDirection,
