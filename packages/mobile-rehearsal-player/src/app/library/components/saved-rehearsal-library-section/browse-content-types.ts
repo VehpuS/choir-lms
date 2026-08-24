@@ -22,6 +22,7 @@ export type SearchState = Pick<
   | 'filesSortMode'
   | 'recordFilesEntryOpened'
   | 'selectedTagFilters'
+  | 'tagFilterMatchMode'
   | 'tagsSortState'
   | 'visiblePlaylistCards'
   | 'visibleSavedLibrarySources'

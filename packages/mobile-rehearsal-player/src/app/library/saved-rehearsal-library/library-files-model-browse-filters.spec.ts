@@ -45,39 +45,41 @@ const TAGGED_LOOP: NamedLoop = {
   tags: ['Alto'],
 };
 
+const FOLDER_TRACKS = {
+  id: 'folder-tracks',
+  name: 'Tracks Folder',
+  parentFolderId: ROOT_FOLDER.id,
+  createdAt: '2026-05-10T10:00:00.000Z',
+};
+
+const FOLDER_NO_TRACKS = {
+  id: 'folder-no-tracks',
+  name: 'No Tracks Folder',
+  parentFolderId: ROOT_FOLDER.id,
+  createdAt: '2026-05-10T10:00:00.000Z',
+};
+
 describe('library-files model browse filters', () => {
   it('Show: Tracks hides non-track leaf rows and folders with no track anywhere inside', () => {
-    const folderTracks = {
-      id: 'folder-tracks',
-      name: 'Tracks Folder',
-      parentFolderId: ROOT_FOLDER.id,
-      createdAt: '2026-05-10T10:00:00.000Z',
-    };
-    const folderNoTracks = {
-      id: 'folder-no-tracks',
-      name: 'No Tracks Folder',
-      parentFolderId: ROOT_FOLDER.id,
-      createdAt: '2026-05-10T10:00:00.000Z',
-    };
     const tree: RehearsalLibraryFileTree = {
       fileLinks: [
         {
           entityId: UNTAGGED_SOURCE.id,
           entityKind: 'track',
           id: `file-link:track:${UNTAGGED_SOURCE.id}`,
-          parentFolderId: folderTracks.id,
+          parentFolderId: FOLDER_TRACKS.id,
         },
         {
           entityId: PLAYLIST.id,
           entityKind: 'playlist',
           id: `file-link:playlist:${PLAYLIST.id}`,
-          parentFolderId: folderNoTracks.id,
+          parentFolderId: FOLDER_NO_TRACKS.id,
         },
         {
           entityId: SAVED_LOOP.id,
           entityKind: 'loop',
           id: `file-link:loop:${SAVED_LOOP.id}`,
-          parentFolderId: folderNoTracks.id,
+          parentFolderId: FOLDER_NO_TRACKS.id,
         },
         {
           entityId: PLAYLIST.id,
@@ -86,7 +88,7 @@ describe('library-files model browse filters', () => {
           parentFolderId: ROOT_FOLDER.id,
         },
       ],
-      folders: [ROOT_FOLDER, folderTracks, folderNoTracks],
+      folders: [ROOT_FOLDER, FOLDER_TRACKS, FOLDER_NO_TRACKS],
       rootFolderId: ROOT_FOLDER.id,
       version: 1,
     };
@@ -100,6 +102,7 @@ describe('library-files model browse filters', () => {
         activeSearchQuery: null,
         entityFilter: 'tracks',
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: [],
       },
       tree,
@@ -153,6 +156,7 @@ describe('library-files model browse filters', () => {
         activeSearchQuery: null,
         entityFilter: 'all',
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: ['Alto'],
       },
       tree,
@@ -195,6 +199,7 @@ describe('library-files model browse filters', () => {
         activeSearchQuery: null,
         entityFilter: 'all',
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: ['Alto'],
       },
       tree,
@@ -248,6 +253,7 @@ describe('library-files model browse filters', () => {
         activeSearchQuery: null,
         entityFilter: 'tracks',
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: ['Alto'],
       },
       tree,
@@ -260,34 +266,22 @@ describe('library-files model browse filters', () => {
   });
 
   it('leaves the no-filter case byte-for-byte unchanged from current behavior', () => {
-    const folderTracks = {
-      id: 'folder-tracks',
-      name: 'Tracks Folder',
-      parentFolderId: ROOT_FOLDER.id,
-      createdAt: '2026-05-10T10:00:00.000Z',
-    };
-    const folderNoTracks = {
-      id: 'folder-no-tracks',
-      name: 'No Tracks Folder',
-      parentFolderId: ROOT_FOLDER.id,
-      createdAt: '2026-05-10T10:00:00.000Z',
-    };
     const tree: RehearsalLibraryFileTree = {
       fileLinks: [
         {
           entityId: UNTAGGED_SOURCE.id,
           entityKind: 'track',
           id: `file-link:track:${UNTAGGED_SOURCE.id}`,
-          parentFolderId: folderTracks.id,
+          parentFolderId: FOLDER_TRACKS.id,
         },
         {
           entityId: PLAYLIST.id,
           entityKind: 'playlist',
           id: `file-link:playlist:${PLAYLIST.id}`,
-          parentFolderId: folderNoTracks.id,
+          parentFolderId: FOLDER_NO_TRACKS.id,
         },
       ],
-      folders: [ROOT_FOLDER, folderTracks, folderNoTracks],
+      folders: [ROOT_FOLDER, FOLDER_TRACKS, FOLDER_NO_TRACKS],
       rootFolderId: ROOT_FOLDER.id,
       version: 1,
     };
@@ -307,6 +301,7 @@ describe('library-files model browse filters', () => {
         activeSearchQuery: null,
         entityFilter: 'all',
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: [],
       },
     });

@@ -65,6 +65,7 @@ export const buildLibraryFilesExplorerState = (options: {
         selectedTagFilters: options.searchOptions?.selectedTagFilters,
         sortDirection: options.searchOptions?.sortDirection,
         sortMode: options.searchOptions?.sortMode,
+        tagFilterMatchMode: options.searchOptions?.tagFilterMatchMode,
         tree: options.tree,
       });
 

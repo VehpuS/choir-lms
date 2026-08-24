@@ -1,81 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type {
-  PlayableItem,
-  RehearsalLibraryFolderNode,
-} from '@org/audio-library-models';
-
-import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import {
   buttonInteractionGuardStyle,
   interactionGuardProps,
 } from '../../../components/interaction-guard';
-import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
-import {
-  getLibraryFilesRowNodeKey,
-  type LibraryFilesSearchScope,
-  type LibraryFilesSortDirection,
-  type LibraryFilesSortMode,
-} from '../../saved-rehearsal-library/library-files-model';
-import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
-import type { LibrarySearchEntityFilter } from '../../search/utils/saved-library-search-view-model';
+import { getLibraryFilesRowNodeKey } from '../../saved-rehearsal-library/library-files-model';
 import { ExplorerBreadcrumbBar, ExplorerNavigationBar } from '../explorer';
 import { FeedbackCard } from '../feedback-card';
 import { FilesExplorerList } from './files-explorer-list';
+import type { SavedRehearsalLibraryFilesViewProps } from './files-view-types';
 import {
   buildSavedRehearsalLibraryFilesViewModel,
   getFilesPlaylistAddModeCopy,
-  type FilesPlaylistAddMode,
 } from './files-view-model';
-import type { LibraryFilesSuccessFeedback } from './library-files-success-feedback';
 import { LibraryFilesSuccessFeedbackCard } from './library-files-success-feedback-card';
 import { useLibraryFilesRowActionFlows } from './use-library-files-row-action-flows';
-
-type SavedRehearsalLibraryFilesViewProps = {
-  activePlayableItem: PlayableItem | null;
-  authorization?: DriveSessionMenuController;
-  canMutateLibrary: boolean;
-  canMutateLoops: boolean;
-  canMutatePlaylists: boolean;
-  canQueueAsNext: boolean;
-  files: UseLibraryFilesResult;
-  isLoopBuilderPreparing: boolean;
-  isLoopMutating: boolean;
-  isPlaylistMutating: boolean;
-  isSavedLibraryMutating: boolean;
-  pendingLoopBuilderSourceId: string | null;
-  onOpenLoopBuilderForSource: (source: DriveLibrarySource) => void;
-  onOpenLoopPlaylistSelector: (loopId: string) => void;
-  onOpenFolderTagEditor: (folder: RehearsalLibraryFolderNode) => void;
-  onOpenPlaylistAddItems: (playlistId: string) => void;
-  onOpenPlaylist: (playlistId: string) => void;
-  onOpenPlaylistTagEditor: (playlistId: string) => void;
-  onPlaylistRenameVisibilityChange?: (isVisible: boolean) => void;
-  onDismissSuccessFeedback: () => void;
-  onOpenSourcePlaylistSelector: (sourceId: string) => void;
-  onOpenSourceTagEditor: (source: DriveLibrarySource) => void;
-  onOpenLoopTagEditor: (loopId: string) => void;
-  onOpenSuccessFeedbackFolder: (folderId: string) => void;
-  onShowSuccessFeedback: (feedback: LibraryFilesSuccessFeedback) => void;
-  onQueuePlayableItemNext: (playableItem: PlayableItem) => void;
-  onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;
-  onRemoveSource: (source: DriveLibrarySource) => void;
-  playlistAddMode?: FilesPlaylistAddMode;
-  searchState: {
-    activeSearchQuery: string | null;
-    entityFilter: LibrarySearchEntityFilter;
-    filesOpenedAtByNodeKey: Readonly<Record<string, string>>;
-    filesSearchScope: LibraryFilesSearchScope;
-    filesSortDirection: LibraryFilesSortDirection;
-    filesSortMode: LibraryFilesSortMode;
-    recordFilesEntryOpened: (nodeKey: string) => void;
-    selectedTagFilters: string[];
-  };
-  successFeedback: LibraryFilesSuccessFeedback | null;
-  onTogglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
-  onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
-};
 
 export const SavedRehearsalLibraryFilesView = ({
   activePlayableItem,
@@ -120,6 +60,7 @@ export const SavedRehearsalLibraryFilesView = ({
     selectedTagFilters: searchState.selectedTagFilters,
     sortDirection: searchState.filesSortDirection,
     sortMode: searchState.filesSortMode,
+    tagFilterMatchMode: searchState.tagFilterMatchMode,
   });
   const [openMenuRowKey, setOpenMenuRowKey] = useState<string | null>(null);
   const rowActionFlows = useLibraryFilesRowActionFlows({

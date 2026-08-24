@@ -202,6 +202,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
             filesSortMode: searchState.filesSortMode,
             recordFilesEntryOpened: searchState.recordFilesEntryOpened,
             selectedTagFilters: searchState.selectedTagFilters,
+            tagFilterMatchMode: searchState.tagFilterMatchMode,
           }}
           successFeedback={libraryFilesSuccessFeedback}
           onTogglePlayableItemPlayback={togglePlayableItemPlayback}

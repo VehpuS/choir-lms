@@ -11,6 +11,7 @@ import {
   matchesSelectedTags,
   normalizeSelectedTags,
   type LibrarySearchEntityFilter,
+  type TagFilterMatchMode,
 } from '../../search/utils/saved-library-search-view-model';
 import { folderContainsMatchingEntity } from './folder-contains-matching-entity';
 import {
@@ -39,6 +40,7 @@ export const buildDefaultRows = (options: {
   selectedTagFilters?: string[];
   sortDirection?: LibraryFilesSortDirection;
   sortMode?: LibraryFilesSortMode;
+  tagFilterMatchMode?: TagFilterMatchMode;
   tree: RehearsalLibraryFileTree;
 }) => {
   const entityFilter = options.entityFilter ?? 'all';

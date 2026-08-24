@@ -6,6 +6,7 @@ import { type RehearsalLibraryFileTree } from '@org/audio-library-models';
 import { buildLibraryFilesExplorerState } from './library-files-model';
 import {
   AVAILABLE_SOURCE,
+  LIBRARY_ROOT_FOLDER,
   PLAYLIST,
   SAVED_LOOP,
   UNAVAILABLE_SOURCE,
@@ -31,7 +32,7 @@ describe('library-files model search', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
+        LIBRARY_ROOT_FOLDER,
         {
           id: 'folder-warmups',
           name: 'Warmups',
@@ -64,6 +65,7 @@ describe('library-files model search', () => {
         activeSearchQuery: 'warm',
         entityFilter: 'all',
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: [],
       },
       tree,
@@ -91,9 +93,7 @@ describe('library-files model search', () => {
           visibleName: 'Warm loop',
         },
       ],
-      folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
-      ],
+      folders: [LIBRARY_ROOT_FOLDER],
       rootFolderId: 'folder:library-root',
       version: 1,
     };
@@ -107,6 +107,7 @@ describe('library-files model search', () => {
         activeSearchQuery: 'warm',
         entityFilter: 'all',
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: [],
       },
       tree,
@@ -145,7 +146,7 @@ describe('library-files model search', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
+        LIBRARY_ROOT_FOLDER,
         {
           id: 'folder-warmups',
           name: 'Warmups',
@@ -178,6 +179,7 @@ describe('library-files model search', () => {
         activeSearchQuery: 'warm',
         entityFilter: 'all',
         searchScope: 'all-files',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: [],
       },
       tree,
@@ -216,7 +218,7 @@ describe('library-files model search', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
+        LIBRARY_ROOT_FOLDER,
         {
           id: 'folder-warmups',
           name: 'Warmups',
@@ -237,6 +239,7 @@ describe('library-files model search', () => {
         activeSearchQuery: 'warm',
         entityFilter: 'all',
         searchScope: 'all-files',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: [],
         sortMode: 'name',
       },
@@ -277,9 +280,7 @@ describe('library-files model search', () => {
           visibleName: 'Warm track',
         },
       ],
-      folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
-      ],
+      folders: [LIBRARY_ROOT_FOLDER],
       rootFolderId: 'folder:library-root',
       version: 1,
     };
@@ -293,6 +294,7 @@ describe('library-files model search', () => {
         activeSearchQuery: 'warm',
         entityFilter: 'all',
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: [],
         sortMode: 'type',
       },

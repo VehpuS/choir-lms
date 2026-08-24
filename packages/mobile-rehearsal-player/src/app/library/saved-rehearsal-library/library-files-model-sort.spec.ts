@@ -52,7 +52,12 @@ const buildDateModeFixtures = () => {
       },
     ],
     folders: [
-      { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
+      {
+        id: 'folder:library-root',
+        name: 'Library',
+        parentFolderId: null,
+        createdAt: '2026-05-10T10:00:00.000Z',
+      },
       {
         id: 'folder-alpha',
         name: 'Archive',
@@ -88,7 +93,12 @@ const buildNameModeTree = (options: {
       },
     ],
     folders: [
-      { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
+      {
+        id: 'folder:library-root',
+        name: 'Library',
+        parentFolderId: null,
+        createdAt: '2026-05-10T10:00:00.000Z',
+      },
       {
         id: 'folder-zeta',
         name: 'zeta folder',
@@ -120,6 +130,7 @@ describe('library-files model sort', () => {
         activeSearchQuery: null,
         entityFilter: 'all',
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: [],
         sortMode: 'name',
       },
@@ -155,7 +166,12 @@ describe('library-files model sort', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
+        {
+          id: 'folder:library-root',
+          name: 'Library',
+          parentFolderId: null,
+          createdAt: '2026-05-10T10:00:00.000Z',
+        },
         {
           id: 'folder-warmups',
           name: 'Warmups',
@@ -176,6 +192,7 @@ describe('library-files model sort', () => {
         activeSearchQuery: null,
         entityFilter: 'all',
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: [],
         sortMode: 'type',
       },
@@ -205,6 +222,7 @@ describe('library-files model sort', () => {
         activeSearchQuery: null,
         entityFilter: 'all',
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: [],
         sortDirection: 'desc',
         sortMode: 'date-added',
@@ -233,6 +251,7 @@ describe('library-files model sort', () => {
             '2026-07-09T09:00:00.000Z',
         },
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: [],
         sortDirection: 'desc',
         sortMode: 'date-opened',
@@ -258,6 +277,7 @@ describe('library-files model sort', () => {
         activeSearchQuery: null,
         entityFilter: 'all',
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: [],
         sortMode: 'date-added',
       },
@@ -282,6 +302,7 @@ describe('library-files model sort', () => {
         activeSearchQuery: null,
         entityFilter: 'all',
         searchScope: 'current-folder',
+        tagFilterMatchMode: 'all',
         selectedTagFilters: [],
         sortDirection: 'desc',
         sortMode: 'name',

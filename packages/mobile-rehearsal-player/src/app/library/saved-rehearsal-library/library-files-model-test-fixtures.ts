@@ -2,7 +2,15 @@ import {
   createDriveAudioSource,
   type NamedLoop,
   type Playlist,
+  type RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
+
+export const LIBRARY_ROOT_FOLDER: RehearsalLibraryFolderNode = {
+  createdAt: '2026-05-10T10:00:00.000Z',
+  id: 'folder:library-root',
+  name: 'Library',
+  parentFolderId: null,
+};
 
 export const AVAILABLE_SOURCE = createDriveAudioSource({
   availability: {

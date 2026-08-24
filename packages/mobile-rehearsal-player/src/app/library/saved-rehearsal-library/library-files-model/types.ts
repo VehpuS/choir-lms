@@ -7,7 +7,10 @@ import type {
 
 import type { createLoopPlayableItem } from '@org/audio-library-models';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
-import type { LibrarySearchEntityFilter } from '../../search/utils/saved-library-search-view-model';
+import type {
+  LibrarySearchEntityFilter,
+  TagFilterMatchMode,
+} from '../../search/utils/saved-library-search-view-model';
 
 export type LibraryFilesSearchScope = 'all-files' | 'current-folder';
 
@@ -27,6 +30,7 @@ export type LibraryFilesSearchOptions = {
   selectedTagFilters: string[];
   sortDirection?: LibraryFilesSortDirection;
   sortMode?: LibraryFilesSortMode;
+  tagFilterMatchMode: TagFilterMatchMode;
 };
 
 export type LibraryFilesBreadcrumb = {
