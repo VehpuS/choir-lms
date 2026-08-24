@@ -222,6 +222,7 @@ export const SavedRehearsalLibrarySearchShell = ({
         }
         onToggleSourcesSortDirection={searchState.toggleSourcesSortDirection}
         onToggleTagFilter={searchState.toggleTagFilter}
+        onToggleTagFilterMatchMode={searchState.toggleTagFilterMatchMode}
         onToggleTagsSortDirection={searchState.toggleTagsSortDirection}
         loopsSortState={searchState.loopsSortState}
         playlistsSortState={searchState.playlistsSortState}
@@ -230,6 +231,7 @@ export const SavedRehearsalLibrarySearchShell = ({
         selectedTagFilters={searchState.selectedTagFilters}
         searchQuery={searchState.librarySearchQuery}
         sourcesSortState={searchState.sourcesSortState}
+        tagFilterMatchMode={searchState.tagFilterMatchMode}
         tagsSortState={searchState.tagsSortState}
       />
     </View>

@@ -24,7 +24,10 @@ import type {
   SavedTagsListSortField,
   SavedTagsListSortState,
 } from '../../tags/components/saved-tags-list/model';
-import type { LibrarySearchEntityFilter } from '../utils/saved-library-search-view-model';
+import type {
+  LibrarySearchEntityFilter,
+  TagFilterMatchMode,
+} from '../utils/saved-library-search-view-model';
 import { resolveActiveFiltersSummaryLabel } from './library-search-active-filters-model';
 import { ContextualSearchPanel } from './contextual-search-panel';
 import { LibrarySearchFilterPopover } from './library-search-filter-popover';
@@ -59,6 +62,7 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   onTogglePlaylistsSortDirection: () => void;
   onToggleSourcesSortDirection: () => void;
   onToggleTagFilter: (value: string) => void;
+  onToggleTagFilterMatchMode: () => void;
   onToggleTagsSortDirection: () => void;
   loopsSortState: SavedLoopSortState;
   playlistsSortState: SavedPlaylistSortState;
@@ -67,6 +71,7 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   selectedTagFilters: string[];
   searchQuery: string;
   sourcesSortState: SavedSourceSortState;
+  tagFilterMatchMode: TagFilterMatchMode;
   tagsSortState: SavedTagsListSortState;
 };
 
@@ -99,6 +104,7 @@ export const LibrarySearchControls = ({
   onTogglePlaylistsSortDirection,
   onToggleSourcesSortDirection,
   onToggleTagFilter,
+  onToggleTagFilterMatchMode,
   onToggleTagsSortDirection,
   loopsSortState,
   playlistsSortState,
@@ -107,6 +113,7 @@ export const LibrarySearchControls = ({
   selectedTagFilters,
   searchQuery,
   sourcesSortState,
+  tagFilterMatchMode,
   tagsSortState,
 }: LibrarySearchControlsProps) => {
   const searchContextCopy = getLibrarySearchContextCopy();
@@ -161,11 +168,13 @@ export const LibrarySearchControls = ({
       onTogglePlaylistsSortDirection={onTogglePlaylistsSortDirection}
       onToggleSourcesSortDirection={onToggleSourcesSortDirection}
       onToggleTagFilter={onToggleTagFilter}
+      onToggleTagFilterMatchMode={onToggleTagFilterMatchMode}
       onToggleTagsSortDirection={onToggleTagsSortDirection}
       playlistsSortState={playlistsSortState}
       selectedTagFilters={selectedTagFilters}
       selectedView={selectedView}
       sourcesSortState={sourcesSortState}
+      tagFilterMatchMode={tagFilterMatchMode}
       tagsSortState={tagsSortState}
     />
   ) : null;

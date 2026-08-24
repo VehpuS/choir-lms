@@ -22,6 +22,12 @@ export const resolveHasActiveLibraryFilters = (
   return entityFilter !== 'all' || selectedTagFilters.length > 0;
 };
 
+export const resolveTagFilterMatchModeToggleLabel = (
+  matchMode: TagFilterMatchMode,
+) => {
+  return matchMode === 'any' ? 'Match: Any' : 'Match: All';
+};
+
 const normalizeTagToken = (value: string) => {
   return value.trim().toLocaleLowerCase();
 };

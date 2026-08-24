@@ -30,7 +30,11 @@ import {
   type SavedTagsListSortField,
   type SavedTagsListSortState,
 } from '../../tags/components/saved-tags-list/model';
-import type { LibrarySearchEntityFilter } from '../utils/saved-library-search-view-model';
+import {
+  resolveTagFilterMatchModeToggleLabel,
+  type LibrarySearchEntityFilter,
+  type TagFilterMatchMode,
+} from '../utils/saved-library-search-view-model';
 import {
   buildFilesSearchScopeOptions,
   ENTITY_FILTER_OPTIONS,
@@ -58,11 +62,13 @@ type LibrarySearchFilterPopoverProps = {
   onTogglePlaylistsSortDirection: () => void;
   onToggleSourcesSortDirection: () => void;
   onToggleTagFilter: (value: string) => void;
+  onToggleTagFilterMatchMode: () => void;
   onToggleTagsSortDirection: () => void;
   playlistsSortState: SavedPlaylistSortState;
   selectedTagFilters: string[];
   selectedView: SavedRehearsalLibraryView;
   sourcesSortState: SavedSourceSortState;
+  tagFilterMatchMode: TagFilterMatchMode;
   tagsSortState: SavedTagsListSortState;
 };
 
@@ -86,11 +92,13 @@ export const LibrarySearchFilterPopover = ({
   onTogglePlaylistsSortDirection,
   onToggleSourcesSortDirection,
   onToggleTagFilter,
+  onToggleTagFilterMatchMode,
   onToggleTagsSortDirection,
   playlistsSortState,
   selectedTagFilters,
   selectedView,
   sourcesSortState,
+  tagFilterMatchMode,
   tagsSortState,
 }: LibrarySearchFilterPopoverProps) => {
   return (
@@ -197,6 +205,16 @@ export const LibrarySearchFilterPopover = ({
         <View style={styles.filterGroup}>
           <View style={styles.filterLabelRow}>
             <Text style={styles.filterLabel}>Tags</Text>
+            <InteractionChip
+              accessibilityLabel={`Tag match mode: ${resolveTagFilterMatchModeToggleLabel(
+                tagFilterMatchMode,
+              )}. Tap to switch to ${
+                tagFilterMatchMode === 'any' ? 'All' : 'Any'
+              }.`}
+              label={resolveTagFilterMatchModeToggleLabel(tagFilterMatchMode)}
+              onPress={onToggleTagFilterMatchMode}
+              style={styles.filterChip}
+            />
           </View>
           <View style={styles.filterRow}>
             {availableTagFilters.map((tagFilter) => {
