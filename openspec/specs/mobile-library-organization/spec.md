@@ -43,11 +43,32 @@ The system SHALL provide a dedicated app-library search function for saved rehea
 - **THEN** each such result shows supporting location metadata for its containing folder path
 - **AND** users do not need to open the item first just to understand where it lives in the file tree
 
-#### Scenario: The Files-only Show filter resets when switching views without an active search
+#### Scenario: Show and Tags filters apply to plain Files browsing, not only during search
 
-- **WHEN** a user has selected a non-default `Show` filter value while Files is the active Library view, has no active search query, and then switches to a different Library view
-- **THEN** the system resets the `Show` filter back to its default value
-- **AND** a stale `Show` filter value from Files cannot silently suppress results in Tracks, Loops, or Playlists
+- **WHEN** a user selects a non-default `Show` entity-type filter or one or more `Tags` filters while Files is the active Library view and no search query is active
+- **THEN** the system filters the current folder's visible track, loop, and playlist rows to only those matching the selected filter(s)
+- **AND** the active `Sort` mode continues to apply on top of the filtered rows
+- **AND** a stale `Show` or `Tags` selection cannot silently have no effect merely because no search is running
+
+#### Scenario: Folders remain reachable while a Show or Tags filter narrows plain Files browsing
+
+- **WHEN** a `Show` or `Tags` filter is active while plain-browsing Files
+- **THEN** the system keeps a subfolder visible in the current listing if it recursively contains at least one item matching the active filter(s), or if the subfolder's own tags match the active `Tags` filter
+- **AND** the system hides a subfolder that meets neither condition
+- **AND** a subfolder that remains visible still opens and lists its own contents under the same active filter(s)
+
+#### Scenario: Active filter state remains visible after closing the filter popover
+
+- **WHEN** a user selects a non-default `Show` filter value or one or more `Tags` filters and then closes the filter popover
+- **THEN** the system continues to indicate that a filter is active, via a small indicator on the filter control itself and via a summary control shown in the browse view
+- **AND** this indication is shown regardless of which Library view is currently active, since the underlying filter selection is shared across views
+- **AND** selecting the summary control reopens the filter popover
+
+#### Scenario: The search toggle's active-state indication matches the filter toggle's pattern
+
+- **WHEN** a user opens or closes Library search
+- **THEN** the search toggle control's filled/active visual state reflects only whether the search bar is currently open
+- **AND** this matches how the filter toggle control's filled/active visual state reflects only whether the filter popover is currently open, independent of whether a filter is active (a filter being active is instead shown via a separate small indicator on the control, not via its filled state)
 
 ### Requirement: Library entities support tag-based organization
 
@@ -80,6 +101,7 @@ The system SHALL support tags for app-owned library entities so users can organi
 
 - **WHEN** a user selects one or more tags in library organization controls
 - **THEN** the system filters visible saved entities to those matching the selected tags
+- **AND** this filtering applies whether or not a library search query is currently active
 
 ### Requirement: Library includes an explorer-style Files view for mixed saved entities
 

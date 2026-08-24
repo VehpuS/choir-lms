@@ -22,7 +22,7 @@ Both header-control gaps are addressed in the same change since they surfaced fr
 ### Non-Goals
 
 - No change to `Scope`'s behavior or applicability — it stays search-only.
-- No change to how `Show`/`Tags` filters behave *during* an active search (`buildSearchRows`); this only extends the same filter values to also apply when there is no active search.
+- No change to how `Show`/`Tags` filters behave _during_ an active search (`buildSearchRows`); this only extends the same filter values to also apply when there is no active search.
 - No new filter types or filter UI — this only fixes when the two existing filters (`Show`, `Tags`) take effect.
 - No per-filter individual clear affordance on the summary chip or the funnel-icon indicator — tapping either opens the filter popover, where individual filters are already cleared today; this proposal does not add a new removal interaction outside the popover.
 - No numeric count on the funnel-icon indicator — it is a simple present/absent dot, not a count badge (the summary chip's text label already carries more detail for users who want it).
