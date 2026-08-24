@@ -195,7 +195,9 @@ export const LibrarySearchFilterPopover = ({
       ) : null}
       {availableTagFilters.length > 0 ? (
         <View style={styles.filterGroup}>
-          <Text style={styles.filterLabel}>Tags</Text>
+          <View style={styles.filterLabelRow}>
+            <Text style={styles.filterLabel}>Tags</Text>
+          </View>
           <View style={styles.filterRow}>
             {availableTagFilters.map((tagFilter) => {
               return (
