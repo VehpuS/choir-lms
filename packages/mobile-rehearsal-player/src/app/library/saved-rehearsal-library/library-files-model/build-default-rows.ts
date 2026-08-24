@@ -70,7 +70,11 @@ export const buildDefaultRows = (options: {
 
       if (
         selectedTags.length > 0 &&
-        matchesSelectedTags({ selectedTags, tags: folder.tags })
+        matchesSelectedTags({
+          matchMode: 'all',
+          selectedTags,
+          tags: folder.tags,
+        })
       ) {
         return true;
       }
@@ -109,7 +113,11 @@ export const buildDefaultRows = (options: {
       if (
         !source ||
         (hasActiveFilter &&
-          !matchesSelectedTags({ selectedTags, tags: source.tags }))
+          !matchesSelectedTags({
+            matchMode: 'all',
+            selectedTags,
+            tags: source.tags,
+          }))
       ) {
         return [] as LibraryFilesRow[];
       }
@@ -133,7 +141,11 @@ export const buildDefaultRows = (options: {
       if (
         !loop ||
         (hasActiveFilter &&
-          !matchesSelectedTags({ selectedTags, tags: loop.tags }))
+          !matchesSelectedTags({
+            matchMode: 'all',
+            selectedTags,
+            tags: loop.tags,
+          }))
       ) {
         return [] as LibraryFilesRow[];
       }
@@ -157,7 +169,11 @@ export const buildDefaultRows = (options: {
     if (
       !playlist ||
       (hasActiveFilter &&
-        !matchesSelectedTags({ selectedTags, tags: playlist.tags }))
+        !matchesSelectedTags({
+          matchMode: 'all',
+          selectedTags,
+          tags: playlist.tags,
+        }))
     ) {
       return [] as LibraryFilesRow[];
     }

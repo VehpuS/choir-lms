@@ -8,6 +8,8 @@ export type LibrarySearchEntityFilter =
   | 'loops'
   | 'playlists';
 
+export type TagFilterMatchMode = 'all' | 'any';
+
 export type SearchHighlightPart = {
   isHighlighted: boolean;
   text: string;
@@ -43,6 +45,7 @@ export const normalizeSelectedTags = (tags: string[]) => {
 };
 
 export const matchesSelectedTags = (options: {
+  matchMode: TagFilterMatchMode;
   selectedTags: string[];
   tags: string[] | undefined;
 }) => {
@@ -60,9 +63,13 @@ export const matchesSelectedTags = (options: {
     }),
   );
 
-  return options.selectedTags.every((tag) => {
-    return entityTags.has(tag);
-  });
+  return options.matchMode === 'any'
+    ? options.selectedTags.some((tag) => {
+        return entityTags.has(tag);
+      })
+    : options.selectedTags.every((tag) => {
+        return entityTags.has(tag);
+      });
 };
 
 export const normalizeSearchQuery = (value: string) => {
@@ -160,6 +167,7 @@ export const filterSavedLibrarySourcesByQuery = (options: {
   return options.sources.filter((source) => {
     if (!normalizedQuery) {
       return matchesSelectedTags({
+        matchMode: 'all',
         selectedTags,
         tags: source.tags,
       });
@@ -170,6 +178,7 @@ export const filterSavedLibrarySourcesByQuery = (options: {
     }
 
     return matchesSelectedTags({
+      matchMode: 'all',
       selectedTags,
       tags: source.tags,
     });
@@ -193,6 +202,7 @@ export const filterSavedLoopsByQuery = (options: {
   return options.loops.filter((loop) => {
     if (!normalizedQuery) {
       return matchesSelectedTags({
+        matchMode: 'all',
         selectedTags,
         tags: loop.tags,
       });
@@ -206,6 +216,7 @@ export const filterSavedLoopsByQuery = (options: {
     }
 
     return matchesSelectedTags({
+      matchMode: 'all',
       selectedTags,
       tags: loop.tags,
     });
@@ -234,6 +245,7 @@ export const filterSavedPlaylistsByQuery = (options: {
     }
 
     return matchesSelectedTags({
+      matchMode: 'all',
       selectedTags,
       tags: playlist.tags,
     });

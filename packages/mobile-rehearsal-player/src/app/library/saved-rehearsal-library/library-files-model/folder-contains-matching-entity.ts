@@ -41,6 +41,7 @@ export const folderContainsMatchingEntity = (options: {
       return (
         !!source &&
         matchesSelectedTags({
+          matchMode: 'all',
           selectedTags: options.selectedTags,
           tags: source.tags,
         })
@@ -57,6 +58,7 @@ export const folderContainsMatchingEntity = (options: {
       return (
         !!loop &&
         matchesSelectedTags({
+          matchMode: 'all',
           selectedTags: options.selectedTags,
           tags: loop.tags,
         })
@@ -72,6 +74,7 @@ export const folderContainsMatchingEntity = (options: {
     return (
       !!playlist &&
       matchesSelectedTags({
+        matchMode: 'all',
         selectedTags: options.selectedTags,
         tags: playlist.tags,
       })
