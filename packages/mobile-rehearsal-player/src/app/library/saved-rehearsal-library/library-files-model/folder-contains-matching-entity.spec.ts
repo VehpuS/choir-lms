@@ -240,6 +240,49 @@ describe('folderContainsMatchingEntity', () => {
     assert.equal(matchesBoth, true);
   });
 
+  it('matches under any mode with two selected tags when no single entity carries both', () => {
+    const tree: RehearsalLibraryFileTree = {
+      fileLinks: [
+        {
+          entityId: TAGGED_SOURCE.id,
+          entityKind: 'track',
+          id: `file-link:track:${TAGGED_SOURCE.id}`,
+          parentFolderId: ROOT_FOLDER.id,
+        },
+      ],
+      folders: [ROOT_FOLDER],
+      rootFolderId: ROOT_FOLDER.id,
+      version: 1,
+    };
+    const savedSourcesById = new Map([[TAGGED_SOURCE.id, TAGGED_SOURCE]]);
+
+    const matchesUnderAll = folderContainsMatchingEntity({
+      entityFilter: 'all',
+      folderId: ROOT_FOLDER.id,
+      matchMode: 'all',
+      savedLoopsById: new Map(),
+      savedPlaylistsById: new Map(),
+      savedSourcesById,
+      selectedTags: ['alto', 'bass'],
+      tree,
+    });
+
+    assert.equal(matchesUnderAll, false);
+
+    const matchesUnderAny = folderContainsMatchingEntity({
+      entityFilter: 'all',
+      folderId: ROOT_FOLDER.id,
+      matchMode: 'any',
+      savedLoopsById: new Map(),
+      savedPlaylistsById: new Map(),
+      savedSourcesById,
+      selectedTags: ['alto', 'bass'],
+      tree,
+    });
+
+    assert.equal(matchesUnderAny, true);
+  });
+
   it('ignores a subfolder that is itself tagged but has no matching descendant entity', () => {
     const taggedChildFolder = {
       id: 'folder-child',
