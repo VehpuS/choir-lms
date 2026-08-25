@@ -12,6 +12,7 @@ import {
   filterSavedPlaylistsByQuery,
   resolveActiveLibrarySearchQuery,
   resolveSearchHighlightParts,
+  resolveTagFilterMatchModeToggleLabel,
 } from './saved-library-search-view-model.js';
 
 const CREATED_AT = '2026-05-12T00:00:00.000Z';
@@ -192,5 +193,10 @@ describe('saved library search view-model', () => {
       }),
       [{ isHighlighted: false, text: 'Bass Line.mp3 \u2022 0:12 to 0:18' }],
     );
+  });
+
+  it('resolves the tag match-mode toggle label for the current mode', () => {
+    assert.equal(resolveTagFilterMatchModeToggleLabel('all'), 'Match: All');
+    assert.equal(resolveTagFilterMatchModeToggleLabel('any'), 'Match: Any');
   });
 });
