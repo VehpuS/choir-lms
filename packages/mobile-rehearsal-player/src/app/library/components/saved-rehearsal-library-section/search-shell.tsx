@@ -214,6 +214,7 @@ export const SavedRehearsalLibrarySearchShell = ({
         onSelectPlaylistsSortField={searchState.setPlaylistsSortField}
         onSelectRecentSearchTerm={searchState.runLibrarySearch}
         onSelectSourcesSortField={searchState.setSourcesSortField}
+        onSelectTagFilterMatchMode={searchState.setTagFilterMatchMode}
         onSelectTagsSortField={searchState.setTagsSortField}
         onToggleFilesSortDirection={searchState.toggleFilesSortDirection}
         onToggleLoopsSortDirection={searchState.toggleLoopsSortDirection}
@@ -222,7 +223,6 @@ export const SavedRehearsalLibrarySearchShell = ({
         }
         onToggleSourcesSortDirection={searchState.toggleSourcesSortDirection}
         onToggleTagFilter={searchState.toggleTagFilter}
-        onToggleTagFilterMatchMode={searchState.toggleTagFilterMatchMode}
         onToggleTagsSortDirection={searchState.toggleTagsSortDirection}
         loopsSortState={searchState.loopsSortState}
         playlistsSortState={searchState.playlistsSortState}

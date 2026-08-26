@@ -30,10 +30,9 @@ import {
   type SavedTagsListSortField,
   type SavedTagsListSortState,
 } from '../../tags/components/saved-tags-list/model';
-import {
-  resolveTagFilterMatchModeToggleLabel,
-  type LibrarySearchEntityFilter,
-  type TagFilterMatchMode,
+import type {
+  LibrarySearchEntityFilter,
+  TagFilterMatchMode,
 } from '../utils/saved-library-search-view-model';
 import {
   buildFilesSearchScopeOptions,
@@ -41,6 +40,7 @@ import {
   FILES_SORT_OPTIONS,
   FilterChipGroup,
 } from './library-search-filter-groups';
+import { TagFilterMatchModeSwitch } from './tag-filter-match-mode-switch';
 
 type LibrarySearchFilterPopoverProps = {
   availableTagFilters: string[];
@@ -61,8 +61,8 @@ type LibrarySearchFilterPopoverProps = {
   onToggleLoopsSortDirection: () => void;
   onTogglePlaylistsSortDirection: () => void;
   onToggleSourcesSortDirection: () => void;
+  onSelectTagFilterMatchMode: (value: TagFilterMatchMode) => void;
   onToggleTagFilter: (value: string) => void;
-  onToggleTagFilterMatchMode: () => void;
   onToggleTagsSortDirection: () => void;
   playlistsSortState: SavedPlaylistSortState;
   selectedTagFilters: string[];
@@ -91,8 +91,8 @@ export const LibrarySearchFilterPopover = ({
   onToggleLoopsSortDirection,
   onTogglePlaylistsSortDirection,
   onToggleSourcesSortDirection,
+  onSelectTagFilterMatchMode,
   onToggleTagFilter,
-  onToggleTagFilterMatchMode,
   onToggleTagsSortDirection,
   playlistsSortState,
   selectedTagFilters,
@@ -205,15 +205,9 @@ export const LibrarySearchFilterPopover = ({
         <View style={styles.filterGroup}>
           <View style={styles.filterLabelRow}>
             <Text style={styles.filterLabel}>Tags</Text>
-            <InteractionChip
-              accessibilityLabel={`Tag match mode: ${resolveTagFilterMatchModeToggleLabel(
-                tagFilterMatchMode,
-              )}. Tap to switch to ${
-                tagFilterMatchMode === 'any' ? 'All' : 'Any'
-              }.`}
-              label={resolveTagFilterMatchModeToggleLabel(tagFilterMatchMode)}
-              onPress={onToggleTagFilterMatchMode}
-              style={styles.filterChip}
+            <TagFilterMatchModeSwitch
+              matchMode={tagFilterMatchMode}
+              onSelectMatchMode={onSelectTagFilterMatchMode}
             />
           </View>
           <View style={styles.filterRow}>

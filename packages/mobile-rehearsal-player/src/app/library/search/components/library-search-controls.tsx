@@ -56,13 +56,13 @@ type LibrarySearchControlsProps = LibrarySearchControlsVisibility & {
   onSelectPlaylistsSortField: (value: SavedPlaylistSortField) => void;
   onSelectRecentSearchTerm: (value: string) => void;
   onSelectSourcesSortField: (value: SavedSourceSortField) => void;
+  onSelectTagFilterMatchMode: (value: TagFilterMatchMode) => void;
   onSelectTagsSortField: (value: SavedTagsListSortField) => void;
   onToggleFilesSortDirection: () => void;
   onToggleLoopsSortDirection: () => void;
   onTogglePlaylistsSortDirection: () => void;
   onToggleSourcesSortDirection: () => void;
   onToggleTagFilter: (value: string) => void;
-  onToggleTagFilterMatchMode: () => void;
   onToggleTagsSortDirection: () => void;
   loopsSortState: SavedLoopSortState;
   playlistsSortState: SavedPlaylistSortState;
@@ -98,13 +98,13 @@ export const LibrarySearchControls = ({
   onSelectPlaylistsSortField,
   onSelectRecentSearchTerm,
   onSelectSourcesSortField,
+  onSelectTagFilterMatchMode,
   onSelectTagsSortField,
   onToggleFilesSortDirection,
   onToggleLoopsSortDirection,
   onTogglePlaylistsSortDirection,
   onToggleSourcesSortDirection,
   onToggleTagFilter,
-  onToggleTagFilterMatchMode,
   onToggleTagsSortDirection,
   loopsSortState,
   playlistsSortState,
@@ -162,13 +162,13 @@ export const LibrarySearchControls = ({
       onSelectLoopsSortField={onSelectLoopsSortField}
       onSelectPlaylistsSortField={onSelectPlaylistsSortField}
       onSelectSourcesSortField={onSelectSourcesSortField}
+      onSelectTagFilterMatchMode={onSelectTagFilterMatchMode}
       onSelectTagsSortField={onSelectTagsSortField}
       onToggleFilesSortDirection={onToggleFilesSortDirection}
       onToggleLoopsSortDirection={onToggleLoopsSortDirection}
       onTogglePlaylistsSortDirection={onTogglePlaylistsSortDirection}
       onToggleSourcesSortDirection={onToggleSourcesSortDirection}
       onToggleTagFilter={onToggleTagFilter}
-      onToggleTagFilterMatchMode={onToggleTagFilterMatchMode}
       onToggleTagsSortDirection={onToggleTagsSortDirection}
       playlistsSortState={playlistsSortState}
       selectedTagFilters={selectedTagFilters}

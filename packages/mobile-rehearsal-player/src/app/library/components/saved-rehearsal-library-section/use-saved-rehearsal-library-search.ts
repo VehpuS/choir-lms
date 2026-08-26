@@ -248,6 +248,7 @@ export const useSavedRehearsalLibrarySearch = ({
     setLoopsSortField: loopsSort.setField,
     setPlaylistsSortField: playlistsSort.setField,
     setSourcesSortField: sourcesSort.setField,
+    setTagFilterMatchMode,
     setTagsSortField: tagsSort.setField,
     tagFilterMatchMode,
     loopsSortState: loopsSort.sortState,
@@ -264,11 +265,6 @@ export const useSavedRehearsalLibrarySearch = ({
               return currentTagFilter !== tag;
             })
           : [...currentTagFilters, tag];
-      });
-    },
-    toggleTagFilterMatchMode() {
-      setTagFilterMatchMode((currentMatchMode) => {
-        return currentMatchMode === 'all' ? 'any' : 'all';
       });
     },
     toggleTagsSortDirection: tagsSort.toggleDirection,
