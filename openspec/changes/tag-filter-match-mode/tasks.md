@@ -28,7 +28,7 @@
 
 - [x] 5.1 Add a `tagFilterMatchMode` parameter to `resolveActiveFiltersSummaryLabel` (`library-search-active-filters-model.ts`); append ` (any)` to the tag-count segment only when `tagFilterMatchMode === 'any'` and at least one tag is selected, leaving the `all`-mode (default) label unchanged. (Added as a third positional parameter, matching the existing positional style. Fixed 5 now-broken call sites in the existing spec with `'all'` — new `any`-mode assertions are 5.3's job.)
 - [x] 5.2 Thread `tagFilterMatchMode` from `SavedRehearsalLibrarySearchShell`/`LibrarySearchControls` into the `resolveActiveFiltersSummaryLabel` call, reusing the same prop-threading path already carrying `entityFilter`/`selectedTagFilters` to that call site. (`LibrarySearchControls` already had `tagFilterMatchMode` in scope since 4.2's prop threading, so this was a one-line call-site fix done together with 5.1. Verified live in the browser: selecting a tag and switching to Any mode updates the active-filters summary chip from "1 tag" to "1 tag (any)".)
-- [ ] 5.3 Add or update focused tests covering: tags-only label under `all` mode (unchanged `N tags`), tags-only label under `any` mode (`N tags (any)`), and combined `Show` + tags labels under both modes.
+- [x] 5.3 Add or update focused tests covering: tags-only label under `all` mode (unchanged `N tags`), tags-only label under `any` mode (`N tags (any)`), and combined `Show` + tags labels under both modes. (Tags-only `all` mode was already covered pre-existing; added a new test for tags-only `any` mode, and extended the combined-labels test with an `any`-mode assertion.)
 
 ## 6. Final validation
 

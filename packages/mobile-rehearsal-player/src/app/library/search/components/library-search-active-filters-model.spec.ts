@@ -22,10 +22,25 @@ describe('resolveActiveFiltersSummaryLabel', () => {
     );
   });
 
+  it('suffixes the tags-only label with (any) only when match mode is any', () => {
+    assert.equal(
+      resolveActiveFiltersSummaryLabel('all', ['alto', 'bass'], 'any'),
+      '2 tags (any)',
+    );
+    assert.equal(
+      resolveActiveFiltersSummaryLabel('all', ['alto'], 'any'),
+      '1 tag (any)',
+    );
+  });
+
   it('joins entity-filter and tags labels when both are active', () => {
     assert.equal(
       resolveActiveFiltersSummaryLabel('loops', ['alto', 'bass'], 'all'),
       'Loops • 2 tags',
+    );
+    assert.equal(
+      resolveActiveFiltersSummaryLabel('loops', ['alto', 'bass'], 'any'),
+      'Loops • 2 tags (any)',
     );
   });
 
