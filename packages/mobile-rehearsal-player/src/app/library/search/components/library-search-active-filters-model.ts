@@ -1,5 +1,8 @@
 import { ENTITY_FILTER_OPTIONS } from './library-search-entity-filter-options';
-import type { LibrarySearchEntityFilter } from '../utils/saved-library-search-view-model';
+import type {
+  LibrarySearchEntityFilter,
+  TagFilterMatchMode,
+} from '../utils/saved-library-search-view-model';
 
 const pluralize = (count: number, noun: string) => {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
@@ -14,6 +17,7 @@ const ENTITY_FILTER_LABEL_BY_VALUE = new Map(
 export const resolveActiveFiltersSummaryLabel = (
   entityFilter: LibrarySearchEntityFilter,
   selectedTagFilters: string[],
+  tagFilterMatchMode: TagFilterMatchMode,
 ): string | null => {
   const labelParts: string[] = [];
 
@@ -24,7 +28,11 @@ export const resolveActiveFiltersSummaryLabel = (
   }
 
   if (selectedTagFilters.length > 0) {
-    labelParts.push(pluralize(selectedTagFilters.length, 'tag'));
+    const tagCountLabel = pluralize(selectedTagFilters.length, 'tag');
+
+    labelParts.push(
+      tagFilterMatchMode === 'any' ? `${tagCountLabel} (any)` : tagCountLabel,
+    );
   }
 
   return labelParts.length > 0 ? labelParts.join(' • ') : null;

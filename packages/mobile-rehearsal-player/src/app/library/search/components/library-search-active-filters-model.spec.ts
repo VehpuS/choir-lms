@@ -5,25 +5,31 @@ import { resolveActiveFiltersSummaryLabel } from './library-search-active-filter
 
 describe('resolveActiveFiltersSummaryLabel', () => {
   it('labels an entity-filter-only selection', () => {
-    assert.equal(resolveActiveFiltersSummaryLabel('tracks', []), 'Tracks');
+    assert.equal(
+      resolveActiveFiltersSummaryLabel('tracks', [], 'all'),
+      'Tracks',
+    );
   });
 
   it('labels a tags-only selection with a pluralized count', () => {
-    assert.equal(resolveActiveFiltersSummaryLabel('all', ['alto']), '1 tag');
     assert.equal(
-      resolveActiveFiltersSummaryLabel('all', ['alto', 'bass']),
+      resolveActiveFiltersSummaryLabel('all', ['alto'], 'all'),
+      '1 tag',
+    );
+    assert.equal(
+      resolveActiveFiltersSummaryLabel('all', ['alto', 'bass'], 'all'),
       '2 tags',
     );
   });
 
   it('joins entity-filter and tags labels when both are active', () => {
     assert.equal(
-      resolveActiveFiltersSummaryLabel('loops', ['alto', 'bass']),
+      resolveActiveFiltersSummaryLabel('loops', ['alto', 'bass'], 'all'),
       'Loops • 2 tags',
     );
   });
 
   it('returns null when no filter is active', () => {
-    assert.equal(resolveActiveFiltersSummaryLabel('all', []), null);
+    assert.equal(resolveActiveFiltersSummaryLabel('all', [], 'all'), null);
   });
 });

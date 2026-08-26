@@ -180,7 +180,11 @@ export const LibrarySearchControls = ({
   ) : null;
 
   const activeFiltersLabel = hasActiveFilters
-    ? resolveActiveFiltersSummaryLabel(entityFilter, selectedTagFilters)
+    ? resolveActiveFiltersSummaryLabel(
+        entityFilter,
+        selectedTagFilters,
+        tagFilterMatchMode,
+      )
     : null;
 
   const activeFiltersChip = activeFiltersLabel ? (
