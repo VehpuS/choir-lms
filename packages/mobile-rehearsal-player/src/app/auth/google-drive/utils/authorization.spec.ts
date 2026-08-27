@@ -201,7 +201,6 @@ describe('resolveDriveAuthorizationResult', () => {
     assert.equal(
       shouldAttemptSilentDriveAuthorization({
         authState: {
-          scope: DEFAULT_SCOPE,
           status: 'expired',
         },
         googleAuthConfigured: true,
@@ -216,7 +215,6 @@ describe('resolveDriveAuthorizationResult', () => {
     assert.equal(
       shouldAttemptSilentDriveAuthorization({
         authState: {
-          scope: DEFAULT_SCOPE,
           status: 'expired',
         },
         googleAuthConfigured: true,
@@ -231,7 +229,6 @@ describe('resolveDriveAuthorizationResult', () => {
     assert.equal(
       shouldAttemptSilentDriveAuthorization({
         authState: {
-          scope: DEFAULT_SCOPE,
           status: 'authorized',
         },
         googleAuthConfigured: true,

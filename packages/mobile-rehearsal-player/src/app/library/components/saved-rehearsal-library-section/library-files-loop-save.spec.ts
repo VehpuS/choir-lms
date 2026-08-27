@@ -23,11 +23,15 @@ const createFilesController = (currentFolderId: string) => {
   return {
     files: {
       explorer: {
+        breadcrumbs: [],
         currentFolder: {
+          createdAt: '2026-05-10T10:00:00.000Z',
           id: currentFolderId,
           name:
             currentFolderId === 'folder:library-root' ? 'Library' : 'Warmups',
+          parentFolderId: null,
         },
+        rows: [],
       },
       moveFileLink: async (options: {
         destinationFolderId: string;

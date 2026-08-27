@@ -249,14 +249,15 @@ describe('library-files operations', () => {
     } as unknown as AsyncStoragePracticeRepository;
     const operations = createLibraryFilesOperations({
       explorer: {
+        breadcrumbs: [],
         currentFolder: {
+          createdAt: '2026-05-10T10:00:00.000Z',
           id: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
           name: 'Library',
           parentFolderId: null,
         },
-      } as NonNullable<
-        ReturnType<typeof createLibraryFilesOperations>['explorer']
-      >,
+        rows: [],
+      },
       options: {
         ...createNoopRefreshCallbacks(),
         savedLoops: [],
