@@ -1,6 +1,6 @@
 ## 1. Phase 0 — Bugs (tag persistence, FAB overlap, stale banners)
 
-- [ ] 1.1 Add stateful test coverage for `saveTagEdits` in `use-saved-rehearsal-library-tag-editor.ts` (currently only the pure `resolveTagEditorTagsAndTitle` helper is tested) asserting that calling it persists tags and that a subsequent read reflects them.
+- [x] 1.1 Add stateful test coverage for `saveTagEdits` in `use-saved-rehearsal-library-tag-editor.ts` (currently only the pure `resolveTagEditorTagsAndTitle` helper is tested) asserting that calling it persists tags and that a subsequent read reflects them.
 - [ ] 1.2 Add stateful test coverage for `saveSource`/`persistSource` in `use-saved-rehearsal-library.ts` (currently only two pure exported helpers are tested) asserting the hook actually calls the repository and updates React state with the new tags.
 - [ ] 1.3 Use the now-failing test(s) from 1.1/1.2 to pin the exact defect in the tag-save write path and fix it, for tracks, loops, and playlists alike.
 - [ ] 1.4 Fix the adjacent staleness bug in `use-library-files.ts`: `canonicalIdsKey` is built only from entity IDs, so the Files-tree `refresh()` effect never re-fires on a tags-only change. Add a regression test.

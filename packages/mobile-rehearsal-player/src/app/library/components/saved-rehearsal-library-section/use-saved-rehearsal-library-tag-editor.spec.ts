@@ -5,12 +5,22 @@ import {
   createDriveAudioSource,
   type NamedLoop,
   type Playlist,
+  type RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
+import { createElement } from 'react';
+import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 
 import {
   resolveTagEditorTagsAndTitle,
+  useSavedRehearsalLibraryTagEditor,
   type TagEditorTarget,
 } from './use-saved-rehearsal-library-tag-editor';
+
+// Tells React this environment intentionally drives updates through
+// act(...), since nothing else here (no Jest) sets this for us.
+(
+  globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
 
 const SOURCE = createDriveAudioSource({
   availability: { status: 'available' },
@@ -42,6 +52,16 @@ const PLAYLIST: Playlist = {
   tags: ['Rehearsal'],
   updatedAt: '2026-05-10T00:00:00.000Z',
 };
+
+const FOLDER: RehearsalLibraryFolderNode = {
+  createdAt: '2026-05-10T10:00:00.000Z',
+  id: 'folder-1',
+  name: 'Warmups',
+  parentFolderId: 'folder:library-root',
+  tags: ['Alto'],
+};
+
+const NEW_TAGS = ['Alto', 'Section leader'];
 
 describe('resolveTagEditorTagsAndTitle', () => {
   it('resolves tags and title for a track target', () => {
@@ -108,5 +128,180 @@ describe('resolveTagEditorTagsAndTitle', () => {
     };
 
     assert.deepEqual(resolveTagEditorTagsAndTitle(target).tags, []);
+  });
+});
+
+type TagEditorHookResult = ReturnType<typeof useSavedRehearsalLibraryTagEditor>;
+type TagEditorHookOptions = Parameters<typeof useSavedRehearsalLibraryTagEditor>[0];
+
+const renderTagEditorHook = (options: TagEditorHookOptions) => {
+  const hookResultBox: { current: TagEditorHookResult | null } = {
+    current: null,
+  };
+
+  const Harness = () => {
+    hookResultBox.current = useSavedRehearsalLibraryTagEditor(options);
+    return null;
+  };
+
+  let renderer!: ReactTestRenderer;
+
+  act(() => {
+    renderer = create(createElement(Harness));
+  });
+
+  return { hookResultBox, renderer };
+};
+
+const createSpy = <Args extends unknown[], Result>(
+  implementation: (...args: Args) => Promise<Result>,
+) => {
+  const calls: Args[] = [];
+  const spy = async (...args: Args) => {
+    calls.push(args);
+    return implementation(...args);
+  };
+
+  return { calls, spy };
+};
+
+describe('useSavedRehearsalLibraryTagEditor -> saveTagEdits', () => {
+  it('saves a source target with the edited tags and closes the editor on success', async () => {
+    const saveSource = createSpy(async () => true);
+    const { hookResultBox, renderer } = renderTagEditorHook({
+      saveFolderTags: async () => ({ didComplete: true }),
+      saveLoop: async () => true,
+      saveSource: saveSource.spy,
+      savedPlaylists: [PLAYLIST],
+      updatePlaylist: async () => null,
+    });
+
+    act(() => {
+      hookResultBox.current?.openSourceTagEditor(SOURCE);
+    });
+
+    await act(async () => {
+      await hookResultBox.current?.saveTagEdits(NEW_TAGS);
+    });
+
+    assert.deepEqual(saveSource.calls, [[{ ...SOURCE, tags: NEW_TAGS }]]);
+    assert.equal(hookResultBox.current?.isTagEditorVisible, false);
+    assert.equal(hookResultBox.current?.isTagEditorSaving, false);
+
+    act(() => {
+      renderer.unmount();
+    });
+  });
+
+  it('saves a loop target with the edited tags and closes the editor on success', async () => {
+    const saveLoop = createSpy(async () => true);
+    const { hookResultBox, renderer } = renderTagEditorHook({
+      saveFolderTags: async () => ({ didComplete: true }),
+      saveLoop: saveLoop.spy,
+      saveSource: async () => true,
+      savedPlaylists: [PLAYLIST],
+      updatePlaylist: async () => null,
+    });
+
+    act(() => {
+      hookResultBox.current?.openLoopTagEditor(LOOP);
+    });
+
+    await act(async () => {
+      await hookResultBox.current?.saveTagEdits(NEW_TAGS);
+    });
+
+    assert.deepEqual(saveLoop.calls, [[{ ...LOOP, tags: NEW_TAGS }]]);
+    assert.equal(hookResultBox.current?.isTagEditorVisible, false);
+
+    act(() => {
+      renderer.unmount();
+    });
+  });
+
+  it('saves a playlist target through updatePlaylist and closes the editor on success', async () => {
+    const updatePlaylist = createSpy(async () => PLAYLIST);
+    const { hookResultBox, renderer } = renderTagEditorHook({
+      saveFolderTags: async () => ({ didComplete: true }),
+      saveLoop: async () => true,
+      saveSource: async () => true,
+      savedPlaylists: [PLAYLIST],
+      updatePlaylist: updatePlaylist.spy,
+    });
+
+    act(() => {
+      hookResultBox.current?.openPlaylistTagEditor(PLAYLIST.id);
+    });
+
+    await act(async () => {
+      await hookResultBox.current?.saveTagEdits(NEW_TAGS);
+    });
+
+    assert.deepEqual(updatePlaylist.calls, [
+      [{ ...PLAYLIST, tags: NEW_TAGS }],
+    ]);
+    assert.equal(hookResultBox.current?.isTagEditorVisible, false);
+
+    act(() => {
+      renderer.unmount();
+    });
+  });
+
+  it('saves a folder target through saveFolderTags and closes the editor on success', async () => {
+    const saveFolderTags = createSpy(async () => ({ didComplete: true }));
+    const { hookResultBox, renderer } = renderTagEditorHook({
+      saveFolderTags: saveFolderTags.spy,
+      saveLoop: async () => true,
+      saveSource: async () => true,
+      savedPlaylists: [PLAYLIST],
+      updatePlaylist: async () => null,
+    });
+
+    act(() => {
+      hookResultBox.current?.openFolderTagEditor(FOLDER);
+    });
+
+    await act(async () => {
+      await hookResultBox.current?.saveTagEdits(NEW_TAGS);
+    });
+
+    assert.deepEqual(saveFolderTags.calls, [
+      [{ folder: FOLDER, tags: NEW_TAGS }],
+    ]);
+    assert.equal(hookResultBox.current?.isTagEditorVisible, false);
+
+    act(() => {
+      renderer.unmount();
+    });
+  });
+
+  it('keeps the editor open and visible with the same target when the save fails', async () => {
+    const saveSource = createSpy(async () => false);
+    const { hookResultBox, renderer } = renderTagEditorHook({
+      saveFolderTags: async () => ({ didComplete: true }),
+      saveLoop: async () => true,
+      saveSource: saveSource.spy,
+      savedPlaylists: [PLAYLIST],
+      updatePlaylist: async () => null,
+    });
+
+    act(() => {
+      hookResultBox.current?.openSourceTagEditor(SOURCE);
+    });
+
+    await act(async () => {
+      await hookResultBox.current?.saveTagEdits(NEW_TAGS);
+    });
+
+    assert.equal(saveSource.calls.length, 1);
+    assert.equal(hookResultBox.current?.isTagEditorVisible, true);
+    assert.equal(hookResultBox.current?.isTagEditorSaving, false);
+    // The editor still shows the pre-edit saved tags, not the failed draft,
+    // since the source save never actually persisted the new tags.
+    assert.deepEqual(hookResultBox.current?.tags, SOURCE.tags);
+
+    act(() => {
+      renderer.unmount();
+    });
   });
 });
