@@ -157,6 +157,7 @@ describe('SavedRehearsalLibraryFilesView', () => {
           onOpenPlaylist: () => undefined,
           onTogglePlayableItemPlayback: async () => undefined,
           onToggleSourcePlayback: async () => undefined,
+          pendingLoopBuilderSourceId: null,
         }),
       /Library files explorer state is required\./,
     );
@@ -173,6 +174,7 @@ describe('SavedRehearsalLibraryFilesView', () => {
       },
       onTogglePlayableItemPlayback: async () => undefined,
       onToggleSourcePlayback: async () => undefined,
+      pendingLoopBuilderSourceId: null,
     });
 
     assert.ok(viewModel);
@@ -221,6 +223,7 @@ describe('SavedRehearsalLibraryFilesView', () => {
       onOpenPlaylist: () => undefined,
       onTogglePlayableItemPlayback: async () => undefined,
       onToggleSourcePlayback: async () => undefined,
+      pendingLoopBuilderSourceId: null,
       playlistAddMode: {
         canMutatePlaylists: true,
         isPlaylistMutating: false,

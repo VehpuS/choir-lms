@@ -62,8 +62,8 @@ const createFakeTrackPlayerModule = () => {
 const withSavedTrackPlayerWebGlobals = async (
   callback: () => Promise<void> | void,
 ) => {
-  const globalObject = globalThis as typeof globalThis &
-    SavedTrackPlayerInteropTestGlobals;
+  const globalObject =
+    globalThis as unknown as SavedTrackPlayerInteropTestGlobals;
   const previousFetch = globalObject.fetch;
   const previousUrl = globalObject.URL;
   const previousWindow = globalObject.window;
@@ -76,7 +76,7 @@ const withSavedTrackPlayerWebGlobals = async (
       ok: true,
       status: 200,
     };
-  }) as typeof globalThis.fetch;
+  }) as unknown as typeof globalThis.fetch;
   globalObject.URL = {
     ...globalObject.URL,
     createObjectURL() {
@@ -85,7 +85,7 @@ const withSavedTrackPlayerWebGlobals = async (
     revokeObjectURL() {
       return undefined;
     },
-  } as typeof globalThis.URL;
+  } as unknown as typeof globalThis.URL;
   globalObject.window = {};
 
   try {

@@ -48,15 +48,17 @@ describe('patchSavedTrackPlayerWebRuntime', () => {
     };
     const runtime = {
       async add(
-        tracks: Array<{
-          headers?: Record<string, string>;
-          url: string;
-        }>,
+        tracks:
+          | { headers?: Record<string, string>; url: string }
+          | Array<{
+              headers?: Record<string, string>;
+              url: string;
+            }>,
         insertBeforeIndex?: number,
       ) {
         addCalls.push({
           insertBeforeIndex,
-          tracks,
+          tracks: Array.isArray(tracks) ? tracks : [tracks],
         });
 
         return undefined;
@@ -86,6 +88,7 @@ describe('patchSavedTrackPlayerWebRuntime', () => {
         return {
           async blob() {
             return new Blob([`audio-${blobIndex + 1}`], {
+              lastModified: Date.now(),
               type: 'audio/mpeg',
             });
           },

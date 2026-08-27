@@ -14,11 +14,13 @@ const SOURCE = {
   availability: {
     status: 'available' as const,
   },
+  createdAt: '2024-01-01T00:00:00.000Z',
   driveFileId: 'drive-file-1',
   durationMs: 245000,
   id: 'source-1',
   mimeType: 'audio/mpeg',
   name: 'Full Choir.mp3',
+  provider: 'google-drive' as const,
 };
 
 describe('shouldRenderFilesLoopBuilder', () => {

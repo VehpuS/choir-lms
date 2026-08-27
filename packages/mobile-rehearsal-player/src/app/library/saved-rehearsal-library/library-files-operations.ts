@@ -18,6 +18,7 @@ import {
   createUniqueNodeId,
   type LibraryFilesEntityRefreshCallbacks,
   type LibraryFilesIssue,
+  type LibraryFilesOperationResult,
   resolveLibraryFilesSuggestedName,
   type UseLibraryFilesOptions,
 } from './library-files-operation-helpers';
@@ -147,7 +148,7 @@ export const createLibraryFilesOperations = ({
         playlistEntryTitles: playlistEntries,
       };
     },
-    async createFolder(name: string) {
+    async createFolder(name: string): Promise<LibraryFilesOperationResult> {
       if (!tree) {
         return {
           didComplete: false,
