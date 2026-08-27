@@ -70,6 +70,12 @@ The system SHALL provide a dedicated app-library search function for saved rehea
 - **THEN** the search toggle control's filled/active visual state reflects only whether the search bar is currently open
 - **AND** this matches how the filter toggle control's filled/active visual state reflects only whether the filter popover is currently open, independent of whether a filter is active (a filter being active is instead shown via a separate small indicator on the control, not via its filled state)
 
+#### Scenario: The active-filters summary chip reflects a non-default tag match mode
+
+- **WHEN** two or more `Tags` filters are selected and the tag match mode is set to `Any`
+- **THEN** the active-filters summary chip's tag-count segment is suffixed to indicate `Any` matching (for example, `2 tags (any)`)
+- **AND** when the tag match mode is at its default `All` value, the chip's tag-count segment is unchanged from its existing form (for example, `2 tags`), with no suffix
+
 ### Requirement: Library entities support tag-based organization
 
 The system SHALL support tags for app-owned library entities so users can organize rehearsal material by choir part, context, or practice intent.
@@ -97,11 +103,24 @@ The system SHALL support tags for app-owned library entities so users can organi
 - **THEN** the system still allows tags to be assigned directly to that loop
 - **AND** the loop keeps those tags when shown in search, tag, or folder results
 
-#### Scenario: Filter by one or more tags
+#### Scenario: Filter by one or more tags matches all selected tags by default
 
-- **WHEN** a user selects one or more tags in library organization controls
-- **THEN** the system filters visible saved entities to those matching the selected tags
+- **WHEN** a user selects one or more tags in library organization controls and has not changed the tag match mode from its default
+- **THEN** the system filters visible saved entities to those that carry every selected tag
 - **AND** this filtering applies whether or not a library search query is currently active
+
+#### Scenario: A tag match-mode control lets a user broaden filtering to any selected tag
+
+- **WHEN** one or more tags are selected in library organization controls
+- **THEN** the system offers a control to switch the tag match mode between `All` (every selected tag must be present) and `Any` (at least one selected tag must be present)
+- **AND** switching to `Any` immediately filters visible saved entities to those that carry at least one selected tag, everywhere the `Tags` filter already applies
+- **AND** the tag match mode is a single setting shared across all selected tags, not an individual setting per tag
+
+#### Scenario: Tag match mode is shared state, not reset by clearing search or switching views
+
+- **WHEN** a user sets the tag match mode to `Any` and then switches the active Library view
+- **THEN** the tag match mode remains `Any` for the still-selected tags in the new view
+- **AND** clearing the active library search resets the tag match mode back to its default `All` value, the same way it already clears `selectedTagFilters`
 
 ### Requirement: Library includes an explorer-style Files view for mixed saved entities
 
