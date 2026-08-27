@@ -2,7 +2,7 @@ import {
   type DriveAuthorizationState,
   type DriveSearchSnapshot,
 } from '@org/google-drive';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useRecentSearchHistory } from '../../search/hooks/use-recent-search-history';
 import { createDebouncedSearchRunner } from '../../search/utils/debounced-search-runner';
@@ -75,12 +75,20 @@ export const useDriveLibrarySearch = ({
     [clearActiveSearch, onClearIssue, onSearchRequested],
   );
 
+  const runSearchQueryRef = useRef(runSearchQuery);
+
+  useEffect(() => {
+    runSearchQueryRef.current = runSearchQuery;
+  }, [runSearchQuery]);
+
   const debouncedSearch = useMemo(() => {
     return createDebouncedSearchRunner({
       debounceMs: DRIVE_SEARCH_DEBOUNCE_MS,
-      runSearch: runSearchQuery,
+      runSearch: (query: string) => {
+        runSearchQueryRef.current(query);
+      },
     });
-  }, [runSearchQuery]);
+  }, []);
 
   useEffect(() => {
     return () => {

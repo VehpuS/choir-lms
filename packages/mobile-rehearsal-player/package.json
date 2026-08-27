@@ -145,6 +145,8 @@
     "shaka-player": "^4.16.39"
   },
   "devDependencies": {
-    "@types/lodash.debounce": "^4.0.9"
+    "@types/lodash.debounce": "^4.0.9",
+    "@types/react-test-renderer": "^19.1.0",
+    "react-test-renderer": "19.1.0"
   }
 }
