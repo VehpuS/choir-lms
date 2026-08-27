@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "ui-mobile": {
+      "source": "alinaqi/maggy",
+      "sourceType": "github",
+      "skillPath": "skills/ui-mobile/SKILL.md",
+      "computedHash": "14062e337cf61370d269b46ff1a9144535956ab1776d4ab8c82a7b980bcf92ce"
+    }
+  }
+}
