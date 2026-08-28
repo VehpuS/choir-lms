@@ -215,10 +215,11 @@ export const AppRouter = () => {
         libraryController.playlists.pendingPlaylistId !== null
       }
       isPlaybackToggleDisabled={playbackActionCopy?.disabled ?? true}
-      libraryScreen={
+      libraryScreen={(isActive) => (
         <LibraryScreen
           authorization={authorization}
           closeTagDetailRequestId={closeTagDetailRequestId}
+          isActive={isActive}
           libraryController={libraryController}
           onRequestAddDestination={() => {
             requestDestination('add');
@@ -229,7 +230,7 @@ export const AppRouter = () => {
           requestedView={requestedLibraryView}
           requestedViewRequestId={requestedLibraryViewRequestId}
         />
-      }
+      )}
       onCloseTagDetail={closeTagDetail}
       onSeekBackward={() => {
         void playback.seekActivePlaybackBySeconds(-PLAYBACK_SEEK_STEP_SECONDS);

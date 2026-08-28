@@ -40,7 +40,9 @@ export const SavedRehearsalLibrarySection = ({
   libraryFiles,
   libraryFilesSuccessFeedback,
   openLoopBuilderForSource,
+  onBlurLibraryFilesSuccessFeedback,
   onDismissLibraryFilesSuccessFeedback,
+  onFocusLibraryFilesSuccessFeedback,
   onBrowseCreateDockChange,
   onDetailPlaybackChange,
   onDetailSearchActionsChange,
@@ -329,8 +331,12 @@ export const SavedRehearsalLibrarySection = ({
           visibleSections={visibleSections}
           onDoneAddingFilesPlaylistItems={handleDoneAddingFilesPlaylistItems}
           onOpenFilesAddItemsForPlaylist={handleOpenFilesAddItems}
+          onBlurLibraryFilesSuccessFeedback={onBlurLibraryFilesSuccessFeedback}
           onDismissLibraryFilesSuccessFeedback={
             onDismissLibraryFilesSuccessFeedback
+          }
+          onFocusLibraryFilesSuccessFeedback={
+            onFocusLibraryFilesSuccessFeedback
           }
           onOpenLibraryFilesSuccessFeedbackFolder={
             onOpenLibraryFilesSuccessFeedbackFolder

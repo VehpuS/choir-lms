@@ -37,7 +37,9 @@ export const SavedRehearsalLibraryFilesView = ({
   onOpenPlaylist,
   onOpenPlaylistTagEditor,
   onPlaylistRenameVisibilityChange,
+  onBlurSuccessFeedback,
   onDismissSuccessFeedback,
+  onFocusSuccessFeedback,
   onOpenSourcePlaylistSelector,
   onOpenSourceTagEditor,
   onOpenLoopTagEditor,
@@ -201,7 +203,9 @@ export const SavedRehearsalLibraryFilesView = ({
         <View pointerEvents="box-none" style={styles.successFeedbackOverlay}>
           <LibraryFilesSuccessFeedbackCard
             feedback={successFeedback}
+            onBlur={onBlurSuccessFeedback}
             onDismiss={onDismissSuccessFeedback}
+            onFocus={onFocusSuccessFeedback}
             onOpenFolder={onOpenSuccessFeedbackFolder}
           />
         </View>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, ScrollView, StyleSheet, View } from 'react-native';
 
+import { useScopedSuccessAcknowledgment } from '../../components/scoped-success-acknowledgment/use-scoped-success-acknowledgment';
 import { SavedRehearsalLibrarySection } from '../../library/components/saved-rehearsal-library-section';
 import type { LibraryFilesSuccessFeedback } from '../../library/components/saved-rehearsal-library-section/library-files-success-feedback';
 import type { LibraryBrowseCreateDockMode } from '../../library/components/saved-rehearsal-library-section/types';
@@ -19,9 +20,12 @@ import type { LibraryScreenProps } from './library-screen-types';
 import { useLibraryFilesSessionRestoration } from './use-library-files-session-restoration';
 import { useLibraryScreenScrollCoordination } from './use-library-screen-scroll-coordination';
 
+const SUCCESS_ACKNOWLEDGMENT_AUTO_DISMISS_MS = 5000;
+
 export const LibraryScreen = ({
   authorization,
   closeTagDetailRequestId,
+  isActive,
   libraryController,
   onRequestAddDestination,
   playback,
@@ -42,8 +46,12 @@ export const LibraryScreen = ({
   }, [requestedView, requestedViewRequestId]);
   const [browseCreateDockMode, setBrowseCreateDockMode] =
     useState<LibraryBrowseCreateDockMode>(null);
-  const [libraryFilesSuccessFeedback, setLibraryFilesSuccessFeedback] =
-    useState<LibraryFilesSuccessFeedback | null>(null);
+  const librarySuccessFeedback =
+    useScopedSuccessAcknowledgment<LibraryFilesSuccessFeedback>({
+      autoDismissMs: SUCCESS_ACKNOWLEDGMENT_AUTO_DISMISS_MS,
+      isActive: isActive && selectedView === 'files',
+      isScreenReaderEnabled: () => AccessibilityInfo.isScreenReaderEnabled(),
+    });
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
   const [playlistDetailPlayback, setPlaylistDetailPlayback] =
     useState<PlaylistDetailHeaderPlaybackAction | null>(null);
@@ -84,15 +92,6 @@ export const LibraryScreen = ({
   const searchPanel = useSavedRehearsalLibrarySearchPanel({
     searchState,
   });
-  const showLibraryFilesSuccessFeedback = useCallback(
-    (feedback: LibraryFilesSuccessFeedback) => {
-      setLibraryFilesSuccessFeedback(feedback);
-    },
-    [],
-  );
-  const dismissLibraryFilesSuccessFeedback = useCallback(() => {
-    setLibraryFilesSuccessFeedback(null);
-  }, []);
   const handlePlaylistCreated = useCallback((playlistId: string) => {
     playlistSelectionHandlerRef.current?.(playlistId);
   }, []);
@@ -104,9 +103,9 @@ export const LibraryScreen = ({
 
       setSelectedView('files');
       libraryController.savedLibrary.files.openFolder(folderId);
-      setLibraryFilesSuccessFeedback(null);
+      librarySuccessFeedback.dismiss();
     },
-    [libraryController.savedLibrary.files],
+    [libraryController.savedLibrary.files, librarySuccessFeedback.dismiss],
   );
   const headerSearchProps = resolveLibraryHeaderSearchProps({
     detailSearchActions,
@@ -170,13 +169,13 @@ export const LibraryScreen = ({
               libraryController.savedLibrary.isSavedLoopsLoading
             }
             libraryFiles={libraryController.savedLibrary.files}
-            libraryFilesSuccessFeedback={libraryFilesSuccessFeedback}
+            libraryFilesSuccessFeedback={librarySuccessFeedback.acknowledgment}
             openLoopBuilderForSource={
               libraryController.savedLibrary.openLoopBuilderForSource
             }
-            onDismissLibraryFilesSuccessFeedback={
-              dismissLibraryFilesSuccessFeedback
-            }
+            onBlurLibraryFilesSuccessFeedback={librarySuccessFeedback.onBlur}
+            onDismissLibraryFilesSuccessFeedback={librarySuccessFeedback.dismiss}
+            onFocusLibraryFilesSuccessFeedback={librarySuccessFeedback.onFocus}
             closeTagDetailRequestId={closeTagDetailRequestId}
             onBrowseCreateDockChange={setBrowseCreateDockMode}
             onDetailPlaybackChange={setPlaylistDetailPlayback}
@@ -187,7 +186,7 @@ export const LibraryScreen = ({
             onPlaylistSelectionHandlerChange={(handler) => {
               playlistSelectionHandlerRef.current = handler;
             }}
-            onShowLibraryFilesSuccessFeedback={showLibraryFilesSuccessFeedback}
+            onShowLibraryFilesSuccessFeedback={librarySuccessFeedback.show}
             pendingLoopBuilderSourceId={
               libraryController.savedLibrary.pendingLoopBuilderSourceId
             }
@@ -250,7 +249,7 @@ export const LibraryScreen = ({
           setIsFilesPlaylistCreateDialogVisible
         }
         onRequestAddDestination={onRequestAddDestination}
-        onShowSuccessFeedback={showLibraryFilesSuccessFeedback}
+        onShowSuccessFeedback={librarySuccessFeedback.show}
         playlistIssue={libraryController.playlists.issue}
       />
       <LibraryPlaylistCreateControls

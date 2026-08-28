@@ -25,6 +25,7 @@ type SavedTrackPlaybackController = Pick<
 export type LibraryScreenProps = {
   authorization: DriveSessionMenuController;
   closeTagDetailRequestId?: number;
+  isActive: boolean;
   libraryController: ReturnType<typeof useRehearsalLibraryController>;
   onRequestAddDestination: () => void;
   playback: SavedTrackPlaybackController;

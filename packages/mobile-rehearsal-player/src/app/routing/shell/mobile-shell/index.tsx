@@ -38,7 +38,11 @@ export type MobileShellProps = {
   isPlaybackPreparing: boolean;
   isSavingQueueAsPlaylist: boolean;
   isPlaybackToggleDisabled: boolean;
-  libraryScreen: ReactNode;
+  // A render prop (rather than a plain ReactNode like the other two
+  // destinations) so the Library screen can know when it stops being the
+  // active tab and clear stale save-acknowledgment state accordingly,
+  // without lifting `activeDestination` out of this component.
+  libraryScreen: (isActive: boolean) => ReactNode;
   onCloseTagDetail: () => void;
   onMoveQueueItem: (fromIndex: number, toIndex: number) => void;
   onMoveQueueItemToEnd: (index: number) => void;
@@ -161,18 +165,18 @@ export const MobileShell = ({
       <View style={styles.contentViewport}>
         {SHELL_DESTINATIONS.map((destination) => {
           const panelKey = PANEL_BY_DESTINATION[destination.key];
-          const panel = {
-            addScreen,
-            recentsScreen,
-            libraryScreen,
-          }[panelKey];
+          const isPanelActive = activeDestination === destination.key;
+          const panel =
+            panelKey === 'libraryScreen'
+              ? libraryScreen(isPanelActive)
+              : { addScreen, recentsScreen }[panelKey];
 
           return (
             <View
               key={destination.key}
               style={[
                 styles.destinationPanel,
-                activeDestination === destination.key
+                isPanelActive
                   ? styles.destinationPanelActive
                   : styles.destinationPanelHidden,
               ]}

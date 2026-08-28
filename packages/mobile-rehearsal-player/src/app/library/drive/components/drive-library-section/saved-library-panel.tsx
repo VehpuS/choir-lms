@@ -85,7 +85,9 @@ export const DriveLibrarySavedLibraryPanel = ({
       libraryFiles={libraryFiles}
       libraryFilesSuccessFeedback={null}
       openLoopBuilderForSource={openLoopBuilderForSource}
+      onBlurLibraryFilesSuccessFeedback={() => undefined}
       onDismissLibraryFilesSuccessFeedback={() => undefined}
+      onFocusLibraryFilesSuccessFeedback={() => undefined}
       onOpenLibraryFilesSuccessFeedbackFolder={() => undefined}
       onShowLibraryFilesSuccessFeedback={() => undefined}
       pendingLoopBuilderSourceId={preparedLoopBuilderTrack.pendingSourceId}

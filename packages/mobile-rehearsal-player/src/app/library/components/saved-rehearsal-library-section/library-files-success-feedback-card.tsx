@@ -5,13 +5,20 @@ import type { LibraryFilesSuccessFeedback } from './library-files-success-feedba
 
 type LibraryFilesSuccessFeedbackCardProps = {
   feedback: LibraryFilesSuccessFeedback;
+  // Wired to the card's interactive controls so an in-flight auto-dismiss
+  // timer pauses while the card has focus (e.g. a screen-reader or keyboard
+  // user is on it) rather than disappearing out from under them.
+  onBlur: () => void;
   onDismiss: () => void;
+  onFocus: () => void;
   onOpenFolder: (folderId: string) => void;
 };
 
 export const LibraryFilesSuccessFeedbackCard = ({
   feedback,
+  onBlur,
   onDismiss,
+  onFocus,
   onOpenFolder,
 }: LibraryFilesSuccessFeedbackCardProps) => {
   return (
@@ -21,6 +28,8 @@ export const LibraryFilesSuccessFeedbackCard = ({
           {feedback.action ? (
             <Pressable
               accessibilityRole="button"
+              onBlur={onBlur}
+              onFocus={onFocus}
               onPress={() => {
                 onOpenFolder(feedback.action?.folderId ?? '');
               }}
@@ -33,6 +42,8 @@ export const LibraryFilesSuccessFeedbackCard = ({
           ) : null}
           <Pressable
             accessibilityRole="button"
+            onBlur={onBlur}
+            onFocus={onFocus}
             onPress={onDismiss}
             style={styles.secondaryAction}
           >
