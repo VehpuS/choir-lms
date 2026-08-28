@@ -30,23 +30,22 @@ const STORAGE_UNAVAILABLE_ISSUE: LibraryFilesIssue = {
   title: 'Library Files unavailable',
 };
 
-const buildCanonicalIdsKey = (options: UseLibraryFilesOptions) => {
+const buildEntityCanonicalKeySegment = (options: {
+  id: string;
+  tags?: string[];
+}) => {
+  return `${options.id}:${(options.tags ?? []).join(',')}`;
+};
+
+// Includes each entity's tags, not just its id, so this key changes on a
+// tags-only edit too. It gates the `refresh()` effect below that re-fetches
+// the Files tree from storage — if it only tracked ids, a tags-only save
+// would never re-fire that effect, leaving stale-looking Files data behind.
+export const buildCanonicalIdsKey = (options: UseLibraryFilesOptions) => {
   return [
-    options.savedSources
-      .map((source) => {
-        return source.id;
-      })
-      .join('|'),
-    options.savedLoops
-      .map((loop) => {
-        return loop.id;
-      })
-      .join('|'),
-    options.savedPlaylists
-      .map((playlist) => {
-        return playlist.id;
-      })
-      .join('|'),
+    options.savedSources.map(buildEntityCanonicalKeySegment).join('|'),
+    options.savedLoops.map(buildEntityCanonicalKeySegment).join('|'),
+    options.savedPlaylists.map(buildEntityCanonicalKeySegment).join('|'),
   ].join('::');
 };
 
