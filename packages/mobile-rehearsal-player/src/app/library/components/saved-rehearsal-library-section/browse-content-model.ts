@@ -45,3 +45,15 @@ export const shouldRenderFilesLoopBuilder = (options: {
     options.selectedTrack !== null
   );
 };
+
+// The Files explorer tree caches its own copy of each entity's fields (see
+// `use-library-files.ts`), which does not refresh on a tags-only save. Row
+// actions that open the tag editor must resolve the entity fresh from the
+// reactive saved-library list by id rather than trust the tree's cached
+// object, or the editor reopens showing stale tags.
+export const resolveFreshEntityForTagEditor = <Entity extends { id: string }>(
+  entities: Entity[],
+  entityId: string,
+): Entity | null => {
+  return entities.find((entity) => entity.id === entityId) ?? null;
+};

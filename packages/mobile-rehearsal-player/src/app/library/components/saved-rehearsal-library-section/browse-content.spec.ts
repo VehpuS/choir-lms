@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import { createTrackPlayableItem } from '@org/audio-library-models';
 
 import {
+  resolveFreshEntityForTagEditor,
   shouldRenderFilesExplorer,
   shouldRenderFilesLoopBuilder,
   shouldRenderSavedLibraryBrowseContent,
@@ -83,6 +84,31 @@ describe('shouldRenderFilesLoopBuilder', () => {
         selectedView: 'tracks',
       }),
       false,
+    );
+  });
+});
+
+describe('resolveFreshEntityForTagEditor', () => {
+  it('resolves the current entity by id, not whatever stale copy the caller already holds', () => {
+    // Regression coverage for the tag-persistence audit bug: the Files
+    // explorer tree caches its own copy of each row's entity, which does not
+    // refresh on a tags-only save (see `use-library-files.ts`). Opening the
+    // tag editor from a Files row must look the entity up fresh by id from
+    // the reactive saved-library list instead of trusting that stale copy,
+    // or the editor reopens showing the tags from before the last save.
+    const staleSource = { ...SOURCE, tags: [] };
+    const freshSources = [{ ...SOURCE, tags: ['Alto'] }];
+
+    assert.deepEqual(
+      resolveFreshEntityForTagEditor(freshSources, staleSource.id),
+      { ...SOURCE, tags: ['Alto'] },
+    );
+  });
+
+  it('returns null when the entity is no longer present in the fresh list', () => {
+    assert.equal(
+      resolveFreshEntityForTagEditor([{ id: SOURCE.id }], 'missing-id'),
+      null,
     );
   });
 });

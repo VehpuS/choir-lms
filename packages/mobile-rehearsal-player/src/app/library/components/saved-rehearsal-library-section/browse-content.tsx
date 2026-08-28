@@ -3,6 +3,7 @@ import { cloneElement, useMemo } from 'react';
 
 import { SavedTagsList } from '../../tags/components/saved-tags-list';
 import {
+  resolveFreshEntityForTagEditor,
   shouldRenderFilesExplorer,
   shouldRenderFilesLoopBuilder,
   shouldRenderSavedTagsList,
@@ -176,11 +177,14 @@ export const SavedRehearsalLibraryBrowseContent = ({
           onOpenSourcePlaylistSelector={
             trackPlaylistMenu.openSourcePlaylistSelector
           }
-          onOpenSourceTagEditor={onOpenSourceTagEditor}
+          onOpenSourceTagEditor={(source) => {
+            onOpenSourceTagEditor(
+              resolveFreshEntityForTagEditor(savedLibrarySources, source.id) ??
+                source,
+            );
+          }}
           onOpenLoopTagEditor={(loopId) => {
-            const loop = savedLoops.find((currentLoop) => {
-              return currentLoop.id === loopId;
-            });
+            const loop = resolveFreshEntityForTagEditor(savedLoops, loopId);
 
             if (!loop) {
               return;
