@@ -10,6 +10,7 @@ import {
   interactionGuardProps,
 } from '../../components/interaction-guard';
 import { appTheme } from '../../utils/theme';
+import { resolveRepeatToggleModel } from './playback-session-mode-options';
 
 const getQueueToggleAction = (
   mode: RehearsalQueueMode,
@@ -33,29 +34,8 @@ const getQueueToggleAction = (
   };
 };
 
-const REPEAT_MODE_OPTIONS: Array<{
-  accessibilityLabel: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  mode: RepeatMode;
-}> = [
-  {
-    accessibilityLabel: 'Repeat off',
-    icon: 'repeat-off',
-    mode: 'off',
-  },
-  {
-    accessibilityLabel: 'Repeat one',
-    icon: 'repeat-once',
-    mode: 'one',
-  },
-  {
-    accessibilityLabel: 'Repeat all',
-    icon: 'repeat',
-    mode: 'all',
-  },
-];
-
 const ModeButton = (props: {
+  accessibilityHint?: string;
   accessibilityLabel: string;
   disabled?: boolean;
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
@@ -64,6 +44,7 @@ const ModeButton = (props: {
 }) => {
   return (
     <Pressable
+      accessibilityHint={props.accessibilityHint}
       accessibilityLabel={props.accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={{
@@ -89,56 +70,6 @@ const ModeButton = (props: {
   );
 };
 
-const RepeatModeSegmentedControl = (props: {
-  disabled?: boolean;
-  onSelect: (mode: RepeatMode) => void;
-  options: typeof REPEAT_MODE_OPTIONS;
-  selectedMode: RepeatMode;
-}) => {
-  return (
-    <View
-      accessibilityLabel="Repeat mode"
-      accessibilityRole="radiogroup"
-      style={styles.segmentedControl}
-    >
-      {props.options.map((option, index) => {
-        const selected = props.selectedMode === option.mode;
-
-        return (
-          <View key={option.mode} style={styles.segmentGroup}>
-            {index > 0 ? <View style={styles.segmentDivider} /> : null}
-            <Pressable
-              accessibilityLabel={option.accessibilityLabel}
-              accessibilityRole="radio"
-              accessibilityState={{
-                disabled: props.disabled,
-                selected,
-              }}
-              {...interactionGuardProps}
-              disabled={props.disabled}
-              onPress={() => {
-                props.onSelect(option.mode);
-              }}
-              style={({ pressed }) => [
-                styles.segment,
-                selected ? styles.segmentSelected : null,
-                pressed && !props.disabled ? styles.modeButtonPressed : null,
-                props.disabled ? styles.modeButtonDisabled : null,
-              ]}
-            >
-              <MaterialCommunityIcons
-                color={selected ? '#fff8ef' : appTheme.colors.primaryText}
-                name={option.icon}
-                size={22}
-              />
-            </Pressable>
-          </View>
-        );
-      })}
-    </View>
-  );
-};
-
 export const PlaybackSessionModeCard = (props: {
   isDisabled?: boolean;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
@@ -151,9 +82,7 @@ export const PlaybackSessionModeCard = (props: {
   const showQueueModeControls = props.showQueueModeControls ?? true;
   const queueToggleAction = getQueueToggleAction(props.queueMode);
   const repeatModes = props.repeatModes ?? ['off', 'one', 'all'];
-  const visibleRepeatOptions = REPEAT_MODE_OPTIONS.filter((option) =>
-    repeatModes.includes(option.mode),
-  );
+  const repeatToggle = resolveRepeatToggleModel(props.repeatMode, repeatModes);
 
   return (
     <View style={styles.card}>
@@ -173,12 +102,18 @@ export const PlaybackSessionModeCard = (props: {
 
       {showQueueModeControls ? <View style={styles.divider} /> : null}
 
-      <RepeatModeSegmentedControl
-        disabled={props.isDisabled}
-        onSelect={props.onSelectRepeatMode}
-        options={visibleRepeatOptions}
-        selectedMode={props.repeatMode}
-      />
+      <View style={styles.groupRow}>
+        <ModeButton
+          accessibilityHint={repeatToggle.accessibilityHint}
+          accessibilityLabel={repeatToggle.accessibilityLabel}
+          disabled={props.isDisabled}
+          icon={repeatToggle.icon}
+          onPress={() => {
+            props.onSelectRepeatMode(repeatToggle.nextMode);
+          }}
+          selected={repeatToggle.selected}
+        />
+      </View>
     </View>
   );
 };
@@ -222,34 +157,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 999,
-    backgroundColor: '#305c4d',
-  },
-  segmentedControl: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 999,
-    overflow: 'hidden',
-    backgroundColor: '#fffdf8',
-  },
-  segmentGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  segmentDivider: {
-    width: StyleSheet.hairlineWidth,
-    alignSelf: 'stretch',
-    backgroundColor: appTheme.colors.border,
-  },
-  segment: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-  },
-  segmentSelected: {
     backgroundColor: '#305c4d',
   },
   modeButtonPressed: {
