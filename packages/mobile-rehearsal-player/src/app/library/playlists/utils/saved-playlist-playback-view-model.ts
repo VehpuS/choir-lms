@@ -69,7 +69,7 @@ type BuildPlaylistPlaybackSessionOptions = {
 const ORDERED_BUTTON_LABEL = 'Play ordered';
 const SHUFFLE_BUTTON_LABEL = 'Shuffle play';
 
-const getBaseActionLabel = (mode: RehearsalQueueMode) => {
+export const getBaseActionLabel = (mode: RehearsalQueueMode) => {
   return mode === 'ordered' ? ORDERED_BUTTON_LABEL : SHUFFLE_BUTTON_LABEL;
 };
 

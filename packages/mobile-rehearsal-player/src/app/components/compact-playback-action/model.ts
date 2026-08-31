@@ -1,6 +1,10 @@
 import { appTheme } from '../../utils/theme';
 
-export type CompactPlaybackActionIconName = 'pause' | 'play' | 'replay';
+export type CompactPlaybackActionIconName =
+  | 'pause'
+  | 'play'
+  | 'replay'
+  | 'shuffle';
 export type CompactPlaybackActionVariant = 'inline' | 'card' | 'row' | 'chip';
 
 export type CompactPlaybackActionVariantTokens = {

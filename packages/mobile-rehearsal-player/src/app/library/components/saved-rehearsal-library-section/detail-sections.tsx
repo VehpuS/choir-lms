@@ -137,9 +137,6 @@ type SavedRehearsalLibraryPlaylistSectionContentProps = {
   isPlaylistDetailMode: boolean;
   onOpenFilesAddItems: () => void;
   onClosePlaylistDetail: () => void;
-  onDetailPlaybackChange?: (
-    action: PlaylistDetailHeaderPlaybackAction | null,
-  ) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   onRenameDialogVisibilityChange?: (isVisible: boolean) => void;
   pendingPlaylistId: string | null;
@@ -168,7 +165,6 @@ export const SavedRehearsalLibraryPlaylistSectionContent = ({
   isPlaylistDetailMode,
   onOpenFilesAddItems,
   onClosePlaylistDetail,
-  onDetailPlaybackChange,
   onOpenPlaylistTagEditor,
   onRenameDialogVisibilityChange,
   pendingPlaylistId,
@@ -208,7 +204,6 @@ export const SavedRehearsalLibraryPlaylistSectionContent = ({
       issue={playlistIssue}
       onAddItems={canMutatePlaylists ? onOpenFilesAddItems : undefined}
       onCloseDetail={onClosePlaylistDetail}
-      onDetailPlaybackChange={onDetailPlaybackChange}
       onEditPlaylistTags={onOpenPlaylistTagEditor}
       onRenameDialogVisibilityChange={onRenameDialogVisibilityChange}
       pendingPlaylistId={pendingPlaylistId}

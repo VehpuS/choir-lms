@@ -1,22 +1,24 @@
-import { type NamedLoop, type Playlist } from '@org/audio-library-models';
+import {
+  type NamedLoop,
+  type Playlist,
+  type RehearsalQueueMode,
+} from '@org/audio-library-models';
 import { View } from 'react-native';
 
 import { savedPlaylistSectionStyles as styles } from '../../components/saved-playlist-section-styles';
 import { DriveLibraryStatusCard } from '../../drive/components/drive-library-status-card';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { SavedTrackPlaybackState } from '../../playback/utils/saved-track-playback-view-model';
-import { usePlaylistDetailHeaderPlayback } from '../hooks/use-playlist-detail-header-playback';
 import { useSavedPlaylistDetailActions } from '../hooks/use-saved-playlist-detail-actions';
 import { useSavedPlaylistSectionState } from '../hooks/use-saved-playlist-section-state';
+import { getPlaylistDetailModeActions } from '../utils/saved-playlist-detail-mode-actions';
 import {
   buildSavedPlaylistDetailDraftPlaylist,
   isSavedPlaylistEntryPlayable,
 } from '../utils/saved-playlist-detail-view-model';
 import { getSavedPlaylistPlaybackToggleLabel } from '../utils/saved-playlist-playback-toggle-label';
 import {
-  getPlaylistPlaybackActionCopy,
   getPlaylistPlaybackCurrentItem,
-  type PlaylistDetailHeaderPlaybackAction,
   type PlaylistPlaybackSession,
 } from '../utils/saved-playlist-playback-view-model';
 import {
@@ -46,9 +48,6 @@ type SavedPlaylistSectionProps = {
   issue: SavedPlaylistIssue | null;
   onAddItems?: () => void;
   onCloseDetail?: () => void;
-  onDetailPlaybackChange?: (
-    action: PlaylistDetailHeaderPlaybackAction | null,
-  ) => void;
   onEditPlaylistTags: (playlistId: string) => void;
   onRenameDialogVisibilityChange?: (isVisible: boolean) => void;
   pendingPlaylistId: string | null;
@@ -86,7 +85,6 @@ export const SavedPlaylistSection = ({
   issue,
   onAddItems,
   onCloseDetail,
-  onDetailPlaybackChange,
   onEditPlaylistTags,
   onRenameDialogVisibilityChange,
   pendingPlaylistId,
@@ -146,10 +144,9 @@ export const SavedPlaylistSection = ({
     activePlaylistSession?.playlistId === selectedPlaylist?.id
       ? activePlaylistSession
       : null;
-  const orderedPlaybackAction = getPlaylistPlaybackActionCopy({
+  const playlistDetailModeActions = getPlaylistDetailModeActions({
     activeSession: selectedPlaybackSession,
     isPreparing: isPlaybackPreparing,
-    mode: 'ordered',
     playbackState,
     selectedPlaylist,
   });
@@ -189,16 +186,14 @@ export const SavedPlaylistSection = ({
     toggleActivePlayback,
     togglePlaylistPlayback,
   });
+  const handleSelectPlaybackMode = (mode: RehearsalQueueMode) => {
+    if (mode === 'shuffle') {
+      detailActions.playShufflePlaylist();
+      return;
+    }
 
-  usePlaylistDetailHeaderPlayback({
-    isDetailVisible,
-    isMutating,
-    onDetailPlaybackChange,
-    orderedPlaybackActionDisabled: orderedPlaybackAction.disabled,
-    orderedPlaybackActionLabel: orderedPlaybackAction.label,
-    playOrderedPlaylist: detailActions.playOrderedPlaylist,
-    playlistTitle: detailSummary?.title,
-  });
+    detailActions.playOrderedPlaylist();
+  };
 
   return (
     <View style={styles.section}>
@@ -254,6 +249,7 @@ export const SavedPlaylistSection = ({
             });
           }}
           isMutating={isMutating}
+          modeActions={playlistDetailModeActions}
           onAddItems={onAddItems}
           onCloseDetail={handleCloseDetail}
           onDismissRemovalNotice={handleDismissRemovalNotice}
@@ -270,6 +266,7 @@ export const SavedPlaylistSection = ({
           }}
           onRenamePlaylistNameChange={handleRenamePlaylistNameChange}
           onPlayPlaylistEntry={detailActions.playPlaylistEntry}
+          onSelectPlaybackMode={handleSelectPlaybackMode}
           onToggleCurrentPlayback={detailActions.toggleCurrentPlayback}
           onReorderDragActiveChange={setIsReorderDragActive}
           onReorderDragMove={setReorderDragMoveY}

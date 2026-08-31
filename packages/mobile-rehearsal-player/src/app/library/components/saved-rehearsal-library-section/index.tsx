@@ -217,7 +217,6 @@ export const SavedRehearsalLibrarySection = ({
       isPlaylistsLoading={isPlaylistsLoading}
       isPlaybackPreparing={isPlaybackPreparing}
       onClosePlaylistDetail={handleClosePlaylistDetail}
-      onDetailPlaybackChange={onDetailPlaybackChange}
       onOpenFilesAddItems={handleOpenFilesAddItems}
       onOpenPlaylistTagEditor={tagEditor.openPlaylistTagEditor}
       onRenameDialogVisibilityChange={setIsPlaylistDetailRenameDialogVisible}

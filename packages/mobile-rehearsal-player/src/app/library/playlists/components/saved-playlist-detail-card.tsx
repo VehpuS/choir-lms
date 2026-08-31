@@ -5,6 +5,7 @@ import { Modal, Pressable, Text, View } from 'react-native';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { SavedLibraryDetailCardShell } from '../../components/saved-library-detail-card-shell';
 import { savedPlaylistSectionStyles as styles } from '../../components/saved-playlist-section-styles';
+import type { PlaylistDetailModeControlAction } from '../utils/saved-playlist-detail-mode-actions';
 import {
   consumeSavedPlaylistRenameRequest,
   type SavedPlaylistDetailRemovalNotice,
@@ -13,6 +14,7 @@ import type {
   PlaylistDraftIssue,
   SavedPlaylistDetailSummary,
 } from '../utils/saved-playlist-view-model';
+import { PlaylistDetailModeRow } from './playlist-detail-mode-row';
 import {
   PlaylistOptionsMenuSurface,
   PlaylistRenameDialog,
@@ -32,7 +34,9 @@ export const SavedPlaylistDetailCard = (props: {
   getItemDetailLabel: (entry: PlaylistEntry) => string;
   isItemPlayable: (entry: PlaylistEntry) => boolean;
   isMutating: boolean;
+  modeActions: PlaylistDetailModeControlAction[];
   onAddItems?: () => void;
+  onSelectPlaybackMode: (mode: PlaylistDetailModeControlAction['mode']) => void;
   playbackToggleDisabled: boolean;
   playbackToggleLabel: string;
   renameIssue: PlaylistDraftIssue | null;
@@ -99,6 +103,12 @@ export const SavedPlaylistDetailCard = (props: {
       }
       metadataLabel={detailSummary.metadataLabel}
       onClose={props.onCloseDetail}
+      playbackControls={
+        <PlaylistDetailModeRow
+          actions={props.modeActions}
+          onSelectMode={props.onSelectPlaybackMode}
+        />
+      }
       title={detailSummary.title}
     >
       <SavedPlaylistDetailItemsList
