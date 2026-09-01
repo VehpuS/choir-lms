@@ -1,9 +1,15 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import {
+  AccessibilityInfo,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { DriveSessionMenu } from '../../auth/google-drive/components/drive-session-menu';
 import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
+import { useScopedSuccessAcknowledgment } from '../../components/scoped-success-acknowledgment/use-scoped-success-acknowledgment';
 import { DestinationHeader } from '../../components/destination-header';
 import { getDestinationHeaderModel } from '../../components/destination-header-model';
 import { resolveHeaderSearchToggleOutcome } from '../../components/header-search-toggle-model';
@@ -11,61 +17,71 @@ import { DriveDiscoveryPanel } from '../../library/drive/components/drive-discov
 import { ADD_SCREEN_DRIVE_PANEL_ORDER } from '../../library/drive/utils/drive-discovery-layout';
 import type { useRehearsalLibraryController } from '../../library/saved-rehearsal-library/use-rehearsal-library-controller';
 import { appTheme } from '../../utils/theme';
+import {
+  ACTION_BUTTON_SIZE,
+  DriveDiscoveryActionButton,
+} from './drive-discovery-action-button';
+import { DriveTrackSavedFeedbackCard } from './drive-track-saved-feedback-card';
+import {
+  createDriveTrackSavedFeedback,
+  resolveTrackSaveDetection,
+} from './drive-track-saved-feedback';
+
+const TRACK_SAVED_AUTO_DISMISS_MS = 5000;
+const ACTION_ROW_GAP = 12;
 
 type AddScreenProps = {
   authorization: DriveSessionMenuController;
+  isActive: boolean;
   libraryController: ReturnType<typeof useRehearsalLibraryController>;
-};
-
-type DriveDiscoveryActionButtonProps = {
-  accessibilityLabel: string;
-  iconName: 'close' | 'magnify' | 'progress-clock' | 'refresh';
-  isDisabled?: boolean;
-  isFilled?: boolean;
-  onPress: () => void;
-};
-
-const ACTION_BUTTON_SIZE = 40;
-const ACTION_ROW_GAP = 12;
-
-const DriveDiscoveryActionButton = ({
-  accessibilityLabel,
-  iconName,
-  isDisabled = false,
-  isFilled = false,
-  onPress,
-}: DriveDiscoveryActionButtonProps) => {
-  return (
-    <Pressable
-      accessibilityLabel={accessibilityLabel}
-      accessibilityRole="button"
-      disabled={isDisabled}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.headerActionButton,
-        isFilled
-          ? styles.headerActionButtonFilled
-          : styles.headerActionButtonOutline,
-        pressed ? styles.headerActionButtonPressed : undefined,
-        isDisabled ? styles.headerActionButtonDisabled : undefined,
-      ]}
-    >
-      <MaterialCommunityIcons
-        color={isFilled ? appTheme.colors.heroBackground : '#fff8ef'}
-        name={iconName}
-        size={18}
-      />
-    </Pressable>
-  );
 };
 
 export const AddScreen = ({
   authorization,
+  isActive,
   libraryController,
 }: AddScreenProps) => {
   const headerModel = getDestinationHeaderModel('add');
   const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
+  const trackSavedFeedback = useScopedSuccessAcknowledgment<
+    ReturnType<typeof createDriveTrackSavedFeedback>
+  >({
+    autoDismissMs: TRACK_SAVED_AUTO_DISMISS_MS,
+    isActive,
+    isScreenReaderEnabled: () => AccessibilityInfo.isScreenReaderEnabled(),
+  });
+  const savedSourceIdsRef = useRef<Set<string> | null>(null);
+  const savedLibrarySources =
+    libraryController.savedLibrary.savedLibrarySources;
+  const isSavedLibraryLoading = libraryController.savedLibrary.isLoading;
+
+  useEffect(() => {
+    const detection = resolveTrackSaveDetection({
+      currentSources: savedLibrarySources,
+      isLoading: isSavedLibraryLoading,
+      previouslySavedIds: savedSourceIdsRef.current,
+    });
+
+    savedSourceIdsRef.current = detection.nextBaselineIds;
+
+    const newlySavedSource = detection.newlySavedSource;
+
+    if (!newlySavedSource) {
+      return;
+    }
+
+    trackSavedFeedback.show(
+      createDriveTrackSavedFeedback({
+        trackId: newlySavedSource.id,
+        trackName: newlySavedSource.name,
+      }),
+    );
+    // Only isSavedLibraryLoading/savedLibrarySources should trigger this
+    // effect; trackSavedFeedback is a fresh object every render, but the
+    // effect that actually runs (when one of those changes) always closes
+    // over that render's own `show`, so omitting it doesn't risk staleness.
+  }, [isSavedLibraryLoading, savedLibrarySources]);
 
   const handleToggleSearchBar = () => {
     const toggleOutcome = resolveHeaderSearchToggleOutcome({
@@ -165,6 +181,16 @@ export const AddScreen = ({
           </View>
         }
       />
+      {trackSavedFeedback.acknowledgment ? (
+        <View style={styles.trackSavedFeedback}>
+          <DriveTrackSavedFeedbackCard
+            feedback={trackSavedFeedback.acknowledgment}
+            onBlur={trackSavedFeedback.onBlur}
+            onDismiss={trackSavedFeedback.dismiss}
+            onFocus={trackSavedFeedback.onFocus}
+          />
+        </View>
+      ) : null}
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -184,32 +210,13 @@ const styles = StyleSheet.create({
   destinationHeader: {
     marginTop: 12,
   },
+  trackSavedFeedback: {
+    marginTop: 12,
+  },
   content: {
     gap: 14,
     paddingTop: 12,
     paddingBottom: 20,
-  },
-  headerActionButton: {
-    width: ACTION_BUTTON_SIZE,
-    height: ACTION_BUTTON_SIZE,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  headerActionButtonDisabled: {
-    opacity: 0.56,
-  },
-  headerActionButtonFilled: {
-    borderColor: '#fff8ef',
-    backgroundColor: '#fff8ef',
-  },
-  headerActionButtonOutline: {
-    borderColor: 'rgba(255, 248, 239, 0.26)',
-    backgroundColor: 'rgba(255, 248, 239, 0.08)',
-  },
-  headerActionButtonPressed: {
-    opacity: 0.88,
   },
   headerActionRow: {
     flexDirection: 'row',

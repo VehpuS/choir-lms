@@ -33,7 +33,10 @@ export type MobileShellProps = {
   canSkipPreviousItem: boolean;
   requestedDestination?: ShellDestinationKey;
   requestedDestinationRequestId?: number;
-  addScreen: ReactNode;
+  // A render prop (rather than a plain ReactNode like `recentsScreen`) so
+  // the Add screen can know when it stops being the active tab and clear
+  // stale save-acknowledgment state accordingly, matching `libraryScreen`.
+  addScreen: (isActive: boolean) => ReactNode;
   recentsScreen: ReactNode;
   isPlaybackPreparing: boolean;
   isSavingQueueAsPlaylist: boolean;
@@ -169,7 +172,9 @@ export const MobileShell = ({
           const panel =
             panelKey === 'libraryScreen'
               ? libraryScreen(isPanelActive)
-              : { addScreen, recentsScreen }[panelKey];
+              : panelKey === 'addScreen'
+                ? addScreen(isPanelActive)
+                : recentsScreen;
 
           return (
             <View

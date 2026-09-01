@@ -281,12 +281,13 @@ export const AppRouter = () => {
       playbackVolumeLevel={playback.volumeLevel}
       playbackState={playback.playbackState}
       savedLibraryConfirmationDialog={libraryController.confirmationDialog}
-      addScreen={
+      addScreen={(isActive) => (
         <AddScreen
           authorization={authorization}
+          isActive={isActive}
           libraryController={libraryController}
         />
-      }
+      )}
     />
   );
 };
