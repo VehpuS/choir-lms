@@ -1,10 +1,4 @@
-import {
-  ScrollView,
-  StyleSheet,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { DriveSessionMenu } from '../../../auth/google-drive/components/drive-session-menu';
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
@@ -12,15 +6,12 @@ import { CompactPlaybackAction } from '../../../components/compact-playback-acti
 import { DestinationHeader } from '../../../components/destination-header';
 import { getDestinationHeaderModel } from '../../../components/destination-header-model';
 import type { PlaylistDetailHeaderPlaybackAction } from '../../playlists/utils/saved-playlist-playback-view-model';
-import {
-  SAVED_REHEARSAL_LIBRARY_VIEW_OPTIONS,
-  type SavedRehearsalLibraryView,
-} from '../../saved-rehearsal-library/detail-mode';
+import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
 import {
   LibrarySearchControls,
   LibrarySearchControlsActions,
 } from '../../search/components/library-search-controls';
-import { InteractionChip } from '../interaction-chip';
+import { SavedRehearsalLibraryViewSwitcher } from './library-view-switcher';
 import { useSavedRehearsalLibrarySearch } from './use-saved-rehearsal-library-search';
 
 export type SearchPanelVisibility = {
@@ -56,40 +47,6 @@ type SavedRehearsalLibrarySearchShellProps = {
   searchPanelVisibility: SearchPanelVisibility;
   searchState: ReturnType<typeof useSavedRehearsalLibrarySearch>;
   selectedView: SavedRehearsalLibraryView;
-};
-
-export const SavedRehearsalLibraryViewSwitcher = ({
-  isViewSwitcherLocked,
-  onSelectView,
-  selectedView,
-}: Pick<
-  SavedRehearsalLibrarySearchShellProps,
-  'isViewSwitcherLocked' | 'onSelectView' | 'selectedView'
->) => {
-  return (
-    <ScrollView
-      contentContainerStyle={styles.viewRowContent}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.viewRow}
-    >
-      {SAVED_REHEARSAL_LIBRARY_VIEW_OPTIONS.map((option) => {
-        return (
-          <InteractionChip
-            key={option.value}
-            accessibilityLabel={`Show ${option.label} library view`}
-            disabled={isViewSwitcherLocked}
-            label={option.label}
-            onPress={() => {
-              onSelectView(option.value);
-            }}
-            style={styles.viewChip}
-            variant={selectedView === option.value ? 'selected' : 'passive'}
-          />
-        );
-      })}
-    </ScrollView>
-  );
 };
 
 export const SavedRehearsalLibraryHeader = ({
@@ -246,18 +203,5 @@ const styles = StyleSheet.create({
   },
   shell: {
     gap: 12,
-  },
-  viewChip: {
-    minHeight: 34,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  viewRow: {
-    maxHeight: 48,
-  },
-  viewRowContent: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingRight: 4,
   },
 });
