@@ -34,15 +34,6 @@ export const playlistRowStyles = {
     alignItems: 'center',
     gap: 4,
   },
-  playlistRowDragHandle: {
-    width: 20,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  playlistRowDragHandleDisabled: {
-    opacity: 0.56,
-  },
   playlistRowPlayButton: {
     width: 30,
     height: 30,

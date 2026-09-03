@@ -1,8 +1,8 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMemo, useRef } from 'react';
 import { PanResponder, Text, View } from 'react-native';
 
 import { CompactPlayableRowShell } from '../../components/compact-playable-row-shell';
+import { DragHandle } from '../../components/drag-handle';
 import { OverflowMenuTrigger } from '../../components/overflow-menu-trigger';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
@@ -170,17 +170,11 @@ export const QueueSurfaceRow = ({
               selected={rowPresentation.playbackAction.selected}
               size={18}
             />
-            <View
+            <DragHandle
               accessibilityLabel={`Drag ${item.title} to reorder`}
-              accessibilityRole="adjustable"
-              style={[
-                styles.queueRowDragHandle,
-                !canDragReorder ? styles.queueRowDragHandleDisabled : null,
-              ]}
-              {...(canDragReorder ? panResponder.panHandlers : {})}
-            >
-              <MaterialCommunityIcons color="#5f5647" name="drag" size={18} />
-            </View>
+              canDrag={canDragReorder}
+              panHandlers={panResponder.panHandlers}
+            />
           </>
         }
         metadata={<Text style={styles.queueDetail}>{item.detail}</Text>}

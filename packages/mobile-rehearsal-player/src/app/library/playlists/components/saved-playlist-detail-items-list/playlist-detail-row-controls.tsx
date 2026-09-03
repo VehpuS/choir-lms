@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMemo, useRef } from 'react';
 import { PanResponder, Pressable, Text, View } from 'react-native';
 
+import { DragHandle } from '../../../../components/drag-handle';
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
 import { SurfaceIconButton } from '../../../../components/surface-icon-button';
 import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
@@ -9,7 +10,6 @@ import { savedPlaylistSectionStyles as styles } from '../../../components/saved-
 import { PLAYLIST_SECONDARY_TEXT } from '../../../components/saved-playlist-section-styles/shared';
 import { getPlaylistDetailRowControlState } from './playlist-detail-row-controls-model';
 
-const PLAYLIST_ROW_DRAG_ICON_SIZE = 15;
 const PLAYLIST_ROW_STEP_ICON_SIZE = 12;
 const PLAYLIST_ROW_PLAY_ICON_SIZE = 13;
 const PLAYLIST_ROW_OVERFLOW_ICON_SIZE = 15;
@@ -157,23 +157,6 @@ export const PlaylistDetailRowControls = (props: {
   return (
     <>
       <View style={styles.playlistRowShell}>
-        <View
-          accessibilityLabel={`Drag ${props.entryTitle} to reorder`}
-          accessibilityRole="adjustable"
-          style={[
-            styles.playlistRowDragHandle,
-            !controlState.canDragReorder
-              ? styles.playlistRowDragHandleDisabled
-              : null,
-          ]}
-          {...(controlState.canDragReorder ? panResponder.panHandlers : {})}
-        >
-          <MaterialCommunityIcons
-            color={PLAYLIST_SECONDARY_TEXT}
-            name="drag-vertical"
-            size={PLAYLIST_ROW_DRAG_ICON_SIZE}
-          />
-        </View>
         <SurfaceIconButton
           accessibilityLabel={controlState.playbackAction.accessibilityLabel}
           disabled={controlState.isPlaybackButtonDisabled}
@@ -258,6 +241,11 @@ export const PlaylistDetailRowControls = (props: {
             />
           </Pressable>
         </View>
+        <DragHandle
+          accessibilityLabel={`Drag ${props.entryTitle} to reorder`}
+          canDrag={controlState.canDragReorder}
+          panHandlers={panResponder.panHandlers}
+        />
         <OverflowMenuTrigger
           accessibilityLabel={`More actions for ${props.entryTitle}`}
           disabled={props.isMutating}
