@@ -1,6 +1,10 @@
 import type { DriveAudioSource } from '@org/audio-library-models';
 
 import {
+  paginateDriveFiles,
+  type DriveFilesPage,
+} from './drive-files-paginator';
+import {
   mapDriveFileToAudioSource,
   type DriveFileMetadata,
 } from './google-drive-core';
@@ -252,6 +256,7 @@ const createDriveFileSearchParams = (options: {
   query: string;
   fields: string;
   includeSharedDrives: boolean;
+  pageToken?: string;
 }) => {
   const searchParams = new URLSearchParams({
     q: options.query,
@@ -264,6 +269,10 @@ const createDriveFileSearchParams = (options: {
   if (options.includeSharedDrives) {
     searchParams.set('supportsAllDrives', 'true');
     searchParams.set('includeItemsFromAllDrives', 'true');
+  }
+
+  if (options.pageToken) {
+    searchParams.set('pageToken', options.pageToken);
   }
 
   return searchParams;
@@ -321,6 +330,7 @@ const requestDriveFiles = async (options: {
   query: string;
   fields: string;
   includeSharedDrives: boolean;
+  pageToken?: string;
   signal?: AbortSignal;
 }) => {
   return fetch(
@@ -328,6 +338,7 @@ const requestDriveFiles = async (options: {
       query: options.query,
       fields: options.fields,
       includeSharedDrives: options.includeSharedDrives,
+      pageToken: options.pageToken,
     })}`,
     {
       method: 'GET',
@@ -367,6 +378,7 @@ const requestDriveFilesWithFallback = async (options: {
   accessToken: string;
   query: string;
   includeSharedDrives: boolean;
+  pageToken?: string;
   signal?: AbortSignal;
 }) => {
   const attempts = [
@@ -395,6 +407,7 @@ const requestDriveFilesWithFallback = async (options: {
       query: options.query,
       fields: attempt.fields,
       includeSharedDrives: attempt.includeSharedDrives,
+      pageToken: options.pageToken,
       signal: options.signal,
     });
 
@@ -414,6 +427,26 @@ const requestDriveFilesWithFallback = async (options: {
   }
 
   throw new Error('Drive library request failed unexpectedly.');
+};
+
+const requestAllDriveFilesWithFallback = async (options: {
+  accessToken: string;
+  query: string;
+  includeSharedDrives: boolean;
+  signal?: AbortSignal;
+}) => {
+  return paginateDriveFiles({
+    requestPage: async ({ pageToken, signal }) => {
+      const response = await requestDriveFilesWithFallback({
+        ...options,
+        pageToken,
+        signal,
+      });
+
+      return (await response.json()) as DriveFilesPage;
+    },
+    signal: options.signal,
+  });
 };
 
 const requestDriveFileMetadataWithFallback = async (options: {
@@ -495,21 +528,18 @@ const parseDriveLibrarySnapshot = async (
   } satisfies DriveLibrarySnapshot;
 };
 
-const parseDriveBrowseSnapshot = async (
-  response: Response,
+const parseDriveBrowseSnapshot = (
+  files: DriveFileMetadata[],
   options: {
     location: DriveBrowseLocation;
     supportedMimeTypes: string[];
     supportedExtensions: string[];
   },
 ) => {
-  const payload = (await response.json()) as {
-    files?: DriveFileMetadata[];
-  };
   const folders: DriveFolder[] = [];
   const sources: DriveDiscoveredAudioSource[] = [];
 
-  for (const file of payload.files ?? []) {
+  for (const file of files) {
     if (isDriveFolder(file)) {
       folders.push(mapDriveFileToFolder(file, options.location.rootKind));
       continue;
@@ -536,20 +566,17 @@ const parseDriveBrowseSnapshot = async (
   } satisfies DriveBrowseSnapshot;
 };
 
-const parseDriveSearchSnapshot = async (
-  response: Response,
+const parseDriveSearchSnapshot = (
+  files: DriveFileMetadata[],
   options: {
     query: string;
     supportedMimeTypes: string[];
     supportedExtensions: string[];
   },
 ) => {
-  const payload = (await response.json()) as {
-    files?: DriveFileMetadata[];
-  };
   const sources: DriveDiscoveredAudioSource[] = [];
 
-  for (const file of payload.files ?? []) {
+  for (const file of files) {
     if (isDriveFolder(file)) {
       continue;
     }
@@ -729,14 +756,14 @@ export const browseDriveLocation = async (options: {
   supportedExtensions: string[];
   signal?: AbortSignal;
 }) => {
-  const response = await requestDriveFilesWithFallback({
+  const files = await requestAllDriveFilesWithFallback({
     accessToken: options.accessToken,
     query: createBrowseQuery(options.location),
     includeSharedDrives: true,
     signal: options.signal,
   });
 
-  return parseDriveBrowseSnapshot(response, {
+  return parseDriveBrowseSnapshot(files, {
     location: options.location,
     supportedMimeTypes: options.supportedMimeTypes,
     supportedExtensions: options.supportedExtensions,
@@ -779,14 +806,14 @@ export const searchDriveAudioFiles = async (options: {
     });
   }
 
-  const response = await requestDriveFilesWithFallback({
+  const files = await requestAllDriveFilesWithFallback({
     accessToken: options.accessToken,
     query: createAudioSearchQuery(trimmedQuery, options.location),
     includeSharedDrives: true,
     signal: options.signal,
   });
 
-  return parseDriveSearchSnapshot(response, {
+  return parseDriveSearchSnapshot(files, {
     query: trimmedQuery,
     supportedMimeTypes: options.supportedMimeTypes,
     supportedExtensions: options.supportedExtensions,
