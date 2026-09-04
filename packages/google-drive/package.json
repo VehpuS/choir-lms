@@ -26,7 +26,7 @@
         ],
         "options": {
           "cwd": "packages/google-drive",
-          "command": "tsx --test src/lib/google-drive.spec.ts"
+          "command": "tsx --test src/lib/*.spec.ts"
         }
       }
     }
