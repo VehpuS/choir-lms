@@ -63,17 +63,14 @@ const searchFolderScopedAudioFiles = async (options: {
     resolvedParentFolderIds,
     FOLDER_AUDIO_SEARCH_BATCH_SIZE,
   )) {
-    const response = await requestDriveFilesWithFallback({
+    const files = await requestAllDriveFilesWithFallback({
       accessToken: options.accessToken,
       query: createAudioSearchQuery(options.query, options.location, batch),
       includeSharedDrives: true,
       signal: options.signal,
     });
-    const payload = (await response.json()) as {
-      files?: DriveFileMetadata[];
-    };
 
-    for (const file of payload.files ?? []) {
+    for (const file of files) {
       if (isDriveFolder(file)) {
         continue;
       }
@@ -116,17 +113,14 @@ const listDescendantFolderIds = async (options: {
     const nextFrontier: string[] = [];
 
     for (const batch of splitIntoBatches(frontier, FOLDER_SCOPE_BATCH_SIZE)) {
-      const response = await requestDriveFilesWithFallback({
+      const files = await requestAllDriveFilesWithFallback({
         accessToken: options.accessToken,
         query: createFolderDescendantQuery(batch),
         includeSharedDrives: true,
         signal: options.signal,
       });
-      const payload = (await response.json()) as {
-        files?: DriveFileMetadata[];
-      };
 
-      for (const file of payload.files ?? []) {
+      for (const file of files) {
         if (!isDriveFolder(file) || discoveredFolderIds.has(file.id)) {
           continue;
         }
