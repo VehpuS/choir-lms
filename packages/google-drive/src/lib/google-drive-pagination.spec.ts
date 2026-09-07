@@ -150,7 +150,10 @@ describe('Drive discovery pagination', () => {
       const pageToken = searchParams.get('pageToken');
       requestUrls.push(requestUrl);
 
-      if (query.includes("mimeType = 'application/vnd.google-apps.folder'")) {
+      if (
+        query.includes("mimeType = 'application/vnd.google-apps.folder'") &&
+        !query.includes("mimeType contains 'audio/'")
+      ) {
         if (query.includes("'folder-root' in parents")) {
           if (pageToken === 'descendants-page-2') {
             return Response.json({

@@ -14,6 +14,7 @@ const DRIVE_SEARCH_DEBOUNCE_MS = 300;
 
 export const EMPTY_DRIVE_SEARCH_SNAPSHOT: DriveSearchSnapshot = {
   query: '',
+  results: [],
   playableSources: [],
   unavailableSources: [],
 };

@@ -64,6 +64,13 @@ export const BROWSE_SNAPSHOT: DriveBrowseSnapshot = {
 
 export const SEARCH_SNAPSHOT: DriveSearchSnapshot = {
   query: 'Kyrie',
+  results: [
+    {
+      ...PLAYABLE_SOURCE,
+      kind: 'audio',
+      locationLabel: 'Shared with you',
+    },
+  ],
   playableSources: [
     {
       ...PLAYABLE_SOURCE,

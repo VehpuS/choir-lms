@@ -43,7 +43,7 @@ export const createBrowseQuery = (location: DriveBrowseLocation) => {
   return `trashed = false and '${escapeDriveQueryValue(parentId)}' in parents and ${DRIVE_FOLDER_OR_AUDIO_QUERY}`;
 };
 
-export const createAudioSearchQuery = (
+export const createDriveSearchQuery = (
   query: string,
   location?: DriveBrowseLocation,
   parentFolderIds: string[] = [],
@@ -52,7 +52,7 @@ export const createAudioSearchQuery = (
   const queryClause = `name contains '${escapedQuery}'`;
 
   if (!location) {
-    return `${DRIVE_LIBRARY_QUERY} and ${queryClause}`;
+    return `trashed = false and ${DRIVE_FOLDER_OR_AUDIO_QUERY} and ${queryClause}`;
   }
 
   if (location.kind === 'folder') {
@@ -61,17 +61,17 @@ export const createAudioSearchQuery = (
     });
 
     if (escapedFolderIds.length === 0) {
-      return `${DRIVE_LIBRARY_QUERY} and '${escapeDriveQueryValue(location.id)}' in parents and ${queryClause}`;
+      return `trashed = false and ${DRIVE_FOLDER_OR_AUDIO_QUERY} and '${escapeDriveQueryValue(location.id)}' in parents and ${queryClause}`;
     }
 
-    return `${DRIVE_LIBRARY_QUERY} and (${escapedFolderIds.join(' or ')}) and ${queryClause}`;
+    return `trashed = false and ${DRIVE_FOLDER_OR_AUDIO_QUERY} and (${escapedFolderIds.join(' or ')}) and ${queryClause}`;
   }
 
   if (location.rootKind === 'shared') {
-    return `${DRIVE_LIBRARY_QUERY} and sharedWithMe and ${queryClause}`;
+    return `trashed = false and ${DRIVE_FOLDER_OR_AUDIO_QUERY} and sharedWithMe and ${queryClause}`;
   }
 
-  return `${DRIVE_LIBRARY_QUERY} and 'me' in owners and ${queryClause}`;
+  return `trashed = false and ${DRIVE_FOLDER_OR_AUDIO_QUERY} and 'me' in owners and ${queryClause}`;
 };
 
 export const createFolderDescendantQuery = (parentFolderIds: string[]) => {

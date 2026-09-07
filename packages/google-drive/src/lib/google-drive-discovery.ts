@@ -1,20 +1,14 @@
 import {
   createEmptyDriveSearchSnapshot,
-  createSearchLocationLabel,
   isDriveFolder,
-  mapDriveFileToDiscoveredSource,
   parseDriveBrowseSnapshot,
   parseDriveLibrarySnapshot,
   parseDriveSearchSnapshot,
-  partitionSources,
-  sortByName,
   type DriveBrowseLocation,
-  type DriveDiscoveredAudioSource,
-  type DriveSearchSnapshot,
 } from './drive-discovery-models';
 import {
-  createAudioSearchQuery,
   createBrowseQuery,
+  createDriveSearchQuery,
   createFolderDescendantQuery,
   DRIVE_LIBRARY_QUERY,
   FOLDER_AUDIO_SEARCH_BATCH_SIZE,
@@ -34,11 +28,14 @@ import {
 } from './google-drive-core';
 
 export type {
+  DriveAudioDiscoveryResult,
   DriveBrowseLocation,
   DriveBrowseRootKind,
   DriveBrowseSnapshot,
   DriveDiscoveredAudioSource,
+  DriveDiscoveryResult,
   DriveFolder,
+  DriveFolderDiscoveryResult,
   DriveLibrarySnapshot,
   DriveSearchSnapshot,
 } from './drive-discovery-models';
@@ -57,7 +54,7 @@ const searchFolderScopedAudioFiles = async (options: {
     options.parentFolderIds.length > 0
       ? options.parentFolderIds
       : [options.location.id];
-  const sourcesById = new Map<string, DriveDiscoveredAudioSource>();
+  const filesById = new Map<string, DriveFileMetadata>();
 
   for (const batch of splitIntoBatches(
     resolvedParentFolderIds,
@@ -65,40 +62,26 @@ const searchFolderScopedAudioFiles = async (options: {
   )) {
     const files = await requestAllDriveFilesWithFallback({
       accessToken: options.accessToken,
-      query: createAudioSearchQuery(options.query, options.location, batch),
+      query: createDriveSearchQuery(options.query, options.location, batch),
       includeSharedDrives: true,
       signal: options.signal,
     });
 
     for (const file of files) {
-      if (isDriveFolder(file)) {
-        continue;
-      }
-
-      const source = mapDriveFileToDiscoveredSource(
-        file,
-        options.supportedMimeTypes,
-        options.supportedExtensions,
-        createSearchLocationLabel(file),
-      );
-
-      sourcesById.set(source.id, source);
+      filesById.set(file.id, file);
     }
   }
 
-  if (sourcesById.size === 0) {
+  if (filesById.size === 0) {
     return createEmptyDriveSearchSnapshot(options.query);
   }
 
-  const { playableSources, unavailableSources } = partitionSources(
-    sortByName([...sourcesById.values()]),
-  );
-
-  return {
+  return parseDriveSearchSnapshot([...filesById.values()], {
     query: options.query,
-    playableSources,
-    unavailableSources,
-  } satisfies DriveSearchSnapshot;
+    location: options.location,
+    supportedMimeTypes: options.supportedMimeTypes,
+    supportedExtensions: options.supportedExtensions,
+  });
 };
 
 const listDescendantFolderIds = async (options: {
@@ -236,13 +219,14 @@ export const searchDriveAudioFiles = async (options: {
 
   const files = await requestAllDriveFilesWithFallback({
     accessToken: options.accessToken,
-    query: createAudioSearchQuery(trimmedQuery, options.location),
+    query: createDriveSearchQuery(trimmedQuery, options.location),
     includeSharedDrives: true,
     signal: options.signal,
   });
 
   return parseDriveSearchSnapshot(files, {
     query: trimmedQuery,
+    location: options.location,
     supportedMimeTypes: options.supportedMimeTypes,
     supportedExtensions: options.supportedExtensions,
   });

@@ -31,6 +31,7 @@ describe('getDriveLibraryStatusCopy', () => {
       issue: null,
       searchSnapshot: {
         query: '',
+        results: [],
         playableSources: [],
         unavailableSources: [],
       },
@@ -62,6 +63,7 @@ describe('getDriveLibraryStatusCopy', () => {
       issue: null,
       searchSnapshot: {
         query: '',
+        results: [],
         playableSources: [],
         unavailableSources: [],
       },
@@ -146,6 +148,7 @@ describe('getDriveLibraryStatusCopy', () => {
       issue: null,
       searchSnapshot: {
         query: 'Roxanne',
+        results: [],
         playableSources: [],
         unavailableSources: [],
       },

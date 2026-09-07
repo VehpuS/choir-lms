@@ -33,6 +33,18 @@ export type DriveFolder = {
   shared: boolean;
 };
 
+export type DriveFolderDiscoveryResult = DriveFolder & {
+  kind: 'folder';
+};
+
+export type DriveAudioDiscoveryResult = DriveDiscoveredAudioSource & {
+  kind: 'audio';
+};
+
+export type DriveDiscoveryResult =
+  | DriveFolderDiscoveryResult
+  | DriveAudioDiscoveryResult;
+
 export type DriveBrowseSnapshot = {
   location: DriveBrowseLocation;
   folders: DriveFolder[];
@@ -42,6 +54,7 @@ export type DriveBrowseSnapshot = {
 
 export type DriveSearchSnapshot = {
   query: string;
+  results: DriveDiscoveryResult[];
   playableSources: DriveDiscoveredAudioSource[];
   unavailableSources: DriveDiscoveredAudioSource[];
 };
@@ -195,14 +208,23 @@ export const parseDriveSearchSnapshot = (
   files: DriveFileMetadata[],
   options: {
     query: string;
+    location?: DriveBrowseLocation;
     supportedMimeTypes: string[];
     supportedExtensions: string[];
   },
 ) => {
+  const folders: DriveFolderDiscoveryResult[] = [];
   const sources: DriveDiscoveredAudioSource[] = [];
 
   for (const file of files) {
     if (isDriveFolder(file)) {
+      folders.push({
+        ...mapDriveFileToFolder(
+          file,
+          options.location?.rootKind ?? (file.shared ? 'shared' : 'my-drive'),
+        ),
+        kind: 'folder',
+      });
       continue;
     }
 
@@ -219,9 +241,17 @@ export const parseDriveSearchSnapshot = (
   const { playableSources, unavailableSources } = partitionSources(
     sortByName(sources),
   );
+  const results: DriveDiscoveryResult[] = [
+    ...folders,
+    ...playableSources.map((source) => ({
+      ...source,
+      kind: 'audio' as const,
+    })),
+  ];
 
   return {
     query: options.query,
+    results: sortByName(results),
     playableSources,
     unavailableSources,
   } satisfies DriveSearchSnapshot;
@@ -232,6 +262,7 @@ export const createEmptyDriveSearchSnapshot = (
 ): DriveSearchSnapshot => {
   return {
     query,
+    results: [],
     playableSources: [],
     unavailableSources: [],
   };
