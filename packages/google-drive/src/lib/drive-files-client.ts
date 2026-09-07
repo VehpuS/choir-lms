@@ -13,6 +13,7 @@ const DRIVE_AUDIO_FILE_FIELDS = [
   'id',
   'name',
   'mimeType',
+  'parents',
   'fileExtension',
   'size',
   'modifiedTime',

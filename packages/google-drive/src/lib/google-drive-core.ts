@@ -23,6 +23,7 @@ export type DriveFileMetadata = {
   id: string;
   name: string;
   mimeType: string;
+  parents?: string[];
   fileExtension?: string;
   size?: string;
   modifiedTime?: string;
