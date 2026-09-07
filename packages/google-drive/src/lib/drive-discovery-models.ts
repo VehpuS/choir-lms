@@ -106,7 +106,7 @@ export const mapDriveFileToDiscoveredSource = (
   };
 };
 
-const mapDriveFileToFolder = (
+export const mapDriveFileToFolder = (
   file: DriveFileMetadata,
   rootKind: DriveBrowseRootKind,
 ): DriveFolder => {
