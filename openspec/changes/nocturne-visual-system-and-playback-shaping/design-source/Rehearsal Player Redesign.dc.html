@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/nocturne-fb092303-4111-493e-8849-17d97be2fee1/styles.css">
+<script src="_ds/nocturne-fb092303-4111-493e-8849-17d97be2fee1/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<style>
+body{margin:0;background:#101220;font-family:Inter,system-ui,sans-serif}
+a{color:#9184d9}a:hover{color:#b5abfc}
+i[class^="ph"]{display:block;line-height:1}
+</style>
+</helmet>
+
+<section style="padding:44px 48px 56px;border-bottom:1px solid rgba(233,233,237,.08)" id="t1">
+<div style="display:flex;align-items:baseline;gap:10px;margin:0 0 26px">
+<a href="#t1" style="font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#9184d9;color:#161826;border-radius:4px;text-decoration:none">1</a>
+<span style="font:500 13px/1.2 Inter,system-ui,sans-serif;color:#e9e9ed">Rehearsal player — Nocturne visual refresh, structure unchanged</span>
+</div>
+
+<div style="max-width:720px;background:#232532;border-radius:14px;padding:22px 24px;box-shadow:0 0 0 1px #3f424d;margin:0 0 34px;color:#e9e9ed">
+<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#9184d9;margin-bottom:8px">Assumptions and reasoning</div>
+<div style="font-size:14px;line-height:1.6;color:#cfd3e5">
+<p style="margin:0 0 12px">Same features, same three destinations, same library views. What changes is the surface: the parchment-and-forest palette becomes Nocturne's dark ground, and the screens stop looking like stacked forms and start looking like a player — rows instead of cards, one large title per screen, transport where a singer's thumb already is.</p>
+<p style="margin:0 0 12px">Streaming apps carry their hierarchy in album art. Rehearsal tracks from Drive have none, so type carries it instead: a 15px medium title over a 12px dim meta line, monospaced times, and one accent line per screen. Nothing is filled with accent — Nocturne uses it as a line and a glow, so the play button is an accent ring, the played waveform is accent, the active tab gets a short accent mark.</p>
+<p style="margin:0 0 12px">Loops become first-class library items, listed beside tracks with their own range bracket, and Now Playing is two-state: practice controls collapsed, full-screen waveform on expand. The waveform is the scrubbing UI at full screen — the shapes here are a stub standing in for real audio analysis.</p>
+<p style="margin:0 0 12px">Speed and pitch are drawn as planned features, and as one sheet with two outcomes: adjust and keep playing (ephemeral), or commit the current settings into a new derived track or loop. Speed is a continuous multiplier that never shifts pitch, so no pitch-lock control exists; pitch moves in semitones. Tempo source is a named field so BPM entry and score-follow against MIDI or MusicXML can land later without moving the control.</p>
+<p style="margin:0 0 12px">The existing advanced search, scope, sort, entity filter and tag match-mode controls are carried over unchanged in behaviour — screen <a href="#1j" style="color:#9184d9">1j</a> shows them restyled, not reduced.</p>
+<p style="margin:0">Icons are Phosphor per the system. Chrome is drawn from the real shell: 3-tab bar, persistent mini player, bottom-sheet playback surface, breadcrumb explorer, view-switcher chips.</p>
+</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:34px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 Inter,system-ui,sans-serif;color:#9397ab"><span style="font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(233,233,237,.08);color:#e9e9ed;border-radius:5px">1a</span>Recents — resume + tag shortcuts</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div data-screen-label="Recents" style="height:874px;display:flex;flex-direction:column;background:#161826;color:#e9e9ed;font-family:Inter,system-ui,sans-serif">
+  <div style="padding:60px 20px 12px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+    <div>
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#9184d9;margin-bottom:6px">Choir LMS</div>
+      <div style="font-size:28px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Recents</div>
+    </div>
+    <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:19px"><i class="ph ph-user-circle"></i></div>
+  </div>
+
+  <div style="flex:1;overflow:hidden;padding:0 20px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin:14px 0 4px">
+      <div style="font-size:13px;font-weight:500;color:#e9e9ed">Recent rehearsal</div>
+      <div style="font-size:11px;color:#9397ab">6 items</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:34px;height:34px;border-radius:8px;background:#2b2741;display:flex;align-items:center;justify-content:center;color:#b5abfc;font-size:17px"><i class="ph ph-waveform"></i></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:500;color:#b5abfc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Lux Aeterna — Soprano</div>
+          <div style="font-size:12px;color:#9397ab;margin-top:2px">Playing now · 1:29 / 4:38</div>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:2px;height:16px;padding-right:2px">
+          <div style="width:2px;height:7px;background:#9184d9;border-radius:2px"></div>
+          <div style="width:2px;height:14px;background:#9184d9;border-radius:2px"></div>
+          <div style="width:2px;height:5px;background:#9184d9;border-radius:2px"></div>
+          <div style="width:2px;height:11px;background:#9184d9;border-radius:2px"></div>
+        </div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:34px;height:34px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.12);display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-repeat"></i></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Kyrie — bars 41–56</div>
+          <div style="font-size:12px;color:#9397ab;margin-top:2px">Loop · 2 hours ago</div>
+        </div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:34px;height:34px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.12);display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-music-note"></i></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Advent Responsory</div>
+          <div style="font-size:12px;color:#9397ab;margin-top:2px">Yesterday · 3:52</div>
+        </div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:34px;height:34px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.12);display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-playlist"></i></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Tuesday warm-ups</div>
+          <div style="font-size:12px;color:#9397ab;margin-top:2px">Playlist · 7 items · Sunday</div>
+        </div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0">
+        <div style="width:34px;height:34px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.12);display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-music-note"></i></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Sanctus — full choir</div>
+          <div style="font-size:12px;color:#9397ab;margin-top:2px">Friday · 5:06</div>
+        </div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+    </div>
+
+    <div style="height:1px;background:linear-gradient(to right,transparent,rgba(233,233,237,.14) 40px,rgba(233,233,237,.14) calc(100% - 40px),transparent);margin:18px 0 16px"></div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:500">Popular tags</div>
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;min-height:44px;min-width:44px;font-size:12px;color:#9184d9">See all <i class="ph ph-caret-right" style="font-size:12px"></i></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Soprano</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Advent</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Latin</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Tricky entries</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Rehearsal 12 Nov</div>
+    </div>
+  </div>
+
+  <div style="background:#1b1e2c;box-shadow:inset 0 1px 0 rgba(233,233,237,.1)">
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 16px 11px;position:relative">
+      <div style="height:22px;display:flex;align-items:center;gap:2px">{{ miniWave }}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Lux Aeterna — Soprano</div>
+        <div style="font-size:11px;color:#9397ab;margin-top:1px">Advent set · loop 1:12–1:48</div>
+      </div>
+      <div style="width:46px;height:46px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9, 0 0 14px rgba(145,132,217,.28);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:16px"><i class="ph-fill ph-pause"></i></div>
+      <div style="position:absolute;left:0;bottom:0;height:2px;width:33%;background:#9184d9"></div>
+    </div>
+    <div style="display:flex;padding:6px 8px 34px">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9184d9">
+        <div style="width:16px;height:2px;border-radius:2px;background:#9184d9"></div>
+        <i class="ph-fill ph-clock-counter-clockwise" style="font-size:21px"></i>
+        <div style="font-size:10px;font-weight:500">Recents</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9397ab">
+        <div style="width:16px;height:2px"></div>
+        <i class="ph ph-folder-plus" style="font-size:21px"></i>
+        <div style="font-size:10px;font-weight:500">Add</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9397ab">
+        <div style="width:16px;height:2px"></div>
+        <i class="ph ph-music-notes" style="font-size:21px"></i>
+        <div style="font-size:10px;font-weight:500">Library</div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-import>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 Inter,system-ui,sans-serif;color:#9397ab"><span style="font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(233,233,237,.08);color:#e9e9ed;border-radius:5px">1b</span>Library — Files explorer</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div data-screen-label="Library / Files" style="height:874px;display:flex;flex-direction:column;background:#161826;color:#e9e9ed;font-family:Inter,system-ui,sans-serif">
+  <div style="padding:60px 20px 0">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+      <div style="font-size:28px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Library</div>
+      <div style="display:flex;gap:8px">
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:18px"><i class="ph ph-magnifying-glass"></i></div>
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:19px"><i class="ph ph-user-circle"></i></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin:16px 0 0;overflow:hidden">
+      <div style="font-size:12.5px;font-weight:500;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9;white-space:nowrap">Files</div>
+      <div style="font-size:12.5px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5;white-space:nowrap">Tracks</div>
+      <div style="font-size:12.5px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5;white-space:nowrap">Loops</div>
+      <div style="font-size:12.5px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5;white-space:nowrap">Playlists</div>
+      <div style="font-size:12.5px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5;white-space:nowrap">Tags</div>
+    </div>
+  </div>
+
+  <div style="flex:1;overflow:hidden;padding:0 20px">
+    <div style="display:flex;align-items:center;gap:10px;margin:16px 0 2px">
+      <div style="width:44px;height:44px;flex:none;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:16px"><i class="ph ph-caret-left"></i></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#9397ab">Current folder</div>
+        <div style="font-size:17px;font-weight:500;margin-top:1px">Advent 2026</div>
+      </div>
+      <div style="width:44px;height:44px;flex:none;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:15px"><i class="ph ph-sliders-horizontal"></i></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#9397ab;margin:6px 0 12px">
+      <span style="color:#9184d9">Library</span><span>/</span><span style="color:#9184d9">Season</span><span>/</span><span style="color:#e9e9ed">Advent 2026</span>
+    </div>
+
+    <div style="display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-folder" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Rehearsal recordings</div><div style="font-size:12px;color:#9397ab;margin-top:2px">4 tracks · 2 folders</div></div>
+        <i class="ph ph-caret-right" style="font-size:14px;color:#75798c"></i>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-folder" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Part tracks</div><div style="font-size:12px;color:#9397ab;margin-top:2px">12 tracks</div></div>
+        <i class="ph ph-caret-right" style="font-size:14px;color:#75798c"></i>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-waveform" style="font-size:20px;color:#b5abfc"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500;color:#b5abfc">Lux Aeterna — Soprano</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Playing · 4:38 · 3 loops</div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9;display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-pause"></i></div></div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-music-note" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Lux Aeterna — Alto</div><div style="font-size:12px;color:#9397ab;margin-top:2px">4:41 · Alto · Latin</div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-repeat" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Kyrie — bars 41–56</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Loop · <span style="font-family:ui-monospace,Menlo,monospace">1:12–1:48</span> · 0:36</div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-playlist" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Advent set</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Playlist · 9 items · 32:14</div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0">
+        <i class="ph ph-music-note" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Sanctus — full choir</div><div style="font-size:12px;color:#9397ab;margin-top:2px">5:06 · Latin</div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:relative;background:#1b1e2c;box-shadow:inset 0 1px 0 rgba(233,233,237,.1)">
+    <div style="position:absolute;right:18px;top:-58px;width:52px;height:52px;border-radius:999px;background:#2b2741;box-shadow:0 0 0 1px #9184d9,0 8px 24px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:#b5abfc;font-size:22px"><i class="ph ph-plus"></i></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 16px 11px;position:relative">
+      <div style="height:22px;display:flex;align-items:center;gap:2px">{{ miniWave }}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Lux Aeterna — Soprano</div>
+        <div style="font-size:11px;color:#9397ab;margin-top:1px">Advent set · loop 1:12–1:48</div>
+      </div>
+      <div style="width:46px;height:46px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9, 0 0 14px rgba(145,132,217,.28);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:16px"><i class="ph-fill ph-pause"></i></div>
+      <div style="position:absolute;left:0;bottom:0;height:2px;width:33%;background:#9184d9"></div>
+    </div>
+    <div style="display:flex;padding:6px 8px 34px">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9397ab">
+        <div style="width:16px;height:2px"></div>
+        <i class="ph ph-clock-counter-clockwise" style="font-size:21px"></i>
+        <div style="font-size:10px;font-weight:500">Recents</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9397ab">
+        <div style="width:16px;height:2px"></div>
+        <i class="ph ph-folder-plus" style="font-size:21px"></i>
+        <div style="font-size:10px;font-weight:500">Add</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9184d9">
+        <div style="width:16px;height:2px;border-radius:2px;background:#9184d9"></div>
+        <i class="ph-fill ph-music-notes" style="font-size:21px"></i>
+        <div style="font-size:10px;font-weight:500">Library</div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-import>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 Inter,system-ui,sans-serif;color:#9397ab"><span style="font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(233,233,237,.08);color:#e9e9ed;border-radius:5px">1c</span>Library — Tracks</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div data-screen-label="Library / Tracks" style="height:874px;display:flex;flex-direction:column;background:#161826;color:#e9e9ed;font-family:Inter,system-ui,sans-serif">
+  <div style="padding:60px 20px 0">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+      <div style="font-size:28px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Library</div>
+      <div style="display:flex;gap:8px">
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:18px"><i class="ph ph-magnifying-glass"></i></div>
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:19px"><i class="ph ph-user-circle"></i></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin:16px 0 0;overflow:hidden">
+      <div style="font-size:12.5px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5;white-space:nowrap">Files</div>
+      <div style="font-size:12.5px;font-weight:500;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9;white-space:nowrap">Tracks</div>
+      <div style="font-size:12.5px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5;white-space:nowrap">Loops</div>
+      <div style="font-size:12.5px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5;white-space:nowrap">Playlists</div>
+      <div style="font-size:12.5px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5;white-space:nowrap">Tags</div>
+    </div>
+  </div>
+
+  <div style="flex:1;overflow:hidden;padding:0 20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 10px">
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9397ab">Sort · 24 saved tracks</div>
+      <div style="width:44px;height:44px;flex:none;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:16px"><i class="ph ph-arrow-down"></i></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:500;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9">Added</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Name</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Opened</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Length</div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:12px 0;border-radius:8px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9;font-size:13.5px;font-weight:500"><i class="ph-fill ph-play" style="font-size:13px"></i>Play all</div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:12px 0;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);color:#e9e9ed;font-size:13.5px;font-weight:500"><i class="ph ph-shuffle" style="font-size:14px"></i>Shuffle</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:22px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#9184d9;text-align:right">1</div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500;color:#b5abfc">Lux Aeterna — Soprano</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Soprano · Latin · 3 loops</div></div>
+        <div style="display:flex;align-items:flex-end;gap:2px;height:14px"><div style="width:2px;height:6px;background:#9184d9;border-radius:2px"></div><div style="width:2px;height:13px;background:#9184d9;border-radius:2px"></div><div style="width:2px;height:9px;background:#9184d9;border-radius:2px"></div></div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#9397ab">4:38</div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:22px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#75798c;text-align:right">2</div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Lux Aeterna — Alto</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Alto · Latin</div></div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#9397ab">4:41</div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:22px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#75798c;text-align:right">3</div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Advent Responsory</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Full choir · 1 loop</div></div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#9397ab">3:52</div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:22px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#75798c;text-align:right">4</div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Sanctus — full choir</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Full choir · Latin</div></div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#9397ab">5:06</div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:22px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#75798c;text-align:right">5</div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Kyrie — rehearsal 12 Nov</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Rehearsal 12 Nov · 2 loops</div></div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#9397ab">6:22</div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:22px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#75798c;text-align:right">6</div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Gloria — tenor line</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Tenor · Tricky entries</div></div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#9397ab">2:48</div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0">
+        <div style="width:22px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#75798c;text-align:right">7</div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Agnus Dei — bass line</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Bass · Latin</div></div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#9397ab">3:11</div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#1b1e2c;box-shadow:inset 0 1px 0 rgba(233,233,237,.1)">
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 16px 11px;position:relative">
+      <div style="height:22px;display:flex;align-items:center;gap:2px">{{ miniWave }}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Lux Aeterna — Soprano</div>
+        <div style="font-size:11px;color:#9397ab;margin-top:1px">Advent set · loop 1:12–1:48</div>
+      </div>
+      <div style="width:46px;height:46px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9, 0 0 14px rgba(145,132,217,.28);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:16px"><i class="ph-fill ph-pause"></i></div>
+      <div style="position:absolute;left:0;bottom:0;height:2px;width:33%;background:#9184d9"></div>
+    </div>
+    <div style="display:flex;padding:6px 8px 34px">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9397ab"><div style="width:16px;height:2px"></div><i class="ph ph-clock-counter-clockwise" style="font-size:21px"></i><div style="font-size:10px;font-weight:500">Recents</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9397ab"><div style="width:16px;height:2px"></div><i class="ph ph-folder-plus" style="font-size:21px"></i><div style="font-size:10px;font-weight:500">Add</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9184d9"><div style="width:16px;height:2px;border-radius:2px;background:#9184d9"></div><i class="ph-fill ph-music-notes" style="font-size:21px"></i><div style="font-size:10px;font-weight:500">Library</div></div>
+    </div>
+  </div>
+</div>
+</x-import>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 Inter,system-ui,sans-serif;color:#9397ab"><span style="font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(233,233,237,.08);color:#e9e9ed;border-radius:5px">1d</span>Library — Loops, as first-class items</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div data-screen-label="Library / Loops" style="height:874px;display:flex;flex-direction:column;background:#161826;color:#e9e9ed;font-family:Inter,system-ui,sans-serif">
+  <div style="padding:60px 20px 0">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+      <div style="font-size:28px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Library</div>
+      <div style="display:flex;gap:8px">
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:18px"><i class="ph ph-magnifying-glass"></i></div>
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:19px"><i class="ph ph-user-circle"></i></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin:16px 0 0;overflow:hidden">
+      <div style="font-size:12.5px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5;white-space:nowrap">Files</div>
+      <div style="font-size:12.5px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5;white-space:nowrap">Tracks</div>
+      <div style="font-size:12.5px;font-weight:500;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9;white-space:nowrap">Loops</div>
+      <div style="font-size:12.5px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5;white-space:nowrap">Playlists</div>
+      <div style="font-size:12.5px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5;white-space:nowrap">Tags</div>
+    </div>
+  </div>
+
+  <div style="flex:1;overflow:hidden;padding:0 20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 10px">
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9397ab">Sort · 12 saved loops · 8:24</div>
+      <div style="width:44px;height:44px;flex:none;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:16px"><i class="ph ph-arrow-up"></i></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:500;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9">Length</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Name</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Added</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Opened</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:#232532;border-radius:8px;padding:13px 14px;box-shadow:0 0 0 1px #9184d9">
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:500;color:#b5abfc">Bars 41–56 · soprano entry</div>
+            <div style="font-size:12px;color:#9397ab;margin-top:3px">Lux Aeterna — Soprano</div>
+          </div>
+          <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:36px;height:36px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9,0 0 12px rgba(145,132,217,.25);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:15px"><i class="ph-fill ph-pause"></i></div></div>
+          <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:17px"><i class="ph ph-dots-three-vertical"></i></div>
+        </div>
+        <div style="height:28px;display:flex;align-items:center;gap:2px;margin:11px 0 8px">{{ loopWave }}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#9397ab">
+          <span>1:12</span>
+          <span style="color:#e9e9ed">0:36 · ×4</span>
+          <span>1:48</span>
+        </div>
+      </div>
+
+      <div style="border-radius:8px;padding:13px 14px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.1)">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:500">Kyrie — bars 41–56</div>
+            <div style="font-size:12px;color:#9397ab;margin-top:3px">Kyrie — rehearsal 12 Nov · <span style="font-family:ui-monospace,Menlo,monospace">2:04–2:31</span></div>
+          </div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#9397ab">0:27</div>
+          <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div>
+        </div>
+      </div>
+
+      <div style="border-radius:8px;padding:13px 14px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.1)">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:500">Gloria — tenor entry</div>
+            <div style="font-size:12px;color:#9397ab;margin-top:3px">Gloria — tenor line · <span style="font-family:ui-monospace,Menlo,monospace">0:41–1:09</span></div>
+          </div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#9397ab">0:28</div>
+          <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div>
+        </div>
+      </div>
+
+      <div style="border-radius:8px;padding:13px 14px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.1)">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:500">Sanctus — hemiola</div>
+            <div style="font-size:12px;color:#9397ab;margin-top:3px">Sanctus — full choir · <span style="font-family:ui-monospace,Menlo,monospace">3:22–4:04</span></div>
+          </div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#9397ab">0:42</div>
+          <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div>
+        </div>
+      </div>
+
+      <div style="border-radius:8px;padding:13px 14px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.1)">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:500">Agnus Dei — divisi</div>
+            <div style="font-size:12px;color:#9397ab;margin-top:3px">Agnus Dei — bass line · <span style="font-family:ui-monospace,Menlo,monospace">1:50–2:38</span></div>
+          </div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#9397ab">0:48</div>
+          <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#1b1e2c;box-shadow:inset 0 1px 0 rgba(233,233,237,.1)">
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 16px 11px;position:relative">
+      <div style="height:22px;display:flex;align-items:center;gap:2px">{{ miniWave }}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Bars 41–56 · soprano entry</div>
+        <div style="font-size:11px;color:#9397ab;margin-top:1px">Loop · repeat ×4 · 0:36</div>
+      </div>
+      <div style="width:46px;height:46px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9, 0 0 14px rgba(145,132,217,.28);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:16px"><i class="ph-fill ph-pause"></i></div>
+      <div style="position:absolute;left:0;bottom:0;height:2px;width:31%;background:#9184d9"></div>
+    </div>
+    <div style="display:flex;padding:6px 8px 34px">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9397ab"><div style="width:16px;height:2px"></div><i class="ph ph-clock-counter-clockwise" style="font-size:21px"></i><div style="font-size:10px;font-weight:500">Recents</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9397ab"><div style="width:16px;height:2px"></div><i class="ph ph-folder-plus" style="font-size:21px"></i><div style="font-size:10px;font-weight:500">Add</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9184d9"><div style="width:16px;height:2px;border-radius:2px;background:#9184d9"></div><i class="ph-fill ph-music-notes" style="font-size:21px"></i><div style="font-size:10px;font-weight:500">Library</div></div>
+    </div>
+  </div>
+</div>
+</x-import>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 Inter,system-ui,sans-serif;color:#9397ab"><span style="font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(233,233,237,.08);color:#e9e9ed;border-radius:5px">1e</span>Add — browse Google Drive</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div data-screen-label="Add" style="height:874px;display:flex;flex-direction:column;background:#161826;color:#e9e9ed;font-family:Inter,system-ui,sans-serif">
+  <div style="padding:60px 20px 0">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+      <div style="font-size:28px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Add</div>
+      <div style="display:flex;gap:8px">
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:18px"><i class="ph ph-arrows-clockwise"></i></div>
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:18px"><i class="ph ph-magnifying-glass"></i></div>
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:19px"><i class="ph ph-user-circle"></i></div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:#9397ab;margin-top:8px">Signed in as m.reyes@choir.org</div>
+  </div>
+
+  <div style="flex:1;overflow:hidden;padding:0 20px">
+    <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#9397ab;margin:18px 0 14px;flex-wrap:wrap">
+      <span style="color:#9184d9">My Drive</span><span>/</span><span style="color:#9184d9">Choir 2026</span><span>/</span><span style="color:#e9e9ed">Advent</span>
+    </div>
+
+    <div style="background:#232532;border-radius:8px;padding:12px 14px;box-shadow:0 0 0 1px #423a6a;display:flex;align-items:center;gap:11px;margin-bottom:16px">
+      <i class="ph-fill ph-check-circle" style="font-size:19px;color:#b5abfc"></i>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13.5px;font-weight:500">Saved to Library</div>
+        <div style="font-size:12px;color:#9397ab;margin-top:2px">Sanctus — full choir.m4a</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;font-size:12px;font-weight:500;color:#9184d9">Open</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-folder" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Part tracks</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Updated 3 Nov</div></div>
+        <i class="ph ph-caret-right" style="font-size:14px;color:#75798c"></i>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-folder" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Rehearsal recordings</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Updated 12 Nov</div></div>
+        <i class="ph ph-caret-right" style="font-size:14px;color:#75798c"></i>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-music-note" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Lux Aeterna — Soprano.mp3</div><div style="font-size:12px;color:#9397ab;margin-top:2px">MP3 · 8.4 MB · 4:38</div></div>
+        <div style="font-size:12px;font-weight:500;color:#9397ab;display:flex;align-items:center;min-height:44px;padding:0 15px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.12)">Saved</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-music-note" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Lux Aeterna — Alto.mp3</div><div style="font-size:12px;color:#9397ab;margin-top:2px">MP3 · 8.5 MB · 4:41</div></div>
+        <div style="font-size:12px;font-weight:500;color:#9184d9;display:flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9">Save</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-music-note" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Advent Responsory.m4a</div><div style="font-size:12px;color:#9397ab;margin-top:2px">M4A · 6.1 MB · 3:52</div></div>
+        <div style="font-size:12px;font-weight:500;color:#9184d9;display:flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9">Save</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-music-note" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Kyrie — 12 Nov.m4a</div><div style="font-size:12px;color:#9397ab;margin-top:2px">M4A · 9.8 MB · 6:22</div></div>
+        <div style="font-size:12px;font-weight:500;color:#9184d9;display:flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9">Save</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;opacity:.5">
+        <i class="ph ph-file" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Advent score.pdf</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Not a supported audio format</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#1b1e2c;box-shadow:inset 0 1px 0 rgba(233,233,237,.1)">
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 16px 11px;position:relative">
+      <div style="height:22px;display:flex;align-items:center;gap:2px">{{ miniWave }}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Lux Aeterna — Soprano</div>
+        <div style="font-size:11px;color:#9397ab;margin-top:1px">Advent set · loop 1:12–1:48</div>
+      </div>
+      <div style="width:46px;height:46px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9, 0 0 14px rgba(145,132,217,.28);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:16px"><i class="ph-fill ph-pause"></i></div>
+      <div style="position:absolute;left:0;bottom:0;height:2px;width:33%;background:#9184d9"></div>
+    </div>
+    <div style="display:flex;padding:6px 8px 34px">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9397ab"><div style="width:16px;height:2px"></div><i class="ph ph-clock-counter-clockwise" style="font-size:21px"></i><div style="font-size:10px;font-weight:500">Recents</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9184d9"><div style="width:16px;height:2px;border-radius:2px;background:#9184d9"></div><i class="ph-fill ph-folder-plus" style="font-size:21px"></i><div style="font-size:10px;font-weight:500">Add</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9397ab"><div style="width:16px;height:2px"></div><i class="ph ph-music-notes" style="font-size:21px"></i><div style="font-size:10px;font-weight:500">Library</div></div>
+    </div>
+  </div>
+</div>
+</x-import>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 Inter,system-ui,sans-serif;color:#9397ab"><span style="font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(233,233,237,.08);color:#e9e9ed;border-radius:5px">1f</span>Now Playing — collapsed practice controls</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div data-screen-label="Now Playing collapsed" style="height:874px;display:flex;flex-direction:column;background:#101220;color:#e9e9ed;font-family:Inter,system-ui,sans-serif">
+  <div style="height:60px;flex:none"></div>
+  <div style="flex:1;background:#161826;border-radius:22px 22px 0 0;box-shadow:0 0 0 1px #3f424d,0 -18px 44px rgba(0,0,0,.6);display:flex;flex-direction:column;padding:12px 22px 0">
+    <div style="width:52px;height:4px;border-radius:999px;background:#3f424d;align-self:center;flex:none"></div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#9397ab">Rehearsing queue</div>
+      <div style="display:flex;gap:8px">
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:17px"><i class="ph ph-list"></i></div>
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:17px"><i class="ph ph-caret-down"></i></div>
+      </div>
+    </div>
+
+    <div style="margin-top:40px">
+      <div style="font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#9184d9">Playing</div>
+      <div style="font-size:32px;font-weight:500;letter-spacing:-.025em;line-height:1.14;margin-top:10px">Lux Aeterna<br>— Soprano</div>
+      <div style="font-size:14px;color:#9397ab;margin-top:10px">Advent set · 3 of 9</div>
+      <div style="display:inline-flex;align-items:center;gap:7px;margin-top:14px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9;font-size:12.5px;font-weight:500">
+        <i class="ph ph-repeat" style="font-size:14px"></i><span style="font-family:ui-monospace,Menlo,monospace">1:12–1:48</span><span>· ×4</span>
+      </div>
+    </div>
+
+    <div style="margin-top:38px">
+      <div style="position:relative;padding:6px 0">
+        <div style="position:absolute;left:26%;right:62%;top:0;bottom:0;border-radius:5px;background:rgba(145,132,217,.09);box-shadow:inset 0 0 0 1px rgba(145,132,217,.4)"></div>
+        <div style="position:relative;height:56px;display:flex;align-items:center;gap:2px">{{ collapsedWave }}</div>
+        <div style="position:absolute;left:33%;top:2px;bottom:2px;width:2px;background:#e9e9ed;box-shadow:0 0 10px rgba(233,233,237,.5)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#9397ab;margin-top:9px">
+        <span>1:29</span><span>−3:09</span>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:center;gap:18px;margin-top:34px">
+      <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:22px"><i class="ph-fill ph-skip-back"></i></div>
+      <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#e9e9ed;font-size:24px"><i class="ph ph-arrow-counter-clockwise"></i></div>
+      <div style="width:76px;height:76px;border-radius:999px;box-shadow:inset 0 0 0 1.5px #9184d9, 0 0 28px rgba(145,132,217,.3);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:30px"><i class="ph-fill ph-pause"></i></div>
+      <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#e9e9ed;font-size:24px"><i class="ph ph-arrow-clockwise"></i></div>
+      <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:22px"><i class="ph-fill ph-skip-forward"></i></div>
+    </div>
+
+    <div style="height:1px;background:linear-gradient(to right,transparent,rgba(233,233,237,.12) 40px,rgba(233,233,237,.12) calc(100% - 40px),transparent);margin:30px 0 20px"></div>
+
+    <div style="display:flex;align-items:stretch;gap:10px">
+      <div style="flex:1;border-radius:8px;padding:11px 12px;box-shadow:inset 0 0 0 1px #9184d9">
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9397ab">Speed</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-top:5px"><span style="font-family:ui-monospace,Menlo,monospace;font-size:17px;color:#b5abfc">0.90×</span></div>
+      </div>
+      <div style="flex:1;border-radius:8px;padding:11px 12px;box-shadow:inset 0 0 0 1px #9184d9">
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9397ab">Pitch</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-top:5px"><span style="font-family:ui-monospace,Menlo,monospace;font-size:17px;color:#b5abfc">−2 st</span></div>
+      </div>
+      <div style="width:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9;font-size:19px"><i class="ph ph-repeat"></i></div>
+      <div style="width:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(233,233,237,.12);color:#9397ab;font-size:19px"><i class="ph ph-shuffle"></i></div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:auto;padding:20px 0 42px;color:#9184d9;font-size:12.5px;font-weight:500">
+      <i class="ph ph-waveform" style="font-size:16px"></i>Waveform and loop editor
+    </div>
+  </div>
+</div>
+</x-import>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 Inter,system-ui,sans-serif;color:#9397ab"><span style="font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(233,233,237,.08);color:#e9e9ed;border-radius:5px">1g</span>Now Playing — expanded; waveform is the scrubber</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div data-screen-label="Now Playing expanded" style="height:874px;display:flex;flex-direction:column;background:#161826;color:#e9e9ed;font-family:Inter,system-ui,sans-serif">
+  <div style="padding:58px 22px 0;flex:none">
+    <div style="width:52px;height:4px;border-radius:999px;background:#3f424d;margin:0 auto 16px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#9397ab">Loop editor</div>
+      <div style="display:flex;gap:8px">
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:17px"><i class="ph ph-list"></i></div>
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:17px"><i class="ph ph-caret-down"></i></div>
+      </div>
+    </div>
+    <div style="font-size:20px;font-weight:500;letter-spacing:-.015em;margin-top:16px">Lux Aeterna — Soprano</div>
+    <div style="font-size:13px;color:#9397ab;margin-top:4px">Advent set · 3 of 9 · 0.90× · −2 st</div>
+  </div>
+
+  <div style="flex:1;overflow:hidden;padding:0 22px;display:flex;flex-direction:column">
+    <div style="position:relative;margin-top:26px;padding:18px 0">
+      <div style="position:absolute;left:26%;right:62%;top:0;bottom:0;border-radius:6px;background:rgba(145,132,217,.1);box-shadow:inset 0 0 0 1px rgba(145,132,217,.45)"></div>
+      <div style="position:absolute;left:26%;top:-6px;transform:translateX(-100%);margin-left:-4px;font-size:10px;font-weight:600;color:#161826;background:#9184d9;padding:1px 6px;border-radius:4px">A</div>
+      <div style="position:absolute;left:38%;top:-6px;margin-left:4px;font-size:10px;font-weight:600;color:#161826;background:#9184d9;padding:1px 6px;border-radius:4px">B</div>
+      <div style="position:relative;height:120px;display:flex;align-items:center;gap:2px">{{ heroWave }}</div>
+      <div style="position:absolute;left:33%;top:8px;bottom:8px;width:2px;background:#e9e9ed;box-shadow:0 0 12px rgba(233,233,237,.5)"></div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#9397ab">
+      <span>0:00</span><span style="color:#e9e9ed">1:29</span><span>4:38</span>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:22px">
+      <div style="flex:1;border-radius:8px;padding:12px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.12)">
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9397ab">Start</div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:15px;margin-top:5px">1:12.4</div>
+        <div style="display:flex;gap:8px;margin-top:9px">
+          <div style="flex:1;height:44px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:14px"><i class="ph ph-minus"></i></div>
+          <div style="flex:1;height:44px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:14px"><i class="ph ph-plus"></i></div>
+        </div>
+      </div>
+      <div style="width:86px;border-radius:8px;padding:12px;box-shadow:inset 0 0 0 1px #423a6a;background:#1d1f30">
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9397ab">Length</div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:15px;color:#b5abfc;margin-top:5px">0:36.0</div>
+        <div style="font-size:11px;color:#9397ab;margin-top:11px">bars 41–56</div>
+      </div>
+      <div style="flex:1;border-radius:8px;padding:12px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.12)">
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9397ab">End</div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:15px;margin-top:5px">1:48.4</div>
+        <div style="display:flex;gap:8px;margin-top:9px">
+          <div style="flex:1;height:44px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:14px"><i class="ph ph-minus"></i></div>
+          <div style="flex:1;height:44px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:14px"><i class="ph ph-plus"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:center;gap:18px;margin-top:24px">
+      <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#e9e9ed;font-size:24px"><i class="ph ph-arrow-counter-clockwise"></i></div>
+      <div style="width:70px;height:70px;border-radius:999px;box-shadow:inset 0 0 0 1.5px #9184d9,0 0 26px rgba(145,132,217,.3);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:28px"><i class="ph-fill ph-pause"></i></div>
+      <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#e9e9ed;font-size:24px"><i class="ph ph-arrow-clockwise"></i></div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:20px;padding-bottom:42px">
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 0;border-radius:8px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9;font-size:13.5px;font-weight:500"><i class="ph ph-bookmark-simple" style="font-size:15px"></i>Save loop</div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 0;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);color:#e9e9ed;font-size:13.5px;font-weight:500"><i class="ph ph-sliders" style="font-size:15px"></i>Speed &amp; pitch</div>
+    </div>
+  </div>
+</div>
+</x-import>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 Inter,system-ui,sans-serif;color:#9397ab"><span style="font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(233,233,237,.08);color:#e9e9ed;border-radius:5px">1h</span>Up Next — queue</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div data-screen-label="Up Next" style="height:874px;display:flex;flex-direction:column;background:#101220;color:#e9e9ed;font-family:Inter,system-ui,sans-serif">
+  <div style="height:60px;flex:none"></div>
+  <div style="flex:1;background:#161826;border-radius:22px 22px 0 0;box-shadow:0 0 0 1px #3f424d,0 -18px 44px rgba(0,0,0,.6);display:flex;flex-direction:column;padding:12px 22px 0;overflow:hidden">
+    <div style="width:52px;height:4px;border-radius:999px;background:#3f424d;align-self:center;flex:none"></div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#9397ab">Up Next</div>
+      <div style="display:flex;gap:8px">
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:18px"><i class="ph ph-play-circle"></i></div>
+        <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:17px"><i class="ph ph-caret-down"></i></div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px">
+      <div style="font-size:22px;font-weight:500;letter-spacing:-.02em">Advent set</div>
+      <div style="font-size:13px;color:#9397ab;margin-top:4px">9 items · 32:14 · ordered · repeat all</div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <div style="display:flex;align-items:center;gap:7px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9;font-size:12px;font-weight:500"><i class="ph ph-list-numbers" style="font-size:14px"></i>Ordered</div>
+      <div style="display:flex;align-items:center;gap:7px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5;font-size:12px"><i class="ph ph-shuffle" style="font-size:14px"></i>Shuffle</div>
+      <div style="display:flex;align-items:center;gap:7px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9;font-size:12px;font-weight:500"><i class="ph ph-repeat" style="font-size:14px"></i>All</div>
+    </div>
+
+    <div style="height:1px;background:linear-gradient(to right,transparent,rgba(233,233,237,.12) 40px,rgba(233,233,237,.12) calc(100% - 40px),transparent);margin:18px 0 4px"></div>
+
+    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:16px;display:flex;align-items:flex-end;gap:2px;height:14px"><div style="width:2px;height:6px;background:#9184d9;border-radius:2px"></div><div style="width:2px;height:13px;background:#9184d9;border-radius:2px"></div><div style="width:2px;height:9px;background:#9184d9;border-radius:2px"></div></div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500;color:#b5abfc">Lux Aeterna — Soprano</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Playing · loop 1:12–1:48</div></div>
+        <div style="width:46px;height:46px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:18px"><i class="ph ph-dots-six-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:16px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#75798c;text-align:center">4</div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Lux Aeterna — Alto</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Track · 4:41</div></div>
+        <div style="width:46px;height:46px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:18px"><i class="ph ph-dots-six-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:16px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#75798c;text-align:center">5</div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Kyrie — bars 41–56</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Loop · 0:27 · ×2</div></div>
+        <div style="width:46px;height:46px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:18px"><i class="ph ph-dots-six-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:16px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#75798c;text-align:center">6</div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Advent Responsory</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Track · 3:52</div></div>
+        <div style="width:46px;height:46px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:18px"><i class="ph ph-dots-six-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:16px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#75798c;text-align:center">7</div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Sanctus — full choir</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Track · 5:06</div></div>
+        <div style="width:46px;height:46px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:18px"><i class="ph ph-dots-six-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <div style="width:16px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#75798c;text-align:center">8</div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Gloria — tenor entry</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Loop · 0:28</div></div>
+        <div style="width:46px;height:46px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:18px"><i class="ph ph-dots-six-vertical"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0">
+        <div style="width:16px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#75798c;text-align:center">9</div>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Agnus Dei — bass line</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Track · 3:11</div></div>
+        <div style="width:46px;height:46px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:18px"><i class="ph ph-dots-six-vertical"></i></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;padding:16px 0 42px;flex:none">
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:12px 0;border-radius:8px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9;font-size:13.5px;font-weight:500">Update Advent set</div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:12px 0;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);color:#e9e9ed;font-size:13.5px;font-weight:500">Save as new</div>
+    </div>
+  </div>
+</div>
+</x-import>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 Inter,system-ui,sans-serif;color:#9397ab"><span style="font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(233,233,237,.08);color:#e9e9ed;border-radius:5px">1i</span>Speed &amp; pitch — ephemeral, or committed as derived (planned)</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div data-screen-label="Speed and pitch" style="height:874px;display:flex;flex-direction:column;background:#101220;color:#e9e9ed;font-family:Inter,system-ui,sans-serif">
+  <div style="height:60px;flex:none"></div>
+  <div style="flex:1;background:#161826;border-radius:22px 22px 0 0;box-shadow:0 0 0 1px #3f424d,0 -18px 44px rgba(0,0,0,.6);display:flex;flex-direction:column;padding:12px 22px 0;overflow:hidden">
+    <div style="width:52px;height:4px;border-radius:999px;background:#3f424d;align-self:center;flex:none"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#9397ab">Speed &amp; pitch</div>
+      <div style="width:44px;height:44px;flex:none;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:17px"><i class="ph ph-caret-down"></i></div>
+    </div>
+    <div style="font-size:15px;font-weight:500;margin-top:14px">Lux Aeterna — Soprano</div>
+    <div style="font-size:12px;color:#9397ab;margin-top:3px">Loop · <span style="font-family:ui-monospace,Menlo,monospace">1:12–1:48</span></div>
+
+    <div style="margin-top:26px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between">
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9397ab">Speed</div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:19px;color:#b5abfc">0.90×</div>
+      </div>
+      <div style="position:relative;height:4px;border-radius:999px;background:#292b31;margin-top:14px">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:40%;border-radius:999px;background:#9184d9"></div>
+        <div style="position:absolute;left:50%;top:-5px;height:14px;width:1px;background:#75798c"></div>
+        <div style="position:absolute;left:40%;top:-5px;width:14px;height:14px;margin-left:-7px;border-radius:999px;background:#e9e9ed;box-shadow:0 0 10px rgba(145,132,217,.6)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#9397ab;margin-top:10px">
+        <span>0.50×</span><span>1.00×</span><span>1.50×</span>
+      </div>
+      <div style="font-size:11.5px;color:#9397ab;margin-top:10px">Continuous. Pitch is never shifted by speed.</div>
+    </div>
+
+    <div style="margin-top:22px">
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9397ab;margin-bottom:9px">Tempo source</div>
+      <div style="display:flex;gap:8px">
+        <div style="display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9;font-size:12px;font-weight:500">Multiplier</div>
+        <div style="display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.1);color:#75798c;font-size:12px">BPM</div>
+        <div style="display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.1);color:#75798c;font-size:12px">Follow score</div>
+      </div>
+      <div style="font-size:11.5px;color:#75798c;margin-top:9px">BPM and score-follow (MIDI / MusicXML) arrive later; dynamic tempo maps then replace the flat multiplier.</div>
+    </div>
+
+    <div style="height:1px;background:linear-gradient(to right,transparent,rgba(233,233,237,.12) 40px,rgba(233,233,237,.12) calc(100% - 40px),transparent);margin:22px 0"></div>
+
+    <div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between">
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9397ab">Pitch</div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:19px;color:#b5abfc">−2 st</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+        <div style="width:46px;height:46px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#e9e9ed;font-size:18px"><i class="ph ph-minus"></i></div>
+        <div style="flex:1;display:flex;align-items:flex-end;justify-content:space-between;height:24px">
+          <div style="width:2px;height:9px;background:#3f424d;border-radius:2px"></div>
+          <div style="width:2px;height:9px;background:#3f424d;border-radius:2px"></div>
+          <div style="width:2px;height:16px;background:#9184d9;border-radius:2px"></div>
+          <div style="width:2px;height:9px;background:#9184d9;border-radius:2px"></div>
+          <div style="width:2px;height:24px;background:#e9e9ed;border-radius:2px"></div>
+          <div style="width:2px;height:9px;background:#3f424d;border-radius:2px"></div>
+          <div style="width:2px;height:16px;background:#3f424d;border-radius:2px"></div>
+          <div style="width:2px;height:9px;background:#3f424d;border-radius:2px"></div>
+          <div style="width:2px;height:9px;background:#3f424d;border-radius:2px"></div>
+        </div>
+        <div style="width:46px;height:46px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);display:flex;align-items:center;justify-content:center;color:#e9e9ed;font-size:18px"><i class="ph ph-plus"></i></div>
+      </div>
+      <div style="font-size:11.5px;color:#9397ab;margin-top:10px">Semitone steps, −12 to +12. Tempo is unchanged.</div>
+    </div>
+
+    <div style="margin-top:auto;padding:20px 0 42px">
+      <div style="display:flex;align-items:center;gap:9px;font-size:11.5px;color:#9397ab;margin-bottom:12px"><i class="ph ph-info" style="font-size:15px;color:#9184d9"></i>Applies to this session only until saved.</div>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:13px 0;border-radius:8px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9;font-size:13.5px;font-weight:500">Save as derived loop</div>
+        <div style="width:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(233,233,237,.16);color:#b2b6ca;font-size:18px"><i class="ph ph-dots-three"></i></div>
+      </div>
+      <div style="text-align:center;font-size:11.5px;color:#9397ab;margin-top:12px">Also available: save as derived track</div>
+    </div>
+  </div>
+</div>
+</x-import>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 Inter,system-ui,sans-serif;color:#9397ab"><span style="font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(233,233,237,.08);color:#e9e9ed;border-radius:5px">1j</span>Library search, filters and tags — carried over</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div data-screen-label="Search and filters" style="height:874px;display:flex;flex-direction:column;background:#161826;color:#e9e9ed;font-family:Inter,system-ui,sans-serif">
+  <div style="padding:60px 20px 0;flex:none">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="flex:1;display:flex;align-items:center;gap:9px;height:44px;padding:0 12px;border-radius:8px;background:#232532;box-shadow:inset 0 0 0 1px #9184d9">
+        <i class="ph ph-magnifying-glass" style="font-size:17px;color:#9184d9"></i>
+        <span style="font-size:14px">lux</span>
+        <span style="width:1px;height:17px;background:#9184d9;margin-left:1px"></span>
+        <div style="width:44px;height:44px;flex:none;margin-left:auto;margin-right:-12px;display:flex;align-items:center;justify-content:center;color:#9397ab;font-size:16px"><i class="ph ph-x-circle"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;font-size:13px;color:#9184d9;font-weight:500">Cancel</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <div style="flex:1;display:flex;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14)">
+        <div style="flex:1;text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#9184d9;box-shadow:inset 0 0 0 1px #9184d9">This folder</div>
+        <div style="flex:1;text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#9397ab">Whole library</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;overflow:hidden;padding:0 20px">
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
+      <div style="font-size:12px;font-weight:500;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9">All</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Tracks</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Loops</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Playlists</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Folders</div>
+    </div>
+
+    <div style="height:1px;background:linear-gradient(to right,transparent,rgba(233,233,237,.12) 40px,rgba(233,233,237,.12) calc(100% - 40px),transparent);margin:16px 0"></div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9397ab">Tags</div>
+      <div style="display:flex;border-radius:999px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14)">
+        <div style="min-height:44px;display:flex;align-items:center;padding:0 14px;font-size:11.5px;color:#9397ab">Any</div>
+        <div style="min-height:44px;display:flex;align-items:center;padding:0 14px;font-size:11.5px;color:#9184d9;box-shadow:inset 0 0 0 1px #9184d9">All</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:11px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;display:flex;align-items:center;min-height:44px;padding:0 13px;border-radius:999px;background:#2b2741;color:#d2cefd"><i class="ph ph-tag" style="font-size:13px"></i>Soprano<i class="ph ph-x" style="font-size:11px"></i></div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;display:flex;align-items:center;min-height:44px;padding:0 13px;border-radius:999px;background:#2b2741;color:#d2cefd"><i class="ph ph-tag" style="font-size:13px"></i>Latin<i class="ph ph-x" style="font-size:11px"></i></div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 13px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Advent</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 13px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Tricky entries</div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px">
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9397ab">Sort</div>
+      <div style="width:44px;height:44px;flex:none;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);display:flex;align-items:center;justify-content:center;color:#b2b6ca;font-size:16px"><i class="ph ph-arrow-down"></i></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:11px">
+      <div style="font-size:12px;font-weight:500;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px #9184d9;color:#9184d9">Added</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Name</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Opened</div>
+      <div style="font-size:12px;display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(233,233,237,.14);color:#cfd3e5">Length</div>
+    </div>
+
+    <div style="height:1px;background:linear-gradient(to right,transparent,rgba(233,233,237,.12) 40px,rgba(233,233,237,.12) calc(100% - 40px),transparent);margin:16px 0 6px"></div>
+
+    <div style="font-size:11.5px;color:#9397ab;margin:6px 0 4px">3 results · tags: Soprano + Latin</div>
+    <div style="display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-music-note" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500"><span style="background:#423a6a;color:#f5f4ff;border-radius:3px;padding:0 2px">Lux</span> Aeterna — Soprano</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Advent 2026 · 4:38 · 3 loops</div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;box-shadow:inset 0 -1px 0 rgba(233,233,237,.07)">
+        <i class="ph ph-repeat" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">Bars 41–56 · soprano entry</div><div style="font-size:12px;color:#9397ab;margin-top:2px"><span style="background:#423a6a;color:#f5f4ff;border-radius:3px;padding:0 2px">Lux</span> Aeterna — Soprano · 0:36</div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0">
+        <i class="ph ph-waveform" style="font-size:20px;color:#9397ab"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500"><span style="background:#423a6a;color:#f5f4ff;border-radius:3px;padding:0 2px">Lux</span> Aeterna — Soprano · 0.90× −2 st</div><div style="font-size:12px;color:#9397ab;margin-top:2px">Derived track · 5:09</div></div>
+        <div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(145,132,217,.55);display:flex;align-items:center;justify-content:center;color:#9184d9;font-size:14px"><i class="ph-fill ph-play"></i></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#1b1e2c;box-shadow:inset 0 1px 0 rgba(233,233,237,.1)">
+    <div style="display:flex;padding:6px 8px 34px">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9397ab"><div style="width:16px;height:2px"></div><i class="ph ph-clock-counter-clockwise" style="font-size:21px"></i><div style="font-size:10px;font-weight:500">Recents</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9397ab"><div style="width:16px;height:2px"></div><i class="ph ph-folder-plus" style="font-size:21px"></i><div style="font-size:10px;font-weight:500">Add</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;color:#9184d9"><div style="width:16px;height:2px;border-radius:2px;background:#9184d9"></div><i class="ph-fill ph-music-notes" style="font-size:21px"></i><div style="font-size:10px;font-weight:500">Library</div></div>
+    </div>
+  </div>
+</div>
+</x-import>
+</div>
+
+</div>
+
+<p style="margin:26px 0 0;font:12px/1.5 Inter,system-ui,sans-serif;color:#9397ab">Try next: "add the Playlists and Tags views" · "show the derived-track result rows in Library" · "draft the BPM / score-follow tempo-source screen"</p>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  // Waveform bar fields are generated rather than hand-written markup: they are
+  // graphics, not layout, and the bar count would otherwise be hundreds of divs.
+  wave(opts) {
+    const { count, height, progress = 0, loop = null, seed = 1.7, barW = 3, gap = 2 } = opts;
+    const bars = [];
+    for (let i = 0; i < count; i++) {
+      const t = i / count;
+      const amp = 0.30 + 0.70 * Math.abs(Math.sin(i * seed) * 0.6 + Math.sin(i * seed * 0.37) * 0.4);
+      const played = t <= progress;
+      const inLoop = loop && t >= loop[0] && t <= loop[1];
+      let color = '#3f424d';
+      if (inLoop) color = played ? '#b5abfc' : '#796cbf';
+      else if (played) color = '#9184d9';
+      bars.push(React.createElement('div', {
+        key: i,
+        style: {
+          width: barW, flex: 'none', borderRadius: 2,
+          height: Math.max(2, Math.round(amp * height)),
+          background: color,
+        },
+      }));
+    }
+    return React.createElement('div', {
+      style: { display: 'flex', alignItems: 'center', gap, height, width: '100%', justifyContent: 'space-between' },
+    }, bars);
+  }
+
+  renderVals() {
+    return {
+      miniWave: this.wave({ count: 9, height: 20, progress: 0.33, barW: 2, gap: 2, seed: 2.1 }),
+      loopWave: this.wave({ count: 46, height: 26, progress: 0.42, barW: 2.5, gap: 2, seed: 1.31 }),
+      collapsedWave: this.wave({ count: 62, height: 56, progress: 0.33, loop: [0.26, 0.38], barW: 3, gap: 2.4, seed: 1.73 }),
+      heroWave: this.wave({ count: 62, height: 118, progress: 0.33, loop: [0.26, 0.38], barW: 3, gap: 2.4, seed: 1.73 }),
+    };
+  }
+}
+</script>
+</body>
+</html>
