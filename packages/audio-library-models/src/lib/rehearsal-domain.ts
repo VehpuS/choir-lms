@@ -1,21 +1,5 @@
-export type SourceAvailabilityStatus =
-  | 'available'
-  | 'unsupported'
-  | 'unavailable';
-
-export type SourceAvailabilityReason =
-  | 'unsupported-format'
-  | 'authorization-required'
-  | 'access-revoked'
-  | 'missing'
-  | 'network'
-  | 'unknown';
-
-export type SourceAvailability = {
-  status: SourceAvailabilityStatus;
-  reason?: SourceAvailabilityReason;
-  message?: string;
-};
+import type { DriveSourceLocation } from './drive-source-location.js';
+import type { SourceAvailability } from './source-availability.js';
 
 export type DriveAudioSource = {
   id: string;
@@ -31,6 +15,7 @@ export type DriveAudioSource = {
   iconLink?: string;
   tags?: string[];
   tagAddedAt?: Record<string, string>;
+  sourceLocation?: DriveSourceLocation;
   createdAt: string;
   availability: SourceAvailability;
 };

@@ -1,4 +1,5 @@
 import {
+  isDriveSourceLocation,
   isNamedLoop,
   withResolvedTagAddedAt,
   type DriveAudioSource,
@@ -63,10 +64,16 @@ export const normalizeStoredSources = (
   sources: DriveAudioSource[],
 ): DriveAudioSource[] => {
   return sources.map((source) => {
+    const { sourceLocation, ...sourceWithoutLocation } = source;
     const createdAt = resolveBackfilledCreatedAt(source.createdAt);
 
     return {
-      ...withResolvedTagAddedAt(source, source.tagAddedAt, createdAt),
+      ...withResolvedTagAddedAt(
+        sourceWithoutLocation,
+        source.tagAddedAt,
+        createdAt,
+      ),
+      ...(isDriveSourceLocation(sourceLocation) ? { sourceLocation } : {}),
       createdAt,
     };
   });
