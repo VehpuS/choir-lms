@@ -6,6 +6,12 @@ import type {
   DriveFolderContents,
 } from '@org/google-drive';
 
+import {
+  classifyDriveImportIntents,
+  type ClassifiedDriveImportFolderIntent,
+  type ClassifiedDriveImportTrackIntent,
+  type DriveImportLibraryState,
+} from './drive-import-plan-classification';
 import type { NormalizedDriveImportSelection } from './drive-import-selection-normalizer';
 
 export type DriveImportMode = 'flatten' | 'preserve-structure';
@@ -32,20 +38,24 @@ export type DriveImportTrackIntent = {
 
 export type DriveImportPlan = {
   destinationFolderId: string;
-  folders: DriveImportFolderIntent[];
+  folders: ClassifiedDriveImportFolderIntent[];
   mode: DriveImportMode;
   summary: {
+    alreadyPresentTracks: number;
     foldersToCreate: number;
+    newTracks: number;
+    reusableTracks: number;
     tracksToImport: number;
     unsupportedFiles: number;
   };
-  tracks: DriveImportTrackIntent[];
+  tracks: ClassifiedDriveImportTrackIntent[];
   unsupportedSources: DriveEnumeratedAudioSource[];
 };
 
 type CreateDriveImportPlanOptions = {
   contentsByFolderId: ReadonlyMap<string, DriveFolderContents>;
   destinationFolderId: string;
+  libraryState: DriveImportLibraryState;
   mode: DriveImportMode;
   selection: NormalizedDriveImportSelection;
 };
@@ -185,16 +195,36 @@ export const createDriveImportPlan = (
     }
   }
 
+  const classifiedIntents = classifyDriveImportIntents({
+    folders,
+    libraryState: options.libraryState,
+    tracks,
+  });
+  const classifications = classifiedIntents.tracks.map(
+    ({ classification }) => classification,
+  );
+
   return {
     destinationFolderId: options.destinationFolderId,
-    folders,
+    folders: classifiedIntents.folders,
     mode: options.mode,
     summary: {
-      foldersToCreate: folders.length,
-      tracksToImport: tracks.length,
+      alreadyPresentTracks: classifications.filter(
+        (classification) => classification === 'already-present',
+      ).length,
+      foldersToCreate: classifiedIntents.folders.filter(
+        ({ status }) => status === 'create',
+      ).length,
+      newTracks: classifications.filter(
+        (classification) => classification === 'new',
+      ).length,
+      reusableTracks: classifications.filter(
+        (classification) => classification === 'reusable',
+      ).length,
+      tracksToImport: classifiedIntents.tracks.length,
       unsupportedFiles: unsupportedSources.length,
     },
-    tracks,
+    tracks: classifiedIntents.tracks,
     unsupportedSources,
   };
 };

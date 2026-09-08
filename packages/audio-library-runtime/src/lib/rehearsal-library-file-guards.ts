@@ -150,12 +150,24 @@ const resolveCopyCandidateSeed = (sourceName: string) => {
   };
 };
 
-export const resolveRehearsalLibraryCopyVisibleName = (options: {
-  tree: RehearsalLibraryFileTree;
-  entityCollections: RehearsalLibraryEntityCollections;
-  parentFolderId: string;
+export const resolveRehearsalLibraryAvailableNodeName = (options: {
+  reservedNames: Iterable<string>;
   sourceName: string;
+  forceCopy?: boolean;
 }) => {
+  const normalizedReservedNames = new Set(
+    [...options.reservedNames].map(normalizeRehearsalLibraryNodeName),
+  );
+
+  if (
+    !options.forceCopy &&
+    !normalizedReservedNames.has(
+      normalizeRehearsalLibraryNodeName(options.sourceName),
+    )
+  ) {
+    return options.sourceName;
+  }
+
   const { baseName, nextCopyIndex } = resolveCopyCandidateSeed(
     options.sourceName,
   );
@@ -164,16 +176,26 @@ export const resolveRehearsalLibraryCopyVisibleName = (options: {
     const candidateName = buildCopyCandidateName(baseName, copyIndex);
 
     if (
-      !hasSiblingNodeNameConflict({
-        tree: options.tree,
-        entityCollections: options.entityCollections,
-        parentFolderId: options.parentFolderId,
-        targetName: candidateName,
-      })
+      !normalizedReservedNames.has(
+        normalizeRehearsalLibraryNodeName(candidateName),
+      )
     ) {
       return candidateName;
     }
   }
+};
+
+export const resolveRehearsalLibraryCopyVisibleName = (options: {
+  tree: RehearsalLibraryFileTree;
+  entityCollections: RehearsalLibraryEntityCollections;
+  parentFolderId: string;
+  sourceName: string;
+}) => {
+  return resolveRehearsalLibraryAvailableNodeName({
+    forceCopy: true,
+    reservedNames: resolveSiblingNodeNames(options),
+    sourceName: options.sourceName,
+  });
 };
 
 export const assertValidRehearsalLibraryFolderMutation = (options: {

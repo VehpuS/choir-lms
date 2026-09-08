@@ -11,6 +11,7 @@ import {
   createAudio,
   createDescendantFolder,
   createFolder,
+  createLibraryState,
   createSelection,
   createUnsupportedAudio,
   DESTINATION_FOLDER_ID,
@@ -65,6 +66,7 @@ describe('createDriveImportPlan', () => {
     const plan = createDriveImportPlan({
       contentsByFolderId,
       destinationFolderId: DESTINATION_FOLDER_ID,
+      libraryState: createLibraryState(),
       mode: 'flatten',
       selection: createSelection({
         audio: [looseAudio],
@@ -87,14 +89,14 @@ describe('createDriveImportPlan', () => {
           },
         },
         {
-          driveFileId: 'audio-shared',
+          driveFileId: 'audio-anthem',
           targetFolder: {
             folderId: DESTINATION_FOLDER_ID,
             kind: 'library-folder',
           },
         },
         {
-          driveFileId: 'audio-anthem',
+          driveFileId: 'audio-shared',
           targetFolder: {
             folderId: DESTINATION_FOLDER_ID,
             kind: 'library-folder',
@@ -104,7 +106,10 @@ describe('createDriveImportPlan', () => {
     );
     assert.deepEqual(plan.unsupportedSources, [unsupported]);
     assert.deepEqual(plan.summary, {
+      alreadyPresentTracks: 0,
       foldersToCreate: 0,
+      newTracks: 3,
+      reusableTracks: 0,
       tracksToImport: 3,
       unsupportedFiles: 1,
     });
@@ -161,6 +166,7 @@ describe('createDriveImportPlan', () => {
     const plan = createDriveImportPlan({
       contentsByFolderId,
       destinationFolderId: DESTINATION_FOLDER_ID,
+      libraryState: createLibraryState(),
       mode: 'preserve-structure',
       selection: createSelection({
         audio: [looseAudio],
@@ -174,6 +180,13 @@ describe('createDriveImportPlan', () => {
         parent,
       })),
       [
+        {
+          driveFolderId: repertoire.id,
+          parent: {
+            folderId: DESTINATION_FOLDER_ID,
+            kind: 'library-folder',
+          },
+        },
         {
           driveFolderId: warmups.id,
           parent: {
@@ -195,13 +208,6 @@ describe('createDriveImportPlan', () => {
             kind: 'planned-folder',
           },
         },
-        {
-          driveFolderId: repertoire.id,
-          parent: {
-            folderId: DESTINATION_FOLDER_ID,
-            kind: 'library-folder',
-          },
-        },
       ],
     );
     assert.deepEqual(
@@ -218,23 +224,26 @@ describe('createDriveImportPlan', () => {
           },
         },
         {
-          driveFileId: 'audio-deep',
-          targetFolder: {
-            driveFolderId: breathing.id,
-            kind: 'planned-folder',
-          },
-        },
-        {
           driveFileId: 'audio-repertoire',
           targetFolder: {
             driveFolderId: repertoire.id,
             kind: 'planned-folder',
           },
         },
+        {
+          driveFileId: 'audio-deep',
+          targetFolder: {
+            driveFolderId: breathing.id,
+            kind: 'planned-folder',
+          },
+        },
       ],
     );
     assert.deepEqual(plan.summary, {
+      alreadyPresentTracks: 0,
       foldersToCreate: 4,
+      newTracks: 3,
+      reusableTracks: 0,
       tracksToImport: 3,
       unsupportedFiles: 0,
     });
@@ -248,6 +257,7 @@ describe('createDriveImportPlan', () => {
         createDriveImportPlan({
           contentsByFolderId: new Map(),
           destinationFolderId: DESTINATION_FOLDER_ID,
+          libraryState: createLibraryState(),
           mode: 'flatten',
           selection: createSelection({ folders: [missingFolder] }),
         }),

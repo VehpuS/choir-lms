@@ -1,4 +1,9 @@
-import { createDriveAudioSource } from '@org/audio-library-models';
+import {
+  createDriveAudioSource,
+  type DriveAudioSource,
+  type RehearsalLibraryFileLinkNode,
+  type RehearsalLibraryFolderNode,
+} from '@org/audio-library-models';
 import type {
   DriveAudioDiscoveryResult,
   DriveEnumeratedAudioSource,
@@ -6,9 +11,35 @@ import type {
   DriveFolderDiscoveryResult,
 } from '@org/google-drive';
 
+import type { DriveImportLibraryState } from './drive-import-plan-classification';
 import type { NormalizedDriveImportSelection } from './drive-import-selection-normalizer';
 
 export const DESTINATION_FOLDER_ID = 'library-destination';
+
+export const createLibraryState = (options?: {
+  fileLinks?: RehearsalLibraryFileLinkNode[];
+  folders?: RehearsalLibraryFolderNode[];
+  sources?: DriveAudioSource[];
+}): DriveImportLibraryState => ({
+  entityCollections: {
+    loops: [],
+    playlists: [],
+    sources: options?.sources ?? [],
+  },
+  tree: {
+    fileLinks: options?.fileLinks ?? [],
+    folders: options?.folders ?? [
+      {
+        createdAt: '2026-09-08T00:00:00.000Z',
+        id: DESTINATION_FOLDER_ID,
+        name: 'Destination',
+        parentFolderId: null,
+      },
+    ],
+    rootFolderId: DESTINATION_FOLDER_ID,
+    version: 1,
+  },
+});
 
 export const createFolder = (
   id: string,
