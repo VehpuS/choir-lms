@@ -12,7 +12,10 @@ import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 
 import { useSavedRehearsalLibraryTagEditor } from '../components/saved-rehearsal-library-section/use-saved-rehearsal-library-tag-editor.js';
 import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model.js';
-import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library.js';
+import {
+  prepareDriveSourceForPersistence,
+  useSavedRehearsalLibrary,
+} from './use-saved-rehearsal-library.js';
 import { resolveSavedRehearsalLibrarySources } from './view-model.js';
 
 (
@@ -72,7 +75,14 @@ const RAW_SOURCE: DriveLibrarySource = {
 // `resolveSavedRehearsalLibrarySources` as `visibleSources`).
 const VISIBLE_SOURCE: DriveLibrarySource = {
   ...RAW_SOURCE,
+  name: 'Warmup rediscovered.mp3',
   durationMs: 91234,
+  locationLabel: 'Shared with you / Concert / Alto',
+  path: [
+    { id: 'folder-concert', name: 'Concert' },
+    { id: 'folder-alto', name: 'Alto' },
+  ],
+  rootKind: 'shared',
 };
 
 type Harness = {
@@ -124,6 +134,22 @@ const renderHarness = async () => {
   return { box, renderer };
 };
 
+describe('prepareDriveSourceForPersistence', () => {
+  it('converts discovered path metadata into structured source provenance', () => {
+    const persistedSource = prepareDriveSourceForPersistence(VISIBLE_SOURCE);
+
+    assert.deepEqual(persistedSource.sourceLocation, {
+      parentFolderId: 'folder-alto',
+      parentFolderName: 'Alto',
+      rootKind: 'shared',
+      path: VISIBLE_SOURCE.path,
+    });
+    assert.equal('locationLabel' in persistedSource, false);
+    assert.equal('path' in persistedSource, false);
+    assert.equal('rootKind' in persistedSource, false);
+  });
+});
+
 describe('tag-save write path (composed library + tag editor + view-model merge)', () => {
   beforeEach(() => {
     installMemoryAsyncStorage();
@@ -157,8 +183,20 @@ describe('tag-save write path (composed library + tag editor + view-model merge)
       box.current?.mergedSources ?? [],
       RAW_SOURCE.id,
     );
+    const persistedAfterTagging = requireMergedSource(
+      box.current?.library.savedSources ?? [],
+      RAW_SOURCE.id,
+    );
 
     assert.deepEqual(mergedAfterTagging.tags, ['Alto']);
+    assert.equal(persistedAfterTagging.name, VISIBLE_SOURCE.name);
+    assert.equal(persistedAfterTagging.createdAt, RAW_SOURCE.createdAt);
+    assert.deepEqual(persistedAfterTagging.sourceLocation, {
+      parentFolderId: 'folder-alto',
+      parentFolderName: 'Alto',
+      rootKind: 'shared',
+      path: VISIBLE_SOURCE.path,
+    });
 
     act(() => {
       box.current?.tagEditor.openSourceTagEditor(mergedAfterTagging);

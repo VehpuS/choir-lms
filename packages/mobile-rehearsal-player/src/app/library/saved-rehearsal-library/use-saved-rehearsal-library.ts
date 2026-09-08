@@ -1,4 +1,6 @@
 import { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
+import type { DriveAudioSource } from '@org/audio-library-models';
+import { omit } from 'es-toolkit/compat';
 import { useEffect, useState } from 'react';
 
 import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
@@ -84,6 +86,28 @@ export const resolveSavedSourceDurationUpdate = (
   return null;
 };
 
+export const prepareDriveSourceForPersistence = (
+  source: DriveLibrarySource,
+): DriveAudioSource => {
+  const persistedSource = omit(source, ['locationLabel', 'path', 'rootKind']);
+  const path = source.path;
+  const parentFolder = path?.[path.length - 1];
+
+  if (!source.rootKind || !path || !parentFolder) {
+    return persistedSource;
+  }
+
+  return {
+    ...persistedSource,
+    sourceLocation: {
+      parentFolderId: parentFolder.id,
+      parentFolderName: parentFolder.name,
+      rootKind: source.rootKind,
+      path: path.map((segment) => ({ ...segment })),
+    },
+  };
+};
+
 export const useSavedRehearsalLibrary = () => {
   const [savedSources, setSavedSources] = useState<DriveLibrarySource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -149,7 +173,7 @@ export const useSavedRehearsalLibrary = () => {
     try {
       const nextSources = await practiceRepository.saveSource(
         LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-        source,
+        prepareDriveSourceForPersistence(source),
       );
 
       setSavedSources(nextSources);

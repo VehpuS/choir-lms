@@ -79,6 +79,30 @@ export const normalizeStoredSources = (
   });
 };
 
+export const resolveSourceForSave = (options: {
+  priorSource?: DriveAudioSource;
+  savedAt: string;
+  source: DriveAudioSource;
+}): DriveAudioSource => {
+  const tags = options.source.tags ?? options.priorSource?.tags;
+  const sourceLocation =
+    options.source.sourceLocation ?? options.priorSource?.sourceLocation;
+  const sourceWithPreservedMetadata: DriveAudioSource = {
+    ...options.source,
+    ...(tags === undefined ? {} : { tags }),
+    ...(sourceLocation === undefined ? {} : { sourceLocation }),
+  };
+
+  return {
+    ...withResolvedTagAddedAt(
+      sourceWithPreservedMetadata,
+      options.priorSource?.tagAddedAt,
+      options.savedAt,
+    ),
+    createdAt: options.priorSource?.createdAt ?? options.source.createdAt,
+  };
+};
+
 export const normalizeStoredLoops = (options: {
   loops: unknown[];
   sources: DriveAudioSource[];

@@ -14,6 +14,7 @@ import {
   deleteLibraryFolderNodeFromRepository,
   normalizeStoredLoops,
   normalizeStoredSources,
+  resolveSourceForSave,
 } from './async-storage-practice-repository-helpers';
 
 import type { PracticeRepository } from './practice-repository';
@@ -53,14 +54,11 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
     const priorSource = sources.find(
       (existingSource) => existingSource.id === source.id,
     );
-    const sourceToSave: DriveAudioSource = {
-      ...withResolvedTagAddedAt(
-        source,
-        priorSource?.tagAddedAt,
-        new Date().toISOString(),
-      ),
-      createdAt: priorSource?.createdAt ?? source.createdAt,
-    };
+    const sourceToSave = resolveSourceForSave({
+      priorSource,
+      savedAt: new Date().toISOString(),
+      source,
+    });
     const otherSources = filter(
       sources,
       (existingSource) => existingSource.id !== source.id,
@@ -107,7 +105,9 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
     const normalizedLoops = normalizeStoredLoops({
       loops: storedLoops,
       sources: await this.listSources(ownerId),
-    }).map((loop) => withResolvedTagAddedAt(loop, loop.tagAddedAt, loop.createdAt));
+    }).map((loop) =>
+      withResolvedTagAddedAt(loop, loop.tagAddedAt, loop.createdAt),
+    );
 
     if (JSON.stringify(storedLoops) !== JSON.stringify(normalizedLoops)) {
       await writeStoredCollection('loops', ownerId, normalizedLoops);
@@ -204,10 +204,7 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
       playlists,
       (existingPlaylist) => existingPlaylist.id !== playlistToSave.id,
     );
-    const nextPlaylists = sortBy(
-      [...otherPlaylists, playlistToSave],
-      ['name'],
-    );
+    const nextPlaylists = sortBy([...otherPlaylists, playlistToSave], ['name']);
 
     await writeStoredCollection(
       'playlists',

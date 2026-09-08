@@ -92,4 +92,65 @@ describe('Drive source location storage', () => {
     assert.deepEqual(sources[0]?.sourceLocation, sourceLocation);
     assert.equal(sources[1]?.sourceLocation, undefined);
   });
+
+  it('refreshes Drive metadata and provenance without replacing app-owned fields or Library links', async () => {
+    const storage = new Map<string, string>();
+    const repository = new AsyncStoragePracticeRepository();
+    configureTestStorage(storage);
+
+    const [initialSource] = await repository.saveSource('user-1', {
+      ...availableSource,
+      tags: ['Alto'],
+      sourceLocation: {
+        parentFolderId: 'folder-old',
+        parentFolderName: 'Old folder',
+        rootKind: 'my-drive',
+        path: [{ id: 'folder-old', name: 'Old folder' }],
+      },
+    });
+
+    assert.ok(initialSource);
+
+    const initialTree = await repository.listLibraryFileTree('user-1');
+    const [rediscoveredSource] = await repository.saveSource('user-1', {
+      ...availableSource,
+      name: 'Full Choir renamed.mp3',
+      durationMs: 245000,
+      modifiedTime: '2026-09-08T10:00:00.000Z',
+      createdAt: '2099-01-01T00:00:00.000Z',
+      sourceLocation: {
+        parentFolderId: 'folder-new',
+        parentFolderName: 'New folder',
+        rootKind: 'shared',
+        path: [
+          { id: 'folder-concert', name: 'Concert' },
+          { id: 'folder-new', name: 'New folder' },
+        ],
+      },
+    });
+    const refreshedTree = await repository.listLibraryFileTree('user-1');
+
+    assert.ok(rediscoveredSource);
+    assert.equal(rediscoveredSource.name, 'Full Choir renamed.mp3');
+    assert.equal(rediscoveredSource.durationMs, 245000);
+    assert.equal(rediscoveredSource.modifiedTime, '2026-09-08T10:00:00.000Z');
+    assert.deepEqual(rediscoveredSource.tags, initialSource.tags);
+    assert.deepEqual(rediscoveredSource.tagAddedAt, initialSource.tagAddedAt);
+    assert.equal(rediscoveredSource.createdAt, initialSource.createdAt);
+    assert.equal(
+      rediscoveredSource.sourceLocation?.parentFolderId,
+      'folder-new',
+    );
+    assert.deepEqual(refreshedTree.fileLinks, initialTree.fileLinks);
+
+    const [sourceWithoutResolvedPath] = await repository.saveSource('user-1', {
+      ...availableSource,
+      name: 'Full Choir rediscovered without path.mp3',
+    });
+
+    assert.deepEqual(
+      sourceWithoutResolvedPath?.sourceLocation,
+      rediscoveredSource.sourceLocation,
+    );
+  });
 });
