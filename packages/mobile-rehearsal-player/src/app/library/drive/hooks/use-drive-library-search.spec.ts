@@ -109,4 +109,59 @@ describe('useDriveLibrarySearch', () => {
       renderer.unmount();
     });
   });
+
+  it('clears mixed results when Drive navigation deactivates the search scope', async () => {
+    type DriveLibrarySearchHookResult = ReturnType<
+      typeof useDriveLibrarySearch
+    >;
+    const hookResultBox: { current: DriveLibrarySearchHookResult | null } = {
+      current: null,
+    };
+
+    const Harness = () => {
+      hookResultBox.current = useDriveLibrarySearch({
+        authState: AUTHORIZED_STATE,
+        onClearIssue: () => undefined,
+        onSearchRequested: () => undefined,
+      });
+      return null;
+    };
+
+    let renderer!: ReactTestRenderer;
+
+    await act(async () => {
+      renderer = create(createElement(Harness));
+    });
+
+    act(() => {
+      hookResultBox.current?.submitSearchQuery('Kyrie');
+      hookResultBox.current?.replaceSearchSnapshot({
+        query: 'Kyrie',
+        results: [
+          {
+            id: 'folder-kyrie',
+            kind: 'folder',
+            name: 'Kyrie folder',
+            rootKind: 'my-drive',
+            shared: false,
+          },
+        ],
+        playableSources: [],
+        unavailableSources: [],
+      });
+    });
+
+    assert.equal(hookResultBox.current?.searchSnapshot.results.length, 1);
+
+    act(() => {
+      hookResultBox.current?.deactivateSearch();
+    });
+
+    assert.equal(hookResultBox.current?.activeSearchQuery, null);
+    assert.deepEqual(hookResultBox.current?.searchSnapshot.results, []);
+
+    act(() => {
+      renderer.unmount();
+    });
+  });
 });

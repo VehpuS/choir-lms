@@ -4,6 +4,10 @@ import {
   mapDriveFileToAudioSource,
   type DriveFileMetadata,
 } from './google-drive-core';
+import type {
+  DrivePathSegment,
+  DriveResolvedPath,
+} from './drive-path-resolver';
 
 export const DRIVE_FOLDER_MIME_TYPE = 'application/vnd.google-apps.folder';
 
@@ -14,6 +18,8 @@ export type DriveLibrarySnapshot = {
 
 export type DriveDiscoveredAudioSource = DriveAudioSource & {
   locationLabel?: string;
+  path?: DrivePathSegment[];
+  rootKind?: DriveBrowseRootKind;
 };
 
 export type DriveBrowseRootKind = 'my-drive' | 'shared';
@@ -27,8 +33,10 @@ export type DriveBrowseLocation = {
 
 export type DriveFolder = {
   id: string;
+  locationLabel?: string;
   name: string;
   modifiedTime?: string;
+  path?: DrivePathSegment[];
   rootKind: DriveBrowseRootKind;
   shared: boolean;
 };
@@ -101,7 +109,7 @@ export const mapDriveFileToDiscoveredSource = (
   file: DriveFileMetadata,
   supportedMimeTypes: string[],
   supportedExtensions: string[],
-  locationLabel?: string,
+  resolvedPath?: DriveResolvedPath,
 ): DriveDiscoveredAudioSource => {
   const source = mapDriveFileToAudioSource(
     file,
@@ -109,31 +117,43 @@ export const mapDriveFileToDiscoveredSource = (
     supportedExtensions,
   );
 
-  if (!locationLabel) {
+  if (!resolvedPath) {
     return source;
   }
 
   return {
     ...source,
-    locationLabel,
+    locationLabel: createDrivePathLabel(resolvedPath),
+    path: resolvedPath.path,
+    rootKind: resolvedPath.rootKind,
   };
 };
 
 export const mapDriveFileToFolder = (
   file: DriveFileMetadata,
   rootKind: DriveBrowseRootKind,
+  resolvedPath?: DriveResolvedPath,
 ): DriveFolder => {
   return {
     id: file.id,
+    ...(resolvedPath
+      ? {
+          locationLabel: createDrivePathLabel(resolvedPath),
+          path: resolvedPath.path,
+        }
+      : {}),
     name: file.name,
     modifiedTime: file.modifiedTime,
-    rootKind,
-    shared: file.shared ?? rootKind === 'shared',
+    rootKind: resolvedPath?.rootKind ?? rootKind,
+    shared: file.shared ?? (resolvedPath?.rootKind ?? rootKind) === 'shared',
   };
 };
 
-export const createSearchLocationLabel = (file: DriveFileMetadata) => {
-  return file.shared ? 'Shared with you' : 'My Drive';
+export const createDrivePathLabel = (resolvedPath: DriveResolvedPath) => {
+  const rootLabel =
+    resolvedPath.rootKind === 'shared' ? 'Shared with you' : 'My Drive';
+
+  return [rootLabel, ...resolvedPath.path.map(({ name }) => name)].join(' / ');
 };
 
 export const parseDriveLibrarySnapshot = async (
@@ -170,6 +190,7 @@ export const parseDriveBrowseSnapshot = (
   files: DriveFileMetadata[],
   options: {
     location: DriveBrowseLocation;
+    resolvedPaths?: ReadonlyMap<string, DriveResolvedPath>;
     supportedMimeTypes: string[];
     supportedExtensions: string[];
   },
@@ -178,6 +199,8 @@ export const parseDriveBrowseSnapshot = (
   const sources: DriveDiscoveredAudioSource[] = [];
 
   for (const file of files) {
+    const resolvedPath = options.resolvedPaths?.get(file.id);
+
     if (isDriveFolder(file)) {
       folders.push(mapDriveFileToFolder(file, options.location.rootKind));
       continue;
@@ -188,6 +211,7 @@ export const parseDriveBrowseSnapshot = (
         file,
         options.supportedMimeTypes,
         options.supportedExtensions,
+        resolvedPath,
       ),
     );
   }
@@ -209,6 +233,7 @@ export const parseDriveSearchSnapshot = (
   options: {
     query: string;
     location?: DriveBrowseLocation;
+    resolvedPaths?: ReadonlyMap<string, DriveResolvedPath>;
     supportedMimeTypes: string[];
     supportedExtensions: string[];
   },
@@ -217,11 +242,14 @@ export const parseDriveSearchSnapshot = (
   const sources: DriveDiscoveredAudioSource[] = [];
 
   for (const file of files) {
+    const resolvedPath = options.resolvedPaths?.get(file.id);
+
     if (isDriveFolder(file)) {
       folders.push({
         ...mapDriveFileToFolder(
           file,
           options.location?.rootKind ?? (file.shared ? 'shared' : 'my-drive'),
+          resolvedPath,
         ),
         kind: 'folder',
       });
@@ -233,7 +261,7 @@ export const parseDriveSearchSnapshot = (
         file,
         options.supportedMimeTypes,
         options.supportedExtensions,
-        createSearchLocationLabel(file),
+        resolvedPath,
       ),
     );
   }

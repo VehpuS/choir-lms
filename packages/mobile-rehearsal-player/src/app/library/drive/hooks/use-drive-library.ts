@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { runtimeConfig } from '../../../../config/runtime';
 import { isDriveAuthorizationFailure } from '../../../auth/google-drive/utils/authorization';
+import { createDriveDiscoveryRequest } from '../utils/drive-discovery-request';
 import {
   EMPTY_DRIVE_SEARCH_SNAPSHOT,
   useDriveLibrarySearch,
@@ -99,8 +100,7 @@ export const useDriveLibrary = (
       return;
     }
 
-    let isDisposed = false;
-    const abortController = new AbortController();
+    const request = createDriveDiscoveryRequest();
 
     setIsLoading(true);
     setIssue(null);
@@ -113,10 +113,10 @@ export const useDriveLibrary = (
           query: activeSearchQuery,
           supportedMimeTypes: runtimeConfig.supportedAudioMimeTypes,
           supportedExtensions: runtimeConfig.supportedAudioExtensions,
-          signal: abortController.signal,
+          signal: request.signal,
         });
 
-        if (isDisposed) {
+        if (!request.shouldApplyResult()) {
           return;
         }
 
@@ -129,10 +129,10 @@ export const useDriveLibrary = (
         location: currentLocation,
         supportedMimeTypes: runtimeConfig.supportedAudioMimeTypes,
         supportedExtensions: runtimeConfig.supportedAudioExtensions,
-        signal: abortController.signal,
+        signal: request.signal,
       });
 
-      if (isDisposed) {
+      if (!request.shouldApplyResult()) {
         return;
       }
 
@@ -141,7 +141,7 @@ export const useDriveLibrary = (
 
     void loadDiscovery()
       .catch((error: unknown) => {
-        if (isDisposed) {
+        if (!request.shouldApplyResult()) {
           return;
         }
 
@@ -160,7 +160,7 @@ export const useDriveLibrary = (
         );
       })
       .finally(() => {
-        if (isDisposed) {
+        if (!request.shouldApplyResult()) {
           return;
         }
 
@@ -168,8 +168,7 @@ export const useDriveLibrary = (
       });
 
     return () => {
-      isDisposed = true;
-      abortController.abort();
+      request.dispose();
     };
   }, [
     activeSearchQuery,
@@ -232,10 +231,12 @@ export const useDriveLibrary = (
     },
     recentSearchTerms,
     searchQuery,
+    searchResults: searchSnapshot.results,
     searchSnapshot,
     selectRoot(rootKind: DriveBrowseLocation['rootKind']) {
       const rootLocation = createRootLocation(rootKind);
 
+      deactivateSearch();
       setNavigationStack([rootLocation]);
       setBrowseSnapshot(createEmptyBrowseSnapshot(rootLocation));
     },

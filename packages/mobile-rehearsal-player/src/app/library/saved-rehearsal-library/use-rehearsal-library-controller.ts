@@ -278,6 +278,7 @@ export const useRehearsalLibraryController = ({
       playableSourceTitle: `Matching audio (${driveLibrary.searchSnapshot.playableSources.length})`,
       playableSources: driveLibrary.searchSnapshot.playableSources,
       recentSearchTerms: driveLibrary.recentSearchTerms,
+      results: driveLibrary.searchResults,
       searchContextCopy: getDriveSearchContextCopy(
         driveLibrary.currentLocation,
       ),

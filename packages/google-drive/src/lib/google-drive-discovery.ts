@@ -22,6 +22,7 @@ import {
   requestDriveFileMetadataWithFallback,
   requestDriveFilesWithFallback,
 } from './drive-files-client';
+import { resolveDriveFilePaths } from './drive-path-resolver';
 import {
   mapDriveFileToAudioSource,
   type DriveFileMetadata,
@@ -76,9 +77,17 @@ const searchFolderScopedAudioFiles = async (options: {
     return createEmptyDriveSearchSnapshot(options.query);
   }
 
-  return parseDriveSearchSnapshot([...filesById.values()], {
+  const files = [...filesById.values()];
+  const resolvedPaths = await resolveDriveFilePaths({
+    accessToken: options.accessToken,
+    files,
+    signal: options.signal,
+  });
+
+  return parseDriveSearchSnapshot(files, {
     query: options.query,
     location: options.location,
+    resolvedPaths,
     supportedMimeTypes: options.supportedMimeTypes,
     supportedExtensions: options.supportedExtensions,
   });
@@ -173,9 +182,15 @@ export const browseDriveLocation = async (options: {
     includeSharedDrives: true,
     signal: options.signal,
   });
+  const resolvedPaths = await resolveDriveFilePaths({
+    accessToken: options.accessToken,
+    files,
+    signal: options.signal,
+  });
 
   return parseDriveBrowseSnapshot(files, {
     location: options.location,
+    resolvedPaths,
     supportedMimeTypes: options.supportedMimeTypes,
     supportedExtensions: options.supportedExtensions,
   });
@@ -223,10 +238,16 @@ export const searchDriveAudioFiles = async (options: {
     includeSharedDrives: true,
     signal: options.signal,
   });
+  const resolvedPaths = await resolveDriveFilePaths({
+    accessToken: options.accessToken,
+    files,
+    signal: options.signal,
+  });
 
   return parseDriveSearchSnapshot(files, {
     query: trimmedQuery,
     location: options.location,
+    resolvedPaths,
     supportedMimeTypes: options.supportedMimeTypes,
     supportedExtensions: options.supportedExtensions,
   });
