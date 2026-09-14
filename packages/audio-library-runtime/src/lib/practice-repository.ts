@@ -12,6 +12,7 @@ export type PracticeRepository = {
   saveSource(
     ownerId: string,
     source: DriveAudioSource,
+    options?: { fileLink?: RehearsalLibraryFileLinkNode },
   ): Promise<DriveAudioSource[]>;
   deleteSource(ownerId: string, sourceId: string): Promise<DriveAudioSource[]>;
   listLoops(ownerId: string): Promise<NamedLoop[]>;

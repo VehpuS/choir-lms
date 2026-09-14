@@ -14,7 +14,6 @@ import {
   deleteLibraryFolderNodeFromRepository,
   normalizeStoredLoops,
   normalizeStoredSources,
-  resolveSourceForSave,
 } from './async-storage-practice-repository-helpers';
 
 import type { PracticeRepository } from './practice-repository';
@@ -33,6 +32,7 @@ import {
   upsertRehearsalLibraryFileLinkNode,
   upsertRehearsalLibraryFolderNode,
 } from './rehearsal-library-files';
+import { saveSource } from './save-source';
 
 export class AsyncStoragePracticeRepository implements PracticeRepository {
   async listSources(ownerId: string) {
@@ -49,30 +49,17 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
     return normalizedSources;
   }
 
-  async saveSource(ownerId: string, source: DriveAudioSource) {
-    const sources = await this.listSources(ownerId);
-    const priorSource = sources.find(
-      (existingSource) => existingSource.id === source.id,
-    );
-    const sourceToSave = resolveSourceForSave({
-      priorSource,
-      savedAt: new Date().toISOString(),
+  async saveSource(
+    ownerId: string,
+    source: DriveAudioSource,
+    options?: { fileLink?: RehearsalLibraryFileLinkNode },
+  ) {
+    return saveSource({
+      ...options,
+      ownerId,
+      repository: this,
       source,
     });
-    const otherSources = filter(
-      sources,
-      (existingSource) => existingSource.id !== source.id,
-    );
-    const nextSources = sortBy([...otherSources, sourceToSave], ['name']);
-
-    await writeStoredCollection('sources', ownerId, nextSources);
-    await persistSynchronizedLibraryFileTree(this, ownerId, {
-      loops: await this.listLoops(ownerId),
-      playlists: await this.listPlaylists(ownerId),
-      sources: nextSources,
-    });
-
-    return nextSources;
   }
 
   async deleteSource(ownerId: string, sourceId: string) {
