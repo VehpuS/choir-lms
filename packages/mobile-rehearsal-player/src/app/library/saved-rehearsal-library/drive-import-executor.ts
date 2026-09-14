@@ -3,10 +3,14 @@ import type { PracticeRepository } from '@org/audio-library-runtime';
 import type { DriveDiscoveredAudioSource } from '@org/google-drive';
 
 import {
+  createCancelledDriveImportOutcome,
   createDriveImportFileLink,
   createDriveImportFolderNode,
   createDriveImportRepositoryWriteQueue,
   createFailedDriveImportOutcome,
+  createPendingFolderCancellationOutcomes,
+  createPendingTrackCancellationOutcomes,
+  createUnsupportedDriveImportOutcomes,
   resolveDriveImportTargetFolderId,
   runDriveImportWithConcurrency,
 } from './drive-import-executor-helpers';
@@ -47,6 +51,7 @@ export type DriveImportExecutionResult = {
 type ExecuteDriveImportPlanOptions = {
   loadDriveSource: (
     source: DriveDiscoveredAudioSource,
+    signal?: AbortSignal,
   ) => Promise<DriveDiscoveredAudioSource>;
   maxConcurrentDriveReads?: number;
   now?: () => string;
@@ -54,19 +59,15 @@ type ExecuteDriveImportPlanOptions = {
   ownerId: string;
   plan: DriveImportPlan;
   repository: DriveImportRepository;
+  signal?: AbortSignal;
 };
 
 export const executeDriveImportPlan = async (
   options: ExecuteDriveImportPlanOptions,
 ): Promise<DriveImportExecutionResult> => {
   const now = options.now ?? (() => new Date().toISOString());
-  const outcomes: DriveImportOutcome[] = options.plan.unsupportedSources.map(
-    (source) => ({
-      itemId: source.driveFileId,
-      itemKind: 'source',
-      itemName: source.name,
-      status: 'unsupported',
-    }),
+  const outcomes: DriveImportOutcome[] = createUnsupportedDriveImportOutcomes(
+    options.plan.unsupportedSources,
   );
   const folderIdsByDriveId = new Map(
     options.plan.folders.map((intent) => [
@@ -83,6 +84,15 @@ export const executeDriveImportPlan = async (
   });
 
   for (const [index, intent] of options.plan.folders.entries()) {
+    if (options.signal?.aborted) {
+      outcomes.push(
+        ...createPendingFolderCancellationOutcomes(
+          options.plan.folders.slice(index),
+        ),
+      );
+      break;
+    }
+
     const parentFolderId = resolveDriveImportTargetFolderId(
       intent.parent,
       folderIdsByDriveId,
@@ -142,7 +152,10 @@ export const executeDriveImportPlan = async (
     items: options.plan.tracks,
     async run(intent): Promise<DriveImportSourceResult> {
       try {
-        const loadedSource = await options.loadDriveSource(intent.source);
+        const loadedSource = await options.loadDriveSource(
+          intent.source,
+          options.signal,
+        );
         const sourceToSave: DriveAudioSource = {
           ...prepareDriveSourceForPersistence(loadedSource),
           id: intent.canonicalSourceId,
@@ -184,9 +197,30 @@ export const executeDriveImportPlan = async (
         });
       }
     },
+    signal: options.signal,
   });
+  for (const [index, result] of sourceResults.entries()) {
+    if (result) {
+      continue;
+    }
+
+    const intent = options.plan.tracks[index];
+
+    if (intent) {
+      sourceResults[index] = {
+        available: false,
+        outcome: createCancelledDriveImportOutcome({
+          itemId: intent.canonicalSourceId,
+          itemKind: 'source',
+          itemName: intent.source.name,
+        }),
+      };
+    }
+  }
   outcomes.push(
-    ...sourceResults.flatMap(({ outcome }) => (outcome ? [outcome] : [])),
+    ...sourceResults.flatMap((result) =>
+      result?.outcome ? [result.outcome] : [],
+    ),
   );
 
   options.onProgress?.({
@@ -195,6 +229,18 @@ export const executeDriveImportPlan = async (
     totalItems: options.plan.tracks.length,
   });
   for (const [index, intent] of options.plan.tracks.entries()) {
+    if (options.signal?.aborted) {
+      outcomes.push(
+        ...createPendingTrackCancellationOutcomes({
+          sourceAvailability: sourceResults
+            .slice(index)
+            .map((result) => result?.available ?? false),
+          tracks: options.plan.tracks.slice(index),
+        }),
+      );
+      break;
+    }
+
     const targetFolderId = resolveDriveImportTargetFolderId(
       intent.targetFolder,
       folderIdsByDriveId,

@@ -2,6 +2,7 @@ import type {
   RehearsalLibraryFileLinkNode,
   RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
+import type { DriveEnumeratedAudioSource } from '@org/google-drive';
 
 import type {
   ClassifiedDriveImportFolderIntent,
@@ -9,6 +10,59 @@ import type {
 } from './drive-import-plan-classification';
 import type { DriveImportFolderTarget } from './drive-import-planner';
 import type { DriveImportOutcome } from './drive-import-status';
+
+export const createUnsupportedDriveImportOutcomes = (
+  sources: readonly DriveEnumeratedAudioSource[],
+): DriveImportOutcome[] =>
+  sources.map((source) => ({
+    itemId: source.driveFileId,
+    itemKind: 'source',
+    itemName: source.name,
+    status: 'unsupported',
+  }));
+
+export const createCancelledDriveImportOutcome = (options: {
+  itemId: string;
+  itemKind: DriveImportOutcome['itemKind'];
+  itemName: string;
+}): DriveImportOutcome => ({
+  itemId: options.itemId,
+  itemKind: options.itemKind,
+  itemName: options.itemName,
+  status: 'cancelled',
+});
+
+export const createPendingTrackCancellationOutcomes = (options: {
+  sourceAvailability: readonly boolean[];
+  tracks: readonly ClassifiedDriveImportTrackIntent[];
+}): DriveImportOutcome[] =>
+  options.tracks.flatMap((intent, index) => [
+    ...(intent.classification === 'new' && options.sourceAvailability[index]
+      ? [
+          createCancelledDriveImportOutcome({
+            itemId: intent.canonicalSourceId,
+            itemKind: 'source',
+            itemName: intent.source.name,
+          }),
+        ]
+      : []),
+    createCancelledDriveImportOutcome({
+      itemId: intent.libraryFileLinkId,
+      itemKind: 'link',
+      itemName: intent.visibleName ?? intent.source.name,
+    }),
+  ]);
+
+export const createPendingFolderCancellationOutcomes = (
+  folders: readonly ClassifiedDriveImportFolderIntent[],
+): DriveImportOutcome[] =>
+  folders.map((intent) =>
+    createCancelledDriveImportOutcome({
+      itemId: intent.libraryFolderId,
+      itemKind: 'folder',
+      itemName: intent.name,
+    }),
+  );
 
 export const createFailedDriveImportOutcome = (options: {
   error: unknown;
@@ -38,13 +92,18 @@ export const runDriveImportWithConcurrency = async <Item, Result>(options: {
   concurrency: number;
   items: readonly Item[];
   run: (item: Item, index: number) => Promise<Result>;
+  signal?: AbortSignal;
 }) => {
-  const results = new Array<Result>(options.items.length);
+  const results = new Array<Result | undefined>(options.items.length);
   let nextIndex = 0;
   const workerCount = Math.min(options.concurrency, options.items.length);
 
   const runWorker = async () => {
     while (nextIndex < options.items.length) {
+      if (options.signal?.aborted) {
+        return;
+      }
+
       const itemIndex = nextIndex;
       nextIndex += 1;
       const item = options.items[itemIndex];
