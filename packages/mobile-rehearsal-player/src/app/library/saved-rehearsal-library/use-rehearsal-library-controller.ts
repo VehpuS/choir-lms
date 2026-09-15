@@ -12,6 +12,9 @@ import { useSavedLoops } from '../loops/hooks/use-saved-loops';
 import type { useSavedTrackPlayback } from '../playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackStatusCopy } from '../playback/utils/saved-track-playback-view-model';
 import { useSavedPlaylists } from '../playlists/hooks/use-saved-playlists';
+import { createDriveImportControllerDependencies } from './drive-import-controller-dependencies';
+import { saveDiscoveredDriveSource } from './save-discovered-drive-source';
+import { useDriveImportController } from './use-drive-import-controller';
 import { useLibraryFiles } from './use-library-files';
 import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
 import { useSavedRehearsalLibraryRemovalActions } from './use-saved-rehearsal-library-removal-actions';
@@ -20,7 +23,6 @@ import {
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
 } from './view-model';
-
 type SavedTrackPlaybackController = Pick<
   ReturnType<typeof useSavedTrackPlayback>,
   | 'activePlayableItem'
@@ -31,7 +33,6 @@ type SavedTrackPlaybackController = Pick<
   | 'resolveTrackDuration'
   | 'toggleSourcePlayback'
 >;
-
 type RehearsalLibraryScreenControllerOptions = {
   authState: DriveAuthorizationState;
   googleAuthConfigured: boolean;
@@ -121,6 +122,22 @@ export const useRehearsalLibraryController = ({
     savedPlaylists: playlists.savedPlaylists,
     savedSources: savedLibrarySources,
   });
+  const driveImportDependencies = useMemo(
+    () =>
+      createDriveImportControllerDependencies(
+        authState.status === 'authorized' ? authState.accessToken : undefined,
+      ),
+    [authState],
+  );
+  const driveImport = useDriveImportController({
+    dependencies: driveImportDependencies,
+    async onLibraryChanged() {
+      await Promise.all([
+        libraryFiles.refresh(),
+        savedLibrary.refreshSources(),
+      ]);
+    },
+  });
   const savedTrackPlaybackStatusCopy = getSavedTrackPlaybackStatusCopy({
     activePlayableItem: playback.activePlayableItem,
     durationSeconds: playback.progress.duration,
@@ -159,28 +176,13 @@ export const useRehearsalLibraryController = ({
     const isSaved = savedSourceIds.has(source.id);
     const isPending = savedLibrary.pendingSourceId === source.id;
 
-    const saveDiscoveredSource = async () => {
-      const didSave = await savedLibrary.saveSource(source);
-
-      if (!didSave) {
-        return false;
-      }
-
-      const pendingFolderId = libraryFiles.consumePendingDriveImportFolderId();
-      const rootFolderId = libraryFiles.rootFolderId;
-
-      if (!pendingFolderId) {
-        return true;
-      }
-
-      if (!rootFolderId || pendingFolderId === rootFolderId) {
-        return true;
-      }
-
-      return libraryFiles.linkEntityToFolder({
-        entityId: source.id,
-        entityKind: 'track',
-        parentFolderId: pendingFolderId,
+    const saveDiscoveredSource = () => {
+      return saveDiscoveredDriveSource({
+        consumePendingFolderId: libraryFiles.consumePendingDriveImportFolderId,
+        linkSourceToFolder: libraryFiles.linkEntityToFolder,
+        rootFolderId: libraryFiles.rootFolderId,
+        saveSource: savedLibrary.saveSource,
+        source,
       });
     };
 
@@ -208,6 +210,7 @@ export const useRehearsalLibraryController = ({
 
   return {
     confirmationDialog: savedLibraryRemovalActions.confirmationDialog,
+    driveImport,
     discovery: {
       browseSnapshot: driveLibrary.browseSnapshot,
       canRefresh,
