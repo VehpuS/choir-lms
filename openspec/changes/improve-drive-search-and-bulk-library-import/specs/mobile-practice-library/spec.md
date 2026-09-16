@@ -30,6 +30,14 @@ The system SHALL search accessible Google Drive folders and supported audio file
 - **AND** it continues to identify the search as loading until complete discovery finishes
 - **AND** opening a folder result reconstructs the full accessible root-to-folder breadcrumb path
 
+#### Scenario: Return from a browsed folder to its search results
+
+- **WHEN** a user opens a folder from Drive search results
+- **THEN** the folder browser provides a direct `Search results` action distinct from parent-folder back navigation
+- **AND** invoking it restores the originating query, Drive root or folder scope, and latest result set
+- **AND** the return action is removed after the search context is restored
+- **AND** clearing or replacing the search or selecting another Drive root discards the suspended return context
+
 #### Scenario: Complete discovery cannot be obtained
 
 - **WHEN** a later Drive page or required descendant lookup fails before a complete result set is available

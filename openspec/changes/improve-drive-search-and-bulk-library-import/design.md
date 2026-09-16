@@ -40,6 +40,8 @@ Global My Drive and shared-root searches may require a result-specific ancestry 
 
 Opening a folder from search reconstructs the Add navigation stack from the result's structured root/path metadata before appending the selected folder. This differs from opening an immediate browse child, which can append to the existing stack. The reconstructed stack keeps every accessible ancestor in the breadcrumb and switches to the result's Drive root when needed.
 
+Folder browsing temporarily suspends the active search while preserving its query, scope navigation stack, and latest result snapshot. The folder navigation bar exposes a distinct `Search results` action for restoring that context directly; ordinary back and breadcrumb actions continue to navigate the folder hierarchy. Restoring search removes the temporary action and resumes the preserved query under its original scope. Clearing or replacing the query, selecting another Drive root, or otherwise starting a new discovery context discards the suspended return context so stale results cannot reappear.
+
 ### Saved sources store optional source-location provenance
 
 Extend `DriveAudioSource` with optional structured provenance rather than treating a local `RehearsalLibraryFileLinkNode` as source location:

@@ -4,7 +4,7 @@ Google Drive discovery currently makes users find and save rehearsal tracks one 
 
 ## What Changes
 
-- Include matching Google Drive folders alongside supported audio files when searching the current Add location's full subtree, with enough path context to understand every result.
+- Include matching Google Drive folders alongside supported audio files when searching the current Add location's full subtree, with enough path context to understand every result and a direct way to return to the originating search after browsing a folder result.
 - Add selection mode for Drive search results, including individual selection, `Select all matching` across every paginated result, and deselection before import.
 - Let users add a Drive folder recursively either by flattening all supported descendant audio into one Library folder or by recreating the selected Drive folder and its descendant structure under a chosen Library destination.
 - Collapse overlapping folder and descendant-track selections so a bulk operation does not import the same source twice.
