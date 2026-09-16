@@ -60,6 +60,8 @@ export const useDriveLibrary = (
   const [isLoading, setIsLoading] = useState(false);
   const [issue, setIssue] = useState<string | null>(null);
   const [refreshCount, setRefreshCount] = useState(0);
+  const [searchReturnNavigationStack, setSearchReturnNavigationStack] =
+    useState<DriveBrowseLocation[] | null>(null);
 
   const currentLocation =
     navigationStack[navigationStack.length - 1] ??
@@ -76,11 +78,13 @@ export const useDriveLibrary = (
     deactivateSearch,
     recentSearchTerms,
     replaceSearchSnapshot,
+    restoreSearch,
     searchQuery,
     searchSnapshot,
     setSearchQuery,
     submitSearch,
     submitSearchQuery,
+    suspendSearch,
   } = useDriveLibrarySearch({
     authState,
     onAuthorizationRequired,
@@ -193,12 +197,22 @@ export const useDriveLibrary = (
   return {
     activeSearchQuery,
     browseSnapshot,
-    clearSearch,
+    canReturnToSearchResults: searchReturnNavigationStack !== null,
+    clearSearch() {
+      setSearchReturnNavigationStack(null);
+      clearSearch();
+    },
     commitSearchQuery,
     currentLocation,
-    deactivateSearch,
-    goToLocation(index: number) {
+    deactivateSearch() {
+      setSearchReturnNavigationStack(null);
       deactivateSearch();
+    },
+    goToLocation(index: number) {
+      if (activeSearchQuery !== null) {
+        deactivateSearch();
+      }
+
       setNavigationStack((currentStack) => {
         return currentStack.slice(0, index + 1);
       });
@@ -207,7 +221,11 @@ export const useDriveLibrary = (
     issue,
     navigationStack,
     openFolder(folder: DriveFolder) {
-      deactivateSearch();
+      if (activeSearchQuery !== null) {
+        setSearchReturnNavigationStack(navigationStack);
+        suspendSearch();
+      }
+
       setNavigationStack((currentStack) => {
         return buildDriveFolderNavigationStack({ currentStack, folder });
       });
@@ -230,19 +248,38 @@ export const useDriveLibrary = (
       setRefreshCount((currentValue) => currentValue + 1);
     },
     recentSearchTerms,
+    returnToSearchResults() {
+      if (searchReturnNavigationStack === null) {
+        return;
+      }
+
+      setNavigationStack(searchReturnNavigationStack);
+      setSearchReturnNavigationStack(null);
+      restoreSearch();
+    },
     searchQuery,
     searchResults: searchSnapshot.results,
     searchSnapshot,
     selectRoot(rootKind: DriveBrowseLocation['rootKind']) {
       const rootLocation = createRootLocation(rootKind);
 
+      setSearchReturnNavigationStack(null);
       deactivateSearch();
       setNavigationStack([rootLocation]);
       setBrowseSnapshot(createEmptyBrowseSnapshot(rootLocation));
     },
-    setSearchQuery,
-    submitSearch,
-    submitSearchQuery,
+    setSearchQuery(value: string) {
+      setSearchReturnNavigationStack(null);
+      setSearchQuery(value);
+    },
+    submitSearch() {
+      setSearchReturnNavigationStack(null);
+      submitSearch();
+    },
+    submitSearchQuery(query: string) {
+      setSearchReturnNavigationStack(null);
+      submitSearchQuery(query);
+    },
     unavailableSources:
       activeSearchQuery === null
         ? browseSnapshot.unavailableSources

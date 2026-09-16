@@ -41,15 +41,19 @@ type ExplorerListSurfaceProps = {
 };
 
 type ExplorerNavigationBarProps = {
+  actionLabel?: string;
   canGoBack: boolean;
   eyebrow: string;
+  onAction?: () => void;
   onGoBack: () => void;
   title: string;
 };
 
 export const ExplorerNavigationBar = ({
+  actionLabel,
   canGoBack,
   eyebrow,
+  onAction,
   onGoBack,
   title,
 }: ExplorerNavigationBarProps) => {
@@ -80,6 +84,18 @@ export const ExplorerNavigationBar = ({
           {title}
         </Text>
       </View>
+      {actionLabel && onAction ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onAction}
+          style={({ pressed }) => [
+            styles.navigationAction,
+            pressed ? styles.rowPressed : undefined,
+          ]}
+        >
+          <Text style={styles.navigationActionLabel}>{actionLabel}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 };

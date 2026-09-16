@@ -164,4 +164,64 @@ describe('useDriveLibrarySearch', () => {
       renderer.unmount();
     });
   });
+
+  it('preserves and restores mixed results when browsing from search', async () => {
+    type DriveLibrarySearchHookResult = ReturnType<
+      typeof useDriveLibrarySearch
+    >;
+    const hookResultBox: { current: DriveLibrarySearchHookResult | null } = {
+      current: null,
+    };
+
+    const Harness = () => {
+      hookResultBox.current = useDriveLibrarySearch({
+        authState: AUTHORIZED_STATE,
+        onClearIssue: () => undefined,
+        onSearchRequested: () => undefined,
+      });
+      return null;
+    };
+
+    let renderer!: ReactTestRenderer;
+
+    await act(async () => {
+      renderer = create(createElement(Harness));
+    });
+
+    act(() => {
+      hookResultBox.current?.submitSearchQuery('Kyrie');
+      hookResultBox.current?.replaceSearchSnapshot({
+        query: 'Kyrie',
+        results: [
+          {
+            id: 'folder-kyrie',
+            kind: 'folder',
+            name: 'Kyrie folder',
+            rootKind: 'my-drive',
+            shared: false,
+          },
+        ],
+        playableSources: [],
+        unavailableSources: [],
+      });
+    });
+
+    act(() => {
+      hookResultBox.current?.suspendSearch();
+    });
+
+    assert.equal(hookResultBox.current?.activeSearchQuery, null);
+    assert.equal(hookResultBox.current?.searchSnapshot.results.length, 1);
+
+    act(() => {
+      hookResultBox.current?.restoreSearch();
+    });
+
+    assert.equal(hookResultBox.current?.activeSearchQuery, 'Kyrie');
+    assert.equal(hookResultBox.current?.searchSnapshot.results.length, 1);
+
+    act(() => {
+      renderer.unmount();
+    });
+  });
 });

@@ -21,6 +21,7 @@ export type DriveDiscoveryPanelViewModel = {
   onOpenFolder: ReturnType<
     typeof useRehearsalLibraryController
   >['discovery']['openFolder'];
+  onReturnToSearchResults?: () => void;
   shouldShowStatusCard: boolean;
 };
 
@@ -83,6 +84,9 @@ export const buildDriveDiscoveryPanelViewModel = (options: {
       controller.discovery.goToLocation(parentLocationIndex);
     },
     onOpenFolder: controller.discovery.openFolder,
+    onReturnToSearchResults: controller.discovery.canReturnToSearchResults
+      ? controller.discovery.returnToSearchResults
+      : undefined,
     shouldShowStatusCard,
   };
 };

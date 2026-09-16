@@ -54,8 +54,10 @@ export const DriveDiscoveryPanel = ({
         onSelectRoot={controller.discovery.selectRoot}
       />
       <ExplorerNavigationBar
+        actionLabel="Search results"
         canGoBack={controller.discovery.navigationStack.length > 1}
         eyebrow={viewModel.navigationEyebrow}
+        onAction={viewModel.onReturnToSearchResults}
         onGoBack={viewModel.onGoBack}
         title={viewModel.currentTitle}
       />

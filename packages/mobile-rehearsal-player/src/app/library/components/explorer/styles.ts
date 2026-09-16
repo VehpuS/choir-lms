@@ -69,6 +69,16 @@ export const explorerStyles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
+  navigationAction: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  navigationActionLabel: {
+    color: appTheme.colors.listMarker,
+    fontSize: 14,
+    fontWeight: '700',
+  },
   navigationCopy: {
     flex: 1,
     gap: 2,

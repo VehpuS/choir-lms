@@ -213,6 +213,7 @@ export const useRehearsalLibraryController = ({
     driveImport,
     discovery: {
       browseSnapshot: driveLibrary.browseSnapshot,
+      canReturnToSearchResults: driveLibrary.canReturnToSearchResults,
       canRefresh,
       currentLocation: driveLibrary.currentLocation,
       folderTitle:
@@ -227,6 +228,7 @@ export const useRehearsalLibraryController = ({
       playableSourceTitle: `Audio in ${driveLibrary.currentLocation.name} (${driveLibrary.browseSnapshot.playableSources.length})`,
       playableSources: driveLibrary.browseSnapshot.playableSources,
       refresh: driveLibrary.refresh,
+      returnToSearchResults: driveLibrary.returnToSearchResults,
       selectRoot: driveLibrary.selectRoot,
       statusCopy: discoveryStatusCopy,
       unavailableSourceTitle: `Unavailable or unsupported in ${driveLibrary.currentLocation.name} (${driveLibrary.browseSnapshot.unavailableSources.length})`,

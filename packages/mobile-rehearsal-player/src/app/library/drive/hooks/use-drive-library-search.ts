@@ -161,6 +161,13 @@ export const useDriveLibrarySearch = ({
       debouncedSearch.cancel();
       clearActiveSearch();
     },
+    restoreSearch() {
+      if (!searchSnapshot.query) {
+        return;
+      }
+
+      setActiveSearchQuery(searchSnapshot.query);
+    },
     recentSearchTerms,
     replaceSearchSnapshot: setSearchSnapshot,
     searchQuery,
@@ -173,6 +180,11 @@ export const useDriveLibrarySearch = ({
       runSubmittedSearchQuery(query, {
         syncInputValue: true,
       });
+    },
+    suspendSearch() {
+      debouncedSearch.cancel();
+      setActiveSearchQuery(null);
+      onClearIssue();
     },
   };
 };

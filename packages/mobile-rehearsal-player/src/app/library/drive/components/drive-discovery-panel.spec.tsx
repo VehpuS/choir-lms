@@ -24,6 +24,7 @@ describe('DriveDiscoveryPanel', () => {
   it('keeps Add explorer navigation on the same stack for back, breadcrumbs, and folders', () => {
     const goToLocationCalls: number[] = [];
     const openedFolderIds: string[] = [];
+    let returnToSearchResultsCallCount = 0;
     const controller = {
       discovery: {
         browseSnapshot: {
@@ -39,6 +40,7 @@ describe('DriveDiscoveryPanel', () => {
           playableSources: [],
           unavailableSources: [],
         },
+        canReturnToSearchResults: true,
         currentLocation: CURRENT_LOCATION,
         goToLocation(locationIndex: number) {
           goToLocationCalls.push(locationIndex);
@@ -49,6 +51,9 @@ describe('DriveDiscoveryPanel', () => {
           openedFolderIds.push(folder.id);
         },
         playableSources: [],
+        returnToSearchResults() {
+          returnToSearchResultsCallCount += 1;
+        },
         selectRoot: () => undefined,
         statusCopy: {
           message: 'Browse Google Drive folders and audio.',
@@ -89,6 +94,7 @@ describe('DriveDiscoveryPanel', () => {
     });
 
     viewModel.onGoBack();
+    viewModel.onReturnToSearchResults?.();
     viewModel.breadcrumbs[0]?.onPress?.();
     viewModel.onOpenFolder({
       id: 'folder-2',
@@ -100,5 +106,6 @@ describe('DriveDiscoveryPanel', () => {
 
     assert.deepEqual(goToLocationCalls, [0, 0]);
     assert.deepEqual(openedFolderIds, ['folder-2']);
+    assert.equal(returnToSearchResultsCallCount, 1);
   });
 });
