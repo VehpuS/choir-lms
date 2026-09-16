@@ -26,7 +26,7 @@ This change crosses `google-drive`, `audio-library-models`, `audio-library-runti
 
 ### Drive list operations consume all pages through a shared paginator
 
-Move page-token handling below browse, search, descendant discovery, and recursive enumeration so each operation explicitly chooses either a complete result or a future paged presentation API. The paginator follows `nextPageToken` until exhausted, propagates abort signals, and deduplicates by Drive item id to guard against page drift. A failed later page fails the discovery operation instead of silently presenting a partial set as complete.
+Move page-token handling below browse, search, descendant discovery, and recursive enumeration so each operation explicitly chooses either a complete result or progressive presentation. The paginator follows `nextPageToken` until exhausted, propagates abort signals, and deduplicates by Drive item id to guard against page drift. Search resolves each newly fetched page through one operation-cached ancestry resolver and publishes cumulative, path-aware snapshots while later pages continue loading. A failed later page leaves already published rows visible with incomplete-discovery feedback instead of silently presenting the partial set as complete.
 
 `Select all matching` enters a preparing state while all pages for the active query and scope are fetched. Its selection is bound to that query snapshot; changing the query, scope, or current Drive location clears selection. This is preferred over treating the first rendered page as "all," which would make the action depend on Drive page size.
 
@@ -37,6 +37,8 @@ Add a discriminated Drive search result model for folders and audio sources. Que
 Drive metadata requests include `parents`. Path resolution walks parent metadata toward the active root, caches folder metadata for the operation, and returns the deepest accessible path when a shared ancestor cannot be read. Results retain root kind plus folder id/name segments rather than a display-only string. Modern Drive files normally have one parent; when metadata contains multiple parents, use the first accessible parent consistently and record only that navigation path.
 
 Global My Drive and shared-root searches may require a result-specific ancestry lookup. Resolve paths with bounded concurrency and reuse metadata across results to control API traffic.
+
+Opening a folder from search reconstructs the Add navigation stack from the result's structured root/path metadata before appending the selected folder. This differs from opening an immediate browse child, which can append to the existing stack. The reconstructed stack keeps every accessible ancestor in the breadcrumb and switches to the result's Drive root when needed.
 
 ### Saved sources store optional source-location provenance
 

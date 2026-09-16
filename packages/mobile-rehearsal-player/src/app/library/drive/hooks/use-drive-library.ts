@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { runtimeConfig } from '../../../../config/runtime';
 import { isDriveAuthorizationFailure } from '../../../auth/google-drive/utils/authorization';
 import { createDriveDiscoveryRequest } from '../utils/drive-discovery-request';
+import { buildDriveFolderNavigationStack } from '../utils/drive-navigation-stack';
 import {
   EMPTY_DRIVE_SEARCH_SNAPSHOT,
   useDriveLibrarySearch,
@@ -110,6 +111,13 @@ export const useDriveLibrary = (
         const nextSearchSnapshot = await searchDriveAudioFiles({
           accessToken,
           location: currentLocation,
+          onProgress: (progressSnapshot) => {
+            if (!request.shouldApplyResult()) {
+              return;
+            }
+
+            replaceSearchSnapshot(progressSnapshot);
+          },
           query: activeSearchQuery,
           supportedMimeTypes: runtimeConfig.supportedAudioMimeTypes,
           supportedExtensions: runtimeConfig.supportedAudioExtensions,
@@ -201,15 +209,7 @@ export const useDriveLibrary = (
     openFolder(folder: DriveFolder) {
       deactivateSearch();
       setNavigationStack((currentStack) => {
-        return [
-          ...currentStack,
-          {
-            id: folder.id,
-            kind: 'folder',
-            name: folder.name,
-            rootKind: folder.rootKind,
-          },
-        ];
+        return buildDriveFolderNavigationStack({ currentStack, folder });
       });
     },
     playableSources:

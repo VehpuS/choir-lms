@@ -10,7 +10,13 @@ export type DriveFilesPageRequest = (options: {
   signal?: AbortSignal;
 }) => Promise<DriveFilesPage>;
 
+export type DriveFilesPageProgress = {
+  files: DriveFileMetadata[];
+  hasMore: boolean;
+};
+
 export const paginateDriveFiles = async (options: {
+  onPage?: (progress: DriveFilesPageProgress) => Promise<void> | void;
   requestPage: DriveFilesPageRequest;
   signal?: AbortSignal;
 }) => {
@@ -26,6 +32,7 @@ export const paginateDriveFiles = async (options: {
       pageToken,
       signal: options.signal,
     });
+    const newFiles: DriveFileMetadata[] = [];
 
     for (const file of page.files ?? []) {
       if (seenFileIds.has(file.id)) {
@@ -34,6 +41,7 @@ export const paginateDriveFiles = async (options: {
 
       seenFileIds.add(file.id);
       files.push(file);
+      newFiles.push(file);
     }
 
     pageToken = page.nextPageToken;
@@ -45,6 +53,11 @@ export const paginateDriveFiles = async (options: {
     if (pageToken) {
       seenPageTokens.add(pageToken);
     }
+
+    await options.onPage?.({
+      files: newFiles,
+      hasMore: pageToken !== undefined,
+    });
   } while (pageToken);
 
   return files;

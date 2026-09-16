@@ -3,7 +3,6 @@ import {
   isDriveFolder,
   parseDriveBrowseSnapshot,
   parseDriveLibrarySnapshot,
-  parseDriveSearchSnapshot,
   type DriveBrowseLocation,
 } from './drive-discovery-models';
 import {
@@ -27,6 +26,10 @@ import {
   mapDriveFileToAudioSource,
   type DriveFileMetadata,
 } from './google-drive-core';
+import {
+  createProgressiveDriveSearch,
+  type DriveSearchProgressCallback,
+} from './progressive-drive-search';
 
 export type {
   DriveAudioDiscoveryResult,
@@ -49,13 +52,14 @@ const searchFolderScopedAudioFiles = async (options: {
   parentFolderIds: string[];
   supportedMimeTypes: string[];
   supportedExtensions: string[];
+  onProgress?: DriveSearchProgressCallback;
   signal?: AbortSignal;
 }) => {
   const resolvedParentFolderIds =
     options.parentFolderIds.length > 0
       ? options.parentFolderIds
       : [options.location.id];
-  const filesById = new Map<string, DriveFileMetadata>();
+  const progressiveSearch = createProgressiveDriveSearch(options);
 
   for (const batch of splitIntoBatches(
     resolvedParentFolderIds,
@@ -65,32 +69,16 @@ const searchFolderScopedAudioFiles = async (options: {
       accessToken: options.accessToken,
       query: createDriveSearchQuery(options.query, options.location, batch),
       includeSharedDrives: true,
+      onPage: ({ files: pageFiles }) => {
+        return progressiveSearch.addFiles(pageFiles);
+      },
       signal: options.signal,
     });
 
-    for (const file of files) {
-      filesById.set(file.id, file);
-    }
+    await progressiveSearch.addFiles(files);
   }
 
-  if (filesById.size === 0) {
-    return createEmptyDriveSearchSnapshot(options.query);
-  }
-
-  const files = [...filesById.values()];
-  const resolvedPaths = await resolveDriveFilePaths({
-    accessToken: options.accessToken,
-    files,
-    signal: options.signal,
-  });
-
-  return parseDriveSearchSnapshot(files, {
-    query: options.query,
-    location: options.location,
-    resolvedPaths,
-    supportedMimeTypes: options.supportedMimeTypes,
-    supportedExtensions: options.supportedExtensions,
-  });
+  return progressiveSearch.getSnapshot();
 };
 
 const listDescendantFolderIds = async (options: {
@@ -200,6 +188,7 @@ export const searchDriveAudioFiles = async (options: {
   accessToken: string;
   query: string;
   location?: DriveBrowseLocation;
+  onProgress?: DriveSearchProgressCallback;
   supportedMimeTypes: string[];
   supportedExtensions: string[];
   signal?: AbortSignal;
@@ -226,29 +215,26 @@ export const searchDriveAudioFiles = async (options: {
       query: trimmedQuery,
       location: options.location,
       parentFolderIds,
+      onProgress: options.onProgress,
       supportedMimeTypes: options.supportedMimeTypes,
       supportedExtensions: options.supportedExtensions,
       signal: options.signal,
     });
   }
 
-  const files = await requestAllDriveFilesWithFallback({
+  const progressiveSearch = createProgressiveDriveSearch({
+    ...options,
+    query: trimmedQuery,
+  });
+  await requestAllDriveFilesWithFallback({
     accessToken: options.accessToken,
     query: createDriveSearchQuery(trimmedQuery, options.location),
     includeSharedDrives: true,
-    signal: options.signal,
-  });
-  const resolvedPaths = await resolveDriveFilePaths({
-    accessToken: options.accessToken,
-    files,
+    onPage: ({ files }) => {
+      return progressiveSearch.addFiles(files);
+    },
     signal: options.signal,
   });
 
-  return parseDriveSearchSnapshot(files, {
-    query: trimmedQuery,
-    location: options.location,
-    resolvedPaths,
-    supportedMimeTypes: options.supportedMimeTypes,
-    supportedExtensions: options.supportedExtensions,
-  });
+  return progressiveSearch.getSnapshot();
 };

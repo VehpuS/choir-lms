@@ -1,6 +1,7 @@
 import {
   paginateDriveFiles,
   type DriveFilesPage,
+  type DriveFilesPageProgress,
 } from './drive-files-paginator';
 
 type DriveApiErrorPayload = {
@@ -195,9 +196,11 @@ export const requestAllDriveFilesWithFallback = async (options: {
   accessToken: string;
   query: string;
   includeSharedDrives: boolean;
+  onPage?: (progress: DriveFilesPageProgress) => Promise<void> | void;
   signal?: AbortSignal;
 }) => {
   return paginateDriveFiles({
+    onPage: options.onPage,
     requestPage: async ({ pageToken, signal }) => {
       const response = await requestDriveFilesWithFallback({
         ...options,

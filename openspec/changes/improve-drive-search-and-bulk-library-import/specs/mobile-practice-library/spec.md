@@ -23,10 +23,18 @@ The system SHALL search accessible Google Drive folders and supported audio file
 - **THEN** the system follows pagination until every accessible matching item is included
 - **AND** the system does not describe a first-page subset as the complete result set
 
+#### Scenario: Search presents path-aware results progressively
+
+- **WHEN** a Drive search requires multiple result pages or ancestry lookups
+- **THEN** the system presents each cumulative batch after that batch's containing paths resolve
+- **AND** it continues to identify the search as loading until complete discovery finishes
+- **AND** opening a folder result reconstructs the full accessible root-to-folder breadcrumb path
+
 #### Scenario: Complete discovery cannot be obtained
 
 - **WHEN** a later Drive page or required descendant lookup fails before a complete result set is available
 - **THEN** the system reports that discovery is incomplete
+- **AND** it may retain already resolved partial results for review
 - **AND** the system does not enable a complete-set bulk action against the partial data as though it represented all matches
 
 ### Requirement: Saved Drive tracks retain readable original-folder provenance

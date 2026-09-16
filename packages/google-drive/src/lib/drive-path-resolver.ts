@@ -18,6 +18,15 @@ export type DriveResolvedPath = {
 
 type DrivePathInput = Pick<DriveFileMetadata, 'id' | 'parents' | 'shared'>;
 
+type DrivePathResolutionCache = Map<
+  string,
+  Promise<DriveFileMetadata | undefined>
+>;
+
+export const createDrivePathResolutionCache = (): DrivePathResolutionCache => {
+  return new Map();
+};
+
 const throwIfAborted = (signal?: AbortSignal) => {
   if (!signal?.aborted) {
     return;
@@ -49,13 +58,11 @@ const resolveConcurrency = (requestedConcurrency?: number) => {
 export const resolveDriveFilePaths = async (options: {
   accessToken: string;
   files: DrivePathInput[];
+  cache?: DrivePathResolutionCache;
   concurrency?: number;
   signal?: AbortSignal;
 }) => {
-  const metadataById = new Map<
-    string,
-    Promise<DriveFileMetadata | undefined>
-  >();
+  const metadataById = options.cache ?? createDrivePathResolutionCache();
 
   const getFolderMetadata = (driveFileId: string) => {
     const cachedMetadata = metadataById.get(driveFileId);

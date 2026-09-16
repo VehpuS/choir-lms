@@ -193,6 +193,14 @@ export const getDriveLibraryStatusCopy = (
       };
     }
 
+    if (options.isLoading) {
+      return {
+        title: 'Loading more results',
+        message: `${searchResultCountLabel} shown so far. Complete Drive discovery is still in progress.`,
+        tone: 'neutral',
+      };
+    }
+
     if (searchResultCount === 0 && searchUnavailableCount === 0) {
       return {
         title: 'No search results',

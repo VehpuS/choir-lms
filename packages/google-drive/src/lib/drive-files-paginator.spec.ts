@@ -87,6 +87,40 @@ describe('paginateDriveFiles', () => {
     assert.deepEqual(files, [originalFile]);
   });
 
+  it('publishes each deduplicated page before requesting the next page', async () => {
+    const publishedPages: Array<{
+      files: ReturnType<typeof createFile>[];
+      hasMore: boolean;
+    }> = [];
+    let publishedPageCountBeforeSecondRequest = 0;
+    const requestPage: DriveFilesPageRequest = async ({ pageToken }) => {
+      if (pageToken === 'page-2') {
+        publishedPageCountBeforeSecondRequest = publishedPages.length;
+        return {
+          files: [createFile('file-1'), createFile('file-2')],
+        };
+      }
+
+      return {
+        files: [createFile('file-1')],
+        nextPageToken: 'page-2',
+      };
+    };
+
+    await paginateDriveFiles({
+      onPage: (progress) => {
+        publishedPages.push(progress);
+      },
+      requestPage,
+    });
+
+    assert.equal(publishedPageCountBeforeSecondRequest, 1);
+    assert.deepEqual(publishedPages, [
+      { files: [createFile('file-1')], hasMore: true },
+      { files: [createFile('file-2')], hasMore: false },
+    ]);
+  });
+
   it('propagates the abort signal and stops before requesting another page', async () => {
     const abortController = new AbortController();
     const requests: Parameters<DriveFilesPageRequest>[0][] = [];
