@@ -85,6 +85,32 @@ describe('resolveDriveFilePaths', () => {
     );
   });
 
+  it('omits My Drive root metadata returned through an opaque folder id', async () => {
+    const folders = new Map([
+      [
+        'movement-folder',
+        createFolder('movement-folder', 'Movement I', ['opaque-root-id']),
+      ],
+      ['opaque-root-id', createFolder('opaque-root-id', 'My Drive', [])],
+    ]);
+
+    globalThis.fetch = async (input) => {
+      const folder = folders.get(getRequestedFileId(input));
+      assert.ok(folder);
+      return Response.json(folder);
+    };
+
+    const paths = await resolveDriveFilePaths({
+      accessToken: 'drive-token',
+      files: [createFile('track', ['movement-folder'])],
+    });
+
+    assert.deepEqual(paths.get('track'), {
+      rootKind: 'my-drive',
+      path: [{ id: 'movement-folder', name: 'Movement I' }],
+    });
+  });
+
   it('returns the deepest accessible path for a shared file', async () => {
     globalThis.fetch = async (input) => {
       const fileId = getRequestedFileId(input);

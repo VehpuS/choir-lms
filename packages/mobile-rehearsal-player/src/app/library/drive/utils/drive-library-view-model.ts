@@ -64,8 +64,18 @@ const getTotalBrowseSourceCount = (snapshot: DriveBrowseSnapshot) => {
   return snapshot.playableSources.length + snapshot.unavailableSources.length;
 };
 
-const getTotalSearchSourceCount = (snapshot: DriveSearchSnapshot) => {
-  return snapshot.playableSources.length + snapshot.unavailableSources.length;
+const getSearchResultCountLabel = (snapshot: DriveSearchSnapshot) => {
+  const folderCount = snapshot.results.filter((result) => {
+    return result.kind === 'folder';
+  }).length;
+  const audioCount = snapshot.results.length - folderCount;
+
+  return [
+    folderCount > 0 ? pluralize(folderCount, 'matching folder') : undefined,
+    audioCount > 0 ? pluralize(audioCount, 'matching track') : undefined,
+  ]
+    .filter((label): label is string => label !== undefined)
+    .join(' and ');
 };
 
 const getDriveSearchScopeCopy = (location?: DriveBrowseLocation) => {
@@ -123,10 +133,10 @@ export const getDriveLibraryStatusCopy = (
   const browseTotalSourceCount = getTotalBrowseSourceCount(
     options.browseSnapshot,
   );
-  const searchPlayableCount = options.searchSnapshot.playableSources.length;
   const searchUnavailableCount =
     options.searchSnapshot.unavailableSources.length;
-  const searchTotalSourceCount = getTotalSearchSourceCount(
+  const searchResultCount = options.searchSnapshot.results.length;
+  const searchResultCountLabel = getSearchResultCountLabel(
     options.searchSnapshot,
   );
 
@@ -175,7 +185,7 @@ export const getDriveLibraryStatusCopy = (
   }
 
   if (options.activeSearchQuery) {
-    if (options.isLoading && searchTotalSourceCount === 0) {
+    if (options.isLoading && searchResultCount === 0) {
       return {
         title: 'Searching Google Drive',
         message: searchScopeCopy.loadingMessage,
@@ -183,15 +193,15 @@ export const getDriveLibraryStatusCopy = (
       };
     }
 
-    if (searchPlayableCount === 0 && searchUnavailableCount === 0) {
+    if (searchResultCount === 0 && searchUnavailableCount === 0) {
       return {
         title: 'No search results',
-        message: `No supported audio matched "${options.activeSearchQuery}". Try another track name or return to folder browsing.`,
+        message: `No folders or supported audio matched "${options.activeSearchQuery}". Try another name or return to folder browsing.`,
         tone: 'neutral',
       };
     }
 
-    if (searchPlayableCount === 0) {
+    if (searchResultCount === 0) {
       return {
         title: 'No playable matches',
         message: `${formatAttentionCount(searchUnavailableCount)} matched "${options.activeSearchQuery}" but are not currently playable.`,
@@ -202,14 +212,14 @@ export const getDriveLibraryStatusCopy = (
     if (searchUnavailableCount === 0) {
       return {
         title: 'Search results ready',
-        message: `${pluralize(searchPlayableCount, 'matching track')} found ${searchScopeCopy.readySuffix}.`,
+        message: `${searchResultCountLabel} found ${searchScopeCopy.readySuffix}.`,
         tone: 'ready',
       };
     }
 
     return {
       title: 'Search results ready',
-      message: `${pluralize(searchPlayableCount, 'matching track')} found, plus ${formatAttentionCount(searchUnavailableCount)}.`,
+      message: `${searchResultCountLabel} found, plus ${formatAttentionCount(searchUnavailableCount)}.`,
       tone: 'ready',
     };
   }

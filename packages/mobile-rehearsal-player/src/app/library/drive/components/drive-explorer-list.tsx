@@ -21,14 +21,13 @@ import {
   type DriveLibrarySourceAction,
 } from '../utils/drive-library-source-actions';
 import {
-  getFolderMetadataLabels,
-  getSourceMetadataLabels,
   getSourceStatusMessage,
   type DriveLibraryFolder,
   type DriveLibrarySource,
 } from '../utils/drive-library-view-model';
 
 import type { DriveDiscoveryExplorerRow } from './drive-discovery-panel-model';
+import { DriveExplorerFolderRow } from './drive-explorer-folder-row';
 import { driveExplorerListStyles as styles } from './drive-explorer-list-styles';
 import {
   DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT,
@@ -69,47 +68,17 @@ const getMenuTone = (tone: DriveLibrarySourceAction['tone']) => {
   return 'secondary' as const;
 };
 
-const DriveExplorerFolderRow = ({
-  folder,
-  onOpenFolder,
-}: {
-  folder: DriveLibraryFolder;
-  onOpenFolder: (folder: DriveLibraryFolder) => void;
-}) => {
-  const metadataLabel = getFolderMetadataLabels(folder).join(' • ');
-  return (
-    <ExplorerListRow
-      leadingIcon={
-        <MaterialCommunityIcons
-          color={appTheme.colors.secondaryText}
-          name="folder-outline"
-          size={22}
-        />
-      }
-      metadata={
-        metadataLabel ? (
-          <Text numberOfLines={1} style={styles.folderMetadata}>
-            {metadataLabel}
-          </Text>
-        ) : null
-      }
-      onPress={() => {
-        onOpenFolder(folder);
-      }}
-      title={<Text style={styles.folderName}>{folder.name}</Text>}
-    />
-  );
-};
-
 const DriveExplorerSourceRow = ({
   getActions,
   getMessage,
   highlightQuery,
+  metadataLabels,
   source,
 }: {
   getActions: DriveExplorerListProps['getActions'];
   getMessage: DriveExplorerListProps['getMessage'];
   highlightQuery?: string | null;
+  metadataLabels: string[];
   source: DriveLibrarySource;
 }) => {
   const [isOptionsMenuVisible, setIsOptionsMenuVisible] = useState(false);
@@ -136,9 +105,7 @@ const DriveExplorerSourceRow = ({
   });
   const externalMessage = isPlayable ? getMessage(source) : undefined;
   const sourceMessage = externalMessage ?? getSourceStatusMessage(source);
-  const metadataLabel = getSourceMetadataLabels(source, {
-    includeUpdatedDate: Boolean(highlightQuery),
-  }).join(' • ');
+  const metadataLabel = metadataLabels.join(' • ');
 
   return (
     <>
@@ -281,7 +248,9 @@ export const DriveExplorerList = ({
           return (
             <DriveExplorerFolderRow
               folder={row.folder}
+              highlightQuery={row.highlightQuery}
               key={row.key}
+              metadataLabels={row.metadataLabels}
               onOpenFolder={onOpenFolder}
             />
           );
@@ -291,8 +260,9 @@ export const DriveExplorerList = ({
           <DriveExplorerSourceRow
             getActions={getActions}
             getMessage={getMessage}
-            highlightQuery={highlightQuery}
+            highlightQuery={row.highlightQuery ?? highlightQuery}
             key={row.key}
+            metadataLabels={row.metadataLabels}
             source={row.source}
           />
         );

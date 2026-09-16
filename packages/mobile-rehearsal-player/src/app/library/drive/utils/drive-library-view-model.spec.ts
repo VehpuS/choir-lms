@@ -132,6 +132,39 @@ describe('getDriveLibraryStatusCopy', () => {
     );
   });
 
+  it('recognizes a folder-only mixed result set as successful search results', () => {
+    const copy = getDriveLibraryStatusCopy({
+      authState: AUTHORIZED_STATE,
+      activeSearchQuery: 'Warmups',
+      browseSnapshot: BROWSE_SNAPSHOT,
+      googleAuthConfigured: true,
+      isLoading: false,
+      issue: null,
+      searchSnapshot: {
+        query: 'Warmups',
+        results: [
+          {
+            id: 'folder-warmups',
+            kind: 'folder',
+            locationLabel: 'My Drive / Choir / Warmups',
+            name: 'Warmups',
+            rootKind: 'my-drive',
+            shared: false,
+          },
+        ],
+        playableSources: [],
+        unavailableSources: [],
+      },
+    });
+
+    assert.equal(copy.tone, 'ready');
+    assert.equal(copy.title, 'Search results ready');
+    assert.equal(
+      copy.message,
+      '1 matching folder found across My Drive and shared folders.',
+    );
+  });
+
   it('uses folder-scoped copy while Drive search is loading', () => {
     const copy = getDriveLibraryStatusCopy({
       authState: AUTHORIZED_STATE,

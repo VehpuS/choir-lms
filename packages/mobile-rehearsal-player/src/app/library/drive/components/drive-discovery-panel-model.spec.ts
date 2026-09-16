@@ -83,8 +83,8 @@ describe('drive discovery panel model', () => {
       currentLocation: ROOT_LOCATION,
       isSearchMode: false,
       navigationStack: [ROOT_LOCATION],
-      searchPlayableSources: [],
-      searchUnavailableSources: [],
+      searchQuery: null,
+      searchResults: [],
     });
 
     assert.equal(explorer.canGoBack, false);
@@ -113,8 +113,8 @@ describe('drive discovery panel model', () => {
       currentLocation: FOLDER_LOCATION,
       isSearchMode: false,
       navigationStack: [ROOT_LOCATION, FOLDER_LOCATION],
-      searchPlayableSources: [],
-      searchUnavailableSources: [],
+      searchQuery: null,
+      searchResults: [],
     });
 
     assert.equal(explorer.canGoBack, true);
@@ -149,8 +149,15 @@ describe('drive discovery panel model', () => {
       currentLocation: FOLDER_LOCATION,
       isSearchMode: true,
       navigationStack: [ROOT_LOCATION, FOLDER_LOCATION],
-      searchPlayableSources: [SEARCH_RESULT],
-      searchUnavailableSources: [UNAVAILABLE_SOURCE],
+      searchQuery: 'entrance',
+      searchResults: [
+        {
+          ...CHILD_FOLDER,
+          kind: 'folder',
+          locationLabel: 'My Drive / Warmups / Alto Entrances',
+        },
+        { ...SEARCH_RESULT, kind: 'audio' },
+      ],
     });
 
     assert.equal(explorer.canGoBack, true);
@@ -165,13 +172,13 @@ describe('drive discovery panel model', () => {
       explorer.rows.map((row) => {
         return row.kind;
       }),
-      ['source', 'source'],
+      ['folder', 'source'],
     );
     assert.deepEqual(
       explorer.rows.map((row) => {
         return row.kind === 'folder' ? row.folder.name : row.source.name;
       }),
-      ['Entrance Cue.wav', 'Bass Notes.mp3'],
+      ['Alto Entrances', 'Entrance Cue.wav'],
     );
   });
 });

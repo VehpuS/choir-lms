@@ -36,8 +36,8 @@ export const buildDriveDiscoveryPanelViewModel = (options: {
     currentLocation: controller.discovery.currentLocation,
     isSearchMode,
     navigationStack: controller.discovery.navigationStack,
-    searchPlayableSources: controller.search.playableSources,
-    searchUnavailableSources: controller.search.unavailableSources,
+    searchQuery: controller.search.activeSearchQuery,
+    searchResults: controller.search.results,
   });
   const activeStatusCopy = isSearchMode
     ? controller.search.statusCopy

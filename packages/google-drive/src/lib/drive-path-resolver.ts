@@ -124,6 +124,14 @@ export const resolveDriveFilePaths = async (options: {
         break;
       }
 
+      if (
+        !accessibleParent.shared &&
+        (accessibleParent.parents?.length ?? 0) === 0
+      ) {
+        rootKind = 'my-drive';
+        break;
+      }
+
       visitedIds.add(accessibleParent.id);
       pathFromFileToRoot.push({
         id: accessibleParent.id,
