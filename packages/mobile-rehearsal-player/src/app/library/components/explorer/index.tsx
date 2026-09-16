@@ -31,6 +31,7 @@ type ExplorerListRowProps = {
   metadata?: ReactNode;
   onPress?: () => void;
   overflowTrigger?: ReactNode;
+  selected?: boolean;
   style?: StyleProp<ViewStyle>;
   title: ReactNode;
 };
@@ -164,6 +165,7 @@ export const ExplorerListRow = ({
   metadata,
   onPress,
   overflowTrigger,
+  selected,
   style,
   title,
 }: ExplorerListRowProps) => {
@@ -195,6 +197,7 @@ export const ExplorerListRow = ({
     return (
       <Pressable
         accessibilityRole="button"
+        accessibilityState={selected === undefined ? undefined : { selected }}
         disabled={!isInteractive}
         onPress={onPress}
         style={({ pressed }) => [
@@ -211,6 +214,7 @@ export const ExplorerListRow = ({
     <View style={rowSurfaceStyles}>
       <Pressable
         accessibilityRole="button"
+        accessibilityState={selected === undefined ? undefined : { selected }}
         disabled={!isInteractive}
         onPress={onPress}
         style={({ pressed }) => [

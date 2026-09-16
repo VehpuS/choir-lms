@@ -51,6 +51,26 @@ export const createDriveBrowseSourceRows = (
   });
 };
 
+export const resolveDriveDiscoveryResultFromRow = (
+  row: DriveDiscoveryExplorerRow,
+): DriveDiscoveryResult => {
+  return row.kind === 'folder'
+    ? { ...row.folder, kind: 'folder' }
+    : { ...row.source, kind: 'audio' };
+};
+
+export const getDriveExplorerRowSelectionState = (options: {
+  isSelectionMode: boolean;
+  row: DriveDiscoveryExplorerRow;
+  selectedResultIds?: ReadonlySet<string>;
+}): boolean | undefined => {
+  if (!options.isSelectionMode) {
+    return undefined;
+  }
+
+  return options.selectedResultIds?.has(options.row.key) ?? false;
+};
+
 export const createDriveSearchResultRows = (options: {
   query: string;
   results: DriveDiscoveryResult[];

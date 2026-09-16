@@ -18,6 +18,7 @@ import {
   EMPTY_DRIVE_SEARCH_SNAPSHOT,
   useDriveLibrarySearch,
 } from './use-drive-library-search';
+import { useDriveSearchSelection } from './use-drive-search-selection';
 
 const createRootLocation = (rootKind: DriveBrowseLocation['rootKind']) => {
   return {
@@ -92,6 +93,14 @@ export const useDriveLibrary = (
     onSearchRequested: () => {
       setRefreshCount((currentValue) => currentValue + 1);
     },
+  });
+  const searchSelection = useDriveSearchSelection({
+    activeQuery: activeSearchQuery,
+    inputQuery: searchQuery,
+    isComplete: issue === null,
+    isLoading,
+    location: currentLocation,
+    results: searchSnapshot.results,
   });
 
   useEffect(() => {
@@ -259,6 +268,7 @@ export const useDriveLibrary = (
     },
     searchQuery,
     searchResults: searchSnapshot.results,
+    searchSelection,
     searchSnapshot,
     selectRoot(rootKind: DriveBrowseLocation['rootKind']) {
       const rootLocation = createRootLocation(rootKind);

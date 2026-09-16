@@ -8,6 +8,8 @@ import type { DriveDiscoveryResult } from '@org/google-drive';
 import {
   createDriveBrowseFolderRows,
   createDriveSearchResultRows,
+  getDriveExplorerRowSelectionState,
+  resolveDriveDiscoveryResultFromRow,
 } from './drive-explorer-row-model.js';
 
 const SEARCH_RESULTS: DriveDiscoveryResult[] = [
@@ -83,5 +85,65 @@ describe('Drive explorer row model', () => {
 
     assert.equal(row?.highlightQuery, null);
     assert.deepEqual(row?.metadataLabels, ['Shared folder']);
+  });
+
+  it('round-trips search rows back into their originating discovery results for selection', () => {
+    const [folderRow, sourceRow] = createDriveSearchResultRows({
+      query: 'warm',
+      results: SEARCH_RESULTS,
+    });
+
+    assert.ok(folderRow);
+    assert.ok(sourceRow);
+    assert.deepEqual(
+      resolveDriveDiscoveryResultFromRow(folderRow),
+      SEARCH_RESULTS[0],
+    );
+    assert.deepEqual(
+      resolveDriveDiscoveryResultFromRow(sourceRow),
+      SEARCH_RESULTS[1],
+    );
+  });
+
+  it('only reports row selection state while selection mode is active', () => {
+    const [folderRow, sourceRow] = createDriveSearchResultRows({
+      query: 'warm',
+      results: SEARCH_RESULTS,
+    });
+
+    assert.ok(folderRow);
+    assert.ok(sourceRow);
+    assert.equal(
+      getDriveExplorerRowSelectionState({
+        isSelectionMode: false,
+        row: folderRow,
+        selectedResultIds: new Set([folderRow.key]),
+      }),
+      undefined,
+    );
+    assert.equal(
+      getDriveExplorerRowSelectionState({
+        isSelectionMode: true,
+        row: folderRow,
+        selectedResultIds: new Set([folderRow.key]),
+      }),
+      true,
+    );
+    assert.equal(
+      getDriveExplorerRowSelectionState({
+        isSelectionMode: true,
+        row: sourceRow,
+        selectedResultIds: new Set([folderRow.key]),
+      }),
+      false,
+    );
+    assert.equal(
+      getDriveExplorerRowSelectionState({
+        isSelectionMode: true,
+        row: sourceRow,
+        selectedResultIds: undefined,
+      }),
+      false,
+    );
   });
 });

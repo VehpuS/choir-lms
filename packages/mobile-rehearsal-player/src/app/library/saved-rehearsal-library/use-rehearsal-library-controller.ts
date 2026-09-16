@@ -159,8 +159,6 @@ export const useRehearsalLibraryController = ({
     savedSources: savedLibrarySources,
     selectedSourceId: savedLibraryRemovalActions.selectedLoopSourceId,
   });
-  const isSavedLibraryMutating = savedLibrary.pendingSourceId !== null;
-
   const openLoopBuilderForSource = (
     source: (typeof savedLibrarySources)[number],
   ) => {
@@ -190,7 +188,7 @@ export const useRehearsalLibraryController = ({
       activePlayableItem: playback.activePlayableItem,
       canMutateLibrary: savedLibrary.canMutateLibrary,
       isLibraryLoading: savedLibrary.isLoading,
-      isLibraryMutating: isSavedLibraryMutating,
+      isLibraryMutating: savedLibrary.pendingSourceId !== null,
       isPreparingPlayback: playback.isPreparing,
       isSaved,
       isSavePending: isPending,
@@ -288,13 +286,12 @@ export const useRehearsalLibraryController = ({
         driveLibrary.currentLocation,
       ),
       searchQuery: driveLibrary.searchQuery,
+      selection: driveLibrary.searchSelection,
       setSearchQuery: driveLibrary.setSearchQuery,
       statusCopy: searchStatusCopy,
       submitSearch: driveLibrary.submitSearch,
       submitSearchQuery: driveLibrary.submitSearchQuery,
-      totalResultCount:
-        driveLibrary.searchSnapshot.playableSources.length +
-        driveLibrary.searchSnapshot.unavailableSources.length,
+      totalResultCount: driveLibrary.searchResults.length,
       unavailableSourceTitle: `Unavailable or unsupported results (${driveLibrary.searchSnapshot.unavailableSources.length})`,
       unavailableSources: driveLibrary.searchSnapshot.unavailableSources,
     },

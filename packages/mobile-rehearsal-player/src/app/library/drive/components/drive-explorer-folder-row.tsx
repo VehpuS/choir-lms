@@ -10,6 +10,7 @@ import { driveExplorerListStyles as styles } from './drive-explorer-list-styles'
 type DriveExplorerFolderRowProps = {
   folder: DriveLibraryFolder;
   highlightQuery: string | null;
+  isSelected?: boolean;
   metadataLabels: string[];
   onOpenFolder: (folder: DriveLibraryFolder) => void;
 };
@@ -17,6 +18,7 @@ type DriveExplorerFolderRowProps = {
 export const DriveExplorerFolderRow = ({
   folder,
   highlightQuery,
+  isSelected,
   metadataLabels,
   onOpenFolder,
 }: DriveExplorerFolderRowProps) => {
@@ -24,10 +26,17 @@ export const DriveExplorerFolderRow = ({
 
   return (
     <ExplorerListRow
+      active={isSelected}
       leadingIcon={
         <MaterialCommunityIcons
           color={appTheme.colors.secondaryText}
-          name="folder-outline"
+          name={
+            isSelected === undefined
+              ? 'folder-outline'
+              : isSelected
+                ? 'check-circle'
+                : 'circle-outline'
+          }
           size={22}
         />
       }
@@ -41,6 +50,7 @@ export const DriveExplorerFolderRow = ({
       onPress={() => {
         onOpenFolder(folder);
       }}
+      selected={isSelected}
       title={
         <SearchHighlightedText
           query={highlightQuery}

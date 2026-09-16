@@ -29,6 +29,7 @@ import {
 import type { DriveDiscoveryExplorerRow } from './drive-discovery-panel-model';
 import { DriveExplorerFolderRow } from './drive-explorer-folder-row';
 import { driveExplorerListStyles as styles } from './drive-explorer-list-styles';
+import { getDriveExplorerRowSelectionState } from './drive-explorer-row-model';
 import {
   DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT,
   driveLibrarySourceGroupStyles as sourceGroupStyles,
@@ -38,8 +39,11 @@ type DriveExplorerListProps = {
   getActions: (source: DriveLibrarySource) => DriveLibrarySourceAction[] | null;
   getMessage: (source: DriveLibrarySource) => string | undefined;
   highlightQuery?: string | null;
+  isSelectionMode?: boolean;
   onOpenFolder: (folder: DriveLibraryFolder) => void;
+  onToggleSelection?: (row: DriveDiscoveryExplorerRow) => void;
   rows: DriveDiscoveryExplorerRow[];
+  selectedResultIds?: ReadonlySet<string>;
 };
 
 const getActionButtonStyle = (action: DriveLibrarySourceAction) => {
@@ -57,39 +61,39 @@ const getMenuActionLabel = (action: DriveLibrarySourceAction) => {
 };
 
 const getMenuTone = (tone: DriveLibrarySourceAction['tone']) => {
-  if (tone === 'primary') {
-    return 'primary' as const;
-  }
-
-  if (tone === 'destructive') {
-    return 'destructive' as const;
-  }
-
-  return 'secondary' as const;
+  return tone === 'primary'
+    ? ('primary' as const)
+    : tone === 'destructive'
+      ? ('destructive' as const)
+      : ('secondary' as const);
 };
 
 const DriveExplorerSourceRow = ({
   getActions,
   getMessage,
   highlightQuery,
+  isSelected,
+  onToggleSelection,
   metadataLabels,
   source,
 }: {
   getActions: DriveExplorerListProps['getActions'];
   getMessage: DriveExplorerListProps['getMessage'];
   highlightQuery?: string | null;
+  isSelected?: boolean;
+  onToggleSelection?: () => void;
   metadataLabels: string[];
   source: DriveLibrarySource;
 }) => {
   const [isOptionsMenuVisible, setIsOptionsMenuVisible] = useState(false);
   const isPlayable = source.availability.status === 'available';
   const actions = useMemo(() => {
-    if (!isPlayable) {
+    if (!isPlayable || onToggleSelection) {
       return [];
     }
 
     return getActions(source) ?? [];
-  }, [getActions, isPlayable, source]);
+  }, [getActions, isPlayable, onToggleSelection, source]);
   const inlineActions = useMemo(() => {
     return actions.filter((action) => {
       return resolveDriveLibrarySourceActionPlacement(action) === 'inline';
@@ -110,6 +114,7 @@ const DriveExplorerSourceRow = ({
   return (
     <>
       <ExplorerListRow
+        active={isSelected}
         actions={map(inlineActions, (action, index) => {
           if (action.iconName) {
             return (
@@ -157,11 +162,17 @@ const DriveExplorerSourceRow = ({
             </Pressable>
           );
         })}
-        disabled={!isPlayable}
+        disabled={!isPlayable && !onToggleSelection}
         leadingIcon={
           <MaterialCommunityIcons
             color={appTheme.colors.secondaryText}
-            name="music-note-outline"
+            name={
+              isSelected === undefined
+                ? 'music-note-outline'
+                : isSelected
+                  ? 'check-circle'
+                  : 'circle-outline'
+            }
             size={22}
           />
         }
@@ -187,9 +198,10 @@ const DriveExplorerSourceRow = ({
           ) : null
         }
         onPress={
-          primaryPlaybackAction && !primaryPlaybackAction.disabled
+          onToggleSelection ??
+          (primaryPlaybackAction && !primaryPlaybackAction.disabled
             ? primaryPlaybackAction.onPress
-            : undefined
+            : undefined)
         }
         overflowTrigger={
           menuActions.length > 0 ? (
@@ -210,6 +222,7 @@ const DriveExplorerSourceRow = ({
             text={source.name}
           />
         }
+        selected={isSelected}
       />
       <OptionsMenuSheet
         actions={menuActions.map((action, index) => {
@@ -238,20 +251,34 @@ export const DriveExplorerList = ({
   getActions,
   getMessage,
   highlightQuery,
+  isSelectionMode = false,
   onOpenFolder,
+  onToggleSelection,
   rows,
+  selectedResultIds,
 }: DriveExplorerListProps) => {
   return (
     <ExplorerListSurface>
       {rows.map((row) => {
+        const isSelected = getDriveExplorerRowSelectionState({
+          isSelectionMode,
+          row,
+          selectedResultIds,
+        });
+        const onSelect =
+          isSelectionMode && onToggleSelection
+            ? () => onToggleSelection(row)
+            : undefined;
+
         if (row.kind === 'folder') {
           return (
             <DriveExplorerFolderRow
               folder={row.folder}
               highlightQuery={row.highlightQuery}
+              isSelected={isSelected}
               key={row.key}
               metadataLabels={row.metadataLabels}
-              onOpenFolder={onOpenFolder}
+              onOpenFolder={onSelect ?? onOpenFolder}
             />
           );
         }
@@ -261,8 +288,10 @@ export const DriveExplorerList = ({
             getActions={getActions}
             getMessage={getMessage}
             highlightQuery={row.highlightQuery ?? highlightQuery}
+            isSelected={isSelected}
             key={row.key}
             metadataLabels={row.metadataLabels}
+            onToggleSelection={onSelect}
             source={row.source}
           />
         );

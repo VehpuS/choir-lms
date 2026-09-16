@@ -72,11 +72,13 @@ describe('DriveDiscoveryPanel', () => {
         isSearchMode: false,
         playableSources: [],
         recentSearchTerms: [],
+        results: [],
         searchContextCopy: {
           helper: 'Search Google Drive',
           placeholder: 'Search Google Drive',
         },
         searchQuery: '',
+        selection: { canSelect: false },
         setSearchQuery: () => undefined,
         statusCopy: {
           message: 'Search Google Drive',
@@ -107,5 +109,84 @@ describe('DriveDiscoveryPanel', () => {
     assert.deepEqual(goToLocationCalls, [0, 0]);
     assert.deepEqual(openedFolderIds, ['folder-2']);
     assert.equal(returnToSearchResultsCallCount, 1);
+  });
+
+  it('only counts selectable search results toward the selection toolbar', () => {
+    const baseController = {
+      discovery: {
+        browseSnapshot: {
+          folders: [],
+          playableSources: [],
+          unavailableSources: [],
+        },
+        canReturnToSearchResults: false,
+        currentLocation: ROOT_LOCATION,
+        goToLocation: () => undefined,
+        isLoading: false,
+        navigationStack: [ROOT_LOCATION],
+        openFolder: () => undefined,
+        playableSources: [],
+        returnToSearchResults: () => undefined,
+        selectRoot: () => undefined,
+        statusCopy: {
+          message: 'Browse Google Drive folders and audio.',
+          title: 'Drive ready',
+          tone: 'neutral',
+        },
+        unavailableSources: [],
+      },
+      getDriveSourceActions: () => [],
+      getSourceMessage: () => undefined,
+      search: {
+        activeSearchQuery: 'Warmups',
+        canSearch: true,
+        clearSearch: () => undefined,
+        isLoading: false,
+        isSearchMode: true,
+        playableSources: [],
+        recentSearchTerms: [],
+        results: [
+          {
+            id: 'folder-warmups',
+            kind: 'folder',
+            name: 'Warmups',
+            rootKind: 'my-drive',
+            shared: false,
+          },
+        ],
+        searchContextCopy: {
+          helper: 'Search Google Drive',
+          placeholder: 'Search Google Drive',
+        },
+        searchQuery: 'Warmups',
+        selection: { canSelect: true },
+        setSearchQuery: () => undefined,
+        statusCopy: {
+          message: 'Search Google Drive',
+          title: 'Search ready',
+          tone: 'neutral',
+        },
+        submitSearch: () => undefined,
+        submitSearchQuery: () => undefined,
+        unavailableSources: [],
+      },
+    } as unknown as ReturnType<typeof useRehearsalLibraryController>;
+
+    const activeQueryViewModel = buildDriveDiscoveryPanelViewModel({
+      controller: baseController,
+    });
+
+    assert.equal(activeQueryViewModel.selectionResultCount, 1);
+
+    const staleQueryController = {
+      ...baseController,
+      search: { ...baseController.search, selection: { canSelect: false } },
+    } as unknown as ReturnType<typeof useRehearsalLibraryController>;
+
+    const staleQueryViewModel = buildDriveDiscoveryPanelViewModel({
+      controller: staleQueryController,
+    });
+
+    assert.equal(staleQueryViewModel.selectionResultCount, 0);
   });
 });
