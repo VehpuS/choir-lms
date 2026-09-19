@@ -17,6 +17,7 @@ import { DriveDiscoveryPanel } from '../../library/drive/components/drive-discov
 import { ADD_SCREEN_DRIVE_PANEL_ORDER } from '../../library/drive/utils/drive-discovery-layout';
 import type { useRehearsalLibraryController } from '../../library/saved-rehearsal-library/use-rehearsal-library-controller';
 import { appTheme } from '../../utils/theme';
+import { DriveImportReviewScreen } from '../drive-import-review';
 import {
   ACTION_BUTTON_SIZE,
   DriveDiscoveryActionButton,
@@ -112,6 +113,14 @@ export const AddScreen = ({
       />
     );
   });
+
+  if (libraryController.search.selection.isReviewReady) {
+    return (
+      <View style={styles.screen}>
+        <DriveImportReviewScreen controller={libraryController} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.screen}>

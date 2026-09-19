@@ -3,81 +3,33 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import type {
-  DriveAudioDiscoveryResult,
-  DriveEnumeratedAudioSource,
-  DriveFolderContents,
-} from '@org/google-drive';
-import { createElement } from 'react';
-import { act, create, type ReactTestRenderer } from 'react-test-renderer';
+import type { DriveAudioDiscoveryResult } from '@org/google-drive';
+import { act } from 'react-test-renderer';
+
+import type { DriveFolderContents } from '@org/google-drive';
 
 import {
   createDeferred,
   createDriveImportExecutionResult,
+  createFolderImport,
+  renderController,
+  requireController,
+  requireControllerState,
 } from './drive-import-controller-test-fixtures.js';
 import type { DriveImportExecutionResult } from './drive-import-executor.js';
 import {
   createAudio,
-  createFolder,
   createLibraryState,
   DESTINATION_FOLDER_ID,
 } from './drive-import-planner-test-fixtures.js';
 import {
   type DriveImportController,
   type DriveImportControllerDependencies,
-  useDriveImportController,
 } from './use-drive-import-controller.js';
 
 (
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
-
-const renderController = async (
-  dependencies: DriveImportControllerDependencies,
-  onLibraryChanged: () => Promise<unknown> = async () => undefined,
-) => {
-  const box: { current: DriveImportController | null } = { current: null };
-
-  const Harness = () => {
-    box.current = useDriveImportController({
-      dependencies,
-      onLibraryChanged,
-    });
-    return null;
-  };
-  let renderer!: ReactTestRenderer;
-
-  await act(async () => {
-    renderer = create(createElement(Harness));
-  });
-
-  return { box, renderer };
-};
-
-const requireController = (box: { current: DriveImportController | null }) => {
-  assert.ok(box.current);
-  return box.current;
-};
-
-const requireControllerState = (box: {
-  current: DriveImportController | null;
-}) => requireController(box).state;
-
-const createFolderImport = () => {
-  const folder = createFolder('drive-folder', 'Warmups');
-  const source = createAudio(
-    'drive-track',
-    'Warmup.mp3',
-    folder.id,
-  ) as DriveEnumeratedAudioSource;
-  const contents: DriveFolderContents = {
-    folders: [],
-    playableSources: [source],
-    unavailableSources: [],
-  };
-
-  return { contents, folder };
-};
 
 describe('useDriveImportController', () => {
   it('moves from preparation through review and execution completion', async () => {

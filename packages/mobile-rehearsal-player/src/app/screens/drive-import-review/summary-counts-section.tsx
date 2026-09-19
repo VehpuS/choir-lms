@@ -1,0 +1,98 @@
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+
+import { appTheme } from '../../utils/theme';
+import type { DriveImportControllerState } from '../../library/saved-rehearsal-library/use-drive-import-controller';
+import { buildDriveImportReviewSummaryRows } from './drive-import-review-model';
+import { getDriveImportReviewSummaryStatusCopy } from './screen-copy';
+
+type SummaryCountsSectionProps = {
+  driveImportState: DriveImportControllerState;
+};
+
+export const SummaryCountsSection = ({
+  driveImportState,
+}: SummaryCountsSectionProps) => {
+  switch (driveImportState.status) {
+    case 'idle':
+      return (
+        <Text style={styles.helper}>
+          {getDriveImportReviewSummaryStatusCopy('idle')}
+        </Text>
+      );
+    case 'preparing':
+      return (
+        <View style={styles.loadingRow}>
+          <ActivityIndicator
+            accessibilityLabel="Preparing import review"
+            color={appTheme.colors.listMarker}
+          />
+          <Text style={styles.helper}>
+            {getDriveImportReviewSummaryStatusCopy('preparing')}
+          </Text>
+        </View>
+      );
+    case 'error':
+      return <Text style={styles.errorText}>{driveImportState.message}</Text>;
+    case 'review': {
+      const rows = buildDriveImportReviewSummaryRows(
+        driveImportState.reviewSummary,
+      );
+
+      return (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Import summary</Text>
+          {rows.map((row) => (
+            <View key={row.key} style={styles.row}>
+              <Text style={styles.rowLabel}>{row.label}</Text>
+              <Text style={styles.rowValue}>{row.value}</Text>
+            </View>
+          ))}
+        </View>
+      );
+    }
+    case 'executing':
+    case 'completed':
+      return null;
+  }
+};
+
+const styles = StyleSheet.create({
+  errorText: {
+    color: appTheme.colors.primaryText,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  helper: {
+    color: appTheme.colors.secondaryText,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    minHeight: 32,
+    alignItems: 'center',
+  },
+  rowLabel: {
+    color: appTheme.colors.primaryText,
+    fontSize: 14,
+  },
+  rowValue: {
+    color: appTheme.colors.primaryText,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  section: {
+    gap: 4,
+  },
+  sectionTitle: {
+    color: appTheme.colors.primaryText,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+});

@@ -79,6 +79,7 @@ export const useDriveImportController = (
     status: 'idle',
   });
   const activeOperation = useRef<AbortController | null>(null);
+  const folderContentsCache = useRef(new Map<string, DriveFolderContents>());
   const dependencies = options.dependencies;
 
   useEffect(() => () => activeOperation.current?.abort(), []);
@@ -143,6 +144,7 @@ export const useDriveImportController = (
     },
     async plan(planOptions: PlanDriveImportOptions) {
       const controller = startOperation();
+      const isCurrentOperation = () => activeOperation.current === controller;
       const selection = normalizeDriveImportSelection(planOptions.selection);
       const contentsByFolderId = new Map<string, DriveFolderContents>();
 
@@ -157,10 +159,22 @@ export const useDriveImportController = (
 
       try {
         for (const [index, folder] of selection.folders.entries()) {
-          const contents = await dependencies.enumerateFolderContents(
-            folder,
-            controller.signal,
-          );
+          const cachedContents = folderContentsCache.current.get(folder.id);
+          const contents =
+            cachedContents ??
+            (await dependencies.enumerateFolderContents(
+              folder,
+              controller.signal,
+            ));
+
+          if (!isCurrentOperation()) {
+            return null;
+          }
+
+          if (!cachedContents) {
+            folderContentsCache.current.set(folder.id, contents);
+          }
+
           contentsByFolderId.set(folder.id, contents);
           setState({
             progress: {
@@ -173,11 +187,18 @@ export const useDriveImportController = (
         }
 
         if (controller.signal.aborted) {
-          setState({ status: 'idle' });
+          if (isCurrentOperation()) {
+            setState({ status: 'idle' });
+          }
           return null;
         }
 
         const libraryState = await dependencies.loadLibraryState();
+
+        if (!isCurrentOperation()) {
+          return null;
+        }
+
         const plan = createDriveImportPlan({
           contentsByFolderId,
           destinationFolderId: planOptions.destinationFolderId,
@@ -196,18 +217,22 @@ export const useDriveImportController = (
         return plan;
       } catch (error) {
         if (controller.signal.aborted) {
-          setState({ status: 'idle' });
+          if (isCurrentOperation()) {
+            setState({ status: 'idle' });
+          }
           return null;
         }
 
-        setState({
-          message: getErrorMessage(error),
-          operation: 'plan',
-          status: 'error',
-        });
+        if (isCurrentOperation()) {
+          setState({
+            message: getErrorMessage(error),
+            operation: 'plan',
+            status: 'error',
+          });
+        }
         return null;
       } finally {
-        if (activeOperation.current === controller) {
+        if (isCurrentOperation()) {
           activeOperation.current = null;
         }
       }
@@ -215,6 +240,7 @@ export const useDriveImportController = (
     reset() {
       activeOperation.current?.abort();
       activeOperation.current = null;
+      folderContentsCache.current = new Map();
       setState({ status: 'idle' });
     },
     async retry() {
