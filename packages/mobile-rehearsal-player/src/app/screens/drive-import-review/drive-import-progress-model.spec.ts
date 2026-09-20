@@ -1,12 +1,16 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import type { DriveImportCompletionSummary } from '../../library/saved-rehearsal-library/drive-import-status';
+import type {
+  DriveImportCompletionSummary,
+  DriveImportOutcome,
+} from '../../library/saved-rehearsal-library/drive-import-status';
 import {
   buildDriveImportCompletionSummaryRows,
   canRetryDriveImportCompletion,
   getDriveImportCompletionStatusCopy,
   getDriveImportProgressCopy,
+  getFailedDriveImportOutcomes,
   resolveDriveImportReviewHeaderMode,
 } from './drive-import-progress-model.js';
 
@@ -148,5 +152,68 @@ describe('buildDriveImportCompletionSummaryRows', () => {
       { key: 'cancelled', label: 'Cancelled', value: 3 },
       { key: 'failed', label: 'Failed', value: 7 },
     ]);
+  });
+});
+
+describe('getFailedDriveImportOutcomes', () => {
+  it('filters to only the failed outcomes, preserving order and error messages', () => {
+    const outcomes: DriveImportOutcome[] = [
+      {
+        itemId: 'source-1',
+        itemKind: 'source',
+        itemName: 'One',
+        status: 'created',
+      },
+      {
+        errorMessage: 'Drive item became unavailable.',
+        itemId: 'source-2',
+        itemKind: 'source',
+        itemName: 'Two',
+        status: 'failed',
+      },
+      {
+        itemId: 'link-1',
+        itemKind: 'link',
+        itemName: 'Three',
+        status: 'reused',
+      },
+      {
+        errorMessage: 'The target folder could not be created.',
+        itemId: 'link-2',
+        itemKind: 'link',
+        itemName: 'Four',
+        status: 'failed',
+      },
+    ];
+
+    assert.deepEqual(getFailedDriveImportOutcomes(outcomes), [
+      {
+        errorMessage: 'Drive item became unavailable.',
+        itemId: 'source-2',
+        itemKind: 'source',
+        itemName: 'Two',
+        status: 'failed',
+      },
+      {
+        errorMessage: 'The target folder could not be created.',
+        itemId: 'link-2',
+        itemKind: 'link',
+        itemName: 'Four',
+        status: 'failed',
+      },
+    ]);
+  });
+
+  it('returns an empty array when there are no failed outcomes', () => {
+    const outcomes: DriveImportOutcome[] = [
+      {
+        itemId: 'source-1',
+        itemKind: 'source',
+        itemName: 'One',
+        status: 'created',
+      },
+    ];
+
+    assert.deepEqual(getFailedDriveImportOutcomes(outcomes), []);
   });
 });

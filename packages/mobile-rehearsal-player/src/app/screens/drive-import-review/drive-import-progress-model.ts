@@ -2,6 +2,7 @@ import type {
   DriveImportCompletionStatus,
   DriveImportCompletionSummary,
   DriveImportExecutionPhase,
+  DriveImportOutcome,
   DriveImportProgress,
 } from '../../library/saved-rehearsal-library/drive-import-status';
 import type { DriveImportControllerState } from '../../library/saved-rehearsal-library/use-drive-import-controller';
@@ -108,3 +109,16 @@ export const buildDriveImportCompletionSummaryRows = (
     label,
     value: summary.counts[key],
   }));
+
+export type DriveImportFailedOutcome = Extract<
+  DriveImportOutcome,
+  { status: 'failed' }
+>;
+
+export const getFailedDriveImportOutcomes = (
+  outcomes: readonly DriveImportOutcome[],
+): DriveImportFailedOutcome[] =>
+  outcomes.filter(
+    (outcome): outcome is DriveImportFailedOutcome =>
+      outcome.status === 'failed',
+  );

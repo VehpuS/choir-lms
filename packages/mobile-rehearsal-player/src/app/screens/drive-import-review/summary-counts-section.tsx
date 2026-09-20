@@ -60,6 +60,7 @@ export const SummaryCountsSection = ({
       return (
         <ImportCompletionSection
           onRetryFailed={onRetryFailed}
+          outcomes={driveImportState.result.outcomes}
           summary={driveImportState.result.summary}
         />
       );

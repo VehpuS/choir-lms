@@ -1,24 +1,33 @@
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../utils/theme';
-import type { DriveImportCompletionSummary } from '../../library/saved-rehearsal-library/drive-import-status';
+import type {
+  DriveImportCompletionSummary,
+  DriveImportOutcome,
+} from '../../library/saved-rehearsal-library/drive-import-status';
 import {
   buildDriveImportCompletionSummaryRows,
   canRetryDriveImportCompletion,
   getDriveImportCompletionStatusCopy,
+  getFailedDriveImportOutcomes,
 } from './drive-import-progress-model';
 
 type ImportCompletionSectionProps = {
   onRetryFailed: () => void;
+  outcomes: readonly DriveImportOutcome[];
   summary: DriveImportCompletionSummary;
 };
 
 export const ImportCompletionSection = ({
   onRetryFailed,
+  outcomes,
   summary,
 }: ImportCompletionSectionProps) => {
+  const [isFailedListExpanded, setIsFailedListExpanded] = useState(false);
   const statusCopy = getDriveImportCompletionStatusCopy(summary.status);
   const rows = buildDriveImportCompletionSummaryRows(summary);
+  const failedOutcomes = getFailedDriveImportOutcomes(outcomes);
 
   return (
     <View style={styles.section}>
@@ -34,6 +43,33 @@ export const ImportCompletionSection = ({
           </View>
         ))}
       </View>
+      {failedOutcomes.length > 0 ? (
+        <View style={styles.failedSection}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: isFailedListExpanded }}
+            onPress={() => setIsFailedListExpanded((current) => !current)}
+          >
+            <Text style={styles.failedToggleLabel}>
+              {isFailedListExpanded
+                ? 'Hide failed items'
+                : `Show failed items (${failedOutcomes.length})`}
+            </Text>
+          </Pressable>
+          {isFailedListExpanded ? (
+            <View style={styles.failedList}>
+              {failedOutcomes.map((outcome) => (
+                <View key={outcome.itemId} style={styles.failedItem}>
+                  <Text style={styles.failedItemName}>{outcome.itemName}</Text>
+                  <Text style={styles.failedItemMessage}>
+                    {outcome.errorMessage}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </View>
+      ) : null}
       {canRetryDriveImportCompletion(summary) ? (
         <Pressable
           accessibilityRole="button"
@@ -48,6 +84,31 @@ export const ImportCompletionSection = ({
 };
 
 const styles = StyleSheet.create({
+  failedItem: {
+    gap: 2,
+  },
+  failedItemMessage: {
+    color: appTheme.colors.secondaryText,
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  failedItemName: {
+    color: appTheme.colors.primaryText,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  failedList: {
+    gap: 10,
+    paddingTop: 4,
+  },
+  failedSection: {
+    gap: 8,
+  },
+  failedToggleLabel: {
+    color: appTheme.colors.listMarker,
+    fontSize: 13,
+    fontWeight: '700',
+  },
   header: {
     gap: 4,
   },

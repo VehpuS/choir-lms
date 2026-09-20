@@ -6,18 +6,22 @@ import { appTheme } from '../utils/theme';
 
 type DestinationHeaderProps = {
   style?: StyleProp<ViewStyle>;
+  subtitle?: string;
   title: string;
   trailingAction?: ReactNode;
 };
 
 export const DestinationHeader = ({
   style,
+  subtitle,
   title,
   trailingAction,
 }: DestinationHeaderProps) => {
   return (
     <View style={[styles.header, style]}>
       <SectionHeading
+        body={subtitle}
+        bodyStyle={styles.subtitle}
         style={styles.headerContent}
         title={title}
         titleNumberOfLines={1}
@@ -46,6 +50,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingTop: 18,
     paddingBottom: 18,
+  },
+  subtitle: {
+    color: 'rgba(255, 248, 239, 0.72)',
+    fontSize: 13,
+    lineHeight: 18,
   },
   title: {
     color: '#fff8ef',

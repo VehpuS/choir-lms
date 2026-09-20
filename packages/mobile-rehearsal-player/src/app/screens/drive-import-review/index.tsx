@@ -1,5 +1,9 @@
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { DriveSessionMenu } from '../../auth/google-drive/components/drive-session-menu';
+import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
+import { DestinationHeader } from '../../components/destination-header';
 import type { useRehearsalLibraryController } from '../../library/saved-rehearsal-library/use-rehearsal-library-controller';
 import { appTheme } from '../../utils/theme';
 import { DestinationPickerSection } from './destination-picker-section';
@@ -10,12 +14,15 @@ import { SummaryCountsSection } from './summary-counts-section';
 import { useDriveImportReviewState } from './use-drive-import-review-state';
 
 type DriveImportReviewScreenProps = {
+  authorization: DriveSessionMenuController;
   controller: ReturnType<typeof useRehearsalLibraryController>;
 };
 
 export const DriveImportReviewScreen = ({
+  authorization,
   controller,
 }: DriveImportReviewScreenProps) => {
+  const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
   const headerCopy = getDriveImportReviewHeaderCopy();
   const reviewState = useDriveImportReviewState({
     destinationFolders: controller.savedLibrary.files.destinationFolders,
@@ -29,52 +36,47 @@ export const DriveImportReviewScreen = ({
   );
 
   const exitReview = (action: () => void) => {
+    setIsSessionMenuVisible(false);
     controller.driveImport.reset();
     action();
   };
 
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
-        <View style={styles.headerCopy}>
-          <Text style={styles.title}>{headerCopy.title}</Text>
-          <Text style={styles.helper}>{headerCopy.helper}</Text>
-        </View>
-        <View style={styles.headerActions}>
-          {headerMode === 'default' ? (
-            <>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => exitReview(controller.search.selection.edit)}
-              >
-                <Text style={styles.headerActionLabel}>Back to selection</Text>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => exitReview(controller.search.selection.cancel)}
-              >
-                <Text style={styles.headerActionLabel}>Cancel</Text>
-              </Pressable>
-            </>
-          ) : null}
-          {headerMode === 'executing' ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => controller.driveImport.cancel()}
-            >
-              <Text style={styles.headerActionLabel}>Cancel import</Text>
-            </Pressable>
-          ) : null}
-          {headerMode === 'completed' ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => exitReview(controller.search.selection.cancel)}
-            >
-              <Text style={styles.headerActionLabel}>Dismiss</Text>
-            </Pressable>
-          ) : null}
-        </View>
-      </View>
+      {isSessionMenuVisible ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setIsSessionMenuVisible(false)}
+          style={styles.menuBackdrop}
+        />
+      ) : null}
+      <DestinationHeader
+        style={styles.destinationHeader}
+        subtitle={headerCopy.helper}
+        title={headerCopy.title}
+        trailingAction={
+          <DriveSessionMenu
+            authState={authorization.authState}
+            canClearAuthorization={authorization.canClearAuthorization}
+            canStartAuthorization={authorization.canStartAuthorization}
+            isBusy={authorization.isBusy}
+            isVisible={isSessionMenuVisible}
+            onClearAuthorization={() => {
+              setIsSessionMenuVisible(false);
+              void authorization.clearAuthorization();
+            }}
+            onStartAuthorization={() => {
+              setIsSessionMenuVisible(false);
+              void authorization.startAuthorization();
+            }}
+            onToggleVisibility={() => {
+              setIsSessionMenuVisible((currentValue) => !currentValue);
+            }}
+            requestReady={authorization.requestReady}
+            statusCopy={authorization.statusCopy}
+          />
+        }
+      />
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -98,70 +100,108 @@ export const DriveImportReviewScreen = ({
           driveImportState={driveImportState}
           onRetryFailed={() => controller.driveImport.retry()}
         />
-        {driveImportState.status === 'review' ? (
+      </ScrollView>
+      <View style={styles.footer}>
+        {headerMode === 'default' ? (
+          <>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => exitReview(controller.search.selection.edit)}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonLabel}>Back</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => exitReview(controller.search.selection.cancel)}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonLabel}>Cancel</Text>
+            </Pressable>
+            {driveImportState.status === 'review' ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => controller.driveImport.execute()}
+                style={styles.primaryButton}
+              >
+                <Text style={styles.primaryButtonLabel}>Confirm import</Text>
+              </Pressable>
+            ) : null}
+          </>
+        ) : null}
+        {headerMode === 'executing' ? (
           <Pressable
             accessibilityRole="button"
-            onPress={() => controller.driveImport.execute()}
-            style={styles.confirmButton}
+            onPress={() => controller.driveImport.cancel()}
+            style={styles.primaryButton}
           >
-            <Text style={styles.confirmButtonLabel}>Confirm import</Text>
+            <Text style={styles.primaryButtonLabel}>Cancel import</Text>
           </Pressable>
         ) : null}
-      </ScrollView>
+        {headerMode === 'completed' ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => exitReview(controller.search.selection.cancel)}
+            style={styles.primaryButton}
+          >
+            <Text style={styles.primaryButtonLabel}>Dismiss</Text>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  confirmButton: {
+  content: {
+    gap: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  destinationHeader: {
+    marginTop: 12,
+  },
+  footer: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingTop: 12,
+    paddingBottom: 4,
+    borderTopWidth: 1,
+    borderTopColor: appTheme.colors.border,
+  },
+  menuBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 10,
+  },
+  primaryButton: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 14,
     paddingVertical: 12,
     backgroundColor: appTheme.colors.listMarker,
   },
-  confirmButtonLabel: {
+  primaryButtonLabel: {
     color: '#fff8ef',
     fontSize: 14,
     fontWeight: '700',
-  },
-  content: {
-    gap: 20,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  header: {
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: appTheme.colors.border,
-  },
-  headerActionLabel: {
-    color: appTheme.colors.listMarker,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: 20,
-  },
-  headerCopy: {
-    gap: 4,
-  },
-  helper: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 13,
-    lineHeight: 18,
   },
   screen: {
     flex: 1,
     backgroundColor: appTheme.colors.pageBackground,
   },
-  title: {
-    color: appTheme.colors.primaryText,
-    fontSize: 20,
+  secondaryButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: appTheme.colors.border,
+  },
+  secondaryButtonLabel: {
+    color: appTheme.colors.listMarker,
+    fontSize: 14,
     fontWeight: '700',
   },
 });

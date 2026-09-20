@@ -117,7 +117,10 @@ export const AddScreen = ({
   if (libraryController.search.selection.isReviewReady) {
     return (
       <View style={styles.screen}>
-        <DriveImportReviewScreen controller={libraryController} />
+        <DriveImportReviewScreen
+          authorization={authorization}
+          controller={libraryController}
+        />
       </View>
     );
   }
