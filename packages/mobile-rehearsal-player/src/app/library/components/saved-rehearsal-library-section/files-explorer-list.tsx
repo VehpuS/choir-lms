@@ -9,6 +9,7 @@ import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { RowPreparingIndicator } from '../../../components/row-preparing-indicator';
 import { appTheme } from '../../../utils/theme';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
+import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import { ExplorerListRow, ExplorerListSurface } from '../explorer';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
@@ -36,6 +37,7 @@ export const FilesExplorerList = (options: {
   ) => OptionsMenuAction[];
   openMenuRowKey: string | null;
   rows: NonNullable<UseLibraryFilesResult['explorer']>['rows'];
+  searchQuery: string | null;
   setOpenMenuRowKey: (rowKey: string | null) => void;
   viewModel: SavedRehearsalLibraryFilesViewModel;
 }) => {
@@ -116,9 +118,12 @@ export const FilesExplorerList = (options: {
                 ) : null
               }
               title={
-                <Text numberOfLines={1} style={styles.rowTitle}>
-                  {viewModelRow.label}
-                </Text>
+                <SearchHighlightedText
+                  numberOfLines={1}
+                  query={options.searchQuery}
+                  style={styles.rowTitle}
+                  text={viewModelRow.label}
+                />
               }
             />
             <OptionsMenuSheet

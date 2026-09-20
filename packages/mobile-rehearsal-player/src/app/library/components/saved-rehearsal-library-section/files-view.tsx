@@ -196,6 +196,7 @@ export const SavedRehearsalLibraryFilesView = ({
         createMenuActions={rowActionFlows.createMenuActions}
         openMenuRowKey={openMenuRowKey}
         rows={explorer.rows}
+        searchQuery={searchState.activeSearchQuery}
         setOpenMenuRowKey={setOpenMenuRowKey}
         viewModel={viewModel}
       />
