@@ -1,4 +1,4 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../utils/theme';
 import type { DriveImportControllerState } from '../../library/saved-rehearsal-library/use-drive-import-controller';
@@ -24,17 +24,8 @@ export const SummaryCountsSection = ({
         </Text>
       );
     case 'preparing':
-      return (
-        <View style={styles.loadingRow}>
-          <ActivityIndicator
-            accessibilityLabel="Preparing import review"
-            color={appTheme.colors.listMarker}
-          />
-          <Text style={styles.helper}>
-            {getDriveImportReviewSummaryStatusCopy('preparing')}
-          </Text>
-        </View>
-      );
+    case 'executing':
+      return <ImportProgressSection progress={driveImportState.progress} />;
     case 'error':
       return <Text style={styles.errorText}>{driveImportState.message}</Text>;
     case 'review': {
@@ -54,8 +45,6 @@ export const SummaryCountsSection = ({
         </View>
       );
     }
-    case 'executing':
-      return <ImportProgressSection progress={driveImportState.progress} />;
     case 'completed':
       return (
         <ImportCompletionSection
@@ -77,11 +66,6 @@ const styles = StyleSheet.create({
     color: appTheme.colors.secondaryText,
     fontSize: 13,
     lineHeight: 18,
-  },
-  loadingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
   },
   row: {
     flexDirection: 'row',

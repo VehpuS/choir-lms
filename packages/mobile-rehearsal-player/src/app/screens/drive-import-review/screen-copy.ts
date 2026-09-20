@@ -15,13 +15,11 @@ export const getDriveImportReviewModeCopy = () => ({
 });
 
 export const getDriveImportReviewSummaryStatusCopy = (
-  status: 'error' | 'idle' | 'preparing',
+  status: 'error' | 'idle',
 ) => {
   switch (status) {
     case 'idle':
       return 'Choose a Library destination to see the import summary.';
-    case 'preparing':
-      return 'Preparing import review…';
     case 'error':
       return 'The import review could not be prepared.';
   }

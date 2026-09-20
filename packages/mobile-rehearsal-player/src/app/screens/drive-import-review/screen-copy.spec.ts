@@ -45,13 +45,6 @@ describe('getDriveImportReviewSummaryStatusCopy', () => {
     );
   });
 
-  it('shows a preparing message while planning is in progress', () => {
-    assert.equal(
-      getDriveImportReviewSummaryStatusCopy('preparing'),
-      'Preparing import review…',
-    );
-  });
-
   it('reports a failure when the review could not be prepared', () => {
     assert.equal(
       getDriveImportReviewSummaryStatusCopy('error'),
