@@ -36,6 +36,7 @@ type DriveLibraryStatusOptions = {
   authState: DriveAuthorizationState;
   activeSearchQuery: string | null;
   browseSnapshot: DriveBrowseSnapshot;
+  currentBrowseLocation?: DriveBrowseLocation;
   currentSearchLocation?: DriveBrowseLocation;
   googleAuthConfigured: boolean;
   isLoading: boolean;
@@ -58,10 +59,6 @@ const formatAttentionCount = (count: number) => {
   }
 
   return `${count} items need attention`;
-};
-
-const getTotalBrowseSourceCount = (snapshot: DriveBrowseSnapshot) => {
-  return snapshot.playableSources.length + snapshot.unavailableSources.length;
 };
 
 const getSearchResultCountLabel = (snapshot: DriveSearchSnapshot) => {
@@ -130,15 +127,14 @@ export const getDriveLibraryStatusCopy = (
   const browsePlayableCount = options.browseSnapshot.playableSources.length;
   const browseUnavailableCount =
     options.browseSnapshot.unavailableSources.length;
-  const browseTotalSourceCount = getTotalBrowseSourceCount(
-    options.browseSnapshot,
-  );
   const searchUnavailableCount =
     options.searchSnapshot.unavailableSources.length;
   const searchResultCount = options.searchSnapshot.results.length;
   const searchResultCountLabel = getSearchResultCountLabel(
     options.searchSnapshot,
   );
+  const currentBrowseLocation =
+    options.currentBrowseLocation ?? options.browseSnapshot.location;
 
   if (!options.googleAuthConfigured) {
     return {
@@ -232,10 +228,10 @@ export const getDriveLibraryStatusCopy = (
     };
   }
 
-  if (options.isLoading && browseFolderCount + browseTotalSourceCount === 0) {
+  if (options.isLoading) {
     return {
       title: 'Loading Drive browser',
-      message: `Checking folders and audio in ${options.browseSnapshot.location.name}.`,
+      message: `Checking folders and audio in ${currentBrowseLocation.name}.`,
       tone: 'neutral',
     };
   }

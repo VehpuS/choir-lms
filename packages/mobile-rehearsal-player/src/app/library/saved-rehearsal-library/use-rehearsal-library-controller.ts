@@ -70,6 +70,7 @@ export const useRehearsalLibraryController = ({
     authState,
     activeSearchQuery: null,
     browseSnapshot: driveLibrary.browseSnapshot,
+    currentBrowseLocation: driveLibrary.currentLocation,
     googleAuthConfigured,
     isLoading: !isSearchMode && driveLibrary.isLoading,
     issue: isSearchMode ? null : driveLibrary.issue,

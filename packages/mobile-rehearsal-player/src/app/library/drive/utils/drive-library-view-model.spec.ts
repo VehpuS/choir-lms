@@ -45,6 +45,33 @@ describe('getDriveLibraryStatusCopy', () => {
     );
   });
 
+  it('shows loading copy for the newly navigated folder while the prior folder contents are still stale', () => {
+    const copy = getDriveLibraryStatusCopy({
+      authState: AUTHORIZED_STATE,
+      activeSearchQuery: null,
+      browseSnapshot: BROWSE_SNAPSHOT,
+      currentBrowseLocation: {
+        id: 'folder-downloads',
+        kind: 'folder',
+        name: 'Downloads',
+        rootKind: 'my-drive',
+      },
+      googleAuthConfigured: true,
+      isLoading: true,
+      issue: null,
+      searchSnapshot: {
+        query: '',
+        results: [],
+        playableSources: [],
+        unavailableSources: [],
+      },
+    });
+
+    assert.equal(copy.tone, 'neutral');
+    assert.equal(copy.title, 'Loading Drive browser');
+    assert.equal(copy.message, 'Checking folders and audio in Downloads.');
+  });
+
   it('asks the user to reconnect when Drive access has expired', () => {
     const copy = getDriveLibraryStatusCopy({
       authState: {
