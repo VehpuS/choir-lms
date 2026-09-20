@@ -3,14 +3,18 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { appTheme } from '../../utils/theme';
 import type { DriveImportControllerState } from '../../library/saved-rehearsal-library/use-drive-import-controller';
 import { buildDriveImportReviewSummaryRows } from './drive-import-review-model';
+import { ImportCompletionSection } from './import-completion-section';
+import { ImportProgressSection } from './import-progress-section';
 import { getDriveImportReviewSummaryStatusCopy } from './screen-copy';
 
 type SummaryCountsSectionProps = {
   driveImportState: DriveImportControllerState;
+  onRetryFailed: () => void;
 };
 
 export const SummaryCountsSection = ({
   driveImportState,
+  onRetryFailed,
 }: SummaryCountsSectionProps) => {
   switch (driveImportState.status) {
     case 'idle':
@@ -51,8 +55,14 @@ export const SummaryCountsSection = ({
       );
     }
     case 'executing':
+      return <ImportProgressSection progress={driveImportState.progress} />;
     case 'completed':
-      return null;
+      return (
+        <ImportCompletionSection
+          onRetryFailed={onRetryFailed}
+          summary={driveImportState.result.summary}
+        />
+      );
   }
 };
 
