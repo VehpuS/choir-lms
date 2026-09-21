@@ -28,7 +28,7 @@ const createSource = (): DriveLibrarySource => {
 };
 
 describe('showSavedSourceOriginalFolderInAdd', () => {
-  it('opens the resolved current parent folder in Add and switches destinations', async () => {
+  it('opens the resolved current parent folder, not the stale stored one', async () => {
     const movedLocation = {
       parentFolderId: 'folder-soprano',
       parentFolderName: 'Soprano',
@@ -39,13 +39,9 @@ describe('showSavedSourceOriginalFolderInAdd', () => {
       ],
     };
     const openedFolders: DriveFolder[] = [];
-    let didGoToAdd = false;
 
     const result = await showSavedSourceOriginalFolderInAdd({
       accessToken: 'drive-token',
-      goToAdd: () => {
-        didGoToAdd = true;
-      },
       openFolder: (folder) => {
         openedFolders.push(folder);
       },
@@ -60,7 +56,6 @@ describe('showSavedSourceOriginalFolderInAdd', () => {
     });
 
     assert.deepEqual(result, { status: 'opened' });
-    assert.equal(didGoToAdd, true);
     assert.deepEqual(openedFolders, [
       {
         id: 'folder-soprano',
@@ -72,15 +67,11 @@ describe('showSavedSourceOriginalFolderInAdd', () => {
     ]);
   });
 
-  it('keeps the user in place and reports the reason when resolution fails', async () => {
+  it('opens nothing and reports the reason when resolution fails', async () => {
     let openCount = 0;
-    let didGoToAdd = false;
 
     const result = await showSavedSourceOriginalFolderInAdd({
       accessToken: 'drive-token',
-      goToAdd: () => {
-        didGoToAdd = true;
-      },
       openFolder: () => {
         openCount += 1;
       },
@@ -99,6 +90,5 @@ describe('showSavedSourceOriginalFolderInAdd', () => {
       reason: 'no-accessible-parent',
     });
     assert.equal(openCount, 0);
-    assert.equal(didGoToAdd, false);
   });
 });

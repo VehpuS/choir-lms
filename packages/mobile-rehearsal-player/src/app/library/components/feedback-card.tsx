@@ -15,6 +15,11 @@ import {
 
 type FeedbackCardProps = {
   footer?: ReactNode;
+  /**
+   * Optional content rendered before the title, on the same row (e.g. an
+   * activity indicator for an in-progress state).
+   */
+  leading?: ReactNode;
   message: string;
   messageStyle?: StyleProp<TextStyle>;
   size?: 'compact' | 'regular';
@@ -26,6 +31,7 @@ type FeedbackCardProps = {
 
 export const FeedbackCard = ({
   footer,
+  leading,
   message,
   messageStyle,
   size = 'regular',
@@ -50,17 +56,20 @@ export const FeedbackCard = ({
         style,
       ]}
     >
-      <Text
-        style={[
-          isCompact ? styles.compactTitle : styles.regularTitle,
-          {
-            color: palette.title,
-          },
-          titleStyle,
-        ]}
-      >
-        {title}
-      </Text>
+      <View style={styles.titleRow}>
+        {leading}
+        <Text
+          style={[
+            isCompact ? styles.compactTitle : styles.regularTitle,
+            {
+              color: palette.title,
+            },
+            titleStyle,
+          ]}
+        >
+          {title}
+        </Text>
+      </View>
       <Text
         style={[
           isCompact ? styles.compactMessage : styles.regularMessage,
@@ -108,5 +117,10 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: 2,
+  },
+  titleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
   },
 });

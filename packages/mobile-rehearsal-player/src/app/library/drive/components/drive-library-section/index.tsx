@@ -245,7 +245,6 @@ export const DriveLibrarySection = ({
       recentSearchTerms={recentSearchTerms}
       savedLibraryPanel={
         <DriveLibrarySavedLibraryPanel
-          onOpenDriveFolder={openFolder}
           openLoopBuilderForSource={openLoopBuilderForSource}
           playback={{
             activePlayableItem,

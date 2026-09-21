@@ -74,15 +74,25 @@ describe('resolveTrackMenuActions original-location actions', () => {
     assert.ok(showInAddIndex < openInGoogleDriveIndex);
   });
 
-  it('disables both original-location actions while a resolution is pending for that source', () => {
+  it('disables both original-location actions while a resolution is pending for that source, relabeling only the pressed one', () => {
     const { options } = createBaseOptions();
     const actions = resolveTrackMenuActions(
-      { ...options, pendingSourceLocationSourceId: SOURCE_WITH_LOCATION.id },
+      {
+        ...options,
+        pendingSourceLocationAction: {
+          kind: 'show-in-add',
+          sourceId: SOURCE_WITH_LOCATION.id,
+        },
+      },
       createTrackRow(SOURCE_WITH_LOCATION),
     );
 
     assert.equal(
-      actions.find((action) => action.label === 'Show in Add')?.disabled,
+      actions.some((action) => action.label === 'Checking Drive…'),
+      true,
+    );
+    assert.equal(
+      actions.find((action) => action.label === 'Checking Drive…')?.disabled,
       true,
     );
     assert.equal(
@@ -90,12 +100,22 @@ describe('resolveTrackMenuActions original-location actions', () => {
         ?.disabled,
       true,
     );
+    assert.equal(
+      actions.some((action) => action.label === 'Show in Add'),
+      false,
+    );
   });
 
   it('leaves another source’s original-location actions enabled while a different source resolves', () => {
     const { options } = createBaseOptions();
     const actions = resolveTrackMenuActions(
-      { ...options, pendingSourceLocationSourceId: 'drive:some-other-file' },
+      {
+        ...options,
+        pendingSourceLocationAction: {
+          kind: 'show-in-add',
+          sourceId: 'drive:some-other-file',
+        },
+      },
       createTrackRow(SOURCE_WITH_LOCATION),
     );
 

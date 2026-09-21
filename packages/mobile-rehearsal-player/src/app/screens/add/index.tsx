@@ -4,6 +4,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Text,
   View,
 } from 'react-native';
 
@@ -13,6 +14,8 @@ import { useScopedSuccessAcknowledgment } from '../../components/scoped-success-
 import { DestinationHeader } from '../../components/destination-header';
 import { getDestinationHeaderModel } from '../../components/destination-header-model';
 import { resolveHeaderSearchToggleOutcome } from '../../components/header-search-toggle-model';
+import { AsyncActionStatusCard } from '../../library/components/async-action-status-card';
+import { FeedbackCard } from '../../library/components/feedback-card';
 import { DriveDiscoveryPanel } from '../../library/drive/components/drive-discovery-panel';
 import { ADD_SCREEN_DRIVE_PANEL_ORDER } from '../../library/drive/utils/drive-discovery-layout';
 import type { useRehearsalLibraryController } from '../../library/saved-rehearsal-library/use-rehearsal-library-controller';
@@ -113,6 +116,13 @@ export const AddScreen = ({
       />
     );
   });
+  const originalLocation = libraryController.originalLocation;
+  const isLocatingShowInAddFolder =
+    originalLocation.pendingSourceLocationAction?.kind === 'show-in-add';
+  const showInAddIssue =
+    originalLocation.sourceLocationIssue?.kind === 'show-in-add'
+      ? originalLocation.sourceLocationIssue
+      : null;
 
   if (libraryController.search.selection.isReviewReady) {
     return (
@@ -208,7 +218,32 @@ export const AddScreen = ({
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
       >
-        {renderedPanels}
+        {isLocatingShowInAddFolder ? (
+          <AsyncActionStatusCard
+            message="This can take a moment while we check Google Drive for the file's current folder."
+            title="Locating this track's folder"
+          />
+        ) : (
+          <>
+            {showInAddIssue ? (
+              <FeedbackCard
+                footer={
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={originalLocation.clearSourceLocationIssue}
+                    style={styles.dismissAction}
+                  >
+                    <Text style={styles.dismissActionLabel}>Dismiss</Text>
+                  </Pressable>
+                }
+                message={showInAddIssue.message}
+                title={showInAddIssue.title}
+                tone="error"
+              />
+            ) : null}
+            {renderedPanels}
+          </>
+        )}
       </ScrollView>
     </View>
   );
@@ -229,6 +264,14 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingTop: 12,
     paddingBottom: 20,
+  },
+  dismissAction: {
+    alignSelf: 'flex-start',
+  },
+  dismissActionLabel: {
+    color: '#8a2d1f',
+    fontSize: 13,
+    fontWeight: '700',
   },
   headerActionRow: {
     flexDirection: 'row',

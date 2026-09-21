@@ -1,5 +1,7 @@
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
 
+export const CHECKING_DRIVE_LABEL = 'Checking Drive…';
+
 export type FilesDeleteFromFolderCopy = {
   confirmLabel: string;
   message: string;
@@ -31,6 +33,7 @@ export const TRACK_ACTION_ORDER = new Map([
   ['Reconnect', 4],
   ['Show in Add', 5],
   ['Open in Google Drive', 6],
+  [CHECKING_DRIVE_LABEL, 5],
   ['Create a copy', 7],
   ['Edit tags', 8],
   ['Rename', 9],

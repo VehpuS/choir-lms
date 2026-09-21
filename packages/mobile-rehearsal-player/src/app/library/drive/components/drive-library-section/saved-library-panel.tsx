@@ -1,7 +1,5 @@
 import { type ComponentProps } from 'react';
 
-import type { DriveFolder } from '@org/google-drive';
-
 import type { useSavedTrackPlayback } from '../../../playback/hooks/use-saved-track-playback';
 
 import { SavedRehearsalLibrarySection } from '../../../components/saved-rehearsal-library-section';
@@ -35,8 +33,20 @@ type SavedLibrarySectionProps = ComponentProps<
   typeof SavedRehearsalLibrarySection
 >;
 
+// This panel is not currently reachable from any screen (superseded by the
+// split Library/Add screens sharing one useRehearsalLibraryController), so
+// it has no live Drive session to resolve an original-location action
+// against; this inert stub keeps it type-safe without wiring one up.
+const INERT_ORIGINAL_LOCATION_ACTIONS: SavedLibrarySectionProps['originalLocationActions'] =
+  {
+    clearSourceLocationIssue: () => undefined,
+    openSourceInGoogleDrive: () => undefined,
+    pendingSourceLocationAction: null,
+    showSourceInAdd: () => undefined,
+    sourceLocationIssue: null,
+  };
+
 type DriveLibrarySavedLibraryPanelProps = {
-  onOpenDriveFolder: (folder: DriveFolder) => void;
   openLoopBuilderForSource: (source: DriveLibrarySource) => void;
   playback: PlaybackController;
   preparedLoopBuilderTrack: ReturnType<typeof usePreparedLoopBuilderTrack>;
@@ -50,7 +60,6 @@ type DriveLibrarySavedLibraryPanelProps = {
 };
 
 export const DriveLibrarySavedLibraryPanel = ({
-  onOpenDriveFolder,
   openLoopBuilderForSource,
   playback,
   preparedLoopBuilderTrack,
@@ -93,10 +102,9 @@ export const DriveLibrarySavedLibraryPanel = ({
       onBlurLibraryFilesSuccessFeedback={() => undefined}
       onDismissLibraryFilesSuccessFeedback={() => undefined}
       onFocusLibraryFilesSuccessFeedback={() => undefined}
-      onOpenDriveFolder={onOpenDriveFolder}
       onOpenLibraryFilesSuccessFeedbackFolder={() => undefined}
-      onRequestAddDestination={() => undefined}
       onShowLibraryFilesSuccessFeedback={() => undefined}
+      originalLocationActions={INERT_ORIGINAL_LOCATION_ACTIONS}
       pendingLoopBuilderSourceId={preparedLoopBuilderTrack.pendingSourceId}
       pendingLoopId={savedLoopsState.pendingLoopId}
       pendingPlaylistId={savedPlaylistsState.pendingPlaylistId}

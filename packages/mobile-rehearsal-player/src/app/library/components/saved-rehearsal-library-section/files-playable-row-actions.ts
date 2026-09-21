@@ -7,6 +7,7 @@ import { getOriginalDriveLocationViewModel } from '../../saved-rehearsal-library
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
 import { attachRowActionSections } from '../options-menu-sheet/row-action-sections';
 import {
+  CHECKING_DRIVE_LABEL,
   LOOP_ACTION_LABELS,
   LOOP_ACTION_ORDER,
   TRACK_ACTION_LABELS,
@@ -70,8 +71,12 @@ export const resolveTrackMenuActions = (
       });
     });
   const originalLocation = getOriginalDriveLocationViewModel(row.source);
-  const isSourceLocationPending =
-    options.pendingSourceLocationSourceId === row.source.id;
+  const pendingAction = options.pendingSourceLocationAction;
+  const isSourceLocationPending = pendingAction?.sourceId === row.source.id;
+  const isShowInAddPending =
+    isSourceLocationPending && pendingAction?.kind === 'show-in-add';
+  const isOpenInGoogleDrivePending =
+    isSourceLocationPending && pendingAction?.kind === 'open-in-google-drive';
   const actions: OptionsMenuAction[] = [
     ...primaryTrackActions,
     ...(row.source.availability.status !== 'available'
@@ -91,7 +96,7 @@ export const resolveTrackMenuActions = (
           {
             disabled: isSourceLocationPending,
             id: `track:${row.fileLink.id}:show-in-add`,
-            label: 'Show in Add',
+            label: isShowInAddPending ? CHECKING_DRIVE_LABEL : 'Show in Add',
             onPress: () => {
               options.onShowSourceInAdd(row.source.id);
             },
@@ -103,7 +108,9 @@ export const resolveTrackMenuActions = (
           {
             disabled: isSourceLocationPending,
             id: `track:${row.fileLink.id}:open-in-google-drive`,
-            label: 'Open in Google Drive',
+            label: isOpenInGoogleDrivePending
+              ? CHECKING_DRIVE_LABEL
+              : 'Open in Google Drive',
             onPress: () => {
               options.onOpenSourceInGoogleDrive(row.source.id);
             },

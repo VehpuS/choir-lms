@@ -49,6 +49,9 @@ export const AppRouter = () => {
     googleAuthConfigured: authorization.googleAuthConfigured,
     onAuthorizationExpired: authorization.expireAuthorization,
     onAuthorizationRequired: authorization.startAuthorization,
+    onRequestAddDestination: () => {
+      requestDestination('add');
+    },
     playback,
   });
   const playbackActionCopy = playback.activePlayableItem

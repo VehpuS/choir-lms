@@ -104,6 +104,51 @@ describe('resolveSavedSourceCurrentLocation', () => {
     assert.equal(savedSource.current?.id, source.id);
   });
 
+  it('resolves without waiting for a slow persist so the caller can act immediately', async () => {
+    const movedLocation = {
+      parentFolderId: 'folder-soprano',
+      parentFolderName: 'Soprano',
+      rootKind: 'my-drive' as const,
+      path: [{ id: 'folder-soprano', name: 'Soprano' }],
+    };
+    const source = createSource({ sourceLocation: ALTO_LOCATION });
+    let didSaveComplete = false;
+    let releaseSave: (() => void) | undefined;
+    const savePromise = new Promise<void>((resolve) => {
+      releaseSave = resolve;
+    });
+
+    const result = await resolveSavedSourceCurrentLocation({
+      accessToken: 'drive-token',
+      resolveCurrentLocation: async () => {
+        return {
+          status: 'resolved',
+          location: movedLocation,
+        } satisfies DriveCurrentSourceLocationResult;
+      },
+      saveSource: async () => {
+        await savePromise;
+        didSaveComplete = true;
+        return true;
+      },
+      source,
+    });
+
+    assert.deepEqual(result, {
+      status: 'resolved',
+      hasMoved: true,
+      location: movedLocation,
+    });
+    assert.equal(
+      didSaveComplete,
+      false,
+      'resolution should not wait for the background save to finish',
+    );
+
+    releaseSave?.();
+    await savePromise;
+  });
+
   it('treats a legacy source with no stored provenance as moved and persists its first location', async () => {
     const source = createSource();
     const savedSource: { current: DriveLibrarySource | null } = {

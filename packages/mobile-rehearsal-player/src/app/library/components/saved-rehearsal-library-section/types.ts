@@ -3,7 +3,6 @@ import {
   type PlayableItem,
   type Playlist,
 } from '@org/audio-library-models';
-import type { DriveFolder } from '@org/google-drive';
 
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import type {
@@ -25,6 +24,7 @@ import type {
 } from '../../playlists/utils/saved-playlist-view-model';
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
+import type { useRehearsalLibraryController } from '../../saved-rehearsal-library/use-rehearsal-library-controller';
 import type { SavedRehearsalLibraryIssue } from '../../saved-rehearsal-library/use-saved-rehearsal-library';
 import type { TagDetailHeaderSearchActions } from '../../tags/hooks/use-tag-detail-header-search-actions';
 import type { LibraryFilesSuccessFeedback } from './library-files-success-feedback';
@@ -49,9 +49,10 @@ export type SavedRehearsalLibrarySectionProps = {
   isPlaylistsLoading: boolean;
   isSavedLibraryLoading: boolean;
   isSavedLoopsLoading: boolean;
-  onOpenDriveFolder: (folder: DriveFolder) => void;
-  onRequestAddDestination: () => void;
   openLoopBuilderForSource: (source: DriveLibrarySource) => void;
+  originalLocationActions: ReturnType<
+    typeof useRehearsalLibraryController
+  >['originalLocation'];
   pendingLoopBuilderSourceId: string | null;
   pendingLoopId: string | null;
   pendingPlaylistId: string | null;

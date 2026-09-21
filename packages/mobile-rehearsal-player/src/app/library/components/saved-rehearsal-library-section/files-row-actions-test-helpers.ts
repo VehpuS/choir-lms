@@ -85,7 +85,10 @@ export const createBaseOptions = () => {
       isPlaylistMutating: false,
       isSavedLibraryMutating: false,
       pendingLoopBuilderSourceId: null as string | null,
-      pendingSourceLocationSourceId: null as string | null,
+      pendingSourceLocationAction: null as {
+        kind: 'open-in-google-drive' | 'show-in-add';
+        sourceId: string;
+      } | null,
       onCreateFileLinkCopy(row: LibraryFilesRow) {
         calls.copies.push(row.kind);
       },

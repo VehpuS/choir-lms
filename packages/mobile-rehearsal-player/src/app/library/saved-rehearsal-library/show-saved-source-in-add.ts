@@ -16,11 +16,12 @@ export type ShowSavedSourceInAddResult =
 /**
  * Resolves a saved source's current Drive parent folder and opens it in the
  * Add Drive browser, reconstructing the breadcrumb from the resolved path so
- * a moved file never opens its stale saved-time parent.
+ * a moved file never opens its stale saved-time parent. Callers are
+ * responsible for switching to Add themselves (typically before calling
+ * this, so the destination screen can show its own loading state).
  */
 export const showSavedSourceOriginalFolderInAdd = async (options: {
   accessToken: string;
-  goToAdd: () => void;
   openFolder: (folder: DriveFolder) => void;
   resolveCurrentLocation?: Parameters<
     typeof resolveSavedSourceCurrentLocation
@@ -50,7 +51,6 @@ export const showSavedSourceOriginalFolderInAdd = async (options: {
     rootKind: location.rootKind,
     shared: location.rootKind === 'shared',
   });
-  options.goToAdd();
 
   return { status: 'opened' };
 };

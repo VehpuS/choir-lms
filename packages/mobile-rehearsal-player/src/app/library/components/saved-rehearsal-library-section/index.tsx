@@ -36,11 +36,10 @@ export const SavedRehearsalLibrarySection = ({
   onBrowseCreateDockChange,
   onDetailPlaybackChange,
   onDetailSearchActionsChange,
-  onOpenDriveFolder,
   onOpenLibraryFilesSuccessFeedbackFolder,
   onPlaylistSelectionHandlerChange,
-  onRequestAddDestination,
   onShowLibraryFilesSuccessFeedback,
+  originalLocationActions,
   pendingLoopBuilderSourceId,
   pendingLoopId,
   pendingPlaylistId,
@@ -238,9 +237,8 @@ export const SavedRehearsalLibrarySection = ({
           libraryFilesSuccessFeedback={libraryFilesSuccessFeedback}
           loopSection={loopSection}
           loopState={loopState}
-          onOpenDriveFolder={onOpenDriveFolder}
-          onRequestAddDestination={onRequestAddDestination}
           openLoopBuilderForSource={openLoopBuilderForSource}
+          originalLocationActions={originalLocationActions}
           pendingLoopBuilderSourceId={pendingLoopBuilderSourceId}
           pendingSourceId={pendingSourceId}
           playbackIssue={playbackIssue}
@@ -254,7 +252,6 @@ export const SavedRehearsalLibrarySection = ({
           savedLibrarySources={savedLibrarySources}
           savedLoops={savedLoops}
           savedPlaylists={savedPlaylists}
-          saveSource={saveSource}
           selectedTrack={selectedTrack}
           selectedView={selectedView}
           savedSourceTitle={savedSourceTitle}

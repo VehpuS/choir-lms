@@ -6,6 +6,7 @@ import {
   interactionGuardProps,
 } from '../../../components/interaction-guard';
 import { getLibraryFilesRowNodeKey } from '../../saved-rehearsal-library/library-files-model';
+import { AsyncActionStatusCard } from '../async-action-status-card';
 import { ExplorerBreadcrumbBar, ExplorerNavigationBar } from '../explorer';
 import { FeedbackCard } from '../feedback-card';
 import { FilesExplorerList } from './files-explorer-list';
@@ -32,7 +33,6 @@ export const SavedRehearsalLibraryFilesView = ({
   pendingLoopBuilderSourceId,
   onOpenLoopBuilderForSource,
   onOpenLoopPlaylistSelector,
-  onOpenDriveFolder,
   onOpenFolderTagEditor,
   onOpenPlaylistAddItems,
   onOpenPlaylist,
@@ -45,13 +45,12 @@ export const SavedRehearsalLibraryFilesView = ({
   onOpenSourceTagEditor,
   onOpenLoopTagEditor,
   onOpenSuccessFeedbackFolder,
-  onRequestAddDestination,
   onShowSuccessFeedback,
   onQueuePlayableItemNext,
   onQueuePlayableItemUpNext,
   onRemoveSource,
+  originalLocationActions,
   playlistAddMode,
-  saveSource,
   searchState,
   successFeedback,
   onTogglePlayableItemPlayback,
@@ -82,7 +81,6 @@ export const SavedRehearsalLibraryFilesView = ({
     pendingLoopBuilderSourceId,
     onOpenLoopBuilderForSource,
     onOpenLoopPlaylistSelector,
-    onOpenDriveFolder,
     onOpenLoopTagEditor,
     onOpenFolderTagEditor,
     onOpenPlaylistAddItems,
@@ -92,9 +90,8 @@ export const SavedRehearsalLibraryFilesView = ({
     onQueuePlayableItemNext,
     onQueuePlayableItemUpNext,
     onRemoveSource,
-    onRequestAddDestination,
-    onSaveSource: saveSource,
     onShowSuccessFeedback,
+    originalLocationActions,
   });
 
   useEffect(() => {
@@ -157,6 +154,33 @@ export const SavedRehearsalLibraryFilesView = ({
           tone="error"
         />
       ) : null}
+      {originalLocationActions.pendingSourceLocationAction?.kind ===
+      'open-in-google-drive' ? (
+        <AsyncActionStatusCard
+          message="Confirming this track's current Google Drive folder before continuing…"
+          size="compact"
+          title="Checking Google Drive"
+        />
+      ) : null}
+      {originalLocationActions.sourceLocationIssue?.kind ===
+      'open-in-google-drive' ? (
+        <FeedbackCard
+          footer={
+            <Pressable
+              accessibilityRole="button"
+              {...interactionGuardProps}
+              onPress={originalLocationActions.clearSourceLocationIssue}
+              style={buttonInteractionGuardStyle}
+            >
+              <Text style={styles.dismissActionLabel}>Dismiss</Text>
+            </Pressable>
+          }
+          message={originalLocationActions.sourceLocationIssue.message}
+          size="compact"
+          title={originalLocationActions.sourceLocationIssue.title}
+          tone="error"
+        />
+      ) : null}
       <ExplorerNavigationBar
         canGoBack={viewModel.canGoBack}
         eyebrow="Current folder"
@@ -200,12 +224,10 @@ export const SavedRehearsalLibraryFilesView = ({
       ) : null}
       <FilesExplorerList
         createMenuActions={rowActionFlows.createMenuActions}
-        onClearSourceLocationIssue={rowActionFlows.clearSourceLocationIssue}
         openMenuRowKey={openMenuRowKey}
         rows={explorer.rows}
         searchQuery={searchState.activeSearchQuery}
         setOpenMenuRowKey={setOpenMenuRowKey}
-        sourceLocationIssue={rowActionFlows.sourceLocationIssue}
         viewModel={viewModel}
       />
       {successFeedback ? (
@@ -226,6 +248,12 @@ export const SavedRehearsalLibraryFilesView = ({
 };
 
 const styles = StyleSheet.create({
+  dismissActionLabel: {
+    alignSelf: 'flex-start',
+    color: '#8a2d1f',
+    fontSize: 13,
+    fontWeight: '700',
+  },
   playlistAddModeActions: {
     flexDirection: 'row',
     flexWrap: 'wrap',

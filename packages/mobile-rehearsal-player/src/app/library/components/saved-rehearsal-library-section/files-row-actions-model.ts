@@ -1,6 +1,7 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
+import type { PendingSourceLocationAction } from '../../saved-rehearsal-library/use-saved-source-original-location-actions';
 
 export type FileLinkLibraryFilesRow = Extract<
   LibraryFilesRow,
@@ -37,5 +38,5 @@ export type ResolveFilesRowMenuActionsBaseOptions = {
   onRenameFileNode: (row: LibraryFilesRow) => void;
   onRemoveLibrarySource: (sourceId: string) => void;
   onShowSourceInAdd: (sourceId: string) => void;
-  pendingSourceLocationSourceId: string | null;
+  pendingSourceLocationAction: PendingSourceLocationAction | null;
 };

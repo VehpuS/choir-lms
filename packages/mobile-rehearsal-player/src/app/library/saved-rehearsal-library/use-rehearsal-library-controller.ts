@@ -1,5 +1,6 @@
 import type { DriveAuthorizationState } from '@org/google-drive';
 import { useMemo } from 'react';
+import { Linking } from 'react-native';
 
 import { useDriveLibrary } from '../drive/hooks/use-drive-library';
 import {
@@ -18,6 +19,7 @@ import { useDriveImportController } from './use-drive-import-controller';
 import { useLibraryFiles } from './use-library-files';
 import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
 import { useSavedRehearsalLibraryRemovalActions } from './use-saved-rehearsal-library-removal-actions';
+import { useSavedSourceOriginalLocationActions } from './use-saved-source-original-location-actions';
 import {
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
@@ -38,6 +40,7 @@ type RehearsalLibraryScreenControllerOptions = {
   googleAuthConfigured: boolean;
   onAuthorizationExpired?: () => void;
   onAuthorizationRequired?: () => Promise<void> | void;
+  onRequestAddDestination: () => void;
   playback: SavedTrackPlaybackController;
 };
 
@@ -46,6 +49,7 @@ export const useRehearsalLibraryController = ({
   googleAuthConfigured,
   onAuthorizationExpired,
   onAuthorizationRequired,
+  onRequestAddDestination,
   playback,
 }: RehearsalLibraryScreenControllerOptions) => {
   const driveLibrary = useDriveLibrary(
@@ -54,6 +58,15 @@ export const useRehearsalLibraryController = ({
     onAuthorizationRequired,
   );
   const savedLibrary = useSavedRehearsalLibrary();
+  const originalLocationActions = useSavedSourceOriginalLocationActions({
+    accessToken:
+      authState.status === 'authorized' ? authState.accessToken : undefined,
+    canOpenUrl: (url) => Linking.canOpenURL(url),
+    onOpenDriveFolder: driveLibrary.openFolder,
+    onRequestAddDestination,
+    onSaveSource: savedLibrary.saveSource,
+    openUrl: (url) => Linking.openURL(url),
+  });
   const savedLoops = useSavedLoops();
   const playlists = useSavedPlaylists();
   const savedLibraryRemovalActions = useSavedRehearsalLibraryRemovalActions({
@@ -242,6 +255,15 @@ export const useRehearsalLibraryController = ({
         source,
         'save',
       );
+    },
+    originalLocation: {
+      clearSourceLocationIssue:
+        originalLocationActions.clearSourceLocationIssue,
+      openSourceInGoogleDrive: originalLocationActions.openSourceInGoogleDrive,
+      pendingSourceLocationAction:
+        originalLocationActions.pendingSourceLocationAction,
+      showSourceInAdd: originalLocationActions.showSourceInAdd,
+      sourceLocationIssue: originalLocationActions.sourceLocationIssue,
     },
     savedLibrary: {
       canMutateLibrary: savedLibrary.canMutateLibrary,
