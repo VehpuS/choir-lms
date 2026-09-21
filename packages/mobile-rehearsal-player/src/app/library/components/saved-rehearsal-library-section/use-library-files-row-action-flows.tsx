@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { Linking } from 'react-native';
 
 import type {
   PlayableItem,
   RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
+import type { DriveFolder } from '@org/google-drive';
 
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
@@ -14,6 +16,7 @@ import { FeedbackCard } from '../feedback-card';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import { resolveFilesRowMenuActions } from './files-row-actions';
 import type { FileLinkLibraryFilesRow } from './files-row-actions-model';
+import { useSavedSourceOriginalLocationActions } from './use-saved-source-original-location-actions';
 import {
   formatTrackRemoveFromLibraryImpactMessage,
   getTrackRemoveFromLibraryAffectedSections,
@@ -83,12 +86,15 @@ type UseLibraryFilesRowActionFlowsOptions = {
   pendingLoopBuilderSourceId: string | null;
   onOpenLoopBuilderForSource: (source: DriveLibrarySource) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
+  onOpenDriveFolder: (folder: DriveFolder) => void;
   onOpenFolderTagEditor: (folder: RehearsalLibraryFolderNode) => void;
   onOpenPlaylistAddItems: (playlistId: string) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   onOpenSourcePlaylistSelector: (sourceId: string) => void;
   onOpenSourceTagEditor: (source: DriveLibrarySource) => void;
   onOpenLoopTagEditor: (loopId: string) => void;
+  onRequestAddDestination: () => void;
+  onSaveSource: (source: DriveLibrarySource) => Promise<boolean>;
   onShowSuccessFeedback?: (feedback: LibraryFilesSuccessFeedback) => void;
   onQueuePlayableItemNext: (playableItem: PlayableItem) => void;
   onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;
@@ -109,12 +115,15 @@ export const useLibraryFilesRowActionFlows = ({
   pendingLoopBuilderSourceId,
   onOpenLoopBuilderForSource,
   onOpenLoopPlaylistSelector,
+  onOpenDriveFolder,
   onOpenFolderTagEditor,
   onOpenPlaylistAddItems,
   onOpenPlaylistTagEditor,
   onOpenSourcePlaylistSelector,
   onOpenSourceTagEditor,
   onOpenLoopTagEditor,
+  onRequestAddDestination,
+  onSaveSource,
   onShowSuccessFeedback,
   onQueuePlayableItemNext,
   onQueuePlayableItemUpNext,
@@ -135,6 +144,14 @@ export const useLibraryFilesRowActionFlows = ({
   const [renameIssue, setRenameIssue] = useState<LibraryFilesIssue | null>(
     null,
   );
+  const originalLocationActions = useSavedSourceOriginalLocationActions({
+    authorization,
+    canOpenUrl: (url) => Linking.canOpenURL(url),
+    onOpenDriveFolder,
+    onRequestAddDestination,
+    onSaveSource,
+    openUrl: (url) => Linking.openURL(url),
+  });
   const confirmationFlow = useLibraryFilesConfirmationFlow();
   const getFolderName = (folderId: string) => {
     return files.destinationFolders.find((destination) => {
@@ -345,6 +362,11 @@ export const useLibraryFilesRowActionFlows = ({
         onOpenLoopTagEditor,
         onOpenPlaylistAddItems,
         onOpenPlaylistTagEditor,
+        onOpenSourceInGoogleDrive(sourceId) {
+          if (row.kind === 'track' && row.source.id === sourceId) {
+            originalLocationActions.openSourceInGoogleDrive(row.source);
+          }
+        },
         onOpenSourcePlaylistSelector,
         onOpenSourceTagEditor(sourceId) {
           if (row.kind === 'track' && row.source.id === sourceId) {
@@ -381,6 +403,13 @@ export const useLibraryFilesRowActionFlows = ({
             },
           });
         },
+        onShowSourceInAdd(sourceId) {
+          if (row.kind === 'track' && row.source.id === sourceId) {
+            originalLocationActions.showSourceInAdd(row.source);
+          }
+        },
+        pendingSourceLocationSourceId:
+          originalLocationActions.pendingSourceLocationSourceId,
         row,
       });
     },
@@ -436,5 +465,7 @@ export const useLibraryFilesRowActionFlows = ({
         {confirmationFlow.confirmationDialog}
       </>
     ),
+    clearSourceLocationIssue: originalLocationActions.clearSourceLocationIssue,
+    sourceLocationIssue: originalLocationActions.sourceLocationIssue,
   };
 };

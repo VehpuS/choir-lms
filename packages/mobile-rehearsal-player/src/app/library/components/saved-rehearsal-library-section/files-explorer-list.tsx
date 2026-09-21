@@ -8,13 +8,16 @@ import {
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { RowPreparingIndicator } from '../../../components/row-preparing-indicator';
 import { appTheme } from '../../../utils/theme';
+import { getOriginalDriveLocationViewModel } from '../../saved-rehearsal-library/original-drive-location-view-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import { ExplorerListRow, ExplorerListSurface } from '../explorer';
+import { FeedbackCard } from '../feedback-card';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
 import { resolveFilesRowMenuTitle } from './files-row-actions';
 import type { SavedRehearsalLibraryFilesViewModel } from './files-view-model';
+import type { SourceLocationIssue } from './use-saved-source-original-location-actions';
 
 const getRowIconName = (
   row: NonNullable<UseLibraryFilesResult['explorer']>['rows'][number],
@@ -35,10 +38,12 @@ export const FilesExplorerList = (options: {
   createMenuActions: (
     row: NonNullable<UseLibraryFilesResult['explorer']>['rows'][number],
   ) => OptionsMenuAction[];
+  onClearSourceLocationIssue: () => void;
   openMenuRowKey: string | null;
   rows: NonNullable<UseLibraryFilesResult['explorer']>['rows'];
   searchQuery: string | null;
   setOpenMenuRowKey: (rowKey: string | null) => void;
+  sourceLocationIssue: SourceLocationIssue | null;
   viewModel: SavedRehearsalLibraryFilesViewModel;
 }) => {
   return (
@@ -139,9 +144,35 @@ export const FilesExplorerList = (options: {
               isVisible={isOptionsVisible}
               onClose={() => {
                 options.setOpenMenuRowKey(null);
+                options.onClearSourceLocationIssue();
               }}
               title={resolveFilesRowMenuTitle(row)}
-            />
+            >
+              {row.kind === 'track' ? (
+                <>
+                  {(() => {
+                    const originalLocation = getOriginalDriveLocationViewModel(
+                      row.source,
+                    );
+
+                    return originalLocation.canShowInAdd ||
+                      originalLocation.canOpenInGoogleDrive ? (
+                      <Text style={styles.originalLocationLabel}>
+                        From {originalLocation.pathLabel}
+                      </Text>
+                    ) : null;
+                  })()}
+                  {options.sourceLocationIssue?.sourceId === row.source.id ? (
+                    <FeedbackCard
+                      message={options.sourceLocationIssue.message}
+                      size="compact"
+                      title={options.sourceLocationIssue.title}
+                      tone="error"
+                    />
+                  ) : null}
+                </>
+              ) : null}
+            </OptionsMenuSheet>
           </View>
         );
       })}
@@ -168,6 +199,11 @@ const styles = StyleSheet.create({
   },
   rowActionButtonPressed: {
     backgroundColor: '#eef7f0',
+  },
+  originalLocationLabel: {
+    color: appTheme.colors.secondaryText,
+    fontSize: 12,
+    lineHeight: 16,
   },
   rowMessage: {
     color: '#9a4d2d',

@@ -28,6 +28,8 @@ export const SavedRehearsalLibraryBrowseContent = ({
   isSavedLibraryMutating,
   loopSection,
   loopState,
+  onOpenDriveFolder,
+  onRequestAddDestination,
   openLoopBuilderForSource,
   pendingLoopBuilderSourceId,
   pendingSourceId,
@@ -42,6 +44,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
   savedLibrarySources,
   savedLoops,
   savedPlaylists,
+  saveSource,
   selectedTrack,
   selectedView,
   savedSourceTitle,
@@ -125,6 +128,9 @@ export const SavedRehearsalLibraryBrowseContent = ({
           onOpenLoopPlaylistSelector={
             trackPlaylistMenu.openLoopPlaylistSelector
           }
+          onOpenDriveFolder={onOpenDriveFolder}
+          onRequestAddDestination={onRequestAddDestination}
+          saveSource={saveSource}
           playlistAddMode={
             playlistState.isFilesAddItemsVisible &&
             playlistState.selectedPlaylist !== null

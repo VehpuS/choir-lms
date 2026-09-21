@@ -3,6 +3,7 @@ import { createTrackPlayableItem } from '@org/audio-library-models';
 import { resolveSavedLoopRowActions } from '../../loops/utils/saved-loop-row-actions';
 import { resolveSavedTrackRowActions } from '../../playback/utils/saved-track-row-actions';
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
+import { getOriginalDriveLocationViewModel } from '../../saved-rehearsal-library/original-drive-location-view-model';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
 import { attachRowActionSections } from '../options-menu-sheet/row-action-sections';
 import {
@@ -68,6 +69,9 @@ export const resolveTrackMenuActions = (
         id: `track:${row.fileLink.id}:${action.label}`,
       });
     });
+  const originalLocation = getOriginalDriveLocationViewModel(row.source);
+  const isSourceLocationPending =
+    options.pendingSourceLocationSourceId === row.source.id;
   const actions: OptionsMenuAction[] = [
     ...primaryTrackActions,
     ...(row.source.availability.status !== 'available'
@@ -78,6 +82,30 @@ export const resolveTrackMenuActions = (
             label: 'Reconnect',
             onPress: () => {
               options.onReconnectLibrarySource(row.source.id);
+            },
+          },
+        ]
+      : []),
+    ...(originalLocation.canShowInAdd
+      ? [
+          {
+            disabled: isSourceLocationPending,
+            id: `track:${row.fileLink.id}:show-in-add`,
+            label: 'Show in Add',
+            onPress: () => {
+              options.onShowSourceInAdd(row.source.id);
+            },
+          },
+        ]
+      : []),
+    ...(originalLocation.canOpenInGoogleDrive
+      ? [
+          {
+            disabled: isSourceLocationPending,
+            id: `track:${row.fileLink.id}:open-in-google-drive`,
+            label: 'Open in Google Drive',
+            onPress: () => {
+              options.onOpenSourceInGoogleDrive(row.source.id);
             },
           },
         ]

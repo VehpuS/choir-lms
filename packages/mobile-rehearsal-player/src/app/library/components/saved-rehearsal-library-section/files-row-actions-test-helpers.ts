@@ -60,11 +60,13 @@ export const createBaseOptions = () => {
     loopTags: [] as string[],
     moves: [] as string[],
     next: [] as string[],
+    openInGoogleDrive: [] as string[],
     playlistAdds: [] as string[],
     playlistTags: [] as string[],
     reconnects: [] as string[],
     renames: [] as string[],
     removals: [] as string[],
+    showInAdd: [] as string[],
     sourcePlaylists: [] as string[],
     sourceTags: [] as string[],
     upNext: [] as string[],
@@ -83,6 +85,7 @@ export const createBaseOptions = () => {
       isPlaylistMutating: false,
       isSavedLibraryMutating: false,
       pendingLoopBuilderSourceId: null as string | null,
+      pendingSourceLocationSourceId: null as string | null,
       onCreateFileLinkCopy(row: LibraryFilesRow) {
         calls.copies.push(row.kind);
       },
@@ -106,6 +109,9 @@ export const createBaseOptions = () => {
       },
       onOpenLoopTagEditor(loopId: string) {
         calls.loopTags.push(loopId);
+      },
+      onOpenSourceInGoogleDrive(sourceId: string) {
+        calls.openInGoogleDrive.push(sourceId);
       },
       onOpenPlaylistAddItems(playlistId: string) {
         calls.playlistAdds.push(playlistId);
@@ -133,6 +139,9 @@ export const createBaseOptions = () => {
       },
       onRemoveLibrarySource(sourceId: string) {
         calls.removals.push(sourceId);
+      },
+      onShowSourceInAdd(sourceId: string) {
+        calls.showInAdd.push(sourceId);
       },
     },
   };

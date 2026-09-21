@@ -25,6 +25,7 @@ export type ResolveFilesRowMenuActionsBaseOptions = {
   onOpenFolderTagEditor: (folderId: string) => void;
   onOpenLoopBuilder: (sourceId: string) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
+  onOpenSourceInGoogleDrive: (sourceId: string) => void;
   onOpenSourcePlaylistSelector: (sourceId: string) => void;
   onOpenSourceTagEditor: (sourceId: string) => void;
   onOpenLoopTagEditor: (loopId: string) => void;
@@ -35,4 +36,6 @@ export type ResolveFilesRowMenuActionsBaseOptions = {
   onReconnectLibrarySource: (sourceId: string) => void;
   onRenameFileNode: (row: LibraryFilesRow) => void;
   onRemoveLibrarySource: (sourceId: string) => void;
+  onShowSourceInAdd: (sourceId: string) => void;
+  pendingSourceLocationSourceId: string | null;
 };

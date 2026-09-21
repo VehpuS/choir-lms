@@ -3,6 +3,7 @@ import {
   type PlayableItem,
   type Playlist,
 } from '@org/audio-library-models';
+import type { DriveFolder } from '@org/google-drive';
 
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import type {
@@ -48,6 +49,8 @@ export type SavedRehearsalLibrarySectionProps = {
   isPlaylistsLoading: boolean;
   isSavedLibraryLoading: boolean;
   isSavedLoopsLoading: boolean;
+  onOpenDriveFolder: (folder: DriveFolder) => void;
+  onRequestAddDestination: () => void;
   openLoopBuilderForSource: (source: DriveLibrarySource) => void;
   pendingLoopBuilderSourceId: string | null;
   pendingLoopId: string | null;

@@ -29,12 +29,14 @@ export const TRACK_ACTION_ORDER = new Map([
   ['View track loops', 2],
   ['Add to playlist', 3],
   ['Reconnect', 4],
-  ['Create a copy', 5],
-  ['Edit tags', 6],
-  ['Rename', 7],
-  ['Move to folder', 8],
-  ['Delete from folder', 9],
-  ['Remove from library', 10],
+  ['Show in Add', 5],
+  ['Open in Google Drive', 6],
+  ['Create a copy', 7],
+  ['Edit tags', 8],
+  ['Rename', 9],
+  ['Move to folder', 10],
+  ['Delete from folder', 11],
+  ['Remove from library', 12],
 ]);
 
 export const LOOP_ACTION_LABELS = new Set([

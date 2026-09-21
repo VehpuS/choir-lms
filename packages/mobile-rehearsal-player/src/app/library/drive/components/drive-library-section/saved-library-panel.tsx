@@ -1,4 +1,7 @@
 import { type ComponentProps } from 'react';
+
+import type { DriveFolder } from '@org/google-drive';
+
 import type { useSavedTrackPlayback } from '../../../playback/hooks/use-saved-track-playback';
 
 import { SavedRehearsalLibrarySection } from '../../../components/saved-rehearsal-library-section';
@@ -33,6 +36,7 @@ type SavedLibrarySectionProps = ComponentProps<
 >;
 
 type DriveLibrarySavedLibraryPanelProps = {
+  onOpenDriveFolder: (folder: DriveFolder) => void;
   openLoopBuilderForSource: (source: DriveLibrarySource) => void;
   playback: PlaybackController;
   preparedLoopBuilderTrack: ReturnType<typeof usePreparedLoopBuilderTrack>;
@@ -46,6 +50,7 @@ type DriveLibrarySavedLibraryPanelProps = {
 };
 
 export const DriveLibrarySavedLibraryPanel = ({
+  onOpenDriveFolder,
   openLoopBuilderForSource,
   playback,
   preparedLoopBuilderTrack,
@@ -88,7 +93,9 @@ export const DriveLibrarySavedLibraryPanel = ({
       onBlurLibraryFilesSuccessFeedback={() => undefined}
       onDismissLibraryFilesSuccessFeedback={() => undefined}
       onFocusLibraryFilesSuccessFeedback={() => undefined}
+      onOpenDriveFolder={onOpenDriveFolder}
       onOpenLibraryFilesSuccessFeedbackFolder={() => undefined}
+      onRequestAddDestination={() => undefined}
       onShowLibraryFilesSuccessFeedback={() => undefined}
       pendingLoopBuilderSourceId={preparedLoopBuilderTrack.pendingSourceId}
       pendingLoopId={savedLoopsState.pendingLoopId}

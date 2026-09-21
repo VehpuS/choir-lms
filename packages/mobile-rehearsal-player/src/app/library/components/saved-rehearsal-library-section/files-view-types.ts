@@ -2,6 +2,7 @@ import type {
   PlayableItem,
   RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
+import type { DriveFolder } from '@org/google-drive';
 
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
@@ -33,6 +34,7 @@ export type SavedRehearsalLibraryFilesViewProps = {
   pendingLoopBuilderSourceId: string | null;
   onOpenLoopBuilderForSource: (source: DriveLibrarySource) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
+  onOpenDriveFolder: (folder: DriveFolder) => void;
   onOpenFolderTagEditor: (folder: RehearsalLibraryFolderNode) => void;
   onOpenPlaylistAddItems: (playlistId: string) => void;
   onOpenPlaylist: (playlistId: string) => void;
@@ -45,11 +47,13 @@ export type SavedRehearsalLibraryFilesViewProps = {
   onOpenSourceTagEditor: (source: DriveLibrarySource) => void;
   onOpenLoopTagEditor: (loopId: string) => void;
   onOpenSuccessFeedbackFolder: (folderId: string) => void;
+  onRequestAddDestination: () => void;
   onShowSuccessFeedback: (feedback: LibraryFilesSuccessFeedback) => void;
   onQueuePlayableItemNext: (playableItem: PlayableItem) => void;
   onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   onRemoveSource: (source: DriveLibrarySource) => void;
   playlistAddMode?: FilesPlaylistAddMode;
+  saveSource: (source: DriveLibrarySource) => Promise<boolean>;
   searchState: {
     activeSearchQuery: string | null;
     entityFilter: LibrarySearchEntityFilter;

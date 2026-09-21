@@ -32,6 +32,7 @@ export const SavedRehearsalLibraryFilesView = ({
   pendingLoopBuilderSourceId,
   onOpenLoopBuilderForSource,
   onOpenLoopPlaylistSelector,
+  onOpenDriveFolder,
   onOpenFolderTagEditor,
   onOpenPlaylistAddItems,
   onOpenPlaylist,
@@ -44,11 +45,13 @@ export const SavedRehearsalLibraryFilesView = ({
   onOpenSourceTagEditor,
   onOpenLoopTagEditor,
   onOpenSuccessFeedbackFolder,
+  onRequestAddDestination,
   onShowSuccessFeedback,
   onQueuePlayableItemNext,
   onQueuePlayableItemUpNext,
   onRemoveSource,
   playlistAddMode,
+  saveSource,
   searchState,
   successFeedback,
   onTogglePlayableItemPlayback,
@@ -79,6 +82,7 @@ export const SavedRehearsalLibraryFilesView = ({
     pendingLoopBuilderSourceId,
     onOpenLoopBuilderForSource,
     onOpenLoopPlaylistSelector,
+    onOpenDriveFolder,
     onOpenLoopTagEditor,
     onOpenFolderTagEditor,
     onOpenPlaylistAddItems,
@@ -88,6 +92,8 @@ export const SavedRehearsalLibraryFilesView = ({
     onQueuePlayableItemNext,
     onQueuePlayableItemUpNext,
     onRemoveSource,
+    onRequestAddDestination,
+    onSaveSource: saveSource,
     onShowSuccessFeedback,
   });
 
@@ -194,10 +200,12 @@ export const SavedRehearsalLibraryFilesView = ({
       ) : null}
       <FilesExplorerList
         createMenuActions={rowActionFlows.createMenuActions}
+        onClearSourceLocationIssue={rowActionFlows.clearSourceLocationIssue}
         openMenuRowKey={openMenuRowKey}
         rows={explorer.rows}
         searchQuery={searchState.activeSearchQuery}
         setOpenMenuRowKey={setOpenMenuRowKey}
+        sourceLocationIssue={rowActionFlows.sourceLocationIssue}
         viewModel={viewModel}
       />
       {successFeedback ? (

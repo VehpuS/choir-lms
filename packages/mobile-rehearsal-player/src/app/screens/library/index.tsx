@@ -174,18 +174,22 @@ export const LibraryScreen = ({
               libraryController.savedLibrary.openLoopBuilderForSource
             }
             onBlurLibraryFilesSuccessFeedback={librarySuccessFeedback.onBlur}
-            onDismissLibraryFilesSuccessFeedback={librarySuccessFeedback.dismiss}
+            onDismissLibraryFilesSuccessFeedback={
+              librarySuccessFeedback.dismiss
+            }
             onFocusLibraryFilesSuccessFeedback={librarySuccessFeedback.onFocus}
             closeTagDetailRequestId={closeTagDetailRequestId}
             onBrowseCreateDockChange={setBrowseCreateDockMode}
             onDetailPlaybackChange={setPlaylistDetailPlayback}
             onDetailSearchActionsChange={setDetailSearchActions}
+            onOpenDriveFolder={libraryController.discovery.openFolder}
             onOpenLibraryFilesSuccessFeedbackFolder={
               openLibraryFilesSuccessFeedbackFolder
             }
             onPlaylistSelectionHandlerChange={(handler) => {
               playlistSelectionHandlerRef.current = handler;
             }}
+            onRequestAddDestination={onRequestAddDestination}
             onShowLibraryFilesSuccessFeedback={librarySuccessFeedback.show}
             pendingLoopBuilderSourceId={
               libraryController.savedLibrary.pendingLoopBuilderSourceId

@@ -59,7 +59,7 @@ const isSupportedFile = (
   );
 };
 
-const resolveAvailabilityReason = (
+export const resolveAvailabilityReason = (
   error: unknown,
 ): SourceAvailabilityReason => {
   if (error instanceof Error) {

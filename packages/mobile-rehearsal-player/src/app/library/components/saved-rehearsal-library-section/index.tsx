@@ -14,6 +14,7 @@ import { useSavedRehearsalLibrarySectionOrchestration } from './use-saved-rehear
 export const SavedRehearsalLibrarySection = ({
   activePlayableItem,
   activePlaylistSession,
+  authorization,
   canMutateLibrary,
   canMutateLoops,
   canMutatePlaylists,
@@ -35,8 +36,10 @@ export const SavedRehearsalLibrarySection = ({
   onBrowseCreateDockChange,
   onDetailPlaybackChange,
   onDetailSearchActionsChange,
+  onOpenDriveFolder,
   onOpenLibraryFilesSuccessFeedbackFolder,
   onPlaylistSelectionHandlerChange,
+  onRequestAddDestination,
   onShowLibraryFilesSuccessFeedback,
   pendingLoopBuilderSourceId,
   pendingLoopId,
@@ -222,6 +225,7 @@ export const SavedRehearsalLibrarySection = ({
       {shouldRenderBrowseContent ? (
         <SavedRehearsalLibraryBrowseContent
           activePlayableItem={activePlayableItem}
+          authorization={authorization}
           canMutateLibrary={canMutateLibrary}
           canMutateLoops={canMutateLoops}
           canMutatePlaylists={canMutatePlaylists}
@@ -234,6 +238,8 @@ export const SavedRehearsalLibrarySection = ({
           libraryFilesSuccessFeedback={libraryFilesSuccessFeedback}
           loopSection={loopSection}
           loopState={loopState}
+          onOpenDriveFolder={onOpenDriveFolder}
+          onRequestAddDestination={onRequestAddDestination}
           openLoopBuilderForSource={openLoopBuilderForSource}
           pendingLoopBuilderSourceId={pendingLoopBuilderSourceId}
           pendingSourceId={pendingSourceId}
@@ -248,6 +254,7 @@ export const SavedRehearsalLibrarySection = ({
           savedLibrarySources={savedLibrarySources}
           savedLoops={savedLoops}
           savedPlaylists={savedPlaylists}
+          saveSource={saveSource}
           selectedTrack={selectedTrack}
           selectedView={selectedView}
           savedSourceTitle={savedSourceTitle}
