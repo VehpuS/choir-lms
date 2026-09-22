@@ -73,8 +73,35 @@ describe('saved rehearsal library view-model', () => {
       visibleSources: [refreshedSource],
     });
 
+    assert.deepEqual(savedSources, [{ ...refreshedSource, tags: ['Soprano'] }]);
+  });
+
+  it('preserves saved Drive provenance when Drive refreshes visible source metadata', () => {
+    const sourceWithProvenance = {
+      ...PLAYABLE_SOURCE,
+      sourceLocation: {
+        parentFolderId: 'folder-downloads',
+        parentFolderName: 'Downloads',
+        rootKind: 'my-drive' as const,
+        path: [{ id: 'folder-downloads', name: 'Downloads' }],
+      },
+    };
+    const refreshedSource = {
+      ...PLAYABLE_SOURCE,
+      modifiedTime: '2026-05-11T10:00:00.000Z',
+    };
+
+    const savedSources = resolveSavedRehearsalLibrarySources({
+      authState: AUTHORIZED_STATE,
+      savedSources: [sourceWithProvenance],
+      visibleSources: [refreshedSource],
+    });
+
     assert.deepEqual(savedSources, [
-      { ...refreshedSource, tags: ['Soprano'] },
+      {
+        ...refreshedSource,
+        sourceLocation: sourceWithProvenance.sourceLocation,
+      },
     ]);
   });
 

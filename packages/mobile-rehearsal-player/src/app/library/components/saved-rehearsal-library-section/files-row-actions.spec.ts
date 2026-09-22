@@ -48,6 +48,8 @@ describe('resolveFilesRowMenuActions', () => {
         'Add to queue',
         'Make loop',
         'Add to playlist',
+        'Show in Add',
+        'Open in Google Drive',
         'Create a copy',
         'Edit tags',
         'Rename',
@@ -65,6 +67,8 @@ describe('resolveFilesRowMenuActions', () => {
         'rehearsal',
         'rehearsal',
         'rehearsal',
+        'organize',
+        'organize',
         'organize',
         'organize',
         'organize',
@@ -301,5 +305,4 @@ describe('resolveFilesRowMenuActions', () => {
 
     assert.deepEqual(calls.folderTags, ['folder-warmups']);
   });
-
 });

@@ -135,9 +135,13 @@ export const resolveSavedRehearsalLibrarySources = (
       return source;
     }
 
-    return source.tags
-      ? { ...visibleSource, tags: source.tags }
-      : visibleSource;
+    return {
+      ...visibleSource,
+      ...(source.tags ? { tags: source.tags } : {}),
+      ...(source.sourceLocation
+        ? { sourceLocation: source.sourceLocation }
+        : {}),
+    };
   });
 };
 

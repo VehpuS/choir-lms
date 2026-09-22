@@ -34,16 +34,17 @@ const createTrackRow = (
 };
 
 describe('resolveTrackMenuActions original-location actions', () => {
-  it('omits Show in Add and Open in Google Drive when the source has no provenance', () => {
+  it('still shows Show in Add and Open in Google Drive when the source has no stored provenance', () => {
     const { options } = createBaseOptions();
     const actions = resolveTrackMenuActions(options, createTrackRow());
 
     assert.equal(
-      actions.some((action) => action.label === 'Show in Add'),
+      actions.find((action) => action.label === 'Show in Add')?.disabled,
       false,
     );
     assert.equal(
-      actions.some((action) => action.label === 'Open in Google Drive'),
+      actions.find((action) => action.label === 'Open in Google Drive')
+        ?.disabled,
       false,
     );
   });

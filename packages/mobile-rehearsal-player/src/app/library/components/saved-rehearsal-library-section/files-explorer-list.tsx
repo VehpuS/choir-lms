@@ -149,8 +149,7 @@ export const FilesExplorerList = (options: {
                       row.source,
                     );
 
-                    return originalLocation.canShowInAdd ||
-                      originalLocation.canOpenInGoogleDrive ? (
+                    return originalLocation.hasKnownPath ? (
                       <Text style={styles.originalLocationLabel}>
                         From {originalLocation.pathLabel}
                       </Text>

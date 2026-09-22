@@ -22,6 +22,7 @@ describe('original Drive location view-model', () => {
       {
         canOpenInGoogleDrive: true,
         canShowInAdd: true,
+        hasKnownPath: true,
         pathLabel: 'My Drive / Spring concert / Alto',
       },
     );
@@ -43,16 +44,18 @@ describe('original Drive location view-model', () => {
       {
         canOpenInGoogleDrive: true,
         canShowInAdd: true,
+        hasKnownPath: true,
         pathLabel: 'Shared with you / Accessible concert folder / Alto',
       },
     );
   });
 
-  it('disables original-location actions for legacy sources without provenance', () => {
+  it('still enables original-location actions for legacy sources without provenance, pending a live lookup', () => {
     assert.deepEqual(getOriginalDriveLocationViewModel({}), {
-      canOpenInGoogleDrive: false,
-      canShowInAdd: false,
-      pathLabel: 'Original Drive location unavailable',
+      canOpenInGoogleDrive: true,
+      canShowInAdd: true,
+      hasKnownPath: false,
+      pathLabel: 'Original Drive location not yet checked',
     });
   });
 });
