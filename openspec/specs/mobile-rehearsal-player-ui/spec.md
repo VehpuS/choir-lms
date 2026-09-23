@@ -283,6 +283,20 @@ Companion mockup states: Screen 3 and Screen 4 show row-level More Options affor
 - **WHEN** a user views rows on Search, Library, playlist detail, or queue surfaces
 - **THEN** the system uses distinct icons for playback, More Options, drag handles, and destructive removal so management actions do not visually masquerade as transport controls
 
+#### Scenario: Repeat and shuffle controls remain visually distinct from each other
+
+- **WHEN** a user views repeat and shuffle controls together on the dedicated playback screen or the queue surface
+- **THEN** the system uses a dedicated repeat glyph for every repeat state (off, one, all) and a dedicated, different crossing-arrows glyph reserved exclusively for shuffle
+- **AND** the inactive or "off" state of the repeat control does not reuse the shuffle glyph, so a user cannot mistake repeat-off for shuffle-on at a glance
+- **AND** each control's active/selected state is conveyed through styling (fill, tint, or outline) on that control's own dedicated glyph, not by borrowing another control's icon shape
+
+#### Scenario: Drag handles use one consistent icon and edge placement across reorderable surfaces
+
+- **WHEN** a user views reorderable rows on playlist detail and on the active queue / Up Next surface
+- **THEN** both surfaces use the same drag-handle icon
+- **AND** both surfaces place the drag handle at the same edge of the row (leading or trailing) relative to the row's other controls
+- **AND** a user who has learned the reorder gesture on one surface recognizes the same affordance on the other without relearning its icon or position
+
 ### Requirement: The queue is visible and controllable without leaving playback
 
 The system SHALL provide an up-next or queue surface that lets the user inspect and manage upcoming playback items while staying close to the active playback modal.

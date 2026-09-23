@@ -122,6 +122,13 @@ The system SHALL support tags for app-owned library entities so users can organi
 - **THEN** the tag match mode remains `Any` for the still-selected tags in the new view
 - **AND** clearing the active library search resets the tag match mode back to its default `All` value, the same way it already clears `selectedTagFilters`
 
+#### Scenario: Saved tag edits persist and are reflected everywhere tags are shown
+
+- **WHEN** a user commits tag edits for a track, loop, or playlist through the tag editor's save action
+- **THEN** the saved tags persist across navigation and app sessions
+- **AND** reopening the tag editor for that same entity shows the saved tags rather than an empty state
+- **AND** the entity's tags are reflected in the Library `Tags` view's usage counts and in the Recents tag-usage-derived module without requiring an app restart
+
 ### Requirement: Library includes an explorer-style Files view for mixed saved entities
 
 The system SHALL provide a unified Files view for app-owned library content that follows standard mobile file-explorer paradigms while preserving focused Tracks, Loops, and Playlists views.
@@ -161,6 +168,12 @@ The system SHALL provide a unified Files view for app-owned library content that
 - **THEN** the Files create control is rendered as a persistent floating circular `+` button instead of a header icon
 - **AND** the control remains visible while the list scrolls
 - **AND** the control stays above the tab bar and mini-player safe area rather than obscuring them
+
+#### Scenario: Files create control does not obscure the current folder's last visible row
+
+- **WHEN** the Files create control's screen position overlaps the vertical space of the current folder's last visible row
+- **THEN** the system keeps that row's trailing more-options trigger fully reachable, either by reserving bottom list padding so no row renders underneath the control or by giving the control a hit region that never intercepts taps intended for row controls
+- **AND** a tap in that region produces the same result regardless of small pixel-level differences in tap position — either it reliably activates the create control, or it reliably activates the row's own control, never an ambiguous mix of the two
 
 #### Scenario: Dedicated entity views remain available inside Library
 
