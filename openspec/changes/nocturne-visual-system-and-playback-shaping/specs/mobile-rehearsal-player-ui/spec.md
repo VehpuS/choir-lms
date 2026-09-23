@@ -41,7 +41,92 @@ Companion mockup states: design screens 1a–1j show every affected surface on t
 - **WHEN** any icon renders
 - **THEN** it comes from the Phosphor icon set, uses the filled weight only where a filled glyph is specified, and keeps the existing icon-semantics distinctness requirements satisfied within that family
 
+#### Scenario: Contrast and touch targets hold on the dark ground
+
+- **WHEN** any text or interactive control renders on the Nocturne ground or a Nocturne surface
+- **THEN** body and meta text meets at least 4.5:1 contrast against its background, only headline-scale type may rely on the 3:1 large-text threshold, and every interactive control keeps a hit area of at least 44 × 44 pt even when its visual mark is smaller
+- **AND** the base accent is not used for body-size text on the dark ground; body-size accent text uses the lighter accent step (`accent-300`)
+
+### Requirement: Surfaces without a companion mockup adopt the Nocturne primitives without behavior change
+
+The system SHALL render every surface that has no companion mockup state in screens 1a–1j by composing the same Nocturne primitives the mocked surfaces use, and SHALL NOT change that surface's behavior, copy, or placement as part of the restyle.
+
+Companion mockup states: none of these surfaces has its own state. Closest references: design screen 1e (Drive rows, save acknowledgment), 1h (pinned two-action footer), and 1j (kickers, segmented controls, chips).
+
+#### Scenario: Primary actions everywhere are accent outlines
+
+- **WHEN** a surface presents a primary action such as `Continue`, `Confirm import`, `Cancel import`, `Dismiss`, `Retry failed`, `Play all`, `Save loop`, or `Update playlist`
+- **THEN** the system renders it as an accent-outlined action and renders its secondary actions as neutral outlines, rather than filling the control with an accent or legacy brand color
+
+#### Scenario: Drive search selection mode is restyled without reducing it
+
+- **WHEN** a user enters selection mode from Drive search results in Add
+- **THEN** each selectable folder and audio row shows its selected or unselected state with a dedicated glyph plus the row's active title treatment rather than color alone, and the selection count, `Select All Matching`, `Cancel`, `Continue`, and `Edit Selection` controls remain present with their existing behavior
+- **AND** folder results and audio results keep their containing Drive path on the row's muted meta line, with matched query text highlighted as in design screen 1j
+
+#### Scenario: Browsing from a folder search result keeps its return action
+
+- **WHEN** a user opens a folder from Drive search results
+- **THEN** the explorer header shows the `Search results` return action as a distinct control from parent-folder back navigation, styled as a secondary header action on the Nocturne tokens
+
+#### Scenario: Drive import review, progress, and completion use the shared primitives
+
+- **WHEN** a user reviews, runs, or finishes a bulk Drive import
+- **THEN** the destination picker, `Preserve structure` / `Flatten` choice, summary counts, phased progress with completed and total work, and completion summary with per-outcome counts and failed-item reasons render with kickers, rows, segmented or chip controls, a pinned action footer, and monospaced numeric counts from the Nocturne token set
+- **AND** progress is shown as an accent line or ring rather than a filled accent block
+
+#### Scenario: Original-location actions and feedback use the shared primitives
+
+- **WHEN** a user opens the options menu for a saved track and chooses `Show in Add` or `Open in Google Drive`
+- **THEN** the menu shows the track's `From <path>` provenance as a muted meta line, shows the `Checking Drive…` pending state and any unresolved-location issue through the shared status-card primitive, and keeps both actions in their existing menu section and order
+
+#### Scenario: Playlist detail play actions match the Tracks view pattern
+
+- **WHEN** a user views playlist detail
+- **THEN** its icon-first ordered-play and shuffle-play actions render as the same paired accent-outline and neutral-outline actions used for `Play all` / `Shuffle` in design screen 1c, inside playlist detail rather than in the shared app bar
+
 ## MODIFIED Requirements
+
+### Requirement: The mini-player uses a waveform-first rehearsal summary
+
+The system SHALL present the mini-player as a horizontal container fixed above the main navigation bar whenever the audio engine has an active track or loop loaded.
+
+Companion mockup states: design screens 1a–1e show the mini-player and tab bar as one band, with the mini waveform, context line, accent-ring play / pause, and accent progress line.
+
+#### Scenario: Waveform replaces square artwork in the mini-player
+
+- **WHEN** the mini-player renders the active item
+- **THEN** the system shows a simplified, non-interactive waveform for the current stem instead of a square artwork thumbnail, truncates the track title with an ellipsis, and shows part or section metadata only when it is available
+
+#### Scenario: The mini-player waveform comes from the same real peaks as the playback surface
+
+- **WHEN** the mini-player renders its waveform
+- **THEN** the shape is downsampled from the same peak data the dedicated playback screen uses for that item, and while peaks are unavailable it renders the same neutral placeholder band rather than a synthetic shape
+
+#### Scenario: The mini-player context line reflects loop and shaping state
+
+- **WHEN** the active item is a loop, or non-default speed or pitch shaping is active
+- **THEN** the mini-player's muted context line shows the loop range and the active speed and pitch values in fixed-width numerals
+
+#### Scenario: Mini-player progress is a line, not a scrubber
+
+- **WHEN** the mini-player is visible during playback
+- **THEN** the system shows playback progress as a thin accent line along the mini-player's edge that stays in sync with the dedicated playback screen's playhead and is not itself interactive
+
+#### Scenario: Overflowing mini-player titles animate only during active playback
+
+- **WHEN** the active title exceeds the available mini-player text width
+- **THEN** the system keeps the title statically truncated unless playback is actively playing, and only then may it use a marquee treatment
+
+#### Scenario: Mini-player body opens the dedicated playback screen
+
+- **WHEN** a user taps anywhere on the mini-player outside the play / pause control
+- **THEN** the system opens the dedicated playback screen with a modal slide-up transition
+
+#### Scenario: Mini-player transport stays local to the compact surface
+
+- **WHEN** a user taps the right-aligned play / pause control in the mini-player
+- **THEN** the system toggles playback without leaving the current route
 
 ### Requirement: The dedicated playback screen prioritizes waveform scrubbing, transport, and rehearsal context
 

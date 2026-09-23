@@ -68,33 +68,33 @@ Companion mockup state: design screen 1i states the session scope directly above
 - **WHEN** any non-default shaping is active and the user returns to the playback surface or the mini-player
 - **THEN** the system shows the active speed and pitch values in the rehearsal context line so a user cannot forget that what they are hearing is shaped
 
-### Requirement: Shaping settings can be committed as a derived track or loop
+### Requirement: Shaping settings can be committed as an adjusted track or loop
 
 The system SHALL let a user turn the current shaping settings into a first-class library entity that references its source and carries its transform, so a rehearsal-tested setting is recoverable in a later session.
 
-Companion mockup states: design screen 1i shows the save actions; screen 1j shows a derived track in search results with its transform in the row.
+Companion mockup states: design screen 1i shows the save actions; screen 1j shows an adjusted track in search results with its transform in the row.
 
-#### Scenario: Shaping can be saved as a derived loop
+#### Scenario: Shaping can be saved as an adjusted loop
 
 - **WHEN** the active item is a loop, or a loop range is set, and the user commits the current shaping settings
-- **THEN** the system creates a saved derived loop that references the source track, keeps the loop range, stores the speed and pitch transform, and offers a smart default name consistent with existing loop naming
+- **THEN** the system creates a saved adjusted loop that references the source track, keeps the loop range, stores the speed and pitch transform, and offers a smart default name consistent with existing loop naming
 
-#### Scenario: Shaping can be saved as a derived track
+#### Scenario: Shaping can be saved as an adjusted track
 
 - **WHEN** the active item is a full track and the user commits the current shaping settings
-- **THEN** the system creates a saved derived track that references the source track and stores the speed and pitch transform
+- **THEN** the system creates a saved adjusted track that references the source track and stores the speed and pitch transform
 
-#### Scenario: Derived entities behave as ordinary library entities
+#### Scenario: Adjusted entities behave as ordinary library entities
 
-- **WHEN** a derived track or loop exists in the library
+- **WHEN** an adjusted track or loop exists in the library
 - **THEN** it can be played, queued, added to playlists, tagged, filtered by tag, sorted, searched, renamed, and removed exactly as a saved track or loop can
 
-#### Scenario: A derived entity's transform and source stay visible
+#### Scenario: An adjusted entity's transform and source stay visible
 
-- **WHEN** a derived entity is shown in any list, result, or queue row
+- **WHEN** an adjusted entity is shown in any list, result, or queue row
 - **THEN** the system shows its speed and pitch transform and identifies its source item, so it is never mistaken for a separate recording
 
-#### Scenario: Derived entities do not require stored audio
+#### Scenario: Adjusted entities do not require stored audio
 
-- **WHEN** a derived entity is created
+- **WHEN** an adjusted entity is created
 - **THEN** the system stores its source reference, range, and transform rather than rendered audio, and applies the transform at playback time

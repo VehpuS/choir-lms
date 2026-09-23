@@ -1,6 +1,6 @@
 ## Context
 
-This change couples a visual-system migration with a new playback capability. They are proposed together because the new capability needed a home in the redesigned playback surface, and because retuning every style block twice would be wasteful. They are separable at the phase boundary: Phase 1–3 (visual system) ship without Phase 4–6 (playback shaping), and the reverse is also true at higher cost.
+This change couples a visual-system migration with a new playback capability. They are proposed together because the new capability needed a home in the redesigned playback surface, and because retuning every style block twice would be wasteful. They are separable at the phase boundary: task groups 1–4 (visual system and waveform) ship without groups 5–6 (playback shaping), and the reverse is also true at higher cost. Throughout this change, "group N" means the numbered section `N.` in `tasks.md`.
 
 ## Decision 1 — Tokens replace `appTheme`, and nothing hard-codes a hex
 
@@ -24,19 +24,21 @@ Filled weights are a separate weight prop in Phosphor, not a name suffix; the tr
 
 Requires a peak-extraction path that works for a Drive-hosted file the app streams rather than owns:
 
-1. **Client-side decode on first play.** Fetch the audio (already streamed), decode to PCM, downsample to a fixed bucket count (e.g. 800 min/max pairs), cache the peak array keyed by source id + file revision in local storage. Web uses `AudioContext.decodeAudioData`; native needs a decode bridge.
+1. **Client-side decode on first play.** Fetch the audio (already streamed), decode to PCM, downsample to a fixed bucket count (e.g. 800 min/max pairs), cache the peak array in `local-library-storage` keyed by `driveFileId` + a Drive content version. `DriveAudioSource` stores `modifiedTime` today but no revision id; the spike (task 4.1) decides whether to add `headRevisionId` / `md5Checksum` to the Drive fields requested in `packages/google-drive` or to key on `modifiedTime`. Provenance refresh on rediscovery (from `improve-drive-search-and-bulk-library-import`) already rewrites Drive-owned metadata, so a changed version naturally misses the cache. Web uses `AudioContext.decodeAudioData`; native needs a decode bridge.
 2. **Progressive peaks from the playback engine.** Cheaper, but yields no waveform for the unplayed portion — which is the part the user scrubs into. Rejected.
 3. **Server-side precompute.** No backend exists in this repo. Out of scope.
 
 Option 1 is the recommendation, with a documented fallback: until peaks are available for an item, render a neutral flat band rather than a fake waveform, so the UI never implies analysis it does not have. The peak cache should be versioned so a changed Drive revision invalidates it.
 
-## Decision 5 — Derived entities store a transform, not rendered audio
+## Decision 5 — Adjusted entities store a transform, not rendered audio
 
-A derived track or loop is `{ id, name, sourceRef, range?, transform: { speedMultiplier, pitchSemitones, tempoSource } }`, persisted alongside saved tracks and loops, and applied by the playback engine at play time.
+An adjusted track or loop is `{ id, name, sourceRef, range?, transform: { speedMultiplier, pitchSemitones, tempoSource } }`, persisted alongside saved tracks and loops, and applied by the playback engine at play time.
 
 - Consistent with the existing by-reference Drive model — no audio is copied, and nothing is stored that the "no offline playback" MVP boundary forbids.
-- A derived loop is a loop with a transform; a derived track is a saved track with a transform. Both reuse existing playable-item plumbing rather than introducing a fourth entity kind, which keeps queue, playlists, tags, and search working with no per-feature changes.
-- Duration shown for a derived entity is the source duration divided by the speed multiplier, computed, not stored.
+- An adjusted loop is a loop with a transform; an adjusted track is a saved track with a transform. Both reuse existing playable-item plumbing rather than introducing a fourth entity kind, which keeps queue, playlists, tags, and search working with no per-feature changes.
+- Duration shown for an adjusted entity is the source duration divided by the speed multiplier, computed, not stored.
+- An adjusted entity has no Drive provenance of its own. Original-location actions (`Show in Add`, `Open in Google Drive`) and availability resolve through `sourceRef`, and the bulk-import planner's canonical-source reuse (keyed on `driveFileId`) only considers saved sources, so an import never reuses, links, or reports an adjusted entity as "already present".
+- Removing a source track cascades to its adjusted entities the same way it cascades to its loops, and the confirmation summary lists them.
 - Alternative considered: render and store transformed audio. Rejected — needs offline storage, a render pipeline, and an audio-license question, and it duplicates material the choir already shares.
 
 ## Decision 6 — Two independent axes, no pitch lock
@@ -46,7 +48,7 @@ A derived track or loop is `{ id, name, sourceRef, range?, transform: { speedMul
 
 Because the two are independent and speed always preserves pitch, a pitch-lock affordance would be a control with one state. It is prohibited by the spec delta so it cannot creep back in as a "standard" transport icon.
 
-Engine implications: this needs time-stretch and pitch-shift independently. Native (SwiftAudioEx / AVAudioEngine) has `AVAudioUnitTimePitch`, which does both. Web needs a Web Audio graph — `playbackRate` alone shifts pitch and is therefore not sufficient on its own; a phase-vocoder or SoundTouch-style node is required. Verify feasibility on both platforms before committing to Phase 4; `docs/mobile-cross-platform-audio-playback.md` must be updated with whatever the playback abstraction gains.
+Engine implications: this needs time-stretch and pitch-shift independently. Native (SwiftAudioEx / AVAudioEngine) has `AVAudioUnitTimePitch`, which does both. Web needs a Web Audio graph — `playbackRate` alone shifts pitch and is therefore not sufficient on its own; a phase-vocoder or SoundTouch-style node is required. Verify feasibility on both platforms at the task 5.0 gate before committing to groups 5–6; `docs/mobile-cross-platform-audio-playback.md` must be updated with whatever the playback abstraction gains.
 
 ## Decision 7 — Tempo source as an extension point
 
@@ -54,6 +56,15 @@ Speed carries `tempoSource: 'multiplier' | 'bpm' | 'score'`. Only `'multiplier'`
 
 ## Risks
 
-- **Playback-engine capability is the gating risk.** If web cannot do pitch-preserving time-stretch at acceptable quality, speed/pitch may have to be native-only, which contradicts the GitHub Pages web build being a real target. Resolve in Phase 4.0 before building UI.
+- **Playback-engine capability is the gating risk.** If web cannot do pitch-preserving time-stretch at acceptable quality, speed/pitch may have to be native-only, which contradicts the GitHub Pages web build being a real target. Resolve at the task 5.0 gate before building UI.
 - **Breadth of the restyle.** Every screen changes. Mitigated by doing tokens first and a shared-primitive pass second, so most screens change by inheritance rather than by hand.
-- **Derived entities multiply library rows.** A singer who saves three speeds of one passage gets three rows. Mitigated by showing the transform in the row's meta line and grouping derived entities under their source in the Files tree; watch for whether this needs a collapse affordance.
+- **Adjusted entities multiply library rows.** A singer who saves three speeds of one passage gets three rows. Mitigated by showing the transform in the row's meta line and grouping adjusted entities under their source in the Files tree; watch for whether this needs a collapse affordance.
+
+## Decision 8 — Surfaces without a mockup inherit primitives, not bespoke styling
+
+Several surfaces shipped after the 1a–1j mockups were drawn: Drive search selection mode (`drive-search-selection-toolbar`, selected-state rows in `drive-explorer-list` / `drive-explorer-folder-row`), the Drive import review screen (`screens/drive-import-review/**`: destination picker, mode picker, summary counts, progress, completion), the original-location actions in the saved-track options menu, `AsyncActionStatusCard`, and the `DestinationHeader` subtitle. Each carries its own inline hexes and filled `listMarker` primary buttons today.
+
+- Restyle them by composing the converted shared primitives — row anatomy, accent-outline primary / neutral-outline secondary actions, `FeedbackCard` / `AsyncActionStatusCard`, `bottom-sheet-surface`, `interaction-chip` — rather than drawing new mockups first. Where a surface needs a pattern the mockups don't show, borrow the closest mockup: selection toolbar and selected rows from 1e rows + 1j chips, import review from 1h's pinned two-action footer and 1j's kicker/segmented controls, import progress from the 2 px accent progress line, completion from the 1e save-acknowledgment card.
+- Extract a shared outlined action button (accent and neutral variants) in task 1.4, since the import review footer, the selection toolbar, Play all / Shuffle, Save loop, and the queue footer all need the same thing, and each currently hand-rolls a filled button.
+- Row selection glyphs map to Phosphor `circle` (unselected) and fill-weight `check-circle` (selected), with the selected state also conveyed through the row's accent title treatment — never by color alone (existing icon-only accessibility scenario).
+- If implementing one of these surfaces turns up a real design question rather than a token swap, stop and ask for a mockup instead of improvising (per the deliberate-execution loop).

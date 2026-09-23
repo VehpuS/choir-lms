@@ -8,20 +8,28 @@ No feature is removed and no destination moves. The three-tab shell (Recents / A
 
 Ten screens are specified, ids `1a`–`1j`:
 
-| id | Screen | Reference image |
-| --- | --- | --- |
-| 1a | Recents | `reference-images/1a-recents.png` |
-| 1b | Library — Files explorer | `reference-images/1b-library-files.png` |
-| 1c | Library — Tracks | `reference-images/1c-library-tracks.png` |
-| 1d | Library — Loops | `reference-images/1d-library-loops.png` |
-| 1e | Add — browse Google Drive | `reference-images/1e-add-from-drive.png` |
-| 1f | Now Playing — collapsed | `reference-images/1f-now-playing-collapsed.png` |
-| 1g | Now Playing — expanded (waveform + loop editor) | `reference-images/1g-now-playing-expanded.png` |
-| 1h | Up Next (queue) | `reference-images/1h-up-next.png` |
-| 1i | Speed & pitch | `reference-images/1i-speed-and-pitch.png` |
-| 1j | Library search, filters and tags | `reference-images/1j-search-and-filters.png` |
+| id  | Screen                                          | Reference image                                 |
+| --- | ----------------------------------------------- | ----------------------------------------------- |
+| 1a  | Recents                                         | `reference-images/1a-recents.png`               |
+| 1b  | Library — Files explorer                        | `reference-images/1b-library-files.png`         |
+| 1c  | Library — Tracks                                | `reference-images/1c-library-tracks.png`        |
+| 1d  | Library — Loops                                 | `reference-images/1d-library-loops.png`         |
+| 1e  | Add — browse Google Drive                       | `reference-images/1e-add-from-drive.png`        |
+| 1f  | Now Playing — collapsed                         | `reference-images/1f-now-playing-collapsed.png` |
+| 1g  | Now Playing — expanded (waveform + loop editor) | `reference-images/1g-now-playing-expanded.png`  |
+| 1h  | Up Next (queue)                                 | `reference-images/1h-up-next.png`               |
+| 1i  | Speed & pitch                                   | `reference-images/1i-speed-and-pitch.png`       |
+| 1j  | Library search, filters and tags                | `reference-images/1j-search-and-filters.png`    |
 
 Reference images are 2× captures of a 402 × 874 pt iPhone viewport (so 804 × 1748 px). Divide every pixel measurement in the images by 2 to get the pt/dp values quoted in this document.
+
+## Updates since handoff (2026-09-23)
+
+The change artifacts (`proposal.md`, `design.md`, `tasks.md`, `specs/`) were revalidated after `improve-drive-search-and-bulk-library-import` and `mobile-rehearsal-ux-audit-fixes` were archived. Where this README and those artifacts disagree, the artifacts win:
+
+- **Terminology:** the mockups' "derived track / loop" is **adjusted track / loop** in the spec and UI copy, because "derived loops" already meant ordinary loops of a track.
+- **Surfaces with no mockup:** Drive search selection mode, the Drive import review / progress / completion screen, and the saved-track `Show in Add` / `Open in Google Drive` actions shipped after these screens were drawn. They are restyled from the existing primitives (design Decision 8, tasks 2.9–2.11), not from new mockups.
+- **Phases** are referred to by task group number (`tasks.md` sections 1–7); the shaping gate is task 5.0.
 
 ## What the task is
 
@@ -36,7 +44,7 @@ The HTML in `design-source/` and the images in `reference-images/` are **design 
 **High-fidelity.** Colors, type sizes, weights, spacing, radii, icon choices and copy are all final and should be matched. The two exceptions, both called out in the draft:
 
 - **Waveforms are stubs.** The bar shapes in the mockups are generated from a sine function. Production must render peaks derived from the real audio; while peaks are unavailable, render a neutral flat band, never a synthetic shape.
-- **Screens 1i and parts of 1f/1g are planned features** (speed, pitch, derived entities). They depend on the Phase 5.0 engine feasibility gate.
+- **Screens 1i and parts of 1f/1g are planned features** (speed, pitch, derived entities). They depend on the task 5.0 engine feasibility gate.
 
 ## Design tokens
 
@@ -44,28 +52,28 @@ Taken from Nocturne. These replace the current `appTheme` in `src/app/utils/them
 
 ### Color
 
-| Role | Value | Used for |
-| --- | --- | --- |
-| Ground | `#161826` | Screen background, sheet surface |
-| Ground (behind sheet) | `#101220` | The dimmed page under a bottom sheet |
-| Surface | `#232532` | Cards, the active loop card, search field fill |
-| Surface (raised alt) | `#1b1e2c` | Mini player + tab bar band |
-| Surface (accent tint) | `#2b2741` | Icon tile behind an active row glyph, tag chips, FAB |
-| Text primary | `#e9e9ed` | Titles, playhead |
-| Text secondary | `#cfd3e5` | Chip labels, body copy |
-| Text muted | `#9397ab` | Meta lines, kickers, inactive tab labels |
-| Text faint | `#75798c` | Row index numbers, disabled tempo sources, chevrons |
-| Icon default | `#b2b6ca` | Icon-button glyphs |
-| Accent | `#9184d9` | Lines, rings, active chips, progress, kickers |
-| Accent light | `#b5abfc` | Active row title, numeric readouts, played-in-loop bars |
-| Accent lighter | `#d2cefd` | Text on the `#2b2741` tag chip |
-| Accent border deep | `#423a6a` | Card edge on accent-tinted cards, search-match highlight fill |
-| Divider (solid) | `#3f424d` | Sheet edge, grabber, unplayed waveform bars |
-| Divider (hairline) | `rgba(233,233,237,.07)` | Row separators |
-| Border (subtle) | `rgba(233,233,237,.10–.16)` | Outlined controls; `.16` for buttons, `.14` for chips, `.12` for tiles |
-| Accent border (soft) | `rgba(145,132,217,.55)` | Inactive per-row play ring |
-| Accent glow | `rgba(145,132,217,.25–.30)` | Ambient glow on transport rings |
-| Highlight (search match) | fill `#423a6a`, text `#f5f4ff` | Matched substring in results |
+| Role                     | Value                          | Used for                                                               |
+| ------------------------ | ------------------------------ | ---------------------------------------------------------------------- |
+| Ground                   | `#161826`                      | Screen background, sheet surface                                       |
+| Ground (behind sheet)    | `#101220`                      | The dimmed page under a bottom sheet                                   |
+| Surface                  | `#232532`                      | Cards, the active loop card, search field fill                         |
+| Surface (raised alt)     | `#1b1e2c`                      | Mini player + tab bar band                                             |
+| Surface (accent tint)    | `#2b2741`                      | Icon tile behind an active row glyph, tag chips, FAB                   |
+| Text primary             | `#e9e9ed`                      | Titles, playhead                                                       |
+| Text secondary           | `#cfd3e5`                      | Chip labels, body copy                                                 |
+| Text muted               | `#9397ab`                      | Meta lines, kickers, inactive tab labels                               |
+| Text faint               | `#75798c`                      | Row index numbers, disabled tempo sources, chevrons                    |
+| Icon default             | `#b2b6ca`                      | Icon-button glyphs                                                     |
+| Accent                   | `#9184d9`                      | Lines, rings, active chips, progress, kickers                          |
+| Accent light             | `#b5abfc`                      | Active row title, numeric readouts, played-in-loop bars                |
+| Accent lighter           | `#d2cefd`                      | Text on the `#2b2741` tag chip                                         |
+| Accent border deep       | `#423a6a`                      | Card edge on accent-tinted cards, search-match highlight fill          |
+| Divider (solid)          | `#3f424d`                      | Sheet edge, grabber, unplayed waveform bars                            |
+| Divider (hairline)       | `rgba(233,233,237,.07)`        | Row separators                                                         |
+| Border (subtle)          | `rgba(233,233,237,.10–.16)`    | Outlined controls; `.16` for buttons, `.14` for chips, `.12` for tiles |
+| Accent border (soft)     | `rgba(145,132,217,.55)`        | Inactive per-row play ring                                             |
+| Accent glow              | `rgba(145,132,217,.25–.30)`    | Ambient glow on transport rings                                        |
+| Highlight (search match) | fill `#423a6a`, text `#f5f4ff` | Matched substring in results                                           |
 
 Rules and dividers **fade to transparent at their ends** over 40 px:
 `linear-gradient(to right, transparent, rgba(233,233,237,.12) 40px, rgba(233,233,237,.12) calc(100% - 40px), transparent)`, height 1 px. Row separators are the plain hairline instead.
@@ -76,20 +84,20 @@ Accent is never used as a flood. The play button is an accent **ring** with a gl
 
 Inter throughout (weights 400 and 500 only — never bolder). Monospace (`ui-monospace` / SF Mono) for every duration, time range, multiplier and semitone value.
 
-| Token | Size / weight / tracking | Used for |
-| --- | --- | --- |
-| Destination title | 28 / 500 / −0.02em / lh 1.1 | "Recents", "Library", "Add" |
-| Now-playing title | 32 / 500 / −0.025em / lh 1.14 | Collapsed player title (wraps to 2 lines) |
-| Sheet title | 20–22 / 500 / −0.015…−0.02em | Expanded player, queue name |
-| Section head | 13 / 500 | "Recent rehearsal", "Popular tags" |
-| Row title | 15 / 500 | Every list row |
-| Row meta | 12 / 400 / `#9397ab` | Second line of every row |
-| Kicker | 10 / 400 / 0.08–0.1em / uppercase | "SORT · 24 SAVED TRACKS", "SPEED", "LOOP EDITOR" |
-| Chip | 12–12.5 (500 when active) | View switcher, sort, filters, tags |
-| Button | 13.5 / 500 | Play all, Save loop, Update playlist |
-| Tab label | 10 / 500 | Recents / Add / Library |
-| Numeric readout | 17–19 mono / `#b5abfc` | `0.90×`, `−2 st` |
-| Timecode | 11–12 mono / `#9397ab` | `1:29`, `−3:09`, `1:12–1:48` |
+| Token             | Size / weight / tracking          | Used for                                         |
+| ----------------- | --------------------------------- | ------------------------------------------------ |
+| Destination title | 28 / 500 / −0.02em / lh 1.1       | "Recents", "Library", "Add"                      |
+| Now-playing title | 32 / 500 / −0.025em / lh 1.14     | Collapsed player title (wraps to 2 lines)        |
+| Sheet title       | 20–22 / 500 / −0.015…−0.02em      | Expanded player, queue name                      |
+| Section head      | 13 / 500                          | "Recent rehearsal", "Popular tags"               |
+| Row title         | 15 / 500                          | Every list row                                   |
+| Row meta          | 12 / 400 / `#9397ab`              | Second line of every row                         |
+| Kicker            | 10 / 400 / 0.08–0.1em / uppercase | "SORT · 24 SAVED TRACKS", "SPEED", "LOOP EDITOR" |
+| Chip              | 12–12.5 (500 when active)         | View switcher, sort, filters, tags               |
+| Button            | 13.5 / 500                        | Play all, Save loop, Update playlist             |
+| Tab label         | 10 / 500                          | Recents / Add / Library                          |
+| Numeric readout   | 17–19 mono / `#b5abfc`            | `0.90×`, `−2 st`                                 |
+| Timecode          | 11–12 mono / `#9397ab`            | `1:29`, `−3:09`, `1:12–1:48`                     |
 
 ### Spacing, radius, elevation
 
@@ -217,6 +225,7 @@ Full screen on `#161826`. Grabber, kicker "LOOP EDITOR", `list` + `caret-down`. 
 Hero waveform: 120 px bars, loop region overlay, A/B badges, playhead. Below it a three-part monospace scale: `0:00` / `1:29` (in `#e9e9ed`) / `4:38`.
 
 Loop editor row, `gap: 10`:
+
 - **Start** — outlined tile, kicker, `1:12.4` at 15 px mono, and two 44 px nudge buttons (`minus`, `plus`, radius 6).
 - **Length** — 86 px fixed tile, `#1d1f30` with `inset 0 0 0 1px #423a6a`, `0:36.0` in `#b5abfc`, and "bars 41–56" at 11 px.
 - **End** — mirrors Start, `1:48.4`.
