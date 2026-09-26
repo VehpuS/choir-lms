@@ -12,6 +12,7 @@ import {
   getCompactPlaybackActionVariantTokens,
   getCompactPlaybackActionVisualState,
 } from './model.js';
+import { appTheme } from '../../utils/theme.js';
 
 describe('CompactPlaybackAction', () => {
   it('returns stable accessibility and visual state for compact playback buttons', () => {
@@ -59,9 +60,12 @@ describe('CompactPlaybackAction', () => {
   });
 
   it('keeps compact playback variants aligned with current row, card, and chip sizes', () => {
-    assert.equal(COMPACT_PLAYBACK_ACTION_BORDER, '#d6d1c4');
-    assert.equal(COMPACT_PLAYBACK_ACTION_BACKGROUND, '#fffdf8');
-    assert.equal(COMPACT_PLAYBACK_ACTION_ICON, '#1f1c17');
+    assert.equal(COMPACT_PLAYBACK_ACTION_BORDER, appTheme.colors.border);
+    assert.equal(
+      COMPACT_PLAYBACK_ACTION_BACKGROUND,
+      appTheme.colors.surfaceBackground,
+    );
+    assert.equal(COMPACT_PLAYBACK_ACTION_ICON, appTheme.colors.primaryText);
     assert.equal(COMPACT_PLAYBACK_ACTION_HIT_SLOP, 4);
 
     assert.deepEqual(getCompactPlaybackActionVariantTokens('inline'), {
