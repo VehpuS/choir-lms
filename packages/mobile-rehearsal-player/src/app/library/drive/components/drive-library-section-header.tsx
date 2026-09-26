@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
 import { SectionHeading } from '../../components/section-heading';
+import { appTheme } from '../../../utils/theme';
 
 type DriveLibrarySectionHeaderProps = {
   body?: string;
@@ -14,9 +15,9 @@ type DriveLibrarySectionHeaderProps = {
   trailingAction?: ReactNode;
 };
 
-const PRIMARY_ACTION_BACKGROUND = '#173229';
-const PRIMARY_ACTION_TEXT = '#fff8ef';
-const PRIMARY_TEXT = '#1f1c17';
+const PRIMARY_ACTION_BACKGROUND = appTheme.colors.surfaceAccent;
+const PRIMARY_ACTION_TEXT = appTheme.colors.text;
+const PRIMARY_TEXT = appTheme.colors.text;
 
 export const DriveLibrarySectionHeader = ({
   body,

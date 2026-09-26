@@ -93,9 +93,7 @@ export const BrowseSourceGroup = ({
   sources,
   toggleSourcePlayback,
 }: BrowseSourceGroupProps) => {
-  const [openMenuSourceId, setOpenMenuSourceId] = useState<string | null>(
-    null,
-  );
+  const [openMenuSourceId, setOpenMenuSourceId] = useState<string | null>(null);
 
   if (sources.length === 0) {
     return null;
@@ -175,9 +173,7 @@ export const BrowseSourceGroup = ({
             }),
             TRACK_ACTION_ORDER,
           ).filter((action) => {
-            return (
-              resolveDriveLibrarySourceActionPlacement(action) === 'menu'
-            );
+            return resolveDriveLibrarySourceActionPlacement(action) === 'menu';
           });
           const sheetActions = attachRowActionSections(
             menuActions.map((action, index) => {
@@ -197,7 +193,7 @@ export const BrowseSourceGroup = ({
                   <MaterialCommunityIcons
                     color={
                       isPlaybackSourceActive
-                        ? '#173229'
+                        ? appTheme.colors.accent
                         : appTheme.colors.secondaryText
                     }
                     name="music-note-outline"
@@ -278,7 +274,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   rowMessage: {
-    color: '#9a4d2d',
+    color: appTheme.colors.danger,
     fontSize: 12,
     lineHeight: 17,
   },

@@ -36,7 +36,7 @@ export const DriveDiscoveryActionButton = ({
       ]}
     >
       <MaterialCommunityIcons
-        color={isFilled ? appTheme.colors.heroBackground : '#fff8ef'}
+        color={isFilled ? appTheme.colors.accentOnTint : appTheme.colors.text}
         name={iconName}
         size={18}
       />
@@ -57,12 +57,12 @@ const styles = StyleSheet.create({
     opacity: 0.56,
   },
   headerActionButtonFilled: {
-    borderColor: '#fff8ef',
-    backgroundColor: '#fff8ef',
+    borderColor: appTheme.colors.accent,
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   headerActionButtonOutline: {
-    borderColor: 'rgba(255, 248, 239, 0.26)',
-    backgroundColor: 'rgba(255, 248, 239, 0.08)',
+    borderColor: appTheme.colors.borderButton,
+    backgroundColor: appTheme.colors.transparent,
   },
   headerActionButtonPressed: {
     opacity: 0.88,

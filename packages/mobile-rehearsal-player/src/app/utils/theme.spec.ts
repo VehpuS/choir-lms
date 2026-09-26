@@ -30,13 +30,43 @@ function getContrastRatio(foreground: string, background: string): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+const RGBA_COLOR_PATTERN = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)$/;
+
+function toHexChannel(value: number): string {
+  return Math.round(value).toString(16).padStart(2, '0');
+}
+
+/** Flattens an `rgba(...)` tint over an opaque `#rrggbb` ground. */
+function compositeOver(tint: string, ground: string): string {
+  const tintMatch = RGBA_COLOR_PATTERN.exec(tint);
+  const groundMatch = HEX_COLOR_PATTERN.exec(ground);
+  assert.ok(tintMatch && groundMatch, `cannot composite ${tint} on ${ground}`);
+
+  const alpha = Number(tintMatch[4]);
+  const channels = [1, 2, 3].map((index) => {
+    const tintChannel = Number(tintMatch[index]);
+    const groundChannel = Number.parseInt(groundMatch[index], 16);
+    return toHexChannel(tintChannel * alpha + groundChannel * (1 - alpha));
+  });
+
+  return `#${channels.join('')}`;
+}
+
 const { colors } = appTheme;
 const BODY_TEXT_TOKENS = {
   accentOnTint: colors.accentOnTint,
   accentText: colors.accentText,
+  danger: colors.danger,
+  success: colors.success,
   text: colors.text,
   textMuted: colors.textMuted,
   textSecondary: colors.textSecondary,
+  warning: colors.warning,
+} as const;
+const STATUS_TINTS = {
+  danger: [colors.danger, colors.dangerFill],
+  success: [colors.success, colors.successFill],
+  warning: [colors.warning, colors.warningFill],
 } as const;
 const GROUNDS = {
   bg: colors.bg,
@@ -61,6 +91,18 @@ describe('Nocturne theme tokens', () => {
         BODY_TEXT_MIN_CONTRAST,
     );
   });
+
+  for (const [statusName, [textColor, fillColor]] of Object.entries(
+    STATUS_TINTS,
+  )) {
+    it(`keeps ${statusName} text at body-text contrast on its tint over the surface`, () => {
+      const tintedSurface = compositeOver(fillColor, colors.surface);
+
+      assert.ok(
+        getContrastRatio(textColor, tintedSurface) >= BODY_TEXT_MIN_CONTRAST,
+      );
+    });
+  }
 
   it('keeps the base accent at least at the large-text threshold on the ground', () => {
     assert.ok(

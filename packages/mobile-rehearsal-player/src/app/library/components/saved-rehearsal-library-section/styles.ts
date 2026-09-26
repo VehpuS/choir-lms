@@ -1,15 +1,15 @@
 import { StyleSheet } from 'react-native';
 
-const BORDER_COLOR = '#d6d1c4';
+import { appTheme } from '../../../utils/theme';
 
-export const SAVED_LIBRARY_SECTION_BACKGROUND = '#faf6ee';
+export const SAVED_LIBRARY_SECTION_BACKGROUND = appTheme.colors.surface;
 
 export const savedRehearsalLibrarySectionStyles = StyleSheet.create({
   savedLibrarySection: {
     gap: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    borderColor: appTheme.colors.borderSubtle,
     borderRadius: 16,
     backgroundColor: SAVED_LIBRARY_SECTION_BACKGROUND,
   },

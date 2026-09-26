@@ -4,16 +4,17 @@ import {
   INTERACTION_CARD_SHELL_TOKENS,
   INTERACTION_STATE_OPACITY,
 } from '../../components/interaction-style-tokens';
+import { appTheme } from '../../../utils/theme';
 
 const BORDER_COLOR = INTERACTION_CARD_SHELL_TOKENS.borderColor;
-const ERROR_SURFACE = '#fff1ed';
-const ERROR_TEXT = '#8a2d1f';
-export const DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT = '#1f1c17';
-const READY_SURFACE = '#e7f2ec';
-const READY_TEXT = '#1f5c40';
-const SECONDARY_TEXT = '#5f5647';
-const WARNING_SURFACE = '#fff4dd';
-const WARNING_TEXT = '#7f5b12';
+const ERROR_SURFACE = appTheme.colors.dangerFill;
+const ERROR_TEXT = appTheme.colors.danger;
+export const DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT = appTheme.colors.text;
+const READY_SURFACE = appTheme.colors.successFill;
+const READY_TEXT = appTheme.colors.success;
+const SECONDARY_TEXT = appTheme.colors.textMuted;
+const WARNING_SURFACE = appTheme.colors.warningFill;
+const WARNING_TEXT = appTheme.colors.warning;
 
 export const driveLibrarySourceGroupStyles = StyleSheet.create({
   group: {
@@ -98,8 +99,8 @@ export const driveLibrarySourceGroupStyles = StyleSheet.create({
     backgroundColor: INTERACTION_CARD_SHELL_TOKENS.surfaceBackground,
   },
   actionButtonPrimary: {
-    borderColor: '#1f5c40',
-    backgroundColor: '#1f5c40',
+    borderColor: appTheme.colors.accent,
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   actionButtonPressed: {
     opacity: INTERACTION_STATE_OPACITY.pressed,
@@ -115,6 +116,6 @@ export const driveLibrarySourceGroupStyles = StyleSheet.create({
     color: DRIVE_LIBRARY_SOURCE_PRIMARY_TEXT,
   },
   actionButtonPrimaryLabel: {
-    color: '#fffdf8',
+    color: appTheme.colors.text,
   },
 });

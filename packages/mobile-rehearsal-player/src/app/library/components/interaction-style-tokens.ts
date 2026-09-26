@@ -1,34 +1,38 @@
+import { appTheme } from '../../utils/theme';
+
+const { colors } = appTheme;
+
 export const INTERACTION_STATE_OPACITY = {
   disabled: 0.56,
   pressed: 0.88,
 } as const;
 
 export const INTERACTION_CARD_SHELL_TOKENS = {
-  borderColor: '#d6d1c4',
-  mutedBackground: '#faf6ee',
-  surfaceBackground: '#fffdf8',
+  borderColor: colors.border,
+  mutedBackground: colors.surface,
+  surfaceBackground: colors.bg,
 } as const;
 
 export const INTERACTION_ACTION_BUTTON_TOKENS = {
   destructive: {
-    background: '#fff1ed',
-    text: '#8a2d1f',
+    background: colors.dangerFill,
+    text: colors.danger,
   },
   primary: {
-    background: '#305c4d',
-    text: '#fff8ef',
+    background: colors.surfaceAccent,
+    text: colors.accentOnTint,
   },
   secondary: {
-    background: '#f2ece1',
-    text: '#1f1c17',
+    background: colors.surface,
+    text: colors.text,
   },
 } as const;
 
 export const INTERACTION_CHIP_TOKENS = {
-  actionText: '#2f5a4b',
-  passiveBackground: '#f2ece1',
-  passivePressedBackground: '#e3dac9',
-  passiveText: '#5f5647',
-  selectedBackground: '#173229',
-  selectedText: '#fff8ef',
+  actionText: colors.accentText,
+  passiveBackground: colors.surface,
+  passivePressedBackground: colors.neutral[700],
+  passiveText: colors.textSecondary,
+  selectedBackground: colors.surfaceAccent,
+  selectedText: colors.accentOnTint,
 } as const;

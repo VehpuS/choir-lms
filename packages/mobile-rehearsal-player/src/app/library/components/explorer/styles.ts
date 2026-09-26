@@ -11,7 +11,7 @@ export const explorerStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 999,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.bg,
   },
   backButtonDisabled: {
     opacity: 0.5,
@@ -25,11 +25,11 @@ export const explorerStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 999,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.bg,
   },
   breadcrumbChipCurrent: {
-    backgroundColor: '#173229',
-    borderColor: '#173229',
+    backgroundColor: appTheme.colors.surfaceAccent,
+    borderColor: appTheme.colors.accent,
   },
   breadcrumbContent: {
     alignItems: 'center',
@@ -47,7 +47,7 @@ export const explorerStyles = StyleSheet.create({
     fontWeight: '600',
   },
   breadcrumbLabelCurrent: {
-    color: '#fff8ef',
+    color: appTheme.colors.accentOnTint,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -62,7 +62,7 @@ export const explorerStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 20,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.bg,
   },
   navigationBar: {
     flexDirection: 'row',
@@ -75,7 +75,7 @@ export const explorerStyles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   navigationActionLabel: {
-    color: appTheme.colors.listMarker,
+    color: appTheme.colors.accentText,
     fontSize: 14,
     fontWeight: '700',
   },
@@ -104,11 +104,11 @@ export const explorerStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 16,
-    backgroundColor: '#fffcf6',
+    backgroundColor: appTheme.colors.surface,
   },
   rowActive: {
-    borderColor: '#6f9c8c',
-    backgroundColor: '#e6f0eb',
+    borderColor: appTheme.colors.accentBorderSoft,
+    backgroundColor: appTheme.colors.accentRegionFill,
   },
   rowActions: {
     flexDirection: 'row',

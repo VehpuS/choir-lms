@@ -1,14 +1,15 @@
 import type { DriveBrowseLocation } from '@org/google-drive';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { appTheme } from '../../../utils/theme';
 
 type DriveLibraryBreadcrumbsProps = {
   navigationStack: DriveBrowseLocation[];
   onGoToLocation: (index: number) => void;
 };
 
-const PRIMARY_TEXT = '#1f1c17';
-const SECONDARY_ACTION_TEXT = '#305c4d';
-const SECONDARY_TEXT = '#5f5647';
+const PRIMARY_TEXT = appTheme.colors.text;
+const SECONDARY_ACTION_TEXT = appTheme.colors.accentText;
+const SECONDARY_TEXT = appTheme.colors.textMuted;
 
 export const DriveLibraryBreadcrumbs = ({
   navigationStack,

@@ -6,7 +6,7 @@ const SHELL_CONTENT_HORIZONTAL_PADDING = 14;
 const HEADER_BOTTOM_RADIUS = 18;
 const MINI_PLAYER_RADIUS = 18;
 const TAB_BAR_RADIUS = 16;
-const TAB_BAR_BACKGROUND = 'rgba(255, 251, 242, 0.96)';
+const TAB_BAR_BACKGROUND = appTheme.colors.surfaceRaised;
 
 export const styles = StyleSheet.create({
   screen: {
@@ -41,20 +41,20 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerLabel: {
-    color: '#d1e8dd',
+    color: appTheme.colors.textSecondary,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
   headerTitle: {
-    color: '#fff8ef',
+    color: appTheme.colors.text,
     fontSize: 26,
     fontWeight: '700',
     lineHeight: 32,
   },
   headerBody: {
-    color: '#dce7e1',
+    color: appTheme.colors.textSecondary,
     fontSize: 14,
     lineHeight: 21,
   },
@@ -88,9 +88,9 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#2d584a',
+    borderColor: appTheme.colors.divider,
     borderRadius: MINI_PLAYER_RADIUS,
-    backgroundColor: '#173229',
+    backgroundColor: appTheme.colors.surfaceRaised,
   },
   miniPlayerBody: {
     flex: 1,
@@ -109,7 +109,7 @@ export const styles = StyleSheet.create({
     gap: 2,
   },
   miniPlayerTitle: {
-    color: '#fff8ef',
+    color: appTheme.colors.text,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -117,7 +117,7 @@ export const styles = StyleSheet.create({
     minHeight: 22,
   },
   miniPlayerContext: {
-    color: '#dce7e1',
+    color: appTheme.colors.textMuted,
     fontSize: 13,
     lineHeight: 18,
   },
@@ -127,7 +127,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 999,
-    backgroundColor: '#305c4d',
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   miniPlayerActionDisabled: {
     opacity: 0.5,
@@ -137,7 +137,7 @@ export const styles = StyleSheet.create({
     gap: 6,
     padding: 4,
     borderWidth: 1,
-    borderColor: appTheme.colors.border,
+    borderColor: appTheme.colors.divider,
     borderRadius: TAB_BAR_RADIUS,
     backgroundColor: TAB_BAR_BACKGROUND,
   },
@@ -150,7 +150,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   tabActive: {
-    backgroundColor: appTheme.colors.heroBackground,
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   tabPressed: {
     opacity: 0.88,
@@ -166,6 +166,6 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
   },
   tabLabelActive: {
-    color: '#fff8ef',
+    color: appTheme.colors.accentOnTint,
   },
 });

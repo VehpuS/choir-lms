@@ -1,6 +1,11 @@
+import { appTheme } from '../../utils/theme';
+
+const { colors } = appTheme;
+
 export type FeedbackCardTone = 'neutral' | 'ready' | 'warning' | 'error';
 
 export type FeedbackCardPalette = {
+  edge: string;
   message: string;
   surface: string;
   title: string;
@@ -8,24 +13,28 @@ export type FeedbackCardPalette = {
 
 const FEEDBACK_CARD_PALETTES: Record<FeedbackCardTone, FeedbackCardPalette> = {
   neutral: {
-    message: '#5f5647ee',
-    surface: '#f6f1e7ee',
-    title: '#1f1c17ee',
+    edge: colors.border,
+    message: colors.textMuted,
+    surface: colors.surface,
+    title: colors.text,
   },
   ready: {
-    message: '#5f5647ee',
-    surface: '#e7f2ecee',
-    title: '#1f5c40ee',
+    edge: colors.successEdge,
+    message: colors.textSecondary,
+    surface: colors.successFill,
+    title: colors.success,
   },
   warning: {
-    message: '#5f5647ee',
-    surface: '#fff4ddee',
-    title: '#7f5b12ee',
+    edge: colors.warningEdge,
+    message: colors.textSecondary,
+    surface: colors.warningFill,
+    title: colors.warning,
   },
   error: {
-    message: '#8a2d1fee',
-    surface: '#fff1edee',
-    title: '#8a2d1fee',
+    edge: colors.dangerEdge,
+    message: colors.danger,
+    surface: colors.dangerFill,
+    title: colors.danger,
   },
 };
 

@@ -22,7 +22,7 @@ export const driveExplorerListStyles = StyleSheet.create({
     right: 0,
   },
   sourceErrorMessage: {
-    color: '#8a2d1f',
+    color: appTheme.colors.danger,
     fontSize: 13,
     lineHeight: 18,
   },

@@ -50,7 +50,7 @@ export const FeedbackCard = ({
         isCompact ? styles.compactCard : styles.regularCard,
         {
           backgroundColor: palette.surface,
-          borderColor: palette.title,
+          borderColor: palette.edge,
           borderWidth: 1,
         },
         style,

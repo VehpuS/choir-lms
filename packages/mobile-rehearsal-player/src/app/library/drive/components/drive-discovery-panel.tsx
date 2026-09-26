@@ -12,6 +12,7 @@ import { DriveLibraryRootSelector } from './drive-library-root-selector';
 import { DriveLibrarySearchPanel } from './drive-library-search-panel';
 import { DriveLibraryStatusCard } from './drive-library-status-card';
 import { DriveSearchSelectionToolbar } from './drive-search-selection-toolbar';
+import { appTheme } from '../../../utils/theme';
 
 type DriveDiscoveryPanelProps = {
   controller: ReturnType<typeof useRehearsalLibraryController>;
@@ -111,8 +112,8 @@ const styles = StyleSheet.create({
     gap: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#d6d1c4',
+    borderColor: appTheme.colors.border,
     borderRadius: 20,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.surface,
   },
 });

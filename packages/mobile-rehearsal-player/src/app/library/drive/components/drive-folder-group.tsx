@@ -5,6 +5,7 @@ import {
   getFolderMetadataLabels,
   type DriveLibraryFolder,
 } from '../utils/drive-library-view-model';
+import { appTheme } from '../../../utils/theme';
 
 type DriveFolderGroupProps = {
   folders: DriveLibraryFolder[];
@@ -12,9 +13,9 @@ type DriveFolderGroupProps = {
   title: string;
 };
 
-const BORDER_COLOR = '#d6d1c4';
-const PRIMARY_TEXT = '#1f1c17';
-const SECONDARY_TEXT = '#5f5647';
+const BORDER_COLOR = appTheme.colors.border;
+const PRIMARY_TEXT = appTheme.colors.text;
+const SECONDARY_TEXT = appTheme.colors.textMuted;
 
 const DriveFolderCard = ({
   folder,
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: BORDER_COLOR,
     borderRadius: 16,
-    backgroundColor: '#faf6ee',
+    backgroundColor: appTheme.colors.surface,
   },
   folderCardPressed: {
     opacity: 0.88,
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   folderAction: {
-    color: '#173229',
+    color: appTheme.colors.accentText,
     fontSize: 13,
     fontWeight: '700',
     textTransform: 'uppercase',

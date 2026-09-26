@@ -3,29 +3,39 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { appTheme } from '../../utils/theme.js';
 import { resolveFeedbackCardPalette } from './feedback-card-model.js';
 
+const { colors } = appTheme;
+
 describe('feedback card model', () => {
-  it('returns the expected palette for each tone', () => {
+  it('keeps the neutral tone on the plain surface', () => {
     assert.deepEqual(resolveFeedbackCardPalette('neutral'), {
-      message: '#5f5647ee',
-      surface: '#f6f1e7ee',
-      title: '#1f1c17ee',
+      edge: colors.border,
+      message: colors.textMuted,
+      surface: colors.surface,
+      title: colors.text,
     });
+  });
+
+  it('tints each status tone with its own status hue', () => {
     assert.deepEqual(resolveFeedbackCardPalette('ready'), {
-      message: '#5f5647ee',
-      surface: '#e7f2ecee',
-      title: '#1f5c40ee',
+      edge: colors.successEdge,
+      message: colors.textSecondary,
+      surface: colors.successFill,
+      title: colors.success,
     });
     assert.deepEqual(resolveFeedbackCardPalette('warning'), {
-      message: '#5f5647ee',
-      surface: '#fff4ddee',
-      title: '#7f5b12ee',
+      edge: colors.warningEdge,
+      message: colors.textSecondary,
+      surface: colors.warningFill,
+      title: colors.warning,
     });
     assert.deepEqual(resolveFeedbackCardPalette('error'), {
-      message: '#8a2d1fee',
-      surface: '#fff1edee',
-      title: '#8a2d1fee',
+      edge: colors.dangerEdge,
+      message: colors.danger,
+      surface: colors.dangerFill,
+      title: colors.danger,
     });
   });
 });

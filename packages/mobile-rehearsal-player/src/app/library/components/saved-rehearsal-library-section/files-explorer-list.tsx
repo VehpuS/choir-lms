@@ -59,7 +59,7 @@ export const FilesExplorerList = (options: {
                 <MaterialCommunityIcons
                   color={
                     viewModelRow.active
-                      ? '#173229'
+                      ? appTheme.colors.accent
                       : appTheme.colors.secondaryText
                   }
                   name={getRowIconName(row)}
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#abc8b6',
+    borderColor: appTheme.colors.accentBorderSoft,
     paddingHorizontal: 10,
     paddingVertical: 7,
   },
@@ -177,12 +177,12 @@ const styles = StyleSheet.create({
     opacity: 0.55,
   },
   rowActionButtonLabel: {
-    color: '#1f5c40',
+    color: appTheme.colors.accentText,
     fontSize: 12,
     fontWeight: '700',
   },
   rowActionButtonPressed: {
-    backgroundColor: '#eef7f0',
+    backgroundColor: appTheme.colors.accentRegionFill,
   },
   originalLocationLabel: {
     color: appTheme.colors.secondaryText,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   rowMessage: {
-    color: '#9a4d2d',
+    color: appTheme.colors.danger,
     fontSize: 12,
     lineHeight: 17,
   },

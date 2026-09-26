@@ -2,6 +2,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { FeedbackCard } from '../../components/feedback-card';
 import { type DriveLibraryStatusCopy } from '../utils/drive-library-view-model';
+import { appTheme } from '../../../utils/theme';
 
 type DriveLibraryStatusCardProps = {
   isLoading: boolean;
@@ -9,7 +10,7 @@ type DriveLibraryStatusCardProps = {
   statusCopy: DriveLibraryStatusCopy;
 };
 
-const SECONDARY_TEXT = '#5f5647';
+const SECONDARY_TEXT = appTheme.colors.textMuted;
 
 export const DriveLibraryStatusCard = ({
   isLoading,

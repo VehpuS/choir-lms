@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { FeedbackCard } from '../feedback-card';
 import type { LibraryFilesSuccessFeedback } from './library-files-success-feedback';
+import { appTheme } from '../../../utils/theme';
 
 type LibraryFilesSuccessFeedbackCardProps = {
   feedback: LibraryFilesSuccessFeedback;
@@ -67,24 +68,24 @@ const styles = StyleSheet.create({
   },
   primaryAction: {
     borderRadius: 999,
-    backgroundColor: '#1f5c40',
+    backgroundColor: appTheme.colors.surfaceAccent,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   primaryActionLabel: {
-    color: '#f8fbf7',
+    color: appTheme.colors.text,
     fontSize: 13,
     fontWeight: '700',
   },
   secondaryAction: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#abc8b6',
+    borderColor: appTheme.colors.successEdge,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   secondaryActionLabel: {
-    color: '#1f5c40',
+    color: appTheme.colors.accentText,
     fontSize: 13,
     fontWeight: '700',
   },

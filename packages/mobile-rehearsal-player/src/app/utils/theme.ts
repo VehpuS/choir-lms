@@ -35,6 +35,19 @@ const accentRamp = {
 const TEXT_RGB = '233,233,237';
 const ACCENT_RGB = '145,132,217';
 
+/**
+ * Status hues are an app-specific extension; Nocturne defines none. Each is a
+ * desaturated text step that clears body-text contrast on the dark grounds,
+ * used as text, an icon, or the base of a low-alpha tint — never a flood.
+ */
+const statusHues = {
+  danger: { hex: '#f28b82', rgb: '242,139,130' },
+  warning: { hex: '#e6c17a', rgb: '230,193,122' },
+  success: { hex: '#81c995', rgb: '129,201,149' },
+} as const;
+const STATUS_FILL_ALPHA = 0.12;
+const STATUS_EDGE_ALPHA = 0.4;
+
 const nocturneColors = {
   /** Screen background and sheet surface. */
   bg: neutralRamp[900],
@@ -70,6 +83,15 @@ const nocturneColors = {
   borderButton: `rgba(${TEXT_RGB},0.16)`,
   highlightFill: accentRamp[700],
   highlightText: accentRamp[100],
+  danger: statusHues.danger.hex,
+  dangerFill: `rgba(${statusHues.danger.rgb},${STATUS_FILL_ALPHA})`,
+  dangerEdge: `rgba(${statusHues.danger.rgb},${STATUS_EDGE_ALPHA})`,
+  warning: statusHues.warning.hex,
+  warningFill: `rgba(${statusHues.warning.rgb},${STATUS_FILL_ALPHA})`,
+  warningEdge: `rgba(${statusHues.warning.rgb},${STATUS_EDGE_ALPHA})`,
+  success: statusHues.success.hex,
+  successFill: `rgba(${statusHues.success.rgb},${STATUS_FILL_ALPHA})`,
+  successEdge: `rgba(${statusHues.success.rgb},${STATUS_EDGE_ALPHA})`,
   /** Fully transparent, for rules that fade at their ends. */
   transparent: 'transparent',
   shadow: '#000000',

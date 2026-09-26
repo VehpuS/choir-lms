@@ -56,7 +56,9 @@ export const SurfaceIconButton = ({
       ]}
     >
       <MaterialCommunityIcons
-        color={isPrimary ? '#fff8ef' : appTheme.colors.primaryText}
+        color={
+          isPrimary ? appTheme.colors.accentOnTint : appTheme.colors.primaryText
+        }
         name={icon}
         size={size}
       />
@@ -70,8 +72,10 @@ const styles = StyleSheet.create({
     height: 70,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: appTheme.colors.accent,
     borderRadius: 999,
-    backgroundColor: '#305c4d',
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   secondaryButton: {
     width: 46,
@@ -81,7 +85,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 999,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.surface,
   },
   pressedButton: {
     opacity: 0.84,

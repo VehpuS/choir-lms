@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { FeedbackCard } from '../../library/components/feedback-card';
 import type { DriveTrackSavedFeedback } from './drive-track-saved-feedback';
+import { appTheme } from '../../utils/theme';
 
 type DriveTrackSavedFeedbackCardProps = {
   feedback: DriveTrackSavedFeedback;
@@ -51,12 +52,12 @@ const styles = StyleSheet.create({
   dismissAction: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#abc8b6',
+    borderColor: appTheme.colors.accentBorderSoft,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   dismissActionLabel: {
-    color: '#1f5c40',
+    color: appTheme.colors.accentText,
     fontSize: 13,
     fontWeight: '700',
   },

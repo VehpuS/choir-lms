@@ -7,6 +7,8 @@ This change couples a visual-system migration with a new playback capability. Th
 `src/app/utils/theme.ts` currently exports eight literal colors, and dozens of style blocks bypass it with inline hexes (`#305c4d`, `#faf6ee`, `#173229`, `#d6d1c4`, `#1f5c40`, `#9a4d2d` and others). Nocturne's rule is that every color, radius, and spacing value comes from a token.
 
 - Rewrite `appTheme` as the full Nocturne token set: `bg`, `surface`, `text`, `accent`, `divider`, the `neutral` and `accent` 100–900 ramps, `radius` (sm 4 / md 8 / lg 14), `space` (the 0.70× scale), and the three elevation steps.
+- Status colors are an app-specific extension: Nocturne and the 1a–1j mockups define none, but Drive errors, unsupported-format warnings, and saved/ready states need them. Add muted `danger` / `warning` / `success` tokens — a desaturated text step at ≥4.5:1 on `bg` and `surface` plus a low-alpha tinted fill, mirroring `accentRegionFill` — so status reads without flooding a hue. Status always pairs with an icon or label, never color alone.
+- Migration order: after the token rewrite, run a color-only pass (task 1.2.1) that moves every hard-coded color onto tokens before any structural restyle. Converting colors per screen in later tasks would leave light surfaces under light token text in the meantime, which is a legibility regression, not just an inconsistency.
 - Add a lint or test guard that fails on a raw hex in `src/app/**` outside `theme.ts`. Without a guard this migration silently regresses the first time someone adds a screen.
 - Alternative considered: a React context theme provider. Rejected for now — the app has one theme, and a static token object keeps every existing `StyleSheet.create` call site working with a one-line change.
 

@@ -15,6 +15,7 @@ import { DriveLibrarySearchPanel } from '../drive-library-search-panel';
 import { DriveLibrarySectionHeader } from '../drive-library-section-header';
 import { DriveLibrarySourceGroup } from '../drive-library-source-group';
 import { DriveLibraryStatusCard } from '../drive-library-status-card';
+import { appTheme } from '../../../../utils/theme';
 
 type DriveLibraryContentProps = {
   canRefresh: boolean;
@@ -47,8 +48,8 @@ type DriveLibraryContentProps = {
   unavailableSources: DriveLibrarySource[];
 };
 
-const BORDER_COLOR = '#d6d1c4';
-const CARD_BACKGROUND = '#fffdf8';
+const BORDER_COLOR = appTheme.colors.border;
+const CARD_BACKGROUND = appTheme.colors.surface;
 
 export const DriveLibraryContent = ({
   canRefresh,

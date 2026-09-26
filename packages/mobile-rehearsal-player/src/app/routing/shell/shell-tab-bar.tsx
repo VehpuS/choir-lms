@@ -11,7 +11,7 @@ type ShellTabBarProps = {
   onSelectDestination: (destination: ShellDestinationKey) => void;
 };
 
-const ACTIVE_TAB_ICON_COLOR = '#fff8ef';
+const ACTIVE_TAB_ICON_COLOR = appTheme.colors.accentOnTint;
 const INACTIVE_TAB_ICON_COLOR = appTheme.colors.secondaryText;
 type MaterialCommunityIconName = ComponentProps<
   typeof MaterialCommunityIcons

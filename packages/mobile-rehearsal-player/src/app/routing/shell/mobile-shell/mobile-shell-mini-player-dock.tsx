@@ -7,8 +7,12 @@ import type { SavedTrackPlaybackState } from '../../../library/playback/utils/sa
 import { getPlaybackToggleControlModel } from '../../playback/playback-toggle-control-model';
 import { styles } from '../mobile-shell-styles';
 import { PlaybackMarqueeText } from '../playback-marquee-text';
-import { type MiniPlayerSummary, type ShellDestinationKey } from '../shell-model';
+import {
+  type MiniPlayerSummary,
+  type ShellDestinationKey,
+} from '../shell-model';
 import { ShellTabBar } from '../shell-tab-bar';
+import { appTheme } from '../../../utils/theme';
 
 type MobileShellMiniPlayerDockProps = {
   activeDestination: ShellDestinationKey;
@@ -97,13 +101,11 @@ export const MobileShellMiniPlayerDock = ({
               pressed && !isPlaybackToggleDisabled
                 ? styles.miniPlayerPressed
                 : null,
-              isPlaybackToggleDisabled
-                ? styles.miniPlayerActionDisabled
-                : null,
+              isPlaybackToggleDisabled ? styles.miniPlayerActionDisabled : null,
             ]}
           >
             <MaterialCommunityIcons
-              color="#fff8ef"
+              color={appTheme.colors.text}
               name={playbackToggleControl?.iconName ?? 'play'}
               size={24}
             />

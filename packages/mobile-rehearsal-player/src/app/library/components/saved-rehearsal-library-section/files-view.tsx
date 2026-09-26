@@ -17,6 +17,7 @@ import {
 } from './files-view-model';
 import { LibraryFilesSuccessFeedbackCard } from './library-files-success-feedback-card';
 import { useLibraryFilesRowActionFlows } from './use-library-files-row-action-flows';
+import { appTheme } from '../../../utils/theme';
 
 export const SavedRehearsalLibraryFilesView = ({
   activePlayableItem,
@@ -250,7 +251,7 @@ export const SavedRehearsalLibraryFilesView = ({
 const styles = StyleSheet.create({
   dismissActionLabel: {
     alignSelf: 'flex-start',
-    color: '#8a2d1f',
+    color: appTheme.colors.danger,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
   },
   playlistAddModePrimaryAction: {
     borderRadius: 999,
-    backgroundColor: '#1f5c40',
+    backgroundColor: appTheme.colors.surfaceAccent,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
     opacity: 0.55,
   },
   playlistAddModePrimaryActionLabel: {
-    color: '#f8fbf7',
+    color: appTheme.colors.text,
     fontSize: 13,
     fontWeight: '700',
   },

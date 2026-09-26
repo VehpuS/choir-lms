@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   dismissActionLabel: {
-    color: '#8a2d1f',
+    color: appTheme.colors.danger,
     fontSize: 13,
     fontWeight: '700',
   },
