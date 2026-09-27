@@ -6,9 +6,11 @@ import {
   INTERACTION_STATE_OPACITY,
 } from '../../components/interaction-style-tokens';
 
-const INPUT_BACKGROUND = '#fff9f0';
-const PRIMARY_TEXT = '#1f1c17';
-const SECONDARY_TEXT = '#5f5647';
+import { appTheme } from '../../../utils/theme';
+
+const INPUT_BACKGROUND = appTheme.colors.bg;
+const PRIMARY_TEXT = appTheme.colors.text;
+const SECONDARY_TEXT = appTheme.colors.textMuted;
 
 export const savedTrackPlaylistMenuSurfaceStyles = StyleSheet.create({
   playlistList: {

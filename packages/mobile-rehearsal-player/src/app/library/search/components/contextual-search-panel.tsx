@@ -12,6 +12,8 @@ import {
 } from './contextual-search-panel-model';
 import { RecentSearchSuggestions } from './recent-search-suggestions';
 
+import { appTheme } from '../../../utils/theme';
+
 type ContextualSearchPanelProps = {
   canShowRecentSearchTerms?: boolean;
   clearActionLabel: string;
@@ -31,13 +33,13 @@ type ContextualSearchPanelProps = {
   showInlineToggleButton?: boolean;
 };
 
-const BORDER_COLOR = '#d6d1c4';
-const INPUT_BACKGROUND = '#fff9f0';
-const PLACEHOLDER_TEXT = '#857b6c';
-const PRIMARY_ACTION_BACKGROUND = '#305c4d';
-const PRIMARY_ACTION_TEXT = '#fff8ef';
-const PRIMARY_TEXT = '#1f1c17';
-const HELPER_TEXT = '#5f5647';
+const BORDER_COLOR = appTheme.colors.border;
+const INPUT_BACKGROUND = appTheme.colors.surface;
+const PLACEHOLDER_TEXT = appTheme.colors.textFaint;
+const PRIMARY_ACTION_BACKGROUND = appTheme.colors.surfaceAccent;
+const PRIMARY_ACTION_TEXT = appTheme.colors.accentOnTint;
+const PRIMARY_TEXT = appTheme.colors.text;
+const HELPER_TEXT = appTheme.colors.textMuted;
 
 export const ContextualSearchPanel = ({
   canShowRecentSearchTerms = true,
@@ -246,7 +248,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   searchButtonActive: {
-    backgroundColor: '#214739',
+    backgroundColor: appTheme.colors.accentBorderDeep,
   },
   searchButtonPressed: {
     opacity: 0.88,

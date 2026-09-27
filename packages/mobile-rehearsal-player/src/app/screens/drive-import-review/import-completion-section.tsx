@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   failedToggleLabel: {
-    color: appTheme.colors.listMarker,
+    color: appTheme.colors.accentText,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -122,10 +122,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 14,
     paddingVertical: 12,
-    backgroundColor: appTheme.colors.listMarker,
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   retryButtonLabel: {
-    color: '#fff8ef',
+    color: appTheme.colors.accentOnTint,
     fontSize: 14,
     fontWeight: '700',
   },

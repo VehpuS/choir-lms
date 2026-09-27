@@ -1,9 +1,11 @@
-export const PLAYLIST_BORDER_COLOR = '#d6d1c4';
-export const PLAYLIST_ERROR_SURFACE = '#fff1ed';
-export const PLAYLIST_ERROR_TEXT = '#8a2d1f';
-export const PLAYLIST_INPUT_BACKGROUND = '#fff9f0';
-export const PLAYLIST_PRIMARY_ACTION_BACKGROUND = '#305c4d';
-export const PLAYLIST_PRIMARY_ACTION_TEXT = '#fff8ef';
-export const PLAYLIST_PRIMARY_TEXT = '#1f1c17';
-export const PLAYLIST_SECONDARY_TEXT = '#5f5647';
-export const SAVED_PLAYLIST_PLACEHOLDER_TEXT = '#857b6c';
+import { appTheme } from '../../../utils/theme';
+
+export const PLAYLIST_BORDER_COLOR = appTheme.colors.border;
+export const PLAYLIST_ERROR_SURFACE = appTheme.colors.dangerFill;
+export const PLAYLIST_ERROR_TEXT = appTheme.colors.danger;
+export const PLAYLIST_INPUT_BACKGROUND = appTheme.colors.bg;
+export const PLAYLIST_PRIMARY_ACTION_BACKGROUND = appTheme.colors.surfaceAccent;
+export const PLAYLIST_PRIMARY_ACTION_TEXT = appTheme.colors.accentOnTint;
+export const PLAYLIST_PRIMARY_TEXT = appTheme.colors.text;
+export const PLAYLIST_SECONDARY_TEXT = appTheme.colors.textMuted;
+export const SAVED_PLAYLIST_PLACEHOLDER_TEXT = appTheme.colors.textFaint;

@@ -1,7 +1,16 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 
 import { hasSectionHeadingContent } from './section-heading-model';
+
+import { appTheme } from '../../utils/theme';
 
 type SectionHeadingProps = {
   body?: string;
@@ -15,8 +24,8 @@ type SectionHeadingProps = {
   trailingAction?: ReactNode;
 };
 
-const PRIMARY_TEXT = '#1f1c17';
-const SECONDARY_TEXT = '#5f5647';
+const PRIMARY_TEXT = appTheme.colors.text;
+const SECONDARY_TEXT = appTheme.colors.textMuted;
 
 export const SectionHeading = ({
   body,
@@ -29,12 +38,14 @@ export const SectionHeading = ({
   titleStyle,
   trailingAction,
 }: SectionHeadingProps) => {
-  if (!hasSectionHeadingContent({
-    body,
-    eyebrow,
-    hasTrailingAction: Boolean(trailingAction),
-    title,
-  })) {
+  if (
+    !hasSectionHeadingContent({
+      body,
+      eyebrow,
+      hasTrailingAction: Boolean(trailingAction),
+      title,
+    })
+  ) {
     return null;
   }
 
@@ -45,13 +56,18 @@ export const SectionHeading = ({
           <Text style={[styles.eyebrow, eyebrowStyle]}>{eyebrow}</Text>
         ) : null}
         {title ? (
-          <Text numberOfLines={titleNumberOfLines} style={[styles.title, titleStyle]}>
+          <Text
+            numberOfLines={titleNumberOfLines}
+            style={[styles.title, titleStyle]}
+          >
             {title}
           </Text>
         ) : null}
         {body ? <Text style={[styles.body, bodyStyle]}>{body}</Text> : null}
       </View>
-      {trailingAction ? <View style={styles.trailingAction}>{trailingAction}</View> : null}
+      {trailingAction ? (
+        <View style={styles.trailingAction}>{trailingAction}</View>
+      ) : null}
     </View>
   );
 };

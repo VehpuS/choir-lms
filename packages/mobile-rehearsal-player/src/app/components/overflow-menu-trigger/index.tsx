@@ -24,6 +24,8 @@ import {
   getOverflowMenuTriggerVisualState,
 } from './model';
 
+import { appTheme } from '../../utils/theme';
+
 type OverflowMenuTriggerProps = {
   accessibilityLabel: string;
   disabled?: boolean;
@@ -61,7 +63,7 @@ const styles = StyleSheet.create({
 export const OverflowMenuTrigger = ({
   accessibilityLabel,
   disabled = false,
-  iconColor = '#1f1c17',
+  iconColor = appTheme.colors.icon,
   iconSize = OVERFLOW_MENU_TRIGGER_ICON_SIZE,
   onPress,
   style,

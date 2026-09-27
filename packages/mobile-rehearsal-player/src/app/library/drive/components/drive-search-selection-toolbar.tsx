@@ -93,7 +93,7 @@ export const DriveSearchSelectionToolbar = ({
         {isSelectingAll ? (
           <ActivityIndicator
             accessibilityLabel="Selecting all matching Drive results"
-            color={appTheme.colors.listMarker}
+            color={appTheme.colors.accentText}
           />
         ) : null}
       </View>
@@ -158,17 +158,17 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   primaryAction: {
-    borderColor: appTheme.colors.listMarker,
-    backgroundColor: appTheme.colors.listMarker,
+    borderColor: appTheme.colors.accent,
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   primaryActionLabel: {
-    color: '#fff8ef',
+    color: appTheme.colors.accentOnTint,
     fontSize: 13,
     fontWeight: '700',
   },
   secondaryAction: {
     borderColor: appTheme.colors.border,
-    backgroundColor: '#f2ece1',
+    backgroundColor: appTheme.colors.surface,
   },
   secondaryActionLabel: {
     color: appTheme.colors.primaryText,
@@ -190,6 +190,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 8,
-    backgroundColor: '#faf6ee',
+    backgroundColor: appTheme.colors.bg,
   },
 });

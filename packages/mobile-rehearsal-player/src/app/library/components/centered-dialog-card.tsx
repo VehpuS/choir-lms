@@ -11,7 +11,7 @@ type CenteredDialogCardProps = {
   onRequestClose: () => void;
 };
 
-const BACKDROP = 'rgba(31, 28, 23, 0.35)';
+const BACKDROP = appTheme.colors.scrim;
 
 export const CenteredDialogCard = ({
   cardStyle,

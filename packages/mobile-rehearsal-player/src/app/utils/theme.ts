@@ -34,6 +34,7 @@ const accentRamp = {
 
 const TEXT_RGB = '233,233,237';
 const ACCENT_RGB = '145,132,217';
+const BG_BEHIND_SHEET_RGB = '16,18,32';
 
 /**
  * Status hues are an app-specific extension; Nocturne defines none. Each is a
@@ -53,6 +54,8 @@ const nocturneColors = {
   bg: neutralRamp[900],
   /** The dimmed page under a bottom sheet. */
   bgBehindSheet: '#101220',
+  /** Translucent backdrop behind modal sheets and dialogs. */
+  scrim: `rgba(${BG_BEHIND_SHEET_RGB},0.72)`,
   /** Cards, the active loop card, search field fill. */
   surface: neutralRamp[800],
   /** Mini-player and tab-bar band. */

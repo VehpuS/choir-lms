@@ -1,16 +1,20 @@
 import { formatDurationLabel } from '../../../drive/utils/drive-library-view-model';
 
-export const LOOP_SELECTOR_BACKDROP = 'rgba(20, 18, 13, 0.42)';
-export const LOOP_SELECTOR_CARD_BACKGROUND = '#fffdf8';
-export const LOOP_SELECTOR_ERROR_SURFACE = '#fff1ed';
-export const LOOP_SELECTOR_ERROR_TEXT = '#8a2d1f';
-export const LOOP_SELECTOR_INPUT_BACKGROUND = '#fff9f0';
-export const LOOP_SELECTOR_PLACEHOLDER_TEXT = '#857b6c';
-export const LOOP_SELECTOR_PRIMARY_ACTION_BACKGROUND = '#305c4d';
-export const LOOP_SELECTOR_PRIMARY_ACTION_TEXT = '#fff8ef';
-export const LOOP_SELECTOR_PRIMARY_TEXT = '#1f1c17';
-export const LOOP_SELECTOR_SECONDARY_ACTION_BACKGROUND = '#f2ece1';
-export const LOOP_SELECTOR_SECONDARY_TEXT = '#5f5647';
+import { appTheme } from '../../../../utils/theme';
+
+export const LOOP_SELECTOR_BACKDROP = appTheme.colors.scrim;
+export const LOOP_SELECTOR_CARD_BACKGROUND = appTheme.colors.bg;
+export const LOOP_SELECTOR_ERROR_SURFACE = appTheme.colors.dangerFill;
+export const LOOP_SELECTOR_ERROR_TEXT = appTheme.colors.danger;
+export const LOOP_SELECTOR_INPUT_BACKGROUND = appTheme.colors.surface;
+export const LOOP_SELECTOR_PLACEHOLDER_TEXT = appTheme.colors.textFaint;
+export const LOOP_SELECTOR_PRIMARY_ACTION_BACKGROUND =
+  appTheme.colors.surfaceAccent;
+export const LOOP_SELECTOR_PRIMARY_ACTION_TEXT = appTheme.colors.accentOnTint;
+export const LOOP_SELECTOR_PRIMARY_TEXT = appTheme.colors.text;
+export const LOOP_SELECTOR_SECONDARY_ACTION_BACKGROUND =
+  appTheme.colors.surface;
+export const LOOP_SELECTOR_SECONDARY_TEXT = appTheme.colors.textMuted;
 
 export const formatRangeLabel = (value: number) => {
   return formatDurationLabel(value) ?? '0:00';

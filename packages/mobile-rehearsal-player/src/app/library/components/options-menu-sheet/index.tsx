@@ -18,6 +18,8 @@ import {
   type ResolvedOptionsMenuAction,
 } from './model';
 
+import { appTheme } from '../../../utils/theme';
+
 type OptionsMenuSheetProps = {
   actions: OptionsMenuAction[];
   children?: ReactNode;
@@ -29,7 +31,7 @@ type OptionsMenuSheetProps = {
   isSecondaryDisabled?: boolean;
 };
 
-const PRIMARY_TEXT = '#1f1c17';
+const PRIMARY_TEXT = appTheme.colors.text;
 
 const getActionContainerStyle = (tone: ResolvedOptionsMenuAction['tone']) => {
   switch (tone) {
@@ -69,9 +71,8 @@ export const OptionsMenuSheet = ({
 
   const resolvedActions = resolveOptionsMenuSheetActions(actions);
   const heading = resolveOptionsMenuSheetHeading(title);
-  const sectionDividers = resolveOptionsMenuSheetSectionDividers(
-    resolvedActions,
-  );
+  const sectionDividers =
+    resolveOptionsMenuSheetSectionDividers(resolvedActions);
 
   return (
     <BottomSheetSurface
@@ -184,7 +185,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   sectionDivider: {
-    backgroundColor: 'rgba(31, 28, 23, 0.1)',
+    backgroundColor: appTheme.colors.hairline,
     height: StyleSheet.hairlineWidth,
     marginBottom: 10,
   },

@@ -42,6 +42,8 @@ import {
 } from './library-search-filter-groups';
 import { TagFilterMatchModeSwitch } from './tag-filter-match-mode-switch';
 
+import { appTheme } from '../../../utils/theme';
+
 type LibrarySearchFilterPopoverProps = {
   availableTagFilters: string[];
   currentFilesFolderName: string | null;
@@ -245,10 +247,10 @@ const styles = StyleSheet.create({
     gap: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#d6d1c4',
+    borderColor: appTheme.colors.divider,
     borderRadius: 20,
-    backgroundColor: '#fffcf4',
-    shadowColor: '#173229',
+    backgroundColor: appTheme.colors.surface,
+    shadowColor: appTheme.colors.shadow,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.08,
     shadowRadius: 18,
@@ -261,7 +263,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   filterLabel: {
-    color: '#5f5647',
+    color: appTheme.colors.textMuted,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.3,

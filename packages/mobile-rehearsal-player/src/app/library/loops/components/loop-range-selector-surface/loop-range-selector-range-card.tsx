@@ -20,6 +20,8 @@ import {
   formatRangeLabel,
 } from './shared';
 
+import { appTheme } from '../../../../utils/theme';
+
 type LoopRangeSelectorRangeCardProps = {
   endMs: number;
   onNudgeBoundary: (
@@ -135,7 +137,9 @@ export const LoopRangeSelectorRangeCard = ({
 
         <View style={[styles.edgeGroup, styles.edgeGroupEnd]}>
           <Text style={styles.groupLabel}>End</Text>
-          <Text style={styles.groupValue}>{formatPreciseRangeLabel(endMs)}</Text>
+          <Text style={styles.groupValue}>
+            {formatPreciseRangeLabel(endMs)}
+          </Text>
           <View style={styles.nudgeRow}>
             <NudgeButton
               accessibilityLabel="Move loop end earlier"
@@ -160,14 +164,14 @@ export const LoopRangeSelectorRangeCard = ({
       <View {...interactionGuardProps} style={continuousInteractionGuardStyle}>
         <Slider
           animateTransitions={false}
-          maximumTrackTintColor="#d5ddd7"
+          maximumTrackTintColor={appTheme.colors.divider}
           maximumValue={maximumValueSeconds}
-          minimumTrackTintColor="#305c4d"
+          minimumTrackTintColor={appTheme.colors.accent}
           minimumValue={selectedTrack.range.startMs / 1000}
           onSlidingComplete={onRangeChange}
           onValueChange={onRangeChange}
           step={LOOP_BUILDER_NUDGE_STEP_MS / 1000}
-          thumbTintColor="#305c4d"
+          thumbTintColor={appTheme.colors.accent}
           thumbTouchSize={{ width: 36, height: 36 }}
           trackClickable
           value={[startMs / 1000, endMs / 1000]}
@@ -191,9 +195,9 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#d6d1c4',
+    borderColor: appTheme.colors.border,
     borderRadius: 18,
-    backgroundColor: '#fffaf2',
+    backgroundColor: appTheme.colors.surface,
   },
   rangeSummaryRow: {
     flexDirection: 'row',
@@ -235,7 +239,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 10,
-    backgroundColor: '#e7e0d2',
+    backgroundColor: appTheme.colors.bg,
   },
   buttonPressed: {
     opacity: 0.86,

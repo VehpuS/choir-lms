@@ -3,6 +3,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { resolveSearchToggleIsFilled } from './library-search-controls-actions-model';
 
+import { appTheme } from '../../../utils/theme';
+
 const ACTION_BUTTON_SIZE = 40;
 const ACTION_ROW_GAP = 12;
 const DOUBLE_ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE * 2 + ACTION_ROW_GAP;
@@ -61,11 +63,11 @@ const LibrarySearchActionButton = ({
         color={
           isHeroTone
             ? isFilled
-              ? '#173229'
-              : '#fff8ef'
+              ? appTheme.colors.accentOnTint
+              : appTheme.colors.icon
             : isFilled
-              ? '#fff8ef'
-              : '#305c4d'
+              ? appTheme.colors.accentOnTint
+              : appTheme.colors.accentText
         }
         name={iconName}
         size={18}
@@ -142,13 +144,13 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 999,
     borderWidth: 1,
-    backgroundColor: '#ffd27d',
+    backgroundColor: appTheme.colors.warning,
   },
   activeIndicatorDotHero: {
-    borderColor: '#173229',
+    borderColor: appTheme.colors.surfaceRaised,
   },
   activeIndicatorDotSurface: {
-    borderColor: '#f7f1e7',
+    borderColor: appTheme.colors.surface,
   },
   actionRow: {
     flexDirection: 'row',
@@ -170,20 +172,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   actionButtonFilledHero: {
-    borderColor: '#fff8ef',
-    backgroundColor: '#fff8ef',
+    borderColor: appTheme.colors.accent,
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   actionButtonFilledSurface: {
-    borderColor: '#305c4d',
-    backgroundColor: '#305c4d',
+    borderColor: appTheme.colors.accent,
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   actionButtonHero: {
-    borderColor: 'rgba(255, 248, 239, 0.26)',
-    backgroundColor: 'rgba(255, 248, 239, 0.08)',
+    borderColor: appTheme.colors.borderButton,
+    backgroundColor: appTheme.colors.surface,
   },
   actionButtonPressed: { opacity: 0.8 },
   actionButtonSurface: {
-    borderColor: '#c8c0b2',
-    backgroundColor: '#f7f1e7',
+    borderColor: appTheme.colors.borderButton,
+    backgroundColor: appTheme.colors.surface,
   },
 });

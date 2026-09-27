@@ -17,6 +17,8 @@ import {
   formatPlaybackLabel,
 } from './shared';
 
+import { appTheme } from '../../../../utils/theme';
+
 type LoopRangeSelectorPreviewCardProps = {
   canSetBoundaryFromPosition: boolean;
   onScrubPreview: (positionSeconds: number) => void;
@@ -122,9 +124,9 @@ const styles = StyleSheet.create({
     gap: 10,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#d6d1c4',
+    borderColor: appTheme.colors.border,
     borderRadius: 18,
-    backgroundColor: '#fffaf2',
+    backgroundColor: appTheme.colors.surface,
   },
   previewTitleRow: {
     flexDirection: 'row',

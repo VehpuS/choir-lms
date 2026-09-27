@@ -13,6 +13,8 @@ import {
   getDriveSessionTriggerCopy,
 } from '../../utils/authorization';
 
+import { appTheme } from '../../../../utils/theme';
+
 type DriveSessionMenuPanelProps = {
   authState: DriveAuthorizationState;
   canClearAuthorization: boolean;
@@ -78,7 +80,9 @@ export const DriveSessionMenuPanel = ({
           <Text style={styles.panelTitle}>{triggerCopy.title}</Text>
           <Text style={styles.panelBody}>{triggerCopy.body}</Text>
         </View>
-        <View style={[styles.statusBadge, getStatusBadgeStyle(statusCopy.tone)]}>
+        <View
+          style={[styles.statusBadge, getStatusBadgeStyle(statusCopy.tone)]}
+        >
           <Text
             style={[
               styles.statusBadgeLabel,
@@ -119,9 +123,14 @@ export const DriveSessionMenuPanel = ({
           ]}
         >
           {isBusy ? (
-            <ActivityIndicator color="#fff8ef" size="small" />
+            <ActivityIndicator
+              color={appTheme.colors.accentOnTint}
+              size="small"
+            />
           ) : (
-            <Text style={styles.primaryActionLabel}>{statusCopy.actionLabel}</Text>
+            <Text style={styles.primaryActionLabel}>
+              {statusCopy.actionLabel}
+            </Text>
           )}
         </Pressable>
 
@@ -151,10 +160,10 @@ const styles = StyleSheet.create({
     gap: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#d6d1c4',
+    borderColor: appTheme.colors.divider,
     borderRadius: 20,
-    backgroundColor: '#fffdf8',
-    shadowColor: '#1f1c17',
+    backgroundColor: appTheme.colors.surface,
+    shadowColor: appTheme.colors.shadow,
     shadowOpacity: 0.16,
     shadowOffset: { width: 0, height: 10 },
     shadowRadius: 24,
@@ -171,13 +180,13 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   panelTitle: {
-    color: '#1f1c17',
+    color: appTheme.colors.text,
     fontSize: 18,
     fontWeight: '700',
     lineHeight: 24,
   },
   panelBody: {
-    color: '#5f5647',
+    color: appTheme.colors.textMuted,
     fontSize: 13,
     lineHeight: 18,
   },
@@ -188,16 +197,16 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   statusBadgeNeutral: {
-    backgroundColor: '#f6f1e7',
+    backgroundColor: appTheme.colors.bg,
   },
   statusBadgeReady: {
-    backgroundColor: '#e7f2ec',
+    backgroundColor: appTheme.colors.successFill,
   },
   statusBadgeWarning: {
-    backgroundColor: '#fff4dd',
+    backgroundColor: appTheme.colors.warningFill,
   },
   statusBadgeError: {
-    backgroundColor: '#fff1ed',
+    backgroundColor: appTheme.colors.dangerFill,
   },
   statusBadgeLabel: {
     fontSize: 12,
@@ -206,16 +215,16 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   statusBadgeLabelNeutral: {
-    color: '#1f1c17',
+    color: appTheme.colors.text,
   },
   statusBadgeLabelReady: {
-    color: '#1f5c40',
+    color: appTheme.colors.success,
   },
   statusBadgeLabelWarning: {
-    color: '#7f5b12',
+    color: appTheme.colors.warning,
   },
   statusBadgeLabelError: {
-    color: '#8a2d1f',
+    color: appTheme.colors.danger,
   },
   detailList: {
     gap: 10,
@@ -227,14 +236,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   detailLabel: {
-    color: '#5f5647',
+    color: appTheme.colors.textMuted,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.4,
     textTransform: 'uppercase',
   },
   detailValue: {
-    color: '#1f1c17',
+    color: appTheme.colors.text,
     fontSize: 13,
     fontWeight: '700',
     flexShrink: 1,
@@ -249,10 +258,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
     borderRadius: 14,
-    backgroundColor: '#173229',
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   primaryActionLabel: {
-    color: '#fff8ef',
+    color: appTheme.colors.accentOnTint,
     fontSize: 14,
     fontWeight: '700',
   },
@@ -262,12 +271,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#d6d1c4',
+    borderColor: appTheme.colors.border,
     borderRadius: 14,
-    backgroundColor: '#f6f1e7',
+    backgroundColor: appTheme.colors.bg,
   },
   secondaryActionLabel: {
-    color: '#1f1c17',
+    color: appTheme.colors.text,
     fontSize: 13,
     fontWeight: '700',
   },

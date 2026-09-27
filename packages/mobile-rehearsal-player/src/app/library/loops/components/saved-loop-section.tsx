@@ -23,6 +23,8 @@ import { LoopRangeSelectorSurface } from './loop-range-selector-surface';
 import { SavedLoopList } from './saved-loop-list';
 import { TrackScopedLoopDetailCard } from './track-scoped-loop-detail-card';
 
+import { appTheme } from '../../../utils/theme';
+
 type SavedLoopSectionProps = {
   activePlayableItem: PlayableItem | null;
   editingLoop: NamedLoop | null;
@@ -65,7 +67,7 @@ type SavedLoopSectionProps = {
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
 };
 
-const SECONDARY_TEXT = '#5f5647';
+const SECONDARY_TEXT = appTheme.colors.textMuted;
 
 export const SavedLoopSection = ({
   activePlayableItem,

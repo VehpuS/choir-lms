@@ -179,7 +179,7 @@ export const SavedLoopListRow = ({
           <MaterialCommunityIcons
             color={
               isPlaybackLoopActive
-                ? '#173229'
+                ? appTheme.colors.accentText
                 : appTheme.colors.secondaryText
             }
             name="repeat"
@@ -241,7 +241,7 @@ export const SavedLoopListRow = ({
 
 const styles = StyleSheet.create({
   rowMessage: {
-    color: '#9a4d2d',
+    color: appTheme.colors.danger,
     fontSize: 12,
     lineHeight: 17,
   },

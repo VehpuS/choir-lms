@@ -90,9 +90,9 @@ export const QueueMovePositionDialog = ({
           >
             <Slider
               animateTransitions={false}
-              maximumTrackTintColor="#d5ddd7"
+              maximumTrackTintColor={appTheme.colors.divider}
               maximumValue={itemCount}
-              minimumTrackTintColor="#305c4d"
+              minimumTrackTintColor={appTheme.colors.accent}
               minimumValue={1}
               onSlidingComplete={(nextValue) => {
                 setDraftPosition(
@@ -111,7 +111,7 @@ export const QueueMovePositionDialog = ({
                 );
               }}
               step={1}
-              thumbTintColor="#305c4d"
+              thumbTintColor={appTheme.colors.accent}
               thumbTouchSize={{ width: 36, height: 36 }}
               trackClickable
               value={draftPosition}
@@ -184,14 +184,14 @@ const styles = StyleSheet.create({
     borderColor: appTheme.colors.border,
     borderRadius: 16,
     padding: 16,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.surface,
   },
   overlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: 'rgba(31, 28, 23, 0.35)',
+    backgroundColor: appTheme.colors.scrim,
   },
   positionChip: {
     flex: 1,
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     borderColor: appTheme.colors.border,
     borderRadius: 14,
     padding: 12,
-    backgroundColor: '#faf6ee',
+    backgroundColor: appTheme.colors.bg,
   },
   positionChipLabel: {
     color: appTheme.colors.secondaryText,
@@ -224,10 +224,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 14,
     paddingVertical: 12,
-    backgroundColor: '#305c4d',
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   primaryButtonLabel: {
-    color: '#fff8ef',
+    color: appTheme.colors.accentOnTint,
     fontSize: 14,
     fontWeight: '700',
   },
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     borderColor: appTheme.colors.border,
     borderRadius: 14,
     paddingVertical: 12,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.surface,
   },
   secondaryButtonLabel: {
     color: appTheme.colors.primaryText,

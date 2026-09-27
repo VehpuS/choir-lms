@@ -1,6 +1,8 @@
 import { StyleSheet } from 'react-native';
 
-export const SAVED_LOOP_PRIMARY_TEXT = '#1f1c17';
+import { appTheme } from '../../../utils/theme';
+
+export const SAVED_LOOP_PRIMARY_TEXT = appTheme.colors.text;
 
 export const savedLoopListStyles = StyleSheet.create({
   loopGroup: {

@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 999,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.surface,
   },
   handleDisabled: {
     opacity: 0.5,

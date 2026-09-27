@@ -24,9 +24,7 @@ const ModeOption = ({
     onPress={onPress}
     style={[styles.option, isSelected ? styles.optionSelected : undefined]}
   >
-    <Text
-      style={isSelected ? styles.optionLabelSelected : styles.optionLabel}
-    >
+    <Text style={isSelected ? styles.optionLabelSelected : styles.optionLabel}>
       {label}
     </Text>
   </Pressable>
@@ -75,7 +73,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   optionLabelSelected: {
-    color: '#fff8ef',
+    color: appTheme.colors.accentOnTint,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -84,8 +82,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   optionSelected: {
-    borderColor: appTheme.colors.listMarker,
-    backgroundColor: appTheme.colors.listMarker,
+    borderColor: appTheme.colors.accent,
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   section: {
     gap: 8,

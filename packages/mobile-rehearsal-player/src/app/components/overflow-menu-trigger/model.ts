@@ -1,5 +1,7 @@
-export const OVERFLOW_MENU_TRIGGER_BACKGROUND = '#fffdf8';
-export const OVERFLOW_MENU_TRIGGER_BORDER = '#d6d1c4';
+import { appTheme } from '../../utils/theme';
+
+export const OVERFLOW_MENU_TRIGGER_BACKGROUND = appTheme.colors.surface;
+export const OVERFLOW_MENU_TRIGGER_BORDER = appTheme.colors.border;
 export const OVERFLOW_MENU_TRIGGER_HIT_SLOP = 4;
 export const OVERFLOW_MENU_TRIGGER_ICON_SIZE = 18;
 export const OVERFLOW_MENU_TRIGGER_MIN_HEIGHT = 36;

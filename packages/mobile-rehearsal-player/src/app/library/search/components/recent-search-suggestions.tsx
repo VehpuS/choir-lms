@@ -2,6 +2,8 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { InteractionChip } from '../../components/interaction-chip';
 
+import { appTheme } from '../../../utils/theme';
+
 type RecentSearchSuggestionsProps = {
   onSelectRecentSearchTerm: (value: string) => void;
   onSelectRecentSearchTermPressIn?: () => void;
@@ -47,7 +49,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    color: '#5f5647',
+    color: appTheme.colors.textMuted,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.6,

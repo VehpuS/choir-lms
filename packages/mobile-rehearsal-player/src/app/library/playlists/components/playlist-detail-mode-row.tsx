@@ -9,6 +9,8 @@ import {
 } from '../../components/saved-playlist-section-styles/shared';
 import type { PlaylistDetailModeControlAction } from '../utils/saved-playlist-detail-mode-actions';
 
+import { appTheme } from '../../../utils/theme';
+
 // Icon-first ordered/shuffle control row for playlist detail
 // (mobile-rehearsal-player-usability: "Playlist detail fresh-start playback
 // uses icon-first ordered and shuffle actions"): the active mode's icon gets
@@ -40,7 +42,10 @@ export const PlaylistDetailModeRow = (props: {
               variant="row"
             />
             <Text
-              style={[styles.label, action.selected ? styles.labelSelected : null]}
+              style={[
+                styles.label,
+                action.selected ? styles.labelSelected : null,
+              ]}
             >
               {action.label}
             </Text>
@@ -62,7 +67,7 @@ const styles = StyleSheet.create({
   },
   selectedButton: {
     backgroundColor: PLAYLIST_PRIMARY_ACTION_BACKGROUND,
-    borderColor: PLAYLIST_PRIMARY_ACTION_BACKGROUND,
+    borderColor: appTheme.colors.accent,
   },
   label: {
     color: PLAYLIST_PRIMARY_TEXT,
@@ -70,7 +75,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   labelSelected: {
-    color: PLAYLIST_PRIMARY_ACTION_BACKGROUND,
+    color: appTheme.colors.accentText,
     fontWeight: '700',
   },
 });

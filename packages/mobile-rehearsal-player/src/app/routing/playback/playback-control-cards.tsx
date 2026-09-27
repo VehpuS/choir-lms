@@ -121,9 +121,9 @@ export const PlaybackVolumeCard = ({
       <View {...interactionGuardProps} style={continuousInteractionGuardStyle}>
         <Slider
           disabled={isDisabled}
-          maximumTrackTintColor="#d5ddd7"
+          maximumTrackTintColor={appTheme.colors.divider}
           maximumValue={1}
-          minimumTrackTintColor="#305c4d"
+          minimumTrackTintColor={appTheme.colors.accent}
           minimumValue={0}
           onValueChange={(nextVolumeLevel) => {
             const resolvedVolumeLevel = getSliderNumber(nextVolumeLevel);
@@ -131,7 +131,7 @@ export const PlaybackVolumeCard = ({
             setDraftVolumeLevel(resolvedVolumeLevel);
             onSetPlaybackVolume(resolvedVolumeLevel);
           }}
-          thumbTintColor="#305c4d"
+          thumbTintColor={appTheme.colors.accent}
           value={draftVolumeLevel}
         />
       </View>
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 20,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.surface,
   },
   timelineCard: {
     gap: 6,

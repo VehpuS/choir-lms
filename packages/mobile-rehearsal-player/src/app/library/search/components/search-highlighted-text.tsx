@@ -3,6 +3,8 @@ import { StyleSheet, Text } from 'react-native';
 
 import { resolveSearchHighlightParts } from '../utils/saved-library-search-view-model';
 
+import { appTheme } from '../../../utils/theme';
+
 type SearchHighlightedTextProps = Pick<TextProps, 'numberOfLines'> & {
   highlightStyle?: StyleProp<TextStyle>;
   query: string | null;
@@ -52,7 +54,7 @@ export const SearchHighlightedText = ({
 
 const styles = StyleSheet.create({
   highlight: {
-    backgroundColor: '#f0df98',
+    backgroundColor: appTheme.colors.highlightFill,
     fontWeight: '800',
   },
 });

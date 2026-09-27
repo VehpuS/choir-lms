@@ -8,6 +8,8 @@ import {
 import { DriveLibrarySourceGroup } from './drive-library-source-group';
 import { DriveLibraryStatusCard } from './drive-library-status-card';
 
+import { appTheme } from '../../../utils/theme';
+
 type DriveSearchResultsPanelProps = {
   controller: ReturnType<typeof useRehearsalLibraryController>;
 };
@@ -58,8 +60,8 @@ const styles = StyleSheet.create({
     gap: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#d6d1c4',
+    borderColor: appTheme.colors.border,
     borderRadius: 16,
-    backgroundColor: '#fffcf4',
+    backgroundColor: appTheme.colors.surface,
   },
 });

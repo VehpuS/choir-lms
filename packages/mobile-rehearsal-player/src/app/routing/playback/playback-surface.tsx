@@ -20,6 +20,8 @@ import type {
 import { NowPlayingSurface } from './playback-surface-content';
 import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
 
+import { appTheme } from '../../utils/theme';
+
 type PlaybackSurfaceMode = 'now-playing' | 'queue';
 
 type PlaybackSurfaceProps = {
@@ -258,7 +260,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    backgroundColor: 'rgba(23, 50, 41, 0.32)',
+    backgroundColor: appTheme.colors.scrim,
   },
   sheetContainer: {
     flex: 1,

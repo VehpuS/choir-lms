@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     overflow: 'visible',
     position: 'relative',
     zIndex: 20,
-    shadowColor: '#173229',
+    shadowColor: appTheme.colors.shadow,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.14,
     shadowRadius: 20,
@@ -52,12 +52,12 @@ const styles = StyleSheet.create({
     paddingBottom: 18,
   },
   subtitle: {
-    color: 'rgba(255, 248, 239, 0.72)',
+    color: appTheme.colors.textMuted,
     fontSize: 13,
     lineHeight: 18,
   },
   title: {
-    color: '#fff8ef',
+    color: appTheme.colors.text,
     fontSize: 26,
     fontWeight: '700',
     lineHeight: 32,

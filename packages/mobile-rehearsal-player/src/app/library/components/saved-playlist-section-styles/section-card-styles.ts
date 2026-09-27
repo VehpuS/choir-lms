@@ -3,10 +3,11 @@ import type { ImageStyle, TextStyle, ViewStyle } from 'react-native';
 import {
   PLAYLIST_BORDER_COLOR,
   PLAYLIST_INPUT_BACKGROUND,
-  PLAYLIST_PRIMARY_ACTION_BACKGROUND,
   PLAYLIST_PRIMARY_TEXT,
   PLAYLIST_SECONDARY_TEXT,
 } from './shared';
+
+import { appTheme } from '../../../utils/theme';
 
 type PlaylistStyleGroup = Record<string, ViewStyle | TextStyle | ImageStyle>;
 
@@ -40,7 +41,7 @@ export const playlistSectionCardStyles = {
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
     borderRadius: 12,
-    backgroundColor: '#fff9f0',
+    backgroundColor: appTheme.colors.bg,
   },
   confirmationAffectedListContent: {
     gap: 12,
@@ -68,7 +69,7 @@ export const playlistSectionCardStyles = {
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
     borderRadius: 16,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.surface,
   },
   editorTitle: {
     color: PLAYLIST_PRIMARY_TEXT,
@@ -118,11 +119,11 @@ export const playlistSectionCardStyles = {
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
     borderRadius: 14,
-    backgroundColor: '#faf6ee',
+    backgroundColor: appTheme.colors.surface,
   },
   playlistCardSelected: {
-    borderColor: PLAYLIST_PRIMARY_ACTION_BACKGROUND,
-    backgroundColor: '#f1f7f3',
+    borderColor: appTheme.colors.accent,
+    backgroundColor: appTheme.colors.accentRegionFill,
   },
   playlistName: {
     paddingRight: 44,
@@ -147,11 +148,11 @@ export const playlistSectionCardStyles = {
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
     borderRadius: 12,
-    backgroundColor: '#faf6ee',
+    backgroundColor: appTheme.colors.surface,
   },
   itemCardActive: {
-    borderColor: PLAYLIST_PRIMARY_ACTION_BACKGROUND,
-    backgroundColor: '#f1f7f3',
+    borderColor: appTheme.colors.accent,
+    backgroundColor: appTheme.colors.accentRegionFill,
   },
   itemCardUnavailable: {
     opacity: 0.72,
@@ -174,14 +175,14 @@ export const playlistSectionCardStyles = {
     lineHeight: 19,
   },
   itemStatusActive: {
-    color: PLAYLIST_PRIMARY_ACTION_BACKGROUND,
+    color: appTheme.colors.accentText,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.3,
     textTransform: 'uppercase',
   },
   itemStatusUnavailable: {
-    color: '#8a2d1f',
+    color: appTheme.colors.danger,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.3,

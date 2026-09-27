@@ -9,6 +9,8 @@ import {
   PLAYLIST_PRIMARY_TEXT,
 } from './shared';
 
+import { appTheme } from '../../../utils/theme';
+
 type PlaylistStyleGroup = Record<string, ViewStyle | TextStyle | ImageStyle>;
 
 export const playlistActionFeedbackStyles = {
@@ -27,7 +29,7 @@ export const playlistActionFeedbackStyles = {
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
     borderRadius: 999,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.surface,
   },
   primaryButton: {
     alignSelf: 'flex-start',
@@ -48,7 +50,7 @@ export const playlistActionFeedbackStyles = {
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
     borderRadius: 999,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.surface,
   },
   destructiveButton: {
     alignSelf: 'flex-start',
@@ -68,7 +70,7 @@ export const playlistActionFeedbackStyles = {
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
     borderRadius: 999,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.surface,
   },
   inlineRowIconButton: {
     marginTop: 1,
@@ -105,12 +107,12 @@ export const playlistActionFeedbackStyles = {
     gap: 10,
     padding: 12,
     borderRadius: 14,
-    backgroundColor: '#efe9db',
+    backgroundColor: appTheme.colors.surface,
   },
   modalSnackbarCard: {
     marginHorizontal: 16,
     marginBottom: 16,
-    shadowColor: '#1f1c17',
+    shadowColor: appTheme.colors.shadow,
     shadowOpacity: 0.16,
     shadowOffset: {
       width: 0,

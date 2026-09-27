@@ -6,6 +6,8 @@ import {
   LOOP_SELECTOR_SECONDARY_TEXT,
 } from './shared';
 
+import { appTheme } from '../../../../utils/theme';
+
 type LoopRangeSelectorHeaderProps = {
   eyebrowLabel: string;
   isTipsVisible: boolean;
@@ -115,7 +117,7 @@ const styles = StyleSheet.create({
   helpCard: {
     padding: 12,
     borderRadius: 14,
-    backgroundColor: '#fff9f0',
+    backgroundColor: appTheme.colors.surface,
   },
   helpText: {
     color: LOOP_SELECTOR_SECONDARY_TEXT,

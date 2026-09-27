@@ -15,6 +15,8 @@ import {
 } from '../utils/saved-track-playlist-menu-view-model';
 import { savedTrackPlaylistMenuSurfaceStyles as styles } from './saved-track-playlist-menu-surface-styles';
 
+import { appTheme } from '../../../utils/theme';
+
 type SavedTrackPlaylistMenuSurfaceProps = {
   createPlaylistIssue: PlaylistDraftIssue | null;
   draftName: string;
@@ -147,7 +149,7 @@ export const SavedTrackPlaylistMenuSurface = ({
             autoCorrect={false}
             onChangeText={onDraftNameChange}
             placeholder="Wednesday rehearsal"
-            placeholderTextColor="#857b6c"
+            placeholderTextColor={appTheme.colors.textFaint}
             returnKeyType="done"
             style={styles.nameInput}
             value={draftName}

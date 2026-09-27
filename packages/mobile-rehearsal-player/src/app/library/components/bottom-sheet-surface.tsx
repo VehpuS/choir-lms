@@ -3,6 +3,8 @@ import { StyleSheet } from 'react-native';
 import { ModalSurfaceBase } from './modal-surface-base';
 import { SectionHeading } from './section-heading';
 
+import { appTheme } from '../../utils/theme';
+
 type BottomSheetSurfaceProps = {
   children: React.ReactNode;
   eyebrow?: string;
@@ -11,8 +13,8 @@ type BottomSheetSurfaceProps = {
   title?: string;
 };
 
-const BACKDROP = 'rgba(20, 18, 13, 0.42)';
-const CARD_BACKGROUND = '#fffdf8';
+const BACKDROP = appTheme.colors.scrim;
+const CARD_BACKGROUND = appTheme.colors.bg;
 
 export const BottomSheetSurface = ({
   children,
@@ -61,7 +63,7 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_BACKGROUND,
   },
   title: {
-    color: '#1f1c17',
+    color: appTheme.colors.text,
     fontSize: 20,
     fontWeight: '700',
     lineHeight: 26,

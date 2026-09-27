@@ -16,7 +16,7 @@ export const styles = StyleSheet.create({
     width: 56,
     height: 5,
     borderRadius: 999,
-    backgroundColor: '#d0d8d2',
+    backgroundColor: appTheme.colors.divider,
   },
   surfaceDragHandleRegion: {
     gap: 12,
@@ -55,7 +55,7 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   statusCaption: {
-    color: '#2d584a',
+    color: appTheme.colors.accentText,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.5,
@@ -73,7 +73,7 @@ export const styles = StyleSheet.create({
     lineHeight: 20,
   },
   rangeLabel: {
-    color: '#2d584a',
+    color: appTheme.colors.accentText,
     fontSize: 14,
     fontWeight: '700',
     lineHeight: 20,
@@ -94,10 +94,10 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 14,
     paddingVertical: 12,
-    backgroundColor: '#305c4d',
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   queuePlaylistPrimaryActionLabel: {
-    color: '#fff8ef',
+    color: appTheme.colors.accentOnTint,
     fontSize: 14,
     fontWeight: '700',
     textAlign: 'center',
@@ -110,7 +110,7 @@ export const styles = StyleSheet.create({
     borderColor: appTheme.colors.border,
     borderRadius: 14,
     paddingVertical: 12,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.surface,
   },
   queuePlaylistSecondaryActionLabel: {
     color: appTheme.colors.primaryText,
@@ -131,7 +131,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 999,
-    backgroundColor: '#305c4d',
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   transportButtonSecondary: {
     width: 46,
@@ -141,7 +141,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 999,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.bg,
   },
   queueRowShell: {
     alignItems: 'flex-start',
@@ -169,11 +169,11 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 18,
-    backgroundColor: '#faf6ee',
+    backgroundColor: appTheme.colors.surface,
   },
   queueCardCurrent: {
-    borderColor: '#305c4d',
-    backgroundColor: '#f1f7f3',
+    borderColor: appTheme.colors.accent,
+    backgroundColor: appTheme.colors.accentRegionFill,
   },
   queueEyebrow: {
     color: appTheme.colors.secondaryText,

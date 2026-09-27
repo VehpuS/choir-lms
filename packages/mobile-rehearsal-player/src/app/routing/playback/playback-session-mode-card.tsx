@@ -62,7 +62,11 @@ const ModeButton = (props: {
       ]}
     >
       <MaterialCommunityIcons
-        color={props.selected ? '#fff8ef' : appTheme.colors.primaryText}
+        color={
+          props.selected
+            ? appTheme.colors.accentOnTint
+            : appTheme.colors.primaryText
+        }
         name={props.icon}
         size={22}
       />
@@ -129,7 +133,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 18,
-    backgroundColor: '#faf6ee',
+    backgroundColor: appTheme.colors.surface,
   },
   groupRow: {
     flexDirection: 'row',
@@ -149,7 +153,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 999,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.bg,
   },
   modeButtonSelected: {
     width: 44,
@@ -157,7 +161,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 999,
-    backgroundColor: '#305c4d',
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   modeButtonPressed: {
     opacity: 0.84,

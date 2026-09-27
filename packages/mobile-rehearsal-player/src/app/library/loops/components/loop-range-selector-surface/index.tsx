@@ -25,6 +25,8 @@ import {
   LOOP_SELECTOR_PRIMARY_TEXT,
 } from './shared';
 
+import { appTheme } from '../../../../utils/theme';
+
 type LoopRangeSelectorSurfaceProps = {
   builderIssue: {
     title: string;
@@ -189,7 +191,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#d6d1c4',
+    borderColor: appTheme.colors.border,
     borderRadius: 14,
     backgroundColor: LOOP_SELECTOR_INPUT_BACKGROUND,
     color: LOOP_SELECTOR_PRIMARY_TEXT,

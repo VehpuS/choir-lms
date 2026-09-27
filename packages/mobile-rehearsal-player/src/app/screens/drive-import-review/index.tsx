@@ -179,10 +179,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 14,
     paddingVertical: 12,
-    backgroundColor: appTheme.colors.listMarker,
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   primaryButtonLabel: {
-    color: '#fff8ef',
+    color: appTheme.colors.accentOnTint,
     fontSize: 14,
     fontWeight: '700',
   },
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     borderColor: appTheme.colors.border,
   },
   secondaryButtonLabel: {
-    color: appTheme.colors.listMarker,
+    color: appTheme.colors.accentText,
     fontSize: 14,
     fontWeight: '700',
   },

@@ -46,7 +46,7 @@ export const DestinationPickerSection = ({
 
 const styles = StyleSheet.create({
   checkmark: {
-    color: appTheme.colors.listMarker,
+    color: appTheme.colors.accentText,
     fontSize: 16,
     fontWeight: '700',
   },

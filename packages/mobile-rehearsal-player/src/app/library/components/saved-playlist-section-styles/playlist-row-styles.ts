@@ -7,6 +7,8 @@ import {
   PLAYLIST_SECONDARY_TEXT,
 } from './shared';
 
+import { appTheme } from '../../../utils/theme';
+
 type PlaylistStyleGroup = Record<string, ViewStyle | TextStyle | ImageStyle>;
 
 export const playlistRowStyles = {
@@ -27,7 +29,7 @@ export const playlistRowStyles = {
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
     borderRadius: 999,
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.surface,
   },
   playlistRowShell: {
     flexDirection: 'row',

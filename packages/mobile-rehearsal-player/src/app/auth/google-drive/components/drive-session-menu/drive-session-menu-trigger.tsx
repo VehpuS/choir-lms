@@ -2,6 +2,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { DriveAuthorizationStatusCopy } from '../../utils/authorization';
 
+import { appTheme } from '../../../../utils/theme';
+
 type DriveSessionMenuTriggerProps = {
   isVisible: boolean;
   onToggleVisibility: () => void;
@@ -74,26 +76,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   triggerNeutral: {
-    borderColor: 'rgba(255, 248, 239, 0.38)',
-    backgroundColor: 'rgba(255, 248, 239, 0.16)',
+    borderColor: appTheme.colors.borderButton,
+    backgroundColor: appTheme.colors.surface,
   },
   triggerReady: {
-    borderColor: 'rgba(209, 232, 221, 0.46)',
-    backgroundColor: 'rgba(209, 232, 221, 0.2)',
+    borderColor: appTheme.colors.successEdge,
+    backgroundColor: appTheme.colors.successFill,
   },
   triggerWarning: {
-    borderColor: 'rgba(255, 214, 128, 0.48)',
-    backgroundColor: 'rgba(255, 214, 128, 0.22)',
+    borderColor: appTheme.colors.warningEdge,
+    backgroundColor: appTheme.colors.warningFill,
   },
   triggerError: {
-    borderColor: 'rgba(248, 174, 150, 0.48)',
-    backgroundColor: 'rgba(248, 174, 150, 0.2)',
+    borderColor: appTheme.colors.dangerEdge,
+    backgroundColor: appTheme.colors.dangerFill,
   },
   triggerPressed: {
     opacity: 0.88,
   },
   avatarLabel: {
-    color: '#fff8ef',
+    color: appTheme.colors.text,
     fontSize: 14,
     fontWeight: '700',
   },
@@ -105,18 +107,18 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#173229',
+    borderColor: appTheme.colors.surfaceRaised,
   },
   statusDotNeutral: {
-    backgroundColor: '#fff8ef',
+    backgroundColor: appTheme.colors.textMuted,
   },
   statusDotReady: {
-    backgroundColor: '#8fd3af',
+    backgroundColor: appTheme.colors.success,
   },
   statusDotWarning: {
-    backgroundColor: '#ffd27d',
+    backgroundColor: appTheme.colors.warning,
   },
   statusDotError: {
-    backgroundColor: '#f7a694',
+    backgroundColor: appTheme.colors.danger,
   },
 });

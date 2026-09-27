@@ -13,6 +13,8 @@ import {
 } from '../../../components/interaction-guard';
 import type { DriveAuthorizationStatusCopy } from '../utils/authorization';
 
+import { appTheme } from '../../../utils/theme';
+
 type DriveAuthorizationCardProps = {
   authState: DriveAuthorizationState;
   canClearAuthorization: boolean;
@@ -32,9 +34,9 @@ type ActionButtonProps = {
   variant?: 'primary' | 'secondary';
 };
 
-const BORDER_COLOR = '#d6d1c4';
-const PRIMARY_TEXT = '#1f1c17';
-const SECONDARY_TEXT = '#5f5647';
+const BORDER_COLOR = appTheme.colors.border;
+const PRIMARY_TEXT = appTheme.colors.text;
+const SECONDARY_TEXT = appTheme.colors.textMuted;
 
 const formatExpirationLabel = (expiresAt?: string) => {
   if (!expiresAt) {
@@ -74,7 +76,9 @@ const ActionButton = ({
       ]}
     >
       {busy ? (
-        <ActivityIndicator color={secondary ? PRIMARY_TEXT : '#fff8ef'} />
+        <ActivityIndicator
+          color={secondary ? PRIMARY_TEXT : appTheme.colors.accentOnTint}
+        />
       ) : (
         <Text
           style={[
@@ -170,16 +174,16 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   neutralCard: {
-    backgroundColor: '#fffdf8',
+    backgroundColor: appTheme.colors.surface,
   },
   readyCard: {
-    backgroundColor: '#edf7ef',
+    backgroundColor: appTheme.colors.successFill,
   },
   warningCard: {
-    backgroundColor: '#fff6df',
+    backgroundColor: appTheme.colors.warningFill,
   },
   errorCard: {
-    backgroundColor: '#f8e6e0',
+    backgroundColor: appTheme.colors.dangerFill,
   },
   eyebrow: {
     color: SECONDARY_TEXT,
@@ -230,12 +234,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   primaryButton: {
-    backgroundColor: '#173229',
+    backgroundColor: appTheme.colors.surfaceAccent,
   },
   secondaryButton: {
     borderWidth: 1,
     borderColor: BORDER_COLOR,
-    backgroundColor: 'rgba(255, 255, 255, 0.55)',
+    backgroundColor: appTheme.colors.surface,
   },
   buttonDisabled: {
     opacity: 0.55,
@@ -244,7 +248,7 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
   buttonLabel: {
-    color: '#fff8ef',
+    color: appTheme.colors.accentOnTint,
     fontSize: 15,
     fontWeight: '700',
   },

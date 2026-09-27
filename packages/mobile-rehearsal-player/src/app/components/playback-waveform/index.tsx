@@ -65,11 +65,16 @@ export const PlaybackWaveform = ({
     layoutWidth,
     onScrubToPosition,
   });
-  const activeColor = appearance === 'dark' ? '#fff8ef' : '#305c4d';
+  const activeColor =
+    appearance === 'dark' ? appTheme.colors.text : appTheme.colors.accent;
   const inactiveColor =
-    appearance === 'dark' ? 'rgba(209, 232, 221, 0.28)' : '#d5ddd7';
+    appearance === 'dark'
+      ? appTheme.colors.borderButton
+      : appTheme.colors.divider;
   const indicatorColor =
-    appearance === 'dark' ? 'rgba(255, 248, 239, 0.55)' : '#6f8e82';
+    appearance === 'dark'
+      ? appTheme.colors.textSecondary
+      : appTheme.colors.textMuted;
 
   useEffect(() => {
     if (
@@ -219,7 +224,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 8,
     borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: appTheme.colors.hairline,
   },
   heroContainer: {
     minHeight: 188,
@@ -228,7 +233,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     borderRadius: 28,
-    backgroundColor: '#f7f1e6',
+    backgroundColor: appTheme.colors.surface,
   },
   barRow: {
     flex: 1,
