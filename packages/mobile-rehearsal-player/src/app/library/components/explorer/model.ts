@@ -30,6 +30,19 @@ export const resolveExplorerBreadcrumbItems = (
   });
 };
 
+/**
+ * Rows in a list are divided by hairlines, with none before the first row or
+ * after the last (screen 1b row anatomy).
+ */
+export const interleaveExplorerRowSeparators = <Item, Separator>(
+  items: Item[],
+  createSeparator: (index: number) => Separator,
+): (Item | Separator)[] => {
+  return items.flatMap((item, index) => {
+    return index === 0 ? [item] : [createSeparator(index), item];
+  });
+};
+
 export const hasExplorerTrailingControls = (
   actions?: ReactNode,
   overflowTrigger?: ReactNode,

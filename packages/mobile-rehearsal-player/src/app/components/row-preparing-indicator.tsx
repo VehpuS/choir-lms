@@ -6,7 +6,9 @@ type RowPreparingIndicatorProps = {
   label: string;
 };
 
-export const RowPreparingIndicator = ({ label }: RowPreparingIndicatorProps) => {
+export const RowPreparingIndicator = ({
+  label,
+}: RowPreparingIndicatorProps) => {
   return (
     <View
       accessibilityLabel={label}
@@ -14,7 +16,7 @@ export const RowPreparingIndicator = ({ label }: RowPreparingIndicatorProps) => 
       accessible
       style={styles.row}
     >
-      <ActivityIndicator color={appTheme.colors.secondaryText} size="small" />
+      <ActivityIndicator color={appTheme.colors.textMuted} size="small" />
       <Text style={styles.label}>{label}</Text>
     </View>
   );
@@ -24,11 +26,9 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: appTheme.space.xs,
   },
   label: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 12,
-    fontWeight: '600',
+    ...appTheme.type.rowMeta,
   },
 });

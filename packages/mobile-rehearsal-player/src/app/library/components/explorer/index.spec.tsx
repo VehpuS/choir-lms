@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
   getExplorerBackAccessibilityLabel,
   hasExplorerTrailingControls,
+  interleaveExplorerRowSeparators,
   resolveExplorerBreadcrumbItems,
 } from './model';
 
@@ -52,6 +53,23 @@ describe('explorer primitives', () => {
       'Go to parent folder',
     );
     assert.equal(getExplorerBackAccessibilityLabel(false), 'Already at root');
+  });
+
+  it('divides rows with separators only between them', () => {
+    assert.deepEqual(
+      interleaveExplorerRowSeparators(['a', 'b', 'c'], (index) => {
+        return `|${index}`;
+      }),
+      ['a', '|1', 'b', '|2', 'c'],
+    );
+    assert.deepEqual(
+      interleaveExplorerRowSeparators(['only'], () => '|'),
+      ['only'],
+    );
+    assert.deepEqual(
+      interleaveExplorerRowSeparators([], () => '|'),
+      [],
+    );
   });
 
   it('treats only real trailing content as explorer row controls', () => {

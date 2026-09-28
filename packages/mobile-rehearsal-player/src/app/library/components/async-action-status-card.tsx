@@ -22,7 +22,7 @@ export const AsyncActionStatusCard = ({
   return (
     <FeedbackCard
       leading={
-        <ActivityIndicator color={appTheme.colors.secondaryText} size="small" />
+        <ActivityIndicator color={appTheme.colors.accent} size="small" />
       }
       message={message}
       size={size}

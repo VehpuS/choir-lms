@@ -20,29 +20,23 @@ export const SummaryCard = ({ body, eyebrow, title }: SummaryCardProps) => {
 
 const styles = StyleSheet.create({
   card: {
-    gap: 6,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 16,
-    backgroundColor: appTheme.colors.cardBackground,
+    ...appTheme.elevation.flat,
+    gap: appTheme.space.xs,
+    padding: appTheme.space.lg,
+    borderRadius: appTheme.radius.md,
+    backgroundColor: appTheme.colors.surface,
   },
   eyebrow: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
+    ...appTheme.type.kicker,
+    color: appTheme.colors.textMuted,
   },
   cardTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 20,
-    fontWeight: '700',
-    lineHeight: 26,
+    ...appTheme.type.sheetTitle,
+    color: appTheme.colors.text,
   },
   cardBody: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 15,
-    lineHeight: 22,
+    ...appTheme.type.body,
+    color: appTheme.colors.textSecondary,
+    lineHeight: 20,
   },
 });

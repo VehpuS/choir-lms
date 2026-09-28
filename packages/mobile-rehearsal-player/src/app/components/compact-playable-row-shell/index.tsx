@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
+import { appTheme } from '../../utils/theme';
 import {
   getCompactPlayableRowShellLayout,
   type CompactPlayableRowShellVariant,
@@ -58,7 +59,9 @@ export const CompactPlayableRowShell = ({
     <View style={[styles.cardContainer, style]}>
       {layout.overflowPlacement === 'top-right' ? overflowTrigger : null}
       <View style={styles.cardCopy}>
-        <View style={{ paddingRight: layout.titleTrailingPadding }}>{title}</View>
+        <View style={{ paddingRight: layout.titleTrailingPadding }}>
+          {title}
+        </View>
         {badge || actions ? (
           <View style={styles.cardActions}>
             {badge}
@@ -75,30 +78,32 @@ export const CompactPlayableRowShell = ({
 const styles = StyleSheet.create({
   cardContainer: {
     position: 'relative',
-    gap: 8,
+    gap: appTheme.space.xs,
   },
   cardCopy: {
-    gap: 12,
+    gap: appTheme.space.sm,
   },
   cardActions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: appTheme.space.xs,
     alignItems: 'center',
   },
+  // Row anatomy (screen 1b): copy column, then 44pt trailing controls that
+  // sit flush against each other.
   rowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: appTheme.space.sm,
   },
   rowCopy: {
     flex: 1,
+    minWidth: 0,
     gap: 2,
   },
   rowActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
 });

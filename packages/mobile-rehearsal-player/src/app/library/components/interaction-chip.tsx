@@ -9,6 +9,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { appTheme } from '../../utils/theme';
 import { INTERACTION_STATE_OPACITY } from './interaction-style-tokens';
 import {
   resolveInteractionChipPalette,
@@ -48,6 +49,9 @@ export const InteractionChip = ({
           styles.label,
           {
             color: palette.text,
+            fontWeight: palette.isEmphasized
+              ? appTheme.fontWeight.medium
+              : appTheme.fontWeight.regular,
           },
           labelStyle,
         ]}
@@ -65,6 +69,7 @@ export const InteractionChip = ({
           styles.base,
           {
             backgroundColor: palette.background,
+            borderColor: palette.border,
             opacity: disabled ? INTERACTION_STATE_OPACITY.disabled : 1,
           },
           style,
@@ -87,7 +92,10 @@ export const InteractionChip = ({
         styles.base,
         {
           backgroundColor:
-            pressed && !disabled ? palette.pressedBackground : palette.background,
+            pressed && !disabled
+              ? palette.pressedBackground
+              : palette.background,
+          borderColor: palette.border,
           opacity: disabled
             ? INTERACTION_STATE_OPACITY.disabled
             : pressed
@@ -104,17 +112,16 @@ export const InteractionChip = ({
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 36,
+    minHeight: appTheme.space.touchTarget,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: appTheme.space.xs,
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
+    borderWidth: 1,
+    borderRadius: appTheme.radius.pill,
   },
   label: {
-    fontSize: 13,
-    fontWeight: '700',
+    ...appTheme.type.chip,
   },
   trailing: {
     alignItems: 'center',

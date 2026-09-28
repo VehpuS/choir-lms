@@ -32,24 +32,18 @@ export const DestinationHeader = ({
   );
 };
 
+// One large title per destination, set directly on the ground (screens
+// 1a, 1b, 1e): no card, fill, or shadow. zIndex keeps header popovers (the
+// Drive session menu) above the content that follows.
 const styles = StyleSheet.create({
   header: {
-    borderRadius: 22,
-    backgroundColor: appTheme.colors.heroBackground,
     overflow: 'visible',
     position: 'relative',
     zIndex: 20,
-    shadowColor: appTheme.colors.shadow,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.14,
-    shadowRadius: 20,
-    elevation: 6,
   },
   headerContent: {
-    gap: 16,
-    paddingHorizontal: 18,
-    paddingTop: 18,
-    paddingBottom: 18,
+    gap: appTheme.space.md,
+    paddingVertical: appTheme.space.xs,
   },
   subtitle: {
     color: appTheme.colors.textMuted,
@@ -57,9 +51,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   title: {
+    ...appTheme.type.destinationTitle,
     color: appTheme.colors.text,
-    fontSize: 26,
-    fontWeight: '700',
-    lineHeight: 32,
   },
 });

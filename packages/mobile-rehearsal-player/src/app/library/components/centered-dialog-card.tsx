@@ -39,13 +39,12 @@ export const CenteredDialogCard = ({
 
 const styles = StyleSheet.create({
   card: {
-    gap: 12,
-    width: '92%',
+    ...appTheme.elevation.raised,
+    gap: appTheme.space.sm,
+    width: '100%',
     maxWidth: 420,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 16,
-    padding: 16,
-    backgroundColor: appTheme.colors.surfaceBackground,
+    borderRadius: appTheme.radius.md,
+    padding: appTheme.space.lg,
+    backgroundColor: appTheme.colors.surface,
   },
 });

@@ -3,10 +3,12 @@ import type { RehearsalLibraryTagUsage } from '@org/audio-library-runtime';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { AppIcon } from '../../../components/app-icon';
 import {
   buttonInteractionGuardStyle,
   interactionGuardProps,
 } from '../../../components/interaction-guard';
+import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { appTheme } from '../../../utils/theme';
 import { BottomSheetSurface } from '../bottom-sheet-surface';
 import { FeedbackCard } from '../feedback-card';
@@ -86,17 +88,13 @@ export const TagEditorSheet = ({
         <View style={styles.tagRow}>
           {draftTags.map((tag) => {
             return (
-              <InteractionChip
-                key={tag}
-                label={tag}
-                style={styles.tagChip}
-                variant="selected"
-              >
+              <InteractionChip key={tag} label={tag} variant="tag">
                 <Pressable
                   accessibilityLabel={`Remove ${tag} tag`}
                   accessibilityRole="button"
                   {...interactionGuardProps}
                   disabled={isSaving}
+                  hitSlop={REMOVE_TAG_HIT_SLOP}
                   onPress={() => {
                     setDraftTags((currentTags) => {
                       return removeLibraryEntityTag(currentTags, tag);
@@ -104,7 +102,11 @@ export const TagEditorSheet = ({
                   }}
                   style={buttonInteractionGuardStyle}
                 >
-                  <Text style={styles.removeTagLabel}>×</Text>
+                  <AppIcon
+                    color={appTheme.colors.accentOnTint}
+                    name="close"
+                    size={REMOVE_TAG_ICON_SIZE}
+                  />
                 </Pressable>
               </InteractionChip>
             );
@@ -126,7 +128,7 @@ export const TagEditorSheet = ({
           onChangeText={setTagInput}
           onSubmitEditing={handleAddTag}
           placeholder={TAG_INPUT_PLACEHOLDER}
-          placeholderTextColor={appTheme.colors.secondaryText}
+          placeholderTextColor={appTheme.colors.textFaint}
           returnKeyType="done"
           style={styles.tagInput}
           value={tagInput}
@@ -144,7 +146,7 @@ export const TagEditorSheet = ({
             isSaving ? styles.disabledAction : undefined,
           ]}
         >
-          <Text style={styles.addTagButtonLabel}>+</Text>
+          <AppIcon color={appTheme.colors.accentText} name="plus" size={20} />
         </Pressable>
       </View>
 
@@ -162,64 +164,47 @@ export const TagEditorSheet = ({
       />
 
       <View style={styles.actionRow}>
-        <Pressable
-          accessibilityRole="button"
-          {...interactionGuardProps}
+        <OutlinedActionButton
           disabled={isSaving}
+          fill
+          label="Cancel"
           onPress={onClose}
-          style={({ pressed }) => [
-            styles.secondaryButton,
-            buttonInteractionGuardStyle,
-            pressed && !isSaving ? styles.pressedAction : undefined,
-            isSaving ? styles.disabledAction : undefined,
-          ]}
-        >
-          <Text style={styles.secondaryButtonLabel}>Cancel</Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          {...interactionGuardProps}
+        />
+        <OutlinedActionButton
           disabled={isSaving}
+          fill
+          label={isSaving ? 'Saving…' : 'Save tags'}
           onPress={() => {
             onSave(draftTags);
           }}
-          style={({ pressed }) => [
-            styles.primaryButton,
-            buttonInteractionGuardStyle,
-            pressed && !isSaving ? styles.pressedAction : undefined,
-            isSaving ? styles.disabledAction : undefined,
-          ]}
-        >
-          <Text style={styles.primaryButtonLabel}>
-            {isSaving ? 'Saving…' : 'Save tags'}
-          </Text>
-        </Pressable>
+          variant="accent"
+        />
       </View>
     </BottomSheetSurface>
   );
 };
 
+const REMOVE_TAG_ICON_SIZE = 14;
+// Pads the 14pt remove glyph out to a 44pt hit area inside the chip.
+const REMOVE_TAG_HIT_SLOP = 15;
+
 const styles = StyleSheet.create({
   actionRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: appTheme.space.xs,
   },
   addTagButton: {
+    width: appTheme.space.touchTarget,
+    height: appTheme.space.touchTarget,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 999,
-    paddingHorizontal: 16,
-    backgroundColor: appTheme.colors.surfaceAccent,
-  },
-  addTagButtonLabel: {
-    color: appTheme.colors.accentOnTint,
-    fontSize: 22,
-    fontWeight: '700',
-    lineHeight: 24,
+    borderWidth: 1,
+    borderColor: appTheme.colors.accent,
+    borderRadius: appTheme.radius.md,
   },
   bodyCopy: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 14,
+    ...appTheme.type.body,
+    color: appTheme.colors.textMuted,
     lineHeight: 20,
   },
   disabledAction: {
@@ -228,62 +213,25 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: appTheme.space.xs,
   },
   pressedAction: {
     opacity: 0.8,
   },
-  primaryButton: {
-    flex: 1,
-    alignItems: 'center',
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: appTheme.colors.surfaceAccent,
-  },
-  primaryButtonLabel: {
-    color: appTheme.colors.accentOnTint,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  removeTagLabel: {
-    color: appTheme.colors.accentText,
-    fontSize: 14,
-    fontWeight: '800',
-    lineHeight: 16,
-  },
-  secondaryButton: {
-    flex: 1,
-    alignItems: 'center',
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: appTheme.colors.cardBackground,
-  },
-  secondaryButtonLabel: {
-    color: appTheme.colors.primaryText,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  tagChip: {
-    minHeight: 32,
-    paddingVertical: 4,
-  },
   tagInput: {
     flex: 1,
+    minHeight: appTheme.space.touchTarget,
     borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: appTheme.colors.primaryText,
-    backgroundColor: appTheme.colors.surfaceBackground,
+    borderColor: appTheme.colors.borderChip,
+    borderRadius: appTheme.radius.md,
+    paddingHorizontal: appTheme.space.md,
+    color: appTheme.colors.text,
+    fontSize: 15,
+    backgroundColor: appTheme.colors.surface,
   },
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: appTheme.space.xs,
   },
 });

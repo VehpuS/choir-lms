@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
+import { AppIcon } from '../../components/app-icon';
+import { OutlinedActionButton } from '../../components/outlined-action-button';
+import { appTheme } from '../../utils/theme';
 import { savedPlaylistSectionStyles as styles } from './saved-playlist-section-styles';
 
 type DetailAction = {
@@ -22,16 +25,6 @@ type SavedLibraryDetailCardShellProps = {
   primaryAction?: DetailAction;
   secondaryAction?: DetailAction;
   title: string;
-};
-
-const getActionStyle = (tone: DetailAction['tone']) => {
-  return tone === 'primary' ? styles.primaryButton : styles.secondaryButton;
-};
-
-const getActionLabelStyle = (tone: DetailAction['tone']) => {
-  return tone === 'primary'
-    ? styles.primaryButtonLabel
-    : styles.secondaryButtonLabel;
 };
 
 export const SavedLibraryDetailCardShell = ({
@@ -56,23 +49,13 @@ export const SavedLibraryDetailCardShell = ({
       <View style={styles.actionRow}>
         {actions.map((action) => {
           return (
-            <Pressable
-              accessibilityRole="button"
+            <OutlinedActionButton
               disabled={action.disabled}
               key={action.label}
+              label={action.label}
               onPress={action.onPress}
-              style={({ pressed }) => [
-                getActionStyle(action.tone),
-                pressed && !action.disabled
-                  ? styles.actionButtonPressed
-                  : undefined,
-                action.disabled ? styles.actionButtonDisabled : undefined,
-              ]}
-            >
-              <Text style={getActionLabelStyle(action.tone)}>
-                {action.label}
-              </Text>
-            </Pressable>
+              variant={action.tone === 'primary' ? 'accent' : 'neutral'}
+            />
           );
         })}
       </View>
@@ -89,7 +72,7 @@ export const SavedLibraryDetailCardShell = ({
           pressed ? styles.actionButtonPressed : undefined,
         ]}
       >
-        <Text style={styles.secondaryButtonLabel}>←</Text>
+        <AppIcon color={appTheme.colors.text} name="chevron-left" size={20} />
       </Pressable>
 
       <View style={styles.headerRow}>

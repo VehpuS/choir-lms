@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { Children, type ReactNode } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -13,6 +13,7 @@ import { appTheme } from '../../../utils/theme';
 import {
   getExplorerBackAccessibilityLabel,
   hasExplorerTrailingControls,
+  interleaveExplorerRowSeparators,
   resolveExplorerBreadcrumbItems,
   type ExplorerBreadcrumbItem,
 } from './model';
@@ -71,11 +72,7 @@ export const ExplorerNavigationBar = ({
           !canGoBack ? styles.backButtonDisabled : undefined,
         ]}
       >
-        <AppIcon
-          color={appTheme.colors.primaryText}
-          name="chevron-left"
-          size={22}
-        />
+        <AppIcon color={appTheme.colors.text} name="chevron-left" size={20} />
       </Pressable>
       <View style={styles.navigationCopy}>
         <Text numberOfLines={1} style={styles.navigationEyebrow}>
@@ -113,7 +110,6 @@ export const ExplorerBreadcrumbBar = ({
       contentContainerStyle={styles.breadcrumbContent}
       horizontal
       showsHorizontalScrollIndicator={false}
-      style={styles.breadcrumbBar}
     >
       {resolveExplorerBreadcrumbItems(items).map((item, index) => {
         return (
@@ -126,8 +122,7 @@ export const ExplorerBreadcrumbBar = ({
               disabled={item.isDisabled}
               onPress={item.onPress}
               style={({ pressed }) => [
-                styles.breadcrumbChip,
-                item.isCurrent ? styles.breadcrumbChipCurrent : undefined,
+                styles.breadcrumbSegment,
                 pressed && !item.isCurrent ? styles.rowPressed : undefined,
               ]}
             >
@@ -153,7 +148,14 @@ export const ExplorerListSurface = ({
   children,
   style,
 }: ExplorerListSurfaceProps) => {
-  return <View style={[styles.listSurface, style]}>{children}</View>;
+  const rows = interleaveExplorerRowSeparators(
+    Children.toArray(children),
+    (index) => {
+      return <View key={`separator-${index}`} style={styles.rowSeparator} />;
+    },
+  );
+
+  return <View style={[styles.listSurface, style]}>{rows}</View>;
 };
 
 export const ExplorerListRow = ({
@@ -188,10 +190,11 @@ export const ExplorerListRow = ({
 
   const rowSurfaceStyles = [
     styles.row,
-    active ? styles.rowActive : undefined,
     disabled ? styles.rowDisabled : undefined,
     style,
   ];
+  // Active rows are marked by a short accent line, never a background fill.
+  const activeMark = active ? <View style={styles.rowActiveMark} /> : null;
 
   if (!hasTrailingControls) {
     return (
@@ -205,6 +208,7 @@ export const ExplorerListRow = ({
           pressed && isInteractive ? styles.rowPressed : undefined,
         ]}
       >
+        {activeMark}
         {rowBody}
       </Pressable>
     );
@@ -212,6 +216,7 @@ export const ExplorerListRow = ({
 
   return (
     <View style={rowSurfaceStyles}>
+      {activeMark}
       <Pressable
         accessibilityRole="button"
         accessibilityState={selected === undefined ? undefined : { selected }}

@@ -33,7 +33,7 @@ describe('compact playable row shell layout', () => {
   });
 
   it('keeps row overflow in trailing actions without extra title padding', () => {
-    assert.equal(COMPACT_PLAYABLE_ROW_CARD_TITLE_TRAILING_PADDING, 44);
+    assert.equal(COMPACT_PLAYABLE_ROW_CARD_TITLE_TRAILING_PADDING, 47);
     assert.deepEqual(
       getCompactPlayableRowShellLayout({
         hasOverflowTrigger: true,

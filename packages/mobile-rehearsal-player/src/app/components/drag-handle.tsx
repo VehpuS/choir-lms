@@ -29,7 +29,7 @@ export const DragHandle = ({
       {...(canDrag ? panHandlers : {})}
     >
       <AppIcon
-        color={appTheme.colors.secondaryText}
+        color={appTheme.colors.icon}
         name="drag-vertical"
         size={DRAG_HANDLE_ICON_SIZE}
       />
@@ -44,9 +44,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 999,
-    backgroundColor: appTheme.colors.surface,
+    borderColor: appTheme.colors.borderButton,
+    borderRadius: appTheme.radius.pill,
+    backgroundColor: appTheme.colors.transparent,
   },
   handleDisabled: {
     opacity: 0.5,

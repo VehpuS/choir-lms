@@ -10,7 +10,7 @@ describe('modal surface base model', () => {
     assert.deepEqual(resolveModalSurfaceLayout('center'), {
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 16,
+      padding: 20,
     });
   });
 

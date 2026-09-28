@@ -43,17 +43,15 @@ export const TagSuggestionRow = ({
 
 const styles = StyleSheet.create({
   suggestionLabel: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    ...appTheme.type.kicker,
+    color: appTheme.colors.textMuted,
   },
   suggestionRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: appTheme.space.xs,
   },
   suggestionSection: {
-    gap: 8,
+    gap: appTheme.space.xs,
   },
 });

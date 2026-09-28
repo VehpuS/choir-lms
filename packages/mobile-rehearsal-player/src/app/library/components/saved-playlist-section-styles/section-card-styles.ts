@@ -19,16 +19,13 @@ export const playlistSectionCardStyles = {
     gap: 8,
   },
   eyebrow: {
+    ...appTheme.type.kicker,
     color: PLAYLIST_SECONDARY_TEXT,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
   },
   sectionTitle: {
     color: PLAYLIST_PRIMARY_TEXT,
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 17,
+    fontWeight: appTheme.fontWeight.medium,
     lineHeight: 24,
   },
   sectionBody: {
@@ -40,7 +37,7 @@ export const playlistSectionCardStyles = {
     maxHeight: 176,
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
-    borderRadius: 12,
+    borderRadius: appTheme.radius.md,
     backgroundColor: appTheme.colors.bg,
   },
   confirmationAffectedListContent: {
@@ -54,7 +51,7 @@ export const playlistSectionCardStyles = {
   confirmationAffectedTitle: {
     color: PLAYLIST_PRIMARY_TEXT,
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: appTheme.fontWeight.medium,
     lineHeight: 18,
   },
   confirmationAffectedItem: {
@@ -63,18 +60,17 @@ export const playlistSectionCardStyles = {
     lineHeight: 18,
   },
   editorCard: {
+    ...appTheme.elevation.flat,
     position: 'relative',
-    gap: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: PLAYLIST_BORDER_COLOR,
-    borderRadius: 16,
+    gap: appTheme.space.sm,
+    padding: appTheme.space.lg,
+    borderRadius: appTheme.radius.md,
     backgroundColor: appTheme.colors.surface,
   },
   editorTitle: {
     color: PLAYLIST_PRIMARY_TEXT,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: appTheme.fontWeight.medium,
   },
   editorBody: {
     color: PLAYLIST_SECONDARY_TEXT,
@@ -91,11 +87,12 @@ export const playlistSectionCardStyles = {
     gap: 4,
   },
   nameInput: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    minHeight: appTheme.space.touchTarget,
+    paddingHorizontal: appTheme.space.md,
+    paddingVertical: appTheme.space.xs,
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
-    borderRadius: 14,
+    borderRadius: appTheme.radius.md,
     backgroundColor: PLAYLIST_INPUT_BACKGROUND,
     color: PLAYLIST_PRIMARY_TEXT,
     fontSize: 15,
@@ -106,7 +103,7 @@ export const playlistSectionCardStyles = {
   groupTitle: {
     color: PLAYLIST_PRIMARY_TEXT,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: appTheme.fontWeight.medium,
   },
   groupItems: {
     gap: 12,
@@ -118,7 +115,7 @@ export const playlistSectionCardStyles = {
     paddingVertical: 12,
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
-    borderRadius: 14,
+    borderRadius: appTheme.radius.md,
     backgroundColor: appTheme.colors.surface,
   },
   playlistCardSelected: {
@@ -129,7 +126,7 @@ export const playlistSectionCardStyles = {
     paddingRight: 44,
     color: PLAYLIST_PRIMARY_TEXT,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: appTheme.fontWeight.medium,
     lineHeight: 20,
   },
   playlistMetadata: {
@@ -147,7 +144,7 @@ export const playlistSectionCardStyles = {
     paddingVertical: 6,
     borderWidth: 1,
     borderColor: PLAYLIST_BORDER_COLOR,
-    borderRadius: 12,
+    borderRadius: appTheme.radius.md,
     backgroundColor: appTheme.colors.surface,
   },
   itemCardActive: {
@@ -171,20 +168,20 @@ export const playlistSectionCardStyles = {
   itemTitle: {
     color: PLAYLIST_PRIMARY_TEXT,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: appTheme.fontWeight.medium,
     lineHeight: 19,
   },
   itemStatusActive: {
     color: appTheme.colors.accentText,
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: appTheme.fontWeight.medium,
     letterSpacing: 0.3,
     textTransform: 'uppercase',
   },
   itemStatusUnavailable: {
     color: appTheme.colors.danger,
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: appTheme.fontWeight.medium,
     letterSpacing: 0.3,
     textTransform: 'uppercase',
   },

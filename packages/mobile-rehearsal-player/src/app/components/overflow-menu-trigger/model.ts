@@ -1,14 +1,13 @@
 import { appTheme } from '../../utils/theme';
 
-export const OVERFLOW_MENU_TRIGGER_BACKGROUND = appTheme.colors.surface;
-export const OVERFLOW_MENU_TRIGGER_BORDER = appTheme.colors.border;
-export const OVERFLOW_MENU_TRIGGER_HIT_SLOP = 4;
-export const OVERFLOW_MENU_TRIGGER_ICON_SIZE = 18;
-export const OVERFLOW_MENU_TRIGGER_MIN_HEIGHT = 36;
-export const OVERFLOW_MENU_TRIGGER_MIN_WIDTH = 44;
-export const OVERFLOW_MENU_TRIGGER_PADDING_HORIZONTAL = 12;
-export const OVERFLOW_MENU_TRIGGER_TOP = 10;
-export const OVERFLOW_MENU_TRIGGER_RIGHT = 10;
+// A bare glyph in a 44pt box (screen 1b row anatomy): the overflow trigger
+// carries no outline or fill so it recedes behind the row's play ring.
+export const OVERFLOW_MENU_TRIGGER_HIT_SLOP = 0;
+export const OVERFLOW_MENU_TRIGGER_ICON_SIZE = 20;
+export const OVERFLOW_MENU_TRIGGER_MIN_HEIGHT = appTheme.space.touchTarget;
+export const OVERFLOW_MENU_TRIGGER_MIN_WIDTH = appTheme.space.touchTarget;
+export const OVERFLOW_MENU_TRIGGER_TOP = 4;
+export const OVERFLOW_MENU_TRIGGER_RIGHT = 4;
 
 export const getOverflowMenuTriggerAccessibilityState = (disabled: boolean) => {
   return {

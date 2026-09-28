@@ -8,6 +8,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { appTheme } from '../../utils/theme';
 import {
   resolveFeedbackCardPalette,
   type FeedbackCardTone,
@@ -88,39 +89,40 @@ export const FeedbackCard = ({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: appTheme.radius.md,
   },
   regularCard: {
-    gap: 8,
-    padding: 16,
+    gap: appTheme.space.xs,
+    paddingHorizontal: appTheme.space.md,
+    paddingVertical: appTheme.space.md,
   },
   compactCard: {
-    gap: 6,
-    padding: 14,
+    gap: appTheme.space.xxs,
+    paddingHorizontal: appTheme.space.md,
+    paddingVertical: appTheme.space.sm,
   },
   regularTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    ...appTheme.type.rowTitle,
   },
   compactTitle: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: appTheme.fontWeight.medium,
     lineHeight: 20,
   },
   regularMessage: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13.5,
+    lineHeight: 19,
   },
   compactMessage: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12.5,
+    lineHeight: 17,
   },
   footer: {
-    marginTop: 2,
+    marginTop: appTheme.space.xxs,
   },
   titleRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 8,
+    gap: appTheme.space.xs,
   },
 });

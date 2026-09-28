@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import {
-  PLAYLIST_PRIMARY_ACTION_BACKGROUND,
   PLAYLIST_PRIMARY_ACTION_TEXT,
   PLAYLIST_PRIMARY_TEXT,
 } from '../../components/saved-playlist-section-styles/shared';
@@ -66,7 +65,6 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   selectedButton: {
-    backgroundColor: PLAYLIST_PRIMARY_ACTION_BACKGROUND,
     borderColor: appTheme.colors.accent,
   },
   label: {

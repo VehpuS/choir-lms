@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ModalSurfaceBase } from './modal-surface-base';
 import { SectionHeading } from './section-heading';
@@ -35,6 +35,7 @@ export const BottomSheetSurface = ({
       placement="bottom"
       surfaceStyle={styles.sheet}
     >
+      <View style={styles.grabber} />
       {eyebrow || title ? (
         <SectionHeading
           eyebrow={eyebrow}
@@ -49,23 +50,37 @@ export const BottomSheetSurface = ({
   );
 };
 
+// Bottom sheet (screens 1f, 1h, 1i): ground-colored, 22pt top radius, a
+// centered grabber, and an edge-plus-ambient-darkness elevation.
+const GRABBER_WIDTH = 52;
+const GRABBER_HEIGHT = 4;
+const SHEET_BOTTOM_PADDING = 34;
+
 const styles = StyleSheet.create({
   copyGroup: {
-    gap: 6,
+    gap: appTheme.space.xxs,
+  },
+  grabber: {
+    alignSelf: 'center',
+    width: GRABBER_WIDTH,
+    height: GRABBER_HEIGHT,
+    marginBottom: appTheme.space.xxs,
+    borderRadius: appTheme.radius.pill,
+    backgroundColor: appTheme.colors.divider,
   },
   sheet: {
-    gap: 16,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 28,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+    ...appTheme.elevation.sheet,
+    borderBottomWidth: 0,
+    gap: appTheme.space.md,
+    paddingHorizontal: appTheme.space.sheetInset,
+    paddingTop: appTheme.space.sm,
+    paddingBottom: SHEET_BOTTOM_PADDING,
+    borderTopLeftRadius: appTheme.radius.sheet,
+    borderTopRightRadius: appTheme.radius.sheet,
     backgroundColor: CARD_BACKGROUND,
   },
   title: {
+    ...appTheme.type.sheetTitle,
     color: appTheme.colors.text,
-    fontSize: 20,
-    fontWeight: '700',
-    lineHeight: 26,
   },
 });

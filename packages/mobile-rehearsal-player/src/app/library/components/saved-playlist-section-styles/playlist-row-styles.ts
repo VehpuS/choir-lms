@@ -15,7 +15,7 @@ export const playlistRowStyles = {
   dragHandleLabel: {
     color: PLAYLIST_SECONDARY_TEXT,
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: appTheme.fontWeight.medium,
     letterSpacing: 0.8,
   },
   dragHandleButton: {
@@ -73,7 +73,7 @@ export const playlistRowStyles = {
   secondaryButtonLabel: {
     color: PLAYLIST_PRIMARY_TEXT,
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: appTheme.fontWeight.medium,
   },
   actionButtonPressed: {
     opacity: 0.88,

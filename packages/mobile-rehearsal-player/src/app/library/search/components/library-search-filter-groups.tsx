@@ -1,5 +1,11 @@
 import type { ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import {
+  Text,
+  View,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 
 import { InteractionChip } from '../../components/interaction-chip';
 import type {
@@ -56,31 +62,11 @@ export const FilterChipGroup = <Value extends string>({
   selectedValue,
   trailingAction,
 }: {
-  filterChipStyle: {
-    minHeight: number;
-    paddingHorizontal: number;
-    paddingVertical: number;
-  };
-  filterGroupStyle: {
-    gap: number;
-  };
-  filterLabelRowStyle?: {
-    alignItems: 'center';
-    flexDirection: 'row';
-    justifyContent: 'space-between';
-  };
-  filterLabelStyle: {
-    color: string;
-    fontSize: number;
-    fontWeight: '700';
-    letterSpacing: number;
-    textTransform: 'uppercase';
-  };
-  filterRowStyle: {
-    flexDirection: 'row';
-    flexWrap: 'wrap';
-    gap: number;
-  };
+  filterChipStyle: StyleProp<ViewStyle>;
+  filterGroupStyle: StyleProp<ViewStyle>;
+  filterLabelRowStyle?: StyleProp<ViewStyle>;
+  filterLabelStyle: StyleProp<TextStyle>;
+  filterRowStyle: StyleProp<ViewStyle>;
   label: string;
   onSelectValue: (value: Value) => void;
   options: ReadonlyArray<FilterOption<Value>>;

@@ -70,17 +70,20 @@ export const TagFilterMatchModeSwitch = ({
 const styles = StyleSheet.create({
   track: {
     flexDirection: 'row',
-    backgroundColor: INTERACTION_CHIP_TOKENS.passiveBackground,
+    borderWidth: 1,
+    borderColor: INTERACTION_CHIP_TOKENS.passiveBorder,
     borderRadius: 999,
     padding: 2,
   },
   segment: {
+    borderWidth: 1,
+    borderColor: INTERACTION_CHIP_TOKENS.transparent,
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
   segmentActive: {
-    backgroundColor: INTERACTION_CHIP_TOKENS.selectedBackground,
+    borderColor: INTERACTION_CHIP_TOKENS.selectedBorder,
   },
   segmentPressed: {
     opacity: INTERACTION_STATE_OPACITY.pressed,

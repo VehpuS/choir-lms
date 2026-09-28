@@ -1,9 +1,6 @@
-import { Pressable, Text, View } from 'react-native';
+import { View } from 'react-native';
 
-import {
-  buttonInteractionGuardStyle,
-  interactionGuardProps,
-} from '../../components/interaction-guard';
+import { OutlinedActionButton } from '../../components/outlined-action-button';
 import { styles } from '../playback/playback-surface-styles';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
 
@@ -24,57 +21,28 @@ export const QueuePlaylistActionRow = ({
   onSaveQueueAsPlaylist,
   onRequestUpdateQueuePlaylist,
 }: QueuePlaylistActionRowProps) => {
-  const hasUpdateAction = actions.updateAction !== null;
+  const { updateAction } = actions;
 
   return (
     <View style={styles.queuePlaylistActionRow}>
-      <Pressable
-        accessibilityRole="button"
-        {...interactionGuardProps}
+      <OutlinedActionButton
         disabled={isMutating}
+        fill
+        label={isMutating ? 'Saving queue…' : actions.saveLabel}
         onPress={onSaveQueueAsPlaylist}
-        style={({ pressed }) => [
-          hasUpdateAction
-            ? styles.queuePlaylistSecondaryAction
-            : styles.queuePlaylistPrimaryAction,
-          buttonInteractionGuardStyle,
-          pressed && !isMutating ? styles.headerActionPressed : null,
-          isMutating ? styles.headerActionDisabled : null,
-        ]}
-      >
-        <Text
-          style={
-            hasUpdateAction
-              ? styles.queuePlaylistSecondaryActionLabel
-              : styles.queuePlaylistPrimaryActionLabel
-          }
-        >
-          {isMutating ? 'Saving queue…' : actions.saveLabel}
-        </Text>
-      </Pressable>
-      {actions.updateAction ? (
-        <Pressable
-          accessibilityRole="button"
-          {...interactionGuardProps}
+        // Saving is the primary action only when there is no playlist to update.
+        variant={updateAction ? 'neutral' : 'accent'}
+      />
+      {updateAction ? (
+        <OutlinedActionButton
           disabled={isMutating}
+          fill
+          label={updateAction.label}
           onPress={() => {
-            if (!actions.updateAction) {
-              return;
-            }
-
-            onRequestUpdateQueuePlaylist(actions.updateAction);
+            onRequestUpdateQueuePlaylist(updateAction);
           }}
-          style={({ pressed }) => [
-            styles.queuePlaylistPrimaryAction,
-            buttonInteractionGuardStyle,
-            pressed && !isMutating ? styles.headerActionPressed : null,
-            isMutating ? styles.headerActionDisabled : null,
-          ]}
-        >
-          <Text style={styles.queuePlaylistPrimaryActionLabel}>
-            {actions.updateAction.label}
-          </Text>
-        </Pressable>
+          variant="accent"
+        />
       ) : null}
     </View>
   );

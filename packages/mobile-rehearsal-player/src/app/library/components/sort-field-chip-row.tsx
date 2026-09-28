@@ -43,7 +43,7 @@ export const SortFieldChipRow = <Field extends string>({
           accessibilityLabel={directionToggleAccessibilityLabel}
           icon={resolveSortDirectionIcon(direction)}
           onPress={onToggleDirection}
-          size={16}
+          size={18}
           style={styles.sortDirectionToggle}
         />
       }
@@ -51,21 +51,20 @@ export const SortFieldChipRow = <Field extends string>({
   );
 };
 
+// The sort block shared by Tracks, Loops, and search (screens 1c, 1d, 1j):
+// kicker label, a square outlined direction toggle, then 44pt field chips.
 const styles = StyleSheet.create({
-  filterChip: { minHeight: 32, paddingHorizontal: 12, paddingVertical: 6 },
-  filterGroup: { gap: 8 },
+  filterChip: { paddingHorizontal: 14 },
+  filterGroup: { gap: appTheme.space.xs },
   filterLabel: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
+    ...appTheme.type.kicker,
+    color: appTheme.colors.textMuted,
   },
   filterLabelRow: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  sortDirectionToggle: { width: 32, height: 32 },
+  filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: appTheme.space.xs },
+  sortDirectionToggle: { borderRadius: appTheme.radius.md },
 });

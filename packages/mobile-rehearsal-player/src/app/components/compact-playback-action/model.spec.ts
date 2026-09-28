@@ -6,7 +6,6 @@ import { describe, it } from 'node:test';
 import {
   COMPACT_PLAYBACK_ACTION_BACKGROUND,
   COMPACT_PLAYBACK_ACTION_BORDER,
-  COMPACT_PLAYBACK_ACTION_HIT_SLOP,
   COMPACT_PLAYBACK_ACTION_ICON,
   getCompactPlaybackActionAccessibilityState,
   getCompactPlaybackActionVariantTokens,
@@ -59,48 +58,42 @@ describe('CompactPlaybackAction', () => {
     );
   });
 
-  it('keeps compact playback variants aligned with current row, card, and chip sizes', () => {
-    assert.equal(COMPACT_PLAYBACK_ACTION_BORDER, appTheme.colors.border);
+  it('renders the per-row play control as a soft accent ring, not a fill', () => {
+    assert.equal(
+      COMPACT_PLAYBACK_ACTION_BORDER,
+      appTheme.colors.accentBorderSoft,
+    );
     assert.equal(
       COMPACT_PLAYBACK_ACTION_BACKGROUND,
-      appTheme.colors.surfaceBackground,
+      appTheme.colors.transparent,
     );
-    assert.equal(COMPACT_PLAYBACK_ACTION_ICON, appTheme.colors.primaryText);
-    assert.equal(COMPACT_PLAYBACK_ACTION_HIT_SLOP, 4);
+    assert.equal(COMPACT_PLAYBACK_ACTION_ICON, appTheme.colors.accent);
+  });
 
-    assert.deepEqual(getCompactPlaybackActionVariantTokens('inline'), {
-      borderRadius: 999,
-      disabledOpacity: 0.56,
-      iconSize: 18,
-      minHeight: 36,
-      minWidth: 38,
-      paddingHorizontal: 12,
-      pressedOpacity: 0.88,
-    });
-    assert.deepEqual(getCompactPlaybackActionVariantTokens('card'), {
-      borderRadius: 999,
-      disabledOpacity: 0.56,
-      iconSize: 18,
-      minHeight: 36,
-      minWidth: 44,
-      paddingHorizontal: 12,
-      pressedOpacity: 0.88,
-    });
-    assert.deepEqual(getCompactPlaybackActionVariantTokens('row'), {
-      borderRadius: 20,
-      disabledOpacity: 0.45,
-      height: 40,
-      iconSize: 22,
-      pressedOpacity: 0.75,
-      width: 40,
-    });
-    assert.deepEqual(getCompactPlaybackActionVariantTokens('chip'), {
-      borderRadius: 16,
-      disabledOpacity: 0.45,
-      height: 32,
-      iconSize: 16,
-      pressedOpacity: 0.75,
-      width: 32,
-    });
+  it('keeps every variant at a 44pt hit area even when the ring is smaller', () => {
+    const touchTarget = appTheme.space.touchTarget;
+
+    for (const variant of ['inline', 'card', 'row', 'chip'] as const) {
+      const tokens = getCompactPlaybackActionVariantTokens(variant);
+      const visualHeight = tokens.height ?? tokens.minHeight ?? 0;
+      const visualWidth = tokens.width ?? tokens.minWidth ?? 0;
+
+      assert.ok(
+        visualHeight + tokens.hitSlop * 2 >= touchTarget,
+        `${variant} height hit area`,
+      );
+      assert.ok(
+        visualWidth + tokens.hitSlop * 2 >= touchTarget,
+        `${variant} width hit area`,
+      );
+    }
+  });
+
+  it('pads row rings out to a 44pt layout box so adjacent controls never overlap', () => {
+    const tokens = getCompactPlaybackActionVariantTokens('row');
+
+    assert.equal(tokens.width, 34);
+    assert.equal((tokens.width ?? 0) + (tokens.margin ?? 0) * 2, 44);
+    assert.deepEqual(getCompactPlaybackActionVariantTokens('inline'), tokens);
   });
 });

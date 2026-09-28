@@ -9,27 +9,43 @@ import { resolveInteractionChipPalette } from './interaction-chip-model.js';
 const { colors } = appTheme;
 
 describe('interaction chip model', () => {
-  it('returns passive palette for passive variant', () => {
+  it('renders a passive chip as a neutral outline on the ground', () => {
     assert.deepEqual(resolveInteractionChipPalette('passive'), {
-      background: colors.surface,
+      background: colors.transparent,
+      border: colors.borderChip,
+      isEmphasized: false,
       pressedBackground: colors.neutral[700],
       text: colors.textSecondary,
     });
   });
 
-  it('returns selected palette for selected variant', () => {
+  it('marks a selected chip with an accent outline and label, never an accent fill', () => {
     assert.deepEqual(resolveInteractionChipPalette('selected'), {
-      background: colors.surfaceAccent,
-      pressedBackground: colors.surfaceAccent,
-      text: colors.accentOnTint,
+      background: colors.transparent,
+      border: colors.accent,
+      isEmphasized: true,
+      pressedBackground: colors.neutral[700],
+      text: colors.accentText,
     });
   });
 
-  it('returns action palette for action variant', () => {
+  it('keeps an action chip on the passive outline with accent text', () => {
     assert.deepEqual(resolveInteractionChipPalette('action'), {
-      background: colors.surface,
+      background: colors.transparent,
+      border: colors.borderChip,
+      isEmphasized: false,
       pressedBackground: colors.neutral[700],
       text: colors.accentText,
+    });
+  });
+
+  it('fills a chosen tag chip with the accent tint', () => {
+    assert.deepEqual(resolveInteractionChipPalette('tag'), {
+      background: colors.surfaceAccent,
+      border: colors.surfaceAccent,
+      isEmphasized: true,
+      pressedBackground: colors.surfaceAccent,
+      text: colors.accentOnTint,
     });
   });
 });

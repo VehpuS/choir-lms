@@ -1,12 +1,13 @@
 import type { NamedLoop, Playlist } from '@org/audio-library-models';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ScrollView, TextInput, View } from 'react-native';
 
-import {
-  buttonInteractionGuardStyle,
-  interactionGuardProps,
-} from '../../../components/interaction-guard';
+import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { BottomSheetSurface } from '../../components/bottom-sheet-surface';
 import { FeedbackCard } from '../../components/feedback-card';
+import {
+  MenuGroup,
+  MenuRow,
+} from '../../components/options-menu-sheet/menu-group';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { PlaylistDraftIssue } from '../utils/saved-playlist-view-model';
 import {
@@ -72,36 +73,36 @@ export const SavedTrackPlaylistMenuSurface = ({
     >
       {step === 'selector' ? (
         <>
+          <MenuGroup>
+            <MenuRow
+              align="leading"
+              disabled={isMutating}
+              label="New playlist…"
+              onPress={onShowCreatePlaylist}
+              tone="accent"
+            />
+          </MenuGroup>
           {playlists.length > 0 ? (
             <ScrollView
-              contentContainerStyle={styles.playlistListContent}
               keyboardShouldPersistTaps="handled"
               style={styles.playlistList}
             >
-              {playlists.map((playlist) => {
-                return (
-                  <Pressable
-                    accessibilityRole="button"
-                    {...interactionGuardProps}
-                    disabled={isMutating}
-                    key={playlist.id}
-                    onPress={() => {
-                      onSelectPlaylist(playlist);
-                    }}
-                    style={({ pressed }) => [
-                      styles.playlistRow,
-                      buttonInteractionGuardStyle,
-                      pressed && !isMutating ? styles.buttonPressed : undefined,
-                      isMutating ? styles.buttonDisabled : undefined,
-                    ]}
-                  >
-                    <Text style={styles.playlistName}>{playlist.name}</Text>
-                    <Text style={styles.playlistMetadata}>
-                      {getPlaylistItemCountLabel(playlist)}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+              <MenuGroup>
+                {playlists.map((playlist) => {
+                  return (
+                    <MenuRow
+                      align="leading"
+                      disabled={isMutating}
+                      key={playlist.id}
+                      label={playlist.name}
+                      meta={getPlaylistItemCountLabel(playlist)}
+                      onPress={() => {
+                        onSelectPlaylist(playlist);
+                      }}
+                    />
+                  );
+                })}
+              </MenuGroup>
             </ScrollView>
           ) : (
             <FeedbackCard
@@ -111,36 +112,14 @@ export const SavedTrackPlaylistMenuSurface = ({
             />
           )}
 
-          <View style={styles.actionColumn}>
-            <Pressable
-              accessibilityRole="button"
-              {...interactionGuardProps}
+          <MenuGroup>
+            <MenuRow
               disabled={isMutating}
-              onPress={onShowCreatePlaylist}
-              style={({ pressed }) => [
-                styles.secondaryAction,
-                buttonInteractionGuardStyle,
-                pressed && !isMutating ? styles.buttonPressed : undefined,
-                isMutating ? styles.buttonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.secondaryActionLabel}>+ New playlist</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              {...interactionGuardProps}
-              disabled={isMutating}
+              label="Cancel"
               onPress={onClose}
-              style={({ pressed }) => [
-                styles.secondaryAction,
-                buttonInteractionGuardStyle,
-                pressed && !isMutating ? styles.buttonPressed : undefined,
-                isMutating ? styles.buttonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.secondaryActionLabel}>Cancel</Text>
-            </Pressable>
-          </View>
+              tone="cancel"
+            />
+          </MenuGroup>
         </>
       ) : (
         <>
@@ -164,37 +143,20 @@ export const SavedTrackPlaylistMenuSurface = ({
             />
           ) : null}
 
-          <View style={styles.actionColumn}>
-            <Pressable
-              accessibilityRole="button"
-              {...interactionGuardProps}
+          <View style={styles.actionRow}>
+            <OutlinedActionButton
               disabled={isMutating}
-              onPress={onSubmitNewPlaylist}
-              style={({ pressed }) => [
-                styles.primaryAction,
-                buttonInteractionGuardStyle,
-                pressed && !isMutating ? styles.buttonPressed : undefined,
-                isMutating ? styles.buttonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.primaryActionLabel}>
-                {isMutating ? 'Creating playlist…' : 'Create'}
-              </Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              {...interactionGuardProps}
-              disabled={isMutating}
+              fill
+              label="Cancel"
               onPress={onShowPlaylistSelector}
-              style={({ pressed }) => [
-                styles.secondaryAction,
-                buttonInteractionGuardStyle,
-                pressed && !isMutating ? styles.buttonPressed : undefined,
-                isMutating ? styles.buttonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.secondaryActionLabel}>Cancel</Text>
-            </Pressable>
+            />
+            <OutlinedActionButton
+              disabled={isMutating}
+              fill
+              label={isMutating ? 'Creating playlist…' : 'Create'}
+              onPress={onSubmitNewPlaylist}
+              variant="accent"
+            />
           </View>
         </>
       )}

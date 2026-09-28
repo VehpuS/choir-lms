@@ -1,5 +1,7 @@
 import type { ViewStyle } from 'react-native';
 
+import { appTheme } from '../../../utils/theme';
+
 export type ModalSurfacePlacement = 'bottom' | 'center';
 
 type ModalSurfaceLayout = Pick<
@@ -14,7 +16,7 @@ export const resolveModalSurfaceLayout = (
     return {
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 16,
+      padding: appTheme.space.screenInset,
     };
   }
 

@@ -1,6 +1,10 @@
 export type CompactPlayableRowShellVariant = 'card' | 'row';
 
-export const COMPACT_PLAYABLE_ROW_CARD_TITLE_TRAILING_PADDING = 44;
+import { appTheme } from '../../utils/theme';
+
+// Leaves room for the top-right 44pt overflow trigger and its inset.
+export const COMPACT_PLAYABLE_ROW_CARD_TITLE_TRAILING_PADDING =
+  appTheme.space.touchTarget + appTheme.space.xxs;
 
 export const getCompactPlayableRowShellLayout = ({
   hasOverflowTrigger,

@@ -13,26 +13,16 @@ export const INTERACTION_CARD_SHELL_TOKENS = {
   surfaceBackground: colors.bg,
 } as const;
 
-export const INTERACTION_ACTION_BUTTON_TOKENS = {
-  destructive: {
-    background: colors.dangerFill,
-    text: colors.danger,
-  },
-  primary: {
-    background: colors.surfaceAccent,
-    text: colors.accentOnTint,
-  },
-  secondary: {
-    background: colors.surface,
-    text: colors.text,
-  },
-} as const;
-
+// Chips are outlines on the ground (screens 1b, 1j). Only a chosen tag is a
+// filled chip, so it reads as a token the user added rather than a toggle.
 export const INTERACTION_CHIP_TOKENS = {
   actionText: colors.accentText,
-  passiveBackground: colors.surface,
+  passiveBorder: colors.borderChip,
   passivePressedBackground: colors.neutral[700],
   passiveText: colors.textSecondary,
-  selectedBackground: colors.surfaceAccent,
-  selectedText: colors.accentOnTint,
+  selectedBorder: colors.accent,
+  selectedText: colors.accentText,
+  tagBackground: colors.surfaceAccent,
+  tagText: colors.accentOnTint,
+  transparent: colors.transparent,
 } as const;

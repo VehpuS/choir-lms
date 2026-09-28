@@ -1,15 +1,10 @@
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import {
-  buttonInteractionGuardStyle,
-  interactionGuardProps,
-} from '../../../components/interaction-guard';
 import { BottomSheetSurface } from '../bottom-sheet-surface';
-import {
-  INTERACTION_ACTION_BUTTON_TOKENS,
-  INTERACTION_STATE_OPACITY,
-} from '../interaction-style-tokens';
+import { MenuGroup, MenuRow } from './menu-group';
+import type { MenuRowTone } from './menu-group-model';
+import { splitIntoMenuGroups } from './menu-group-model';
 import {
   resolveOptionsMenuSheetActions,
   resolveOptionsMenuSheetHeading,
@@ -31,30 +26,17 @@ type OptionsMenuSheetProps = {
   isSecondaryDisabled?: boolean;
 };
 
-const PRIMARY_TEXT = appTheme.colors.text;
-
-const getActionContainerStyle = (tone: ResolvedOptionsMenuAction['tone']) => {
-  switch (tone) {
-    case 'primary':
-      return styles.primaryAction;
-    case 'destructive':
-      return styles.destructiveAction;
-    default:
-      return styles.secondaryAction;
-  }
+const ACTION_TONE_TO_ROW_TONE: Record<
+  ResolvedOptionsMenuAction['tone'],
+  MenuRowTone
+> = {
+  destructive: 'destructive',
+  primary: 'preferred',
+  secondary: 'default',
 };
 
-const getActionLabelStyle = (tone: ResolvedOptionsMenuAction['tone']) => {
-  switch (tone) {
-    case 'primary':
-      return styles.primaryActionLabel;
-    case 'destructive':
-      return styles.destructiveActionLabel;
-    default:
-      return styles.secondaryActionLabel;
-  }
-};
-
+// An iOS action sheet inside the app's bottom sheet: each menu section is
+// its own rounded group, and Cancel sits alone in a group below.
 export const OptionsMenuSheet = ({
   actions,
   children,
@@ -71,8 +53,10 @@ export const OptionsMenuSheet = ({
 
   const resolvedActions = resolveOptionsMenuSheetActions(actions);
   const heading = resolveOptionsMenuSheetHeading(title);
-  const sectionDividers =
-    resolveOptionsMenuSheetSectionDividers(resolvedActions);
+  const actionGroups = splitIntoMenuGroups(
+    resolvedActions,
+    resolveOptionsMenuSheetSectionDividers(resolvedActions),
+  );
 
   return (
     <BottomSheetSurface
@@ -83,110 +67,38 @@ export const OptionsMenuSheet = ({
     >
       <View style={styles.contentColumn}>
         {children ? <View>{children}</View> : null}
-        <View style={styles.actionColumn}>
-          {resolvedActions.map((action, index) => {
-            return (
-              <View key={action.id}>
-                {sectionDividers[index] ? (
-                  <View style={styles.sectionDivider} />
-                ) : null}
-                <Pressable
-                  accessibilityRole="button"
-                  {...interactionGuardProps}
-                  disabled={action.disabled}
-                  onPress={action.onPress}
-                  style={({ pressed }) => [
-                    getActionContainerStyle(action.tone),
-                    buttonInteractionGuardStyle,
-                    pressed && !action.disabled
-                      ? styles.buttonPressed
-                      : undefined,
-                    action.disabled ? styles.buttonDisabled : undefined,
-                  ]}
-                >
-                  <Text style={getActionLabelStyle(action.tone)}>
-                    {action.label}
-                  </Text>
-                </Pressable>
-              </View>
-            );
-          })}
-          <Pressable
-            accessibilityRole="button"
-            {...interactionGuardProps}
+        {actionGroups.map((group) => {
+          return (
+            <MenuGroup key={group[0]?.id}>
+              {group.map((action) => {
+                return (
+                  <MenuRow
+                    disabled={action.disabled}
+                    key={action.id}
+                    label={action.label}
+                    onPress={action.onPress}
+                    tone={ACTION_TONE_TO_ROW_TONE[action.tone]}
+                  />
+                );
+              })}
+            </MenuGroup>
+          );
+        })}
+        <MenuGroup>
+          <MenuRow
             disabled={isSecondaryDisabled}
+            label={secondaryActionLabel}
             onPress={onSecondaryAction ?? onClose}
-            style={({ pressed }) => [
-              styles.secondaryAction,
-              buttonInteractionGuardStyle,
-              pressed && !isSecondaryDisabled
-                ? styles.buttonPressed
-                : undefined,
-              isSecondaryDisabled ? styles.buttonDisabled : undefined,
-            ]}
-          >
-            <Text style={styles.secondaryActionLabel}>
-              {secondaryActionLabel}
-            </Text>
-          </Pressable>
-        </View>
+            tone="cancel"
+          />
+        </MenuGroup>
       </View>
     </BottomSheetSurface>
   );
 };
 
 const styles = StyleSheet.create({
-  actionColumn: {
-    gap: 10,
-  },
   contentColumn: {
-    gap: 12,
-  },
-  buttonDisabled: {
-    opacity: INTERACTION_STATE_OPACITY.disabled,
-  },
-  buttonPressed: {
-    opacity: INTERACTION_STATE_OPACITY.pressed,
-  },
-  primaryAction: {
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 999,
-    backgroundColor: INTERACTION_ACTION_BUTTON_TOKENS.primary.background,
-  },
-  primaryActionLabel: {
-    color: INTERACTION_ACTION_BUTTON_TOKENS.primary.text,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  destructiveAction: {
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 999,
-    backgroundColor: INTERACTION_ACTION_BUTTON_TOKENS.destructive.background,
-  },
-  destructiveActionLabel: {
-    color: INTERACTION_ACTION_BUTTON_TOKENS.destructive.text,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  secondaryAction: {
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 999,
-    backgroundColor: INTERACTION_ACTION_BUTTON_TOKENS.secondary.background,
-  },
-  secondaryActionLabel: {
-    color: PRIMARY_TEXT,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  sectionDivider: {
-    backgroundColor: appTheme.colors.hairline,
-    height: StyleSheet.hairlineWidth,
-    marginBottom: 10,
+    gap: appTheme.space.xs,
   },
 });

@@ -10,13 +10,10 @@ import {
   interactionGuardProps,
 } from '../interaction-guard';
 import {
-  OVERFLOW_MENU_TRIGGER_BACKGROUND,
-  OVERFLOW_MENU_TRIGGER_BORDER,
   OVERFLOW_MENU_TRIGGER_HIT_SLOP,
   OVERFLOW_MENU_TRIGGER_ICON_SIZE,
   OVERFLOW_MENU_TRIGGER_MIN_HEIGHT,
   OVERFLOW_MENU_TRIGGER_MIN_WIDTH,
-  OVERFLOW_MENU_TRIGGER_PADDING_HORIZONTAL,
   OVERFLOW_MENU_TRIGGER_RIGHT,
   OVERFLOW_MENU_TRIGGER_TOP,
   getOverflowMenuTriggerAccessibilityState,
@@ -44,16 +41,12 @@ const styles = StyleSheet.create({
     zIndex: 1,
     minWidth: OVERFLOW_MENU_TRIGGER_MIN_WIDTH,
     minHeight: OVERFLOW_MENU_TRIGGER_MIN_HEIGHT,
-    paddingHorizontal: OVERFLOW_MENU_TRIGGER_PADDING_HORIZONTAL,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: OVERFLOW_MENU_TRIGGER_BORDER,
-    borderRadius: 999,
-    backgroundColor: OVERFLOW_MENU_TRIGGER_BACKGROUND,
+    borderRadius: appTheme.radius.pill,
   },
   pressed: {
-    opacity: 0.88,
+    backgroundColor: appTheme.colors.hairline,
   },
   disabled: {
     opacity: 0.56,

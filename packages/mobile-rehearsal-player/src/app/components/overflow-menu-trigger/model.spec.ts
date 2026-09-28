@@ -44,11 +44,11 @@ describe('OverflowMenuTrigger', () => {
       },
     );
 
-    assert.equal(OVERFLOW_MENU_TRIGGER_TOP, 10);
-    assert.equal(OVERFLOW_MENU_TRIGGER_RIGHT, 10);
+    assert.equal(OVERFLOW_MENU_TRIGGER_TOP, 4);
+    assert.equal(OVERFLOW_MENU_TRIGGER_RIGHT, 4);
     assert.equal(OVERFLOW_MENU_TRIGGER_MIN_WIDTH, 44);
-    assert.equal(OVERFLOW_MENU_TRIGGER_MIN_HEIGHT, 36);
-    assert.equal(OVERFLOW_MENU_TRIGGER_HIT_SLOP, 4);
-    assert.equal(OVERFLOW_MENU_TRIGGER_ICON_SIZE, 18);
+    assert.equal(OVERFLOW_MENU_TRIGGER_MIN_HEIGHT, 44);
+    assert.equal(OVERFLOW_MENU_TRIGGER_HIT_SLOP, 0);
+    assert.equal(OVERFLOW_MENU_TRIGGER_ICON_SIZE, 20);
   });
 });

@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { DriveSessionMenu } from '../../auth/google-drive/components/drive-session-menu';
 import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import { DestinationHeader } from '../../components/destination-header';
+import { OutlinedActionButton } from '../../components/outlined-action-button';
 import type { useRehearsalLibraryController } from '../../library/saved-rehearsal-library/use-rehearsal-library-controller';
 import { appTheme } from '../../utils/theme';
 import { DestinationPickerSection } from './destination-picker-section';
@@ -104,48 +105,39 @@ export const DriveImportReviewScreen = ({
       <View style={styles.footer}>
         {headerMode === 'default' ? (
           <>
-            <Pressable
-              accessibilityRole="button"
+            <OutlinedActionButton
+              label="Back"
               onPress={() => exitReview(controller.search.selection.edit)}
-              style={styles.secondaryButton}
-            >
-              <Text style={styles.secondaryButtonLabel}>Back</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
+            />
+            <OutlinedActionButton
+              label="Cancel"
               onPress={() => exitReview(controller.search.selection.cancel)}
-              style={styles.secondaryButton}
-            >
-              <Text style={styles.secondaryButtonLabel}>Cancel</Text>
-            </Pressable>
+            />
             {driveImportState.status === 'review' ? (
-              <Pressable
-                accessibilityRole="button"
+              <OutlinedActionButton
+                fill
+                label="Confirm import"
                 onPress={() => controller.driveImport.execute()}
-                style={styles.primaryButton}
-              >
-                <Text style={styles.primaryButtonLabel}>Confirm import</Text>
-              </Pressable>
+                variant="accent"
+              />
             ) : null}
           </>
         ) : null}
         {headerMode === 'executing' ? (
-          <Pressable
-            accessibilityRole="button"
+          <OutlinedActionButton
+            fill
+            label="Cancel import"
             onPress={() => controller.driveImport.cancel()}
-            style={styles.primaryButton}
-          >
-            <Text style={styles.primaryButtonLabel}>Cancel import</Text>
-          </Pressable>
+            variant="accent"
+          />
         ) : null}
         {headerMode === 'completed' ? (
-          <Pressable
-            accessibilityRole="button"
+          <OutlinedActionButton
+            fill
+            label="Dismiss"
             onPress={() => exitReview(controller.search.selection.cancel)}
-            style={styles.primaryButton}
-          >
-            <Text style={styles.primaryButtonLabel}>Dismiss</Text>
-          </Pressable>
+            variant="accent"
+          />
         ) : null}
       </View>
     </View>
@@ -163,45 +155,18 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    gap: 10,
-    paddingTop: 12,
-    paddingBottom: 4,
+    gap: appTheme.space.xs,
+    paddingTop: appTheme.space.sm,
+    paddingBottom: appTheme.space.xxs,
     borderTopWidth: 1,
-    borderTopColor: appTheme.colors.border,
+    borderTopColor: appTheme.colors.hairline,
   },
   menuBackdrop: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 10,
   },
-  primaryButton: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 14,
-    paddingVertical: 12,
-    backgroundColor: appTheme.colors.surfaceAccent,
-  },
-  primaryButtonLabel: {
-    color: appTheme.colors.accentOnTint,
-    fontSize: 14,
-    fontWeight: '700',
-  },
   screen: {
     flex: 1,
     backgroundColor: appTheme.colors.pageBackground,
-  },
-  secondaryButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-  },
-  secondaryButtonLabel: {
-    color: appTheme.colors.accentText,
-    fontSize: 14,
-    fontWeight: '700',
   },
 });

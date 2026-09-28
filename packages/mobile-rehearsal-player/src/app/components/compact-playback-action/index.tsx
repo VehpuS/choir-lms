@@ -13,12 +13,12 @@ import {
   COMPACT_PLAYBACK_ACTION_BACKGROUND,
   COMPACT_PLAYBACK_ACTION_BORDER,
   COMPACT_PLAYBACK_ACTION_DISABLED_ICON,
-  COMPACT_PLAYBACK_ACTION_HIT_SLOP,
   COMPACT_PLAYBACK_ACTION_ICON,
   getCompactPlaybackActionAccessibilityState,
   getCompactPlaybackActionVariantTokens,
   getCompactPlaybackActionVisualState,
   type CompactPlaybackActionIconName,
+  type CompactPlaybackActionVariantTokens,
   type CompactPlaybackActionVariant,
 } from './model';
 import { AppIcon } from '../app-icon';
@@ -44,41 +44,18 @@ const styles = StyleSheet.create({
     borderColor: COMPACT_PLAYBACK_ACTION_BORDER,
     backgroundColor: COMPACT_PLAYBACK_ACTION_BACKGROUND,
   },
-  inline: {
-    minWidth: 38,
-    minHeight: 36,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-  },
-  card: {
-    minWidth: 44,
-    minHeight: 36,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-  },
-  row: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  chip: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-  },
 });
 
-const getVariantStyle = (variant: CompactPlaybackActionVariant) => {
-  switch (variant) {
-    case 'card':
-      return styles.card;
-    case 'row':
-      return styles.row;
-    case 'chip':
-      return styles.chip;
-    default:
-      return styles.inline;
-  }
+const toVariantStyle = (tokens: CompactPlaybackActionVariantTokens) => {
+  return {
+    borderRadius: tokens.borderRadius,
+    height: tokens.height,
+    margin: tokens.margin,
+    minHeight: tokens.minHeight,
+    minWidth: tokens.minWidth,
+    paddingHorizontal: tokens.paddingHorizontal,
+    width: tokens.width,
+  };
 };
 
 export const CompactPlaybackAction = ({
@@ -105,7 +82,7 @@ export const CompactPlaybackAction = ({
       })}
       {...interactionGuardProps}
       disabled={disabled}
-      hitSlop={COMPACT_PLAYBACK_ACTION_HIT_SLOP}
+      hitSlop={tokens.hitSlop}
       onPress={onPress}
       style={({ pressed }) => {
         const visualState = getCompactPlaybackActionVisualState({
@@ -115,7 +92,7 @@ export const CompactPlaybackAction = ({
 
         return [
           styles.action,
-          getVariantStyle(variant),
+          toVariantStyle(tokens),
           buttonInteractionGuardStyle,
           style,
           visualState.pressed ? { opacity: tokens.pressedOpacity } : undefined,

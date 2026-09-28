@@ -1,11 +1,6 @@
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
+import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { appTheme } from '../../../utils/theme';
 
 type DriveSearchSelectionToolbarProps = {
@@ -21,37 +16,6 @@ type DriveSearchSelectionToolbarProps = {
   resultCount: number;
   selectedCount: number;
 };
-
-const SelectionAction = ({
-  disabled = false,
-  label,
-  onPress,
-  primary = false,
-}: {
-  disabled?: boolean;
-  label: string;
-  onPress: () => void;
-  primary?: boolean;
-}) => (
-  <Pressable
-    accessibilityRole="button"
-    accessibilityState={{ disabled }}
-    disabled={disabled}
-    onPress={onPress}
-    style={({ pressed }) => [
-      styles.action,
-      primary ? styles.primaryAction : styles.secondaryAction,
-      pressed && !disabled ? styles.actionPressed : undefined,
-      disabled ? styles.actionDisabled : undefined,
-    ]}
-  >
-    <Text
-      style={primary ? styles.primaryActionLabel : styles.secondaryActionLabel}
-    >
-      {label}
-    </Text>
-  </Pressable>
-);
 
 export const DriveSearchSelectionToolbar = ({
   canSelectAll,
@@ -70,7 +34,7 @@ export const DriveSearchSelectionToolbar = ({
     return resultCount > 0 ? (
       <View style={styles.entryRow}>
         <Text style={styles.helper}>Choose folders and audio to import.</Text>
-        <SelectionAction label="Select" onPress={onEnter} />
+        <OutlinedActionButton label="Select" onPress={onEnter} />
       </View>
     ) : null;
   }
@@ -99,21 +63,21 @@ export const DriveSearchSelectionToolbar = ({
       </View>
       <View style={styles.actions}>
         {isReviewReady ? (
-          <SelectionAction label="Edit Selection" onPress={onEdit} />
+          <OutlinedActionButton label="Edit Selection" onPress={onEdit} />
         ) : (
-          <SelectionAction
+          <OutlinedActionButton
             disabled={isSelectingAll || !canSelectAll}
             label="Select All Matching"
             onPress={onSelectAll}
           />
         )}
-        <SelectionAction label="Cancel" onPress={onCancel} />
+        <OutlinedActionButton label="Cancel" onPress={onCancel} />
         {!isReviewReady ? (
-          <SelectionAction
+          <OutlinedActionButton
             disabled={selectedCount === 0 || isSelectingAll}
             label="Continue"
             onPress={onContinue}
-            primary={true}
+            variant="accent"
           />
         ) : null}
       </View>
@@ -122,28 +86,14 @@ export const DriveSearchSelectionToolbar = ({
 };
 
 const styles = StyleSheet.create({
-  action: {
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: 14,
-    borderWidth: 1,
-    borderRadius: 8,
-  },
-  actionDisabled: {
-    opacity: 0.56,
-  },
-  actionPressed: {
-    opacity: 0.88,
-  },
   actions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
   count: {
-    color: appTheme.colors.primaryText,
-    fontSize: 16,
-    fontWeight: '700',
+    ...appTheme.type.rowTitle,
+    color: appTheme.colors.text,
   },
   entryRow: {
     flexDirection: 'row',
@@ -156,24 +106,6 @@ const styles = StyleSheet.create({
     color: appTheme.colors.secondaryText,
     fontSize: 13,
     lineHeight: 18,
-  },
-  primaryAction: {
-    borderColor: appTheme.colors.accent,
-    backgroundColor: appTheme.colors.surfaceAccent,
-  },
-  primaryActionLabel: {
-    color: appTheme.colors.accentOnTint,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  secondaryAction: {
-    borderColor: appTheme.colors.border,
-    backgroundColor: appTheme.colors.surface,
-  },
-  secondaryActionLabel: {
-    color: appTheme.colors.primaryText,
-    fontSize: 13,
-    fontWeight: '700',
   },
   summaryCopy: {
     flex: 1,
