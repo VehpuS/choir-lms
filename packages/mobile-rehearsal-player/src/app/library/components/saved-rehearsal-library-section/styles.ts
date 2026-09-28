@@ -2,15 +2,10 @@ import { StyleSheet } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
 
-export const SAVED_LIBRARY_SECTION_BACKGROUND = appTheme.colors.surface;
-
+// Every Library view and detail mode sits directly on the ground at the
+// shell's content inset: no panel card (screens 1b–1d).
 export const savedRehearsalLibrarySectionStyles = StyleSheet.create({
   savedLibrarySection: {
-    gap: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: appTheme.colors.borderSubtle,
-    borderRadius: 16,
-    backgroundColor: SAVED_LIBRARY_SECTION_BACKGROUND,
+    gap: appTheme.space.md,
   },
 });

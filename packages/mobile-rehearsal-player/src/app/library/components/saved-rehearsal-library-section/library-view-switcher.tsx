@@ -1,30 +1,67 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
+import { appTheme } from '../../../utils/theme';
 import {
   SAVED_REHEARSAL_LIBRARY_VIEW_OPTIONS,
   type SavedRehearsalLibraryView,
 } from '../../saved-rehearsal-library/detail-mode';
 import { InteractionChip } from '../interaction-chip';
-import { SAVED_LIBRARY_SECTION_BACKGROUND } from './styles';
-import { resolveHorizontalScrollEdgeFades } from './view-switcher-overflow-model';
-
-// Fades to the pill row's own card background, hinting that the row
-// scrolls horizontally to reveal more views (e.g. "Tags") without adding a
-// gradient-rendering dependency for this one minimal affordance. Ordered
-// from the strip nearest the content (most transparent) to the strip at the
-// true trailing edge (fully opaque); the leading fade uses the same stops
-// mirrored, since it's anchored to the opposite side of the row.
-const VIEW_SWITCHER_FADE_OPACITIES = [0.15, 0.4, 0.75, 0.95, 1] as const;
-const VIEW_SWITCHER_FADE_OPACITIES_LEADING = [
-  ...VIEW_SWITCHER_FADE_OPACITIES,
-].reverse();
-const VIEW_SWITCHER_FADE_STRIP_WIDTH = 8;
+import {
+  resolveEdgeFadeStops,
+  resolveHorizontalScrollEdgeFades,
+  VIEW_SWITCHER_EDGE_FADE_COLOR,
+  VIEW_SWITCHER_EDGE_FADE_WIDTH,
+  type HorizontalScrollEdge,
+} from './view-switcher-overflow-model';
 
 type LibraryViewSwitcherProps = {
   isViewSwitcherLocked: boolean;
   onSelectView: (view: SavedRehearsalLibraryView) => void;
   selectedView: SavedRehearsalLibraryView;
+};
+
+// Scroll affordance: hints that the row scrolls to reveal more views (e.g.
+// "Tags") by fading the chips into the ground at whichever edge still has
+// content beyond it.
+const ViewRowEdgeFade = ({ edge }: { edge: HorizontalScrollEdge }) => {
+  const gradientId = `library-view-switcher-fade-${edge}`;
+  const [start, end] = resolveEdgeFadeStops(edge);
+
+  return (
+    <View
+      pointerEvents="none"
+      style={[
+        styles.viewRowFade,
+        edge === 'leading'
+          ? styles.viewRowFadeLeading
+          : styles.viewRowFadeTrailing,
+      ]}
+    >
+      <Svg height="100%" width={VIEW_SWITCHER_EDGE_FADE_WIDTH}>
+        <Defs>
+          <LinearGradient id={gradientId} x1="0" x2="1" y1="0" y2="0">
+            <Stop
+              offset={start.offset}
+              stopColor={VIEW_SWITCHER_EDGE_FADE_COLOR}
+              stopOpacity={start.opacity}
+            />
+            <Stop
+              offset={end.offset}
+              stopColor={VIEW_SWITCHER_EDGE_FADE_COLOR}
+              stopOpacity={end.opacity}
+            />
+          </LinearGradient>
+        </Defs>
+        <Rect
+          fill={`url(#${gradientId})`}
+          height="100%"
+          width={VIEW_SWITCHER_EDGE_FADE_WIDTH}
+        />
+      </Svg>
+    </View>
+  );
 };
 
 export const SavedRehearsalLibraryViewSwitcher = ({
@@ -57,7 +94,6 @@ export const SavedRehearsalLibraryViewSwitcher = ({
         }}
         scrollEventThrottle={16}
         showsHorizontalScrollIndicator={false}
-        style={styles.viewRow}
       >
         {SAVED_REHEARSAL_LIBRARY_VIEW_OPTIONS.map((option) => {
           return (
@@ -69,65 +105,21 @@ export const SavedRehearsalLibraryViewSwitcher = ({
               onPress={() => {
                 onSelectView(option.value);
               }}
-              style={styles.viewChip}
               variant={selectedView === option.value ? 'selected' : 'passive'}
             />
           );
         })}
       </ScrollView>
-      {edgeFades.showLeadingFade ? (
-        <View
-          pointerEvents="none"
-          style={[styles.viewRowFade, styles.viewRowFadeLeading]}
-        >
-          {VIEW_SWITCHER_FADE_OPACITIES_LEADING.map((opacity) => {
-            return (
-              <View
-                key={opacity}
-                style={[
-                  styles.viewRowFadeStrip,
-                  { opacity, width: VIEW_SWITCHER_FADE_STRIP_WIDTH },
-                ]}
-              />
-            );
-          })}
-        </View>
-      ) : null}
-      {edgeFades.showTrailingFade ? (
-        <View
-          pointerEvents="none"
-          style={[styles.viewRowFade, styles.viewRowFadeTrailing]}
-        >
-          {VIEW_SWITCHER_FADE_OPACITIES.map((opacity) => {
-            return (
-              <View
-                key={opacity}
-                style={[
-                  styles.viewRowFadeStrip,
-                  { opacity, width: VIEW_SWITCHER_FADE_STRIP_WIDTH },
-                ]}
-              />
-            );
-          })}
-        </View>
-      ) : null}
+      {edgeFades.showLeadingFade ? <ViewRowEdgeFade edge="leading" /> : null}
+      {edgeFades.showTrailingFade ? <ViewRowEdgeFade edge="trailing" /> : null}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  viewChip: {
-    minHeight: 34,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  viewRow: {
-    maxHeight: 48,
-  },
   viewRowContent: {
     flexDirection: 'row',
-    gap: 8,
-    paddingRight: 4,
+    gap: appTheme.space.sm,
   },
   viewRowWrapper: {
     position: 'relative',
@@ -136,16 +128,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     bottom: 0,
-    flexDirection: 'row',
+    width: VIEW_SWITCHER_EDGE_FADE_WIDTH,
   },
   viewRowFadeLeading: {
     left: 0,
   },
   viewRowFadeTrailing: {
     right: 0,
-  },
-  viewRowFadeStrip: {
-    height: '100%',
-    backgroundColor: SAVED_LIBRARY_SECTION_BACKGROUND,
   },
 });

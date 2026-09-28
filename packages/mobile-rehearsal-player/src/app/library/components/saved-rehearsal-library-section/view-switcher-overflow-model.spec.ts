@@ -3,7 +3,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { resolveHorizontalScrollEdgeFades } from './view-switcher-overflow-model.js';
+import { appTheme } from '../../../utils/theme.js';
+import {
+  resolveEdgeFadeStops,
+  resolveHorizontalScrollEdgeFades,
+  VIEW_SWITCHER_EDGE_FADE_COLOR,
+} from './view-switcher-overflow-model.js';
 
 describe('resolveHorizontalScrollEdgeFades', () => {
   it('shows neither fade when content fits within the container', () => {
@@ -67,5 +72,27 @@ describe('resolveHorizontalScrollEdgeFades', () => {
       }),
       { showLeadingFade: true, showTrailingFade: false },
     );
+  });
+});
+
+describe('view switcher edge fade', () => {
+  it('fades to the Library ground the row sits on', () => {
+    assert.equal(VIEW_SWITCHER_EDGE_FADE_COLOR, appTheme.colors.pageBackground);
+  });
+
+  it('is opaque at the leading screen edge and clear toward the chips', () => {
+    const [start, end] = resolveEdgeFadeStops('leading');
+
+    assert.equal(start.offset, 0);
+    assert.equal(start.opacity, 1);
+    assert.equal(end.offset, 1);
+    assert.equal(end.opacity, 0);
+  });
+
+  it('is clear toward the chips and opaque at the trailing screen edge', () => {
+    const [start, end] = resolveEdgeFadeStops('trailing');
+
+    assert.equal(start.opacity, 0);
+    assert.equal(end.opacity, 1);
   });
 });
