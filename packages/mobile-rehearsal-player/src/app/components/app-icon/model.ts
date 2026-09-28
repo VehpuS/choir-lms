@@ -23,6 +23,7 @@ export type PhosphorGlyph =
   | 'MagnifyingGlass'
   | 'Minus'
   | 'MusicNote'
+  | 'MusicNotes'
   | 'Pause'
   | 'Play'
   | 'PlayCircle'
@@ -41,6 +42,7 @@ export type PhosphorGlyph =
   | 'SpeakerLow'
   | 'SpeakerX'
   | 'Tag'
+  | 'UserCircle'
   | 'X'
   | 'XCircle';
 
@@ -106,11 +108,17 @@ export const APP_ICON_GLYPHS = {
   'folder-plus': filled('FolderPlus'),
   'folder-plus-outline': regular('FolderPlus'),
   history: regular('ClockCounterClockwise'),
+  'history-filled': filled('ClockCounterClockwise'),
   'music-note': filled('MusicNote'),
   'music-note-outline': regular('MusicNote'),
+  'music-note-multiple': filled('MusicNotes'),
+  'music-note-multiple-outline': regular('MusicNotes'),
   'playlist-music-outline': regular('Playlist'),
   'tag-outline': regular('Tag'),
   'view-list': regular('Queue'),
+
+  // Account.
+  'account-circle-outline': regular('UserCircle'),
 
   // Selection.
   'check-circle': filled('CheckCircle'),

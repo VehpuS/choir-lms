@@ -20,6 +20,7 @@ import { FolderPlusIcon } from 'phosphor-react-native/src/icons/FolderPlus';
 import { MagnifyingGlassIcon } from 'phosphor-react-native/src/icons/MagnifyingGlass';
 import { MinusIcon } from 'phosphor-react-native/src/icons/Minus';
 import { MusicNoteIcon } from 'phosphor-react-native/src/icons/MusicNote';
+import { MusicNotesIcon } from 'phosphor-react-native/src/icons/MusicNotes';
 import { PauseIcon } from 'phosphor-react-native/src/icons/Pause';
 import { PlayIcon } from 'phosphor-react-native/src/icons/Play';
 import { PlayCircleIcon } from 'phosphor-react-native/src/icons/PlayCircle';
@@ -38,6 +39,7 @@ import { SpeakerHighIcon } from 'phosphor-react-native/src/icons/SpeakerHigh';
 import { SpeakerLowIcon } from 'phosphor-react-native/src/icons/SpeakerLow';
 import { SpeakerXIcon } from 'phosphor-react-native/src/icons/SpeakerX';
 import { TagIcon } from 'phosphor-react-native/src/icons/Tag';
+import { UserCircleIcon } from 'phosphor-react-native/src/icons/UserCircle';
 import { XIcon } from 'phosphor-react-native/src/icons/X';
 import { XCircleIcon } from 'phosphor-react-native/src/icons/XCircle';
 
@@ -69,6 +71,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   MagnifyingGlass: MagnifyingGlassIcon,
   Minus: MinusIcon,
   MusicNote: MusicNoteIcon,
+  MusicNotes: MusicNotesIcon,
   Pause: PauseIcon,
   Play: PlayIcon,
   PlayCircle: PlayCircleIcon,
@@ -87,6 +90,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   SpeakerLow: SpeakerLowIcon,
   SpeakerX: SpeakerXIcon,
   Tag: TagIcon,
+  UserCircle: UserCircleIcon,
   X: XIcon,
   XCircle: XCircleIcon,
 };

@@ -1,38 +1,16 @@
 import { Pressable, Text, View } from 'react-native';
 
-import { AppIcon, type AppIconName } from '../../components/app-icon';
-import { appTheme } from '../../utils/theme';
+import { AppIcon } from '../../components/app-icon';
 import { styles } from './mobile-shell-styles';
 import { SHELL_DESTINATIONS, type ShellDestinationKey } from './shell-model';
+import { getShellTabPresentation } from './shell-tab-bar-model';
 
 type ShellTabBarProps = {
   activeDestination: ShellDestinationKey;
   onSelectDestination: (destination: ShellDestinationKey) => void;
 };
 
-const ACTIVE_TAB_ICON_COLOR = appTheme.colors.accentOnTint;
-const INACTIVE_TAB_ICON_COLOR = appTheme.colors.secondaryText;
-
-const TAB_ICONS: Record<
-  ShellDestinationKey,
-  {
-    active: AppIconName;
-    inactive: AppIconName;
-  }
-> = {
-  recents: {
-    active: 'history',
-    inactive: 'history',
-  },
-  add: {
-    active: 'folder-plus',
-    inactive: 'folder-plus-outline',
-  },
-  library: {
-    active: 'music-note',
-    inactive: 'music-note-outline',
-  },
-};
+const TAB_ICON_SIZE = 21;
 
 export const ShellTabBar = ({
   activeDestination,
@@ -42,7 +20,7 @@ export const ShellTabBar = ({
     <View style={styles.tabBar}>
       {SHELL_DESTINATIONS.map((destination) => {
         const isActive = destination.key === activeDestination;
-        const icon = TAB_ICONS[destination.key];
+        const presentation = getShellTabPresentation(destination.key, isActive);
 
         return (
           <Pressable
@@ -54,27 +32,23 @@ export const ShellTabBar = ({
             }}
             style={({ pressed }) => [
               styles.tab,
-              isActive ? styles.tabActive : null,
               pressed ? styles.tabPressed : null,
             ]}
           >
-            <View style={styles.tabContent}>
-              <AppIcon
-                color={
-                  isActive ? ACTIVE_TAB_ICON_COLOR : INACTIVE_TAB_ICON_COLOR
-                }
-                name={isActive ? icon.active : icon.inactive}
-                size={18}
-              />
-              <Text
-                style={[
-                  styles.tabLabel,
-                  isActive ? styles.tabLabelActive : null,
-                ]}
-              >
-                {destination.label}
-              </Text>
-            </View>
+            <View
+              style={[
+                styles.tabMark,
+                presentation.showActiveMark ? styles.tabMarkActive : null,
+              ]}
+            />
+            <AppIcon
+              color={presentation.color}
+              name={presentation.iconName}
+              size={TAB_ICON_SIZE}
+            />
+            <Text style={[styles.tabLabel, { color: presentation.color }]}>
+              {destination.label}
+            </Text>
           </Pressable>
         );
       })}

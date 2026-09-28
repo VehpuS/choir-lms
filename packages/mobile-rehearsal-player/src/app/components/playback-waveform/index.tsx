@@ -13,33 +13,33 @@ import {
   clampWaveformRatio,
   getPlaybackBoundsSeconds,
   hasWaveformProgressSettled,
+  isWaveformBarPlayed,
   isWaveformScrubReady,
   resolveWaveformCommitRatio,
   resolveWaveformRatioFromLocation,
 } from './model';
 import {
+  MIN_BAR_HEIGHT,
+  MINI_WAVEFORM_BARS,
+  WAVEFORM_BARS,
+  WAVEFORM_HEIGHT,
+  getWaveformColors,
+  type PlaybackWaveformAppearance,
+  type PlaybackWaveformVariant,
+} from './variants';
+import {
   continuousInteractionGuardStyle,
   interactionGuardProps,
 } from '../interaction-guard';
 
-const WAVEFORM_BARS = [
-  0.22, 0.36, 0.54, 0.44, 0.68, 0.3, 0.58, 0.4, 0.74, 0.48, 0.62, 0.34, 0.72,
-  0.38, 0.57, 0.29, 0.64, 0.42, 0.77, 0.35, 0.59, 0.31, 0.69, 0.47, 0.56, 0.33,
-  0.61, 0.27,
-] as const;
-
 type PlaybackWaveformProps = {
   activePlayableItem: PlayableItem;
-  appearance?: 'dark' | 'light';
+  appearance?: PlaybackWaveformAppearance;
   interactive?: boolean;
   onScrubToPosition?: (positionSeconds: number) => void;
   progressRatio: number;
   style?: StyleProp<ViewStyle>;
-  variant?: 'compact' | 'hero';
-};
-
-const getWaveformHeight = (variant: PlaybackWaveformProps['variant']) => {
-  return variant === 'hero' ? 154 : 28;
+  variant?: PlaybackWaveformVariant;
 };
 
 export const PlaybackWaveform = ({
@@ -54,7 +54,8 @@ export const PlaybackWaveform = ({
   const [draftRatio, setDraftRatio] = useState<number | null>(null);
   const draftRatioRef = useRef<number | null>(null);
   const [layoutWidth, setLayoutWidth] = useState(0);
-  const waveformHeight = getWaveformHeight(variant);
+  const waveformHeight = WAVEFORM_HEIGHT[variant];
+  const bars = variant === 'mini' ? MINI_WAVEFORM_BARS : WAVEFORM_BARS;
   const { endSeconds, startSeconds } =
     getPlaybackBoundsSeconds(activePlayableItem);
   const hasScrubRange = endSeconds > startSeconds;
@@ -65,16 +66,7 @@ export const PlaybackWaveform = ({
     layoutWidth,
     onScrubToPosition,
   });
-  const activeColor =
-    appearance === 'dark' ? appTheme.colors.text : appTheme.colors.accent;
-  const inactiveColor =
-    appearance === 'dark'
-      ? appTheme.colors.borderButton
-      : appTheme.colors.divider;
-  const indicatorColor =
-    appearance === 'dark'
-      ? appTheme.colors.textSecondary
-      : appTheme.colors.textMuted;
+  const colors = getWaveformColors(variant, appearance);
 
   useEffect(() => {
     if (
@@ -163,22 +155,23 @@ export const PlaybackWaveform = ({
       onStartShouldSetResponder={() => canScrub}
       style={[
         styles.container,
-        variant === 'hero' ? styles.heroContainer : styles.compactContainer,
+        CONTAINER_STYLE[variant],
         interactive ? continuousInteractionGuardStyle : undefined,
         style,
       ]}
     >
       <View
         pointerEvents="none"
-        style={[
-          styles.barRow,
-          variant === 'compact' ? styles.compactBarRow : null,
-        ]}
+        style={[styles.barRow, BAR_ROW_STYLE[variant]]}
       >
-        {WAVEFORM_BARS.map((amplitude, index) => {
-          const threshold = (index + 1) / WAVEFORM_BARS.length;
+        {bars.map((amplitude, index) => {
+          const isPlayed = isWaveformBarPlayed({
+            barCount: bars.length,
+            barIndex: index,
+            progressRatio: displayedRatio,
+          });
           const barHeight = Math.max(
-            variant === 'hero' ? 18 : 8,
+            MIN_BAR_HEIGHT[variant],
             Math.round(amplitude * waveformHeight),
           );
 
@@ -187,10 +180,9 @@ export const PlaybackWaveform = ({
               key={`${variant}:${index}`}
               style={[
                 styles.bar,
-                variant === 'hero' ? styles.heroBar : styles.compactBar,
+                BAR_STYLE[variant],
                 {
-                  backgroundColor:
-                    displayedRatio >= threshold ? activeColor : inactiveColor,
+                  backgroundColor: isPlayed ? colors.active : colors.inactive,
                   height: barHeight,
                 },
               ]}
@@ -204,7 +196,7 @@ export const PlaybackWaveform = ({
           style={[
             styles.scrubIndicator,
             {
-              backgroundColor: indicatorColor,
+              backgroundColor: colors.indicator,
               left: `${displayedRatio * 100}%`,
             },
           ]}
@@ -244,6 +236,21 @@ const styles = StyleSheet.create({
   compactBarRow: {
     gap: 2,
   },
+  miniContainer: {
+    height: WAVEFORM_HEIGHT.mini,
+  },
+  miniBarRow: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  // Fixed 2pt bars: reset the shared `flex: 1` so the basis is the width.
+  miniBar: {
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: 'auto',
+    width: 2,
+    borderRadius: 2,
+  },
   bar: {
     flex: 1,
     borderRadius: 999,
@@ -263,3 +270,21 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
 });
+
+const CONTAINER_STYLE: Record<PlaybackWaveformVariant, ViewStyle> = {
+  compact: styles.compactContainer,
+  hero: styles.heroContainer,
+  mini: styles.miniContainer,
+};
+
+const BAR_ROW_STYLE: Record<PlaybackWaveformVariant, ViewStyle | null> = {
+  compact: styles.compactBarRow,
+  hero: null,
+  mini: styles.miniBarRow,
+};
+
+const BAR_STYLE: Record<PlaybackWaveformVariant, ViewStyle> = {
+  compact: styles.compactBar,
+  hero: styles.heroBar,
+  mini: styles.miniBar,
+};

@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import { AppIcon } from '../../../components/app-icon';
 import { PlaybackWaveform } from '../../../components/playback-waveform';
+import { getProgressLineWidth } from '../../../components/playback-waveform/model';
 import type { SavedTrackPlaybackState } from '../../../library/playback/utils/saved-track-playback-view-model';
 import { getPlaybackToggleControlModel } from '../../playback/playback-toggle-control-model';
 import { styles } from '../mobile-shell-styles';
@@ -13,6 +14,8 @@ import {
 } from '../shell-model';
 import { ShellTabBar } from '../shell-tab-bar';
 import { appTheme } from '../../../utils/theme';
+
+const MINI_PLAYER_TOGGLE_ICON_SIZE = 20;
 
 type MobileShellMiniPlayerDockProps = {
   activeDestination: ShellDestinationKey;
@@ -45,12 +48,7 @@ export const MobileShellMiniPlayerDock = ({
     : null;
 
   return (
-    <View
-      style={[
-        styles.bottomDock,
-        !miniPlayerSummary ? styles.bottomDockTabsOnly : null,
-      ]}
-    >
+    <View style={styles.bottomDock}>
       {miniPlayerSummary ? (
         <View style={styles.miniPlayer}>
           <Pressable
@@ -66,10 +64,9 @@ export const MobileShellMiniPlayerDock = ({
             {activePlayableItem ? (
               <PlaybackWaveform
                 activePlayableItem={activePlayableItem}
-                appearance="dark"
                 progressRatio={miniPlayerSummary.waveformProgressRatio}
                 style={styles.miniPlayerWaveform}
-                variant="compact"
+                variant="mini"
               />
             ) : null}
             <View style={styles.miniPlayerCopy}>
@@ -105,11 +102,24 @@ export const MobileShellMiniPlayerDock = ({
             ]}
           >
             <AppIcon
-              color={appTheme.colors.text}
+              color={appTheme.colors.accentText}
               name={playbackToggleControl?.iconName ?? 'play'}
-              size={24}
+              size={MINI_PLAYER_TOGGLE_ICON_SIZE}
             />
           </Pressable>
+          {/* Progress only, not a scrubber: it ignores touches. */}
+          <View
+            pointerEvents="none"
+            style={[
+              styles.miniPlayerProgressLine,
+              {
+                width: getProgressLineWidth(
+                  miniPlayerSummary.waveformProgressRatio,
+                ),
+              },
+            ]}
+            testID="mini-player-progress-line"
+          />
         </View>
       ) : null}
       <ShellTabBar

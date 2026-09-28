@@ -1,11 +1,5 @@
 import type { DriveAuthorizationState } from '@org/google-drive';
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import type { DriveAuthorizationStatusCopy } from '../../utils/authorization';
 import {
@@ -13,6 +7,7 @@ import {
   getDriveSessionTriggerCopy,
 } from '../../utils/authorization';
 
+import { OutlinedActionButton } from '../../../../components/outlined-action-button';
 import { appTheme } from '../../../../utils/theme';
 
 type DriveSessionMenuPanelProps = {
@@ -110,64 +105,39 @@ export const DriveSessionMenuPanel = ({
       </View>
 
       <View style={styles.actions}>
-        <Pressable
-          accessibilityRole="button"
-          disabled={!canStartAuthorization || isBusy}
+        <OutlinedActionButton
+          disabled={!canStartAuthorization}
+          isBusy={isBusy}
+          label={statusCopy.actionLabel}
           onPress={onStartAuthorization}
-          style={({ pressed }) => [
-            styles.primaryAction,
-            pressed && canStartAuthorization && !isBusy
-              ? styles.actionPressed
-              : null,
-            !canStartAuthorization || isBusy ? styles.actionDisabled : null,
-          ]}
-        >
-          {isBusy ? (
-            <ActivityIndicator
-              color={appTheme.colors.accentOnTint}
-              size="small"
-            />
-          ) : (
-            <Text style={styles.primaryActionLabel}>
-              {statusCopy.actionLabel}
-            </Text>
-          )}
-        </Pressable>
+          variant="accent"
+        />
 
         {canClearAuthorization ? (
-          <Pressable
-            accessibilityRole="button"
+          <OutlinedActionButton
+            label="Forget session"
             onPress={onClearAuthorization}
-            style={({ pressed }) => [
-              styles.secondaryAction,
-              pressed ? styles.actionPressed : null,
-            ]}
-          >
-            <Text style={styles.secondaryActionLabel}>Forget session</Text>
-          </Pressable>
+            variant="neutral"
+          />
         ) : null}
       </View>
     </View>
   );
 };
 
+// An account card anchored under the header's account button: radius 8, the
+// raised edge-plus-darkness elevation, and outlined actions (design Decision 8).
 const styles = StyleSheet.create({
   panel: {
     position: 'absolute',
-    top: 52,
+    top: appTheme.space.touchTarget + appTheme.space.xs,
     right: 0,
     width: 286,
-    gap: 14,
+    gap: appTheme.space.lg,
     padding: 16,
-    borderWidth: 1,
-    borderColor: appTheme.colors.divider,
-    borderRadius: 20,
+    borderRadius: appTheme.radius.md,
     backgroundColor: appTheme.colors.surface,
-    shadowColor: appTheme.colors.shadow,
-    shadowOpacity: 0.16,
-    shadowOffset: { width: 0, height: 10 },
-    shadowRadius: 24,
-    elevation: 12,
+    ...appTheme.elevation.raised,
   },
   panelHeader: {
     flexDirection: 'row',
@@ -181,9 +151,9 @@ const styles = StyleSheet.create({
   },
   panelTitle: {
     color: appTheme.colors.text,
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 24,
+    fontSize: 17,
+    fontWeight: appTheme.fontWeight.medium,
+    lineHeight: 22,
   },
   panelBody: {
     color: appTheme.colors.textMuted,
@@ -193,8 +163,8 @@ const styles = StyleSheet.create({
   statusBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
+    paddingVertical: 5,
+    borderRadius: appTheme.radius.pill,
   },
   statusBadgeNeutral: {
     backgroundColor: appTheme.colors.bg,
@@ -209,10 +179,8 @@ const styles = StyleSheet.create({
     backgroundColor: appTheme.colors.dangerFill,
   },
   statusBadgeLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
+    ...appTheme.type.kicker,
+    fontWeight: appTheme.fontWeight.medium,
   },
   statusBadgeLabelNeutral: {
     color: appTheme.colors.text,
@@ -236,54 +204,17 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   detailLabel: {
+    ...appTheme.type.kicker,
     color: appTheme.colors.textMuted,
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
   },
   detailValue: {
     color: appTheme.colors.text,
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: appTheme.fontWeight.medium,
     flexShrink: 1,
     textAlign: 'right',
   },
   actions: {
-    gap: 10,
-  },
-  primaryAction: {
-    minHeight: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    borderRadius: 14,
-    backgroundColor: appTheme.colors.surfaceAccent,
-  },
-  primaryActionLabel: {
-    color: appTheme.colors.accentOnTint,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  secondaryAction: {
-    minHeight: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 14,
-    backgroundColor: appTheme.colors.bg,
-  },
-  secondaryActionLabel: {
-    color: appTheme.colors.text,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  actionPressed: {
-    opacity: 0.85,
-  },
-  actionDisabled: {
-    opacity: 0.55,
+    gap: appTheme.space.sm,
   },
 });

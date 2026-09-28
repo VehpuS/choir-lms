@@ -2,65 +2,28 @@ import { StyleSheet } from 'react-native';
 
 import { appTheme } from '../../utils/theme';
 
-const SHELL_CONTENT_HORIZONTAL_PADDING = 14;
-const HEADER_BOTTOM_RADIUS = 18;
-const MINI_PLAYER_RADIUS = 18;
-const TAB_BAR_RADIUS = 16;
-const TAB_BAR_BACKGROUND = appTheme.colors.surfaceRaised;
+const { colors, space } = appTheme;
 
+const MINI_PLAYER_TOGGLE_SIZE = 46;
+const MINI_PLAYER_WAVEFORM_WIDTH = 34;
+const PROGRESS_LINE_HEIGHT = 2;
+const TAB_MARK_WIDTH = 16;
+const TAB_MARK_HEIGHT = 2;
+const TAB_GAP = 5;
+const PRESSED_OPACITY = 0.88;
+const DISABLED_OPACITY = 0.5;
+
+// Mini-player and tab bar render as one flush band (screens 1a–1e):
+// `surfaceRaised` with a hairline top edge, no floating cards.
 export const styles = StyleSheet.create({
   screen: {
     flex: 1,
     position: 'relative',
-    backgroundColor: appTheme.colors.pageBackground,
-  },
-  menuBackdrop: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    zIndex: 5,
-  },
-  headerCard: {
-    position: 'relative',
-    zIndex: 10,
-    gap: 8,
-    paddingTop: 12,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    borderBottomLeftRadius: HEADER_BOTTOM_RADIUS,
-    borderBottomRightRadius: HEADER_BOTTOM_RADIUS,
-    backgroundColor: appTheme.colors.heroBackground,
-    overflow: 'visible',
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerLabel: {
-    color: appTheme.colors.textSecondary,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-  },
-  headerTitle: {
-    color: appTheme.colors.text,
-    fontSize: 26,
-    fontWeight: '700',
-    lineHeight: 32,
-  },
-  headerBody: {
-    color: appTheme.colors.textSecondary,
-    fontSize: 14,
-    lineHeight: 21,
+    backgroundColor: colors.bg,
   },
   contentViewport: {
     flex: 1,
-    paddingHorizontal: SHELL_CONTENT_HORIZONTAL_PADDING,
+    paddingHorizontal: space.screenInset,
   },
   destinationPanel: {
     flex: 1,
@@ -72,100 +35,102 @@ export const styles = StyleSheet.create({
     display: 'none',
   },
   bottomDock: {
-    gap: 8,
-    paddingTop: 6,
-    paddingHorizontal: 12,
-    paddingBottom: 6,
-  },
-  bottomDockTabsOnly: {
-    paddingTop: 2,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderSubtle,
+    backgroundColor: colors.surfaceRaised,
   },
   miniPlayer: {
+    position: 'relative',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     gap: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: appTheme.colors.divider,
-    borderRadius: MINI_PLAYER_RADIUS,
-    backgroundColor: appTheme.colors.surfaceRaised,
+    paddingTop: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 11,
   },
   miniPlayerBody: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    minHeight: space.touchTarget,
   },
   miniPlayerPressed: {
-    opacity: 0.9,
+    opacity: PRESSED_OPACITY,
   },
   miniPlayerWaveform: {
-    width: 74,
+    width: MINI_PLAYER_WAVEFORM_WIDTH,
   },
   miniPlayerCopy: {
     flex: 1,
+    minWidth: 0,
     gap: 2,
   },
   miniPlayerTitle: {
-    color: appTheme.colors.text,
-    fontSize: 16,
-    fontWeight: '700',
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: appTheme.fontWeight.medium,
   },
   miniPlayerTitleWrap: {
-    minHeight: 22,
+    minHeight: 19,
   },
   miniPlayerContext: {
-    color: appTheme.colors.textMuted,
-    fontSize: 13,
-    lineHeight: 18,
+    color: colors.textMuted,
+    fontSize: 11,
+    fontVariant: [...appTheme.tabularNumbers],
+    lineHeight: 15,
   },
   miniPlayerActionButton: {
-    width: 46,
-    height: 46,
+    width: MINI_PLAYER_TOGGLE_SIZE,
+    height: MINI_PLAYER_TOGGLE_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 999,
-    backgroundColor: appTheme.colors.surfaceAccent,
+    borderWidth: 1.5,
+    borderColor: colors.accent,
+    borderRadius: appTheme.radius.pill,
+    backgroundColor: colors.transparent,
+    // Ambient accent glow around the ring (README: 0 0 14px accent .28).
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.28,
+    shadowRadius: 14,
   },
   miniPlayerActionDisabled: {
-    opacity: 0.5,
+    opacity: DISABLED_OPACITY,
+  },
+  miniPlayerProgressLine: {
+    position: 'absolute',
+    left: 0,
+    bottom: 0,
+    height: PROGRESS_LINE_HEIGHT,
+    backgroundColor: colors.accent,
   },
   tabBar: {
     flexDirection: 'row',
-    gap: 6,
-    padding: 4,
-    borderWidth: 1,
-    borderColor: appTheme.colors.divider,
-    borderRadius: TAB_BAR_RADIUS,
-    backgroundColor: TAB_BAR_BACKGROUND,
+    paddingTop: 6,
+    paddingHorizontal: space.xs,
+    paddingBottom: space.xs,
   },
   tab: {
     flex: 1,
-    minHeight: 56,
+    minHeight: space.touchTarget,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
-    paddingVertical: 6,
-  },
-  tabActive: {
-    backgroundColor: appTheme.colors.surfaceAccent,
+    gap: TAB_GAP,
   },
   tabPressed: {
-    opacity: 0.88,
+    opacity: PRESSED_OPACITY,
   },
-  tabContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 3,
+  // The spacer keeps inactive glyphs aligned with the active one.
+  tabMark: {
+    width: TAB_MARK_WIDTH,
+    height: TAB_MARK_HEIGHT,
+    borderRadius: appTheme.radius.pill,
+  },
+  tabMarkActive: {
+    backgroundColor: colors.accent,
   },
   tabLabel: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  tabLabelActive: {
-    color: appTheme.colors.accentOnTint,
+    ...appTheme.type.tabLabel,
   },
 });

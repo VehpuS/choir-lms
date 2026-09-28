@@ -1,29 +1,16 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { DriveAuthorizationStatusCopy } from '../../utils/authorization';
 
+import { AppIcon } from '../../../../components/app-icon';
 import { appTheme } from '../../../../utils/theme';
+
+const ACCOUNT_ICON_SIZE = 24;
 
 type DriveSessionMenuTriggerProps = {
   isVisible: boolean;
   onToggleVisibility: () => void;
   tone: DriveAuthorizationStatusCopy['tone'];
-};
-
-const getTriggerToneStyle = (tone: DriveAuthorizationStatusCopy['tone']) => {
-  if (tone === 'ready') {
-    return styles.triggerReady;
-  }
-
-  if (tone === 'warning') {
-    return styles.triggerWarning;
-  }
-
-  if (tone === 'error') {
-    return styles.triggerError;
-  }
-
-  return styles.triggerNeutral;
 };
 
 const getStatusDotStyle = (tone: DriveAuthorizationStatusCopy['tone']) => {
@@ -55,59 +42,45 @@ export const DriveSessionMenuTrigger = ({
       onPress={onToggleVisibility}
       style={({ pressed }) => [
         styles.trigger,
-        getTriggerToneStyle(tone),
         pressed ? styles.triggerPressed : null,
       ]}
       testID="drive-session-trigger"
     >
-      <Text style={styles.avatarLabel}>U</Text>
+      <AppIcon
+        color={appTheme.colors.icon}
+        name="account-circle-outline"
+        size={ACCOUNT_ICON_SIZE}
+      />
       <View style={[styles.statusDot, getStatusDotStyle(tone)]} />
     </Pressable>
   );
 };
 
+// A 44pt neutral-outlined account button (screens 1a, 1b, 1e); the dot keeps
+// the Drive session status visible without opening the menu.
 const styles = StyleSheet.create({
   trigger: {
-    width: 42,
-    height: 42,
+    width: appTheme.space.touchTarget,
+    height: appTheme.space.touchTarget,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 999,
+    borderRadius: appTheme.radius.pill,
     borderWidth: 1,
-  },
-  triggerNeutral: {
     borderColor: appTheme.colors.borderButton,
-    backgroundColor: appTheme.colors.surface,
-  },
-  triggerReady: {
-    borderColor: appTheme.colors.successEdge,
-    backgroundColor: appTheme.colors.successFill,
-  },
-  triggerWarning: {
-    borderColor: appTheme.colors.warningEdge,
-    backgroundColor: appTheme.colors.warningFill,
-  },
-  triggerError: {
-    borderColor: appTheme.colors.dangerEdge,
-    backgroundColor: appTheme.colors.dangerFill,
+    backgroundColor: appTheme.colors.transparent,
   },
   triggerPressed: {
     opacity: 0.88,
   },
-  avatarLabel: {
-    color: appTheme.colors.text,
-    fontSize: 14,
-    fontWeight: '700',
-  },
   statusDot: {
     position: 'absolute',
-    right: 5,
-    bottom: 5,
+    right: 6,
+    bottom: 6,
     width: 8,
     height: 8,
-    borderRadius: 999,
+    borderRadius: appTheme.radius.pill,
     borderWidth: 1,
-    borderColor: appTheme.colors.surfaceRaised,
+    borderColor: appTheme.colors.bg,
   },
   statusDotNeutral: {
     backgroundColor: appTheme.colors.textMuted,

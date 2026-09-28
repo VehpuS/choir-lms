@@ -25,10 +25,8 @@ export {
 export type ShellDestinationKey = 'recents' | 'add' | 'library';
 
 export type ShellDestination = {
-  description: string;
   key: ShellDestinationKey;
   label: string;
-  title: string;
 };
 
 export type NowPlayingSurfaceSummary = {
@@ -65,25 +63,9 @@ export type UpNextSurfaceSummary = {
 };
 
 export const SHELL_DESTINATIONS: ShellDestination[] = [
-  {
-    key: 'library',
-    label: 'Library',
-    title: 'Your rehearsal library',
-    description: 'Play saved tracks, loops, and playlists.',
-  },
-  {
-    key: 'add',
-    label: 'Add',
-    title: 'Add from Google Drive',
-    description: 'Browse and search Google Drive folders and tracks to add.',
-  },
-  {
-    key: 'recents',
-    label: 'Recents',
-    title: 'Recent rehearsal shortcuts',
-    description:
-      'Resume current playback and jump back into recent practice context.',
-  },
+  { key: 'library', label: 'Library' },
+  { key: 'add', label: 'Add' },
+  { key: 'recents', label: 'Recents' },
 ];
 
 export const getNowPlayingSurfaceSummary = (options: {
