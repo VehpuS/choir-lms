@@ -21,7 +21,7 @@ export type PlaybackQueue = {
   items: PlayableItem[];
 };
 
-const shuffleItems = <Entity>(
+export const shuffleItems = <Entity>(
   values: Entity[],
   random: () => number = Math.random,
 ) => {

@@ -9,6 +9,7 @@ import type {
 import {
   createPlaybackQueue,
   resolveNextQueueIndex,
+  resolvePlaylistItems,
   resolvePreviousQueueIndex,
   type PlaybackQueue,
 } from '@org/audio-library-runtime';
@@ -54,6 +55,9 @@ export type PlaylistPlaybackSession = {
   playlistName: string;
   queue: PlaybackQueue;
   requestedItemCount: number;
+  // Transient queues have no saved playlist to rebuild their order from, so
+  // shuffling one keeps the pre-shuffle order here for turning shuffle off.
+  unshuffledItems?: PlayableItem[];
 };
 
 type BuildPlaylistPlaybackSessionOptions = {
@@ -180,6 +184,15 @@ export const buildPlaylistPlaybackSession = (
       playlistName: options.playlist.name,
       queue,
       requestedItemCount: options.playlist.items.length,
+      // Lets shuffle be turned off later by restoring the playlist order.
+      unshuffledItems:
+        queue.mode === 'shuffle'
+          ? resolvePlaylistItems(
+              options.playlist,
+              options.loops,
+              options.sources,
+            )
+          : undefined,
     } satisfies PlaylistPlaybackSession,
   };
 };

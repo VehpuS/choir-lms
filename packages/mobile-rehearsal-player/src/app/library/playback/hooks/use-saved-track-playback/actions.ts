@@ -12,7 +12,6 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { DriveLibrarySource } from '../../../drive/utils/drive-library-view-model';
 import {
   bindQueueToPlaylistPlaybackSession,
-  rebuildPlaylistPlaybackSessionForMode,
   type ActivePlaylistContext,
 } from '../../../playlists/utils/playlist-session-mode';
 import {
@@ -26,6 +25,7 @@ import {
   updatePlaylistPlaybackRepeatMode,
   type PlaylistPlaybackSession,
 } from '../../../playlists/utils/saved-playlist-playback-view-model';
+import { rebuildQueueSessionForMode } from '../../../playlists/utils/queue-session-mode';
 import type { SavedTrackPlaybackController } from '../../utils/saved-track-playback-controller';
 import {
   createSavedTrackPlaybackRuntimeIssue,
@@ -35,11 +35,7 @@ import {
 } from '../../utils/saved-track-playback-view-model';
 import { startItemQueuePlayback } from './item-queue-playback-actions';
 import { startPlaylistPlayback } from './playlist-playback-actions';
-import {
-  hasSameQueuePosition,
-  mapPlaylistPlaybackIssue,
-  trackPlayerState,
-} from './shared';
+import { hasSameQueuePosition, trackPlayerState } from './shared';
 
 type CreateSavedTrackPlaybackActionsOptions = {
   authState: DriveAuthorizationState;
@@ -132,30 +128,9 @@ export const createSavedTrackPlaybackActions = ({
     },
     setPlaylistQueueMode(mode: RehearsalQueueMode) {
       setActivePlaylistSession((currentSession) => {
-        const activePlaylistContext = activePlaylistContextRef.current;
-
-        if (!currentSession || !activePlaylistContext) {
-          return currentSession;
-        }
-
-        const nextSession = rebuildPlaylistPlaybackSessionForMode({
-          loops: activePlaylistContext.loops,
-          mode,
-          playlist: activePlaylistContext.playlist,
-          session: currentSession,
-          sources: activePlaylistContext.sources,
-        });
-
-        if (nextSession.issue || !nextSession.session) {
-          setIssue(
-            nextSession.issue
-              ? mapPlaylistPlaybackIssue(nextSession.issue)
-              : null,
-          );
-          return currentSession;
-        }
-
-        return nextSession.session;
+        return currentSession
+          ? rebuildQueueSessionForMode({ mode, session: currentSession })
+          : currentSession;
       });
     },
     async seekActivePlaybackBySeconds(deltaSeconds: number) {
