@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import {
   Pressable,
@@ -9,6 +8,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { AppIcon } from '../../../components/app-icon';
 import { appTheme } from '../../../utils/theme';
 import {
   getExplorerBackAccessibilityLabel,
@@ -71,7 +71,7 @@ export const ExplorerNavigationBar = ({
           !canGoBack ? styles.backButtonDisabled : undefined,
         ]}
       >
-        <MaterialCommunityIcons
+        <AppIcon
           color={appTheme.colors.primaryText}
           name="chevron-left"
           size={22}

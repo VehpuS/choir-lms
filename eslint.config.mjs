@@ -39,4 +39,29 @@ export default [
             ],
         },
     },
+    {
+        // Every mobile icon renders through AppIcon so the Phosphor glyph map
+        // (and its icon-semantics tests) stays the single source of icons.
+        files: ['packages/mobile-rehearsal-player/src/**/*.{ts,tsx}'],
+        ignores: ['packages/mobile-rehearsal-player/src/app/components/app-icon/**'],
+        rules: {
+            '@typescript-eslint/no-restricted-imports': [
+                'error',
+                {
+                    paths: [
+                        {
+                            name: '@expo/vector-icons',
+                            message: 'Use AppIcon from src/app/components/app-icon (Phosphor).',
+                        },
+                    ],
+                    patterns: [
+                        {
+                            group: ['phosphor-react-native', 'phosphor-react-native/*'],
+                            message: 'Add the glyph to src/app/components/app-icon and render AppIcon.',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
 ];

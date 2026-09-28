@@ -1,6 +1,6 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { AppIcon } from '../../../components/app-icon';
 import { resolveSearchToggleIsFilled } from './library-search-controls-actions-model';
 
 import { appTheme } from '../../../utils/theme';
@@ -59,7 +59,7 @@ const LibrarySearchActionButton = ({
         pressed ? styles.actionButtonPressed : undefined,
       ]}
     >
-      <MaterialCommunityIcons
+      <AppIcon
         color={
           isHeroTone
             ? isFilled

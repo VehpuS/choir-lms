@@ -1,8 +1,8 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { map } from 'es-toolkit/compat';
 import { useMemo, useState } from 'react';
 import { Pressable, Text } from 'react-native';
 
+import { AppIcon } from '../../../components/app-icon';
 import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import {
   buttonInteractionGuardStyle,
@@ -164,7 +164,7 @@ const DriveExplorerSourceRow = ({
         })}
         disabled={!isPlayable && !onToggleSelection}
         leadingIcon={
-          <MaterialCommunityIcons
+          <AppIcon
             color={appTheme.colors.secondaryText}
             name={
               isSelected === undefined

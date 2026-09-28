@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -10,6 +9,7 @@ import {
   resolveSearchInputBlurOutcome,
   shouldShowRecentSearchSuggestions,
 } from './contextual-search-panel-model';
+import { AppIcon } from '../../../components/app-icon';
 import { RecentSearchSuggestions } from './recent-search-suggestions';
 
 import { appTheme } from '../../../utils/theme';
@@ -118,11 +118,7 @@ export const ContextualSearchPanel = ({
           pressed ? styles.searchButtonPressed : undefined,
         ]}
       >
-        <MaterialCommunityIcons
-          color={PRIMARY_ACTION_TEXT}
-          name="magnify"
-          size={18}
-        />
+        <AppIcon color={PRIMARY_ACTION_TEXT} name="magnify" size={18} />
       </Pressable>
     );
   }
@@ -164,7 +160,7 @@ export const ContextualSearchPanel = ({
                 pressed ? styles.clearSearchIconButtonPressed : undefined,
               ]}
             >
-              <MaterialCommunityIcons
+              <AppIcon
                 color={PLACEHOLDER_TEXT}
                 name="close-circle-outline"
                 size={18}
@@ -187,11 +183,7 @@ export const ContextualSearchPanel = ({
               isSubmitDisabled ? styles.searchButtonDisabled : undefined,
             ]}
           >
-            <MaterialCommunityIcons
-              color={PRIMARY_ACTION_TEXT}
-              name="close"
-              size={18}
-            />
+            <AppIcon color={PRIMARY_ACTION_TEXT} name="close" size={18} />
           </Pressable>
         ) : null}
       </View>

@@ -1,7 +1,7 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMemo, useRef } from 'react';
 import { PanResponder, Pressable, Text, View } from 'react-native';
 
+import { AppIcon } from '../../../../components/app-icon';
 import { DragHandle } from '../../../../components/drag-handle';
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
 import { SurfaceIconButton } from '../../../../components/surface-icon-button';
@@ -208,7 +208,7 @@ export const PlaylistDetailRowControls = (props: {
                 : undefined,
             ]}
           >
-            <MaterialCommunityIcons
+            <AppIcon
               color={PLAYLIST_SECONDARY_TEXT}
               name="chevron-up"
               size={PLAYLIST_ROW_STEP_ICON_SIZE}
@@ -234,7 +234,7 @@ export const PlaylistDetailRowControls = (props: {
                 : undefined,
             ]}
           >
-            <MaterialCommunityIcons
+            <AppIcon
               color={PLAYLIST_SECONDARY_TEXT}
               name="chevron-down"
               size={PLAYLIST_ROW_STEP_ICON_SIZE}

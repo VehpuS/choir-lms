@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   type RehearsalQueueMode,
   type RepeatMode,
@@ -9,6 +8,7 @@ import {
   buttonInteractionGuardStyle,
   interactionGuardProps,
 } from '../../components/interaction-guard';
+import { AppIcon, type AppIconName } from '../../components/app-icon';
 import { appTheme } from '../../utils/theme';
 import { resolveRepeatToggleModel } from './playback-session-mode-options';
 
@@ -38,7 +38,7 @@ const ModeButton = (props: {
   accessibilityHint?: string;
   accessibilityLabel: string;
   disabled?: boolean;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: AppIconName;
   onPress: () => void;
   selected: boolean;
 }) => {
@@ -61,7 +61,7 @@ const ModeButton = (props: {
         props.disabled ? styles.modeButtonDisabled : null,
       ]}
     >
-      <MaterialCommunityIcons
+      <AppIcon
         color={
           props.selected
             ? appTheme.colors.accentOnTint

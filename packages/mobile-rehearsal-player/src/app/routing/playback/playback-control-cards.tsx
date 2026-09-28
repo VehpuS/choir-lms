@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Slider } from '@miblanchard/react-native-slider';
 import type { PlayableItem } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
@@ -8,6 +7,7 @@ import {
   continuousInteractionGuardStyle,
   interactionGuardProps,
 } from '../../components/interaction-guard';
+import { AppIcon } from '../../components/app-icon';
 import { PlaybackWaveform } from '../../components/playback-waveform';
 import { formatDurationLabel } from '../../library/drive/utils/drive-library-view-model';
 import { appTheme } from '../../utils/theme';
@@ -137,7 +137,7 @@ export const PlaybackVolumeCard = ({
       </View>
       <View style={styles.scaleRow}>
         <View style={styles.scaleEndpoint}>
-          <MaterialCommunityIcons
+          <AppIcon
             color={appTheme.colors.secondaryText}
             name={draftVolumeLevel <= 0.01 ? 'volume-off' : 'volume-low'}
             size={16}
@@ -145,7 +145,7 @@ export const PlaybackVolumeCard = ({
           <Text style={styles.scaleLabel}>Mute</Text>
         </View>
         <View style={styles.scaleEndpoint}>
-          <MaterialCommunityIcons
+          <AppIcon
             color={appTheme.colors.secondaryText}
             name="volume-high"
             size={16}

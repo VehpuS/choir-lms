@@ -1,8 +1,8 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createTrackPlayableItem } from '@org/audio-library-models';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { AppIcon } from '../../../components/app-icon';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { RowPreparingIndicator } from '../../../components/row-preparing-indicator';
 import { appTheme } from '../../../utils/theme';
@@ -190,7 +190,7 @@ export const BrowseSourceGroup = ({
                 active={isPlaybackSourceActive}
                 disabled={!isAvailable}
                 leadingIcon={
-                  <MaterialCommunityIcons
+                  <AppIcon
                     color={
                       isPlaybackSourceActive
                         ? appTheme.colors.accent

@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   Pressable,
   StyleSheet,
@@ -22,6 +21,7 @@ import {
   type CompactPlaybackActionIconName,
   type CompactPlaybackActionVariant,
 } from './model';
+import { AppIcon } from '../app-icon';
 
 type CompactPlaybackActionProps = {
   accessibilityLabel: string;
@@ -126,7 +126,7 @@ export const CompactPlaybackAction = ({
       }}
       testID={testID}
     >
-      <MaterialCommunityIcons
+      <AppIcon
         color={disabled ? disabledIconColor : iconColor}
         name={iconName}
         size={tokens.iconSize}

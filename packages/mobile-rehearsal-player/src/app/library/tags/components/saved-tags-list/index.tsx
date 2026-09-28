@@ -1,10 +1,13 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { RehearsalLibraryTagUsage } from '@org/audio-library-runtime';
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { AppIcon } from '../../../../components/app-icon';
 import { appTheme } from '../../../../utils/theme';
-import { ExplorerListRow, ExplorerListSurface } from '../../../components/explorer';
+import {
+  ExplorerListRow,
+  ExplorerListSurface,
+} from '../../../components/explorer';
 import { SearchHighlightedText } from '../../../search/components/search-highlighted-text';
 import {
   EMPTY_SAVED_TAGS_MESSAGE,
@@ -52,7 +55,7 @@ export const SavedTagsList = ({
               <ExplorerListRow
                 key={usage.tag}
                 leadingIcon={
-                  <MaterialCommunityIcons
+                  <AppIcon
                     color={appTheme.colors.secondaryText}
                     name="tag-outline"
                     size={22}

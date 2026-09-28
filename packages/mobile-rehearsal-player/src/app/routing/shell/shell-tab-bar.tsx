@@ -1,7 +1,6 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import type { ComponentProps } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
+import { AppIcon, type AppIconName } from '../../components/app-icon';
 import { appTheme } from '../../utils/theme';
 import { styles } from './mobile-shell-styles';
 import { SHELL_DESTINATIONS, type ShellDestinationKey } from './shell-model';
@@ -13,15 +12,12 @@ type ShellTabBarProps = {
 
 const ACTIVE_TAB_ICON_COLOR = appTheme.colors.accentOnTint;
 const INACTIVE_TAB_ICON_COLOR = appTheme.colors.secondaryText;
-type MaterialCommunityIconName = ComponentProps<
-  typeof MaterialCommunityIcons
->['name'];
 
 const TAB_ICONS: Record<
   ShellDestinationKey,
   {
-    active: MaterialCommunityIconName;
-    inactive: MaterialCommunityIconName;
+    active: AppIconName;
+    inactive: AppIconName;
   }
 > = {
   recents: {
@@ -63,7 +59,7 @@ export const ShellTabBar = ({
             ]}
           >
             <View style={styles.tabContent}>
-              <MaterialCommunityIcons
+              <AppIcon
                 color={
                   isActive ? ACTIVE_TAB_ICON_COLOR : INACTIVE_TAB_ICON_COLOR
                 }

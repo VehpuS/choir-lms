@@ -1,5 +1,3 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { type ComponentProps } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -7,6 +5,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { AppIcon, type AppIconName } from './app-icon';
 import { appTheme } from '../utils/theme';
 import {
   buttonInteractionGuardStyle,
@@ -16,7 +15,7 @@ import {
 export type SurfaceIconButtonProps = {
   accessibilityLabel: string;
   disabled?: boolean;
-  icon: ComponentProps<typeof MaterialCommunityIcons>['name'];
+  icon: AppIconName;
   onPress: () => void;
   selected?: boolean;
   size?: number;
@@ -55,7 +54,7 @@ export const SurfaceIconButton = ({
         disabled ? styles.disabledButton : null,
       ]}
     >
-      <MaterialCommunityIcons
+      <AppIcon
         color={
           isPrimary ? appTheme.colors.accentOnTint : appTheme.colors.primaryText
         }

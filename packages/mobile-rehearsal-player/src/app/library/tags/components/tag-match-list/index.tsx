@@ -1,10 +1,13 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { RehearsalLibraryTagMatch } from '@org/audio-library-runtime';
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { AppIcon } from '../../../../components/app-icon';
 import { appTheme } from '../../../../utils/theme';
-import { ExplorerListRow, ExplorerListSurface } from '../../../components/explorer';
+import {
+  ExplorerListRow,
+  ExplorerListSurface,
+} from '../../../components/explorer';
 import {
   DEFAULT_TAG_MATCH_LIST_SORT_STATE,
   EMPTY_TAG_MATCH_LIST_MESSAGE,
@@ -62,7 +65,7 @@ export const TagMatchList = ({
               <ExplorerListRow
                 key={getTagMatchKey(match)}
                 leadingIcon={
-                  <MaterialCommunityIcons
+                  <AppIcon
                     color={appTheme.colors.secondaryText}
                     name={getTagMatchIconName(match)}
                     size={22}

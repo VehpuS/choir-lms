@@ -1,6 +1,6 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text } from 'react-native';
 
+import { AppIcon } from '../../../components/app-icon';
 import { appTheme } from '../../../utils/theme';
 import { ExplorerListRow } from '../../components/explorer/index';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
@@ -28,7 +28,7 @@ export const DriveExplorerFolderRow = ({
     <ExplorerListRow
       active={isSelected}
       leadingIcon={
-        <MaterialCommunityIcons
+        <AppIcon
           color={appTheme.colors.secondaryText}
           name={
             isSelected === undefined

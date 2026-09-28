@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   Pressable,
   StyleSheet,
@@ -24,6 +23,7 @@ import {
   getOverflowMenuTriggerVisualState,
 } from './model';
 
+import { AppIcon } from '../app-icon';
 import { appTheme } from '../../utils/theme';
 
 type OverflowMenuTriggerProps = {
@@ -94,11 +94,7 @@ export const OverflowMenuTrigger = ({
       }}
       testID={testID}
     >
-      <MaterialCommunityIcons
-        color={iconColor}
-        name="dots-vertical"
-        size={iconSize}
-      />
+      <AppIcon color={iconColor} name="dots-vertical" size={iconSize} />
     </Pressable>
   );
 };

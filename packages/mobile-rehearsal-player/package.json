@@ -134,6 +134,7 @@
     "expo-web-browser": "~15.0.11",
     "jest-expo": "*",
     "lodash.debounce": "^4.0.8",
+    "phosphor-react-native": "*",
     "metro-config": "*",
     "metro-resolver": "*",
     "react": "19.1.0",

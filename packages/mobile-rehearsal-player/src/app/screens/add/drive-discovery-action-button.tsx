@@ -1,6 +1,6 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet } from 'react-native';
 
+import { AppIcon } from '../../components/app-icon';
 import { appTheme } from '../../utils/theme';
 
 export const ACTION_BUTTON_SIZE = 40;
@@ -35,7 +35,7 @@ export const DriveDiscoveryActionButton = ({
         isDisabled ? styles.headerActionButtonDisabled : undefined,
       ]}
     >
-      <MaterialCommunityIcons
+      <AppIcon
         color={isFilled ? appTheme.colors.accentOnTint : appTheme.colors.text}
         name={iconName}
         size={18}

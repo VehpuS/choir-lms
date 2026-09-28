@@ -1,9 +1,9 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { RehearsalLibraryTagUsage } from '@org/audio-library-runtime';
 import { join, map, toUpper } from 'es-toolkit/compat';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { useState } from 'react';
+import { AppIcon } from '../../components/app-icon';
 import { runtimeConfig } from '../../../config/runtime';
 import { DriveSessionMenu } from '../../auth/google-drive/components/drive-session-menu';
 import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
@@ -183,7 +183,7 @@ export const RecentsScreen = ({
                         pressed ? styles.iconActionButtonPressed : undefined,
                       ]}
                     >
-                      <MaterialCommunityIcons
+                      <AppIcon
                         color={appTheme.colors.primaryText}
                         name="dots-vertical"
                         size={20}

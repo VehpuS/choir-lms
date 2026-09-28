@@ -1,7 +1,7 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { type PlayableItem } from '@org/audio-library-models';
 import { StyleSheet, Text } from 'react-native';
 
+import { AppIcon } from '../../../../components/app-icon';
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
 import { appTheme } from '../../../../utils/theme';
 import { ExplorerListRow } from '../../../components/explorer';
@@ -176,7 +176,7 @@ export const SavedLoopListRow = ({
         active={isPlaybackLoopActive}
         disabled={playbackAction.disabled}
         leadingIcon={
-          <MaterialCommunityIcons
+          <AppIcon
             color={
               isPlaybackLoopActive
                 ? appTheme.colors.accentText

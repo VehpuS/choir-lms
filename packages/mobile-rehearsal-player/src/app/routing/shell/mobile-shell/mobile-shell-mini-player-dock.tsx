@@ -1,7 +1,7 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { PlayableItem } from '@org/audio-library-models';
 import { Pressable, Text, View } from 'react-native';
 
+import { AppIcon } from '../../../components/app-icon';
 import { PlaybackWaveform } from '../../../components/playback-waveform';
 import type { SavedTrackPlaybackState } from '../../../library/playback/utils/saved-track-playback-view-model';
 import { getPlaybackToggleControlModel } from '../../playback/playback-toggle-control-model';
@@ -104,7 +104,7 @@ export const MobileShellMiniPlayerDock = ({
               isPlaybackToggleDisabled ? styles.miniPlayerActionDisabled : null,
             ]}
           >
-            <MaterialCommunityIcons
+            <AppIcon
               color={appTheme.colors.text}
               name={playbackToggleControl?.iconName ?? 'play'}
               size={24}

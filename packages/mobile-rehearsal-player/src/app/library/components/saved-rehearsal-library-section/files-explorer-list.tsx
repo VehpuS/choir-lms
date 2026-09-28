@@ -1,10 +1,10 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
   buttonInteractionGuardStyle,
   interactionGuardProps,
 } from '../../../components/interaction-guard';
+import { AppIcon } from '../../../components/app-icon';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { RowPreparingIndicator } from '../../../components/row-preparing-indicator';
 import { appTheme } from '../../../utils/theme';
@@ -56,7 +56,7 @@ export const FilesExplorerList = (options: {
               active={viewModelRow.active}
               disabled={viewModelRow.disabled}
               leadingIcon={
-                <MaterialCommunityIcons
+                <AppIcon
                   color={
                     viewModelRow.active
                       ? appTheme.colors.accent

@@ -1,7 +1,7 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
+import { AppIcon } from '../../../components/app-icon';
 import { SectionHeading } from '../../components/section-heading';
 import { appTheme } from '../../../utils/theme';
 
@@ -40,7 +40,7 @@ export const DriveLibrarySectionHeader = ({
         isLoading ? styles.refreshButtonDisabled : undefined,
       ]}
     >
-      <MaterialCommunityIcons
+      <AppIcon
         color={PRIMARY_ACTION_TEXT}
         name={isLoading ? 'progress-clock' : 'refresh'}
         size={18}

@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Slider } from '@miblanchard/react-native-slider';
 import { type PlayableItem } from '@org/audio-library-models';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -8,6 +7,7 @@ import {
   continuousInteractionGuardStyle,
   interactionGuardProps,
 } from '../../../../components/interaction-guard';
+import { AppIcon } from '../../../../components/app-icon';
 import { useLongPressRepeat } from '../../hooks/use-long-press-repeat';
 import {
   LOOP_BUILDER_NUDGE_STEP_MS,
@@ -70,11 +70,7 @@ const NudgeButton = ({
         disabled ? styles.buttonDisabled : undefined,
       ]}
     >
-      <MaterialCommunityIcons
-        color={LOOP_SELECTOR_PRIMARY_TEXT}
-        name={icon}
-        size={16}
-      />
+      <AppIcon color={LOOP_SELECTOR_PRIMARY_TEXT} name={icon} size={16} />
     </Pressable>
   );
 };

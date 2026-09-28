@@ -1,6 +1,6 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StyleSheet, View, type GestureResponderHandlers } from 'react-native';
 
+import { AppIcon } from './app-icon';
 import { appTheme } from '../utils/theme';
 
 const DRAG_HANDLE_ICON_SIZE = 18;
@@ -28,7 +28,7 @@ export const DragHandle = ({
       style={[styles.handle, !canDrag ? styles.handleDisabled : null]}
       {...(canDrag ? panHandlers : {})}
     >
-      <MaterialCommunityIcons
+      <AppIcon
         color={appTheme.colors.secondaryText}
         name="drag-vertical"
         size={DRAG_HANDLE_ICON_SIZE}
