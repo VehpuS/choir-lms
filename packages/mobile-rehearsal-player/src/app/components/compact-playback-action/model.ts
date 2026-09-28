@@ -87,7 +87,7 @@ export const getCompactPlaybackActionAccessibilityState = (options: {
 
 export const getCompactPlaybackActionVariantTokens = (
   variant: CompactPlaybackActionVariant,
-) => {
+): CompactPlaybackActionVariantTokens => {
   return COMPACT_PLAYBACK_ACTION_VARIANT_TOKENS[variant];
 };
 

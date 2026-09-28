@@ -1,4 +1,5 @@
 import type { DriveFileMetadata } from './google-drive-core';
+import { throwIfDriveRequestAborted } from './drive-abort';
 
 export type DriveFilesPage = {
   files?: DriveFileMetadata[];
@@ -26,7 +27,7 @@ export const paginateDriveFiles = async (options: {
   let pageToken: string | undefined;
 
   do {
-    options.signal?.throwIfAborted();
+    throwIfDriveRequestAborted(options.signal);
 
     const page = await options.requestPage({
       pageToken,

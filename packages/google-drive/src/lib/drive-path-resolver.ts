@@ -1,6 +1,10 @@
 import type { DriveBrowseRootKind } from './drive-discovery-models';
 import { requestDriveFileMetadataWithFallback } from './drive-files-client';
 import type { DriveFileMetadata } from './google-drive-core';
+import { throwIfDriveRequestAborted } from './drive-abort';
+
+const DRIVE_PATH_RESOLUTION_ABORT_MESSAGE =
+  'Drive path resolution was aborted.';
 
 const DEFAULT_PATH_RESOLUTION_CONCURRENCY = 4;
 const MY_DRIVE_ROOT_ID = 'root';
@@ -25,16 +29,6 @@ type DrivePathResolutionCache = Map<
 
 export const createDrivePathResolutionCache = (): DrivePathResolutionCache => {
   return new Map();
-};
-
-const throwIfAborted = (signal?: AbortSignal) => {
-  if (!signal?.aborted) {
-    return;
-  }
-
-  const abortError = new Error('Drive path resolution was aborted.');
-  abortError.name = 'AbortError';
-  throw abortError;
 };
 
 const isInaccessibleDriveItemError = (error: unknown) => {
@@ -72,7 +66,10 @@ export const resolveDriveFilePaths = async (options: {
     }
 
     const metadata = (async () => {
-      throwIfAborted(options.signal);
+      throwIfDriveRequestAborted(
+        options.signal,
+        DRIVE_PATH_RESOLUTION_ABORT_MESSAGE,
+      );
 
       try {
         const response = await requestDriveFileMetadataWithFallback({
@@ -104,7 +101,10 @@ export const resolveDriveFilePaths = async (options: {
     let rootKind: DriveBrowseRootKind = file.shared ? 'shared' : 'my-drive';
 
     while (parentIds.length > 0) {
-      throwIfAborted(options.signal);
+      throwIfDriveRequestAborted(
+        options.signal,
+        DRIVE_PATH_RESOLUTION_ABORT_MESSAGE,
+      );
 
       let accessibleParent: DriveFileMetadata | undefined;
 

@@ -9,6 +9,7 @@ import {
 } from './drive-discovery-models';
 import { createBrowseQuery } from './drive-file-queries';
 import { requestAllDriveFilesWithFallback } from './drive-files-client';
+import { throwIfDriveRequestAborted } from './drive-abort';
 
 export type DriveEnumeratedFolder = DriveFolder & {
   parentFolderId: string;
@@ -48,7 +49,7 @@ export const enumerateDriveFolderContents = async (options: {
   const pendingFolders: DriveFolder[] = [options.rootFolder];
 
   for (let index = 0; index < pendingFolders.length; index += 1) {
-    options.signal?.throwIfAborted();
+    throwIfDriveRequestAborted(options.signal);
 
     const parentFolder = pendingFolders[index];
 
