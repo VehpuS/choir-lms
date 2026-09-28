@@ -53,21 +53,15 @@ describe('getRecentsContinuePracticingCopy', () => {
 
 describe('getRecentsTagModuleCopy', () => {
   it('guides the user to add a tag when no saved entity carries one', () => {
-    assert.deepEqual(
-      getRecentsTagModuleCopy({ hasSavedTagUsage: false }),
-      {
-        body: 'No tags yet. Tag a track, loop, playlist, or folder in Library to see it here.',
-      },
-    );
+    assert.deepEqual(getRecentsTagModuleCopy({ hasSavedTagUsage: false }), {
+      body: 'No tags yet. Tag a track, loop, playlist, or folder in Library to see it here.',
+    });
   });
 
   it('shows the optional-shortcuts hint once real tags exist', () => {
-    assert.deepEqual(
-      getRecentsTagModuleCopy({ hasSavedTagUsage: true }),
-      {
-        body: 'Optional tag shortcuts for fast recents scanning.',
-      },
-    );
+    assert.deepEqual(getRecentsTagModuleCopy({ hasSavedTagUsage: true }), {
+      body: 'Optional tag shortcuts for fast recents scanning.',
+    });
   });
 });
 

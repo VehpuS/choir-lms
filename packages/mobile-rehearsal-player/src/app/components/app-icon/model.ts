@@ -43,6 +43,7 @@ export type PhosphorGlyph =
   | 'SpeakerX'
   | 'Tag'
   | 'UserCircle'
+  | 'Waveform'
   | 'X'
   | 'XCircle';
 
@@ -116,6 +117,7 @@ export const APP_ICON_GLYPHS = {
   'playlist-music-outline': regular('Playlist'),
   'tag-outline': regular('Tag'),
   'view-list': regular('Queue'),
+  waveform: regular('Waveform'),
 
   // Account.
   'account-circle-outline': regular('UserCircle'),

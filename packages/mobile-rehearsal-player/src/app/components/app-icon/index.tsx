@@ -40,6 +40,7 @@ import { SpeakerLowIcon } from 'phosphor-react-native/src/icons/SpeakerLow';
 import { SpeakerXIcon } from 'phosphor-react-native/src/icons/SpeakerX';
 import { TagIcon } from 'phosphor-react-native/src/icons/Tag';
 import { UserCircleIcon } from 'phosphor-react-native/src/icons/UserCircle';
+import { WaveformIcon } from 'phosphor-react-native/src/icons/Waveform';
 import { XIcon } from 'phosphor-react-native/src/icons/X';
 import { XCircleIcon } from 'phosphor-react-native/src/icons/XCircle';
 
@@ -91,6 +92,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   SpeakerX: SpeakerXIcon,
   Tag: TagIcon,
   UserCircle: UserCircleIcon,
+  Waveform: WaveformIcon,
   X: XIcon,
   XCircle: XCircleIcon,
 };
