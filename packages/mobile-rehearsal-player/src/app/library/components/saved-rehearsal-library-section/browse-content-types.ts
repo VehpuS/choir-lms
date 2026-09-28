@@ -86,6 +86,8 @@ export type SavedRehearsalLibraryBrowseContentProps = Pick<
   | 'savedLoops'
   | 'savedPlaylists'
   | 'selectedTrack'
+  | 'toggleActivePlayback'
+  | 'toggleItemQueuePlayback'
   | 'togglePlaylistPlayback'
   | 'togglePlayableItemPlayback'
   | 'toggleSourcePlayback'

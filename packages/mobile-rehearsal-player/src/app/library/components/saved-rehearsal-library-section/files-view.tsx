@@ -8,6 +8,7 @@ import {
 import { getLibraryFilesRowNodeKey } from '../../saved-rehearsal-library/library-files-model';
 import { AsyncActionStatusCard } from '../async-action-status-card';
 import { ExplorerBreadcrumbBar, ExplorerNavigationBar } from '../explorer';
+import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { FeedbackCard } from '../feedback-card';
 import { FilesExplorerList } from './files-explorer-list';
 import type { SavedRehearsalLibraryFilesViewProps } from './files-view-types';
@@ -51,6 +52,7 @@ export const SavedRehearsalLibraryFilesView = ({
   onQueuePlayableItemUpNext,
   onRemoveSource,
   originalLocationActions,
+  playback,
   playlistAddMode,
   searchState,
   successFeedback,
@@ -134,6 +136,7 @@ export const SavedRehearsalLibraryFilesView = ({
     },
     onTogglePlayableItemPlayback,
     onToggleSourcePlayback,
+    playback,
     playlistAddMode,
   });
 
@@ -194,28 +197,13 @@ export const SavedRehearsalLibraryFilesView = ({
       {playlistAddModeCopy && activePlaylistAddMode ? (
         <FeedbackCard
           footer={
-            <View style={styles.playlistAddModeActions}>
-              <Pressable
-                accessibilityRole="button"
-                {...interactionGuardProps}
-                disabled={activePlaylistAddMode.isPlaylistMutating}
-                onPress={activePlaylistAddMode.onDone}
-                style={({ pressed }) => [
-                  styles.playlistAddModePrimaryAction,
-                  buttonInteractionGuardStyle,
-                  pressed && !activePlaylistAddMode.isPlaylistMutating
-                    ? styles.playlistAddModePrimaryActionPressed
-                    : undefined,
-                  activePlaylistAddMode.isPlaylistMutating
-                    ? styles.playlistAddModePrimaryActionDisabled
-                    : undefined,
-                ]}
-              >
-                <Text style={styles.playlistAddModePrimaryActionLabel}>
-                  Back to playlist
-                </Text>
-              </Pressable>
-            </View>
+            <OutlinedActionButton
+              disabled={activePlaylistAddMode.isPlaylistMutating}
+              label="Back to playlist"
+              onPress={activePlaylistAddMode.onDone}
+              style={styles.playlistAddModeAction}
+              variant="accent"
+            />
           }
           message={playlistAddModeCopy.message}
           size="compact"
@@ -252,30 +240,10 @@ const styles = StyleSheet.create({
   dismissActionLabel: {
     alignSelf: 'flex-start',
     color: appTheme.colors.danger,
-    fontSize: 13,
-    fontWeight: '700',
+    ...appTheme.type.button,
   },
-  playlistAddModeActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  playlistAddModePrimaryAction: {
-    borderRadius: 999,
-    backgroundColor: appTheme.colors.surfaceAccent,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  playlistAddModePrimaryActionDisabled: {
-    opacity: 0.55,
-  },
-  playlistAddModePrimaryActionLabel: {
-    color: appTheme.colors.text,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  playlistAddModePrimaryActionPressed: {
-    opacity: 0.88,
+  playlistAddModeAction: {
+    alignSelf: 'flex-start',
   },
   surface: {
     gap: 12,

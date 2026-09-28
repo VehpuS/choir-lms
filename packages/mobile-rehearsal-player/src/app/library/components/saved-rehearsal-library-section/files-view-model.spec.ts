@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import { createLoopPlayableItem } from '@org/audio-library-models';
 
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
-import { isRowPreparingLoop } from './files-view-model';
+import { buildFilesBreadcrumbs, isRowPreparingLoop } from './files-view-model';
 import { LOOP, SOURCE } from './files-row-actions-test-helpers';
 
 describe('isRowPreparingLoop', () => {
@@ -19,7 +19,7 @@ describe('isRowPreparingLoop', () => {
     kind: 'track',
     label: SOURCE.name,
     source: SOURCE,
-    supportingLabel: 'Track • 4:05',
+    supportingLabel: '4:05',
   };
   const loopRow: LibraryFilesRow = {
     fileLink: {
@@ -33,7 +33,7 @@ describe('isRowPreparingLoop', () => {
     loop: LOOP,
     playableItem: createLoopPlayableItem(LOOP, SOURCE),
     source: SOURCE,
-    supportingLabel: `${SOURCE.name} • 0:12 to 0:24`,
+    supportingLabel: `0:12–0:24 · 0:12 · ${SOURCE.name}`,
   };
   const folderRow: LibraryFilesRow = {
     childCount: 0,
@@ -65,5 +65,54 @@ describe('isRowPreparingLoop', () => {
 
   it('is always false for row kinds without a loop-builder source, such as folders', () => {
     assert.equal(isRowPreparingLoop(SOURCE.id, folderRow), false);
+  });
+});
+
+describe('buildFilesBreadcrumbs', () => {
+  const files = {
+    goToFolder: (folderId: string) => {
+      visitedFolderIds.push(folderId);
+    },
+  };
+  let visitedFolderIds: string[] = [];
+
+  it('is empty at the Library root, where it would repeat the title', () => {
+    assert.deepEqual(
+      buildFilesBreadcrumbs(
+        {
+          breadcrumbs: [{ folderId: 'folder:library-root', label: 'Library' }],
+        },
+        files,
+      ),
+      [],
+    );
+  });
+
+  it('ends on the current folder as a non-interactive segment', () => {
+    visitedFolderIds = [];
+    const breadcrumbs = buildFilesBreadcrumbs(
+      {
+        breadcrumbs: [
+          { folderId: 'folder:library-root', label: 'Library' },
+          { folderId: 'folder-season', label: 'Season' },
+          { folderId: 'folder-advent', label: 'Advent 2026' },
+        ],
+      },
+      files,
+    );
+
+    assert.deepEqual(
+      breadcrumbs.map((breadcrumb) => [breadcrumb.label, breadcrumb.isCurrent]),
+      [
+        ['Library', false],
+        ['Season', false],
+        ['Advent 2026', true],
+      ],
+    );
+    assert.equal(breadcrumbs[2]?.onPress, undefined);
+
+    breadcrumbs[1]?.onPress?.();
+
+    assert.deepEqual(visitedFolderIds, ['folder-season']);
   });
 });

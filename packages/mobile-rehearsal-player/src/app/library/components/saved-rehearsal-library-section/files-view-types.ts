@@ -16,6 +16,7 @@ import type {
   LibrarySearchEntityFilter,
   TagFilterMatchMode,
 } from '../../search/utils/saved-library-search-view-model';
+import type { FilesViewPlayback } from './files-row-playback-model';
 import type { FilesPlaylistAddMode } from './files-view-model';
 import type { LibraryFilesSuccessFeedback } from './library-files-success-feedback';
 
@@ -53,6 +54,7 @@ export type SavedRehearsalLibraryFilesViewProps = {
   originalLocationActions: ReturnType<
     typeof useRehearsalLibraryController
   >['originalLocation'];
+  playback: FilesViewPlayback;
   playlistAddMode?: FilesPlaylistAddMode;
   searchState: {
     activeSearchQuery: string | null;

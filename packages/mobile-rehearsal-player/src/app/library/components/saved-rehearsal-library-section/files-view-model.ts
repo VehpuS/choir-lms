@@ -6,7 +6,14 @@ import {
   type LibraryFilesExplorerState,
 } from '../../saved-rehearsal-library/library-files-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
+import type { AppIconName } from '../../../components/app-icon/model';
 import type { ExplorerBreadcrumbItem } from '../explorer/model';
+import {
+  formatFilesRowMeta,
+  resolveFilesRowPlaybackPresentation,
+  type FilesRowPlaybackRing,
+  type FilesViewPlayback,
+} from './files-row-playback-model';
 
 type LibraryFilesControllerLike = Pick<
   UseLibraryFilesResult,
@@ -40,16 +47,20 @@ export type SavedRehearsalLibraryFilesViewModel = {
   canGoBack: boolean;
   currentFolderName: string;
   rows: Array<{
-    active: boolean;
     addAction?: FilesPlaylistAddAction;
     disabled: boolean;
+    isActive: boolean;
+    isPlaying: boolean;
     isPreparingLoop: boolean;
     key: string;
     kind: LibraryFilesExplorerState['rows'][number]['kind'];
     label: string;
+    leadingIconName: AppIconName;
     message?: string;
+    metaLabel: string;
     onPress: () => void;
-    supportingLabel: string;
+    /** Absent for folders and while playlist add mode shows `Add`. */
+    playbackRing?: FilesRowPlaybackRing;
   }>;
 };
 
@@ -143,6 +154,37 @@ const isRowActive = (
   return false;
 };
 
+/**
+ * The full trail with the current folder as the last, non-interactive
+ * segment (screen 1b). At the Library root it would only repeat the folder
+ * title above it, so it is empty there.
+ */
+export const buildFilesBreadcrumbs = (
+  explorer: Pick<LibraryFilesExplorerState, 'breadcrumbs'>,
+  files: Pick<LibraryFilesControllerLike, 'goToFolder'>,
+): ExplorerBreadcrumbItem[] => {
+  if (explorer.breadcrumbs.length <= 1) {
+    return [];
+  }
+
+  const currentIndex = explorer.breadcrumbs.length - 1;
+
+  return explorer.breadcrumbs.map((breadcrumb, index) => {
+    const isCurrent = index === currentIndex;
+
+    return {
+      isCurrent,
+      key: breadcrumb.folderId,
+      label: breadcrumb.label,
+      onPress: isCurrent
+        ? undefined
+        : () => {
+            files.goToFolder(breadcrumb.folderId);
+          },
+    };
+  });
+};
+
 export const buildSavedRehearsalLibraryFilesViewModel = (options: {
   activePlayableItem: PlayableItem | null;
   explorer?: LibraryFilesExplorerState;
@@ -152,6 +194,7 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
   onTogglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
   pendingLoopBuilderSourceId: string | null;
+  playback: FilesViewPlayback;
   playlistAddMode?: FilesPlaylistAddMode;
 }): SavedRehearsalLibraryFilesViewModel => {
   const explorer = options.explorer ?? options.files.explorer;
@@ -160,28 +203,58 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
     throw new Error('Library files explorer state is required.');
   }
 
+  const openRow = (row: LibraryFilesExplorerState['rows'][number]) => {
+    options.onOpenRow?.(row);
+
+    if (row.kind === 'folder') {
+      options.files.openFolder(row.folder.id);
+      return;
+    }
+
+    if (row.kind === 'track') {
+      void options.onToggleSourcePlayback(row.source);
+      return;
+    }
+
+    if (row.kind === 'loop') {
+      if (!row.playableItem) {
+        return;
+      }
+
+      void options.onTogglePlayableItemPlayback(row.playableItem);
+      return;
+    }
+
+    options.onOpenPlaylist(row.playlist.id);
+  };
+
   return {
-    breadcrumbs: explorer.breadcrumbs.slice(0, -1).map((breadcrumb) => {
-      return {
-        isCurrent: false,
-        key: breadcrumb.folderId,
-        label: breadcrumb.label,
-        onPress: () => {
-          options.files.goToFolder(breadcrumb.folderId);
-        },
-      };
-    }),
+    breadcrumbs: buildFilesBreadcrumbs(explorer, options.files),
     canGoBack: Boolean(explorer.currentFolder.parentFolderId),
     currentFolderName: explorer.currentFolder.name,
     rows: explorer.rows.map((row) => {
       const disabled =
         (row.kind === 'track' && !row.isPlayable) ||
         (row.kind === 'loop' && row.playableItem === null);
+      const addAction = buildFilesPlaylistAddAction(
+        row,
+        options.playlistAddMode,
+      );
+      const playback = resolveFilesRowPlaybackPresentation({
+        activePlayableItem: options.activePlayableItem,
+        isActive: isRowActive(options.activePlayableItem, row),
+        onToggle: () => {
+          openRow(row);
+        },
+        playback: options.playback,
+        row,
+      });
 
       return {
-        active: isRowActive(options.activePlayableItem, row),
-        addAction: buildFilesPlaylistAddAction(row, options.playlistAddMode),
+        addAction,
         disabled,
+        isActive: playback.isActive,
+        isPlaying: playback.isPlaying,
         isPreparingLoop: isRowPreparingLoop(
           options.pendingLoopBuilderSourceId,
           row,
@@ -189,32 +262,16 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
         key: getLibraryFilesRowNodeKey(row),
         kind: row.kind,
         label: row.label,
+        leadingIconName: playback.leadingIconName,
         message: 'message' in row ? row.message : undefined,
+        metaLabel: formatFilesRowMeta({
+          isPlaying: playback.isPlaying,
+          supportingLabel: row.supportingLabel,
+        }),
         onPress: () => {
-          options.onOpenRow?.(row);
-
-          if (row.kind === 'folder') {
-            options.files.openFolder(row.folder.id);
-            return;
-          }
-
-          if (row.kind === 'track') {
-            void options.onToggleSourcePlayback(row.source);
-            return;
-          }
-
-          if (row.kind === 'loop') {
-            if (!row.playableItem) {
-              return;
-            }
-
-            void options.onTogglePlayableItemPlayback(row.playableItem);
-            return;
-          }
-
-          options.onOpenPlaylist(row.playlist.id);
+          openRow(row);
         },
-        supportingLabel: row.supportingLabel,
+        playbackRing: addAction ? undefined : playback.playbackRing,
       };
     }),
   };

@@ -5,7 +5,9 @@ import {
   interactionGuardProps,
 } from '../../../components/interaction-guard';
 import { AppIcon } from '../../../components/app-icon';
+import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
+import { RowMetaLine } from '../../../components/row-meta-line';
 import { RowPreparingIndicator } from '../../../components/row-preparing-indicator';
 import { appTheme } from '../../../utils/theme';
 import { getOriginalDriveLocationViewModel } from '../../saved-rehearsal-library/original-drive-location-view-model';
@@ -17,20 +19,7 @@ import type { OptionsMenuAction } from '../options-menu-sheet/model';
 import { resolveFilesRowMenuTitle } from './files-row-actions';
 import type { SavedRehearsalLibraryFilesViewModel } from './files-view-model';
 
-const getRowIconName = (
-  row: NonNullable<UseLibraryFilesResult['explorer']>['rows'][number],
-) => {
-  switch (row.kind) {
-    case 'folder':
-      return 'folder-outline' as const;
-    case 'loop':
-      return 'repeat' as const;
-    case 'playlist':
-      return 'playlist-music-outline' as const;
-    default:
-      return 'music-note-outline' as const;
-  }
-};
+const LEADING_GLYPH_SIZE = 20;
 
 export const FilesExplorerList = (options: {
   createMenuActions: (
@@ -53,21 +42,31 @@ export const FilesExplorerList = (options: {
         return (
           <View key={viewModelRow.key}>
             <ExplorerListRow
-              active={viewModelRow.active}
               disabled={viewModelRow.disabled}
               leadingIcon={
                 <AppIcon
                   color={
-                    viewModelRow.active
-                      ? appTheme.colors.accent
-                      : appTheme.colors.secondaryText
+                    viewModelRow.isActive
+                      ? appTheme.colors.accentText
+                      : appTheme.colors.icon
                   }
-                  name={getRowIconName(row)}
-                  size={22}
+                  name={viewModelRow.leadingIconName}
+                  size={LEADING_GLYPH_SIZE}
                 />
               }
               actions={
-                rowAddAction ? (
+                viewModelRow.playbackRing ? (
+                  <CompactPlaybackAction
+                    accessibilityLabel={
+                      viewModelRow.playbackRing.accessibilityLabel
+                    }
+                    disabled={viewModelRow.playbackRing.disabled}
+                    iconName={viewModelRow.playbackRing.iconName}
+                    onPress={viewModelRow.playbackRing.onPress}
+                    selected={viewModelRow.isActive}
+                    variant="row"
+                  />
+                ) : rowAddAction ? (
                   <Pressable
                     accessibilityLabel={rowAddAction.accessibilityLabel}
                     accessibilityRole="button"
@@ -100,17 +99,12 @@ export const FilesExplorerList = (options: {
                   </Text>
                 ) : null
               }
-              metadata={
-                <Text numberOfLines={1} style={styles.rowSupportingLabel}>
-                  {viewModelRow.supportingLabel}
-                </Text>
-              }
+              metadata={<RowMetaLine text={viewModelRow.metaLabel} />}
               onPress={viewModelRow.onPress}
               overflowTrigger={
                 menuActions.length > 0 ? (
                   <OverflowMenuTrigger
                     accessibilityLabel={`${resolveFilesRowMenuTitle(row)} options`}
-                    iconColor={appTheme.colors.secondaryText}
                     onPress={() => {
                       options.setOpenMenuRowKey(viewModelRow.key);
                     }}
@@ -122,7 +116,10 @@ export const FilesExplorerList = (options: {
                 <SearchHighlightedText
                   numberOfLines={1}
                   query={options.searchQuery}
-                  style={styles.rowTitle}
+                  style={[
+                    styles.rowTitle,
+                    viewModelRow.isActive ? styles.rowTitleActive : undefined,
+                  ]}
                   text={viewModelRow.label}
                 />
               }
@@ -177,9 +174,8 @@ const styles = StyleSheet.create({
     opacity: 0.55,
   },
   rowActionButtonLabel: {
+    ...appTheme.type.button,
     color: appTheme.colors.accentText,
-    fontSize: 12,
-    fontWeight: '700',
   },
   rowActionButtonPressed: {
     backgroundColor: appTheme.colors.accentRegionFill,
@@ -199,14 +195,12 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
   },
-  rowSupportingLabel: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 13,
-    lineHeight: 18,
-  },
   rowTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 15,
-    fontWeight: '700',
+    ...appTheme.type.rowTitle,
+    color: appTheme.colors.text,
+  },
+  // The playing row is marked by its title, glyph, and ring, never a fill.
+  rowTitleActive: {
+    color: appTheme.colors.accentText,
   },
 });

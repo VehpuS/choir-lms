@@ -2,6 +2,7 @@ import {
   type NamedLoop,
   type PlayableItem,
   type Playlist,
+  type RehearsalQueueMode,
 } from '@org/audio-library-models';
 
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
@@ -108,7 +109,10 @@ export type SavedRehearsalLibrarySectionProps = {
     sources: DriveLibrarySource[];
   }) => void;
   toggleActivePlayback: () => Promise<void>;
-  toggleItemQueuePlayback: (items: PlayableItem[]) => Promise<void>;
+  toggleItemQueuePlayback: (
+    items: PlayableItem[],
+    options?: { mode?: RehearsalQueueMode },
+  ) => Promise<void>;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   togglePlaylistPlayback: (options: {
     loops: NamedLoop[];

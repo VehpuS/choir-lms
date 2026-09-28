@@ -88,6 +88,15 @@ const TREE: RehearsalLibraryFileTree = {
   version: 1,
 };
 
+// Nothing is playing in these interaction tests; the play rings have their
+// own spec (`files-row-playback-model.spec.ts`).
+const IDLE_PLAYBACK = {
+  isPreparing: false,
+  onStartPlaylist: () => undefined,
+  onToggleActivePlayback: () => undefined,
+  state: undefined,
+};
+
 const createFilesStub = (
   explorerOverride?: ReturnType<typeof buildLibraryFilesExplorerState> | null,
 ) => {
@@ -158,6 +167,7 @@ describe('SavedRehearsalLibraryFilesView', () => {
           onTogglePlayableItemPlayback: async () => undefined,
           onToggleSourcePlayback: async () => undefined,
           pendingLoopBuilderSourceId: null,
+          playback: IDLE_PLAYBACK,
         }),
       /Library files explorer state is required\./,
     );
@@ -175,6 +185,7 @@ describe('SavedRehearsalLibraryFilesView', () => {
       onTogglePlayableItemPlayback: async () => undefined,
       onToggleSourcePlayback: async () => undefined,
       pendingLoopBuilderSourceId: null,
+      playback: IDLE_PLAYBACK,
     });
 
     assert.ok(viewModel);
@@ -190,8 +201,13 @@ describe('SavedRehearsalLibraryFilesView', () => {
           isCurrent: false,
           label: 'Library',
         },
+        {
+          isCurrent: true,
+          label: 'Warmups',
+        },
       ],
     );
+    assert.equal(viewModel.breadcrumbs[1]?.onPress, undefined);
     assert.equal(viewModel.currentFolderName, 'Warmups');
 
     files.goToParentFolder();
@@ -224,6 +240,7 @@ describe('SavedRehearsalLibraryFilesView', () => {
       onTogglePlayableItemPlayback: async () => undefined,
       onToggleSourcePlayback: async () => undefined,
       pendingLoopBuilderSourceId: null,
+      playback: IDLE_PLAYBACK,
       playlistAddMode: {
         canMutatePlaylists: true,
         isPlaylistMutating: false,
@@ -258,6 +275,10 @@ describe('SavedRehearsalLibraryFilesView', () => {
       viewModel?.rows.find((row) => row.label === 'Alto Section')?.addAction,
       undefined,
     );
+
+    // The `Add` pill takes the play ring's place while collecting items.
+    assert.equal(trackRow?.playbackRing, undefined);
+    assert.equal(loopRow?.playbackRing, undefined);
 
     trackRow?.addAction?.onPress();
     loopRow?.addAction?.onPress();

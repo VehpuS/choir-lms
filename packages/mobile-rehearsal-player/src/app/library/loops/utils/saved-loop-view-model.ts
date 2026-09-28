@@ -102,6 +102,18 @@ export const formatSavedLoopRangeLabel = (
   return `${startLabel} to ${endLabel}`;
 };
 
+/** `1:12–1:48 · 0:36`: the loop's range, then its length (screens 1b, 1d). */
+export const formatSavedLoopBracketLabel = (
+  loop: Pick<NamedLoop, 'startMs' | 'endMs'>,
+) => {
+  const startLabel = formatDurationLabel(loop.startMs) ?? '0:00';
+  const endLabel = formatDurationLabel(loop.endMs) ?? '0:00';
+  const lengthLabel =
+    formatDurationLabel(Math.max(loop.endMs - loop.startMs, 0)) ?? '0:00';
+
+  return `${startLabel}–${endLabel} · ${lengthLabel}`;
+};
+
 export const formatSavedLoopParentTrackLabel = (options: {
   loop: Pick<NamedLoop, 'startMs' | 'endMs'>;
   parentTrackName: string;

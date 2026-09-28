@@ -178,3 +178,62 @@ describe('queue session mode', () => {
     assert.equal(roundTripped.currentIndex, session.currentIndex);
   });
 });
+
+describe('transient queue started in a mode', () => {
+  const items = ['a', 'b', 'c', 'd'].map(buildTrack);
+
+  it('keeps the given order when started in order', () => {
+    const session = createTransientPlaybackSessionFromItems({
+      items,
+      mode: 'ordered',
+      repeatMode: 'off',
+    });
+
+    assert.equal(session.queue.mode, 'ordered');
+    assert.deepEqual(
+      queueIds(session),
+      items.map((item) => item.id),
+    );
+    assert.equal(session.unshuffledItems, undefined);
+  });
+
+  it('shuffles every item when started shuffled and remembers the given order', () => {
+    const session = createTransientPlaybackSessionFromItems({
+      items,
+      mode: 'shuffle',
+      random: pickFirst,
+      repeatMode: 'off',
+    });
+
+    assert.equal(session.queue.mode, 'shuffle');
+    assert.equal(session.currentIndex, 0);
+    assert.equal(session.requestedItemCount, items.length);
+    assert.deepEqual(queueIds(session), [
+      'track:drive:b',
+      'track:drive:c',
+      'track:drive:d',
+      'track:drive:a',
+    ]);
+    assert.deepEqual(session.unshuffledItems, items);
+  });
+
+  it('restores the given order when a shuffled start is switched to ordered', () => {
+    const shuffled = createTransientPlaybackSessionFromItems({
+      items,
+      mode: 'shuffle',
+      random: pickFirst,
+      repeatMode: 'off',
+    });
+
+    const ordered = rebuildQueueSessionForMode({
+      mode: 'ordered',
+      session: shuffled,
+    });
+
+    assert.equal(ordered.queue.mode, 'ordered');
+    assert.deepEqual(
+      queueIds(ordered),
+      items.map((item) => item.id),
+    );
+  });
+});

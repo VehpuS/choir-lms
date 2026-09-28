@@ -13,7 +13,8 @@ import {
   formatDurationLabel,
   type DriveLibrarySource,
 } from '../../drive/utils/drive-library-view-model';
-import { formatSavedLoopParentTrackLabel } from '../../loops/utils/saved-loop-view-model';
+import { ROW_META_SEPARATOR } from '../../../components/row-meta-line/model';
+import { formatSavedLoopBracketLabel } from '../../loops/utils/saved-loop-view-model';
 
 import type {
   LibraryFilesFolderChildCounts,
@@ -32,7 +33,11 @@ const DEFAULT_UNAVAILABLE_LOOP_MESSAGE =
 const MISSING_LOOP_SOURCE_MESSAGE =
   'Restore the parent track before playing this saved loop.';
 
-const formatPluralizedCount = (count: number, noun: string) => {
+const TRACK_KIND_LABEL = 'Track';
+const PLAYLIST_KIND_LABEL = 'Playlist';
+const UNAVAILABLE_TRACK_LABEL = 'Track unavailable';
+
+export const formatPluralizedCount = (count: number, noun: string) => {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 };
 
@@ -70,10 +75,10 @@ const formatFolderSupportingLabel = (counts: LibraryFilesFolderChildCounts) => {
   }
 
   if (musicSegments.length === 1 && folderSegment) {
-    return `${musicSegments[0]} • ${folderSegment}`;
+    return `${musicSegments[0]}${ROW_META_SEPARATOR}${folderSegment}`;
   }
 
-  return musicSegments.join(' • ');
+  return musicSegments.join(ROW_META_SEPARATOR);
 };
 
 const createEntityReferenceKey = (
@@ -119,6 +124,16 @@ const resolveFileLinkLabel = (options: {
     ) ??
     options.fileLink.entityId
   );
+};
+
+export const countLoopsBySourceId = (loops: Pick<NamedLoop, 'sourceId'>[]) => {
+  const counts = new Map<string, number>();
+
+  for (const loop of loops) {
+    counts.set(loop.sourceId, (counts.get(loop.sourceId) ?? 0) + 1);
+  }
+
+  return counts;
 };
 
 export const buildFolderChildCounts = (options: {
@@ -182,33 +197,53 @@ export const buildFolderRow = (options: {
   };
 };
 
+/**
+ * A track's meta line (screens 1b, 1c): duration, tags, and loop count, or
+ * the kind word when none of those exist.
+ */
+export const formatTrackMetaLabel = (options: {
+  loopCount: number;
+  source: Pick<DriveLibrarySource, 'durationMs' | 'tags'>;
+  withDuration: boolean;
+}) => {
+  const parts = compact([
+    options.withDuration
+      ? formatDurationLabel(options.source.durationMs)
+      : undefined,
+    ...(options.source.tags ?? []),
+    options.loopCount > 0
+      ? formatPluralizedCount(options.loopCount, 'loop')
+      : undefined,
+  ]);
+
+  return parts.length > 0 ? parts.join(ROW_META_SEPARATOR) : TRACK_KIND_LABEL;
+};
+
 export const buildTrackRow = (options: {
   entityNameByKey: LibraryFilesEntityNameByKey;
   fileLink: RehearsalLibraryFileLinkNode;
+  loopCount?: number;
   source: DriveLibrarySource;
 }): LibraryFilesTrackRow => {
-  const durationLabel = options.source.durationMs
-    ? formatDurationLabel(options.source.durationMs)
-    : null;
-  const availabilityLabel =
-    options.source.availability.status === 'available'
-      ? durationLabel
-        ? `Track • ${durationLabel}`
-        : 'Track'
-      : 'Track unavailable';
+  const isAvailable = options.source.availability.status === 'available';
 
   return {
     fileLink: options.fileLink,
-    isPlayable: options.source.availability.status === 'available',
+    isPlayable: isAvailable,
     kind: 'track',
     label: resolveFileLinkLabel(options),
-    message:
-      options.source.availability.status === 'available'
-        ? undefined
-        : (options.source.availability.message ??
-          DEFAULT_UNAVAILABLE_TRACK_MESSAGE),
+    message: isAvailable
+      ? undefined
+      : (options.source.availability.message ??
+        DEFAULT_UNAVAILABLE_TRACK_MESSAGE),
     source: options.source,
-    supportingLabel: availabilityLabel,
+    supportingLabel: isAvailable
+      ? formatTrackMetaLabel({
+          loopCount: options.loopCount ?? 0,
+          source: options.source,
+          withDuration: true,
+        })
+      : UNAVAILABLE_TRACK_LABEL,
   };
 };
 
@@ -223,8 +258,6 @@ export const buildLoopRow = (options: {
       ? createLoopPlayableItem(options.loop, options.source)
       : null;
 
-  const parentTrackName = options.source?.name ?? options.loop.sourceName;
-
   return {
     fileLink: options.fileLink,
     kind: 'loop',
@@ -238,23 +271,63 @@ export const buildLoopRow = (options: {
           DEFAULT_UNAVAILABLE_LOOP_MESSAGE),
     playableItem,
     source: options.source,
-    supportingLabel: formatSavedLoopParentTrackLabel({
-      loop: options.loop,
-      parentTrackName,
-    }),
+    // The bracket leads so its times survive truncation; the parent track
+    // follows because loops keep their source context in every Files and
+    // result view (`mobile-library-organization`).
+    supportingLabel: `${formatSavedLoopBracketLabel(options.loop)}${ROW_META_SEPARATOR}${options.source?.name ?? options.loop.sourceName}`,
   };
+};
+
+/**
+ * Total running time of a playlist, or `undefined` when any item's duration
+ * is unknown (a partial total would read as the real one).
+ */
+export const sumPlaylistDurationMs = (options: {
+  loopsById: ReadonlyMap<string, Pick<NamedLoop, 'endMs' | 'startMs'>>;
+  playlist: Pick<Playlist, 'items'>;
+  sourcesById: ReadonlyMap<string, Pick<DriveLibrarySource, 'durationMs'>>;
+}) => {
+  let totalMs = 0;
+
+  for (const item of options.playlist.items) {
+    const itemMs =
+      item.kind === 'loop' && item.loopId
+        ? (() => {
+            const loop = options.loopsById.get(item.loopId);
+
+            return loop ? loop.endMs - loop.startMs : undefined;
+          })()
+        : options.sourcesById.get(item.sourceId)?.durationMs;
+
+    if (itemMs === undefined) {
+      return undefined;
+    }
+
+    totalMs += itemMs;
+  }
+
+  return totalMs;
 };
 
 export const buildPlaylistRow = (options: {
   entityNameByKey: LibraryFilesEntityNameByKey;
   fileLink: RehearsalLibraryFileLinkNode;
   playlist: Playlist;
+  totalDurationMs?: number;
 }): LibraryFilesPlaylistRow => {
+  const parts = compact([
+    PLAYLIST_KIND_LABEL,
+    formatPluralizedItemCount(options.playlist.items.length),
+    options.playlist.items.length > 0
+      ? formatDurationLabel(options.totalDurationMs)
+      : undefined,
+  ]);
+
   return {
     fileLink: options.fileLink,
     kind: 'playlist',
     label: resolveFileLinkLabel(options),
     playlist: options.playlist,
-    supportingLabel: formatPluralizedItemCount(options.playlist.items.length),
+    supportingLabel: parts.join(ROW_META_SEPARATOR),
   };
 };

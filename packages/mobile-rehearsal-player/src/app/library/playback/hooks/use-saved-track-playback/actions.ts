@@ -324,7 +324,10 @@ export const createSavedTrackPlaybackActions = ({
         createTrackPlayableItem(source),
       );
     },
-    async toggleItemQueuePlayback(items: PlayableItem[]) {
+    async toggleItemQueuePlayback(
+      items: PlayableItem[],
+      queueOptions?: { mode?: RehearsalQueueMode },
+    ) {
       if (await requestAuthorizationIfExpired()) {
         return;
       }
@@ -332,6 +335,7 @@ export const createSavedTrackPlaybackActions = ({
       await startItemQueuePlayback({
         activePlaylistContextRef,
         items,
+        mode: queueOptions?.mode,
         playbackController,
         repeatMode: playlistRepeatMode,
         setActivePlaylistSession,

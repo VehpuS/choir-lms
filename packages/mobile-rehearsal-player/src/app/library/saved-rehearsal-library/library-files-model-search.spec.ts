@@ -78,7 +78,7 @@ describe('library-files model search', () => {
     assert.equal(explorer.rows[0]?.kind, 'track');
     assert.equal(
       explorer.rows[0]?.supportingLabel,
-      'Library / Warmups / Entrances • Track • 4:05',
+      'Library / Warmups / Entrances · 4:05',
     );
   });
 
@@ -121,7 +121,7 @@ describe('library-files model search', () => {
       [
         {
           kind: 'loop',
-          supportingLabel: 'Parent track: Full Choir.mp3 • 0:12 to 0:24',
+          supportingLabel: '0:12–0:24 · 0:12 · Full Choir.mp3',
         },
       ],
     );
@@ -195,12 +195,12 @@ describe('library-files model search', () => {
         {
           kind: 'track',
           label: 'Warm ending',
-          supportingLabel: 'Library / Anthems • Track unavailable',
+          supportingLabel: 'Library / Anthems · Track unavailable',
         },
         {
           kind: 'track',
           label: 'Warm entrance',
-          supportingLabel: 'Library / Warmups / Entrances • Track • 4:05',
+          supportingLabel: 'Library / Warmups / Entrances · 4:05',
         },
       ],
     );

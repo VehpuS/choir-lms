@@ -23,7 +23,12 @@ describe('library-files model browse', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
+        {
+          id: 'folder:library-root',
+          name: 'Library',
+          parentFolderId: null,
+          createdAt: '2026-05-10T10:00:00.000Z',
+        },
         {
           id: 'folder-archive',
           name: 'Archive',
@@ -84,7 +89,12 @@ describe('library-files model browse', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
+        {
+          id: 'folder:library-root',
+          name: 'Library',
+          parentFolderId: null,
+          createdAt: '2026-05-10T10:00:00.000Z',
+        },
         {
           id: 'folder-anthems',
           name: 'Anthems',
@@ -144,9 +154,9 @@ describe('library-files model browse', () => {
       (row) => row.folder.id === 'folder-warmups',
     );
 
-    assert.equal(anthemsRow?.supportingLabel, '1 track • 1 folder');
+    assert.equal(anthemsRow?.supportingLabel, '1 track · 1 folder');
     assert.equal(sectionsRow?.supportingLabel, '1 folder');
-    assert.equal(warmupsRow?.supportingLabel, '1 track • 1 loop • 1 playlist');
+    assert.equal(warmupsRow?.supportingLabel, '1 track · 1 loop · 1 playlist');
   });
 
   it('builds a mixed explorer list with folders first and canonical breadcrumb paths', () => {
@@ -179,14 +189,24 @@ describe('library-files model browse', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
+        {
+          id: 'folder:library-root',
+          name: 'Library',
+          parentFolderId: null,
+          createdAt: '2026-05-10T10:00:00.000Z',
+        },
         {
           id: 'folder-1',
           name: 'Warmups',
           parentFolderId: 'folder:library-root',
           createdAt: '2026-05-10T10:00:00.000Z',
         },
-        { id: 'folder-2', name: 'Alto Entrances', parentFolderId: 'folder-1', createdAt: '2026-05-10T10:00:00.000Z' },
+        {
+          id: 'folder-2',
+          name: 'Alto Entrances',
+          parentFolderId: 'folder-1',
+          createdAt: '2026-05-10T10:00:00.000Z',
+        },
       ],
       rootFolderId: 'folder:library-root',
       version: 1,
@@ -239,7 +259,12 @@ describe('library-files model browse', () => {
         },
       ],
       folders: [
-        { id: 'folder:library-root', name: 'Library', parentFolderId: null, createdAt: '2026-05-10T10:00:00.000Z' },
+        {
+          id: 'folder:library-root',
+          name: 'Library',
+          parentFolderId: null,
+          createdAt: '2026-05-10T10:00:00.000Z',
+        },
       ],
       rootFolderId: 'folder:library-root',
       version: 1,
@@ -257,11 +282,8 @@ describe('library-files model browse', () => {
 
     assert.equal(trackRow?.label, 'Mass entry copy');
     assert.equal(trackRow?.kind, 'track');
-    assert.equal(trackRow?.supportingLabel, 'Track • 4:05');
+    assert.equal(trackRow?.supportingLabel, '4:05 · 1 loop');
     assert.equal(loopRow?.kind, 'loop');
-    assert.equal(
-      loopRow?.supportingLabel,
-      'Parent track: Full Choir.mp3 • 0:12 to 0:24',
-    );
+    assert.equal(loopRow?.supportingLabel, '0:12–0:24 · 0:12 · Full Choir.mp3');
   });
 });

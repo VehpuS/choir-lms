@@ -11,6 +11,7 @@ import {
 import type { SavedRehearsalLibraryBrowseContentProps } from './browse-content-types';
 import { BrowsePlaylistCards } from './browse-playlist-cards';
 import { BrowseSourceGroup } from './browse-source-group';
+import { resolveFilesPlaylistAddMode } from './files-playlist-add-mode';
 import { SavedRehearsalLibraryFilesView } from './files-view';
 
 export const SavedRehearsalLibraryBrowseContent = ({
@@ -63,6 +64,8 @@ export const SavedRehearsalLibraryBrowseContent = ({
   onShowLibraryFilesSuccessFeedback,
   togglePlaylistPlayback,
   togglePlayableItemPlayback,
+  toggleActivePlayback,
+  toggleItemQueuePlayback,
   toggleSourcePlayback,
   trackPlaylistMenu,
 }: SavedRehearsalLibraryBrowseContentProps) => {
@@ -127,40 +130,30 @@ export const SavedRehearsalLibraryBrowseContent = ({
             trackPlaylistMenu.openLoopPlaylistSelector
           }
           originalLocationActions={originalLocationActions}
-          playlistAddMode={
-            playlistState.isFilesAddItemsVisible &&
-            playlistState.selectedPlaylist !== null
-              ? {
-                  canMutatePlaylists,
-                  isPlaylistMutating,
-                  isSavedLibraryMutating,
-                  onAddLoop: (loopId) => {
-                    const loop = savedLoops.find((currentLoop) => {
-                      return currentLoop.id === loopId;
-                    });
-
-                    if (!loop) {
-                      return;
-                    }
-
-                    void playlistState.addLoopToSelectedPlaylist(loop);
-                  },
-                  onAddSource: (sourceId) => {
-                    const source = savedLibrarySources.find((currentSource) => {
-                      return currentSource.id === sourceId;
-                    });
-
-                    if (!source) {
-                      return;
-                    }
-
-                    void playlistState.addSourceToSelectedPlaylist(source);
-                  },
-                  onDone: onDoneAddingFilesPlaylistItems,
-                  playlistName: playlistState.selectedPlaylist.name,
-                }
-              : undefined
-          }
+          playback={{
+            isPreparing: isPlaybackPreparing,
+            onStartPlaylist: (playlist) => {
+              void togglePlaylistPlayback({
+                loops: savedLoops,
+                mode: 'ordered',
+                playlist,
+                sources: savedLibrarySources,
+              });
+            },
+            onToggleActivePlayback: () => {
+              void toggleActivePlayback();
+            },
+            state: playbackState,
+          }}
+          playlistAddMode={resolveFilesPlaylistAddMode({
+            canMutatePlaylists,
+            isPlaylistMutating,
+            isSavedLibraryMutating,
+            onDone: onDoneAddingFilesPlaylistItems,
+            playlistState,
+            savedLibrarySources,
+            savedLoops,
+          })}
           onOpenPlaylist={(playlistId) => {
             playlistState.openPlaylistDetail(
               playlistId,
@@ -281,6 +274,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
           savedSourceTitle={savedSourceTitle}
           searchQuery={searchState.activeLibrarySearchQuery}
           sources={searchState.visibleSavedLibrarySources}
+          toggleItemQueuePlayback={toggleItemQueuePlayback}
           toggleSourcePlayback={toggleSourcePlayback}
         />
       ) : null}

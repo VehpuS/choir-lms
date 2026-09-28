@@ -1,4 +1,8 @@
-import { type PlayableItem, type RepeatMode } from '@org/audio-library-models';
+import {
+  type PlayableItem,
+  type RehearsalQueueMode,
+  type RepeatMode,
+} from '@org/audio-library-models';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 
 import { type ActivePlaylistContext } from '../../../playlists/utils/playlist-session-mode';
@@ -22,6 +26,7 @@ const EMPTY_ITEM_QUEUE_ISSUE: SavedTrackPlaybackIssue = {
 type StartItemQueuePlaybackOptions = {
   activePlaylistContextRef: MutableRefObject<ActivePlaylistContext | null>;
   items: PlayableItem[];
+  mode?: RehearsalQueueMode;
   playbackController: SavedTrackPlaybackController;
   repeatMode: RepeatMode;
   setActivePlaylistSession: Dispatch<
@@ -36,6 +41,7 @@ export const startItemQueuePlayback = async (
 ) => {
   const nextSession = createTransientPlaybackSessionFromItems({
     items: options.items,
+    mode: options.mode,
     repeatMode: options.repeatMode,
   });
   const firstPlayableItem = getPlaylistPlaybackCurrentItem(nextSession);

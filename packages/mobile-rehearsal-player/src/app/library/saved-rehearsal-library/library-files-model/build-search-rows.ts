@@ -20,6 +20,8 @@ import {
   buildLoopRow,
   buildPlaylistRow,
   buildTrackRow,
+  countLoopsBySourceId,
+  sumPlaylistDurationMs,
 } from './row-builders';
 import { sortRows } from './sort';
 import type { LibraryFilesRow, LibraryFilesSearchOptions } from './types';
@@ -77,6 +79,7 @@ export const buildSearchRows = (options: {
       return [playlist.id, playlist] as const;
     }),
   );
+  const loopCountBySourceId = countLoopsBySourceId(options.savedLoops);
 
   const folderRows =
     options.searchOptions.entityFilter === 'all'
@@ -142,6 +145,7 @@ export const buildSearchRows = (options: {
       const row = buildTrackRow({
         entityNameByKey: options.entityNameByKey,
         fileLink,
+        loopCount: loopCountBySourceId.get(source.id) ?? 0,
         source,
       });
 
@@ -234,6 +238,11 @@ export const buildSearchRows = (options: {
       entityNameByKey: options.entityNameByKey,
       fileLink,
       playlist,
+      totalDurationMs: sumPlaylistDurationMs({
+        loopsById: savedLoopsById,
+        playlist,
+        sourcesById: savedSourcesById,
+      }),
     });
 
     if (!matchesSearchText(normalizedQuery, [row.label, playlist.name])) {

@@ -1,4 +1,9 @@
-import type { PlayableItem, RepeatMode } from '@org/audio-library-models';
+import type {
+  PlayableItem,
+  RehearsalQueueMode,
+  RepeatMode,
+} from '@org/audio-library-models';
+import { shuffleItems } from '@org/audio-library-runtime';
 
 import type { PlaylistPlaybackSession } from './saved-playlist-playback-view-model';
 
@@ -208,9 +213,7 @@ export const selectPlaylistPlaybackQueueItem = (
   };
 };
 
-export const dedupePlayableItems = (
-  items: PlayableItem[],
-): PlayableItem[] => {
+export const dedupePlayableItems = (items: PlayableItem[]): PlayableItem[] => {
   const seenItemIds = new Set<string>();
 
   return items.filter((item) => {
@@ -242,22 +245,35 @@ export const createTransientPlaybackSession = (options: {
   } satisfies PlaylistPlaybackSession;
 };
 
+/**
+ * A `Current queue` session over a list of items. Shuffle mode shuffles the
+ * whole list (nothing is playing yet) and keeps the given order in
+ * `unshuffledItems`, so switching back to ordered restores it, the same
+ * contract `rebuildQueueSessionForMode` keeps for a running queue.
+ */
 export const createTransientPlaybackSessionFromItems = (options: {
   items: PlayableItem[];
+  mode?: RehearsalQueueMode;
+  random?: () => number;
   repeatMode: RepeatMode;
 }): PlaylistPlaybackSession => {
+  const isShuffled = options.mode === 'shuffle';
+
   return {
     currentIndex: 0,
     hasCompleted: false,
     playlistId: TRANSIENT_QUEUE_PLAYLIST_ID,
     playlistName: TRANSIENT_QUEUE_PLAYLIST_NAME,
     queue: {
-      items: options.items,
-      mode: 'ordered',
+      items: isShuffled
+        ? shuffleItems(options.items, options.random)
+        : options.items,
+      mode: isShuffled ? 'shuffle' : 'ordered',
       playlistId: TRANSIENT_QUEUE_PLAYLIST_ID,
       repeatMode: options.repeatMode,
     },
     requestedItemCount: options.items.length,
+    ...(isShuffled ? { unshuffledItems: options.items } : {}),
   } satisfies PlaylistPlaybackSession;
 };
 
@@ -276,7 +292,9 @@ export const canShowQueuePlaylistActions = (
 export const canUpdateQueuePlaylist = (
   session: PlaylistPlaybackSession | null,
 ) => {
-  return canShowQueuePlaylistActions(session) && !isTransientQueueSession(session);
+  return (
+    canShowQueuePlaylistActions(session) && !isTransientQueueSession(session)
+  );
 };
 
 export const queuePlayableItemDuringPlayback = (

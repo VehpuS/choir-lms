@@ -21,6 +21,8 @@ import {
   buildLoopRow,
   buildPlaylistRow,
   buildTrackRow,
+  countLoopsBySourceId,
+  sumPlaylistDurationMs,
 } from './row-builders';
 import { sortRows } from './sort';
 import type {
@@ -62,6 +64,7 @@ export const buildDefaultRows = (options: {
       return [playlist.id, playlist] as const;
     }),
   );
+  const loopCountBySourceId = countLoopsBySourceId(options.savedLoops);
   const childFolders = options.tree.folders
     .filter((folder) => {
       return folder.parentFolderId === options.currentFolder.id;
@@ -130,6 +133,7 @@ export const buildDefaultRows = (options: {
         buildTrackRow({
           entityNameByKey: options.entityNameByKey,
           fileLink,
+          loopCount: loopCountBySourceId.get(source.id) ?? 0,
           source,
         }),
       ];
@@ -187,6 +191,11 @@ export const buildDefaultRows = (options: {
         entityNameByKey: options.entityNameByKey,
         fileLink,
         playlist,
+        totalDurationMs: sumPlaylistDurationMs({
+          loopsById: savedLoopsById,
+          playlist,
+          sourcesById: savedSourcesById,
+        }),
       }),
     ];
   });

@@ -1,262 +1,93 @@
-import { createTrackPlayableItem } from '@org/audio-library-models';
-import { useState } from 'react';
+import type { RehearsalQueueMode } from '@org/audio-library-models';
+import { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { AppIcon } from '../../../components/app-icon';
-import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
-import { RowPreparingIndicator } from '../../../components/row-preparing-indicator';
+import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { appTheme } from '../../../utils/theme';
-import { resolveDriveLibrarySourceActionPlacement } from '../../drive/utils/drive-library-source-actions';
+import { countLoopsBySourceId } from '../../saved-rehearsal-library/library-files-model/row-builders';
+import { ExplorerListSurface } from '../explorer';
 import {
-  getSourceMetadataLabels,
-  getSourceStatusMessage,
-} from '../../drive/utils/drive-library-view-model';
-import {
-  getSavedTrackPlaybackActionCopy,
-  getSavedTrackPlaybackItemIssue,
-  isSavedTrackPlaybackActive,
-} from '../../playback/utils/saved-track-playback-view-model';
-import { resolveSavedTrackRowActions } from '../../playback/utils/saved-track-row-actions';
-import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
-import {
-  getSavedRehearsalLibraryDependentLoops,
-  getSavedRehearsalLibrarySourceIssue,
-} from '../../saved-rehearsal-library/view-model';
-import { ExplorerListRow, ExplorerListSurface } from '../explorer';
-import { OptionsMenuSheet } from '../options-menu-sheet';
-import { attachRowActionSections } from '../options-menu-sheet/row-action-sections';
-import {
-  TRACK_ACTION_ORDER,
-  sortActionsByLabelOrder,
-  toOptionsMenuAction,
-} from './files-row-actions-contract';
+  BrowseSourceRow,
+  type BrowseSourceRowSharedProps,
+} from './browse-source-row';
+import { resolveTracksPlayAllItems } from './browse-source-row-model';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 
-type BrowseSourceGroupProps = Pick<
-  SavedRehearsalLibrarySectionProps,
-  | 'activePlayableItem'
-  | 'canMutateLibrary'
-  | 'canMutateLoops'
-  | 'canMutatePlaylists'
-  | 'isPlaybackPreparing'
-  | 'playbackIssue'
-  | 'playbackState'
-  | 'queuePlayableItemNext'
-  | 'queuePlayableItemUpNext'
-  | 'removeSource'
-  | 'savedLibraryIssue'
-  | 'savedLoops'
-  | 'toggleSourcePlayback'
-> & {
-  canQueueAsNext: boolean;
-  isLoopMutating: boolean;
-  isPlaylistMutating: boolean;
-  isSavedLibraryMutating: boolean;
-  onOpenLoopBuilderForSource: SavedRehearsalLibrarySectionProps['openLoopBuilderForSource'];
-  onOpenSourceTagEditor: (
-    source: SavedRehearsalLibrarySectionProps['savedLibrarySources'][number],
-  ) => void;
-  openTrackLoopView: (sourceId: string) => void;
-  openSourcePlaylistSelector: (sourceId: string) => void;
-  pendingLoopBuilderSourceId: string | null;
-  pendingSourceId: string | null;
-  savedSourceTitle: string;
-  searchQuery: string | null;
-  sources: SavedRehearsalLibrarySectionProps['savedLibrarySources'];
-};
+type BrowseSourceGroupProps = BrowseSourceRowSharedProps &
+  Pick<
+    SavedRehearsalLibrarySectionProps,
+    'savedLoops' | 'toggleItemQueuePlayback'
+  > & {
+    savedSourceTitle: string;
+    sources: SavedRehearsalLibrarySectionProps['savedLibrarySources'];
+  };
 
+// The Tracks view (screen 1c): a kicker heading, Play all / Shuffle over the
+// tracks it shows, then numbered rows.
 export const BrowseSourceGroup = ({
-  activePlayableItem,
-  canMutateLibrary,
-  canMutateLoops,
-  canMutatePlaylists,
-  canQueueAsNext,
-  isLoopMutating,
-  isPlaybackPreparing,
-  isPlaylistMutating,
-  isSavedLibraryMutating,
-  onOpenLoopBuilderForSource,
-  onOpenSourceTagEditor,
-  openSourcePlaylistSelector,
-  openTrackLoopView,
-  pendingLoopBuilderSourceId,
-  pendingSourceId,
-  playbackIssue,
-  playbackState,
-  queuePlayableItemNext,
-  queuePlayableItemUpNext,
-  removeSource,
-  savedLibraryIssue,
   savedLoops,
   savedSourceTitle,
-  searchQuery,
   sources,
-  toggleSourcePlayback,
+  toggleItemQueuePlayback,
+  ...rowProps
 }: BrowseSourceGroupProps) => {
   const [openMenuSourceId, setOpenMenuSourceId] = useState<string | null>(null);
+  const loopCountBySourceId = useMemo(() => {
+    return countLoopsBySourceId(savedLoops);
+  }, [savedLoops]);
+  const playAllItems = resolveTracksPlayAllItems(sources);
 
   if (sources.length === 0) {
     return null;
   }
 
+  const startQueue = (mode: RehearsalQueueMode) => {
+    void toggleItemQueuePlayback(playAllItems, { mode });
+  };
+
   return (
     <View style={styles.group}>
       <Text style={styles.groupTitle}>{savedSourceTitle}</Text>
+      {playAllItems.length > 0 ? (
+        <View style={styles.playActions}>
+          <OutlinedActionButton
+            disabled={rowProps.isPlaybackPreparing}
+            fill
+            icon="play"
+            label="Play all"
+            onPress={() => {
+              startQueue('ordered');
+            }}
+            variant="accent"
+          />
+          <OutlinedActionButton
+            disabled={rowProps.isPlaybackPreparing}
+            fill
+            icon="shuffle"
+            label="Shuffle"
+            onPress={() => {
+              startQueue('shuffle');
+            }}
+          />
+        </View>
+      ) : null}
       <ExplorerListSurface>
-        {sources.map((source) => {
-          const isPending = pendingSourceId === source.id;
-          const trackPlayableItem = createTrackPlayableItem(source);
-          const playbackAction = getSavedTrackPlaybackActionCopy({
-            activePlayableItem,
-            isPreparing: isPlaybackPreparing,
-            playableItem: trackPlayableItem,
-            playbackState,
-          });
-          const isPlaybackSourceActive = isSavedTrackPlaybackActive(
-            activePlayableItem,
-            trackPlayableItem,
-          );
-          const isAvailable = source.availability.status === 'available';
-          const isPreparingLoop = pendingLoopBuilderSourceId === source.id;
-          const externalMessage =
-            getSavedRehearsalLibrarySourceIssue(
-              savedLibraryIssue,
-              source,
-              'remove',
-            ) ??
-            getSavedTrackPlaybackItemIssue(playbackIssue, trackPlayableItem);
-          const statusMessage =
-            externalMessage ?? getSourceStatusMessage(source);
-          const metadataLabel = getSourceMetadataLabels(source).join(' • ');
-          const menuActions = sortActionsByLabelOrder(
-            resolveSavedTrackRowActions({
-              canMutateLibrary,
-              canMutateLoops,
-              canMutatePlaylists,
-              canQueueAsNext,
-              hasAvailableSource: isAvailable,
-              hasSavedLoops:
-                getSavedRehearsalLibraryDependentLoops(savedLoops, source.id)
-                  .length > 0,
-              isLoopBuilderPreparing: pendingLoopBuilderSourceId !== null,
-              isLoopMutating,
-              isPendingLoopSource: pendingLoopBuilderSourceId === source.id,
-              isPendingRemoval: isPending,
-              isPlaylistMutating,
-              isSavedLibraryMutating,
-              onOpenLoopBuilder: () => {
-                onOpenLoopBuilderForSource(source);
-              },
-              onOpenPlaylistSelector: () => {
-                openSourcePlaylistSelector(source.id);
-              },
-              onOpenTagEditor: () => {
-                onOpenSourceTagEditor(source);
-              },
-              onQueueNext: () => {
-                queuePlayableItemNext(trackPlayableItem);
-              },
-              onQueueUpNext: () => {
-                queuePlayableItemUpNext(trackPlayableItem);
-              },
-              onRemove: () => {
-                removeSource(source);
-              },
-              onTogglePlayback: () => {
-                void toggleSourcePlayback(source);
-              },
-              onViewTrackLoops: () => {
-                openTrackLoopView(source.id);
-              },
-              playbackAction,
-              sourceName: source.name,
-            }),
-            TRACK_ACTION_ORDER,
-          ).filter((action) => {
-            return resolveDriveLibrarySourceActionPlacement(action) === 'menu';
-          });
-          const sheetActions = attachRowActionSections(
-            menuActions.map((action, index) => {
-              return toOptionsMenuAction({
-                action,
-                id: `${source.id}:${action.accessibilityLabel ?? action.label}:${index}`,
-              });
-            }),
-          );
-
+        {sources.map((source, index) => {
           return (
-            <View key={source.id}>
-              <ExplorerListRow
-                active={isPlaybackSourceActive}
-                disabled={!isAvailable}
-                leadingIcon={
-                  <AppIcon
-                    color={
-                      isPlaybackSourceActive
-                        ? appTheme.colors.accent
-                        : appTheme.colors.secondaryText
-                    }
-                    name="music-note-outline"
-                    size={22}
-                  />
-                }
-                message={
-                  isPreparingLoop ? (
-                    <RowPreparingIndicator label="Preparing loop…" />
-                  ) : statusMessage ? (
-                    <Text numberOfLines={2} style={styles.rowMessage}>
-                      {statusMessage}
-                    </Text>
-                  ) : null
-                }
-                metadata={
-                  metadataLabel ? (
-                    <Text numberOfLines={1} style={styles.rowSupportingLabel}>
-                      {metadataLabel}
-                    </Text>
-                  ) : null
-                }
-                onPress={() => {
-                  void toggleSourcePlayback(source);
-                }}
-                overflowTrigger={
-                  menuActions.length > 0 ? (
-                    <OverflowMenuTrigger
-                      accessibilityLabel={`${source.name} options`}
-                      iconColor={appTheme.colors.secondaryText}
-                      onPress={() => {
-                        setOpenMenuSourceId(source.id);
-                      }}
-                      style={styles.rowOverflowTrigger}
-                    />
-                  ) : null
-                }
-                title={
-                  <SearchHighlightedText
-                    numberOfLines={1}
-                    query={searchQuery}
-                    style={styles.rowTitle}
-                    text={source.name}
-                  />
-                }
-              />
-              <OptionsMenuSheet
-                actions={sheetActions.map((action) => {
-                  return {
-                    ...action,
-                    onPress: () => {
-                      setOpenMenuSourceId(null);
-                      action.onPress();
-                    },
-                  };
-                })}
-                isVisible={openMenuSourceId === source.id}
-                onClose={() => {
-                  setOpenMenuSourceId(null);
-                }}
-                title={source.name}
-              />
-            </View>
+            <BrowseSourceRow
+              key={source.id}
+              {...rowProps}
+              index={index}
+              isMenuOpen={openMenuSourceId === source.id}
+              loopCount={loopCountBySourceId.get(source.id) ?? 0}
+              onCloseMenu={() => {
+                setOpenMenuSourceId(null);
+              }}
+              onOpenMenu={() => {
+                setOpenMenuSourceId(source.id);
+              }}
+              source={source}
+            />
           );
         })}
       </ExplorerListSurface>
@@ -266,31 +97,14 @@ export const BrowseSourceGroup = ({
 
 const styles = StyleSheet.create({
   group: {
-    gap: 12,
+    gap: appTheme.space.md,
   },
   groupTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 18,
-    fontWeight: '700',
+    ...appTheme.type.kicker,
+    color: appTheme.colors.textMuted,
   },
-  rowMessage: {
-    color: appTheme.colors.danger,
-    fontSize: 12,
-    lineHeight: 17,
-  },
-  rowOverflowTrigger: {
-    position: 'relative',
-    right: 0,
-    top: 0,
-  },
-  rowSupportingLabel: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  rowTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 15,
-    fontWeight: '700',
+  playActions: {
+    flexDirection: 'row',
+    gap: appTheme.space.md,
   },
 });
