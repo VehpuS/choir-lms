@@ -36,6 +36,12 @@ Companion mockup states: design screens 1a–1j show every affected surface on t
 - **WHEN** the system renders a screen title, section heading, or card title
 - **THEN** it conveys hierarchy through size and space rather than by bolding headings past the design system's heading weight
 
+#### Scenario: Headers leave the most room for content
+
+- **WHEN** a user views any destination or any view within a destination
+- **THEN** the destination header shows only its large title and trailing actions, with no kicker above the title, the same way on every destination
+- **AND** any view or section header above a list is at most one compact line that does not restate the destination title or the selected view, so the first content row starts as high as the controls above it allow
+
 #### Scenario: Icons come from one specified family
 
 - **WHEN** any icon renders

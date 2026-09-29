@@ -90,6 +90,13 @@ Today selection exists only for Drive search results: `drive-search-selection-mo
 - **Aggregated confirmation.** Destructive actions reuse the existing impact summaries (folder delete, last-link delete, track removal cascade) and sum them across the selection before one confirmation; the inspect-affected-entities affordance lists the union.
 - **Conflicts in one pass.** Bulk copy / move computes all destination-name conflicts up front and shows one list with keep-both (unique `Copy` proposal) or skip per item, instead of a dialog per item.
 
+## Decision 11 — Headers spend as little height as possible
+
+Decided by the user (2026-09-29): vertical space goes to content rows, not to header chrome.
+
+- A destination header is its large title plus trailing actions and nothing above it. No destination carries a kicker (eyebrow) over its title. This deliberately departs from design screen 1a, which shows `CHOIR LMS` over `Recents` while 1b–1e show no kicker on `Library` or `Add` (task 8.24).
+- Within a destination, a view or section header is at most one compact line (a kicker with a count, plus that view's sort or primary actions), and never restates what the selected view pill or the destination title already says. Descriptive helper paragraphs belong in empty states, not above populated lists. Task 8.25 applies this to the Library views.
+
 ## Open questions for multiple selection (resolve at task 9.0)
 
 - Bulk-action bar layout at 375pt: which three actions are always visible per surface, and what goes in its overflow sheet.
