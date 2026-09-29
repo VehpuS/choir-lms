@@ -4,7 +4,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 
@@ -14,6 +13,7 @@ import { useScopedSuccessAcknowledgment } from '../../components/scoped-success-
 import { DestinationHeader } from '../../components/destination-header';
 import { getDestinationHeaderModel } from '../../components/destination-header-model';
 import { resolveHeaderSearchToggleOutcome } from '../../components/header-search-toggle-model';
+import { OutlinedActionButton } from '../../components/outlined-action-button';
 import { AsyncActionStatusCard } from '../../library/components/async-action-status-card';
 import { FeedbackCard } from '../../library/components/feedback-card';
 import { DriveDiscoveryPanel } from '../../library/drive/components/drive-discovery-panel';
@@ -31,6 +31,8 @@ import {
   createDriveTrackSavedFeedback,
   resolveTrackSaveDetection,
 } from './drive-track-saved-feedback';
+
+const DISMISS_LABEL = 'Dismiss';
 
 const TRACK_SAVED_AUTO_DISMISS_MS = 5000;
 const ACTION_ROW_GAP = 12;
@@ -234,13 +236,12 @@ export const AddScreen = ({
             {showInAddIssue ? (
               <FeedbackCard
                 footer={
-                  <Pressable
-                    accessibilityRole="button"
+                  <OutlinedActionButton
+                    label={DISMISS_LABEL}
                     onPress={originalLocation.clearSourceLocationIssue}
                     style={styles.dismissAction}
-                  >
-                    <Text style={styles.dismissActionLabel}>Dismiss</Text>
-                  </Pressable>
+                    variant="accent"
+                  />
                 }
                 message={showInAddIssue.message}
                 title={showInAddIssue.title}
@@ -273,11 +274,6 @@ const styles = StyleSheet.create({
   },
   dismissAction: {
     alignSelf: 'flex-start',
-  },
-  dismissActionLabel: {
-    color: appTheme.colors.danger,
-    fontSize: 13,
-    fontWeight: '700',
   },
   headerActionRow: {
     flexDirection: 'row',

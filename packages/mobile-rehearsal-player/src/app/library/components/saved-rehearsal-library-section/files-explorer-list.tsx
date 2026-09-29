@@ -161,6 +161,8 @@ export const FilesExplorerList = (options: {
   );
 };
 
+const ORIGINAL_LOCATION_LINE_HEIGHT = 17;
+
 const styles = StyleSheet.create({
   rowActionButton: {
     alignSelf: 'center',
@@ -180,10 +182,11 @@ const styles = StyleSheet.create({
   rowActionButtonPressed: {
     backgroundColor: appTheme.colors.accentRegionFill,
   },
+  // The `From <path>` provenance under the options sheet title: the row meta
+  // treatment, wrapping so a deep Drive path stays readable in full.
   originalLocationLabel: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 12,
-    lineHeight: 16,
+    ...appTheme.type.rowMeta,
+    lineHeight: ORIGINAL_LOCATION_LINE_HEIGHT,
   },
   rowMessage: {
     color: appTheme.colors.danger,

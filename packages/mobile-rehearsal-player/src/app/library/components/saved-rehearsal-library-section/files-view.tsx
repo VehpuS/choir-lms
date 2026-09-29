@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import {
-  buttonInteractionGuardStyle,
-  interactionGuardProps,
-} from '../../../components/interaction-guard';
 import { getLibraryFilesRowNodeKey } from '../../saved-rehearsal-library/library-files-model';
 import { AsyncActionStatusCard } from '../async-action-status-card';
 import { ExplorerBreadcrumbBar, ExplorerNavigationBar } from '../explorer';
@@ -18,7 +14,8 @@ import {
 } from './files-view-model';
 import { LibraryFilesSuccessFeedbackCard } from './library-files-success-feedback-card';
 import { useLibraryFilesRowActionFlows } from './use-library-files-row-action-flows';
-import { appTheme } from '../../../utils/theme';
+
+const DISMISS_LABEL = 'Dismiss';
 
 export const SavedRehearsalLibraryFilesView = ({
   activePlayableItem,
@@ -170,14 +167,12 @@ export const SavedRehearsalLibraryFilesView = ({
       'open-in-google-drive' ? (
         <FeedbackCard
           footer={
-            <Pressable
-              accessibilityRole="button"
-              {...interactionGuardProps}
+            <OutlinedActionButton
+              label={DISMISS_LABEL}
               onPress={originalLocationActions.clearSourceLocationIssue}
-              style={buttonInteractionGuardStyle}
-            >
-              <Text style={styles.dismissActionLabel}>Dismiss</Text>
-            </Pressable>
+              style={styles.dismissAction}
+              variant="accent"
+            />
           }
           message={originalLocationActions.sourceLocationIssue.message}
           size="compact"
@@ -237,10 +232,8 @@ export const SavedRehearsalLibraryFilesView = ({
 };
 
 const styles = StyleSheet.create({
-  dismissActionLabel: {
+  dismissAction: {
     alignSelf: 'flex-start',
-    color: appTheme.colors.danger,
-    ...appTheme.type.button,
   },
   playlistAddModeAction: {
     alignSelf: 'flex-start',
