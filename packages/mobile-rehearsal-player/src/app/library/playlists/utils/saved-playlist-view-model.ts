@@ -1,3 +1,4 @@
+import { resolveSavedPlaylistMenu } from '../../components/saved-item-menu/saved-item-menus';
 import {
   createPlaylist,
   type NamedLoop,
@@ -232,52 +233,38 @@ export const getSavedPlaylistCreateDialogCopy = (options?: {
   };
 };
 
+/**
+ * A playlist's menu outside Files: the shared saved-playlist menu (task 2.12)
+ * plus `Rename playlist`, this view's own action, since here the row is the
+ * playlist itself rather than a file link.
+ */
 export const getPlaylistOptionsMenuActions = (options: {
   isMutating: boolean;
   onAddItems?: () => void;
-  onEditTags?: () => void;
-  onRemove?: () => void;
+  onEditTags: () => void;
+  onRemove: () => void;
   onRename: () => void;
 }): OptionsMenuAction[] => {
-  const actions: OptionsMenuAction[] = [];
-
-  if (options.onAddItems) {
-    actions.push({
-      disabled: options.isMutating,
-      id: 'add-playlist-items',
-      label: 'Add items',
-      onPress: options.onAddItems,
-      tone: 'secondary',
-    });
-  }
-
-  actions.push({
-    disabled: options.isMutating,
-    id: 'rename-playlist',
-    label: 'Rename playlist',
-    onPress: options.onRename,
-    tone: 'primary',
-  });
-
-  if (options.onEditTags) {
-    actions.push({
-      disabled: options.isMutating,
-      id: 'edit-playlist-tags',
-      label: 'Edit tags',
-      onPress: options.onEditTags,
-      tone: 'secondary',
-    });
-  }
-
-  if (options.onRemove) {
-    actions.push({
-      disabled: options.isMutating,
-      id: 'remove-playlist',
-      label: 'Remove playlist',
-      onPress: options.onRemove,
-      tone: 'destructive',
-    });
-  }
-
-  return actions;
+  return resolveSavedPlaylistMenu(
+    {
+      isMutating: options.isMutating,
+      onAddItems: options.onAddItems,
+      onEditTags: options.onEditTags,
+      onRemoveFromLibrary: options.onRemove,
+    },
+    {
+      idPrefix: 'playlist',
+      viewActions: [
+        {
+          disabled: options.isMutating,
+          id: 'playlist:rename',
+          label: 'Rename playlist',
+          onPress: options.onRename,
+          // Not `primary`: the sheet hoists primary actions to the top,
+          // which would break the shared item order.
+          tone: 'secondary',
+        },
+      ],
+    },
+  );
 };

@@ -31,15 +31,20 @@ describe('row action sections', () => {
     assert.equal(getRowActionSection('Removing…'), 'destructive');
   });
 
-  it('leaves unlisted labels unsectioned so unrelated menus stay flat', () => {
-    assert.equal(getRowActionSection('Rename playlist'), undefined);
+  it('sections Rename playlist with organize actions and leaves unlisted labels unsectioned', () => {
+    assert.equal(getRowActionSection('Rename playlist'), 'organize');
     assert.equal(getRowActionSection('Share'), undefined);
   });
 
   it('attaches the resolved section to each action without changing order or other fields', () => {
     const actions = attachRowActionSections([
       { id: 'a', label: 'Play next', onPress: () => undefined },
-      { id: 'b', label: 'Remove', onPress: () => undefined, tone: 'destructive' as const },
+      {
+        id: 'b',
+        label: 'Remove',
+        onPress: () => undefined,
+        tone: 'destructive' as const,
+      },
       { id: 'c', label: 'Custom action', onPress: () => undefined },
     ]);
 

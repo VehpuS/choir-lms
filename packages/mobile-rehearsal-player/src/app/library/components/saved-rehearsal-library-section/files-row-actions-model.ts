@@ -1,4 +1,4 @@
-import type { PlayableItem } from '@org/audio-library-models';
+import type { NamedLoop, PlayableItem } from '@org/audio-library-models';
 
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { PendingSourceLocationAction } from '../../saved-rehearsal-library/use-saved-source-original-location-actions';
@@ -37,6 +37,9 @@ export type ResolveFilesRowMenuActionsBaseOptions = {
   onReconnectLibrarySource: (sourceId: string) => void;
   onRenameFileNode: (row: LibraryFilesRow) => void;
   onRemoveLibrarySource: (sourceId: string) => void;
+  onRemoveLoop: (loop: NamedLoop) => void;
+  onRemovePlaylist: (playlistId: string) => void;
   onShowSourceInAdd: (sourceId: string) => void;
+  onViewTrackLoops: (sourceId: string) => void;
   pendingSourceLocationAction: PendingSourceLocationAction | null;
 };

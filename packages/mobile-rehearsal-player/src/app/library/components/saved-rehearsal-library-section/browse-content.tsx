@@ -39,6 +39,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
   playlistState,
   queuePlayableItemNext,
   queuePlayableItemUpNext,
+  removeLoop,
   removeSource,
   savedLibraryIssue,
   savedLibrarySources,
@@ -194,6 +195,9 @@ export const SavedRehearsalLibraryBrowseContent = ({
           onQueuePlayableItemNext={queuePlayableItemNext}
           onQueuePlayableItemUpNext={queuePlayableItemUpNext}
           onRemoveSource={removeSource}
+          onRemoveLoop={removeLoop}
+          onRemovePlaylist={playlistState.handleDeletePlaylist}
+          onViewTrackLoops={loopState.openTrackLoopView}
           onOpenSuccessFeedbackFolder={onOpenLibraryFilesSuccessFeedbackFolder}
           onShowSuccessFeedback={onShowLibraryFilesSuccessFeedback}
           searchState={{
@@ -252,6 +256,13 @@ export const SavedRehearsalLibraryBrowseContent = ({
           canMutateLoops={canMutateLoops}
           canMutatePlaylists={canMutatePlaylists}
           canQueueAsNext={canQueueAsNext}
+          canReconnectSource={Boolean(
+            authorization?.canStartAuthorization && !authorization.isBusy,
+          )}
+          onReconnectSource={() => {
+            void authorization?.startAuthorization();
+          }}
+          originalLocationActions={originalLocationActions}
           isLoopMutating={isLoopMutating}
           isPlaybackPreparing={isPlaybackPreparing}
           isPlaylistMutating={isPlaylistMutating}

@@ -1,4 +1,5 @@
 import type {
+  NamedLoop,
   PlayableItem,
   RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
@@ -51,6 +52,9 @@ export type SavedRehearsalLibraryFilesViewProps = {
   onQueuePlayableItemNext: (playableItem: PlayableItem) => void;
   onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   onRemoveSource: (source: DriveLibrarySource) => void;
+  onRemoveLoop: (loop: NamedLoop) => void;
+  onRemovePlaylist: (playlistId: string) => void;
+  onViewTrackLoops: (sourceId: string) => void;
   originalLocationActions: ReturnType<
     typeof useRehearsalLibraryController
   >['originalLocation'];

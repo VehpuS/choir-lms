@@ -10,11 +10,11 @@ import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { RowMetaLine } from '../../../components/row-meta-line';
 import { RowPreparingIndicator } from '../../../components/row-preparing-indicator';
 import { appTheme } from '../../../utils/theme';
-import { getOriginalDriveLocationViewModel } from '../../saved-rehearsal-library/original-drive-location-view-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import { ExplorerListRow, ExplorerListSurface } from '../explorer';
 import { OptionsMenuSheet } from '../options-menu-sheet';
+import { SavedTrackMenuProvenance } from '../saved-item-menu/saved-track-menu-provenance';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
 import { resolveFilesRowMenuTitle } from './files-row-actions';
 import type { SavedRehearsalLibraryFilesViewModel } from './files-view-model';
@@ -140,19 +140,9 @@ export const FilesExplorerList = (options: {
               }}
               title={resolveFilesRowMenuTitle(row)}
             >
-              {row.kind === 'track'
-                ? (() => {
-                    const originalLocation = getOriginalDriveLocationViewModel(
-                      row.source,
-                    );
-
-                    return originalLocation.hasKnownPath ? (
-                      <Text style={styles.originalLocationLabel}>
-                        From {originalLocation.pathLabel}
-                      </Text>
-                    ) : null;
-                  })()
-                : null}
+              {row.kind === 'track' ? (
+                <SavedTrackMenuProvenance source={row.source} />
+              ) : null}
             </OptionsMenuSheet>
           </View>
         );
@@ -160,8 +150,6 @@ export const FilesExplorerList = (options: {
     </ExplorerListSurface>
   );
 };
-
-const ORIGINAL_LOCATION_LINE_HEIGHT = 17;
 
 const styles = StyleSheet.create({
   rowActionButton: {
@@ -181,12 +169,6 @@ const styles = StyleSheet.create({
   },
   rowActionButtonPressed: {
     backgroundColor: appTheme.colors.accentRegionFill,
-  },
-  // The `From <path>` provenance under the options sheet title: the row meta
-  // treatment, wrapping so a deep Drive path stays readable in full.
-  originalLocationLabel: {
-    ...appTheme.type.rowMeta,
-    lineHeight: ORIGINAL_LOCATION_LINE_HEIGHT,
   },
   rowMessage: {
     color: appTheme.colors.danger,

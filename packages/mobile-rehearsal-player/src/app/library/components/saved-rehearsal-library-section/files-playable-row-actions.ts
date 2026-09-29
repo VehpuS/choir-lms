@@ -1,168 +1,125 @@
 import { createTrackPlayableItem } from '@org/audio-library-models';
 
-import { resolveSavedLoopRowActions } from '../../loops/utils/saved-loop-row-actions';
-import { resolveSavedTrackRowActions } from '../../playback/utils/saved-track-row-actions';
-import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
-import { getOriginalDriveLocationViewModel } from '../../saved-rehearsal-library/original-drive-location-view-model';
-import type { OptionsMenuAction } from '../options-menu-sheet/model';
-import { attachRowActionSections } from '../options-menu-sheet/row-action-sections';
 import {
-  CHECKING_DRIVE_LABEL,
-  LOOP_ACTION_LABELS,
-  LOOP_ACTION_ORDER,
-  TRACK_ACTION_LABELS,
-  TRACK_ACTION_ORDER,
-  sortActionsByLabelOrder,
-  toOptionsMenuAction,
-} from './files-row-actions-contract';
-import type { ResolveFilesRowMenuActionsBaseOptions } from './files-row-actions-model';
+  resolveSavedLoopMenu,
+  resolveSavedTrackMenu,
+} from '../saved-item-menu/saved-item-menus';
+import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
+import type { OptionsMenuAction } from '../options-menu-sheet/model';
+import type {
+  FileLinkLibraryFilesRow,
+  ResolveFilesRowMenuActionsBaseOptions,
+} from './files-row-actions-model';
 
-export const resolveTrackMenuActions = (
+/**
+ * Files' own actions on a track, loop, or playlist link: they act on this
+ * file link only, so they are the view actions every Files item menu adds to
+ * its shared saved-item menu (task 2.12).
+ */
+export const resolveFileLinkViewActions = (
   options: ResolveFilesRowMenuActionsBaseOptions,
-  row: Extract<LibraryFilesRow, { kind: 'track' }>,
+  row: FileLinkLibraryFilesRow,
 ): OptionsMenuAction[] => {
-  const trackPlayableItem = createTrackPlayableItem(row.source);
-  const primaryTrackActions = resolveSavedTrackRowActions({
-    canMutateLibrary: options.canMutateLibrary,
-    canMutateLoops: options.canMutateLoops,
-    canMutatePlaylists: options.canMutatePlaylists,
-    canQueueAsNext: options.canQueueAsNext,
-    hasAvailableSource: row.isPlayable,
-    hasSavedLoops: false,
-    isLoopBuilderPreparing: options.isLoopBuilderPreparing,
-    isLoopMutating: options.isLoopMutating,
-    isPendingLoopSource: options.pendingLoopBuilderSourceId === row.source.id,
-    isPendingRemoval: false,
-    isPlaylistMutating: options.isPlaylistMutating,
-    isSavedLibraryMutating: options.isSavedLibraryMutating,
-    onOpenLoopBuilder: () => {
-      options.onOpenLoopBuilder(row.source.id);
-    },
-    onOpenTagEditor: () => {
-      options.onOpenSourceTagEditor(row.source.id);
-    },
-    onOpenPlaylistSelector: () => {
-      options.onOpenSourcePlaylistSelector(row.source.id);
-    },
-    onQueueNext: () => {
-      options.onQueuePlayableItemNext(trackPlayableItem);
-    },
-    onQueueUpNext: () => {
-      options.onQueuePlayableItemUpNext(trackPlayableItem);
-    },
-    onRemove: () => undefined,
-    onTogglePlayback: () => undefined,
-    onViewTrackLoops: () => undefined,
-    playbackAction: {
-      disabled: false,
-      label: 'Play',
-    },
-    sourceName: row.source.name,
-  })
-    .filter((action) => {
-      return (
-        action.placement === 'menu' && TRACK_ACTION_LABELS.has(action.label)
-      );
-    })
-    .map((action) => {
-      return toOptionsMenuAction({
-        action,
-        id: `track:${row.fileLink.id}:${action.label}`,
-      });
-    });
-  const originalLocation = getOriginalDriveLocationViewModel(row.source);
-  const pendingAction = options.pendingSourceLocationAction;
-  const isSourceLocationPending = pendingAction?.sourceId === row.source.id;
-  const isShowInAddPending =
-    isSourceLocationPending && pendingAction?.kind === 'show-in-add';
-  const isOpenInGoogleDrivePending =
-    isSourceLocationPending && pendingAction?.kind === 'open-in-google-drive';
-  const actions: OptionsMenuAction[] = [
-    ...primaryTrackActions,
-    ...(row.source.availability.status !== 'available'
-      ? [
-          {
-            disabled: !options.canReconnectLibrarySource,
-            id: `track:${row.fileLink.id}:reconnect`,
-            label: 'Reconnect',
-            onPress: () => {
-              options.onReconnectLibrarySource(row.source.id);
-            },
-          },
-        ]
-      : []),
-    ...(originalLocation.canShowInAdd
-      ? [
-          {
-            disabled: isSourceLocationPending,
-            id: `track:${row.fileLink.id}:show-in-add`,
-            label: isShowInAddPending ? CHECKING_DRIVE_LABEL : 'Show in Add',
-            onPress: () => {
-              options.onShowSourceInAdd(row.source.id);
-            },
-          },
-        ]
-      : []),
-    ...(originalLocation.canOpenInGoogleDrive
-      ? [
-          {
-            disabled: isSourceLocationPending,
-            id: `track:${row.fileLink.id}:open-in-google-drive`,
-            label: isOpenInGoogleDrivePending
-              ? CHECKING_DRIVE_LABEL
-              : 'Open in Google Drive',
-            onPress: () => {
-              options.onOpenSourceInGoogleDrive(row.source.id);
-            },
-          },
-        ]
-      : []),
+  const disabled = !options.canMutateLibrary || options.isSavedLibraryMutating;
+  const idPrefix = `${row.kind}:${row.fileLink.id}`;
+
+  return [
     {
-      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
-      id: `track:${row.fileLink.id}:create-copy`,
+      disabled,
+      id: `${idPrefix}:create-copy`,
       label: 'Create a copy',
       onPress: () => {
         options.onCreateFileLinkCopy(row);
       },
+      tone: 'secondary',
     },
     {
-      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
-      id: `track:${row.fileLink.id}:rename`,
+      disabled,
+      id: `${idPrefix}:rename`,
       label: 'Rename',
       onPress: () => {
         options.onRenameFileNode(row);
       },
+      tone: 'secondary',
     },
     {
-      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
-      id: `track:${row.fileLink.id}:move-to-folder`,
+      disabled,
+      id: `${idPrefix}:move-to-folder`,
       label: 'Move to folder',
       onPress: () => {
         options.onMoveFileNode(row);
       },
+      tone: 'secondary',
     },
     {
-      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
-      id: `track:${row.fileLink.id}:delete-from-folder`,
+      disabled,
+      id: `${idPrefix}:delete-from-folder`,
       label: 'Delete from folder',
       onPress: () => {
         options.onDeleteFileNode(row);
       },
       tone: 'destructive',
     },
+  ];
+};
+
+export const resolveTrackMenuActions = (
+  options: ResolveFilesRowMenuActionsBaseOptions,
+  row: Extract<LibraryFilesRow, { kind: 'track' }>,
+): OptionsMenuAction[] => {
+  const trackPlayableItem = createTrackPlayableItem(row.source);
+
+  return resolveSavedTrackMenu(
     {
-      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
-      id: `track:${row.fileLink.id}:remove-from-library`,
-      label: 'Remove from library',
-      onPress: () => {
+      canMutateLibrary: options.canMutateLibrary,
+      canMutateLoops: options.canMutateLoops,
+      canMutatePlaylists: options.canMutatePlaylists,
+      canQueueAsNext: options.canQueueAsNext,
+      canReconnect: options.canReconnectLibrarySource,
+      isLoopBuilderPreparing: options.isLoopBuilderPreparing,
+      isLoopMutating: options.isLoopMutating,
+      isPendingLoopSource: options.pendingLoopBuilderSourceId === row.source.id,
+      isPendingRemoval: false,
+      isPlaylistMutating: options.isPlaylistMutating,
+      isSavedLibraryMutating: options.isSavedLibraryMutating,
+      loopCount: row.loopCount ?? 0,
+      onAddToPlaylist: () => {
+        options.onOpenSourcePlaylistSelector(row.source.id);
+      },
+      onAddToQueue: () => {
+        options.onQueuePlayableItemUpNext(trackPlayableItem);
+      },
+      onEditTags: () => {
+        options.onOpenSourceTagEditor(row.source.id);
+      },
+      onMakeLoop: () => {
+        options.onOpenLoopBuilder(row.source.id);
+      },
+      onOpenInGoogleDrive: () => {
+        options.onOpenSourceInGoogleDrive(row.source.id);
+      },
+      onPlayNext: () => {
+        options.onQueuePlayableItemNext(trackPlayableItem);
+      },
+      onReconnect: () => {
+        options.onReconnectLibrarySource(row.source.id);
+      },
+      onRemoveFromLibrary: () => {
         options.onRemoveLibrarySource(row.source.id);
       },
-      tone: 'destructive',
+      onShowInAdd: () => {
+        options.onShowSourceInAdd(row.source.id);
+      },
+      onViewTrackLoops: () => {
+        options.onViewTrackLoops(row.source.id);
+      },
+      pendingSourceLocationAction: options.pendingSourceLocationAction,
+      source: row.source,
     },
-  ];
-
-  return attachRowActionSections(
-    sortActionsByLabelOrder(actions, TRACK_ACTION_ORDER),
+    {
+      idPrefix: `track:${row.fileLink.id}`,
+      viewActions: resolveFileLinkViewActions(options, row),
+    },
   );
 };
 
@@ -170,94 +127,46 @@ export const resolveLoopMenuActions = (
   options: ResolveFilesRowMenuActionsBaseOptions,
   row: Extract<LibraryFilesRow, { kind: 'loop' }>,
 ): OptionsMenuAction[] => {
-  const primaryLoopActions = resolveSavedLoopRowActions({
-    canEditLoop: row.source !== null,
-    canMutateLoops: options.canMutateLoops,
-    canMutatePlaylists: options.canMutatePlaylists,
-    canQueueAsNext: options.canQueueAsNext,
-    hasPlayableItem: row.playableItem !== null,
-    isEditingLoop: false,
-    isLoopMutating: options.isLoopMutating,
-    isPendingRemoval: false,
-    isPlaylistMutating: options.isPlaylistMutating,
-    itemName: row.loop.name,
-    onEdit: () => {
-      if (row.source) {
-        options.onOpenLoopBuilder(row.source.id);
-      }
-    },
-    onEditTags: () => {
-      options.onOpenLoopTagEditor(row.loop.id);
-    },
-    onOpenPlaylistSelector: () => {
-      options.onOpenLoopPlaylistSelector(row.loop.id);
-    },
-    onQueueNext: () => {
-      if (row.playableItem) {
-        options.onQueuePlayableItemNext(row.playableItem);
-      }
-    },
-    onQueueUpNext: () => {
-      if (row.playableItem) {
-        options.onQueuePlayableItemUpNext(row.playableItem);
-      }
-    },
-    onRemove: () => undefined,
-    onTogglePlayback: () => undefined,
-    playbackAction: {
-      disabled: false,
-      label: 'Play',
-    },
-  })
-    .filter((action) => {
-      return (
-        action.placement === 'menu' && LOOP_ACTION_LABELS.has(action.label)
-      );
-    })
-    .map((action) => {
-      return toOptionsMenuAction({
-        action,
-        id: `loop:${row.fileLink.id}:${action.label}`,
-      });
-    });
-  const actions: OptionsMenuAction[] = [
-    ...primaryLoopActions,
+  return resolveSavedLoopMenu(
     {
-      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
-      id: `loop:${row.fileLink.id}:create-copy`,
-      label: 'Create a copy',
-      onPress: () => {
-        options.onCreateFileLinkCopy(row);
+      canEditLoop: row.source !== null,
+      canMutateLoops: options.canMutateLoops,
+      canMutatePlaylists: options.canMutatePlaylists,
+      canQueueAsNext: options.canQueueAsNext,
+      hasPlayableItem: row.playableItem !== null,
+      isEditingLoop: false,
+      isLoopMutating: options.isLoopMutating,
+      isPendingRemoval: false,
+      isPlaylistMutating: options.isPlaylistMutating,
+      loopName: row.loop.name,
+      onAddToPlaylist: () => {
+        options.onOpenLoopPlaylistSelector(row.loop.id);
+      },
+      onAddToQueue: () => {
+        if (row.playableItem) {
+          options.onQueuePlayableItemUpNext(row.playableItem);
+        }
+      },
+      onEditLoop: () => {
+        if (row.source) {
+          options.onOpenLoopBuilder(row.source.id);
+        }
+      },
+      onEditTags: () => {
+        options.onOpenLoopTagEditor(row.loop.id);
+      },
+      onPlayNext: () => {
+        if (row.playableItem) {
+          options.onQueuePlayableItemNext(row.playableItem);
+        }
+      },
+      onRemoveFromLibrary: () => {
+        options.onRemoveLoop(row.loop);
       },
     },
     {
-      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
-      id: `loop:${row.fileLink.id}:rename`,
-      label: 'Rename',
-      onPress: () => {
-        options.onRenameFileNode(row);
-      },
+      idPrefix: `loop:${row.fileLink.id}`,
+      viewActions: resolveFileLinkViewActions(options, row),
     },
-    {
-      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
-      id: `loop:${row.fileLink.id}:move-to-folder`,
-      label: 'Move to folder',
-      onPress: () => {
-        options.onMoveFileNode(row);
-      },
-    },
-    {
-      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
-      id: `loop:${row.fileLink.id}:delete-from-folder`,
-      label: 'Delete from folder',
-      onPress: () => {
-        options.onDeleteFileNode(row);
-      },
-      tone: 'destructive',
-    },
-  ];
-
-  return attachRowActionSections(
-    sortActionsByLabelOrder(actions, LOOP_ACTION_ORDER),
   );
 };

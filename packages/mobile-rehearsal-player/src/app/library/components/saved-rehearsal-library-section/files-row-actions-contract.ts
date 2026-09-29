@@ -1,79 +1,10 @@
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
 
-export const CHECKING_DRIVE_LABEL = 'Checking Drive…';
-
 export type FilesDeleteFromFolderCopy = {
   confirmLabel: string;
   message: string;
   title: string;
 };
-
-export const TRACK_ACTION_LABELS = new Set([
-  'Play next',
-  'Add to queue',
-  'Add to playlist',
-  'Make loop',
-  'Preparing loop…',
-  'Reconnect',
-  'Create a copy',
-  'Edit tags',
-  'Rename',
-  'Move to folder',
-  'Delete from folder',
-  'Remove from library',
-]);
-
-export const TRACK_ACTION_ORDER = new Map([
-  ['Play next', 0],
-  ['Add to queue', 1],
-  ['Make loop', 2],
-  ['Preparing loop…', 2],
-  ['View track loops', 2],
-  ['Add to playlist', 3],
-  ['Reconnect', 4],
-  ['Show in Add', 5],
-  ['Open in Google Drive', 6],
-  [CHECKING_DRIVE_LABEL, 5],
-  ['Create a copy', 7],
-  ['Edit tags', 8],
-  ['Rename', 9],
-  ['Move to folder', 10],
-  ['Delete from folder', 11],
-  ['Remove from library', 12],
-]);
-
-export const LOOP_ACTION_LABELS = new Set([
-  'Play next',
-  'Add to queue',
-  'Add to playlist',
-  'Edit loop',
-  'Create a copy',
-  'Edit tags',
-  'Rename',
-  'Move to folder',
-  'Delete from folder',
-]);
-
-export const LOOP_ACTION_ORDER = new Map([
-  ['Play next', 0],
-  ['Add to queue', 1],
-  ['Add to playlist', 2],
-  ['Edit loop', 3],
-  ['Create a copy', 4],
-  ['Edit tags', 5],
-  ['Rename', 6],
-  ['Move to folder', 7],
-  ['Delete from folder', 8],
-]);
-
-export const PLAYLIST_ACTION_ORDER = new Map([
-  ['Add items', 0],
-  ['Create a copy', 1],
-  ['Edit tags', 2],
-  ['Rename', 3],
-  ['Move to folder', 4],
-  ['Delete from folder', 5],
-]);
 
 export const FOLDER_ACTION_ORDER = new Map([
   ['Edit tags', 0],
@@ -81,36 +12,6 @@ export const FOLDER_ACTION_ORDER = new Map([
   ['Move to folder', 2],
   ['Delete from folder', 3],
 ]);
-
-export const DISABLED_PLACEHOLDER_ACTIONS = {
-  createCopy: {
-    disabled: true,
-    label: 'Create a copy',
-    onPress: () => undefined,
-  },
-  deleteFromFolder: {
-    disabled: true,
-    label: 'Delete from folder',
-    onPress: () => undefined,
-    tone: 'destructive' as const,
-  },
-  moveToFolder: {
-    disabled: true,
-    label: 'Move to folder',
-    onPress: () => undefined,
-  },
-  removeFromLibrary: {
-    disabled: true,
-    label: 'Remove from library',
-    onPress: () => undefined,
-    tone: 'destructive' as const,
-  },
-  rename: {
-    disabled: true,
-    label: 'Rename',
-    onPress: () => undefined,
-  },
-};
 
 export type SavedRowActionLike = {
   disabled?: boolean;

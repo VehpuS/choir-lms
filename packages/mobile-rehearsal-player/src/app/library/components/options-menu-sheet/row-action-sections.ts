@@ -29,6 +29,7 @@ const ROW_ACTION_SECTION_BY_LABEL = new Map<string, RowActionSection>([
   ['Create a copy', 'organize'],
   ['Edit tags', 'organize'],
   ['Rename', 'organize'],
+  ['Rename playlist', 'organize'],
   ['Move to folder', 'organize'],
   ['Delete from folder', 'destructive'],
   ['Remove from library', 'destructive'],

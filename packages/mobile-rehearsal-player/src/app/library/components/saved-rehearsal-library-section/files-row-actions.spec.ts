@@ -50,8 +50,8 @@ describe('resolveFilesRowMenuActions', () => {
         'Add to playlist',
         'Show in Add',
         'Open in Google Drive',
-        'Create a copy',
         'Edit tags',
+        'Create a copy',
         'Rename',
         'Move to folder',
         'Delete from folder',
@@ -125,11 +125,12 @@ describe('resolveFilesRowMenuActions', () => {
         'Add to queue',
         'Add to playlist',
         'Edit loop',
-        'Create a copy',
         'Edit tags',
+        'Create a copy',
         'Rename',
         'Move to folder',
         'Delete from folder',
+        'Remove from library',
       ],
     );
   });
@@ -257,11 +258,12 @@ describe('resolveFilesRowMenuActions', () => {
       actions.map((action) => action.label),
       [
         'Add items',
-        'Create a copy',
         'Edit tags',
+        'Create a copy',
         'Rename',
         'Move to folder',
         'Delete from folder',
+        'Remove from library',
       ],
     );
     assert.deepEqual(calls.playlistAdds, [PLAYLIST.id]);

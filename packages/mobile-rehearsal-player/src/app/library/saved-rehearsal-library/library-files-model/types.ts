@@ -51,6 +51,8 @@ export type LibraryFilesTrackRow = {
   isPlayable: boolean;
   kind: 'track';
   label: string;
+  /** Saved loops of this track, for the shared menu's `View track loops`. */
+  loopCount?: number;
   message?: string;
   source: DriveLibrarySource;
   supportingLabel: string;

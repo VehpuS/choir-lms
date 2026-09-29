@@ -3,8 +3,7 @@ import { StyleSheet } from 'react-native';
 
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
 import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
-import { attachRowActionSections } from '../../../components/options-menu-sheet/row-action-sections';
-import { toOptionsMenuAction } from '../../../components/saved-rehearsal-library-section/files-row-actions-contract';
+import { resolveSavedLoopMenu } from '../../../components/saved-item-menu/saved-item-menus';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -12,7 +11,6 @@ import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../../../playback/utils/saved-track-playback-view-model';
-import { resolveSavedLoopRowActions } from '../../utils/saved-loop-row-actions';
 import {
   getSavedLoopItemIssue,
   type SavedLoopCard,
@@ -108,58 +106,43 @@ export const SavedLoopListRow = ({
 
     void togglePlayableItemPlayback(playableItem);
   };
-  const rowActions = resolveSavedLoopRowActions({
-    canEditLoop: playableItem !== null,
-    canMutateLoops,
-    canMutatePlaylists,
-    canQueueAsNext,
-    hasPlayableItem: playableItem !== null,
-    isEditingLoop: editingLoopId === loopCard.loop.id,
-    itemName: loopCard.loop.name,
-    isLoopMutating: pendingLoopId !== null,
-    isPendingRemoval: pendingLoopId === loopCard.loop.id,
-    isPlaylistMutating,
-    onEdit: () => {
-      onEditLoop(loopCard.loop);
+  // The same loop menu as Files, with no view actions (task 2.12).
+  const sheetActions = resolveSavedLoopMenu(
+    {
+      canEditLoop: playableItem !== null,
+      canMutateLoops,
+      canMutatePlaylists,
+      canQueueAsNext,
+      hasPlayableItem: playableItem !== null,
+      isEditingLoop: editingLoopId === loopCard.loop.id,
+      isLoopMutating: pendingLoopId !== null,
+      isPendingRemoval: pendingLoopId === loopCard.loop.id,
+      isPlaylistMutating,
+      loopName: loopCard.loop.name,
+      onAddToPlaylist: () => {
+        onOpenLoopPlaylistSelector(loopCard.loop.id);
+      },
+      onAddToQueue: () => {
+        if (playableItem) {
+          queuePlayableItemUpNext(playableItem);
+        }
+      },
+      onEditLoop: () => {
+        onEditLoop(loopCard.loop);
+      },
+      onEditTags: () => {
+        onEditLoopTags(loopCard.loop);
+      },
+      onPlayNext: () => {
+        if (playableItem) {
+          queuePlayableItemNext(playableItem);
+        }
+      },
+      onRemoveFromLibrary: () => {
+        removeLoop(loopCard.loop);
+      },
     },
-    onEditTags: () => {
-      onCloseOptions();
-      onEditLoopTags(loopCard.loop);
-    },
-    onOpenPlaylistSelector: () => {
-      onCloseOptions();
-      onOpenLoopPlaylistSelector(loopCard.loop.id);
-    },
-    onQueueNext: () => {
-      if (!playableItem) {
-        return;
-      }
-
-      queuePlayableItemNext(playableItem);
-    },
-    onQueueUpNext: () => {
-      if (!playableItem) {
-        return;
-      }
-
-      queuePlayableItemUpNext(playableItem);
-    },
-    onRemove: () => {
-      removeLoop(loopCard.loop);
-    },
-    onTogglePlayback: handleTogglePlayback,
-    playbackAction,
-  });
-  const menuActions = rowActions.filter((action) => {
-    return action.placement === 'menu';
-  });
-  const sheetActions = attachRowActionSections(
-    menuActions.map((action, index) => {
-      return toOptionsMenuAction({
-        action,
-        id: `loop:${loopCard.loop.id}:${index}`,
-      });
-    }),
+    { idPrefix: `loop:${loopCard.loop.id}` },
   );
   const loopMessage =
     getSavedLoopItemIssue(loopIssue, loopCard.loop.id) ??
@@ -176,7 +159,7 @@ export const SavedLoopListRow = ({
         message={loopMessage}
         onTogglePlayback={handleTogglePlayback}
         overflowTrigger={
-          menuActions.length > 0 ? (
+          sheetActions.length > 0 ? (
             <OverflowMenuTrigger
               accessibilityLabel={`${loopCard.loop.name} options`}
               onPress={onOpenOptions}

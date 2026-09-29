@@ -247,6 +247,7 @@ export const SavedRehearsalLibrarySection = ({
           playlistState={playlistState}
           queuePlayableItemNext={queuePlayableItemNext}
           queuePlayableItemUpNext={queuePlayableItemUpNext}
+          removeLoop={removeLoop}
           removeSource={removeSource}
           savedLibraryIssue={savedLibraryIssue}
           savedLibrarySources={savedLibrarySources}

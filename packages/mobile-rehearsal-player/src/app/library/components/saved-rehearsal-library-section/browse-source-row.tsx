@@ -6,31 +6,24 @@ import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { RowMetaLine } from '../../../components/row-meta-line';
 import { RowPreparingIndicator } from '../../../components/row-preparing-indicator';
 import { appTheme } from '../../../utils/theme';
-import { resolveDriveLibrarySourceActionPlacement } from '../../drive/utils/drive-library-source-actions';
 import {
   formatDurationLabel,
   getSourceStatusMessage,
 } from '../../drive/utils/drive-library-view-model';
 import {
-  getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
   isSavedTrackPlaybackActive,
 } from '../../playback/utils/saved-track-playback-view-model';
-import { resolveSavedTrackRowActions } from '../../playback/utils/saved-track-row-actions';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import { getSavedRehearsalLibrarySourceIssue } from '../../saved-rehearsal-library/view-model';
 import { ExplorerListRow } from '../explorer';
 import { OptionsMenuSheet } from '../options-menu-sheet';
-import { attachRowActionSections } from '../options-menu-sheet/row-action-sections';
+import { resolveSavedTrackMenu } from '../saved-item-menu/saved-item-menus';
+import { SavedTrackMenuProvenance } from '../saved-item-menu/saved-track-menu-provenance';
 import {
   formatTracksRowIndex,
   formatTracksRowMeta,
 } from './browse-source-row-model';
-import {
-  TRACK_ACTION_ORDER,
-  sortActionsByLabelOrder,
-  toOptionsMenuAction,
-} from './files-row-actions-contract';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 
 export type BrowseSourceRowSharedProps = Pick<
@@ -44,11 +37,14 @@ export type BrowseSourceRowSharedProps = Pick<
   | 'playbackState'
   | 'queuePlayableItemNext'
   | 'queuePlayableItemUpNext'
+  | 'originalLocationActions'
   | 'removeSource'
   | 'savedLibraryIssue'
   | 'toggleSourcePlayback'
 > & {
   canQueueAsNext: boolean;
+  canReconnectSource: boolean;
+  onReconnectSource: () => void;
   isLoopMutating: boolean;
   isPlaylistMutating: boolean;
   isSavedLibraryMutating: boolean;
@@ -80,10 +76,10 @@ export const BrowseSourceRow = ({
   canMutateLoops,
   canMutatePlaylists,
   canQueueAsNext,
+  canReconnectSource,
   index,
   isLoopMutating,
   isMenuOpen,
-  isPlaybackPreparing,
   isPlaylistMutating,
   isSavedLibraryMutating,
   loopCount,
@@ -91,7 +87,9 @@ export const BrowseSourceRow = ({
   onOpenLoopBuilderForSource,
   onOpenMenu,
   onOpenSourceTagEditor,
+  onReconnectSource,
   openSourcePlaylistSelector,
+  originalLocationActions,
   openTrackLoopView,
   pendingLoopBuilderSourceId,
   pendingSourceId,
@@ -106,12 +104,6 @@ export const BrowseSourceRow = ({
   toggleSourcePlayback,
 }: BrowseSourceRowProps) => {
   const trackPlayableItem = createTrackPlayableItem(source);
-  const playbackAction = getSavedTrackPlaybackActionCopy({
-    activePlayableItem,
-    isPreparing: isPlaybackPreparing,
-    playableItem: trackPlayableItem,
-    playbackState,
-  });
   const isActive = isSavedTrackPlaybackActive(
     activePlayableItem,
     trackPlayableItem,
@@ -123,58 +115,54 @@ export const BrowseSourceRow = ({
     getSavedTrackPlaybackItemIssue(playbackIssue, trackPlayableItem) ??
     getSourceStatusMessage(source);
   const durationLabel = formatDurationLabel(source.durationMs);
-  const menuActions = sortActionsByLabelOrder(
-    resolveSavedTrackRowActions({
+  // The same track menu as Files, with no view actions (task 2.12).
+  const sheetActions = resolveSavedTrackMenu(
+    {
       canMutateLibrary,
       canMutateLoops,
       canMutatePlaylists,
       canQueueAsNext,
-      hasAvailableSource: isAvailable,
-      hasSavedLoops: loopCount > 0,
+      canReconnect: canReconnectSource,
       isLoopBuilderPreparing: pendingLoopBuilderSourceId !== null,
       isLoopMutating,
       isPendingLoopSource: pendingLoopBuilderSourceId === source.id,
       isPendingRemoval: pendingSourceId === source.id,
       isPlaylistMutating,
       isSavedLibraryMutating,
-      onOpenLoopBuilder: () => {
-        onOpenLoopBuilderForSource(source);
-      },
-      onOpenPlaylistSelector: () => {
+      loopCount,
+      onAddToPlaylist: () => {
         openSourcePlaylistSelector(source.id);
       },
-      onOpenTagEditor: () => {
-        onOpenSourceTagEditor(source);
-      },
-      onQueueNext: () => {
-        queuePlayableItemNext(trackPlayableItem);
-      },
-      onQueueUpNext: () => {
+      onAddToQueue: () => {
         queuePlayableItemUpNext(trackPlayableItem);
       },
-      onRemove: () => {
+      onEditTags: () => {
+        onOpenSourceTagEditor(source);
+      },
+      onMakeLoop: () => {
+        onOpenLoopBuilderForSource(source);
+      },
+      onOpenInGoogleDrive: () => {
+        originalLocationActions.openSourceInGoogleDrive(source);
+      },
+      onPlayNext: () => {
+        queuePlayableItemNext(trackPlayableItem);
+      },
+      onReconnect: onReconnectSource,
+      onRemoveFromLibrary: () => {
         removeSource(source);
       },
-      onTogglePlayback: () => {
-        void toggleSourcePlayback(source);
+      onShowInAdd: () => {
+        originalLocationActions.showSourceInAdd(source);
       },
       onViewTrackLoops: () => {
         openTrackLoopView(source.id);
       },
-      playbackAction,
-      sourceName: source.name,
-    }),
-    TRACK_ACTION_ORDER,
-  ).filter((action) => {
-    return resolveDriveLibrarySourceActionPlacement(action) === 'menu';
-  });
-  const sheetActions = attachRowActionSections(
-    menuActions.map((action, actionIndex) => {
-      return toOptionsMenuAction({
-        action,
-        id: `${source.id}:${action.accessibilityLabel ?? action.label}:${actionIndex}`,
-      });
-    }),
+      pendingSourceLocationAction:
+        originalLocationActions.pendingSourceLocationAction,
+      source,
+    },
+    { idPrefix: `track:${source.id}` },
   );
 
   return (
@@ -212,7 +200,7 @@ export const BrowseSourceRow = ({
           void toggleSourcePlayback(source);
         }}
         overflowTrigger={
-          menuActions.length > 0 ? (
+          sheetActions.length > 0 ? (
             <OverflowMenuTrigger
               accessibilityLabel={`${source.name} options`}
               onPress={onOpenMenu}
@@ -242,7 +230,9 @@ export const BrowseSourceRow = ({
         isVisible={isMenuOpen}
         onClose={onCloseMenu}
         title={source.name}
-      />
+      >
+        <SavedTrackMenuProvenance source={source} />
+      </OptionsMenuSheet>
     </View>
   );
 };

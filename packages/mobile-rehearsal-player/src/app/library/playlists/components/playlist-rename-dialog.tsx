@@ -33,8 +33,8 @@ type PlaylistOptionsMenuSurfaceProps = {
   playlistName: string;
   onAddItems?: () => void;
   onClose: () => void;
-  onEditTags?: () => void;
-  onRemove?: () => void;
+  onEditTags: () => void;
+  onRemove: () => void;
   onRename: () => void;
 };
 

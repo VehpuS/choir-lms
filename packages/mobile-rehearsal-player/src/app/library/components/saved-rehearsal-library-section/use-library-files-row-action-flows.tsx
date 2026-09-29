@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import type {
+  NamedLoop,
   PlayableItem,
   RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
@@ -94,6 +95,10 @@ type UseLibraryFilesRowActionFlowsOptions = {
   onQueuePlayableItemNext: (playableItem: PlayableItem) => void;
   onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   onRemoveSource: (source: DriveLibrarySource) => void;
+  /** The Loops / Playlists views' removal flows, shared by Files (2.12). */
+  onRemoveLoop: (loop: NamedLoop) => void;
+  onRemovePlaylist: (playlistId: string) => void;
+  onViewTrackLoops: (sourceId: string) => void;
   originalLocationActions: ReturnType<
     typeof useRehearsalLibraryController
   >['originalLocation'];
@@ -123,6 +128,9 @@ export const useLibraryFilesRowActionFlows = ({
   onQueuePlayableItemNext,
   onQueuePlayableItemUpNext,
   onRemoveSource,
+  onRemoveLoop,
+  onRemovePlaylist,
+  onViewTrackLoops,
   originalLocationActions,
 }: UseLibraryFilesRowActionFlowsOptions) => {
   const [isFileActionMutating, setIsFileActionMutating] = useState(false);
@@ -391,6 +399,9 @@ export const useLibraryFilesRowActionFlows = ({
             },
           });
         },
+        onRemoveLoop,
+        onRemovePlaylist,
+        onViewTrackLoops,
         onShowSourceInAdd(sourceId) {
           if (row.kind === 'track' && row.source.id === sourceId) {
             originalLocationActions.showSourceInAdd(row.source);

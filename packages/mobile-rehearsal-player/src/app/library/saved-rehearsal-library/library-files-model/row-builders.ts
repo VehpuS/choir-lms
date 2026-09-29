@@ -232,6 +232,7 @@ export const buildTrackRow = (options: {
     isPlayable: isAvailable,
     kind: 'track',
     label: resolveFileLinkLabel(options),
+    loopCount: options.loopCount ?? 0,
     message: isAvailable
       ? undefined
       : (options.source.availability.message ??

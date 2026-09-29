@@ -1,13 +1,14 @@
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
 import { attachRowActionSections } from '../options-menu-sheet/row-action-sections';
+import { resolveSavedPlaylistMenu } from '../saved-item-menu/saved-item-menus';
 import {
+  resolveFileLinkViewActions,
   resolveLoopMenuActions,
   resolveTrackMenuActions,
 } from './files-playable-row-actions';
 import {
   FOLDER_ACTION_ORDER,
-  PLAYLIST_ACTION_ORDER,
   getDeleteFromFolderConfirmationCopy,
   getTrackRemoveFromLibraryPlacementLabel,
   sortActionsByLabelOrder,
@@ -18,62 +19,23 @@ const resolvePlaylistMenuActions = (
   options: ResolveFilesRowMenuActionsBaseOptions,
   row: Extract<LibraryFilesRow, { kind: 'playlist' }>,
 ) => {
-  const actions = [
+  return resolveSavedPlaylistMenu(
     {
-      disabled: !options.canMutatePlaylists || options.isPlaylistMutating,
-      id: `playlist:${row.fileLink.id}:add-items`,
-      label: 'Add items',
-      onPress: () => {
+      isMutating: !options.canMutatePlaylists || options.isPlaylistMutating,
+      onAddItems: () => {
         options.onOpenPlaylistAddItems(row.playlist.id);
       },
-      tone: 'secondary' as const,
-    },
-    {
-      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
-      id: `playlist:${row.fileLink.id}:create-copy`,
-      label: 'Create a copy',
-      onPress: () => {
-        options.onCreateFileLinkCopy(row);
-      },
-    },
-    {
-      disabled: !options.canMutatePlaylists || options.isPlaylistMutating,
-      id: `playlist:${row.fileLink.id}:edit-tags`,
-      label: 'Edit tags',
-      onPress: () => {
+      onEditTags: () => {
         options.onOpenPlaylistTagEditor(row.playlist.id);
       },
-      tone: 'secondary' as const,
-    },
-    {
-      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
-      id: `playlist:${row.fileLink.id}:rename`,
-      label: 'Rename',
-      onPress: () => {
-        options.onRenameFileNode(row);
+      onRemoveFromLibrary: () => {
+        options.onRemovePlaylist(row.playlist.id);
       },
     },
     {
-      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
-      id: `playlist:${row.fileLink.id}:move-to-folder`,
-      label: 'Move to folder',
-      onPress: () => {
-        options.onMoveFileNode(row);
-      },
+      idPrefix: `playlist:${row.fileLink.id}`,
+      viewActions: resolveFileLinkViewActions(options, row),
     },
-    {
-      disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
-      id: `playlist:${row.fileLink.id}:delete-from-folder`,
-      label: 'Delete from folder',
-      onPress: () => {
-        options.onDeleteFileNode(row);
-      },
-      tone: 'destructive' as const,
-    },
-  ];
-
-  return attachRowActionSections(
-    sortActionsByLabelOrder(actions, PLAYLIST_ACTION_ORDER),
   );
 };
 

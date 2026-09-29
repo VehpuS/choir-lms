@@ -65,7 +65,10 @@ export const createBaseOptions = () => {
     playlistTags: [] as string[],
     reconnects: [] as string[],
     renames: [] as string[],
+    loopRemovals: [] as string[],
+    playlistRemovals: [] as string[],
     removals: [] as string[],
+    trackLoopViews: [] as string[],
     showInAdd: [] as string[],
     sourcePlaylists: [] as string[],
     sourceTags: [] as string[],
@@ -142,6 +145,15 @@ export const createBaseOptions = () => {
       },
       onRemoveLibrarySource(sourceId: string) {
         calls.removals.push(sourceId);
+      },
+      onRemoveLoop(loop: { id: string }) {
+        calls.loopRemovals.push(loop.id);
+      },
+      onRemovePlaylist(playlistId: string) {
+        calls.playlistRemovals.push(playlistId);
+      },
+      onViewTrackLoops(sourceId: string) {
+        calls.trackLoopViews.push(sourceId);
       },
       onShowSourceInAdd(sourceId: string) {
         calls.showInAdd.push(sourceId);
