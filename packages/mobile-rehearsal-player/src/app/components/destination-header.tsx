@@ -5,7 +5,6 @@ import { SectionHeading } from '../library/components/section-heading';
 import { appTheme } from '../utils/theme';
 
 type DestinationHeaderProps = {
-  eyebrow?: string;
   style?: StyleProp<ViewStyle>;
   subtitle?: string;
   title: string;
@@ -13,7 +12,6 @@ type DestinationHeaderProps = {
 };
 
 export const DestinationHeader = ({
-  eyebrow,
   style,
   subtitle,
   title,
@@ -24,8 +22,6 @@ export const DestinationHeader = ({
       <SectionHeading
         body={subtitle}
         bodyStyle={styles.subtitle}
-        eyebrow={eyebrow}
-        eyebrowStyle={styles.eyebrow}
         style={styles.headerContent}
         title={title}
         titleNumberOfLines={1}
@@ -37,7 +33,8 @@ export const DestinationHeader = ({
 };
 
 // One large title per destination, set directly on the ground (screens
-// 1a, 1b, 1e): no card, fill, or shadow. zIndex keeps header popovers (the
+// 1a, 1b, 1e): no card, fill, or shadow, and nothing above the title — no
+// kicker, even where 1a shows one, so content starts higher (Decision 11). zIndex keeps header popovers (the
 // Drive session menu) above the content that follows.
 const styles = StyleSheet.create({
   header: {
@@ -48,10 +45,6 @@ const styles = StyleSheet.create({
   headerContent: {
     gap: appTheme.space.md,
     paddingVertical: appTheme.space.xs,
-  },
-  // Accent kicker above the title (screen 1a `CHOIR LMS`).
-  eyebrow: {
-    color: appTheme.colors.accentText,
   },
   subtitle: {
     color: appTheme.colors.textMuted,

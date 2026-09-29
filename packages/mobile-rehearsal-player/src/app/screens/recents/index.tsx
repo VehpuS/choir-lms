@@ -42,7 +42,6 @@ export type RecentsScreenProps = {
   savedTrackCount: number;
 };
 
-const RECENTS_EYEBROW = 'Choir LMS';
 const SEE_ALL_ICON_SIZE = 16;
 
 const AUDIO_FORMAT_LABEL = join(
@@ -105,7 +104,6 @@ export const RecentsScreen = ({
         />
       ) : null}
       <DestinationHeader
-        eyebrow={RECENTS_EYEBROW}
         style={styles.destinationHeader}
         title={headerModel.title}
         trailingAction={
