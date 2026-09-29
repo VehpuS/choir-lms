@@ -1,6 +1,6 @@
 ## Context
 
-This change couples a visual-system migration with a new playback capability. They are proposed together because the new capability needed a home in the redesigned playback surface, and because retuning every style block twice would be wasteful. They are separable at the phase boundary: task groups 1–4 (visual system and waveform) ship without groups 5–6 (playback shaping), and the reverse is also true at higher cost. Throughout this change, "group N" means the numbered section `N.` in `tasks.md`.
+This change couples a visual-system migration with a new playback capability. They are proposed together because the new capability needed a home in the redesigned playback surface, and because retuning every style block twice would be wasteful. They are separable at the phase boundary: task groups 1–4 (visual system and waveform) ship without groups 5–6 (playback shaping), and the reverse is also true at higher cost. Group 9 (multiple selection and bulk actions, Decisions 9–10) depends only on groups 1–2 and is separable from groups 3–6. Throughout this change, "group N" means the numbered section `N.` in `tasks.md`.
 
 ## Decision 1 — Tokens replace `appTheme`, and nothing hard-codes a hex
 
@@ -70,3 +70,29 @@ Several surfaces shipped after the 1a–1j mockups were drawn: Drive search sele
 - Extract a shared outlined action button (accent and neutral variants) in task 1.4, since the import review footer, the selection toolbar, Play all / Shuffle, Save loop, and the queue footer all need the same thing, and each currently hand-rolls a filled button.
 - Row selection glyphs map to Phosphor `circle` (unselected) and fill-weight `check-circle` (selected), with the selected state also conveyed through the row's accent title treatment — never by color alone (existing icon-only accessibility scenario).
 - If implementing one of these surfaces turns up a real design question rather than a token swap, stop and ask for a mockup instead of improvising (per the deliberate-execution loop).
+
+## Decision 9 — Multiple selection is one model, one hook, and a few primitives
+
+Today selection exists only for Drive search results: `drive-search-selection-model.ts` (state bound to a query context key, with `Select all matching` tracking a live, paginating result set), `use-drive-search-selection.ts`, `drive-search-selection-toolbar.tsx`, and a `selected` / `active` pair threaded through `ExplorerListRow` and the Drive rows (2.9 added `getDriveRowSelectionGlyph`). Adding Add-browse and Library selection by copying that pattern would produce three diverging implementations.
+
+- **Pure model** (framework-agnostic, in the app for now, e.g. `src/app/library/selection/selection-model.ts`): `SelectionState<TItem>` holds `isActive` and an insertion-ordered map of `key → item`, with `enter`, `cancel`, `toggle`, `selectMany`, `deselectMany`, and `prune(validKeys)`. Items are stored, not only keys, because Add's basket must show and import items whose folder is no longer on screen. The model knows nothing about Drive or Library; it could move to a shared package later if another app needs it.
+- **Select-all as a layered extension**, not a model feature: Drive's `Select all matching` becomes a small reducer over the base model that tracks one pending source (query context + excluded keys) and feeds pages into `selectMany` until complete. A context change ends the pending source and keeps what it added (see the `mobile-rehearsal-player-usability` delta).
+- **Hook** `useSelection` wraps the model with stable callbacks and a `selectedKeys` set; surface-specific hooks (`useDriveSelectionBasket`, `useLibrarySelection`) compose it and supply identity functions and pruning.
+- **Primitives**: `ExplorerListRow` takes a `selection?: { selected: boolean; onToggle }` prop and renders the glyph itself (the generalized `getDriveRowSelectionGlyph`), hides trailing controls, sets `accessibilityState.selected`, and wires long-press to enter selection. A `SelectionBar` (count live region, `Cancel`, optional secondary action such as `Select all matching` or `View selection`) replaces `drive-search-selection-toolbar`. A `BulkActionBar` pins to the bottom like 1h's two-action footer, over the mini-player / tab band, with up to three outlined actions and an overflow sheet for the rest.
+- **Action resolution is pure and tested**: `resolveBulkActions({ surface, items })` returns the visible actions with enabled state, the reason when disabled, and the effective item count. `expandSelectionForPlayback(items, library)` performs the folder / playlist expansion in display order. The UI only renders what these return.
+- **Identity**: Drive items key on Drive file / folder id (the basket spans roots, so ids, not paths). Library items key on the row's identity in that view: file-link id in Files (the same entity can be selected through two links, and move / delete act on links), entity id in Tracks / Loops / Playlists / tag detail / search, and entry id in playlist detail (a repeated item is two entries).
+
+## Decision 10 — Bulk actions batch existing operations; they add no new semantics
+
+- Each bulk action reuses the single-item operation's rules — link-vs-entity semantics, case-insensitive name uniqueness, invalid move targets, track removal cascade, playlist naming, transient-queue promotion — and applies them to many items in one pass.
+- **One persisted write per action.** `library-files-operations.ts` and `audio-library-runtime` gain batched variants that compute the next library state once and persist it once, so a reload never shows half an action and playback / queue reconciliation runs once. Bulk import already has its own recoverable executor and is unaffected.
+- **Containers expand only for playback and playlist actions** (`Play next`, `Add to queue`, `Add to playlist`, `Save as playlist`): these are about the audio the user wants to hear. Copy, move, tag, and destructive actions act on the selected nodes, because expanding a folder for `Remove from library` would silently delete far more than the user selected. Folders are excluded from `Copy to folder` and `Remove from library` with an explicit count, because neither operation exists for folders today.
+- **Aggregated confirmation.** Destructive actions reuse the existing impact summaries (folder delete, last-link delete, track removal cascade) and sum them across the selection before one confirmation; the inspect-affected-entities affordance lists the union.
+- **Conflicts in one pass.** Bulk copy / move computes all destination-name conflicts up front and shows one list with keep-both (unique `Copy` proposal) or skip per item, instead of a dialog per item.
+
+## Open questions for multiple selection (resolve at task 9.0)
+
+- Bulk-action bar layout at 375pt: which three actions are always visible per surface, and what goes in its overflow sheet.
+- Whether long-press to enter selection conflicts with any existing long-press (drag-to-reorder in playlist detail uses a drag handle, so probably not) and how selection coexists with playlist detail's reorder affordance.
+- The basket view: a sheet listing selected Drive items grouped by root and path, or a dedicated screen reusing the import review list.
+- Whether a bulk action should offer undo instead of (or in addition to) confirmation for non-destructive batch changes such as move.
