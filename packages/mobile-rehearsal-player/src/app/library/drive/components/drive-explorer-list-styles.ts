@@ -60,6 +60,9 @@ export const driveExplorerListStyles = StyleSheet.create({
     color: colors.text,
     lineHeight: 20,
   },
+  rowTitleSelected: {
+    color: colors.accentText,
+  },
   sourceErrorMessage: {
     ...appTheme.type.rowMeta,
     color: colors.danger,

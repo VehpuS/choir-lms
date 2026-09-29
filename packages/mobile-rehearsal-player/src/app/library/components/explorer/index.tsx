@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import { AppIcon } from '../../../components/app-icon';
+import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { appTheme } from '../../../utils/theme';
 import {
   getExplorerBackAccessibilityLabel,
@@ -85,16 +86,10 @@ export const ExplorerNavigationBar = ({
         </Text>
       </View>
       {actionLabel && onAction ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={onAction}
-          style={({ pressed }) => [
-            styles.navigationAction,
-            pressed ? styles.rowPressed : undefined,
-          ]}
-        >
-          <Text style={styles.navigationActionLabel}>{actionLabel}</Text>
-        </Pressable>
+        // A secondary header action (e.g. Drive's `Search results` return),
+        // outlined in neutral so it reads apart from the back button's
+        // parent-folder navigation without competing with primary actions.
+        <OutlinedActionButton label={actionLabel} onPress={onAction} />
       ) : null}
     </View>
   );

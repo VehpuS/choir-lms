@@ -11,6 +11,7 @@ import {
   createDriveBrowseSourceRows,
   createDriveSearchResultRows,
   getDriveExplorerRowSelectionState,
+  getDriveRowSelectionGlyph,
   resolveDriveDiscoveryResultFromRow,
 } from './drive-explorer-row-model.js';
 
@@ -51,9 +52,12 @@ const SEARCH_RESULTS: DriveDiscoveryResult[] = [
   },
 ];
 
+const SEARCH_NOW = new Date('2026-09-29T12:00:00.000Z');
+
 describe('Drive explorer row model', () => {
-  it('maps mixed search results to identified, highlighted, path-aware rows', () => {
+  it('maps mixed search results to identified, highlighted rows that lead with their path', () => {
     const rows = createDriveSearchResultRows({
+      now: SEARCH_NOW,
       query: 'warm',
       results: SEARCH_RESULTS,
     });
@@ -62,16 +66,44 @@ describe('Drive explorer row model', () => {
     assert.equal(rows[0]?.highlightQuery, 'warm');
     assert.deepEqual(rows[0]?.metadataLabels, [
       'Folder',
-      'Shared folder',
-      'Updated 2026-09-12',
       'Shared with you / Choir / Autumn',
+      'Updated 12 Sep',
+      'Shared folder',
     ]);
     assert.equal(rows[1]?.kind, 'source');
     assert.equal(rows[1]?.highlightQuery, 'warm');
     assert.deepEqual(rows[1]?.metadataLabels, [
       'Audio',
+      'My Drive / Choir / Autumn / Warmups',
+      'WAV',
       '1:32',
-      'Updated 2026-09-13',
+    ]);
+  });
+
+  it('names an unplayable search result reason before its path', () => {
+    const audioResult = SEARCH_RESULTS[1];
+    assert.equal(audioResult?.kind, 'audio');
+    if (!audioResult || audioResult.kind !== 'audio') {
+      return;
+    }
+
+    const [row] = createDriveSearchResultRows({
+      now: SEARCH_NOW,
+      query: 'warm',
+      results: [
+        {
+          ...audioResult,
+          availability: {
+            reason: 'unsupported-format',
+            status: 'unsupported',
+          },
+        },
+      ],
+    });
+
+    assert.deepEqual(row?.metadataLabels, [
+      'Audio',
+      'Not a supported audio format',
       'My Drive / Choir / Autumn / Warmups',
     ]);
   });
@@ -162,5 +194,16 @@ describe('Drive explorer row model', () => {
       }),
       false,
     );
+  });
+
+  it('gives selected rows a filled accent check and unselected rows an empty circle', () => {
+    const selected = getDriveRowSelectionGlyph(true);
+    const unselected = getDriveRowSelectionGlyph(false);
+
+    assert.equal(selected.name, 'check-circle');
+    assert.equal(unselected.name, 'circle-outline');
+    // The glyph shape differs, so the state never rests on color alone.
+    assert.notEqual(selected.name, unselected.name);
+    assert.notEqual(selected.color, unselected.color);
   });
 });

@@ -35,19 +35,23 @@ export const DriveLibraryStatusCard = ({
   );
 };
 
+const BODY_LINE_HEIGHT = 20;
+
+// Progressive and incomplete-discovery status (design Decision 8) sits on the
+// shared FeedbackCard; only the muted body copy and spinner row are local.
 const styles = StyleSheet.create({
   statusMessage: {
+    ...appTheme.type.body,
     color: SECONDARY_TEXT,
-    fontSize: 14,
-    lineHeight: 20,
+    lineHeight: BODY_LINE_HEIGHT,
   },
   loadingRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: appTheme.space.sm,
     alignItems: 'center',
   },
   loadingLabel: {
+    ...appTheme.type.body,
     color: SECONDARY_TEXT,
-    fontSize: 14,
   },
 });

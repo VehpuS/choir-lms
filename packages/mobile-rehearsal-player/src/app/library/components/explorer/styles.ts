@@ -58,15 +58,6 @@ export const explorerStyles = StyleSheet.create({
     alignItems: 'center',
     gap: space.sm,
   },
-  navigationAction: {
-    minHeight: space.touchTarget,
-    justifyContent: 'center',
-    paddingHorizontal: space.xxs,
-  },
-  navigationActionLabel: {
-    ...appTheme.type.button,
-    color: colors.accentText,
-  },
   navigationCopy: {
     flex: 1,
     minWidth: 0,

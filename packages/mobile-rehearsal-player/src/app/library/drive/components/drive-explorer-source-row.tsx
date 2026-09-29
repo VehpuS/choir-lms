@@ -24,6 +24,7 @@ import {
   DRIVE_ROW_TITLE_LINES,
   driveExplorerListStyles as styles,
 } from './drive-explorer-list-styles';
+import { getDriveRowSelectionGlyph } from './drive-explorer-row-model';
 import { getDriveRowSavePillAppearance } from './drive-row-save-pill-model';
 
 // A full, untruncated file name in the options sheet title, so long Drive
@@ -56,15 +57,20 @@ const getMenuTone = (tone: DriveLibrarySourceAction['tone']) => {
       : ('secondary' as const);
 };
 
-const getLeadingIconName = (options: {
+const getLeadingGlyph = (options: {
   isPlayable: boolean;
   isSelected?: boolean;
 }) => {
   if (options.isSelected !== undefined) {
-    return options.isSelected ? 'check-circle' : 'circle-outline';
+    return getDriveRowSelectionGlyph(options.isSelected);
   }
 
-  return options.isPlayable ? 'music-note-outline' : 'file-outline';
+  return {
+    color: appTheme.colors.icon,
+    name: options.isPlayable
+      ? ('music-note-outline' as const)
+      : ('file-outline' as const),
+  };
 };
 
 const PILL_CHECK_ICON_SIZE = 13;
@@ -134,6 +140,7 @@ export const DriveExplorerSourceRow = ({
   });
   const externalMessage = isPlayable ? getMessage(source) : undefined;
   const metadataLabel = metadataLabels.join(' · ');
+  const leadingGlyph = getLeadingGlyph({ isPlayable, isSelected });
 
   return (
     <>
@@ -160,8 +167,8 @@ export const DriveExplorerSourceRow = ({
         disabled={!isPlayable && !onToggleSelection}
         leadingIcon={
           <AppIcon
-            color={appTheme.colors.icon}
-            name={getLeadingIconName({ isPlayable, isSelected })}
+            color={leadingGlyph.color}
+            name={leadingGlyph.name}
             size={DRIVE_ROW_LEADING_GLYPH_SIZE}
           />
         }
@@ -195,7 +202,7 @@ export const DriveExplorerSourceRow = ({
           <SearchHighlightedText
             numberOfLines={DRIVE_ROW_TITLE_LINES}
             query={highlightQuery ?? null}
-            style={styles.rowTitle}
+            style={[styles.rowTitle, isSelected && styles.rowTitleSelected]}
             text={source.name}
           />
         }

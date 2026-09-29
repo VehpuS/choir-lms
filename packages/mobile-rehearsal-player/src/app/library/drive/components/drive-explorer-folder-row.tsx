@@ -4,6 +4,7 @@ import { appTheme } from '../../../utils/theme';
 import { ExplorerListRow } from '../../components/explorer/index';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import type { DriveLibraryFolder } from '../utils/drive-library-view-model';
+import { getDriveRowSelectionGlyph } from './drive-explorer-row-model';
 import {
   DRIVE_ROW_LEADING_GLYPH_SIZE,
   DRIVE_ROW_TITLE_LINES,
@@ -32,20 +33,17 @@ export const DriveExplorerFolderRow = ({
 }: DriveExplorerFolderRowProps) => {
   const metadataLabel = metadataLabels.join(' · ');
   const isSelectionMode = isSelected !== undefined;
+  const leadingGlyph = isSelectionMode
+    ? getDriveRowSelectionGlyph(isSelected)
+    : { color: appTheme.colors.icon, name: 'folder-outline' as const };
 
   return (
     <ExplorerListRow
       active={isSelected}
       leadingIcon={
         <AppIcon
-          color={appTheme.colors.icon}
-          name={
-            !isSelectionMode
-              ? 'folder-outline'
-              : isSelected
-                ? 'check-circle'
-                : 'circle-outline'
-          }
+          color={leadingGlyph.color}
+          name={leadingGlyph.name}
           size={DRIVE_ROW_LEADING_GLYPH_SIZE}
         />
       }
@@ -58,7 +56,7 @@ export const DriveExplorerFolderRow = ({
         <SearchHighlightedText
           numberOfLines={DRIVE_ROW_TITLE_LINES}
           query={highlightQuery}
-          style={styles.rowTitle}
+          style={[styles.rowTitle, isSelected && styles.rowTitleSelected]}
           text={folder.name}
         />
       }

@@ -6,11 +6,12 @@ import { compact } from 'es-toolkit/compat';
 
 import { formatDurationLabel } from './drive-library-metadata';
 
-// Browse-row meta lines for Add (screen 1e): audio rows read
+// Drive row meta lines for Add (screen 1e): audio rows read
 // `MP3 · 8.4 MB · 4:38` and folder rows `Updated 3 Nov`. The location label
 // is left out while browsing because it is the folder on screen. Search
-// results keep their own labels (with the containing path) in
-// `drive-library-metadata.ts`.
+// results, which mix folders and audio from anywhere in the root, lead with
+// their entity type and containing path (`Audio · My Drive / Choir · MP3 ·
+// 4:38`) so both survive the meta line's truncation.
 
 const BYTES_PER_UNIT = 1024;
 const SIZE_UNITS = ['KB', 'MB', 'GB'] as const;
@@ -32,6 +33,8 @@ const FILE_EXTENSION_PATTERN = /\.([a-z0-9]{1,5})$/i;
 
 export const UNSUPPORTED_AUDIO_FORMAT_LABEL = 'Not a supported audio format';
 const SHARED_FOLDER_LABEL = 'Shared folder';
+const SEARCH_FOLDER_KIND_LABEL = 'Folder';
+const SEARCH_AUDIO_KIND_LABEL = 'Audio';
 
 /** `8.4 MB`: at most one decimal from megabytes up, whole kilobytes, plain bytes. */
 export const formatDriveFileSizeLabel = (sizeBytes?: number) => {
@@ -121,4 +124,27 @@ export const getBrowseFolderMetadataLabels = (
       ? SHARED_FOLDER_LABEL
       : undefined,
   ]);
+};
+
+export const getSearchFolderMetadataLabels = (
+  folder: DriveFolder,
+  now: Date = new Date(),
+): string[] => {
+  return compact([
+    SEARCH_FOLDER_KIND_LABEL,
+    folder.locationLabel,
+    ...getBrowseFolderMetadataLabels(folder, now),
+  ]);
+};
+
+export const getSearchSourceMetadataLabels = (
+  source: DriveDiscoveredAudioSource,
+): string[] => {
+  const browseLabels = getBrowseSourceMetadataLabels(source);
+
+  // An unplayable result names its reason before the path, so the reason is
+  // never the part that truncates away.
+  return source.availability.status === 'available'
+    ? compact([SEARCH_AUDIO_KIND_LABEL, source.locationLabel, ...browseLabels])
+    : compact([SEARCH_AUDIO_KIND_LABEL, ...browseLabels, source.locationLabel]);
 };

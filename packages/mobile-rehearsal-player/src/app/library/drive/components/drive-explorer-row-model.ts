@@ -1,14 +1,17 @@
 import type { DriveDiscoveryResult } from '@org/google-drive';
 
+import type { AppIconName } from '../../../components/app-icon';
+import { appTheme } from '../../../utils/theme';
+
 import {
   getBrowseFolderMetadataLabels,
   getBrowseSourceMetadataLabels,
+  getSearchFolderMetadataLabels,
+  getSearchSourceMetadataLabels,
 } from '../utils/drive-browse-row-metadata';
-import {
-  getFolderMetadataLabels,
-  getSourceMetadataLabels,
-  type DriveLibraryFolder,
-  type DriveLibrarySource,
+import type {
+  DriveLibraryFolder,
+  DriveLibrarySource,
 } from '../utils/drive-library-view-model';
 
 type DriveExplorerRowPresentation = {
@@ -77,9 +80,12 @@ export const getDriveExplorerRowSelectionState = (options: {
 };
 
 export const createDriveSearchResultRows = (options: {
+  now?: Date;
   query: string;
   results: DriveDiscoveryResult[];
 }): DriveDiscoveryExplorerRow[] => {
+  const now = options.now ?? new Date();
+
   return options.results.map((result) => {
     if (result.kind === 'folder') {
       return {
@@ -87,11 +93,7 @@ export const createDriveSearchResultRows = (options: {
         highlightQuery: options.query,
         key: result.id,
         kind: 'folder',
-        metadataLabels: [
-          'Folder',
-          ...getFolderMetadataLabels(result, { includeUpdatedDate: true }),
-          ...(result.locationLabel ? [result.locationLabel] : []),
-        ],
+        metadataLabels: getSearchFolderMetadataLabels(result, now),
       };
     }
 
@@ -99,11 +101,26 @@ export const createDriveSearchResultRows = (options: {
       highlightQuery: options.query,
       key: result.id,
       kind: 'source',
-      metadataLabels: [
-        'Audio',
-        ...getSourceMetadataLabels(result, { includeUpdatedDate: true }),
-      ],
+      metadataLabels: getSearchSourceMetadataLabels(result),
       source: result,
     };
   });
+};
+
+type DriveRowSelectionGlyph = {
+  color: string;
+  name: AppIconName;
+};
+
+/**
+ * Selection-mode glyph for a Drive row (design Decision 8): an empty circle,
+ * or a filled check in the accent. The shape change carries the state, so it
+ * never rests on color alone; the row also accents its title and active mark.
+ */
+export const getDriveRowSelectionGlyph = (
+  isSelected: boolean,
+): DriveRowSelectionGlyph => {
+  return isSelected
+    ? { color: appTheme.colors.accent, name: 'check-circle' }
+    : { color: appTheme.colors.icon, name: 'circle-outline' };
 };
