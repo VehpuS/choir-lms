@@ -46,18 +46,15 @@ export const RecentSearchSuggestions = ({
 
 const styles = StyleSheet.create({
   container: {
-    gap: 8,
+    gap: appTheme.space.xs,
   },
   title: {
+    ...appTheme.type.kicker,
     color: appTheme.colors.textMuted,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
   },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: appTheme.space.xs,
   },
 });

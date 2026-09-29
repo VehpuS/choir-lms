@@ -5,7 +5,7 @@ import { resolveSearchToggleIsFilled } from './library-search-controls-actions-m
 
 import { appTheme } from '../../../utils/theme';
 
-const ACTION_BUTTON_SIZE = 40;
+const ACTION_BUTTON_SIZE = appTheme.space.touchTarget;
 const ACTION_ROW_GAP = 12;
 const DOUBLE_ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE * 2 + ACTION_ROW_GAP;
 const SINGLE_ACTION_ROW_WIDTH = ACTION_BUTTON_SIZE;
@@ -144,7 +144,8 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 999,
     borderWidth: 1,
-    backgroundColor: appTheme.colors.warning,
+    // A filter being active is state, not a warning, so the dot is the accent.
+    backgroundColor: appTheme.colors.accent,
   },
   activeIndicatorDotHero: {
     borderColor: appTheme.colors.surfaceRaised,

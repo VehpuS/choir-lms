@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
@@ -33,13 +33,11 @@ type ContextualSearchPanelProps = {
   showInlineToggleButton?: boolean;
 };
 
-const BORDER_COLOR = appTheme.colors.border;
-const INPUT_BACKGROUND = appTheme.colors.surface;
-const PLACEHOLDER_TEXT = appTheme.colors.textFaint;
-const PRIMARY_ACTION_BACKGROUND = appTheme.colors.surfaceAccent;
-const PRIMARY_ACTION_TEXT = appTheme.colors.accentOnTint;
-const PRIMARY_TEXT = appTheme.colors.text;
-const HELPER_TEXT = appTheme.colors.textMuted;
+const { colors, space } = appTheme;
+const PLACEHOLDER_TEXT = colors.textFaint;
+const PRIMARY_ACTION_BACKGROUND = colors.surfaceAccent;
+const PRIMARY_ACTION_TEXT = colors.accentOnTint;
+const FIELD_ICON_SIZE = 18;
 
 export const ContextualSearchPanel = ({
   canShowRecentSearchTerms = true,
@@ -59,6 +57,7 @@ export const ContextualSearchPanel = ({
   searchQuery,
   showInlineToggleButton = true,
 }: ContextualSearchPanelProps) => {
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const shouldSkipBlurCommitRef = useRef(false);
   const isSearchBarVisibleRef = useRef(isSearchBarVisible);
 
@@ -79,6 +78,8 @@ export const ContextualSearchPanel = ({
     isSearchBarVisible && searchQuery.trim().length > 0;
 
   const handleSearchInputBlur = () => {
+    setIsInputFocused(false);
+
     const blurOutcome = resolveSearchInputBlurOutcome({
       shouldSkipBlurCommit: shouldSkipBlurCommitRef.current,
     });
@@ -131,19 +132,33 @@ export const ContextualSearchPanel = ({
         </View>
       ) : null}
       <View style={styles.searchRow}>
-        <View style={styles.searchInputContainer}>
+        {/* Screen 1j's field: one 44pt row with a leading search glyph and a
+            trailing clear, edged in the accent while focused. */}
+        <View
+          style={[
+            styles.searchField,
+            isInputFocused ? styles.searchFieldFocused : undefined,
+          ]}
+        >
+          <AppIcon
+            color={isInputFocused ? colors.accentText : colors.icon}
+            name="magnify"
+            size={FIELD_ICON_SIZE}
+          />
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}
             onBlur={handleSearchInputBlur}
             onChangeText={onSearchQueryChange}
             onFocus={() => {
+              setIsInputFocused(true);
               shouldSkipBlurCommitRef.current = false;
             }}
             onSubmitEditing={onSearch}
             placeholder={placeholderCopy}
             placeholderTextColor={PLACEHOLDER_TEXT}
             returnKeyType="search"
+            selectionColor={colors.accent}
             style={styles.searchInput}
             value={searchQuery}
           />
@@ -161,9 +176,9 @@ export const ContextualSearchPanel = ({
               ]}
             >
               <AppIcon
-                color={PLACEHOLDER_TEXT}
+                color={colors.textMuted}
                 name="close-circle-outline"
-                size={18}
+                size={FIELD_ICON_SIZE}
               />
             </Pressable>
           ) : null}
@@ -200,47 +215,61 @@ export const ContextualSearchPanel = ({
 
 const styles = StyleSheet.create({
   searchPanel: {
-    gap: 12,
+    gap: space.sm,
   },
   copyRow: {
-    gap: 4,
+    gap: space.xxs,
   },
   helperCopy: {
-    color: HELPER_TEXT,
+    color: colors.textMuted,
     fontSize: 13,
     lineHeight: 18,
   },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: space.sm,
   },
-  searchInputContainer: {
+  searchField: {
     flex: 1,
-    position: 'relative',
+    minHeight: space.touchTarget,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xs,
+    paddingLeft: space.md,
+    borderWidth: 1,
+    borderColor: colors.borderChip,
+    borderRadius: appTheme.radius.md,
+    backgroundColor: colors.surface,
+  },
+  searchFieldFocused: {
+    borderColor: colors.accent,
   },
   searchInput: {
-    paddingHorizontal: 16,
-    paddingRight: 42,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
-    borderRadius: 14,
-    backgroundColor: INPUT_BACKGROUND,
-    color: PRIMARY_TEXT,
+    flex: 1,
+    minWidth: 0,
+    minHeight: space.touchTarget - 2,
+    paddingVertical: 0,
+    paddingRight: space.md,
+    color: colors.text,
     fontSize: 15,
+    // The field row draws its own accent focus edge; drop the browser's inner
+    // focus ring on web (no effect on native). Chrome ignores the width of an
+    // `auto` outline, so the style is set too.
+    outlineStyle: 'solid',
+    outlineWidth: 0,
   },
   searchButton: {
     alignSelf: 'flex-start',
-    width: 40,
-    height: 40,
-    borderRadius: 999,
+    width: space.touchTarget,
+    height: space.touchTarget,
+    borderRadius: appTheme.radius.pill,
     backgroundColor: PRIMARY_ACTION_BACKGROUND,
     alignItems: 'center',
     justifyContent: 'center',
   },
   searchButtonActive: {
-    backgroundColor: appTheme.colors.accentBorderDeep,
+    backgroundColor: colors.accentBorderDeep,
   },
   searchButtonPressed: {
     opacity: 0.88,
@@ -249,10 +278,8 @@ const styles = StyleSheet.create({
     opacity: 0.56,
   },
   clearSearchIconButton: {
-    position: 'absolute',
-    top: 0,
-    right: 10,
-    bottom: 0,
+    width: space.touchTarget,
+    height: space.touchTarget - 2,
     justifyContent: 'center',
     alignItems: 'center',
   },

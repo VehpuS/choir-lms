@@ -1,25 +1,21 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-
-import {
-  INTERACTION_CHIP_TOKENS,
-  INTERACTION_STATE_OPACITY,
-} from '../../components/interaction-style-tokens';
+import { SegmentedControl } from '../../../components/segmented-control';
 import type { TagFilterMatchMode } from '../utils/saved-library-search-view-model';
 
-const MATCH_MODE_SEGMENTS: ReadonlyArray<{
+// Any / All in 1j's order; the default remains `All` (set by the caller).
+const MATCH_MODE_OPTIONS: ReadonlyArray<{
   accessibilityLabel: string;
   label: string;
   value: TagFilterMatchMode;
 }> = [
   {
-    accessibilityLabel: 'Match all selected tags',
-    label: 'All',
-    value: 'all',
-  },
-  {
     accessibilityLabel: 'Match any selected tag',
     label: 'Any',
     value: 'any',
+  },
+  {
+    accessibilityLabel: 'Match all selected tags',
+    label: 'All',
+    value: 'all',
   },
 ];
 
@@ -33,67 +29,12 @@ export const TagFilterMatchModeSwitch = ({
   onSelectMatchMode,
 }: TagFilterMatchModeSwitchProps) => {
   return (
-    <View accessibilityRole="radiogroup" style={styles.track}>
-      {MATCH_MODE_SEGMENTS.map((segment) => {
-        const isActive = segment.value === matchMode;
-
-        return (
-          <Pressable
-            key={segment.value}
-            accessibilityLabel={segment.accessibilityLabel}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: isActive }}
-            onPress={() => {
-              onSelectMatchMode(segment.value);
-            }}
-            style={({ pressed }) => [
-              styles.segment,
-              isActive && styles.segmentActive,
-              pressed && !isActive ? styles.segmentPressed : undefined,
-            ]}
-          >
-            <Text
-              style={[
-                styles.segmentLabel,
-                isActive && styles.segmentLabelActive,
-              ]}
-            >
-              {segment.label}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </View>
+    <SegmentedControl
+      accessibilityLabel="Tag match mode"
+      onSelect={onSelectMatchMode}
+      options={MATCH_MODE_OPTIONS}
+      selectedValue={matchMode}
+      shape="pill"
+    />
   );
 };
-
-const styles = StyleSheet.create({
-  track: {
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: INTERACTION_CHIP_TOKENS.passiveBorder,
-    borderRadius: 999,
-    padding: 2,
-  },
-  segment: {
-    borderWidth: 1,
-    borderColor: INTERACTION_CHIP_TOKENS.transparent,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-  },
-  segmentActive: {
-    borderColor: INTERACTION_CHIP_TOKENS.selectedBorder,
-  },
-  segmentPressed: {
-    opacity: INTERACTION_STATE_OPACITY.pressed,
-  },
-  segmentLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: INTERACTION_CHIP_TOKENS.passiveText,
-  },
-  segmentLabelActive: {
-    color: INTERACTION_CHIP_TOKENS.selectedText,
-  },
-});

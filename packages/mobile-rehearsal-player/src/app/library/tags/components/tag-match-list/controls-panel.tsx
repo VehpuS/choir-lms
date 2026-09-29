@@ -54,7 +54,6 @@ export const TagMatchControlsPanel = ({
                 onPress={() => {
                   onToggleTypeFilter(option.value);
                 }}
-                style={styles.filterChip}
                 variant={
                   selectedTypeFilters.includes(option.value)
                     ? 'selected'
@@ -69,18 +68,19 @@ export const TagMatchControlsPanel = ({
   );
 };
 
+// Same kicker and 44pt chips as the Library filter popover (screen 1j).
 const styles = StyleSheet.create({
   panel: {
-    gap: 12,
+    gap: appTheme.space.md,
   },
-  filterChip: { minHeight: 32, paddingHorizontal: 12, paddingVertical: 6 },
-  filterGroup: { gap: 8 },
+  filterGroup: { gap: appTheme.space.xs },
   filterLabel: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
+    ...appTheme.type.kicker,
+    color: appTheme.colors.textMuted,
   },
-  filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: appTheme.space.xs,
+  },
 });

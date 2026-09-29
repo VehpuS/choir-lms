@@ -22,6 +22,8 @@ type InteractionChipProps = {
   disabled?: boolean;
   label: string;
   labelStyle?: StyleProp<TextStyle>;
+  /** A glyph before the label (1j's selected tag chips). */
+  leadingIcon?: ReactNode;
   onPress?: () => void;
   onPressIn?: () => void;
   style?: StyleProp<ViewStyle>;
@@ -34,6 +36,7 @@ export const InteractionChip = ({
   disabled = false,
   label,
   labelStyle,
+  leadingIcon,
   onPress,
   onPressIn,
   style,
@@ -43,6 +46,7 @@ export const InteractionChip = ({
 
   const content = (
     <>
+      {leadingIcon}
       <Text
         numberOfLines={1}
         style={[

@@ -53,8 +53,10 @@ export const SearchHighlightedText = ({
 };
 
 const styles = StyleSheet.create({
+  // Screen 1j: the matched run sits on the deep accent fill in near-white.
   highlight: {
     backgroundColor: appTheme.colors.highlightFill,
-    fontWeight: '800',
+    color: appTheme.colors.highlightText,
+    fontWeight: appTheme.fontWeight.medium,
   },
 });
