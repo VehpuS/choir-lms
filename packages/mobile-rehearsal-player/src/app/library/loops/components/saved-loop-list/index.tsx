@@ -2,7 +2,6 @@ import { type PlayableItem } from '@org/audio-library-models';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 
-import { ExplorerListSurface } from '../../../components/explorer';
 import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
@@ -79,7 +78,7 @@ export const SavedLoopList = ({
         {title ?? `Saved loops (${loopCards.length})`}
       </Text>
 
-      <ExplorerListSurface>
+      <View style={styles.loopCards}>
         {loopCards.map((loopCard) => {
           return (
             <SavedLoopListRow
@@ -116,7 +115,7 @@ export const SavedLoopList = ({
             />
           );
         })}
-      </ExplorerListSurface>
+      </View>
     </View>
   );
 };

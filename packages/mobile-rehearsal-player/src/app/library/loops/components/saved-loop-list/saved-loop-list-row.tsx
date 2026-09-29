@@ -1,10 +1,7 @@
 import { type PlayableItem } from '@org/audio-library-models';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-import { AppIcon } from '../../../../components/app-icon';
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
-import { appTheme } from '../../../../utils/theme';
-import { ExplorerListRow } from '../../../components/explorer';
 import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
 import { attachRowActionSections } from '../../../components/options-menu-sheet/row-action-sections';
 import { toOptionsMenuAction } from '../../../components/saved-rehearsal-library-section/files-row-actions-contract';
@@ -15,13 +12,14 @@ import {
   type SavedTrackPlaybackIssue,
   type SavedTrackPlaybackState,
 } from '../../../playback/utils/saved-track-playback-view-model';
-import { SearchHighlightedText } from '../../../search/components/search-highlighted-text';
 import { resolveSavedLoopRowActions } from '../../utils/saved-loop-row-actions';
 import {
   getSavedLoopItemIssue,
   type SavedLoopCard,
   type SavedLoopIssue,
 } from '../../utils/saved-loop-view-model';
+import { SavedLoopListCard } from './saved-loop-list-card';
+import { resolveSavedLoopCardPresentation } from './saved-loop-list-card-model';
 
 type SavedLoopListRowProps = {
   activePlayableItem: PlayableItem | null;
@@ -172,54 +170,29 @@ export const SavedLoopListRow = ({
 
   return (
     <>
-      <ExplorerListRow
-        active={isPlaybackLoopActive}
-        disabled={playbackAction.disabled}
-        leadingIcon={
-          <AppIcon
-            color={
-              isPlaybackLoopActive
-                ? appTheme.colors.accentText
-                : appTheme.colors.secondaryText
-            }
-            name="repeat"
-            size={22}
-          />
-        }
-        message={
-          loopMessage ? (
-            <Text numberOfLines={2} style={styles.rowMessage}>
-              {loopMessage}
-            </Text>
-          ) : null
-        }
-        metadata={
-          <SearchHighlightedText
-            numberOfLines={1}
-            query={highlightQuery}
-            style={styles.rowSupportingLabel}
-            text={loopCard.metadataLabel}
-          />
-        }
-        onPress={handleTogglePlayback}
+      <SavedLoopListCard
+        disabled={playableItem === null}
+        highlightQuery={highlightQuery}
+        message={loopMessage}
+        onTogglePlayback={handleTogglePlayback}
         overflowTrigger={
           menuActions.length > 0 ? (
             <OverflowMenuTrigger
               accessibilityLabel={`${loopCard.loop.name} options`}
-              iconColor={appTheme.colors.secondaryText}
               onPress={onOpenOptions}
               style={styles.rowOverflowTrigger}
             />
           ) : null
         }
-        title={
-          <SearchHighlightedText
-            numberOfLines={1}
-            query={highlightQuery}
-            style={styles.rowTitle}
-            text={loopCard.loop.name}
-          />
-        }
+        parentTrackName={loopCard.parentTrack.name}
+        playableItem={playableItem}
+        presentation={resolveSavedLoopCardPresentation({
+          isActive: isPlaybackLoopActive,
+          loop: loopCard.loop,
+          playbackActionLabel: playbackAction.label,
+        })}
+        ringDisabled={playbackAction.disabled}
+        title={loopCard.loop.name}
       />
       <OptionsMenuSheet
         actions={sheetActions.map((action) => {
@@ -240,24 +213,9 @@ export const SavedLoopListRow = ({
 };
 
 const styles = StyleSheet.create({
-  rowMessage: {
-    color: appTheme.colors.danger,
-    fontSize: 12,
-    lineHeight: 17,
-  },
   rowOverflowTrigger: {
     position: 'relative',
     right: 0,
     top: 0,
-  },
-  rowSupportingLabel: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  rowTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 15,
-    fontWeight: '700',
   },
 });

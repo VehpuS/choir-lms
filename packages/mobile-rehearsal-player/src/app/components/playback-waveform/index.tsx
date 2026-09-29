@@ -1,14 +1,12 @@
 import type { PlayableItem } from '@org/audio-library-models';
 import { useEffect, useRef, useState } from 'react';
 import {
-  StyleSheet,
   View,
   type LayoutChangeEvent,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
 
-import { appTheme } from '../../utils/theme';
 import {
   clampWaveformRatio,
   getPlaybackBoundsSeconds,
@@ -27,6 +25,12 @@ import {
   type PlaybackWaveformAppearance,
   type PlaybackWaveformVariant,
 } from './variants';
+import {
+  BAR_ROW_STYLE,
+  BAR_STYLE,
+  CONTAINER_STYLE,
+  waveformStyles,
+} from './styles';
 import {
   continuousInteractionGuardStyle,
   interactionGuardProps,
@@ -154,7 +158,7 @@ export const PlaybackWaveform = ({
       }}
       onStartShouldSetResponder={() => canScrub}
       style={[
-        styles.container,
+        waveformStyles.container,
         CONTAINER_STYLE[variant],
         interactive ? continuousInteractionGuardStyle : undefined,
         style,
@@ -162,7 +166,7 @@ export const PlaybackWaveform = ({
     >
       <View
         pointerEvents="none"
-        style={[styles.barRow, BAR_ROW_STYLE[variant]]}
+        style={[waveformStyles.barRow, BAR_ROW_STYLE[variant]]}
       >
         {bars.map((amplitude, index) => {
           const isPlayed = isWaveformBarPlayed({
@@ -179,7 +183,7 @@ export const PlaybackWaveform = ({
             <View
               key={`${variant}:${index}`}
               style={[
-                styles.bar,
+                waveformStyles.bar,
                 BAR_STYLE[variant],
                 {
                   backgroundColor: isPlayed ? colors.active : colors.inactive,
@@ -194,7 +198,7 @@ export const PlaybackWaveform = ({
         <View
           pointerEvents="none"
           style={[
-            styles.scrubIndicator,
+            waveformStyles.scrubIndicator,
             {
               backgroundColor: colors.indicator,
               left: `${displayedRatio * 100}%`,
@@ -204,87 +208,4 @@ export const PlaybackWaveform = ({
       ) : null}
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  compactContainer: {
-    minHeight: 44,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    borderRadius: 18,
-    backgroundColor: appTheme.colors.hairline,
-  },
-  heroContainer: {
-    minHeight: 188,
-    paddingHorizontal: 14,
-    paddingVertical: 18,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 28,
-    backgroundColor: appTheme.colors.surface,
-  },
-  barRow: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 4,
-  },
-  compactBarRow: {
-    gap: 2,
-  },
-  miniContainer: {
-    height: WAVEFORM_HEIGHT.mini,
-  },
-  miniBarRow: {
-    alignItems: 'center',
-    gap: 2,
-  },
-  // Fixed 2pt bars: reset the shared `flex: 1` so the basis is the width.
-  miniBar: {
-    flexGrow: 0,
-    flexShrink: 0,
-    flexBasis: 'auto',
-    width: 2,
-    borderRadius: 2,
-  },
-  bar: {
-    flex: 1,
-    borderRadius: 999,
-  },
-  compactBar: {
-    minWidth: 2,
-  },
-  heroBar: {
-    minWidth: 4,
-  },
-  scrubIndicator: {
-    position: 'absolute',
-    top: 16,
-    bottom: 16,
-    width: 2,
-    marginLeft: -1,
-    borderRadius: 999,
-  },
-});
-
-const CONTAINER_STYLE: Record<PlaybackWaveformVariant, ViewStyle> = {
-  compact: styles.compactContainer,
-  hero: styles.heroContainer,
-  mini: styles.miniContainer,
-};
-
-const BAR_ROW_STYLE: Record<PlaybackWaveformVariant, ViewStyle | null> = {
-  compact: styles.compactBarRow,
-  hero: null,
-  mini: styles.miniBarRow,
-};
-
-const BAR_STYLE: Record<PlaybackWaveformVariant, ViewStyle> = {
-  compact: styles.compactBar,
-  hero: styles.heroBar,
-  mini: styles.miniBar,
 };

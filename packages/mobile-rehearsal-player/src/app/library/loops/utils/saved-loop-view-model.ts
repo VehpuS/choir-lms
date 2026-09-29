@@ -102,23 +102,42 @@ export const formatSavedLoopRangeLabel = (
   return `${startLabel} to ${endLabel}`;
 };
 
+const LOOP_META_SEPARATOR = ' · ';
+const ZERO_DURATION_LABEL = '0:00';
+
+export const formatSavedLoopBoundaryLabel = (ms: number) => {
+  return formatDurationLabel(ms) ?? ZERO_DURATION_LABEL;
+};
+
+export const formatSavedLoopLengthLabel = (
+  loop: Pick<NamedLoop, 'startMs' | 'endMs'>,
+) => {
+  return formatSavedLoopBoundaryLabel(Math.max(loop.endMs - loop.startMs, 0));
+};
+
+/** `1:12–1:48`: the loop's range as one timecode segment. */
+export const formatSavedLoopTimeRange = (
+  loop: Pick<NamedLoop, 'startMs' | 'endMs'>,
+) => {
+  return `${formatSavedLoopBoundaryLabel(loop.startMs)}–${formatSavedLoopBoundaryLabel(loop.endMs)}`;
+};
+
 /** `1:12–1:48 · 0:36`: the loop's range, then its length (screens 1b, 1d). */
 export const formatSavedLoopBracketLabel = (
   loop: Pick<NamedLoop, 'startMs' | 'endMs'>,
 ) => {
-  const startLabel = formatDurationLabel(loop.startMs) ?? '0:00';
-  const endLabel = formatDurationLabel(loop.endMs) ?? '0:00';
-  const lengthLabel =
-    formatDurationLabel(Math.max(loop.endMs - loop.startMs, 0)) ?? '0:00';
-
-  return `${startLabel}–${endLabel} · ${lengthLabel}`;
+  return `${formatSavedLoopTimeRange(loop)}${LOOP_META_SEPARATOR}${formatSavedLoopLengthLabel(loop)}`;
 };
 
+/**
+ * `1:12–1:48 · <parent track>`: the range, then its source context (screen
+ * 1d's parts, range first so it survives truncation of a long name).
+ */
 export const formatSavedLoopParentTrackLabel = (options: {
   loop: Pick<NamedLoop, 'startMs' | 'endMs'>;
   parentTrackName: string;
 }) => {
-  return `Parent track: ${options.parentTrackName} • ${formatSavedLoopRangeLabel(options.loop)}`;
+  return `${formatSavedLoopTimeRange(options.loop)}${LOOP_META_SEPARATOR}${options.parentTrackName}`;
 };
 
 const defaultCreateId = (sourceId: string, createdAt: string) => {

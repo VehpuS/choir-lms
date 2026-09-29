@@ -32,10 +32,7 @@ describe('saved loop view-model', () => {
 
     const [loopCard] = resolveSavedLoopCards([SAVED_LOOP], [PLAYABLE_SOURCE]);
 
-    assert.equal(
-      loopCard?.metadataLabel,
-      'Parent track: Alto Line.mp3 • 0:12 to 0:18',
-    );
+    assert.equal(loopCard?.metadataLabel, '0:12–0:18 · Alto Line.mp3');
     assert.deepEqual(loopCard?.parentTrack, {
       id: PLAYABLE_SOURCE.id,
       name: PLAYABLE_SOURCE.name,

@@ -16,16 +16,19 @@ export const MINI_WAVEFORM_BARS = downsampleWaveformBars(
   MINI_WAVEFORM_BAR_COUNT,
 );
 
-export type PlaybackWaveformVariant = 'compact' | 'hero' | 'mini';
+// `excerpt` is the bare 28pt bar strip inside an expanded loop card (1d).
+export type PlaybackWaveformVariant = 'compact' | 'excerpt' | 'hero' | 'mini';
 
 export const WAVEFORM_HEIGHT: Record<PlaybackWaveformVariant, number> = {
   compact: 28,
+  excerpt: 28,
   hero: 154,
   mini: 22,
 };
 
 export const MIN_BAR_HEIGHT: Record<PlaybackWaveformVariant, number> = {
   compact: 8,
+  excerpt: 4,
   hero: 18,
   mini: 2,
 };
@@ -36,7 +39,7 @@ export const getWaveformColors = (
 ) => {
   // Played bars are accent and unplayed bars the solid divider (README
   // "Waveform"); the older variants keep their appearance mapping until 3.x.
-  if (variant === 'mini') {
+  if (variant === 'mini' || variant === 'excerpt') {
     return {
       active: appTheme.colors.accent,
       inactive: appTheme.colors.divider,

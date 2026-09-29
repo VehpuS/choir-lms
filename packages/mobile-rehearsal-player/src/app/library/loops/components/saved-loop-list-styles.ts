@@ -2,15 +2,17 @@ import { StyleSheet } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
 
-export const SAVED_LOOP_PRIMARY_TEXT = appTheme.colors.text;
-
 export const savedLoopListStyles = StyleSheet.create({
   loopGroup: {
-    gap: 12,
+    gap: appTheme.space.md,
   },
   loopGroupTitle: {
-    color: SAVED_LOOP_PRIMARY_TEXT,
-    fontSize: 16,
-    fontWeight: '700',
+    ...appTheme.type.kicker,
+    color: appTheme.colors.textMuted,
+  },
+  // Loops are a card stack rather than hairline rows because the active
+  // loop expands (screen 1d).
+  loopCards: {
+    gap: 10,
   },
 });
