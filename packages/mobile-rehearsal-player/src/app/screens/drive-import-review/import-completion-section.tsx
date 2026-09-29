@@ -1,17 +1,23 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Fragment, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { appTheme } from '../../utils/theme';
+import { OutlinedActionButton } from '../../components/outlined-action-button';
+import { FeedbackCard } from '../../library/components/feedback-card';
 import type {
   DriveImportCompletionSummary,
   DriveImportOutcome,
 } from '../../library/saved-rehearsal-library/drive-import-status';
+import { appTheme } from '../../utils/theme';
 import {
   buildDriveImportCompletionSummaryRows,
   canRetryDriveImportCompletion,
   getDriveImportCompletionStatusCopy,
+  getDriveImportCompletionTone,
   getFailedDriveImportOutcomes,
 } from './drive-import-progress-model';
+import { ImportCountRows } from './import-count-rows';
+
+const { colors, space } = appTheme;
 
 type ImportCompletionSectionProps = {
   onRetryFailed: () => void;
@@ -19,6 +25,9 @@ type ImportCompletionSectionProps = {
   summary: DriveImportCompletionSummary;
 };
 
+// Completion (design Decision 8): the outcome as a toned status card like 1e's
+// save acknowledgment, per-outcome counts, an expandable list of failed items
+// with their reasons, and `Retry failed` as the accent-outlined primary.
 export const ImportCompletionSection = ({
   onRetryFailed,
   outcomes,
@@ -26,58 +35,53 @@ export const ImportCompletionSection = ({
 }: ImportCompletionSectionProps) => {
   const [isFailedListExpanded, setIsFailedListExpanded] = useState(false);
   const statusCopy = getDriveImportCompletionStatusCopy(summary.status);
-  const rows = buildDriveImportCompletionSummaryRows(summary);
   const failedOutcomes = getFailedDriveImportOutcomes(outcomes);
 
   return (
     <View style={styles.section}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{statusCopy.title}</Text>
-        <Text style={styles.helper}>{statusCopy.description}</Text>
-      </View>
-      <View style={styles.rows}>
-        {rows.map((row) => (
-          <View key={row.key} style={styles.row}>
-            <Text style={styles.rowLabel}>{row.label}</Text>
-            <Text style={styles.rowValue}>{row.value}</Text>
-          </View>
-        ))}
-      </View>
+      <FeedbackCard
+        message={statusCopy.description}
+        title={statusCopy.title}
+        tone={getDriveImportCompletionTone(summary.status)}
+      />
+      <ImportCountRows rows={buildDriveImportCompletionSummaryRows(summary)} />
       {failedOutcomes.length > 0 ? (
         <View style={styles.failedSection}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ expanded: isFailedListExpanded }}
-            onPress={() => setIsFailedListExpanded((current) => !current)}
-          >
-            <Text style={styles.failedToggleLabel}>
-              {isFailedListExpanded
+          <OutlinedActionButton
+            icon={isFailedListExpanded ? 'chevron-up' : 'chevron-down'}
+            label={
+              isFailedListExpanded
                 ? 'Hide failed items'
-                : `Show failed items (${failedOutcomes.length})`}
-            </Text>
-          </Pressable>
+                : `Show failed items (${failedOutcomes.length})`
+            }
+            onPress={() => setIsFailedListExpanded((current) => !current)}
+            style={styles.failedToggle}
+          />
           {isFailedListExpanded ? (
-            <View style={styles.failedList}>
-              {failedOutcomes.map((outcome) => (
-                <View key={outcome.itemId} style={styles.failedItem}>
-                  <Text style={styles.failedItemName}>{outcome.itemName}</Text>
-                  <Text style={styles.failedItemMessage}>
-                    {outcome.errorMessage}
-                  </Text>
-                </View>
+            <View>
+              {failedOutcomes.map((outcome, index) => (
+                <Fragment key={outcome.itemId}>
+                  {index > 0 ? <View style={styles.separator} /> : null}
+                  <View style={styles.failedItem}>
+                    <Text style={styles.failedItemName}>
+                      {outcome.itemName}
+                    </Text>
+                    <Text style={styles.failedItemMessage}>
+                      {outcome.errorMessage}
+                    </Text>
+                  </View>
+                </Fragment>
               ))}
             </View>
           ) : null}
         </View>
       ) : null}
       {canRetryDriveImportCompletion(summary) ? (
-        <Pressable
-          accessibilityRole="button"
+        <OutlinedActionButton
+          label="Retry failed"
           onPress={onRetryFailed}
-          style={styles.retryButton}
-        >
-          <Text style={styles.retryButtonLabel}>Retry failed</Text>
-        </Pressable>
+          variant="accent"
+        />
       ) : null}
     </View>
   );
@@ -86,73 +90,27 @@ export const ImportCompletionSection = ({
 const styles = StyleSheet.create({
   failedItem: {
     gap: 2,
+    paddingVertical: space.xs,
   },
   failedItemMessage: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 12,
-    lineHeight: 16,
+    ...appTheme.type.rowMeta,
+    color: colors.danger,
   },
   failedItemName: {
-    color: appTheme.colors.primaryText,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  failedList: {
-    gap: 10,
-    paddingTop: 4,
+    ...appTheme.type.rowTitle,
+    color: colors.text,
   },
   failedSection: {
-    gap: 8,
+    gap: space.xs,
   },
-  failedToggleLabel: {
-    color: appTheme.colors.accentText,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  header: {
-    gap: 4,
-  },
-  helper: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  retryButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 14,
-    paddingVertical: 12,
-    backgroundColor: appTheme.colors.surfaceAccent,
-  },
-  retryButtonLabel: {
-    color: appTheme.colors.accentOnTint,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    minHeight: 32,
-    alignItems: 'center',
-  },
-  rowLabel: {
-    color: appTheme.colors.primaryText,
-    fontSize: 14,
-  },
-  rowValue: {
-    color: appTheme.colors.primaryText,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  rows: {
-    gap: 4,
+  failedToggle: {
+    alignSelf: 'flex-start',
   },
   section: {
-    gap: 16,
+    gap: space.md,
   },
-  title: {
-    color: appTheme.colors.primaryText,
-    fontSize: 15,
-    fontWeight: '700',
+  separator: {
+    height: 1,
+    backgroundColor: colors.hairline,
   },
 });

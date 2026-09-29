@@ -9,7 +9,9 @@ import {
   buildDriveImportCompletionSummaryRows,
   canRetryDriveImportCompletion,
   getDriveImportCompletionStatusCopy,
+  getDriveImportCompletionTone,
   getDriveImportProgressCopy,
+  getDriveImportProgressRatio,
   getFailedDriveImportOutcomes,
   resolveDriveImportReviewHeaderMode,
 } from './drive-import-progress-model.js';
@@ -215,5 +217,50 @@ describe('getFailedDriveImportOutcomes', () => {
     ];
 
     assert.deepEqual(getFailedDriveImportOutcomes(outcomes), []);
+  });
+});
+
+describe('getDriveImportProgressRatio', () => {
+  it('has no ratio while the total is unknown, so the screen stays indeterminate', () => {
+    assert.equal(
+      getDriveImportProgressRatio({ completedItems: 3, phase: 'preparing' }),
+      null,
+    );
+    assert.equal(
+      getDriveImportProgressRatio({
+        completedItems: 0,
+        phase: 'saving-sources',
+        totalItems: 0,
+      }),
+      null,
+    );
+  });
+
+  it('reports completed over total, clamped to the line', () => {
+    assert.equal(
+      getDriveImportProgressRatio({
+        completedItems: 1,
+        phase: 'creating-folders',
+        totalItems: 4,
+      }),
+      0.25,
+    );
+    assert.equal(
+      getDriveImportProgressRatio({
+        completedItems: 5,
+        phase: 'linking-tracks',
+        totalItems: 4,
+      }),
+      1,
+    );
+  });
+});
+
+describe('getDriveImportCompletionTone', () => {
+  it('maps each completion status to a status tone, never color alone', () => {
+    assert.equal(getDriveImportCompletionTone('completed'), 'ready');
+    assert.equal(getDriveImportCompletionTone('partial-failure'), 'warning');
+    assert.equal(getDriveImportCompletionTone('failed'), 'error');
+    assert.equal(getDriveImportCompletionTone('cancelled'), 'neutral');
   });
 });

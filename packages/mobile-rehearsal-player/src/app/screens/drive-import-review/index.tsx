@@ -144,14 +144,16 @@ export const DriveImportReviewScreen = ({
   );
 };
 
+// Review sits on the ground like Add (screen 1e), with sections separated by
+// space and kickers, and 1h's pinned outlined-action footer.
 const styles = StyleSheet.create({
   content: {
-    gap: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
+    gap: appTheme.space.xl,
+    paddingTop: appTheme.space.xl,
+    paddingBottom: appTheme.space.xl,
   },
   destinationHeader: {
-    marginTop: 12,
+    marginTop: appTheme.space.md,
   },
   footer: {
     flexDirection: 'row',
@@ -167,6 +169,6 @@ const styles = StyleSheet.create({
   },
   screen: {
     flex: 1,
-    backgroundColor: appTheme.colors.pageBackground,
+    backgroundColor: appTheme.colors.bg,
   },
 });

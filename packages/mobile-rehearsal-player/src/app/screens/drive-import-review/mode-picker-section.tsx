@@ -1,7 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { appTheme } from '../../utils/theme';
+import { SegmentedControl } from '../../components/segmented-control';
+import { SectionHeading } from '../../library/components/section-heading';
 import type { DriveImportMode } from '../../library/saved-rehearsal-library/drive-import-planner';
+import { appTheme } from '../../utils/theme';
 import { getDriveImportReviewModeCopy } from './screen-copy';
 
 type ModePickerSectionProps = {
@@ -9,27 +11,7 @@ type ModePickerSectionProps = {
   onSelectMode: (mode: DriveImportMode) => void;
 };
 
-const ModeOption = ({
-  isSelected,
-  label,
-  onPress,
-}: {
-  isSelected: boolean;
-  label: string;
-  onPress: () => void;
-}) => (
-  <Pressable
-    accessibilityRole="radio"
-    accessibilityState={{ selected: isSelected }}
-    onPress={onPress}
-    style={[styles.option, isSelected ? styles.optionSelected : undefined]}
-  >
-    <Text style={isSelected ? styles.optionLabelSelected : styles.optionLabel}>
-      {label}
-    </Text>
-  </Pressable>
-);
-
+// `Preserve structure` / `Flatten` as 1j's segmented control under a kicker.
 export const ModePickerSection = ({
   mode,
   onSelectMode,
@@ -38,59 +20,22 @@ export const ModePickerSection = ({
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{copy.title}</Text>
-      <View style={styles.optionRow}>
-        <ModeOption
-          isSelected={mode === 'preserve-structure'}
-          label={copy.preserveStructureLabel}
-          onPress={() => onSelectMode('preserve-structure')}
-        />
-        <ModeOption
-          isSelected={mode === 'flatten'}
-          label={copy.flattenLabel}
-          onPress={() => onSelectMode('flatten')}
-        />
-      </View>
+      <SectionHeading eyebrow={copy.title} />
+      <SegmentedControl<DriveImportMode>
+        accessibilityLabel={copy.title}
+        onSelect={onSelectMode}
+        options={[
+          { label: copy.preserveStructureLabel, value: 'preserve-structure' },
+          { label: copy.flattenLabel, value: 'flatten' },
+        ]}
+        selectedValue={mode}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  option: {
-    flex: 1,
-    alignItems: 'center',
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 8,
-    backgroundColor: appTheme.colors.surfaceBackground,
-  },
-  optionLabel: {
-    color: appTheme.colors.primaryText,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  optionLabelSelected: {
-    color: appTheme.colors.accentOnTint,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  optionRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  optionSelected: {
-    borderColor: appTheme.colors.accent,
-    backgroundColor: appTheme.colors.surfaceAccent,
-  },
   section: {
-    gap: 8,
-  },
-  sectionTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 15,
-    fontWeight: '700',
+    gap: appTheme.space.sm,
   },
 });

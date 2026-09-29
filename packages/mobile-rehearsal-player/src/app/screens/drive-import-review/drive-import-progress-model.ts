@@ -5,6 +5,7 @@ import type {
   DriveImportOutcome,
   DriveImportProgress,
 } from '../../library/saved-rehearsal-library/drive-import-status';
+import type { FeedbackCardTone } from '../../library/components/feedback-card-model';
 import type { DriveImportControllerState } from '../../library/saved-rehearsal-library/use-drive-import-controller';
 
 export type DriveImportReviewHeaderMode = 'completed' | 'default' | 'executing';
@@ -45,6 +46,24 @@ export const getDriveImportProgressCopy = (
   totalItems: progress.totalItems ?? null,
 });
 
+/**
+ * Fraction of known work done, for the accent progress line; `null` while the
+ * total is still unknown (Drive contents are being prepared), so the screen
+ * shows an indeterminate spinner instead of a line that implies a total.
+ */
+export const getDriveImportProgressRatio = (
+  progress: DriveImportProgress,
+): number | null => {
+  if (progress.totalItems === undefined || progress.totalItems <= 0) {
+    return null;
+  }
+
+  return Math.min(
+    1,
+    Math.max(0, progress.completedItems / progress.totalItems),
+  );
+};
+
 export type DriveImportCompletionStatusCopy = {
   description: string;
   title: string;
@@ -77,6 +96,20 @@ const COMPLETION_STATUS_COPY: Record<
 export const getDriveImportCompletionStatusCopy = (
   status: DriveImportCompletionStatus,
 ): DriveImportCompletionStatusCopy => COMPLETION_STATUS_COPY[status];
+
+const COMPLETION_STATUS_TONES: Record<
+  DriveImportCompletionStatus,
+  FeedbackCardTone
+> = {
+  cancelled: 'neutral',
+  completed: 'ready',
+  failed: 'error',
+  'partial-failure': 'warning',
+};
+
+export const getDriveImportCompletionTone = (
+  status: DriveImportCompletionStatus,
+): FeedbackCardTone => COMPLETION_STATUS_TONES[status];
 
 export const canRetryDriveImportCompletion = (
   summary: DriveImportCompletionSummary,
