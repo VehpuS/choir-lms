@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AppIcon } from '../../../../components/app-icon';
+import { RowMetaLine } from '../../../../components/row-meta-line';
 import { appTheme } from '../../../../utils/theme';
 import {
   ExplorerListRow,
@@ -66,15 +67,13 @@ export const TagMatchList = ({
                 key={getTagMatchKey(match)}
                 leadingIcon={
                   <AppIcon
-                    color={appTheme.colors.secondaryText}
+                    color={appTheme.colors.icon}
                     name={getTagMatchIconName(match)}
-                    size={22}
+                    size={LEADING_GLYPH_SIZE}
                   />
                 }
                 metadata={
-                  <Text style={styles.rowSupportingLabel}>
-                    {getTagMatchMetadataLabel(match)}
-                  </Text>
+                  <RowMetaLine text={getTagMatchMetadataLabel(match)} />
                 }
                 onPress={onPress}
                 title={
@@ -89,28 +88,23 @@ export const TagMatchList = ({
   );
 };
 
+const LEADING_GLYPH_SIZE = 20;
+
 const styles = StyleSheet.create({
   emptyMessage: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 14,
+    ...appTheme.type.body,
+    color: appTheme.colors.textMuted,
     lineHeight: 20,
   },
   group: {
     gap: 12,
   },
   groupTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  rowSupportingLabel: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 13,
-    lineHeight: 18,
+    ...appTheme.type.kicker,
+    color: appTheme.colors.textMuted,
   },
   rowTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 15,
-    fontWeight: '700',
+    ...appTheme.type.rowTitle,
+    color: appTheme.colors.text,
   },
 });

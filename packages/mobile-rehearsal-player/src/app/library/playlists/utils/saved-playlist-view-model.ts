@@ -9,6 +9,7 @@ import {
   formatDurationLabel,
   type DriveLibrarySource,
 } from '../../drive/utils/drive-library-view-model';
+import { formatSavedLoopTimeRange } from '../../loops/utils/saved-loop-view-model';
 import {
   getPlaylistPlaybackSessionSummary,
   type PlaylistPlaybackSession,
@@ -96,11 +97,10 @@ const getPlaylistDurationLabel = (options: {
   return totalDurationMs > 0 ? formatDurationLabel(totalDurationMs) : undefined;
 };
 
+// `Loop • 0:12–0:18 • <parent>`: the range is its own segment so the row meta
+// line sets it in the mono font.
 const getLoopEntryRangeLabel = (loop: NamedLoop) => {
-  const startLabel = formatDurationLabel(loop.startMs) ?? '0:00';
-  const endLabel = formatDurationLabel(loop.endMs) ?? '0:00';
-
-  return `Loop ${startLabel} - ${endLabel} • ${loop.sourceName}`;
+  return `Loop • ${formatSavedLoopTimeRange(loop)} • ${loop.sourceName}`;
 };
 
 export const validatePlaylistName = (name: string) => {

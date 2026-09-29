@@ -2,17 +2,16 @@ import { useMemo, useRef } from 'react';
 import { PanResponder, Pressable, Text, View } from 'react-native';
 
 import { AppIcon } from '../../../../components/app-icon';
+import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
 import { DragHandle } from '../../../../components/drag-handle';
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
-import { SurfaceIconButton } from '../../../../components/surface-icon-button';
+import { RowMetaLine } from '../../../../components/row-meta-line';
 import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
 import { savedPlaylistSectionStyles as styles } from '../../../components/saved-playlist-section-styles';
 import { PLAYLIST_SECONDARY_TEXT } from '../../../components/saved-playlist-section-styles/shared';
 import { getPlaylistDetailRowControlState } from './playlist-detail-row-controls-model';
 
 const PLAYLIST_ROW_STEP_ICON_SIZE = 12;
-const PLAYLIST_ROW_PLAY_ICON_SIZE = 13;
-const PLAYLIST_ROW_OVERFLOW_ICON_SIZE = 15;
 
 export const PlaylistDetailRowControls = (props: {
   entryId: string;
@@ -157,36 +156,43 @@ export const PlaylistDetailRowControls = (props: {
   return (
     <>
       <View style={styles.playlistRowShell}>
-        <SurfaceIconButton
+        <CompactPlaybackAction
           accessibilityLabel={controlState.playbackAction.accessibilityLabel}
           disabled={controlState.isPlaybackButtonDisabled}
-          icon={controlState.playbackAction.iconName}
+          iconName={controlState.playbackAction.iconName}
           onPress={
             controlState.playbackAction.pressBehavior === 'toggle-current'
               ? props.onToggleCurrentPlayback
               : props.onPlayItem
           }
-          size={PLAYLIST_ROW_PLAY_ICON_SIZE}
-          style={styles.playlistRowPlayButton}
+          variant="row"
         />
         <View style={styles.playlistRowCopy}>
-          <Text numberOfLines={1} style={styles.itemTitle}>
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.itemTitle,
+              props.isCurrentEntry ? styles.itemTitleCurrent : undefined,
+            ]}
+          >
             {props.entryTitle}
           </Text>
-          <Text numberOfLines={1} style={styles.itemMetadata}>
-            {controlState.rowStatusLabel !== 'Ready' ? (
-              <Text
-                style={
-                  props.isCurrentEntry
-                    ? styles.itemStatusActive
-                    : styles.itemStatusUnavailable
-                }
-              >
-                {controlState.rowStatusLabel} •{' '}
-              </Text>
-            ) : null}
-            {props.metadataLabel}
-          </Text>
+          <RowMetaLine
+            leading={
+              controlState.rowStatusLabel !== 'Ready' ? (
+                <Text
+                  style={
+                    props.isCurrentEntry
+                      ? styles.itemStatusActive
+                      : styles.itemStatusUnavailable
+                  }
+                >
+                  {controlState.rowStatusLabel}
+                </Text>
+              ) : null
+            }
+            text={props.metadataLabel}
+          />
         </View>
         <View style={styles.playlistRowStepper}>
           <Pressable
@@ -249,7 +255,6 @@ export const PlaylistDetailRowControls = (props: {
         <OverflowMenuTrigger
           accessibilityLabel={`More actions for ${props.entryTitle}`}
           disabled={props.isMutating}
-          iconSize={PLAYLIST_ROW_OVERFLOW_ICON_SIZE}
           onPress={props.onShowMenu}
           style={styles.playlistRowOverflowTrigger}
         />

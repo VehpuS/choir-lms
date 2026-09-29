@@ -1,5 +1,6 @@
 import type { Playlist, RehearsalQueueMode } from '@org/audio-library-models';
 
+import type { OutlinedActionButtonVariant } from '../../../components/outlined-action-button/model';
 import type { SavedTrackPlaybackState } from '../../playback/utils/saved-track-playback-view-model';
 import {
   getBaseActionLabel,
@@ -8,7 +9,7 @@ import {
   type PlaylistPlaybackSession,
 } from './saved-playlist-playback-view-model';
 
-export type PlaylistDetailModeControlIcon = 'play' | 'shuffle';
+export type PlaylistDetailModeControlIcon = 'play' | 'play-outline' | 'shuffle';
 
 export type PlaylistDetailModeControlAction = {
   accessibilityLabel: string;
@@ -17,17 +18,25 @@ export type PlaylistDetailModeControlAction = {
   label: string;
   mode: RehearsalQueueMode;
   selected: boolean;
-};
-
-const PLAYLIST_DETAIL_MODE_ICONS: Record<
-  RehearsalQueueMode,
-  PlaylistDetailModeControlIcon
-> = {
-  ordered: 'play',
-  shuffle: 'shuffle',
+  variant: Extract<OutlinedActionButtonVariant, 'accent' | 'neutral'>;
 };
 
 const PLAYLIST_DETAIL_MODES: RehearsalQueueMode[] = ['ordered', 'shuffle'];
+
+// With nothing running, ordered play is the primary action (screen 1c's
+// `Play all`); once a mode runs, the accent follows it.
+const DEFAULT_PRIMARY_MODE: RehearsalQueueMode = 'ordered';
+
+const getPlaylistDetailModeIcon = (
+  mode: RehearsalQueueMode,
+  isPrimary: boolean,
+): PlaylistDetailModeControlIcon => {
+  if (mode === 'shuffle') {
+    return 'shuffle';
+  }
+
+  return isPrimary ? 'play' : 'play-outline';
+};
 
 // Icon-first ordered/shuffle actions for playlist detail's own control row
 // (mobile-rehearsal-player-usability: "Playlist detail fresh-start playback
@@ -41,19 +50,26 @@ export const getPlaylistDetailModeActions = (options: {
   playbackState: SavedTrackPlaybackState | undefined;
   selectedPlaylist: Playlist | null;
 }): PlaylistDetailModeControlAction[] => {
+  const isSessionForPlaylist =
+    options.activeSession !== null &&
+    options.activeSession.playlistId === options.selectedPlaylist?.id;
+  const runningMode = isSessionForPlaylist
+    ? (options.activeSession?.queue.mode ?? null)
+    : null;
+  const primaryMode = runningMode ?? DEFAULT_PRIMARY_MODE;
+
   return PLAYLIST_DETAIL_MODES.map((mode) => {
     const actionCopy = getPlaylistPlaybackActionCopy({ ...options, mode });
-    const selected =
-      options.activeSession?.playlistId === options.selectedPlaylist?.id &&
-      options.activeSession?.queue.mode === mode;
+    const isPrimary = mode === primaryMode;
 
     return {
       accessibilityLabel: getBaseActionLabel(mode),
       disabled: actionCopy.disabled,
-      icon: PLAYLIST_DETAIL_MODE_ICONS[mode],
+      icon: getPlaylistDetailModeIcon(mode, isPrimary),
       label: getPlaylistQueueModeLabel(mode),
       mode,
-      selected,
+      selected: mode === runningMode,
+      variant: isPrimary ? 'accent' : 'neutral',
     };
   });
 };

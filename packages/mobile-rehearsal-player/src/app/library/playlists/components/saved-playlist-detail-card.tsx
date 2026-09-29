@@ -1,7 +1,8 @@
 import type { Playlist } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, Text, View } from 'react-native';
+import { Modal, StyleSheet, Text, View } from 'react-native';
 
+import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { SavedLibraryDetailCardShell } from '../../components/saved-library-detail-card-shell';
 import { savedPlaylistSectionStyles as styles } from '../../components/saved-playlist-section-styles';
@@ -99,6 +100,7 @@ export const SavedPlaylistDetailCard = (props: {
           onPress={() => {
             setIsOptionsMenuVisible(true);
           }}
+          style={localStyles.headerOverflowTrigger}
         />
       }
       metadataLabel={detailSummary.metadataLabel}
@@ -189,34 +191,17 @@ export const SavedPlaylistDetailCard = (props: {
               {detailSummary.title}.
             </Text>
             <View style={styles.actionRow}>
-              <Pressable
-                accessibilityRole="button"
+              <OutlinedActionButton
                 disabled={props.isMutating}
+                label="Undo"
                 onPress={props.onUndoRemoveItem}
-                style={({ pressed }) => [
-                  styles.primaryButton,
-                  pressed && !props.isMutating
-                    ? styles.actionButtonPressed
-                    : undefined,
-                  props.isMutating ? styles.actionButtonDisabled : undefined,
-                ]}
-              >
-                <Text style={styles.primaryButtonLabel}>Undo</Text>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
+                variant="accent"
+              />
+              <OutlinedActionButton
                 disabled={props.isMutating}
+                label="Dismiss"
                 onPress={props.onDismissRemovalNotice}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && !props.isMutating
-                    ? styles.actionButtonPressed
-                    : undefined,
-                  props.isMutating ? styles.actionButtonDisabled : undefined,
-                ]}
-              >
-                <Text style={styles.secondaryButtonLabel}>Dismiss</Text>
-              </Pressable>
+              />
             </View>
           </View>
         </View>
@@ -224,3 +209,11 @@ export const SavedPlaylistDetailCard = (props: {
     </SavedLibraryDetailCardShell>
   );
 };
+
+const localStyles = StyleSheet.create({
+  headerOverflowTrigger: {
+    position: 'relative',
+    top: 0,
+    right: 0,
+  },
+});

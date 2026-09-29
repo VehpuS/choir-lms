@@ -59,24 +59,6 @@ export const playlistSectionCardStyles = {
     fontSize: 13,
     lineHeight: 18,
   },
-  editorCard: {
-    ...appTheme.elevation.flat,
-    position: 'relative',
-    gap: appTheme.space.sm,
-    padding: appTheme.space.lg,
-    borderRadius: appTheme.radius.md,
-    backgroundColor: appTheme.colors.surface,
-  },
-  editorTitle: {
-    color: PLAYLIST_PRIMARY_TEXT,
-    fontSize: 16,
-    fontWeight: appTheme.fontWeight.medium,
-  },
-  editorBody: {
-    color: PLAYLIST_SECONDARY_TEXT,
-    fontSize: 14,
-    lineHeight: 20,
-  },
   headerRow: {
     flexDirection: 'row',
     gap: 12,
@@ -108,82 +90,42 @@ export const playlistSectionCardStyles = {
   groupItems: {
     gap: 12,
   },
-  playlistCard: {
-    position: 'relative',
-    gap: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: PLAYLIST_BORDER_COLOR,
-    borderRadius: appTheme.radius.md,
-    backgroundColor: appTheme.colors.surface,
+  // Playlist detail items are flat rows divided by hairlines (screen 1h);
+  // the current item is marked by its accent title, never a fill.
+  itemRow: {
+    paddingVertical: 11,
   },
-  playlistCardSelected: {
-    borderColor: appTheme.colors.accent,
-    backgroundColor: appTheme.colors.accentRegionFill,
+  itemRowSeparated: {
+    borderBottomWidth: 1,
+    borderBottomColor: appTheme.colors.hairline,
   },
-  playlistName: {
-    paddingRight: 44,
-    color: PLAYLIST_PRIMARY_TEXT,
-    fontSize: 14,
-    fontWeight: appTheme.fontWeight.medium,
-    lineHeight: 20,
+  itemsHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: appTheme.space.sm,
   },
-  playlistMetadata: {
+  itemsHeading: {
+    ...appTheme.type.kicker,
     color: PLAYLIST_SECONDARY_TEXT,
-    fontSize: 12,
-    lineHeight: 16,
   },
-  playlistPreview: {
-    color: PLAYLIST_SECONDARY_TEXT,
-    fontSize: 12,
-    lineHeight: 16,
-  },
-  itemCard: {
-    paddingHorizontal: 6,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: PLAYLIST_BORDER_COLOR,
-    borderRadius: appTheme.radius.md,
-    backgroundColor: appTheme.colors.surface,
-  },
-  itemCardActive: {
-    borderColor: appTheme.colors.accent,
-    backgroundColor: appTheme.colors.accentRegionFill,
-  },
-  itemCardUnavailable: {
+  itemRowUnavailable: {
     opacity: 0.72,
   },
-  itemPressable: {
-    gap: 8,
-  },
-  itemPressableContent: {
-    flex: 1,
-  },
-  itemTopRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
   itemTitle: {
+    ...appTheme.type.rowTitle,
     color: PLAYLIST_PRIMARY_TEXT,
-    fontSize: 14,
-    fontWeight: appTheme.fontWeight.medium,
-    lineHeight: 19,
+  },
+  itemTitleCurrent: {
+    color: appTheme.colors.accentText,
   },
   itemStatusActive: {
     color: appTheme.colors.accentText,
-    fontSize: 12,
     fontWeight: appTheme.fontWeight.medium,
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
   },
   itemStatusUnavailable: {
     color: appTheme.colors.danger,
-    fontSize: 12,
     fontWeight: appTheme.fontWeight.medium,
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
   },
   itemMetadata: {
     color: PLAYLIST_SECONDARY_TEXT,

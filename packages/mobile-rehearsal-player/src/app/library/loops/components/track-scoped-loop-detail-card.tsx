@@ -34,7 +34,8 @@ export const TrackScopedLoopDetailCard = ({
       onClose={onClose}
       primaryAction={{
         disabled: orderedPlaybackAction.disabled,
-        label: `▶ ${orderedPlaybackAction.label}`,
+        icon: 'play',
+        label: orderedPlaybackAction.label,
         onPress: onPlayOrderedTrackLoops,
         tone: 'primary',
       }}

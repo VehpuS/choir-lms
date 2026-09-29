@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { AppIcon } from '../../../components/app-icon';
 import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
+import { RowMetaLine } from '../../../components/row-meta-line';
 import { appTheme } from '../../../utils/theme';
 import {
   ExplorerListRow,
@@ -103,9 +104,9 @@ export const SavedPlaylistCardsList = (props: {
                 }
                 leadingIcon={
                   <AppIcon
-                    color={appTheme.colors.secondaryText}
+                    color={appTheme.colors.icon}
                     name="playlist-music-outline"
-                    size={22}
+                    size={LEADING_GLYPH_SIZE}
                   />
                 }
                 message={
@@ -115,11 +116,7 @@ export const SavedPlaylistCardsList = (props: {
                     </Text>
                   ) : null
                 }
-                metadata={
-                  <Text numberOfLines={1} style={styles.rowSupportingLabel}>
-                    {playlistCard.detailLabel}
-                  </Text>
-                }
+                metadata={<RowMetaLine text={playlistCard.detailLabel} />}
                 onPress={() => {
                   props.onSelectPlaylist(playlistCard.playlist.id);
                 }}
@@ -127,7 +124,6 @@ export const SavedPlaylistCardsList = (props: {
                   <OverflowMenuTrigger
                     accessibilityLabel={`${playlistCard.playlist.name} options`}
                     disabled={!props.canMutatePlaylists || props.isMutating}
-                    iconColor={appTheme.colors.secondaryText}
                     onPress={() => {
                       setOptionsPlaylistId(playlistCard.playlist.id);
                     }}
@@ -203,11 +199,12 @@ export const SavedPlaylistCardsList = (props: {
 
 export { SavedPlaylistDetailCard } from './saved-playlist-detail-card';
 
+const LEADING_GLYPH_SIZE = 20;
+
 const styles = StyleSheet.create({
   listTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 18,
-    fontWeight: '700',
+    ...appTheme.type.kicker,
+    color: appTheme.colors.textMuted,
   },
   rowOverflowTrigger: {
     position: 'relative',
@@ -215,21 +212,15 @@ const styles = StyleSheet.create({
     right: 0,
   },
   rowPreviewLabel: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 12,
+    ...appTheme.type.rowMeta,
+    color: appTheme.colors.textFaint,
     lineHeight: 17,
   },
-  rowSupportingLabel: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 13,
-    lineHeight: 18,
-  },
   rowTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 15,
-    fontWeight: '700',
+    ...appTheme.type.rowTitle,
+    color: appTheme.colors.text,
   },
   surface: {
-    gap: 12,
+    gap: appTheme.space.sm,
   },
 });

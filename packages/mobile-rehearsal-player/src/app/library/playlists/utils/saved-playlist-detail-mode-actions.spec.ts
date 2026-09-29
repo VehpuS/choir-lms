@@ -75,6 +75,45 @@ describe('saved playlist detail mode actions', () => {
     );
   });
 
+  it('makes ordered the accent action with a filled play glyph when nothing is running', () => {
+    const actions = getPlaylistDetailModeActions({
+      activeSession: null,
+      isPreparing: false,
+      playbackState: 'none',
+      selectedPlaylist: buildWarmupsPlaylist(),
+    });
+
+    assert.deepEqual(
+      actions.map((action) => [action.mode, action.variant, action.icon]),
+      [
+        ['ordered', 'accent', 'play'],
+        ['shuffle', 'neutral', 'shuffle'],
+      ],
+    );
+  });
+
+  it('moves the accent to shuffle and outlines the play glyph while shuffle runs', () => {
+    const playlist = buildWarmupsPlaylist();
+    const actions = getPlaylistDetailModeActions({
+      activeSession: buildWarmupsPlaybackSession({
+        mode: 'shuffle',
+        playlist,
+        sources: [PLAYABLE_SOURCE],
+      }),
+      isPreparing: false,
+      playbackState: 'playing',
+      selectedPlaylist: playlist,
+    });
+
+    assert.deepEqual(
+      actions.map((action) => [action.mode, action.variant, action.icon]),
+      [
+        ['ordered', 'neutral', 'play-outline'],
+        ['shuffle', 'accent', 'shuffle'],
+      ],
+    );
+  });
+
   it('does not mark an action selected when the active session belongs to a different playlist', () => {
     const playlist = buildWarmupsPlaylist();
     const otherPlaylistSession = {

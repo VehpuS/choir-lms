@@ -1,4 +1,7 @@
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
+
+import { AppIcon } from '../../../components/app-icon';
+import { appTheme } from '../../../utils/theme';
 
 import { SectionHeading } from '../../components/section-heading';
 import { savedPlaylistSectionStyles as styles } from '../../components/saved-playlist-section-styles';
@@ -32,7 +35,7 @@ export const SavedPlaylistSectionHeader = ({
               isMutating ? styles.actionButtonDisabled : undefined,
             ]}
           >
-            <Text style={styles.secondaryButtonLabel}>+</Text>
+            <AppIcon color={appTheme.colors.text} name="plus" size={20} />
           </Pressable>
         ) : null
       }

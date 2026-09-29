@@ -73,6 +73,9 @@ export const APP_ICON_GLYPHS = {
   // Transport: filled weight per design Decision 3.
   pause: filled('Pause'),
   play: filled('Play'),
+  // The same glyph at regular weight, for a play action that is not the
+  // current primary (playlist detail's neutral `Ordered`).
+  'play-outline': regular('Play'),
   'play-circle-outline': regular('PlayCircle'),
   'skip-previous': filled('SkipBack'),
   'skip-next': filled('SkipForward'),

@@ -1,13 +1,17 @@
 import type { ReactNode } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AppIcon } from '../../components/app-icon';
+import { AppIcon, type AppIconName } from '../../components/app-icon';
 import { OutlinedActionButton } from '../../components/outlined-action-button';
 import { appTheme } from '../../utils/theme';
-import { savedPlaylistSectionStyles as styles } from './saved-playlist-section-styles';
+import { INTERACTION_STATE_OPACITY } from './interaction-style-tokens';
+
+const { colors, space } = appTheme;
+const BACK_ICON_SIZE = 20;
 
 type DetailAction = {
   disabled: boolean;
+  icon?: AppIconName;
   label: string;
   onPress: () => void;
   tone: 'primary' | 'secondary';
@@ -27,6 +31,10 @@ type SavedLibraryDetailCardShellProps = {
   title: string;
 };
 
+// Playlist detail, tag detail, and the track-scoped loop view share this
+// header. It sits on the ground like the Library list views (no card since
+// 2.6): a 44pt back button, kicker eyebrow, sheet-scale title, muted meta,
+// then the detail's playback controls as a half-width outlined pair (1c).
 export const SavedLibraryDetailCardShell = ({
   body,
   children,
@@ -51,6 +59,8 @@ export const SavedLibraryDetailCardShell = ({
           return (
             <OutlinedActionButton
               disabled={action.disabled}
+              fill
+              icon={action.icon}
               key={action.label}
               label={action.label}
               onPress={action.onPress}
@@ -62,33 +72,38 @@ export const SavedLibraryDetailCardShell = ({
     ) : null);
 
   return (
-    <View style={styles.editorCard}>
-      <Pressable
-        accessibilityLabel={closeAccessibilityLabel}
-        accessibilityRole="button"
-        onPress={onClose}
-        style={({ pressed }) => [
-          styles.compactIconButton,
-          pressed ? styles.actionButtonPressed : undefined,
-        ]}
-      >
-        <AppIcon color={appTheme.colors.text} name="chevron-left" size={20} />
-      </Pressable>
-
-      <View style={styles.headerRow}>
-        <View style={styles.headerCopy}>
-          {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
-          <Text style={styles.sectionTitle}>{title}</Text>
-          <Text style={styles.sectionBody}>{metadataLabel}</Text>
-          {body ? <Text style={styles.editorBody}>{body}</Text> : null}
-        </View>
+    <View style={styles.shell}>
+      <View style={styles.navigationRow}>
+        <Pressable
+          accessibilityLabel={closeAccessibilityLabel}
+          accessibilityRole="button"
+          onPress={onClose}
+          style={({ pressed }) => [
+            styles.backButton,
+            pressed ? styles.pressed : undefined,
+          ]}
+        >
+          <AppIcon
+            color={colors.text}
+            name="chevron-left"
+            size={BACK_ICON_SIZE}
+          />
+        </Pressable>
+        {headerAction}
       </View>
 
-      {headerAction}
+      <View style={styles.headerCopy}>
+        {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
+        <Text style={styles.title}>{title}</Text>
+        {metadataLabel ? (
+          <Text style={styles.metadata}>{metadataLabel}</Text>
+        ) : null}
+        {body ? <Text style={styles.body}>{body}</Text> : null}
+      </View>
 
       {resolvedPlaybackControls ? (
         <View style={styles.group}>
-          <Text style={styles.groupTitle}>Playback controls</Text>
+          <Text style={styles.kicker}>Playback controls</Text>
           {resolvedPlaybackControls}
         </View>
       ) : null}
@@ -97,3 +112,58 @@ export const SavedLibraryDetailCardShell = ({
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  actionRow: {
+    flexDirection: 'row',
+    gap: space.sm,
+  },
+  backButton: {
+    width: space.touchTarget,
+    height: space.touchTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.borderButton,
+    borderRadius: appTheme.radius.md,
+  },
+  body: {
+    ...appTheme.type.body,
+    color: colors.textMuted,
+    lineHeight: 20,
+  },
+  eyebrow: {
+    ...appTheme.type.kicker,
+    color: colors.textMuted,
+  },
+  group: {
+    gap: space.sm,
+  },
+  headerCopy: {
+    gap: space.xxs,
+  },
+  kicker: {
+    ...appTheme.type.kicker,
+    color: colors.textMuted,
+  },
+  metadata: {
+    fontSize: 13,
+    color: colors.textMuted,
+    fontVariant: ['tabular-nums'],
+  },
+  navigationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  pressed: {
+    opacity: INTERACTION_STATE_OPACITY.pressed,
+  },
+  shell: {
+    gap: space.md,
+  },
+  title: {
+    ...appTheme.type.sheetTitle,
+    color: colors.text,
+  },
+});

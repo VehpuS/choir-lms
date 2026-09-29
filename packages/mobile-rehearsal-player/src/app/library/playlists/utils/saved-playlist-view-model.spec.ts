@@ -118,8 +118,7 @@ describe('saved playlist view-model', () => {
 
   it('falls back to the generic create playlist dialog title when no destination folder is given', () => {
     assert.equal(
-      getSavedPlaylistCreateDialogCopy({ destinationFolderName: null })
-        .title,
+      getSavedPlaylistCreateDialogCopy({ destinationFolderName: null }).title,
       'Create playlist',
     );
   });
@@ -226,7 +225,7 @@ describe('saved playlist view-model', () => {
         savedLoops: [SAVED_LOOP],
         savedSources: [PLAYABLE_SOURCE],
       }),
-      'Loop 0:12 - 0:18 • Alto Line.mp3',
+      'Loop • 0:12–0:18 • Alto Line.mp3',
     );
   });
 });

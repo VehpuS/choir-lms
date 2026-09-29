@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AppIcon } from '../../../../components/app-icon';
+import { RowMetaLine } from '../../../../components/row-meta-line';
 import { appTheme } from '../../../../utils/theme';
 import {
   ExplorerListRow,
@@ -56,15 +57,13 @@ export const SavedTagsList = ({
                 key={usage.tag}
                 leadingIcon={
                   <AppIcon
-                    color={appTheme.colors.secondaryText}
+                    color={appTheme.colors.icon}
                     name="tag-outline"
-                    size={22}
+                    size={LEADING_GLYPH_SIZE}
                   />
                 }
                 metadata={
-                  <Text style={styles.rowSupportingLabel}>
-                    {getSavedTagUsageRowMetadataLabel(usage)}
-                  </Text>
+                  <RowMetaLine text={getSavedTagUsageRowMetadataLabel(usage)} />
                 }
                 onPress={() => {
                   onSelectTag(usage.tag);
@@ -85,23 +84,19 @@ export const SavedTagsList = ({
   );
 };
 
+const LEADING_GLYPH_SIZE = 20;
+
 const styles = StyleSheet.create({
   container: {
     gap: 12,
   },
   emptyMessage: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 14,
+    ...appTheme.type.body,
+    color: appTheme.colors.textMuted,
     lineHeight: 20,
   },
-  rowSupportingLabel: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 13,
-    lineHeight: 18,
-  },
   rowTitle: {
-    color: appTheme.colors.primaryText,
-    fontSize: 15,
-    fontWeight: '700',
+    ...appTheme.type.rowTitle,
+    color: appTheme.colors.text,
   },
 });

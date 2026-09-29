@@ -60,29 +60,9 @@ export const playlistActionFeedbackStyles = {
     borderColor: appTheme.colors.dangerEdge,
     borderRadius: appTheme.radius.md,
   },
-  destructiveIconButton: {
-    alignSelf: 'flex-start',
-    minWidth: appTheme.space.touchTarget,
-    minHeight: appTheme.space.touchTarget,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: PLAYLIST_BUTTON_BORDER_COLOR,
-    borderRadius: appTheme.radius.md,
-  },
-  inlineRowIconButton: {
-    marginTop: 1,
-  },
   destructiveButtonLabel: {
     ...appTheme.type.button,
     color: PLAYLIST_ERROR_TEXT,
-  },
-  iconOnlyDestructiveButton: {
-    minWidth: appTheme.space.touchTarget,
-    minHeight: appTheme.space.touchTarget,
-    paddingHorizontal: appTheme.space.sm,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   issueCard: {
     gap: 4,
@@ -107,16 +87,9 @@ export const playlistActionFeedbackStyles = {
     backgroundColor: appTheme.colors.surface,
   },
   modalSnackbarCard: {
+    ...appTheme.elevation.raised,
     marginHorizontal: 16,
     marginBottom: 16,
-    shadowColor: appTheme.colors.shadow,
-    shadowOpacity: 0.16,
-    shadowOffset: {
-      width: 0,
-      height: 6,
-    },
-    shadowRadius: 10,
-    elevation: 5,
   },
   snackbarModalOverlay: {
     flex: 1,

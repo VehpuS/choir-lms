@@ -31,6 +31,8 @@ type OutlinedActionButtonProps = {
   isBusy?: boolean;
   label: string;
   onPress: () => void;
+  /** Marks the action as the current choice in a set (e.g. the running mode). */
+  selected?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;
   variant?: OutlinedActionButtonVariant;
@@ -44,6 +46,7 @@ export const OutlinedActionButton = ({
   isBusy = false,
   label,
   onPress,
+  selected,
   style,
   testID,
   variant = 'neutral',
@@ -55,7 +58,7 @@ export const OutlinedActionButton = ({
     <Pressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
-      accessibilityState={{ busy: isBusy, disabled: isDisabled }}
+      accessibilityState={{ busy: isBusy, disabled: isDisabled, selected }}
       {...interactionGuardProps}
       disabled={isDisabled}
       onPress={onPress}

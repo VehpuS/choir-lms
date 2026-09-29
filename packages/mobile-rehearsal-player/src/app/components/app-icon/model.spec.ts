@@ -79,6 +79,13 @@ describe('app icon glyph map', () => {
     assert.equal(resolveAppIconGlyph('pause').weight, 'fill');
   });
 
+  it('offers a regular-weight play for secondary play actions', () => {
+    assert.deepEqual(resolveAppIconGlyph('play-outline'), {
+      glyph: 'Play',
+      weight: 'regular',
+    });
+  });
+
   it('marks Drive selection with a regular circle and a filled check-circle', () => {
     assert.deepEqual(resolveAppIconGlyph('circle-outline'), {
       glyph: 'Circle',

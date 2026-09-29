@@ -1,7 +1,8 @@
 import type { Playlist } from '@org/audio-library-models';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
+import { OutlinedActionButton } from '../../../../components/outlined-action-button';
 import { QueueMovePositionDialog } from '../../../../components/queue-move-position-dialog';
 import { savedPlaylistSectionStyles as styles } from '../../../components/saved-playlist-section-styles';
 import { PlaylistDetailRowControls } from './playlist-detail-row-controls';
@@ -83,27 +84,17 @@ export const SavedPlaylistDetailItemsList = (props: {
 
   return (
     <View style={styles.group}>
-      <View style={styles.headerRow}>
-        <Text style={styles.groupTitle}>
+      <View style={styles.itemsHeaderRow}>
+        <Text style={styles.itemsHeading}>
           Items ({props.detailEntries.length})
         </Text>
         {props.onAddItems ? (
-          <Pressable
-            accessibilityRole="button"
+          <OutlinedActionButton
             disabled={props.isMutating}
+            icon="plus"
+            label={addItemsActionLabel}
             onPress={props.onAddItems}
-            style={({ pressed }) => [
-              styles.secondaryButton,
-              pressed && !props.isMutating
-                ? styles.actionButtonPressed
-                : undefined,
-              props.isMutating ? styles.actionButtonDisabled : undefined,
-            ]}
-          >
-            <Text style={styles.secondaryButtonLabel}>
-              {addItemsActionLabel}
-            </Text>
-          </Pressable>
+          />
         ) : null}
       </View>
       {props.detailEntries.length === 0 ? (
@@ -111,7 +102,7 @@ export const SavedPlaylistDetailItemsList = (props: {
           <Text style={styles.emptyMessage}>{props.emptyStateMessage}</Text>
         </View>
       ) : (
-        <View style={styles.groupItems}>
+        <View>
           {props.detailEntries.map((entry, index) => {
             const isCurrentEntry = props.currentPlaylistEntryId === entry.id;
             const isPlayable = props.isItemPlayable(entry);
@@ -127,9 +118,11 @@ export const SavedPlaylistDetailItemsList = (props: {
                   }
                 }}
                 style={[
-                  styles.itemCard,
-                  isCurrentEntry ? styles.itemCardActive : undefined,
-                  !isPlayable ? styles.itemCardUnavailable : undefined,
+                  styles.itemRow,
+                  index < props.detailEntries.length - 1
+                    ? styles.itemRowSeparated
+                    : undefined,
+                  !isPlayable ? styles.itemRowUnavailable : undefined,
                 ]}
               >
                 <PlaylistDetailRowControls
