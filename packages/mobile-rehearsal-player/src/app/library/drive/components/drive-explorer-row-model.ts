@@ -1,6 +1,10 @@
 import type { DriveDiscoveryResult } from '@org/google-drive';
 
 import {
+  getBrowseFolderMetadataLabels,
+  getBrowseSourceMetadataLabels,
+} from '../utils/drive-browse-row-metadata';
+import {
   getFolderMetadataLabels,
   getSourceMetadataLabels,
   type DriveLibraryFolder,
@@ -25,6 +29,7 @@ export type DriveDiscoveryExplorerRow =
 
 export const createDriveBrowseFolderRows = (
   folders: DriveLibraryFolder[],
+  now: Date = new Date(),
 ): DriveDiscoveryExplorerRow[] => {
   return folders.map((folder) => {
     return {
@@ -32,7 +37,7 @@ export const createDriveBrowseFolderRows = (
       highlightQuery: null,
       key: folder.id,
       kind: 'folder',
-      metadataLabels: getFolderMetadataLabels(folder),
+      metadataLabels: getBrowseFolderMetadataLabels(folder, now),
     };
   });
 };
@@ -45,7 +50,7 @@ export const createDriveBrowseSourceRows = (
       highlightQuery: null,
       key: source.id,
       kind: 'source',
-      metadataLabels: getSourceMetadataLabels(source),
+      metadataLabels: getBrowseSourceMetadataLabels(source),
       source,
     };
   });

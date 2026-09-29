@@ -80,6 +80,13 @@ Companion mockup states: none of these surfaces has its own state. Closest refer
 - **WHEN** a user opens the options menu for a saved track and chooses `Show in Add` or `Open in Google Drive`
 - **THEN** the menu shows the track's `From <path>` provenance as a muted meta line, shows the `Checking Drive…` pending state and any unresolved-location issue through the shared status-card primitive, and keeps both actions in their existing menu section and order
 
+#### Scenario: Every Drive row in Add offers its actions from an overflow menu
+
+- **WHEN** a user views a folder's audio rows in Add, in browse or search results
+- **THEN** each audio row keeps its preview play control and its `Save` action, which becomes a `Saved` toggle once saved (pressing it starts removal behind the existing confirmation) at the same fixed width in every state, and also shows an overflow control on every row, not only saved ones
+- **AND** the overflow menu is titled with the file's full, untruncated name and offers preview playback, `Save to Library` or `Remove from library`, and `Open in Google Drive`, which opens that file's own Google Drive page
+- **AND** a row whose file is not a supported audio format shows that reason on its meta line, offers no playback or save control, and still offers `Open in Google Drive`
+
 #### Scenario: Playlist detail play actions match the Tracks view pattern
 
 - **WHEN** a user views playlist detail

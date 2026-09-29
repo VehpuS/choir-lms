@@ -10,8 +10,9 @@ export const createDriveTrackSavedFeedback = (options: {
 }): DriveTrackSavedFeedback => {
   return {
     id: options.trackId,
-    message: `${options.trackName} was saved to your rehearsal library.`,
-    title: 'Track saved',
+    // Screen 1e: the title states the outcome and the message names the file.
+    message: options.trackName,
+    title: 'Saved to Library',
   };
 };
 

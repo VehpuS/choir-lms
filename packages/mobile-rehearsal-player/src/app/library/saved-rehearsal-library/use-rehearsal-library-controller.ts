@@ -206,6 +206,9 @@ export const useRehearsalLibraryController = ({
       isPreparingPlayback: playback.isPreparing,
       isSaved,
       isSavePending: isPending,
+      onOpenInGoogleDrive: () => {
+        originalLocationActions.openDriveSourceFileInGoogleDrive(source);
+      },
       onPreviewPlayback: () => {
         void playback.toggleSourcePlayback(source);
       },

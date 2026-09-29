@@ -31,80 +31,39 @@ describe('drive library source actions', () => {
     );
   });
 
-  it('assigns explicit placement for Drive preview and save actions', () => {
-    const unsavedActions = resolveDriveSourceActions({
-      activePlayableItem: null,
-      canMutateLibrary: true,
-      isLibraryLoading: false,
-      isLibraryMutating: false,
-      isPreparingPlayback: false,
-      isSaved: false,
-      isSavePending: false,
-      onPreviewPlayback: () => undefined,
-      onRemoveSource: () => undefined,
-      onSaveSource: () => undefined,
-      playbackState: undefined,
-      source: PLAYABLE_SOURCE,
-    });
-    const savedActions = resolveDriveSourceActions({
-      activePlayableItem: null,
-      canMutateLibrary: true,
-      isLibraryLoading: false,
-      isLibraryMutating: false,
-      isPreparingPlayback: false,
-      isSaved: true,
-      isSavePending: false,
-      onPreviewPlayback: () => undefined,
-      onRemoveSource: () => undefined,
-      onSaveSource: () => undefined,
-      playbackState: undefined,
-      source: PLAYABLE_SOURCE,
-    });
+  it('keeps Drive preview and Save / Saved inline and every other Drive action in the menu', () => {
+    const buildActions = (isSaved: boolean) => {
+      return resolveDriveSourceActions({
+        activePlayableItem: null,
+        canMutateLibrary: true,
+        isLibraryLoading: false,
+        isLibraryMutating: false,
+        isPreparingPlayback: false,
+        isSaved,
+        isSavePending: false,
+        onOpenInGoogleDrive: () => undefined,
+        onPreviewPlayback: () => undefined,
+        onRemoveSource: () => undefined,
+        onSaveSource: () => undefined,
+        playbackState: undefined,
+        source: PLAYABLE_SOURCE,
+      }).map((action) => [action.label, action.placement]);
+    };
 
-    assert.deepEqual(
-      unsavedActions.map((action) => ({
-        accessibilityLabel: action.accessibilityLabel,
-        iconName: action.iconName,
-        label: action.label,
-        placement: action.placement,
-      })),
-      [
-        {
-          accessibilityLabel: 'Play Alto Line.mp3',
-          iconName: 'play',
-          label: 'Play',
-          placement: 'inline',
-        },
-        {
-          accessibilityLabel: undefined,
-          iconName: undefined,
-          label: 'Save',
-          placement: 'inline',
-        },
-      ],
-    );
-    assert.deepEqual(
-      savedActions.map((action) => ({
-        accessibilityLabel: action.accessibilityLabel,
-        iconName: action.iconName,
-        label: action.label,
-        placement: action.placement,
-      })),
-      [
-        {
-          accessibilityLabel: 'Play Alto Line.mp3',
-          iconName: 'play',
-          label: 'Play',
-          placement: 'inline',
-        },
-        {
-          accessibilityLabel: undefined,
-          iconName: undefined,
-          label: 'Remove',
-          placement: 'menu',
-        },
-      ],
-    );
+    assert.deepEqual(buildActions(false), [
+      ['Play', 'inline'],
+      ['Save', 'inline'],
+      ['Play preview', 'menu'],
+      ['Save to Library', 'menu'],
+      ['Open in Google Drive', 'menu'],
+    ]);
+    assert.deepEqual(buildActions(true), [
+      ['Play', 'inline'],
+      ['Saved', 'inline'],
+      ['Play preview', 'menu'],
+      ['Remove from library', 'menu'],
+      ['Open in Google Drive', 'menu'],
+    ]);
   });
 
   it('keeps saved track rows to one inline playback icon and overflow-only secondary actions', () => {

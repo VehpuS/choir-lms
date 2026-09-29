@@ -9,12 +9,14 @@ import { CaretDownIcon } from 'phosphor-react-native/src/icons/CaretDown';
 import { CaretLeftIcon } from 'phosphor-react-native/src/icons/CaretLeft';
 import { CaretRightIcon } from 'phosphor-react-native/src/icons/CaretRight';
 import { CaretUpIcon } from 'phosphor-react-native/src/icons/CaretUp';
+import { CheckIcon } from 'phosphor-react-native/src/icons/Check';
 import { CheckCircleIcon } from 'phosphor-react-native/src/icons/CheckCircle';
 import { CircleIcon } from 'phosphor-react-native/src/icons/Circle';
 import { ClockCountdownIcon } from 'phosphor-react-native/src/icons/ClockCountdown';
 import { ClockCounterClockwiseIcon } from 'phosphor-react-native/src/icons/ClockCounterClockwise';
 import { DotsSixVerticalIcon } from 'phosphor-react-native/src/icons/DotsSixVertical';
 import { DotsThreeVerticalIcon } from 'phosphor-react-native/src/icons/DotsThreeVertical';
+import { FileIcon } from 'phosphor-react-native/src/icons/File';
 import { FolderIcon } from 'phosphor-react-native/src/icons/Folder';
 import { FolderPlusIcon } from 'phosphor-react-native/src/icons/FolderPlus';
 import { MagnifyingGlassIcon } from 'phosphor-react-native/src/icons/MagnifyingGlass';
@@ -61,12 +63,14 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   CaretLeft: CaretLeftIcon,
   CaretRight: CaretRightIcon,
   CaretUp: CaretUpIcon,
+  Check: CheckIcon,
   CheckCircle: CheckCircleIcon,
   Circle: CircleIcon,
   ClockCountdown: ClockCountdownIcon,
   ClockCounterClockwise: ClockCounterClockwiseIcon,
   DotsSixVertical: DotsSixVerticalIcon,
   DotsThreeVertical: DotsThreeVerticalIcon,
+  File: FileIcon,
   Folder: FolderIcon,
   FolderPlus: FolderPlusIcon,
   MagnifyingGlass: MagnifyingGlassIcon,

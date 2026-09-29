@@ -3,13 +3,12 @@ import { Pressable, StyleSheet } from 'react-native';
 import { AppIcon } from '../../components/app-icon';
 import { appTheme } from '../../utils/theme';
 
-export const ACTION_BUTTON_SIZE = 40;
+export const ACTION_BUTTON_SIZE = appTheme.space.touchTarget;
 
 type DriveDiscoveryActionButtonProps = {
   accessibilityLabel: string;
   iconName: 'close' | 'magnify' | 'progress-clock' | 'refresh';
   isDisabled?: boolean;
-  isFilled?: boolean;
   onPress: () => void;
 };
 
@@ -17,7 +16,6 @@ export const DriveDiscoveryActionButton = ({
   accessibilityLabel,
   iconName,
   isDisabled = false,
-  isFilled = false,
   onPress,
 }: DriveDiscoveryActionButtonProps) => {
   return (
@@ -28,18 +26,11 @@ export const DriveDiscoveryActionButton = ({
       onPress={onPress}
       style={({ pressed }) => [
         styles.headerActionButton,
-        isFilled
-          ? styles.headerActionButtonFilled
-          : styles.headerActionButtonOutline,
         pressed ? styles.headerActionButtonPressed : undefined,
         isDisabled ? styles.headerActionButtonDisabled : undefined,
       ]}
     >
-      <AppIcon
-        color={isFilled ? appTheme.colors.accentOnTint : appTheme.colors.text}
-        name={iconName}
-        size={18}
-      />
+      <AppIcon color={appTheme.colors.text} name={iconName} size={18} />
     </Pressable>
   );
 };
@@ -52,17 +43,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
+    borderColor: appTheme.colors.borderButton,
+    backgroundColor: appTheme.colors.transparent,
   },
   headerActionButtonDisabled: {
     opacity: 0.56,
-  },
-  headerActionButtonFilled: {
-    borderColor: appTheme.colors.accent,
-    backgroundColor: appTheme.colors.surfaceAccent,
-  },
-  headerActionButtonOutline: {
-    borderColor: appTheme.colors.borderButton,
-    backgroundColor: appTheme.colors.transparent,
   },
   headerActionButtonPressed: {
     opacity: 0.88,

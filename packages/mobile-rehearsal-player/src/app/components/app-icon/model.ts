@@ -12,12 +12,14 @@ export type PhosphorGlyph =
   | 'CaretLeft'
   | 'CaretRight'
   | 'CaretUp'
+  | 'Check'
   | 'CheckCircle'
   | 'Circle'
   | 'ClockCountdown'
   | 'ClockCounterClockwise'
   | 'DotsSixVertical'
   | 'DotsThreeVertical'
+  | 'File'
   | 'Folder'
   | 'FolderPlus'
   | 'MagnifyingGlass'
@@ -108,6 +110,7 @@ export const APP_ICON_GLYPHS = {
   minus: regular('Minus'),
 
   // Entities and navigation.
+  'file-outline': regular('File'),
   'folder-outline': regular('Folder'),
   'folder-plus': filled('FolderPlus'),
   'folder-plus-outline': regular('FolderPlus'),
@@ -126,6 +129,7 @@ export const APP_ICON_GLYPHS = {
   'account-circle-outline': regular('UserCircle'),
 
   // Selection.
+  check: regular('Check'),
   'check-circle': filled('CheckCircle'),
   'circle-outline': regular('Circle'),
 

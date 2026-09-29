@@ -79,6 +79,24 @@ describe('app icon glyph map', () => {
     assert.equal(resolveAppIconGlyph('pause').weight, 'fill');
   });
 
+  it('marks a saved Drive row with a plain check, distinct from the selection check-circle', () => {
+    assert.deepEqual(resolveAppIconGlyph('check'), {
+      glyph: 'Check',
+      weight: 'regular',
+    });
+    assert.notEqual(
+      resolveAppIconGlyph('check').glyph,
+      resolveAppIconGlyph('check-circle').glyph,
+    );
+  });
+
+  it('marks a non-audio Drive file with the plain file glyph', () => {
+    assert.deepEqual(resolveAppIconGlyph('file-outline'), {
+      glyph: 'File',
+      weight: 'regular',
+    });
+  });
+
   it('offers a regular-weight play for secondary play actions', () => {
     assert.deepEqual(resolveAppIconGlyph('play-outline'), {
       glyph: 'Play',

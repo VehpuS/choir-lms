@@ -5,8 +5,10 @@ import { describe, it } from 'node:test';
 
 import type { DriveDiscoveryResult } from '@org/google-drive';
 
+import { PLAYABLE_SOURCE } from '../../../test-utils/library-test-fixtures.js';
 import {
   createDriveBrowseFolderRows,
+  createDriveBrowseSourceRows,
   createDriveSearchResultRows,
   getDriveExplorerRowSelectionState,
   resolveDriveDiscoveryResultFromRow,
@@ -74,17 +76,32 @@ describe('Drive explorer row model', () => {
     ]);
   });
 
-  it('keeps ordinary browse folder rows free of search-only presentation', () => {
+  it('keeps ordinary browse folder rows free of search-only presentation (no kind word or path)', () => {
     const folderResult = SEARCH_RESULTS[0];
     assert.equal(folderResult?.kind, 'folder');
     if (!folderResult || folderResult.kind !== 'folder') {
       return;
     }
 
-    const [row] = createDriveBrowseFolderRows([folderResult]);
+    const [row] = createDriveBrowseFolderRows(
+      [folderResult],
+      new Date('2026-09-29T12:00:00.000Z'),
+    );
 
     assert.equal(row?.highlightQuery, null);
-    assert.deepEqual(row?.metadataLabels, ['Shared folder']);
+    assert.deepEqual(row?.metadataLabels, ['Updated 12 Sep', 'Shared folder']);
+  });
+
+  it('gives browse audio rows the format, size, and duration meta of screen 1e', () => {
+    const [row] = createDriveBrowseSourceRows([
+      {
+        ...PLAYABLE_SOURCE,
+        locationLabel: 'My Drive',
+        sizeBytes: 3 * 1024 * 1024,
+      },
+    ]);
+
+    assert.deepEqual(row?.metadataLabels, ['MP3', '3 MB', '3:05']);
   });
 
   it('round-trips search rows back into their originating discovery results for selection', () => {

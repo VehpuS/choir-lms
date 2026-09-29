@@ -101,7 +101,6 @@ export const DriveLibraryContent = ({
       />
       <DriveLibraryRootSelector
         currentRootKind={currentRootKind}
-        isSearchMode={isSearchMode}
         onSelectRoot={onSelectRoot}
       />
       {!isSearchMode ? (

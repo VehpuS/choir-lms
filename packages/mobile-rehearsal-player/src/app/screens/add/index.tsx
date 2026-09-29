@@ -19,6 +19,7 @@ import { FeedbackCard } from '../../library/components/feedback-card';
 import { DriveDiscoveryPanel } from '../../library/drive/components/drive-discovery-panel';
 import { ADD_SCREEN_DRIVE_PANEL_ORDER } from '../../library/drive/utils/drive-discovery-layout';
 import type { useRehearsalLibraryController } from '../../library/saved-rehearsal-library/use-rehearsal-library-controller';
+import type { SourceLocationActionKind } from '../../library/saved-rehearsal-library/use-saved-source-original-location-actions';
 import { appTheme } from '../../utils/theme';
 import { DriveImportReviewScreen } from '../drive-import-review';
 import {
@@ -33,6 +34,11 @@ import {
 
 const TRACK_SAVED_AUTO_DISMISS_MS = 5000;
 const ACTION_ROW_GAP = 12;
+// Add reports its own location issues: a saved track's `Show in Add`, and a
+// Drive row's `Open in Google Drive`.
+const ADD_LOCATION_ISSUE_KINDS: ReadonlySet<SourceLocationActionKind> = new Set(
+  ['open-drive-file', 'show-in-add'],
+);
 
 type AddScreenProps = {
   authorization: DriveSessionMenuController;
@@ -120,7 +126,8 @@ export const AddScreen = ({
   const isLocatingShowInAddFolder =
     originalLocation.pendingSourceLocationAction?.kind === 'show-in-add';
   const showInAddIssue =
-    originalLocation.sourceLocationIssue?.kind === 'show-in-add'
+    originalLocation.sourceLocationIssue &&
+    ADD_LOCATION_ISSUE_KINDS.has(originalLocation.sourceLocationIssue.kind)
       ? originalLocation.sourceLocationIssue
       : null;
 
@@ -177,7 +184,6 @@ export const AddScreen = ({
                 isSearchBarVisible ? 'Close search' : 'Search Google Drive'
               }
               iconName={isSearchBarVisible ? 'close' : 'magnify'}
-              isFilled={true}
               onPress={handleToggleSearchBar}
             />
             <DriveSessionMenu

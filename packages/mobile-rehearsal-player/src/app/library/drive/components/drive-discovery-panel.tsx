@@ -53,7 +53,6 @@ export const DriveDiscoveryPanel = ({
       {isSearchBarVisible ? searchPanel : null}
       <DriveLibraryRootSelector
         currentRootKind={controller.discovery.currentLocation.rootKind}
-        isSearchMode={viewModel.isSearchMode}
         onSelectRoot={controller.discovery.selectRoot}
       />
       <ExplorerNavigationBar
@@ -64,7 +63,9 @@ export const DriveDiscoveryPanel = ({
         onGoBack={viewModel.onGoBack}
         title={viewModel.currentTitle}
       />
-      <ExplorerBreadcrumbBar items={viewModel.breadcrumbs} />
+      {viewModel.breadcrumbs.length > 1 ? (
+        <ExplorerBreadcrumbBar items={viewModel.breadcrumbs} />
+      ) : null}
       {viewModel.shouldShowStatusCard ? (
         <DriveLibraryStatusCard
           isLoading={viewModel.isStatusLoading}
@@ -107,13 +108,10 @@ export const DriveDiscoveryPanel = ({
   );
 };
 
+// Add sits on the ground like the Library views (screen 1e): no panel card.
+// A one-location breadcrumb would only repeat the navigation title.
 const styles = StyleSheet.create({
   section: {
-    gap: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 20,
-    backgroundColor: appTheme.colors.surface,
+    gap: appTheme.space.md,
   },
 });

@@ -11,6 +11,8 @@ type BottomSheetSurfaceProps = {
   isVisible: boolean;
   onClose: () => void;
   title?: string;
+  /** Lines before the title ellipsizes; 0 shows it in full. */
+  titleNumberOfLines?: number;
 };
 
 const BACKDROP = appTheme.colors.scrim;
@@ -22,6 +24,7 @@ export const BottomSheetSurface = ({
   isVisible,
   onClose,
   title,
+  titleNumberOfLines = 1,
 }: BottomSheetSurfaceProps) => {
   if (!isVisible) {
     return null;
@@ -41,7 +44,7 @@ export const BottomSheetSurface = ({
           eyebrow={eyebrow}
           style={styles.copyGroup}
           title={title}
-          titleNumberOfLines={1}
+          titleNumberOfLines={titleNumberOfLines}
           titleStyle={styles.title}
         />
       ) : null}

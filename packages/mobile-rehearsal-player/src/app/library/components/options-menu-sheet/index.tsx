@@ -20,6 +20,8 @@ type OptionsMenuSheetProps = {
   children?: ReactNode;
   isVisible: boolean;
   title: string;
+  /** Lines before the title ellipsizes; 0 shows it in full. */
+  titleNumberOfLines?: number;
   secondaryActionLabel?: string;
   onClose: () => void;
   onSecondaryAction?: () => void;
@@ -42,6 +44,7 @@ export const OptionsMenuSheet = ({
   children,
   isVisible,
   title,
+  titleNumberOfLines,
   secondaryActionLabel = 'Cancel',
   onClose,
   onSecondaryAction,
@@ -64,6 +67,7 @@ export const OptionsMenuSheet = ({
       isVisible
       onClose={onClose}
       title={heading.title}
+      titleNumberOfLines={titleNumberOfLines}
     >
       <View style={styles.contentColumn}>
         {children ? <View>{children}</View> : null}

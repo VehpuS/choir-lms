@@ -4,6 +4,12 @@ export type DriveLibrarySourceAction = {
   accessibilityLabel?: string;
   disabled?: boolean;
   iconName?: 'pause' | 'play';
+  /**
+   * `saved-toggle` is the saved state of the Save pill: a neutral `✓ Saved`
+   * control whose press starts removal (Apple Music / Spotify-style toggle).
+   */
+  accessibilityHint?: string;
+  kind?: 'saved-toggle';
   label: string;
   onPress: () => void;
   placement: DriveLibrarySourceActionPlacement;

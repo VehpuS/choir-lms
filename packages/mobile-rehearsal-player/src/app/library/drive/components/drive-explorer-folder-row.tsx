@@ -1,11 +1,16 @@
-import { Text } from 'react-native';
-
 import { AppIcon } from '../../../components/app-icon';
+import { RowMetaLine } from '../../../components/row-meta-line';
 import { appTheme } from '../../../utils/theme';
 import { ExplorerListRow } from '../../components/explorer/index';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import type { DriveLibraryFolder } from '../utils/drive-library-view-model';
-import { driveExplorerListStyles as styles } from './drive-explorer-list-styles';
+import {
+  DRIVE_ROW_LEADING_GLYPH_SIZE,
+  DRIVE_ROW_TITLE_LINES,
+  driveExplorerListStyles as styles,
+} from './drive-explorer-list-styles';
+
+const CHEVRON_SIZE = 16;
 
 type DriveExplorerFolderRowProps = {
   folder: DriveLibraryFolder;
@@ -15,6 +20,9 @@ type DriveExplorerFolderRowProps = {
   onOpenFolder: (folder: DriveLibraryFolder) => void;
 };
 
+// An Add folder row (screen 1e): folder glyph, title, `Updated 3 Nov` meta,
+// and a trailing chevron. Selection mode swaps the glyph for the selection
+// circle and drops the chevron, since tapping selects instead of opening.
 export const DriveExplorerFolderRow = ({
   folder,
   highlightQuery,
@@ -22,41 +30,46 @@ export const DriveExplorerFolderRow = ({
   metadataLabels,
   onOpenFolder,
 }: DriveExplorerFolderRowProps) => {
-  const metadataLabel = metadataLabels.join(' • ');
+  const metadataLabel = metadataLabels.join(' · ');
+  const isSelectionMode = isSelected !== undefined;
 
   return (
     <ExplorerListRow
       active={isSelected}
       leadingIcon={
         <AppIcon
-          color={appTheme.colors.secondaryText}
+          color={appTheme.colors.icon}
           name={
-            isSelected === undefined
+            !isSelectionMode
               ? 'folder-outline'
               : isSelected
                 ? 'check-circle'
                 : 'circle-outline'
           }
-          size={22}
+          size={DRIVE_ROW_LEADING_GLYPH_SIZE}
         />
       }
-      metadata={
-        metadataLabel ? (
-          <Text numberOfLines={1} style={styles.folderMetadata}>
-            {metadataLabel}
-          </Text>
-        ) : null
-      }
+      metadata={metadataLabel ? <RowMetaLine text={metadataLabel} /> : null}
       onPress={() => {
         onOpenFolder(folder);
       }}
       selected={isSelected}
       title={
         <SearchHighlightedText
+          numberOfLines={DRIVE_ROW_TITLE_LINES}
           query={highlightQuery}
-          style={styles.folderName}
+          style={styles.rowTitle}
           text={folder.name}
         />
+      }
+      trailingAccessory={
+        isSelectionMode ? undefined : (
+          <AppIcon
+            color={appTheme.colors.textFaint}
+            name="chevron-right"
+            size={CHEVRON_SIZE}
+          />
+        )
       }
     />
   );

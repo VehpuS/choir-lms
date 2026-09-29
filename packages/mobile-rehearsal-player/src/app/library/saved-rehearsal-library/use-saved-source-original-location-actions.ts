@@ -4,10 +4,16 @@ import type { DriveFolder } from '@org/google-drive';
 
 import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
 import { getDriveSourceLocationIssueCopy } from './drive-source-location-issue-copy';
+import { openDriveFileInGoogleDrive } from './open-drive-file-in-google-drive';
 import { openSavedSourceOriginalFolderInGoogleDrive } from './open-saved-source-original-location';
 import { showSavedSourceOriginalFolderInAdd } from './show-saved-source-in-add';
 
-export type SourceLocationActionKind = 'open-in-google-drive' | 'show-in-add';
+// `open-drive-file` is an Add row's "Open in Google Drive": the file's own
+// page, reported on Add. The other two are the saved-track flows.
+export type SourceLocationActionKind =
+  | 'open-drive-file'
+  | 'open-in-google-drive'
+  | 'show-in-add';
 
 export type SourceLocationIssue = {
   kind: SourceLocationActionKind;
@@ -30,6 +36,13 @@ const OPEN_FAILED_ISSUE = {
   message: 'Google Drive could not be opened. Try again.',
   title: 'Original Drive location unavailable',
 };
+
+const DRIVE_FILE_ISSUE_TITLE = 'Could not open Google Drive';
+const DRIVE_FILE_ISSUE_MESSAGES = {
+  'no-link': 'Google Drive did not return a link for this file.',
+  'open-failed': OPEN_FAILED_ISSUE.message,
+  'unsupported-link': UNSUPPORTED_LINK_ISSUE.message,
+} as const;
 
 /**
  * Drives the saved-track "Show in Add" and "Open in Google Drive" flows: a
@@ -84,6 +97,25 @@ export const useSavedSourceOriginalLocationActions = (options: {
   return {
     clearSourceLocationIssue: () => {
       setSourceLocationIssue(null);
+    },
+    openDriveSourceFileInGoogleDrive(source: DriveLibrarySource) {
+      setSourceLocationIssue(null);
+      void openDriveFileInGoogleDrive({
+        canOpenUrl: options.canOpenUrl,
+        openUrl: options.openUrl,
+        url: source.webViewLink,
+      }).then((result) => {
+        if (result.status === 'opened') {
+          return;
+        }
+
+        setSourceLocationIssue({
+          kind: 'open-drive-file',
+          message: DRIVE_FILE_ISSUE_MESSAGES[result.status],
+          sourceId: source.id,
+          title: DRIVE_FILE_ISSUE_TITLE,
+        });
+      });
     },
     openSourceInGoogleDrive(source: DriveLibrarySource) {
       withAccessToken(

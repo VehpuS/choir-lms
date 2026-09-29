@@ -18,8 +18,8 @@ describe('createDriveTrackSavedFeedback', () => {
 
     assert.deepEqual(feedback, {
       id: 'track-1',
-      message: 'Alto warm-up was saved to your rehearsal library.',
-      title: 'Track saved',
+      message: 'Alto warm-up',
+      title: 'Saved to Library',
     });
   });
 });

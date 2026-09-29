@@ -1,8 +1,12 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { FeedbackCard } from '../../library/components/feedback-card';
-import type { DriveTrackSavedFeedback } from './drive-track-saved-feedback';
+import { AppIcon } from '../../components/app-icon';
+import { INTERACTION_STATE_OPACITY } from '../../library/components/interaction-style-tokens';
 import { appTheme } from '../../utils/theme';
+import type { DriveTrackSavedFeedback } from './drive-track-saved-feedback';
+
+const { colors, space } = appTheme;
+const CHECK_ICON_SIZE = 20;
 
 type DriveTrackSavedFeedbackCardProps = {
   feedback: DriveTrackSavedFeedback;
@@ -14,6 +18,10 @@ type DriveTrackSavedFeedbackCardProps = {
   onFocus: () => void;
 };
 
+// Screen 1e's save acknowledgment: an opaque card with an accent edge, a
+// filled check, `Saved to Library` over the file name, and an explicit
+// Dismiss (mobile-rehearsal-player-usability requires one; 1e's `Open` is
+// not built).
 export const DriveTrackSavedFeedbackCard = ({
   feedback,
   onBlur,
@@ -21,44 +29,78 @@ export const DriveTrackSavedFeedbackCard = ({
   onFocus,
 }: DriveTrackSavedFeedbackCardProps) => {
   return (
-    <FeedbackCard
-      footer={
-        <View style={styles.actions}>
-          <Pressable
-            accessibilityRole="button"
-            onBlur={onBlur}
-            onFocus={onFocus}
-            onPress={onDismiss}
-            style={styles.dismissAction}
-          >
-            <Text style={styles.dismissActionLabel}>Dismiss</Text>
-          </Pressable>
-        </View>
-      }
-      message={feedback.message}
-      size="compact"
-      title={feedback.title}
-      tone="ready"
-    />
+    <View
+      accessibilityLiveRegion="polite"
+      accessibilityRole="summary"
+      style={styles.card}
+    >
+      <AppIcon
+        color={colors.accentText}
+        name="check-circle"
+        size={CHECK_ICON_SIZE}
+      />
+      <View style={styles.copy}>
+        <Text style={styles.title}>{feedback.title}</Text>
+        <Text numberOfLines={1} style={styles.message}>
+          {feedback.message}
+        </Text>
+      </View>
+      <Pressable
+        accessibilityLabel={`Dismiss ${feedback.title}`}
+        accessibilityRole="button"
+        onBlur={onBlur}
+        onFocus={onFocus}
+        onPress={onDismiss}
+        style={({ pressed }) => [
+          styles.dismissAction,
+          pressed ? styles.pressed : undefined,
+        ]}
+      >
+        <Text style={styles.dismissLabel}>Dismiss</Text>
+      </Pressable>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  actions: {
+  card: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    alignItems: 'center',
+    gap: space.md,
+    paddingVertical: space.xs,
+    paddingLeft: space.lg,
+    paddingRight: space.xs,
+    borderWidth: 1,
+    borderColor: colors.accentBorderDeep,
+    borderRadius: appTheme.radius.md,
+    backgroundColor: colors.surface,
+  },
+  copy: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
   },
   dismissAction: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: appTheme.colors.accentBorderSoft,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    minWidth: space.touchTarget,
+    minHeight: space.touchTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: space.sm,
   },
-  dismissActionLabel: {
-    color: appTheme.colors.accentText,
+  dismissLabel: {
+    ...appTheme.type.button,
+    color: colors.accentText,
+  },
+  message: {
+    ...appTheme.type.rowMeta,
     fontSize: 13,
-    fontWeight: '700',
+  },
+  pressed: {
+    opacity: INTERACTION_STATE_OPACITY.pressed,
+  },
+  title: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: appTheme.fontWeight.medium,
   },
 });

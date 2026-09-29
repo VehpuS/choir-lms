@@ -35,6 +35,8 @@ type ExplorerListRowProps = {
   selected?: boolean;
   style?: StyleProp<ViewStyle>;
   title: ReactNode;
+  /** Non-interactive mark after the copy, inside the row's tap target (a folder chevron). */
+  trailingAccessory?: ReactNode;
 };
 
 type ExplorerListSurfaceProps = {
@@ -170,6 +172,7 @@ export const ExplorerListRow = ({
   selected,
   style,
   title,
+  trailingAccessory,
 }: ExplorerListRowProps) => {
   const isInteractive = !disabled && onPress !== undefined;
   const hasTrailingControls = hasExplorerTrailingControls(
@@ -185,6 +188,7 @@ export const ExplorerListRow = ({
         {metadata}
         {message}
       </View>
+      {trailingAccessory}
     </>
   );
 
