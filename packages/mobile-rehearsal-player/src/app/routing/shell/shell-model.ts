@@ -8,7 +8,7 @@ import {
   type PlaylistPlaybackSession,
 } from '../../library/playlists/utils/saved-playlist-playback-view-model';
 import {
-  getPlayableItemRangeLabel,
+  getPlayableItemLoopRange,
   getPlaybackCollectionLabel,
   getPlaybackProgressRatio,
   getPlaybackStatusLabel,
@@ -32,8 +32,8 @@ export type ShellDestination = {
 export type NowPlayingSurfaceSummary = {
   collectionLabel: string;
   playbackLabel: string;
+  loopRange: ReturnType<typeof getPlayableItemLoopRange>;
   progressLabel: string;
-  rangeLabel: string | null;
   statusLabel: string;
   supportsQueueNavigation: boolean;
   title: string;
@@ -93,7 +93,7 @@ export const getNowPlayingSurfaceSummary = (options: {
     playbackLabel: options.activePlaylistSession
       ? getPlaylistPlaybackSessionSummary(options.activePlaylistSession)
       : 'Keep the current rehearsal item audible while moving between Library, Add, and Recents.',
-    rangeLabel: getPlayableItemRangeLabel(options.activePlayableItem),
+    loopRange: getPlayableItemLoopRange(options.activePlayableItem),
     supportsQueueNavigation: Boolean(options.activePlaylistSession),
     upNextLabel: options.activePlaylistSession
       ? (resolvePlaylistPlaybackAdvance(options.activePlaylistSession)

@@ -29,6 +29,7 @@ import {
   BAR_ROW_STYLE,
   BAR_STYLE,
   CONTAINER_STYLE,
+  SCRUB_INDICATOR_STYLE,
   waveformStyles,
 } from './styles';
 import {
@@ -199,6 +200,7 @@ export const PlaybackWaveform = ({
           pointerEvents="none"
           style={[
             waveformStyles.scrubIndicator,
+            SCRUB_INDICATOR_STYLE[variant],
             {
               backgroundColor: colors.indicator,
               left: `${displayedRatio * 100}%`,

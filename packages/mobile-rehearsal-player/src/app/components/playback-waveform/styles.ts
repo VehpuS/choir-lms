@@ -15,14 +15,9 @@ export const waveformStyles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: appTheme.colors.hairline,
   },
-  heroContainer: {
-    minHeight: 188,
-    paddingHorizontal: 14,
-    paddingVertical: 18,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    borderRadius: 28,
-    backgroundColor: appTheme.colors.surface,
+  // The now-playing scrubber is bare bars at a fixed height, no container.
+  scrubberContainer: {
+    height: WAVEFORM_HEIGHT.scrubber,
   },
   barRow: {
     flex: 1,
@@ -36,12 +31,12 @@ export const waveformStyles = StyleSheet.create({
   excerptContainer: {
     height: WAVEFORM_HEIGHT.excerpt,
   },
-  // Thin bars spread across the card's width (1d).
-  excerptBarRow: {
+  // Thin bars spread across the available width (1d, 1f).
+  spreadBarRow: {
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  excerptBar: {
+  spreadBar: {
     maxWidth: 3,
     borderRadius: 2,
   },
@@ -67,9 +62,6 @@ export const waveformStyles = StyleSheet.create({
   compactBar: {
     minWidth: 2,
   },
-  heroBar: {
-    minWidth: 4,
-  },
   scrubIndicator: {
     position: 'absolute',
     top: 16,
@@ -78,26 +70,45 @@ export const waveformStyles = StyleSheet.create({
     marginLeft: -1,
     borderRadius: 999,
   },
+  // The scrubber's playhead spans the full height with a soft glow.
+  playhead: {
+    top: 0,
+    bottom: 0,
+    shadowColor: appTheme.colors.text,
+    shadowOffset: { height: 0, width: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+  },
 });
 
 export const CONTAINER_STYLE: Record<PlaybackWaveformVariant, ViewStyle> = {
   compact: waveformStyles.compactContainer,
   excerpt: waveformStyles.excerptContainer,
-  hero: waveformStyles.heroContainer,
   mini: waveformStyles.miniContainer,
+  scrubber: waveformStyles.scrubberContainer,
 };
 
 export const BAR_ROW_STYLE: Record<PlaybackWaveformVariant, ViewStyle | null> =
   {
     compact: waveformStyles.compactBarRow,
-    excerpt: waveformStyles.excerptBarRow,
-    hero: null,
+    excerpt: waveformStyles.spreadBarRow,
     mini: waveformStyles.miniBarRow,
+    scrubber: waveformStyles.spreadBarRow,
   };
 
 export const BAR_STYLE: Record<PlaybackWaveformVariant, ViewStyle> = {
   compact: waveformStyles.compactBar,
-  excerpt: waveformStyles.excerptBar,
-  hero: waveformStyles.heroBar,
+  excerpt: waveformStyles.spreadBar,
   mini: waveformStyles.miniBar,
+  scrubber: waveformStyles.spreadBar,
+};
+
+export const SCRUB_INDICATOR_STYLE: Record<
+  PlaybackWaveformVariant,
+  ViewStyle | null
+> = {
+  compact: null,
+  excerpt: null,
+  mini: null,
+  scrubber: waveformStyles.playhead,
 };

@@ -97,6 +97,14 @@ Decided by the user (2026-09-29): vertical space goes to content rows, not to he
 - A destination header is its large title plus trailing actions and nothing above it. No destination carries a kicker (eyebrow) over its title. This deliberately departs from design screen 1a, which shows `CHOIR LMS` over `Recents` while 1b–1e show no kicker on `Library` or `Add` (task 8.24).
 - Within a destination, a view or section header is at most one compact line (a kicker with a count, plus that view's sort or primary actions), and never restates what the selected view pill or the destination title already says. Descriptive helper paragraphs belong in empty states, not above populated lists. Task 8.25 applies this to the Library views.
 
+## Decision 12 — No full-screen waveform outside an editing task
+
+Decided by the user (2026-09-30), after 3.1 first built 1g's full-screen state as a toggle from the playback sheet: without the loop editor it only enlarged a waveform the sheet already scrubs, and mainstream players have no such toggle.
+
+- The playback surface is one sheet (1f). Nothing on it exists only to enlarge the waveform.
+- A full-screen waveform is part of an editing task, entered through that task's action (for example `Make loop` / `Edit loop`) and left by saving or cancelling. Screen 1g is that task's layout; task 3.4 decides the loop editor's entry points and whether it replaces the Library loop builder.
+- A wide waveform in landscape is a possible later exploration (the app is portrait-locked today), not part of this change.
+
 ## Open questions for multiple selection (resolve at task 9.0)
 
 - Bulk-action bar layout at 375pt: which three actions are always visible per surface, and what goes in its overflow sheet.

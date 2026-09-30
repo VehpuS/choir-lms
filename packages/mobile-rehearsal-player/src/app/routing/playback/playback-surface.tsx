@@ -17,7 +17,7 @@ import type {
   NowPlayingSurfaceSummary,
   UpNextSurfaceSummary,
 } from '../shell/shell-model';
-import { NowPlayingSurface } from './playback-surface-content';
+import { NowPlayingSurface } from './now-playing';
 import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
 
 import { appTheme } from '../../utils/theme';
@@ -180,7 +180,14 @@ export const PlaybackSurface = ({
         onPress={dismissSurface}
         style={styles.backdrop}
       />
-      <View style={styles.sheetContainer}>
+      <View
+        pointerEvents="box-none"
+        style={
+          canRenderQueue
+            ? styles.queueSheetContainer
+            : styles.nowPlayingSheetContainer
+        }
+      >
         <Animated.View
           {...sheetFramePanHandlers}
           style={[styles.sheetFrame, { transform: [{ translateY }] }]}
@@ -262,14 +269,23 @@ const styles = StyleSheet.create({
     left: 0,
     backgroundColor: appTheme.colors.scrim,
   },
-  sheetContainer: {
+  // Up Next keeps its floating card until 3.3.
+  queueSheetContainer: {
     flex: 1,
     justifyContent: 'flex-end',
     paddingHorizontal: 16,
     paddingTop: 56,
     paddingBottom: 12,
   },
+  // Now playing is a flush bottom sheet (1f) with a strip of backdrop above
+  // it to tap away; the frame caps it so its body scrolls on short screens.
+  nowPlayingSheetContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingTop: 56,
+  },
   sheetFrame: {
     width: '100%',
+    maxHeight: '100%',
   },
 });

@@ -76,8 +76,11 @@ describe('shell playback summaries', () => {
       collectionLabel: 'Warmups • Item 2 of 2',
       playbackLabel:
         'Active session • Warmups • item 2 of 2 • Ordered • Repeat all.',
+      loopRange: {
+        accessibilityLabel: 'Loop 0:12 to 0:18',
+        label: '0:12–0:18',
+      },
       progressLabel: '0:06 of 0:06',
-      rangeLabel: 'Loop 0:12 - 0:18',
       statusLabel: 'Playing',
       supportsQueueNavigation: true,
       title: 'Entrance cue',
@@ -99,7 +102,7 @@ describe('shell playback summaries', () => {
       playbackLabel:
         'Keep the current rehearsal item audible while moving between Library, Add, and Recents.',
       progressLabel: '0:20 of 3:05',
-      rangeLabel: null,
+      loopRange: null,
       statusLabel: 'Paused',
       supportsQueueNavigation: false,
       title: 'Alto Line.mp3',
@@ -150,7 +153,7 @@ describe('shell playback summaries', () => {
         playbackLabel:
           'Active session • Current queue • item 1 of 2 • Ordered • Repeat all.',
         progressLabel: '0:18 of 3:05',
-        rangeLabel: null,
+        loopRange: null,
         statusLabel: 'Playing',
         supportsQueueNavigation: true,
         title: 'Alto Line.mp3',

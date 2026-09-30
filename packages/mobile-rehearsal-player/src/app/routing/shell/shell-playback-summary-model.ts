@@ -1,6 +1,10 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
 import { formatDurationLabel } from '../../library/drive/utils/drive-library-view-model';
+import {
+  formatSavedLoopRangeLabel,
+  formatSavedLoopTimeRange,
+} from '../../library/loops/utils/saved-loop-view-model';
 import type { SavedTrackPlaybackState } from '../../library/playback/utils/saved-track-playback-view-model';
 import {
   getPlaylistQueueModeLabel,
@@ -125,6 +129,23 @@ export const getPlayableItemRangeLabel = (playableItem: PlayableItem) => {
   const endLabel = formatDurationLabel(playableItem.range.endMs) ?? '0:00';
 
   return `Loop ${startLabel} - ${endLabel}`;
+};
+
+/** The loop chip on the playback surface (1f): `0:12–0:18`, read as a loop. */
+export const getPlayableItemLoopRange = (playableItem: PlayableItem) => {
+  if (playableItem.kind !== 'loop' || playableItem.range.endMs === null) {
+    return null;
+  }
+
+  const range = {
+    endMs: playableItem.range.endMs,
+    startMs: playableItem.range.startMs,
+  };
+
+  return {
+    accessibilityLabel: `Loop ${formatSavedLoopRangeLabel(range)}`,
+    label: formatSavedLoopTimeRange(range),
+  };
 };
 
 const getPlaybackQueueLabel = (

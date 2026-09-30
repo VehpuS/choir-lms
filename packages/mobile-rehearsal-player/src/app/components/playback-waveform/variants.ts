@@ -16,22 +16,35 @@ export const MINI_WAVEFORM_BARS = downsampleWaveformBars(
   MINI_WAVEFORM_BAR_COUNT,
 );
 
-// `excerpt` is the bare 28pt bar strip inside an expanded loop card (1d).
-export type PlaybackWaveformVariant = 'compact' | 'excerpt' | 'hero' | 'mini';
+// `excerpt` is the bare 28pt bar strip inside an expanded loop card (1d);
+// `scrubber` is the now-playing sheet's scrubber (1f).
+export type PlaybackWaveformVariant =
+  | 'compact'
+  | 'excerpt'
+  | 'mini'
+  | 'scrubber';
 
 export const WAVEFORM_HEIGHT: Record<PlaybackWaveformVariant, number> = {
   compact: 28,
   excerpt: 28,
-  hero: 154,
   mini: 22,
+  scrubber: 56,
 };
 
 export const MIN_BAR_HEIGHT: Record<PlaybackWaveformVariant, number> = {
   compact: 8,
   excerpt: 4,
-  hero: 18,
   mini: 2,
+  scrubber: 2,
 };
+
+// Variants drawn as bare Nocturne bars (README "Waveform"); `compact` keeps
+// its pre-Nocturne pill until the loop editor moves over in 3.4.
+const NOCTURNE_VARIANTS = new Set<PlaybackWaveformVariant>([
+  'excerpt',
+  'mini',
+  'scrubber',
+]);
 
 export const getWaveformColors = (
   variant: PlaybackWaveformVariant,
@@ -39,7 +52,7 @@ export const getWaveformColors = (
 ) => {
   // Played bars are accent and unplayed bars the solid divider (README
   // "Waveform"); the older variants keep their appearance mapping until 3.x.
-  if (variant === 'mini' || variant === 'excerpt') {
+  if (NOCTURNE_VARIANTS.has(variant)) {
     return {
       active: appTheme.colors.accent,
       inactive: appTheme.colors.divider,

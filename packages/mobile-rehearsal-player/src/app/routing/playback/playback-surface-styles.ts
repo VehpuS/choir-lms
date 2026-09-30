@@ -48,40 +48,10 @@ export const styles = StyleSheet.create({
   summaryGroup: {
     gap: 4,
   },
-  summaryMetaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: 8,
-  },
-  statusCaption: {
-    color: appTheme.colors.accentText,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
-  title: {
-    color: appTheme.colors.primaryText,
-    fontSize: 24,
-    fontWeight: '700',
-    lineHeight: 30,
-  },
   subtitle: {
     color: appTheme.colors.secondaryText,
     fontSize: 14,
     lineHeight: 20,
-  },
-  rangeLabel: {
-    color: appTheme.colors.accentText,
-    fontSize: 14,
-    fontWeight: '700',
-    lineHeight: 20,
-  },
-  inlineContextText: {
-    color: appTheme.colors.secondaryText,
-    fontSize: 13,
-    lineHeight: 18,
   },
   queuePlaylistActionRow: {
     flexDirection: 'row',

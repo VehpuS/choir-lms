@@ -145,23 +145,23 @@ Companion mockup states: design screens 1a–1e show the mini-player and tab bar
 
 The system SHALL provide a full-screen playback modal that slides up from the bottom and foregrounds a SoundCloud-style waveform, rehearsal-oriented transport controls, and contextual track information for metadata-poor stems.
 
-Companion mockup states: design screen 1f shows the collapsed state with the practice row, screen 1g shows the full-screen waveform state, screen 1i shows the shaping surface reached from it, and screen 1h shows the queue sheet.
+Companion mockup states: design screen 1f shows the playback sheet with the practice row, screen 1g shows the full-screen loop editor that playback can enter to edit a loop, screen 1i shows the shaping surface reached from the sheet, and screen 1h shows the queue sheet.
 
 #### Scenario: Mini-player expands into a slide-up playback modal
 
 - **WHEN** a user opens the dedicated playback screen from the mini-player or another playback entry point
 - **THEN** the system presents a full-screen modal that slides up from the bottom, includes a swipe-down chevron or pill plus contextual header text such as `Rehearsing: [Song Name]`, and keeps audio playback uninterrupted during the transition
 
-#### Scenario: The playback surface has a collapsed practice state and a full-screen waveform state
+#### Scenario: The playback surface is one practice sheet, and a full-screen waveform exists only for editing
 
 - **WHEN** a user opens the dedicated playback screen
-- **THEN** the system first presents a collapsed state carrying track identity, rehearsal context, a compact timeline, transport, and the practice controls, and offers an explicit affordance to expand into the full-screen waveform state
-- **AND** expanding or collapsing does not interrupt audio or lose the current position
+- **THEN** the system presents one sheet carrying track identity, rehearsal context, a scrubbable waveform timeline, transport, and the practice controls, with no control that only enlarges the waveform
+- **AND** a full-screen waveform appears only as part of an editing task such as creating or editing a loop, which the user enters through that task's own action and leaves by saving or cancelling, without interrupting audio or losing the current position
 
 #### Scenario: Waveform is the dominant interactive hero
 
-- **WHEN** the full-screen waveform state is visible
-- **THEN** the system shows a large interactive waveform for the entire active item instead of square artwork, colors the played portion with an active state from left to right, renders the unplayed portion in a muted state, and lets the user scrub by dragging horizontally across the waveform itself
+- **WHEN** the dedicated playback screen is visible
+- **THEN** the system shows an interactive waveform for the entire active item instead of square artwork, colors the played portion with an active state from left to right, renders the unplayed portion in a muted state, and lets the user scrub by dragging horizontally across the waveform itself
 
 #### Scenario: The waveform is derived from the actual audio
 
@@ -176,7 +176,7 @@ Companion mockup states: design screen 1f shows the collapsed state with the pra
 
 #### Scenario: The practice row exposes speed and pitch and reaches the shaping surface
 
-- **WHEN** the collapsed playback state is visible
+- **WHEN** the dedicated playback screen is visible
 - **THEN** the system shows the active speed and pitch values alongside the repeat and queue-mode controls, and provides a control that opens the full shaping surface
 - **AND** the row contains no pitch-lock affordance
 
