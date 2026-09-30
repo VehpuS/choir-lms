@@ -1,17 +1,17 @@
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
-import type { AppIconName } from '../../../components/app-icon';
-import { SurfaceIconButton } from '../../../components/surface-icon-button';
+import { AppIcon, type AppIconName } from '../../../components/app-icon';
 import {
+  buttonInteractionGuardStyle,
+  interactionGuardProps,
+} from '../../../components/interaction-guard';
+import {
+  getNowPlayingTransportAppearance,
   getNowPlayingTransportControls,
   type NowPlayingTransportControl,
 } from './now-playing-model';
 import { nowPlayingStyles as styles } from './styles';
 import { getPlaybackToggleControlModel } from '../playback-toggle-control-model';
-
-const QUEUED_TRANSPORT_ICON_SIZE = 22;
-const STANDALONE_TRANSPORT_ICON_SIZE = 24;
-const PLAYBACK_TOGGLE_ICON_SIZE = 32;
 
 export type NowPlayingTransportRowProps = {
   canSeekActivePlayback: boolean;
@@ -28,17 +28,56 @@ export type NowPlayingTransportRowProps = {
   title: string;
 };
 
-type TransportButton = {
+type TransportButtonModel = {
   accessibilityLabel: string;
   disabled: boolean;
   icon: AppIconName;
   onPress: () => void;
+  selected?: boolean;
+};
+
+const TransportButton = ({
+  button,
+  control,
+}: {
+  button: TransportButtonModel;
+  control: NowPlayingTransportControl;
+}) => {
+  const appearance = getNowPlayingTransportAppearance(control);
+
+  return (
+    <Pressable
+      accessibilityLabel={button.accessibilityLabel}
+      accessibilityRole="button"
+      accessibilityState={{
+        disabled: button.disabled,
+        selected: button.selected,
+      }}
+      {...interactionGuardProps}
+      disabled={button.disabled}
+      onPress={button.onPress}
+      style={({ pressed }) => [
+        styles.transportButton,
+        { height: appearance.size, width: appearance.size },
+        appearance.ring ? styles.transportRing : null,
+        buttonInteractionGuardStyle,
+        pressed && !button.disabled ? styles.pressed : null,
+        button.disabled ? styles.disabled : null,
+      ]}
+    >
+      <AppIcon
+        color={appearance.iconColor}
+        name={button.icon}
+        size={appearance.iconSize}
+      />
+    </Pressable>
+  );
 };
 
 const getSecondaryButton = (
   control: Exclude<NowPlayingTransportControl, 'toggle-playback'>,
   props: NowPlayingTransportRowProps,
-): TransportButton => {
+): TransportButtonModel => {
   switch (control) {
     case 'previous-item':
       return {
@@ -75,9 +114,6 @@ export const NowPlayingTransportRow = (props: NowPlayingTransportRowProps) => {
   const controls = getNowPlayingTransportControls(
     props.supportsQueueNavigation,
   );
-  const secondaryIconSize = props.supportsQueueNavigation
-    ? QUEUED_TRANSPORT_ICON_SIZE
-    : STANDALONE_TRANSPORT_ICON_SIZE;
   const playbackToggle = getPlaybackToggleControlModel({
     playbackToggleLabel: props.playbackToggleLabel,
     title: props.title,
@@ -86,32 +122,19 @@ export const NowPlayingTransportRow = (props: NowPlayingTransportRowProps) => {
   return (
     <View style={styles.transportRow}>
       {controls.map((control) => {
-        if (control === 'toggle-playback') {
-          return (
-            <SurfaceIconButton
-              accessibilityLabel={playbackToggle.accessibilityLabel}
-              disabled={props.isPlaybackToggleDisabled}
-              icon={playbackToggle.iconName}
-              key={control}
-              onPress={props.onTogglePlayback}
-              selected={playbackToggle.selected}
-              size={PLAYBACK_TOGGLE_ICON_SIZE}
-              tone="primary"
-            />
-          );
-        }
-
-        const button = getSecondaryButton(control, props);
+        const button: TransportButtonModel =
+          control === 'toggle-playback'
+            ? {
+                accessibilityLabel: playbackToggle.accessibilityLabel,
+                disabled: props.isPlaybackToggleDisabled,
+                icon: playbackToggle.iconName,
+                onPress: props.onTogglePlayback,
+                selected: playbackToggle.selected,
+              }
+            : getSecondaryButton(control, props);
 
         return (
-          <SurfaceIconButton
-            accessibilityLabel={button.accessibilityLabel}
-            disabled={button.disabled}
-            icon={button.icon}
-            key={control}
-            onPress={button.onPress}
-            size={secondaryIconSize}
-          />
+          <TransportButton button={button} control={control} key={control} />
         );
       })}
     </View>

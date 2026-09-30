@@ -5,9 +5,11 @@ import { describe, it } from 'node:test';
 
 import {
   getNowPlayingKicker,
+  getNowPlayingTransportAppearance,
   getNowPlayingTimelineLabels,
   getNowPlayingTransportControls,
 } from './now-playing-model.js';
+import { appTheme } from '../../../utils/theme.js';
 
 describe('now playing model', () => {
   it('names the queue in the kicker only for queued playback', () => {
@@ -31,6 +33,46 @@ describe('now playing model', () => {
       'toggle-playback',
       'seek-forward',
     ]);
+  });
+
+  it('draws only play / pause as the accent ring', () => {
+    const controls = getNowPlayingTransportControls(true);
+
+    assert.deepEqual(
+      controls.filter((control) => {
+        return getNowPlayingTransportAppearance(control).ring;
+      }),
+      ['toggle-playback'],
+    );
+    assert.equal(
+      getNowPlayingTransportAppearance('toggle-playback').iconColor,
+      appTheme.colors.accentText,
+    );
+  });
+
+  it('keeps queue navigation quieter than the rehearsal jumps', () => {
+    assert.equal(
+      getNowPlayingTransportAppearance('previous-item').iconColor,
+      appTheme.colors.icon,
+    );
+    assert.equal(
+      getNowPlayingTransportAppearance('next-item').iconColor,
+      appTheme.colors.icon,
+    );
+    assert.equal(
+      getNowPlayingTransportAppearance('seek-backward').iconColor,
+      appTheme.colors.text,
+    );
+    assert.equal(
+      getNowPlayingTransportAppearance('seek-forward').iconColor,
+      appTheme.colors.text,
+    );
+  });
+
+  it('gives every transport control at least a 44pt hit area', () => {
+    for (const control of getNowPlayingTransportControls(true)) {
+      assert.ok(getNowPlayingTransportAppearance(control).size >= 44, control);
+    }
   });
 
   it('shows elapsed and remaining time', () => {

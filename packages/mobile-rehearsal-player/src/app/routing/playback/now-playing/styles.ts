@@ -12,6 +12,9 @@ const PRACTICE_TILE_SIZE = 52;
 const LOOP_CHIP_TEXT_SIZE = 13;
 const CONTEXT_TEXT_SIZE = 14;
 const NEXT_TEXT_SIZE = 12;
+const TRANSPORT_RING_WIDTH = 1.5;
+const TRANSPORT_GLOW_OPACITY = 0.3;
+const TRANSPORT_GLOW_RADIUS = 18;
 
 export const nowPlayingStyles = StyleSheet.create({
   // A flush bottom sheet capped to the space above it; its body scrolls.
@@ -113,7 +116,22 @@ export const nowPlayingStyles = StyleSheet.create({
     flexWrap: 'nowrap',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: space.xs,
+    gap: space.xl,
+  },
+  // Width and height come from the transport appearance model.
+  transportButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+  },
+  // 1f: an accent ring with an ambient glow, never a filled disc.
+  transportRing: {
+    borderWidth: TRANSPORT_RING_WIDTH,
+    borderColor: colors.accent,
+    shadowColor: colors.accent,
+    shadowOffset: { height: 0, width: 0 },
+    shadowOpacity: TRANSPORT_GLOW_OPACITY,
+    shadowRadius: TRANSPORT_GLOW_RADIUS,
   },
   practiceRow: {
     flexDirection: 'row',
