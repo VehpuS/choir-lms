@@ -17,6 +17,8 @@ import { MobileShellMiniPlayerDock } from './mobile-shell-mini-player-dock';
 import { MobileShellPlaybackSurface } from './mobile-shell-playback-surface';
 import { MobileShellQueuePlaylistDialogs } from './mobile-shell-queue-playlist-dialogs';
 import { useMobileShellQueuePlaylistState } from './use-mobile-shell-queue-playlist-state';
+import { useSavedTrackDownloadProgress } from '../../../library/playback/hooks/use-saved-track-download-progress';
+import { getPlaybackDownloadLabel } from '../../../library/playback/utils/saved-track-download-label';
 
 type PlaybackSurfaceKey = 'now-playing' | 'queue';
 
@@ -139,6 +141,12 @@ export const MobileShell = ({
     playbackPositionSeconds,
     playbackState,
   });
+  // Web playback downloads the whole file before it can play (8.33), so the
+  // mini-player and sheet say how far that download has got.
+  const downloadProgress = useSavedTrackDownloadProgress();
+  const playbackDownloadLabel = isPlaybackPreparing
+    ? getPlaybackDownloadLabel(downloadProgress)
+    : null;
   const upNextSummary = getUpNextSurfaceSummary({
     activePlaylistSession,
   });
@@ -195,6 +203,8 @@ export const MobileShell = ({
       <MobileShellMiniPlayerDock
         activeDestination={activeDestination}
         activePlayableItem={activePlayableItem}
+        downloadLabel={playbackDownloadLabel}
+        isPlaybackLoading={isPlaybackPreparing}
         isPlaybackToggleDisabled={isPlaybackToggleDisabled}
         miniPlayerSummary={miniPlayerSummary}
         onOpenNowPlaying={() => {
@@ -216,6 +226,8 @@ export const MobileShell = ({
         canSeekActivePlayback={canSeekActivePlayback}
         canSkipNextItem={canSkipNextItem}
         canSkipPreviousItem={canSkipPreviousItem}
+        downloadLabel={playbackDownloadLabel}
+        isPlaybackLoading={isPlaybackPreparing}
         isPlaybackToggleDisabled={isPlaybackToggleDisabled}
         isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
         nowPlayingSummary={nowPlayingSummary}

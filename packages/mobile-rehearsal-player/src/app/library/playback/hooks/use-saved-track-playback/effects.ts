@@ -47,7 +47,8 @@ type UseSavedTrackPlaybackEffectsOptions = {
   progressPositionSeconds: number;
   repeatModeRef: MutableRefObject<RepeatMode>;
   setActivePlayableItem: Dispatch<SetStateAction<PlayableItem | null>>;
-  setIsPreparing: Dispatch<SetStateAction<boolean>>;
+  /** The player failed or ran out of queue: nothing is loading any more. */
+  resetPreparing: () => void;
   setIssue: Dispatch<SetStateAction<SavedTrackPlaybackIssue | null>>;
   setVolumeLevel: Dispatch<SetStateAction<number>>;
   volumeLevel: number;
@@ -67,7 +68,7 @@ export const useSavedTrackPlaybackEffects = ({
   progressPositionSeconds,
   repeatModeRef,
   setActivePlayableItem,
-  setIsPreparing,
+  resetPreparing,
   setIssue,
   setVolumeLevel,
   volumeLevel,
@@ -240,7 +241,7 @@ export const useSavedTrackPlaybackEffects = ({
       setIssue(null);
     }
 
-    setIsPreparing(false);
+    resetPreparing();
   };
 
   useSavedTrackPlayerEvents(

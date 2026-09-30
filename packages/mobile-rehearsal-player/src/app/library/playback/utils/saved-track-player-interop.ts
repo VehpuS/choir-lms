@@ -155,8 +155,16 @@ const patchSavedTrackPlayerModule = (
   patchSavedTrackPlayerWebRuntime(runtime as SavedTrackPlayerWebRuntime, {
     fetch: globalThis.fetch.bind(globalThis),
     urlApi: globalThis.URL,
+    // Development builds name slow Drive downloads in the console so a slow
+    // connection is not mistaken for a playback bug.
+    warn: isDevelopmentBuild() ? console.warn.bind(console) : undefined,
     windowApi: getSavedTrackPlayerWebWindow(),
   });
+};
+
+// `__DEV__` is a Metro global; plain Node (the test runner) does not define it.
+const isDevelopmentBuild = () => {
+  return typeof __DEV__ !== 'undefined' && __DEV__;
 };
 
 const getExpoRuntimeMetadata = () => {

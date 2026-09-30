@@ -24,7 +24,7 @@ export type SavedTrackPlaybackControllerOptions = {
   setActivePlaylistSession: Dispatch<
     SetStateAction<PlaylistPlaybackSession | null>
   >;
-  setIsPreparing: Dispatch<SetStateAction<boolean>>;
+  setIsPreparing: (isPreparing: boolean) => void;
   setIssue: Dispatch<SetStateAction<SavedTrackPlaybackIssue | null>>;
   setVolumeLevel: Dispatch<SetStateAction<number>>;
   volumeLevelRef: MutableRefObject<number>;

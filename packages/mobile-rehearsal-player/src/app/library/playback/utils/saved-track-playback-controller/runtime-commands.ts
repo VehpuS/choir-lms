@@ -13,6 +13,7 @@ import {
 } from '../saved-track-playback-view-model';
 import { getSavedTrackPlayer } from '../saved-track-player-interop';
 import { ensureSavedTrackPlayerReady } from '../saved-track-player-runtime';
+import { isSavedTrackDownloadAbortError } from '../saved-track-web-download';
 import { createSavedTrackPlaybackRuntimeCore } from './runtime-core';
 import {
   canResumeSavedTrackPlayback,
@@ -22,6 +23,7 @@ import {
 } from './shared';
 
 export type SavedTrackPlaybackRuntimeCommands = {
+  canLoadPlayableItem: (playableItem: PlayableItem) => boolean;
   loadPlayableItem: (playableItem: PlayableItem) => Promise<boolean>;
   loadPlayableItemIntoPlayer: LoadPlayableItemIntoPlayer;
   pauseActivePlayback: () => Promise<boolean>;
@@ -44,6 +46,7 @@ export const createSavedTrackPlaybackRuntimeCommands = (
 ): SavedTrackPlaybackRuntimeCommands => {
   const runtimeCore = createSavedTrackPlaybackRuntimeCore(options);
   const {
+    canLoadPlayableItem,
     loadPlayableItem,
     loadPlayableItemIntoPlayer,
     pausePlayableItem,
@@ -52,6 +55,7 @@ export const createSavedTrackPlaybackRuntimeCommands = (
   } = runtimeCore;
 
   return {
+    canLoadPlayableItem,
     loadPlayableItem,
     loadPlayableItemIntoPlayer,
     async pauseActivePlayback() {
@@ -237,9 +241,12 @@ export const createSavedTrackPlaybackRuntimeCommands = (
         );
         return true;
       } catch (error) {
-        options.setIssue(
-          createSavedTrackPlaybackRuntimeIssue(playableItem, error),
-        );
+        if (!isSavedTrackDownloadAbortError(error)) {
+          options.setIssue(
+            createSavedTrackPlaybackRuntimeIssue(playableItem, error),
+          );
+        }
+
         return false;
       } finally {
         options.setIsPreparing(false);
@@ -278,12 +285,17 @@ export const createSavedTrackPlaybackRuntimeCommands = (
         return;
       }
 
+      if (!canLoadPlayableItem(playableItem)) {
+        return;
+      }
+
+      // Standalone playback leaves any queue as soon as it starts loading, so
+      // the mini-player never pairs the new item with the old queue context.
+      options.setActivePlaylistSession(null);
       options.setIsPreparing(true);
 
       try {
-        if (await loadPlayableItem(playableItem)) {
-          options.setActivePlaylistSession(null);
-        }
+        await loadPlayableItem(playableItem);
       } catch (error) {
         options.setIssue(
           createSavedTrackPlaybackRuntimeIssue(playableItem, error),

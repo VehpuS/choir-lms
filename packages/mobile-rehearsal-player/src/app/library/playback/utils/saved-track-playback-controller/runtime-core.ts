@@ -8,12 +8,14 @@ import {
 } from '../saved-track-playback-view-model';
 import { getSavedTrackPlayer } from '../saved-track-player-interop';
 import { ensureSavedTrackPlayerReady } from '../saved-track-player-runtime';
+import { isSavedTrackDownloadAbortError } from '../saved-track-web-download';
 import {
   type SavedTrackPlaybackControllerOptions,
   trackPlayerState,
 } from './shared';
 
 export type SavedTrackPlaybackRuntimeCore = {
+  canLoadPlayableItem: (playableItem: PlayableItem) => boolean;
   loadPlayableItem: (playableItem: PlayableItem) => Promise<boolean>;
   loadPlayableItemIntoPlayer: LoadPlayableItemIntoPlayer;
   pausePlayableItem: (playableItem: PlayableItem) => Promise<boolean>;
@@ -43,13 +45,16 @@ export const createSavedTrackPlaybackRuntimeCore = (
       loadOptions?.initialPositionSeconds ??
       playbackRequest.playableItem.range.startMs / 1000;
 
-    await trackPlayer.reset();
-    await trackPlayer.add(playbackRequest.track);
-    await trackPlayer.setVolume(options.volumeLevelRef.current);
-
+    // The item becomes active before the player loads it, so the mini-player
+    // and its row show `Loading` while web playback downloads the file
+    // (which takes as long as the connection needs; see 8.33).
     if (loadOptions?.syncActivePlayableItem !== false) {
       options.setActivePlayableItem(playbackRequest.playableItem);
     }
+
+    await trackPlayer.reset();
+    await trackPlayer.add(playbackRequest.track);
+    await trackPlayer.setVolume(options.volumeLevelRef.current);
 
     if (initialPositionSeconds > 0) {
       await trackPlayer.seekTo(initialPositionSeconds);
@@ -84,7 +89,8 @@ export const createSavedTrackPlaybackRuntimeCore = (
     }
   };
 
-  const loadPlayableItem = async (playableItem: PlayableItem) => {
+  /** Reports an auth or availability issue that would stop a load starting. */
+  const canLoadPlayableItem = (playableItem: PlayableItem) => {
     const blockingIssue = createSavedTrackPlaybackPreconditionIssue(
       options.authState,
       playableItem,
@@ -95,14 +101,29 @@ export const createSavedTrackPlaybackRuntimeCore = (
       return false;
     }
 
-    if (!options.authState.accessToken) {
+    return Boolean(options.authState.accessToken);
+  };
+
+  /**
+   * Resolves `false` when the load could not start or was superseded by a
+   * newer one (its web download was aborted); callers leave state alone then.
+   */
+  const loadPlayableItem = async (playableItem: PlayableItem) => {
+    const accessToken = options.authState.accessToken;
+
+    if (!canLoadPlayableItem(playableItem) || !accessToken) {
       return false;
     }
 
-    await loadPlayableItemIntoPlayer(
-      playableItem,
-      options.authState.accessToken,
-    );
+    try {
+      await loadPlayableItemIntoPlayer(playableItem, accessToken);
+    } catch (error) {
+      if (isSavedTrackDownloadAbortError(error)) {
+        return false;
+      }
+
+      throw error;
+    }
 
     return true;
   };
@@ -147,6 +168,7 @@ export const createSavedTrackPlaybackRuntimeCore = (
   };
 
   return {
+    canLoadPlayableItem,
     loadPlayableItem,
     loadPlayableItemIntoPlayer,
     pausePlayableItem,

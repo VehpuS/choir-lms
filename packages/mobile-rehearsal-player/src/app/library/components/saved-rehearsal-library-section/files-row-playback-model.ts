@@ -78,8 +78,10 @@ const resolvePlaylistPresentation = (options: {
     leadingIconName: KIND_ICONS.playlist,
     playbackRing: {
       accessibilityLabel: `${actionLabel} ${options.rowLabel}`,
+      // Only the playlist that is loading waits; others supersede its load.
       disabled:
-        options.playback.isPreparing || options.playlist.items.length === 0,
+        (isActive && options.playback.isPreparing) ||
+        options.playlist.items.length === 0,
       iconName: isPlaying ? 'pause' : 'play',
       // The row tap opens the playlist; its ring plays it in order, or
       // pauses / resumes it once it is the active session.

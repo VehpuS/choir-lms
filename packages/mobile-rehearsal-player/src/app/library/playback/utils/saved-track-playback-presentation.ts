@@ -86,9 +86,11 @@ export const getSavedTrackPlaybackActionCopy = (
     options.playableItem,
   );
 
+  // Another item loading does not block this one: starting it supersedes
+  // the load (the web download is aborted on reset).
   if (!isActiveSource) {
     return {
-      disabled: options.isPreparing,
+      disabled: false,
       label: 'Play',
     };
   }

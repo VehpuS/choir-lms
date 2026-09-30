@@ -47,6 +47,9 @@ flowchart TD
   - `packages/mobile-rehearsal-player/src/app/library/playback/utils/saved-track-player-interop.ts`
 - Web runtime patching (header fetch -> blob URL -> cleanup):
   - `packages/mobile-rehearsal-player/src/app/library/playback/utils/saved-track-player-web-load.ts`
+- Web media download (streamed progress, slow flag, abort on reset) and its progress store:
+  - `packages/mobile-rehearsal-player/src/app/library/playback/utils/saved-track-web-download.ts`
+  - `packages/mobile-rehearsal-player/src/app/library/playback/utils/saved-track-download-progress.ts`
 - Player setup and capability sync:
   - `packages/mobile-rehearsal-player/src/app/library/playback/utils/saved-track-player-runtime.ts`
 - Playback request construction (Drive URL + auth headers):
@@ -74,6 +77,7 @@ flowchart TD
 - Interop applies the web patch only when `Platform.OS === 'web'` and browser APIs are present.
 - Tracks with auth headers are fetched manually, converted to blob URLs, and passed into TrackPlayer runtime calls.
 - Blob URLs are tracked and revoked on `reset` and `stop` to avoid leaks.
+- `reset` and `stop` also abort any download still in flight, so a superseded load rejects with an abort error (which the controller ignores) instead of adding a stale track.
 - A player-level load patch updates the media element source for blob playback (`window.rntp`).
 
 ### Expo Go Guardrail
@@ -95,6 +99,24 @@ This separation keeps background service code lightweight while allowing current
 1. `createSavedTrackPlaybackRequest` builds a track payload with Drive media URL and `Authorization: Bearer ...` headers.
 2. Runtime commands reset TrackPlayer, add the requested track, seek to range start, and optionally play.
 3. On web, header-bearing requests are fetched first and rewritten to blob URLs before TrackPlayer consumes them.
+
+## Slow Connections (Web)
+
+Web playback cannot stream an authenticated Drive file: the media element cannot send the `Authorization` header, so the web patch downloads the **whole file** (`GET …/files/<id>?alt=media`) into a blob before TrackPlayer gets it. Playback therefore starts only when the download finishes, and that takes as long as the connection needs. Measured on 2026-09-30 on a connection the browser reported as `3g` (1.3 Mbps, 350 ms RTT): a 3:08 MP3 took **92.7 s** to download. Native streams directly and has no download step.
+
+What the app shows (task 8.33 of `nocturne-visual-system-and-playback-shaping`):
+
+- The tapped item becomes the active item, and a started playlist or queue becomes the active session, **before** the download begins. The mini-player, the sheet, the loading row's `Loading…` control, and the queue controls (Up Next, previous / next, repeat, shuffle, `Play next` / `Add to queue`) appear at once.
+- The mini-player context line and the sheet read `Loading from Google Drive · 42%` (from `Content-Length`; no percentage when the response has none), then after 5 s `Slow connection · 42% downloaded`. The play / pause ring shows a spinner.
+- Starting another item, playlist, or queue position during the download supersedes it: the player resets, the old download is aborted, and nothing is reported as an error. Only the loading item's own control stays disabled.
+- In development builds, a download that passes 5 s logs one `console.warn` starting `[playback] Slow web media download:` with the Drive file id, elapsed time, and bytes received so far.
+
+How to tell a slow connection from a playback bug in the browser:
+
+- `navigator.connection` gives the browser's estimate (`effectiveType`, `downlink` in Mbps, `rtt` in ms).
+- A Resource Timing entry for the `alt=media` request appears only once the response ends; its `duration` is the download time. While it is still running there is no entry at all, which is easy to misread as "no request was made".
+- To exercise the loading state on a fast connection, slow every stream read in the page before pressing play, for example by wrapping `ReadableStreamDefaultReader.prototype.read` with a 300 ms delay in the devtools console.
+- Browser-pane screenshots can lag the DOM; read the mini-player's `Now playing: …` accessibility label or the page text to see the current state.
 
 ## Implementation Notes
 

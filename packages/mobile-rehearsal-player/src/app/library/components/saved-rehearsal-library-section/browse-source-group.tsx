@@ -50,8 +50,8 @@ export const BrowseSourceGroup = ({
       <Text style={styles.groupTitle}>{savedSourceTitle}</Text>
       {playAllItems.length > 0 ? (
         <View style={styles.playActions}>
+          {/* Starting a queue supersedes any load still in progress. */}
           <OutlinedActionButton
-            disabled={rowProps.isPlaybackPreparing}
             fill
             icon="play"
             label="Play all"
@@ -61,7 +61,6 @@ export const BrowseSourceGroup = ({
             variant="accent"
           />
           <OutlinedActionButton
-            disabled={rowProps.isPlaybackPreparing}
             fill
             icon="shuffle"
             label="Shuffle"

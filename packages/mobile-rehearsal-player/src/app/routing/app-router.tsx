@@ -182,12 +182,9 @@ export const AppRouter = () => {
       canSeekActivePlayback={
         playback.activePlayableItem !== null && !playback.isPreparing
       }
-      canSkipNextItem={
-        playback.activePlaylistSession !== null && !playback.isPreparing
-      }
-      canSkipPreviousItem={
-        playback.activePlaylistSession !== null && !playback.isPreparing
-      }
+      // Skipping during a load supersedes it (8.33), so only a queue is needed.
+      canSkipNextItem={playback.activePlaylistSession !== null}
+      canSkipPreviousItem={playback.activePlaylistSession !== null}
       requestedDestination={requestedDestination}
       requestedDestinationRequestId={requestedDestinationRequestId}
       recentsScreen={

@@ -22,6 +22,7 @@ import {
   DEFAULT_PLAYBACK_VOLUME_LEVEL,
   type SyncActivePlaylistContextOptions,
 } from './shared';
+import { createPreparingTracker } from './preparing-tracker';
 import { createSyncActivePlaylistContext } from './sync-playlist-context';
 
 export const useSavedTrackPlayback = (
@@ -33,7 +34,16 @@ export const useSavedTrackPlayback = (
     useState<PlayableItem | null>(null);
   const [activePlaylistSession, setActivePlaylistSession] =
     useState<PlaylistPlaybackSession | null>(null);
-  const [isPreparing, setIsPreparing] = useState(false);
+  const [isPreparing, setIsPreparingState] = useState(false);
+  const preparingTrackerRef = useRef<ReturnType<
+    typeof createPreparingTracker
+  > | null>(null);
+
+  if (!preparingTrackerRef.current) {
+    preparingTrackerRef.current = createPreparingTracker(setIsPreparingState);
+  }
+
+  const { reset: resetPreparing, setIsPreparing } = preparingTrackerRef.current;
   const [issue, setIssueState] = useState<SavedTrackPlaybackIssue | null>(null);
   const [playlistRepeatMode, setPlaylistRepeatModeState] =
     useState<RepeatMode>('off');
@@ -152,8 +162,8 @@ export const useSavedTrackPlayback = (
     progressDurationSeconds: progress.duration,
     progressPositionSeconds: progress.position,
     repeatModeRef,
+    resetPreparing,
     setActivePlayableItem,
-    setIsPreparing,
     setIssue,
     setVolumeLevel,
     volumeLevel,

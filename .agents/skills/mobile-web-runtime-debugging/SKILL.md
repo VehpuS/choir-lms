@@ -80,6 +80,9 @@ When the failure involves Google Drive or TrackPlayer web, check for these signa
   Meaning: Shaka or the TrackPlayer web layer is probing a blob URL through the normal load path.
 - No media request at all after the click
   Meaning: the patch may not be installed, `setupPlayer` may not have run, or the controller never reached the web runtime.
+  Check first: a Resource Timing entry for `alt=media` appears only when the download **finishes**, so a slow download in progress looks like "no request". Look for the mini-player's `Loading from Google Drive` / `Slow connection` line and the development `[playback] Slow web media download` warning before concluding nothing was requested.
+- Playback takes tens of seconds to start, or looks stuck on `Loading` / `Slow connection · N% downloaded`
+  Meaning: the connection is slow. Web playback downloads the whole Drive file before it can play (a 3:08 MP3 took 93 s at 1.3 Mbps). Read `navigator.connection` and the `alt=media` Resource Timing `duration` before debugging code, and see "Slow Connections (Web)" in `docs/mobile-cross-platform-audio-playback.md`.
 
 Do not assume `load` is the active entry point. In this codebase, web playback can begin through `TrackPlayer.add(...)`, so verify the real call path before patching.
 

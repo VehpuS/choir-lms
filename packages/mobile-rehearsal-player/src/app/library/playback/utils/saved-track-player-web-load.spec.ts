@@ -3,7 +3,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { createSavedTrackDownloadProgressStore } from './saved-track-download-progress.js';
 import { patchSavedTrackPlayerWebRuntime } from './saved-track-player-web-load.js';
+import { isSavedTrackDownloadAbortError } from './saved-track-web-download.js';
 
 describe('patchSavedTrackPlayerWebRuntime', () => {
   const createPatchedRuntime = () => {
@@ -241,5 +243,54 @@ describe('patchSavedTrackPlayerWebRuntime', () => {
     await runtime.reset();
 
     assert.deepEqual(revokedUrls, ['blob:track-1', 'blob:track-2']);
+  });
+
+  it('aborts a download still in flight when the player is reset, so the stale add never reaches the player', async () => {
+    const addCalls: unknown[] = [];
+    const revokedUrls: string[] = [];
+    const runtime = {
+      async add(tracks: unknown) {
+        addCalls.push(tracks);
+        return undefined;
+      },
+      async reset() {
+        return undefined;
+      },
+    };
+
+    patchSavedTrackPlayerWebRuntime(runtime, {
+      // A download that only settles when its signal aborts, like a slow
+      // Drive response that is superseded.
+      fetch(_input, init) {
+        return new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => {
+            reject(new Error('aborted by the browser'));
+          });
+        });
+      },
+      store: createSavedTrackDownloadProgressStore(),
+      urlApi: {
+        createObjectURL() {
+          return 'blob:unused';
+        },
+        revokeObjectURL(url) {
+          revokedUrls.push(url);
+        },
+      },
+      windowApi: {},
+    });
+
+    const staleAdd = runtime.add({
+      headers: { Authorization: 'Bearer token' },
+      url: 'https://example.com/slow-track.mp3',
+    });
+
+    await runtime.reset();
+
+    await assert.rejects(staleAdd, (error) => {
+      return isSavedTrackDownloadAbortError(error);
+    });
+    assert.deepEqual(addCalls, []);
+    assert.deepEqual(revokedUrls, []);
   });
 });

@@ -31,6 +31,8 @@ type PlaybackSurfaceProps = {
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
+  downloadLabel: string | null;
+  isPlaybackLoading: boolean;
   isPlaybackToggleDisabled: boolean;
   isSavingQueueAsPlaylist: boolean;
   nowPlayingSummary: NowPlayingSurfaceSummary | null;
@@ -71,6 +73,8 @@ export const PlaybackSurface = ({
   canSeekActivePlayback,
   canSkipNextItem,
   canSkipPreviousItem,
+  downloadLabel,
+  isPlaybackLoading,
   isPlaybackToggleDisabled,
   isSavingQueueAsPlaylist,
   nowPlayingSummary,
@@ -200,6 +204,7 @@ export const PlaybackSurface = ({
               dragHandleProps={panResponder.panHandlers}
               activeRepeatMode={activeRepeatMode ?? 'off'}
               isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
+              isPlaybackLoading={isPlaybackLoading}
               isPlaybackToggleDisabled={isPlaybackToggleDisabled}
               onClose={dismissSurface}
               onMoveQueueItem={onMoveQueueItem}
@@ -227,6 +232,8 @@ export const PlaybackSurface = ({
               canSeekActivePlayback={canSeekActivePlayback}
               canSkipNextItem={canSkipNextItem}
               canSkipPreviousItem={canSkipPreviousItem}
+              downloadLabel={downloadLabel}
+              isPlaybackLoading={isPlaybackLoading}
               isPlaybackToggleDisabled={isPlaybackToggleDisabled}
               onAdjustPlaybackVolume={onAdjustPlaybackVolume}
               onClose={dismissSurface}

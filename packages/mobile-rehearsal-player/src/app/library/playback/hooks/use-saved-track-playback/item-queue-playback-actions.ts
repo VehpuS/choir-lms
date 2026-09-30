@@ -32,7 +32,7 @@ type StartItemQueuePlaybackOptions = {
   setActivePlaylistSession: Dispatch<
     SetStateAction<PlaylistPlaybackSession | null>
   >;
-  setIsPreparing: Dispatch<SetStateAction<boolean>>;
+  setIsPreparing: (isPreparing: boolean) => void;
   setIssue: Dispatch<SetStateAction<SavedTrackPlaybackIssue | null>>;
 };
 
@@ -53,13 +53,19 @@ export const startItemQueuePlayback = async (
   }
 
   options.setIssue(null);
+
+  if (!options.playbackController.canLoadPlayableItem(firstPlayableItem)) {
+    return;
+  }
+
+  // The queue starts before its first item loads, so queue controls and Up
+  // Next never wait on that item's download.
+  options.activePlaylistContextRef.current = null;
+  options.setActivePlaylistSession(nextSession);
   options.setIsPreparing(true);
 
   try {
-    if (await options.playbackController.loadPlayableItem(firstPlayableItem)) {
-      options.activePlaylistContextRef.current = null;
-      options.setActivePlaylistSession(nextSession);
-    }
+    await options.playbackController.loadPlayableItem(firstPlayableItem);
   } catch (error) {
     options.setIssue(
       createSavedTrackPlaybackRuntimeIssue(firstPlayableItem, error),

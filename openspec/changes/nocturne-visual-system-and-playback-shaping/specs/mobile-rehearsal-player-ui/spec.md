@@ -141,6 +141,13 @@ Companion mockup states: design screens 1a–1e show the mini-player and tab bar
 - **WHEN** a user taps the right-aligned play / pause control in the mini-player
 - **THEN** the system toggles playback without leaving the current route
 
+#### Scenario: The mini-player appears while the active item is still loading
+
+- **WHEN** a user starts a track, loop, playlist, or queue whose first item still has to load (on web, the whole Drive file downloads before it can play)
+- **THEN** the mini-player appears at once for that item with a loading indicator in place of the play / pause glyph, and its context line reports loading progress as a percentage when the size is known, changing to a slow-connection notice once loading has taken more than a few seconds
+- **AND** a started playlist or queue is current immediately, so Up Next, previous / next, repeat, shuffle, and `Play next` / `Add to queue` are available without waiting for that item to load
+- **AND** starting a different item or queue position while an item is loading replaces the load rather than being blocked, and the replaced load reports no error
+
 ### Requirement: The dedicated playback screen prioritizes waveform scrubbing, transport, and rehearsal context
 
 The system SHALL provide a full-screen playback modal that slides up from the bottom and foregrounds a SoundCloud-style waveform, rehearsal-oriented transport controls, and contextual track information for metadata-poor stems.

@@ -1,4 +1,4 @@
-import { Pressable, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { AppIcon, type AppIconName } from '../../../components/app-icon';
 import {
@@ -17,6 +17,7 @@ export type NowPlayingTransportRowProps = {
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
+  isPlaybackLoading: boolean;
   isPlaybackToggleDisabled: boolean;
   onSeekBackward: () => void;
   onSeekForward: () => void;
@@ -32,6 +33,7 @@ type TransportButtonModel = {
   accessibilityLabel: string;
   disabled: boolean;
   icon: AppIconName;
+  isLoading?: boolean;
   onPress: () => void;
   selected?: boolean;
 };
@@ -65,11 +67,15 @@ const TransportButton = ({
         button.disabled ? styles.disabled : null,
       ]}
     >
-      <AppIcon
-        color={appearance.iconColor}
-        name={button.icon}
-        size={appearance.iconSize}
-      />
+      {button.isLoading ? (
+        <ActivityIndicator color={appearance.iconColor} />
+      ) : (
+        <AppIcon
+          color={appearance.iconColor}
+          name={button.icon}
+          size={appearance.iconSize}
+        />
+      )}
     </Pressable>
   );
 };
@@ -128,6 +134,7 @@ export const NowPlayingTransportRow = (props: NowPlayingTransportRowProps) => {
                 accessibilityLabel: playbackToggle.accessibilityLabel,
                 disabled: props.isPlaybackToggleDisabled,
                 icon: playbackToggle.iconName,
+                isLoading: props.isPlaybackLoading,
                 onPress: props.onTogglePlayback,
                 selected: playbackToggle.selected,
               }

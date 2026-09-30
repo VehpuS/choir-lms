@@ -1,5 +1,5 @@
 import type { PlayableItem } from '@org/audio-library-models';
-import { Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
 import { AppIcon } from '../../../components/app-icon';
 import { PlaybackWaveform } from '../../../components/playback-waveform';
@@ -20,6 +20,9 @@ const MINI_PLAYER_TOGGLE_ICON_SIZE = 20;
 type MobileShellMiniPlayerDockProps = {
   activeDestination: ShellDestinationKey;
   activePlayableItem: PlayableItem | null;
+  /** Download progress while web playback fetches the active item. */
+  downloadLabel: string | null;
+  isPlaybackLoading: boolean;
   isPlaybackToggleDisabled: boolean;
   miniPlayerSummary: MiniPlayerSummary | null;
   onOpenNowPlaying: () => void;
@@ -32,6 +35,8 @@ type MobileShellMiniPlayerDockProps = {
 export const MobileShellMiniPlayerDock = ({
   activeDestination,
   activePlayableItem,
+  downloadLabel,
+  isPlaybackLoading,
   isPlaybackToggleDisabled,
   miniPlayerSummary,
   onOpenNowPlaying,
@@ -77,7 +82,7 @@ export const MobileShellMiniPlayerDock = ({
                 text={miniPlayerSummary.title}
               />
               <Text numberOfLines={1} style={styles.miniPlayerContext}>
-                {miniPlayerSummary.context}
+                {downloadLabel ?? miniPlayerSummary.context}
               </Text>
             </View>
           </Pressable>
@@ -101,11 +106,15 @@ export const MobileShellMiniPlayerDock = ({
               isPlaybackToggleDisabled ? styles.miniPlayerActionDisabled : null,
             ]}
           >
-            <AppIcon
-              color={appTheme.colors.accentText}
-              name={playbackToggleControl?.iconName ?? 'play'}
-              size={MINI_PLAYER_TOGGLE_ICON_SIZE}
-            />
+            {isPlaybackLoading ? (
+              <ActivityIndicator color={appTheme.colors.accentText} />
+            ) : (
+              <AppIcon
+                color={appTheme.colors.accentText}
+                name={playbackToggleControl?.iconName ?? 'play'}
+                size={MINI_PLAYER_TOGGLE_ICON_SIZE}
+              />
+            )}
           </Pressable>
           {/* Progress only, not a scrubber: it ignores touches. */}
           <View

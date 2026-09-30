@@ -30,7 +30,7 @@ type StartPlaylistPlaybackOptions = {
   setActivePlaylistSession: Dispatch<
     SetStateAction<PlaylistPlaybackSession | null>
   >;
-  setIsPreparing: Dispatch<SetStateAction<boolean>>;
+  setIsPreparing: (isPreparing: boolean) => void;
   setIssue: Dispatch<SetStateAction<SavedTrackPlaybackIssue | null>>;
   sources: DriveLibrarySource[];
   startEntryId?: string;
@@ -72,17 +72,23 @@ export const startPlaylistPlayback = async (
   }
 
   options.setIssue(null);
+
+  if (!options.playbackController.canLoadPlayableItem(firstPlayableItem)) {
+    return;
+  }
+
+  // The session starts before its first item loads, so queue controls and
+  // Up Next never wait on that item's download.
+  options.activePlaylistContextRef.current = {
+    loops: options.loops,
+    playlist: options.playlist,
+    sources: options.sources,
+  };
+  options.setActivePlaylistSession(nextSession.session);
   options.setIsPreparing(true);
 
   try {
-    if (await options.playbackController.loadPlayableItem(firstPlayableItem)) {
-      options.activePlaylistContextRef.current = {
-        loops: options.loops,
-        playlist: options.playlist,
-        sources: options.sources,
-      };
-      options.setActivePlaylistSession(nextSession.session);
-    }
+    await options.playbackController.loadPlayableItem(firstPlayableItem);
   } catch (error) {
     options.setIssue(
       createSavedTrackPlaybackRuntimeIssue(firstPlayableItem, error),

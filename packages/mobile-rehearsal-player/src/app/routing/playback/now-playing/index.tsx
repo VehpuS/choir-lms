@@ -31,6 +31,8 @@ type NowPlayingSurfaceProps = {
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
+  downloadLabel: string | null;
+  isPlaybackLoading: boolean;
   isPlaybackToggleDisabled: boolean;
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
   onClose: () => void;
@@ -71,7 +73,13 @@ const LoopRangeChip = ({
   );
 };
 
-const TitleBlock = ({ summary }: { summary: NowPlayingSurfaceSummary }) => {
+const TitleBlock = ({
+  downloadLabel,
+  summary,
+}: {
+  downloadLabel: string | null;
+  summary: NowPlayingSurfaceSummary;
+}) => {
   return (
     <View style={styles.titleBlock}>
       <Text style={styles.statusKicker}>{summary.statusLabel}</Text>
@@ -81,6 +89,11 @@ const TitleBlock = ({ summary }: { summary: NowPlayingSurfaceSummary }) => {
       <Text numberOfLines={1} style={styles.contextText}>
         {summary.collectionLabel}
       </Text>
+      {downloadLabel ? (
+        <Text numberOfLines={1} style={styles.downloadText}>
+          {downloadLabel}
+        </Text>
+      ) : null}
       {summary.upNextLabel ? (
         <Text numberOfLines={1} style={styles.nextText}>
           Next · {summary.upNextLabel}
@@ -123,7 +136,7 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
         contentContainerStyle={styles.bodyContent}
         style={styles.body}
       >
-        <TitleBlock summary={summary} />
+        <TitleBlock downloadLabel={props.downloadLabel} summary={summary} />
 
         <NowPlayingTimeline
           activePlayableItem={props.activePlayableItem}
@@ -137,6 +150,7 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
           canSeekActivePlayback={props.canSeekActivePlayback}
           canSkipNextItem={props.canSkipNextItem}
           canSkipPreviousItem={props.canSkipPreviousItem}
+          isPlaybackLoading={props.isPlaybackLoading}
           isPlaybackToggleDisabled={props.isPlaybackToggleDisabled}
           onSeekBackward={props.onSeekBackward}
           onSeekForward={props.onSeekForward}
@@ -151,7 +165,11 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
         <FadedRule />
         {props.activeRepeatMode ? (
           <PlaybackPracticeRow
-            isDisabled={props.isPlaybackToggleDisabled}
+            // Repeat and shuffle only change the session, so they stay usable
+            // while the current item is still loading (8.33).
+            isDisabled={
+              props.isPlaybackToggleDisabled && !props.isPlaybackLoading
+            }
             onSelectQueueMode={props.onSelectQueueMode}
             onSelectRepeatMode={props.onSelectRepeatMode}
             queueMode={props.activeQueueMode}

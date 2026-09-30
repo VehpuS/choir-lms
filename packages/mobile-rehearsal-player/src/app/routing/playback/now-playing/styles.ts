@@ -80,6 +80,10 @@ export const nowPlayingStyles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: CONTEXT_TEXT_SIZE,
   },
+  downloadText: {
+    color: colors.accentText,
+    fontSize: NEXT_TEXT_SIZE,
+  },
   nextText: {
     color: colors.textMuted,
     fontSize: NEXT_TEXT_SIZE,

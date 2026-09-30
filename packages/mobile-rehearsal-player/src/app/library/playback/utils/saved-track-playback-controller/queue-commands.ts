@@ -14,7 +14,7 @@ export const createSavedTrackPlaybackQueueCommands = (
   options: SavedTrackPlaybackControllerOptions,
   runtimeCommands: Pick<
     SavedTrackPlaybackRuntimeCommands,
-    'loadPlayableItem' | 'seekActivePlayableItemTo'
+    'canLoadPlayableItem' | 'loadPlayableItem' | 'seekActivePlayableItemTo'
   >,
 ) => {
   const advancePlaylistPlayback = async () => {
@@ -45,11 +45,20 @@ export const createSavedTrackPlaybackQueueCommands = (
         return;
       }
 
+      // Paired with the `finally` below, including the early return.
       options.setIsPreparing(true);
 
-      if (await runtimeCommands.loadPlayableItem(nextPlayableItem)) {
-        options.setActivePlaylistSession(nextSession);
+      if (!runtimeCommands.canLoadPlayableItem(nextPlayableItem)) {
+        return;
       }
+
+      // The queue moves on as soon as the next item starts loading, so queue
+      // controls never wait on its download. The advance guard only covers
+      // choosing the next item: a further skip during the download supersedes
+      // it rather than being ignored.
+      options.setActivePlaylistSession(nextSession);
+      options.isAdvancingPlaylistRef.current = false;
+      await runtimeCommands.loadPlayableItem(nextPlayableItem);
     } catch (error) {
       options.setIssue(
         createSavedTrackPlaybackRuntimeIssue(currentPlayableItem, error),
@@ -117,12 +126,15 @@ export const createSavedTrackPlaybackQueueCommands = (
         return;
       }
 
+      if (!runtimeCommands.canLoadPlayableItem(previousPlayableItem)) {
+        return;
+      }
+
+      options.setActivePlaylistSession(previousSession);
       options.setIsPreparing(true);
 
       try {
-        if (await runtimeCommands.loadPlayableItem(previousPlayableItem)) {
-          options.setActivePlaylistSession(previousSession);
-        }
+        await runtimeCommands.loadPlayableItem(previousPlayableItem);
       } catch (error) {
         options.setIssue(
           createSavedTrackPlaybackRuntimeIssue(previousPlayableItem, error),

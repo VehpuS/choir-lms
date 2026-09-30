@@ -1,3 +1,10 @@
+import {
+  abortSavedTrackDownloads,
+  startSavedTrackDownload,
+  type SavedTrackDownloadDependencies,
+  type SavedTrackDownloadResponse,
+} from './saved-track-web-download';
+
 const SAVED_TRACK_PLAYER_WEB_PATCH = Symbol('saved-track-player-web-patch');
 const SAVED_TRACK_PLAYER_WEB_PLAYER_PATCH = Symbol(
   'saved-track-player-web-player-patch',
@@ -20,12 +27,6 @@ type SavedTrackPlayerWebRuntime = {
   stop?: () => Promise<unknown>;
 };
 
-type SavedTrackPlayerWebResponse = {
-  blob(): Promise<Blob>;
-  ok: boolean;
-  status: number;
-};
-
 type SavedTrackPlayerWebMediaElement = {
   load(): void;
   removeAttribute?(name: string): void;
@@ -38,13 +39,16 @@ type SavedTrackPlayerWebPlayer = {
   load(url: string): Promise<unknown>;
 };
 
-type SavedTrackPlayerWebDependencies = {
+type SavedTrackPlayerWebDependencies = Partial<
+  Omit<SavedTrackDownloadDependencies, 'fetch'>
+> & {
   fetch: (
     input: string,
     init?: {
       headers?: Record<string, string>;
+      signal?: AbortSignal;
     },
-  ) => Promise<SavedTrackPlayerWebResponse>;
+  ) => Promise<SavedTrackDownloadResponse>;
   urlApi: Pick<typeof URL, 'createObjectURL' | 'revokeObjectURL'>;
   windowApi: {
     rntp?: SavedTrackPlayerWebPlayer;
@@ -71,17 +75,10 @@ const fetchSavedTrackBlobUrl = async (
   track: SavedTrackPlayerWebTrack,
   dependencies: SavedTrackPlayerWebDependencies,
 ) => {
-  const response = await dependencies.fetch(track.url, {
-    headers: track.headers,
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Web playback media request failed with ${response.status}.`,
-    );
-  }
-
-  const trackBlob = await response.blob();
+  const trackBlob = await startSavedTrackDownload(
+    { headers: track.headers, url: track.url },
+    dependencies,
+  );
 
   return dependencies.urlApi.createObjectURL(trackBlob);
 };
@@ -303,6 +300,8 @@ export const patchSavedTrackPlayerWebRuntime = (
 
   if (originalReset) {
     patchedRuntime.reset = async () => {
+      abortSavedTrackDownloads();
+
       try {
         return await originalReset();
       } finally {
@@ -315,6 +314,8 @@ export const patchSavedTrackPlayerWebRuntime = (
 
   if (originalStop) {
     patchedRuntime.stop = async () => {
+      abortSavedTrackDownloads();
+
       try {
         return await originalStop();
       } finally {

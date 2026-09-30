@@ -299,9 +299,10 @@ export const getPlaylistPlaybackActionCopy = (options: {
     options.activeSession?.playlistId === options.selectedPlaylist.id &&
     options.activeSession.queue.mode === options.mode;
 
+  // Starting another mode or playlist supersedes a load still in progress.
   if (!isActiveMode) {
     return {
-      disabled: options.isPreparing,
+      disabled: false,
       label: getBaseActionLabel(options.mode),
     };
   }

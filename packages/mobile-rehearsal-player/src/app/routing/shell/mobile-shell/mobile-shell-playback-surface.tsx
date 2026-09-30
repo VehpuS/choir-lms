@@ -16,6 +16,8 @@ type MobileShellPlaybackSurfaceProps = {
   canSeekActivePlayback: boolean;
   canSkipNextItem: boolean;
   canSkipPreviousItem: boolean;
+  downloadLabel: string | null;
+  isPlaybackLoading: boolean;
   isPlaybackToggleDisabled: boolean;
   isSavingQueueAsPlaylist: boolean;
   nowPlayingSummary: NowPlayingSurfaceSummary | null;
@@ -62,6 +64,8 @@ export const MobileShellPlaybackSurface = (
       canSeekActivePlayback={props.canSeekActivePlayback}
       canSkipNextItem={props.canSkipNextItem}
       canSkipPreviousItem={props.canSkipPreviousItem}
+      downloadLabel={props.downloadLabel}
+      isPlaybackLoading={props.isPlaybackLoading}
       isPlaybackToggleDisabled={props.isPlaybackToggleDisabled}
       isSavingQueueAsPlaylist={props.isSavingQueueAsPlaylist}
       nowPlayingSummary={props.nowPlayingSummary}

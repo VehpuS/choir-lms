@@ -51,7 +51,7 @@ type CreateSavedTrackPlaybackActionsOptions = {
   setActivePlaylistSession: Dispatch<
     SetStateAction<PlaylistPlaybackSession | null>
   >;
-  setIsPreparing: Dispatch<SetStateAction<boolean>>;
+  setIsPreparing: (isPreparing: boolean) => void;
   setIssue: Dispatch<SetStateAction<SavedTrackPlaybackIssue | null>>;
   setPlaylistRepeatModeState: Dispatch<SetStateAction<RepeatMode>>;
 };
@@ -261,12 +261,16 @@ export const createSavedTrackPlaybackActions = ({
       }
 
       setIssue(null);
+
+      if (!playbackController.canLoadPlayableItem(selection.playableItem)) {
+        return;
+      }
+
+      setActivePlaylistSession(selection.nextSession);
       setIsPreparing(true);
 
       try {
-        if (await playbackController.loadPlayableItem(selection.playableItem)) {
-          setActivePlaylistSession(selection.nextSession);
-        }
+        await playbackController.loadPlayableItem(selection.playableItem);
       } catch (error) {
         setIssue(
           createSavedTrackPlaybackRuntimeIssue(selection.playableItem, error),

@@ -19,6 +19,7 @@ type QueueSurfaceProps = {
   canSkipPreviousItem: boolean;
   dragHandleProps?: ComponentProps<typeof View>;
   isSavingQueueAsPlaylist: boolean;
+  isPlaybackLoading: boolean;
   isPlaybackToggleDisabled: boolean;
   onClose: () => void;
   onMoveQueueItem: (fromIndex: number, toIndex: number) => void;
@@ -49,6 +50,7 @@ export const QueueSurface = ({
   canSkipPreviousItem,
   dragHandleProps,
   isSavingQueueAsPlaylist,
+  isPlaybackLoading,
   isPlaybackToggleDisabled,
   onClose,
   onMoveQueueItem,
@@ -67,6 +69,7 @@ export const QueueSurface = ({
   playbackToggleLabel,
   summary,
 }: QueueSurfaceProps) => {
+  const isQueueControlDisabled = isPlaybackToggleDisabled && !isPlaybackLoading;
   const { height: windowHeight } = useWindowDimensions();
   const queueListMaxHeight = getQueueListMaxHeight(windowHeight);
   const [activeOptionsItemKey, setActiveOptionsItemKey] = useState<
@@ -149,8 +152,9 @@ export const QueueSurface = ({
         />
       ) : null}
 
+      {/* Queue controls stay usable while the current item loads (8.33). */}
       <PlaybackSessionModeCard
-        isDisabled={isPlaybackToggleDisabled}
+        isDisabled={isQueueControlDisabled}
         onSelectQueueMode={onSelectQueueMode}
         onSelectRepeatMode={onSelectRepeatMode}
         queueMode={activeQueueMode}
@@ -184,7 +188,13 @@ export const QueueSurface = ({
           return (
             <QueueSurfaceRow
               key={item.key}
-              isPlaybackToggleDisabled={isPlaybackToggleDisabled}
+              // The loading item's own control waits; other rows may
+              // supersede its load.
+              isPlaybackToggleDisabled={
+                item.isCurrent
+                  ? isPlaybackToggleDisabled
+                  : isQueueControlDisabled
+              }
               isVisible={activeOptionsItemKey === item.key}
               item={item}
               itemCount={summary.items.length}
