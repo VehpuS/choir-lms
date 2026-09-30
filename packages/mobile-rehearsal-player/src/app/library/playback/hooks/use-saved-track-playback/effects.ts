@@ -6,6 +6,7 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
+import { Platform } from 'react-native';
 
 import type { PlaylistPlaybackSession } from '../../../playlists/utils/saved-playlist-playback-view-model';
 import type { SavedTrackPlaybackController } from '../../utils/saved-track-playback-controller';
@@ -22,8 +23,10 @@ import {
 } from '../../utils/saved-track-playback-view-model';
 import {
   getSavedTrackPlayer,
+  resolveSavedTrackPlayerSupport,
   useSavedTrackPlayerEvents,
 } from '../../utils/saved-track-player-interop';
+import { prewarmSavedTrackPlayer } from '../../utils/saved-track-player-prewarm';
 import {
   ensureSavedTrackPlayerReady,
   syncSavedTrackPlayerCapabilities,
@@ -93,6 +96,14 @@ export const useSavedTrackPlaybackEffects = ({
   useEffect(() => {
     playbackStateRef.current.playbackState = playbackState;
   }, [playbackState, playbackStateRef]);
+
+  useEffect(() => {
+    prewarmSavedTrackPlayer({
+      ensureReady: ensureSavedTrackPlayerReady,
+      isSupported: resolveSavedTrackPlayerSupport().isSupported,
+      platformOs: Platform.OS,
+    });
+  }, []);
 
   useEffect(() => {
     if (!activePlayableItem) {

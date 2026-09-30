@@ -34,9 +34,6 @@ export const createSavedTrackPlaybackRuntimeCore = (
     accessToken,
     loadOptions,
   ) => {
-    await ensureSavedTrackPlayerReady();
-    const trackPlayer = getSavedTrackPlayer();
-
     const playbackRequest = createSavedTrackPlaybackRequest({
       accessToken,
       playableItem,
@@ -45,12 +42,15 @@ export const createSavedTrackPlaybackRuntimeCore = (
       loadOptions?.initialPositionSeconds ??
       playbackRequest.playableItem.range.startMs / 1000;
 
-    // The item becomes active before the player loads it, so the mini-player
-    // and its row show `Loading` while web playback downloads the file
-    // (which takes as long as the connection needs; see 8.33).
+    // The item becomes active before anything is awaited (player setup, the
+    // web download), so the mini-player and its row show `Loading` in the
+    // same frame as the tap (8.33).
     if (loadOptions?.syncActivePlayableItem !== false) {
       options.setActivePlayableItem(playbackRequest.playableItem);
     }
+
+    await ensureSavedTrackPlayerReady();
+    const trackPlayer = getSavedTrackPlayer();
 
     await trackPlayer.reset();
     await trackPlayer.add(playbackRequest.track);
