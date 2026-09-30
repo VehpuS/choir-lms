@@ -1,5 +1,7 @@
 import type { PlayableItem } from '@org/audio-library-models';
+import { sum } from 'es-toolkit';
 
+import { ROW_META_SEPARATOR } from '../../components/row-meta-line/model';
 import { formatDurationLabel } from '../../library/drive/utils/drive-library-view-model';
 import {
   formatSavedLoopRangeLabel,
@@ -190,16 +192,53 @@ const getMiniPlayerContextLabel = (options: {
   return `${options.status} • ${options.progressLabel}`;
 };
 
+/** An Up Next row's meta line (1h): `Track · 4:41` or `Loop · 1:12–1:48 · Kyrie.mp3`. */
 export const getQueueItemDetail = (playableItem: PlayableItem) => {
-  const loopLabel = getPlayableItemRangeLabel(playableItem);
+  const loopRange = getPlayableItemLoopRange(playableItem);
 
-  if (loopLabel) {
-    return `${loopLabel} • ${playableItem.source.name}`;
+  if (loopRange) {
+    return ['Loop', loopRange.label, playableItem.source.name].join(
+      ROW_META_SEPARATOR,
+    );
   }
 
   const durationLabel = formatDurationLabel(playableItem.source.durationMs);
 
-  return durationLabel ? `Full track • ${durationLabel}` : 'Full track';
+  return durationLabel ? `Track${ROW_META_SEPARATOR}${durationLabel}` : 'Track';
+};
+
+// The length an item plays for: its loop range, or the rest of its source.
+const getPlayableItemDurationMs = (playableItem: PlayableItem) => {
+  const endMs = playableItem.range.endMs ?? playableItem.source.durationMs;
+
+  return endMs === undefined ? undefined : endMs - playableItem.range.startMs;
+};
+
+/**
+ * The Up Next title block's line (1h): `9 items · 32:14 · ordered · repeat all`.
+ * The total is left out rather than understated when an item has no duration.
+ */
+export const getQueueSessionMetaLabel = (session: PlaylistPlaybackSession) => {
+  const itemCount = session.queue.items.length;
+  const durations = session.queue.items.flatMap((item) => {
+    return getPlayableItemDurationMs(item) ?? [];
+  });
+  const totalDurationLabel =
+    durations.length === itemCount ? formatDurationLabel(sum(durations)) : null;
+  const unavailableItemCount = Math.max(
+    0,
+    session.requestedItemCount - itemCount,
+  );
+  const parts = [
+    `${itemCount} ${itemCount === 1 ? 'item' : 'items'}`,
+    totalDurationLabel,
+    getPlaylistQueueModeLabel(session.queue.mode).toLowerCase(),
+    getPlaylistRepeatModeLabel(session.queue.repeatMode).toLowerCase(),
+    unavailableItemCount > 0 ? `${unavailableItemCount} unavailable` : null,
+    session.hasCompleted ? 'finished' : null,
+  ];
+
+  return parts.filter((part) => part !== null).join(ROW_META_SEPARATOR);
 };
 
 export const getMiniPlayerSummary = (options: {

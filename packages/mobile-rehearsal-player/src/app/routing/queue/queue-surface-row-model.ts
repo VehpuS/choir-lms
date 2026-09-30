@@ -1,28 +1,35 @@
 import { getPlaybackToggleControlModel } from '../playback/playback-toggle-control-model';
 
-export type QueueRowPlaybackAction = {
-  accessibilityLabel: string;
-  iconName: 'pause' | 'play';
-  pressBehavior: 'play-item' | 'toggle-current';
-  selected: boolean;
-};
-
 export type QueueRowPresentation = {
+  accessibilityLabel: string;
   emphasis: 'current' | 'upcoming';
-  playbackAction: QueueRowPlaybackAction;
+  /** What tapping the row does: start it, or toggle the item already current. */
+  pressBehavior: 'play-item' | 'toggle-current';
+  /** The current row's status, set before its meta line (1h: `Playing`). */
+  statusLabel: 'Loading' | 'Paused' | 'Playing' | null;
 };
 
-export const getQueueRowPlaybackAction = (options: {
+const getCurrentStatusLabel = (isPlaying: boolean, isLoading: boolean) => {
+  if (isLoading) {
+    return 'Loading';
+  }
+
+  return isPlaying ? 'Playing' : 'Paused';
+};
+
+export const getQueueRowPresentation = (options: {
   isCurrent: boolean;
+  /** The current item is still loading, so it is neither playing nor paused. */
+  isLoading?: boolean;
   playbackToggleLabel: string;
   title: string;
-}): QueueRowPlaybackAction => {
+}): QueueRowPresentation => {
   if (!options.isCurrent) {
     return {
       accessibilityLabel: `Play ${options.title}`,
-      iconName: 'play',
+      emphasis: 'upcoming',
       pressBehavior: 'play-item',
-      selected: false,
+      statusLabel: null,
     };
   }
 
@@ -33,19 +40,11 @@ export const getQueueRowPlaybackAction = (options: {
 
   return {
     accessibilityLabel: playbackToggleControl.accessibilityLabel,
-    iconName: playbackToggleControl.iconName,
+    emphasis: 'current',
     pressBehavior: 'toggle-current',
-    selected: playbackToggleControl.selected,
-  };
-};
-
-export const getQueueRowPresentation = (options: {
-  isCurrent: boolean;
-  playbackToggleLabel: string;
-  title: string;
-}): QueueRowPresentation => {
-  return {
-    emphasis: options.isCurrent ? 'current' : 'upcoming',
-    playbackAction: getQueueRowPlaybackAction(options),
+    statusLabel: getCurrentStatusLabel(
+      playbackToggleControl.selected,
+      options.isLoading ?? false,
+    ),
   };
 };

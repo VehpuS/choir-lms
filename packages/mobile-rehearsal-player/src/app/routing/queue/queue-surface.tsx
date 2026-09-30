@@ -1,22 +1,26 @@
 import type { RehearsalQueueMode, RepeatMode } from '@org/audio-library-models';
 import { type ComponentProps, useEffect, useState } from 'react';
-import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 
+import { AppIcon } from '../../components/app-icon';
+import { FadedRule } from '../../components/faded-rule';
 import { QueueMovePositionDialog } from '../../components/queue-move-position-dialog';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
-import { PlaybackSessionModeCard } from '../playback/playback-session-mode-card';
-import { styles } from '../playback/playback-surface-styles';
+import { ExplorerListSurface } from '../../library/components/explorer';
+import { InteractionChip } from '../../library/components/interaction-chip';
+import { nowPlayingStyles } from '../playback/now-playing/styles';
+import { appTheme } from '../../utils/theme';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
 import { QueuePlaylistActionRow } from './queue-playlist-action-row';
-import { getQueueListMaxHeight } from './queue-surface-layout';
+import { getQueueModeChips } from './queue-mode-chips-model';
 import { QueueSurfaceRow } from './queue-surface-row';
-import { getQueueSurfaceTransportActions } from './queue-surface-transport-model';
+import { queueStyles as styles } from './styles';
+
+const MODE_CHIP_ICON_SIZE = 18;
 
 type QueueSurfaceProps = {
   activeQueueMode: RehearsalQueueMode;
   activeRepeatMode: RepeatMode;
-  canSkipNextItem: boolean;
-  canSkipPreviousItem: boolean;
   dragHandleProps?: ComponentProps<typeof View>;
   isSavingQueueAsPlaylist: boolean;
   isPlaybackLoading: boolean;
@@ -36,18 +40,26 @@ type QueueSurfaceProps = {
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
-  onSkipNextItem: () => void;
-  onSkipPreviousItem: () => void;
   onTogglePlayback: () => void;
   playbackToggleLabel: string;
   summary: UpNextSurfaceSummary;
 };
 
+// Drops a remembered row key once its item leaves the queue.
+const keepKeyIfQueued = (
+  currentKey: string | null,
+  items: UpNextSurfaceSummary['items'],
+) => {
+  if (!currentKey) {
+    return currentKey;
+  }
+
+  return items.some((item) => item.key === currentKey) ? currentKey : null;
+};
+
 export const QueueSurface = ({
   activeQueueMode,
   activeRepeatMode,
-  canSkipNextItem,
-  canSkipPreviousItem,
   dragHandleProps,
   isSavingQueueAsPlaylist,
   isPlaybackLoading,
@@ -63,15 +75,12 @@ export const QueueSurface = ({
   onSelectQueueMode,
   onSelectRepeatMode,
   onShowNowPlaying,
-  onSkipNextItem,
-  onSkipPreviousItem,
   onTogglePlayback,
   playbackToggleLabel,
   summary,
 }: QueueSurfaceProps) => {
+  // Queue controls stay usable while the current item loads (8.33).
   const isQueueControlDisabled = isPlaybackToggleDisabled && !isPlaybackLoading;
-  const { height: windowHeight } = useWindowDimensions();
-  const queueListMaxHeight = getQueueListMaxHeight(windowHeight);
   const [activeOptionsItemKey, setActiveOptionsItemKey] = useState<
     string | null
   >(null);
@@ -79,51 +88,33 @@ export const QueueSurface = ({
     string | null
   >(null);
   const [isQueueRowDragActive, setIsQueueRowDragActive] = useState(false);
-  const transportActions = getQueueSurfaceTransportActions({
-    canSkipNextItem,
-    canSkipPreviousItem,
+  const modeChips = getQueueModeChips({
+    queueMode: activeQueueMode,
+    repeatMode: activeRepeatMode,
   });
 
   useEffect(() => {
-    setActiveOptionsItemKey((currentKey) => {
-      if (!currentKey) {
-        return currentKey;
-      }
-
-      return summary.items.some((item) => item.key === currentKey)
-        ? currentKey
-        : null;
-    });
+    setActiveOptionsItemKey((key) => keepKeyIfQueued(key, summary.items));
+    setActiveMovePositionItemKey((key) => keepKeyIfQueued(key, summary.items));
   }, [summary.items]);
 
-  useEffect(() => {
-    setActiveMovePositionItemKey((currentKey) => {
-      if (!currentKey) {
-        return currentKey;
-      }
-
-      return summary.items.some((item) => item.key === currentKey)
-        ? currentKey
-        : null;
-    });
-  }, [summary.items]);
-
+  const resolveItemIndex = (itemKey: string) => {
+    return summary.items.findIndex((queuedItem) => queuedItem.key === itemKey);
+  };
   const activeMovePositionItem = summary.items.find((item) => {
     return item.key === activeMovePositionItemKey;
   });
   const activeMovePositionIndex = activeMovePositionItem
-    ? summary.items.findIndex((item) => {
-        return item.key === activeMovePositionItem.key;
-      })
+    ? resolveItemIndex(activeMovePositionItem.key)
     : -1;
 
   return (
-    <View style={styles.sheetCard}>
-      <View {...dragHandleProps} style={styles.surfaceDragHandleRegion}>
-        <View style={styles.surfaceHandle} />
-        <View style={styles.sheetHeaderRow}>
-          <Text style={styles.sheetEyebrow}>Up Next</Text>
-          <View style={styles.headerActionRow}>
+    <View style={nowPlayingStyles.sheet}>
+      <View {...dragHandleProps} style={styles.dragRegion}>
+        <View style={nowPlayingStyles.grabber} />
+        <View style={nowPlayingStyles.header}>
+          <Text style={nowPlayingStyles.headerKicker}>Up Next</Text>
+          <View style={nowPlayingStyles.headerActions}>
             <SurfaceIconButton
               accessibilityLabel="Show now playing"
               icon="play-circle-outline"
@@ -138,10 +129,105 @@ export const QueueSurface = ({
         </View>
       </View>
 
-      <View style={styles.summaryGroup}>
-        <Text style={styles.queueSurfaceTitle}>Active rehearsal queue</Text>
-        <Text style={styles.subtitle}>{summary.collectionLabel}</Text>
+      <View style={styles.titleBlock}>
+        <Text numberOfLines={2} style={styles.title}>
+          {summary.title}
+        </Text>
+        <Text numberOfLines={1} style={styles.meta}>
+          {summary.metaLabel}
+        </Text>
+        <View style={styles.chipRow}>
+          {modeChips.map((chip) => {
+            return (
+              <InteractionChip
+                accessibilityHint={
+                  chip.key === 'repeat' ? chip.accessibilityHint : undefined
+                }
+                accessibilityLabel={chip.accessibilityLabel}
+                accessibilitySelected={chip.selected}
+                disabled={isQueueControlDisabled}
+                key={chip.key}
+                label={chip.label}
+                leadingIcon={
+                  <AppIcon
+                    color={
+                      chip.selected
+                        ? appTheme.colors.accentText
+                        : appTheme.colors.icon
+                    }
+                    name={chip.icon}
+                    size={MODE_CHIP_ICON_SIZE}
+                  />
+                }
+                onPress={() => {
+                  if (chip.key === 'repeat') {
+                    onSelectRepeatMode(chip.mode);
+                    return;
+                  }
+
+                  onSelectQueueMode(chip.mode);
+                }}
+                variant={chip.selected ? 'selected' : 'passive'}
+              />
+            );
+          })}
+        </View>
       </View>
+
+      <FadedRule />
+
+      <ScrollView
+        bounces={false}
+        contentContainerStyle={styles.listContent}
+        scrollEnabled={!isQueueRowDragActive}
+        showsVerticalScrollIndicator={summary.items.length > 6}
+        style={styles.list}
+      >
+        <ExplorerListSurface>
+          {summary.items.map((item) => {
+            return (
+              <QueueSurfaceRow
+                isPlaybackLoading={isPlaybackLoading}
+                key={item.key}
+                // The loading item's own row waits; other rows may supersede
+                // its load.
+                isPlaybackToggleDisabled={
+                  item.isCurrent
+                    ? isPlaybackToggleDisabled
+                    : isQueueControlDisabled
+                }
+                isVisible={activeOptionsItemKey === item.key}
+                item={item}
+                itemCount={summary.items.length}
+                onCloseMenu={() => {
+                  setActiveOptionsItemKey(null);
+                }}
+                onMoveItem={onMoveQueueItem}
+                onMoveItemToEnd={onMoveQueueItemToEnd}
+                onMoveItemToStart={onMoveQueueItemToStart}
+                onPlayItem={() => {
+                  const itemIndex = resolveItemIndex(item.key);
+
+                  if (itemIndex >= 0) {
+                    onPlayQueueItem(itemIndex);
+                  }
+                }}
+                onRemoveItem={onRemoveQueueItem}
+                onRequestMoveToPosition={() => {
+                  setActiveMovePositionItemKey(item.key);
+                }}
+                onSetDragActive={setIsQueueRowDragActive}
+                onShowMenu={() => {
+                  setActiveOptionsItemKey(item.key);
+                }}
+                onToggleCurrentPlayback={onTogglePlayback}
+                playbackToggleLabel={playbackToggleLabel}
+                resolveItemIndex={() => resolveItemIndex(item.key)}
+              />
+            );
+          })}
+        </ExplorerListSurface>
+      </ScrollView>
 
       {summary.queuePlaylistActions ? (
         <QueuePlaylistActionRow
@@ -151,87 +237,6 @@ export const QueueSurface = ({
           onSaveQueueAsPlaylist={onSaveQueueAsPlaylist}
         />
       ) : null}
-
-      {/* Queue controls stay usable while the current item loads (8.33). */}
-      <PlaybackSessionModeCard
-        isDisabled={isQueueControlDisabled}
-        onSelectQueueMode={onSelectQueueMode}
-        onSelectRepeatMode={onSelectRepeatMode}
-        queueMode={activeQueueMode}
-        repeatMode={activeRepeatMode}
-      />
-
-      <View style={styles.transportRow}>
-        {transportActions.map((action) => {
-          return (
-            <SurfaceIconButton
-              accessibilityLabel={action.accessibilityLabel}
-              disabled={action.disabled}
-              icon={action.icon}
-              key={action.key}
-              onPress={
-                action.key === 'previous' ? onSkipPreviousItem : onSkipNextItem
-              }
-            />
-          );
-        })}
-      </View>
-
-      <ScrollView
-        bounces={false}
-        contentContainerStyle={styles.queueListContent}
-        scrollEnabled={!isQueueRowDragActive}
-        showsVerticalScrollIndicator={summary.items.length > 4}
-        style={[styles.queueList, { maxHeight: queueListMaxHeight }]}
-      >
-        {summary.items.map((item) => {
-          return (
-            <QueueSurfaceRow
-              key={item.key}
-              // The loading item's own control waits; other rows may
-              // supersede its load.
-              isPlaybackToggleDisabled={
-                item.isCurrent
-                  ? isPlaybackToggleDisabled
-                  : isQueueControlDisabled
-              }
-              isVisible={activeOptionsItemKey === item.key}
-              item={item}
-              itemCount={summary.items.length}
-              onCloseMenu={() => {
-                setActiveOptionsItemKey(null);
-              }}
-              onMoveItem={onMoveQueueItem}
-              onMoveItemToEnd={onMoveQueueItemToEnd}
-              onMoveItemToStart={onMoveQueueItemToStart}
-              onPlayItem={() => {
-                const itemIndex = summary.items.findIndex((queuedItem) => {
-                  return queuedItem.key === item.key;
-                });
-
-                if (itemIndex >= 0) {
-                  onPlayQueueItem(itemIndex);
-                }
-              }}
-              onRemoveItem={onRemoveQueueItem}
-              onRequestMoveToPosition={() => {
-                setActiveMovePositionItemKey(item.key);
-              }}
-              onSetDragActive={setIsQueueRowDragActive}
-              onShowMenu={() => {
-                setActiveOptionsItemKey(item.key);
-              }}
-              onToggleCurrentPlayback={onTogglePlayback}
-              playbackToggleLabel={playbackToggleLabel}
-              resolveItemIndex={() => {
-                return summary.items.findIndex((queuedItem) => {
-                  return queuedItem.key === item.key;
-                });
-              }}
-            />
-          );
-        })}
-      </ScrollView>
 
       {activeMovePositionItem ? (
         <QueueMovePositionDialog

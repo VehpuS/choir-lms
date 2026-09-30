@@ -1,8 +1,8 @@
 import { View } from 'react-native';
 
 import { OutlinedActionButton } from '../../components/outlined-action-button';
-import { styles } from '../playback/playback-surface-styles';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
+import { queueStyles as styles } from './styles';
 
 type QueuePlaylistActionRowProps = {
   actions: NonNullable<UpNextSurfaceSummary['queuePlaylistActions']>;
@@ -15,6 +15,8 @@ type QueuePlaylistActionRowProps = {
   ) => void;
 };
 
+// The pinned footer (1h): update the playlist the queue came from, or save the
+// queue as a new one.
 export const QueuePlaylistActionRow = ({
   actions,
   isMutating,
@@ -24,15 +26,7 @@ export const QueuePlaylistActionRow = ({
   const { updateAction } = actions;
 
   return (
-    <View style={styles.queuePlaylistActionRow}>
-      <OutlinedActionButton
-        disabled={isMutating}
-        fill
-        label={isMutating ? 'Saving queue…' : actions.saveLabel}
-        onPress={onSaveQueueAsPlaylist}
-        // Saving is the primary action only when there is no playlist to update.
-        variant={updateAction ? 'neutral' : 'accent'}
-      />
+    <View style={styles.footer}>
       {updateAction ? (
         <OutlinedActionButton
           disabled={isMutating}
@@ -44,6 +38,14 @@ export const QueuePlaylistActionRow = ({
           variant="accent"
         />
       ) : null}
+      <OutlinedActionButton
+        disabled={isMutating}
+        fill
+        label={isMutating ? 'Saving queue…' : actions.saveLabel}
+        onPress={onSaveQueueAsPlaylist}
+        // Saving is the primary action only when there is no playlist to update.
+        variant={updateAction ? 'neutral' : 'accent'}
+      />
     </View>
   );
 };

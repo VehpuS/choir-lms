@@ -25,6 +25,7 @@ type ExplorerBreadcrumbBarProps = {
 };
 
 type ExplorerListRowProps = {
+  accessibilityLabel?: string;
   actions?: ReactNode;
   active?: boolean;
   disabled?: boolean;
@@ -156,6 +157,7 @@ export const ExplorerListSurface = ({
 };
 
 export const ExplorerListRow = ({
+  accessibilityLabel,
   actions,
   active = false,
   disabled = false,
@@ -198,6 +200,7 @@ export const ExplorerListRow = ({
   if (!hasTrailingControls) {
     return (
       <Pressable
+        accessibilityLabel={accessibilityLabel}
         accessibilityRole="button"
         accessibilityState={selected === undefined ? undefined : { selected }}
         disabled={!isInteractive}
@@ -217,6 +220,7 @@ export const ExplorerListRow = ({
     <View style={rowSurfaceStyles}>
       {activeMark}
       <Pressable
+        accessibilityLabel={accessibilityLabel}
         accessibilityRole="button"
         accessibilityState={selected === undefined ? undefined : { selected }}
         disabled={!isInteractive}

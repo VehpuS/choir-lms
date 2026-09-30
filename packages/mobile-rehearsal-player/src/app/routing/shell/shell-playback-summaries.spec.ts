@@ -166,26 +166,26 @@ describe('shell playback summaries', () => {
         activePlaylistSession: transientSession,
       }),
       {
-        collectionLabel:
-          'Current queue • Active session • Current queue • item 1 of 2 • Ordered • Repeat all.',
         items: [
           {
-            detail: 'Full track • 3:05',
+            detail: 'Track · 3:05',
             isCurrent: true,
             key: 'track:drive:alto-line:0',
             title: 'Alto Line.mp3',
           },
           {
-            detail: 'Full track • 3:05',
+            detail: 'Track · 3:05',
             isCurrent: false,
             key: 'track:drive:tenor-line:1',
             title: 'Tenor Line.mp3',
           },
         ],
+        metaLabel: '2 items · 6:10 · ordered · repeat all',
         queuePlaylistActions: {
-          saveLabel: 'Create new playlist',
+          saveLabel: 'Save as playlist',
           updateAction: null,
         },
+        title: 'Current queue',
       },
     );
   });
@@ -202,32 +202,32 @@ describe('shell playback summaries', () => {
     });
 
     assert.deepEqual(summary, {
-      collectionLabel:
-        'Warmups • Active session • Warmups • item 2 of 2 • Ordered • Repeat all.',
       items: [
         {
-          detail: 'Full track • 3:05',
+          detail: 'Track · 3:05',
           isCurrent: false,
           key: 'entry:track:drive:alto-line:2026-05-12T00:01:00.000Z',
           title: 'Alto Line.mp3',
         },
         {
-          detail: 'Loop 0:12 - 0:18 • Alto Line.mp3',
+          detail: 'Loop · 0:12–0:18 · Alto Line.mp3',
           isCurrent: true,
           key: 'entry:loop:loop-1:2026-05-12T00:02:00.000Z',
           title: 'Entrance cue',
         },
       ],
+      metaLabel: '2 items · 3:11 · ordered · repeat all',
       queuePlaylistActions: {
-        saveLabel: 'Create new playlist',
+        saveLabel: 'Save as new',
         updateAction: {
           confirmLabel: 'Update playlist',
           confirmationMessage:
             'Replace the saved items and order in Warmups with the current Up Next order. Unsaved queued tracks will be added to Library first, and current playback keeps running.',
           confirmationTitle: 'Update Warmups?',
-          label: 'Update current playlist',
+          label: 'Update Warmups',
         },
       },
+      title: 'Warmups',
     });
   });
 
@@ -277,13 +277,13 @@ describe('shell playback summaries', () => {
         activePlaylistSession: reboundSession,
       })?.queuePlaylistActions,
       {
-        saveLabel: 'Create new playlist',
+        saveLabel: 'Save as new',
         updateAction: {
           confirmLabel: 'Update playlist',
           confirmationMessage:
             'Replace the saved items and order in Wednesday rehearsal with the current Up Next order. Unsaved queued tracks will be added to Library first, and current playback keeps running.',
           confirmationTitle: 'Update Wednesday rehearsal?',
-          label: 'Update current playlist',
+          label: 'Update Wednesday rehearsal',
         },
       },
     );

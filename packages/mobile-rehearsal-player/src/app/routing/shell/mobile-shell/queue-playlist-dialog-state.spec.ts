@@ -19,7 +19,7 @@ const UPDATE_ACTION: QueuePlaylistUpdateAction = {
   confirmationMessage:
     'Replace the saved items and order in Wednesday rehearsal with the current Up Next order.',
   confirmationTitle: 'Update Wednesday rehearsal?',
-  label: 'Update current playlist',
+  label: 'Update Wednesday rehearsal',
 };
 
 const ISSUE: PlaylistDraftIssue = {

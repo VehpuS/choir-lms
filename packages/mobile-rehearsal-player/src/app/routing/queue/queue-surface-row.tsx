@@ -1,19 +1,20 @@
-import { useMemo, useRef } from 'react';
-import { PanResponder, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import { CompactPlayableRowShell } from '../../components/compact-playable-row-shell';
 import { DragHandle } from '../../components/drag-handle';
+import { EqualizerMark } from '../../components/equalizer-mark';
 import { OverflowMenuTrigger } from '../../components/overflow-menu-trigger';
-import { SurfaceIconButton } from '../../components/surface-icon-button';
+import { RowMetaLine } from '../../components/row-meta-line';
+import { ExplorerListRow } from '../../library/components/explorer';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
-
-import { styles } from '../playback/playback-surface-styles';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
 import { getQueueRowPresentation } from './queue-surface-row-model';
+import { queueStyles as styles } from './styles';
+import { useQueueRowDrag } from './use-queue-row-drag';
 
 export type QueueSurfaceRowProps = {
   item: UpNextSurfaceSummary['items'][number];
   itemCount: number;
+  isPlaybackLoading: boolean;
   isPlaybackToggleDisabled: boolean;
   isVisible: boolean;
   onCloseMenu: () => void;
@@ -30,9 +31,12 @@ export type QueueSurfaceRowProps = {
   resolveItemIndex: () => number;
 };
 
+// One Up Next row (1h): a position number (an equalizer mark for the current
+// item), title over meta line, and a drag handle. Tapping plays the item.
 export const QueueSurfaceRow = ({
   item,
   itemCount,
+  isPlaybackLoading,
   isPlaybackToggleDisabled,
   isVisible,
   onCloseMenu,
@@ -48,146 +52,83 @@ export const QueueSurfaceRow = ({
   playbackToggleLabel,
   resolveItemIndex,
 }: QueueSurfaceRowProps) => {
-  const dragAnchorMoveYRef = useRef<number | null>(null);
-  const measuredItemHeightRef = useRef(88);
   const currentIndex = resolveItemIndex();
   const canMoveToStart = currentIndex > 0;
   const canMoveToEnd = currentIndex >= 0 && currentIndex < itemCount - 1;
   const canMoveToPosition = itemCount > 1 && currentIndex >= 0;
   const canRemove = !item.isCurrent;
   const canDragReorder = itemCount > 1;
-  const rowPresentation = getQueueRowPresentation({
+  const presentation = getQueueRowPresentation({
     isCurrent: item.isCurrent,
+    isLoading: isPlaybackLoading,
     playbackToggleLabel,
     title: item.title,
   });
-
-  const panResponder = useMemo(() => {
-    return PanResponder.create({
-      onStartShouldSetPanResponder: () => {
-        return canDragReorder;
-      },
-      onStartShouldSetPanResponderCapture: () => {
-        return canDragReorder;
-      },
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return canDragReorder && Math.abs(gestureState.dy) > 5;
-      },
-      onMoveShouldSetPanResponderCapture: (_, gestureState) => {
-        return canDragReorder && Math.abs(gestureState.dy) > 5;
-      },
-      onPanResponderTerminationRequest: () => {
-        return false;
-      },
-      onShouldBlockNativeResponder: () => {
-        return true;
-      },
-      onPanResponderGrant: () => {
-        onSetDragActive(true);
-        dragAnchorMoveYRef.current = null;
-      },
-      onPanResponderMove: (_, gestureState) => {
-        if (!canDragReorder) {
-          return;
-        }
-
-        if (dragAnchorMoveYRef.current === null) {
-          dragAnchorMoveYRef.current = gestureState.moveY;
-          return;
-        }
-
-        const stepDistance = Math.max(measuredItemHeightRef.current * 0.82, 44);
-        let delta = gestureState.moveY - dragAnchorMoveYRef.current;
-
-        while (Math.abs(delta) >= stepDistance) {
-          const direction = delta > 0 ? 1 : -1;
-          const activeIndex = resolveItemIndex();
-
-          if (activeIndex < 0) {
-            break;
-          }
-
-          const nextIndex = Math.min(
-            Math.max(activeIndex + direction, 0),
-            itemCount - 1,
-          );
-
-          if (nextIndex === activeIndex) {
-            break;
-          }
-
-          onMoveItem(activeIndex, nextIndex);
-          dragAnchorMoveYRef.current += direction * stepDistance;
-          delta = gestureState.moveY - dragAnchorMoveYRef.current;
-        }
-      },
-      onPanResponderRelease: () => {
-        onSetDragActive(false);
-        dragAnchorMoveYRef.current = null;
-      },
-      onPanResponderTerminate: () => {
-        onSetDragActive(false);
-        dragAnchorMoveYRef.current = null;
-      },
-    });
-  }, [
+  const { onRowLayout, panHandlers } = useQueueRowDrag({
     canDragReorder,
     itemCount,
     onMoveItem,
     onSetDragActive,
     resolveItemIndex,
-  ]);
+  });
 
   return (
     <View
       onLayout={(event) => {
-        const measuredHeight = event.nativeEvent.layout.height;
-
-        if (measuredHeight > 0) {
-          measuredItemHeightRef.current = measuredHeight;
-        }
+        onRowLayout(event.nativeEvent.layout.height);
       }}
-      style={[
-        styles.queueCard,
-        rowPresentation.emphasis === 'current' ? styles.queueCardCurrent : null,
-      ]}
     >
-      <CompactPlayableRowShell
+      <ExplorerListRow
+        accessibilityLabel={presentation.accessibilityLabel}
         actions={
-          <>
-            <SurfaceIconButton
-              accessibilityLabel={
-                rowPresentation.playbackAction.accessibilityLabel
-              }
-              disabled={isPlaybackToggleDisabled}
-              icon={rowPresentation.playbackAction.iconName}
-              onPress={
-                rowPresentation.playbackAction.pressBehavior ===
-                'toggle-current'
-                  ? onToggleCurrentPlayback
-                  : onPlayItem
-              }
-              selected={rowPresentation.playbackAction.selected}
-              size={18}
-            />
-            <DragHandle
-              accessibilityLabel={`Drag ${item.title} to reorder`}
-              canDrag={canDragReorder}
-              panHandlers={panResponder.panHandlers}
-            />
-          </>
+          <DragHandle
+            accessibilityLabel={`Drag ${item.title} to reorder`}
+            canDrag={canDragReorder}
+            panHandlers={panHandlers}
+          />
         }
-        metadata={<Text style={styles.queueDetail}>{item.detail}</Text>}
+        active={item.isCurrent}
+        disabled={isPlaybackToggleDisabled}
+        leadingIcon={
+          item.isCurrent ? (
+            <EqualizerMark style={styles.equalizerSlot} />
+          ) : (
+            <Text style={styles.positionNumber}>{currentIndex + 1}</Text>
+          )
+        }
+        metadata={
+          <RowMetaLine
+            leading={
+              presentation.statusLabel ? (
+                <Text style={styles.rowStatus}>{presentation.statusLabel}</Text>
+              ) : null
+            }
+            text={item.detail}
+          />
+        }
+        onPress={
+          presentation.pressBehavior === 'toggle-current'
+            ? onToggleCurrentPlayback
+            : onPlayItem
+        }
         overflowTrigger={
           <OverflowMenuTrigger
             accessibilityLabel={`More actions for ${item.title}`}
             onPress={onShowMenu}
-            style={styles.queueOverflowTrigger}
+            style={styles.rowOverflowTrigger}
           />
         }
-        style={styles.queueRowShell}
-        title={<Text style={styles.queueTitle}>{item.title}</Text>}
-        variant="row"
+        title={
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.rowTitle,
+              item.isCurrent ? styles.rowTitleCurrent : null,
+            ]}
+          >
+            {item.title}
+          </Text>
+        }
       />
       <OptionsMenuSheet
         actions={[

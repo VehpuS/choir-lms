@@ -184,14 +184,7 @@ export const PlaybackSurface = ({
         onPress={dismissSurface}
         style={styles.backdrop}
       />
-      <View
-        pointerEvents="box-none"
-        style={
-          canRenderQueue
-            ? styles.queueSheetContainer
-            : styles.nowPlayingSheetContainer
-        }
-      >
+      <View pointerEvents="box-none" style={styles.sheetContainer}>
         <Animated.View
           {...sheetFramePanHandlers}
           style={[styles.sheetFrame, { transform: [{ translateY }] }]}
@@ -199,8 +192,6 @@ export const PlaybackSurface = ({
           {canRenderQueue && queueSummary ? (
             <QueueSurface
               activeQueueMode={activeQueueMode ?? 'ordered'}
-              canSkipNextItem={canSkipNextItem}
-              canSkipPreviousItem={canSkipPreviousItem}
               dragHandleProps={panResponder.panHandlers}
               activeRepeatMode={activeRepeatMode ?? 'off'}
               isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
@@ -217,8 +208,6 @@ export const PlaybackSurface = ({
               onSelectQueueMode={onSelectQueueMode}
               onSelectRepeatMode={onSelectRepeatMode}
               onShowNowPlaying={onShowNowPlaying}
-              onSkipNextItem={onSkipNextItem}
-              onSkipPreviousItem={onSkipPreviousItem}
               onTogglePlayback={onTogglePlayback}
               playbackToggleLabel={playbackToggleLabel}
               summary={queueSummary}
@@ -276,17 +265,10 @@ const styles = StyleSheet.create({
     left: 0,
     backgroundColor: appTheme.colors.scrim,
   },
-  // Up Next keeps its floating card until 3.3.
-  queueSheetContainer: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    paddingHorizontal: 16,
-    paddingTop: 56,
-    paddingBottom: 12,
-  },
-  // Now playing is a flush bottom sheet (1f) with a strip of backdrop above
-  // it to tap away; the frame caps it so its body scrolls on short screens.
-  nowPlayingSheetContainer: {
+  // Now playing (1f) and Up Next (1h) are flush bottom sheets with a strip of
+  // backdrop above them to tap away; the frame caps them so their bodies
+  // scroll on short screens.
+  sheetContainer: {
     flex: 1,
     justifyContent: 'flex-end',
     paddingTop: 56,

@@ -14,6 +14,7 @@ import {
   getPlaybackStatusLabel,
   getProgressLabel,
   getQueueItemDetail,
+  getQueueSessionMetaLabel,
 } from './shell-playback-summary-model';
 
 export {
@@ -49,8 +50,9 @@ export type UpNextSurfaceItem = {
 };
 
 export type UpNextSurfaceSummary = {
-  collectionLabel: string;
   items: UpNextSurfaceItem[];
+  /** `9 items · 32:14 · ordered · repeat all` (1h). */
+  metaLabel: string;
   queuePlaylistActions: {
     saveLabel: string;
     updateAction: {
@@ -60,6 +62,7 @@ export type UpNextSurfaceSummary = {
       label: string;
     } | null;
   } | null;
+  title: string;
 };
 
 export const SHELL_DESTINATIONS: ShellDestination[] = [
@@ -118,16 +121,19 @@ export const getUpNextSurfaceSummary = (options: {
         confirmLabel: 'Update playlist',
         confirmationMessage: `Replace the saved items and order in ${options.activePlaylistSession.playlistName} with the current Up Next order. Unsaved queued tracks will be added to Library first, and current playback keeps running.`,
         confirmationTitle: `Update ${options.activePlaylistSession.playlistName}?`,
-        label: 'Update current playlist',
+        label: `Update ${options.activePlaylistSession.playlistName}`,
       }
     : null;
 
   return {
-    collectionLabel: `${options.activePlaylistSession.playlistName} • ${getPlaylistPlaybackSessionSummary(options.activePlaylistSession)}`,
+    metaLabel: getQueueSessionMetaLabel(options.activePlaylistSession),
     queuePlaylistActions: {
-      saveLabel: 'Create new playlist',
+      // With a playlist to update, saving is the alternative (1h); without
+      // one, it is the only way to keep the queue.
+      saveLabel: updateAction ? 'Save as new' : 'Save as playlist',
       updateAction,
     },
+    title: options.activePlaylistSession.playlistName,
     items: options.activePlaylistSession.queue.items.map((item, index) => {
       return {
         title: item.title,

@@ -17,7 +17,10 @@ import {
 } from './interaction-chip-model';
 
 type InteractionChipProps = {
+  accessibilityHint?: string;
   accessibilityLabel?: string;
+  /** Announces a toggle chip's side; leave unset for chips that are not toggles. */
+  accessibilitySelected?: boolean;
   children?: ReactNode;
   disabled?: boolean;
   label: string;
@@ -31,7 +34,9 @@ type InteractionChipProps = {
 };
 
 export const InteractionChip = ({
+  accessibilityHint,
   accessibilityLabel,
+  accessibilitySelected,
   children,
   disabled = false,
   label,
@@ -86,9 +91,10 @@ export const InteractionChip = ({
 
   return (
     <Pressable
+      accessibilityHint={accessibilityHint}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
-      accessibilityState={{ disabled }}
+      accessibilityState={{ disabled, selected: accessibilitySelected }}
       disabled={disabled}
       onPress={onPress}
       onPressIn={onPressIn}
