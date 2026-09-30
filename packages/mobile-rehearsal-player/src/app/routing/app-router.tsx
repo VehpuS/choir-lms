@@ -42,6 +42,11 @@ export const AppRouter = () => {
   const [requestedTag, setRequestedTag] = useState<string | null>(null);
   const [requestedTagRequestId, setRequestedTagRequestId] = useState(0);
   const [closeTagDetailRequestId, setCloseTagDetailRequestId] = useState(0);
+  const [requestedLoopEditId, setRequestedLoopEditId] = useState<string | null>(
+    null,
+  );
+  const [requestedLoopEditRequestId, setRequestedLoopEditRequestId] =
+    useState(0);
   const [isRecentRehearsalHistoryReady, setIsRecentRehearsalHistoryReady] =
     useState(false);
   const libraryController = useRehearsalLibraryController({
@@ -164,6 +169,15 @@ export const AppRouter = () => {
     });
   };
 
+  // The loop editor is a sheet over whatever is showing, so the playback
+  // sheet stays open beneath it and audio keeps playing (Decision 12).
+  const requestLoopEdit = (loopId: string) => {
+    setRequestedLoopEditId(loopId);
+    setRequestedLoopEditRequestId((currentId) => {
+      return currentId + 1;
+    });
+  };
+
   const closeTagDetail = () => {
     setCloseTagDetailRequestId((currentId) => {
       return currentId + 1;
@@ -225,6 +239,8 @@ export const AppRouter = () => {
             requestDestination('add');
           }}
           playback={playback}
+          requestedLoopEditId={requestedLoopEditId}
+          requestedLoopEditRequestId={requestedLoopEditRequestId}
           requestedTag={requestedTag}
           requestedTagRequestId={requestedTagRequestId}
           requestedView={requestedLibraryView}
@@ -232,6 +248,7 @@ export const AppRouter = () => {
         />
       )}
       onCloseTagDetail={closeTagDetail}
+      onEditActiveLoop={requestLoopEdit}
       onSeekBackward={() => {
         void playback.seekActivePlaybackBySeconds(-PLAYBACK_SEEK_STEP_SECONDS);
       }}

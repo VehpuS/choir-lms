@@ -226,3 +226,34 @@ Companion mockup states: design screen 1f shows the playback sheet with the prac
 
 - **WHEN** a user swipes down anywhere on the dedicated playback screen
 - **THEN** the system dismisses the modal back to the mini-player while preserving the current playback state and active item
+
+### Requirement: Loop creation uses a playback-aware marker selection flow
+
+The system SHALL provide a loop editor that lets a user select a saved track, mark a start and end on the track's own waveform, preview the range, review it, and save the result as a named loop. The loop editor is the one place a full-screen waveform appears (screen 1g).
+
+#### Scenario: Users capture loop boundaries from the active track timeline
+
+- **WHEN** a user chooses to create a loop from a saved track
+- **THEN** the system presents the track's waveform in full, the loop as a region between an `A` and a `B` handle, the preview position as a playhead, and a visible summary of the start, length, and end before the loop is saved
+
+#### Scenario: The loop editor is a dedicated full-screen surface with several entry points
+
+- **WHEN** a user chooses `Make loop` for a saved track, `Edit loop` for a saved loop, or taps the loop chip on the playback sheet while a saved loop is active
+- **THEN** the system opens the loop editor for that track, in edit mode for an existing loop, without requiring playback to stop and without closing the playback sheet beneath it
+- **AND** saving or closing the editor returns the user to where they were, with audio and position undisturbed
+
+#### Scenario: Loop range selection is touch-driven on the waveform
+
+- **WHEN** a user drags the `A` or `B` handle, or nudges either edge with the minus and plus controls of the start and end cards
+- **THEN** the region follows, the start, length, and end read out in tenths of a second, a handle cannot cross the other or leave the track, and dragging and nudging land on the same grid
+- **AND** holding a nudge control repeats it, and each handle offers increment and decrement actions to assistive technology
+
+#### Scenario: The preview transport sits beside the editor
+
+- **WHEN** the loop editor is open
+- **THEN** the system offers preview play / pause, jumps of fifteen seconds within the previewed range, and `Set start here` / `Set end here` from the preview position, from the same surface as `Save loop`
+
+#### Scenario: Incomplete or invalid loop markers receive immediate feedback
+
+- **WHEN** a user attempts to save a loop without both markers or with an invalid range
+- **THEN** the system keeps the user in the loop editor and presents inline guidance explaining how to complete or correct the range

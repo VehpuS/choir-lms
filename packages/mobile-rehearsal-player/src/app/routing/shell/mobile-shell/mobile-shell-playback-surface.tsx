@@ -23,6 +23,7 @@ type MobileShellPlaybackSurfaceProps = {
   nowPlayingSummary: NowPlayingSurfaceSummary | null;
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
   onClose: () => void;
+  onEditActiveLoop: (loopId: string) => void;
   onMoveQueueItem: (fromIndex: number, toIndex: number) => void;
   onMoveQueueItemToEnd: (index: number) => void;
   onMoveQueueItemToStart: (index: number) => void;
@@ -71,6 +72,7 @@ export const MobileShellPlaybackSurface = (
       nowPlayingSummary={props.nowPlayingSummary}
       onAdjustPlaybackVolume={props.onAdjustPlaybackVolume}
       onClose={props.onClose}
+      onEditActiveLoop={props.onEditActiveLoop}
       onMoveQueueItem={props.onMoveQueueItem}
       onMoveQueueItemToEnd={props.onMoveQueueItemToEnd}
       onMoveQueueItemToStart={props.onMoveQueueItemToStart}

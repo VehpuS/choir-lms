@@ -19,7 +19,7 @@ import {
 } from '../utils/saved-loop-view-model';
 import type { TrackScopedLoopDetailCopy } from '../utils/track-scoped-loop-view-model';
 import { useLoopPreviewPlaybackContext } from './loop-preview-playback-context';
-import { LoopRangeSelectorSurface } from './loop-range-selector-surface';
+import { LoopEditorSurface } from './loop-editor';
 import { SavedLoopList } from './saved-loop-list';
 import { TrackScopedLoopDetailCard } from './track-scoped-loop-detail-card';
 
@@ -227,12 +227,17 @@ export const SavedLoopSection = ({
         </TrackScopedLoopDetailCard>
       ) : null}
 
-      <LoopRangeSelectorSurface
+      <LoopEditorSurface
         builderIssue={builderIssue}
         canSaveLoop={canSaveLoop}
         canSetBoundaryFromPosition={canSetBoundaryFromPosition}
         endMs={loopDraft.endMs}
         eyebrowLabel={isEditingLoop ? 'Edit loop' : 'New loop'}
+        isPreviewLoading={
+          isPlaybackPreparing &&
+          previewPlayableItem !== null &&
+          activePlayableItem?.id === previewPlayableItem.id
+        }
         isSavingLoop={isLoopMutating}
         isVisible={selectedTrack !== null}
         loopName={loopDraft.loopName}

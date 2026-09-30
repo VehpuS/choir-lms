@@ -49,6 +49,8 @@ export type MobileShellProps = {
   // without lifting `activeDestination` out of this component.
   libraryScreen: (isActive: boolean) => ReactNode;
   onCloseTagDetail: () => void;
+  /** Opens the loop editor for the saved loop with this id. */
+  onEditActiveLoop: (loopId: string) => void;
   onMoveQueueItem: (fromIndex: number, toIndex: number) => void;
   onMoveQueueItemToEnd: (index: number) => void;
   onMoveQueueItemToStart: (index: number) => void;
@@ -101,6 +103,7 @@ export const MobileShell = ({
   isPlaybackToggleDisabled,
   libraryScreen,
   onCloseTagDetail,
+  onEditActiveLoop,
   onMoveQueueItem,
   onMoveQueueItemToEnd,
   onMoveQueueItemToStart,
@@ -232,6 +235,7 @@ export const MobileShell = ({
         isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
         nowPlayingSummary={nowPlayingSummary}
         onAdjustPlaybackVolume={onSetPlaybackVolume}
+        onEditActiveLoop={onEditActiveLoop}
         onMoveQueueItem={onMoveQueueItem}
         onMoveQueueItemToEnd={onMoveQueueItemToEnd}
         onMoveQueueItemToStart={onMoveQueueItemToStart}

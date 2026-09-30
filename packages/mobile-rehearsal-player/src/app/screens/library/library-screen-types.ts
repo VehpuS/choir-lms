@@ -29,6 +29,8 @@ export type LibraryScreenProps = {
   libraryController: ReturnType<typeof useRehearsalLibraryController>;
   onRequestAddDestination: () => void;
   playback: SavedTrackPlaybackController;
+  requestedLoopEditId?: string | null;
+  requestedLoopEditRequestId?: number;
   requestedTag?: string | null;
   requestedTagRequestId?: number;
   requestedView?: SavedRehearsalLibraryView;

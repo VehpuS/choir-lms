@@ -29,6 +29,8 @@ type UseSavedRehearsalLibrarySectionOrchestrationOptions = Pick<
   | 'pendingSourceId'
   | 'playbackState'
   | 'playlistIssue'
+  | 'requestedLoopEditId'
+  | 'requestedLoopEditRequestId'
   | 'requestedTag'
   | 'requestedTagRequestId'
   | 'saveLoop'
@@ -70,6 +72,8 @@ export const useSavedRehearsalLibrarySectionOrchestration = ({
   pendingSourceId,
   playbackState,
   playlistIssue,
+  requestedLoopEditId,
+  requestedLoopEditRequestId,
   requestedTag,
   requestedTagRequestId,
   saveLoop,
@@ -124,7 +128,10 @@ export const useSavedRehearsalLibrarySectionOrchestration = ({
     isSearchPanelVisible: sectionState.isSearchPanelVisible,
     onBrowseCreateDockChange,
     onPlaylistSelectionHandlerChange,
+    openLoopEditor: sectionState.loopState.openLoopEditor,
     openTagDetail: sectionState.tagDetailState.openTagDetail,
+    requestedLoopEditId,
+    requestedLoopEditRequestId,
     requestedTag,
     requestedTagRequestId,
     savedLibrarySources,

@@ -3,7 +3,7 @@ import type {
   RehearsalQueueMode,
   RepeatMode,
 } from '@org/audio-library-models';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { AppIcon } from '../../../components/app-icon';
 import { FadedRule } from '../../../components/faded-rule';
@@ -36,6 +36,7 @@ type NowPlayingSurfaceProps = {
   isPlaybackToggleDisabled: boolean;
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
   onClose: () => void;
+  onEditActiveLoop: (loopId: string) => void;
   onSeekBackward: () => void;
   onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
@@ -52,16 +53,31 @@ type NowPlayingSurfaceProps = {
   summary: NowPlayingSurfaceSummary;
 };
 
+// A saved loop's chip opens the loop editor for it; a preview or other range
+// has nothing to edit, so its chip stays a plain readout.
 const LoopRangeChip = ({
   loopRange,
+  onEdit,
 }: {
   loopRange: NonNullable<NowPlayingSurfaceSummary['loopRange']>;
+  onEdit?: () => void;
 }) => {
   return (
-    <View
-      accessibilityLabel={loopRange.accessibilityLabel}
+    <Pressable
+      accessibilityHint={onEdit ? 'Opens the loop editor' : undefined}
+      accessibilityLabel={
+        onEdit
+          ? `Edit ${loopRange.accessibilityLabel.toLowerCase()}`
+          : loopRange.accessibilityLabel
+      }
+      accessibilityRole={onEdit ? 'button' : undefined}
       accessible
-      style={styles.loopChip}
+      disabled={!onEdit}
+      onPress={onEdit}
+      style={({ pressed }) => [
+        styles.loopChip,
+        pressed && onEdit ? styles.pressed : null,
+      ]}
     >
       <AppIcon
         color={appTheme.colors.accentText}
@@ -69,15 +85,17 @@ const LoopRangeChip = ({
         size={LOOP_CHIP_ICON_SIZE}
       />
       <Text style={styles.loopChipText}>{loopRange.label}</Text>
-    </View>
+    </Pressable>
   );
 };
 
 const TitleBlock = ({
   downloadLabel,
+  onEditLoop,
   summary,
 }: {
   downloadLabel: string | null;
+  onEditLoop?: () => void;
   summary: NowPlayingSurfaceSummary;
 }) => {
   return (
@@ -100,7 +118,7 @@ const TitleBlock = ({
         </Text>
       ) : null}
       {summary.loopRange ? (
-        <LoopRangeChip loopRange={summary.loopRange} />
+        <LoopRangeChip loopRange={summary.loopRange} onEdit={onEditLoop} />
       ) : null}
     </View>
   );
@@ -136,7 +154,17 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
         contentContainerStyle={styles.bodyContent}
         style={styles.body}
       >
-        <TitleBlock downloadLabel={props.downloadLabel} summary={summary} />
+        <TitleBlock
+          downloadLabel={props.downloadLabel}
+          onEditLoop={
+            props.activePlayableItem.loopId
+              ? () => {
+                  props.onEditActiveLoop(props.activePlayableItem.loopId ?? '');
+                }
+              : undefined
+          }
+          summary={summary}
+        />
 
         <NowPlayingTimeline
           activePlayableItem={props.activePlayableItem}

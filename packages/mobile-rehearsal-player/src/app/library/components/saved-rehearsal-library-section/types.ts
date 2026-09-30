@@ -65,6 +65,8 @@ export type SavedRehearsalLibrarySectionProps = {
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   removeLoop: (loop: NamedLoop) => void;
   removeSource: (source: DriveLibrarySource) => void;
+  requestedLoopEditId?: string | null;
+  requestedLoopEditRequestId?: number;
   requestedTag?: string | null;
   requestedTagRequestId?: number;
   libraryFiles: UseLibraryFilesResult;

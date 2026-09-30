@@ -1,3 +1,4 @@
+import type { NamedLoop } from '@org/audio-library-models';
 import { useEffect, useRef } from 'react';
 
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
@@ -13,7 +14,10 @@ type UseSavedRehearsalLibrarySectionEffectsOptions = {
   isSearchPanelVisible: boolean;
   onBrowseCreateDockChange?: (mode: LibraryBrowseCreateDockMode) => void;
   onPlaylistSelectionHandlerChange?: SavedRehearsalLibrarySectionProps['onPlaylistSelectionHandlerChange'];
+  openLoopEditor: (loop: NamedLoop) => void;
   openTagDetail: (tag: string) => void;
+  requestedLoopEditId?: string | null;
+  requestedLoopEditRequestId?: number;
   requestedTag?: SavedRehearsalLibrarySectionProps['requestedTag'];
   requestedTagRequestId?: SavedRehearsalLibrarySectionProps['requestedTagRequestId'];
   savedLibrarySources: SavedRehearsalLibrarySectionProps['savedLibrarySources'];
@@ -31,7 +35,10 @@ export const useSavedRehearsalLibrarySectionEffects = ({
   isSearchPanelVisible,
   onBrowseCreateDockChange,
   onPlaylistSelectionHandlerChange,
+  openLoopEditor,
   openTagDetail,
+  requestedLoopEditId,
+  requestedLoopEditRequestId,
   requestedTag,
   requestedTagRequestId,
   savedLibrarySources,
@@ -42,6 +49,7 @@ export const useSavedRehearsalLibrarySectionEffects = ({
   syncActivePlaylistContext,
 }: UseSavedRehearsalLibrarySectionEffectsOptions) => {
   const handledTagRequestIdRef = useRef<number | undefined>(undefined);
+  const handledLoopEditRequestIdRef = useRef<number | undefined>(undefined);
   const handledCloseTagDetailRequestIdRef = useRef<number | undefined>(
     closeTagDetailRequestId,
   );
@@ -58,6 +66,35 @@ export const useSavedRehearsalLibrarySectionEffects = ({
     handledTagRequestIdRef.current = requestedTagRequestId;
     openTagDetail(requestedTag);
   }, [openTagDetail, requestedTag, requestedTagRequestId]);
+
+  // Opens the loop editor for a loop another surface asked to edit (the
+  // playback sheet's loop chip). Waits for the loops to load, then handles
+  // each request once.
+  useEffect(() => {
+    if (
+      !requestedLoopEditId ||
+      requestedLoopEditRequestId === undefined ||
+      handledLoopEditRequestIdRef.current === requestedLoopEditRequestId
+    ) {
+      return;
+    }
+
+    const loop = savedLoops.find((savedLoop) => {
+      return savedLoop.id === requestedLoopEditId;
+    });
+
+    if (!loop) {
+      return;
+    }
+
+    handledLoopEditRequestIdRef.current = requestedLoopEditRequestId;
+    openLoopEditor(loop);
+  }, [
+    openLoopEditor,
+    requestedLoopEditId,
+    requestedLoopEditRequestId,
+    savedLoops,
+  ]);
 
   useEffect(() => {
     if (

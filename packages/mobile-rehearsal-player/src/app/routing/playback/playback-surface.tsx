@@ -41,6 +41,7 @@ type PlaybackSurfaceProps = {
   onMoveQueueItemToEnd: (index: number) => void;
   onMoveQueueItemToStart: (index: number) => void;
   onClose: () => void;
+  onEditActiveLoop: (loopId: string) => void;
   onPlayQueueItem: (index: number) => void;
   onRemoveQueueItem: (index: number) => void;
   onRequestUpdateQueuePlaylist: (
@@ -83,6 +84,7 @@ export const PlaybackSurface = ({
   onMoveQueueItemToEnd,
   onMoveQueueItemToStart,
   onClose,
+  onEditActiveLoop,
   onPlayQueueItem,
   onRemoveQueueItem,
   onRequestUpdateQueuePlaylist,
@@ -226,6 +228,7 @@ export const PlaybackSurface = ({
               isPlaybackToggleDisabled={isPlaybackToggleDisabled}
               onAdjustPlaybackVolume={onAdjustPlaybackVolume}
               onClose={dismissSurface}
+              onEditActiveLoop={onEditActiveLoop}
               onSeekBackward={onSeekBackward}
               onSeekForward={onSeekForward}
               onSeekToPosition={onSeekToPosition}
