@@ -127,6 +127,31 @@ export const resolveSynchronizedPlayableItem = (
   );
 };
 
+/**
+ * Whether the audio to play differs: another file, or another range of it.
+ * A refreshed length, title, or queue position changes the item but not what
+ * the player has loaded, so it must not trigger a reload (8.35).
+ */
+export const hasPlayableItemAudioChanged = (
+  currentPlayableItem: PlayableItem,
+  nextPlayableItem: PlayableItem,
+) => {
+  if (
+    currentPlayableItem.source.driveFileId !==
+      nextPlayableItem.source.driveFileId ||
+    currentPlayableItem.range.startMs !== nextPlayableItem.range.startMs
+  ) {
+    return true;
+  }
+
+  // A whole track's range end only mirrors its source length, so learning the
+  // length is not a change to the audio; a loop's end is part of what plays.
+  return (
+    nextPlayableItem.kind === 'loop' &&
+    currentPlayableItem.range.endMs !== nextPlayableItem.range.endMs
+  );
+};
+
 export const hasPlayableItemChanged = (
   currentPlayableItem: PlayableItem | null,
   nextPlayableItem: PlayableItem | null,

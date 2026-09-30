@@ -14,12 +14,22 @@ import {
   trackPlayerState,
 } from './shared';
 
+/** Where the player actually is, read from it rather than from hook state. */
+export type LivePlaybackSnapshot = {
+  isPlaying: boolean;
+  positionSeconds: number;
+};
+
 export type SavedTrackPlaybackRuntimeCore = {
   canLoadPlayableItem: (playableItem: PlayableItem) => boolean;
+  isLoadInFlight: () => boolean;
   loadPlayableItem: (playableItem: PlayableItem) => Promise<boolean>;
   loadPlayableItemIntoPlayer: LoadPlayableItemIntoPlayer;
   pausePlayableItem: (playableItem: PlayableItem) => Promise<boolean>;
+  readLivePlaybackSnapshot: () => Promise<LivePlaybackSnapshot | null>;
   resumePlayableItem: (playableItem: PlayableItem) => Promise<void>;
+  /** Runs `task` as a load: progress is hidden until it settles (8.35). */
+  runAsLoad: <Result>(task: () => Promise<Result>) => Promise<Result>;
   seekActivePlayableItemTo: (
     playableItem: PlayableItem,
     positionSeconds: number,
@@ -29,7 +39,61 @@ export type SavedTrackPlaybackRuntimeCore = {
 export const createSavedTrackPlaybackRuntimeCore = (
   options: SavedTrackPlaybackControllerOptions,
 ): SavedTrackPlaybackRuntimeCore => {
-  const loadPlayableItemIntoPlayer: LoadPlayableItemIntoPlayer = async (
+  let loadsInFlight = 0;
+
+  const runAsLoad = async <Result>(task: () => Promise<Result>) => {
+    const epoch = options.progressGate.begin();
+
+    loadsInFlight += 1;
+
+    try {
+      return await task();
+    } finally {
+      loadsInFlight -= 1;
+      options.progressGate.settle(epoch);
+    }
+  };
+
+  /**
+   * The player's own position and state, or null while a load owns it (its
+   * numbers then describe the file being replaced, not the one being loaded).
+   */
+  const readLivePlaybackSnapshot =
+    async (): Promise<LivePlaybackSnapshot | null> => {
+      if (loadsInFlight > 0) {
+        return null;
+      }
+
+      try {
+        const trackPlayer = getSavedTrackPlayer();
+        const [progress, playback] = await Promise.all([
+          trackPlayer.getProgress(),
+          trackPlayer.getPlaybackState(),
+        ]);
+
+        return {
+          isPlaying:
+            playback.state === trackPlayerState.Playing ||
+            playback.state === trackPlayerState.Buffering ||
+            playback.state === trackPlayerState.Loading,
+          positionSeconds: progress.position,
+        };
+      } catch {
+        return null;
+      }
+    };
+
+  const loadPlayableItemIntoPlayer: LoadPlayableItemIntoPlayer = (
+    playableItem,
+    accessToken,
+    loadOptions,
+  ) => {
+    return runAsLoad(() =>
+      loadIntoPlayer(playableItem, accessToken, loadOptions),
+    );
+  };
+
+  const loadIntoPlayer: LoadPlayableItemIntoPlayer = async (
     playableItem,
     accessToken,
     loadOptions,
@@ -169,10 +233,13 @@ export const createSavedTrackPlaybackRuntimeCore = (
 
   return {
     canLoadPlayableItem,
+    isLoadInFlight: () => loadsInFlight > 0,
     loadPlayableItem,
     loadPlayableItemIntoPlayer,
     pausePlayableItem,
+    readLivePlaybackSnapshot,
     resumePlayableItem,
+    runAsLoad,
     seekActivePlayableItemTo,
   };
 };

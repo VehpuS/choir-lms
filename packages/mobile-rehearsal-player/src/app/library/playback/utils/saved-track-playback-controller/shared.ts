@@ -7,6 +7,7 @@ import type {
   SavedTrackPlaybackIssue,
   SavedTrackPlaybackState,
 } from '../saved-track-playback-view-model';
+import type { SavedTrackProgressGateController } from '../saved-track-progress-gate';
 import { getSavedTrackPlayerStateMap } from '../saved-track-player-interop';
 
 export const trackPlayerState = getSavedTrackPlayerStateMap();
@@ -18,6 +19,8 @@ export type SavedTrackPlaybackControllerOptions = {
   isAdvancingPlaylistRef: MutableRefObject<boolean>;
   isPreparing: boolean;
   playbackState: SavedTrackPlaybackState | undefined;
+  /** Hides the previous item's progress while a load owns the player. */
+  progressGate: SavedTrackProgressGateController;
   progressDurationSeconds: number;
   progressPositionSeconds: number;
   setActivePlayableItem: Dispatch<SetStateAction<PlayableItem | null>>;
@@ -51,6 +54,9 @@ export const createSavedTrackPlaybackControllerOptionsProxy = (
     },
     get playbackState() {
       return optionsRef.current.playbackState;
+    },
+    get progressGate() {
+      return optionsRef.current.progressGate;
     },
     get progressDurationSeconds() {
       return optionsRef.current.progressDurationSeconds;

@@ -50,7 +50,9 @@ export const createSavedTrackPlaybackRuntimeCommands = (
     loadPlayableItem,
     loadPlayableItemIntoPlayer,
     pausePlayableItem,
+    readLivePlaybackSnapshot,
     resumePlayableItem,
+    runAsLoad,
     seekActivePlayableItemTo,
   } = runtimeCore;
 
@@ -93,17 +95,24 @@ export const createSavedTrackPlaybackRuntimeCommands = (
         options.setIsPreparing(false);
       }
     },
-    resolveTrackDuration(playableItem: PlayableItem) {
-      return resolveSavedTrackDuration(playableItem, {
-        accessToken: options.authState.accessToken,
-        activePlayableItem: options.activePlayableItemRef.current,
-        isPreparing: options.isPreparing,
-        loadPlayableItemIntoPlayer,
-        playbackState: options.playbackState,
-        progressDurationSeconds: options.progressDurationSeconds,
-        progressPositionSeconds: options.progressPositionSeconds,
-        setIssue: options.setIssue,
-      });
+    async resolveTrackDuration(playableItem: PlayableItem) {
+      // The probe replaces what is loaded, then restores it: read where the
+      // player is before it is touched, not from hook state (8.35).
+      const live = await readLivePlaybackSnapshot();
+
+      return runAsLoad(() =>
+        resolveSavedTrackDuration(playableItem, {
+          accessToken: options.authState.accessToken,
+          activePlayableItem: options.activePlayableItemRef.current,
+          isPreparing: options.isPreparing,
+          livePlayback: live,
+          loadPlayableItemIntoPlayer,
+          playbackState: options.playbackState,
+          progressDurationSeconds: options.progressDurationSeconds,
+          progressPositionSeconds: options.progressPositionSeconds,
+          setIssue: options.setIssue,
+        }),
+      );
     },
     async restartActivePlaybackFromRangeStart() {
       const currentPlayableItem = options.activePlayableItemRef.current;
@@ -218,13 +227,15 @@ export const createSavedTrackPlaybackRuntimeCommands = (
         return false;
       }
 
-      const shouldResumePlayback =
-        options.playbackState === trackPlayerState.Playing ||
-        options.playbackState === trackPlayerState.Buffering ||
-        options.playbackState === trackPlayerState.Loading;
+      // A reload for changed audio continues from where the player really is.
+      // While another load owns the player there is nothing to continue: that
+      // load was a request to play this item, so start it from its beginning.
+      const live = await readLivePlaybackSnapshot();
+      const shouldResumePlayback = live?.isPlaying ?? true;
       const nextPositionSeconds = resolvePlaybackScrubPositionSeconds({
         activePlayableItem: playableItem,
-        requestedPositionSeconds: options.progressPositionSeconds,
+        requestedPositionSeconds:
+          live?.positionSeconds ?? playableItem.range.startMs / 1000,
       });
 
       options.setIssue(null);

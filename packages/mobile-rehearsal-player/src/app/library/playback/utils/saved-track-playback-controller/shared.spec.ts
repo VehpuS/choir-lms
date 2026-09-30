@@ -10,6 +10,7 @@ import {
   trackPlayerState,
   type SavedTrackPlaybackControllerOptions,
 } from './shared.js';
+import { createSavedTrackProgressGateController } from '../saved-track-progress-gate.js';
 
 const createControllerOptions = (
   overrides: Partial<SavedTrackPlaybackControllerOptions> = {},
@@ -32,6 +33,7 @@ const createControllerOptions = (
     isPreparing: false,
     playbackState: trackPlayerState.Paused,
     progressDurationSeconds: 0,
+    progressGate: createSavedTrackProgressGateController(() => undefined),
     progressPositionSeconds: 0,
     setActivePlayableItem: () => undefined,
     setActivePlaylistSession: () => undefined,

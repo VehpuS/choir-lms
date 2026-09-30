@@ -29,6 +29,8 @@ type ResolveSavedTrackDurationOptions = {
   accessToken: string | null | undefined;
   activePlayableItem: PlayableItem | null;
   isPreparing: boolean;
+  /** The player's own state read before the probe, or null if unavailable. */
+  livePlayback: { isPlaying: boolean; positionSeconds: number } | null;
   loadPlayableItemIntoPlayer: LoadPlayableItemIntoPlayer;
   playbackState: SavedTrackPlaybackState | undefined;
   progressDurationSeconds: number;
@@ -62,9 +64,10 @@ export const resolveSavedTrackDuration = async (
   const shouldRestorePlayback =
     currentPlayableItem !== null && !options.isPreparing;
   const shouldResumePlayback =
-    options.playbackState === trackPlayerState.Playing ||
-    options.playbackState === trackPlayerState.Buffering ||
-    options.playbackState === trackPlayerState.Loading;
+    options.livePlayback?.isPlaying ??
+    (options.playbackState === trackPlayerState.Playing ||
+      options.playbackState === trackPlayerState.Buffering ||
+      options.playbackState === trackPlayerState.Loading);
 
   try {
     return await resolveSavedTrackDurationFromPlayer({
@@ -76,7 +79,9 @@ export const resolveSavedTrackDuration = async (
       try {
         const restorePositionSeconds = resolvePlaybackScrubPositionSeconds({
           activePlayableItem: currentPlayableItem,
-          requestedPositionSeconds: options.progressPositionSeconds,
+          requestedPositionSeconds:
+            options.livePlayback?.positionSeconds ??
+            options.progressPositionSeconds,
         });
 
         await options.loadPlayableItemIntoPlayer(

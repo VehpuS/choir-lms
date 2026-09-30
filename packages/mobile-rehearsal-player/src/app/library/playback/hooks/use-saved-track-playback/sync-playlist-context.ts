@@ -11,6 +11,7 @@ import {
 } from '../../../playlists/utils/saved-playlist-playback-view-model';
 import type { SavedTrackPlaybackController } from '../../utils/saved-track-playback-controller';
 import {
+  hasPlayableItemAudioChanged,
   hasPlayableItemChanged,
   resolveSynchronizedPlayableItem,
   type SavedTrackPlaybackIssue,
@@ -81,9 +82,14 @@ export const createSyncActivePlaylistContext = (
     options.setActivePlayableItem(nextActivePlayableItem);
 
     if (nextActivePlayableItem) {
-      void options.playbackControllerRef.current?.syncActivePlayableItem(
-        nextActivePlayableItem,
-      );
+      // Only a change to the audio itself needs the player reloaded.
+      if (
+        hasPlayableItemAudioChanged(currentPlayableItem, nextActivePlayableItem)
+      ) {
+        void options.playbackControllerRef.current?.syncActivePlayableItem(
+          nextActivePlayableItem,
+        );
+      }
     } else {
       void options.playbackControllerRef.current?.pauseActivePlayback();
     }

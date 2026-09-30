@@ -23,7 +23,10 @@ import {
   type SyncActivePlaylistContextOptions,
 } from './shared';
 import { createPreparingTracker } from './preparing-tracker';
+import { useGatedSavedTrackProgress } from './use-gated-progress';
 import { createSyncActivePlaylistContext } from './sync-playlist-context';
+
+const PROGRESS_POLL_INTERVAL_MS = 500;
 
 export const useSavedTrackPlayback = (
   authState: DriveAuthorizationState,
@@ -66,7 +69,9 @@ export const useSavedTrackPlayback = (
   const volumeLevelRef = useRef(DEFAULT_PLAYBACK_VOLUME_LEVEL);
   const repeatModeRef = useRef<RepeatMode>('off');
   const playbackState = useSavedTrackPlayerPlaybackState().state;
-  const progress = useSavedTrackPlayerProgress(500);
+  const { progress, progressGate } = useGatedSavedTrackProgress(
+    useSavedTrackPlayerProgress(PROGRESS_POLL_INTERVAL_MS),
+  );
 
   onAuthorizationExpiredRef.current = onAuthorizationExpired;
   issueRef.current = issue;
@@ -102,6 +107,7 @@ export const useSavedTrackPlayback = (
     isPreparing,
     playbackState,
     progressDurationSeconds: progress.duration,
+    progressGate,
     progressPositionSeconds: progress.position,
     setActivePlayableItem,
     setActivePlaylistSession,
@@ -119,6 +125,7 @@ export const useSavedTrackPlayback = (
     isPreparing,
     playbackState,
     progressDurationSeconds: progress.duration,
+    progressGate,
     progressPositionSeconds: progress.position,
     setActivePlayableItem,
     setActivePlaylistSession,
