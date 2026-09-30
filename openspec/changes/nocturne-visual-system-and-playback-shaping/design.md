@@ -30,6 +30,8 @@ Requires a peak-extraction path that works for a Drive-hosted file the app strea
 2. **Progressive peaks from the playback engine.** Cheaper, but yields no waveform for the unplayed portion — which is the part the user scrubs into. Rejected.
 3. **Server-side precompute.** No backend exists in this repo. Out of scope.
 
+**Decided (2026-09-30, after the task 4.1 spike):** peaks are one unsigned byte per bucket, with one bucket per millisecond up to 120,000 buckets, so a track shorter than two minutes gets fewer buckets and a longer one stretches each bucket (a 5-minute track is 2.5 ms per bucket, 120 KB). The cache key is `driveFileId` plus Drive `modifiedTime`; no extra Drive fields are requested. Web decodes the bytes the player already downloaded (`decodeAudioData`, 242 ms for 5:34 measured) and stores peaks in IndexedDB, because 120 KB per track does not fit `localStorage`. Native has no decoder: a pure-JS MP3 decode took 42.8 s for 5:34 in Node alone, so native keeps the flat band until a cheaper extractor exists (task 8.41).
+
 Option 1 is the recommendation, with a documented fallback: until peaks are available for an item, render a neutral flat band rather than a fake waveform, so the UI never implies analysis it does not have. The peak cache should be versioned so a changed Drive revision invalidates it.
 
 ## Decision 5 — Adjusted entities store a transform, not rendered audio

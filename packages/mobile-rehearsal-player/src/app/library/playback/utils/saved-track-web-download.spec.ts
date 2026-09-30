@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { subscribeToSavedTrackDownloads } from './saved-track-download-events.js';
 import {
   createSavedTrackDownloadProgressStore,
   type SavedTrackDownloadProgress,
@@ -11,6 +12,7 @@ import {
   SLOW_SAVED_TRACK_DOWNLOAD_MS,
   downloadSavedTrackBlob,
   isSavedTrackDownloadAbortError,
+  startSavedTrackDownload,
   type SavedTrackDownloadResponse,
 } from './saved-track-web-download.js';
 
@@ -250,5 +252,51 @@ describe('downloadSavedTrackBlob', () => {
 
     await newerStream.releaseNextRead();
     await newerDownload;
+  });
+});
+
+describe('started saved track downloads', () => {
+  it('announces the finished bytes under their Drive file id for waveform analysis', async () => {
+    const events: Array<{ driveFileId: string | null; size: number }> = [];
+    const stop = subscribeToSavedTrackDownloads((event) => {
+      events.push({ driveFileId: event.driveFileId, size: event.blob.size });
+    });
+
+    await startSavedTrackDownload(
+      { url: TRACK_URL },
+      {
+        fetch: async () => ({
+          blob: async () => new Blob(['abcd']),
+          ok: true,
+          status: 200,
+        }),
+      },
+    );
+    stop();
+
+    assert.deepEqual(events, [{ driveFileId: 'drive-file-1', size: 4 }]);
+  });
+
+  it('announces nothing when the download fails', async () => {
+    let announced = 0;
+    const stop = subscribeToSavedTrackDownloads(() => {
+      announced += 1;
+    });
+
+    await assert.rejects(
+      startSavedTrackDownload(
+        { url: TRACK_URL },
+        {
+          fetch: async () => ({
+            blob: async () => new Blob([]),
+            ok: false,
+            status: 500,
+          }),
+        },
+      ),
+    );
+    stop();
+
+    assert.equal(announced, 0);
   });
 });

@@ -26,6 +26,7 @@ import {
   resolveSavedTrackPlayerSupport,
   useSavedTrackPlayerEvents,
 } from '../../utils/saved-track-player-interop';
+import { ensureWaveformPeakExtraction } from '../../waveform-peaks';
 import { prewarmSavedTrackPlayer } from '../../utils/saved-track-player-prewarm';
 import {
   ensureSavedTrackPlayerReady,
@@ -96,6 +97,10 @@ export const useSavedTrackPlaybackEffects = ({
   useEffect(() => {
     playbackStateRef.current.playbackState = playbackState;
   }, [playbackState, playbackStateRef]);
+
+  useEffect(() => {
+    ensureWaveformPeakExtraction();
+  }, []);
 
   useEffect(() => {
     prewarmSavedTrackPlayer({

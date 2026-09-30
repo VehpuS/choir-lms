@@ -100,6 +100,15 @@ This separation keeps background service code lightweight while allowing current
 2. Runtime commands reset TrackPlayer, add the requested track, seek to range start, and optionally play.
 3. On web, header-bearing requests are fetched first and rewritten to blob URLs before TrackPlayer consumes them.
 
+## Waveform Peaks
+
+The waveform draws the item's own audio, never a synthetic shape (design Decision 4). Modules:
+
+- `@org/audio-library-models` `waveform-peaks.ts`: the framework-agnostic model. One byte per bucket, one bucket per millisecond up to 120,000 (`getPeakBucketCount`), `computeWaveformPeaks` from PCM, serialization, and `resolveWaveformBars` to slice an item's range into display bars.
+- `library/playback/waveform-peaks/`: `peak-registry.ts` (in-memory view per Drive file, shared analyses), `peak-cache.ts` (Drive-version keyed, size-budgeted LRU), `peak-store.web.ts` (IndexedDB) and `peak-store.ts` (AsyncStorage), `peak-extractor.web.ts` (`decodeAudioData`) and `peak-extractor.ts` (native: none yet), `peak-extraction-service.ts`, and `use-waveform-peaks.ts`.
+- Flow on web: `saved-track-web-download.ts` announces each finished download (`saved-track-download-events.ts`); the service decodes those bytes once, publishes the peaks to the registry, and persists them. `PlaybackWaveform` calls `useWaveformPeaks(source)` and draws the flat placeholder band until peaks exist, so a file shows real peaks after its first play and on later visits.
+- Not yet covered: native extraction, and files that have never been played (tasks 8.41, 8.43).
+
 ## Slow Connections (Web)
 
 Web playback cannot stream an authenticated Drive file: the media element cannot send the `Authorization` header, so the web patch downloads the **whole file** (`GET …/files/<id>?alt=media`) into a blob before TrackPlayer gets it. Playback therefore starts only when the download finishes, and that takes as long as the connection needs. Measured on 2026-09-30 on a connection the browser reported as `3g` (1.3 Mbps, 350 ms RTT): a 3:08 MP3 took **92.7 s** to download. Native streams directly and has no download step.

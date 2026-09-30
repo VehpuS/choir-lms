@@ -1,5 +1,5 @@
 import type { PlayableItem } from '@org/audio-library-models';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   type LayoutChangeEvent,
@@ -13,13 +13,13 @@ import {
   hasWaveformProgressSettled,
   isWaveformBarPlayed,
   isWaveformScrubReady,
+  resolvePlaybackWaveformBars,
   resolveWaveformCommitRatio,
   resolveWaveformRatioFromLocation,
 } from './model';
 import {
   MIN_BAR_HEIGHT,
-  MINI_WAVEFORM_BARS,
-  WAVEFORM_BARS,
+  WAVEFORM_BAR_COUNT,
   WAVEFORM_HEIGHT,
   getWaveformColors,
   type PlaybackWaveformAppearance,
@@ -32,6 +32,7 @@ import {
   SCRUB_INDICATOR_STYLE,
   waveformStyles,
 } from './styles';
+import { useWaveformPeaks } from '../../library/playback/waveform-peaks/use-waveform-peaks';
 import {
   continuousInteractionGuardStyle,
   interactionGuardProps,
@@ -60,7 +61,14 @@ export const PlaybackWaveform = ({
   const draftRatioRef = useRef<number | null>(null);
   const [layoutWidth, setLayoutWidth] = useState(0);
   const waveformHeight = WAVEFORM_HEIGHT[variant];
-  const bars = variant === 'mini' ? MINI_WAVEFORM_BARS : WAVEFORM_BARS;
+  const peaks = useWaveformPeaks(activePlayableItem.source);
+  const bars = useMemo(() => {
+    return resolvePlaybackWaveformBars({
+      barCount: WAVEFORM_BAR_COUNT[variant],
+      item: activePlayableItem,
+      peaks,
+    });
+  }, [activePlayableItem, peaks, variant]);
   const { endSeconds, startSeconds } =
     getPlaybackBoundsSeconds(activePlayableItem);
   const hasScrubRange = endSeconds > startSeconds;

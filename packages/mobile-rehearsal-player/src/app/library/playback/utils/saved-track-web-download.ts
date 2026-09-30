@@ -1,3 +1,4 @@
+import { emitSavedTrackDownloaded } from './saved-track-download-events';
 import {
   IDLE_SAVED_TRACK_DOWNLOAD_PROGRESS,
   savedTrackDownloadProgressStore,
@@ -252,10 +253,18 @@ export const startSavedTrackDownload = async (
   inFlightDownloads.add(controller);
 
   try {
-    return await downloadSavedTrackBlob(
+    const blob = await downloadSavedTrackBlob(
       { ...request, signal: controller.signal },
       resolveDownloadDependencies(dependencies),
     );
+
+    // Waveform analysis reuses these bytes rather than fetching the file again.
+    emitSavedTrackDownloaded({
+      blob,
+      driveFileId: DRIVE_FILE_ID_PATTERN.exec(request.url)?.[1] ?? null,
+    });
+
+    return blob;
   } finally {
     inFlightDownloads.delete(controller);
   }

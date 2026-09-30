@@ -1,4 +1,9 @@
-import type { PlayableItem } from '@org/audio-library-models';
+import {
+  getWaveformPeakGain,
+  resolveWaveformBars,
+  type PlayableItem,
+  type WaveformPeaks,
+} from '@org/audio-library-models';
 
 const WAVEFORM_PROGRESS_SETTLE_TOLERANCE = 0.015;
 
@@ -84,30 +89,33 @@ export const hasWaveformProgressSettled = (options: {
   );
 };
 
+/** Height of the neutral placeholder band, as a share of the bar height. */
+export const FLAT_WAVEFORM_BAR_AMPLITUDE = 0.12;
+
 /**
- * Reduces a bar-amplitude series to `count` bars, keeping the loudest value in
- * each bucket so short peaks survive the smaller rendering.
+ * The bars to draw for an item: its own peaks over its range, or a flat band
+ * of the same length while peaks are unavailable (never a synthetic shape).
  */
-export const downsampleWaveformBars = (
-  amplitudes: readonly number[],
-  count: number,
-): number[] => {
-  if (count <= 0 || amplitudes.length === 0) {
-    return [];
+export const resolvePlaybackWaveformBars = (options: {
+  barCount: number;
+  item: PlayableItem;
+  peaks: WaveformPeaks | null;
+}): number[] => {
+  const { barCount, item, peaks } = options;
+
+  if (!peaks) {
+    return Array.from({ length: barCount }, () => FLAT_WAVEFORM_BAR_AMPLITUDE);
   }
 
-  if (amplitudes.length <= count) {
-    return [...amplitudes];
-  }
-
-  return Array.from({ length: count }, (_, bucketIndex) => {
-    const bucketStart = Math.floor((bucketIndex * amplitudes.length) / count);
-    const bucketEnd = Math.floor(
-      ((bucketIndex + 1) * amplitudes.length) / count,
-    );
-
-    return Math.max(...amplitudes.slice(bucketStart, bucketEnd));
-  });
+  return resolveWaveformBars(
+    peaks,
+    {
+      endMs: item.range.endMs ?? item.source.durationMs ?? peaks.durationMs,
+      startMs: item.range.startMs,
+    },
+    barCount,
+    getWaveformPeakGain(peaks),
+  );
 };
 
 /** A bar counts as played once progress reaches its trailing edge. */
