@@ -257,3 +257,35 @@ The system SHALL provide a loop editor that lets a user select a saved track, ma
 
 - **WHEN** a user attempts to save a loop without both markers or with an invalid range
 - **THEN** the system keeps the user in the loop editor and presents inline guidance explaining how to complete or correct the range
+
+### Requirement: Every action responds at once and loading never moves the interface
+
+The system SHALL acknowledge every tap, press, and selection in the same frame, whatever work follows, and SHALL show waiting as a loading state in place rather than as silence, a delayed screen change, or content that shifts the interface.
+
+#### Scenario: A tap changes the screen before its data arrives
+
+- **WHEN** a user taps something that opens a destination, sheet, editor, or folder whose content must be fetched, resolved, or analyzed
+- **THEN** the new surface appears in the same frame with its identity (title, path, controls) already in place, and its content area shows a loading state until the content arrives
+- **AND** the interface is never left unchanged while the work runs
+
+#### Scenario: A loading indicator lasts exactly as long as the work
+
+- **WHEN** an action involves several stages, such as a metadata request followed by a download followed by analysis
+- **THEN** the loading indicator stays visible from the first stage until the last completes, and is replaced by the result
+- **AND** no warning, empty state, or placeholder appears in between that the result would then contradict
+
+#### Scenario: Loading is shown in place and does not shift or hide navigation
+
+- **WHEN** a surface is loading
+- **THEN** the indicator occupies the area that will hold the content, or a fixed slot, and does not insert a card or banner that moves the navigation, breadcrumbs, or the content the user is aiming at
+- **AND** the navigation controls stay visible and operable throughout, and loading text is brief and replaces itself rather than stacking
+
+#### Scenario: A new location never shows the old location's content
+
+- **WHEN** a user navigates from one location to another
+- **THEN** the previous location's rows are not shown under the new location's title; the area shows a loading state, or content already held for the new location
+
+#### Scenario: Content already seen appears first and refreshes behind
+
+- **WHEN** a user returns to a location whose content was loaded earlier in the session
+- **THEN** that content appears immediately and any refresh happens behind it without clearing it

@@ -107,6 +107,16 @@ Decided by the user (2026-09-30), after 3.1 first built 1g's full-screen state a
 - A full-screen waveform is part of an editing task, entered through that task's action (for example `Make loop` / `Edit loop`) and left by saving or cancelling. Screen 1g is that task's layout; task 3.4 decides the loop editor's entry points and whether it replaces the Library loop builder.
 - A wide waveform in landscape is a possible later exploration (the app is portrait-locked today), not part of this change.
 
+## Decision 13 — Every action answers at once, and loading never moves the interface
+
+Decided by the user (2026-10-01), after the loop editor (tasks 3.4 / 8.45) and Add's folder navigation (task 2.13) showed the difference between work that takes time and an interface that goes quiet while it does.
+
+- The reaction to a tap is immediate and does not wait for data: the destination, sheet, or selection changes in the same frame, and any wait is shown as a loading state inside the new surface. Work may take as long as it takes; the response may not.
+- A loading indicator stays up for exactly as long as something is outstanding. It does not clear when one stage of a chain ends while a later stage is still running, and it is replaced by the result, not by an empty or warning state that the result will then contradict.
+- Loading is shown in place. It occupies the area that will hold the result, or a fixed slot, and it never inserts a card that shifts the navigation, hides the navigation tree, or pushes the content the user is aiming at. Status text is short and replaces itself rather than stacking.
+- A surface never shows the previous location's content under the new location's title.
+- Where data already exists (cached or just seen), it is shown first and refreshed behind, so going back is instant.
+
 ## Open questions for multiple selection (resolve at task 9.0)
 
 - Bulk-action bar layout at 375pt: which three actions are always visible per surface, and what goes in its overflow sheet.
