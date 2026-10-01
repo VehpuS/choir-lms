@@ -23,6 +23,8 @@ type Nudge = (
 ) => void;
 
 type LoopEditorRangeCardsProps = {
+  /** Nudging waits until the track's length is known. */
+  isLoading: boolean;
   onNudgeBoundary: Nudge;
   range: LoopEditorRange;
   trackDurationMs: number | null;
@@ -108,6 +110,7 @@ const EdgeCard = ({
 
 // Start, length, and end (1g): the two edges nudge; the length is the result.
 export const LoopEditorRangeCards = ({
+  isLoading,
   onNudgeBoundary,
   range,
   trackDurationMs,
@@ -118,12 +121,12 @@ export const LoopEditorRangeCards = ({
   });
 
   return (
-    <View style={styles.cardRow}>
+    <View style={[styles.cardRow, isLoading ? styles.disabled : null]}>
       <EdgeCard
         boundary="start"
         disabled={{
-          earlier: availability.startEarlier,
-          later: availability.startLater,
+          earlier: isLoading || availability.startEarlier,
+          later: isLoading || availability.startLater,
         }}
         label="Start"
         onNudgeBoundary={onNudgeBoundary}
@@ -138,8 +141,8 @@ export const LoopEditorRangeCards = ({
       <EdgeCard
         boundary="end"
         disabled={{
-          earlier: availability.endEarlier,
-          later: availability.endLater,
+          earlier: isLoading || availability.endEarlier,
+          later: isLoading || availability.endLater,
         }}
         label="End"
         onNudgeBoundary={onNudgeBoundary}

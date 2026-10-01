@@ -1,6 +1,7 @@
 import type { PlayableItem } from '@org/audio-library-models';
 import { useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   PanResponder,
   Text,
   View,
@@ -10,7 +11,10 @@ import {
 
 import { MIN_BAR_HEIGHT } from '../../../../components/playback-waveform/variants';
 import { resolvePlaybackWaveformBars } from '../../../../components/playback-waveform/model';
-import { useWaveformPeaks } from '../../../playback/waveform-peaks/use-waveform-peaks';
+import {
+  useWaveformPeaks,
+  useWaveformPeaksPending,
+} from '../../../playback/waveform-peaks/use-waveform-peaks';
 import { appTheme } from '../../../../utils/theme';
 import {
   getLoopEditorHandleRatio,
@@ -29,6 +33,8 @@ const BAR_AREA_HEIGHT = 112;
 const PERCENT = 100;
 
 type LoopEditorWaveformProps = {
+  /** The track's length is still being resolved. */
+  isLoading: boolean;
   onNudgeBoundary: (
     boundary: LoopBuilderBoundary,
     direction: 'earlier' | 'later',
@@ -50,6 +56,7 @@ const HANDLE_LABELS: Record<
 };
 
 export const LoopEditorWaveform = ({
+  isLoading,
   onNudgeBoundary,
   onRangeChange,
   playbackPositionSeconds,
@@ -60,6 +67,14 @@ export const LoopEditorWaveform = ({
   const [layoutWidth, setLayoutWidth] = useState(0);
   const durationMs = trackDurationMs ?? 0;
   const peaks = useWaveformPeaks(selectedTrack.source);
+  const isAnalyzing = useWaveformPeaksPending(selectedTrack.source);
+  // The indicator stays up for exactly as long as something is outstanding:
+  // the track's length, then the waveform's analysis.
+  const loadingLabel = isLoading
+    ? 'Loading track…'
+    : isAnalyzing
+      ? 'Loading waveform…'
+      : null;
   const bars = useMemo(() => {
     return resolvePlaybackWaveformBars({
       barCount: BAR_COUNT,
@@ -163,6 +178,17 @@ export const LoopEditorWaveform = ({
         }}
         style={styles.waveform}
       >
+        {loadingLabel ? (
+          <View
+            accessibilityLabel={loadingLabel}
+            accessibilityLiveRegion="polite"
+            accessible
+            style={styles.loading}
+          >
+            <ActivityIndicator color={appTheme.colors.accentText} />
+            <Text style={styles.loadingLabel}>{loadingLabel}</Text>
+          </View>
+        ) : null}
         <View
           pointerEvents="none"
           style={[

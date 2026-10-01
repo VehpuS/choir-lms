@@ -27,3 +27,16 @@ export const useWaveformPeaks = (source: {
     NO_PEAKS,
   );
 };
+
+/** Whether the file's peaks are still being looked up or analyzed. */
+export const useWaveformPeaksPending = (source: {
+  driveFileId: string;
+}): boolean => {
+  return (
+    useSyncExternalStore(
+      waveformPeakRegistry.subscribe,
+      () => waveformPeakRegistry.getStatus(source.driveFileId),
+      () => 'none' as const,
+    ) === 'pending'
+  );
+};

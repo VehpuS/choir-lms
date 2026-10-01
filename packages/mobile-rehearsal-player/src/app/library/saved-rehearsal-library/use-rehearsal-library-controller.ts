@@ -187,10 +187,11 @@ export const useRehearsalLibraryController = ({
       );
     }
 
-    void (async () => {
-      await prepareLoopBuilderTrack(source);
-      savedLibraryRemovalActions.setSelectedLoopSourceId(source.id);
-    })();
+    // The editor opens at once; while the track's length resolves it shows its
+    // own loading state (`pendingLoopBuilderSourceId`) instead of the row
+    // sitting silent until the length is known.
+    savedLibraryRemovalActions.setSelectedLoopSourceId(source.id);
+    void prepareLoopBuilderTrack(source);
   };
 
   const getDriveSourceActions = (

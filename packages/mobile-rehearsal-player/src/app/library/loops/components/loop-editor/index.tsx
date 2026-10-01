@@ -24,6 +24,7 @@ type LoopEditorSurfaceProps = {
   canSetBoundaryFromPosition: boolean;
   endMs: number;
   eyebrowLabel: string;
+  isPreparing: boolean;
   isPreviewLoading: boolean;
   isSavingLoop: boolean;
   isVisible: boolean;
@@ -51,7 +52,8 @@ type LoopEditorSurfaceProps = {
   startMs: number;
 };
 
-// The loop editor (1g): a full-height sheet with the whole track's waveform,
+// The loop editor (1g): opens at once and shows its loading state while the
+// track's length resolves. A full-height sheet with the whole track's waveform,
 // the loop as an A–B region with draggable handles, and the preview transport.
 export const LoopEditorSurface = (props: LoopEditorSurfaceProps) => {
   const { selectedTrack } = props;
@@ -103,6 +105,7 @@ export const LoopEditorSurface = (props: LoopEditorSurfaceProps) => {
         </Text>
 
         <LoopEditorWaveform
+          isLoading={props.isPreparing}
           onNudgeBoundary={props.onNudgeBoundary}
           onRangeChange={props.onRangeChange}
           playbackPositionSeconds={props.previewTimeline?.positionSeconds ?? 0}
@@ -112,6 +115,7 @@ export const LoopEditorSurface = (props: LoopEditorSurfaceProps) => {
         />
 
         <LoopEditorRangeCards
+          isLoading={props.isPreparing}
           onNudgeBoundary={props.onNudgeBoundary}
           range={range}
           trackDurationMs={props.rangeMaximumMs}
@@ -130,7 +134,7 @@ export const LoopEditorSurface = (props: LoopEditorSurfaceProps) => {
           onSetBoundaryFromPosition={props.onSetBoundaryFromPosition}
           onTogglePreview={props.onTogglePreview}
           previewActionLabel={props.previewActionLabel}
-          previewDisabled={props.previewDisabled}
+          previewDisabled={props.previewDisabled || props.isPreparing}
           previewIconName={props.previewIconName}
         />
 
@@ -145,7 +149,7 @@ export const LoopEditorSurface = (props: LoopEditorSurfaceProps) => {
           value={props.loopName}
         />
 
-        {props.builderIssue ? (
+        {props.builderIssue && !props.isPreparing ? (
           <FeedbackCard
             message={props.builderIssue.message}
             title={props.builderIssue.title}

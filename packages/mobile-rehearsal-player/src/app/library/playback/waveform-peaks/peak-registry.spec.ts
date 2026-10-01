@@ -135,4 +135,54 @@ describe('waveform peak registry', () => {
     assert.equal(registry.getSnapshot('file-1'), null);
     assert.equal(memory.records.size, 0);
   });
+
+  it('reports a file as pending from the first request until the cache answers, then none', async () => {
+    const { registry } = createRegistry();
+
+    assert.equal(registry.getStatus('file-1'), 'none');
+
+    registry.request('file-1', 'v1');
+    assert.equal(registry.getStatus('file-1'), 'pending');
+
+    await registry.whenLoaded('file-1');
+    assert.equal(registry.getStatus('file-1'), 'none');
+  });
+
+  it('stays pending for as long as an analysis runs, then becomes ready', async () => {
+    const { registry } = createRegistry();
+    let release: () => void = () => undefined;
+    const statuses: string[] = [];
+
+    registry.subscribe(() => {
+      statuses.push(registry.getStatus('file-1'));
+    });
+    registry.request('file-1', 'v1');
+    await registry.whenLoaded('file-1');
+
+    const pending = registry.ingest('file-1', () => {
+      return new Promise((resolve) => {
+        release = () => {
+          resolve(createTestPeaks());
+        };
+      });
+    });
+
+    await settle();
+    assert.equal(registry.getStatus('file-1'), 'pending');
+
+    release();
+    await pending;
+
+    assert.equal(registry.getStatus('file-1'), 'ready');
+    assert.equal(statuses.at(-1), 'ready');
+  });
+
+  it('is none again, not stuck pending, after an analysis that finds nothing', async () => {
+    const { registry } = createRegistry();
+
+    registry.request('file-1', 'v1');
+    await registry.ingest('file-1', async () => null);
+
+    assert.equal(registry.getStatus('file-1'), 'none');
+  });
 });

@@ -2,7 +2,12 @@ import type { WaveformPeaks } from '@org/audio-library-models';
 
 import { UNVERSIONED_SOURCE, type WaveformPeakCache } from './peak-cache';
 
+/** What the UI can show for a file: nothing yet, working on it, or ready. */
+export type WaveformPeakStatus = 'none' | 'pending' | 'ready';
+
 type PeakEntry = {
+  /** False until the persisted cache has been consulted. */
+  isLoaded: boolean;
   /** Resolves once the persisted cache has been consulted for this version. */
   loaded: Promise<void>;
   peaks: WaveformPeaks | null;
@@ -27,6 +32,7 @@ export const createWaveformPeakRegistry = (cache: WaveformPeakCache) => {
 
   const load = (key: string, version: string) => {
     const entry: PeakEntry = {
+      isLoaded: false,
       loaded: Promise.resolve(),
       peaks: null,
       version,
@@ -36,12 +42,18 @@ export const createWaveformPeakRegistry = (cache: WaveformPeakCache) => {
       .read(key, version)
       .then((peaks) => {
         // A newer version may have replaced this entry while the read ran.
-        if (entries.get(key) === entry && peaks) {
-          entry.peaks = peaks;
+        if (entries.get(key) === entry) {
+          entry.peaks = peaks ?? entry.peaks;
+          entry.isLoaded = true;
           notify();
         }
       })
-      .catch(() => undefined);
+      .catch(() => {
+        if (entries.get(key) === entry) {
+          entry.isLoaded = true;
+          notify();
+        }
+      });
     entries.set(key, entry);
 
     return entry;
@@ -50,6 +62,22 @@ export const createWaveformPeakRegistry = (cache: WaveformPeakCache) => {
   return {
     getSnapshot(key: string): WaveformPeaks | null {
       return entries.get(key)?.peaks ?? null;
+    },
+    /**
+     * `pending` from the first request until the cache has answered and for
+     * as long as an analysis of the file is running, so a view can keep its
+     * loading indicator up for exactly as long as work is outstanding.
+     */
+    getStatus(key: string): WaveformPeakStatus {
+      const entry = entries.get(key);
+
+      if (entry?.peaks) {
+        return 'ready';
+      }
+
+      return entry && (!entry.isLoaded || inFlightExtractions.has(key))
+        ? 'pending'
+        : 'none';
     },
     /** Resolves once persisted peaks for `key` have been looked up. */
     async whenLoaded(key: string): Promise<void> {
@@ -110,9 +138,11 @@ export const createWaveformPeakRegistry = (cache: WaveformPeakCache) => {
         .catch(() => undefined)
         .finally(() => {
           inFlightExtractions.delete(key);
+          notify();
         });
 
       inFlightExtractions.set(key, task);
+      notify();
 
       return task;
     },

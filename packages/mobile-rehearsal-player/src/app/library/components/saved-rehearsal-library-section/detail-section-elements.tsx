@@ -23,6 +23,7 @@ type DetailSectionElementsProps = Pick<
   | 'libraryFiles'
   | 'onDetailPlaybackChange'
   | 'onDetailSearchActionsChange'
+  | 'pendingLoopBuilderSourceId'
   | 'pendingLoopId'
   | 'pendingPlaylistId'
   | 'playbackIssue'
@@ -104,6 +105,10 @@ export const buildSavedRehearsalLibraryDetailSectionElements = (options: {
       isPlaybackPreparing={props.isPlaybackPreparing}
       isPlaylistMutating={isPlaylistMutating}
       isSavedLoopsLoading={props.isSavedLoopsLoading}
+      isTrackPreparing={
+        props.pendingLoopBuilderSourceId !== null &&
+        props.pendingLoopBuilderSourceId === props.selectedTrack?.sourceId
+      }
       isTrackLoopDetailVisible={detailMode === 'track-loop-detail'}
       loopState={loopState}
       onOpenLoopTagEditor={tagEditor.openLoopTagEditor}

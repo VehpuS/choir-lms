@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { PlayableItem } from '@org/audio-library-models';
 import { runtimeConfig } from '../../../../config/runtime';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
+import { requestLoopBuilderSourceDuration } from '../utils/request-loop-builder-source-duration';
 import {
   hydrateLoopBuilderTrackDuration,
   resolveLoopBuilderTrack,
@@ -77,89 +78,46 @@ export const usePreparedLoopBuilderTrack = (
     return probedDurationMs;
   };
 
-  const requestSourceDuration = async (
+  const requestSourceDuration = (
     source: DriveLibrarySource,
     requestOptions?: {
       retryFailedLookup?: boolean;
       showPending?: boolean;
     },
   ) => {
-    const cachedDurationMs = resolvedDurationsBySourceId[source.id];
-
-    if (source.durationMs !== undefined) {
-      return source.durationMs;
-    }
-
-    if (
-      cachedDurationMs !== undefined &&
-      (cachedDurationMs !== null || !requestOptions?.retryFailedLookup)
-    ) {
-      return cachedDurationMs;
-    }
-
-    if (
-      options.authState.status !== 'authorized' ||
-      !options.authState.accessToken
-    ) {
-      return cachedDurationMs;
-    }
-
-    if (requestOptions?.showPending) {
-      setPendingSourceId(source.id);
-    }
-
-    try {
-      const refreshedSource = await getDriveAudioSource({
-        accessToken: options.authState.accessToken,
-        driveFileId: source.driveFileId,
-        supportedMimeTypes: runtimeConfig.supportedAudioMimeTypes,
-        supportedExtensions: runtimeConfig.supportedAudioExtensions,
-      });
-      const resolvedDurationMs = refreshedSource.durationMs ?? null;
-
-      setResolvedDurationsBySourceId((currentDurations) => {
-        return {
-          ...currentDurations,
-          [source.id]: resolvedDurationMs,
-        };
-      });
-
-      if (typeof refreshedSource.durationMs === 'number') {
-        options.persistResolvedSourceDuration(
-          source.id,
-          refreshedSource.durationMs,
-        );
-      }
-
-      if (resolvedDurationMs !== null) {
-        return resolvedDurationMs;
-      }
-
-      if (requestOptions?.showPending) {
-        return probeSourceDurationFromPlayer(source);
-      }
-
-      return resolvedDurationMs;
-    } catch {
-      setResolvedDurationsBySourceId((currentDurations) => {
-        return {
-          ...currentDurations,
-          [source.id]: null,
-        };
-      });
-
-      if (requestOptions?.showPending) {
-        return probeSourceDurationFromPlayer(source);
-      }
-
-      return null;
-    } finally {
-      if (requestOptions?.showPending) {
-        setPendingSourceId((currentSourceId) => {
-          return currentSourceId === source.id ? null : currentSourceId;
+    return requestLoopBuilderSourceDuration(source, requestOptions, {
+      cachedDurationMs: resolvedDurationsBySourceId[source.id],
+      canRequest:
+        options.authState.status === 'authorized' &&
+        Boolean(options.authState.accessToken),
+      fetchDriveDurationMs: async () => {
+        const refreshedSource = await getDriveAudioSource({
+          accessToken: options.authState.accessToken ?? '',
+          driveFileId: source.driveFileId,
+          supportedMimeTypes: runtimeConfig.supportedAudioMimeTypes,
+          supportedExtensions: runtimeConfig.supportedAudioExtensions,
         });
-      }
-    }
+
+        return refreshedSource.durationMs ?? null;
+      },
+      onPendingChange: (pendingId) => {
+        // Clearing only clears this source's own flag.
+        setPendingSourceId((currentSourceId) => {
+          return pendingId === null && currentSourceId !== source.id
+            ? currentSourceId
+            : pendingId;
+        });
+      },
+      onResolved: (durationMs) => {
+        setResolvedDurationsBySourceId((currentDurations) => {
+          return { ...currentDurations, [source.id]: durationMs };
+        });
+      },
+      persistDurationMs: (durationMs) => {
+        options.persistResolvedSourceDuration(source.id, durationMs);
+      },
+      probeDurationMs: () => probeSourceDurationFromPlayer(source),
+    });
   };
 
   useEffect(() => {

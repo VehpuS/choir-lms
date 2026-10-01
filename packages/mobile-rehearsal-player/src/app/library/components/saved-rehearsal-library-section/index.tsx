@@ -162,6 +162,7 @@ export const SavedRehearsalLibrarySection = ({
         libraryFiles,
         onDetailPlaybackChange,
         onDetailSearchActionsChange,
+        pendingLoopBuilderSourceId,
         pendingLoopId,
         pendingPlaylistId,
         playbackIssue,

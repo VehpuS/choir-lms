@@ -31,6 +31,8 @@ type SavedLoopSectionProps = {
   isBrowseListSuppressed?: boolean;
   isPlaybackPreparing: boolean;
   isTrackLoopDetailVisible: boolean;
+  /** The selected track's length is still resolving: the editor shows loading. */
+  isTrackPreparing?: boolean;
   canMutateLoops: boolean;
   canQueueAsNext: boolean;
   highlightQuery: string | null;
@@ -75,6 +77,7 @@ export const SavedLoopSection = ({
   isBrowseListSuppressed = false,
   isPlaybackPreparing,
   isTrackLoopDetailVisible,
+  isTrackPreparing = false,
   canMutateLoops,
   canQueueAsNext,
   highlightQuery,
@@ -238,6 +241,7 @@ export const SavedLoopSection = ({
           previewPlayableItem !== null &&
           activePlayableItem?.id === previewPlayableItem.id
         }
+        isPreparing={isTrackPreparing}
         isSavingLoop={isLoopMutating}
         isVisible={selectedTrack !== null}
         loopName={loopDraft.loopName}

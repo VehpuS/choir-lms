@@ -40,6 +40,8 @@ type SavedRehearsalLibraryLoopSectionContentProps = {
   isPlaylistMutating: boolean;
   isSavedLoopsLoading: boolean;
   isTrackLoopDetailVisible: boolean;
+  /** The selected track's length is still being resolved. */
+  isTrackPreparing: boolean;
   loopState: ReturnType<typeof useSavedRehearsalLibraryLoopState>;
   onOpenLoopTagEditor: (
     loop: Parameters<typeof SavedLoopSection>[0]['savedLoops'][number],
@@ -72,6 +74,7 @@ export const SavedRehearsalLibraryLoopSectionContent = ({
   isPlaylistMutating,
   isSavedLoopsLoading,
   isTrackLoopDetailVisible,
+  isTrackPreparing,
   loopState,
   onOpenLoopTagEditor,
   openLoopPlaylistSelector,
@@ -104,6 +107,7 @@ export const SavedRehearsalLibraryLoopSectionContent = ({
       isPlaylistMutating={isPlaylistMutating}
       isSavedLoopsLoading={isSavedLoopsLoading}
       isTrackLoopDetailVisible={isTrackLoopDetailVisible}
+      isTrackPreparing={isTrackPreparing}
       onCloseLoopBuilder={loopState.closeLoopBuilder}
       onEditLoop={loopState.openLoopEditor}
       onEditLoopTags={onOpenLoopTagEditor}

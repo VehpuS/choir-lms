@@ -168,7 +168,14 @@ export const useSavedLoopSectionState = (
       }),
     );
     setDraftIssue(null);
-  }, [options.editingLoop?.id, options.selectedTrack?.id]);
+    // A new loop's range spans the whole track, so it starts over once the
+    // length arrives (the editor opens before it is known). An edited loop
+    // keeps its own range.
+  }, [
+    options.editingLoop?.id,
+    options.selectedTrack?.id,
+    options.editingLoop ? null : selectedTrackDurationMs,
+  ]);
 
   const applyRange = (nextRange: { endMs: number; startMs: number }) => {
     setLoopDraft((currentDraft) => {

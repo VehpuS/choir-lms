@@ -120,6 +120,16 @@ export const loopEditorStyles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: colors.text,
   },
+  loading: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.sm,
+  },
+  loadingLabel: {
+    ...type.body,
+    color: colors.textMuted,
+  },
   scale: {
     flexDirection: 'row',
     justifyContent: 'space-between',
