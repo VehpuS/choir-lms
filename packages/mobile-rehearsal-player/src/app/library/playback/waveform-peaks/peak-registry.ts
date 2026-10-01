@@ -51,6 +51,10 @@ export const createWaveformPeakRegistry = (cache: WaveformPeakCache) => {
     getSnapshot(key: string): WaveformPeaks | null {
       return entries.get(key)?.peaks ?? null;
     },
+    /** Resolves once persisted peaks for `key` have been looked up. */
+    async whenLoaded(key: string): Promise<void> {
+      await entries.get(key)?.loaded;
+    },
     /**
      * Records that something is showing `key` at `version`, loading any
      * persisted peaks. A changed version discards what was held.

@@ -1,3 +1,4 @@
+import { createTrackPlayableItem } from '@org/audio-library-models';
 import type { DriveAuthorizationState } from '@org/google-drive';
 import { useMemo } from 'react';
 import { Linking } from 'react-native';
@@ -11,6 +12,7 @@ import { resolveDriveSourceActions } from '../drive/utils/drive-search-preview-a
 import { usePreparedLoopBuilderTrack } from '../loops/hooks/use-prepared-loop-builder-track';
 import { useSavedLoops } from '../loops/hooks/use-saved-loops';
 import type { useSavedTrackPlayback } from '../playback/hooks/use-saved-track-playback';
+import { prefetchWaveformPeaks } from '../playback/waveform-peaks';
 import { getSavedTrackPlaybackStatusCopy } from '../playback/utils/saved-track-playback-view-model';
 import { useSavedPlaylists } from '../playlists/hooks/use-saved-playlists';
 import { createDriveImportControllerDependencies } from './drive-import-controller-dependencies';
@@ -176,6 +178,15 @@ export const useRehearsalLibraryController = ({
   const openLoopBuilderForSource = (
     source: (typeof savedLibrarySources)[number],
   ) => {
+    // Analyze the file's waveform in the background while the length is
+    // resolved, so the editor opens with it rather than waiting for a play.
+    if (authState.accessToken) {
+      prefetchWaveformPeaks(
+        createTrackPlayableItem(source),
+        authState.accessToken,
+      );
+    }
+
     void (async () => {
       await prepareLoopBuilderTrack(source);
       savedLibraryRemovalActions.setSelectedLoopSourceId(source.id);
