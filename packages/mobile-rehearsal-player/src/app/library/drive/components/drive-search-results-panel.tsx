@@ -24,6 +24,7 @@ export const DriveSearchResultsPanel = ({
   const shouldShowStatusCard = shouldShowDriveStatusCard(
     controller.search.isLoading,
     controller.search.statusCopy.tone,
+    true,
   );
 
   return (

@@ -4,6 +4,7 @@ import {
   parseDriveBrowseSnapshot,
   parseDriveLibrarySnapshot,
   type DriveBrowseLocation,
+  type DriveBrowseSnapshot,
 } from './drive-discovery-models';
 import {
   createBrowseQuery,
@@ -21,7 +22,10 @@ import {
   requestDriveFileMetadataWithFallback,
   requestDriveFilesWithFallback,
 } from './drive-files-client';
-import { resolveDriveFilePaths } from './drive-path-resolver';
+import {
+  resolveDriveFilePaths,
+  type DrivePathResolutionCache,
+} from './drive-path-resolver';
 import {
   mapDriveFileToAudioSource,
   type DriveFileMetadata,
@@ -160,18 +164,42 @@ export const getDriveAudioSource = async (options: {
 export const browseDriveLocation = async (options: {
   accessToken: string;
   location: DriveBrowseLocation;
+  /**
+   * Called after each page with the folders found so far (no audio sources).
+   * Folders need no path resolution, so a folder can be opened while the
+   * remaining pages and the source paths are still loading.
+   */
+  onFolders?: (snapshot: DriveBrowseSnapshot) => void;
+  /** Share across calls so ancestor folders are fetched once per session. */
+  pathCache?: DrivePathResolutionCache;
   supportedMimeTypes: string[];
   supportedExtensions: string[];
   signal?: AbortSignal;
 }) => {
+  const folderFiles: DriveFileMetadata[] = [];
   const files = await requestAllDriveFilesWithFallback({
     accessToken: options.accessToken,
     query: createBrowseQuery(options.location),
     includeSharedDrives: true,
+    onPage: ({ files: pageFiles }) => {
+      if (!options.onFolders) {
+        return;
+      }
+
+      folderFiles.push(...pageFiles.filter(isDriveFolder));
+      options.onFolders(
+        parseDriveBrowseSnapshot(folderFiles, {
+          location: options.location,
+          supportedMimeTypes: options.supportedMimeTypes,
+          supportedExtensions: options.supportedExtensions,
+        }),
+      );
+    },
     signal: options.signal,
   });
   const resolvedPaths = await resolveDriveFilePaths({
     accessToken: options.accessToken,
+    cache: options.pathCache,
     files,
     signal: options.signal,
   });

@@ -2,16 +2,23 @@ import {
   MY_DRIVE_ROOT_LOCATION,
   SHARED_FOLDERS_ROOT_LOCATION,
   browseDriveLocation,
+  createDrivePathResolutionCache,
   searchDriveAudioFiles,
   type DriveAuthorizationState,
   type DriveBrowseLocation,
   type DriveBrowseSnapshot,
   type DriveFolder,
 } from '@org/google-drive';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { runtimeConfig } from '../../../../config/runtime';
 import { isDriveAuthorizationFailure } from '../../../auth/google-drive/utils/authorization';
+import {
+  createDriveBrowseCache,
+  createEmptyDriveBrowseSnapshot,
+  getDriveBrowseCacheKey,
+  resolveVisibleDriveBrowse,
+} from '../utils/drive-browse-cache';
 import { createDriveDiscoveryRequest } from '../utils/drive-discovery-request';
 import { buildDriveFolderNavigationStack } from '../utils/drive-navigation-stack';
 import {
@@ -28,17 +35,6 @@ const createRootLocation = (rootKind: DriveBrowseLocation['rootKind']) => {
   } satisfies DriveBrowseLocation;
 };
 
-const createEmptyBrowseSnapshot = (
-  location: DriveBrowseLocation,
-): DriveBrowseSnapshot => {
-  return {
-    location,
-    folders: [],
-    playableSources: [],
-    unavailableSources: [],
-  };
-};
-
 const DEFAULT_LIBRARY_ERROR = 'Drive library could not be loaded.';
 
 export const useDriveLibrary = (
@@ -51,13 +47,14 @@ export const useDriveLibrary = (
       return [createRootLocation('my-drive')];
     },
   );
-  const [browseSnapshot, setBrowseSnapshot] = useState<DriveBrowseSnapshot>(
-    () => {
-      const rootLocation = createRootLocation('my-drive');
-
-      return createEmptyBrowseSnapshot(rootLocation);
-    },
-  );
+  const [loadedBrowseSnapshot, setLoadedBrowseSnapshot] =
+    useState<DriveBrowseSnapshot>(() => {
+      return createEmptyDriveBrowseSnapshot(createRootLocation('my-drive'));
+    });
+  // Session-only memory of listed folders and resolved ancestor names, so going
+  // back or re-entering a folder shows its rows at once and refreshes behind.
+  const browseCacheRef = useRef(createDriveBrowseCache());
+  const pathCacheRef = useRef(createDrivePathResolutionCache());
   const [isLoading, setIsLoading] = useState(false);
   const [issue, setIssue] = useState<string | null>(null);
   const [refreshCount, setRefreshCount] = useState(0);
@@ -67,6 +64,13 @@ export const useDriveLibrary = (
   const currentLocation =
     navigationStack[navigationStack.length - 1] ??
     createRootLocation('my-drive');
+
+  const { isAwaitingLocation, snapshot: browseSnapshot } =
+    resolveVisibleDriveBrowse({
+      cache: browseCacheRef.current,
+      currentLocation,
+      loadedSnapshot: loadedBrowseSnapshot,
+    });
 
   const clearIssue = useCallback(() => {
     setIssue(null);
@@ -94,6 +98,12 @@ export const useDriveLibrary = (
       setRefreshCount((currentValue) => currentValue + 1);
     },
   });
+  const isAwaitingBrowse =
+    isAwaitingLocation &&
+    activeSearchQuery === null &&
+    issue === null &&
+    authState.status === 'authorized';
+
   const searchSelection = useDriveSearchSelection({
     activeQuery: activeSearchQuery,
     inputQuery: searchQuery,
@@ -107,7 +117,9 @@ export const useDriveLibrary = (
     const accessToken = authState.accessToken;
 
     if (authState.status !== 'authorized' || !accessToken) {
-      setBrowseSnapshot(createEmptyBrowseSnapshot(currentLocation));
+      browseCacheRef.current.clear();
+      pathCacheRef.current.clear();
+      setLoadedBrowseSnapshot(createEmptyDriveBrowseSnapshot(currentLocation));
       replaceSearchSnapshot(EMPTY_DRIVE_SEARCH_SNAPSHOT);
       setIssue(null);
       setIsLoading(false);
@@ -145,9 +157,23 @@ export const useDriveLibrary = (
         return;
       }
 
+      const browseCacheKey = getDriveBrowseCacheKey(currentLocation);
       const nextBrowseSnapshot = await browseDriveLocation({
         accessToken,
         location: currentLocation,
+        // Show folders as pages arrive, but never replace an already listed
+        // location (a refresh) with a folders-only view.
+        onFolders: (foldersSnapshot) => {
+          if (
+            !request.shouldApplyResult() ||
+            browseCacheRef.current.has(browseCacheKey)
+          ) {
+            return;
+          }
+
+          setLoadedBrowseSnapshot(foldersSnapshot);
+        },
+        pathCache: pathCacheRef.current,
         supportedMimeTypes: runtimeConfig.supportedAudioMimeTypes,
         supportedExtensions: runtimeConfig.supportedAudioExtensions,
         signal: request.signal,
@@ -157,7 +183,8 @@ export const useDriveLibrary = (
         return;
       }
 
-      setBrowseSnapshot(nextBrowseSnapshot);
+      browseCacheRef.current.set(browseCacheKey, nextBrowseSnapshot);
+      setLoadedBrowseSnapshot(nextBrowseSnapshot);
     };
 
     void loadDiscovery()
@@ -226,7 +253,9 @@ export const useDriveLibrary = (
         return currentStack.slice(0, index + 1);
       });
     },
-    isLoading,
+    // Navigating flips this in the same render, before the effect starts the
+    // request, so Add never paints a "nothing here" state for a new location.
+    isLoading: isLoading || isAwaitingBrowse,
     issue,
     navigationStack,
     openFolder(folder: DriveFolder) {
@@ -276,7 +305,6 @@ export const useDriveLibrary = (
       setSearchReturnNavigationStack(null);
       deactivateSearch();
       setNavigationStack([rootLocation]);
-      setBrowseSnapshot(createEmptyBrowseSnapshot(rootLocation));
     },
     setSearchQuery(value: string) {
       setSearchReturnNavigationStack(null);

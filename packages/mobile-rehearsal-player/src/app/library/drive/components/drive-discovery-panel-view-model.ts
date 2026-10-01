@@ -1,6 +1,9 @@
 import type { ExplorerBreadcrumbItem } from '../../components/explorer/model';
 import type { useRehearsalLibraryController } from '../../saved-rehearsal-library/use-rehearsal-library-controller';
-import { shouldShowDriveStatusCard } from '../utils/drive-discovery-layout';
+import {
+  shouldShowDriveLoadingRows,
+  shouldShowDriveStatusCard,
+} from '../utils/drive-discovery-layout';
 import {
   buildDriveDiscoveryExplorerState,
   type DriveDiscoveryExplorerState,
@@ -23,6 +26,7 @@ export type DriveDiscoveryPanelViewModel = {
   >['discovery']['openFolder'];
   onReturnToSearchResults?: () => void;
   selectionResultCount: number;
+  shouldShowLoadingRows: boolean;
   shouldShowStatusCard: boolean;
 };
 
@@ -50,6 +54,7 @@ export const buildDriveDiscoveryPanelViewModel = (options: {
   const shouldShowStatusCard = shouldShowDriveStatusCard(
     isStatusLoading,
     activeStatusCopy.tone,
+    isSearchMode,
   );
   const parentLocationIndex = controller.discovery.navigationStack.length - 2;
 
@@ -91,6 +96,11 @@ export const buildDriveDiscoveryPanelViewModel = (options: {
     selectionResultCount: controller.search.selection.canSelect
       ? controller.search.results.length
       : 0,
+    shouldShowLoadingRows: shouldShowDriveLoadingRows({
+      isLoading: isStatusLoading,
+      isSearchMode,
+      rowCount: explorerState.rows.length,
+    }),
     shouldShowStatusCard,
   };
 };

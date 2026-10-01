@@ -7,6 +7,7 @@ import {
 import type { useRehearsalLibraryController } from '../../saved-rehearsal-library/use-rehearsal-library-controller';
 import { buildDriveDiscoveryPanelViewModel } from './drive-discovery-panel-view-model';
 import { DriveExplorerList } from './drive-explorer-list';
+import { DriveExplorerLoadingRows } from './drive-explorer-loading-rows';
 import { resolveDriveDiscoveryResultFromRow } from './drive-explorer-row-model';
 import { DriveLibraryRootSelector } from './drive-library-root-selector';
 import { DriveLibrarySearchPanel } from './drive-library-search-panel';
@@ -90,20 +91,30 @@ export const DriveDiscoveryPanel = ({
           selectedCount={controller.search.selection.selectedCount}
         />
       ) : null}
-      <DriveExplorerList
-        getActions={controller.getDriveSourceActions}
-        getMessage={controller.getSourceMessage}
-        highlightQuery={viewModel.highlightQuery}
-        isSelectionMode={controller.search.selection.isActive}
-        onOpenFolder={viewModel.onOpenFolder}
-        onToggleSelection={(row) => {
-          controller.search.selection.toggle(
-            resolveDriveDiscoveryResultFromRow(row),
-          );
-        }}
-        rows={viewModel.explorerRows}
-        selectedResultIds={controller.search.selection.selectedResultIds}
-      />
+      {viewModel.shouldShowLoadingRows ? (
+        <View
+          accessibilityLabel="Loading"
+          accessibilityLiveRegion="polite"
+          accessibilityState={{ busy: true }}
+        >
+          <DriveExplorerLoadingRows />
+        </View>
+      ) : (
+        <DriveExplorerList
+          getActions={controller.getDriveSourceActions}
+          getMessage={controller.getSourceMessage}
+          highlightQuery={viewModel.highlightQuery}
+          isSelectionMode={controller.search.selection.isActive}
+          onOpenFolder={viewModel.onOpenFolder}
+          onToggleSelection={(row) => {
+            controller.search.selection.toggle(
+              resolveDriveDiscoveryResultFromRow(row),
+            );
+          }}
+          rows={viewModel.explorerRows}
+          selectedResultIds={controller.search.selection.selectedResultIds}
+        />
+      )}
     </View>
   );
 };

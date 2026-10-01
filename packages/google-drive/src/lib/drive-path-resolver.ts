@@ -22,7 +22,7 @@ export type DriveResolvedPath = {
 
 type DrivePathInput = Pick<DriveFileMetadata, 'id' | 'parents' | 'shared'>;
 
-type DrivePathResolutionCache = Map<
+export type DrivePathResolutionCache = Map<
   string,
   Promise<DriveFileMetadata | undefined>
 >;
