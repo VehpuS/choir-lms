@@ -12,16 +12,17 @@ const { assetExts, sourceExts } = defaultConfig.resolver;
  * @type {import('metro-config').MetroConfig}
  */
 const customConfig = {
-  cacheVersion: "mobile-rehearsal-player",
+  cacheVersion: 'mobile-rehearsal-player',
   transformer: {
     babelTransformerPath: require.resolve('react-native-svg-transformer'),
   },
   resolver: {
-    assetExts: assetExts.filter((ext) => ext !== 'svg'),
+    // `worklet` carries the SoundTouch AudioWorklet processor (web pitch
+    // shifting) as an asset, so it is served as a file instead of bundled.
+    assetExts: [...assetExts.filter((ext) => ext !== 'svg'), 'worklet'],
     sourceExts: [...sourceExts, 'cjs', 'mjs', 'svg'],
   },
 };
-
 
 module.exports = withNxMetro(mergeConfig(defaultConfig, customConfig), {
   // Change this to true to see debugging info.

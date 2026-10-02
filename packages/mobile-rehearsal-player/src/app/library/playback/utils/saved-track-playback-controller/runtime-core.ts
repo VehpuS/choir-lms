@@ -6,7 +6,11 @@ import {
   createSavedTrackPlaybackRequest,
   createSavedTrackPlaybackRuntimeIssue,
 } from '../saved-track-playback-view-model';
-import { getSavedTrackPlayer } from '../saved-track-player-interop';
+import { getPitchPreservingTrackOptions } from '../../shaping/pitch-preserving-track-options';
+import {
+  getSavedTrackPlayer,
+  getSavedTrackPlayerModule,
+} from '../saved-track-player-interop';
 import { ensureSavedTrackPlayerReady } from '../saved-track-player-runtime';
 import { isSavedTrackDownloadAbortError } from '../saved-track-web-download';
 import {
@@ -117,7 +121,12 @@ export const createSavedTrackPlaybackRuntimeCore = (
     const trackPlayer = getSavedTrackPlayer();
 
     await trackPlayer.reset();
-    await trackPlayer.add(playbackRequest.track);
+    await trackPlayer.add({
+      ...playbackRequest.track,
+      ...getPitchPreservingTrackOptions(
+        getSavedTrackPlayerModule().PitchAlgorithm,
+      ),
+    });
     await trackPlayer.setVolume(options.volumeLevelRef.current);
 
     if (initialPositionSeconds > 0) {

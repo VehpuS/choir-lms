@@ -50,6 +50,8 @@ flowchart TD
 - Web media download (streamed progress, slow flag, abort on reset) and its progress store:
   - `packages/mobile-rehearsal-player/src/app/library/playback/utils/saved-track-web-download.ts`
   - `packages/mobile-rehearsal-player/src/app/library/playback/utils/saved-track-download-progress.ts`
+- Playback shaping engine, pitch capability, and the web pitch graph:
+  - `packages/mobile-rehearsal-player/src/app/library/playback/shaping/`
 - Player setup and capability sync:
   - `packages/mobile-rehearsal-player/src/app/library/playback/utils/saved-track-player-runtime.ts`
 - Playback request construction (Drive URL + auth headers):
@@ -108,6 +110,22 @@ The waveform draws the item's own audio, never a synthetic shape (design Decisio
 - `library/playback/waveform-peaks/`: `peak-registry.ts` (in-memory view per Drive file, shared analyses), `peak-cache.ts` (Drive-version keyed, size-budgeted LRU), `peak-store.web.ts` (IndexedDB) and `peak-store.ts` (AsyncStorage), `peak-extractor.web.ts` (`decodeAudioData`) and `peak-extractor.ts` (native: none yet), `peak-extraction-service.ts`, and `use-waveform-peaks.ts`.
 - Flow on web: `saved-track-web-download.ts` announces each finished download (`saved-track-download-events.ts`); the service decodes those bytes once, publishes the peaks to the registry, and persists them. `PlaybackWaveform` calls `useWaveformPeaks(source)` and draws the flat placeholder band until peaks exist, so a file shows real peaks after its first play and on later visits.
 - Not yet covered: native extraction, and files that have never been played (tasks 8.41, 8.43).
+
+## Playback Shaping (Speed and Pitch)
+
+Speed and pitch are two independent axes (design Decision 6 of `nocturne-visual-system-and-playback-shaping`). The engine lives in `library/playback/shaping/` and is reached through `getPlaybackShapingEngine()`; callers clamp to the product ranges before calling it.
+
+| Axis                             | Web                                                              | iOS                                                                                       | Android                                      |
+| -------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------- |
+| Speed (always pitch-preserving)  | element `playbackRate`; browsers keep pitch via `preservesPitch` | `setRate`; tracks carry the `Music` pitch algorithm (`pitch-preserving-track-options.ts`) | `setRate` (ExoPlayer speed, pitch stays 1.0) |
+| Semitone pitch (tempo unchanged) | SoundTouch AudioWorklet (`@soundtouchjs/audio-worklet`)          | **not implemented**                                                                       | **not implemented**                          |
+
+- `playback-shaping-engine.ts`: `setSpeed(SpeedTransform)` / `setSpeedMultiplier`, `setPitchSemitones`, `getState`, `reset`. `SpeedTransform` is `multiplier | tempoMap`; only `multiplier` is implemented and `tempoMap` rejects with `UnsupportedSpeedTransformError`.
+- `canShapePitch` is defined in one place (`playback-shaping-capabilities.ts`, with the reasons). Where it is false, `setPitchSemitones` returns `{ applied: false }`, changes no state, and never approximates pitch through the rate (that would change tempo). The shaping UI shows an inert pitch control with `PITCH_UNAVAILABLE_REASON` instead. Native pitch is deliberately deferred (tasks 8.51); it needs new native modules because iOS plays through `AVPlayer` (via `SwiftAudioEx`) and `react-native-track-player` exposes no pitch on Android.
+- Web pitch graph (`web-pitch-shifter-core.ts`, wired in `web-pitch-shifter.web.ts`): media element → `createMediaElementSource` → SoundTouch node → destination, built on the first non-zero pitch. The element keeps tempo (`playbackRate` with `preservesPitch`), and its volume and mute still apply upstream, so the volume slider needs no extra gain node. Pitch changes are applied in call order.
+- The processor script ships as a Metro asset, `assets/audio/soundtouch-processor.worklet` (extension registered in `metro.config.js`), because the worklet scope loads it by URL. It is fetched and re-served as a `text/javascript` blob (`addModule` rejects other MIME types). A spec keeps it identical to the installed package's file; re-copy `.dist/soundtouch-processor.js` after upgrading the package.
+- Measured on web (2026-10-02, preview at 375 × 812, audio routed to an analyser): +3 st read 525 Hz (target 523.3), −5 st 329.1 Hz (329.6), 0 st 441 Hz (440), and +3 st at 0.7× speed still 525 Hz; graph build 55 ms; SoundTouch costs about 0.1% of a core on a 5-minute track in a Node benchmark.
+- `reset()` on the player between items (`loadIntoPlayer` resets and re-adds the track) may drop the native rate; the session wiring (task 5.3) must re-apply the active shaping after each load.
 
 ## Slow Connections (Web)
 
