@@ -246,7 +246,7 @@ Pinned footer, two half-width actions: **Update Advent set** (accent outline) an
 
 Sheet. Kicker "SPEED & PITCH", `caret-down`. Context: 15/500 track title, 12 px "Loop · 1:12–1:48".
 
-**Speed** — kicker left, 19 px mono `0.90×` in `#b5abfc` right. A continuous 4 px track (`#292b31`) with an accent filled portion, a 14 px `#e9e9ed` thumb with an accent glow, and a 1 px `#75798c` detent tick at the 1.00× midpoint. Scale labels `0.50×` / `1.00×` / `1.50×`. Helper: "Continuous. Pitch is never shifted by speed."
+**Speed** — kicker left, 19 px mono `0.90×` in `#b5abfc` right. A continuous 4 px track (`#292b31`) with an accent filled portion, a 14 px `#e9e9ed` thumb with an accent glow, and a 1 px `#75798c` detent tick at the 1.00× midpoint. Scale labels `0.50×` / `1.00×` / `1.50×` (superseded 2026-10-02: the range is 0.25–2.00, so labels and the detent position are re-derived in task 6.1). Helper: "Continuous. Pitch is never shifted by speed."
 
 **Tempo source** — three chips: **Multiplier** (active, accent), BPM and Follow score (both inert: `rgba(233,233,237,.1)` border, `#75798c` label). Helper: "BPM and score-follow (MIDI / MusicXML) arrive later; dynamic tempo maps then replace the flat multiplier." The field exists now so the control doesn't have to move when those land.
 
@@ -256,7 +256,7 @@ Faded rule.
 
 Pinned footer: an accent `info` glyph with "Applies to this session only until saved.", then a full-width **Save as derived loop** (accent outline) with a 52 px `dots-three` overflow, and a centered 11.5 px note "Also available: save as derived track".
 
-Model: `speedMultiplier` float 0.50–1.50 default 1.0; `pitchSemitones` int −12…+12 default 0; `tempoSource` `'multiplier' | 'bpm' | 'score'` with only `'multiplier'` implemented. Committing creates a derived entity that stores `sourceRef` + optional `range` + `transform` — **metadata, never rendered audio** — which keeps the change inside the existing by-reference Drive model and the "no offline playback" MVP boundary.
+Model: `speedMultiplier` float 0.25–2.00 default 1.0 (was 0.50–1.50 in the mockup); `pitchSemitones` int −12…+12 default 0; `tempoSource` `'multiplier' | 'bpm' | 'score'` with only `'multiplier'` implemented. Committing creates a derived entity that stores `sourceRef` + optional `range` + `transform` — **metadata, never rendered audio** — which keeps the change inside the existing by-reference Drive model and the "no offline playback" MVP boundary.
 
 ### 1j — Library search, filters and tags
 

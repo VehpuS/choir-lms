@@ -47,7 +47,7 @@ An adjusted track or loop is `{ id, name, sourceRef, range?, transform: { speedM
 
 ## Decision 6 — Two independent axes, no pitch lock
 
-- `speedMultiplier`: continuous float, proposed clamp 0.50–1.50, default 1.0, never alters pitch.
+- `speedMultiplier`: continuous float, clamp 0.25–2.00 (widened from the proposed 0.50–1.50 by the user, 2026-10-02), default 1.0, never alters pitch.
 - `pitchSemitones`: integer, clamp −12…+12, default 0, never alters tempo.
 
 Because the two are independent and speed always preserves pitch, a pitch-lock affordance would be a control with one state. It is prohibited by the spec delta so it cannot creep back in as a "standard" transport icon.

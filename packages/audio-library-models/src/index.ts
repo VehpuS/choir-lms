@@ -1,4 +1,5 @@
 export * from './lib/drive-source-location.ts';
+export * from './lib/playback-shaping.ts';
 export * from './lib/rehearsal-domain.ts';
 export * from './lib/rehearsal-playlists.ts';
 export * from './lib/rehearsal-tags.ts';

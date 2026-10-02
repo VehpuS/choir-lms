@@ -31,5 +31,7 @@
       }
     }
   },
-  "dependencies": {}
+  "dependencies": {
+    "es-toolkit": "^1.46.1"
+  }
 }
