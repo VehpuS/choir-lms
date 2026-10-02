@@ -1,4 +1,7 @@
-import type { PlayableItem } from '@org/audio-library-models';
+import {
+  getPlaybackShapingLabelParts,
+  type PlayableItem,
+} from '@org/audio-library-models';
 import { sum } from 'es-toolkit';
 
 import { ROW_META_SEPARATOR } from '../../components/row-meta-line/model';
@@ -160,7 +163,25 @@ const getPlaybackQueueLabel = (
   return `${getPlaylistQueueModeLabel(activePlaylistSession.queue.mode)} • ${getPlaylistRepeatModeLabel(activePlaylistSession.queue.repeatMode)}`;
 };
 
+/** The rehearsal context line's shaping tail (`• 0.90× · −2 st`), or nothing. */
+const appendShapingLabel = (label: string, shapingLabel: string | null) => {
+  return shapingLabel ? `${label} • ${shapingLabel}` : label;
+};
+
 const getMiniPlayerContextLabel = (options: {
+  activePlayableItem: PlayableItem;
+  activePlaylistSession?: PlaylistPlaybackSession | null;
+  progressLabel: string;
+  shapingLabel: string | null;
+  status: string;
+}) => {
+  return appendShapingLabel(
+    getMiniPlayerBaseContextLabel(options),
+    options.shapingLabel,
+  );
+};
+
+const getMiniPlayerBaseContextLabel = (options: {
   activePlayableItem: PlayableItem;
   activePlaylistSession?: PlaylistPlaybackSession | null;
   progressLabel: string;
@@ -247,6 +268,8 @@ export const getMiniPlayerSummary = (options: {
   isPlaybackPreparing: boolean;
   playbackPositionSeconds: number;
   playbackState: SavedTrackPlaybackState | undefined;
+  /** Active speed and pitch, e.g. `0.90× · −2 st`; null when unshaped. */
+  shapingLabel?: string | null;
 }): MiniPlayerSummary | null => {
   if (!options.activePlayableItem) {
     return null;
@@ -268,6 +291,7 @@ export const getMiniPlayerSummary = (options: {
     collectionLabel,
     queueLabel,
     loopLabel,
+    options.shapingLabel ?? null,
   ]);
 
   return {
@@ -276,6 +300,7 @@ export const getMiniPlayerSummary = (options: {
       activePlayableItem: options.activePlayableItem,
       activePlaylistSession: options.activePlaylistSession,
       progressLabel,
+      shapingLabel: options.shapingLabel ?? null,
       status,
     }),
     title: options.activePlayableItem.title,
@@ -288,4 +313,13 @@ export const getMiniPlayerSummary = (options: {
 
 const compactDetailLabels = (labels: Array<string | null>) => {
   return labels.filter((label): label is string => Boolean(label)).join(' • ');
+};
+
+/** `0.90× · −2 st` for the active shaping, or null when nothing is shaped. */
+export const getPlaybackShapingContextLabel = (
+  shaping: Parameters<typeof getPlaybackShapingLabelParts>[0],
+) => {
+  const parts = getPlaybackShapingLabelParts(shaping);
+
+  return parts.length > 0 ? parts.join(ROW_META_SEPARATOR) : null;
 };

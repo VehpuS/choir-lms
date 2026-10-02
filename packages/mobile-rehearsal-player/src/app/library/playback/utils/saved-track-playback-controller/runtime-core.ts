@@ -6,6 +6,7 @@ import {
   createSavedTrackPlaybackRequest,
   createSavedTrackPlaybackRuntimeIssue,
 } from '../saved-track-playback-view-model';
+import { getPlaybackShapingSession } from '../../shaping';
 import { getPitchPreservingTrackOptions } from '../../shaping/pitch-preserving-track-options';
 import {
   getSavedTrackPlayer,
@@ -97,6 +98,17 @@ export const createSavedTrackPlaybackRuntimeCore = (
     );
   };
 
+  // The player resets between items and may drop the rate, so the session's
+  // shaping is applied after every load. A shaping failure (for example the
+  // web pitch processor not loading) must not stop the item from playing.
+  const applyAmbientShaping = async () => {
+    try {
+      await getPlaybackShapingSession().applyForLoadedItem();
+    } catch (error) {
+      console.warn('Playback shaping could not be applied.', error);
+    }
+  };
+
   const loadIntoPlayer: LoadPlayableItemIntoPlayer = async (
     playableItem,
     accessToken,
@@ -128,6 +140,7 @@ export const createSavedTrackPlaybackRuntimeCore = (
       ),
     });
     await trackPlayer.setVolume(options.volumeLevelRef.current);
+    await applyAmbientShaping();
 
     if (initialPositionSeconds > 0) {
       await trackPlayer.seekTo(initialPositionSeconds);

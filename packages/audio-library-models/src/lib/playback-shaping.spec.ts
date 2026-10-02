@@ -3,6 +3,9 @@ import { describe, it } from 'node:test';
 
 import {
   DEFAULT_PLAYBACK_SHAPING,
+  formatPitchSemitones,
+  formatSpeedMultiplier,
+  getPlaybackShapingLabelParts,
   clampPitchSemitones,
   clampSpeedMultiplier,
   isPitchShaped,
@@ -120,5 +123,42 @@ describe('shaped state', () => {
     assert.equal(isPitchShaped(speedOnly), false);
     assert.equal(isPitchShaped(pitchOnly), true);
     assert.equal(isPlaybackShapingNeutral(pitchOnly), false);
+  });
+});
+
+describe('shaping readouts', () => {
+  it('formats speed with two decimals so the readout keeps its width', () => {
+    assert.equal(formatSpeedMultiplier(0.9), '0.90×');
+    assert.equal(formatSpeedMultiplier(1), '1.00×');
+    assert.equal(formatSpeedMultiplier(0.25), '0.25×');
+    assert.equal(formatSpeedMultiplier(2), '2.00×');
+  });
+
+  it('formats pitch with an explicit sign and a true minus', () => {
+    assert.equal(formatPitchSemitones(3), '+3 st');
+    assert.equal(formatPitchSemitones(-2), '\u22122 st');
+    assert.equal(formatPitchSemitones(0), '0 st');
+  });
+
+  it('lists only the shaped axes for a context line', () => {
+    assert.deepEqual(
+      getPlaybackShapingLabelParts(DEFAULT_PLAYBACK_SHAPING),
+      [],
+    );
+    assert.deepEqual(
+      getPlaybackShapingLabelParts({ pitchSemitones: 0, speedMultiplier: 0.9 }),
+      ['0.90×'],
+    );
+    assert.deepEqual(
+      getPlaybackShapingLabelParts({ pitchSemitones: -2, speedMultiplier: 1 }),
+      ['\u22122 st'],
+    );
+    assert.deepEqual(
+      getPlaybackShapingLabelParts({
+        pitchSemitones: 3,
+        speedMultiplier: 0.75,
+      }),
+      ['0.75×', '+3 st'],
+    );
   });
 });

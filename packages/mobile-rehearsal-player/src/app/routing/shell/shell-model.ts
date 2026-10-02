@@ -20,6 +20,7 @@ import {
 export {
   getMiniPlayerSummary,
   getPlaybackProgressRatio,
+  getPlaybackShapingContextLabel,
   type MiniPlayerSummary,
 } from './shell-playback-summary-model';
 
@@ -35,6 +36,8 @@ export type NowPlayingSurfaceSummary = {
   playbackLabel: string;
   loopRange: ReturnType<typeof getPlayableItemLoopRange>;
   progressLabel: string;
+  /** Active speed and pitch, `0.90× · −2 st`; null when unshaped. */
+  shapingLabel: string | null;
   statusLabel: string;
   supportsQueueNavigation: boolean;
   title: string;
@@ -77,6 +80,7 @@ export const getNowPlayingSurfaceSummary = (options: {
   isPlaybackPreparing: boolean;
   playbackPositionSeconds: number;
   playbackState: SavedTrackPlaybackState | undefined;
+  shapingLabel?: string | null;
 }): NowPlayingSurfaceSummary | null => {
   if (!options.activePlayableItem) {
     return null;
@@ -84,6 +88,7 @@ export const getNowPlayingSurfaceSummary = (options: {
 
   return {
     title: options.activePlayableItem.title,
+    shapingLabel: options.shapingLabel ?? null,
     statusLabel: getPlaybackStatusLabel(options),
     progressLabel: getProgressLabel({
       activePlayableItem: options.activePlayableItem,

@@ -17,6 +17,7 @@ import {
 } from '../screens/recents/history';
 import { MobileShell } from './shell/mobile-shell';
 import type { ShellDestinationKey } from './shell/shell-model';
+import { getPlaybackShapingContextLabel } from './shell/shell-playback-summary-model';
 import { useAppRouterQueuePlaylistActions } from './use-app-router-queue-playlist-actions';
 
 const PLAYBACK_SEEK_STEP_SECONDS = 15;
@@ -296,6 +297,9 @@ export const AppRouter = () => {
       playbackPositionSeconds={playback.progress.position}
       playbackToggleLabel={playbackActionCopy?.label ?? 'Play'}
       playbackVolumeLevel={playback.volumeLevel}
+      playbackShapingLabel={getPlaybackShapingContextLabel(
+        playback.shaping.effective,
+      )}
       playbackState={playback.playbackState}
       savedLibraryConfirmationDialog={libraryController.confirmationDialog}
       addScreen={(isActive) => (

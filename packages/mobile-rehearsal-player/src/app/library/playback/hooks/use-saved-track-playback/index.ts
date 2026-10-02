@@ -16,6 +16,7 @@ import {
   useSavedTrackPlayerPlaybackState,
   useSavedTrackPlayerProgress,
 } from '../../utils/saved-track-player-interop';
+import { usePlaybackShaping } from '../../shaping/use-playback-shaping';
 import { createSavedTrackPlaybackActions } from './actions';
 import { useSavedTrackPlaybackEffects } from './effects';
 import {
@@ -68,6 +69,7 @@ export const useSavedTrackPlayback = (
   >(null);
   const volumeLevelRef = useRef(DEFAULT_PLAYBACK_VOLUME_LEVEL);
   const repeatModeRef = useRef<RepeatMode>('off');
+  const shaping = usePlaybackShaping();
   const playbackState = useSavedTrackPlayerPlaybackState().state;
   const { progress, progressGate } = useGatedSavedTrackProgress(
     useSavedTrackPlayerProgress(PROGRESS_POLL_INTERVAL_MS),
@@ -203,6 +205,7 @@ export const useSavedTrackPlayback = (
     playlistRepeatMode,
     progress,
     resolveTrackDuration: playbackController.resolveTrackDuration,
+    shaping,
     volumeLevel,
     syncActivePlaylistContext: syncActivePlaylistContextRef.current,
     ...actions,

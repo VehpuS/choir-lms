@@ -107,6 +107,11 @@ const TitleBlock = ({
       <Text numberOfLines={1} style={styles.contextText}>
         {summary.collectionLabel}
       </Text>
+      {summary.shapingLabel ? (
+        <Text numberOfLines={1} style={styles.contextText}>
+          {summary.shapingLabel}
+        </Text>
+      ) : null}
       {downloadLabel ? (
         <Text numberOfLines={1} style={styles.downloadText}>
           {downloadLabel}

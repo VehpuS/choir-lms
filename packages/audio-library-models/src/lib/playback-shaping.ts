@@ -135,3 +135,42 @@ export const isPlaybackShapingNeutral = (
 ) => {
   return !isSpeedShaped(shaping) && !isPitchShaped(shaping);
 };
+
+const TRUE_MINUS_SIGN = '−';
+const SPEED_READOUT_FRACTION_DIGITS = 2;
+
+/** The fixed-width speed readout, always two decimals: `0.90×`, `1.00×`. */
+export const formatSpeedMultiplier = (speedMultiplier: number) => {
+  return `${clampSpeedMultiplier(speedMultiplier).toFixed(SPEED_READOUT_FRACTION_DIGITS)}×`;
+};
+
+/** The pitch readout with an explicit sign and a true minus: `+3 st`, `−2 st`. */
+export const formatPitchSemitones = (pitchSemitones: number) => {
+  const semitones = clampPitchSemitones(pitchSemitones);
+
+  if (semitones === 0) {
+    return `0 st`;
+  }
+
+  const sign = semitones > 0 ? '+' : TRUE_MINUS_SIGN;
+
+  return `${sign}${Math.abs(semitones)} st`;
+};
+
+/**
+ * The shaped parts of a rehearsal context line, in a stable order: speed
+ * first, then pitch. An axis at its default is left out, so an unshaped item
+ * adds nothing and a pitch of zero never shows as an active `0 st`.
+ */
+export const getPlaybackShapingLabelParts = (
+  shaping: Pick<PlaybackShaping, 'pitchSemitones' | 'speedMultiplier'>,
+) => {
+  return [
+    isSpeedShaped(shaping)
+      ? formatSpeedMultiplier(shaping.speedMultiplier)
+      : null,
+    isPitchShaped(shaping)
+      ? formatPitchSemitones(shaping.pitchSemitones)
+      : null,
+  ].filter((part): part is string => part !== null);
+};

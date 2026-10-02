@@ -18,6 +18,7 @@ import {
   createSavedTrackPlaybackRuntimeIssue,
   type SavedTrackPlaybackIssue,
 } from '../../utils/saved-track-playback-view-model';
+import { getPlaybackShapingSession } from '../../shaping';
 import { mapPlaylistPlaybackIssue } from './shared';
 
 type StartPlaylistPlaybackOptions = {
@@ -84,6 +85,9 @@ export const startPlaylistPlayback = async (
     playlist: options.playlist,
     sources: options.sources,
   };
+  // Starting a playlist is a new start: ambient shaping from before does not
+  // carry in (queue advances within it keep whatever is set during it).
+  getPlaybackShapingSession().startNewPlayback();
   options.setActivePlaylistSession(nextSession.session);
   options.setIsPreparing(true);
 

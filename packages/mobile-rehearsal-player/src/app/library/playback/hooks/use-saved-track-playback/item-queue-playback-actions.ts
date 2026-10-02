@@ -11,6 +11,7 @@ import {
   getPlaylistPlaybackCurrentItem,
   type PlaylistPlaybackSession,
 } from '../../../playlists/utils/saved-playlist-playback-view-model';
+import { getPlaybackShapingSession } from '../../shaping';
 import type { SavedTrackPlaybackController } from '../../utils/saved-track-playback-controller';
 import {
   createSavedTrackPlaybackRuntimeIssue,
@@ -61,6 +62,8 @@ export const startItemQueuePlayback = async (
   // The queue starts before its first item loads, so queue controls and Up
   // Next never wait on that item's download.
   options.activePlaylistContextRef.current = null;
+  // Starting a queue is a new start: ambient shaping from before does not carry in.
+  getPlaybackShapingSession().startNewPlayback();
   options.setActivePlaylistSession(nextSession);
   options.setIsPreparing(true);
 

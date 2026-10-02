@@ -72,6 +72,7 @@ export type MobileShellProps = {
   playbackPositionSeconds: number;
   playbackToggleLabel: string;
   playbackVolumeLevel: number;
+  playbackShapingLabel?: string | null;
   playbackState: SavedTrackPlaybackState | undefined;
   savedLibraryConfirmationDialog: ReactNode;
 };
@@ -123,6 +124,7 @@ export const MobileShell = ({
   playbackPositionSeconds,
   playbackToggleLabel,
   playbackVolumeLevel,
+  playbackShapingLabel = null,
   playbackState,
   savedLibraryConfirmationDialog,
 }: MobileShellProps) => {
@@ -136,6 +138,7 @@ export const MobileShell = ({
     isPlaybackPreparing,
     playbackPositionSeconds,
     playbackState,
+    shapingLabel: playbackShapingLabel,
   });
   const nowPlayingSummary = getNowPlayingSurfaceSummary({
     activePlayableItem,
@@ -143,6 +146,7 @@ export const MobileShell = ({
     isPlaybackPreparing,
     playbackPositionSeconds,
     playbackState,
+    shapingLabel: playbackShapingLabel,
   });
   // Web playback downloads the whole file before it can play (8.33), so the
   // mini-player and sheet say how far that download has got.
