@@ -42,6 +42,11 @@ Companion mockup states: design screen 1f shows the collapsed pitch readout; scr
 - **WHEN** pitch is transposed by any non-zero number of semitones
 - **THEN** the system leaves the playback tempo unchanged
 
+#### Scenario: Pitch is shown as unavailable where the platform cannot shift it
+
+- **WHEN** the platform cannot transpose playback without changing tempo (native iOS and Android: native pitch is deliberately not implemented in this change)
+- **THEN** the system presents the pitch stepper in a visibly inert state with a short reason such as `Not available on this device yet`, keeps it in the same position as on platforms that support it, and never applies a pitch change that also alters tempo
+
 #### Scenario: Pitch offset of zero is presented as unshaped
 
 - **WHEN** the pitch offset is zero

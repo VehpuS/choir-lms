@@ -31,6 +31,7 @@ Speed and pitch are deliberately separate axes. Speed is a continuous multiplier
 - **Tempo source** is a named, extensible field on speed. This change ships the flat multiplier only; BPM entry and score-follow (matching a track to a MIDI or MusicXML file for dynamic tempo maps) are specified as future tempo sources so the control does not have to move when they land.
 - An adjusted entity is not a new Drive source. It reuses its source's Drive provenance, so `Show in Add` / `Open in Google Drive` resolve through the source track, and bulk Drive import reuse matches canonical saved sources only — an adjusted entity is never a reuse target or counted as a duplicate.
 - No pitch-lock control is added, and none should appear in any surface: speed change in this app always preserves pitch.
+- **Pitch is web-only in this change.** Semitone pitch ships on web; native iOS and Android do not implement it (decided 2026-10-02: web is the priority platform, and native pitch needs new native modules). Speed ships on every platform. Native pitch is deliberately deferred, not planned; it can be taken up if native becomes a priority (tasks 8.51). Native shows an inert pitch control with a stated reason, and the limitation is documented in the code.
 - Naming: the mockups' copy says "derived track / loop". The spec uses **adjusted** instead, because the live `mobile-library-organization` spec already used "derived loops" to mean ordinary loops cut from a track; that removal requirement is reworded to "loops of that track" so each term has one meaning. UI copy follows the spec (`Save as adjusted loop`, `Adjusted track · 5:09`).
 
 ### Multiple selection and bulk actions (new capability — separable)
@@ -76,6 +77,7 @@ The same holds for everything shipped by `improve-drive-search-and-bulk-library-
 
 - No offline playback, no downloaded or rendered audio files.
 - No score annotation, no recording overlay, no collaboration.
+- No native (iOS / Android) semitone pitch shifting: deferred indefinitely and not scheduled, see the playback-shaping spec's unavailable-pitch scenario and tasks 8.51.
 - No BPM entry and no MIDI/MusicXML score-follow implementation in this change — specified as future tempo sources only.
 - No change to Drive auth, Drive browsing/search/import behavior, source provenance, or the by-reference save model. Drive selection changes only as the `multi-selection` basket specifies.
 - No selection or bulk actions in Up Next / the queue sheet, in Recents, or across destinations (a Library selection does not carry into Add, or the reverse).
