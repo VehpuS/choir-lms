@@ -5,6 +5,7 @@ import { useSavedTrackPlayback } from '../../../library/playback/hooks/use-saved
 import type { SavedTrackPlaybackState } from '../../../library/playback/utils/saved-track-playback-view-model';
 import type { PlaylistPlaybackSession } from '../../../library/playlists/utils/saved-playlist-playback-view-model';
 import type { PlaylistDraftIssue } from '../../../library/playlists/utils/saved-playlist-view-model';
+import type { PlaybackShapingControls } from '../../playback/shaping/shaping-surface-model';
 import { styles } from '../mobile-shell-styles';
 import {
   SHELL_DESTINATIONS,
@@ -20,7 +21,7 @@ import { useMobileShellQueuePlaylistState } from './use-mobile-shell-queue-playl
 import { useSavedTrackDownloadProgress } from '../../../library/playback/hooks/use-saved-track-download-progress';
 import { getPlaybackDownloadLabel } from '../../../library/playback/utils/saved-track-download-label';
 
-type PlaybackSurfaceKey = 'now-playing' | 'queue';
+type PlaybackSurfaceKey = 'now-playing' | 'queue' | 'shaping';
 
 export type MobileShellProps = {
   activePlayableItem: ReturnType<
@@ -73,6 +74,7 @@ export type MobileShellProps = {
   playbackToggleLabel: string;
   playbackVolumeLevel: number;
   playbackShapingLabel?: string | null;
+  playbackShaping: PlaybackShapingControls;
   playbackState: SavedTrackPlaybackState | undefined;
   savedLibraryConfirmationDialog: ReactNode;
 };
@@ -124,6 +126,7 @@ export const MobileShell = ({
   playbackPositionSeconds,
   playbackToggleLabel,
   playbackVolumeLevel,
+  playbackShaping,
   playbackShapingLabel = null,
   playbackState,
   savedLibraryConfirmationDialog,
@@ -264,6 +267,9 @@ export const MobileShell = ({
         onShowQueue={() => {
           setActivePlaybackSurface('queue');
         }}
+        onShowShaping={() => {
+          setActivePlaybackSurface('shaping');
+        }}
         onSkipNextItem={onSkipNextItem}
         onSkipPreviousItem={onSkipPreviousItem}
         onTogglePlayback={onTogglePlayback}
@@ -271,6 +277,7 @@ export const MobileShell = ({
         playbackToggleLabel={playbackToggleLabel}
         playbackVolumeLevel={playbackVolumeLevel}
         queueSummary={upNextSummary}
+        shaping={playbackShaping}
         surface={activePlaybackSurface}
       />
 

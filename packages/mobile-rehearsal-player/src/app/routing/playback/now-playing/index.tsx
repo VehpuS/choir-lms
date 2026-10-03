@@ -19,12 +19,14 @@ import {
   PlaybackVolumeRow,
 } from './now-playing-controls';
 import { getNowPlayingKicker } from './now-playing-model';
+import type { PlaybackShapingControls } from '../shaping/shaping-surface-model';
 import { nowPlayingStyles as styles } from './styles';
 import { NowPlayingTransportRow } from './now-playing-transport-row';
 
 const LOOP_CHIP_ICON_SIZE = 16;
 
 type NowPlayingSurfaceProps = {
+  shaping: Pick<PlaybackShapingControls, 'canShapePitch' | 'effective'>;
   activePlayableItem: PlayableItem;
   activeQueueMode: RehearsalQueueMode | null;
   activeRepeatMode: RepeatMode | null;
@@ -37,6 +39,7 @@ type NowPlayingSurfaceProps = {
   onAdjustPlaybackVolume: (volumeLevel: number) => void;
   onClose: () => void;
   onEditActiveLoop: (loopId: string) => void;
+  onOpenShaping: () => void;
   onSeekBackward: () => void;
   onSeekForward: () => void;
   onSeekToPosition: (positionSeconds: number) => void;
@@ -203,10 +206,12 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
             isDisabled={
               props.isPlaybackToggleDisabled && !props.isPlaybackLoading
             }
+            onOpenShaping={props.onOpenShaping}
             onSelectQueueMode={props.onSelectQueueMode}
             onSelectRepeatMode={props.onSelectRepeatMode}
             queueMode={props.activeQueueMode}
             repeatMode={props.activeRepeatMode}
+            shaping={props.shaping}
           />
         ) : null}
         <PlaybackVolumeRow

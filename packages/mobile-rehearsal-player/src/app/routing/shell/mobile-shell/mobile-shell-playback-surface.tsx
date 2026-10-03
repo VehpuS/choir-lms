@@ -2,12 +2,13 @@ import type { PlayableItem } from '@org/audio-library-models';
 
 import type { PlaylistPlaybackSession } from '../../../library/playlists/utils/saved-playlist-playback-view-model';
 import { PlaybackSurface } from '../../playback/playback-surface';
+import type { PlaybackShapingControls } from '../../playback/shaping/shaping-surface-model';
 import type {
   NowPlayingSurfaceSummary,
   UpNextSurfaceSummary,
 } from '../shell-model';
 
-type PlaybackSurfaceKey = 'now-playing' | 'queue';
+type PlaybackSurfaceKey = 'now-playing' | 'queue' | 'shaping';
 
 type MobileShellPlaybackSurfaceProps = {
   activePlayableItem: PlayableItem | null;
@@ -44,6 +45,7 @@ type MobileShellPlaybackSurfaceProps = {
   ) => void;
   onShowNowPlaying: () => void;
   onShowQueue: () => void;
+  onShowShaping: () => void;
   onSkipNextItem: () => void;
   onSkipPreviousItem: () => void;
   onTogglePlayback: () => void;
@@ -51,6 +53,7 @@ type MobileShellPlaybackSurfaceProps = {
   playbackToggleLabel: string;
   playbackVolumeLevel: number;
   queueSummary: UpNextSurfaceSummary | null;
+  shaping: PlaybackShapingControls;
   surface: PlaybackSurfaceKey | null;
 };
 
@@ -87,6 +90,7 @@ export const MobileShellPlaybackSurface = (
       onSelectRepeatMode={props.onSelectRepeatMode}
       onShowNowPlaying={props.onShowNowPlaying}
       onShowQueue={props.onShowQueue}
+      onShowShaping={props.onShowShaping}
       onSkipNextItem={props.onSkipNextItem}
       onSkipPreviousItem={props.onSkipPreviousItem}
       onTogglePlayback={props.onTogglePlayback}
@@ -94,6 +98,7 @@ export const MobileShellPlaybackSurface = (
       playbackToggleLabel={props.playbackToggleLabel}
       playbackVolumeLevel={props.playbackVolumeLevel}
       queueSummary={props.queueSummary}
+      shaping={props.shaping}
       surface={props.surface}
     />
   );

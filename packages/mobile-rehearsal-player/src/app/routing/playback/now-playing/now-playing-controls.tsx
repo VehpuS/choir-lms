@@ -18,6 +18,8 @@ import { getPlaybackBoundsSeconds } from '../../../components/playback-waveform/
 import { appTheme } from '../../../utils/theme';
 import { getNowPlayingTimelineLabels } from './now-playing-model';
 import { nowPlayingStyles as styles } from './styles';
+import { getPracticeShapingTiles } from '../shaping/shaping-surface-model';
+import type { PlaybackShapingControls } from '../shaping/shaping-surface-model';
 import { getPracticeTiles } from './practice-row-model';
 
 const PRACTICE_ICON_SIZE = 22;
@@ -76,11 +78,14 @@ export const NowPlayingTimeline = (props: {
 
 export const PlaybackPracticeRow = (props: {
   isDisabled: boolean;
+  onOpenShaping: () => void;
   onSelectQueueMode: (mode: RehearsalQueueMode) => void;
   onSelectRepeatMode: (mode: RepeatMode) => void;
   queueMode: RehearsalQueueMode | null;
   repeatMode: RepeatMode;
+  shaping: Pick<PlaybackShapingControls, 'canShapePitch' | 'effective'>;
 }) => {
+  const shapingTiles = getPracticeShapingTiles(props.shaping);
   const tiles = getPracticeTiles({
     queueMode: props.queueMode,
     repeatMode: props.repeatMode,
@@ -88,6 +93,31 @@ export const PlaybackPracticeRow = (props: {
 
   return (
     <View style={styles.practiceRow}>
+      {shapingTiles.map((tile) => (
+        <Pressable
+          accessibilityLabel={tile.accessibilityLabel}
+          accessibilityRole="button"
+          {...interactionGuardProps}
+          key={tile.key}
+          onPress={props.onOpenShaping}
+          style={({ pressed }) => [
+            styles.practiceReadoutTile,
+            tile.isInert ? styles.practiceReadoutTileInert : null,
+            buttonInteractionGuardStyle,
+            pressed ? styles.pressed : null,
+          ]}
+        >
+          <Text style={styles.practiceReadoutKicker}>{tile.kicker}</Text>
+          <Text
+            style={[
+              styles.practiceReadout,
+              tile.isShaped ? null : styles.practiceReadoutIdle,
+            ]}
+          >
+            {tile.readout}
+          </Text>
+        </Pressable>
+      ))}
       {tiles.map((tile) => {
         const onPress =
           tile.key === 'repeat'

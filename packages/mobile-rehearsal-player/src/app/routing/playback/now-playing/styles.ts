@@ -151,6 +151,33 @@ export const nowPlayingStyles = StyleSheet.create({
     borderColor: colors.borderButton,
     borderRadius: radius.md,
   },
+  // The Speed and Pitch readout tiles (1f) flex to share the row with the
+  // two square repeat / shuffle tiles.
+  practiceReadoutTile: {
+    flex: 1,
+    height: PRACTICE_TILE_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.xxs,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: radius.md,
+  },
+  practiceReadoutTileInert: {
+    borderColor: colors.borderButton,
+  },
+  practiceReadoutKicker: {
+    ...type.kicker,
+    color: colors.textMuted,
+  },
+  practiceReadout: {
+    color: colors.accentText,
+    fontFamily: fontFamily.mono,
+    fontSize: 17,
+  },
+  practiceReadoutIdle: {
+    color: colors.textSecondary,
+  },
   practiceTileSelected: {
     borderColor: colors.accent,
   },

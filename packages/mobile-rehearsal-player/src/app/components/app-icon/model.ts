@@ -22,6 +22,7 @@ export type PhosphorGlyph =
   | 'File'
   | 'Folder'
   | 'FolderPlus'
+  | 'Info'
   | 'ListNumbers'
   | 'MagnifyingGlass'
   | 'Minus'
@@ -127,6 +128,9 @@ export const APP_ICON_GLYPHS = {
   'tag-outline': regular('Tag'),
   'view-list': regular('Queue'),
   waveform: regular('Waveform'),
+
+  // Notes and statements (the session-scope line on the shaping sheet).
+  'information-outline': regular('Info'),
 
   // Account.
   'account-circle-outline': regular('UserCircle'),

@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 
 import { QueueSurface } from '../queue/queue-surface';
+import { ShapingSurface } from './shaping/shaping-surface';
+import type { PlaybackShapingControls } from './shaping/shaping-surface-model';
 import type {
   NowPlayingSurfaceSummary,
   UpNextSurfaceSummary,
@@ -22,7 +24,7 @@ import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-ges
 
 import { appTheme } from '../../utils/theme';
 
-type PlaybackSurfaceMode = 'now-playing' | 'queue';
+type PlaybackSurfaceMode = 'now-playing' | 'queue' | 'shaping';
 
 type PlaybackSurfaceProps = {
   activePlayableItem: PlayableItem | null;
@@ -57,6 +59,7 @@ type PlaybackSurfaceProps = {
   onSelectRepeatMode: (mode: RepeatMode) => void;
   onShowNowPlaying: () => void;
   onShowQueue: () => void;
+  onShowShaping: () => void;
   onSkipNextItem: () => void;
   onSkipPreviousItem: () => void;
   onTogglePlayback: () => void;
@@ -64,6 +67,7 @@ type PlaybackSurfaceProps = {
   playbackToggleLabel: string;
   playbackVolumeLevel: number;
   queueSummary: UpNextSurfaceSummary | null;
+  shaping: PlaybackShapingControls;
   surface: PlaybackSurfaceMode | null;
 };
 
@@ -96,6 +100,7 @@ export const PlaybackSurface = ({
   onSelectRepeatMode,
   onShowNowPlaying,
   onShowQueue,
+  onShowShaping,
   onSkipNextItem,
   onSkipPreviousItem,
   onTogglePlayback,
@@ -103,11 +108,13 @@ export const PlaybackSurface = ({
   playbackToggleLabel,
   playbackVolumeLevel,
   queueSummary,
+  shaping,
   surface,
 }: PlaybackSurfaceProps) => {
   const translateY = useRef(new Animated.Value(32)).current;
   const canRenderQueue = surface === 'queue' && queueSummary;
   const canRenderNowPlaying = surface === 'now-playing' && nowPlayingSummary;
+  const canRenderShaping = surface === 'shaping' && nowPlayingSummary;
 
   const dismissSurface = () => {
     Animated.timing(translateY, {
@@ -175,7 +182,7 @@ export const PlaybackSurface = ({
     return null;
   }
 
-  if (!canRenderQueue && !canRenderNowPlaying) {
+  if (!canRenderQueue && !canRenderNowPlaying && !canRenderShaping) {
     return null;
   }
 
@@ -234,6 +241,7 @@ export const PlaybackSurface = ({
               onSeekToPosition={onSeekToPosition}
               onSelectQueueMode={onSelectQueueMode}
               onSelectRepeatMode={onSelectRepeatMode}
+              onOpenShaping={onShowShaping}
               onShowQueue={onShowQueue}
               onSkipNextItem={onSkipNextItem}
               onSkipPreviousItem={onSkipPreviousItem}
@@ -242,6 +250,14 @@ export const PlaybackSurface = ({
               playbackToggleLabel={playbackToggleLabel}
               playbackVolumeLevel={playbackVolumeLevel}
               queueSummary={queueSummary}
+              shaping={shaping}
+              summary={nowPlayingSummary}
+            />
+          ) : null}
+          {canRenderShaping && nowPlayingSummary ? (
+            <ShapingSurface
+              controls={shaping}
+              onClose={onShowNowPlaying}
               summary={nowPlayingSummary}
             />
           ) : null}
