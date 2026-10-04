@@ -11,6 +11,7 @@ import {
 import {
   getSavedRehearsalLibraryDependentLoops,
   getSavedRehearsalLibraryRemovalCopy,
+  getSavedRehearsalLibraryRemovalDependents,
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
@@ -230,6 +231,56 @@ describe('saved rehearsal library view-model', () => {
         message:
           '"Alto Line.mp3" will be removed from your saved rehearsal library.\n\nThis will also remove 2 saved loops:\n• Entrance cue\n• Cadence repeat',
         title: 'Remove saved track and loops?',
+      },
+    );
+  });
+
+  it('lists adjusted tracks and every loop that goes with them before track removal', () => {
+    const adjustedTrack = {
+      ...PLAYABLE_SOURCE,
+      adjustment: {
+        sourceName: PLAYABLE_SOURCE.name,
+        sourceRef: PLAYABLE_SOURCE.id,
+        transform: {
+          pitchSemitones: 0,
+          speedMultiplier: 0.8,
+          tempoSource: 'multiplier' as const,
+        },
+      },
+      id: 'adjusted:alto',
+      name: 'Alto Line.mp3 • 0.80×',
+    };
+    const loopOfAdjustedTrack = {
+      ...SAVED_LOOP,
+      id: 'loop-3',
+      name: 'Slow cadence',
+      sourceId: adjustedTrack.id,
+    };
+    const unrelatedLoop = { ...SAVED_LOOP, id: 'loop-4', sourceId: 'other' };
+    const dependents = getSavedRehearsalLibraryRemovalDependents({
+      savedLoops: [SAVED_LOOP, loopOfAdjustedTrack, unrelatedLoop],
+      savedSources: [PLAYABLE_SOURCE, adjustedTrack],
+      sourceId: PLAYABLE_SOURCE.id,
+    });
+
+    assert.deepEqual(
+      dependents.dependentAdjustedTracks.map(({ id }) => id),
+      ['adjusted:alto'],
+    );
+    assert.deepEqual(
+      dependents.dependentLoops.map(({ id }) => id),
+      [SAVED_LOOP.id, 'loop-3'],
+    );
+    assert.deepEqual(
+      getSavedRehearsalLibraryRemovalCopy({
+        ...dependents,
+        source: PLAYABLE_SOURCE,
+      }),
+      {
+        confirmLabel: 'Remove track and dependents',
+        message:
+          '"Alto Line.mp3" will be removed from your saved rehearsal library.\n\nThis will also remove 1 adjusted track:\n• Alto Line.mp3 • 0.80×\n\n2 saved loops (including adjusted loops):\n• Entrance cue\n• Slow cadence',
+        title: 'Remove saved track and dependents?',
       },
     );
   });

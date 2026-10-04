@@ -80,7 +80,11 @@ describe('adjusted entities in the practice repository', () => {
 
     assert.deepEqual(
       sources.find(({ id }) => id === adjustedTrack.id)?.adjustment,
-      { sourceRef: source.id, transform: SLOW_AND_LOW },
+      {
+        sourceRef: source.id,
+        sourceName: source.name,
+        transform: SLOW_AND_LOW,
+      },
     );
     assert.deepEqual(loops[0]?.transform, SLOW_AND_LOW);
     // Both entities get a Library file link like any saved track or loop.
@@ -176,6 +180,37 @@ describe('adjusted entities in the practice repository', () => {
       2,
     );
     assert.equal(loop?.transform, undefined);
+  });
+
+  it("repairs an adjusted track's source name from the saved track", async () => {
+    const adjustedTrack = createAdjustedTrackSource({
+      source,
+      transform: SLOW_AND_LOW,
+    });
+    // A library saved before the name was stored, and a renamed source.
+    const legacyAdjustment = {
+      sourceRef: source.id,
+      transform: SLOW_AND_LOW,
+    };
+
+    useMemoryStorage(
+      new Map([
+        [
+          SOURCES_KEY,
+          JSON.stringify([
+            { ...source, name: 'Full Choir (renamed).mp3' },
+            { ...adjustedTrack, adjustment: legacyAdjustment },
+          ]),
+        ],
+      ]),
+    );
+    const repository = new AsyncStoragePracticeRepository();
+    const sources = await repository.listSources(OWNER_ID);
+
+    assert.equal(
+      sources.find(({ id }) => id === adjustedTrack.id)?.adjustment?.sourceName,
+      'Full Choir (renamed).mp3',
+    );
   });
 
   it('removes adjusted tracks and loops with their source', async () => {

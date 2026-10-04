@@ -6,6 +6,8 @@ import {
   createAdjustedTrackSource,
   getAdjustedDurationMs,
   getAdjustedEntityDefaultName,
+  getLoopDisplayDurationMs,
+  getSourceDisplayDurationMs,
   hasSavableTransform,
   parseLoopTransform,
   parseSourceAdjustment,
@@ -47,6 +49,7 @@ describe('adjusted tracks', () => {
     assert.equal(adjusted.name, 'Kyrie • 0.80× −2 st');
     assert.deepEqual(adjusted.adjustment, {
       sourceRef: 'drive:file-1',
+      sourceName: 'Kyrie',
       transform: slowAndLow,
     });
     assert.equal(adjusted.tags, undefined);
@@ -121,6 +124,45 @@ describe('stored adjustment reads', () => {
     assert.equal(parseLoopTransform(undefined), null);
     assert.equal(parseLoopTransform({ speedMultiplier: 1 }), null);
     assert.deepEqual(parseLoopTransform(slowAndLow), slowAndLow);
+  });
+});
+
+describe('stored adjustment source names', () => {
+  it('keeps a stored name and falls back to the reference when it is missing', () => {
+    const base = { sourceRef: 'drive:file-1', transform: slowAndLow };
+
+    assert.equal(
+      parseSourceAdjustment({ ...base, sourceName: 'Kyrie' })?.sourceName,
+      'Kyrie',
+    );
+    assert.equal(parseSourceAdjustment(base)?.sourceName, 'drive:file-1');
+  });
+});
+
+describe('display durations', () => {
+  it('scales an adjusted track and loop by speed and leaves ordinary ones alone', () => {
+    const adjusted = createAdjustedTrackSource({
+      source,
+      transform: slowAndLow,
+    });
+    const loop = createAdjustedLoop({
+      id: 'loop-1',
+      name: 'Entrance',
+      ownerId: 'owner',
+      source,
+      startMs: 10_000,
+      endMs: 20_000,
+      transform: { ...slowAndLow, speedMultiplier: 0.5 },
+    });
+
+    assert.equal(getSourceDisplayDurationMs(source), 120_000);
+    assert.equal(getSourceDisplayDurationMs(adjusted), 150_000);
+    assert.equal(getSourceDisplayDurationMs({}), undefined);
+    assert.equal(
+      getLoopDisplayDurationMs({ ...loop, transform: undefined }),
+      10_000,
+    );
+    assert.equal(getLoopDisplayDurationMs(loop), 20_000);
   });
 });
 

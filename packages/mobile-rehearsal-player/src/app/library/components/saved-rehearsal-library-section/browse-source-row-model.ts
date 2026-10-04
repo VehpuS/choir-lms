@@ -12,7 +12,7 @@ import { formatTrackMetaLabel } from '../../saved-rehearsal-library/library-file
  */
 export const formatTracksRowMeta = (options: {
   loopCount: number;
-  source: Pick<DriveLibrarySource, 'durationMs' | 'tags'>;
+  source: Pick<DriveLibrarySource, 'adjustment' | 'durationMs' | 'tags'>;
 }) => {
   return formatTrackMetaLabel({ ...options, withDuration: false });
 };

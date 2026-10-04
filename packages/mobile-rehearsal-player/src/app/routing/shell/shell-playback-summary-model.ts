@@ -1,8 +1,11 @@
 import {
+  formatTransformLabel,
+  getAdjustedDurationMs,
   getPlaybackShapingLabelParts,
   type PlayableItem,
 } from '@org/audio-library-models';
 import { sum } from 'es-toolkit';
+import { compact } from 'es-toolkit/compat';
 
 import { ROW_META_SEPARATOR } from '../../components/row-meta-line/model';
 import { formatDurationLabel } from '../../library/drive/utils/drive-library-view-model';
@@ -217,22 +220,45 @@ const getMiniPlayerBaseContextLabel = (options: {
 export const getQueueItemDetail = (playableItem: PlayableItem) => {
   const loopRange = getPlayableItemLoopRange(playableItem);
 
+  // An adjusted item shows its transform, so it is never mistaken for its source.
+  const transformLabel = playableItem.transform
+    ? formatTransformLabel(playableItem.transform)
+    : '';
+
   if (loopRange) {
-    return ['Loop', loopRange.label, playableItem.source.name].join(
-      ROW_META_SEPARATOR,
-    );
+    return compact([
+      'Loop',
+      loopRange.label,
+      transformLabel,
+      playableItem.source.name,
+    ]).join(ROW_META_SEPARATOR);
   }
 
-  const durationLabel = formatDurationLabel(playableItem.source.durationMs);
+  const durationLabel = formatDurationLabel(
+    getPlayableItemDurationMs(playableItem),
+  );
 
-  return durationLabel ? `Track${ROW_META_SEPARATOR}${durationLabel}` : 'Track';
+  return compact([
+    playableItem.transform ? 'Adjusted track' : 'Track',
+    transformLabel,
+    durationLabel,
+  ]).join(ROW_META_SEPARATOR);
 };
 
 // The length an item plays for: its loop range, or the rest of its source.
+// An adjusted item plays for that length over its speed.
 const getPlayableItemDurationMs = (playableItem: PlayableItem) => {
   const endMs = playableItem.range.endMs ?? playableItem.source.durationMs;
 
-  return endMs === undefined ? undefined : endMs - playableItem.range.startMs;
+  if (endMs === undefined) {
+    return undefined;
+  }
+
+  const lengthMs = endMs - playableItem.range.startMs;
+
+  return playableItem.transform
+    ? getAdjustedDurationMs(lengthMs, playableItem.transform.speedMultiplier)
+    : lengthMs;
 };
 
 /**

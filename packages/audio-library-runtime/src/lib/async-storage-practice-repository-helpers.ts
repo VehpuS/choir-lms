@@ -68,6 +68,10 @@ const normalizeStoredLoop = (options: {
 export const normalizeStoredSources = (
   sources: DriveAudioSource[],
 ): DriveAudioSource[] => {
+  const nameBySourceId = new Map(
+    sources.map((source) => [source.id, source.name] as const),
+  );
+
   return sources.flatMap((source) => {
     const {
       adjustment: storedAdjustment,
@@ -92,7 +96,16 @@ export const normalizeStoredSources = (
           createdAt,
         ),
         ...(isDriveSourceLocation(sourceLocation) ? { sourceLocation } : {}),
-        ...(adjustment ? { adjustment } : {}),
+        ...(adjustment
+          ? {
+              adjustment: {
+                ...adjustment,
+                sourceName:
+                  nameBySourceId.get(adjustment.sourceRef) ??
+                  adjustment.sourceName,
+              },
+            }
+          : {}),
         createdAt,
       },
     ];

@@ -258,7 +258,11 @@ describe('createDriveImportPlan classification', () => {
     ): DriveAudioSource => ({
       ...source,
       id: `adjusted:${source.id}`,
-      adjustment: { sourceRef: source.id, transform: slowTransform },
+      adjustment: {
+        sourceName: source.name,
+        sourceRef: source.id,
+        transform: slowTransform,
+      },
     });
     const baseSource = createAudio('audio-1', 'Song.mp3') as DriveAudioSource;
 

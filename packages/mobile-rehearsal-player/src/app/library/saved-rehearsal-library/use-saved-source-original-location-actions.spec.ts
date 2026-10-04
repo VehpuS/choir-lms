@@ -5,7 +5,10 @@ import { afterEach, describe, it } from 'node:test';
 import { createElement } from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 
-import { createDriveAudioSource } from '@org/audio-library-models';
+import {
+  createAdjustedTrackSource,
+  createDriveAudioSource,
+} from '@org/audio-library-models';
 import type { DriveFolder } from '@org/google-drive';
 
 import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
@@ -270,5 +273,75 @@ describe('useSavedSourceOriginalLocationActions', () => {
     });
 
     assert.equal(box.current?.pendingSourceLocationAction, null);
+  });
+
+  it('answers Show in Add for an adjusted track through its source track, never saving a location onto the adjusted one', async () => {
+    const metadataById = new Map([
+      [
+        'drive-track',
+        {
+          id: 'drive-track',
+          name: 'Warmup.mp3',
+          mimeType: 'audio/mpeg',
+          parents: ['folder-tenor'],
+        },
+      ],
+      [
+        'folder-tenor',
+        {
+          id: 'folder-tenor',
+          name: 'Tenor',
+          mimeType: 'application/vnd.google-apps.folder',
+          parents: ['root'],
+        },
+      ],
+    ]);
+
+    globalThis.fetch = async (input) => {
+      const pathnameParts = new URL(String(input)).pathname.split('/');
+      const metadata = metadataById.get(
+        decodeURIComponent(pathnameParts.at(-1) ?? ''),
+      );
+
+      assert.ok(metadata);
+      return Response.json(metadata);
+    };
+
+    const adjusted = createAdjustedTrackSource({
+      source: SOURCE,
+      transform: {
+        pitchSemitones: 0,
+        speedMultiplier: 0.8,
+        tempoSource: 'multiplier',
+      },
+    });
+    const savedSourceIds: string[] = [];
+    const openedFolderIds: string[] = [];
+    const { box } = await renderActions({
+      accessToken: 'drive-token',
+      canOpenUrl: async () => true,
+      onOpenDriveFolder: (folder) => {
+        openedFolderIds.push(folder.id);
+      },
+      onRequestAddDestination: () => undefined,
+      onSaveSource: async (saved) => {
+        savedSourceIds.push(saved.id);
+        return true;
+      },
+      openUrl: async () => undefined,
+      savedSources: [SOURCE, adjusted],
+    });
+
+    await act(async () => {
+      box.current?.showSourceInAdd(adjusted);
+      for (let flush = 0; flush < 10; flush += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+    });
+
+    assert.deepEqual(openedFolderIds, ['folder-tenor']);
+    // The source moved folders, so its refreshed location is saved: onto the
+    // source track, not onto the adjusted track.
+    assert.deepEqual(savedSourceIds, [SOURCE.id]);
   });
 });

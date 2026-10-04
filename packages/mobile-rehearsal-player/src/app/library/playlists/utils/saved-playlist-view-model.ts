@@ -1,6 +1,9 @@
 import { resolveSavedPlaylistMenu } from '../../components/saved-item-menu/saved-item-menus';
 import {
   createPlaylist,
+  formatTransformLabel,
+  getLoopDisplayDurationMs,
+  getSourceDisplayDurationMs,
   type NamedLoop,
   type Playlist,
 } from '@org/audio-library-models';
@@ -68,12 +71,14 @@ const getPlaylistEntryDurationMs = (options: {
       return savedLoop.id === options.entry.loopId;
     });
 
-    return loop ? Math.max(0, loop.endMs - loop.startMs) : undefined;
+    return loop ? Math.max(0, getLoopDisplayDurationMs(loop)) : undefined;
   }
 
-  return options.savedSources.find((source) => {
-    return source.id === options.entry.sourceId;
-  })?.durationMs;
+  const source = options.savedSources.find((savedSource) => {
+    return savedSource.id === options.entry.sourceId;
+  });
+
+  return source ? getSourceDisplayDurationMs(source) : undefined;
 };
 
 const getPlaylistDurationLabel = (options: {
@@ -101,7 +106,17 @@ const getPlaylistDurationLabel = (options: {
 // `Loop • 0:12–0:18 • <parent>`: the range is its own segment so the row meta
 // line sets it in the mono font.
 const getLoopEntryRangeLabel = (loop: NamedLoop) => {
-  return `Loop • ${formatSavedLoopTimeRange(loop)} • ${loop.sourceName}`;
+  // An adjusted loop shows its transform between the range and its source.
+  const transformLabel = loop.transform
+    ? formatTransformLabel(loop.transform)
+    : '';
+
+  return [
+    'Loop',
+    formatSavedLoopTimeRange(loop),
+    ...(transformLabel ? [transformLabel] : []),
+    loop.sourceName,
+  ].join(' • ');
 };
 
 export const validatePlaylistName = (name: string) => {
@@ -190,6 +205,18 @@ export const getSavedPlaylistEntryDetailLabel = (options: {
   }
 
   const durationLabel = getPlaylistEntryDurationMs(options);
+  const adjustment = options.savedSources.find((source) => {
+    return source.id === options.entry.sourceId;
+  })?.adjustment;
+
+  if (adjustment) {
+    return [
+      'Adjusted track',
+      formatTransformLabel(adjustment.transform),
+      ...(durationLabel ? [formatDurationLabel(durationLabel)] : []),
+      adjustment.sourceName,
+    ].join(' • ');
+  }
 
   return durationLabel
     ? `Full track • ${formatDurationLabel(durationLabel)}`

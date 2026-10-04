@@ -1,4 +1,7 @@
-import type { NamedLoop } from '@org/audio-library-models';
+import {
+  formatTransformLabel,
+  type NamedLoop,
+} from '@org/audio-library-models';
 
 import {
   formatSavedLoopBoundaryLabel,
@@ -21,6 +24,8 @@ export type SavedLoopCardPresentation = {
   rangeLabel: string;
   ringAccessibilityLabel: string;
   ringIconName: 'pause' | 'play';
+  /** An adjusted loop's `0.90× −2 st`, shown between its range and its source. */
+  transformLabel: string | null;
   tone: SavedLoopCardTone;
 };
 
@@ -34,7 +39,7 @@ const PAUSE_ACTION_LABEL = 'Pause';
  */
 export const resolveSavedLoopCardPresentation = (options: {
   isActive: boolean;
-  loop: Pick<NamedLoop, 'endMs' | 'name' | 'startMs'>;
+  loop: Pick<NamedLoop, 'endMs' | 'name' | 'startMs' | 'transform'>;
   playbackActionLabel: string;
 }): SavedLoopCardPresentation => {
   const lengthLabel = formatSavedLoopLengthLabel(options.loop);
@@ -52,6 +57,9 @@ export const resolveSavedLoopCardPresentation = (options: {
     ringAccessibilityLabel: `${options.playbackActionLabel} ${options.loop.name}`,
     ringIconName:
       options.playbackActionLabel === PAUSE_ACTION_LABEL ? 'pause' : 'play',
+    transformLabel: options.loop.transform
+      ? formatTransformLabel(options.loop.transform)
+      : null,
     tone: options.isActive ? 'active' : 'idle',
   };
 };

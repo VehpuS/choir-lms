@@ -68,6 +68,7 @@ export const useRehearsalLibraryController = ({
     onRequestAddDestination,
     onSaveSource: savedLibrary.saveSource,
     openUrl: (url) => Linking.openURL(url),
+    savedSources: savedLibrary.savedSources,
   });
   const savedLoops = useSavedLoops();
   const playlists = useSavedPlaylists();
@@ -77,6 +78,7 @@ export const useRehearsalLibraryController = ({
     refreshPlaylists: playlists.refreshPlaylists,
     removeSource: savedLibrary.removeSource,
     savedLoops: savedLoops.savedLoops,
+    savedSources: savedLibrary.savedSources,
   });
   const canRefresh =
     authState.status === 'authorized' || authState.status === 'expired';

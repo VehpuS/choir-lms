@@ -2,6 +2,9 @@ import { compact } from 'es-toolkit/compat';
 
 import {
   createLoopPlayableItem,
+  formatTransformLabel,
+  getLoopDisplayDurationMs,
+  getSourceDisplayDurationMs,
   type NamedLoop,
   type Playlist,
   type RehearsalLibraryFileLinkNode,
@@ -197,19 +200,27 @@ export const buildFolderRow = (options: {
   };
 };
 
+const ADJUSTED_TRACK_KIND_LABEL = 'Adjusted track';
+
 /**
  * A track's meta line (screens 1b, 1c): duration, tags, and loop count, or
- * the kind word when none of those exist.
+ * the kind word when none of those exist. An adjusted track leads with its
+ * kind and transform and names its source, so it is never mistaken for a
+ * separate recording; its duration is the source's over its speed.
  */
 export const formatTrackMetaLabel = (options: {
   loopCount: number;
-  source: Pick<DriveLibrarySource, 'durationMs' | 'tags'>;
+  source: Pick<DriveLibrarySource, 'adjustment' | 'durationMs' | 'tags'>;
   withDuration: boolean;
 }) => {
+  const { adjustment } = options.source;
   const parts = compact([
+    adjustment ? ADJUSTED_TRACK_KIND_LABEL : undefined,
+    adjustment ? formatTransformLabel(adjustment.transform) : undefined,
     options.withDuration
-      ? formatDurationLabel(options.source.durationMs)
+      ? formatDurationLabel(getSourceDisplayDurationMs(options.source))
       : undefined,
+    adjustment?.sourceName,
     ...(options.source.tags ?? []),
     options.loopCount > 0
       ? formatPluralizedCount(options.loopCount, 'loop')
@@ -275,7 +286,13 @@ export const buildLoopRow = (options: {
     // The bracket leads so its times survive truncation; the parent track
     // follows because loops keep their source context in every Files and
     // result view (`mobile-library-organization`).
-    supportingLabel: `${formatSavedLoopBracketLabel(options.loop)}${ROW_META_SEPARATOR}${options.source?.name ?? options.loop.sourceName}`,
+    supportingLabel: compact([
+      formatSavedLoopBracketLabel(options.loop),
+      options.loop.transform
+        ? formatTransformLabel(options.loop.transform)
+        : undefined,
+      options.source?.name ?? options.loop.sourceName,
+    ]).join(ROW_META_SEPARATOR),
   };
 };
 
@@ -284,9 +301,15 @@ export const buildLoopRow = (options: {
  * is unknown (a partial total would read as the real one).
  */
 export const sumPlaylistDurationMs = (options: {
-  loopsById: ReadonlyMap<string, Pick<NamedLoop, 'endMs' | 'startMs'>>;
+  loopsById: ReadonlyMap<
+    string,
+    Pick<NamedLoop, 'endMs' | 'startMs' | 'transform'>
+  >;
   playlist: Pick<Playlist, 'items'>;
-  sourcesById: ReadonlyMap<string, Pick<DriveLibrarySource, 'durationMs'>>;
+  sourcesById: ReadonlyMap<
+    string,
+    Pick<DriveLibrarySource, 'adjustment' | 'durationMs'>
+  >;
 }) => {
   let totalMs = 0;
 
@@ -296,9 +319,13 @@ export const sumPlaylistDurationMs = (options: {
         ? (() => {
             const loop = options.loopsById.get(item.loopId);
 
-            return loop ? loop.endMs - loop.startMs : undefined;
+            return loop ? getLoopDisplayDurationMs(loop) : undefined;
           })()
-        : options.sourcesById.get(item.sourceId)?.durationMs;
+        : (() => {
+            const source = options.sourcesById.get(item.sourceId);
+
+            return source ? getSourceDisplayDurationMs(source) : undefined;
+          })();
 
     if (itemMs === undefined) {
       return undefined;

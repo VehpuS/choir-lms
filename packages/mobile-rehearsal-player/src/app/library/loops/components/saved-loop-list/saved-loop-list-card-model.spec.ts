@@ -48,4 +48,33 @@ describe('resolveSavedLoopCardPresentation', () => {
     assert.equal(presentation.ringIconName, 'play');
     assert.equal(presentation.ringAccessibilityLabel, 'Resume Bars 41–56');
   });
+
+  it('shows an adjusted loop its transform and a length scaled by its speed', () => {
+    const presentation = resolveSavedLoopCardPresentation({
+      isActive: false,
+      loop: {
+        ...LOOP,
+        transform: {
+          pitchSemitones: -2,
+          speedMultiplier: 0.5,
+          tempoSource: 'multiplier',
+        },
+      },
+      playbackActionLabel: 'Play',
+    });
+
+    assert.equal(presentation.transformLabel, '0.50× −2 st');
+    assert.equal(presentation.lengthLabel, '1:12');
+    assert.equal(presentation.rangeLabel, '1:12–1:48');
+  });
+
+  it('shows an ordinary loop no transform', () => {
+    const presentation = resolveSavedLoopCardPresentation({
+      isActive: false,
+      loop: LOOP,
+      playbackActionLabel: 'Play',
+    });
+
+    assert.equal(presentation.transformLabel, null);
+  });
 });

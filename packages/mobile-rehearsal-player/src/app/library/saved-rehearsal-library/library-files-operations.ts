@@ -115,19 +115,29 @@ export const createLibraryFilesOperations = ({
       const source = options.savedSources.find((savedSource) => {
         return savedSource.id === sourceId;
       });
+      // Removing a track also removes its adjusted tracks, so their links,
+      // loops, and playlist entries go with it and are listed too.
+      const adjustedTracks = options.savedSources.filter((savedSource) => {
+        return savedSource.adjustment?.sourceRef === sourceId;
+      });
+      const removedSourceIds = new Set([
+        sourceId,
+        ...adjustedTracks.map(({ id }) => id),
+      ]);
       const fileLinks =
         tree?.fileLinks.filter((fileLink) => {
           return (
-            fileLink.entityKind === 'track' && fileLink.entityId === sourceId
+            fileLink.entityKind === 'track' &&
+            removedSourceIds.has(fileLink.entityId)
           );
         }) ?? [];
       const loops = options.savedLoops.filter((loop) => {
-        return loop.sourceId === sourceId;
+        return removedSourceIds.has(loop.sourceId);
       });
       const playlistEntries = options.savedPlaylists.flatMap((playlist) => {
         return playlist.items
           .filter((item) => {
-            return item.sourceId === sourceId;
+            return removedSourceIds.has(item.sourceId);
           })
           .map((item) => {
             return `${playlist.name}: ${item.title}`;
@@ -135,9 +145,16 @@ export const createLibraryFilesOperations = ({
       });
 
       return {
+        adjustedTrackCount: adjustedTracks.length,
+        adjustedTrackNames: adjustedTracks.map((track) => track.name),
         fileLinkCount: fileLinks.length,
         fileLinkNames: fileLinks.map((fileLink) => {
-          const displayName = fileLink.visibleName ?? source?.name ?? 'Track';
+          const displayName =
+            fileLink.visibleName ??
+            options.savedSources.find(({ id }) => id === fileLink.entityId)
+              ?.name ??
+            source?.name ??
+            'Track';
           const folderName = foldersById.get(fileLink.parentFolderId)?.name;
 
           return folderName ? `${displayName} (${folderName})` : displayName;

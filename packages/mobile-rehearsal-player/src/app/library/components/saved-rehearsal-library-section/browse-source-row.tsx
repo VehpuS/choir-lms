@@ -1,4 +1,7 @@
-import { createTrackPlayableItem } from '@org/audio-library-models';
+import {
+  createTrackPlayableItem,
+  getSourceDisplayDurationMs,
+} from '@org/audio-library-models';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { EqualizerMark } from '../../../components/equalizer-mark';
@@ -114,7 +117,7 @@ export const BrowseSourceRow = ({
     getSavedRehearsalLibrarySourceIssue(savedLibraryIssue, source, 'remove') ??
     getSavedTrackPlaybackItemIssue(playbackIssue, trackPlayableItem) ??
     getSourceStatusMessage(source);
-  const durationLabel = formatDurationLabel(source.durationMs);
+  const durationLabel = formatDurationLabel(getSourceDisplayDurationMs(source));
   // The same track menu as Files, with no view actions (task 2.12).
   const sheetActions = resolveSavedTrackMenu(
     {

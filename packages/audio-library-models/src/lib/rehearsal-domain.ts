@@ -11,6 +11,11 @@ import type { SourceAvailability } from './source-availability.js';
 export type SourceAdjustment = {
   /** The id of the saved (non-adjusted) track this one is adjusted from. */
   sourceRef: string;
+  /**
+   * That track's name, kept so rows can name it without a lookup (as a loop
+   * keeps `sourceName`); repaired from the saved track when the library reads.
+   */
+  sourceName: string;
   transform: PlaybackShaping;
 };
 

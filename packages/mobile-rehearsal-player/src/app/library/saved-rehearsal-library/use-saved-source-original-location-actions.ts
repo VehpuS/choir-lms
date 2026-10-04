@@ -6,6 +6,7 @@ import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model
 import { getDriveSourceLocationIssueCopy } from './drive-source-location-issue-copy';
 import { openDriveFileInGoogleDrive } from './open-drive-file-in-google-drive';
 import { openSavedSourceOriginalFolderInGoogleDrive } from './open-saved-source-original-location';
+import { resolveOriginalLocationSource } from './resolve-original-location-source';
 import { showSavedSourceOriginalFolderInAdd } from './show-saved-source-in-add';
 
 // `open-drive-file` is an Add row's "Open in Google Drive": the file's own
@@ -59,11 +60,17 @@ export const useSavedSourceOriginalLocationActions = (options: {
   onRequestAddDestination: () => void;
   onSaveSource: (source: DriveLibrarySource) => Promise<boolean>;
   openUrl: (url: string) => Promise<unknown>;
+  /** Lets an adjusted track answer through its source track. */
+  savedSources?: readonly DriveLibrarySource[];
 }) => {
   const [pendingSourceLocationAction, setPendingSourceLocationAction] =
     useState<PendingSourceLocationAction | null>(null);
   const [sourceLocationIssue, setSourceLocationIssue] =
     useState<SourceLocationIssue | null>(null);
+
+  const locationSource = (source: DriveLibrarySource) => {
+    return resolveOriginalLocationSource(source, options.savedSources ?? []);
+  };
 
   const withAccessToken = (
     source: DriveLibrarySource,
@@ -127,7 +134,7 @@ export const useSavedSourceOriginalLocationActions = (options: {
             canOpenUrl: options.canOpenUrl,
             openUrl: options.openUrl,
             saveSource: options.onSaveSource,
-            source,
+            source: locationSource(source),
           });
 
           if (result.status === 'unresolved') {
@@ -162,7 +169,7 @@ export const useSavedSourceOriginalLocationActions = (options: {
             accessToken,
             openFolder: options.onOpenDriveFolder,
             saveSource: options.onSaveSource,
-            source,
+            source: locationSource(source),
           });
 
           if (result.status === 'unresolved') {

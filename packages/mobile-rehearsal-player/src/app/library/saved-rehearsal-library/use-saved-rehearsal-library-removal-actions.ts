@@ -5,8 +5,8 @@ import { useLibraryFilesConfirmationFlow } from '../components/saved-rehearsal-l
 import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
 import { getSavedLoopRemovalCopy } from '../loops/utils/saved-loop-view-model';
 import {
-  getSavedRehearsalLibraryDependentLoops,
   getSavedRehearsalLibraryRemovalCopy,
+  getSavedRehearsalLibraryRemovalDependents,
 } from './view-model';
 
 type UseSavedRehearsalLibraryRemovalActionsOptions = {
@@ -15,6 +15,7 @@ type UseSavedRehearsalLibraryRemovalActionsOptions = {
   refreshPlaylists: () => Promise<unknown>;
   removeSource: (source: DriveLibrarySource) => Promise<boolean>;
   savedLoops: NamedLoop[];
+  savedSources: readonly DriveLibrarySource[];
 };
 
 export const useSavedRehearsalLibraryRemovalActions = ({
@@ -23,6 +24,7 @@ export const useSavedRehearsalLibraryRemovalActions = ({
   refreshPlaylists,
   removeSource,
   savedLoops,
+  savedSources,
 }: UseSavedRehearsalLibraryRemovalActionsOptions) => {
   const [selectedLoopSourceId, setSelectedLoopSourceId] = useState<
     string | null
@@ -43,10 +45,11 @@ export const useSavedRehearsalLibraryRemovalActions = ({
     },
     confirmRemoveSource(source: DriveLibrarySource) {
       const removalCopy = getSavedRehearsalLibraryRemovalCopy({
-        dependentLoops: getSavedRehearsalLibraryDependentLoops(
+        ...getSavedRehearsalLibraryRemovalDependents({
           savedLoops,
-          source.id,
-        ),
+          savedSources,
+          sourceId: source.id,
+        }),
         source,
       });
 

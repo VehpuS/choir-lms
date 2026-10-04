@@ -54,6 +54,8 @@ describe('Files delete and removal copy', () => {
       supportingLabel: 'Track • 4:05',
     };
     const message = formatTrackRemoveFromLibraryImpactMessage(row, {
+      adjustedTrackCount: 0,
+      adjustedTrackNames: [],
       fileLinkCount: 2,
       fileLinkNames: ['Original track link', 'Practice copy'],
       loopCount: 1,
@@ -70,6 +72,8 @@ describe('Files delete and removal copy', () => {
     assert.doesNotMatch(message, /Verse entrance/);
     assert.deepEqual(
       getTrackRemoveFromLibraryAffectedSections({
+        adjustedTrackCount: 0,
+        adjustedTrackNames: [],
         fileLinkCount: 2,
         fileLinkNames: ['Original track link', 'Practice copy'],
         loopCount: 1,

@@ -110,6 +110,9 @@ export const SavedLoopListCard = ({
           {/* Range first so it survives truncation of a long parent name. */}
           <Text numberOfLines={1} style={styles.meta}>
             <Text style={styles.timecode}>{presentation.rangeLabel}</Text>
+            {presentation.transformLabel
+              ? ` · ${presentation.transformLabel}`
+              : null}
             {' · '}
             <SearchHighlightedText
               query={highlightQuery}

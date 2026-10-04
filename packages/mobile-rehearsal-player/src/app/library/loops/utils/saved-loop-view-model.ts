@@ -1,5 +1,7 @@
 import {
   createLoopPlayableItem,
+  formatTransformLabel,
+  getLoopDisplayDurationMs,
   type NamedLoop,
   validateLoopRange,
 } from '@org/audio-library-models';
@@ -109,10 +111,13 @@ export const formatSavedLoopBoundaryLabel = (ms: number) => {
   return formatDurationLabel(ms) ?? ZERO_DURATION_LABEL;
 };
 
+/** The loop's running time: an adjusted loop plays for its length over its speed. */
 export const formatSavedLoopLengthLabel = (
-  loop: Pick<NamedLoop, 'startMs' | 'endMs'>,
+  loop: Pick<NamedLoop, 'startMs' | 'endMs' | 'transform'>,
 ) => {
-  return formatSavedLoopBoundaryLabel(Math.max(loop.endMs - loop.startMs, 0));
+  return formatSavedLoopBoundaryLabel(
+    Math.max(getLoopDisplayDurationMs(loop), 0),
+  );
 };
 
 /** `1:12–1:48`: the loop's range as one timecode segment. */
@@ -124,7 +129,7 @@ export const formatSavedLoopTimeRange = (
 
 /** `1:12–1:48 · 0:36`: the loop's range, then its length (screens 1b, 1d). */
 export const formatSavedLoopBracketLabel = (
-  loop: Pick<NamedLoop, 'startMs' | 'endMs'>,
+  loop: Pick<NamedLoop, 'startMs' | 'endMs' | 'transform'>,
 ) => {
   return `${formatSavedLoopTimeRange(loop)}${LOOP_META_SEPARATOR}${formatSavedLoopLengthLabel(loop)}`;
 };
@@ -134,10 +139,17 @@ export const formatSavedLoopBracketLabel = (
  * 1d's parts, range first so it survives truncation of a long name).
  */
 export const formatSavedLoopParentTrackLabel = (options: {
-  loop: Pick<NamedLoop, 'startMs' | 'endMs'>;
+  loop: Pick<NamedLoop, 'startMs' | 'endMs' | 'transform'>;
   parentTrackName: string;
 }) => {
-  return `${formatSavedLoopTimeRange(options.loop)}${LOOP_META_SEPARATOR}${options.parentTrackName}`;
+  // An adjusted loop shows its transform between the range and the source.
+  const parts = [
+    formatSavedLoopTimeRange(options.loop),
+    options.loop.transform ? formatTransformLabel(options.loop.transform) : '',
+    options.parentTrackName,
+  ].filter((part) => part.length > 0);
+
+  return parts.join(LOOP_META_SEPARATOR);
 };
 
 const defaultCreateId = (sourceId: string, createdAt: string) => {

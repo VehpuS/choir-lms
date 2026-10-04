@@ -1,3 +1,8 @@
+import {
+  formatTransformLabel,
+  getLoopDisplayDurationMs,
+  getSourceDisplayDurationMs,
+} from '@org/audio-library-models';
 import type { RehearsalLibraryTagMatch } from '@org/audio-library-runtime';
 
 import { normalizeSearchQuery } from '../../../search/utils/saved-library-search-view-model';
@@ -10,8 +15,7 @@ const pluralize = (count: number, noun: string) => {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 };
 
-export const EMPTY_TAG_MATCH_LIST_MESSAGE =
-  'Nothing is tagged with this yet.';
+export const EMPTY_TAG_MATCH_LIST_MESSAGE = 'Nothing is tagged with this yet.';
 
 export const NO_TAG_MATCH_RESULTS_MESSAGE =
   'No matches for the selected filters.';
@@ -28,13 +32,12 @@ const TAG_MATCH_TYPE_LABELS: Record<RehearsalLibraryTagMatch['kind'], string> =
     folder: 'Folder',
   };
 
-const TAG_MATCH_TYPE_ORDER: Record<RehearsalLibraryTagMatch['kind'], number> =
-  {
-    track: 0,
-    loop: 1,
-    playlist: 2,
-    folder: 3,
-  };
+const TAG_MATCH_TYPE_ORDER: Record<RehearsalLibraryTagMatch['kind'], number> = {
+  track: 0,
+  loop: 1,
+  playlist: 2,
+  folder: 3,
+};
 
 export const getTagMatchKey = (match: RehearsalLibraryTagMatch) => {
   return `${match.kind}:${match.item.id}`;
@@ -83,14 +86,27 @@ export const getTagMatchNavigationTarget = (
   return null;
 };
 
+/** An adjusted item's transform leads its metadata so it reads as adjusted. */
+const joinWithTransform = (
+  transform: Parameters<typeof formatTransformLabel>[0] | undefined,
+  label: string,
+) => {
+  return transform ? `${formatTransformLabel(transform)} · ${label}` : label;
+};
+
 export const getTagMatchMetadataLabel = (match: RehearsalLibraryTagMatch) => {
   switch (match.kind) {
     case 'track':
-      return formatDurationLabel(match.item.durationMs) ?? TAG_MATCH_TYPE_LABELS.track;
+      return joinWithTransform(
+        match.item.adjustment?.transform,
+        formatDurationLabel(getSourceDisplayDurationMs(match.item)) ??
+          TAG_MATCH_TYPE_LABELS.track,
+      );
     case 'loop':
-      return (
-        formatDurationLabel(match.item.endMs - match.item.startMs) ??
-        TAG_MATCH_TYPE_LABELS.loop
+      return joinWithTransform(
+        match.item.transform,
+        formatDurationLabel(getLoopDisplayDurationMs(match.item)) ??
+          TAG_MATCH_TYPE_LABELS.loop,
       );
     case 'playlist':
       return pluralize(match.item.items.length, 'item');
@@ -125,9 +141,13 @@ const compareMatchesByName = (
   left: RehearsalLibraryTagMatch,
   right: RehearsalLibraryTagMatch,
 ) => {
-  return getTagMatchTitle(left).localeCompare(getTagMatchTitle(right), undefined, {
-    sensitivity: 'base',
-  });
+  return getTagMatchTitle(left).localeCompare(
+    getTagMatchTitle(right),
+    undefined,
+    {
+      sensitivity: 'base',
+    },
+  );
 };
 
 export const sortTagMatches = (
@@ -193,6 +213,8 @@ export const filterTagMatchesByQuery = (
   }
 
   return matches.filter((match) => {
-    return getTagMatchTitle(match).toLocaleLowerCase().includes(normalizedQuery);
+    return getTagMatchTitle(match)
+      .toLocaleLowerCase()
+      .includes(normalizedQuery);
   });
 };

@@ -1,3 +1,8 @@
+import {
+  formatTransformLabel,
+  getAdjustedDurationMs,
+} from '@org/audio-library-models';
+
 import type { AppIconName } from '../../components/app-icon/model';
 import { formatDurationLabel } from '../../library/drive/utils/drive-library-metadata';
 import {
@@ -41,7 +46,24 @@ const getTrackDurationLabel = (recentRehearsal: RecentRehearsalItem) => {
     return undefined;
   }
 
-  return formatDurationLabel(recentRehearsal.playableItem.source.durationMs);
+  const { source, transform } = recentRehearsal.playableItem;
+
+  return formatDurationLabel(
+    source.durationMs !== undefined && transform
+      ? getAdjustedDurationMs(source.durationMs, transform.speedMultiplier)
+      : source.durationMs,
+  );
+};
+
+/** An adjusted track or loop shows its transform in its meta line. */
+const getTransformLabel = (recentRehearsal: RecentRehearsalItem) => {
+  if (recentRehearsal.kind === 'playlist') {
+    return undefined;
+  }
+
+  const { transform } = recentRehearsal.playableItem;
+
+  return transform ? formatTransformLabel(transform) : undefined;
 };
 
 /**
@@ -57,6 +79,7 @@ export const getRecentRowMeta = (options: {
   const { recentRehearsal } = options;
   const parts = [
     options.isPlaying ? null : KIND_LABELS[recentRehearsal.kind],
+    getTransformLabel(recentRehearsal),
     options.isPlaying
       ? PLAYING_LABEL
       : getRecentRehearsalLastPlayedLabel(

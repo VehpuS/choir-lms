@@ -223,6 +223,8 @@ describe('library-files operations', () => {
     });
 
     assert.deepEqual(operations.getTrackRemoveFromLibraryImpact(SOURCE.id), {
+      adjustedTrackCount: 0,
+      adjustedTrackNames: [],
       fileLinkCount: 2,
       fileLinkNames: [
         'Full Choir.mp3 (Library)',
@@ -309,8 +311,7 @@ describe('library-files operations', () => {
       setCurrentFolderId: () => undefined,
       setIssue: () => undefined,
       setTree: (updater) => {
-        capturedTree =
-          typeof updater === 'function' ? updater(null) : updater;
+        capturedTree = typeof updater === 'function' ? updater(null) : updater;
       },
       tree: createTree(),
     });
@@ -503,11 +504,10 @@ describe('library-files operations', () => {
     const didDelete = await operations.deleteFileLink(ROOT_FILE_LINK.id);
 
     assert.equal(didDelete, true);
-    assert.deepEqual(new Set(refreshedCollections), new Set([
-      'sources',
-      'loops',
-      'playlists',
-    ]));
+    assert.deepEqual(
+      new Set(refreshedCollections),
+      new Set(['sources', 'loops', 'playlists']),
+    );
   });
 
   it('does not refresh saved entity caches when another link to the entity remains', async () => {

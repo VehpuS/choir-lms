@@ -41,7 +41,10 @@ export const formatTrackRemoveFromLibraryImpactMessage = (
   impact: ReturnType<UseLibraryFilesResult['getTrackRemoveFromLibraryImpact']>,
 ) => {
   const totalAffectedItems =
-    impact.loopCount + impact.fileLinkCount + impact.playlistEntryCount;
+    impact.adjustedTrackCount +
+    impact.loopCount +
+    impact.fileLinkCount +
+    impact.playlistEntryCount;
 
   if (totalAffectedItems === 0) {
     return `"${row.source.name}" will be removed from your saved rehearsal library.`;
@@ -54,6 +57,13 @@ export const getTrackRemoveFromLibraryAffectedSections = (
   impact: ReturnType<UseLibraryFilesResult['getTrackRemoveFromLibraryImpact']>,
 ) => {
   return [
+    {
+      items: impact.adjustedTrackNames,
+      title: formatAffectedSectionTitle(
+        'Adjusted tracks',
+        impact.adjustedTrackCount,
+      ),
+    },
     {
       items: impact.loopNames,
       title: formatAffectedSectionTitle('Saved loops', impact.loopCount),

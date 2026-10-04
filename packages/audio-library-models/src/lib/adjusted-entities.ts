@@ -63,8 +63,18 @@ export const parseSourceAdjustment = (
 
   const transform = normalizePlaybackShaping(value.transform);
 
+  // A missing name is repaired from the saved track on read; until then the
+  // reference stands in so the field is always a string.
   return hasSavableTransform(transform)
-    ? { sourceRef: value.sourceRef, transform }
+    ? {
+        sourceRef: value.sourceRef,
+        sourceName:
+          typeof value.sourceName === 'string' &&
+          value.sourceName.trim().length > 0
+            ? value.sourceName
+            : value.sourceRef,
+        transform,
+      }
     : null;
 };
 
@@ -91,6 +101,34 @@ export const getAdjustedDurationMs = (
   return round(
     durationMs / normalizePlaybackShaping({ speedMultiplier }).speedMultiplier,
   );
+};
+
+/**
+ * The running time a row shows for a saved track: an adjusted track plays for
+ * its source's duration over its speed, an ordinary track for its duration.
+ */
+export const getSourceDisplayDurationMs = (
+  source: Pick<DriveAudioSource, 'adjustment' | 'durationMs'>,
+) => {
+  if (source.durationMs === undefined || !source.adjustment) {
+    return source.durationMs;
+  }
+
+  return getAdjustedDurationMs(
+    source.durationMs,
+    source.adjustment.transform.speedMultiplier,
+  );
+};
+
+/** The running time a row shows for a loop, scaled by its transform's speed. */
+export const getLoopDisplayDurationMs = (
+  loop: Pick<NamedLoop, 'endMs' | 'startMs' | 'transform'>,
+) => {
+  const durationMs = loop.endMs - loop.startMs;
+
+  return loop.transform
+    ? getAdjustedDurationMs(durationMs, loop.transform.speedMultiplier)
+    : durationMs;
 };
 
 /** `0.80× −2 st`: the shaped parts of a transform, as shown in names and meta. */
@@ -145,6 +183,7 @@ export const createAdjustedTrackSource = (options: {
       getAdjustedEntityDefaultName(source.name, options.transform),
     adjustment: {
       sourceRef: source.id,
+      sourceName: source.name,
       transform: normalizePlaybackShaping(options.transform),
     },
     createdAt,
