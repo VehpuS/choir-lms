@@ -66,12 +66,28 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
     const sources = await this.listSources(ownerId);
     const loops = await this.listLoops(ownerId);
     const playlists = await this.listPlaylists(ownerId);
-    const nextSources = filter(sources, (source) => source.id !== sourceId);
-    const nextLoops = filter(loops, (loop) => loop.sourceId !== sourceId);
+    // Adjusted tracks have no audio of their own, so they go with their source
+    // the same way its loops do.
+    const removedSourceIds = new Set([
+      sourceId,
+      ...sources
+        .filter((source) => source.adjustment?.sourceRef === sourceId)
+        .map((source) => source.id),
+    ]);
+    const nextSources = filter(
+      sources,
+      (source) => !removedSourceIds.has(source.id),
+    );
+    const nextLoops = filter(
+      loops,
+      (loop) => !removedSourceIds.has(loop.sourceId),
+    );
     const nextPlaylists = playlists.map((playlist) => {
       return normalizePlaylist({
         ...playlist,
-        items: playlist.items.filter((item) => item.sourceId !== sourceId),
+        items: playlist.items.filter(
+          (item) => !removedSourceIds.has(item.sourceId),
+        ),
       });
     });
 

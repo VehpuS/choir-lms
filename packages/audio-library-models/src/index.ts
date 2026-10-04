@@ -1,3 +1,4 @@
+export * from './lib/adjusted-entities.ts';
 export * from './lib/drive-source-location.ts';
 export * from './lib/playback-shaping.ts';
 export * from './lib/rehearsal-domain.ts';

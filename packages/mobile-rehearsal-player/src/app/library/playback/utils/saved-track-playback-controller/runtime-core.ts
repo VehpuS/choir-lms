@@ -101,9 +101,12 @@ export const createSavedTrackPlaybackRuntimeCore = (
   // The player resets between items and may drop the rate, so the session's
   // shaping is applied after every load. A shaping failure (for example the
   // web pitch processor not loading) must not stop the item from playing.
-  const applyAmbientShaping = async () => {
+  // An adjusted track or loop plays with its own transform for that item only.
+  const applyAmbientShaping = async (
+    itemTransform?: PlayableItem['transform'],
+  ) => {
     try {
-      await getPlaybackShapingSession().applyForLoadedItem();
+      await getPlaybackShapingSession().applyForLoadedItem(itemTransform);
     } catch (error) {
       console.warn('Playback shaping could not be applied.', error);
     }
@@ -140,7 +143,7 @@ export const createSavedTrackPlaybackRuntimeCore = (
       ),
     });
     await trackPlayer.setVolume(options.volumeLevelRef.current);
-    await applyAmbientShaping();
+    await applyAmbientShaping(playbackRequest.playableItem.transform);
 
     if (initialPositionSeconds > 0) {
       await trackPlayer.seekTo(initialPositionSeconds);

@@ -1,5 +1,18 @@
 import type { DriveSourceLocation } from './drive-source-location.js';
+import type { PlaybackShaping } from './playback-shaping.js';
 import type { SourceAvailability } from './source-availability.js';
+
+/**
+ * Marks a saved track as an adjusted track (design Decision 5): a copy of
+ * `sourceRef`'s audio that plays with its own speed and pitch transform. It
+ * keeps the source's `driveFileId` so playback needs nothing new, but has no
+ * Drive provenance of its own, so the import planner never reuses it.
+ */
+export type SourceAdjustment = {
+  /** The id of the saved (non-adjusted) track this one is adjusted from. */
+  sourceRef: string;
+  transform: PlaybackShaping;
+};
 
 export type DriveAudioSource = {
   id: string;
@@ -16,6 +29,7 @@ export type DriveAudioSource = {
   tags?: string[];
   tagAddedAt?: Record<string, string>;
   sourceLocation?: DriveSourceLocation;
+  adjustment?: SourceAdjustment;
   createdAt: string;
   availability: SourceAvailability;
 };
@@ -38,6 +52,8 @@ export type PlayableItem = {
   playlistId?: string;
   playlistEntryId?: string;
   description?: string;
+  /** The item's own speed and pitch (an adjusted track or loop). */
+  transform?: PlaybackShaping;
 };
 
 export type NamedLoop = {
@@ -49,6 +65,8 @@ export type NamedLoop = {
   tagAddedAt?: Record<string, string>;
   startMs: number;
   endMs: number;
+  /** Present on an adjusted loop: the loop plays with this speed and pitch. */
+  transform?: PlaybackShaping;
   ownerId: string;
   createdAt: string;
   updatedAt: string;
@@ -191,6 +209,7 @@ export const isNamedLoop = (value: unknown): value is NamedLoop => {
     typeof value.sourceName === 'string' &&
     (value.tags === undefined || isStringArray(value.tags)) &&
     (value.tagAddedAt === undefined || isStringRecord(value.tagAddedAt)) &&
+    (value.transform === undefined || isRecord(value.transform)) &&
     typeof value.startMs === 'number' &&
     typeof value.endMs === 'number' &&
     typeof value.ownerId === 'string' &&
@@ -261,6 +280,7 @@ export const createTrackPlayableItem = (
     },
     playlistId,
     ...(playlistEntryId ? { playlistEntryId } : {}),
+    ...(source.adjustment ? { transform: source.adjustment.transform } : {}),
     description: 'Full track',
   };
 };
@@ -286,6 +306,7 @@ export const createLoopPlayableItem = (
     loopId: loop.id,
     playlistId,
     ...(playlistEntryId ? { playlistEntryId } : {}),
+    ...(loop.transform ? { transform: loop.transform } : {}),
     description: `${parentTrack.name} loop`,
   };
 };

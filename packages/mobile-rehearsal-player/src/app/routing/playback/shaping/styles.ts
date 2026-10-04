@@ -154,12 +154,42 @@ export const shapingStyles = StyleSheet.create({
   },
   // Pinned under the scrolling body so the session scope is always in view.
   footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
+    gap: space.md,
     paddingHorizontal: space.sheetInset,
     paddingTop: space.md,
     paddingBottom: space.xl,
+  },
+  footerNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+  },
+  saveActions: {
+    gap: space.sm,
+  },
+  saveHint: {
+    color: colors.textSecondary,
+    fontSize: NOTE_TEXT_SIZE,
+    textAlign: 'center',
+  },
+  secondarySave: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondarySaveLabel: {
+    color: colors.textSecondary,
+    fontSize: NOTE_TEXT_SIZE,
+  },
+  saveFeedback: {
+    color: colors.success,
+    fontSize: NOTE_TEXT_SIZE,
+    textAlign: 'center',
+  },
+  saveFeedbackError: {
+    color: colors.danger,
+    fontSize: NOTE_TEXT_SIZE,
+    textAlign: 'center',
   },
   footerText: {
     flex: 1,

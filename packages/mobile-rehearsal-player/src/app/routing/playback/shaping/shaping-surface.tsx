@@ -3,6 +3,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { AppIcon } from '../../../components/app-icon';
 import { FadedRule } from '../../../components/faded-rule';
+import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { appTheme } from '../../../utils/theme';
 import type { NowPlayingSurfaceSummary } from '../../shell/shell-model';
@@ -13,11 +14,60 @@ import {
   SESSION_SCOPE_STATEMENT,
   canResetShaping,
   type PlaybackShapingControls,
+  type PlaybackShapingSaveControls,
 } from './shaping-surface-model';
 import { shapingStyles as styles } from './styles';
 
 const INFO_ICON_SIZE = 18;
 
+/** The commit actions under the session-scope note (screen 1i). */
+const SaveActions = ({ save }: { save: PlaybackShapingSaveControls }) => {
+  const { availability } = save;
+
+  if (availability.status === 'unavailable') {
+    return <Text style={styles.saveHint}>{availability.reason}</Text>;
+  }
+
+  const [primary, ...others] = availability.options;
+
+  return (
+    <View style={styles.saveActions}>
+      {primary ? (
+        <OutlinedActionButton
+          isBusy={save.isSaving}
+          label={primary.label}
+          onPress={() => save.onSave(primary.kind)}
+          variant="accent"
+        />
+      ) : null}
+      {others.map((option) => (
+        <Pressable
+          accessibilityRole="button"
+          disabled={save.isSaving}
+          key={option.kind}
+          onPress={() => save.onSave(option.kind)}
+          style={styles.secondarySave}
+        >
+          <Text style={styles.secondarySaveLabel}>
+            Also available: {option.label.toLowerCase()}
+          </Text>
+        </Pressable>
+      ))}
+      {save.feedback ? (
+        <Text
+          accessibilityLiveRegion="polite"
+          style={
+            save.feedback.tone === 'error'
+              ? styles.saveFeedbackError
+              : styles.saveFeedback
+          }
+        >
+          {save.feedback.message}
+        </Text>
+      ) : null}
+    </View>
+  );
+};
 type ShapingSurfaceProps = {
   controls: PlaybackShapingControls;
   dragHandleProps?: ComponentProps<typeof View>;
@@ -25,7 +75,7 @@ type ShapingSurfaceProps = {
   summary: NowPlayingSurfaceSummary;
 };
 
-/** Screen 1i: speed and pitch for the session. Saving is task 6.4. */
+/** Screen 1i: speed and pitch for the session, and saving it as an adjusted loop or track. */
 export const ShapingSurface = ({
   controls,
   onClose,
@@ -94,12 +144,15 @@ export const ShapingSurface = ({
         />
       </ScrollView>
       <View style={styles.footer}>
-        <AppIcon
-          color={appTheme.colors.accentText}
-          name="information-outline"
-          size={INFO_ICON_SIZE}
-        />
-        <Text style={styles.footerText}>{SESSION_SCOPE_STATEMENT}</Text>
+        <View style={styles.footerNote}>
+          <AppIcon
+            color={appTheme.colors.accentText}
+            name="information-outline"
+            size={INFO_ICON_SIZE}
+          />
+          <Text style={styles.footerText}>{SESSION_SCOPE_STATEMENT}</Text>
+        </View>
+        {controls.save ? <SaveActions save={controls.save} /> : null}
       </View>
     </View>
   );

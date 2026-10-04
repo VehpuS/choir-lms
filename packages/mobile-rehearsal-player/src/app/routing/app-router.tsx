@@ -16,9 +16,9 @@ import {
   restoreRecentRehearsalHistory,
 } from '../screens/recents/history';
 import { MobileShell } from './shell/mobile-shell';
-import { usePlaybackShapingControls } from './playback/shaping/use-playback-shaping-controls';
 import type { ShellDestinationKey } from './shell/shell-model';
 import { getPlaybackShapingContextLabel } from './shell/shell-playback-summary-model';
+import { useAppRouterPlaybackShaping } from './use-app-router-playback-shaping';
 import { useAppRouterQueuePlaylistActions } from './use-app-router-queue-playlist-actions';
 
 const PLAYBACK_SEEK_STEP_SECONDS = 15;
@@ -61,7 +61,10 @@ export const AppRouter = () => {
     },
     playback,
   });
-  const playbackShaping = usePlaybackShapingControls(playback.shaping);
+  const playbackShaping = useAppRouterPlaybackShaping({
+    libraryController,
+    playback,
+  });
   const playbackActionCopy = playback.activePlayableItem
     ? getSavedTrackPlaybackActionCopy({
         activePlayableItem: playback.activePlayableItem,

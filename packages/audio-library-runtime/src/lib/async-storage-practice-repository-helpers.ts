@@ -1,6 +1,8 @@
 import {
   isDriveSourceLocation,
   isNamedLoop,
+  parseLoopTransform,
+  parseSourceAdjustment,
   withResolvedTagAddedAt,
   type DriveAudioSource,
   type NamedLoop,
@@ -51,8 +53,11 @@ const normalizeStoredLoop = (options: {
     return null;
   }
 
+  const { transform: storedTransform, ...loopWithoutTransform } = options.loop;
+  const transform = parseLoopTransform(storedTransform);
   const normalizedLoop = {
-    ...options.loop,
+    ...loopWithoutTransform,
+    ...(transform ? { transform } : {}),
     sourceId: options.loop.sourceId,
     sourceName,
   };
@@ -63,19 +68,34 @@ const normalizeStoredLoop = (options: {
 export const normalizeStoredSources = (
   sources: DriveAudioSource[],
 ): DriveAudioSource[] => {
-  return sources.map((source) => {
-    const { sourceLocation, ...sourceWithoutLocation } = source;
+  return sources.flatMap((source) => {
+    const {
+      adjustment: storedAdjustment,
+      sourceLocation,
+      ...sourceWithoutLocation
+    } = source;
+    const adjustment = parseSourceAdjustment(storedAdjustment);
+
+    // A record that claims to be adjusted but cannot be read as such would
+    // otherwise surface as a second plain copy of its source's audio.
+    if (storedAdjustment !== undefined && !adjustment) {
+      return [];
+    }
+
     const createdAt = resolveBackfilledCreatedAt(source.createdAt);
 
-    return {
-      ...withResolvedTagAddedAt(
-        sourceWithoutLocation,
-        source.tagAddedAt,
+    return [
+      {
+        ...withResolvedTagAddedAt(
+          sourceWithoutLocation,
+          source.tagAddedAt,
+          createdAt,
+        ),
+        ...(isDriveSourceLocation(sourceLocation) ? { sourceLocation } : {}),
+        ...(adjustment ? { adjustment } : {}),
         createdAt,
-      ),
-      ...(isDriveSourceLocation(sourceLocation) ? { sourceLocation } : {}),
-      createdAt,
-    };
+      },
+    ];
   });
 };
 

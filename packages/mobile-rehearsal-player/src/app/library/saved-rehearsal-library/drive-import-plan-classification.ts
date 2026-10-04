@@ -1,7 +1,8 @@
-import type {
-  DriveAudioSource,
-  RehearsalLibraryFileLinkNode,
-  RehearsalLibraryFileTree,
+import {
+  isAdjustedSource,
+  type DriveAudioSource,
+  type RehearsalLibraryFileLinkNode,
+  type RehearsalLibraryFileTree,
 } from '@org/audio-library-models';
 import {
   resolveRehearsalLibraryAvailableNodeName,
@@ -126,11 +127,12 @@ export const classifyDriveImportIntents = (options: {
   const existingFoldersById = new Map(
     options.libraryState.tree.folders.map((folder) => [folder.id, folder]),
   );
+  // Adjusted tracks share their source's `driveFileId` but have no Drive
+  // provenance of their own, so they are never reused or reported as present.
   const savedSourcesByDriveId = new Map(
-    options.libraryState.entityCollections.sources.map((source) => [
-      source.driveFileId,
-      source,
-    ]),
+    options.libraryState.entityCollections.sources
+      .filter((source) => !isAdjustedSource(source))
+      .map((source) => [source.driveFileId, source]),
   );
   const folders: ClassifiedDriveImportFolderIntent[] = [];
   const folderPathsById = resolveDriveImportFolderPaths(options.folders);

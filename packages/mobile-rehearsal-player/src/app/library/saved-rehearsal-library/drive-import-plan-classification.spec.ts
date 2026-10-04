@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import type { DriveAudioSource } from '@org/audio-library-models';
 import type {
   DriveAudioDiscoveryResult,
   DriveEnumeratedAudioSource,
@@ -216,6 +217,86 @@ describe('createDriveImportPlan classification', () => {
       reusableTracks: 1,
       tracksToImport: 3,
       unsupportedFiles: 0,
+    });
+  });
+  describe('adjusted tracks', () => {
+    const slowTransform = {
+      pitchSemitones: 0,
+      speedMultiplier: 0.8,
+      tempoSource: 'multiplier' as const,
+    };
+    const destinationFolder = {
+      createdAt: '2026-09-08T00:00:00.000Z',
+      id: DESTINATION_FOLDER_ID,
+      name: 'Destination',
+      parentFolderId: null,
+    };
+    const importAudio = (savedSources: DriveAudioSource[], links: string[]) => {
+      const importedSource = asDiscoveryAudio(
+        createAudio('audio-1', 'Song.mp3'),
+      );
+
+      return createDriveImportPlan({
+        contentsByFolderId: new Map(),
+        destinationFolderId: DESTINATION_FOLDER_ID,
+        libraryState: createLibraryState({
+          fileLinks: links.map((entityId) => ({
+            entityId,
+            entityKind: 'track' as const,
+            id: `link-${entityId}`,
+            parentFolderId: DESTINATION_FOLDER_ID,
+          })),
+          folders: [destinationFolder],
+          sources: savedSources,
+        }),
+        mode: 'preserve-structure',
+        selection: createSelection({ audio: [importedSource] }),
+      });
+    };
+    const createAdjustedCopy = (
+      source: DriveAudioSource,
+    ): DriveAudioSource => ({
+      ...source,
+      id: `adjusted:${source.id}`,
+      adjustment: { sourceRef: source.id, transform: slowTransform },
+    });
+    const baseSource = createAudio('audio-1', 'Song.mp3') as DriveAudioSource;
+
+    it('does not reuse or report an adjusted track as already present when only it is saved', () => {
+      const adjustedCopy = createAdjustedCopy(baseSource);
+      const plan = importAudio([adjustedCopy], [adjustedCopy.id]);
+
+      assert.deepEqual(
+        plan.tracks.map(({ canonicalSourceId, classification }) => ({
+          canonicalSourceId,
+          classification,
+        })),
+        [{ canonicalSourceId: baseSource.id, classification: 'new' }],
+      );
+      assert.equal(plan.summary.alreadyPresentTracks, 0);
+      assert.equal(plan.summary.reusableTracks, 0);
+    });
+
+    it('reuses the saved source, not its adjusted copy, when both are saved', () => {
+      const adjustedCopy = createAdjustedCopy(baseSource);
+      // The adjusted copy is listed last so a last-wins lookup would pick it.
+      const plan = importAudio(
+        [baseSource, adjustedCopy],
+        [baseSource.id, adjustedCopy.id],
+      );
+
+      assert.deepEqual(
+        plan.tracks.map(({ canonicalSourceId, classification }) => ({
+          canonicalSourceId,
+          classification,
+        })),
+        [
+          {
+            canonicalSourceId: baseSource.id,
+            classification: 'already-present',
+          },
+        ],
+      );
     });
   });
 });

@@ -13,11 +13,28 @@ import {
   type TempoSource,
 } from '@org/audio-library-models';
 
+import type {
+  AdjustedSaveAvailability,
+  AdjustedSaveKind,
+} from './adjusted-save-model';
 import { PITCH_UNAVAILABLE_REASON } from '../../../library/playback/shaping/playback-shaping-capabilities';
 
 type ShapingAxes = {
   pitchSemitones: number;
   speedMultiplier: number;
+};
+
+export type PlaybackShapingSaveFeedback = {
+  message: string;
+  tone: 'error' | 'success';
+};
+
+/** Saving the shaping as an adjusted loop or track (task 6.4). */
+export type PlaybackShapingSaveControls = {
+  availability: AdjustedSaveAvailability;
+  feedback: PlaybackShapingSaveFeedback | null;
+  isSaving: boolean;
+  onSave: (kind: AdjustedSaveKind) => void;
 };
 
 /** What the playback surfaces need from the shaping session. */
@@ -32,6 +49,8 @@ export type PlaybackShapingControls = {
   onReset: () => void;
   onSetPitchSemitones: (semitones: number) => void;
   onSetSpeedMultiplier: (multiplier: number) => void;
+  /** Absent where saving is not wired (previews, tests). */
+  save?: PlaybackShapingSaveControls;
 };
 
 export const SESSION_SCOPE_STATEMENT =
