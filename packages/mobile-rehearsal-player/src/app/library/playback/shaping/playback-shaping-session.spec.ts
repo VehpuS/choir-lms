@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { createManualScheduler } from './manual-scheduler.js';
 import { createPlaybackShapingSession } from './playback-shaping-session.js';
 import { createPlaybackShapingEngine } from './playback-shaping-engine.js';
 
@@ -18,7 +19,12 @@ const createSession = (options: { canShapePitch: boolean }) => {
     player: { setRate: async (rate) => void rates.push(rate) },
   });
 
-  return { rates, semitones, session: createPlaybackShapingSession(engine) };
+  // No pacing here: the pacing has its own tests below.
+  return {
+    rates,
+    semitones,
+    session: createPlaybackShapingSession(engine, { minApplyIntervalMs: 0 }),
+  };
 };
 
 const WEB = { canShapePitch: true };
@@ -169,7 +175,7 @@ describe('clamping and platform limits', () => {
       speedMultiplier: 0.8,
     });
     // Speed still applies; pitch never leaks into the rate.
-    assert.deepEqual(rates, [1, 1, 0.8]);
+    assert.deepEqual(rates, [1, 0.8]);
   });
 });
 
@@ -194,5 +200,159 @@ describe('subscribers', () => {
     assert.equal(session.getState(), before);
     await session.setSpeedMultiplier(0.8);
     assert.notEqual(session.getState(), before);
+  });
+});
+
+describe('what the player is given', () => {
+  it('does not rewrite the speed on a pitch change or the pitch on a speed change', async () => {
+    const { rates, semitones, session } = createSession(WEB);
+    await session.applyForLoadedItem();
+    rates.length = 0;
+    semitones.length = 0;
+
+    await session.setPitchSemitones(2);
+    await session.setPitchSemitones(3);
+    await session.setSpeedMultiplier(0.8);
+
+    assert.deepEqual(rates, [0.8]);
+    assert.deepEqual(semitones, [2, 3]);
+  });
+
+  it('skips a value the player already has', async () => {
+    const { rates, session } = createSession(WEB);
+    await session.applyForLoadedItem();
+    rates.length = 0;
+
+    await session.setSpeedMultiplier(1);
+    await session.setSpeedMultiplier(1);
+
+    assert.deepEqual(rates, []);
+  });
+
+  it('rewrites both values after a load, as the player may have dropped them', async () => {
+    const { rates, semitones, session } = createSession(WEB);
+    await session.applyForLoadedItem();
+    await session.applyForLoadedItem();
+
+    assert.deepEqual(rates, [1, 1]);
+    assert.deepEqual(semitones, [0, 0]);
+  });
+});
+
+describe('pacing a burst of changes', () => {
+  const createPacedSession = (
+    options: { engineDelay?: Promise<void> } = {},
+  ) => {
+    const { advance, scheduler } = createManualScheduler();
+    const rates: number[] = [];
+    const engine = createPlaybackShapingEngine({
+      pitchShifter: null,
+      player: {
+        setRate: async (rate) => {
+          await options.engineDelay;
+          rates.push(rate);
+        },
+      },
+    });
+
+    return {
+      advance,
+      rates,
+      session: createPlaybackShapingSession(engine, {
+        minApplyIntervalMs: 120,
+        scheduler,
+      }),
+    };
+  };
+
+  it('sends the player the first value at once and only the latest after it', async () => {
+    const { advance, rates, session } = createPacedSession();
+    await session.applyForLoadedItem();
+    rates.length = 0;
+
+    const pending: Promise<void>[] = [];
+    for (let step = 1; step <= 40; step += 1) {
+      pending.push(session.setSpeedMultiplier(1 - step * 0.01));
+      await advance(16);
+    }
+    await advance(500);
+    await Promise.all(pending);
+
+    // 40 slider events over ~640 ms reach the player a handful of times, and
+    // the last value is the final one: nothing stale is applied afterwards.
+    assert.ok(rates.length <= 7, `player was written ${rates.length} times`);
+    assert.equal(rates.at(-1), 0.6);
+    assert.deepEqual(
+      rates,
+      [...rates].sort((a, b) => b - a),
+      'values only ever move toward the final one',
+    );
+  });
+
+  it('keeps the displayed value following every event even while the player is paced', async () => {
+    const { rates, session } = createPacedSession();
+    await session.applyForLoadedItem();
+    rates.length = 0;
+
+    void session.setSpeedMultiplier(0.9);
+    void session.setSpeedMultiplier(0.8);
+    void session.setSpeedMultiplier(0.7);
+
+    assert.equal(session.getState().effective.speedMultiplier, 0.7);
+  });
+
+  it('applies the newest value last even when the player is slow to answer', async () => {
+    let release: () => void = () => undefined;
+    const slow = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const { advance, rates, session } = createPacedSession({
+      engineDelay: slow,
+    });
+    const loaded = session.applyForLoadedItem();
+    release();
+    await loaded;
+    rates.length = 0;
+
+    const first = session.setSpeedMultiplier(0.9);
+    const second = session.setSpeedMultiplier(0.8);
+    const third = session.setSpeedMultiplier(0.7);
+    await advance(300);
+    await Promise.all([first, second, third]);
+
+    assert.equal(rates.at(-1), 0.7);
+  });
+});
+
+describe('a failing player', () => {
+  it('keeps the ambient value and retries it on the next change', async () => {
+    let shouldFail = true;
+    const rates: number[] = [];
+    const engine = createPlaybackShapingEngine({
+      pitchShifter: null,
+      player: {
+        setRate: async (rate) => {
+          if (shouldFail) {
+            throw new Error('player unavailable');
+          }
+          rates.push(rate);
+        },
+      },
+    });
+    const session = createPlaybackShapingSession(engine, {
+      minApplyIntervalMs: 0,
+    });
+    shouldFail = false;
+    await session.applyForLoadedItem();
+    shouldFail = true;
+
+    await assert.rejects(session.setSpeedMultiplier(0.8), /player unavailable/);
+    assert.equal(session.getState().ambient.speedMultiplier, 0.8);
+
+    shouldFail = false;
+    await session.setPitchSemitones(0);
+    await session.setSpeedMultiplier(0.8);
+
+    assert.equal(rates.at(-1), 0.8);
   });
 });

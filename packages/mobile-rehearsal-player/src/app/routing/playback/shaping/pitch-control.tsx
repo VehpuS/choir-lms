@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { AppIcon } from '../../../components/app-icon';
@@ -65,8 +66,19 @@ export const PitchControl = ({
   pitchSemitones,
 }: PitchControlProps) => {
   const model = getPitchControlModel({ canShapePitch, pitchSemitones });
+  // Taps step from the latest value, not from the last render's prop, so two
+  // quick taps are two steps even if the second lands before a re-render.
+  const latestPitchRef = useRef(pitchSemitones);
+
+  useEffect(() => {
+    latestPitchRef.current = pitchSemitones;
+  }, [pitchSemitones]);
+
   const step = (delta: number) => {
-    onSetPitchSemitones(stepPitchSemitones(pitchSemitones, delta));
+    const next = stepPitchSemitones(latestPitchRef.current, delta);
+
+    latestPitchRef.current = next;
+    onSetPitchSemitones(next);
   };
 
   return (

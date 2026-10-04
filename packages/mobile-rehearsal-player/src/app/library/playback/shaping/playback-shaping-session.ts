@@ -5,6 +5,10 @@ import {
   type PlaybackShaping,
 } from '@org/audio-library-models';
 
+import {
+  createCoalescedRunner,
+  type RunnerScheduler,
+} from './coalesced-runner';
 import type { PlaybackShapingEngine } from './playback-shaping-types';
 
 type ShapingAxes = Pick<PlaybackShaping, 'pitchSemitones' | 'speedMultiplier'>;
@@ -31,7 +35,8 @@ export type PlaybackShapingSession = {
   /**
    * Makes the engine match the effective shaping for the item that just
    * loaded. The player resets between items and may drop the rate, so this
-   * runs after every load, not only when the user changes a setting.
+   * runs after every load (and rewrites both values), not only when the user
+   * changes a setting.
    */
   applyForLoadedItem: (
     itemTransform?: ItemShapingTransform | null,
@@ -50,14 +55,34 @@ const NEUTRAL_AXES: ShapingAxes = {
 };
 
 /**
+ * Setting changes reach the player at most this often. A slider drag is dozens
+ * of events a second and every rate or pitch change makes the player
+ * re-synchronize its audio (AVPlayer, ExoPlayer and the browser's time-stretch
+ * all do), so an unthrottled drag is heard as stutter and jumps in speed. The
+ * displayed value still follows the finger at once, and the latest value is
+ * always the one applied.
+ */
+export const SHAPING_APPLY_INTERVAL_MS = 120;
+
+type PlaybackShapingSessionOptions = {
+  minApplyIntervalMs?: number;
+  scheduler?: RunnerScheduler;
+};
+
+/**
  * The ambient shaping of the playback session (design Decision 6, task 5.3).
  *
  * Ambient settings live until the app restarts or the user resets them:
  * stopping or dismissing playback keeps them, a queue advance keeps them, and
  * only a new user-initiated start (`startNewPlayback`) returns to neutral.
+ *
+ * The engine is only given values that changed, one run at a time, newest
+ * value last: a pitch tap does not rewrite the speed and a speed change does
+ * not rewrite the pitch.
  */
 export const createPlaybackShapingSession = (
   engine: PlaybackShapingEngine,
+  options: PlaybackShapingSessionOptions = {},
 ): PlaybackShapingSession => {
   const listeners = new Set<() => void>();
   let ambient: ShapingAxes = NEUTRAL_AXES;
@@ -65,6 +90,10 @@ export const createPlaybackShapingSession = (
   // The web player's media element does not exist before the first load, so
   // settings made earlier are only remembered and applied by that load.
   let hasLoadedItem = false;
+  // What the engine was last given, so unchanged values are not rewritten.
+  let appliedPitch: number | null = null;
+  let appliedSpeed: number | null = null;
+  let shouldRewriteAll = false;
   let state = buildState();
 
   function buildState(): PlaybackShapingSessionState {
@@ -81,39 +110,58 @@ export const createPlaybackShapingSession = (
     listeners.forEach((listener) => listener());
   };
 
-  // Callers see engine failures (for example a pitch processor that cannot
-  // load) as thrown errors, but the ambient value is kept so a retry or the
-  // next load applies it.
-  const applyEffective = async () => {
+  // Reads the effective shaping when it runs, so a run that was delayed by the
+  // interval applies the latest value rather than the one that scheduled it.
+  // A failure leaves the ambient value recorded and the applied marker
+  // untouched, so the next run retries it.
+  const applyChanges = async () => {
     if (!hasLoadedItem) {
       return;
     }
 
     const effective = itemTransform ?? ambient;
+    const shouldRewrite = shouldRewriteAll;
 
-    await engine.setSpeedMultiplier(effective.speedMultiplier);
-    await engine.setPitchSemitones(effective.pitchSemitones);
+    shouldRewriteAll = false;
+
+    if (shouldRewrite || appliedSpeed !== effective.speedMultiplier) {
+      await engine.setSpeedMultiplier(effective.speedMultiplier);
+      appliedSpeed = effective.speedMultiplier;
+    }
+
+    if (shouldRewrite || appliedPitch !== effective.pitchSemitones) {
+      await engine.setPitchSemitones(effective.pitchSemitones);
+      appliedPitch = effective.pitchSemitones;
+    }
   };
+
+  const runner = createCoalescedRunner(applyChanges, {
+    minIntervalMs: options.minApplyIntervalMs ?? SHAPING_APPLY_INTERVAL_MS,
+    scheduler: options.scheduler,
+  });
 
   return {
     getState: () => state,
-    applyForLoadedItem: async (nextItemTransform = null) => {
+    applyForLoadedItem: (nextItemTransform = null) => {
       hasLoadedItem = true;
       itemTransform = nextItemTransform;
+      shouldRewriteAll = true;
       publish();
-      await applyEffective();
+
+      return runner.runNow();
     },
     startNewPlayback: () => {
       ambient = NEUTRAL_AXES;
       itemTransform = null;
       publish();
     },
-    reset: async () => {
+    reset: () => {
       ambient = NEUTRAL_AXES;
       publish();
-      await applyEffective();
+
+      return runner.runNow();
     },
-    setPitchSemitones: async (semitones) => {
+    setPitchSemitones: (semitones) => {
       // Where pitch cannot be shifted the ambient value stays 0, so no surface
       // reports a pitch change nobody can hear (see `canShapePitchOnPlatform`).
       const pitchSemitones = engine.canShapePitch
@@ -122,15 +170,17 @@ export const createPlaybackShapingSession = (
 
       ambient = { ...ambient, pitchSemitones };
       publish();
-      await applyEffective();
+
+      return runner.request();
     },
-    setSpeedMultiplier: async (multiplier) => {
+    setSpeedMultiplier: (multiplier) => {
       ambient = {
         ...ambient,
         speedMultiplier: clampSpeedMultiplier(multiplier),
       };
       publish();
-      await applyEffective();
+
+      return runner.request();
     },
     subscribe: (listener) => {
       listeners.add(listener);

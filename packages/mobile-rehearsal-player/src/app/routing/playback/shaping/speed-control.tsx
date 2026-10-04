@@ -1,5 +1,5 @@
 import { Slider } from '@miblanchard/react-native-slider';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Text, View, type LayoutChangeEvent } from 'react-native';
 
 import {
@@ -33,10 +33,18 @@ export const SpeedControl = ({
   const model = getSpeedControlModel(speedMultiplier);
   const [draft, setDraft] = useState(speedMultiplier);
   const [trackWidth, setTrackWidth] = useState(0);
+  const isDraggingRef = useRef(false);
+  const latestSpeedRef = useRef(speedMultiplier);
+
+  latestSpeedRef.current = speedMultiplier;
 
   // A reset, a new start, or an item transform moves the value from outside.
+  // While the finger is down the slider owns the value, so a late echo of an
+  // earlier event cannot pull the thumb back.
   useEffect(() => {
-    setDraft(speedMultiplier);
+    if (!isDraggingRef.current) {
+      setDraft(speedMultiplier);
+    }
   }, [speedMultiplier]);
 
   const onLayout = (event: LayoutChangeEvent) => {
@@ -74,6 +82,13 @@ export const SpeedControl = ({
 
             setDraft(next);
             onSetSpeedMultiplier(next);
+          }}
+          onSlidingComplete={() => {
+            isDraggingRef.current = false;
+            setDraft(latestSpeedRef.current);
+          }}
+          onSlidingStart={() => {
+            isDraggingRef.current = true;
           }}
           step={model.step}
           thumbStyle={styles.thumbStyle}
