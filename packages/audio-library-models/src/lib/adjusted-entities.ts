@@ -5,12 +5,12 @@ import {
   isPlaybackShapingNeutral,
   normalizePlaybackShaping,
   type PlaybackShaping,
-} from './playback-shaping.js';
+} from './playback-shaping.ts';
 import type {
   DriveAudioSource,
   NamedLoop,
   SourceAdjustment,
-} from './rehearsal-domain.js';
+} from './rehearsal-domain.ts';
 
 /**
  * Adjusted tracks and loops (design Decision 5) store a source reference and
