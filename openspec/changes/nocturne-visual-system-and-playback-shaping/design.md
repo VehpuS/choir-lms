@@ -119,9 +119,11 @@ Decided by the user (2026-10-01), after the loop editor (tasks 3.4 / 8.45) and A
 - A surface never shows the previous location's content under the new location's title.
 - Where data already exists (cached or just seen), it is shown first and refreshed behind, so going back is instant.
 
-## Open questions for multiple selection (resolve at task 9.0)
+## Decisions for multiple selection (resolved at task 9.0, 2026-10-06)
 
-- Bulk-action bar layout at 375pt: which three actions are always visible per surface, and what goes in its overflow sheet.
-- Whether long-press to enter selection conflicts with any existing long-press (drag-to-reorder in playlist detail uses a drag handle, so probably not) and how selection coexists with playlist detail's reorder affordance.
-- The basket view: a sheet listing selected Drive items grouped by root and path, or a dedicated screen reusing the import review list.
-- Whether a bulk action should offer undo instead of (or in addition to) confirmation for non-destructive batch changes such as move.
+Decided by the user. No new mockups were drawn: selection states borrow 1e (Add rows and footer), 1h (two-action footer, review list) and 1j (Library rows and menus) per Decision 8; implementation tasks verify them in the browser.
+
+- **Bulk-action bar layout.** Every Library surface that lists tracks, loops, or playlists shows the same three always-visible actions: `Play next`, `Add to queue`, `Add to playlist`. Everything else (copy, move, tags, remove, `Save as playlist`, ...) lives in the overflow sheet, resolved per surface by `resolveBulkActions`. Add's bar shows `Continue` and `Clear`.
+- **Long-press entry.** Long-press enters selection on every surface. It does not clash with playlist detail's drag handle; reorder is disabled while selecting.
+- **Basket view.** The basket is shown with the existing import review list, grouped by root and path with per-item deselect, not a new surface or sheet. Any capability the review list lacks (deselecting from the basket, showing items outside the current folder, a pre-import entry state) is added to it by task 9.4.
+- **Undo.** Non-destructive batch changes (move, copy) offer undo on the completion acknowledgment, implemented by restoring the single persisted pre-action state (Decision 10). Destructive actions keep the aggregated confirmation and have no undo.
