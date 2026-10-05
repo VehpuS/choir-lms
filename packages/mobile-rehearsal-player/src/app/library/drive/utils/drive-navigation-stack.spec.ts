@@ -69,4 +69,19 @@ describe('buildDriveFolderNavigationStack', () => {
       [MY_DRIVE_ROOT_LOCATION.id, 'choir', 'warmups'],
     );
   });
+
+  it('opens the My Drive root as the root level, not as a folder inside it', () => {
+    const stack = buildDriveFolderNavigationStack({
+      currentStack: [SHARED_FOLDERS_ROOT_LOCATION],
+      folder: {
+        id: MY_DRIVE_ROOT_LOCATION.id,
+        name: MY_DRIVE_ROOT_LOCATION.name,
+        path: [],
+        rootKind: 'my-drive',
+        shared: false,
+      },
+    });
+
+    assert.deepEqual(stack, [MY_DRIVE_ROOT_LOCATION]);
+  });
 });

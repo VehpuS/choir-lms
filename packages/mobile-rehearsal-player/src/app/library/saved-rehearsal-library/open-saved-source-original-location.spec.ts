@@ -36,6 +36,13 @@ describe('buildDriveFolderUrl', () => {
       'https://drive.google.com/drive/folders/folder-alto',
     );
   });
+
+  it('opens My Drive itself for the root location', () => {
+    assert.equal(
+      buildDriveFolderUrl('root'),
+      'https://drive.google.com/drive/my-drive',
+    );
+  });
 });
 
 describe('openSavedSourceOriginalFolderInGoogleDrive', () => {

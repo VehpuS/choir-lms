@@ -1,4 +1,7 @@
-import type { DriveCurrentSourceLocationUnresolvedReason } from '@org/google-drive';
+import {
+  MY_DRIVE_ROOT_LOCATION,
+  type DriveCurrentSourceLocationUnresolvedReason,
+} from '@org/google-drive';
 
 import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
 import { resolveSavedSourceCurrentLocation } from './resolve-saved-source-current-location';
@@ -12,7 +15,14 @@ export type OpenSavedSourceOriginalFolderResult =
   | { status: 'unsupported-link' }
   | { status: 'open-failed' };
 
+const MY_DRIVE_URL = 'https://drive.google.com/drive/my-drive';
+
 export const buildDriveFolderUrl = (parentFolderId: string) => {
+  // The My Drive root has no folder page under its alias id.
+  if (parentFolderId === MY_DRIVE_ROOT_LOCATION.id) {
+    return MY_DRIVE_URL;
+  }
+
   return `https://drive.google.com/drive/folders/${parentFolderId}`;
 };
 

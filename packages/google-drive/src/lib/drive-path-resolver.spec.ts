@@ -238,4 +238,43 @@ describe('resolveDriveFilePaths', () => {
       { id: 'folder-a', name: 'Folder A' },
     ]);
   });
+
+  it('marks a file directly in My Drive as at the root, whether the root is the alias or an opaque id', async () => {
+    globalThis.fetch = async (input) => {
+      const requestedId = getRequestedFileId(input);
+
+      assert.equal(requestedId, 'opaque-root-id');
+      return Response.json(createFolder('opaque-root-id', 'My Drive', []));
+    };
+
+    const paths = await resolveDriveFilePaths({
+      accessToken: 'drive-token',
+      files: [
+        createFile('alias-track', ['root']),
+        createFile('opaque-track', ['opaque-root-id']),
+      ],
+    });
+    const rootLevel = {
+      isAtMyDriveRoot: true,
+      path: [],
+      rootKind: 'my-drive',
+    };
+
+    assert.deepEqual(paths.get('alias-track'), rootLevel);
+    assert.deepEqual(paths.get('opaque-track'), rootLevel);
+  });
+
+  it('does not mark a file whose parent is not accessible as at the root', async () => {
+    globalThis.fetch = async () => {
+      return new Response('{}', { status: 404 });
+    };
+
+    const paths = await resolveDriveFilePaths({
+      accessToken: 'drive-token',
+      files: [createFile('orphan', ['hidden-folder'])],
+    });
+
+    assert.equal(paths.get('orphan')?.isAtMyDriveRoot, undefined);
+    assert.deepEqual(paths.get('orphan')?.path, []);
+  });
 });

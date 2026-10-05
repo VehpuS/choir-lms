@@ -18,6 +18,11 @@ export type DrivePathSegment = {
 export type DriveResolvedPath = {
   rootKind: DriveBrowseRootKind;
   path: DrivePathSegment[];
+  /**
+   * Set when the file sits directly in My Drive, so its (empty) path means
+   * "at the root" rather than "no accessible parent".
+   */
+  isAtMyDriveRoot?: true;
 };
 
 type DrivePathInput = Pick<DriveFileMetadata, 'id' | 'parents' | 'shared'>;
@@ -99,6 +104,7 @@ export const resolveDriveFilePaths = async (options: {
     const visitedIds = new Set<string>([file.id]);
     let parentIds = file.parents ?? [];
     let rootKind: DriveBrowseRootKind = file.shared ? 'shared' : 'my-drive';
+    let hasReachedMyDriveRoot = false;
 
     while (parentIds.length > 0) {
       throwIfDriveRequestAborted(
@@ -115,6 +121,7 @@ export const resolveDriveFilePaths = async (options: {
 
         if (parentId === MY_DRIVE_ROOT_ID) {
           rootKind = 'my-drive';
+          hasReachedMyDriveRoot = true;
           parentIds = [];
           break;
         }
@@ -136,6 +143,7 @@ export const resolveDriveFilePaths = async (options: {
         (accessibleParent.parents?.length ?? 0) === 0
       ) {
         rootKind = 'my-drive';
+        hasReachedMyDriveRoot = true;
         break;
       }
 
@@ -151,6 +159,9 @@ export const resolveDriveFilePaths = async (options: {
     return {
       rootKind,
       path: pathFromFileToRoot.reverse(),
+      ...(hasReachedMyDriveRoot && pathFromFileToRoot.length === 0
+        ? { isAtMyDriveRoot: true as const }
+        : {}),
     };
   };
 

@@ -6,6 +6,7 @@ import {
   resolveDriveFilePaths,
   type DrivePathSegment,
 } from './drive-path-resolver';
+import { MY_DRIVE_ROOT_LOCATION } from './drive-file-queries';
 import {
   resolveAvailabilityReason,
   type DriveFileMetadata,
@@ -68,6 +69,20 @@ export const resolveCurrentDriveSourceLocation = async (options: {
     });
     const resolvedPath = resolvedPaths.get(metadata.id);
     const parentSegment = resolvedPath?.path[resolvedPath.path.length - 1];
+
+    // A file directly in My Drive has no folder segment; its location is My
+    // Drive itself.
+    if (resolvedPath?.isAtMyDriveRoot) {
+      return {
+        status: 'resolved',
+        location: {
+          rootKind: 'my-drive',
+          parentFolderId: MY_DRIVE_ROOT_LOCATION.id,
+          parentFolderName: MY_DRIVE_ROOT_LOCATION.name,
+          path: [],
+        },
+      };
+    }
 
     if (!resolvedPath || !parentSegment) {
       return { status: 'unresolved', reason: 'no-accessible-parent' };

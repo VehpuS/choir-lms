@@ -266,4 +266,44 @@ describe('resolveCurrentDriveSourceLocation', () => {
       (error: unknown) => error instanceof Error && error.name === 'AbortError',
     );
   });
+
+  it('resolves a file directly in My Drive to My Drive itself', async () => {
+    globalThis.fetch = async (input) => {
+      assert.equal(getRequestedFileId(input), 'track');
+      return Response.json(createFile('track', ['root']));
+    };
+
+    const result = await resolveCurrentDriveSourceLocation({
+      accessToken: 'drive-token',
+      driveFileId: 'track',
+    });
+
+    assert.deepEqual(result, {
+      status: 'resolved',
+      location: {
+        parentFolderId: 'root',
+        parentFolderName: 'My Drive',
+        path: [],
+        rootKind: 'my-drive',
+      },
+    });
+  });
+
+  it('still reports no accessible parent when the parent folder cannot be read', async () => {
+    globalThis.fetch = async (input) => {
+      return getRequestedFileId(input) === 'track'
+        ? Response.json(createFile('track', ['hidden-folder']))
+        : new Response('{}', { status: 404 });
+    };
+
+    const result = await resolveCurrentDriveSourceLocation({
+      accessToken: 'drive-token',
+      driveFileId: 'track',
+    });
+
+    assert.deepEqual(result, {
+      status: 'unresolved',
+      reason: 'no-accessible-parent',
+    });
+  });
 });
