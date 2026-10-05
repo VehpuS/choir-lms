@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { SafeAreaView, View } from 'react-native';
 
+import { PinnedBulkActionBarHost } from '../../../library/selection/pinned-bulk-action-bar-host';
 import { useSavedTrackPlayback } from '../../../library/playback/hooks/use-saved-track-playback';
 import type { SavedTrackPlaybackState } from '../../../library/playback/utils/saved-track-playback-view-model';
 import type { PlaylistPlaybackSession } from '../../../library/playlists/utils/saved-playlist-playback-view-model';
@@ -210,24 +211,26 @@ export const MobileShell = ({
         })}
       </View>
 
-      <MobileShellMiniPlayerDock
-        activeDestination={activeDestination}
-        activePlayableItem={activePlayableItem}
-        downloadLabel={playbackDownloadLabel}
-        isPlaybackLoading={isPlaybackPreparing}
-        isPlaybackToggleDisabled={isPlaybackToggleDisabled}
-        miniPlayerSummary={miniPlayerSummary}
-        onOpenNowPlaying={() => {
-          setActivePlaybackSurface('now-playing');
-        }}
-        onSelectDestination={(destination) => {
-          onCloseTagDetail();
-          setActiveDestination(destination);
-        }}
-        onTogglePlayback={onTogglePlayback}
-        playbackState={playbackState}
-        playbackToggleLabel={playbackToggleLabel}
-      />
+      <PinnedBulkActionBarHost>
+        <MobileShellMiniPlayerDock
+          activeDestination={activeDestination}
+          activePlayableItem={activePlayableItem}
+          downloadLabel={playbackDownloadLabel}
+          isPlaybackLoading={isPlaybackPreparing}
+          isPlaybackToggleDisabled={isPlaybackToggleDisabled}
+          miniPlayerSummary={miniPlayerSummary}
+          onOpenNowPlaying={() => {
+            setActivePlaybackSurface('now-playing');
+          }}
+          onSelectDestination={(destination) => {
+            onCloseTagDetail();
+            setActiveDestination(destination);
+          }}
+          onTogglePlayback={onTogglePlayback}
+          playbackState={playbackState}
+          playbackToggleLabel={playbackToggleLabel}
+        />
+      </PinnedBulkActionBarHost>
 
       <MobileShellPlaybackSurface
         activePlayableItem={activePlayableItem}

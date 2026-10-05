@@ -19,6 +19,7 @@ import { LibraryScreenHeader } from './library-screen-header';
 import type { LibraryScreenProps } from './library-screen-types';
 import { useLibraryFilesSessionRestoration } from './use-library-files-session-restoration';
 import { useLibraryScreenScrollCoordination } from './use-library-screen-scroll-coordination';
+import { scrollGutterStyles } from '../../components/scroll-gutter';
 
 const SUCCESS_ACKNOWLEDGMENT_AUTO_DISMISS_MS = 5000;
 
@@ -134,6 +135,7 @@ export const LibraryScreen = ({
         ref={scrollCoordination.scrollViewRef}
         contentContainerStyle={[
           styles.content,
+          scrollGutterStyles.content,
           browseCreateDockMode !== null ? styles.contentWithCreateDock : null,
         ]}
         onContentSizeChange={scrollCoordination.handleContentSizeChange}
@@ -142,7 +144,7 @@ export const LibraryScreen = ({
         scrollEnabled={!scrollCoordination.isPlaylistReorderDragActive}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        style={styles.scrollView}
+        style={[styles.scrollView, scrollGutterStyles.scrollView]}
       >
         <LoopPreviewPlaybackContext.Provider
           value={{

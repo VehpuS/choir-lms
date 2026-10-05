@@ -16,9 +16,13 @@ import {
   hasExplorerTrailingControls,
   interleaveExplorerRowSeparators,
   resolveExplorerBreadcrumbItems,
+  resolveExplorerRowSelection,
   type ExplorerBreadcrumbItem,
+  type ExplorerRowSelection,
 } from './model';
 import { explorerStyles as styles } from './styles';
+
+const SELECTION_GLYPH_SIZE = 20;
 
 type ExplorerBreadcrumbBarProps = {
   items: ExplorerBreadcrumbItem[];
@@ -34,6 +38,8 @@ type ExplorerListRowProps = {
   metadata?: ReactNode;
   onPress?: () => void;
   overflowTrigger?: ReactNode;
+  /** Multiple-selection wiring; rows without it are not selectable. */
+  selection?: ExplorerRowSelection;
   selected?: boolean;
   style?: StyleProp<ViewStyle>;
   title: ReactNode;
@@ -164,22 +170,44 @@ export const ExplorerListRow = ({
   leadingIcon,
   message,
   metadata,
-  onPress,
+  onPress: onRowPress,
   overflowTrigger,
   selected,
+  selection,
   style,
   title,
   trailingAccessory,
 }: ExplorerListRowProps) => {
+  const resolvedSelection = resolveExplorerRowSelection(selection, onRowPress);
+  const { onLongPress, onPress, role: pressableRole } = resolvedSelection;
   const isInteractive = !disabled && onPress !== undefined;
-  const hasTrailingControls = hasExplorerTrailingControls(
-    actions,
-    overflowTrigger,
-  );
+  const hasTrailingControls =
+    !resolvedSelection.hidesTrailingControls &&
+    hasExplorerTrailingControls(actions, overflowTrigger);
+  const isSelected = resolvedSelection.glyph
+    ? resolvedSelection.isMarked
+    : selected;
+  const selectionProps = {
+    accessibilityRole: pressableRole,
+    accessibilityState:
+      isSelected === undefined ? undefined : { selected: isSelected },
+    'aria-checked': resolvedSelection.ariaChecked,
+    onLongPress: disabled ? undefined : onLongPress,
+  };
 
   const rowBody = (
     <>
-      <View style={styles.rowLeadingIcon}>{leadingIcon}</View>
+      <View style={styles.rowLeadingIcon}>
+        {resolvedSelection.glyph ? (
+          <AppIcon
+            color={resolvedSelection.glyph.color}
+            name={resolvedSelection.glyph.name}
+            size={SELECTION_GLYPH_SIZE}
+          />
+        ) : (
+          leadingIcon
+        )}
+      </View>
       <View style={styles.rowCopy}>
         {title}
         {metadata}
@@ -195,14 +223,16 @@ export const ExplorerListRow = ({
     style,
   ];
   // Active rows are marked by a short accent line, never a background fill.
-  const activeMark = active ? <View style={styles.rowActiveMark} /> : null;
+  const activeMark =
+    active || resolvedSelection.isMarked ? (
+      <View style={styles.rowActiveMark} />
+    ) : null;
 
   if (!hasTrailingControls) {
     return (
       <Pressable
         accessibilityLabel={accessibilityLabel}
-        accessibilityRole="button"
-        accessibilityState={selected === undefined ? undefined : { selected }}
+        {...selectionProps}
         disabled={!isInteractive}
         onPress={onPress}
         style={({ pressed }) => [
@@ -221,8 +251,7 @@ export const ExplorerListRow = ({
       {activeMark}
       <Pressable
         accessibilityLabel={accessibilityLabel}
-        accessibilityRole="button"
-        accessibilityState={selected === undefined ? undefined : { selected }}
+        {...selectionProps}
         disabled={!isInteractive}
         onPress={onPress}
         style={({ pressed }) => [

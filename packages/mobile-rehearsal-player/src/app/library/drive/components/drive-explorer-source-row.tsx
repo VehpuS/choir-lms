@@ -24,7 +24,7 @@ import {
   DRIVE_ROW_TITLE_LINES,
   driveExplorerListStyles as styles,
 } from './drive-explorer-list-styles';
-import { getDriveRowSelectionGlyph } from './drive-explorer-row-model';
+import { getRowSelectionGlyph } from '../../components/explorer/model';
 import { getDriveRowSavePillAppearance } from './drive-row-save-pill-model';
 
 // A full, untruncated file name in the options sheet title, so long Drive
@@ -62,7 +62,7 @@ const getLeadingGlyph = (options: {
   isSelected?: boolean;
 }) => {
   if (options.isSelected !== undefined) {
-    return getDriveRowSelectionGlyph(options.isSelected);
+    return getRowSelectionGlyph(options.isSelected);
   }
 
   return {

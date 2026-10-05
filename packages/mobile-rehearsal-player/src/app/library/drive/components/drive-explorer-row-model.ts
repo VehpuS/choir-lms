@@ -1,8 +1,5 @@
 import type { DriveDiscoveryResult } from '@org/google-drive';
 
-import type { AppIconName } from '../../../components/app-icon';
-import { appTheme } from '../../../utils/theme';
-
 import {
   getBrowseFolderMetadataLabels,
   getBrowseSourceMetadataLabels,
@@ -105,22 +102,4 @@ export const createDriveSearchResultRows = (options: {
       source: result,
     };
   });
-};
-
-type DriveRowSelectionGlyph = {
-  color: string;
-  name: AppIconName;
-};
-
-/**
- * Selection-mode glyph for a Drive row (design Decision 8): an empty circle,
- * or a filled check in the accent. The shape change carries the state, so it
- * never rests on color alone; the row also accents its title and active mark.
- */
-export const getDriveRowSelectionGlyph = (
-  isSelected: boolean,
-): DriveRowSelectionGlyph => {
-  return isSelected
-    ? { color: appTheme.colors.accent, name: 'check-circle' }
-    : { color: appTheme.colors.icon, name: 'circle-outline' };
 };

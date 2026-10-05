@@ -31,6 +31,7 @@ import {
   createDriveTrackSavedFeedback,
   resolveTrackSaveDetection,
 } from './drive-track-saved-feedback';
+import { scrollGutterStyles } from '../../components/scroll-gutter';
 
 const DISMISS_LABEL = 'Dismiss';
 
@@ -222,9 +223,9 @@ export const AddScreen = ({
         </View>
       ) : null}
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, scrollGutterStyles.content]}
         showsVerticalScrollIndicator={false}
-        style={styles.scrollView}
+        style={[styles.scrollView, scrollGutterStyles.scrollView]}
       >
         {isLocatingShowInAddFolder ? (
           <AsyncActionStatusCard

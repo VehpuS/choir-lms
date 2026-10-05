@@ -11,7 +11,6 @@ import {
   createDriveBrowseSourceRows,
   createDriveSearchResultRows,
   getDriveExplorerRowSelectionState,
-  getDriveRowSelectionGlyph,
   resolveDriveDiscoveryResultFromRow,
 } from './drive-explorer-row-model.js';
 
@@ -194,16 +193,5 @@ describe('Drive explorer row model', () => {
       }),
       false,
     );
-  });
-
-  it('gives selected rows a filled accent check and unselected rows an empty circle', () => {
-    const selected = getDriveRowSelectionGlyph(true);
-    const unselected = getDriveRowSelectionGlyph(false);
-
-    assert.equal(selected.name, 'check-circle');
-    assert.equal(unselected.name, 'circle-outline');
-    // The glyph shape differs, so the state never rests on color alone.
-    assert.notEqual(selected.name, unselected.name);
-    assert.notEqual(selected.color, unselected.color);
   });
 });

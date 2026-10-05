@@ -24,6 +24,7 @@ import {
   getRecentsTagModuleVisibility,
 } from './screen-copy';
 import { recentsScreenStyles as styles } from './styles';
+import { scrollGutterStyles } from '../../components/scroll-gutter';
 
 export type RecentsScreenProps = {
   activePlayableItemId: string | null;
@@ -130,9 +131,9 @@ export const RecentsScreen = ({
         }
       />
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, scrollGutterStyles.content]}
         showsVerticalScrollIndicator={false}
-        style={styles.scrollView}
+        style={[styles.scrollView, scrollGutterStyles.scrollView]}
       >
         <View style={styles.sectionHead}>
           <Text style={styles.sectionTitle}>

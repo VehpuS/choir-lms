@@ -13,6 +13,7 @@ import { getDriveImportReviewHeaderCopy } from './screen-copy';
 import { ModePickerSection } from './mode-picker-section';
 import { SummaryCountsSection } from './summary-counts-section';
 import { useDriveImportReviewState } from './use-drive-import-review-state';
+import { scrollGutterStyles } from '../../components/scroll-gutter';
 
 type DriveImportReviewScreenProps = {
   authorization: DriveSessionMenuController;
@@ -79,8 +80,9 @@ export const DriveImportReviewScreen = ({
         }
       />
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, scrollGutterStyles.content]}
         showsVerticalScrollIndicator={false}
+        style={scrollGutterStyles.scrollView}
       >
         {headerMode === 'default' ? (
           <>
