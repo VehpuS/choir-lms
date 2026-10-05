@@ -13,7 +13,6 @@ import {
   type LibrarySearchEntityFilter,
   type TagFilterMatchMode,
 } from '../../search/utils/saved-library-search-view-model';
-import { groupAdjustedRows } from './group-adjusted-rows';
 import { folderContainsMatchingEntity } from './folder-contains-matching-entity';
 import {
   buildEntityNameByKey,
@@ -201,12 +200,10 @@ export const buildDefaultRows = (options: {
     ];
   });
 
-  return groupAdjustedRows(
-    sortRows({
-      openedAtByNodeKey: options.openedAtByNodeKey,
-      rows: [...childFolders, ...entityRows],
-      sortDirection: options.sortDirection,
-      sortMode: options.sortMode,
-    }),
-  );
+  return sortRows({
+    openedAtByNodeKey: options.openedAtByNodeKey,
+    rows: [...childFolders, ...entityRows],
+    sortDirection: options.sortDirection,
+    sortMode: options.sortMode,
+  });
 };

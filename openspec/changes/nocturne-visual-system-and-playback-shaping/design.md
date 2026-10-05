@@ -64,7 +64,7 @@ Speed carries `tempoSource: 'multiplier' | 'bpm' | 'score'`. Only `'multiplier'`
 
 - **Playback-engine capability is the gating risk (resolved at 5.0 for speed everywhere and pitch on web; native pitch remains open, 8.51).** If web cannot do pitch-preserving time-stretch at acceptable quality, speed/pitch may have to be native-only, which contradicts the GitHub Pages web build being a real target. Resolve at the task 5.0 gate before building UI.
 - **Breadth of the restyle.** Every screen changes. Mitigated by doing tokens first and a shared-primitive pass second, so most screens change by inheritance rather than by hand.
-- **Adjusted entities multiply library rows.** A singer who saves three speeds of one passage gets three rows. Mitigated by showing the transform in the row's meta line and grouping adjusted entities under their source in the Files tree; watch for whether this needs a collapse affordance.
+- **Adjusted entities multiply library rows.** A singer who saves three speeds of one passage gets three rows. Mitigated by showing the transform and source name in the row's meta line. Adjusted tracks and loops are ordinary top-level files in the Files tree, named independently (they can be renamed) and ordered only by the active sort; they are not grouped or indented under their source (user decision 2026-10-06, reversing the grouping first built in 6.6).
 
 ## Decision 8 — Surfaces without a mockup inherit primitives, not bespoke styling
 

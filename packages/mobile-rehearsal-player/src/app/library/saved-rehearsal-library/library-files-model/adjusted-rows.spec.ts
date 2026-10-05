@@ -10,7 +10,6 @@ import {
   type RehearsalLibraryFileLinkNode,
 } from '@org/audio-library-models';
 
-import { groupAdjustedRows } from './group-adjusted-rows';
 import {
   buildLoopRow,
   buildTrackRow,
@@ -109,67 +108,5 @@ describe('adjusted row meta', () => {
     });
 
     assert.equal(totalMs, 240_000 + 20_000);
-  });
-});
-
-describe('groupAdjustedRows', () => {
-  const kyrie = trackRow(source);
-  const gloria = trackRow(otherSource);
-  const adjustedKyrie = trackRow(adjustedTrack);
-  const adjustedKyrieLoop = loopRow(adjustedLoop, source);
-  const plainLoop = loopRow(
-    { ...adjustedLoop, id: 'loop-2', transform: undefined },
-    source,
-  );
-
-  const describeRows = (rows: LibraryFilesRow[]) =>
-    rows.map((row) => {
-      const id =
-        row.kind === 'track'
-          ? row.source.id
-          : row.kind === 'loop'
-            ? row.loop.id
-            : row.kind;
-
-      return `${id}${'groupedUnderSourceId' in row && row.groupedUnderSourceId ? '*' : ''}`;
-    });
-
-  it('moves adjusted tracks and then adjusted loops directly under their source, marked as grouped', () => {
-    assert.deepEqual(
-      describeRows(
-        groupAdjustedRows([
-          adjustedKyrieLoop,
-          gloria,
-          adjustedKyrie,
-          kyrie,
-          plainLoop,
-        ]),
-      ),
-      [
-        gloria.source.id,
-        kyrie.source.id,
-        `${adjustedKyrie.source.id}*`,
-        `${adjustedKyrieLoop.loop.id}*`,
-        plainLoop.loop.id,
-      ],
-    );
-  });
-
-  it('leaves an adjusted entity in place when its source is not in the listing', () => {
-    assert.deepEqual(
-      describeRows(
-        groupAdjustedRows([adjustedKyrie, gloria, adjustedKyrieLoop]),
-      ),
-      [adjustedKyrie.source.id, gloria.source.id, adjustedKyrieLoop.loop.id],
-    );
-  });
-
-  it('does not mutate the rows it is given', () => {
-    const rows = [adjustedKyrie, kyrie];
-
-    groupAdjustedRows(rows);
-
-    assert.equal('groupedUnderSourceId' in adjustedKyrie, false);
-    assert.deepEqual(rows, [adjustedKyrie, kyrie]);
   });
 });

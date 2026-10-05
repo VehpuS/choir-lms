@@ -54,8 +54,6 @@ export type LibraryFilesTrackRow = {
   /** Saved loops of this track, for the shared menu's `View track loops`. */
   loopCount?: number;
   message?: string;
-  /** Set on an adjusted track shown directly under its source track. */
-  groupedUnderSourceId?: string;
   source: DriveLibrarySource;
   supportingLabel: string;
 };
@@ -64,8 +62,6 @@ export type LibraryFilesLoopRow = {
   fileLink: RehearsalLibraryFileLinkNode;
   kind: 'loop';
   label: string;
-  /** Set on an adjusted loop shown directly under its source track. */
-  groupedUnderSourceId?: string;
   loop: NamedLoop;
   message?: string;
   playableItem: ReturnType<typeof createLoopPlayableItem> | null;

@@ -20,8 +20,6 @@ import { resolveFilesRowMenuTitle } from './files-row-actions';
 import type { SavedRehearsalLibraryFilesViewModel } from './files-view-model';
 
 const LEADING_GLYPH_SIZE = 20;
-// An adjusted entity sits indented under its source track (task 6.6).
-const GROUPED_ROW_INDENT = appTheme.space.lg;
 
 export const FilesExplorerList = (options: {
   createMenuActions: (
@@ -44,11 +42,6 @@ export const FilesExplorerList = (options: {
         return (
           <View key={viewModelRow.key}>
             <ExplorerListRow
-              style={
-                'groupedUnderSourceId' in row && row.groupedUnderSourceId
-                  ? { paddingLeft: GROUPED_ROW_INDENT }
-                  : undefined
-              }
               disabled={viewModelRow.disabled}
               leadingIcon={
                 <AppIcon

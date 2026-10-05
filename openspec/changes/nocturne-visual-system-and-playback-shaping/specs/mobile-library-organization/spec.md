@@ -21,10 +21,11 @@ Companion mockup state: design screen 1j shows an adjusted track in search resul
 - **WHEN** an adjusted entity appears in any list or result row
 - **THEN** the row shows its speed and pitch transform and identifies the source item it was derived from
 
-#### Scenario: Adjusted entities group under their source in the file tree
+#### Scenario: Adjusted entities are ordinary files ordered only by the active sort
 
-- **WHEN** one or more adjusted entities exist for the same source item
-- **THEN** the Files view keeps them associated with that source rather than scattering them as unrelated siblings
+- **WHEN** the Files view lists a folder that contains adjusted tracks or adjusted loops
+- **THEN** each one is a top-level row of its own kind, named by its own (possibly renamed) label
+- **AND** rows are ordered only by the active sort field and direction, with no grouping, nesting, or indentation under the source track
 
 #### Scenario: Adjusted entities reach their source's original Drive location
 
