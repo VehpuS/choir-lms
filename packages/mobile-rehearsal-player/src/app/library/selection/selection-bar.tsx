@@ -2,12 +2,23 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { OutlinedActionButton } from '../../components/outlined-action-button';
 import { appTheme } from '../../utils/theme';
-import { getSelectionCountLabel } from './bulk-action-model';
+import {
+  SELECTION_COPY,
+  getSelectAllToggleLabel,
+  getSelectionCountLabel,
+} from './selection-copy';
 
 type SelectionBarSecondaryAction = {
   isDisabled?: boolean;
   label: string;
   onPress: () => void;
+};
+
+type SelectionBarSelectAll = {
+  /** Every item of the set `Select all` covers is selected. */
+  isAllSelected: boolean;
+  isDisabled?: boolean;
+  onToggle: () => void;
 };
 
 type SelectionBarProps = {
@@ -17,7 +28,13 @@ type SelectionBarProps = {
   isBusy?: boolean;
   busyLabel?: string;
   onCancel: () => void;
-  /** An optional extra action such as `Select all matching` or `View selection`. */
+  /**
+   * The shared select-all toggle (`Select all` / `Deselect all`). Every
+   * surface passes this rather than its own secondary action so the wording
+   * and position stay identical.
+   */
+  selectAll?: SelectionBarSelectAll;
+  /** An optional extra action such as `View selection`. */
   secondaryAction?: SelectionBarSecondaryAction;
   selectedCount: number;
 };
@@ -30,6 +47,7 @@ export const SelectionBar = ({
   isBusy = false,
   onCancel,
   secondaryAction,
+  selectAll,
   selectedCount,
 }: SelectionBarProps) => {
   return (
@@ -42,6 +60,13 @@ export const SelectionBar = ({
         >
           {getSelectionCountLabel(selectedCount)}
         </Text>
+        {selectAll ? (
+          <OutlinedActionButton
+            disabled={selectAll.isDisabled}
+            label={getSelectAllToggleLabel(selectAll.isAllSelected)}
+            onPress={selectAll.onToggle}
+          />
+        ) : null}
         {secondaryAction ? (
           <OutlinedActionButton
             disabled={secondaryAction.isDisabled}
@@ -49,7 +74,10 @@ export const SelectionBar = ({
             onPress={secondaryAction.onPress}
           />
         ) : null}
-        <OutlinedActionButton label="Cancel" onPress={onCancel} />
+        <OutlinedActionButton
+          label={SELECTION_COPY.cancel}
+          onPress={onCancel}
+        />
       </View>
       {helperText || isBusy ? (
         <View style={styles.helperRow}>

@@ -10,6 +10,7 @@ import {
   splitBulkActions,
   type BulkAction,
 } from './bulk-action-model';
+import { SELECTION_COPY } from './selection-copy';
 
 const OVERFLOW_ICON_SIZE = 20;
 
@@ -76,7 +77,7 @@ export const BulkActionBar = ({
         ))}
         {overflow.length > 0 ? (
           <Pressable
-            accessibilityLabel="More actions"
+            accessibilityLabel={SELECTION_COPY.moreActions}
             accessibilityRole="button"
             onPress={() => {
               setIsOverflowVisible(true);

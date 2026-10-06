@@ -1,4 +1,5 @@
 import {
+  areAllSelected,
   deselectMany,
   selectMany,
   toggleSelection,
@@ -111,4 +112,37 @@ export const synchronizeSelectAll = <TItem>(
     pending: snapshot.isLoading ? pending : null,
     selection: selectMany(state.selection, nextEntries),
   };
+};
+
+// `Deselect all`: removes the context's own keys and ends the pending source
+// (or its next page would refill them). Items selected from other contexts stay.
+export const deselectContext = <TItem>(
+  state: SelectAllState<TItem>,
+  keys: readonly string[],
+): SelectAllState<TItem> => ({
+  pending: null,
+  selection: deselectMany(state.selection, keys),
+});
+
+// A pending select-all with nothing excluded counts as "all selected" so the
+// control does not flicker back to `Select all` between a page arriving and
+// the sync that selects it.
+export const isSelectAllComplete = <TItem>(
+  state: SelectAllState<TItem>,
+  snapshot: Pick<SelectAllSourceSnapshot<TItem>, 'contextKey' | 'entries'>,
+): boolean => {
+  const { pending } = state;
+
+  if (
+    pending !== null &&
+    pending.contextKey === snapshot.contextKey &&
+    pending.excludedKeys.size === 0
+  ) {
+    return true;
+  }
+
+  return areAllSelected(
+    state.selection,
+    snapshot.entries.map(({ key }) => key),
+  );
 };

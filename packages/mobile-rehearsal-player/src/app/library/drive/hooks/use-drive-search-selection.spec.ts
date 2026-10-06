@@ -3,53 +3,16 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import type {
-  DriveBrowseLocation,
-  DriveDiscoveryResult,
-} from '@org/google-drive';
 import { createElement } from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 
 import { useDriveSearchSelection } from './use-drive-search-selection.js';
-
-const ROOT_LOCATION: DriveBrowseLocation = {
-  id: 'root',
-  kind: 'root',
-  name: 'My Drive',
-  rootKind: 'my-drive',
-};
-
-const RESULTS: DriveDiscoveryResult[] = [
-  {
-    id: 'folder-warmups',
-    kind: 'folder',
-    name: 'Warmups',
-    rootKind: 'my-drive',
-    shared: false,
-  },
-  {
-    availability: { status: 'available' },
-    createdAt: '2026-09-16T00:00:00.000Z',
-    driveFileId: 'track-warmup',
-    id: 'track-warmup',
-    kind: 'audio',
-    mimeType: 'audio/mpeg',
-    name: 'Warmup.mp3',
-    provider: 'google-drive',
-    rootKind: 'my-drive',
-  },
-];
-
-type HarnessProps = {
-  activeQuery: string | null;
-  inputQuery: string;
-  isComplete: boolean;
-  isLoading: boolean;
-  location: DriveBrowseLocation;
-  results: DriveDiscoveryResult[];
-};
-
-type SelectionHook = ReturnType<typeof useDriveSearchSelection>;
+import {
+  RESULTS,
+  ROOT_LOCATION,
+  type HarnessProps,
+  type SelectionHook,
+} from './use-drive-search-selection-test-fixtures.js';
 
 (
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -76,7 +39,7 @@ describe('useDriveSearchSelection', () => {
         }),
       );
     });
-    act(() => hookResult.current?.selectAll());
+    act(() => hookResult.current?.toggleAll());
 
     assert.equal(hookResult.current?.isSelectingAll, true);
     assert.equal(hookResult.current?.selectedCount, 1);
@@ -182,7 +145,7 @@ describe('useDriveSearchSelection', () => {
     await act(async () => {
       renderer = create(createElement(Harness, loadingProps));
     });
-    act(() => hookResult.current?.selectAll());
+    act(() => hookResult.current?.toggleAll());
     assert.equal(hookResult.current?.isSelectingAll, true);
 
     await act(async () => {
@@ -221,7 +184,7 @@ describe('useDriveSearchSelection', () => {
         }),
       );
     });
-    act(() => hookResult.current?.selectAll());
+    act(() => hookResult.current?.toggleAll());
     assert.equal(hookResult.current?.selectedCount, 2);
 
     act(() => hookResult.current?.clear());
@@ -299,7 +262,7 @@ describe('useDriveSearchSelection', () => {
         }),
       );
     });
-    act(() => hookResult.current?.selectAll());
+    act(() => hookResult.current?.toggleAll());
     assert.equal(hookResult.current?.canSelectAll, false);
     assert.equal(hookResult.current?.selectedCount, 0);
 

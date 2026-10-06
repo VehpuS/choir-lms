@@ -51,6 +51,3 @@ export const resolveBulkActionPress = (
         message: action.disabledReason ?? FALLBACK_DISABLED_MESSAGE,
       }
     : { kind: 'run' };
-
-export const getSelectionCountLabel = (selectedCount: number): string =>
-  `${selectedCount} selected`;

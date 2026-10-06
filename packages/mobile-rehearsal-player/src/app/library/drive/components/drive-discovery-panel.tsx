@@ -16,7 +16,10 @@ import { DriveLibraryStatusCard } from './drive-library-status-card';
 import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { appTheme } from '../../../utils/theme';
 import type { BulkAction } from '../../selection/bulk-action-model';
-import { getSelectionCountLabel } from '../../selection/bulk-action-model';
+import {
+  SELECTION_COPY,
+  getSelectionCountLabel,
+} from '../../selection/selection-copy';
 import { SelectionBar } from '../../selection/selection-bar';
 import { usePinnedBulkActionBar } from '../../selection/use-pinned-bulk-action-bar';
 
@@ -51,7 +54,7 @@ export const DriveDiscoveryPanel = ({
           : 'Select at least one folder or audio file first.',
         id: 'continue',
         isDisabled: selection.selectedCount === 0 || selection.isSelectingAll,
-        label: 'Continue',
+        label: SELECTION_COPY.continue,
         onPress: selection.continueToReview,
         tone: 'accent',
       },
@@ -59,7 +62,7 @@ export const DriveDiscoveryPanel = ({
         disabledReason: 'Nothing is selected.',
         id: 'clear',
         isDisabled: selection.selectedCount === 0,
-        label: 'Clear',
+        label: SELECTION_COPY.clear,
         onPress: selection.clear,
       },
     ];
@@ -140,13 +143,14 @@ export const DriveDiscoveryPanel = ({
           }
           isBusy={selection.isSelectingAll}
           onCancel={selection.cancel}
-          secondaryAction={
+          selectAll={
             viewModel.isSearchMode
               ? {
+                  // Stays pressable while gathering so `Deselect all` can stop it.
+                  isAllSelected: selection.isAllSelected,
                   isDisabled:
-                    selection.isSelectingAll || !selection.canSelectAll,
-                  label: 'Select all matching',
-                  onPress: selection.selectAll,
+                    !selection.isAllSelected && !selection.canSelectAll,
+                  onToggle: selection.toggleAll,
                 }
               : undefined
           }
@@ -157,7 +161,10 @@ export const DriveDiscoveryPanel = ({
           <Text style={styles.entryHelper}>
             Choose folders and audio to import.
           </Text>
-          <OutlinedActionButton label="Select" onPress={selection.enter} />
+          <OutlinedActionButton
+            label={SELECTION_COPY.enter}
+            onPress={selection.enter}
+          />
         </View>
       ) : null}
       {viewModel.shouldShowLoadingRows ? (

@@ -5,7 +5,9 @@ import { describe, it } from 'node:test';
 
 import {
   createSelectAllState,
+  deselectContext,
   deselectWithSelectAll,
+  isSelectAllComplete,
   startSelectAll,
   synchronizeSelectAll,
   toggleWithSelectAll,
@@ -116,5 +118,49 @@ describe('select-all source', () => {
     const state = initialState();
 
     assert.equal(startSelectAll(state, snapshot(null, ['a'], false)), state);
+  });
+
+  it('deselects a context and ends its pending source but keeps other items', () => {
+    let state = startSelectAll(
+      createSelectAllState(
+        enterSelection(createSelectionState<Row>(), entries('z')[0]),
+      ),
+      snapshot('q', ['a', 'b'], true),
+    );
+
+    state = deselectContext(state, ['a', 'b']);
+    state = synchronizeSelectAll(state, snapshot('q', ['a', 'b', 'c'], false));
+
+    assert.equal(state.pending, null);
+    assert.deepEqual(selectedKeys(state), ['z']);
+  });
+
+  it('counts a pending select-all with nothing excluded as complete', () => {
+    const loading = snapshot('q', ['a', 'b'], true);
+    let state = startSelectAll(initialState(), loading);
+
+    assert.equal(isSelectAllComplete(state, loading), true);
+    // A page that has arrived but is not yet synced is still "all selected".
+    assert.equal(
+      isSelectAllComplete(state, snapshot('q', ['a', 'b', 'c'], true)),
+      true,
+    );
+
+    state = toggleWithSelectAll(state, entries('b')[0]);
+    assert.equal(isSelectAllComplete(state, loading), false);
+  });
+
+  it('is not complete for an empty result set or a different context', () => {
+    const state = startSelectAll(initialState(), snapshot('q', ['a'], true));
+
+    assert.equal(isSelectAllComplete(state, snapshot('q', [], false)), true);
+    assert.equal(
+      isSelectAllComplete(initialState(), snapshot('q', [], false)),
+      false,
+    );
+    assert.equal(
+      isSelectAllComplete(state, snapshot('other', ['x'], true)),
+      false,
+    );
   });
 });

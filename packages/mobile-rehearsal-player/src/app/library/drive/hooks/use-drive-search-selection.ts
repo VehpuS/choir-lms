@@ -6,6 +6,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   createSelectAllState,
+  deselectContext,
+  isSelectAllComplete,
   startSelectAll,
   synchronizeSelectAll,
   toggleWithSelectAll,
@@ -96,6 +98,9 @@ export const useDriveSearchSelection = (
     [selection],
   );
   const canSelect = contextKey !== null;
+  // `Select all` becomes `Deselect all` once every loaded result is selected.
+  const isAllSelected =
+    canSelect && isSelectAllComplete(state.selectAll, snapshot);
 
   const enter = useCallback(() => {
     if (!canSelect) {
@@ -152,9 +157,24 @@ export const useDriveSearchSelection = (
     }, []),
     enter,
     isActive: selection.isActive,
+    isAllSelected,
     isReviewReady: state.isReviewReady,
     isSelectingAll: pending !== null,
-    selectAll: useCallback(() => {
+    // The one select-all control: selects the whole result set, or removes it
+    // (and any still-gathering pages) while keeping the rest of the basket.
+    toggleAll: useCallback(() => {
+      if (isAllSelected) {
+        setState((current) => ({
+          ...current,
+          selectAll: deselectContext(
+            current.selectAll,
+            snapshot.entries.map(({ key }) => key),
+          ),
+        }));
+
+        return;
+      }
+
       if (!canSelect || (!isLoading && !isComplete)) {
         return;
       }
@@ -163,7 +183,7 @@ export const useDriveSearchSelection = (
         isReviewReady: false,
         selectAll: startSelectAll(current.selectAll, snapshot),
       }));
-    }, [canSelect, isComplete, isLoading, snapshot]),
+    }, [canSelect, isAllSelected, isComplete, isLoading, snapshot]),
     selectedCount: selection.items.size,
     selectedResultIds,
     selectedResults,

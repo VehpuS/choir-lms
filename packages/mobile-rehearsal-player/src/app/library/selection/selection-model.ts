@@ -106,3 +106,13 @@ export const isSelected = <TItem>(
 export const getSelectedItems = <TItem>(
   state: SelectionState<TItem>,
 ): TItem[] => [...state.items.values()];
+
+/** True when `keys` is non-empty and every one of them is selected. */
+export const areAllSelected = <TItem>(
+  state: SelectionState<TItem>,
+  keys: Iterable<string>,
+): boolean => {
+  const all = [...keys];
+
+  return all.length > 0 && all.every((key) => state.items.has(key));
+};

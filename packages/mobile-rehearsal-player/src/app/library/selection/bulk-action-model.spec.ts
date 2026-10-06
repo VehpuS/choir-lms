@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-  getSelectionCountLabel,
   resolveBulkActionPress,
   splitBulkActions,
   type BulkAction,
@@ -63,10 +62,5 @@ describe('bulk action model', () => {
     const outcome = resolveBulkActionPress(action('a', { isDisabled: true }));
 
     assert.equal(outcome.kind, 'explain');
-  });
-
-  it('labels the selection count', () => {
-    assert.equal(getSelectionCountLabel(0), '0 selected');
-    assert.equal(getSelectionCountLabel(4), '4 selected');
   });
 });

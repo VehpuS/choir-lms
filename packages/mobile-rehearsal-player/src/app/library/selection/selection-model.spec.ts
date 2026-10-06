@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  areAllSelected,
   cancelSelection,
   createSelectionState,
   deselectMany,
@@ -112,5 +113,14 @@ describe('selection model', () => {
     deselectMany(state, ['a']);
 
     assert.deepEqual([...state.items.keys()], ['a']);
+  });
+
+  it('reports all selected only for a non-empty set that is fully selected', () => {
+    const state = selectMany(activeState(), [entry('a'), entry('b')]);
+
+    assert.equal(areAllSelected(state, ['a', 'b']), true);
+    assert.equal(areAllSelected(state, ['a', 'b', 'c']), false);
+    assert.equal(areAllSelected(state, []), false);
+    assert.equal(areAllSelected(activeState(), ['a']), false);
   });
 });
