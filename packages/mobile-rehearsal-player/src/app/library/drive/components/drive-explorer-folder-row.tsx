@@ -4,7 +4,7 @@ import { appTheme } from '../../../utils/theme';
 import { ExplorerListRow } from '../../components/explorer/index';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import type { DriveLibraryFolder } from '../utils/drive-library-view-model';
-import { getRowSelectionGlyph } from '../../components/explorer/model';
+import type { ExplorerRowSelection } from '../../components/explorer/model';
 import {
   DRIVE_ROW_LEADING_GLYPH_SIZE,
   DRIVE_ROW_TITLE_LINES,
@@ -16,9 +16,9 @@ const CHEVRON_SIZE = 16;
 type DriveExplorerFolderRowProps = {
   folder: DriveLibraryFolder;
   highlightQuery: string | null;
-  isSelected?: boolean;
   metadataLabels: string[];
   onOpenFolder: (folder: DriveLibraryFolder) => void;
+  selection?: ExplorerRowSelection;
 };
 
 // An Add folder row (screen 1e): folder glyph, title, `Updated 3 Nov` meta,
@@ -27,23 +27,20 @@ type DriveExplorerFolderRowProps = {
 export const DriveExplorerFolderRow = ({
   folder,
   highlightQuery,
-  isSelected,
   metadataLabels,
   onOpenFolder,
+  selection,
 }: DriveExplorerFolderRowProps) => {
   const metadataLabel = metadataLabels.join(' · ');
-  const isSelectionMode = isSelected !== undefined;
-  const leadingGlyph = isSelectionMode
-    ? getRowSelectionGlyph(isSelected)
-    : { color: appTheme.colors.icon, name: 'folder-outline' as const };
+  const isSelectionMode = selection?.isActive ?? false;
+  const isSelected = isSelectionMode && selection?.isSelected;
 
   return (
     <ExplorerListRow
-      active={isSelected}
       leadingIcon={
         <AppIcon
-          color={leadingGlyph.color}
-          name={leadingGlyph.name}
+          color={appTheme.colors.icon}
+          name="folder-outline"
           size={DRIVE_ROW_LEADING_GLYPH_SIZE}
         />
       }
@@ -51,7 +48,7 @@ export const DriveExplorerFolderRow = ({
       onPress={() => {
         onOpenFolder(folder);
       }}
-      selected={isSelected}
+      selection={selection}
       title={
         <SearchHighlightedText
           numberOfLines={DRIVE_ROW_TITLE_LINES}

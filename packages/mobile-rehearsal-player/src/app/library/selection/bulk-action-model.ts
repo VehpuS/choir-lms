@@ -53,4 +53,4 @@ export const resolveBulkActionPress = (
     : { kind: 'run' };
 
 export const getSelectionCountLabel = (selectedCount: number): string =>
-  selectedCount === 0 ? 'Nothing selected' : `${selectedCount} selected`;
+  `${selectedCount} selected`;

@@ -27,19 +27,29 @@ export const BulkActionBar = ({
   overflowTitle,
 }: BulkActionBarProps) => {
   const [isOverflowVisible, setIsOverflowVisible] = useState(false);
-  const [explanation, setExplanation] = useState<string | null>(null);
+  const [explained, setExplained] = useState<{
+    id: string;
+    message: string;
+  } | null>(null);
   const { overflow, visible } = splitBulkActions(actions);
+  // The reason only stays up while its action is still disabled, so it never
+  // contradicts a selection that has since changed.
+  const explanation =
+    explained !== null &&
+    actions.some(({ id, isDisabled }) => id === explained.id && isDisabled)
+      ? explained.message
+      : null;
 
   const press = (action: BulkAction) => {
     const outcome = resolveBulkActionPress(action);
 
     if (outcome.kind === 'explain') {
-      setExplanation(outcome.message);
+      setExplained({ id: action.id, message: outcome.message });
 
       return;
     }
 
-    setExplanation(null);
+    setExplained(null);
     action.onPress();
   };
 

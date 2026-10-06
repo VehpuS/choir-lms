@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import { useMemo } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 import {
   ExplorerBreadcrumbBar,
@@ -12,23 +13,71 @@ import { resolveDriveDiscoveryResultFromRow } from './drive-explorer-row-model';
 import { DriveLibraryRootSelector } from './drive-library-root-selector';
 import { DriveLibrarySearchPanel } from './drive-library-search-panel';
 import { DriveLibraryStatusCard } from './drive-library-status-card';
-import { DriveSearchSelectionToolbar } from './drive-search-selection-toolbar';
+import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { appTheme } from '../../../utils/theme';
+import type { BulkAction } from '../../selection/bulk-action-model';
+import { getSelectionCountLabel } from '../../selection/bulk-action-model';
+import { SelectionBar } from '../../selection/selection-bar';
+import { usePinnedBulkActionBar } from '../../selection/use-pinned-bulk-action-bar';
 
 type DriveDiscoveryPanelProps = {
   controller: ReturnType<typeof useRehearsalLibraryController>;
+  /** Whether Add is the visible destination; the pinned bar only shows then. */
+  isDestinationActive: boolean;
   isSearchBarVisible: boolean;
   onToggleSearchBar: () => void;
 };
 
 export const DriveDiscoveryPanel = ({
   controller,
+  isDestinationActive,
   isSearchBarVisible,
   onToggleSearchBar,
 }: DriveDiscoveryPanelProps) => {
   const viewModel = buildDriveDiscoveryPanelViewModel({
     controller,
   });
+
+  const selection = controller.search.selection;
+  const bulkBar = useMemo(() => {
+    if (!selection.isActive || !isDestinationActive) {
+      return null;
+    }
+
+    const actions: BulkAction[] = [
+      {
+        disabledReason: selection.isSelectingAll
+          ? 'Still gathering matching results.'
+          : 'Select at least one folder or audio file first.',
+        id: 'continue',
+        isDisabled: selection.selectedCount === 0 || selection.isSelectingAll,
+        label: 'Continue',
+        onPress: selection.continueToReview,
+        tone: 'accent',
+      },
+      {
+        disabledReason: 'Nothing is selected.',
+        id: 'clear',
+        isDisabled: selection.selectedCount === 0,
+        label: 'Clear',
+        onPress: selection.clear,
+      },
+    ];
+
+    return {
+      actions,
+      overflowTitle: getSelectionCountLabel(selection.selectedCount),
+    };
+  }, [
+    isDestinationActive,
+    selection.clear,
+    selection.continueToReview,
+    selection.isActive,
+    selection.isSelectingAll,
+    selection.selectedCount,
+  ]);
+
+  usePinnedBulkActionBar(bulkBar);
 
   const searchPanel = (
     <DriveLibrarySearchPanel
@@ -76,20 +125,40 @@ export const DriveDiscoveryPanel = ({
           statusCopy={viewModel.activeStatusCopy}
         />
       ) : null}
-      {viewModel.isSearchMode ? (
-        <DriveSearchSelectionToolbar
-          canSelectAll={controller.search.selection.canSelectAll}
-          isActive={controller.search.selection.isActive}
-          isReviewReady={controller.search.selection.isReviewReady}
-          isSelectingAll={controller.search.selection.isSelectingAll}
-          onCancel={controller.search.selection.cancel}
-          onContinue={controller.search.selection.continueToReview}
-          onEdit={controller.search.selection.edit}
-          onEnter={controller.search.selection.enter}
-          onSelectAll={controller.search.selection.selectAll}
-          resultCount={viewModel.selectionResultCount}
-          selectedCount={controller.search.selection.selectedCount}
+      {selection.isActive ? (
+        // Shown wherever the basket is active, not only in search results: a
+        // scope change keeps the basket, and its count and `Cancel` must stay
+        // reachable (the basket view itself arrives with task 9.4).
+        <SelectionBar
+          busyLabel="Selecting all matching Drive results"
+          helperText={
+            selection.isSelectingAll
+              ? 'Selecting every matching result…'
+              : viewModel.isSearchMode
+                ? 'Tap any row to select or deselect it.'
+                : 'Your selection stays until you continue or cancel.'
+          }
+          isBusy={selection.isSelectingAll}
+          onCancel={selection.cancel}
+          secondaryAction={
+            viewModel.isSearchMode
+              ? {
+                  isDisabled:
+                    selection.isSelectingAll || !selection.canSelectAll,
+                  label: 'Select all matching',
+                  onPress: selection.selectAll,
+                }
+              : undefined
+          }
+          selectedCount={selection.selectedCount}
         />
+      ) : viewModel.isSearchMode && viewModel.selectionResultCount > 0 ? (
+        <View style={styles.entryRow}>
+          <Text style={styles.entryHelper}>
+            Choose folders and audio to import.
+          </Text>
+          <OutlinedActionButton label="Select" onPress={selection.enter} />
+        </View>
       ) : null}
       {viewModel.shouldShowLoadingRows ? (
         <View
@@ -104,15 +173,23 @@ export const DriveDiscoveryPanel = ({
           getActions={controller.getDriveSourceActions}
           getMessage={controller.getSourceMessage}
           highlightQuery={viewModel.highlightQuery}
-          isSelectionMode={controller.search.selection.isActive}
           onOpenFolder={viewModel.onOpenFolder}
-          onToggleSelection={(row) => {
-            controller.search.selection.toggle(
-              resolveDriveDiscoveryResultFromRow(row),
-            );
-          }}
           rows={viewModel.explorerRows}
-          selectedResultIds={controller.search.selection.selectedResultIds}
+          selection={
+            viewModel.isSearchMode
+              ? {
+                  isActive: selection.isActive,
+                  onEnter: (row) => {
+                    selection.enter();
+                    selection.toggle(resolveDriveDiscoveryResultFromRow(row));
+                  },
+                  onToggle: (row) => {
+                    selection.toggle(resolveDriveDiscoveryResultFromRow(row));
+                  },
+                  selectedIds: selection.selectedResultIds,
+                }
+              : undefined
+          }
         />
       )}
     </View>
@@ -122,6 +199,18 @@ export const DriveDiscoveryPanel = ({
 // Add sits on the ground like the Library views (screen 1e): no panel card.
 // A one-location breadcrumb would only repeat the navigation title.
 const styles = StyleSheet.create({
+  entryHelper: {
+    flex: 1,
+    color: appTheme.colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  entryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: appTheme.space.md,
+  },
   section: {
     gap: appTheme.space.md,
   },

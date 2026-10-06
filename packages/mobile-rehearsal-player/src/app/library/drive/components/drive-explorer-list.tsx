@@ -1,4 +1,5 @@
 import { ExplorerListSurface } from '../../components/explorer/index';
+import type { ExplorerRowSelection } from '../../components/explorer/model';
 import type { DriveLibrarySourceAction } from '../utils/drive-library-source-actions';
 import type {
   DriveLibraryFolder,
@@ -7,52 +8,67 @@ import type {
 
 import type { DriveDiscoveryExplorerRow } from './drive-discovery-panel-model';
 import { DriveExplorerFolderRow } from './drive-explorer-folder-row';
-import { getDriveExplorerRowSelectionState } from './drive-explorer-row-model';
 import { DriveExplorerSourceRow } from './drive-explorer-source-row';
 
 type DriveExplorerListProps = {
   getActions: (source: DriveLibrarySource) => DriveLibrarySourceAction[] | null;
   getMessage: (source: DriveLibrarySource) => string | undefined;
   highlightQuery?: string | null;
-  isSelectionMode?: boolean;
   onOpenFolder: (folder: DriveLibraryFolder) => void;
-  onToggleSelection?: (row: DriveDiscoveryExplorerRow) => void;
   rows: DriveDiscoveryExplorerRow[];
-  selectedResultIds?: ReadonlySet<string>;
+  /** Wires rows to the shared selection model; rows are not selectable without it. */
+  selection?: DriveExplorerListSelection;
+};
+
+export type DriveExplorerListSelection = {
+  isActive: boolean;
+  onEnter: (row: DriveDiscoveryExplorerRow) => void;
+  onToggle: (row: DriveDiscoveryExplorerRow) => void;
+  selectedIds: ReadonlySet<string>;
+};
+
+const getRowSelection = (
+  row: DriveDiscoveryExplorerRow,
+  selection: DriveExplorerListSelection | undefined,
+): ExplorerRowSelection | undefined => {
+  if (selection === undefined) {
+    return undefined;
+  }
+
+  return {
+    isActive: selection.isActive,
+    isSelected: selection.selectedIds.has(row.key),
+    onEnter: () => {
+      selection.onEnter(row);
+    },
+    onToggle: () => {
+      selection.onToggle(row);
+    },
+  };
 };
 
 export const DriveExplorerList = ({
   getActions,
   getMessage,
   highlightQuery,
-  isSelectionMode = false,
   onOpenFolder,
-  onToggleSelection,
   rows,
-  selectedResultIds,
+  selection,
 }: DriveExplorerListProps) => {
   return (
     <ExplorerListSurface>
       {rows.map((row) => {
-        const isSelected = getDriveExplorerRowSelectionState({
-          isSelectionMode,
-          row,
-          selectedResultIds,
-        });
-        const onSelect =
-          isSelectionMode && onToggleSelection
-            ? () => onToggleSelection(row)
-            : undefined;
+        const rowSelection = getRowSelection(row, selection);
 
         if (row.kind === 'folder') {
           return (
             <DriveExplorerFolderRow
               folder={row.folder}
               highlightQuery={row.highlightQuery}
-              isSelected={isSelected}
               key={row.key}
               metadataLabels={row.metadataLabels}
-              onOpenFolder={onSelect ?? onOpenFolder}
+              onOpenFolder={onOpenFolder}
+              selection={rowSelection}
             />
           );
         }
@@ -62,10 +78,9 @@ export const DriveExplorerList = ({
             getActions={getActions}
             getMessage={getMessage}
             highlightQuery={row.highlightQuery ?? highlightQuery}
-            isSelected={isSelected}
             key={row.key}
             metadataLabels={row.metadataLabels}
-            onToggleSelection={onSelect}
+            selection={rowSelection}
             source={row.source}
           />
         );

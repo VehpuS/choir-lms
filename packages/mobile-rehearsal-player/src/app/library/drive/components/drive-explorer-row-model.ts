@@ -64,18 +64,6 @@ export const resolveDriveDiscoveryResultFromRow = (
     : { ...row.source, kind: 'audio' };
 };
 
-export const getDriveExplorerRowSelectionState = (options: {
-  isSelectionMode: boolean;
-  row: DriveDiscoveryExplorerRow;
-  selectedResultIds?: ReadonlySet<string>;
-}): boolean | undefined => {
-  if (!options.isSelectionMode) {
-    return undefined;
-  }
-
-  return options.selectedResultIds?.has(options.row.key) ?? false;
-};
-
 export const createDriveSearchResultRows = (options: {
   now?: Date;
   query: string;

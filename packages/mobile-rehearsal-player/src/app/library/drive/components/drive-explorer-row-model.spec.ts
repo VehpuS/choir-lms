@@ -10,7 +10,6 @@ import {
   createDriveBrowseFolderRows,
   createDriveBrowseSourceRows,
   createDriveSearchResultRows,
-  getDriveExplorerRowSelectionState,
   resolveDriveDiscoveryResultFromRow,
 } from './drive-explorer-row-model.js';
 
@@ -150,48 +149,6 @@ describe('Drive explorer row model', () => {
     assert.deepEqual(
       resolveDriveDiscoveryResultFromRow(sourceRow),
       SEARCH_RESULTS[1],
-    );
-  });
-
-  it('only reports row selection state while selection mode is active', () => {
-    const [folderRow, sourceRow] = createDriveSearchResultRows({
-      query: 'warm',
-      results: SEARCH_RESULTS,
-    });
-
-    assert.ok(folderRow);
-    assert.ok(sourceRow);
-    assert.equal(
-      getDriveExplorerRowSelectionState({
-        isSelectionMode: false,
-        row: folderRow,
-        selectedResultIds: new Set([folderRow.key]),
-      }),
-      undefined,
-    );
-    assert.equal(
-      getDriveExplorerRowSelectionState({
-        isSelectionMode: true,
-        row: folderRow,
-        selectedResultIds: new Set([folderRow.key]),
-      }),
-      true,
-    );
-    assert.equal(
-      getDriveExplorerRowSelectionState({
-        isSelectionMode: true,
-        row: sourceRow,
-        selectedResultIds: new Set([folderRow.key]),
-      }),
-      false,
-    );
-    assert.equal(
-      getDriveExplorerRowSelectionState({
-        isSelectionMode: true,
-        row: sourceRow,
-        selectedResultIds: undefined,
-      }),
-      false,
     );
   });
 });

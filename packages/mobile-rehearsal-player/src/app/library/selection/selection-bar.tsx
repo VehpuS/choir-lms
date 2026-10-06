@@ -33,27 +33,36 @@ export const SelectionBar = ({
   selectedCount,
 }: SelectionBarProps) => {
   return (
-    <View style={styles.bar}>
-      <View style={styles.copy}>
-        <Text accessibilityLiveRegion="polite" style={styles.count}>
+    <View style={styles.container}>
+      <View style={styles.bar}>
+        <Text
+          accessibilityLiveRegion="polite"
+          numberOfLines={1}
+          style={styles.count}
+        >
           {getSelectionCountLabel(selectedCount)}
         </Text>
-        {helperText ? <Text style={styles.helper}>{helperText}</Text> : null}
+        {secondaryAction ? (
+          <OutlinedActionButton
+            disabled={secondaryAction.isDisabled}
+            label={secondaryAction.label}
+            onPress={secondaryAction.onPress}
+          />
+        ) : null}
+        <OutlinedActionButton label="Cancel" onPress={onCancel} />
       </View>
-      {isBusy ? (
-        <ActivityIndicator
-          accessibilityLabel={busyLabel}
-          color={appTheme.colors.accentText}
-        />
+      {helperText || isBusy ? (
+        <View style={styles.helperRow}>
+          {isBusy ? (
+            <ActivityIndicator
+              accessibilityLabel={busyLabel}
+              color={appTheme.colors.accentText}
+              size="small"
+            />
+          ) : null}
+          {helperText ? <Text style={styles.helper}>{helperText}</Text> : null}
+        </View>
       ) : null}
-      {secondaryAction ? (
-        <OutlinedActionButton
-          disabled={secondaryAction.isDisabled}
-          label={secondaryAction.label}
-          onPress={secondaryAction.onPress}
-        />
-      ) : null}
-      <OutlinedActionButton label="Cancel" onPress={onCancel} />
     </View>
   );
 };
@@ -64,14 +73,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: appTheme.space.sm,
   },
-  copy: {
-    flex: 1,
-    minWidth: 0,
-    gap: 2,
+  container: {
+    gap: appTheme.space.xs,
   },
   count: {
+    flex: 1,
+    minWidth: 0,
     ...appTheme.type.rowTitle,
     color: appTheme.colors.text,
+  },
+  helperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: appTheme.space.xs,
   },
   helper: {
     color: appTheme.colors.textSecondary,

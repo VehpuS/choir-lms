@@ -118,6 +118,7 @@ export const AddScreen = ({
   const renderedPanels = ADD_SCREEN_DRIVE_PANEL_ORDER.map((panelKey) => {
     return (
       <DriveDiscoveryPanel
+        isDestinationActive={isActive}
         controller={libraryController}
         isSearchBarVisible={isSearchBarVisible}
         key={panelKey}

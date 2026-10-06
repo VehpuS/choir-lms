@@ -99,7 +99,7 @@ describe('useDriveSearchSelection', () => {
     act(() => renderer.unmount());
   });
 
-  it('clears selection after query, root, and folder context changes', async () => {
+  it('keeps the basket after query, root, and folder context changes', async () => {
     const hookResult: { current: SelectionHook | null } = { current: null };
     const Harness = (props: HarnessProps) => {
       hookResult.current = useDriveSearchSelection(props);
@@ -146,19 +146,124 @@ describe('useDriveSearchSelection', () => {
         renderer.update(createElement(Harness, initialProps));
       });
       act(() => {
+        hookResult.current?.cancel();
         hookResult.current?.enter();
-        hookResult.current?.toggle(RESULTS[0]);
       });
+      act(() => hookResult.current?.toggle(RESULTS[0]));
       assert.equal(hookResult.current?.selectedCount, 1);
 
       await act(async () => {
         renderer.update(createElement(Harness, nextProps));
       });
 
-      assert.equal(hookResult.current?.isActive, false);
-      assert.equal(hookResult.current?.selectedCount, 0);
+      assert.equal(hookResult.current?.isActive, true);
+      assert.deepEqual(hookResult.current?.selectedResults, [RESULTS[0]]);
     }
 
+    act(() => renderer.unmount());
+  });
+
+  it('ends a pending select-all on a context change but keeps the pages it added', async () => {
+    const hookResult: { current: SelectionHook | null } = { current: null };
+    const Harness = (props: HarnessProps) => {
+      hookResult.current = useDriveSearchSelection(props);
+      return null;
+    };
+    const loadingProps: HarnessProps = {
+      activeQuery: 'Warmups',
+      inputQuery: 'Warmups',
+      isComplete: true,
+      isLoading: true,
+      location: ROOT_LOCATION,
+      results: RESULTS.slice(0, 1),
+    };
+    let renderer!: ReactTestRenderer;
+
+    await act(async () => {
+      renderer = create(createElement(Harness, loadingProps));
+    });
+    act(() => hookResult.current?.selectAll());
+    assert.equal(hookResult.current?.isSelectingAll, true);
+
+    await act(async () => {
+      renderer.update(
+        createElement(Harness, {
+          ...loadingProps,
+          activeQuery: 'Anthems',
+          inputQuery: 'Anthems',
+          results: [RESULTS[1]],
+        }),
+      );
+    });
+
+    assert.equal(hookResult.current?.isSelectingAll, false);
+    assert.deepEqual(hookResult.current?.selectedResults, [RESULTS[0]]);
+    act(() => renderer.unmount());
+  });
+
+  it('clears the basket but stays in selection mode, and cancel leaves it', async () => {
+    const hookResult: { current: SelectionHook | null } = { current: null };
+    const Harness = (props: HarnessProps) => {
+      hookResult.current = useDriveSearchSelection(props);
+      return null;
+    };
+    let renderer!: ReactTestRenderer;
+
+    await act(async () => {
+      renderer = create(
+        createElement(Harness, {
+          activeQuery: 'Warmups',
+          inputQuery: 'Warmups',
+          isComplete: true,
+          isLoading: false,
+          location: ROOT_LOCATION,
+          results: RESULTS,
+        }),
+      );
+    });
+    act(() => hookResult.current?.selectAll());
+    assert.equal(hookResult.current?.selectedCount, 2);
+
+    act(() => hookResult.current?.clear());
+    assert.equal(hookResult.current?.selectedCount, 0);
+    assert.equal(hookResult.current?.isActive, true);
+
+    act(() => hookResult.current?.cancel());
+    assert.equal(hookResult.current?.isActive, false);
+    act(() => renderer.unmount());
+  });
+
+  it('continues to review only with a selection and returns from review with edit', async () => {
+    const hookResult: { current: SelectionHook | null } = { current: null };
+    const Harness = (props: HarnessProps) => {
+      hookResult.current = useDriveSearchSelection(props);
+      return null;
+    };
+    let renderer!: ReactTestRenderer;
+
+    await act(async () => {
+      renderer = create(
+        createElement(Harness, {
+          activeQuery: 'Warmups',
+          inputQuery: 'Warmups',
+          isComplete: true,
+          isLoading: false,
+          location: ROOT_LOCATION,
+          results: RESULTS,
+        }),
+      );
+    });
+    act(() => hookResult.current?.enter());
+    act(() => hookResult.current?.continueToReview());
+    assert.equal(hookResult.current?.isReviewReady, false);
+
+    act(() => hookResult.current?.toggle(RESULTS[1]));
+    act(() => hookResult.current?.continueToReview());
+    assert.equal(hookResult.current?.isReviewReady, true);
+
+    act(() => hookResult.current?.edit());
+    assert.equal(hookResult.current?.isReviewReady, false);
+    assert.equal(hookResult.current?.selectedCount, 1);
     act(() => renderer.unmount());
   });
 

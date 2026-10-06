@@ -66,7 +66,7 @@ describe('bulk action model', () => {
   });
 
   it('labels the selection count', () => {
-    assert.equal(getSelectionCountLabel(0), 'Nothing selected');
+    assert.equal(getSelectionCountLabel(0), '0 selected');
     assert.equal(getSelectionCountLabel(4), '4 selected');
   });
 });

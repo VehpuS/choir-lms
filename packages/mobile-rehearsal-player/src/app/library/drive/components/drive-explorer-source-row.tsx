@@ -24,7 +24,7 @@ import {
   DRIVE_ROW_TITLE_LINES,
   driveExplorerListStyles as styles,
 } from './drive-explorer-list-styles';
-import { getRowSelectionGlyph } from '../../components/explorer/model';
+import type { ExplorerRowSelection } from '../../components/explorer/model';
 import { getDriveRowSavePillAppearance } from './drive-row-save-pill-model';
 
 // A full, untruncated file name in the options sheet title, so long Drive
@@ -35,9 +35,8 @@ type DriveExplorerSourceRowProps = {
   getActions: (source: DriveLibrarySource) => DriveLibrarySourceAction[] | null;
   getMessage: (source: DriveLibrarySource) => string | undefined;
   highlightQuery?: string | null;
-  isSelected?: boolean;
   metadataLabels: string[];
-  onToggleSelection?: () => void;
+  selection?: ExplorerRowSelection;
   source: DriveLibrarySource;
 };
 
@@ -57,17 +56,10 @@ const getMenuTone = (tone: DriveLibrarySourceAction['tone']) => {
       : ('secondary' as const);
 };
 
-const getLeadingGlyph = (options: {
-  isPlayable: boolean;
-  isSelected?: boolean;
-}) => {
-  if (options.isSelected !== undefined) {
-    return getRowSelectionGlyph(options.isSelected);
-  }
-
+const getLeadingGlyph = (isPlayable: boolean) => {
   return {
     color: appTheme.colors.icon,
-    name: options.isPlayable
+    name: isPlayable
       ? ('music-note-outline' as const)
       : ('file-outline' as const),
   };
@@ -116,16 +108,17 @@ export const DriveExplorerSourceRow = ({
   getActions,
   getMessage,
   highlightQuery,
-  isSelected,
   metadataLabels,
-  onToggleSelection,
+  selection,
   source,
 }: DriveExplorerSourceRowProps) => {
   const [isOptionsMenuVisible, setIsOptionsMenuVisible] = useState(false);
+  const isSelectionMode = selection?.isActive ?? false;
+  const isSelected = isSelectionMode && selection?.isSelected;
   const isPlayable = source.availability.status === 'available';
   const actions = useMemo(() => {
-    return onToggleSelection ? [] : (getActions(source) ?? []);
-  }, [getActions, onToggleSelection, source]);
+    return isSelectionMode ? [] : (getActions(source) ?? []);
+  }, [getActions, isSelectionMode, source]);
   const inlineActions = actions.filter((action) => {
     return resolveDriveLibrarySourceActionPlacement(action) === 'inline';
   });
@@ -140,12 +133,11 @@ export const DriveExplorerSourceRow = ({
   });
   const externalMessage = isPlayable ? getMessage(source) : undefined;
   const metadataLabel = metadataLabels.join(' · ');
-  const leadingGlyph = getLeadingGlyph({ isPlayable, isSelected });
+  const leadingGlyph = getLeadingGlyph(isPlayable);
 
   return (
     <>
       <ExplorerListRow
-        active={isSelected}
         actions={
           playbackAction || saveAction ? (
             <View style={styles.trailingActions}>
@@ -164,7 +156,7 @@ export const DriveExplorerSourceRow = ({
             </View>
           ) : null
         }
-        disabled={!isPlayable && !onToggleSelection}
+        disabled={!isPlayable && !isSelectionMode}
         leadingIcon={
           <AppIcon
             color={leadingGlyph.color}
@@ -181,10 +173,9 @@ export const DriveExplorerSourceRow = ({
         }
         metadata={metadataLabel ? <RowMetaLine text={metadataLabel} /> : null}
         onPress={
-          onToggleSelection ??
-          (playbackAction && !playbackAction.disabled
+          playbackAction && !playbackAction.disabled
             ? playbackAction.onPress
-            : undefined)
+            : undefined
         }
         overflowTrigger={
           menuActions.length > 0 ? (
@@ -197,7 +188,7 @@ export const DriveExplorerSourceRow = ({
             />
           ) : null
         }
-        selected={isSelected}
+        selection={selection}
         title={
           <SearchHighlightedText
             numberOfLines={DRIVE_ROW_TITLE_LINES}
