@@ -11,18 +11,26 @@ The system SHALL let users select mixed Drive search results individually or sel
 - **AND** the interface shows the current selection count and actions to cancel or continue
 - **AND** canceling selection leaves the search query and result context intact
 
-#### Scenario: Select all matching includes every paginated result
+#### Scenario: Select all includes every paginated result
 
-- **WHEN** a user chooses `Select all matching`
+- **WHEN** a user chooses `Select all` while viewing Drive search results
 - **THEN** the system prepares and selects the complete result set for the active Drive query and scope across every result page
 - **AND** the user can deselect individual results before continuing
 - **AND** the control does not mean only the currently rendered or first-page rows
 
+#### Scenario: The select-all control becomes Deselect all once everything is selected
+
+- **WHEN** every result of the active Drive query and scope that is loaded so far is selected, whether by `Select all` or by selecting rows one by one
+- **THEN** the same control reads `Deselect all`, and choosing it removes those results from the basket
+- **AND** if results are still being gathered, choosing it also stops the gathering, so no later page re-selects them
+- **AND** basket items that came from other searches or folders stay selected, and the basket-wide `Clear` action remains the way to empty everything
+- **AND** deselecting any one result, or a later page of results arriving, returns the control to `Select all`
+
 #### Scenario: Search context change keeps explicit selections and ends a pending select-all
 
 - **WHEN** a user changes the active query, Drive root, search scope, or browsed folder while results are selected
-- **THEN** the system keeps every result already in the basket, including results added by a completed `Select all matching`, and continues to show the basket count
-- **AND** a `Select all matching` still gathering pages for the previous query stops, keeps the results it had already added, and does not add results from the new context
+- **THEN** the system keeps every result already in the basket, including results added by a completed `Select all`, and continues to show the basket count
+- **AND** a `Select all` still gathering pages for the previous query stops, keeps the results it had already added, and does not add results from the new context
 - **AND** the basket view shows each kept result with its containing Drive path, so nothing is imported that the user cannot see and deselect
 
 #### Scenario: Mixed selection collapses overlapping descendants

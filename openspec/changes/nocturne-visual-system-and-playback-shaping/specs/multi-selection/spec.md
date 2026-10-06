@@ -24,6 +24,14 @@ Companion mockup states: none yet. Task 9.0 produces or confirms them before imp
 - **THEN** the system shows the number of selected items in a live region, a `Cancel` action that leaves selection mode, and a pinned bulk-action bar at the bottom of the screen whose actions reflect the current selection
 - **AND** bulk actions that cannot act on any selected item are hidden, and actions that are disabled for the current selection explain why when chosen or focused
 
+#### Scenario: One control selects and deselects everything in the list
+
+- **WHEN** selection mode is active in a list whose full set is known (Add's Drive search results, or a Library view after its filters and search)
+- **THEN** the selection bar offers `Select all`, which selects every item of that set
+- **AND** once every item of that set is selected, the same control reads `Deselect all` and removes those items from the selection
+- **AND** deselecting any one item, or the set growing, returns the control to `Select all`
+- **AND** `Deselect all` leaves items selected from other contexts in place, and the count and any pending gathering of results update at once
+
 #### Scenario: Leaving selection mode
 
 - **WHEN** a user chooses `Cancel`, completes a bulk action that ends the selection, or leaves the destination

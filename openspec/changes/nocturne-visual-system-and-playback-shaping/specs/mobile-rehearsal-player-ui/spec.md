@@ -67,7 +67,7 @@ Companion mockup states: none of these surfaces has its own state. Closest refer
 #### Scenario: Drive search selection mode is restyled without reducing it
 
 - **WHEN** a user enters selection mode from Drive search results in Add
-- **THEN** each selectable folder and audio row shows its selected or unselected state with a dedicated glyph plus the row's active title treatment rather than color alone, and the selection count, `Select All Matching`, `Cancel`, `Continue`, and `Edit Selection` controls remain present with their existing behavior
+- **THEN** each selectable folder and audio row shows its selected or unselected state with a dedicated glyph plus the row's active title treatment rather than color alone, and the selection count, `Select all` (which becomes `Deselect all` once every loaded result is selected), `Cancel`, `Continue`, and `Edit Selection` controls remain present with their existing behavior
 - **AND** folder results and audio results keep their containing Drive path on the row's muted meta line, with matched query text highlighted as in design screen 1j
 
 #### Scenario: Browsing from a folder search result keeps its return action
