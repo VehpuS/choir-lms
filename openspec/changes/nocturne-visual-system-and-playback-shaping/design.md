@@ -119,6 +119,24 @@ Decided by the user (2026-10-01), after the loop editor (tasks 3.4 / 8.45) and A
 - A surface never shows the previous location's content under the new location's title.
 - Where data already exists (cached or just seen), it is shown first and refreshed behind, so going back is instant.
 
+## Decision 14 — Add's search reports one status line, in one place
+
+Raised by the user (2026-10-06), after 9.3 verification showed the search status card moving the whole list.
+
+- A Drive search shows its summary (`36 folders · 12 tracks`, in the same form whether or not discovery has finished) as a single line at the top of the results, above the first row, from the first page of results until the search ends. While discovery is still running, the line carries a small inline indicator and nothing else; when it ends the indicator goes away and the line stays. An incomplete or failed discovery changes that same line (a short reason and a retry), not a separate card.
+- The `Loading more results` card (title, count message, `Complete Drive discovery is still in progress.`, spinner row) is removed. It repeated the first-load card's `Searching Google Drive…` and, by appearing and disappearing, moved the list by over a hundred points (Decision 13 forbids exactly this). The first-load state before any result exists uses the same fixed slot, not a different card.
+- The search field sits below the `My Drive` / `Shared folders` switcher, so the scope it searches is implied by where it is. The `Search in My Drive` helper line above the field is removed, and the placeholder stops restating the scope (the field keeps an accessible name that does name the scope, for screen readers).
+- The summary line is also where the selection basket's `Select all` operates (Decision 9); it does not move when selection mode starts.
+
+## Decision 15 — Interface copy is sentence case
+
+Raised by the user (2026-10-06): casing is inconsistent (`Edit Selection`, `All Files`, `Loading Files`, `Library Files unavailable` beside `Remove from library`, `Preserve structure`) and must be one explicit rule, enforced.
+
+- **Rule.** Every piece of interface text — buttons, row and menu actions, titles, section and sheet headings, chips, placeholders, status and error messages, helper text, and accessibility labels — is written in sentence case: the first word is capitalized and everything else is lowercase unless it is a proper name.
+- **Proper names that keep their capitals:** the product's destinations and the places it names (`Library`, `Add`, `Recents`), Google's own names (`Google Drive`, `Drive`, `My Drive`), and names the user or a file supplies (file names, folder names, playlist and loop names, tags). A generic noun after a proper name stays lowercase (`Library files unavailable`, `Shared folders`, `Drive browser`). Whether `Library` is a proper name in running copy (`Save to Library`) or a generic noun (`Remove from library`) is the one case the app currently does both ways; 10.0 settles it.
+- **All-caps is styling, not copy.** Kickers and eyebrows (`CURRENT FOLDER`) are sentence-case source text rendered with `textTransform: 'uppercase'`, so the copy stays in one form and tests, accessibility readers, and search see the same words.
+- **Enforcement.** Copy lives in the surface's copy module or a named constant where it can be reached (as `selection-copy.ts` already does); a spec-level guard scans the copy modules and JSX string props for two or more consecutive capitalized words that are not on a small proper-name allowlist, and fails the build on a new violation (the same shape as the raw-color guard from 1.2). The guard lists today's violations when it is introduced and the audit task fixes them before turning it on.
+
 ## Decisions for multiple selection (resolved at task 9.0, 2026-10-06)
 
 Decided by the user. No new mockups were drawn: selection states borrow 1e (Add rows and footer), 1h (two-action footer, review list) and 1j (Library rows and menus) per Decision 8; implementation tasks verify them in the browser.

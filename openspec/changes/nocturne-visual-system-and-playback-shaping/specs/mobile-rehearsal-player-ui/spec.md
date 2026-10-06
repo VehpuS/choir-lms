@@ -289,3 +289,45 @@ The system SHALL acknowledge every tap, press, and selection in the same frame, 
 
 - **WHEN** a user returns to a location whose content was loaded earlier in the session
 - **THEN** that content appears immediately and any refresh happens behind it without clearing it
+
+### Requirement: Drive search reports one stable status line and implies its scope by position
+
+The system SHALL show a Drive search's progress and result summary as one line in a fixed place above the results, and SHALL place the search field below the Drive root switcher so the scope it searches is implied rather than restated.
+
+#### Scenario: The summary stays at the top whether or not discovery has finished
+
+- **WHEN** a Drive search has returned its first results
+- **THEN** a single summary line above the first row states how many folders and tracks matched, in the same form while discovery is running and after it ends
+- **AND** while discovery is running the line carries a small inline indicator, and when it ends the indicator disappears without the line or the list moving
+
+#### Scenario: No separate loading card appears during or after a search
+
+- **WHEN** a Drive search is running, finishes, or ends incomplete
+- **THEN** the interface inserts no card or banner that moves the list; an incomplete or failed discovery is a short reason and a retry within the same summary line
+- **AND** the first-load state before any result exists uses the same fixed slot
+
+#### Scenario: The search field implies its scope
+
+- **WHEN** a user views Add with the search field open
+- **THEN** the field appears below the `My Drive` / `Shared folders` switcher and no helper line above it repeats the scope
+- **AND** the field's accessible name still states the scope for screen readers
+
+### Requirement: Interface copy is written in sentence case
+
+The system SHALL write all interface text in sentence case, capitalizing only the first word and proper names.
+
+#### Scenario: Labels, titles, and messages use sentence case
+
+- **WHEN** the interface shows a button, menu action, title, heading, chip, placeholder, status message, or accessibility label
+- **THEN** only its first word and any proper name in it are capitalized
+- **AND** proper names are the product's destinations (`Library`, `Add`, `Recents`), Google's names (`Google Drive`, `My Drive`), and names supplied by the user or a file
+
+#### Scenario: All-caps text is styling only
+
+- **WHEN** a kicker or eyebrow is shown in capitals
+- **THEN** its source text is sentence case and the capitals come from the text style, so the copy is identical in tests and to assistive technology
+
+#### Scenario: A new copy violation fails validation
+
+- **WHEN** a change adds interface copy with consecutive capitalized words that are not proper names
+- **THEN** the project's validation fails until the copy is corrected or the proper name is added to the reviewed allowlist
