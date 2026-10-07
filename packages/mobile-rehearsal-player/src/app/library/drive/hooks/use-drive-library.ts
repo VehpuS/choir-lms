@@ -95,6 +95,10 @@ export const useDriveLibrary = (
     onAuthorizationRequired,
     onClearIssue: clearIssue,
     onSearchRequested: () => {
+      // Loading starts in the same commit as the new query. Waiting for the
+      // discovery effect leaves one render with the query set, nothing loading
+      // and no results, which flashes the `No search results` card (Decision 13).
+      setIsLoading(true);
       setRefreshCount((currentValue) => currentValue + 1);
     },
   });

@@ -18,6 +18,8 @@ type ContextualSearchPanelProps = {
   canShowRecentSearchTerms?: boolean;
   clearActionLabel: string;
   helperCopy?: string;
+  /** Names the input for assistive tech when the placeholder alone does not. */
+  inputAccessibilityLabel?: string;
   isSearchBarVisible: boolean;
   isSubmitDisabled?: boolean;
   onClearSearch: () => void;
@@ -43,6 +45,7 @@ export const ContextualSearchPanel = ({
   canShowRecentSearchTerms = true,
   clearActionLabel,
   helperCopy,
+  inputAccessibilityLabel,
   isSearchBarVisible,
   isSubmitDisabled = false,
   onClearSearch,
@@ -146,6 +149,7 @@ export const ContextualSearchPanel = ({
             size={FIELD_ICON_SIZE}
           />
           <TextInput
+            accessibilityLabel={inputAccessibilityLabel}
             autoCapitalize="none"
             autoCorrect={false}
             onBlur={handleSearchInputBlur}

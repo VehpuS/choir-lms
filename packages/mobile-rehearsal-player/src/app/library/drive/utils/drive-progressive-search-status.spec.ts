@@ -35,10 +35,8 @@ describe('progressive Drive search status', () => {
     });
 
     assert.equal(copy.tone, 'neutral');
-    assert.equal(copy.title, 'Loading more results');
-    assert.equal(
-      copy.message,
-      '1 matching folder shown so far. Complete Drive discovery is still in progress.',
-    );
+    // Progress with results is the summary line's job, not a second card.
+    assert.equal(copy.title, 'Searching Google Drive');
+    assert.equal(copy.message, 'Matches appear as Drive is searched.');
   });
 });

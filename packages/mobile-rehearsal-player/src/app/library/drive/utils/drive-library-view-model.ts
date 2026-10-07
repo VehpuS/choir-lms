@@ -78,8 +78,6 @@ const getSearchResultCountLabel = (snapshot: DriveSearchSnapshot) => {
 const getDriveSearchScopeCopy = (location?: DriveBrowseLocation) => {
   if (!location) {
     return {
-      loadingMessage:
-        'Looking for matching audio across My Drive and shared folders.',
       readySuffix: 'across My Drive and shared folders',
     };
   }
@@ -88,13 +86,11 @@ const getDriveSearchScopeCopy = (location?: DriveBrowseLocation) => {
 
   if (location.kind === 'folder') {
     return {
-      loadingMessage: `Looking for matching audio in ${location.name} and nested folders.`,
       readySuffix: `in ${location.name} and nested folders`,
     };
   }
 
   return {
-    loadingMessage: `Looking for matching audio ${searchContext.helper.replace('Search ', '').toLowerCase()}.`,
     readySuffix: searchContext.helper.replace('Search ', '').toLowerCase(),
   };
 };
@@ -181,18 +177,13 @@ export const getDriveLibraryStatusCopy = (
   }
 
   if (options.activeSearchQuery) {
-    if (options.isLoading && searchResultCount === 0) {
-      return {
-        title: 'Searching Google Drive',
-        message: searchScopeCopy.loadingMessage,
-        tone: 'neutral',
-      };
-    }
-
+    // Progress is reported by the search summary line (design Decision 14),
+    // not a card, so there is one neutral loading state however many results
+    // have arrived.
     if (options.isLoading) {
       return {
-        title: 'Loading more results',
-        message: `${searchResultCountLabel} shown so far. Complete Drive discovery is still in progress.`,
+        title: 'Searching Google Drive',
+        message: 'Matches appear as Drive is searched.',
         tone: 'neutral',
       };
     }

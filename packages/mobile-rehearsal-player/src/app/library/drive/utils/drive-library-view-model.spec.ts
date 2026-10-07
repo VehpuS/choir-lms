@@ -216,10 +216,7 @@ describe('getDriveLibraryStatusCopy', () => {
 
     assert.equal(copy.tone, 'neutral');
     assert.equal(copy.title, 'Searching Google Drive');
-    assert.equal(
-      copy.message,
-      'Looking for matching audio in Music Archive and nested folders.',
-    );
+    assert.equal(copy.message, 'Matches appear as Drive is searched.');
   });
 });
 
@@ -284,7 +281,7 @@ describe('drive library search context copy', () => {
   it('shows My Drive scoped search copy at root', () => {
     assert.deepEqual(getDriveSearchContextCopy(BROWSE_SNAPSHOT.location), {
       helper: 'Search in My Drive',
-      placeholder: 'Search in My Drive',
+      placeholder: 'Search',
     });
   });
 
@@ -298,7 +295,7 @@ describe('drive library search context copy', () => {
       }),
       {
         helper: 'Search in Sectionals',
-        placeholder: 'Search in Sectionals',
+        placeholder: 'Search',
       },
     );
   });

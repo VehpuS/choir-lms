@@ -67,26 +67,31 @@ export const formatDurationLabel = (durationMs?: number) => {
   return `${minutes}:${formatDurationSegment(seconds)}`;
 };
 
+// The field's position under the root switcher implies its scope, so the
+// visible placeholder stays short; `helper` is the screen-reader name that
+// still says where it searches (design Decision 14).
+const DRIVE_SEARCH_PLACEHOLDER = 'Search';
+
 export const getDriveSearchContextCopy = (
   location: DriveBrowseLocation,
 ): SearchContextCopy => {
   if (location.kind === 'folder') {
     return {
       helper: `Search in ${location.name}`,
-      placeholder: `Search in ${location.name}`,
+      placeholder: DRIVE_SEARCH_PLACEHOLDER,
     };
   }
 
   if (location.rootKind === 'shared') {
     return {
       helper: 'Search in Shared folders',
-      placeholder: 'Search in Shared folders',
+      placeholder: DRIVE_SEARCH_PLACEHOLDER,
     };
   }
 
   return {
     helper: 'Search in My Drive',
-    placeholder: 'Search in My Drive',
+    placeholder: DRIVE_SEARCH_PLACEHOLDER,
   };
 };
 

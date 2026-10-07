@@ -5,7 +5,8 @@ import { ContextualSearchPanel } from '../../search/components/contextual-search
 
 type DriveLibrarySearchPanelProps = {
   canSearch: boolean;
-  helperCopy: string;
+  helperCopy?: string;
+  inputAccessibilityLabel?: string;
   isSearchBarVisible?: boolean;
   isLoading: boolean;
   onClearSearch: () => void;
@@ -23,6 +24,7 @@ type DriveLibrarySearchPanelProps = {
 export const DriveLibrarySearchPanel = ({
   canSearch,
   helperCopy,
+  inputAccessibilityLabel,
   isSearchBarVisible,
   isLoading,
   onClearSearch,
@@ -55,6 +57,7 @@ export const DriveLibrarySearchPanel = ({
       canShowRecentSearchTerms={canSearch && !isLoading}
       clearActionLabel="Browse folders"
       helperCopy={helperCopy}
+      inputAccessibilityLabel={inputAccessibilityLabel}
       isSearchBarVisible={resolvedIsSearchBarVisible}
       isSubmitDisabled={isSubmitDisabled}
       onClearSearch={onClearSearch}

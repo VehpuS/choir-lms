@@ -16,18 +16,29 @@ describe('drive discovery layout', () => {
     assert.deepEqual(ADD_SCREEN_DRIVE_PANEL_ORDER, ['discovery']);
   });
 
-  it('keeps search controls directly below breadcrumbs in discovery', () => {
+  it('keeps the search field directly below the root switcher', () => {
     assert.deepEqual(DRIVE_DISCOVERY_NAVIGATION_ORDER, [
       'root-selector',
-      'breadcrumbs',
       'search-control',
+      'breadcrumbs',
     ]);
   });
 
   it('keeps status-card visibility tied to loading and non-ready states', () => {
     assert.equal(shouldShowDriveStatusCard(false, 'ready', false), false);
     assert.equal(shouldShowDriveStatusCard(false, 'warning', false), true);
-    assert.equal(shouldShowDriveStatusCard(true, 'ready', true), true);
+    assert.equal(shouldShowDriveStatusCard(true, 'ready', true), false);
+  });
+
+  it('never shows a card above search results, running or finished', () => {
+    assert.equal(shouldShowDriveStatusCard(true, 'neutral', true, true), false);
+    assert.equal(shouldShowDriveStatusCard(false, 'error', true, true), false);
+    // A search with nothing to list still explains itself.
+    assert.equal(
+      shouldShowDriveStatusCard(false, 'neutral', true, false),
+      true,
+    );
+    assert.equal(shouldShowDriveStatusCard(false, 'error', true, false), true);
   });
 
   it('never inserts the status card above the list while browsing loads', () => {
@@ -35,8 +46,8 @@ describe('drive discovery layout', () => {
     assert.equal(shouldShowDriveStatusCard(true, 'ready', false), false);
   });
 
-  it('shows loading rows only for an empty browse list that is loading', () => {
-    const base = { isLoading: true, isSearchMode: false, rowCount: 0 };
+  it('shows loading rows only for an empty list that is loading', () => {
+    const base = { isLoading: true, rowCount: 0 };
 
     assert.equal(shouldShowDriveLoadingRows(base), true);
     assert.equal(shouldShowDriveLoadingRows({ ...base, rowCount: 3 }), false);
@@ -44,10 +55,8 @@ describe('drive discovery layout', () => {
       shouldShowDriveLoadingRows({ ...base, isLoading: false }),
       false,
     );
-    assert.equal(
-      shouldShowDriveLoadingRows({ ...base, isSearchMode: true }),
-      false,
-    );
+    // A search that has not produced its first row yet shows the same rows.
+    assert.equal(shouldShowDriveLoadingRows({ ...base }), true);
   });
 
   it('keeps unavailable groups visible only when unavailable sources exist', () => {

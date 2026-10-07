@@ -8,6 +8,10 @@ import {
   buildDriveDiscoveryExplorerState,
   type DriveDiscoveryExplorerState,
 } from './drive-discovery-panel-model';
+import {
+  getDriveSearchSummary,
+  type DriveSearchSummary,
+} from '../utils/drive-search-summary-model';
 
 export type DriveDiscoveryPanelViewModel = {
   activeStatusCopy: ReturnType<
@@ -25,6 +29,7 @@ export type DriveDiscoveryPanelViewModel = {
     typeof useRehearsalLibraryController
   >['discovery']['openFolder'];
   onReturnToSearchResults?: () => void;
+  searchSummary: DriveSearchSummary | null;
   selectionResultCount: number;
   shouldShowLoadingRows: boolean;
   shouldShowStatusCard: boolean;
@@ -55,7 +60,20 @@ export const buildDriveDiscoveryPanelViewModel = (options: {
     isStatusLoading,
     activeStatusCopy.tone,
     isSearchMode,
+    explorerState.rows.length > 0,
   );
+  const searchResults = controller.search.results;
+  const resultFolderCount = searchResults.filter(
+    (result) => result.kind === 'folder',
+  ).length;
+  const searchSummary = getDriveSearchSummary({
+    hasIssue: activeStatusCopy.tone === 'error',
+    isLoading: isStatusLoading,
+    isSearchActive: isSearchMode,
+    resultFolderCount,
+    resultTrackCount: searchResults.length - resultFolderCount,
+    unavailableCount: controller.search.unavailableSources.length,
+  });
   const parentLocationIndex = controller.discovery.navigationStack.length - 2;
 
   return {
@@ -93,12 +111,12 @@ export const buildDriveDiscoveryPanelViewModel = (options: {
     onReturnToSearchResults: controller.discovery.canReturnToSearchResults
       ? controller.discovery.returnToSearchResults
       : undefined,
+    searchSummary,
     selectionResultCount: controller.search.selection.canSelect
       ? controller.search.results.length
       : 0,
     shouldShowLoadingRows: shouldShowDriveLoadingRows({
       isLoading: isStatusLoading,
-      isSearchMode,
       rowCount: explorerState.rows.length,
     }),
     shouldShowStatusCard,

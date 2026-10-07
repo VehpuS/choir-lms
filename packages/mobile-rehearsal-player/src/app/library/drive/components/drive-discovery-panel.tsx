@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import {
   ExplorerBreadcrumbBar,
@@ -12,6 +12,7 @@ import { DriveExplorerLoadingRows } from './drive-explorer-loading-rows';
 import { resolveDriveDiscoveryResultFromRow } from './drive-explorer-row-model';
 import { DriveLibraryRootSelector } from './drive-library-root-selector';
 import { DriveLibrarySearchPanel } from './drive-library-search-panel';
+import { DriveSearchSummaryLine } from './drive-search-summary-line';
 import { DriveLibraryStatusCard } from './drive-library-status-card';
 import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { appTheme } from '../../../utils/theme';
@@ -85,7 +86,7 @@ export const DriveDiscoveryPanel = ({
   const searchPanel = (
     <DriveLibrarySearchPanel
       canSearch={controller.search.canSearch}
-      helperCopy={controller.search.searchContextCopy.helper}
+      inputAccessibilityLabel={controller.search.searchContextCopy.helper}
       isLoading={controller.search.isLoading}
       isSearchBarVisible={isSearchBarVisible}
       onClearSearch={controller.search.clearSearch}
@@ -103,11 +104,12 @@ export const DriveDiscoveryPanel = ({
 
   return (
     <View style={styles.section}>
-      {isSearchBarVisible ? searchPanel : null}
       <DriveLibraryRootSelector
         currentRootKind={controller.discovery.currentLocation.rootKind}
         onSelectRoot={controller.discovery.selectRoot}
       />
+      {/* Under the root switcher so the scope it searches is implied. */}
+      {isSearchBarVisible ? searchPanel : null}
       <ExplorerNavigationBar
         actionLabel="Search results"
         canGoBack={controller.discovery.navigationStack.length > 1}
@@ -122,10 +124,21 @@ export const DriveDiscoveryPanel = ({
       {viewModel.shouldShowStatusCard ? (
         <DriveLibraryStatusCard
           isLoading={viewModel.isStatusLoading}
-          loadingLabel={
-            viewModel.isSearchMode ? 'Searching Google Drive…' : undefined
-          }
           statusCopy={viewModel.activeStatusCopy}
+        />
+      ) : null}
+      {viewModel.searchSummary ? (
+        <DriveSearchSummaryLine
+          onRetry={controller.search.submitSearch}
+          summary={viewModel.searchSummary}
+          trailing={
+            !selection.isActive && viewModel.selectionResultCount > 0 ? (
+              <OutlinedActionButton
+                label={SELECTION_COPY.enter}
+                onPress={selection.enter}
+              />
+            ) : undefined
+          }
         />
       ) : null}
       {selection.isActive ? (
@@ -156,16 +169,6 @@ export const DriveDiscoveryPanel = ({
           }
           selectedCount={selection.selectedCount}
         />
-      ) : viewModel.isSearchMode && viewModel.selectionResultCount > 0 ? (
-        <View style={styles.entryRow}>
-          <Text style={styles.entryHelper}>
-            Choose folders and audio to import.
-          </Text>
-          <OutlinedActionButton
-            label={SELECTION_COPY.enter}
-            onPress={selection.enter}
-          />
-        </View>
       ) : null}
       {viewModel.shouldShowLoadingRows ? (
         <View
@@ -206,18 +209,6 @@ export const DriveDiscoveryPanel = ({
 // Add sits on the ground like the Library views (screen 1e): no panel card.
 // A one-location breadcrumb would only repeat the navigation title.
 const styles = StyleSheet.create({
-  entryHelper: {
-    flex: 1,
-    color: appTheme.colors.textSecondary,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  entryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: appTheme.space.md,
-  },
   section: {
     gap: appTheme.space.md,
   },
