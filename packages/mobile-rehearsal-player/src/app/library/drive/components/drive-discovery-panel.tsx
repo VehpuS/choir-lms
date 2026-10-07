@@ -14,7 +14,7 @@ import { DriveLibraryRootSelector } from './drive-library-root-selector';
 import { DriveLibrarySearchPanel } from './drive-library-search-panel';
 import { DriveSearchSummaryLine } from './drive-search-summary-line';
 import { DriveLibraryStatusCard } from './drive-library-status-card';
-import { OutlinedActionButton } from '../../../components/outlined-action-button';
+import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { appTheme } from '../../../utils/theme';
 import type { BulkAction } from '../../selection/bulk-action-model';
 import {
@@ -83,6 +83,15 @@ export const DriveDiscoveryPanel = ({
 
   usePinnedBulkActionBar(bulkBar);
 
+  // One entry point for browse and search: an icon in the navigation bar, so
+  // it costs no row of its own.
+  const canEnterSelection =
+    !selection.isActive &&
+    selection.canSelect &&
+    (viewModel.isSearchMode
+      ? viewModel.selectionResultCount > 0
+      : viewModel.explorerRows.length > 0);
+
   // Search results and browsed rows are both selectable; the basket spans them.
   const listSelection = selection.canSelect
     ? buildDriveRowSelection({
@@ -127,6 +136,15 @@ export const DriveDiscoveryPanel = ({
         onAction={viewModel.onReturnToSearchResults}
         onGoBack={viewModel.onGoBack}
         title={viewModel.currentTitle}
+        trailingAction={
+          canEnterSelection ? (
+            <SurfaceIconButton
+              accessibilityLabel={SELECTION_COPY.enter}
+              icon="select-multiple"
+              onPress={selection.enter}
+            />
+          ) : undefined
+        }
       />
       {viewModel.breadcrumbs.length > 1 ? (
         <ExplorerBreadcrumbBar items={viewModel.breadcrumbs} />
@@ -141,26 +159,7 @@ export const DriveDiscoveryPanel = ({
         <DriveSearchSummaryLine
           onRetry={controller.search.submitSearch}
           summary={viewModel.searchSummary}
-          trailing={
-            !selection.isActive && viewModel.selectionResultCount > 0 ? (
-              <OutlinedActionButton
-                label={SELECTION_COPY.enter}
-                onPress={selection.enter}
-              />
-            ) : undefined
-          }
         />
-      ) : null}
-      {!selection.isActive &&
-      !viewModel.isSearchMode &&
-      selection.canSelect &&
-      viewModel.explorerRows.length > 0 ? (
-        <View style={styles.selectEntry}>
-          <OutlinedActionButton
-            label={SELECTION_COPY.enter}
-            onPress={selection.enter}
-          />
-        </View>
       ) : null}
       {selection.isActive ? (
         // Shown wherever the basket is active: a scope change keeps the
@@ -210,8 +209,5 @@ export const DriveDiscoveryPanel = ({
 const styles = StyleSheet.create({
   section: {
     gap: appTheme.space.md,
-  },
-  selectEntry: {
-    alignItems: 'flex-end',
   },
 });

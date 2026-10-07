@@ -20,6 +20,7 @@ import { FileIcon } from 'phosphor-react-native/src/icons/File';
 import { FolderIcon } from 'phosphor-react-native/src/icons/Folder';
 import { FolderPlusIcon } from 'phosphor-react-native/src/icons/FolderPlus';
 import { InfoIcon } from 'phosphor-react-native/src/icons/Info';
+import { ListChecksIcon } from 'phosphor-react-native/src/icons/ListChecks';
 import { ListNumbersIcon } from 'phosphor-react-native/src/icons/ListNumbers';
 import { MagnifyingGlassIcon } from 'phosphor-react-native/src/icons/MagnifyingGlass';
 import { MinusIcon } from 'phosphor-react-native/src/icons/Minus';
@@ -76,6 +77,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   Folder: FolderIcon,
   FolderPlus: FolderPlusIcon,
   Info: InfoIcon,
+  ListChecks: ListChecksIcon,
   ListNumbers: ListNumbersIcon,
   MagnifyingGlass: MagnifyingGlassIcon,
   Minus: MinusIcon,

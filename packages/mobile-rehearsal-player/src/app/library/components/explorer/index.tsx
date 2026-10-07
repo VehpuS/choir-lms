@@ -59,6 +59,8 @@ type ExplorerNavigationBarProps = {
   onAction?: () => void;
   onGoBack: () => void;
   title: string;
+  /** A compact control at the end of the bar, e.g. the `Select` icon button. */
+  trailingAction?: ReactNode;
 };
 
 export const ExplorerNavigationBar = ({
@@ -68,6 +70,7 @@ export const ExplorerNavigationBar = ({
   onAction,
   onGoBack,
   title,
+  trailingAction,
 }: ExplorerNavigationBarProps) => {
   return (
     <View style={styles.navigationBar}>
@@ -98,6 +101,7 @@ export const ExplorerNavigationBar = ({
         // parent-folder navigation without competing with primary actions.
         <OutlinedActionButton label={actionLabel} onPress={onAction} />
       ) : null}
+      {trailingAction}
     </View>
   );
 };
