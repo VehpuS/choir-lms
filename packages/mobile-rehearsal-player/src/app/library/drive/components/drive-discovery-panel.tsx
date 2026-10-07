@@ -14,13 +14,13 @@ import { DriveLibraryRootSelector } from './drive-library-root-selector';
 import { DriveLibrarySearchPanel } from './drive-library-search-panel';
 import { DriveSearchSummaryLine } from './drive-search-summary-line';
 import { DriveLibraryStatusCard } from './drive-library-status-card';
-import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { appTheme } from '../../../utils/theme';
 import type { BulkAction } from '../../selection/bulk-action-model';
 import {
   SELECTION_COPY,
   getSelectionCountLabel,
 } from '../../selection/selection-copy';
+import { SelectEntryButton } from '../../selection/select-entry-button';
 import { SelectionBar } from '../../selection/selection-bar';
 import { usePinnedBulkActionBar } from '../../selection/use-pinned-bulk-action-bar';
 
@@ -138,11 +138,7 @@ export const DriveDiscoveryPanel = ({
         title={viewModel.currentTitle}
         trailingAction={
           canEnterSelection ? (
-            <SurfaceIconButton
-              accessibilityLabel={SELECTION_COPY.enter}
-              icon="select-multiple"
-              onPress={selection.enter}
-            />
+            <SelectEntryButton onPress={selection.enter} />
           ) : undefined
         }
       />

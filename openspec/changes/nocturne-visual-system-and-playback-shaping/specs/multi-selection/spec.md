@@ -8,9 +8,15 @@ Companion mockup states: none yet. Task 9.0 produces or confirms them before imp
 
 #### Scenario: Entering selection mode
 
-- **WHEN** a user chooses `Select` from a selectable list's header, or long-presses a selectable row
+- **WHEN** a user chooses the `Select` icon button in a selectable list's header row, or long-presses a selectable row
 - **THEN** the list enters selection mode, every selectable row shows an unselected glyph in place of its leading glyph, and a long-pressed row starts selected
 - **AND** row-level trailing controls (play, save, overflow) are hidden while selection mode is active, so a tap on a row always toggles it
+
+#### Scenario: Every surface enters selection the same way
+
+- **WHEN** any selectable surface (Add browse and search, each Library view, playlist detail, tag detail, Library search) offers selection
+- **THEN** it shows the same 44pt checklist icon button, labelled `Select` for assistive technology, in the trailing slot of its existing header row
+- **AND** it adds no separate row, text button, or surface-specific control for entering selection
 
 #### Scenario: Rows show their selected state without relying on color
 
