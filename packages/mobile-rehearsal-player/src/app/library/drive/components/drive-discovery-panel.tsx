@@ -9,7 +9,7 @@ import type { useRehearsalLibraryController } from '../../saved-rehearsal-librar
 import { buildDriveDiscoveryPanelViewModel } from './drive-discovery-panel-view-model';
 import { DriveExplorerList } from './drive-explorer-list';
 import { DriveExplorerLoadingRows } from './drive-explorer-loading-rows';
-import { resolveDriveDiscoveryResultFromRow } from './drive-explorer-row-model';
+import { buildDriveRowSelection } from './drive-discovery-panel-selection';
 import { DriveLibraryRootSelector } from './drive-library-root-selector';
 import { DriveLibrarySearchPanel } from './drive-library-search-panel';
 import { DriveSearchSummaryLine } from './drive-search-summary-line';
@@ -83,6 +83,16 @@ export const DriveDiscoveryPanel = ({
 
   usePinnedBulkActionBar(bulkBar);
 
+  // Search results and browsed rows are both selectable; the basket spans them.
+  const listSelection = selection.canSelect
+    ? buildDriveRowSelection({
+        isSearchMode: viewModel.isSearchMode,
+        navigationStack: controller.discovery.navigationStack,
+        rows: viewModel.explorerRows,
+        selection,
+      })
+    : undefined;
+
   const searchPanel = (
     <DriveLibrarySearchPanel
       canSearch={controller.search.canSearch}
@@ -141,32 +151,35 @@ export const DriveDiscoveryPanel = ({
           }
         />
       ) : null}
+      {!selection.isActive &&
+      !viewModel.isSearchMode &&
+      selection.canSelect &&
+      viewModel.explorerRows.length > 0 ? (
+        <View style={styles.selectEntry}>
+          <OutlinedActionButton
+            label={SELECTION_COPY.enter}
+            onPress={selection.enter}
+          />
+        </View>
+      ) : null}
       {selection.isActive ? (
-        // Shown wherever the basket is active, not only in search results: a
-        // scope change keeps the basket, and its count and `Cancel` must stay
-        // reachable (the basket view itself arrives with task 9.4).
+        // Shown wherever the basket is active: a scope change keeps the
+        // basket, so its count, `Select all` and `Cancel` stay reachable.
         <SelectionBar
           busyLabel="Selecting all matching Drive results"
           helperText={
             selection.isSelectingAll
               ? 'Selecting every matching result…'
-              : viewModel.isSearchMode
-                ? 'Tap any row to select or deselect it.'
-                : 'Your selection stays until you continue or cancel.'
+              : 'Selected folders include everything inside them. Tap a folder’s arrow to open it.'
           }
           isBusy={selection.isSelectingAll}
           onCancel={selection.cancel}
-          selectAll={
-            viewModel.isSearchMode
-              ? {
-                  // Stays pressable while gathering so `Deselect all` can stop it.
-                  isAllSelected: selection.isAllSelected,
-                  isDisabled:
-                    !selection.isAllSelected && !selection.canSelectAll,
-                  onToggle: selection.toggleAll,
-                }
-              : undefined
-          }
+          selectAll={{
+            // Stays pressable while gathering so `Deselect all` can stop it.
+            isAllSelected: selection.isAllSelected,
+            isDisabled: !selection.isAllSelected && !selection.canSelectAll,
+            onToggle: selection.toggleAll,
+          }}
           selectedCount={selection.selectedCount}
         />
       ) : null}
@@ -185,21 +198,7 @@ export const DriveDiscoveryPanel = ({
           highlightQuery={viewModel.highlightQuery}
           onOpenFolder={viewModel.onOpenFolder}
           rows={viewModel.explorerRows}
-          selection={
-            viewModel.isSearchMode
-              ? {
-                  isActive: selection.isActive,
-                  onEnter: (row) => {
-                    selection.enter();
-                    selection.toggle(resolveDriveDiscoveryResultFromRow(row));
-                  },
-                  onToggle: (row) => {
-                    selection.toggle(resolveDriveDiscoveryResultFromRow(row));
-                  },
-                  selectedIds: selection.selectedResultIds,
-                }
-              : undefined
-          }
+          selection={listSelection}
         />
       )}
     </View>
@@ -211,5 +210,8 @@ export const DriveDiscoveryPanel = ({
 const styles = StyleSheet.create({
   section: {
     gap: appTheme.space.md,
+  },
+  selectEntry: {
+    alignItems: 'flex-end',
   },
 });

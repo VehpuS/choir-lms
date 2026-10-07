@@ -10,6 +10,8 @@ import {
   type DriveImportDestinationFolderOption,
 } from './drive-import-review-model';
 
+const SELECTION_KEY_SEPARATOR = '|';
+
 type UseDriveImportReviewStateOptions = {
   destinationFolders: readonly DriveImportDestinationFolderOption[];
   driveImport: DriveImportController;
@@ -21,12 +23,16 @@ export const useDriveImportReviewState = (
   options: UseDriveImportReviewStateOptions,
 ) => {
   const hasFolderSelection = hasFolderInSelection(options.selectedResults);
-  const [destinationFolderId, setDestinationFolderId] = useState<
-    string | null
-  >(options.rootFolderId);
+  const [destinationFolderId, setDestinationFolderId] = useState<string | null>(
+    options.rootFolderId,
+  );
   const [selectedMode, setSelectedMode] = useState<DriveImportMode | null>(
     null,
   );
+  // The basket can shrink inside the review, which changes the plan.
+  const selectionKey = options.selectedResults
+    .map(({ id }) => id)
+    .join(SELECTION_KEY_SEPARATOR);
   const resolvedMode = resolveDriveImportReviewMode({
     hasFolderSelection,
     selectedMode,
@@ -48,7 +54,7 @@ export const useDriveImportReviewState = (
       mode: resolvedMode,
       selection: options.selectedResults,
     });
-  }, [destinationFolderId, resolvedMode]);
+  }, [destinationFolderId, resolvedMode, selectionKey]);
 
   return {
     destinationFolderId,

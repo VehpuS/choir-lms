@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { DriveSessionMenu } from '../../auth/google-drive/components/drive-session-menu';
@@ -7,6 +7,8 @@ import { DestinationHeader } from '../../components/destination-header';
 import { OutlinedActionButton } from '../../components/outlined-action-button';
 import type { useRehearsalLibraryController } from '../../library/saved-rehearsal-library/use-rehearsal-library-controller';
 import { appTheme } from '../../utils/theme';
+import { BasketSection } from './basket-section';
+import { groupDriveBasket } from '../../library/drive/utils/drive-basket-model';
 import { DestinationPickerSection } from './destination-picker-section';
 import { resolveDriveImportReviewHeaderMode } from './drive-import-progress-model';
 import { getDriveImportReviewHeaderCopy } from './screen-copy';
@@ -32,6 +34,10 @@ export const DriveImportReviewScreen = ({
     rootFolderId: controller.savedLibrary.files.rootFolderId,
     selectedResults: controller.search.selection.selectedResults,
   });
+  const basketGroups = useMemo(
+    () => groupDriveBasket(controller.search.selection.selectedResults),
+    [controller.search.selection.selectedResults],
+  );
   const driveImportState = controller.driveImport.state;
   const headerMode = resolveDriveImportReviewHeaderMode(
     driveImportState.status,
@@ -86,6 +92,10 @@ export const DriveImportReviewScreen = ({
       >
         {headerMode === 'default' ? (
           <>
+            <BasketSection
+              groups={basketGroups}
+              onRemove={controller.search.selection.remove}
+            />
             <DestinationPickerSection
               destinationFolders={reviewState.destinationFolders}
               onSelectDestination={reviewState.selectDestinationFolder}

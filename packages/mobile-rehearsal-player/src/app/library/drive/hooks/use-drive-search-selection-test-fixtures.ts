@@ -35,6 +35,7 @@ export const RESULTS: DriveDiscoveryResult[] = [
 
 export type HarnessProps = {
   activeQuery: string | null;
+  browse?: Parameters<typeof useDriveSearchSelection>[0]['browse'];
   inputQuery: string;
   isComplete: boolean;
   isLoading: boolean;

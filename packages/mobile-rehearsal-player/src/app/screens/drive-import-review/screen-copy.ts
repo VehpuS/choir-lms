@@ -3,6 +3,11 @@ export const getDriveImportReviewHeaderCopy = () => ({
   title: 'Review import',
 });
 
+export const getDriveImportReviewBasketCopy = () => ({
+  getRemoveLabel: (name: string) => `Remove ${name} from selection`,
+  title: 'Selected items',
+});
+
 export const getDriveImportReviewDestinationCopy = () => ({
   emptyHelper: 'Create a Library folder first to choose an import destination.',
   title: 'Library destination',

@@ -58,6 +58,11 @@ export type ExplorerRowSelection = {
   /** True while the list is in selection mode. */
   isActive: boolean;
   isSelected: boolean;
+  /**
+   * Keeps the row's trailing controls in selection mode. A folder row uses it
+   * so its open control stays reachable while a tap on the row selects it.
+   */
+  keepsTrailingControls?: boolean;
   /** Long-press outside selection mode: enters it with this row selected. */
   onEnter: () => void;
   onToggle: () => void;
@@ -128,7 +133,7 @@ export const resolveExplorerRowSelection = (
   return {
     ariaChecked: selection.isSelected,
     glyph: getRowSelectionGlyph(selection.isSelected),
-    hidesTrailingControls: true,
+    hidesTrailingControls: selection.keepsTrailingControls !== true,
     isMarked: selection.isSelected,
     onLongPress: undefined,
     onPress: selection.onToggle,

@@ -21,6 +21,11 @@ type DriveExplorerListProps = {
 };
 
 export type DriveExplorerListSelection = {
+  /**
+   * Rows that sit inside a selected folder. They read as selected and a tap
+   * does nothing, since the folder already brings them into the import.
+   */
+  coveredIds?: ReadonlySet<string>;
   isActive: boolean;
   onEnter: (row: DriveDiscoveryExplorerRow) => void;
   onToggle: (row: DriveDiscoveryExplorerRow) => void;
@@ -35,14 +40,20 @@ const getRowSelection = (
     return undefined;
   }
 
+  const isCovered =
+    !selection.selectedIds.has(row.key) &&
+    (selection.coveredIds?.has(row.key) ?? false);
+
   return {
     isActive: selection.isActive,
-    isSelected: selection.selectedIds.has(row.key),
+    isSelected: isCovered || selection.selectedIds.has(row.key),
     onEnter: () => {
       selection.onEnter(row);
     },
     onToggle: () => {
-      selection.onToggle(row);
+      if (!isCovered) {
+        selection.onToggle(row);
+      }
     },
   };
 };

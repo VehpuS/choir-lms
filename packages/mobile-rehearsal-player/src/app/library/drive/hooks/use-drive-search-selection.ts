@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   createSelectAllState,
   deselectContext,
+  deselectWithSelectAll,
   isSelectAllComplete,
   startSelectAll,
   synchronizeSelectAll,
@@ -22,8 +23,18 @@ import {
   type SelectionEntry,
 } from '../../selection/selection-model';
 
+/** The folder being browsed, as a selection source while no search is active. */
+type DriveBrowseSelectionSource = {
+  contextKey: string;
+  isComplete: boolean;
+  isLoading: boolean;
+  results: DriveDiscoveryResult[];
+};
+
 type UseDriveSearchSelectionOptions = {
   activeQuery: string | null;
+  /** Null while the folder's rows are not the ones on screen yet. */
+  browse?: DriveBrowseSelectionSource | null;
   inputQuery: string;
   isComplete: boolean;
   isLoading: boolean;
@@ -58,19 +69,32 @@ export const createDriveSearchContextKey = (
     query.trim().toLocaleLowerCase(),
   ].join(':');
 
-// Drive search results as a selection source over the shared selection model.
+// The Add basket over the shared selection model. Its source is the active
+// search's results, or the browsed folder's rows when no search is active.
 // A context change keeps what is already selected (the basket) and only ends a
 // pending select-all, which keeps the pages it had already added.
 export const useDriveSearchSelection = (
   options: UseDriveSearchSelectionOptions,
 ) => {
-  const { isComplete, isLoading, results } = options;
   const hasCurrentQuery =
     options.activeQuery?.trim().toLocaleLowerCase() ===
     options.inputQuery.trim().toLocaleLowerCase();
-  const contextKey = hasCurrentQuery
+  const searchContextKey = hasCurrentQuery
     ? createDriveSearchContextKey(options.location, options.inputQuery)
     : null;
+  // A search that is typed but not yet run leaves the old results on screen,
+  // so it has no source at all rather than falling back to the folder.
+  const browse = options.activeQuery === null ? (options.browse ?? null) : null;
+  const source =
+    searchContextKey === null && browse !== null
+      ? browse
+      : {
+          contextKey: searchContextKey,
+          isComplete: options.isComplete,
+          isLoading: options.isLoading,
+          results: options.results,
+        };
+  const { contextKey, isComplete, isLoading, results } = source;
   const [state, setState] = useState(createInitialState);
 
   const snapshot = useMemo<SelectAllSourceSnapshot<DriveDiscoveryResult>>(
@@ -121,7 +145,7 @@ export const useDriveSearchSelection = (
       setState(createInitialState());
     }, []),
     canSelect,
-    canSelectAll: canSelect && (isLoading || isComplete),
+    canSelectAll: canSelect && results.length > 0 && (isLoading || isComplete),
     // Empties the basket but stays in selection mode.
     clear: useCallback(() => {
       // Also ends a pending select-all, or its next page would refill it.
@@ -184,6 +208,19 @@ export const useDriveSearchSelection = (
         selectAll: startSelectAll(current.selectAll, snapshot),
       }));
     }, [canSelect, isAllSelected, isComplete, isLoading, snapshot]),
+    // Takes one item out of the basket, also from the import review. Emptying
+    // the basket there returns to browsing, since there is nothing to review.
+    remove: useCallback((resultId: string) => {
+      setState((current) => {
+        const selectAll = deselectWithSelectAll(current.selectAll, [resultId]);
+
+        return {
+          isReviewReady:
+            current.isReviewReady && selectAll.selection.items.size > 0,
+          selectAll,
+        };
+      });
+    }, []),
     selectedCount: selection.items.size,
     selectedResultIds,
     selectedResults,

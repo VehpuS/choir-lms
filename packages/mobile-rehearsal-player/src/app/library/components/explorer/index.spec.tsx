@@ -134,6 +134,17 @@ describe('explorer primitives', () => {
       assert.equal(resolved.isMarked, true);
     });
 
+    it('keeps trailing controls in selection mode when the row asks to', () => {
+      const resolved = resolveExplorerRowSelection(
+        { ...selection(true, false), keepsTrailingControls: true },
+        ownPress,
+      );
+
+      assert.equal(resolved.hidesTrailingControls, false);
+      resolved.onPress?.();
+      assert.deepEqual(log.splice(0), ['toggle']);
+    });
+
     it('exposes the selected state as a checkbox the web DOM can read', () => {
       const selected = resolveExplorerRowSelection(
         selection(true, true),

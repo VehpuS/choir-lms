@@ -1,4 +1,5 @@
 import { AppIcon } from '../../../components/app-icon';
+import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { RowMetaLine } from '../../../components/row-meta-line';
 import { appTheme } from '../../../utils/theme';
 import { ExplorerListRow } from '../../components/explorer/index';
@@ -23,7 +24,8 @@ type DriveExplorerFolderRowProps = {
 
 // An Add folder row (screen 1e): folder glyph, title, `Updated 3 Nov` meta,
 // and a trailing chevron. Selection mode swaps the glyph for the selection
-// circle and drops the chevron, since tapping selects instead of opening.
+// circle, and the chevron becomes its own button: tapping the row selects it,
+// the chevron still opens it so a basket can be built across folders.
 export const DriveExplorerFolderRow = ({
   folder,
   highlightQuery,
@@ -48,7 +50,21 @@ export const DriveExplorerFolderRow = ({
       onPress={() => {
         onOpenFolder(folder);
       }}
-      selection={selection}
+      overflowTrigger={
+        isSelectionMode ? (
+          <SurfaceIconButton
+            accessibilityLabel={`Open ${folder.name}`}
+            icon="chevron-right"
+            onPress={() => {
+              onOpenFolder(folder);
+            }}
+            size={CHEVRON_SIZE}
+          />
+        ) : undefined
+      }
+      selection={
+        selection ? { ...selection, keepsTrailingControls: true } : undefined
+      }
       title={
         <SearchHighlightedText
           numberOfLines={DRIVE_ROW_TITLE_LINES}

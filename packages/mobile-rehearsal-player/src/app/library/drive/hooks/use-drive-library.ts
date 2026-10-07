@@ -9,7 +9,7 @@ import {
   type DriveBrowseSnapshot,
   type DriveFolder,
 } from '@org/google-drive';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { runtimeConfig } from '../../../../config/runtime';
 import { isDriveAuthorizationFailure } from '../../../auth/google-drive/utils/authorization';
@@ -25,6 +25,10 @@ import {
   EMPTY_DRIVE_SEARCH_SNAPSHOT,
   useDriveLibrarySearch,
 } from './use-drive-library-search';
+import {
+  createDriveBrowseContextKey,
+  createDriveBrowseResults,
+} from '../utils/drive-basket-model';
 import { useDriveSearchSelection } from './use-drive-search-selection';
 
 const createRootLocation = (rootKind: DriveBrowseLocation['rootKind']) => {
@@ -108,8 +112,28 @@ export const useDriveLibrary = (
     issue === null &&
     authState.status === 'authorized';
 
+  const browseSelectionSource = useMemo(
+    () =>
+      isAwaitingLocation
+        ? null
+        : {
+            contextKey: createDriveBrowseContextKey(currentLocation),
+            isComplete: issue === null,
+            isLoading,
+            results: createDriveBrowseResults(browseSnapshot, navigationStack),
+          },
+    [
+      browseSnapshot,
+      currentLocation,
+      isAwaitingLocation,
+      isLoading,
+      issue,
+      navigationStack,
+    ],
+  );
   const searchSelection = useDriveSearchSelection({
     activeQuery: activeSearchQuery,
+    browse: browseSelectionSource,
     inputQuery: searchQuery,
     isComplete: issue === null,
     isLoading,
