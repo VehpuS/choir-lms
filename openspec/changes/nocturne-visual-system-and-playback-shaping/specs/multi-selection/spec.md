@@ -24,6 +24,13 @@ Companion mockup states: none yet. Task 9.0 produces or confirms them before imp
 - **THEN** it shows a filled check glyph or an empty circle glyph respectively, and a selected row also takes the active title treatment
 - **AND** the row exposes its selected state to assistive technology, and toggling it keeps the 44pt minimum touch target
 
+#### Scenario: Folders with some of their contents selected show a partial state
+
+- **WHEN** a folder row is not itself selected, is not inside a selected folder, and at least one selected item lies inside it at any depth
+- **THEN** the row shows a partial glyph (a minus in the circle) instead of the empty circle, and exposes a mixed state to assistive technology
+- **AND** tapping the row selects the whole folder, and tapping it again deselects the folder and returns it to partial while those inner items stay selected
+- **AND** a folder whose loaded rows are all selected is still partial, never promoted to selected, because its full contents may not be loaded
+
 #### Scenario: The selection count and bulk actions stay in reach
 
 - **WHEN** selection mode is active
