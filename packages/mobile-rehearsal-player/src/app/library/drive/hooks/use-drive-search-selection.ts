@@ -22,6 +22,7 @@ import {
   getSelectedItems,
   type SelectionEntry,
 } from '../../selection/selection-model';
+import { getKeysCoveredByBasketFolders } from '../utils/drive-basket-model';
 
 /** The folder being browsed, as a selection source while no search is active. */
 type DriveBrowseSelectionSource = {
@@ -51,6 +52,20 @@ const createInitialState = (): DriveSearchSelectionState => ({
   isReviewReady: false,
   selectAll: createSelectAllState(createSelectionState<DriveDiscoveryResult>()),
 });
+
+// Selecting a folder replaces the items already selected inside it: the
+// basket keeps the folder alone, so the count does not add the two.
+const absorbCoveredItems = (
+  state: SelectAllState<DriveDiscoveryResult>,
+): SelectAllState<DriveDiscoveryResult> => {
+  const coveredKeys = getKeysCoveredByBasketFolders(
+    getSelectedItems(state.selection),
+  );
+
+  return coveredKeys.length === 0
+    ? state
+    : { ...state, selection: deselectMany(state.selection, coveredKeys) };
+};
 
 const toEntry = (
   result: DriveDiscoveryResult,
@@ -104,7 +119,9 @@ export const useDriveSearchSelection = (
 
   useEffect(() => {
     setState((current) => {
-      const selectAll = synchronizeSelectAll(current.selectAll, snapshot);
+      const selectAll = absorbCoveredItems(
+        synchronizeSelectAll(current.selectAll, snapshot),
+      );
 
       return selectAll === current.selectAll
         ? current
@@ -205,7 +222,9 @@ export const useDriveSearchSelection = (
 
       setState((current) => ({
         isReviewReady: false,
-        selectAll: startSelectAll(current.selectAll, snapshot),
+        selectAll: absorbCoveredItems(
+          startSelectAll(current.selectAll, snapshot),
+        ),
       }));
     }, [canSelect, isAllSelected, isComplete, isLoading, snapshot]),
     // Takes one item out of the basket, also from the import review. Emptying
@@ -230,9 +249,8 @@ export const useDriveSearchSelection = (
           ? current
           : {
               ...current,
-              selectAll: toggleWithSelectAll(
-                current.selectAll,
-                toEntry(result),
+              selectAll: absorbCoveredItems(
+                toggleWithSelectAll(current.selectAll, toEntry(result)),
               ),
             },
       );

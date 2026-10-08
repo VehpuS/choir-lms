@@ -12,6 +12,7 @@ import {
   createDriveBrowseContextKey,
   createDriveBrowseResults,
   getBrowseCoveredRowIds,
+  getKeysCoveredByBasketFolders,
   getSelectedFolderIds,
   groupDriveBasket,
 } from './drive-basket-model';
@@ -122,6 +123,17 @@ describe('drive basket model', () => {
       }).size,
       0,
     );
+  });
+
+  it('finds the selected items that sit inside a selected folder', () => {
+    const covered = getKeysCoveredByBasketFolders([
+      folder('Advent'),
+      folder('Carols', { path: [{ id: 'Advent', name: 'Advent' }] }),
+      audio('in-advent', { path: [{ id: 'Advent', name: 'Advent' }] }),
+      audio('elsewhere', { path: [{ id: 'Other', name: 'Other' }] }),
+    ]);
+
+    assert.deepEqual(covered, ['Carols', 'in-advent']);
   });
 
   it('groups the basket by root then path, my drive first', () => {

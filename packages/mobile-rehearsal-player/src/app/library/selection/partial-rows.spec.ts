@@ -35,7 +35,7 @@ describe('partial rows', () => {
     assert.deepEqual([...partial], ['plain']);
   });
 
-  it('returns a folder to partial once it is deselected but its inner items stay', () => {
+  it('stops marking a folder once it is selected, and marks it again while inner items remain beneath it', () => {
     const ancestorIds = collectAncestorIds([['folder']]);
     const rowIds = ['folder'];
 

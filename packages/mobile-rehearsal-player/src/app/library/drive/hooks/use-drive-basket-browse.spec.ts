@@ -148,4 +148,28 @@ describe('useDriveSearchSelection while browsing', () => {
     assert.equal(hookResult.current?.selectedCount, 0);
     act(() => renderer.unmount());
   });
+
+  it('replaces the items selected inside a folder when the folder is selected', async () => {
+    const innerFile = {
+      ...RESULTS[1],
+      path: [{ id: 'folder-warmups', name: 'Warmups' }],
+    } as DriveDiscoveryResult;
+    const { hookResult, renderer } = await mount(browseProps(RESULTS));
+
+    act(() => hookResult.current?.enter());
+    act(() => hookResult.current?.toggle(innerFile));
+    assert.equal(hookResult.current?.selectedCount, 1);
+
+    act(() => hookResult.current?.toggle(RESULTS[0]));
+    assert.equal(hookResult.current?.selectedCount, 1);
+    assert.deepEqual(
+      hookResult.current?.selectedResults.map(({ id }) => id),
+      ['folder-warmups'],
+    );
+
+    // Deselecting the folder leaves nothing behind, so it is not partial.
+    act(() => hookResult.current?.toggle(RESULTS[0]));
+    assert.equal(hookResult.current?.selectedCount, 0);
+    act(() => renderer.unmount());
+  });
 });

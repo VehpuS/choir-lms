@@ -28,7 +28,8 @@ Companion mockup states: none yet. Task 9.0 produces or confirms them before imp
 
 - **WHEN** a folder row is not itself selected, is not inside a selected folder, and at least one selected item lies inside it at any depth
 - **THEN** the row shows a partial glyph (a minus in the circle) instead of the empty circle, and exposes a mixed state to assistive technology
-- **AND** tapping the row selects the whole folder, and tapping it again deselects the folder and returns it to partial while those inner items stay selected
+- **AND** tapping the row selects the whole folder and replaces the items already selected inside it, so the count shows the folder alone rather than adding to it
+- **AND** tapping it again deselects the folder, leaving nothing selected beneath it
 - **AND** a folder whose loaded rows are all selected is still partial, never promoted to selected, because its full contents may not be loaded
 
 #### Scenario: The selection count and bulk actions stay in reach

@@ -82,6 +82,21 @@ export const isCoveredBySelectedFolder = (
   selectedFolderIds: ReadonlySet<string>,
 ) => path?.some((segment) => selectedFolderIds.has(segment.id)) ?? false;
 
+// Keys of selected items that sit inside another selected folder. Selecting a
+// folder takes over what was selected beneath it, so the basket (and its
+// count) holds the folder alone.
+export const getKeysCoveredByBasketFolders = (
+  selection: readonly DriveDiscoveryResult[],
+): string[] => {
+  const selectedFolderIds = getSelectedFolderIds(selection);
+
+  return selection
+    .filter((result) =>
+      isCoveredBySelectedFolder(result.path, selectedFolderIds),
+    )
+    .map(({ id }) => id);
+};
+
 export const getBrowseCoveredRowIds = (options: {
   navigationStack: readonly DriveBrowseLocation[];
   rowIds: readonly string[];
