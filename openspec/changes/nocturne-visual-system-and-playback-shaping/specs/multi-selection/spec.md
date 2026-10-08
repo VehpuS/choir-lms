@@ -112,6 +112,27 @@ The system SHALL let a user select multiple items in the Files, Tracks, Loops, a
 - **AND** selected tracks and loops contribute themselves
 - **AND** the contributed items are applied in the order the selection is displayed, and the confirmation states the effective item count
 
+#### Scenario: Playlists inside a selected folder are the user's choice
+
+- **WHEN** a playback or playlist action is applied to a selection whose folders contain playlist links
+- **THEN** the system asks whether to include those playlists, stating how many there are, and offers `Include playlists` and `Skip playlists`
+- **AND** an included playlist contributes its entries in playlist order, at the position of its link in the folder's display order, and cannot recurse because a playlist holds only tracks and loops
+- **AND** the question is not asked when no selected folder contains a playlist link
+
+#### Scenario: Repeated items are the user's choice
+
+- **WHEN** a playback or playlist action's effective items include the same track or loop more than once (selected directly and through a folder, listed twice by a playlist, or in two selected folders)
+- **THEN** the system asks whether to keep the repeats or remove them, stating how many items repeat, and offers `Keep repeats` and `Remove repeats`
+- **AND** removing repeats keeps the first occurrence of each track or loop and drops the later ones, preserving the display order
+- **AND** the question is not asked when nothing repeats
+
+#### Scenario: A choice can become the default
+
+- **WHEN** either question is shown
+- **THEN** the user can mark their choice as the default, and the choice is stored on the device as the preference for that question, surviving app restarts
+- **AND** each preference has three values, `Ask each time` (the initial value), and one for each of the two answers, and a stored answer is applied without asking
+- **AND** the user can see and reset a stored default from the preferences surface without having to trigger the question again
+
 #### Scenario: Queue actions keep playback continuity
 
 - **WHEN** a user applies `Play next` or `Add to queue` to a selection
