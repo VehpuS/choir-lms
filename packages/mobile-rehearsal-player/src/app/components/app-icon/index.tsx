@@ -24,6 +24,7 @@ import { ListChecksIcon } from 'phosphor-react-native/src/icons/ListChecks';
 import { ListNumbersIcon } from 'phosphor-react-native/src/icons/ListNumbers';
 import { MagnifyingGlassIcon } from 'phosphor-react-native/src/icons/MagnifyingGlass';
 import { MinusIcon } from 'phosphor-react-native/src/icons/Minus';
+import { MinusCircleIcon } from 'phosphor-react-native/src/icons/MinusCircle';
 import { MusicNoteIcon } from 'phosphor-react-native/src/icons/MusicNote';
 import { MusicNotesIcon } from 'phosphor-react-native/src/icons/MusicNotes';
 import { PauseIcon } from 'phosphor-react-native/src/icons/Pause';
@@ -81,6 +82,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   ListNumbers: ListNumbersIcon,
   MagnifyingGlass: MagnifyingGlassIcon,
   Minus: MinusIcon,
+  MinusCircle: MinusCircleIcon,
   MusicNote: MusicNoteIcon,
   MusicNotes: MusicNotesIcon,
   Pause: PauseIcon,

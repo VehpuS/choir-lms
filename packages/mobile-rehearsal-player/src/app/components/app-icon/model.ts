@@ -27,6 +27,7 @@ export type PhosphorGlyph =
   | 'ListNumbers'
   | 'MagnifyingGlass'
   | 'Minus'
+  | 'MinusCircle'
   | 'MusicNote'
   | 'MusicNotes'
   | 'Pause'
@@ -140,6 +141,8 @@ export const APP_ICON_GLYPHS = {
   check: regular('Check'),
   'check-circle': filled('CheckCircle'),
   'circle-outline': regular('Circle'),
+  // A folder with some, not all, of its contents selected.
+  'minus-circle': filled('MinusCircle'),
   // Enters multiple selection (the Add and Library `Select` control).
   'select-multiple': regular('ListChecks'),
 

@@ -43,6 +43,22 @@ describe('app icon glyph map', () => {
     );
   });
 
+  it('keeps the partial-selection glyph distinct from the other selection and removal glyphs', () => {
+    const partialGlyph = resolveAppIconGlyph('minus-circle').glyph;
+    const others: AppIconName[] = [
+      'check-circle',
+      'circle-outline',
+      'close-circle-outline',
+      'close',
+    ];
+
+    for (const name of others) {
+      assert.notEqual(resolveAppIconGlyph(name).glyph, partialGlyph, name);
+    }
+
+    assert.deepEqual(namesUsingGlyph(partialGlyph), ['minus-circle']);
+  });
+
   it('keeps the drag handle distinct from playback, More Options, and removal glyphs', () => {
     const dragGlyph = resolveAppIconGlyph('drag-vertical').glyph;
     const otherRowGlyphs: AppIconName[] = [

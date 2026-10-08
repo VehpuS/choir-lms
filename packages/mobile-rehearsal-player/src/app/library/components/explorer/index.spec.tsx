@@ -81,14 +81,22 @@ describe('explorer primitives', () => {
   });
 
   it('gives selected rows a filled accent check and unselected rows an empty circle', () => {
-    const selected = getRowSelectionGlyph(true);
-    const unselected = getRowSelectionGlyph(false);
+    const selected = getRowSelectionGlyph('selected');
+    const unselected = getRowSelectionGlyph('unselected');
 
     assert.equal(selected.name, 'check-circle');
     assert.equal(unselected.name, 'circle-outline');
     // The glyph shape differs, so the state never rests on color alone.
     assert.notEqual(selected.name, unselected.name);
     assert.notEqual(selected.color, unselected.color);
+  });
+
+  it('gives a partially selected folder a minus glyph distinct from both other states', () => {
+    const partial = getRowSelectionGlyph('partial');
+
+    assert.equal(partial.name, 'minus-circle');
+    assert.notEqual(partial.name, getRowSelectionGlyph('selected').name);
+    assert.notEqual(partial.name, getRowSelectionGlyph('unselected').name);
   });
 
   describe('row selection routing', () => {
@@ -132,6 +140,29 @@ describe('explorer primitives', () => {
       assert.equal(resolved.hidesTrailingControls, true);
       assert.equal(resolved.glyph?.name, 'check-circle');
       assert.equal(resolved.isMarked, true);
+    });
+
+    it('exposes a partial folder as mixed, unmarked, and still toggling on tap', () => {
+      const resolved = resolveExplorerRowSelection(
+        { ...selection(true, false), isPartial: true },
+        ownPress,
+      );
+
+      assert.equal(resolved.ariaChecked, 'mixed');
+      assert.equal(resolved.glyph?.name, 'minus-circle');
+      assert.equal(resolved.isMarked, false);
+      resolved.onPress?.();
+      assert.deepEqual(log.splice(0), ['toggle']);
+    });
+
+    it('treats a selected row as selected even when it is also flagged partial', () => {
+      const resolved = resolveExplorerRowSelection(
+        { ...selection(true, true), isPartial: true },
+        ownPress,
+      );
+
+      assert.equal(resolved.ariaChecked, true);
+      assert.equal(resolved.glyph?.name, 'check-circle');
     });
 
     it('keeps trailing controls in selection mode when the row asks to', () => {

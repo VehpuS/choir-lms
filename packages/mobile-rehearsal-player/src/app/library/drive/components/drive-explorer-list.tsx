@@ -27,6 +27,8 @@ export type DriveExplorerListSelection = {
    */
   coveredIds?: ReadonlySet<string>;
   isActive: boolean;
+  /** Folder rows with some of their contents selected (not selected themselves). */
+  partialIds?: ReadonlySet<string>;
   onEnter: (row: DriveDiscoveryExplorerRow) => void;
   onToggle: (row: DriveDiscoveryExplorerRow) => void;
   selectedIds: ReadonlySet<string>;
@@ -46,6 +48,7 @@ const getRowSelection = (
 
   return {
     isActive: selection.isActive,
+    isPartial: selection.partialIds?.has(row.key) ?? false,
     isSelected: isCovered || selection.selectedIds.has(row.key),
     onEnter: () => {
       selection.onEnter(row);

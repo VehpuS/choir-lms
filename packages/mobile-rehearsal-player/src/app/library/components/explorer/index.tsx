@@ -194,7 +194,14 @@ export const ExplorerListRow = ({
   const selectionProps = {
     accessibilityRole: pressableRole,
     accessibilityState:
-      isSelected === undefined ? undefined : { selected: isSelected },
+      isSelected === undefined
+        ? undefined
+        : {
+            ...(resolvedSelection.ariaChecked === 'mixed'
+              ? { checked: 'mixed' as const }
+              : {}),
+            selected: isSelected,
+          },
     'aria-checked': resolvedSelection.ariaChecked,
     onLongPress: disabled ? undefined : onLongPress,
   };

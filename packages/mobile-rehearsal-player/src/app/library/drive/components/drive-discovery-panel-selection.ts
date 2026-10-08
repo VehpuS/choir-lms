@@ -9,6 +9,10 @@ import {
   getSelectedFolderIds,
   isCoveredBySelectedFolder,
 } from '../utils/drive-basket-model';
+import {
+  collectAncestorIds,
+  getPartialRowIds,
+} from '../../selection/partial-rows';
 import type { DriveExplorerListSelection } from './drive-explorer-list';
 import {
   resolveDriveDiscoveryResultFromRow,
@@ -76,8 +80,21 @@ export const buildDriveRowSelection = (
     return isSearchMode ? result : attachBrowsePath(result, navigationStack);
   };
 
+  const coveredIds = getCoveredRowIds(options);
+  // Folders whose subtree holds a selected item, from each item's path ids.
+  const partialIds = getPartialRowIds({
+    ancestorIds: collectAncestorIds(
+      selection.selectedResults.map((result) =>
+        result.path?.map((segment) => segment.id),
+      ),
+    ),
+    coveredIds,
+    rowIds: options.rows.map(({ key }) => key),
+    selectedIds: selection.selectedResultIds,
+  });
+
   return {
-    coveredIds: getCoveredRowIds(options),
+    coveredIds,
     isActive: selection.isActive,
     onEnter: (row) => {
       selection.enter();
@@ -86,6 +103,7 @@ export const buildDriveRowSelection = (
     onToggle: (row) => {
       selection.toggle(resolveResult(row));
     },
+    partialIds,
     selectedIds: selection.selectedResultIds,
   };
 };
