@@ -12,6 +12,7 @@ import type {
   BulkTagTarget,
 } from '../components/tag-editor-sheet/bulk-tags';
 import type { BulkOperationResult } from '../saved-rehearsal-library/library-files-bulk-operations';
+import type { UseLibraryFilesResult } from '../saved-rehearsal-library/use-library-files';
 import type { BulkAcknowledgment } from './bulk-playback-run';
 
 // What every Library selection surface needs from the screen but should not
@@ -27,6 +28,11 @@ export type LibrarySelectionServices = {
     sources: DriveAudioSource[];
   };
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
+  /**
+   * The Files tree and its batched operations, for the views that copy or
+   * remove entities. Rebuilt every render, so read it at call time.
+   */
+  files: UseLibraryFilesResult;
   /** Folders carry tags too, so the bulk tag editor reads them. */
   folders: RehearsalLibraryFolderNode[];
   /** False while another tab is showing, so an open selection ends. */

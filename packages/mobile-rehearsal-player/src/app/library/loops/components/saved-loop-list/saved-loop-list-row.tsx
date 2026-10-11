@@ -2,6 +2,7 @@ import { type PlayableItem } from '@org/audio-library-models';
 import { StyleSheet } from 'react-native';
 
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
+import type { ExplorerRowSelection } from '../../../components/explorer/model';
 import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
 import { resolveSavedLoopMenu } from '../../../components/saved-item-menu/saved-item-menus';
 import {
@@ -44,6 +45,7 @@ type SavedLoopListRowProps = {
   queuePlayableItemNext: (playableItem: PlayableItem) => void;
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
   removeLoop: (loop: SavedLoopCard['loop']) => void;
+  selection?: ExplorerRowSelection;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
 };
 
@@ -72,6 +74,7 @@ export const SavedLoopListRow = ({
   queuePlayableItemNext,
   queuePlayableItemUpNext,
   removeLoop,
+  selection,
   togglePlayableItemPlayback,
 }: SavedLoopListRowProps) => {
   const playableItem = loopCard.playableItem;
@@ -175,6 +178,7 @@ export const SavedLoopListRow = ({
           playbackActionLabel: playbackAction.label,
         })}
         ringDisabled={playbackAction.disabled}
+        selection={selection}
         title={loopCard.loop.name}
       />
       <OptionsMenuSheet

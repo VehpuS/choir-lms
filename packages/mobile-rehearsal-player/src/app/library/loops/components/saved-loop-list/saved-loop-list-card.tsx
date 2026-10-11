@@ -2,6 +2,7 @@ import type { PlayableItem } from '@org/audio-library-models';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { AppIcon } from '../../../../components/app-icon';
 import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
 import {
   buttonInteractionGuardStyle,
@@ -10,6 +11,8 @@ import {
 import { PlaybackWaveform } from '../../../../components/playback-waveform';
 import { getPlaybackProgressRatio } from '../../../../routing/shell/shell-playback-summary-model';
 import { appTheme } from '../../../../utils/theme';
+import type { ExplorerRowSelection } from '../../../components/explorer/model';
+import { resolveExplorerRowSelection } from '../../../components/explorer/model';
 import { useSavedTrackPlayerProgress } from '../../../playback/utils/saved-track-player-interop';
 import { SearchHighlightedText } from '../../../search/components/search-highlighted-text';
 import type {
@@ -27,8 +30,12 @@ type SavedLoopListCardProps = {
   playableItem: PlayableItem | null;
   presentation: SavedLoopCardPresentation;
   ringDisabled: boolean;
+  /** Selection wiring from the view's selection mode (task 9.8). */
+  selection?: ExplorerRowSelection;
   title: string;
 };
+
+const SELECTION_GLYPH_SIZE = 20;
 
 const { colors } = appTheme;
 const PROGRESS_UPDATE_INTERVAL_MS = 500;
@@ -77,28 +84,52 @@ export const SavedLoopListCard = ({
   playableItem,
   presentation,
   ringDisabled,
+  selection,
   title,
 }: SavedLoopListCardProps) => {
   const isActive = presentation.tone === 'active';
+  const resolvedSelection = resolveExplorerRowSelection(
+    selection,
+    onTogglePlayback,
+  );
+  // Selection can still pick an unavailable loop, for removal.
+  const isBodyDisabled = disabled && !selection?.isActive;
 
   return (
     <View
       style={[
         styles.card,
         isActive ? styles.cardActive : undefined,
-        disabled ? styles.cardDisabled : undefined,
+        resolvedSelection.isMarked ? styles.cardSelected : undefined,
+        isBodyDisabled ? styles.cardDisabled : undefined,
       ]}
     >
       <View style={styles.header}>
+        {resolvedSelection.glyph ? (
+          <AppIcon
+            color={resolvedSelection.glyph.color}
+            name={resolvedSelection.glyph.name}
+            size={SELECTION_GLYPH_SIZE}
+          />
+        ) : null}
         <Pressable
-          accessibilityRole="button"
+          accessibilityRole={resolvedSelection.role}
+          accessibilityState={
+            selection?.isActive
+              ? { selected: resolvedSelection.isMarked }
+              : undefined
+          }
+          aria-checked={resolvedSelection.ariaChecked}
           {...interactionGuardProps}
-          disabled={disabled}
-          onPress={onTogglePlayback}
+          disabled={isBodyDisabled}
+          onLongPress={
+            isBodyDisabled ? undefined : resolvedSelection.onLongPress
+          }
+          onPress={resolvedSelection.onPress}
           style={({ pressed }) => [
             styles.body,
             buttonInteractionGuardStyle,
-            pressed && !disabled ? styles.pressed : undefined,
+            pressed && !isBodyDisabled ? styles.pressed : undefined,
           ]}
         >
           <SearchHighlightedText
@@ -124,15 +155,19 @@ export const SavedLoopListCard = ({
         {isActive ? null : (
           <Text style={styles.length}>{presentation.lengthLabel}</Text>
         )}
-        <CompactPlaybackAction
-          accessibilityLabel={presentation.ringAccessibilityLabel}
-          disabled={ringDisabled}
-          iconName={presentation.ringIconName}
-          onPress={onTogglePlayback}
-          selected={isActive}
-          variant="row"
-        />
-        {overflowTrigger}
+        {resolvedSelection.hidesTrailingControls ? null : (
+          <>
+            <CompactPlaybackAction
+              accessibilityLabel={presentation.ringAccessibilityLabel}
+              disabled={ringDisabled}
+              iconName={presentation.ringIconName}
+              onPress={onTogglePlayback}
+              selected={isActive}
+              variant="row"
+            />
+            {overflowTrigger}
+          </>
+        )}
       </View>
       {message ? (
         <Text numberOfLines={2} style={styles.message}>
@@ -162,6 +197,10 @@ const styles = StyleSheet.create({
   cardActive: {
     borderColor: colors.accent,
     backgroundColor: colors.surface,
+  },
+  // A selected loop is marked by its edge and the glyph, as a selected row is.
+  cardSelected: {
+    borderColor: colors.accent,
   },
   cardDisabled: {
     opacity: 0.6,

@@ -28,6 +28,8 @@ export const PlaylistDetailRowControls = (props: {
   metadataLabel: string;
   onCloseMenu: () => void;
   onCommitReorder: () => void;
+  /** Long-press on the row's copy enters selection mode (task 9.8). */
+  onLongPressRow?: () => void;
   onMoveItem: (
     fromIndex: number,
     toIndex: number,
@@ -167,7 +169,11 @@ export const PlaylistDetailRowControls = (props: {
           }
           variant="row"
         />
-        <View style={styles.playlistRowCopy}>
+        <Pressable
+          accessibilityRole="none"
+          onLongPress={props.onLongPressRow}
+          style={styles.playlistRowCopy}
+        >
           <Text
             numberOfLines={1}
             style={[
@@ -193,7 +199,7 @@ export const PlaylistDetailRowControls = (props: {
             }
             text={props.metadataLabel}
           />
-        </View>
+        </Pressable>
         <View style={styles.playlistRowStepper}>
           <Pressable
             accessibilityLabel={`Move ${props.entryTitle} up`}

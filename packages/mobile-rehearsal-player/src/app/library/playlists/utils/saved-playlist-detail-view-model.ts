@@ -324,3 +324,16 @@ export const consumeSavedPlaylistRenameRequest = (playlistId: string) => {
 
   return true;
 };
+
+/**
+ * Whether the open detail's draft has fallen behind the stored playlist. The
+ * draft runs ahead of storage during a reorder and equals it once persisted,
+ * so a difference seen when the stored playlist changes means something else
+ * (a bulk removal) edited it.
+ */
+export const isDetailDraftBehindStoredEntries = (
+  storedEntries: readonly PlaylistEntry[],
+  draftEntries: readonly PlaylistEntry[],
+): boolean =>
+  storedEntries.length !== draftEntries.length ||
+  storedEntries.some((entry, index) => entry.id !== draftEntries[index]?.id);

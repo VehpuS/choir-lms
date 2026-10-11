@@ -4,12 +4,21 @@ import { Text, View } from 'react-native';
 
 import { OutlinedActionButton } from '../../../../components/outlined-action-button';
 import { QueueMovePositionDialog } from '../../../../components/queue-move-position-dialog';
+import { AppIcon } from '../../../../components/app-icon';
+import { RowMetaLine } from '../../../../components/row-meta-line';
+import { appTheme } from '../../../../utils/theme';
+import {
+  ExplorerListRow,
+  ExplorerListSurface,
+} from '../../../components/explorer';
 import { savedPlaylistSectionStyles as styles } from '../../../components/saved-playlist-section-styles';
+import { usePlaylistDetailSelection } from '../../../components/saved-rehearsal-library-section/use-playlist-detail-selection';
 import { PlaylistDetailRowControls } from './playlist-detail-row-controls';
 
 type PlaylistEntry = Playlist['items'][number];
 
 const DEFAULT_PLAYLIST_ADD_ITEMS_ACTION_LABEL = 'Add items';
+const SELECTION_ROW_GLYPH_SIZE = 20;
 
 export const SavedPlaylistDetailItemsList = (props: {
   addItemsActionLabel: string | null;
@@ -34,8 +43,14 @@ export const SavedPlaylistDetailItemsList = (props: {
   onToggleCurrentPlayback: () => void;
   playbackToggleDisabled: boolean;
   playbackToggleLabel: string;
+  /** The playlist these entries belong to, for bulk removal. */
+  playlist: Pick<Playlist, 'id' | 'name'> | null;
 }) => {
   const measuredItemHeightRef = useRef(102);
+  const selection = usePlaylistDetailSelection({
+    entries: props.detailEntries,
+    playlist: props.playlist,
+  });
   const [activeOptionsEntryId, setActiveOptionsEntryId] = useState<
     string | null
   >(null);
@@ -88,7 +103,7 @@ export const SavedPlaylistDetailItemsList = (props: {
         <Text style={styles.itemsHeading}>
           Items ({props.detailEntries.length})
         </Text>
-        {props.onAddItems ? (
+        {props.onAddItems && !selection.isActive ? (
           <OutlinedActionButton
             disabled={props.isMutating}
             icon="plus"
@@ -96,11 +111,37 @@ export const SavedPlaylistDetailItemsList = (props: {
             onPress={props.onAddItems}
           />
         ) : null}
+        {selection.entryButton}
       </View>
+      {selection.selectionBar}
       {props.detailEntries.length === 0 ? (
         <View style={styles.playlistRowShell}>
           <Text style={styles.emptyMessage}>{props.emptyStateMessage}</Text>
         </View>
+      ) : selection.isActive ? (
+        // Selecting swaps the row controls for plain selectable rows, which
+        // is what turns reordering off while a selection is open.
+        <ExplorerListSurface>
+          {props.detailEntries.map((entry) => (
+            <ExplorerListRow
+              key={entry.id}
+              leadingIcon={
+                <AppIcon
+                  color={appTheme.colors.icon}
+                  name={entry.kind === 'loop' ? 'repeat' : 'music-note-outline'}
+                  size={SELECTION_ROW_GLYPH_SIZE}
+                />
+              }
+              metadata={<RowMetaLine text={props.getItemDetailLabel(entry)} />}
+              selection={selection.getRowSelection(entry)}
+              title={
+                <Text numberOfLines={1} style={styles.itemTitle}>
+                  {entry.title}
+                </Text>
+              }
+            />
+          ))}
+        </ExplorerListSurface>
       ) : (
         <View>
           {props.detailEntries.map((entry, index) => {
@@ -146,6 +187,9 @@ export const SavedPlaylistDetailItemsList = (props: {
                     setActiveOptionsEntryId(null);
                   }}
                   onCommitReorder={props.onCommitReorder}
+                  onLongPressRow={() => {
+                    selection.getRowSelection(entry).onEnter();
+                  }}
                   onMoveItem={props.onMoveItem}
                   onPlayItem={() => {
                     props.onPlayPlaylistEntry(entry.id);
@@ -168,6 +212,8 @@ export const SavedPlaylistDetailItemsList = (props: {
           })}
         </View>
       )}
+
+      {selection.bulkNodes}
 
       {activeMovePositionEntry ? (
         <QueueMovePositionDialog

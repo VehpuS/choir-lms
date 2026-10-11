@@ -7,6 +7,7 @@ import {
   getSavedPlaylistDetailInitialState,
   getSavedPlaylistDetailItemRemovalCopy,
   hasSavedPlaylistDetailEntryOrderChanged,
+  isDetailDraftBehindStoredEntries,
   moveSavedPlaylistDetailEntry,
   reduceSavedPlaylistDetailState,
   removeSavedPlaylistDetailEntry,
@@ -62,6 +63,21 @@ export const useSavedPlaylistSectionState = (
       options.isDetailVisible ? (options.selectedPlaylist?.items ?? []) : [],
     );
   }, [options.isDetailVisible, options.selectedPlaylist?.id]);
+
+  // An edit made elsewhere (a bulk removal from this playlist) lands in the
+  // stored playlist; keep the open draft in step without clearing notices.
+  useEffect(() => {
+    if (
+      options.isDetailVisible &&
+      options.selectedPlaylist &&
+      isDetailDraftBehindStoredEntries(
+        options.selectedPlaylist.items,
+        detailEntriesRef.current,
+      )
+    ) {
+      setDraftEntries(options.selectedPlaylist.items);
+    }
+  }, [options.selectedPlaylist?.updatedAt]);
 
   const isMutating = options.pendingPlaylistId !== null;
   const createDialogState = useSavedPlaylistCreateDialogState({

@@ -9,6 +9,7 @@ import {
   ExplorerListRow,
   ExplorerListSurface,
 } from '../../../components/explorer';
+import { useLibraryEntitySelection } from '../../../components/saved-rehearsal-library-section/use-library-entity-selection';
 import {
   DEFAULT_TAG_MATCH_LIST_SORT_STATE,
   EMPTY_TAG_MATCH_LIST_MESSAGE,
@@ -42,11 +43,27 @@ export const TagMatchList = ({
     return sortTagMatches(matches, sortState);
   }, [matches, sortState]);
 
+  const selection = useLibraryEntitySelection({
+    rows: useMemo(
+      () =>
+        sortedMatches.map((match) => ({
+          id: match.item.id,
+          kind: match.kind,
+        })),
+      [sortedMatches],
+    ),
+    surface: 'tag-detail',
+  });
+
   return (
     <View style={styles.group}>
-      <Text style={styles.groupTitle}>
-        {getTagMatchListSectionTitle(sortedMatches.length)}
-      </Text>
+      <View style={styles.groupHeader}>
+        <Text style={styles.groupTitle}>
+          {getTagMatchListSectionTitle(sortedMatches.length)}
+        </Text>
+        {selection.entryButton}
+      </View>
+      {selection.selectionBar}
       {!hasUnfilteredMatches ? (
         <Text style={styles.emptyMessage}>{EMPTY_TAG_MATCH_LIST_MESSAGE}</Text>
       ) : sortedMatches.length === 0 ? (
@@ -76,6 +93,10 @@ export const TagMatchList = ({
                   <RowMetaLine text={getTagMatchMetadataLabel(match)} />
                 }
                 onPress={onPress}
+                selection={selection.getRowSelection({
+                  id: match.item.id,
+                  kind: match.kind,
+                })}
                 title={
                   <Text style={styles.rowTitle}>{getTagMatchTitle(match)}</Text>
                 }
@@ -84,6 +105,7 @@ export const TagMatchList = ({
           })}
         </ExplorerListSurface>
       )}
+      {selection.bulkNodes}
     </View>
   );
 };
@@ -99,8 +121,13 @@ const styles = StyleSheet.create({
   group: {
     gap: 12,
   },
+  groupHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   groupTitle: {
     ...appTheme.type.kicker,
+    flex: 1,
     color: appTheme.colors.textMuted,
   },
   rowTitle: {

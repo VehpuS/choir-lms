@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { LibrarySelectionServicesProvider } from '../../selection/library-selection-services';
+import { SelectionFeedbackCard } from './selection-feedback-card';
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
 import { resolveHasActiveLibraryFilters } from '../../search/utils/saved-library-search-view-model';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
@@ -245,6 +246,16 @@ export const SavedRehearsalLibrarySection = ({
           savedSourceCount={savedLibrarySources.length}
           savedLibraryStatusCopy={savedLibraryStatusCopy}
           savedTrackPlaybackStatusCopy={savedTrackPlaybackStatusCopy}
+        />
+        <SelectionFeedbackCard
+          feedback={libraryFilesSuccessFeedback}
+          isShownByFilesView={
+            shouldRenderBrowseContent && selectedView === 'files'
+          }
+          onBlur={onBlurLibraryFilesSuccessFeedback}
+          onDismiss={onDismissLibraryFilesSuccessFeedback}
+          onFocus={onFocusLibraryFilesSuccessFeedback}
+          onOpenFolder={onOpenLibraryFilesSuccessFeedbackFolder}
         />
         {shouldRenderBrowseContent ? (
           <SavedRehearsalLibraryBrowseContent

@@ -132,6 +132,7 @@ export const SavedPlaylistDetailCard = (props: {
         onToggleCurrentPlayback={props.onToggleCurrentPlayback}
         playbackToggleDisabled={props.playbackToggleDisabled}
         playbackToggleLabel={props.playbackToggleLabel}
+        playlist={props.selectedPlaylist}
       />
 
       <PlaylistRenameDialog

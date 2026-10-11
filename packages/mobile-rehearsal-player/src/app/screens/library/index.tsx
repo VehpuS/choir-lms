@@ -53,9 +53,21 @@ export const LibraryScreen = ({
   const librarySuccessFeedback =
     useScopedSuccessAcknowledgment<LibraryFilesSuccessFeedback>({
       autoDismissMs: SUCCESS_ACKNOWLEDGMENT_AUTO_DISMISS_MS,
-      isActive: isActive && selectedView === 'files',
+      isActive,
       isScreenReaderEnabled: () => AccessibilityInfo.isScreenReaderEnabled(),
     });
+  // An acknowledgment belongs to the view that produced it, so switching
+  // views clears it (as leaving Files always has).
+  // `dismiss` is rebuilt every render, so the effect reads it through a ref
+  // and re-runs only when the view changes.
+  const dismissLibrarySuccessFeedbackRef = useRef(
+    librarySuccessFeedback.dismiss,
+  );
+
+  dismissLibrarySuccessFeedbackRef.current = librarySuccessFeedback.dismiss;
+  useEffect(() => {
+    dismissLibrarySuccessFeedbackRef.current();
+  }, [selectedView]);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
   const [playlistDetailPlayback, setPlaylistDetailPlayback] =
     useState<PlaylistDetailHeaderPlaybackAction | null>(null);

@@ -15,6 +15,7 @@ import {
   buildSavedPlaylistDetailDraftPlaylist,
   getSavedPlaylistDetailInitialState,
   hasSavedPlaylistDetailEntryOrderChanged,
+  isDetailDraftBehindStoredEntries,
   isSavedPlaylistEntryPlayable,
   moveSavedPlaylistDetailEntry,
   reduceSavedPlaylistDetailState,
@@ -227,6 +228,40 @@ describe('saved playlist detail view-model', () => {
           moveY: 730,
           viewportHeight: 800,
         }),
+    );
+  });
+});
+
+describe('isDetailDraftBehindStoredEntries', () => {
+  const entry = (id: string) =>
+    ({ id, kind: 'track', sourceId: id }) as unknown as Parameters<
+      typeof isDetailDraftBehindStoredEntries
+    >[0][number];
+
+  it('is false while the draft matches storage, including after a persisted reorder', () => {
+    assert.equal(
+      isDetailDraftBehindStoredEntries(
+        [entry('a'), entry('b')],
+        [entry('a'), entry('b')],
+      ),
+      false,
+    );
+  });
+
+  it('is true when storage lost an entry the draft still shows', () => {
+    assert.equal(
+      isDetailDraftBehindStoredEntries([entry('a')], [entry('a'), entry('b')]),
+      true,
+    );
+  });
+
+  it('is true when the same entries are stored in another order', () => {
+    assert.equal(
+      isDetailDraftBehindStoredEntries(
+        [entry('b'), entry('a')],
+        [entry('a'), entry('b')],
+      ),
+      true,
     );
   });
 });

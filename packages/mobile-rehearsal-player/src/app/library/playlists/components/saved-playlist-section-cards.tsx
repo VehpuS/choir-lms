@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AppIcon } from '../../../components/app-icon';
@@ -11,6 +11,7 @@ import {
   ExplorerListSurface,
 } from '../../components/explorer';
 import { FeedbackCard } from '../../components/feedback-card';
+import { useLibraryEntitySelection } from '../../components/saved-rehearsal-library-section/use-library-entity-selection';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import {
   getSavedPlaylistCardPlayAction,
@@ -65,6 +66,18 @@ export const SavedPlaylistCardsList = (props: {
     null,
   );
 
+  const selection = useLibraryEntitySelection({
+    rows: useMemo(
+      () =>
+        props.playlistCards.map(({ playlist }) => ({
+          id: playlist.id,
+          kind: 'playlist' as const,
+        })),
+      [props.playlistCards],
+    ),
+    surface: 'playlists',
+  });
+
   if (props.playlistCards.length === 0) {
     return null;
   }
@@ -79,9 +92,13 @@ export const SavedPlaylistCardsList = (props: {
 
   return (
     <View style={styles.surface}>
-      <Text style={styles.listTitle}>
-        Playlists ({props.playlistCards.length})
-      </Text>
+      <View style={styles.listHeader}>
+        <Text style={styles.listTitle}>
+          Playlists ({props.playlistCards.length})
+        </Text>
+        {selection.entryButton}
+      </View>
+      {selection.selectionBar}
       <ExplorerListSurface>
         {props.playlistCards.map((playlistCard) => {
           const playAction = getSavedPlaylistCardPlayAction(
@@ -120,6 +137,10 @@ export const SavedPlaylistCardsList = (props: {
                 onPress={() => {
                   props.onSelectPlaylist(playlistCard.playlist.id);
                 }}
+                selection={selection.getRowSelection({
+                  id: playlistCard.playlist.id,
+                  kind: 'playlist',
+                })}
                 overflowTrigger={
                   <OverflowMenuTrigger
                     accessibilityLabel={`${playlistCard.playlist.name} options`}
@@ -143,6 +164,7 @@ export const SavedPlaylistCardsList = (props: {
           );
         })}
       </ExplorerListSurface>
+      {selection.bulkNodes}
       <PlaylistOptionsMenuSurface
         isMutating={props.isMutating || !props.canMutatePlaylists}
         isVisible={selectedOptionsPlaylist !== undefined}
@@ -202,8 +224,13 @@ export { SavedPlaylistDetailCard } from './saved-playlist-detail-card';
 const LEADING_GLYPH_SIZE = 20;
 
 const styles = StyleSheet.create({
+  listHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   listTitle: {
     ...appTheme.type.kicker,
+    flex: 1,
     color: appTheme.colors.textMuted,
   },
   rowOverflowTrigger: {

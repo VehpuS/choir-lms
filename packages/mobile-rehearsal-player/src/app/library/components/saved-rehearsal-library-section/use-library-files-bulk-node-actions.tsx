@@ -1,4 +1,5 @@
 import type {
+  PlacementItem,
   PlacementMode,
   PlacementPlanEntry,
   PlacementResolution,
@@ -36,6 +37,11 @@ type PlacementState = {
 
 type UseLibraryFilesBulkNodeActionsOptions = {
   files: UseLibraryFilesResult;
+  /**
+   * The nodes a copy or move acts on. Files reads them from the tree; the
+   * views without folder links supply synthetic ones (see `entity-selection`).
+   */
+  getPlacementItems?: () => PlacementItem[];
   /** The selection in display order. */
   items: readonly FilesSelectionItem[];
   /** Called once an action finished, so the view can leave selection mode. */
@@ -53,6 +59,7 @@ const UNDO_LABEL = 'Undo';
  */
 export const useLibraryFilesBulkNodeActions = ({
   files,
+  getPlacementItems,
   items,
   onCompleted,
 }: UseLibraryFilesBulkNodeActionsOptions) => {
@@ -145,7 +152,8 @@ export const useLibraryFilesBulkNodeActions = ({
         return;
       }
 
-      const { placementItems } = toPlacementItems(items, tree);
+      const placementItems =
+        getPlacementItems?.() ?? toPlacementItems(items, tree).placementItems;
       const entries = files.bulk.planPlacement({
         destinationFolderId,
         items: placementItems,
@@ -178,7 +186,7 @@ export const useLibraryFilesBulkNodeActions = ({
         },
       });
     },
-    [applyPlacement, files.bulk, items, placement, tree],
+    [applyPlacement, files.bulk, getPlacementItems, items, placement, tree],
   );
 
   const startPlacement = useCallback(

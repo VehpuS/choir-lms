@@ -11,6 +11,7 @@ import {
   type BrowseSourceRowSharedProps,
 } from './browse-source-row';
 import { resolveTracksPlayAllItems } from './browse-source-row-model';
+import { useLibraryEntitySelection } from './use-library-entity-selection';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 
 type BrowseSourceGroupProps = BrowseSourceRowSharedProps &
@@ -36,6 +37,13 @@ export const BrowseSourceGroup = ({
     return countLoopsBySourceId(savedLoops);
   }, [savedLoops]);
   const playAllItems = resolveTracksPlayAllItems(sources);
+  const selection = useLibraryEntitySelection({
+    rows: useMemo(
+      () => sources.map(({ id }) => ({ id, kind: 'track' as const })),
+      [sources],
+    ),
+    surface: 'tracks',
+  });
 
   if (sources.length === 0) {
     return null;
@@ -47,8 +55,12 @@ export const BrowseSourceGroup = ({
 
   return (
     <View style={styles.group}>
-      <Text style={styles.groupTitle}>{savedSourceTitle}</Text>
-      {playAllItems.length > 0 ? (
+      <View style={styles.headerRow}>
+        <Text style={styles.groupTitle}>{savedSourceTitle}</Text>
+        {selection.entryButton}
+      </View>
+      {selection.selectionBar}
+      {playAllItems.length > 0 && !selection.isActive ? (
         <View style={styles.playActions}>
           {/* Starting a queue supersedes any load still in progress. */}
           <OutlinedActionButton
@@ -85,11 +97,16 @@ export const BrowseSourceGroup = ({
               onOpenMenu={() => {
                 setOpenMenuSourceId(source.id);
               }}
+              selection={selection.getRowSelection({
+                id: source.id,
+                kind: 'track',
+              })}
               source={source}
             />
           );
         })}
       </ExplorerListSurface>
+      {selection.bulkNodes}
     </View>
   );
 };
@@ -100,7 +117,12 @@ const styles = StyleSheet.create({
   },
   groupTitle: {
     ...appTheme.type.kicker,
+    flex: 1,
     color: appTheme.colors.textMuted,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   playActions: {
     flexDirection: 'row',

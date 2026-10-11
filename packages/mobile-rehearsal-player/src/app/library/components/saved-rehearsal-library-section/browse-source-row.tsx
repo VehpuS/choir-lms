@@ -20,6 +20,7 @@ import {
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import { getSavedRehearsalLibrarySourceIssue } from '../../saved-rehearsal-library/view-model';
 import { ExplorerListRow } from '../explorer';
+import type { ExplorerRowSelection } from '../explorer/model';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import { resolveSavedTrackMenu } from '../saved-item-menu/saved-item-menus';
 import { SavedTrackMenuProvenance } from '../saved-item-menu/saved-track-menu-provenance';
@@ -68,6 +69,8 @@ type BrowseSourceRowProps = BrowseSourceRowSharedProps & {
   loopCount: number;
   onCloseMenu: () => void;
   onOpenMenu: () => void;
+  /** Selection wiring from the view's selection mode. */
+  selection?: ExplorerRowSelection;
   source: SavedRehearsalLibrarySectionProps['savedLibrarySources'][number];
 };
 
@@ -103,6 +106,7 @@ export const BrowseSourceRow = ({
   removeSource,
   savedLibraryIssue,
   searchQuery,
+  selection,
   source,
   toggleSourcePlayback,
 }: BrowseSourceRowProps) => {
@@ -179,7 +183,8 @@ export const BrowseSourceRow = ({
             ) : null}
           </>
         }
-        disabled={!isAvailable}
+        // Selection can still pick an unavailable row, for removal.
+        disabled={!isAvailable && !selection?.isActive}
         leadingIcon={
           <Text
             style={[styles.index, isActive ? styles.indexActive : undefined]}
@@ -202,6 +207,7 @@ export const BrowseSourceRow = ({
         onPress={() => {
           void toggleSourcePlayback(source);
         }}
+        selection={selection}
         overflowTrigger={
           sheetActions.length > 0 ? (
             <OverflowMenuTrigger

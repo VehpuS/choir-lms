@@ -1,5 +1,5 @@
 import { type PlayableItem } from '@org/audio-library-models';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 
 import {
@@ -10,6 +10,7 @@ import type {
   SavedLoopCard,
   SavedLoopIssue,
 } from '../../utils/saved-loop-view-model';
+import { useLibraryEntitySelection } from '../../../components/saved-rehearsal-library-section/use-library-entity-selection';
 import { savedLoopListStyles as styles } from '../saved-loop-list-styles';
 import { SavedLoopListRow } from './saved-loop-list-row';
 
@@ -68,15 +69,28 @@ export const SavedLoopList = ({
     null,
   );
 
+  const selection = useLibraryEntitySelection({
+    rows: useMemo(
+      () =>
+        loopCards.map(({ loop }) => ({ id: loop.id, kind: 'loop' as const })),
+      [loopCards],
+    ),
+    surface: 'loops',
+  });
+
   if (loopCards.length === 0) {
     return null;
   }
 
   return (
     <View style={styles.loopGroup}>
-      <Text style={styles.loopGroupTitle}>
-        {title ?? `Saved loops (${loopCards.length})`}
-      </Text>
+      <View style={styles.loopGroupHeader}>
+        <Text style={styles.loopGroupTitle}>
+          {title ?? `Saved loops (${loopCards.length})`}
+        </Text>
+        {selection.entryButton}
+      </View>
+      {selection.selectionBar}
 
       <View style={styles.loopCards}>
         {loopCards.map((loopCard) => {
@@ -111,11 +125,16 @@ export const SavedLoopList = ({
               queuePlayableItemNext={queuePlayableItemNext}
               queuePlayableItemUpNext={queuePlayableItemUpNext}
               removeLoop={removeLoop}
+              selection={selection.getRowSelection({
+                id: loopCard.loop.id,
+                kind: 'loop',
+              })}
               togglePlayableItemPlayback={togglePlayableItemPlayback}
             />
           );
         })}
       </View>
+      {selection.bulkNodes}
     </View>
   );
 };
