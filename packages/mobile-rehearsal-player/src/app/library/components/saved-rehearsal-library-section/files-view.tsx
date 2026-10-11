@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { getLibraryFilesRowNodeKey } from '../../saved-rehearsal-library/library-files-model';
@@ -13,9 +13,11 @@ import {
   getFilesPlaylistAddModeCopy,
 } from './files-view-model';
 import { LibraryFilesSuccessFeedbackCard } from './library-files-success-feedback-card';
+import { useLibraryFilesSelection } from './use-library-files-selection';
 import { useLibraryFilesRowActionFlows } from './use-library-files-row-action-flows';
 
 const DISMISS_LABEL = 'Dismiss';
+const NO_ROWS: never[] = [];
 
 export const SavedRehearsalLibraryFilesView = ({
   activePlayableItem,
@@ -59,16 +61,29 @@ export const SavedRehearsalLibraryFilesView = ({
   onTogglePlayableItemPlayback,
   onToggleSourcePlayback,
 }: SavedRehearsalLibraryFilesViewProps) => {
-  const explorer = files.resolveExplorerState({
-    activeSearchQuery: searchState.activeSearchQuery,
-    entityFilter: searchState.entityFilter,
-    openedAtByNodeKey: searchState.filesOpenedAtByNodeKey,
-    searchScope: searchState.filesSearchScope,
-    selectedTagFilters: searchState.selectedTagFilters,
-    sortDirection: searchState.filesSortDirection,
-    sortMode: searchState.filesSortMode,
-    tagFilterMatchMode: searchState.tagFilterMatchMode,
-  });
+  const searchOptions = useMemo(
+    () => ({
+      activeSearchQuery: searchState.activeSearchQuery,
+      entityFilter: searchState.entityFilter,
+      openedAtByNodeKey: searchState.filesOpenedAtByNodeKey,
+      searchScope: searchState.filesSearchScope,
+      selectedTagFilters: searchState.selectedTagFilters,
+      sortDirection: searchState.filesSortDirection,
+      sortMode: searchState.filesSortMode,
+      tagFilterMatchMode: searchState.tagFilterMatchMode,
+    }),
+    [
+      searchState.activeSearchQuery,
+      searchState.entityFilter,
+      searchState.filesOpenedAtByNodeKey,
+      searchState.filesSearchScope,
+      searchState.filesSortDirection,
+      searchState.filesSortMode,
+      searchState.selectedTagFilters,
+      searchState.tagFilterMatchMode,
+    ],
+  );
+  const explorer = files.resolveExplorerState(searchOptions);
   const [openMenuRowKey, setOpenMenuRowKey] = useState<string | null>(null);
   const rowActionFlows = useLibraryFilesRowActionFlows({
     authorization,
@@ -98,6 +113,12 @@ export const SavedRehearsalLibraryFilesView = ({
     onViewTrackLoops,
     onShowSuccessFeedback,
     originalLocationActions,
+  });
+
+  const selection = useLibraryFilesSelection({
+    files,
+    rows: explorer?.rows ?? NO_ROWS,
+    searchOptions,
   });
 
   useEffect(() => {
@@ -193,8 +214,10 @@ export const SavedRehearsalLibraryFilesView = ({
           files.goToParentFolder();
         }}
         title={viewModel.currentFolderName}
+        trailingAction={selection.entryButton}
       />
       <ExplorerBreadcrumbBar items={viewModel.breadcrumbs} />
+      {selection.selectionBar}
       {playlistAddModeCopy && activePlaylistAddMode ? (
         <FeedbackCard
           footer={
@@ -216,6 +239,11 @@ export const SavedRehearsalLibraryFilesView = ({
         createMenuActions={rowActionFlows.createMenuActions}
         openMenuRowKey={openMenuRowKey}
         rows={explorer.rows}
+        selection={{
+          getRowSelection: selection.getRowSelection,
+          isActive: selection.isActive,
+          onOpenFolder: files.openFolder,
+        }}
         searchQuery={searchState.activeSearchQuery}
         setOpenMenuRowKey={setOpenMenuRowKey}
         viewModel={viewModel}
@@ -231,6 +259,7 @@ export const SavedRehearsalLibraryFilesView = ({
           />
         </View>
       ) : null}
+      {selection.bulkNodes}
       {rowActionFlows.destinationPicker}
       {rowActionFlows.renameDialog}
     </View>

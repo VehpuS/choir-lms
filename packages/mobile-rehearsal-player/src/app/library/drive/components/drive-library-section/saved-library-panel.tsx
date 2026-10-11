@@ -59,6 +59,8 @@ type DriveLibrarySavedLibraryPanelProps = {
   savedTrackPlaybackStatusCopy: SavedLibrarySectionProps['savedTrackPlaybackStatusCopy'];
 };
 
+const noBulkQueue = () => undefined;
+
 export const DriveLibrarySavedLibraryPanel = ({
   openLoopBuilderForSource,
   playback,
@@ -114,6 +116,10 @@ export const DriveLibrarySavedLibraryPanel = ({
       playlistIssue={savedPlaylistsState.issue}
       queuePlayableItemNext={playback.queuePlayableItemNext}
       queuePlayableItemUpNext={playback.queuePlayableItemUpNext}
+      // This legacy panel (8.16) has no selection mode, so bulk queueing
+      // is never reached.
+      queuePlayableItemsNext={noBulkQueue}
+      queuePlayableItemsUpNext={noBulkQueue}
       removeLoop={savedLibraryActions.confirmRemoveLoop}
       removeSource={savedLibraryActions.confirmRemoveSource}
       savedLibraryIssue={savedLibraryState.issue}

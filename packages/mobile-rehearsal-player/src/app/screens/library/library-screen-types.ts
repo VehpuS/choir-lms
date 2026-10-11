@@ -13,6 +13,8 @@ type SavedTrackPlaybackController = Pick<
   | 'progress'
   | 'queuePlayableItemNext'
   | 'queuePlayableItemUpNext'
+  | 'queuePlayableItemsNext'
+  | 'queuePlayableItemsUpNext'
   | 'seekActivePlaybackToPosition'
   | 'syncActivePlaylistContext'
   | 'toggleActivePlayback'

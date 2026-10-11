@@ -7,6 +7,7 @@ import type { LibraryFilesSuccessFeedback } from '../../library/components/saved
 import type { LibraryBrowseCreateDockMode } from '../../library/components/saved-rehearsal-library-section/types';
 import { useSavedRehearsalLibrarySearch } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search';
 import { useSavedRehearsalLibrarySearchPanel } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search-panel';
+import { usePinnedBulkActionBarProps } from '../../library/selection/use-pinned-bulk-action-bar';
 import { LoopPreviewPlaybackContext } from '../../library/loops/components/loop-preview-playback-context';
 import type { PlaylistDetailHeaderPlaybackAction } from '../../library/playlists/utils/saved-playlist-playback-view-model';
 import type { SavedRehearsalLibraryView } from '../../library/saved-rehearsal-library/detail-mode';
@@ -71,6 +72,8 @@ export const LibraryScreen = ({
   const playlistSelectionHandlerRef = useRef<
     ((playlistId: string) => void) | null
   >(null);
+  // The create dock gives way while a selection's bulk-action bar is pinned.
+  const isBulkBarPinned = usePinnedBulkActionBarProps() !== null;
   const scrollCoordination = useLibraryScreenScrollCoordination();
   const searchState = useSavedRehearsalLibrarySearch({
     savedLibrarySources: libraryController.savedLibrary.savedLibrarySources,
@@ -136,7 +139,9 @@ export const LibraryScreen = ({
         contentContainerStyle={[
           styles.content,
           scrollGutterStyles.content,
-          browseCreateDockMode !== null ? styles.contentWithCreateDock : null,
+          browseCreateDockMode !== null && !isBulkBarPinned
+            ? styles.contentWithCreateDock
+            : null,
         ]}
         onContentSizeChange={scrollCoordination.handleContentSizeChange}
         onLayout={scrollCoordination.handleLayout}
@@ -162,6 +167,7 @@ export const LibraryScreen = ({
             createPlaylist={libraryController.playlists.createPlaylist}
             deletePlaylist={libraryController.playlists.deletePlaylist}
             getCurrentScrollOffsetY={scrollCoordination.getCurrentScrollOffsetY}
+            isDestinationActive={isActive}
             isPlaybackPreparing={playback.isPreparing}
             isPlaylistCreateDialogVisible={
               isFilesPlaylistCreateDialogVisible ||
@@ -205,6 +211,8 @@ export const LibraryScreen = ({
             playlistIssue={libraryController.playlists.issue}
             queuePlayableItemNext={playback.queuePlayableItemNext}
             queuePlayableItemUpNext={playback.queuePlayableItemUpNext}
+            queuePlayableItemsNext={playback.queuePlayableItemsNext}
+            queuePlayableItemsUpNext={playback.queuePlayableItemsUpNext}
             removeLoop={libraryController.savedLibrary.removeLoop}
             removeSource={libraryController.savedLibrary.removeSource}
             requestedLoopEditId={requestedLoopEditId}
@@ -253,7 +261,7 @@ export const LibraryScreen = ({
       <LibraryFilesCreateControls
         createPlaylist={libraryController.playlists.createPlaylist}
         files={libraryController.savedLibrary.files}
-        isVisible={browseCreateDockMode === 'files'}
+        isVisible={browseCreateDockMode === 'files' && !isBulkBarPinned}
         onPlaylistCreateDialogVisibilityChange={
           setIsFilesPlaylistCreateDialogVisible
         }
@@ -264,7 +272,7 @@ export const LibraryScreen = ({
       <LibraryPlaylistCreateControls
         canMutatePlaylists={libraryController.playlists.canMutatePlaylists}
         createPlaylist={libraryController.playlists.createPlaylist}
-        isVisible={browseCreateDockMode === 'playlists'}
+        isVisible={browseCreateDockMode === 'playlists' && !isBulkBarPinned}
         onPlaylistCreateDialogVisibilityChange={
           setIsPlaylistsDockCreateDialogVisible
         }

@@ -1,6 +1,6 @@
 import type { Playlist } from '@org/audio-library-models';
 
-import type { UseLibraryFilesResult } from '../../library/saved-rehearsal-library/use-library-files';
+import type { UseLibraryFilesResult } from './use-library-files';
 
 type LibraryFilesPlaylistCreateController = Pick<
   UseLibraryFilesResult,

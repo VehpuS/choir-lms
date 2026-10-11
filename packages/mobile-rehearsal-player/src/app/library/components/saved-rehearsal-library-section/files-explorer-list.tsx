@@ -6,6 +6,7 @@ import {
 } from '../../../components/interaction-guard';
 import { AppIcon } from '../../../components/app-icon';
 import { CompactPlaybackAction } from '../../../components/compact-playback-action';
+import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { RowMetaLine } from '../../../components/row-meta-line';
 import { RowPreparingIndicator } from '../../../components/row-preparing-indicator';
@@ -13,6 +14,7 @@ import { appTheme } from '../../../utils/theme';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import { ExplorerListRow, ExplorerListSurface } from '../explorer';
+import type { ExplorerRowSelection } from '../explorer/model';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import { SavedTrackMenuProvenance } from '../saved-item-menu/saved-track-menu-provenance';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
@@ -20,6 +22,15 @@ import { resolveFilesRowMenuTitle } from './files-row-actions';
 import type { SavedRehearsalLibraryFilesViewModel } from './files-view-model';
 
 const LEADING_GLYPH_SIZE = 20;
+const OPEN_FOLDER_CHEVRON_SIZE = 16;
+
+export type FilesExplorerListSelection = {
+  getRowSelection: (
+    row: NonNullable<UseLibraryFilesResult['explorer']>['rows'][number],
+  ) => ExplorerRowSelection;
+  isActive: boolean;
+  onOpenFolder: (folderId: string) => void;
+};
 
 export const FilesExplorerList = (options: {
   createMenuActions: (
@@ -28,6 +39,7 @@ export const FilesExplorerList = (options: {
   openMenuRowKey: string | null;
   rows: NonNullable<UseLibraryFilesResult['explorer']>['rows'];
   searchQuery: string | null;
+  selection?: FilesExplorerListSelection;
   setOpenMenuRowKey: (rowKey: string | null) => void;
   viewModel: SavedRehearsalLibraryFilesViewModel;
 }) => {
@@ -42,7 +54,8 @@ export const FilesExplorerList = (options: {
         return (
           <View key={viewModelRow.key}>
             <ExplorerListRow
-              disabled={viewModelRow.disabled}
+              // Selection can still pick an unavailable row, for removal.
+              disabled={viewModelRow.disabled && !options.selection?.isActive}
               leadingIcon={
                 <AppIcon
                   color={
@@ -101,8 +114,20 @@ export const FilesExplorerList = (options: {
               }
               metadata={<RowMetaLine text={viewModelRow.metaLabel} />}
               onPress={viewModelRow.onPress}
+              selection={options.selection?.getRowSelection(row)}
               overflowTrigger={
-                menuActions.length > 0 ? (
+                options.selection?.isActive && row.kind === 'folder' ? (
+                  // In selection mode a tap on the row selects it, so the
+                  // folder keeps its own control for opening it.
+                  <SurfaceIconButton
+                    accessibilityLabel={`Open ${row.label}`}
+                    icon="chevron-right"
+                    onPress={() => {
+                      options.selection?.onOpenFolder(row.folder.id);
+                    }}
+                    size={OPEN_FOLDER_CHEVRON_SIZE}
+                  />
+                ) : menuActions.length > 0 ? (
                   <OverflowMenuTrigger
                     accessibilityLabel={`${resolveFilesRowMenuTitle(row)} options`}
                     onPress={() => {

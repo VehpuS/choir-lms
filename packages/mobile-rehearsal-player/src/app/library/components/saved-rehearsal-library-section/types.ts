@@ -45,6 +45,7 @@ export type SavedRehearsalLibrarySectionProps = {
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
   deletePlaylist: (playlist: Playlist) => Promise<boolean>;
   getCurrentScrollOffsetY: () => number;
+  isDestinationActive?: boolean;
   isPlaybackPreparing: boolean;
   isPlaylistCreateDialogVisible?: boolean;
   isPlaylistsLoading: boolean;
@@ -63,6 +64,8 @@ export type SavedRehearsalLibrarySectionProps = {
   playlistIssue: SavedPlaylistIssue | null;
   queuePlayableItemNext: (playableItem: PlayableItem) => void;
   queuePlayableItemUpNext: (playableItem: PlayableItem) => void;
+  queuePlayableItemsNext: (playableItems: readonly PlayableItem[]) => void;
+  queuePlayableItemsUpNext: (playableItems: readonly PlayableItem[]) => void;
   removeLoop: (loop: NamedLoop) => void;
   removeSource: (source: DriveLibrarySource) => void;
   requestedLoopEditId?: string | null;

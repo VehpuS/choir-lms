@@ -20,6 +20,7 @@ import {
   type LibraryFilesIssue,
   type UseLibraryFilesOptions,
 } from './library-files-operation-helpers';
+import { createLibraryFilesBulkOperations } from './library-files-bulk-operations';
 import { createLibraryFilesOperations } from './library-files-operations';
 
 const practiceRepository = new AsyncStoragePracticeRepository();
@@ -159,7 +160,16 @@ export const useLibraryFiles = (
     tree,
   });
 
+  const bulk = createLibraryFilesBulkOperations({
+    options,
+    practiceRepository,
+    setIssue,
+    setTree,
+    tree,
+  });
+
   return {
+    bulk,
     clearIssue() {
       setIssue(null);
     },
@@ -229,6 +239,7 @@ export const useLibraryFiles = (
     renameFileLink: operations.renameFileLink,
     renameFolder: operations.renameFolder,
     saveFolderTags: operations.saveFolderTags,
+    tree,
     stageDriveImportForCurrentFolder() {
       const stagedFolderId =
         explorer?.currentFolder.id ?? tree?.rootFolderId ?? null;

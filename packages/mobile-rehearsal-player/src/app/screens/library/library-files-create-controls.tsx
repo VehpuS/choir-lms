@@ -18,7 +18,7 @@ import {
 import type { LibraryFilesIssue } from '../../library/saved-rehearsal-library/library-files-operation-helpers';
 import type { UseLibraryFilesResult } from '../../library/saved-rehearsal-library/use-library-files';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../library/storage/local-library-storage';
-import { createPlaylistWithFilesLocation } from './library-files-playlist-create';
+import { createPlaylistWithFilesLocation } from '../../library/saved-rehearsal-library/library-files-playlist-create';
 
 type LibraryFilesCreateControlsProps = {
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
