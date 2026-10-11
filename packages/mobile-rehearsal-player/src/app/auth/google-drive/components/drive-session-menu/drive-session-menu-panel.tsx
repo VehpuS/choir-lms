@@ -16,6 +16,7 @@ type DriveSessionMenuPanelProps = {
   canStartAuthorization: boolean;
   isBusy: boolean;
   onClearAuthorization: () => void;
+  onOpenSettings: () => void;
   onStartAuthorization: () => void;
   requestReady: boolean;
   statusCopy: DriveAuthorizationStatusCopy;
@@ -61,6 +62,7 @@ export const DriveSessionMenuPanel = ({
   canStartAuthorization,
   isBusy,
   onClearAuthorization,
+  onOpenSettings,
   onStartAuthorization,
   requestReady,
   statusCopy,
@@ -120,6 +122,11 @@ export const DriveSessionMenuPanel = ({
             variant="neutral"
           />
         ) : null}
+        <OutlinedActionButton
+          label="Settings"
+          onPress={onOpenSettings}
+          variant="neutral"
+        />
       </View>
     </View>
   );

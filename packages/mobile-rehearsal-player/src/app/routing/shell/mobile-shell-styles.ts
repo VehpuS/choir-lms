@@ -28,6 +28,17 @@ export const styles = StyleSheet.create({
   destinationPanel: {
     flex: 1,
   },
+  // Settings shows over the destinations, not as a tab; absolute children
+  // ignore the viewport's padding, so the screen carries its own inset.
+  settingsOverlay: {
+    backgroundColor: colors.bg,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    zIndex: 40,
+  },
   destinationPanelActive: {
     display: 'flex',
   },

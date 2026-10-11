@@ -5,7 +5,7 @@ import {
   type BulkChoicePreferences,
   type PlaylistsInFoldersPreference,
   type RepeatedItemsPreference,
-} from './bulk-choices.js';
+} from './bulk-choices';
 
 type BulkChoicePreferencesStorage = Pick<
   typeof AsyncStorage,

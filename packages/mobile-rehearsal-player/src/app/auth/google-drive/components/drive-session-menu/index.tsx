@@ -2,6 +2,7 @@ import type { DriveAuthorizationState } from '@org/google-drive';
 import { StyleSheet, View } from 'react-native';
 
 import type { DriveAuthorizationStatusCopy } from '../../utils/authorization';
+import { settingsNavigationStore } from '../../../../screens/settings/settings-navigation-store';
 import { DriveSessionMenuPanel } from './drive-session-menu-panel';
 import { DriveSessionMenuTrigger } from './drive-session-menu-trigger';
 
@@ -45,6 +46,11 @@ export const DriveSessionMenu = ({
           canStartAuthorization={canStartAuthorization}
           isBusy={isBusy}
           onClearAuthorization={onClearAuthorization}
+          onOpenSettings={() => {
+            // The menu is open, so toggling closes it before Settings shows.
+            onToggleVisibility();
+            settingsNavigationStore.open();
+          }}
           onStartAuthorization={onStartAuthorization}
           requestReady={requestReady}
           statusCopy={statusCopy}

@@ -7,6 +7,11 @@ import type { SavedTrackPlaybackState } from '../../../library/playback/utils/sa
 import type { PlaylistPlaybackSession } from '../../../library/playlists/utils/saved-playlist-playback-view-model';
 import type { PlaylistDraftIssue } from '../../../library/playlists/utils/saved-playlist-view-model';
 import type { PlaybackShapingControls } from '../../playback/shaping/shaping-surface-model';
+import { SettingsScreen } from '../../../screens/settings';
+import {
+  settingsNavigationStore,
+  useIsSettingsOpen,
+} from '../../../screens/settings/settings-navigation-store';
 import { styles } from '../mobile-shell-styles';
 import {
   SHELL_DESTINATIONS,
@@ -134,6 +139,7 @@ export const MobileShell = ({
 }: MobileShellProps) => {
   const [activeDestination, setActiveDestination] =
     useState<ShellDestinationKey>('library');
+  const isSettingsOpen = useIsSettingsOpen();
   const [activePlaybackSurface, setActivePlaybackSurface] =
     useState<PlaybackSurfaceKey | null>(null);
   const miniPlayerSummary = getMiniPlayerSummary({
@@ -209,6 +215,11 @@ export const MobileShell = ({
             </View>
           );
         })}
+        {isSettingsOpen ? (
+          <View style={styles.settingsOverlay}>
+            <SettingsScreen />
+          </View>
+        ) : null}
       </View>
 
       <PinnedBulkActionBarHost>
@@ -223,6 +234,8 @@ export const MobileShell = ({
             setActivePlaybackSurface('now-playing');
           }}
           onSelectDestination={(destination) => {
+            // Settings covers the destinations, so choosing one leaves it.
+            settingsNavigationStore.close();
             onCloseTagDetail();
             setActiveDestination(destination);
           }}

@@ -3,7 +3,7 @@ import {
   type BulkSelectionItem,
   type PlaybackExpansionContext,
   type PlaybackExpansionOptions,
-} from './playback-expansion.js';
+} from './playback-expansion';
 
 export type PlaylistsInFoldersPreference = 'ask' | 'include' | 'skip';
 export type RepeatedItemsPreference = 'ask' | 'keep' | 'remove';
