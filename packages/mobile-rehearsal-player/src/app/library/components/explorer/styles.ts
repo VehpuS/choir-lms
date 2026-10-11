@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
 
+const ROW_VERTICAL_PADDING = 11;
 const { colors, space } = appTheme;
 
 const LEADING_GLYPH_SLOT = 20;
@@ -77,7 +78,7 @@ export const explorerStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.sm,
-    paddingVertical: 11,
+    paddingVertical: ROW_VERTICAL_PADDING,
   },
   rowActiveMark: {
     position: 'absolute',
@@ -105,11 +106,18 @@ export const explorerStyles = StyleSheet.create({
     minWidth: 0,
     gap: 2,
   },
+  // With trailing controls the row's own padding moves inside this press
+  // target, so the tap area is the whole row height (react-native-web ignores
+  // `hitSlop`, so padding is what makes a short row a 44pt target).
   rowMainPressable: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.sm,
+    paddingVertical: ROW_VERTICAL_PADDING,
+  },
+  rowWithTrailingControls: {
+    paddingVertical: 0,
   },
   rowPressed: {
     opacity: 0.7,

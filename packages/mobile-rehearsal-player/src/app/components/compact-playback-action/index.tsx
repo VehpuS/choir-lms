@@ -1,6 +1,7 @@
 import {
   Pressable,
   StyleSheet,
+  View,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
@@ -44,13 +45,17 @@ const styles = StyleSheet.create({
     borderColor: COMPACT_PLAYBACK_ACTION_BORDER,
     backgroundColor: COMPACT_PLAYBACK_ACTION_BACKGROUND,
   },
+  // The transparent press target around a smaller ring.
+  hitBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 
 const toVariantStyle = (tokens: CompactPlaybackActionVariantTokens) => {
   return {
     borderRadius: tokens.borderRadius,
     height: tokens.height,
-    margin: tokens.margin,
     minHeight: tokens.minHeight,
     minWidth: tokens.minWidth,
     paddingHorizontal: tokens.paddingHorizontal,
@@ -71,6 +76,21 @@ export const CompactPlaybackAction = ({
   variant = 'inline',
 }: CompactPlaybackActionProps) => {
   const tokens = getCompactPlaybackActionVariantTokens(variant);
+  const icon = (
+    <AppIcon
+      color={disabled ? disabledIconColor : iconColor}
+      name={iconName}
+      size={tokens.iconSize}
+    />
+  );
+  const hitBoxStyle =
+    tokens.hitBox === undefined
+      ? undefined
+      : {
+          height: tokens.hitBox,
+          margin: tokens.margin,
+          width: tokens.hitBox,
+        };
 
   return (
     <Pressable
@@ -82,7 +102,6 @@ export const CompactPlaybackAction = ({
       })}
       {...interactionGuardProps}
       disabled={disabled}
-      hitSlop={tokens.hitSlop}
       onPress={onPress}
       style={({ pressed }) => {
         const visualState = getCompactPlaybackActionVisualState({
@@ -91,8 +110,8 @@ export const CompactPlaybackAction = ({
         });
 
         return [
-          styles.action,
-          toVariantStyle(tokens),
+          hitBoxStyle ? styles.hitBox : styles.action,
+          hitBoxStyle ?? toVariantStyle(tokens),
           buttonInteractionGuardStyle,
           style,
           visualState.pressed ? { opacity: tokens.pressedOpacity } : undefined,
@@ -103,11 +122,11 @@ export const CompactPlaybackAction = ({
       }}
       testID={testID}
     >
-      <AppIcon
-        color={disabled ? disabledIconColor : iconColor}
-        name={iconName}
-        size={tokens.iconSize}
-      />
+      {hitBoxStyle ? (
+        <View style={[styles.action, toVariantStyle(tokens)]}>{icon}</View>
+      ) : (
+        icon
+      )}
     </Pressable>
   );
 };

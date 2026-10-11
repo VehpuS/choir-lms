@@ -18,6 +18,7 @@ import { resolveLibraryHeaderSearchProps } from './library-header-search-props';
 import { LibraryPlaylistCreateControls } from './library-playlist-create-controls';
 import { LibraryScreenHeader } from './library-screen-header';
 import type { LibraryScreenProps } from './library-screen-types';
+import { useDismissOnViewChange } from './use-dismiss-on-view-change';
 import { useLibraryFilesSessionRestoration } from './use-library-files-session-restoration';
 import { useLibraryScreenScrollCoordination } from './use-library-screen-scroll-coordination';
 import { scrollGutterStyles } from '../../components/scroll-gutter';
@@ -56,18 +57,7 @@ export const LibraryScreen = ({
       isActive,
       isScreenReaderEnabled: () => AccessibilityInfo.isScreenReaderEnabled(),
     });
-  // An acknowledgment belongs to the view that produced it, so switching
-  // views clears it (as leaving Files always has).
-  // `dismiss` is rebuilt every render, so the effect reads it through a ref
-  // and re-runs only when the view changes.
-  const dismissLibrarySuccessFeedbackRef = useRef(
-    librarySuccessFeedback.dismiss,
-  );
-
-  dismissLibrarySuccessFeedbackRef.current = librarySuccessFeedback.dismiss;
-  useEffect(() => {
-    dismissLibrarySuccessFeedbackRef.current();
-  }, [selectedView]);
+  useDismissOnViewChange(librarySuccessFeedback.dismiss, selectedView);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
   const [playlistDetailPlayback, setPlaylistDetailPlayback] =
     useState<PlaylistDetailHeaderPlaybackAction | null>(null);

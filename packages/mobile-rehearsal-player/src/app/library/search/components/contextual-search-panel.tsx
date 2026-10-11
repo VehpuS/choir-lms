@@ -252,7 +252,10 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     minWidth: 0,
-    minHeight: space.touchTarget - 2,
+    // The input is a full 44pt target; its 1pt overlap of the field's border
+    // keeps the field itself at 44pt.
+    minHeight: space.touchTarget,
+    marginVertical: -1,
     paddingVertical: 0,
     paddingRight: space.md,
     color: colors.text,

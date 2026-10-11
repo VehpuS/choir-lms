@@ -154,7 +154,6 @@ export const TagEditorSheet = ({
                   accessibilityRole="button"
                   {...interactionGuardProps}
                   disabled={isSaving}
-                  hitSlop={REMOVE_TAG_HIT_SLOP}
                   onPress={() => {
                     setDraftTags((currentTags) => {
                       return removeLibraryEntityTag(currentTags, tag);
@@ -163,7 +162,7 @@ export const TagEditorSheet = ({
                       return removeLibraryEntityTag(currentMixed, tag);
                     });
                   }}
-                  style={buttonInteractionGuardStyle}
+                  style={[buttonInteractionGuardStyle, styles.removeTagTarget]}
                 >
                   <AppIcon
                     color={appTheme.colors.accentOnTint}
@@ -255,8 +254,10 @@ export const TagEditorSheet = ({
 };
 
 const REMOVE_TAG_ICON_SIZE = 14;
-// Pads the 14pt remove glyph out to a 44pt hit area inside the chip.
-const REMOVE_TAG_HIT_SLOP = 15;
+// Pads the 14pt remove glyph out to a 44pt press target, and pulls the padding
+// back with a matching negative margin so the chip keeps its size. (`hitSlop`
+// would not do: react-native-web ignores it.)
+const REMOVE_TAG_TARGET_PADDING = 15;
 
 const styles = StyleSheet.create({
   actionRow: {
@@ -287,6 +288,10 @@ const styles = StyleSheet.create({
   },
   pressedAction: {
     opacity: 0.8,
+  },
+  removeTagTarget: {
+    margin: -REMOVE_TAG_TARGET_PADDING,
+    padding: REMOVE_TAG_TARGET_PADDING,
   },
   tagInput: {
     flex: 1,

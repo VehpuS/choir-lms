@@ -70,30 +70,27 @@ describe('CompactPlaybackAction', () => {
     assert.equal(COMPACT_PLAYBACK_ACTION_ICON, appTheme.colors.accent);
   });
 
-  it('keeps every variant at a 44pt hit area even when the ring is smaller', () => {
+  it('keeps every variant at a 44pt press target even when the ring is smaller', () => {
     const touchTarget = appTheme.space.touchTarget;
 
     for (const variant of ['inline', 'card', 'row', 'chip'] as const) {
       const tokens = getCompactPlaybackActionVariantTokens(variant);
-      const visualHeight = tokens.height ?? tokens.minHeight ?? 0;
-      const visualWidth = tokens.width ?? tokens.minWidth ?? 0;
+      // A ring is centered in a transparent box that is the press target;
+      // `hitSlop` would not do, since react-native-web ignores it.
+      const boxHeight = tokens.hitBox ?? tokens.minHeight ?? 0;
+      const boxWidth = tokens.hitBox ?? tokens.minWidth ?? 0;
 
-      assert.ok(
-        visualHeight + tokens.hitSlop * 2 >= touchTarget,
-        `${variant} height hit area`,
-      );
-      assert.ok(
-        visualWidth + tokens.hitSlop * 2 >= touchTarget,
-        `${variant} width hit area`,
-      );
+      assert.ok(boxHeight >= touchTarget, `${variant} height press target`);
+      assert.ok(boxWidth >= touchTarget, `${variant} width press target`);
     }
   });
 
-  it('pads row rings out to a 44pt layout box so adjacent controls never overlap', () => {
+  it('gives row rings a 44pt layout box so adjacent controls never overlap', () => {
     const tokens = getCompactPlaybackActionVariantTokens('row');
 
     assert.equal(tokens.width, 34);
-    assert.equal((tokens.width ?? 0) + (tokens.margin ?? 0) * 2, 44);
+    assert.equal(tokens.hitBox, 44);
+    assert.equal(tokens.margin, undefined);
     assert.deepEqual(getCompactPlaybackActionVariantTokens('inline'), tokens);
   });
 });

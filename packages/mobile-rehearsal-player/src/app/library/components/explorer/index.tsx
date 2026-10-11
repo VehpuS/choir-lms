@@ -23,9 +23,6 @@ import {
 import { explorerStyles as styles } from './styles';
 
 const SELECTION_GLYPH_SIZE = 20;
-// A row's copy can be 37pt tall beside trailing controls; this pads its tap
-// area to the 44pt minimum without growing the row.
-const ROW_MAIN_HIT_SLOP = { bottom: 4, top: 4 } as const;
 
 type ExplorerBreadcrumbBarProps = {
   items: ExplorerBreadcrumbItem[];
@@ -261,13 +258,12 @@ export const ExplorerListRow = ({
   }
 
   return (
-    <View style={rowSurfaceStyles}>
+    <View style={[...rowSurfaceStyles, styles.rowWithTrailingControls]}>
       {activeMark}
       <Pressable
         accessibilityLabel={accessibilityLabel}
         {...selectionProps}
         disabled={!isInteractive}
-        hitSlop={ROW_MAIN_HIT_SLOP}
         onPress={onPress}
         style={({ pressed }) => [
           styles.rowMainPressable,

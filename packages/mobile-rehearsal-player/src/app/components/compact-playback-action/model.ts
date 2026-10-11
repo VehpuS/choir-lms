@@ -11,9 +11,18 @@ export type CompactPlaybackActionVariantTokens = {
   borderRadius: number;
   disabledOpacity: number;
   height?: number;
-  hitSlop: number;
+  /**
+   * The press target around a smaller ring: a transparent box at least 44pt
+   * square that the ring is centered in. `hitSlop` is not enough, because
+   * react-native-web ignores it, so the tap area would stay the size of the
+   * ring on the web.
+   */
+  hitBox?: number;
   iconSize: number;
-  /** Outer spacing that pads a smaller visual ring out to a 44pt box. */
+  /**
+   * Outer spacing around the hit box. Negative when the ring should keep its
+   * own layout footprint and the box overlaps its neighbors' spacing.
+   */
   margin?: number;
   minHeight?: number;
   minWidth?: number;
@@ -32,7 +41,6 @@ export const COMPACT_PLAYBACK_ACTION_ICON = appTheme.colors.accent;
 const TOUCH_TARGET = appTheme.space.touchTarget;
 const ROW_RING_SIZE = 34;
 const CHIP_RING_SIZE = 32;
-const ROW_RING_OUTSET = (TOUCH_TARGET - ROW_RING_SIZE) / 2;
 const CHIP_RING_OUTSET = (TOUCH_TARGET - CHIP_RING_SIZE) / 2;
 const PRESSED_OPACITY = 0.8;
 const DISABLED_OPACITY = 0.5;
@@ -41,9 +49,9 @@ const rowRingTokens = {
   borderRadius: ROW_RING_SIZE / 2,
   disabledOpacity: DISABLED_OPACITY,
   height: ROW_RING_SIZE,
-  hitSlop: ROW_RING_OUTSET,
+  // The 44pt box is the row's layout slot, so no margin is needed.
+  hitBox: TOUCH_TARGET,
   iconSize: 16,
-  margin: ROW_RING_OUTSET,
   pressedOpacity: PRESSED_OPACITY,
   width: ROW_RING_SIZE,
 };
@@ -53,7 +61,6 @@ const COMPACT_PLAYBACK_ACTION_VARIANT_TOKENS = {
   card: {
     borderRadius: appTheme.radius.pill,
     disabledOpacity: DISABLED_OPACITY,
-    hitSlop: 0,
     iconSize: 18,
     minHeight: TOUCH_TARGET,
     minWidth: TOUCH_TARGET,
@@ -65,8 +72,10 @@ const COMPACT_PLAYBACK_ACTION_VARIANT_TOKENS = {
     borderRadius: CHIP_RING_SIZE / 2,
     disabledOpacity: DISABLED_OPACITY,
     height: CHIP_RING_SIZE,
-    hitSlop: CHIP_RING_OUTSET,
+    hitBox: TOUCH_TARGET,
     iconSize: 14,
+    // The chip keeps its 32pt layout footprint; its box overlaps the gaps.
+    margin: -CHIP_RING_OUTSET,
     pressedOpacity: PRESSED_OPACITY,
     width: CHIP_RING_SIZE,
   },
