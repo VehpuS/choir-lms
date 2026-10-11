@@ -20,7 +20,6 @@ import {
 import type { DriveLibrarySource } from '../utils/drive-library-view-model';
 import {
   DRIVE_ROW_LEADING_GLYPH_SIZE,
-  DRIVE_ROW_PILL_HIT_SLOP,
   DRIVE_ROW_TITLE_LINES,
   driveExplorerListStyles as styles,
 } from './drive-explorer-list-styles';
@@ -81,22 +80,33 @@ const DriveRowSavePill = ({ action }: { action: DriveLibrarySourceAction }) => {
       accessibilityRole="button"
       {...interactionGuardProps}
       disabled={action.disabled}
-      hitSlop={DRIVE_ROW_PILL_HIT_SLOP}
       onPress={action.onPress}
-      style={({ pressed }) => [
-        styles.pill,
-        isAccent ? styles.pillAccent : styles.pillNeutral,
-        buttonInteractionGuardStyle,
-        pressed && !action.disabled ? styles.pillPressed : undefined,
-        action.disabled ? styles.pillDisabled : undefined,
-      ]}
+      style={[styles.pillHitBox, buttonInteractionGuardStyle]}
     >
-      {appearance.showsCheck ? (
-        <AppIcon color={labelColor} name="check" size={PILL_CHECK_ICON_SIZE} />
-      ) : null}
-      <Text numberOfLines={1} style={[styles.pillLabel, { color: labelColor }]}>
-        {action.label}
-      </Text>
+      {({ pressed }) => (
+        <View
+          style={[
+            styles.pill,
+            isAccent ? styles.pillAccent : styles.pillNeutral,
+            pressed && !action.disabled ? styles.pillPressed : undefined,
+            action.disabled ? styles.pillDisabled : undefined,
+          ]}
+        >
+          {appearance.showsCheck ? (
+            <AppIcon
+              color={labelColor}
+              name="check"
+              size={PILL_CHECK_ICON_SIZE}
+            />
+          ) : null}
+          <Text
+            numberOfLines={1}
+            style={[styles.pillLabel, { color: labelColor }]}
+          >
+            {action.label}
+          </Text>
+        </View>
+      )}
     </Pressable>
   );
 };

@@ -10,18 +10,16 @@ export const DRIVE_ROW_LEADING_GLYPH_SIZE = 20;
 /** Long Drive names wrap once before ellipsizing (the sheet shows them in full). */
 export const DRIVE_ROW_TITLE_LINES = 2;
 
-// Save / Saved pills draw 36pt tall (screen 1e) inside a 44pt hit area.
+// Save / Saved pills draw 36pt tall (screen 1e) inside a 44pt press target
+// (react-native-web ignores `hitSlop`, so the target is a padded box).
 const PILL_HEIGHT = 36;
-const PILL_HIT_EXTENSION = (space.touchTarget - PILL_HEIGHT) / 2;
-
-export const DRIVE_ROW_PILL_HIT_SLOP = {
-  bottom: PILL_HIT_EXTENSION,
-  left: 0,
-  right: 0,
-  top: PILL_HIT_EXTENSION,
-};
 
 export const driveExplorerListStyles = StyleSheet.create({
+  pillHitBox: {
+    width: DRIVE_ROW_SAVE_PILL_WIDTH,
+    minHeight: space.touchTarget,
+    justifyContent: 'center',
+  },
   pill: {
     width: DRIVE_ROW_SAVE_PILL_WIDTH,
     minHeight: PILL_HEIGHT,
