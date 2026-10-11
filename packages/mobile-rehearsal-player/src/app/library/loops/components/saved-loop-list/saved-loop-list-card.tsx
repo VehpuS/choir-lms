@@ -213,6 +213,9 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
     minWidth: 0,
+    // A full 44pt press target, also while selecting (the ring is hidden then).
+    minHeight: appTheme.space.touchTarget,
+    justifyContent: 'center',
     gap: 2,
   },
   pressed: {
