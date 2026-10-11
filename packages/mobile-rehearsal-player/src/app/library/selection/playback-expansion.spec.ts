@@ -45,6 +45,8 @@ describe('expandSelectionForPlayback', () => {
 
     assert.deepEqual(expandSelectionForPlayback(items, context), {
       emptyContainerCount: 0,
+      playlistLinkCount: 0,
+      repeatCount: 0,
       refs: [
         { entityId: 't1', kind: 'track' },
         { entityId: 'l1', kind: 'loop' },
@@ -127,6 +129,101 @@ describe('expandSelectionForPlayback', () => {
 
     assert.deepEqual(result.refs, []);
     assert.equal(result.emptyContainerCount, 1);
+  });
+});
+
+describe('expandSelectionForPlayback options', () => {
+  const advent: BulkSelectionItem[] = [
+    { folderId: 'advent', key: 'f', kind: 'folder' },
+  ];
+
+  it('places an included playlist at its link position', () => {
+    const { refs } = expandSelectionForPlayback(advent, context, {
+      playlists: 'include',
+      repeats: 'keep',
+    });
+
+    assert.deepEqual(ids(refs), [
+      'carol-a',
+      'loop-1',
+      'carol-b',
+      'loop-1',
+      'carol-b',
+      'carol-b',
+    ]);
+  });
+
+  it('includes a playlist link inside a nested folder', () => {
+    const nested: PlaybackExpansionContext = {
+      ...context,
+      getFolderChildren: (folderId) =>
+        folderId === 'outer'
+          ? [{ folderId: 'inner', kind: 'folder' }]
+          : folderId === 'inner'
+            ? [{ entityId: 'playlist-x', kind: 'playlist' }]
+            : [],
+    };
+    const result = expandSelectionForPlayback(
+      [{ folderId: 'outer', key: 'f', kind: 'folder' }],
+      nested,
+      { playlists: 'include', repeats: 'keep' },
+    );
+
+    assert.deepEqual(ids(result.refs), ['carol-b', 'loop-1', 'carol-b']);
+    assert.equal(result.playlistLinkCount, 1);
+  });
+
+  it('reports playlist links whether or not they are included', () => {
+    assert.equal(
+      expandSelectionForPlayback(advent, context).playlistLinkCount,
+      1,
+    );
+    assert.equal(
+      expandSelectionForPlayback(advent, context, {
+        playlists: 'include',
+        repeats: 'keep',
+      }).playlistLinkCount,
+      1,
+    );
+  });
+
+  it('keeps first occurrences across direct, folder and playlist sources', () => {
+    const result = expandSelectionForPlayback(
+      [
+        { entityId: 'carol-b', key: 'a', kind: 'track' },
+        ...advent,
+        { key: 'c', kind: 'playlist', playlistId: 'playlist-x' },
+      ],
+      context,
+      { playlists: 'skip', repeats: 'remove' },
+    );
+
+    assert.deepEqual(ids(result.refs), ['carol-b', 'carol-a', 'loop-1']);
+  });
+
+  it('counts the repeats a removal drops, and the same when kept', () => {
+    const items: BulkSelectionItem[] = [
+      { key: 'p', kind: 'playlist', playlistId: 'playlist-x' },
+    ];
+
+    assert.equal(expandSelectionForPlayback(items, context).repeatCount, 1);
+    assert.equal(
+      expandSelectionForPlayback(items, context, {
+        playlists: 'skip',
+        repeats: 'remove',
+      }).repeatCount,
+      1,
+    );
+  });
+
+  it('reports no counts when nothing qualifies', () => {
+    const result = expandSelectionForPlayback(
+      [{ folderId: 'advent-loops', key: 'f', kind: 'folder' }],
+      context,
+    );
+
+    assert.equal(result.playlistLinkCount, 0);
+    assert.equal(result.repeatCount, 0);
   });
 });
 

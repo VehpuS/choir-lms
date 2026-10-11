@@ -33,82 +33,157 @@ export type PlaybackExpansionContext = {
   getPlaylistRefs: (playlistId: string) => readonly PlaybackRef[];
 };
 
+export type PlaylistsInFoldersChoice = 'include' | 'skip';
+export type RepeatedItemsChoice = 'keep' | 'remove';
+
+export type PlaybackExpansionOptions = {
+  /** `include` expands a folder's playlist links at their display position. */
+  playlists: PlaylistsInFoldersChoice;
+  /** `remove` keeps only the first occurrence of each track or loop. */
+  repeats: RepeatedItemsChoice;
+};
+
+/** The behavior before the user is asked: playlist links skipped, repeats kept. */
+export const DEFAULT_EXPANSION_OPTIONS: PlaybackExpansionOptions = {
+  playlists: 'skip',
+  repeats: 'keep',
+};
+
 export type PlaybackExpansion = {
   /** Selected folders and playlists that contributed nothing. */
   emptyContainerCount: number;
+  /** Playlist links met inside selected folders, whether or not included. */
+  playlistLinkCount: number;
+  refs: PlaybackRef[];
+  /** Items `repeats: 'remove'` would drop (or did drop) from the result. */
+  repeatCount: number;
+};
+
+type ItemExpansion = {
+  isContainer: boolean;
+  playlistLinkCount: number;
   refs: PlaybackRef[];
 };
 
-// Depth-first in display order. Playlist links inside a folder are skipped:
-// the spec expands folders into their tracks and loops only.
-const collectFolderRefs = (
+// Depth-first in display order. A playlist link is expanded through the
+// playlist's own entries only when asked; entries are tracks and loops, so
+// playlists never recurse.
+const collectFolderExpansion = (
   folderId: string,
   context: PlaybackExpansionContext,
+  options: PlaybackExpansionOptions,
   visitedFolderIds: Set<string>,
-): PlaybackRef[] => {
+): { playlistLinkCount: number; refs: PlaybackRef[] } => {
   if (visitedFolderIds.has(folderId)) {
-    return [];
+    return { playlistLinkCount: 0, refs: [] };
   }
 
   visitedFolderIds.add(folderId);
 
-  return context.getFolderChildren(folderId).flatMap((child) => {
-    if (child.kind === 'folder') {
-      return collectFolderRefs(child.folderId, context, visitedFolderIds);
-    }
+  let playlistLinkCount = 0;
+  const refs: PlaybackRef[] = [];
 
-    return child.kind === 'playlist'
-      ? []
-      : [{ entityId: child.entityId, kind: child.kind }];
-  });
+  for (const child of context.getFolderChildren(folderId)) {
+    if (child.kind === 'folder') {
+      const nested = collectFolderExpansion(
+        child.folderId,
+        context,
+        options,
+        visitedFolderIds,
+      );
+
+      playlistLinkCount += nested.playlistLinkCount;
+      refs.push(...nested.refs);
+    } else if (child.kind === 'playlist') {
+      playlistLinkCount += 1;
+
+      if (options.playlists === 'include') {
+        refs.push(...context.getPlaylistRefs(child.entityId));
+      }
+    } else {
+      refs.push({ entityId: child.entityId, kind: child.kind });
+    }
+  }
+
+  return { playlistLinkCount, refs };
 };
 
 const expandItem = (
   item: BulkSelectionItem,
   context: PlaybackExpansionContext,
-): { isContainer: boolean; refs: PlaybackRef[] } => {
+  options: PlaybackExpansionOptions,
+): ItemExpansion => {
   switch (item.kind) {
     case 'folder':
       return {
         isContainer: true,
-        refs: collectFolderRefs(item.folderId, context, new Set()),
+        ...collectFolderExpansion(item.folderId, context, options, new Set()),
       };
     case 'playlist':
       return {
         isContainer: true,
+        playlistLinkCount: 0,
         refs: [...context.getPlaylistRefs(item.playlistId)],
       };
     case 'playlist-entry':
       return {
         isContainer: false,
+        playlistLinkCount: 0,
         refs: [{ entityId: item.entityId, kind: item.entityKind }],
       };
     case 'track':
     case 'loop':
       return {
         isContainer: false,
+        playlistLinkCount: 0,
         refs: [{ entityId: item.entityId, kind: item.kind }],
       };
   }
 };
 
+const getRefKey = ({ entityId, kind }: PlaybackRef) => `${kind}:${entityId}`;
+
+const dropRepeats = (refs: readonly PlaybackRef[]): PlaybackRef[] => {
+  const seen = new Set<string>();
+
+  return refs.filter((ref) => {
+    const key = getRefKey(ref);
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+};
+
 /**
  * The effective items for a playback or playlist action, applied in the order
- * the selection is displayed (callers pass `items` in display order). Repeats
- * are kept: a track selected directly and again through a folder plays twice,
- * as queueing it twice would.
+ * the selection is displayed (callers pass `items` in display order). By
+ * default repeats are kept and folders' playlist links skipped; the user's
+ * answers (9.5.1) arrive as `options`. The counts are reported either way so a
+ * surface can tell whether a question is due.
  */
 export const expandSelectionForPlayback = (
   items: readonly BulkSelectionItem[],
   context: PlaybackExpansionContext,
+  options: PlaybackExpansionOptions = DEFAULT_EXPANSION_OPTIONS,
 ): PlaybackExpansion => {
-  const expansions = items.map((item) => expandItem(item, context));
+  const expansions = items.map((item) => expandItem(item, context, options));
+  const allRefs = expansions.flatMap(({ refs }) => refs);
+  const dedupedRefs = dropRepeats(allRefs);
 
   return {
     emptyContainerCount: expansions.filter(
       ({ isContainer, refs }) => isContainer && refs.length === 0,
     ).length,
-    refs: expansions.flatMap(({ refs }) => refs),
+    playlistLinkCount: expansions.reduce(
+      (total, { playlistLinkCount }) => total + playlistLinkCount,
+      0,
+    ),
+    refs: options.repeats === 'remove' ? dedupedRefs : allRefs,
+    repeatCount: allRefs.length - dedupedRefs.length,
   };
 };
 
