@@ -11,7 +11,7 @@ import {
 describe('getDriveImportReviewHeaderCopy', () => {
   it('describes the review flow', () => {
     assert.deepEqual(getDriveImportReviewHeaderCopy(), {
-      helper: 'Choose where these Drive folders and tracks go in Library.',
+      helper: 'Choose where these Drive folders and tracks go in your library.',
       title: 'Review import',
     });
   });
@@ -21,7 +21,7 @@ describe('getDriveImportReviewDestinationCopy', () => {
   it('provides a title and an empty-library helper', () => {
     assert.deepEqual(getDriveImportReviewDestinationCopy(), {
       emptyHelper:
-        'Create a Library folder first to choose an import destination.',
+        'Create a library folder first to choose an import destination.',
       title: 'Library destination',
     });
   });
@@ -41,7 +41,7 @@ describe('getDriveImportReviewSummaryStatusCopy', () => {
   it('prompts for a destination while idle', () => {
     assert.equal(
       getDriveImportReviewSummaryStatusCopy('idle'),
-      'Choose a Library destination to see the import summary.',
+      'Choose a library destination to see the import summary.',
     );
   });
 

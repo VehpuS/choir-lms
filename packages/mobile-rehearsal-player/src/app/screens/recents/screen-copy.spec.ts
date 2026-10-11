@@ -30,7 +30,7 @@ describe('getRecentsContinuePracticingCopy', () => {
         savedTrackCount: 0,
       }),
       {
-        body: 'No recent rehearsal yet. Start in Add or Library.',
+        body: 'No recent rehearsal yet. Start in Add or your library.',
         title: 'No recent rehearsal yet',
       },
     );
@@ -44,7 +44,7 @@ describe('getRecentsContinuePracticingCopy', () => {
         savedTrackCount: 3,
       }),
       {
-        body: '3 saved rehearsal tracks are ready in Library. Open Library to continue practicing.',
+        body: '3 saved rehearsal tracks are ready in your library. Open your library to continue practicing.',
         title: 'Recent rehearsal entry points',
       },
     );
@@ -54,7 +54,7 @@ describe('getRecentsContinuePracticingCopy', () => {
 describe('getRecentsTagModuleCopy', () => {
   it('guides the user to add a tag when no saved entity carries one', () => {
     assert.deepEqual(getRecentsTagModuleCopy({ hasSavedTagUsage: false }), {
-      body: 'No tags yet. Tag a track, loop, playlist, or folder in Library to see it here.',
+      body: 'No tags yet. Tag a track, loop, playlist, or folder in your library to see it here.',
     });
   });
 

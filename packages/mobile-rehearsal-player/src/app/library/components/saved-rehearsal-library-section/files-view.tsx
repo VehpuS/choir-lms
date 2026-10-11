@@ -128,8 +128,8 @@ export const SavedRehearsalLibraryFilesView = ({
   if (files.isLoading && !explorer) {
     return (
       <FeedbackCard
-        message="Reading the saved Library Files structure from this device."
-        title="Loading Files"
+        message="Reading the saved library files structure from this device."
+        title="Loading files"
         tone="neutral"
       />
     );

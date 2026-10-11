@@ -238,7 +238,7 @@ export const getSavedPlaylistRemovalCopy = (
     confirmLabel: 'Remove playlist',
     message:
       `"${playlist.name}" will be removed from your saved playlists.\n\n` +
-      `This will remove ${pluralize(playlist.items.length, 'item')} from this playlist only. Saved tracks and loops will stay in Library.`,
+      `This will remove ${pluralize(playlist.items.length, 'item')} from this playlist only. Saved tracks and loops will stay in your library.`,
     title: 'Remove saved playlist?',
   };
 };

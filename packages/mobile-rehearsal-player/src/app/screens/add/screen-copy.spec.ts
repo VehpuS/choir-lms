@@ -11,7 +11,7 @@ describe('getAddScreenSummaryCopy', () => {
         resultCount: 0,
       }),
       {
-        body: 'Browse or search My Drive and shared folders, then save promising tracks into Library without leaving this view.',
+        body: 'Browse or search My Drive and shared folders, then save promising tracks into your library without leaving this view.',
         title: 'Add from Google Drive',
       },
     );

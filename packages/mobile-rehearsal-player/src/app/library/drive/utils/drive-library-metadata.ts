@@ -84,7 +84,7 @@ export const getDriveSearchContextCopy = (
 
   if (location.rootKind === 'shared') {
     return {
-      helper: 'Search in Shared folders',
+      helper: 'Search in shared folders',
       placeholder: DRIVE_SEARCH_PLACEHOLDER,
     };
   }

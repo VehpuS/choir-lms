@@ -1,5 +1,5 @@
 export const getDriveImportReviewHeaderCopy = () => ({
-  helper: 'Choose where these Drive folders and tracks go in Library.',
+  helper: 'Choose where these Drive folders and tracks go in your library.',
   title: 'Review import',
 });
 
@@ -9,7 +9,7 @@ export const getDriveImportReviewBasketCopy = () => ({
 });
 
 export const getDriveImportReviewDestinationCopy = () => ({
-  emptyHelper: 'Create a Library folder first to choose an import destination.',
+  emptyHelper: 'Create a library folder first to choose an import destination.',
   title: 'Library destination',
 });
 
@@ -24,7 +24,7 @@ export const getDriveImportReviewSummaryStatusCopy = (
 ) => {
   switch (status) {
     case 'idle':
-      return 'Choose a Library destination to see the import summary.';
+      return 'Choose a library destination to see the import summary.';
     case 'error':
       return 'The import review could not be prepared.';
   }

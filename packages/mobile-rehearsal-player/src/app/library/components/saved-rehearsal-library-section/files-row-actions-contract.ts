@@ -53,7 +53,7 @@ export const getDeleteFromFolderConfirmationCopy = (options: {
     return {
       confirmLabel: 'Delete item from library',
       message:
-        `"${options.itemName}" is the last link in Library Files. ` +
+        `"${options.itemName}" is the last link in library files. ` +
         'Deleting it from this folder will also remove the saved item from your rehearsal library.',
       title: 'Delete last link from folder?',
     };

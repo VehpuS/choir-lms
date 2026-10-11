@@ -82,7 +82,7 @@ export const LibraryFilesCreateControls = ({
           setFilesCreateIssue(
             result.issue ?? {
               message:
-                'The current Library Files folder could not be created right now.',
+                'The current library files folder could not be created right now.',
               title: 'Could not create folder',
             },
           );
@@ -129,7 +129,7 @@ export const LibraryFilesCreateControls = ({
         setFilesPlaylistDraftIssue(
           playlistIssue ?? {
             message:
-              'The Library Files playlist could not be created right now.',
+              'The library files playlist could not be created right now.',
             title: 'Could not create playlist',
           },
         );

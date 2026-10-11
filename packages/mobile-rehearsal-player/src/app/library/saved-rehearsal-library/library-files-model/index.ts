@@ -39,7 +39,7 @@ export const buildLibraryFilesExplorerState = (options: {
     options.tree.folders[0];
 
   if (!currentFolder) {
-    throw new Error('Library Files requires a root folder.');
+    throw new Error('Library files require a root folder.');
   }
 
   const entityNameByKey = buildEntityNameByKey(options);

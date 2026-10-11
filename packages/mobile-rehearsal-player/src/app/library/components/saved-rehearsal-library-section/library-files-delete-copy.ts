@@ -25,7 +25,7 @@ export const formatFolderDeleteImpactMessage = (
   ].filter(Boolean);
 
   if (counts.length === 0) {
-    return `"${row.folder.name}" is empty and will be deleted from Library Files.`;
+    return `"${row.folder.name}" is empty and will be deleted from library files.`;
   }
 
   const libraryRemovalCopy =
@@ -33,7 +33,7 @@ export const formatFolderDeleteImpactMessage = (
       ? ` ${impact.lastLinkCount} saved item${impact.lastLinkCount === 1 ? '' : 's'} will also be removed from the library because no other folder links remain.`
       : '';
 
-  return `Deleting "${row.folder.name}" will remove ${counts.join(', ')} from Library Files.${libraryRemovalCopy}`;
+  return `Deleting "${row.folder.name}" will remove ${counts.join(', ')} from library files.${libraryRemovalCopy}`;
 };
 
 export const formatTrackRemoveFromLibraryImpactMessage = (

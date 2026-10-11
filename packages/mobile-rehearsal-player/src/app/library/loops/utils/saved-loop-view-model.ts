@@ -330,7 +330,7 @@ export const getSavedLoopsStatusCopy = (
     return {
       title: 'No saved loops yet',
       message:
-        'Choose Make loop on a saved rehearsal track, adjust the loop range, and save the segment for direct playback.',
+        'Choose "Make loop" on a saved rehearsal track, adjust the loop range, and save the segment for direct playback.',
       tone: 'neutral',
     };
   }

@@ -127,7 +127,7 @@ const getDisabledCheck = (
     const onlyFolders = folderCount === options.items.length;
     const folderHint =
       id === 'remove-from-library' && options.surface === 'files'
-        ? 'Folders can only be removed with Delete from folder.'
+        ? 'Folders can only be removed with "Delete from folder".'
         : id === 'copy-to-folder'
           ? 'Folders cannot be copied.'
           : 'Folders cannot be removed from the library.';

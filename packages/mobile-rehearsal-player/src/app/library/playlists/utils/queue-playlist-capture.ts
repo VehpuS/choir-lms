@@ -20,7 +20,7 @@ const NO_QUEUE_CAPTURE_ISSUE: PlaylistDraftIssue = {
 const createMissingLoopIssue = (loopTitle: string): PlaylistDraftIssue => {
   return {
     title: 'Queued loop unavailable',
-    message: `The queue item "${loopTitle}" no longer has a saved loop source. Remove it from Up Next before saving this playlist.`,
+    message: `The queue item "${loopTitle}" no longer has a saved loop source. Remove it from the queue before saving this playlist.`,
   };
 };
 

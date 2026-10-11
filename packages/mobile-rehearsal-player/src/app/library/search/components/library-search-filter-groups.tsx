@@ -39,7 +39,7 @@ export const buildFilesSearchScopeOptions = (
       value: 'current-folder',
     },
     {
-      label: 'All Files',
+      label: 'All files',
       value: 'all-files',
     },
   ];

@@ -61,7 +61,7 @@ describe('drive search preview actions', () => {
       {
         disabled: false,
         kind: undefined,
-        label: 'Save to Library',
+        label: 'Save to library',
         placement: 'menu',
       },
       {
@@ -74,7 +74,7 @@ describe('drive search preview actions', () => {
     assert.equal(actions[0]?.iconName, 'play');
     assert.equal(
       actions[1]?.accessibilityLabel,
-      'Save Alto Line.mp3 to Library',
+      'Save Alto Line.mp3 to library',
     );
   });
 
@@ -94,7 +94,7 @@ describe('drive search preview actions', () => {
     assert.equal(toggleActions[1]?.disabled, false);
     assert.equal(
       toggleActions[1]?.accessibilityLabel,
-      'Alto Line.mp3 is saved to Library',
+      'Alto Line.mp3 is saved to library',
     );
 
     const actions = resolveDriveSourceActions(buildOptions({ isSaved: true }));

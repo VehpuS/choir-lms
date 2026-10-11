@@ -45,7 +45,7 @@ export const requestLibraryFilesDeleteConfirmation = ({
         if (didDelete) {
           onShowSuccessFeedback?.(
             createLibraryFilesSuccessFeedback({
-              message: `${row.label} was removed from Library Files.`,
+              message: `${row.label} was removed from library files.`,
               title: 'Folder deleted',
             }),
           );

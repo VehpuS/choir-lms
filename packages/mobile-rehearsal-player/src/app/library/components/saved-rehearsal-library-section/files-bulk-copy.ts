@@ -38,7 +38,7 @@ export const getBulkDeleteFromFolderConfirmation = (
 
   return {
     confirmLabel: 'Delete from folder',
-    message: `This deletes ${removed || 'nothing'} from Library Files.${libraryRemoval}`,
+    message: `This deletes ${removed || 'nothing'} from library files.${libraryRemoval}`,
     title: 'Delete from folder?',
   };
 };
@@ -59,7 +59,7 @@ export const getBulkRemoveFromLibraryConfirmation = (options: {
   ]);
   const leftOut =
     plan.excludedFolderCount > 0
-      ? ` ${plural(plan.excludedFolderCount, 'selected folder')} will be left out; use Delete from folder to remove a folder.`
+      ? ` ${plural(plan.excludedFolderCount, 'selected folder')} will be left out; use "Delete from folder" to remove a folder.`
       : '';
   const sections = [
     { items: names.tracks, label: 'Tracks' },
@@ -121,7 +121,7 @@ export const getBulkDeleteAcknowledgment = (
   message: `${joinParts([
     countOrNull(plan.selectedFolderCount, 'folder'),
     countOrNull(plan.selectedLinkCount, 'link'),
-  ])} deleted from Library Files.`,
+  ])} deleted from library files.`,
   title: 'Deleted from folder',
 });
 

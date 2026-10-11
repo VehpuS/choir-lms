@@ -7,9 +7,10 @@ const pluralize = (count: number, noun: string) => {
 };
 
 export const EMPTY_SAVED_TAGS_MESSAGE =
-  'No tags yet. Tag a track, loop, playlist, or folder in Library to see it here.';
+  'No tags yet. Tag a track, loop, playlist, or folder in your library to see it here.';
 
-export const NO_SAVED_TAGS_SEARCH_RESULTS_MESSAGE = 'No tags match your search.';
+export const NO_SAVED_TAGS_SEARCH_RESULTS_MESSAGE =
+  'No tags match your search.';
 
 export const getSavedTagUsageMetadataLabel = (
   usage: RehearsalLibraryTagUsage,

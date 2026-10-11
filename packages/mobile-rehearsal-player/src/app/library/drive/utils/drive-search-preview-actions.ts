@@ -36,7 +36,7 @@ const PLAY_PREVIEW_LABEL = 'Play preview';
  * Actions for an Add audio row (screen 1e). Inline: the preview ring, then an
  * accent `Save` pill or, once saved, a neutral `✓ Saved` toggle that starts
  * removal (behind the existing confirmation). Menu (on every
- * row): preview playback, `Save to Library` / `Remove from library`, and
+ * row): preview playback, `Save to library` / `Remove from library`, and
  * `Open in Google Drive` (the file's own Drive page). A file outside the
  * supported audio set only offers `Open in Google Drive`.
  */
@@ -82,7 +82,7 @@ export const resolveDriveSourceActions = (
     options.isSaved
       ? {
           accessibilityHint: 'Removes it from your library after you confirm',
-          accessibilityLabel: `${source.name} is saved to Library`,
+          accessibilityLabel: `${source.name} is saved to library`,
           disabled: !canMutateSource,
           kind: 'saved-toggle',
           label: options.isSavePending ? 'Removing…' : 'Saved',
@@ -90,7 +90,7 @@ export const resolveDriveSourceActions = (
           placement: 'inline',
         }
       : {
-          accessibilityLabel: `Save ${source.name} to Library`,
+          accessibilityLabel: `Save ${source.name} to library`,
           disabled: !canMutateSource,
           label: options.isSavePending ? 'Saving…' : 'Save',
           onPress: options.onSaveSource,
@@ -115,7 +115,7 @@ export const resolveDriveSourceActions = (
         }
       : {
           disabled: !canMutateSource,
-          label: 'Save to Library',
+          label: 'Save to library',
           onPress: options.onSaveSource,
           placement: 'menu',
         },

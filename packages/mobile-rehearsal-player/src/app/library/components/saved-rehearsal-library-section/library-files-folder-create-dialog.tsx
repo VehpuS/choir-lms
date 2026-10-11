@@ -41,7 +41,7 @@ export const LibraryFilesFolderCreateDialog = ({
     <CenteredDialogCard isVisible={isVisible} onRequestClose={onCancel}>
       <Text style={styles.groupTitle}>Create folder</Text>
       <Text style={styles.sectionBody}>
-        Create a new folder in the current Library Files location.
+        Create a new folder in the current library files location.
       </Text>
       <TextInput
         autoCapitalize="words"

@@ -90,7 +90,7 @@ export const createLibraryFilesRenameOperations = ({
       } catch (error) {
         const issue = createLibraryFilesIssue({
           error,
-          fallbackMessage: `The Library Files item could not be renamed to "${trimmedName}".`,
+          fallbackMessage: `The library files item could not be renamed to "${trimmedName}".`,
           fallbackTitle: 'Could not rename item',
           recovery(conflictingName) {
             return buildSuggestedNameRecovery({
@@ -144,7 +144,7 @@ export const createLibraryFilesRenameOperations = ({
       } catch (error) {
         const issue = createLibraryFilesIssue({
           error,
-          fallbackMessage: `The Library Files folder could not be renamed to "${trimmedName}".`,
+          fallbackMessage: `The library files folder could not be renamed to "${trimmedName}".`,
           fallbackTitle: 'Could not rename folder',
           recovery(conflictingName) {
             return buildSuggestedNameRecovery({

@@ -66,7 +66,7 @@ export const QueueMovePositionDialog = ({
           <Text style={styles.title}>Move to position</Text>
           <Text style={styles.body}>
             {bodyText ??
-              `Choose a new queue position for ${itemTitle}. Playback continues while Up Next updates.`}
+              `Choose a new queue position for ${itemTitle}. Playback continues while the queue updates.`}
           </Text>
 
           <View style={styles.positionSummaryRow}>

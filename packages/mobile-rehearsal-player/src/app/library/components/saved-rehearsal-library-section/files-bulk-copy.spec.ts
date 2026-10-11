@@ -28,7 +28,7 @@ describe('getBulkDeleteFromFolderConfirmation', () => {
     assert.deepEqual(getBulkDeleteFromFolderConfirmation(deletePlan), {
       confirmLabel: 'Delete from folder',
       message:
-        'This deletes 2 folders, 2 links from Library Files. 1 saved item will also be removed from the library because no other folder links remain.',
+        'This deletes 2 folders, 2 links from library files. 1 saved item will also be removed from the library because no other folder links remain.',
       title: 'Delete from folder?',
     });
   });
@@ -41,7 +41,7 @@ describe('getBulkDeleteFromFolderConfirmation', () => {
       linkCount: 1,
     });
 
-    assert.equal(content.message, 'This deletes 1 link from Library Files.');
+    assert.equal(content.message, 'This deletes 1 link from library files.');
   });
 });
 
@@ -71,7 +71,7 @@ describe('getBulkRemoveFromLibraryConfirmation', () => {
 
     assert.equal(
       content.message,
-      '1 track, 1 loop will be removed from your saved rehearsal library. Review affected items before confirming. 1 selected folder will be left out; use Delete from folder to remove a folder.',
+      '1 track, 1 loop will be removed from your saved rehearsal library. Review affected items before confirming. 1 selected folder will be left out; use "Delete from folder" to remove a folder.',
     );
     assert.deepEqual(
       content.affectedSections?.map(({ title }) => title),
@@ -129,7 +129,7 @@ describe('placement copy', () => {
     );
     assert.equal(
       getBulkDeleteAcknowledgment(deletePlan).message,
-      '1 folder, 1 link deleted from Library Files.',
+      '1 folder, 1 link deleted from library files.',
     );
   });
 });

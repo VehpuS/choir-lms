@@ -36,8 +36,8 @@ export const QueuePlaylistSaveDialog = ({
     <CenteredDialogCard isVisible={isVisible} onRequestClose={onCancel}>
       <Text style={styles.title}>Create new playlist</Text>
       <Text style={styles.body}>
-        Create a new playlist from the current Up Next order. Unsaved queued
-        tracks will be added to Library first.
+        Create a new playlist from the current queue order. Unsaved queued
+        tracks will be added to your library first.
       </Text>
       <TextInput
         autoCapitalize="words"

@@ -18,7 +18,7 @@ describe('SegmentedControl', () => {
     const segments = resolveSegmentedControlSegments(
       [
         { label: 'This folder', value: 'current-folder' },
-        { label: 'All Files', value: 'all-files' },
+        { label: 'All files', value: 'all-files' },
       ],
       'all-files',
     );

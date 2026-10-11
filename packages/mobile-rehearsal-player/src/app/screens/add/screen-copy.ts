@@ -4,7 +4,7 @@ export const getAddScreenSummaryCopy = (options: {
 }) => {
   if (!options.activeSearchQuery) {
     return {
-      body: 'Browse or search My Drive and shared folders, then save promising tracks into Library without leaving this view.',
+      body: 'Browse or search My Drive and shared folders, then save promising tracks into your library without leaving this view.',
       title: 'Add from Google Drive',
     };
   }
@@ -17,7 +17,7 @@ export const getAddScreenSummaryCopy = (options: {
   }
 
   return {
-    body: `${options.resultCount} result${options.resultCount === 1 ? '' : 's'} matched "${options.activeSearchQuery}". Save the tracks you want to keep rehearsing, then switch to Library for full-track playback and loop work.`,
+    body: `${options.resultCount} result${options.resultCount === 1 ? '' : 's'} matched "${options.activeSearchQuery}". Save the tracks you want to keep rehearsing, then switch to your library for full-track playback and loop work.`,
     title: 'Search results ready',
   };
 };

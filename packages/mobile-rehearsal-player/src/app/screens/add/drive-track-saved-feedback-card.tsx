@@ -19,7 +19,7 @@ type DriveTrackSavedFeedbackCardProps = {
 };
 
 // Screen 1e's save acknowledgment: an opaque card with an accent edge, a
-// filled check, `Saved to Library` over the file name, and an explicit
+// filled check, `Saved to library` over the file name, and an explicit
 // Dismiss (mobile-rehearsal-player-usability requires one; 1e's `Open` is
 // not built).
 export const DriveTrackSavedFeedbackCard = ({

@@ -113,7 +113,7 @@ export const QueueSurface = ({
       <View {...dragHandleProps} style={styles.dragRegion}>
         <View style={nowPlayingStyles.grabber} />
         <View style={nowPlayingStyles.header}>
-          <Text style={nowPlayingStyles.headerKicker}>Up Next</Text>
+          <Text style={nowPlayingStyles.headerKicker}>Up next</Text>
           <View style={nowPlayingStyles.headerActions}>
             <SurfaceIconButton
               accessibilityLabel="Show now playing"

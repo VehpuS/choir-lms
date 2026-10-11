@@ -33,7 +33,7 @@ export const NOTHING_TO_SAVE_REASON =
 export const ALREADY_ADJUSTED_REASON =
   'This item already plays with its own saved speed and pitch.';
 export const SOURCE_NOT_SAVED_REASON =
-  'Save this track to Library first to keep an adjusted version.';
+  'Save this track to your library first to keep an adjusted version.';
 
 const isSavableLoopItem = (item: PlayableItem) => {
   return item.kind === 'loop' && item.range.endMs !== null;

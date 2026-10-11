@@ -32,7 +32,7 @@ export const useAppRouterQueuePlaylistActions = (options: {
       if (!didSave) {
         return {
           title: 'Could not save queued track',
-          message: `The queue could not be saved as a playlist because "${source.name}" could not be added to Library first.`,
+          message: `The queue could not be saved as a playlist because "${source.name}" could not be added to your library first.`,
         };
       }
     }
@@ -62,7 +62,7 @@ export const useAppRouterQueuePlaylistActions = (options: {
       return {
         title: 'Playlist unavailable',
         message:
-          'Start playback from a saved playlist before updating it from Up Next.',
+          'Start playback from a saved playlist before updating it from the queue.',
       };
     }
 
@@ -76,7 +76,7 @@ export const useAppRouterQueuePlaylistActions = (options: {
       return {
         title: 'Playlist unavailable',
         message:
-          'The playlist for this active queue is no longer available in your saved Library.',
+          'The playlist for this active queue is no longer available in your saved library.',
       };
     }
 
@@ -97,7 +97,7 @@ export const useAppRouterQueuePlaylistActions = (options: {
       if (!didSave) {
         return {
           title: 'Could not save queued track',
-          message: `The queue could not update "${targetPlaylist.name}" because "${source.name}" could not be added to Library first.`,
+          message: `The queue could not update "${targetPlaylist.name}" because "${source.name}" could not be added to your library first.`,
         };
       }
     }
@@ -109,7 +109,7 @@ export const useAppRouterQueuePlaylistActions = (options: {
     if (!updatedPlaylist) {
       return {
         title: 'Could not update playlist',
-        message: `The current Up Next order could not replace "${targetPlaylist.name}".`,
+        message: `The current queue order could not replace "${targetPlaylist.name}".`,
       };
     }
 

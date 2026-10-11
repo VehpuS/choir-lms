@@ -4,7 +4,7 @@ import { appTheme } from '../../utils/theme';
 
 const { colors, fontFamily, fontWeight, space, type } = appTheme;
 
-// Screen 1h: the Up Next sheet. Its frame, grabber, and header come from the
+// Screen 1h: the Up next sheet. Its frame, grabber, and header come from the
 // now-playing styles so the two sheets read as one family.
 const POSITION_NUMBER_SIZE = 13;
 const EQUALIZER_SLOT_SIZE = 20;

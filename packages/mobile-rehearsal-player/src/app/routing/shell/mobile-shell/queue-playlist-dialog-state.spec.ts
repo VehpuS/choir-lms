@@ -17,7 +17,7 @@ import {
 const UPDATE_ACTION: QueuePlaylistUpdateAction = {
   confirmLabel: 'Update playlist',
   confirmationMessage:
-    'Replace the saved items and order in Wednesday rehearsal with the current Up Next order.',
+    'Replace the saved items and order in Wednesday rehearsal with the current queue order.',
   confirmationTitle: 'Update Wednesday rehearsal?',
   label: 'Update Wednesday rehearsal',
 };

@@ -32,7 +32,7 @@ const REPEAT_CHIP_LABELS: Record<RepeatMode, string> = {
 };
 
 /**
- * Up Next's mode chips (1h): `Ordered` and `Shuffle` are the two sides of the
+ * Up next's mode chips (1h): `Ordered` and `Shuffle` are the two sides of the
  * queue mode, and one repeat chip cycles off, one, and all, lit whenever
  * repeat is on. A chip's `mode` is what pressing it selects.
  */

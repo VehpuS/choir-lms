@@ -100,7 +100,7 @@ export const getNowPlayingSurfaceSummary = (options: {
     }),
     playbackLabel: options.activePlaylistSession
       ? getPlaylistPlaybackSessionSummary(options.activePlaylistSession)
-      : 'Keep the current rehearsal item audible while moving between Library, Add, and Recents.',
+      : 'Keep the current rehearsal item audible while moving between tabs.',
     loopRange: getPlayableItemLoopRange(options.activePlayableItem),
     supportsQueueNavigation: Boolean(options.activePlaylistSession),
     upNextLabel: options.activePlaylistSession
@@ -124,7 +124,7 @@ export const getUpNextSurfaceSummary = (options: {
   const updateAction = canUpdateQueuePlaylist(options.activePlaylistSession)
     ? {
         confirmLabel: 'Update playlist',
-        confirmationMessage: `Replace the saved items and order in ${options.activePlaylistSession.playlistName} with the current Up Next order. Unsaved queued tracks will be added to Library first, and current playback keeps running.`,
+        confirmationMessage: `Replace the saved items and order in ${options.activePlaylistSession.playlistName} with the current queue order. Unsaved queued tracks will be added to your library first, and current playback keeps running.`,
         confirmationTitle: `Update ${options.activePlaylistSession.playlistName}?`,
         label: `Update ${options.activePlaylistSession.playlistName}`,
       }

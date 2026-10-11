@@ -41,7 +41,7 @@ export const LibraryFilesRenameDialog = ({
     <CenteredDialogCard isVisible={isVisible} onRequestClose={onCancel}>
       <Text style={styles.groupTitle}>Rename</Text>
       <Text style={styles.sectionBody}>
-        Update the visible name in this Library Files location.
+        Update the visible name in this library files location.
       </Text>
       <TextInput
         autoCapitalize="words"

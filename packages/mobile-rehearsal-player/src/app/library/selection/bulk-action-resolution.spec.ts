@@ -173,7 +173,7 @@ describe('resolveBulkActions disabled reasons', () => {
     );
     assert.equal(
       find(actions, 'remove-from-library').disabledReason,
-      'Folders can only be removed with Delete from folder.',
+      'Folders can only be removed with "Delete from folder".',
     );
     assert.equal(find(actions, 'move-to-folder').isDisabled, false);
   });

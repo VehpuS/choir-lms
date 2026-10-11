@@ -74,7 +74,7 @@ export const BulkPlaylistTargetSheet = ({
       </ScrollView>
     ) : (
       <FeedbackCard
-        message="Use Save as playlist to make one from this selection."
+        message={'Use "Save as playlist" to make one from this selection.'}
         size="compact"
         title="No playlists yet"
       />

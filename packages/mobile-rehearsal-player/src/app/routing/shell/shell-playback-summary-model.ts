@@ -216,7 +216,7 @@ const getMiniPlayerBaseContextLabel = (options: {
   return `${options.status} • ${options.progressLabel}`;
 };
 
-/** An Up Next row's meta line (1h): `Track · 4:41` or `Loop · 1:12–1:48 · Kyrie.mp3`. */
+/** An Up next row's meta line (1h): `Track · 4:41` or `Loop · 1:12–1:48 · Kyrie.mp3`. */
 export const getQueueItemDetail = (playableItem: PlayableItem) => {
   const loopRange = getPlayableItemLoopRange(playableItem);
 
@@ -262,7 +262,7 @@ const getPlayableItemDurationMs = (playableItem: PlayableItem) => {
 };
 
 /**
- * The Up Next title block's line (1h): `9 items · 32:14 · ordered · repeat all`.
+ * The Up next title block's line (1h): `9 items · 32:14 · ordered · repeat all`.
  * The total is left out rather than understated when an item has no duration.
  */
 export const getQueueSessionMetaLabel = (session: PlaylistPlaybackSession) => {

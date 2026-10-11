@@ -208,7 +208,7 @@ export const createLibraryFilesOperations = ({
       } catch (error) {
         const issue = createLibraryFilesIssue({
           error,
-          fallbackMessage: `The folder "${trimmedName}" could not be created in the current Library Files location.`,
+          fallbackMessage: `The folder "${trimmedName}" could not be created in the current library files location.`,
           fallbackTitle: 'Could not create folder',
           recovery(conflictingName) {
             const suggestedName = buildSuggestedName(
@@ -337,7 +337,7 @@ export const createLibraryFilesOperations = ({
       } catch (error) {
         setOperationIssue(
           'Could not delete from folder',
-          'The selected Library Files item could not be deleted from this folder.',
+          'The selected library files item could not be deleted from this folder.',
           error,
         );
         return false;
@@ -361,7 +361,7 @@ export const createLibraryFilesOperations = ({
       } catch (error) {
         setOperationIssue(
           'Could not delete folder',
-          'The selected Library Files folder could not be deleted.',
+          'The selected library files folder could not be deleted.',
           error,
         );
         return false;
@@ -391,7 +391,7 @@ export const createLibraryFilesOperations = ({
       } catch (error) {
         setOperationIssue(
           'Could not add item to folder',
-          'The selected Library Files folder could not accept this item.',
+          'The selected library files folder could not accept this item.',
           error,
         );
         return false;
@@ -420,7 +420,7 @@ export const createLibraryFilesOperations = ({
         const issue = createLibraryFilesIssue({
           error,
           fallbackMessage:
-            'The selected Library Files item could not be moved to that folder.',
+            'The selected library files item could not be moved to that folder.',
           fallbackTitle: 'Could not move item',
           recovery(conflictingName) {
             const suggestedName = buildSuggestedName(
@@ -468,7 +468,7 @@ export const createLibraryFilesOperations = ({
         const issue = createLibraryFilesIssue({
           error,
           fallbackMessage:
-            'The selected Library Files folder could not be moved to that location.',
+            'The selected library files folder could not be moved to that location.',
           fallbackTitle: 'Could not move folder',
           recovery(conflictingName) {
             const suggestedName = buildSuggestedName(
@@ -516,7 +516,7 @@ export const createLibraryFilesOperations = ({
         const issue = createLibraryFilesIssue({
           error,
           fallbackMessage:
-            "The selected Library Files folder's tags could not be saved.",
+            "The selected library files folder's tags could not be saved.",
           fallbackTitle: 'Could not save folder tags',
         });
 

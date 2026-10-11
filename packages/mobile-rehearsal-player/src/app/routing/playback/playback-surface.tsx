@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     left: 0,
     backgroundColor: appTheme.colors.scrim,
   },
-  // Now playing (1f) and Up Next (1h) are flush bottom sheets with a strip of
+  // Now playing (1f) and Up next (1h) are flush bottom sheets with a strip of
   // backdrop above them to tap away; the frame caps them so their bodies
   // scroll on short screens.
   sheetContainer: {

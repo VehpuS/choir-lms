@@ -122,7 +122,7 @@ describe('queue playlist capture', () => {
       issue: {
         title: 'Queued loop unavailable',
         message:
-          'The queue item "Entrance cue" no longer has a saved loop source. Remove it from Up Next before saving this playlist.',
+          'The queue item "Entrance cue" no longer has a saved loop source. Remove it from the queue before saving this playlist.',
       },
       playlist: null,
       unsavedSources: [],

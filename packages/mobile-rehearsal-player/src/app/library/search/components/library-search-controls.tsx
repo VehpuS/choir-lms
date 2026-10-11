@@ -124,7 +124,7 @@ export const LibrarySearchControls = ({
             ? currentFilesFolderName
               ? `This folder (${currentFilesFolderName})`
               : 'This folder'
-            : 'All Files'
+            : 'All files'
         }`
       : searchContextCopy.helper;
 

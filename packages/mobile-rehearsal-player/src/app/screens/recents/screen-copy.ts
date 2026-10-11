@@ -12,13 +12,13 @@ export const getRecentsContinuePracticingCopy = (options: {
 
   if (options.savedTrackCount === 0) {
     return {
-      body: 'No recent rehearsal yet. Start in Add or Library.',
+      body: 'No recent rehearsal yet. Start in Add or your library.',
       title: 'No recent rehearsal yet',
     };
   }
 
   return {
-    body: `${options.savedTrackCount} saved rehearsal ${options.savedTrackCount === 1 ? 'track is' : 'tracks are'} ready in Library. Open Library to continue practicing.`,
+    body: `${options.savedTrackCount} saved rehearsal ${options.savedTrackCount === 1 ? 'track is' : 'tracks are'} ready in your library. Open your library to continue practicing.`,
     title: 'Recent rehearsal entry points',
   };
 };
@@ -28,7 +28,7 @@ export const getRecentsTagModuleCopy = (options: {
 }) => {
   if (!options.hasSavedTagUsage) {
     return {
-      body: 'No tags yet. Tag a track, loop, playlist, or folder in Library to see it here.',
+      body: 'No tags yet. Tag a track, loop, playlist, or folder in your library to see it here.',
     };
   }
 

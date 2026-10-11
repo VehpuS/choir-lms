@@ -91,7 +91,7 @@ describe('saved playlist view-model', () => {
     assert.deepEqual(getSavedPlaylistRemovalCopy(populatedPlaylist), {
       confirmLabel: 'Remove playlist',
       message:
-        '"Warmups" will be removed from your saved playlists.\n\nThis will remove 1 item from this playlist only. Saved tracks and loops will stay in Library.',
+        '"Warmups" will be removed from your saved playlists.\n\nThis will remove 1 item from this playlist only. Saved tracks and loops will stay in your library.',
       title: 'Remove saved playlist?',
     });
   });

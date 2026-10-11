@@ -28,8 +28,8 @@ const practiceRepository = new AsyncStoragePracticeRepository();
 
 const STORAGE_UNAVAILABLE_ISSUE: LibraryFilesIssue = {
   message:
-    'This build could not access the device storage needed for Library Files.',
-  title: 'Library Files unavailable',
+    'This build could not access the device storage needed for library files.',
+  title: 'Library files unavailable',
 };
 
 const buildEntityCanonicalKeySegment = (options: {
@@ -99,8 +99,8 @@ export const useLibraryFiles = (
     } catch (error) {
       setIssue(
         formatLibraryFilesIssue(
-          'Could not load Library Files',
-          'The Library Files explorer could not load the current file tree.',
+          'Could not load library files',
+          'The library files explorer could not load the current file tree.',
           error,
         ),
       );

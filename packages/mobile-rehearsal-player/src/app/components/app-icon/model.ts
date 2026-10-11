@@ -102,7 +102,7 @@ export const APP_ICON_GLYPHS = {
   repeat: regular('Repeat'),
   'repeat-once': regular('RepeatOnce'),
   shuffle: regular('Shuffle'),
-  // Queue order, the unshuffled counterpart of `shuffle` (Up Next's mode chips).
+  // Queue order, the unshuffled counterpart of `shuffle` (Up next's mode chips).
   'list-numbers': regular('ListNumbers'),
 
   // Row management.

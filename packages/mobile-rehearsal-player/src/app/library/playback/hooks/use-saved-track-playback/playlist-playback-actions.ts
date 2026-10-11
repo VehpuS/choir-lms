@@ -79,7 +79,7 @@ export const startPlaylistPlayback = async (
   }
 
   // The session starts before its first item loads, so queue controls and
-  // Up Next never wait on that item's download.
+  // Up next never wait on that item's download.
   options.activePlaylistContextRef.current = {
     loops: options.loops,
     playlist: options.playlist,

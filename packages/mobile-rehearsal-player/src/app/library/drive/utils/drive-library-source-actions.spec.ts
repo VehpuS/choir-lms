@@ -54,7 +54,7 @@ describe('drive library source actions', () => {
       ['Play', 'inline'],
       ['Save', 'inline'],
       ['Play preview', 'menu'],
-      ['Save to Library', 'menu'],
+      ['Save to library', 'menu'],
       ['Open in Google Drive', 'menu'],
     ]);
     assert.deepEqual(buildActions(true), [

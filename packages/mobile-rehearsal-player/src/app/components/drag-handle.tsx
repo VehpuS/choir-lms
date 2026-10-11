@@ -11,7 +11,7 @@ type DragHandleProps = {
   panHandlers: GestureResponderHandlers;
 };
 
-// Shared by playlist-detail and Up Next/queue reorderable rows so both
+// Shared by playlist-detail and Up next/queue reorderable rows so both
 // surfaces present the same drag-handle icon, size, and trailing placement
 // (mobile-rehearsal-player-ui: "Drag handles use one consistent icon and
 // edge placement across reorderable surfaces").

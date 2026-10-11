@@ -70,7 +70,7 @@ const SAVED_REHEARSAL_LIBRARY_VIEW_COPY: Record<
     title: 'Tags',
   },
   tracks: {
-    body: 'Browse saved tracks, with track-linked loops one tap away via View track loops.',
+    body: 'Browse saved tracks, with track-linked loops one tap away via "View track loops".',
     eyebrow: 'Library',
     title: 'Tracks',
   },

@@ -31,7 +31,7 @@ export type QueueSurfaceRowProps = {
   resolveItemIndex: () => number;
 };
 
-// One Up Next row (1h): a position number (an equalizer mark for the current
+// One Up next row (1h): a position number (an equalizer mark for the current
 // item), title over meta line, and a drag handle. Tapping plays the item.
 export const QueueSurfaceRow = ({
   item,

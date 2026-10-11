@@ -19,7 +19,7 @@ describe('saved playlist status view-model', () => {
       {
         title: 'No playlists yet',
         message:
-          'Create a playlist, then add saved tracks or loops from Library to build a rehearsal running order.',
+          'Create a playlist, then add saved tracks or loops from your library to build a rehearsal running order.',
         tone: 'neutral',
       },
     );

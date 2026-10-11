@@ -29,10 +29,10 @@ type UseAdjustedShapingSaveOptions = {
 };
 
 const SAVE_FAILURE_MESSAGE =
-  'Could not save the adjusted version. Try again from the Library.';
+  'Could not save the adjusted version. Try again from the library.';
 
 const createSuccessFeedback = (name: string): PlaybackShapingSaveFeedback => {
-  return { message: `Saved “${name}” to Library.`, tone: 'success' };
+  return { message: `Saved “${name}” to library.`, tone: 'success' };
 };
 
 /** Persists the current shaping as an adjusted loop or track, with feedback. */

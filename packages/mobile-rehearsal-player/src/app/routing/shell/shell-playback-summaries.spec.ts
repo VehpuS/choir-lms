@@ -101,7 +101,7 @@ describe('shell playback summaries', () => {
     assert.deepEqual(summary, {
       collectionLabel: 'Saved rehearsal library',
       playbackLabel:
-        'Keep the current rehearsal item audible while moving between Library, Add, and Recents.',
+        'Keep the current rehearsal item audible while moving between tabs.',
       progressLabel: '0:20 of 3:05',
       loopRange: null,
       shapingLabel: null,
@@ -225,7 +225,7 @@ describe('shell playback summaries', () => {
         updateAction: {
           confirmLabel: 'Update playlist',
           confirmationMessage:
-            'Replace the saved items and order in Warmups with the current Up Next order. Unsaved queued tracks will be added to Library first, and current playback keeps running.',
+            'Replace the saved items and order in Warmups with the current queue order. Unsaved queued tracks will be added to your library first, and current playback keeps running.',
           confirmationTitle: 'Update Warmups?',
           label: 'Update Warmups',
         },
@@ -284,7 +284,7 @@ describe('shell playback summaries', () => {
         updateAction: {
           confirmLabel: 'Update playlist',
           confirmationMessage:
-            'Replace the saved items and order in Wednesday rehearsal with the current Up Next order. Unsaved queued tracks will be added to Library first, and current playback keeps running.',
+            'Replace the saved items and order in Wednesday rehearsal with the current queue order. Unsaved queued tracks will be added to your library first, and current playback keeps running.',
           confirmationTitle: 'Update Wednesday rehearsal?',
           label: 'Update Wednesday rehearsal',
         },
