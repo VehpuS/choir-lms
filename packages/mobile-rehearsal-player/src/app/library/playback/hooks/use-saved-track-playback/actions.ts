@@ -19,7 +19,7 @@ import {
   movePlaylistPlaybackQueueItem,
   movePlaylistPlaybackQueueItemToEnd,
   movePlaylistPlaybackQueueItemToStart,
-  queuePlayableItemDuringPlayback,
+  queuePlayableItemsDuringPlayback,
   removePlaylistPlaybackQueueItem,
   selectPlaylistPlaybackQueueItem,
   updatePlaylistPlaybackRepeatMode,
@@ -81,6 +81,25 @@ export const createSavedTrackPlaybackActions = ({
     await requestAuthorization?.();
 
     return true;
+  };
+
+  const queuePlayableItems = (
+    playableItems: readonly PlayableItem[],
+    position: 'next' | 'up-next',
+  ) => {
+    if (playableItems.length === 0) {
+      return;
+    }
+
+    setActivePlaylistSession((currentSession) => {
+      return queuePlayableItemsDuringPlayback({
+        activePlayableItem: activePlayableItemRef.current,
+        playableItems,
+        position,
+        repeatMode: repeatModeRef.current,
+        session: currentSession,
+      });
+    });
   };
 
   return {
@@ -183,26 +202,18 @@ export const createSavedTrackPlaybackActions = ({
       await playbackController.togglePlayableItemPlayback(playableItem);
     },
     queuePlayableItemNext(playableItem: PlayableItem) {
-      setActivePlaylistSession((currentSession) => {
-        return queuePlayableItemDuringPlayback({
-          activePlayableItem: activePlayableItemRef.current,
-          playableItem,
-          position: 'next',
-          repeatMode: repeatModeRef.current,
-          session: currentSession,
-        });
-      });
+      queuePlayableItems([playableItem], 'next');
     },
     queuePlayableItemUpNext(playableItem: PlayableItem) {
-      setActivePlaylistSession((currentSession) => {
-        return queuePlayableItemDuringPlayback({
-          activePlayableItem: activePlayableItemRef.current,
-          playableItem,
-          position: 'up-next',
-          repeatMode: repeatModeRef.current,
-          session: currentSession,
-        });
-      });
+      queuePlayableItems([playableItem], 'up-next');
+    },
+    // Bulk selection: the whole block goes in as one ordered insertion, so
+    // the current item is never interrupted (design Decision 10).
+    queuePlayableItemsNext(playableItems: readonly PlayableItem[]) {
+      queuePlayableItems(playableItems, 'next');
+    },
+    queuePlayableItemsUpNext(playableItems: readonly PlayableItem[]) {
+      queuePlayableItems(playableItems, 'up-next');
     },
     moveQueueItem(fromIndex: number, toIndex: number) {
       setActivePlaylistSession((currentSession) => {

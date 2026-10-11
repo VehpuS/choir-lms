@@ -7,9 +7,9 @@ import { shuffleItems } from '@org/audio-library-runtime';
 
 import type { PlaylistPlaybackSession } from './saved-playlist-playback-view-model';
 
-type QueuePlayableItemDuringPlaybackOptions = {
+type QueuePlayableItemsDuringPlaybackOptions = {
   activePlayableItem: PlayableItem | null;
-  playableItem: PlayableItem;
+  playableItems: readonly PlayableItem[];
   position: 'next' | 'up-next';
   repeatMode: RepeatMode;
   session: PlaylistPlaybackSession | null;
@@ -71,9 +71,13 @@ const resolveMovedQueueCurrentIndex = (options: {
   return options.currentIndex;
 };
 
-export const queuePlayableItemAsNext = (
+/**
+ * Inserts an ordered block directly after the current item, without moving
+ * the current item. The single-item action is the one-element block.
+ */
+export const queuePlayableItemsAsNext = (
   session: PlaylistPlaybackSession,
-  playableItem: PlayableItem,
+  playableItems: readonly PlayableItem[],
 ): PlaylistPlaybackSession => {
   const insertionIndex = Math.min(
     session.currentIndex + 1,
@@ -86,26 +90,41 @@ export const queuePlayableItemAsNext = (
       ...session.queue,
       items: [
         ...session.queue.items.slice(0, insertionIndex),
-        playableItem,
+        ...playableItems,
         ...session.queue.items.slice(insertionIndex),
       ],
     },
-    requestedItemCount: session.requestedItemCount + 1,
+    requestedItemCount: session.requestedItemCount + playableItems.length,
   };
+};
+
+/** Appends an ordered block at the end of the queue. */
+export const queuePlayableItemsAsUpNext = (
+  session: PlaylistPlaybackSession,
+  playableItems: readonly PlayableItem[],
+): PlaylistPlaybackSession => {
+  return {
+    ...session,
+    queue: {
+      ...session.queue,
+      items: [...session.queue.items, ...playableItems],
+    },
+    requestedItemCount: session.requestedItemCount + playableItems.length,
+  };
+};
+
+export const queuePlayableItemAsNext = (
+  session: PlaylistPlaybackSession,
+  playableItem: PlayableItem,
+): PlaylistPlaybackSession => {
+  return queuePlayableItemsAsNext(session, [playableItem]);
 };
 
 export const queuePlayableItemAsUpNext = (
   session: PlaylistPlaybackSession,
   playableItem: PlayableItem,
 ): PlaylistPlaybackSession => {
-  return {
-    ...session,
-    queue: {
-      ...session.queue,
-      items: [...session.queue.items, playableItem],
-    },
-    requestedItemCount: session.requestedItemCount + 1,
-  };
+  return queuePlayableItemsAsUpNext(session, [playableItem]);
 };
 
 export const movePlaylistPlaybackQueueItem = (
@@ -297,8 +316,13 @@ export const canUpdateQueuePlaylist = (
   );
 };
 
-export const queuePlayableItemDuringPlayback = (
-  options: QueuePlayableItemDuringPlaybackOptions,
+/**
+ * Queues a block during playback. A standalone item is promoted into the
+ * transient queue first, exactly as for a single item; with nothing playing
+ * there is no queue to insert into and the result is `null`.
+ */
+export const queuePlayableItemsDuringPlayback = (
+  options: QueuePlayableItemsDuringPlaybackOptions,
 ): PlaylistPlaybackSession | null => {
   const session =
     options.session ??
@@ -314,6 +338,19 @@ export const queuePlayableItemDuringPlayback = (
   }
 
   return options.position === 'next'
-    ? queuePlayableItemAsNext(session, options.playableItem)
-    : queuePlayableItemAsUpNext(session, options.playableItem);
+    ? queuePlayableItemsAsNext(session, options.playableItems)
+    : queuePlayableItemsAsUpNext(session, options.playableItems);
+};
+
+export const queuePlayableItemDuringPlayback = (
+  options: Omit<QueuePlayableItemsDuringPlaybackOptions, 'playableItems'> & {
+    playableItem: PlayableItem;
+  },
+): PlaylistPlaybackSession | null => {
+  const { playableItem, ...rest } = options;
+
+  return queuePlayableItemsDuringPlayback({
+    ...rest,
+    playableItems: [playableItem],
+  });
 };

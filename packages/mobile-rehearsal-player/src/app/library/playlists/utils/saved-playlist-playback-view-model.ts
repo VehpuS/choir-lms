@@ -27,6 +27,9 @@ export {
   queuePlayableItemAsNext,
   queuePlayableItemAsUpNext,
   queuePlayableItemDuringPlayback,
+  queuePlayableItemsAsNext,
+  queuePlayableItemsAsUpNext,
+  queuePlayableItemsDuringPlayback,
   removePlaylistPlaybackQueueItem,
   selectPlaylistPlaybackQueueItem,
 } from './playlist-playback-queue-state';
