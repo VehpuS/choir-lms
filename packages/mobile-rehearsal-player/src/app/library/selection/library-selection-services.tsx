@@ -3,9 +3,15 @@ import type {
   NamedLoop,
   PlayableItem,
   Playlist,
+  RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
 import { createContext, useContext } from 'react';
 
+import type {
+  BulkTagChange,
+  BulkTagTarget,
+} from '../components/tag-editor-sheet/bulk-tags';
+import type { BulkOperationResult } from '../saved-rehearsal-library/library-files-bulk-operations';
 import type { BulkAcknowledgment } from './bulk-playback-run';
 
 // What every Library selection surface needs from the screen but should not
@@ -21,11 +27,17 @@ export type LibrarySelectionServices = {
     sources: DriveAudioSource[];
   };
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
+  /** Folders carry tags too, so the bulk tag editor reads them. */
+  folders: RehearsalLibraryFolderNode[];
   /** False while another tab is showing, so an open selection ends. */
   isDestinationActive: boolean;
   queueItemsNext: (items: readonly PlayableItem[]) => void;
   queueItemsUpNext: (items: readonly PlayableItem[]) => void;
   updatePlaylist: (playlist: Playlist) => Promise<Playlist | null>;
+  /** One write that adds and removes tags across the targets. */
+  updateTags: (
+    change: BulkTagChange & { targets: readonly BulkTagTarget[] },
+  ) => Promise<BulkOperationResult>;
 };
 
 const LibrarySelectionServicesContext =

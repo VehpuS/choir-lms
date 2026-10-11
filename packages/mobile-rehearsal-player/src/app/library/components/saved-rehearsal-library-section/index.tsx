@@ -210,6 +210,7 @@ export const SavedRehearsalLibrarySection = ({
     activePlayableItem,
     createPlaylist,
     isDestinationActive,
+    libraryFiles,
     onShowLibraryFilesSuccessFeedback,
     queuePlayableItemsNext,
     queuePlayableItemsUpNext,

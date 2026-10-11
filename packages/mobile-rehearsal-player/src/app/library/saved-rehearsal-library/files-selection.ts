@@ -277,3 +277,24 @@ export const toPlacementItems = (
     placementItems,
   };
 };
+
+/** The entities behind the selected nodes, each once, for a tag change. */
+export const toFilesTagTargets = (
+  items: readonly FilesSelectionItem[],
+): { id: string; kind: 'folder' | 'loop' | 'playlist' | 'track' }[] => {
+  const targets = new Map<
+    string,
+    { id: string; kind: 'folder' | 'loop' | 'playlist' | 'track' }
+  >();
+
+  for (const item of items) {
+    const target =
+      item.kind === 'folder'
+        ? { id: item.folderId, kind: 'folder' as const }
+        : { id: item.entityId, kind: item.entityKind };
+
+    targets.set(`${target.kind}:${target.id}`, target);
+  }
+
+  return [...targets.values()];
+};

@@ -14,6 +14,7 @@ import {
   orderFilesSelectionByRows,
   toFilesBulkSelectionItem,
   toFilesSelectionEntry,
+  toFilesTagTargets,
   toPlacementItems,
   type FilesSelectionItem,
 } from './files-selection';
@@ -237,6 +238,29 @@ describe('toPlacementItems', () => {
         item.kind === 'folder' ? item.folder.id : item.fileLink.id,
       ),
       ['verses', 'link-a'],
+    );
+  });
+});
+
+describe('toFilesTagTargets', () => {
+  it('lists each entity once, even when it is selected through two links', () => {
+    assert.deepEqual(
+      toFilesTagTargets([
+        folderItem('verses'),
+        linkItem('link-a', 'a'),
+        linkItem('link-a-again', 'a'),
+        {
+          entityId: 'p1',
+          entityKind: 'playlist',
+          fileLinkId: 'link-p',
+          kind: 'link',
+        },
+      ]),
+      [
+        { id: 'verses', kind: 'folder' },
+        { id: 'a', kind: 'track' },
+        { id: 'p1', kind: 'playlist' },
+      ],
     );
   });
 });

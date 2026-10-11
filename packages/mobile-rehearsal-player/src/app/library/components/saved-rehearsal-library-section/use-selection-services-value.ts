@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
 import { type LibrarySelectionServices } from '../../selection/library-selection-services';
 import { createLibraryFilesSuccessFeedback } from './library-files-success-feedback';
@@ -8,6 +8,7 @@ type Options = Pick<
   SavedRehearsalLibrarySectionProps,
   | 'activePlayableItem'
   | 'createPlaylist'
+  | 'libraryFiles'
   | 'onShowLibraryFilesSuccessFeedback'
   | 'queuePlayableItemsNext'
   | 'queuePlayableItemsUpNext'
@@ -26,6 +27,7 @@ export const useSelectionServicesValue = ({
   activePlayableItem,
   createPlaylist,
   isDestinationActive,
+  libraryFiles,
   onShowLibraryFilesSuccessFeedback,
   queuePlayableItemsNext,
   queuePlayableItemsUpNext,
@@ -33,8 +35,19 @@ export const useSelectionServicesValue = ({
   savedLoops,
   savedPlaylists,
   updatePlaylist,
-}: Options): LibrarySelectionServices =>
-  useMemo(
+}: Options): LibrarySelectionServices => {
+  // `libraryFiles.bulk` is rebuilt on every render; reading it through a ref
+  // keeps `updateTags` stable so consumers do not re-run on each render.
+  const libraryFilesRef = useRef(libraryFiles);
+
+  libraryFilesRef.current = libraryFiles;
+
+  const updateTags = useCallback<LibrarySelectionServices['updateTags']>(
+    (change) => libraryFilesRef.current.bulk.updateTags(change),
+    [],
+  );
+
+  return useMemo(
     () => ({
       acknowledge: ({ action, message, title, undo }) => {
         onShowLibraryFilesSuccessFeedback(
@@ -48,15 +61,18 @@ export const useSelectionServicesValue = ({
         sources: savedLibrarySources,
       },
       createPlaylist,
+      folders: libraryFiles.folders,
       isDestinationActive,
       queueItemsNext: queuePlayableItemsNext,
       queueItemsUpNext: queuePlayableItemsUpNext,
       updatePlaylist,
+      updateTags,
     }),
     [
       activePlayableItem,
       createPlaylist,
       isDestinationActive,
+      libraryFiles.folders,
       onShowLibraryFilesSuccessFeedback,
       queuePlayableItemsNext,
       queuePlayableItemsUpNext,
@@ -64,5 +80,7 @@ export const useSelectionServicesValue = ({
       savedLoops,
       savedPlaylists,
       updatePlaylist,
+      updateTags,
     ],
   );
+};

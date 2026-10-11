@@ -8,6 +8,7 @@ import {
   orderFilesSelectionByRows,
   toFilesBulkSelectionItem,
   toFilesSelectionEntry,
+  toFilesTagTargets,
   type FilesSelectionItem,
 } from '../../saved-rehearsal-library/files-selection';
 import {
@@ -28,6 +29,7 @@ import { getSelectionCountLabel } from '../../selection/selection-copy';
 import { SelectEntryButton } from '../../selection/select-entry-button';
 import { SelectionBar } from '../../selection/selection-bar';
 import { useBulkPlaybackActions } from '../../selection/use-bulk-playback-actions';
+import { useBulkTagEditor } from '../../selection/use-bulk-tag-editor';
 import { usePinnedBulkActionBar } from '../../selection/use-pinned-bulk-action-bar';
 import { useSelection } from '../../selection/use-selection';
 import type { ExplorerRowSelection } from '../explorer/model';
@@ -147,15 +149,24 @@ export const useLibraryFilesSelection = ({
     items: orderedItems,
     onCompleted: selection.cancel,
   });
+  const tagTargets = useMemo(
+    () => toFilesTagTargets(orderedItems),
+    [orderedItems],
+  );
+  const tagEditor = useBulkTagEditor({
+    onCompleted: selection.cancel,
+    targets: tagTargets,
+  });
   const handlers = useMemo<BulkActionHandlers>(
     () => ({
       'add-to-playlist': playback.run.addToPlaylist,
       'add-to-queue': playback.run.addToQueue,
+      'edit-tags': tagEditor.open,
       'play-next': playback.run.playNext,
       'save-as-playlist': playback.run.saveAsPlaylist,
       ...nodeActions.handlers,
     }),
-    [nodeActions.handlers, playback.run],
+    [nodeActions.handlers, playback.run, tagEditor.open],
   );
   const actions = useMemo<BulkAction[]>(
     () =>
@@ -293,6 +304,7 @@ export const useLibraryFilesSelection = ({
       <>
         {playback.nodes}
         {nodeActions.nodes}
+        {tagEditor.node}
       </>
     ),
     entryButton:

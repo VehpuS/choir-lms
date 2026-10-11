@@ -132,7 +132,9 @@ describe('resolveTagEditorTagsAndTitle', () => {
 });
 
 type TagEditorHookResult = ReturnType<typeof useSavedRehearsalLibraryTagEditor>;
-type TagEditorHookOptions = Parameters<typeof useSavedRehearsalLibraryTagEditor>[0];
+type TagEditorHookOptions = Parameters<
+  typeof useSavedRehearsalLibraryTagEditor
+>[0];
 
 const renderTagEditorHook = (options: TagEditorHookOptions) => {
   const hookResultBox: { current: TagEditorHookResult | null } = {
@@ -237,9 +239,7 @@ describe('useSavedRehearsalLibraryTagEditor -> saveTagEdits', () => {
       await hookResultBox.current?.saveTagEdits(NEW_TAGS);
     });
 
-    assert.deepEqual(updatePlaylist.calls, [
-      [{ ...PLAYLIST, tags: NEW_TAGS }],
-    ]);
+    assert.deepEqual(updatePlaylist.calls, [[{ ...PLAYLIST, tags: NEW_TAGS }]]);
     assert.equal(hookResultBox.current?.isTagEditorVisible, false);
 
     act(() => {

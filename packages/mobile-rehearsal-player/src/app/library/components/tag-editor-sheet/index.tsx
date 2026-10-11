@@ -13,9 +13,11 @@ import { appTheme } from '../../../utils/theme';
 import { BottomSheetSurface } from '../bottom-sheet-surface';
 import { FeedbackCard } from '../feedback-card';
 import { InteractionChip } from '../interaction-chip';
+import { dropFromMixed } from './bulk-tags';
 import {
   addLibraryEntityTag,
   getActiveTagEditorInputSegment,
+  parseLibraryTagInput,
   removeLibraryEntityTag,
   removeTagEditorInputActiveSegment,
   resolveTagEditorSuggestions,
@@ -25,25 +27,45 @@ import { TagSuggestionRow } from './tag-suggestion-row';
 type TagEditorSheetProps = {
   availableTagUsage: RehearsalLibraryTagUsage[];
   isSaving: boolean;
+  /** Replaces the single-item line, e.g. for a selection of several items. */
+  description?: string;
   isVisible: boolean;
+  /** Why the last save failed; shown above the actions. */
+  issue?: { message: string; title: string } | null;
+  /**
+   * Tags carried by only some of the items a bulk edit covers. They sit in the
+   * list marked `some`; tapping one, or adding it, gives it to every item.
+   */
+  mixedTags?: readonly string[];
+  selectedCount?: number;
   tags: string[];
   title: string;
   onClose: () => void;
-  onSave: (tags: string[]) => void;
+  /** The final tags, and which of them are still mixed (untouched). */
+  onSave: (tags: string[], untouchedMixedTags: string[]) => void;
 };
 
 const TAG_INPUT_PLACEHOLDER = 'Add tags (comma-separated)';
+const SINGLE_ITEM_DESCRIPTION =
+  'Add or remove tags to organize this saved library item.';
+const MIXED_TAG_SUFFIX = ' · some';
+const NO_MIXED_TAGS: readonly string[] = [];
 
 export const TagEditorSheet = ({
   availableTagUsage,
+  description = SINGLE_ITEM_DESCRIPTION,
   isSaving,
   isVisible,
+  issue = null,
+  mixedTags = NO_MIXED_TAGS,
+  selectedCount,
   tags,
   title,
   onClose,
   onSave,
 }: TagEditorSheetProps) => {
   const [draftTags, setDraftTags] = useState<string[]>([]);
+  const [draftMixedTags, setDraftMixedTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
 
   useEffect(() => {
@@ -51,18 +73,27 @@ export const TagEditorSheet = ({
       return;
     }
 
-    setDraftTags(normalizeLibraryEntityTags(tags));
+    setDraftTags(normalizeLibraryEntityTags([...tags, ...mixedTags]));
+    setDraftMixedTags([...mixedTags]);
     setTagInput('');
-  }, [isVisible, tags]);
+  }, [isVisible, mixedTags, tags]);
 
   if (!isVisible) {
     return null;
   }
 
-  const handleAddTag = () => {
+  // Adding a tag that was mixed gives it to every item, so it stops being mixed.
+  const addTags = (value: string) => {
     setDraftTags((currentTags) => {
-      return addLibraryEntityTag(currentTags, tagInput);
+      return addLibraryEntityTag(currentTags, value);
     });
+    setDraftMixedTags((currentMixed) => {
+      return dropFromMixed(currentMixed, parseLibraryTagInput(value));
+    });
+  };
+
+  const handleAddTag = () => {
+    addTags(tagInput);
     setTagInput('');
   };
 
@@ -80,17 +111,46 @@ export const TagEditorSheet = ({
       onClose={onClose}
       title={title}
     >
-      <Text style={styles.bodyCopy}>
-        Add or remove tags to organize this saved library item.
-      </Text>
+      <Text style={styles.bodyCopy}>{description}</Text>
 
       {draftTags.length > 0 ? (
         <View style={styles.tagRow}>
           {draftTags.map((tag) => {
+            const isMixed = draftMixedTags.some(
+              (mixedTag) =>
+                mixedTag.toLocaleLowerCase() === tag.toLocaleLowerCase(),
+            );
+
             return (
-              <InteractionChip key={tag} label={tag} variant="tag">
+              <InteractionChip
+                accessibilityHint={
+                  isMixed ? 'Adds this tag to every selected item.' : undefined
+                }
+                accessibilityLabel={
+                  isMixed
+                    ? `${tag}, on some of the ${selectedCount ?? 'selected'} items`
+                    : undefined
+                }
+                disabled={isSaving}
+                key={tag}
+                label={isMixed ? `${tag}${MIXED_TAG_SUFFIX}` : tag}
+                onPress={
+                  isMixed
+                    ? () => {
+                        setDraftMixedTags((currentMixed) => {
+                          return dropFromMixed(currentMixed, [tag]);
+                        });
+                      }
+                    : undefined
+                }
+                variant={isMixed ? 'passive' : 'tag'}
+              >
                 <Pressable
-                  accessibilityLabel={`Remove ${tag} tag`}
+                  accessibilityLabel={
+                    isMixed
+                      ? `Remove ${tag} tag from every selected item`
+                      : `Remove ${tag} tag`
+                  }
                   accessibilityRole="button"
                   {...interactionGuardProps}
                   disabled={isSaving}
@@ -98,6 +158,9 @@ export const TagEditorSheet = ({
                   onPress={() => {
                     setDraftTags((currentTags) => {
                       return removeLibraryEntityTag(currentTags, tag);
+                    });
+                    setDraftMixedTags((currentMixed) => {
+                      return removeLibraryEntityTag(currentMixed, tag);
                     });
                   }}
                   style={buttonInteractionGuardStyle}
@@ -153,15 +216,22 @@ export const TagEditorSheet = ({
       <TagSuggestionRow
         isSaving={isSaving}
         onSelectSuggestion={(suggestion) => {
-          setDraftTags((currentTags) => {
-            return addLibraryEntityTag(currentTags, suggestion);
-          });
+          addTags(suggestion);
           setTagInput((currentInput) => {
             return removeTagEditorInputActiveSegment(currentInput);
           });
         }}
         suggestions={suggestions}
       />
+
+      {issue ? (
+        <FeedbackCard
+          message={issue.message}
+          size="compact"
+          title={issue.title}
+          tone="error"
+        />
+      ) : null}
 
       <View style={styles.actionRow}>
         <OutlinedActionButton
@@ -175,7 +245,7 @@ export const TagEditorSheet = ({
           fill
           label={isSaving ? 'Saving…' : 'Save tags'}
           onPress={() => {
-            onSave(draftTags);
+            onSave(draftTags, draftMixedTags);
           }}
           variant="accent"
         />
