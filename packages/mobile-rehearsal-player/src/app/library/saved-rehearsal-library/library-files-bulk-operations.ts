@@ -34,69 +34,31 @@ type LibraryFilesBulkOperationsOptions = {
   tree: RehearsalLibraryFileTree | null;
 };
 
+export type PlacedNodes = {
+  /** Links a copy created (undo removes them) or a move relocated. */
+  fileLinkIds: string[];
+  mode: PlacementMode;
+  /** The nodes as they were before a move, so undo can put them back. */
+  originals: PlacementItem[];
+};
+
 export type BulkOperationResult = {
   didComplete: boolean;
   issue: LibraryFilesIssue | null;
   /** How many selected items the action changed. */
   placedCount: number;
-  /** The tree before the action, for the completion acknowledgment's undo. */
+  /** What a copy / move placed, for the completion acknowledgment's undo. */
+  placed?: PlacedNodes;
+  /** The tree before the action. */
   previousTree: RehearsalLibraryFileTree | null;
   /** Items left out: invalid targets and conflicts the user chose to skip. */
   skippedCount: number;
 };
 
-export type BulkRemoveFromLibraryImpact = {
-  adjustedTrackCount: number;
-  adjustedTrackNames: string[];
-  fileLinkCount: number;
-  fileLinkNames: string[];
-  loopCount: number;
-  loopNames: string[];
-  playlistEntryCount: number;
-  playlistEntryTitles: string[];
-};
-
-type TrackRemoveImpactReader = (
-  sourceId: string,
-) => BulkRemoveFromLibraryImpact;
-
-/**
- * Sums single-track removal impacts across a selection. An adjusted track
- * selected together with its source is already inside that source's impact,
- * so it is not counted twice; names that several tracks share are listed once.
- */
-export const aggregateTrackRemoveImpacts = (options: {
-  getImpact: TrackRemoveImpactReader;
-  savedSources: UseLibraryFilesOptions['savedSources'];
-  sourceIds: readonly string[];
-}): BulkRemoveFromLibraryImpact => {
-  const selectedIds = new Set(options.sourceIds);
-  const independentIds = options.sourceIds.filter((sourceId) => {
-    const sourceRef = options.savedSources.find(({ id }) => id === sourceId)
-      ?.adjustment?.sourceRef;
-
-    return !sourceRef || !selectedIds.has(sourceRef);
-  });
-  const impacts = independentIds.map(options.getImpact);
-  const union = (pick: (impact: BulkRemoveFromLibraryImpact) => string[]) => [
-    ...new Set(impacts.flatMap(pick)),
-  ];
-  const adjustedTrackNames = union((impact) => impact.adjustedTrackNames);
-  const fileLinkNames = union((impact) => impact.fileLinkNames);
-  const loopNames = union((impact) => impact.loopNames);
-  const playlistEntryTitles = union((impact) => impact.playlistEntryTitles);
-
-  return {
-    adjustedTrackCount: adjustedTrackNames.length,
-    adjustedTrackNames,
-    fileLinkCount: fileLinkNames.length,
-    fileLinkNames,
-    loopCount: loopNames.length,
-    loopNames,
-    playlistEntryCount: playlistEntryTitles.length,
-    playlistEntryTitles,
-  };
-};
+export {
+  aggregateTrackRemoveImpacts,
+  type BulkRemoveFromLibraryImpact,
+} from './library-files-bulk-impact';
 
 export const createLibraryFilesBulkOperations = ({
   options,
@@ -195,7 +157,7 @@ export const createLibraryFilesBulkOperations = ({
       }
 
       try {
-        return succeed(
+        const result = succeed(
           await practiceRepository.saveLibraryNodes(
             LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
             nodes,
@@ -203,6 +165,21 @@ export const createLibraryFilesBulkOperations = ({
           placedCount,
           nodes.skippedCount,
         );
+        const placedIds = new Set([
+          ...nodes.fileLinks.map(({ id }) => id),
+          ...nodes.folders.map(({ id }) => id),
+        ]);
+
+        return {
+          ...result,
+          placed: {
+            fileLinkIds: nodes.fileLinks.map(({ id }) => id),
+            mode: placement.mode,
+            originals: placement.plan
+              .filter(({ itemId }) => placedIds.has(itemId))
+              .map(({ item }) => item),
+          },
+        };
       } catch (error) {
         return fail(
           placement.mode === 'copy'

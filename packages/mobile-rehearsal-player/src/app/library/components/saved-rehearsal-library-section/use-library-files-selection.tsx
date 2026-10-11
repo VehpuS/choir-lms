@@ -31,6 +31,7 @@ import { useBulkPlaybackActions } from '../../selection/use-bulk-playback-action
 import { usePinnedBulkActionBar } from '../../selection/use-pinned-bulk-action-bar';
 import { useSelection } from '../../selection/use-selection';
 import type { ExplorerRowSelection } from '../explorer/model';
+import { useLibraryFilesBulkNodeActions } from './use-library-files-bulk-node-actions';
 
 export type FilesRowSelectionFactory = (
   row: LibraryFilesRow,
@@ -141,14 +142,20 @@ export const useLibraryFilesSelection = ({
     updatePlaylist: services.updatePlaylist,
   });
 
+  const nodeActions = useLibraryFilesBulkNodeActions({
+    files,
+    items: orderedItems,
+    onCompleted: selection.cancel,
+  });
   const handlers = useMemo<BulkActionHandlers>(
     () => ({
       'add-to-playlist': playback.run.addToPlaylist,
       'add-to-queue': playback.run.addToQueue,
       'play-next': playback.run.playNext,
       'save-as-playlist': playback.run.saveAsPlaylist,
+      ...nodeActions.handlers,
     }),
-    [playback.run],
+    [nodeActions.handlers, playback.run],
   );
   const actions = useMemo<BulkAction[]>(
     () =>
@@ -282,7 +289,12 @@ export const useLibraryFilesSelection = ({
   ]);
 
   return {
-    bulkNodes: playback.nodes,
+    bulkNodes: (
+      <>
+        {playback.nodes}
+        {nodeActions.nodes}
+      </>
+    ),
     entryButton:
       !selection.isActive && rows.length > 0 ? (
         <SelectEntryButton onPress={() => enter()} />

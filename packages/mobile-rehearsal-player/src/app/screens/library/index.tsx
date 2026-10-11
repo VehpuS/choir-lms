@@ -7,7 +7,7 @@ import type { LibraryFilesSuccessFeedback } from '../../library/components/saved
 import type { LibraryBrowseCreateDockMode } from '../../library/components/saved-rehearsal-library-section/types';
 import { useSavedRehearsalLibrarySearch } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search';
 import { useSavedRehearsalLibrarySearchPanel } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search-panel';
-import { usePinnedBulkActionBarProps } from '../../library/selection/use-pinned-bulk-action-bar';
+import { useIsBulkActionBarPinned } from '../../library/selection/use-pinned-bulk-action-bar';
 import { LoopPreviewPlaybackContext } from '../../library/loops/components/loop-preview-playback-context';
 import type { PlaylistDetailHeaderPlaybackAction } from '../../library/playlists/utils/saved-playlist-playback-view-model';
 import type { SavedRehearsalLibraryView } from '../../library/saved-rehearsal-library/detail-mode';
@@ -73,7 +73,7 @@ export const LibraryScreen = ({
     ((playlistId: string) => void) | null
   >(null);
   // The create dock gives way while a selection's bulk-action bar is pinned.
-  const isBulkBarPinned = usePinnedBulkActionBarProps() !== null;
+  const isBulkBarPinned = useIsBulkActionBarPinned();
   const scrollCoordination = useLibraryScreenScrollCoordination();
   const searchState = useSavedRehearsalLibrarySearch({
     savedLibrarySources: libraryController.savedLibrary.savedLibrarySources,

@@ -23,8 +23,12 @@ export type BulkPlaybackActionId =
   | 'save-as-playlist';
 
 export type BulkAcknowledgment = {
+  /** Opens a folder from the acknowledgment (the destination of a move). */
+  action?: { folderId: string; label: string };
   message: string;
   title: string;
+  /** Reverses a non-destructive batch change (design 9.0: copy and move). */
+  undo?: { label: string; run: () => Promise<void> | void };
 };
 
 export type PreparedBulkPlayback = {

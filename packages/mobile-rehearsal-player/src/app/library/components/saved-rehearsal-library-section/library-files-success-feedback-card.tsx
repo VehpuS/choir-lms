@@ -41,6 +41,24 @@ export const LibraryFilesSuccessFeedbackCard = ({
               </Text>
             </Pressable>
           ) : null}
+          {feedback.undo ? (
+            <Pressable
+              accessibilityRole="button"
+              onBlur={onBlur}
+              onFocus={onFocus}
+              onPress={() => {
+                const { run } = feedback.undo ?? {};
+
+                onDismiss();
+                void run?.();
+              }}
+              style={styles.secondaryAction}
+            >
+              <Text style={styles.secondaryActionLabel}>
+                {feedback.undo.label}
+              </Text>
+            </Pressable>
+          ) : null}
           <Pressable
             accessibilityRole="button"
             onBlur={onBlur}

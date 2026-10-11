@@ -20,6 +20,7 @@ import {
   type LibraryFilesIssue,
   type UseLibraryFilesOptions,
 } from './library-files-operation-helpers';
+import { createLibraryFilesBulkNodeOperations } from './library-files-bulk-node-operations';
 import { createLibraryFilesBulkOperations } from './library-files-bulk-operations';
 import { createLibraryFilesOperations } from './library-files-operations';
 
@@ -160,13 +161,28 @@ export const useLibraryFiles = (
     tree,
   });
 
-  const bulk = createLibraryFilesBulkOperations({
-    options,
-    practiceRepository,
-    setIssue,
-    setTree,
-    tree,
-  });
+  const bulk = {
+    ...createLibraryFilesBulkOperations({
+      options,
+      practiceRepository,
+      setIssue,
+      setTree,
+      tree,
+    }),
+    ...createLibraryFilesBulkNodeOperations({
+      practiceRepository,
+      refreshAllEntities: async () => {
+        await Promise.all([
+          options.refreshSavedSources(),
+          options.refreshSavedLoops(),
+          options.refreshSavedPlaylists(),
+        ]);
+      },
+      setIssue,
+      setTree,
+      tree,
+    }),
+  };
 
   return {
     bulk,

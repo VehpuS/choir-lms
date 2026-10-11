@@ -8,18 +8,22 @@ export type LibraryFilesSuccessFeedback = {
   id: string;
   message: string;
   title: string;
+  /** Reverses the action the acknowledgment reports; shown as `Undo`. */
+  undo?: { label: string; run: () => Promise<void> | void };
 };
 
 export const createLibraryFilesSuccessFeedback = ({
   action,
   message,
   title,
+  undo,
 }: Omit<LibraryFilesSuccessFeedback, 'id'>): LibraryFilesSuccessFeedback => {
   return {
     action,
     id: [title, message, action?.folderId ?? 'none'].join(':'),
     message,
     title,
+    ...(undo === undefined ? {} : { undo }),
   };
 };
 

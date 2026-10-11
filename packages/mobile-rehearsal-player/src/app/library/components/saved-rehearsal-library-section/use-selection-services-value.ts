@@ -36,9 +36,9 @@ export const useSelectionServicesValue = ({
 }: Options): LibrarySelectionServices =>
   useMemo(
     () => ({
-      acknowledge: ({ message, title }) => {
+      acknowledge: ({ action, message, title, undo }) => {
         onShowLibraryFilesSuccessFeedback(
-          createLibraryFilesSuccessFeedback({ message, title }),
+          createLibraryFilesSuccessFeedback({ action, message, title, undo }),
         );
       },
       canQueue: activePlayableItem !== null,

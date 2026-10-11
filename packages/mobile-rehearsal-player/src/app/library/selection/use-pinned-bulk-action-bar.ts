@@ -22,3 +22,13 @@ export const usePinnedBulkActionBarProps = () =>
     pinnedBulkBarStore.subscribe,
     pinnedBulkBarStore.getSnapshot,
   );
+
+/**
+ * Whether a bar is pinned, as a primitive: a surface that only needs to make
+ * room for the bar must not re-render every time the bar's props change.
+ */
+export const useIsBulkActionBarPinned = () =>
+  useSyncExternalStore(
+    pinnedBulkBarStore.subscribe,
+    () => pinnedBulkBarStore.getSnapshot() !== null,
+  );
