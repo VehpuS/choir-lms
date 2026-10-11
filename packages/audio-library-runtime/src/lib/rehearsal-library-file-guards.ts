@@ -9,7 +9,7 @@ import type { RehearsalLibraryEntityCollections } from './rehearsal-library-file
 
 const COPY_NAME_SUFFIX_PATTERN = /^(.*?)( Copy(?: (\d+))?)?$/i;
 
-const normalizeRehearsalLibraryNodeName = (value: string) => {
+export const normalizeRehearsalLibraryNodeName = (value: string) => {
   return value.toLocaleLowerCase();
 };
 
@@ -32,7 +32,7 @@ const resolveRehearsalLibraryEntityName = (
   )?.name;
 };
 
-const resolveRehearsalLibraryFileLinkName = (options: {
+export const resolveRehearsalLibraryFileLinkName = (options: {
   entityCollections: RehearsalLibraryEntityCollections;
   fileLink: RehearsalLibraryFileLinkNode;
 }) => {
@@ -47,7 +47,7 @@ const resolveRehearsalLibraryFileLinkName = (options: {
   );
 };
 
-const resolveSiblingNodeNames = (options: {
+export const resolveSiblingNodeNames = (options: {
   tree: RehearsalLibraryFileTree;
   entityCollections: RehearsalLibraryEntityCollections;
   parentFolderId: string;
@@ -98,7 +98,7 @@ const hasSiblingNodeNameConflict = (options: {
   });
 };
 
-const collectDescendantFolderIds = (
+export const collectDescendantFolderIds = (
   tree: RehearsalLibraryFileTree,
   folderId: string,
 ) => {

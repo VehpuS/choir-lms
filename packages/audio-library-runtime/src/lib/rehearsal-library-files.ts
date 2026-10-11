@@ -320,3 +320,11 @@ export {
   assertValidRehearsalLibraryFolderMutation,
   resolveRehearsalLibraryCopyVisibleName,
 } from './rehearsal-library-file-guards';
+export {
+  buildPlacementNodes,
+  planRehearsalLibraryPlacement,
+  type PlacementItem,
+  type PlacementMode,
+  type PlacementPlanEntry,
+  type PlacementResolution,
+} from './rehearsal-library-placement-plan';

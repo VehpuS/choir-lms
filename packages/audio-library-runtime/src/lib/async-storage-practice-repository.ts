@@ -18,20 +18,19 @@ import {
 
 import type { PracticeRepository } from './practice-repository';
 import {
-  hasCanonicalEntity,
-  loadCanonicalCollections,
   persistSynchronizedLibraryFileTree,
   readStoredCollection,
   writeStoredCollection,
-  writeStoredLibraryFileTree,
 } from './practice-repository-storage';
 import {
-  assertValidRehearsalLibraryFileLinkMutation,
-  assertValidRehearsalLibraryFolderMutation,
-  REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
-  upsertRehearsalLibraryFileLinkNode,
-  upsertRehearsalLibraryFolderNode,
-} from './rehearsal-library-files';
+  removeLibraryEntitiesFromRepository,
+  removeLibraryFileLinksFromRepository,
+  removePlaylistEntriesFromRepository,
+  saveLibraryNodesToRepository,
+  updateLibraryTagsInRepository,
+  type LibraryTagChange,
+  type RemovedEntityIds,
+} from './rehearsal-library-batch-operations';
 import { saveSource } from './save-source';
 
 export class AsyncStoragePracticeRepository implements PracticeRepository {
@@ -248,90 +247,54 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
     ownerId: string,
     folder: RehearsalLibraryFolderNode,
   ) {
-    if (folder.id === REHEARSAL_LIBRARY_ROOT_FOLDER_ID) {
-      throw new Error('The root library folder cannot be mutated.');
-    }
-
-    if (folder.parentFolderId === null) {
-      throw new Error(
-        'Non-root library folders must reference a parent folder.',
-      );
-    }
-
-    const entityCollections = await loadCanonicalCollections(this, ownerId);
-    const tree = await persistSynchronizedLibraryFileTree(
-      this,
-      ownerId,
-      entityCollections,
-    );
-
-    if (
-      !tree.folders.some(
-        (existingFolder) => existingFolder.id === folder.parentFolderId,
-      )
-    ) {
-      throw new Error(
-        `The parent folder "${folder.parentFolderId}" does not exist.`,
-      );
-    }
-
-    assertValidRehearsalLibraryFolderMutation({
-      tree,
-      entityCollections,
-      folder,
-    });
-
-    const priorFolder = tree.folders.find(
-      (existingFolder) => existingFolder.id === folder.id,
-    );
-    const folderToSave: RehearsalLibraryFolderNode = {
-      ...withResolvedTagAddedAt(
-        folder,
-        priorFolder?.tagAddedAt,
-        new Date().toISOString(),
-      ),
-      createdAt: priorFolder?.createdAt ?? folder.createdAt,
-    };
-
-    return writeStoredLibraryFileTree(
-      ownerId,
-      upsertRehearsalLibraryFolderNode(tree, folderToSave),
-    );
+    return this.saveLibraryNodes(ownerId, { folders: [folder] });
   }
 
   async saveLibraryFileLink(
     ownerId: string,
     fileLink: RehearsalLibraryFileLinkNode,
   ) {
-    const entityCollections = await loadCanonicalCollections(this, ownerId);
-    const tree = await persistSynchronizedLibraryFileTree(
+    return this.saveLibraryNodes(ownerId, { fileLinks: [fileLink] });
+  }
+
+  /**
+   * Validates and applies many folder / link mutations in order against the
+   * progressively updated tree, then persists the tree once. Any invalid node
+   * throws before anything is written, so a batch is all-or-nothing.
+   */
+  async saveLibraryNodes(
+    ownerId: string,
+    nodes: {
+      fileLinks?: RehearsalLibraryFileLinkNode[];
+      folders?: RehearsalLibraryFolderNode[];
+    },
+  ) {
+    return saveLibraryNodesToRepository(this, ownerId, nodes);
+  }
+
+  async removeLibraryFileLinks(ownerId: string, fileLinkIds: string[]) {
+    return removeLibraryFileLinksFromRepository(this, ownerId, fileLinkIds);
+  }
+
+  async removeLibraryEntities(ownerId: string, entities: RemovedEntityIds) {
+    return removeLibraryEntitiesFromRepository(this, ownerId, entities);
+  }
+
+  async removePlaylistEntries(
+    ownerId: string,
+    playlistId: string,
+    entryIds: string[],
+  ) {
+    return removePlaylistEntriesFromRepository(
       this,
       ownerId,
-      entityCollections,
+      playlistId,
+      entryIds,
     );
+  }
 
-    if (!tree.folders.some((folder) => folder.id === fileLink.parentFolderId)) {
-      throw new Error(
-        `The parent folder "${fileLink.parentFolderId}" does not exist.`,
-      );
-    }
-
-    if (!hasCanonicalEntity(entityCollections, fileLink)) {
-      throw new Error(
-        `The ${fileLink.entityKind} entity "${fileLink.entityId}" is not available in the saved library.`,
-      );
-    }
-
-    assertValidRehearsalLibraryFileLinkMutation({
-      tree,
-      entityCollections,
-      fileLink,
-    });
-
-    return writeStoredLibraryFileTree(ownerId, {
-      ...tree,
-      fileLinks: upsertRehearsalLibraryFileLinkNode(tree, fileLink).fileLinks,
-    });
+  async updateLibraryTags(ownerId: string, change: LibraryTagChange) {
+    return updateLibraryTagsInRepository(this, ownerId, change);
   }
 
   async deleteLibraryFileLink(ownerId: string, fileLinkId: string) {
