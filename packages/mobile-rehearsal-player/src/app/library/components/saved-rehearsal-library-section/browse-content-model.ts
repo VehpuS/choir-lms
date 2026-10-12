@@ -57,3 +57,38 @@ export const resolveFreshEntityForTagEditor = <Entity extends { id: string }>(
 ): Entity | null => {
   return entities.find((entity) => entity.id === entityId) ?? null;
 };
+
+export type SearchResultCounts = {
+  files: number;
+  loops: number;
+  playlists: number;
+  tracks: number;
+};
+
+const SEARCH_NO_RESULTS_NOUNS: Partial<
+  Record<SavedRehearsalLibraryView, string>
+> = {
+  files: 'files',
+  loops: 'saved loops',
+  playlists: 'playlists',
+  tracks: 'saved tracks',
+};
+
+// A search that matches nothing in Tracks, Loops or Playlists used to leave
+// the area under the field blank, which reads as a screen that failed to load.
+// Tags has its own empty state.
+export const resolveSearchNoResultsMessage = (options: {
+  query: string | null;
+  resultCounts: SearchResultCounts;
+  view: SavedRehearsalLibraryView;
+}): string | null => {
+  const noun = SEARCH_NO_RESULTS_NOUNS[options.view];
+  const resultCount =
+    options.view === 'tags' ? 0 : options.resultCounts[options.view];
+
+  if (!noun || !options.query || resultCount > 0) {
+    return null;
+  }
+
+  return `No ${noun} match "${options.query}".`;
+};

@@ -13,6 +13,7 @@ import { BrowsePlaylistCards } from './browse-playlist-cards';
 import { BrowseSourceGroup } from './browse-source-group';
 import { resolveFilesPlaylistAddMode } from './files-playlist-add-mode';
 import { SavedRehearsalLibraryFilesView } from './files-view';
+import { SearchNoResults } from './search-no-results';
 
 export const SavedRehearsalLibraryBrowseContent = ({
   activePlayableItem,
@@ -291,6 +292,16 @@ export const SavedRehearsalLibraryBrowseContent = ({
       ) : null}
       {visibleSections.showLoopSection ? loopSection : null}
       {visibleSections.showPlaylistSection ? playlistSection : null}
+      <SearchNoResults
+        query={searchState.activeLibrarySearchQuery}
+        resultCounts={{
+          files: 0,
+          loops: searchState.visibleSavedLoops.length,
+          playlists: searchState.visiblePlaylistCards.length,
+          tracks: searchState.visibleSavedLibrarySources.length,
+        }}
+        view={selectedView}
+      />
     </>
   );
 };

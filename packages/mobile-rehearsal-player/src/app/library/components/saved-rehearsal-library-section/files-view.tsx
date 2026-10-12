@@ -7,6 +7,7 @@ import { ExplorerBreadcrumbBar, ExplorerNavigationBar } from '../explorer';
 import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { FeedbackCard } from '../feedback-card';
 import { FilesExplorerList } from './files-explorer-list';
+import { SearchNoResults } from './search-no-results';
 import type { SavedRehearsalLibraryFilesViewProps } from './files-view-types';
 import {
   buildSavedRehearsalLibraryFilesViewModel,
@@ -247,6 +248,16 @@ export const SavedRehearsalLibraryFilesView = ({
         searchQuery={searchState.activeSearchQuery}
         setOpenMenuRowKey={setOpenMenuRowKey}
         viewModel={viewModel}
+      />
+      <SearchNoResults
+        query={searchState.activeSearchQuery}
+        resultCounts={{
+          files: explorer.rows.length,
+          loops: 0,
+          playlists: 0,
+          tracks: 0,
+        }}
+        view="files"
       />
       {successFeedback ? (
         <View pointerEvents="box-none" style={styles.successFeedbackOverlay}>

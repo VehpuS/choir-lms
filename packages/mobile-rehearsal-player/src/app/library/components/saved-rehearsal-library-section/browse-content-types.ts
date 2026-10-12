@@ -26,6 +26,7 @@ export type SearchState = Pick<
   | 'tagsSortState'
   | 'visiblePlaylistCards'
   | 'visibleSavedLibrarySources'
+  | 'visibleSavedLoops'
 >;
 
 export type PlaylistState = Pick<
