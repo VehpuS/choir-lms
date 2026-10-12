@@ -1,14 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  AccessibilityInfo,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { DriveSessionMenu } from '../../auth/google-drive/components/drive-session-menu';
 import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
+import { isScreenReaderEnabled } from '../../components/scoped-success-acknowledgment/is-screen-reader-enabled';
 import { useScopedSuccessAcknowledgment } from '../../components/scoped-success-acknowledgment/use-scoped-success-acknowledgment';
 import { DestinationHeader } from '../../components/destination-header';
 import { getDestinationHeaderModel } from '../../components/destination-header-model';
@@ -29,6 +24,7 @@ import {
 import { DriveTrackSavedFeedbackCard } from './drive-track-saved-feedback-card';
 import {
   createDriveTrackSavedFeedback,
+  isAcknowledgedTrackStillSaved,
   resolveTrackSaveDetection,
 } from './drive-track-saved-feedback';
 import { scrollGutterStyles } from '../../components/scroll-gutter';
@@ -62,17 +58,22 @@ export const AddScreen = ({
   >({
     autoDismissMs: TRACK_SAVED_AUTO_DISMISS_MS,
     isActive,
-    isScreenReaderEnabled: () => AccessibilityInfo.isScreenReaderEnabled(),
+    isScreenReaderEnabled,
   });
   const savedSourceIdsRef = useRef<Set<string> | null>(null);
   const savedLibrarySources =
     libraryController.savedLibrary.savedLibrarySources;
   const isSavedLibraryLoading = libraryController.savedLibrary.isLoading;
+  const isImportReviewReady = libraryController.search.selection.isReviewReady;
+  const acknowledgedTrackId = trackSavedFeedback.acknowledgment?.id;
 
   useEffect(() => {
     const detection = resolveTrackSaveDetection({
       currentSources: savedLibrarySources,
       isLoading: isSavedLibraryLoading,
+      // A bulk import reports on its own completion card, so the single-track
+      // `Saved to library` card must not follow it back to Add.
+      isSuppressed: isImportReviewReady,
       previouslySavedIds: savedSourceIdsRef.current,
     });
 
@@ -95,6 +96,23 @@ export const AddScreen = ({
     // effect that actually runs (when one of those changes) always closes
     // over that render's own `show`, so omitting it doesn't risk staleness.
   }, [isSavedLibraryLoading, savedLibrarySources]);
+
+  // Removing the track the card names clears the card; it would otherwise
+  // keep celebrating a save that no longer exists.
+  useEffect(() => {
+    if (
+      acknowledgedTrackId &&
+      !isAcknowledgedTrackStillSaved({
+        currentSources: savedLibrarySources,
+        isLoading: isSavedLibraryLoading,
+        trackId: acknowledgedTrackId,
+      })
+    ) {
+      trackSavedFeedback.dismiss();
+    }
+    // `dismiss` is recreated each render but closes over refs and a setter
+    // only, so leaving it out of the dependencies cannot go stale.
+  }, [acknowledgedTrackId, isSavedLibraryLoading, savedLibrarySources]);
 
   const handleToggleSearchBar = () => {
     const toggleOutcome = resolveHeaderSearchToggleOutcome({

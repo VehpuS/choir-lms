@@ -32,9 +32,8 @@ export const useScopedSuccessAcknowledgment = <Payload>({
   isActive,
   isScreenReaderEnabled,
 }: UseScopedSuccessAcknowledgmentOptions) => {
-  const [acknowledgment, setAcknowledgment] = useState<ScopedSuccessAcknowledgment<Payload> | null>(
-    null,
-  );
+  const [acknowledgment, setAcknowledgment] =
+    useState<ScopedSuccessAcknowledgment<Payload> | null>(null);
   const nextTokenRef = useRef(0);
   const isFocusedRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

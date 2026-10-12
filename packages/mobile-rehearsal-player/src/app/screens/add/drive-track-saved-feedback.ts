@@ -51,6 +51,9 @@ export const resolveTrackSaveDetection = <
 >(options: {
   currentSources: Source[];
   isLoading: boolean;
+  // True while something other than the row's own save is adding tracks (a
+  // bulk import): the baseline still advances, but no save is reported.
+  isSuppressed?: boolean;
   previouslySavedIds: Set<string> | null;
 }): TrackSaveDetectionResult<Source> => {
   if (options.isLoading) {
@@ -64,7 +67,7 @@ export const resolveTrackSaveDetection = <
     options.currentSources.map((source) => source.id),
   );
 
-  if (!options.previouslySavedIds) {
+  if (!options.previouslySavedIds || options.isSuppressed) {
     return { newlySavedSource: null, nextBaselineIds };
   }
 
@@ -76,3 +79,14 @@ export const resolveTrackSaveDetection = <
     nextBaselineIds,
   };
 };
+
+// A `Saved to library` card names one track; once that track is gone from the
+// library (removed from its row menu) the card no longer describes anything.
+// While the library is still loading the list is empty, which says nothing.
+export const isAcknowledgedTrackStillSaved = (options: {
+  currentSources: readonly { id: string }[];
+  isLoading: boolean;
+  trackId: string;
+}): boolean =>
+  options.isLoading ||
+  options.currentSources.some((source) => source.id === options.trackId);

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
+import { isScreenReaderEnabled } from '../../components/scoped-success-acknowledgment/is-screen-reader-enabled';
 import { useScopedSuccessAcknowledgment } from '../../components/scoped-success-acknowledgment/use-scoped-success-acknowledgment';
 import { SavedRehearsalLibrarySection } from '../../library/components/saved-rehearsal-library-section';
 import type { LibraryFilesSuccessFeedback } from '../../library/components/saved-rehearsal-library-section/library-files-success-feedback';
@@ -55,7 +56,7 @@ export const LibraryScreen = ({
     useScopedSuccessAcknowledgment<LibraryFilesSuccessFeedback>({
       autoDismissMs: SUCCESS_ACKNOWLEDGMENT_AUTO_DISMISS_MS,
       isActive,
-      isScreenReaderEnabled: () => AccessibilityInfo.isScreenReaderEnabled(),
+      isScreenReaderEnabled,
     });
   useDismissOnViewChange(librarySuccessFeedback.dismiss, selectedView);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);

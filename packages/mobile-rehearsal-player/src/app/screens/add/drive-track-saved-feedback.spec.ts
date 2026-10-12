@@ -5,6 +5,7 @@ import { describe, it } from 'node:test';
 
 import {
   createDriveTrackSavedFeedback,
+  isAcknowledgedTrackStillSaved,
   resolveNewlySavedSource,
   resolveTrackSaveDetection,
 } from './drive-track-saved-feedback.js';
@@ -117,5 +118,78 @@ describe('resolveTrackSaveDetection', () => {
       id: 'b',
       name: 'Just saved',
     });
+  });
+});
+
+describe('resolveTrackSaveDetection while suppressed', () => {
+  it('advances the baseline but reports no save, so a bulk import raises no single-track card', () => {
+    const result = resolveTrackSaveDetection({
+      currentSources: [
+        { id: 'a', name: 'A.mp3' },
+        { id: 'b', name: 'B.mp3' },
+      ],
+      isLoading: false,
+      isSuppressed: true,
+      previouslySavedIds: new Set(['a']),
+    });
+
+    assert.equal(result.newlySavedSource, null);
+    assert.deepEqual([...(result.nextBaselineIds ?? [])], ['a', 'b']);
+  });
+
+  it('reports the next genuine save once the suppression ends', () => {
+    const baseline = resolveTrackSaveDetection({
+      currentSources: [{ id: 'a', name: 'A.mp3' }],
+      isLoading: false,
+      isSuppressed: true,
+      previouslySavedIds: new Set(),
+    }).nextBaselineIds;
+    const result = resolveTrackSaveDetection({
+      currentSources: [
+        { id: 'a', name: 'A.mp3' },
+        { id: 'c', name: 'C.mp3' },
+      ],
+      isLoading: false,
+      previouslySavedIds: baseline,
+    });
+
+    assert.equal(result.newlySavedSource?.id, 'c');
+  });
+});
+
+describe('isAcknowledgedTrackStillSaved', () => {
+  const sources = [{ id: 'a' }, { id: 'b' }];
+
+  it('is true while the acknowledged track is in the library', () => {
+    assert.equal(
+      isAcknowledgedTrackStillSaved({
+        currentSources: sources,
+        isLoading: false,
+        trackId: 'b',
+      }),
+      true,
+    );
+  });
+
+  it('is false once the track was removed', () => {
+    assert.equal(
+      isAcknowledgedTrackStillSaved({
+        currentSources: [{ id: 'a' }],
+        isLoading: false,
+        trackId: 'b',
+      }),
+      false,
+    );
+  });
+
+  it('is true while the library is still loading, because an empty list proves nothing', () => {
+    assert.equal(
+      isAcknowledgedTrackStillSaved({
+        currentSources: [],
+        isLoading: true,
+        trackId: 'b',
+      }),
+      true,
+    );
   });
 });
