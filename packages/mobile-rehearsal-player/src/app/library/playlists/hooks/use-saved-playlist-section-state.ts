@@ -1,7 +1,7 @@
 import { type Playlist } from '@org/audio-library-models';
 import { useEffect, useReducer, useRef } from 'react';
 
-import { useLibraryFilesConfirmationFlow } from '../../components/saved-rehearsal-library-section/use-library-files-confirmation-flow';
+import { useLibraryFilesConfirmationFlow } from '../../selection/use-library-files-confirmation-flow';
 import {
   buildSavedPlaylistDetailDraftPlaylist,
   getSavedPlaylistDetailInitialState,

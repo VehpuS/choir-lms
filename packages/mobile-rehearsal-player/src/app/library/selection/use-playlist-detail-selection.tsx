@@ -8,23 +8,23 @@ import {
   toPlaylistEntryBulkItem,
   toPlaylistEntrySelectionEntry,
   type PlaylistEntrySelectionItem,
-} from '../../playlists/utils/playlist-entry-selection';
+} from '../playlists/utils/playlist-entry-selection';
 import {
   assembleBulkActions,
   type BulkActionHandlers,
-} from '../../selection/bulk-action-assembly';
-import type { BulkAction } from '../../selection/bulk-action-model';
-import { resolveBulkActions } from '../../selection/bulk-action-resolution';
-import { createEntityExpansionContext } from '../../selection/entity-selection';
-import { useLibrarySelectionServices } from '../../selection/library-selection-services';
-import { getSelectionCountLabel } from '../../selection/selection-copy';
-import { SelectEntryButton } from '../../selection/select-entry-button';
-import { SelectionBar } from '../../selection/selection-bar';
-import { useBulkPlaybackActions } from '../../selection/use-bulk-playback-actions';
-import { usePinnedBulkActionBar } from '../../selection/use-pinned-bulk-action-bar';
-import { useSelection } from '../../selection/use-selection';
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../storage/local-library-storage';
-import type { ExplorerRowSelection } from '../explorer/model';
+} from './bulk-action-assembly';
+import type { BulkAction } from './bulk-action-model';
+import { resolveBulkActions } from './bulk-action-resolution';
+import { createEntityExpansionContext } from './entity-selection';
+import { useLibrarySelectionServices } from './library-selection-services';
+import { getSelectionCountLabel } from './selection-copy';
+import { SelectEntryButton } from './select-entry-button';
+import { SelectionBar } from './selection-bar';
+import { useBulkPlaybackActions } from './use-bulk-playback-actions';
+import { usePinnedBulkActionBar } from './use-pinned-bulk-action-bar';
+import { useSelection } from './use-selection';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../storage/local-library-storage';
+import type { ExplorerRowSelection } from '../components/explorer/model';
 import { useLibraryFilesConfirmationFlow } from './use-library-files-confirmation-flow';
 
 type PlaylistEntry = Playlist['items'][number];

@@ -28,7 +28,7 @@ import {
   createLibraryFilesRenameSuccessFeedback,
   type LibraryFilesSuccessFeedback,
 } from './library-files-success-feedback';
-import { useLibraryFilesConfirmationFlow } from './use-library-files-confirmation-flow';
+import { useLibraryFilesConfirmationFlow } from '../../selection/use-library-files-confirmation-flow';
 
 const isSameRow = (left: LibraryFilesRow, right: LibraryFilesRow) => {
   if (left.kind !== right.kind) {

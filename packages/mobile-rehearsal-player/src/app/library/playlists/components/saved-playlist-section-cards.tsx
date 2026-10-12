@@ -12,7 +12,7 @@ import {
   ExplorerListSurface,
 } from '../../components/explorer';
 import { FeedbackCard } from '../../components/feedback-card';
-import { useLibraryEntitySelection } from '../../components/saved-rehearsal-library-section/use-library-entity-selection';
+import { useLibraryEntitySelection } from '../../selection/use-library-entity-selection';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
 import {
   getSavedPlaylistCardPlayAction,

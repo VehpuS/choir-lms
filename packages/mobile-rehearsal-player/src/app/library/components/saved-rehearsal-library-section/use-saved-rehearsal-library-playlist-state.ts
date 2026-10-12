@@ -20,7 +20,7 @@ import {
   buildPlaylistDetailOrigin,
   type PlaylistDetailOpenContext,
 } from './playlist-detail-origin';
-import { useLibraryFilesConfirmationFlow } from './use-library-files-confirmation-flow';
+import { useLibraryFilesConfirmationFlow } from '../../selection/use-library-files-confirmation-flow';
 
 type UseSavedRehearsalLibraryPlaylistStateOptions = {
   deletePlaylist: (playlist: Playlist) => Promise<boolean>;

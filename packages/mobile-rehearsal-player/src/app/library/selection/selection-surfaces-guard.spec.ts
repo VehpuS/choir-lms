@@ -20,9 +20,9 @@ const SELECTION_SURFACES = [
   'library/drive/components/drive-discovery-panel.tsx',
   // Library: Files, the entity lists (Tracks, Loops, Playlists, tag detail),
   // and playlist detail.
-  'library/components/saved-rehearsal-library-section/use-library-entity-selection.tsx',
+  'library/selection/use-library-entity-selection.tsx',
   'library/components/saved-rehearsal-library-section/use-library-files-selection.tsx',
-  'library/components/saved-rehearsal-library-section/use-playlist-detail-selection.tsx',
+  'library/selection/use-playlist-detail-selection.tsx',
 ] as const;
 
 function listSourceFiles(directory: string): string[] {

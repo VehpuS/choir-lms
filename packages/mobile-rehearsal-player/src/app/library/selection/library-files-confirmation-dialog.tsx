@@ -3,9 +3,9 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import {
   buttonInteractionGuardStyle,
   interactionGuardProps,
-} from '../../../components/interaction-guard';
-import { CenteredDialogCard } from '../centered-dialog-card';
-import { savedPlaylistSectionStyles as styles } from '../saved-playlist-section-styles';
+} from '../../components/interaction-guard';
+import { CenteredDialogCard } from '../components/centered-dialog-card';
+import { savedPlaylistSectionStyles as styles } from '../components/saved-playlist-section-styles';
 
 export type LibraryFilesConfirmationDialogContent = {
   affectedSections?: Array<{

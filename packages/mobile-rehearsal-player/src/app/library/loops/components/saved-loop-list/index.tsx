@@ -10,7 +10,7 @@ import type {
   SavedLoopCard,
   SavedLoopIssue,
 } from '../../utils/saved-loop-view-model';
-import { useLibraryEntitySelection } from '../../../components/saved-rehearsal-library-section/use-library-entity-selection';
+import { useLibraryEntitySelection } from '../../../selection/use-library-entity-selection';
 import { savedLoopListStyles as styles } from '../saved-loop-list-styles';
 import { SavedLoopListRow } from './saved-loop-list-row';
 

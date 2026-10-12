@@ -2,7 +2,7 @@ import type { NamedLoop } from '@org/audio-library-models';
 import { useState } from 'react';
 
 import { createTrackRemoveFromLibraryConfirmation } from '../components/saved-rehearsal-library-section/library-files-delete-copy';
-import { useLibraryFilesConfirmationFlow } from '../components/saved-rehearsal-library-section/use-library-files-confirmation-flow';
+import { useLibraryFilesConfirmationFlow } from '../selection/use-library-files-confirmation-flow';
 import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
 import { getSavedLoopRemovalCopy } from '../loops/utils/saved-loop-view-model';
 import type { UseLibraryFilesResult } from './use-library-files';

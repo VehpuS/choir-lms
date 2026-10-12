@@ -12,7 +12,7 @@ import {
   ExplorerListSurface,
 } from '../../../components/explorer';
 import { savedPlaylistSectionStyles as styles } from '../../../components/saved-playlist-section-styles';
-import { usePlaylistDetailSelection } from '../../../components/saved-rehearsal-library-section/use-playlist-detail-selection';
+import { usePlaylistDetailSelection } from '../../../selection/use-playlist-detail-selection';
 import { PlaylistDetailRowControls } from './playlist-detail-row-controls';
 
 type PlaylistEntry = Playlist['items'][number];

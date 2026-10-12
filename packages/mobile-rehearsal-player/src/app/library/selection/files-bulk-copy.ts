@@ -6,9 +6,9 @@ import type {
 import type {
   BulkDeleteFromFolderPlan,
   BulkRemoveFromLibraryPlan,
-} from '../../saved-rehearsal-library/files-bulk-node-plans';
-import type { BulkRemoveFromLibraryImpact } from '../../saved-rehearsal-library/library-files-bulk-operations';
-import type { BulkAcknowledgment } from '../../selection/bulk-playback-run';
+} from '../saved-rehearsal-library/files-bulk-node-plans';
+import type { BulkRemoveFromLibraryImpact } from '../saved-rehearsal-library/library-files-bulk-operations';
+import type { BulkAcknowledgment } from './bulk-playback-run';
 import type { LibraryFilesConfirmationDialogContent } from './library-files-confirmation-dialog';
 
 // The words for the Files bulk actions that act on the selected nodes

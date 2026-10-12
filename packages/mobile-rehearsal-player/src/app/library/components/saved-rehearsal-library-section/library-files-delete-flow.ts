@@ -1,7 +1,7 @@
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import { getDeleteFromFolderConfirmationCopy } from './files-row-actions';
-import type { LibraryFilesConfirmationDialogContent } from './library-files-confirmation-dialog';
+import type { LibraryFilesConfirmationDialogContent } from '../../selection/library-files-confirmation-dialog';
 import { formatFolderDeleteImpactMessage } from './library-files-delete-copy';
 import {
   createLibraryFilesSuccessFeedback,

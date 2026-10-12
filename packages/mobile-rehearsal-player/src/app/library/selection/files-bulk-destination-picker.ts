@@ -1,7 +1,7 @@
 import type { PlacementMode } from '@org/audio-library-runtime';
 import type { RehearsalLibraryFolderNode } from '@org/audio-library-models';
 
-import type { OptionsMenuAction } from '../options-menu-sheet/model';
+import type { OptionsMenuAction } from '../components/options-menu-sheet/model';
 
 type DestinationFolder = { folder: RehearsalLibraryFolderNode };
 

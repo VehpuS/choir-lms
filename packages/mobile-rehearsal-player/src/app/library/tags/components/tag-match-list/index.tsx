@@ -9,7 +9,7 @@ import {
   ExplorerListRow,
   ExplorerListSurface,
 } from '../../../components/explorer';
-import { useLibraryEntitySelection } from '../../../components/saved-rehearsal-library-section/use-library-entity-selection';
+import { useLibraryEntitySelection } from '../../../selection/use-library-entity-selection';
 import {
   DEFAULT_TAG_MATCH_LIST_SORT_STATE,
   EMPTY_TAG_MATCH_LIST_MESSAGE,

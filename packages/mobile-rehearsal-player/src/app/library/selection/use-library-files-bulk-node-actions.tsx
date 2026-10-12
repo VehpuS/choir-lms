@@ -6,22 +6,22 @@ import type {
 } from '@org/audio-library-runtime';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 
-import {} from '../../saved-rehearsal-library/files-bulk-node-plans';
+import {} from '../saved-rehearsal-library/files-bulk-node-plans';
 import {
   toPlacementItems,
   type FilesSelectionItem,
-} from '../../saved-rehearsal-library/files-selection';
-import { type BulkOperationResult } from '../../saved-rehearsal-library/library-files-bulk-operations';
-import type { LibraryFilesIssue } from '../../saved-rehearsal-library/library-files-operation-helpers';
-import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
-import type { BulkActionHandlers } from '../../selection/bulk-action-assembly';
-import type { BulkAcknowledgment } from '../../selection/bulk-playback-run';
-import { useLibrarySelectionServices } from '../../selection/library-selection-services';
-import { OptionsMenuSheet } from '../options-menu-sheet';
+} from '../saved-rehearsal-library/files-selection';
+import { type BulkOperationResult } from '../saved-rehearsal-library/library-files-bulk-operations';
+import type { LibraryFilesIssue } from '../saved-rehearsal-library/library-files-operation-helpers';
+import type { UseLibraryFilesResult } from '../saved-rehearsal-library/use-library-files';
+import type { BulkActionHandlers } from './bulk-action-assembly';
+import type { BulkAcknowledgment } from './bulk-playback-run';
+import { useLibrarySelectionServices } from './library-selection-services';
+import { OptionsMenuSheet } from '../components/options-menu-sheet';
 import { getBulkPlacementAcknowledgment } from './files-bulk-copy';
 import { buildBulkDestinationPicker } from './files-bulk-destination-picker';
 import { FilesBulkPlacementReview } from './files-bulk-placement-review';
-import { FeedbackCard } from '../feedback-card';
+import { FeedbackCard } from '../components/feedback-card';
 import { useLibraryFilesBulkRemovalActions } from './use-library-files-bulk-removal-actions';
 
 type PlacementState = {

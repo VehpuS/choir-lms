@@ -11,7 +11,7 @@ import {
   type BrowseSourceRowSharedProps,
 } from './browse-source-row';
 import { resolveTracksPlayAllItems } from './browse-source-row-model';
-import { useLibraryEntitySelection } from './use-library-entity-selection';
+import { useLibraryEntitySelection } from '../../selection/use-library-entity-selection';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 
 type BrowseSourceGroupProps = BrowseSourceRowSharedProps &

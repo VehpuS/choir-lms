@@ -33,7 +33,7 @@ import { useBulkTagEditor } from '../../selection/use-bulk-tag-editor';
 import { usePinnedBulkActionBar } from '../../selection/use-pinned-bulk-action-bar';
 import { useSelection } from '../../selection/use-selection';
 import type { ExplorerRowSelection } from '../explorer/model';
-import { useLibraryFilesBulkNodeActions } from './use-library-files-bulk-node-actions';
+import { useLibraryFilesBulkNodeActions } from '../../selection/use-library-files-bulk-node-actions';
 
 export type FilesRowSelectionFactory = (
   row: LibraryFilesRow,

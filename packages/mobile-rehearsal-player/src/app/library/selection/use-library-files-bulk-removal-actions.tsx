@@ -3,11 +3,11 @@ import { useCallback, type ReactNode } from 'react';
 import {
   planBulkDeleteFromFolder,
   planBulkRemoveFromLibrary,
-} from '../../saved-rehearsal-library/files-bulk-node-plans';
-import type { FilesSelectionItem } from '../../saved-rehearsal-library/files-selection';
-import { aggregateTrackRemoveImpacts } from '../../saved-rehearsal-library/library-files-bulk-operations';
-import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
-import { useLibrarySelectionServices } from '../../selection/library-selection-services';
+} from '../saved-rehearsal-library/files-bulk-node-plans';
+import type { FilesSelectionItem } from '../saved-rehearsal-library/files-selection';
+import { aggregateTrackRemoveImpacts } from '../saved-rehearsal-library/library-files-bulk-operations';
+import type { UseLibraryFilesResult } from '../saved-rehearsal-library/use-library-files';
+import { useLibrarySelectionServices } from './library-selection-services';
 import {
   getBulkDeleteAcknowledgment,
   getBulkDeleteFromFolderConfirmation,

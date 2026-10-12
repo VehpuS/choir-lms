@@ -1,19 +1,16 @@
 import { useCallback, useEffect, useMemo, type ReactNode } from 'react';
 
-import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../storage/local-library-storage';
+import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../storage/local-library-storage';
 import {
   toFilesBulkSelectionItem,
   toFilesTagTargets,
-} from '../../saved-rehearsal-library/files-selection';
+} from '../saved-rehearsal-library/files-selection';
 import {
   assembleBulkActions,
   type BulkActionHandlers,
-} from '../../selection/bulk-action-assembly';
-import type { BulkAction } from '../../selection/bulk-action-model';
-import {
-  resolveBulkActions,
-  type BulkSurface,
-} from '../../selection/bulk-action-resolution';
+} from './bulk-action-assembly';
+import type { BulkAction } from './bulk-action-model';
+import { resolveBulkActions, type BulkSurface } from './bulk-action-resolution';
 import {
   createEntityExpansionContext,
   getEntitySelectionKey,
@@ -22,16 +19,16 @@ import {
   toEntityPlacementItems,
   toEntitySelectionEntry,
   type EntitySelectionRef,
-} from '../../selection/entity-selection';
-import { useLibrarySelectionServices } from '../../selection/library-selection-services';
-import { getSelectionCountLabel } from '../../selection/selection-copy';
-import { SelectEntryButton } from '../../selection/select-entry-button';
-import { SelectionBar } from '../../selection/selection-bar';
-import { useBulkPlaybackActions } from '../../selection/use-bulk-playback-actions';
-import { useBulkTagEditor } from '../../selection/use-bulk-tag-editor';
-import { usePinnedBulkActionBar } from '../../selection/use-pinned-bulk-action-bar';
-import { useSelection } from '../../selection/use-selection';
-import type { ExplorerRowSelection } from '../explorer/model';
+} from './entity-selection';
+import { useLibrarySelectionServices } from './library-selection-services';
+import { getSelectionCountLabel } from './selection-copy';
+import { SelectEntryButton } from './select-entry-button';
+import { SelectionBar } from './selection-bar';
+import { useBulkPlaybackActions } from './use-bulk-playback-actions';
+import { useBulkTagEditor } from './use-bulk-tag-editor';
+import { usePinnedBulkActionBar } from './use-pinned-bulk-action-bar';
+import { useSelection } from './use-selection';
+import type { ExplorerRowSelection } from '../components/explorer/model';
 import { useLibraryFilesBulkNodeActions } from './use-library-files-bulk-node-actions';
 
 export type EntityRowSelectionFactory = (

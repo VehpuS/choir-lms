@@ -6,12 +6,12 @@ import type {
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { OutlinedActionButton } from '../../../components/outlined-action-button';
-import { SegmentedControl } from '../../../components/segmented-control';
-import { appTheme } from '../../../utils/theme';
-import type { LibraryFilesIssue } from '../../saved-rehearsal-library/library-files-operation-helpers';
-import { BottomSheetSurface } from '../bottom-sheet-surface';
-import { FeedbackCard } from '../feedback-card';
+import { OutlinedActionButton } from '../../components/outlined-action-button';
+import { SegmentedControl } from '../../components/segmented-control';
+import { appTheme } from '../../utils/theme';
+import type { LibraryFilesIssue } from '../saved-rehearsal-library/library-files-operation-helpers';
+import { BottomSheetSurface } from '../components/bottom-sheet-surface';
+import { FeedbackCard } from '../components/feedback-card';
 import { getPlacementEntryDescription } from './files-bulk-copy';
 import {
   getPlacementReviewSummary,
