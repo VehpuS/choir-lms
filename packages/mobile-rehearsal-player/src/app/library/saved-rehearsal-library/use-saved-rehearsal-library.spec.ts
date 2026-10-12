@@ -212,13 +212,13 @@ describe('useSavedRehearsalLibrary -> saveSource', () => {
   });
 
   it('calls the repository to persist a saved source and reflects it in hook state', async () => {
-    const { hookResultBox, renderer } =
-      await renderSavedRehearsalLibraryHook();
+    const { hookResultBox, renderer } = await renderSavedRehearsalLibraryHook();
 
     let didSave = false;
 
     await act(async () => {
-      didSave = (await hookResultBox.current?.saveSource(SAVED_SOURCE)) ?? false;
+      didSave =
+        (await hookResultBox.current?.saveSource(SAVED_SOURCE)) ?? false;
     });
 
     assert.equal(didSave, true);
@@ -227,9 +227,10 @@ describe('useSavedRehearsalLibrary -> saveSource', () => {
       [SAVED_SOURCE.id],
     );
 
-    const persistedSources = await new AsyncStoragePracticeRepository().listSources(
-      LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-    );
+    const persistedSources =
+      await new AsyncStoragePracticeRepository().listSources(
+        LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+      );
 
     assert.deepEqual(
       persistedSources.map((source) => source.id),
@@ -242,8 +243,7 @@ describe('useSavedRehearsalLibrary -> saveSource', () => {
   });
 
   it('persists edited tags and reflects them after the hook reloads from storage', async () => {
-    const { hookResultBox, renderer } =
-      await renderSavedRehearsalLibraryHook();
+    const { hookResultBox, renderer } = await renderSavedRehearsalLibraryHook();
 
     await act(async () => {
       await hookResultBox.current?.saveSource(SAVED_SOURCE);
@@ -281,6 +281,82 @@ describe('useSavedRehearsalLibrary -> saveSource', () => {
 
     act(() => {
       reopened.renderer.unmount();
+    });
+  });
+});
+
+describe('useSavedRehearsalLibrary -> a removed source stays removed', () => {
+  beforeEach(() => {
+    installMemoryAsyncStorage();
+  });
+
+  afterEach(() => {
+    restoreAsyncStorage();
+  });
+
+  it('does not bring a source back when a duration resolved against an older snapshot is saved after its removal', async () => {
+    const { hookResultBox, renderer } = await renderSavedRehearsalLibraryHook();
+    const withoutDuration: DriveLibrarySource = {
+      ...SAVED_SOURCE,
+      durationMs: undefined,
+    };
+
+    await act(async () => {
+      await hookResultBox.current?.saveSource(withoutDuration);
+    });
+
+    // What a playback or loop-builder callback holds: the hook's functions from
+    // the render in which the source was still saved.
+    const staleSaveResolvedSourceDuration =
+      hookResultBox.current?.saveResolvedSourceDuration;
+
+    await act(async () => {
+      await hookResultBox.current?.removeSource(withoutDuration);
+    });
+
+    let didSave = true;
+
+    await act(async () => {
+      didSave =
+        (await staleSaveResolvedSourceDuration?.(withoutDuration.id, 92000)) ??
+        true;
+    });
+
+    const persistedSources =
+      await new AsyncStoragePracticeRepository().listSources(
+        LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+      );
+
+    assert.equal(didSave, false);
+    assert.deepEqual(persistedSources, []);
+    assert.deepEqual(hookResultBox.current?.savedSources, []);
+
+    act(() => {
+      renderer.unmount();
+    });
+  });
+
+  it('still saves a learned duration for a source that is saved', async () => {
+    const { hookResultBox, renderer } = await renderSavedRehearsalLibraryHook();
+    const withoutDuration: DriveLibrarySource = {
+      ...SAVED_SOURCE,
+      durationMs: undefined,
+    };
+
+    await act(async () => {
+      await hookResultBox.current?.saveSource(withoutDuration);
+    });
+    await act(async () => {
+      await hookResultBox.current?.saveResolvedSourceDuration(
+        withoutDuration.id,
+        92000,
+      );
+    });
+
+    assert.equal(hookResultBox.current?.savedSources[0]?.durationMs, 92000);
+
+    act(() => {
+      renderer.unmount();
     });
   });
 });

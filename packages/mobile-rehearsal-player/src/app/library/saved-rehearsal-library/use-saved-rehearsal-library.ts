@@ -30,6 +30,20 @@ const STORAGE_UNAVAILABLE_ISSUE: SavedRehearsalLibraryIssue = {
 };
 const practiceRepository = new AsyncStoragePracticeRepository();
 
+// Saves, removals and learned durations all rewrite the same stored list, and
+// callbacks held by playback or the loop builder can run long after the render
+// that created them. They run one at a time, in the order they were requested,
+// so a late write can no longer land on top of a removal.
+let pendingLibraryWrite: Promise<unknown> = Promise.resolve();
+
+const enqueueLibraryWrite = <Result>(write: () => Promise<Result>) => {
+  const result = pendingLibraryWrite.then(write, write);
+
+  pendingLibraryWrite = result.catch(() => undefined);
+
+  return result;
+};
+
 const createMutationIssue = (
   kind: 'remove' | 'save',
   sourceId: string,
@@ -171,9 +185,11 @@ export const useSavedRehearsalLibrary = () => {
     }
 
     try {
-      const nextSources = await practiceRepository.saveSource(
-        LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-        prepareDriveSourceForPersistence(source),
+      const nextSources = await enqueueLibraryWrite(() =>
+        practiceRepository.saveSource(
+          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+          prepareDriveSourceForPersistence(source),
+        ),
       );
 
       setSavedSources(nextSources);
@@ -215,9 +231,11 @@ export const useSavedRehearsalLibrary = () => {
       setIssue(null);
 
       try {
-        const nextSources = await practiceRepository.deleteSource(
-          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-          sourceId,
+        const nextSources = await enqueueLibraryWrite(() =>
+          practiceRepository.deleteSource(
+            LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+            sourceId,
+          ),
         );
 
         setSavedSources(nextSources);
@@ -233,17 +251,43 @@ export const useSavedRehearsalLibrary = () => {
     },
     savedSources,
     async saveResolvedSourceDuration(sourceId: string, durationMs: number) {
-      const updatedSource = resolveSavedSourceDurationUpdate(
-        savedSources,
-        sourceId,
-        durationMs,
-      );
-
-      if (!updatedSource) {
+      if (issue?.kind === 'storage') {
         return false;
       }
 
-      return persistSource(updatedSource);
+      try {
+        // Decided against what is stored when the write runs, not against this
+        // render's `savedSources`: a callback holding an older render still
+        // lists a source that has since been removed, and saving its snapshot
+        // would bring the track back.
+        const nextSources = await enqueueLibraryWrite(async () => {
+          const storedSources = await practiceRepository.listSources(
+            LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+          );
+          const updatedSource = resolveSavedSourceDurationUpdate(
+            storedSources,
+            sourceId,
+            durationMs,
+          );
+
+          return updatedSource
+            ? practiceRepository.saveSource(
+                LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+                prepareDriveSourceForPersistence(updatedSource),
+              )
+            : null;
+        });
+
+        if (!nextSources) {
+          return false;
+        }
+
+        setSavedSources(nextSources);
+        return true;
+      } catch (error) {
+        setIssue(createMutationIssue('save', sourceId, sourceId, error));
+        return false;
+      }
     },
     async saveSource(source: DriveLibrarySource) {
       return persistSource(source, {
