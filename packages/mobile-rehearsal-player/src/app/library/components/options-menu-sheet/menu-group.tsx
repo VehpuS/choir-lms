@@ -71,8 +71,9 @@ export const MenuRow = ({
       onPress={onPress}
       style={({ pressed }) => [
         styles.row,
-        icon ? styles.rowWithIcon : undefined,
         isLeading ? styles.rowLeading : styles.rowCentered,
+        // After the alignment rows so its centering wins on leading rows.
+        icon ? styles.rowWithIcon : undefined,
         buttonInteractionGuardStyle,
         pressed && !disabled ? styles.rowPressed : undefined,
         disabled ? styles.rowDisabled : undefined,
@@ -87,25 +88,43 @@ export const MenuRow = ({
           <AppIcon color={palette.icon} name={icon} size={MENU_ROW_ICON_SIZE} />
         </View>
       ) : null}
-      <Text
-        numberOfLines={1}
-        style={[
-          styles.label,
-          { color: palette.label, fontWeight: palette.fontWeight },
-        ]}
-      >
-        {label}
-      </Text>
-      {meta ? (
-        <Text numberOfLines={1} style={styles.meta}>
-          {meta}
+      <MenuRowText hasIcon={Boolean(icon)}>
+        <Text
+          numberOfLines={1}
+          style={[
+            styles.label,
+            { color: palette.label, fontWeight: palette.fontWeight },
+          ]}
+        >
+          {label}
         </Text>
-      ) : null}
+        {meta ? (
+          <Text numberOfLines={1} style={styles.meta}>
+            {meta}
+          </Text>
+        ) : null}
+      </MenuRowText>
     </Pressable>
   );
 };
 
 const MENU_ROW_ICON_SIZE = 20;
+
+// Beside an icon the label and meta stack in their own column; without one
+// they stay direct children so the row's own centering and gap apply.
+const MenuRowText = ({
+  children,
+  hasIcon,
+}: {
+  children: ReactNode;
+  hasIcon: boolean;
+}) => {
+  return hasIcon ? (
+    <View style={styles.textColumn}>{children}</View>
+  ) : (
+    <>{children}</>
+  );
+};
 
 const styles = StyleSheet.create({
   group: {
@@ -116,6 +135,10 @@ const styles = StyleSheet.create({
   iconSlot: {
     width: MENU_ROW_ICON_SIZE,
     alignItems: 'center',
+  },
+  textColumn: {
+    flex: 1,
+    gap: 2,
   },
   label: {
     fontSize: 16,

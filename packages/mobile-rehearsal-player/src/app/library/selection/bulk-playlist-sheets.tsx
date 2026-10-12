@@ -67,6 +67,7 @@ export const BulkPlaylistTargetSheet = ({
               <MenuRow
                 align="leading"
                 disabled={isMutating || isBlocked}
+                icon="playlist-music-outline"
                 key={playlist.id}
                 label={playlist.name}
                 meta={

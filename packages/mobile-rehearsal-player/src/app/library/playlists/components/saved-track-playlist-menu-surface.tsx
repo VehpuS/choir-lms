@@ -77,6 +77,7 @@ export const SavedTrackPlaylistMenuSurface = ({
             <MenuRow
               align="leading"
               disabled={isMutating}
+              icon="plus"
               label="New playlist…"
               onPress={onShowCreatePlaylist}
               tone="accent"
@@ -93,6 +94,7 @@ export const SavedTrackPlaylistMenuSurface = ({
                     <MenuRow
                       align="leading"
                       disabled={isMutating}
+                      icon="playlist-music-outline"
                       key={playlist.id}
                       label={playlist.name}
                       meta={getPlaylistItemCountLabel(playlist)}

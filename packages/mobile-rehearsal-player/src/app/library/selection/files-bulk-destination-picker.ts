@@ -70,6 +70,7 @@ export const buildBulkDestinationPicker = (options: {
     actions: [
       {
         disabled: options.isMutating || isBlocked(current.id),
+        icon: options.mode === 'copy' ? 'content-copy' : 'swap-horizontal',
         id: `${current.id}:select-destination`,
         label: `${verb} here${currentContext}`,
         onPress: () => {
@@ -81,6 +82,7 @@ export const buildBulkDestinationPicker = (options: {
         ? [
             {
               disabled: options.isMutating,
+              icon: 'chevron-left' as const,
               id: `${parent.id}:open-parent-destination`,
               label: `Back to ${parent.name}`,
               onPress: () => {
@@ -94,6 +96,7 @@ export const buildBulkDestinationPicker = (options: {
         .filter(({ folder }) => folder.parentFolderId === current.id)
         .map(({ folder }) => ({
           disabled: options.isMutating || isBlocked(folder.id),
+          icon: 'folder-outline' as const,
           id: `${folder.id}:open-destination`,
           label: folder.name,
           onPress: () => {

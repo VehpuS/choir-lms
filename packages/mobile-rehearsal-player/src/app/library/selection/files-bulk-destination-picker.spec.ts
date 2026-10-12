@@ -41,6 +41,23 @@ describe('buildBulkDestinationPicker', () => {
     );
   });
 
+  it('gives each picker row the icon of what it does: the verb, a way back, or a folder', () => {
+    const [copy, move] = (['copy', 'move'] as const).map((mode) => {
+      return buildBulkDestinationPicker({
+        ...base,
+        mode,
+        pickerFolderId: 'verses',
+        selectedFolderIds: new Set(),
+      });
+    });
+
+    assert.deepEqual(
+      copy.actions.map(({ icon }) => icon),
+      ['content-copy', 'chevron-left', 'folder-outline'],
+    );
+    assert.equal(move.actions[0].icon, 'swap-horizontal');
+  });
+
   it('marks the folder being browsed when it is the Files folder', () => {
     const picker = buildBulkDestinationPicker({
       ...base,

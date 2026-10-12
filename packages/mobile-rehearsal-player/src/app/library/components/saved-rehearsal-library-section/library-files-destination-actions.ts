@@ -136,6 +136,7 @@ export const buildLibraryFilesDestinationPicker = ({
       pendingAction.row.kind !== 'folder'
     ) {
       return {
+        icon: 'content-copy' as const,
         id: `${currentFolder.id}:retry-copy-with-suggested-name`,
         label: recovery.label,
         onPress: () => {
@@ -153,6 +154,7 @@ export const buildLibraryFilesDestinationPicker = ({
       pendingAction.kind === 'move'
     ) {
       return {
+        icon: 'pencil-outline' as const,
         id: `${currentFolder.id}:rename-before-retry`,
         label: recovery.label,
         onPress: () => {
@@ -188,6 +190,8 @@ export const buildLibraryFilesDestinationPicker = ({
       ...(recoveryAction ? [recoveryAction] : []),
       {
         disabled: selectDisabledReason !== null,
+        icon:
+          pendingAction.kind === 'copy' ? 'content-copy' : 'swap-horizontal',
         id: `${currentFolder.id}:select-destination`,
         label: selectActionLabel,
         onPress: () => {
@@ -199,6 +203,7 @@ export const buildLibraryFilesDestinationPicker = ({
         ? [
             {
               disabled: isMutating,
+              icon: 'chevron-left' as const,
               id: `${parentFolder.id}:open-parent-destination`,
               label: `Back to ${parentFolder.name}`,
               onPress: () => {
@@ -218,6 +223,7 @@ export const buildLibraryFilesDestinationPicker = ({
 
         return {
           disabled: disabledReason !== null,
+          icon: 'folder-outline' as const,
           id: `${destination.folder.id}:open-destination`,
           label: destination.folder.name,
           onPress: () => {
