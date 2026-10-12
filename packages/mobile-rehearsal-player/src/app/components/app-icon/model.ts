@@ -7,7 +7,11 @@
 export type PhosphorGlyph =
   | 'ArrowClockwise'
   | 'ArrowCounterClockwise'
+  | 'ArrowLineDown'
+  | 'ArrowLineUp'
+  | 'ArrowSquareOut'
   | 'ArrowsClockwise'
+  | 'ArrowsLeftRight'
   | 'CaretDown'
   | 'CaretLeft'
   | 'CaretRight'
@@ -17,20 +21,25 @@ export type PhosphorGlyph =
   | 'Circle'
   | 'ClockCountdown'
   | 'ClockCounterClockwise'
+  | 'Copy'
   | 'DotsSixVertical'
   | 'DotsThreeVertical'
   | 'File'
+  | 'FloppyDisk'
   | 'Folder'
   | 'FolderPlus'
   | 'Info'
   | 'ListChecks'
+  | 'ListDashes'
   | 'ListNumbers'
+  | 'ListPlus'
   | 'MagnifyingGlass'
   | 'Minus'
   | 'MinusCircle'
   | 'MusicNote'
   | 'MusicNotes'
   | 'Pause'
+  | 'PencilSimple'
   | 'Play'
   | 'PlayCircle'
   | 'Playlist'
@@ -48,6 +57,7 @@ export type PhosphorGlyph =
   | 'SpeakerLow'
   | 'SpeakerX'
   | 'Tag'
+  | 'Trash'
   | 'UserCircle'
   | 'Waveform'
   | 'X'
@@ -130,6 +140,19 @@ export const APP_ICON_GLYPHS = {
   'tag-outline': regular('Tag'),
   'view-list': regular('Queue'),
   waveform: regular('Waveform'),
+
+  // Menu actions: one glyph per action, shared by every menu that offers it.
+  'content-copy': regular('Copy'),
+  'swap-horizontal': regular('ArrowsLeftRight'),
+  'pencil-outline': regular('PencilSimple'),
+  'trash-can-outline': regular('Trash'),
+  'open-in-new': regular('ArrowSquareOut'),
+  'format-list-bulleted': regular('ListDashes'),
+  'playlist-plus': regular('ListPlus'),
+  'content-save-outline': regular('FloppyDisk'),
+  'skip-next-outline': regular('SkipForward'),
+  'arrow-collapse-up': regular('ArrowLineUp'),
+  'arrow-collapse-down': regular('ArrowLineDown'),
 
   // Notes and statements (the session-scope line on the shaping sheet).
   'information-outline': regular('Info'),

@@ -4,7 +4,11 @@ import type { Icon } from 'phosphor-react-native';
 // Metro does not tree-shake the package's barrel export.
 import { ArrowClockwiseIcon } from 'phosphor-react-native/src/icons/ArrowClockwise';
 import { ArrowCounterClockwiseIcon } from 'phosphor-react-native/src/icons/ArrowCounterClockwise';
+import { ArrowLineDownIcon } from 'phosphor-react-native/src/icons/ArrowLineDown';
+import { ArrowLineUpIcon } from 'phosphor-react-native/src/icons/ArrowLineUp';
+import { ArrowSquareOutIcon } from 'phosphor-react-native/src/icons/ArrowSquareOut';
 import { ArrowsClockwiseIcon } from 'phosphor-react-native/src/icons/ArrowsClockwise';
+import { ArrowsLeftRightIcon } from 'phosphor-react-native/src/icons/ArrowsLeftRight';
 import { CaretDownIcon } from 'phosphor-react-native/src/icons/CaretDown';
 import { CaretLeftIcon } from 'phosphor-react-native/src/icons/CaretLeft';
 import { CaretRightIcon } from 'phosphor-react-native/src/icons/CaretRight';
@@ -14,20 +18,25 @@ import { CheckCircleIcon } from 'phosphor-react-native/src/icons/CheckCircle';
 import { CircleIcon } from 'phosphor-react-native/src/icons/Circle';
 import { ClockCountdownIcon } from 'phosphor-react-native/src/icons/ClockCountdown';
 import { ClockCounterClockwiseIcon } from 'phosphor-react-native/src/icons/ClockCounterClockwise';
+import { CopyIcon } from 'phosphor-react-native/src/icons/Copy';
 import { DotsSixVerticalIcon } from 'phosphor-react-native/src/icons/DotsSixVertical';
 import { DotsThreeVerticalIcon } from 'phosphor-react-native/src/icons/DotsThreeVertical';
 import { FileIcon } from 'phosphor-react-native/src/icons/File';
+import { FloppyDiskIcon } from 'phosphor-react-native/src/icons/FloppyDisk';
 import { FolderIcon } from 'phosphor-react-native/src/icons/Folder';
 import { FolderPlusIcon } from 'phosphor-react-native/src/icons/FolderPlus';
 import { InfoIcon } from 'phosphor-react-native/src/icons/Info';
 import { ListChecksIcon } from 'phosphor-react-native/src/icons/ListChecks';
+import { ListDashesIcon } from 'phosphor-react-native/src/icons/ListDashes';
 import { ListNumbersIcon } from 'phosphor-react-native/src/icons/ListNumbers';
+import { ListPlusIcon } from 'phosphor-react-native/src/icons/ListPlus';
 import { MagnifyingGlassIcon } from 'phosphor-react-native/src/icons/MagnifyingGlass';
 import { MinusIcon } from 'phosphor-react-native/src/icons/Minus';
 import { MinusCircleIcon } from 'phosphor-react-native/src/icons/MinusCircle';
 import { MusicNoteIcon } from 'phosphor-react-native/src/icons/MusicNote';
 import { MusicNotesIcon } from 'phosphor-react-native/src/icons/MusicNotes';
 import { PauseIcon } from 'phosphor-react-native/src/icons/Pause';
+import { PencilSimpleIcon } from 'phosphor-react-native/src/icons/PencilSimple';
 import { PlayIcon } from 'phosphor-react-native/src/icons/Play';
 import { PlayCircleIcon } from 'phosphor-react-native/src/icons/PlayCircle';
 import { PlaylistIcon } from 'phosphor-react-native/src/icons/Playlist';
@@ -45,6 +54,7 @@ import { SpeakerHighIcon } from 'phosphor-react-native/src/icons/SpeakerHigh';
 import { SpeakerLowIcon } from 'phosphor-react-native/src/icons/SpeakerLow';
 import { SpeakerXIcon } from 'phosphor-react-native/src/icons/SpeakerX';
 import { TagIcon } from 'phosphor-react-native/src/icons/Tag';
+import { TrashIcon } from 'phosphor-react-native/src/icons/Trash';
 import { UserCircleIcon } from 'phosphor-react-native/src/icons/UserCircle';
 import { WaveformIcon } from 'phosphor-react-native/src/icons/Waveform';
 import { XIcon } from 'phosphor-react-native/src/icons/X';
@@ -62,7 +72,11 @@ export type { AppIconName } from './model';
 const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   ArrowClockwise: ArrowClockwiseIcon,
   ArrowCounterClockwise: ArrowCounterClockwiseIcon,
+  ArrowLineDown: ArrowLineDownIcon,
+  ArrowLineUp: ArrowLineUpIcon,
+  ArrowSquareOut: ArrowSquareOutIcon,
   ArrowsClockwise: ArrowsClockwiseIcon,
+  ArrowsLeftRight: ArrowsLeftRightIcon,
   CaretDown: CaretDownIcon,
   CaretLeft: CaretLeftIcon,
   CaretRight: CaretRightIcon,
@@ -72,20 +86,25 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   Circle: CircleIcon,
   ClockCountdown: ClockCountdownIcon,
   ClockCounterClockwise: ClockCounterClockwiseIcon,
+  Copy: CopyIcon,
   DotsSixVertical: DotsSixVerticalIcon,
   DotsThreeVertical: DotsThreeVerticalIcon,
   File: FileIcon,
+  FloppyDisk: FloppyDiskIcon,
   Folder: FolderIcon,
   FolderPlus: FolderPlusIcon,
   Info: InfoIcon,
   ListChecks: ListChecksIcon,
+  ListDashes: ListDashesIcon,
   ListNumbers: ListNumbersIcon,
+  ListPlus: ListPlusIcon,
   MagnifyingGlass: MagnifyingGlassIcon,
   Minus: MinusIcon,
   MinusCircle: MinusCircleIcon,
   MusicNote: MusicNoteIcon,
   MusicNotes: MusicNotesIcon,
   Pause: PauseIcon,
+  PencilSimple: PencilSimpleIcon,
   Play: PlayIcon,
   PlayCircle: PlayCircleIcon,
   Playlist: PlaylistIcon,
@@ -103,6 +122,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   SpeakerLow: SpeakerLowIcon,
   SpeakerX: SpeakerXIcon,
   Tag: TagIcon,
+  Trash: TrashIcon,
   UserCircle: UserCircleIcon,
   Waveform: WaveformIcon,
   X: XIcon,

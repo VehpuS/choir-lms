@@ -17,15 +17,37 @@ export type MenuRowTone =
 
 type MenuRowPalette = {
   fontWeight: (typeof fontWeight)[keyof typeof fontWeight];
+  /** Leading icon color: muted, with the tone's color for emphasis. */
+  icon: string;
   label: string;
 };
 
 const MENU_ROW_PALETTES: Record<MenuRowTone, MenuRowPalette> = {
-  accent: { fontWeight: fontWeight.regular, label: colors.accentText },
-  cancel: { fontWeight: fontWeight.medium, label: colors.text },
-  default: { fontWeight: fontWeight.regular, label: colors.text },
-  destructive: { fontWeight: fontWeight.regular, label: colors.danger },
-  preferred: { fontWeight: fontWeight.medium, label: colors.accentText },
+  accent: {
+    icon: colors.accentText,
+    fontWeight: fontWeight.regular,
+    label: colors.accentText,
+  },
+  cancel: {
+    icon: colors.textMuted,
+    fontWeight: fontWeight.medium,
+    label: colors.text,
+  },
+  default: {
+    icon: colors.textMuted,
+    fontWeight: fontWeight.regular,
+    label: colors.text,
+  },
+  destructive: {
+    icon: colors.danger,
+    fontWeight: fontWeight.regular,
+    label: colors.danger,
+  },
+  preferred: {
+    icon: colors.accentText,
+    fontWeight: fontWeight.medium,
+    label: colors.accentText,
+  },
 };
 
 export const MENU_ROW_MIN_HEIGHT = 50;

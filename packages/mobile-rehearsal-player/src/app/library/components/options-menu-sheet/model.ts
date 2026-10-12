@@ -1,5 +1,9 @@
+import type { AppIconName } from '../../../components/app-icon/model';
+
 export type OptionsMenuAction = {
   disabled?: boolean;
+  /** Overrides the icon the shared map picks for this label. */
+  icon?: AppIconName;
   id: string;
   label: string;
   onPress: () => void;

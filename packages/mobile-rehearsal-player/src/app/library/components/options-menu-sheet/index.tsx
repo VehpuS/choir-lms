@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { BottomSheetSurface } from '../bottom-sheet-surface';
+import { resolveMenuActionIcon } from './menu-action-icons';
 import { MenuGroup, MenuRow } from './menu-group';
 import type { MenuRowTone } from './menu-group-model';
 import { splitIntoMenuGroups } from './menu-group-model';
@@ -78,6 +79,7 @@ export const OptionsMenuSheet = ({
                 return (
                   <MenuRow
                     disabled={action.disabled}
+                    icon={resolveMenuActionIcon(action)}
                     key={action.id}
                     label={action.label}
                     onPress={action.onPress}

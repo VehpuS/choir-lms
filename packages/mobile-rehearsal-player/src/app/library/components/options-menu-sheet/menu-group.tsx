@@ -5,6 +5,7 @@ import {
   buttonInteractionGuardStyle,
   interactionGuardProps,
 } from '../../../components/interaction-guard';
+import { AppIcon, type AppIconName } from '../../../components/app-icon';
 import { appTheme } from '../../../utils/theme';
 import { interleaveExplorerRowSeparators } from '../explorer/model';
 import { INTERACTION_STATE_OPACITY } from '../interaction-style-tokens';
@@ -23,6 +24,8 @@ type MenuRowProps = {
   accessibilityLabel?: string;
   align?: 'center' | 'leading';
   disabled?: boolean;
+  /** Leading decorative icon; the label stays the accessible name. */
+  icon?: AppIconName;
   label: string;
   meta?: string;
   onPress: () => void;
@@ -48,6 +51,7 @@ export const MenuRow = ({
   accessibilityLabel,
   align = 'center',
   disabled = false,
+  icon,
   label,
   meta,
   onPress,
@@ -67,12 +71,22 @@ export const MenuRow = ({
       onPress={onPress}
       style={({ pressed }) => [
         styles.row,
+        icon ? styles.rowWithIcon : undefined,
         isLeading ? styles.rowLeading : styles.rowCentered,
         buttonInteractionGuardStyle,
         pressed && !disabled ? styles.rowPressed : undefined,
         disabled ? styles.rowDisabled : undefined,
       ]}
     >
+      {icon ? (
+        <View
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          style={styles.iconSlot}
+        >
+          <AppIcon color={palette.icon} name={icon} size={MENU_ROW_ICON_SIZE} />
+        </View>
+      ) : null}
       <Text
         numberOfLines={1}
         style={[
@@ -91,11 +105,17 @@ export const MenuRow = ({
   );
 };
 
+const MENU_ROW_ICON_SIZE = 20;
+
 const styles = StyleSheet.create({
   group: {
     overflow: 'hidden',
     borderRadius: appTheme.radius.lg,
     backgroundColor: appTheme.colors.surface,
+  },
+  iconSlot: {
+    width: MENU_ROW_ICON_SIZE,
+    alignItems: 'center',
   },
   label: {
     fontSize: 16,
@@ -118,6 +138,14 @@ const styles = StyleSheet.create({
   },
   rowLeading: {
     alignItems: 'flex-start',
+  },
+  // An icon row reads left to right (icon, then label) like the iOS context
+  // menu; icon-less rows keep the centered action-sheet look.
+  rowWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: appTheme.space.md,
   },
   rowPressed: {
     backgroundColor: appTheme.colors.neutral[700],
