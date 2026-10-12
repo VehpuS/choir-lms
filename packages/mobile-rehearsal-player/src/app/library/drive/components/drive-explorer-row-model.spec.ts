@@ -53,7 +53,7 @@ const SEARCH_RESULTS: DriveDiscoveryResult[] = [
 const SEARCH_NOW = new Date('2026-09-29T12:00:00.000Z');
 
 describe('Drive explorer row model', () => {
-  it('maps mixed search results to identified, highlighted rows that lead with their path', () => {
+  it('maps mixed search results to identified, highlighted rows that lead with their parent folder', () => {
     const rows = createDriveSearchResultRows({
       now: SEARCH_NOW,
       query: 'warm',
@@ -64,7 +64,7 @@ describe('Drive explorer row model', () => {
     assert.equal(rows[0]?.highlightQuery, 'warm');
     assert.deepEqual(rows[0]?.metadataLabels, [
       'Folder',
-      'Shared with you / Choir / Autumn',
+      'Autumn',
       'Updated 12 Sep',
       'Shared folder',
     ]);
@@ -72,7 +72,7 @@ describe('Drive explorer row model', () => {
     assert.equal(rows[1]?.highlightQuery, 'warm');
     assert.deepEqual(rows[1]?.metadataLabels, [
       'Audio',
-      'My Drive / Choir / Autumn / Warmups',
+      'Warmups',
       'WAV',
       '1:32',
     ]);
@@ -102,7 +102,7 @@ describe('Drive explorer row model', () => {
     assert.deepEqual(row?.metadataLabels, [
       'Audio',
       'Not a supported audio format',
-      'My Drive / Choir / Autumn / Warmups',
+      'Warmups',
     ]);
   });
 

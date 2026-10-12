@@ -13,12 +13,22 @@ import {
   formatDriveFileSizeLabel,
   getBrowseFolderMetadataLabels,
   getBrowseSourceMetadataLabels,
+  getParentFolderLabel,
 } from './drive-browse-row-metadata.js';
 
 const NOW = new Date('2026-09-29T12:00:00.000Z');
 const FOLDER = BROWSE_SNAPSHOT.folders[0];
 
 describe('Drive browse row metadata', () => {
+  it('names only the containing folder of a search result path', () => {
+    assert.equal(
+      getParentFolderLabel('My Drive / Music Archive / Seth.Ect'),
+      'Seth.Ect',
+    );
+    assert.equal(getParentFolderLabel('My Drive'), 'My Drive');
+    assert.equal(getParentFolderLabel(undefined), undefined);
+  });
+
   it('reads format, size, and duration for an audio row even when the name ends in the extension', () => {
     assert.deepEqual(
       getBrowseSourceMetadataLabels({

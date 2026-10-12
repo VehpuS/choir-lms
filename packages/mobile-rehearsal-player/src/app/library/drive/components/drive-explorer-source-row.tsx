@@ -227,7 +227,11 @@ export const DriveExplorerSourceRow = ({
         }}
         title={source.name}
         titleNumberOfLines={FULL_TITLE_NUMBER_OF_LINES}
-      />
+      >
+        {source.locationLabel ? (
+          <Text style={styles.menuLocation}>In {source.locationLabel}</Text>
+        ) : null}
+      </OptionsMenuSheet>
     </>
   );
 };

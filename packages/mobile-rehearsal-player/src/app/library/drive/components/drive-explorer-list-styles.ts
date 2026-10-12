@@ -53,6 +53,11 @@ export const driveExplorerListStyles = StyleSheet.create({
     top: 0,
     right: 0,
   },
+  menuLocation: {
+    ...appTheme.type.rowMeta,
+    color: colors.textMuted,
+    paddingBottom: space.sm,
+  },
   rowTitle: {
     ...appTheme.type.rowTitle,
     color: colors.text,

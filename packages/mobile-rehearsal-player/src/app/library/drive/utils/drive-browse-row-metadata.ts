@@ -126,13 +126,23 @@ export const getBrowseFolderMetadataLabels = (
   ]);
 };
 
+const DRIVE_PATH_SEPARATOR = ' / ';
+
+/**
+ * A search row names only the folder it sits in, so the format and length stay
+ * visible; the full path is in the row's overflow sheet (task 8.23).
+ */
+export const getParentFolderLabel = (locationLabel: string | undefined) => {
+  return locationLabel?.split(DRIVE_PATH_SEPARATOR).at(-1);
+};
+
 export const getSearchFolderMetadataLabels = (
   folder: DriveFolder,
   now: Date = new Date(),
 ): string[] => {
   return compact([
     SEARCH_FOLDER_KIND_LABEL,
-    folder.locationLabel,
+    getParentFolderLabel(folder.locationLabel),
     ...getBrowseFolderMetadataLabels(folder, now),
   ]);
 };
@@ -144,7 +154,9 @@ export const getSearchSourceMetadataLabels = (
 
   // An unplayable result names its reason before the path, so the reason is
   // never the part that truncates away.
+  const parentLabel = getParentFolderLabel(source.locationLabel);
+
   return source.availability.status === 'available'
-    ? compact([SEARCH_AUDIO_KIND_LABEL, source.locationLabel, ...browseLabels])
-    : compact([SEARCH_AUDIO_KIND_LABEL, ...browseLabels, source.locationLabel]);
+    ? compact([SEARCH_AUDIO_KIND_LABEL, parentLabel, ...browseLabels])
+    : compact([SEARCH_AUDIO_KIND_LABEL, ...browseLabels, parentLabel]);
 };
