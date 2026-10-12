@@ -9,6 +9,7 @@ import {
   ExplorerListRow,
   ExplorerListSurface,
 } from '../../../components/explorer';
+import { formatSectionCount } from '../../../components/saved-rehearsal-library-section/section-count-label';
 import { SearchHighlightedText } from '../../../search/components/search-highlighted-text';
 import {
   EMPTY_SAVED_TAGS_MESSAGE,
@@ -50,45 +51,67 @@ export const SavedTagsList = ({
           {NO_SAVED_TAGS_SEARCH_RESULTS_MESSAGE}
         </Text>
       ) : (
-        <ExplorerListSurface>
-          {sortedTagUsage.map((usage) => {
-            return (
-              <ExplorerListRow
-                key={usage.tag}
-                leadingIcon={
-                  <AppIcon
-                    color={appTheme.colors.icon}
-                    name="tag-outline"
-                    size={LEADING_GLYPH_SIZE}
-                  />
-                }
-                metadata={
-                  <RowMetaLine text={getSavedTagUsageRowMetadataLabel(usage)} />
-                }
-                onPress={() => {
-                  onSelectTag(usage.tag);
-                }}
-                title={
-                  <SearchHighlightedText
-                    query={searchQuery}
-                    style={styles.rowTitle}
-                    text={usage.tag}
-                  />
-                }
-              />
-            );
-          })}
-        </ExplorerListSurface>
+        <>
+          <View style={styles.countRow}>
+            <Text style={styles.countLine}>
+              Tags ({formatSectionCount(sortedTagUsage.length, tagUsage.length)}
+              )
+            </Text>
+          </View>
+          <ExplorerListSurface>
+            {sortedTagUsage.map((usage) => {
+              return (
+                <ExplorerListRow
+                  key={usage.tag}
+                  leadingIcon={
+                    <AppIcon
+                      color={appTheme.colors.icon}
+                      name="tag-outline"
+                      size={LEADING_GLYPH_SIZE}
+                    />
+                  }
+                  metadata={
+                    <RowMetaLine
+                      text={getSavedTagUsageRowMetadataLabel(usage)}
+                    />
+                  }
+                  onPress={() => {
+                    onSelectTag(usage.tag);
+                  }}
+                  title={
+                    <SearchHighlightedText
+                      query={searchQuery}
+                      style={styles.rowTitle}
+                      text={usage.tag}
+                    />
+                  }
+                />
+              );
+            })}
+          </ExplorerListSurface>
+        </>
       )}
     </View>
   );
 };
 
 const LEADING_GLYPH_SIZE = 20;
+// The height of the Select button that sits beside the other views' count
+// line, so the list starts at the same offset in every view.
+const COUNT_ROW_MIN_HEIGHT = 44;
 
 const styles = StyleSheet.create({
   container: {
     gap: 12,
+  },
+  // The same count line the other views show above their list (task 8.25).
+  countRow: {
+    justifyContent: 'center',
+    minHeight: COUNT_ROW_MIN_HEIGHT,
+  },
+  countLine: {
+    ...appTheme.type.kicker,
+    color: appTheme.colors.textMuted,
   },
   emptyMessage: {
     ...appTheme.type.body,

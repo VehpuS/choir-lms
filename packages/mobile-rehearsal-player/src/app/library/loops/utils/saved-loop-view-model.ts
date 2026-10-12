@@ -46,9 +46,6 @@ export type SavedLoopRemovalCopy = {
   title: string;
 };
 
-export const SAVED_LOOP_SECTION_BODY_COPY =
-  'Create and manage loops from saved tracks. Each saved loop keeps its parent track context for playback and library navigation.';
-
 export type SavedLoopParentTrack = {
   id: string;
   name: string;

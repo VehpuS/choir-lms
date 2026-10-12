@@ -2,7 +2,6 @@ import { formatSectionCount } from '../../components/saved-rehearsal-library-sec
 import { type NamedLoop, type PlayableItem } from '@org/audio-library-models';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { SectionHeading } from '../../components/section-heading';
 import { DriveLibraryStatusCard } from '../../drive/components/drive-library-status-card';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import {
@@ -16,7 +15,6 @@ import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import {
   getSavedLoopsStatusCopy,
   resolveSavedLoopCards,
-  SAVED_LOOP_SECTION_BODY_COPY,
 } from '../utils/saved-loop-view-model';
 import type { TrackScopedLoopDetailCopy } from '../utils/track-scoped-loop-view-model';
 import { useLoopPreviewPlaybackContext } from './loop-preview-playback-context';
@@ -168,14 +166,6 @@ export const SavedLoopSection = ({
 
   return (
     <View style={styles.section}>
-      {shouldShowBrowseContent ? (
-        <SectionHeading
-          body={SAVED_LOOP_SECTION_BODY_COPY}
-          style={styles.sectionCopy}
-          title="Saved loops"
-        />
-      ) : null}
-
       {shouldShowBrowseContent && shouldShowStatusCard ? (
         <DriveLibraryStatusCard
           isLoading={isSavedLoopsLoading}
@@ -305,9 +295,6 @@ export const SavedLoopSection = ({
 const styles = StyleSheet.create({
   section: {
     gap: 12,
-  },
-  sectionCopy: {
-    gap: 8,
   },
   sectionBody: {
     color: SECONDARY_TEXT,
