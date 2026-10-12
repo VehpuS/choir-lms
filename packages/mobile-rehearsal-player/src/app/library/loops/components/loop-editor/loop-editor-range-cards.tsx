@@ -14,6 +14,7 @@ import {
 import type { LoopBuilderBoundary } from '../../utils/saved-loop-view-model';
 import { formatLoopEditorPrecise } from './format';
 import { loopEditorStyles as styles } from './styles';
+import { ariaStateProps } from '../../../../components/aria-state';
 
 const NUDGE_ICON_SIZE = 18;
 
@@ -48,6 +49,7 @@ const NudgeButton = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
+      {...ariaStateProps({ disabled })}
       {...interactionGuardProps}
       disabled={disabled}
       onPress={longPressRepeat.onPress}

@@ -14,6 +14,7 @@ import {
   stepPitchSemitones,
 } from './shaping-surface-model';
 import { shapingStyles as styles } from './styles';
+import { ariaStateProps } from '../../../components/aria-state';
 
 const STEP_ICON_SIZE = 22;
 
@@ -41,6 +42,7 @@ const StepButton = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
+      {...ariaStateProps({ disabled })}
       {...interactionGuardProps}
       disabled={disabled}
       onPress={onPress}

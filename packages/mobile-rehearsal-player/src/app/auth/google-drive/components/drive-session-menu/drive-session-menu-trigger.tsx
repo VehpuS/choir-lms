@@ -4,6 +4,7 @@ import type { DriveAuthorizationStatusCopy } from '../../utils/authorization';
 
 import { AppIcon } from '../../../../components/app-icon';
 import { appTheme } from '../../../../utils/theme';
+import { ariaStateProps } from '../../../../components/aria-state';
 
 const ACCOUNT_ICON_SIZE = 24;
 
@@ -39,6 +40,7 @@ export const DriveSessionMenuTrigger = ({
       accessibilityLabel="Open Drive session menu"
       accessibilityRole="button"
       accessibilityState={{ expanded: isVisible }}
+      {...ariaStateProps({ expanded: isVisible })}
       onPress={onToggleVisibility}
       style={({ pressed }) => [
         styles.trigger,

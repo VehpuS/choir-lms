@@ -89,6 +89,7 @@ export const FilterChipGroup = <Value extends string>({
         {options.map((option) => {
           return (
             <InteractionChip
+              accessibilitySelected={selectedValue === option.value}
               key={option.value}
               label={option.label}
               onPress={() => {

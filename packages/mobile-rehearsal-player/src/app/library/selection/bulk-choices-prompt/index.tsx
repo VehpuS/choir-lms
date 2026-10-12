@@ -16,6 +16,7 @@ import {
   getBulkChoicesPromptCopy,
   type BulkChoiceAnswers,
 } from './model';
+import { ariaStateProps } from '../../../components/aria-state';
 
 const CHECKBOX_SIZE = 22;
 
@@ -72,6 +73,7 @@ export const BulkChoicesPrompt = ({
         accessibilityLabel={copy.rememberLabel}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: remember }}
+        {...ariaStateProps({ checked: remember })}
         {...interactionGuardProps}
         onPress={() => {
           setRemember((current) => !current);

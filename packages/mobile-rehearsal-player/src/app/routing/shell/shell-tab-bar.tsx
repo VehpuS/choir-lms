@@ -27,6 +27,7 @@ export const ShellTabBar = ({
             key={destination.key}
             accessibilityRole="button"
             accessibilityState={{ selected: isActive }}
+            aria-current={isActive ? 'page' : undefined}
             onPress={() => {
               onSelectDestination(destination.key);
             }}

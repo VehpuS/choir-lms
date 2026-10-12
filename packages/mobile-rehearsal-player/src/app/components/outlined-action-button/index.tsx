@@ -21,6 +21,7 @@ import {
   resolveOutlinedActionButtonPalette,
   type OutlinedActionButtonVariant,
 } from './model';
+import { ariaStateProps } from '../aria-state';
 
 type OutlinedActionButtonProps = {
   accessibilityLabel?: string;
@@ -59,6 +60,7 @@ export const OutlinedActionButton = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={{ busy: isBusy, disabled: isDisabled, selected }}
+      {...ariaStateProps({ busy: isBusy, disabled: isDisabled, selected })}
       {...interactionGuardProps}
       disabled={isDisabled}
       onPress={onPress}

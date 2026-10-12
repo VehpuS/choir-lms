@@ -22,6 +22,7 @@ import {
 
 import { AppIcon } from '../app-icon';
 import { appTheme } from '../../utils/theme';
+import { ariaStateProps } from '../aria-state';
 
 type OverflowMenuTriggerProps = {
   accessibilityLabel: string;
@@ -67,6 +68,7 @@ export const OverflowMenuTrigger = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={getOverflowMenuTriggerAccessibilityState(disabled)}
+      {...ariaStateProps(getOverflowMenuTriggerAccessibilityState(disabled))}
       {...interactionGuardProps}
       disabled={disabled}
       hitSlop={OVERFLOW_MENU_TRIGGER_HIT_SLOP}

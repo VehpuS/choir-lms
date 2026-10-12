@@ -23,6 +23,7 @@ import {
   type CompactPlaybackActionVariant,
 } from './model';
 import { AppIcon } from '../app-icon';
+import { ariaStateProps } from '../aria-state';
 
 type CompactPlaybackActionProps = {
   accessibilityLabel: string;
@@ -100,6 +101,12 @@ export const CompactPlaybackAction = ({
         disabled,
         selected,
       })}
+      {...ariaStateProps(
+        getCompactPlaybackActionAccessibilityState({
+          disabled,
+          selected,
+        }),
+      )}
       {...interactionGuardProps}
       disabled={disabled}
       onPress={onPress}

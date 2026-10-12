@@ -13,6 +13,7 @@ import {
   continuousInteractionGuardStyle,
   interactionGuardProps,
 } from '../../../components/interaction-guard';
+import { AccessibleSlider } from '../../../components/accessible-slider';
 import { PlaybackWaveform } from '../../../components/playback-waveform';
 import { getPlaybackBoundsSeconds } from '../../../components/playback-waveform/model';
 import { appTheme } from '../../../utils/theme';
@@ -21,10 +22,13 @@ import { nowPlayingStyles as styles } from './styles';
 import { getPracticeShapingTiles } from '../shaping/shaping-surface-model';
 import type { PlaybackShapingControls } from '../shaping/shaping-surface-model';
 import { getPracticeTiles } from './practice-row-model';
+import { ariaStateProps } from '../../../components/aria-state';
 
 const PRACTICE_ICON_SIZE = 22;
 const VOLUME_ICON_SIZE = 16;
 const MUTED_VOLUME_THRESHOLD = 0.01;
+const VOLUME_STEP = 0.05;
+const PERCENT = 100;
 
 const getSliderNumber = (value: number | number[]) => {
   return Array.isArray(value) ? (value[0] ?? 0) : value;
@@ -137,6 +141,10 @@ export const PlaybackPracticeRow = (props: {
               disabled: props.isDisabled,
               selected: tile.selected,
             }}
+            {...ariaStateProps({
+              disabled: props.isDisabled,
+              selected: tile.selected,
+            })}
             {...interactionGuardProps}
             disabled={props.isDisabled}
             key={tile.key}
@@ -175,6 +183,11 @@ export const PlaybackVolumeRow = (props: {
     setDraftVolumeLevel(props.volumeLevel);
   }, [props.volumeLevel]);
 
+  const changeVolume = (nextVolumeLevel: number) => {
+    setDraftVolumeLevel(nextVolumeLevel);
+    props.onSetPlaybackVolume(nextVolumeLevel);
+  };
+
   return (
     <View style={styles.volumeRow}>
       <AppIcon
@@ -190,20 +203,27 @@ export const PlaybackVolumeRow = (props: {
         {...interactionGuardProps}
         style={[continuousInteractionGuardStyle, styles.volumeSlider]}
       >
-        <Slider
-          maximumTrackTintColor={appTheme.colors.divider}
-          maximumValue={1}
-          minimumTrackTintColor={appTheme.colors.accent}
-          minimumValue={0}
-          onValueChange={(nextVolumeLevel) => {
-            const resolvedVolumeLevel = getSliderNumber(nextVolumeLevel);
-
-            setDraftVolumeLevel(resolvedVolumeLevel);
-            props.onSetPlaybackVolume(resolvedVolumeLevel);
-          }}
-          thumbTintColor={appTheme.colors.text}
+        <AccessibleSlider
+          label="Playback volume"
+          maximum={1}
+          minimum={0}
+          onChange={changeVolume}
+          step={VOLUME_STEP}
           value={draftVolumeLevel}
-        />
+          valueText={`${Math.round(draftVolumeLevel * PERCENT)}%`}
+        >
+          <Slider
+            maximumTrackTintColor={appTheme.colors.divider}
+            maximumValue={1}
+            minimumTrackTintColor={appTheme.colors.accent}
+            minimumValue={0}
+            onValueChange={(nextVolumeLevel) => {
+              changeVolume(getSliderNumber(nextVolumeLevel));
+            }}
+            thumbTintColor={appTheme.colors.text}
+            value={draftVolumeLevel}
+          />
+        </AccessibleSlider>
       </View>
       <AppIcon
         color={appTheme.colors.textMuted}

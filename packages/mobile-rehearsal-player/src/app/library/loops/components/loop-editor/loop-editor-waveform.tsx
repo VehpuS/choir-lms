@@ -146,6 +146,11 @@ export const LoopEditorWaveform = ({
             boundary === 'start' ? range.startMs : range.endMs,
           ),
         }}
+        // react-native-web does not map `accessibilityValue`, so the value text
+        // is repeated as `aria-valuetext` for web screen readers.
+        aria-valuetext={formatLoopEditorScale(
+          boundary === 'start' ? range.startMs : range.endMs,
+        )}
         accessible
         onAccessibilityAction={(event: AccessibilityActionEvent) => {
           onNudgeBoundary(

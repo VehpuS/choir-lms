@@ -17,6 +17,7 @@ import {
   type PlaybackShapingSaveControls,
 } from './shaping-surface-model';
 import { shapingStyles as styles } from './styles';
+import { ariaStateProps } from '../../../components/aria-state';
 
 const INFO_ICON_SIZE = 18;
 
@@ -93,6 +94,7 @@ export const ShapingSurface = ({
             accessibilityLabel="Reset speed and pitch"
             accessibilityRole="button"
             accessibilityState={{ disabled: !canReset }}
+            {...ariaStateProps({ disabled: !canReset })}
             disabled={!canReset}
             onPress={controls.onReset}
             style={({ pressed }) => [

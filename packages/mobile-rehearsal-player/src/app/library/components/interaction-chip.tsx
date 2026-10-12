@@ -15,6 +15,7 @@ import {
   resolveInteractionChipPalette,
   type InteractionChipVariant,
 } from './interaction-chip-model';
+import { ariaStateProps } from '../../components/aria-state';
 
 type InteractionChipProps = {
   accessibilityHint?: string;
@@ -95,6 +96,7 @@ export const InteractionChip = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={{ disabled, selected: accessibilitySelected }}
+      {...ariaStateProps({ disabled, selected: accessibilitySelected })}
       disabled={disabled}
       onPress={onPress}
       onPressIn={onPressIn}

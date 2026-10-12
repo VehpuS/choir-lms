@@ -203,6 +203,9 @@ export const ExplorerListRow = ({
             selected: isSelected,
           },
     'aria-checked': resolvedSelection.ariaChecked,
+    ...(pressableRole === 'button' && isSelected !== undefined
+      ? { 'aria-pressed': isSelected }
+      : {}),
     onLongPress: disabled ? undefined : onLongPress,
   };
 

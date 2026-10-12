@@ -11,6 +11,7 @@ import {
   buttonInteractionGuardStyle,
   interactionGuardProps,
 } from './interaction-guard';
+import { ariaStateProps } from './aria-state';
 
 export type SurfaceIconButtonProps = {
   accessibilityLabel: string;
@@ -43,6 +44,10 @@ export const SurfaceIconButton = ({
         disabled,
         selected,
       }}
+      {...ariaStateProps({
+        disabled,
+        selected,
+      })}
       {...interactionGuardProps}
       disabled={disabled}
       onPress={onPress}

@@ -19,6 +19,7 @@ import type {
   SavedLoopCardFooter,
   SavedLoopCardPresentation,
 } from './saved-loop-list-card-model';
+import { ariaStateProps } from '../../../../components/aria-state';
 
 type SavedLoopListCardProps = {
   disabled: boolean;
@@ -119,6 +120,12 @@ export const SavedLoopListCard = ({
               ? { selected: resolvedSelection.isMarked }
               : undefined
           }
+          {...ariaStateProps(
+            selection?.isActive
+              ? { selected: resolvedSelection.isMarked }
+              : undefined,
+            resolvedSelection.role,
+          )}
           aria-checked={resolvedSelection.ariaChecked}
           {...interactionGuardProps}
           disabled={isBodyDisabled}

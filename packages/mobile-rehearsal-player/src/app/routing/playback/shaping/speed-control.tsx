@@ -2,6 +2,7 @@ import { Slider } from '@miblanchard/react-native-slider';
 import { useEffect, useRef, useState } from 'react';
 import { Text, View, type LayoutChangeEvent } from 'react-native';
 
+import { AccessibleSlider } from '../../../components/accessible-slider';
 import {
   continuousInteractionGuardStyle,
   interactionGuardProps,
@@ -20,6 +21,10 @@ import {
   SPEED_THUMB_SIZE,
   shapingStyles as styles,
 } from './styles';
+
+// The slider itself moves in hundredths; one arrow key or screen-reader
+// increment moves a more useful twentieth.
+const KEYBOARD_STEP = 0.05;
 
 type SpeedControlProps = {
   onSetSpeedMultiplier: (multiplier: number) => void;
@@ -47,6 +52,11 @@ export const SpeedControl = ({
     }
   }, [speedMultiplier]);
 
+  const changeSpeed = (next: number) => {
+    setDraft(next);
+    onSetSpeedMultiplier(next);
+  };
+
   const onLayout = (event: LayoutChangeEvent) => {
     setTrackWidth(event.nativeEvent.layout.width);
   };
@@ -72,30 +82,37 @@ export const SpeedControl = ({
         onLayout={onLayout}
         style={[continuousInteractionGuardStyle, styles.sliderFrame]}
       >
-        <Slider
-          maximumTrackTintColor={appTheme.colors.divider}
-          maximumValue={model.maximum}
-          minimumTrackTintColor={appTheme.colors.accent}
-          minimumValue={model.minimum}
-          onValueChange={(value) => {
-            const next = resolveSpeedSliderValue(value);
-
-            setDraft(next);
-            onSetSpeedMultiplier(next);
-          }}
-          onSlidingComplete={() => {
-            isDraggingRef.current = false;
-            setDraft(latestSpeedRef.current);
-          }}
-          onSlidingStart={() => {
-            isDraggingRef.current = true;
-          }}
-          step={model.step}
-          thumbStyle={styles.thumbStyle}
-          thumbTintColor={appTheme.colors.text}
-          trackStyle={styles.trackStyle}
+        <AccessibleSlider
+          label="Speed"
+          maximum={model.maximum}
+          minimum={model.minimum}
+          onChange={changeSpeed}
+          step={KEYBOARD_STEP}
           value={draft}
-        />
+          valueText={getSpeedControlModel(draft).readout}
+        >
+          <Slider
+            maximumTrackTintColor={appTheme.colors.divider}
+            maximumValue={model.maximum}
+            minimumTrackTintColor={appTheme.colors.accent}
+            minimumValue={model.minimum}
+            onValueChange={(value) => {
+              changeSpeed(resolveSpeedSliderValue(value));
+            }}
+            onSlidingComplete={() => {
+              isDraggingRef.current = false;
+              setDraft(latestSpeedRef.current);
+            }}
+            onSlidingStart={() => {
+              isDraggingRef.current = true;
+            }}
+            step={model.step}
+            thumbStyle={styles.thumbStyle}
+            thumbTintColor={appTheme.colors.text}
+            trackStyle={styles.trackStyle}
+            value={draft}
+          />
+        </AccessibleSlider>
         {trackWidth > 0 ? (
           <View
             pointerEvents="none"

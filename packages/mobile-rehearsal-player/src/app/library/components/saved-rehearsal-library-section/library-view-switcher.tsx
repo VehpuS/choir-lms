@@ -137,6 +137,7 @@ export const SavedRehearsalLibraryViewSwitcher = ({
             >
               <InteractionChip
                 accessibilityLabel={`Show ${option.label} library view`}
+                accessibilitySelected={selectedView === option.value}
                 disabled={isViewSwitcherLocked}
                 label={option.label}
                 onPress={() => {

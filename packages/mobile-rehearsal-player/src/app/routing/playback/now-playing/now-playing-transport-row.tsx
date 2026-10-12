@@ -12,6 +12,7 @@ import {
 } from './now-playing-model';
 import { nowPlayingStyles as styles } from './styles';
 import { getPlaybackToggleControlModel } from '../playback-toggle-control-model';
+import { ariaStateProps } from '../../../components/aria-state';
 
 export type NowPlayingTransportRowProps = {
   canSeekActivePlayback: boolean;
@@ -55,6 +56,10 @@ const TransportButton = ({
         disabled: button.disabled,
         selected: button.selected,
       }}
+      {...ariaStateProps({
+        disabled: button.disabled,
+        selected: button.selected,
+      })}
       {...interactionGuardProps}
       disabled={button.disabled}
       onPress={button.onPress}

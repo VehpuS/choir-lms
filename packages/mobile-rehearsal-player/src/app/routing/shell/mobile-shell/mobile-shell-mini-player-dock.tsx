@@ -14,6 +14,7 @@ import {
 } from '../shell-model';
 import { ShellTabBar } from '../shell-tab-bar';
 import { appTheme } from '../../../utils/theme';
+import { ariaStateProps } from '../../../components/aria-state';
 
 const MINI_PLAYER_TOGGLE_ICON_SIZE = 20;
 
@@ -96,6 +97,10 @@ export const MobileShellMiniPlayerDock = ({
               disabled: isPlaybackToggleDisabled,
               selected: playbackToggleControl?.selected ?? false,
             }}
+            {...ariaStateProps({
+              disabled: isPlaybackToggleDisabled,
+              selected: playbackToggleControl?.selected ?? false,
+            })}
             disabled={isPlaybackToggleDisabled}
             onPress={onTogglePlayback}
             style={({ pressed }) => [

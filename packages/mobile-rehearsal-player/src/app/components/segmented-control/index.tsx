@@ -17,6 +17,7 @@ import {
   type SegmentedControlOption,
   type SegmentedControlShape,
 } from './model';
+import { ariaStateProps } from '../aria-state';
 
 type SegmentedControlProps<Value extends string> = {
   accessibilityLabel?: string;
@@ -57,6 +58,7 @@ export const SegmentedControl = <Value extends string>({
             accessibilityLabel={segment.accessibilityLabel}
             accessibilityRole="radio"
             accessibilityState={{ selected: segment.isSelected }}
+            {...ariaStateProps({ selected: segment.isSelected }, 'radio')}
             key={segment.value}
             onPress={() => {
               onSelect(segment.value);

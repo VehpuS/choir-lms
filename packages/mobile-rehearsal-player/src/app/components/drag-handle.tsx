@@ -2,6 +2,7 @@ import { StyleSheet, View, type GestureResponderHandlers } from 'react-native';
 
 import { AppIcon } from './app-icon';
 import { appTheme } from '../utils/theme';
+import { ariaStateProps } from './aria-state';
 
 const DRAG_HANDLE_ICON_SIZE = 18;
 
@@ -25,6 +26,7 @@ export const DragHandle = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="adjustable"
       accessibilityState={{ disabled: !canDrag }}
+      {...ariaStateProps({ disabled: !canDrag })}
       style={[styles.handle, !canDrag ? styles.handleDisabled : null]}
       {...(canDrag ? panHandlers : {})}
     >

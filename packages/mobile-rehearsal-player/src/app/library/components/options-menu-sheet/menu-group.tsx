@@ -13,6 +13,7 @@ import {
   resolveMenuRowPalette,
   type MenuRowTone,
 } from './menu-group-model';
+import { ariaStateProps } from '../../../components/aria-state';
 
 type MenuGroupProps = {
   children: ReactNode;
@@ -60,6 +61,7 @@ export const MenuRow = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
+      {...ariaStateProps({ disabled })}
       {...interactionGuardProps}
       disabled={disabled}
       onPress={onPress}

@@ -35,6 +35,7 @@ export const DriveLibraryRootSelector = ({
         return (
           <InteractionChip
             accessibilityLabel={`Select ${option.label}`}
+            accessibilitySelected={isSelected}
             key={option.rootKind}
             onPress={() => {
               onSelectRoot(option.rootKind);

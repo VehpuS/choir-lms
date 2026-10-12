@@ -23,6 +23,7 @@ import {
 import { SelectEntryButton } from '../../selection/select-entry-button';
 import { SelectionBar } from '../../selection/selection-bar';
 import { usePinnedBulkActionBar } from '../../selection/use-pinned-bulk-action-bar';
+import { ariaStateProps } from '../../../components/aria-state';
 
 type DriveDiscoveryPanelProps = {
   controller: ReturnType<typeof useRehearsalLibraryController>;
@@ -183,6 +184,7 @@ export const DriveDiscoveryPanel = ({
           accessibilityLabel="Loading"
           accessibilityLiveRegion="polite"
           accessibilityState={{ busy: true }}
+          {...ariaStateProps({ busy: true })}
         >
           <DriveExplorerLoadingRows />
         </View>

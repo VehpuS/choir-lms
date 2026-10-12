@@ -8,6 +8,7 @@ import {
 import { OutlinedActionButton } from '../../../../components/outlined-action-button';
 import { appTheme } from '../../../../utils/theme';
 import { loopEditorStyles as styles } from './styles';
+import { ariaStateProps } from '../../../../components/aria-state';
 
 const RING_GLYPH_SIZE = 30;
 const SEEK_GLYPH_SIZE = 26;
@@ -41,6 +42,7 @@ const SeekButton = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
+      {...ariaStateProps({ disabled })}
       {...interactionGuardProps}
       disabled={disabled}
       onPress={onPress}
@@ -88,6 +90,7 @@ export const LoopEditorTransport = ({
           accessibilityLabel={previewActionLabel}
           accessibilityRole="button"
           accessibilityState={{ disabled: previewDisabled }}
+          {...ariaStateProps({ disabled: previewDisabled })}
           {...interactionGuardProps}
           disabled={previewDisabled}
           onPress={onTogglePreview}

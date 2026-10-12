@@ -8,6 +8,7 @@ import {
   continuousInteractionGuardStyle,
   interactionGuardProps,
 } from '../interaction-guard';
+import { AccessibleSlider } from '../accessible-slider';
 
 import { clampQueuePosition, resolveQueueMoveTargetIndex } from './model';
 
@@ -88,21 +89,11 @@ export const QueueMovePositionDialog = ({
             {...interactionGuardProps}
             style={continuousInteractionGuardStyle}
           >
-            <Slider
-              animateTransitions={false}
-              maximumTrackTintColor={appTheme.colors.divider}
-              maximumValue={itemCount}
-              minimumTrackTintColor={appTheme.colors.accent}
-              minimumValue={1}
-              onSlidingComplete={(nextValue) => {
-                setDraftPosition(
-                  resolveQueueMoveTargetIndex({
-                    itemCount,
-                    sliderValue: nextValue,
-                  }) + 1,
-                );
-              }}
-              onValueChange={(nextValue) => {
+            <AccessibleSlider
+              label="Move to position"
+              maximum={itemCount}
+              minimum={1}
+              onChange={(nextValue) => {
                 setDraftPosition(
                   resolveQueueMoveTargetIndex({
                     itemCount,
@@ -111,11 +102,38 @@ export const QueueMovePositionDialog = ({
                 );
               }}
               step={1}
-              thumbTintColor={appTheme.colors.accent}
-              thumbTouchSize={{ width: 36, height: 36 }}
-              trackClickable
               value={draftPosition}
-            />
+              valueText={`${draftPosition} of ${itemCount}`}
+            >
+              <Slider
+                animateTransitions={false}
+                maximumTrackTintColor={appTheme.colors.divider}
+                maximumValue={itemCount}
+                minimumTrackTintColor={appTheme.colors.accent}
+                minimumValue={1}
+                onSlidingComplete={(nextValue) => {
+                  setDraftPosition(
+                    resolveQueueMoveTargetIndex({
+                      itemCount,
+                      sliderValue: nextValue,
+                    }) + 1,
+                  );
+                }}
+                onValueChange={(nextValue) => {
+                  setDraftPosition(
+                    resolveQueueMoveTargetIndex({
+                      itemCount,
+                      sliderValue: nextValue,
+                    }) + 1,
+                  );
+                }}
+                step={1}
+                thumbTintColor={appTheme.colors.accent}
+                thumbTouchSize={{ width: 36, height: 36 }}
+                trackClickable
+                value={draftPosition}
+              />
+            </AccessibleSlider>
           </View>
 
           <View style={styles.scaleRow}>
