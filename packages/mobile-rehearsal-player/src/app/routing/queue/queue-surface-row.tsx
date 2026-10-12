@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 
 import { DragHandle } from '../../components/drag-handle';
 import { EqualizerMark } from '../../components/equalizer-mark';
@@ -6,6 +6,7 @@ import { OverflowMenuTrigger } from '../../components/overflow-menu-trigger';
 import { RowMetaLine } from '../../components/row-meta-line';
 import { ExplorerListRow } from '../../library/components/explorer';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
+import { appTheme } from '../../utils/theme';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
 import { getQueueRowPresentation } from './queue-surface-row-model';
 import { queueStyles as styles } from './styles';
@@ -90,8 +91,16 @@ export const QueueSurfaceRow = ({
         }
         active={item.isCurrent}
         disabled={isPlaybackToggleDisabled}
+        // Only the copy dims while the item loads; the drag handle and menu
+        // stay usable, so they stay at full strength (task 8.36).
+        disabledKeepsControls
         leadingIcon={
-          item.isCurrent ? (
+          item.isCurrent && isPlaybackLoading ? (
+            <ActivityIndicator
+              color={appTheme.colors.accentText}
+              size="small"
+            />
+          ) : item.isCurrent ? (
             <EqualizerMark style={styles.equalizerSlot} />
           ) : (
             <Text style={styles.positionNumber}>{currentIndex + 1}</Text>

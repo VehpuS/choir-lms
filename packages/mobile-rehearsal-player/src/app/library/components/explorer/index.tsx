@@ -33,6 +33,8 @@ type ExplorerListRowProps = {
   actions?: ReactNode;
   active?: boolean;
   disabled?: boolean;
+  /** Keep the controls at full strength while the row cannot be pressed. */
+  disabledKeepsControls?: boolean;
   leadingIcon: ReactNode;
   message?: ReactNode;
   metadata?: ReactNode;
@@ -171,6 +173,7 @@ export const ExplorerListRow = ({
   actions,
   active = false,
   disabled = false,
+  disabledKeepsControls = false,
   leadingIcon,
   message,
   metadata,
@@ -222,7 +225,12 @@ export const ExplorerListRow = ({
           leadingIcon
         )}
       </View>
-      <View style={styles.rowCopy}>
+      <View
+        style={[
+          styles.rowCopy,
+          disabled && disabledKeepsControls ? styles.rowDisabled : undefined,
+        ]}
+      >
         {title}
         {metadata}
         {message}
@@ -233,7 +241,7 @@ export const ExplorerListRow = ({
 
   const rowSurfaceStyles = [
     styles.row,
-    disabled ? styles.rowDisabled : undefined,
+    disabled && !disabledKeepsControls ? styles.rowDisabled : undefined,
     style,
   ];
   // Active rows are marked by a short accent line, never a background fill.
