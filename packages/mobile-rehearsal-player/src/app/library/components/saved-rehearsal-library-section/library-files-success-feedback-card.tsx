@@ -23,62 +23,70 @@ export const LibraryFilesSuccessFeedbackCard = ({
   onOpenFolder,
 }: LibraryFilesSuccessFeedbackCardProps) => {
   return (
-    <FeedbackCard
-      footer={
-        <View style={styles.actions}>
-          {feedback.action ? (
-            <Pressable
-              accessibilityRole="button"
-              onBlur={onBlur}
-              onFocus={onFocus}
-              onPress={() => {
-                onOpenFolder(feedback.action?.folderId ?? '');
-              }}
-              style={styles.primaryAction}
-            >
-              <Text style={styles.primaryActionLabel}>
-                {feedback.action.label}
-              </Text>
-            </Pressable>
-          ) : null}
-          {feedback.undo ? (
-            <Pressable
-              accessibilityRole="button"
-              onBlur={onBlur}
-              onFocus={onFocus}
-              onPress={() => {
-                const { run } = feedback.undo ?? {};
+    // The card sits over the explorer and its success tint is translucent, so
+    // an opaque base underneath stops the rows behind it showing through.
+    <View style={styles.opaqueBase}>
+      <FeedbackCard
+        footer={
+          <View style={styles.actions}>
+            {feedback.action ? (
+              <Pressable
+                accessibilityRole="button"
+                onBlur={onBlur}
+                onFocus={onFocus}
+                onPress={() => {
+                  onOpenFolder(feedback.action?.folderId ?? '');
+                }}
+                style={styles.primaryAction}
+              >
+                <Text style={styles.primaryActionLabel}>
+                  {feedback.action.label}
+                </Text>
+              </Pressable>
+            ) : null}
+            {feedback.undo ? (
+              <Pressable
+                accessibilityRole="button"
+                onBlur={onBlur}
+                onFocus={onFocus}
+                onPress={() => {
+                  const { run } = feedback.undo ?? {};
 
-                onDismiss();
-                void run?.();
-              }}
+                  onDismiss();
+                  void run?.();
+                }}
+                style={styles.secondaryAction}
+              >
+                <Text style={styles.secondaryActionLabel}>
+                  {feedback.undo.label}
+                </Text>
+              </Pressable>
+            ) : null}
+            <Pressable
+              accessibilityRole="button"
+              onBlur={onBlur}
+              onFocus={onFocus}
+              onPress={onDismiss}
               style={styles.secondaryAction}
             >
-              <Text style={styles.secondaryActionLabel}>
-                {feedback.undo.label}
-              </Text>
+              <Text style={styles.secondaryActionLabel}>Dismiss</Text>
             </Pressable>
-          ) : null}
-          <Pressable
-            accessibilityRole="button"
-            onBlur={onBlur}
-            onFocus={onFocus}
-            onPress={onDismiss}
-            style={styles.secondaryAction}
-          >
-            <Text style={styles.secondaryActionLabel}>Dismiss</Text>
-          </Pressable>
-        </View>
-      }
-      message={feedback.message}
-      size="compact"
-      title={feedback.title}
-      tone="ready"
-    />
+          </View>
+        }
+        message={feedback.message}
+        size="compact"
+        title={feedback.title}
+        tone="ready"
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  opaqueBase: {
+    backgroundColor: appTheme.colors.bg,
+    borderRadius: appTheme.radius.md,
+  },
   actions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
