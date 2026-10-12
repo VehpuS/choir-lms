@@ -82,6 +82,15 @@ export const isCoveredBySelectedFolder = (
   selectedFolderIds: ReadonlySet<string>,
 ) => path?.some((segment) => selectedFolderIds.has(segment.id)) ?? false;
 
+// The selected folder that covers a row, by name, so the row can say why it
+// cannot be picked on its own (task 8.67). The outermost one wins, since that
+// is the folder the basket holds.
+export const getCoveringFolderName = (
+  path: readonly DrivePathSegment[] | undefined,
+  selectedFolderIds: ReadonlySet<string>,
+): string | undefined =>
+  path?.find((segment) => selectedFolderIds.has(segment.id))?.name;
+
 // Keys of selected items that sit inside another selected folder. Selecting a
 // folder takes over what was selected beneath it, so the basket (and its
 // count) holds the folder alone.
@@ -97,17 +106,15 @@ export const getKeysCoveredByBasketFolders = (
     .map(({ id }) => id);
 };
 
-export const getBrowseCoveredRowIds = (options: {
+/** The name of the selected folder covering the folder being browsed, if any. */
+export const getBrowseCoveringFolderName = (options: {
   navigationStack: readonly DriveBrowseLocation[];
-  rowIds: readonly string[];
   selectedFolderIds: ReadonlySet<string>;
-}): Set<string> =>
-  isCoveredBySelectedFolder(
+}): string | undefined =>
+  getCoveringFolderName(
     getFolderPath(options.navigationStack),
     options.selectedFolderIds,
-  )
-    ? new Set(options.rowIds)
-    : new Set();
+  );
 
 // The basket view: selected items grouped by root, then by folder path, with
 // the path as the row's context line.

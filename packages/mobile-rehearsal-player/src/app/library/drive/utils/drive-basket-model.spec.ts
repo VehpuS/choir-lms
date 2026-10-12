@@ -11,7 +11,8 @@ import {
   attachBrowsePath,
   createDriveBrowseContextKey,
   createDriveBrowseResults,
-  getBrowseCoveredRowIds,
+  getBrowseCoveringFolderName,
+  getCoveringFolderName,
   getKeysCoveredByBasketFolders,
   getSelectedFolderIds,
   groupDriveBasket,
@@ -101,27 +102,39 @@ describe('drive basket model', () => {
     );
   });
 
-  it('marks every row of a folder opened inside a selected folder as covered', () => {
+  it('names the selected folder behind a folder opened inside it', () => {
     const selectedFolderIds = getSelectedFolderIds([folder('Advent')]);
-    const stack = [root('my-drive'), folderLocation('Advent')];
 
-    assert.deepEqual(
-      [
-        ...getBrowseCoveredRowIds({
-          navigationStack: stack,
-          rowIds: ['a', 'b'],
-          selectedFolderIds,
-        }),
-      ],
-      ['a', 'b'],
+    assert.equal(
+      getBrowseCoveringFolderName({
+        navigationStack: [root('my-drive'), folderLocation('Advent')],
+        selectedFolderIds,
+      }),
+      'Advent',
     );
     assert.equal(
-      getBrowseCoveredRowIds({
+      getBrowseCoveringFolderName({
         navigationStack: [root('my-drive')],
-        rowIds: ['a'],
         selectedFolderIds,
-      }).size,
-      0,
+      }),
+      undefined,
+    );
+  });
+
+  it('names the outermost selected folder on a result path', () => {
+    const path = [
+      { id: 'choir', name: 'Choir' },
+      { id: 'advent', name: 'Advent' },
+    ];
+
+    assert.equal(
+      getCoveringFolderName(path, new Set(['advent', 'choir'])),
+      'Choir',
+    );
+    assert.equal(getCoveringFolderName(path, new Set(['other'])), undefined);
+    assert.equal(
+      getCoveringFolderName(undefined, new Set(['advent'])),
+      undefined,
     );
   });
 

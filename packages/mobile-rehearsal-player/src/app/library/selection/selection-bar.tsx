@@ -1,4 +1,10 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { OutlinedActionButton } from '../../components/outlined-action-button';
 import { appTheme } from '../../utils/theme';
@@ -29,6 +35,11 @@ type SelectionBarProps = {
   busyLabel?: string;
   onCancel: () => void;
   /**
+   * Makes the count a button that opens what is selected (the Add basket's
+   * review, task 8.68). Without it the count is plain text.
+   */
+  onOpenSelection?: () => void;
+  /**
    * The shared select-all toggle (`Select all` / `Deselect all`). Every
    * surface passes this rather than its own secondary action so the wording
    * and position stay identical.
@@ -46,6 +57,7 @@ export const SelectionBar = ({
   helperText,
   isBusy = false,
   onCancel,
+  onOpenSelection,
   secondaryAction,
   selectAll,
   selectedCount,
@@ -53,13 +65,30 @@ export const SelectionBar = ({
   return (
     <View style={styles.container}>
       <View style={styles.bar}>
-        <Text
-          accessibilityLiveRegion="polite"
-          numberOfLines={1}
-          style={styles.count}
-        >
-          {getSelectionCountLabel(selectedCount)}
-        </Text>
+        {onOpenSelection && selectedCount > 0 ? (
+          <Pressable
+            accessibilityHint="Opens what is selected"
+            accessibilityRole="button"
+            onPress={onOpenSelection}
+            style={styles.countButton}
+          >
+            <Text
+              accessibilityLiveRegion="polite"
+              numberOfLines={1}
+              style={[styles.count, styles.countLink]}
+            >
+              {getSelectionCountLabel(selectedCount)}
+            </Text>
+          </Pressable>
+        ) : (
+          <Text
+            accessibilityLiveRegion="polite"
+            numberOfLines={1}
+            style={styles.count}
+          >
+            {getSelectionCountLabel(selectedCount)}
+          </Text>
+        )}
         {selectAll ? (
           <OutlinedActionButton
             disabled={selectAll.isDisabled}
@@ -103,6 +132,16 @@ const styles = StyleSheet.create({
   },
   container: {
     gap: appTheme.space.xs,
+  },
+  countButton: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: appTheme.space.touchTarget,
+    justifyContent: 'center',
+  },
+  countLink: {
+    color: appTheme.colors.accentText,
+    textDecorationLine: 'underline',
   },
   count: {
     flex: 1,

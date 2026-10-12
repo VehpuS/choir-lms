@@ -26,6 +26,8 @@ export type DriveExplorerListSelection = {
    * does nothing, since the folder already brings them into the import.
    */
   coveredIds?: ReadonlySet<string>;
+  /** The selected folder behind each covered row, named in its meta line. */
+  coveringFolderNames?: ReadonlyMap<string, string>;
   isActive: boolean;
   /** Folder rows with some of their contents selected (not selected themselves). */
   partialIds?: ReadonlySet<string>;
@@ -73,6 +75,12 @@ export const DriveExplorerList = ({
     <ExplorerListSurface>
       {rows.map((row) => {
         const rowSelection = getRowSelection(row, selection);
+        const coveringFolderName = selection?.coveringFolderNames?.get(row.key);
+        const metadataLabels =
+          coveringFolderName !== undefined &&
+          !selection?.selectedIds.has(row.key)
+            ? [`Included with ${coveringFolderName}`, ...row.metadataLabels]
+            : row.metadataLabels;
 
         if (row.kind === 'folder') {
           return (
@@ -80,7 +88,7 @@ export const DriveExplorerList = ({
               folder={row.folder}
               highlightQuery={row.highlightQuery}
               key={row.key}
-              metadataLabels={row.metadataLabels}
+              metadataLabels={metadataLabels}
               onOpenFolder={onOpenFolder}
               selection={rowSelection}
             />
@@ -93,7 +101,7 @@ export const DriveExplorerList = ({
             getMessage={getMessage}
             highlightQuery={row.highlightQuery ?? highlightQuery}
             key={row.key}
-            metadataLabels={row.metadataLabels}
+            metadataLabels={metadataLabels}
             selection={rowSelection}
             source={row.source}
           />

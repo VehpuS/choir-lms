@@ -170,6 +170,7 @@ export const DriveDiscoveryPanel = ({
           }
           isBusy={selection.isSelectingAll}
           onCancel={selection.cancel}
+          onOpenSelection={selection.continueToReview}
           selectAll={{
             // Stays pressable while gathering so `Deselect all` can stop it.
             isAllSelected: selection.isAllSelected,

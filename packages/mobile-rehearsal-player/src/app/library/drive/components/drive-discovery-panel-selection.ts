@@ -5,9 +5,9 @@ import type {
 
 import {
   attachBrowsePath,
-  getBrowseCoveredRowIds,
+  getBrowseCoveringFolderName,
+  getCoveringFolderName,
   getSelectedFolderIds,
-  isCoveredBySelectedFolder,
 } from '../utils/drive-basket-model';
 import {
   collectAncestorIds,
@@ -37,35 +37,46 @@ type BuildDriveRowSelectionOptions = {
 const getRowPath = (row: DriveDiscoveryExplorerRow) =>
   row.kind === 'folder' ? row.folder.path : row.source.path;
 
-// Rows inside a selected folder: in search each row carries its path; in
-// browse every row shares the folder being browsed.
-const getCoveredRowIds = ({
+// Rows inside a selected folder, each with that folder's name: in search each
+// row carries its path; in browse every row shares the folder being browsed.
+const getCoveringFolderNames = ({
   isSearchMode,
   navigationStack,
   rows,
   selection,
-}: BuildDriveRowSelectionOptions): ReadonlySet<string> => {
+}: BuildDriveRowSelectionOptions): ReadonlyMap<string, string> => {
   const selectedFolderIds = getSelectedFolderIds(selection.selectedResults);
+  const names = new Map<string, string>();
 
   if (selectedFolderIds.size === 0) {
-    return new Set();
+    return names;
   }
 
   if (!isSearchMode) {
-    return getBrowseCoveredRowIds({
+    const folderName = getBrowseCoveringFolderName({
       navigationStack,
-      rowIds: rows.map(({ key }) => key),
       selectedFolderIds,
     });
+
+    if (folderName !== undefined) {
+      rows.forEach(({ key }) => names.set(key, folderName));
+    }
+
+    return names;
   }
 
-  return new Set(
-    rows
-      .filter((row) =>
-        isCoveredBySelectedFolder(getRowPath(row), selectedFolderIds),
-      )
-      .map(({ key }) => key),
-  );
+  for (const row of rows) {
+    const folderName = getCoveringFolderName(
+      getRowPath(row),
+      selectedFolderIds,
+    );
+
+    if (folderName !== undefined) {
+      names.set(row.key, folderName);
+    }
+  }
+
+  return names;
 };
 
 // Search results already carry their path; a browse row is picked from the
@@ -80,7 +91,8 @@ export const buildDriveRowSelection = (
     return isSearchMode ? result : attachBrowsePath(result, navigationStack);
   };
 
-  const coveredIds = getCoveredRowIds(options);
+  const coveringFolderNames = getCoveringFolderNames(options);
+  const coveredIds = new Set(coveringFolderNames.keys());
   // Folders whose subtree holds a selected item, from each item's path ids.
   const partialIds = getPartialRowIds({
     ancestorIds: collectAncestorIds(
@@ -95,6 +107,7 @@ export const buildDriveRowSelection = (
 
   return {
     coveredIds,
+    coveringFolderNames,
     isActive: selection.isActive,
     onEnter: (row) => {
       selection.enter();
