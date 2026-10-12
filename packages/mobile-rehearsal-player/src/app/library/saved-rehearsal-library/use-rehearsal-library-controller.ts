@@ -70,11 +70,7 @@ export const useRehearsalLibraryController = ({
     savedSources: savedLibrary.savedSources,
   });
   const savedLoops = useSavedLoops();
-  const sourceLyrics = useSourceLyrics({
-    canMutateLibrary: savedLibrary.canMutateLibrary,
-    refreshSources: savedLibrary.refreshSources,
-    savedSources: savedLibrary.savedSources,
-  });
+  const sourceLyrics = useSourceLyrics(savedLibrary);
   const playlists = useSavedPlaylists();
   const savedLibrarySources = useSavedLibrarySourcesInView({
     authState,

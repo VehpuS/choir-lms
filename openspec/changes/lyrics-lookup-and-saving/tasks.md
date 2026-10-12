@@ -31,7 +31,7 @@
 
 ## 6. Validation and documentation
 
-- [ ] 6.1 Run `typecheck`, `lint`, `test`, and `build` for every touched project, format only touched files, and keep touched files under 300 lines or extract helpers.
+- [x] 6.1 Run `typecheck`, `lint`, `test`, and `build` for every touched project, format only touched files, and keep touched files under 300 lines or extract helpers. **Done (2026-10-12):** `lint`, `test`, `typecheck`, and `build` pass for `audio-library-models`, `audio-library-runtime`, and `mobile-rehearsal-player` with no lint warnings; touched files are Prettier-clean.
 - [x] 6.2 Add a README note on lyrics (what is stored, where lookup comes from, what is sent, and that text stays on the device) and update `docs/` if the playback screen module map changes. **Done:** README `Lyrics` section. `docs/` needs no change: the playback module map is unchanged (the section, peek, and reading mode are new UI under `library/lyrics/` and `routing/playback/now-playing/`).
 
 ## 7. Follow-ups (not scheduled)

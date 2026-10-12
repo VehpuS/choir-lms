@@ -322,14 +322,7 @@ export const AppRouter = () => {
       />
       <LyricsHosts
         library={libraryController.savedLibrary}
-        playback={{
-          isPlaybackToggleDisabled:
-            playback.activePlayableItem === null || playback.isPreparing,
-          isPlaying: playback.playbackState === 'playing',
-          onTogglePlayback: () => {
-            void playback.toggleActivePlayback();
-          },
-        }}
+        playback={playback}
       />
     </SavedItemAvailabilityProvider>
   );
