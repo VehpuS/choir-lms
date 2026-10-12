@@ -128,13 +128,11 @@ export const AppRouter = () => {
 
     // A loop editor preview is not something to come back to until it is saved
     // as a loop (task 8.95).
-    if (
-      !isRecentRehearsalHistoryReady ||
-      !activePlayableItem ||
-      isLoopPreviewItem(activePlayableItem)
-    ) {
+    if (!isRecentRehearsalHistoryReady || !activePlayableItem) {
       return;
     }
+
+    if (isLoopPreviewItem(activePlayableItem)) return;
 
     setRecentRehearsalHistory((currentHistory) => {
       const nextHistory = appendRecentRehearsalItem(
