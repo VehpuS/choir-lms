@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import type {
   NamedLoop,
   PlayableItem,
@@ -9,7 +7,6 @@ import type {
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
-import type { LibraryFilesIssue } from '../../saved-rehearsal-library/library-files-operation-helpers';
 import type { useRehearsalLibraryController } from '../../saved-rehearsal-library/use-rehearsal-library-controller';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import { FeedbackCard } from '../feedback-card';
@@ -18,55 +15,12 @@ import { resolveFilesRowMenuActions } from './files-row-actions';
 import type { FileLinkLibraryFilesRow } from './files-row-actions-model';
 import { createTrackRemoveFromLibraryConfirmation } from './library-files-delete-copy';
 import { requestLibraryFilesDeleteConfirmation } from './library-files-delete-flow';
-import {
-  buildLibraryFilesDestinationPicker,
-  type PendingLibraryFilesDestinationAction,
-} from './library-files-destination-actions';
+import { buildLibraryFilesDestinationPicker } from './library-files-destination-actions';
+import { getRowSource, getTrackRowSource } from './files-row-identity';
+import { useLibraryFilesPlacementFlow } from './use-library-files-placement-flow';
 import { LibraryFilesRenameDialog } from './library-files-rename-dialog';
-import {
-  createLibraryFilesDestinationSuccessFeedback,
-  createLibraryFilesRenameSuccessFeedback,
-  type LibraryFilesSuccessFeedback,
-} from './library-files-success-feedback';
+import { type LibraryFilesSuccessFeedback } from './library-files-success-feedback';
 import { useLibraryFilesConfirmationFlow } from '../../selection/use-library-files-confirmation-flow';
-
-const isSameRow = (left: LibraryFilesRow, right: LibraryFilesRow) => {
-  if (left.kind !== right.kind) {
-    return false;
-  }
-
-  if (left.kind === 'folder' && right.kind === 'folder') {
-    return left.folder.id === right.folder.id;
-  }
-
-  if (left.kind !== 'folder' && right.kind !== 'folder') {
-    return left.fileLink.id === right.fileLink.id;
-  }
-
-  return false;
-};
-
-const applySuggestedNameToRow = (row: LibraryFilesRow, nextName: string) => {
-  if (row.kind === 'folder') {
-    return {
-      ...row,
-      folder: {
-        ...row.folder,
-        name: nextName,
-      },
-      label: nextName,
-    };
-  }
-
-  return {
-    ...row,
-    fileLink: {
-      ...row.fileLink,
-      visibleName: nextName,
-    },
-    label: nextName,
-  };
-};
 
 type UseLibraryFilesRowActionFlowsOptions = {
   authorization?: DriveSessionMenuController;
@@ -132,146 +86,24 @@ export const useLibraryFilesRowActionFlows = ({
   onViewTrackLoops,
   originalLocationActions,
 }: UseLibraryFilesRowActionFlowsOptions) => {
-  const [isFileActionMutating, setIsFileActionMutating] = useState(false);
-  const [pendingDestinationAction, setPendingDestinationAction] =
-    useState<PendingLibraryFilesDestinationAction | null>(null);
-  const [
-    currentDestinationPickerFolderId,
-    setCurrentDestinationPickerFolderId,
-  ] = useState<string | null>(null);
-  const [pendingRenameRow, setPendingRenameRow] =
-    useState<LibraryFilesRow | null>(null);
-  const [destinationIssue, setDestinationIssue] =
-    useState<LibraryFilesIssue | null>(null);
-  const [renameDraftName, setRenameDraftName] = useState('');
-  const [renameIssue, setRenameIssue] = useState<LibraryFilesIssue | null>(
-    null,
-  );
   const confirmationFlow = useLibraryFilesConfirmationFlow();
-  const getFolderName = (folderId: string) => {
-    return files.destinationFolders.find((destination) => {
-      return destination.folder.id === folderId;
-    })?.folder.name;
-  };
-
-  const clearDestinationIssue = () => {
-    setDestinationIssue(null);
-    files.clearIssue();
-  };
-
-  const clearRenameIssue = () => {
-    setRenameIssue(null);
-    files.clearIssue();
-  };
-
-  const handleSubmitDestination = (folderId: string, visibleName?: string) => {
-    if (!pendingDestinationAction) {
-      return;
-    }
-
-    clearDestinationIssue();
-    setIsFileActionMutating(true);
-
-    void (async () => {
-      const row = pendingDestinationAction.row;
-      const result =
-        pendingDestinationAction.kind === 'copy' && row.kind !== 'folder'
-          ? await files.createFileLinkCopy({
-              destinationFolderId: folderId,
-              fileLink: row.fileLink,
-              sourceName: row.label,
-              visibleName,
-            })
-          : row.kind === 'folder'
-            ? await files.moveFolder({
-                destinationFolderId: folderId,
-                folder: row.folder,
-              })
-            : await files.moveFileLink({
-                destinationFolderId: folderId,
-                fileLink: row.fileLink,
-              });
-
-      setIsFileActionMutating(false);
-
-      if (result.didComplete) {
-        const destinationFolderName =
-          getFolderName(folderId) ?? 'the selected folder';
-
-        setPendingDestinationAction(null);
-        setCurrentDestinationPickerFolderId(null);
-        clearDestinationIssue();
-        files.openFolder(folderId);
-        onShowSuccessFeedback?.(
-          createLibraryFilesDestinationSuccessFeedback({
-            destinationFolderName,
-            kind: pendingDestinationAction.kind,
-            row,
-          }),
-        );
-
-        return;
-      }
-
-      setDestinationIssue(result.issue);
-      files.clearIssue();
-    })();
-  };
-
-  const handleSubmitRename = (suggestedName?: string) => {
-    if (!pendingRenameRow) {
-      return;
-    }
-
-    const nextDraftName = suggestedName ?? renameDraftName;
-
-    clearRenameIssue();
-    setIsFileActionMutating(true);
-
-    void (async () => {
-      const result =
-        pendingRenameRow.kind === 'folder'
-          ? await files.renameFolder({
-              folder: pendingRenameRow.folder,
-              name: nextDraftName,
-            })
-          : await files.renameFileLink({
-              fileLink: pendingRenameRow.fileLink,
-              name: nextDraftName,
-            });
-
-      setIsFileActionMutating(false);
-
-      if (result.didComplete) {
-        const nextName = nextDraftName.trim();
-
-        setPendingRenameRow(null);
-        setRenameDraftName('');
-        setPendingDestinationAction((currentValue) => {
-          if (!currentValue || !isSameRow(currentValue.row, pendingRenameRow)) {
-            return currentValue;
-          }
-
-          return {
-            ...currentValue,
-            row: applySuggestedNameToRow(currentValue.row, nextName),
-          };
-        });
-        clearRenameIssue();
-        onShowSuccessFeedback?.(
-          createLibraryFilesRenameSuccessFeedback({
-            nextName,
-            previousName: pendingRenameRow.label,
-          }),
-        );
-
-        return;
-      }
-
-      setRenameIssue(result.issue);
-      files.clearIssue();
-    })();
-  };
+  const {
+    clearDestinationIssue,
+    clearRenameIssue,
+    currentDestinationPickerFolderId,
+    destinationIssue,
+    handleSubmitDestination,
+    handleSubmitRename,
+    isFileActionMutating,
+    pendingDestinationAction,
+    pendingRenameRow,
+    renameDraftName,
+    renameIssue,
+    setCurrentDestinationPickerFolderId,
+    setPendingDestinationAction,
+    setPendingRenameRow,
+    setRenameDraftName,
+  } = useLibraryFilesPlacementFlow({ files, onShowSuccessFeedback });
 
   const handleDeleteFileNode = (row: LibraryFilesRow) => {
     requestLibraryFilesDeleteConfirmation({
@@ -345,13 +177,10 @@ export const useLibraryFilesRowActionFlows = ({
         },
         onEditLoop,
         onOpenLoopBuilder(sourceId) {
-          if (row.kind === 'track' && row.source.id === sourceId) {
-            onOpenLoopBuilderForSource(row.source);
-            return;
-          }
+          const source = getRowSource(row, sourceId);
 
-          if (row.kind === 'loop' && row.source?.id === sourceId) {
-            onOpenLoopBuilderForSource(row.source);
+          if (source) {
+            onOpenLoopBuilderForSource(source);
           }
         },
         onOpenLoopPlaylistSelector,
@@ -359,14 +188,18 @@ export const useLibraryFilesRowActionFlows = ({
         onOpenPlaylistAddItems,
         onOpenPlaylistTagEditor,
         onOpenSourceInGoogleDrive(sourceId) {
-          if (row.kind === 'track' && row.source.id === sourceId) {
-            originalLocationActions.openSourceInGoogleDrive(row.source);
+          const source = getTrackRowSource(row, sourceId);
+
+          if (source) {
+            originalLocationActions.openSourceInGoogleDrive(source);
           }
         },
         onOpenSourcePlaylistSelector,
         onOpenSourceTagEditor(sourceId) {
-          if (row.kind === 'track' && row.source.id === sourceId) {
-            onOpenSourceTagEditor(row.source);
+          const source = getTrackRowSource(row, sourceId);
+
+          if (source) {
+            onOpenSourceTagEditor(source);
           }
         },
         onQueuePlayableItemNext,
@@ -399,8 +232,10 @@ export const useLibraryFilesRowActionFlows = ({
         onRemovePlaylist,
         onViewTrackLoops,
         onShowSourceInAdd(sourceId) {
-          if (row.kind === 'track' && row.source.id === sourceId) {
-            originalLocationActions.showSourceInAdd(row.source);
+          const source = getTrackRowSource(row, sourceId);
+
+          if (source) {
+            originalLocationActions.showSourceInAdd(source);
           }
         },
         pendingSourceLocationAction:
