@@ -28,6 +28,8 @@ const ROW_ACTION_SECTION_BY_LABEL = new Map<string, RowActionSection>([
   ['Checking Drive…', 'organize'],
   ['Create a copy', 'organize'],
   ['Edit tags', 'organize'],
+  ['Lyrics', 'organize'],
+  ['Edit lyrics', 'organize'],
   ['Rename', 'organize'],
   ['Rename playlist', 'organize'],
   ['Move to folder', 'organize'],

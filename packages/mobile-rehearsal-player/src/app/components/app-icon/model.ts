@@ -57,6 +57,7 @@ export type PhosphorGlyph =
   | 'SpeakerLow'
   | 'SpeakerX'
   | 'Tag'
+  | 'TextAlignLeft'
   | 'Trash'
   | 'UserCircle'
   | 'Waveform'
@@ -138,6 +139,7 @@ export const APP_ICON_GLYPHS = {
   'music-note-multiple-outline': regular('MusicNotes'),
   'playlist-music-outline': regular('Playlist'),
   'tag-outline': regular('Tag'),
+  'text-align-left': regular('TextAlignLeft'),
   'view-list': regular('Queue'),
   waveform: regular('Waveform'),
 

@@ -22,6 +22,8 @@ import { getSavedRehearsalLibrarySourceIssue } from '../../saved-rehearsal-libra
 import { ExplorerListRow } from '../explorer';
 import type { ExplorerRowSelection } from '../explorer/model';
 import { OptionsMenuSheet } from '../options-menu-sheet';
+import { createLyricsMenuState } from '../../lyrics/utils/lyrics-menu-action';
+import { useHasLyrics } from '../saved-item-menu/saved-item-availability-context';
 import { resolveSavedTrackMenu } from '../saved-item-menu/saved-item-menus';
 import { SavedTrackMenuProvenance } from '../saved-item-menu/saved-track-menu-provenance';
 import {
@@ -111,6 +113,7 @@ export const BrowseSourceRow = ({
   toggleSourcePlayback,
 }: BrowseSourceRowProps) => {
   const trackPlayableItem = createTrackPlayableItem(source);
+  const hasLyrics = useHasLyrics({ sourceId: source.id });
   const isActive = isSavedTrackPlaybackActive(
     activePlayableItem,
     trackPlayableItem,
@@ -137,6 +140,11 @@ export const BrowseSourceRow = ({
       isPlaylistMutating,
       isSavedLibraryMutating,
       loopCount,
+      lyrics: createLyricsMenuState({
+        hasLyrics,
+        id: source.id,
+        kind: 'track',
+      }),
       onAddToPlaylist: () => {
         openSourcePlaylistSelector(source.id);
       },

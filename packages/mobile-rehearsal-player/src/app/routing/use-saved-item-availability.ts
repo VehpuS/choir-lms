@@ -1,6 +1,8 @@
 import type { NamedLoop } from '@org/audio-library-models';
 import { useEffect, useMemo } from 'react';
 
+import { resolveSourceLyrics } from '../library/lyrics/hooks/use-source-lyrics';
+
 import { subscribeToSavedItemRequests } from '../library/components/saved-item-menu/saved-item-requests';
 import type { DriveLibrarySource } from '../library/drive/utils/drive-library-view-model';
 
@@ -28,5 +30,13 @@ export const useSavedItemAvailability = (options: {
     });
   });
 
-  return { savedLoopIds, savedSourceIds };
+  // A track, adjusted track, or loop has lyrics when its owning track does.
+  const hasLyricsFor = (sourceId: string) => {
+    return (
+      resolveSourceLyrics({ id: sourceId, sourceId }, savedSources).lyrics !==
+      undefined
+    );
+  };
+
+  return { hasLyricsFor, savedLoopIds, savedSourceIds };
 };

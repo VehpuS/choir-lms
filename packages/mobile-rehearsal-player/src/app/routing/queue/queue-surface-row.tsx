@@ -6,7 +6,10 @@ import { OverflowMenuTrigger } from '../../components/overflow-menu-trigger';
 import { RowMetaLine } from '../../components/row-meta-line';
 import { ExplorerListRow } from '../../library/components/explorer';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
-import { useIsPlayableItemSaved } from '../../library/components/saved-item-menu/saved-item-availability-context';
+import {
+  useHasLyrics,
+  useIsPlayableItemSaved,
+} from '../../library/components/saved-item-menu/saved-item-availability-context';
 import {
   requestSavedItemAction,
   resolveSavedItemShortcuts,
@@ -65,8 +68,10 @@ export const QueueSurfaceRow = ({
   const canRemove = !item.isCurrent;
   const canDragReorder = itemCount > 1;
   const isSaved = useIsPlayableItemSaved(item.itemRef);
+  const hasLyrics = useHasLyrics(item.itemRef);
   // The Library's item actions, then this surface's own queue actions (task 8.26).
   const itemActions = resolveSavedItemShortcuts({
+    hasLyrics,
     isSaved,
     item: item.itemRef,
   }).map((shortcut) => ({

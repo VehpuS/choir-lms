@@ -1,6 +1,7 @@
 import { aggregateRehearsalLibraryTags } from '@org/audio-library-runtime';
 import { useEffect, useMemo, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/google-drive/hooks/use-authorization';
+import { LyricsEditorHost } from '../library/lyrics/components/lyrics-editor-host';
 import { SavedItemAvailabilityProvider } from '../library/components/saved-item-menu/saved-item-availability-context';
 import { isLoopPreviewItem } from '../library/playback/utils/loop-preview-item';
 import { useSavedTrackPlayback } from '../library/playback/hooks/use-saved-track-playback';
@@ -76,7 +77,7 @@ export const AppRouter = () => {
         playbackState: playback.playbackState,
       })
     : null;
-  const { savedLoopIds, savedSourceIds } = useSavedItemAvailability({
+  const savedItemAvailability = useSavedItemAvailability({
     onViewTrackLoops: () => {
       requestDestination('library');
     },
@@ -191,7 +192,7 @@ export const AppRouter = () => {
   };
 
   return (
-    <SavedItemAvailabilityProvider value={{ savedLoopIds, savedSourceIds }}>
+    <SavedItemAvailabilityProvider value={savedItemAvailability}>
       <MobileShell
         activePlayableItem={playback.activePlayableItem}
         activePlaylistSession={playback.activePlaylistSession}
@@ -225,8 +226,8 @@ export const AppRouter = () => {
             }}
             playback={playback}
             recentRehearsalHistory={recentRehearsalHistory}
-            savedLoopIds={savedLoopIds}
-            savedSourceIds={savedSourceIds}
+            savedLoopIds={savedItemAvailability.savedLoopIds}
+            savedSourceIds={savedItemAvailability.savedSourceIds}
             savedTrackCount={libraryController.savedLibrary.trackCount}
           />
         }
@@ -319,6 +320,7 @@ export const AppRouter = () => {
           />
         )}
       />
+      <LyricsEditorHost library={libraryController.savedLibrary} />
     </SavedItemAvailabilityProvider>
   );
 };

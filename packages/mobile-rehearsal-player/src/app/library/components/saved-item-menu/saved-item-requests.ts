@@ -8,6 +8,7 @@ import type { PlayableItem } from '@org/audio-library-models';
 export type SavedItemRequestAction =
   | 'add-to-playlist'
   | 'edit-loop'
+  | 'edit-lyrics'
   | 'edit-tags'
   | 'make-loop'
   | 'remove-from-library'
@@ -23,6 +24,9 @@ export type SavedItemRequest = {
 type Listener = (request: SavedItemRequest) => void;
 
 const listeners = new Set<Listener>();
+
+export const ADD_LYRICS_LABEL = 'Lyrics';
+export const EDIT_LYRICS_LABEL = 'Edit lyrics';
 
 export const requestSavedItemAction = (request: SavedItemRequest) => {
   listeners.forEach((listener) => {
@@ -52,6 +56,8 @@ export type SavedItemShortcut = {
  * identified by its loop, anything else by its track.
  */
 export const resolveSavedItemShortcuts = (options: {
+  /** Whether the item's owning track has lyrics: the entry reads `Edit lyrics`. */
+  hasLyrics: boolean;
   isSaved: boolean;
   item: Pick<PlayableItem, 'kind' | 'loopId' | 'sourceId'>;
 }): SavedItemShortcut[] => {
@@ -74,6 +80,11 @@ export const resolveSavedItemShortcuts = (options: {
       id: 'edit-tags',
       label: 'Edit tags',
       request: { action: 'edit-tags', id, kind },
+    },
+    {
+      id: 'edit-lyrics',
+      label: options.hasLyrics ? EDIT_LYRICS_LABEL : ADD_LYRICS_LABEL,
+      request: { action: 'edit-lyrics', id, kind },
     },
   ];
 

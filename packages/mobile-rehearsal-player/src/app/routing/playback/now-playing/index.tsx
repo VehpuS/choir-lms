@@ -9,7 +9,10 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { AppIcon } from '../../../components/app-icon';
 import { FadedRule } from '../../../components/faded-rule';
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
-import { useIsPlayableItemSaved } from '../../../library/components/saved-item-menu/saved-item-availability-context';
+import {
+  useHasLyrics,
+  useIsPlayableItemSaved,
+} from '../../../library/components/saved-item-menu/saved-item-availability-context';
 import {
   requestSavedItemAction,
   resolveSavedItemShortcuts,
@@ -146,6 +149,7 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
     playbackPositionSeconds: props.playbackPositionSeconds,
   });
   const isSaved = useIsPlayableItemSaved(props.activePlayableItem);
+  const hasLyrics = useHasLyrics(props.activePlayableItem);
   // The Library's item actions, plus `Make loop` from the playhead in place of
   // the plain one (task 8.26).
   const menuActions = [
@@ -162,6 +166,7 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
         ]
       : []),
     ...resolveSavedItemShortcuts({
+      hasLyrics,
       isSaved,
       item: props.activePlayableItem,
     })

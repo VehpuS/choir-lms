@@ -1,4 +1,8 @@
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
+import {
+  resolveLyricsMenuActions,
+  type LyricsMenuState,
+} from '../../lyrics/utils/lyrics-menu-action';
 import { resolveSavedLoopRowActions } from '../../loops/utils/saved-loop-row-actions';
 import { resolveSavedTrackRowActions } from '../../playback/utils/saved-track-row-actions';
 import type { PendingSourceLocationAction } from '../../saved-rehearsal-library/use-saved-source-original-location-actions';
@@ -34,6 +38,8 @@ export type SavedTrackMenuContext = {
   isPlaylistMutating: boolean;
   isSavedLibraryMutating: boolean;
   loopCount: number;
+  /** Offers `Lyrics` / `Edit lyrics`; absent where lyrics are not offered. */
+  lyrics?: LyricsMenuState;
   onAddToPlaylist: () => void;
   onAddToQueue: () => void;
   onEditTags: () => void;
@@ -90,7 +96,11 @@ export const resolveSavedTrackMenu = (
   });
 
   return composeSavedItemMenu({
-    itemActions: [...itemActions, ...driveActions],
+    itemActions: [
+      ...itemActions,
+      ...driveActions,
+      ...resolveLyricsMenuActions(context.lyrics, placement.idPrefix),
+    ],
     kind: 'track',
     removeAction,
     viewActions: placement.viewActions,
@@ -108,6 +118,7 @@ export type SavedLoopMenuContext = {
   isPendingRemoval: boolean;
   isPlaylistMutating: boolean;
   loopName: string;
+  lyrics?: LyricsMenuState;
   onAddToPlaylist: () => void;
   onAddToQueue: () => void;
   onEditLoop: () => void;
@@ -145,7 +156,10 @@ export const resolveSavedLoopMenu = (
   );
 
   return composeSavedItemMenu({
-    itemActions,
+    itemActions: [
+      ...itemActions,
+      ...resolveLyricsMenuActions(context.lyrics, placement.idPrefix),
+    ],
     kind: 'loop',
     removeAction,
     viewActions: placement.viewActions,

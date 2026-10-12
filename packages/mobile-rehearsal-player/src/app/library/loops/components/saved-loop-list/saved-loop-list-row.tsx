@@ -4,7 +4,9 @@ import { StyleSheet } from 'react-native';
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
 import type { ExplorerRowSelection } from '../../../components/explorer/model';
 import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
+import { useHasLyrics } from '../../../components/saved-item-menu/saved-item-availability-context';
 import { resolveSavedLoopMenu } from '../../../components/saved-item-menu/saved-item-menus';
+import { createLyricsMenuState } from '../../../lyrics/utils/lyrics-menu-action';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -109,6 +111,7 @@ export const SavedLoopListRow = ({
 
     void togglePlayableItemPlayback(playableItem);
   };
+  const hasLyrics = useHasLyrics(loopCard.loop);
   // The same loop menu as Files, with no view actions (task 2.12).
   const sheetActions = resolveSavedLoopMenu(
     {
@@ -122,6 +125,11 @@ export const SavedLoopListRow = ({
       isPendingRemoval: pendingLoopId === loopCard.loop.id,
       isPlaylistMutating,
       loopName: loopCard.loop.name,
+      lyrics: createLyricsMenuState({
+        hasLyrics,
+        id: loopCard.loop.id,
+        kind: 'loop',
+      }),
       onAddToPlaylist: () => {
         onOpenLoopPlaylistSelector(loopCard.loop.id);
       },

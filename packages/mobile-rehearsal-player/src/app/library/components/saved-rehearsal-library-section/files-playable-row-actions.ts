@@ -4,6 +4,7 @@ import {
   resolveSavedLoopMenu,
   resolveSavedTrackMenu,
 } from '../saved-item-menu/saved-item-menus';
+import { createLyricsMenuState } from '../../lyrics/utils/lyrics-menu-action';
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
 import type {
@@ -83,6 +84,11 @@ export const resolveTrackMenuActions = (
       isPlaylistMutating: options.isPlaylistMutating,
       isSavedLibraryMutating: options.isSavedLibraryMutating,
       loopCount: row.loopCount ?? 0,
+      lyrics: createLyricsMenuState({
+        hasLyrics: options.hasLyricsFor(row.source.id),
+        id: row.source.id,
+        kind: 'track',
+      }),
       onAddToPlaylist: () => {
         options.onOpenSourcePlaylistSelector(row.source.id);
       },
@@ -139,6 +145,11 @@ export const resolveLoopMenuActions = (
       isPendingRemoval: false,
       isPlaylistMutating: options.isPlaylistMutating,
       loopName: row.loop.name,
+      lyrics: createLyricsMenuState({
+        hasLyrics: options.hasLyricsFor(row.loop.sourceId),
+        id: row.loop.id,
+        kind: 'loop',
+      }),
       onAddToPlaylist: () => {
         options.onOpenLoopPlaylistSelector(row.loop.id);
       },

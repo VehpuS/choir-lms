@@ -39,6 +39,8 @@ export const SAVED_ITEM_ACTION_ORDER: Record<
     'Add to playlist',
     'Edit loop',
     'Edit tags',
+    'Lyrics',
+    'Edit lyrics',
   ],
   playlist: ['Add items', 'Edit tags'],
   track: [
@@ -51,6 +53,8 @@ export const SAVED_ITEM_ACTION_ORDER: Record<
     SHOW_IN_ADD_LABEL,
     OPEN_IN_GOOGLE_DRIVE_LABEL,
     'Edit tags',
+    'Lyrics',
+    'Edit lyrics',
   ],
 };
 

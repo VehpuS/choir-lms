@@ -11,6 +11,7 @@ import type { useRehearsalLibraryController } from '../../saved-rehearsal-librar
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
 import { FeedbackCard } from '../feedback-card';
 import { OptionsMenuSheet } from '../options-menu-sheet';
+import { useHasLyricsFor } from '../saved-item-menu/saved-item-availability-context';
 import { resolveFilesRowMenuActions } from './files-row-actions';
 import type { FileLinkLibraryFilesRow } from './files-row-actions-model';
 import { createTrackRemoveFromLibraryConfirmation } from './library-files-delete-copy';
@@ -87,6 +88,7 @@ export const useLibraryFilesRowActionFlows = ({
   originalLocationActions,
 }: UseLibraryFilesRowActionFlowsOptions) => {
   const confirmationFlow = useLibraryFilesConfirmationFlow();
+  const hasLyricsFor = useHasLyricsFor();
   const {
     clearDestinationIssue,
     clearRenameIssue,
@@ -144,6 +146,7 @@ export const useLibraryFilesRowActionFlows = ({
         canMutateLoops,
         canMutatePlaylists,
         canQueueAsNext,
+        hasLyricsFor,
         canReconnectLibrarySource: Boolean(
           authorization?.canStartAuthorization && !authorization.isBusy,
         ),

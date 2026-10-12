@@ -14,6 +14,7 @@ export type ResolveFilesRowMenuActionsBaseOptions = {
   canMutatePlaylists: boolean;
   canQueueAsNext: boolean;
   canReconnectLibrarySource: boolean;
+  hasLyricsFor: (sourceId: string) => boolean;
   isLoopBuilderPreparing: boolean;
   isLoopMutating: boolean;
   pendingLoopBuilderSourceId: string | null;

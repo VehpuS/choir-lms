@@ -1,4 +1,7 @@
-import { useIsPlayableItemSaved } from '../../library/components/saved-item-menu/saved-item-availability-context';
+import {
+  useHasLyrics,
+  useIsPlayableItemSaved,
+} from '../../library/components/saved-item-menu/saved-item-availability-context';
 import {
   requestSavedItemAction,
   resolveSavedItemShortcuts,
@@ -31,6 +34,7 @@ export const RecentRehearsalMenu = ({
   recentRehearsal,
 }: RecentRehearsalMenuProps) => {
   const isSaved = useIsPlayableItemSaved(recentRehearsal.playableItem);
+  const hasLyrics = useHasLyrics(recentRehearsal.playableItem);
   const runAndClose = (run: () => void) => () => {
     onClose();
     run();
@@ -50,6 +54,7 @@ export const RecentRehearsalMenu = ({
     section: 'row',
   }));
   const itemActions = resolveSavedItemShortcuts({
+    hasLyrics,
     isSaved,
     item: recentRehearsal.playableItem,
   }).map((shortcut) => ({

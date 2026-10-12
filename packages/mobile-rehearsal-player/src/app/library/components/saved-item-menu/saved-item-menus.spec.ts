@@ -44,6 +44,9 @@ const withoutFilesViewActions = (actions: OptionsMenuAction[]) => {
   return actions.filter((action) => !FILES_VIEW_LABELS.has(action.label));
 };
 
+// Files rows always offer lyrics, so the shared menus are built with them too.
+const NO_LYRICS = { hasLyrics: false, onEditLyrics: () => undefined };
+
 const trackContext = (
   overrides: Partial<SavedTrackMenuContext> = {},
 ): SavedTrackMenuContext => ({
@@ -52,6 +55,7 @@ const trackContext = (
   canMutatePlaylists: true,
   canQueueAsNext: true,
   canReconnect: true,
+  lyrics: NO_LYRICS,
   isLoopBuilderPreparing: false,
   isLoopMutating: false,
   isPendingLoopSource: false,
@@ -80,6 +84,7 @@ const loopContext = (): SavedLoopMenuContext => ({
   canMutatePlaylists: true,
   canQueueAsNext: true,
   hasPlayableItem: true,
+  lyrics: NO_LYRICS,
   isEditingLoop: false,
   isLoopMutating: false,
   isPendingRemoval: false,
@@ -199,6 +204,7 @@ describe('shared saved-item menus', () => {
       'Show in Add',
       'Open in Google Drive',
       'Edit tags',
+      'Lyrics',
       'Remove from library',
     ]);
   });
@@ -232,6 +238,7 @@ describe('shared saved-item menus', () => {
         'Add to playlist',
         'Edit loop',
         'Edit tags',
+        'Lyrics',
         'Remove from library',
       ],
     );

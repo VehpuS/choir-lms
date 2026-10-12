@@ -84,6 +84,7 @@ export const createBaseOptions = () => {
       canMutatePlaylists: true,
       canQueueAsNext: true,
       canReconnectLibrarySource: true,
+      hasLyricsFor: () => false,
       isLoopBuilderPreparing: false,
       isLoopMutating: false,
       isPlaylistMutating: false,
