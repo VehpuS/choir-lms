@@ -5,6 +5,7 @@ import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-
 import { resolveHasActiveLibraryFilters } from '../../search/utils/saved-library-search-view-model';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
 import { buildSavedRehearsalLibraryDetailSectionElements } from './detail-section-elements';
+import { useSavedItemRequestHandler } from '../saved-item-menu/use-saved-item-request-handler';
 import { SavedRehearsalLibrarySearchShell } from './search-shell';
 import { SavedRehearsalLibraryStatusCards } from './status-cards';
 import { savedRehearsalLibrarySectionStyles as styles } from './styles';
@@ -144,6 +145,19 @@ export const SavedRehearsalLibrarySection = ({
     syncActivePlaylistContext,
     togglePlaylistPlayback,
     updatePlaylist,
+  });
+  useSavedItemRequestHandler({
+    openLoopEditor: loopState.openLoopEditor,
+    openLoopPlaylistSelector: trackPlaylistMenu.openLoopPlaylistSelector,
+    openLoopTagEditor: tagEditor.openLoopTagEditor,
+    openSourcePlaylistSelector: trackPlaylistMenu.openSourcePlaylistSelector,
+    openSourceTagEditor: tagEditor.openSourceTagEditor,
+    openTrackLoopView: loopState.openTrackLoopView,
+    removeLoop,
+    removeSource,
+    savedLibrarySources,
+    savedLoops,
+    setSelectedView,
   });
   const { loopSection, playlistSection, tagDetailSection } =
     buildSavedRehearsalLibraryDetailSectionElements({

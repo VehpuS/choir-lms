@@ -6,6 +6,11 @@ import { OverflowMenuTrigger } from '../../components/overflow-menu-trigger';
 import { RowMetaLine } from '../../components/row-meta-line';
 import { ExplorerListRow } from '../../library/components/explorer';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
+import { useIsPlayableItemSaved } from '../../library/components/saved-item-menu/saved-item-availability-context';
+import {
+  requestSavedItemAction,
+  resolveSavedItemShortcuts,
+} from '../../library/components/saved-item-menu/saved-item-requests';
 import { appTheme } from '../../utils/theme';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
 import { getQueueRowPresentation } from './queue-surface-row-model';
@@ -59,6 +64,21 @@ export const QueueSurfaceRow = ({
   const canMoveToPosition = itemCount > 1 && currentIndex >= 0;
   const canRemove = !item.isCurrent;
   const canDragReorder = itemCount > 1;
+  const isSaved = useIsPlayableItemSaved(item.itemRef);
+  // The Library's item actions, then this surface's own queue actions (task 8.26).
+  const itemActions = resolveSavedItemShortcuts({
+    isSaved,
+    item: item.itemRef,
+  }).map((shortcut) => ({
+    id: `${item.key}:${shortcut.id}`,
+    label: shortcut.label,
+    onPress: () => {
+      onCloseMenu();
+      requestSavedItemAction(shortcut.request);
+    },
+    section: 'item',
+    tone: shortcut.tone,
+  }));
   const presentation = getQueueRowPresentation({
     isCurrent: item.isCurrent,
     isLoading: isPlaybackLoading,
@@ -142,9 +162,11 @@ export const QueueSurfaceRow = ({
       />
       <OptionsMenuSheet
         actions={[
+          ...itemActions,
           {
             disabled: !canMoveToStart,
             id: `${item.key}:move-to-start`,
+            section: 'queue',
             label: 'Move to start',
             onPress: () => {
               onCloseMenu();
@@ -154,6 +176,7 @@ export const QueueSurfaceRow = ({
           {
             disabled: !canMoveToEnd,
             id: `${item.key}:move-to-end`,
+            section: 'queue',
             label: 'Move to end',
             onPress: () => {
               onCloseMenu();
@@ -163,6 +186,7 @@ export const QueueSurfaceRow = ({
           {
             disabled: !canMoveToPosition,
             id: `${item.key}:move-to-position`,
+            section: 'queue',
             label: 'Move to position',
             onPress: () => {
               onCloseMenu();
@@ -172,6 +196,7 @@ export const QueueSurfaceRow = ({
           {
             disabled: !canRemove,
             id: `${item.key}:remove`,
+            section: 'queue',
             label: 'Remove from queue',
             onPress: () => {
               onCloseMenu();

@@ -47,6 +47,8 @@ export type NowPlayingSurfaceSummary = {
 export type UpNextSurfaceItem = {
   detail: string;
   isCurrent: boolean;
+  /** Which saved track or loop the row is, for the item actions in its menu. */
+  itemRef: Pick<PlayableItem, 'kind' | 'loopId' | 'sourceId'>;
   key: string;
   title: string;
 };
@@ -139,6 +141,11 @@ export const getUpNextSurfaceSummary = (options: {
         title: item.title,
         detail: getQueueItemDetail(item),
         isCurrent: index === options.activePlaylistSession?.currentIndex,
+        itemRef: {
+          kind: item.kind,
+          ...(item.loopId ? { loopId: item.loopId } : {}),
+          sourceId: item.sourceId,
+        },
         key: item.playlistEntryId ?? `${item.id}:${index}`,
       };
     }),

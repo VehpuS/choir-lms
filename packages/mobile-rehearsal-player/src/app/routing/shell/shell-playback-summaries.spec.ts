@@ -170,12 +170,14 @@ describe('shell playback summaries', () => {
           {
             detail: 'Track · 3:05',
             isCurrent: true,
+            itemRef: { kind: 'track', sourceId: 'drive:alto-line' },
             key: 'track:drive:alto-line:0',
             title: 'Alto Line.mp3',
           },
           {
             detail: 'Track · 3:05',
             isCurrent: false,
+            itemRef: { kind: 'track', sourceId: 'drive:tenor-line' },
             key: 'track:drive:tenor-line:1',
             title: 'Tenor Line.mp3',
           },
@@ -206,12 +208,18 @@ describe('shell playback summaries', () => {
         {
           detail: 'Track · 3:05',
           isCurrent: false,
+          itemRef: { kind: 'track', sourceId: 'drive:alto-line' },
           key: 'entry:track:drive:alto-line:2026-05-12T00:01:00.000Z',
           title: 'Alto Line.mp3',
         },
         {
           detail: 'Loop · 0:12–0:18 · Alto Line.mp3',
           isCurrent: true,
+          itemRef: {
+            kind: 'loop',
+            loopId: 'loop-1',
+            sourceId: 'drive:alto-line',
+          },
           key: 'entry:loop:loop-1:2026-05-12T00:02:00.000Z',
           title: 'Entrance cue',
         },

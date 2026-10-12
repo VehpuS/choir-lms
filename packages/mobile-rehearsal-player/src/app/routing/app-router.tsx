@@ -1,6 +1,8 @@
 import { aggregateRehearsalLibraryTags } from '@org/audio-library-runtime';
 import { useEffect, useMemo, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/google-drive/hooks/use-authorization';
+import { SavedItemAvailabilityProvider } from '../library/components/saved-item-menu/saved-item-availability-context';
+import { subscribeToSavedItemRequests } from '../library/components/saved-item-menu/saved-item-requests';
 import { useSavedTrackPlayback } from '../library/playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackActionCopy } from '../library/playback/utils/saved-track-playback-view-model';
 import { canShowQueuePlaylistActions } from '../library/playlists/utils/saved-playlist-playback-view-model';
@@ -184,6 +186,16 @@ export const AppRouter = () => {
     });
   };
 
+  // Menus outside the Library ask it to run item actions (task 8.26); the ones
+  // that show the Library's loop view also bring the Library forward.
+  useEffect(() => {
+    return subscribeToSavedItemRequests((request) => {
+      if (request.action === 'view-track-loops') {
+        requestDestination('library');
+      }
+    });
+  });
+
   const closeTagDetail = () => {
     setCloseTagDetailRequestId((currentId) => {
       return currentId + 1;
@@ -191,130 +203,134 @@ export const AppRouter = () => {
   };
 
   return (
-    <MobileShell
-      activePlayableItem={playback.activePlayableItem}
-      activePlaylistSession={playback.activePlaylistSession}
-      activeQueueMode={playback.activePlaylistSession?.queue.mode ?? null}
-      activeRepeatMode={playback.playlistRepeatMode}
-      canShowQueuePlaylistActions={canShowQueuePlaylistActions(
-        playback.activePlaylistSession,
-      )}
-      canSeekActivePlayback={
-        playback.activePlayableItem !== null && !playback.isPreparing
-      }
-      // Skipping during a load supersedes it (8.33), so only a queue is needed.
-      canSkipNextItem={playback.activePlaylistSession !== null}
-      canSkipPreviousItem={playback.activePlaylistSession !== null}
-      requestedDestination={requestedDestination}
-      requestedDestinationRequestId={requestedDestinationRequestId}
-      recentsScreen={
-        <AppRouterRecentsScreen
-          authorization={authorization}
-          libraryTagUsage={libraryTagUsage}
-          onRequestLibraryDestination={() => {
-            requestDestination('library');
-          }}
-          onSelectTag={(tag) => {
-            requestTagDetail(tag);
-            requestDestination('library');
-          }}
-          onViewAllTags={() => {
-            requestDestination('library');
-            requestLibraryView('tags');
-          }}
-          playback={playback}
-          recentRehearsalHistory={recentRehearsalHistory}
-          savedLoopIds={savedLoopIds}
-          savedSourceIds={savedSourceIds}
-          savedTrackCount={libraryController.savedLibrary.trackCount}
-        />
-      }
-      isPlaybackPreparing={playback.isPreparing}
-      isSavingQueueAsPlaylist={
-        libraryController.savedLibrary.pendingSourceId !== null ||
-        libraryController.playlists.pendingPlaylistId !== null
-      }
-      isPlaybackToggleDisabled={playbackActionCopy?.disabled ?? true}
-      libraryScreen={(isActive) => (
-        <LibraryScreen
-          authorization={authorization}
-          closeTagDetailRequestId={closeTagDetailRequestId}
-          isActive={isActive}
-          libraryController={libraryController}
-          onRequestAddDestination={() => {
-            requestDestination('add');
-          }}
-          playback={playback}
-          requestedLoopEditId={requestedLoopEditId}
-          requestedLoopEditRequestId={requestedLoopEditRequestId}
-          requestedTag={requestedTag}
-          requestedTagRequestId={requestedTagRequestId}
-          requestedView={requestedLibraryView}
-          requestedViewRequestId={requestedLibraryViewRequestId}
-        />
-      )}
-      onCloseTagDetail={closeTagDetail}
-      onEditActiveLoop={requestLoopEdit}
-      onSeekBackward={() => {
-        void playback.seekActivePlaybackBySeconds(-PLAYBACK_SEEK_STEP_SECONDS);
-      }}
-      onSeekForward={() => {
-        void playback.seekActivePlaybackBySeconds(PLAYBACK_SEEK_STEP_SECONDS);
-      }}
-      onSeekToPosition={(positionSeconds) => {
-        void playback.seekActivePlaybackToPosition(positionSeconds);
-      }}
-      onMoveQueueItem={(fromIndex, toIndex) => {
-        playback.moveQueueItem(fromIndex, toIndex);
-      }}
-      onMoveQueueItemToEnd={(index) => {
-        playback.moveQueueItemToEnd(index);
-      }}
-      onMoveQueueItemToStart={(index) => {
-        playback.moveQueueItemToStart(index);
-      }}
-      onPlayQueueItem={(index) => {
-        void playback.playQueueItem(index);
-      }}
-      onRemoveQueueItem={(index) => {
-        playback.removeQueueItem(index);
-      }}
-      onSaveQueueAsPlaylist={handleSaveQueueAsPlaylist}
-      onUpdateQueuePlaylist={handleUpdateQueuePlaylist}
-      onSelectQueueMode={(mode) => {
-        playback.setPlaylistQueueMode(mode);
-      }}
-      onSelectRepeatMode={(mode) => {
-        playback.setPlaylistRepeatMode(mode);
-      }}
-      onSetPlaybackVolume={(volumeLevel) => {
-        void playback.setPlaybackVolume(volumeLevel);
-      }}
-      onSkipNextItem={() => {
-        void playback.skipToNextItem();
-      }}
-      onSkipPreviousItem={() => {
-        void playback.skipToPreviousItem();
-      }}
-      onTogglePlayback={() => {
-        void playback.toggleActivePlayback();
-      }}
-      playbackPositionSeconds={playback.progress.position}
-      playbackToggleLabel={playbackActionCopy?.label ?? 'Play'}
-      playbackVolumeLevel={playback.volumeLevel}
-      playbackShaping={playbackShaping}
-      playbackShapingLabel={getPlaybackShapingContextLabel(
-        playback.shaping.effective,
-      )}
-      playbackState={playback.playbackState}
-      savedLibraryConfirmationDialog={libraryController.confirmationDialog}
-      addScreen={(isActive) => (
-        <AddScreen
-          authorization={authorization}
-          isActive={isActive}
-          libraryController={libraryController}
-        />
-      )}
-    />
+    <SavedItemAvailabilityProvider value={{ savedLoopIds, savedSourceIds }}>
+      <MobileShell
+        activePlayableItem={playback.activePlayableItem}
+        activePlaylistSession={playback.activePlaylistSession}
+        activeQueueMode={playback.activePlaylistSession?.queue.mode ?? null}
+        activeRepeatMode={playback.playlistRepeatMode}
+        canShowQueuePlaylistActions={canShowQueuePlaylistActions(
+          playback.activePlaylistSession,
+        )}
+        canSeekActivePlayback={
+          playback.activePlayableItem !== null && !playback.isPreparing
+        }
+        // Skipping during a load supersedes it (8.33), so only a queue is needed.
+        canSkipNextItem={playback.activePlaylistSession !== null}
+        canSkipPreviousItem={playback.activePlaylistSession !== null}
+        requestedDestination={requestedDestination}
+        requestedDestinationRequestId={requestedDestinationRequestId}
+        recentsScreen={
+          <AppRouterRecentsScreen
+            authorization={authorization}
+            libraryTagUsage={libraryTagUsage}
+            onRequestLibraryDestination={() => {
+              requestDestination('library');
+            }}
+            onSelectTag={(tag) => {
+              requestTagDetail(tag);
+              requestDestination('library');
+            }}
+            onViewAllTags={() => {
+              requestDestination('library');
+              requestLibraryView('tags');
+            }}
+            playback={playback}
+            recentRehearsalHistory={recentRehearsalHistory}
+            savedLoopIds={savedLoopIds}
+            savedSourceIds={savedSourceIds}
+            savedTrackCount={libraryController.savedLibrary.trackCount}
+          />
+        }
+        isPlaybackPreparing={playback.isPreparing}
+        isSavingQueueAsPlaylist={
+          libraryController.savedLibrary.pendingSourceId !== null ||
+          libraryController.playlists.pendingPlaylistId !== null
+        }
+        isPlaybackToggleDisabled={playbackActionCopy?.disabled ?? true}
+        libraryScreen={(isActive) => (
+          <LibraryScreen
+            authorization={authorization}
+            closeTagDetailRequestId={closeTagDetailRequestId}
+            isActive={isActive}
+            libraryController={libraryController}
+            onRequestAddDestination={() => {
+              requestDestination('add');
+            }}
+            playback={playback}
+            requestedLoopEditId={requestedLoopEditId}
+            requestedLoopEditRequestId={requestedLoopEditRequestId}
+            requestedTag={requestedTag}
+            requestedTagRequestId={requestedTagRequestId}
+            requestedView={requestedLibraryView}
+            requestedViewRequestId={requestedLibraryViewRequestId}
+          />
+        )}
+        onCloseTagDetail={closeTagDetail}
+        onEditActiveLoop={requestLoopEdit}
+        onSeekBackward={() => {
+          void playback.seekActivePlaybackBySeconds(
+            -PLAYBACK_SEEK_STEP_SECONDS,
+          );
+        }}
+        onSeekForward={() => {
+          void playback.seekActivePlaybackBySeconds(PLAYBACK_SEEK_STEP_SECONDS);
+        }}
+        onSeekToPosition={(positionSeconds) => {
+          void playback.seekActivePlaybackToPosition(positionSeconds);
+        }}
+        onMoveQueueItem={(fromIndex, toIndex) => {
+          playback.moveQueueItem(fromIndex, toIndex);
+        }}
+        onMoveQueueItemToEnd={(index) => {
+          playback.moveQueueItemToEnd(index);
+        }}
+        onMoveQueueItemToStart={(index) => {
+          playback.moveQueueItemToStart(index);
+        }}
+        onPlayQueueItem={(index) => {
+          void playback.playQueueItem(index);
+        }}
+        onRemoveQueueItem={(index) => {
+          playback.removeQueueItem(index);
+        }}
+        onSaveQueueAsPlaylist={handleSaveQueueAsPlaylist}
+        onUpdateQueuePlaylist={handleUpdateQueuePlaylist}
+        onSelectQueueMode={(mode) => {
+          playback.setPlaylistQueueMode(mode);
+        }}
+        onSelectRepeatMode={(mode) => {
+          playback.setPlaylistRepeatMode(mode);
+        }}
+        onSetPlaybackVolume={(volumeLevel) => {
+          void playback.setPlaybackVolume(volumeLevel);
+        }}
+        onSkipNextItem={() => {
+          void playback.skipToNextItem();
+        }}
+        onSkipPreviousItem={() => {
+          void playback.skipToPreviousItem();
+        }}
+        onTogglePlayback={() => {
+          void playback.toggleActivePlayback();
+        }}
+        playbackPositionSeconds={playback.progress.position}
+        playbackToggleLabel={playbackActionCopy?.label ?? 'Play'}
+        playbackVolumeLevel={playback.volumeLevel}
+        playbackShaping={playbackShaping}
+        playbackShapingLabel={getPlaybackShapingContextLabel(
+          playback.shaping.effective,
+        )}
+        playbackState={playback.playbackState}
+        savedLibraryConfirmationDialog={libraryController.confirmationDialog}
+        addScreen={(isActive) => (
+          <AddScreen
+            authorization={authorization}
+            isActive={isActive}
+            libraryController={libraryController}
+          />
+        )}
+      />
+    </SavedItemAvailabilityProvider>
   );
 };

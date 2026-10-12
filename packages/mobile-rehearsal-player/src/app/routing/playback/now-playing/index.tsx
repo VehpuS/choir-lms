@@ -9,6 +9,11 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { AppIcon } from '../../../components/app-icon';
 import { FadedRule } from '../../../components/faded-rule';
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
+import { useIsPlayableItemSaved } from '../../../library/components/saved-item-menu/saved-item-availability-context';
+import {
+  requestSavedItemAction,
+  resolveSavedItemShortcuts,
+} from '../../../library/components/saved-item-menu/saved-item-requests';
 import { OptionsMenuSheet } from '../../../library/components/options-menu-sheet';
 import { requestLoopBuilder } from '../../../library/loops/utils/loop-builder-request';
 import { appTheme } from '../../../utils/theme';
@@ -140,6 +145,37 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
     activePlayableItem: props.activePlayableItem,
     playbackPositionSeconds: props.playbackPositionSeconds,
   });
+  const isSaved = useIsPlayableItemSaved(props.activePlayableItem);
+  // The Library's item actions, plus `Make loop` from the playhead in place of
+  // the plain one (task 8.26).
+  const menuActions = [
+    ...(makeLoopRequest
+      ? [
+          {
+            id: 'make-loop',
+            label: 'Make loop',
+            onPress: () => {
+              setIsMenuVisible(false);
+              requestLoopBuilder(makeLoopRequest);
+            },
+          },
+        ]
+      : []),
+    ...resolveSavedItemShortcuts({
+      isSaved,
+      item: props.activePlayableItem,
+    })
+      .filter(({ id }) => !(makeLoopRequest && id === 'make-loop'))
+      .map((shortcut) => ({
+        id: shortcut.id,
+        label: shortcut.label,
+        onPress: () => {
+          setIsMenuVisible(false);
+          requestSavedItemAction(shortcut.request);
+        },
+        tone: shortcut.tone,
+      })),
+  ];
 
   return (
     <View style={styles.sheet}>
@@ -156,7 +192,7 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
               onPress={props.onShowQueue}
             />
           ) : null}
-          {makeLoopRequest ? (
+          {menuActions.length > 0 ? (
             <SurfaceIconButton
               accessibilityLabel="More actions"
               icon="dots-vertical"
@@ -235,19 +271,7 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
         />
       </ScrollView>
       <OptionsMenuSheet
-        actions={[
-          {
-            id: 'make-loop',
-            label: 'Make loop',
-            onPress: () => {
-              setIsMenuVisible(false);
-
-              if (makeLoopRequest) {
-                requestLoopBuilder(makeLoopRequest);
-              }
-            },
-          },
-        ]}
+        actions={menuActions}
         isVisible={isMenuVisible}
         onClose={() => {
           setIsMenuVisible(false);

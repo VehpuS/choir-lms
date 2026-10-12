@@ -11,10 +11,10 @@ import { DestinationHeader } from '../../components/destination-header';
 import { getDestinationHeaderModel } from '../../components/destination-header-model';
 import { FadedRule } from '../../components/faded-rule';
 import { InteractionChip } from '../../library/components/interaction-chip';
-import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
 import { appTheme } from '../../utils/theme';
 import type { RecentRehearsalItem } from './history';
-import { getRecentsOverflowActionState } from './overflow-actions';
+
+import { RecentRehearsalMenu } from './recent-rehearsal-menu';
 import { RecentRehearsalRow } from './recent-rehearsal-row';
 import { getRecentItemCountLabel } from './row-model';
 import {
@@ -165,45 +165,23 @@ export const RecentsScreen = ({
                 }}
                 recentRehearsal={recentRehearsal}
               />
-              <OptionsMenuSheet
-                actions={getRecentsOverflowActionState({
-                  canQueueAsNext,
-                  isViewInLibraryAvailable:
-                    isRecentItemInLibrary(recentRehearsal),
-                }).map((action) => {
-                  if (action.id === 'play-next') {
-                    return {
-                      ...action,
-                      onPress: () => {
-                        setActiveOptionsRecentId(null);
-                        onQueueRecentPlaybackNext(recentRehearsal);
-                      },
-                    };
-                  }
-
-                  if (action.id === 'add-to-queue') {
-                    return {
-                      ...action,
-                      onPress: () => {
-                        setActiveOptionsRecentId(null);
-                        onQueueRecentPlaybackUpNext(recentRehearsal);
-                      },
-                    };
-                  }
-
-                  return {
-                    ...action,
-                    onPress: () => {
-                      setActiveOptionsRecentId(null);
-                      onViewRecentInLibrary(recentRehearsal);
-                    },
-                  };
-                })}
+              <RecentRehearsalMenu
+                canQueueAsNext={canQueueAsNext}
+                isInLibrary={isRecentItemInLibrary(recentRehearsal)}
                 isVisible={activeOptionsRecentId === recentRehearsal.id}
                 onClose={() => {
                   setActiveOptionsRecentId(null);
                 }}
-                title={recentRehearsal.title}
+                onQueueNext={() => {
+                  onQueueRecentPlaybackNext(recentRehearsal);
+                }}
+                onQueueUpNext={() => {
+                  onQueueRecentPlaybackUpNext(recentRehearsal);
+                }}
+                onViewInLibrary={() => {
+                  onViewRecentInLibrary(recentRehearsal);
+                }}
+                recentRehearsal={recentRehearsal}
               />
             </View>
           ))}
