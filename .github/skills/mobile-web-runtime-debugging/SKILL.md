@@ -68,6 +68,23 @@ Treat recurring baseline warnings as background unless they align with the failu
 - `useNativeDriver is not supported`
 - generic unrelated `400` resource errors
 
+### Silencing the preview and tracing the media element
+
+- Silence the preview with `media.volume = 0`, never `media.muted = true`. Chrome pauses a muted element it treats as background media ("The `play()` request was interrupted because video-only background media was paused to save power"), which looks like a player that starts and then reports `Paused` while its position keeps moving. The player's media element is created outside the DOM, so `document.querySelector('audio')` finds nothing; patch the prototype instead and set `volume` inside `play`:
+
+  ```js
+  const proto = HTMLMediaElement.prototype;
+  const play = proto.play;
+  proto.play = function (...args) {
+    this.volume = 0;
+    return play.apply(this, args);
+  };
+  ```
+
+- To see what the element is doing, wrap `HTMLMediaElement.play` / `pause` / `load` (log `paused`, `volume`, and the `src` tail), `URL.createObjectURL` / `URL.revokeObjectURL` (log the blob size and the URL tail), `Storage.prototype.setItem` and `console.error`, stamp each entry with `performance.now()` relative to the click, and read the timeline back. Capture `new Error().stack` inside the `play` wrapper to find who calls it (a web `TrackPlayer.add` already ends in `goToIndex` → `play`, so the app's own `play()` right after it is a harmless second call on a playing element).
+- Resource errors for blob URLs (`net::ERR_FILE_NOT_FOUND` paired with a `206`) around a track change come from the previous element's last range request after its source is cleared; a handful per change is normal, a stream that grows while audio plays is not.
+- Scripted pointer input needs a stepped sequence (`pointerdown`, several `pointermove`, `pointerup` on `document`) for the slider and queue drag handles; a two-point drag only moves one step.
+
 ## Playback-Specific Heuristics
 
 When the failure involves Google Drive or TrackPlayer web, check for these signatures first:

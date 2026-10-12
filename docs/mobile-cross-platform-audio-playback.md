@@ -161,6 +161,13 @@ How to tell a slow connection from a playback bug in the browser:
   - `npm exec -- nx run mobile-rehearsal-player:typecheck`
   - `npm exec -- nx run mobile-rehearsal-player:build` (web export path)
 
+## Debugging the Web Player
+
+- Silence the preview with `media.volume = 0`. Setting `media.muted = true` makes Chrome pause the element as background media, which shows up as `Paused` while the position keeps advancing. The media element is not in the DOM, so patch `HTMLMediaElement.prototype.play` to set the volume.
+- To trace a start, wrap `HTMLMediaElement.play` / `pause` / `load`, `URL.createObjectURL` / `revokeObjectURL`, `Storage.prototype.setItem` and `console.error`, and log a timeline relative to the click. A plain start makes one `play()` call; the web TrackPlayer's `add` ends in `goToIndex` → `play`, so a start while the player was already running also shows the app's explicit `play()` as a second, no-op call.
+- Expect a few `net::ERR_FILE_NOT_FOUND` blob requests next to `206` ones around a track change (the previous source's last range request); the Drive `400` errors seen while browsing are metadata calls that ask for `durationMillis`, not playback.
+- The `mobile-web-runtime-debugging` skill has the full recipe and the scripted-pointer notes.
+
 ## When To Update This Doc
 
 Update this document whenever any of the following changes:
