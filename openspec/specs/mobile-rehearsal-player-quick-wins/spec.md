@@ -1,8 +1,11 @@
 # mobile-rehearsal-player-quick-wins Specification
 
 ## Purpose
+
 TBD - created by archiving change streamline-mobile-rehearsal-ux. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Track rows support ad-hoc queue acceleration actions
 
 The system SHALL provide quick queue actions from track-focused contexts so users can shape the current rehearsal session without opening playlist editors.
@@ -171,7 +174,7 @@ The system SHALL provide track-scoped loop management from parent tracks while k
 #### Scenario: Saved loop overflow exposes in-place editing from loop surfaces
 
 - **WHEN** a user opens row actions for a saved loop from the top-level Saved loops section or a track-scoped loop view
-- **THEN** the menu includes `Edit loop` and `Remove loop`
+- **THEN** the menu includes `Edit loop` and `Remove from library`, as defined by the shared saved-loop menu in `mobile-library-organization`
 - **AND** `Edit loop` opens the existing loop builder in edit mode for that loop instead of creating a duplicate saved loop
 
 #### Scenario: Active loop playback does not block editing
@@ -202,4 +205,3 @@ The system SHALL provide track-scoped loop management from parent tracks while k
 - **WHEN** a user views library search, tag, or folder results that include loops
 - **THEN** the system shows loops in their own visible result category without requiring any special surfacing step
 - **AND** those results retain parent-track linkage
-
