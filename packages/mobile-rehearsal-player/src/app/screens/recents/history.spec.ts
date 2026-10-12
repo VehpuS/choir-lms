@@ -122,6 +122,41 @@ describe('recent rehearsal persistence', () => {
     assert.equal(restoredHistory[0]?.title, playableItem.title);
   });
 
+  it('drops loop editor previews from stored history', async () => {
+    const track = createTrackPlayableItem(PLAYABLE_SOURCE);
+    const preview = {
+      ...track,
+      id: 'loop-preview:drive:a',
+      kind: 'loop' as const,
+    };
+    const stored = JSON.stringify(
+      [track, preview].map((playableItem) =>
+        buildRecentRehearsalItem({
+          activePlayableItem: playableItem,
+          activePlaylistSession: null,
+          playedAt: '2026-06-01T09:00:00.000Z',
+        }),
+      ),
+    );
+
+    const restoredHistory = await restoreRecentRehearsalHistory({
+      async getItem() {
+        return stored;
+      },
+      async removeItem() {
+        throw new Error('not used');
+      },
+      async setItem() {
+        throw new Error('not used');
+      },
+    });
+
+    assert.deepEqual(
+      restoredHistory.map((item) => item.playableItem.id),
+      [track.id],
+    );
+  });
+
   it('returns an empty list for malformed persisted values', async () => {
     const restoredHistory = await restoreRecentRehearsalHistory({
       async getItem() {

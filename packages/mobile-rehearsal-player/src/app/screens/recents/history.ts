@@ -1,3 +1,4 @@
+import { isLoopPreviewItem } from '../../library/playback/utils/loop-preview-item';
 import type { PlayableItem } from '@org/audio-library-models';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { PlaylistPlaybackSession } from '../../library/playlists/utils/saved-playlist-playback-view-model';
@@ -161,10 +162,14 @@ export const restoreRecentRehearsalHistory = async (
       return [] as RecentRehearsalItem[];
     }
 
-    return parsedValue
-      .map(parseRecentRehearsalItem)
-      .filter((item): item is RecentRehearsalItem => item !== null)
-      .slice(0, MAX_RECENT_REHEARSAL_ITEMS);
+    return (
+      parsedValue
+        .map(parseRecentRehearsalItem)
+        .filter((item): item is RecentRehearsalItem => item !== null)
+        // Previews recorded before they were excluded (task 8.95).
+        .filter((item) => !isLoopPreviewItem(item.playableItem))
+        .slice(0, MAX_RECENT_REHEARSAL_ITEMS)
+    );
   } catch {
     return [] as RecentRehearsalItem[];
   }

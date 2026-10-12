@@ -2,6 +2,7 @@ import { aggregateRehearsalLibraryTags } from '@org/audio-library-runtime';
 import { useEffect, useMemo, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/google-drive/hooks/use-authorization';
 import { SavedItemAvailabilityProvider } from '../library/components/saved-item-menu/saved-item-availability-context';
+import { isLoopPreviewItem } from '../library/playback/utils/loop-preview-item';
 import { useSavedTrackPlayback } from '../library/playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackActionCopy } from '../library/playback/utils/saved-track-playback-view-model';
 import { canShowQueuePlaylistActions } from '../library/playlists/utils/saved-playlist-playback-view-model';
@@ -125,7 +126,13 @@ export const AppRouter = () => {
   useEffect(() => {
     const activePlayableItem = playback.activePlayableItem;
 
-    if (!isRecentRehearsalHistoryReady || !activePlayableItem) {
+    // A loop editor preview is not something to come back to until it is saved
+    // as a loop (task 8.95).
+    if (
+      !isRecentRehearsalHistoryReady ||
+      !activePlayableItem ||
+      isLoopPreviewItem(activePlayableItem)
+    ) {
       return;
     }
 
