@@ -89,6 +89,20 @@ describe('now playing model', () => {
     );
   });
 
+  it('shows the remaining time of a clip shorter than a second with a decimal', () => {
+    assert.deepEqual(
+      getNowPlayingTimelineLabels({ elapsedSeconds: 0, totalSeconds: 0.627 }),
+      { elapsed: '0:00', remaining: '−0:00.6' },
+    );
+  });
+
+  it('keeps the last second of a normal track in whole seconds', () => {
+    assert.deepEqual(
+      getNowPlayingTimelineLabels({ elapsedSeconds: 277.4, totalSeconds: 278 }),
+      { elapsed: '4:37', remaining: '−0:00' },
+    );
+  });
+
   it('falls back to zero labels while the duration is unknown', () => {
     assert.deepEqual(
       getNowPlayingTimelineLabels({ elapsedSeconds: 12, totalSeconds: 0 }),

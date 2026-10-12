@@ -10,7 +10,7 @@ import { RowMetaLine } from '../../../components/row-meta-line';
 import { RowPreparingIndicator } from '../../../components/row-preparing-indicator';
 import { appTheme } from '../../../utils/theme';
 import {
-  formatDurationLabel,
+  formatLengthLabel,
   getSourceStatusMessage,
 } from '../../drive/utils/drive-library-view-model';
 import {
@@ -121,7 +121,7 @@ export const BrowseSourceRow = ({
     getSavedRehearsalLibrarySourceIssue(savedLibraryIssue, source, 'remove') ??
     getSavedTrackPlaybackItemIssue(playbackIssue, trackPlayableItem) ??
     getSourceStatusMessage(source);
-  const durationLabel = formatDurationLabel(getSourceDisplayDurationMs(source));
+  const durationLabel = formatLengthLabel(getSourceDisplayDurationMs(source));
   // The same track menu as Files, with no view actions (task 2.12).
   const sheetActions = resolveSavedTrackMenu(
     {

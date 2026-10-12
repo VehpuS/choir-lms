@@ -9,6 +9,7 @@ import type {
 
 export {
   formatDurationLabel,
+  formatLengthLabel,
   getDriveSearchContextCopy,
   getFolderMetadataLabels,
   getLibrarySearchContextCopy,

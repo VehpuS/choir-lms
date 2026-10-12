@@ -6,7 +6,7 @@ import {
 import type { RehearsalLibraryTagMatch } from '@org/audio-library-runtime';
 
 import { normalizeSearchQuery } from '../../../search/utils/saved-library-search-view-model';
-import { formatDurationLabel } from '../../../drive/utils/drive-library-view-model';
+import { formatLengthLabel } from '../../../drive/utils/drive-library-view-model';
 import { getSavedTagsListSortDirectionToggleLabel } from '../saved-tags-list/model';
 
 export { getSavedTagsListSortDirectionToggleLabel as getTagMatchListSortDirectionToggleLabel };
@@ -99,13 +99,13 @@ export const getTagMatchMetadataLabel = (match: RehearsalLibraryTagMatch) => {
     case 'track':
       return joinWithTransform(
         match.item.adjustment?.transform,
-        formatDurationLabel(getSourceDisplayDurationMs(match.item)) ??
+        formatLengthLabel(getSourceDisplayDurationMs(match.item)) ??
           TAG_MATCH_TYPE_LABELS.track,
       );
     case 'loop':
       return joinWithTransform(
         match.item.transform,
-        formatDurationLabel(getLoopDisplayDurationMs(match.item)) ??
+        formatLengthLabel(getLoopDisplayDurationMs(match.item)) ??
           TAG_MATCH_TYPE_LABELS.loop,
       );
     case 'playlist':

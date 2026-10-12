@@ -2,6 +2,7 @@ import type { PlayableItem } from '@org/audio-library-models';
 
 import {
   formatDurationLabel,
+  formatLengthLabel,
   type DriveLibraryStatusCopy,
 } from '../../drive/utils/drive-library-view-model';
 
@@ -58,7 +59,7 @@ const getPlaybackSummary = (
       : fallbackDurationMs;
   const positionLabel = formatDurationLabel(positionMs) ?? '0:00';
   const durationLabel = resolvedDurationMs
-    ? formatDurationLabel(resolvedDurationMs)
+    ? formatLengthLabel(resolvedDurationMs)
     : undefined;
 
   return durationLabel ? `${positionLabel} of ${durationLabel}` : positionLabel;

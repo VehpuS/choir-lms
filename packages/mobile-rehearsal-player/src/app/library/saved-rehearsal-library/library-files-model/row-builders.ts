@@ -13,7 +13,7 @@ import {
 } from '@org/audio-library-models';
 
 import {
-  formatDurationLabel,
+  formatLengthLabel,
   type DriveLibrarySource,
 } from '../../drive/utils/drive-library-view-model';
 import { ROW_META_SEPARATOR } from '../../../components/row-meta-line/model';
@@ -218,7 +218,7 @@ export const formatTrackMetaLabel = (options: {
     adjustment ? ADJUSTED_TRACK_KIND_LABEL : undefined,
     adjustment ? formatTransformLabel(adjustment.transform) : undefined,
     options.withDuration
-      ? formatDurationLabel(getSourceDisplayDurationMs(options.source))
+      ? formatLengthLabel(getSourceDisplayDurationMs(options.source))
       : undefined,
     adjustment?.sourceName,
     ...(options.source.tags ?? []),
@@ -347,7 +347,7 @@ export const buildPlaylistRow = (options: {
     PLAYLIST_KIND_LABEL,
     formatPluralizedItemCount(options.playlist.items.length),
     options.playlist.items.length > 0
-      ? formatDurationLabel(options.totalDurationMs)
+      ? formatLengthLabel(options.totalDurationMs)
       : undefined,
   ]);
 

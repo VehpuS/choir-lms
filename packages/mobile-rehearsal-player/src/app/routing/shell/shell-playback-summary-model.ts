@@ -8,7 +8,10 @@ import { sum } from 'es-toolkit';
 import { compact } from 'es-toolkit/compat';
 
 import { ROW_META_SEPARATOR } from '../../components/row-meta-line/model';
-import { formatDurationLabel } from '../../library/drive/utils/drive-library-view-model';
+import {
+  formatDurationLabel,
+  formatLengthLabel,
+} from '../../library/drive/utils/drive-library-view-model';
 import {
   formatSavedLoopRangeLabel,
   formatSavedLoopTimeRange,
@@ -72,7 +75,7 @@ export const getProgressLabel = (options: {
       : Math.min(boundedPositionMs, totalDurationMs);
   const relativePositionMs = Math.max(0, clampedPositionMs - rangeStartMs);
   const positionLabel = formatDurationLabel(relativePositionMs) ?? '0:00';
-  const durationLabel = formatDurationLabel(
+  const durationLabel = formatLengthLabel(
     totalDurationMs === undefined
       ? totalDurationMs
       : totalDurationMs - rangeStartMs,
@@ -234,7 +237,7 @@ export const getQueueItemDetail = (playableItem: PlayableItem) => {
     ]).join(ROW_META_SEPARATOR);
   }
 
-  const durationLabel = formatDurationLabel(
+  const durationLabel = formatLengthLabel(
     getPlayableItemDurationMs(playableItem),
   );
 
@@ -271,7 +274,7 @@ export const getQueueSessionMetaLabel = (session: PlaylistPlaybackSession) => {
     return getPlayableItemDurationMs(item) ?? [];
   });
   const totalDurationLabel =
-    durations.length === itemCount ? formatDurationLabel(sum(durations)) : null;
+    durations.length === itemCount ? formatLengthLabel(sum(durations)) : null;
   const unavailableItemCount = Math.max(
     0,
     session.requestedItemCount - itemCount,

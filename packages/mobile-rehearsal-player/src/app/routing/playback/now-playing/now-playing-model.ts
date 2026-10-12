@@ -1,4 +1,7 @@
-import { formatDurationLabel } from '../../../library/drive/utils/drive-library-view-model';
+import {
+  formatDurationLabel,
+  formatLengthLabel,
+} from '../../../library/drive/utils/drive-library-view-model';
 import { appTheme } from '../../../utils/theme';
 
 export type NowPlayingTransportControl =
@@ -109,8 +112,16 @@ export const getNowPlayingTimelineLabels = (options: {
     Math.max(0, options.elapsedSeconds),
   );
 
+  // Only a clip shorter than a second needs a decimal to avoid reading
+  // `-0:00`; a normal track's last second stays whole so it does not flicker.
+  const isSubSecondClip = totalSeconds > 0 && totalSeconds < 1;
+  const remainingLabel = isSubSecondClip
+    ? (formatLengthLabel(Math.round((totalSeconds - elapsedSeconds) * 1000)) ??
+      ZERO_TIME_LABEL)
+    : formatSecondsLabel(totalSeconds - elapsedSeconds);
+
   return {
     elapsed: formatSecondsLabel(elapsedSeconds),
-    remaining: `${REMAINING_TIME_PREFIX}${formatSecondsLabel(totalSeconds - elapsedSeconds)}`,
+    remaining: `${REMAINING_TIME_PREFIX}${remainingLabel}`,
   };
 };

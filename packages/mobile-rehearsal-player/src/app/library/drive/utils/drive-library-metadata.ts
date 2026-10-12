@@ -67,6 +67,30 @@ export const formatDurationLabel = (durationMs?: number) => {
   return `${minutes}:${formatDurationSegment(seconds)}`;
 };
 
+const MS_PER_SECOND = 1000;
+const MS_PER_TENTH_SECOND = 100;
+const TENTHS_PER_SECOND = 10;
+
+// A length (not a position): a clip shorter than a second would read `0:00`,
+// which looks like an unreadable file, so it gets one decimal instead
+// (`0:00.6`). Positions keep whole seconds, or early playback would flicker
+// `0:00.4` before settling.
+export const formatLengthLabel = (durationMs?: number) => {
+  if (
+    durationMs === undefined ||
+    !Number.isFinite(durationMs) ||
+    durationMs <= 0 ||
+    durationMs >= MS_PER_SECOND
+  ) {
+    return formatDurationLabel(durationMs);
+  }
+
+  const tenths = Math.max(1, Math.round(durationMs / MS_PER_TENTH_SECOND));
+
+  // Just under a second rounds up to the whole second.
+  return tenths >= TENTHS_PER_SECOND ? '0:01' : `0:00.${tenths}`;
+};
+
 // The field's position under the root switcher implies its scope, so the
 // visible placeholder stays short; `helper` is the screen-reader name that
 // still says where it searches (design Decision 14).

@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, type ViewStyle } from 'react-native';
 
 import { appTheme } from '../../utils/theme';
 
@@ -11,6 +11,10 @@ const EQUALIZER_SLOT_SIZE = 20;
 const FOOTER_BOTTOM_INSET = space.xl;
 
 export const queueStyles = StyleSheet.create({
+  // Dragging a row by its handle must not select the row's text on web.
+  // react-native-web honors `userSelect` on any view, but React Native's
+  // `ViewStyle` type only lists it for text, hence the cast.
+  rowDragSurface: { userSelect: 'none' } as ViewStyle,
   dragRegion: {
     gap: 0,
   },

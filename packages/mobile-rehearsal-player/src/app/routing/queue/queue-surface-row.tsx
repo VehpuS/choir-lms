@@ -77,6 +77,7 @@ export const QueueSurfaceRow = ({
       onLayout={(event) => {
         onRowLayout(event.nativeEvent.layout.height);
       }}
+      style={styles.rowDragSurface}
     >
       <ExplorerListRow
         accessibilityLabel={presentation.accessibilityLabel}
