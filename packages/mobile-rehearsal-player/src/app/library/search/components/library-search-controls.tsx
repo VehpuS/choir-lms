@@ -116,17 +116,17 @@ export const LibrarySearchControls = ({
   tagFilterMatchMode,
   tagsSortState,
 }: LibrarySearchControlsProps) => {
-  const searchContextCopy = getLibrarySearchContextCopy();
+  const searchContextCopy = getLibrarySearchContextCopy(selectedView);
   const searchHelperCopy =
     selectedView === 'files'
-      ? `${searchContextCopy.helper} Scope: ${
+      ? `Scope: ${
           filesSearchScope === 'current-folder'
             ? currentFilesFolderName
               ? `This folder (${currentFilesFolderName})`
               : 'This folder'
             : 'All files'
         }`
-      : searchContextCopy.helper;
+      : undefined;
 
   const searchPanel = isSearchBarVisible ? (
     <ContextualSearchPanel

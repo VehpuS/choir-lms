@@ -26,14 +26,14 @@ import {
 } from './saved-loop-view-model.js';
 
 describe('saved loop builder view-model', () => {
-  it('prefills loop drafts with a source-aware suggested name', () => {
+  it('prefills loop drafts with the range as the suggested name', () => {
     assert.equal(
       getDefaultLoopName({
         endMs: 18500,
         sourceName: PLAYABLE_SOURCE.name,
         startMs: 12000,
       }),
-      'Loop 0:12 - 0:18 • Alto Line.mp3',
+      '0:12–0:18',
     );
 
     assert.deepEqual(
@@ -44,9 +44,9 @@ describe('saved loop builder view-model', () => {
       }),
       {
         endMs: 18500,
-        loopName: 'Loop 0:12 - 0:18 • Alto Line.mp3',
+        loopName: '0:12–0:18',
         startMs: 12000,
-        suggestedLoopName: 'Loop 0:12 - 0:18 • Alto Line.mp3',
+        suggestedLoopName: '0:12–0:18',
       },
     );
   });
@@ -67,9 +67,9 @@ describe('saved loop builder view-model', () => {
       }),
       {
         endMs: 47000,
-        loopName: 'Loop 0:30 - 0:47 • Alto Line.mp3',
+        loopName: '0:30–0:47',
         startMs: 30000,
-        suggestedLoopName: 'Loop 0:30 - 0:47 • Alto Line.mp3',
+        suggestedLoopName: '0:30–0:47',
       },
     );
 
@@ -87,7 +87,7 @@ describe('saved loop builder view-model', () => {
         endMs: 47000,
         loopName: 'Entrance cue',
         startMs: 30000,
-        suggestedLoopName: 'Loop 0:30 - 0:47 • Alto Line.mp3',
+        suggestedLoopName: '0:30–0:47',
       },
     );
   });

@@ -1,3 +1,4 @@
+import { formatSectionCount } from '../../components/saved-rehearsal-library-section/section-count-label';
 import { type NamedLoop, type PlayableItem } from '@org/audio-library-models';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -51,6 +52,8 @@ type SavedLoopSectionProps = {
   savedSources: DriveLibrarySource[];
   savedLoopIssue: SavedLoopIssue | null;
   savedLoops: NamedLoop[];
+  /** All saved loops, so the heading can read `1 of 3` while filtered. */
+  totalLoopCount?: number;
   saveLoop: (loop: NamedLoop) => Promise<boolean>;
   selectedTrack: PlayableItem | null;
   trackLoopView: {
@@ -96,6 +99,7 @@ export const SavedLoopSection = ({
   savedSources,
   savedLoopIssue,
   savedLoops,
+  totalLoopCount,
   saveLoop,
   selectedTrack,
   trackLoopView,
@@ -290,7 +294,7 @@ export const SavedLoopSection = ({
           queuePlayableItemNext={queuePlayableItemNext}
           queuePlayableItemUpNext={queuePlayableItemUpNext}
           removeLoop={removeLoop}
-          title={`Saved loops (${savedLoopCards.length})`}
+          title={`Saved loops (${formatSectionCount(savedLoopCards.length, totalLoopCount ?? savedLoopCards.length)})`}
           togglePlayableItemPlayback={togglePlayableItemPlayback}
         />
       ) : null}

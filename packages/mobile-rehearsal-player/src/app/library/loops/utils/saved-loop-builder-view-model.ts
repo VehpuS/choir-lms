@@ -82,11 +82,14 @@ const formatLoopNameRangeLabel = (
   const startLabel = formatDurationLabel(loop.startMs) ?? '0:00';
   const endLabel = formatDurationLabel(loop.endMs) ?? '0:00';
 
-  return `${startLabel} - ${endLabel}`;
+  return `${startLabel}–${endLabel}`;
 };
 
+// A new loop is named by its range alone (task 8.14): the parent track and the
+// range already sit on every row's meta line, so repeating them in the title
+// only pushed the useful part off the end. Saved names are never rewritten.
 export const getDefaultLoopName = (options: DefaultLoopNameOptions) => {
-  return `Loop ${formatLoopNameRangeLabel(options)} • ${options.sourceName}`;
+  return formatLoopNameRangeLabel(options);
 };
 
 export const createLoopBuilderDraft = (

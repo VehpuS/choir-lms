@@ -1,3 +1,4 @@
+import { formatSectionCount } from './section-count-label';
 import { aggregateRehearsalLibraryTags } from '@org/audio-library-runtime';
 import { useMemo } from 'react';
 
@@ -147,7 +148,7 @@ export const useSavedRehearsalLibrarySectionOrchestration = ({
     sectionState.searchState.isLibrarySearchMode;
   const savedSourceTitle = showResults
     ? `Matching saved rehearsal tracks (${sectionState.searchState.visibleSavedLibrarySources.length})`
-    : `Saved rehearsal tracks (${savedLibrarySources.length})`;
+    : `Saved rehearsal tracks (${formatSectionCount(sectionState.searchState.visibleSavedLibrarySources.length, savedLibrarySources.length)})`;
   const visibleSections = resolveSavedRehearsalLibraryVisibleSections(
     sectionState.selectedView,
   );

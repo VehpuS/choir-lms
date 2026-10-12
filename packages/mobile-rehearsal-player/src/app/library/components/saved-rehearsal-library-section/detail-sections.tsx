@@ -56,6 +56,7 @@ type SavedRehearsalLibraryLoopSectionContentProps = {
   savedLibrarySources: DriveLibrarySource[];
   savedLoopIssue: SavedLoopIssue | null;
   savedLoops: NamedLoop[];
+  totalLoopCount?: number;
   saveLoop: (loop: NamedLoop) => Promise<boolean>;
   searchHighlightQuery: string | null;
   selectedTrack: SavedRehearsalLibrarySectionProps['selectedTrack'];
@@ -87,6 +88,7 @@ export const SavedRehearsalLibraryLoopSectionContent = ({
   savedLibrarySources,
   savedLoopIssue,
   savedLoops,
+  totalLoopCount,
   saveLoop,
   searchHighlightQuery,
   selectedTrack,
@@ -120,6 +122,7 @@ export const SavedRehearsalLibraryLoopSectionContent = ({
       removeLoop={removeLoop}
       savedLoopIssue={savedLoopIssue}
       savedLoops={savedLoops}
+      totalLoopCount={totalLoopCount}
       savedSources={savedLibrarySources}
       saveLoop={saveLoop}
       selectedTrack={selectedTrack}

@@ -122,6 +122,7 @@ export const buildSavedRehearsalLibraryDetailSectionElements = (options: {
       savedLibrarySources={props.savedLibrarySources}
       savedLoopIssue={props.savedLoopIssue}
       savedLoops={searchState.visibleSavedLoops}
+      totalLoopCount={props.savedLoops.length}
       saveLoop={saveLoopForVisibleContext}
       searchHighlightQuery={searchState.activeLibrarySearchQuery}
       selectedTrack={props.selectedTrack}

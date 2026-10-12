@@ -119,10 +119,24 @@ export const getDriveSearchContextCopy = (
   };
 };
 
-export const getLibrarySearchContextCopy = (): SearchContextCopy => {
+// Search is per view, so the placeholder names the view it searches instead of
+// implying one box covers the whole library (task 8.87).
+const LIBRARY_SEARCH_PLACEHOLDERS: Record<string, string> = {
+  files: 'Search files',
+  loops: 'Search loops',
+  playlists: 'Search playlists',
+  tags: 'Search tags',
+  tracks: 'Search tracks',
+};
+const DEFAULT_LIBRARY_SEARCH_PLACEHOLDER = 'Search saved library';
+
+export const getLibrarySearchContextCopy = (
+  view?: string,
+): { placeholder: string } => {
   return {
-    helper: 'Search saved library (playlists, tracks, loops, and tags)',
-    placeholder: 'Search saved library',
+    placeholder:
+      (view ? LIBRARY_SEARCH_PLACEHOLDERS[view] : undefined) ??
+      DEFAULT_LIBRARY_SEARCH_PLACEHOLDER,
   };
 };
 

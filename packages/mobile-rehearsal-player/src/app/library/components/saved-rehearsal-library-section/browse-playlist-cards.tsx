@@ -79,6 +79,7 @@ export const BrowsePlaylistCards = ({
         void playlistState.handleRenamePlaylistCard();
       }}
       playlistCards={playlistCards}
+      totalPlaylistCount={savedPlaylists.length}
       selectedPlaylistId={playlistState.selectedPlaylist?.id ?? null}
     />
   );

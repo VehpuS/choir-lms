@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import type { Playlist } from '@org/audio-library-models';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
+import { subscribeToFilesCreateMenuRequests } from '../../library/components/saved-rehearsal-library-section/files-create-menu-request';
 import { LibraryFilesFolderCreateDialog } from '../../library/components/saved-rehearsal-library-section/library-files-folder-create-dialog';
 import {
   createLibraryFilesSuccessFeedback,
@@ -54,6 +55,13 @@ export const LibraryFilesCreateControls = ({
     useState(false);
   const [isFilesPlaylistMutating, setIsFilesPlaylistMutating] = useState(false);
   const filesFolderLabel = files.explorer?.currentFolder.name ?? 'Files';
+
+  // The folder's empty state asks for this same menu (task 8.94).
+  useEffect(() => {
+    return subscribeToFilesCreateMenuRequests(() => {
+      setIsFilesCreateMenuVisible(true);
+    });
+  }, []);
 
   useEffect(() => {
     onPlaylistCreateDialogVisibilityChange?.(isFilesPlaylistDialogVisible);

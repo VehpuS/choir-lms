@@ -8,6 +8,8 @@ import { OutlinedActionButton } from '../../../components/outlined-action-button
 import { FeedbackCard } from '../feedback-card';
 import { FilesExplorerList } from './files-explorer-list';
 import { SearchNoResults } from './search-no-results';
+import { FilesEmptyFolder } from './files-empty-folder';
+import { shouldShowEmptyFolder } from './files-empty-folder-model';
 import type { SavedRehearsalLibraryFilesViewProps } from './files-view-types';
 import {
   buildSavedRehearsalLibraryFilesViewModel,
@@ -251,6 +253,13 @@ export const SavedRehearsalLibraryFilesView = ({
         setOpenMenuRowKey={setOpenMenuRowKey}
         viewModel={viewModel}
       />
+      {shouldShowEmptyFolder({
+        isSelecting: selection.isActive,
+        rowCount: explorer.rows.length,
+        searchQuery: searchState.activeSearchQuery,
+      }) ? (
+        <FilesEmptyFolder />
+      ) : null}
       <SearchNoResults
         query={searchState.activeSearchQuery}
         resultCounts={{

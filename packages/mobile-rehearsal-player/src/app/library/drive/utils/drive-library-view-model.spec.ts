@@ -300,9 +300,14 @@ describe('drive library search context copy', () => {
     );
   });
 
-  it('adds bracketed corpus detail in library search copy', () => {
+  it('names the searched view in the search placeholder', () => {
+    assert.deepEqual(getLibrarySearchContextCopy('loops'), {
+      placeholder: 'Search loops',
+    });
+    assert.deepEqual(getLibrarySearchContextCopy('files'), {
+      placeholder: 'Search files',
+    });
     assert.deepEqual(getLibrarySearchContextCopy(), {
-      helper: 'Search saved library (playlists, tracks, loops, and tags)',
       placeholder: 'Search saved library',
     });
   });

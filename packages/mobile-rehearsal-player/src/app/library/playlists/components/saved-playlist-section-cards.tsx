@@ -1,3 +1,4 @@
+import { formatSectionCount } from '../../components/saved-rehearsal-library-section/section-count-label';
 import { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -58,6 +59,8 @@ export const SavedPlaylistCardsList = (props: {
   onRenamePlaylistNameChange: (value: string) => void;
   onSubmitRenamePlaylist: () => void;
   playlistCards: SavedPlaylistCard[];
+  /** All saved playlists, so the heading can read `1 of 3` while filtered. */
+  totalPlaylistCount?: number;
   selectedPlaylistId?: string | null;
   onPlayPlaylist: (playlistId: string) => void;
   onSelectPlaylist: (playlistId: string) => void;
@@ -94,7 +97,12 @@ export const SavedPlaylistCardsList = (props: {
     <View style={styles.surface}>
       <View style={styles.listHeader}>
         <Text style={styles.listTitle}>
-          Playlists ({props.playlistCards.length})
+          Playlists (
+          {formatSectionCount(
+            props.playlistCards.length,
+            props.totalPlaylistCount ?? props.playlistCards.length,
+          )}
+          )
         </Text>
         {selection.entryButton}
       </View>
