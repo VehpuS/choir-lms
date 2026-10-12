@@ -1,6 +1,6 @@
 import { createTrackPlayableItem } from '@org/audio-library-models';
 import type { DriveAuthorizationState } from '@org/google-drive';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Linking } from 'react-native';
 
 import { useDriveLibrary } from '../drive/hooks/use-drive-library';
@@ -20,6 +20,7 @@ import { saveDiscoveredDriveSource } from './save-discovered-drive-source';
 import { useDriveImportController } from './use-drive-import-controller';
 import { useLibraryFiles } from './use-library-files';
 import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
+import { isSelectedLoopSourceStale } from './selected-loop-source';
 import { useSavedRehearsalLibraryRemovalActions } from './use-saved-rehearsal-library-removal-actions';
 import { useSavedSourceOriginalLocationActions } from './use-saved-source-original-location-actions';
 import {
@@ -107,6 +108,27 @@ export const useRehearsalLibraryController = ({
     refreshPlaylists: playlists.refreshPlaylists,
     removeSource: savedLibrary.removeSource,
   });
+  const { selectedLoopSourceId, setSelectedLoopSourceId } =
+    savedLibraryRemovalActions;
+
+  // Whichever path removed the track (single, bulk, last-link delete), the
+  // loop builder must stop remembering it.
+  useEffect(() => {
+    if (
+      isSelectedLoopSourceStale({
+        isLibraryLoading: savedLibrary.isLoading,
+        savedSourceIds: savedLibrary.savedSources.map(({ id }) => id),
+        selectedLoopSourceId,
+      })
+    ) {
+      setSelectedLoopSourceId(null);
+    }
+  }, [
+    savedLibrary.isLoading,
+    savedLibrary.savedSources,
+    selectedLoopSourceId,
+    setSelectedLoopSourceId,
+  ]);
   const canRefresh =
     authState.status === 'authorized' || authState.status === 'expired';
   const isSearchMode = driveLibrary.activeSearchQuery !== null;
