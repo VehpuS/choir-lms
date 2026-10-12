@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
@@ -11,6 +11,7 @@ import { InteractionChip } from '../interaction-chip';
 import {
   resolveEdgeFadeStops,
   resolveHorizontalScrollEdgeFades,
+  resolveScrollXToRevealChip,
   VIEW_SWITCHER_EDGE_FADE_COLOR,
   VIEW_SWITCHER_EDGE_FADE_WIDTH,
   type HorizontalScrollEdge,
@@ -72,15 +73,44 @@ export const SavedRehearsalLibraryViewSwitcher = ({
   const [containerWidth, setContainerWidth] = useState(0);
   const [contentWidth, setContentWidth] = useState(0);
   const [scrollX, setScrollX] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const chipLayoutsRef = useRef(
+    new Map<string, { width: number; x: number }>(),
+  );
   const edgeFades = resolveHorizontalScrollEdgeFades({
     containerWidth,
     contentWidth,
     scrollX,
   });
 
+  // The row never moved on its own, so a view chosen from elsewhere (Recents'
+  // `See all`) or at the overflowing end could sit half under the edge fade.
+  useEffect(() => {
+    const chip = chipLayoutsRef.current.get(selectedView);
+
+    if (!chip) {
+      return;
+    }
+
+    const nextScrollX = resolveScrollXToRevealChip({
+      chipWidth: chip.width,
+      chipX: chip.x,
+      containerWidth,
+      contentWidth,
+      scrollX,
+    });
+
+    if (nextScrollX !== null) {
+      scrollViewRef.current?.scrollTo({ animated: true, x: nextScrollX });
+    }
+    // Only a different selection or a re-measured row should move the row; the
+    // user's own scrolling (`scrollX`) must not be fought.
+  }, [selectedView, containerWidth, contentWidth]);
+
   return (
     <View style={styles.viewRowWrapper}>
       <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={styles.viewRowContent}
         horizontal
         onContentSizeChange={(width) => {
@@ -97,16 +127,24 @@ export const SavedRehearsalLibraryViewSwitcher = ({
       >
         {SAVED_REHEARSAL_LIBRARY_VIEW_OPTIONS.map((option) => {
           return (
-            <InteractionChip
+            <View
               key={option.value}
-              accessibilityLabel={`Show ${option.label} library view`}
-              disabled={isViewSwitcherLocked}
-              label={option.label}
-              onPress={() => {
-                onSelectView(option.value);
+              onLayout={(event) => {
+                const { width, x } = event.nativeEvent.layout;
+
+                chipLayoutsRef.current.set(option.value, { width, x });
               }}
-              variant={selectedView === option.value ? 'selected' : 'passive'}
-            />
+            >
+              <InteractionChip
+                accessibilityLabel={`Show ${option.label} library view`}
+                disabled={isViewSwitcherLocked}
+                label={option.label}
+                onPress={() => {
+                  onSelectView(option.value);
+                }}
+                variant={selectedView === option.value ? 'selected' : 'passive'}
+              />
+            </View>
           );
         })}
       </ScrollView>

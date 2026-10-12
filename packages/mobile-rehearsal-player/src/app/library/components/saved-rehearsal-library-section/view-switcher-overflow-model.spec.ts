@@ -7,6 +7,7 @@ import { appTheme } from '../../../utils/theme.js';
 import {
   resolveEdgeFadeStops,
   resolveHorizontalScrollEdgeFades,
+  resolveScrollXToRevealChip,
   VIEW_SWITCHER_EDGE_FADE_COLOR,
 } from './view-switcher-overflow-model.js';
 
@@ -94,5 +95,93 @@ describe('view switcher edge fade', () => {
 
     assert.equal(start.opacity, 0);
     assert.equal(end.opacity, 1);
+  });
+});
+
+describe('resolveScrollXToRevealChip', () => {
+  // A 375pt-wide row whose five chips overflow by one: 430 of content.
+  const ROW = { containerWidth: 375, contentWidth: 430 };
+
+  it('scrolls a chip hidden under the trailing fade into view', () => {
+    // `Tags` at 340 to 420 starts under the fade of an unscrolled row.
+    assert.equal(
+      resolveScrollXToRevealChip({
+        ...ROW,
+        chipWidth: 80,
+        chipX: 340,
+        scrollX: 0,
+      }),
+      55,
+    );
+  });
+
+  it('does nothing for a chip that is already fully visible', () => {
+    assert.equal(
+      resolveScrollXToRevealChip({
+        ...ROW,
+        chipWidth: 70,
+        chipX: 100,
+        scrollX: 0,
+      }),
+      null,
+    );
+  });
+
+  it('scrolls back for a chip hidden under the leading fade', () => {
+    assert.equal(
+      resolveScrollXToRevealChip({
+        ...ROW,
+        chipWidth: 60,
+        chipX: 70,
+        scrollX: 55,
+      }),
+      38,
+    );
+  });
+
+  it('never scrolls past the ends of the row', () => {
+    assert.equal(
+      resolveScrollXToRevealChip({
+        ...ROW,
+        chipWidth: 80,
+        chipX: 350,
+        scrollX: 0,
+      }),
+      55,
+    );
+    assert.equal(
+      resolveScrollXToRevealChip({
+        ...ROW,
+        chipWidth: 60,
+        chipX: 0,
+        scrollX: 20,
+      }),
+      0,
+    );
+  });
+
+  it('leaves a first chip alone when the row is at its start, since no fade covers it', () => {
+    assert.equal(
+      resolveScrollXToRevealChip({
+        ...ROW,
+        chipWidth: 60,
+        chipX: 0,
+        scrollX: 0,
+      }),
+      null,
+    );
+  });
+
+  it('does nothing when the content fits the container', () => {
+    assert.equal(
+      resolveScrollXToRevealChip({
+        chipWidth: 80,
+        chipX: 300,
+        containerWidth: 400,
+        contentWidth: 380,
+        scrollX: 0,
+      }),
+      null,
+    );
   });
 });

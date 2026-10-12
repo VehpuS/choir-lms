@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 
+import { useEscapeToDismiss } from '../../components/escape-to-dismiss/use-escape-to-dismiss';
 import { QueueSurface } from '../queue/queue-surface';
 import { ShapingSurface } from './shaping/shaping-surface';
 import type { PlaybackShapingControls } from './shaping/shaping-surface-model';
@@ -177,6 +178,10 @@ export const PlaybackSurface = ({
     });
   }, [translateY]);
   const sheetFramePanHandlers = canRenderQueue ? {} : panResponder.panHandlers;
+
+  // On web there is no swipe-down: Escape closes the sheet the way the
+  // caret-down control does.
+  useEscapeToDismiss(surface !== null, dismissSurface);
 
   if (!surface) {
     return null;

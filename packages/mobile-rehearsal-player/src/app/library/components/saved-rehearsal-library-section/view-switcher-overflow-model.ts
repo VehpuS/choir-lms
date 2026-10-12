@@ -58,3 +58,41 @@ export const resolveEdgeFadeStops = (
     { offset: 1, opacity: 1 },
   ];
 };
+
+// Where to scroll the row so a chip is fully visible and clear of the edge
+// fades, or null when it already is. A chip at the leading end needs no fade
+// room (the row cannot scroll further back) and neither does one at the
+// trailing end, so the room is only reserved on a side the row can still
+// scroll toward after this move.
+export const resolveScrollXToRevealChip = (options: {
+  chipWidth: number;
+  chipX: number;
+  containerWidth: number;
+  contentWidth: number;
+  scrollX: number;
+}): number | null => {
+  const maxScrollX = Math.max(options.contentWidth - options.containerWidth, 0);
+  const chipEnd = options.chipX + options.chipWidth;
+  const clamp = (scrollX: number) => Math.min(Math.max(scrollX, 0), maxScrollX);
+  const hiddenOnTheLeft =
+    options.chipX < options.scrollX + VIEW_SWITCHER_EDGE_FADE_WIDTH;
+  const hiddenOnTheRight =
+    chipEnd >
+    options.scrollX + options.containerWidth - VIEW_SWITCHER_EDGE_FADE_WIDTH;
+
+  if (hiddenOnTheLeft && options.scrollX > SCROLL_EPSILON) {
+    const target = clamp(options.chipX - VIEW_SWITCHER_EDGE_FADE_WIDTH);
+
+    return Math.abs(target - options.scrollX) > SCROLL_EPSILON ? target : null;
+  }
+
+  if (hiddenOnTheRight && options.scrollX < maxScrollX - SCROLL_EPSILON) {
+    const target = clamp(
+      chipEnd - options.containerWidth + VIEW_SWITCHER_EDGE_FADE_WIDTH,
+    );
+
+    return Math.abs(target - options.scrollX) > SCROLL_EPSILON ? target : null;
+  }
+
+  return null;
+};

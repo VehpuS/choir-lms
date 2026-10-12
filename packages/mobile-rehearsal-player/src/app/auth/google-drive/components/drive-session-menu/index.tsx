@@ -5,7 +5,7 @@ import type { DriveAuthorizationStatusCopy } from '../../utils/authorization';
 import { settingsNavigationStore } from '../../../../screens/settings/settings-navigation-store';
 import { DriveSessionMenuPanel } from './drive-session-menu-panel';
 import { DriveSessionMenuTrigger } from './drive-session-menu-trigger';
-import { useEscapeToDismiss } from './use-escape-to-dismiss';
+import { useEscapeToDismiss } from '../../../../components/escape-to-dismiss/use-escape-to-dismiss';
 
 type DriveSessionMenuProps = {
   authState: DriveAuthorizationState;

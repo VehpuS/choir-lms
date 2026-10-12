@@ -201,7 +201,7 @@ Applies to `PlaybackSurface` (when expanded from MiniPlayer), `DriveLibraryRootS
 
 ## SF Symbol Guidance
 
-For React Native, use the `react-native-sf-symbols` package or fallback to equivalent `@expo/vector-icons` / `lucide-react-native` icons that match the HIG semantic meaning:
+In this app every icon renders through `AppIcon` (`packages/mobile-rehearsal-player/src/app/components/app-icon`), which maps a semantic icon name to a Phosphor glyph; lint bans `@expo/vector-icons`. Add or reuse a name there rather than importing an icon package directly, and pick the glyph whose meaning matches the HIG symbol:
 
 | Action              | SF Symbol name                                    | Semantic meaning                   |
 | ------------------- | ------------------------------------------------- | ---------------------------------- |
