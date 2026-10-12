@@ -2,7 +2,6 @@ import { aggregateRehearsalLibraryTags } from '@org/audio-library-runtime';
 import { useEffect, useMemo, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/google-drive/hooks/use-authorization';
 import { SavedItemAvailabilityProvider } from '../library/components/saved-item-menu/saved-item-availability-context';
-import { subscribeToSavedItemRequests } from '../library/components/saved-item-menu/saved-item-requests';
 import { useSavedTrackPlayback } from '../library/playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackActionCopy } from '../library/playback/utils/saved-track-playback-view-model';
 import { canShowQueuePlaylistActions } from '../library/playlists/utils/saved-playlist-playback-view-model';
@@ -20,6 +19,7 @@ import {
 import { MobileShell } from './shell/mobile-shell';
 import type { ShellDestinationKey } from './shell/shell-model';
 import { getPlaybackShapingContextLabel } from './shell/shell-playback-summary-model';
+import { useSavedItemAvailability } from './use-saved-item-availability';
 import { useAppRouterPlaybackShaping } from './use-app-router-playback-shaping';
 import { useAppRouterQueuePlaylistActions } from './use-app-router-queue-playlist-actions';
 
@@ -75,20 +75,13 @@ export const AppRouter = () => {
         playbackState: playback.playbackState,
       })
     : null;
-  const savedSourceIds = useMemo(() => {
-    return new Set(
-      libraryController.savedLibrary.savedLibrarySources.map((source) => {
-        return source.id;
-      }),
-    );
-  }, [libraryController.savedLibrary.savedLibrarySources]);
-  const savedLoopIds = useMemo(() => {
-    return new Set(
-      libraryController.savedLibrary.savedLoops.map((loop) => {
-        return loop.id;
-      }),
-    );
-  }, [libraryController.savedLibrary.savedLoops]);
+  const { savedLoopIds, savedSourceIds } = useSavedItemAvailability({
+    onViewTrackLoops: () => {
+      requestDestination('library');
+    },
+    savedLoops: libraryController.savedLibrary.savedLoops,
+    savedSources: libraryController.savedLibrary.savedLibrarySources,
+  });
   const libraryTagUsage = useMemo(() => {
     return aggregateRehearsalLibraryTags({
       entityCollections: {
@@ -185,16 +178,6 @@ export const AppRouter = () => {
       return currentId + 1;
     });
   };
-
-  // Menus outside the Library ask it to run item actions (task 8.26); the ones
-  // that show the Library's loop view also bring the Library forward.
-  useEffect(() => {
-    return subscribeToSavedItemRequests((request) => {
-      if (request.action === 'view-track-loops') {
-        requestDestination('library');
-      }
-    });
-  });
 
   const closeTagDetail = () => {
     setCloseTagDetailRequestId((currentId) => {

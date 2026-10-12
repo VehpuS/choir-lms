@@ -22,7 +22,10 @@ import {
   resolveLibraryFilesSuggestedName,
   type UseLibraryFilesOptions,
 } from './library-files-operation-helpers';
+import { createLibraryFilesDeleteOperations } from './library-files-delete-operations';
+import { createLibraryFilesMoveOperations } from './library-files-move-operations';
 import { createLibraryFilesRenameOperations } from './library-files-rename-operations';
+import { getTrackRemoveFromLibraryImpact } from './library-files-removal-impact';
 
 type LibraryFilesOperationsOptions = {
   explorer: LibraryFilesExplorerState | null;
@@ -32,27 +35,6 @@ type LibraryFilesOperationsOptions = {
   setIssue: Dispatch<SetStateAction<LibraryFilesIssue | null>>;
   setTree: Dispatch<SetStateAction<RehearsalLibraryFileTree | null>>;
   tree: RehearsalLibraryFileTree | null;
-};
-
-const refreshSavedEntityCollectionAfterLastLinkDelete = async (
-  options: LibraryFilesEntityRefreshCallbacks,
-  entityKind: RehearsalLibraryEntityKind,
-) => {
-  if (entityKind === 'track') {
-    await Promise.all([
-      options.refreshSavedSources(),
-      options.refreshSavedLoops(),
-      options.refreshSavedPlaylists(),
-    ]);
-    return;
-  }
-
-  if (entityKind === 'loop') {
-    await options.refreshSavedLoops();
-    return;
-  }
-
-  await options.refreshSavedPlaylists();
 };
 
 export const createLibraryFilesOperations = ({
@@ -107,63 +89,7 @@ export const createLibraryFilesOperations = ({
       tree,
     }),
     getTrackRemoveFromLibraryImpact(sourceId: string) {
-      const foldersById = new Map(
-        tree?.folders.map((folder) => {
-          return [folder.id, folder] as const;
-        }) ?? [],
-      );
-      const source = options.savedSources.find((savedSource) => {
-        return savedSource.id === sourceId;
-      });
-      // Removing a track also removes its adjusted tracks, so their links,
-      // loops, and playlist entries go with it and are listed too.
-      const adjustedTracks = options.savedSources.filter((savedSource) => {
-        return savedSource.adjustment?.sourceRef === sourceId;
-      });
-      const removedSourceIds = new Set([
-        sourceId,
-        ...adjustedTracks.map(({ id }) => id),
-      ]);
-      const fileLinks =
-        tree?.fileLinks.filter((fileLink) => {
-          return (
-            fileLink.entityKind === 'track' &&
-            removedSourceIds.has(fileLink.entityId)
-          );
-        }) ?? [];
-      const loops = options.savedLoops.filter((loop) => {
-        return removedSourceIds.has(loop.sourceId);
-      });
-      const playlistEntries = options.savedPlaylists.flatMap((playlist) => {
-        return playlist.items
-          .filter((item) => {
-            return removedSourceIds.has(item.sourceId);
-          })
-          .map((item) => {
-            return `${playlist.name}: ${item.title}`;
-          });
-      });
-
-      return {
-        adjustedTrackCount: adjustedTracks.length,
-        adjustedTrackNames: adjustedTracks.map((track) => track.name),
-        fileLinkCount: fileLinks.length,
-        fileLinkNames: fileLinks.map((fileLink) => {
-          const displayName =
-            fileLink.visibleName ??
-            options.savedSources.find(({ id }) => id === fileLink.entityId)
-              ?.name ??
-            source?.name ??
-            'Track';
-          const folderName = foldersById.get(fileLink.parentFolderId)?.name;
-
-          return folderName ? `${displayName} (${folderName})` : displayName;
-        }),
-        loopCount: loops.length,
-        loopNames: loops.map((loop) => loop.name),
-        playlistEntryCount: playlistEntries.length,
-        playlistEntryTitles: playlistEntries,
-      };
+      return getTrackRemoveFromLibraryImpact(tree, options, sourceId);
     },
     async createFolder(name: string): Promise<LibraryFilesOperationResult> {
       if (!tree) {
@@ -306,226 +232,20 @@ export const createLibraryFilesOperations = ({
         };
       }
     },
-    async deleteFileLink(fileLinkId: string) {
-      const fileLink =
-        tree?.fileLinks.find((existingFileLink) => {
-          return existingFileLink.id === fileLinkId;
-        }) ?? null;
-      const isLastLink = fileLink
-        ? createLibraryFilesImpactReaders(tree).getFileLinkDeleteImpact(
-            fileLink,
-          ).isLastLink
-        : false;
-
-      try {
-        const nextTree = await practiceRepository.deleteLibraryFileLink(
-          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-          fileLinkId,
-        );
-
-        setTree(nextTree);
-        setIssue(null);
-
-        if (isLastLink && fileLink) {
-          await refreshSavedEntityCollectionAfterLastLinkDelete(
-            options,
-            fileLink.entityKind,
-          );
-        }
-
-        return true;
-      } catch (error) {
-        setOperationIssue(
-          'Could not delete from folder',
-          'The selected library files item could not be deleted from this folder.',
-          error,
-        );
-        return false;
-      }
-    },
-    async deleteFolder(folderId: string) {
-      try {
-        const nextTree = await practiceRepository.deleteLibraryFolderNode(
-          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-          folderId,
-        );
-
-        setTree(nextTree);
-        setIssue(null);
-        setCurrentFolderId((currentValue) => {
-          return currentValue === folderId
-            ? nextTree.rootFolderId
-            : currentValue;
-        });
-        return true;
-      } catch (error) {
-        setOperationIssue(
-          'Could not delete folder',
-          'The selected library files folder could not be deleted.',
-          error,
-        );
-        return false;
-      }
-    },
-    async linkEntityToFolder(linkOptions: {
-      entityId: string;
-      entityKind: RehearsalLibraryEntityKind;
-      parentFolderId: string;
-    }) {
-      try {
-        const nextTree = await practiceRepository.saveLibraryFileLink(
-          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-          {
-            entityId: linkOptions.entityId,
-            entityKind: linkOptions.entityKind,
-            id: createUniqueNodeId(
-              `file-link:${linkOptions.entityKind}:${linkOptions.entityId}`,
-            ),
-            parentFolderId: linkOptions.parentFolderId,
-          },
-        );
-
-        setTree(nextTree);
-        setIssue(null);
-        return true;
-      } catch (error) {
-        setOperationIssue(
-          'Could not add item to folder',
-          'The selected library files folder could not accept this item.',
-          error,
-        );
-        return false;
-      }
-    },
-    async moveFileLink(optionsForMove: {
-      destinationFolderId: string;
-      fileLink: RehearsalLibraryFileLinkNode;
-    }) {
-      try {
-        const nextTree = await practiceRepository.saveLibraryFileLink(
-          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-          {
-            ...optionsForMove.fileLink,
-            parentFolderId: optionsForMove.destinationFolderId,
-          },
-        );
-
-        setTree(nextTree);
-        setIssue(null);
-        return {
-          didComplete: true,
-          issue: null,
-        };
-      } catch (error) {
-        const issue = createLibraryFilesIssue({
-          error,
-          fallbackMessage:
-            'The selected library files item could not be moved to that folder.',
-          fallbackTitle: 'Could not move item',
-          recovery(conflictingName) {
-            const suggestedName = buildSuggestedName(
-              optionsForMove.destinationFolderId,
-              conflictingName,
-            );
-
-            return suggestedName
-              ? {
-                  kind: 'rename-before-retry' as const,
-                  label: `Rename to "${suggestedName}"`,
-                  suggestedName,
-                }
-              : undefined;
-          },
-        });
-
-        setIssue(issue);
-        return {
-          didComplete: false,
-          issue,
-        };
-      }
-    },
-    async moveFolder(optionsForMove: {
-      destinationFolderId: string;
-      folder: RehearsalLibraryFolderNode;
-    }) {
-      try {
-        const nextTree = await practiceRepository.saveLibraryFolderNode(
-          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-          {
-            ...optionsForMove.folder,
-            parentFolderId: optionsForMove.destinationFolderId,
-          },
-        );
-
-        setTree(nextTree);
-        setIssue(null);
-        return {
-          didComplete: true,
-          issue: null,
-        };
-      } catch (error) {
-        const issue = createLibraryFilesIssue({
-          error,
-          fallbackMessage:
-            'The selected library files folder could not be moved to that location.',
-          fallbackTitle: 'Could not move folder',
-          recovery(conflictingName) {
-            const suggestedName = buildSuggestedName(
-              optionsForMove.destinationFolderId,
-              conflictingName,
-            );
-
-            return suggestedName
-              ? {
-                  kind: 'rename-before-retry' as const,
-                  label: `Rename to "${suggestedName}"`,
-                  suggestedName,
-                }
-              : undefined;
-          },
-        });
-
-        setIssue(issue);
-        return {
-          didComplete: false,
-          issue,
-        };
-      }
-    },
-    async saveFolderTags(optionsForTags: {
-      folder: RehearsalLibraryFolderNode;
-      tags: string[];
-    }) {
-      try {
-        const nextTree = await practiceRepository.saveLibraryFolderNode(
-          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
-          {
-            ...optionsForTags.folder,
-            tags: optionsForTags.tags,
-          },
-        );
-
-        setTree(nextTree);
-        setIssue(null);
-        return {
-          didComplete: true,
-          issue: null,
-        };
-      } catch (error) {
-        const issue = createLibraryFilesIssue({
-          error,
-          fallbackMessage:
-            "The selected library files folder's tags could not be saved.",
-          fallbackTitle: 'Could not save folder tags',
-        });
-
-        setIssue(issue);
-        return {
-          didComplete: false,
-          issue,
-        };
-      }
-    },
+    ...createLibraryFilesDeleteOperations({
+      options,
+      practiceRepository,
+      setCurrentFolderId,
+      setIssue,
+      setOperationIssue,
+      setTree,
+      tree,
+    }),
+    ...createLibraryFilesMoveOperations({
+      buildSuggestedName,
+      practiceRepository,
+      setIssue,
+      setTree,
+    }),
   };
 };
