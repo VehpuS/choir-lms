@@ -35,8 +35,8 @@ Common Nx tasks (mirrors CI in `.github/workflows/ci.yml`):
 ```sh
 npm exec -- nx sync:check                                    # validate Nx project graph sync
 npm exec -- nx format:check --base=origin/main --head=HEAD   # PR-scoped format check
-npm exec -- nx affected -t lint test typecheck --base=origin/main --head=HEAD
-npm exec -- nx run-many -t lint test typecheck --all         # full check, as run on push to main
+npm exec -- nx affected -t lint test typecheck build --base=origin/main --head=HEAD
+npm exec -- nx run-many -t lint test typecheck build --all         # full check, as run on push to main
 ```
 
 Single project / single test:
