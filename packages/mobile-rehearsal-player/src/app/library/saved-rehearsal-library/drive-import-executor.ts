@@ -9,7 +9,6 @@ import {
   createDriveImportRepositoryWriteQueue,
   createFailedDriveImportOutcome,
   createPendingFolderCancellationOutcomes,
-  createPendingTrackCancellationOutcomes,
   createUnsupportedDriveImportOutcomes,
   resolveDriveImportTargetFolderId,
   runDriveImportWithConcurrency,
@@ -60,6 +59,86 @@ type ExecuteDriveImportPlanOptions = {
   plan: DriveImportPlan;
   repository: DriveImportRepository;
   signal?: AbortSignal;
+};
+
+type ImportTrackLinkOptions = {
+  folderIdsByDriveId: ReadonlyMap<string, string>;
+  intent: DriveImportPlan['tracks'][number];
+  ownerId: string;
+  repository: DriveImportRepository;
+  signal?: AbortSignal;
+  sourceResult: DriveImportSourceResult | undefined;
+  unavailableFolderIds: ReadonlySet<string>;
+};
+
+const TRACK_COMPLETED_STATUS = {
+  'already-present': 'already-present',
+  new: 'created',
+  reusable: 'reused',
+} as const;
+
+// Links one planned track into its target folder and reports it exactly once:
+// the source stage's failure or cancellation, a cancel before this track, the
+// link's own failure, or the track's completed status.
+const importTrackLink = async (
+  options: ImportTrackLinkOptions,
+): Promise<DriveImportOutcome> => {
+  const { intent, sourceResult } = options;
+  const identity = {
+    itemId: intent.canonicalSourceId,
+    itemKind: 'source' as const,
+    itemName: intent.source.name,
+  };
+
+  if (sourceResult?.outcome) {
+    return sourceResult.outcome;
+  }
+
+  if (options.signal?.aborted) {
+    return createCancelledDriveImportOutcome(identity);
+  }
+
+  const targetFolderId = resolveDriveImportTargetFolderId(
+    intent.targetFolder,
+    options.folderIdsByDriveId,
+  );
+  const targetUnavailable =
+    intent.targetFolder.kind === 'planned-folder' &&
+    options.unavailableFolderIds.has(intent.targetFolder.driveFolderId);
+
+  try {
+    if (!sourceResult?.available) {
+      throw new Error('The source could not be saved.');
+    }
+    if (!targetFolderId || targetUnavailable) {
+      throw new Error('The target folder could not be created.');
+    }
+
+    if (intent.classification === 'new') {
+      if (!sourceResult.source) {
+        throw new Error('The source could not be prepared for saving.');
+      }
+      await options.repository.saveSource(
+        options.ownerId,
+        sourceResult.source,
+        {
+          fileLink: createDriveImportFileLink(intent, targetFolderId),
+        },
+      );
+    } else if (intent.classification !== 'already-present') {
+      await options.repository.saveLibraryFileLink(
+        options.ownerId,
+        createDriveImportFileLink(intent, targetFolderId),
+      );
+    }
+
+    return {
+      ...identity,
+      status: TRACK_COMPLETED_STATUS[intent.classification],
+    };
+  } catch (error) {
+    return createFailedDriveImportOutcome({ error, ...identity });
+  }
 };
 
 export const executeDriveImportPlan = async (
@@ -165,28 +244,28 @@ export const executeDriveImportPlan = async (
             options.repository.saveSource(options.ownerId, sourceToSave),
           );
         }
+        // A track is reported once, by the link stage below, so a loaded
+        // source carries no outcome of its own.
         return {
           available: true,
-          ...(intent.classification === 'new'
-            ? { source: sourceToSave }
-            : {
-                outcome: {
-                  itemId: intent.canonicalSourceId,
-                  itemKind: 'source' as const,
-                  itemName: intent.source.name,
-                  status: 'reused' as const,
-                },
-              }),
+          ...(intent.classification === 'new' ? { source: sourceToSave } : {}),
         };
       } catch (error) {
+        // An abort is the user's cancel, not a failure of the track.
         return {
           available: false,
-          outcome: createFailedDriveImportOutcome({
-            error,
-            itemId: intent.canonicalSourceId,
-            itemKind: 'source',
-            itemName: intent.source.name,
-          }),
+          outcome: options.signal?.aborted
+            ? createCancelledDriveImportOutcome({
+                itemId: intent.canonicalSourceId,
+                itemKind: 'source',
+                itemName: intent.source.name,
+              })
+            : createFailedDriveImportOutcome({
+                error,
+                itemId: intent.canonicalSourceId,
+                itemKind: 'source',
+                itemName: intent.source.name,
+              }),
         };
       } finally {
         completedSources += 1;
@@ -217,97 +296,24 @@ export const executeDriveImportPlan = async (
       };
     }
   }
-  outcomes.push(
-    ...sourceResults.flatMap((result) =>
-      result?.outcome ? [result.outcome] : [],
-    ),
-  );
-
   options.onProgress?.({
     completedItems: 0,
     phase: 'linking-tracks',
     totalItems: options.plan.tracks.length,
   });
   for (const [index, intent] of options.plan.tracks.entries()) {
-    if (options.signal?.aborted) {
-      outcomes.push(
-        ...createPendingTrackCancellationOutcomes({
-          sourceAvailability: sourceResults
-            .slice(index)
-            .map((result) => result?.available ?? false),
-          tracks: options.plan.tracks.slice(index),
-        }),
-      );
-      break;
-    }
-
-    const targetFolderId = resolveDriveImportTargetFolderId(
-      intent.targetFolder,
+    // One outcome per track, keyed by its source id (retry planning reads it).
+    const trackOutcome = await importTrackLink({
       folderIdsByDriveId,
-    );
-    const targetUnavailable =
-      intent.targetFolder.kind === 'planned-folder' &&
-      unavailableFolderIds.has(intent.targetFolder.driveFolderId);
+      intent,
+      ownerId: options.ownerId,
+      repository: options.repository,
+      signal: options.signal,
+      sourceResult: sourceResults[index],
+      unavailableFolderIds,
+    });
 
-    try {
-      if (!sourceResults[index]?.available) {
-        throw new Error('The source could not be saved.');
-      }
-      if (!targetFolderId || targetUnavailable) {
-        throw new Error('The target folder could not be created.');
-      }
-
-      if (intent.classification === 'new') {
-        const source = sourceResults[index]?.source;
-
-        if (!source) {
-          throw new Error('The source could not be prepared for saving.');
-        }
-        await options.repository.saveSource(options.ownerId, source, {
-          fileLink: createDriveImportFileLink(intent, targetFolderId),
-        });
-        outcomes.push({
-          itemId: intent.canonicalSourceId,
-          itemKind: 'source',
-          itemName: intent.source.name,
-          status: 'created',
-        });
-      } else if (intent.classification !== 'already-present') {
-        await options.repository.saveLibraryFileLink(
-          options.ownerId,
-          createDriveImportFileLink(intent, targetFolderId),
-        );
-      }
-      outcomes.push({
-        itemId: intent.libraryFileLinkId,
-        itemKind: 'link',
-        itemName: intent.visibleName ?? intent.source.name,
-        status:
-          intent.classification === 'already-present'
-            ? 'already-present'
-            : 'created',
-      });
-    } catch (error) {
-      if (intent.classification === 'new') {
-        outcomes.push(
-          createFailedDriveImportOutcome({
-            error,
-            itemId: intent.canonicalSourceId,
-            itemKind: 'source',
-            itemName: intent.source.name,
-          }),
-        );
-      }
-      outcomes.push(
-        createFailedDriveImportOutcome({
-          error,
-          itemId: intent.libraryFileLinkId,
-          itemKind: 'link',
-          itemName: intent.visibleName ?? intent.source.name,
-        }),
-      );
-    }
-
+    outcomes.push(trackOutcome);
     options.onProgress?.({
       completedItems: index + 1,
       phase: 'linking-tracks',

@@ -13,6 +13,7 @@ import {
   canRetryDriveImportCompletion,
   getDriveImportCompletionStatusCopy,
   getDriveImportCompletionTone,
+  getDriveImportRetryLabel,
   getFailedDriveImportOutcomes,
 } from './drive-import-progress-model';
 import { ImportCountRows } from './import-count-rows';
@@ -27,7 +28,7 @@ type ImportCompletionSectionProps = {
 
 // Completion (design Decision 8): the outcome as a toned status card like 1e's
 // save acknowledgment, per-outcome counts, an expandable list of failed items
-// with their reasons, and `Retry failed` as the accent-outlined primary.
+// with their reasons, and `Retry failed` (`Resume import` after a cancel) as the accent-outlined primary.
 export const ImportCompletionSection = ({
   onRetryFailed,
   outcomes,
@@ -78,7 +79,7 @@ export const ImportCompletionSection = ({
       ) : null}
       {canRetryDriveImportCompletion(summary) ? (
         <OutlinedActionButton
-          label="Retry failed"
+          label={getDriveImportRetryLabel(summary.status)}
           onPress={onRetryFailed}
           variant="accent"
         />

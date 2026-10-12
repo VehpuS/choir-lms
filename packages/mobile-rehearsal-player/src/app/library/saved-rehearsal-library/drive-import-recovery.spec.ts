@@ -64,7 +64,8 @@ describe('Drive import cancellation and retry', () => {
 
     assert.equal(driveReads, 1);
     assert.equal((await repository.listSources(OWNER_ID)).length, 0);
-    assert.equal(result.summary.counts.cancelled, 6);
+    // One outcome per track: all three were cancelled.
+    assert.equal(result.summary.counts.cancelled, 3);
     assert.equal(result.summary.status, 'cancelled');
   });
 
@@ -121,7 +122,8 @@ describe('Drive import cancellation and retry', () => {
       (await repository.listLibraryFileTree(OWNER_ID)).fileLinks.length,
       1,
     );
-    assert.equal(cancelledResult.summary.counts.cancelled, 4);
+    // The first track completed; the other two were cancelled.
+    assert.equal(cancelledResult.summary.counts.cancelled, 2);
 
     const retryPlan = createDriveImportRetryPlan({
       libraryState: await createPlanState(repository),

@@ -32,27 +32,6 @@ export const createCancelledDriveImportOutcome = (options: {
   status: 'cancelled',
 });
 
-export const createPendingTrackCancellationOutcomes = (options: {
-  sourceAvailability: readonly boolean[];
-  tracks: readonly ClassifiedDriveImportTrackIntent[];
-}): DriveImportOutcome[] =>
-  options.tracks.flatMap((intent, index) => [
-    ...(intent.classification === 'new' && options.sourceAvailability[index]
-      ? [
-          createCancelledDriveImportOutcome({
-            itemId: intent.canonicalSourceId,
-            itemKind: 'source',
-            itemName: intent.source.name,
-          }),
-        ]
-      : []),
-    createCancelledDriveImportOutcome({
-      itemId: intent.libraryFileLinkId,
-      itemKind: 'link',
-      itemName: intent.visibleName ?? intent.source.name,
-    }),
-  ]);
-
 export const createPendingFolderCancellationOutcomes = (
   folders: readonly ClassifiedDriveImportFolderIntent[],
 ): DriveImportOutcome[] =>

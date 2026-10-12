@@ -38,10 +38,7 @@ const buildAudio = (
 
 describe('hasFolderInSelection', () => {
   it('reports true when the selection contains at least one folder', () => {
-    assert.equal(
-      hasFolderInSelection([buildAudio(), buildFolder()]),
-      true,
-    );
+    assert.equal(hasFolderInSelection([buildAudio(), buildFolder()]), true);
   });
 
   it('reports false for a folder-free selection of only audio results', () => {

@@ -120,8 +120,10 @@ describe('executeDriveImportPlan', () => {
     assert.equal(tree.folders.length, 3);
     assert.equal(tree.fileLinks.length, 4);
     assert.equal((await repository.listSources(OWNER_ID)).length, 3);
+    // Two folders and two new tracks are created; the reusable track is reused.
     assert.equal(result.summary.counts.reused, 1);
-    assert.equal(result.summary.counts.created, 7);
+    assert.equal(result.summary.counts.created, 4);
+    assert.equal(result.outcomes.length, 5);
     assert.equal(result.summary.status, 'completed');
     assert.deepEqual(
       [...new Set(progressPhases)],
@@ -213,8 +215,105 @@ describe('executeDriveImportPlan', () => {
       tree.fileLinks.map(({ entityId }) => entityId),
       ['drive:drive-success-track'],
     );
-    assert.equal(result.summary.counts.failed, 3);
-    assert.equal(result.summary.counts.created, 3);
+    // One failed folder plus its one failed track; one created folder plus its
+    // one created track.
+    assert.equal(result.summary.counts.failed, 2);
+    assert.equal(result.summary.counts.created, 2);
     assert.equal(result.summary.status, 'partial-failure');
+  });
+
+  describe('with two new tracks in the library root', () => {
+    const createTwoTrackPlan = async (
+      repository: AsyncStoragePracticeRepository,
+    ) => {
+      const folder = createFolder('drive-folder-two', 'Two tracks');
+
+      return createDriveImportPlan({
+        contentsByFolderId: new Map([
+          [
+            folder.id,
+            {
+              folders: [],
+              playableSources: [
+                asEnumeratedAudio(createAudio('drive-a', 'A.mp3', folder.id)),
+                asEnumeratedAudio(createAudio('drive-b', 'B.mp3', folder.id)),
+              ],
+              unavailableSources: [],
+            },
+          ],
+        ]),
+        destinationFolderId: REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+        libraryState: await createPlanState(repository),
+        mode: 'flatten',
+        selection: createSelection({ folders: [folder] }),
+      });
+    };
+
+    it('reports each track once, as created, when everything succeeds', async () => {
+      const repository = new AsyncStoragePracticeRepository();
+      const result = await executeDriveImportPlan({
+        loadDriveSource: async (source) => source,
+        now: () => CREATED_AT,
+        ownerId: OWNER_ID,
+        plan: await createTwoTrackPlan(repository),
+        repository,
+      });
+
+      assert.equal(result.summary.counts.created, 2);
+      assert.equal(result.outcomes.length, 2);
+    });
+
+    it('lists one failed row per track with the real reason when Drive cannot be read', async () => {
+      const repository = new AsyncStoragePracticeRepository();
+      const result = await executeDriveImportPlan({
+        loadDriveSource: async () => {
+          throw new Error('Drive could not be reached.');
+        },
+        now: () => CREATED_AT,
+        ownerId: OWNER_ID,
+        plan: await createTwoTrackPlan(repository),
+        repository,
+      });
+      const failed = result.outcomes.filter(
+        ({ status }) => status === 'failed',
+      );
+
+      assert.equal(result.summary.counts.failed, 2);
+      assert.deepEqual(
+        failed.map((outcome) => outcome.itemName),
+        ['A.mp3', 'B.mp3'],
+      );
+      assert.deepEqual(
+        failed.map(
+          (outcome) => outcome.status === 'failed' && outcome.errorMessage,
+        ),
+        ['Drive could not be reached.', 'Drive could not be reached.'],
+      );
+      assert.equal(result.summary.status, 'failed');
+    });
+
+    it('counts a cancel once as cancelled and never as failed', async () => {
+      const repository = new AsyncStoragePracticeRepository();
+      const controller = new AbortController();
+      const result = await executeDriveImportPlan({
+        loadDriveSource: async () => {
+          controller.abort();
+          // What fetch rejects with when its signal aborts mid-request.
+          throw Object.assign(new Error('The operation was aborted.'), {
+            name: 'AbortError',
+          });
+        },
+        now: () => CREATED_AT,
+        ownerId: OWNER_ID,
+        plan: await createTwoTrackPlan(repository),
+        repository,
+        signal: controller.signal,
+      });
+
+      assert.equal(result.summary.counts.cancelled, 2);
+      assert.equal(result.summary.counts.failed, 0);
+      assert.equal(result.summary.status, 'cancelled');
+      assert.equal(result.outcomes.length, 2);
+    });
   });
 });

@@ -12,6 +12,7 @@ import {
   getDriveImportCompletionTone,
   getDriveImportProgressCopy,
   getDriveImportProgressRatio,
+  getDriveImportRetryLabel,
   getFailedDriveImportOutcomes,
   resolveDriveImportReviewHeaderMode,
 } from './drive-import-progress-model.js';
@@ -85,6 +86,14 @@ describe('getDriveImportCompletionStatusCopy', () => {
     for (const copy of copies) {
       assert.ok(copy.description.length > 0);
     }
+  });
+});
+
+describe('getDriveImportRetryLabel', () => {
+  it('resumes a cancelled import and retries a failed or partly failed one', () => {
+    assert.equal(getDriveImportRetryLabel('cancelled'), 'Resume import');
+    assert.equal(getDriveImportRetryLabel('failed'), 'Retry failed');
+    assert.equal(getDriveImportRetryLabel('partial-failure'), 'Retry failed');
   });
 });
 

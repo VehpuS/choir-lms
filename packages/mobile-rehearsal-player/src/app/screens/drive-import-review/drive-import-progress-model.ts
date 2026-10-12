@@ -111,6 +111,12 @@ export const getDriveImportCompletionTone = (
   status: DriveImportCompletionStatus,
 ): FeedbackCardTone => COMPLETION_STATUS_TONES[status];
 
+// A cancelled import left work unstarted rather than broken, so its action
+// resumes it; a failed one retries what failed.
+export const getDriveImportRetryLabel = (
+  status: DriveImportCompletionStatus,
+) => (status === 'cancelled' ? 'Resume import' : 'Retry failed');
+
 export const canRetryDriveImportCompletion = (
   summary: DriveImportCompletionSummary,
 ) => summary.status !== 'completed';

@@ -130,22 +130,10 @@ describe('Drive import retry classification', () => {
         .map(({ itemId, status }) => ({ itemId, status }))
         .sort((a, b) => a.itemId.localeCompare(b.itemId)),
       [
-        {
-          itemId: 'drive:drive-already-present',
-          status: 'reused',
-        },
+        { itemId: 'drive:drive-already-present', status: 'already-present' },
         { itemId: 'drive:drive-new-failure', status: 'failed' },
         { itemId: 'drive:drive-reusable', status: 'reused' },
-        { itemId: 'existing-already-present-link', status: 'already-present' },
-        {
-          itemId: `file-link:drive-import:drive-new-failure:${encodeURIComponent(REHEARSAL_LIBRARY_ROOT_FOLDER_ID)}`,
-          status: 'failed',
-        },
-        {
-          itemId: `file-link:drive-import:drive-reusable:${encodeURIComponent(REHEARSAL_LIBRARY_ROOT_FOLDER_ID)}`,
-          status: 'created',
-        },
-      ].sort((a, b) => a.itemId.localeCompare(b.itemId)),
+      ],
     );
 
     const retryPlan = createDriveImportRetryPlan({
