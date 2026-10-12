@@ -3,6 +3,7 @@ import type {
   PlacementPlanEntry,
   PlacementResolution,
 } from '@org/audio-library-runtime';
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { OutlinedActionButton } from '../../../components/outlined-action-button';
@@ -12,6 +13,10 @@ import type { LibraryFilesIssue } from '../../saved-rehearsal-library/library-fi
 import { BottomSheetSurface } from '../bottom-sheet-surface';
 import { FeedbackCard } from '../feedback-card';
 import { getPlacementEntryDescription } from './files-bulk-copy';
+import {
+  getPlacementReviewSummary,
+  getPlacementReviewToggleLabel,
+} from './placement-review-summary';
 
 const LIST_MAX_HEIGHT = 320;
 const RESOLUTION_OPTIONS = [
@@ -59,6 +64,8 @@ export const FilesBulkPlacementReview = ({
   const needsAttention = entries.filter(({ status }) => status !== 'ready');
   const placeableCount = countPlaceableEntries(entries, resolutions);
   const verb = mode === 'copy' ? 'Copy' : 'Move';
+  // The rows sit behind a disclosure so a long selection stays a short sheet.
+  const [isListOpen, setIsListOpen] = useState(false);
 
   return (
     <BottomSheetSurface
@@ -67,30 +74,37 @@ export const FilesBulkPlacementReview = ({
       onClose={onCancel}
       title={`${verb} to ${destinationName}`}
     >
-      <ScrollView style={styles.list}>
-        {needsAttention.map((entry) => (
-          <View key={entry.itemId} style={styles.entry}>
-            <Text numberOfLines={1} style={styles.entryName}>
-              {entry.name}
-            </Text>
-            <Text style={styles.entryDescription}>
-              {getPlacementEntryDescription(entry, mode)}
-            </Text>
-            {entry.status === 'conflict' ? (
-              <SegmentedControl
-                accessibilityLabel={`${entry.name}: keep both or skip`}
-                onSelect={(value) => {
-                  onResolve(entry.itemId, value);
-                }}
-                options={RESOLUTION_OPTIONS}
-                selectedValue={resolutions[entry.itemId] ?? 'skip'}
-              />
-            ) : (
-              <Text style={styles.entryLeftOut}>Left out</Text>
-            )}
-          </View>
-        ))}
-      </ScrollView>
+      <Text style={styles.summary}>{getPlacementReviewSummary(entries)}</Text>
+      <OutlinedActionButton
+        label={getPlacementReviewToggleLabel(needsAttention.length, isListOpen)}
+        onPress={() => {
+          setIsListOpen((isOpen) => !isOpen);
+        }}
+      />
+      {isListOpen ? (
+        <ScrollView style={styles.list}>
+          {needsAttention.map((entry) => (
+            <View key={entry.itemId} style={styles.entry}>
+              <Text numberOfLines={1} style={styles.entryName}>
+                {entry.name}
+              </Text>
+              <Text style={styles.entryDescription}>
+                {getPlacementEntryDescription(entry, mode)}
+              </Text>
+              {entry.status === 'conflict' ? (
+                <SegmentedControl
+                  accessibilityLabel={`${entry.name}: keep both or skip`}
+                  onSelect={(value) => {
+                    onResolve(entry.itemId, value);
+                  }}
+                  options={RESOLUTION_OPTIONS}
+                  selectedValue={resolutions[entry.itemId] ?? 'skip'}
+                />
+              ) : null}
+            </View>
+          ))}
+        </ScrollView>
+      ) : null}
       {issue ? (
         <FeedbackCard
           message={issue.message}
@@ -136,15 +150,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
-  entryLeftOut: {
-    color: appTheme.colors.textSecondary,
-    fontSize: 13,
-  },
   entryName: {
     ...appTheme.type.rowTitle,
     color: appTheme.colors.text,
   },
   list: {
     maxHeight: LIST_MAX_HEIGHT,
+  },
+  summary: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
