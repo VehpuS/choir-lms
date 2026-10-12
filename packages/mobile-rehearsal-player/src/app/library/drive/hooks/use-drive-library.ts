@@ -1,35 +1,33 @@
 import {
   MY_DRIVE_ROOT_LOCATION,
   SHARED_FOLDERS_ROOT_LOCATION,
-  browseDriveLocation,
   createDrivePathResolutionCache,
-  searchDriveAudioFiles,
   type DriveAuthorizationState,
   type DriveBrowseLocation,
   type DriveBrowseSnapshot,
   type DriveFolder,
 } from '@org/google-drive';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { runtimeConfig } from '../../../../config/runtime';
 import { isDriveAuthorizationFailure } from '../../../auth/google-drive/utils/authorization';
 import {
   createDriveBrowseCache,
   createEmptyDriveBrowseSnapshot,
-  getDriveBrowseCacheKey,
   resolveVisibleDriveBrowse,
 } from '../utils/drive-browse-cache';
+import { loadDriveDiscovery } from '../utils/drive-discovery-load';
 import { createDriveDiscoveryRequest } from '../utils/drive-discovery-request';
+import {
+  createSuspendedDriveSearch,
+  resolveRestoredSearchToSkip,
+  type SuspendedDriveSearch,
+} from '../utils/drive-search-restore';
 import { buildDriveFolderNavigationStack } from '../utils/drive-navigation-stack';
 import {
   EMPTY_DRIVE_SEARCH_SNAPSHOT,
   useDriveLibrarySearch,
 } from './use-drive-library-search';
-import {
-  createDriveBrowseContextKey,
-  createDriveBrowseResults,
-} from '../utils/drive-basket-model';
-import { useDriveSearchSelection } from './use-drive-search-selection';
+import { useDriveLibrarySelection } from './use-drive-library-selection';
 
 const createRootLocation = (rootKind: DriveBrowseLocation['rootKind']) => {
   return {
@@ -64,6 +62,10 @@ export const useDriveLibrary = (
   const [refreshCount, setRefreshCount] = useState(0);
   const [searchReturnNavigationStack, setSearchReturnNavigationStack] =
     useState<DriveBrowseLocation[] | null>(null);
+  // The search left behind by opening a folder, and the query whose restored,
+  // finished results the next discovery run must not replace (task 8.21).
+  const suspendedSearchRef = useRef<SuspendedDriveSearch | null>(null);
+  const skipRestoredSearchRef = useRef<string | null>(null);
 
   const currentLocation =
     navigationStack[navigationStack.length - 1] ??
@@ -112,39 +114,25 @@ export const useDriveLibrary = (
     issue === null &&
     authState.status === 'authorized';
 
-  const browseSelectionSource = useMemo(
-    () =>
-      isAwaitingLocation
-        ? null
-        : {
-            contextKey: createDriveBrowseContextKey(currentLocation),
-            isComplete: issue === null,
-            isLoading,
-            results: createDriveBrowseResults(browseSnapshot, navigationStack),
-          },
-    [
-      browseSnapshot,
-      currentLocation,
-      isAwaitingLocation,
-      isLoading,
-      issue,
-      navigationStack,
-    ],
-  );
-  const searchSelection = useDriveSearchSelection({
-    activeQuery: activeSearchQuery,
-    browse: browseSelectionSource,
-    inputQuery: searchQuery,
-    isComplete: issue === null,
+  const searchSelection = useDriveLibrarySelection({
+    activeSearchQuery,
+    browseSnapshot,
+    currentLocation,
+    isAwaitingLocation,
     isLoading,
-    location: currentLocation,
-    results: searchSnapshot.results,
+    issue,
+    navigationStack,
+    searchQuery,
+    searchResults: searchSnapshot.results,
   });
 
   useEffect(() => {
     const accessToken = authState.accessToken;
 
     if (authState.status !== 'authorized' || !accessToken) {
+      // The restored results are cleared just below, so there is nothing left
+      // to protect from a re-run.
+      skipRestoredSearchRef.current = null;
       browseCacheRef.current.clear();
       pathCacheRef.current.clear();
       setLoadedBrowseSnapshot(createEmptyDriveBrowseSnapshot(currentLocation));
@@ -154,68 +142,31 @@ export const useDriveLibrary = (
       return;
     }
 
+    if (
+      activeSearchQuery !== null &&
+      skipRestoredSearchRef.current === activeSearchQuery
+    ) {
+      skipRestoredSearchRef.current = null;
+      setIsLoading(false);
+      setIssue(null);
+      return;
+    }
+
     const request = createDriveDiscoveryRequest();
 
     setIsLoading(true);
     setIssue(null);
 
-    const loadDiscovery = async () => {
-      if (activeSearchQuery) {
-        const nextSearchSnapshot = await searchDriveAudioFiles({
-          accessToken,
-          location: currentLocation,
-          onProgress: (progressSnapshot) => {
-            if (!request.shouldApplyResult()) {
-              return;
-            }
-
-            replaceSearchSnapshot(progressSnapshot);
-          },
-          query: activeSearchQuery,
-          supportedMimeTypes: runtimeConfig.supportedAudioMimeTypes,
-          supportedExtensions: runtimeConfig.supportedAudioExtensions,
-          signal: request.signal,
-        });
-
-        if (!request.shouldApplyResult()) {
-          return;
-        }
-
-        replaceSearchSnapshot(nextSearchSnapshot);
-        return;
-      }
-
-      const browseCacheKey = getDriveBrowseCacheKey(currentLocation);
-      const nextBrowseSnapshot = await browseDriveLocation({
-        accessToken,
-        location: currentLocation,
-        // Show folders as pages arrive, but never replace an already listed
-        // location (a refresh) with a folders-only view.
-        onFolders: (foldersSnapshot) => {
-          if (
-            !request.shouldApplyResult() ||
-            browseCacheRef.current.has(browseCacheKey)
-          ) {
-            return;
-          }
-
-          setLoadedBrowseSnapshot(foldersSnapshot);
-        },
-        pathCache: pathCacheRef.current,
-        supportedMimeTypes: runtimeConfig.supportedAudioMimeTypes,
-        supportedExtensions: runtimeConfig.supportedAudioExtensions,
-        signal: request.signal,
-      });
-
-      if (!request.shouldApplyResult()) {
-        return;
-      }
-
-      browseCacheRef.current.set(browseCacheKey, nextBrowseSnapshot);
-      setLoadedBrowseSnapshot(nextBrowseSnapshot);
-    };
-
-    void loadDiscovery()
+    void loadDriveDiscovery({
+      accessToken,
+      activeSearchQuery,
+      browseCache: browseCacheRef.current,
+      currentLocation,
+      onBrowseSnapshot: setLoadedBrowseSnapshot,
+      onSearchSnapshot: replaceSearchSnapshot,
+      pathCache: pathCacheRef.current,
+      request,
+    })
       .catch((error: unknown) => {
         if (!request.shouldApplyResult()) {
           return;
@@ -288,6 +239,11 @@ export const useDriveLibrary = (
     navigationStack,
     openFolder(folder: DriveFolder) {
       if (activeSearchQuery !== null) {
+        suspendedSearchRef.current = createSuspendedDriveSearch({
+          hasIssue: issue !== null,
+          isLoading,
+          query: activeSearchQuery,
+        });
         setSearchReturnNavigationStack(navigationStack);
         suspendSearch();
       }
@@ -319,6 +275,11 @@ export const useDriveLibrary = (
         return;
       }
 
+      skipRestoredSearchRef.current = resolveRestoredSearchToSkip(
+        suspendedSearchRef.current,
+        searchSnapshot.query || null,
+      );
+      suspendedSearchRef.current = null;
       setNavigationStack(searchReturnNavigationStack);
       setSearchReturnNavigationStack(null);
       restoreSearch();

@@ -6,23 +6,23 @@ import { describe, it } from 'node:test';
 import { createElement } from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 
-import { useDriveSearchSelection } from './use-drive-search-selection.js';
+import { useDriveBasketSelection } from './use-drive-basket-selection.js';
 import {
   RESULTS,
   ROOT_LOCATION,
   type HarnessProps,
   type SelectionHook,
-} from './use-drive-search-selection-test-fixtures.js';
+} from './use-drive-basket-selection-test-fixtures.js';
 
 (
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
-describe('useDriveSearchSelection', () => {
+describe('useDriveBasketSelection', () => {
   it('selects progressive result batches through complete discovery', async () => {
     const hookResult: { current: SelectionHook | null } = { current: null };
     const Harness = (props: HarnessProps) => {
-      hookResult.current = useDriveSearchSelection(props);
+      hookResult.current = useDriveBasketSelection(props);
       return null;
     };
     let renderer!: ReactTestRenderer;
@@ -65,7 +65,7 @@ describe('useDriveSearchSelection', () => {
   it('keeps the basket after query, root, and folder context changes', async () => {
     const hookResult: { current: SelectionHook | null } = { current: null };
     const Harness = (props: HarnessProps) => {
-      hookResult.current = useDriveSearchSelection(props);
+      hookResult.current = useDriveBasketSelection(props);
       return null;
     };
     const initialProps: HarnessProps = {
@@ -129,7 +129,7 @@ describe('useDriveSearchSelection', () => {
   it('ends a pending select-all on a context change but keeps the pages it added', async () => {
     const hookResult: { current: SelectionHook | null } = { current: null };
     const Harness = (props: HarnessProps) => {
-      hookResult.current = useDriveSearchSelection(props);
+      hookResult.current = useDriveBasketSelection(props);
       return null;
     };
     const loadingProps: HarnessProps = {
@@ -167,7 +167,7 @@ describe('useDriveSearchSelection', () => {
   it('clears the basket but stays in selection mode, and cancel leaves it', async () => {
     const hookResult: { current: SelectionHook | null } = { current: null };
     const Harness = (props: HarnessProps) => {
-      hookResult.current = useDriveSearchSelection(props);
+      hookResult.current = useDriveBasketSelection(props);
       return null;
     };
     let renderer!: ReactTestRenderer;
@@ -199,7 +199,7 @@ describe('useDriveSearchSelection', () => {
   it('continues to review only with a selection and returns from review with edit', async () => {
     const hookResult: { current: SelectionHook | null } = { current: null };
     const Harness = (props: HarnessProps) => {
-      hookResult.current = useDriveSearchSelection(props);
+      hookResult.current = useDriveBasketSelection(props);
       return null;
     };
     let renderer!: ReactTestRenderer;
@@ -233,7 +233,7 @@ describe('useDriveSearchSelection', () => {
   it('blocks stale-query and incomplete complete-set selection', async () => {
     const hookResult: { current: SelectionHook | null } = { current: null };
     const Harness = (props: HarnessProps) => {
-      hookResult.current = useDriveSearchSelection(props);
+      hookResult.current = useDriveBasketSelection(props);
       return null;
     };
     const props: HarnessProps = {

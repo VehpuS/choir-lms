@@ -8,13 +8,13 @@ import { createElement } from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 
 import { createDriveBrowseContextKey } from '../utils/drive-basket-model.js';
-import { useDriveSearchSelection } from './use-drive-search-selection.js';
+import { useDriveBasketSelection } from './use-drive-basket-selection.js';
 import {
   RESULTS,
   ROOT_LOCATION,
   type HarnessProps,
   type SelectionHook,
-} from './use-drive-search-selection-test-fixtures.js';
+} from './use-drive-basket-selection-test-fixtures.js';
 
 (
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -50,7 +50,7 @@ const browseProps = (
 const mount = async (props: HarnessProps) => {
   const hookResult: { current: SelectionHook | null } = { current: null };
   const Harness = (harnessProps: HarnessProps) => {
-    hookResult.current = useDriveSearchSelection(harnessProps);
+    hookResult.current = useDriveBasketSelection(harnessProps);
     return null;
   };
   let renderer!: ReactTestRenderer;
@@ -62,7 +62,7 @@ const mount = async (props: HarnessProps) => {
   return { Harness, hookResult, renderer };
 };
 
-describe('useDriveSearchSelection while browsing', () => {
+describe('useDriveBasketSelection while browsing', () => {
   it('selects and deselects the whole folder with one toggle', async () => {
     const { hookResult, renderer } = await mount(browseProps(RESULTS));
 

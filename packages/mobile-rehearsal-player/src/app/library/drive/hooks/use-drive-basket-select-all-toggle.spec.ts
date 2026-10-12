@@ -6,23 +6,23 @@ import { describe, it } from 'node:test';
 import { createElement } from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 
-import { useDriveSearchSelection } from './use-drive-search-selection.js';
+import { useDriveBasketSelection } from './use-drive-basket-selection.js';
 import {
   RESULTS,
   ROOT_LOCATION,
   type HarnessProps,
   type SelectionHook,
-} from './use-drive-search-selection-test-fixtures.js';
+} from './use-drive-basket-selection-test-fixtures.js';
 
 (
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
-describe('useDriveSearchSelection select-all toggle', () => {
+describe('useDriveBasketSelection select-all toggle', () => {
   it('reads Deselect all once everything is selected and toggles back', async () => {
     const hookResult: { current: SelectionHook | null } = { current: null };
     const Harness = (props: HarnessProps) => {
-      hookResult.current = useDriveSearchSelection(props);
+      hookResult.current = useDriveBasketSelection(props);
       return null;
     };
     let renderer!: ReactTestRenderer;
@@ -61,7 +61,7 @@ describe('useDriveSearchSelection select-all toggle', () => {
   it('treats selecting every row by hand as all selected', async () => {
     const hookResult: { current: SelectionHook | null } = { current: null };
     const Harness = (props: HarnessProps) => {
-      hookResult.current = useDriveSearchSelection(props);
+      hookResult.current = useDriveBasketSelection(props);
       return null;
     };
     let renderer!: ReactTestRenderer;
@@ -89,7 +89,7 @@ describe('useDriveSearchSelection select-all toggle', () => {
   it('deselects while results are still loading, stops gathering, and a later page stays unselected', async () => {
     const hookResult: { current: SelectionHook | null } = { current: null };
     const Harness = (props: HarnessProps) => {
-      hookResult.current = useDriveSearchSelection(props);
+      hookResult.current = useDriveBasketSelection(props);
       return null;
     };
     const loadingProps: HarnessProps = {
@@ -131,7 +131,7 @@ describe('useDriveSearchSelection select-all toggle', () => {
   it('returns to Select all when a later page arrives after a completed select-all', async () => {
     const hookResult: { current: SelectionHook | null } = { current: null };
     const Harness = (props: HarnessProps) => {
-      hookResult.current = useDriveSearchSelection(props);
+      hookResult.current = useDriveBasketSelection(props);
       return null;
     };
     const props: HarnessProps = {
@@ -161,7 +161,7 @@ describe('useDriveSearchSelection select-all toggle', () => {
   it('keeps basket items from another search when deselecting all', async () => {
     const hookResult: { current: SelectionHook | null } = { current: null };
     const Harness = (props: HarnessProps) => {
-      hookResult.current = useDriveSearchSelection(props);
+      hookResult.current = useDriveBasketSelection(props);
       return null;
     };
     const props: HarnessProps = {

@@ -3,7 +3,7 @@ import type {
   DriveDiscoveryResult,
 } from '@org/google-drive';
 
-import type { useDriveSearchSelection } from './use-drive-search-selection.js';
+import type { useDriveBasketSelection } from './use-drive-basket-selection.js';
 
 export const ROOT_LOCATION: DriveBrowseLocation = {
   id: 'root',
@@ -35,7 +35,7 @@ export const RESULTS: DriveDiscoveryResult[] = [
 
 export type HarnessProps = {
   activeQuery: string | null;
-  browse?: Parameters<typeof useDriveSearchSelection>[0]['browse'];
+  browse?: Parameters<typeof useDriveBasketSelection>[0]['browse'];
   inputQuery: string;
   isComplete: boolean;
   isLoading: boolean;
@@ -43,4 +43,4 @@ export type HarnessProps = {
   results: DriveDiscoveryResult[];
 };
 
-export type SelectionHook = ReturnType<typeof useDriveSearchSelection>;
+export type SelectionHook = ReturnType<typeof useDriveBasketSelection>;

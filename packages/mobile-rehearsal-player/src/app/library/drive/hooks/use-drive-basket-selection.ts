@@ -32,7 +32,7 @@ type DriveBrowseSelectionSource = {
   results: DriveDiscoveryResult[];
 };
 
-type UseDriveSearchSelectionOptions = {
+type UseDriveBasketSelectionOptions = {
   activeQuery: string | null;
   /** Null while the folder's rows are not the ones on screen yet. */
   browse?: DriveBrowseSelectionSource | null;
@@ -43,12 +43,12 @@ type UseDriveSearchSelectionOptions = {
   results: DriveDiscoveryResult[];
 };
 
-type DriveSearchSelectionState = {
+type DriveBasketSelectionState = {
   isReviewReady: boolean;
   selectAll: SelectAllState<DriveDiscoveryResult>;
 };
 
-const createInitialState = (): DriveSearchSelectionState => ({
+const createInitialState = (): DriveBasketSelectionState => ({
   isReviewReady: false,
   selectAll: createSelectAllState(createSelectionState<DriveDiscoveryResult>()),
 });
@@ -73,7 +73,7 @@ const toEntry = (
 
 // Identifies one search (scope + query) so a pending `Select all matching`
 // knows when the results it is gathering stop being the visible ones.
-export const createDriveSearchContextKey = (
+export const createDriveBasketContextKey = (
   location: Pick<DriveBrowseLocation, 'id' | 'kind' | 'rootKind'>,
   query: string,
 ) =>
@@ -88,14 +88,14 @@ export const createDriveSearchContextKey = (
 // search's results, or the browsed folder's rows when no search is active.
 // A context change keeps what is already selected (the basket) and only ends a
 // pending select-all, which keeps the pages it had already added.
-export const useDriveSearchSelection = (
-  options: UseDriveSearchSelectionOptions,
+export const useDriveBasketSelection = (
+  options: UseDriveBasketSelectionOptions,
 ) => {
   const hasCurrentQuery =
     options.activeQuery?.trim().toLocaleLowerCase() ===
     options.inputQuery.trim().toLocaleLowerCase();
   const searchContextKey = hasCurrentQuery
-    ? createDriveSearchContextKey(options.location, options.inputQuery)
+    ? createDriveBasketContextKey(options.location, options.inputQuery)
     : null;
   // A search that is typed but not yet run leaves the old results on screen,
   // so it has no source at all rather than falling back to the folder.
