@@ -129,6 +129,27 @@ describe('resolveTagEditorTagsAndTitle', () => {
 
     assert.deepEqual(resolveTagEditorTagsAndTitle(target).tags, []);
   });
+
+  it('returns the same empty list on every call for an untagged target so the sheet does not reset staged tags', () => {
+    const untagged: TagEditorTarget = {
+      kind: 'source',
+      source: createDriveAudioSource({
+        availability: { status: 'available' },
+        driveFileId: 'drive-file-2',
+        mimeType: 'audio/mpeg',
+        name: 'Untagged.mp3',
+      }),
+    };
+
+    assert.equal(
+      resolveTagEditorTagsAndTitle(untagged).tags,
+      resolveTagEditorTagsAndTitle(untagged).tags,
+    );
+    assert.equal(
+      resolveTagEditorTagsAndTitle({ kind: 'none' }).tags,
+      resolveTagEditorTagsAndTitle(untagged).tags,
+    );
+  });
 });
 
 type TagEditorHookResult = ReturnType<typeof useSavedRehearsalLibraryTagEditor>;
@@ -166,6 +187,41 @@ const createSpy = <Args extends unknown[], Result>(
 
   return { calls, spy };
 };
+
+describe('useSavedRehearsalLibraryTagEditor -> tags identity', () => {
+  it('keeps the tags list identical across re-renders for an untagged track', () => {
+    const untagged = createDriveAudioSource({
+      availability: { status: 'available' },
+      driveFileId: 'drive-file-3',
+      mimeType: 'audio/mpeg',
+      name: 'Untagged.mp3',
+    });
+    const { hookResultBox, renderer } = renderTagEditorHook({
+      saveFolderTags: async () => ({ didComplete: true }),
+      saveLoop: async () => true,
+      saveSource: async () => true,
+      savedPlaylists: [],
+      updatePlaylist: async () => null,
+    });
+
+    act(() => {
+      hookResultBox.current?.openSourceTagEditor(untagged);
+    });
+    const firstTags = hookResultBox.current?.tags;
+
+    // A fresh render of the hook's owner, as playback progress causes about
+    // once a second (here: the same target opened again).
+    act(() => {
+      hookResultBox.current?.openSourceTagEditor(untagged);
+    });
+
+    assert.equal(hookResultBox.current?.tags, firstTags);
+
+    act(() => {
+      renderer.unmount();
+    });
+  });
+});
 
 describe('useSavedRehearsalLibraryTagEditor -> saveTagEdits', () => {
   it('saves a source target with the edited tags and closes the editor on success', async () => {

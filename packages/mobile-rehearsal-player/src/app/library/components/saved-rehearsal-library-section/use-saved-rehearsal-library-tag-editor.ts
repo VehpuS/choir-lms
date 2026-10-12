@@ -38,32 +38,37 @@ type UseSavedRehearsalLibraryTagEditorOptions = {
   updatePlaylist: SavedRehearsalLibrarySectionProps['updatePlaylist'];
 };
 
+// One shared empty list: the tag editor sheet resets its draft whenever the
+// `tags` prop changes identity, and playback re-renders this hook's owner about
+// once a second. A fresh `[]` per render would clear tags the user had staged.
+const NO_TAGS: string[] = [];
+
 export const resolveTagEditorTagsAndTitle = (
   target: TagEditorTarget,
 ): { tags: string[]; title: string } => {
   switch (target.kind) {
     case 'source':
       return {
-        tags: target.source.tags ?? [],
+        tags: target.source.tags ?? NO_TAGS,
         title: `Track tags • ${target.source.name}`,
       };
     case 'loop':
       return {
-        tags: target.loop.tags ?? [],
+        tags: target.loop.tags ?? NO_TAGS,
         title: `Loop tags • ${target.loop.name}`,
       };
     case 'playlist':
       return {
-        tags: target.playlist.tags ?? [],
+        tags: target.playlist.tags ?? NO_TAGS,
         title: `Playlist tags • ${target.playlist.name}`,
       };
     case 'folder':
       return {
-        tags: target.folder.tags ?? [],
+        tags: target.folder.tags ?? NO_TAGS,
         title: `Folder tags • ${target.folder.name}`,
       };
     case 'none':
-      return { tags: [], title: '' };
+      return { tags: NO_TAGS, title: '' };
   }
 };
 
