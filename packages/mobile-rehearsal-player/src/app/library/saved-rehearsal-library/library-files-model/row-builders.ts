@@ -19,6 +19,11 @@ import {
 import { ROW_META_SEPARATOR } from '../../../components/row-meta-line/model';
 import { formatSavedLoopBracketLabel } from '../../loops/utils/saved-loop-view-model';
 
+import {
+  formatPluralizedCount,
+  formatTrackMetaLabel,
+  formatUnavailableTrackMetaLabel,
+} from './track-meta';
 import type {
   LibraryFilesFolderChildCounts,
   LibraryFilesFolderRow,
@@ -36,13 +41,9 @@ const DEFAULT_UNAVAILABLE_LOOP_MESSAGE =
 const MISSING_LOOP_SOURCE_MESSAGE =
   'Restore the parent track before playing this saved loop.';
 
-const TRACK_KIND_LABEL = 'Track';
 const PLAYLIST_KIND_LABEL = 'Playlist';
-const UNAVAILABLE_TRACK_LABEL = 'Track unavailable';
 
-export const formatPluralizedCount = (count: number, noun: string) => {
-  return `${count} ${noun}${count === 1 ? '' : 's'}`;
-};
+export { formatPluralizedCount, formatTrackMetaLabel };
 
 const formatPluralizedItemCount = (count: number) => {
   return formatPluralizedCount(count, 'item');
@@ -200,36 +201,6 @@ export const buildFolderRow = (options: {
   };
 };
 
-const ADJUSTED_TRACK_KIND_LABEL = 'Adjusted track';
-
-/**
- * A track's meta line (screens 1b, 1c): duration, tags, and loop count, or
- * the kind word when none of those exist. An adjusted track leads with its
- * kind and transform and names its source, so it is never mistaken for a
- * separate recording; its duration is the source's over its speed.
- */
-export const formatTrackMetaLabel = (options: {
-  loopCount: number;
-  source: Pick<DriveLibrarySource, 'adjustment' | 'durationMs' | 'tags'>;
-  withDuration: boolean;
-}) => {
-  const { adjustment } = options.source;
-  const parts = compact([
-    adjustment ? ADJUSTED_TRACK_KIND_LABEL : undefined,
-    adjustment ? formatTransformLabel(adjustment.transform) : undefined,
-    options.withDuration
-      ? formatLengthLabel(getSourceDisplayDurationMs(options.source))
-      : undefined,
-    adjustment?.sourceName,
-    ...(options.source.tags ?? []),
-    options.loopCount > 0
-      ? formatPluralizedCount(options.loopCount, 'loop')
-      : undefined,
-  ]);
-
-  return parts.length > 0 ? parts.join(ROW_META_SEPARATOR) : TRACK_KIND_LABEL;
-};
-
 export const buildTrackRow = (options: {
   entityNameByKey: LibraryFilesEntityNameByKey;
   fileLink: RehearsalLibraryFileLinkNode;
@@ -255,7 +226,7 @@ export const buildTrackRow = (options: {
           source: options.source,
           withDuration: true,
         })
-      : UNAVAILABLE_TRACK_LABEL,
+      : formatUnavailableTrackMetaLabel(options.source),
   };
 };
 

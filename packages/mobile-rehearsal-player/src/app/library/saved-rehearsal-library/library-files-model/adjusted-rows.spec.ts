@@ -16,7 +16,6 @@ import {
   formatTrackMetaLabel,
   sumPlaylistDurationMs,
 } from './row-builders';
-import type { LibraryFilesRow } from './types';
 
 const transform = {
   pitchSemitones: -2,
@@ -29,13 +28,6 @@ const source = createDriveAudioSource({
   durationMs: 120_000,
   mimeType: 'audio/mpeg',
   name: 'Kyrie.mp3',
-});
-const otherSource = createDriveAudioSource({
-  availability: { status: 'available' },
-  driveFileId: 'file-2',
-  durationMs: 60_000,
-  mimeType: 'audio/mpeg',
-  name: 'Gloria.mp3',
 });
 const adjustedTrack = createAdjustedTrackSource({ source, transform });
 const adjustedLoop: NamedLoop = createAdjustedLoop({
@@ -85,6 +77,25 @@ describe('adjusted row meta', () => {
         withDuration: true,
       }),
       'Track',
+    );
+  });
+
+  it('keeps an adjusted track identifiable while Drive access is missing', () => {
+    const unavailable = (item: DriveAudioSource): DriveAudioSource => ({
+      ...item,
+      availability: {
+        status: 'unavailable',
+        message: 'Reconnect Google Drive',
+      },
+    });
+
+    assert.equal(
+      trackRow(unavailable(adjustedTrack)).supportingLabel,
+      'Track unavailable · Adjusted track · 0.50× −2 st · Kyrie.mp3',
+    );
+    assert.equal(
+      trackRow(unavailable(source)).supportingLabel,
+      'Track unavailable',
     );
   });
 
