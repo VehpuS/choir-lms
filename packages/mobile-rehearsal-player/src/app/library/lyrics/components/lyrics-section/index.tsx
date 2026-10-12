@@ -1,5 +1,5 @@
 import type { PlayableItem } from '@org/audio-library-models';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { OutlinedActionButton } from '../../../../components/outlined-action-button';
 import { appTheme } from '../../../../utils/theme';
@@ -19,7 +19,7 @@ type LyricsSectionProps = {
 const ADD_LYRICS_PROMPT = 'Add the words to read them while you sing.';
 
 /**
- * The playback screen's Lyrics section: a collapsed preview with `Show all`
+ * The playback screen's Lyrics section: a fixed-height scrollable window with `Show all`
  * and `Edit`, or an `Add lyrics` prompt. Its height depends only on the text
  * size, so changing the playing item does not move what is below it.
  */
@@ -65,12 +65,12 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
               {`Lyrics for ${model.sharedFromName}`}
             </Text>
           ) : null}
-          <Text
-            numberOfLines={LYRICS_PREVIEW_LINES}
-            style={[textStyle, { minHeight: previewHeight }]}
-          >
-            {model.text}
-          </Text>
+          {/* A fixed-height window onto the full text, so it scrolls in place. */}
+          <ScrollView nestedScrollEnabled style={{ height: previewHeight }}>
+            <Text selectable style={textStyle}>
+              {model.text}
+            </Text>
+          </ScrollView>
         </>
       ) : (
         <View style={[styles.empty, { minHeight: previewHeight }]}>
