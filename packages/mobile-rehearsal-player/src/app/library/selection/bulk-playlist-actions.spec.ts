@@ -10,6 +10,7 @@ import {
 import {
   appendRefsToPlaylist,
   buildPlaylistFromRefs,
+  countRefsAlreadyInPlaylist,
 } from './bulk-playlist-actions.js';
 
 const NOW = '2026-10-11T10:00:00.000Z';
@@ -19,6 +20,32 @@ const refs = [
   { entityId: SAVED_LOOP.id, kind: 'loop' as const },
   { entityId: PLAYABLE_SOURCE.id, kind: 'track' as const },
 ];
+
+describe('countRefsAlreadyInPlaylist', () => {
+  it('counts the selected tracks and loops the playlist already holds', () => {
+    const empty = createPlaylist({
+      createdAt: NOW,
+      name: 'Set',
+      ownerId: 'user-1',
+    });
+    const holdingTrack = appendRefsToPlaylist({
+      now: NOW,
+      playlist: empty,
+      refs: refs.slice(0, 1),
+      ...saved,
+    }).playlist;
+    const holdingBoth = appendRefsToPlaylist({
+      now: NOW,
+      playlist: holdingTrack ?? empty,
+      refs: refs.slice(1, 2),
+      ...saved,
+    }).playlist;
+
+    assert.equal(countRefsAlreadyInPlaylist(empty, refs), 0);
+    assert.equal(countRefsAlreadyInPlaylist(holdingTrack ?? empty, refs), 2);
+    assert.equal(countRefsAlreadyInPlaylist(holdingBoth ?? empty, refs), 3);
+  });
+});
 
 describe('appendRefsToPlaylist', () => {
   it('appends entries after the existing ones, in order, repeats included', () => {

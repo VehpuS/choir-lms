@@ -29,6 +29,31 @@ const getEntryTimestamp = (baseTimestamp: string, entryIndex: number) => {
 };
 
 /**
+ * How many of the refs the playlist already holds an entry for. `Add to
+ * playlist` appends repeats on purpose, so the target sheet shows this count
+ * instead of blocking them (task 8.78).
+ */
+export const countRefsAlreadyInPlaylist = (
+  playlist: Playlist,
+  refs: readonly PlaybackRef[],
+): number => {
+  const trackIds = new Set<string>();
+  const loopIds = new Set<string>();
+
+  for (const entry of playlist.items) {
+    if (entry.kind === 'loop' && entry.loopId) {
+      loopIds.add(entry.loopId);
+    } else if (entry.kind === 'track') {
+      trackIds.add(entry.sourceId);
+    }
+  }
+
+  return refs.filter((ref) => {
+    return (ref.kind === 'track' ? trackIds : loopIds).has(ref.entityId);
+  }).length;
+};
+
+/**
  * Appends the effective items as entries, in order, through the same entry
  * constructors the single-item flow uses. Each entry gets its own timestamp so
  * entries keep the order they were added in.

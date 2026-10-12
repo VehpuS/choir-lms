@@ -16,7 +16,14 @@ const PLAYLIST_LIST_MAX_HEIGHT = 280;
 const formatEntryCount = (playlist: Playlist) =>
   `${playlist.items.length} ${playlist.items.length === 1 ? 'item' : 'items'}`;
 
+const formatAlreadyHeldMeta = (playlist: Playlist, heldCount: number) =>
+  heldCount > 0
+    ? `${formatEntryCount(playlist)} · ${heldCount} already in it`
+    : formatEntryCount(playlist);
+
 type BulkPlaylistTargetSheetProps = {
+  /** How many of the selected items a playlist already holds. */
+  getAlreadyHeldCount: (playlist: Playlist) => number;
   /** Playlists in the selection itself: adding them to themselves would double them. */
   blockedPlaylistIds: ReadonlySet<string>;
   isMutating: boolean;
@@ -32,6 +39,7 @@ type BulkPlaylistTargetSheetProps = {
 // appended to. Creating a new one is `Save as playlist`.
 export const BulkPlaylistTargetSheet = ({
   blockedPlaylistIds,
+  getAlreadyHeldCount,
   isMutating,
   isVisible,
   issue,
@@ -62,7 +70,12 @@ export const BulkPlaylistTargetSheet = ({
                 key={playlist.id}
                 label={playlist.name}
                 meta={
-                  isBlocked ? 'In the selection' : formatEntryCount(playlist)
+                  isBlocked
+                    ? 'In the selection'
+                    : formatAlreadyHeldMeta(
+                        playlist,
+                        getAlreadyHeldCount(playlist),
+                      )
                 }
                 onPress={() => {
                   onSelectPlaylist(playlist);

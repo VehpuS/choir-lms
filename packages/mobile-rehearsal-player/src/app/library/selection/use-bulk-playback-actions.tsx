@@ -17,6 +17,7 @@ import {
 import { useBulkChoices } from './bulk-choices-prompt/use-bulk-choices';
 import {
   appendRefsToPlaylist,
+  countRefsAlreadyInPlaylist,
   buildPlaylistFromRefs,
 } from './bulk-playlist-actions';
 import {
@@ -264,12 +265,19 @@ export const useBulkPlaybackActions = ({
     );
   }, [collections, createPlaylist, draftName, finish, getPendingRefs, ownerId]);
 
+  // The refs the target sheet counts repeats against, built once per opening.
+  const targetSheetRefs = useMemo(() => {
+    return step === 'target' ? getPendingRefs() : [];
+  }, [getPendingRefs, step]);
   const selectedCountLabel = getSelectionCountLabel(items.length);
   const nodes: ReactNode = (
     <>
       {prompt}
       <BulkPlaylistTargetSheet
         blockedPlaylistIds={blockedPlaylistIds}
+        getAlreadyHeldCount={(playlist) => {
+          return countRefsAlreadyInPlaylist(playlist, targetSheetRefs);
+        }}
         isMutating={isMutating}
         isVisible={step === 'target'}
         issue={issue}
