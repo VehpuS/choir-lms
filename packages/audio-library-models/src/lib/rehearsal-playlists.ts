@@ -1,6 +1,8 @@
 import {
   createPlaylistEntryFromLoop,
   createPlaylistEntryFromTrack,
+} from './playlist-entries.ts';
+import {
   type DriveAudioSource,
   type NamedLoop,
   type Playlist,
