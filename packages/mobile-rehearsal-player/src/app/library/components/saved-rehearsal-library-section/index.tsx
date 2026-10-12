@@ -14,74 +14,56 @@ import type { SavedRehearsalLibrarySectionProps } from './types';
 import { useSelectionServicesValue } from './use-selection-services-value';
 import { useSavedRehearsalLibrarySectionOrchestration } from './use-saved-rehearsal-library-section-orchestration';
 
-export const SavedRehearsalLibrarySection = ({
-  activePlayableItem,
-  activePlaylistSession,
-  authorization,
-  canMutateLibrary,
-  canMutateLoops,
-  canMutatePlaylists,
-  closeTagDetailRequestId,
-  createPlaylist,
-  deletePlaylist,
-  getCurrentScrollOffsetY,
-  isDestinationActive = true,
-  isPlaybackPreparing,
-  isPlaylistCreateDialogVisible = false,
-  isPlaylistsLoading,
-  isSavedLibraryLoading,
-  isSavedLoopsLoading,
-  libraryFiles,
-  openLoopBuilderForSource,
-  onBrowseCreateDockChange,
-  onDetailPlaybackChange,
-  onDetailSearchActionsChange,
-  onPlaylistSelectionHandlerChange,
-  onShowLibraryFilesSuccessFeedback,
-  originalLocationActions,
-  pendingLoopBuilderSourceId,
-  pendingLoopId,
-  pendingPlaylistId,
-  pendingSourceId,
-  playbackIssue,
-  playbackState,
-  playlistIssue,
-  queuePlayableItemNext,
-  queuePlayableItemUpNext,
-  queuePlayableItemsNext,
-  queuePlayableItemsUpNext,
-  removeLoop,
-  removeSource,
-  removeSourceWithoutConfirmation,
-  requestedLoopEditId,
-  requestedLoopEditRequestId,
-  requestedTag,
-  requestedTagRequestId,
-  savedLibraryIssue,
-  savedLibrarySources,
-  savedLibraryStatusCopy,
-  savedLoopIssue,
-  savedLoops,
-  savedPlaylists,
-  savedTrackPlaybackStatusCopy,
-  saveLoop,
-  saveSource,
-  searchPanel: externalSearchPanel,
-  searchState: externalSearchState,
-  selectedTrack,
-  selectedView: externalSelectedView,
-  setIsPlaylistReorderDragActive,
-  setPlaylistReorderDragMoveY,
-  setSelectedLoopSourceId,
-  setSelectedView: externalSetSelectedView,
-  syncActivePlaylistContext,
-  toggleActivePlayback,
-  toggleItemQueuePlayback,
-  togglePlayableItemPlayback,
-  togglePlaylistPlayback,
-  toggleSourcePlayback,
-  updatePlaylist,
-}: SavedRehearsalLibrarySectionProps) => {
+export const SavedRehearsalLibrarySection = (
+  props: SavedRehearsalLibrarySectionProps,
+) => {
+  const {
+    activePlayableItem,
+    activePlaylistSession,
+    canMutateLoops,
+    closeTagDetailRequestId,
+    createPlaylist,
+    deletePlaylist,
+    isDestinationActive = true,
+    isPlaybackPreparing,
+    isPlaylistCreateDialogVisible = false,
+    isSavedLibraryLoading,
+    libraryFiles,
+    openLoopBuilderForSource,
+    onBrowseCreateDockChange,
+    onPlaylistSelectionHandlerChange,
+    onShowLibraryFilesSuccessFeedback,
+    pendingLoopBuilderSourceId,
+    pendingLoopId,
+    pendingPlaylistId,
+    pendingSourceId,
+    playbackState,
+    playlistIssue,
+    queuePlayableItemsNext,
+    queuePlayableItemsUpNext,
+    removeLoop,
+    removeSource,
+    requestedLoopEditId,
+    requestedLoopEditRequestId,
+    requestedTag,
+    requestedTagRequestId,
+    savedLibrarySources,
+    savedLibraryStatusCopy,
+    savedLoops,
+    savedPlaylists,
+    savedTrackPlaybackStatusCopy,
+    saveLoop,
+    saveSource,
+    searchPanel: externalSearchPanel,
+    searchState: externalSearchState,
+    selectedTrack,
+    selectedView: externalSelectedView,
+    setSelectedLoopSourceId,
+    setSelectedView: externalSetSelectedView,
+    syncActivePlaylistContext,
+    togglePlaylistPlayback,
+    updatePlaylist,
+  } = props;
   const {
     availableTagUsage,
     detailMode,
@@ -163,42 +145,7 @@ export const SavedRehearsalLibrarySection = ({
     buildSavedRehearsalLibraryDetailSectionElements({
       handleClosePlaylistDetail,
       handleOpenFilesAddItems,
-      props: {
-        activePlayableItem,
-        activePlaylistSession,
-        canMutateLoops,
-        canMutatePlaylists,
-        createPlaylist,
-        deletePlaylist,
-        getCurrentScrollOffsetY,
-        isPlaybackPreparing,
-        isPlaylistsLoading,
-        isSavedLoopsLoading,
-        libraryFiles,
-        onDetailPlaybackChange,
-        onDetailSearchActionsChange,
-        pendingLoopBuilderSourceId,
-        pendingLoopId,
-        pendingPlaylistId,
-        playbackIssue,
-        playbackState,
-        playlistIssue,
-        queuePlayableItemNext,
-        queuePlayableItemUpNext,
-        removeLoop,
-        savedLibrarySources,
-        savedLoopIssue,
-        savedLoops,
-        savedPlaylists,
-        selectedTrack,
-        setIsPlaylistReorderDragActive,
-        setPlaylistReorderDragMoveY,
-        toggleActivePlayback,
-        toggleItemQueuePlayback,
-        togglePlayableItemPlayback,
-        togglePlaylistPlayback,
-        updatePlaylist,
-      },
+      props,
       saveLoopForVisibleContext,
       showLoopBrowseList: visibleSections.showLoopBrowseList,
       state: {
@@ -258,37 +205,15 @@ export const SavedRehearsalLibrarySection = ({
         />
         {shouldRenderBrowseContent ? (
           <SavedRehearsalLibraryBrowseContent
-            activePlayableItem={activePlayableItem}
-            authorization={authorization}
-            canMutateLibrary={canMutateLibrary}
-            canMutateLoops={canMutateLoops}
-            canMutatePlaylists={canMutatePlaylists}
+            {...props}
             canQueueAsNext={activePlayableItem !== null}
-            libraryFiles={libraryFiles}
             isLoopMutating={isLoopMutating}
-            isPlaybackPreparing={isPlaybackPreparing}
             isPlaylistMutating={isPlaylistMutating}
             isSavedLibraryMutating={isSavedLibraryMutating}
             loopSection={loopSection}
             loopState={loopState}
-            openLoopBuilderForSource={openLoopBuilderForSource}
-            originalLocationActions={originalLocationActions}
-            pendingLoopBuilderSourceId={pendingLoopBuilderSourceId}
-            pendingSourceId={pendingSourceId}
-            playbackIssue={playbackIssue}
-            playbackState={playbackState}
             playlistSection={playlistSection}
             playlistState={playlistState}
-            queuePlayableItemNext={queuePlayableItemNext}
-            queuePlayableItemUpNext={queuePlayableItemUpNext}
-            removeLoop={removeLoop}
-            removeSource={removeSource}
-            removeSourceWithoutConfirmation={removeSourceWithoutConfirmation}
-            savedLibraryIssue={savedLibraryIssue}
-            savedLibrarySources={savedLibrarySources}
-            savedLoops={savedLoops}
-            savedPlaylists={savedPlaylists}
-            selectedTrack={selectedTrack}
             selectedView={selectedView}
             savedSourceTitle={savedSourceTitle}
             searchState={searchState}
@@ -303,14 +228,7 @@ export const SavedRehearsalLibrarySection = ({
             }
             onOpenSourceTagEditor={tagEditor.openSourceTagEditor}
             onSelectTag={tagDetailState.openTagDetail}
-            onShowLibraryFilesSuccessFeedback={
-              onShowLibraryFilesSuccessFeedback
-            }
-            toggleActivePlayback={toggleActivePlayback}
-            toggleItemQueuePlayback={toggleItemQueuePlayback}
             togglePlaylistPlayback={togglePlaylistPlayback}
-            togglePlayableItemPlayback={togglePlayableItemPlayback}
-            toggleSourcePlayback={toggleSourcePlayback}
             trackPlaylistMenu={trackPlaylistMenu}
           />
         ) : detailMode === 'playlist-detail' ? (

@@ -1,11 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { isScreenReaderEnabled } from '../../components/scoped-success-acknowledgment/is-screen-reader-enabled';
-import { useScopedSuccessAcknowledgment } from '../../components/scoped-success-acknowledgment/use-scoped-success-acknowledgment';
 import { SavedRehearsalLibrarySection } from '../../library/components/saved-rehearsal-library-section';
-import type { LibraryFilesSuccessFeedback } from '../../library/components/saved-rehearsal-library-section/library-files-success-feedback';
-import { LibraryFilesSuccessFeedbackCard } from '../../library/components/saved-rehearsal-library-section/library-files-success-feedback-card';
 import type { LibraryBrowseCreateDockMode } from '../../library/components/saved-rehearsal-library-section/types';
 import { useSavedRehearsalLibrarySearch } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search';
 import { useSavedRehearsalLibrarySearchPanel } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search-panel';
@@ -18,16 +14,14 @@ import { appTheme } from '../../utils/theme';
 import { LibraryFilesCreateControls } from './library-files-create-controls';
 import { resolveLibraryHeaderSearchProps } from './library-header-search-props';
 import { LibraryPlaylistCreateControls } from './library-playlist-create-controls';
+import { LibrarySuccessToast } from './library-success-toast';
 import { LibraryScreenHeader } from './library-screen-header';
 import type { LibraryScreenProps } from './library-screen-types';
-import { useDismissOnViewChange } from './use-dismiss-on-view-change';
 import { useLibraryFilesSessionRestoration } from './use-library-files-session-restoration';
 import { useLibraryScreenScrollCoordination } from './use-library-screen-scroll-coordination';
-import { useOpenSuccessFeedbackFolder } from './use-open-success-feedback-folder';
+import { useLibrarySuccessFeedback } from './use-library-success-feedback';
 import { useRequestedLibraryView } from './use-requested-library-view';
 import { scrollGutterStyles } from '../../components/scroll-gutter';
-
-const SUCCESS_ACKNOWLEDGMENT_AUTO_DISMISS_MS = 5000;
 
 export const LibraryScreen = ({
   authorization,
@@ -53,13 +47,13 @@ export const LibraryScreen = ({
   });
   const [browseCreateDockMode, setBrowseCreateDockMode] =
     useState<LibraryBrowseCreateDockMode>(null);
-  const librarySuccessFeedback =
-    useScopedSuccessAcknowledgment<LibraryFilesSuccessFeedback>({
-      autoDismissMs: SUCCESS_ACKNOWLEDGMENT_AUTO_DISMISS_MS,
+  const { feedback: librarySuccessFeedback, openFeedbackFolder } =
+    useLibrarySuccessFeedback({
       isActive,
-      isScreenReaderEnabled,
+      openFolder: libraryController.savedLibrary.files.openFolder,
+      selectedView,
+      setSelectedView,
     });
-  useDismissOnViewChange(librarySuccessFeedback.dismiss, selectedView);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
   const [playlistDetailPlayback, setPlaylistDetailPlayback] =
     useState<PlaylistDetailHeaderPlaybackAction | null>(null);
@@ -105,11 +99,6 @@ export const LibraryScreen = ({
   const handlePlaylistCreated = useCallback((playlistId: string) => {
     playlistSelectionHandlerRef.current?.(playlistId);
   }, []);
-  const openLibraryFilesSuccessFeedbackFolder = useOpenSuccessFeedbackFolder({
-    dismiss: librarySuccessFeedback.dismiss,
-    openFolder: libraryController.savedLibrary.files.openFolder,
-    setSelectedView,
-  });
   const headerSearchProps = resolveLibraryHeaderSearchProps({
     detailSearchActions,
     playlistDetailPlayback,
@@ -250,19 +239,13 @@ export const LibraryScreen = ({
           />
         </LoopPreviewPlaybackContext.Provider>
       </ScrollView>
-      {librarySuccessFeedback.acknowledgment ? (
-        // A bottom toast above the dock covers no header or control, and shows
-        // in every Library view (task 8.71).
-        <View pointerEvents="box-none" style={styles.successToast}>
-          <LibraryFilesSuccessFeedbackCard
-            feedback={librarySuccessFeedback.acknowledgment}
-            onBlur={librarySuccessFeedback.onBlur}
-            onDismiss={librarySuccessFeedback.dismiss}
-            onFocus={librarySuccessFeedback.onFocus}
-            onOpenFolder={openLibraryFilesSuccessFeedbackFolder}
-          />
-        </View>
-      ) : null}
+      <LibrarySuccessToast
+        feedback={librarySuccessFeedback.acknowledgment}
+        onBlur={librarySuccessFeedback.onBlur}
+        onDismiss={librarySuccessFeedback.dismiss}
+        onFocus={librarySuccessFeedback.onFocus}
+        onOpenFolder={openFeedbackFolder}
+      />
       <LibraryFilesCreateControls
         createPlaylist={libraryController.playlists.createPlaylist}
         files={libraryController.savedLibrary.files}
@@ -288,8 +271,6 @@ export const LibraryScreen = ({
   );
 };
 
-const SUCCESS_TOAST_BOTTOM_OFFSET = 76;
-
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -299,14 +280,6 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingTop: 12,
     paddingBottom: 20,
-  },
-  // Above the create button's corner, so the toast covers no header or control.
-  successToast: {
-    position: 'absolute',
-    left: appTheme.space.lg,
-    right: appTheme.space.lg,
-    bottom: SUCCESS_TOAST_BOTTOM_OFFSET,
-    zIndex: 20,
   },
   contentWithCreateDock: {
     paddingBottom: 188,
