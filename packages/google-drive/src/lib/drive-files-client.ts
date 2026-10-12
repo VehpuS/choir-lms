@@ -37,6 +37,52 @@ const DEFAULT_FILE_FIELDS = [
 const FALLBACK_FILE_FIELDS = DRIVE_AUDIO_FILE_FIELDS;
 const DRIVE_FILES_ENDPOINT = 'https://www.googleapis.com/drive/v3/files';
 
+// Drive rejects `audioMediaMetadata/durationMillis` as an invalid field for
+// some files and accounts (the API documents no audio metadata), so asking for
+// it first used to cost a failed round trip, and a retry, on every listing and
+// every ancestor lookup (task 8.48). Once a request with the field fails with a
+// 400 and the same request without it succeeds, the field is left out for the
+// rest of the session; once a request with it succeeds, it stays in.
+type DurationFieldSupport = 'supported' | 'unknown' | 'unsupported';
+
+let durationFieldSupport: DurationFieldSupport = 'unknown';
+
+export const resetDriveDurationFieldSupport = () => {
+  durationFieldSupport = 'unknown';
+};
+
+type FieldAttempt = {
+  fields: string;
+  includeSharedDrives: boolean;
+  withDuration?: boolean;
+};
+
+const prepareFieldAttempts = (attempts: FieldAttempt[]) =>
+  attempts.filter(
+    (attempt) =>
+      !(attempt.withDuration && durationFieldSupport === 'unsupported'),
+  );
+
+// Learns from one finished attempt. `rejectedDurationAttempt` is the earlier
+// attempt that asked for the field and got a 400. Only a success of the same
+// request without the field (same shared-drive flag) shows the field was the
+// problem; a later success after other changes proves nothing about it.
+const rememberDurationFieldOutcome = (
+  attempt: FieldAttempt,
+  rejectedDurationAttempt: FieldAttempt | null,
+) => {
+  if (attempt.withDuration) {
+    durationFieldSupport = 'supported';
+  } else if (
+    rejectedDurationAttempt &&
+    rejectedDurationAttempt.includeSharedDrives ===
+      attempt.includeSharedDrives &&
+    durationFieldSupport === 'unknown'
+  ) {
+    durationFieldSupport = 'unsupported';
+  }
+};
+
 const createDriveFileSearchParams = (options: {
   query: string;
   fields: string;
@@ -150,10 +196,11 @@ export const requestDriveFilesWithFallback = async (options: {
   pageToken?: string;
   signal?: AbortSignal;
 }) => {
-  const attempts = [
+  const allAttempts: FieldAttempt[] = [
     {
       fields: DEFAULT_FIELDS,
       includeSharedDrives: options.includeSharedDrives,
+      withDuration: true,
     },
     {
       fields: FALLBACK_FIELDS,
@@ -162,10 +209,12 @@ export const requestDriveFilesWithFallback = async (options: {
   ];
 
   if (options.includeSharedDrives) {
-    attempts.push({ fields: FALLBACK_FIELDS, includeSharedDrives: false });
+    allAttempts.push({ fields: FALLBACK_FIELDS, includeSharedDrives: false });
   }
 
+  const attempts = prepareFieldAttempts(allAttempts);
   let lastResponse: Response | null = null;
+  let rejectedDurationAttempt: FieldAttempt | null = null;
 
   for (const attempt of attempts) {
     const response = await requestDriveFiles({
@@ -175,10 +224,14 @@ export const requestDriveFilesWithFallback = async (options: {
     });
 
     if (response.ok) {
+      rememberDurationFieldOutcome(attempt, rejectedDurationAttempt);
       return response;
     }
 
     lastResponse = response;
+    if (attempt.withDuration) {
+      rejectedDurationAttempt = attempt;
+    }
 
     if (response.status !== 400) {
       throw await createDriveRequestError(response);
@@ -219,21 +272,34 @@ export const requestDriveFileMetadataWithFallback = async (options: {
   driveFileId: string;
   signal?: AbortSignal;
 }) => {
-  const attempts = [
-    { fields: DEFAULT_FILE_FIELDS, includeSharedDrives: true },
+  const attempts = prepareFieldAttempts([
+    {
+      fields: DEFAULT_FILE_FIELDS,
+      includeSharedDrives: true,
+      withDuration: true,
+    },
     { fields: FALLBACK_FILE_FIELDS, includeSharedDrives: true },
     { fields: FALLBACK_FILE_FIELDS, includeSharedDrives: false },
-  ];
+  ]);
   let lastResponse: Response | null = null;
+  let rejectedDurationAttempt: FieldAttempt | null = null;
 
   for (const attempt of attempts) {
-    const response = await requestDriveFileMetadata({ ...options, ...attempt });
+    const response = await requestDriveFileMetadata({
+      ...options,
+      fields: attempt.fields,
+      includeSharedDrives: attempt.includeSharedDrives,
+    });
 
     if (response.ok) {
+      rememberDurationFieldOutcome(attempt, rejectedDurationAttempt);
       return response;
     }
 
     lastResponse = response;
+    if (attempt.withDuration) {
+      rejectedDurationAttempt = attempt;
+    }
 
     if (response.status !== 400) {
       throw await createDriveRequestError(response);
