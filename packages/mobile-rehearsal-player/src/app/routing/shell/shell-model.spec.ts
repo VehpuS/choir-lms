@@ -90,10 +90,7 @@ describe('shell model', () => {
       playbackState: 'playing',
     });
 
-    assert.equal(
-      summary?.context,
-      'Playing • Warmups • 1 of 1',
-    );
+    assert.equal(summary?.context, 'Playing • Warmups • 1 of 1');
     assert.equal(
       summary?.accessibilityLabel,
       'Now playing: Alto Line.mp3. Playing • 0:18 of 3:05 • Warmups • Item 1 of 1 • Shuffle • Repeat all',

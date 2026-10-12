@@ -8,7 +8,9 @@ import {
   sortSavedLoopsBy,
 } from './saved-loop-sort-model';
 
-const buildLoop = (overrides: Partial<NamedLoop> & { id: string }): NamedLoop => {
+const buildLoop = (
+  overrides: Partial<NamedLoop> & { id: string },
+): NamedLoop => {
   return {
     createdAt: '2026-01-01T00:00:00.000Z',
     endMs: 44000,

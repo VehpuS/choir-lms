@@ -144,10 +144,7 @@ describe('aggregateRehearsalLibraryTags', () => {
     });
 
     assert.equal(result.length, 1);
-    assert.equal(
-      Number.isNaN(Date.parse(result[0]?.createdAt ?? '')),
-      false,
-    );
+    assert.equal(Number.isNaN(Date.parse(result[0]?.createdAt ?? '')), false);
   });
 });
 

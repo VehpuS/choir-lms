@@ -76,9 +76,7 @@ export const useLongPressRepeat = (options: UseLongPressRepeatOptions) => {
   const accelerateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  const repeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
-    null,
-  );
+  const repeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const didAutoRepeatRef = useRef(false);
 
   const detachGlobalReleaseListenersRef = useRef<(() => void) | null>(null);
@@ -168,7 +166,10 @@ export const useLongPressRepeat = (options: UseLongPressRepeatOptions) => {
       return;
     }
 
-    if (delayTimeoutRef.current !== null || repeatIntervalRef.current !== null) {
+    if (
+      delayTimeoutRef.current !== null ||
+      repeatIntervalRef.current !== null
+    ) {
       // A hold is already in progress; ignore a re-entrant press-in instead
       // of stacking a second, overlapping repeat cycle.
       return;

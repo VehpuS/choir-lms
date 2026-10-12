@@ -41,7 +41,10 @@ const collectEntityTagInfos = (options: {
 };
 
 export type RehearsalLibraryTagMatch =
-  | { kind: 'track'; item: RehearsalLibraryEntityCollections['sources'][number] }
+  | {
+      kind: 'track';
+      item: RehearsalLibraryEntityCollections['sources'][number];
+    }
   | { kind: 'loop'; item: RehearsalLibraryEntityCollections['loops'][number] }
   | {
       kind: 'playlist';
@@ -83,7 +86,12 @@ export const resolveRehearsalLibraryTagMatches = (
     .filter((folder) => entityCarriesTag(folder.tags, normalizedTagKey))
     .map((item) => ({ kind: 'folder', item }));
 
-  return [...trackMatches, ...loopMatches, ...playlistMatches, ...folderMatches];
+  return [
+    ...trackMatches,
+    ...loopMatches,
+    ...playlistMatches,
+    ...folderMatches,
+  ];
 };
 
 export const aggregateRehearsalLibraryTags = (options: {
@@ -102,9 +110,7 @@ export const aggregateRehearsalLibraryTags = (options: {
       if (existingUsage) {
         existingUsage.count += 1;
         existingUsage.createdAt =
-          addedAt < existingUsage.createdAt
-            ? addedAt
-            : existingUsage.createdAt;
+          addedAt < existingUsage.createdAt ? addedAt : existingUsage.createdAt;
         continue;
       }
 

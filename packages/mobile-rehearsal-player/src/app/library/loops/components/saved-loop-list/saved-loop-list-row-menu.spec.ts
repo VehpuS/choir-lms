@@ -41,7 +41,10 @@ describe('Loops-view saved-loop menu ordering and tone', () => {
     });
 
     assert.deepEqual(
-      actions.map((action) => ({ section: action.section, label: action.label })),
+      actions.map((action) => ({
+        section: action.section,
+        label: action.label,
+      })),
       [
         { label: 'Play next', section: 'rehearsal' },
         { label: 'Add to queue', section: 'rehearsal' },

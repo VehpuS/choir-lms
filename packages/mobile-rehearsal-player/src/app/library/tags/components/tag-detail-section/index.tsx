@@ -76,7 +76,10 @@ export const TagDetailSection = ({
     DEFAULT_TAG_MATCH_LIST_SORT_STATE,
   );
   const matches = useMemo(() => {
-    return resolveRehearsalLibraryTagMatches(tag, { entityCollections, folders });
+    return resolveRehearsalLibraryTagMatches(tag, {
+      entityCollections,
+      folders,
+    });
   }, [tag, entityCollections, folders]);
   const visibleMatches = useMemo(() => {
     return filterTagMatchesByQuery(

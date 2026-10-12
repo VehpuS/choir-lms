@@ -172,7 +172,10 @@ describe('practice-repository-storage library file tree serialization', () => {
     // reported bug. Without serialization, the refresh's read can still
     // land before the move's write completes and return stale data even
     // though it was dispatched second.
-    const movePromise = writeStoredLibraryFileTree('owner-1', movedTreeWithLink);
+    const movePromise = writeStoredLibraryFileTree(
+      'owner-1',
+      movedTreeWithLink,
+    );
     const refreshPromise = persistSynchronizedLibraryFileTree(
       CANONICAL_COLLECTION_READER,
       'owner-1',

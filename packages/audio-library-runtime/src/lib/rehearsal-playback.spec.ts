@@ -617,7 +617,10 @@ describe('AsyncStoragePracticeRepository', () => {
     assert.equal(backfilledLoop.tagAddedAt?.Alto, legacyLoop.createdAt);
 
     assert.ok(backfilledPlaylist);
-    assert.equal(backfilledPlaylist.tagAddedAt?.Soprano, legacyPlaylist.createdAt);
+    assert.equal(
+      backfilledPlaylist.tagAddedAt?.Soprano,
+      legacyPlaylist.createdAt,
+    );
   });
 
   it('migrates canonical library entities into a root folder file tree', async () => {

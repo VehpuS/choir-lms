@@ -100,10 +100,7 @@ const fileLink = (entityKind: 'loop' | 'playlist' | 'track', id: string) => ({
   parentFolderId: 'folder:library-root',
 });
 
-const filesTrackRow = (
-  source = SOURCE,
-  loopCount = 0,
-): LibraryFilesRow => ({
+const filesTrackRow = (source = SOURCE, loopCount = 0): LibraryFilesRow => ({
   fileLink: fileLink('track', source.id),
   isPlayable: source.availability.status === 'available',
   kind: 'track',
@@ -181,7 +178,9 @@ describe('shared saved-item menus', () => {
     assert.deepEqual(
       describeMenu(withoutFilesViewActions(filesMenu)),
       describeMenu(
-        playlistsViewMenu.filter((action) => action.label !== 'Rename playlist'),
+        playlistsViewMenu.filter(
+          (action) => action.label !== 'Rename playlist',
+        ),
       ),
     );
   });

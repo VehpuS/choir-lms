@@ -662,16 +662,19 @@ describe('searchDriveAudioFiles', () => {
       callCount += 1;
 
       if (callCount === 1) {
-        return new Response(JSON.stringify({
-          error: {
-            message: 'Query failed',
+        return new Response(
+          JSON.stringify({
+            error: {
+              message: 'Query failed',
+            },
+          }),
+          {
+            status: 500,
+            headers: {
+              'content-type': 'application/json',
+            },
           },
-        }), {
-          status: 500,
-          headers: {
-            'content-type': 'application/json',
-          },
-        });
+        );
       }
 
       return new Response(JSON.stringify({ files: [] }), {

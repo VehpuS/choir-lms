@@ -79,10 +79,13 @@ describe('resolveTagEditorSuggestions', () => {
   ];
 
   it('ranks by usage, most-used-first, when the active segment is empty', () => {
-    assert.deepEqual(
-      resolveTagEditorSuggestions(AVAILABLE_TAG_USAGE, [], ''),
-      ['Soprano', 'Alto', 'Tenor', 'Bass', 'Warmup'],
-    );
+    assert.deepEqual(resolveTagEditorSuggestions(AVAILABLE_TAG_USAGE, [], ''), [
+      'Soprano',
+      'Alto',
+      'Tenor',
+      'Bass',
+      'Warmup',
+    ]);
   });
 
   it('narrows to tags matching the active segment via case-insensitive substring', () => {
@@ -107,7 +110,10 @@ describe('resolveTagEditorSuggestions', () => {
     const result = resolveTagEditorSuggestions(manyTagUsage, [], '');
 
     assert.equal(result.length, TAG_EDITOR_SUGGESTION_CAP);
-    assert.deepEqual(result, manyTagUsage.slice(0, 12).map((usage) => usage.tag));
+    assert.deepEqual(
+      result,
+      manyTagUsage.slice(0, 12).map((usage) => usage.tag),
+    );
   });
 
   it('returns an empty list when no eligible tag remains', () => {

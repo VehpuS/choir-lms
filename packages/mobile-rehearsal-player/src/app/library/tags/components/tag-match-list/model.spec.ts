@@ -118,8 +118,14 @@ describe('tag match list model', () => {
     const matches = [PLAYLIST_MATCH, TRACK_MATCH, LOOP_MATCH, FOLDER_MATCH];
 
     it('sorts by name ascending and descending', () => {
-      const ascending: TagMatchListSortState = { field: 'name', direction: 'asc' };
-      const descending: TagMatchListSortState = { field: 'name', direction: 'desc' };
+      const ascending: TagMatchListSortState = {
+        field: 'name',
+        direction: 'asc',
+      };
+      const descending: TagMatchListSortState = {
+        field: 'name',
+        direction: 'desc',
+      };
 
       assert.deepEqual(
         sortTagMatches(matches, ascending).map(getTagMatchTitle),
@@ -132,14 +138,20 @@ describe('tag match list model', () => {
     });
 
     it('sorts by type in track/loop/playlist/folder order, tie-breaking on name', () => {
-      const ascending: TagMatchListSortState = { field: 'type', direction: 'asc' };
+      const ascending: TagMatchListSortState = {
+        field: 'type',
+        direction: 'asc',
+      };
 
       assert.deepEqual(
         sortTagMatches(matches, ascending).map((match) => match.kind),
         ['track', 'loop', 'playlist', 'folder'],
       );
 
-      const descending: TagMatchListSortState = { field: 'type', direction: 'desc' };
+      const descending: TagMatchListSortState = {
+        field: 'type',
+        direction: 'desc',
+      };
 
       assert.deepEqual(
         sortTagMatches(matches, descending).map((match) => match.kind),
@@ -148,8 +160,14 @@ describe('tag match list model', () => {
     });
 
     it('sorts by date added ascending and descending', () => {
-      const ascending: TagMatchListSortState = { field: 'date', direction: 'asc' };
-      const descending: TagMatchListSortState = { field: 'date', direction: 'desc' };
+      const ascending: TagMatchListSortState = {
+        field: 'date',
+        direction: 'asc',
+      };
+      const descending: TagMatchListSortState = {
+        field: 'date',
+        direction: 'desc',
+      };
 
       assert.deepEqual(
         sortTagMatches(matches, ascending).map(getTagMatchTitle),
@@ -187,7 +205,10 @@ describe('tag match list model', () => {
     it('returns an empty array when no match has a selected type', () => {
       const trackOnlyMatches = [TRACK_MATCH];
 
-      assert.deepEqual(filterTagMatchesByType(trackOnlyMatches, ['folder']), []);
+      assert.deepEqual(
+        filterTagMatchesByType(trackOnlyMatches, ['folder']),
+        [],
+      );
     });
   });
 

@@ -33,7 +33,13 @@ export const SAVED_ITEM_ACTION_ORDER: Record<
   SavedItemMenuKind,
   readonly string[]
 > = {
-  loop: ['Play next', 'Add to queue', 'Add to playlist', 'Edit loop', 'Edit tags'],
+  loop: [
+    'Play next',
+    'Add to queue',
+    'Add to playlist',
+    'Edit loop',
+    'Edit tags',
+  ],
   playlist: ['Add items', 'Edit tags'],
   track: [
     'Play next',
@@ -56,9 +62,13 @@ const PENDING_LABEL_SLOTS = new Map([
   ['Updating playlist…', 'Add to playlist'],
 ]);
 
-const resolveSlotIndex = (kind: SavedItemMenuKind, action: SavedItemMenuAction) => {
+const resolveSlotIndex = (
+  kind: SavedItemMenuKind,
+  action: SavedItemMenuAction,
+) => {
   const order = SAVED_ITEM_ACTION_ORDER[kind];
-  const slot = action.slot ?? PENDING_LABEL_SLOTS.get(action.label) ?? action.label;
+  const slot =
+    action.slot ?? PENDING_LABEL_SLOTS.get(action.label) ?? action.label;
   const index = order.indexOf(slot);
 
   // An action the order does not know sorts after the known ones rather

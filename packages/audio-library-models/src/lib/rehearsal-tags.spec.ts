@@ -49,7 +49,10 @@ describe('resolveTagAddedAt', () => {
     assert.deepEqual(
       resolveTagAddedAt(
         ['Alto'],
-        { Alto: '2026-01-01T00:00:00.000Z', Soprano: '2026-01-02T00:00:00.000Z' },
+        {
+          Alto: '2026-01-01T00:00:00.000Z',
+          Soprano: '2026-01-02T00:00:00.000Z',
+        },
         '2026-06-01T00:00:00.000Z',
       ),
       { Alto: '2026-01-01T00:00:00.000Z' },
@@ -58,11 +61,19 @@ describe('resolveTagAddedAt', () => {
 
   it('returns undefined when there are no tags', () => {
     assert.equal(
-      resolveTagAddedAt(undefined, { Alto: '2026-01-01T00:00:00.000Z' }, '2026-06-01T00:00:00.000Z'),
+      resolveTagAddedAt(
+        undefined,
+        { Alto: '2026-01-01T00:00:00.000Z' },
+        '2026-06-01T00:00:00.000Z',
+      ),
       undefined,
     );
     assert.equal(
-      resolveTagAddedAt([], { Alto: '2026-01-01T00:00:00.000Z' }, '2026-06-01T00:00:00.000Z'),
+      resolveTagAddedAt(
+        [],
+        { Alto: '2026-01-01T00:00:00.000Z' },
+        '2026-06-01T00:00:00.000Z',
+      ),
       undefined,
     );
   });
@@ -74,7 +85,11 @@ describe('withResolvedTagAddedAt', () => {
 
     assert.deepEqual(
       withResolvedTagAddedAt(entity, undefined, '2026-06-01T00:00:00.000Z'),
-      { id: 'source-1', tags: ['Alto'], tagAddedAt: { Alto: '2026-06-01T00:00:00.000Z' } },
+      {
+        id: 'source-1',
+        tags: ['Alto'],
+        tagAddedAt: { Alto: '2026-06-01T00:00:00.000Z' },
+      },
     );
   });
 

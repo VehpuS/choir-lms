@@ -244,7 +244,10 @@ const syncPlaylistPlaybackQueueItems = (options: {
   const nextCurrentIndex =
     survivingCurrentIndex !== -1
       ? survivingCurrentIndex
-      : Math.max(0, Math.min(options.session.currentIndex, survivingItems.length - 1));
+      : Math.max(
+          0,
+          Math.min(options.session.currentIndex, survivingItems.length - 1),
+        );
 
   return {
     ...options.session,

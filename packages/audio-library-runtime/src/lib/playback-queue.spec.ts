@@ -50,10 +50,7 @@ describe('resolveRehearsalLibraryFolderSubtreeIds', () => {
       ALL_FOLDERS,
     );
 
-    assert.deepEqual(
-      [...result].sort(),
-      [FOLDER_A.id, FOLDER_B.id].sort(),
-    );
+    assert.deepEqual([...result].sort(), [FOLDER_A.id, FOLDER_B.id].sort());
   });
 
   it('excludes sibling and unrelated folders', () => {
