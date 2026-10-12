@@ -5,6 +5,7 @@ import { describe, it } from 'node:test';
 
 import {
   canResetShaping,
+  getItemOverrideNote,
   getPitchControlModel,
   getPitchStripBars,
   getPracticeShapingTiles,
@@ -15,6 +16,25 @@ import {
 } from './shaping-surface-model.js';
 
 const NEUTRAL = { pitchSemitones: 0, speedMultiplier: 1 };
+
+describe('item override note', () => {
+  it('says nothing while the session shaping is what plays', () => {
+    assert.equal(
+      getItemOverrideNote({ effective: NEUTRAL, isItemTransformActive: false }),
+      null,
+    );
+  });
+
+  it('names the adjusted item’s own shaping and that the controls edit the session', () => {
+    assert.equal(
+      getItemOverrideNote({
+        effective: { pitchSemitones: -2, speedMultiplier: 0.8 },
+        isItemTransformActive: true,
+      }),
+      'Playing at its own saved 0.80× −2 st. These controls set the session for other items.',
+    );
+  });
+});
 
 describe('speed control', () => {
   it('places the 1.00× detent off-centre on the linear 0.25–2.00 track', () => {

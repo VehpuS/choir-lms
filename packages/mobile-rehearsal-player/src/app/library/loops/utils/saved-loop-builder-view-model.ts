@@ -7,6 +7,7 @@ import { keyBy } from 'es-toolkit/compat';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import { formatDurationLabel } from '../../drive/utils/drive-library-view-model';
+import { LOOP_PREVIEW_ITEM_ID_PREFIX } from '../../playback/utils/loop-preview-item';
 
 type ResolveLoopBuilderTrackOptions = {
   savedSources: DriveLibrarySource[];
@@ -325,7 +326,7 @@ export const createLoopPreviewPlayableItem = (options: {
   const endLabel = formatDurationLabel(options.endMs) ?? '0:00';
 
   return {
-    id: `loop-preview:${options.selectedTrack.sourceId}:${options.startMs}:${options.endMs}`,
+    id: `${LOOP_PREVIEW_ITEM_ID_PREFIX}${options.selectedTrack.sourceId}:${options.startMs}:${options.endMs}`,
     kind: 'loop',
     title: `${options.selectedTrack.source.name} preview`,
     sourceId: options.selectedTrack.sourceId,

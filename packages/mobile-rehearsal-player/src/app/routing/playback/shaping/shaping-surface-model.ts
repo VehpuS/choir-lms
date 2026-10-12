@@ -5,6 +5,7 @@ import {
   MIN_SPEED_MULTIPLIER,
   clampPitchSemitones,
   formatPitchSemitones,
+  formatTransformLabel,
   formatSpeedMultiplier,
   isPitchShaped,
   isPlaybackShapingNeutral,
@@ -59,6 +60,28 @@ export type PlaybackShapingControls = {
 
 export const SESSION_SCOPE_STATEMENT =
   'Applies to this session only until saved.';
+/**
+ * Shown while an adjusted item plays: its own saved speed and pitch override
+ * the session, so the sliders edit the session for the other items instead of
+ * what is heard now (task 8.53).
+ */
+export const getItemOverrideNote = (
+  controls: Pick<
+    PlaybackShapingControls,
+    'effective' | 'isItemTransformActive'
+  >,
+): string | null => {
+  if (!controls.isItemTransformActive) {
+    return null;
+  }
+
+  const label = formatTransformLabel(controls.effective);
+
+  return label
+    ? `Playing at its own saved ${label}. These controls set the session for other items.`
+    : 'This item plays with its own saved speed and pitch. These controls set the session for other items.';
+};
+
 export const SPEED_HELPER = 'Continuous. Pitch is never shifted by speed.';
 export const PITCH_HELPER = 'Semitone steps, −12 to +12. Tempo is unchanged.';
 export const TEMPO_SOURCE_HELPER =

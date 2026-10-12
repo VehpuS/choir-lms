@@ -14,6 +14,7 @@ import { SpeedControl } from './speed-control';
 import {
   SESSION_SCOPE_STATEMENT,
   canResetShaping,
+  getItemOverrideNote,
   type PlaybackShapingControls,
   type PlaybackShapingSaveControls,
 } from './shaping-surface-model';
@@ -92,6 +93,7 @@ export const ShapingSurface = ({
   summary,
 }: ShapingSurfaceProps) => {
   const canReset = canResetShaping(controls.ambient);
+  const overrideNote = getItemOverrideNote(controls);
 
   return (
     <View style={nowPlayingStyles.sheet}>
@@ -143,15 +145,22 @@ export const ShapingSurface = ({
           ) : null}
         </View>
 
+        {overrideNote ? (
+          <Text accessibilityLiveRegion="polite" style={styles.overrideNote}>
+            {overrideNote}
+          </Text>
+        ) : null}
+        {/* The sliders edit the session (ambient); an adjusted item's own
+            transform is what plays, and the note above says so. */}
         <SpeedControl
           onSetSpeedMultiplier={controls.onSetSpeedMultiplier}
-          speedMultiplier={controls.effective.speedMultiplier}
+          speedMultiplier={controls.ambient.speedMultiplier}
         />
         <FadedRule />
         <PitchControl
           canShapePitch={controls.canShapePitch}
           onSetPitchSemitones={controls.onSetPitchSemitones}
-          pitchSemitones={controls.effective.pitchSemitones}
+          pitchSemitones={controls.ambient.pitchSemitones}
         />
       </ScrollView>
       <View style={styles.footer}>

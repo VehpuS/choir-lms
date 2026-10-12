@@ -12,6 +12,7 @@ import {
   resolvePlaybackSeekPositionSeconds,
 } from '../saved-track-playback-view-model';
 import { getPlaybackShapingSession } from '../../shaping';
+import { isLoopPreviewItem } from '../loop-preview-item';
 import { getSavedTrackPlayer } from '../saved-track-player-interop';
 import { ensureSavedTrackPlayerReady } from '../saved-track-player-runtime';
 import { isSavedTrackDownloadAbortError } from '../saved-track-web-download';
@@ -306,7 +307,11 @@ export const createSavedTrackPlaybackRuntimeCommands = (
       options.setActivePlaylistSession(null);
       // A different item the user chose is a new start: ambient shaping from
       // an earlier item does not carry over (queue advances do not come here).
-      getPlaybackShapingSession().startNewPlayback();
+      // A loop editor preview is not a new start: it plays at the session's
+      // shaping and leaves it alone (task 8.52).
+      if (!isLoopPreviewItem(playableItem)) {
+        getPlaybackShapingSession().startNewPlayback();
+      }
       options.setIsPreparing(true);
 
       try {

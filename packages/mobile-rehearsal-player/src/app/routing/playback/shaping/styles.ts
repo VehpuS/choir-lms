@@ -172,6 +172,10 @@ export const shapingStyles = StyleSheet.create({
   saveActions: {
     gap: space.sm,
   },
+  overrideNote: {
+    color: colors.accentText,
+    fontSize: NOTE_TEXT_SIZE,
+  },
   saveHint: {
     color: colors.textSecondary,
     fontSize: NOTE_TEXT_SIZE,
