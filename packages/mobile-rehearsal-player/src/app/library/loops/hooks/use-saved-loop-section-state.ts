@@ -5,6 +5,7 @@ import {
 } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 
+import { useLoopPreviewPlaybackContext } from '../components/loop-preview-playback-context';
 import { getCompactPlaybackActionIconName } from '../../drive/utils/drive-library-source-actions';
 import type { SavedTrackPlaybackState } from '../../playback/utils/saved-track-playback-view-model';
 import { getSavedTrackPlaybackActionCopy } from '../../playback/utils/saved-track-playback-view-model';
@@ -92,6 +93,21 @@ export const useSavedLoopSectionState = (
           startMs: rangeValidation.normalizedStartMs,
         })
       : null;
+  // Moving a boundary while the preview plays gives the playing item the new
+  // range instead of reloading it, so the edit is audible at once and
+  // `Set start here` / `Set end here` stay live (tasks 8.38, 8.46).
+  const { syncActivePreviewRange } = useLoopPreviewPlaybackContext();
+
+  useEffect(() => {
+    if (previewPlayableItem) {
+      void syncActivePreviewRange(previewPlayableItem);
+    }
+  }, [
+    previewPlayableItem?.id,
+    previewPlayableItem?.range.startMs,
+    previewPlayableItem?.range.endMs,
+  ]);
+
   const previewActionCopy = previewPlayableItem
     ? getSavedTrackPlaybackActionCopy({
         activePlayableItem: options.activePlayableItem,

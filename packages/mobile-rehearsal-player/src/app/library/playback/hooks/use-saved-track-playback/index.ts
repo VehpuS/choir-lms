@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 import { isDriveAuthorizationFailure } from '../../../../auth/google-drive/utils/authorization';
 import { type ActivePlaylistContext } from '../../../playlists/utils/playlist-session-mode';
 import { type PlaylistPlaybackSession } from '../../../playlists/utils/saved-playlist-playback-view-model';
+import { resolvePreviewRangeSync } from '../../utils/loop-preview-item';
 import { createSavedTrackPlaybackController } from '../../utils/saved-track-playback-controller';
 import { createSavedTrackPlaybackControllerOptionsProxy } from '../../utils/saved-track-playback-controller/shared';
 import {
@@ -196,6 +197,30 @@ export const useSavedTrackPlayback = (
     setPlaylistRepeatModeState,
   });
 
+  // The loop editor changing its range while its preview plays: the active
+  // item takes the new range without a reload (tasks 8.38, 8.46).
+  const syncActivePreviewRange = (previewItem: PlayableItem) => {
+    const sync = resolvePreviewRangeSync({
+      active: activePlayableItemRef.current,
+      playbackPositionSeconds: progress.position,
+      preview: previewItem,
+    });
+
+    if (!sync.shouldUpdate) {
+      return Promise.resolve();
+    }
+
+    activePlayableItemRef.current = previewItem;
+    setActivePlayableItem(previewItem);
+
+    return sync.seekToSeconds === null
+      ? Promise.resolve()
+      : playbackController.seekActivePlayableItemTo(
+          previewItem,
+          sync.seekToSeconds,
+        );
+  };
+
   return {
     activePlayableItem,
     activePlaylistSession,
@@ -208,6 +233,7 @@ export const useSavedTrackPlayback = (
     shaping,
     volumeLevel,
     syncActivePlaylistContext: syncActivePlaylistContextRef.current,
+    syncActivePreviewRange,
     ...actions,
   };
 };

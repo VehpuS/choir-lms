@@ -326,7 +326,9 @@ export const createLoopPreviewPlayableItem = (options: {
   const endLabel = formatDurationLabel(options.endMs) ?? '0:00';
 
   return {
-    id: `${LOOP_PREVIEW_ITEM_ID_PREFIX}${options.selectedTrack.sourceId}:${options.startMs}:${options.endMs}`,
+    // One id per source: moving a boundary changes the range, not the item, so
+    // the loaded file keeps playing (tasks 8.38, 8.46).
+    id: `${LOOP_PREVIEW_ITEM_ID_PREFIX}${options.selectedTrack.sourceId}`,
     kind: 'loop',
     title: `${options.selectedTrack.source.name} preview`,
     sourceId: options.selectedTrack.sourceId,

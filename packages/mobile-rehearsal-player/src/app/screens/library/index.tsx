@@ -152,6 +152,7 @@ export const LibraryScreen = ({
           value={{
             playbackPositionSeconds: playback.progress.position,
             seekActivePlaybackToPosition: playback.seekActivePlaybackToPosition,
+            syncActivePreviewRange: playback.syncActivePreviewRange,
           }}
         >
           <SavedRehearsalLibrarySection

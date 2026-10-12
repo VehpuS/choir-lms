@@ -46,10 +46,7 @@ describe('saved loop builder range view-model', () => {
     });
 
     assert.equal(previewPlayableItem.kind, 'loop');
-    assert.equal(
-      previewPlayableItem.id,
-      `loop-preview:${PLAYABLE_SOURCE.id}:12000:18500`,
-    );
+    assert.equal(previewPlayableItem.id, `loop-preview:${PLAYABLE_SOURCE.id}`);
     assert.deepEqual(previewPlayableItem.range, {
       startMs: 12000,
       endMs: 18500,

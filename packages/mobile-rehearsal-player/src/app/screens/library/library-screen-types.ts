@@ -17,6 +17,7 @@ type SavedTrackPlaybackController = Pick<
   | 'queuePlayableItemsUpNext'
   | 'seekActivePlaybackToPosition'
   | 'syncActivePlaylistContext'
+  | 'syncActivePreviewRange'
   | 'toggleActivePlayback'
   | 'toggleItemQueuePlayback'
   | 'togglePlayableItemPlayback'
