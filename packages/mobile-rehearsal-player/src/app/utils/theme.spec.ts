@@ -85,6 +85,23 @@ describe('Nocturne theme tokens', () => {
     }
   }
 
+  for (const [sizeName, style] of Object.entries(appTheme.type.lyrics)) {
+    it(`keeps ${sizeName} lyrics text at body-text contrast on the ground`, () => {
+      assert.ok(
+        getContrastRatio(style.color, colors.bg) >= BODY_TEXT_MIN_CONTRAST,
+      );
+    });
+  }
+
+  it('grows lyrics text and line height with each size step', () => {
+    const sizes = Object.values(appTheme.type.lyrics);
+
+    for (let index = 1; index < sizes.length; index += 1) {
+      assert.ok(sizes[index].fontSize > sizes[index - 1].fontSize);
+      assert.ok(sizes[index].lineHeight > sizes[index - 1].lineHeight);
+    }
+  });
+
   it('keeps accent-on-tint chip text at body-text contrast on its tinted chip', () => {
     assert.ok(
       getContrastRatio(colors.accentOnTint, colors.surfaceAccent) >=

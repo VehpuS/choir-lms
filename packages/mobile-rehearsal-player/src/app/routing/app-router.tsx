@@ -1,7 +1,7 @@
 import { aggregateRehearsalLibraryTags } from '@org/audio-library-runtime';
 import { useEffect, useMemo, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/google-drive/hooks/use-authorization';
-import { LyricsEditorHost } from '../library/lyrics/components/lyrics-editor-host';
+import { LyricsHosts } from '../library/lyrics/components/lyrics-hosts';
 import { SavedItemAvailabilityProvider } from '../library/components/saved-item-menu/saved-item-availability-context';
 import { isLoopPreviewItem } from '../library/playback/utils/loop-preview-item';
 import { useSavedTrackPlayback } from '../library/playback/hooks/use-saved-track-playback';
@@ -320,7 +320,17 @@ export const AppRouter = () => {
           />
         )}
       />
-      <LyricsEditorHost library={libraryController.savedLibrary} />
+      <LyricsHosts
+        library={libraryController.savedLibrary}
+        playback={{
+          isPlaybackToggleDisabled:
+            playback.activePlayableItem === null || playback.isPreparing,
+          isPlaying: playback.playbackState === 'playing',
+          onTogglePlayback: () => {
+            void playback.toggleActivePlayback();
+          },
+        }}
+      />
     </SavedItemAvailabilityProvider>
   );
 };

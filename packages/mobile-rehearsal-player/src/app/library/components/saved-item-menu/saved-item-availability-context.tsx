@@ -1,18 +1,23 @@
 import type { PlayableItem } from '@org/audio-library-models';
 import { createContext, useContext, type ReactNode } from 'react';
 
+import type { SourceLyricsResolution } from '../../lyrics/hooks/use-source-lyrics';
+
 type SavedItemAvailability = {
   /**
    * Whether the track that owns the lyrics of a track, adjusted track, or loop
    * (named by its source id) has lyrics; menus then read `Edit lyrics`.
    */
   hasLyricsFor: (sourceId: string) => boolean;
+  /** The lyrics shown for an item (named by its source id) and their owner. */
+  lyricsFor: (sourceId: string) => SourceLyricsResolution;
   savedLoopIds: ReadonlySet<string>;
   savedSourceIds: ReadonlySet<string>;
 };
 
 const EMPTY_AVAILABILITY: SavedItemAvailability = {
   hasLyricsFor: () => false,
+  lyricsFor: () => ({ lyrics: undefined, owner: null }),
   savedLoopIds: new Set(),
   savedSourceIds: new Set(),
 };
@@ -56,4 +61,11 @@ export const useHasLyricsFor = () => {
 /** Whether lyrics exist for the track that owns this item's lyrics. */
 export const useHasLyrics = (item: Pick<PlayableItem, 'sourceId'>): boolean => {
   return useContext(SavedItemAvailabilityContext).hasLyricsFor(item.sourceId);
+};
+
+/** The lyrics and owning track for a playable item, for the viewing surfaces. */
+export const useLyricsFor = (
+  item: Pick<PlayableItem, 'sourceId'>,
+): SourceLyricsResolution => {
+  return useContext(SavedItemAvailabilityContext).lyricsFor(item.sourceId);
 };

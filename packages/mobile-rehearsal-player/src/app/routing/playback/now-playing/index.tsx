@@ -17,6 +17,7 @@ import {
   requestSavedItemAction,
   resolveSavedItemShortcuts,
 } from '../../../library/components/saved-item-menu/saved-item-requests';
+import { LyricsSection } from '../../../library/lyrics/components/lyrics-section';
 import { OptionsMenuSheet } from '../../../library/components/options-menu-sheet';
 import { requestLoopBuilder } from '../../../library/loops/utils/loop-builder-request';
 import { appTheme } from '../../../utils/theme';
@@ -274,6 +275,7 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
           onSetPlaybackVolume={props.onAdjustPlaybackVolume}
           volumeLevel={props.playbackVolumeLevel}
         />
+        <LyricsSection item={props.activePlayableItem} />
       </ScrollView>
       <OptionsMenuSheet
         actions={menuActions}

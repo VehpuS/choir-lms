@@ -238,6 +238,16 @@ const type = {
     fontFamily: fontFamily.mono,
     fontSize: 11.5,
   },
+  /**
+   * Lyrics reading text, one step per text-size preference. Generous line
+   * height suits reading while singing; color is the primary text on the ground.
+   */
+  lyrics: {
+    small: { color: nocturneColors.text, fontSize: 16, lineHeight: 24 },
+    medium: { color: nocturneColors.text, fontSize: 18, lineHeight: 28 },
+    large: { color: nocturneColors.text, fontSize: 22, lineHeight: 34 },
+    extraLarge: { color: nocturneColors.text, fontSize: 28, lineHeight: 42 },
+  },
 } as const;
 
 export const appTheme = {

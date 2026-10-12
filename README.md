@@ -25,9 +25,19 @@ For the MVP, the player is expected to support:
 - marking start and end points on a track and saving them as named loops
 - adding full tracks and saved loops into playlists
 - ordered playback, repeat, and shuffle for rehearsal sessions
+- lyrics saved with a track and read during playback (see [Lyrics](#lyrics))
 - native mobile transport integration where practical, including background playback and lock-screen controls
 
 The MVP explicitly does not include offline playback, document collaboration, score annotation, recording overlays, or broader rehearsal management workflows.
+
+## Lyrics
+
+A saved track can hold one body of plain-text lyrics, stored with the track in the on-device library like its tags. Loops and adjusted tracks do not keep their own copy: they show the lyrics of the track they came from, and removing a track removes its lyrics.
+
+- **Adding lyrics:** open `Lyrics` (or `Edit lyrics`) from any track, loop, or playback menu. Type or paste text, use `Search the web` to open a search for the title and artist in the system browser, or use `Look up` to fetch suggestions.
+- **Where lookup comes from:** `Look up` asks the open [LRCLIB](https://lrclib.net) service. It runs only when you tap it, after a one-time notice on the device, and sends the title, artist, and track length you see in the editor, nothing else. Results are suggestions: you review and can edit them, and nothing is saved until you press `Save`. Timed (synced) lyrics are ignored.
+- **Privacy and copyright:** saved lyrics stay on the device; the app never uploads or shares them. Looked-up text is third-party content that you choose to keep in your own library, and the lyrics service's own terms apply to the lookup.
+- **Reading:** the playback screen has a Lyrics section, the mini-player shows a `Lyrics` control while the playing item has lyrics (a half-height peek), and `Show all` / `Expand` opens a full-screen reading mode. One text-size setting (`Small` to `Extra large`) applies to all three.
 
 ## Product Direction
 
@@ -70,8 +80,8 @@ The currently implemented automated tests run through Nx `test` targets and exec
 - Primary command pattern: `npm exec -- nx run <project>:test`.
 - In this workspace, Jest and Vitest are not the active test harness for existing package tests.
 - For targeted mobile test runs, use:
-	- `npm exec -- nx run mobile-rehearsal-player:test-file -- --file=src/path/to/file.spec.ts`
-	- `npm exec -- nx run mobile-rehearsal-player:test-pattern -- --pattern='src/**/*.spec.ts'`
+  - `npm exec -- nx run mobile-rehearsal-player:test-file -- --file=src/path/to/file.spec.ts`
+  - `npm exec -- nx run mobile-rehearsal-player:test-pattern -- --pattern='src/**/*.spec.ts'`
 
 ### Google OAuth for mobile manual testing
 

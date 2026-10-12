@@ -3,6 +3,9 @@ import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
 import { AppIcon } from '../../../components/app-icon';
 import { PlaybackWaveform } from '../../../components/playback-waveform';
+import { useLyricsFor } from '../../../library/components/saved-item-menu/saved-item-availability-context';
+import { shouldShowMiniPlayerLyrics } from '../../../library/lyrics/components/lyrics-viewer/model';
+import { requestLyricsView } from '../../../library/lyrics/lyrics-view-request';
 import { getProgressLineWidth } from '../../../components/playback-waveform/model';
 import type { SavedTrackPlaybackState } from '../../../library/playback/utils/saved-track-playback-view-model';
 import { getPlaybackToggleControlModel } from '../../playback/playback-toggle-control-model';
@@ -46,6 +49,9 @@ export const MobileShellMiniPlayerDock = ({
   playbackState,
   playbackToggleLabel,
 }: MobileShellMiniPlayerDockProps) => {
+  const lyricsResolution = useLyricsFor({
+    sourceId: activePlayableItem?.sourceId ?? '',
+  });
   const playbackToggleControl = miniPlayerSummary
     ? getPlaybackToggleControlModel({
         playbackToggleLabel,
@@ -87,6 +93,29 @@ export const MobileShellMiniPlayerDock = ({
               </Text>
             </View>
           </Pressable>
+          {activePlayableItem &&
+          shouldShowMiniPlayerLyrics(lyricsResolution) ? (
+            <Pressable
+              accessibilityLabel="Show lyrics"
+              accessibilityRole="button"
+              onPress={() => {
+                requestLyricsView({
+                  mode: 'peek',
+                  sourceId: activePlayableItem.sourceId,
+                });
+              }}
+              style={({ pressed }) => [
+                styles.miniPlayerLyricsButton,
+                pressed ? styles.miniPlayerPressed : null,
+              ]}
+            >
+              <AppIcon
+                color={appTheme.colors.accentText}
+                name="text-align-left"
+                size={MINI_PLAYER_TOGGLE_ICON_SIZE}
+              />
+            </Pressable>
+          ) : null}
           <Pressable
             accessibilityLabel={
               playbackToggleControl?.accessibilityLabel ??

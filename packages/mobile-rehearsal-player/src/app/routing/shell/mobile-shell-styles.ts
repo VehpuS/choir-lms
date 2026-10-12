@@ -91,6 +91,13 @@ export const styles = StyleSheet.create({
     fontVariant: [...appTheme.tabularNumbers],
     lineHeight: 15,
   },
+  // A quiet glyph beside the play ring: it opens the lyrics peek.
+  miniPlayerLyricsButton: {
+    width: appTheme.space.touchTarget,
+    height: appTheme.space.touchTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   miniPlayerActionButton: {
     width: MINI_PLAYER_TOGGLE_SIZE,
     height: MINI_PLAYER_TOGGLE_SIZE,

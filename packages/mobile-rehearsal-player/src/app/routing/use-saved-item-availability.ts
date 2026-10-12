@@ -30,13 +30,13 @@ export const useSavedItemAvailability = (options: {
     });
   });
 
-  // A track, adjusted track, or loop has lyrics when its owning track does.
+  // A track, adjusted track, or loop shows the lyrics of its owning track.
+  const lyricsFor = (sourceId: string) => {
+    return resolveSourceLyrics({ id: sourceId, sourceId }, savedSources);
+  };
   const hasLyricsFor = (sourceId: string) => {
-    return (
-      resolveSourceLyrics({ id: sourceId, sourceId }, savedSources).lyrics !==
-      undefined
-    );
+    return lyricsFor(sourceId).lyrics !== undefined;
   };
 
-  return { hasLyricsFor, savedLoopIds, savedSourceIds };
+  return { hasLyricsFor, lyricsFor, savedLoopIds, savedSourceIds };
 };
