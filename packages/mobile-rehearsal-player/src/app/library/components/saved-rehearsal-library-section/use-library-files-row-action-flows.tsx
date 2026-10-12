@@ -16,10 +16,7 @@ import { FeedbackCard } from '../feedback-card';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import { resolveFilesRowMenuActions } from './files-row-actions';
 import type { FileLinkLibraryFilesRow } from './files-row-actions-model';
-import {
-  formatTrackRemoveFromLibraryImpactMessage,
-  getTrackRemoveFromLibraryAffectedSections,
-} from './library-files-delete-copy';
+import { createTrackRemoveFromLibraryConfirmation } from './library-files-delete-copy';
 import { requestLibraryFilesDeleteConfirmation } from './library-files-delete-flow';
 import {
   buildLibraryFilesDestinationPicker,
@@ -387,13 +384,9 @@ export const useLibraryFilesRowActionFlows = ({
           const impact = files.getTrackRemoveFromLibraryImpact(row.source.id);
 
           confirmationFlow.requestConfirmation({
-            content: {
-              affectedSections:
-                getTrackRemoveFromLibraryAffectedSections(impact),
-              confirmLabel: 'Remove from library',
-              message: formatTrackRemoveFromLibraryImpactMessage(row, impact),
-              title: 'Remove from library?',
-            },
+            content: createTrackRemoveFromLibraryConfirmation(row, impact),
+            // This dialog is the confirmation; the removal itself must not ask
+            // again.
             onConfirm: () => {
               onRemoveSource(row.source);
             },

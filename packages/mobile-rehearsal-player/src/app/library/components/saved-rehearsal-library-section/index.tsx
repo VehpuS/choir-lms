@@ -57,6 +57,7 @@ export const SavedRehearsalLibrarySection = ({
   queuePlayableItemsUpNext,
   removeLoop,
   removeSource,
+  removeSourceWithoutConfirmation,
   requestedLoopEditId,
   requestedLoopEditRequestId,
   requestedTag,
@@ -285,6 +286,7 @@ export const SavedRehearsalLibrarySection = ({
             queuePlayableItemUpNext={queuePlayableItemUpNext}
             removeLoop={removeLoop}
             removeSource={removeSource}
+            removeSourceWithoutConfirmation={removeSourceWithoutConfirmation}
             savedLibraryIssue={savedLibraryIssue}
             savedLibrarySources={savedLibrarySources}
             savedLoops={savedLoops}

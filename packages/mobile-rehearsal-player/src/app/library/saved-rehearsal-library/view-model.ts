@@ -26,12 +26,6 @@ const CONNECT_SAVED_TRACK_MESSAGE =
 const RECONNECT_SAVED_TRACK_MESSAGE =
   'Reconnect Google Drive to restore this saved rehearsal track.';
 
-export type SavedRehearsalLibraryRemovalCopy = {
-  confirmLabel: string;
-  message: string;
-  title: string;
-};
-
 const pluralize = (count: number, noun: string) => {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 };
@@ -59,14 +53,6 @@ const markSavedSourceUnavailable = (
   };
 };
 
-const formatLoopRemovalList = (loops: Array<Pick<NamedLoop, 'name'>>) => {
-  return loops
-    .map((loop) => {
-      return `• ${loop.name}`;
-    })
-    .join('\n');
-};
-
 export const getSavedRehearsalLibraryDependentLoops = <
   Loop extends Pick<NamedLoop, 'id' | 'name' | 'sourceId'>,
 >(
@@ -76,80 +62,6 @@ export const getSavedRehearsalLibraryDependentLoops = <
   return loops.filter((loop) => {
     return loop.sourceId === sourceId;
   });
-};
-
-/**
- * What removing a track takes with it: its adjusted tracks, and the loops of
- * the track and of those adjusted tracks (the repository cascade removes all
- * of them, so the confirmation lists all of them).
- */
-export const getSavedRehearsalLibraryRemovalDependents = <
-  Loop extends Pick<NamedLoop, 'id' | 'name' | 'sourceId'>,
-  Source extends Pick<DriveLibrarySource, 'adjustment' | 'id' | 'name'>,
->(options: {
-  savedLoops: Loop[];
-  savedSources: readonly Source[];
-  sourceId: string;
-}) => {
-  const dependentAdjustedTracks = options.savedSources.filter((source) => {
-    return source.adjustment?.sourceRef === options.sourceId;
-  });
-  const removedSourceIds = new Set([
-    options.sourceId,
-    ...dependentAdjustedTracks.map(({ id }) => id),
-  ]);
-
-  return {
-    dependentAdjustedTracks,
-    dependentLoops: options.savedLoops.filter((loop) => {
-      return removedSourceIds.has(loop.sourceId);
-    }),
-  };
-};
-
-export const getSavedRehearsalLibraryRemovalCopy = (options: {
-  dependentAdjustedTracks?: Array<Pick<DriveLibrarySource, 'name'>>;
-  dependentLoops: Array<Pick<NamedLoop, 'name'>>;
-  source: Pick<DriveLibrarySource, 'name'>;
-}): SavedRehearsalLibraryRemovalCopy => {
-  const adjustedTracks = options.dependentAdjustedTracks ?? [];
-  const intro = `"${options.source.name}" will be removed from your saved rehearsal library.`;
-
-  if (adjustedTracks.length === 0 && options.dependentLoops.length === 0) {
-    return {
-      confirmLabel: 'Remove track',
-      message: intro,
-      title: 'Remove saved track?',
-    };
-  }
-
-  if (adjustedTracks.length === 0) {
-    return {
-      confirmLabel: 'Remove track and loops',
-      message:
-        `${intro}\n\n` +
-        `This will also remove ${pluralize(options.dependentLoops.length, 'saved loop')}:\n` +
-        formatLoopRemovalList(options.dependentLoops),
-      title: 'Remove saved track and loops?',
-    };
-  }
-
-  const sections = [
-    `This will also remove ${pluralize(adjustedTracks.length, 'adjusted track')}:\n` +
-      formatLoopRemovalList(adjustedTracks),
-    ...(options.dependentLoops.length > 0
-      ? [
-          `${pluralize(options.dependentLoops.length, 'saved loop')} (including adjusted loops):\n` +
-            formatLoopRemovalList(options.dependentLoops),
-        ]
-      : []),
-  ];
-
-  return {
-    confirmLabel: 'Remove track and dependents',
-    message: `${intro}\n\n${sections.join('\n\n')}`,
-    title: 'Remove saved track and dependents?',
-  };
 };
 
 export const resolveSavedRehearsalLibrarySources = (

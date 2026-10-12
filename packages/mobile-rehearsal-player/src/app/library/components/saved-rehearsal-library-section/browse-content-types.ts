@@ -83,6 +83,7 @@ export type SavedRehearsalLibraryBrowseContentProps = Pick<
   | 'queuePlayableItemUpNext'
   | 'removeLoop'
   | 'removeSource'
+  | 'removeSourceWithoutConfirmation'
   | 'savedLibraryIssue'
   | 'savedLibrarySources'
   | 'savedLoops'

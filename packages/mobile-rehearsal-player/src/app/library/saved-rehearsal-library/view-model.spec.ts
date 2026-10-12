@@ -9,14 +9,10 @@ import {
   UNSUPPORTED_SOURCE,
 } from '../../test-utils/library-test-fixtures.js';
 import {
-  getSavedRehearsalLibraryDependentLoops,
-  getSavedRehearsalLibraryRemovalCopy,
-  getSavedRehearsalLibraryRemovalDependents,
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
   resolveSavedRehearsalLibrarySources,
 } from './view-model.js';
-import { SAVED_LOOP } from '../../test-utils/library-test-fixtures.js';
 
 describe('saved rehearsal library view-model', () => {
   it('marks saved tracks unavailable until Drive access is restored', () => {
@@ -205,83 +201,6 @@ describe('saved rehearsal library view-model', () => {
     assert.equal(
       getSavedRehearsalLibrarySourceIssue(issue, PLAYABLE_SOURCE, 'remove'),
       undefined,
-    );
-  });
-
-  it('builds destructive copy that lists dependent loops before track removal', () => {
-    const dependentLoops = getSavedRehearsalLibraryDependentLoops(
-      [
-        SAVED_LOOP,
-        {
-          ...SAVED_LOOP,
-          id: 'loop-2',
-          name: 'Cadence repeat',
-        },
-      ],
-      PLAYABLE_SOURCE.id,
-    );
-
-    assert.deepEqual(
-      getSavedRehearsalLibraryRemovalCopy({
-        dependentLoops,
-        source: PLAYABLE_SOURCE,
-      }),
-      {
-        confirmLabel: 'Remove track and loops',
-        message:
-          '"Alto Line.mp3" will be removed from your saved rehearsal library.\n\nThis will also remove 2 saved loops:\n• Entrance cue\n• Cadence repeat',
-        title: 'Remove saved track and loops?',
-      },
-    );
-  });
-
-  it('lists adjusted tracks and every loop that goes with them before track removal', () => {
-    const adjustedTrack = {
-      ...PLAYABLE_SOURCE,
-      adjustment: {
-        sourceName: PLAYABLE_SOURCE.name,
-        sourceRef: PLAYABLE_SOURCE.id,
-        transform: {
-          pitchSemitones: 0,
-          speedMultiplier: 0.8,
-          tempoSource: 'multiplier' as const,
-        },
-      },
-      id: 'adjusted:alto',
-      name: 'Alto Line.mp3 • 0.80×',
-    };
-    const loopOfAdjustedTrack = {
-      ...SAVED_LOOP,
-      id: 'loop-3',
-      name: 'Slow cadence',
-      sourceId: adjustedTrack.id,
-    };
-    const unrelatedLoop = { ...SAVED_LOOP, id: 'loop-4', sourceId: 'other' };
-    const dependents = getSavedRehearsalLibraryRemovalDependents({
-      savedLoops: [SAVED_LOOP, loopOfAdjustedTrack, unrelatedLoop],
-      savedSources: [PLAYABLE_SOURCE, adjustedTrack],
-      sourceId: PLAYABLE_SOURCE.id,
-    });
-
-    assert.deepEqual(
-      dependents.dependentAdjustedTracks.map(({ id }) => id),
-      ['adjusted:alto'],
-    );
-    assert.deepEqual(
-      dependents.dependentLoops.map(({ id }) => id),
-      [SAVED_LOOP.id, 'loop-3'],
-    );
-    assert.deepEqual(
-      getSavedRehearsalLibraryRemovalCopy({
-        ...dependents,
-        source: PLAYABLE_SOURCE,
-      }),
-      {
-        confirmLabel: 'Remove track and dependents',
-        message:
-          '"Alto Line.mp3" will be removed from your saved rehearsal library.\n\nThis will also remove 1 adjusted track:\n• Alto Line.mp3 • 0.80×\n\n2 saved loops (including adjusted loops):\n• Entrance cue\n• Slow cadence',
-        title: 'Remove saved track and dependents?',
-      },
     );
   });
 });

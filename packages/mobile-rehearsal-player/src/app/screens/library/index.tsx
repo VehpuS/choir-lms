@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { isScreenReaderEnabled } from '../../components/scoped-success-acknowledgment/is-screen-reader-enabled';
@@ -22,6 +22,8 @@ import type { LibraryScreenProps } from './library-screen-types';
 import { useDismissOnViewChange } from './use-dismiss-on-view-change';
 import { useLibraryFilesSessionRestoration } from './use-library-files-session-restoration';
 import { useLibraryScreenScrollCoordination } from './use-library-screen-scroll-coordination';
+import { useOpenSuccessFeedbackFolder } from './use-open-success-feedback-folder';
+import { useRequestedLibraryView } from './use-requested-library-view';
 import { scrollGutterStyles } from '../../components/scroll-gutter';
 
 const SUCCESS_ACKNOWLEDGMENT_AUTO_DISMISS_MS = 5000;
@@ -43,13 +45,11 @@ export const LibraryScreen = ({
   const [selectedView, setSelectedView] =
     useState<SavedRehearsalLibraryView>('files');
 
-  useEffect(() => {
-    if (!requestedView || requestedViewRequestId === undefined) {
-      return;
-    }
-
-    setSelectedView(requestedView);
-  }, [requestedView, requestedViewRequestId]);
+  useRequestedLibraryView({
+    requestedView,
+    requestedViewRequestId,
+    setSelectedView,
+  });
   const [browseCreateDockMode, setBrowseCreateDockMode] =
     useState<LibraryBrowseCreateDockMode>(null);
   const librarySuccessFeedback =
@@ -104,18 +104,11 @@ export const LibraryScreen = ({
   const handlePlaylistCreated = useCallback((playlistId: string) => {
     playlistSelectionHandlerRef.current?.(playlistId);
   }, []);
-  const openLibraryFilesSuccessFeedbackFolder = useCallback(
-    (folderId: string) => {
-      if (!folderId) {
-        return;
-      }
-
-      setSelectedView('files');
-      libraryController.savedLibrary.files.openFolder(folderId);
-      librarySuccessFeedback.dismiss();
-    },
-    [libraryController.savedLibrary.files, librarySuccessFeedback.dismiss],
-  );
+  const openLibraryFilesSuccessFeedbackFolder = useOpenSuccessFeedbackFolder({
+    dismiss: librarySuccessFeedback.dismiss,
+    openFolder: libraryController.savedLibrary.files.openFolder,
+    setSelectedView,
+  });
   const headerSearchProps = resolveLibraryHeaderSearchProps({
     detailSearchActions,
     playlistDetailPlayback,
@@ -218,6 +211,9 @@ export const LibraryScreen = ({
             queuePlayableItemsUpNext={playback.queuePlayableItemsUpNext}
             removeLoop={libraryController.savedLibrary.removeLoop}
             removeSource={libraryController.savedLibrary.removeSource}
+            removeSourceWithoutConfirmation={
+              libraryController.savedLibrary.removeSourceWithoutConfirmation
+            }
             requestedLoopEditId={requestedLoopEditId}
             requestedLoopEditRequestId={requestedLoopEditRequestId}
             requestedTag={requestedTag}

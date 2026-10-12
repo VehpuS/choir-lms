@@ -37,7 +37,7 @@ export const formatFolderDeleteImpactMessage = (
 };
 
 export const formatTrackRemoveFromLibraryImpactMessage = (
-  row: Extract<LibraryFilesRow, { kind: 'track' }>,
+  row: { source: { name: string } },
   impact: ReturnType<UseLibraryFilesResult['getTrackRemoveFromLibraryImpact']>,
 ) => {
   const totalAffectedItems =
@@ -81,3 +81,16 @@ export const getTrackRemoveFromLibraryAffectedSections = (
     },
   ].filter((section) => section.items.length > 0 && section.title.length > 0);
 };
+
+// The one confirmation for taking a track out of the library, whichever view
+// asks (Files, Tracks, Add): it lists every adjusted track, loop, folder link
+// and playlist entry that goes with it.
+export const createTrackRemoveFromLibraryConfirmation = (
+  row: { source: { name: string } },
+  impact: ReturnType<UseLibraryFilesResult['getTrackRemoveFromLibraryImpact']>,
+) => ({
+  affectedSections: getTrackRemoveFromLibraryAffectedSections(impact),
+  confirmLabel: 'Remove from library',
+  message: formatTrackRemoveFromLibraryImpactMessage(row, impact),
+  title: 'Remove from library?',
+});

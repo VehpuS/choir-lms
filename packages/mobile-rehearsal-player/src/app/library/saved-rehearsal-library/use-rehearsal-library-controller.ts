@@ -72,13 +72,40 @@ export const useRehearsalLibraryController = ({
   });
   const savedLoops = useSavedLoops();
   const playlists = useSavedPlaylists();
+  const visibleSources = useMemo(() => {
+    return [
+      ...driveLibrary.browseSnapshot.playableSources,
+      ...driveLibrary.browseSnapshot.unavailableSources,
+      ...driveLibrary.searchSnapshot.playableSources,
+      ...driveLibrary.searchSnapshot.unavailableSources,
+    ];
+  }, [
+    driveLibrary.browseSnapshot.playableSources,
+    driveLibrary.browseSnapshot.unavailableSources,
+    driveLibrary.searchSnapshot.playableSources,
+    driveLibrary.searchSnapshot.unavailableSources,
+  ]);
+  const savedLibrarySources = useMemo(() => {
+    return resolveSavedRehearsalLibrarySources({
+      authState,
+      savedSources: savedLibrary.savedSources,
+      visibleSources,
+    });
+  }, [authState, savedLibrary.savedSources, visibleSources]);
+  const libraryFiles = useLibraryFiles({
+    refreshSavedLoops: savedLoops.refreshLoops,
+    refreshSavedPlaylists: playlists.refreshPlaylists,
+    refreshSavedSources: savedLibrary.refreshSources,
+    savedLoops: savedLoops.savedLoops,
+    savedPlaylists: playlists.savedPlaylists,
+    savedSources: savedLibrarySources,
+  });
   const savedLibraryRemovalActions = useSavedRehearsalLibraryRemovalActions({
     deleteLoop: savedLoops.deleteLoop,
+    getTrackRemoveImpact: libraryFiles.getTrackRemoveFromLibraryImpact,
     refreshLoops: savedLoops.refreshLoops,
     refreshPlaylists: playlists.refreshPlaylists,
     removeSource: savedLibrary.removeSource,
-    savedLoops: savedLoops.savedLoops,
-    savedSources: savedLibrary.savedSources,
   });
   const canRefresh =
     authState.status === 'authorized' || authState.status === 'expired';
@@ -103,26 +130,6 @@ export const useRehearsalLibraryController = ({
     issue: isSearchMode ? driveLibrary.issue : null,
     searchSnapshot: driveLibrary.searchSnapshot,
   });
-  const visibleSources = useMemo(() => {
-    return [
-      ...driveLibrary.browseSnapshot.playableSources,
-      ...driveLibrary.browseSnapshot.unavailableSources,
-      ...driveLibrary.searchSnapshot.playableSources,
-      ...driveLibrary.searchSnapshot.unavailableSources,
-    ];
-  }, [
-    driveLibrary.browseSnapshot.playableSources,
-    driveLibrary.browseSnapshot.unavailableSources,
-    driveLibrary.searchSnapshot.playableSources,
-    driveLibrary.searchSnapshot.unavailableSources,
-  ]);
-  const savedLibrarySources = useMemo(() => {
-    return resolveSavedRehearsalLibrarySources({
-      authState,
-      savedSources: savedLibrary.savedSources,
-      visibleSources,
-    });
-  }, [authState, savedLibrary.savedSources, visibleSources]);
   const savedSourceIds = new Set(
     savedLibrary.savedSources.map((source) => source.id),
   );
@@ -130,14 +137,6 @@ export const useRehearsalLibraryController = ({
     authState,
     isLoading: savedLibrary.isLoading,
     issue: savedLibrary.issue,
-    savedSources: savedLibrarySources,
-  });
-  const libraryFiles = useLibraryFiles({
-    refreshSavedLoops: savedLoops.refreshLoops,
-    refreshSavedPlaylists: playlists.refreshPlaylists,
-    refreshSavedSources: savedLibrary.refreshSources,
-    savedLoops: savedLoops.savedLoops,
-    savedPlaylists: playlists.savedPlaylists,
     savedSources: savedLibrarySources,
   });
   const driveImportDependencies = useMemo(
@@ -291,6 +290,8 @@ export const useRehearsalLibraryController = ({
       pendingSourceId: savedLibrary.pendingSourceId,
       removeLoop: savedLibraryRemovalActions.confirmRemoveLoop,
       removeSource: savedLibraryRemovalActions.confirmRemoveSource,
+      removeSourceWithoutConfirmation:
+        savedLibraryRemovalActions.removeSourceWithoutConfirmation,
       files: libraryFiles,
       savedLibraryIssue: savedLibrary.issue,
       savedLibrarySources,

@@ -42,6 +42,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
   queuePlayableItemUpNext,
   removeLoop,
   removeSource,
+  removeSourceWithoutConfirmation,
   savedLibraryIssue,
   savedLibrarySources,
   savedLoops,
@@ -195,7 +196,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
           }}
           onQueuePlayableItemNext={queuePlayableItemNext}
           onQueuePlayableItemUpNext={queuePlayableItemUpNext}
-          onRemoveSource={removeSource}
+          onRemoveSource={removeSourceWithoutConfirmation}
           onRemoveLoop={removeLoop}
           onRemovePlaylist={playlistState.handleDeletePlaylist}
           onViewTrackLoops={loopState.openTrackLoopView}
