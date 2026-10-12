@@ -9,6 +9,10 @@ import { getCompactPlaybackActionIconName } from '../../drive/utils/drive-librar
 import type { SavedTrackPlaybackState } from '../../playback/utils/saved-track-playback-view-model';
 import { getSavedTrackPlaybackActionCopy } from '../../playback/utils/saved-track-playback-view-model';
 import { resolveLoopPreviewPlaybackTimeline } from '../utils/saved-loop-preview-playback-view-model';
+import {
+  clearRequestedLoopBuilder,
+  takeRequestedLoopBuilderStart,
+} from '../utils/loop-builder-request';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../storage/local-library-storage';
 import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
 import {
@@ -141,6 +145,7 @@ export const useSavedLoopSectionState = (
     }
 
     if (options.editingLoop) {
+      clearRequestedLoopBuilder();
       const nextDraft = createLoopBuilderDraft({
         endMs: options.editingLoop.endMs,
         sourceName: options.selectedTrack.source.name,
@@ -160,11 +165,17 @@ export const useSavedLoopSectionState = (
       options.selectedTrack.source.durationMs ??
       options.selectedTrack.range.startMs;
 
+    // `Make loop` on the playback sheet starts the new loop at the playhead.
+    const requestedStartMs = takeRequestedLoopBuilderStart({
+      endMs: nextEndMs,
+      sourceId: options.selectedTrack.source.id,
+    });
+
     setLoopDraft(
       createLoopBuilderDraft({
         endMs: nextEndMs,
         sourceName: options.selectedTrack.source.name,
-        startMs: options.selectedTrack.range.startMs,
+        startMs: requestedStartMs ?? options.selectedTrack.range.startMs,
       }),
     );
     setDraftIssue(null);

@@ -3,11 +3,14 @@ import type {
   RehearsalQueueMode,
   RepeatMode,
 } from '@org/audio-library-models';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { AppIcon } from '../../../components/app-icon';
 import { FadedRule } from '../../../components/faded-rule';
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
+import { OptionsMenuSheet } from '../../../library/components/options-menu-sheet';
+import { requestLoopBuilder } from '../../../library/loops/utils/loop-builder-request';
 import { appTheme } from '../../../utils/theme';
 import type {
   NowPlayingSurfaceSummary,
@@ -19,6 +22,7 @@ import {
   PlaybackVolumeRow,
 } from './now-playing-controls';
 import { getNowPlayingKicker } from './now-playing-model';
+import { resolveNowPlayingMakeLoopRequest } from './now-playing-menu-model';
 import type { PlaybackShapingControls } from '../shaping/shaping-surface-model';
 import { nowPlayingStyles as styles } from './styles';
 import { NowPlayingTransportRow } from './now-playing-transport-row';
@@ -131,6 +135,11 @@ const TitleBlock = ({
 
 export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
   const { summary } = props;
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const makeLoopRequest = resolveNowPlayingMakeLoopRequest({
+    activePlayableItem: props.activePlayableItem,
+    playbackPositionSeconds: props.playbackPositionSeconds,
+  });
 
   return (
     <View style={styles.sheet}>
@@ -145,6 +154,15 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
               accessibilityLabel="Show queue"
               icon="view-list"
               onPress={props.onShowQueue}
+            />
+          ) : null}
+          {makeLoopRequest ? (
+            <SurfaceIconButton
+              accessibilityLabel="More actions"
+              icon="dots-vertical"
+              onPress={() => {
+                setIsMenuVisible(true);
+              }}
             />
           ) : null}
           <SurfaceIconButton
@@ -216,6 +234,26 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
           volumeLevel={props.playbackVolumeLevel}
         />
       </ScrollView>
+      <OptionsMenuSheet
+        actions={[
+          {
+            id: 'make-loop',
+            label: 'Make loop',
+            onPress: () => {
+              setIsMenuVisible(false);
+
+              if (makeLoopRequest) {
+                requestLoopBuilder(makeLoopRequest);
+              }
+            },
+          },
+        ]}
+        isVisible={isMenuVisible}
+        onClose={() => {
+          setIsMenuVisible(false);
+        }}
+        title={summary.title}
+      />
     </View>
   );
 };

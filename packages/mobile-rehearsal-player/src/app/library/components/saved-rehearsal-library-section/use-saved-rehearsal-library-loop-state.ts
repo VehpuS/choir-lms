@@ -10,6 +10,10 @@ import {
   getPlaylistPlaybackActionCopy,
   type PlaylistPlaybackSession,
 } from '../../playlists/utils/saved-playlist-playback-view-model';
+import {
+  clearRequestedLoopBuilder,
+  subscribeToLoopBuilderRequests,
+} from '../../loops/utils/loop-builder-request';
 import { getSavedRehearsalLibraryDependentLoops } from '../../saved-rehearsal-library/view-model';
 
 type UseSavedRehearsalLibraryLoopStateOptions = {
@@ -92,6 +96,24 @@ export const useSavedRehearsalLibraryLoopState = ({
       ? activePlaylistSession
       : null;
   const currentLoopBuilderSourceId = selectedTrack?.source.id ?? null;
+
+  // The playback sheet's `Make loop` opens a new loop on the active track
+  // (task 8.47); the draft picks up the requested start once it is built.
+  useEffect(() => {
+    return subscribeToLoopBuilderRequests((request) => {
+      const source = savedLibrarySources.find((savedSource) => {
+        return savedSource.id === request.sourceId;
+      });
+
+      if (!source) {
+        clearRequestedLoopBuilder();
+        return;
+      }
+
+      setSelectedLoopEditId(null);
+      openLoopBuilderForSource(source);
+    });
+  }, [openLoopBuilderForSource, savedLibrarySources]);
 
   useEffect(() => {
     if (selectedLoopEditId === null) {
