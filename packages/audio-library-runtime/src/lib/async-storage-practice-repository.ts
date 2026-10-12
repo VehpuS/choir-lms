@@ -32,6 +32,10 @@ import {
   type RemovedEntityIds,
 } from './rehearsal-library-batch-operations';
 import { saveSource } from './save-source';
+import {
+  saveSourceLyricsToRepository,
+  type SourceLyricsChange,
+} from './source-lyrics-storage';
 
 export class AsyncStoragePracticeRepository implements PracticeRepository {
   async listSources(ownerId: string) {
@@ -291,6 +295,18 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
       playlistId,
       entryIds,
     );
+  }
+
+  async saveSourceLyrics(
+    ownerId: string,
+    sourceId: string,
+    change: SourceLyricsChange,
+  ) {
+    return saveSourceLyricsToRepository(this, ownerId, sourceId, change);
+  }
+
+  async clearSourceLyrics(ownerId: string, sourceId: string) {
+    return saveSourceLyricsToRepository(this, ownerId, sourceId, null);
   }
 
   async updateLibraryTags(ownerId: string, change: LibraryTagChange) {

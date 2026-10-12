@@ -7,6 +7,7 @@ import { getDriveSearchContextCopy } from '../drive/utils/drive-library-view-mod
 import { resolveDriveSourceActions } from '../drive/utils/drive-search-preview-actions';
 import { usePreparedLoopBuilderTrack } from '../loops/hooks/use-prepared-loop-builder-track';
 import { useSavedLoops } from '../loops/hooks/use-saved-loops';
+import { useSourceLyrics } from '../lyrics/hooks/use-source-lyrics';
 import type { useSavedTrackPlayback } from '../playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackStatusCopy } from '../playback/utils/saved-track-playback-view-model';
 import { useSavedPlaylists } from '../playlists/hooks/use-saved-playlists';
@@ -69,6 +70,11 @@ export const useRehearsalLibraryController = ({
     savedSources: savedLibrary.savedSources,
   });
   const savedLoops = useSavedLoops();
+  const sourceLyrics = useSourceLyrics({
+    canMutateLibrary: savedLibrary.canMutateLibrary,
+    refreshSources: savedLibrary.refreshSources,
+    savedSources: savedLibrary.savedSources,
+  });
   const playlists = useSavedPlaylists();
   const savedLibrarySources = useSavedLibrarySourcesInView({
     authState,
@@ -263,6 +269,7 @@ export const useRehearsalLibraryController = ({
       savedLoopIssue: savedLoops.issue,
       savedLoops: savedLoops.savedLoops,
       savedLibraryStatusCopy,
+      lyrics: sourceLyrics,
       saveLoop: savedLoops.saveLoop,
       saveSource: savedLibrary.saveSource,
       savedSourceIds,

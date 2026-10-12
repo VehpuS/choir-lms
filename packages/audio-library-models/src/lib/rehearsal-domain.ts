@@ -1,6 +1,7 @@
 import type { DriveSourceLocation } from './drive-source-location.js';
 import type { PlaybackShaping } from './playback-shaping.js';
 import type { SourceAvailability } from './source-availability.js';
+import type { SourceLyrics } from './source-lyrics.js';
 
 /**
  * Marks a saved track as an adjusted track (design Decision 5): a copy of
@@ -33,6 +34,8 @@ export type DriveAudioSource = {
   iconLink?: string;
   tags?: string[];
   tagAddedAt?: Record<string, string>;
+  /** One plain-text body of lyrics; loops and adjusted tracks read their owner's. */
+  lyrics?: SourceLyrics;
   sourceLocation?: DriveSourceLocation;
   adjustment?: SourceAdjustment;
   createdAt: string;

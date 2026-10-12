@@ -28,7 +28,7 @@ const STORAGE_UNAVAILABLE_ISSUE: SavedRehearsalLibraryIssue = {
   message:
     'This build could not access the device storage needed for the saved rehearsal library.',
 };
-const practiceRepository = new AsyncStoragePracticeRepository();
+export const practiceRepository = new AsyncStoragePracticeRepository();
 
 // Saves, removals and learned durations all rewrite the same stored list, and
 // callbacks held by playback or the loop builder can run long after the render
@@ -36,7 +36,7 @@ const practiceRepository = new AsyncStoragePracticeRepository();
 // so a late write can no longer land on top of a removal.
 let pendingLibraryWrite: Promise<unknown> = Promise.resolve();
 
-const enqueueLibraryWrite = <Result>(write: () => Promise<Result>) => {
+export const enqueueLibraryWrite = <Result>(write: () => Promise<Result>) => {
   const result = pendingLibraryWrite.then(write, write);
 
   pendingLibraryWrite = result.catch(() => undefined);

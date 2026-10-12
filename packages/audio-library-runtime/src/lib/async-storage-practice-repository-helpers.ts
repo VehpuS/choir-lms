@@ -3,6 +3,7 @@ import {
   isNamedLoop,
   parseLoopTransform,
   parseSourceAdjustment,
+  parseSourceLyrics,
   withResolvedTagAddedAt,
   type DriveAudioSource,
   type NamedLoop,
@@ -75,6 +76,7 @@ export const normalizeStoredSources = (
   return sources.flatMap((source) => {
     const {
       adjustment: storedAdjustment,
+      lyrics: storedLyrics,
       sourceLocation,
       ...sourceWithoutLocation
     } = source;
@@ -87,6 +89,7 @@ export const normalizeStoredSources = (
     }
 
     const createdAt = resolveBackfilledCreatedAt(source.createdAt);
+    const lyrics = parseSourceLyrics(storedLyrics);
 
     return [
       {
@@ -96,6 +99,7 @@ export const normalizeStoredSources = (
           createdAt,
         ),
         ...(isDriveSourceLocation(sourceLocation) ? { sourceLocation } : {}),
+        ...(lyrics ? { lyrics } : {}),
         ...(adjustment
           ? {
               adjustment: {
@@ -120,8 +124,12 @@ export const resolveSourceForSave = (options: {
   const tags = options.source.tags ?? options.priorSource?.tags;
   const sourceLocation =
     options.source.sourceLocation ?? options.priorSource?.sourceLocation;
+  // Re-saving a track (for example when Drive metadata is refreshed) must not
+  // drop lyrics the incoming record does not know about.
+  const lyrics = options.source.lyrics ?? options.priorSource?.lyrics;
   const sourceWithPreservedMetadata: DriveAudioSource = {
     ...options.source,
+    ...(lyrics === undefined ? {} : { lyrics }),
     ...(tags === undefined ? {} : { tags }),
     ...(sourceLocation === undefined ? {} : { sourceLocation }),
   };

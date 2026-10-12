@@ -176,8 +176,10 @@ export const createAdjustedTrackSource = (options: {
 
   const createdAt = options.createdAt ?? new Date().toISOString();
   // Drive provenance (location, tags) stays with the source; the adjusted
-  // track resolves "original location" actions through `sourceRef`.
+  // track resolves "original location" actions through `sourceRef`. Lyrics stay
+  // there too and are read through `resolveLyricsOwner`, never copied.
   const inheritedSource = omit(source, [
+    'lyrics',
     'sourceLocation',
     'tags',
     'tagAddedAt',

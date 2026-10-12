@@ -56,6 +56,22 @@ describe('adjusted tracks', () => {
     assert.equal(adjusted.sourceLocation, undefined);
   });
 
+  it('does not copy the source lyrics', () => {
+    const adjusted = createAdjustedTrackSource({
+      source: {
+        ...source,
+        lyrics: {
+          text: 'Kyrie eleison',
+          updatedAt: '2026-10-01T00:00:00.000Z',
+          origin: 'typed',
+        },
+      },
+      transform: slowAndLow,
+    });
+
+    assert.equal(adjusted.lyrics, undefined);
+  });
+
   it('refuses to adjust an adjusted track or to save a neutral transform', () => {
     const adjusted = createAdjustedTrackSource({
       source,
