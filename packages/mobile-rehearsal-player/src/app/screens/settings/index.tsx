@@ -1,6 +1,9 @@
+import { useRef } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { DestinationHeader } from '../../components/destination-header';
+import { useEscapeToDismiss } from '../../components/escape-to-dismiss/use-escape-to-dismiss';
+import { useFocusOnMount } from '../../components/focus-on-mount/use-focus-on-mount';
 import { OutlinedActionButton } from '../../components/outlined-action-button';
 import { SegmentedControl } from '../../components/segmented-control';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
@@ -21,9 +24,22 @@ import { settingsNavigationStore } from './settings-navigation-store';
 // its prompt is never invisible (design "Bulk action preferences").
 export const SettingsScreen = () => {
   const preferences = useBulkChoicePreferences();
+  const screenRef = useRef<View>(null);
+
+  // An overlay needs its own way out and its own focus: Escape or the back
+  // button closes it, and focus moves in so keyboard and screen-reader users
+  // do not stay on the page underneath (task 8.70).
+  useEscapeToDismiss(true, settingsNavigationStore.close);
+  useFocusOnMount(screenRef);
 
   return (
-    <View style={styles.screen}>
+    <View
+      accessibilityLabel={SETTINGS_COPY.title}
+      accessible={false}
+      ref={screenRef}
+      style={styles.screen}
+      tabIndex={-1}
+    >
       <DestinationHeader
         title={SETTINGS_COPY.title}
         trailingAction={
