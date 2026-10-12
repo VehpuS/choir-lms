@@ -1,32 +1,29 @@
-import { createTrackPlayableItem } from '@org/audio-library-models';
 import type { DriveAuthorizationState } from '@org/google-drive';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Linking } from 'react-native';
 
 import { useDriveLibrary } from '../drive/hooks/use-drive-library';
-import {
-  getDriveLibraryStatusCopy,
-  getDriveSearchContextCopy,
-} from '../drive/utils/drive-library-view-model';
+import { getDriveSearchContextCopy } from '../drive/utils/drive-library-view-model';
 import { resolveDriveSourceActions } from '../drive/utils/drive-search-preview-actions';
 import { usePreparedLoopBuilderTrack } from '../loops/hooks/use-prepared-loop-builder-track';
 import { useSavedLoops } from '../loops/hooks/use-saved-loops';
 import type { useSavedTrackPlayback } from '../playback/hooks/use-saved-track-playback';
-import { prefetchWaveformPeaks } from '../playback/waveform-peaks';
 import { getSavedTrackPlaybackStatusCopy } from '../playback/utils/saved-track-playback-view-model';
 import { useSavedPlaylists } from '../playlists/hooks/use-saved-playlists';
 import { createDriveImportControllerDependencies } from './drive-import-controller-dependencies';
+import { resolveDriveStatusCopies } from './resolve-drive-status-copies';
 import { saveDiscoveredDriveSource } from './save-discovered-drive-source';
+import { useClearStaleLoopSource } from './use-clear-stale-loop-source';
 import { useDriveImportController } from './use-drive-import-controller';
 import { useLibraryFiles } from './use-library-files';
+import { useSavedLibrarySourcesInView } from './use-saved-library-sources-in-view';
+import { useOpenLoopBuilderForSource } from './use-open-loop-builder-for-source';
 import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
-import { isSelectedLoopSourceStale } from './selected-loop-source';
 import { useSavedRehearsalLibraryRemovalActions } from './use-saved-rehearsal-library-removal-actions';
 import { useSavedSourceOriginalLocationActions } from './use-saved-source-original-location-actions';
 import {
   getSavedRehearsalLibrarySourceIssue,
   getSavedRehearsalLibraryStatusCopy,
-  resolveSavedRehearsalLibrarySources,
 } from './view-model';
 type SavedTrackPlaybackController = Pick<
   ReturnType<typeof useSavedTrackPlayback>,
@@ -73,26 +70,11 @@ export const useRehearsalLibraryController = ({
   });
   const savedLoops = useSavedLoops();
   const playlists = useSavedPlaylists();
-  const visibleSources = useMemo(() => {
-    return [
-      ...driveLibrary.browseSnapshot.playableSources,
-      ...driveLibrary.browseSnapshot.unavailableSources,
-      ...driveLibrary.searchSnapshot.playableSources,
-      ...driveLibrary.searchSnapshot.unavailableSources,
-    ];
-  }, [
-    driveLibrary.browseSnapshot.playableSources,
-    driveLibrary.browseSnapshot.unavailableSources,
-    driveLibrary.searchSnapshot.playableSources,
-    driveLibrary.searchSnapshot.unavailableSources,
-  ]);
-  const savedLibrarySources = useMemo(() => {
-    return resolveSavedRehearsalLibrarySources({
-      authState,
-      savedSources: savedLibrary.savedSources,
-      visibleSources,
-    });
-  }, [authState, savedLibrary.savedSources, visibleSources]);
+  const savedLibrarySources = useSavedLibrarySourcesInView({
+    authState,
+    driveLibrary,
+    savedSources: savedLibrary.savedSources,
+  });
   const libraryFiles = useLibraryFiles({
     refreshSavedLoops: savedLoops.refreshLoops,
     refreshSavedPlaylists: playlists.refreshPlaylists,
@@ -111,46 +93,20 @@ export const useRehearsalLibraryController = ({
   const { selectedLoopSourceId, setSelectedLoopSourceId } =
     savedLibraryRemovalActions;
 
-  // Whichever path removed the track (single, bulk, last-link delete), the
-  // loop builder must stop remembering it.
-  useEffect(() => {
-    if (
-      isSelectedLoopSourceStale({
-        isLibraryLoading: savedLibrary.isLoading,
-        savedSourceIds: savedLibrary.savedSources.map(({ id }) => id),
-        selectedLoopSourceId,
-      })
-    ) {
-      setSelectedLoopSourceId(null);
-    }
-  }, [
-    savedLibrary.isLoading,
-    savedLibrary.savedSources,
+  useClearStaleLoopSource({
+    isLibraryLoading: savedLibrary.isLoading,
+    savedSources: savedLibrary.savedSources,
     selectedLoopSourceId,
     setSelectedLoopSourceId,
-  ]);
+  });
   const canRefresh =
     authState.status === 'authorized' || authState.status === 'expired';
   const isSearchMode = driveLibrary.activeSearchQuery !== null;
-  const discoveryStatusCopy = getDriveLibraryStatusCopy({
+  const { discoveryStatusCopy, searchStatusCopy } = resolveDriveStatusCopies({
     authState,
-    activeSearchQuery: null,
-    browseSnapshot: driveLibrary.browseSnapshot,
-    currentBrowseLocation: driveLibrary.currentLocation,
+    driveLibrary,
     googleAuthConfigured,
-    isLoading: !isSearchMode && driveLibrary.isLoading,
-    issue: isSearchMode ? null : driveLibrary.issue,
-    searchSnapshot: driveLibrary.searchSnapshot,
-  });
-  const searchStatusCopy = getDriveLibraryStatusCopy({
-    authState,
-    activeSearchQuery: driveLibrary.activeSearchQuery,
-    browseSnapshot: driveLibrary.browseSnapshot,
-    currentSearchLocation: driveLibrary.currentLocation,
-    googleAuthConfigured,
-    isLoading: isSearchMode && driveLibrary.isLoading,
-    issue: isSearchMode ? driveLibrary.issue : null,
-    searchSnapshot: driveLibrary.searchSnapshot,
+    isSearchMode,
   });
   const savedSourceIds = new Set(
     savedLibrary.savedSources.map((source) => source.id),
@@ -198,24 +154,11 @@ export const useRehearsalLibraryController = ({
     savedSources: savedLibrarySources,
     selectedSourceId: savedLibraryRemovalActions.selectedLoopSourceId,
   });
-  const openLoopBuilderForSource = (
-    source: (typeof savedLibrarySources)[number],
-  ) => {
-    // Analyze the file's waveform in the background while the length is
-    // resolved, so the editor opens with it rather than waiting for a play.
-    if (authState.accessToken) {
-      prefetchWaveformPeaks(
-        createTrackPlayableItem(source),
-        authState.accessToken,
-      );
-    }
-
-    // The editor opens at once; while the track's length resolves it shows its
-    // own loading state (`pendingLoopBuilderSourceId`) instead of the row
-    // sitting silent until the length is known.
-    savedLibraryRemovalActions.setSelectedLoopSourceId(source.id);
-    void prepareLoopBuilderTrack(source);
-  };
+  const openLoopBuilderForSource = useOpenLoopBuilderForSource({
+    accessToken: authState.accessToken,
+    prepareLoopBuilderTrack,
+    setSelectedLoopSourceId: savedLibraryRemovalActions.setSelectedLoopSourceId,
+  });
 
   const getDriveSourceActions = (
     source: (typeof driveLibrary.browseSnapshot.playableSources)[number],

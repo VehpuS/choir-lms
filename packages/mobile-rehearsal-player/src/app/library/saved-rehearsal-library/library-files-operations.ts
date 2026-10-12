@@ -1,8 +1,6 @@
 import type {
-  RehearsalLibraryEntityKind,
   RehearsalLibraryFileLinkNode,
   RehearsalLibraryFileTree,
-  RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
 import {
   AsyncStoragePracticeRepository,
