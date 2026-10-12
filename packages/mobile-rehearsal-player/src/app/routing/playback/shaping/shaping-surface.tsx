@@ -8,6 +8,7 @@ import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { appTheme } from '../../../utils/theme';
 import type { NowPlayingSurfaceSummary } from '../../shell/shell-model';
 import { nowPlayingStyles } from '../now-playing/styles';
+import { AdjustedSaveRename } from './adjusted-save-rename';
 import { PitchControl } from './pitch-control';
 import { SpeedControl } from './speed-control';
 import {
@@ -65,6 +66,14 @@ const SaveActions = ({ save }: { save: PlaybackShapingSaveControls }) => {
         >
           {save.feedback.message}
         </Text>
+      ) : null}
+      {save.feedback?.tone === 'success' && save.savedName !== null ? (
+        <AdjustedSaveRename
+          isSaving={save.isSaving}
+          key={save.savedName}
+          onRename={save.onRename}
+          savedName={save.savedName}
+        />
       ) : null}
     </View>
   );

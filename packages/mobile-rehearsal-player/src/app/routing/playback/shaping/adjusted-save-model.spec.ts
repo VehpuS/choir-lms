@@ -11,8 +11,10 @@ import {
 import {
   ALREADY_ADJUSTED_REASON,
   NOTHING_TO_SAVE_REASON,
-  SOURCE_NOT_SAVED_REASON,
   buildAdjustedSaveEntity,
+  formatAdjustedSaveSuccess,
+  getAdjustedSaveEntityName,
+  renameAdjustedSaveEntity,
   resolveAdjustedSaveAvailability,
 } from './adjusted-save-model';
 
@@ -37,7 +39,6 @@ const loop: NamedLoop = {
 const trackItem = createTrackPlayableItem(source);
 const loopItem = createLoopPlayableItem(loop, source);
 const shaped = { pitchSemitones: -2, speedMultiplier: 0.8 };
-const savedSourceIds = new Set([source.id]);
 
 describe('resolveAdjustedSaveAvailability', () => {
   it('offers only an adjusted track for a full track', () => {
@@ -46,7 +47,6 @@ describe('resolveAdjustedSaveAvailability', () => {
         activeItem: trackItem,
         effective: shaped,
         isItemTransformActive: false,
-        savedSourceIds,
       }),
       {
         status: 'ready',
@@ -60,7 +60,6 @@ describe('resolveAdjustedSaveAvailability', () => {
       activeItem: loopItem,
       effective: shaped,
       isItemTransformActive: false,
-      savedSourceIds,
     });
 
     assert.equal(availability.status, 'ready');
@@ -76,7 +75,6 @@ describe('resolveAdjustedSaveAvailability', () => {
       activeItem: trackItem,
       effective: shaped,
       isItemTransformActive: false,
-      savedSourceIds,
     };
 
     assert.deepEqual(
@@ -89,13 +87,6 @@ describe('resolveAdjustedSaveAvailability', () => {
     assert.deepEqual(
       resolveAdjustedSaveAvailability({ ...base, isItemTransformActive: true }),
       { status: 'unavailable', reason: ALREADY_ADJUSTED_REASON },
-    );
-    assert.deepEqual(
-      resolveAdjustedSaveAvailability({
-        ...base,
-        savedSourceIds: new Set<string>(),
-      }),
-      { status: 'unavailable', reason: SOURCE_NOT_SAVED_REASON },
     );
   });
 });
@@ -141,7 +132,7 @@ describe('buildAdjustedSaveEntity', () => {
     assert.equal(entity?.kind, 'track');
     assert.equal(
       entity?.kind === 'track' && entity.source.name,
-      'Kyrie.mp3 • 0.80× −2 st',
+      'Kyrie • 0.80× −2 st',
     );
     assert.equal(
       entity?.kind === 'track' && entity.source.adjustment?.sourceRef,
@@ -159,6 +150,46 @@ describe('buildAdjustedSaveEntity', () => {
         savedSource: source,
       }),
       null,
+    );
+  });
+});
+
+describe('renaming a saved adjusted entity', () => {
+  const now = '2026-10-04T10:00:00.000Z';
+  const entity = buildAdjustedSaveEntity({
+    activeItem: trackItem,
+    effective: shaped,
+    kind: 'track',
+    now,
+    ownerId: 'owner',
+    savedSource: source,
+  });
+
+  it('keeps everything but the trimmed name', () => {
+    assert.ok(entity);
+
+    const renamed = renameAdjustedSaveEntity(entity, '  Kyrie slow  ');
+
+    assert.equal(renamed && getAdjustedSaveEntityName(renamed), 'Kyrie slow');
+    assert.equal(
+      renamed?.kind === 'track' && renamed.source.id,
+      entity.kind === 'track' && entity.source.id,
+    );
+  });
+
+  it('refuses an empty name', () => {
+    assert.ok(entity);
+    assert.equal(renameAdjustedSaveEntity(entity, '   '), null);
+  });
+
+  it('says when the track was added to the library too', () => {
+    assert.equal(
+      formatAdjustedSaveSuccess({ addedSourceName: null, name: 'A' }),
+      'Saved “A” to library.',
+    );
+    assert.equal(
+      formatAdjustedSaveSuccess({ addedSourceName: 'Kyrie.mp3', name: 'A' }),
+      'Saved “A” and added “Kyrie.mp3” to library.',
     );
   });
 });

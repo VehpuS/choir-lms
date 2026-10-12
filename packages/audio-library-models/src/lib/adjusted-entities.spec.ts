@@ -189,4 +189,15 @@ describe('transform helpers', () => {
     );
     assert.equal(hasSavableTransform(slowAndLow), true);
   });
+
+  it('drops a media file extension from a default name but keeps other dots', () => {
+    assert.equal(
+      getAdjustedEntityDefaultName('This Masquerade.m4a', slowAndLow),
+      'This Masquerade • 0.80× −2 st',
+    );
+    assert.equal(
+      getAdjustedEntityDefaultName('Mass in B.minor Vol.2', slowAndLow),
+      'Mass in B.minor Vol.2 • 0.80× −2 st',
+    );
+  });
 });

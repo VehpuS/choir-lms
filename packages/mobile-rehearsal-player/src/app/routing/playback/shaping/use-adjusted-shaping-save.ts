@@ -7,7 +7,11 @@ import { useEffect, useState } from 'react';
 
 import {
   buildAdjustedSaveEntity,
+  formatAdjustedSaveSuccess,
+  getAdjustedSaveEntityName,
+  renameAdjustedSaveEntity,
   resolveAdjustedSaveAvailability,
+  type AdjustedSaveEntity,
   type AdjustedSaveKind,
 } from './adjusted-save-model';
 import type {
@@ -30,83 +34,141 @@ type UseAdjustedShapingSaveOptions = {
 
 const SAVE_FAILURE_MESSAGE =
   'Could not save the adjusted version. Try again from the library.';
+const RENAME_FAILURE_MESSAGE = 'Could not rename it. Try again.';
 
-const createSuccessFeedback = (name: string): PlaybackShapingSaveFeedback => {
-  return { message: `Saved “${name}” to library.`, tone: 'success' };
+type SavedAdjustedEntity = {
+  /** Set when the saved track was not in the library and was added with it. */
+  addedSourceName: string | null;
+  entity: AdjustedSaveEntity;
 };
 
-/** Persists the current shaping as an adjusted loop or track, with feedback. */
+/**
+ * Persists the current shaping as an adjusted loop or track, at once, with a
+ * confirmation that offers a rename (tasks 8.56, 8.57). A track that is not in
+ * the library yet is added to it first, since an adjusted entity references a
+ * saved source.
+ */
 export const useAdjustedShapingSave = (
   options: UseAdjustedShapingSaveOptions,
 ): PlaybackShapingSaveControls | undefined => {
-  const [feedback, setFeedback] = useState<PlaybackShapingSaveFeedback | null>(
-    null,
-  );
+  const [errorFeedback, setErrorFeedback] =
+    useState<PlaybackShapingSaveFeedback | null>(null);
+  const [saved, setSaved] = useState<SavedAdjustedEntity | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const { activeItem, effective } = options;
 
   // A confirmation belongs to the item and settings that were saved.
   useEffect(() => {
-    setFeedback(null);
+    setErrorFeedback(null);
+    setSaved(null);
   }, [activeItem?.id, effective.pitchSemitones, effective.speedMultiplier]);
 
   if (!activeItem) {
     return undefined;
   }
 
-  const savedSources = options.savedSources;
-  const savedSource = savedSources.find(({ id }) => id === activeItem.sourceId);
+  const persist = (entity: AdjustedSaveEntity) => {
+    return entity.kind === 'loop'
+      ? options.saveLoop(entity.loop)
+      : options.saveSource(entity.source);
+  };
 
   const onSave = async (kind: AdjustedSaveKind) => {
-    if (!savedSource || isSaving) {
+    if (isSaving) {
       return;
     }
 
-    const entity = buildAdjustedSaveEntity({
-      activeItem,
-      effective,
-      kind,
-      ownerId: options.ownerId,
-      savedSource,
-    });
+    const savedSource = options.savedSources.find(
+      ({ id }) => id === activeItem.sourceId,
+    );
+    const sourceToUse = savedSource ?? activeItem.source;
 
-    if (!entity) {
+    setIsSaving(true);
+
+    try {
+      if (!savedSource && !(await options.saveSource(sourceToUse))) {
+        setErrorFeedback({ message: SAVE_FAILURE_MESSAGE, tone: 'error' });
+        return;
+      }
+
+      const entity = buildAdjustedSaveEntity({
+        activeItem,
+        effective,
+        kind,
+        ownerId: options.ownerId,
+        savedSource: sourceToUse,
+      });
+
+      if (!entity) {
+        return;
+      }
+
+      if (await persist(entity)) {
+        setErrorFeedback(null);
+        setSaved({
+          addedSourceName: savedSource ? null : sourceToUse.name,
+          entity,
+        });
+      } else {
+        setErrorFeedback({ message: SAVE_FAILURE_MESSAGE, tone: 'error' });
+      }
+    } catch {
+      setErrorFeedback({ message: SAVE_FAILURE_MESSAGE, tone: 'error' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const onRename = async (name: string) => {
+    const renamed = saved ? renameAdjustedSaveEntity(saved.entity, name) : null;
+
+    if (!saved || !renamed || isSaving) {
       return;
     }
 
     setIsSaving(true);
 
     try {
-      const didSave =
-        entity.kind === 'loop'
-          ? await options.saveLoop(entity.loop)
-          : await options.saveSource(entity.source);
-
-      setFeedback(
-        didSave
-          ? createSuccessFeedback(
-              entity.kind === 'loop' ? entity.loop.name : entity.source.name,
-            )
-          : { message: SAVE_FAILURE_MESSAGE, tone: 'error' },
-      );
+      if (await persist(renamed)) {
+        setErrorFeedback(null);
+        setSaved({ ...saved, entity: renamed });
+      } else {
+        setErrorFeedback({ message: RENAME_FAILURE_MESSAGE, tone: 'error' });
+      }
     } catch {
-      setFeedback({ message: SAVE_FAILURE_MESSAGE, tone: 'error' });
+      setErrorFeedback({ message: RENAME_FAILURE_MESSAGE, tone: 'error' });
     } finally {
       setIsSaving(false);
     }
   };
+
+  const savedName = saved ? getAdjustedSaveEntityName(saved.entity) : null;
+  const feedback: PlaybackShapingSaveFeedback | null =
+    errorFeedback ??
+    (saved && savedName !== null
+      ? {
+          message: formatAdjustedSaveSuccess({
+            addedSourceName: saved.addedSourceName,
+            name: savedName,
+          }),
+          tone: 'success',
+        }
+      : null);
 
   return {
     availability: resolveAdjustedSaveAvailability({
       activeItem,
       effective,
       isItemTransformActive: options.isItemTransformActive,
-      savedSourceIds: new Set(savedSources.map(({ id }) => id)),
     }),
     feedback,
     isSaving,
+    onRename: (name) => {
+      void onRename(name);
+    },
     onSave: (kind) => {
       void onSave(kind);
     },
+    savedName,
   };
 };

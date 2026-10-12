@@ -20,6 +20,10 @@ import type {
  */
 
 const NAME_SEPARATOR = ' • ';
+// A default name reads as a title, so the file's extension is dropped (task
+// 8.56). Only a known audio or video extension goes, so `Vol.2` stays whole.
+const MEDIA_EXTENSION_PATTERN =
+  /\.(aac|aif|aiff|flac|m4a|m4v|mov|mp3|mp4|oga|ogg|opus|wav|webm|wma|wmv)$/i;
 const SHAPING_LABEL_SEPARATOR = ' ';
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
@@ -138,14 +142,18 @@ export const formatTransformLabel = (
   return getPlaybackShapingLabelParts(transform).join(SHAPING_LABEL_SEPARATOR);
 };
 
-/** The smart default name: `<base> • 0.80× −2 st`, matching loop naming's bullet. */
+/**
+ * The smart default name: `<base> • 0.80× −2 st`, matching loop naming's
+ * bullet, with the base's file extension dropped.
+ */
 export const getAdjustedEntityDefaultName = (
   baseName: string,
   transform: Pick<PlaybackShaping, 'pitchSemitones' | 'speedMultiplier'>,
 ) => {
   const label = formatTransformLabel(transform);
+  const title = baseName.replace(MEDIA_EXTENSION_PATTERN, '');
 
-  return label ? `${baseName}${NAME_SEPARATOR}${label}` : baseName;
+  return label ? `${title}${NAME_SEPARATOR}${label}` : title;
 };
 
 export const createAdjustedTrackSource = (options: {

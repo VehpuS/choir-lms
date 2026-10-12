@@ -34,7 +34,11 @@ export type PlaybackShapingSaveControls = {
   availability: AdjustedSaveAvailability;
   feedback: PlaybackShapingSaveFeedback | null;
   isSaving: boolean;
+  /** Renames what was just saved; the confirmation offers it. */
+  onRename: (name: string) => void;
   onSave: (kind: AdjustedSaveKind) => void;
+  /** The name the last save used, while its confirmation shows. */
+  savedName: string | null;
 };
 
 /** What the playback surfaces need from the shaping session. */
