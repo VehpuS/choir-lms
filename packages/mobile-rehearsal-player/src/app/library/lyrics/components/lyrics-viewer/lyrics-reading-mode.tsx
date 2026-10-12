@@ -1,3 +1,4 @@
+import { useKeepAwake } from 'expo-keep-awake';
 import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
@@ -11,6 +12,10 @@ import {
   setLyricsTextSize,
   useLyricsTextSize,
 } from '../../lyrics-text-size';
+
+// Reading happens with the phone held out, so the screen stays on while this
+// view is open; the hook releases the lock when it unmounts.
+const KEEP_AWAKE_TAG = 'lyrics-reading-mode';
 
 const TEXT_SIZE_OPTIONS = LYRICS_TEXT_SIZES.map((size) => ({
   accessibilityLabel: `${LYRICS_TEXT_SIZE_LABELS[size]} text`,
@@ -41,6 +46,8 @@ export const LyricsReadingMode = ({
   text,
 }: LyricsReadingModeProps) => {
   const size = useLyricsTextSize();
+
+  useKeepAwake(KEEP_AWAKE_TAG);
 
   return (
     <Modal animationType="slide" onRequestClose={onClose} visible>
