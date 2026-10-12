@@ -19,7 +19,7 @@ export type DriveBasketGroup = {
   rootKind: DriveBrowseRootKind;
 };
 
-const getFolderPath = (
+export const getBrowseFolderPath = (
   navigationStack: readonly DriveBrowseLocation[],
 ): DrivePathSegment[] =>
   navigationStack
@@ -41,7 +41,7 @@ export const attachBrowsePath = (
 
   return {
     ...result,
-    path: getFolderPath(navigationStack),
+    path: getBrowseFolderPath(navigationStack),
     ...(rootKind === undefined ? {} : { rootKind }),
   };
 };
@@ -112,7 +112,7 @@ export const getBrowseCoveringFolderName = (options: {
   selectedFolderIds: ReadonlySet<string>;
 }): string | undefined =>
   getCoveringFolderName(
-    getFolderPath(options.navigationStack),
+    getBrowseFolderPath(options.navigationStack),
     options.selectedFolderIds,
   );
 

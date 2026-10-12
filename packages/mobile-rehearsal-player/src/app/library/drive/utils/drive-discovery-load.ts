@@ -3,6 +3,7 @@ import {
   searchDriveAudioFiles,
   type DriveBrowseLocation,
   type DriveBrowseSnapshot,
+  type DrivePathSegment,
   type DriveSearchSnapshot,
 } from '@org/google-drive';
 
@@ -25,10 +26,27 @@ type LoadDriveDiscoveryOptions = {
   activeSearchQuery: string | null;
   browseCache: BrowseCache;
   currentLocation: DriveBrowseLocation;
+  /** The path of the folder being listed, from the navigation stack. */
+  browsePath: readonly DrivePathSegment[];
   onBrowseSnapshot: (snapshot: DriveBrowseSnapshot) => void;
   onSearchSnapshot: (snapshot: DriveSearchSnapshot) => void;
   pathCache: PathCache;
   request: DiscoveryRequest;
+};
+
+const withBrowsePath = (
+  snapshot: DriveBrowseSnapshot,
+  path: readonly DrivePathSegment[],
+): DriveBrowseSnapshot => {
+  const attach = <Source extends { path?: DrivePathSegment[] }>(
+    source: Source,
+  ): Source => ({ ...source, path: [...path] });
+
+  return {
+    ...snapshot,
+    playableSources: snapshot.playableSources.map(attach),
+    unavailableSources: snapshot.unavailableSources.map(attach),
+  };
 };
 
 // One Drive discovery run: a search (publishing partial snapshots as pages
@@ -73,6 +91,20 @@ export const loadDriveDiscovery = async (
         !options.browseCache.has(browseCacheKey)
       ) {
         options.onBrowseSnapshot(foldersSnapshot);
+      }
+    },
+    // The audio rows show as soon as the folder is listed; their paths are
+    // resolved behind. Until then each carries the browsed folder's path from
+    // the navigation stack, so a Save made now still records where it came
+    // from (task 8.49). Never replace an already listed location with it.
+    onSources: (sourcesSnapshot) => {
+      if (
+        request.shouldApplyResult() &&
+        !options.browseCache.has(browseCacheKey)
+      ) {
+        options.onBrowseSnapshot(
+          withBrowsePath(sourcesSnapshot, options.browsePath),
+        );
       }
     },
     pathCache: options.pathCache,

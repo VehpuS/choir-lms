@@ -170,6 +170,12 @@ export const browseDriveLocation = async (options: {
    * remaining pages and the source paths are still loading.
    */
   onFolders?: (snapshot: DriveBrowseSnapshot) => void;
+  /**
+   * Called once the whole folder is listed, with its folders and audio rows
+   * but before any path is resolved, so the rows can show at once and the
+   * returned snapshot fills their `path` in afterwards (task 8.49).
+   */
+  onSources?: (snapshot: DriveBrowseSnapshot) => void;
   /** Share across calls so ancestor folders are fetched once per session. */
   pathCache?: DrivePathResolutionCache;
   supportedMimeTypes: string[];
@@ -197,6 +203,13 @@ export const browseDriveLocation = async (options: {
     },
     signal: options.signal,
   });
+  options.onSources?.(
+    parseDriveBrowseSnapshot(files, {
+      location: options.location,
+      supportedMimeTypes: options.supportedMimeTypes,
+      supportedExtensions: options.supportedExtensions,
+    }),
+  );
   const resolvedPaths = await resolveDriveFilePaths({
     accessToken: options.accessToken,
     cache: options.pathCache,

@@ -10,6 +10,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { isDriveAuthorizationFailure } from '../../../auth/google-drive/utils/authorization';
+import { getBrowseFolderPath } from '../utils/drive-basket-model';
 import {
   createDriveBrowseCache,
   createEmptyDriveBrowseSnapshot,
@@ -161,6 +162,7 @@ export const useDriveLibrary = (
       accessToken,
       activeSearchQuery,
       browseCache: browseCacheRef.current,
+      browsePath: getBrowseFolderPath(navigationStack),
       currentLocation,
       onBrowseSnapshot: setLoadedBrowseSnapshot,
       onSearchSnapshot: replaceSearchSnapshot,

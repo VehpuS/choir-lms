@@ -72,6 +72,61 @@ describe('Drive discovery paths', () => {
     assert.equal(snapshot.playableSources[0]?.rootKind, 'my-drive');
   });
 
+  it('hands over the audio rows before their paths are resolved, then the full snapshot', async () => {
+    const order: string[] = [];
+
+    globalThis.fetch = async (input) => {
+      if (isListRequest(input)) {
+        return Response.json({
+          files: [
+            {
+              id: 'track-kyrie',
+              name: 'Kyrie.mp3',
+              mimeType: 'audio/mpeg',
+              fileExtension: 'mp3',
+              parents: ['folder-sectionals'],
+            },
+          ],
+        });
+      }
+
+      order.push('path-request');
+
+      return Response.json({
+        id: 'folder-sectionals',
+        name: 'Sectionals',
+        mimeType: FOLDER_MIME_TYPE,
+        parents: ['root'],
+      } satisfies DriveFileMetadata);
+    };
+
+    const early: {
+      snapshot?: Awaited<ReturnType<typeof browseDriveLocation>>;
+    } = {};
+    const snapshot = await browseDriveLocation({
+      accessToken: 'drive-token',
+      location: {
+        id: 'folder-sectionals',
+        kind: 'folder',
+        name: 'Sectionals',
+        rootKind: 'my-drive',
+      },
+      onSources: (sourcesSnapshot) => {
+        order.push('sources');
+        early.snapshot = sourcesSnapshot;
+      },
+      supportedMimeTypes: SUPPORTED_MIME_TYPES,
+      supportedExtensions: SUPPORTED_EXTENSIONS,
+    });
+
+    assert.equal(order[0], 'sources');
+    assert.equal(early.snapshot?.playableSources[0]?.name, 'Kyrie.mp3');
+    assert.equal(early.snapshot?.playableSources[0]?.path, undefined);
+    assert.deepEqual(snapshot.playableSources[0]?.path, [
+      { id: 'folder-sectionals', name: 'Sectionals' },
+    ]);
+  });
+
   it('attaches a shared path to mixed search results with cached ancestry', async () => {
     let ancestorRequestCount = 0;
 
