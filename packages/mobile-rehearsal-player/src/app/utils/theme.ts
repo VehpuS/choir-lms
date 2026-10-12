@@ -65,7 +65,8 @@ const nocturneColors = {
   text: neutralRamp[100],
   textSecondary: neutralRamp[200],
   textMuted: neutralRamp[400],
-  textFaint: neutralRamp[500],
+  /** Lifted from the mockup's #75798c, which was too dim on the dark grounds. */
+  textFaint: '#8e92a6',
   icon: neutralRamp[300],
   /** Base accent: lines, rings, active chips, progress. Not for body text. */
   accent: accentRamp[500],

@@ -93,6 +93,18 @@ export const hasWaveformProgressSettled = (options: {
 export const FLAT_WAVEFORM_BAR_AMPLITUDE = 0.12;
 
 /**
+ * Bars are normalized to the track's loudest bucket, so on mastered audio most
+ * of the body sits near full height. A power above 1 pulls the mid-level bars
+ * down while the peak stays at 1, which restores the contour (task 8.42). A
+ * square root would do the opposite: it lifts quiet bars toward the top.
+ */
+export const WAVEFORM_BAR_HEIGHT_EXPONENT = 2;
+
+export const shapeWaveformBarHeight = (amplitude: number) => {
+  return Math.pow(amplitude, WAVEFORM_BAR_HEIGHT_EXPONENT);
+};
+
+/**
  * The bars to draw for an item: its own peaks over its range, or a flat band
  * of the same length while peaks are unavailable (never a synthetic shape).
  */
@@ -115,7 +127,7 @@ export const resolvePlaybackWaveformBars = (options: {
     },
     barCount,
     getWaveformPeakGain(peaks),
-  );
+  ).map(shapeWaveformBarHeight);
 };
 
 /** A bar counts as played once progress reaches its trailing edge. */

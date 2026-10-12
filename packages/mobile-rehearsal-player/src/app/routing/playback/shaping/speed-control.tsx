@@ -72,6 +72,7 @@ export const SpeedControl = ({
         <Text style={styles.kicker}>Speed</Text>
         <Text
           accessibilityLabel={`Speed ${model.readout}`}
+          numberOfLines={1}
           style={[styles.readout, model.isShaped ? null : styles.readoutIdle]}
         >
           {getSpeedControlModel(draft).readout}

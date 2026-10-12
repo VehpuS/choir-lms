@@ -15,6 +15,7 @@ import {
 import {
   FLAT_WAVEFORM_BAR_AMPLITUDE,
   resolvePlaybackWaveformBars,
+  shapeWaveformBarHeight,
   getProgressLineWidth,
   hasWaveformProgressSettled,
   isWaveformBarPlayed,
@@ -90,6 +91,12 @@ describe('PlaybackWaveformModel', () => {
     });
 
     assert.deepEqual(bars, Array(5).fill(FLAT_WAVEFORM_BAR_AMPLITUDE));
+  });
+
+  it('keeps the loudest bar at full height and pulls mid-level bars down', () => {
+    assert.equal(shapeWaveformBarHeight(1), 1);
+    assert.equal(shapeWaveformBarHeight(0), 0);
+    assert.ok(shapeWaveformBarHeight(0.8) < 0.8);
   });
 
   it('draws bars from the item’s own peaks so different items differ', () => {

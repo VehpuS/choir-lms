@@ -37,6 +37,11 @@ export const shapingStyles = StyleSheet.create({
   readout: {
     ...type.numericReadout,
     fontSize: 19,
+    // A reserved width, one line, and tabular digits keep the header from
+    // re-wrapping while the value changes during a fast drag (task 8.93).
+    fontVariant: ['tabular-nums'],
+    minWidth: 84,
+    textAlign: 'right',
   },
   readoutIdle: {
     color: colors.textMuted,

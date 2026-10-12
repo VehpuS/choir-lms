@@ -89,6 +89,7 @@ export const PitchControl = ({
         <Text style={styles.kicker}>Pitch</Text>
         <Text
           accessibilityLabel={`Pitch ${model.readout}`}
+          numberOfLines={1}
           style={[styles.readout, model.isShaped ? null : styles.readoutIdle]}
         >
           {model.readout}
