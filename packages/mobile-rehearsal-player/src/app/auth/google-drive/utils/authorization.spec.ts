@@ -15,7 +15,6 @@ import {
   resolveDriveAuthorizationResult,
   resolveWebAuthRedirectUri,
   restoreDriveAuthorizationState,
-  shouldAttemptSilentDriveAuthorization,
   type AuthorizationSessionStore,
 } from './authorization.js';
 
@@ -193,50 +192,6 @@ describe('resolveDriveAuthorizationResult', () => {
     );
     assert.equal(
       isDriveAuthorizationFailure(new Error('network timeout')),
-      false,
-    );
-  });
-
-  it('only auto-attempts silent authorization when an expired session can be renewed', () => {
-    assert.equal(
-      shouldAttemptSilentDriveAuthorization({
-        authState: {
-          status: 'expired',
-        },
-        googleAuthConfigured: true,
-        isAuthorizing: false,
-        isRestoring: false,
-        isSavingSession: false,
-        requestReady: true,
-      }),
-      true,
-    );
-
-    assert.equal(
-      shouldAttemptSilentDriveAuthorization({
-        authState: {
-          status: 'expired',
-        },
-        googleAuthConfigured: true,
-        isAuthorizing: false,
-        isRestoring: false,
-        isSavingSession: false,
-        requestReady: false,
-      }),
-      false,
-    );
-
-    assert.equal(
-      shouldAttemptSilentDriveAuthorization({
-        authState: {
-          status: 'authorized',
-        },
-        googleAuthConfigured: true,
-        isAuthorizing: false,
-        isRestoring: false,
-        isSavingSession: false,
-        requestReady: true,
-      }),
       false,
     );
   });

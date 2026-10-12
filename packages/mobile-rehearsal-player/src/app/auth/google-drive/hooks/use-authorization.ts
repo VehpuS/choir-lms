@@ -2,7 +2,6 @@ import {
   getDriveAuthorizationState,
   type DriveAuthorizationState,
 } from '@org/google-drive';
-import { Prompt } from 'expo-auth-session';
 import * as Google from 'expo-auth-session/providers/google';
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
@@ -21,7 +20,6 @@ import {
   resolveDriveAuthorizationResult,
   resolveWebAuthRedirectUri,
   restoreDriveAuthorizationState,
-  shouldAttemptSilentDriveAuthorization,
 } from '../utils/authorization';
 import {
   createAuthorizationSessionStore,
@@ -83,7 +81,6 @@ export const useGoogleDriveAuthorization = () => {
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [isSavingSession, setIsSavingSession] = useState(false);
   const [lastIssue, setLastIssue] = useState<string | null>(null);
-  const silentAuthorizationAttemptKeyRef = useRef<string | null>(null);
 
   const googleClientId = getGoogleAuthClientId();
   const googleAuthConfigured = Boolean(googleClientId);
@@ -95,14 +92,6 @@ export const useGoogleDriveAuthorization = () => {
     scopes: [runtimeConfig.google.driveScope],
     selectAccount: true,
   });
-  const [silentRequest, silentResponse, promptSilentAsync] =
-    Google.useAuthRequest({
-      clientId: googleClientId ?? FALLBACK_GOOGLE_CLIENT_ID,
-      prompt: Prompt.None,
-      redirectUri: googleRedirectUri,
-      scopes: [runtimeConfig.google.driveScope],
-    });
-
   const persistAuthorizedState = useCallback(
     (nextState: DriveAuthorizationState) => {
       setLastIssue(null);
@@ -177,69 +166,10 @@ export const useGoogleDriveAuthorization = () => {
     persistAuthorizedState(outcome.state);
   }, [persistAuthorizedState, response]);
 
-  useEffect(() => {
-    const outcome = resolveDriveAuthorizationResult(
-      silentResponse,
-      runtimeConfig.google.driveScope,
-    );
-
-    if (!outcome) {
-      return;
-    }
-
-    setIsAuthorizing(false);
-
-    if (outcome.kind !== 'authorized') {
-      return;
-    }
-
-    persistAuthorizedState(outcome.state);
-  }, [persistAuthorizedState, silentResponse]);
-
-  useEffect(() => {
-    if (authState.status !== 'expired') {
-      silentAuthorizationAttemptKeyRef.current = null;
-      return;
-    }
-
-    if (Platform.OS !== 'web') {
-      return;
-    }
-
-    if (
-      !shouldAttemptSilentDriveAuthorization({
-        authState,
-        googleAuthConfigured,
-        isAuthorizing,
-        isRestoring,
-        isSavingSession,
-        requestReady: Boolean(silentRequest),
-      })
-    ) {
-      return;
-    }
-
-    const attemptKey = authState.expiresAt ?? 'expired';
-
-    if (silentAuthorizationAttemptKeyRef.current === attemptKey) {
-      return;
-    }
-
-    silentAuthorizationAttemptKeyRef.current = attemptKey;
-    setLastIssue(null);
-    setIsAuthorizing(true);
-    void promptSilentAsync().catch(() => {
-      setIsAuthorizing(false);
-    });
-  }, [
-    authState,
-    googleAuthConfigured,
-    isAuthorizing,
-    isRestoring,
-    isSavingSession,
-    silentRequest,
-    promptSilentAsync,
-  ]);
+  // No silent reconnect: a sign-in window opens only from a tap on a reconnect
+  // control (`startAuthorization`). An automatic attempt had to open a popup
+  // without a tap, which browsers block and which surprised the user (tasks
+  // 8.29, 8.82).
 
   const startAuthorization = async () => {
     if (
