@@ -4,12 +4,14 @@ import { describe, it } from 'node:test';
 import {
   createLoopPlayableItem,
   createTrackPlayableItem,
+  DEFAULT_PLAYBACK_SHAPING,
   type Playlist,
 } from '@org/audio-library-models';
 
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import {
   formatFilesRowMeta,
+  getFilesRowLeadingIconName,
   resolveFilesRowPlaybackPresentation,
   type FilesViewPlayback,
 } from './files-row-playback-model';
@@ -105,6 +107,27 @@ const createPlayback = (
     ...overrides,
   };
 };
+
+describe('Files row leading glyph', () => {
+  it('keeps the kind glyph for an ordinary row and uses the waveform for an adjusted one', () => {
+    assert.equal(getFilesRowLeadingIconName(TRACK_ROW), 'music-note-outline');
+    assert.equal(getFilesRowLeadingIconName(LOOP_ROW), 'repeat');
+    assert.equal(
+      getFilesRowLeadingIconName({
+        ...TRACK_ROW,
+        source: {
+          ...SOURCE,
+          adjustment: {
+            sourceName: 'Origin.mp3',
+            sourceRef: 'drive:origin',
+            transform: { ...DEFAULT_PLAYBACK_SHAPING, speedMultiplier: 0.8 },
+          },
+        },
+      }),
+      'waveform',
+    );
+  });
+});
 
 describe('resolveFilesRowPlaybackPresentation', () => {
   it('gives an idle track a play ring that toggles it like the row tap', () => {

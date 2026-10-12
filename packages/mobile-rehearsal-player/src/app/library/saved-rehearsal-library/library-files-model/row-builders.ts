@@ -130,10 +130,20 @@ const resolveFileLinkLabel = (options: {
   );
 };
 
-export const countLoopsBySourceId = (loops: Pick<NamedLoop, 'sourceId'>[]) => {
+/**
+ * Loops per parent track. An adjusted loop is its own row with its own
+ * transform, so it is left out of its source's count (task 8.62).
+ */
+export const countLoopsBySourceId = (
+  loops: Pick<NamedLoop, 'sourceId' | 'transform'>[],
+) => {
   const counts = new Map<string, number>();
 
   for (const loop of loops) {
+    if (loop.transform) {
+      continue;
+    }
+
     counts.set(loop.sourceId, (counts.get(loop.sourceId) ?? 0) + 1);
   }
 

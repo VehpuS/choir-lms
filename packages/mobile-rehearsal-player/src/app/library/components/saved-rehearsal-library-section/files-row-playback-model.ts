@@ -44,6 +44,20 @@ const KIND_ICONS: Record<LibraryFilesRow['kind'], AppIconName> = {
   track: 'music-note-outline',
 };
 
+// An adjusted track or loop wears the waveform glyph (mockup 1j), so a row with
+// its own speed or pitch is never mistaken for its source (task 8.61).
+const ADJUSTED_ROW_ICON: AppIconName = 'waveform';
+
+export const getFilesRowLeadingIconName = (
+  row: LibraryFilesRow,
+): AppIconName => {
+  const isAdjusted =
+    (row.kind === 'track' && row.source.adjustment !== undefined) ||
+    (row.kind === 'loop' && row.loop.transform !== undefined);
+
+  return isAdjusted ? ADJUSTED_ROW_ICON : KIND_ICONS[row.kind];
+};
+
 const getRowPlayableItem = (row: LibraryFilesRow): PlayableItem | null => {
   if (row.kind === 'track') {
     return row.isPlayable ? createTrackPlayableItem(row.source) : null;
@@ -121,7 +135,7 @@ export const resolveFilesRowPlaybackPresentation = (options: {
   const isPlaying = options.isActive && options.playback.state === 'playing';
   // Rows keep their entity-type glyph even while playing (the Files row
   // contract in `mobile-library-organization`); the row colors it instead.
-  const leadingIconName = KIND_ICONS[row.kind];
+  const leadingIconName = getFilesRowLeadingIconName(row);
 
   if (!playableItem) {
     return { isActive: options.isActive, isPlaying, leadingIconName };

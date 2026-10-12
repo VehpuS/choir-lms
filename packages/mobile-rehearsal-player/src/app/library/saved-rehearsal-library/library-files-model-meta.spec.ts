@@ -1,3 +1,4 @@
+import { DEFAULT_PLAYBACK_SHAPING } from '@org/audio-library-models';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
@@ -156,5 +157,18 @@ describe('countLoopsBySourceId', () => {
 
     assert.equal(counts.get(AVAILABLE_SOURCE.id), 2);
     assert.equal(counts.get('drive:other'), 1);
+  });
+
+  it('leaves adjusted loops out of the source track count', () => {
+    const counts = countLoopsBySourceId([
+      SAVED_LOOP,
+      {
+        ...SAVED_LOOP,
+        id: 'loop-adjusted',
+        transform: { ...DEFAULT_PLAYBACK_SHAPING, speedMultiplier: 0.8 },
+      },
+    ]);
+
+    assert.equal(counts.get(AVAILABLE_SOURCE.id), 1);
   });
 });
