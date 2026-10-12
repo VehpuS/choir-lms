@@ -42,13 +42,9 @@ export type SavedRehearsalLibraryFilesViewProps = {
   onOpenPlaylist: (playlistId: string) => void;
   onOpenPlaylistTagEditor: (playlistId: string) => void;
   onPlaylistRenameVisibilityChange?: (isVisible: boolean) => void;
-  onBlurSuccessFeedback: () => void;
-  onDismissSuccessFeedback: () => void;
-  onFocusSuccessFeedback: () => void;
   onOpenSourcePlaylistSelector: (sourceId: string) => void;
   onOpenSourceTagEditor: (source: DriveLibrarySource) => void;
   onOpenLoopTagEditor: (loopId: string) => void;
-  onOpenSuccessFeedbackFolder: (folderId: string) => void;
   onShowSuccessFeedback: (feedback: LibraryFilesSuccessFeedback) => void;
   onQueuePlayableItemNext: (playableItem: PlayableItem) => void;
   onQueuePlayableItemUpNext: (playableItem: PlayableItem) => void;
@@ -72,7 +68,6 @@ export type SavedRehearsalLibraryFilesViewProps = {
     selectedTagFilters: string[];
     tagFilterMatchMode: TagFilterMatchMode;
   };
-  successFeedback: LibraryFilesSuccessFeedback | null;
   onTogglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
   onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
 };

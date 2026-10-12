@@ -1,7 +1,6 @@
 import { View } from 'react-native';
 
 import { LibrarySelectionServicesProvider } from '../../selection/library-selection-services';
-import { SelectionFeedbackCard } from './selection-feedback-card';
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
 import { resolveHasActiveLibraryFilters } from '../../search/utils/saved-library-search-view-model';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
@@ -32,15 +31,10 @@ export const SavedRehearsalLibrarySection = ({
   isSavedLibraryLoading,
   isSavedLoopsLoading,
   libraryFiles,
-  libraryFilesSuccessFeedback,
   openLoopBuilderForSource,
-  onBlurLibraryFilesSuccessFeedback,
-  onDismissLibraryFilesSuccessFeedback,
-  onFocusLibraryFilesSuccessFeedback,
   onBrowseCreateDockChange,
   onDetailPlaybackChange,
   onDetailSearchActionsChange,
-  onOpenLibraryFilesSuccessFeedbackFolder,
   onPlaylistSelectionHandlerChange,
   onShowLibraryFilesSuccessFeedback,
   originalLocationActions,
@@ -248,16 +242,6 @@ export const SavedRehearsalLibrarySection = ({
           savedLibraryStatusCopy={savedLibraryStatusCopy}
           savedTrackPlaybackStatusCopy={savedTrackPlaybackStatusCopy}
         />
-        <SelectionFeedbackCard
-          feedback={libraryFilesSuccessFeedback}
-          isShownByFilesView={
-            shouldRenderBrowseContent && selectedView === 'files'
-          }
-          onBlur={onBlurLibraryFilesSuccessFeedback}
-          onDismiss={onDismissLibraryFilesSuccessFeedback}
-          onFocus={onFocusLibraryFilesSuccessFeedback}
-          onOpenFolder={onOpenLibraryFilesSuccessFeedbackFolder}
-        />
         {shouldRenderBrowseContent ? (
           <SavedRehearsalLibraryBrowseContent
             activePlayableItem={activePlayableItem}
@@ -271,7 +255,6 @@ export const SavedRehearsalLibrarySection = ({
             isPlaybackPreparing={isPlaybackPreparing}
             isPlaylistMutating={isPlaylistMutating}
             isSavedLibraryMutating={isSavedLibraryMutating}
-            libraryFilesSuccessFeedback={libraryFilesSuccessFeedback}
             loopSection={loopSection}
             loopState={loopState}
             openLoopBuilderForSource={openLoopBuilderForSource}
@@ -298,18 +281,6 @@ export const SavedRehearsalLibrarySection = ({
             visibleSections={visibleSections}
             onDoneAddingFilesPlaylistItems={handleDoneAddingFilesPlaylistItems}
             onOpenFilesAddItemsForPlaylist={handleOpenFilesAddItems}
-            onBlurLibraryFilesSuccessFeedback={
-              onBlurLibraryFilesSuccessFeedback
-            }
-            onDismissLibraryFilesSuccessFeedback={
-              onDismissLibraryFilesSuccessFeedback
-            }
-            onFocusLibraryFilesSuccessFeedback={
-              onFocusLibraryFilesSuccessFeedback
-            }
-            onOpenLibraryFilesSuccessFeedbackFolder={
-              onOpenLibraryFilesSuccessFeedbackFolder
-            }
             onOpenFolderTagEditor={tagEditor.openFolderTagEditor}
             onOpenLoopTagEditor={tagEditor.openLoopTagEditor}
             onOpenPlaylistTagEditor={tagEditor.openPlaylistTagEditor}

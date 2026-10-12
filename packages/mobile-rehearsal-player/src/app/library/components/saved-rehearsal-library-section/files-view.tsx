@@ -15,7 +15,6 @@ import {
   buildSavedRehearsalLibraryFilesViewModel,
   getFilesPlaylistAddModeCopy,
 } from './files-view-model';
-import { LibraryFilesSuccessFeedbackCard } from './library-files-success-feedback-card';
 import { useLibraryFilesSelection } from './use-library-files-selection';
 import { useLibraryFilesRowActionFlows } from './use-library-files-row-action-flows';
 
@@ -43,13 +42,9 @@ export const SavedRehearsalLibraryFilesView = ({
   onOpenPlaylist,
   onOpenPlaylistTagEditor,
   onPlaylistRenameVisibilityChange,
-  onBlurSuccessFeedback,
-  onDismissSuccessFeedback,
-  onFocusSuccessFeedback,
   onOpenSourcePlaylistSelector,
   onOpenSourceTagEditor,
   onOpenLoopTagEditor,
-  onOpenSuccessFeedbackFolder,
   onShowSuccessFeedback,
   onQueuePlayableItemNext,
   onQueuePlayableItemUpNext,
@@ -61,7 +56,6 @@ export const SavedRehearsalLibraryFilesView = ({
   playback,
   playlistAddMode,
   searchState,
-  successFeedback,
   onTogglePlayableItemPlayback,
   onToggleSourcePlayback,
 }: SavedRehearsalLibraryFilesViewProps) => {
@@ -270,17 +264,6 @@ export const SavedRehearsalLibraryFilesView = ({
         }}
         view="files"
       />
-      {successFeedback ? (
-        <View pointerEvents="box-none" style={styles.successFeedbackOverlay}>
-          <LibraryFilesSuccessFeedbackCard
-            feedback={successFeedback}
-            onBlur={onBlurSuccessFeedback}
-            onDismiss={onDismissSuccessFeedback}
-            onFocus={onFocusSuccessFeedback}
-            onOpenFolder={onOpenSuccessFeedbackFolder}
-          />
-        </View>
-      ) : null}
       {selection.bulkNodes}
       {rowActionFlows.destinationPicker}
       {rowActionFlows.renameDialog}
@@ -298,12 +281,5 @@ const styles = StyleSheet.create({
   surface: {
     gap: 12,
     position: 'relative',
-  },
-  successFeedbackOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 20,
   },
 });

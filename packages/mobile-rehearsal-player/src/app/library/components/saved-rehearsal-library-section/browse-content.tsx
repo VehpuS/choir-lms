@@ -23,7 +23,6 @@ export const SavedRehearsalLibraryBrowseContent = ({
   canMutatePlaylists,
   canQueueAsNext,
   libraryFiles,
-  libraryFilesSuccessFeedback,
   isLoopMutating,
   isPlaybackPreparing,
   isPlaylistMutating,
@@ -54,11 +53,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
   visibleSections,
   onDoneAddingFilesPlaylistItems,
   onOpenFilesAddItemsForPlaylist,
-  onBlurLibraryFilesSuccessFeedback,
-  onDismissLibraryFilesSuccessFeedback,
-  onFocusLibraryFilesSuccessFeedback,
   onOpenFolderTagEditor,
-  onOpenLibraryFilesSuccessFeedbackFolder,
   onOpenPlaylistTagEditor,
   onPlaylistRenameVisibilityChange,
   onOpenLoopTagEditor,
@@ -174,9 +169,6 @@ export const SavedRehearsalLibraryBrowseContent = ({
           onOpenFolderTagEditor={onOpenFolderTagEditor}
           onOpenPlaylistTagEditor={onOpenPlaylistTagEditor}
           onPlaylistRenameVisibilityChange={onPlaylistRenameVisibilityChange}
-          onBlurSuccessFeedback={onBlurLibraryFilesSuccessFeedback}
-          onDismissSuccessFeedback={onDismissLibraryFilesSuccessFeedback}
-          onFocusSuccessFeedback={onFocusLibraryFilesSuccessFeedback}
           onOpenSourcePlaylistSelector={
             trackPlaylistMenu.openSourcePlaylistSelector
           }
@@ -201,7 +193,6 @@ export const SavedRehearsalLibraryBrowseContent = ({
           onRemoveLoop={removeLoop}
           onRemovePlaylist={playlistState.handleDeletePlaylist}
           onViewTrackLoops={loopState.openTrackLoopView}
-          onOpenSuccessFeedbackFolder={onOpenLibraryFilesSuccessFeedbackFolder}
           onShowSuccessFeedback={onShowLibraryFilesSuccessFeedback}
           searchState={{
             activeSearchQuery: searchState.activeLibrarySearchQuery,
@@ -214,7 +205,6 @@ export const SavedRehearsalLibraryBrowseContent = ({
             selectedTagFilters: searchState.selectedTagFilters,
             tagFilterMatchMode: searchState.tagFilterMatchMode,
           }}
-          successFeedback={libraryFilesSuccessFeedback}
           onTogglePlayableItemPlayback={togglePlayableItemPlayback}
           onToggleSourcePlayback={toggleSourcePlayback}
         />

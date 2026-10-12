@@ -74,10 +74,6 @@ export type SavedRehearsalLibrarySectionProps = {
   requestedTag?: string | null;
   requestedTagRequestId?: number;
   libraryFiles: UseLibraryFilesResult;
-  libraryFilesSuccessFeedback: LibraryFilesSuccessFeedback | null;
-  onBlurLibraryFilesSuccessFeedback: () => void;
-  onDismissLibraryFilesSuccessFeedback: () => void;
-  onFocusLibraryFilesSuccessFeedback: () => void;
   onBrowseCreateDockChange?: (mode: LibraryBrowseCreateDockMode) => void;
   onDetailPlaybackChange?: (
     action: PlaylistDetailHeaderPlaybackAction | null,
@@ -85,7 +81,6 @@ export type SavedRehearsalLibrarySectionProps = {
   onDetailSearchActionsChange?: (
     actions: TagDetailHeaderSearchActions | null,
   ) => void;
-  onOpenLibraryFilesSuccessFeedbackFolder: (folderId: string) => void;
   onPlaylistSelectionHandlerChange?: (
     handler: ((playlistId: string) => void) | null,
   ) => void;

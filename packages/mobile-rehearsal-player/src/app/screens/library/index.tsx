@@ -5,6 +5,7 @@ import { isScreenReaderEnabled } from '../../components/scoped-success-acknowled
 import { useScopedSuccessAcknowledgment } from '../../components/scoped-success-acknowledgment/use-scoped-success-acknowledgment';
 import { SavedRehearsalLibrarySection } from '../../library/components/saved-rehearsal-library-section';
 import type { LibraryFilesSuccessFeedback } from '../../library/components/saved-rehearsal-library-section/library-files-success-feedback';
+import { LibraryFilesSuccessFeedbackCard } from '../../library/components/saved-rehearsal-library-section/library-files-success-feedback-card';
 import type { LibraryBrowseCreateDockMode } from '../../library/components/saved-rehearsal-library-section/types';
 import { useSavedRehearsalLibrarySearch } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search';
 import { useSavedRehearsalLibrarySearchPanel } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search-panel';
@@ -175,22 +176,13 @@ export const LibraryScreen = ({
               libraryController.savedLibrary.isSavedLoopsLoading
             }
             libraryFiles={libraryController.savedLibrary.files}
-            libraryFilesSuccessFeedback={librarySuccessFeedback.acknowledgment}
             openLoopBuilderForSource={
               libraryController.savedLibrary.openLoopBuilderForSource
             }
-            onBlurLibraryFilesSuccessFeedback={librarySuccessFeedback.onBlur}
-            onDismissLibraryFilesSuccessFeedback={
-              librarySuccessFeedback.dismiss
-            }
-            onFocusLibraryFilesSuccessFeedback={librarySuccessFeedback.onFocus}
             closeTagDetailRequestId={closeTagDetailRequestId}
             onBrowseCreateDockChange={setBrowseCreateDockMode}
             onDetailPlaybackChange={setPlaylistDetailPlayback}
             onDetailSearchActionsChange={setDetailSearchActions}
-            onOpenLibraryFilesSuccessFeedbackFolder={
-              openLibraryFilesSuccessFeedbackFolder
-            }
             onPlaylistSelectionHandlerChange={(handler) => {
               playlistSelectionHandlerRef.current = handler;
             }}
@@ -257,6 +249,19 @@ export const LibraryScreen = ({
           />
         </LoopPreviewPlaybackContext.Provider>
       </ScrollView>
+      {librarySuccessFeedback.acknowledgment ? (
+        // A bottom toast above the dock covers no header or control, and shows
+        // in every Library view (task 8.71).
+        <View pointerEvents="box-none" style={styles.successToast}>
+          <LibraryFilesSuccessFeedbackCard
+            feedback={librarySuccessFeedback.acknowledgment}
+            onBlur={librarySuccessFeedback.onBlur}
+            onDismiss={librarySuccessFeedback.dismiss}
+            onFocus={librarySuccessFeedback.onFocus}
+            onOpenFolder={openLibraryFilesSuccessFeedbackFolder}
+          />
+        </View>
+      ) : null}
       <LibraryFilesCreateControls
         createPlaylist={libraryController.playlists.createPlaylist}
         files={libraryController.savedLibrary.files}
@@ -282,6 +287,8 @@ export const LibraryScreen = ({
   );
 };
 
+const SUCCESS_TOAST_BOTTOM_OFFSET = 76;
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -291,6 +298,14 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingTop: 12,
     paddingBottom: 20,
+  },
+  // Above the create button's corner, so the toast covers no header or control.
+  successToast: {
+    position: 'absolute',
+    left: appTheme.space.lg,
+    right: appTheme.space.lg,
+    bottom: SUCCESS_TOAST_BOTTOM_OFFSET,
+    zIndex: 20,
   },
   contentWithCreateDock: {
     paddingBottom: 188,
