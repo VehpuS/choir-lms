@@ -115,7 +115,10 @@ describe('resolveFilesRowMenuActions', () => {
     actions.find((action) => action.label === 'Add to playlist')?.onPress();
     actions.find((action) => action.label === 'Edit tags')?.onPress();
 
-    assert.deepEqual(calls.loopBuilders, [SOURCE.id]);
+    // `Edit loop` edits this loop (as in the Loops view); it must not open the
+    // new-loop builder on the parent track (task 8.28).
+    assert.deepEqual(calls.loopEdits, [LOOP.id]);
+    assert.deepEqual(calls.loopBuilders, []);
     assert.deepEqual(calls.loopPlaylists, [LOOP.id]);
     assert.deepEqual(calls.loopTags, [LOOP.id]);
     assert.deepEqual(

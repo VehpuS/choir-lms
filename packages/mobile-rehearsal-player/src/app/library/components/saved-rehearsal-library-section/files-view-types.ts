@@ -34,6 +34,7 @@ export type SavedRehearsalLibraryFilesViewProps = {
   isPlaylistMutating: boolean;
   isSavedLibraryMutating: boolean;
   pendingLoopBuilderSourceId: string | null;
+  onEditLoop: (loop: NamedLoop) => void;
   onOpenLoopBuilderForSource: (source: DriveLibrarySource) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
   onOpenFolderTagEditor: (folder: RehearsalLibraryFolderNode) => void;

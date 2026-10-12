@@ -80,6 +80,7 @@ type UseLibraryFilesRowActionFlowsOptions = {
   isPlaylistMutating: boolean;
   isSavedLibraryMutating: boolean;
   pendingLoopBuilderSourceId: string | null;
+  onEditLoop: (loop: NamedLoop) => void;
   onOpenLoopBuilderForSource: (source: DriveLibrarySource) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
   onOpenFolderTagEditor: (folder: RehearsalLibraryFolderNode) => void;
@@ -113,6 +114,7 @@ export const useLibraryFilesRowActionFlows = ({
   isPlaylistMutating,
   isSavedLibraryMutating,
   pendingLoopBuilderSourceId,
+  onEditLoop,
   onOpenLoopBuilderForSource,
   onOpenLoopPlaylistSelector,
   onOpenFolderTagEditor,
@@ -341,6 +343,7 @@ export const useLibraryFilesRowActionFlows = ({
             onOpenFolderTagEditor(row.folder);
           }
         },
+        onEditLoop,
         onOpenLoopBuilder(sourceId) {
           if (row.kind === 'track' && row.source.id === sourceId) {
             onOpenLoopBuilderForSource(row.source);

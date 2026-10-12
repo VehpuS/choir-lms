@@ -147,10 +147,9 @@ export const resolveLoopMenuActions = (
           options.onQueuePlayableItemUpNext(row.playableItem);
         }
       },
+      // Edit mode for this loop, as in the Loops view; not a new-loop builder.
       onEditLoop: () => {
-        if (row.source) {
-          options.onOpenLoopBuilder(row.source.id);
-        }
+        options.onEditLoop(row.loop);
       },
       onEditTags: () => {
         options.onOpenLoopTagEditor(row.loop.id);

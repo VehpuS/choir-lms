@@ -50,7 +50,7 @@ export type PlaylistState = Pick<
 
 export type LoopState = Pick<
   ReturnType<typeof useSavedRehearsalLibraryLoopState>,
-  'openTrackLoopView'
+  'openLoopEditor' | 'openTrackLoopView'
 >;
 
 export type TrackPlaylistMenuState = Pick<

@@ -24,6 +24,7 @@ export type ResolveFilesRowMenuActionsBaseOptions = {
   onMoveFileNode: (row: LibraryFilesRow) => void;
   onOpenFolder: (folderId: string) => void;
   onOpenFolderTagEditor: (folderId: string) => void;
+  onEditLoop: (loop: NamedLoop) => void;
   onOpenLoopBuilder: (sourceId: string) => void;
   onOpenLoopPlaylistSelector: (loopId: string) => void;
   onOpenSourceInGoogleDrive: (sourceId: string) => void;

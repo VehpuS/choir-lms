@@ -128,6 +128,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
           isPlaylistMutating={isPlaylistMutating}
           isSavedLibraryMutating={isSavedLibraryMutating}
           pendingLoopBuilderSourceId={pendingLoopBuilderSourceId}
+          onEditLoop={loopState.openLoopEditor}
           onOpenLoopBuilderForSource={openLoopBuilderForSource}
           onOpenLoopPlaylistSelector={
             trackPlaylistMenu.openLoopPlaylistSelector
