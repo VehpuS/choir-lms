@@ -107,9 +107,11 @@ const TitleBlock = ({
       <Text numberOfLines={2} style={styles.title}>
         {summary.title}
       </Text>
-      <Text numberOfLines={1} style={styles.contextText}>
-        {summary.collectionLabel}
-      </Text>
+      {summary.collectionLabel ? (
+        <Text numberOfLines={1} style={styles.contextText}>
+          {summary.collectionLabel}
+        </Text>
+      ) : null}
       {summary.shapingLabel ? (
         <Text numberOfLines={1} style={styles.contextText}>
           {summary.shapingLabel}
@@ -118,11 +120,6 @@ const TitleBlock = ({
       {downloadLabel ? (
         <Text numberOfLines={1} style={styles.downloadText}>
           {downloadLabel}
-        </Text>
-      ) : null}
-      {summary.upNextLabel ? (
-        <Text numberOfLines={1} style={styles.nextText}>
-          Next · {summary.upNextLabel}
         </Text>
       ) : null}
       {summary.loopRange ? (

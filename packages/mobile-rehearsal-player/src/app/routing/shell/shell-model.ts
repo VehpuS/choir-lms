@@ -4,7 +4,6 @@ import type { SavedTrackPlaybackState } from '../../library/playback/utils/saved
 import {
   canUpdateQueuePlaylist,
   getPlaylistPlaybackSessionSummary,
-  resolvePlaylistPlaybackAdvance,
   type PlaylistPlaybackSession,
 } from '../../library/playlists/utils/saved-playlist-playback-view-model';
 import {
@@ -32,7 +31,8 @@ export type ShellDestination = {
 };
 
 export type NowPlayingSurfaceSummary = {
-  collectionLabel: string;
+  /** `Advent set · 3 of 9`; null for a standalone track. */
+  collectionLabel: string | null;
   playbackLabel: string;
   loopRange: ReturnType<typeof getPlayableItemLoopRange>;
   progressLabel: string;
@@ -41,7 +41,6 @@ export type NowPlayingSurfaceSummary = {
   statusLabel: string;
   supportsQueueNavigation: boolean;
   title: string;
-  upNextLabel: string | null;
   waveformProgressRatio: number;
 };
 
@@ -103,10 +102,6 @@ export const getNowPlayingSurfaceSummary = (options: {
       : 'Keep the current rehearsal item audible while moving between tabs.',
     loopRange: getPlayableItemLoopRange(options.activePlayableItem),
     supportsQueueNavigation: Boolean(options.activePlaylistSession),
-    upNextLabel: options.activePlaylistSession
-      ? (resolvePlaylistPlaybackAdvance(options.activePlaylistSession)
-          .nextPlayableItem?.title ?? null)
-      : null,
     waveformProgressRatio: getPlaybackProgressRatio({
       activePlayableItem: options.activePlayableItem,
       playbackPositionSeconds: options.playbackPositionSeconds,

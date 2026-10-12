@@ -115,11 +115,11 @@ export const getPlaybackProgressRatio = (options: {
 export const getPlaybackCollectionLabel = (options: {
   activePlayableItem: PlayableItem;
   activePlaylistSession?: PlaylistPlaybackSession | null;
-}) => {
+}): string | null => {
   if (!options.activePlaylistSession) {
     return options.activePlayableItem.kind === 'loop'
       ? `Saved loop from ${options.activePlayableItem.source.name}`
-      : 'Saved rehearsal library';
+      : null;
   }
 
   const queueItemCount = options.activePlaylistSession.queue.items.length;
@@ -128,7 +128,7 @@ export const getPlaybackCollectionLabel = (options: {
     queueItemCount,
   );
 
-  return `${options.activePlaylistSession.playlistName} • Item ${itemPosition} of ${queueItemCount}`;
+  return `${options.activePlaylistSession.playlistName}${ROW_META_SEPARATOR}${itemPosition} of ${queueItemCount}`;
 };
 
 export const getPlayableItemRangeLabel = (playableItem: PlayableItem) => {
@@ -171,7 +171,7 @@ const getPlaybackQueueLabel = (
 
 /** The rehearsal context line's shaping tail (`• 0.90× · −2 st`), or nothing. */
 const appendShapingLabel = (label: string, shapingLabel: string | null) => {
-  return shapingLabel ? `${label} • ${shapingLabel}` : label;
+  return shapingLabel ? `${label}${ROW_META_SEPARATOR}${shapingLabel}` : label;
 };
 
 const getMiniPlayerContextLabel = (options: {
@@ -200,7 +200,11 @@ const getMiniPlayerBaseContextLabel = (options: {
       itemCount,
     );
 
-    return `${options.status} • ${options.activePlaylistSession.playlistName} • ${itemPosition} of ${itemCount}`;
+    return [
+      options.status,
+      options.activePlaylistSession.playlistName,
+      `${itemPosition} of ${itemCount}`,
+    ].join(ROW_META_SEPARATOR);
   }
 
   if (options.activePlayableItem.kind === 'loop') {
@@ -210,13 +214,13 @@ const getMiniPlayerBaseContextLabel = (options: {
       options.activePlayableItem.source.name.toLocaleLowerCase();
 
     if (normalizedTitle.includes(normalizedSourceName)) {
-      return `${options.status} • Saved loop`;
+      return `${options.status}${ROW_META_SEPARATOR}Saved loop`;
     }
 
-    return `${options.status} • Loop from ${options.activePlayableItem.source.name}`;
+    return `${options.status}${ROW_META_SEPARATOR}Loop from ${options.activePlayableItem.source.name}`;
   }
 
-  return `${options.status} • ${options.progressLabel}`;
+  return `${options.status}${ROW_META_SEPARATOR}${options.progressLabel}`;
 };
 
 /** An Up next row's meta line (1h): `Track · 4:41` or `Loop · 1:12–1:48 · Kyrie.mp3`. */

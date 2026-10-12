@@ -84,10 +84,6 @@ export const nowPlayingStyles = StyleSheet.create({
     color: colors.accentText,
     fontSize: NEXT_TEXT_SIZE,
   },
-  nextText: {
-    color: colors.textMuted,
-    fontSize: NEXT_TEXT_SIZE,
-  },
   loopChip: {
     flexDirection: 'row',
     alignItems: 'center',

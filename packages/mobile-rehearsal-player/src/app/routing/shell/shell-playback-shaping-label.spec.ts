@@ -65,7 +65,7 @@ describe('shaping in the rehearsal context lines', () => {
       shapingLabel: '0.90× · −2 st',
     });
 
-    assert.ok(summary?.context.endsWith(' • 0.90× · −2 st'));
+    assert.ok(summary?.context.endsWith(' · 0.90× · −2 st'));
     assert.ok(summary?.accessibilityLabel.includes('0.90× · −2 st'));
   });
 
@@ -76,7 +76,7 @@ describe('shaping in the rehearsal context lines', () => {
       shapingLabel: '0.80×',
     });
 
-    assert.ok(summary?.context.endsWith(' • 0.80×'));
+    assert.ok(summary?.context.endsWith(' · 0.80×'));
   });
 
   it('carries the label on the playback sheet summary', () => {

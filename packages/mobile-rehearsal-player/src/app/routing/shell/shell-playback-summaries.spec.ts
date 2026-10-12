@@ -38,7 +38,7 @@ describe('shell playback summaries', () => {
 
     assert.equal(
       customNameSummary?.context,
-      'Playing • Loop from Alto Line.mp3',
+      'Playing · Loop from Alto Line.mp3',
     );
     assert.equal(
       customNameSummary?.accessibilityLabel,
@@ -54,10 +54,10 @@ describe('shell playback summaries', () => {
       playbackState: 'playing',
     });
 
-    assert.equal(autoNameSummary?.context, 'Playing • Saved loop');
+    assert.equal(autoNameSummary?.context, 'Playing · Saved loop');
   });
 
-  it('builds now-playing copy with loop context and the next queue item', () => {
+  it('builds now-playing copy with loop context and the queue position', () => {
     const summary = getNowPlayingSurfaceSummary({
       activePlayableItem: createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE),
       activePlaylistSession: {
@@ -73,7 +73,7 @@ describe('shell playback summaries', () => {
     });
 
     assert.deepEqual(summary, {
-      collectionLabel: 'Warmups • Item 2 of 2',
+      collectionLabel: 'Warmups · 2 of 2',
       playbackLabel:
         'Active session • Warmups • item 2 of 2 • Ordered • Repeat all.',
       loopRange: {
@@ -85,7 +85,6 @@ describe('shell playback summaries', () => {
       statusLabel: 'Playing',
       supportsQueueNavigation: true,
       title: 'Entrance cue',
-      upNextLabel: 'Alto Line.mp3',
       waveformProgressRatio: 1,
     });
   });
@@ -99,7 +98,7 @@ describe('shell playback summaries', () => {
     });
 
     assert.deepEqual(summary, {
-      collectionLabel: 'Saved rehearsal library',
+      collectionLabel: null,
       playbackLabel:
         'Keep the current rehearsal item audible while moving between tabs.',
       progressLabel: '0:20 of 3:05',
@@ -108,7 +107,6 @@ describe('shell playback summaries', () => {
       statusLabel: 'Paused',
       supportsQueueNavigation: false,
       title: 'Alto Line.mp3',
-      upNextLabel: null,
       waveformProgressRatio: 20 / 185,
     });
   });
@@ -140,7 +138,7 @@ describe('shell playback summaries', () => {
         playbackPositionSeconds: 18,
         playbackState: 'playing',
       })?.context,
-      'Playing • Current queue • 1 of 2',
+      'Playing · Current queue · 1 of 2',
     );
     assert.deepEqual(
       getNowPlayingSurfaceSummary({
@@ -151,7 +149,7 @@ describe('shell playback summaries', () => {
         playbackState: 'playing',
       }),
       {
-        collectionLabel: 'Current queue • Item 1 of 2',
+        collectionLabel: 'Current queue · 1 of 2',
         playbackLabel:
           'Active session • Current queue • item 1 of 2 • Ordered • Repeat all.',
         progressLabel: '0:18 of 3:05',
@@ -160,7 +158,6 @@ describe('shell playback summaries', () => {
         statusLabel: 'Playing',
         supportsQueueNavigation: true,
         title: 'Alto Line.mp3',
-        upNextLabel: 'Tenor Line.mp3',
         waveformProgressRatio: 18 / 185,
       },
     );
