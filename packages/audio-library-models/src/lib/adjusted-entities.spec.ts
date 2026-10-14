@@ -72,6 +72,26 @@ describe('adjusted tracks', () => {
     assert.equal(adjusted.lyrics, undefined);
   });
 
+  it('does not copy the source sheet music', () => {
+    const adjusted = createAdjustedTrackSource({
+      source: {
+        ...source,
+        sheetMusic: [
+          {
+            id: 'sm-1',
+            label: 'Full score',
+            location: { kind: 'url', url: 'https://example.com/score.pdf' },
+            format: 'pdf',
+            addedAt: '2026-10-01T00:00:00.000Z',
+          },
+        ],
+      },
+      transform: slowAndLow,
+    });
+
+    assert.equal(adjusted.sheetMusic, undefined);
+  });
+
   it('refuses to adjust an adjusted track or to save a neutral transform', () => {
     const adjusted = createAdjustedTrackSource({
       source,

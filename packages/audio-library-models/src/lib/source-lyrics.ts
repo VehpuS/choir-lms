@@ -86,8 +86,8 @@ type LyricsOwnerItem = { id: string } & (
 );
 
 /**
- * Finds the saved track that owns the lyrics shown for a track, an adjusted
- * track, a loop, or a loop of an adjusted track. Returns `null` when the
+ * Finds the saved track that owns the lyrics (and the sheet music) shown for a
+ * track, an adjusted track, a loop, or a loop of an adjusted track. Returns `null` when the
  * owning track no longer exists.
  */
 export const resolveLyricsOwner = <Source extends LyricsOwnerSource>(
