@@ -70,7 +70,7 @@ The system SHALL open a sheet music source only in a full-screen viewer, reached
 #### Scenario: Open MIDI
 
 - **WHEN** a user opens a MIDI source
-- **THEN** staves notated from the MIDI are shown with the label `Approximate notation from MIDI`
+- **THEN** staves notated from the MIDI are shown, through the same renderer and part filter as MusicXML, with no label marking them as converted
 
 #### Scenario: Switch between sources
 
