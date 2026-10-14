@@ -1,0 +1,344 @@
+<title>Sheet Music Entry Mock</title>
+<style>
+/* Layout: a decision page. Left, a working phone mock (Nocturne look from the app) you can tap through for each option; right, a compact comparison. Stacks on a phone. */
+:root {
+  --bg: #101220;
+  --ground: #161826;
+  --surface: #232532;
+  --surface-raised: #1b1e2c;
+  --text: #e9e9ed;
+  --text-muted: #9397ab;
+  --text-faint: #8e92a6;
+  --accent: #9184d9;
+  --accent-text: #b5abfc;
+  --accent-tint: #2b2741;
+  --divider: #3f424d;
+  --danger: #f28b82;
+  --success: #81c995;
+  --paper: #f3f1ea;
+  --ink: #1b1c22;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); padding-block: 28px 48px; padding-inline: 16px; line-height: 1.45; }
+main { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1 { font-size: 26px; line-height: 1.15; margin: 0 0 6px; font-weight: 650; letter-spacing: -0.01em; text-wrap: balance; }
+h2 { font-size: 15px; margin: 0 0 10px; font-weight: 650; }
+p { margin: 0; color: var(--text-muted); max-width: 62ch; }
+.kicker { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-text); margin-bottom: 8px; }
+.stage { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 32px; align-items: start; }
+@media (max-width: 820px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+.controls { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+.seg { display: flex; border: 1px solid var(--divider); border-radius: 12px; overflow: hidden; }
+.seg button { flex: 1; min-height: 44px; padding: 8px 10px; background: transparent; color: var(--text-muted); border: 0; border-right: 1px solid var(--divider); font: inherit; font-size: 13px; cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent-tint); color: var(--text); box-shadow: inset 0 0 0 1px var(--accent); }
+.label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 6px; }
+button:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+/* phone */
+.phone { width: 100%; max-width: 380px; aspect-ratio: 380 / 720; background: var(--ground); border: 1px solid var(--divider); border-radius: 34px; position: relative; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.45); }
+.np { padding: 22px 20px; display: flex; flex-direction: column; gap: 14px; height: 100%; }
+.np .t { font-size: 22px; font-weight: 650; }
+.np .k { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-text); }
+.wave { display: flex; align-items: center; gap: 2px; height: 46px; }
+.wave i { flex: 1; background: var(--accent); border-radius: 2px; opacity: .8; }
+.ring { width: 58px; height: 58px; border: 1.5px solid var(--accent); border-radius: 50%; margin: 4px auto; display: grid; place-items: center; box-shadow: 0 0 18px rgba(145,132,217,.28); }
+.ring::after { content: ""; border-left: 14px solid var(--accent-text); border-top: 9px solid transparent; border-bottom: 9px solid transparent; margin-left: 4px; }
+.lyr { border-top: 1px solid var(--divider); padding-top: 12px; font-size: 14px; color: var(--text); }
+.lyr b { display: block; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
+.dim { position: absolute; inset: 0; background: rgba(8,9,16,.62); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--ground); border-top-left-radius: 22px; border-top-right-radius: 22px; border: 1px solid var(--divider); border-bottom: 0; padding: 10px 18px 22px; display: flex; flex-direction: column; gap: 8px; max-height: 92%; overflow: auto; }
+.sheet .grab { width: 52px; height: 4px; border-radius: 4px; background: var(--divider); margin: 0 auto 6px; }
+.sheet h3 { margin: 0; font-size: 19px; }
+.sheet .sub { font-size: 13px; color: var(--text-muted); }
+.row { display: flex; align-items: center; gap: 12px; min-height: 50px; padding: 4px 2px; border: 0; border-bottom: 1px solid rgba(63,66,77,.55); background: transparent; color: var(--text); font: inherit; font-size: 15px; text-align: left; width: 100%; cursor: pointer; }
+.row:last-child { border-bottom: 0; }
+.row .g { width: 18px; height: 18px; border: 1.5px solid var(--text-muted); border-radius: 5px; flex: none; }
+.row .meta { margin-left: auto; font-size: 12px; color: var(--text-muted); font-family: var(--mono); }
+.row.hot { color: var(--accent-text); }
+.row.hot .g { border-color: var(--accent); }
+.row.destructive { color: var(--danger); }
+.src { display: flex; align-items: center; gap: 10px; border: 1px solid var(--divider); border-radius: 12px; padding: 10px 12px; background: var(--surface); }
+.src .n { min-width: 0; flex: 1; }
+.src .n b { display: block; font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.src .n span { font-size: 12px; color: var(--text-muted); font-family: var(--mono); }
+.btn { min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--divider); background: transparent; color: var(--text); font: inherit; font-size: 14px; cursor: pointer; }
+.btn.accent { border-color: var(--accent); color: var(--accent-text); }
+.btn.small { min-height: 40px; padding: 0 12px; }
+.field { min-height: 44px; border: 1px solid var(--divider); border-radius: 12px; padding: 0 14px; background: var(--surface); color: var(--text); font: inherit; font-size: 15px; width: 100%; }
+.pair { display: flex; gap: 8px; }
+.pair > * { flex: 1; }
+.empty { font-size: 13px; color: var(--text-muted); padding: 6px 0 2px; }
+
+/* viewer */
+.viewer { position: absolute; inset: 0; background: var(--ground); display: flex; flex-direction: column; }
+.vbar { display: flex; align-items: center; gap: 8px; padding: 14px 14px 8px; }
+.x { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--divider); background: transparent; color: var(--text); font-size: 18px; cursor: pointer; flex: none; }
+.vbar .tt { min-width: 0; flex: 1; }
+.vbar .tt b { display: block; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vbar .tt span { font-size: 11px; color: var(--text-muted); }
+.srcsw { display: flex; gap: 6px; padding: 0 14px 8px; }
+.chip { min-height: 38px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--divider); background: transparent; color: var(--text-muted); font: inherit; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-tint); color: var(--text); }
+.chips { display: flex; gap: 6px; padding: 0 14px 10px; flex-wrap: wrap; }
+.notice { margin: 0 14px 8px; font-size: 12px; color: var(--text-muted); }
+.page { flex: 1; margin: 0 12px; background: var(--paper); border-radius: 6px; overflow: auto; padding: 14px 12px; color: var(--ink); }
+.staff { margin-bottom: 14px; }
+.staff .nm { font-size: 10px; font-family: var(--mono); color: #555; margin-bottom: 2px; }
+.pdf-title { text-align: center; font-family: Georgia, "Times New Roman", serif; font-size: 17px; margin-bottom: 2px; }
+.pdf-sub { text-align: center; font-family: Georgia, serif; font-size: 11px; color: #555; margin-bottom: 12px; }
+.vfoot { display: flex; align-items: center; justify-content: center; gap: 18px; padding: 10px 0 18px; }
+.mini { width: 46px; height: 46px; border: 1.5px solid var(--accent); border-radius: 50%; background: transparent; display: grid; place-items: center; cursor: pointer; }
+.mini::after { content: ""; width: 12px; height: 14px; border-left: 4px solid var(--accent-text); border-right: 4px solid var(--accent-text); }
+
+/* comparison */
+.cmp { display: flex; flex-direction: column; gap: 14px; }
+.flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; }
+.flow span { border: 1px solid var(--divider); border-radius: 999px; padding: 4px 10px; color: var(--text); }
+.flow span.cur { border-color: var(--accent); background: var(--accent-tint); }
+.flow i { color: var(--text-faint); font-style: normal; }
+.card { border: 1px solid var(--divider); border-radius: 14px; padding: 16px; background: var(--surface-raised); display: flex; flex-direction: column; gap: 8px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 13px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 10px; border-bottom: 1px solid var(--divider); }
+th { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); font-weight: 500; }
+td:first-child { color: var(--text-muted); width: 26%; }
+.rec { color: var(--success); }
+.note { font-size: 12.5px; color: var(--text-faint); }
+</style>
+
+<main>
+  <header>
+    <div class="kicker">Sheet music · design check</div>
+    <h1>How should a track open its sheet music?</h1>
+    <p>Two ways to reach the full-screen viewer from an item menu. Pick a track state and an option, then tap through the phone. Nothing here is saved, and the real app uses its menu icons and the same Nocturne look.</p>
+  </header>
+
+  <div class="stage">
+    <section aria-label="Interactive phone mock">
+      <div class="controls">
+        <div>
+          <div class="label">Option</div>
+          <div class="seg" id="optSeg">
+            <button type="button" data-opt="A" aria-pressed="true">A · Manager sheet</button>
+            <button type="button" data-opt="B" aria-pressed="false">B · View shortcut</button>
+          </div>
+        </div>
+        <div>
+          <div class="label">This track has</div>
+          <div class="seg" id="cntSeg">
+            <button type="button" data-n="0" aria-pressed="false">No sheet music</button>
+            <button type="button" data-n="1" aria-pressed="false">One source</button>
+            <button type="button" data-n="2" aria-pressed="true">Two sources</button>
+          </div>
+        </div>
+      </div>
+      <div class="phone" id="phone"></div>
+      <p class="note" style="margin-top:10px">Tap in the phone. <button type="button" class="chip" id="reset" style="min-height:44px">Start over</button></p>
+    </section>
+
+    <section class="cmp" aria-label="Comparison">
+      <div class="card">
+        <h2>Path for this choice</h2>
+        <div class="flow" id="flow"></div>
+        <p id="taps"></p>
+      </div>
+
+      <div class="card">
+        <h2>A · One <em style="font-style:normal;color:var(--accent-text)">Sheet music</em> action, always a manager sheet</h2>
+        <p>The menu entry never changes. It opens a sheet that lists the sources with <b>View</b>, rename, and remove, and holds <b>Add sheet music</b>.</p>
+      </div>
+      <div class="card">
+        <h2>B · <em style="font-style:normal;color:var(--accent-text)">View sheet music</em> when one exists</h2>
+        <p>With one source the entry opens the viewer directly. With several it opens a short picker. A second entry, <b>Manage sheet music</b>, handles add, rename, and remove. With none it reads <b>Sheet music</b> and goes to Add.</p>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th></th><th>A · Manager sheet</th><th>B · View shortcut</th></tr></thead>
+          <tbody>
+            <tr><td>Taps to read the score</td><td>3 from the playback menu: menu, View, then the viewer is open.</td><td class="rec">2 with one source. 3 with several (menu, pick, viewer).</td></tr>
+            <tr><td>Menu entries</td><td class="rec">One entry. The menu stays the same length for every track.</td><td>One or two entries (<i>View</i> and <i>Manage</i>), and the label changes with the track.</td></tr>
+            <tr><td>Fits “a quiet option”</td><td class="rec">Yes. Looks identical whether or not a track has sheet music.</td><td>Mostly. The label change is a small signal that music is attached.</td></tr>
+            <tr><td>Learnability</td><td class="rec">One place for everything.</td><td>Two places: view here, manage there.</td></tr>
+            <tr><td>Mid-rehearsal use</td><td>One extra tap every time.</td><td class="rec">Fastest for the common case of one score.</td></tr>
+            <tr><td>Build and test cost</td><td class="rec">One sheet, one label, one icon.</td><td>Two labels, two requests, a picker, and a rule for the “one versus many” switch.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">A middle path: build A first. If singers open the same single score often, add the direct <b>View sheet music</b> shortcut later as a pure addition, since the manager sheet stays as it is.</p>
+    </section>
+  </div>
+</main>
+
+<script>
+(function () {
+  var state = { opt: 'A', n: 2, screen: 'np', src: 0, parts: { S: true, A: true, T: true, B: true, P: false }, partsMode: 'vocal', adding: false };
+  var SOURCES = [
+    { label: 'Full score', kind: 'MusicXML', hint: 'SATB + piano' },
+    { label: 'Alto part', kind: 'PDF', hint: '2 pages' }
+  ];
+  var PARTS = [['S', 'Soprano'], ['A', 'Alto'], ['T', 'Tenor'], ['B', 'Bass'], ['P', 'Piano']];
+  var phone = document.getElementById('phone');
+
+  function srcs() { return SOURCES.slice(0, state.n); }
+
+  function wave() {
+    var h = [10, 22, 30, 18, 34, 26, 40, 20, 28, 36, 16, 24, 32, 12, 26, 38, 22, 14, 30, 20, 34, 18, 28, 36, 24, 16, 30, 22];
+    return '<div class="wave">' + h.map(function (v) { return '<i style="height:' + v + 'px"></i>'; }).join('') + '</div>';
+  }
+  function nowPlaying() {
+    return '<div class="np"><div><div class="k">Rehearsing</div><div class="t">Kyrie</div></div>' + wave() +
+      '<div class="ring" aria-hidden="true"></div>' +
+      '<div class="lyr"><b>Lyrics</b>Kyrie eleison, Kyrie eleison,<br>Christe eleison, Christe eleison…</div></div>';
+  }
+
+  function menuRows() {
+    var rows = ['Add to playlist', 'Edit tags', 'Edit lyrics'];
+    var html = rows.map(function (r) { return '<div class="row" style="cursor:default"><span class="g"></span>' + r + '</div>'; }).join('');
+    var n = state.n;
+    if (state.opt === 'A') {
+      html += '<button type="button" class="row hot" data-go="manager"><span class="g"></span>Sheet music</button>';
+    } else if (n === 0) {
+      html += '<button type="button" class="row hot" data-go="manager"><span class="g"></span>Sheet music</button>';
+    } else {
+      html += '<button type="button" class="row hot" data-go="' + (n === 1 ? 'viewer0' : 'picker') + '"><span class="g"></span>View sheet music</button>';
+      html += '<button type="button" class="row hot" data-go="manager"><span class="g"></span>Manage sheet music</button>';
+    }
+    html += '<div class="row destructive" style="cursor:default"><span class="g" style="border-color:var(--danger)"></span>Remove from library</div>';
+    return html;
+  }
+  function menu() {
+    return nowPlaying() + '<div class="dim"></div><div class="sheet"><div class="grab"></div><h3>Kyrie</h3><div class="sub">Item menu from the playback screen</div>' + menuRows() + '</div>';
+  }
+  function manager() {
+    var list = srcs().map(function (s, i) {
+      return '<div class="src"><div class="n"><b>' + s.label + '</b><span>' + s.kind + ' · ' + s.hint + '</span></div>' +
+        '<button type="button" class="btn small accent" data-go="viewer' + i + '">View</button></div>';
+    }).join('');
+    if (!list) list = '<div class="empty">No sheet music yet. Add a score or a part for this track.</div>';
+    return nowPlaying() + '<div class="dim"></div><div class="sheet"><div class="grab"></div><h3>Sheet music</h3><div class="sub">Sheet music for Kyrie</div>' + list +
+      '<button type="button" class="btn accent" data-go="add">Add sheet music</button>' +
+      '<button type="button" class="btn" data-go="np">Done</button></div>';
+  }
+  function picker() {
+    var list = srcs().map(function (s, i) {
+      return '<button type="button" class="row" data-go="viewer' + i + '"><span class="g"></span>' + s.label + '<span class="meta">' + s.kind + '</span></button>';
+    }).join('');
+    return nowPlaying() + '<div class="dim"></div><div class="sheet"><div class="grab"></div><h3>Choose sheet music</h3><div class="sub">Opens full screen</div>' + list + '</div>';
+  }
+  function add() {
+    return nowPlaying() + '<div class="dim"></div><div class="sheet"><div class="grab"></div><h3>Add sheet music</h3><div class="sub">Sheet music for Kyrie</div>' +
+      '<button type="button" class="row" data-go="manager"><span class="g"></span>From Google Drive</button>' +
+      '<button type="button" class="row" data-go="manager"><span class="g"></span>From a web link</button>' +
+      '<div class="label" style="margin-top:8px">Search MuseScore</div>' +
+      '<div class="pair"><input class="field" aria-label="Title" value="Kyrie"><input class="field" aria-label="Artist" placeholder="Artist"></div>' +
+      '<button type="button" class="btn accent" data-go="manager">Search MuseScore</button>' +
+      '<div class="empty">Opens your browser. Bring a link or an exported file back here.</div>' +
+      '<button type="button" class="btn" data-go="manager">Cancel</button></div>';
+  }
+
+  function notes(seed, count) {
+    var x = 30, out = '', y0 = 8, step = 5;
+    for (var i = 0; i < count; i++) {
+      var pos = (seed * 7 + i * 5 + (i % 3) * 3) % 9;
+      var y = y0 + (8 - pos) * (step / 2);
+      out += '<ellipse cx="' + x + '" cy="' + y + '" rx="3.6" ry="2.6" fill="#1b1c22" transform="rotate(-18 ' + x + ' ' + y + ')"/>';
+      out += '<line x1="' + (x + 3.2) + '" y1="' + y + '" x2="' + (x + 3.2) + '" y2="' + (y - 14) + '" stroke="#1b1c22" stroke-width="1"/>';
+      x += 22;
+    }
+    return out;
+  }
+  function staffSvg(seed) {
+    var lines = '';
+    for (var l = 0; l < 5; l++) lines += '<line x1="0" x2="300" y1="' + (8 + l * 5) + '" y2="' + (8 + l * 5) + '" stroke="#1b1c22" stroke-width=".7"/>';
+    var bars = '<line x1="0" x2="0" y1="8" y2="28" stroke="#1b1c22"/><line x1="150" x2="150" y1="8" y2="28" stroke="#1b1c22"/><line x1="299" x2="299" y1="8" y2="28" stroke="#1b1c22" stroke-width="1.5"/>';
+    return '<svg viewBox="0 0 300 40" width="100%" role="img" aria-label="Staff">' + lines + bars + notes(seed, 12) + '</svg>';
+  }
+  function viewer(i) {
+    var s = srcs()[i];
+    var bar = '<div class="vbar"><button type="button" class="x" data-go="back" aria-label="Close sheet music">×</button><div class="tt"><b>' + s.label + '</b><span>Sheet music for Kyrie</span></div></div>';
+    var sw = '';
+    if (srcs().length > 1) {
+      sw = '<div class="srcsw">' + srcs().map(function (t, k) { return '<button type="button" class="chip" aria-pressed="' + (k === i) + '" data-go="viewer' + k + '">' + t.label + '</button>'; }).join('') + '</div>';
+    }
+    var body;
+    if (s.kind === 'MusicXML') {
+      var chips = '<div class="chips"><button type="button" class="chip" aria-pressed="' + (state.partsMode === 'vocal') + '" data-parts="vocal">Vocal parts</button><button type="button" class="chip" aria-pressed="' + (state.partsMode === 'all') + '" data-parts="all">All parts</button>' +
+        PARTS.map(function (p) { return '<button type="button" class="chip" aria-pressed="' + state.parts[p[0]] + '" data-part="' + p[0] + '">' + p[1] + '</button>'; }).join('') + '</div>';
+      var staves = PARTS.filter(function (p) { return state.parts[p[0]]; }).map(function (p, k) { return '<div class="staff"><div class="nm">' + p[1] + '</div>' + staffSvg(k + 1) + '</div>'; }).join('');
+      if (!staves) staves = '<div class="empty" style="color:#555">No parts selected. Choose a part above.</div>';
+      body = chips + '<div class="page"><div class="pdf-title">Kyrie</div><div class="pdf-sub">W. A. Mozart · m. 1–8</div>' + staves + '</div>';
+    } else {
+      body = '<div class="notice">A PDF shows pages as they are, so there is no part filter.</div><div class="page"><div class="pdf-title">Kyrie · Alto</div><div class="pdf-sub">Page 1 of 2</div>' + staffSvg(3) + '<br>' + staffSvg(5) + '<br>' + staffSvg(2) + '</div>';
+    }
+    return '<div class="viewer">' + bar + sw + body + '<div class="vfoot"><button type="button" class="mini" aria-label="Pause"></button></div></div>';
+  }
+
+  function render() {
+    var s = state.screen, html;
+    if (s === 'np') html = nowPlaying();
+    else if (s === 'menu') html = menu();
+    else if (s === 'manager') html = manager();
+    else if (s === 'picker') html = picker();
+    else if (s === 'add') html = add();
+    else html = viewer(Number(s.replace('viewer', '')));
+    if (s === 'np') html += '<button type="button" class="btn accent" data-go="menu" style="position:absolute;right:16px;bottom:16px">⋯ More actions</button>';
+    phone.innerHTML = html;
+    document.getElementById('flow').innerHTML = flowHtml();
+    document.getElementById('taps').textContent = tapsText();
+    ['optSeg', 'cntSeg'].forEach(function (id) {
+      document.querySelectorAll('#' + id + ' button').forEach(function (b) {
+        var on = id === 'optSeg' ? b.dataset.opt === state.opt : Number(b.dataset.n) === state.n;
+        b.setAttribute('aria-pressed', String(on));
+      });
+    });
+  }
+
+  function flowSteps() {
+    var n = state.n;
+    if (state.opt === 'A') return n === 0 ? ['Item menu', 'Sheet music', 'Add sheet music'] : ['Item menu', 'Sheet music', 'View', 'Viewer'];
+    if (n === 0) return ['Item menu', 'Sheet music', 'Add sheet music'];
+    if (n === 1) return ['Item menu', 'View sheet music', 'Viewer'];
+    return ['Item menu', 'View sheet music', 'Pick a source', 'Viewer'];
+  }
+  function flowHtml() {
+    var steps = flowSteps(), cur = state.screen;
+    var map = { np: 0, menu: 0, manager: 1, picker: 2, add: 2, back: 0 };
+    var idx = cur.indexOf('viewer') === 0 ? steps.length - 1 : (map[cur] || 0);
+    if (state.opt === 'B' && state.n === 1 && cur === 'manager') idx = 1;
+    return steps.map(function (t, i) { return '<span class="' + (i === idx ? 'cur' : '') + '">' + t + '</span>'; }).join('<i>→</i>');
+  }
+  function tapsText() {
+    var n = state.n, st = flowSteps();
+    if (n === 0) return 'With no sheet music both options look the same: one entry that goes straight to adding a source.';
+    var taps = st.length - 1;
+    return taps + ' taps from the item menu to the open score' + (state.opt === 'B' && n === 1 ? ', the shortest path.' : '.');
+  }
+
+  phone.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-go],[data-parts],[data-part]');
+    if (!t) return;
+    if (t.dataset.go) {
+      var g = t.dataset.go;
+      if (g === 'back') g = state.opt === 'A' ? 'manager' : 'np';
+      if (g.indexOf('viewer') === 0 && g !== 'viewer0' && g !== 'viewer1') g = 'viewer0';
+      state.screen = g;
+    } else if (t.dataset.parts) {
+      state.partsMode = t.dataset.parts;
+      PARTS.forEach(function (p) { state.parts[p[0]] = t.dataset.parts === 'all' ? true : p[0] !== 'P'; });
+    } else if (t.dataset.part) {
+      state.parts[t.dataset.part] = !state.parts[t.dataset.part];
+      state.partsMode = 'custom';
+    }
+    render();
+  });
+  document.getElementById('optSeg').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { state.opt = b.dataset.opt; state.screen = 'np'; render(); } });
+  document.getElementById('cntSeg').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { state.n = Number(b.dataset.n); state.screen = 'np'; render(); } });
+  document.getElementById('reset').addEventListener('click', function () { state.screen = 'np'; render(); });
+  render();
+})();
+</script>

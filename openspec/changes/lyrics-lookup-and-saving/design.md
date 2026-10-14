@@ -122,6 +122,8 @@ A pure `extractScoreParts(parsedScore)` returns the parts of a MusicXML or MIDI 
 
 ### Decision 13: Reaching sheet music, and keeping it non-standard
 
+Decided by the user on 2026-10-14 from the HTML mock in `design-source/sheet-music-entry-mock.html` (Option A over a `View sheet music` shortcut).
+
 - One menu action, `Sheet music`, after `Lyrics` / `Edit lyrics`, with its own icon in the shared icon map, on the same menus as the lyrics action (Library views, Recents, Up Next, playback sheet) and never in bulk menus. It always reads `Sheet music`; it opens the manager sheet.
 - The **manager sheet** lists the track's sources (label, format, a `View` action, remove, rename) and holds `Add sheet music` with three paths: `From Google Drive`, `From a web link`, and `Search MuseScore`. Rows that cannot be rendered say `Opens outside the app`.
 - Opening a source opens the **full-screen viewer** only. There is no sheet music section, preview, mini-player control, or empty-state prompt on the playback screen, and playback controls stay reachable through a compact play/pause control as in lyrics reading mode, with the screen kept awake via the same `expo-keep-awake` use.
@@ -163,5 +165,5 @@ No data migration: the `lyrics` and `sheetMusic` fields are optional and absent 
 - Should `Search the web` be configurable (another search engine)? Default to one fixed engine for now.
 - Sheet music, MuseScore files: link-out for `.mscz` and `musescore.com` pages was accepted by the user on 2026-10-14 (Decision 10). Task 9.4 still re-confirms the facts it rests on.
 - Sheet music, MIDI: ship approximate notation, or show MIDI only as a link-out if the spike's quality is poor (task 9.3)?
-- Sheet music, entry point: one `Sheet music` action opening a manager sheet (Option A), or a `View sheet music` shortcut that opens the viewer directly when a track has one source (Option B)? An HTML mock of both is published for the user to compare (https://claude.ai/artifact/5Gw7dFmcRyWLTPc2WH49zc); decide before building task 13.1. The plan stays with Option A until then, and B can be added later as a pure addition.
+- Sheet music, entry point: **decided 2026-10-14, Option A** (one `Sheet music` action that always opens the manager sheet). A `View sheet music` shortcut for tracks with one source (Option B) stays a possible later addition. The HTML mock of both options is saved at `design-source/sheet-music-entry-mock.html`.
 - Sheet music, offline: should opened files be cached for offline use? It belongs with `offline-audio-caching`; not built here.
