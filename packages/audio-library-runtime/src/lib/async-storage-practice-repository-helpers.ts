@@ -129,11 +129,14 @@ export const resolveSourceForSave = (options: {
   const sourceLocation =
     options.source.sourceLocation ?? options.priorSource?.sourceLocation;
   // Re-saving a track (for example when Drive metadata is refreshed) must not
-  // drop lyrics the incoming record does not know about.
+  // drop lyrics or sheet music the incoming record does not know about.
   const lyrics = options.source.lyrics ?? options.priorSource?.lyrics;
+  const sheetMusic =
+    options.source.sheetMusic ?? options.priorSource?.sheetMusic;
   const sourceWithPreservedMetadata: DriveAudioSource = {
     ...options.source,
     ...(lyrics === undefined ? {} : { lyrics }),
+    ...(sheetMusic === undefined ? {} : { sheetMusic }),
     ...(tags === undefined ? {} : { tags }),
     ...(sourceLocation === undefined ? {} : { sourceLocation }),
   };

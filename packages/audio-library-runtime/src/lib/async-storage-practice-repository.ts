@@ -31,11 +31,19 @@ import {
   type LibraryTagChange,
   type RemovedEntityIds,
 } from './rehearsal-library-batch-operations';
+import { deleteSourceFromRepository } from './delete-source-from-repository';
 import { saveSource } from './save-source';
 import {
   saveSourceLyricsToRepository,
   type SourceLyricsChange,
 } from './source-lyrics-storage';
+import {
+  addSheetMusicSourceToRepository,
+  removeSheetMusicSourceFromRepository,
+  updateSheetMusicSourceInRepository,
+  type SheetMusicAddition,
+  type SheetMusicChange,
+} from './source-sheet-music-storage';
 
 export class AsyncStoragePracticeRepository implements PracticeRepository {
   async listSources(ownerId: string) {
@@ -66,44 +74,7 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
   }
 
   async deleteSource(ownerId: string, sourceId: string) {
-    const sources = await this.listSources(ownerId);
-    const loops = await this.listLoops(ownerId);
-    const playlists = await this.listPlaylists(ownerId);
-    // Adjusted tracks have no audio of their own, so they go with their source
-    // the same way its loops do.
-    const removedSourceIds = new Set([
-      sourceId,
-      ...sources
-        .filter((source) => source.adjustment?.sourceRef === sourceId)
-        .map((source) => source.id),
-    ]);
-    const nextSources = filter(
-      sources,
-      (source) => !removedSourceIds.has(source.id),
-    );
-    const nextLoops = filter(
-      loops,
-      (loop) => !removedSourceIds.has(loop.sourceId),
-    );
-    const nextPlaylists = playlists.map((playlist) => {
-      return normalizePlaylist({
-        ...playlist,
-        items: playlist.items.filter(
-          (item) => !removedSourceIds.has(item.sourceId),
-        ),
-      });
-    });
-
-    await writeStoredCollection('loops', ownerId, nextLoops);
-    await writeStoredCollection('playlists', ownerId, nextPlaylists);
-    await writeStoredCollection('sources', ownerId, nextSources);
-    await persistSynchronizedLibraryFileTree(this, ownerId, {
-      loops: nextLoops,
-      playlists: nextPlaylists,
-      sources: nextSources,
-    });
-
-    return nextSources;
+    return deleteSourceFromRepository(this, ownerId, sourceId);
   }
 
   async listLoops(ownerId: string) {
@@ -307,6 +278,42 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
 
   async clearSourceLyrics(ownerId: string, sourceId: string) {
     return saveSourceLyricsToRepository(this, ownerId, sourceId, null);
+  }
+
+  async addSheetMusicSource(
+    ownerId: string,
+    sourceId: string,
+    addition: SheetMusicAddition,
+  ) {
+    return addSheetMusicSourceToRepository(this, ownerId, sourceId, addition);
+  }
+
+  async updateSheetMusicSource(
+    ownerId: string,
+    sourceId: string,
+    sheetMusicId: string,
+    change: SheetMusicChange,
+  ) {
+    return updateSheetMusicSourceInRepository(
+      this,
+      ownerId,
+      sourceId,
+      sheetMusicId,
+      change,
+    );
+  }
+
+  async removeSheetMusicSource(
+    ownerId: string,
+    sourceId: string,
+    sheetMusicId: string,
+  ) {
+    return removeSheetMusicSourceFromRepository(
+      this,
+      ownerId,
+      sourceId,
+      sheetMusicId,
+    );
   }
 
   async updateLibraryTags(ownerId: string, change: LibraryTagChange) {
