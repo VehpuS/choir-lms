@@ -28,6 +28,13 @@ const readAscii = (bytes: Uint8Array, length: number): string => {
   return text;
 };
 
+/** True when the text opens with a `score-partwise` or `score-timewise` root. */
+export const hasMusicXmlRoot = (text: string): boolean => {
+  return MUSICXML_ROOT_PATTERN.test(
+    text.slice(0, MUSICXML_ROOT_WINDOW_BYTES).replace(XML_COMMENT_PATTERN, ''),
+  );
+};
+
 /**
  * Confirms that downloaded bytes are what the source claims. A host that
  * answers 200 with an HTML sign-in page, or a `.xml` that is not MusicXML,
@@ -53,12 +60,7 @@ export const inspectSheetMusicBytes = (
     return { isValid: true, isCompressed: true };
   }
 
-  const head = readAscii(bytes, MUSICXML_ROOT_WINDOW_BYTES).replace(
-    XML_COMMENT_PATTERN,
-    '',
-  );
-
-  return MUSICXML_ROOT_PATTERN.test(head)
+  return hasMusicXmlRoot(readAscii(bytes, MUSICXML_ROOT_WINDOW_BYTES))
     ? { isValid: true, isCompressed: false }
     : { isValid: false };
 };
