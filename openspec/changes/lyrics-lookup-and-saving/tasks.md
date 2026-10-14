@@ -50,7 +50,7 @@
 
 ## Sheet music (added 2026-10-14; planned only, nothing below is started)
 
-Groups 9 to 14 add sheet music to this change (design Decisions 8 to 15). Group 9 is spikes whose results must be written back into `design.md` (and the user confirms the flagged ones) before groups 10 to 13 are built. Native renderers and device checks are not in this change; they are group 15 and the matching item in `native-playback-follow-ups`.
+Groups 9 to 14 add sheet music to this change (design Decisions 8 to 15). Group 9 is spikes whose results must be written back into `design.md` (and the user confirms the flagged ones) before groups 10 to 13 are built. Native renderers, their implementation, and device checks are not in this change (confirmed by the user, 2026-10-14); they live only in `native-playback-follow-ups` task 1.6.
 
 ## 9. Spikes and decisions (before building)
 
@@ -85,7 +85,7 @@ Groups 9 to 14 add sheet music to this change (design Decisions 8 to 15). Group 
 
 ## 13. Adding and reaching sheet music
 
-- [ ] 13.1 Add the `Sheet music` action after `Lyrics` / `Edit lyrics` in the saved-item menus (Library views, Recents, Up Next, playback sheet; not bulk) with an icon in `menu-action-icons.ts` and specs for the order, the icon map, and bulk menus; add the `sheet-music` request on the saved-item request channel.
+- [ ] 13.1 **First, decide the entry point with the user from the HTML mock (https://claude.ai/artifact/5Gw7dFmcRyWLTPc2WH49zc): Option A, a manager sheet, or Option B, a `View sheet music` shortcut.** Then add the `Sheet music` action after `Lyrics` / `Edit lyrics` in the saved-item menus (Library views, Recents, Up Next, playback sheet; not bulk) with an icon in `menu-action-icons.ts` and specs for the order, the icon map, and bulk menus; add the `sheet-music` request on the saved-item request channel.
 - [ ] 13.2 Build the manager sheet (list with label, format, `View`, rename, remove; `Opens outside the app` rows; the 10-source limit; the owning-track subtitle) and its host mounted with the lyrics hosts. Add `buildMuseScoreSearchUrl({ title, artist })` (pure, specced, confirmed against spike 9.4) and the `Add sheet music` choices: `From Google Drive`, `From a web link` (paste, detect, label, validate), `Search MuseScore` (reusing the lyrics title suggestion).
 - [ ] 13.3 Add the Drive picker for sheet music files, reusing the Drive browse and search surfaces with a MIME filter (per spike 9.6), and showing only supported types with a note that unsupported files are hidden.
 - [ ] 13.4 Verify adding and removing in the browser preview: Drive file, pasted URL, MuseScore search (opens a tab), a `musescore.com` link, a `.mscz` file, the 10-source limit, rename, and a loop opening its track's sources. Record the result here.
@@ -97,7 +97,7 @@ Groups 9 to 14 add sheet music to this change (design Decisions 8 to 15). Group 
 
 ## 15. Sheet music follow-ups (explore with the user before building)
 
-- [ ] 15.1 Native renderers for iOS and Android (WebView host or native PDF view, OSMD in a WebView) and their on-device checks: recorded as `native-playback-follow-ups` task 1.6. Not part of this change's verification.
+- [x] 15.1 Native renderers for iOS and Android live in `native-playback-follow-ups` task 1.6 (implementation and device checks), not in this change.
 - [ ] 15.2 Offline use of opened sheet music, through the `offline-audio-caching` change.
 - [ ] 15.3 Converting MuseScore files, drag-to-reorder sources, choosing a default source per track, remembering the user's own voice part across tracks, and sheet music for a track's loops (a page or measure range per loop). Explore which singers actually want these.
 - [ ] 15.4 Other score sources beyond MuseScore search (for example IMSLP or the choir's own site) and whether `Search MuseScore` should be a configurable engine like `Search the web`.
