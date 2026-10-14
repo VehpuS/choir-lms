@@ -8,6 +8,7 @@ import { resolveDriveSourceActions } from '../drive/utils/drive-search-preview-a
 import { usePreparedLoopBuilderTrack } from '../loops/hooks/use-prepared-loop-builder-track';
 import { useSavedLoops } from '../loops/hooks/use-saved-loops';
 import { useSourceLyrics } from '../lyrics/hooks/use-source-lyrics';
+import { useSourceSheetMusic } from '../sheet-music/hooks/use-source-sheet-music';
 import type { useSavedTrackPlayback } from '../playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackStatusCopy } from '../playback/utils/saved-track-playback-view-model';
 import { useSavedPlaylists } from '../playlists/hooks/use-saved-playlists';
@@ -71,6 +72,7 @@ export const useRehearsalLibraryController = ({
   });
   const savedLoops = useSavedLoops();
   const sourceLyrics = useSourceLyrics(savedLibrary);
+  const sourceSheetMusic = useSourceSheetMusic(savedLibrary);
   const playlists = useSavedPlaylists();
   const savedLibrarySources = useSavedLibrarySourcesInView({
     authState,
@@ -266,6 +268,7 @@ export const useRehearsalLibraryController = ({
       savedLoops: savedLoops.savedLoops,
       savedLibraryStatusCopy,
       lyrics: sourceLyrics,
+      sheetMusic: sourceSheetMusic,
       saveLoop: savedLoops.saveLoop,
       saveSource: savedLibrary.saveSource,
       savedSourceIds,
