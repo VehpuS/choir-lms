@@ -90,6 +90,8 @@ Alternatives considered: copying the file into app storage (works offline but du
 | a `musescore.com/...` page URL                                              | A link-out source (Decision 10).                                                                                                                      |
 | anything else                                                               | Refused at add time with a message that names the supported formats; a URL with no clear extension may be added as `link` and opened outside the app. |
 
+A bare `.xml` cannot be confirmed from its name, so it is accepted as MusicXML at add time and the loader checks its root element after download; a file that is not MusicXML is rejected as `unsupported` (decided by the user, 2026-10-14).
+
 Keeping detection pure and at the boundary means the viewer only ever receives a known format.
 
 ### Decision 10: MuseScore is search and link-out, not a rendered format

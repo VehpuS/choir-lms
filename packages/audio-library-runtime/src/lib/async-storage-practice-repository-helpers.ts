@@ -4,6 +4,7 @@ import {
   parseLoopTransform,
   parseSourceAdjustment,
   parseSourceLyrics,
+  parseSourceSheetMusic,
   withResolvedTagAddedAt,
   type DriveAudioSource,
   type NamedLoop,
@@ -77,6 +78,7 @@ export const normalizeStoredSources = (
     const {
       adjustment: storedAdjustment,
       lyrics: storedLyrics,
+      sheetMusic: storedSheetMusic,
       sourceLocation,
       ...sourceWithoutLocation
     } = source;
@@ -90,6 +92,7 @@ export const normalizeStoredSources = (
 
     const createdAt = resolveBackfilledCreatedAt(source.createdAt);
     const lyrics = parseSourceLyrics(storedLyrics);
+    const sheetMusic = parseSourceSheetMusic(storedSheetMusic);
 
     return [
       {
@@ -100,6 +103,7 @@ export const normalizeStoredSources = (
         ),
         ...(isDriveSourceLocation(sourceLocation) ? { sourceLocation } : {}),
         ...(lyrics ? { lyrics } : {}),
+        ...(sheetMusic ? { sheetMusic } : {}),
         ...(adjustment
           ? {
               adjustment: {

@@ -7,4 +7,5 @@ export * from './lib/rehearsal-playlists.ts';
 export * from './lib/rehearsal-tags.ts';
 export * from './lib/source-availability.ts';
 export * from './lib/source-lyrics.ts';
+export * from './lib/source-sheet-music.ts';
 export * from './lib/waveform-peaks.ts';
