@@ -14,6 +14,9 @@
     },
     {
       "path": "./packages/audio-library-models"
+    },
+    {
+      "path": "./packages/midi-notation"
     }
   ]
 }

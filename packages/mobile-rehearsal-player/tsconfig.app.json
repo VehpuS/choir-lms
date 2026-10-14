@@ -44,6 +44,9 @@
     },
     {
       "path": "../audio-library-runtime/tsconfig.lib.json"
+    },
+    {
+      "path": "../midi-notation/tsconfig.lib.json"
     }
   ]
 }

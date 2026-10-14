@@ -76,6 +76,7 @@ openspec status --change "<change-name>"
 - `audio-library-models` — framework-agnostic domain types/logic for the rehearsal library (tracks, loops, playlists).
 - `audio-library-runtime` — runtime/state logic built on the models package (depends on `audio-library-models`).
 - `google-drive` — Google Drive integration logic (depends on `audio-library-models`).
+- `midi-notation` — turns MIDI files into MusicXML staves and lists their parts (depends on `audio-library-models`). It is the app's only lazily loaded workspace project, imported dynamically by the sheet music viewer; Nx forbids static imports of a lazily loaded project, so keep it out of static imports and put anything shared in `audio-library-models`.
 - `mobile-rehearsal-player` — the Expo/React Native app; depends on all of the above.
 
 Shared packages are kept framework-agnostic; app-facing/framework-specific code lives in `mobile-rehearsal-player`. Prefer reusing/extending a shared package over duplicating domain logic in the app.

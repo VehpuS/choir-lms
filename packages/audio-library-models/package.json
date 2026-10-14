@@ -32,7 +32,6 @@
     }
   },
   "dependencies": {
-    "@tonejs/midi": "^2.0.28",
     "es-toolkit": "^1.46.1"
   }
 }

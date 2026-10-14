@@ -166,6 +166,6 @@ No data migration: the `lyrics` and `sheetMusic` fields are optional and absent 
 - Is a looked-up result worth an artist field on the track later (so the next lookup needs no typing)? Out of scope here; revisit after use.
 - Should `Search the web` be configurable (another search engine)? Default to one fixed engine for now.
 - Sheet music, MuseScore files: link-out for `.mscz` and `musescore.com` pages was accepted by the user on 2026-10-14 (Decision 10). Task 9.4 still re-confirms the facts it rests on.
-- Sheet music, MIDI: decided 2026-10-14, ship approximate notation labelled `Approximate notation from MIDI`.
+- Sheet music, MIDI: decided 2026-10-14 to ship approximate notation. Whether to label it `Approximate notation from MIDI` is **open** (2026-10-15: the user is unsure the label is needed). The converter reports an `origin` and does not decide it; the `track-sheet-music` spec scenario keeps the label until the user decides after seeing real output (task 12.5).
 - Sheet music, entry point: **decided 2026-10-14, Option A** (one `Sheet music` action that always opens the manager sheet). A `View sheet music` shortcut for tracks with one source (Option B) stays a possible later addition. The HTML mock of both options is saved at `design-source/sheet-music-entry-mock.html`.
 - Sheet music, offline: should opened files be cached for offline use? It belongs with `offline-audio-caching`; not built here.

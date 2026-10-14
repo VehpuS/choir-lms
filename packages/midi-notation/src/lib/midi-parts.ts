@@ -1,22 +1,10 @@
-import * as toneMidi from '@tonejs/midi';
+import { classifyVocalPart, type ScorePart } from '@org/audio-library-models';
 
-import { classifyVocalPart, type ScorePart } from './score-parts.ts';
-
-type MidiClass = typeof toneMidi.Midi;
-
-// `@tonejs/midi` ships a CommonJS build as `main`. Node's ESM loader exposes
-// it only as `default`, while Metro's interop exposes the named export, so
-// read the class from whichever the runtime provides.
-const Midi: MidiClass =
-  toneMidi.Midi ??
-  (toneMidi as unknown as { default: { Midi: MidiClass } }).default.Midi;
-
-// MIDI channel 10 (index 9) is reserved for percussion by General MIDI.
-const PERCUSSION_CHANNEL_INDEX = 9;
+import { PERCUSSION_CHANNEL_INDEX, readMidiFile } from './tone-midi.ts';
 
 // Deliberately not re-exported from the package index: that would put
-// `@tonejs/midi` in the app's startup bundle. The first consumer (the viewer,
-// 12.4/12.5) loads it lazily through its own subpath export.
+// `@tonejs/midi` in the app's startup bundle. The viewer loads it lazily
+// through the `@org/midi-notation` package.
 /**
  * Lists the parts of a Standard MIDI File: one per track that holds notes
  * (tempo and conductor tracks are skipped). Takes the file bytes and never
@@ -29,11 +17,9 @@ const PERCUSSION_CHANNEL_INDEX = 9;
  * program name is not used and an unnamed track is `unknown`, not hidden.
  */
 export const extractMidiParts = (bytes: ArrayLike<number>): ScorePart[] => {
-  let midi: InstanceType<MidiClass>;
+  const midi = readMidiFile(bytes);
 
-  try {
-    midi = new Midi(bytes as ArrayLike<number> & ArrayBuffer);
-  } catch {
+  if (!midi) {
     return [];
   }
 
