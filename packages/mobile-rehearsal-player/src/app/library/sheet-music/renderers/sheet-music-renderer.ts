@@ -44,3 +44,34 @@ export type MusicXmlRenderer<Container> = {
     zoom?: number;
   }): Promise<ScoreRenderResult>;
 };
+
+export type PdfRenderFailureReason =
+  | 'invalid-pdf'
+  /** Needs a password the app cannot ask for; the viewer offers to open it outside. */
+  | 'password-protected'
+  | 'unsupported-platform';
+
+/** A PDF on screen as a column of pages. */
+export type PdfRendering = {
+  readonly pageCount: number;
+  /** Removes the pages and releases the document. */
+  dispose(): void;
+  /**
+   * Sets the zoom (1 fits the container's width) and lays the pages out again.
+   * Call it with the current zoom after the container's width changes.
+   */
+  setZoom(zoom: number): void;
+};
+
+export type PdfRenderResult =
+  | { rendering: PdfRendering; status: 'rendered' }
+  | { reason: PdfRenderFailureReason; status: 'failed' };
+
+/** Draws a PDF into a host element as a scrolling column of pages. Never throws. */
+export type PdfRenderer<Container> = {
+  render(options: {
+    bytes: Uint8Array;
+    container: Container;
+    zoom?: number;
+  }): Promise<PdfRenderResult>;
+};
