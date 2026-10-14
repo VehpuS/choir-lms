@@ -80,7 +80,7 @@ describe('convertMidiToMusicXml', () => {
 
       for (const measure of measures) {
         for (const length of Object.values(voiceLengths(measure))) {
-          assert.equal(length, 16);
+          assert.equal(length, 48);
         }
       }
     }
@@ -101,7 +101,7 @@ describe('convertMidiToMusicXml', () => {
       ['C05', 'D05', 'E05', 'F15'],
     );
     // The last note, played a little short, is closed up to the beat too.
-    assert.ok(pitched.every(({ duration }) => duration === 4));
+    assert.ok(pitched.every(({ duration }) => duration === 12));
   });
 
   it('uses the key in the file and says so, else infers one', () => {
@@ -136,7 +136,7 @@ describe('convertMidiToMusicXml', () => {
     assert.equal(result?.barCount, 2);
 
     for (const measure of readParts(result?.musicXml ?? '').P1 ?? []) {
-      assert.equal(voiceLengths(measure)[1], 12);
+      assert.equal(voiceLengths(measure)[1], 36);
     }
   });
 
@@ -173,12 +173,12 @@ describe('convertMidiToMusicXml', () => {
     // Without the offset the second note straddles bars 1 and 2; with it the
     // pickup note ends the first bar and the long note starts the second.
     assert.deepEqual(firstBar(without?.musicXml), [
-      [false, 4],
       [false, 12],
+      [false, 36],
     ]);
     assert.deepEqual(firstBar(withPickup?.musicXml), [
-      [true, 12],
-      [false, 4],
+      [true, 36],
+      [false, 12],
     ]);
   });
 

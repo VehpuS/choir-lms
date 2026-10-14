@@ -9,6 +9,10 @@ import {
   fifthsFromKeyName,
   inferFifths,
 } from './midi-notation-pitch.ts';
+import {
+  UNITS_PER_QUARTER,
+  UNITS_PER_SIXTEENTH,
+} from './midi-notation-triplets.ts';
 import { escapeXml, writePartMeasuresXml } from './midi-notation-xml.ts';
 import { PERCUSSION_CHANNEL_INDEX, readMidiFile } from './tone-midi.ts';
 
@@ -33,7 +37,7 @@ export type MidiNotationResult = {
   partCount: number;
 };
 
-const SIXTEENTHS_PER_WHOLE_NOTE = 16;
+const UNITS_PER_WHOLE_NOTE = UNITS_PER_QUARTER * 4;
 const DEFAULT_TIME_SIGNATURE: [number, number] = [4, 4];
 /** Refuse files that would produce an unreasonably large score. */
 const MAX_BARS = 500;
@@ -44,7 +48,7 @@ const readTimeSignature = (
 ): [number, number] => {
   const [beats, beatType] = value ?? [];
   const barLength =
-    beats && beatType ? (beats * SIXTEENTHS_PER_WHOLE_NOTE) / beatType : 0;
+    beats && beatType ? (beats * UNITS_PER_WHOLE_NOTE) / beatType : 0;
 
   return beats && beatType && Number.isInteger(barLength) && barLength > 0
     ? [beats, beatType]
@@ -54,9 +58,10 @@ const readTimeSignature = (
 /**
  * Turns a Standard MIDI File into MusicXML so MIDI and MusicXML share one
  * renderer and one part filter. MIDI is performance data, so the notation is
- * an approximation: notes are snapped to a 16th grid (no tuplets), the first
- * time signature applies throughout, black keys are spelled from the key
- * alone, and a performed (not score-exported) file will look rough.
+ * an approximation: notes are snapped to a 16th grid, or to eighth-note
+ * triplets in the beats that fit them better; the first time signature
+ * applies throughout; black keys are spelled from the key alone; and a
+ * performed (not score-exported) file will look rough.
  *
  * Returns undefined for bytes that are not MIDI, files without notes, and
  * files too large to notate. Never throws.
@@ -90,9 +95,11 @@ export const convertMidiToMusicXml = (
   const [beats, beatType] = readTimeSignature(
     midi.header.timeSignatures[0]?.timeSignature,
   );
-  const barLength = (beats * SIXTEENTHS_PER_WHOLE_NOTE) / beatType;
+  const barLength = (beats * UNITS_PER_WHOLE_NOTE) / beatType;
   const pickup = options.pickupSixteenths ?? 0;
-  const offset = pickup > 0 && pickup < barLength ? barLength - pickup : 0;
+  const pickupUnits = pickup * UNITS_PER_SIXTEENTH;
+  const offset =
+    pickupUnits > 0 && pickupUnits < barLength ? barLength - pickupUnits : 0;
   const allPitches = tracks.flatMap(({ track }) =>
     track.notes.map((n) => n.midi),
   );
@@ -101,14 +108,14 @@ export const convertMidiToMusicXml = (
   const fifths = fifthsFromFile ?? inferFifths(allPitches);
 
   const parts = tracks.map(({ track, trackIndex }) => {
-    const notes = quantizeNotes(
+    const { notes, tripletWindows } = quantizeNotes(
       track.notes.map((note) => ({
         durationTicks: note.durationTicks,
         midi: note.midi,
         ticks: note.ticks,
       })),
       {
-        beatLength: SIXTEENTHS_PER_WHOLE_NOTE / beatType,
+        beatLength: UNITS_PER_WHOLE_NOTE / beatType,
         legatoSnap: options.legatoSnapSixteenths ?? DEFAULT_LEGATO_SNAP,
         offset,
         ticksPerQuarter: midi.header.ppq,
@@ -121,6 +128,7 @@ export const convertMidiToMusicXml = (
       name: track.name.trim() || `Track ${trackIndex + 1}`,
       program: track.instrument.number + 1,
       channel: track.channel + 1,
+      tripletWindows,
       voices: assignVoices(groupChords(notes)),
     };
   });
@@ -141,7 +149,7 @@ export const convertMidiToMusicXml = (
   const partBodies = parts
     .map(
       (part, index) =>
-        `<part id="P${index + 1}">${writePartMeasuresXml({ barCount, barLength, beatType, beats, clef: part.clef, fifths, voices: part.voices })}</part>`,
+        `<part id="P${index + 1}">${writePartMeasuresXml({ barCount, barLength, beatType, beats, clef: part.clef, fifths, tripletWindows: part.tripletWindows, voices: part.voices })}</part>`,
     )
     .join('');
   const titleXml = options.title

@@ -11,6 +11,8 @@ const { Midi } = createRequire(import.meta.url)('@tonejs/midi') as {
 
 export const PPQ = 480;
 export const SIXTEENTH_TICKS = PPQ / 4;
+/** One twelfth of a quarter note: the notation grid unit. */
+export const UNIT_TICKS = PPQ / 12;
 
 export type FixtureNote = {
   durationTicks: number;
@@ -24,6 +26,17 @@ export type FixtureTrack = {
   notes: readonly FixtureNote[];
   program?: number;
 };
+
+/** A note given in grid units (twelfths of a quarter: a 16th is 3, a triplet eighth 4). */
+export const units = (
+  midi: number,
+  start: number,
+  length: number,
+): FixtureNote => ({
+  durationTicks: length * UNIT_TICKS,
+  midi,
+  ticks: start * UNIT_TICKS,
+});
 
 /** A note given in 16ths, as most specs think in the grid. */
 export const sixteenths = (
@@ -106,10 +119,13 @@ export type ReadNote = {
   duration: number;
   isChord: boolean;
   isRest: boolean;
+  isTuplet: boolean;
   octave: number | undefined;
   step: string | undefined;
   tieStart: boolean;
   tieStop: boolean;
+  tupletStart: boolean;
+  tupletStop: boolean;
   type: string;
   voice: number;
 };
@@ -128,11 +144,14 @@ const readNote = (xml: string): ReadNote => ({
   duration: Number(tag(xml, 'duration')),
   isChord: xml.includes('<chord/>'),
   isRest: xml.includes('<rest/>'),
+  isTuplet: xml.includes('<time-modification>'),
   octave:
     tag(xml, 'octave') === undefined ? undefined : Number(tag(xml, 'octave')),
   step: tag(xml, 'step'),
   tieStart: xml.includes('<tie type="start"/>'),
   tieStop: xml.includes('<tie type="stop"/>'),
+  tupletStart: xml.includes('<tuplet type="start"'),
+  tupletStop: xml.includes('<tuplet type="stop"'),
   type: tag(xml, 'type') ?? '',
   voice: Number(tag(xml, 'voice')),
 });
@@ -177,4 +196,25 @@ export const requireMeasure = (
   }
 
   return measure;
+};
+
+/**
+ * Where each sounding note begins within a measure, in grid units, skipping the
+ * tied continuations of a note that began earlier. Chord mates share an onset.
+ */
+export const noteOnsets = (measure: ReadMeasure, voice = 1): number[] => {
+  const onsets: number[] = [];
+  let position = 0;
+
+  for (const note of measure.notes.filter((entry) => entry.voice === voice)) {
+    if (!note.isRest && !note.tieStop && !note.isChord) {
+      onsets.push(position);
+    }
+
+    if (!note.isChord) {
+      position += note.duration;
+    }
+  }
+
+  return onsets;
 };

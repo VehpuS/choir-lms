@@ -1,7 +1,18 @@
-/** Notation is built on a 16th-note grid. */
-export const GRID_PER_QUARTER = 4;
+import {
+  UNITS_PER_QUARTER,
+  UNITS_PER_SIXTEENTH,
+  detectTripletWindows,
+  isTripletAt,
+  nextGridPoint,
+  snapToGrid,
+} from './midi-notation-triplets.ts';
+
 /** Gaps up to this many 16ths are performance gaps, not rests. */
 export const DEFAULT_LEGATO_SNAP = 2;
+/** A final note played this many units short is closed up to the next beat. */
+const LAST_NOTE_SNAP_UNITS = UNITS_PER_SIXTEENTH;
+/** Inside a triplet window a gap is at least a triplet eighth, so only a sliver is closed. */
+const TRIPLET_SNAP_UNITS = 2;
 
 export type RawMidiNote = {
   durationTicks: number;
@@ -9,63 +20,81 @@ export type RawMidiNote = {
   ticks: number;
 };
 
-/** A note on the grid; `end` is exclusive and at least one 16th after `start`. */
+/** A note on the grid (twelfths of a quarter); `end` is exclusive and after `start`. */
 export type GridNote = { end: number; pitch: number; start: number };
 
 /** Notes that start and end together, written as one chord. Pitches run high to low. */
 export type GridEvent = { end: number; pitches: number[]; start: number };
 
+export type QuantizedLine = {
+  notes: GridNote[];
+  /** Quarter-note windows (from time zero) that hold triplets. */
+  tripletWindows: Set<number>;
+};
+
 /**
- * Snaps note starts and ends to the 16th grid. `offset` shifts everything
- * later (used to leave room for a pickup measure). A gap of up to
+ * Snaps note starts and ends to the grid: 16ths, or eighth-note triplets in
+ * the windows where the line's notes are triplets. `offset` (in units) shifts
+ * everything later, to leave room for a pickup measure. A gap of up to
  * `legatoSnap` 16ths before the next note in the line is closed, because a
  * performed melody is rarely legato to the tick and the gap would otherwise
  * be written as a rest. A note with no later note is closed up to the next
- * beat the same way, so a final note played a touch short is not left with a
- * stray 16th rest after it.
+ * beat when it stops a 16th short, so a final note played a touch short is
+ * not left with a stray rest after it.
  */
 export const quantizeNotes = (
   notes: readonly RawMidiNote[],
   options: {
-    /** Length of one beat in 16ths; the last note is closed up to a beat. */
+    /** Length of one beat in units; the last note is closed up to a beat. */
     beatLength: number;
     legatoSnap: number;
     offset: number;
     ticksPerQuarter: number;
   },
-): GridNote[] => {
-  const gridTicks = options.ticksPerQuarter / GRID_PER_QUARTER;
-  const snap = (ticks: number) =>
-    Math.round(ticks / gridTicks) + options.offset;
-  const quantized = notes
+): QuantizedLine => {
+  const unitsPerTick = UNITS_PER_QUARTER / options.ticksPerQuarter;
+  const timed = notes.map((note) => ({
+    end: (note.ticks + note.durationTicks) * unitsPerTick + options.offset,
+    pitch: note.midi,
+    start: note.ticks * unitsPerTick + options.offset,
+  }));
+  const tripletWindows = detectTripletWindows(timed);
+  const quantized: GridNote[] = timed
     .map((note) => {
-      const start = snap(note.ticks);
+      const start = snapToGrid(note.start, tripletWindows);
+      const end = snapToGrid(note.end, tripletWindows);
 
       return {
-        end: Math.max(start + 1, snap(note.ticks + note.durationTicks)),
-        pitch: note.midi,
+        end: end > start ? end : nextGridPoint(start, tripletWindows),
+        pitch: note.pitch,
         start,
       };
     })
     .sort((a, b) => a.start - b.start || b.pitch - a.pitch);
+  const legatoUnits = options.legatoSnap * UNITS_PER_SIXTEENTH;
 
   quantized.forEach((note, index) => {
     // The next note that begins later; chord mates at the same start do not count.
     const next = quantized
       .slice(index + 1)
       .find((other) => other.start > note.start);
-    // With no later note, the line ends: close up to the next beat instead.
     const target = next
       ? next.start
       : Math.ceil(note.end / options.beatLength) * options.beatLength;
+    const limit = next
+      ? legatoUnits
+      : Math.min(LAST_NOTE_SNAP_UNITS, legatoUnits);
     const gap = target - note.end;
+    const maxGap = isTripletAt(note.end, tripletWindows)
+      ? Math.min(limit, TRIPLET_SNAP_UNITS)
+      : limit;
 
-    if (gap > 0 && gap <= options.legatoSnap) {
+    if (gap > 0 && gap <= maxGap) {
       note.end = target;
     }
   });
 
-  return quantized;
+  return { notes: quantized, tripletWindows };
 };
 
 /** Merges notes with the same start and end into one chord event. */

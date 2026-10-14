@@ -1,24 +1,30 @@
-import { GRID_PER_QUARTER, type GridEvent } from './midi-notation-quantize.ts';
+import type { GridEvent } from './midi-notation-quantize.ts';
 import {
   spellPitch,
   type NotationClef,
   type SpelledPitch,
 } from './midi-notation-pitch.ts';
+import { UNITS_PER_QUARTER, isTripletAt } from './midi-notation-triplets.ts';
 
-// Note values in 16ths, largest first, with their MusicXML type and dots.
-const NOTE_VALUES: ReadonlyArray<{
-  dotted: boolean;
-  size: number;
-  type: string;
-}> = [
-  { dotted: false, size: 16, type: 'whole' },
-  { dotted: true, size: 12, type: 'half' },
-  { dotted: false, size: 8, type: 'half' },
-  { dotted: true, size: 6, type: 'quarter' },
-  { dotted: false, size: 4, type: 'quarter' },
-  { dotted: true, size: 3, type: 'eighth' },
-  { dotted: false, size: 2, type: 'eighth' },
-  { dotted: false, size: 1, type: '16th' },
+type NoteValue = { dotted: boolean; size: number; type: string };
+
+// Note values in twelfths of a quarter, largest first.
+const STRAIGHT_VALUES: readonly NoteValue[] = [
+  { dotted: false, size: 48, type: 'whole' },
+  { dotted: true, size: 36, type: 'half' },
+  { dotted: false, size: 24, type: 'half' },
+  { dotted: true, size: 18, type: 'quarter' },
+  { dotted: false, size: 12, type: 'quarter' },
+  { dotted: true, size: 9, type: 'eighth' },
+  { dotted: false, size: 6, type: 'eighth' },
+  { dotted: false, size: 3, type: '16th' },
+];
+
+// The same note values played three in the time of two.
+const TRIPLET_VALUES: readonly NoteValue[] = [
+  { dotted: false, size: 8, type: 'quarter' },
+  { dotted: false, size: 4, type: 'eighth' },
+  { dotted: false, size: 2, type: '16th' },
 ];
 
 const XML_ESCAPES: Record<string, string> = {
@@ -33,6 +39,8 @@ const TAB = 0x09;
 const LINE_FEED = 0x0a;
 const CARRIAGE_RETURN = 0x0d;
 const FIRST_PRINTABLE = 0x20;
+const TIME_MODIFICATION_XML =
+  '<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>';
 
 // XML 1.0 forbids most control characters, and a track name read from a binary
 // file can hold them.
@@ -57,12 +65,15 @@ export const escapeXml = (text: string): string => {
     );
 };
 
-/** Splits a length in 16ths into the written note values that add up to it. */
-export const splitIntoNoteValues = (length: number) => {
-  const pieces: Array<(typeof NOTE_VALUES)[number]> = [];
+/** Splits a length (in twelfths) into the written note values that add up to it. */
+export const splitIntoNoteValues = (
+  length: number,
+  isTuplet = false,
+): NoteValue[] => {
+  const pieces: NoteValue[] = [];
   let remaining = length;
 
-  for (const value of NOTE_VALUES) {
+  for (const value of isTuplet ? TRIPLET_VALUES : STRAIGHT_VALUES) {
     while (remaining >= value.size) {
       pieces.push(value);
       remaining -= value.size;
@@ -72,115 +83,171 @@ export const splitIntoNoteValues = (length: number) => {
   return pieces;
 };
 
+type Segment = { from: number; isTuplet: boolean; to: number };
+
+/**
+ * Cuts a span at the edges of triplet windows where it begins or ends inside
+ * one, so the part inside the window is written as triplets and the rest as
+ * ordinary notes. A note that merely passes over a triplet window, or fills a
+ * whole beat of one, stays ordinary.
+ */
+const splitIntoSegments = (
+  from: number,
+  to: number,
+  tripletWindows: ReadonlySet<number>,
+): Segment[] => {
+  const cuts = [from];
+  const startsInside =
+    from % UNITS_PER_QUARTER !== 0 && isTripletAt(from, tripletWindows);
+  const endsInside =
+    to % UNITS_PER_QUARTER !== 0 && isTripletAt(to, tripletWindows);
+  const startEdge = Math.ceil(from / UNITS_PER_QUARTER) * UNITS_PER_QUARTER;
+  const endEdge = Math.floor(to / UNITS_PER_QUARTER) * UNITS_PER_QUARTER;
+
+  if (startsInside && startEdge < to) {
+    cuts.push(startEdge);
+  }
+
+  if (endsInside && endEdge > from && !cuts.includes(endEdge)) {
+    cuts.push(endEdge);
+  }
+
+  cuts.push(to);
+
+  return cuts.slice(0, -1).map((start, index) => {
+    const end = cuts[index + 1] ?? to;
+    const isAligned =
+      start % UNITS_PER_QUARTER === 0 && end % UNITS_PER_QUARTER === 0;
+
+    return {
+      from: start,
+      isTuplet: !isAligned && isTripletAt(start, tripletWindows),
+      to: end,
+    };
+  });
+};
+
+type Piece = NoteValue & {
+  isTiedBack: boolean;
+  isTiedOn: boolean;
+  isTuplet: boolean;
+  pitches: readonly number[];
+  start: number;
+  tupletStart?: boolean;
+  tupletStop?: boolean;
+};
+
+/** Breaks a span into written pieces; `ties` mark a note continuing across a barline. */
+const buildPieces = (
+  span: { from: number; to: number },
+  pitches: readonly number[],
+  ties: { fromPrevious: boolean; toNext: boolean },
+  tripletWindows: ReadonlySet<number>,
+): Piece[] => {
+  const values = splitIntoSegments(span.from, span.to, tripletWindows).flatMap(
+    (segment) => {
+      let position = segment.from;
+
+      return splitIntoNoteValues(
+        segment.to - segment.from,
+        segment.isTuplet,
+      ).map((value) => {
+        const placed = {
+          ...value,
+          isTuplet: segment.isTuplet,
+          start: position,
+        };
+
+        position += value.size;
+
+        return placed;
+      });
+    },
+  );
+
+  return values.map((value, index) => ({
+    ...value,
+    isTiedBack: index > 0 || ties.fromPrevious,
+    isTiedOn: index < values.length - 1 || ties.toNext,
+    pitches,
+  }));
+};
+
+const windowOf = (piece: Piece) => Math.floor(piece.start / UNITS_PER_QUARTER);
+
+/** Marks where each beat's run of triplet pieces begins and ends, for the bracket. */
+const markTupletBrackets = (pieces: readonly Piece[]): Piece[] => {
+  const sameGroup = (a: Piece | undefined, b: Piece) =>
+    a !== undefined && a.isTuplet && windowOf(a) === windowOf(b);
+
+  return pieces.map((piece, index) => {
+    if (!piece.isTuplet) {
+      return piece;
+    }
+
+    return {
+      ...piece,
+      tupletStart: !sameGroup(pieces[index - 1], piece),
+      tupletStop: !sameGroup(pieces[index + 1], piece),
+    };
+  });
+};
+
 const pitchXml = ({ alter, octave, step }: SpelledPitch) => {
   const alterXml = alter === 0 ? '' : `<alter>${alter}</alter>`;
 
   return `<pitch><step>${step}</step>${alterXml}<octave>${octave}</octave></pitch>`;
 };
 
-type SliceTies = { fromPrevious: boolean; toNext: boolean };
-
-/** One written note value (a chord, or a rest when `pitches` is empty). */
-const pieceXml = (options: {
-  dotted: boolean;
-  fifths: number;
-  isFirst: boolean;
-  isLast: boolean;
-  pitches: readonly number[];
-  size: number;
-  ties: SliceTies;
-  type: string;
-  voice: number;
-}) => {
-  const isTiedBack = !options.isFirst || options.ties.fromPrevious;
-  const isTiedOn = !options.isLast || options.ties.toNext;
-  const tieXml = [
-    isTiedBack ? '<tie type="stop"/>' : '',
-    isTiedOn ? '<tie type="start"/>' : '',
+/** One written note value: a chord, or a rest when there are no pitches. */
+const pieceXml = (piece: Piece, voice: number, fifths: number) => {
+  const isRest = piece.pitches.length === 0;
+  const dotXml = piece.dotted ? '<dot/>' : '';
+  const body = `<duration>${piece.size}</duration>`;
+  const tail = `<voice>${voice}</voice><type>${piece.type}</type>${dotXml}${piece.isTuplet ? TIME_MODIFICATION_XML : ''}`;
+  const tupletXml = [
+    piece.tupletStart ? '<tuplet type="start" bracket="yes" number="1"/>' : '',
+    piece.tupletStop ? '<tuplet type="stop" number="1"/>' : '',
   ].join('');
-  const notationXml = [
-    isTiedBack ? '<tied type="stop"/>' : '',
-    isTiedOn ? '<tied type="start"/>' : '',
-  ].join('');
-  const dotXml = options.dotted ? '<dot/>' : '';
-  const tail = `<duration>${options.size}</duration>`;
-  const common = `<voice>${options.voice}</voice><type>${options.type}</type>${dotXml}`;
 
-  if (options.pitches.length === 0) {
-    return `<note><rest/>${tail}${common}</note>`;
+  if (isRest) {
+    const notations = tupletXml ? `<notations>${tupletXml}</notations>` : '';
+
+    return `<note><rest/>${body}${tail}${notations}</note>`;
   }
 
-  return options.pitches
-    .map((pitch, index) => {
-      const chordXml = index === 0 ? '' : '<chord/>';
-      const notations = notationXml
-        ? `<notations>${notationXml}</notations>`
-        : '';
+  const tieXml = [
+    piece.isTiedBack ? '<tie type="stop"/>' : '',
+    piece.isTiedOn ? '<tie type="start"/>' : '',
+  ].join('');
+  const tiedXml = [
+    piece.isTiedBack ? '<tied type="stop"/>' : '',
+    piece.isTiedOn ? '<tied type="start"/>' : '',
+  ].join('');
 
-      return `<note>${chordXml}${pitchXml(spellPitch(pitch, options.fifths))}${tail}${tieXml}${common}${notations}</note>`;
+  return piece.pitches
+    .map((pitch, index) => {
+      // The bracket belongs to the first note of a chord only.
+      const notationsXml = `${tiedXml}${index === 0 ? tupletXml : ''}`;
+      const notations = notationsXml
+        ? `<notations>${notationsXml}</notations>`
+        : '';
+      const chordXml = index === 0 ? '' : '<chord/>';
+
+      return `<note>${chordXml}${pitchXml(spellPitch(pitch, fifths))}${body}${tieXml}${tail}${notations}</note>`;
     })
     .join('');
 };
 
-const writeRestsXml = (
-  from: number,
-  to: number,
-  voice: number,
-  fifths: number,
-) => {
-  return splitIntoNoteValues(to - from)
-    .map(({ dotted, size, type }) =>
-      pieceXml({
-        dotted,
-        fifths,
-        isFirst: true,
-        isLast: true,
-        pitches: [],
-        size,
-        ties: { fromPrevious: false, toNext: false },
-        type,
-        voice,
-      }),
-    )
-    .join('');
-};
-
-const writeEventSliceXml = (
-  event: GridEvent,
-  slice: { end: number; start: number },
-  voice: number,
-  fifths: number,
-) => {
-  const ties: SliceTies = {
-    fromPrevious: event.start < slice.start,
-    toNext: event.end > slice.end,
-  };
-  const pieces = splitIntoNoteValues(slice.end - slice.start);
-
-  return pieces
-    .map(({ dotted, size, type }, index) =>
-      pieceXml({
-        dotted,
-        fifths,
-        isFirst: index === 0,
-        isLast: index === pieces.length - 1,
-        pitches: event.pitches,
-        size,
-        ties,
-        type,
-        voice,
-      }),
-    )
-    .join('');
-};
+const NO_TIES = { fromPrevious: false, toNext: false };
 
 const writeVoiceBarXml = (
   events: readonly GridEvent[],
   bar: { end: number; start: number },
   voice: number,
-  fifths: number,
+  options: { fifths: number; tripletWindows: ReadonlySet<number> },
 ) => {
-  let xml = '';
+  const pieces: Piece[] = [];
   let cursor = bar.start;
 
   for (const event of events) {
@@ -189,20 +256,45 @@ const writeVoiceBarXml = (
     }
 
     const slice = {
-      end: Math.min(event.end, bar.end),
-      start: Math.max(event.start, bar.start),
+      from: Math.max(event.start, bar.start),
+      to: Math.min(event.end, bar.end),
     };
 
-    xml += writeRestsXml(cursor, slice.start, voice, fifths);
-    xml += writeEventSliceXml(event, slice, voice, fifths);
-    cursor = slice.end;
+    pieces.push(
+      ...buildPieces(
+        { from: cursor, to: slice.from },
+        [],
+        NO_TIES,
+        options.tripletWindows,
+      ),
+      ...buildPieces(
+        slice,
+        event.pitches,
+        {
+          fromPrevious: event.start < slice.from,
+          toNext: event.end > slice.to,
+        },
+        options.tripletWindows,
+      ),
+    );
+    cursor = slice.to;
   }
 
-  return xml + writeRestsXml(cursor, bar.end, voice, fifths);
+  pieces.push(
+    ...buildPieces(
+      { from: cursor, to: bar.end },
+      [],
+      NO_TIES,
+      options.tripletWindows,
+    ),
+  );
+
+  return markTupletBrackets(pieces)
+    .map((piece) => pieceXml(piece, voice, options.fifths))
+    .join('');
 };
 
 const attributesXml = (options: {
-  barLength: number;
   beatType: number;
   beats: number;
   clef: NotationClef;
@@ -214,12 +306,13 @@ const attributesXml = (options: {
       ? ''
       : `<clef-octave-change>${clef.octaveChange}</clef-octave-change>`;
 
-  return `<attributes><divisions>${GRID_PER_QUARTER}</divisions><key><fifths>${options.fifths}</fifths></key><time><beats>${options.beats}</beats><beat-type>${options.beatType}</beat-type></time><clef><sign>${clef.sign}</sign><line>${clef.line}</line>${octaveXml}</clef></attributes>`;
+  return `<attributes><divisions>${UNITS_PER_QUARTER}</divisions><key><fifths>${options.fifths}</fifths></key><time><beats>${options.beats}</beats><beat-type>${options.beatType}</beat-type></time><clef><sign>${clef.sign}</sign><line>${clef.line}</line>${octaveXml}</clef></attributes>`;
 };
 
 /**
  * Writes one part's measures. A note that crosses a barline is split and tied
- * across it; a second voice appears only in the bars where it has notes.
+ * across it; a second voice appears only in the bars where it has notes;
+ * notes in triplet windows are written as bracketed triplets.
  */
 export const writePartMeasuresXml = (options: {
   barCount: number;
@@ -228,6 +321,7 @@ export const writePartMeasuresXml = (options: {
   beats: number;
   clef: NotationClef;
   fifths: number;
+  tripletWindows: ReadonlySet<number>;
   voices: readonly GridEvent[][];
 }): string => {
   let xml = '';
@@ -260,7 +354,7 @@ export const writePartMeasuresXml = (options: {
         measure += `<backup><duration>${options.barLength}</duration></backup>`;
       }
 
-      measure += writeVoiceBarXml(events, bar, index + 1, options.fifths);
+      measure += writeVoiceBarXml(events, bar, index + 1, options);
       hasWrittenVoice = true;
     });
 
