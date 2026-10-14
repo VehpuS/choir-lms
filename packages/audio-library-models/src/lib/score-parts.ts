@@ -9,6 +9,8 @@ export type ScorePart = {
   name: string;
   instrument?: string;
   midiProgram?: number;
+  /** MIDI channel, 1-based; set for MIDI files only. */
+  channel?: number;
   kind: ScorePartKind;
 };
 
