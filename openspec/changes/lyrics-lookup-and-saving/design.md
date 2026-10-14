@@ -56,7 +56,7 @@ The editor is a bottom sheet (`LyricsEditorSheet`) opened from the saved-item me
 
 ### Decision 6: Viewing — section, peek, reading mode, one size control
 
-- The playback screen gets a `Lyrics` section below the transport, collapsed to a few lines with `Show all`, resolving the owner through Decision 2; an empty state offers `Add lyrics`.
+- The playback screen gets a `Lyrics` section below the transport, collapsed to a few lines with `View`, resolving the owner through Decision 2; an empty state offers `Add lyrics`.
 - The mini-player gets a `Lyrics` control that opens a half-height peek sheet over the current screen, with `Expand` to reading mode and `Edit`. It is shown only while the playing item has lyrics, so the mini-player does not gain a dead control.
 - Reading mode is a full-screen view with a large, left-aligned, high-contrast text column on the Nocturne ground, generous line height, a text-size control (four steps: `Small`, `Medium`, `Large`, `Extra large`), and a close button. The text size is a device preference stored with the other app preferences and shared by all three surfaces. Text is selectable on web and native. No scroll position is tracked or driven; the user scrolls by hand, and playback controls stay reachable (the mini-player remains visible over reading mode's bottom edge).
 - Keeping the screen awake in reading mode is useful for a singer holding a phone but needs `expo-keep-awake`. It is recorded as an open question below rather than assumed.

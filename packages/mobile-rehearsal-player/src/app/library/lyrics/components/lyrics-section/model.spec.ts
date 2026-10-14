@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import type { SourceLyricsResolution } from '../../hooks/use-source-lyrics.js';
-import { resolveLyricsSectionModel } from './model.js';
+import {
+  MIN_WINDOW_HEIGHT_FOR_INLINE_LYRICS,
+  resolveLyricsSectionModel,
+  shouldShowInlineLyrics,
+} from './model.js';
 
 const OWNER = {
   id: 'drive:kyrie',
@@ -65,5 +69,19 @@ describe('resolveLyricsSectionModel', () => {
       ),
       { kind: 'hidden' },
     );
+  });
+});
+
+describe('shouldShowInlineLyrics', () => {
+  it('shows the scrolling lyrics only when the screen is tall enough', () => {
+    assert.equal(
+      shouldShowInlineLyrics(MIN_WINDOW_HEIGHT_FOR_INLINE_LYRICS),
+      true,
+    );
+    assert.equal(
+      shouldShowInlineLyrics(MIN_WINDOW_HEIGHT_FOR_INLINE_LYRICS - 1),
+      false,
+    );
+    assert.equal(shouldShowInlineLyrics(667), false);
   });
 });

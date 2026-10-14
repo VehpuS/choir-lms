@@ -2,12 +2,12 @@
 
 ### Requirement: The playback screen shows the current item's lyrics
 
-The dedicated playback screen SHALL include a `Lyrics` section for the playing item, resolved through the owning track. With lyrics it SHALL show a collapsed preview with `Show all` and `Edit`; without lyrics it SHALL show `Add lyrics`. The section SHALL NOT scroll, highlight, or otherwise track playback position, and it SHALL NOT change the position of the waveform or transport controls when it loads or changes.
+The dedicated playback screen SHALL include a `Lyrics` section for the playing item, resolved through the owning track. With lyrics it SHALL show `View` and `Edit`, and, when the window is tall enough to leave room under the controls, a fixed-height window of about four lines that the user can scroll through the full text; on a shorter window it SHALL show only `View` and `Edit`. Without lyrics it SHALL show `Add lyrics`. The section SHALL NOT scroll by itself, highlight, or otherwise track playback position, and it SHALL NOT change the position of the waveform or transport controls when it loads or changes.
 
 #### Scenario: A track with lyrics
 
 - **WHEN** a track with lyrics is playing
-- **THEN** the Lyrics section shows the first lines with `Show all` and `Edit`, and the waveform and transport stay where they were
+- **THEN** the Lyrics section shows a scrollable window of the lyrics with `View` and `Edit` (only `View` and `Edit` on a short window), and the waveform and transport stay where they were
 
 #### Scenario: A track without lyrics
 

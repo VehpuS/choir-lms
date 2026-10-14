@@ -4,6 +4,16 @@ import type { SourceLyricsResolution } from '../../hooks/use-source-lyrics';
 
 export const LYRICS_PREVIEW_LINES = 4;
 
+/**
+ * Below this window height the playback screen has no room for lyrics under
+ * the controls, so the section offers only `View` (reading mode).
+ */
+export const MIN_WINDOW_HEIGHT_FOR_INLINE_LYRICS = 800;
+
+export const shouldShowInlineLyrics = (windowHeight: number): boolean => {
+  return windowHeight >= MIN_WINDOW_HEIGHT_FOR_INLINE_LYRICS;
+};
+
 export type LyricsSectionModel =
   /** The owning track is gone: nothing to show or add. */
   | { kind: 'hidden' }

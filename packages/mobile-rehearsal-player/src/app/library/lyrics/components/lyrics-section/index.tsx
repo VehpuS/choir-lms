@@ -1,5 +1,11 @@
 import type { PlayableItem } from '@org/audio-library-models';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import { OutlinedActionButton } from '../../../../components/outlined-action-button';
 import { appTheme } from '../../../../utils/theme';
@@ -10,7 +16,11 @@ import {
   useLyricsTextSize,
 } from '../../lyrics-text-size';
 import { requestLyricsView } from '../../lyrics-view-request';
-import { LYRICS_PREVIEW_LINES, resolveLyricsSectionModel } from './model';
+import {
+  LYRICS_PREVIEW_LINES,
+  resolveLyricsSectionModel,
+  shouldShowInlineLyrics,
+} from './model';
 
 type LyricsSectionProps = {
   item: Pick<PlayableItem, 'kind' | 'loopId' | 'sourceId'>;
@@ -19,13 +29,14 @@ type LyricsSectionProps = {
 const ADD_LYRICS_PROMPT = 'Add the words to read them while you sing.';
 
 /**
- * The playback screen's Lyrics section: a fixed-height scrollable window with `Show all`
+ * The playback screen's Lyrics section: a fixed-height scrollable window on tall screens (only `View` on short ones)
  * and `Edit`, or an `Add lyrics` prompt. Its height depends only on the text
  * size, so changing the playing item does not move what is below it.
  */
 export const LyricsSection = ({ item }: LyricsSectionProps) => {
   const resolution = useLyricsFor(item);
   const textSize = useLyricsTextSize();
+  const showsInlineText = shouldShowInlineLyrics(useWindowDimensions().height);
   const model = resolveLyricsSectionModel(item, resolution);
 
   if (model.kind === 'hidden') {
@@ -50,7 +61,7 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
           <View style={styles.actions}>
             <OutlinedActionButton label="Edit" onPress={editLyrics} />
             <OutlinedActionButton
-              label="Show all"
+              label="View"
               onPress={() => {
                 requestLyricsView({ mode: 'reading', sourceId: item.sourceId });
               }}
@@ -66,11 +77,13 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
             </Text>
           ) : null}
           {/* A fixed-height window onto the full text, so it scrolls in place. */}
-          <ScrollView nestedScrollEnabled style={{ height: previewHeight }}>
-            <Text selectable style={textStyle}>
-              {model.text}
-            </Text>
-          </ScrollView>
+          {showsInlineText ? (
+            <ScrollView nestedScrollEnabled style={{ height: previewHeight }}>
+              <Text selectable style={textStyle}>
+                {model.text}
+              </Text>
+            </ScrollView>
+          ) : null}
         </>
       ) : (
         <View style={[styles.empty, { minHeight: previewHeight }]}>
