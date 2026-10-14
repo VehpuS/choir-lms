@@ -120,7 +120,7 @@ A pure `extractScoreParts(parsedScore)` returns the parts of a MusicXML or MIDI 
 - MIDI: track names and the same program numbers; unnamed tracks are `unknown`.
 - A staff that holds several voices (a SATB system on two staves) is listed as the parts the file declares, and the vocal filter cannot split them further; the viewer says so rather than guessing.
 
-`partSelection` per source defaults to `'vocal'` (show vocal parts; if none are found, show all and say that no vocal parts were recognized). The viewer lists the parts as chips with `Vocal parts`, `All parts`, and per-part toggles; the choice is saved on the source so a separate `Alto part` source stays on its alto line. A saved `include` list refers to parts by name and index, and when the file changes so a saved part is missing, the selection falls back to `vocal`.
+`partSelection` per source defaults to `'vocal'` (show every part not known to be instrumental, so a part with no telling name is never hidden; if none is recognized as vocal, show all and say that no vocal parts were recognized). The viewer lists the parts as chips with `Vocal parts`, `All parts`, and per-part toggles; the choice is saved on the source so a separate `Alto part` source stays on its alto line. A saved `include` list refers to parts by index and name together (`0:Soprano`), and when the file changes so a saved part is missing, the selection falls back to `vocal`.
 
 ### Decision 13: Reaching sheet music, and keeping it non-standard
 
