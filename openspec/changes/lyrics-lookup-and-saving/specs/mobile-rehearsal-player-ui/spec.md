@@ -52,3 +52,22 @@ The mini-player SHALL show a `Lyrics` control only while the playing item has ly
 
 - **WHEN** a user presses and holds on lyrics text
 - **THEN** the platform's text selection and copy controls are available
+
+### Requirement: Sheet music opens full screen only, with no playback-screen preview
+
+Sheet music SHALL open only in a full-screen viewer reached from the `Sheet music` manager sheet. The playback screen SHALL NOT include a sheet music section, preview, or empty-state prompt, and the mini-player SHALL NOT include a sheet music control. The viewer SHALL use the Nocturne tokens, keep a play/pause control reachable, keep the screen awake while open, and offer a close control that returns to the previous screen without interrupting playback.
+
+#### Scenario: The playback screen is unchanged
+
+- **WHEN** a track with sheet music is playing
+- **THEN** the playback screen shows no sheet music UI beyond the item menu's `Sheet music` action
+
+#### Scenario: Full screen only
+
+- **WHEN** a user opens a source from the manager sheet
+- **THEN** a full-screen viewer opens, and there is no half-height peek
+
+#### Scenario: Closing keeps playback going
+
+- **WHEN** a user closes the viewer while a track plays
+- **THEN** playback continues and the previous screen is shown

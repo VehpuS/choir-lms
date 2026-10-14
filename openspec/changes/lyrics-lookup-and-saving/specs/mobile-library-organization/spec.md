@@ -23,3 +23,22 @@ The shared saved-item menu SHALL offer `Lyrics` on a track that has none and `Ed
 
 - **WHEN** a user opens the bulk action menu over a selection
 - **THEN** it does not offer a lyrics action
+
+### Requirement: Saved track menus offer sheet music as a quiet option
+
+The shared saved-item menu SHALL offer `Sheet music` on tracks, loops, and adjusted tracks in the same menus that offer lyrics, placed immediately after `Lyrics` / `Edit lyrics`, with one icon from the shared menu icon map. The label SHALL stay `Sheet music` whether or not sources are attached, it SHALL open the manager sheet for the owning track, and it SHALL NOT appear in bulk action menus. Removing or adjusting a track SHALL follow the same rules for sheet music links as for lyrics.
+
+#### Scenario: Track menu
+
+- **WHEN** a user opens the menu of any saved track
+- **THEN** it offers `Sheet music` directly after `Lyrics` or `Edit lyrics`
+
+#### Scenario: Loop menu opens the owning track's sources
+
+- **WHEN** a user chooses `Sheet music` on a loop
+- **THEN** the manager sheet opens for the loop's track and its subtitle names that track
+
+#### Scenario: Not offered in bulk menus
+
+- **WHEN** a user opens the bulk action menu over a selection
+- **THEN** it does not offer a sheet music action

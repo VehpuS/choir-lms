@@ -65,6 +65,76 @@ The editor is a bottom sheet (`LyricsEditorSheet`) opened from the saved-item me
 
 Pure logic is tested with `node:test`: lyrics normalization and the 20,000-character limit, `resolveLyricsOwner` (track, adjusted track, loop, loop of an adjusted track, missing owner), candidate parsing from fixture responses including synced-stamp stripping, the title and artist pre-fill and query builder, and the lookup client against an injected fake `fetch` (success, empty, rate-limit, offline, abort). Repository persistence round-trips through the AsyncStorage fake already used by the storage specs. Component slices follow the repo's render-test pattern for the menu action, the playback section states (empty, filled, owner missing), the editor's discard and delete confirmations, and the text-size control. Web verification uses the browser preview with the test library; a real LRCLIB call is checked once manually.
 
+## Sheet music (added 2026-10-14)
+
+The decisions below extend the lyrics design. Several rest on facts that are not yet verified in this codebase (rendering libraries in the Expo web build, CORS on arbitrary hosts, the quality of MIDI notation); those are spikes in task group 9, to be settled and written back here before the build tasks start.
+
+### Decision 8: Sheet music is a list of links on the saved track, never file content
+
+Add `sheetMusic?: SheetMusicSource[]` to `DriveAudioSource`, next to `lyrics`, parsed and normalized at the storage boundary, absent on every existing record (no migration), and capped (10 sources per track, 60-character labels). A source is `{ id, label, location, format, partSelection?, addedAt }` where `location` is `{ kind: 'drive'; fileId; name }` or `{ kind: 'url'; url }`, `format` is `'pdf' | 'musicxml' | 'midi' | 'musescore' | 'link'`, and `partSelection` is `'vocal' | 'all' | { include: string[] }` (Decision 12). The app stores the link and settings only: no file is copied into the library, so there is nothing to sync, no copyright redistribution, and a lapsed Drive file simply shows as unavailable. Owner resolution reuses `resolveLyricsOwner` (Decision 2), so loops and adjusted tracks read the parent track's list, a created adjusted track never copies it, and removing the track removes its links.
+
+Why multiple: a choir often holds the full score and a separate part file for the same piece, so one track can carry several sources, each with its own label (for example `Full score`, `Alto part`) and its own part selection. They stay a plain ordered list; the user can reorder by removing and re-adding, and a drag-to-reorder is a follow-up.
+
+Alternatives considered: copying the file into app storage (works offline but duplicates large files, adds a redistribution question, and needs eviction; offline caching is already its own change, `offline-audio-caching`, and can cover sheet music later); one `sheetMusicUrl` string (cannot hold a score plus parts or per-source settings).
+
+### Decision 9: Format detection, and what each format becomes on screen
+
+`detectSheetMusicFormat({ name, mimeType, url })` is a pure function used at the boundary where a source is added. It decides from the Drive file's MIME type and name, or from the URL path's extension, with these outcomes:
+
+| Detected                                                                    | Shown as                                                                                                                                              |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.pdf` / `application/pdf`                                                  | Rendered pages (PDF viewer). No part filtering: a PDF is pictures of staves.                                                                          |
+| `.musicxml`, `.xml` containing `score-partwise` or `score-timewise`, `.mxl` | Rendered as staves with part filtering (OpenSheetMusicDisplay, built on VexFlow).                                                                     |
+| `.mid`, `.midi`                                                             | Notated as staves, with part filtering, through a conversion step (Decision 11). Labelled as approximate.                                             |
+| `.mscz`, `.mscx` (MuseScore files)                                          | Not rendered in the app (Decision 10). Stored as a link and opened outside the app.                                                                   |
+| a `musescore.com/...` page URL                                              | A link-out source (Decision 10).                                                                                                                      |
+| anything else                                                               | Refused at add time with a message that names the supported formats; a URL with no clear extension may be added as `link` and opened outside the app. |
+
+Keeping detection pure and at the boundary means the viewer only ever receives a known format.
+
+### Decision 10: MuseScore is search and link-out, not a rendered format
+
+MuseScore.com has no current public API that we can rely on (the old developer API was retired, and score downloads depend on each score's license and on the user's account), and a MuseScore score page cannot be embedded or downloaded by the app without the user's login and MuseScore's terms. Native `.mscz` files have no browser renderer. So:
+
+- `Search MuseScore` builds a MuseScore search URL from the Title and Artist fields (a pure function, specced like the lyrics web search, to be confirmed in task 13.2) and opens it in the system browser. The user finds a score there, then brings it back as one of: a `musescore.com` page link (stored as a link-out source and opened in the browser), or a file they exported themselves (MusicXML, PDF, or MIDI) saved to Drive or hosted at a URL, which the app renders.
+- `.mscz` / `.mscx` files are accepted as links but opened outside the app, with a one-line hint to export MusicXML from MuseScore for in-app display. Converting them in the app would need a MuseScore engine or a server we do not run; that stays a recorded follow-up, not a promise.
+- The add flow never scrapes or downloads from musescore.com, and says so where it explains the options.
+
+This is the main place where the request, rendering MuseScore, is narrowed; the user confirms it in task 9.4.
+
+### Decision 11: Rendering engines, loaded on demand
+
+- **PDF:** a pdf.js based renderer showing pages in a scrolling column with zoom. Chosen and wired in spike 9.2, including the worker setup under Metro and a native path.
+- **MusicXML and MXL:** OpenSheetMusicDisplay (OSMD) renders MusicXML (and compressed `.mxl`) to SVG using VexFlow and supports hiding parts. Parts are filtered by choosing which parts to include before render, so a hidden part is not laid out at all.
+- **MIDI:** MIDI is performance data, not notation: it has notes and timing but no key spelling, voices, lyrics layout, or reliable measure structure. The conversion step parses the file (`@tonejs/midi` or similar), takes tracks as parts, quantizes note onsets and durations to a grid, infers key and time signature from meta events, and emits MusicXML that OSMD renders, so MIDI and MusicXML share one renderer and one part filter. The result is approximate (spelling, rests, and tuplets can be rough), so the viewer labels it `Approximate notation from MIDI`. Whether quality is good enough to ship, or MIDI should be limited to a piano-roll-like fallback, is decided in spike 9.3.
+- All three libraries are imported dynamically from the viewer, so they add nothing to startup or to the bundle a user who never opens sheet music downloads. Platform divergence (web renders in the DOM; native needs a WebView host or a native PDF view) follows the app's `.web` / `.native` file convention behind one renderer interface, `SheetMusicRenderer`, so the viewer, the part filter, and the model are shared.
+- **Scope split:** this change builds the shared model, the web renderers, and the viewer; the iOS and Android renderers and their on-device checks are recorded in `native-playback-follow-ups` and are not part of this change's verification.
+
+### Decision 12: Part filtering, with vocal parts as the default
+
+A pure `extractScoreParts(parsedScore)` returns the parts of a MusicXML or MIDI source as `{ id, name, instrument?, midiProgram?, kind: 'vocal' | 'instrumental' | 'unknown' }`, where `kind` comes from `classifyVocalPart`:
+
+- MusicXML: `score-part` names and instrument names matching soprano, alto, tenor, bass, baritone, mezzo, treble/vocal/voice/choir/chorus/SATB and common abbreviations (`S`, `A`, `T`, `B`, `Sop.`), and `midi-program` values for choir and voice sounds (GM 53 to 55). A piano reduction of the voices stays `instrumental`.
+- MIDI: track names and the same program numbers; unnamed tracks are `unknown`.
+- A staff that holds several voices (a SATB system on two staves) is listed as the parts the file declares, and the vocal filter cannot split them further; the viewer says so rather than guessing.
+
+`partSelection` per source defaults to `'vocal'` (show vocal parts; if none are found, show all and say that no vocal parts were recognized). The viewer lists the parts as chips with `Vocal parts`, `All parts`, and per-part toggles; the choice is saved on the source so a separate `Alto part` source stays on its alto line. A saved `include` list refers to parts by name and index, and when the file changes so a saved part is missing, the selection falls back to `vocal`.
+
+### Decision 13: Reaching sheet music, and keeping it non-standard
+
+- One menu action, `Sheet music`, after `Lyrics` / `Edit lyrics`, with its own icon in the shared icon map, on the same menus as the lyrics action (Library views, Recents, Up Next, playback sheet) and never in bulk menus. It always reads `Sheet music`; it opens the manager sheet.
+- The **manager sheet** lists the track's sources (label, format, a `View` action, remove, rename) and holds `Add sheet music` with three paths: `From Google Drive`, `From a web link`, and `Search MuseScore`. Rows that cannot be rendered say `Opens outside the app`.
+- Opening a source opens the **full-screen viewer** only. There is no sheet music section, preview, mini-player control, or empty-state prompt on the playback screen, and playback controls stay reachable through a compact play/pause control as in lyrics reading mode, with the screen kept awake via the same `expo-keep-awake` use.
+- The Drive picker reuses the app's Drive browsing and search surfaces with a MIME filter for the supported types instead of the audio-only filter; the web link path is a pasted URL, validated and detected on the spot.
+
+### Decision 14: Loading is on demand, typed, and cancellable
+
+A `SheetMusicLoader` fetches a source only when the viewer opens it, with an injected `fetch`, an `AbortSignal`, a 30 s timeout and a 25 MB size limit, and returns a typed result: `loaded`, or `failed` with `needs-drive-access`, `not-found`, `blocked` (a web host that does not allow browser requests, CORS), `too-large`, `unsupported`, `offline`, or `unavailable`. It never throws into the UI. Drive files reuse the audio path's authorized download (and the existing `Drive access expired` handling); URL sources are fetched directly, and when a browser blocks a host the viewer offers `Open in browser` and suggests saving the file to Drive. Nothing is sent to us, and the only data that leaves the device is the request for the file itself.
+
+### Decision 15: Tests for sheet music
+
+Pure logic gets `node:test` specs: format detection (Drive MIME and URL cases, MuseScore pages, refused formats), source normalization and the 10-source cap, owner resolution for sheet music, part extraction and vocal classification on small fixture MusicXML and MIDI files (SATB score, piano-vocal, a part-only file, an unnamed MIDI track), part selection fallbacks, the MuseScore search URL, the loader against a fake `fetch` (each failure), and the viewer's state model (source switching, part toggles, error states). Renderers are verified in the browser preview with fixture files, since the repo has no harness for rendering components (task 8.3).
+
 ## Risks / Trade-offs
 
 - [The lyrics service is a third party: it can change, rate-limit, or disappear] → The lookup is optional and behind an interface; typed and pasted lyrics need no network; failures are typed and show a retry and the `Search the web` fallback.
@@ -74,13 +144,25 @@ Pure logic is tested with `node:test`: lyrics normalization and the 20,000-chara
 - [Web build and CORS: a browser may block the service] → Verify on the deployed web build early (task 3.x); if blocked, the web path falls back to `Search the web` and paste, with the editor hiding `Look up` when the client reports `unavailable`.
 - [Long lyrics in a small panel] → The playback section collapses; reading mode is the place for long text; the 20,000-character cap keeps rendering cheap.
 - [One body per track means a singer cannot keep a translation] → Accepted for now; a second body or a free-form notes field is a later change.
+- [Sheet music: MuseScore cannot be rendered or searched through an API] → Search is a system browser search; the app renders only what the user brings back as a file or link in a supported format, and says plainly that MuseScore files open outside the app (Decision 10).
+- [Sheet music: MIDI notation can look wrong] → Labelled approximate, with the source file one tap away; spike 9.3 decides whether it ships at all and, if not, MIDI is accepted as a link-out.
+- [Sheet music: vocal part detection is a heuristic] → The user can always choose parts by hand, the choice is saved per source, and an unrecognized file shows everything with a notice rather than hiding music.
+- [Sheet music: rendering libraries are large and untested in this Expo build] → Loaded on demand from the viewer only; spikes 9.1 and 9.2 confirm they bundle and run before any other work depends on them.
+- [Sheet music: arbitrary web hosts block browser requests (CORS)] → A typed `blocked` result with `Open in browser`, and the suggestion to save the file to Drive, which always works through the user's authorization.
+- [Sheet music: copyright of linked scores] → Only links and settings are stored; the app never copies, hosts, or shares a score, and does not scrape MuseScore.
+- [Sheet music: native renderers are not in this change] → The shared model and the viewer contract land here; native rendering is recorded in `native-playback-follow-ups`. Until then a native build shows the source list and opens sources outside the app.
 
 ## Migration Plan
 
-No data migration: the field is optional and absent on every existing record. Rolling back the change leaves a `lyrics` field on stored records that older code ignores because the parser only reads fields it knows. Ship behind no flag.
+No data migration: the `lyrics` and `sheetMusic` fields are optional and absent on every existing record. Rolling back the change leaves those fields on stored records that older code ignores because the parser only reads fields it knows. Ship behind no flag; the sheet music renderers' libraries load only when a viewer opens.
 
 ## Open Questions
 
 - Should reading mode keep the screen awake (adds `expo-keep-awake`)? Default to yes if the dependency is acceptable; confirm with the user in the reading-mode task.
 - Is a looked-up result worth an artist field on the track later (so the next lookup needs no typing)? Out of scope here; revisit after use.
 - Should `Search the web` be configurable (another search engine)? Default to one fixed engine for now.
+- Sheet music, native scope: should this change also build the iOS and Android renderers (a WebView host for OSMD and pdf.js, or a native PDF view), or stay web-only with native recorded in `native-playback-follow-ups` as planned here? The plan assumes web-only here.
+- Sheet music, MuseScore files: is link-out for `.mscz` and `musescore.com` pages acceptable, given no rendering engine and no usable API (Decision 10)? Confirm in task 9.4.
+- Sheet music, MIDI: ship approximate notation, or show MIDI only as a link-out if the spike's quality is poor (task 9.3)?
+- Sheet music, entry point: is one `Sheet music` menu action opening a manager sheet right, or should a track with exactly one source open the viewer straight from the menu (labelled `View sheet music`)? The plan uses the manager sheet.
+- Sheet music, offline: should opened files be cached for offline use? It belongs with `offline-audio-caching`; not built here.

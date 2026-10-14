@@ -47,3 +47,57 @@
 - [ ] 8.4 Accessibility: the editor's `OutlinedActionButton` controls (`Look up`, `Search the web`, `Save`, `Cancel`) show no accessible name in the web accessibility tree (they expose text but no label). Check whether this is true for every `OutlinedActionButton` in the app and fix the shared component rather than this sheet.
 - [ ] 8.5 Editor on long text: the sheet scrolls, but with the keyboard open on a phone the multiline field and `Save` may be hard to reach. Check on a device and with the user (belongs with the native follow-up, `native-playback-follow-ups` 1.5).
 - [ ] 8.6 The peek and reading mode show the browser's default light scrollbar on the dark ground (web). Explore with the user whether to hide it or theme it.
+
+## Sheet music (added 2026-10-14; planned only, nothing below is started)
+
+Groups 9 to 14 add sheet music to this change (design Decisions 8 to 15). Group 9 is spikes whose results must be written back into `design.md` (and the user confirms the flagged ones) before groups 10 to 13 are built. Native renderers and device checks are not in this change; they are group 15 and the matching item in `native-playback-follow-ups`.
+
+## 9. Spikes and decisions (before building)
+
+- [ ] 9.1 **OSMD in the Expo web build.** Add `opensheetmusicdisplay` in a scratch branch, import it dynamically, render a small SATB MusicXML and a compressed `.mxl`, hide parts by id, and record: it bundles under Metro, bundle size added to the lazy chunk, render time for a 4-page choral score, and any DOM or canvas constraint inside react-native-web. Write the result into design Decision 11.
+- [ ] 9.2 **PDF rendering.** Try `pdfjs-dist` on web (worker setup under Metro, a 20-page PDF, zoom) and list the native options (a WebView host for pdf.js versus a native PDF view; note dev-client and Expo SDK 54 compatibility without building them). Decide the web renderer and record the native option for group 15 (Decision 11).
+- [ ] 9.3 **MIDI to staves.** Prototype `@tonejs/midi` (or equivalent) parsing, onset and duration quantization, key and time signature inference, and MusicXML emission rendered by OSMD, on 3 real choir MIDI files (a SATB arrangement, a part-only file, a piano reduction). Judge the notation honestly. **Ask the user** whether to ship it as `Approximate notation from MIDI`, or to link MIDI out only (Decision 11 and open question).
+- [ ] 9.4 **MuseScore.** Confirm that there is no usable public MuseScore API and no browser renderer for `.mscz` / `.mscx`, confirm the current search URL form for the prepared search, and re-read MuseScore's terms for linking and search. Then **ask the user** to confirm Decision 10 (search and link-out, no rendering of MuseScore files or pages in the app).
+- [ ] 9.5 **Web links and CORS.** Fetch a PDF, a MusicXML, and a MIDI from 3 common hosts (a plain file host, GitHub raw, a Drive public link) from the web build and record which work; confirm the `blocked` outcome is detectable and what the viewer should say (Decision 14).
+- [ ] 9.6 **Drive for non-audio files.** Confirm the existing Drive scope and authorized download work for PDF, `.mxl`, `.musicxml`, `.mid`, and `.mscz` files, and how the Add / Drive browse and search surfaces filter by MIME type today so a sheet music picker can reuse them. Record the changes needed (Decision 13).
+
+## 10. Model, storage, and ownership
+
+- [ ] 10.1 Add `sheetMusic?: SheetMusicSource[]` to `DriveAudioSource` in `audio-library-models` with `SheetMusicSource`, `detectSheetMusicFormat` (pure; Drive MIME and name, URL extension, MuseScore page, refused), normalization (10-source cap, 60-character labels, trimmed URLs allowing only `http` and `https`), and defensive parsing at the storage boundary where a malformed entry is dropped, not the read. Spec every format case and the cap.
+- [ ] 10.2 Reuse `resolveLyricsOwner` for sheet music (rename to a shared owner resolver only if it reads better, keeping the lyrics specs green); make `createAdjustedTrackSource` leave `sheetMusic` behind like `lyrics`. Spec loop, adjusted track, and a deleted owner.
+- [ ] 10.3 Persist through the practice repository and AsyncStorage implementation with `addSheetMusicSource`, `updateSheetMusicSource` (label, part selection), and `removeSheetMusicSource` that touch only that field; keep it across a re-save of the track and confirm removing a track removes it. Round-trip and old-record specs.
+- [ ] 10.4 Expose `sheetMusicFor(item)` and the three writes through the library controller (as `useSourceLyrics` does), with a hook spec for add, rename, select parts, remove, and a derived item.
+
+## 11. Parts
+
+- [ ] 11.1 Add `extractScoreParts` and `classifyVocalPart` for MusicXML (part names, instrument names and abbreviations, MIDI program) in a framework-agnostic module, with small fixture files: a SATB score, a piano-vocal score, a part-only file, and unnamed parts. Spec each, including a single staff holding several voices.
+- [ ] 11.2 Do the same for MIDI (track names, program numbers, channels) with fixture bytes, including an unnamed track and a GM choir program.
+- [ ] 11.3 Add part selection resolution (`'vocal'`, `'all'`, `{ include }`, the saved-part-missing fallback, and the nothing-recognized notice) as a pure function with a spec, and the persistence of the choice on the source.
+
+## 12. Loading and viewing
+
+- [ ] 12.1 Add `SheetMusicLoader` (design Decision 14): injected `fetch` and `AbortSignal`, 30 s timeout, 25 MB limit, Drive through the existing authorized download, URL direct, typed results (`needs-drive-access`, `not-found`, `blocked`, `too-large`, `unsupported`, `offline`, `unavailable`) and no throws. Spec with a fake `fetch` for each, and abort.
+- [ ] 12.2 Add the `SheetMusicRenderer` contract and the web MusicXML / MXL renderer (OSMD, dynamically imported) with part filtering applied before render. Fixture-driven checks in the browser preview.
+- [ ] 12.3 Add the web PDF renderer (per spike 9.2) with page column and zoom.
+- [ ] 12.4 Add the MIDI conversion step and render through the MusicXML path with the `Approximate notation from MIDI` label, only if spike 9.3 says to ship it; otherwise MIDI sources are link-out and this task is replaced by that behavior.
+- [ ] 12.5 Build the full-screen viewer (`library/sheet-music/`): close, source switcher, part chips (`Vocal parts`, `All parts`, per-part), zoom, a play/pause control, `expo-keep-awake`, loading and each typed failure with its next step (`Reconnect`, `Open in browser`, `Try again`). Put the state (source switching, part toggles, error mapping) in a model with its own spec, and use Nocturne tokens, sentence-case copy, and 44pt controls.
+- [ ] 12.6 Verify the viewer in the browser preview with fixture files and a real Drive file of each format: PDF, MusicXML, `.mxl`, MIDI, part filtering and its persistence, source switching, and each failure. Playback muted. Record the result here.
+
+## 13. Adding and reaching sheet music
+
+- [ ] 13.1 Add the `Sheet music` action after `Lyrics` / `Edit lyrics` in the saved-item menus (Library views, Recents, Up Next, playback sheet; not bulk) with an icon in `menu-action-icons.ts` and specs for the order, the icon map, and bulk menus; add the `sheet-music` request on the saved-item request channel.
+- [ ] 13.2 Build the manager sheet (list with label, format, `View`, rename, remove; `Opens outside the app` rows; the 10-source limit; the owning-track subtitle) and its host mounted with the lyrics hosts. Add `buildMuseScoreSearchUrl({ title, artist })` (pure, specced, confirmed against spike 9.4) and the `Add sheet music` choices: `From Google Drive`, `From a web link` (paste, detect, label, validate), `Search MuseScore` (reusing the lyrics title suggestion).
+- [ ] 13.3 Add the Drive picker for sheet music files, reusing the Drive browse and search surfaces with a MIME filter (per spike 9.6), and showing only supported types with a note that unsupported files are hidden.
+- [ ] 13.4 Verify adding and removing in the browser preview: Drive file, pasted URL, MuseScore search (opens a tab), a `musescore.com` link, a `.mscz` file, the 10-source limit, rename, and a loop opening its track's sources. Record the result here.
+
+## 14. Documentation and validation
+
+- [ ] 14.1 Run `typecheck`, `lint`, `test`, and `build` for every touched project; keep touched files under 300 lines; and confirm the lazy renderer chunks are not in the startup bundle (record the bundle sizes).
+- [ ] 14.2 Add a README section on sheet music (what is stored, formats and what each becomes, MuseScore handling, part filtering, what is fetched and when, nothing uploaded) and update `docs/` if a module map changes.
+
+## 15. Sheet music follow-ups (explore with the user before building)
+
+- [ ] 15.1 Native renderers for iOS and Android (WebView host or native PDF view, OSMD in a WebView) and their on-device checks: recorded as `native-playback-follow-ups` task 1.6. Not part of this change's verification.
+- [ ] 15.2 Offline use of opened sheet music, through the `offline-audio-caching` change.
+- [ ] 15.3 Converting MuseScore files, drag-to-reorder sources, choosing a default source per track, remembering the user's own voice part across tracks, and sheet music for a track's loops (a page or measure range per loop). Explore which singers actually want these.
+- [ ] 15.4 Other score sources beyond MuseScore search (for example IMSLP or the choir's own site) and whether `Search MuseScore` should be a configurable engine like `Search the web`.
