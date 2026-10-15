@@ -46,6 +46,7 @@ const withoutFilesViewActions = (actions: OptionsMenuAction[]) => {
 
 // Files rows always offer lyrics, so the shared menus are built with them too.
 const NO_LYRICS = { hasLyrics: false, onEditLyrics: () => undefined };
+const SHEET_MUSIC = { onOpenSheetMusic: () => undefined };
 
 const trackContext = (
   overrides: Partial<SavedTrackMenuContext> = {},
@@ -56,6 +57,7 @@ const trackContext = (
   canQueueAsNext: true,
   canReconnect: true,
   lyrics: NO_LYRICS,
+  sheetMusic: SHEET_MUSIC,
   isLoopBuilderPreparing: false,
   isLoopMutating: false,
   isPendingLoopSource: false,
@@ -85,6 +87,7 @@ const loopContext = (): SavedLoopMenuContext => ({
   canQueueAsNext: true,
   hasPlayableItem: true,
   lyrics: NO_LYRICS,
+  sheetMusic: SHEET_MUSIC,
   isEditingLoop: false,
   isLoopMutating: false,
   isPendingRemoval: false,
@@ -205,6 +208,7 @@ describe('shared saved-item menus', () => {
       'Open in Google Drive',
       'Edit tags',
       'Lyrics',
+      'Sheet music',
       'Remove from library',
     ]);
   });
@@ -239,6 +243,7 @@ describe('shared saved-item menus', () => {
         'Edit loop',
         'Edit tags',
         'Lyrics',
+        'Sheet music',
         'Remove from library',
       ],
     );

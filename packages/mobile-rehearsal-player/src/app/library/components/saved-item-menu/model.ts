@@ -41,6 +41,7 @@ export const SAVED_ITEM_ACTION_ORDER: Record<
     'Edit tags',
     'Lyrics',
     'Edit lyrics',
+    'Sheet music',
   ],
   playlist: ['Add items', 'Edit tags'],
   track: [
@@ -55,6 +56,7 @@ export const SAVED_ITEM_ACTION_ORDER: Record<
     'Edit tags',
     'Lyrics',
     'Edit lyrics',
+    'Sheet music',
   ],
 };
 

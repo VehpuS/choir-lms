@@ -23,6 +23,7 @@ import { ExplorerListRow } from '../explorer';
 import type { ExplorerRowSelection } from '../explorer/model';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import { createLyricsMenuState } from '../../lyrics/utils/lyrics-menu-action';
+import { createSheetMusicMenuState } from '../../sheet-music/utils/sheet-music-menu-action';
 import { useHasLyrics } from '../saved-item-menu/saved-item-availability-context';
 import { resolveSavedTrackMenu } from '../saved-item-menu/saved-item-menus';
 import { SavedTrackMenuProvenance } from '../saved-item-menu/saved-track-menu-provenance';
@@ -145,6 +146,7 @@ export const BrowseSourceRow = ({
         id: source.id,
         kind: 'track',
       }),
+      sheetMusic: createSheetMusicMenuState({ id: source.id, kind: 'track' }),
       onAddToPlaylist: () => {
         openSourcePlaylistSelector(source.id);
       },

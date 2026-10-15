@@ -49,6 +49,7 @@ describe('resolveSavedItemShortcuts', () => {
         'add-to-playlist',
         'edit-tags',
         'edit-lyrics',
+        'sheet-music',
         'make-loop',
         'view-track-loops',
         'remove-from-library',
@@ -70,6 +71,7 @@ describe('resolveSavedItemShortcuts', () => {
         'add-to-playlist',
         'edit-tags',
         'edit-lyrics',
+        'sheet-music',
         'edit-loop',
         'remove-from-library',
       ],
@@ -91,5 +93,27 @@ describe('resolveSavedItemShortcuts', () => {
 
     assert.equal(labelFor(false), 'Lyrics');
     assert.equal(labelFor(true), 'Edit lyrics');
+  });
+});
+
+describe('the Sheet music shortcut', () => {
+  it('always reads Sheet music and addresses the track or loop it was opened from', () => {
+    const shortcutFor = (
+      item: Parameters<typeof resolveSavedItemShortcuts>[0]['item'],
+    ) =>
+      resolveSavedItemShortcuts({ hasLyrics: true, isSaved: true, item }).find(
+        ({ id }) => id === 'sheet-music',
+      );
+
+    assert.deepEqual(shortcutFor({ kind: 'track', sourceId: 'drive:a' }), {
+      id: 'sheet-music',
+      label: 'Sheet music',
+      request: { action: 'sheet-music', id: 'drive:a', kind: 'track' },
+    });
+    assert.deepEqual(
+      shortcutFor({ kind: 'loop', loopId: 'loop-1', sourceId: 'drive:a' })
+        ?.request,
+      { action: 'sheet-music', id: 'loop-1', kind: 'loop' },
+    );
   });
 });

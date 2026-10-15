@@ -35,6 +35,7 @@ import { MinusIcon } from 'phosphor-react-native/src/icons/Minus';
 import { MinusCircleIcon } from 'phosphor-react-native/src/icons/MinusCircle';
 import { MusicNoteIcon } from 'phosphor-react-native/src/icons/MusicNote';
 import { MusicNotesIcon } from 'phosphor-react-native/src/icons/MusicNotes';
+import { MusicNotesSimpleIcon } from 'phosphor-react-native/src/icons/MusicNotesSimple';
 import { PauseIcon } from 'phosphor-react-native/src/icons/Pause';
 import { PencilSimpleIcon } from 'phosphor-react-native/src/icons/PencilSimple';
 import { PlayIcon } from 'phosphor-react-native/src/icons/Play';
@@ -104,6 +105,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   MinusCircle: MinusCircleIcon,
   MusicNote: MusicNoteIcon,
   MusicNotes: MusicNotesIcon,
+  MusicNotesSimple: MusicNotesSimpleIcon,
   Pause: PauseIcon,
   PencilSimple: PencilSimpleIcon,
   Play: PlayIcon,

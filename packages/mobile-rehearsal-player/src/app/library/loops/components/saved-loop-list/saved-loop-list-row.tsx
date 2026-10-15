@@ -7,6 +7,7 @@ import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
 import { useHasLyrics } from '../../../components/saved-item-menu/saved-item-availability-context';
 import { resolveSavedLoopMenu } from '../../../components/saved-item-menu/saved-item-menus';
 import { createLyricsMenuState } from '../../../lyrics/utils/lyrics-menu-action';
+import { createSheetMusicMenuState } from '../../../sheet-music/utils/sheet-music-menu-action';
 import {
   getSavedTrackPlaybackActionCopy,
   getSavedTrackPlaybackItemIssue,
@@ -127,6 +128,10 @@ export const SavedLoopListRow = ({
       loopName: loopCard.loop.name,
       lyrics: createLyricsMenuState({
         hasLyrics,
+        id: loopCard.loop.id,
+        kind: 'loop',
+      }),
+      sheetMusic: createSheetMusicMenuState({
         id: loopCard.loop.id,
         kind: 'loop',
       }),

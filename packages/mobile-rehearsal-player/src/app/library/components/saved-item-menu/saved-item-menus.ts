@@ -3,6 +3,10 @@ import {
   resolveLyricsMenuActions,
   type LyricsMenuState,
 } from '../../lyrics/utils/lyrics-menu-action';
+import {
+  resolveSheetMusicMenuActions,
+  type SheetMusicMenuState,
+} from '../../sheet-music/utils/sheet-music-menu-action';
 import { resolveSavedLoopRowActions } from '../../loops/utils/saved-loop-row-actions';
 import { resolveSavedTrackRowActions } from '../../playback/utils/saved-track-row-actions';
 import type { PendingSourceLocationAction } from '../../saved-rehearsal-library/use-saved-source-original-location-actions';
@@ -40,6 +44,8 @@ export type SavedTrackMenuContext = {
   loopCount: number;
   /** Offers `Lyrics` / `Edit lyrics`; absent where lyrics are not offered. */
   lyrics?: LyricsMenuState;
+  /** Offers `Sheet music`; absent where sheet music is not offered. */
+  sheetMusic?: SheetMusicMenuState;
   onAddToPlaylist: () => void;
   onAddToQueue: () => void;
   onEditTags: () => void;
@@ -100,6 +106,7 @@ export const resolveSavedTrackMenu = (
       ...itemActions,
       ...driveActions,
       ...resolveLyricsMenuActions(context.lyrics, placement.idPrefix),
+      ...resolveSheetMusicMenuActions(context.sheetMusic, placement.idPrefix),
     ],
     kind: 'track',
     removeAction,
@@ -119,6 +126,8 @@ export type SavedLoopMenuContext = {
   isPlaylistMutating: boolean;
   loopName: string;
   lyrics?: LyricsMenuState;
+  /** Offers `Sheet music`; absent where sheet music is not offered. */
+  sheetMusic?: SheetMusicMenuState;
   onAddToPlaylist: () => void;
   onAddToQueue: () => void;
   onEditLoop: () => void;
@@ -159,6 +168,7 @@ export const resolveSavedLoopMenu = (
     itemActions: [
       ...itemActions,
       ...resolveLyricsMenuActions(context.lyrics, placement.idPrefix),
+      ...resolveSheetMusicMenuActions(context.sheetMusic, placement.idPrefix),
     ],
     kind: 'loop',
     removeAction,
