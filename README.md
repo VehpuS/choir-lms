@@ -26,6 +26,7 @@ For the MVP, the player is expected to support:
 - adding full tracks and saved loops into playlists
 - ordered playback, repeat, and shuffle for rehearsal sessions
 - lyrics saved with a track and read during playback (see [Lyrics](#lyrics))
+- optional sheet music links per track, opened in a full-screen viewer (see [Sheet music](#sheet-music))
 - native mobile transport integration where practical, including background playback and lock-screen controls
 
 The MVP explicitly does not include offline playback, document collaboration, score annotation, recording overlays, or broader rehearsal management workflows.
@@ -38,6 +39,17 @@ A saved track can hold one body of plain-text lyrics, stored with the track in t
 - **Where lookup comes from:** `Look up` asks the open [LRCLIB](https://lrclib.net) service. It runs only when you tap it, after a one-time notice on the device, and sends the title, artist, and track length you see in the editor, nothing else. Results are suggestions: you review and can edit them, and nothing is saved until you press `Save`. Timed (synced) lyrics are ignored.
 - **Privacy and copyright:** saved lyrics stay on the device; the app never uploads or shares them. Looked-up text is third-party content that you choose to keep in your own library, and the lyrics service's own terms apply to the lookup.
 - **Reading:** the playback screen has a Lyrics section, the mini-player shows a `Lyrics` control while the playing item has lyrics (a half-height peek), and `View` / `Expand` opens a full-screen reading mode. One text-size setting (`Small` to `Extra large`) applies to all three.
+
+## Sheet music
+
+A saved track can carry up to 10 sheet music sources, such as the full score and one part. The app stores only a link (a Google Drive file or a web address), a label, and the chosen parts; it never copies, hosts, or uploads a score. Loops and adjusted tracks show the sources of the track they came from, and removing a track removes its links.
+
+- **Reaching it:** `Sheet music` in any track, loop, or playback menu (after `Lyrics`) opens a manager sheet. There is no sheet music section on the playback screen. `View` opens a full-screen viewer with a play/pause control, and the screen stays awake.
+- **Adding:** `From Google Drive` (a picker that shows only PDF, MusicXML, MIDI, and MuseScore files), `From a web link` (pasted, detected, validated), or `Search MuseScore` (opens a prepared search in the system browser).
+- **Formats:** PDF is drawn as pages with zoom. MusicXML (`.musicxml`, `.xml`, `.mxl`) is drawn as staves in one strip that scrolls sideways. MIDI is converted to MusicXML on the device and drawn the same way; the notation is approximate, and performed (not score-exported) MIDI will look rough. MuseScore files (`.mscz`, `.mscx`) and `musescore.com` pages are not rendered: they open outside the app, so export MusicXML from MuseScore to view a score here. The app never fetches from musescore.com.
+- **Parts:** for MusicXML and MIDI the viewer shows the vocal parts by default (a part is hidden only when it is known to be instrumental). `Vocal parts`, `All parts`, and per-part chips change the choice, and it is remembered per source. A PDF has no parts.
+- **What is fetched, and when:** a file is downloaded only when you open it, with your existing Google authorization for Drive files, or directly from the address for a web link. On the web build, a host that does not allow browser requests shows `Open in browser`; saving the file to Drive always works. The renderers (OpenSheetMusicDisplay, pdf.js, a MIDI parser) are separate chunks loaded when a viewer opens, not at startup. Nothing is uploaded.
+- **Not yet:** the iOS and Android renderers are tracked in `native-playback-follow-ups`; until then a native build lists the sources and opens them outside the app.
 
 ## Product Direction
 
