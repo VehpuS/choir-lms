@@ -77,6 +77,15 @@ export const hasReachedSheetMusicLimit = (count: number): boolean => {
   return count >= MAX_SHEET_MUSIC_SOURCES;
 };
 
+/** A label from a Drive file's name: no extension, `_` read as a space. */
+export const suggestLabelFromFileName = (name: string): string => {
+  const label = name
+    .replace(EXTENSION_SUFFIX_PATTERN, '')
+    .replace(NAME_SEPARATOR_PATTERN, ' ');
+
+  return normalizeSheetMusicLabel(label) ?? name;
+};
+
 /** A label guessed from the link's file name, or its host when it has none. */
 export const suggestLabelFromUrl = (url: string): string => {
   const path = readUrlPath(url);

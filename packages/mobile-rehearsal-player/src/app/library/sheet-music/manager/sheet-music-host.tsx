@@ -13,6 +13,8 @@ import {
 import { suggestSheetMusicTitle } from '../sheet-music-search-terms';
 import { SheetMusicViewer } from '../viewer';
 import { isViewableSource, resolveExternalUrl } from '../viewer/model';
+import { createDriveAddition } from '../drive-picker/model';
+import { DriveSheetMusicPickerSheet } from '../drive-picker/drive-sheet-music-picker-sheet';
 import { SheetMusicManagerSheet } from './sheet-music-manager-sheet';
 
 type SheetMusicHostProps = {
@@ -47,6 +49,9 @@ export const SheetMusicHost = ({
   const { savedLibrarySources, savedLoops, sheetMusic } = library;
   const [item, setItem] = useState<SheetMusicItem | null>(null);
   const [viewerSourceId, setViewerSourceId] = useState<string | null>(null);
+  const [isPickingFromDrive, setIsPickingFromDrive] = useState(false);
+  // Remounting the manager after a Drive pick returns it to the list.
+  const [managerKey, setManagerKey] = useState(0);
 
   useEffect(() => {
     return subscribeToSavedItemRequests((request) => {
@@ -81,11 +86,16 @@ export const SheetMusicHost = ({
   return (
     <>
       <SheetMusicManagerSheet
+        key={managerKey}
         canMutate={true}
         onAddLink={(addition) => sheetMusic.addSheetMusic(item, addition)}
+        onChooseDrive={() => {
+          setIsPickingFromDrive(true);
+        }}
         onClose={() => {
           setItem(null);
           setViewerSourceId(null);
+          setIsPickingFromDrive(false);
         }}
         onOpenExternal={openExternal}
         onOpenSource={(source) => {
@@ -104,6 +114,25 @@ export const SheetMusicHost = ({
         sources={sources}
         suggestedTitle={suggestSheetMusicTitle(owner.name)}
       />
+      {isPickingFromDrive ? (
+        <DriveSheetMusicPickerSheet
+          accessToken={authorization.authState.accessToken}
+          onClose={() => {
+            setIsPickingFromDrive(false);
+          }}
+          onPick={(file) => {
+            void sheetMusic
+              .addSheetMusic(item, createDriveAddition(file))
+              .then((wasAdded) => {
+                if (wasAdded) {
+                  setIsPickingFromDrive(false);
+                  setManagerKey((key) => key + 1);
+                }
+              });
+          }}
+          onReconnectDrive={authorization.startAuthorization}
+        />
+      ) : null}
       {viewerSourceId ? (
         <SheetMusicViewer
           getDriveAccessToken={() => authorization.authState.accessToken}

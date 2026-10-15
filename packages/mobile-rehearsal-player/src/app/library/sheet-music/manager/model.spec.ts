@@ -13,6 +13,7 @@ import {
   describeSheetMusicRow,
   hasReachedSheetMusicLimit,
   resolveLinkAddition,
+  suggestLabelFromFileName,
   suggestLabelFromUrl,
 } from './model';
 
@@ -210,5 +211,18 @@ describe('resolveLinkAddition', () => {
       resolveLinkAddition({ label: '', url: 'https://example.org/k.docx' }),
       { message: SUPPORTED_FORMATS_MESSAGE, status: 'refused' },
     );
+  });
+});
+
+describe('suggestLabelFromFileName', () => {
+  it('drops the extension and reads underscores as spaces', () => {
+    assert.equal(
+      suggestLabelFromFileName('Ave_Maria_SATB.pdf'),
+      'Ave Maria SATB',
+    );
+  });
+
+  it('keeps a name with nothing left after cleaning', () => {
+    assert.equal(suggestLabelFromFileName('.pdf'), '.pdf');
   });
 });
