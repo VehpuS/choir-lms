@@ -27,7 +27,11 @@ type OsmdInstance = {
 type OsmdModule = {
   OpenSheetMusicDisplay: new (
     container: unknown,
-    options: { autoResize: boolean; drawTitle: boolean },
+    options: {
+      autoResize: boolean;
+      drawTitle: boolean;
+      renderSingleHorizontalStaffline: boolean;
+    },
   ) => OsmdInstance;
 };
 
@@ -55,25 +59,16 @@ export const createMusicXmlRenderer =
       try {
         const { OpenSheetMusicDisplay } =
           (await import('opensheetmusicdisplay')) as unknown as OsmdModule;
-        // OpenSheetMusicDisplay sizes itself from its container's `offsetWidth`,
-        // which counts the space a scrollbar takes. Drawing into a full-width
-        // inner element makes it use the width the scrolling host really has.
-        const host = container as {
-          appendChild(child: unknown): unknown;
-          innerHTML: string;
-          ownerDocument: {
-            createElement(tag: 'div'): { style: { cssText: string } };
-          };
-        };
-        const surface = host.ownerDocument.createElement('div');
-
-        surface.style.cssText = 'width:100%;';
-        host.innerHTML = '';
-        host.appendChild(surface);
-
-        const osmd = new OpenSheetMusicDisplay(surface, {
+        const host = container as { innerHTML: string };
+        // The whole score is one long system that scrolls sideways, as a singer
+        // reads it, instead of lines that wrap at the pane's width: on a phone
+        // that wrap leaves about a bar per line and a very tall page. Its size
+        // does not depend on the pane's width, so nothing reflows on a resize.
+        // OpenSheetMusicDisplay stops at 32,768 px and wraps past that.
+        const osmd = new OpenSheetMusicDisplay(container, {
           autoResize: false,
           drawTitle: false,
+          renderSingleHorizontalStaffline: true,
         });
 
         await osmd.load(musicXml);

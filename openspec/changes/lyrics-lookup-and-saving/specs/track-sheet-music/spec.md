@@ -67,6 +67,11 @@ The system SHALL open a sheet music source only in a full-screen viewer, reached
 - **WHEN** a user opens a MusicXML source
 - **THEN** its staves are rendered as notation, not as a picture of a file or as text
 
+#### Scenario: Staves scroll sideways
+
+- **WHEN** a user opens a MusicXML or MIDI source
+- **THEN** its staves are one continuous line that scrolls horizontally, not lines wrapped to the screen width
+
 #### Scenario: Open MIDI
 
 - **WHEN** a user opens a MIDI source

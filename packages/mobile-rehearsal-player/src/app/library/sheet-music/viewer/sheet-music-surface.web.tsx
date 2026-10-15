@@ -15,7 +15,7 @@ import type { SheetMusicSurfaceProps } from './sheet-music-surface-types';
 // used here is described structurally.
 type HostNode = {
   clientWidth: number;
-  style: { overflowY: string; scrollbarGutter: string };
+  style: { overflow: string; scrollbarGutter: string };
 };
 type ResizeObserverLike = {
   disconnect(): void;
@@ -143,8 +143,9 @@ export const SheetMusicSurface = ({
     live.current.score?.setZoom(zoom);
   }, [zoom]);
 
-  // The pages and staves are laid out for the element's width, so a change in
-  // it (a rotated phone, a resized window) lays them out again.
+  // PDF pages are laid out for the element's width, so a change in it (a rotated
+  // phone, a resized window) lays them out again. Staves are one sideways strip
+  // and do not depend on the width.
   useEffect(() => {
     const Observer = (
       globalThis as { ResizeObserver?: ResizeObserverConstructor }
@@ -165,7 +166,6 @@ export const SheetMusicSurface = ({
 
         lastWidth = host.clientWidth;
         live.current.pdf?.setZoom(latest.current.zoom);
-        live.current.score?.setZoom(latest.current.zoom);
       }, RESIZE_DEBOUNCE_MS);
     });
 
@@ -182,11 +182,12 @@ export const SheetMusicSurface = ({
       ref={(node) => {
         const element = node as unknown as HostNode | null;
 
-        // A plain scrolling element: both renderers measure it and draw into it.
-        // The scrollbar's space is reserved up front, so the width they measure
-        // is the width they keep once a long score makes the scrollbar appear.
+        // A plain scrolling element that both renderers draw into: staves scroll
+        // sideways, PDF pages scroll down. The scrollbar's space is reserved up
+        // front, so the PDF column keeps the width it measured once a long
+        // document makes the scrollbar appear.
         if (element) {
-          element.style.overflowY = 'auto';
+          element.style.overflow = 'auto';
           element.style.scrollbarGutter = 'stable';
         }
 
