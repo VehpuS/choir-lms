@@ -11,6 +11,8 @@ type ViewerToolbarProps = {
   onTogglePlayback: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
+  /** `column` is the compact layout's side rail; `row` runs along the bottom. */
+  orientation: 'column' | 'row';
   zoom: number;
 };
 
@@ -21,26 +23,43 @@ export const ViewerToolbar = ({
   onTogglePlayback,
   onZoomIn,
   onZoomOut,
+  orientation,
   zoom,
 }: ViewerToolbarProps) => {
+  const isColumn = orientation === 'column';
+  // In a column the larger zoom is on top, as a slider reads.
+  const zoomOut = (
+    <SurfaceIconButton
+      accessibilityLabel="Zoom out"
+      disabled={zoom <= VIEWER_MIN_ZOOM}
+      icon="minus"
+      key="out"
+      onPress={onZoomOut}
+    />
+  );
+  const zoomIn = (
+    <SurfaceIconButton
+      accessibilityLabel="Zoom in"
+      disabled={zoom >= VIEWER_MAX_ZOOM}
+      icon="plus"
+      key="in"
+      onPress={onZoomIn}
+    />
+  );
+  const zoomValue = (
+    <Text
+      accessibilityLiveRegion="polite"
+      key="value"
+      style={[styles.zoomValue, isColumn ? styles.zoomValueColumn : undefined]}
+    >
+      {formatViewerZoom(zoom)}
+    </Text>
+  );
+
   return (
-    <View style={styles.bar}>
-      <View style={styles.zoom}>
-        <SurfaceIconButton
-          accessibilityLabel="Zoom out"
-          disabled={zoom <= VIEWER_MIN_ZOOM}
-          icon="minus"
-          onPress={onZoomOut}
-        />
-        <Text accessibilityLiveRegion="polite" style={styles.zoomValue}>
-          {formatViewerZoom(zoom)}
-        </Text>
-        <SurfaceIconButton
-          accessibilityLabel="Zoom in"
-          disabled={zoom >= VIEWER_MAX_ZOOM}
-          icon="plus"
-          onPress={onZoomIn}
-        />
+    <View style={[styles.bar, isColumn ? styles.barColumn : undefined]}>
+      <View style={[styles.zoom, isColumn ? styles.zoomColumn : undefined]}>
+        {isColumn ? [zoomIn, zoomValue, zoomOut] : [zoomOut, zoomValue, zoomIn]}
       </View>
       <CompactPlaybackAction
         accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
@@ -59,15 +78,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  barColumn: {
+    flexDirection: 'column',
+    gap: appTheme.space.md,
+  },
   zoom: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: appTheme.space.sm,
+  },
+  zoomColumn: {
+    flexDirection: 'column',
+    gap: appTheme.space.xs,
   },
   zoomValue: {
     ...appTheme.type.rowTitle,
     minWidth: 48,
     textAlign: 'center',
     color: appTheme.colors.text,
+  },
+  zoomValueColumn: {
+    minWidth: 0,
   },
 });

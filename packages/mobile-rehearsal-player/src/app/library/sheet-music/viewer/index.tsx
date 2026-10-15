@@ -1,4 +1,3 @@
-import { createSheetMusicLoader } from '../sheet-music-loader';
 import type {
   SheetMusicPartSelection,
   SheetMusicSource,
@@ -6,17 +5,19 @@ import type {
 import { useKeepAwake } from 'expo-keep-awake';
 import { useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Modal,
   Platform,
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { appTheme } from '../../../utils/theme';
-import { FailureCard } from './failure-card';
+import { createSheetMusicLoader } from '../sheet-music-loader';
+import { ChipRow } from './chip-row';
+import { isCompactViewerHeight } from './layout-model';
 import {
   VIEWER_DEFAULT_ZOOM,
   applyPartChip,
@@ -25,13 +26,11 @@ import {
   resolveExternalUrl,
   stepViewerZoom,
   type ViewerFailureAction,
-  type ViewerFailureReason,
 } from './model';
-import { PartControls } from './part-controls';
-import { SourceSwitcher } from './source-switcher';
-import { SheetMusicSurface } from './sheet-music-surface';
-import type { ScoreInfo } from './sheet-music-surface-types';
+import { ChipDivider, PartChips, PartNotices } from './part-chips';
+import { SourceChips } from './source-chips';
 import { useSheetMusicDocument } from './use-sheet-music-document';
+import { ViewerBody, type ViewerOutcome } from './viewer-body';
 import { ViewerToolbar } from './viewer-toolbar';
 
 // Reading music means holding the phone or tablet up, so the screen stays on
@@ -57,14 +56,14 @@ type SheetMusicViewerProps = {
   sources: readonly SheetMusicSource[];
 };
 
-type Outcome =
-  | { info: ScoreInfo | null; kind: 'ready' }
-  | { kind: 'failed'; reason: ViewerFailureReason };
-
 /**
  * The full-screen sheet music viewer: the source switcher, the part controls
  * for MusicXML and MIDI, the score itself, zoom, and a play/pause control. It
  * loads a source only when shown and cancels the request when closed.
+ *
+ * A phone held sideways is too short for a header, two chip rows, and a
+ * toolbar above the score, so below a height limit the controls move into a
+ * slim rail beside the score and the chips share one row.
  */
 export const SheetMusicViewer = ({
   getDriveAccessToken,
@@ -81,6 +80,7 @@ export const SheetMusicViewer = ({
 }: SheetMusicViewerProps) => {
   useKeepAwake(KEEP_AWAKE_TAG);
 
+  const isCompact = isCompactViewerHeight(useWindowDimensions().height);
   const viewable = useMemo(() => filterViewableSources(sources), [sources]);
   const [sourceId, setSourceId] = useState(initialSourceId);
   const [zoom, setZoom] = useState(VIEWER_DEFAULT_ZOOM);
@@ -89,7 +89,7 @@ export const SheetMusicViewer = ({
   >({});
   const [drawn, setDrawn] = useState<{
     document: unknown;
-    outcome: Outcome;
+    outcome: ViewerOutcome;
   }>();
   const source = viewable.find(({ id }) => id === sourceId) ?? viewable[0];
   const selection = source
@@ -129,6 +129,8 @@ export const SheetMusicViewer = ({
       ? describeViewerFailure(failureReason, source)
       : undefined;
   const info = outcome?.kind === 'ready' ? outcome.info : null;
+  const hasParts = info !== null && info.parts.length > 0;
+  const hasSwitcher = viewable.length > 1 && source !== undefined;
 
   const handleFailureAction = (action: ViewerFailureAction) => {
     if (action === 'reconnect-drive') {
@@ -155,6 +157,86 @@ export const SheetMusicViewer = ({
     onChangePartSelection(source.id, next);
   };
 
+  const sourceChips = hasSwitcher ? (
+    <SourceChips
+      onSelect={setSourceId}
+      selectedId={source.id}
+      sources={viewable}
+    />
+  ) : null;
+  const partChips = hasParts ? (
+    <PartChips info={info} onPressChip={handleChip} />
+  ) : null;
+  const body = (
+    <ViewerBody
+      failure={failure}
+      onFailed={(reason) =>
+        setDrawn({
+          document: state.status === 'loaded' ? state.document : undefined,
+          outcome: { kind: 'failed', reason },
+        })
+      }
+      onFailureAction={handleFailureAction}
+      onRendered={(next) =>
+        setDrawn({
+          document: state.status === 'loaded' ? state.document : undefined,
+          outcome: { info: next, kind: 'ready' },
+        })
+      }
+      outcome={outcome}
+      selection={selection}
+      source={source}
+      state={state}
+      zoom={zoom}
+    />
+  );
+  const toolbar = (orientation: 'column' | 'row') => (
+    <ViewerToolbar
+      isPlaybackToggleDisabled={isPlaybackToggleDisabled}
+      isPlaying={isPlaying}
+      onTogglePlayback={onTogglePlayback}
+      onZoomIn={() => setZoom((current) => stepViewerZoom(current, 1))}
+      onZoomOut={() => setZoom((current) => stepViewerZoom(current, -1))}
+      orientation={orientation}
+      zoom={zoom}
+    />
+  );
+  const closeButton = (
+    <SurfaceIconButton
+      accessibilityLabel="Close sheet music"
+      icon="close"
+      onPress={onClose}
+    />
+  );
+
+  if (isCompact) {
+    return (
+      <Modal animationType="slide" onRequestClose={onClose} visible>
+        <View style={[styles.screen, styles.screenCompact]}>
+          <View style={styles.compactMain}>
+            {sourceChips || partChips ? (
+              <ChipRow accessibilityLabel="Sources and parts">
+                {sourceChips}
+                {sourceChips && partChips ? <ChipDivider /> : null}
+                {partChips}
+              </ChipRow>
+            ) : source ? (
+              <Text numberOfLines={1} style={styles.subtitle}>
+                {`${ownerName} · ${source.label}`}
+              </Text>
+            ) : null}
+            {info ? <PartNotices info={info} /> : null}
+            <View style={styles.body}>{body}</View>
+          </View>
+          <View style={styles.rail}>
+            {closeButton}
+            {toolbar('column')}
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+
   return (
     <Modal animationType="slide" onRequestClose={onClose} visible>
       <View style={styles.screen}>
@@ -169,74 +251,19 @@ export const SheetMusicViewer = ({
               </Text>
             ) : null}
           </View>
-          <SurfaceIconButton
-            accessibilityLabel="Close sheet music"
-            icon="close"
-            onPress={onClose}
-          />
+          {closeButton}
         </View>
-        {viewable.length > 1 && source ? (
-          <SourceSwitcher
-            onSelect={setSourceId}
-            selectedId={source.id}
-            sources={viewable}
-          />
+        {sourceChips ? (
+          <ChipRow accessibilityLabel="Sheet music sources">
+            {sourceChips}
+          </ChipRow>
         ) : null}
-        {info && info.parts.length > 0 ? (
-          <PartControls info={info} onPressChip={handleChip} />
+        {partChips ? (
+          <ChipRow accessibilityLabel="Parts">{partChips}</ChipRow>
         ) : null}
-        <View style={styles.body}>
-          {!source ? (
-            <Text style={styles.subtitle}>
-              No sheet music can be shown here.
-            </Text>
-          ) : failure ? (
-            <FailureCard
-              failure={failure}
-              onAction={handleFailureAction}
-              source={source}
-            />
-          ) : (
-            <>
-              {state.status === 'loaded' ? (
-                <SheetMusicSurface
-                  document={state.document}
-                  key={`${source.id}:${source.format}`}
-                  onFailed={(reason) =>
-                    setDrawn({
-                      document: state.document,
-                      outcome: { kind: 'failed', reason },
-                    })
-                  }
-                  onRendered={(next) =>
-                    setDrawn({
-                      document: state.document,
-                      outcome: { info: next, kind: 'ready' },
-                    })
-                  }
-                  selection={selection}
-                  zoom={zoom}
-                />
-              ) : null}
-              {outcome?.kind !== 'ready' ? (
-                <View pointerEvents="none" style={styles.loading}>
-                  <ActivityIndicator
-                    accessibilityLabel="Loading sheet music"
-                    color={appTheme.colors.accent}
-                  />
-                </View>
-              ) : null}
-            </>
-          )}
-        </View>
-        <ViewerToolbar
-          isPlaybackToggleDisabled={isPlaybackToggleDisabled}
-          isPlaying={isPlaying}
-          onTogglePlayback={onTogglePlayback}
-          onZoomIn={() => setZoom((current) => stepViewerZoom(current, 1))}
-          onZoomOut={() => setZoom((current) => stepViewerZoom(current, -1))}
-          zoom={zoom}
-        />
+        {info ? <PartNotices info={info} /> : null}
+        <View style={styles.body}>{body}</View>
+        {toolbar('row')}
       </View>
     </Modal>
   );
@@ -246,16 +273,19 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
   },
+  compactMain: {
+    flex: 1,
+    gap: appTheme.space.sm,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: appTheme.space.md,
   },
-  loading: {
-    ...StyleSheet.absoluteFillObject,
+  rail: {
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
   screen: {
     flex: 1,
@@ -263,6 +293,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: appTheme.space.screenInset,
     paddingVertical: appTheme.space.lg,
     backgroundColor: appTheme.colors.bg,
+  },
+  screenCompact: {
+    flexDirection: 'row',
+    paddingVertical: appTheme.space.sm,
   },
   subtitle: {
     ...appTheme.type.rowMeta,

@@ -67,6 +67,11 @@ The system SHALL open a sheet music source only in a full-screen viewer, reached
 - **WHEN** a user opens a MusicXML source
 - **THEN** its staves are rendered as notation, not as a picture of a file or as text
 
+#### Scenario: A phone held sideways
+
+- **WHEN** the viewer is open on a short screen, such as a phone in landscape
+- **THEN** the close, zoom, and play/pause controls sit beside the score and the source and part chips share one row, so the score keeps most of the screen's height, and turning the phone while the viewer is open keeps the file, zoom, and chosen parts
+
 #### Scenario: Staves scroll sideways
 
 - **WHEN** a user opens a MusicXML or MIDI source

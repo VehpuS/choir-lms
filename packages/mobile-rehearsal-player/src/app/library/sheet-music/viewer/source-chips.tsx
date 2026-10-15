@@ -1,29 +1,21 @@
 import type { SheetMusicSource } from '@org/audio-library-models';
-import { ScrollView, StyleSheet } from 'react-native';
 
-import { appTheme } from '../../../utils/theme';
 import { InteractionChip } from '../../components/interaction-chip';
 
-type SourceSwitcherProps = {
+type SourceChipsProps = {
   onSelect: (sourceId: string) => void;
   selectedId: string;
   sources: readonly SheetMusicSource[];
 };
 
-/** Moves between a track's sources, for example `Full score` and `Alto part`. */
-export const SourceSwitcher = ({
+/** One chip per source, for moving between `Full score`, `Alto part`, and so on. */
+export const SourceChips = ({
   onSelect,
   selectedId,
   sources,
-}: SourceSwitcherProps) => {
+}: SourceChipsProps) => {
   return (
-    <ScrollView
-      accessibilityLabel="Sheet music sources"
-      contentContainerStyle={styles.row}
-      horizontal
-      style={styles.scroller}
-      showsHorizontalScrollIndicator={false}
-    >
+    <>
       {sources.map((source) => {
         const isSelected = source.id === selectedId;
 
@@ -38,16 +30,6 @@ export const SourceSwitcher = ({
           />
         );
       })}
-    </ScrollView>
+    </>
   );
 };
-
-const styles = StyleSheet.create({
-  // A horizontal ScrollView grows to fill a column; keep it to its chips' height.
-  scroller: {
-    flexGrow: 0,
-  },
-  row: {
-    gap: appTheme.space.sm,
-  },
-});
