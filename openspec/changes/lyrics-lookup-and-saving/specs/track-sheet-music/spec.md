@@ -55,7 +55,7 @@ The system SHALL offer `Search MuseScore` in the add flow, which opens the syste
 
 ### Requirement: Sheet music opens only in full screen and is rendered as music
 
-The system SHALL open a sheet music source only in a full-screen viewer, reached from the `Sheet music` manager sheet, and SHALL show: PDF sources as rendered pages; MusicXML (`.musicxml`, `.xml`, `.mxl`) sources as rendered staves; and MIDI sources as staves notated from the file, labelled as approximate. The viewer SHALL provide a close control, a switcher between the track's sources, zoom, and a play/pause control so playback stays reachable, and SHALL keep the screen awake while open.
+The system SHALL open a sheet music source only in a full-screen viewer, reached from the `Sheet music` manager sheet, and SHALL show: PDF sources as rendered pages; MusicXML (`.musicxml`, `.xml`, `.mxl`) sources as rendered staves; and MIDI sources as staves notated from the file. The viewer SHALL provide a close control, a switcher between the track's sources, zoom, and a play/pause control so playback stays reachable, and SHALL keep the screen awake while open.
 
 #### Scenario: Open a PDF
 

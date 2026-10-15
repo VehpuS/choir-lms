@@ -56,6 +56,11 @@ const nocturneColors = {
   bgBehindSheet: '#101220',
   /** Translucent backdrop behind modal sheets and dialogs. */
   scrim: `rgba(${BG_BEHIND_SHEET_RGB},0.72)`,
+  /**
+   * Sheet music paper. Notation is drawn in black, so it sits on white rather
+   * than on the dark ground.
+   */
+  paper: '#ffffff',
   /** Cards, the active loop card, search field fill. */
   surface: neutralRamp[800],
   /** Mini-player and tab-bar band. */

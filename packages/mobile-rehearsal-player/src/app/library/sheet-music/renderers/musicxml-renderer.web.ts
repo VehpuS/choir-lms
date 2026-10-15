@@ -55,7 +55,23 @@ export const createMusicXmlRenderer =
       try {
         const { OpenSheetMusicDisplay } =
           (await import('opensheetmusicdisplay')) as unknown as OsmdModule;
-        const osmd = new OpenSheetMusicDisplay(container, {
+        // OpenSheetMusicDisplay sizes itself from its container's `offsetWidth`,
+        // which counts the space a scrollbar takes. Drawing into a full-width
+        // inner element makes it use the width the scrolling host really has.
+        const host = container as {
+          appendChild(child: unknown): unknown;
+          innerHTML: string;
+          ownerDocument: {
+            createElement(tag: 'div'): { style: { cssText: string } };
+          };
+        };
+        const surface = host.ownerDocument.createElement('div');
+
+        surface.style.cssText = 'width:100%;';
+        host.innerHTML = '';
+        host.appendChild(surface);
+
+        const osmd = new OpenSheetMusicDisplay(surface, {
           autoResize: false,
           drawTitle: false,
         });
@@ -93,7 +109,7 @@ export const createMusicXmlRenderer =
           dispose() {
             osmd.clear();
             // `clear` resets the layout but leaves the drawn SVG in the host.
-            (container as { innerHTML: string }).innerHTML = '';
+            host.innerHTML = '';
           },
           parts: parts as readonly ScorePart[],
           get resolved() {
