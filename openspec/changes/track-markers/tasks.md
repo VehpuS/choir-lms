@@ -1,0 +1,41 @@
+## 1. Model, storage, and ownership
+
+- [ ] 1.1 Add `markers?: TrackMarker[]` and `TrackMarker` to `DriveAudioSource` in `packages/audio-library-models`, with the normalization from design Decision 1 (position, name, unique ids, ordering, 200 cap, `Marker N` repair) applied where a source is read, and an empty list removing the field. Spec the parser, including negative and non-finite positions, duplicate ids, missing names, over-long names, over-limit lists, and an old record without the field.
+- [ ] 1.2 Add `resolveMarkerOwner(item, sources)` reusing the existing lyrics/sheet-music owner resolver (track, adjusted track, loop, loop of an adjusted track, missing owner). Spec every case.
+- [ ] 1.3 Add `deriveLoopMarkers`, `buildMarkerList` (merge, order, filter, loop range window, `isPastEnd` flag), and `nextMarkerName`. Spec: loops of an adjusted copy included, loop edit and delete, equal positions ordering, range window inclusive, past-end flagging, `Marker N` filling gaps.
+- [ ] 1.4 Add `planMarkerSections` (design Decision 7): consecutive explicit markers, last section to the track end (needs a duration), optional `Intro`, skip of an existing identical loop, too-short sections, and name reuse. Spec each rule and that derived markers are never boundaries.
+- [ ] 1.5 Persist the field through the practice repository and AsyncStorage in `packages/audio-library-runtime` with `addMarker`, `renameMarker`, `moveMarker`, `deleteMarker` (and undo by re-adding), each updating only that field. Round-trip in the storage specs, confirm an old record loads, the 200 limit is enforced, and removing a track removes its markers.
+- [ ] 1.6 Expose markers through the library controller (`use-rehearsal-library-controller`): `markersFor(item)` through the owner resolver plus derived loop markers, and the write operations, with a controller spec for add, rename, move, delete, a derived item, and a loop being edited.
+
+## 2. Preference
+
+- [ ] 2.1 Add the `markers-filter-preference` store (`choirlms.markers.filter`, `all` | `mine`, default `all`, unknown value falls back) shared by the sheet, the picker, and the flags. Spec defaults, storage failure, and parsing.
+
+## 3. Playback jumping
+
+- [ ] 3.1 Add a `jumpToMarker` operation on the playback controller: seek by absolute audio position when the owner (or a matching loop or adjusted copy) is loaded, preserving the play state; otherwise load the originating item and start from the position, seeking on ready; clamp inside the loop in a loop context. Check the existing seek and loop-range handling first and record the finding here. Spec with the controller fakes: playing, paused, unloaded, loop clamp, and a past-end marker refused.
+
+## 4. Markers sheet
+
+- [ ] 4.1 Build the `MarkersSheet` model (rows, filter, subtitle `Markers for <track name>`, empty state, past-end rows, `Select` mode with exactly-two rule, row action sets for explicit and derived rows) and spec it for every `track-markers` scenario.
+- [ ] 4.2 Build the sheet view: list with time and name, filter control, `Add marker here` (loaded only), `Select`, `Create loops from markers`, the row menu, `Rename` dialog, `Move` dialog (±0.1 s, ±1 s, `Set to current position`, `mm:ss.s` entry with validation), delete with undo toast. Nocturne tokens, 44 pt rows, sentence-case copy, accessible labels.
+- [ ] 4.3 Add `Markers` to the shared saved-item menu (after `Sheet music`) for tracks, loops, and adjusted tracks with an icon in `menu-action-icons.ts`; extend the icon spec and saved-item menu specs; confirm playlist, folder, and bulk menus do not gain it. Host the sheet like the lyrics and sheet music hosts.
+- [ ] 4.4 Add `Markers` and `Add marker here` to the playback screen overflow (`now-playing-menu-model`), extend its spec.
+
+## 5. Waveform flags
+
+- [ ] 5.1 Add a flag layout model (positions to x, merge below 12 pt, kinds, nearest-flag hit test) and spec it, including crowded flags and the filter.
+- [ ] 5.2 Draw the flags on the playback waveform component with the press label, tap-to-jump, long-press-to-add, and long-press-on-flag menu, with button roles and labels for assistive technology. Confirm no layout shift.
+
+## 6. Loop editor and markers to loops
+
+- [ ] 6.1 Extend the loop editor model with the armed field state and `pickMarker(field, marker)` (does not move the other boundary; invalid range handled by the existing validation), excluding the edited loop's own derived markers. Spec arming, disarming, pick start, pick end, and the invalid range.
+- [ ] 6.2 Make the Start/End range cards selectable with the armed outline, add `Pick marker` opening the list as a picker (filter retained), draw read-only flags on the loop editor waveform, and make flag taps set the armed field. Markers cannot be added there.
+- [ ] 6.3 Add `Loop to next marker` and two-marker `Make loop` by opening the loop editor in create mode with prefilled boundaries and name; spec the prefill (including last-marker, unknown duration).
+- [ ] 6.4 Build the `Create loops from markers` dialog (sections with checkboxes, `Include intro`, skipped reasons, `Create N loops`) over `planMarkerSections` and the existing save-loop operation. Spec the dialog model, including nothing checked disabling confirm.
+
+## 7. Verification and docs
+
+- [ ] 7.1 Verify in the browser preview with playback muted: add at the playhead and by long-press, rename, move, delete and undo, jump playing, paused, and from the library, loop markers appearing, updating, disappearing, the filter, keep-as-marker, flags on both waveforms, picking in the loop editor, the three markers-to-loops flows, a loop's and an adjusted copy's lists, and persistence across reload. Record the result here.
+- [ ] 7.2 Confirm markers appear nowhere else (Files tree, search, tags, playlists, bulk) and that removing a track removes them.
+- [ ] 7.3 Update the README with the new capability and run `npm exec -- nx run-many -t lint test typecheck build --all` (or affected) green.
