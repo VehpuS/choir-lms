@@ -1,11 +1,16 @@
-import { suggestLyricsTitle } from '../lyrics/lyrics-search-terms';
+import {
+  suggestLyricsQuery,
+  type LyricsQuerySuggestion,
+} from '../lyrics/lyrics-search-terms';
 
 const REPEATED_WHITESPACE_PATTERN = /\s+/g;
 // Spike 9.4: the search page form seen in MuseScore's own search results.
 const MUSESCORE_SEARCH_BASE_URL = 'https://musescore.com/sheetmusic';
 
-/** The Title shown in the add flow before the user edits it: the track name, cleaned. */
-export const suggestSheetMusicTitle = suggestLyricsTitle;
+/** The Title and Artist shown in the add flow before the user edits them, from the track name. */
+export type SheetMusicSearchSuggestion = LyricsQuerySuggestion;
+
+export const suggestSheetMusicQuery = suggestLyricsQuery;
 
 /**
  * The MuseScore search for the Title and Artist visible in the add flow. The

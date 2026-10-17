@@ -3,7 +3,10 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { appTheme } from '../../../utils/theme';
-import { buildMuseScoreSearchUrl } from '../sheet-music-search-terms';
+import {
+  buildMuseScoreSearchUrl,
+  type SheetMusicSearchSuggestion,
+} from '../sheet-music-search-terms';
 import { resolveLinkAddition, type LinkAddition } from './model';
 
 type AddSheetMusicPanelProps = {
@@ -12,8 +15,8 @@ type AddSheetMusicPanelProps = {
   onAddLink: (addition: LinkAddition) => Promise<boolean>;
   onBack: () => void;
   onOpenExternal: (url: string) => void;
-  /** The Title shown before the user edits it (the track name, cleaned). */
-  suggestedTitle: string;
+  /** The Title and Artist shown before the user edits them (from the track name). */
+  suggestedQuery: SheetMusicSearchSuggestion;
 };
 
 type Mode = 'choices' | 'link';
@@ -24,11 +27,11 @@ export const AddSheetMusicPanel = ({
   onBack,
   onChooseDrive,
   onOpenExternal,
-  suggestedTitle,
+  suggestedQuery,
 }: AddSheetMusicPanelProps) => {
   const [mode, setMode] = useState<Mode>('choices');
-  const [title, setTitle] = useState(suggestedTitle);
-  const [artist, setArtist] = useState('');
+  const [title, setTitle] = useState(suggestedQuery.title);
+  const [artist, setArtist] = useState(suggestedQuery.artist);
   const [url, setUrl] = useState('');
   const [label, setLabel] = useState('');
   const [message, setMessage] = useState<string | null>(null);

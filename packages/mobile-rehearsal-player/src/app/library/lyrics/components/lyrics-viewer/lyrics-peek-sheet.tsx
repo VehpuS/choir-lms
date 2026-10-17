@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 
 import { OutlinedActionButton } from '../../../../components/outlined-action-button';
+import { darkScrollbarStyle } from '../../../../components/dark-scrollbar';
 import { appTheme } from '../../../../utils/theme';
 import { BottomSheetSurface } from '../../../components/bottom-sheet-surface';
 import {
@@ -41,7 +42,12 @@ export const LyricsPeekSheet = ({
       onClose={onClose}
       title={ownerName}
     >
-      <ScrollView style={{ maxHeight: resolveLyricsPeekMaxHeight(height) }}>
+      <ScrollView
+        style={[
+          darkScrollbarStyle,
+          { maxHeight: resolveLyricsPeekMaxHeight(height) },
+        ]}
+      >
         <Text selectable style={textStyle}>
           {text}
         </Text>

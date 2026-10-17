@@ -9,7 +9,7 @@ import type {
   LyricsCandidate,
   LyricsLookupFailureReason,
 } from '../../lyrics-lookup-client';
-import { suggestLyricsTitle } from '../../lyrics-search-terms';
+import { suggestLyricsQuery } from '../../lyrics-search-terms';
 
 export { MAX_LYRICS_LENGTH };
 
@@ -49,15 +49,16 @@ export const createLyricsEditorState = (options: {
   trackName: string;
 }): LyricsEditorState => {
   const text = options.lyrics?.text ?? '';
+  const suggestion = suggestLyricsQuery(options.trackName);
 
   return {
-    artist: '',
+    artist: suggestion.artist,
     hasAcknowledgedDisclosure: options.hasAcknowledgedDisclosure,
     initialText: text,
     lookup: { status: 'idle' },
     origin: options.lyrics?.origin ?? 'typed',
     text,
-    title: suggestLyricsTitle(options.trackName),
+    title: suggestion.title,
   };
 };
 

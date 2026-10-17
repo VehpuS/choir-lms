@@ -13,6 +13,7 @@ import {
   type LinkAddition,
 } from './model';
 import { SheetMusicRow } from './sheet-music-row';
+import type { SheetMusicSearchSuggestion } from '../sheet-music-search-terms';
 
 type SheetMusicManagerSheetProps = {
   canMutate: boolean;
@@ -26,7 +27,7 @@ type SheetMusicManagerSheetProps = {
   /** The track that owns the list (a loop or adjusted track opens its parent's). */
   ownerName: string;
   sources: readonly SheetMusicSource[];
-  suggestedTitle: string;
+  suggestedQuery: SheetMusicSearchSuggestion;
 };
 
 /** The `Sheet music` manager: the track's sources, `Add sheet music`, and the limit. */
@@ -41,7 +42,7 @@ export const SheetMusicManagerSheet = ({
   onRename,
   ownerName,
   sources,
-  suggestedTitle,
+  suggestedQuery,
 }: SheetMusicManagerSheetProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const confirmation = useLibraryFilesConfirmationFlow();
@@ -89,7 +90,7 @@ export const SheetMusicManagerSheet = ({
             }}
             onChooseDrive={onChooseDrive}
             onOpenExternal={onOpenExternal}
-            suggestedTitle={suggestedTitle}
+            suggestedQuery={suggestedQuery}
           />
         ) : (
           <>

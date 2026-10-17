@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import { OutlinedActionButton } from '../../../../components/outlined-action-button';
+import { darkScrollbarStyle } from '../../../../components/dark-scrollbar';
 import { appTheme } from '../../../../utils/theme';
 import { useLyricsFor } from '../../../components/saved-item-menu/saved-item-availability-context';
 import { requestSavedItemAction } from '../../../components/saved-item-menu/saved-item-requests';
@@ -78,7 +79,10 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
           ) : null}
           {/* A fixed-height window onto the full text, so it scrolls in place. */}
           {showsInlineText ? (
-            <ScrollView nestedScrollEnabled style={{ height: previewHeight }}>
+            <ScrollView
+              nestedScrollEnabled
+              style={[darkScrollbarStyle, { height: previewHeight }]}
+            >
               <Text selectable style={textStyle}>
                 {model.text}
               </Text>

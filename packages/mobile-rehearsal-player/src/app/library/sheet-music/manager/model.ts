@@ -7,6 +7,7 @@ import {
   type SheetMusicSource,
 } from '@org/audio-library-models';
 
+import { SHEET_MUSIC_FORMAT_LABELS as FORMAT_LABELS } from '../format-labels';
 import { isViewableSource, resolveExternalActionLabel } from '../viewer/model';
 
 export const SUPPORTED_FORMATS_MESSAGE =
@@ -18,13 +19,6 @@ export const MUSESCORE_EXPORT_HINT =
   'Export MusicXML from MuseScore to view it here.';
 export const OPENS_OUTSIDE_LABEL = 'Opens outside the app';
 
-const FORMAT_LABELS: Record<SheetMusicFormat, string> = {
-  link: 'Link',
-  midi: 'MIDI',
-  musescore: 'MuseScore',
-  musicxml: 'MusicXML',
-  pdf: 'PDF',
-};
 const URL_LAST_SEGMENT_PATTERN = /([^/]+)\/?$/;
 const URL_HOST_PATTERN = /^https?:\/\/([^/?#]+)/i;
 const EXTENSION_SUFFIX_PATTERN = /\.[a-z0-9]{1,8}$/i;

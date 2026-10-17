@@ -43,6 +43,17 @@ describe('opening the editor', () => {
     assert.deepEqual(state.lookup, { status: 'idle' });
   });
 
+  it('pre-fills the artist too when the name reads Artist - Title', () => {
+    const state = createLyricsEditorState({
+      hasAcknowledgedDisclosure: false,
+      lyrics: undefined,
+      trackName: 'Queen - Bohemian Rhapsody.mp3',
+    });
+
+    assert.equal(state.artist, 'Queen');
+    assert.equal(state.title, 'Bohemian Rhapsody');
+  });
+
   it('opens with stored lyrics and treats them as saved', () => {
     const state = createLyricsEditorState({
       hasAcknowledgedDisclosure: true,

@@ -1,6 +1,7 @@
 import type { SheetMusicSource } from '@org/audio-library-models';
 
 import { InteractionChip } from '../../components/interaction-chip';
+import { resolveSourceChipLabels } from './source-chip-labels';
 
 type SourceChipsProps = {
   onSelect: (sourceId: string) => void;
@@ -14,6 +15,8 @@ export const SourceChips = ({
   selectedId,
   sources,
 }: SourceChipsProps) => {
+  const labels = resolveSourceChipLabels(sources);
+
   return (
     <>
       {sources.map((source) => {
@@ -21,10 +24,10 @@ export const SourceChips = ({
 
         return (
           <InteractionChip
-            accessibilityLabel={`Show ${source.label}`}
+            accessibilityLabel={`Show ${labels[source.id]}`}
             accessibilitySelected={isSelected}
             key={source.id}
-            label={source.label}
+            label={labels[source.id] ?? source.label}
             onPress={() => onSelect(source.id)}
             variant={isSelected ? 'selected' : 'passive'}
           />

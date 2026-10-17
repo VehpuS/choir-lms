@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   buildMuseScoreSearchUrl,
-  suggestSheetMusicTitle,
+  suggestSheetMusicQuery,
 } from './sheet-music-search-terms';
 
 describe('buildMuseScoreSearchUrl', () => {
@@ -29,11 +29,18 @@ describe('buildMuseScoreSearchUrl', () => {
   });
 });
 
-describe('suggestSheetMusicTitle', () => {
+describe('suggestSheetMusicQuery', () => {
   it('reads a track file name the way the lyrics editor does', () => {
-    assert.equal(
-      suggestSheetMusicTitle('03 - Kyrie_Eleison.mp3'),
-      'Kyrie Eleison',
-    );
+    assert.deepEqual(suggestSheetMusicQuery('03 - Kyrie_Eleison.mp3'), {
+      artist: '',
+      title: 'Kyrie Eleison',
+    });
+  });
+
+  it('fills the artist from an Artist - Title name', () => {
+    assert.deepEqual(suggestSheetMusicQuery('Rutter - Gloria.mp3'), {
+      artist: 'Rutter',
+      title: 'Gloria',
+    });
   });
 });

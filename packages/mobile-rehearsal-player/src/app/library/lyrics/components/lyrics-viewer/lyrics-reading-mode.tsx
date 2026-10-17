@@ -4,6 +4,7 @@ import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
 import { SegmentedControl } from '../../../../components/segmented-control';
 import { SurfaceIconButton } from '../../../../components/surface-icon-button';
+import { darkScrollbarStyle } from '../../../../components/dark-scrollbar';
 import { appTheme } from '../../../../utils/theme';
 import {
   LYRICS_TEXT_SIZES,
@@ -68,7 +69,10 @@ export const LyricsReadingMode = ({
           options={TEXT_SIZE_OPTIONS}
           selectedValue={size}
         />
-        <ScrollView contentContainerStyle={styles.column} style={styles.scroll}>
+        <ScrollView
+          contentContainerStyle={styles.column}
+          style={[darkScrollbarStyle, styles.scroll]}
+        >
           <Text selectable style={resolveLyricsTextStyle(size)}>
             {text}
           </Text>

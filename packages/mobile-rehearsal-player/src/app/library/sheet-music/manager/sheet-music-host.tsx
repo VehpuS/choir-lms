@@ -10,7 +10,7 @@ import {
   type SheetMusicItem,
   type useSourceSheetMusic,
 } from '../hooks/use-source-sheet-music';
-import { suggestSheetMusicTitle } from '../sheet-music-search-terms';
+import { suggestSheetMusicQuery } from '../sheet-music-search-terms';
 import { SheetMusicViewer } from '../viewer';
 import { isViewableSource, resolveExternalUrl } from '../viewer/model';
 import { createDriveAddition } from '../drive-picker/model';
@@ -112,7 +112,7 @@ export const SheetMusicHost = ({
         }
         ownerName={owner.name}
         sources={sources}
-        suggestedTitle={suggestSheetMusicTitle(owner.name)}
+        suggestedQuery={suggestSheetMusicQuery(owner.name)}
       />
       {isPickingFromDrive ? (
         <DriveSheetMusicPickerSheet
