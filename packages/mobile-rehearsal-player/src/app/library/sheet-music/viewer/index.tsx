@@ -22,6 +22,7 @@ import {
   applyPartChip,
   describeViewerFailure,
   filterViewableSources,
+  hasPartChoice,
   resolveExternalUrl,
   type ViewerFailureAction,
 } from './model';
@@ -128,7 +129,7 @@ export const SheetMusicViewer = ({
       : undefined;
   const info = outcome?.kind === 'ready' ? outcome.info : null;
   const viewerZoom = useViewerZoom(info !== null);
-  const hasParts = info !== null && info.parts.length > 0;
+  const hasParts = info !== null && hasPartChoice(info.parts);
   const hasSwitcher = viewable.length > 1 && source !== undefined;
 
   const handleFailureAction = (action: ViewerFailureAction) => {
@@ -227,7 +228,7 @@ export const SheetMusicViewer = ({
                 {`${ownerName} · ${source.label}`}
               </Text>
             ) : null}
-            {info ? <PartNotices info={info} /> : null}
+            {hasParts ? <PartNotices info={info} /> : null}
             <View style={styles.body}>{body}</View>
           </View>
           <View style={styles.rail}>
@@ -263,7 +264,7 @@ export const SheetMusicViewer = ({
         {partChips ? (
           <ChipRow accessibilityLabel="Parts">{partChips}</ChipRow>
         ) : null}
-        {info ? <PartNotices info={info} /> : null}
+        {hasParts ? <PartNotices info={info} /> : null}
         <View style={styles.body}>{body}</View>
         {toolbar('row')}
       </View>

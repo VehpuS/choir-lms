@@ -17,6 +17,7 @@ import {
   describeViewerFailure,
   filterViewableSources,
   formatViewerZoom,
+  hasPartChoice,
   resolveExternalActionLabel,
   resolveExternalUrl,
   stepViewerZoom,
@@ -128,6 +129,22 @@ describe('describeViewerFailure', () => {
 
       assert.doesNotMatch(`${failure?.title} ${failure?.message}`, /error/i);
     }
+  });
+});
+
+describe('hasPartChoice', () => {
+  it('offers no choice for a one-part file, named or not', () => {
+    assert.equal(hasPartChoice(scoreParts(['Track 1'])), false);
+    assert.equal(hasPartChoice(scoreParts(['Alto'])), false);
+  });
+
+  it('offers a choice once there are two parts, even unrecognized ones', () => {
+    assert.equal(hasPartChoice(scoreParts(['Track 1', 'Track 2'])), true);
+    assert.equal(hasPartChoice(PIANO_VOCAL), true);
+  });
+
+  it('offers no choice for a file with no parts', () => {
+    assert.equal(hasPartChoice([]), false);
   });
 });
 

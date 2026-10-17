@@ -150,6 +150,15 @@ export const describeViewerFailure = (
   }
 };
 
+/**
+ * Whether the singer has anything to choose between. A one-part file (a part
+ * file such as `...-Alto.mid`, whose single track may be called `Track 1`)
+ * shows no chips and no notice: there is nothing to pick, and a notice about
+ * unrecognized parts says nothing a singer can act on.
+ */
+export const hasPartChoice = (parts: readonly ScorePart[]): boolean =>
+  parts.length > 1;
+
 export type PartChip = {
   accessibilityLabel: string;
   isOn: boolean;
