@@ -20,6 +20,7 @@ import {
 } from './shaping-surface-model';
 import { shapingStyles as styles } from './styles';
 import { ariaStateProps } from '../../../components/aria-state';
+import { darkScrollbarStyle } from '../../../components/dark-scrollbar';
 
 const INFO_ICON_SIZE = 18;
 
@@ -132,7 +133,7 @@ export const ShapingSurface = ({
 
       <ScrollView
         contentContainerStyle={nowPlayingStyles.bodyContent}
-        style={nowPlayingStyles.body}
+        style={[darkScrollbarStyle, nowPlayingStyles.body]}
       >
         <View style={styles.contextBlock}>
           <Text numberOfLines={1} style={styles.contextTitle}>

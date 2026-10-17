@@ -17,6 +17,7 @@ import {
 import { savedTrackPlaylistMenuSurfaceStyles as styles } from './saved-track-playlist-menu-surface-styles';
 
 import { appTheme } from '../../../utils/theme';
+import { darkScrollbarStyle } from '../../../components/dark-scrollbar';
 
 type SavedTrackPlaylistMenuSurfaceProps = {
   createPlaylistIssue: PlaylistDraftIssue | null;
@@ -86,7 +87,7 @@ export const SavedTrackPlaylistMenuSurface = ({
           {playlists.length > 0 ? (
             <ScrollView
               keyboardShouldPersistTaps="handled"
-              style={styles.playlistList}
+              style={[darkScrollbarStyle, styles.playlistList]}
             >
               <MenuGroup>
                 {playlists.map((playlist) => {

@@ -35,6 +35,7 @@ import { resolveNowPlayingMakeLoopRequest } from './now-playing-menu-model';
 import type { PlaybackShapingControls } from '../shaping/shaping-surface-model';
 import { nowPlayingStyles as styles } from './styles';
 import { NowPlayingTransportRow } from './now-playing-transport-row';
+import { darkScrollbarStyle } from '../../../components/dark-scrollbar';
 
 const LOOP_CHIP_ICON_SIZE = 16;
 
@@ -217,7 +218,7 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
 
       <ScrollView
         contentContainerStyle={styles.bodyContent}
-        style={styles.body}
+        style={[darkScrollbarStyle, styles.body]}
       >
         <TitleBlock
           downloadLabel={props.downloadLabel}

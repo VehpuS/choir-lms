@@ -14,6 +14,7 @@ import {
 } from './model';
 import { SheetMusicRow } from './sheet-music-row';
 import type { SheetMusicSearchSuggestion } from '../sheet-music-search-terms';
+import { darkScrollbarStyle } from '../../../components/dark-scrollbar';
 
 type SheetMusicManagerSheetProps = {
   canMutate: boolean;
@@ -71,7 +72,7 @@ export const SheetMusicManagerSheet = ({
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
-        style={styles.scroll}
+        style={[darkScrollbarStyle, styles.scroll]}
       >
         <Text style={styles.copy}>{`Sheet music for ${ownerName}`}</Text>
         {isAdding ? (

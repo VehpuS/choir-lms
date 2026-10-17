@@ -17,6 +17,7 @@ import { LoopEditorRangeCards } from './loop-editor-range-cards';
 import { LoopEditorTransport } from './loop-editor-transport';
 import { LoopEditorWaveform } from './loop-editor-waveform';
 import { loopEditorStyles as styles } from './styles';
+import { darkScrollbarStyle } from '../../../../components/dark-scrollbar';
 
 type LoopEditorSurfaceProps = {
   builderIssue: { message: string; title: string } | null;
@@ -98,7 +99,7 @@ export const LoopEditorSurface = (props: LoopEditorSurfaceProps) => {
       <ScrollView
         contentContainerStyle={styles.bodyContent}
         keyboardShouldPersistTaps="handled"
-        style={styles.body}
+        style={[darkScrollbarStyle, styles.body]}
       >
         <Text numberOfLines={2} style={styles.title}>
           {selectedTrack.source.name}

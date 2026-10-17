@@ -6,6 +6,7 @@ import {
 } from '../../components/interaction-guard';
 import { CenteredDialogCard } from '../components/centered-dialog-card';
 import { savedPlaylistSectionStyles as styles } from '../components/saved-playlist-section-styles';
+import { darkScrollbarStyle } from '../../components/dark-scrollbar';
 
 export type LibraryFilesConfirmationDialogContent = {
   affectedSections?: Array<{
@@ -41,7 +42,7 @@ export const LibraryFilesConfirmationDialog = ({
       {content.affectedSections?.length ? (
         <ScrollView
           contentContainerStyle={styles.confirmationAffectedListContent}
-          style={styles.confirmationAffectedList}
+          style={[darkScrollbarStyle, styles.confirmationAffectedList]}
         >
           {content.affectedSections.map((section) => (
             <View key={section.title} style={styles.confirmationAffectedGroup}>

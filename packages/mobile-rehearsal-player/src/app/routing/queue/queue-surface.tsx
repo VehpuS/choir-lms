@@ -15,6 +15,7 @@ import { QueuePlaylistActionRow } from './queue-playlist-action-row';
 import { getQueueModeChips } from './queue-mode-chips-model';
 import { QueueSurfaceRow } from './queue-surface-row';
 import { queueStyles as styles } from './styles';
+import { darkScrollbarStyle } from '../../components/dark-scrollbar';
 
 const MODE_CHIP_ICON_SIZE = 18;
 
@@ -181,7 +182,7 @@ export const QueueSurface = ({
         contentContainerStyle={styles.listContent}
         scrollEnabled={!isQueueRowDragActive}
         showsVerticalScrollIndicator={summary.items.length > 6}
-        style={styles.list}
+        style={[darkScrollbarStyle, styles.list]}
       >
         <ExplorerListSurface>
           {summary.items.map((item) => {

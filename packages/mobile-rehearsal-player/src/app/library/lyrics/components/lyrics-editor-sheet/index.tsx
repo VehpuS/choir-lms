@@ -23,6 +23,7 @@ import {
   isLyricsEditorOverLimit,
   lyricsEditorReducer,
 } from './model';
+import { darkScrollbarStyle } from '../../../../components/dark-scrollbar';
 
 export type LyricsEditorSheetProps = {
   hasAcknowledgedDisclosure: boolean;
@@ -116,7 +117,7 @@ export const LyricsEditorSheet = ({
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
-        style={styles.scroll}
+        style={[darkScrollbarStyle, styles.scroll]}
       >
         <Text style={styles.bodyCopy}>{`Lyrics for ${ownerName}`}</Text>
 

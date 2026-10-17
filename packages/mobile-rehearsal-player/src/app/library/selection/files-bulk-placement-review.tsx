@@ -17,6 +17,7 @@ import {
   getPlacementReviewSummary,
   getPlacementReviewToggleLabel,
 } from './placement-review-summary';
+import { darkScrollbarStyle } from '../../components/dark-scrollbar';
 
 const LIST_MAX_HEIGHT = 320;
 const RESOLUTION_OPTIONS = [
@@ -82,7 +83,7 @@ export const FilesBulkPlacementReview = ({
         }}
       />
       {isListOpen ? (
-        <ScrollView style={styles.list}>
+        <ScrollView style={[darkScrollbarStyle, styles.list]}>
           {needsAttention.map((entry) => (
             <View key={entry.itemId} style={styles.entry}>
               <Text numberOfLines={1} style={styles.entryName}>

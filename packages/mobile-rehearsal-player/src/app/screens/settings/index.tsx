@@ -19,6 +19,7 @@ import {
   hasStoredBulkChoiceDefault,
 } from './model';
 import { settingsNavigationStore } from './settings-navigation-store';
+import { darkScrollbarStyle } from '../../components/dark-scrollbar';
 
 // The one place stored defaults are shown and reset, so a default that skips
 // its prompt is never invisible (design "Bulk action preferences").
@@ -52,7 +53,7 @@ export const SettingsScreen = () => {
       />
       <ScrollView
         contentContainerStyle={[styles.content, scrollGutterStyles.content]}
-        style={scrollGutterStyles.scrollView}
+        style={[darkScrollbarStyle, scrollGutterStyles.scrollView]}
       >
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{SETTINGS_COPY.sectionTitle}</Text>

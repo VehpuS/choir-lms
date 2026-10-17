@@ -30,6 +30,7 @@ import {
   useDriveSheetMusicPicker,
   type DriveSheetMusicClient,
 } from './use-drive-sheet-music-picker';
+import { darkScrollbarStyle } from '../../../components/dark-scrollbar';
 
 type DriveSheetMusicPickerSheetProps = {
   /** The current Drive token, or undefined when Drive is not connected. */
@@ -136,7 +137,10 @@ export const DriveSheetMusicPickerSheet = ({
 
         <ScrollView
           keyboardShouldPersistTaps="handled"
-          style={{ maxHeight: height * LIST_MAX_HEIGHT_SHARE }}
+          style={[
+            darkScrollbarStyle,
+            { maxHeight: height * LIST_MAX_HEIGHT_SHARE },
+          ]}
         >
           {state.status === 'loading' ? (
             <Text style={styles.copy}>Loading…</Text>

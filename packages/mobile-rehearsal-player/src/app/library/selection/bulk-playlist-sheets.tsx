@@ -10,6 +10,7 @@ import {
   MenuRow,
 } from '../components/options-menu-sheet/menu-group';
 import type { PlaylistDraftIssue } from '../playlists/utils/saved-playlist-view-model';
+import { darkScrollbarStyle } from '../../components/dark-scrollbar';
 
 const PLAYLIST_LIST_MAX_HEIGHT = 280;
 
@@ -57,7 +58,7 @@ export const BulkPlaylistTargetSheet = ({
     {playlists.length > 0 ? (
       <ScrollView
         keyboardShouldPersistTaps="handled"
-        style={styles.playlistList}
+        style={[darkScrollbarStyle, styles.playlistList]}
       >
         <MenuGroup>
           {playlists.map((playlist) => {
