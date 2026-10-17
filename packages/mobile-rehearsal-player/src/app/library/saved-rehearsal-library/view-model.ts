@@ -1,5 +1,6 @@
 import type { NamedLoop } from '@org/audio-library-models';
 import type { DriveAuthorizationState } from '@org/google-drive';
+import { pickBy } from 'es-toolkit';
 import { keyBy } from 'es-toolkit/compat';
 
 import type {
@@ -25,6 +26,16 @@ const CONNECT_SAVED_TRACK_MESSAGE =
   'Connect Google Drive to verify or play this saved rehearsal track.';
 const RECONNECT_SAVED_TRACK_MESSAGE =
   'Reconnect Google Drive to restore this saved rehearsal track.';
+
+// Fields the user owns on a saved track. Drive knows nothing about them, so a
+// Drive row on screen must not erase them: add a new saved-only field here.
+const SAVED_TRACK_OWNED_FIELDS = new Set<string>([
+  'lyrics',
+  'sheetMusic',
+  'sourceLocation',
+  'tagAddedAt',
+  'tags',
+]);
 
 const pluralize = (count: number, noun: string) => {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
@@ -99,16 +110,17 @@ export const resolveSavedRehearsalLibrarySources = (
       return source;
     }
 
+    const ownedFields = pickBy(source, (value, key) => {
+      return value !== undefined && SAVED_TRACK_OWNED_FIELDS.has(key);
+    });
+    // Drive is the source of truth for the duration whenever it reports one;
+    // the saved value only fills the gap before Drive has.
+    const durationMs = visibleSource.durationMs ?? source.durationMs;
+
     return {
       ...visibleSource,
-      ...(source.tags ? { tags: source.tags } : {}),
-      ...(source.sourceLocation
-        ? { sourceLocation: source.sourceLocation }
-        : {}),
-      // Lyrics and sheet music belong to the saved track, not to Drive, so the
-      // Drive row on screen must not erase them.
-      ...(source.lyrics ? { lyrics: source.lyrics } : {}),
-      ...(source.sheetMusic ? { sheetMusic: source.sheetMusic } : {}),
+      ...(durationMs === undefined ? {} : { durationMs }),
+      ...ownedFields,
     };
   });
 };
