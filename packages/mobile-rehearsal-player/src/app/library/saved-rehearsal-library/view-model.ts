@@ -105,6 +105,10 @@ export const resolveSavedRehearsalLibrarySources = (
       ...(source.sourceLocation
         ? { sourceLocation: source.sourceLocation }
         : {}),
+      // Lyrics and sheet music belong to the saved track, not to Drive, so the
+      // Drive row on screen must not erase them.
+      ...(source.lyrics ? { lyrics: source.lyrics } : {}),
+      ...(source.sheetMusic ? { sheetMusic: source.sheetMusic } : {}),
     };
   });
 };

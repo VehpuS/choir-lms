@@ -73,6 +73,44 @@ describe('saved rehearsal library view-model', () => {
     assert.deepEqual(savedSources, [{ ...refreshedSource, tags: ['Soprano'] }]);
   });
 
+  it('keeps saved lyrics and sheet music when a Drive row for the track is on screen', () => {
+    const sourceWithExtras = {
+      ...PLAYABLE_SOURCE,
+      lyrics: {
+        origin: 'typed' as const,
+        text: 'Kyrie eleison',
+        updatedAt: '2026-10-17T00:00:00.000Z',
+      },
+      sheetMusic: [
+        {
+          addedAt: '2026-10-17T00:00:00.000Z',
+          format: 'pdf' as const,
+          id: 'sheet-1',
+          label: 'Full score',
+          location: { kind: 'url' as const, url: 'https://example.com/a.pdf' },
+        },
+      ],
+    };
+    const refreshedSource = {
+      ...PLAYABLE_SOURCE,
+      modifiedTime: '2026-05-11T10:00:00.000Z',
+    };
+
+    const savedSources = resolveSavedRehearsalLibrarySources({
+      authState: AUTHORIZED_STATE,
+      savedSources: [sourceWithExtras],
+      visibleSources: [refreshedSource],
+    });
+
+    assert.deepEqual(savedSources, [
+      {
+        ...refreshedSource,
+        lyrics: sourceWithExtras.lyrics,
+        sheetMusic: sourceWithExtras.sheetMusic,
+      },
+    ]);
+  });
+
   it('preserves saved Drive provenance when Drive refreshes visible source metadata', () => {
     const sourceWithProvenance = {
       ...PLAYABLE_SOURCE,
