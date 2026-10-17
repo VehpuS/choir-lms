@@ -19,18 +19,17 @@ import { createSheetMusicLoader } from '../sheet-music-loader';
 import { ChipRow } from './chip-row';
 import { isCompactViewerHeight } from './layout-model';
 import {
-  VIEWER_DEFAULT_ZOOM,
   applyPartChip,
   describeViewerFailure,
   filterViewableSources,
   resolveExternalUrl,
-  stepViewerZoom,
   type ViewerFailureAction,
 } from './model';
 import { ChipDivider, PartChips, PartNotices } from './part-chips';
 import { SourceChips } from './source-chips';
 import { useSheetMusicDocument } from './use-sheet-music-document';
 import { ViewerBody, type ViewerOutcome } from './viewer-body';
+import { useViewerZoom } from './use-viewer-zoom';
 import { ViewerToolbar } from './viewer-toolbar';
 
 // Reading music means holding the phone or tablet up, so the screen stays on
@@ -83,7 +82,6 @@ export const SheetMusicViewer = ({
   const isCompact = isCompactViewerHeight(useWindowDimensions().height);
   const viewable = useMemo(() => filterViewableSources(sources), [sources]);
   const [sourceId, setSourceId] = useState(initialSourceId);
-  const [zoom, setZoom] = useState(VIEWER_DEFAULT_ZOOM);
   const [chosen, setChosen] = useState<
     Record<string, SheetMusicPartSelection | undefined>
   >({});
@@ -129,6 +127,7 @@ export const SheetMusicViewer = ({
       ? describeViewerFailure(failureReason, source)
       : undefined;
   const info = outcome?.kind === 'ready' ? outcome.info : null;
+  const viewerZoom = useViewerZoom(info !== null);
   const hasParts = info !== null && info.parts.length > 0;
   const hasSwitcher = viewable.length > 1 && source !== undefined;
 
@@ -177,6 +176,7 @@ export const SheetMusicViewer = ({
         })
       }
       onFailureAction={handleFailureAction}
+      onFitZoom={viewerZoom.onFitZoom}
       onRendered={(next) =>
         setDrawn({
           document: state.status === 'loaded' ? state.document : undefined,
@@ -187,7 +187,7 @@ export const SheetMusicViewer = ({
       selection={selection}
       source={source}
       state={state}
-      zoom={zoom}
+      zoom={viewerZoom.zoom}
     />
   );
   const toolbar = (orientation: 'column' | 'row') => (
@@ -195,10 +195,12 @@ export const SheetMusicViewer = ({
       isPlaybackToggleDisabled={isPlaybackToggleDisabled}
       isPlaying={isPlaying}
       onTogglePlayback={onTogglePlayback}
-      onZoomIn={() => setZoom((current) => stepViewerZoom(current, 1))}
-      onZoomOut={() => setZoom((current) => stepViewerZoom(current, -1))}
+      isFitted={viewerZoom.isFitted}
+      onFit={info ? viewerZoom.fit : undefined}
+      onZoomIn={viewerZoom.zoomIn}
+      onZoomOut={viewerZoom.zoomOut}
       orientation={orientation}
-      zoom={zoom}
+      zoom={viewerZoom.zoom}
     />
   );
   const closeButton = (

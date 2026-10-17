@@ -23,6 +23,7 @@ type ViewerBodyProps = {
   failure: ViewerFailure | undefined;
   onFailed: (reason: ViewerFailureReason) => void;
   onFailureAction: (action: ViewerFailureAction) => void;
+  onFitZoom: (zoom: number) => void;
   onRendered: (info: ScoreInfo | null) => void;
   outcome: ViewerOutcome | undefined;
   selection: SheetMusicPartSelection | undefined;
@@ -36,6 +37,7 @@ export const ViewerBody = ({
   failure,
   onFailed,
   onFailureAction,
+  onFitZoom,
   onRendered,
   outcome,
   selection,
@@ -66,6 +68,7 @@ export const ViewerBody = ({
           document={state.document}
           key={`${source.id}:${source.format}`}
           onFailed={onFailed}
+          onFitZoom={onFitZoom}
           onRendered={onRendered}
           selection={selection}
           zoom={zoom}

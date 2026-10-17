@@ -16,6 +16,8 @@ export type ScoreInfo = {
 export type SheetMusicSurfaceProps = {
   document: LoadedSheetMusic;
   onFailed: (reason: ViewerFailureReason) => void;
+  /** The zoom that fits a score's height to the space; not called for a PDF. */
+  onFitZoom: (zoom: number) => void;
   /** `null` for a PDF, which has no parts. Called again when the selection changes. */
   onRendered: (info: ScoreInfo | null) => void;
   selection: SheetMusicPartSelection | undefined;

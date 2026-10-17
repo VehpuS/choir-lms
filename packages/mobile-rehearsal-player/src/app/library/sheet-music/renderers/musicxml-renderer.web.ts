@@ -35,7 +35,24 @@ type OsmdModule = {
   ) => OsmdInstance;
 };
 
+// The slice of a DOM element used to measure the drawing.
+type DrawnSvg = {
+  getBoundingClientRect(): { height: number };
+  style: { display: string };
+};
+type Measurable = { querySelector(selector: string): DrawnSvg | null };
+
 const DEFAULT_ZOOM = 1;
+
+// An inline SVG sits on its line's baseline, which leaves a few pixels under it
+// that make a score fitted exactly to the height scroll vertically.
+const removeBaselineGap = (container: Measurable) => {
+  const svg = container.querySelector('svg');
+
+  if (svg) {
+    svg.style.display = 'block';
+  }
+};
 
 const failed = (reason: 'invalid-score'): ScoreRenderResult => ({
   reason,
@@ -89,6 +106,7 @@ export const createMusicXmlRenderer =
             instrument.Visible = flags[index] ?? true;
           });
           osmd.render();
+          removeBaselineGap(container as Measurable);
 
           return resolved;
         };
@@ -106,6 +124,11 @@ export const createMusicXmlRenderer =
             // `clear` resets the layout but leaves the drawn SVG in the host.
             host.innerHTML = '';
           },
+          naturalHeight() {
+            const svg = (container as Measurable).querySelector('svg');
+
+            return svg ? svg.getBoundingClientRect().height / osmd.zoom : 0;
+          },
           parts: parts as readonly ScorePart[],
           get resolved() {
             return resolved;
@@ -113,6 +136,7 @@ export const createMusicXmlRenderer =
           setZoom(next) {
             osmd.zoom = next;
             osmd.render();
+            removeBaselineGap(container as Measurable);
           },
         };
 

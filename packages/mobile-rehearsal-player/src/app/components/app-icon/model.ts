@@ -12,6 +12,7 @@ export type PhosphorGlyph =
   | 'ArrowSquareOut'
   | 'ArrowsClockwise'
   | 'ArrowsLeftRight'
+  | 'ArrowsVertical'
   | 'CaretDown'
   | 'CaretLeft'
   | 'CaretRight'
@@ -148,6 +149,7 @@ export const APP_ICON_GLYPHS = {
   // Menu actions: one glyph per action, shared by every menu that offers it.
   'content-copy': regular('Copy'),
   'swap-horizontal': regular('ArrowsLeftRight'),
+  'fit-height': regular('ArrowsVertical'),
   'pencil-outline': regular('PencilSimple'),
   'trash-can-outline': regular('Trash'),
   'open-in-new': regular('ArrowSquareOut'),

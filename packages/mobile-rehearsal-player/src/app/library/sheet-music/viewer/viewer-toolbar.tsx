@@ -6,8 +6,12 @@ import { appTheme } from '../../../utils/theme';
 import { VIEWER_MAX_ZOOM, VIEWER_MIN_ZOOM, formatViewerZoom } from './model';
 
 type ViewerToolbarProps = {
+  /** Auto-fit is on, so the zoom follows the available height. */
+  isFitted: boolean;
   isPlaybackToggleDisabled: boolean;
   isPlaying: boolean;
+  /** Turns auto-fit back on; absent for a PDF, which fits to width instead. */
+  onFit: (() => void) | undefined;
   onTogglePlayback: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
@@ -18,8 +22,10 @@ type ViewerToolbarProps = {
 
 /** Zoom, and a play/pause control so playback stays reachable while reading. */
 export const ViewerToolbar = ({
+  isFitted,
   isPlaybackToggleDisabled,
   isPlaying,
+  onFit,
   onTogglePlayback,
   onZoomIn,
   onZoomOut,
@@ -46,6 +52,15 @@ export const ViewerToolbar = ({
       onPress={onZoomIn}
     />
   );
+  const fitButton = onFit ? (
+    <SurfaceIconButton
+      accessibilityLabel="Fit to height"
+      icon="fit-height"
+      key="fit"
+      onPress={onFit}
+      selected={isFitted}
+    />
+  ) : null;
   const zoomValue = (
     <Text
       accessibilityLiveRegion="polite"
@@ -59,7 +74,9 @@ export const ViewerToolbar = ({
   return (
     <View style={[styles.bar, isColumn ? styles.barColumn : undefined]}>
       <View style={[styles.zoom, isColumn ? styles.zoomColumn : undefined]}>
-        {isColumn ? [zoomIn, zoomValue, zoomOut] : [zoomOut, zoomValue, zoomIn]}
+        {isColumn
+          ? [zoomIn, zoomValue, zoomOut, fitButton]
+          : [zoomOut, zoomValue, zoomIn, fitButton]}
       </View>
       <CompactPlaybackAction
         accessibilityLabel={isPlaying ? 'Pause' : 'Play'}

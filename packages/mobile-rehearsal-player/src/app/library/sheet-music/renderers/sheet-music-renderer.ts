@@ -22,6 +22,12 @@ export type ScoreRendering = {
   applySelection(
     selection: SheetMusicPartSelection | undefined,
   ): ResolvedPartSelection;
+  /**
+   * The drawn height at zoom 1, in the same units as the container's height,
+   * or 0 when it cannot be measured. The viewer fits the zoom to the height
+   * it has (design Decision 11).
+   */
+  naturalHeight(): number;
   /** 1 is the natural size. */
   setZoom(zoom: number): void;
 };

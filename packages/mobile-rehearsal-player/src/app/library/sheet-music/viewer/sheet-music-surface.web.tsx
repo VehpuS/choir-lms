@@ -9,11 +9,13 @@ import type {
   PdfRendering,
   ScoreRendering,
 } from '../renderers/sheet-music-renderer';
+import { computeFitZoom } from './fit-zoom-model';
 import type { SheetMusicSurfaceProps } from './sheet-music-surface-types';
 
 // The app's TypeScript config carries no DOM library, so the slice of the DOM
 // used here is described structurally.
 type HostNode = {
+  clientHeight: number;
   clientWidth: number;
   style: { overflow: string; scrollbarGutter: string };
 };
@@ -38,6 +40,7 @@ const RESIZE_DEBOUNCE_MS = 150;
 export const SheetMusicSurface = ({
   document,
   onFailed,
+  onFitZoom,
   onRendered,
   selection,
   zoom,
@@ -45,9 +48,24 @@ export const SheetMusicSurface = ({
   const [host, setHost] = useState<HostNode | null>(null);
   const live = useRef<Live>({});
   // The latest values, read by effects that must not restart when they change.
-  const latest = useRef({ onFailed, onRendered, selection, zoom });
+  const latest = useRef({ onFailed, onFitZoom, onRendered, selection, zoom });
 
-  latest.current = { onFailed, onRendered, selection, zoom };
+  latest.current = { onFailed, onFitZoom, onRendered, selection, zoom };
+
+  // Tells the viewer which zoom fits the drawn score into the height this
+  // element has; the viewer decides whether to use it (auto-fit is on).
+  const reportFit = (current: Live, element: HostNode) => {
+    const naturalHeight = current.score?.naturalHeight() ?? 0;
+
+    if (naturalHeight > 0) {
+      latest.current.onFitZoom(
+        computeFitZoom({
+          availableHeight: element.clientHeight,
+          naturalHeight,
+        }),
+      );
+    }
+  };
 
   useEffect(() => {
     if (!host) {
@@ -103,6 +121,10 @@ export const SheetMusicSurface = ({
       next.score = result.rendering;
       live.current = next;
 
+      if (!isCancelled) {
+        reportFit(next, host);
+      }
+
       return isCancelled
         ? undefined
         : latest.current.onRendered({
@@ -130,12 +152,15 @@ export const SheetMusicSurface = ({
   useEffect(() => {
     const rendering = live.current.score;
 
-    if (rendering) {
+    if (rendering && host) {
       latest.current.onRendered({
         parts: rendering.parts,
         resolved: rendering.applySelection(selection),
       });
+      // Hiding or showing parts changes how tall the strip is.
+      reportFit(live.current, host);
     }
+    // `reportFit` only reads refs and the host, so it is not a dependency.
   }, [selection]);
 
   useEffect(() => {
@@ -145,7 +170,7 @@ export const SheetMusicSurface = ({
 
   // PDF pages are laid out for the element's width, so a change in it (a rotated
   // phone, a resized window) lays them out again. Staves are one sideways strip
-  // and do not depend on the width.
+  // and do not depend on the width, but a change in height re-fits them.
   useEffect(() => {
     const Observer = (
       globalThis as { ResizeObserver?: ResizeObserverConstructor }
@@ -155,11 +180,17 @@ export const SheetMusicSurface = ({
       return undefined;
     }
 
+    let lastHeight = host.clientHeight;
     let lastWidth = host.clientWidth;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const observer = new Observer(() => {
       clearTimeout(timer);
       timer = setTimeout(() => {
+        if (host.clientHeight !== lastHeight) {
+          lastHeight = host.clientHeight;
+          reportFit(live.current, host);
+        }
+
         if (host.clientWidth === lastWidth) {
           return;
         }
