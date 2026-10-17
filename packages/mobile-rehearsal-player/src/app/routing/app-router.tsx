@@ -22,6 +22,7 @@ import {
 import { MobileShell } from './shell/mobile-shell';
 import type { ShellDestinationKey } from './shell/shell-model';
 import { getPlaybackShapingContextLabel } from './shell/shell-playback-summary-model';
+import { useRequestChannel, useRequestSignal } from './use-request-channel';
 import { useSavedItemAvailability } from './use-saved-item-availability';
 import { useAppRouterPlaybackShaping } from './use-app-router-playback-shaping';
 import { useAppRouterQueuePlaylistActions } from './use-app-router-queue-playlist-actions';
@@ -38,22 +39,14 @@ export const AppRouter = () => {
   const [recentRehearsalHistory, setRecentRehearsalHistory] = useState(
     [] as Awaited<ReturnType<typeof restoreRecentRehearsalHistory>>,
   );
-  const [requestedDestination, setRequestedDestination] =
-    useState<ShellDestinationKey>('library');
-  const [requestedDestinationRequestId, setRequestedDestinationRequestId] =
-    useState(0);
-  const [requestedLibraryView, setRequestedLibraryView] =
-    useState<SavedRehearsalLibraryView>('files');
-  const [requestedLibraryViewRequestId, setRequestedLibraryViewRequestId] =
-    useState(0);
-  const [requestedTag, setRequestedTag] = useState<string | null>(null);
-  const [requestedTagRequestId, setRequestedTagRequestId] = useState(0);
-  const [closeTagDetailRequestId, setCloseTagDetailRequestId] = useState(0);
-  const [requestedLoopEditId, setRequestedLoopEditId] = useState<string | null>(
-    null,
-  );
-  const [requestedLoopEditRequestId, setRequestedLoopEditRequestId] =
-    useState(0);
+  const destinationRequest = useRequestChannel<ShellDestinationKey>('library');
+  const libraryViewRequest =
+    useRequestChannel<SavedRehearsalLibraryView>('files');
+  const tagRequest = useRequestChannel<string | null>(null);
+  const closeTagDetailRequest = useRequestSignal();
+  // The loop editor is a sheet over whatever is showing, so the playback
+  // sheet stays open beneath it and audio keeps playing (Decision 12).
+  const loopEditRequest = useRequestChannel<string | null>(null);
   const [isRecentRehearsalHistoryReady, setIsRecentRehearsalHistoryReady] =
     useState(false);
   const libraryController = useRehearsalLibraryController({
@@ -62,7 +55,7 @@ export const AppRouter = () => {
     onAuthorizationExpired: authorization.expireAuthorization,
     onAuthorizationRequired: authorization.startAuthorization,
     onRequestAddDestination: () => {
-      requestDestination('add');
+      destinationRequest.request('add');
     },
     playback,
   });
@@ -80,7 +73,7 @@ export const AppRouter = () => {
     : null;
   const savedItemAvailability = useSavedItemAvailability({
     onViewTrackLoops: () => {
-      requestDestination('library');
+      destinationRequest.request('library');
     },
     savedLoops: libraryController.savedLibrary.savedLoops,
     savedSources: libraryController.savedLibrary.savedLibrarySources,
@@ -156,42 +149,6 @@ export const AppRouter = () => {
     playback.activePlaylistSession,
   ]);
 
-  const requestDestination = (destination: ShellDestinationKey) => {
-    setRequestedDestination(destination);
-    setRequestedDestinationRequestId((currentId) => {
-      return currentId + 1;
-    });
-  };
-
-  const requestLibraryView = (view: SavedRehearsalLibraryView) => {
-    setRequestedLibraryView(view);
-    setRequestedLibraryViewRequestId((currentId) => {
-      return currentId + 1;
-    });
-  };
-
-  const requestTagDetail = (tag: string) => {
-    setRequestedTag(tag);
-    setRequestedTagRequestId((currentId) => {
-      return currentId + 1;
-    });
-  };
-
-  // The loop editor is a sheet over whatever is showing, so the playback
-  // sheet stays open beneath it and audio keeps playing (Decision 12).
-  const requestLoopEdit = (loopId: string) => {
-    setRequestedLoopEditId(loopId);
-    setRequestedLoopEditRequestId((currentId) => {
-      return currentId + 1;
-    });
-  };
-
-  const closeTagDetail = () => {
-    setCloseTagDetailRequestId((currentId) => {
-      return currentId + 1;
-    });
-  };
-
   return (
     <SavedItemAvailabilityProvider value={savedItemAvailability}>
       <MobileShell
@@ -208,22 +165,22 @@ export const AppRouter = () => {
         // Skipping during a load supersedes it (8.33), so only a queue is needed.
         canSkipNextItem={playback.activePlaylistSession !== null}
         canSkipPreviousItem={playback.activePlaylistSession !== null}
-        requestedDestination={requestedDestination}
-        requestedDestinationRequestId={requestedDestinationRequestId}
+        requestedDestination={destinationRequest.value}
+        requestedDestinationRequestId={destinationRequest.requestId}
         recentsScreen={
           <AppRouterRecentsScreen
             authorization={authorization}
             libraryTagUsage={libraryTagUsage}
             onRequestLibraryDestination={() => {
-              requestDestination('library');
+              destinationRequest.request('library');
             }}
             onSelectTag={(tag) => {
-              requestTagDetail(tag);
-              requestDestination('library');
+              tagRequest.request(tag);
+              destinationRequest.request('library');
             }}
             onViewAllTags={() => {
-              requestDestination('library');
-              requestLibraryView('tags');
+              destinationRequest.request('library');
+              libraryViewRequest.request('tags');
             }}
             playback={playback}
             recentRehearsalHistory={recentRehearsalHistory}
@@ -241,23 +198,23 @@ export const AppRouter = () => {
         libraryScreen={(isActive) => (
           <LibraryScreen
             authorization={authorization}
-            closeTagDetailRequestId={closeTagDetailRequestId}
+            closeTagDetailRequestId={closeTagDetailRequest.requestId}
             isActive={isActive}
             libraryController={libraryController}
             onRequestAddDestination={() => {
-              requestDestination('add');
+              destinationRequest.request('add');
             }}
             playback={playback}
-            requestedLoopEditId={requestedLoopEditId}
-            requestedLoopEditRequestId={requestedLoopEditRequestId}
-            requestedTag={requestedTag}
-            requestedTagRequestId={requestedTagRequestId}
-            requestedView={requestedLibraryView}
-            requestedViewRequestId={requestedLibraryViewRequestId}
+            requestedLoopEditId={loopEditRequest.value}
+            requestedLoopEditRequestId={loopEditRequest.requestId}
+            requestedTag={tagRequest.value}
+            requestedTagRequestId={tagRequest.requestId}
+            requestedView={libraryViewRequest.value}
+            requestedViewRequestId={libraryViewRequest.requestId}
           />
         )}
-        onCloseTagDetail={closeTagDetail}
-        onEditActiveLoop={requestLoopEdit}
+        onCloseTagDetail={closeTagDetailRequest.signal}
+        onEditActiveLoop={loopEditRequest.request}
         onSeekBackward={() => {
           void playback.seekActivePlaybackBySeconds(
             -PLAYBACK_SEEK_STEP_SECONDS,

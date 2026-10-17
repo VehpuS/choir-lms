@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 import { Linking } from 'react-native';
 
 import { useDriveLibrary } from '../drive/hooks/use-drive-library';
-import { getDriveSearchContextCopy } from '../drive/utils/drive-library-view-model';
 import { resolveDriveSourceActions } from '../drive/utils/drive-search-preview-actions';
 import { usePreparedLoopBuilderTrack } from '../loops/hooks/use-prepared-loop-builder-track';
 import { useSavedLoops } from '../loops/hooks/use-saved-loops';
@@ -12,6 +11,10 @@ import { useSourceSheetMusic } from '../sheet-music/hooks/use-source-sheet-music
 import type { useSavedTrackPlayback } from '../playback/hooks/use-saved-track-playback';
 import { getSavedTrackPlaybackStatusCopy } from '../playback/utils/saved-track-playback-view-model';
 import { useSavedPlaylists } from '../playlists/hooks/use-saved-playlists';
+import {
+  buildDriveDiscoveryView,
+  buildDriveSearchView,
+} from './build-drive-views';
 import { createDriveImportControllerDependencies } from './drive-import-controller-dependencies';
 import { resolveDriveStatusCopies } from './resolve-drive-status-copies';
 import { saveDiscoveredDriveSource } from './save-discovered-drive-source';
@@ -208,29 +211,12 @@ export const useRehearsalLibraryController = ({
   return {
     confirmationDialog: savedLibraryRemovalActions.confirmationDialog,
     driveImport,
-    discovery: {
-      browseSnapshot: driveLibrary.browseSnapshot,
-      canReturnToSearchResults: driveLibrary.canReturnToSearchResults,
+    discovery: buildDriveDiscoveryView({
       canRefresh,
-      currentLocation: driveLibrary.currentLocation,
-      folderTitle:
-        driveLibrary.currentLocation.rootKind === 'shared' &&
-        driveLibrary.currentLocation.kind === 'root'
-          ? `Shared folders (${driveLibrary.browseSnapshot.folders.length})`
-          : `Folders (${driveLibrary.browseSnapshot.folders.length})`,
-      goToLocation: driveLibrary.goToLocation,
-      isLoading: !isSearchMode && driveLibrary.isLoading,
-      navigationStack: driveLibrary.navigationStack,
-      openFolder: driveLibrary.openFolder,
-      playableSourceTitle: `Audio in ${driveLibrary.currentLocation.name} (${driveLibrary.browseSnapshot.playableSources.length})`,
-      playableSources: driveLibrary.browseSnapshot.playableSources,
-      refresh: driveLibrary.refresh,
-      returnToSearchResults: driveLibrary.returnToSearchResults,
-      selectRoot: driveLibrary.selectRoot,
+      driveLibrary,
+      isSearchMode,
       statusCopy: discoveryStatusCopy,
-      unavailableSourceTitle: `Unavailable or unsupported in ${driveLibrary.currentLocation.name} (${driveLibrary.browseSnapshot.unavailableSources.length})`,
-      unavailableSources: driveLibrary.browseSnapshot.unavailableSources,
-    },
+    }),
     getDriveSourceActions,
     getSourceMessage(
       source: (typeof driveLibrary.browseSnapshot.playableSources)[number],
@@ -282,30 +268,11 @@ export const useRehearsalLibraryController = ({
       trackCount: savedLibrarySources.length,
     },
     playlists,
-    search: {
-      activeSearchQuery: driveLibrary.activeSearchQuery,
-      canSearch: canRefresh,
-      clearSearch: driveLibrary.clearSearch,
-      commitSearchQuery: driveLibrary.commitSearchQuery,
-      deactivateSearch: driveLibrary.deactivateSearch,
-      isLoading: isSearchMode && driveLibrary.isLoading,
+    search: buildDriveSearchView({
+      canRefresh,
+      driveLibrary,
       isSearchMode,
-      playableSourceTitle: `Matching audio (${driveLibrary.searchSnapshot.playableSources.length})`,
-      playableSources: driveLibrary.searchSnapshot.playableSources,
-      recentSearchTerms: driveLibrary.recentSearchTerms,
-      results: driveLibrary.searchResults,
-      searchContextCopy: getDriveSearchContextCopy(
-        driveLibrary.currentLocation,
-      ),
-      searchQuery: driveLibrary.searchQuery,
-      selection: driveLibrary.searchSelection,
-      setSearchQuery: driveLibrary.setSearchQuery,
       statusCopy: searchStatusCopy,
-      submitSearch: driveLibrary.submitSearch,
-      submitSearchQuery: driveLibrary.submitSearchQuery,
-      totalResultCount: driveLibrary.searchResults.length,
-      unavailableSourceTitle: `Unavailable or unsupported results (${driveLibrary.searchSnapshot.unavailableSources.length})`,
-      unavailableSources: driveLibrary.searchSnapshot.unavailableSources,
-    },
+    }),
   };
 };
