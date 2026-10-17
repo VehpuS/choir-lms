@@ -116,6 +116,7 @@ export const SheetMusicHost = ({
       />
       {isPickingFromDrive ? (
         <DriveSheetMusicPickerSheet
+          existingSources={sources}
           accessToken={authorization.authState.accessToken}
           onClose={() => {
             setIsPickingFromDrive(false);

@@ -1,3 +1,4 @@
+import type { SheetMusicSource } from '@org/audio-library-models';
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -10,6 +11,8 @@ import {
 import { resolveLinkAddition, type LinkAddition } from './model';
 
 type AddSheetMusicPanelProps = {
+  /** The track's sources, so a link it already has is refused. */
+  existingSources: readonly SheetMusicSource[];
   /** Offered once the Drive picker exists; hidden while it is absent. */
   onChooseDrive?: () => void;
   onAddLink: (addition: LinkAddition) => Promise<boolean>;
@@ -23,6 +26,7 @@ type Mode = 'choices' | 'link';
 
 /** The `Add sheet music` choices: a Drive file, a web link, or a MuseScore search. */
 export const AddSheetMusicPanel = ({
+  existingSources,
   onAddLink,
   onBack,
   onChooseDrive,
@@ -39,7 +43,11 @@ export const AddSheetMusicPanel = ({
 
   if (mode === 'link') {
     const submit = async () => {
-      const result = resolveLinkAddition({ label, url });
+      const result = resolveLinkAddition({
+        existing: existingSources,
+        label,
+        url,
+      });
 
       if (result.status === 'refused') {
         setMessage(result.message);

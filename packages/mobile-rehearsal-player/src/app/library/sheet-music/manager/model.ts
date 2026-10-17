@@ -101,6 +101,24 @@ export const suggestLabelFromUrl = (url: string): string => {
   }
 };
 
+/** The source already holding this Drive file or link, if any. */
+export const findDuplicateSheetMusic = (
+  sources: readonly SheetMusicSource[],
+  location: SheetMusicSource['location'],
+): SheetMusicSource | undefined => {
+  return sources.find((existing) => {
+    return existing.location.kind === 'drive'
+      ? location.kind === 'drive' &&
+          existing.location.fileId === location.fileId
+      : location.kind === 'url' && existing.location.url === location.url;
+  });
+};
+
+/** The refusal for a source the track already has, under whatever label it carries. */
+export const describeAlreadyAdded = (existing: SheetMusicSource): string => {
+  return `Already added as ${existing.label}.`;
+};
+
 export type LinkAddition = {
   format: SheetMusicFormat;
   label: string;
@@ -117,6 +135,8 @@ export type LinkAdditionResult =
  * formats (design Decision 9).
  */
 export const resolveLinkAddition = (input: {
+  /** The track's current sources, so a link it already has is refused. */
+  existing?: readonly SheetMusicSource[];
   label: string;
   url: string;
 }): LinkAdditionResult => {
@@ -130,6 +150,15 @@ export const resolveLinkAddition = (input: {
 
   if (format === 'refused') {
     return { message: SUPPORTED_FORMATS_MESSAGE, status: 'refused' };
+  }
+
+  const duplicate = findDuplicateSheetMusic(input.existing ?? [], {
+    kind: 'url',
+    url,
+  });
+
+  if (duplicate) {
+    return { message: describeAlreadyAdded(duplicate), status: 'refused' };
   }
 
   // A MuseScore page's last path segment is a score number, which says nothing.

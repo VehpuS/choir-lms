@@ -1,3 +1,4 @@
+import type { SheetMusicSource } from '@org/audio-library-models';
 import type { DriveSheetMusicFile } from '@org/google-drive';
 import { useState } from 'react';
 import {
@@ -14,6 +15,10 @@ import { AppIcon } from '../../../components/app-icon';
 import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { appTheme } from '../../../utils/theme';
 import { BottomSheetSurface } from '../../components/bottom-sheet-surface';
+import {
+  describeAlreadyAdded,
+  findDuplicateSheetMusic,
+} from '../manager/model';
 import {
   DRIVE_ACCESS_MESSAGE,
   DRIVE_EMPTY_FOLDER_MESSAGE,
@@ -33,6 +38,8 @@ import {
 import { darkScrollbarStyle } from '../../../components/dark-scrollbar';
 
 type DriveSheetMusicPickerSheetProps = {
+  /** The track's sources, so a file it already has is refused. */
+  existingSources: readonly SheetMusicSource[];
   /** The current Drive token, or undefined when Drive is not connected. */
   accessToken: string | undefined;
   client?: DriveSheetMusicClient;
@@ -60,6 +67,7 @@ const FAILURE_COPY: Record<DrivePickerFailure, string> = {
  * and the sheet says so.
  */
 export const DriveSheetMusicPickerSheet = ({
+  existingSources,
   accessToken,
   client,
   onClose,
@@ -68,6 +76,7 @@ export const DriveSheetMusicPickerSheet = ({
 }: DriveSheetMusicPickerSheetProps) => {
   const picker = useDriveSheetMusicPicker({ accessToken, client });
   const [draftQuery, setDraftQuery] = useState('');
+  const [refusal, setRefusal] = useState<string | null>(null);
   const { height } = useWindowDimensions();
   const { state } = picker;
   const isSearching = picker.query.length > 0;
@@ -135,6 +144,8 @@ export const DriveSheetMusicPickerSheet = ({
           ) : null}
         </View>
 
+        {refusal ? <Text style={styles.copy}>{refusal}</Text> : null}
+
         <ScrollView
           keyboardShouldPersistTaps="handled"
           style={[
@@ -192,7 +203,19 @@ export const DriveSheetMusicPickerSheet = ({
                   accessibilityRole="button"
                   key={file.id}
                   onPress={() => {
-                    onPick(file);
+                    const duplicate = findDuplicateSheetMusic(existingSources, {
+                      fileId: file.id,
+                      kind: 'drive',
+                      name: file.name,
+                    });
+
+                    setRefusal(
+                      duplicate ? describeAlreadyAdded(duplicate) : null,
+                    );
+
+                    if (!duplicate) {
+                      onPick(file);
+                    }
                   }}
                   style={styles.item}
                 >

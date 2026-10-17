@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { OutlinedActionButton } from '../../../components/outlined-action-button';
+import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { appTheme } from '../../../utils/theme';
+import { OptionsMenuSheet } from '../../components/options-menu-sheet';
 import { describeSheetMusicRow } from './model';
 
 type SheetMusicRowProps = {
@@ -23,6 +25,7 @@ export const SheetMusicRow = ({
   source,
 }: SheetMusicRowProps) => {
   const [draftLabel, setDraftLabel] = useState<string | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const row = describeSheetMusicRow(source);
 
   if (draftLabel !== null) {
@@ -58,43 +61,60 @@ export const SheetMusicRow = ({
     );
   }
 
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
   return (
     <View style={styles.row}>
-      <View style={styles.summary}>
-        <Text numberOfLines={2} style={styles.label}>
-          {source.label}
-        </Text>
-        <Text style={styles.detail}>{row.detail}</Text>
-        {row.hint ? <Text style={styles.detail}>{row.hint}</Text> : null}
+      <View style={styles.main}>
+        <View style={styles.summary}>
+          <Text numberOfLines={2} style={styles.label}>
+            {source.label}
+          </Text>
+          <Text style={styles.detail}>{row.detail}</Text>
+          {row.hint ? <Text style={styles.detail}>{row.hint}</Text> : null}
+        </View>
+        <OutlinedActionButton
+          label={row.actionLabel}
+          onPress={() => {
+            onAction(source);
+          }}
+          variant="accent"
+        />
+        <OverflowMenuTrigger
+          accessibilityLabel={`${source.label} options`}
+          disabled={disabled}
+          onPress={() => {
+            setIsMenuOpen(true);
+          }}
+          style={styles.overflowTrigger}
+        />
       </View>
-      <OutlinedActionButton
-        label={row.actionLabel}
-        onPress={() => {
-          onAction(source);
-        }}
-        variant="accent"
+      <OptionsMenuSheet
+        actions={[
+          {
+            id: 'rename',
+            label: 'Rename',
+            onPress: () => {
+              closeMenu();
+              setDraftLabel(source.label);
+            },
+          },
+          {
+            id: 'remove',
+            label: 'Remove',
+            onPress: () => {
+              closeMenu();
+              onRemove(source);
+            },
+            tone: 'destructive',
+          },
+        ]}
+        isVisible={isMenuOpen}
+        onClose={closeMenu}
+        title={source.label}
       />
-      <View style={styles.actions}>
-        <OutlinedActionButton
-          accessibilityLabel={`Rename ${source.label}`}
-          disabled={disabled}
-          fill
-          label="Rename"
-          onPress={() => {
-            setDraftLabel(source.label);
-          }}
-        />
-        <OutlinedActionButton
-          accessibilityLabel={`Remove ${source.label}`}
-          disabled={disabled}
-          fill
-          label="Remove"
-          onPress={() => {
-            onRemove(source);
-          }}
-          variant="destructive"
-        />
-      </View>
     </View>
   );
 };
@@ -132,7 +152,19 @@ const styles = StyleSheet.create({
     borderRadius: appTheme.radius.md,
     backgroundColor: appTheme.colors.surface,
   },
+  main: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: appTheme.space.xs,
+  },
+  // The shared trigger is absolutely placed by default; here it sits in the row.
+  overflowTrigger: {
+    position: 'relative',
+    right: 0,
+    top: 0,
+  },
   summary: {
+    flex: 1,
     gap: 2,
   },
 });

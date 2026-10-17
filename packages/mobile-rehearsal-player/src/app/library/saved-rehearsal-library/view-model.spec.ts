@@ -3,6 +3,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { omit } from 'es-toolkit';
+
 import {
   AUTHORIZED_STATE,
   PLAYABLE_SOURCE,
@@ -129,7 +131,7 @@ describe('saved rehearsal library view-model', () => {
   });
 
   it('falls back to the saved duration when the Drive row has none', () => {
-    const { durationMs: _ignored, ...driveRow } = PLAYABLE_SOURCE;
+    const driveRow = omit(PLAYABLE_SOURCE, ['durationMs']);
 
     const savedSources = resolveSavedRehearsalLibrarySources({
       authState: AUTHORIZED_STATE,

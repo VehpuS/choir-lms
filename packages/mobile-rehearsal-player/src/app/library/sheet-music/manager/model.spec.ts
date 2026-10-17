@@ -11,6 +11,7 @@ import {
   MUSESCORE_EXPORT_HINT,
   SUPPORTED_FORMATS_MESSAGE,
   describeSheetMusicRow,
+  findDuplicateSheetMusic,
   hasReachedSheetMusicLimit,
   resolveLinkAddition,
   suggestLabelFromFileName,
@@ -121,7 +122,69 @@ describe('suggestLabelFromUrl', () => {
   });
 });
 
+describe('findDuplicateSheetMusic', () => {
+  const driveSource = source({
+    format: 'pdf',
+    id: 'sheet-music:drive',
+    label: 'Alto part',
+    location: { fileId: 'file-1', kind: 'drive', name: 'alto.pdf' },
+  });
+  const linkSource = source({ format: 'pdf', id: 'sheet-music:link' });
+
+  it('finds a Drive file already on the track, whatever its name or label', () => {
+    assert.equal(
+      findDuplicateSheetMusic([linkSource, driveSource], {
+        fileId: 'file-1',
+        kind: 'drive',
+        name: 'renamed-in-drive.pdf',
+      }),
+      driveSource,
+    );
+  });
+
+  it('finds a link already on the track', () => {
+    assert.equal(
+      findDuplicateSheetMusic([driveSource, linkSource], {
+        kind: 'url',
+        url: 'https://example.org/score',
+      }),
+      linkSource,
+    );
+  });
+
+  it('treats a different file or link as new, and a Drive id never matches a link', () => {
+    assert.equal(
+      findDuplicateSheetMusic([driveSource, linkSource], {
+        fileId: 'file-2',
+        kind: 'drive',
+        name: 'alto.pdf',
+      }),
+      undefined,
+    );
+    assert.equal(
+      findDuplicateSheetMusic([driveSource], {
+        kind: 'url',
+        url: 'file-1',
+      }),
+      undefined,
+    );
+  });
+});
+
 describe('resolveLinkAddition', () => {
+  it('refuses a link the track already has and names the existing source', () => {
+    const existing = source({ format: 'pdf', label: 'Full score' });
+
+    assert.deepEqual(
+      resolveLinkAddition({
+        existing: [existing],
+        label: 'Another label',
+        url: ' https://example.org/score ',
+      }),
+      { message: 'Already added as Full score.', status: 'refused' },
+    );
+  });
+
   it('detects a PDF link and suggests a label the user can change', () => {
     assert.deepEqual(
       resolveLinkAddition({

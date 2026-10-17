@@ -77,6 +77,7 @@ export const SheetMusicManagerSheet = ({
         <Text style={styles.copy}>{`Sheet music for ${ownerName}`}</Text>
         {isAdding ? (
           <AddSheetMusicPanel
+            existingSources={sources}
             onAddLink={async (addition) => {
               const wasAdded = await onAddLink(addition);
 
