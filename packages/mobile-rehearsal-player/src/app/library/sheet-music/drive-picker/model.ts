@@ -21,10 +21,17 @@ export const DRIVE_EMPTY_SEARCH_MESSAGE = 'No sheet music matches that name.';
 
 export type DrivePickerFailure = 'needs-drive-access' | 'unavailable';
 
-export const DRIVE_PICKER_ROOTS = [
+// The shared root is titled `Shared folders` elsewhere; the picker names it
+// after its button so the title matches what was pressed.
+export const DRIVE_PICKER_ROOTS: readonly DriveBrowseLocation[] = [
   MY_DRIVE_ROOT_LOCATION,
-  SHARED_FOLDERS_ROOT_LOCATION,
-] as const;
+  { ...SHARED_FOLDERS_ROOT_LOCATION, name: 'Shared with you' },
+];
+
+export const DRIVE_PICKER_FAILURE_COPY: Record<DrivePickerFailure, string> = {
+  'needs-drive-access': DRIVE_ACCESS_MESSAGE,
+  unavailable: DRIVE_UNAVAILABLE_MESSAGE,
+};
 
 const UNAUTHORIZED_PATTERN = /\b(401|403)\b/;
 
@@ -89,6 +96,54 @@ export const goUpInDrivePicker = (
 export const describeDrivePickerLocation = (
   navigation: DrivePickerNavigation,
 ): string => navigation.stack.map(({ name }) => name).join(' / ');
+
+export type DrivePickerSearchScope = 'everywhere' | 'folder';
+
+/**
+ * Where a name search runs. It follows the folder being browsed, and the
+ * singer can widen it to all of Drive; opening another folder resets it. At a
+ * root there is no folder to follow, so it always covers all of Drive.
+ */
+export const resolveDrivePickerSearchScope = (
+  navigation: DrivePickerNavigation,
+  isWidened: boolean,
+): DrivePickerSearchScope => {
+  return canGoUpInDrivePicker(navigation) && !isWidened
+    ? 'folder'
+    : 'everywhere';
+};
+
+/** The name of the folder a folder search runs in, or undefined at a root. */
+export const getDrivePickerSearchFolderName = (
+  navigation: DrivePickerNavigation,
+): string | undefined => {
+  return canGoUpInDrivePicker(navigation)
+    ? currentDrivePickerLocation(navigation).name
+    : undefined;
+};
+
+export const describeDrivePickerSearchPlaceholder = (
+  scope: DrivePickerSearchScope,
+  folderName: string | undefined,
+): string => {
+  return scope === 'folder' && folderName
+    ? `Search in ${folderName}`
+    : 'Search Drive by name';
+};
+
+/** The line above search results, saying what was searched. */
+export const describeDrivePickerResultsLine = (
+  query: string,
+  scope: DrivePickerSearchScope,
+  folderName: string | undefined,
+): string => {
+  const where =
+    scope === 'folder' && folderName
+      ? `${folderName} and its subfolders`
+      : 'all of Drive';
+
+  return `Results for “${query}” in ${where}`;
+};
 
 /** What the manager adds for a chosen Drive file. */
 export const createDriveAddition = (file: DriveSheetMusicFile) => {

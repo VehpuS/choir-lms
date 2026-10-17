@@ -22,6 +22,7 @@ import {
 type Call = {
   kind: 'browse' | 'search';
   locationId?: string;
+  onProgress?: (listing: DriveSheetMusicListing) => void;
   query?: string;
   reject: (error: unknown) => void;
   resolve: (listing: DriveSheetMusicListing) => void;
@@ -34,7 +35,7 @@ const createControlledClient = () => {
   const calls: Call[] = [];
   const ask = (
     kind: Call['kind'],
-    extra: Pick<Call, 'locationId' | 'query'>,
+    extra: Pick<Call, 'locationId' | 'onProgress' | 'query'>,
     signal: AbortSignal | undefined,
   ) =>
     new Promise<DriveSheetMusicListing>((resolve, reject) => {
@@ -42,9 +43,21 @@ const createControlledClient = () => {
     });
   const client: DriveSheetMusicClient = {
     browse: (options) =>
-      ask('browse', { locationId: options.location.id }, options.signal),
+      ask(
+        'browse',
+        { locationId: options.location.id, onProgress: options.onProgress },
+        options.signal,
+      ),
     search: (options) =>
-      ask('search', { query: options.query }, options.signal),
+      ask(
+        'search',
+        {
+          locationId: options.location?.id,
+          onProgress: options.onProgress,
+          query: options.query,
+        },
+        options.signal,
+      ),
   };
 
   return { calls, client };
@@ -102,7 +115,11 @@ describe('useDriveSheetMusicPicker', () => {
 
     await act(async () => calls[0]?.resolve(LISTING));
 
-    assert.deepEqual(box.current?.state, { listing: LISTING, status: 'ready' });
+    assert.deepEqual(box.current?.state, {
+      isLoadingMore: false,
+      listing: LISTING,
+      status: 'ready',
+    });
   });
 
   it('asks for Drive access without a request when there is no token', async () => {
@@ -233,5 +250,100 @@ describe('useDriveSheetMusicPicker', () => {
     });
 
     assert.equal(calls[0]?.signal?.aborted, true);
+  });
+
+  it('shows the first page of a folder while the rest is still loading', async () => {
+    const { calls, client } = createControlledClient();
+    const box = await renderHook('token', client);
+
+    await act(async () => calls[0]?.onProgress?.(LISTING));
+    assert.deepEqual(box.current?.state, {
+      isLoadingMore: true,
+      listing: LISTING,
+      status: 'ready',
+    });
+
+    await act(async () => calls[0]?.resolve(LISTING));
+    assert.deepEqual(box.current?.state, {
+      isLoadingMore: false,
+      listing: LISTING,
+      status: 'ready',
+    });
+  });
+
+  it('searches all of Drive from a root, where there is no folder to follow', async () => {
+    const { calls, client } = createControlledClient();
+    const box = await renderHook('token', client);
+
+    await act(async () => {
+      box.current?.search('kyrie');
+    });
+
+    assert.equal(box.current?.searchScope, 'everywhere');
+    assert.equal(calls[1]?.locationId, undefined);
+  });
+
+  it('searches the folder being browsed, and widens to all of Drive on request', async () => {
+    const { calls, client } = createControlledClient();
+    const box = await renderHook('token', client);
+
+    await act(async () => {
+      box.current?.openFolder({
+        id: 'folder-1',
+        name: 'Scores',
+        rootKind: 'my-drive',
+      });
+    });
+    await act(async () => {
+      box.current?.search('kyrie');
+    });
+
+    assert.equal(box.current?.searchScope, 'folder');
+    assert.deepEqual(
+      [calls[2]?.kind, calls[2]?.locationId],
+      ['search', 'folder-1'],
+    );
+
+    await act(async () => {
+      box.current?.setSearchScope('everywhere');
+    });
+
+    assert.equal(calls[2]?.signal?.aborted, true);
+    assert.deepEqual(
+      [calls[3]?.kind, calls[3]?.locationId, calls[3]?.query],
+      ['search', undefined, 'kyrie'],
+    );
+
+    await act(async () => {
+      box.current?.setSearchScope('folder');
+    });
+    assert.equal(calls[4]?.locationId, 'folder-1');
+  });
+
+  it('goes back to following the folder when another folder is opened', async () => {
+    const { client } = createControlledClient();
+    const box = await renderHook('token', client);
+
+    await act(async () => {
+      box.current?.openFolder({
+        id: 'folder-1',
+        name: 'Scores',
+        rootKind: 'my-drive',
+      });
+    });
+    await act(async () => {
+      box.current?.setSearchScope('everywhere');
+    });
+    assert.equal(box.current?.searchScope, 'everywhere');
+
+    await act(async () => {
+      box.current?.openFolder({
+        id: 'folder-2',
+        name: 'Mass',
+        rootKind: 'my-drive',
+      });
+    });
+
+    assert.equal(box.current?.searchScope, 'folder');
   });
 });

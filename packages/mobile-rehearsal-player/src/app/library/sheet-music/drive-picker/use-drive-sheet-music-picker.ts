@@ -12,7 +12,9 @@ import {
   currentDrivePickerLocation,
   goUpInDrivePicker,
   openDrivePickerFolder,
+  resolveDrivePickerSearchScope,
   type DrivePickerFailure,
+  type DrivePickerSearchScope,
   type DrivePickerNavigation,
 } from './model';
 
@@ -28,7 +30,12 @@ export const driveSheetMusicClient: DriveSheetMusicClient = {
 };
 
 export type DrivePickerState =
-  | { listing: DriveSheetMusicListing; status: 'ready' }
+  | {
+      /** True while more pages of this folder or search are still arriving. */
+      isLoadingMore: boolean;
+      listing: DriveSheetMusicListing;
+      status: 'ready';
+    }
   | { reason: DrivePickerFailure; status: 'failed' }
   | { status: 'loading' };
 
@@ -36,8 +43,10 @@ const LOADING: DrivePickerState = { status: 'loading' };
 
 /**
  * Browses and searches Drive for sheet music while the picker is open. A
- * request is cancelled when the place, the search, or the picker changes, and
- * a late answer is ignored. With no Drive token nothing is requested and the
+ * folder or search shows its first page at once and fills in as more arrive. A
+ * search follows the folder being browsed unless the singer widens it to all
+ * of Drive. A request is cancelled when the place, the search, the scope, or
+ * the picker changes, and a late answer is ignored. With no Drive token nothing is requested and the
  * picker says Drive access is needed.
  */
 export const useDriveSheetMusicPicker = (options: {
@@ -51,7 +60,9 @@ export const useDriveSheetMusicPicker = (options: {
   const [query, setQuery] = useState('');
   const [state, setState] = useState<DrivePickerState>(LOADING);
   const [attempt, setAttempt] = useState(0);
+  const [isWidened, setIsWidened] = useState(false);
   const location = currentDrivePickerLocation(navigation);
+  const searchScope = resolveDrivePickerSearchScope(navigation, isWidened);
 
   useEffect(() => {
     if (!accessToken) {
@@ -61,15 +72,31 @@ export const useDriveSheetMusicPicker = (options: {
 
     const controller = new AbortController();
     let isCurrent = true;
+    const onProgress = (listing: DriveSheetMusicListing) => {
+      if (isCurrent) {
+        setState({ isLoadingMore: true, listing, status: 'ready' });
+      }
+    };
     const request = query
-      ? client.search({ accessToken, query, signal: controller.signal })
-      : client.browse({ accessToken, location, signal: controller.signal });
+      ? client.search({
+          accessToken,
+          location: searchScope === 'folder' ? location : undefined,
+          onProgress,
+          query,
+          signal: controller.signal,
+        })
+      : client.browse({
+          accessToken,
+          location,
+          onProgress,
+          signal: controller.signal,
+        });
 
     setState(LOADING);
     request.then(
       (listing) => {
         if (isCurrent) {
-          setState({ listing, status: 'ready' });
+          setState({ isLoadingMore: false, listing, status: 'ready' });
         }
       },
       (error: unknown) => {
@@ -86,20 +113,31 @@ export const useDriveSheetMusicPicker = (options: {
       isCurrent = false;
       controller.abort();
     };
-  }, [accessToken, attempt, client, location.id, location.rootKind, query]);
+  }, [
+    accessToken,
+    attempt,
+    client,
+    location.id,
+    location.rootKind,
+    query,
+    searchScope,
+  ]);
 
   const openFolder = useCallback(
     (folder: Parameters<typeof openDrivePickerFolder>[1]) => {
       setQuery('');
+      setIsWidened(false);
       setNavigation((current) => openDrivePickerFolder(current, folder));
     },
     [],
   );
   const goUp = useCallback(() => {
+    setIsWidened(false);
     setNavigation((current) => goUpInDrivePicker(current));
   }, []);
   const switchRoot = useCallback((root: DriveBrowseLocation) => {
     setQuery('');
+    setIsWidened(false);
     setNavigation(createDrivePickerNavigation(root));
   }, []);
   const retry = useCallback(() => setAttempt((count) => count + 1), []);
@@ -111,6 +149,10 @@ export const useDriveSheetMusicPicker = (options: {
     query,
     retry,
     search: setQuery,
+    searchScope,
+    setSearchScope: (scope: DrivePickerSearchScope) => {
+      setIsWidened(scope === 'everywhere');
+    },
     state,
     switchRoot,
   };

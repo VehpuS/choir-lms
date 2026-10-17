@@ -251,4 +251,32 @@ describe('browseDriveSheetMusic and searchDriveSheetMusic', () => {
     ]);
     assert.equal(listing.files[0]?.format, 'musicxml');
   });
+
+  it('reports a folder to the caller a page at a time while it is still loading', async () => {
+    globalThis.fetch = async (input) => {
+      const pageToken = new URL(String(input)).searchParams.get('pageToken');
+
+      return pageToken
+        ? Response.json({ files: [file('Second.pdf', 'application/pdf')] })
+        : Response.json({
+            files: [file('First.pdf', 'application/pdf')],
+            nextPageToken: 'page-2',
+          });
+    };
+    const partial: string[][] = [];
+
+    const listing = await browseDriveSheetMusic({
+      accessToken: 'token',
+      location: MY_DRIVE_ROOT_LOCATION,
+      onProgress: (progress) => {
+        partial.push(progress.files.map(({ name }) => name));
+      },
+    });
+
+    assert.deepEqual(partial, [['First.pdf']]);
+    assert.deepEqual(
+      listing.files.map(({ name }) => name),
+      ['First.pdf', 'Second.pdf'],
+    );
+  });
 });

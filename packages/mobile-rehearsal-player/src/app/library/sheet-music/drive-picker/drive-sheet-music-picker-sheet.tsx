@@ -1,12 +1,14 @@
 import type { SheetMusicSource } from '@org/audio-library-models';
-import type { DriveSheetMusicFile } from '@org/google-drive';
+import type {
+  DriveBrowseLocation,
+  DriveSheetMusicFile,
+} from '@org/google-drive';
 import { useState } from 'react';
 import {
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
   useWindowDimensions,
 } from 'react-native';
@@ -20,17 +22,19 @@ import {
   findDuplicateSheetMusic,
 } from '../manager/model';
 import {
-  DRIVE_ACCESS_MESSAGE,
   DRIVE_EMPTY_FOLDER_MESSAGE,
   DRIVE_EMPTY_SEARCH_MESSAGE,
   DRIVE_MORE_RESULTS_MESSAGE,
+  DRIVE_PICKER_FAILURE_COPY,
   DRIVE_PICKER_NOTE,
   DRIVE_PICKER_ROOTS,
-  DRIVE_UNAVAILABLE_MESSAGE,
   canGoUpInDrivePicker,
+  describeDrivePickerResultsLine,
+  getDrivePickerSearchFolderName,
   describeDrivePickerLocation,
-  type DrivePickerFailure,
 } from './model';
+import { SHEET_MUSIC_FORMAT_LABELS } from '../format-labels';
+import { DrivePickerSearchBar } from './drive-picker-search-bar';
 import {
   useDriveSheetMusicPicker,
   type DriveSheetMusicClient,
@@ -49,18 +53,6 @@ type DriveSheetMusicPickerSheetProps = {
 };
 
 const LIST_MAX_HEIGHT_SHARE = 0.4;
-const FORMAT_LABELS: Record<DriveSheetMusicFile['format'], string> = {
-  midi: 'MIDI',
-  musescore: 'MuseScore',
-  musicxml: 'MusicXML',
-  pdf: 'PDF',
-};
-
-const FAILURE_COPY: Record<DrivePickerFailure, string> = {
-  'needs-drive-access': DRIVE_ACCESS_MESSAGE,
-  unavailable: DRIVE_UNAVAILABLE_MESSAGE,
-};
-
 /**
  * Chooses a sheet music file from Google Drive: My Drive or shared folders,
  * folder by folder, or a search by name. Files the app cannot use are hidden,
@@ -80,6 +72,11 @@ export const DriveSheetMusicPickerSheet = ({
   const { height } = useWindowDimensions();
   const { state } = picker;
   const isSearching = picker.query.length > 0;
+  const isSelectedRoot = (root: DriveBrowseLocation) => {
+    return (
+      !isSearching && picker.navigation.stack[0]?.rootKind === root.rootKind
+    );
+  };
 
   return (
     <BottomSheetSurface
@@ -101,38 +98,34 @@ export const DriveSheetMusicPickerSheet = ({
                 setDraftQuery('');
                 picker.switchRoot(root);
               }}
-              selected={
-                !isSearching &&
-                picker.navigation.stack[0]?.rootKind === root.rootKind
-              }
+              selected={isSelectedRoot(root)}
+              variant={isSelectedRoot(root) ? 'accent' : 'neutral'}
             />
           ))}
         </View>
-        <TextInput
-          accessibilityLabel="Search Drive by name"
-          autoCapitalize="none"
-          autoCorrect={false}
-          onChangeText={(text) => {
+        <DrivePickerSearchBar
+          draftQuery={draftQuery}
+          folderName={getDrivePickerSearchFolderName(picker.navigation)}
+          onChangeDraft={(text) => {
             setDraftQuery(text);
 
             if (text.trim().length === 0) {
               picker.search('');
             }
           }}
-          onSubmitEditing={() => {
-            picker.search(draftQuery.trim());
-          }}
-          placeholder="Search Drive by name"
-          placeholderTextColor={appTheme.colors.textFaint}
-          returnKeyType="search"
-          style={styles.field}
-          value={draftQuery}
+          onChooseScope={picker.setSearchScope}
+          onSubmit={picker.search}
+          scope={picker.searchScope}
         />
 
         <View style={styles.locationRow}>
-          <Text numberOfLines={1} style={styles.location}>
+          <Text numberOfLines={2} style={styles.location}>
             {isSearching
-              ? `Results for “${picker.query}”`
+              ? describeDrivePickerResultsLine(
+                  picker.query,
+                  picker.searchScope,
+                  getDrivePickerSearchFolderName(picker.navigation),
+                )
               : describeDrivePickerLocation(picker.navigation)}
           </Text>
           {!isSearching && canGoUpInDrivePicker(picker.navigation) ? (
@@ -158,7 +151,9 @@ export const DriveSheetMusicPickerSheet = ({
           ) : null}
           {state.status === 'failed' ? (
             <View style={styles.stack}>
-              <Text style={styles.copy}>{FAILURE_COPY[state.reason]}</Text>
+              <Text style={styles.copy}>
+                {DRIVE_PICKER_FAILURE_COPY[state.reason]}
+              </Text>
               <OutlinedActionButton
                 label={
                   state.reason === 'needs-drive-access'
@@ -228,14 +223,20 @@ export const DriveSheetMusicPickerSheet = ({
                     {file.name}
                   </Text>
                   <Text style={styles.itemFormat}>
-                    {FORMAT_LABELS[file.format]}
+                    {SHEET_MUSIC_FORMAT_LABELS[file.format]}
                   </Text>
                 </Pressable>
               ))}
+              {state.isLoadingMore ? (
+                <Text style={styles.copy}>
+                  {isSearching ? 'Still searching…' : 'Loading more…'}
+                </Text>
+              ) : null}
               {state.listing.hasMore ? (
                 <Text style={styles.copy}>{DRIVE_MORE_RESULTS_MESSAGE}</Text>
               ) : null}
-              {state.listing.folders.length === 0 &&
+              {!state.isLoadingMore &&
+              state.listing.folders.length === 0 &&
               state.listing.files.length === 0 ? (
                 <Text style={styles.copy}>
                   {isSearching
@@ -259,16 +260,6 @@ const styles = StyleSheet.create({
     ...appTheme.type.body,
     color: appTheme.colors.textMuted,
     lineHeight: 20,
-  },
-  field: {
-    minHeight: appTheme.space.touchTarget,
-    borderWidth: 1,
-    borderColor: appTheme.colors.borderChip,
-    borderRadius: appTheme.radius.md,
-    paddingHorizontal: appTheme.space.md,
-    color: appTheme.colors.text,
-    fontSize: 15,
-    backgroundColor: appTheme.colors.surface,
   },
   item: {
     flexDirection: 'row',
