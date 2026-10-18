@@ -62,7 +62,7 @@ describe('drive picker navigation', () => {
       describeDrivePickerLocation(
         createDrivePickerNavigation(SHARED_FOLDERS_ROOT_LOCATION),
       ),
-      'Shared folders',
+      'Shared with you',
     );
   });
 });

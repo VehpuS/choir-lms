@@ -1,15 +1,12 @@
-import type {
-  DriveBrowseLocation,
-  DriveBrowseRootKind,
-  DriveBrowseSnapshot,
-  DriveDiscoveryResult,
-  DrivePathSegment,
+import {
+  DRIVE_ROOT_LABELS,
+  type DriveBrowseLocation,
+  type DriveBrowseRootKind,
+  type DriveBrowseSnapshot,
+  type DriveDiscoveryResult,
+  type DrivePathSegment,
 } from '@org/google-drive';
 
-const ROOT_LABELS: Record<DriveBrowseRootKind, string> = {
-  'my-drive': 'My Drive',
-  shared: 'Shared folders',
-};
 const ROOT_ORDER: readonly DriveBrowseRootKind[] = ['my-drive', 'shared'];
 const PATH_SEPARATOR = ' / ';
 
@@ -126,7 +123,7 @@ export const groupDriveBasket = (
       .filter((result) => (result.rootKind ?? 'my-drive') === rootKind)
       .map((result) => ({
         pathLabel: [
-          ROOT_LABELS[rootKind],
+          DRIVE_ROOT_LABELS[rootKind],
           ...(result.path ?? []).map(({ name }) => name),
         ].join(PATH_SEPARATOR),
         result,
@@ -139,5 +136,5 @@ export const groupDriveBasket = (
 
     return entries.length === 0
       ? []
-      : [{ entries, label: ROOT_LABELS[rootKind], rootKind }];
+      : [{ entries, label: DRIVE_ROOT_LABELS[rootKind], rootKind }];
   });

@@ -16,11 +16,7 @@ import {
   createDriveSearchQuery,
 } from './drive-file-queries';
 import { walkFolderTree } from './drive-folder-descendants';
-import {
-  requestAllDriveFilesWithFallback,
-  requestDriveFilesWithFallback,
-} from './drive-files-client';
-import type { DriveFilesPage } from './drive-files-paginator';
+import { requestAllDriveFilesWithFallback } from './drive-files-client';
 import type { DriveFileMetadata } from './google-drive-core';
 
 /** A Drive file the sheet music picker can offer, with the format it will be read as. */
@@ -35,19 +31,9 @@ export type DriveSheetMusicFile = {
 export type DriveSheetMusicListing = {
   files: DriveSheetMusicFile[];
   folders: DriveFolder[];
-  /** True when a search stopped at its page limit and more matches exist. */
-  hasMore?: boolean;
+  /** True when some folders could not be searched, so files may be missing. */
+  isIncomplete?: boolean;
 };
-
-// A name such as `pdf` can match thousands of files, and a listing shows
-// nothing until its pages arrive, so a search reads at most this many pages
-// (100 Drive entries each) and says when it stopped.
-export const SHEET_MUSIC_SEARCH_PAGE_LIMIT = 3;
-
-// Drive returns 100 entries a page; a search stops once it has read this many
-// across all of its queries, so a search inside a large tree is bounded too.
-const DRIVE_PAGE_SIZE = 100;
-const SEARCH_ENTRY_LIMIT = SHEET_MUSIC_SEARCH_PAGE_LIMIT * DRIVE_PAGE_SIZE;
 
 /**
  * Splits a Drive listing into folders and supported sheet music files. The
@@ -126,11 +112,12 @@ export const browseDriveSheetMusic = async (options: {
 };
 
 /**
- * Searches by name. With a folder `location` the search covers that folder and
- * every folder under it, batch by batch as the folders are discovered, so
- * matches stream in; without one it covers the user's Drive and what is shared
- * with them. It lists files only: a name often matches many folders, and a
- * folder is reached by browsing.
+ * Searches by name, to the end: it never stops at a result limit, and
+ * `onProgress` reports the matches found so far after every page. With a
+ * folder `location` the search covers that folder and every folder under it,
+ * batch by batch as the folders are discovered, so matches stream in; without
+ * one it covers the user's Drive and what is shared with them. It lists files
+ * only: a name often matches many folders, and a folder is reached by browsing.
  */
 export const searchDriveSheetMusic = async (options: {
   accessToken: string;
@@ -147,57 +134,36 @@ export const searchDriveSheetMusic = async (options: {
   }
 
   const found = new Map<string, DriveFileMetadata>();
-  let hasMore = false;
-
-  // Reads up to the page limit of one query into `found`.
   const searchQuery = async (driveQuery: string) => {
-    let pageToken: string | undefined;
+    await requestAllDriveFilesWithFallback({
+      accessToken: options.accessToken,
+      includeSharedDrives: true,
+      onPage: ({ files }) => {
+        for (const file of files) {
+          found.set(file.id, file);
+        }
 
-    for (let page = 0; page < SHEET_MUSIC_SEARCH_PAGE_LIMIT; page += 1) {
-      const response = await requestDriveFilesWithFallback({
-        accessToken: options.accessToken,
-        includeSharedDrives: true,
-        pageToken,
-        query: driveQuery,
-        signal: options.signal,
-      });
-      const payload = (await response.json()) as DriveFilesPage;
-
-      for (const file of payload.files ?? []) {
-        found.set(file.id, file);
-      }
-
-      pageToken = payload.nextPageToken;
-      options.onProgress?.(toFilesOnlyListing([...found.values()]));
-
-      if (!pageToken) {
-        return;
-      }
-
-      hasMore = page === SHEET_MUSIC_SEARCH_PAGE_LIMIT - 1;
-    }
+        options.onProgress?.(toFilesOnlyListing([...found.values()]));
+      },
+      query: driveQuery,
+      signal: options.signal,
+    });
   };
-  const isFull = () => found.size >= SEARCH_ENTRY_LIMIT;
+  let isIncomplete = false;
 
   if (options.location?.kind === 'folder') {
     const { location } = options;
     const walk = await walkFolderTree({
       accessToken: options.accessToken,
       rootFolderId: location.id,
-      shouldStop: isFull,
       signal: options.signal,
-      visit: async (folderIds) => {
-        if (!isFull()) {
-          await searchQuery(
-            createDriveSearchQuery(query, location, folderIds, 'sheet-music'),
-          );
-        }
-      },
+      visit: (folderIds) =>
+        searchQuery(
+          createDriveSearchQuery(query, location, folderIds, 'sheet-music'),
+        ),
     });
 
-    // Stopping on a full list, or on a folder that could not be listed, leaves
-    // some folders unsearched.
-    hasMore = hasMore || walk.isIncomplete || isFull();
+    isIncomplete = walk.isIncomplete;
   } else {
     await searchQuery(
       createDriveSearchQuery(query, undefined, [], 'sheet-music'),
@@ -206,7 +172,7 @@ export const searchDriveSheetMusic = async (options: {
 
   return {
     ...toFilesOnlyListing([...found.values()]),
-    ...(hasMore ? { hasMore } : {}),
+    ...(isIncomplete ? { isIncomplete } : {}),
   };
 };
 

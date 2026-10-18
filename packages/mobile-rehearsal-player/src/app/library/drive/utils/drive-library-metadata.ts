@@ -1,7 +1,8 @@
-import type {
-  DriveBrowseLocation,
-  DriveDiscoveredAudioSource,
-  DriveFolder,
+import {
+  DRIVE_ROOT_LABELS,
+  type DriveBrowseLocation,
+  type DriveDiscoveredAudioSource,
+  type DriveFolder,
 } from '@org/google-drive';
 import { compact } from 'es-toolkit/compat';
 
@@ -108,13 +109,13 @@ export const getDriveSearchContextCopy = (
 
   if (location.rootKind === 'shared') {
     return {
-      helper: 'Search in shared folders',
+      helper: `Search in ${DRIVE_ROOT_LABELS.shared}`,
       placeholder: DRIVE_SEARCH_PLACEHOLDER,
     };
   }
 
   return {
-    helper: 'Search in My Drive',
+    helper: `Search in ${DRIVE_ROOT_LABELS['my-drive']}`,
     placeholder: DRIVE_SEARCH_PLACEHOLDER,
   };
 };

@@ -1,10 +1,11 @@
-import type {
-  DriveAuthorizationState,
-  DriveBrowseLocation,
-  DriveBrowseSnapshot,
-  DriveDiscoveredAudioSource,
-  DriveFolder,
-  DriveSearchSnapshot,
+import {
+  DRIVE_ROOT_LABELS,
+  type DriveAuthorizationState,
+  type DriveBrowseLocation,
+  type DriveBrowseSnapshot,
+  type DriveDiscoveredAudioSource,
+  type DriveFolder,
+  type DriveSearchSnapshot,
 } from '@org/google-drive';
 
 export {
@@ -79,7 +80,7 @@ const getSearchResultCountLabel = (snapshot: DriveSearchSnapshot) => {
 const getDriveSearchScopeCopy = (location?: DriveBrowseLocation) => {
   if (!location) {
     return {
-      readySuffix: 'across My Drive and shared folders',
+      readySuffix: `across ${DRIVE_ROOT_LABELS['my-drive']} and ${DRIVE_ROOT_LABELS.shared}`,
     };
   }
 

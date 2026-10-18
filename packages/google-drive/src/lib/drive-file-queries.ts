@@ -1,5 +1,6 @@
 import {
   DRIVE_FOLDER_MIME_TYPE,
+  DRIVE_ROOT_LABELS,
   type DriveBrowseLocation,
 } from './drive-discovery-models';
 
@@ -28,19 +29,18 @@ const SHARED_FOLDERS_ROOT_ID = 'shared-with-me';
 const DRIVE_QUERY_ESCAPE_PATTERN = /['\\]/g;
 
 export const FOLDER_SCOPE_BATCH_SIZE = 20;
-export const FOLDER_AUDIO_SEARCH_BATCH_SIZE = 20;
 
 export const MY_DRIVE_ROOT_LOCATION: DriveBrowseLocation = {
   id: MY_DRIVE_ROOT_ID,
   kind: 'root',
-  name: 'My Drive',
+  name: DRIVE_ROOT_LABELS['my-drive'],
   rootKind: 'my-drive',
 };
 
 export const SHARED_FOLDERS_ROOT_LOCATION: DriveBrowseLocation = {
   id: SHARED_FOLDERS_ROOT_ID,
   kind: 'root',
-  name: 'Shared folders',
+  name: DRIVE_ROOT_LABELS.shared,
   rootKind: 'shared',
 };
 

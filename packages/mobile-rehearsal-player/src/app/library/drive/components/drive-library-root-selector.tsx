@@ -1,4 +1,4 @@
-import type { DriveBrowseLocation } from '@org/google-drive';
+import { DRIVE_ROOT_LABELS, type DriveBrowseLocation } from '@org/google-drive';
 import { StyleSheet, View } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
@@ -14,11 +14,11 @@ const ROOT_OPTIONS: ReadonlyArray<{
   rootKind: DriveBrowseLocation['rootKind'];
 }> = [
   {
-    label: 'My Drive',
+    label: DRIVE_ROOT_LABELS['my-drive'],
     rootKind: 'my-drive',
   },
   {
-    label: 'Shared folders',
+    label: DRIVE_ROOT_LABELS.shared,
     rootKind: 'shared',
   },
 ];

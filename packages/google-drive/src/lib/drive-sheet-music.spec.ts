@@ -10,7 +10,6 @@ import {
   createDriveSearchQuery,
 } from './drive-file-queries.js';
 import {
-  SHEET_MUSIC_SEARCH_PAGE_LIMIT,
   browseDriveSheetMusic,
   searchDriveSheetMusic,
   toDriveSheetMusicListing,
@@ -175,7 +174,8 @@ describe('browseDriveSheetMusic and searchDriveSheetMusic', () => {
     );
   });
 
-  it('stops a broad search at its page limit and says more exist', async () => {
+  it('keeps searching every page of a broad search and reports matches as they arrive', async () => {
+    const PAGE_COUNT = 5;
     let requests = 0;
 
     globalThis.fetch = async () => {
@@ -183,18 +183,25 @@ describe('browseDriveSheetMusic and searchDriveSheetMusic', () => {
 
       return Response.json({
         files: [file(`Kyrie ${requests}.pdf`, 'application/pdf')],
-        nextPageToken: `page-${requests + 1}`,
+        ...(requests < PAGE_COUNT
+          ? { nextPageToken: `page-${requests + 1}` }
+          : {}),
       });
     };
+    const progress: number[] = [];
 
     const listing = await searchDriveSheetMusic({
       accessToken: 'token',
+      onProgress: (partial) => {
+        progress.push(partial.files.length);
+      },
       query: 'pdf',
     });
 
-    assert.equal(requests, SHEET_MUSIC_SEARCH_PAGE_LIMIT);
-    assert.equal(listing.files.length, SHEET_MUSIC_SEARCH_PAGE_LIMIT);
-    assert.equal(listing.hasMore, true);
+    assert.equal(requests, PAGE_COUNT);
+    assert.equal(listing.files.length, PAGE_COUNT);
+    assert.deepEqual(progress, [1, 2, 3, 4, 5]);
+    assert.equal(listing.isIncomplete, undefined);
   });
 
   it('lists files only in search results, not the folders that match the name', async () => {
@@ -216,18 +223,6 @@ describe('browseDriveSheetMusic and searchDriveSheetMusic', () => {
       listing.files.map(({ name }) => name),
       ['Kyrie.pdf'],
     );
-  });
-
-  it('does not report more when the search ends before the limit', async () => {
-    globalThis.fetch = async () =>
-      Response.json({ files: [file('Kyrie.pdf', 'application/pdf')] });
-
-    const listing = await searchDriveSheetMusic({
-      accessToken: 'token',
-      query: 'kyrie',
-    });
-
-    assert.equal(listing.hasMore, undefined);
   });
 
   it('searches Drive by name for sheet music', async () => {

@@ -1,3 +1,5 @@
+import { DRIVE_ROOT_LABELS } from '@org/google-drive';
+
 import type { useDriveLibrary } from '../drive/hooks/use-drive-library';
 import { getDriveSearchContextCopy } from '../drive/utils/drive-library-view-model';
 import type { resolveDriveStatusCopies } from './resolve-drive-status-copies';
@@ -28,7 +30,7 @@ export const buildDriveDiscoveryView = ({
     canRefresh,
     currentLocation,
     folderTitle: isSharedRoot
-      ? `Shared folders (${folderCount})`
+      ? `${DRIVE_ROOT_LABELS.shared} (${folderCount})`
       : `Folders (${folderCount})`,
     goToLocation: driveLibrary.goToLocation,
     isLoading: !isSearchMode && driveLibrary.isLoading,

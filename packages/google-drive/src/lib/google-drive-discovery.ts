@@ -1,4 +1,5 @@
 import {
+  DRIVE_ROOT_LABELS,
   createEmptyDriveSearchSnapshot,
   isDriveFolder,
   parseDriveBrowseSnapshot,
@@ -10,12 +11,10 @@ import {
   createBrowseQuery,
   createDriveSearchQuery,
   DRIVE_LIBRARY_QUERY,
-  FOLDER_AUDIO_SEARCH_BATCH_SIZE,
   MY_DRIVE_ROOT_LOCATION,
   SHARED_FOLDERS_ROOT_LOCATION,
-  splitIntoBatches,
 } from './drive-file-queries';
-import { listDescendantFolderIds } from './drive-folder-descendants';
+import { walkFolderTree } from './drive-folder-descendants';
 import {
   requestAllDriveFilesWithFallback,
   requestDriveFileMetadataWithFallback,
@@ -46,40 +45,48 @@ export type {
   DriveLibrarySnapshot,
   DriveSearchSnapshot,
 } from './drive-discovery-models';
-export { MY_DRIVE_ROOT_LOCATION, SHARED_FOLDERS_ROOT_LOCATION };
+export {
+  DRIVE_ROOT_LABELS,
+  MY_DRIVE_ROOT_LOCATION,
+  SHARED_FOLDERS_ROOT_LOCATION,
+};
 
+// Searches a folder and every folder under it. Folders are discovered a few
+// batches at a time and each batch is searched as it is found, so results
+// stream in instead of waiting for the whole tree to be listed.
 const searchFolderScopedAudioFiles = async (options: {
   accessToken: string;
   query: string;
   location: DriveBrowseLocation;
-  parentFolderIds: string[];
   supportedMimeTypes: string[];
   supportedExtensions: string[];
   onProgress?: DriveSearchProgressCallback;
   signal?: AbortSignal;
 }) => {
-  const resolvedParentFolderIds =
-    options.parentFolderIds.length > 0
-      ? options.parentFolderIds
-      : [options.location.id];
   const progressiveSearch = createProgressiveDriveSearch(options);
 
-  for (const batch of splitIntoBatches(
-    resolvedParentFolderIds,
-    FOLDER_AUDIO_SEARCH_BATCH_SIZE,
-  )) {
-    const files = await requestAllDriveFilesWithFallback({
-      accessToken: options.accessToken,
-      query: createDriveSearchQuery(options.query, options.location, batch),
-      includeSharedDrives: true,
-      onPage: ({ files: pageFiles }) => {
-        return progressiveSearch.addFiles(pageFiles);
-      },
-      signal: options.signal,
-    });
+  await walkFolderTree({
+    accessToken: options.accessToken,
+    rootFolderId: options.location.id,
+    signal: options.signal,
+    visit: async (folderIds) => {
+      const files = await requestAllDriveFilesWithFallback({
+        accessToken: options.accessToken,
+        query: createDriveSearchQuery(
+          options.query,
+          options.location,
+          folderIds,
+        ),
+        includeSharedDrives: true,
+        onPage: ({ files: pageFiles }) => {
+          return progressiveSearch.addFiles(pageFiles);
+        },
+        signal: options.signal,
+      });
 
-    await progressiveSearch.addFiles(files);
-  }
+      await progressiveSearch.addFiles(files);
+    },
+  });
 
   return progressiveSearch.getSnapshot();
 };
@@ -205,21 +212,10 @@ export const searchDriveAudioFiles = async (options: {
   }
 
   if (options.location?.kind === 'folder') {
-    const rootFolderId = options.location.id;
-    const parentFolderIds = await listDescendantFolderIds({
-      accessToken: options.accessToken,
-      rootFolderId,
-      signal: options.signal,
-    }).catch(() => {
-      // Fall back to direct-folder scope if descendant discovery is unavailable.
-      return [rootFolderId];
-    });
-
     return searchFolderScopedAudioFiles({
       accessToken: options.accessToken,
       query: trimmedQuery,
       location: options.location,
-      parentFolderIds,
       onProgress: options.onProgress,
       supportedMimeTypes: options.supportedMimeTypes,
       supportedExtensions: options.supportedExtensions,

@@ -188,7 +188,7 @@ describe('getDriveLibraryStatusCopy', () => {
     assert.equal(copy.title, 'Search results ready');
     assert.equal(
       copy.message,
-      '1 matching folder found across My Drive and shared folders.',
+      '1 matching folder found across My Drive and Shared with you.',
     );
   });
 

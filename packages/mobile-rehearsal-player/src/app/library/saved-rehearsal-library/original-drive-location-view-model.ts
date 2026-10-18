@@ -1,18 +1,12 @@
-import type {
-  DriveAudioSource,
-  DriveSourceLocation,
-} from '@org/audio-library-models';
+import type { DriveAudioSource } from '@org/audio-library-models';
+
+import { DRIVE_ROOT_LABELS } from '@org/google-drive';
 
 export type OriginalDriveLocationViewModel = {
   canOpenInGoogleDrive: boolean;
   canShowInAdd: boolean;
   hasKnownPath: boolean;
   pathLabel: string;
-};
-
-const ROOT_LABELS: Record<DriveSourceLocation['rootKind'], string> = {
-  'my-drive': 'My Drive',
-  shared: 'Shared with you',
 };
 
 const UNKNOWN_PATH_LABEL = 'Original Drive location not yet checked';
@@ -41,7 +35,7 @@ export const getOriginalDriveLocationViewModel = (
     canShowInAdd: true,
     hasKnownPath: true,
     pathLabel: [
-      ROOT_LABELS[sourceLocation.rootKind],
+      DRIVE_ROOT_LABELS[sourceLocation.rootKind],
       ...sourceLocation.path.map(({ name }) => name),
     ].join(' / '),
   };

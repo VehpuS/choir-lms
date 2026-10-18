@@ -24,6 +24,13 @@ export type DriveDiscoveredAudioSource = DriveAudioSource & {
 
 export type DriveBrowseRootKind = 'my-drive' | 'shared';
 
+/**
+ * How each Drive root is named to the user, in every title, chip, breadcrumb,
+ * and sentence that names one. Read this rather than writing the name again.
+ */
+export const DRIVE_ROOT_LABELS: Readonly<Record<DriveBrowseRootKind, string>> =
+  { 'my-drive': 'My Drive', shared: 'Shared with you' };
+
 export type DriveBrowseLocation = {
   id: string;
   kind: 'root' | 'folder';
@@ -150,8 +157,7 @@ export const mapDriveFileToFolder = (
 };
 
 export const createDrivePathLabel = (resolvedPath: DriveResolvedPath) => {
-  const rootLabel =
-    resolvedPath.rootKind === 'shared' ? 'Shared with you' : 'My Drive';
+  const rootLabel = DRIVE_ROOT_LABELS[resolvedPath.rootKind];
 
   return [rootLabel, ...resolvedPath.path.map(({ name }) => name)].join(' / ');
 };

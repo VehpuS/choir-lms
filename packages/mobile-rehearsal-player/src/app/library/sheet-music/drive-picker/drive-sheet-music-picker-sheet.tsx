@@ -1,7 +1,8 @@
 import type { SheetMusicSource } from '@org/audio-library-models';
-import type {
-  DriveBrowseLocation,
-  DriveSheetMusicFile,
+import {
+  DRIVE_ROOT_LABELS,
+  type DriveBrowseLocation,
+  type DriveSheetMusicFile,
 } from '@org/google-drive';
 import { useState } from 'react';
 import {
@@ -24,7 +25,7 @@ import {
 import {
   DRIVE_EMPTY_FOLDER_MESSAGE,
   DRIVE_EMPTY_SEARCH_MESSAGE,
-  DRIVE_MORE_RESULTS_MESSAGE,
+  DRIVE_INCOMPLETE_SEARCH_MESSAGE,
   DRIVE_PICKER_FAILURE_COPY,
   DRIVE_PICKER_NOTE,
   DRIVE_PICKER_ROOTS,
@@ -91,9 +92,7 @@ export const DriveSheetMusicPickerSheet = ({
             <OutlinedActionButton
               fill
               key={root.id}
-              label={
-                root.rootKind === 'shared' ? 'Shared with you' : 'My Drive'
-              }
+              label={DRIVE_ROOT_LABELS[root.rootKind]}
               onPress={() => {
                 setDraftQuery('');
                 picker.switchRoot(root);
@@ -232,8 +231,10 @@ export const DriveSheetMusicPickerSheet = ({
                   {isSearching ? 'Still searching…' : 'Loading more…'}
                 </Text>
               ) : null}
-              {state.listing.hasMore ? (
-                <Text style={styles.copy}>{DRIVE_MORE_RESULTS_MESSAGE}</Text>
+              {state.listing.isIncomplete ? (
+                <Text style={styles.copy}>
+                  {DRIVE_INCOMPLETE_SEARCH_MESSAGE}
+                </Text>
               ) : null}
               {!state.isLoadingMore &&
               state.listing.folders.length === 0 &&

@@ -166,121 +166,79 @@ describe('searchDriveAudioFiles', () => {
     assert.doesNotMatch(finalRequestUrl, /sharedWithMe/);
   });
 
+  const ROOT_FOLDER = {
+    id: 'folder-root',
+    kind: 'folder' as const,
+    name: 'Root folder',
+    rootKind: 'my-drive' as const,
+  };
+  const FOLDER_MIME = 'application/vnd.google-apps.folder';
+  // A listing of subfolders is the one query that does not filter by name.
+  const queryOf = (input: Parameters<typeof fetch>[0]) =>
+    new URL(String(input)).searchParams.get('q') ?? '';
+  const isFolderListing = (query: string) => !query.includes('name contains');
+
   it('searches nested descendants when scoped to a folder', async () => {
-    const requestUrls: string[] = [];
-    let callCount = 0;
+    const searches: string[] = [];
 
     globalThis.fetch = async (input) => {
-      requestUrls.push(String(input));
-      callCount += 1;
+      const query = queryOf(input);
 
-      if (callCount === 1) {
-        return new Response(
-          JSON.stringify({
-            files: [
-              {
-                id: 'folder-child',
-                name: 'Child folder',
-                mimeType: 'application/vnd.google-apps.folder',
-              },
-            ],
-          }),
-          {
-            status: 200,
-            headers: {
-              'content-type': 'application/json',
-            },
-          },
-        );
-      }
-
-      if (callCount === 2) {
-        return new Response(JSON.stringify({ files: [] }), {
-          status: 200,
-          headers: {
-            'content-type': 'application/json',
-          },
+      if (isFolderListing(query)) {
+        return Response.json({
+          files: query.includes("'folder-root' in parents")
+            ? [{ id: 'folder-child', mimeType: FOLDER_MIME, name: 'Child' }]
+            : [],
         });
       }
 
-      return new Response(JSON.stringify({ files: [] }), {
-        status: 200,
-        headers: {
-          'content-type': 'application/json',
-        },
-      });
+      searches.push(query);
+
+      return Response.json({ files: [] });
     };
 
     await searchDriveAudioFiles({
       accessToken: 'drive-token',
-      location: {
-        id: 'folder-root',
-        kind: 'folder',
-        name: 'Root folder',
-        rootKind: 'my-drive',
-      },
+      location: ROOT_FOLDER,
       query: 'Amen',
       supportedMimeTypes: SUPPORTED_MIME_TYPES,
       supportedExtensions: SUPPORTED_EXTENSIONS,
     });
 
-    assert.equal(requestUrls.length, 3);
-    assert.match(
-      requestUrls[0] ?? '',
-      /mimeType\+%3D\+%27application%2Fvnd\.google-apps\.folder%27/,
-    );
-    assert.match(requestUrls[0] ?? '', /%27folder-root%27\+in\+parents/);
-    assert.match(requestUrls[1] ?? '', /%27folder-child%27\+in\+parents/);
-    assert.match(requestUrls[2] ?? '', /%27folder-root%27\+in\+parents/);
-    assert.match(requestUrls[2] ?? '', /%27folder-child%27\+in\+parents/);
+    // The folder is searched first and its subfolder as it is discovered.
+    assert.equal(searches.length, 2);
+    assert.ok(searches[0]?.includes("'folder-root' in parents"));
+    assert.ok(!searches[0]?.includes("'folder-child' in parents"));
+    assert.ok(searches[1]?.includes("'folder-child' in parents"));
   });
 
-  it('falls back to direct folder scope when descendant discovery fails', async () => {
-    const requestUrls: string[] = [];
-    let callCount = 0;
+  it('still searches the folder itself when its subfolders cannot be listed', async () => {
+    const searches: string[] = [];
 
     globalThis.fetch = async (input) => {
-      requestUrls.push(String(input));
-      callCount += 1;
+      const query = queryOf(input);
 
-      if (callCount === 1) {
-        return new Response(
-          JSON.stringify({
-            error: {
-              message: 'Query failed',
-            },
-          }),
-          {
-            status: 500,
-            headers: {
-              'content-type': 'application/json',
-            },
-          },
+      if (isFolderListing(query)) {
+        return Response.json(
+          { error: { message: 'Query failed' } },
+          { status: 500 },
         );
       }
 
-      return new Response(JSON.stringify({ files: [] }), {
-        status: 200,
-        headers: {
-          'content-type': 'application/json',
-        },
-      });
+      searches.push(query);
+
+      return Response.json({ files: [] });
     };
 
     await searchDriveAudioFiles({
       accessToken: 'drive-token',
-      location: {
-        id: 'folder-root',
-        kind: 'folder',
-        name: 'Root folder',
-        rootKind: 'my-drive',
-      },
+      location: ROOT_FOLDER,
       query: 'Amen',
       supportedMimeTypes: SUPPORTED_MIME_TYPES,
       supportedExtensions: SUPPORTED_EXTENSIONS,
     });
 
-    assert.equal(requestUrls.length, 2);
-    assert.match(requestUrls[1] ?? '', /%27folder-root%27\+in\+parents/);
+    assert.equal(searches.length, 1);
+    assert.ok(searches[0]?.includes("'folder-root' in parents"));
   });
 });

@@ -48,7 +48,7 @@ test('discovery titles count folders, audio, and unavailable files', () => {
   );
 });
 
-test('discovery titles the shared root as shared folders', () => {
+test('discovery titles the shared root as Shared with you', () => {
   const view = buildDriveDiscoveryView({
     ...baseOptions,
     driveLibrary: createDriveLibrary({
@@ -57,7 +57,7 @@ test('discovery titles the shared root as shared folders', () => {
     isSearchMode: false,
   });
 
-  assert.equal(view.folderTitle, 'Shared folders (2)');
+  assert.equal(view.folderTitle, 'Shared with you (2)');
 });
 
 test('loading belongs to discovery or search, never both', () => {

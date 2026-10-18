@@ -15,17 +15,15 @@ export const DRIVE_UNAVAILABLE_MESSAGE =
   'Google Drive could not be reached. Check your connection and try again.';
 export const DRIVE_EMPTY_FOLDER_MESSAGE =
   'No sheet music in this folder. Open a folder or search by name.';
-export const DRIVE_MORE_RESULTS_MESSAGE =
-  'Showing the first matches. Type more of the name to narrow the list.';
+export const DRIVE_INCOMPLETE_SEARCH_MESSAGE =
+  'Some folders could not be searched, so files may be missing. Search again to retry.';
 export const DRIVE_EMPTY_SEARCH_MESSAGE = 'No sheet music matches that name.';
 
 export type DrivePickerFailure = 'needs-drive-access' | 'unavailable';
 
-// The shared root is titled `Shared folders` elsewhere; the picker names it
-// after its button so the title matches what was pressed.
 export const DRIVE_PICKER_ROOTS: readonly DriveBrowseLocation[] = [
   MY_DRIVE_ROOT_LOCATION,
-  { ...SHARED_FOLDERS_ROOT_LOCATION, name: 'Shared with you' },
+  SHARED_FOLDERS_ROOT_LOCATION,
 ];
 
 export const DRIVE_PICKER_FAILURE_COPY: Record<DrivePickerFailure, string> = {

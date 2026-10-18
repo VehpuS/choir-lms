@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, it } from 'node:test';
 
-import {
-  SHEET_MUSIC_SEARCH_PAGE_LIMIT,
-  searchDriveSheetMusic,
-} from './drive-sheet-music.js';
+import { searchDriveSheetMusic } from './drive-sheet-music.js';
 import type { DriveFileMetadata } from './google-drive-core.js';
 
 const ORIGINAL_FETCH = globalThis.fetch;
@@ -68,7 +65,7 @@ describe('searchDriveSheetMusic inside a folder', () => {
     );
   });
 
-  it('still searches the folder, and says more may exist, when its subfolders cannot be listed', async () => {
+  it('still searches the folder, and says the list may be incomplete, when its subfolders cannot be listed', async () => {
     const searches: string[] = [];
 
     globalThis.fetch = async (input) => {
@@ -92,10 +89,10 @@ describe('searchDriveSheetMusic inside a folder', () => {
     assert.equal(searches.length, 1);
     assert.ok(searches[0]?.includes("'folder-a' in parents"));
     assert.equal(listing.files.length, 1);
-    assert.equal(listing.hasMore, true);
+    assert.equal(listing.isIncomplete, true);
   });
 
-  it('does not report more when a folder search ends before the limit', async () => {
+  it('is complete when every folder could be searched', async () => {
     globalThis.fetch = async (input) => {
       const query = new URL(String(input)).searchParams.get('q') ?? '';
 
@@ -112,7 +109,7 @@ describe('searchDriveSheetMusic inside a folder', () => {
       query: 'kyrie',
     });
 
-    assert.equal(listing.hasMore, undefined);
+    assert.equal(listing.isIncomplete, undefined);
   });
 
   it('reports matches to the caller as each batch of folders is searched', async () => {
@@ -149,14 +146,14 @@ describe('searchDriveSheetMusic inside a folder', () => {
     assert.deepEqual(seen, [['Top.pdf'], ['Deep.pdf', 'Top.pdf']]);
   });
 
-  it('stops a large folder search once it has read enough and says more exist', async () => {
+  it('searches every folder of a large tree and every page, never stopping early', async () => {
     const CHILD_FOLDER_COUNT = 25;
-    const PAGE_SIZE = 100;
-    let searchRequests = 0;
+    const searches: string[] = [];
     let counter = 0;
 
     globalThis.fetch = async (input) => {
-      const query = new URL(String(input)).searchParams.get('q') ?? '';
+      const url = new URL(String(input));
+      const query = url.searchParams.get('q') ?? '';
 
       if (isFolderListing(query)) {
         return Response.json({
@@ -168,15 +165,15 @@ describe('searchDriveSheetMusic inside a folder', () => {
         });
       }
 
-      searchRequests += 1;
+      searches.push(query);
+      counter += 1;
 
+      // Every search returns two pages of a hundred matches each.
       return Response.json({
-        files: Array.from({ length: PAGE_SIZE }, () => {
-          counter += 1;
-
-          return file(`Kyrie ${counter}.pdf`, 'application/pdf');
-        }),
-        nextPageToken: `page-${searchRequests + 1}`,
+        files: Array.from({ length: 100 }, (_, index) =>
+          file(`Kyrie ${counter}-${index}.pdf`, 'application/pdf'),
+        ),
+        ...(url.searchParams.get('pageToken') ? {} : { nextPageToken: 'more' }),
       });
     };
 
@@ -186,8 +183,9 @@ describe('searchDriveSheetMusic inside a folder', () => {
       query: 'kyrie',
     });
 
-    // 26 folders make two query batches, but the first already fills the limit.
-    assert.equal(searchRequests, SHEET_MUSIC_SEARCH_PAGE_LIMIT);
-    assert.equal(listing.hasMore, true);
+    // 26 folders: the root, then batches of 20 and 5, two pages each.
+    assert.equal(searches.length, 3 * 2);
+    assert.equal(listing.files.length, 3 * 2 * 100);
+    assert.equal(listing.isIncomplete, undefined);
   });
 });

@@ -6,45 +6,6 @@ import {
 import { isDriveFolder } from './drive-discovery-models';
 import { requestAllDriveFilesWithFallback } from './drive-files-client';
 
-/**
- * Every folder under `rootFolderId`, the root included, found a level at a
- * time. A search inside a folder reads this to cover its subfolders too.
- */
-export const listDescendantFolderIds = async (options: {
-  accessToken: string;
-  rootFolderId: string;
-  signal?: AbortSignal;
-}) => {
-  const discoveredFolderIds = new Set<string>([options.rootFolderId]);
-  let frontier = [options.rootFolderId];
-
-  while (frontier.length > 0) {
-    const nextFrontier: string[] = [];
-
-    for (const batch of splitIntoBatches(frontier, FOLDER_SCOPE_BATCH_SIZE)) {
-      const files = await requestAllDriveFilesWithFallback({
-        accessToken: options.accessToken,
-        query: createFolderDescendantQuery(batch),
-        includeSharedDrives: true,
-        signal: options.signal,
-      });
-
-      for (const file of files) {
-        if (!isDriveFolder(file) || discoveredFolderIds.has(file.id)) {
-          continue;
-        }
-
-        discoveredFolderIds.add(file.id);
-        nextFrontier.push(file.id);
-      }
-    }
-
-    frontier = nextFrontier;
-  }
-
-  return [...discoveredFolderIds];
-};
-
 const DEFAULT_WALK_CONCURRENCY = 4;
 
 export type FolderTreeWalkResult = {

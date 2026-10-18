@@ -1,10 +1,12 @@
+import { DRIVE_ROOT_LABELS } from '@org/google-drive';
+
 export const getAddScreenSummaryCopy = (options: {
   activeSearchQuery: string | null;
   resultCount: number;
 }) => {
   if (!options.activeSearchQuery) {
     return {
-      body: 'Browse or search My Drive and shared folders, then save promising tracks into your library without leaving this view.',
+      body: `Browse or search ${DRIVE_ROOT_LABELS['my-drive']} and ${DRIVE_ROOT_LABELS.shared}, then save promising tracks into your library without leaving this view.`,
       title: 'Add from Google Drive',
     };
   }

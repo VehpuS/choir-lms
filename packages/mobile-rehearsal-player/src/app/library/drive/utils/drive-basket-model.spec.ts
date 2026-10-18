@@ -21,7 +21,7 @@ import {
 const root = (rootKind: 'my-drive' | 'shared'): DriveBrowseLocation => ({
   id: rootKind === 'shared' ? 'shared-root' : 'my-drive-root',
   kind: 'root',
-  name: rootKind === 'shared' ? 'Shared folders' : 'My Drive',
+  name: rootKind === 'shared' ? 'Shared with you' : 'My Drive',
   rootKind,
 });
 const folderLocation = (
@@ -163,7 +163,7 @@ describe('drive basket model', () => {
       ]),
       [
         ['My Drive', ['My Drive / A', 'My Drive / B']],
-        ['Shared folders', ['Shared folders / Choir']],
+        ['Shared with you', ['Shared with you / Choir']],
       ],
     );
   });

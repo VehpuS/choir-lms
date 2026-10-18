@@ -201,26 +201,26 @@ describe('Drive discovery pagination for search', () => {
   });
 
   it('rejects a folder-scoped search when a later result page fails', async () => {
-    let requestCount = 0;
+    globalThis.fetch = async (input) => {
+      const url = new URL(String(input));
+      const query = url.searchParams.get('q') ?? '';
 
-    globalThis.fetch = async () => {
-      requestCount += 1;
-
-      if (requestCount === 1) {
+      // Listing subfolders finds none; the search itself fails on page two.
+      if (!query.includes('name contains')) {
         return Response.json({ files: [] });
       }
 
-      if (requestCount === 2) {
-        return Response.json({
-          files: createAudioFiles(100),
-          nextPageToken: 'search-page-2',
-        });
+      if (url.searchParams.get('pageToken')) {
+        return Response.json(
+          { error: { message: 'Later search page failed' } },
+          { status: 500 },
+        );
       }
 
-      return Response.json(
-        { error: { message: 'Later search page failed' } },
-        { status: 500 },
-      );
+      return Response.json({
+        files: createAudioFiles(100),
+        nextPageToken: 'search-page-2',
+      });
     };
 
     await assert.rejects(
