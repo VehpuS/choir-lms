@@ -1,8 +1,9 @@
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { ModalSurfaceBase } from './modal-surface-base';
 import { SectionHeading } from './section-heading';
 
+import { darkScrollbarStyle } from '../../components/dark-scrollbar';
 import { appTheme } from '../../utils/theme';
 
 type BottomSheetSurfaceProps = {
@@ -10,6 +11,12 @@ type BottomSheetSurfaceProps = {
   eyebrow?: string;
   isVisible: boolean;
   onClose: () => void;
+  /**
+   * Scrolls the content under the title when it is taller than the screen. For
+   * a sheet whose content has no scroll area of its own; one that has its own
+   * (a list, a text field) leaves this off so scrolling is not nested.
+   */
+  scrollable?: boolean;
   title?: string;
   /** Lines before the title ellipsizes; 0 shows it in full. */
   titleNumberOfLines?: number;
@@ -23,6 +30,7 @@ export const BottomSheetSurface = ({
   eyebrow,
   isVisible,
   onClose,
+  scrollable = false,
   title,
   titleNumberOfLines = 1,
 }: BottomSheetSurfaceProps) => {
@@ -48,7 +56,18 @@ export const BottomSheetSurface = ({
           titleStyle={styles.title}
         />
       ) : null}
-      {children}
+      {scrollable ? (
+        <ScrollView
+          bounces={false}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          style={[darkScrollbarStyle, styles.scroll]}
+        >
+          {children}
+        </ScrollView>
+      ) : (
+        children
+      )}
     </ModalSurfaceBase>
   );
 };
@@ -70,6 +89,14 @@ const styles = StyleSheet.create({
     marginBottom: appTheme.space.xxs,
     borderRadius: appTheme.radius.pill,
     backgroundColor: appTheme.colors.divider,
+  },
+  // Shrinks under the surface's height cap instead of pushing past the screen.
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 1,
+  },
+  scrollContent: {
+    gap: appTheme.space.md,
   },
   sheet: {
     ...appTheme.elevation.sheet,

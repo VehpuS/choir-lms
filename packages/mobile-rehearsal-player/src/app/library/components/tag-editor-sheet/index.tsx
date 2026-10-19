@@ -109,6 +109,7 @@ export const TagEditorSheet = ({
       eyebrow="Tags"
       isVisible={true}
       onClose={onClose}
+      scrollable
       title={title}
     >
       <Text style={styles.bodyCopy}>{description}</Text>

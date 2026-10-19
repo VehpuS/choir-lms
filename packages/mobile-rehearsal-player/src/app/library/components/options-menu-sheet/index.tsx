@@ -67,6 +67,7 @@ export const OptionsMenuSheet = ({
       eyebrow={heading.eyebrow}
       isVisible
       onClose={onClose}
+      scrollable
       title={heading.title}
       titleNumberOfLines={titleNumberOfLines}
     >

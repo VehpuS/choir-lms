@@ -3,7 +3,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { resolveModalSurfaceLayout } from './model.js';
+import {
+  resolveModalSurfaceLayout,
+  resolveModalSurfaceMaxHeight,
+} from './model.js';
 
 describe('modal surface base model', () => {
   it('resolves centered modal layout', () => {
@@ -20,5 +23,10 @@ describe('modal surface base model', () => {
       justifyContent: 'flex-end',
       padding: 0,
     });
+  });
+
+  it('caps every surface below the screen height so its scroll area can shrink', () => {
+    assert.equal(resolveModalSurfaceMaxHeight('bottom'), '92%');
+    assert.equal(resolveModalSurfaceMaxHeight('center'), '88%');
   });
 });

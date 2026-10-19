@@ -9,7 +9,11 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { resolveModalSurfaceLayout, type ModalSurfacePlacement } from './model';
+import {
+  resolveModalSurfaceLayout,
+  resolveModalSurfaceMaxHeight,
+  type ModalSurfacePlacement,
+} from './model';
 
 type ModalSurfaceBaseProps = {
   backdropColor: string;
@@ -63,7 +67,15 @@ export const ModalSurfaceBase = ({
             style={styles.backdrop}
           />
         ) : null}
-        <View style={[styles.surface, surfaceStyle]}>{children}</View>
+        <View
+          style={[
+            styles.surface,
+            { maxHeight: resolveModalSurfaceMaxHeight(placement) },
+            surfaceStyle,
+          ]}
+        >
+          {children}
+        </View>
       </View>
     </Modal>
   );
