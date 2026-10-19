@@ -24,3 +24,23 @@ export const readMidiFile = (
 
 /** MIDI channel 10 (index 9) is reserved for percussion by General MIDI. */
 export const PERCUSSION_CHANNEL_INDEX = 9;
+
+/**
+ * The name of a track. Some exporters put a track's name in an empty track just
+ * before its notes, so a track with no name of its own takes the name of an
+ * empty, named track right before it; otherwise it has none.
+ */
+export const resolveTrackName = (
+  tracks: readonly { name: string; notes: { length: number } }[],
+  index: number,
+): string => {
+  const own = tracks[index]?.name.trim() ?? '';
+
+  if (own !== '') {
+    return own;
+  }
+
+  const before = tracks[index - 1];
+
+  return before && before.notes.length === 0 ? before.name.trim() : '';
+};

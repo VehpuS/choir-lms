@@ -45,8 +45,10 @@ const MAJOR_KEYS = [
   'F#',
   'C#',
 ];
-// Median pitches (MIDI) that split a bass line, a tenor line, and the rest.
-const BASS_CLEF_BELOW = 53;
+// Median pitches (MIDI) that split a bass line, a tenor line, and the rest. A
+// baritone line (median about 56) is written in bass clef, a tenor line (about
+// 59) in treble-8, as in the real score of the audited file (task 15.5).
+const BASS_CLEF_BELOW = 57;
 const TENOR_CLEF_BELOW = 61;
 const KEY_PREFERENCE_PER_ACCIDENTAL = 0.01;
 

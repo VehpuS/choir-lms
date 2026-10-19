@@ -157,6 +157,7 @@ describe('convertMidiToMusicXml', () => {
     const notes = [sixteenths(60, 0, 4), sixteenths(62, 4, 16)];
     const without = convertMidiToMusicXml(
       buildMidiFile({ tracks: [{ notes }] }),
+      { pickupSixteenths: 0 },
     );
     const withPickup = convertMidiToMusicXml(
       buildMidiFile({ tracks: [{ notes }] }),
@@ -180,6 +181,59 @@ describe('convertMidiToMusicXml', () => {
       [true, 36],
       [false, 12],
     ]);
+  });
+
+  it('detects a pickup from the notes when none is given, and honors an explicit zero', () => {
+    // A one-beat pickup, then a long note on each of the next bars' lines and
+    // a shorter one mid-bar, so the bar lines are clear.
+    const notes = [sixteenths(60, 0, 4)];
+
+    for (let bar = 0; bar < 6; bar += 1) {
+      notes.push(
+        sixteenths(62, 4 + bar * 16, 8),
+        sixteenths(64, 12 + bar * 16, 4),
+      );
+    }
+
+    const bytes = buildMidiFile({ tracks: [{ notes }] });
+    const detected = convertMidiToMusicXml(bytes);
+    const forcedOff = convertMidiToMusicXml(bytes, { pickupSixteenths: 0 });
+    const firstBar = (xml: string | undefined) =>
+      readParts(xml ?? '').P1?.[0]?.notes.map(({ isRest, duration }) => [
+        isRest,
+        duration,
+      ]);
+
+    assert.equal(detected?.pickupSixteenths, 4);
+    assert.deepEqual(firstBar(detected?.musicXml)?.slice(0, 2), [
+      [true, 36],
+      [false, 12],
+    ]);
+    assert.equal(forcedOff?.pickupSixteenths, 0);
+  });
+
+  it('keeps a breath: a gap of one eighth is written as a rest, not closed into the note', () => {
+    const result = convertMidiToMusicXml(
+      buildMidiFile({
+        tracks: [
+          {
+            // A quarter, an eighth rest, then an eighth (a pair per beat).
+            notes: [sixteenths(60, 0, 4), sixteenths(62, 6, 2)],
+          },
+        ],
+      }),
+      { pickupSixteenths: 0 },
+    );
+    const bar = readParts(result?.musicXml ?? '').P1?.[0];
+
+    assert.deepEqual(
+      bar?.notes.slice(0, 3).map(({ isRest, duration }) => [isRest, duration]),
+      [
+        [false, 12],
+        [true, 6],
+        [false, 6],
+      ],
+    );
   });
 
   it('writes simultaneous notes as a chord, not as extra voices', () => {

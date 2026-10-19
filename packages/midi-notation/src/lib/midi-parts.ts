@@ -1,6 +1,10 @@
 import { classifyVocalPart, type ScorePart } from '@org/audio-library-models';
 
-import { PERCUSSION_CHANNEL_INDEX, readMidiFile } from './tone-midi.ts';
+import {
+  PERCUSSION_CHANNEL_INDEX,
+  readMidiFile,
+  resolveTrackName,
+} from './tone-midi.ts';
 
 // Deliberately not re-exported from the package index: that would put
 // `@tonejs/midi` in the app's startup bundle. The viewer loads it lazily
@@ -31,7 +35,7 @@ export const extractMidiParts = (bytes: ArrayLike<number>): ScorePart[] => {
     }
 
     const index = parts.length;
-    const name = track.name.trim();
+    const name = resolveTrackName(midi.tracks, trackIndex);
     const midiProgram = track.instrument.number + 1;
     const isPercussion = track.channel === PERCUSSION_CHANNEL_INDEX;
 

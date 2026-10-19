@@ -9,12 +9,17 @@ import {
   fifthsFromKeyName,
   inferFifths,
 } from './midi-notation-pitch.ts';
+import { detectPickupSixteenths } from './midi-notation-pickup.ts';
 import {
   UNITS_PER_QUARTER,
   UNITS_PER_SIXTEENTH,
 } from './midi-notation-triplets.ts';
 import { escapeXml, writePartMeasuresXml } from './midi-notation-xml.ts';
-import { PERCUSSION_CHANNEL_INDEX, readMidiFile } from './tone-midi.ts';
+import {
+  PERCUSSION_CHANNEL_INDEX,
+  readMidiFile,
+  resolveTrackName,
+} from './tone-midi.ts';
 
 // This package is the lazily loaded boundary: nothing statically imports it.
 
@@ -23,7 +28,9 @@ export type MidiNotationOptions = {
   legatoSnapSixteenths?: number;
   /**
    * Length of a pickup (anacrusis) in 16ths. Bar lines are counted from time
-   * zero, so a pickup shifts every bar unless this leaves room for it.
+   * zero, so a pickup shifts every bar unless this leaves room for it. When
+   * left out the file's notes decide (see `detectPickupSixteenths`); 0 forces
+   * no pickup.
    */
   pickupSixteenths?: number;
   title?: string;
@@ -35,6 +42,8 @@ export type MidiNotationResult = {
   keySource: 'file' | 'inferred';
   musicXml: string;
   partCount: number;
+  /** The pickup length used, in 16ths: given, or detected from the notes; 0 for none. */
+  pickupSixteenths: number;
 };
 
 const UNITS_PER_WHOLE_NOTE = UNITS_PER_QUARTER * 4;
@@ -96,7 +105,13 @@ export const convertMidiToMusicXml = (
     midi.header.timeSignatures[0]?.timeSignature,
   );
   const barLength = (beats * UNITS_PER_WHOLE_NOTE) / beatType;
-  const pickup = options.pickupSixteenths ?? 0;
+  const pickup =
+    options.pickupSixteenths ??
+    detectPickupSixteenths(
+      tracks.flatMap(({ track }) => track.notes),
+      midi.header.ppq,
+      barLength / UNITS_PER_SIXTEENTH,
+    );
   const pickupUnits = pickup * UNITS_PER_SIXTEENTH;
   const offset =
     pickupUnits > 0 && pickupUnits < barLength ? barLength - pickupUnits : 0;
@@ -125,7 +140,8 @@ export const convertMidiToMusicXml = (
     return {
       clef: chooseClef(notes.map((note) => note.pitch)),
       endsAt: Math.max(...notes.map((note) => note.end)),
-      name: track.name.trim() || `Track ${trackIndex + 1}`,
+      name:
+        resolveTrackName(midi.tracks, trackIndex) || `Track ${trackIndex + 1}`,
       program: track.instrument.number + 1,
       channel: track.channel + 1,
       tripletWindows,
@@ -161,5 +177,6 @@ export const convertMidiToMusicXml = (
     keySource: fifthsFromFile === undefined ? 'inferred' : 'file',
     musicXml: `<?xml version="1.0" encoding="UTF-8"?><score-partwise version="3.1">${titleXml}<part-list>${partList}</part-list>${partBodies}</score-partwise>`,
     partCount: parts.length,
+    pickupSixteenths: pickupUnits > 0 && pickupUnits < barLength ? pickup : 0,
   };
 };

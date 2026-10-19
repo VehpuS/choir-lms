@@ -7,8 +7,14 @@ import {
   snapToGrid,
 } from './midi-notation-triplets.ts';
 
-/** Gaps up to this many 16ths are performance gaps, not rests. */
-export const DEFAULT_LEGATO_SNAP = 2;
+/**
+ * Gaps up to this many 16ths are performance gaps, not rests. One 16th: against
+ * the real score of a score-exported file, a snap of 2 closed a written eighth
+ * rest (a breath) into the note before it and left only 72 to 99 percent of
+ * note lengths right, where 1 left 95 to 99 percent, and 1 stayed best on the
+ * same file with timing and length jitter added (task 15.5 audit).
+ */
+export const DEFAULT_LEGATO_SNAP = 1;
 /** A final note played this many units short is closed up to the next beat. */
 const LAST_NOTE_SNAP_UNITS = UNITS_PER_SIXTEENTH;
 /** Inside a triplet window a gap is at least a triplet eighth, so only a sliver is closed. */

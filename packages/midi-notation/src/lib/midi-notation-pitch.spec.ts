@@ -70,4 +70,14 @@ describe('chooseClef', () => {
     });
     assert.deepEqual(chooseClef([67, 69, 71, 72, 74]), { line: 2, sign: 'G' });
   });
+
+  it('writes a baritone line in bass clef and a tenor line in treble-8', () => {
+    // Medians 56 (baritone) and 59 (tenor), as in the audited score.
+    assert.deepEqual(chooseClef([52, 54, 56, 58, 61]), { line: 4, sign: 'F' });
+    assert.deepEqual(chooseClef([56, 57, 59, 62, 66]), {
+      line: 2,
+      octaveChange: -1,
+      sign: 'G',
+    });
+  });
 });

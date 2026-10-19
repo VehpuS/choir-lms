@@ -187,4 +187,48 @@ describe('extractMidiParts', () => {
     );
     assert.deepEqual(extractMidiParts(RAW_ALTO_FILE.slice(0, 10)), []);
   });
+
+  it('names a track from an empty named track just before it', () => {
+    // Exporters such as the audited V7 file write a part's name in an empty
+    // track and its notes in the next one.
+    const midi = new Midi();
+
+    midi.header.setTempo(100);
+    midi.addTrack();
+
+    for (const name of ['Alto', 'Tenor']) {
+      const label = midi.addTrack();
+
+      label.name = name;
+
+      const notes = midi.addTrack();
+
+      notes.channel = 1;
+      notes.addNote({ midi: 60, time: 0, duration: 0.5 });
+    }
+
+    const unnamed = midi.addTrack();
+
+    unnamed.addNote({ midi: 62, time: 0, duration: 0.5 });
+
+    assert.deepEqual(summarize(midi.toArray()), [
+      ['track-2', 'Alto', 'vocal'],
+      ['track-4', 'Tenor', 'vocal'],
+      ['track-5', 'Track 6', 'unknown'],
+    ]);
+  });
+
+  it("keeps a track's own name over the name of the empty track before it", () => {
+    const midi = new Midi();
+
+    midi.header.setTempo(100);
+    midi.addTrack().name = 'Soprano';
+
+    const own = midi.addTrack();
+
+    own.name = 'Alto';
+    own.addNote({ midi: 60, time: 0, duration: 0.5 });
+
+    assert.deepEqual(summarize(midi.toArray()), [['track-1', 'Alto', 'vocal']]);
+  });
 });
