@@ -6,6 +6,34 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "web", "-w", "packages/mobile-rehearsal-player"],
       "port": 19007
+    },
+    {
+      "name": "mobile-rehearsal-player-ios",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "ios", "-w", "packages/mobile-rehearsal-player"],
+      "port": 8081
+    },
+    {
+      "name": "mobile-rehearsal-player-metro",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "exec",
+        "-w",
+        "packages/mobile-rehearsal-player",
+        "--",
+        "expo",
+        "start",
+        "--dev-client",
+        "--port",
+        "8081"
+      ],
+      "port": 8081
+    },
+    {
+      "name": "mobile-rehearsal-player-android",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "android", "-w", "packages/mobile-rehearsal-player"],
+      "port": 8081
     }
   ]
 }
