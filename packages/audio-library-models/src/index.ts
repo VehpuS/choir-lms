@@ -4,6 +4,7 @@ export * from './lib/part-selection.ts';
 export * from './lib/search-sources.ts';
 export * from './lib/part-preferences.ts';
 export * from './lib/voice-section.ts';
+export * from './lib/piano-pitch.ts';
 export * from './lib/playback-shaping.ts';
 export * from './lib/playlist-entries.ts';
 export * from './lib/rehearsal-domain.ts';

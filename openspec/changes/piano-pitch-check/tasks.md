@@ -6,20 +6,20 @@
 
 ## 2. Pitch model
 
-- [ ] 2.1 Add framework-agnostic pitch helpers to `packages/audio-library-models`: MIDI number ↔ note name with octave (sharp and flat spelling), MIDI → frequency (A4 = 440), and MusicXML pitch (`step`, `alter`, `octave`, optional `<transpose>` `chromatic` / `octave-change`) → sounding MIDI number. Spec the helpers, including A0, C8, C4 = 60, accidentals, and a transposed part. Export through the package index.
-- [ ] 2.2 Add a keyboard layout model in the app (`library/piano/`): the 88 keys with white/black classification, left offset and width, label for a key given `showAllNoteNames` and `accidentals`, and the scroll offset that centres a given MIDI number or range. Spec it, including no label other than C by default and the centring edge cases at both ends.
+- [x] 2.1 Add framework-agnostic pitch helpers to `packages/audio-library-models`: MIDI number ↔ note name with octave (sharp and flat spelling), MIDI → frequency (A4 = 440), and MusicXML pitch (`step`, `alter`, `octave`, optional `<transpose>` `chromatic` / `octave-change`) → sounding MIDI number. Spec the helpers, including A0, C8, C4 = 60, accidentals, and a transposed part. Export through the package index.
+- [x] 2.2 Add a keyboard layout model in the app (`library/piano/`): the 88 keys with white/black classification, left offset and width, label for a key given `showAllNoteNames` and `accidentals`, and the scroll offset that centres a given MIDI number or range. Spec it, including no label other than C by default and the centring edge cases at both ends.
 
 ## 3. Preferences and voices
 
-- [ ] 3.1 Add the `piano-preferences` store (`choirlms.piano.*`): `sound`, `volume`, `accidentals`, `showAllNoteNames`, and the overlay state (`isOpen`, `isCollapsed`, `heightStep`, `scrollLeft`), parsed and clamped at the read boundary (design Decision 8). Spec defaults, clamping, an unknown sound, and a storage failure falling back to defaults.
-- [ ] 3.2 Add the `PianoVoice` interface and `pianoCapabilities()` (design Decisions 4 and 5) with the capability flag spec for web with and without `AudioContext` and for native.
-- [ ] 3.3 Add the web `Organ` voice (oscillator stack, attack, sustain, release) with a spec against a fake `AudioContext` for attack, release, volume, and polyphony cap.
+- [x] 3.1 Add the `piano-preferences` store (`choirlms.piano.*`): `sound`, `volume`, `accidentals`, `showAllNoteNames`, and the overlay state (`isOpen`, `isCollapsed`, `heightStep`, `scrollLeft`), parsed and clamped at the read boundary (design Decision 8). Spec defaults, clamping, an unknown sound, and a storage failure falling back to defaults.
+- [x] 3.2 Add the `PianoVoice` interface and `pianoCapabilities()` (design Decisions 4 and 5) with the capability flag spec for web with and without `AudioContext` and for native.
+- [x] 3.3 Add the web `Organ` voice (oscillator stack, attack, sustain, release) with a spec against a fake `AudioContext` for attack, release, volume, and polyphony cap.
 - [ ] 3.4 Add the web `Piano` voice: lazy sample load on first press, nearest-sample playback rate, held-note tail looping, 250 ms release, 1.5 s queued-press cap, and fallback to the organ tone with a notice on load failure. Spec with a fake `AudioContext` and `fetch`: cold press, warm press, load failure, nearest-sample selection across the range.
 - [ ] 3.5 Add the `usePianoSound` hook: creates and resumes the context from the first user gesture, applies the current sound and volume at each press, exposes `press(midi)` / `release(midi)` and the set of sounding notes (so the keyboard and the score can light keys), and disposes on unmount.
 
 ## 4. Key gestures
 
-- [ ] 4.1 Add the `piano-key-gestures` model (design Decision 3): key under a pointer with black-key precedence, down / move / up / cancel handling, glissando across keys, 10-voice cap releasing the oldest, and scroll-vs-play arbitration. Spec with synthetic pointer sequences for every scenario in `piano-pitch-check` (hold, two keys, slide, scroll).
+- [x] 4.1 Add the `piano-key-gestures` model (design Decision 3): key under a pointer with black-key precedence, down / move / up / cancel handling, glissando across keys, 10-voice cap releasing the oldest, and scroll-vs-play arbitration. Spec with synthetic pointer sequences for every scenario in `piano-pitch-check` (hold, two keys, slide, scroll).
 
 ## 5. Overlay component
 
