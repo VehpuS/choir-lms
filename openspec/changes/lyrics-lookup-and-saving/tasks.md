@@ -37,7 +37,7 @@
 ## 7. Follow-ups (not scheduled)
 
 - [x] 7.1 Moved to `native-playback-follow-ups` task 1.5 (2026-10-12, at the user's direction); native verification is not part of this change.
-- [ ] 7.2 Explore with the user: remembering an artist on the track so lookups need no typing, a second text body (for example a translation), and configurable web search. **Partly done (2026-10-19):** configurable web search shipped as 15.4's shared search sources (Settings, `Lyrics search`). Still open: remembering an artist on the track, and a second text body such as a translation.
+- [x] 7.2 Explore with the user: remembering an artist on the track so lookups need no typing, a second text body (for example a translation), and configurable web search. **Partly done (2026-10-19):** configurable web search shipped as 15.4's shared search sources (Settings, `Lyrics search`). Still open: remembering an artist on the track, and a second text body such as a translation. **Closed (2026-10-19), decided with the user:** the other two ideas are not needed, so nothing more is built here. A remembered artist on the track (saved on a lookup or search and used to prefill the lyrics editor and the add-sheet-music panel) and a second text body such as a translation (a switch in the editor and in each lyrics surface) were pitched and declined; the artist is still guessed from the file name on each open. They can be reopened as new items if singers ask for them.
 
 ## 8. Follow-ups found while implementing (explore with the user before building)
 
