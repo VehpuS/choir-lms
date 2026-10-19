@@ -16,6 +16,8 @@ type ViewerLayoutProps = {
   onClose: () => void;
   ownerName: string;
   partChips: ReactNode;
+  /** The docked piano; sits under the score, which shrinks to make room. */
+  piano: ReactNode;
   sourceChips: ReactNode;
   sourceLabel: string | undefined;
   toolbar: (orientation: 'column' | 'row') => ReactNode;
@@ -34,6 +36,7 @@ export const ViewerLayout = ({
   onClose,
   ownerName,
   partChips,
+  piano,
   sourceChips,
   sourceLabel,
   toolbar,
@@ -56,6 +59,7 @@ export const ViewerLayout = ({
             ) : null}
             {notices}
             <View style={styles.body}>{body}</View>
+            {piano}
           </View>
           <View style={styles.rail}>
             {closeButton}
@@ -92,6 +96,7 @@ export const ViewerLayout = ({
         ) : null}
         {notices}
         <View style={styles.body}>{body}</View>
+        {piano}
         {toolbar('row')}
       </View>
     </Modal>

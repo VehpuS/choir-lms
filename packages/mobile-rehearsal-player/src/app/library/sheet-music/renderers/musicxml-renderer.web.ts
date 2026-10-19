@@ -1,4 +1,7 @@
 import {
+  combineNoteRanges,
+  extractPartNoteRanges,
+  extractPartTransposes,
   extractScoreBars,
   extractScoreParts,
   resolvePartSelection,
@@ -13,6 +16,7 @@ import {
   type MeasureRow,
 } from './bar-offsets';
 import { resolveVisibilityFlags } from './part-visibility';
+import { tagScoreNoteheads } from './score-note-tags';
 import {
   buildStaffBands,
   findPartNameAtY,
@@ -174,6 +178,18 @@ export const createMusicXmlRenderer =
         // The part list and the renderer's instruments describe the same file; if
         // they ever disagree, draw everything rather than hide the wrong staves.
         const canFilter = osmd.Sheet.Instruments.length === parts.length;
+        const transposes = extractPartTransposes(musicXml);
+        // Marks each drawn notehead with its sounding pitch so a tap can find
+        // it; the mark survives the strip copying a run's SVG into its slot.
+        const tagNotes = () => {
+          tagScoreNoteheads({
+            instruments: osmd.Sheet.Instruments,
+            measures: osmd.GraphicSheet.MeasureList as unknown as Parameters<
+              typeof tagScoreNoteheads
+            >[0]['measures'],
+            transposes,
+          });
+        };
         const draw = (
           next: PartSelectionRequest | undefined,
         ): ResolvedPartSelection => {
@@ -191,6 +207,7 @@ export const createMusicXmlRenderer =
               strip.redraw();
             } else {
               strip = createSegmentedStrip({
+                afterRender: tagNotes,
                 host: container as StripHost,
                 osmd,
                 stage,
@@ -200,6 +217,7 @@ export const createMusicXmlRenderer =
             }
           } else {
             osmd.render();
+            tagNotes();
             removeBaselineGap(container as Measurable);
             barOffsets = readBarOffsets(
               osmd.GraphicSheet.MeasureList,
@@ -221,11 +239,22 @@ export const createMusicXmlRenderer =
         osmd.zoom = zoom;
         let resolved = draw(selection);
 
+        // Each part's sounding range, read once from the text; the viewer asks
+        // for the union of the parts shown.
+        const partNoteRanges = extractPartNoteRanges(musicXml);
+
         const rendering: ScoreRendering = {
           bars,
           applySelection(next) {
             resolved = draw(next);
             return resolved;
+          },
+          noteRange() {
+            return combineNoteRanges(
+              resolved.visible.map(
+                (part) => partNoteRanges[part.index] ?? null,
+              ),
+            );
           },
           dispose() {
             if (strip) {
@@ -273,6 +302,7 @@ export const createMusicXmlRenderer =
 
             osmd.zoom = next;
             osmd.render();
+            tagNotes();
             removeBaselineGap(container as Measurable);
           },
         };

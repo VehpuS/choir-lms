@@ -33,8 +33,9 @@
 ## 6. Settings and viewer integration
 
 - [x] 6.1 Add the `Piano` section to Settings (`Sound`, `Show every note name`, `Black key names`) through the existing preference-row model, extending `screens/settings/model.spec.ts`.
-- [ ] 6.2 Add the piano toggle to the sheet music viewer toolbar and compact-layout rail, mount the docked instance under the score bound to the shared store, and shrink the score area to the space above it. Open collapsed in the compact-height layout. Extend the viewer layout model spec.
-- [ ] 6.3 Centre the keyboard on the shown part's range when opened from the viewer (using the part's lowest and highest pitch from the loaded score), once per opening and not during user scrolling. Spec the range-to-offset function.
+- [x] 6.2 Add the piano toggle to the sheet music viewer toolbar and compact-layout rail, mount the docked instance under the score bound to the shared store, and shrink the score area to the space above it. Open collapsed in the compact-height layout. Extend the viewer layout model spec.
+  - Note: the compact-height rule (opens collapsed) lives in the shared toggle model (`getPianoToggleModel`, specced in `piano-toggle.spec.ts`) rather than in `layout-model.ts`, because the toggle is what decides how the piano opens; the viewer passes `openCollapsed` from `isCompactViewerHeight`. The toolbar's controls now wrap on a narrow phone so Fit, Go to, the piano toggle, and play all stay reachable.
+- [x] 6.3 Centre the keyboard on the shown part's range when opened from the viewer (using the part's lowest and highest pitch from the loaded score), once per opening and not during user scrolling. Spec the range-to-offset function.
 
 ## 7. Tapping notes in the score
 
@@ -44,8 +45,8 @@
 ## 8. Verification and docs
 
 - [ ] 8.1 Verify in the browser preview with the track muted: open from the mini-player, playback screen, and viewer; hold and multi-touch keys; slide; scroll; resize and collapse; persist across reload; organ and piano sounds; tap notes in a MusicXML and a MIDI source and a PDF; the piano staying out of the way of transport and score. Record the result here.
-- [ ] 8.2 Add the native piano sound item to `native-playback-follow-ups` (bundled-sample native audio, spike to choose a dependency, device check).
-- [ ] 8.3 Update the README with the new capability and run `npm exec -- nx run-many -t lint test typecheck build --all` (or affected) green.
+- [x] 8.2 Add the native piano sound item to `native-playback-follow-ups` (bundled-sample native audio, spike to choose a dependency, device check).
+- [x] 8.3 Update the README with the new capability and run `npm exec -- nx run-many -t lint test typecheck build --all` (or affected) green.
 
 ## 9. Future work
 

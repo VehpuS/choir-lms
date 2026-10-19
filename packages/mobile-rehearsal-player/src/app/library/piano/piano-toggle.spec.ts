@@ -19,4 +19,15 @@ describe('piano toggle', () => {
     assert.equal(model.selected, true);
     assert.deepEqual(model.nextPreferences, { isOpen: false });
   });
+
+  it('opens as a handle where the screen is too short for the keyboard', () => {
+    assert.deepEqual(
+      getPianoToggleModel(false, { openCollapsed: true }).nextPreferences,
+      { isOpen: true, isCollapsed: true },
+    );
+    assert.deepEqual(
+      getPianoToggleModel(true, { openCollapsed: true }).nextPreferences,
+      { isOpen: false },
+    );
+  });
 });

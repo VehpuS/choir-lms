@@ -4,10 +4,12 @@ import {
   type SheetMusicSource,
 } from '@org/audio-library-models';
 import { useKeepAwake } from 'expo-keep-awake';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, useWindowDimensions } from 'react-native';
 
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
+import { PianoOverlay } from '../../piano/components/piano-overlay';
+import { registerPianoViewer } from '../../piano/piano-host-store';
 import { createSheetMusicLoader } from '../sheet-music-loader';
 import { GoToDrawer } from './go-to';
 import { useGoTo } from './go-to/use-go-to';
@@ -80,6 +82,9 @@ export const SheetMusicViewer = ({
   sources,
 }: SheetMusicViewerProps) => {
   useKeepAwake(KEEP_AWAKE_TAG);
+  // The viewer is a Modal above the shell, so it carries its own docked piano
+  // and the shell's steps aside while this is open.
+  useEffect(registerPianoViewer, []);
 
   const isCompact = isCompactViewerHeight(useWindowDimensions().height);
   const viewable = useMemo(() => filterViewableSources(sources), [sources]);
@@ -225,6 +230,7 @@ export const SheetMusicViewer = ({
     ) : null;
   const toolbar = (orientation: 'column' | 'row') => (
     <ViewerToolbar
+      isCompact={isCompact}
       isPlaybackToggleDisabled={isPlaybackToggleDisabled}
       isPlaying={isPlaying}
       onTogglePlayback={onTogglePlayback}
@@ -259,6 +265,7 @@ export const SheetMusicViewer = ({
       onClose={onClose}
       ownerName={ownerName}
       partChips={partChips}
+      piano={<PianoOverlay focusRange={info?.noteRange} />}
       sourceChips={sourceChips}
       sourceLabel={source?.label}
       toolbar={toolbar}

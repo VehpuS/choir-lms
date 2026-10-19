@@ -1,5 +1,6 @@
 import type {
   ResolvedPartSelection,
+  ScoreNoteRange,
   ScoreBars,
   ScorePart,
   PartSelectionRequest,
@@ -19,6 +20,11 @@ export type ScoreRendering = {
   readonly parts: readonly ScorePart[];
   /** Which parts are shown now, and why a fallback happened. */
   readonly resolved: ResolvedPartSelection;
+  /**
+   * The lowest and highest sounding note of the parts shown now, or null when
+   * they have no pitched notes. The viewer centres the piano on it.
+   */
+  noteRange(): ScoreNoteRange | null;
   /** Removes the drawing and releases the renderer. */
   dispose(): void;
   /** Redraws with a different part selection and returns what is now shown. */

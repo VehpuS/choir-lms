@@ -27,6 +27,7 @@ For the MVP, the player is expected to support:
 - ordered playback, repeat, and shuffle for rehearsal sessions
 - lyrics saved with a track and read during playback (see [Lyrics](#lyrics))
 - optional sheet music links per track, opened in a full-screen viewer (see [Sheet music](#sheet-music))
+- a piano for checking pitches against the track and the score (see [Piano](#piano))
 - native mobile transport integration where practical, including background playback and lock-screen controls
 
 The MVP explicitly does not include offline playback, document collaboration, score annotation, recording overlays, or broader rehearsal management workflows.
@@ -51,6 +52,15 @@ A saved track can carry up to 10 sheet music sources, such as the full score and
 - **Your parts:** Settings has an ordered `Your parts` list (Soprano, Mezzo-soprano, Alto, Tenor, Baritone, Bass, Beatbox, or any name you type, such as `Lead` or `Alto 2`), reordered by dragging or with the arrows. A source with no saved choice of its own opens on the first listed part the score has: every name is tried for an exact match first (digits count, so `Alto 2` finds only `Alto 2`), then for a close match (`Alto` also finds `Alto 1` and `Alto 2`; instrumental parts are never suggested), and only that part's staves show. With nothing listed, or nothing matching, it follows the exact part you last showed alone with the chips, then falls back to the vocal parts. `Make <Part> my part` in the viewer puts the exact part showing at the top of the list, and pressing it again removes it. A part saved on a source always wins. The list is stored on the device, not per track.
 - **What is fetched, and when:** a file is downloaded only when you open it, with your existing Google authorization for Drive files, or directly from the address for a web link. On the web build, a host that does not allow browser requests shows `Open in browser`; saving the file to Drive always works. The renderers (OpenSheetMusicDisplay, pdf.js, a MIDI parser) are separate chunks loaded when a viewer opens, not at startup. Nothing is uploaded.
 - **Not yet:** the iOS and Android renderers are tracked in `native-playback-follow-ups`; until then a native build lists the sources and opens them outside the app.
+
+## Piano
+
+A singer checking a pitch can open an 88-key piano (A0 to C8) over the app without leaving the track or the score. It is a web-only capability for now: native has no piano sound, so its controls are absent there (tracked in `native-playback-follow-ups`).
+
+- **Opening it:** the keyboard icon on the mini-player, in the practice row of the playback screen, and in the sheet music viewer's controls. It docks above the mini-player and tab bar (under the score in the viewer, where the score area shrinks to fit), never pauses, ducks, or moves the track, and remembers whether it is open, its height, and where it was scrolled. Drag its handle to one of three heights, or collapse it to the handle; `Close piano` closes it everywhere.
+- **Playing:** keys sound while held, with several fingers at once, and sliding across keys plays a glissando. A touch that begins on a key plays and never scrolls; the strip beneath the keys scrolls the keyboard. Notes are concert pitch (A4 = 440 Hz) and do not follow the track's pitch shaping. It opens on middle C, or on the range of the part shown in the sheet music viewer. C keys carry their octave (`C4`).
+- **Tapping the score:** tapping a notehead in MusicXML or MIDI sheet music sounds its pitch (at least 350 ms) and lights the key; a part's transposition is applied, rests and tied continuations do nothing, and a PDF is not tappable.
+- **Settings:** a `Piano` section chooses the sound (`Piano` is a synthesized tone for now; recorded samples are planned, `Organ` is a simple oscillator), whether every key is named, and how black keys are spelled (sharps or flats). The piano's volume is in its handle row and is separate from the track's.
 
 ## Product Direction
 

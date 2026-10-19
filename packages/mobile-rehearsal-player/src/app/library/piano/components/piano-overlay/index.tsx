@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { appTheme } from '../../../../utils/theme';
@@ -34,14 +34,20 @@ type PianoOverlayProps = {
 
 type PianoOverlayBodyProps = PianoOverlayProps;
 
-// Mounted once per opening, so the opening position is chosen once and never
-// again while the user is scrolling.
+// Mounted once per opening, so the opening position is chosen once per
+// opening and never while the user is scrolling.
 const PianoOverlayBody = ({ focusRange }: PianoOverlayBodyProps) => {
   const preferences = usePianoPreferences();
   const sound = usePianoSound();
   const [viewportWidth, setViewportWidth] = useState(0);
-  const [hasPlaced, setHasPlaced] = useState(false);
   const keyHeight = PIANO_KEY_HEIGHTS[preferences.heightStep];
+  // What the opening position was based on, and whether the user has scrolled
+  // since: a score's range can arrive after the piano opens, and it replaces
+  // the middle C default only if nobody has scrolled yet.
+  const placed = useRef<'none' | 'default' | 'range'>('none');
+  const hasUserScrolled = useRef(false);
+  const lowest = focusRange?.lowest;
+  const highest = focusRange?.highest;
 
   useEffect(() => {
     // Opening is a user gesture, the moment browsers allow audio to start.
@@ -49,24 +55,40 @@ const PianoOverlayBody = ({ focusRange }: PianoOverlayBodyProps) => {
   }, []);
 
   useEffect(() => {
-    if (hasPlaced || viewportWidth === 0 || preferences.isCollapsed) {
+    if (
+      viewportWidth === 0 ||
+      preferences.isCollapsed ||
+      hasUserScrolled.current
+    ) {
       return;
     }
 
-    setHasPlaced(true);
+    if (lowest !== undefined && highest !== undefined) {
+      if (placed.current !== 'range') {
+        placed.current = 'range';
+        setPianoScrollLeft(
+          centredScrollOffset({ lowest, highest }, viewportWidth),
+        );
+      }
+    } else if (placed.current === 'none') {
+      placed.current = 'default';
 
-    if (focusRange) {
-      setPianoScrollLeft(centredScrollOffset(focusRange, viewportWidth));
-    } else if (preferences.scrollLeft === 0) {
-      setPianoScrollLeft(middleCScrollOffset(viewportWidth));
+      if (preferences.scrollLeft === 0) {
+        setPianoScrollLeft(middleCScrollOffset(viewportWidth));
+      }
     }
   }, [
-    focusRange,
-    hasPlaced,
+    highest,
+    lowest,
     preferences.isCollapsed,
     preferences.scrollLeft,
     viewportWidth,
   ]);
+
+  const scrollByUser = (next: number) => {
+    hasUserScrolled.current = true;
+    setPianoScrollLeft(next);
+  };
 
   const scrollLeft = clampScrollLeft(preferences.scrollLeft, viewportWidth);
 
@@ -96,13 +118,13 @@ const PianoOverlayBody = ({ focusRange }: PianoOverlayBodyProps) => {
             labelOptions={preferences}
             onPress={sound.press}
             onRelease={sound.release}
-            onScrollLeftChange={setPianoScrollLeft}
+            onScrollLeftChange={scrollByUser}
             onViewportWidthChange={setViewportWidth}
             scrollLeft={scrollLeft}
             sounding={sound.sounding}
           />
           <PianoScrollStrip
-            onScrollLeftChange={setPianoScrollLeft}
+            onScrollLeftChange={scrollByUser}
             scrollLeft={scrollLeft}
             viewportWidth={viewportWidth}
           />

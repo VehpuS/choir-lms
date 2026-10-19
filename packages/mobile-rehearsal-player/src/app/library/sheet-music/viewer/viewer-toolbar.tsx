@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
+import { usePianoToggle } from '../../piano/piano-toggle';
 import { appTheme } from '../../../utils/theme';
 import { VIEWER_MAX_ZOOM, VIEWER_MIN_ZOOM, formatViewerZoom } from './model';
 
@@ -17,6 +18,8 @@ type ViewerToolbarProps = {
   onTogglePlayback: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
+  /** The compact layout opens the piano as a handle: the score needs the height. */
+  isCompact: boolean;
   /** `column` is the compact layout's side rail; `row` runs along the bottom. */
   orientation: 'column' | 'row';
   zoom: number;
@@ -24,6 +27,7 @@ type ViewerToolbarProps = {
 
 /** Zoom, and a play/pause control so playback stays reachable while reading. */
 export const ViewerToolbar = ({
+  isCompact,
   isFitted,
   isPlaybackToggleDisabled,
   isPlaying,
@@ -36,6 +40,7 @@ export const ViewerToolbar = ({
   zoom,
 }: ViewerToolbarProps) => {
   const isColumn = orientation === 'column';
+  const pianoToggle = usePianoToggle({ openCollapsed: isCompact });
   // In a column the larger zoom is on top, as a slider reads.
   const zoomOut = (
     <SurfaceIconButton
@@ -72,6 +77,15 @@ export const ViewerToolbar = ({
       onPress={onGoTo}
     />
   ) : null;
+  const pianoButton = pianoToggle ? (
+    <SurfaceIconButton
+      accessibilityLabel={pianoToggle.accessibilityLabel}
+      icon="piano-keyboard"
+      key="piano"
+      onPress={pianoToggle.toggle}
+      selected={pianoToggle.selected}
+    />
+  ) : null;
   const zoomValue = (
     <Text
       accessibilityLiveRegion="polite"
@@ -86,8 +100,8 @@ export const ViewerToolbar = ({
     <View style={[styles.bar, isColumn ? styles.barColumn : undefined]}>
       <View style={[styles.zoom, isColumn ? styles.zoomColumn : undefined]}>
         {isColumn
-          ? [zoomIn, zoomValue, zoomOut, fitButton, goToButton]
-          : [zoomOut, zoomValue, zoomIn, fitButton, goToButton]}
+          ? [zoomIn, zoomValue, zoomOut, fitButton, goToButton, pianoButton]
+          : [zoomOut, zoomValue, zoomIn, fitButton, goToButton, pianoButton]}
       </View>
       <CompactPlaybackAction
         accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
@@ -112,6 +126,10 @@ const styles = StyleSheet.create({
   },
   zoom: {
     flexDirection: 'row',
+    flexShrink: 1,
+    // Zoom, fit, go to, and piano plus play do not fit one row on a narrow
+    // phone, so the controls wrap rather than run off the edge.
+    flexWrap: 'wrap',
     alignItems: 'center',
     gap: appTheme.space.sm,
   },

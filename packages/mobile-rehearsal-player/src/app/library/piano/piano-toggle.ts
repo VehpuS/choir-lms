@@ -14,32 +14,34 @@ export type PianoToggleModel = {
 
 /**
  * The open/close control shared by the playback screen, the mini-player, and
- * the viewer toolbar. Opening always shows the keyboard, even if the piano was
- * last left collapsed to its handle.
+ * the viewer toolbar. Opening shows the keyboard, even if the piano was last
+ * left collapsed to its handle, except where the screen is too short for it
+ * (the viewer in its compact layout), which opens it as a handle.
  */
-export const getPianoToggleModel = (isOpen: boolean): PianoToggleModel => {
+export const getPianoToggleModel = (
+  isOpen: boolean,
+  options: { openCollapsed?: boolean } = {},
+): PianoToggleModel => {
   return {
     accessibilityLabel: isOpen ? 'Close piano' : 'Open piano',
     selected: isOpen,
     nextPreferences: isOpen
       ? { isOpen: false }
-      : { isOpen: true, isCollapsed: false },
+      : { isOpen: true, isCollapsed: options.openCollapsed ?? false },
   };
 };
 
 /** Null where the platform cannot play, so the control is simply absent. */
-export const usePianoToggle = ():
-  | (PianoToggleModel & {
-      toggle: () => void;
-    })
-  | null => {
+export const usePianoToggle = (
+  options: { openCollapsed?: boolean } = {},
+): (PianoToggleModel & { toggle: () => void }) | null => {
   const { isOpen } = usePianoPreferences();
 
   if (!pianoCapabilities().canPlay) {
     return null;
   }
 
-  const model = getPianoToggleModel(isOpen);
+  const model = getPianoToggleModel(isOpen, options);
 
   return {
     ...model,

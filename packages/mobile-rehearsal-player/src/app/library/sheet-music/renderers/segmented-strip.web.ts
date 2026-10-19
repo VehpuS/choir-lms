@@ -89,8 +89,10 @@ export const createSegmentedStrip = (options: {
   stage: StripStage;
   totalBars: number;
   zoom: number;
+  /** Called after each run is drawn and before its SVG is copied. */
+  afterRender?: () => void;
 }): SegmentedStrip => {
-  const { host, osmd, stage } = options;
+  const { afterRender, host, osmd, stage } = options;
   const segments = planSegments(options.totalBars);
   const strip = host.ownerDocument.createElement('div');
   const slots = segments.map(() => host.ownerDocument.createElement('div'));
@@ -157,6 +159,7 @@ export const createSegmentedStrip = (options: {
       drawUpToMeasureNumber: segment.lastBar,
     });
     osmd.render();
+    afterRender?.();
 
     const svg = stage.querySelector(SVG_SELECTOR);
 

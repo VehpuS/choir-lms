@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { pianoCapabilities } from '../../piano/piano-capabilities';
+import { usePianoSound } from '../../piano/use-piano-sound';
 import { appTheme } from '../../../utils/theme';
 import { createMusicXmlRenderer } from '../renderers/musicxml-renderer';
 import { createPdfRenderer } from '../renderers/pdf-renderer';
@@ -12,6 +14,7 @@ import type {
 import { computeFitZoom } from './fit-zoom-model';
 import { PartPeekLabel, usePartPeek, type PeekHost } from './part-peek';
 import type { SheetMusicSurfaceProps } from './sheet-music-surface-types';
+import { useScoreNoteTaps } from './use-score-note-taps';
 
 // The app's TypeScript config carries no DOM library, so the slice of the DOM
 // used here is described structurally.
@@ -130,6 +133,7 @@ export const SheetMusicSurface = ({
         ? undefined
         : latest.current.onRendered({
             bars: result.rendering.bars,
+            noteRange: result.rendering.noteRange(),
             parts: result.rendering.parts,
             resolved: result.rendering.resolved,
           });
@@ -155,16 +159,28 @@ export const SheetMusicSurface = ({
     const rendering = live.current.score;
 
     if (rendering && host) {
+      const resolved = rendering.applySelection(selection);
+
       latest.current.onRendered({
         bars: rendering.bars,
+        noteRange: rendering.noteRange(),
         parts: rendering.parts,
-        resolved: rendering.applySelection(selection),
+        resolved,
       });
       // Hiding or showing parts changes how tall the strip is.
       reportFit(live.current, host);
     }
     // `reportFit` only reads refs and the host, so it is not a dependency.
   }, [selection]);
+
+  // Notes are tappable in staves (MusicXML and MIDI), not in a PDF page.
+  const piano = usePianoSound();
+
+  useScoreNoteTaps(host as Parameters<typeof useScoreNoteTaps>[0], {
+    isEnabled: document.format !== 'pdf' && pianoCapabilities().canPlay,
+    press: piano.press,
+    release: piano.release,
+  });
 
   const peek = usePartPeek(host, (y) => live.current.score?.partNameAtY(y));
 

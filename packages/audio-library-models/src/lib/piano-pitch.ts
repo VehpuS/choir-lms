@@ -100,6 +100,32 @@ export type MusicXmlTranspose = {
   octaveChange?: number;
 };
 
+/** A part's `<transpose>` as a whole number of semitones. */
+const transposeSemitones = (transpose?: MusicXmlTranspose): number => {
+  return (
+    (transpose?.chromatic ?? 0) +
+    (transpose?.octaveChange ?? 0) * SEMITONES_PER_OCTAVE
+  );
+};
+
+/**
+ * The sounding MIDI number for a pitch given as semitones above C within its
+ * octave (C = 0 … B = 11), an accidental in semitones, and the MusicXML
+ * octave number. Renderers that already resolved the letter to a semitone use
+ * this directly.
+ */
+export const semitonePitchToMidi = (
+  pitch: { semitone: number; alter?: number; octave: number },
+  transpose?: MusicXmlTranspose,
+): number => {
+  return (
+    (pitch.octave + MIDI_OCTAVE_OFFSET) * SEMITONES_PER_OCTAVE +
+    pitch.semitone +
+    (pitch.alter ?? 0) +
+    transposeSemitones(transpose)
+  );
+};
+
 /**
  * The sounding MIDI number for a written pitch. A part's `<transpose>` says
  * how far its written notes sit from what is heard, so it is added to the
@@ -110,19 +136,14 @@ export const musicXmlPitchToMidi = (
   pitch: MusicXmlPitch,
   transpose?: MusicXmlTranspose,
 ): number | null => {
-  const stepSemitones = STEP_SEMITONES[pitch.step];
+  const semitone = STEP_SEMITONES[pitch.step];
 
-  if (stepSemitones === undefined) {
+  if (semitone === undefined) {
     return null;
   }
 
-  const written =
-    (pitch.octave + MIDI_OCTAVE_OFFSET) * SEMITONES_PER_OCTAVE +
-    stepSemitones +
-    (pitch.alter ?? 0);
-  const shift =
-    (transpose?.chromatic ?? 0) +
-    (transpose?.octaveChange ?? 0) * SEMITONES_PER_OCTAVE;
-
-  return written + shift;
+  return semitonePitchToMidi(
+    { semitone, alter: pitch.alter, octave: pitch.octave },
+    transpose,
+  );
 };

@@ -1,5 +1,6 @@
 import type {
   ResolvedPartSelection,
+  ScoreNoteRange,
   ScoreBars,
   ScorePart,
   PartSelectionRequest,
@@ -12,6 +13,8 @@ import type { LoadedSheetMusic } from './use-sheet-music-document';
 /** The parts of a drawn score and which of them are shown. */
 export type ScoreInfo = {
   bars: ScoreBars;
+  /** The range of the parts shown, for centring the piano; null if none. */
+  noteRange: ScoreNoteRange | null;
   parts: readonly ScorePart[];
   resolved: ResolvedPartSelection;
 };

@@ -7,6 +7,7 @@ import {
   midiToNoteName,
   midiToPitchName,
   musicXmlPitchToMidi,
+  semitonePitchToMidi,
   PIANO_HIGHEST_MIDI,
   PIANO_LOWEST_MIDI,
 } from './piano-pitch.js';
@@ -65,5 +66,19 @@ describe('MusicXML pitch to sounding MIDI', () => {
 
   it('returns null for an unknown step', () => {
     assert.equal(musicXmlPitchToMidi({ step: 'H', octave: 4 }), null);
+  });
+});
+
+describe('semitone pitch to MIDI', () => {
+  it('matches the MusicXML reading for the same note', () => {
+    // B♭4: B is 11 semitones above C, flattened once.
+    assert.equal(
+      semitonePitchToMidi({ semitone: 11, alter: -1, octave: 4 }),
+      70,
+    );
+    assert.equal(
+      semitonePitchToMidi({ semitone: 0, octave: 5 }, { chromatic: -2 }),
+      70,
+    );
   });
 });
