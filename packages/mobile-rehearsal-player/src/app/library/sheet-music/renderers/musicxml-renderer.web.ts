@@ -4,7 +4,7 @@ import {
   resolvePartSelection,
   type ResolvedPartSelection,
   type ScorePart,
-  type SheetMusicPartSelection,
+  type PartSelectionRequest,
 } from '@org/audio-library-models';
 
 import {
@@ -175,7 +175,7 @@ export const createMusicXmlRenderer =
         // they ever disagree, draw everything rather than hide the wrong staves.
         const canFilter = osmd.Sheet.Instruments.length === parts.length;
         const draw = (
-          next: SheetMusicPartSelection | undefined,
+          next: PartSelectionRequest | undefined,
         ): ResolvedPartSelection => {
           const resolved = resolvePartSelection(
             parts,

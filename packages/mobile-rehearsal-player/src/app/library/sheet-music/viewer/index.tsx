@@ -1,6 +1,7 @@
-import type {
-  SheetMusicPartSelection,
-  SheetMusicSource,
+import {
+  resolvePartSelection,
+  type SheetMusicPartSelection,
+  type SheetMusicSource,
 } from '@org/audio-library-models';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useMemo, useRef, useState } from 'react';
@@ -20,6 +21,16 @@ import {
   type ViewerFailureAction,
 } from './model';
 import { PartChips, PartNotices } from './part-chips';
+import {
+  buildMyPartChip,
+  resolvePreferredVoice,
+  resolveRequestedSelection,
+  singleVisibleVoice,
+} from '../voice-part/voice-part-preferences';
+import {
+  updateVoicePartPreferences,
+  useVoicePartPreferences,
+} from '../voice-part/voice-part-preferences-store';
 import { SourceChips } from './source-chips';
 import { useSheetMusicDocument } from './use-sheet-music-document';
 import { ViewerBody, type ViewerOutcome } from './viewer-body';
@@ -85,11 +96,19 @@ export const SheetMusicViewer = ({
     outcome: ViewerOutcome;
   }>();
   const source = viewable.find(({ id }) => id === sourceId) ?? viewable[0];
-  const selection = source
+  const voicePreferences = useVoicePartPreferences();
+  const preferredVoice = resolvePreferredVoice(voicePreferences);
+  const ownSelection = source
     ? source.id in chosen
       ? chosen[source.id]
       : source.partSelection
     : undefined;
+  // Memoized: the surface redraws whenever the selection's identity changes,
+  // so a fresh `{ preferVoice }` object per render would redraw forever.
+  const selection = useMemo(
+    () => resolveRequestedSelection(ownSelection, preferredVoice),
+    [ownSelection, preferredVoice],
+  );
 
   // The loader reads the token when a request starts, so a Drive reconnection
   // is picked up by `Try again` without rebuilding it.
@@ -151,6 +170,16 @@ export const SheetMusicViewer = ({
 
     setChosen((current) => ({ ...current, [source.id]: next }));
     onChangePartSelection(source.id, next);
+
+    // Using the chips is what teaches the app a singer's line: remember it when
+    // exactly one section is left showing.
+    const learned = singleVisibleVoice(
+      resolvePartSelection(info.parts, next).visible,
+    );
+
+    if (learned) {
+      updateVoicePartPreferences({ latestVoice: learned });
+    }
   };
 
   const sourceChips = hasSwitcher ? (
@@ -161,7 +190,17 @@ export const SheetMusicViewer = ({
     />
   ) : null;
   const partChips = hasParts ? (
-    <PartChips info={info} onPressChip={handleChip} />
+    <PartChips
+      info={info}
+      myPart={buildMyPartChip(
+        info.resolved.visible,
+        voicePreferences.defaultVoice,
+      )}
+      onPressChip={handleChip}
+      onPressMyPart={(chip) =>
+        updateVoicePartPreferences({ defaultVoice: chip.nextDefault })
+      }
+    />
   ) : null;
   const body = (
     <ViewerBody

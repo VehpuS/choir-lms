@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import { DEFAULT_BULK_CHOICE_PREFERENCES } from '../../library/selection/bulk-choices.js';
 import {
   SETTINGS_PREFERENCE_ROWS,
+  buildVoicePartOptions,
   hasStoredBulkChoiceDefault,
 } from './model.js';
 
@@ -31,6 +32,30 @@ describe('settings model', () => {
         repeatedItems: 'remove',
       }),
       true,
+    );
+  });
+});
+
+describe('buildVoicePartOptions', () => {
+  it('lists Automatic first, then each section, selecting Automatic with no default', () => {
+    const options = buildVoicePartOptions(undefined);
+
+    assert.deepEqual(
+      options.map(({ label }) => label),
+      ['Automatic', 'Soprano', 'Alto', 'Tenor', 'Baritone', 'Bass'],
+    );
+    assert.deepEqual(
+      options.filter(({ isSelected }) => isSelected).map(({ label }) => label),
+      ['Automatic'],
+    );
+  });
+
+  it('selects only the stored default', () => {
+    assert.deepEqual(
+      buildVoicePartOptions('tenor')
+        .filter(({ isSelected }) => isSelected)
+        .map(({ value }) => value),
+      ['tenor'],
     );
   });
 });

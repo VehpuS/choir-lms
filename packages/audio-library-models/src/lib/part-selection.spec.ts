@@ -138,3 +138,45 @@ describe('resolvePartSelection', () => {
     }
   });
 });
+
+describe('resolvePartSelection with a preferred voice', () => {
+  it("shows only the singer's line when the file has it", () => {
+    const resolved = resolvePartSelection(satb, { preferVoice: 'alto' });
+
+    assert.equal(resolved.effective, 'custom');
+    assert.deepEqual(
+      resolved.visible.map((part) => part.name),
+      ['Alto'],
+    );
+    assert.deepEqual(resolved.notices, []);
+  });
+
+  it('falls back to the vocal parts, with no notice, when the file lacks the voice', () => {
+    const resolved = resolvePartSelection(pianoVocal, { preferVoice: 'tenor' });
+
+    assert.equal(resolved.effective, 'vocal');
+    assert.deepEqual(
+      resolved.visible.map((part) => part.name),
+      ['Voice'],
+    );
+    assert.deepEqual(resolved.notices, []);
+  });
+
+  it('falls back without a notice when no part is recognized as vocal', () => {
+    const resolved = resolvePartSelection(noVoices, { preferVoice: 'bass' });
+
+    assert.equal(resolved.effective, 'all');
+    assert.deepEqual(resolved.notices, []);
+  });
+
+  it("leaves a source's own saved selection alone", () => {
+    const resolved = resolvePartSelection(satb, {
+      include: [scorePartKey(partAt(satb, 3))],
+    });
+
+    assert.deepEqual(
+      resolved.visible.map((part) => part.name),
+      ['Bass'],
+    );
+  });
+});

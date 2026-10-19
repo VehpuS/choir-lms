@@ -1,3 +1,9 @@
+import {
+  VOICE_SECTIONS,
+  VOICE_SECTION_LABELS,
+  type VoiceSection,
+} from '@org/audio-library-models';
+
 import type { BulkChoicePreferences } from '../../library/selection/bulk-choices';
 
 export type SettingsPreferenceRow = {
@@ -50,3 +56,32 @@ export const hasStoredBulkChoiceDefault = (
     preferences.repeatedItems !== 'ask'
   );
 };
+
+export const VOICE_PART_COPY = {
+  automaticLabel: 'Automatic',
+  body: 'Sheet music opens on this part when a score has several. Automatic follows the part you viewed last. A part you picked for a piece stays as you left it.',
+  title: 'Your voice part',
+  sectionTitle: 'Sheet music',
+} as const;
+
+export type VoicePartOption = {
+  isSelected: boolean;
+  label: string;
+  value: VoiceSection | undefined;
+};
+
+/** `Automatic` first, then each choir section; the stored default is selected. */
+export const buildVoicePartOptions = (
+  defaultVoice: VoiceSection | undefined,
+): VoicePartOption[] => [
+  {
+    isSelected: defaultVoice === undefined,
+    label: VOICE_PART_COPY.automaticLabel,
+    value: undefined,
+  },
+  ...VOICE_SECTIONS.map((section) => ({
+    isSelected: defaultVoice === section,
+    label: VOICE_SECTION_LABELS[section],
+    value: section,
+  })),
+];

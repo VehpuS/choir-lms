@@ -1,11 +1,20 @@
 import type { ScorePart } from './score-parts.ts';
 import type { SheetMusicPartSelection } from './source-sheet-music.ts';
+import { partsForVoiceSection, type VoiceSection } from './voice-section.ts';
 
 export type PartSelectionNotice =
   /** `vocal` was chosen but no part is recognized as vocal, so all are shown. */
   | 'no-vocal-parts'
   /** A saved part is not in this file any more, so the selection reset. */
   | 'saved-parts-missing';
+
+/**
+ * What the viewer asks for: a saved selection, or `{ preferVoice }` for a
+ * source that has none of its own. The second is never stored.
+ */
+export type PartSelectionRequest =
+  | SheetMusicPartSelection
+  | { preferVoice: VoiceSection };
 
 export type ResolvedPartSelection = {
   /** What is actually in effect after any fallback. */
@@ -44,6 +53,22 @@ const resolveVocal = (parts: readonly ScorePart[]): ResolvedPartSelection => {
   };
 };
 
+// A preferred voice that the file lacks (or a score whose staves hold several
+// voices) falls back to `vocal` without a notice: the singer asked for nothing
+// on this source, so there is nothing to explain.
+const resolvePreferredVoice = (
+  parts: readonly ScorePart[],
+  voice: VoiceSection,
+): ResolvedPartSelection => {
+  const visible = partsForVoiceSection(parts, voice);
+
+  if (visible.length === 0 || visible.length === parts.length) {
+    return { ...resolveVocal(parts), notices: [] };
+  }
+
+  return { effective: 'custom', notices: [], visible };
+};
+
 /**
  * Decides which parts of a score to show for a source's saved selection
  * (design Decision 12). No saved selection means `vocal`; a saved `include`
@@ -51,10 +76,14 @@ const resolveVocal = (parts: readonly ScorePart[]): ResolvedPartSelection => {
  */
 export const resolvePartSelection = (
   parts: readonly ScorePart[],
-  selection: SheetMusicPartSelection | undefined,
+  selection: PartSelectionRequest | undefined,
 ): ResolvedPartSelection => {
   if (parts.length === 0 || selection === 'all') {
     return { effective: 'all', notices: [], visible: [...parts] };
+  }
+
+  if (typeof selection === 'object' && 'preferVoice' in selection) {
+    return resolvePreferredVoice(parts, selection.preferVoice);
   }
 
   if (selection === undefined || selection === 'vocal') {

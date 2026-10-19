@@ -2,7 +2,7 @@ import type {
   ResolvedPartSelection,
   ScoreBars,
   ScorePart,
-  SheetMusicPartSelection,
+  PartSelectionRequest,
 } from '@org/audio-library-models';
 
 import type { GoToJump } from './go-to/use-go-to';
@@ -25,6 +25,6 @@ export type SheetMusicSurfaceProps = {
   onFitZoom: (zoom: number) => void;
   /** `null` for a PDF, which has no parts. Called again when the selection changes. */
   onRendered: (info: ScoreInfo | null) => void;
-  selection: SheetMusicPartSelection | undefined;
+  selection: PartSelectionRequest | undefined;
   zoom: number;
 };

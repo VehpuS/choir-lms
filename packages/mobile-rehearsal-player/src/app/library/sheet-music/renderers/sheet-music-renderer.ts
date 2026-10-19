@@ -2,7 +2,7 @@ import type {
   ResolvedPartSelection,
   ScoreBars,
   ScorePart,
-  SheetMusicPartSelection,
+  PartSelectionRequest,
 } from '@org/audio-library-models';
 
 export type ScoreRenderFailureReason =
@@ -23,7 +23,7 @@ export type ScoreRendering = {
   dispose(): void;
   /** Redraws with a different part selection and returns what is now shown. */
   applySelection(
-    selection: SheetMusicPartSelection | undefined,
+    selection: PartSelectionRequest | undefined,
   ): ResolvedPartSelection;
   /**
    * The drawn height at zoom 1, in the same units as the container's height,
@@ -60,7 +60,7 @@ export type MusicXmlRenderer<Container> = {
   render(options: {
     container: Container;
     musicXml: string;
-    selection: SheetMusicPartSelection | undefined;
+    selection: PartSelectionRequest | undefined;
     zoom?: number;
   }): Promise<ScoreRenderResult>;
 };

@@ -1,5 +1,5 @@
 import type {
-  SheetMusicPartSelection,
+  PartSelectionRequest,
   SheetMusicSource,
 } from '@org/audio-library-models';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
@@ -28,7 +28,7 @@ type ViewerBodyProps = {
   onFitZoom: (zoom: number) => void;
   onRendered: (info: ScoreInfo | null) => void;
   outcome: ViewerOutcome | undefined;
-  selection: SheetMusicPartSelection | undefined;
+  selection: PartSelectionRequest | undefined;
   source: SheetMusicSource | undefined;
   state: SheetMusicDocumentState;
   zoom: number;
