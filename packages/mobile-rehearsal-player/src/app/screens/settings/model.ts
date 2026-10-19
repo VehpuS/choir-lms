@@ -5,6 +5,10 @@ import {
   type SearchTemplateProblem,
 } from '@org/audio-library-models';
 
+import {
+  parsePianoPreferences,
+  type PianoPreferences,
+} from '../../library/piano/piano-preferences';
 import type { BulkChoicePreferences } from '../../library/selection/bulk-choices';
 
 export type SettingsPreferenceRow = {
@@ -111,4 +115,79 @@ export const SEARCH_TEMPLATE_PROBLEM_MESSAGES: Record<
 /** The site a source searches, shown under its name. */
 export const describeSearchSourceHost = (urlTemplate: string): string => {
   return /^https:\/\/([^/?#]+)/i.exec(urlTemplate)?.[1] ?? '';
+};
+
+export const PIANO_SETTINGS_COPY = {
+  body: 'The keyboard that opens over playback and the sheet music. Notes always sound at concert pitch.',
+  sectionTitle: 'Piano',
+} as const;
+
+export type PianoPreferenceKey = 'sound' | 'showAllNoteNames' | 'accidentals';
+
+export type PianoPreferenceRow = {
+  body: string;
+  key: PianoPreferenceKey;
+  options: ReadonlyArray<{ label: string; value: string }>;
+  title: string;
+};
+
+const ON_VALUE = 'on';
+const OFF_VALUE = 'off';
+
+export const PIANO_PREFERENCE_ROWS: readonly PianoPreferenceRow[] = [
+  {
+    body: 'The tone the keys and tapped notes make. A change applies from the next key.',
+    key: 'sound',
+    options: [
+      { label: 'Piano', value: 'piano' },
+      { label: 'Organ', value: 'organ' },
+    ],
+    title: 'Sound',
+  },
+  {
+    body: 'Name every key, not only the C keys.',
+    key: 'showAllNoteNames',
+    options: [
+      { label: 'Off', value: OFF_VALUE },
+      { label: 'On', value: ON_VALUE },
+    ],
+    title: 'Show every note name',
+  },
+  {
+    body: 'How black keys are spelled when they are named.',
+    key: 'accidentals',
+    options: [
+      { label: 'Sharps', value: 'sharps' },
+      { label: 'Flats', value: 'flats' },
+    ],
+    title: 'Black key names',
+  },
+];
+
+/** The segmented-control value for a row, given the stored preferences. */
+export const pianoPreferenceValue = (
+  preferences: PianoPreferences,
+  key: PianoPreferenceKey,
+): string => {
+  if (key === 'showAllNoteNames') {
+    return preferences.showAllNoteNames ? ON_VALUE : OFF_VALUE;
+  }
+
+  return preferences[key];
+};
+
+/** What choosing a value changes, validated by the store's own parser. */
+export const pianoPreferencePatch = (
+  key: PianoPreferenceKey,
+  value: string,
+): Partial<PianoPreferences> => {
+  if (key === 'showAllNoteNames') {
+    return { showAllNoteNames: value === ON_VALUE };
+  }
+
+  const parsed = parsePianoPreferences({ [key]: value });
+
+  return key === 'sound'
+    ? { sound: parsed.sound }
+    : { accidentals: parsed.accidentals };
 };

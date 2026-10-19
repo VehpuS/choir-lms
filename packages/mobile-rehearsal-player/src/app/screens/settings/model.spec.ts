@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { DEFAULT_BULK_CHOICE_PREFERENCES } from '../../library/selection/bulk-choices.js';
+import { DEFAULT_PIANO_PREFERENCES } from '../../library/piano/piano-preferences.js';
 import {
+  PIANO_PREFERENCE_ROWS,
+  pianoPreferencePatch,
+  pianoPreferenceValue,
   SETTINGS_PREFERENCE_ROWS,
   buildPartPresetChips,
   hasStoredBulkChoiceDefault,
@@ -57,5 +61,53 @@ describe('buildPartPresetChips', () => {
       'Bass',
       'Beatbox',
     ]);
+  });
+});
+
+describe('piano settings rows', () => {
+  it('offers sound, every note name, and black key names in order', () => {
+    assert.deepEqual(
+      PIANO_PREFERENCE_ROWS.map(({ title }) => title),
+      ['Sound', 'Show every note name', 'Black key names'],
+    );
+    assert.deepEqual(
+      PIANO_PREFERENCE_ROWS.map(({ options }) =>
+        options.map(({ label }) => label),
+      ),
+      [
+        ['Piano', 'Organ'],
+        ['Off', 'On'],
+        ['Sharps', 'Flats'],
+      ],
+    );
+  });
+
+  it('shows the stored value for each row', () => {
+    const stored = {
+      ...DEFAULT_PIANO_PREFERENCES,
+      accidentals: 'flats',
+      showAllNoteNames: true,
+      sound: 'organ',
+    } as const;
+
+    assert.equal(pianoPreferenceValue(stored, 'sound'), 'organ');
+    assert.equal(pianoPreferenceValue(stored, 'showAllNoteNames'), 'on');
+    assert.equal(pianoPreferenceValue(stored, 'accidentals'), 'flats');
+    assert.equal(
+      pianoPreferenceValue(DEFAULT_PIANO_PREFERENCES, 'showAllNoteNames'),
+      'off',
+    );
+  });
+
+  it('changes only the chosen preference', () => {
+    assert.deepEqual(pianoPreferencePatch('accidentals', 'flats'), {
+      accidentals: 'flats',
+    });
+    assert.deepEqual(pianoPreferencePatch('showAllNoteNames', 'on'), {
+      showAllNoteNames: true,
+    });
+    assert.deepEqual(pianoPreferencePatch('sound', 'organ'), {
+      sound: 'organ',
+    });
   });
 });

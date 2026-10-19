@@ -32,7 +32,7 @@
 
 ## 6. Settings and viewer integration
 
-- [ ] 6.1 Add the `Piano` section to Settings (`Sound`, `Show every note name`, `Black key names`) through the existing preference-row model, extending `screens/settings/model.spec.ts`.
+- [x] 6.1 Add the `Piano` section to Settings (`Sound`, `Show every note name`, `Black key names`) through the existing preference-row model, extending `screens/settings/model.spec.ts`.
 - [ ] 6.2 Add the piano toggle to the sheet music viewer toolbar and compact-layout rail, mount the docked instance under the score bound to the shared store, and shrink the score area to the space above it. Open collapsed in the compact-height layout. Extend the viewer layout model spec.
 - [ ] 6.3 Centre the keyboard on the shown part's range when opened from the viewer (using the part's lowest and highest pitch from the loaded score), once per opening and not during user scrolling. Spec the range-to-offset function.
 
