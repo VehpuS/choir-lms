@@ -1,6 +1,5 @@
 import { ActivityIndicator, Text, View } from 'react-native';
 
-import { DragHandle } from '../../components/drag-handle';
 import { EqualizerMark } from '../../components/equalizer-mark';
 import { OverflowMenuTrigger } from '../../components/overflow-menu-trigger';
 import { RowMetaLine } from '../../components/row-meta-line';
@@ -18,7 +17,10 @@ import { appTheme } from '../../utils/theme';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
 import { getQueueRowPresentation } from './queue-surface-row-model';
 import { queueStyles as styles } from './styles';
-import { useDragReorder } from '../../components/reorderable-list';
+import {
+  ReorderControls,
+  useDragReorder,
+} from '../../components/reorderable-list';
 
 export type QueueSurfaceRowProps = {
   item: UpNextSurfaceSummary['items'][number];
@@ -108,9 +110,12 @@ export const QueueSurfaceRow = ({
       <ExplorerListRow
         accessibilityLabel={presentation.accessibilityLabel}
         actions={
-          <DragHandle
-            accessibilityLabel={`Drag ${item.title} to reorder`}
+          <ReorderControls
             canDrag={canDragReorder}
+            index={currentIndex}
+            itemCount={itemCount}
+            label={item.title}
+            onMove={onMoveItem}
             panHandlers={panHandlers}
           />
         }

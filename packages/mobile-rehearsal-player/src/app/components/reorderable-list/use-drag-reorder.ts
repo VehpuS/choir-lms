@@ -7,6 +7,7 @@ import {
   advanceDrag,
   resolveDragStepDistance,
 } from './reorder-model';
+import { lockTextSelection } from './text-selection-lock';
 
 export type DragReorderOptions = {
   canDrag: boolean;
@@ -33,6 +34,7 @@ export const useDragReorder = (options: DragReorderOptions) => {
   const anchorRef = useRef<number | null>(null);
   const hasMovedRef = useRef(false);
   const measuredHeightRef = useRef(DEFAULT_ROW_HEIGHT);
+  const releaseSelectionRef = useRef<(() => void) | null>(null);
   // One PanResponder for the row's life: it reads the latest options on every
   // event instead of being rebuilt, which could drop a drag in progress.
   const latest = useRef(options);
@@ -43,6 +45,8 @@ export const useDragReorder = (options: DragReorderOptions) => {
     const reset = () => {
       anchorRef.current = null;
       hasMovedRef.current = false;
+      releaseSelectionRef.current?.();
+      releaseSelectionRef.current = null;
     };
     const shouldStart = (dy: number) => {
       return latest.current.canDrag && Math.abs(dy) > DRAG_START_DISTANCE;
@@ -59,6 +63,7 @@ export const useDragReorder = (options: DragReorderOptions) => {
       onPanResponderGrant: () => {
         latest.current.onActiveChange?.(true);
         reset();
+        releaseSelectionRef.current = lockTextSelection();
       },
       onPanResponderMove: (_, gesture) => {
         const current = latest.current;
