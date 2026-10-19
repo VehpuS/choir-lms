@@ -13,6 +13,7 @@ import { appTheme } from '../../utils/theme';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
 import { QueuePlaylistActionRow } from './queue-playlist-action-row';
 import { getQueueModeChips } from './queue-mode-chips-model';
+import { ReorderableList } from '../../components/reorderable-list';
 import { QueueSurfaceRow } from './queue-surface-row';
 import { queueStyles as styles } from './styles';
 import { darkScrollbarStyle } from '../../components/dark-scrollbar';
@@ -184,50 +185,54 @@ export const QueueSurface = ({
         showsVerticalScrollIndicator={summary.items.length > 6}
         style={[darkScrollbarStyle, styles.list]}
       >
-        <ExplorerListSurface>
-          {summary.items.map((item) => {
-            return (
-              <QueueSurfaceRow
-                isPlaybackLoading={isPlaybackLoading}
-                key={item.key}
-                // The loading item's own row waits; other rows may supersede
-                // its load.
-                isPlaybackToggleDisabled={
-                  item.isCurrent
-                    ? isPlaybackToggleDisabled
-                    : isQueueControlDisabled
-                }
-                isVisible={activeOptionsItemKey === item.key}
-                item={item}
-                itemCount={summary.items.length}
-                onCloseMenu={() => {
-                  setActiveOptionsItemKey(null);
-                }}
-                onMoveItem={onMoveQueueItem}
-                onMoveItemToEnd={onMoveQueueItemToEnd}
-                onMoveItemToStart={onMoveQueueItemToStart}
-                onPlayItem={() => {
-                  const itemIndex = resolveItemIndex(item.key);
+        <ReorderableList
+          getKey={(item) => item.key}
+          getLabel={(item) => item.title}
+          items={summary.items}
+          onDragActiveChange={setIsQueueRowDragActive}
+          onMove={onMoveQueueItem}
+          renderContainer={(rows) => (
+            <ExplorerListSurface>{rows}</ExplorerListSurface>
+          )}
+          renderItem={(item, { controls }) => (
+            <QueueSurfaceRow
+              isPlaybackLoading={isPlaybackLoading}
+              // The loading item's own row waits; other rows may supersede
+              // its load.
+              isPlaybackToggleDisabled={
+                item.isCurrent
+                  ? isPlaybackToggleDisabled
+                  : isQueueControlDisabled
+              }
+              isVisible={activeOptionsItemKey === item.key}
+              item={item}
+              itemCount={summary.items.length}
+              onCloseMenu={() => {
+                setActiveOptionsItemKey(null);
+              }}
+              onMoveItemToEnd={onMoveQueueItemToEnd}
+              onMoveItemToStart={onMoveQueueItemToStart}
+              onPlayItem={() => {
+                const itemIndex = resolveItemIndex(item.key);
 
-                  if (itemIndex >= 0) {
-                    onPlayQueueItem(itemIndex);
-                  }
-                }}
-                onRemoveItem={onRemoveQueueItem}
-                onRequestMoveToPosition={() => {
-                  setActiveMovePositionItemKey(item.key);
-                }}
-                onSetDragActive={setIsQueueRowDragActive}
-                onShowMenu={() => {
-                  setActiveOptionsItemKey(item.key);
-                }}
-                onToggleCurrentPlayback={onTogglePlayback}
-                playbackToggleLabel={playbackToggleLabel}
-                resolveItemIndex={() => resolveItemIndex(item.key)}
-              />
-            );
-          })}
-        </ExplorerListSurface>
+                if (itemIndex >= 0) {
+                  onPlayQueueItem(itemIndex);
+                }
+              }}
+              onRemoveItem={onRemoveQueueItem}
+              onRequestMoveToPosition={() => {
+                setActiveMovePositionItemKey(item.key);
+              }}
+              onShowMenu={() => {
+                setActiveOptionsItemKey(item.key);
+              }}
+              onToggleCurrentPlayback={onTogglePlayback}
+              playbackToggleLabel={playbackToggleLabel}
+              reorderControls={controls}
+              resolveItemIndex={() => resolveItemIndex(item.key)}
+            />
+          )}
+        />
       </ScrollView>
 
       {summary.queuePlaylistActions ? (

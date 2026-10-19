@@ -49,25 +49,33 @@ export const MyPartsSection = () => {
           getKey={normalizePartName}
           getLabel={(name) => name}
           items={parts}
-          onChange={(next) => updateMyPartsPreferences({ parts: next })}
-          renderContent={(name) => <Text style={styles.name}>{name}</Text>}
-          renderTrailing={(name) => (
-            <Pressable
-              accessibilityLabel={`Remove ${name}`}
-              accessibilityRole="button"
-              onPress={() =>
-                updateMyPartsPreferences({
-                  parts: removePartPreference(parts, name),
-                })
-              }
-              style={styles.remove}
+          onReorder={(next) => updateMyPartsPreferences({ parts: next })}
+          renderItem={(name, { controls, index, itemCount }) => (
+            <View
+              style={[
+                styles.partRow,
+                index < itemCount - 1 ? styles.partRowSeparated : undefined,
+              ]}
             >
-              <AppIcon
-                color={appTheme.colors.textMuted}
-                name="close"
-                size={REMOVE_ICON_SIZE}
-              />
-            </Pressable>
+              <Text style={styles.name}>{name}</Text>
+              {controls}
+              <Pressable
+                accessibilityLabel={`Remove ${name}`}
+                accessibilityRole="button"
+                onPress={() =>
+                  updateMyPartsPreferences({
+                    parts: removePartPreference(parts, name),
+                  })
+                }
+                style={styles.remove}
+              >
+                <AppIcon
+                  color={appTheme.colors.textMuted}
+                  name="close"
+                  size={REMOVE_ICON_SIZE}
+                />
+              </Pressable>
+            </View>
           )}
         />
       )}
@@ -151,7 +159,19 @@ const styles = StyleSheet.create({
   },
   name: {
     color: appTheme.colors.text,
+    flex: 1,
     fontSize: 15,
+    minWidth: 0,
+  },
+  partRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: appTheme.space.sm,
+    paddingVertical: appTheme.space.xs,
+  },
+  partRowSeparated: {
+    borderBottomColor: appTheme.colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   remove: {
     alignItems: 'center',

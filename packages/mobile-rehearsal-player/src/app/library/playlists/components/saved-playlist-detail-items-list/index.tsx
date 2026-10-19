@@ -1,10 +1,11 @@
 import type { Playlist } from '@org/audio-library-models';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 
 import { OutlinedActionButton } from '../../../../components/outlined-action-button';
 import { QueueMovePositionDialog } from '../../../../components/queue-move-position-dialog';
 import { AppIcon } from '../../../../components/app-icon';
+import { ReorderableList } from '../../../../components/reorderable-list';
 import { RowMetaLine } from '../../../../components/row-meta-line';
 import { appTheme } from '../../../../utils/theme';
 import {
@@ -46,7 +47,6 @@ export const SavedPlaylistDetailItemsList = (props: {
   /** The playlist these entries belong to, for bulk removal. */
   playlist: Pick<Playlist, 'id' | 'name'> | null;
 }) => {
-  const measuredItemHeightRef = useRef(102);
   const selection = usePlaylistDetailSelection({
     entries: props.detailEntries,
     playlist: props.playlist,
@@ -143,21 +143,21 @@ export const SavedPlaylistDetailItemsList = (props: {
           ))}
         </ExplorerListSurface>
       ) : (
-        <View>
-          {props.detailEntries.map((entry, index) => {
-            const isCurrentEntry = props.currentPlaylistEntryId === entry.id;
+        <ReorderableList
+          disabled={props.isMutating}
+          getKey={(entry) => entry.id}
+          getLabel={(entry) => entry.title}
+          getScrollOffsetY={props.getCurrentScrollOffsetY}
+          items={props.detailEntries}
+          onCommit={props.onCommitReorder}
+          onDragActiveChange={props.onReorderDragActiveChange}
+          onDragMove={props.onReorderDragMove}
+          onMove={props.onMoveItem}
+          renderItem={(entry, { controls, index }) => {
             const isPlayable = props.isItemPlayable(entry);
 
             return (
               <View
-                key={entry.id}
-                onLayout={(event) => {
-                  const measuredHeight = event.nativeEvent.layout.height;
-
-                  if (measuredHeight > 0) {
-                    measuredItemHeightRef.current = measuredHeight;
-                  }
-                }}
                 style={[
                   styles.itemRow,
                   index < props.detailEntries.length - 1
@@ -169,34 +169,22 @@ export const SavedPlaylistDetailItemsList = (props: {
                 <PlaylistDetailRowControls
                   entryId={entry.id}
                   entryTitle={entry.title}
-                  getCurrentScrollOffsetY={props.getCurrentScrollOffsetY}
-                  getEntryIndex={() => {
-                    return props.detailEntries.findIndex((detailEntry) => {
-                      return detailEntry.id === entry.id;
-                    });
-                  }}
-                  index={index}
-                  isCurrentEntry={isCurrentEntry}
+                  isCurrentEntry={props.currentPlaylistEntryId === entry.id}
                   isItemPlayable={isPlayable}
                   isMenuVisible={activeOptionsEntryId === entry.id}
                   isMutating={props.isMutating}
                   itemCount={props.detailEntries.length}
-                  itemHeight={measuredItemHeightRef.current}
                   metadataLabel={props.getItemDetailLabel(entry)}
                   onCloseMenu={() => {
                     setActiveOptionsEntryId(null);
                   }}
-                  onCommitReorder={props.onCommitReorder}
                   onLongPressRow={() => {
                     selection.getRowSelection(entry).onEnter();
                   }}
-                  onMoveItem={props.onMoveItem}
                   onPlayItem={() => {
                     props.onPlayPlaylistEntry(entry.id);
                   }}
                   onRemoveItem={props.onRemoveItem}
-                  onReorderDragActiveChange={props.onReorderDragActiveChange}
-                  onReorderDragMove={props.onReorderDragMove}
                   onRequestMoveToPosition={(entryId) => {
                     setActiveMovePositionEntryId(entryId);
                   }}
@@ -206,11 +194,12 @@ export const SavedPlaylistDetailItemsList = (props: {
                   onToggleCurrentPlayback={props.onToggleCurrentPlayback}
                   playbackToggleDisabled={props.playbackToggleDisabled}
                   playbackToggleLabel={props.playbackToggleLabel}
+                  reorderControls={controls}
                 />
               </View>
             );
-          })}
-        </View>
+          }}
+        />
       )}
 
       {selection.bulkNodes}

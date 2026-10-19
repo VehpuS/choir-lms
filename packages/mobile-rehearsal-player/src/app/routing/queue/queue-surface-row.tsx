@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 
 import { EqualizerMark } from '../../components/equalizer-mark';
@@ -17,10 +18,6 @@ import { appTheme } from '../../utils/theme';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
 import { getQueueRowPresentation } from './queue-surface-row-model';
 import { queueStyles as styles } from './styles';
-import {
-  ReorderControls,
-  useDragReorder,
-} from '../../components/reorderable-list';
 
 export type QueueSurfaceRowProps = {
   item: UpNextSurfaceSummary['items'][number];
@@ -29,13 +26,13 @@ export type QueueSurfaceRowProps = {
   isPlaybackToggleDisabled: boolean;
   isVisible: boolean;
   onCloseMenu: () => void;
-  onMoveItem: (fromIndex: number, toIndex: number) => void;
   onMoveItemToEnd: (index: number) => void;
   onMoveItemToStart: (index: number) => void;
   onPlayItem: () => void;
   onRemoveItem: (index: number) => void;
   onRequestMoveToPosition: () => void;
-  onSetDragActive: (isActive: boolean) => void;
+  /** The arrows and drag handle from the shared reorderable list. */
+  reorderControls: ReactNode;
   onShowMenu: () => void;
   onToggleCurrentPlayback: () => void;
   playbackToggleLabel: string;
@@ -51,16 +48,15 @@ export const QueueSurfaceRow = ({
   isPlaybackToggleDisabled,
   isVisible,
   onCloseMenu,
-  onMoveItem,
   onMoveItemToEnd,
   onMoveItemToStart,
   onPlayItem,
   onRemoveItem,
   onRequestMoveToPosition,
-  onSetDragActive,
   onShowMenu,
   onToggleCurrentPlayback,
   playbackToggleLabel,
+  reorderControls,
   resolveItemIndex,
 }: QueueSurfaceRowProps) => {
   const currentIndex = resolveItemIndex();
@@ -68,7 +64,6 @@ export const QueueSurfaceRow = ({
   const canMoveToEnd = currentIndex >= 0 && currentIndex < itemCount - 1;
   const canMoveToPosition = itemCount > 1 && currentIndex >= 0;
   const canRemove = !item.isCurrent;
-  const canDragReorder = itemCount > 1;
   const isSaved = useIsPlayableItemSaved(item.itemRef);
   const hasLyrics = useHasLyrics(item.itemRef);
   // The Library's item actions, then this surface's own queue actions (task 8.26).
@@ -92,33 +87,11 @@ export const QueueSurfaceRow = ({
     playbackToggleLabel,
     title: item.title,
   });
-  const { onRowLayout, panHandlers } = useDragReorder({
-    canDrag: canDragReorder,
-    getIndex: resolveItemIndex,
-    itemCount,
-    onActiveChange: onSetDragActive,
-    onMove: onMoveItem,
-  });
-
   return (
-    <View
-      onLayout={(event) => {
-        onRowLayout(event.nativeEvent.layout.height);
-      }}
-      style={styles.rowDragSurface}
-    >
+    <View style={styles.rowDragSurface}>
       <ExplorerListRow
         accessibilityLabel={presentation.accessibilityLabel}
-        actions={
-          <ReorderControls
-            canDrag={canDragReorder}
-            index={currentIndex}
-            itemCount={itemCount}
-            label={item.title}
-            onMove={onMoveItem}
-            panHandlers={panHandlers}
-          />
-        }
+        actions={reorderControls}
         active={item.isCurrent}
         disabled={isPlaybackToggleDisabled}
         // Only the copy dims while the item loads; the drag handle and menu

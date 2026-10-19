@@ -10,7 +10,6 @@ describe('playlist detail row controls model', () => {
     const state = getPlaylistDetailRowControlState({
       entryId: 'playlist-entry-2',
       entryTitle: 'Alto Line.mp3',
-      index: 1,
       isCurrentEntry: false,
       isItemPlayable: true,
       isMutating: false,
@@ -19,7 +18,6 @@ describe('playlist detail row controls model', () => {
       playbackToggleLabel: 'Pause',
     });
 
-    assert.equal(state.canDragReorder, true);
     assert.equal(state.isPlaybackButtonDisabled, false);
     assert.equal(state.rowStatusLabel, 'Ready');
     assert.deepEqual(state.playbackAction, {
@@ -59,7 +57,6 @@ describe('playlist detail row controls model', () => {
       getPlaylistDetailRowControlState({
         entryId: 'playlist-entry-1',
         entryTitle: 'Entrance cue',
-        index: 0,
         isCurrentEntry: true,
         isItemPlayable: true,
         isMutating: false,
@@ -73,7 +70,6 @@ describe('playlist detail row controls model', () => {
       getPlaylistDetailRowControlState({
         entryId: 'playlist-entry-1',
         entryTitle: 'Entrance cue',
-        index: 0,
         isCurrentEntry: true,
         isItemPlayable: true,
         isMutating: false,
@@ -89,7 +85,6 @@ describe('playlist detail row controls model', () => {
     const state = getPlaylistDetailRowControlState({
       entryId: 'playlist-entry-1',
       entryTitle: 'Unavailable cue',
-      index: 0,
       isCurrentEntry: false,
       isItemPlayable: false,
       isMutating: true,
@@ -98,7 +93,6 @@ describe('playlist detail row controls model', () => {
       playbackToggleLabel: 'Pause',
     });
 
-    assert.equal(state.canDragReorder, false);
     assert.equal(state.isPlaybackButtonDisabled, true);
     assert.equal(state.rowStatusLabel, 'Unavailable');
     assert.deepEqual(
