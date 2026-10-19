@@ -27,7 +27,6 @@ import { FloppyDiskIcon } from 'phosphor-react-native/src/icons/FloppyDisk';
 import { FolderIcon } from 'phosphor-react-native/src/icons/Folder';
 import { FolderPlusIcon } from 'phosphor-react-native/src/icons/FolderPlus';
 import { InfoIcon } from 'phosphor-react-native/src/icons/Info';
-import { KeyboardIcon } from 'phosphor-react-native/src/icons/Keyboard';
 import { ListChecksIcon } from 'phosphor-react-native/src/icons/ListChecks';
 import { ListDashesIcon } from 'phosphor-react-native/src/icons/ListDashes';
 import { ListNumbersIcon } from 'phosphor-react-native/src/icons/ListNumbers';
@@ -40,6 +39,7 @@ import { MusicNotesIcon } from 'phosphor-react-native/src/icons/MusicNotes';
 import { MusicNotesSimpleIcon } from 'phosphor-react-native/src/icons/MusicNotesSimple';
 import { PauseIcon } from 'phosphor-react-native/src/icons/Pause';
 import { PencilSimpleIcon } from 'phosphor-react-native/src/icons/PencilSimple';
+import { PianoKeysIcon } from 'phosphor-react-native/src/icons/PianoKeys';
 import { PlayIcon } from 'phosphor-react-native/src/icons/Play';
 import { PlayCircleIcon } from 'phosphor-react-native/src/icons/PlayCircle';
 import { PlaylistIcon } from 'phosphor-react-native/src/icons/Playlist';
@@ -99,7 +99,6 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   Folder: FolderIcon,
   FolderPlus: FolderPlusIcon,
   Info: InfoIcon,
-  Keyboard: KeyboardIcon,
   ListChecks: ListChecksIcon,
   ListDashes: ListDashesIcon,
   ListNumbers: ListNumbersIcon,
@@ -112,6 +111,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   MusicNotesSimple: MusicNotesSimpleIcon,
   Pause: PauseIcon,
   PencilSimple: PencilSimpleIcon,
+  PianoKeys: PianoKeysIcon,
   Play: PlayIcon,
   PlayCircle: PlayCircleIcon,
   Playlist: PlaylistIcon,

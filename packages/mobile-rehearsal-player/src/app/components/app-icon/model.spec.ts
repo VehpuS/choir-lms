@@ -20,8 +20,8 @@ const namesUsingGlyph = (glyph: string) => {
 };
 
 describe('app icon glyph map', () => {
-  it('gives the piano control its own keyboard glyph', () => {
-    assert.deepEqual(namesUsingGlyph('Keyboard'), ['piano-keyboard']);
+  it('gives the piano control its own piano keys glyph', () => {
+    assert.deepEqual(namesUsingGlyph('PianoKeys'), ['piano-keyboard']);
   });
 
   it('renders every repeat state with a repeat-family glyph and never the shuffle glyph', () => {

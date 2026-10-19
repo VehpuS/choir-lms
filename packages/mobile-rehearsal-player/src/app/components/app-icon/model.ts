@@ -30,7 +30,6 @@ export type PhosphorGlyph =
   | 'Folder'
   | 'FolderPlus'
   | 'Info'
-  | 'Keyboard'
   | 'ListChecks'
   | 'ListDashes'
   | 'ListNumbers'
@@ -43,6 +42,7 @@ export type PhosphorGlyph =
   | 'MusicNotesSimple'
   | 'Pause'
   | 'PencilSimple'
+  | 'PianoKeys'
   | 'Play'
   | 'PlayCircle'
   | 'Playlist'
@@ -164,8 +164,9 @@ export const APP_ICON_GLYPHS = {
   // Notes and statements (the session-scope line on the shaping sheet).
   'information-outline': regular('Info'),
 
-  // The piano overlay's open/close control.
-  'piano-keyboard': regular('Keyboard'),
+  // The piano overlay's open/close control: a row of piano keys, not a
+  // computer keyboard.
+  'piano-keyboard': regular('PianoKeys'),
 
   // Account.
   'account-circle-outline': regular('UserCircle'),
