@@ -24,6 +24,18 @@ export const resolveModalSurfaceMaxHeight = (
     : BOTTOM_SURFACE_MAX_HEIGHT;
 };
 
+// iOS does not resize a screen for the keyboard, so a sheet anchored to the
+// bottom (or a dialog centered in the screen) would sit under it. Padding the
+// bottom by the keyboard's height lifts the surface above it and shrinks the
+// room the height cap works from, so the scroll area gives way and the footer
+// stays visible. Android resizes its window itself and the web has no
+// on-screen keyboard to cover anything, so neither needs it.
+export const resolveKeyboardAvoidingBehavior = (
+  platform: string,
+): 'padding' | undefined => {
+  return platform === 'ios' ? 'padding' : undefined;
+};
+
 export const resolveModalSurfaceLayout = (
   placement: ModalSurfacePlacement,
 ): ModalSurfaceLayout => {

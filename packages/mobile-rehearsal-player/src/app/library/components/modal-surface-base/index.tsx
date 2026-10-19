@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import {
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -10,6 +12,7 @@ import {
 } from 'react-native';
 
 import {
+  resolveKeyboardAvoidingBehavior,
   resolveModalSurfaceLayout,
   resolveModalSurfaceMaxHeight,
   type ModalSurfacePlacement,
@@ -49,7 +52,8 @@ export const ModalSurfaceBase = ({
       transparent
       visible
     >
-      <View
+      <KeyboardAvoidingView
+        behavior={resolveKeyboardAvoidingBehavior(Platform.OS)}
         style={[
           styles.overlay,
           {
@@ -76,7 +80,7 @@ export const ModalSurfaceBase = ({
         >
           {children}
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

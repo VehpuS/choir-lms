@@ -54,7 +54,11 @@ export const SettingsScreen = () => {
         }
       />
       <ScrollView
+        // The forms sit low on the screen: lift them above the keyboard on iOS and
+        // let the first tap reach `Add` instead of only closing the keyboard.
+        automaticallyAdjustKeyboardInsets
         contentContainerStyle={[styles.content, scrollGutterStyles.content]}
+        keyboardShouldPersistTaps="handled"
         style={[darkScrollbarStyle, scrollGutterStyles.scrollView]}
       >
         <View style={styles.section}>

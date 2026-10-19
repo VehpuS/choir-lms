@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  resolveKeyboardAvoidingBehavior,
   resolveModalSurfaceLayout,
   resolveModalSurfaceMaxHeight,
 } from './model.js';
@@ -28,5 +29,11 @@ describe('modal surface base model', () => {
   it('caps every surface below the screen height so its scroll area can shrink', () => {
     assert.equal(resolveModalSurfaceMaxHeight('bottom'), '92%');
     assert.equal(resolveModalSurfaceMaxHeight('center'), '88%');
+  });
+
+  it('lifts a surface above the keyboard on iOS only', () => {
+    assert.equal(resolveKeyboardAvoidingBehavior('ios'), 'padding');
+    assert.equal(resolveKeyboardAvoidingBehavior('android'), undefined);
+    assert.equal(resolveKeyboardAvoidingBehavior('web'), undefined);
   });
 });
