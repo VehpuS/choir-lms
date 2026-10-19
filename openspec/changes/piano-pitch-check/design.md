@@ -41,6 +41,9 @@ A `piano-key-gestures` model maps pointer ids to the key under them (with black 
 `PianoVoice` is `{ load(): Promise<void>; noteOn(midi, velocity): NoteHandle; setVolume(v): void; dispose(): void }` with `NoteHandle.release()`. The web implementations use their own `AudioContext`, separate from the playback shaping graph, so the piano is mixed by the output device on top of the track and never touches the track's gain.
 
 - `Piano` (default): sampled. One sample every minor third from C2 to C7 (about 21 samples) as short decaying clips, played at `playbackRate` for the nearest sample; notes held longer than the clip loop the tail with a slow fade; release is a 250 ms exponential fade. Samples are lazy-loaded the first time a key is pressed and cached for the session; the overlay shows keys immediately and the first press waits for the load (press is queued and played on arrival, but not later than 1.5 s). Size budget is 1.5 MB total; the licence is verified in the spike (task 1.1) and recorded in the repo. If no acceptable sample set exists, the fallback is an additive-synthesis piano (decaying partial stack) behind the same interface.
+
+  Outcome (task 1.1, 2026-10-19): no sample set with a verified redistributable licence was found, so `Piano` ships as the additive-synthesis voice. The sample loading, queued first press, and load-failure fallback above are deferred to task 9.1 and apply once samples are chosen.
+
 - `Organ`: a fixed-envelope oscillator stack (sine fundamental plus two quiet harmonics), 20 ms attack, sustaining while held, 120 ms release. No assets.
 
 The selected sound is stored by the preferences store and read when a voice is created; changing it in Settings takes effect on the next press. Pitch is `440 * 2^((midi - 69) / 12)`; no shaping offset is applied (Decision 6).

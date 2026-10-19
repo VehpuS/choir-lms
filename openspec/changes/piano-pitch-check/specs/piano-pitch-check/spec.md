@@ -97,7 +97,7 @@ The piano SHALL produce its sound separately from the track and SHALL NOT change
 
 ### Requirement: The user chooses between a piano and an organ sound in Settings
 
-The system SHALL provide two sounds: a sampled `Piano` (the default) and a simple `Organ` tone. Settings SHALL include a `Piano` section with `Sound`, `Show every note name`, and `Black key names` (`Sharps` or `Flats`) rows. A change SHALL apply from the next key press. Piano samples SHALL load the first time a key is pressed, not at app start, and the first press SHALL sound as soon as the samples arrive, within 1.5 seconds, or fall back to the organ tone for that press if loading fails.
+The system SHALL provide two sounds: a `Piano` (the default; a synthesized piano tone until recorded samples are added) and a simple `Organ` tone. Settings SHALL include a `Piano` section with `Sound`, `Show every note name`, and `Black key names` (`Sharps` or `Flats`) rows. A change SHALL apply from the next key press. Where the `Piano` sound uses recorded samples, they SHALL load the first time a key is pressed, not at app start, and the first press SHALL sound as soon as the samples arrive, within 1.5 seconds, or fall back to the organ tone for that press if loading fails.
 
 #### Scenario: Choose the organ
 
@@ -106,7 +106,7 @@ The system SHALL provide two sounds: a sampled `Piano` (the default) and a simpl
 
 #### Scenario: Sample loading fails
 
-- **WHEN** the piano samples cannot be loaded and the user presses a key
+- **WHEN** the piano uses recorded samples and they cannot be loaded and the user presses a key
 - **THEN** the note still sounds in the organ tone and the overlay shows a quiet notice that the piano sound is unavailable
 
 #### Scenario: Unknown stored value
