@@ -1,5 +1,6 @@
 import type {
   ResolvedPartSelection,
+  ScoreBars,
   ScorePart,
   SheetMusicPartSelection,
 } from '@org/audio-library-models';
@@ -12,6 +13,8 @@ export type ScoreRenderFailureReason =
 
 /** A score on screen: it can be re-filtered, zoomed, and torn down. */
 export type ScoreRendering = {
+  /** The bars of the score: how many, the number printed on each, its rehearsal marks. */
+  readonly bars: ScoreBars;
   /** Every part the score declares, whether or not it is shown. */
   readonly parts: readonly ScorePart[];
   /** Which parts are shown now, and why a fallback happened. */
@@ -28,6 +31,11 @@ export type ScoreRendering = {
    * it has (design Decision 11).
    */
   naturalHeight(): number;
+  /**
+   * Scrolls so that bar `barIndex` (1-based, counting every bar) is at the
+   * left of the view. A long score draws the run holding the bar first.
+   */
+  scrollToBar(barIndex: number): void;
   /** 1 is the natural size. */
   setZoom(zoom: number): void;
 };

@@ -12,6 +12,7 @@ import type {
   ViewerFailureReason,
 } from './model';
 import { SheetMusicSurface } from './sheet-music-surface';
+import type { GoToJump } from './go-to/use-go-to';
 import type { ScoreInfo } from './sheet-music-surface-types';
 import type { SheetMusicDocumentState } from './use-sheet-music-document';
 
@@ -21,6 +22,7 @@ export type ViewerOutcome =
 
 type ViewerBodyProps = {
   failure: ViewerFailure | undefined;
+  jump: GoToJump | undefined;
   onFailed: (reason: ViewerFailureReason) => void;
   onFailureAction: (action: ViewerFailureAction) => void;
   onFitZoom: (zoom: number) => void;
@@ -35,6 +37,7 @@ type ViewerBodyProps = {
 /** The area under the controls: the score, a spinner while it loads, or why it did not open. */
 export const ViewerBody = ({
   failure,
+  jump,
   onFailed,
   onFailureAction,
   onFitZoom,
@@ -66,6 +69,7 @@ export const ViewerBody = ({
       {state.status === 'loaded' ? (
         <SheetMusicSurface
           document={state.document}
+          jump={jump}
           key={`${source.id}:${source.format}`}
           onFailed={onFailed}
           onFitZoom={onFitZoom}

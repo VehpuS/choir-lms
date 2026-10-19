@@ -4,19 +4,12 @@ import type {
 } from '@org/audio-library-models';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useMemo, useRef, useState } from 'react';
-import {
-  Modal,
-  Platform,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { Platform, useWindowDimensions } from 'react-native';
 
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
-import { appTheme } from '../../../utils/theme';
 import { createSheetMusicLoader } from '../sheet-music-loader';
-import { ChipRow } from './chip-row';
+import { GoToDrawer } from './go-to';
+import { useGoTo } from './go-to/use-go-to';
 import { isCompactViewerHeight } from './layout-model';
 import {
   applyPartChip,
@@ -26,11 +19,12 @@ import {
   resolveExternalUrl,
   type ViewerFailureAction,
 } from './model';
-import { ChipDivider, PartChips, PartNotices } from './part-chips';
+import { PartChips, PartNotices } from './part-chips';
 import { SourceChips } from './source-chips';
 import { useSheetMusicDocument } from './use-sheet-music-document';
 import { ViewerBody, type ViewerOutcome } from './viewer-body';
 import { useViewerZoom } from './use-viewer-zoom';
+import { ViewerLayout } from './viewer-layout';
 import { ViewerToolbar } from './viewer-toolbar';
 
 // Reading music means holding the phone or tablet up, so the screen stays on
@@ -129,6 +123,8 @@ export const SheetMusicViewer = ({
       : undefined;
   const info = outcome?.kind === 'ready' ? outcome.info : null;
   const viewerZoom = useViewerZoom(info !== null);
+  const goTo = useGoTo();
+  const canGoTo = info !== null && info.bars.barCount > 0;
   const hasParts = info !== null && hasPartChoice(info.parts);
   const hasSwitcher = viewable.length > 1 && source !== undefined;
 
@@ -170,6 +166,7 @@ export const SheetMusicViewer = ({
   const body = (
     <ViewerBody
       failure={failure}
+      jump={goTo.jump}
       onFailed={(reason) =>
         setDrawn({
           document: state.status === 'loaded' ? state.document : undefined,
@@ -191,6 +188,15 @@ export const SheetMusicViewer = ({
       zoom={viewerZoom.zoom}
     />
   );
+  const drawer =
+    goTo.isOpen && canGoTo ? (
+      <GoToDrawer
+        bars={info.bars}
+        onClose={goTo.close}
+        onJump={goTo.jumpTo}
+        visibleParts={info.resolved.visible}
+      />
+    ) : null;
   const toolbar = (orientation: 'column' | 'row') => (
     <ViewerToolbar
       isPlaybackToggleDisabled={isPlaybackToggleDisabled}
@@ -198,6 +204,7 @@ export const SheetMusicViewer = ({
       onTogglePlayback={onTogglePlayback}
       isFitted={viewerZoom.isFitted}
       onFit={info ? viewerZoom.fit : undefined}
+      onGoTo={canGoTo ? goTo.open : undefined}
       onZoomIn={viewerZoom.zoomIn}
       onZoomOut={viewerZoom.zoomOut}
       orientation={orientation}
@@ -212,104 +219,23 @@ export const SheetMusicViewer = ({
     />
   );
 
-  if (isCompact) {
-    return (
-      <Modal animationType="slide" onRequestClose={onClose} visible>
-        <View style={[styles.screen, styles.screenCompact]}>
-          <View style={styles.compactMain}>
-            {sourceChips || partChips ? (
-              <ChipRow accessibilityLabel="Sources and parts">
-                {sourceChips}
-                {sourceChips && partChips ? <ChipDivider /> : null}
-                {partChips}
-              </ChipRow>
-            ) : source ? (
-              <Text numberOfLines={1} style={styles.subtitle}>
-                {`${ownerName} · ${source.label}`}
-              </Text>
-            ) : null}
-            {hasParts ? <PartNotices info={info} /> : null}
-            <View style={styles.body}>{body}</View>
-          </View>
-          <View style={styles.rail}>
-            {closeButton}
-            {toolbar('column')}
-          </View>
-        </View>
-      </Modal>
-    );
-  }
-
   return (
-    <Modal animationType="slide" onRequestClose={onClose} visible>
-      <View style={styles.screen}>
-        <View style={styles.header}>
-          <View style={styles.titles}>
-            <Text numberOfLines={1} style={styles.title}>
-              {ownerName}
-            </Text>
-            {source ? (
-              <Text numberOfLines={1} style={styles.subtitle}>
-                {source.label}
-              </Text>
-            ) : null}
-          </View>
-          {closeButton}
-        </View>
-        {sourceChips ? (
-          <ChipRow accessibilityLabel="Sheet music sources">
-            {sourceChips}
-          </ChipRow>
-        ) : null}
-        {partChips ? (
-          <ChipRow accessibilityLabel="Parts">{partChips}</ChipRow>
-        ) : null}
-        {hasParts ? <PartNotices info={info} /> : null}
-        <View style={styles.body}>{body}</View>
-        {toolbar('row')}
-      </View>
-    </Modal>
+    <ViewerLayout
+      body={
+        <>
+          {body}
+          {drawer}
+        </>
+      }
+      closeButton={closeButton}
+      isCompact={isCompact}
+      notices={hasParts ? <PartNotices info={info} /> : null}
+      onClose={onClose}
+      ownerName={ownerName}
+      partChips={partChips}
+      sourceChips={sourceChips}
+      sourceLabel={source?.label}
+      toolbar={toolbar}
+    />
   );
 };
-
-const styles = StyleSheet.create({
-  body: {
-    flex: 1,
-  },
-  compactMain: {
-    flex: 1,
-    gap: appTheme.space.sm,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: appTheme.space.md,
-  },
-  rail: {
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  screen: {
-    flex: 1,
-    gap: appTheme.space.md,
-    paddingHorizontal: appTheme.space.screenInset,
-    paddingVertical: appTheme.space.lg,
-    backgroundColor: appTheme.colors.bg,
-  },
-  screenCompact: {
-    flexDirection: 'row',
-    paddingVertical: appTheme.space.sm,
-  },
-  subtitle: {
-    ...appTheme.type.rowMeta,
-    color: appTheme.colors.textMuted,
-  },
-  title: {
-    ...appTheme.type.rowTitle,
-    color: appTheme.colors.text,
-  },
-  titles: {
-    flex: 1,
-  },
-});

@@ -1,6 +1,13 @@
 import {
+  computeBarScrollLeft,
+  readBarOffsets,
+  type MeasureRow,
+} from './bar-offsets';
+import {
   computeScrollAdjustment,
   estimateBarWidth,
+  findSegmentForBar,
+  layoutOffsets,
   planSegments,
   selectSegmentsToDraw,
   selectSegmentsToRelease,
@@ -36,6 +43,7 @@ export type StripHost = StripNode & {
 
 /** The slice of the OpenSheetMusicDisplay instance the strip drives. */
 export type StripOsmd = {
+  GraphicSheet: { MeasureList: readonly MeasureRow[] };
   clear(): void;
   render(): void;
   setOptions(options: Record<string, unknown>): void;
@@ -48,6 +56,8 @@ export type SegmentedStrip = {
   naturalHeight(): number;
   /** Draws again after parts are shown or hidden; the first run is drawn before it returns. */
   redraw(): void;
+  /** Draws the run holding the bar if needed and scrolls the bar to the left of the view. */
+  scrollToBar(barIndex: number): void;
   setZoom(zoom: number): void;
 };
 
@@ -86,6 +96,9 @@ export const createSegmentedStrip = (options: {
   const slots = segments.map(() => host.ownerDocument.createElement('div'));
   const measured = new Map<number, number>();
   const drawn = new Set<number>();
+  // Where each bar starts inside its run's drawing, in pixels at zoom 1. A run
+  // keeps these when it is released; drawing it again refreshes them.
+  const barOffsets = new Map<number, number>();
   const pending = new Set<number>();
   let zoom = options.zoom;
   let height = 0;
@@ -159,6 +172,15 @@ export const createSegmentedStrip = (options: {
     slot.innerHTML = '';
     slot.appendChild(copy);
     drawn.add(index);
+
+    for (const [bar, offset] of readBarOffsets(
+      osmd.GraphicSheet.MeasureList,
+      segment.firstBar,
+      segment.lastBar,
+    )) {
+      barOffsets.set(bar, offset);
+    }
+
     measured.set(index, rect.width);
     height = rect.height;
     relayout(estimateWidths());
@@ -268,6 +290,25 @@ export const createSegmentedStrip = (options: {
       clearDrawn();
       // Runs keep their last widths as estimates until they are drawn again.
       draw(0);
+      refresh();
+    },
+    scrollToBar(barIndex) {
+      const index = findSegmentForBar(segments, barIndex);
+
+      if (index === undefined) {
+        return;
+      }
+
+      // Draw the run first so the bar's position is measured, not guessed.
+      if (!drawn.has(index)) {
+        draw(index);
+      }
+
+      host.scrollLeft = computeBarScrollLeft({
+        barOffset: barOffsets.get(barIndex) ?? 0,
+        drawingLeft: layoutOffsets(widths)[index] ?? 0,
+        zoom,
+      });
       refresh();
     },
     setZoom(next) {

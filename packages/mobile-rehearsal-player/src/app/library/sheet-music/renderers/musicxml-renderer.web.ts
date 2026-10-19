@@ -7,6 +7,11 @@ import {
   type SheetMusicPartSelection,
 } from '@org/audio-library-models';
 
+import {
+  computeBarScrollLeft,
+  readBarOffsets,
+  type MeasureRow,
+} from './bar-offsets';
 import { resolveVisibilityFlags } from './part-visibility';
 import {
   createSegmentedStrip,
@@ -26,6 +31,7 @@ import type {
 // OpenSheetMusicDisplay API used here is described structurally.
 type OsmdInstrument = { Visible: boolean };
 type OsmdInstance = {
+  GraphicSheet: { MeasureList: readonly MeasureRow[] };
   Sheet: { Instruments: OsmdInstrument[] };
   clear(): void;
   load(musicXml: string): Promise<unknown>;
@@ -93,7 +99,8 @@ export const createMusicXmlRenderer =
         const { OpenSheetMusicDisplay } =
           (await import('opensheetmusicdisplay')) as unknown as OsmdModule;
         const host = container as { innerHTML: string };
-        const totalBars = extractScoreBars(musicXml).barCount;
+        const bars = extractScoreBars(musicXml);
+        const totalBars = bars.barCount;
         // A long score is drawn in runs of bars, only those near the viewport;
         // an ordinary arrangement is one drawing, as it always was.
         const stage = shouldSegment(totalBars)
@@ -147,17 +154,25 @@ export const createMusicXmlRenderer =
           } else {
             osmd.render();
             removeBaselineGap(container as Measurable);
+            barOffsets = readBarOffsets(
+              osmd.GraphicSheet.MeasureList,
+              1,
+              totalBars,
+            );
           }
 
           return resolved;
         };
 
         let strip: SegmentedStrip | undefined;
+        // Where each bar starts in a single drawing, in pixels at zoom 1.
+        let barOffsets = new Map<number, number>();
 
         osmd.zoom = zoom;
         let resolved = draw(selection);
 
         const rendering: ScoreRendering = {
+          bars,
           applySelection(next) {
             resolved = draw(next);
             return resolved;
@@ -184,6 +199,18 @@ export const createMusicXmlRenderer =
           parts: parts as readonly ScorePart[],
           get resolved() {
             return resolved;
+          },
+          scrollToBar(barIndex) {
+            if (strip) {
+              strip.scrollToBar(barIndex);
+              return;
+            }
+
+            (container as { scrollLeft: number }).scrollLeft =
+              computeBarScrollLeft({
+                barOffset: barOffsets.get(barIndex) ?? 0,
+                zoom: osmd.zoom,
+              });
           },
           setZoom(next) {
             if (strip) {

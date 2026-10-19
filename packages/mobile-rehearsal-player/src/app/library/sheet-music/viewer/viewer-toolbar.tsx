@@ -10,6 +10,8 @@ type ViewerToolbarProps = {
   isFitted: boolean;
   isPlaybackToggleDisabled: boolean;
   isPlaying: boolean;
+  /** Opens the `Go to` drawer; absent when the document has no bars to go to. */
+  onGoTo: (() => void) | undefined;
   /** Turns auto-fit back on; absent for a PDF, which fits to width instead. */
   onFit: (() => void) | undefined;
   onTogglePlayback: () => void;
@@ -26,6 +28,7 @@ export const ViewerToolbar = ({
   isPlaybackToggleDisabled,
   isPlaying,
   onFit,
+  onGoTo,
   onTogglePlayback,
   onZoomIn,
   onZoomOut,
@@ -61,6 +64,14 @@ export const ViewerToolbar = ({
       selected={isFitted}
     />
   ) : null;
+  const goToButton = onGoTo ? (
+    <SurfaceIconButton
+      accessibilityLabel="Go to bar or rehearsal mark"
+      icon="list-numbers"
+      key="go-to"
+      onPress={onGoTo}
+    />
+  ) : null;
   const zoomValue = (
     <Text
       accessibilityLiveRegion="polite"
@@ -75,8 +86,8 @@ export const ViewerToolbar = ({
     <View style={[styles.bar, isColumn ? styles.barColumn : undefined]}>
       <View style={[styles.zoom, isColumn ? styles.zoomColumn : undefined]}>
         {isColumn
-          ? [zoomIn, zoomValue, zoomOut, fitButton]
-          : [zoomOut, zoomValue, zoomIn, fitButton]}
+          ? [zoomIn, zoomValue, zoomOut, fitButton, goToButton]
+          : [zoomOut, zoomValue, zoomIn, fitButton, goToButton]}
       </View>
       <CompactPlaybackAction
         accessibilityLabel={isPlaying ? 'Pause' : 'Play'}

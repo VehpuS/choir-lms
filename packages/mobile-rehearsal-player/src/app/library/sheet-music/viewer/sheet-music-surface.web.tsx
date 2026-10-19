@@ -39,6 +39,7 @@ const RESIZE_DEBOUNCE_MS = 150;
  */
 export const SheetMusicSurface = ({
   document,
+  jump,
   onFailed,
   onFitZoom,
   onRendered,
@@ -128,6 +129,7 @@ export const SheetMusicSurface = ({
       return isCancelled
         ? undefined
         : latest.current.onRendered({
+            bars: result.rendering.bars,
             parts: result.rendering.parts,
             resolved: result.rendering.resolved,
           });
@@ -154,6 +156,7 @@ export const SheetMusicSurface = ({
 
     if (rendering && host) {
       latest.current.onRendered({
+        bars: rendering.bars,
         parts: rendering.parts,
         resolved: rendering.applySelection(selection),
       });
@@ -162,6 +165,12 @@ export const SheetMusicSurface = ({
     }
     // `reportFit` only reads refs and the host, so it is not a dependency.
   }, [selection]);
+
+  useEffect(() => {
+    if (jump) {
+      live.current.score?.scrollToBar(jump.barIndex);
+    }
+  }, [jump]);
 
   useEffect(() => {
     live.current.pdf?.setZoom(zoom);
