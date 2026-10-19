@@ -14,6 +14,12 @@ import {
 } from './bar-offsets';
 import { resolveVisibilityFlags } from './part-visibility';
 import {
+  buildStaffBands,
+  findPartNameAtY,
+  flattenStaffNames,
+  type StaffBand,
+} from './staff-bands';
+import {
   createSegmentedStrip,
   type SegmentedStrip,
   type StripHost,
@@ -29,9 +35,18 @@ import type {
 
 // The app's TypeScript config carries no DOM library, so the slice of the
 // OpenSheetMusicDisplay API used here is described structurally.
-type OsmdInstrument = { Visible: boolean };
+type OsmdInstrument = { Staves: readonly unknown[]; Visible: boolean };
+type OsmdStaffLine = {
+  PositionAndShape: { AbsolutePosition: { y: number } };
+  StaffHeight: number;
+};
 type OsmdInstance = {
-  GraphicSheet: { MeasureList: readonly MeasureRow[] };
+  GraphicSheet: {
+    MeasureList: readonly MeasureRow[];
+    MusicPages: readonly {
+      MusicSystems: readonly { StaffLines: readonly OsmdStaffLine[] }[];
+    }[];
+  };
   Sheet: { Instruments: OsmdInstrument[] };
   clear(): void;
   load(musicXml: string): Promise<unknown>;
@@ -61,6 +76,8 @@ type StageBuilder = {
 };
 
 const DEFAULT_ZOOM = 1;
+// OpenSheetMusicDisplay lays out in units of ten pixels at zoom 1.
+const UNIT_PX = 10;
 // Where a long score is drawn before its runs are copied into the strip: laid
 // out like a normal element but out of sight.
 const STAGE_STYLE =
@@ -74,6 +91,36 @@ const removeBaselineGap = (container: Measurable) => {
   if (svg) {
     svg.style.display = 'block';
   }
+};
+
+// Where each drawn staff sits, matched to the part it belongs to, from the
+// last drawing. Positions do not depend on the zoom or on which run of a long
+// score was drawn last, so this holds until the part selection changes.
+const readStaffBands = (
+  osmd: OsmdInstance,
+  visibleParts: readonly ScorePart[],
+): StaffBand[] => {
+  const lines = osmd.GraphicSheet.MusicPages[0]?.MusicSystems[0]?.StaffLines;
+  const shown = osmd.Sheet.Instruments.filter(({ Visible }) => Visible);
+  const names = lines
+    ? flattenStaffNames(
+        visibleParts.map(({ name }, index) => ({
+          name,
+          staffCount: shown[index]?.Staves.length ?? 0,
+        })),
+        lines.length,
+      )
+    : undefined;
+
+  return lines && names
+    ? buildStaffBands(
+        lines.map((line) => ({
+          height: line.StaffHeight * UNIT_PX,
+          y: line.PositionAndShape.AbsolutePosition.y * UNIT_PX,
+        })),
+        names,
+      )
+    : [];
 };
 
 const failed = (reason: 'invalid-score'): ScoreRenderResult => ({
@@ -161,12 +208,15 @@ export const createMusicXmlRenderer =
             );
           }
 
+          staffBands = readStaffBands(osmd, resolved.visible);
+
           return resolved;
         };
 
         let strip: SegmentedStrip | undefined;
         // Where each bar starts in a single drawing, in pixels at zoom 1.
         let barOffsets = new Map<number, number>();
+        let staffBands: StaffBand[] = [];
 
         osmd.zoom = zoom;
         let resolved = draw(selection);
@@ -199,6 +249,9 @@ export const createMusicXmlRenderer =
           parts: parts as readonly ScorePart[],
           get resolved() {
             return resolved;
+          },
+          partNameAtY(y) {
+            return findPartNameAtY(staffBands, y / osmd.zoom);
           },
           scrollToBar(barIndex) {
             if (strip) {

@@ -32,6 +32,12 @@ export type ScoreRendering = {
    */
   naturalHeight(): number;
   /**
+   * The name of the part whose staff is at `y`, in pixels from the top of the
+   * drawing at the current zoom, or undefined for blank space or when the staves
+   * cannot be matched to parts.
+   */
+  partNameAtY(y: number): string | undefined;
+  /**
    * Scrolls so that bar `barIndex` (1-based, counting every bar) is at the
    * left of the view. A long score draws the run holding the bar first.
    */

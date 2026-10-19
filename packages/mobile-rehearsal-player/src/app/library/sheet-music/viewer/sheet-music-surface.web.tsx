@@ -10,11 +10,12 @@ import type {
   ScoreRendering,
 } from '../renderers/sheet-music-renderer';
 import { computeFitZoom } from './fit-zoom-model';
+import { PartPeekLabel, usePartPeek, type PeekHost } from './part-peek';
 import type { SheetMusicSurfaceProps } from './sheet-music-surface-types';
 
 // The app's TypeScript config carries no DOM library, so the slice of the DOM
 // used here is described structurally.
-type HostNode = {
+type HostNode = PeekHost & {
   clientHeight: number;
   clientWidth: number;
   style: { overflow: string; scrollbarGutter: string };
@@ -30,7 +31,6 @@ type ResizeObserverConstructor = new (
 type Live = { pdf?: PdfRendering; score?: ScoreRendering };
 
 const RESIZE_DEBOUNCE_MS = 150;
-
 /**
  * Draws the loaded document into a scrolling element: a column of pages for a
  * PDF, staves for MusicXML and MIDI. The viewer owns the part selection and
@@ -166,6 +166,8 @@ export const SheetMusicSurface = ({
     // `reportFit` only reads refs and the host, so it is not a dependency.
   }, [selection]);
 
+  const peek = usePartPeek(host, (y) => live.current.score?.partNameAtY(y));
+
   useEffect(() => {
     if (jump) {
       live.current.score?.scrollToBar(jump.barIndex);
@@ -218,30 +220,36 @@ export const SheetMusicSurface = ({
   }, [host]);
 
   return (
-    <View
-      ref={(node) => {
-        const element = node as unknown as HostNode | null;
+    <View style={styles.frame}>
+      <View
+        ref={(node) => {
+          const element = node as unknown as HostNode | null;
 
-        // A plain scrolling element that both renderers draw into: staves scroll
-        // sideways, PDF pages scroll down. The scrollbar's space is reserved up
-        // front, so the PDF column keeps the width it measured once a long
-        // document makes the scrollbar appear.
-        if (element) {
-          element.style.overflow = 'auto';
-          element.style.scrollbarGutter = 'stable';
-        }
+          // A plain scrolling element that both renderers draw into: staves scroll
+          // sideways, PDF pages scroll down. The scrollbar's space is reserved up
+          // front, so the PDF column keeps the width it measured once a long
+          // document makes the scrollbar appear.
+          if (element) {
+            element.style.overflow = 'auto';
+            element.style.scrollbarGutter = 'stable';
+          }
 
-        setHost(element);
-      }}
-      style={[
-        styles.host,
-        document.format === 'pdf' ? styles.pdfGround : styles.paper,
-      ]}
-    />
+          setHost(element);
+        }}
+        style={[
+          styles.host,
+          document.format === 'pdf' ? styles.pdfGround : styles.paper,
+        ]}
+      />
+      {peek ? <PartPeekLabel peek={peek} /> : null}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  frame: {
+    flex: 1,
+  },
   host: {
     flex: 1,
     borderRadius: appTheme.radius.md,
