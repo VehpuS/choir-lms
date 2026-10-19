@@ -1,8 +1,9 @@
 import type { SheetMusicSource } from '@org/audio-library-models';
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { OutlinedActionButton } from '../../../components/outlined-action-button';
+import { darkScrollbarStyle } from '../../../components/dark-scrollbar';
 import { appTheme } from '../../../utils/theme';
 import { SearchSourceButton } from '../../search-sources/search-source-button';
 import type { SheetMusicSearchSuggestion } from '../sheet-music-search-terms';
@@ -60,33 +61,39 @@ export const AddSheetMusicPanel = ({
     };
 
     return (
-      <View style={styles.stack}>
-        <TextInput
-          accessibilityLabel="Web link"
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="url"
-          onChangeText={(text) => {
-            setUrl(text);
-            setMessage(null);
-          }}
-          placeholder="https://"
-          placeholderTextColor={appTheme.colors.textFaint}
-          style={styles.field}
-          value={url}
-        />
-        <TextInput
-          accessibilityLabel="Label"
-          onChangeText={setLabel}
-          placeholder="Label (optional)"
-          placeholderTextColor={appTheme.colors.textFaint}
-          style={styles.field}
-          value={label}
-        />
-        <Text style={styles.copy}>
-          Nothing is downloaded until you open it.
-        </Text>
-        {message ? <Text style={styles.error}>{message}</Text> : null}
+      <>
+        <ScrollView
+          contentContainerStyle={styles.stack}
+          keyboardShouldPersistTaps="handled"
+          style={[darkScrollbarStyle, styles.scroll]}
+        >
+          <TextInput
+            accessibilityLabel="Web link"
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+            onChangeText={(text) => {
+              setUrl(text);
+              setMessage(null);
+            }}
+            placeholder="https://"
+            placeholderTextColor={appTheme.colors.textFaint}
+            style={styles.field}
+            value={url}
+          />
+          <TextInput
+            accessibilityLabel="Label"
+            onChangeText={setLabel}
+            placeholder="Label (optional)"
+            placeholderTextColor={appTheme.colors.textFaint}
+            style={styles.field}
+            value={label}
+          />
+          <Text style={styles.copy}>
+            Nothing is downloaded until you open it.
+          </Text>
+          {message ? <Text style={styles.error}>{message}</Text> : null}
+        </ScrollView>
         <View style={styles.row}>
           <OutlinedActionButton
             fill
@@ -107,58 +114,64 @@ export const AddSheetMusicPanel = ({
             variant="accent"
           />
         </View>
-      </View>
+      </>
     );
   }
 
   return (
-    <View style={styles.stack}>
-      {onChooseDrive ? (
+    <>
+      <ScrollView
+        contentContainerStyle={styles.stack}
+        keyboardShouldPersistTaps="handled"
+        style={[darkScrollbarStyle, styles.scroll]}
+      >
+        {onChooseDrive ? (
+          <OutlinedActionButton
+            icon="folder-outline"
+            label="From Google Drive"
+            onPress={onChooseDrive}
+          />
+        ) : null}
         <OutlinedActionButton
-          icon="folder-outline"
-          label="From Google Drive"
-          onPress={onChooseDrive}
+          icon="open-in-new"
+          label="From a web link"
+          onPress={() => {
+            setMode('link');
+          }}
         />
-      ) : null}
-      <OutlinedActionButton
-        icon="open-in-new"
-        label="From a web link"
-        onPress={() => {
-          setMode('link');
-        }}
-      />
 
-      <Text style={styles.heading}>Search for a score</Text>
-      <TextInput
-        accessibilityLabel="Title"
-        autoCorrect={false}
-        onChangeText={setTitle}
-        placeholder="Title"
-        placeholderTextColor={appTheme.colors.textFaint}
-        style={styles.field}
-        value={title}
-      />
-      <TextInput
-        accessibilityLabel="Artist"
-        autoCorrect={false}
-        onChangeText={setArtist}
-        placeholder="Artist"
-        placeholderTextColor={appTheme.colors.textFaint}
-        style={styles.field}
-        value={artist}
-      />
-      <SearchSourceButton
-        disabled={title.trim().length === 0}
-        kind="sheet-music"
-        onOpen={onOpenExternal}
-        query={{ artist, title }}
-      />
-      <Text style={styles.copy}>
-        Opens your browser. Bring a link or an exported file back here; the app
-        never downloads from these sites.
-      </Text>
+        <Text style={styles.heading}>Search for a score</Text>
+        <TextInput
+          accessibilityLabel="Title"
+          autoCorrect={false}
+          onChangeText={setTitle}
+          placeholder="Title"
+          placeholderTextColor={appTheme.colors.textFaint}
+          style={styles.field}
+          value={title}
+        />
+        <TextInput
+          accessibilityLabel="Artist"
+          autoCorrect={false}
+          onChangeText={setArtist}
+          placeholder="Artist"
+          placeholderTextColor={appTheme.colors.textFaint}
+          style={styles.field}
+          value={artist}
+        />
+        <SearchSourceButton
+          disabled={title.trim().length === 0}
+          kind="sheet-music"
+          onOpen={onOpenExternal}
+          query={{ artist, title }}
+        />
+        <Text style={styles.copy}>
+          Opens your browser. Bring a link or an exported file back here; the
+          app never downloads from these sites.
+        </Text>
+      </ScrollView>
       <OutlinedActionButton label="Back" onPress={onBack} />
-    </View>
+    </>
   );
 };
 
@@ -192,6 +205,11 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: appTheme.space.xs,
+  },
+  // Shrinks under the sheet's height cap so Back and Add stay on screen.
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 1,
   },
   stack: {
     gap: appTheme.space.sm,

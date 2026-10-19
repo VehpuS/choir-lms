@@ -110,6 +110,29 @@ export const LyricsEditorSheet = ({
   return (
     <BottomSheetSurface
       eyebrow="Lyrics"
+      footer={
+        <>
+          <View style={styles.footerRow}>
+            <OutlinedActionButton fill label="Cancel" onPress={requestClose} />
+            <OutlinedActionButton
+              disabled={!canSaveLyrics(state)}
+              fill
+              label="Save"
+              onPress={() => {
+                void onSave({ origin: state.origin, text: state.text });
+              }}
+              variant="accent"
+            />
+          </View>
+          {hasStoredLyrics(state) ? (
+            <OutlinedActionButton
+              label="Delete lyrics"
+              onPress={requestDelete}
+              variant="destructive"
+            />
+          ) : null}
+        </>
+      }
       isVisible={true}
       onClose={requestClose}
       title={hasStoredLyrics(state) ? 'Edit lyrics' : 'Add lyrics'}
@@ -188,26 +211,6 @@ export const LyricsEditorSheet = ({
         {attribution ? (
           <Text style={styles.bodyCopy}>{attribution}</Text>
         ) : null}
-
-        <View style={styles.actionRow}>
-          <OutlinedActionButton fill label="Cancel" onPress={requestClose} />
-          <OutlinedActionButton
-            disabled={!canSaveLyrics(state)}
-            fill
-            label="Save"
-            onPress={() => {
-              void onSave({ origin: state.origin, text: state.text });
-            }}
-            variant="accent"
-          />
-        </View>
-        {hasStoredLyrics(state) ? (
-          <OutlinedActionButton
-            label="Delete lyrics"
-            onPress={requestDelete}
-            variant="destructive"
-          />
-        ) : null}
       </ScrollView>
       {confirmation.confirmationDialog}
     </BottomSheetSurface>
@@ -220,6 +223,10 @@ const styles = StyleSheet.create({
   // Look up, then the search with its dropdown on a row of its own: side by
   // side the source name was cut off on a phone.
   actionRow: {
+    gap: appTheme.space.xs,
+  },
+  footerRow: {
+    flexDirection: 'row',
     gap: appTheme.space.xs,
   },
   bodyCopy: {

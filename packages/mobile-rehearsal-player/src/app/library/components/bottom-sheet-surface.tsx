@@ -9,6 +9,11 @@ import { appTheme } from '../../utils/theme';
 type BottomSheetSurfaceProps = {
   children: React.ReactNode;
   eyebrow?: string;
+  /**
+   * Actions that stay at the bottom while the content scrolls (Cancel, Save,
+   * Done). Anything inside the content scrolls away with it.
+   */
+  footer?: React.ReactNode;
   isVisible: boolean;
   onClose: () => void;
   /**
@@ -28,6 +33,7 @@ const CARD_BACKGROUND = appTheme.colors.bg;
 export const BottomSheetSurface = ({
   children,
   eyebrow,
+  footer,
   isVisible,
   onClose,
   scrollable = false,
@@ -68,6 +74,7 @@ export const BottomSheetSurface = ({
       ) : (
         children
       )}
+      {footer ? <View style={styles.footer}>{footer}</View> : null}
     </ModalSurfaceBase>
   );
 };
@@ -81,6 +88,9 @@ const SHEET_BOTTOM_PADDING = 34;
 const styles = StyleSheet.create({
   copyGroup: {
     gap: appTheme.space.xxs,
+  },
+  footer: {
+    gap: appTheme.space.sm,
   },
   grabber: {
     alignSelf: 'center',

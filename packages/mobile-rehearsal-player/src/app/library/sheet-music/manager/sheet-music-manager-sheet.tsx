@@ -65,57 +65,9 @@ export const SheetMusicManagerSheet = ({
   return (
     <BottomSheetSurface
       eyebrow="Sheet music"
-      isVisible={true}
-      onClose={isAdding ? () => setIsAdding(false) : onClose}
-      title={isAdding ? 'Add sheet music' : 'Sheet music'}
-    >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-        style={[darkScrollbarStyle, styles.scroll]}
-      >
-        <Text style={styles.copy}>{`Sheet music for ${ownerName}`}</Text>
-        {isAdding ? (
-          <AddSheetMusicPanel
-            existingSources={sources}
-            onAddLink={async (addition) => {
-              const wasAdded = await onAddLink(addition);
-
-              if (wasAdded) {
-                setIsAdding(false);
-              }
-
-              return wasAdded;
-            }}
-            onBack={() => {
-              setIsAdding(false);
-            }}
-            onChooseDrive={onChooseDrive}
-            onOpenExternal={onOpenExternal}
-            suggestedQuery={suggestedQuery}
-          />
-        ) : (
+      footer={
+        isAdding ? undefined : (
           <>
-            {sources.length === 0 ? (
-              <Text style={styles.copy}>
-                No sheet music yet. Add a score or a part for this track.
-              </Text>
-            ) : null}
-            {sources.map((source) => (
-              <SheetMusicRow
-                disabled={!canMutate}
-                key={source.id}
-                onAction={onOpenSource}
-                onRemove={requestRemove}
-                onRename={(row, label) => {
-                  void onRename(row, label);
-                }}
-                source={source}
-              />
-            ))}
-            {isAtLimit ? (
-              <Text style={styles.copy}>{LIMIT_MESSAGE}</Text>
-            ) : null}
             <OutlinedActionButton
               disabled={!canMutate || isAtLimit}
               icon="plus"
@@ -127,8 +79,57 @@ export const SheetMusicManagerSheet = ({
             />
             <OutlinedActionButton label="Done" onPress={onClose} />
           </>
-        )}
-      </ScrollView>
+        )
+      }
+      isVisible={true}
+      onClose={isAdding ? () => setIsAdding(false) : onClose}
+      title={isAdding ? 'Add sheet music' : 'Sheet music'}
+    >
+      <Text style={styles.copy}>{`Sheet music for ${ownerName}`}</Text>
+      {isAdding ? (
+        <AddSheetMusicPanel
+          existingSources={sources}
+          onAddLink={async (addition) => {
+            const wasAdded = await onAddLink(addition);
+
+            if (wasAdded) {
+              setIsAdding(false);
+            }
+
+            return wasAdded;
+          }}
+          onBack={() => {
+            setIsAdding(false);
+          }}
+          onChooseDrive={onChooseDrive}
+          onOpenExternal={onOpenExternal}
+          suggestedQuery={suggestedQuery}
+        />
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.content}
+          style={[darkScrollbarStyle, styles.scroll]}
+        >
+          {sources.length === 0 ? (
+            <Text style={styles.copy}>
+              No sheet music yet. Add a score or a part for this track.
+            </Text>
+          ) : null}
+          {sources.map((source) => (
+            <SheetMusicRow
+              disabled={!canMutate}
+              key={source.id}
+              onAction={onOpenSource}
+              onRemove={requestRemove}
+              onRename={(row, label) => {
+                void onRename(row, label);
+              }}
+              source={source}
+            />
+          ))}
+          {isAtLimit ? <Text style={styles.copy}>{LIMIT_MESSAGE}</Text> : null}
+        </ScrollView>
+      )}
       {confirmation.confirmationDialog}
     </BottomSheetSurface>
   );
@@ -145,5 +146,6 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flexGrow: 0,
+    flexShrink: 1,
   },
 });

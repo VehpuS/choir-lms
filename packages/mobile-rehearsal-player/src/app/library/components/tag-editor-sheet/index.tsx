@@ -107,6 +107,25 @@ export const TagEditorSheet = ({
   return (
     <BottomSheetSurface
       eyebrow="Tags"
+      footer={
+        <View style={styles.actionRow}>
+          <OutlinedActionButton
+            disabled={isSaving}
+            fill
+            label="Cancel"
+            onPress={onClose}
+          />
+          <OutlinedActionButton
+            disabled={isSaving}
+            fill
+            label={isSaving ? 'Saving…' : 'Save tags'}
+            onPress={() => {
+              onSave(draftTags, draftMixedTags);
+            }}
+            variant="accent"
+          />
+        </View>
+      }
       isVisible={true}
       onClose={onClose}
       scrollable
@@ -232,24 +251,6 @@ export const TagEditorSheet = ({
           tone="error"
         />
       ) : null}
-
-      <View style={styles.actionRow}>
-        <OutlinedActionButton
-          disabled={isSaving}
-          fill
-          label="Cancel"
-          onPress={onClose}
-        />
-        <OutlinedActionButton
-          disabled={isSaving}
-          fill
-          label={isSaving ? 'Saving…' : 'Save tags'}
-          onPress={() => {
-            onSave(draftTags, draftMixedTags);
-          }}
-          variant="accent"
-        />
-      </View>
     </BottomSheetSurface>
   );
 };

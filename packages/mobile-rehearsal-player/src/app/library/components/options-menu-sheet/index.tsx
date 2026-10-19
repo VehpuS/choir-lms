@@ -65,6 +65,16 @@ export const OptionsMenuSheet = ({
   return (
     <BottomSheetSurface
       eyebrow={heading.eyebrow}
+      footer={
+        <MenuGroup>
+          <MenuRow
+            disabled={isSecondaryDisabled}
+            label={secondaryActionLabel}
+            onPress={onSecondaryAction ?? onClose}
+            tone="cancel"
+          />
+        </MenuGroup>
+      }
       isVisible
       onClose={onClose}
       scrollable
@@ -91,14 +101,6 @@ export const OptionsMenuSheet = ({
             </MenuGroup>
           );
         })}
-        <MenuGroup>
-          <MenuRow
-            disabled={isSecondaryDisabled}
-            label={secondaryActionLabel}
-            onPress={onSecondaryAction ?? onClose}
-            tone="cancel"
-          />
-        </MenuGroup>
       </View>
     </BottomSheetSurface>
   );
