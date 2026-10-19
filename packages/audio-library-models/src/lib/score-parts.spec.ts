@@ -115,6 +115,22 @@ describe('classifyVocalPart', () => {
     }
   });
 
+  it('treats beatbox and vocal percussion as vocal, not as the percussion instrument', () => {
+    for (const name of [
+      'Beatbox',
+      'Beat Box',
+      'Vocal Percussion',
+      'Beatboxer',
+    ]) {
+      assert.equal(classifyVocalPart({ name }), 'vocal', name);
+    }
+
+    // Real percussion instruments stay instrumental.
+    for (const name of ['Percussion', 'Drums', 'Timpani']) {
+      assert.equal(classifyVocalPart({ name }), 'instrumental', name);
+    }
+  });
+
   it('uses the abbreviation or instrument name when the part name is empty', () => {
     assert.equal(classifyVocalPart({ abbreviation: 'Sop.' }), 'vocal');
     assert.equal(classifyVocalPart({ instrument: 'Choir Aahs' }), 'vocal');

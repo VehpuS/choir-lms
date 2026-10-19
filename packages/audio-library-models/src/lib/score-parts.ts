@@ -31,6 +31,9 @@ const VOCAL_WORD_PATTERN =
 const VOICE_LETTERS_PATTERN = /^[satb](?:[\s./&,+-]*[satb])*[\s.]*\d*$/;
 const INSTRUMENT_WORD_PATTERN =
   /\b(piano|organ|harpsichord|keyboards?|synth(?:esizer)?|accordion|guitar|ukulele|banjo|mandolin|harp|violin|viola|cello|violoncello|contrabass|double bass|string bass|strings?|flute|piccolo|oboe|clarinet|bassoon|saxophone|sax|horn|trumpet|cornet|trombone|euphonium|tuba|recorder|percussion|drums?|timpani|marimba|vibraphone|glockenspiel|xylophone|bells|accompaniment|orchestra|reduction|continuo)\b/;
+// Vocal percussion is sung, so it beats the `percussion` instrument word.
+const VOCAL_PERCUSSION_PATTERN =
+  /\b(beatbox(?:er|ers|ing)?|beat box|vocal percussion)\b/;
 const NON_VOCAL_BASS_PATTERN = /\bbass (clarinet|guitar|drum|trombone|flute)\b/;
 const NON_LETTER_RUN_PATTERN = /[^\p{L}\p{N}\s./&,+-]+/gu;
 
@@ -51,7 +54,8 @@ const isVocalClue = (clue: string): boolean => {
 /**
  * Decides whether a part is sung from its names and sound. An instrument word
  * wins over a voice word, so `Piano (SATB reduction)` and `Alto Sax` stay
- * instrumental. A non-vocal MIDI program alone is not evidence: exporters
+ * instrumental, but a beatbox or vocal percussion part is sung and stays
+ * vocal. A non-vocal MIDI program alone is not evidence: exporters
  * write a default piano program on every part, so a part with no telling name
  * stays `unknown` rather than being hidden by the vocal filter.
  */
@@ -59,6 +63,10 @@ export const classifyVocalPart = (clues: ScorePartClues): ScorePartKind => {
   const texts = [clues.name, clues.abbreviation, clues.instrument]
     .map(normalizeClue)
     .filter((clue) => clue.length > 0);
+
+  if (texts.some((clue) => VOCAL_PERCUSSION_PATTERN.test(clue))) {
+    return 'vocal';
+  }
 
   if (texts.some(isInstrumentalClue)) {
     return 'instrumental';

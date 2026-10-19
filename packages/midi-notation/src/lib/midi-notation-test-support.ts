@@ -86,10 +86,73 @@ const withKeySignature = (
   return patched;
 };
 
+const END_OF_TRACK = [0xff, 0x2f, 0x00];
+const VLQ_PAYLOAD_BITS = 7;
+const VLQ_PAYLOAD_MASK = 0x7f;
+const VLQ_CONTINUE_BIT = 0x80;
+const TRACK_COUNT_OFFSET = 10;
+
+/** A MIDI variable-length quantity (a delta time). */
+const variableLength = (value: number): number[] => {
+  const bytes = [value & VLQ_PAYLOAD_MASK];
+  let rest = value >> VLQ_PAYLOAD_BITS;
+
+  while (rest > 0) {
+    bytes.unshift((rest & VLQ_PAYLOAD_MASK) | VLQ_CONTINUE_BIT);
+    rest >>= VLQ_PAYLOAD_BITS;
+  }
+
+  return bytes;
+};
+
+/**
+ * Appends a track of key signature events at the given ticks. Like
+ * `withKeySignature`, it writes the bytes by hand because the library's writer
+ * gets the sign wrong; a separate track lets a change fall at any tick.
+ */
+export const withKeyChanges = (
+  bytes: Uint8Array,
+  changes: readonly { fifths: number; ticks: number }[],
+): Uint8Array => {
+  let previousTick = 0;
+  const events = [...changes]
+    .sort((a, b) => a.ticks - b.ticks)
+    .flatMap(({ fifths, ticks }) => {
+      const delta = variableLength(ticks - previousTick);
+
+      previousTick = ticks;
+
+      return [...delta, 0xff, 0x59, 0x02, fifths & 0xff, 0x00];
+    });
+  const body = [...events, 0x00, ...END_OF_TRACK];
+  const chunk = [
+    ...[...'MTrk'].map((character) => character.charCodeAt(0)),
+    ...[24, 16, 8, 0].map((shift) => (body.length >>> shift) & 0xff),
+    ...body,
+  ];
+  const patched = new Uint8Array(bytes.length + chunk.length);
+
+  patched.set(bytes);
+  patched.set(chunk, bytes.length);
+
+  const view = new DataView(patched.buffer);
+
+  view.setUint16(TRACK_COUNT_OFFSET, view.getUint16(TRACK_COUNT_OFFSET) + 1);
+
+  return patched;
+};
+
 export const buildMidiFile = (options: {
   /** A key signature: sharps (positive) or flats (negative), and whether it is minor. */
   key?: { fifths: number; isMinor?: boolean };
+  /** Key signature changes after the start, written as events at their ticks. */
+  keyChanges?: readonly { fifths: number; ticks: number }[];
   timeSignature?: [number, number];
+  /** Further time signature events (the first is `timeSignature`, at tick 0). */
+  timeSignatureChanges?: readonly {
+    ticks: number;
+    timeSignature: [number, number];
+  }[];
   tracks: readonly FixtureTrack[];
 }): Uint8Array => {
   const midi = new Midi();
@@ -100,6 +163,10 @@ export const buildMidiFile = (options: {
     timeSignature: options.timeSignature ?? [4, 4],
   });
 
+  for (const change of options.timeSignatureChanges ?? []) {
+    midi.header.timeSignatures.push({ ...change });
+  }
+
   for (const spec of options.tracks) {
     const track = midi.addTrack();
 
@@ -109,9 +176,14 @@ export const buildMidiFile = (options: {
     spec.notes.forEach((note) => track.addNote({ ...note }));
   }
 
-  const bytes = midi.toArray();
+  const written = midi.toArray();
+  const withKey = options.key
+    ? withKeySignature(written, options.key)
+    : written;
 
-  return options.key ? withKeySignature(bytes, options.key) : bytes;
+  return options.keyChanges
+    ? withKeyChanges(withKey, options.keyChanges)
+    : withKey;
 };
 
 export type ReadNote = {

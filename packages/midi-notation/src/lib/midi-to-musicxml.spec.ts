@@ -259,7 +259,7 @@ describe('convertMidiToMusicXml', () => {
     );
   });
 
-  it('skips percussion and tracks without notes', () => {
+  it('skips tracks without notes and writes drums as a percussion part', () => {
     const result = convertMidiToMusicXml(
       buildMidiFile({
         tracks: [
@@ -270,10 +270,16 @@ describe('convertMidiToMusicXml', () => {
       }),
     );
 
-    assert.equal(result?.partCount, 1);
+    assert.equal(result?.partCount, 2);
     assert.deepEqual(
-      extractScoreParts(result?.musicXml ?? '').map(({ name }) => name),
-      ['Alto'],
+      extractScoreParts(result?.musicXml ?? '').map(({ name, kind }) => [
+        name,
+        kind,
+      ]),
+      [
+        ['Drums', 'instrumental'],
+        ['Alto', 'vocal'],
+      ],
     );
   });
 

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { uniformBars } from './midi-notation-bars.ts';
 import type { GridEvent } from './midi-notation-quantize.ts';
 import {
   readParts,
@@ -8,11 +9,8 @@ import {
   voiceLengths,
   type ReadMeasure,
 } from './midi-notation-test-support.ts';
-import {
-  escapeXml,
-  splitIntoNoteValues,
-  writePartMeasuresXml,
-} from './midi-notation-xml.ts';
+import { splitIntoNoteValues } from './midi-notation-pieces.ts';
+import { escapeXml, writePartMeasuresXml } from './midi-notation-xml.ts';
 
 const TREBLE = { line: 2, sign: 'G' } as const;
 const BAR = 48; // a 4/4 bar in twelfths of a quarter
@@ -36,12 +34,8 @@ const write = (
   return (
     readParts(
       `<part id="P1">${writePartMeasuresXml({
-        barCount,
-        barLength,
-        beatType: 4,
-        beats: barLength / 12,
+        bars: uniformBars({ barCount, beats: barLength / 12 }),
         clef: TREBLE,
-        fifths: 0,
         tripletWindows: new Set(options.tripletWindows ?? []),
         voices,
       })}</part>`,

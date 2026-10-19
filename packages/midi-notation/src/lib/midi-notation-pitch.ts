@@ -1,11 +1,14 @@
 export type SpelledPitch = { alter: number; octave: number; step: string };
 
-export type NotationClef = {
-  /** MusicXML `clef-octave-change`, -1 for the tenor's treble-8 clef. */
-  octaveChange?: number;
-  line: number;
-  sign: 'F' | 'G';
-};
+export type NotationClef =
+  | {
+      /** MusicXML `clef-octave-change`, -1 for the tenor's treble-8 clef. */
+      octaveChange?: number;
+      line: number;
+      sign: 'F' | 'G';
+    }
+  /** The unpitched clef of a drum or beatbox part. */
+  | { sign: 'percussion' };
 
 const SHARP_STEPS = [
   'C',

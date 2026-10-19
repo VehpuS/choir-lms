@@ -10,10 +10,15 @@ import {
   inferFifths,
 } from './midi-notation-pitch.ts';
 import { detectPickupSixteenths } from './midi-notation-pickup.ts';
+import { normalizeHitLengths } from './midi-notation-percussion.ts';
 import {
-  UNITS_PER_QUARTER,
-  UNITS_PER_SIXTEENTH,
-} from './midi-notation-triplets.ts';
+  UNITS_PER_WHOLE_NOTE,
+  buildBars,
+  buildKeyChanges,
+  buildMeterMap,
+  meterBarLength,
+} from './midi-notation-bars.ts';
+import { UNITS_PER_SIXTEENTH } from './midi-notation-triplets.ts';
 import { escapeXml, writePartMeasuresXml } from './midi-notation-xml.ts';
 import {
   PERCUSSION_CHANNEL_INDEX,
@@ -46,31 +51,19 @@ export type MidiNotationResult = {
   pickupSixteenths: number;
 };
 
-const UNITS_PER_WHOLE_NOTE = UNITS_PER_QUARTER * 4;
-const DEFAULT_TIME_SIGNATURE: [number, number] = [4, 4];
 /** Refuse files that would produce an unreasonably large score. */
 const MAX_BARS = 500;
 const MAX_NOTES = 50_000;
-
-const readTimeSignature = (
-  value: readonly number[] | undefined,
-): [number, number] => {
-  const [beats, beatType] = value ?? [];
-  const barLength =
-    beats && beatType ? (beats * UNITS_PER_WHOLE_NOTE) / beatType : 0;
-
-  return beats && beatType && Number.isInteger(barLength) && barLength > 0
-    ? [beats, beatType]
-    : DEFAULT_TIME_SIGNATURE;
-};
 
 /**
  * Turns a Standard MIDI File into MusicXML so MIDI and MusicXML share one
  * renderer and one part filter. MIDI is performance data, so the notation is
  * an approximation: notes are snapped to a 16th grid, or to eighth-note
- * triplets in the beats that fit them better; the first time signature
- * applies throughout; black keys are spelled from the key alone; and a
- * performed (not score-exported) file will look rough.
+ * triplets in the beats that fit them better; time and key signature changes
+ * are followed (a change that falls inside a bar takes effect from the next
+ * bar for a key, and cuts the bar short for a time signature); black keys are
+ * spelled from the key alone; and a performed (not score-exported) file will
+ * look rough.
  *
  * Returns undefined for bytes that are not MIDI, files without notes, and
  * files too large to notate. Never throws.
@@ -85,13 +78,17 @@ export const convertMidiToMusicXml = (
     return undefined;
   }
 
-  // Percussion has no pitch to notate.
+  // A drum or beatbox track is written too, unpitched, on a percussion staff.
   const tracks = midi.tracks
-    .map((track, trackIndex) => ({ track, trackIndex }))
-    .filter(
-      ({ track }) =>
-        track.notes.length > 0 && track.channel !== PERCUSSION_CHANNEL_INDEX,
-    );
+    .map((track, trackIndex) => ({
+      isPercussion: track.channel === PERCUSSION_CHANNEL_INDEX,
+      track,
+      trackIndex,
+    }))
+    .filter(({ track }) => track.notes.length > 0);
+  // Key, pickup, and clef come from pitched lines; drums only when there are none.
+  const pitchedTracks = tracks.filter(({ isPercussion }) => !isPercussion);
+  const guideTracks = pitchedTracks.length > 0 ? pitchedTracks : tracks;
   const noteCount = tracks.reduce(
     (sum, { track }) => sum + track.notes.length,
     0,
@@ -101,36 +98,53 @@ export const convertMidiToMusicXml = (
     return undefined;
   }
 
-  const [beats, beatType] = readTimeSignature(
-    midi.header.timeSignatures[0]?.timeSignature,
-  );
-  const barLength = (beats * UNITS_PER_WHOLE_NOTE) / beatType;
+  const timeSignatures = midi.header.timeSignatures;
+  const firstMeter = buildMeterMap(timeSignatures, midi.header.ppq)[0] ?? {
+    beatType: 4,
+    beats: 4,
+    startUnit: 0,
+  };
+  const barLength = meterBarLength(firstMeter);
+  // A file whose time signature changes already says where its bars fall, so
+  // the pickup guess (which assumes one bar length) is left out for it.
+  const hasMeterChanges =
+    buildMeterMap(timeSignatures, midi.header.ppq).length > 1;
   const pickup =
     options.pickupSixteenths ??
-    detectPickupSixteenths(
-      tracks.flatMap(({ track }) => track.notes),
-      midi.header.ppq,
-      barLength / UNITS_PER_SIXTEENTH,
-    );
+    (hasMeterChanges
+      ? 0
+      : detectPickupSixteenths(
+          guideTracks.flatMap(({ track }) => track.notes),
+          midi.header.ppq,
+          barLength / UNITS_PER_SIXTEENTH,
+        ));
   const pickupUnits = pickup * UNITS_PER_SIXTEENTH;
   const offset =
     pickupUnits > 0 && pickupUnits < barLength ? barLength - pickupUnits : 0;
-  const allPitches = tracks.flatMap(({ track }) =>
+  const allPitches = guideTracks.flatMap(({ track }) =>
     track.notes.map((n) => n.midi),
   );
-  const fileKey = midi.header.keySignatures[0];
-  const fifthsFromFile = fifthsFromKeyName(fileKey?.key);
-  const fifths = fifthsFromFile ?? inferFifths(allPitches);
+  const keyChanges = buildKeyChanges(
+    midi.header.keySignatures.map((key) => ({
+      fifths: fifthsFromKeyName(key.key),
+      ticks: key.ticks,
+    })),
+    midi.header.ppq,
+    offset,
+  );
+  const fifthsFromFile = keyChanges[0]?.fifths;
+  const defaultFifths = fifthsFromFile ?? inferFifths(allPitches);
 
-  const parts = tracks.map(({ track, trackIndex }) => {
+  const parts = tracks.map(({ isPercussion, track, trackIndex }) => {
+    const rawNotes = track.notes.map((note) => ({
+      durationTicks: note.durationTicks,
+      midi: note.midi,
+      ticks: note.ticks,
+    }));
     const { notes, tripletWindows } = quantizeNotes(
-      track.notes.map((note) => ({
-        durationTicks: note.durationTicks,
-        midi: note.midi,
-        ticks: note.ticks,
-      })),
+      isPercussion ? normalizeHitLengths(rawNotes, midi.header.ppq) : rawNotes,
       {
-        beatLength: UNITS_PER_WHOLE_NOTE / beatType,
+        beatLength: UNITS_PER_WHOLE_NOTE / firstMeter.beatType,
         legatoSnap: options.legatoSnapSixteenths ?? DEFAULT_LEGATO_SNAP,
         offset,
         ticksPerQuarter: midi.header.ppq,
@@ -138,7 +152,10 @@ export const convertMidiToMusicXml = (
     );
 
     return {
-      clef: chooseClef(notes.map((note) => note.pitch)),
+      clef: isPercussion
+        ? ({ sign: 'percussion' } as const)
+        : chooseClef(notes.map((note) => note.pitch)),
+      isPercussion,
       endsAt: Math.max(...notes.map((note) => note.end)),
       name:
         resolveTrackName(midi.tracks, trackIndex) || `Track ${trackIndex + 1}`,
@@ -148,11 +165,15 @@ export const convertMidiToMusicXml = (
       voices: assignVoices(groupChords(notes)),
     };
   });
-  const barCount = Math.ceil(
-    Math.max(...parts.map((part) => part.endsAt)) / barLength,
-  );
+  const bars = buildBars({
+    defaultFifths,
+    endUnit: Math.max(...parts.map((part) => part.endsAt)),
+    keys: fifthsFromFile === undefined ? [] : keyChanges,
+    maxBars: MAX_BARS,
+    meters: buildMeterMap(timeSignatures, midi.header.ppq, offset),
+  });
 
-  if (barCount > MAX_BARS) {
+  if (bars.length > MAX_BARS) {
     return undefined;
   }
 
@@ -165,7 +186,7 @@ export const convertMidiToMusicXml = (
   const partBodies = parts
     .map(
       (part, index) =>
-        `<part id="P${index + 1}">${writePartMeasuresXml({ barCount, barLength, beatType, beats, clef: part.clef, fifths, tripletWindows: part.tripletWindows, voices: part.voices })}</part>`,
+        `<part id="P${index + 1}">${writePartMeasuresXml({ bars: part.isPercussion ? bars.map((bar) => ({ ...bar, fifths: 0 })) : bars, clef: part.clef, isPercussion: part.isPercussion, tripletWindows: part.tripletWindows, voices: part.voices })}</part>`,
     )
     .join('');
   const titleXml = options.title
@@ -173,7 +194,7 @@ export const convertMidiToMusicXml = (
     : '';
 
   return {
-    barCount,
+    barCount: bars.length,
     keySource: fifthsFromFile === undefined ? 'inferred' : 'file',
     musicXml: `<?xml version="1.0" encoding="UTF-8"?><score-partwise version="3.1">${titleXml}<part-list>${partList}</part-list>${partBodies}</score-partwise>`,
     partCount: parts.length,

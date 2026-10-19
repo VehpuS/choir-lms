@@ -45,9 +45,13 @@ export const extractMidiParts = (bytes: ArrayLike<number>): ScorePart[] => {
       name: name.length > 0 ? name : `Track ${trackIndex + 1}`,
       midiProgram,
       channel: track.channel + 1,
-      kind: isPercussion
-        ? 'instrumental'
-        : classifyVocalPart({ name, midiProgram }),
+      // A drum channel is instrumental unless the track says it is sung (a
+      // beatbox part), so the name is asked first.
+      kind: (() => {
+        const byName = classifyVocalPart({ name, midiProgram });
+
+        return isPercussion && byName !== 'vocal' ? 'instrumental' : byName;
+      })(),
     });
   });
 
