@@ -116,6 +116,19 @@ describe('score notehead tags', () => {
     assert.equal(continuation.head.attributes[NOTE_MIDI_ATTRIBUTE], undefined);
   });
 
+  it('skips rows and measures that were not drawn', () => {
+    const instrument = {};
+    const drawn = createNote({ fundamental: 7, octave: 1 });
+
+    tagScoreNoteheads({
+      instruments: [instrument],
+      measures: [undefined, [undefined, measureOf(instrument, [drawn.note])]],
+      transposes: [{}],
+    });
+
+    assert.equal(drawn.head.attributes[NOTE_MIDI_ATTRIBUTE], '67');
+  });
+
   it('skips notes with no drawn notehead', () => {
     const instrument = {};
     const hidden = createNote({ fundamental: 0, octave: 1 });

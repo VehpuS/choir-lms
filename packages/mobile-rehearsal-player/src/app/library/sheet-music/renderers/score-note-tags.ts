@@ -45,7 +45,7 @@ const readNoteheads = (note: OsmdGraphicalNote): readonly TaggableElement[] => {
 
 export type ScoreNoteTagOptions = {
   /** `GraphicSheet.MeasureList`: every measure, one entry per staff. */
-  measures: readonly (readonly OsmdMeasure[])[];
+  measures: readonly (readonly (OsmdMeasure | undefined)[] | undefined)[];
   /** `Sheet.Instruments`, to tell which part a staff belongs to. */
   instruments: readonly unknown[];
   /** Each part's `<transpose>`, in part order. */
@@ -66,6 +66,11 @@ export const tagScoreNoteheads = ({
 }: ScoreNoteTagOptions): void => {
   for (const row of measures) {
     for (const measure of row ?? []) {
+      // A hidden part's staff has no graphical measure in its row.
+      if (!measure) {
+        continue;
+      }
+
       const partIndex = instruments.indexOf(
         measure.ParentStaff?.ParentInstrument,
       );

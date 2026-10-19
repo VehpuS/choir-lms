@@ -182,13 +182,18 @@ export const createMusicXmlRenderer =
         // Marks each drawn notehead with its sounding pitch so a tap can find
         // it; the mark survives the strip copying a run's SVG into its slot.
         const tagNotes = () => {
-          tagScoreNoteheads({
-            instruments: osmd.Sheet.Instruments,
-            measures: osmd.GraphicSheet.MeasureList as unknown as Parameters<
-              typeof tagScoreNoteheads
-            >[0]['measures'],
-            transposes,
-          });
+          try {
+            tagScoreNoteheads({
+              instruments: osmd.Sheet.Instruments,
+              measures: osmd.GraphicSheet.MeasureList as unknown as Parameters<
+                typeof tagScoreNoteheads
+              >[0]['measures'],
+              transposes,
+            });
+          } catch (error) {
+            // Tapping notes is an extra: a score must still draw without it.
+            console.error('Could not mark noteheads for tapping', error);
+          }
         };
         const draw = (
           next: PartSelectionRequest | undefined,

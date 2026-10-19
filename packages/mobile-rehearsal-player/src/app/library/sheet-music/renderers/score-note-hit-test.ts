@@ -54,3 +54,47 @@ export const remainingAudibleMs = (
 ): number => {
   return Math.max(minimum - (releasedAt - pressedAt), 0);
 };
+
+/** The slice of a tagged notehead element needed to build its box. */
+export type TaggedNotehead = {
+  getAttribute(name: string): string | null;
+  getBoundingClientRect(): {
+    bottom: number;
+    left: number;
+    right: number;
+    top: number;
+  };
+};
+
+/**
+ * Boxes for the noteheads whose tag reads as a pitch. The rect's fields are
+ * copied one by one: a browser `DOMRect` keeps them as prototype getters, so
+ * spreading it yields an empty object.
+ */
+export const readNoteheadBoxes = <T extends TaggedNotehead>(
+  heads: readonly T[],
+  attribute: string,
+): (NoteheadBox & { head: T })[] => {
+  return heads.flatMap((head) => {
+    const tag = head.getAttribute(attribute);
+    // `Number(null)` and `Number('')` are 0, which is not a pitch.
+    const midi = tag === null || tag.trim() === '' ? NaN : Number(tag);
+
+    if (!Number.isFinite(midi)) {
+      return [];
+    }
+
+    const rect = head.getBoundingClientRect();
+
+    return [
+      {
+        bottom: rect.bottom,
+        head,
+        left: rect.left,
+        midi,
+        right: rect.right,
+        top: rect.top,
+      },
+    ];
+  });
+};

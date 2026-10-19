@@ -3,8 +3,8 @@ import { useEffect, useRef } from 'react';
 import { appTheme } from '../../../utils/theme';
 import {
   nearestNotehead,
+  readNoteheadBoxes,
   remainingAudibleMs,
-  type NoteheadBox,
 } from '../renderers/score-note-hit-test';
 import { NOTE_MIDI_ATTRIBUTE } from '../renderers/score-note-tags';
 
@@ -97,17 +97,8 @@ export const useScoreNoteTaps = (
       }
 
       const heads = Array.from(host.querySelectorAll(NOTEHEAD_SELECTOR));
-      const boxes = heads.flatMap((head) => {
-        const midi = Number(head.getAttribute(NOTE_MIDI_ATTRIBUTE));
-        const rect = head.getBoundingClientRect();
-
-        return Number.isFinite(midi) ? [{ ...rect, head, midi }] : [];
-      });
-      const hit = nearestNotehead<NoteheadBox & { head: NoteheadElement }>(
-        boxes,
-        event.clientX,
-        event.clientY,
-      );
+      const boxes = readNoteheadBoxes(heads, NOTE_MIDI_ATTRIBUTE);
+      const hit = nearestNotehead(boxes, event.clientX, event.clientY);
 
       if (!hit) {
         return;
