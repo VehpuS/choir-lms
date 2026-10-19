@@ -27,12 +27,12 @@ type LyricsSectionProps = {
   item: Pick<PlayableItem, 'kind' | 'loopId' | 'sourceId'>;
 };
 
-const ADD_LYRICS_PROMPT = 'Add the words to read them while you sing.';
-
 /**
  * The playback screen's Lyrics section: a fixed-height scrollable window on tall screens (only `View` on short ones)
- * and `Edit`, or an `Add lyrics` prompt. Its height depends only on the text
- * size, so changing the playing item does not move what is below it.
+ * and `Edit`, or, with no lyrics yet, just an `Add lyrics` button (no title or
+ * prose, so a track without lyrics takes only a button's height). With lyrics
+ * its height depends only on the text size, so changing between two items
+ * that have them does not move what is below.
  */
 export const LyricsSection = ({ item }: LyricsSectionProps) => {
   const resolution = useLyricsFor(item);
@@ -56,9 +56,9 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
 
   return (
     <View style={styles.section}>
-      <View style={styles.header}>
-        <Text style={styles.kicker}>Lyrics</Text>
-        {model.kind === 'filled' ? (
+      {model.kind === 'filled' ? (
+        <View style={styles.header}>
+          <Text style={styles.kicker}>Lyrics</Text>
           <View style={styles.actions}>
             <OutlinedActionButton label="Edit" onPress={editLyrics} />
             <OutlinedActionButton
@@ -68,8 +68,8 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
               }}
             />
           </View>
-        ) : null}
-      </View>
+        </View>
+      ) : null}
       {model.kind === 'filled' ? (
         <>
           {model.sharedFromName ? (
@@ -90,8 +90,7 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
           ) : null}
         </>
       ) : (
-        <View style={[styles.empty, { minHeight: previewHeight }]}>
-          <Text style={styles.note}>{ADD_LYRICS_PROMPT}</Text>
+        <View style={styles.empty}>
           <OutlinedActionButton
             icon="plus"
             label="Add lyrics"
@@ -110,7 +109,6 @@ const styles = StyleSheet.create({
     gap: appTheme.space.xs,
   },
   empty: {
-    gap: appTheme.space.sm,
     alignItems: 'flex-start',
   },
   header: {

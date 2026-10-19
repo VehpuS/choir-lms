@@ -60,7 +60,7 @@ export const nowPlayingStyles = StyleSheet.create({
     gap: space.lg,
     paddingHorizontal: space.sheetInset,
     paddingTop: space.xl,
-    paddingBottom: space.xxl,
+    paddingBottom: space.md,
   },
   titleBlock: {
     gap: space.xs,
