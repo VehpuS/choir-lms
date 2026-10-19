@@ -167,6 +167,8 @@ export const APP_ICON_GLYPHS = {
   // The piano overlay's open/close control: a row of piano keys, not a
   // computer keyboard.
   'piano-keyboard': regular('PianoKeys'),
+  // The same glyph filled, for the tab bar's piano item while the piano is open.
+  'piano-keyboard-filled': filled('PianoKeys'),
 
   // Account.
   'account-circle-outline': regular('UserCircle'),

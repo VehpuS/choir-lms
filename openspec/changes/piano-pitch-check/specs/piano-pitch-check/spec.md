@@ -2,7 +2,7 @@
 
 ### Requirement: A piano overlay opens over the app without interrupting playback
 
-The system SHALL provide a piano overlay: a non-modal keyboard docked at the bottom of the screen, directly above the mini-player and tab bar when they are shown. It SHALL open and close from a single control, SHALL NOT pause, duck, seek, or otherwise alter the playing track, and SHALL leave the playback transport, waveform, and score usable while open. The overlay SHALL work while the track is playing and while it is paused.
+The system SHALL provide a piano overlay: a non-modal keyboard docked at the bottom of the screen, directly above the mini-player and tab bar when they are shown. It SHALL open and close from a single control, SHALL NOT pause, duck, seek, or otherwise alter the playing track, and SHALL leave the playback transport, waveform, and score usable while open. The overlay SHALL work while the track is playing, while it is paused, and with no track at all (before anything has played, or after playback has ended).
 
 #### Scenario: Open the piano during playback
 

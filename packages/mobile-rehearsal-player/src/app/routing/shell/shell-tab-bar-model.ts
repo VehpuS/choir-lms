@@ -46,3 +46,24 @@ export const getShellTabPresentation = (
     showActiveMark: false,
   };
 };
+
+/**
+ * The piano's tab: a toggle rather than a destination, so it is open or
+ * closed instead of active. Open reads like an active tab (accent colour,
+ * mark, filled glyph); the open piano itself docks above the tab bar.
+ */
+export const getPianoTabPresentation = (
+  isOpen: boolean,
+): ShellTabPresentation => {
+  return isOpen
+    ? {
+        color: ACTIVE_TAB_COLOR,
+        iconName: 'piano-keyboard-filled',
+        showActiveMark: true,
+      }
+    : {
+        color: INACTIVE_TAB_COLOR,
+        iconName: 'piano-keyboard',
+        showActiveMark: false,
+      };
+};

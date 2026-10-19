@@ -4,7 +4,10 @@ import { describe, it } from 'node:test';
 import { resolveAppIconGlyph } from '../../components/app-icon/model.js';
 import { appTheme } from '../../utils/theme.js';
 import { SHELL_DESTINATIONS } from './shell-model.js';
-import { getShellTabPresentation } from './shell-tab-bar-model.js';
+import {
+  getPianoTabPresentation,
+  getShellTabPresentation,
+} from './shell-tab-bar-model.js';
 
 const DESTINATION_KEYS = SHELL_DESTINATIONS.map((destination) => {
   return destination.key;
@@ -44,5 +47,28 @@ describe('shell tab bar model', () => {
     });
 
     assert.equal(new Set(glyphs).size, DESTINATION_KEYS.length);
+  });
+});
+
+describe('piano tab presentation', () => {
+  it('reads like an active tab while the piano is open', () => {
+    const open = getPianoTabPresentation(true);
+
+    assert.equal(open.showActiveMark, true);
+    assert.equal(open.color, appTheme.colors.accentText);
+    assert.equal(resolveAppIconGlyph(open.iconName).weight, 'fill');
+  });
+
+  it('is muted and regular weight, with the same glyph, while closed', () => {
+    const open = getPianoTabPresentation(true);
+    const closed = getPianoTabPresentation(false);
+
+    assert.equal(closed.showActiveMark, false);
+    assert.equal(closed.color, appTheme.colors.textMuted);
+    assert.equal(resolveAppIconGlyph(closed.iconName).weight, 'regular');
+    assert.equal(
+      resolveAppIconGlyph(closed.iconName).glyph,
+      resolveAppIconGlyph(open.iconName).glyph,
+    );
   });
 });
