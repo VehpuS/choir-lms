@@ -3,6 +3,10 @@
 // answered by react-native-web (plain JS, same component API), and the icon
 // library, whose source needs native SVG, is replaced by empty views.
 //
+//
+// react-native-web's TextInput also listens for `selectionchange` on `document`,
+// which node does not have, so a two-method stand-in is provided.
+//
 // Loaded with `--require` by the `test` targets in package.json.
 const Module = require('node:module');
 const path = require('node:path');
@@ -20,3 +24,10 @@ Module._resolveFilename = function (request, ...rest) {
 
   return resolveFilename.call(this, request, ...rest);
 };
+
+if (typeof globalThis.document === 'undefined') {
+  globalThis.document = {
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  };
+}

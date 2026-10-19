@@ -1,6 +1,8 @@
 import {
   PRESET_PART_NAMES,
   hasPartPreference,
+  type SearchSourceKind,
+  type SearchTemplateProblem,
 } from '@org/audio-library-models';
 
 import type { BulkChoicePreferences } from '../../library/selection/bulk-choices';
@@ -70,4 +72,43 @@ export const MY_PARTS_COPY = {
 /** The built-in names not yet on the list, for the quick-add chips. */
 export const buildPartPresetChips = (listed: readonly string[]): string[] => {
   return PRESET_PART_NAMES.filter((name) => !hasPartPreference(listed, name));
+};
+
+export const SEARCH_SOURCES_COPY: Record<
+  SearchSourceKind,
+  { body: string; title: string }
+> = {
+  lyrics: {
+    body: 'Where the lyrics editor searches. The first is the default; the dropdown there picks another.',
+    title: 'Lyrics search',
+  },
+  'sheet-music': {
+    body: 'Where adding sheet music searches. The first is the default; the dropdown there picks another.',
+    title: 'Score search',
+  },
+};
+
+export const SEARCH_SOURCE_FORM_COPY = {
+  addLabel: 'Add a source',
+  customLabel: 'Other…',
+  hint: 'Use {query} for the title and artist together, or {title} and {artist}. The address must start with https.',
+  labelPlaceholder: 'Name',
+  resetLabel: 'Restore defaults',
+  saveLabel: 'Add',
+  templatePlaceholder: 'https://example.com/search?q={query}',
+} as const;
+
+export const SEARCH_TEMPLATE_PROBLEM_MESSAGES: Record<
+  SearchTemplateProblem,
+  string
+> = {
+  'invalid-address': 'That is not a complete web address (no spaces).',
+  'no-placeholder': 'Add {query}, {title}, or {artist} where the search goes.',
+  'not-https': 'The address must start with https.',
+  'too-long': 'That address is too long.',
+};
+
+/** The site a source searches, shown under its name. */
+export const describeSearchSourceHost = (urlTemplate: string): string => {
+  return /^https:\/\/([^/?#]+)/i.exec(urlTemplate)?.[1] ?? '';
 };

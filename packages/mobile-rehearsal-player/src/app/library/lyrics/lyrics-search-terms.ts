@@ -7,7 +7,6 @@ const SEPARATOR_PATTERN = /[_]+/g;
 // "Artist - Title": a dash with spaces on both sides, so "Radio-Video" is not split.
 const ARTIST_TITLE_SEPARATOR_PATTERN = /\s[-–—]\s/;
 const REPEATED_WHITESPACE_PATTERN = /\s+/g;
-const WEB_SEARCH_BASE_URL = 'https://www.google.com/search';
 
 export type LyricsQuerySuggestion = { artist: string; title: string };
 
@@ -39,17 +38,4 @@ export const suggestLyricsQuery = (
 
   // A dash with nothing on one side is not an Artist - Title name.
   return artist && title ? { artist, title } : { artist: '', title: cleaned };
-};
-
-/** The web search for the Title and Artist visible in the lyrics editor. */
-export const buildLyricsWebSearchUrl = (query: {
-  artist: string;
-  title: string;
-}): string => {
-  const terms = [query.title, query.artist, 'lyrics']
-    .map((term) => term.trim().replace(REPEATED_WHITESPACE_PATTERN, ' '))
-    .filter((term) => term.length > 0)
-    .join(' ');
-
-  return `${WEB_SEARCH_BASE_URL}?q=${encodeURIComponent(terms)}`;
 };

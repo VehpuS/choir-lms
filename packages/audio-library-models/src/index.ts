@@ -1,6 +1,7 @@
 export * from './lib/adjusted-entities.ts';
 export * from './lib/drive-source-location.ts';
 export * from './lib/part-selection.ts';
+export * from './lib/search-sources.ts';
 export * from './lib/part-preferences.ts';
 export * from './lib/voice-section.ts';
 export * from './lib/playback-shaping.ts';

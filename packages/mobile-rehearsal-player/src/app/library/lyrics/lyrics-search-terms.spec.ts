@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import {
-  buildLyricsWebSearchUrl,
-  suggestLyricsQuery,
-} from './lyrics-search-terms.js';
+import { suggestLyricsQuery } from './lyrics-search-terms.js';
 
 describe('suggestLyricsQuery', () => {
   it('drops the extension and a leading track number', () => {
@@ -94,24 +91,5 @@ describe('suggestLyricsQuery', () => {
       artist: '',
       title: 'Kyrie',
     });
-  });
-});
-
-describe('buildLyricsWebSearchUrl', () => {
-  it('encodes title and artist and ends with lyrics', () => {
-    assert.equal(
-      buildLyricsWebSearchUrl({
-        title: 'Mezmerize',
-        artist: 'System of a Down',
-      }),
-      'https://www.google.com/search?q=Mezmerize%20System%20of%20a%20Down%20lyrics',
-    );
-  });
-
-  it('omits an empty artist and encodes reserved characters', () => {
-    assert.equal(
-      buildLyricsWebSearchUrl({ title: 'Rock & Roll?', artist: ' ' }),
-      'https://www.google.com/search?q=Rock%20%26%20Roll%3F%20lyrics',
-    );
   });
 });

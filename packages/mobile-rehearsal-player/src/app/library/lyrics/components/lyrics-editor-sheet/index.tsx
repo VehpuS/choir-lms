@@ -10,7 +10,7 @@ import { appTheme } from '../../../../utils/theme';
 import { BottomSheetSurface } from '../../../components/bottom-sheet-surface';
 import { useLibraryFilesConfirmationFlow } from '../../../selection/use-library-files-confirmation-flow';
 import type { LyricsLookupClient } from '../../lyrics-lookup-client';
-import { buildLyricsWebSearchUrl } from '../../lyrics-search-terms';
+import { SearchSourceButton } from '../../../search-sources/search-source-button';
 import { LyricsLookupResults } from './lyrics-lookup-results';
 import { useLyricsLookup } from './use-lyrics-lookup';
 import {
@@ -147,7 +147,6 @@ export const LyricsEditorSheet = ({
         <View style={styles.actionRow}>
           <OutlinedActionButton
             disabled={state.title.trim().length === 0}
-            fill
             icon="magnify"
             isBusy={lookup.status === 'loading'}
             label="Look up"
@@ -155,18 +154,10 @@ export const LyricsEditorSheet = ({
               dispatch({ type: 'lookup-requested' });
             }}
           />
-          <OutlinedActionButton
-            fill
-            icon="open-in-new"
-            label="Search the web"
-            onPress={() => {
-              onOpenWebSearch(
-                buildLyricsWebSearchUrl({
-                  artist: state.artist,
-                  title: state.title,
-                }),
-              );
-            }}
+          <SearchSourceButton
+            kind="lyrics"
+            onOpen={onOpenWebSearch}
+            query={{ artist: state.artist, title: state.title }}
           />
         </View>
 
@@ -226,8 +217,9 @@ export const LyricsEditorSheet = ({
 const TEXT_FIELD_MIN_HEIGHT = 160;
 
 const styles = StyleSheet.create({
+  // Look up, then the search with its dropdown on a row of its own: side by
+  // side the source name was cut off on a phone.
   actionRow: {
-    flexDirection: 'row',
     gap: appTheme.space.xs,
   },
   bodyCopy: {

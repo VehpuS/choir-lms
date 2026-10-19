@@ -19,6 +19,7 @@ import {
   hasStoredBulkChoiceDefault,
 } from './model';
 import { MyPartsSection } from './my-parts-section';
+import { SearchSourcesSection } from './search-sources-section';
 import { settingsNavigationStore } from './settings-navigation-store';
 import { darkScrollbarStyle } from '../../components/dark-scrollbar';
 
@@ -83,6 +84,8 @@ export const SettingsScreen = () => {
           variant="neutral"
         />
         <MyPartsSection />
+        <SearchSourcesSection kind="sheet-music" />
+        <SearchSourcesSection kind="lyrics" />
       </ScrollView>
     </View>
   );

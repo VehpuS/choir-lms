@@ -4,10 +4,8 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { appTheme } from '../../../utils/theme';
-import {
-  buildMuseScoreSearchUrl,
-  type SheetMusicSearchSuggestion,
-} from '../sheet-music-search-terms';
+import { SearchSourceButton } from '../../search-sources/search-source-button';
+import type { SheetMusicSearchSuggestion } from '../sheet-music-search-terms';
 import { resolveLinkAddition, type LinkAddition } from './model';
 
 type AddSheetMusicPanelProps = {
@@ -130,7 +128,7 @@ export const AddSheetMusicPanel = ({
         }}
       />
 
-      <Text style={styles.heading}>Search MuseScore</Text>
+      <Text style={styles.heading}>Search for a score</Text>
       <TextInput
         accessibilityLabel="Title"
         autoCorrect={false}
@@ -149,18 +147,15 @@ export const AddSheetMusicPanel = ({
         style={styles.field}
         value={artist}
       />
-      <OutlinedActionButton
+      <SearchSourceButton
         disabled={title.trim().length === 0}
-        icon="magnify"
-        label="Search MuseScore"
-        onPress={() => {
-          onOpenExternal(buildMuseScoreSearchUrl({ artist, title }));
-        }}
-        variant="accent"
+        kind="sheet-music"
+        onOpen={onOpenExternal}
+        query={{ artist, title }}
       />
       <Text style={styles.copy}>
         Opens your browser. Bring a link or an exported file back here; the app
-        never downloads from MuseScore.
+        never downloads from these sites.
       </Text>
       <OutlinedActionButton label="Back" onPress={onBack} />
     </View>
