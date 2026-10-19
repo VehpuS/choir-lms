@@ -1,3 +1,4 @@
+import { detectFineWindows, isFineAt } from './midi-notation-fine.ts';
 import {
   UNITS_PER_QUARTER,
   UNITS_PER_SIXTEENTH,
@@ -19,6 +20,8 @@ export const DEFAULT_LEGATO_SNAP = 1;
 const LAST_NOTE_SNAP_UNITS = UNITS_PER_SIXTEENTH;
 /** Inside a triplet window a gap is at least a triplet eighth, so only a sliver is closed. */
 const TRIPLET_SNAP_UNITS = 2;
+/** Inside a 32nd window a gap is at least a 32nd (1.5 units), so only a sliver is closed. */
+const FINE_SNAP_UNITS = 1;
 
 export type RawMidiNote = {
   durationTicks: number;
@@ -34,6 +37,8 @@ export type GridEvent = { end: number; pitches: number[]; start: number };
 
 export type QuantizedLine = {
   notes: GridNote[];
+  /** Quarter-note windows (from time zero) that hold 32nds. */
+  fineWindows: Set<number>;
   /** Quarter-note windows (from time zero) that hold triplets. */
   tripletWindows: Set<number>;
 };
@@ -65,13 +70,15 @@ export const quantizeNotes = (
     start: note.ticks * unitsPerTick + options.offset,
   }));
   const tripletWindows = detectTripletWindows(timed);
+  const fineWindows = detectFineWindows(timed, tripletWindows);
   const quantized: GridNote[] = timed
     .map((note) => {
-      const start = snapToGrid(note.start, tripletWindows);
-      const end = snapToGrid(note.end, tripletWindows);
+      const start = snapToGrid(note.start, tripletWindows, fineWindows);
+      const end = snapToGrid(note.end, tripletWindows, fineWindows);
 
       return {
-        end: end > start ? end : nextGridPoint(start, tripletWindows),
+        end:
+          end > start ? end : nextGridPoint(start, tripletWindows, fineWindows),
         pitch: note.pitch,
         start,
       };
@@ -93,14 +100,16 @@ export const quantizeNotes = (
     const gap = target - note.end;
     const maxGap = isTripletAt(note.end, tripletWindows)
       ? Math.min(limit, TRIPLET_SNAP_UNITS)
-      : limit;
+      : isFineAt(note.end, fineWindows)
+        ? Math.min(limit, FINE_SNAP_UNITS)
+        : limit;
 
     if (gap > 0 && gap <= maxGap) {
       note.end = target;
     }
   });
 
-  return { notes: quantized, tripletWindows };
+  return { fineWindows, notes: quantized, tripletWindows };
 };
 
 /** Merges notes with the same start and end into one chord event. */

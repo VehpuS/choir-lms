@@ -14,7 +14,11 @@ const STRAIGHT_VALUES: readonly NoteValue[] = [
   { dotted: false, size: 12, type: 'quarter' },
   { dotted: true, size: 9, type: 'eighth' },
   { dotted: false, size: 6, type: 'eighth' },
+  // The values below only come up inside a 32nd window, where positions are
+  // not whole units: a dotted 16th is 4.5 units and a 32nd 1.5.
+  { dotted: true, size: 4.5, type: '16th' },
   { dotted: false, size: 3, type: '16th' },
+  { dotted: false, size: 1.5, type: '32nd' },
 ];
 
 // The same note values played three in the time of two.

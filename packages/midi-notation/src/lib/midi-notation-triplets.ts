@@ -123,22 +123,31 @@ export const detectTripletWindows = (
   return triplets;
 };
 
+const NO_WINDOWS: ReadonlySet<number> = new Set();
+const UNITS_PER_THIRTY_SECOND = UNITS_PER_SIXTEENTH / 2;
+
 export const stepOfWindow = (
   window: number,
   tripletWindows: ReadonlySet<number>,
+  fineWindows: ReadonlySet<number> = NO_WINDOWS,
 ) => {
-  return tripletWindows.has(window)
-    ? UNITS_PER_TRIPLET_EIGHTH
+  if (tripletWindows.has(window)) {
+    return UNITS_PER_TRIPLET_EIGHTH;
+  }
+
+  return fineWindows.has(window)
+    ? UNITS_PER_THIRTY_SECOND
     : UNITS_PER_SIXTEENTH;
 };
 
-/** Snaps a time to the grid of the window it falls in; window edges are on both grids. */
+/** Snaps a time to the grid of the window it falls in; window edges are on every grid. */
 export const snapToGrid = (
   time: number,
   tripletWindows: ReadonlySet<number>,
+  fineWindows: ReadonlySet<number> = NO_WINDOWS,
 ): number => {
   const window = windowOf(time);
-  const step = stepOfWindow(window, tripletWindows);
+  const step = stepOfWindow(window, tripletWindows, fineWindows);
   const start = window * UNITS_PER_QUARTER;
 
   return start + Math.round((time - start) / step) * step;
@@ -148,8 +157,9 @@ export const snapToGrid = (
 export const nextGridPoint = (
   time: number,
   tripletWindows: ReadonlySet<number>,
+  fineWindows: ReadonlySet<number> = NO_WINDOWS,
 ): number => {
-  return time + stepOfWindow(windowOf(time), tripletWindows);
+  return time + stepOfWindow(windowOf(time), tripletWindows, fineWindows);
 };
 
 export const isTripletAt = (

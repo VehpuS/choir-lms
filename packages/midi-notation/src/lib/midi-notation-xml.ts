@@ -76,10 +76,11 @@ const pieceXml = (
   voice: number,
   fifths: number,
   isPercussion = false,
+  durationScale = 1,
 ) => {
   const isRest = piece.pitches.length === 0;
   const dotXml = piece.dotted ? '<dot/>' : '';
-  const body = `<duration>${piece.size}</duration>`;
+  const body = `<duration>${piece.size * durationScale}</duration>`;
   const tail = `<voice>${voice}</voice><type>${piece.type}</type>${dotXml}${piece.isTuplet ? TIME_MODIFICATION_XML : ''}`;
   const tupletXml = [
     piece.tupletStart ? '<tuplet type="start" bracket="yes" number="1"/>' : '',
@@ -128,6 +129,7 @@ const writeVoiceBarXml = (
   bar: { end: number; start: number },
   voice: number,
   options: {
+    durationScale: number;
     fifths: number;
     isPercussion: boolean;
     tripletWindows: ReadonlySet<number>;
@@ -177,7 +179,13 @@ const writeVoiceBarXml = (
 
   return markTupletBrackets(pieces)
     .map((piece) =>
-      pieceXml(piece, voice, options.fifths, options.isPercussion),
+      pieceXml(
+        piece,
+        voice,
+        options.fifths,
+        options.isPercussion,
+        options.durationScale,
+      ),
     )
     .join('');
 };
@@ -200,8 +208,12 @@ const clefXml = (clef: NotationClef) => {
   return `<clef><sign>${clef.sign}</sign><line>${clef.line}</line>${octaveXml}</clef>`;
 };
 
-const attributesXml = (bar: BarSpec, clef: NotationClef) => {
-  return `<attributes><divisions>${UNITS_PER_QUARTER}</divisions>${keyXml(bar.fifths)}${timeXml(bar)}${clefXml(clef)}</attributes>`;
+const attributesXml = (
+  bar: BarSpec,
+  clef: NotationClef,
+  durationScale: number,
+) => {
+  return `<attributes><divisions>${UNITS_PER_QUARTER * durationScale}</divisions>${keyXml(bar.fifths)}${timeXml(bar)}${clefXml(clef)}</attributes>`;
 };
 
 /** A later measure's attributes: only the key and time signature that changed. */
@@ -230,6 +242,15 @@ export const writePartMeasuresXml = (options: {
   voices: readonly GridEvent[][];
 }): string => {
   let xml = '';
+  // A part with 32nds has positions at half units, which whole divisions can
+  // only hold at twice the resolution; every other part keeps twelve.
+  const durationScale = options.voices.some((events) =>
+    events.some(
+      (event) => !Number.isInteger(event.start) || !Number.isInteger(event.end),
+    ),
+  )
+    ? 2
+    : 1;
 
   options.bars.forEach((bar, barIndex) => {
     const previous = options.bars[barIndex - 1];
@@ -237,7 +258,7 @@ export const writePartMeasuresXml = (options: {
 
     measure += previous
       ? changedAttributesXml(previous, bar)
-      : attributesXml(bar, options.clef);
+      : attributesXml(bar, options.clef, durationScale);
 
     let hasWrittenVoice = false;
 
@@ -253,10 +274,11 @@ export const writePartMeasuresXml = (options: {
       }
 
       if (hasWrittenVoice) {
-        measure += `<backup><duration>${bar.end - bar.start}</duration></backup>`;
+        measure += `<backup><duration>${(bar.end - bar.start) * durationScale}</duration></backup>`;
       }
 
       measure += writeVoiceBarXml(events, bar, index + 1, {
+        durationScale,
         fifths: bar.fifths,
         isPercussion: options.isPercussion ?? false,
         tripletWindows: options.tripletWindows,
