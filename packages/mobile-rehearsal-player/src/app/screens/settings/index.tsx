@@ -11,20 +11,14 @@ import {
   bulkChoicePreferencesStore,
   useBulkChoicePreferences,
 } from '../../library/selection/bulk-choice-preferences-store';
-import { InteractionChip } from '../../library/components/interaction-chip';
-import {
-  updateVoicePartPreferences,
-  useVoicePartPreferences,
-} from '../../library/sheet-music/voice-part/voice-part-preferences-store';
 import { scrollGutterStyles } from '../../components/scroll-gutter';
 import { appTheme } from '../../utils/theme';
 import {
   SETTINGS_COPY,
   SETTINGS_PREFERENCE_ROWS,
-  VOICE_PART_COPY,
-  buildVoicePartOptions,
   hasStoredBulkChoiceDefault,
 } from './model';
+import { MyPartsSection } from './my-parts-section';
 import { settingsNavigationStore } from './settings-navigation-store';
 import { darkScrollbarStyle } from '../../components/dark-scrollbar';
 
@@ -32,7 +26,6 @@ import { darkScrollbarStyle } from '../../components/dark-scrollbar';
 // its prompt is never invisible (design "Bulk action preferences").
 export const SettingsScreen = () => {
   const preferences = useBulkChoicePreferences();
-  const voicePreferences = useVoicePartPreferences();
   const screenRef = useRef<View>(null);
 
   // An overlay needs its own way out and its own focus: Escape or the back
@@ -89,45 +82,13 @@ export const SettingsScreen = () => {
           }}
           variant="neutral"
         />
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {VOICE_PART_COPY.sectionTitle}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.rowTitle}>{VOICE_PART_COPY.title}</Text>
-          <Text style={styles.rowBody}>{VOICE_PART_COPY.body}</Text>
-          <View
-            accessibilityLabel={VOICE_PART_COPY.title}
-            accessibilityRole="radiogroup"
-            style={styles.chips}
-          >
-            {buildVoicePartOptions(voicePreferences.defaultVoice).map(
-              (option) => (
-                <InteractionChip
-                  accessibilitySelected={option.isSelected}
-                  key={option.label}
-                  label={option.label}
-                  onPress={() =>
-                    updateVoicePartPreferences({ defaultVoice: option.value })
-                  }
-                  variant={option.isSelected ? 'selected' : 'passive'}
-                />
-              ),
-            )}
-          </View>
-        </View>
+        <MyPartsSection />
       </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: appTheme.space.xs,
-  },
   content: {
     gap: appTheme.space.lg,
     paddingBottom: appTheme.space.xl,

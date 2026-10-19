@@ -1,6 +1,6 @@
 import type { ScorePart } from './score-parts.ts';
 import type { SheetMusicPartSelection } from './source-sheet-music.ts';
-import { partsForVoiceSection, type VoiceSection } from './voice-section.ts';
+import { matchPreferredParts } from './part-preferences.ts';
 
 export type PartSelectionNotice =
   /** `vocal` was chosen but no part is recognized as vocal, so all are shown. */
@@ -9,12 +9,13 @@ export type PartSelectionNotice =
   | 'saved-parts-missing';
 
 /**
- * What the viewer asks for: a saved selection, or `{ preferVoice }` for a
- * source that has none of its own. The second is never stored.
+ * What the viewer asks for: a saved selection, or `{ preferParts }` for a
+ * source that has none of its own: the singer's ordered part names, then the
+ * part last viewed. The second form is never stored.
  */
 export type PartSelectionRequest =
   | SheetMusicPartSelection
-  | { preferVoice: VoiceSection };
+  | { learnedPart?: string; preferParts: readonly string[] };
 
 export type ResolvedPartSelection = {
   /** What is actually in effect after any fallback. */
@@ -53,14 +54,19 @@ const resolveVocal = (parts: readonly ScorePart[]): ResolvedPartSelection => {
   };
 };
 
-// A preferred voice that the file lacks (or a score whose staves hold several
-// voices) falls back to `vocal` without a notice: the singer asked for nothing
-// on this source, so there is nothing to explain.
-const resolvePreferredVoice = (
+// A preference the file cannot satisfy (or one that would show every staff)
+// falls back to `vocal` without a notice: the singer asked for nothing on this
+// source, so there is nothing to explain.
+const resolvePreferredParts = (
   parts: readonly ScorePart[],
-  voice: VoiceSection,
+  names: readonly string[],
+  learnedPart: string | undefined,
 ): ResolvedPartSelection => {
-  const visible = partsForVoiceSection(parts, voice);
+  const listed = matchPreferredParts(parts, names);
+  const visible =
+    listed.length > 0 || learnedPart === undefined
+      ? listed
+      : matchPreferredParts(parts, [learnedPart]);
 
   if (visible.length === 0 || visible.length === parts.length) {
     return { ...resolveVocal(parts), notices: [] };
@@ -82,8 +88,12 @@ export const resolvePartSelection = (
     return { effective: 'all', notices: [], visible: [...parts] };
   }
 
-  if (typeof selection === 'object' && 'preferVoice' in selection) {
-    return resolvePreferredVoice(parts, selection.preferVoice);
+  if (typeof selection === 'object' && 'preferParts' in selection) {
+    return resolvePreferredParts(
+      parts,
+      selection.preferParts,
+      selection.learnedPart,
+    );
   }
 
   if (selection === undefined || selection === 'vocal') {

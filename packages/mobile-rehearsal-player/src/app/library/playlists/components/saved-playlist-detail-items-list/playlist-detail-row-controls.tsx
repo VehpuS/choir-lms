@@ -1,17 +1,15 @@
-import { useMemo, useRef } from 'react';
-import { PanResponder, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
-import { AppIcon } from '../../../../components/app-icon';
 import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
-import { DragHandle } from '../../../../components/drag-handle';
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
+import {
+  ReorderControls,
+  useDragReorder,
+} from '../../../../components/reorderable-list';
 import { RowMetaLine } from '../../../../components/row-meta-line';
 import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
 import { savedPlaylistSectionStyles as styles } from '../../../components/saved-playlist-section-styles';
-import { PLAYLIST_SECONDARY_TEXT } from '../../../components/saved-playlist-section-styles/shared';
 import { getPlaylistDetailRowControlState } from './playlist-detail-row-controls-model';
-
-const PLAYLIST_ROW_STEP_ICON_SIZE = 12;
 
 export const PlaylistDetailRowControls = (props: {
   entryId: string;
@@ -45,9 +43,6 @@ export const PlaylistDetailRowControls = (props: {
   playbackToggleDisabled: boolean;
   playbackToggleLabel: string;
 }) => {
-  const dragAnchorMoveYRef = useRef<number | null>(null);
-  const hasMovedDuringDragRef = useRef(false);
-  const stepDistance = Math.max(props.itemHeight * 0.82, 44);
   const controlState = getPlaylistDetailRowControlState({
     entryId: props.entryId,
     entryTitle: props.entryTitle,
@@ -60,100 +55,17 @@ export const PlaylistDetailRowControls = (props: {
     playbackToggleLabel: props.playbackToggleLabel,
   });
 
-  const panResponder = useMemo(() => {
-    return PanResponder.create({
-      onStartShouldSetPanResponder: () => {
-        return controlState.canDragReorder;
-      },
-      onStartShouldSetPanResponderCapture: () => {
-        return controlState.canDragReorder;
-      },
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return controlState.canDragReorder && Math.abs(gestureState.dy) > 5;
-      },
-      onMoveShouldSetPanResponderCapture: (_, gestureState) => {
-        return controlState.canDragReorder && Math.abs(gestureState.dy) > 5;
-      },
-      onPanResponderTerminationRequest: () => {
-        return false;
-      },
-      onShouldBlockNativeResponder: () => {
-        return true;
-      },
-      onPanResponderGrant: () => {
-        props.onReorderDragActiveChange(true);
-        dragAnchorMoveYRef.current = null;
-        hasMovedDuringDragRef.current = false;
-      },
-      onPanResponderMove: (_, gestureState) => {
-        props.onReorderDragMove(gestureState.moveY);
-
-        if (!controlState.canDragReorder) {
-          return;
-        }
-
-        const effectiveMoveY =
-          gestureState.moveY + props.getCurrentScrollOffsetY();
-
-        if (dragAnchorMoveYRef.current === null) {
-          dragAnchorMoveYRef.current = effectiveMoveY;
-          return;
-        }
-
-        let delta = effectiveMoveY - dragAnchorMoveYRef.current;
-
-        while (Math.abs(delta) >= stepDistance) {
-          const direction = delta > 0 ? 1 : -1;
-          const currentIndex = props.getEntryIndex();
-
-          if (currentIndex < 0) {
-            break;
-          }
-
-          const nextIndex = Math.min(
-            Math.max(currentIndex + direction, 0),
-            props.itemCount - 1,
-          );
-
-          if (nextIndex === currentIndex) {
-            break;
-          }
-
-          props.onMoveItem(currentIndex, nextIndex);
-          hasMovedDuringDragRef.current = true;
-          dragAnchorMoveYRef.current += direction * stepDistance;
-          delta = effectiveMoveY - dragAnchorMoveYRef.current;
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        props.onReorderDragActiveChange(false);
-        props.onReorderDragMove(gestureState.moveY);
-
-        if (hasMovedDuringDragRef.current) {
-          props.onCommitReorder();
-        }
-
-        dragAnchorMoveYRef.current = null;
-        hasMovedDuringDragRef.current = false;
-      },
-      onPanResponderTerminate: () => {
-        props.onReorderDragActiveChange(false);
-        dragAnchorMoveYRef.current = null;
-        hasMovedDuringDragRef.current = false;
-      },
-    });
-  }, [
-    controlState.canDragReorder,
-    props.getCurrentScrollOffsetY,
-    props.getEntryIndex,
-    props.itemCount,
-    props.itemHeight,
-    props.onCommitReorder,
-    props.onMoveItem,
-    props.onReorderDragActiveChange,
-    props.onReorderDragMove,
-    stepDistance,
-  ]);
+  const { panHandlers } = useDragReorder({
+    canDrag: controlState.canDragReorder,
+    getIndex: props.getEntryIndex,
+    getScrollOffsetY: props.getCurrentScrollOffsetY,
+    itemCount: props.itemCount,
+    itemHeight: props.itemHeight,
+    onActiveChange: props.onReorderDragActiveChange,
+    onCommit: props.onCommitReorder,
+    onDragMove: props.onReorderDragMove,
+    onMove: props.onMoveItem,
+  });
 
   return (
     <>
@@ -200,63 +112,15 @@ export const PlaylistDetailRowControls = (props: {
             text={props.metadataLabel}
           />
         </Pressable>
-        <View style={styles.playlistRowStepper}>
-          <Pressable
-            accessibilityLabel={`Move ${props.entryTitle} up`}
-            accessibilityRole="button"
-            disabled={props.isMutating || !controlState.canMoveUp}
-            onPress={() => {
-              props.onMoveItem(props.index, props.index - 1, {
-                persist: true,
-              });
-            }}
-            style={({ pressed }) => [
-              styles.playlistRowStepperButton,
-              pressed && !props.isMutating && controlState.canMoveUp
-                ? styles.actionButtonPressed
-                : undefined,
-              props.isMutating || !controlState.canMoveUp
-                ? styles.actionButtonDisabled
-                : undefined,
-            ]}
-          >
-            <AppIcon
-              color={PLAYLIST_SECONDARY_TEXT}
-              name="chevron-up"
-              size={PLAYLIST_ROW_STEP_ICON_SIZE}
-            />
-          </Pressable>
-          <View style={styles.playlistRowStepperDivider} />
-          <Pressable
-            accessibilityLabel={`Move ${props.entryTitle} down`}
-            accessibilityRole="button"
-            disabled={props.isMutating || !controlState.canMoveDown}
-            onPress={() => {
-              props.onMoveItem(props.index, props.index + 1, {
-                persist: true,
-              });
-            }}
-            style={({ pressed }) => [
-              styles.playlistRowStepperButton,
-              pressed && !props.isMutating && controlState.canMoveDown
-                ? styles.actionButtonPressed
-                : undefined,
-              props.isMutating || !controlState.canMoveDown
-                ? styles.actionButtonDisabled
-                : undefined,
-            ]}
-          >
-            <AppIcon
-              color={PLAYLIST_SECONDARY_TEXT}
-              name="chevron-down"
-              size={PLAYLIST_ROW_STEP_ICON_SIZE}
-            />
-          </Pressable>
-        </View>
-        <DragHandle
-          accessibilityLabel={`Drag ${props.entryTitle} to reorder`}
+        <ReorderControls
           canDrag={controlState.canDragReorder}
-          panHandlers={panResponder.panHandlers}
+          disabled={props.isMutating}
+          index={props.index}
+          itemCount={props.itemCount}
+          label={props.entryTitle}
+          // Arrows save at once; a drag saves when it is released.
+          onMove={(from, to) => props.onMoveItem(from, to, { persist: true })}
+          panHandlers={panHandlers}
         />
         <OverflowMenuTrigger
           accessibilityLabel={`More actions for ${props.entryTitle}`}

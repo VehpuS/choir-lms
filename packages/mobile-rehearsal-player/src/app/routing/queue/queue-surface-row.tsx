@@ -18,7 +18,7 @@ import { appTheme } from '../../utils/theme';
 import type { UpNextSurfaceSummary } from '../shell/shell-model';
 import { getQueueRowPresentation } from './queue-surface-row-model';
 import { queueStyles as styles } from './styles';
-import { useQueueRowDrag } from './use-queue-row-drag';
+import { useDragReorder } from '../../components/reorderable-list';
 
 export type QueueSurfaceRowProps = {
   item: UpNextSurfaceSummary['items'][number];
@@ -90,12 +90,12 @@ export const QueueSurfaceRow = ({
     playbackToggleLabel,
     title: item.title,
   });
-  const { onRowLayout, panHandlers } = useQueueRowDrag({
-    canDragReorder,
+  const { onRowLayout, panHandlers } = useDragReorder({
+    canDrag: canDragReorder,
+    getIndex: resolveItemIndex,
     itemCount,
-    onMoveItem,
-    onSetDragActive,
-    resolveItemIndex,
+    onActiveChange: onSetDragActive,
+    onMove: onMoveItem,
   });
 
   return (

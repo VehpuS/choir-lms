@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import { DEFAULT_BULK_CHOICE_PREFERENCES } from '../../library/selection/bulk-choices.js';
 import {
   SETTINGS_PREFERENCE_ROWS,
-  buildVoicePartOptions,
+  buildPartPresetChips,
   hasStoredBulkChoiceDefault,
 } from './model.js';
 
@@ -36,26 +36,26 @@ describe('settings model', () => {
   });
 });
 
-describe('buildVoicePartOptions', () => {
-  it('lists Automatic first, then each section, selecting Automatic with no default', () => {
-    const options = buildVoicePartOptions(undefined);
-
-    assert.deepEqual(
-      options.map(({ label }) => label),
-      ['Automatic', 'Soprano', 'Alto', 'Tenor', 'Baritone', 'Bass'],
-    );
-    assert.deepEqual(
-      options.filter(({ isSelected }) => isSelected).map(({ label }) => label),
-      ['Automatic'],
-    );
+describe('buildPartPresetChips', () => {
+  it('offers every preset while the list is empty', () => {
+    assert.deepEqual(buildPartPresetChips([]), [
+      'Soprano',
+      'Mezzo-soprano',
+      'Alto',
+      'Tenor',
+      'Baritone',
+      'Bass',
+      'Beatbox',
+    ]);
   });
 
-  it('selects only the stored default', () => {
-    assert.deepEqual(
-      buildVoicePartOptions('tenor')
-        .filter(({ isSelected }) => isSelected)
-        .map(({ value }) => value),
-      ['tenor'],
-    );
+  it('leaves out presets already listed, however they were typed', () => {
+    assert.deepEqual(buildPartPresetChips(['alto', 'Mezzo Soprano', 'Lead']), [
+      'Soprano',
+      'Tenor',
+      'Baritone',
+      'Bass',
+      'Beatbox',
+    ]);
   });
 });

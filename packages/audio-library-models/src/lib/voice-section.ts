@@ -1,29 +1,42 @@
 import type { ScorePart } from './score-parts.ts';
 
-export type VoiceSection = 'soprano' | 'alto' | 'tenor' | 'baritone' | 'bass';
+export type VoiceSection =
+  | 'soprano'
+  | 'mezzo'
+  | 'alto'
+  | 'tenor'
+  | 'baritone'
+  | 'bass'
+  | 'beatbox';
 
 export const VOICE_SECTIONS: readonly VoiceSection[] = [
   'soprano',
+  'mezzo',
   'alto',
   'tenor',
   'baritone',
   'bass',
+  'beatbox',
 ];
 
 export const VOICE_SECTION_LABELS: Record<VoiceSection, string> = {
   soprano: 'Soprano',
+  mezzo: 'Mezzo-soprano',
   alto: 'Alto',
   tenor: 'Tenor',
   baritone: 'Baritone',
   bass: 'Bass',
+  beatbox: 'Beatbox',
 };
 
 const SECTION_WORD_PATTERNS: ReadonlyArray<readonly [VoiceSection, RegExp]> = [
   ['soprano', /\b(soprano|soprani|sopr?)\b/],
+  ['mezzo', /\b(mezzos?)\b/],
   ['alto', /\b(alto|alti|alt|contralto)\b/],
   ['tenor', /\b(tenor|tenori|ten)\b/],
   ['baritone', /\b(baritone|bari|bar)\b/],
   ['bass', /\b(bass|basso|bassi)\b/],
+  ['beatbox', /\b(beat ?box\w*|vocal percussion)\b/],
 ];
 // A bare voice letter as in `S`, `A.`, `T 2`; combinations such as `S/A` do not match.
 const VOICE_LETTER_PATTERN = /^([satb])[\s.]*\d*$/;
@@ -35,6 +48,8 @@ const VOICE_LETTER_SECTIONS: Record<string, VoiceSection> = {
 };
 const NON_LETTER_RUN_PATTERN = /[^\p{L}\p{N}\s./&,+-]+/gu;
 const SEPARATOR_RUN_PATTERN = /[_\-/&,+]+/g;
+// `Mezzo-soprano` names one section, not two.
+const MEZZO_SOPRANO_PATTERN = /\bmezzo\s?soprano\b/g;
 
 export const parseVoiceSection = (value: unknown): VoiceSection | undefined => {
   return VOICE_SECTIONS.find((section) => section === value);
@@ -55,7 +70,9 @@ const sectionsInClue = (clue: string): VoiceSection[] => {
     return [VOICE_LETTER_SECTIONS[letter[1]]];
   }
 
-  const words = clue.replace(SEPARATOR_RUN_PATTERN, ' ');
+  const words = clue
+    .replace(SEPARATOR_RUN_PATTERN, ' ')
+    .replace(MEZZO_SOPRANO_PATTERN, 'mezzo');
 
   return SECTION_WORD_PATTERNS.filter(([, pattern]) => pattern.test(words)).map(
     ([section]) => section,

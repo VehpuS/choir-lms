@@ -139,9 +139,9 @@ describe('resolvePartSelection', () => {
   });
 });
 
-describe('resolvePartSelection with a preferred voice', () => {
+describe('resolvePartSelection with preferred parts', () => {
   it("shows only the singer's line when the file has it", () => {
-    const resolved = resolvePartSelection(satb, { preferVoice: 'alto' });
+    const resolved = resolvePartSelection(satb, { preferParts: ['Alto'] });
 
     assert.equal(resolved.effective, 'custom');
     assert.deepEqual(
@@ -151,8 +151,34 @@ describe('resolvePartSelection with a preferred voice', () => {
     assert.deepEqual(resolved.notices, []);
   });
 
-  it('falls back to the vocal parts, with no notice, when the file lacks the voice', () => {
-    const resolved = resolvePartSelection(pianoVocal, { preferVoice: 'tenor' });
+  it('tries the learned part when no listed name matches', () => {
+    const resolved = resolvePartSelection(satb, {
+      learnedPart: 'Tenor',
+      preferParts: ['Lead'],
+    });
+
+    assert.deepEqual(
+      resolved.visible.map((part) => part.name),
+      ['Tenor'],
+    );
+  });
+
+  it('prefers a listed name over the learned part', () => {
+    const resolved = resolvePartSelection(satb, {
+      learnedPart: 'Tenor',
+      preferParts: ['Bass'],
+    });
+
+    assert.deepEqual(
+      resolved.visible.map((part) => part.name),
+      ['Bass'],
+    );
+  });
+
+  it('falls back to the vocal parts, with no notice, when nothing matches', () => {
+    const resolved = resolvePartSelection(pianoVocal, {
+      preferParts: ['Tenor'],
+    });
 
     assert.equal(resolved.effective, 'vocal');
     assert.deepEqual(
@@ -163,7 +189,7 @@ describe('resolvePartSelection with a preferred voice', () => {
   });
 
   it('falls back without a notice when no part is recognized as vocal', () => {
-    const resolved = resolvePartSelection(noVoices, { preferVoice: 'bass' });
+    const resolved = resolvePartSelection(noVoices, { preferParts: ['Bass'] });
 
     assert.equal(resolved.effective, 'all');
     assert.deepEqual(resolved.notices, []);

@@ -1,22 +1,22 @@
 import { useSyncExternalStore } from 'react';
 
 import {
-  DEFAULT_VOICE_PART_PREFERENCES,
-  type VoicePartPreferences,
-} from './voice-part-preferences';
+  DEFAULT_MY_PARTS_PREFERENCES,
+  type MyPartsPreferences,
+} from './my-parts-model';
 import {
-  persistVoicePartPreferences,
-  restoreVoicePartPreferences,
-} from './voice-part-preferences-storage';
+  persistMyPartsPreferences,
+  restoreMyPartsPreferences,
+} from './my-parts-storage';
 
 // One device-wide copy shared by the viewer and Settings, so a change in one
 // shows in the other at once (same pattern as the lyrics text size).
-let current: VoicePartPreferences = DEFAULT_VOICE_PART_PREFERENCES;
+let current: MyPartsPreferences = DEFAULT_MY_PARTS_PREFERENCES;
 let hasRestored = false;
 let hasChangedBeforeRestore = false;
 const listeners = new Set<() => void>();
 
-const publish = (next: VoicePartPreferences) => {
+const publish = (next: MyPartsPreferences) => {
   current = next;
   listeners.forEach((listener) => {
     listener();
@@ -28,7 +28,7 @@ const subscribe = (listener: () => void) => {
 
   if (!hasRestored) {
     hasRestored = true;
-    void restoreVoicePartPreferences().then((restored) => {
+    void restoreMyPartsPreferences().then((restored) => {
       // A change made while the read was pending must not be overwritten by it.
       if (!hasChangedBeforeRestore) {
         publish(restored);
@@ -41,24 +41,17 @@ const subscribe = (listener: () => void) => {
   };
 };
 
-export const updateVoicePartPreferences = (
-  change: Partial<VoicePartPreferences>,
+export const updateMyPartsPreferences = (
+  change: Partial<MyPartsPreferences>,
 ) => {
   hasChangedBeforeRestore = true;
 
   const next = { ...current, ...change };
 
-  if (
-    next.defaultVoice === current.defaultVoice &&
-    next.latestVoice === current.latestVoice
-  ) {
-    return;
-  }
-
   publish(next);
-  void persistVoicePartPreferences(next);
+  void persistMyPartsPreferences(next);
 };
 
-export const useVoicePartPreferences = (): VoicePartPreferences => {
+export const useMyPartsPreferences = (): MyPartsPreferences => {
   return useSyncExternalStore(subscribe, () => current);
 };

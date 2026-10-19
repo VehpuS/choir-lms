@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
 import { InteractionChip } from '../../components/interaction-chip';
-import type { MyPartChip } from '../voice-part/voice-part-preferences';
+import type { MyPartChip } from '../my-parts/my-parts-model';
 import { buildPartChips, describePartNotices } from './model';
 import type { ScoreInfo } from './sheet-music-surface-types';
 

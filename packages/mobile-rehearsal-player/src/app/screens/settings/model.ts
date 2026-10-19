@@ -1,7 +1,6 @@
 import {
-  VOICE_SECTIONS,
-  VOICE_SECTION_LABELS,
-  type VoiceSection,
+  PRESET_PART_NAMES,
+  hasPartPreference,
 } from '@org/audio-library-models';
 
 import type { BulkChoicePreferences } from '../../library/selection/bulk-choices';
@@ -57,31 +56,18 @@ export const hasStoredBulkChoiceDefault = (
   );
 };
 
-export const VOICE_PART_COPY = {
-  automaticLabel: 'Automatic',
-  body: 'Sheet music opens on this part when a score has several. Automatic follows the part you viewed last. A part you picked for a piece stays as you left it.',
-  title: 'Your voice part',
+export const MY_PARTS_COPY = {
+  addLabel: 'Add a part',
+  addPlaceholder: 'Part name',
+  body: 'Sheet music opens on the first part in this list that your score has. A whole name is tried first, then a close match, so "Alto" also finds "Alto 2". With no parts listed, it follows the part you viewed last. A part you picked for a piece stays as you left it.',
+  customLabel: 'Other…',
+  emptyLabel: 'Automatic',
+  saveLabel: 'Add',
   sectionTitle: 'Sheet music',
+  title: 'Your parts',
 } as const;
 
-export type VoicePartOption = {
-  isSelected: boolean;
-  label: string;
-  value: VoiceSection | undefined;
+/** The built-in names not yet on the list, for the quick-add chips. */
+export const buildPartPresetChips = (listed: readonly string[]): string[] => {
+  return PRESET_PART_NAMES.filter((name) => !hasPartPreference(listed, name));
 };
-
-/** `Automatic` first, then each choir section; the stored default is selected. */
-export const buildVoicePartOptions = (
-  defaultVoice: VoiceSection | undefined,
-): VoicePartOption[] => [
-  {
-    isSelected: defaultVoice === undefined,
-    label: VOICE_PART_COPY.automaticLabel,
-    value: undefined,
-  },
-  ...VOICE_SECTIONS.map((section) => ({
-    isSelected: defaultVoice === section,
-    label: VOICE_SECTION_LABELS[section],
-    value: section,
-  })),
-];

@@ -40,7 +40,13 @@ describe('classifyVoiceSection', () => {
     ['SATB', undefined],
     ['Voice', undefined],
     ['Track 1', undefined],
-    ['Beatbox', undefined],
+    ['Mezzo-soprano', 'mezzo'],
+    ['Mezzo Soprano 2', 'mezzo'],
+    ['Mezzo', 'mezzo'],
+    ['Beatbox', 'beatbox'],
+    ['Vocal Percussion', 'beatbox'],
+    ['Lead', undefined],
+    ['Solo', undefined],
   ];
 
   for (const [name, expected] of cases) {

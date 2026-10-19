@@ -23,14 +23,13 @@ import {
 import { PartChips, PartNotices } from './part-chips';
 import {
   buildMyPartChip,
-  resolvePreferredVoice,
+  learnPartName,
   resolveRequestedSelection,
-  singleVisibleVoice,
-} from '../voice-part/voice-part-preferences';
+} from '../my-parts/my-parts-model';
 import {
-  updateVoicePartPreferences,
-  useVoicePartPreferences,
-} from '../voice-part/voice-part-preferences-store';
+  updateMyPartsPreferences,
+  useMyPartsPreferences,
+} from '../my-parts/my-parts-store';
 import { SourceChips } from './source-chips';
 import { useSheetMusicDocument } from './use-sheet-music-document';
 import { ViewerBody, type ViewerOutcome } from './viewer-body';
@@ -96,8 +95,7 @@ export const SheetMusicViewer = ({
     outcome: ViewerOutcome;
   }>();
   const source = viewable.find(({ id }) => id === sourceId) ?? viewable[0];
-  const voicePreferences = useVoicePartPreferences();
-  const preferredVoice = resolvePreferredVoice(voicePreferences);
+  const myParts = useMyPartsPreferences();
   const ownSelection = source
     ? source.id in chosen
       ? chosen[source.id]
@@ -106,8 +104,8 @@ export const SheetMusicViewer = ({
   // Memoized: the surface redraws whenever the selection's identity changes,
   // so a fresh `{ preferVoice }` object per render would redraw forever.
   const selection = useMemo(
-    () => resolveRequestedSelection(ownSelection, preferredVoice),
-    [ownSelection, preferredVoice],
+    () => resolveRequestedSelection(ownSelection, myParts),
+    [ownSelection, myParts],
   );
 
   // The loader reads the token when a request starts, so a Drive reconnection
@@ -172,13 +170,13 @@ export const SheetMusicViewer = ({
     onChangePartSelection(source.id, next);
 
     // Using the chips is what teaches the app a singer's line: remember it when
-    // exactly one section is left showing.
-    const learned = singleVisibleVoice(
+    // exactly one part is left showing.
+    const learned = learnPartName(
       resolvePartSelection(info.parts, next).visible,
     );
 
     if (learned) {
-      updateVoicePartPreferences({ latestVoice: learned });
+      updateMyPartsPreferences({ latestPart: learned });
     }
   };
 
@@ -192,13 +190,10 @@ export const SheetMusicViewer = ({
   const partChips = hasParts ? (
     <PartChips
       info={info}
-      myPart={buildMyPartChip(
-        info.resolved.visible,
-        voicePreferences.defaultVoice,
-      )}
+      myPart={buildMyPartChip(info.resolved.visible, myParts.parts)}
       onPressChip={handleChip}
       onPressMyPart={(chip) =>
-        updateVoicePartPreferences({ defaultVoice: chip.nextDefault })
+        updateMyPartsPreferences({ parts: chip.nextParts })
       }
     />
   ) : null;

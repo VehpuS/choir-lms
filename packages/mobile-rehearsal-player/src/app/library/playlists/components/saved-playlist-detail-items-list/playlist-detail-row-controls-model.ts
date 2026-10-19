@@ -13,8 +13,6 @@ export type PlaylistDetailRowMenuActionModel = Pick<
 
 export type PlaylistDetailRowControlState = {
   canDragReorder: boolean;
-  canMoveDown: boolean;
-  canMoveUp: boolean;
   isPlaybackButtonDisabled: boolean;
   menuActions: PlaylistDetailRowMenuActionModel[];
   playbackAction: SavedPlaylistDetailPlaybackAction;
@@ -48,8 +46,6 @@ export const getPlaylistDetailRowControlState = (options: {
   playbackToggleDisabled: boolean;
   playbackToggleLabel: string;
 }): PlaylistDetailRowControlState => {
-  const canMoveUp = options.index > 0;
-  const canMoveDown = options.index < options.itemCount - 1;
   const canMoveToPosition = options.itemCount > 1;
   const canDragReorder = canMoveToPosition && !options.isMutating;
   const playbackAction = getSavedPlaylistDetailPlaybackAction({
@@ -60,8 +56,6 @@ export const getPlaylistDetailRowControlState = (options: {
 
   return {
     canDragReorder,
-    canMoveDown,
-    canMoveUp,
     isPlaybackButtonDisabled:
       options.isMutating ||
       options.playbackToggleDisabled ||

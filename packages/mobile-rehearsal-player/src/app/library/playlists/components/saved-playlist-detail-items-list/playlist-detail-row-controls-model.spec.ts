@@ -20,8 +20,6 @@ describe('playlist detail row controls model', () => {
     });
 
     assert.equal(state.canDragReorder, true);
-    assert.equal(state.canMoveUp, true);
-    assert.equal(state.canMoveDown, true);
     assert.equal(state.isPlaybackButtonDisabled, false);
     assert.equal(state.rowStatusLabel, 'Ready');
     assert.deepEqual(state.playbackAction, {
@@ -101,8 +99,6 @@ describe('playlist detail row controls model', () => {
     });
 
     assert.equal(state.canDragReorder, false);
-    assert.equal(state.canMoveUp, false);
-    assert.equal(state.canMoveDown, false);
     assert.equal(state.isPlaybackButtonDisabled, true);
     assert.equal(state.rowStatusLabel, 'Unavailable');
     assert.deepEqual(
