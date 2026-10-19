@@ -1,4 +1,5 @@
 import {
+  extractScoreBars,
   extractScoreParts,
   resolvePartSelection,
   type ResolvedPartSelection,
@@ -7,6 +8,13 @@ import {
 } from '@org/audio-library-models';
 
 import { resolveVisibilityFlags } from './part-visibility';
+import {
+  createSegmentedStrip,
+  type SegmentedStrip,
+  type StripHost,
+  type StripStage,
+} from './segmented-strip.web';
+import { shouldSegment } from './strip-segments';
 import type { MusicXmlContainer } from './musicxml-renderer';
 import type {
   MusicXmlRenderer,
@@ -22,6 +30,7 @@ type OsmdInstance = {
   clear(): void;
   load(musicXml: string): Promise<unknown>;
   render(): void;
+  setOptions(options: Record<string, unknown>): void;
   zoom: number;
 };
 type OsmdModule = {
@@ -41,8 +50,15 @@ type DrawnSvg = {
   style: { display: string };
 };
 type Measurable = { querySelector(selector: string): DrawnSvg | null };
+type StageBuilder = {
+  ownerDocument: { createElement(tag: 'div'): StripStage };
+};
 
 const DEFAULT_ZOOM = 1;
+// Where a long score is drawn before its runs are copied into the strip: laid
+// out like a normal element but out of sight.
+const STAGE_STYLE =
+  'position:absolute;left:-100000px;top:0;width:4000px;visibility:hidden;';
 
 // An inline SVG sits on its line's baseline, which leaves a few pixels under it
 // that make a score fitted exactly to the height scroll vertically.
@@ -77,12 +93,23 @@ export const createMusicXmlRenderer =
         const { OpenSheetMusicDisplay } =
           (await import('opensheetmusicdisplay')) as unknown as OsmdModule;
         const host = container as { innerHTML: string };
+        const totalBars = extractScoreBars(musicXml).barCount;
+        // A long score is drawn in runs of bars, only those near the viewport;
+        // an ordinary arrangement is one drawing, as it always was.
+        const stage = shouldSegment(totalBars)
+          ? (container as StageBuilder).ownerDocument.createElement('div')
+          : undefined;
+
+        if (stage) {
+          stage.style.cssText = STAGE_STYLE;
+        }
+
         // The whole score is one long system that scrolls sideways, as a singer
         // reads it, instead of lines that wrap at the pane's width: on a phone
         // that wrap leaves about a bar per line and a very tall page. Its size
         // does not depend on the pane's width, so nothing reflows on a resize.
         // OpenSheetMusicDisplay stops at 32,768 px and wraps past that.
-        const osmd = new OpenSheetMusicDisplay(container, {
+        const osmd = new OpenSheetMusicDisplay(stage ?? container, {
           autoResize: false,
           drawTitle: false,
           renderSingleHorizontalStaffline: true,
@@ -105,11 +132,27 @@ export const createMusicXmlRenderer =
           osmd.Sheet.Instruments.forEach((instrument, index) => {
             instrument.Visible = flags[index] ?? true;
           });
-          osmd.render();
-          removeBaselineGap(container as Measurable);
+          if (stage) {
+            if (strip) {
+              strip.redraw();
+            } else {
+              strip = createSegmentedStrip({
+                host: container as StripHost,
+                osmd,
+                stage,
+                totalBars,
+                zoom: osmd.zoom,
+              });
+            }
+          } else {
+            osmd.render();
+            removeBaselineGap(container as Measurable);
+          }
 
           return resolved;
         };
+
+        let strip: SegmentedStrip | undefined;
 
         osmd.zoom = zoom;
         let resolved = draw(selection);
@@ -120,11 +163,20 @@ export const createMusicXmlRenderer =
             return resolved;
           },
           dispose() {
+            if (strip) {
+              strip.dispose();
+              return;
+            }
+
             osmd.clear();
             // `clear` resets the layout but leaves the drawn SVG in the host.
             host.innerHTML = '';
           },
           naturalHeight() {
+            if (strip) {
+              return strip.naturalHeight();
+            }
+
             const svg = (container as Measurable).querySelector('svg');
 
             return svg ? svg.getBoundingClientRect().height / osmd.zoom : 0;
@@ -134,6 +186,11 @@ export const createMusicXmlRenderer =
             return resolved;
           },
           setZoom(next) {
+            if (strip) {
+              strip.setZoom(next);
+              return;
+            }
+
             osmd.zoom = next;
             osmd.render();
             removeBaselineGap(container as Measurable);

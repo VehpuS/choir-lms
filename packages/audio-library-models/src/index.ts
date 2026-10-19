@@ -6,6 +6,7 @@ export * from './lib/playlist-entries.ts';
 export * from './lib/rehearsal-domain.ts';
 export * from './lib/rehearsal-playlists.ts';
 export * from './lib/rehearsal-tags.ts';
+export * from './lib/score-bars.ts';
 export * from './lib/score-parts.ts';
 export * from './lib/source-availability.ts';
 export * from './lib/source-lyrics.ts';
