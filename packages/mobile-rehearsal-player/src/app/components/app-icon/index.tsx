@@ -27,6 +27,7 @@ import { FloppyDiskIcon } from 'phosphor-react-native/src/icons/FloppyDisk';
 import { FolderIcon } from 'phosphor-react-native/src/icons/Folder';
 import { FolderPlusIcon } from 'phosphor-react-native/src/icons/FolderPlus';
 import { InfoIcon } from 'phosphor-react-native/src/icons/Info';
+import { KeyboardIcon } from 'phosphor-react-native/src/icons/Keyboard';
 import { ListChecksIcon } from 'phosphor-react-native/src/icons/ListChecks';
 import { ListDashesIcon } from 'phosphor-react-native/src/icons/ListDashes';
 import { ListNumbersIcon } from 'phosphor-react-native/src/icons/ListNumbers';
@@ -98,6 +99,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   Folder: FolderIcon,
   FolderPlus: FolderPlusIcon,
   Info: InfoIcon,
+  Keyboard: KeyboardIcon,
   ListChecks: ListChecksIcon,
   ListDashes: ListDashesIcon,
   ListNumbers: ListNumbersIcon,

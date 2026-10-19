@@ -24,6 +24,7 @@ import { NowPlayingSurface } from './now-playing';
 import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
 
 import { appTheme } from '../../utils/theme';
+import { usePianoDockHeight } from '../../library/piano/use-piano-dock-height';
 
 type PlaybackSurfaceMode = 'now-playing' | 'queue' | 'shaping';
 
@@ -113,6 +114,9 @@ export const PlaybackSurface = ({
   surface,
 }: PlaybackSurfaceProps) => {
   const translateY = useRef(new Animated.Value(32)).current;
+  // While the piano is open the shell floats it over the bottom of this
+  // sheet, so the sheet stops above it and keeps its transport in view.
+  const pianoDockHeight = usePianoDockHeight();
   const canRenderQueue = surface === 'queue' && queueSummary;
   const canRenderNowPlaying = surface === 'now-playing' && nowPlayingSummary;
   const canRenderShaping = surface === 'shaping' && nowPlayingSummary;
@@ -198,7 +202,10 @@ export const PlaybackSurface = ({
         onPress={dismissSurface}
         style={styles.backdrop}
       />
-      <View pointerEvents="box-none" style={styles.sheetContainer}>
+      <View
+        pointerEvents="box-none"
+        style={[styles.sheetContainer, { paddingBottom: pianoDockHeight }]}
+      >
         <Animated.View
           {...sheetFramePanHandlers}
           style={[styles.sheetFrame, { transform: [{ translateY }] }]}

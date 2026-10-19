@@ -7,6 +7,7 @@ import type { SavedTrackPlaybackState } from '../../../library/playback/utils/sa
 import type { PlaylistPlaybackSession } from '../../../library/playlists/utils/saved-playlist-playback-view-model';
 import type { PlaylistDraftIssue } from '../../../library/playlists/utils/saved-playlist-view-model';
 import type { PlaybackShapingControls } from '../../playback/shaping/shaping-surface-model';
+import { ShellPianoDock } from '../../../library/piano/components/shell-piano-dock';
 import { SettingsScreen } from '../../../screens/settings';
 import {
   settingsNavigationStore,
@@ -164,9 +165,7 @@ export const MobileShell = ({
   const playbackDownloadLabel = isPlaybackPreparing
     ? getPlaybackDownloadLabel(downloadProgress)
     : null;
-  const upNextSummary = getUpNextSurfaceSummary({
-    activePlaylistSession,
-  });
+  const upNextSummary = getUpNextSurfaceSummary({ activePlaylistSession });
   const queuePlaylistState = useMobileShellQueuePlaylistState({
     canShowQueuePlaylistActions,
     hasMiniPlayerSummary: miniPlayerSummary !== null,
@@ -221,6 +220,8 @@ export const MobileShell = ({
           </View>
         ) : null}
       </View>
+
+      <ShellPianoDock isPlaybackSurfaceOpen={activePlaybackSurface !== null} />
 
       <PinnedBulkActionBarHost>
         <MobileShellMiniPlayerDock

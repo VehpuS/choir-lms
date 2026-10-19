@@ -16,6 +16,7 @@ import {
 import { AccessibleSlider } from '../../../components/accessible-slider';
 import { PlaybackWaveform } from '../../../components/playback-waveform';
 import { getPlaybackBoundsSeconds } from '../../../components/playback-waveform/model';
+import { usePianoToggle } from '../../../library/piano/piano-toggle';
 import { appTheme } from '../../../utils/theme';
 import { getNowPlayingTimelineLabels } from './now-playing-model';
 import { nowPlayingStyles as styles } from './styles';
@@ -89,6 +90,7 @@ export const PlaybackPracticeRow = (props: {
   repeatMode: RepeatMode;
   shaping: Pick<PlaybackShapingControls, 'canShapePitch' | 'effective'>;
 }) => {
+  const pianoToggle = usePianoToggle();
   const shapingTiles = getPracticeShapingTiles(props.shaping);
   const tiles = getPracticeTiles({
     queueMode: props.queueMode,
@@ -169,6 +171,32 @@ export const PlaybackPracticeRow = (props: {
           </Pressable>
         );
       })}
+      {pianoToggle ? (
+        <Pressable
+          accessibilityLabel={pianoToggle.accessibilityLabel}
+          accessibilityRole="button"
+          accessibilityState={{ selected: pianoToggle.selected }}
+          {...ariaStateProps({ selected: pianoToggle.selected })}
+          {...interactionGuardProps}
+          onPress={pianoToggle.toggle}
+          style={({ pressed }) => [
+            styles.practiceTile,
+            pianoToggle.selected ? styles.practiceTileSelected : null,
+            buttonInteractionGuardStyle,
+            pressed ? styles.pressed : null,
+          ]}
+        >
+          <AppIcon
+            color={
+              pianoToggle.selected
+                ? appTheme.colors.accentText
+                : appTheme.colors.icon
+            }
+            name="piano-keyboard"
+            size={PRACTICE_ICON_SIZE}
+          />
+        </Pressable>
+      ) : null}
     </View>
   );
 };
