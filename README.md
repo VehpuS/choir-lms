@@ -89,7 +89,7 @@ npm exec -- nx sync
 
 The currently implemented automated tests run through Nx `test` targets and execute with Node's built-in test runner using `tsx --test`.
 
-- Test sources use `node:test` plus `node:assert/strict`.
+- Test sources use `node:test` plus `node:assert/strict`. Mobile component specs render with `@testing-library/react-native/pure` through a small `src/test-support/` preload that maps `react-native` to `react-native-web`.
 - Primary command pattern: `npm exec -- nx run <project>:test`.
 - In this workspace, Jest and Vitest are not the active test harness for existing package tests.
 - For targeted mobile test runs, use:

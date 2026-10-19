@@ -83,6 +83,7 @@ export const MyPartsSection = () => {
       <View style={styles.chips}>
         {buildPartPresetChips(parts).map((name) => (
           <InteractionChip
+            accessibilityLabel={`Add ${name}`}
             key={name}
             label={name}
             onPress={() => addPart(name)}

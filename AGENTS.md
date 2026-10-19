@@ -39,6 +39,7 @@ This repository is an Nx monorepo for a broader choir learning platform. See the
 - Prefer `npm exec -- nx run <project>:test` to run tests for a project.
 - For targeted mobile runs, use `npm exec -- nx run mobile-rehearsal-player:test-file -- --file=src/path/to/file.spec.ts` or `npm exec -- nx run mobile-rehearsal-player:test-pattern -- --pattern='src/**/*.spec.ts'`.
 - Do not introduce Jest or Vitest config/targets unless a change explicitly asks for a runner migration.
+- Mobile component specs render with `@testing-library/react-native/pure` through the `src/test-support/` shim described in `.github/instructions/testing-policy.instructions.md`; the runner is still `tsx --test`.
 - Some dependencies (for example `jest-expo`) may exist for ecosystem compatibility, but they are not the active test harness in this workspace.
 
 <!-- nx configuration start-->

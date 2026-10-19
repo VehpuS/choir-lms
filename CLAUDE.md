@@ -47,7 +47,7 @@ npm exec -- nx run mobile-rehearsal-player:test-file -- --file=src/path/to/file.
 npm exec -- nx run mobile-rehearsal-player:test-pattern -- --pattern='src/**/*.spec.ts'
 ```
 
-Tests run via `tsx --test` using Node's built-in `node:test` + `node:assert/strict` — **not** Jest or Vitest, even though `jest-expo` appears as a dependency for ecosystem compatibility only. Match each package's existing `*.spec.ts`/`*.spec.tsx` naming; don't introduce `*.test.*` files or `__tests__` directories.
+Tests run via `tsx --test` using Node's built-in `node:test` + `node:assert/strict` — **not** Jest or Vitest, even though `jest-expo` appears as a dependency for ecosystem compatibility only. Mobile component specs use `@testing-library/react-native/pure` through the `src/test-support/` preload (see the testing policy). Match each package's existing `*.spec.ts`/`*.spec.tsx` naming; don't introduce `*.test.*` files or `__tests__` directories.
 
 Mobile-specific:
 

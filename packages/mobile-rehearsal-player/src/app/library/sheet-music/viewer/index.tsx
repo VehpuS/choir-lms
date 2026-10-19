@@ -21,11 +21,8 @@ import {
   type ViewerFailureAction,
 } from './model';
 import { PartChips, PartNotices } from './part-chips';
-import {
-  buildMyPartChip,
-  learnPartName,
-  resolveRequestedSelection,
-} from '../my-parts/my-parts-model';
+import { buildMyPartChip, learnPartName } from '../my-parts/my-parts-model';
+import { useRequestedSelection } from '../my-parts/use-requested-selection';
 import {
   updateMyPartsPreferences,
   useMyPartsPreferences,
@@ -101,12 +98,7 @@ export const SheetMusicViewer = ({
       ? chosen[source.id]
       : source.partSelection
     : undefined;
-  // Memoized: the surface redraws whenever the selection's identity changes,
-  // so a fresh `{ preferVoice }` object per render would redraw forever.
-  const selection = useMemo(
-    () => resolveRequestedSelection(ownSelection, myParts),
-    [ownSelection, myParts],
-  );
+  const selection = useRequestedSelection(ownSelection, myParts);
 
   // The loader reads the token when a request starts, so a Drive reconnection
   // is picked up by `Try again` without rebuilding it.

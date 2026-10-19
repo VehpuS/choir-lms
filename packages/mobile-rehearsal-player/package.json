@@ -87,7 +87,7 @@
         ],
         "options": {
           "cwd": "packages/mobile-rehearsal-player",
-          "command": "tsx --test 'src/**/*.spec.ts' 'src/**/*.spec.tsx'"
+          "command": "TSX_TSCONFIG_PATH=tsconfig.spec.json tsx --require ./src/test-support/register-react-native-web.cjs --test 'src/**/*.spec.ts' 'src/**/*.spec.tsx'"
         }
       },
       "test-file": {
@@ -95,7 +95,7 @@
         "cache": false,
         "options": {
           "cwd": "packages/mobile-rehearsal-player",
-          "command": "tsx --test {args.file}"
+          "command": "TSX_TSCONFIG_PATH=tsconfig.spec.json tsx --require ./src/test-support/register-react-native-web.cjs --test {args.file}"
         }
       },
       "test-pattern": {
@@ -103,7 +103,7 @@
         "cache": false,
         "options": {
           "cwd": "packages/mobile-rehearsal-player",
-          "command": "tsx --test {args.pattern}"
+          "command": "TSX_TSCONFIG_PATH=tsconfig.spec.json tsx --require ./src/test-support/register-react-native-web.cjs --test {args.pattern}"
         }
       },
       "lint": {
