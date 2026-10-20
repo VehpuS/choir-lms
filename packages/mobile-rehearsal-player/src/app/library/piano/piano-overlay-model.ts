@@ -1,4 +1,7 @@
+import { midiToNoteName } from '@org/audio-library-models';
+
 import {
+  DEFAULT_KEYBOARD_LAYOUT,
   PIANO_HEIGHT_STEPS,
   PIANO_KEY_HEIGHTS,
   PIANO_STRIP_WIDTH,
@@ -7,8 +10,9 @@ import {
 
 /** The handle row: volume, the grabber, and close. */
 export const PIANO_HANDLE_HEIGHT = 44;
-/** The minimap beneath the keys; a drag that begins here scrolls. */
-export const PIANO_SCROLL_STRIP_HEIGHT = 28;
+/** The minimap beneath the keys; a drag that begins here scrolls. 44 pt is the minimum touch target. */
+export const PIANO_SCROLL_STRIP_HEIGHT = 44;
+const SEMITONES_PER_OCTAVE = 12;
 
 /** Total overlay height for a step: handle row, keys, and the minimap. */
 export const pianoOverlayHeight = (step: PianoHeightStep): number => {
@@ -102,4 +106,27 @@ export const mapWindow = (
     left,
     width: Math.min(viewportWidth / stripWidth, 1),
   };
+};
+
+export type OctaveTick = {
+  /** `C4`: the label drawn on the minimap. */
+  label: string;
+  /** Where the C key's centre sits, as a fraction of the minimap width. */
+  position: number;
+};
+
+/**
+ * One tick per C on the minimap, so the strip reads as a map of the keyboard.
+ * Positions are fractions of the strip, which do not change with the key width
+ * (the white key count is fixed).
+ */
+export const octaveTicks = (): OctaveTick[] => {
+  const { keys, stripWidth } = DEFAULT_KEYBOARD_LAYOUT;
+
+  return keys
+    .filter((key) => key.midi % SEMITONES_PER_OCTAVE === 0)
+    .map((key) => ({
+      label: midiToNoteName(key.midi, 'sharps'),
+      position: (key.left + key.width / 2) / stripWidth,
+    }));
 };

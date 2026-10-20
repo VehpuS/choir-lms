@@ -1,9 +1,10 @@
 import { useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../../../utils/theme';
 import {
   mapWindow,
+  octaveTicks,
   PIANO_SCROLL_STRIP_HEIGHT,
   scrollLeftFromMapX,
 } from '../../piano-overlay-model';
@@ -11,6 +12,8 @@ import { capturePointer, pointRelativeTo, readPointer } from './pointer-events';
 
 const { colors, radius, space } = appTheme;
 const PERCENT = 100;
+const TICK_FONT_SIZE = 10;
+const OCTAVE_TICKS = octaveTicks();
 
 type PianoScrollStripProps = {
   onScrollLeftChange: (scrollLeft: number) => void;
@@ -69,6 +72,16 @@ export const PianoScrollStrip = ({
       style={styles.strip}
       testID="piano-scroll-strip"
     >
+      {OCTAVE_TICKS.map((tick) => (
+        <View
+          key={tick.label}
+          pointerEvents="none"
+          style={[styles.tick, { left: `${tick.position * PERCENT}%` }]}
+        >
+          <View style={styles.tickMark} />
+          <Text style={styles.tickLabel}>{tick.label}</Text>
+        </View>
+      ))}
       <View
         pointerEvents="none"
         style={[
@@ -91,6 +104,26 @@ const styles = StyleSheet.create({
     touchAction: 'none',
     userSelect: 'none',
   } as never,
+  // A zero-width column on the C key's centre, so the label centres on it.
+  tick: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tickMark: {
+    width: 1,
+    height: space.sm,
+    backgroundColor: colors.divider,
+  },
+  tickLabel: {
+    color: colors.textMuted,
+    fontSize: TICK_FONT_SIZE,
+    width: space.xxl,
+    textAlign: 'center',
+  },
   window: {
     position: 'absolute',
     top: space.xs,

@@ -6,6 +6,7 @@ import {
   capHeightStep,
   clampScrollLeft,
   mapWindow,
+  octaveTicks,
   PIANO_HANDLE_HEIGHT,
   PIANO_SCROLL_STRIP_HEIGHT,
   pianoOverlayHeight,
@@ -117,5 +118,38 @@ describe('scrolling at a wider key width', () => {
 
     assert.ok(Math.abs(width - viewport / wideStrip) < 1e-9);
     assert.ok(width < mapWindow(0, viewport).width);
+  });
+});
+
+describe('octave ticks', () => {
+  it('labels every C from C1 to C8 in pitch order', () => {
+    assert.deepEqual(
+      octaveTicks().map((tick) => tick.label),
+      ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8'],
+    );
+  });
+
+  it('places them inside the strip, increasing, with C8 at the far end', () => {
+    const positions = octaveTicks().map((tick) => tick.position);
+
+    assert.ok(positions.every((position) => position > 0 && position < 1));
+    assert.deepEqual(
+      positions,
+      [...positions].sort((a, b) => a - b),
+    );
+    assert.ok(positions[positions.length - 1] > 0.98);
+  });
+
+  it('puts middle C at the same place whatever the key width', () => {
+    const wide = createKeyboardLayout(100);
+    const middleC = wide.keys.find((key) => key.midi === 60);
+    const tick = octaveTicks().find((candidate) => candidate.label === 'C4');
+
+    assert.ok(middleC && tick);
+    assert.ok(
+      Math.abs(
+        (middleC.left + middleC.width / 2) / wide.stripWidth - tick.position,
+      ) < 1e-9,
+    );
   });
 });
