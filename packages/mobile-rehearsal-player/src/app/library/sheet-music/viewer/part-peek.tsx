@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
@@ -28,8 +28,13 @@ const PEEK_LIFT_PX = 44;
 export const usePartPeek = (
   host: PeekHost | null,
   partNameAtY: (y: number) => string | undefined,
+  // A tap that sounds a note is answered by the sound, so it names no part.
+  isSoundingNoteAt: (clientX: number, clientY: number) => boolean = () => false,
 ) => {
   const [peek, setPeek] = useState<PartPeek | null>(null);
+  const latest = useRef({ isSoundingNoteAt, partNameAtY });
+
+  latest.current = { isSoundingNoteAt, partNameAtY };
 
   useEffect(() => {
     if (!host) {
@@ -41,11 +46,14 @@ export const usePartPeek = (
       const rect = host.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
-      const name = partNameAtY(y + host.scrollTop);
+      const name = latest.current.partNameAtY(y + host.scrollTop);
 
       clearTimeout(timer);
 
-      if (!name) {
+      if (
+        !name ||
+        latest.current.isSoundingNoteAt(event.clientX, event.clientY)
+      ) {
         setPeek(null);
         return;
       }
@@ -62,8 +70,8 @@ export const usePartPeek = (
       clearTimeout(timer);
       host.removeEventListener('click', onTap);
     };
-    // The caller reads the current drawing through `partNameAtY`, so it is not
-    // a dependency: the listener lives as long as the host.
+    // The callbacks are read through `latest`, so the listener lives as long as
+    // the host.
   }, [host]);
 
   return peek;

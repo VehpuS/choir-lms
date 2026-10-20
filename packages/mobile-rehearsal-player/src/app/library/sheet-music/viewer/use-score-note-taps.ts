@@ -26,7 +26,7 @@ type NoteheadElement = {
   };
   querySelectorAll(selector: string): ArrayLike<{ style: { fill: string } }>;
 };
-type TapHost = {
+export type TapHost = {
   addEventListener(type: string, listener: (event: PointerLike) => void): void;
   querySelectorAll(selector: string): ArrayLike<NoteheadElement>;
   removeEventListener(
@@ -57,6 +57,13 @@ const paintHead = (head: NoteheadElement, fill: string) => {
   Array.from(head.querySelectorAll('path')).forEach((path) => {
     path.style.fill = fill;
   });
+};
+
+/** The notehead a point lands on (or near enough to sound), if any. */
+export const noteheadAtPoint = (host: TapHost, x: number, y: number) => {
+  const heads = Array.from(host.querySelectorAll(NOTEHEAD_SELECTOR));
+
+  return nearestNotehead(readNoteheadBoxes(heads, NOTE_MIDI_ATTRIBUTE), x, y);
 };
 
 /**
@@ -96,9 +103,7 @@ export const useScoreNoteTaps = (
         return;
       }
 
-      const heads = Array.from(host.querySelectorAll(NOTEHEAD_SELECTOR));
-      const boxes = readNoteheadBoxes(heads, NOTE_MIDI_ATTRIBUTE);
-      const hit = nearestNotehead(boxes, event.clientX, event.clientY);
+      const hit = noteheadAtPoint(host, event.clientX, event.clientY);
 
       if (!hit) {
         return;

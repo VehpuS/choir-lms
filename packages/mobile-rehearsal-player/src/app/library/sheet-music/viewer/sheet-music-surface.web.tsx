@@ -14,7 +14,11 @@ import type {
 import { computeFitZoom } from './fit-zoom-model';
 import { PartPeekLabel, usePartPeek, type PeekHost } from './part-peek';
 import type { SheetMusicSurfaceProps } from './sheet-music-surface-types';
-import { useScoreNoteTaps } from './use-score-note-taps';
+import {
+  noteheadAtPoint,
+  useScoreNoteTaps,
+  type TapHost,
+} from './use-score-note-taps';
 
 // The app's TypeScript config carries no DOM library, so the slice of the DOM
 // used here is described structurally.
@@ -176,13 +180,22 @@ export const SheetMusicSurface = ({
   // Notes are tappable in staves (MusicXML and MIDI), not in a PDF page.
   const piano = usePianoSound();
 
+  const notesSound = document.format !== 'pdf' && pianoCapabilities().canPlay;
+
   useScoreNoteTaps(host as Parameters<typeof useScoreNoteTaps>[0], {
-    isEnabled: document.format !== 'pdf' && pianoCapabilities().canPlay,
+    isEnabled: notesSound,
     press: piano.press,
     release: piano.release,
   });
 
-  const peek = usePartPeek(host, (y) => live.current.score?.partNameAtY(y));
+  const peek = usePartPeek(
+    host,
+    (y) => live.current.score?.partNameAtY(y),
+    (x, y) =>
+      notesSound &&
+      host !== null &&
+      noteheadAtPoint(host as unknown as TapHost, x, y) !== undefined,
+  );
 
   useEffect(() => {
     if (jump) {
