@@ -4,13 +4,14 @@ A singer learning a part checks pitches against an instrument: they read the not
 
 ## What Changes
 
-- Add a piano overlay: a non-modal, bottom-docked keyboard that opens over any screen during playback (playing or paused) without stopping or covering the transport. It is resizable (key height) and remembers its open state, height, and scroll position.
+- Add a piano overlay: a non-modal, bottom-docked keyboard that opens over any screen during playback (playing or paused) without stopping or covering the transport. It is resizable (key height) and remembers its open state, height, key width, and scroll position.
 - The keyboard spans A0–C8 (88 keys) and scrolls horizontally. It opens on middle C, or on the range of the vocal part when sheet music is showing. C keys carry octave labels (`C4`); an option shows every note name. Keys are multi-touch and sound for as long as they are held, with a short release; sliding a finger across keys plays a glissando. The pitch is always concert pitch (it never follows the track's pitch shaping).
+- Add a key width slider in the overlay so a user who wants bigger, easier-to-press keys can widen them (fewer keys fit on screen, and the strip scrolls further). The width is remembered and defaults to today's 40 pt.
 - Add two sounds, chosen in Settings: a sampled `Piano` (default) and a simple `Organ` oscillator tone. A device-level piano volume sits in the overlay. The piano mixes on top of the track and never pauses, ducks, or alters it.
 - Make notes in rendered sheet music tappable: tapping a notehead in MusicXML or MIDI sheet music (both render through the same score path) plays that pitch and lights the matching key when the overlay is open. PDF is excluded because its notes cannot be identified.
 - Open the piano from the playback screen, the mini-player, and the sheet music viewer toolbar. In the viewer the keyboard docks under the score and the score area shrinks so the staves stay visible.
 - Scope: this change targets the web build (Web Audio), like playback shaping and sheet music. The piano control is hidden on native until native sound exists, tracked in `native-playback-follow-ups`.
-- Out of scope: following the shaped pitch, a transpose control, computer-keyboard play mapping, pinch-to-zoom key width, recording, MIDI input, chords and scale tools, tuning other than A4 = 440 Hz, and any sound on native.
+- Out of scope: following the shaped pitch, a transpose control, computer-keyboard play mapping, a pinch gesture for key width (the slider is the control), recording, MIDI input, chords and scale tools, tuning other than A4 = 440 Hz, and any sound on native.
 
 ## Capabilities
 
@@ -25,7 +26,7 @@ A singer learning a part checks pitches against an instrument: they read the not
 ## Impact
 
 - `packages/audio-library-models`: framework-agnostic pitch helpers (MIDI number ↔ note name ↔ frequency, sharp/flat spelling, MusicXML pitch with transposition → sounding MIDI number). `midi-notation` is lazily loaded and cannot be statically imported, so these live in the models package.
-- `packages/mobile-rehearsal-player`: a piano module (keyboard layout model, key gesture model, overlay component, device preference store, voice interface with Web Audio `Piano` and `Organ` implementations), shell integration above the mini-player, viewer integration (toolbar toggle and docked instance), score note hit-testing in the OSMD renderer, and Settings rows.
+- `packages/mobile-rehearsal-player`: a piano module (keyboard layout model, key gesture model, overlay component with a key width slider, device preference store, voice interface with Web Audio `Piano` and `Organ` implementations), shell integration above the mini-player, viewer integration (toolbar toggle and docked instance), score note hit-testing in the OSMD renderer, and Settings rows.
 - Assets: a small set of piano samples, lazy-loaded the first time a key is pressed (size budget in design). The licence must allow redistribution; chosen in a spike before it is added.
 - No new native dependency. No change to playback, storage, or the library model; preferences are device-level.
 - README gets a short note on the capability. `native-playback-follow-ups` gets a native piano sound item.

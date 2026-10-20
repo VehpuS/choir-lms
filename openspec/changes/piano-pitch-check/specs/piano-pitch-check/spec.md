@@ -26,7 +26,7 @@ The system SHALL provide a piano overlay: a non-modal keyboard docked at the bot
 
 ### Requirement: The keyboard is an 88-key scrollable strip with sensible starting range
 
-The keyboard SHALL span A0 to C8, SHALL scroll horizontally, and SHALL open centred on middle C (C4) when it has no stored position. When sheet music is showing a part, the keyboard SHALL open centred on the middle of that part's note range, once per opening and never while the user is scrolling. Keys SHALL be at least 40 pt wide for white keys. C keys SHALL be labelled with their octave (`C4`); with `Show every note name` on, all natural keys and the black keys in the chosen spelling (sharps or flats) SHALL be labelled.
+The keyboard SHALL span A0 to C8, SHALL scroll horizontally, and SHALL open centred on middle C (C4) when it has no stored position. When sheet music is showing a part, the keyboard SHALL open centred on the middle of that part's note range, once per opening and never while the user is scrolling. White keys SHALL be 40 pt wide by default and never narrower (see the key width requirement). C keys SHALL be labelled with their octave (`C4`); with `Show every note name` on, all natural keys and the black keys in the chosen spelling (sharps or flats) SHALL be labelled.
 
 #### Scenario: First open
 
@@ -156,3 +156,33 @@ The system SHALL show the piano control only when the platform can play it. On a
 
 - **WHEN** the app runs on web in a browser with Web Audio
 - **THEN** the piano controls appear
+
+### Requirement: The key width can be widened with a slider
+
+The overlay SHALL include a `Key width` slider that sets the white key width from 40 pt (the default and the minimum) to 100 pt, with black keys keeping their proportion to the white key. The control SHALL be at least 44 pt, SHALL carry an accessible label and its current value, SHALL NOT change the key height, and SHALL be remembered on the device. Changing the width SHALL keep the key at the centre of the view at the centre, and SHALL leave the scroll position valid (no empty space past either end of the keyboard). Notes SHALL keep sounding while the width changes.
+
+#### Scenario: Widen the keys
+
+- **WHEN** the user drags `Key width` from 40 pt to 80 pt
+- **THEN** the white keys are twice as wide, fewer keys are in view, the key that was centred stays centred, and pressing a key plays the key under the finger
+
+#### Scenario: Remembered
+
+- **WHEN** the user sets the width to 64 pt, closes the piano, and opens it again (or reloads the app)
+- **THEN** the keys are 64 pt wide and the scroll position is the one stored
+
+#### Scenario: Stored width out of range
+
+- **WHEN** the stored width is below 40 pt, above 100 pt, or not a number
+- **THEN** it is clamped into 40–100 pt, or the default 40 pt is used for a value that is not a number
+
+#### Scenario: Range no longer fits
+
+- **WHEN** the keys are wide enough that a part's note range does not fit on screen and the piano opens from the viewer
+- **THEN** the middle of the range is centred and the rest is reached by scrolling
+
+#### Scenario: Slider at the end of the keyboard
+
+- **WHEN** the view is at the lowest or highest keys and the user widens the keys
+- **THEN** the view stays at that end without gaps
+

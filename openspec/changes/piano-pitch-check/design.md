@@ -15,7 +15,7 @@ Users decided: a voice-range scrollable keyboard, web first with a second simple
 
 **Non-Goals:**
 
-- Native sound, shaping-aware pitch, transposition, computer-keyboard mapping, key-width zoom, recording, MIDI input, tuning options, chord or scale helpers.
+- Native sound, shaping-aware pitch, transposition, computer-keyboard mapping, a pinch gesture for key width (a slider sets it, Decision 9), recording, MIDI input, tuning options, chord or scale helpers.
 - Playing the score back from the notes (this plays one tapped note only).
 
 ## Decisions
@@ -28,9 +28,13 @@ Alternative considered: a single global overlay rendered above everything. A Rea
 
 ### Decision 2: Size and layout
 
-The keyboard has 52 white keys (A0–C8). White key width is a fixed 40 pt (a 44 pt touch target is met by the full key height and the gaps between black keys); the strip scrolls horizontally with momentum and a visible position strip. Height has three steps — compact (white 96 pt), regular (136 pt), tall (184 pt) — chosen by dragging the overlay's top handle, which snaps to a step. There is no collapsed state: closing and reopening from the tab bar restores the same height and scroll position, so a handle-only mode added nothing (removed 2026-10-20). On open with no stored scroll position the keyboard centres on middle C. When a sheet music viewer is showing a part, it centres on the middle of that part's range (task 6.3), once per opening, never while the user is scrolling.
+The keyboard has 52 white keys (A0–C8). White key width defaults to 40 pt and is user-adjustable up to 100 pt (Decision 9); at the default, a 44 pt touch target is met by the full key height and the gaps between black keys); the strip scrolls horizontally with momentum and a visible position strip. Height has three steps — compact (white 96 pt), regular (136 pt), tall (184 pt) — chosen by dragging the overlay's top handle, which snaps to a step. There is no collapsed state: closing and reopening from the tab bar restores the same height and scroll position, so a handle-only mode added nothing (removed 2026-10-20). On open with no stored scroll position the keyboard centres on middle C. When a sheet music viewer is showing a part, it centres on the middle of that part's range (task 6.3), once per opening, never while the user is scrolling.
 
 Key labels: only C keys show an octave label (`C4`) by default; the Settings row `Show every note name` shows all natural keys, and black keys in the chosen spelling.
+
+### Decision 9: Key width is a slider in the overlay (added 2026-10-21)
+
+A user who wants bigger targets can widen the white keys from the 40 pt default up to 100 pt (about 2.5x), with black keys staying at 60 % of the white width as today. A `Key width` slider sits in the overlay header beside the volume control, with a 44 pt touch target, an accessible label, and the current width as its value text. The width is a device preference (`choirlms.piano.keyWidth`, clamped to 40–100 pt at the read boundary, default 40) and is not part of the height step, so resizing the height does not change it. The keyboard layout model already takes the white key width as an input; changing it recomputes key offsets, the strip's total width, the scroll clamp, and the position strip (minimap). While the slider is dragged the keyboard keeps the key that was at the centre of the view at the centre (the scroll offset is rescaled around it), so the user does not lose their place. With wider keys fewer keys are in view: the strip scrolls as before, and a part's range from the viewer opening (Decision 2) is centred, not fitted, when it no longer fits. Key labels do not grow with the key. The slider is for the piano only; Settings does not repeat it. Not a pinch gesture: pinch conflicts with the page's own zoom and scroll on touch and is not accessible.
 
 ### Decision 3: Gestures are a pure model over pointer events
 
@@ -62,7 +66,7 @@ The OSMD renderer already holds each notehead's graphical object and its source 
 
 ### Decision 8: Preferences and settings
 
-A `piano-preferences` store holds `sound: 'piano' | 'organ'`, `volume` (0–1, default 0.7), `accidentals: 'sharps' | 'flats'` (default sharps, used for black-key labels and the note readout), `showAllNoteNames`, and the overlay state from Decision 1, under `choirlms.piano.*` keys. Parsing and clamping happen where the value is read from storage (unknown sound falls back to `piano`; volume clamps to 0–1). Settings gets a `Piano` section with `Sound`, `Show every note name`, and `Black key names` rows driven by the existing preference-row model. Volume lives in the overlay itself.
+A `piano-preferences` store holds `sound: 'piano' | 'organ'`, `volume` (0–1, default 0.7), `accidentals: 'sharps' | 'flats'` (default sharps, used for black-key labels and the note readout), `showAllNoteNames`, `keyWidth` (40–100 pt, default 40; Decision 9), and the overlay state from Decision 1, under `choirlms.piano.*` keys. Parsing and clamping happen where the value is read from storage (unknown sound falls back to `piano`; volume clamps to 0–1). Settings gets a `Piano` section with `Sound`, `Show every note name`, and `Black key names` rows driven by the existing preference-row model. Volume lives in the overlay itself.
 
 ## Risks / Trade-offs
 
@@ -72,6 +76,9 @@ A `piano-preferences` store holds `sound: 'piano' | 'organ'`, `volume` (0–1, d
 - [OSMD hit-testing precision at small zoom] → 12 px slop and nearest-notehead resolution; verified at the viewer's zoom steps.
 - [Overlay height competes with the score on a phone held sideways] → the compact step; the viewer's compact-height layout (height under its existing threshold) caps the piano at the compact step for that screen, without changing the stored height, and the user can close it.
 - [Mixing on top can be inaudible over loud audio] → accepted; the user chose no ducking, the volume slider is the control.
+
+- [A wide keyboard hides the part's range] → the slider is user-driven; the viewer still centres on the range, and the position strip shows where the view sits.
+- [The header gets crowded with volume, key width, and close on a 320 pt phone] → verify the layout at 320 pt in the browser; if both sliders do not fit, the key width slider takes a second row under the header rather than shrinking either target.
 
 ## Migration Plan
 
