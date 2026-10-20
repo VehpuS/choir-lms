@@ -111,6 +111,7 @@ export const PianoOverlayHeader = ({
             valueText={`${Math.round(volume * PERCENT)}%`}
           >
             <Slider
+              containerStyle={styles.sliderContainer}
               maximumTrackTintColor={colors.divider}
               maximumValue={1}
               minimumTrackTintColor={colors.accent}
@@ -140,6 +141,7 @@ export const PianoOverlayHeader = ({
             valueText={`${Math.round(keyWidth)} points`}
           >
             <Slider
+              containerStyle={styles.sliderContainer}
               maximumTrackTintColor={colors.divider}
               maximumValue={MAX_WHITE_KEY_WIDTH}
               minimumTrackTintColor={colors.accent}
@@ -204,6 +206,8 @@ const styles = StyleSheet.create({
     width: VOLUME_WIDTH,
   },
   volumeSlider: { flex: 1 },
+  // The library's default is 40 pt tall; the touch target is 44 pt.
+  sliderContainer: { height: appTheme.space.touchTarget },
   grabberArea: {
     alignItems: 'center',
     flex: 1,
