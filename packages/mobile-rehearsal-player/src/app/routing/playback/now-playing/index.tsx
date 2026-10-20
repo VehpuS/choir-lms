@@ -19,6 +19,7 @@ import {
 } from '../../../library/components/saved-item-menu/saved-item-requests';
 import { LyricsSection } from '../../../library/lyrics/components/lyrics-section';
 import { OptionsMenuSheet } from '../../../library/components/options-menu-sheet';
+import { usePianoToggle } from '../../../library/piano/piano-toggle';
 import { requestLoopBuilder } from '../../../library/loops/utils/loop-builder-request';
 import { appTheme } from '../../../utils/theme';
 import type {
@@ -146,6 +147,7 @@ const TitleBlock = ({
 export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
   const { summary } = props;
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const pianoToggle = usePianoToggle();
   const makeLoopRequest = resolveNowPlayingMakeLoopRequest({
     activePlayableItem: props.activePlayableItem,
     playbackPositionSeconds: props.playbackPositionSeconds,
@@ -197,6 +199,14 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
               accessibilityLabel="Show queue"
               icon="view-list"
               onPress={props.onShowQueue}
+            />
+          ) : null}
+          {pianoToggle ? (
+            <SurfaceIconButton
+              accessibilityLabel={pianoToggle.accessibilityLabel}
+              icon="piano-keyboard"
+              onPress={pianoToggle.toggle}
+              selected={pianoToggle.selected}
             />
           ) : null}
           {menuActions.length > 0 ? (
