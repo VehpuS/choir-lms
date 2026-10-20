@@ -22,13 +22,13 @@ Users decided: a voice-range scrollable keyboard, web first with a second simple
 
 ### Decision 1: The overlay is a non-modal dock with one shared state store
 
-`PianoOverlay` is a non-modal panel docked directly above the mini-player and tab bar (bottom of the screen when neither shows). It does not trap touches outside itself, so the waveform, transport, and score stay usable. A module-level store (same pattern as the lyrics text-size store) holds `isOpen`, `heightStep`, `isCollapsed`, and `scrollLeft`, persisted per device. The shell mounts one overlay. The sheet music viewer mounts a second instance, docked under the score, bound to the same store; while the viewer is open the shell's instance is hidden. Closing the piano in either place closes it in both, so opening it on the playback screen and then opening a score shows it already open in the viewer.
+`PianoOverlay` is a non-modal panel docked directly above the mini-player and tab bar (bottom of the screen when neither shows). It does not trap touches outside itself, so the waveform, transport, and score stay usable. A module-level store (same pattern as the lyrics text-size store) holds `isOpen`, `heightStep`, and `scrollLeft`, persisted per device. The shell mounts one overlay. The sheet music viewer mounts a second instance, docked under the score, bound to the same store; while the viewer is open the shell's instance is hidden. Closing the piano in either place closes it in both, so opening it on the playback screen and then opening a score shows it already open in the viewer.
 
 Alternative considered: a single global overlay rendered above everything. A React Native `Modal` always paints above the shell, so a single instance would need to be a modal itself, which blocks the score and transport.
 
 ### Decision 2: Size and layout
 
-The keyboard has 52 white keys (A0–C8). White key width is a fixed 40 pt (a 44 pt touch target is met by the full key height and the gaps between black keys); the strip scrolls horizontally with momentum and a visible position strip. Height has three steps — compact (white 96 pt), regular (136 pt), tall (184 pt) — chosen by dragging the overlay's top handle, which snaps to a step. `isCollapsed` shrinks the panel to its handle (the keyboard hides, the open state is kept). On open with no stored scroll position the keyboard centres on middle C. When a sheet music viewer is showing a part, it centres on the middle of that part's range (task 6.3), once per opening, never while the user is scrolling.
+The keyboard has 52 white keys (A0–C8). White key width is a fixed 40 pt (a 44 pt touch target is met by the full key height and the gaps between black keys); the strip scrolls horizontally with momentum and a visible position strip. Height has three steps — compact (white 96 pt), regular (136 pt), tall (184 pt) — chosen by dragging the overlay's top handle, which snaps to a step. There is no collapsed state: closing and reopening from the tab bar restores the same height and scroll position, so a handle-only mode added nothing (removed 2026-10-20). On open with no stored scroll position the keyboard centres on middle C. When a sheet music viewer is showing a part, it centres on the middle of that part's range (task 6.3), once per opening, never while the user is scrolling.
 
 Key labels: only C keys show an octave label (`C4`) by default; the Settings row `Show every note name` shows all natural keys, and black keys in the chosen spelling.
 
@@ -70,7 +70,7 @@ A `piano-preferences` store holds `sound: 'piano' | 'organ'`, `volume` (0–1, d
 - [First press latency while samples load] → queue with a 1.5 s cap, prefetch on first overlay open, and show a quiet loading dot on the volume control.
 - [Browser autoplay rules block the audio context until a gesture] → create and resume the context in the first key press handler and on overlay open (a user gesture).
 - [OSMD hit-testing precision at small zoom] → 12 px slop and nearest-notehead resolution; verified at the viewer's zoom steps.
-- [Overlay height competes with the score on a phone held sideways] → the compact step plus collapse; the viewer's compact-height layout (height under its existing threshold) opens the piano collapsed.
+- [Overlay height competes with the score on a phone held sideways] → the compact step; the viewer's compact-height layout (height under its existing threshold) caps the piano at the compact step for that screen, without changing the stored height, and the user can close it.
 - [Mixing on top can be inaudible over loud audio] → accepted; the user chose no ducking, the volume slider is the control.
 
 ## Migration Plan

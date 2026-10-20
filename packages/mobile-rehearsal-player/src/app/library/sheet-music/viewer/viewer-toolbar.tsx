@@ -18,8 +18,6 @@ type ViewerToolbarProps = {
   onTogglePlayback: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
-  /** The compact layout opens the piano as a handle: the score needs the height. */
-  isCompact: boolean;
   /** `column` is the compact layout's side rail; `row` runs along the bottom. */
   orientation: 'column' | 'row';
   zoom: number;
@@ -27,7 +25,6 @@ type ViewerToolbarProps = {
 
 /** Zoom, and a play/pause control so playback stays reachable while reading. */
 export const ViewerToolbar = ({
-  isCompact,
   isFitted,
   isPlaybackToggleDisabled,
   isPlaying,
@@ -40,7 +37,7 @@ export const ViewerToolbar = ({
   zoom,
 }: ViewerToolbarProps) => {
   const isColumn = orientation === 'column';
-  const pianoToggle = usePianoToggle({ openCollapsed: isCompact });
+  const pianoToggle = usePianoToggle();
   // In a column the larger zoom is on top, as a slider reads.
   const zoomOut = (
     <SurfaceIconButton

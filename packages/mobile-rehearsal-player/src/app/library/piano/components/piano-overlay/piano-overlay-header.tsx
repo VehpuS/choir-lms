@@ -3,7 +3,6 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AccessibleSlider } from '../../../../components/accessible-slider';
 import { AppIcon } from '../../../../components/app-icon';
-import { ariaStateProps } from '../../../../components/aria-state';
 import {
   continuousInteractionGuardStyle,
   interactionGuardProps,
@@ -33,22 +32,18 @@ const getSliderNumber = (value: number | number[]) => {
 
 type PianoOverlayHeaderProps = {
   heightStep: PianoHeightStep;
-  isCollapsed: boolean;
   onChangeHeightStep: (step: PianoHeightStep) => void;
   onChangeVolume: (volume: number) => void;
   onClose: () => void;
-  onToggleCollapsed: () => void;
   volume: number;
 };
 
-/** The handle row: volume, the draggable grabber, collapse, and close. */
+/** The handle row: volume, the draggable grabber, and close. */
 export const PianoOverlayHeader = ({
   heightStep,
-  isCollapsed,
   onChangeHeightStep,
   onChangeVolume,
   onClose,
-  onToggleCollapsed,
   volume,
 }: PianoOverlayHeaderProps) => {
   const dragStartY = useRef<number | null>(null);
@@ -134,20 +129,6 @@ export const PianoOverlayHeader = ({
       >
         <View style={styles.grabber} />
       </View>
-      <Pressable
-        accessibilityLabel={isCollapsed ? 'Show keyboard' : 'Hide keyboard'}
-        accessibilityRole="button"
-        accessibilityState={{ expanded: !isCollapsed }}
-        {...ariaStateProps({ expanded: !isCollapsed })}
-        onPress={onToggleCollapsed}
-        style={styles.button}
-      >
-        <AppIcon
-          color={colors.icon}
-          name={isCollapsed ? 'chevron-up' : 'chevron-down'}
-          size={ICON_SIZE}
-        />
-      </Pressable>
       <Pressable
         accessibilityLabel="Close piano"
         accessibilityRole="button"

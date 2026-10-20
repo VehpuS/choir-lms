@@ -58,7 +58,6 @@ describe('piano preferences', () => {
       accidentals: 'flats',
       showAllNoteNames: true,
       isOpen: true,
-      isCollapsed: true,
       heightStep: 'tall',
       scrollLeft: 812,
     } as const;

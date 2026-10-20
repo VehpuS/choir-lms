@@ -5,19 +5,34 @@ import {
   type PianoHeightStep,
 } from './keyboard-layout';
 
-/** The handle row: grabber, volume, collapse, and close. */
+/** The handle row: volume, the grabber, and close. */
 export const PIANO_HANDLE_HEIGHT = 44;
 /** The minimap beneath the keys; a drag that begins here scrolls. */
 export const PIANO_SCROLL_STRIP_HEIGHT = 28;
 
-/** Total overlay height for a step, or just the handle when collapsed. */
-export const pianoOverlayHeight = (
+/** Total overlay height for a step: handle row, keys, and the minimap. */
+export const pianoOverlayHeight = (step: PianoHeightStep): number => {
+  return (
+    PIANO_HANDLE_HEIGHT + PIANO_KEY_HEIGHTS[step] + PIANO_SCROLL_STRIP_HEIGHT
+  );
+};
+
+/**
+ * The step actually drawn: the stored one, but no taller than `limit`. The
+ * viewer on a short landscape window caps the piano at the compact step so the
+ * score keeps its height, without changing the step stored for other screens.
+ */
+export const capHeightStep = (
   step: PianoHeightStep,
-  isCollapsed: boolean,
-): number => {
-  return isCollapsed
-    ? PIANO_HANDLE_HEIGHT
-    : PIANO_HANDLE_HEIGHT + PIANO_KEY_HEIGHTS[step] + PIANO_SCROLL_STRIP_HEIGHT;
+  limit: PianoHeightStep | undefined,
+): PianoHeightStep => {
+  if (!limit) {
+    return step;
+  }
+
+  return PIANO_HEIGHT_STEPS.indexOf(step) > PIANO_HEIGHT_STEPS.indexOf(limit)
+    ? limit
+    : step;
 };
 
 /**

@@ -14,10 +14,10 @@ The system SHALL provide a piano overlay: a non-modal keyboard docked at the bot
 - **WHEN** playback is paused and the user presses a key
 - **THEN** the note sounds and the track stays paused
 
-#### Scenario: Close and collapse
+#### Scenario: Close
 
-- **WHEN** the user closes the piano, or collapses it to its handle
-- **THEN** the keyboard hides; closing also clears the open state, while collapsing keeps the piano open as a handle that restores the keyboard
+- **WHEN** the user closes the piano
+- **THEN** the keyboard hides and the open state is cleared everywhere; opening it again restores the same height and scroll position
 
 #### Scenario: The overlay is remembered
 
@@ -69,7 +69,7 @@ A key SHALL start sounding when pressed and sound until released, with a short r
 
 ### Requirement: The overlay is resizable and keeps the score visible
 
-The overlay SHALL offer three heights (compact, regular, tall) chosen by dragging its handle, which snaps to a step, and SHALL remember the choice. Inside the sheet music viewer the keyboard SHALL dock beneath the score, and the score area SHALL shrink to the space above it so the staves stay visible. On a viewer in its compact-height layout the piano SHALL open collapsed.
+The overlay SHALL offer three heights (compact, regular, tall) chosen by dragging its handle, which snaps to a step, and SHALL remember the choice. Inside the sheet music viewer the keyboard SHALL dock beneath the score, and the score area SHALL shrink to the space above it so the staves stay visible. In a viewer in its compact-height layout the piano SHALL be drawn no taller than the compact height, without changing the height remembered for other screens.
 
 #### Scenario: Resize
 

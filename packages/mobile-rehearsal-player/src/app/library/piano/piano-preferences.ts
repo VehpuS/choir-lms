@@ -25,7 +25,6 @@ export type PianoPreferences = {
   accidentals: Accidentals;
   showAllNoteNames: boolean;
   isOpen: boolean;
-  isCollapsed: boolean;
   heightStep: PianoHeightStep;
   scrollLeft: number;
 };
@@ -36,7 +35,6 @@ export const DEFAULT_PIANO_PREFERENCES: PianoPreferences = {
   accidentals: 'sharps',
   showAllNoteNames: false,
   isOpen: false,
-  isCollapsed: false,
   heightStep: 'regular',
   scrollLeft: 0,
 };
@@ -91,7 +89,6 @@ export const parsePianoPreferences = (
       defaults.showAllNoteNames,
     ),
     isOpen: parseBoolean(raw.isOpen, defaults.isOpen),
-    isCollapsed: parseBoolean(raw.isCollapsed, defaults.isCollapsed),
     heightStep:
       PIANO_HEIGHT_STEPS.find((step) => step === raw.heightStep) ??
       defaults.heightStep,

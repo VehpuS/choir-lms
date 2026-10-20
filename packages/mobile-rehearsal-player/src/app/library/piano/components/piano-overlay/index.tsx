@@ -8,7 +8,8 @@ import {
   PIANO_KEY_HEIGHTS,
 } from '../../keyboard-layout';
 import { pianoCapabilities } from '../../piano-capabilities';
-import { clampScrollLeft } from '../../piano-overlay-model';
+import type { PianoHeightStep } from '../../keyboard-layout';
+import { capHeightStep, clampScrollLeft } from '../../piano-overlay-model';
 import {
   setPianoPreferences,
   setPianoScrollLeft,
@@ -30,17 +31,26 @@ type PianoOverlayProps = {
    * position opens on middle C.
    */
   focusRange?: PianoNoteRange | null;
+  /**
+   * The tallest step to draw, whatever is stored. The viewer on a short
+   * landscape window caps it at `compact` so the score keeps its height.
+   */
+  heightLimit?: PianoHeightStep;
 };
 
 type PianoOverlayBodyProps = PianoOverlayProps;
 
 // Mounted once per opening, so the opening position is chosen once per
 // opening and never while the user is scrolling.
-const PianoOverlayBody = ({ focusRange }: PianoOverlayBodyProps) => {
+const PianoOverlayBody = ({
+  focusRange,
+  heightLimit,
+}: PianoOverlayBodyProps) => {
   const preferences = usePianoPreferences();
   const sound = usePianoSound();
   const [viewportWidth, setViewportWidth] = useState(0);
-  const keyHeight = PIANO_KEY_HEIGHTS[preferences.heightStep];
+  const heightStep = capHeightStep(preferences.heightStep, heightLimit);
+  const keyHeight = PIANO_KEY_HEIGHTS[heightStep];
   // What the opening position was based on, and whether the user has scrolled
   // since: a score's range can arrive after the piano opens, and it replaces
   // the middle C default only if nobody has scrolled yet.
@@ -55,11 +65,7 @@ const PianoOverlayBody = ({ focusRange }: PianoOverlayBodyProps) => {
   }, []);
 
   useEffect(() => {
-    if (
-      viewportWidth === 0 ||
-      preferences.isCollapsed ||
-      hasUserScrolled.current
-    ) {
+    if (viewportWidth === 0 || hasUserScrolled.current) {
       return;
     }
 
@@ -77,13 +83,7 @@ const PianoOverlayBody = ({ focusRange }: PianoOverlayBodyProps) => {
         setPianoScrollLeft(middleCScrollOffset(viewportWidth));
       }
     }
-  }, [
-    highest,
-    lowest,
-    preferences.isCollapsed,
-    preferences.scrollLeft,
-    viewportWidth,
-  ]);
+  }, [highest, lowest, preferences.scrollLeft, viewportWidth]);
 
   const scrollByUser = (next: number) => {
     hasUserScrolled.current = true;
@@ -95,8 +95,7 @@ const PianoOverlayBody = ({ focusRange }: PianoOverlayBodyProps) => {
   return (
     <View style={styles.overlay} testID="piano-overlay">
       <PianoOverlayHeader
-        heightStep={preferences.heightStep}
-        isCollapsed={preferences.isCollapsed}
+        heightStep={heightStep}
         onChangeHeightStep={(heightStep) => {
           setPianoPreferences({ heightStep });
         }}
@@ -106,30 +105,23 @@ const PianoOverlayBody = ({ focusRange }: PianoOverlayBodyProps) => {
         onClose={() => {
           setPianoPreferences({ isOpen: false });
         }}
-        onToggleCollapsed={() => {
-          setPianoPreferences({ isCollapsed: !preferences.isCollapsed });
-        }}
         volume={preferences.volume}
       />
-      {preferences.isCollapsed ? null : (
-        <>
-          <PianoKeyboard
-            keyHeight={keyHeight}
-            labelOptions={preferences}
-            onPress={sound.press}
-            onRelease={sound.release}
-            onScrollLeftChange={scrollByUser}
-            onViewportWidthChange={setViewportWidth}
-            scrollLeft={scrollLeft}
-            sounding={sound.sounding}
-          />
-          <PianoScrollStrip
-            onScrollLeftChange={scrollByUser}
-            scrollLeft={scrollLeft}
-            viewportWidth={viewportWidth}
-          />
-        </>
-      )}
+      <PianoKeyboard
+        keyHeight={keyHeight}
+        labelOptions={preferences}
+        onPress={sound.press}
+        onRelease={sound.release}
+        onScrollLeftChange={scrollByUser}
+        onViewportWidthChange={setViewportWidth}
+        scrollLeft={scrollLeft}
+        sounding={sound.sounding}
+      />
+      <PianoScrollStrip
+        onScrollLeftChange={scrollByUser}
+        scrollLeft={scrollLeft}
+        viewportWidth={viewportWidth}
+      />
     </View>
   );
 };

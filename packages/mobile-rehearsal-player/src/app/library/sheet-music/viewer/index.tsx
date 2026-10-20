@@ -230,7 +230,6 @@ export const SheetMusicViewer = ({
     ) : null;
   const toolbar = (orientation: 'column' | 'row') => (
     <ViewerToolbar
-      isCompact={isCompact}
       isPlaybackToggleDisabled={isPlaybackToggleDisabled}
       isPlaying={isPlaying}
       onTogglePlayback={onTogglePlayback}
@@ -265,7 +264,13 @@ export const SheetMusicViewer = ({
       onClose={onClose}
       ownerName={ownerName}
       partChips={partChips}
-      piano={<PianoOverlay focusRange={info?.noteRange} />}
+      piano={
+        <PianoOverlay
+          focusRange={info?.noteRange}
+          // A short landscape window needs the height for the score.
+          heightLimit={isCompact ? 'compact' : undefined}
+        />
+      }
       sourceChips={sourceChips}
       sourceLabel={source?.label}
       toolbar={toolbar}

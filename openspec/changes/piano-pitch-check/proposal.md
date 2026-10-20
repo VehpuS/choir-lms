@@ -4,7 +4,7 @@ A singer learning a part checks pitches against an instrument: they read the not
 
 ## What Changes
 
-- Add a piano overlay: a non-modal, bottom-docked keyboard that opens over any screen during playback (playing or paused) without stopping or covering the transport. It is resizable (key height), collapsible to a handle, and remembers its open state, height, and scroll position.
+- Add a piano overlay: a non-modal, bottom-docked keyboard that opens over any screen during playback (playing or paused) without stopping or covering the transport. It is resizable (key height) and remembers its open state, height, and scroll position.
 - The keyboard spans A0–C8 (88 keys) and scrolls horizontally. It opens on middle C, or on the range of the vocal part when sheet music is showing. C keys carry octave labels (`C4`); an option shows every note name. Keys are multi-touch and sound for as long as they are held, with a short release; sliding a finger across keys plays a glissando. The pitch is always concert pitch (it never follows the track's pitch shaping).
 - Add two sounds, chosen in Settings: a sampled `Piano` (default) and a simple `Organ` oscillator tone. A device-level piano volume sits in the overlay. The piano mixes on top of the track and never pauses, ducks, or alters it.
 - Make notes in rendered sheet music tappable: tapping a notehead in MusicXML or MIDI sheet music (both render through the same score path) plays that pitch and lights the matching key when the overlay is open. PDF is excluded because its notes cannot be identified.

@@ -3,27 +3,40 @@ import { describe, it } from 'node:test';
 
 import { PIANO_STRIP_WIDTH } from './keyboard-layout.js';
 import {
+  capHeightStep,
   clampScrollLeft,
   mapWindow,
   PIANO_HANDLE_HEIGHT,
+  PIANO_SCROLL_STRIP_HEIGHT,
   pianoOverlayHeight,
   scrollLeftFromMapX,
   snapHeightStep,
 } from './piano-overlay-model.js';
 
 describe('overlay height', () => {
-  it('shrinks to the handle when collapsed', () => {
-    assert.equal(pianoOverlayHeight('tall', true), PIANO_HANDLE_HEIGHT);
+  it('is the handle row, the keys, and the minimap', () => {
+    assert.equal(
+      pianoOverlayHeight('compact'),
+      PIANO_HANDLE_HEIGHT + 96 + PIANO_SCROLL_STRIP_HEIGHT,
+    );
   });
 
   it('grows with the step', () => {
-    assert.ok(
-      pianoOverlayHeight('compact', false) <
-        pianoOverlayHeight('regular', false),
-    );
-    assert.ok(
-      pianoOverlayHeight('regular', false) < pianoOverlayHeight('tall', false),
-    );
+    assert.ok(pianoOverlayHeight('compact') < pianoOverlayHeight('regular'));
+    assert.ok(pianoOverlayHeight('regular') < pianoOverlayHeight('tall'));
+  });
+});
+
+describe('height cap', () => {
+  it('lowers a taller stored step to the limit and leaves others alone', () => {
+    assert.equal(capHeightStep('tall', 'compact'), 'compact');
+    assert.equal(capHeightStep('regular', 'compact'), 'compact');
+    assert.equal(capHeightStep('compact', 'regular'), 'compact');
+    assert.equal(capHeightStep('regular', 'regular'), 'regular');
+  });
+
+  it('does nothing without a limit', () => {
+    assert.equal(capHeightStep('tall', undefined), 'tall');
   });
 });
 
