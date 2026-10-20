@@ -16,7 +16,6 @@ import {
   type ShellDestinationKey,
 } from '../shell-model';
 import { ShellTabBar } from '../shell-tab-bar';
-import { usePianoToggle } from '../../../library/piano/piano-toggle';
 import { appTheme } from '../../../utils/theme';
 import { ariaStateProps } from '../../../components/aria-state';
 
@@ -53,7 +52,6 @@ export const MobileShellMiniPlayerDock = ({
   const lyricsResolution = useLyricsFor({
     sourceId: activePlayableItem?.sourceId ?? '',
   });
-  const pianoToggle = usePianoToggle();
   const playbackToggleControl = miniPlayerSummary
     ? getPlaybackToggleControlModel({
         playbackToggleLabel,
@@ -114,29 +112,6 @@ export const MobileShellMiniPlayerDock = ({
               <AppIcon
                 color={appTheme.colors.accentText}
                 name="text-align-left"
-                size={MINI_PLAYER_TOGGLE_ICON_SIZE}
-              />
-            </Pressable>
-          ) : null}
-          {pianoToggle ? (
-            <Pressable
-              accessibilityLabel={pianoToggle.accessibilityLabel}
-              accessibilityRole="button"
-              accessibilityState={{ selected: pianoToggle.selected }}
-              {...ariaStateProps({ selected: pianoToggle.selected })}
-              onPress={pianoToggle.toggle}
-              style={({ pressed }) => [
-                styles.miniPlayerLyricsButton,
-                pressed ? styles.miniPlayerPressed : null,
-              ]}
-            >
-              <AppIcon
-                color={
-                  pianoToggle.selected
-                    ? appTheme.colors.accentText
-                    : appTheme.colors.icon
-                }
-                name="piano-keyboard"
                 size={MINI_PLAYER_TOGGLE_ICON_SIZE}
               />
             </Pressable>
