@@ -3,7 +3,6 @@ import {
   type SheetMusicPartSelection,
   type SheetMusicSource,
 } from '@org/audio-library-models';
-import { useKeepAwake } from 'expo-keep-awake';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, useWindowDimensions } from 'react-native';
 
@@ -35,6 +34,7 @@ import { ViewerBody, type ViewerOutcome } from './viewer-body';
 import { useViewerZoom } from './use-viewer-zoom';
 import { ViewerLayout } from './viewer-layout';
 import { ViewerToolbar } from './viewer-toolbar';
+import { useBestEffortKeepAwake } from '../../../hooks/use-best-effort-keep-awake';
 
 // Reading music means holding the phone or tablet up, so the screen stays on
 // while the viewer is open; the hook releases the lock when it unmounts.
@@ -81,7 +81,7 @@ export const SheetMusicViewer = ({
   ownerName,
   sources,
 }: SheetMusicViewerProps) => {
-  useKeepAwake(KEEP_AWAKE_TAG);
+  useBestEffortKeepAwake(KEEP_AWAKE_TAG);
   // The viewer is a Modal above the shell, so it carries its own docked piano
   // and the shell's steps aside while this is open.
   useEffect(registerPianoViewer, []);
