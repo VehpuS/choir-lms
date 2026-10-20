@@ -43,6 +43,60 @@ const readNoteheads = (note: OsmdGraphicalNote): readonly TaggableElement[] => {
   }
 };
 
+type TaggedNote = { graphicalNote: OsmdGraphicalNote; midi: number };
+
+const isTieContinuation = (note: OsmdNote): boolean =>
+  note.NoteTie !== undefined && note.NoteTie.StartNote !== note;
+
+/**
+ * Tags one voice entry: a single note, or a chord. For a chord the library
+ * answers `getNoteheadSVGs()` with every head of the chord for each of its
+ * notes, so tagging per note would leave the last (top) pitch on all of them.
+ * The heads come back lowest first, the same order as the notes sorted by
+ * pitch, so each head takes the pitch at its position.
+ */
+const tagVoiceEntry = (
+  graphicalNotes: readonly OsmdGraphicalNote[],
+  transpose: MusicXmlTranspose | undefined,
+): void => {
+  const pitched: TaggedNote[] = graphicalNotes
+    .filter(({ sourceNote }) => !sourceNote.isRest())
+    .map((graphicalNote) => ({
+      graphicalNote,
+      midi: semitonePitchToMidi(
+        {
+          semitone: graphicalNote.sourceNote.Pitch.FundamentalNote,
+          alter: graphicalNote.sourceNote.Pitch.AccidentalHalfTones,
+          octave: graphicalNote.sourceNote.Pitch.Octave + OSMD_OCTAVE_OFFSET,
+        },
+        transpose,
+      ),
+    }))
+    .sort((a, b) => a.midi - b.midi);
+
+  const sharedHeads = pitched[0] ? readNoteheads(pitched[0].graphicalNote) : [];
+
+  if (pitched.length > 1 && sharedHeads.length === pitched.length) {
+    pitched.forEach(({ graphicalNote, midi }, index) => {
+      // A tie continuation sounds as the note it extends, so it stays untagged.
+      if (!isTieContinuation(graphicalNote.sourceNote)) {
+        sharedHeads[index]?.setAttribute(NOTE_MIDI_ATTRIBUTE, String(midi));
+      }
+    });
+    return;
+  }
+
+  for (const { graphicalNote, midi } of pitched) {
+    if (isTieContinuation(graphicalNote.sourceNote)) {
+      continue;
+    }
+
+    for (const head of readNoteheads(graphicalNote)) {
+      head.setAttribute(NOTE_MIDI_ATTRIBUTE, String(midi));
+    }
+  }
+};
+
 export type ScoreNoteTagOptions = {
   /** `GraphicSheet.MeasureList`: every measure, one entry per staff. */
   measures: readonly (readonly (OsmdMeasure | undefined)[] | undefined)[];
@@ -78,28 +132,7 @@ export const tagScoreNoteheads = ({
 
       for (const entry of measure.staffEntries ?? []) {
         for (const voiceEntry of entry.graphicalVoiceEntries ?? []) {
-          for (const graphicalNote of voiceEntry.notes ?? []) {
-            const note = graphicalNote.sourceNote;
-            const isTieContinuation =
-              note.NoteTie !== undefined && note.NoteTie.StartNote !== note;
-
-            if (note.isRest() || isTieContinuation) {
-              continue;
-            }
-
-            const midi = semitonePitchToMidi(
-              {
-                semitone: note.Pitch.FundamentalNote,
-                alter: note.Pitch.AccidentalHalfTones,
-                octave: note.Pitch.Octave + OSMD_OCTAVE_OFFSET,
-              },
-              transpose,
-            );
-
-            for (const head of readNoteheads(graphicalNote)) {
-              head.setAttribute(NOTE_MIDI_ATTRIBUTE, String(midi));
-            }
-          }
+          tagVoiceEntry(voiceEntry.notes ?? [], transpose);
         }
       }
     }

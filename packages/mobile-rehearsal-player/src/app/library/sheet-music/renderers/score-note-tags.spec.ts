@@ -143,4 +143,70 @@ describe('score notehead tags', () => {
       });
     });
   });
+
+  it('gives each head of a chord its own pitch, lowest head first', () => {
+    const instrument = {};
+    const heads = [createHead(), createHead(), createHead()];
+    // The library lists every head of the chord for each of its notes, and
+    // the chord may list its notes in any order.
+    const chord = [
+      createNote({ fundamental: 7, octave: 1 }),
+      createNote({ fundamental: 0, octave: 1 }),
+      createNote({ fundamental: 4, octave: 1 }),
+    ];
+
+    for (const { note } of chord) {
+      note.getNoteheadSVGs = () => heads;
+    }
+
+    tagScoreNoteheads({
+      instruments: [instrument],
+      measures: [
+        [
+          measureOf(
+            instrument,
+            chord.map(({ note }) => note),
+          ),
+        ],
+      ],
+      transposes: [{}],
+    });
+
+    assert.deepEqual(
+      heads.map((head) => head.attributes[NOTE_MIDI_ATTRIBUTE]),
+      ['60', '64', '67'],
+    );
+  });
+
+  it('keeps a transposed chord head on its sounding pitch', () => {
+    const instrument = {};
+    const heads = [createHead(), createHead()];
+    // Written D4 and A4 on a B♭ instrument sound C4 and G4.
+    const chord = [
+      createNote({ fundamental: 2, octave: 1 }),
+      createNote({ fundamental: 9, octave: 1 }),
+    ];
+
+    for (const { note } of chord) {
+      note.getNoteheadSVGs = () => heads;
+    }
+
+    tagScoreNoteheads({
+      instruments: [instrument],
+      measures: [
+        [
+          measureOf(
+            instrument,
+            chord.map(({ note }) => note),
+          ),
+        ],
+      ],
+      transposes: [{ chromatic: -2 }],
+    });
+
+    assert.deepEqual(
+      heads.map((head) => head.attributes[NOTE_MIDI_ATTRIBUTE]),
+      ['60', '67'],
+    );
+  });
 });
