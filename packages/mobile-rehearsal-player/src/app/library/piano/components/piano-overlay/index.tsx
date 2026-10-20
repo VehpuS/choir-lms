@@ -17,6 +17,7 @@ import {
   setPianoScrollLeft,
   usePianoPreferences,
 } from '../../piano-preferences';
+import { useComputerKeyboardPiano } from '../../use-computer-keyboard-piano';
 import { usePianoSound } from '../../use-piano-sound';
 import { PianoKeyboard } from './piano-keyboard';
 import { PianoOverlayHeader } from './piano-overlay-header';
@@ -50,6 +51,8 @@ const PianoOverlayBody = ({
 }: PianoOverlayBodyProps) => {
   const preferences = usePianoPreferences();
   const sound = usePianoSound();
+
+  useComputerKeyboardPiano(sound.press, sound.release);
   const [viewportWidth, setViewportWidth] = useState(0);
   const heightStep = capHeightStep(preferences.heightStep, heightLimit);
   const keyHeight = PIANO_KEY_HEIGHTS[heightStep];
