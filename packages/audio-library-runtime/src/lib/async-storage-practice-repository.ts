@@ -38,6 +38,13 @@ import {
   type SourceLyricsChange,
 } from './source-lyrics-storage';
 import {
+  addMarkerToRepository,
+  deleteMarkerFromRepository,
+  moveMarkerInRepository,
+  renameMarkerInRepository,
+  type MarkerAddition,
+} from './source-markers-storage';
+import {
   addSheetMusicSourceToRepository,
   removeSheetMusicSourceFromRepository,
   updateSheetMusicSourceInRepository,
@@ -278,6 +285,38 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
 
   async clearSourceLyrics(ownerId: string, sourceId: string) {
     return saveSourceLyricsToRepository(this, ownerId, sourceId, null);
+  }
+
+  async addMarker(ownerId: string, sourceId: string, addition: MarkerAddition) {
+    return addMarkerToRepository(this, ownerId, sourceId, addition);
+  }
+
+  async renameMarker(
+    ownerId: string,
+    sourceId: string,
+    markerId: string,
+    name: string,
+  ) {
+    return renameMarkerInRepository(this, ownerId, sourceId, markerId, name);
+  }
+
+  async moveMarker(
+    ownerId: string,
+    sourceId: string,
+    markerId: string,
+    positionMs: number,
+  ) {
+    return moveMarkerInRepository(
+      this,
+      ownerId,
+      sourceId,
+      markerId,
+      positionMs,
+    );
+  }
+
+  async deleteMarker(ownerId: string, sourceId: string, markerId: string) {
+    return deleteMarkerFromRepository(this, ownerId, sourceId, markerId);
   }
 
   async addSheetMusicSource(

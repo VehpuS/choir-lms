@@ -4,8 +4,8 @@
 - [x] 1.2 Add `resolveMarkerOwner(item, sources)` reusing the existing lyrics/sheet-music owner resolver (track, adjusted track, loop, loop of an adjusted track, missing owner). Spec every case.
 - [x] 1.3 Add `deriveLoopMarkers`, `buildMarkerList` (merge, order, filter, loop range window, `isPastEnd` flag), and `nextMarkerName`. Spec: loops of an adjusted copy included, loop edit and delete, equal positions ordering, range window inclusive, past-end flagging, `Marker N` filling gaps.
 - [x] 1.4 Add `planMarkerSections` (design Decision 7): consecutive explicit markers, last section to the track end (needs a duration), optional `Intro`, skip of an existing identical loop, too-short sections, and name reuse. Spec each rule and that derived markers are never boundaries.
-- [ ] 1.5 Persist the field through the practice repository and AsyncStorage in `packages/audio-library-runtime` with `addMarker`, `renameMarker`, `moveMarker`, `deleteMarker` (and undo by re-adding), each updating only that field. Round-trip in the storage specs, confirm an old record loads, the 200 limit is enforced, and removing a track removes its markers.
-- [ ] 1.6 Expose markers through the library controller (`use-rehearsal-library-controller`): `markersFor(item)` through the owner resolver plus derived loop markers, and the write operations, with a controller spec for add, rename, move, delete, a derived item, and a loop being edited.
+- [x] 1.5 Persist the field through the practice repository and AsyncStorage in `packages/audio-library-runtime` with `addMarker`, `renameMarker`, `moveMarker`, `deleteMarker` (and undo by re-adding), each updating only that field. Round-trip in the storage specs, confirm an old record loads, the 200 limit is enforced, and removing a track removes its markers.
+- [x] 1.6 Expose markers through the library controller (`use-rehearsal-library-controller`): `markersFor(item)` through the owner resolver plus derived loop markers, and the write operations, with a controller spec for add, rename, move, delete, a derived item, and a loop being edited.
 
 ## 2. Preference
 
@@ -39,3 +39,7 @@
 - [ ] 7.1 Verify in the browser preview with playback muted: add at the playhead and by long-press, rename, move, delete and undo, jump playing, paused, and from the library, loop markers appearing, updating, disappearing, the filter, keep-as-marker, flags on both waveforms, picking in the loop editor, the three markers-to-loops flows, a loop's and an adjusted copy's lists, and persistence across reload. Record the result here.
 - [ ] 7.2 Confirm markers appear nowhere else (Files tree, search, tags, playlists, bulk) and that removing a track removes them.
 - [ ] 7.3 Update the README with the new capability and run `npm exec -- nx run-many -t lint test typecheck build --all` (or affected) green.
+
+## 8. Follow-ups found during implementation (not part of this change's scope)
+
+- [ ] 8.1 `packages/audio-library-runtime/src/lib/async-storage-practice-repository.ts` was already over the 300-line guideline (330) and is now 350 with the marker methods, so `max-lines` warns. Split the repository's per-feature methods (lyrics, sheet music, markers) into delegating helpers or a mixin so the class file is back under 300 lines. Pre-existing warning, not CI-blocking.

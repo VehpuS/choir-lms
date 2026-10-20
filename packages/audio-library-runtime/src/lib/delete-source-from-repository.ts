@@ -10,7 +10,7 @@ import {
 /**
  * Removes a saved track together with everything that depends on it: its
  * adjusted tracks, their loops, and the playlist entries pointing at any of
- * them. Lyrics and sheet music live on the track record, so they go with it.
+ * them. Lyrics, sheet music, and markers live on the track record, so they go with it.
  */
 export const deleteSourceFromRepository = async (
   repository: PracticeRepository,

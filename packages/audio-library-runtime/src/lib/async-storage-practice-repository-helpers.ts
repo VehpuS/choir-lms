@@ -5,6 +5,7 @@ import {
   parseSourceAdjustment,
   parseSourceLyrics,
   parseSourceSheetMusic,
+  parseTrackMarkers,
   withResolvedTagAddedAt,
   type DriveAudioSource,
   type NamedLoop,
@@ -78,6 +79,7 @@ export const normalizeStoredSources = (
     const {
       adjustment: storedAdjustment,
       lyrics: storedLyrics,
+      markers: storedMarkers,
       sheetMusic: storedSheetMusic,
       sourceLocation,
       ...sourceWithoutLocation
@@ -93,6 +95,7 @@ export const normalizeStoredSources = (
     const createdAt = resolveBackfilledCreatedAt(source.createdAt);
     const lyrics = parseSourceLyrics(storedLyrics);
     const sheetMusic = parseSourceSheetMusic(storedSheetMusic);
+    const markers = parseTrackMarkers(storedMarkers);
 
     return [
       {
@@ -104,6 +107,7 @@ export const normalizeStoredSources = (
         ...(isDriveSourceLocation(sourceLocation) ? { sourceLocation } : {}),
         ...(lyrics ? { lyrics } : {}),
         ...(sheetMusic ? { sheetMusic } : {}),
+        ...(markers ? { markers } : {}),
         ...(adjustment
           ? {
               adjustment: {
@@ -129,14 +133,16 @@ export const resolveSourceForSave = (options: {
   const sourceLocation =
     options.source.sourceLocation ?? options.priorSource?.sourceLocation;
   // Re-saving a track (for example when Drive metadata is refreshed) must not
-  // drop lyrics or sheet music the incoming record does not know about.
+  // drop lyrics, sheet music, or markers the incoming record does not know about.
   const lyrics = options.source.lyrics ?? options.priorSource?.lyrics;
   const sheetMusic =
     options.source.sheetMusic ?? options.priorSource?.sheetMusic;
+  const markers = options.source.markers ?? options.priorSource?.markers;
   const sourceWithPreservedMetadata: DriveAudioSource = {
     ...options.source,
     ...(lyrics === undefined ? {} : { lyrics }),
     ...(sheetMusic === undefined ? {} : { sheetMusic }),
+    ...(markers === undefined ? {} : { markers }),
     ...(tags === undefined ? {} : { tags }),
     ...(sourceLocation === undefined ? {} : { sourceLocation }),
   };
