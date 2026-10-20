@@ -31,7 +31,6 @@ import {
   PlaybackPracticeRow,
   PlaybackVolumeRow,
 } from './now-playing-controls';
-import { getNowPlayingKicker } from './now-playing-model';
 import { resolveNowPlayingMakeLoopRequest } from './now-playing-menu-model';
 import type { PlaybackShapingControls } from '../shaping/shaping-surface-model';
 import { nowPlayingStyles as styles } from './styles';
@@ -118,7 +117,6 @@ const TitleBlock = ({
 }) => {
   return (
     <View style={styles.titleBlock}>
-      <Text style={styles.statusKicker}>{summary.statusLabel}</Text>
       <Text numberOfLines={2} style={styles.title}>
         {summary.title}
       </Text>
@@ -190,8 +188,12 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
     <View style={styles.sheet}>
       <View style={styles.grabber} />
       <View style={styles.header}>
-        <Text style={styles.headerKicker}>
-          {getNowPlayingKicker(summary.supportsQueueNavigation)}
+        {/* The status stands in for a title: the sheet says what it is by its content. */}
+        <Text
+          numberOfLines={1}
+          style={[styles.statusKicker, styles.headerStatus]}
+        >
+          {summary.statusLabel}
         </Text>
         <View style={styles.headerActions}>
           {summary.supportsQueueNavigation && props.queueSummary ? (

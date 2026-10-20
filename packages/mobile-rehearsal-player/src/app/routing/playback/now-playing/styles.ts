@@ -47,6 +47,10 @@ export const nowPlayingStyles = StyleSheet.create({
     ...type.kicker,
     color: colors.textMuted,
   },
+  // Shrinks before the header buttons do.
+  headerStatus: {
+    flexShrink: 1,
+  },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',

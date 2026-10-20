@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-  getNowPlayingKicker,
   getNowPlayingTransportAppearance,
   getNowPlayingTimelineLabels,
   getNowPlayingTransportControls,
@@ -12,11 +11,6 @@ import {
 import { appTheme } from '../../../utils/theme.js';
 
 describe('now playing model', () => {
-  it('names the queue in the kicker only for queued playback', () => {
-    assert.equal(getNowPlayingKicker(true), 'Rehearsing queue');
-    assert.equal(getNowPlayingKicker(false), 'Rehearsing');
-  });
-
   it('shows queue navigation around the current-item controls in a queue', () => {
     assert.deepEqual(getNowPlayingTransportControls(true), [
       'previous-item',

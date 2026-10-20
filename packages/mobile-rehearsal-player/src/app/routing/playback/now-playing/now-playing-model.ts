@@ -84,10 +84,6 @@ export const getNowPlayingTransportAppearance = (
 const ZERO_TIME_LABEL = '0:00';
 const REMAINING_TIME_PREFIX = '−';
 
-export const getNowPlayingKicker = (supportsQueueNavigation: boolean) => {
-  return supportsQueueNavigation ? 'Rehearsing queue' : 'Rehearsing';
-};
-
 /** Queue navigation surrounds the current-item controls only in a queue. */
 export const getNowPlayingTransportControls = (
   supportsQueueNavigation: boolean,
