@@ -6,6 +6,7 @@ import {
   MAX_TRACK_MARKERS,
   nextAutomaticMarkerName,
   parseTrackMarkers,
+  resolveMarkerOwner,
 } from './track-markers.ts';
 
 const CREATED_AT = '2026-01-01T00:00:00.000Z';
@@ -164,5 +165,60 @@ describe('nextAutomaticMarkerName', () => {
 
   it('ignores names that are not automatic', () => {
     assert.equal(nextAutomaticMarkerName(['Verse 2', 'Marker 1x']), 'Marker 1');
+  });
+});
+
+describe('resolveMarkerOwner', () => {
+  type OwnerSource = {
+    id: string;
+    adjustment?: { sourceRef: string };
+    markers?: unknown[];
+  };
+  const track: OwnerSource = { id: 'track', markers: [] };
+  const adjusted: OwnerSource = {
+    id: 'adjusted',
+    adjustment: { sourceRef: 'track' },
+  };
+  const orphan: OwnerSource = {
+    id: 'orphan',
+    adjustment: { sourceRef: 'gone' },
+  };
+  const sources = [track, adjusted, orphan];
+
+  it('resolves a track to itself', () => {
+    assert.equal(resolveMarkerOwner({ id: 'track' }, sources), track);
+  });
+
+  it('resolves an adjusted track to the track it was adjusted from', () => {
+    assert.equal(resolveMarkerOwner(adjusted, sources), track);
+  });
+
+  it('resolves a loop to its track', () => {
+    assert.equal(
+      resolveMarkerOwner({ id: 'loop', sourceId: 'track' }, sources),
+      track,
+    );
+  });
+
+  it('resolves a loop of an adjusted track to the original track', () => {
+    assert.equal(
+      resolveMarkerOwner({ id: 'loop', sourceId: 'adjusted' }, sources),
+      track,
+    );
+  });
+
+  it('returns null when the adjusted track lost its original', () => {
+    assert.equal(resolveMarkerOwner(orphan, sources), null);
+    assert.equal(
+      resolveMarkerOwner({ id: 'loop', sourceId: 'orphan' }, sources),
+      null,
+    );
+  });
+
+  it('returns null for a loop whose track is missing', () => {
+    assert.equal(
+      resolveMarkerOwner({ id: 'loop', sourceId: 'missing' }, sources),
+      null,
+    );
   });
 });

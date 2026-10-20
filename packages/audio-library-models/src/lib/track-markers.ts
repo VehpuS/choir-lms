@@ -1,3 +1,5 @@
+import { resolveLyricsOwner } from './source-lyrics.ts';
+
 export const MAX_TRACK_MARKERS = 200;
 export const MAX_MARKER_NAME_LENGTH = 60;
 
@@ -138,4 +140,19 @@ export const parseTrackMarkers = (
   const capped = markers.slice(0, MAX_TRACK_MARKERS);
 
   return capped.length > 0 ? capped : undefined;
+};
+
+type MarkerOwnerSource = Parameters<typeof resolveLyricsOwner>[1][number];
+type MarkerOwnerItem = Parameters<typeof resolveLyricsOwner>[0];
+
+/**
+ * Finds the saved track that owns the markers shown for a track, an adjusted
+ * track, a loop, or a loop of an adjusted track. Markers share the lyrics and
+ * sheet music ownership rules; returns `null` when the owner no longer exists.
+ */
+export const resolveMarkerOwner = <Source extends MarkerOwnerSource>(
+  item: MarkerOwnerItem,
+  sources: readonly Source[],
+): Source | null => {
+  return resolveLyricsOwner(item, sources);
 };
