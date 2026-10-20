@@ -22,6 +22,7 @@ type SectionHeadingProps = {
   titleNumberOfLines?: number;
   titleStyle?: StyleProp<TextStyle>;
   trailingAction?: ReactNode;
+  trailingActionStyle?: StyleProp<ViewStyle>;
 };
 
 const PRIMARY_TEXT = appTheme.colors.text;
@@ -37,6 +38,7 @@ export const SectionHeading = ({
   titleNumberOfLines,
   titleStyle,
   trailingAction,
+  trailingActionStyle,
 }: SectionHeadingProps) => {
   if (
     !hasSectionHeadingContent({
@@ -66,7 +68,9 @@ export const SectionHeading = ({
         {body ? <Text style={[styles.body, bodyStyle]}>{body}</Text> : null}
       </View>
       {trailingAction ? (
-        <View style={styles.trailingAction}>{trailingAction}</View>
+        <View style={[styles.trailingAction, trailingActionStyle]}>
+          {trailingAction}
+        </View>
       ) : null}
     </View>
   );

@@ -22,11 +22,15 @@ export const DestinationHeader = ({
       <SectionHeading
         body={subtitle}
         bodyStyle={styles.subtitle}
-        style={styles.headerContent}
+        style={[
+          styles.headerContent,
+          !subtitle && styles.headerContentCentered,
+        ]}
         title={title}
         titleNumberOfLines={1}
         titleStyle={styles.title}
         trailingAction={trailingAction}
+        trailingActionStyle={!subtitle && styles.trailingActionCentered}
       />
     </View>
   );
@@ -45,6 +49,14 @@ const styles = StyleSheet.create({
   headerContent: {
     gap: appTheme.space.md,
     paddingVertical: appTheme.space.xs,
+  },
+  // Without a subtitle the title is a single line, so centre it and the buttons
+  // on one line rather than pinning both to the top of the row.
+  headerContentCentered: {
+    alignItems: 'center',
+  },
+  trailingActionCentered: {
+    alignSelf: 'center',
   },
   subtitle: {
     color: appTheme.colors.textMuted,
