@@ -34,9 +34,16 @@
 - [ ] 5.3 After a successful save, replace the source (4.3), close the sheet, and open the viewer on the Drive copy.
 - [ ] 5.4 Verify in the browser preview with the user's Drive: a blocked link (for example the `example.org` fixture, or a real score site), a device file, a cancelled upload, and a session without the write scope. Note the result per scenario in `spec.md`'s scenarios.
 
-## 6. Documentation and wrap-up
+## 6. PDF zoom
 
-- [ ] 6.1 Update the README's Google OAuth section with the new scope and the console steps (link to `design.md` rather than duplicating it) and `.env.example` comments if any mention scopes.
-- [ ] 6.2 Update `docs/` or the track-sheet-music spec's notes if they describe the "blocked host" copy, then run `openspec validate save-blocked-sheet-music-links-to-drive`.
-- [ ] 6.3 Run lint, test, typecheck, and build for `mobile-rehearsal-player`, `google-drive`, and `audio-library-models` through Nx, and `npm ci` is not needed (no dependency changes).
-- [ ] 6.4 Add a follow-up entry to `native-playback-follow-ups` noting that native needs the document picker and the same scope flow, then archive this change after the user's go-ahead.
+- [ ] 6.1 **Check what PDF zoom does today** on web with a real Drive PDF (the `Radio Video V5.0 Score and Parts` PDF is a good one): the − and + buttons (50% to 400%, `pdf-page-layout.ts`), whether the zoom value reads correctly, whether the page stays sharp at 300% and 400%, and whether scroll position is kept when zooming. Record what is missing or broken here and in `design.md` before changing anything; adjust 6.2 to match.
+- [ ] 6.2 Add direct-manipulation zoom for PDFs on web: pinch on a touch screen, `Ctrl`/`Cmd` + wheel or trackpad pinch on desktop, and double-tap or double-click to toggle between fit-to-width and a readable zoom (about 200%). Keep the point under the fingers fixed while zooming, clamp to the existing range, and keep the toolbar value in step. Put the gesture-to-zoom math in a pure model (`pdf-zoom-gestures.ts`) with a spec for focal-point scroll offsets, clamping, and the double-tap toggle; keep DOM listeners thin and `.web` only.
+- [ ] 6.3 Make sure repeated zoom steps do not queue a full re-render of every page: coalesce rapid changes so only the final zoom renders at full resolution (a CSS scale in the meantime), and release canvases for pages far from the viewport at high zoom. Verify memory and responsiveness on the 20-page Drive PDF at 400%.
+- [ ] 6.4 Verify in the browser preview (touch emulation for pinch and double-tap, wheel with `Ctrl` for desktop) and confirm the page does not zoom the whole browser page instead of the PDF (`touch-action` and `preventDefault` on the wheel handler).
+
+## 7. Documentation and wrap-up
+
+- [ ] 7.1 Update the README's Google OAuth section with the new scope and the console steps (link to `design.md` rather than duplicating it) and `.env.example` comments if any mention scopes.
+- [ ] 7.2 Update `docs/` or the track-sheet-music spec's notes if they describe the "blocked host" copy, then run `openspec validate save-blocked-sheet-music-links-to-drive`.
+- [ ] 7.3 Run lint, test, typecheck, and build for `mobile-rehearsal-player`, `google-drive`, and `audio-library-models` through Nx, and `npm ci` is not needed (no dependency changes).
+- [ ] 7.4 Add a follow-up entry to `native-playback-follow-ups` noting that native needs the document picker and the same scope flow, then archive this change after the user's go-ahead.

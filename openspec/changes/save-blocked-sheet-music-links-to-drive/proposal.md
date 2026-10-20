@@ -11,6 +11,7 @@ Separately, MusicXML saved as UTF-16 (written by some Finale and Sibelius export
 - Drive authorization asks for one more scope, `https://www.googleapis.com/auth/drive.file` (per-file access to files the app creates), next to the existing `drive.readonly`. Existing sessions keep working for reading; a session without the new scope shows an `Allow saving to Drive` step when the user first tries to save, which re-runs sign-in with both scopes.
 - The content check decodes UTF-16 (byte-order mark or `<\0?\0x\0m\0l\0` start) and UTF-8 with a BOM before looking for the MusicXML root, and the renderer receives text it can parse. A file that still cannot be read says what was wrong (HTML page, not MusicXML, unreadable encoding) instead of one generic message.
 - The failure copy distinguishes a blocked host, an unreachable host, and a bad file, and no longer implies that `Open in browser` fixes a blocked link.
+- PDF zoom on the web viewer gains direct manipulation (pinch, `Ctrl`/`Cmd` + wheel, double-tap to toggle fit and a readable zoom) on top of the existing zoom buttons, so a score a user has just saved to Drive is comfortable to read.
 - Setup documentation: the README gains the Google Cloud console steps for the new scope (Data Access, test users, verification state, and how to confirm the granted scopes).
 
 Native iOS and Android sheet music rendering stays out of scope here; it is tracked in `native-playback-follow-ups` 1.6 and will get its own change. MuseScore (`.mscz`, `.mscx`) files still open outside the app.

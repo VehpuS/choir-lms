@@ -55,3 +55,28 @@ The system SHALL open uncompressed MusicXML saved as UTF-8 (with or without a by
 
 - **WHEN** a source claims to be MusicXML but its text cannot be decoded
 - **THEN** the viewer says the file's encoding cannot be read, not that it is not MusicXML
+
+### Requirement: A PDF can be zoomed by gesture as well as by the zoom controls
+
+The system SHALL let a user zoom a PDF in the web viewer by pinching, by holding `Ctrl` or `Cmd` while scrolling the wheel, and by double-tapping or double-clicking to toggle between fitting the page width and a readable zoom, in addition to the zoom controls. Zoom SHALL stay within the same minimum and maximum as the controls, SHALL keep the point under the pointer in place, and SHALL zoom the PDF rather than the browser page.
+
+#### Scenario: Pinch to zoom
+
+- **WHEN** a user pinches on an open PDF
+- **THEN** the pages zoom around the pinch point and the zoom value in the toolbar follows
+
+#### Scenario: Wheel zoom on desktop
+
+- **WHEN** a user scrolls the wheel with `Ctrl` or `Cmd` held over an open PDF
+- **THEN** the PDF zooms and the browser page does not
+
+#### Scenario: Double-tap toggles
+
+- **WHEN** a user double-taps a PDF that is fitted to the width
+- **THEN** it zooms to a readable size at the tapped point
+- **AND** a second double-tap returns to fitting the width
+
+#### Scenario: Limits
+
+- **WHEN** a gesture would zoom beyond the zoom controls' minimum or maximum
+- **THEN** the zoom stops at that limit
