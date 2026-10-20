@@ -13,14 +13,19 @@
  */
 const PROPER_NAMES: ReadonlySet<string> = new Set([
   'Add',
+  'Alexander',
   'Android',
   'Drive',
   'Expo',
   'Go',
   'Google',
+  'Grand',
+  'Holm',
   'I',
   'My',
   'OAuth',
+  // Part of the Salamander Grand Piano credit in Settings.
+  'Piano',
   'Recents',
   'iOS',
 ]);
