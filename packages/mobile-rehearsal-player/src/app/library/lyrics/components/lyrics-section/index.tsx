@@ -29,10 +29,11 @@ type LyricsSectionProps = {
 
 /**
  * The playback screen's Lyrics section: a fixed-height scrollable window on tall screens (only `View` on short ones)
- * and `Edit`, or, with no lyrics yet, just an `Add lyrics` button (no title or
- * prose, so a track without lyrics takes only a button's height). With lyrics
- * its height depends only on the text size, so changing between two items
- * that have them does not move what is below.
+ * and `Edit`, or, with no lyrics yet, the same header with a single `Add`
+ * in place of them (no prose or reserved preview space, so a track without
+ * lyrics takes only the header's height). With lyrics its height depends only
+ * on the text size, so changing between two items that have them does not
+ * move what is below.
  */
 export const LyricsSection = ({ item }: LyricsSectionProps) => {
   const resolution = useLyricsFor(item);
@@ -56,20 +57,35 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
 
   return (
     <View style={styles.section}>
-      {model.kind === 'filled' ? (
-        <View style={styles.header}>
-          <Text style={styles.kicker}>Lyrics</Text>
-          <View style={styles.actions}>
-            <OutlinedActionButton label="Edit" onPress={editLyrics} />
+      {/* One header for both states, so the row does not change shape: Edit
+          and View with lyrics, a single accent Add without. */}
+      <View style={styles.header}>
+        <Text style={styles.kicker}>Lyrics</Text>
+        <View style={styles.actions}>
+          {model.kind === 'filled' ? (
+            <>
+              <OutlinedActionButton label="Edit" onPress={editLyrics} />
+              <OutlinedActionButton
+                label="View"
+                onPress={() => {
+                  requestLyricsView({
+                    mode: 'reading',
+                    sourceId: item.sourceId,
+                  });
+                }}
+              />
+            </>
+          ) : (
             <OutlinedActionButton
-              label="View"
-              onPress={() => {
-                requestLyricsView({ mode: 'reading', sourceId: item.sourceId });
-              }}
+              accessibilityLabel="Add lyrics"
+              icon="plus"
+              label="Add"
+              onPress={editLyrics}
+              variant="accent"
             />
-          </View>
+          )}
         </View>
-      ) : null}
+      </View>
       {model.kind === 'filled' ? (
         <>
           {model.sharedFromName ? (
@@ -89,16 +105,7 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
             </ScrollView>
           ) : null}
         </>
-      ) : (
-        <View style={styles.empty}>
-          <OutlinedActionButton
-            icon="plus"
-            label="Add lyrics"
-            onPress={editLyrics}
-            variant="accent"
-          />
-        </View>
-      )}
+      ) : null}
     </View>
   );
 };
@@ -107,9 +114,6 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     gap: appTheme.space.xs,
-  },
-  empty: {
-    alignItems: 'flex-start',
   },
   header: {
     flexDirection: 'row',
