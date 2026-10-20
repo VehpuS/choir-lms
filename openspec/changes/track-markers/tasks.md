@@ -9,11 +9,13 @@
 
 ## 2. Preference
 
-- [ ] 2.1 Add the `markers-filter-preference` store (`choirlms.markers.filter`, `all` | `mine`, default `all`, unknown value falls back) shared by the sheet, the picker, and the flags. Spec defaults, storage failure, and parsing.
+- [x] 2.1 Add the `markers-filter-preference` store (`choirlms.markers.filter`, `all` | `mine`, default `all`, unknown value falls back) shared by the sheet, the picker, and the flags. Spec defaults, storage failure, and parsing.
 
 ## 3. Playback jumping
 
-- [ ] 3.1 Add a `jumpToMarker` operation on the playback controller: seek by absolute audio position when the owner (or a matching loop or adjusted copy) is loaded, preserving the play state; otherwise load the originating item and start from the position, seeking on ready; clamp inside the loop in a loop context. Check the existing seek and loop-range handling first and record the finding here. Spec with the controller fakes: playing, paused, unloaded, loop clamp, and a past-end marker refused.
+- [x] 3.1 Add a `jumpToMarker` operation on the playback controller: seek by absolute audio position when the owner (or a matching loop or adjusted copy) is loaded, preserving the play state; otherwise load the originating item and start from the position, seeking on ready; clamp inside the loop in a loop context. Check the existing seek and loop-range handling first and record the finding here. Spec with the controller fakes: playing, paused, unloaded, loop clamp, and a past-end marker refused.
+  - Finding: the player already seeks in absolute audio seconds and `loadPlayableItemIntoPlayer` already takes `initialPositionSeconds` and `shouldPlay`, so "start from the marker" needs no seek-on-ready. A seek leaves the play state alone. Implemented as the pure `planMarkerJump` plus `jumpToMarker` on the controller (new `marker-jump-*` files beside the runtime commands). The seek is used when the loaded item has the same owner and contains the marker; otherwise the originating item is loaded.
+  - Found and fixed in passing: `createAdjustedTrackSource` copied `markers` onto adjusted copies; it now leaves them on the owner (spec added).
 
 ## 4. Markers sheet
 

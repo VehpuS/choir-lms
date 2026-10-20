@@ -92,6 +92,25 @@ describe('adjusted tracks', () => {
     assert.equal(adjusted.sheetMusic, undefined);
   });
 
+  it('does not copy the source markers', () => {
+    const adjusted = createAdjustedTrackSource({
+      source: {
+        ...source,
+        markers: [
+          {
+            id: 'm1',
+            name: 'Verse',
+            positionMs: 1_000,
+            createdAt: '2026-10-01T00:00:00.000Z',
+          },
+        ],
+      },
+      transform: slowAndLow,
+    });
+
+    assert.equal(adjusted.markers, undefined);
+  });
+
   it('refuses to adjust an adjusted track or to save a neutral transform', () => {
     const adjusted = createAdjustedTrackSource({
       source,

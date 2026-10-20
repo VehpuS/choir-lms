@@ -1,5 +1,9 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
+import {
+  createSavedTrackMarkerJumpCommand,
+  type MarkerJumpOutcome,
+} from './marker-jump-command';
 import { createSavedTrackPlaybackQueueCommands } from './queue-commands';
 import {
   createSavedTrackPlaybackRuntimeCommands,
@@ -12,6 +16,10 @@ export type SavedTrackPlaybackController = SavedTrackPlaybackRuntimeCommands & {
   playNextQueueItem: () => Promise<void>;
   playPreviousQueueItem: () => Promise<void>;
   loadPlayableItem: (playableItem: PlayableItem) => Promise<boolean>;
+  jumpToMarker: (
+    target: PlayableItem,
+    positionMs: number,
+  ) => Promise<MarkerJumpOutcome>;
 };
 
 export const createSavedTrackPlaybackController = (
@@ -26,5 +34,6 @@ export const createSavedTrackPlaybackController = (
   return {
     ...runtimeCommands,
     ...queueCommands,
+    jumpToMarker: createSavedTrackMarkerJumpCommand(options, runtimeCommands),
   };
 };
