@@ -42,6 +42,7 @@ export const PianoSection = () => {
           />
         </View>
       ))}
+      <Text style={styles.credit}>{PIANO_SETTINGS_COPY.credit}</Text>
     </View>
   );
 };
@@ -51,6 +52,11 @@ const styles = StyleSheet.create({
     color: appTheme.colors.textMuted,
     fontSize: 13,
     lineHeight: 18,
+  },
+  credit: {
+    color: appTheme.colors.textMuted,
+    fontSize: 12,
+    lineHeight: 16,
   },
   row: { gap: appTheme.space.xs },
   rowTitle: {

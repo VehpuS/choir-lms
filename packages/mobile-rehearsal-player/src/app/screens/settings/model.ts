@@ -119,6 +119,10 @@ export const describeSearchSourceHost = (urlTemplate: string): string => {
 
 export const PIANO_SETTINGS_COPY = {
   body: 'The keyboard that opens over playback and the sheet music. Notes always sound at concert pitch.',
+  // Required by the samples' licence (CC BY 3.0): author, work, licence, and
+  // a note that the recordings were trimmed and converted.
+  credit:
+    'Piano recordings: Salamander Grand Piano by Alexander Holm, licensed CC BY 3.0, trimmed and converted for this app.',
   sectionTitle: 'Piano',
 } as const;
 

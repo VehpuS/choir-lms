@@ -1,7 +1,7 @@
 import { createOrganVoice } from './organ-voice';
 import type { PianoSound } from './piano-preferences';
 import type { PianoNoteHandle, PianoVoice } from './piano-voice';
-import { createSynthPianoVoice } from './synth-piano-voice';
+import { createSampledPianoVoice } from './sampled-piano-voice';
 import type { AudioContextLike } from './web-audio-types';
 
 export type PianoSoundEngineOptions = {
@@ -9,6 +9,10 @@ export type PianoSoundEngineOptions = {
   createContext: () => AudioContextLike | null;
   /** Read at each press so Settings and the volume control apply at once. */
   getSettings: () => { sound: PianoSound; volume: number };
+  /** Fetches one recorded piano note as encoded audio. */
+  loadSample: (midi: number) => Promise<ArrayBuffer>;
+  /** Called once if the recordings fail; the piano then plays as the organ. */
+  onSamplesUnavailable?: () => void;
 };
 
 export type PianoSoundEngine = {
@@ -36,14 +40,6 @@ const MIN_DELAYED_NOTE_MS = 200;
 const STALE_TAP_MS = 1000;
 const DEFAULT_VELOCITY = 0.8;
 const NO_NOTES: ReadonlySet<number> = new Set();
-
-const VOICE_FACTORIES: Record<
-  PianoSound,
-  (context: AudioContextLike) => PianoVoice
-> = {
-  piano: createSynthPianoVoice,
-  organ: createOrganVoice,
-};
 
 /**
  * Owns the piano's own audio context (separate from playback shaping, so the
@@ -74,12 +70,24 @@ export const createPianoSoundEngine = (
     });
   };
 
+  const createVoice = (sound: PianoSound, audio: AudioContextLike) =>
+    sound === 'organ'
+      ? createOrganVoice(audio)
+      : createSampledPianoVoice(audio, {
+          fallback: createOrganVoice(audio),
+          loadSample: options.loadSample,
+          onLoadFailed: options.onSamplesUnavailable,
+        });
+
   const voiceFor = (sound: PianoSound, audio: AudioContextLike) => {
     let voice = voices.get(sound);
 
     if (!voice) {
-      voice = VOICE_FACTORIES[sound](audio);
+      voice = createVoice(sound, audio);
       voices.set(sound, voice);
+      // The recordings load at the first use; presses meanwhile are queued by
+      // the voice itself.
+      void voice.load();
     }
 
     return voice;

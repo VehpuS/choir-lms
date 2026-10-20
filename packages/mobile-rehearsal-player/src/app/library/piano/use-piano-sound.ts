@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 
 import { pianoCapabilities } from './piano-capabilities';
 import { getPianoPreferences } from './piano-preferences';
+import { loadPianoSample } from './piano-sample-sources';
 import {
   createPianoSoundEngine,
   type PianoSoundEngine,
@@ -27,6 +28,7 @@ let consumers = 0;
 const acquireEngine = (): PianoSoundEngine => {
   sharedEngine ??= createPianoSoundEngine({
     createContext: createWebContext,
+    loadSample: loadPianoSample,
     getSettings: () => {
       const { sound, volume } = getPianoPreferences();
 

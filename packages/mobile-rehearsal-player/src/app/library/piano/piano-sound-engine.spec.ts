@@ -4,6 +4,9 @@ import { describe, it } from 'node:test';
 import { createFakeAudioContext } from './fake-audio-context.js';
 import { createPianoSoundEngine } from './piano-sound-engine.js';
 
+// The recordings are never fetched here (see sampled-piano-voice.spec.ts).
+const loadSample = async () => new ArrayBuffer(8);
+
 const createHarness = (settings = { sound: 'organ', volume: 0.5 } as const) => {
   const contexts: ReturnType<typeof createFakeAudioContext>[] = [];
   let current: { sound: 'piano' | 'organ'; volume: number } = { ...settings };
@@ -16,6 +19,7 @@ const createHarness = (settings = { sound: 'organ', volume: 0.5 } as const) => {
       return context;
     },
     getSettings: () => current,
+    loadSample,
   });
 
   return {
@@ -86,13 +90,17 @@ describe('piano sound engine', () => {
     change({ sound: 'piano', volume: 0.5 });
     engine.press(62);
     await untilRunning();
-    assert.equal(contexts[0].oscillators.length, 3 + 6);
+    await untilRunning();
+    // The piano plays a recording, not oscillators; the organ's three stay.
+    assert.equal(contexts[0].oscillators.length, 3);
+    assert.equal(contexts[0].sources.length, 1);
   });
 
   it('does nothing where no context can be created', () => {
     const engine = createPianoSoundEngine({
       createContext: () => null,
       getSettings: () => ({ sound: 'piano', volume: 1 }),
+      loadSample,
     });
 
     engine.press(60);
@@ -122,6 +130,7 @@ describe('piano sound engine', () => {
           return context;
         },
         getSettings: () => ({ sound: 'organ', volume: 0.5 }),
+        loadSample,
       });
 
       return { engine, contexts };
