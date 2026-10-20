@@ -35,6 +35,7 @@ export type PhosphorGlyph =
   | 'ListNumbers'
   | 'ListPlus'
   | 'MagnifyingGlass'
+  | 'MagnifyingGlassPlus'
   | 'Minus'
   | 'MinusCircle'
   | 'MusicNote'
@@ -186,6 +187,7 @@ export const APP_ICON_GLYPHS = {
   close: regular('X'),
   'close-circle-outline': regular('XCircle'),
   magnify: regular('MagnifyingGlass'),
+  'zoom-in': regular('MagnifyingGlassPlus'),
   'tune-variant': regular('SlidersHorizontal'),
   'sort-ascending': regular('SortAscending'),
   'sort-descending': regular('SortDescending'),

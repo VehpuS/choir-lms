@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { appTheme } from '../../../../utils/theme';
 import {
   centredScrollOffset,
+  createKeyboardLayout,
   middleCScrollOffset,
   PIANO_KEY_HEIGHTS,
+  rescaledScrollOffset,
 } from '../../keyboard-layout';
 import { pianoCapabilities } from '../../piano-capabilities';
 import type { PianoHeightStep } from '../../keyboard-layout';
@@ -51,6 +53,10 @@ const PianoOverlayBody = ({
   const [viewportWidth, setViewportWidth] = useState(0);
   const heightStep = capHeightStep(preferences.heightStep, heightLimit);
   const keyHeight = PIANO_KEY_HEIGHTS[heightStep];
+  const layout = useMemo(
+    () => createKeyboardLayout(preferences.keyWidth),
+    [preferences.keyWidth],
+  );
   // What the opening position was based on, and whether the user has scrolled
   // since: a score's range can arrive after the piano opens, and it replaces
   // the middle C default only if nobody has scrolled yet.
@@ -73,14 +79,14 @@ const PianoOverlayBody = ({
       if (placed.current !== 'range') {
         placed.current = 'range';
         setPianoScrollLeft(
-          centredScrollOffset({ lowest, highest }, viewportWidth),
+          centredScrollOffset({ lowest, highest }, viewportWidth, layout),
         );
       }
     } else if (placed.current === 'none') {
       placed.current = 'default';
 
       if (preferences.scrollLeft === 0) {
-        setPianoScrollLeft(middleCScrollOffset(viewportWidth));
+        setPianoScrollLeft(middleCScrollOffset(viewportWidth, layout));
       }
     }
   }, [highest, lowest, preferences.scrollLeft, viewportWidth]);
@@ -90,15 +96,36 @@ const PianoOverlayBody = ({
     setPianoScrollLeft(next);
   };
 
-  const scrollLeft = clampScrollLeft(preferences.scrollLeft, viewportWidth);
+  const scrollLeft = clampScrollLeft(
+    preferences.scrollLeft,
+    viewportWidth,
+    layout.stripWidth,
+  );
+
+  // The key at the centre of the view stays there as the keys widen or narrow.
+  const changeKeyWidth = (keyWidth: number) => {
+    const next = createKeyboardLayout(keyWidth);
+
+    setPianoPreferences({ keyWidth: next.whiteKeyWidth });
+    setPianoScrollLeft(
+      rescaledScrollOffset({
+        from: layout,
+        scrollLeft,
+        to: next,
+        viewportWidth,
+      }),
+    );
+  };
 
   return (
     <View style={styles.overlay} testID="piano-overlay">
       <PianoOverlayHeader
         heightStep={heightStep}
+        keyWidth={preferences.keyWidth}
         onChangeHeightStep={(heightStep) => {
           setPianoPreferences({ heightStep });
         }}
+        onChangeKeyWidth={changeKeyWidth}
         onChangeVolume={(volume) => {
           setPianoPreferences({ volume });
         }}
@@ -110,6 +137,7 @@ const PianoOverlayBody = ({
       <PianoKeyboard
         keyHeight={keyHeight}
         labelOptions={preferences}
+        layout={layout}
         onPress={sound.press}
         onRelease={sound.release}
         onScrollLeftChange={scrollByUser}
@@ -120,6 +148,7 @@ const PianoOverlayBody = ({
       <PianoScrollStrip
         onScrollLeftChange={scrollByUser}
         scrollLeft={scrollLeft}
+        stripWidth={layout.stripWidth}
         viewportWidth={viewportWidth}
       />
     </View>

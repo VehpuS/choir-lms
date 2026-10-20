@@ -15,6 +15,8 @@ const PERCENT = 100;
 type PianoScrollStripProps = {
   onScrollLeftChange: (scrollLeft: number) => void;
   scrollLeft: number;
+  /** The width of the whole keyboard at the current key width. */
+  stripWidth: number;
   viewportWidth: number;
 };
 
@@ -25,16 +27,19 @@ type PianoScrollStripProps = {
 export const PianoScrollStrip = ({
   onScrollLeftChange,
   scrollLeft,
+  stripWidth,
   viewportWidth,
 }: PianoScrollStripProps) => {
   const mapRef = useRef<View>(null);
   const isDragging = useRef(false);
-  const window = mapWindow(scrollLeft, viewportWidth);
+  const window = mapWindow(scrollLeft, viewportWidth, stripWidth);
 
   const seek = (event: unknown) => {
     const point = pointRelativeTo(mapRef.current, readPointer(event));
 
-    onScrollLeftChange(scrollLeftFromMapX(point.x, point.width, viewportWidth));
+    onScrollLeftChange(
+      scrollLeftFromMapX(point.x, point.width, viewportWidth, stripWidth),
+    );
   };
 
   const webProps = {

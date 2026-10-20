@@ -4,9 +4,7 @@ import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { appTheme } from '../../../../utils/theme';
 import {
   BLACK_KEY_HEIGHT_RATIO,
-  PIANO_BLACK_KEYS,
-  PIANO_STRIP_WIDTH,
-  PIANO_WHITE_KEYS,
+  type KeyboardLayout,
   pianoKeyLabel,
   type PianoLabelOptions,
 } from '../../keyboard-layout';
@@ -20,6 +18,7 @@ const WHEEL_SCROLL_FACTOR = 1;
 
 type PianoKeyboardProps = {
   keyHeight: number;
+  layout: KeyboardLayout;
   labelOptions: PianoLabelOptions;
   onPress: (midi: number) => void;
   onRelease: (midi: number) => void;
@@ -43,6 +42,7 @@ type WheelEvent = {
  */
 export const PianoKeyboard = ({
   keyHeight,
+  layout,
   labelOptions,
   onPress,
   onRelease,
@@ -55,9 +55,9 @@ export const PianoKeyboard = ({
   const [viewportWidth, setViewportWidth] = useState(0);
   // The gesture model outlives renders; it reads the latest height and
   // handlers through refs so it is created once.
-  const latest = useRef({ keyHeight, onPress, onRelease });
+  const latest = useRef({ keyHeight, layout, onPress, onRelease });
 
-  latest.current = { keyHeight, onPress, onRelease };
+  latest.current = { keyHeight, layout, onPress, onRelease };
 
   const gestures = useMemo(() => {
     return createKeyGestures(
@@ -69,7 +69,10 @@ export const PianoKeyboard = ({
           latest.current.onRelease(midi);
         },
       },
-      { keyHeight: () => latest.current.keyHeight },
+      {
+        keyHeight: () => latest.current.keyHeight,
+        layout: () => latest.current.layout,
+      },
     );
   }, []);
 
@@ -120,6 +123,7 @@ export const PianoKeyboard = ({
           clampScrollLeft(
             scrollLeft + delta * WHEEL_SCROLL_FACTOR,
             viewportWidth,
+            layout.stripWidth,
           ),
         );
       }
@@ -141,11 +145,11 @@ export const PianoKeyboard = ({
           {
             height: keyHeight,
             transform: [{ translateX: -scrollLeft }],
-            width: PIANO_STRIP_WIDTH,
+            width: layout.stripWidth,
           },
         ]}
       >
-        {PIANO_WHITE_KEYS.map((key) => {
+        {layout.whiteKeys.map((key) => {
           const label = pianoKeyLabel(key.midi, labelOptions);
 
           return (
@@ -161,7 +165,7 @@ export const PianoKeyboard = ({
             </View>
           );
         })}
-        {PIANO_BLACK_KEYS.map((key) => {
+        {layout.blackKeys.map((key) => {
           const label = pianoKeyLabel(key.midi, labelOptions);
 
           return (

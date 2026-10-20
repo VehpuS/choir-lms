@@ -1,8 +1,7 @@
 import {
   BLACK_KEY_HEIGHT_RATIO,
-  PIANO_BLACK_KEYS,
-  PIANO_WHITE_KEYS,
-  WHITE_KEY_WIDTH,
+  DEFAULT_KEYBOARD_LAYOUT,
+  type KeyboardLayout,
   type PianoKey,
 } from './keyboard-layout';
 import { MAX_PIANO_VOICES } from './piano-voice';
@@ -16,13 +15,14 @@ export const keyAtPoint = (
   x: number,
   y: number,
   keyHeight: number,
+  layout: KeyboardLayout = DEFAULT_KEYBOARD_LAYOUT,
 ): PianoKey | null => {
   if (y < 0 || y > keyHeight || x < 0) {
     return null;
   }
 
   if (y <= keyHeight * BLACK_KEY_HEIGHT_RATIO) {
-    const black = PIANO_BLACK_KEYS.find(
+    const black = layout.blackKeys.find(
       (key) => x >= key.left && x < key.left + key.width,
     );
 
@@ -31,7 +31,7 @@ export const keyAtPoint = (
     }
   }
 
-  return PIANO_WHITE_KEYS[Math.floor(x / WHITE_KEY_WIDTH)] ?? null;
+  return layout.whiteKeys[Math.floor(x / layout.whiteKeyWidth)] ?? null;
 };
 
 /**
@@ -61,7 +61,12 @@ export type KeyGestures = {
  */
 export const createKeyGestures = (
   handlers: KeyGestureHandlers,
-  options: { keyHeight: () => number; maxVoices?: number },
+  options: {
+    keyHeight: () => number;
+    /** Read at each touch, so the keys can be widened while the model lives. */
+    layout?: () => KeyboardLayout;
+    maxVoices?: number;
+  },
 ): KeyGestures => {
   const maxVoices = options.maxVoices ?? MAX_PIANO_VOICES;
   /** The key each playing pointer holds, or null once it left the keys. */
@@ -117,7 +122,9 @@ export const createKeyGestures = (
   };
 
   const keyUnder = (x: number, y: number) => {
-    return keyAtPoint(x, y, options.keyHeight())?.midi ?? null;
+    return (
+      keyAtPoint(x, y, options.keyHeight(), options.layout?.())?.midi ?? null
+    );
   };
 
   return {

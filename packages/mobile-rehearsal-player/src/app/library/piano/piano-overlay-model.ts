@@ -60,10 +60,11 @@ export const snapHeightStep = (
 export const clampScrollLeft = (
   scrollLeft: number,
   viewportWidth: number,
+  stripWidth: number = PIANO_STRIP_WIDTH,
 ): number => {
   return Math.min(
     Math.max(scrollLeft, 0),
-    Math.max(PIANO_STRIP_WIDTH - viewportWidth, 0),
+    Math.max(stripWidth - viewportWidth, 0),
   );
 };
 
@@ -75,23 +76,30 @@ export const scrollLeftFromMapX = (
   x: number,
   mapWidth: number,
   viewportWidth: number,
+  stripWidth: number = PIANO_STRIP_WIDTH,
 ): number => {
   if (mapWidth <= 0) {
     return 0;
   }
 
   return clampScrollLeft(
-    (x / mapWidth) * PIANO_STRIP_WIDTH - viewportWidth / 2,
+    (x / mapWidth) * stripWidth - viewportWidth / 2,
     viewportWidth,
+    stripWidth,
   );
 };
 
 /** The visible window on the minimap, as fractions of its width. */
-export const mapWindow = (scrollLeft: number, viewportWidth: number) => {
-  const left = clampScrollLeft(scrollLeft, viewportWidth) / PIANO_STRIP_WIDTH;
+export const mapWindow = (
+  scrollLeft: number,
+  viewportWidth: number,
+  stripWidth: number = PIANO_STRIP_WIDTH,
+) => {
+  const left =
+    clampScrollLeft(scrollLeft, viewportWidth, stripWidth) / stripWidth;
 
   return {
     left,
-    width: Math.min(viewportWidth / PIANO_STRIP_WIDTH, 1),
+    width: Math.min(viewportWidth / stripWidth, 1),
   };
 };

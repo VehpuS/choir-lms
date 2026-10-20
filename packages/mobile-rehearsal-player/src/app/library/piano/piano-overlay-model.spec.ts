@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { PIANO_STRIP_WIDTH } from './keyboard-layout.js';
+import { createKeyboardLayout, PIANO_STRIP_WIDTH } from './keyboard-layout.js';
 import {
   capHeightStep,
   clampScrollLeft,
@@ -90,5 +90,32 @@ describe('scrolling', () => {
     assert.ok(Math.abs(width - viewport / PIANO_STRIP_WIDTH) < 1e-9);
     assert.ok(left > 0 && left < 1);
     assert.equal(mapWindow(0, PIANO_STRIP_WIDTH * 2).width, 1);
+  });
+});
+
+describe('scrolling at a wider key width', () => {
+  const viewport = 400;
+  const wideStrip = createKeyboardLayout(80).stripWidth;
+
+  it('clamps to the wider strip', () => {
+    assert.equal(
+      clampScrollLeft(99999, viewport, wideStrip),
+      wideStrip - viewport,
+    );
+    assert.equal(clampScrollLeft(50, wideStrip + 1, wideStrip), 0);
+  });
+
+  it('maps a minimap touch onto the wider strip', () => {
+    assert.equal(
+      scrollLeftFromMapX(150, 300, viewport, wideStrip),
+      wideStrip / 2 - viewport / 2,
+    );
+  });
+
+  it('shows a narrower window on the minimap as the strip grows', () => {
+    const { width } = mapWindow(0, viewport, wideStrip);
+
+    assert.ok(Math.abs(width - viewport / wideStrip) < 1e-9);
+    assert.ok(width < mapWindow(0, viewport).width);
   });
 });

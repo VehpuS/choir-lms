@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, it } from 'node:test';
 
-import { PIANO_KEYS, WHITE_KEY_WIDTH } from './keyboard-layout.js';
+import {
+  createKeyboardLayout,
+  PIANO_KEYS,
+  WHITE_KEY_WIDTH,
+} from './keyboard-layout.js';
 import { createKeyGestures, keyAtPoint } from './piano-key-gestures.js';
 
 const KEY_HEIGHT = 100;
@@ -28,6 +32,60 @@ const createHarness = (maxVoices?: number) => {
 
   return { events, gestures };
 };
+
+describe('key hit-testing at a wider key width', () => {
+  const wide = createKeyboardLayout(80);
+
+  it('finds the key under a point on the wider keys', () => {
+    const d4 = wide.keys[62 - 21];
+
+    assert.equal(
+      keyAtPoint(d4.left + d4.width / 2, WHITE_ZONE_Y, KEY_HEIGHT, wide)?.midi,
+      62,
+    );
+    // At 40 pt the same x lands on a different (higher) key.
+    assert.notEqual(
+      keyAtPoint(d4.left + d4.width / 2, WHITE_ZONE_Y, KEY_HEIGHT)?.midi,
+      62,
+    );
+  });
+
+  it('prefers the wider black key in its region', () => {
+    const black = wide.keys[61 - 21];
+
+    assert.equal(
+      keyAtPoint(black.left + black.width / 2, 10, KEY_HEIGHT, wide)?.midi,
+      61,
+    );
+    assert.equal(
+      keyAtPoint(black.left + black.width - 1, 10, KEY_HEIGHT, wide)?.midi,
+      61,
+    );
+  });
+
+  it('uses the layout the model is asked for at each touch', () => {
+    const events: string[] = [];
+    let layout = createKeyboardLayout(40);
+    const gestures = createKeyGestures(
+      {
+        press: (midi) => events.push(`+${midi}`),
+        release: (midi) => events.push(`-${midi}`),
+      },
+      { keyHeight: () => KEY_HEIGHT, layout: () => layout },
+    );
+    const d4Wide = createKeyboardLayout(80).keys[62 - 21];
+    const x = d4Wide.left + d4Wide.width / 2;
+
+    gestures.pointerDown(1, x, WHITE_ZONE_Y);
+    gestures.pointerUp(1);
+    layout = createKeyboardLayout(80);
+    gestures.pointerDown(2, x, WHITE_ZONE_Y);
+    gestures.pointerUp(2);
+
+    assert.notEqual(events[0], '+62');
+    assert.deepEqual(events.slice(-2), ['+62', '-62']);
+  });
+});
 
 describe('key hit-testing', () => {
   it('prefers a black key in its region and the white key below it', () => {

@@ -27,6 +27,14 @@ describe('app icon glyph map', () => {
     ]);
   });
 
+  it('gives key width its own zoom glyph, distinct from search', () => {
+    assert.deepEqual(namesUsingGlyph('MagnifyingGlassPlus'), ['zoom-in']);
+    assert.notEqual(
+      resolveAppIconGlyph('zoom-in').glyph,
+      resolveAppIconGlyph('magnify').glyph,
+    );
+  });
+
   it('renders every repeat state with a repeat-family glyph and never the shuffle glyph', () => {
     const shuffleGlyph = resolveAppIconGlyph('shuffle').glyph;
 
