@@ -242,7 +242,7 @@ Companion mockup states: design screen 1f shows the playback sheet with the prac
 #### Scenario: Mini-player expands into a slide-up playback modal
 
 - **WHEN** a user opens the dedicated playback screen from the mini-player or another playback entry point
-- **THEN** the system presents a full-screen modal that slides up from the bottom, includes a swipe-down chevron or pill plus contextual header text such as `Rehearsing: [Song Name]`, and keeps audio playback uninterrupted during the transition
+- **THEN** the system presents a full-screen modal that slides up from the bottom, includes a swipe-down chevron or pill plus the playback status (`Playing` or `Paused`) in its header, and keeps audio playback uninterrupted during the transition
 
 #### Scenario: The playback surface is one practice sheet, and a full-screen waveform exists only for editing
 
