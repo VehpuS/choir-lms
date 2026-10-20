@@ -65,7 +65,9 @@ export type FakeBufferSource = BufferSourceNodeLike &
   };
 
 /** A recording stand-in for `AudioContext`, with a clock the test advances. */
-export const createFakeAudioContext = () => {
+export const createFakeAudioContext = (
+  options: { blockResume?: boolean } = {},
+) => {
   const gains: FakeGain[] = [];
   const oscillators: FakeOscillator[] = [];
   const sources: FakeBufferSource[] = [];
@@ -79,9 +81,31 @@ export const createFakeAudioContext = () => {
     sources,
     decoded,
     resumeCalls: 0,
-    resume: async () => {
+    /**
+     * While true, `resume()` stays pending, as in a browser that has not seen
+     * a qualifying user gesture; `allowStart()` is that gesture.
+     */
+    isBlocked: options.blockResume ?? false,
+    waitingResumes: [] as (() => void)[],
+    resume: () => {
       context.resumeCalls += 1;
+
+      if (context.isBlocked) {
+        return new Promise<void>((resolve) => {
+          context.waitingResumes.push(resolve);
+        });
+      }
+
       context.state = 'running';
+
+      return Promise.resolve();
+    },
+    allowStart: () => {
+      context.isBlocked = false;
+      context.state = 'running';
+      context.waitingResumes.splice(0).forEach((resolve) => {
+        resolve();
+      });
     },
     close: async () => {
       context.state = 'closed';
