@@ -29,7 +29,6 @@ const createVoice = (options: { fails?: boolean } = {}) => {
   const context = createFakeAudioContext();
   const fallback = createFallback();
   const loaded: number[] = [];
-  let failures = 0;
   const voice = createSampledPianoVoice(context, {
     fallback: fallback.voice,
     loadSample: async (midi) => {
@@ -41,9 +40,6 @@ const createVoice = (options: { fails?: boolean } = {}) => {
 
       return new ArrayBuffer(8);
     },
-    onLoadFailed: () => {
-      failures += 1;
-    },
   });
 
   return {
@@ -51,7 +47,6 @@ const createVoice = (options: { fails?: boolean } = {}) => {
     fallback,
     loaded,
     voice,
-    failures: () => failures,
   };
 };
 
@@ -150,7 +145,7 @@ describe('sampled piano voice', () => {
   });
 
   it('uses the fallback voice when the recordings cannot load', async () => {
-    const { failures, fallback, voice } = createVoice({ fails: true });
+    const { fallback, voice } = createVoice({ fails: true });
 
     voice.noteOn(60, 1);
     await voice.load();
@@ -158,6 +153,5 @@ describe('sampled piano voice', () => {
     voice.noteOn(64, 1);
 
     assert.deepEqual(fallback.played, [60, 64]);
-    assert.equal(failures(), 1);
   });
 });

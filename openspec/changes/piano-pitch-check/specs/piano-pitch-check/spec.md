@@ -107,7 +107,7 @@ The system SHALL provide two sounds: a `Piano` (the default; a synthesized piano
 #### Scenario: Sample loading fails
 
 - **WHEN** the piano uses recorded samples and they cannot be loaded and the user presses a key
-- **THEN** the note still sounds in the organ tone and the overlay shows a quiet notice that the piano sound is unavailable
+- **THEN** the note still sounds, in the organ tone, and nothing is shown to the user about the failure
 
 #### Scenario: Unknown stored value
 

@@ -21,8 +21,6 @@ export type SampledPianoVoiceOptions = {
   fallback: PianoVoice;
   /** Fetches one recording as encoded audio. */
   loadSample: (midi: number) => Promise<ArrayBuffer>;
-  /** Called once, when the recordings fail to load. */
-  onLoadFailed?: () => void;
 };
 
 /**
@@ -30,7 +28,7 @@ export type SampledPianoVoiceOptions = {
  * the key. The recordings load on the first press (or `load()`) and stay for
  * the session. A press that arrives while they load is held and played on
  * arrival if it is still recent; if they cannot load, the fallback voice
- * plays instead.
+ * plays instead, with no report to the user (they have nothing to act on).
  */
 export const createSampledPianoVoice = (
   context: AudioContextLike,
@@ -63,7 +61,6 @@ export const createSampledPianoVoice = (
       },
       () => {
         state = 'failed';
-        options.onLoadFailed?.();
       },
     );
 

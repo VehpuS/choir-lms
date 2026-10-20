@@ -11,8 +11,6 @@ export type PianoSoundEngineOptions = {
   getSettings: () => { sound: PianoSound; volume: number };
   /** Fetches one recorded piano note as encoded audio. */
   loadSample: (midi: number) => Promise<ArrayBuffer>;
-  /** Called once if the recordings fail; the piano then plays as the organ. */
-  onSamplesUnavailable?: () => void;
 };
 
 export type PianoSoundEngine = {
@@ -76,7 +74,6 @@ export const createPianoSoundEngine = (
       : createSampledPianoVoice(audio, {
           fallback: createOrganVoice(audio),
           loadSample: options.loadSample,
-          onLoadFailed: options.onSamplesUnavailable,
         });
 
   const voiceFor = (sound: PianoSound, audio: AudioContextLike) => {

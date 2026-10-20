@@ -44,9 +44,9 @@ A `piano-key-gestures` model maps pointer ids to the key under them (with black 
 
 `PianoVoice` is `{ load(): Promise<void>; noteOn(midi, velocity): NoteHandle; setVolume(v): void; dispose(): void }` with `NoteHandle.release()`. The web implementations use their own `AudioContext`, separate from the playback shaping graph, so the piano is mixed by the output device on top of the track and never touches the track's gain.
 
-- `Piano` (default): sampled. One sample every minor third from C2 to C7 (about 21 samples) as short decaying clips, played at `playbackRate` for the nearest sample; notes held longer than the clip loop the tail with a slow fade; release is a 250 ms exponential fade. Samples are lazy-loaded the first time a key is pressed and cached for the session; the overlay shows keys immediately and the first press waits for the load (press is queued and played on arrival, but not later than 1.5 s). Size budget is 1.5 MB total; the licence is verified in the spike (task 1.1) and recorded in the repo. If no acceptable sample set exists, the fallback is an additive-synthesis piano (decaying partial stack) behind the same interface.
+- `Piano` (default): sampled. One sample every minor third from C2 to C7 (about 21 samples) as short decaying clips, played at `playbackRate` for the nearest sample; notes held longer than the clip loop the tail with a slow fade; release is a 250 ms exponential fade. Samples are lazy-loaded the first time a key is pressed and cached for the session; the overlay shows keys immediately and the first press waits for the load (press is queued and played on arrival, but not later than 1.5 s). Size budget is 1.5 MB total; the licence is verified in the spike (task 1.1) and recorded in the repo. If the samples cannot be loaded, the voice plays the `Organ` tone instead, silently: the user has nothing to act on, so no notice is shown (decided 2026-10-21). Nothing else in the overlay or Settings reports the failure.
 
-  Outcome (task 1.1, 2026-10-19): no sample set with a verified redistributable licence was found, so `Piano` ships as the additive-synthesis voice. The sample loading, queued first press, and load-failure fallback above are deferred to task 9.1 and apply once samples are chosen.
+  Outcome (task 1.1, 2026-10-19): no sample set with a verified redistributable licence was found, so `Piano` first shipped as an additive-synthesis voice. Task 9.1 (2026-10-21) replaced it with Salamander Grand Piano recordings (CC BY 3.0, credited in Settings), with the sample loading, queued first press, and organ fallback above.
 
 - `Organ`: a fixed-envelope oscillator stack (sine fundamental plus two quiet harmonics), 20 ms attack, sustaining while held, 120 ms release. No assets.
 
@@ -71,7 +71,7 @@ A `piano-preferences` store holds `sound: 'piano' | 'organ'`, `volume` (0–1, d
 ## Risks / Trade-offs
 
 - [Sample licensing and size] → spike first, hard 1.5 MB budget, synthesis fallback behind the same interface.
-- [First press latency while samples load] → queue with a 1.5 s cap, prefetch on first overlay open, and show a quiet loading dot on the volume control.
+- [First press latency while samples load] → queue with a 1.5 s cap, and load the samples at the first use.
 - [Browser autoplay rules block the audio context until a gesture] → create and resume the context in the first key press handler and on overlay open (a user gesture).
 - [OSMD hit-testing precision at small zoom] → 12 px slop and nearest-notehead resolution; verified at the viewer's zoom steps.
 - [Overlay height competes with the score on a phone held sideways] → the compact step; the viewer's compact-height layout (height under its existing threshold) caps the piano at the compact step for that screen, without changing the stored height, and the user can close it.
