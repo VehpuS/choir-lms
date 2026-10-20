@@ -3,6 +3,7 @@ import type { PlaybackShaping } from './playback-shaping.js';
 import type { SourceAvailability } from './source-availability.js';
 import type { SourceLyrics } from './source-lyrics.js';
 import type { SheetMusicSource } from './source-sheet-music.js';
+import type { TrackMarker } from './track-markers.js';
 
 /**
  * Marks a saved track as an adjusted track (design Decision 5): a copy of
@@ -39,6 +40,8 @@ export type DriveAudioSource = {
   lyrics?: SourceLyrics;
   /** Links to score or part files; loops and adjusted tracks read their owner's. */
   sheetMusic?: SheetMusicSource[];
+  /** Named points in the audio, in position order; loops and adjusted tracks read their owner's. */
+  markers?: TrackMarker[];
   sourceLocation?: DriveSourceLocation;
   adjustment?: SourceAdjustment;
   createdAt: string;
