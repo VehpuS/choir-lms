@@ -2,7 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSyncExternalStore } from 'react';
 import type { Accidentals } from '@org/audio-library-models';
 
-import { PIANO_HEIGHT_STEPS, type PianoHeightStep } from './keyboard-layout';
+import {
+  clampWhiteKeyWidth,
+  DEFAULT_WHITE_KEY_WIDTH,
+  PIANO_HEIGHT_STEPS,
+  type PianoHeightStep,
+} from './keyboard-layout';
 
 type PianoStorage = Pick<typeof AsyncStorage, 'getItem' | 'setItem'>;
 
@@ -26,6 +31,8 @@ export type PianoPreferences = {
   showAllNoteNames: boolean;
   isOpen: boolean;
   heightStep: PianoHeightStep;
+  /** White key width in pt, 40–100; the keyboard layout derives the rest. */
+  keyWidth: number;
   scrollLeft: number;
 };
 
@@ -36,6 +43,7 @@ export const DEFAULT_PIANO_PREFERENCES: PianoPreferences = {
   showAllNoteNames: false,
   isOpen: false,
   heightStep: 'regular',
+  keyWidth: DEFAULT_WHITE_KEY_WIDTH,
   scrollLeft: 0,
 };
 
@@ -68,7 +76,7 @@ export type RawPianoPreferences = Partial<
 
 /**
  * Parses and clamps stored values where they enter the app, so an unknown
- * sound, an out-of-range volume, or garbage falls back to a safe default.
+ * sound, an out-of-range volume or key width, or garbage falls back to a safe default.
  */
 export const parsePianoPreferences = (
   raw: RawPianoPreferences,
@@ -76,6 +84,7 @@ export const parsePianoPreferences = (
   const defaults = DEFAULT_PIANO_PREFERENCES;
   const volume = parseNumber(raw.volume);
   const scrollLeft = parseNumber(raw.scrollLeft);
+  const keyWidth = parseNumber(raw.keyWidth);
 
   return {
     sound: PIANO_SOUNDS.find((sound) => sound === raw.sound) ?? defaults.sound,
@@ -92,6 +101,8 @@ export const parsePianoPreferences = (
     heightStep:
       PIANO_HEIGHT_STEPS.find((step) => step === raw.heightStep) ??
       defaults.heightStep,
+    keyWidth:
+      keyWidth === null ? defaults.keyWidth : clampWhiteKeyWidth(keyWidth),
     scrollLeft:
       scrollLeft === null ? defaults.scrollLeft : Math.max(scrollLeft, 0),
   };

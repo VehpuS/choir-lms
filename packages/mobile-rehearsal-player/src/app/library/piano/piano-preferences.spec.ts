@@ -50,6 +50,19 @@ describe('piano preferences', () => {
     assert.equal(parsed.scrollLeft, 0);
   });
 
+  it('defaults the key width to 40 pt', () => {
+    assert.equal(DEFAULT_PIANO_PREFERENCES.keyWidth, 40);
+    assert.equal(parsePianoPreferences({}).keyWidth, 40);
+  });
+
+  it('clamps the key width into 40-100 pt and ignores garbage', () => {
+    assert.equal(parsePianoPreferences({ keyWidth: '64' }).keyWidth, 64);
+    assert.equal(parsePianoPreferences({ keyWidth: '12' }).keyWidth, 40);
+    assert.equal(parsePianoPreferences({ keyWidth: '250' }).keyWidth, 100);
+    assert.equal(parsePianoPreferences({ keyWidth: 'wide' }).keyWidth, 40);
+    assert.equal(parsePianoPreferences({ keyWidth: 'NaN' }).keyWidth, 40);
+  });
+
   it('round-trips changed preferences', async () => {
     const storage = memoryStorage();
     const changed = {
@@ -59,6 +72,7 @@ describe('piano preferences', () => {
       showAllNoteNames: true,
       isOpen: true,
       heightStep: 'tall',
+      keyWidth: 64,
       scrollLeft: 812,
     } as const;
 
