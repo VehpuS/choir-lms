@@ -1,17 +1,31 @@
 export type SheetMusicContentFormat = 'pdf' | 'musicxml' | 'midi';
 
+import { decodeMusicXmlBytes } from './musicxml-encoding';
+
+/** Why bytes were refused; only used to choose the failure copy. */
+export type SheetMusicContentProblem =
+  /** A sign-in or error page where the file should be. */
+  | 'html-page'
+  /** Text that is not a MusicXML score. */
+  | 'not-musicxml'
+  /** A PDF or MIDI source whose bytes are something else. */
+  | 'wrong-format'
+  /** Text in an encoding the viewer cannot read (UTF-32). */
+  | 'unreadable-encoding';
+
 export type SheetMusicContentCheck =
   | {
       isValid: true;
       /** A `.mxl` zip the renderer must unzip. */ isCompressed: boolean;
     }
-  | { isValid: false };
+  | { isValid: false; reason: SheetMusicContentProblem };
 
 const PDF_SIGNATURE = '%PDF-';
 const MIDI_SIGNATURE = 'MThd';
 const ZIP_SIGNATURE = 'PK\u0003\u0004';
 const PDF_SIGNATURE_WINDOW_BYTES = 1024;
 const MUSICXML_ROOT_WINDOW_BYTES = 16_384;
+const HTML_PAGE_PATTERN = /^\s*(?:<!doctype\s+html|<html\b)/i;
 const XML_COMMENT_PATTERN = /<!--[\s\S]*?-->/g;
 const MUSICXML_ROOT_PATTERN = /<score-(?:partwise|timewise)\b/;
 
@@ -35,6 +49,22 @@ export const hasMusicXmlRoot = (text: string): boolean => {
   );
 };
 
+const invalid = (reason: SheetMusicContentProblem): SheetMusicContentCheck => ({
+  isValid: false,
+  reason,
+});
+
+const valid = (isCompressed: boolean): SheetMusicContentCheck => ({
+  isCompressed,
+  isValid: true,
+});
+
+const wrongBinaryFormat = (bytes: Uint8Array): SheetMusicContentCheck => {
+  return HTML_PAGE_PATTERN.test(readAscii(bytes, PDF_SIGNATURE_WINDOW_BYTES))
+    ? invalid('html-page')
+    : invalid('wrong-format');
+};
+
 /**
  * Confirms that downloaded bytes are what the source claims. A host that
  * answers 200 with an HTML sign-in page, or a `.xml` that is not MusicXML,
@@ -46,21 +76,32 @@ export const inspectSheetMusicBytes = (
 ): SheetMusicContentCheck => {
   if (format === 'pdf') {
     return readAscii(bytes, PDF_SIGNATURE_WINDOW_BYTES).includes(PDF_SIGNATURE)
-      ? { isValid: true, isCompressed: false }
-      : { isValid: false };
+      ? valid(false)
+      : wrongBinaryFormat(bytes);
   }
 
   if (format === 'midi') {
     return readAscii(bytes, MIDI_SIGNATURE.length) === MIDI_SIGNATURE
-      ? { isValid: true, isCompressed: false }
-      : { isValid: false };
+      ? valid(false)
+      : wrongBinaryFormat(bytes);
   }
 
   if (readAscii(bytes, ZIP_SIGNATURE.length) === ZIP_SIGNATURE) {
-    return { isValid: true, isCompressed: true };
+    return valid(true);
   }
 
-  return hasMusicXmlRoot(readAscii(bytes, MUSICXML_ROOT_WINDOW_BYTES))
-    ? { isValid: true, isCompressed: false }
-    : { isValid: false };
+  // Two bytes per character in UTF-16, so the window grows to cover the same text.
+  const text = decodeMusicXmlBytes(
+    bytes.subarray(0, MUSICXML_ROOT_WINDOW_BYTES * 2),
+  );
+
+  if (text === null) {
+    return invalid('unreadable-encoding');
+  }
+
+  if (hasMusicXmlRoot(text)) {
+    return valid(false);
+  }
+
+  return invalid(HTML_PAGE_PATTERN.test(text) ? 'html-page' : 'not-musicxml');
 };

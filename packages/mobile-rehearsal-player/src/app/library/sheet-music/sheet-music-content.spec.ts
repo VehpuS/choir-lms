@@ -18,7 +18,7 @@ describe('inspectSheetMusicBytes', () => {
     );
     assert.deepEqual(
       inspectSheetMusicBytes('pdf', bytesOf('<!doctype html><title>Sign in')),
-      { isValid: false },
+      { isValid: false, reason: 'html-page' },
     );
   });
 
@@ -32,6 +32,7 @@ describe('inspectSheetMusicBytes', () => {
     );
     assert.deepEqual(inspectSheetMusicBytes('midi', bytesOf('RIFF')), {
       isValid: false,
+      reason: 'wrong-format',
     });
   });
 
@@ -59,13 +60,55 @@ describe('inspectSheetMusicBytes', () => {
   it('refuses a .xml that is not MusicXML, even one that mentions the root name', () => {
     for (const text of [
       '<?xml version="1.0"?><rss version="2.0"></rss>',
-      '<html>score-partwise</html>',
       '<!-- <score-partwise> --><note/>',
       '',
     ]) {
       assert.deepEqual(inspectSheetMusicBytes('musicxml', bytesOf(text)), {
         isValid: false,
+        reason: 'not-musicxml',
       });
     }
+  });
+
+  it('reports an HTML page served in place of a .xml', () => {
+    for (const text of [
+      '<html>score-partwise</html>',
+      '\n <!DOCTYPE html><html>',
+    ]) {
+      assert.deepEqual(inspectSheetMusicBytes('musicxml', bytesOf(text)), {
+        isValid: false,
+        reason: 'html-page',
+      });
+    }
+  });
+
+  it('accepts MusicXML saved as UTF-16 or UTF-8 with a byte-order mark', () => {
+    const utf16 = (text: string, bom: number[]) =>
+      Uint8Array.from([
+        ...bom,
+        ...[...text].flatMap((c) => [c.charCodeAt(0), 0]),
+      ]);
+    const header = `<?xml version="1.0" encoding="UTF-16"?>${MUSICXML}`;
+
+    for (const bytes of [
+      utf16(header, [0xff, 0xfe]),
+      utf16(header, []),
+      Uint8Array.from([0xef, 0xbb, 0xbf, ...bytesOf(MUSICXML)]),
+    ]) {
+      assert.deepEqual(inspectSheetMusicBytes('musicxml', bytes), {
+        isCompressed: false,
+        isValid: true,
+      });
+    }
+  });
+
+  it('reports UTF-32 as an unreadable encoding', () => {
+    assert.deepEqual(
+      inspectSheetMusicBytes(
+        'musicxml',
+        Uint8Array.from([0xff, 0xfe, 0x00, 0x00, 0x3c, 0x00, 0x00, 0x00]),
+      ),
+      { isValid: false, reason: 'unreadable-encoding' },
+    );
   });
 });

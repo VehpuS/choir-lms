@@ -105,8 +105,28 @@ export const describeViewerFailure = (
       return {
         actions: ['open-external'],
         message:
-          'Open it in your browser, or save the file to Google Drive to view it here.',
+          'The app cannot read files from this site. You can still open the link in your browser.',
         title: 'This site does not allow the app to load the file',
+      };
+    case 'html-page':
+      return {
+        actions: ['open-external'],
+        message:
+          'The link opened a web page, such as a sign-in or error page, instead of the file.',
+        title: 'This is a web page, not a score',
+      };
+    case 'not-musicxml':
+      return {
+        actions: ['open-external'],
+        message: 'The file is text, but it is not a MusicXML score.',
+        title: 'This is not a MusicXML file',
+      };
+    case 'unreadable-encoding':
+      return {
+        actions: ['open-external'],
+        message:
+          'Export it again as MusicXML in UTF-8 or UTF-16, or as a compressed .mxl file.',
+        title: 'The text encoding of this file cannot be read',
       };
     case 'too-large':
       return {
@@ -115,6 +135,7 @@ export const describeViewerFailure = (
         title: 'This file is too large to open here',
       };
     case 'unsupported':
+    case 'wrong-format':
     case 'invalid-score':
     case 'invalid-pdf':
       return {
@@ -131,8 +152,10 @@ export const describeViewerFailure = (
     case 'offline':
       return {
         actions: ['try-again'],
-        message: 'Check your connection and try again.',
-        title: 'No connection',
+        message: isDrive
+          ? 'Check your connection and try again.'
+          : 'Check the address and your connection, then try again.',
+        title: isDrive ? 'No connection' : 'This site could not be reached',
       };
     case 'unavailable':
       return {

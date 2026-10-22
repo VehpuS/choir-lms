@@ -162,12 +162,15 @@ describe('createSheetMusicLoader', () => {
     const html = setUp(async () => respond('<html>Sign in</html>'));
     const notMusicXml = setUp(async () => respond('<rss version="2.0"/>'));
 
-    assert.equal((await html.loader.load(LINK)).status, 'failed');
+    assert.deepEqual(await html.loader.load(LINK), {
+      reason: 'html-page',
+      status: 'failed',
+    });
     assert.deepEqual(
       await notMusicXml.loader.load(
         source({ kind: 'url', url: 'https://host.example/a.xml' }, 'musicxml'),
       ),
-      { reason: 'unsupported', status: 'failed' },
+      { reason: 'not-musicxml', status: 'failed' },
     );
   });
 

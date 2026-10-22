@@ -2,14 +2,14 @@
 
 - [ ] 1.1 **Owner: add the scope in Google Cloud** by following "Google Cloud console setup" in `design.md` (Data Access → add `https://www.googleapis.com/auth/drive.file`, keep `drive.readonly`; add test users under Audience). Record in this task that it is done and which project it was done in. Nothing in the app depends on it until group 3 ships.
 - [ ] 1.2 **Spike: can `drive.file` create into a folder the app did not make?** With a token holding both scopes, `POST` a small PDF to a folder in My Drive the app did not create, from the web build. Record the result in `design.md` Decision 4. If refused, change tasks 4.1 and 4.2 to the one app-created `Choir LMS sheet music` folder and note it in the spec delta's folder wording.
-- [ ] 1.3 **Spike: UTF-16 through OpenSheetMusicDisplay.** Decode a UTF-16 MusicXML to a string and load it in the web renderer; record whether an `encoding="UTF-16"` declaration must be rewritten (design Decision 6).
+- [x] 1.3 **Spike: UTF-16 through OpenSheetMusicDisplay.** Decode a UTF-16 MusicXML to a string and load it in the web renderer; record whether an `encoding="UTF-16"` declaration must be rewritten (design Decision 6).
 
 ## 2. UTF-16 and encoding fix (shippable on its own)
 
-- [ ] 2.1 Add `musicxml-encoding.ts` with `decodeMusicXmlBytes` (UTF-8 with and without BOM, UTF-16 LE and BE with a BOM, BOM-less UTF-16 by the first four bytes), plus `musicxml-encoding.spec.ts` covering each encoding with one real MusicXML header and a garbage case.
-- [ ] 2.2 Use it in `inspectSheetMusicBytes` for MusicXML and in `readMusicXmlText`; add a `reason` (`html-page`, `not-musicxml`, `unreadable-encoding`) to the invalid result. Extend `sheet-music-content.spec.ts` and `musicxml-text.spec.ts` (UTF-16 now valid, an HTML page reports `html-page`).
-- [ ] 2.3 Apply the 1.3 finding if a declaration rewrite is needed, with a spec for it.
-- [ ] 2.4 Map the `reason` to failure copy in `viewer/model.ts` (and the distinct `blocked` and `offline` wording from Decision 7), with `viewer/model.spec.ts` cases. Update the `unsupported` path in `sheet-music-loader.ts` to carry the reason, with `sheet-music-loader.spec.ts` cases.
+- [x] 2.1 Add `musicxml-encoding.ts` with `decodeMusicXmlBytes` (UTF-8 with and without BOM, UTF-16 LE and BE with a BOM, BOM-less UTF-16 by the first four bytes), plus `musicxml-encoding.spec.ts` covering each encoding with one real MusicXML header and a garbage case.
+- [x] 2.2 Use it in `inspectSheetMusicBytes` for MusicXML and in `readMusicXmlText`; add a `reason` (`html-page`, `not-musicxml`, `unreadable-encoding`) to the invalid result. Extend `sheet-music-content.spec.ts` and `musicxml-text.spec.ts` (UTF-16 now valid, an HTML page reports `html-page`).
+- [x] 2.3 Apply the 1.3 finding if a declaration rewrite is needed, with a spec for it. _Not needed: `DOMParser` ignores the declaration of a string (see design Decision 6); the UTF-16 specs in `sheet-music-content.spec.ts` and `musicxml-text.spec.ts` cover the decoded text._
+- [x] 2.4 Map the `reason` to failure copy in `viewer/model.ts` (and the distinct `blocked` and `offline` wording from Decision 7), with `viewer/model.spec.ts` cases. Update the `unsupported` path in `sheet-music-loader.ts` to carry the reason, with `sheet-music-loader.spec.ts` cases.
 - [ ] 2.5 Verify in the browser preview with a UTF-16 and a UTF-8 BOM MusicXML served from `public/` (remove the fixtures afterward).
 
 ## 3. Drive write scope

@@ -31,6 +31,23 @@ describe('readMusicXmlText', () => {
     );
   });
 
+  it('decodes UTF-16 and UTF-8 with a byte-order mark', async () => {
+    const utf16 = Uint8Array.from([
+      0xff,
+      0xfe,
+      ...[...SCORE].flatMap((c) => [c.charCodeAt(0), 0]),
+    ]);
+    const utf8Bom = Uint8Array.from([
+      0xef,
+      0xbb,
+      0xbf,
+      ...new TextEncoder().encode(SCORE),
+    ]);
+
+    assert.equal(await readMusicXmlText(utf16, false), SCORE);
+    assert.equal(await readMusicXmlText(utf8Bom, false), SCORE);
+  });
+
   it('reads the root file a compressed score names in its container', async () => {
     const bytes = await zip({
       'META-INF/container.xml': CONTAINER('score/main.xml'),

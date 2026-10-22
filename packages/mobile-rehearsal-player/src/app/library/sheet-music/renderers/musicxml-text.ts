@@ -1,3 +1,4 @@
+import { decodeMusicXmlBytes } from '../musicxml-encoding';
 import { hasMusicXmlRoot } from '../sheet-music-content';
 
 const CONTAINER_PATH = 'META-INF/container.xml';
@@ -5,10 +6,6 @@ const ROOTFILE_PATH_PATTERN =
   /<rootfile\b[^>]*\bfull-path\s*=\s*(?:"([^"]*)"|'([^']*)')/;
 const XML_ENTRY_PATTERN = /\.(?:xml|musicxml)$/i;
 const META_INF_PREFIX = 'META-INF/';
-
-const decodeUtf8 = (bytes: Uint8Array): string => {
-  return new TextDecoder('utf-8').decode(bytes);
-};
 
 /**
  * Reads the MusicXML text out of a compressed `.mxl`: the file named by
@@ -48,7 +45,7 @@ export const readMusicXmlText = async (
   try {
     const text = isCompressed
       ? await readCompressedMusicXml(bytes)
-      : decodeUtf8(bytes);
+      : decodeMusicXmlBytes(bytes);
 
     if (text === null || text === undefined) {
       return null;

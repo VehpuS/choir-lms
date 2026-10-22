@@ -3,6 +3,7 @@ import type { SheetMusicSource } from '@org/audio-library-models';
 
 import {
   inspectSheetMusicBytes,
+  type SheetMusicContentProblem,
   type SheetMusicContentFormat,
 } from './sheet-music-content';
 
@@ -14,8 +15,10 @@ export type SheetMusicLoadFailureReason =
   /** A web host that does not allow browser requests (CORS). */
   | 'blocked'
   | 'too-large'
-  /** Not a format the viewer shows, or the bytes are not what the link claims. */
+  /** Not a format the viewer shows. */
   | 'unsupported'
+  /** The bytes are not what the link claims; the reason picks the failure copy. */
+  | SheetMusicContentProblem
   | 'offline'
   | 'unavailable';
 
@@ -206,7 +209,7 @@ export const createSheetMusicLoader = (
               isCompressed: check.isCompressed,
               status: 'loaded',
             }
-          : failed('unsupported');
+          : failed(check.reason);
       } catch (error) {
         if (callerSignal?.aborted && !timedOut) {
           return failed('aborted');

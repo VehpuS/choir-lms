@@ -84,11 +84,37 @@ describe('describeViewerFailure', () => {
     assert.deepEqual(failure?.actions, ['reconnect-drive']);
   });
 
-  it('offers to open in the browser, and to save to Drive, when a host blocks the request', () => {
+  it('says a blocked host cannot be read, without implying the browser fixes it', () => {
     const failure = describeViewerFailure('blocked', LINK);
 
     assert.deepEqual(failure?.actions, ['open-external']);
-    assert.match(failure?.message ?? '', /save the file to Google Drive/);
+    assert.match(failure?.message ?? '', /cannot read files from this site/);
+  });
+
+  it('tells an unreachable site from a Drive file with no connection', () => {
+    assert.equal(
+      describeViewerFailure('offline', LINK)?.title,
+      'This site could not be reached',
+    );
+    assert.equal(
+      describeViewerFailure('offline', DRIVE)?.title,
+      'No connection',
+    );
+  });
+
+  it('says what is wrong with a file that is not a score', () => {
+    assert.match(
+      describeViewerFailure('html-page', LINK)?.title ?? '',
+      /web page/,
+    );
+    assert.match(
+      describeViewerFailure('not-musicxml', LINK)?.title ?? '',
+      /not a MusicXML/,
+    );
+    assert.match(
+      describeViewerFailure('unreadable-encoding', LINK)?.message ?? '',
+      /UTF-8/,
+    );
   });
 
   it('says a file is too large and offers to open it elsewhere', () => {
@@ -105,6 +131,10 @@ describe('describeViewerFailure', () => {
       'blocked',
       'too-large',
       'unsupported',
+      'html-page',
+      'not-musicxml',
+      'wrong-format',
+      'unreadable-encoding',
       'offline',
       'unavailable',
       'invalid-score',
