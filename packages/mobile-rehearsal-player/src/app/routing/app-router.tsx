@@ -2,6 +2,7 @@ import { aggregateRehearsalLibraryTags } from '@org/audio-library-runtime';
 import { useEffect, useMemo, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/google-drive/hooks/use-authorization';
 import { LyricsHosts } from '../library/lyrics/components/lyrics-hosts';
+import { MarkerAddHost } from '../library/markers/components/marker-add-host';
 import { MarkersHost } from '../library/markers/components/markers-host';
 import { SheetMusicHost } from '../library/sheet-music/manager/sheet-music-host';
 import { SavedItemAvailabilityProvider } from '../library/components/saved-item-menu/saved-item-availability-context';
@@ -289,6 +290,10 @@ export const AppRouter = () => {
         playback={playback}
       />
       <MarkersHost
+        library={libraryController.savedLibrary}
+        playback={playback}
+      />
+      <MarkerAddHost
         library={libraryController.savedLibrary}
         playback={playback}
       />

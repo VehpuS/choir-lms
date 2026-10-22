@@ -1,8 +1,7 @@
 import type { MarkerListFilter, TrackMarker } from '@org/audio-library-models';
 
+import type { MarkerAddResult } from '../../utils/marker-add-result';
 import type { MarkerLoopDraft, MarkerRow, MarkersSheetModel } from './model';
-
-export type MarkerAddResult = { marker: TrackMarker } | { error: string };
 
 export type MarkersSheetProps = {
   /** Playhead of the loaded owner, when there is one: `Set to current position`. */

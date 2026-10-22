@@ -6,6 +6,7 @@ import type { PlayableItem } from '@org/audio-library-models';
 // the Library section, so a menu asks for them over this small channel instead
 // of owning copies.
 export type SavedItemRequestAction =
+  | 'add-marker-here'
   | 'add-to-playlist'
   | 'edit-loop'
   | 'edit-lyrics'
@@ -21,6 +22,8 @@ export type SavedItemRequest = {
   /** The loop's id for a loop, the track's source id for a track. */
   id: string;
   kind: 'loop' | 'track';
+  /** `add-marker-here` only: where to add (a waveform press); else the playhead. */
+  positionMs?: number;
 };
 
 type Listener = (request: SavedItemRequest) => void;
@@ -31,6 +34,7 @@ export const ADD_LYRICS_LABEL = 'Lyrics';
 export const EDIT_LYRICS_LABEL = 'Edit lyrics';
 export const SHEET_MUSIC_LABEL = 'Sheet music';
 export const MARKERS_LABEL = 'Markers';
+export const ADD_MARKER_HERE_LABEL = 'Add marker here';
 
 export const requestSavedItemAction = (request: SavedItemRequest) => {
   listeners.forEach((listener) => {

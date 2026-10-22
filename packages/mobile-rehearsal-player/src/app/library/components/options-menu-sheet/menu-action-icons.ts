@@ -12,6 +12,7 @@ import type { OptionsMenuAction } from './model';
  */
 export const MENU_ACTION_ICONS: Readonly<Record<string, AppIconName>> = {
   'Add items': 'plus',
+  'Add marker here': 'plus',
   'Add to playlist': 'playlist-music-outline',
   'Add to queue': 'playlist-plus',
   'Add tracks from Drive': 'plus',

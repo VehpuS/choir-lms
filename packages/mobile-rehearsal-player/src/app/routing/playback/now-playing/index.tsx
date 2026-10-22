@@ -9,18 +9,9 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { AppIcon } from '../../../components/app-icon';
 import { FadedRule } from '../../../components/faded-rule';
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
-import {
-  useHasLyrics,
-  useIsPlayableItemSaved,
-} from '../../../library/components/saved-item-menu/saved-item-availability-context';
-import {
-  requestSavedItemAction,
-  resolveSavedItemShortcuts,
-} from '../../../library/components/saved-item-menu/saved-item-requests';
 import { LyricsSection } from '../../../library/lyrics/components/lyrics-section';
 import { OptionsMenuSheet } from '../../../library/components/options-menu-sheet';
 import { usePianoToggle } from '../../../library/piano/piano-toggle';
-import { requestLoopBuilder } from '../../../library/loops/utils/loop-builder-request';
 import { appTheme } from '../../../utils/theme';
 import type {
   NowPlayingSurfaceSummary,
@@ -31,7 +22,7 @@ import {
   PlaybackPracticeRow,
   PlaybackVolumeRow,
 } from './now-playing-controls';
-import { resolveNowPlayingMakeLoopRequest } from './now-playing-menu-model';
+import { useNowPlayingMenuActions } from './use-now-playing-menu-actions';
 import type { PlaybackShapingControls } from '../shaping/shaping-surface-model';
 import { nowPlayingStyles as styles } from './styles';
 import { NowPlayingTransportRow } from './now-playing-transport-row';
@@ -146,43 +137,13 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
   const { summary } = props;
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const pianoToggle = usePianoToggle();
-  const makeLoopRequest = resolveNowPlayingMakeLoopRequest({
+  const menuActions = useNowPlayingMenuActions({
     activePlayableItem: props.activePlayableItem,
+    closeMenu: () => {
+      setIsMenuVisible(false);
+    },
     playbackPositionSeconds: props.playbackPositionSeconds,
   });
-  const isSaved = useIsPlayableItemSaved(props.activePlayableItem);
-  const hasLyrics = useHasLyrics(props.activePlayableItem);
-  // The Library's item actions, plus `Make loop` from the playhead in place of
-  // the plain one (task 8.26).
-  const menuActions = [
-    ...(makeLoopRequest
-      ? [
-          {
-            id: 'make-loop',
-            label: 'Make loop',
-            onPress: () => {
-              setIsMenuVisible(false);
-              requestLoopBuilder(makeLoopRequest);
-            },
-          },
-        ]
-      : []),
-    ...resolveSavedItemShortcuts({
-      hasLyrics,
-      isSaved,
-      item: props.activePlayableItem,
-    })
-      .filter(({ id }) => !(makeLoopRequest && id === 'make-loop'))
-      .map((shortcut) => ({
-        id: shortcut.id,
-        label: shortcut.label,
-        onPress: () => {
-          setIsMenuVisible(false);
-          requestSavedItemAction(shortcut.request);
-        },
-        tone: shortcut.tone,
-      })),
-  ];
 
   return (
     <View style={styles.sheet}>

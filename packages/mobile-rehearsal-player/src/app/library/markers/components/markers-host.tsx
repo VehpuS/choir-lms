@@ -1,26 +1,27 @@
-import { MAX_TRACK_MARKERS, type NamedLoop } from '@org/audio-library-models';
+import type { NamedLoop } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 
-import { subscribeToSavedItemRequests } from '../../components/saved-item-menu/saved-item-requests';
-import { requestSavedItemAction } from '../../components/saved-item-menu/saved-item-requests';
+import {
+  requestSavedItemAction,
+  subscribeToSavedItemRequests,
+} from '../../components/saved-item-menu/saved-item-requests';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { useSavedTrackPlayback } from '../../playback/hooks/use-saved-track-playback';
 import { getPlayableItemMarkerOwnerId } from '../../playback/utils/saved-track-playback-controller/marker-jump-plan';
-import type {
-  MarkerActionResult,
-  useSourceMarkers,
-} from '../hooks/use-source-markers';
+import type { useSourceMarkers } from '../hooks/use-source-markers';
 import { useMarkersFilter } from '../markers-filter-preference';
 import {
   resolveMarkersContext,
   type MarkersContext,
 } from '../utils/markers-context';
-import { MarkersSheet, type MarkerAddResult } from './markers-sheet';
+import {
+  MARKER_ADD_FAILED_MESSAGE,
+  toMarkerAddResult,
+} from '../utils/marker-add-result';
+import { MarkersSheet } from './markers-sheet';
 import { buildMarkersSheetModel } from './markers-sheet/model';
 
 const MS_PER_SECOND = 1000;
-const ADD_LIMIT_MESSAGE = `This track already has ${MAX_TRACK_MARKERS} markers.`;
-const ADD_FAILED_MESSAGE = 'Could not add the marker.';
 
 type MarkersHostProps = {
   library: {
@@ -33,19 +34,6 @@ type MarkersHostProps = {
     ReturnType<typeof useSavedTrackPlayback>,
     'activePlayableItem' | 'jumpToMarker' | 'progress'
   >;
-};
-
-const toAddResult = (result: MarkerActionResult): MarkerAddResult => {
-  if (result.status === 'ok' && result.marker) {
-    return { marker: result.marker };
-  }
-
-  return {
-    error:
-      result.status === 'limit-reached'
-        ? ADD_LIMIT_MESSAGE
-        : ADD_FAILED_MESSAGE,
-  };
 };
 
 /**
@@ -104,10 +92,10 @@ export const MarkersHost = ({ library, playback }: MarkersHostProps) => {
       model={model}
       onAddHere={async () => {
         if (currentPositionMs === undefined) {
-          return { error: ADD_FAILED_MESSAGE };
+          return { error: MARKER_ADD_FAILED_MESSAGE };
         }
 
-        return toAddResult(
+        return toMarkerAddResult(
           await markers.addMarker(item, { positionMs: currentPositionMs }),
         );
       }}

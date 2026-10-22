@@ -21,7 +21,7 @@ import {
 import type { MarkersSheetProps } from './props';
 import { useMarkersSheetState } from './use-markers-sheet-state';
 
-export type { MarkerAddResult, MarkersSheetProps } from './props';
+export type { MarkersSheetProps } from './props';
 
 const LIST_MAX_HEIGHT = 360;
 
