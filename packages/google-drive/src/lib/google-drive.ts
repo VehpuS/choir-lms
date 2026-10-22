@@ -1,3 +1,4 @@
+export * from './drive-file-upload';
 export * from './drive-files-paginator';
 export * from './drive-folder-contents';
 export * from './drive-path-resolver';

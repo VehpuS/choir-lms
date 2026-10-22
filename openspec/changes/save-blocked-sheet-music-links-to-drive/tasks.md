@@ -22,9 +22,9 @@
 
 ## 4. Upload and source swap
 
-- [ ] 4.1 Add `uploadDriveFile` to `@org/google-drive` (multipart upload, parent folder, abort signal, typed failures: `needs-write-access`, `quota`, `folder-not-writable`, `offline`, `too-large`, `unavailable`), with specs using a fake `fetch` for success, a 403, a 404 parent, an abort, and a network error.
+- [x] 4.1 Add `uploadDriveFile` to `@org/google-drive` (multipart upload, parent folder, abort signal, typed failures: `needs-write-access`, `quota`, `folder-not-writable`, `offline`, `too-large`, `unavailable`), with specs using a fake `fetch` for success, a 403, a 404 parent, an abort, and a network error.
 - [ ] 4.2 Add a folder-choosing mode to the Drive picker (folders only, `Save here`, remembered last folder, opens at the track's own Drive folder when it has one), with a model spec for the mode.
-- [ ] 4.3 Add `replaceSourceLocationWithDrive` to `@org/audio-library-models`, with specs for keeping id, label, part selection, and added time, re-detecting format, an unknown id, and a source removed mid-upload.
+- [x] 4.3 Add `replaceSourceLocationWithDrive` to `@org/audio-library-models`, with specs for keeping id, label, part selection, and added time, re-detecting format, an unknown id, and a source removed mid-upload.
 - [ ] 4.4 Add a web file chooser (`<input type="file">`, `.web` file with a native stub that reports unsupported) returning bytes and name, validated with `inspectSheetMusicBytes`, over 25 MB refused. Spec the validation and size rules through the model.
 
 ## 5. The save flow
