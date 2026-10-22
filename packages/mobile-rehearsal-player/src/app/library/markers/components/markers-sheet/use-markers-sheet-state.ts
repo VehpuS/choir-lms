@@ -51,7 +51,13 @@ const toRenameRow = (marker: {
  * the undo after a delete) clears itself after a few seconds.
  */
 export const useMarkersSheetState = (props: MarkersSheetProps) => {
-  const [dialog, setDialog] = useState<OpenDialog | null>(null);
+  const [dialog, setDialog] = useState<OpenDialog | null>(() => {
+    const row = props.model.rows.find(
+      ({ key }) => key === props.initialMenuRowKey,
+    );
+
+    return row ? { kind: 'menu', row } : null;
+  });
   const [notice, setNotice] = useState<MarkersNotice | null>(null);
 
   useEffect(() => {

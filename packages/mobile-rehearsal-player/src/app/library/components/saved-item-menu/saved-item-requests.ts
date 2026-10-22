@@ -24,6 +24,8 @@ export type SavedItemRequest = {
   kind: 'loop' | 'track';
   /** `add-marker-here` only: where to add (a waveform press); else the playhead. */
   positionMs?: number;
+  /** `markers` only: the flag whose row actions to open straight away. */
+  markerKey?: string;
 };
 
 type Listener = (request: SavedItemRequest) => void;

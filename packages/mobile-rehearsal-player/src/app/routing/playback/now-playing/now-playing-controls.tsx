@@ -16,6 +16,7 @@ import {
 import { AccessibleSlider } from '../../../components/accessible-slider';
 import { PlaybackWaveform } from '../../../components/playback-waveform';
 import { getPlaybackBoundsSeconds } from '../../../components/playback-waveform/model';
+import { useWaveformMarkers } from '../../../library/markers/hooks/use-playback-markers';
 import { appTheme } from '../../../utils/theme';
 import { getNowPlayingTimelineLabels } from './now-playing-model';
 import { nowPlayingStyles as styles } from './styles';
@@ -62,12 +63,14 @@ export const NowPlayingTimeline = (props: {
   const labels = getNowPlayingTimelineLabels(
     getTimelineSeconds(props.activePlayableItem, props.playbackPositionSeconds),
   );
+  const waveformMarkers = useWaveformMarkers(props.activePlayableItem);
 
   return (
     <View style={styles.timeline}>
       <PlaybackWaveform
         activePlayableItem={props.activePlayableItem}
         interactive={props.canSeekActivePlayback}
+        {...waveformMarkers}
         onScrubToPosition={props.onSeekToPosition}
         progressRatio={props.progressRatio}
         variant="scrubber"

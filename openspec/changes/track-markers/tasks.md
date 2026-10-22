@@ -26,8 +26,8 @@
 
 ## 5. Waveform flags
 
-- [ ] 5.1 Add a flag layout model (positions to x, merge below 12 pt, kinds, nearest-flag hit test) and spec it, including crowded flags and the filter.
-- [ ] 5.2 Draw the flags on the playback waveform component with the press label, tap-to-jump, long-press-to-add, and long-press-on-flag menu, with button roles and labels for assistive technology. Confirm no layout shift.
+- [x] 5.1 Add a flag layout model (positions to x, merge below 12 pt, kinds, nearest-flag hit test) and spec it, including crowded flags and the filter.
+- [x] 5.2 Draw the flags on the playback waveform component with the press label, tap-to-jump, long-press-to-add, and long-press-on-flag menu, with button roles and labels for assistive technology. Confirm no layout shift. Done: `PlaybackWaveform` takes `markers` and press handlers (flags in `marker-flags-layer.tsx`, long-press in `use-waveform-long-press.ts`); the now-playing timeline gets them from `useWaveformMarkers`, fed by `PlaybackMarkersProvider` in the router. A flag long-press sends `markers` with `markerKey` so the sheet opens on that row's menu. Rendered behavior (flag look, press label, tap jump, long-press add, no layout shift) is unverified in the browser until 7.1 has a live Drive session; the layout model, layer, and long-press hook are covered by specs.
 
 ## 6. Loop editor and markers to loops
 

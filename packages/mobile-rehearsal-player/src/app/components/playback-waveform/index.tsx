@@ -7,6 +7,14 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { MarkerFlagsLayer } from './marker-flags-layer';
+import { useWaveformLongPress } from './use-waveform-long-press';
+import {
+  resolveWaveformFlags,
+  resolveWaveformPositionMs,
+  type WaveformFlag,
+  type WaveformMarker,
+} from './marker-flags-model';
 import {
   clampWaveformRatio,
   getPlaybackBoundsSeconds,
@@ -42,6 +50,12 @@ type PlaybackWaveformProps = {
   activePlayableItem: PlayableItem;
   appearance?: PlaybackWaveformAppearance;
   interactive?: boolean;
+  /** Markers to draw as flags, already filtered; none draws nothing. */
+  markers?: readonly WaveformMarker[];
+  onFlagLongPress?: (flag: WaveformFlag) => void;
+  onFlagPress?: (flag: WaveformFlag) => void;
+  /** Long press on empty waveform, at the audio position pressed. */
+  onLongPressPosition?: (positionMs: number) => void;
   onScrubToPosition?: (positionSeconds: number) => void;
   progressRatio: number;
   style?: StyleProp<ViewStyle>;
@@ -52,6 +66,10 @@ export const PlaybackWaveform = ({
   activePlayableItem,
   appearance = 'light',
   interactive = false,
+  markers,
+  onFlagLongPress,
+  onFlagPress,
+  onLongPressPosition,
   onScrubToPosition,
   progressRatio,
   style,
@@ -80,6 +98,32 @@ export const PlaybackWaveform = ({
     onScrubToPosition,
   });
   const colors = getWaveformColors(variant, appearance);
+  const flags = useMemo(() => {
+    return resolveWaveformFlags({
+      endMs: endSeconds * 1000,
+      markers: markers ?? [],
+      startMs: startSeconds * 1000,
+      width: layoutWidth,
+    });
+  }, [endSeconds, layoutWidth, markers, startSeconds]);
+  // When a long press fires, the scrub draft is dropped so the playhead stays
+  // where it was.
+  const longPress = useWaveformLongPress({
+    onLongPress: onLongPressPosition
+      ? (locationX) => {
+          draftRatioRef.current = null;
+          setDraftRatio(null);
+          onLongPressPosition(
+            resolveWaveformPositionMs(
+              locationX,
+              startSeconds * 1000,
+              endSeconds * 1000,
+              layoutWidth,
+            ),
+          );
+        }
+      : undefined,
+  });
 
   useEffect(() => {
     if (
@@ -139,12 +183,21 @@ export const PlaybackWaveform = ({
       }}
       onMoveShouldSetResponder={() => canScrub}
       onResponderGrant={(event) => {
+        longPress.start(event.nativeEvent.locationX);
         updateDraftRatio(event.nativeEvent.locationX);
       }}
       onResponderMove={(event) => {
-        updateDraftRatio(event.nativeEvent.locationX);
+        longPress.move(event.nativeEvent.locationX);
+
+        if (!longPress.hasFired()) {
+          updateDraftRatio(event.nativeEvent.locationX);
+        }
       }}
       onResponderRelease={(event) => {
+        if (longPress.consumeFired()) {
+          return;
+        }
+
         if (!canScrub) {
           draftRatioRef.current = null;
           setDraftRatio(null);
@@ -162,6 +215,7 @@ export const PlaybackWaveform = ({
         commitScrub(nextRatio);
       }}
       onResponderTerminate={() => {
+        longPress.cancel();
         draftRatioRef.current = null;
         setDraftRatio(null);
       }}
@@ -203,6 +257,14 @@ export const PlaybackWaveform = ({
           );
         })}
       </View>
+      {flags.length > 0 ? (
+        <MarkerFlagsLayer
+          flags={flags}
+          onFlagLongPress={onFlagLongPress}
+          onFlagPress={onFlagPress}
+          width={layoutWidth}
+        />
+      ) : null}
       {interactive ? (
         <View
           pointerEvents="none"

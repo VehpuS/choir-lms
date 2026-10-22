@@ -44,6 +44,7 @@ type MarkersHostProps = {
 export const MarkersHost = ({ library, playback }: MarkersHostProps) => {
   const { markers, savedLibrarySources, savedLoops } = library;
   const [context, setContext] = useState<MarkersContext | null>(null);
+  const [menuRowKey, setMenuRowKey] = useState<string | undefined>();
   const { filter, setFilter } = useMarkersFilter();
 
   useEffect(() => {
@@ -52,6 +53,7 @@ export const MarkersHost = ({ library, playback }: MarkersHostProps) => {
         return;
       }
 
+      setMenuRowKey(request.markerKey);
       setContext(
         resolveMarkersContext(request, savedLibrarySources, savedLoops),
       );
@@ -89,6 +91,7 @@ export const MarkersHost = ({ library, playback }: MarkersHostProps) => {
       currentPositionMs={currentPositionMs}
       durationMs={owner.durationMs}
       filter={filter}
+      initialMenuRowKey={menuRowKey}
       model={model}
       onAddHere={async () => {
         if (currentPositionMs === undefined) {

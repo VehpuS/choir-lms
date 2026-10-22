@@ -8,6 +8,8 @@ export type MarkersSheetProps = {
   currentPositionMs?: number;
   durationMs?: number;
   filter: MarkerListFilter;
+  /** Opens this row's action menu straight away (a long press on its flag). */
+  initialMenuRowKey?: string;
   model: MarkersSheetModel;
   /** Resolves with the new marker, or the reason nothing was added. */
   onAddHere: () => Promise<MarkerAddResult>;
