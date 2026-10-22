@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   PanResponder,
+  Pressable,
   Text,
   View,
   type AccessibilityActionEvent,
@@ -15,6 +16,8 @@ import {
   type WaveformFlag,
   type WaveformMarker,
 } from '../../../../components/playback-waveform/marker-flags-model';
+import { AppIcon } from '../../../../components/app-icon';
+import { ariaStateProps } from '../../../../components/aria-state';
 import { MIN_BAR_HEIGHT } from '../../../../components/playback-waveform/variants';
 import { resolvePlaybackWaveformBars } from '../../../../components/playback-waveform/model';
 import {
@@ -37,12 +40,16 @@ import { loopEditorStyles as styles } from './styles';
 const BAR_COUNT = 72;
 const BAR_AREA_HEIGHT = 112;
 const PERCENT = 100;
+const MARKERS_TOGGLE_ICON_SIZE = 14;
 
 type LoopEditorWaveformProps = {
   /** The track's length is still being resolved. */
   isLoading: boolean;
   /** Read-only marker flags across the whole track; pressing one picks it. */
   markers?: readonly WaveformMarker[];
+  /** The show / hide control in the scale row; absent when there are no markers. */
+  onToggleMarkers?: () => void;
+  areMarkersShown?: boolean;
   onFlagPress?: (flag: WaveformFlag) => void;
   onNudgeBoundary: (
     boundary: LoopBuilderBoundary,
@@ -66,8 +73,10 @@ const HANDLE_LABELS: Record<
 
 export const LoopEditorWaveform = ({
   isLoading,
+  areMarkersShown = true,
   markers,
   onFlagPress,
+  onToggleMarkers,
   onNudgeBoundary,
   onRangeChange,
   playbackPositionSeconds,
@@ -266,6 +275,27 @@ export const LoopEditorWaveform = ({
       </View>
       <View style={styles.scale}>
         <Text style={styles.timecode}>0:00</Text>
+        {onToggleMarkers ? (
+          <Pressable
+            accessibilityLabel={
+              areMarkersShown ? 'Hide markers' : 'Show markers'
+            }
+            accessibilityRole="button"
+            accessibilityState={{ selected: areMarkersShown }}
+            {...ariaStateProps({ selected: areMarkersShown }, 'button')}
+            onPress={onToggleMarkers}
+            style={styles.markersToggle}
+          >
+            <AppIcon
+              color={appTheme.colors.accentText}
+              name="flag-outline"
+              size={MARKERS_TOGGLE_ICON_SIZE}
+            />
+            <Text style={styles.markersToggleLabel}>
+              {areMarkersShown ? 'Hide markers' : 'Show markers'}
+            </Text>
+          </Pressable>
+        ) : null}
         <Text style={styles.timecode}>{formatLoopEditorScale(durationMs)}</Text>
       </View>
     </View>

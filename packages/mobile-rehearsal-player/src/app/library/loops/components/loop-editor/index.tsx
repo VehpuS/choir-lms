@@ -14,7 +14,6 @@ import {
 import type { LoopPreviewPlaybackTimeline } from '../../utils/saved-loop-preview-playback-view-model';
 import type { LoopBuilderBoundary } from '../../utils/saved-loop-view-model';
 import {
-  LoopEditorMarkerControls,
   LoopEditorMarkerPicker,
   LoopEditorPickConflictDialog,
 } from './loop-editor-marker-controls';
@@ -130,7 +129,9 @@ const LoopEditorContent = (
 
         <LoopEditorWaveform
           isLoading={props.isPreparing}
+          areMarkersShown={pick.areMarkersShown}
           markers={pick.markers}
+          onToggleMarkers={pick.canPick ? pick.toggleMarkers : undefined}
           onFlagPress={pick.pickFromFlag}
           onNudgeBoundary={props.onNudgeBoundary}
           onRangeChange={props.onRangeChange}
@@ -144,14 +145,10 @@ const LoopEditorContent = (
           armedBoundary={pick.armed}
           isLoading={props.isPreparing}
           onNudgeBoundary={props.onNudgeBoundary}
+          onPickMarker={pick.canPick ? pick.openPickerFor : undefined}
           onToggleArm={pick.canPick ? pick.toggleArm : undefined}
           range={range}
           trackDurationMs={props.rangeMaximumMs}
-        />
-
-        <LoopEditorMarkerControls
-          armed={pick.armed}
-          onOpenPicker={pick.openPicker}
         />
 
         <LoopEditorTransport

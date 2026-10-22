@@ -159,6 +159,30 @@ export const loopEditorStyles = StyleSheet.create({
   cardHeader: {
     gap: space.xxs,
   },
+  // A small flag button in the card's top-right corner, over the label row, so
+  // the time below keeps the whole card width.
+  pickButton: {
+    position: 'absolute',
+    top: space.xxs,
+    right: space.xxs,
+    width: space.touchTarget - space.xs,
+    height: space.touchTarget - space.xs,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+  },
+  markersToggle: {
+    minHeight: space.touchTarget - space.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xxs,
+    marginVertical: -space.xs,
+    paddingHorizontal: space.xs,
+  },
+  markersToggleLabel: {
+    ...type.chip,
+    color: colors.accentText,
+  },
   cardLength: {
     borderColor: colors.accentBorderDeep,
     backgroundColor: colors.accentRegionFill,

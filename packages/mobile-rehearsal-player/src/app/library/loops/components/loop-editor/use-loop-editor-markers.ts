@@ -27,6 +27,8 @@ const WHOLE_TRACK = {
   range: { startMs: 0, endMs: null },
 } as const;
 
+const NO_FLAGS: never[] = [];
+
 const OUT_OF_REACH_LABELS: Record<LoopBuilderBoundary, string> = {
   end: 'At or before the loop start',
   start: 'At or after the loop end',
@@ -54,6 +56,7 @@ export const useLoopEditorMarkers = (options: Options) => {
   const lookup = usePlaybackMarkersLookup();
   const [pickState, setPickState] = useState(INITIAL_MARKER_PICK_STATE);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [areMarkersShown, setAreMarkersShown] = useState(true);
   const [conflict, setConflict] = useState<MarkerPickConflict | null>(null);
   const durationMs = options.trackDurationMs ?? undefined;
   const { armed } = pickState;
@@ -135,6 +138,7 @@ export const useLoopEditorMarkers = (options: Options) => {
       : null;
 
   return {
+    areMarkersShown,
     armed,
     canPick: markers.length > 0,
     closePicker: () => {
@@ -145,9 +149,13 @@ export const useLoopEditorMarkers = (options: Options) => {
       : null,
     filter: lookup?.filter,
     isPickerOpen,
-    markers,
-    openPicker: () => {
+    markers: areMarkersShown ? markers : NO_FLAGS,
+    openPickerFor: (boundary: LoopBuilderBoundary) => {
+      setPickState({ armed: boundary });
       setIsPickerOpen(true);
+    },
+    toggleMarkers: () => {
+      setAreMarkersShown(!areMarkersShown);
     },
     pickFromFlag: (flag: WaveformFlag) => {
       pick(flag.positionMs, flag.name);

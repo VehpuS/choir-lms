@@ -7,29 +7,8 @@ import { CenteredDialogCard } from '../../../components/centered-dialog-card';
 import { MarkersSheet } from '../../../markers/components/markers-sheet';
 import type { MarkersSheetModel } from '../../../markers/components/markers-sheet/model';
 import { setMarkersFilter } from '../../../markers/markers-filter-preference';
-import type { LoopBuilderBoundary } from '../../utils/saved-loop-view-model';
 
 const noop = () => undefined;
-
-type LoopEditorMarkerControlsProps = {
-  armed: LoopBuilderBoundary | null;
-  onOpenPicker: () => void;
-};
-
-/** `Pick marker` while a card is armed. */
-export const LoopEditorMarkerControls = ({
-  armed,
-  onOpenPicker,
-}: LoopEditorMarkerControlsProps) => {
-  return armed ? (
-    <OutlinedActionButton
-      fill
-      icon="flag-outline"
-      label={`Pick marker for ${armed}`}
-      onPress={onOpenPicker}
-    />
-  ) : null;
-};
 
 type LoopEditorMarkerPickerProps = {
   durationMs?: number;

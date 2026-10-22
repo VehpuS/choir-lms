@@ -28,6 +28,8 @@ type LoopEditorRangeCardsProps = {
   armedBoundary?: LoopBuilderBoundary | null;
   /** Taps on a card's label and time arm it for a marker pick. */
   onToggleArm?: (boundary: LoopBuilderBoundary) => void;
+  /** The card's flag button: pick this edge from the markers list. */
+  onPickMarker?: (boundary: LoopBuilderBoundary) => void;
   /** Nudging waits until the track's length is known. */
   isLoading: boolean;
   onNudgeBoundary: Nudge;
@@ -81,10 +83,12 @@ const EdgeCard = ({
   isArmed,
   label,
   onNudgeBoundary,
+  onPickMarker,
   onToggleArm,
   valueMs,
 }: {
   boundary: LoopBuilderBoundary;
+  onPickMarker?: (boundary: LoopBuilderBoundary) => void;
   isArmed: boolean;
   onToggleArm?: (boundary: LoopBuilderBoundary) => void;
   disabled: { earlier: boolean; later: boolean };
@@ -112,6 +116,31 @@ const EdgeCard = ({
         <Text style={styles.cardLabel}>{label}</Text>
         <Text style={styles.cardValue}>{formatLoopEditorPrecise(valueMs)}</Text>
       </Pressable>
+      {/* Always there, so arming never shifts the layout; it is disabled
+            while the track has no markers to pick. */}
+      <Pressable
+        accessibilityLabel={`Pick loop ${boundary} from a marker`}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: !onPickMarker }}
+        {...ariaStateProps({ disabled: !onPickMarker })}
+        {...interactionGuardProps}
+        disabled={!onPickMarker}
+        onPress={() => {
+          onPickMarker?.(boundary);
+        }}
+        style={({ pressed }) => [
+          styles.pickButton,
+          buttonInteractionGuardStyle,
+          pressed && onPickMarker ? styles.pressed : null,
+          !onPickMarker ? styles.disabled : null,
+        ]}
+      >
+        <AppIcon
+          color={appTheme.colors.accentText}
+          name="flag-outline"
+          size={NUDGE_ICON_SIZE}
+        />
+      </Pressable>
       <View style={styles.nudgeRow}>
         <NudgeButton
           accessibilityLabel={`Move loop ${boundary} earlier`}
@@ -138,6 +167,7 @@ const EdgeCard = ({
 export const LoopEditorRangeCards = ({
   armedBoundary = null,
   isLoading,
+  onPickMarker,
   onToggleArm,
   onNudgeBoundary,
   range,
@@ -159,6 +189,7 @@ export const LoopEditorRangeCards = ({
         isArmed={armedBoundary === 'start'}
         label="Start"
         onNudgeBoundary={onNudgeBoundary}
+        onPickMarker={onPickMarker}
         onToggleArm={onToggleArm}
         valueMs={range.startMs}
       />
@@ -177,6 +208,7 @@ export const LoopEditorRangeCards = ({
         isArmed={armedBoundary === 'end'}
         label="End"
         onNudgeBoundary={onNudgeBoundary}
+        onPickMarker={onPickMarker}
         onToggleArm={onToggleArm}
         valueMs={range.endMs}
       />
