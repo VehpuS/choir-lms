@@ -13,6 +13,11 @@ import {
 } from '../../utils/loop-editor-model';
 import type { LoopPreviewPlaybackTimeline } from '../../utils/saved-loop-preview-playback-view-model';
 import type { LoopBuilderBoundary } from '../../utils/saved-loop-view-model';
+import {
+  LoopEditorMarkerControls,
+  LoopEditorMarkerPicker,
+} from './loop-editor-marker-controls';
+import { useLoopEditorMarkers } from './use-loop-editor-markers';
 import { LoopEditorRangeCards } from './loop-editor-range-cards';
 import { LoopEditorTransport } from './loop-editor-transport';
 import { LoopEditorWaveform } from './loop-editor-waveform';
@@ -23,6 +28,7 @@ type LoopEditorSurfaceProps = {
   builderIssue: { message: string; title: string } | null;
   canSaveLoop: boolean;
   canSetBoundaryFromPosition: boolean;
+  editingLoopId: string | null;
   endMs: number;
   eyebrowLabel: string;
   isPreparing: boolean;
@@ -40,6 +46,8 @@ type LoopEditorSurfaceProps = {
   onSaveLoop: () => void;
   onScrubPreview: (positionSeconds: number) => void;
   onSetBoundaryFromPosition: (boundary: LoopBuilderBoundary) => void;
+  /** Sets the range exactly, even to an unusable one (marker picks). */
+  onSetRange: (range: { endMs: number; startMs: number }) => void;
   onTogglePreview: () => void;
   previewActionLabel: string;
   previewDisabled: boolean;
@@ -63,7 +71,21 @@ export const LoopEditorSurface = (props: LoopEditorSurfaceProps) => {
     return null;
   }
 
+  return <LoopEditorContent {...props} selectedTrack={selectedTrack} />;
+};
+
+const LoopEditorContent = (
+  props: LoopEditorSurfaceProps & { selectedTrack: PlayableItem },
+) => {
+  const { selectedTrack } = props;
   const range = { endMs: props.endMs, startMs: props.startMs };
+  const pick = useLoopEditorMarkers({
+    editingLoopId: props.editingLoopId,
+    onSetRange: props.onSetRange,
+    range,
+    selectedTrack,
+    trackDurationMs: props.rangeMaximumMs,
+  });
   const seekPreviewBy = (deltaSeconds: number) => {
     if (!props.previewTimeline) {
       return;
@@ -107,6 +129,8 @@ export const LoopEditorSurface = (props: LoopEditorSurfaceProps) => {
 
         <LoopEditorWaveform
           isLoading={props.isPreparing}
+          markers={pick.markers}
+          onFlagPress={pick.pickFromFlag}
           onNudgeBoundary={props.onNudgeBoundary}
           onRangeChange={props.onRangeChange}
           playbackPositionSeconds={props.previewTimeline?.positionSeconds ?? 0}
@@ -116,10 +140,19 @@ export const LoopEditorSurface = (props: LoopEditorSurfaceProps) => {
         />
 
         <LoopEditorRangeCards
+          armedBoundary={pick.armed}
           isLoading={props.isPreparing}
           onNudgeBoundary={props.onNudgeBoundary}
+          onToggleArm={pick.canPick ? pick.toggleArm : undefined}
           range={range}
           trackDurationMs={props.rangeMaximumMs}
+        />
+
+        <LoopEditorMarkerControls
+          armed={pick.armed}
+          invalidRangeMessage={pick.invalidRangeMessage}
+          isPreparing={props.isPreparing}
+          onOpenPicker={pick.openPicker}
         />
 
         <LoopEditorTransport
@@ -170,6 +203,15 @@ export const LoopEditorSurface = (props: LoopEditorSurfaceProps) => {
           variant="accent"
         />
       </ScrollView>
+      {pick.isPickerOpen && pick.pickerModel && pick.filter ? (
+        <LoopEditorMarkerPicker
+          durationMs={props.rangeMaximumMs ?? undefined}
+          filter={pick.filter}
+          model={pick.pickerModel}
+          onClose={pick.closePicker}
+          onPick={pick.pickFromRow}
+        />
+      ) : null}
     </ModalSurfaceBase>
   );
 };

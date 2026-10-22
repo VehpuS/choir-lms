@@ -94,6 +94,8 @@ export type MarkersSheetInput = {
    * `Select`, `Create loops from markers`); off where no loop editor opens.
    */
   canMakeLoops?: boolean;
+  /** Off for the loop editor's picker: rows are only tapped, never edited. */
+  showRowActions?: boolean;
 };
 
 export type MarkersSheetModel = {
@@ -157,10 +159,15 @@ const toRow = (
   entry: MarkerListEntry,
   loopToNext: MarkerLoopDraft | undefined,
   canMutateLibrary: boolean,
+  showRowActions: boolean,
 ): MarkerRow => {
   const isExplicit = entry.origin === 'explicit';
   const candidates = isExplicit ? EXPLICIT_ROW_ACTIONS : DERIVED_ROW_ACTIONS;
   const actions = candidates.filter((action) => {
+    if (!showRowActions) {
+      return false;
+    }
+
     if (action === 'loop-to-next') {
       return loopToNext !== undefined;
     }
@@ -204,6 +211,7 @@ export const buildMarkersSheetModel = (
         ? resolveLoopToNext(entries, index, input.durationMs)
         : undefined,
       input.canMutateLibrary,
+      input.showRowActions ?? true,
     ),
   );
   const usableCount = rows.filter((row) => row.canJump).length;

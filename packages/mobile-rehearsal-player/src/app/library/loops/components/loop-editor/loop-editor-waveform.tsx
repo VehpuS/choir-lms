@@ -9,6 +9,12 @@ import {
   type LayoutChangeEvent,
 } from 'react-native';
 
+import { MarkerFlagsLayer } from '../../../../components/playback-waveform/marker-flags-layer';
+import {
+  resolveWaveformFlags,
+  type WaveformFlag,
+  type WaveformMarker,
+} from '../../../../components/playback-waveform/marker-flags-model';
 import { MIN_BAR_HEIGHT } from '../../../../components/playback-waveform/variants';
 import { resolvePlaybackWaveformBars } from '../../../../components/playback-waveform/model';
 import {
@@ -35,6 +41,9 @@ const PERCENT = 100;
 type LoopEditorWaveformProps = {
   /** The track's length is still being resolved. */
   isLoading: boolean;
+  /** Read-only marker flags across the whole track; pressing one picks it. */
+  markers?: readonly WaveformMarker[];
+  onFlagPress?: (flag: WaveformFlag) => void;
   onNudgeBoundary: (
     boundary: LoopBuilderBoundary,
     direction: 'earlier' | 'later',
@@ -57,6 +66,8 @@ const HANDLE_LABELS: Record<
 
 export const LoopEditorWaveform = ({
   isLoading,
+  markers,
+  onFlagPress,
   onNudgeBoundary,
   onRangeChange,
   playbackPositionSeconds,
@@ -83,6 +94,14 @@ export const LoopEditorWaveform = ({
     });
   }, [peaks, selectedTrack]);
   const region = getLoopEditorRegion(range, durationMs);
+  const flags = useMemo(() => {
+    return resolveWaveformFlags({
+      endMs: durationMs,
+      markers: markers ?? [],
+      startMs: 0,
+      width: layoutWidth,
+    });
+  }, [durationMs, layoutWidth, markers]);
   const playheadRatio = getLoopEditorPlayheadRatio({
     durationMs,
     positionSeconds: playbackPositionSeconds,
@@ -235,6 +254,13 @@ export const LoopEditorWaveform = ({
           pointerEvents="none"
           style={[styles.playhead, { left: `${playheadRatio * PERCENT}%` }]}
         />
+        {flags.length > 0 ? (
+          <MarkerFlagsLayer
+            flags={flags}
+            onFlagPress={onFlagPress}
+            width={layoutWidth}
+          />
+        ) : null}
         {durationMs > 0 ? renderHandle('start', region.startRatio) : null}
         {durationMs > 0 ? renderHandle('end', region.endRatio) : null}
       </View>

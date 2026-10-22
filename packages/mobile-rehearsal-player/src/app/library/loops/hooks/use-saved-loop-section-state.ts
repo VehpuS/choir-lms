@@ -269,6 +269,9 @@ export const useSavedLoopSectionState = (
         }),
       );
     },
+    // Marker picks set a boundary exactly; an unusable range just disables
+    // preview and save until it is fixed.
+    handleSetRange: applyRange,
     handleSaveLoop: async () => {
       if (!options.selectedTrack) {
         return;

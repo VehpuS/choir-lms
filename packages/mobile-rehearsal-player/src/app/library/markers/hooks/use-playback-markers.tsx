@@ -26,7 +26,10 @@ type PlaybackMarkersValue = {
   filter: MarkerListFilter;
   /** Jumps within the loaded item `target`; see `planMarkerJump`. */
   jump: (target: PlayableItem, positionMs: number) => void;
-  markersFor: (item: MarkersItem) => SourceMarkersResolution;
+  markersFor: (
+    item: MarkersItem,
+    options?: { excludeLoopId?: string },
+  ) => SourceMarkersResolution;
 };
 
 const NO_MARKERS: readonly WaveformMarker[] = [];
@@ -115,4 +118,9 @@ export const useWaveformMarkers = (item: PlayableItem) => {
       },
     };
   }, [item, value]);
+};
+
+/** The markers lookup and filter, for surfaces that build their own lists. */
+export const usePlaybackMarkersLookup = () => {
+  return useContext(PlaybackMarkersContext);
 };

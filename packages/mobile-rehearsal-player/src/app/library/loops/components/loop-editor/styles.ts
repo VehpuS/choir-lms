@@ -151,6 +151,14 @@ export const loopEditorStyles = StyleSheet.create({
     borderColor: colors.borderButton,
     borderRadius: radius.md,
   },
+  // Armed: the next marker pick sets this edge.
+  cardArmed: {
+    borderColor: colors.accent,
+    backgroundColor: colors.accentRegionFill,
+  },
+  cardHeader: {
+    gap: space.xxs,
+  },
   cardLength: {
     borderColor: colors.accentBorderDeep,
     backgroundColor: colors.accentRegionFill,

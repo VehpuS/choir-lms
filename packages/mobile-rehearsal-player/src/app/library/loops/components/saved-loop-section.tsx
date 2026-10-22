@@ -118,6 +118,7 @@ export const SavedLoopSection = ({
     handleRangeChange,
     handleSaveLoop,
     handleSetBoundaryToCurrentPosition,
+    handleSetRange,
     handleTogglePreview,
     isEditingLoop,
     loopDraft,
@@ -228,6 +229,7 @@ export const SavedLoopSection = ({
         builderIssue={builderIssue}
         canSaveLoop={canSaveLoop}
         canSetBoundaryFromPosition={canSetBoundaryFromPosition}
+        editingLoopId={activeEditingLoopId}
         endMs={loopDraft.endMs}
         eyebrowLabel={isEditingLoop ? 'Edit loop' : 'New loop'}
         isPreviewLoading={
@@ -250,6 +252,7 @@ export const SavedLoopSection = ({
           void seekActivePlaybackToPosition(positionSeconds);
         }}
         onSetBoundaryFromPosition={handleSetBoundaryToCurrentPosition}
+        onSetRange={handleSetRange}
         onTogglePreview={handleTogglePreview}
         previewActionLabel={previewActionLabel}
         previewDisabled={previewDisabled}
