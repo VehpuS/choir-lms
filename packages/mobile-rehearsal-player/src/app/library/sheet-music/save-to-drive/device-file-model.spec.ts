@@ -39,6 +39,15 @@ describe('checkDeviceFile', () => {
     }
   });
 
+  it('falls back to the format type when the browser reports none', async () => {
+    const result = await checkDeviceFile(textFile('Kyrie.pdf', '%PDF-1.7'));
+
+    assert.equal(
+      result.status === 'accepted' && result.mimeType,
+      'application/pdf',
+    );
+  });
+
   it('refuses a type the viewer cannot show, without reading the file', async () => {
     let reads = 0;
 

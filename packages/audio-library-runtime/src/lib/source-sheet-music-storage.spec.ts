@@ -10,7 +10,10 @@ import AsyncStorage, {
   type AsyncStorageStatic,
 } from '@react-native-async-storage/async-storage';
 
-import { AsyncStoragePracticeRepository } from './rehearsal-playback.js';
+import {
+  AsyncStoragePracticeRepository,
+  replaceSheetMusicLocationInRepository,
+} from './rehearsal-playback.js';
 
 const mutableAsyncStorage = AsyncStorage as unknown as AsyncStorageStatic;
 
@@ -156,6 +159,49 @@ describe('sheet music in the practice repository', () => {
     await repository.addSheetMusicSource(OWNER_ID, source.id, scoreAddition);
     const id = (await readSheetMusic(repository))?.[0]?.id ?? '';
     await repository.removeSheetMusicSource(OWNER_ID, source.id, id);
+
+    assert.equal(await readSheetMusic(repository), undefined);
+  });
+
+  it('points a link at its Drive copy, keeping its id, label, and part selection', async () => {
+    const repository = await setUp();
+
+    await repository.addSheetMusicSource(OWNER_ID, source.id, {
+      ...scoreAddition,
+      partSelection: { include: ['Alto'] },
+    });
+    const before = (await readSheetMusic(repository))?.[0];
+
+    await replaceSheetMusicLocationInRepository(
+      repository,
+      OWNER_ID,
+      source.id,
+      before?.id ?? '',
+      { fileId: 'drive-copy', name: 'Score.mxl' },
+    );
+
+    const after = (await readSheetMusic(repository))?.[0];
+
+    assert.deepEqual(after, {
+      ...before,
+      format: 'musicxml',
+      location: { kind: 'drive', fileId: 'drive-copy', name: 'Score.mxl' },
+    });
+  });
+
+  it('does not bring back a source removed while its upload ran', async () => {
+    const repository = await setUp();
+
+    await repository.addSheetMusicSource(OWNER_ID, source.id, scoreAddition);
+    const id = (await readSheetMusic(repository))?.[0]?.id ?? '';
+    await repository.removeSheetMusicSource(OWNER_ID, source.id, id);
+    await replaceSheetMusicLocationInRepository(
+      repository,
+      OWNER_ID,
+      source.id,
+      id,
+      { fileId: 'drive-copy', name: 'Score.pdf' },
+    );
 
     assert.equal(await readSheetMusic(repository), undefined);
   });

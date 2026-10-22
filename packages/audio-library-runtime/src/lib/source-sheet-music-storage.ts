@@ -2,6 +2,8 @@ import {
   createSheetMusicSource,
   normalizeSheetMusicLabel,
   parseSourceSheetMusic,
+  replaceSourceLocationWithDrive,
+  type SavedDriveFile,
   type DriveAudioSource,
   type SheetMusicFormat,
   type SheetMusicLocation,
@@ -130,5 +132,23 @@ export const removeSheetMusicSourceFromRepository = (
 ) => {
   return updateSourceSheetMusic(repository, ownerId, sourceId, (current) =>
     current.filter((entry) => entry.id !== sheetMusicId),
+  );
+};
+
+/**
+ * Points one source at the Drive copy of its file (a link the browser could
+ * not read, saved to Drive). The source keeps its id, label, and part
+ * selection; an unknown source id changes nothing, so a source removed while
+ * the upload ran is not brought back.
+ */
+export const replaceSheetMusicLocationInRepository = (
+  repository: SheetMusicRepository,
+  ownerId: string,
+  sourceId: string,
+  sheetMusicId: string,
+  file: SavedDriveFile,
+) => {
+  return updateSourceSheetMusic(repository, ownerId, sourceId, (current) =>
+    replaceSourceLocationWithDrive(current, sheetMusicId, file),
   );
 };

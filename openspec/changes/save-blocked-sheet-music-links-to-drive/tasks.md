@@ -29,7 +29,7 @@
 
 ## 5. The save flow
 
-- [ ] 5.1 Build the `Save to Drive` sheet: step 1 `Open the link`, step 2 `Choose the downloaded file`, step 3 destination folder, progress with cancel. Drive the steps from a pure state model with a spec for each transition, including cancel, failure, and removal mid-upload.
+- [x] 5.1 Build the `Save to Drive` sheet: step 1 `Open the link`, step 2 `Choose the downloaded file`, step 3 destination folder, progress with cancel. Drive the steps from a pure state model with a spec for each transition, including cancel, failure, and removal mid-upload. _Built in `save-to-drive/`: `save-flow-model.ts` (the state machine and failure copy), `use-save-to-drive.ts` (runs the steps; aborts on cancel or close), `save-flow-panel.tsx`, and `save-to-drive-sheet.tsx` (the folder step is the 4.2 picker). Extra in this task: `replaceSheetMusicLocationInRepository` in `@org/audio-library-runtime`, which saves the 4.3 swap. Not reachable from the UI until 5.2._
 - [ ] 5.2 Add `Save to Drive` to the blocked failure card and to the manager row menu for link sources, and `From this device` to `Add sheet music`; adding a Drive source from there uses the existing add path and source limit. Component specs for the card actions.
 - [ ] 5.3 After a successful save, replace the source (4.3), close the sheet, and open the viewer on the Drive copy.
 - [ ] 5.4 Verify in the browser preview with the user's Drive: a blocked link (for example the `example.org` fixture, or a real score site), a device file, a cancelled upload, and a session without the write scope. Note the result per scenario in `spec.md`'s scenarios.

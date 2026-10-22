@@ -10,6 +10,14 @@ import type { DeviceFile } from './device-file-chooser-types';
 /** What the file chooser offers; MuseScore files cannot be shown, so they are left out. */
 export const DEVICE_FILE_ACCEPT = '.pdf,.xml,.musicxml,.mxl,.mid,.midi';
 
+// Browsers report no type for `.musicxml` and a text type for `.xml`, so the
+// upload uses the format's own type when the file has none.
+const FORMAT_UPLOAD_MIME_TYPES: Record<SheetMusicContentFormat, string> = {
+  midi: 'audio/midi',
+  musicxml: 'application/vnd.recordare.musicxml+xml',
+  pdf: 'application/pdf',
+};
+
 export type DeviceFileRefusalReason =
   | 'too-large'
   | 'unsupported-type'
@@ -94,7 +102,7 @@ export const checkDeviceFile = async (
     ? {
         bytes,
         format,
-        mimeType: file.mimeType,
+        mimeType: file.mimeType || FORMAT_UPLOAD_MIME_TYPES[format],
         name: file.name,
         status: 'accepted',
       }
