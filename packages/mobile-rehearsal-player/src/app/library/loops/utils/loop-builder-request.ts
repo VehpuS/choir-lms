@@ -4,7 +4,17 @@
 // instead of through every layer's props. The start waits here until the
 // editor's draft is built, then is taken once.
 export type LoopBuilderRequest = {
+  /** A marker pair or next-marker loop also carries its end and a name. */
+  endMs?: number;
+  name?: string;
   sourceId: string;
+  startMs: number;
+};
+
+/** What a new loop's draft starts from, beyond the whole track. */
+export type RequestedLoopBuilderDraft = {
+  endMs?: number;
+  name?: string;
   startMs: number;
 };
 
@@ -29,14 +39,15 @@ export const subscribeToLoopBuilderRequests = (listener: Listener) => {
 };
 
 /**
- * The start a new loop's draft should use for this source, or null when none
- * was requested, the length is not known yet (the request is kept), or the
- * playhead is not inside the track.
+ * The start (and, for marker loops, end and name) a new loop's draft should
+ * use for this source, or null when none was requested, the length is not
+ * known yet (the request is kept), or the request does not fit the track: a
+ * playhead start must lie inside it, and an explicit range must be usable.
  */
-export const takeRequestedLoopBuilderStart = (options: {
+export const takeRequestedLoopBuilderDraft = (options: {
   endMs: number;
   sourceId: string;
-}): number | null => {
+}): RequestedLoopBuilderDraft | null => {
   if (
     pendingRequest === null ||
     pendingRequest.sourceId !== options.sourceId ||
@@ -45,11 +56,19 @@ export const takeRequestedLoopBuilderStart = (options: {
     return null;
   }
 
-  const { startMs } = pendingRequest;
+  const { endMs, name, startMs } = pendingRequest;
 
   pendingRequest = null;
 
-  return startMs > 0 && startMs < options.endMs ? startMs : null;
+  if (endMs === undefined) {
+    return startMs > 0 && startMs < options.endMs ? { startMs } : null;
+  }
+
+  const clampedEndMs = Math.min(endMs, options.endMs);
+
+  return startMs >= 0 && startMs < clampedEndMs
+    ? { endMs: clampedEndMs, ...(name ? { name } : {}), startMs }
+    : null;
 };
 
 export const clearRequestedLoopBuilder = () => {

@@ -5,6 +5,7 @@ import {
   requestSavedItemAction,
   subscribeToSavedItemRequests,
 } from '../../components/saved-item-menu/saved-item-requests';
+import { requestLoopBuilder } from '../../loops/utils/loop-builder-request';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { useSavedTrackPlayback } from '../../playback/hooks/use-saved-track-playback';
 import { getPlayableItemMarkerOwnerId } from '../../playback/utils/saved-track-playback-controller/marker-jump-plan';
@@ -26,6 +27,7 @@ const MS_PER_SECOND = 1000;
 type MarkersHostProps = {
   library: {
     canMutateLibrary: boolean;
+    canMutateLoops: boolean;
     markers: ReturnType<typeof useSourceMarkers>;
     savedLibrarySources: readonly DriveLibrarySource[];
     savedLoops: readonly NamedLoop[];
@@ -75,7 +77,7 @@ export const MarkersHost = ({ library, playback }: MarkersHostProps) => {
     ? Math.round(playback.progress.position * MS_PER_SECOND)
     : undefined;
   const model = buildMarkersSheetModel({
-    canMakeLoops: false,
+    canMakeLoops: library.canMutateLoops,
     canMutateLibrary: library.canMutateLibrary,
     derived: resolution.derived,
     durationMs: owner.durationMs,
@@ -119,7 +121,16 @@ export const MarkersHost = ({ library, playback }: MarkersHostProps) => {
           positionMs: row.positionMs,
         });
       }}
-      onMakeLoop={() => undefined}
+      onMakeLoop={(draft) => {
+        // The loop editor opens on the item's own source, prefilled.
+        setContext(null);
+        requestLoopBuilder({
+          endMs: draft.endMs,
+          name: draft.name,
+          sourceId: context.target.sourceId,
+          startMs: draft.startMs,
+        });
+      }}
       onMove={(markerId, positionMs) => {
         void markers.moveMarker(item, markerId, positionMs);
       }}

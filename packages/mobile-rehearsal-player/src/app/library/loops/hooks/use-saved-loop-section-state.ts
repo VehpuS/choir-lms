@@ -12,7 +12,7 @@ import { getSavedTrackPlaybackActionCopy } from '../../playback/utils/saved-trac
 import { resolveLoopPreviewPlaybackTimeline } from '../utils/saved-loop-preview-playback-view-model';
 import {
   clearRequestedLoopBuilder,
-  takeRequestedLoopBuilderStart,
+  takeRequestedLoopBuilderDraft,
 } from '../utils/loop-builder-request';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../storage/local-library-storage';
 import type { SavedLoopIssue } from '../utils/saved-loop-view-model';
@@ -181,18 +181,20 @@ export const useSavedLoopSectionState = (
       options.selectedTrack.source.durationMs ??
       options.selectedTrack.range.startMs;
 
-    // `Make loop` on the playback sheet starts the new loop at the playhead.
-    const requestedStartMs = takeRequestedLoopBuilderStart({
+    // `Make loop` on the playback sheet starts the new loop at the playhead;
+    // a marker loop also brings its end and a name.
+    const requested = takeRequestedLoopBuilderDraft({
       endMs: nextEndMs,
       sourceId: options.selectedTrack.source.id,
     });
+    const nextDraft = createLoopBuilderDraft({
+      endMs: requested?.endMs ?? nextEndMs,
+      sourceName: options.selectedTrack.source.name,
+      startMs: requested?.startMs ?? options.selectedTrack.range.startMs,
+    });
 
     setLoopDraft(
-      createLoopBuilderDraft({
-        endMs: nextEndMs,
-        sourceName: options.selectedTrack.source.name,
-        startMs: requestedStartMs ?? options.selectedTrack.range.startMs,
-      }),
+      requested?.name ? { ...nextDraft, loopName: requested.name } : nextDraft,
     );
     setDraftIssue(null);
     // A new loop's range spans the whole track, so it starts over once the
