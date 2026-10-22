@@ -1,4 +1,4 @@
-import type { PlayableItem } from '@org/audio-library-models';
+import type { MarkerListFilter, PlayableItem } from '@org/audio-library-models';
 import { useMemo, useState } from 'react';
 
 import type { WaveformFlag } from '../../../../components/playback-waveform/marker-flags-model';
@@ -29,6 +29,10 @@ const WHOLE_TRACK = {
 
 const NO_FLAGS: never[] = [];
 
+// Loop starts and ends are for playback; creating or editing a loop only
+// offers the user's own markers, whatever the device filter says.
+const EDITOR_FILTER: MarkerListFilter = 'mine';
+
 const OUT_OF_REACH_LABELS: Record<LoopBuilderBoundary, string> = {
   end: 'At or before the loop start',
   start: 'At or after the loop end',
@@ -49,7 +53,8 @@ type Options = {
  * from a flag or from the marker picker. A pick that would put the start at
  * or after the end (or the reverse) asks first, offering to move the other
  * edge to the track's start or end, so the editor never holds an unusable
- * range. Markers cannot be changed here.
+ * range. Only the user's own markers are offered (never loop starts or
+ * ends). Markers cannot be changed here.
  */
 export const useLoopEditorMarkers = (options: Options) => {
   const { editingLoopId, onSetRange, range, selectedTrack } = options;
@@ -80,7 +85,7 @@ export const useLoopEditorMarkers = (options: Options) => {
       return [];
     }
 
-    return resolveWaveformMarkers(WHOLE_TRACK, resolution, lookup.filter).map(
+    return resolveWaveformMarkers(WHOLE_TRACK, resolution, EDITOR_FILTER).map(
       (marker) => ({
         ...marker,
         isDimmed:
@@ -128,7 +133,7 @@ export const useLoopEditorMarkers = (options: Options) => {
           derived: resolution.derived,
           durationMs: resolution.owner.durationMs,
           explicit: resolution.explicit,
-          filter: lookup.filter,
+          filter: EDITOR_FILTER,
           isOwnerLoaded: false,
           isPickable,
           outOfReachLabel: armed ? OUT_OF_REACH_LABELS[armed] : undefined,
@@ -147,7 +152,7 @@ export const useLoopEditorMarkers = (options: Options) => {
     conflictText: conflict
       ? describeMarkerPickConflict(conflict, range, formatMarkerTime)
       : null,
-    filter: lookup?.filter,
+    filter: lookup ? EDITOR_FILTER : undefined,
     isPickerOpen,
     markers: areMarkersShown ? markers : NO_FLAGS,
     openPickerFor: (boundary: LoopBuilderBoundary) => {

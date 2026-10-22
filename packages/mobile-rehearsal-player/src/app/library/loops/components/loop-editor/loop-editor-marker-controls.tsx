@@ -34,6 +34,7 @@ export const LoopEditorMarkerPicker = ({
     <MarkersSheet
       durationMs={durationMs}
       filter={filter}
+      isFilterHidden
       model={model}
       onAddHere={() => Promise.resolve({ error: '' })}
       onClose={onClose}

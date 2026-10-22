@@ -76,16 +76,18 @@ export const MarkersSheet = (props: MarkersSheetProps) => {
         titleNumberOfLines={2}
       >
         <View style={styles.filterRow}>
-          <SegmentedControl
-            style={styles.filter}
-            accessibilityLabel="Marker filter"
-            onSelect={props.onFilterChange}
-            options={MARKERS_FILTER_OPTIONS.map(({ filter, label }) => ({
-              label,
-              value: filter,
-            }))}
-            selectedValue={props.filter}
-          />
+          {props.isFilterHidden ? null : (
+            <SegmentedControl
+              style={styles.filter}
+              accessibilityLabel="Marker filter"
+              onSelect={props.onFilterChange}
+              options={MARKERS_FILTER_OPTIONS.map(({ filter, label }) => ({
+                label,
+                value: filter,
+              }))}
+              selectedValue={props.filter}
+            />
+          )}
           {model.canSelect && !selection.isSelecting ? (
             <SelectEntryButton
               onPress={() => {

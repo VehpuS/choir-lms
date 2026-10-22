@@ -8,6 +8,8 @@ export type MarkersSheetProps = {
   currentPositionMs?: number;
   durationMs?: number;
   filter: MarkerListFilter;
+  /** Hides the All / My markers control (the loop editor's picker). */
+  isFilterHidden?: boolean;
   /** Opens this row's action menu straight away (a long press on its flag). */
   initialMenuRowKey?: string;
   model: MarkersSheetModel;
