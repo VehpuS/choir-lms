@@ -3,6 +3,10 @@ export const DEFAULT_ANDROID_PACKAGE = 'com.choirlms.mobile';
 export const DEFAULT_IOS_BUNDLE_IDENTIFIER = 'com.choirlms.mobile';
 export const DEFAULT_GOOGLE_DRIVE_SCOPE =
   'https://www.googleapis.com/auth/drive.readonly';
+// Lets the app save a sheet music file to Drive; kept in step with the same
+// constant in app.config.ts (a spec compares them).
+export const DEFAULT_GOOGLE_DRIVE_WRITE_SCOPE =
+  'https://www.googleapis.com/auth/drive.file';
 
 export const DEFAULT_SUPPORTED_AUDIO_MIME_TYPES = [
   'audio/mpeg',

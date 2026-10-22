@@ -12,6 +12,8 @@ const DEFAULT_IOS_BUNDLE_IDENTIFIER = 'com.choirlms.mobile';
 const DEFAULT_EAS_PROJECT_ID = 'b4ff1edf-46a7-4c71-a903-0a39ad6f7375';
 const DEFAULT_GOOGLE_DRIVE_SCOPE =
   'https://www.googleapis.com/auth/drive.readonly';
+const DEFAULT_GOOGLE_DRIVE_WRITE_SCOPE =
+  'https://www.googleapis.com/auth/drive.file';
 
 const DEFAULT_SUPPORTED_AUDIO_MIME_TYPES = [
   'audio/mpeg',
@@ -138,6 +140,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? '',
           webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '',
           driveScope: DEFAULT_GOOGLE_DRIVE_SCOPE,
+          driveWriteScope: DEFAULT_GOOGLE_DRIVE_WRITE_SCOPE,
         },
         supportedAudioMimeTypes,
         supportedAudioExtensions,

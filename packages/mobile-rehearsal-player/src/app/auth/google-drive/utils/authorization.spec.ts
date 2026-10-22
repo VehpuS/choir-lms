@@ -10,6 +10,7 @@ import {
   getDriveAuthorizationStatusCopy,
   getDriveSessionDetails,
   getDriveSessionTriggerCopy,
+  hasDriveWriteAccess,
   isDriveAuthorizationFailure,
   persistDriveAuthorizationState,
   resolveDriveAuthorizationResult,
@@ -286,5 +287,43 @@ describe('authorization persistence', () => {
     assert.equal(persistedValue.status, 'expired');
     assert.equal(restoredState.status, 'expired');
     assert.equal(restoredState.accessToken, undefined);
+  });
+});
+
+describe('hasDriveWriteAccess', () => {
+  const WRITE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+  const restore = (scope: string | undefined) =>
+    restoreDriveAuthorizationState(
+      createMemoryStore(
+        JSON.stringify({
+          accessToken: 'token',
+          expiresAt: '2099-01-01T00:00:00.000Z',
+          ...(scope ? { scope } : {}),
+        }),
+      ).store,
+      DEFAULT_SCOPE,
+    );
+
+  it('is true for a restored session that was granted the write scope', async () => {
+    assert.equal(
+      hasDriveWriteAccess(await restore(`${DEFAULT_SCOPE} ${WRITE_SCOPE}`)),
+      true,
+    );
+  });
+
+  it('is false for a restored session from before the write scope existed', async () => {
+    assert.equal(hasDriveWriteAccess(await restore(DEFAULT_SCOPE)), false);
+    assert.equal(hasDriveWriteAccess(await restore(undefined)), false);
+  });
+
+  it('is false without a token, even when the scope string has the write scope', () => {
+    assert.equal(
+      hasDriveWriteAccess({ scope: WRITE_SCOPE, status: 'unconfigured' }),
+      false,
+    );
+    assert.equal(
+      hasDriveWriteAccess({ scope: WRITE_SCOPE, status: 'expired' }),
+      false,
+    );
   });
 });

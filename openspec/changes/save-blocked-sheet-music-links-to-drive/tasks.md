@@ -14,10 +14,10 @@
 
 ## 3. Drive write scope
 
-- [ ] 3.1 Add `DRIVE_WRITE_SCOPE` and `hasDriveWriteScope(scope)` to `@org/google-drive` (whitespace-split, accepts `drive.file` or `drive`), with specs for missing, single, combined, and empty scope strings.
-- [ ] 3.2 Add `driveWriteScope` to runtime config (`defaults.ts`, `runtime-config-model.ts`, `app.config.ts`), and a spec that `app.config.ts` and `defaults.ts` carry the same values.
-- [ ] 3.3 Pass both scopes to `Google.useAuthRequest` in `use-authorization.ts`, and expose `hasWriteAccess` from the hook (from the stored `scope`). Extend `authorization.spec.ts` for a restored session with and without the write scope.
-- [ ] 3.4 Add the `Allow saving to Drive` step component and its model (states: needs-permission, declined, ready), with specs for each state.
+- [x] 3.1 Add `DRIVE_WRITE_SCOPE` and `hasDriveWriteScope(scope)` to `@org/google-drive` (whitespace-split, accepts `drive.file` or `drive`), with specs for missing, single, combined, and empty scope strings.
+- [x] 3.2 Add `driveWriteScope` to runtime config (`defaults.ts`, `runtime-config-model.ts`, `app.config.ts`), and a spec that `app.config.ts` and `defaults.ts` carry the same values.
+- [x] 3.3 Pass both scopes to `Google.useAuthRequest` in `use-authorization.ts`, and expose `hasWriteAccess` from the hook (from the stored `scope`). Extend `authorization.spec.ts` for a restored session with and without the write scope.
+- [x] 3.4 Add the `Allow saving to Drive` step component and its model (states: needs-permission, declined, ready), with specs for each state.
 - [ ] 3.5 Manual check (needs the user): sign out and in on web, confirm the consent screen lists the new permission, then confirm the stored `scope` and `tokeninfo` per `design.md`.
 
 ## 4. Upload and source swap

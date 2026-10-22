@@ -4,6 +4,7 @@ import {
   DEFAULT_ANDROID_PACKAGE,
   DEFAULT_APP_SCHEME,
   DEFAULT_GOOGLE_DRIVE_SCOPE,
+  DEFAULT_GOOGLE_DRIVE_WRITE_SCOPE,
   DEFAULT_IOS_BUNDLE_IDENTIFIER,
   DEFAULT_SUPPORTED_AUDIO_EXTENSIONS,
   DEFAULT_SUPPORTED_AUDIO_MIME_TYPES,
@@ -12,6 +13,7 @@ import {
 type RuntimeGoogleConfig = {
   androidClientId: string;
   driveScope: string;
+  driveWriteScope: string;
   iosClientId: string;
   webClientId: string;
 };
@@ -78,6 +80,7 @@ const DEFAULT_RUNTIME_CONFIG: RuntimeConfig = {
     androidClientId: '',
     webClientId: '',
     driveScope: DEFAULT_GOOGLE_DRIVE_SCOPE,
+    driveWriteScope: DEFAULT_GOOGLE_DRIVE_WRITE_SCOPE,
   },
   supportedAudioMimeTypes: DEFAULT_SUPPORTED_AUDIO_MIME_TYPES,
   supportedAudioExtensions: DEFAULT_SUPPORTED_AUDIO_EXTENSIONS,
@@ -129,6 +132,9 @@ export const resolveRuntimeConfig = (options: {
       driveScope:
         mobileConfig.google?.driveScope ??
         DEFAULT_RUNTIME_CONFIG.google.driveScope,
+      driveWriteScope:
+        mobileConfig.google?.driveWriteScope ??
+        DEFAULT_RUNTIME_CONFIG.google.driveWriteScope,
     },
     supportedAudioMimeTypes:
       mobileConfig.supportedAudioMimeTypes ??

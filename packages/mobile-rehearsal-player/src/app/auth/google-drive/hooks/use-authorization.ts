@@ -16,6 +16,7 @@ import {
   clearDriveAuthorizationState,
   createExpiredDriveAuthorizationState,
   getDriveAuthorizationStatusCopy,
+  hasDriveWriteAccess,
   persistDriveAuthorizationState,
   resolveDriveAuthorizationResult,
   resolveWebAuthRedirectUri,
@@ -89,7 +90,10 @@ export const useGoogleDriveAuthorization = () => {
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: googleClientId ?? FALLBACK_GOOGLE_CLIENT_ID,
     redirectUri: googleRedirectUri,
-    scopes: [runtimeConfig.google.driveScope],
+    scopes: [
+      runtimeConfig.google.driveScope,
+      runtimeConfig.google.driveWriteScope,
+    ],
     selectAccount: true,
   });
   const persistAuthorizedState = useCallback(
@@ -251,6 +255,7 @@ export const useGoogleDriveAuthorization = () => {
     clearAuthorization,
     expireAuthorization,
     googleAuthConfigured,
+    hasWriteAccess: hasDriveWriteAccess(authState),
     isBusy: isRestoring || isAuthorizing || isSavingSession,
     requestReady: Boolean(request),
     startAuthorization,

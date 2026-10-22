@@ -1,8 +1,14 @@
 /// <reference types="node" />
 
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { describe, it } from 'node:test';
 
+import {
+  DEFAULT_GOOGLE_DRIVE_SCOPE,
+  DEFAULT_GOOGLE_DRIVE_WRITE_SCOPE,
+} from './defaults.js';
 import {
   readExpoPublicRuntimeEnv,
   resolveRuntimeConfig,
@@ -94,5 +100,35 @@ describe('runtimeConfigModel', () => {
       'audio/wav',
       'audio/ogg',
     ]);
+  });
+});
+
+describe('Drive scopes', () => {
+  const SCOPES_PATTERN = (name: string) =>
+    new RegExp(`${name}\\s*=\\s*'([^']+)'`);
+
+  it('defaults to read access plus the write scope', () => {
+    const { google } = resolveRuntimeConfig({});
+
+    assert.equal(google.driveScope, DEFAULT_GOOGLE_DRIVE_SCOPE);
+    assert.equal(google.driveWriteScope, DEFAULT_GOOGLE_DRIVE_WRITE_SCOPE);
+  });
+
+  it('keeps app.config.ts and defaults.ts on the same scopes', async () => {
+    // app.config.ts cannot import from src/, so it repeats the values.
+    // Nx runs the test targets from the project root.
+    const source = await readFile(
+      path.resolve(process.cwd(), 'app.config.ts'),
+      'utf8',
+    );
+
+    assert.equal(
+      SCOPES_PATTERN('DEFAULT_GOOGLE_DRIVE_SCOPE').exec(source)?.[1],
+      DEFAULT_GOOGLE_DRIVE_SCOPE,
+    );
+    assert.equal(
+      SCOPES_PATTERN('DEFAULT_GOOGLE_DRIVE_WRITE_SCOPE').exec(source)?.[1],
+      DEFAULT_GOOGLE_DRIVE_WRITE_SCOPE,
+    );
   });
 });

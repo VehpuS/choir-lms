@@ -1,5 +1,6 @@
 import {
   getDriveAuthorizationState,
+  hasDriveWriteScope,
   type DriveAuthorizationState,
 } from '@org/google-drive';
 import { isEmpty } from 'es-toolkit/compat';
@@ -163,6 +164,21 @@ export const createExpiredDriveAuthorizationState = (
     scope: state.scope,
     status: 'expired',
   };
+};
+
+/**
+ * Whether the signed-in session may save files to Drive. Sessions made before
+ * the write scope was requested hold only `drive.readonly` and read as false,
+ * which is what sends the save flow to its `Allow saving to Drive` step.
+ */
+export const hasDriveWriteAccess = (
+  state: Pick<DriveAuthorizationState, 'accessToken' | 'scope' | 'status'>,
+): boolean => {
+  return (
+    state.status === 'authorized' &&
+    Boolean(state.accessToken) &&
+    hasDriveWriteScope(state.scope)
+  );
 };
 
 export const isDriveAuthorizationFailure = (error: unknown) => {
