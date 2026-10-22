@@ -12,7 +12,7 @@ type MarkerAddToastProps = {
 // Floats above the playback surface without taking layout space, so adding a
 // marker never moves the waveform or the transport controls. `box-none` keeps
 // everything outside the card tappable.
-const TOAST_BOTTOM_OFFSET = 112;
+const TOAST_BOTTOM_OFFSET = 24;
 
 export const MarkerAddToast = (props: MarkerAddToastProps) => {
   return (

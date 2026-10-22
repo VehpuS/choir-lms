@@ -143,7 +143,6 @@ export const MoveMarkerDialog = ({
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {currentPositionMs === undefined ? null : (
         <OutlinedActionButton
-          icon="refresh"
           label="Set to current position"
           onPress={() => {
             applyPosition(Math.round(currentPositionMs));
