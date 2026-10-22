@@ -52,10 +52,12 @@ const LOADING: DrivePickerState = { status: 'loading' };
 export const useDriveSheetMusicPicker = (options: {
   accessToken: string | undefined;
   client?: DriveSheetMusicClient;
+  /** Where the picker opens; My Drive when omitted. */
+  initialNavigation?: DrivePickerNavigation;
 }) => {
   const { accessToken, client = driveSheetMusicClient } = options;
   const [navigation, setNavigation] = useState<DrivePickerNavigation>(
-    createDrivePickerNavigation,
+    () => options.initialNavigation ?? createDrivePickerNavigation(),
   );
   const [query, setQuery] = useState('');
   const [state, setState] = useState<DrivePickerState>(LOADING);
