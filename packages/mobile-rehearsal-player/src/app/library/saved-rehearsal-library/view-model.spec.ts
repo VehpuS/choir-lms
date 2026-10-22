@@ -113,6 +113,34 @@ describe('saved rehearsal library view-model', () => {
     ]);
   });
 
+  it('keeps saved markers when a Drive row for the track is on screen', () => {
+    const markedSource = {
+      ...PLAYABLE_SOURCE,
+      markers: [
+        {
+          id: 'marker-1',
+          name: 'Chorus',
+          positionMs: 72_400,
+          createdAt: '2026-10-21T00:00:00.000Z',
+        },
+      ],
+    };
+    const refreshedSource = {
+      ...PLAYABLE_SOURCE,
+      modifiedTime: '2026-05-11T10:00:00.000Z',
+    };
+
+    const savedSources = resolveSavedRehearsalLibrarySources({
+      authState: AUTHORIZED_STATE,
+      savedSources: [markedSource],
+      visibleSources: [refreshedSource],
+    });
+
+    assert.deepEqual(savedSources, [
+      { ...refreshedSource, markers: markedSource.markers },
+    ]);
+  });
+
   it('keeps saved tag timestamps when a Drive row for the track is on screen', () => {
     const taggedSource = {
       ...PLAYABLE_SOURCE,

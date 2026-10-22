@@ -231,6 +231,23 @@ describe('buildMarkersSheetModel', () => {
     assert.equal(withExplicit.canCreateLoops, true);
   });
 
+  it('hides every loop-making entry when loops cannot be made from here', () => {
+    const model = buildMarkersSheetModel(
+      buildInput({
+        explicit: [marker('a', 1_000), marker('b', 2_000)],
+        durationMs: 10_000,
+        canMakeLoops: false,
+      }),
+    );
+
+    assert.equal(model.canCreateLoops, false);
+    assert.equal(model.canSelect, false);
+    assert.equal(
+      model.rows.some((row) => row.actions.includes('loop-to-next')),
+      false,
+    );
+  });
+
   it('offers Select only with two jumpable rows', () => {
     const one = buildMarkersSheetModel(
       buildInput({ explicit: [marker('a', 1_000)] }),

@@ -26,6 +26,7 @@ export type PhosphorGlyph =
   | 'DotsSixVertical'
   | 'DotsThreeVertical'
   | 'File'
+  | 'Flag'
   | 'FloppyDisk'
   | 'Folder'
   | 'FolderPlus'
@@ -143,6 +144,8 @@ export const APP_ICON_GLYPHS = {
   'music-note-multiple-outline': regular('MusicNotes'),
   'playlist-music-outline': regular('Playlist'),
   'sheet-music-outline': regular('MusicNotesSimple'),
+  // Track markers: a flag, the same figure drawn on the waveform.
+  'flag-outline': regular('Flag'),
   'tag-outline': regular('Tag'),
   'text-align-left': regular('TextAlignLeft'),
   'view-list': regular('Queue'),

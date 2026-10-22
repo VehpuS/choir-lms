@@ -2,6 +2,7 @@ import { aggregateRehearsalLibraryTags } from '@org/audio-library-runtime';
 import { useEffect, useMemo, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/google-drive/hooks/use-authorization';
 import { LyricsHosts } from '../library/lyrics/components/lyrics-hosts';
+import { MarkersHost } from '../library/markers/components/markers-host';
 import { SheetMusicHost } from '../library/sheet-music/manager/sheet-music-host';
 import { SavedItemAvailabilityProvider } from '../library/components/saved-item-menu/saved-item-availability-context';
 import { isLoopPreviewItem } from '../library/playback/utils/loop-preview-item';
@@ -284,6 +285,10 @@ export const AppRouter = () => {
       />
       <SheetMusicHost
         authorization={authorization}
+        library={libraryController.savedLibrary}
+        playback={playback}
+      />
+      <MarkersHost
         library={libraryController.savedLibrary}
         playback={playback}
       />

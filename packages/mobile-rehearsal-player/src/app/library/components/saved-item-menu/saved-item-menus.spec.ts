@@ -47,6 +47,7 @@ const withoutFilesViewActions = (actions: OptionsMenuAction[]) => {
 // Files rows always offer lyrics, so the shared menus are built with them too.
 const NO_LYRICS = { hasLyrics: false, onEditLyrics: () => undefined };
 const SHEET_MUSIC = { onOpenSheetMusic: () => undefined };
+const MARKERS = { onOpenMarkers: () => undefined };
 
 const trackContext = (
   overrides: Partial<SavedTrackMenuContext> = {},
@@ -58,6 +59,7 @@ const trackContext = (
   canReconnect: true,
   lyrics: NO_LYRICS,
   sheetMusic: SHEET_MUSIC,
+  markers: MARKERS,
   isLoopBuilderPreparing: false,
   isLoopMutating: false,
   isPendingLoopSource: false,
@@ -88,6 +90,7 @@ const loopContext = (): SavedLoopMenuContext => ({
   hasPlayableItem: true,
   lyrics: NO_LYRICS,
   sheetMusic: SHEET_MUSIC,
+  markers: MARKERS,
   isEditingLoop: false,
   isLoopMutating: false,
   isPendingRemoval: false,
@@ -209,6 +212,7 @@ describe('shared saved-item menus', () => {
       'Edit tags',
       'Lyrics',
       'Sheet music',
+      'Markers',
       'Remove from library',
     ]);
   });
@@ -244,6 +248,7 @@ describe('shared saved-item menus', () => {
         'Edit tags',
         'Lyrics',
         'Sheet music',
+        'Markers',
         'Remove from library',
       ],
     );

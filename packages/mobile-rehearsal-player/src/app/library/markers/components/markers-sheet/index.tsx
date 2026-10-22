@@ -1,5 +1,4 @@
-import type { TrackMarker } from '@org/audio-library-models';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { darkScrollbarStyle } from '../../../../components/dark-scrollbar';
@@ -7,65 +6,24 @@ import { OutlinedActionButton } from '../../../../components/outlined-action-but
 import { SegmentedControl } from '../../../../components/segmented-control';
 import { appTheme } from '../../../../utils/theme';
 import { BottomSheetSurface } from '../../../components/bottom-sheet-surface';
-import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
-import type { OptionsMenuAction } from '../../../components/options-menu-sheet/model';
-import { MoveMarkerDialog, RenameMarkerDialog } from './marker-dialogs';
+import { SelectEntryButton } from '../../../selection/select-entry-button';
+import { MarkerNoticeBar } from './marker-notice-bar';
 import { MarkerRow } from './marker-row';
-import { MarkerUndoBar } from './marker-undo-bar';
+import { MarkerRowDialogs } from './marker-row-dialogs';
 import {
   INITIAL_MARKER_SELECTION,
   MARKERS_FILTER_OPTIONS,
-  MARKER_ROW_ACTION_LABELS,
   cancelMarkerSelection,
   resolveMarkerPairLoop,
   startMarkerSelection,
   toggleMarkerSelection,
-  type MarkerLoopDraft,
-  type MarkerRow as MarkerRowModel,
-  type MarkerRowAction,
-  type MarkersSheetModel,
 } from './model';
-import type { MarkerListFilter } from '@org/audio-library-models';
+import type { MarkersSheetProps } from './props';
+import { useMarkersSheetState } from './use-markers-sheet-state';
 
-const UNDO_VISIBLE_MS = 5000;
+export type { MarkerAddResult, MarkersSheetProps } from './props';
+
 const LIST_MAX_HEIGHT = 360;
-
-const ROW_ACTION_ICONS: Record<
-  MarkerRowAction,
-  NonNullable<OptionsMenuAction['icon']>
-> = {
-  delete: 'trash-can-outline',
-  'keep-as-marker': 'plus',
-  'loop-to-next': 'repeat',
-  move: 'swap-horizontal',
-  'open-loop': 'repeat',
-  rename: 'pencil-outline',
-};
-
-export type MarkersSheetProps = {
-  /** Playhead of the loaded owner, when there is one: `Set to current position`. */
-  currentPositionMs?: number;
-  durationMs?: number;
-  filter: MarkerListFilter;
-  model: MarkersSheetModel;
-  onAddHere: () => void;
-  onClose: () => void;
-  onCreateLoops: () => void;
-  onDelete: (markerId: string) => Promise<TrackMarker | undefined>;
-  onFilterChange: (filter: MarkerListFilter) => void;
-  onJump: (row: MarkerRowModel) => void;
-  onKeepAsMarker: (row: MarkerRowModel) => void;
-  onMakeLoop: (draft: MarkerLoopDraft) => void;
-  onMove: (markerId: string, positionMs: number) => void;
-  onOpenLoop: (loopId: string) => void;
-  onRename: (markerId: string, name: string) => void;
-  onRestore: (marker: TrackMarker) => void;
-};
-
-type OpenDialog =
-  | { kind: 'menu'; row: MarkerRowModel }
-  | { kind: 'move'; row: MarkerRowModel }
-  | { kind: 'rename'; row: MarkerRowModel };
 
 /**
  * The markers list as a bottom sheet: filter, add / select / create-loops
@@ -75,60 +33,13 @@ type OpenDialog =
 export const MarkersSheet = (props: MarkersSheetProps) => {
   const { model, onClose } = props;
   const [selection, setSelection] = useState(INITIAL_MARKER_SELECTION);
-  const [dialog, setDialog] = useState<OpenDialog | null>(null);
-  const [deleted, setDeleted] = useState<TrackMarker | null>(null);
-
-  useEffect(() => {
-    if (!deleted) {
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setDeleted(null);
-    }, UNDO_VISIBLE_MS);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [deleted]);
-
+  const { addHere, dialog, menuActions, notice, setDialog } =
+    useMarkersSheetState(props);
   const pairLoop = resolveMarkerPairLoop(
     model.rows,
     selection,
     props.durationMs,
   );
-
-  const runRowAction = (row: MarkerRowModel, action: MarkerRowAction) => {
-    if (action === 'rename' || action === 'move') {
-      setDialog({ kind: action, row });
-      return;
-    }
-
-    setDialog(null);
-
-    if (action === 'delete' && row.markerId) {
-      void props.onDelete(row.markerId).then((marker) => {
-        setDeleted(marker ?? null);
-      });
-    } else if (action === 'open-loop' && row.loopId) {
-      props.onOpenLoop(row.loopId);
-    } else if (action === 'keep-as-marker') {
-      props.onKeepAsMarker(row);
-    } else if (action === 'loop-to-next' && row.loopToNext) {
-      props.onMakeLoop(row.loopToNext);
-    }
-  };
-
-  const menuActions = (row: MarkerRowModel): OptionsMenuAction[] =>
-    row.actions.map((action) => ({
-      icon: ROW_ACTION_ICONS[action],
-      id: `${row.key}:${action}`,
-      label: MARKER_ROW_ACTION_LABELS[action],
-      onPress: () => {
-        runRowAction(row, action);
-      },
-      tone: action === 'delete' ? 'destructive' : 'secondary',
-    }));
 
   return (
     <>
@@ -164,15 +75,25 @@ export const MarkersSheet = (props: MarkersSheetProps) => {
         title={model.subtitle}
         titleNumberOfLines={2}
       >
-        <SegmentedControl
-          accessibilityLabel="Marker filter"
-          onSelect={props.onFilterChange}
-          options={MARKERS_FILTER_OPTIONS.map(({ filter, label }) => ({
-            label,
-            value: filter,
-          }))}
-          selectedValue={props.filter}
-        />
+        <View style={styles.filterRow}>
+          <SegmentedControl
+            style={styles.filter}
+            accessibilityLabel="Marker filter"
+            onSelect={props.onFilterChange}
+            options={MARKERS_FILTER_OPTIONS.map(({ filter, label }) => ({
+              label,
+              value: filter,
+            }))}
+            selectedValue={props.filter}
+          />
+          {model.canSelect && !selection.isSelecting ? (
+            <SelectEntryButton
+              onPress={() => {
+                setSelection(startMarkerSelection());
+              }}
+            />
+          ) : null}
+        </View>
         {selection.isSelecting ? (
           <Text style={styles.hint}>Choose two markers to bound a loop.</Text>
         ) : (
@@ -182,18 +103,8 @@ export const MarkersSheet = (props: MarkersSheetProps) => {
                 fill
                 icon="plus"
                 label="Add marker here"
-                onPress={props.onAddHere}
+                onPress={addHere}
                 variant="accent"
-              />
-            ) : null}
-            {model.canSelect ? (
-              <OutlinedActionButton
-                fill
-                icon="select-multiple"
-                label="Select"
-                onPress={() => {
-                  setSelection(startMarkerSelection());
-                }}
               />
             ) : null}
           </View>
@@ -233,59 +144,22 @@ export const MarkersSheet = (props: MarkersSheetProps) => {
             ))}
           </ScrollView>
         )}
-        {deleted ? (
-          <MarkerUndoBar
-            markerName={deleted.name}
-            onUndo={() => {
-              props.onRestore(deleted);
-              setDeleted(null);
-            }}
+        {notice ? (
+          <MarkerNoticeBar
+            actionLabel={notice.action?.label}
+            message={notice.message}
+            onAction={notice.action?.onPress}
           />
         ) : null}
       </BottomSheetSurface>
-      {dialog?.kind === 'menu' ? (
-        <OptionsMenuSheet
-          actions={menuActions(dialog.row)}
-          isVisible
-          onClose={() => {
-            setDialog(null);
-          }}
-          title={dialog.row.name}
-        />
-      ) : null}
-      {dialog?.kind === 'rename' ? (
-        <RenameMarkerDialog
-          initialName={dialog.row.name}
-          onCancel={() => {
-            setDialog(null);
-          }}
-          onSubmit={(name) => {
-            if (dialog.row.markerId) {
-              props.onRename(dialog.row.markerId, name);
-            }
-
-            setDialog(null);
-          }}
-        />
-      ) : null}
-      {dialog?.kind === 'move' ? (
-        <MoveMarkerDialog
-          currentPositionMs={props.currentPositionMs}
-          durationMs={props.durationMs}
-          initialPositionMs={dialog.row.positionMs}
-          name={dialog.row.name}
-          onCancel={() => {
-            setDialog(null);
-          }}
-          onSubmit={(positionMs) => {
-            if (dialog.row.markerId) {
-              props.onMove(dialog.row.markerId, positionMs);
-            }
-
-            setDialog(null);
-          }}
-        />
-      ) : null}
+      <MarkerRowDialogs
+        dialog={dialog}
+        menuActions={menuActions}
+        onClose={() => {
+          setDialog(null);
+        }}
+        sheet={props}
+      />
     </>
   );
 };
@@ -300,6 +174,14 @@ const styles = StyleSheet.create({
     paddingVertical: appTheme.space.lg,
     textAlign: 'center',
     color: appTheme.colors.textMuted,
+  },
+  filter: {
+    flex: 1,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: appTheme.space.xs,
   },
   hint: {
     ...appTheme.type.body,

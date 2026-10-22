@@ -25,6 +25,14 @@ const SELECTION_SURFACES = [
   'library/selection/use-playlist-detail-selection.tsx',
 ] as const;
 
+// Surfaces that reuse the shared entry icon to choose a few rows for one
+// action instead of bulk-acting on library entities, so the selection bar and
+// the pinned bulk-action bar do not apply: the markers sheet picks two markers
+// to bound a new loop.
+const STANDALONE_ENTRY_SURFACES = [
+  'library/markers/components/markers-sheet/index.tsx',
+] as const;
+
 function listSourceFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const entryPath = join(directory, entry.name);
@@ -59,16 +67,17 @@ describe('selection surfaces', () => {
   it('lists every file that renders the shared Select entry icon', () => {
     assert.deepEqual(
       entryFiles.map(({ path }) => path).sort(),
-      [...SELECTION_SURFACES].sort(),
+      [...SELECTION_SURFACES, ...STANDALONE_ENTRY_SURFACES].sort(),
     );
   });
 
   it('pairs the entry icon with the shared selection bar and the pinned action bar', () => {
     const incomplete = entryFiles
       .filter(
-        ({ source }) =>
-          !SELECTION_BAR_PATTERN.test(source) ||
-          !PINNED_BAR_PATTERN.test(source),
+        ({ path, source }) =>
+          !(STANDALONE_ENTRY_SURFACES as readonly string[]).includes(path) &&
+          (!SELECTION_BAR_PATTERN.test(source) ||
+            !PINNED_BAR_PATTERN.test(source)),
       )
       .map(({ path }) => path);
 

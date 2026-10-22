@@ -115,6 +115,16 @@ export const createSavedTrackPlaybackActions = ({
       activePlaylistContextRef.current = null;
       await playbackController.togglePlayableItemPlayback(playableItem);
     },
+    /** Seeks the loaded item or loads `target` at the marker; see `planMarkerJump`. */
+    async jumpToMarker(target: PlayableItem, positionMs: number) {
+      if (await requestAuthorizationIfExpired()) {
+        return 'blocked' as const;
+      }
+
+      activePlaylistContextRef.current = null;
+
+      return playbackController.jumpToMarker(target, positionMs);
+    },
     async playPlayableItem(playableItem: PlayableItem) {
       if (await requestAuthorizationIfExpired()) {
         return;

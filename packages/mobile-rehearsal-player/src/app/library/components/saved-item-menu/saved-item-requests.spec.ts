@@ -50,6 +50,7 @@ describe('resolveSavedItemShortcuts', () => {
         'edit-tags',
         'edit-lyrics',
         'sheet-music',
+        'markers',
         'make-loop',
         'view-track-loops',
         'remove-from-library',
@@ -72,6 +73,7 @@ describe('resolveSavedItemShortcuts', () => {
         'edit-tags',
         'edit-lyrics',
         'sheet-music',
+        'markers',
         'edit-loop',
         'remove-from-library',
       ],
@@ -114,6 +116,28 @@ describe('the Sheet music shortcut', () => {
       shortcutFor({ kind: 'loop', loopId: 'loop-1', sourceId: 'drive:a' })
         ?.request,
       { action: 'sheet-music', id: 'loop-1', kind: 'loop' },
+    );
+  });
+});
+
+describe('the Markers shortcut', () => {
+  it('always reads Markers and addresses the track or loop it was opened from', () => {
+    const shortcutFor = (
+      item: Parameters<typeof resolveSavedItemShortcuts>[0]['item'],
+    ) =>
+      resolveSavedItemShortcuts({ hasLyrics: true, isSaved: true, item }).find(
+        ({ id }) => id === 'markers',
+      );
+
+    assert.deepEqual(shortcutFor({ kind: 'track', sourceId: 'drive:a' }), {
+      id: 'markers',
+      label: 'Markers',
+      request: { action: 'markers', id: 'drive:a', kind: 'track' },
+    });
+    assert.deepEqual(
+      shortcutFor({ kind: 'loop', loopId: 'loop-1', sourceId: 'drive:a' })
+        ?.request,
+      { action: 'markers', id: 'loop-1', kind: 'loop' },
     );
   });
 });

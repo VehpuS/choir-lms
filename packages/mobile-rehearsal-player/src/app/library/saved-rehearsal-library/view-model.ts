@@ -31,6 +31,7 @@ const RECONNECT_SAVED_TRACK_MESSAGE =
 // Drive row on screen must not erase them: add a new saved-only field here.
 const SAVED_TRACK_OWNED_FIELDS = new Set<string>([
   'lyrics',
+  'markers',
   'sheetMusic',
   'sourceLocation',
   'tagAddedAt',

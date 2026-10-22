@@ -27,6 +27,10 @@ describe('app icon glyph map', () => {
     ]);
   });
 
+  it('gives markers their own flag glyph', () => {
+    assert.deepEqual(namesUsingGlyph('Flag'), ['flag-outline']);
+  });
+
   it('gives key width its own zoom glyph, distinct from search', () => {
     assert.deepEqual(namesUsingGlyph('MagnifyingGlassPlus'), ['zoom-in']);
     assert.notEqual(

@@ -27,6 +27,7 @@ export const MENU_ACTION_ICONS: Readonly<Record<string, AppIconName>> = {
   'Editing…': 'pencil-outline',
   Lyrics: 'text-align-left',
   'Make loop': 'repeat',
+  Markers: 'flag-outline',
   'Move to end': 'arrow-collapse-down',
   'Move to folder': 'swap-horizontal',
   'Move to position': 'list-numbers',

@@ -3,19 +3,33 @@ import { StyleSheet, Text, View } from 'react-native';
 import { OutlinedActionButton } from '../../../../components/outlined-action-button';
 import { appTheme } from '../../../../utils/theme';
 
-type MarkerUndoBarProps = {
-  markerName: string;
-  onUndo: () => void;
+type MarkerNoticeBarProps = {
+  actionLabel?: string;
+  message: string;
+  onAction?: () => void;
 };
 
-/** Offered for a few seconds after a deletion, in place of a confirmation. */
-export const MarkerUndoBar = ({ markerName, onUndo }: MarkerUndoBarProps) => {
+/**
+ * A short confirmation with one follow-up action: `Undo` after a deletion (in
+ * place of a confirmation dialog), `Rename` after an add.
+ */
+export const MarkerNoticeBar = ({
+  actionLabel,
+  message,
+  onAction,
+}: MarkerNoticeBarProps) => {
   return (
     <View style={styles.bar}>
       <Text numberOfLines={1} style={styles.text}>
-        Deleted {markerName}
+        {message}
       </Text>
-      <OutlinedActionButton label="Undo" onPress={onUndo} variant="accent" />
+      {actionLabel && onAction ? (
+        <OutlinedActionButton
+          label={actionLabel}
+          onPress={onAction}
+          variant="accent"
+        />
+      ) : null}
     </View>
   );
 };
@@ -29,7 +43,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.borderButton,
     borderRadius: appTheme.radius.md,
-    paddingLeft: appTheme.space.sm,
+    paddingHorizontal: appTheme.space.sm,
+    minHeight: appTheme.space.touchTarget,
     backgroundColor: appTheme.colors.surface,
   },
   text: {

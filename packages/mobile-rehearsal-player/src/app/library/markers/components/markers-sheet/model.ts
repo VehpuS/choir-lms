@@ -89,6 +89,11 @@ export type MarkersSheetInput = {
   /** The owner (or one of its loops or copies) is the loaded item. */
   isOwnerLoaded: boolean;
   canMutateLibrary: boolean;
+  /**
+   * Whether markers can become loops from here (`Loop to next marker`,
+   * `Select`, `Create loops from markers`); off where no loop editor opens.
+   */
+  canMakeLoops?: boolean;
 };
 
 export type MarkersSheetModel = {
@@ -191,10 +196,13 @@ export const buildMarkersSheetModel = (
     range: input.range,
     durationMs: input.durationMs,
   });
+  const canMakeLoops = input.canMakeLoops ?? true;
   const rows = entries.map((entry, index) =>
     toRow(
       entry,
-      resolveLoopToNext(entries, index, input.durationMs),
+      canMakeLoops
+        ? resolveLoopToNext(entries, index, input.durationMs)
+        : undefined,
       input.canMutateLibrary,
     ),
   );
@@ -206,8 +214,9 @@ export const buildMarkersSheetModel = (
     isEmpty: rows.length === 0,
     emptyMessage: MARKERS_EMPTY_MESSAGE,
     canAddMarker: input.isOwnerLoaded && input.canMutateLibrary,
-    canCreateLoops: input.canMutateLibrary && input.explicit.length > 0,
-    canSelect: usableCount >= MARKERS_SELECT_PAIR_SIZE,
+    canCreateLoops:
+      canMakeLoops && input.canMutateLibrary && input.explicit.length > 0,
+    canSelect: canMakeLoops && usableCount >= MARKERS_SELECT_PAIR_SIZE,
   };
 };
 

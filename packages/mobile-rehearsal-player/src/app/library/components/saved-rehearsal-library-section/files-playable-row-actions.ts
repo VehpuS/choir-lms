@@ -5,6 +5,7 @@ import {
   resolveSavedTrackMenu,
 } from '../saved-item-menu/saved-item-menus';
 import { createLyricsMenuState } from '../../lyrics/utils/lyrics-menu-action';
+import { createMarkersMenuState } from '../../markers/utils/markers-menu-action';
 import { createSheetMusicMenuState } from '../../sheet-music/utils/sheet-music-menu-action';
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
@@ -94,6 +95,7 @@ export const resolveTrackMenuActions = (
         id: row.source.id,
         kind: 'track',
       }),
+      markers: createMarkersMenuState({ id: row.source.id, kind: 'track' }),
       onAddToPlaylist: () => {
         options.onOpenSourcePlaylistSelector(row.source.id);
       },
@@ -159,6 +161,11 @@ export const resolveLoopMenuActions = (
         id: row.loop.id,
         kind: 'loop',
       }),
+      // A loop whose track is gone has no markers to show.
+      markers:
+        row.source !== null
+          ? createMarkersMenuState({ id: row.loop.id, kind: 'loop' })
+          : undefined,
       onAddToPlaylist: () => {
         options.onOpenLoopPlaylistSelector(row.loop.id);
       },

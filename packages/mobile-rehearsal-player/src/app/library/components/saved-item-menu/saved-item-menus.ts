@@ -4,6 +4,10 @@ import {
   type LyricsMenuState,
 } from '../../lyrics/utils/lyrics-menu-action';
 import {
+  resolveMarkersMenuActions,
+  type MarkersMenuState,
+} from '../../markers/utils/markers-menu-action';
+import {
   resolveSheetMusicMenuActions,
   type SheetMusicMenuState,
 } from '../../sheet-music/utils/sheet-music-menu-action';
@@ -46,6 +50,8 @@ export type SavedTrackMenuContext = {
   lyrics?: LyricsMenuState;
   /** Offers `Sheet music`; absent where sheet music is not offered. */
   sheetMusic?: SheetMusicMenuState;
+  /** Offers `Markers`; absent where markers are not offered. */
+  markers?: MarkersMenuState;
   onAddToPlaylist: () => void;
   onAddToQueue: () => void;
   onEditTags: () => void;
@@ -107,6 +113,7 @@ export const resolveSavedTrackMenu = (
       ...driveActions,
       ...resolveLyricsMenuActions(context.lyrics, placement.idPrefix),
       ...resolveSheetMusicMenuActions(context.sheetMusic, placement.idPrefix),
+      ...resolveMarkersMenuActions(context.markers, placement.idPrefix),
     ],
     kind: 'track',
     removeAction,
@@ -128,6 +135,8 @@ export type SavedLoopMenuContext = {
   lyrics?: LyricsMenuState;
   /** Offers `Sheet music`; absent where sheet music is not offered. */
   sheetMusic?: SheetMusicMenuState;
+  /** Offers `Markers`; absent where markers are not offered. */
+  markers?: MarkersMenuState;
   onAddToPlaylist: () => void;
   onAddToQueue: () => void;
   onEditLoop: () => void;
@@ -169,6 +178,7 @@ export const resolveSavedLoopMenu = (
       ...itemActions,
       ...resolveLyricsMenuActions(context.lyrics, placement.idPrefix),
       ...resolveSheetMusicMenuActions(context.sheetMusic, placement.idPrefix),
+      ...resolveMarkersMenuActions(context.markers, placement.idPrefix),
     ],
     kind: 'loop',
     removeAction,

@@ -23,6 +23,7 @@ import { CopyIcon } from 'phosphor-react-native/src/icons/Copy';
 import { DotsSixVerticalIcon } from 'phosphor-react-native/src/icons/DotsSixVertical';
 import { DotsThreeVerticalIcon } from 'phosphor-react-native/src/icons/DotsThreeVertical';
 import { FileIcon } from 'phosphor-react-native/src/icons/File';
+import { FlagIcon } from 'phosphor-react-native/src/icons/Flag';
 import { FloppyDiskIcon } from 'phosphor-react-native/src/icons/FloppyDisk';
 import { FolderIcon } from 'phosphor-react-native/src/icons/Folder';
 import { FolderPlusIcon } from 'phosphor-react-native/src/icons/FolderPlus';
@@ -96,6 +97,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   DotsSixVertical: DotsSixVerticalIcon,
   DotsThreeVertical: DotsThreeVerticalIcon,
   File: FileIcon,
+  Flag: FlagIcon,
   FloppyDisk: FloppyDiskIcon,
   Folder: FolderIcon,
   FolderPlus: FolderPlusIcon,

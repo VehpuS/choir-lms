@@ -11,6 +11,7 @@ export type SavedItemRequestAction =
   | 'edit-lyrics'
   | 'edit-tags'
   | 'make-loop'
+  | 'markers'
   | 'remove-from-library'
   | 'sheet-music'
   | 'view-track-loops';
@@ -29,6 +30,7 @@ const listeners = new Set<Listener>();
 export const ADD_LYRICS_LABEL = 'Lyrics';
 export const EDIT_LYRICS_LABEL = 'Edit lyrics';
 export const SHEET_MUSIC_LABEL = 'Sheet music';
+export const MARKERS_LABEL = 'Markers';
 
 export const requestSavedItemAction = (request: SavedItemRequest) => {
   listeners.forEach((listener) => {
@@ -92,6 +94,11 @@ export const resolveSavedItemShortcuts = (options: {
       id: 'sheet-music',
       label: SHEET_MUSIC_LABEL,
       request: { action: 'sheet-music', id, kind },
+    },
+    {
+      id: 'markers',
+      label: MARKERS_LABEL,
+      request: { action: 'markers', id, kind },
     },
   ];
 

@@ -31,6 +31,7 @@ const ROW_ACTION_SECTION_BY_LABEL = new Map<string, RowActionSection>([
   ['Lyrics', 'organize'],
   ['Edit lyrics', 'organize'],
   ['Sheet music', 'organize'],
+  ['Markers', 'organize'],
   ['Rename', 'organize'],
   ['Rename playlist', 'organize'],
   ['Move to folder', 'organize'],

@@ -7,6 +7,7 @@ import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
 import { useHasLyrics } from '../../../components/saved-item-menu/saved-item-availability-context';
 import { resolveSavedLoopMenu } from '../../../components/saved-item-menu/saved-item-menus';
 import { createLyricsMenuState } from '../../../lyrics/utils/lyrics-menu-action';
+import { createMarkersMenuState } from '../../../markers/utils/markers-menu-action';
 import { createSheetMusicMenuState } from '../../../sheet-music/utils/sheet-music-menu-action';
 import {
   getSavedTrackPlaybackActionCopy,
@@ -135,6 +136,11 @@ export const SavedLoopListRow = ({
         id: loopCard.loop.id,
         kind: 'loop',
       }),
+      // A loop whose track is gone has no markers to show.
+      markers:
+        playableItem !== null
+          ? createMarkersMenuState({ id: loopCard.loop.id, kind: 'loop' })
+          : undefined,
       onAddToPlaylist: () => {
         onOpenLoopPlaylistSelector(loopCard.loop.id);
       },
