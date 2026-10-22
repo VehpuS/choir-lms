@@ -18,6 +18,7 @@ const flag = (overrides: Partial<WaveformFlag> = {}): WaveformFlag => ({
   name: 'Chorus',
   positionMs: 72_400,
   memberKeys: ['marker:a'],
+  isDimmed: false,
   accessibilityLabel: 'Chorus, 1:12.4',
   ...overrides,
 });

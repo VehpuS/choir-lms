@@ -1,7 +1,9 @@
 import type { MarkerListFilter } from '@org/audio-library-models';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { OutlinedActionButton } from '../../../../components/outlined-action-button';
-import { FeedbackCard } from '../../../components/feedback-card';
+import { appTheme } from '../../../../utils/theme';
+import { CenteredDialogCard } from '../../../components/centered-dialog-card';
 import { MarkersSheet } from '../../../markers/components/markers-sheet';
 import type { MarkersSheetModel } from '../../../markers/components/markers-sheet/model';
 import { setMarkersFilter } from '../../../markers/markers-filter-preference';
@@ -11,38 +13,22 @@ const noop = () => undefined;
 
 type LoopEditorMarkerControlsProps = {
   armed: LoopBuilderBoundary | null;
-  invalidRangeMessage: string | null;
-  isPreparing: boolean;
   onOpenPicker: () => void;
 };
 
-/** `Pick marker` while a card is armed, and the note for an unusable range. */
+/** `Pick marker` while a card is armed. */
 export const LoopEditorMarkerControls = ({
   armed,
-  invalidRangeMessage,
-  isPreparing,
   onOpenPicker,
 }: LoopEditorMarkerControlsProps) => {
-  return (
-    <>
-      {armed ? (
-        <OutlinedActionButton
-          fill
-          icon="flag-outline"
-          label={`Pick marker for ${armed}`}
-          onPress={onOpenPicker}
-        />
-      ) : null}
-      {invalidRangeMessage && !isPreparing ? (
-        <FeedbackCard
-          message={invalidRangeMessage}
-          size="compact"
-          title="Check the loop range"
-          tone="warning"
-        />
-      ) : null}
-    </>
-  );
+  return armed ? (
+    <OutlinedActionButton
+      fill
+      icon="flag-outline"
+      label={`Pick marker for ${armed}`}
+      onPress={onOpenPicker}
+    />
+  ) : null;
 };
 
 type LoopEditorMarkerPickerProps = {
@@ -50,7 +36,7 @@ type LoopEditorMarkerPickerProps = {
   filter: MarkerListFilter;
   model: MarkersSheetModel;
   onClose: () => void;
-  onPick: (positionMs: number) => void;
+  onPick: (positionMs: number, name: string) => void;
 };
 
 /**
@@ -76,7 +62,7 @@ export const LoopEditorMarkerPicker = ({
       onDelete={() => Promise.resolve(undefined)}
       onFilterChange={setMarkersFilter}
       onJump={(row) => {
-        onPick(row.positionMs);
+        onPick(row.positionMs, row.name);
       }}
       onKeepAsMarker={noop}
       onMakeLoop={noop}
@@ -87,3 +73,57 @@ export const LoopEditorMarkerPicker = ({
     />
   );
 };
+
+type LoopEditorPickConflictDialogProps = {
+  fixLabel: string | null;
+  message: string;
+  onCancel: () => void;
+  onPickAnother: () => void;
+  onUseFix: () => void;
+  title: string;
+};
+
+/** Asked when a pick would invert the range: move the other edge, or choose again. */
+export const LoopEditorPickConflictDialog = ({
+  fixLabel,
+  message,
+  onCancel,
+  onPickAnother,
+  onUseFix,
+  title,
+}: LoopEditorPickConflictDialogProps) => {
+  return (
+    <CenteredDialogCard isVisible onRequestClose={onCancel}>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.message}>{message}</Text>
+      <View style={styles.actions}>
+        {fixLabel ? (
+          <OutlinedActionButton
+            label={fixLabel}
+            onPress={onUseFix}
+            variant="accent"
+          />
+        ) : null}
+        <OutlinedActionButton
+          label="Pick another marker"
+          onPress={onPickAnother}
+        />
+        <OutlinedActionButton label="Cancel" onPress={onCancel} />
+      </View>
+    </CenteredDialogCard>
+  );
+};
+
+const styles = StyleSheet.create({
+  actions: {
+    gap: appTheme.space.xs,
+  },
+  message: {
+    ...appTheme.type.body,
+    color: appTheme.colors.textSecondary,
+  },
+  title: {
+    ...appTheme.type.sheetTitle,
+    color: appTheme.colors.text,
+  },
+});

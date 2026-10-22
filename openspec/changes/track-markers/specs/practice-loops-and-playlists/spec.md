@@ -2,7 +2,7 @@
 
 ### Requirement: Loop boundaries can be picked from markers in the loop editor
 
-The loop editor SHALL let a user select the Start or End field and set it from a marker. Selecting a field SHALL arm it with a visible outline; while armed, tapping a marker flag on the waveform, or pressing `Pick marker` and choosing from the markers list, SHALL set that boundary to the marker's position and disarm the field. Tapping the armed field SHALL disarm it. Picking SHALL NOT change the other boundary. If the result leaves the start at or after the end, the editor SHALL show the existing invalid-range feedback and SHALL NOT allow saving. Markers in the loop editor SHALL be read-only (no add, rename, move, or delete). The loop being edited SHALL NOT contribute its own start and end as markers.
+The loop editor SHALL let a user select the Start or End field and set it from a marker. Selecting a field SHALL arm it with a visible outline; while armed, tapping a marker flag on the waveform, or pressing `Pick marker` and choosing from the markers list, SHALL set that boundary to the marker's position and disarm the field. Tapping the armed field SHALL disarm it. Picking SHALL set only the armed boundary, unless the marker would put the start at or after the end (or the end at or before the start): the editor SHALL then ask before changing anything, offering to move the other boundary to the track's start or end (only when that makes a usable range), to pick another marker, or to cancel, so the draft is never left unusable. While a field is armed, markers that would need that choice SHALL be drawn dimmer on the waveform and listed after the usable markers under their own heading, and SHALL remain selectable. Markers in the loop editor SHALL be read-only (no add, rename, move, or delete). The loop being edited SHALL NOT contribute its own start and end as markers.
 
 #### Scenario: Pick a start from a flag
 
@@ -14,10 +14,25 @@ The loop editor SHALL let a user select the Start or End field and set it from a
 - **WHEN** the user taps the End field, presses `Pick marker`, and chooses `Bridge` at 2:10
 - **THEN** the loop end becomes 2:10
 
-#### Scenario: Pick produces an invalid range
+#### Scenario: Pick would invert the range
 
-- **WHEN** the end is 1:00 and the user picks a start marker at 1:20
-- **THEN** the editor shows the invalid-range guidance and `Save loop` stays disabled until the range is corrected
+- **WHEN** the end is 1:00 and the user picks a start marker at 1:20 on a 4:00 track
+- **THEN** a dialog names the marker and the conflict and offers `Move end to the track end (4:00)`, `Pick another marker`, and `Cancel`, and nothing changes until the user chooses
+
+#### Scenario: Moving the other edge
+
+- **WHEN** the user chooses `Move end to the track end (4:00)`
+- **THEN** the start becomes 1:20, the end becomes 4:00, and the field disarms
+
+#### Scenario: No room to move the other edge
+
+- **WHEN** the user picks an end marker at 0:00
+- **THEN** the dialog offers only `Pick another marker` and `Cancel`, because the start cannot move before the track start
+
+#### Scenario: Usable and unusable markers are separate
+
+- **WHEN** the Start field is armed with the end at 1:00
+- **THEN** markers after 1:00 are dimmer on the waveform and listed in a separate group below the usable ones in the picker
 
 #### Scenario: Markers are read-only here
 

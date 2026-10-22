@@ -134,6 +134,18 @@ describe('resolveWaveformFlags', () => {
     assert.equal(flag?.kind, 'derived');
   });
 
+  it('dims a flag only when every marker it stands for is dimmed', () => {
+    const dimmed = (key: string, positionMs: number) => ({
+      ...marker(key, positionMs),
+      isDimmed: true,
+    });
+    const [onlyDim] = flagsFor([dimmed('a', 100_000), dimmed('b', 101_000)]);
+    const [mixed] = flagsFor([dimmed('a', 100_000), marker('b', 101_000)]);
+
+    assert.equal(onlyDim?.isDimmed, true);
+    assert.equal(mixed?.isDimmed, false);
+  });
+
   it('respects the filter because it only draws the markers it is given', () => {
     const all = [marker('mine', 50_000), marker('loop', 80_000, 'derived')];
     const mineOnly = all.filter(({ kind }) => kind === 'explicit');

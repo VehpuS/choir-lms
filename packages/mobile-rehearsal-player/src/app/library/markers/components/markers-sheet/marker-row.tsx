@@ -62,7 +62,7 @@ export const MarkerRow = ({
           styles.main,
           buttonInteractionGuardStyle,
           pressed && !isPressDisabled ? styles.pressed : undefined,
-          row.isPastEnd ? styles.dimmed : undefined,
+          row.isPastEnd || row.isOutOfReach ? styles.dimmed : undefined,
         ]}
       >
         {isSelecting ? (

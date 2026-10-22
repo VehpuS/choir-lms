@@ -258,6 +258,44 @@ describe('buildMarkersSheetModel', () => {
     );
   });
 
+  it('lists usable markers first and out-of-reach ones under a heading', () => {
+    const model = buildMarkersSheetModel(
+      buildInput({
+        explicit: [
+          marker('early', 5_000),
+          marker('mid', 50_000),
+          marker('late', 90_000),
+        ],
+        isPickable: (positionMs) => positionMs > 20_000,
+        outOfReachLabel: 'Before the loop start',
+        showRowActions: false,
+      }),
+    );
+
+    assert.deepEqual(
+      model.rows.map((row) => [row.name, row.isOutOfReach]),
+      [
+        ['mid', false],
+        ['late', false],
+        ['early', true],
+      ],
+    );
+    assert.equal(model.outOfReachLabel, 'Before the loop start');
+  });
+
+  it('shows no heading when every marker is usable', () => {
+    const model = buildMarkersSheetModel(
+      buildInput({
+        explicit: [marker('a', 50_000)],
+        isPickable: () => true,
+        outOfReachLabel: 'Before the loop start',
+      }),
+    );
+
+    assert.equal(model.outOfReachLabel, undefined);
+    assert.equal(model.rows[0]?.isOutOfReach, false);
+  });
+
   it('offers Select only with two jumpable rows', () => {
     const one = buildMarkersSheetModel(
       buildInput({ explicit: [marker('a', 1_000)] }),

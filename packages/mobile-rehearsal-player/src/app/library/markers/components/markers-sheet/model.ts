@@ -73,6 +73,8 @@ export type MarkerRow = {
   actions: readonly MarkerRowAction[];
   /** Present when `Loop to next marker` is offered for this row. */
   loopToNext?: MarkerLoopDraft;
+  /** Picker only: this marker cannot be used without moving the other edge. */
+  isOutOfReach?: boolean;
   /** Explicit marker id or derived loop id, for the action handlers. */
   markerId?: string;
   loopId?: string;
@@ -96,6 +98,12 @@ export type MarkersSheetInput = {
   canMakeLoops?: boolean;
   /** Off for the loop editor's picker: rows are only tapped, never edited. */
   showRowActions?: boolean;
+  /**
+   * Picker only: markers this returns false for are listed after the usable
+   * ones, under `outOfReachLabel`, and stay tappable (the caller explains).
+   */
+  isPickable?: (positionMs: number) => boolean;
+  outOfReachLabel?: string;
 };
 
 export type MarkersSheetModel = {
@@ -109,6 +117,8 @@ export type MarkersSheetModel = {
   canCreateLoops: boolean;
   /** `Select` needs two rows that could bound a loop. */
   canSelect: boolean;
+  /** Heading for the first out-of-reach row; absent when there is none. */
+  outOfReachLabel?: string;
 };
 
 export const formatMarkerTime = (positionMs: number): string => {
@@ -193,6 +203,26 @@ const toRow = (
   };
 };
 
+/** Usable rows first, then out-of-reach ones, each group in position order. */
+const partitionPickerRows = (
+  rows: MarkerRow[],
+  isPickable?: (positionMs: number) => boolean,
+): MarkerRow[] => {
+  if (!isPickable) {
+    return rows;
+  }
+
+  const marked = rows.map((row) => ({
+    ...row,
+    isOutOfReach: !isPickable(row.positionMs),
+  }));
+
+  return [
+    ...marked.filter((row) => !row.isOutOfReach),
+    ...marked.filter((row) => row.isOutOfReach),
+  ];
+};
+
 export const buildMarkersSheetModel = (
   input: MarkersSheetInput,
 ): MarkersSheetModel => {
@@ -215,16 +245,21 @@ export const buildMarkersSheetModel = (
     ),
   );
   const usableCount = rows.filter((row) => row.canJump).length;
+  const orderedRows = partitionPickerRows(rows, input.isPickable);
+  const hasOutOfReach = orderedRows.some((row) => row.isOutOfReach);
 
   return {
     subtitle: `Markers for ${input.ownerName}`,
-    rows,
+    rows: orderedRows,
     isEmpty: rows.length === 0,
     emptyMessage: MARKERS_EMPTY_MESSAGE,
     canAddMarker: input.isOwnerLoaded && input.canMutateLibrary,
     canCreateLoops:
       canMakeLoops && input.canMutateLibrary && input.explicit.length > 0,
     canSelect: canMakeLoops && usableCount >= MARKERS_SELECT_PAIR_SIZE,
+    ...(hasOutOfReach && input.outOfReachLabel
+      ? { outOfReachLabel: input.outOfReachLabel }
+      : {}),
   };
 };
 

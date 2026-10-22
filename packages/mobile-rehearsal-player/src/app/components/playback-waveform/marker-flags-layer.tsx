@@ -59,7 +59,11 @@ export const MarkerFlagsLayer = ({
             onPressOut={() => {
               setPressedKey(null);
             }}
-            style={[styles.hitArea, { left: flag.x - MARKER_FLAG_HIT_RADIUS }]}
+            style={[
+              styles.hitArea,
+              { left: flag.x - MARKER_FLAG_HIT_RADIUS },
+              flag.isDimmed ? styles.dimmed : null,
+            ]}
           >
             <View
               style={[
@@ -92,6 +96,9 @@ export const MarkerFlagsLayer = ({
 };
 
 const styles = StyleSheet.create({
+  dimmed: {
+    opacity: 0.4,
+  },
   derivedTick: {
     height: DERIVED_TICK_HEIGHT,
     backgroundColor: appTheme.colors.textFaint,

@@ -16,6 +16,7 @@ import type { LoopBuilderBoundary } from '../../utils/saved-loop-view-model';
 import {
   LoopEditorMarkerControls,
   LoopEditorMarkerPicker,
+  LoopEditorPickConflictDialog,
 } from './loop-editor-marker-controls';
 import { useLoopEditorMarkers } from './use-loop-editor-markers';
 import { LoopEditorRangeCards } from './loop-editor-range-cards';
@@ -150,8 +151,6 @@ const LoopEditorContent = (
 
         <LoopEditorMarkerControls
           armed={pick.armed}
-          invalidRangeMessage={pick.invalidRangeMessage}
-          isPreparing={props.isPreparing}
           onOpenPicker={pick.openPicker}
         />
 
@@ -203,6 +202,14 @@ const LoopEditorContent = (
           variant="accent"
         />
       </ScrollView>
+      {pick.conflictText ? (
+        <LoopEditorPickConflictDialog
+          {...pick.conflictText}
+          onCancel={pick.resolveConflict.cancel}
+          onPickAnother={pick.resolveConflict.pickAnother}
+          onUseFix={pick.resolveConflict.useFix}
+        />
+      ) : null}
       {pick.isPickerOpen && pick.pickerModel && pick.filter ? (
         <LoopEditorMarkerPicker
           durationMs={props.rangeMaximumMs ?? undefined}

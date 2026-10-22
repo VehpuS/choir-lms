@@ -27,6 +27,7 @@ For the MVP, the player is expected to support:
 - ordered playback, repeat, and shuffle for rehearsal sessions
 - lyrics saved with a track and read during playback (see [Lyrics](#lyrics))
 - optional sheet music links per track, opened in a full-screen viewer (see [Sheet music](#sheet-music))
+- named markers at points of a track, shown as flags on the waveform, that jump playback and turn into loops (see [Markers](#markers))
 - a piano for checking pitches against the track and the score (see [Piano](#piano))
 - native mobile transport integration where practical, including background playback and lock-screen controls
 
@@ -52,6 +53,18 @@ A saved track can carry up to 10 sheet music sources, such as the full score and
 - **Your parts:** Settings has an ordered `Your parts` list (Soprano, Mezzo-soprano, Alto, Tenor, Baritone, Bass, Beatbox, or any name you type, such as `Lead` or `Alto 2`), reordered by dragging or with the arrows. A source with no saved choice of its own opens on the first listed part the score has: every name is tried for an exact match first (digits count, so `Alto 2` finds only `Alto 2`), then for a close match (`Alto` also finds `Alto 1` and `Alto 2`; instrumental parts are never suggested), and only that part's staves show. With nothing listed, or nothing matching, it follows the exact part you last showed alone with the chips, then falls back to the vocal parts. `Make <Part> my part` in the viewer puts the exact part showing at the top of the list, and pressing it again removes it. A part saved on a source always wins. The list is stored on the device, not per track.
 - **What is fetched, and when:** a file is downloaded only when you open it, with your existing Google authorization for Drive files, or directly from the address for a web link. On the web build, a host that does not allow browser requests shows `Open in browser`; saving the file to Drive always works. The renderers (OpenSheetMusicDisplay, pdf.js, a MIDI parser) are separate chunks loaded when a viewer opens, not at startup. Nothing is uploaded.
 - **Not yet:** the iOS and Android renderers are tracked in `native-playback-follow-ups`; until then a native build lists the sources and opens them outside the app.
+
+## Markers
+
+A saved track can hold up to 200 named markers, such as `Verse 2` or `Bridge`, each at a point in the audio. They are stored with the track like its tags and lyrics. Loops and adjusted tracks show and edit the markers of the track they came from (positions are in the original audio's time, so speed and pitch shaping never move them), and removing a track removes its markers. Markers are not library entries: they do not appear in Files, search, tags, or playlists.
+
+- **Reaching them:** `Markers` in any track, loop, or playback menu (after `Sheet music`) opens a list for the owning track; opened from a loop it shows only the markers inside that loop. The playback menu also has `Add marker here`.
+- **Adding:** `Add marker here` takes the playhead, or long-press the playback waveform to add at the pressed point. A new marker is named `Marker N`; a confirmation offers `Rename`. Each row's menu has `Rename`, `Move` (nudges, `Set to current position`, or a typed `mm:ss.s`), and `Delete` with undo.
+- **Loop boundaries:** every saved loop shows `<name> start` and `<name> end` rows, computed from the loop, so they follow edits and disappear with the loop. They are read-only; `Keep as marker` copies one into your own markers. `My markers` hides them (the choice is remembered on the device and also filters the waveform flags).
+- **Jumping:** tap a row, or a flag on the waveform, to seek there while playing or paused; from the library it loads the track and starts at the marker. A marker past the end of a replaced, shorter audio file is greyed and not jumpable but is kept.
+- **Flags:** the playback waveform draws your markers as accent hairlines with a small head and loop boundaries as shorter dim ticks; press one to see its name, long-press it for its row actions.
+- **Markers to loops:** `Loop to next marker` on a row, `Select` two markers then `Make loop`, or `Create loops from markers` (one loop per section between your markers, named after the start marker, with an optional `Intro`). All open or use the normal loop editor and save operation.
+- **In the loop editor:** tap the Start or End card, then a flag or `Pick marker` to set that edge from a marker. Markers the armed edge cannot take (a start at or after the end, or an end at or before the start) are dimmer and listed separately; choosing one asks whether to move the other edge to the track start or end, pick another marker, or cancel. Markers are read-only there.
 
 ## Piano
 

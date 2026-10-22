@@ -12,6 +12,8 @@ export type WaveformMarker = {
   kind: 'derived' | 'explicit';
   /** Formatted time, for the accessible label. */
   timeLabel: string;
+  /** Drawn fainter: pressing it needs more than picking (loop editor). */
+  isDimmed?: boolean;
 };
 
 export type WaveformFlag = {
@@ -25,6 +27,8 @@ export type WaveformFlag = {
   /** Keys of every marker this flag stands for, earliest first. */
   memberKeys: string[];
   accessibilityLabel: string;
+  /** Only when every marker it stands for is dimmed. */
+  isDimmed: boolean;
 };
 
 type ResolveFlagsOptions = {
@@ -126,6 +130,7 @@ export const resolveWaveformFlags = ({
         name: earliest.marker.name,
         positionMs: earliest.marker.positionMs,
         memberKeys: group.map(({ marker }) => marker.key),
+        isDimmed: group.every(({ marker }) => marker.isDimmed === true),
         accessibilityLabel: describeFlag(earliest.marker, group.length),
       },
     ];

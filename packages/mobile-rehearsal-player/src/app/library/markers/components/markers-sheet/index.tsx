@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { darkScrollbarStyle } from '../../../../components/dark-scrollbar';
@@ -123,24 +123,28 @@ export const MarkersSheet = (props: MarkersSheetProps) => {
             style={[darkScrollbarStyle, styles.list]}
             keyboardShouldPersistTaps="handled"
           >
-            {model.rows.map((row) => (
-              <MarkerRow
-                isChecked={selection.selectedKeys.includes(row.key)}
-                isSelecting={selection.isSelecting}
-                key={row.key}
-                onOpenMenu={() => {
-                  setDialog({ kind: 'menu', row });
-                }}
-                onPress={() => {
-                  if (selection.isSelecting) {
-                    setSelection(toggleMarkerSelection(selection, row.key));
-                    return;
-                  }
+            {model.rows.map((row, index) => (
+              <Fragment key={row.key}>
+                {row.isOutOfReach && !model.rows[index - 1]?.isOutOfReach ? (
+                  <Text style={styles.groupLabel}>{model.outOfReachLabel}</Text>
+                ) : null}
+                <MarkerRow
+                  isChecked={selection.selectedKeys.includes(row.key)}
+                  isSelecting={selection.isSelecting}
+                  onOpenMenu={() => {
+                    setDialog({ kind: 'menu', row });
+                  }}
+                  onPress={() => {
+                    if (selection.isSelecting) {
+                      setSelection(toggleMarkerSelection(selection, row.key));
+                      return;
+                    }
 
-                  props.onJump(row);
-                }}
-                row={row}
-              />
+                    props.onJump(row);
+                  }}
+                  row={row}
+                />
+              </Fragment>
             ))}
           </ScrollView>
         )}
@@ -182,6 +186,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: appTheme.space.xs,
+  },
+  groupLabel: {
+    ...appTheme.type.sectionHead,
+    paddingTop: appTheme.space.sm,
+    color: appTheme.colors.textMuted,
   },
   hint: {
     ...appTheme.type.body,
