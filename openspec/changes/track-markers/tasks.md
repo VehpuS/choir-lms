@@ -20,7 +20,7 @@
 ## 4. Markers sheet
 
 - [x] 4.1 Build the `MarkersSheet` model (rows, filter, subtitle `Markers for <track name>`, empty state, past-end rows, `Select` mode with exactly-two rule, row action sets for explicit and derived rows) and spec it for every `track-markers` scenario.
-- [ ] 4.2 Build the sheet view: list with time and name, filter control, `Add marker here` (loaded only), `Select`, `Create loops from markers`, the row menu, `Rename` dialog, `Move` dialog (±0.1 s, ±1 s, `Set to current position`, `mm:ss.s` entry with validation), delete with undo toast. Nocturne tokens, 44 pt rows, sentence-case copy, accessible labels.
+- [x] 4.2 Build the sheet view: list with time and name, filter control, `Add marker here` (loaded only), `Select`, `Create loops from markers`, the row menu, `Rename` dialog, `Move` dialog (±0.1 s, ±1 s, `Set to current position`, `mm:ss.s` entry with validation), delete with undo toast. Nocturne tokens, 44 pt rows, sentence-case copy, accessible labels.
 - [ ] 4.3 Add `Markers` to the shared saved-item menu (after `Sheet music`) for tracks, loops, and adjusted tracks with an icon in `menu-action-icons.ts`; extend the icon spec and saved-item menu specs; confirm playlist, folder, and bulk menus do not gain it. Host the sheet like the lyrics and sheet music hosts.
 - [ ] 4.4 Add `Markers` and `Add marker here` to the playback screen overflow (`now-playing-menu-model`), extend its spec.
 
