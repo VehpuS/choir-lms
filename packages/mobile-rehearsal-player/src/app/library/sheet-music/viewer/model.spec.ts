@@ -87,8 +87,9 @@ describe('describeViewerFailure', () => {
   it('says a blocked host cannot be read, without implying the browser fixes it', () => {
     const failure = describeViewerFailure('blocked', LINK);
 
-    assert.deepEqual(failure?.actions, ['open-external']);
+    assert.deepEqual(failure?.actions, ['save-to-drive', 'open-external']);
     assert.match(failure?.message ?? '', /cannot read files from this site/);
+    assert.match(failure?.message ?? '', /save it to your Google Drive/);
   });
 
   it('tells an unreachable site from a Drive file with no connection', () => {

@@ -12,6 +12,8 @@ import { resolveLinkAddition, type LinkAddition } from './model';
 type AddSheetMusicPanelProps = {
   /** The track's sources, so a link it already has is refused. */
   existingSources: readonly SheetMusicSource[];
+  /** Saves a file from this device to Drive; offered on the web only. */
+  onChooseDevice?: () => void;
   /** Offered once the Drive picker exists; hidden while it is absent. */
   onChooseDrive?: () => void;
   onAddLink: (addition: LinkAddition) => Promise<boolean>;
@@ -28,6 +30,7 @@ export const AddSheetMusicPanel = ({
   existingSources,
   onAddLink,
   onBack,
+  onChooseDevice,
   onChooseDrive,
   onOpenExternal,
   suggestedQuery,
@@ -130,6 +133,13 @@ export const AddSheetMusicPanel = ({
             icon="folder-outline"
             label="From Google Drive"
             onPress={onChooseDrive}
+          />
+        ) : null}
+        {onChooseDevice ? (
+          <OutlinedActionButton
+            icon="file-outline"
+            label="From this device"
+            onPress={onChooseDevice}
           />
         ) : null}
         <OutlinedActionButton

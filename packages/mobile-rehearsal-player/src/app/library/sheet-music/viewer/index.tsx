@@ -53,6 +53,8 @@ type SheetMusicViewerProps = {
   onClose: () => void;
   onOpenExternal: (url: string) => void;
   onReconnectDrive: () => void;
+  /** Opens the Save to Drive flow for a link the browser could not read. */
+  onSaveToDrive?: (source: SheetMusicSource) => void;
   onTogglePlayback: () => void;
   /** The owning track's name. */
   ownerName: string;
@@ -77,6 +79,7 @@ export const SheetMusicViewer = ({
   onClose,
   onOpenExternal,
   onReconnectDrive,
+  onSaveToDrive,
   onTogglePlayback,
   ownerName,
   sources,
@@ -131,10 +134,17 @@ export const SheetMusicViewer = ({
       : outcome?.kind === 'failed'
         ? outcome.reason
         : undefined;
-  const failure =
+  const described =
     source && failureReason
       ? describeViewerFailure(failureReason, source)
       : undefined;
+  // Without a save flow (native) the card does not offer one.
+  const failure = described && {
+    ...described,
+    actions: described.actions.filter(
+      (action) => action !== 'save-to-drive' || onSaveToDrive,
+    ),
+  };
   const info = outcome?.kind === 'ready' ? outcome.info : null;
   const viewerZoom = useViewerZoom(info !== null);
   const goTo = useGoTo();
@@ -147,6 +157,10 @@ export const SheetMusicViewer = ({
       onReconnectDrive();
     } else if (action === 'try-again') {
       retry();
+    } else if (action === 'save-to-drive') {
+      if (source) {
+        onSaveToDrive?.(source);
+      }
     } else if (source) {
       onOpenExternal(resolveExternalUrl(source));
     }

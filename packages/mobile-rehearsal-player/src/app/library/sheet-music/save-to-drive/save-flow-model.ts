@@ -178,7 +178,7 @@ export const describeSaveFailure = (
         action: 'close',
         actionLabel: 'Done',
         message:
-          "The file is in your Drive, but this track's list could not be updated. Add it with Add sheet music, From Google Drive.",
+          "The file is in your Drive, but this track's list could not be updated. Add it with “Add sheet music”, then “From Google Drive”.",
         title: 'Saved, but not added to the track',
       };
     case 'unavailable':

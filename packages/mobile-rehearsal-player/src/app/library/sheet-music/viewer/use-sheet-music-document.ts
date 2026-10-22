@@ -31,6 +31,12 @@ export const useSheetMusicDocument = (
   const [state, setState] = useState<SheetMusicDocumentState>(LOADING);
   const [attempt, setAttempt] = useState(0);
   const sourceId = source?.id;
+  // Saving a link to Drive keeps the source's id but changes where it loads
+  // from, so the location is part of what a load is keyed by.
+  const locationKey =
+    source?.location.kind === 'drive'
+      ? `drive:${source.location.fileId}`
+      : source?.location.url;
 
   useEffect(() => {
     if (!source) {
@@ -58,8 +64,8 @@ export const useSheetMusicDocument = (
       isCurrent = false;
       controller.abort();
     };
-    // A rename must not reload the file, so the source is keyed by its id.
-  }, [attempt, loader, sourceId]);
+    // A rename must not reload the file, so the source is keyed by its id and location.
+  }, [attempt, loader, sourceId, locationKey]);
 
   const retry = useCallback(() => setAttempt((count) => count + 1), []);
 

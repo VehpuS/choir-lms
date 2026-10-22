@@ -135,6 +135,36 @@ describe('useSourceSheetMusic', () => {
     act(() => renderer.unmount());
   });
 
+  it('points a link at its Drive copy through a loop, keeping its id and label', async () => {
+    const { box, renderer } = await renderHarness();
+
+    await act(async () => {
+      await box.current?.sheetMusic.addSheetMusic(TRACK, SCORE);
+    });
+    const [added] =
+      box.current?.sheetMusic.sheetMusicFor(TRACK).sheetMusic ?? [];
+
+    await act(async () => {
+      await box.current?.sheetMusic.replaceSheetMusicWithDrive(
+        LOOP,
+        added?.id ?? '',
+        { fileId: 'drive-copy', name: 'Score.pdf' },
+      );
+    });
+    const [replaced] =
+      box.current?.sheetMusic.sheetMusicFor(TRACK).sheetMusic ?? [];
+
+    assert.equal(replaced?.id, added?.id);
+    assert.equal(replaced?.label, 'Full score');
+    assert.deepEqual(replaced?.location, {
+      fileId: 'drive-copy',
+      kind: 'drive',
+      name: 'Score.pdf',
+    });
+
+    act(() => renderer.unmount());
+  });
+
   it('reads and edits the owning track from a loop', async () => {
     const { box, renderer } = await renderHarness();
 

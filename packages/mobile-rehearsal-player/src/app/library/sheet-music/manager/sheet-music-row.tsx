@@ -13,6 +13,8 @@ type SheetMusicRowProps = {
   onAction: (source: SheetMusicSource) => void;
   onRemove: (source: SheetMusicSource) => void;
   onRename: (source: SheetMusicSource, label: string) => void;
+  /** Offered for a link, where the browser may not let the app read the file. */
+  onSaveToDrive?: (source: SheetMusicSource) => void;
   source: SheetMusicSource;
 };
 
@@ -22,6 +24,7 @@ export const SheetMusicRow = ({
   onAction,
   onRemove,
   onRename,
+  onSaveToDrive,
   source,
 }: SheetMusicRowProps) => {
   const [draftLabel, setDraftLabel] = useState<string | null>(null);
@@ -93,6 +96,18 @@ export const SheetMusicRow = ({
       </View>
       <OptionsMenuSheet
         actions={[
+          ...(onSaveToDrive && source.location.kind === 'url'
+            ? [
+                {
+                  id: 'save-to-drive',
+                  label: 'Save to Drive',
+                  onPress: () => {
+                    closeMenu();
+                    onSaveToDrive(source);
+                  },
+                },
+              ]
+            : []),
           {
             id: 'rename',
             label: 'Rename',

@@ -21,6 +21,7 @@ export type ViewerFailureReason =
 export type ViewerFailureAction =
   | 'open-external'
   | 'reconnect-drive'
+  | 'save-to-drive'
   | 'try-again';
 
 export type ViewerFailure = {
@@ -71,6 +72,7 @@ export const VIEWER_ACTION_LABELS: Record<
   string
 > = {
   'reconnect-drive': 'Reconnect Drive',
+  'save-to-drive': 'Save to Drive',
   'try-again': 'Try again',
 };
 
@@ -103,9 +105,9 @@ export const describeViewerFailure = (
       };
     case 'blocked':
       return {
-        actions: ['open-external'],
+        actions: ['save-to-drive', 'open-external'],
         message:
-          'The app cannot read files from this site. You can still open the link in your browser.',
+          'The app cannot read files from this site. Download the file there and save it to your Google Drive to view it here, or open the link in your browser.',
         title: 'This site does not allow the app to load the file',
       };
     case 'html-page':

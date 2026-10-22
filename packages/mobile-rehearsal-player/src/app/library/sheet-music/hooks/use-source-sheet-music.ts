@@ -1,7 +1,9 @@
 import {
   resolveLyricsOwner,
+  type SavedDriveFile,
   type SheetMusicSource,
 } from '@org/audio-library-models';
+import { replaceSheetMusicLocationInRepository } from '@org/audio-library-runtime';
 import { useCallback } from 'react';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
@@ -117,5 +119,27 @@ export const useSourceSheetMusic = ({
     [writeSheetMusic],
   );
 
-  return { addSheetMusic, removeSheetMusic, sheetMusicFor, updateSheetMusic };
+  // For a link saved to Drive: the source keeps its id, label, and part
+  // selection and loads from the Drive copy. An id removed meanwhile is ignored.
+  const replaceSheetMusicWithDrive = useCallback(
+    (item: SheetMusicItem, sheetMusicId: string, file: SavedDriveFile) =>
+      writeSheetMusic(item, (ownerId) =>
+        replaceSheetMusicLocationInRepository(
+          practiceRepository,
+          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+          ownerId,
+          sheetMusicId,
+          file,
+        ),
+      ),
+    [writeSheetMusic],
+  );
+
+  return {
+    addSheetMusic,
+    removeSheetMusic,
+    replaceSheetMusicWithDrive,
+    sheetMusicFor,
+    updateSheetMusic,
+  };
 };

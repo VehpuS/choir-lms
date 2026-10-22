@@ -19,12 +19,14 @@ import { darkScrollbarStyle } from '../../../components/dark-scrollbar';
 type SheetMusicManagerSheetProps = {
   canMutate: boolean;
   onAddLink: (addition: LinkAddition) => Promise<boolean>;
+  onChooseDevice?: () => void;
   onChooseDrive?: () => void;
   onClose: () => void;
   onOpenExternal: (url: string) => void;
   onOpenSource: (source: SheetMusicSource) => void;
   onRemove: (source: SheetMusicSource) => Promise<boolean>;
   onRename: (source: SheetMusicSource, label: string) => Promise<boolean>;
+  onSaveToDrive?: (source: SheetMusicSource) => void;
   /** The track that owns the list (a loop or adjusted track opens its parent's). */
   ownerName: string;
   sources: readonly SheetMusicSource[];
@@ -35,12 +37,14 @@ type SheetMusicManagerSheetProps = {
 export const SheetMusicManagerSheet = ({
   canMutate,
   onAddLink,
+  onChooseDevice,
   onChooseDrive,
   onClose,
   onOpenExternal,
   onOpenSource,
   onRemove,
   onRename,
+  onSaveToDrive,
   ownerName,
   sources,
   suggestedQuery,
@@ -101,6 +105,7 @@ export const SheetMusicManagerSheet = ({
           onBack={() => {
             setIsAdding(false);
           }}
+          onChooseDevice={onChooseDevice}
           onChooseDrive={onChooseDrive}
           onOpenExternal={onOpenExternal}
           suggestedQuery={suggestedQuery}
@@ -124,6 +129,7 @@ export const SheetMusicManagerSheet = ({
               onRename={(row, label) => {
                 void onRename(row, label);
               }}
+              onSaveToDrive={onSaveToDrive}
               source={source}
             />
           ))}

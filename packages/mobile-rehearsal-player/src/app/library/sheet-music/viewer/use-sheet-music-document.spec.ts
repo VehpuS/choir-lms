@@ -147,6 +147,22 @@ describe('useSheetMusicDocument', () => {
     assert.equal(pending[0]?.signal?.aborted, false);
   });
 
+  it('reloads from the new place when the same source is pointed at a Drive copy', async () => {
+    const { loader, pending } = createControlledLoader();
+    const { box, rerender } = await renderHook(sourceOf('a'), loader);
+
+    await act(async () =>
+      pending[0]?.resolve({ reason: 'blocked', status: 'failed' }),
+    );
+    await rerender({
+      ...sourceOf('a'),
+      location: { fileId: 'drive-1', kind: 'drive', name: 'a.pdf' },
+    });
+
+    assert.equal(pending.length, 2);
+    assert.equal(statusOf(box), 'loading');
+  });
+
   it('asks again on retry and shows loading in between', async () => {
     const { loader, pending } = createControlledLoader();
     const { box } = await renderHook(sourceOf('a'), loader);
