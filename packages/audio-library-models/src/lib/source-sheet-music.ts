@@ -16,6 +16,11 @@ export type SheetMusicLocation =
 
 export type SheetMusicPartSelection = 'vocal' | 'all' | { include: string[] };
 
+/** How the web viewer lays out a PDF's pages. */
+export type PdfLayout = 'scroll' | 'pages' | 'strip';
+
+export const DEFAULT_PDF_LAYOUT: PdfLayout = 'scroll';
+
 /** A link to one score or part file for a track; the file itself is never stored. */
 export type SheetMusicSource = {
   id: string;
@@ -23,6 +28,8 @@ export type SheetMusicSource = {
   location: SheetMusicLocation;
   format: SheetMusicFormat;
   partSelection?: SheetMusicPartSelection;
+  /** This file's own PDF layout; when absent the device layout applies. */
+  pdfLayout?: PdfLayout;
   addedAt: string;
 };
 
@@ -159,6 +166,7 @@ export const createSheetMusicSource = (options: {
   label: string;
   location: SheetMusicLocation;
   partSelection?: SheetMusicPartSelection;
+  pdfLayout?: PdfLayout;
 }): SheetMusicSource | undefined => {
   const label = normalizeSheetMusicLabel(options.label);
   const location = parseLocation(options.location);
@@ -173,6 +181,7 @@ export const createSheetMusicSource = (options: {
     location,
     format: options.format,
     ...(options.partSelection ? { partSelection: options.partSelection } : {}),
+    ...(options.pdfLayout ? { pdfLayout: options.pdfLayout } : {}),
     addedAt: options.addedAt,
   };
 };
@@ -209,6 +218,21 @@ const isFormat = (value: unknown): value is SheetMusicFormat => {
   );
 };
 
+/** Reads a stored layout; anything but a known layout is `undefined`. */
+export const parsePdfLayout = (value: unknown): PdfLayout | undefined => {
+  return value === 'scroll' || value === 'pages' || value === 'strip'
+    ? value
+    : undefined;
+};
+
+/** A file's own layout, else the device layout, else `scroll`. */
+export const resolvePdfLayout = (
+  source: Pick<SheetMusicSource, 'pdfLayout'> | undefined,
+  devicePreference: PdfLayout | undefined,
+): PdfLayout => {
+  return source?.pdfLayout ?? devicePreference ?? DEFAULT_PDF_LAYOUT;
+};
+
 const parsePartSelection = (
   value: unknown,
 ): SheetMusicPartSelection | undefined => {
@@ -236,13 +260,15 @@ const parseSheetMusicSource = (
     return undefined;
   }
 
-  // A bad part selection only resets to the default; it never drops the link.
+  // A bad part selection or layout only resets to the default; it never drops
+  // the link.
   return createSheetMusicSource({
     id: typeof value.id === 'string' ? value.id : '',
     label: value.label,
     location: value.location as SheetMusicLocation,
     format: value.format,
     partSelection: parsePartSelection(value.partSelection),
+    pdfLayout: parsePdfLayout(value.pdfLayout),
     addedAt: value.addedAt,
   });
 };

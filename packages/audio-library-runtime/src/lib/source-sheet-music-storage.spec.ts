@@ -153,6 +153,56 @@ describe('sheet music in the practice repository', () => {
     assert.equal(entry?.partSelection, undefined);
   });
 
+  it('saves, changes, and clears a source layout without touching anything else', async () => {
+    const repository = await setUp();
+
+    await repository.addSheetMusicSource(OWNER_ID, source.id, {
+      ...scoreAddition,
+      partSelection: { include: ['Alto'] },
+    });
+    const before = (await readSheetMusic(repository))?.[0];
+    const id = before?.id ?? '';
+
+    await repository.updateSheetMusicSource(OWNER_ID, source.id, id, {
+      pdfLayout: 'strip',
+    });
+    let entry = (await readSheetMusic(repository))?.[0];
+    assert.deepEqual(entry, { ...before, pdfLayout: 'strip' });
+
+    await repository.updateSheetMusicSource(OWNER_ID, source.id, id, {
+      pdfLayout: 'pages',
+    });
+    entry = (await readSheetMusic(repository))?.[0];
+    assert.equal(entry?.pdfLayout, 'pages');
+
+    // A change that omits the layout keeps it; null clears it.
+    await repository.updateSheetMusicSource(OWNER_ID, source.id, id, {
+      label: 'Renamed',
+    });
+    entry = (await readSheetMusic(repository))?.[0];
+    assert.equal(entry?.pdfLayout, 'pages');
+
+    await repository.updateSheetMusicSource(OWNER_ID, source.id, id, {
+      pdfLayout: null,
+    });
+    entry = (await readSheetMusic(repository))?.[0];
+    assert.equal('pdfLayout' in (entry ?? {}), false);
+    assert.deepEqual(entry?.partSelection, { include: ['Alto'] });
+  });
+
+  it('ignores a layout change for an unknown source id', async () => {
+    const repository = await setUp();
+
+    await repository.addSheetMusicSource(OWNER_ID, source.id, scoreAddition);
+    const before = await readSheetMusic(repository);
+
+    await repository.updateSheetMusicSource(OWNER_ID, 'no-such-track', 'x', {
+      pdfLayout: 'pages',
+    });
+
+    assert.deepEqual(await readSheetMusic(repository), before);
+  });
+
   it('removes a source and the field once the list is empty', async () => {
     const repository = await setUp();
 

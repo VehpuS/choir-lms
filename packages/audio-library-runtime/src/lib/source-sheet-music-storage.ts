@@ -5,6 +5,7 @@ import {
   replaceSourceLocationWithDrive,
   type SavedDriveFile,
   type DriveAudioSource,
+  type PdfLayout,
   type SheetMusicFormat,
   type SheetMusicLocation,
   type SheetMusicPartSelection,
@@ -29,6 +30,8 @@ export type SheetMusicAddition = {
 export type SheetMusicChange = {
   label?: string;
   partSelection?: SheetMusicPartSelection | null;
+  /** `pdfLayout: null` removes the file's own layout (the device layout applies). */
+  pdfLayout?: PdfLayout | null;
 };
 
 const createSheetMusicId = () =>
@@ -109,16 +112,21 @@ export const updateSheetMusicSourceInRepository = (
         change.label === undefined
           ? undefined
           : normalizeSheetMusicLabel(change.label);
-      const withoutSelection = omit(entry, ['partSelection']);
+      const withoutSelection = omit(entry, ['partSelection', 'pdfLayout']);
       const partSelection =
         change.partSelection === undefined
           ? entry.partSelection
           : (change.partSelection ?? undefined);
+      const pdfLayout =
+        change.pdfLayout === undefined
+          ? entry.pdfLayout
+          : (change.pdfLayout ?? undefined);
 
       return {
         ...withoutSelection,
         label: label ?? entry.label,
         ...(partSelection ? { partSelection } : {}),
+        ...(pdfLayout ? { pdfLayout } : {}),
       };
     }),
   );
