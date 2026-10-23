@@ -46,7 +46,7 @@
 - [x] 7.1 Update the README's Google OAuth section with the new scope and the console steps (link to `design.md` rather than duplicating it) and `.env.example` comments if any mention scopes. _Done 2026-10-23: README's Google OAuth section names both scopes and links to the console steps in `design.md`; `.env.example` notes that the scopes live in app config and the consent screen must list both._
 - [x] 7.2 Update `docs/` or the track-sheet-music spec's notes if they describe the "blocked host" copy, then run `openspec validate save-blocked-sheet-music-links-to-drive`. _Done 2026-10-23: nothing under `docs/` describes the blocked-host copy; the main `track-sheet-music` spec's blocked scenarios are replaced by this change's delta at archive. `openspec validate` passes._
 - [x] 7.3 Run lint, test, typecheck, and build for `mobile-rehearsal-player`, `google-drive`, and `audio-library-models` through Nx, and `npm ci` is not needed (no dependency changes). _Done 2026-10-23: `lint test typecheck build` pass for all three projects through Nx._
-- [ ] 7.4 Add a follow-up entry to `native-playback-follow-ups` noting that native needs the document picker and the same scope flow, then archive this change, but only once every other task in this file is checked (including group 8) and the user gives the go-ahead. _Entry added as `native-playback-follow-ups` 1.9 (done). Archiving is the last step: do not archive while any task above or below is unchecked._
+- [x] 7.4 Add a follow-up entry to `native-playback-follow-ups` noting that native needs the document picker and the same scope flow. _Done 2026-10-23: added as `native-playback-follow-ups` 1.9._
 
 ## 8. Future tasks (found during this change, not done here)
 
@@ -54,3 +54,7 @@
 - [ ] 8.2 **Explore with a user before changing:** the Save to Drive flow is web only. Decide how native iOS and Android should choose a file (document picker) and request the write scope; this extends `native-playback-follow-ups` (task 7.4 below records the entry).
 - [ ] 8.3 **Explore with a user before changing:** the Save to Drive sheet stacks over the manager sheet (two sheets on screen during the transition). Check on a phone whether replacing the manager's content instead would feel calmer.
 - [ ] 8.4 **Explore with a user before changing:** pdf.js draws on the main thread (the "fake worker"), so a dense page is likely what blocks the UI for up to about a second (not profiled; seen on zoom out from 400% to 100% on the 81-page score: three canvas swaps over 1.4 s, the last at 1.36 s). Decide whether to serve a real pdf.js worker (static file at a known path, or a bundled worker) and whether to show a progress hint while a page draws. Measurements are in the 6.3 note.
+
+## 9. Archive (last)
+
+- [ ] 9.1 Archive this change, but only once every other task in this file is checked (including group 8) and the user gives the go-ahead. Do not archive while any task above is unchecked.
