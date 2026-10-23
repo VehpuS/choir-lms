@@ -124,4 +124,4 @@ Confirming it works (after the sign-in change ships):
 
 - Should the destination folder default to the track's own Drive folder (`sourceLocation.parentFolderId`) when it has one? It is the likeliest place the user wants the score, and the picker would open there.
 - Should a successful save offer to open the file in the viewer immediately? The plan is yes, since that is why the user started.
-- Should PDF zoom reach 400% as the plan assumed? Today the buttons stop at 300% and sharpness already falls below 1x at 300% on a 1200 px wide window. Keeping 300% for both buttons and gestures is the simpler choice; raising it also needs a decision on the canvas pixel cap (`MAX_CANVAS_PIXELS`) or drawing only the visible part of a page.
+- ~~Should PDF zoom reach 400%?~~ Decided 2026-10-23 by the owner: yes, for PDFs. The viewer's PDF maximum is now 400% (`VIEWER_MAX_PDF_ZOOM`); scores (OpenSheetMusicDisplay) stay at 300% (`VIEWER_MAX_ZOOM`). Sharpness above about 250% on wide windows is unchanged and is tracked as future task 8.1.

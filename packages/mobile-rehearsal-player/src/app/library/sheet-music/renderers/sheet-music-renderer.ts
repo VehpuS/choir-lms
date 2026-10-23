@@ -80,6 +80,8 @@ export type PdfRenderFailureReason =
 /** A PDF on screen as a column of pages. */
 export type PdfRendering = {
   readonly pageCount: number;
+  /** The zoom the pages are laid out at now (1 fits the container's width). */
+  currentZoom(): number;
   /** Removes the pages and releases the document. */
   dispose(): void;
   /**

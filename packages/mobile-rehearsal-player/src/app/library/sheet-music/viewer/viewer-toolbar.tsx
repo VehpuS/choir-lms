@@ -18,6 +18,8 @@ type ViewerToolbarProps = {
   onTogglePlayback: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
+  /** The most this document zooms in to; a PDF goes further than a score. */
+  maxZoom?: number;
   /** `column` is the compact layout's side rail; `row` runs along the bottom. */
   orientation: 'column' | 'row';
   zoom: number;
@@ -28,6 +30,7 @@ export const ViewerToolbar = ({
   isFitted,
   isPlaybackToggleDisabled,
   isPlaying,
+  maxZoom = VIEWER_MAX_ZOOM,
   onFit,
   onGoTo,
   onTogglePlayback,
@@ -51,7 +54,7 @@ export const ViewerToolbar = ({
   const zoomIn = (
     <SurfaceIconButton
       accessibilityLabel="Zoom in"
-      disabled={zoom >= VIEWER_MAX_ZOOM}
+      disabled={zoom >= maxZoom}
       icon="plus"
       key="in"
       onPress={onZoomIn}

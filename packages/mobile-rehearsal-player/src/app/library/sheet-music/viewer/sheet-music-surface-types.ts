@@ -28,6 +28,11 @@ export type SheetMusicSurfaceProps = {
   onFitZoom: (zoom: number) => void;
   /** `null` for a PDF, which has no parts. Called again when the selection changes. */
   onRendered: (info: ScoreInfo | null) => void;
+  /**
+   * A PDF was zoomed by pinch, wheel, or double tap; the viewer takes the zoom
+   * so its readout and buttons follow. Not called for a score.
+   */
+  onZoomChange: (zoom: number) => void;
   selection: PartSelectionRequest | undefined;
   zoom: number;
 };

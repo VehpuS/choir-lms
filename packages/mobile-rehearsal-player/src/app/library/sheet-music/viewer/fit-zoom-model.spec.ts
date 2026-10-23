@@ -90,3 +90,48 @@ test('Fit turns auto-fit back on and uses the latest measurement', () => {
 
   assert.equal(resolveViewerZoom(refit), 0.6);
 });
+
+test('a gesture sets the zoom as given and turns auto-fit off', () => {
+  const state = reduceViewerZoom(INITIAL_VIEWER_ZOOM_STATE, {
+    max: 4,
+    type: 'set',
+    zoom: 2.37,
+  });
+
+  assert.equal(state.fitEnabled, false);
+  assert.equal(resolveViewerZoom(state), 2.37);
+});
+
+test('a gesture is held to the maximum it was given', () => {
+  assert.equal(
+    resolveViewerZoom(
+      reduceViewerZoom(INITIAL_VIEWER_ZOOM_STATE, { type: 'set', zoom: 9 }),
+    ),
+    3,
+  );
+  assert.equal(
+    resolveViewerZoom(
+      reduceViewerZoom(INITIAL_VIEWER_ZOOM_STATE, {
+        max: 4,
+        type: 'set',
+        zoom: 9,
+      }),
+    ),
+    4,
+  );
+});
+
+test('a step can go past the score maximum when the document allows it', () => {
+  const atScoreMax = reduceViewerZoom(INITIAL_VIEWER_ZOOM_STATE, {
+    max: 4,
+    type: 'set',
+    zoom: 3,
+  });
+  const stepped = reduceViewerZoom(atScoreMax, {
+    direction: 1,
+    max: 4,
+    type: 'step',
+  });
+
+  assert.equal(resolveViewerZoom(stepped), 3.25);
+});

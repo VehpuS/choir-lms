@@ -32,6 +32,8 @@ export type ViewerFailure = {
 
 export const VIEWER_MIN_ZOOM = 0.5;
 export const VIEWER_MAX_ZOOM = 3;
+/** A PDF page is drawn again at each zoom, so it can go further than a score. */
+export const VIEWER_MAX_PDF_ZOOM = 4;
 export const VIEWER_ZOOM_STEP = 0.25;
 export const VIEWER_DEFAULT_ZOOM = 1;
 
@@ -287,15 +289,28 @@ const roundToStep = (zoom: number) => {
   return Math.round(zoom / VIEWER_ZOOM_STEP) * VIEWER_ZOOM_STEP;
 };
 
-export const clampViewerZoom = (zoom: number): number => {
-  return Math.min(
-    VIEWER_MAX_ZOOM,
-    Math.max(VIEWER_MIN_ZOOM, roundToStep(zoom)),
-  );
+/** The most the viewer zooms in for what is on screen. */
+export const maxViewerZoom = (isPdf: boolean): number => {
+  return isPdf ? VIEWER_MAX_PDF_ZOOM : VIEWER_MAX_ZOOM;
 };
 
-export const stepViewerZoom = (zoom: number, direction: -1 | 1): number => {
-  return clampViewerZoom(roundToStep(zoom) + direction * VIEWER_ZOOM_STEP);
+/** Keeps a zoom inside the viewer's range without moving it onto the step grid (for gestures). */
+export const limitViewerZoom = (
+  zoom: number,
+  max: number = VIEWER_MAX_ZOOM,
+): number => Math.min(max, Math.max(VIEWER_MIN_ZOOM, zoom));
+
+export const clampViewerZoom = (
+  zoom: number,
+  max: number = VIEWER_MAX_ZOOM,
+): number => limitViewerZoom(roundToStep(zoom), max);
+
+export const stepViewerZoom = (
+  zoom: number,
+  direction: -1 | 1,
+  max: number = VIEWER_MAX_ZOOM,
+): number => {
+  return clampViewerZoom(roundToStep(zoom) + direction * VIEWER_ZOOM_STEP, max);
 };
 
 export const formatViewerZoom = (zoom: number): string => {

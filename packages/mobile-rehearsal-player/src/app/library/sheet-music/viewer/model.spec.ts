@@ -21,6 +21,9 @@ import {
   resolveExternalActionLabel,
   resolveExternalUrl,
   stepViewerZoom,
+  limitViewerZoom,
+  maxViewerZoom,
+  VIEWER_MAX_PDF_ZOOM,
   type ViewerFailureReason,
 } from './model.js';
 
@@ -288,6 +291,22 @@ describe('zoom', () => {
     assert.equal(stepViewerZoom(1.1, 1), 1.25);
     assert.equal(clampViewerZoom(99), VIEWER_MAX_ZOOM);
     assert.equal(clampViewerZoom(0), VIEWER_MIN_ZOOM);
+  });
+
+  it('lets a PDF zoom to 400% while a score stops at 300%', () => {
+    assert.equal(maxViewerZoom(false), VIEWER_MAX_ZOOM);
+    assert.equal(maxViewerZoom(true), VIEWER_MAX_PDF_ZOOM);
+    assert.equal(VIEWER_MAX_PDF_ZOOM, 4);
+    assert.equal(stepViewerZoom(3, 1), 3);
+    assert.equal(stepViewerZoom(3, 1, VIEWER_MAX_PDF_ZOOM), 3.25);
+    assert.equal(stepViewerZoom(4, 1, VIEWER_MAX_PDF_ZOOM), 4);
+  });
+
+  it('keeps a gesture zoom as given within the range, off the step grid', () => {
+    assert.equal(limitViewerZoom(1.37), 1.37);
+    assert.equal(limitViewerZoom(9), VIEWER_MAX_ZOOM);
+    assert.equal(limitViewerZoom(9, VIEWER_MAX_PDF_ZOOM), VIEWER_MAX_PDF_ZOOM);
+    assert.equal(limitViewerZoom(0.1), VIEWER_MIN_ZOOM);
   });
 
   it('shows the zoom as a percentage', () => {

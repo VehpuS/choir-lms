@@ -26,6 +26,7 @@ type ViewerBodyProps = {
   onFailed: (reason: ViewerFailureReason) => void;
   onFailureAction: (action: ViewerFailureAction) => void;
   onFitZoom: (zoom: number) => void;
+  onZoomChange: (zoom: number) => void;
   onRendered: (info: ScoreInfo | null) => void;
   outcome: ViewerOutcome | undefined;
   selection: PartSelectionRequest | undefined;
@@ -41,6 +42,7 @@ export const ViewerBody = ({
   onFailed,
   onFailureAction,
   onFitZoom,
+  onZoomChange,
   onRendered,
   outcome,
   selection,
@@ -73,6 +75,7 @@ export const ViewerBody = ({
           key={`${source.id}:${source.format}`}
           onFailed={onFailed}
           onFitZoom={onFitZoom}
+          onZoomChange={onZoomChange}
           onRendered={onRendered}
           selection={selection}
           zoom={zoom}

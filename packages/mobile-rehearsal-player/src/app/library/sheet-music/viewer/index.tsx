@@ -18,6 +18,7 @@ import {
   describeViewerFailure,
   filterViewableSources,
   hasPartChoice,
+  maxViewerZoom,
   resolveExternalUrl,
   type ViewerFailureAction,
 } from './model';
@@ -146,7 +147,8 @@ export const SheetMusicViewer = ({
     ),
   };
   const info = outcome?.kind === 'ready' ? outcome.info : null;
-  const viewerZoom = useViewerZoom(info !== null);
+  const isPdf = state.status === 'loaded' && state.document.format === 'pdf';
+  const viewerZoom = useViewerZoom(info !== null, maxViewerZoom(isPdf));
   const goTo = useGoTo();
   const canGoTo = info !== null && info.bars.barCount > 0;
   const hasParts = info !== null && hasPartChoice(info.parts);
@@ -220,6 +222,7 @@ export const SheetMusicViewer = ({
       }
       onFailureAction={handleFailureAction}
       onFitZoom={viewerZoom.onFitZoom}
+      onZoomChange={viewerZoom.setZoom}
       onRendered={(next) =>
         setDrawn({
           document: state.status === 'loaded' ? state.document : undefined,
@@ -248,6 +251,7 @@ export const SheetMusicViewer = ({
       isPlaying={isPlaying}
       onTogglePlayback={onTogglePlayback}
       isFitted={viewerZoom.isFitted}
+      maxZoom={viewerZoom.maxZoom}
       onFit={info ? viewerZoom.fit : undefined}
       onGoTo={canGoTo ? goTo.open : undefined}
       onZoomIn={viewerZoom.zoomIn}

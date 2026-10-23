@@ -11,7 +11,12 @@ import type {
   PdfRendering,
   ScoreRendering,
 } from '../renderers/sheet-music-renderer';
+import {
+  attachPdfZoomGestures,
+  type GestureHost,
+} from './attach-pdf-zoom-gestures.web';
 import { computeFitZoom } from './fit-zoom-model';
+import { VIEWER_MAX_PDF_ZOOM } from './model';
 import { PartPeekLabel, usePartPeek, type PeekHost } from './part-peek';
 import type { SheetMusicSurfaceProps } from './sheet-music-surface-types';
 import {
@@ -35,7 +40,12 @@ type ResizeObserverConstructor = new (
   callback: () => void,
 ) => ResizeObserverLike;
 
-type Live = { pdf?: PdfRendering; score?: ScoreRendering };
+type Live = {
+  /** Removes the PDF's pinch, wheel, and double-tap handling. */
+  detachGestures?: () => void;
+  pdf?: PdfRendering;
+  score?: ScoreRendering;
+};
 
 const RESIZE_DEBOUNCE_MS = 150;
 /**
@@ -50,15 +60,30 @@ export const SheetMusicSurface = ({
   onFailed,
   onFitZoom,
   onRendered,
+  onZoomChange,
   selection,
   zoom,
 }: SheetMusicSurfaceProps) => {
   const [host, setHost] = useState<HostNode | null>(null);
   const live = useRef<Live>({});
   // The latest values, read by effects that must not restart when they change.
-  const latest = useRef({ onFailed, onFitZoom, onRendered, selection, zoom });
+  const latest = useRef({
+    onFailed,
+    onFitZoom,
+    onRendered,
+    onZoomChange,
+    selection,
+    zoom,
+  });
 
-  latest.current = { onFailed, onFitZoom, onRendered, selection, zoom };
+  latest.current = {
+    onFailed,
+    onFitZoom,
+    onRendered,
+    onZoomChange,
+    selection,
+    zoom,
+  };
 
   // Tells the viewer which zoom fits the drawn score into the height this
   // element has; the viewer decides whether to use it (auto-fit is on).
@@ -98,7 +123,18 @@ export const SheetMusicSurface = ({
         next.pdf = result.rendering;
         live.current = next;
 
-        return isCancelled ? undefined : latest.current.onRendered(null);
+        if (isCancelled) {
+          return undefined;
+        }
+
+        next.detachGestures = attachPdfZoomGestures({
+          host: host as unknown as GestureHost,
+          max: VIEWER_MAX_PDF_ZOOM,
+          onZoomChange: (changed) => latest.current.onZoomChange(changed),
+          pdf: result.rendering,
+        });
+
+        return latest.current.onRendered(null);
       }
 
       const score = await resolveScoreMusicXml({
@@ -146,6 +182,7 @@ export const SheetMusicSurface = ({
     void draw().then(() => {
       // A drawing that finished after the effect was cleaned up is released here.
       if (isCancelled) {
+        next.detachGestures?.();
         next.pdf?.dispose();
         next.score?.dispose();
       }
@@ -153,6 +190,7 @@ export const SheetMusicSurface = ({
 
     return () => {
       isCancelled = true;
+      next.detachGestures?.();
       next.pdf?.dispose();
       next.score?.dispose();
       live.current = {};
@@ -204,7 +242,11 @@ export const SheetMusicSurface = ({
   }, [jump]);
 
   useEffect(() => {
-    live.current.pdf?.setZoom(zoom);
+    // A pinch or wheel has already laid the pages out at this zoom.
+    if (live.current.pdf && live.current.pdf.currentZoom() !== zoom) {
+      live.current.pdf.setZoom(zoom);
+    }
+
     live.current.score?.setZoom(zoom);
   }, [zoom]);
 

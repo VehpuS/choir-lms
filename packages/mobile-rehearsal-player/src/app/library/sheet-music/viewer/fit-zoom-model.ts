@@ -1,4 +1,10 @@
-import { VIEWER_DEFAULT_ZOOM, VIEWER_MIN_ZOOM, stepViewerZoom } from './model';
+import {
+  VIEWER_DEFAULT_ZOOM,
+  VIEWER_MAX_ZOOM,
+  VIEWER_MIN_ZOOM,
+  limitViewerZoom,
+  stepViewerZoom,
+} from './model';
 
 /**
  * Fit to height (design Decision 11): a strip of staves is as tall as its
@@ -34,7 +40,10 @@ export type ViewerZoomState = {
 export type ViewerZoomAction =
   | { type: 'fit' }
   | { type: 'measured'; zoom: number }
-  | { direction: -1 | 1; type: 'step' };
+  /** `max` is the most this document zooms in to (a PDF goes further than a score). */
+  | { direction: -1 | 1; max?: number; type: 'step' }
+  /** A zoom chosen by pinch, wheel, or double tap, kept as given within the range. */
+  | { max?: number; type: 'set'; zoom: number };
 
 export const INITIAL_VIEWER_ZOOM_STATE: ViewerZoomState = {
   fitEnabled: true,
@@ -60,10 +69,22 @@ export const reduceViewerZoom = (
     return { ...state, fitEnabled: true };
   }
 
+  if (action.type === 'set') {
+    return {
+      ...state,
+      fitEnabled: false,
+      manualZoom: limitViewerZoom(action.zoom, action.max ?? VIEWER_MAX_ZOOM),
+    };
+  }
+
   // A step starts from what is on screen, then auto-fit stays out of the way.
   return {
     ...state,
     fitEnabled: false,
-    manualZoom: stepViewerZoom(resolveViewerZoom(state), action.direction),
+    manualZoom: stepViewerZoom(
+      resolveViewerZoom(state),
+      action.direction,
+      action.max,
+    ),
   };
 };

@@ -301,6 +301,7 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     observeAll();
 
     const rendering: PdfRendering = {
+      currentZoom: () => currentZoom,
       dispose() {
         isDisposed = true;
         observer?.disconnect();
