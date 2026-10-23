@@ -1,0 +1,36 @@
+## 1. Layout model and preference
+
+- [ ] 1.1 Add `renderers/pdf-layout-model.ts`: the layout type (`scroll`, `pages`, `strip`), page boxes and content size for each layout from the container size, page sizes, and zoom, the page index and in-page fraction at a point, and the scroll offset that brings a page (or a page and fraction) into view. Spec each layout's boxes, the fits (width in `Scroll`, whole page in `Pages`, height in `Strip`), the page at a point, and the scroll-to-page offsets.
+- [ ] 1.2 Add the device-wide layout preference (`pdf-layout-storage.ts` and `pdf-layout-store.ts`, following `my-parts-storage.ts` and `my-parts-store.ts`): restore, validate (unknown becomes `scroll`), persist, and a `usePdfLayout` hook. Spec restore, persist, and invalid values with an in-memory storage.
+
+## 2. Renderer
+
+- [ ] 2.1 Make `pdf-renderer.web.ts` apply page boxes from the layout model (still `Scroll` only), keeping today's behavior and its specs; extract helpers so the file stays near 300 lines. Verify in the browser that `Scroll` is unchanged.
+- [ ] 2.2 Add the `Strip` layout: pages in a row, horizontal lazy-drawing margin, rebuilt observer on a layout change, and `setLayout` keeping the page and in-page fraction in view.
+- [ ] 2.3 Add the `Pages` layout: one slot per page, snapping only at fitted zoom (turned off above fit and on again at fit, scrolling to the nearest page), and `goToPage(index)` that works at any zoom.
+- [ ] 2.4 Add page tracking: `currentPage()` and a throttled page-change callback from scroll position, plus a width-change relayout that keeps the page.
+
+## 3. Viewer
+
+- [ ] 3.1 Add the `Layout` toolbar button and its options sheet (`Scroll`, `Pages`, `Strip`, current one marked), wired to the preference. Confirm the icon glyphs with the owner first (design Open Questions); component spec for the sheet's choices.
+- [ ] 3.2 Add the page indicator and, in `Pages`, `Previous page` and `Next page` controls disabled at the ends; a pure model for the indicator text and the disabled states with a spec.
+- [ ] 3.3 Add keyboard paging (arrows and `Page Up`/`Page Down`) and the vertical-wheel-to-sideways mapping for `Strip` and `Pages` at fitted zoom, as thin `.web` listeners over pure functions with specs.
+
+## 4. Zoom in every layout
+
+- [ ] 4.1 Define zoom per layout (100% fits the width in `Scroll`, fits the viewer in `Pages` and `Strip`) and check the `Fit` double-tap toggle, the zoom controls, and the 50% to 400% range in each; spec the fit math.
+- [ ] 4.2 Check pinch, wheel zoom, and focal-point scrolling in `Strip` and `Pages` and fix any axis that does not hold the point under the fingers.
+
+## 5. Verification and wrap-up
+
+- [ ] 5.1 Verify in the browser preview with the 81-page `Radio Video V5.0 Score and Parts` PDF at phone width and a desktop width: each layout, switching layouts mid-document, the page indicator, keyboard, swipe snapping (touch emulation), zoom and unzoom in `Pages`, rotating (width change), and memory staying flat. Note results per scenario in the spec.
+- [ ] 5.2 Update the README's viewer notes if they describe the PDF viewer, and run `openspec validate pdf-horizontal-paging`.
+- [ ] 5.3 Run lint, test, typecheck, and build for `mobile-rehearsal-player` through Nx.
+- [ ] 5.4 Archive `save-blocked-sheet-music-links-to-drive` first, then this change, after the user's go-ahead.
+
+## 6. Future tasks (not in scope here)
+
+- [ ] 6.1 **Explore with a user before changing:** right-to-left page order for documents that declare it (design Open Questions).
+- [ ] 6.2 **Explore with a user before changing:** a `Go to page` entry from the page indicator, and page thumbnails.
+- [ ] 6.3 **Explore with a user before changing:** two-page spreads on a wide tablet or desktop window.
+- [ ] 6.4 Add the layouts and page paging to native when native PDF rendering exists (`native-playback-follow-ups` 1.6).
