@@ -130,6 +130,8 @@ For the default app identifiers in this repo:
 - `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` should be an Android OAuth client for package `com.choirlms.mobile`
 - `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` is only needed when running the app on web
 
+The app asks Google for two Drive scopes: `https://www.googleapis.com/auth/drive.readonly` (browsing and playing files) and `https://www.googleapis.com/auth/drive.file` (saving a sheet music file to the user's Drive, the `Save to Drive` flow). The OAuth consent screen in the Google Cloud project must list both, and every account that signs in while the app is in Testing must be a test user. The console steps are in [design.md](openspec/changes/save-blocked-sheet-music-links-to-drive/design.md#google-cloud-console-setup-project-owner); no new client ID or `.env` value is needed.
+
 To get the Android debug SHA-1 for local `expo run:android` builds:
 
 ```sh
