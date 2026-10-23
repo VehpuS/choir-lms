@@ -14,6 +14,8 @@ export type DomCanvas = DomElement & {
 export type HostElement = DomElement & {
   clientHeight: number;
   clientWidth: number;
+  scrollLeft: number;
+  scrollTop: number;
   ownerDocument: { createElement(tag: 'canvas'): DomCanvas } & {
     createElement(tag: 'div'): DomElement;
   } & {

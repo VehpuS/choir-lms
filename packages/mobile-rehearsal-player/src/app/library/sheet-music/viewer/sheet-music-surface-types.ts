@@ -1,4 +1,5 @@
 import type {
+  PdfLayout,
   ResolvedPartSelection,
   ScoreNoteRange,
   ScoreBars,
@@ -33,6 +34,8 @@ export type SheetMusicSurfaceProps = {
    * so its readout and buttons follow. Not called for a score.
    */
   onZoomChange: (zoom: number) => void;
+  /** How a PDF's pages are laid out; defaults to `scroll`. Not used for a score. */
+  pdfLayout?: PdfLayout;
   selection: PartSelectionRequest | undefined;
   zoom: number;
 };

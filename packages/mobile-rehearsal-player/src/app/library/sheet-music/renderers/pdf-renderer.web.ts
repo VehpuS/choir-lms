@@ -1,20 +1,23 @@
 import type { PdfContainer } from './pdf-renderer';
+import type { PdfLayout } from '@org/audio-library-models';
+
 import {
-  PDF_PAGE_GAP_PX,
   computePdfLayout,
+  pageAtOffset,
+  scrollOffsetForPage,
   type PdfLayoutResult,
 } from './pdf-layout-model';
+import { pdfColumnStyle, pdfPageStyle } from './pdf-layout-style';
+import { createPageObserver } from './pdf-page-observer';
 import { clampPdfZoom, computePdfRenderScale } from './pdf-page-layout';
 import type {
   DomElement,
   HostElement,
-  PageObserverConstructor,
   PdfDocument,
   PdfPage,
   PdfRenderTask,
 } from './pdf-web-types';
-import { findScrollRoot } from './pdf-scroll-root';
-import { isPasswordError, loadPdfjs } from './pdfjs-loader';
+import { isPasswordError, openPdf } from './pdfjs-loader';
 import type {
   PdfRenderer,
   PdfRenderResult,
@@ -35,51 +38,42 @@ type PageEntry = {
 };
 
 const DEFAULT_ZOOM = 1;
-// Pages within one and a half screens of the viewport stay drawn, so a normal
-// scroll never shows an empty page, while a long score holds only a few canvases.
-const OBSERVER_ROOT_MARGIN = '150% 0px';
+const DEFAULT_LAYOUT: PdfLayout = 'scroll';
 // A zoom stream (a pinch, a held wheel) redraws once, this long after the last
 // change; until then the drawn canvases are stretched by the browser.
 const ZOOM_SETTLE_MS = 150;
-const COLUMN_STYLE =
-  'display:flex;flex-direction:column;align-items:center;min-width:100%;width:max-content;';
 
 const failed = (
   reason: 'invalid-pdf' | 'password-protected',
 ): PdfRenderResult => ({ reason, status: 'failed' });
 
 /**
- * Draws a PDF into a DOM element as a column of pages that fits the element's
- * width. Every page has its final size from the start, so the scroll length is
- * right; a page is drawn only near the viewport and released when it leaves.
+ * Draws a PDF into a DOM element in a layout (a column fitted to the width, or
+ * a sideways strip fitted to the height). Every page has its final size from
+ * the start, so the scroll length is right; a page is drawn only near the
+ * viewport and released when it leaves.
  */
 export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
-  async render({ bytes, container, zoom = DEFAULT_ZOOM }) {
+  async render({
+    bytes,
+    container,
+    layout: initialLayout = DEFAULT_LAYOUT,
+    zoom = DEFAULT_ZOOM,
+  }) {
     const host = container as HostElement;
     let doc: PdfDocument;
     let pages: PageEntry[];
 
     try {
-      const pdfjs = await loadPdfjs();
+      const opened = await openPdf(bytes);
 
-      // pdf.js may take ownership of the buffer, so it gets its own copy.
-      doc = await pdfjs.getDocument({ data: bytes.slice() }).promise;
-      pages = await Promise.all(
-        Array.from({ length: doc.numPages }, async (_, index) => {
-          const page = await doc.getPage(index + 1);
-          const size = page.getViewport({ scale: 1 });
-
-          return {
-            height: size.height,
-            index,
-            isRendered: false,
-            isVisible: false,
-            page,
-            width: size.width,
-            wrapper: host.ownerDocument.createElement('div'),
-          };
-        }),
-      );
+      doc = opened.doc;
+      pages = opened.pages.map((size) => ({
+        ...size,
+        isRendered: false,
+        isVisible: false,
+        wrapper: host.ownerDocument.createElement('div'),
+      }));
     } catch (error) {
       return failed(
         isPasswordError(error) ? 'password-protected' : 'invalid-pdf',
@@ -89,15 +83,16 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     const column = host.ownerDocument.createElement('div');
     const pixelRatio =
       (globalThis as { devicePixelRatio?: number }).devicePixelRatio ?? 1;
+    let currentLayout = initialLayout;
     let currentZoom = clampPdfZoom(zoom);
     let isDisposed = false;
     let settleTimer: ReturnType<typeof setTimeout> | undefined;
 
-    // Every page's box comes from the layout model; only `scroll` exists so far.
+    // Every page's box comes from the layout model.
     const computeLayout = (): PdfLayoutResult =>
       computePdfLayout({
         container: { height: host.clientHeight, width: host.clientWidth },
-        layout: 'scroll',
+        layout: currentLayout,
         pages: pages.map((entry) => ({
           height: entry.height,
           width: entry.width,
@@ -176,64 +171,48 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     };
 
     const applyLayout = (canRetry = true): void => {
-      const measuredWidth = host.clientWidth;
+      const measured = { height: host.clientHeight, width: host.clientWidth };
 
       layout = computeLayout();
 
       for (const entry of pages) {
         const box = layout.boxes[entry.index];
 
-        entry.wrapper.style.cssText = `width:${box?.width}px;height:${box?.height}px;margin:0 0 ${PDF_PAGE_GAP_PX}px;background:#fff;flex:none;`;
+        if (box) {
+          entry.wrapper.style.cssText = pdfPageStyle(currentLayout, box);
+        }
       }
 
-      // Laying the pages out can add a vertical scrollbar, which narrows the
-      // host; fit the pages to the width that is left instead of overflowing.
-      // One retry only: a page that is borderline for needing a scrollbar could
-      // otherwise flip the width back and forth.
-      if (canRetry && host.clientWidth !== measuredWidth) {
+      // Laying the pages out can add a scrollbar, which shrinks the host; fit
+      // the pages to the size that is left instead of overflowing. One retry
+      // only: a page that is borderline for needing a scrollbar could otherwise
+      // flip the size back and forth.
+      if (
+        canRetry &&
+        (host.clientWidth !== measured.width ||
+          host.clientHeight !== measured.height)
+      ) {
         applyLayout(false);
       }
     };
 
-    const Observer = (
-      globalThis as { IntersectionObserver?: PageObserverConstructor }
-    ).IntersectionObserver;
-    const entryByWrapper = new Map<unknown, PageEntry>(
-      pages.map((entry) => [entry.wrapper, entry]),
-    );
-    const observer = Observer
-      ? new Observer(
-          (changes) => {
-            for (const change of changes) {
-              const entry = entryByWrapper.get(change.target);
+    const startObserving = () =>
+      createPageObserver({
+        host,
+        layout: currentLayout,
+        onHidden: release,
+        onVisible: (entry) => {
+          // While a zoom is settling the page waits for the one redraw.
+          if (!settleTimer) {
+            void draw(entry);
+          }
+        },
+        pages,
+      });
+    let observer = startObserving();
 
-              if (!entry) {
-                continue;
-              }
-
-              entry.isVisible = change.isIntersecting;
-
-              if (change.isIntersecting) {
-                // While a zoom is settling the page waits for the one redraw.
-                if (!settleTimer) {
-                  void draw(entry);
-                }
-              } else {
-                release(entry);
-              }
-            }
-          },
-          { root: findScrollRoot(host), rootMargin: OBSERVER_ROOT_MARGIN },
-        )
-      : undefined;
-
-    // Observing reports every page's state now and again whenever a layout
-    // change moves one in or out of range.
     const observeAll = () => {
-      for (const entry of pages) {
-        entry.isVisible = false;
-        observer?.observe(entry.wrapper);
-      }
+      observer?.observeAll();
 
       // Without IntersectionObserver every page is drawn (older browsers).
       if (!observer) {
@@ -253,7 +232,7 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
       }
     };
 
-    column.style.cssText = COLUMN_STYLE;
+    column.style.cssText = pdfColumnStyle(currentLayout);
     pages.forEach((entry) => column.appendChild(entry.wrapper));
     host.innerHTML = '';
     host.appendChild(column);
@@ -261,6 +240,7 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     observeAll();
 
     const rendering: PdfRendering = {
+      currentLayout: () => currentLayout,
       currentZoom: () => currentZoom,
       dispose() {
         isDisposed = true;
@@ -271,6 +251,33 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         void doc.destroy();
       },
       pageCount: pages.length,
+      setLayout(next) {
+        if (next === currentLayout) {
+          return;
+        }
+
+        // The page at the viewport's start edge, and how far through it, stay
+        // in view across the change.
+        const anchor = pageAtOffset(
+          layout,
+          layout.axis === 'vertical' ? host.scrollTop : host.scrollLeft,
+        );
+
+        currentLayout = next;
+        column.style.cssText = pdfColumnStyle(next);
+        applyLayout();
+
+        const target = scrollOffsetForPage(layout, anchor);
+
+        host.scrollLeft = target.left;
+        host.scrollTop = target.top;
+
+        // The look-ahead margin follows the scroll axis, so the observer is
+        // rebuilt; observing again reports every page's state at the new layout.
+        observer?.disconnect();
+        observer = startObserving();
+        observeAll();
+      },
       setZoom(next) {
         currentZoom = clampPdfZoom(next);
         applyLayout();

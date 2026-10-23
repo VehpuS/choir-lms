@@ -1,3 +1,4 @@
+import { DEFAULT_PDF_LAYOUT } from '@org/audio-library-models';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -61,6 +62,7 @@ export const SheetMusicSurface = ({
   onFitZoom,
   onRendered,
   onZoomChange,
+  pdfLayout = DEFAULT_PDF_LAYOUT,
   selection,
   zoom,
 }: SheetMusicSurfaceProps) => {
@@ -72,6 +74,7 @@ export const SheetMusicSurface = ({
     onFitZoom,
     onRendered,
     onZoomChange,
+    pdfLayout,
     selection,
     zoom,
   });
@@ -81,6 +84,7 @@ export const SheetMusicSurface = ({
     onFitZoom,
     onRendered,
     onZoomChange,
+    pdfLayout,
     selection,
     zoom,
   };
@@ -113,6 +117,7 @@ export const SheetMusicSurface = ({
         const result = await createPdfRenderer().render({
           bytes: document.bytes,
           container: host,
+          layout: latest.current.pdfLayout,
           zoom: latest.current.zoom,
         });
 
@@ -240,6 +245,10 @@ export const SheetMusicSurface = ({
       live.current.score?.scrollToBar(jump.barIndex);
     }
   }, [jump]);
+
+  useEffect(() => {
+    live.current.pdf?.setLayout(pdfLayout);
+  }, [pdfLayout]);
 
   useEffect(() => {
     // A pinch or wheel has already laid the pages out at this zoom.

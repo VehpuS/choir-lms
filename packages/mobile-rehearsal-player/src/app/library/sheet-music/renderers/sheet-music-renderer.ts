@@ -1,4 +1,5 @@
 import type {
+  PdfLayout,
   ResolvedPartSelection,
   ScoreNoteRange,
   ScoreBars,
@@ -80,12 +81,16 @@ export type PdfRenderFailureReason =
 /** A PDF on screen as a column of pages. */
 export type PdfRendering = {
   readonly pageCount: number;
-  /** The zoom the pages are laid out at now (1 fits the container's width). */
+  /** The layout the pages are in now. */
+  currentLayout(): PdfLayout;
+  /** The zoom the pages are laid out at now (1 fits the layout: width, whole page, or height). */
   currentZoom(): number;
   /** Removes the pages and releases the document. */
   dispose(): void;
+  /** Changes the layout, keeping the page at the viewport's start edge in view. */
+  setLayout(layout: PdfLayout): void;
   /**
-   * Sets the zoom (1 fits the container's width) and lays the pages out again.
+   * Sets the zoom (1 fits the layout's width, whole page, or height) and lays the pages out again.
    * Call it with the current zoom after the container's width changes.
    */
   setZoom(zoom: number): void;
@@ -100,6 +105,8 @@ export type PdfRenderer<Container> = {
   render(options: {
     bytes: Uint8Array;
     container: Container;
+    /** Defaults to `scroll`. */
+    layout?: PdfLayout;
     zoom?: number;
   }): Promise<PdfRenderResult>;
 };
