@@ -10,7 +10,7 @@ Constraints: web only (native has no PDF renderer), no new dependencies, the 300
 
 **Goals:**
 
-- Three layouts (`Scroll`, `Pages`, `Strip`) from one control, remembered per device.
+- Three layouts (`Scroll`, `Pages`, `Strip`) from one control, remembered per device, with an optional override for a single file.
 - A page indicator and page-to-page movement, including the keyboard.
 - Changing layout, zooming, and resizing keep the reader on the same page.
 - Pages stay lazily drawn in every layout.
@@ -18,7 +18,7 @@ Constraints: web only (native has no PDF renderer), no new dependencies, the 300
 **Non-Goals:**
 
 - Native rendering or a native layout control.
-- Two-page spreads (facing pages), or a different layout per document.
+- Two-page spreads (facing pages).
 - Right-to-left page order (see Open Questions).
 - A page thumbnail strip or a `Go to page` entry box (possible later; the indicator is not interactive in this change).
 - Changing how MusicXML and MIDI are drawn.
@@ -48,9 +48,16 @@ A layout change, a width change (rotating the phone), and the viewer's zoom step
 
 The observer's `rootMargin` becomes `150% 0px` for `Scroll` and `0px 150%` for `Strip` and `Pages`, and the observer is rebuilt on a layout change. In `Pages` that draws the current page and one neighbor on each side, which is what a swipe reveals. Releasing far pages is unchanged.
 
-### 5. The preference is a device-wide store
+### 5. A device default, and a per-file override on the source
 
-A small store (`pdf-layout-store.ts`, `pdf-layout-storage.ts`) follows the `My parts` pattern: a module-level value shared through `useSyncExternalStore`, restored once from async storage under `choirlms.sheet-music.pdf-layout`, validated on read (an unknown value is `Scroll`), and written on change. It is read by the viewer and passed to the surface, so no source or track stores it.
+The layout a PDF opens in is resolved in order: the source's own `pdfLayout`, else the device preference, else `Scroll`. A pure `resolvePdfLayout(source, devicePreference)` does this and is the only place the order lives.
+
+- **Device default.** A small store (`pdf-layout-store.ts`, `pdf-layout-storage.ts`) follows the `My parts` pattern: a module-level value shared through `useSyncExternalStore`, restored once from async storage under `choirlms.sheet-music.pdf-layout`, validated on read (an unknown value is ignored), and written on change.
+- **Per-file override.** `PdfLayout` (`'scroll' | 'pages' | 'strip'`) and an optional `pdfLayout` field live on `SheetMusicSource` in `@org/audio-library-models`, parsed with the rest of the source: an unknown value drops the field rather than the source, as a bad part selection does. `@org/audio-library-runtime` saves it through `updateSheetMusicSource`, whose change object already carries `partSelection` (where `null` resets); `pdfLayout: null` clears the override the same way. Nothing else on the source or track changes.
+- **Why on the source, not keyed by file content:** the app never stores or hashes file contents, and the same Drive file added to two tracks is two sources, each of which a singer may read differently. The source is already where per-file reading choices (parts) live, so the layout travels with its label and parts, and an existing library reads as "no override".
+- **Why not only a per-file setting:** most singers want one way of reading everywhere; a per-file choice for every new PDF would be repeated work.
+
+In the layout sheet (Decision 6) the three layouts set what the user is looking at, and a switch, `Only for this file`, decides where the choice is saved: off (the default) saves it as the device layout; on saves it on this source. When the file has its own layout, the sheet says so (`This file uses its own layout`) and offers `Use the device layout`, which clears it. Switching `Only for this file` on does not change the device layout, and a choice made with it off does not touch a file that has its own layout, so the screen never changes under a file the singer set by hand: if the open file has its own layout and the user picks a device layout, the sheet keeps showing the file's own layout and says the device layout was changed.
 
 ### 6. Controls and indicator
 
@@ -68,6 +75,7 @@ In `Strip` and `Pages` at fitted zoom there is nothing to scroll vertically, so 
 - [`scroll-snap` behaves differently across browsers, especially with programmatic scrolling and after a layout change] -> Snapping is turned off while scrolling programmatically and on again after, and verified in the browser pane at phone and desktop widths; a failure falls back to `Strip` behavior without snapping.
 - [A page that is much wider than tall fits poorly in a portrait phone in `Pages`] -> The page is fitted whole, so it appears small but complete; the zoom controls and double tap enlarge it, which is the same trade-off as `Scroll`.
 - [The page indicator needs scroll position at frame rate] -> It reads scroll offsets in one throttled handler and only sets state when the page number changes.
+- [A new field on a stored source must not break older data or older app versions] -> The field is optional, an unknown value is dropped on read, and a library without it reads as "no override"; an older app ignores the extra field.
 - [Two open changes edit the `track-sheet-music` spec] -> This change's requirements are all ADDED and do not touch the zoom requirement; archive `save-blocked-sheet-music-links-to-drive` first.
 
 ## Migration Plan
@@ -75,11 +83,12 @@ In `Strip` and `Pages` at fitted zoom there is nothing to scroll vertically, so 
 1. The layout model, preference store, and their specs land first with no visible change.
 2. The renderer adopts the model for `Scroll` with the layout parameter defaulting to `Scroll`, so existing behavior is verified unchanged before the other layouts exist.
 3. `Strip`, then `Pages`, then the control, indicator, and keyboard.
-4. Rollback: hide the `Layout` control; the stored preference is ignored, and PDFs open in `Scroll` as today.
+4. Rollback: hide the `Layout` control; the stored preference and any sources' `pdfLayout` are ignored, and PDFs open in `Scroll` as today. A stored `pdfLayout` is harmless data and does not need removing.
 
 ## Open Questions
 
 - **Right-to-left documents.** Some PDFs (for example Hebrew documents) are read right to left, and a PDF can declare its page direction. This change keeps left-to-right order in `Pages` and `Strip` and treats honoring a declared right-to-left direction as a follow-up. Confirm with the owner whether any scores they use are right to left.
+- **The override switch.** The design uses an `Only for this file` switch in the layout sheet. An alternative is two actions (`Use for all PDFs`, `Use for this file`), which is more explicit but adds a tap. Try the switch first and revisit after use.
 - **Icons.** The layout control needs a glyph, and each choice may want one. `app-icon` has no matching glyphs yet; adding Phosphor entries changes the app's icon set, so choose them with the owner at the first checkpoint (the `music-ui-iconography` and `ui-consistency` guidance applies).
 - **Page indicator interaction.** Should tapping the indicator open a `Go to page` entry? Left out here; decide after using it.
 - **`Pages` default zoom for very wide pages** (landscape scores on a portrait phone): fit whole (small) or fit width (needs panning)? This design fits whole; revisit after trying real scores.

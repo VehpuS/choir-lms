@@ -31,19 +31,34 @@ The system SHALL let a user choose, in the web viewer, how an open PDF is laid o
 - **WHEN** a PDF of many pages is open in any layout
 - **THEN** only the pages near the viewport hold drawn content, and pages that move far away release it
 
-### Requirement: The chosen PDF layout is remembered for the device
+### Requirement: The PDF layout is remembered for the device and can be overridden for a file
 
-The system SHALL store one PDF layout choice for the device and use it for every PDF opened afterwards, and SHALL fall back to `Scroll` when nothing is stored or the stored value is not a known layout. The choice SHALL NOT be stored on a sheet music source or a track.
+The system SHALL store one PDF layout choice for the device and use it for every PDF that has no layout of its own, and SHALL let the user give one sheet music source its own layout that takes precedence over the device choice. A PDF SHALL open in its own layout when it has one, else the device layout, else `Scroll`; a stored value that is not a known layout SHALL be ignored. The user SHALL be able to remove a file's own layout so the file follows the device choice again. A file's own layout SHALL be saved on the sheet music source (as its part selection is), not on the track, and SHALL NOT change the device choice or any other source.
 
 #### Scenario: Remembered across PDFs and sessions
 
-- **WHEN** a user chooses `Pages` and later opens a different PDF, or reopens the app
+- **WHEN** a user chooses `Pages` for the device and later opens a different PDF, or reopens the app
 - **THEN** that PDF opens in `Pages`
+
+#### Scenario: A file with its own layout
+
+- **WHEN** a user sets `Strip` for one PDF only, and the device choice is `Pages`
+- **THEN** that PDF opens in `Strip` every time, and other PDFs open in `Pages`
+
+#### Scenario: Following the device again
+
+- **WHEN** a user removes a file's own layout
+- **THEN** the file opens in the device layout from then on
+
+#### Scenario: Changing the device choice does not touch a file's own layout
+
+- **WHEN** a file has its own layout and the user changes the device choice from another file
+- **THEN** the first file still opens in its own layout
 
 #### Scenario: Unreadable stored value
 
-- **WHEN** the stored layout is missing or not one the app knows
-- **THEN** the PDF opens in `Scroll`
+- **WHEN** a stored layout, on the device or on a source, is missing or not one the app knows
+- **THEN** it is ignored and the next choice applies (the device layout, then `Scroll`)
 
 ### Requirement: The viewer shows which page a PDF is on and moves between pages
 
