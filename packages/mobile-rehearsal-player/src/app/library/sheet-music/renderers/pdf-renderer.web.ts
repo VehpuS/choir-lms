@@ -1,64 +1,29 @@
 import type { PdfContainer } from './pdf-renderer';
-import { clampPdfZoom, computePdfPageLayout } from './pdf-page-layout';
+import {
+  PDF_PAGE_GAP_PX,
+  computePdfLayout,
+  type PdfLayoutResult,
+} from './pdf-layout-model';
+import { clampPdfZoom, computePdfRenderScale } from './pdf-page-layout';
+import type {
+  DomElement,
+  HostElement,
+  PageObserverConstructor,
+  PdfDocument,
+  PdfPage,
+  PdfRenderTask,
+} from './pdf-web-types';
+import { findScrollRoot } from './pdf-scroll-root';
+import { isPasswordError, loadPdfjs } from './pdfjs-loader';
 import type {
   PdfRenderer,
   PdfRenderResult,
   PdfRendering,
 } from './sheet-music-renderer';
 
-// The app's TypeScript config carries no DOM library, so the slices of the DOM
-// and of pdf.js used here are described structurally.
-type DomElement = {
-  appendChild(child: unknown): unknown;
-  innerHTML: string;
-  style: { cssText: string };
-};
-type DomCanvas = DomElement & {
-  getContext(kind: '2d'): unknown;
-  height: number;
-  width: number;
-};
-type HostElement = DomElement & {
-  clientWidth: number;
-  ownerDocument: { createElement(tag: 'canvas'): DomCanvas } & {
-    createElement(tag: 'div'): DomElement;
-  } & {
-    defaultView: {
-      getComputedStyle(element: unknown): { overflowY: string };
-    } | null;
-  };
-  parentElement: HostElement | null;
-};
-type ObserverEntry = { isIntersecting: boolean; target: unknown };
-type PageObserver = {
-  disconnect(): void;
-  observe(target: unknown): void;
-};
-type PageObserverConstructor = new (
-  callback: (entries: ObserverEntry[]) => void,
-  options: { root: unknown; rootMargin: string },
-) => PageObserver;
-
-type PdfViewport = { height: number; width: number };
-type PdfRenderTask = { cancel(): void; promise: Promise<unknown> };
-type PdfPage = {
-  getViewport(options: { scale: number }): PdfViewport;
-  render(options: {
-    canvasContext: unknown;
-    viewport: PdfViewport;
-  }): PdfRenderTask;
-};
-type PdfDocument = {
-  destroy(): Promise<unknown>;
-  getPage(pageNumber: number): Promise<PdfPage>;
-  numPages: number;
-};
-type PdfJs = {
-  getDocument(source: { data: Uint8Array }): { promise: Promise<PdfDocument> };
-};
-
 type PageEntry = {
   height: number;
+  index: number;
   isRendered: boolean;
   isVisible: boolean;
   page: PdfPage;
@@ -70,78 +35,14 @@ type PageEntry = {
 };
 
 const DEFAULT_ZOOM = 1;
-const PAGE_GAP_PX = 12;
 // Pages within one and a half screens of the viewport stay drawn, so a normal
 // scroll never shows an empty page, while a long score holds only a few canvases.
 const OBSERVER_ROOT_MARGIN = '150% 0px';
 // A zoom stream (a pinch, a held wheel) redraws once, this long after the last
 // change; until then the drawn canvases are stretched by the browser.
 const ZOOM_SETTLE_MS = 150;
-const PASSWORD_ERROR_NAME = 'PasswordException';
-const SCROLLABLE_OVERFLOW_PATTERN = /^(auto|scroll)$/;
 const COLUMN_STYLE =
   'display:flex;flex-direction:column;align-items:center;min-width:100%;width:max-content;';
-
-let pdfjsPromise: Promise<PdfJs> | undefined;
-
-// pdf.js and its worker are large, so they load on demand. The worker runs on
-// the main thread (pdf.js's "fake worker") because the real one needs a static
-// file served at a known path; spike 9.2 measured this as fast enough, and a
-// real worker is the fallback if long PDFs make the page jank.
-const loadPdfjs = (): Promise<PdfJs> => {
-  pdfjsPromise ??= (async () => {
-    const [pdfModule, workerModule] = await Promise.all([
-      import('pdfjs-dist/build/pdf'),
-      import('pdfjs-dist/build/pdf.worker'),
-    ]);
-    const worker = workerModule as {
-      default?: unknown;
-      WorkerMessageHandler?: unknown;
-    };
-    const pdf = pdfModule as { default?: PdfJs } & Partial<PdfJs>;
-
-    (globalThis as { pdfjsWorker?: unknown }).pdfjsWorker =
-      worker.WorkerMessageHandler ? worker : (worker.default ?? worker);
-
-    return (pdf.getDocument ? pdf : pdf.default) as PdfJs;
-  })().catch((error: unknown) => {
-    // A failed load (offline chunk fetch) must not be cached for the session.
-    pdfjsPromise = undefined;
-    throw error;
-  });
-
-  return pdfjsPromise;
-};
-
-/**
- * The element the pages scroll in: the host or its nearest scrolling ancestor,
- * else null (the page itself scrolls). `rootMargin` widens only the observer's
- * root, so it must be that element for the lookahead to work: inside a scroll
- * container, a page outside its bounds is clipped with no margin.
- */
-const findScrollRoot = (host: HostElement): HostElement | null => {
-  const view = host.ownerDocument.defaultView;
-
-  for (let node: HostElement | null = host; node; node = node.parentElement) {
-    if (
-      SCROLLABLE_OVERFLOW_PATTERN.test(
-        view?.getComputedStyle(node).overflowY ?? '',
-      )
-    ) {
-      return node;
-    }
-  }
-
-  return null;
-};
-
-const isPasswordError = (error: unknown): boolean => {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    (error as { name?: unknown }).name === PASSWORD_ERROR_NAME
-  );
-};
 
 const failed = (
   reason: 'invalid-pdf' | 'password-protected',
@@ -170,6 +71,7 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
 
           return {
             height: size.height,
+            index,
             isRendered: false,
             isVisible: false,
             page,
@@ -191,14 +93,18 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     let isDisposed = false;
     let settleTimer: ReturnType<typeof setTimeout> | undefined;
 
-    const layoutOf = (entry: PageEntry) =>
-      computePdfPageLayout({
-        containerWidth: host.clientWidth,
-        devicePixelRatio: pixelRatio,
-        pageHeight: entry.height,
-        pageWidth: entry.width,
+    // Every page's box comes from the layout model; only `scroll` exists so far.
+    const computeLayout = (): PdfLayoutResult =>
+      computePdfLayout({
+        container: { height: host.clientHeight, width: host.clientWidth },
+        layout: 'scroll',
+        pages: pages.map((entry) => ({
+          height: entry.height,
+          width: entry.width,
+        })),
         zoom: currentZoom,
       });
+    let layout = computeLayout();
 
     const release = (entry: PageEntry) => {
       entry.task?.cancel();
@@ -216,15 +122,26 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         return;
       }
 
-      const layout = layoutOf(entry);
+      const box = layout.boxes[entry.index];
 
-      if (entry.isRendered && entry.renderedScale === layout.renderScale) {
+      if (!box) {
+        return;
+      }
+
+      const renderScale = computePdfRenderScale({
+        cssHeight: box.height,
+        cssWidth: box.width,
+        devicePixelRatio: pixelRatio,
+        pageWidth: entry.width,
+      });
+
+      if (entry.isRendered && entry.renderedScale === renderScale) {
         return;
       }
 
       entry.task?.cancel();
 
-      const viewport = entry.page.getViewport({ scale: layout.renderScale });
+      const viewport = entry.page.getViewport({ scale: renderScale });
       const canvas = host.ownerDocument.createElement('canvas');
       const hadCanvas = entry.isRendered;
 
@@ -232,7 +149,7 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
       canvas.height = Math.floor(viewport.height);
       canvas.style.cssText = 'display:block;width:100%;height:100%;';
       entry.isRendered = true;
-      entry.renderedScale = layout.renderScale;
+      entry.renderedScale = renderScale;
 
       if (!hadCanvas) {
         entry.wrapper.appendChild(canvas);
@@ -261,10 +178,12 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     const applyLayout = (canRetry = true): void => {
       const measuredWidth = host.clientWidth;
 
-      for (const entry of pages) {
-        const layout = layoutOf(entry);
+      layout = computeLayout();
 
-        entry.wrapper.style.cssText = `width:${layout.cssWidth}px;height:${layout.cssHeight}px;margin:0 0 ${PAGE_GAP_PX}px;background:#fff;flex:none;`;
+      for (const entry of pages) {
+        const box = layout.boxes[entry.index];
+
+        entry.wrapper.style.cssText = `width:${box?.width}px;height:${box?.height}px;margin:0 0 ${PDF_PAGE_GAP_PX}px;background:#fff;flex:none;`;
       }
 
       // Laying the pages out can add a vertical scrollbar, which narrows the

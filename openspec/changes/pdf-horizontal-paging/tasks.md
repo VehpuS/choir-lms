@@ -8,7 +8,7 @@
 
 ## 2. Renderer
 
-- [ ] 2.1 Make `pdf-renderer.web.ts` apply page boxes from the layout model (still `Scroll` only), keeping today's behavior and its specs; extract helpers so the file stays near 300 lines. Verify in the browser that `Scroll` is unchanged.
+- [x] 2.1 Make `pdf-renderer.web.ts` apply page boxes from the layout model (still `Scroll` only), keeping today's behavior and its specs; extract helpers so the file stays near 300 lines. Verify in the browser that `Scroll` is unchanged.
 - [ ] 2.2 Add the `Strip` layout: pages in a row, horizontal lazy-drawing margin, rebuilt observer on a layout change, and `setLayout` keeping the page and in-page fraction in view.
 - [ ] 2.3 Add the `Pages` layout: one slot per page, snapping only at fitted zoom (turned off above fit and on again at fit, scrolling to the nearest page), and `goToPage(index)` that works at any zoom.
 - [ ] 2.4 Add page tracking: `currentPage()` and a throttled page-change callback from scroll position, plus a width-change relayout that keeps the page.

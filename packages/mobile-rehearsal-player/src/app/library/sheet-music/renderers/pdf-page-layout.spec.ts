@@ -6,6 +6,7 @@ import {
   MIN_PDF_ZOOM,
   clampPdfZoom,
   computePdfPageLayout,
+  computePdfRenderScale,
 } from './pdf-page-layout.js';
 
 const LETTER = { pageHeight: 792, pageWidth: 612 };
@@ -86,5 +87,39 @@ describe('clampPdfZoom', () => {
     assert.equal(clampPdfZoom(0.1), MIN_PDF_ZOOM);
     assert.equal(clampPdfZoom(99), MAX_PDF_ZOOM);
     assert.equal(clampPdfZoom(1.5), 1.5);
+  });
+});
+
+describe('computePdfRenderScale', () => {
+  it('matches the column layout for the same CSS size', () => {
+    const layout = computePdfPageLayout({
+      ...LETTER,
+      containerWidth: 1200,
+      devicePixelRatio: 2,
+      zoom: 4,
+    });
+
+    assert.equal(
+      computePdfRenderScale({
+        cssHeight: layout.cssHeight,
+        cssWidth: layout.cssWidth,
+        devicePixelRatio: 2,
+        pageWidth: LETTER.pageWidth,
+      }),
+      layout.renderScale,
+    );
+  });
+
+  it('scales to the CSS size of any layout, not just the width fit', () => {
+    // A page shown 306 CSS pixels wide is drawn at half scale before the ratio.
+    assert.equal(
+      computePdfRenderScale({
+        cssHeight: 396,
+        cssWidth: 306,
+        devicePixelRatio: 1,
+        pageWidth: LETTER.pageWidth,
+      }),
+      0.5,
+    );
   });
 });

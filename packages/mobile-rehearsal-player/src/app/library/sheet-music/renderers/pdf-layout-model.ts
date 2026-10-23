@@ -1,7 +1,7 @@
 import type { PdfLayout } from '@org/audio-library-models';
 import { clamp } from 'es-toolkit';
 
-import { clampPdfZoom } from './pdf-page-layout.js';
+import { clampPdfZoom } from './pdf-page-layout';
 
 export const PDF_PAGE_GAP_PX = 12;
 
