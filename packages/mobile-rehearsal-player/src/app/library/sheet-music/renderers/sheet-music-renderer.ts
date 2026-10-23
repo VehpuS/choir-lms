@@ -87,6 +87,8 @@ export type PdfRendering = {
   currentZoom(): number;
   /** Removes the pages and releases the document. */
   dispose(): void;
+  /** Scrolls to a page's start (0-based) in any layout and at any zoom. */
+  goToPage(index: number): void;
   /** Changes the layout, keeping the page at the viewport's start edge in view. */
   setLayout(layout: PdfLayout): void;
   /**

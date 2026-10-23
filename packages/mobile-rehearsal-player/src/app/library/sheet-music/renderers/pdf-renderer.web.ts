@@ -3,39 +3,27 @@ import type { PdfLayout } from '@org/audio-library-models';
 
 import {
   computePdfLayout,
+  nearestPage,
   pageAtOffset,
   scrollOffsetForPage,
   type PdfLayoutResult,
 } from './pdf-layout-model';
-import { pdfColumnStyle, pdfPageStyle } from './pdf-layout-style';
+import {
+  isPdfSnapping,
+  pdfColumnStyle,
+  pdfPageStyle,
+  pdfSnapType,
+} from './pdf-layout-style';
 import { createPageObserver } from './pdf-page-observer';
-import { clampPdfZoom, computePdfRenderScale } from './pdf-page-layout';
-import type {
-  DomElement,
-  HostElement,
-  PdfDocument,
-  PdfPage,
-  PdfRenderTask,
-} from './pdf-web-types';
+import { clampPdfZoom } from './pdf-page-layout';
+import { createPageDrawer, type PageEntry } from './pdf-page-drawer';
+import type { HostElement, PdfDocument } from './pdf-web-types';
 import { isPasswordError, openPdf } from './pdfjs-loader';
 import type {
   PdfRenderer,
   PdfRenderResult,
   PdfRendering,
 } from './sheet-music-renderer';
-
-type PageEntry = {
-  height: number;
-  index: number;
-  isRendered: boolean;
-  isVisible: boolean;
-  page: PdfPage;
-  /** The pdf.js render scale of the canvas on screen (or being drawn). */
-  renderedScale?: number;
-  task?: PdfRenderTask;
-  width: number;
-  wrapper: DomElement;
-};
 
 const DEFAULT_ZOOM = 1;
 const DEFAULT_LAYOUT: PdfLayout = 'scroll';
@@ -101,74 +89,12 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
       });
     let layout = computeLayout();
 
-    const release = (entry: PageEntry) => {
-      entry.task?.cancel();
-      entry.task = undefined;
-      entry.renderedScale = undefined;
-      entry.wrapper.innerHTML = '';
-      entry.isRendered = false;
-    };
-
-    // Draws the page at the current zoom. A page that already shows a canvas at
-    // another scale keeps it (stretched by CSS) until the new one is finished,
-    // so a zoom change never flashes a blank page.
-    const draw = async (entry: PageEntry) => {
-      if (isDisposed) {
-        return;
-      }
-
-      const box = layout.boxes[entry.index];
-
-      if (!box) {
-        return;
-      }
-
-      const renderScale = computePdfRenderScale({
-        cssHeight: box.height,
-        cssWidth: box.width,
-        devicePixelRatio: pixelRatio,
-        pageWidth: entry.width,
-      });
-
-      if (entry.isRendered && entry.renderedScale === renderScale) {
-        return;
-      }
-
-      entry.task?.cancel();
-
-      const viewport = entry.page.getViewport({ scale: renderScale });
-      const canvas = host.ownerDocument.createElement('canvas');
-      const hadCanvas = entry.isRendered;
-
-      canvas.width = Math.floor(viewport.width);
-      canvas.height = Math.floor(viewport.height);
-      canvas.style.cssText = 'display:block;width:100%;height:100%;';
-      entry.isRendered = true;
-      entry.renderedScale = renderScale;
-
-      if (!hadCanvas) {
-        entry.wrapper.appendChild(canvas);
-      }
-
-      const task = entry.page.render({
-        canvasContext: canvas.getContext('2d'),
-        viewport,
-      });
-
-      entry.task = task;
-
-      try {
-        await task.promise;
-      } catch {
-        // A cancelled render rejects: the page was released or drawn again.
-        return;
-      }
-
-      if (hadCanvas && entry.task === task) {
-        entry.wrapper.innerHTML = '';
-        entry.wrapper.appendChild(canvas);
-      }
-    };
+    const { draw, release } = createPageDrawer({
+      boxOf: (index) => layout.boxes[index],
+      host,
+      isDisposed: () => isDisposed,
+      pixelRatio,
+    });
 
     const applyLayout = (canRetry = true): void => {
       const measured = { height: host.clientHeight, width: host.clientWidth };
@@ -179,7 +105,11 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         const box = layout.boxes[entry.index];
 
         if (box) {
-          entry.wrapper.style.cssText = pdfPageStyle(currentLayout, box);
+          entry.wrapper.style.cssText = pdfPageStyle(
+            currentLayout,
+            box,
+            layout.spans[entry.index],
+          );
         }
       }
 
@@ -220,6 +150,30 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
       }
     };
 
+    const scrollToPage = (index: number, fraction = 0) => {
+      const target = scrollOffsetForPage(layout, { fraction, index });
+
+      host.scrollLeft = target.left;
+      host.scrollTop = target.top;
+    };
+
+    // Snapping is on only while a paged page is fitted. When it turns back on
+    // after a zoom, the view settles on the page the reader is mostly on.
+    let wasSnapping = false;
+    const updateSnapping = () => {
+      host.style.scrollSnapType = pdfSnapType(currentLayout, currentZoom);
+
+      const isSnapping = isPdfSnapping(currentLayout, currentZoom);
+
+      if (isSnapping && !wasSnapping) {
+        scrollToPage(
+          nearestPage(pageAtOffset(layout, host.scrollLeft), pages.length),
+        );
+      }
+
+      wasSnapping = isSnapping;
+    };
+
     const settleZoom = () => {
       settleTimer = undefined;
 
@@ -237,6 +191,7 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     host.innerHTML = '';
     host.appendChild(column);
     applyLayout();
+    updateSnapping();
     observeAll();
 
     const rendering: PdfRendering = {
@@ -247,9 +202,11 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         clearTimeout(settleTimer);
         observer?.disconnect();
         pages.forEach(release);
+        host.style.scrollSnapType = '';
         host.innerHTML = '';
         void doc.destroy();
       },
+      goToPage: (index) => scrollToPage(index),
       pageCount: pages.length,
       setLayout(next) {
         if (next === currentLayout) {
@@ -267,10 +224,15 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         column.style.cssText = pdfColumnStyle(next);
         applyLayout();
 
-        const target = scrollOffsetForPage(layout, anchor);
+        // Whole pages show the page the reader is mostly on, from its start.
+        if (next === 'pages') {
+          scrollToPage(nearestPage(anchor, pages.length));
+        } else {
+          scrollToPage(anchor.index, anchor.fraction);
+        }
 
-        host.scrollLeft = target.left;
-        host.scrollTop = target.top;
+        wasSnapping = false;
+        updateSnapping();
 
         // The look-ahead margin follows the scroll axis, so the observer is
         // rebuilt; observing again reports every page's state at the new layout.
@@ -279,8 +241,22 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         observeAll();
       },
       setZoom(next) {
+        // Sideways layouts change width with zoom, so the same pixel offset
+        // would be a different page: the page and fraction at the start edge
+        // are kept (the vertical offset is left as it is).
+        const anchor =
+          layout.axis === 'horizontal'
+            ? pageAtOffset(layout, host.scrollLeft)
+            : undefined;
+
         currentZoom = clampPdfZoom(next);
         applyLayout();
+
+        if (anchor) {
+          host.scrollLeft = scrollOffsetForPage(layout, anchor).left;
+        }
+
+        updateSnapping();
         clearTimeout(settleTimer);
         // Pages scrolled out of range are released by the observer as the
         // layout moves them; what stays is redrawn once the zoom stops changing.

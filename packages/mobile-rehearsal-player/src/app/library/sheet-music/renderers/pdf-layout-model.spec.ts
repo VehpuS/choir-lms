@@ -5,6 +5,7 @@ import {
   PDF_PAGE_GAP_PX,
   computePdfLayout,
   fitScale,
+  nearestPage,
   pageAtOffset,
   scrollOffsetForPage,
 } from './pdf-layout-model.js';
@@ -225,5 +226,17 @@ describe('scrollOffsetForPage', () => {
 
     assert.equal(found.index, target.index);
     assert.ok(Math.abs(found.fraction - target.fraction) < 1e-9);
+  });
+});
+
+describe('nearestPage', () => {
+  it('stays on the page until more than half has scrolled past', () => {
+    assert.equal(nearestPage({ fraction: 0.5, index: 4 }, 10), 4);
+    assert.equal(nearestPage({ fraction: 0.51, index: 4 }, 10), 5);
+  });
+
+  it('never goes past the last page or before the first', () => {
+    assert.equal(nearestPage({ fraction: 0.9, index: 9 }, 10), 9);
+    assert.equal(nearestPage({ fraction: 0, index: 0 }, 0), 0);
   });
 });

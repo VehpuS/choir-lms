@@ -210,3 +210,16 @@ export const scrollOffsetForPage = (
 
   return isVertical ? { left: 0, top: clamped } : { left: clamped, top: 0 };
 };
+
+/**
+ * The page a reading position belongs to when a layout shows whole pages: the
+ * next page once more than half of this one has scrolled past the edge.
+ */
+export const nearestPage = (
+  position: PdfPagePosition,
+  pageCount: number,
+): number => {
+  const index = position.fraction > 0.5 ? position.index + 1 : position.index;
+
+  return clamp(index, 0, Math.max(0, pageCount - 1));
+};

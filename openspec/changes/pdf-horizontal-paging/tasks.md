@@ -10,7 +10,7 @@
 
 - [x] 2.1 Make `pdf-renderer.web.ts` apply page boxes from the layout model (still `Scroll` only), keeping today's behavior and its specs; extract helpers so the file stays near 300 lines. Verify in the browser that `Scroll` is unchanged.
 - [x] 2.2 Add the `Strip` layout: pages in a row, horizontal lazy-drawing margin, rebuilt observer on a layout change, and `setLayout` keeping the page and in-page fraction in view.
-- [ ] 2.3 Add the `Pages` layout: one slot per page, snapping only at fitted zoom (turned off above fit and on again at fit, scrolling to the nearest page), and `goToPage(index)` that works at any zoom.
+- [x] 2.3 Add the `Pages` layout: one slot per page, snapping only at fitted zoom (turned off above fit and on again at fit, scrolling to the nearest page), and `goToPage(index)` that works at any zoom.
 - [ ] 2.4 Add page tracking: `currentPage()` and a throttled page-change callback from scroll position, plus a width-change relayout that keeps the page.
 
 ## 3. Viewer
@@ -37,3 +37,5 @@
 - [ ] 6.2 **Explore with a user before changing:** a `Go to page` entry from the page indicator, and page thumbnails.
 - [ ] 6.3 **Explore with a user before changing:** two-page spreads on a wide tablet or desktop window.
 - [ ] 6.4 Add the layouts and page paging to native when native PDF rendering exists (`native-playback-follow-ups` 1.6).
+- [ ] 6.5 **Explore with a user before changing:** the horizontal scrollbar under `Pages` and `Strip` (seen in 2.3 on the phone-width preview): keep it, hide it in `Pages` where swiping and page controls move the view, or replace it with the page indicator.
+- [ ] 6.6 **Explore with a user before changing:** page turns from `Previous page`, `Next page`, and the arrow keys currently jump instantly; try a short smooth scroll (and whether it should follow the device's reduced-motion setting).

@@ -11,7 +11,10 @@ export type DomCanvas = DomElement & {
   height: number;
   width: number;
 };
-export type HostElement = DomElement & {
+export type HostElement = Omit<DomElement, 'style'> & {
+  // The host's own style is shared with the viewer, so only named properties
+  // are set on it, never `cssText`.
+  style: { scrollSnapType: string };
   clientHeight: number;
   clientWidth: number;
   scrollLeft: number;
