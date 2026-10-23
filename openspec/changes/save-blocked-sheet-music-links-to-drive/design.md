@@ -75,6 +75,18 @@ A small pure `decodeMusicXmlBytes(bytes)` (in a new `musicxml-encoding.ts` besid
 
 `blocked` says the site does not let the app read the file and offers `Save to Drive` (and `Open in browser`); `offline` says the site could not be reached; `unsupported` says the specific reason when one is known. The strings stay in the viewer model (`viewer/model.ts`), tested as pure functions, and the native "not shown on this device yet" card is unchanged.
 
+### 8. PDF zoom today (task 6.1, measured 2026-10-23)
+
+Measured in the web preview with the real Drive PDF `Radio Video - A Capella - V5.0 - Score and Parts` (81 pages, not 20) at a phone-width pane (427 px, device pixel ratio 2) and a 1200 px emulated width, using the `-` and `+` buttons only. Nothing was changed.
+
+- **Range.** The buttons step 25% from 50% to **300%**: `VIEWER_MAX_ZOOM` is 3 (`viewer/model.ts`), while `MAX_PDF_ZOOM` in `pdf-page-layout.ts` allows 4. So 400% is not reachable today, and the plan's "50% to 400%" was wrong. The readout (`100%`, `125%`, … `300%`) matches the page width every step, and `+` stops at 300%.
+- **Gestures.** There are no pinch, wheel, or double-tap handlers on the PDF surface. `Ctrl`/`Cmd` + wheel and a touch pinch zoom the whole browser page, not the score.
+- **Scroll position.** The scroll offset follows the page height (zooming in from the middle of a long score keeps the same page under the viewport centre), but the point under the centre drifts: from 73% down page 37 at 100% to 24% down it at 300%, because the offset is scaled while half a screen of height is not. There is no focal point to hold fixed, so a pinch would jump.
+- **Sharpness.** The canvas is drawn at the screen's pixel ratio (2x) up to a 12-million-pixel cap. At phone width it stays at 2x through 300%. At 1200 px wide the cap bites from about 250%: the canvas falls to 1.02x at 250% and **0.85x at 300%**, so the page looks soft. A higher maximum would make that worse.
+- **Cost.** Only two to five pages hold a canvas at any zoom, so memory stays flat across 81 pages. Eight `+` presses 60 ms apart settled in about 0.5 s with no frame gap over 17 ms (measured with `requestAnimationFrame`, which may under-report if the pane is hidden). Every zoom change releases every canvas and redraws the visible pages from scratch, which is fast enough for button steps but would flash on a stream of pinch events.
+
+What this means for the plan: gestures are new work as described; the range to clamp to is 50% to 300% unless the owner chooses otherwise (see Open Questions); focal-point scrolling needs an explicit offset calculation; and a pinch needs a cheap preview (CSS scale of the drawn canvases) with one full redraw when the gesture ends, which is what task 6.3 describes.
+
 ## Google Cloud console setup (project owner)
 
 These steps are done once in the Google Cloud project that owns the app's OAuth clients. No new client ID, redirect URI, or `.env` value is needed.
@@ -112,3 +124,4 @@ Confirming it works (after the sign-in change ships):
 
 - Should the destination folder default to the track's own Drive folder (`sourceLocation.parentFolderId`) when it has one? It is the likeliest place the user wants the score, and the picker would open there.
 - Should a successful save offer to open the file in the viewer immediately? The plan is yes, since that is why the user started.
+- Should PDF zoom reach 400% as the plan assumed? Today the buttons stop at 300% and sharpness already falls below 1x at 300% on a 1200 px wide window. Keeping 300% for both buttons and gestures is the simpler choice; raising it also needs a decision on the canvas pixel cap (`MAX_CANVAS_PIXELS`) or drawing only the visible part of a page.
