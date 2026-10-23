@@ -259,7 +259,8 @@ export const SheetMusicSurface = ({
     live.current.score?.setZoom(zoom);
   }, [zoom]);
 
-  // PDF pages are laid out for the element's width, so a change in it (a rotated
+  // PDF pages are laid out for the element's size (a column fits its width; a
+  // strip or paged page fits its height), so a change in either (a rotated
   // phone, a resized window) lays them out again. Staves are one sideways strip
   // and do not depend on the width, but a change in height re-fits them.
   useEffect(() => {
@@ -277,12 +278,14 @@ export const SheetMusicSurface = ({
     const observer = new Observer(() => {
       clearTimeout(timer);
       timer = setTimeout(() => {
-        if (host.clientHeight !== lastHeight) {
+        const hasHeightChanged = host.clientHeight !== lastHeight;
+
+        if (hasHeightChanged) {
           lastHeight = host.clientHeight;
           reportFit(live.current, host);
         }
 
-        if (host.clientWidth === lastWidth) {
+        if (host.clientWidth === lastWidth && !hasHeightChanged) {
           return;
         }
 

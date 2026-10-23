@@ -3,10 +3,12 @@ import type { PdfLayout } from '@org/audio-library-models';
 
 import {
   computePdfLayout,
+  currentPageAt,
   nearestPage,
   pageAtOffset,
   scrollOffsetForPage,
   type PdfLayoutResult,
+  type PdfPagePosition,
 } from './pdf-layout-model';
 import {
   isPdfSnapping,
@@ -17,6 +19,7 @@ import {
 import { createPageObserver } from './pdf-page-observer';
 import { clampPdfZoom } from './pdf-page-layout';
 import { createPageDrawer, type PageEntry } from './pdf-page-drawer';
+import { createPageTracker } from './pdf-page-tracker';
 import type { HostElement, PdfDocument } from './pdf-web-types';
 import { isPasswordError, openPdf } from './pdfjs-loader';
 import type {
@@ -46,6 +49,7 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     bytes,
     container,
     layout: initialLayout = DEFAULT_LAYOUT,
+    onPageChange,
     zoom = DEFAULT_ZOOM,
   }) {
     const host = container as HostElement;
@@ -69,8 +73,6 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     }
 
     const column = host.ownerDocument.createElement('div');
-    const pixelRatio =
-      (globalThis as { devicePixelRatio?: number }).devicePixelRatio ?? 1;
     let currentLayout = initialLayout;
     let currentZoom = clampPdfZoom(zoom);
     let isDisposed = false;
@@ -93,7 +95,6 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
       boxOf: (index) => layout.boxes[index],
       host,
       isDisposed: () => isDisposed,
-      pixelRatio,
     });
 
     const applyLayout = (canRetry = true): void => {
@@ -174,6 +175,30 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
       wasSnapping = isSnapping;
     };
 
+    const mainOffset = () =>
+      layout.axis === 'vertical' ? host.scrollTop : host.scrollLeft;
+
+    // The page at the viewport's start edge, and how far through it, are kept
+    // across anything that changes the pages' sizes (zoom, a width change).
+    const readAnchor = () => pageAtOffset(layout, mainOffset());
+
+    const restoreAnchor = (anchor: PdfPagePosition) => {
+      if (isPdfSnapping(currentLayout, currentZoom)) {
+        scrollToPage(nearestPage(anchor, pages.length));
+
+        return;
+      }
+
+      // Only the scrolling axis moves; a pan across it is left alone.
+      const target = scrollOffsetForPage(layout, anchor);
+
+      if (layout.axis === 'vertical') {
+        host.scrollTop = target.top;
+      } else {
+        host.scrollLeft = target.left;
+      }
+    };
+
     const settleZoom = () => {
       settleTimer = undefined;
 
@@ -194,11 +219,25 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     updateSnapping();
     observeAll();
 
+    const currentPage = () =>
+      currentPageAt(
+        layout,
+        mainOffset(),
+        layout.axis === 'vertical' ? host.clientHeight : host.clientWidth,
+      );
+    const tracker = createPageTracker({
+      host,
+      onChange: onPageChange,
+      pageOf: currentPage,
+    });
+
     const rendering: PdfRendering = {
       currentLayout: () => currentLayout,
+      currentPage,
       currentZoom: () => currentZoom,
       dispose() {
         isDisposed = true;
+        tracker.dispose();
         clearTimeout(settleTimer);
         observer?.disconnect();
         pages.forEach(release);
@@ -206,19 +245,17 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         host.innerHTML = '';
         void doc.destroy();
       },
-      goToPage: (index) => scrollToPage(index),
+      goToPage(index) {
+        scrollToPage(index);
+        tracker.check();
+      },
       pageCount: pages.length,
       setLayout(next) {
         if (next === currentLayout) {
           return;
         }
 
-        // The page at the viewport's start edge, and how far through it, stay
-        // in view across the change.
-        const anchor = pageAtOffset(
-          layout,
-          layout.axis === 'vertical' ? host.scrollTop : host.scrollLeft,
-        );
+        const anchor = readAnchor();
 
         currentLayout = next;
         column.style.cssText = pdfColumnStyle(next);
@@ -239,24 +276,16 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         observer?.disconnect();
         observer = startObserving();
         observeAll();
+        tracker.check();
       },
       setZoom(next) {
-        // Sideways layouts change width with zoom, so the same pixel offset
-        // would be a different page: the page and fraction at the start edge
-        // are kept (the vertical offset is left as it is).
-        const anchor =
-          layout.axis === 'horizontal'
-            ? pageAtOffset(layout, host.scrollLeft)
-            : undefined;
+        const anchor = readAnchor();
 
         currentZoom = clampPdfZoom(next);
         applyLayout();
-
-        if (anchor) {
-          host.scrollLeft = scrollOffsetForPage(layout, anchor).left;
-        }
-
+        restoreAnchor(anchor);
         updateSnapping();
+        tracker.check();
         clearTimeout(settleTimer);
         // Pages scrolled out of range are released by the observer as the
         // layout moves them; what stays is redrawn once the zoom stops changing.

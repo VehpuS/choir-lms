@@ -223,3 +223,16 @@ export const nearestPage = (
 
   return clamp(index, 0, Math.max(0, pageCount - 1));
 };
+
+/**
+ * The page the reader is on: the one under the middle of the viewport along the
+ * scrolling axis. In `pages` that is the snapped page; in a column or strip it
+ * is the page that fills most of the view.
+ */
+export const currentPageAt = (
+  layout: PdfLayoutResult,
+  scrollOffset: number,
+  viewportSize: number,
+): number => {
+  return pageAtOffset(layout, scrollOffset + viewportSize / 2).index;
+};

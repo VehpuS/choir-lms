@@ -17,6 +17,8 @@ export type HostElement = Omit<DomElement, 'style'> & {
   style: { scrollSnapType: string };
   clientHeight: number;
   clientWidth: number;
+  addEventListener(type: 'scroll', listener: () => void): void;
+  removeEventListener(type: 'scroll', listener: () => void): void;
   scrollLeft: number;
   scrollTop: number;
   ownerDocument: { createElement(tag: 'canvas'): DomCanvas } & {

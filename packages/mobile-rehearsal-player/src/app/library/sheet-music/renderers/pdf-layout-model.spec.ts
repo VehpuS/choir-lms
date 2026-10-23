@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
   PDF_PAGE_GAP_PX,
   computePdfLayout,
+  currentPageAt,
   fitScale,
   nearestPage,
   pageAtOffset,
@@ -238,5 +239,35 @@ describe('nearestPage', () => {
   it('never goes past the last page or before the first', () => {
     assert.equal(nearestPage({ fraction: 0.9, index: 9 }, 10), 9);
     assert.equal(nearestPage({ fraction: 0, index: 0 }, 0), 0);
+  });
+});
+
+describe('currentPageAt', () => {
+  const column = layoutOf('scroll', [LETTER, LETTER, LETTER], 1, {
+    height: 400,
+    width: 306,
+  });
+
+  it('is the page under the middle of the viewport', () => {
+    // Pages are 396 tall with 12 between; the viewport is 400 tall.
+    assert.equal(currentPageAt(column, 0, 400), 0);
+    // A middle that falls in the gap still belongs to the page above it.
+    assert.equal(currentPageAt(column, 200, 400), 0);
+    assert.equal(currentPageAt(column, 210, 400), 1);
+    assert.equal(currentPageAt(column, 408, 400), 1);
+  });
+
+  it('is the snapped page in pages', () => {
+    const paged = layoutOf('pages', [LETTER, LETTER, LETTER], 1, {
+      height: 396,
+      width: 400,
+    });
+
+    assert.equal(currentPageAt(paged, 400, 400), 1);
+    assert.equal(currentPageAt(paged, 800, 400), 2);
+  });
+
+  it('is the first page for an empty document', () => {
+    assert.equal(currentPageAt(layoutOf('strip', []), 0, 300), 0);
   });
 });

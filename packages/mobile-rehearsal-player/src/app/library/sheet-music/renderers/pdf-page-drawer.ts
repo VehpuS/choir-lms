@@ -34,8 +34,10 @@ export const createPageDrawer = (options: {
   boxOf: (index: number) => PdfPageBox | undefined;
   host: HostElement;
   isDisposed: () => boolean;
-  pixelRatio: number;
 }): PageDrawer => {
+  const pixelRatio =
+    (globalThis as { devicePixelRatio?: number }).devicePixelRatio ?? 1;
+
   const release = (entry: PageEntry) => {
     entry.task?.cancel();
     entry.task = undefined;
@@ -57,7 +59,7 @@ export const createPageDrawer = (options: {
     const renderScale = computePdfRenderScale({
       cssHeight: box.height,
       cssWidth: box.width,
-      devicePixelRatio: options.pixelRatio,
+      devicePixelRatio: pixelRatio,
       pageWidth: entry.width,
     });
 
