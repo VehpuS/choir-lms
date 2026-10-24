@@ -17,6 +17,13 @@ type ViewerToolbarProps = {
   onGoTo: (() => void) | undefined;
   /** Turns auto-fit back on; absent for a PDF, which fits to width instead. */
   onFit: (() => void) | undefined;
+  /** Turns whole pages (`Pages` layout only); absent in any other layout. */
+  pageSteps?: {
+    canGoNext: boolean;
+    canGoPrevious: boolean;
+    onNext: () => void;
+    onPrevious: () => void;
+  };
   /** Opens the PDF `Layout` sheet; absent unless a PDF is open. */
   pdfLayout?: { layout: PdfLayout; onOpen: () => void };
   onTogglePlayback: () => void;
@@ -41,6 +48,7 @@ export const ViewerToolbar = ({
   onZoomIn,
   onZoomOut,
   orientation,
+  pageSteps,
   pdfLayout,
   zoom,
 }: ViewerToolbarProps) => {
@@ -83,6 +91,24 @@ export const ViewerToolbar = ({
       onPress={pdfLayout.onOpen}
     />
   ) : null;
+  const pageButtons = pageSteps
+    ? [
+        <SurfaceIconButton
+          accessibilityLabel="Previous page"
+          disabled={!pageSteps.canGoPrevious}
+          icon="chevron-left"
+          key="previous-page"
+          onPress={pageSteps.onPrevious}
+        />,
+        <SurfaceIconButton
+          accessibilityLabel="Next page"
+          disabled={!pageSteps.canGoNext}
+          icon="chevron-right"
+          key="next-page"
+          onPress={pageSteps.onNext}
+        />,
+      ]
+    : [];
   const goToButton = onGoTo ? (
     <SurfaceIconButton
       accessibilityLabel="Go to bar or rehearsal mark"
@@ -120,6 +146,7 @@ export const ViewerToolbar = ({
               zoomOut,
               fitButton,
               layoutButton,
+              ...pageButtons,
               goToButton,
               pianoButton,
             ]
@@ -129,6 +156,7 @@ export const ViewerToolbar = ({
               zoomIn,
               fitButton,
               layoutButton,
+              ...pageButtons,
               goToButton,
               pianoButton,
             ]}

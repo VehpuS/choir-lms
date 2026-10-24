@@ -6,6 +6,11 @@ import type {
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
+import { PageIndicator } from '../pdf-layout/page-indicator';
+import type {
+  PdfPageRequest,
+  PdfPageState,
+} from '../pdf-layout/pdf-page-controls-model';
 import { FailureCard } from './failure-card';
 import type {
   ViewerFailure,
@@ -27,9 +32,13 @@ type ViewerBodyProps = {
   onFailed: (reason: ViewerFailureReason) => void;
   onFailureAction: (action: ViewerFailureAction) => void;
   onFitZoom: (zoom: number) => void;
+  onPageChange: (state: PdfPageState) => void;
   onZoomChange: (zoom: number) => void;
   onRendered: (info: ScoreInfo | null) => void;
   outcome: ViewerOutcome | undefined;
+  /** `Page 3 of 81` for an open PDF; undefined for a score. */
+  pageIndicator: string | undefined;
+  pageRequest: PdfPageRequest | undefined;
   pdfLayout: PdfLayout;
   selection: PartSelectionRequest | undefined;
   source: SheetMusicSource | undefined;
@@ -44,9 +53,12 @@ export const ViewerBody = ({
   onFailed,
   onFailureAction,
   onFitZoom,
+  onPageChange,
   onZoomChange,
   onRendered,
   outcome,
+  pageIndicator,
+  pageRequest,
   pdfLayout,
   selection,
   source,
@@ -78,12 +90,17 @@ export const ViewerBody = ({
           key={`${source.id}:${source.format}`}
           onFailed={onFailed}
           onFitZoom={onFitZoom}
+          onPageChange={onPageChange}
           onZoomChange={onZoomChange}
           onRendered={onRendered}
+          pageRequest={pageRequest}
           pdfLayout={pdfLayout}
           selection={selection}
           zoom={zoom}
         />
+      ) : null}
+      {pageIndicator && outcome?.kind === 'ready' ? (
+        <PageIndicator text={pageIndicator} />
       ) : null}
       {outcome?.kind !== 'ready' ? (
         <View pointerEvents="none" style={styles.loading}>

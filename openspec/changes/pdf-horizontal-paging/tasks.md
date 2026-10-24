@@ -16,7 +16,7 @@
 ## 3. Viewer
 
 - [x] 3.1 Add the `Layout` toolbar button and its options sheet (`Scroll`, `Pages`, `Strip`, current one marked), the `Only for this file` switch, the `This file uses its own layout` note, and `Use the device layout`, wired to the device preference and the source's layout (design Decision 5). Confirm the icon glyphs with the owner first (design Open Questions). A pure model for what the sheet shows and where a choice is saved, with specs for each case (no override, with an override, switch on and off), and a component spec for the sheet's choices.
-- [ ] 3.2 Add the page indicator and, in `Pages`, `Previous page` and `Next page` controls disabled at the ends; a pure model for the indicator text and the disabled states with a spec.
+- [x] 3.2 Add the page indicator and, in `Pages`, `Previous page` and `Next page` controls disabled at the ends; a pure model for the indicator text and the disabled states with a spec.
 - [ ] 3.3 Add keyboard paging (arrows and `Page Up`/`Page Down`) and the vertical-wheel-to-sideways mapping for `Strip` and `Pages` at fitted zoom, as thin `.web` listeners over pure functions with specs.
 
 ## 4. Zoom in every layout
@@ -39,3 +39,4 @@
 - [ ] 6.4 Add the layouts and page paging to native when native PDF rendering exists (`native-playback-follow-ups` 1.6).
 - [ ] 6.5 **Explore with a user before changing:** the horizontal scrollbar under `Pages` and `Strip` (seen in 2.3 on the phone-width preview): keep it, hide it in `Pages` where swiping and page controls move the view, or replace it with the page indicator.
 - [ ] 6.6 **Explore with a user before changing:** page turns from `Previous page`, `Next page`, and the arrow keys currently jump instantly; try a short smooth scroll (and whether it should follow the device's reduced-motion setting).
+- [ ] 6.7 **Explore with a user before changing:** in `Pages` on a phone the toolbar (zoom, `Layout`, `Previous page`, `Next page`, piano, play) no longer fits one row and the piano button wraps to a second row, which shortens the page area. Try a more compact arrangement (for example, page controls beside the page indicator, or fewer controls in the main row) and how the compact landscape side rail should hold them.

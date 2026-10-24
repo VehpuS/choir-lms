@@ -61,7 +61,9 @@ export const SheetMusicSurface = ({
   onFailed,
   onFitZoom,
   onRendered,
+  onPageChange,
   onZoomChange,
+  pageRequest,
   pdfLayout = DEFAULT_PDF_LAYOUT,
   selection,
   zoom,
@@ -72,6 +74,7 @@ export const SheetMusicSurface = ({
   const latest = useRef({
     onFailed,
     onFitZoom,
+    onPageChange,
     onRendered,
     onZoomChange,
     pdfLayout,
@@ -82,6 +85,7 @@ export const SheetMusicSurface = ({
   latest.current = {
     onFailed,
     onFitZoom,
+    onPageChange,
     onRendered,
     onZoomChange,
     pdfLayout,
@@ -118,6 +122,11 @@ export const SheetMusicSurface = ({
           bytes: document.bytes,
           container: host,
           layout: latest.current.pdfLayout,
+          onPageChange: (page) =>
+            latest.current.onPageChange?.({
+              page,
+              pageCount: next.pdf?.pageCount ?? 0,
+            }),
           zoom: latest.current.zoom,
         });
 
@@ -131,6 +140,12 @@ export const SheetMusicSurface = ({
         if (isCancelled) {
           return undefined;
         }
+
+        // The viewer shows the page from the start, before any scrolling.
+        latest.current.onPageChange?.({
+          page: result.rendering.currentPage(),
+          pageCount: result.rendering.pageCount,
+        });
 
         next.detachGestures = attachPdfZoomGestures({
           host: host as unknown as GestureHost,
@@ -249,6 +264,12 @@ export const SheetMusicSurface = ({
   useEffect(() => {
     live.current.pdf?.setLayout(pdfLayout);
   }, [pdfLayout]);
+
+  useEffect(() => {
+    if (pageRequest) {
+      live.current.pdf?.goToPage(pageRequest.page);
+    }
+  }, [pageRequest]);
 
   useEffect(() => {
     // A pinch or wheel has already laid the pages out at this zoom.
