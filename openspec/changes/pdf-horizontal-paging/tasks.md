@@ -15,7 +15,7 @@
 
 ## 3. Viewer
 
-- [ ] 3.1 Add the `Layout` toolbar button and its options sheet (`Scroll`, `Pages`, `Strip`, current one marked), the `Only for this file` switch, the `This file uses its own layout` note, and `Use the device layout`, wired to the device preference and the source's layout (design Decision 5). Confirm the icon glyphs with the owner first (design Open Questions). A pure model for what the sheet shows and where a choice is saved, with specs for each case (no override, with an override, switch on and off), and a component spec for the sheet's choices.
+- [x] 3.1 Add the `Layout` toolbar button and its options sheet (`Scroll`, `Pages`, `Strip`, current one marked), the `Only for this file` switch, the `This file uses its own layout` note, and `Use the device layout`, wired to the device preference and the source's layout (design Decision 5). Confirm the icon glyphs with the owner first (design Open Questions). A pure model for what the sheet shows and where a choice is saved, with specs for each case (no override, with an override, switch on and off), and a component spec for the sheet's choices.
 - [ ] 3.2 Add the page indicator and, in `Pages`, `Previous page` and `Next page` controls disabled at the ends; a pure model for the indicator text and the disabled states with a spec.
 - [ ] 3.3 Add keyboard paging (arrows and `Page Up`/`Page Down`) and the vertical-wheel-to-sideways mapping for `Strip` and `Pages` at fitted zoom, as thin `.web` listeners over pure functions with specs.
 

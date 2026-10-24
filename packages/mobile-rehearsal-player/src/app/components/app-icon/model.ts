@@ -22,6 +22,7 @@ export type PhosphorGlyph =
   | 'Circle'
   | 'ClockCountdown'
   | 'ClockCounterClockwise'
+  | 'Columns'
   | 'Copy'
   | 'DotsSixVertical'
   | 'DotsThreeVertical'
@@ -52,6 +53,7 @@ export type PhosphorGlyph =
   | 'Queue'
   | 'Repeat'
   | 'RepeatOnce'
+  | 'Rows'
   | 'Shuffle'
   | 'SkipBack'
   | 'SkipForward'
@@ -133,6 +135,10 @@ export const APP_ICON_GLYPHS = {
 
   // Entities and navigation.
   'file-outline': regular('File'),
+  // The three PDF layouts: a column of pages, one page, pages side by side.
+  'pdf-layout-scroll': regular('Rows'),
+  'pdf-layout-pages': regular('File'),
+  'pdf-layout-strip': regular('Columns'),
   'folder-outline': regular('Folder'),
   'folder-plus': filled('FolderPlus'),
   'folder-plus-outline': regular('FolderPlus'),

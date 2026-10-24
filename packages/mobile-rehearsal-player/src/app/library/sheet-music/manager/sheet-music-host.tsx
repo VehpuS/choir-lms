@@ -245,6 +245,9 @@ export const SheetMusicHost = ({
           onChangePartSelection={(sourceId, partSelection) => {
             void sheetMusic.updateSheetMusic(item, sourceId, { partSelection });
           }}
+          onChangePdfLayout={(sourceId, pdfLayout) => {
+            void sheetMusic.updateSheetMusic(item, sourceId, { pdfLayout });
+          }}
           onClose={() => {
             setViewerSourceId(null);
           }}

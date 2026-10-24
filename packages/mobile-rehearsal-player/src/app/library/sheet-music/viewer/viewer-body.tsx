@@ -1,5 +1,6 @@
 import type {
   PartSelectionRequest,
+  PdfLayout,
   SheetMusicSource,
 } from '@org/audio-library-models';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
@@ -29,6 +30,7 @@ type ViewerBodyProps = {
   onZoomChange: (zoom: number) => void;
   onRendered: (info: ScoreInfo | null) => void;
   outcome: ViewerOutcome | undefined;
+  pdfLayout: PdfLayout;
   selection: PartSelectionRequest | undefined;
   source: SheetMusicSource | undefined;
   state: SheetMusicDocumentState;
@@ -45,6 +47,7 @@ export const ViewerBody = ({
   onZoomChange,
   onRendered,
   outcome,
+  pdfLayout,
   selection,
   source,
   state,
@@ -77,6 +80,7 @@ export const ViewerBody = ({
           onFitZoom={onFitZoom}
           onZoomChange={onZoomChange}
           onRendered={onRendered}
+          pdfLayout={pdfLayout}
           selection={selection}
           zoom={zoom}
         />

@@ -1,5 +1,6 @@
 import {
   resolvePartSelection,
+  type PdfLayout,
   type SheetMusicPartSelection,
   type SheetMusicSource,
 } from '@org/audio-library-models';
@@ -15,7 +16,6 @@ import { useGoTo } from './go-to/use-go-to';
 import { isCompactViewerHeight } from './layout-model';
 import {
   applyPartChip,
-  describeViewerFailure,
   filterViewableSources,
   hasPartChoice,
   maxViewerZoom,
@@ -29,9 +29,11 @@ import {
   updateMyPartsPreferences,
   useMyPartsPreferences,
 } from '../my-parts/my-parts-store';
+import { usePdfLayoutControl } from '../pdf-layout/use-pdf-layout-control';
 import { SourceChips } from './source-chips';
 import { useSheetMusicDocument } from './use-sheet-music-document';
 import { ViewerBody, type ViewerOutcome } from './viewer-body';
+import { resolveViewerFailure } from './viewer-failure';
 import { useViewerZoom } from './use-viewer-zoom';
 import { ViewerLayout } from './viewer-layout';
 import { ViewerToolbar } from './viewer-toolbar';
@@ -51,6 +53,7 @@ type SheetMusicViewerProps = {
     sourceId: string,
     selection: SheetMusicPartSelection,
   ) => void;
+  onChangePdfLayout: (sourceId: string, layout: PdfLayout | null) => void;
   onClose: () => void;
   onOpenExternal: (url: string) => void;
   onReconnectDrive: () => void;
@@ -77,6 +80,7 @@ export const SheetMusicViewer = ({
   isPlaybackToggleDisabled,
   isPlaying,
   onChangePartSelection,
+  onChangePdfLayout,
   onClose,
   onOpenExternal,
   onReconnectDrive,
@@ -129,25 +133,19 @@ export const SheetMusicViewer = ({
     state.status === 'loaded' && drawn?.document === state.document
       ? drawn.outcome
       : undefined;
-  const failureReason =
-    state.status === 'failed'
-      ? state.reason
-      : outcome?.kind === 'failed'
-        ? outcome.reason
-        : undefined;
-  const described =
-    source && failureReason
-      ? describeViewerFailure(failureReason, source)
-      : undefined;
-  // Without a save flow (native) the card does not offer one.
-  const failure = described && {
-    ...described,
-    actions: described.actions.filter(
-      (action) => action !== 'save-to-drive' || onSaveToDrive,
-    ),
-  };
+  const failure = resolveViewerFailure({
+    canSaveToDrive: onSaveToDrive !== undefined,
+    outcome,
+    source,
+    state,
+  });
   const info = outcome?.kind === 'ready' ? outcome.info : null;
   const isPdf = state.status === 'loaded' && state.document.format === 'pdf';
+  const pdfLayout = usePdfLayoutControl({
+    isPdf,
+    onSaveSourceLayout: onChangePdfLayout,
+    source,
+  });
   const viewerZoom = useViewerZoom(info !== null, maxViewerZoom(isPdf));
   const goTo = useGoTo();
   const canGoTo = info !== null && info.bars.barCount > 0;
@@ -230,6 +228,7 @@ export const SheetMusicViewer = ({
         })
       }
       outcome={outcome}
+      pdfLayout={pdfLayout.layout}
       selection={selection}
       source={source}
       state={state}
@@ -257,6 +256,7 @@ export const SheetMusicViewer = ({
       onZoomIn={viewerZoom.zoomIn}
       onZoomOut={viewerZoom.zoomOut}
       orientation={orientation}
+      pdfLayout={pdfLayout.button}
       zoom={viewerZoom.zoom}
     />
   );
@@ -274,6 +274,7 @@ export const SheetMusicViewer = ({
         <>
           {body}
           {drawer}
+          {pdfLayout.sheet}
         </>
       }
       closeButton={closeButton}

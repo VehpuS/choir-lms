@@ -1,8 +1,10 @@
+import type { PdfLayout } from '@org/audio-library-models';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { usePianoToggle } from '../../piano/piano-toggle';
+import { PDF_LAYOUT_ICONS } from '../pdf-layout/pdf-layout-sheet-model';
 import { appTheme } from '../../../utils/theme';
 import { VIEWER_MAX_ZOOM, VIEWER_MIN_ZOOM, formatViewerZoom } from './model';
 
@@ -15,6 +17,8 @@ type ViewerToolbarProps = {
   onGoTo: (() => void) | undefined;
   /** Turns auto-fit back on; absent for a PDF, which fits to width instead. */
   onFit: (() => void) | undefined;
+  /** Opens the PDF `Layout` sheet; absent unless a PDF is open. */
+  pdfLayout?: { layout: PdfLayout; onOpen: () => void };
   onTogglePlayback: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
@@ -37,6 +41,7 @@ export const ViewerToolbar = ({
   onZoomIn,
   onZoomOut,
   orientation,
+  pdfLayout,
   zoom,
 }: ViewerToolbarProps) => {
   const isColumn = orientation === 'column';
@@ -67,6 +72,15 @@ export const ViewerToolbar = ({
       key="fit"
       onPress={onFit}
       selected={isFitted}
+    />
+  ) : null;
+  // The glyph shows the layout in use, so the button also says where you are.
+  const layoutButton = pdfLayout ? (
+    <SurfaceIconButton
+      accessibilityLabel="Layout"
+      icon={PDF_LAYOUT_ICONS[pdfLayout.layout]}
+      key="layout"
+      onPress={pdfLayout.onOpen}
     />
   ) : null;
   const goToButton = onGoTo ? (
@@ -100,8 +114,24 @@ export const ViewerToolbar = ({
     <View style={[styles.bar, isColumn ? styles.barColumn : undefined]}>
       <View style={[styles.zoom, isColumn ? styles.zoomColumn : undefined]}>
         {isColumn
-          ? [zoomIn, zoomValue, zoomOut, fitButton, goToButton, pianoButton]
-          : [zoomOut, zoomValue, zoomIn, fitButton, goToButton, pianoButton]}
+          ? [
+              zoomIn,
+              zoomValue,
+              zoomOut,
+              fitButton,
+              layoutButton,
+              goToButton,
+              pianoButton,
+            ]
+          : [
+              zoomOut,
+              zoomValue,
+              zoomIn,
+              fitButton,
+              layoutButton,
+              goToButton,
+              pianoButton,
+            ]}
       </View>
       <CompactPlaybackAction
         accessibilityLabel={isPlaying ? 'Pause' : 'Play'}

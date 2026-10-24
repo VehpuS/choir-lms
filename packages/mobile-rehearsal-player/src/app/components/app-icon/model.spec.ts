@@ -51,6 +51,15 @@ describe('app icon glyph map', () => {
     }
   });
 
+  it('gives each PDF layout its own glyph', () => {
+    const glyphs = (
+      ['pdf-layout-scroll', 'pdf-layout-pages', 'pdf-layout-strip'] as const
+    ).map((name) => resolveAppIconGlyph(name).glyph);
+
+    assert.deepEqual(glyphs, ['Rows', 'File', 'Columns']);
+    assert.equal(new Set(glyphs).size, glyphs.length);
+  });
+
   it('reserves the crossing-arrows shuffle glyph for shuffle alone', () => {
     assert.deepEqual(namesUsingGlyph('Shuffle'), ['shuffle']);
   });

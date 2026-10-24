@@ -19,6 +19,7 @@ import { CheckCircleIcon } from 'phosphor-react-native/src/icons/CheckCircle';
 import { CircleIcon } from 'phosphor-react-native/src/icons/Circle';
 import { ClockCountdownIcon } from 'phosphor-react-native/src/icons/ClockCountdown';
 import { ClockCounterClockwiseIcon } from 'phosphor-react-native/src/icons/ClockCounterClockwise';
+import { ColumnsIcon } from 'phosphor-react-native/src/icons/Columns';
 import { CopyIcon } from 'phosphor-react-native/src/icons/Copy';
 import { DotsSixVerticalIcon } from 'phosphor-react-native/src/icons/DotsSixVertical';
 import { DotsThreeVerticalIcon } from 'phosphor-react-native/src/icons/DotsThreeVertical';
@@ -49,6 +50,7 @@ import { PlusIcon } from 'phosphor-react-native/src/icons/Plus';
 import { QueueIcon } from 'phosphor-react-native/src/icons/Queue';
 import { RepeatIcon } from 'phosphor-react-native/src/icons/Repeat';
 import { RepeatOnceIcon } from 'phosphor-react-native/src/icons/RepeatOnce';
+import { RowsIcon } from 'phosphor-react-native/src/icons/Rows';
 import { ShuffleIcon } from 'phosphor-react-native/src/icons/Shuffle';
 import { SkipBackIcon } from 'phosphor-react-native/src/icons/SkipBack';
 import { SkipForwardIcon } from 'phosphor-react-native/src/icons/SkipForward';
@@ -93,6 +95,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   Circle: CircleIcon,
   ClockCountdown: ClockCountdownIcon,
   ClockCounterClockwise: ClockCounterClockwiseIcon,
+  Columns: ColumnsIcon,
   Copy: CopyIcon,
   DotsSixVertical: DotsSixVerticalIcon,
   DotsThreeVertical: DotsThreeVerticalIcon,
@@ -123,6 +126,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   Queue: QueueIcon,
   Repeat: RepeatIcon,
   RepeatOnce: RepeatOnceIcon,
+  Rows: RowsIcon,
   Shuffle: ShuffleIcon,
   SkipBack: SkipBackIcon,
   SkipForward: SkipForwardIcon,
