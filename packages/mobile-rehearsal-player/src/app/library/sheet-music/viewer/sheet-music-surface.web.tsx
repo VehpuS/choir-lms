@@ -12,6 +12,7 @@ import type {
   PdfRendering,
   ScoreRendering,
 } from '../renderers/sheet-music-renderer';
+import { attachPdfPaging, type PagingHost } from './attach-pdf-paging.web';
 import {
   attachPdfZoomGestures,
   type GestureHost,
@@ -44,6 +45,8 @@ type ResizeObserverConstructor = new (
 type Live = {
   /** Removes the PDF's pinch, wheel, and double-tap handling. */
   detachGestures?: () => void;
+  /** Removes the PDF's keyboard and wheel paging. */
+  detachPaging?: () => void;
   pdf?: PdfRendering;
   score?: ScoreRendering;
 };
@@ -153,6 +156,10 @@ export const SheetMusicSurface = ({
           onZoomChange: (changed) => latest.current.onZoomChange(changed),
           pdf: result.rendering,
         });
+        next.detachPaging = attachPdfPaging({
+          host: host as unknown as PagingHost,
+          pdf: result.rendering,
+        });
 
         return latest.current.onRendered(null);
       }
@@ -203,6 +210,7 @@ export const SheetMusicSurface = ({
       // A drawing that finished after the effect was cleaned up is released here.
       if (isCancelled) {
         next.detachGestures?.();
+        next.detachPaging?.();
         next.pdf?.dispose();
         next.score?.dispose();
       }
@@ -211,6 +219,7 @@ export const SheetMusicSurface = ({
     return () => {
       isCancelled = true;
       next.detachGestures?.();
+      next.detachPaging?.();
       next.pdf?.dispose();
       next.score?.dispose();
       live.current = {};
