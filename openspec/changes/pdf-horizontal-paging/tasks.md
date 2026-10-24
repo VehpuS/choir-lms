@@ -21,7 +21,7 @@
 
 ## 4. Zoom in every layout
 
-- [ ] 4.1 Define zoom per layout (100% fits the width in `Scroll`, fits the viewer in `Pages` and `Strip`) and check the `Fit` double-tap toggle, the zoom controls, and the 50% to 400% range in each; spec the fit math.
+- [x] 4.1 Define zoom per layout (100% fits the width in `Scroll`, fits the viewer in `Pages` and `Strip`) and check the `Fit` double-tap toggle, the zoom controls, and the 50% to 400% range in each; spec the fit math.
 - [ ] 4.2 Check pinch, wheel zoom, and focal-point scrolling in `Strip` and `Pages` and fix any axis that does not hold the point under the fingers.
 
 ## 5. Verification and wrap-up
@@ -42,3 +42,4 @@
 - [ ] 6.7 **Explore with a user before changing:** in `Pages` on a phone the toolbar (zoom, `Layout`, `Previous page`, `Next page`, piano, play) no longer fits one row and the piano button wraps to a second row, which shortens the page area. Try a more compact arrangement (for example, page controls beside the page indicator, or fewer controls in the main row) and how the compact landscape side rail should hold them.
 - [ ] 6.8 **Explore with a user before changing:** keys work only while the page area has keyboard focus (design Decision 6 puts the handler on the host). After using a toolbar button or the `Layout` sheet, focus is elsewhere and the arrow keys do nothing until the page is clicked. Options: return focus to the page when a sheet closes or a toolbar button is used, or listen at the viewer level while no text field is focused.
 - [ ] 6.9 **Explore with a user before changing:** in `Pages` the wheel turns one page per flick (design Decision 7 says the vertical delta is applied sideways, which a snapping layout would undo); check the feel of the threshold and pause with a mouse wheel and a trackpad.
+- [ ] 6.10 **Explore with a user before changing:** the zoom is one number shared by every layout, so changing layout keeps it (for example, zoomed to 150% in `Scroll` and then switching to `Pages` shows a zoomed page with no snapping until the zoom returns to 100%). Decide whether a layout change should return to the new layout's fit, or keep the zoom as it is.
