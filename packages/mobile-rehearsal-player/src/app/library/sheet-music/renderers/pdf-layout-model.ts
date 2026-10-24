@@ -236,3 +236,60 @@ export const currentPageAt = (
 ): number => {
   return pageAtOffset(layout, scrollOffset + viewportSize / 2).index;
 };
+
+/** A point on a page: which page, and how far across and down it (0 to 1). */
+export type PdfPagePoint = { fx: number; fy: number; index: number };
+
+/** The page under a point of the scrolled content, or undefined in a gap or margin. */
+export const pointOnPage = (
+  layout: PdfLayoutResult,
+  x: number,
+  y: number,
+): PdfPagePoint | undefined => {
+  const index = layout.boxes.findIndex(
+    (box) =>
+      x >= box.left &&
+      x < box.left + box.width &&
+      y >= box.top &&
+      y < box.top + box.height,
+  );
+  const box = layout.boxes[index];
+
+  return box
+    ? { fx: (x - box.left) / box.width, fy: (y - box.top) / box.height, index }
+    : undefined;
+};
+
+const clampScroll = (offset: number, content: number, view: number): number =>
+  clamp(offset, 0, Math.max(0, content - view));
+
+/**
+ * The scroll offsets that put a page point back under a spot in the viewport
+ * (`focal`, measured from the viewport's top left). Used after a zoom changes
+ * every page's size: unlike scaling the offsets by the content's size ratio, it
+ * is exact even though the gaps between pages do not scale with the zoom.
+ */
+export const scrollOffsetForPoint = (
+  layout: PdfLayoutResult,
+  point: PdfPagePoint,
+  focal: { x: number; y: number },
+): PdfScrollOffset => {
+  const box = layout.boxes[point.index];
+
+  if (!box) {
+    return { left: 0, top: 0 };
+  }
+
+  return {
+    left: clampScroll(
+      box.left + point.fx * box.width - focal.x,
+      layout.contentWidth,
+      layout.container.width,
+    ),
+    top: clampScroll(
+      box.top + point.fy * box.height - focal.y,
+      layout.contentHeight,
+      layout.container.height,
+    ),
+  };
+};

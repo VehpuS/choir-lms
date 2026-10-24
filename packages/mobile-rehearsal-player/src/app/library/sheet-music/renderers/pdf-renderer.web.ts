@@ -6,7 +6,9 @@ import {
   currentPageAt,
   nearestPage,
   pageAtOffset,
+  pointOnPage,
   scrollOffsetForPage,
+  scrollOffsetForPoint,
   type PdfLayoutResult,
   type PdfPagePosition,
 } from './pdf-layout-model';
@@ -231,6 +233,22 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
       pageOf: currentPage,
     });
 
+    // `hold` places the scroll once the pages have their new sizes; without
+    // one, the page at the viewport's start edge stays where it was.
+    const changeZoom = (next: number, hold?: () => void) => {
+      const anchor = readAnchor();
+
+      currentZoom = clampPdfZoom(next);
+      applyLayout();
+      (hold ?? (() => restoreAnchor(anchor)))();
+      updateSnapping();
+      tracker.check();
+      clearTimeout(settleTimer);
+      // Pages scrolled out of range are released by the observer as the layout
+      // moves them; what stays is redrawn once the zoom stops changing.
+      settleTimer = setTimeout(settleZoom, ZOOM_SETTLE_MS);
+    };
+
     const rendering: PdfRendering = {
       currentLayout: () => currentLayout,
       currentPage,
@@ -278,18 +296,26 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         observeAll();
         tracker.check();
       },
-      setZoom(next) {
-        const anchor = readAnchor();
+      setZoom: (next) => changeZoom(next),
+      setZoomAround(next, focal) {
+        // The page point under the fingers; none when they are over a gap or
+        // a margin, where keeping the page in view is all that can be done.
+        const point = pointOnPage(
+          layout,
+          host.scrollLeft + focal.x,
+          host.scrollTop + focal.y,
+        );
 
-        currentZoom = clampPdfZoom(next);
-        applyLayout();
-        restoreAnchor(anchor);
-        updateSnapping();
-        tracker.check();
-        clearTimeout(settleTimer);
-        // Pages scrolled out of range are released by the observer as the
-        // layout moves them; what stays is redrawn once the zoom stops changing.
-        settleTimer = setTimeout(settleZoom, ZOOM_SETTLE_MS);
+        changeZoom(
+          next,
+          point &&
+            (() => {
+              const target = scrollOffsetForPoint(layout, point, focal);
+
+              host.scrollLeft = target.left;
+              host.scrollTop = target.top;
+            }),
+        );
       },
     };
 

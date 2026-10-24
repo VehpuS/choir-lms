@@ -22,7 +22,7 @@
 ## 4. Zoom in every layout
 
 - [x] 4.1 Define zoom per layout (100% fits the width in `Scroll`, fits the viewer in `Pages` and `Strip`) and check the `Fit` double-tap toggle, the zoom controls, and the 50% to 400% range in each; spec the fit math.
-- [ ] 4.2 Check pinch, wheel zoom, and focal-point scrolling in `Strip` and `Pages` and fix any axis that does not hold the point under the fingers.
+- [x] 4.2 Check pinch, wheel zoom, and focal-point scrolling in `Strip` and `Pages` and fix any axis that does not hold the point under the fingers.
 
 ## 5. Verification and wrap-up
 

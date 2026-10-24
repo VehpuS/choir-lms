@@ -10,9 +10,13 @@ type Handler = (event: Record<string, unknown>) => void;
 
 // A stand-in for the scrolling element: it records listeners and sizes the
 // content in proportion to the zoom, as drawn pages do.
-const setUp = (startZoom = 1) => {
+const setUp = (startZoom = 1, options: { around?: boolean } = {}) => {
   const handlers = new Map<string, Handler>();
-  const state = { zoom: startZoom, zooms: [] as number[] };
+  const state = {
+    around: [] as Array<{ focal: { x: number; y: number }; zoom: number }>,
+    zoom: startZoom,
+    zooms: [] as number[],
+  };
   const host = {
     addEventListener: (type: string, listener: unknown) => {
       handlers.set(type, listener as Handler);
@@ -45,6 +49,15 @@ const setUp = (startZoom = 1) => {
         state.zoom = zoom;
         state.zooms.push(zoom);
       },
+      // A target that places the scroll itself (the real renderer does).
+      ...(options.around
+        ? {
+            setZoomAround: (zoom: number, focal: { x: number; y: number }) => {
+              state.zoom = zoom;
+              state.around.push({ focal, zoom });
+            },
+          }
+        : {}),
     },
     // Frames run when the spec says so, so batching can be observed.
     requestFrame: (callback) => frames.push(callback),
@@ -226,6 +239,23 @@ describe('attachPdfZoomGestures', () => {
     flush();
 
     assert.equal(state.zoom, 4);
+  });
+
+  it('leaves the scroll to a target that keeps the focal point itself', () => {
+    const { changes, fire, flush, host, state } = setUp(1, { around: true });
+
+    fire('wheel', { ctrlKey: true, deltaY: -30, clientX: 110, clientY: 70 });
+    flush();
+
+    // Focal point is relative to the host's top left (10, 20).
+    assert.deepEqual(
+      state.around.map(({ focal }) => focal),
+      [{ x: 100, y: 50 }],
+    );
+    assert.equal(state.zooms.length, 0);
+    assert.equal(host.scrollLeft, 0);
+    assert.equal(host.scrollTop, 400);
+    assert.equal(changes.length, 1);
   });
 
   it('removes its listeners and restores touch action when detached', () => {

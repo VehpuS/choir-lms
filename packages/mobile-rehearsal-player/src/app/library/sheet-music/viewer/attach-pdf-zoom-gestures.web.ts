@@ -51,6 +51,12 @@ export type GestureHost = {
 export type PdfZoomTarget = {
   currentZoom(): number;
   setZoom(zoom: number): void;
+  /**
+   * Zooms keeping the page point under `focal` in place. A target that has it
+   * places the scroll itself; one without it is scrolled here by the ratio of
+   * its content's measured sizes.
+   */
+  setZoomAround?(zoom: number, focal: Point): void;
 };
 
 export type PdfZoomGestureOptions = {
@@ -131,20 +137,25 @@ export const attachPdfZoomGestures = ({
       return;
     }
 
-    const before = { height: host.scrollHeight, width: host.scrollWidth };
-    const scroll = { left: host.scrollLeft, top: host.scrollTop };
+    if (pdf.setZoomAround) {
+      pdf.setZoomAround(next, focal);
+    } else {
+      const before = { height: host.scrollHeight, width: host.scrollWidth };
+      const scroll = { left: host.scrollLeft, top: host.scrollTop };
 
-    pdf.setZoom(next);
+      pdf.setZoom(next);
 
-    const offset = focalScrollOffset({
-      after: { height: host.scrollHeight, width: host.scrollWidth },
-      before,
-      focal,
-      scroll,
-    });
+      const offset = focalScrollOffset({
+        after: { height: host.scrollHeight, width: host.scrollWidth },
+        before,
+        focal,
+        scroll,
+      });
 
-    host.scrollLeft = offset.left;
-    host.scrollTop = offset.top;
+      host.scrollLeft = offset.left;
+      host.scrollTop = offset.top;
+    }
+
     onZoomChange(next);
   };
 

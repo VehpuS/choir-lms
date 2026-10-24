@@ -98,6 +98,11 @@ export type PdfRendering = {
    * Call it with the current zoom after the container's width changes.
    */
   setZoom(zoom: number): void;
+  /**
+   * Sets the zoom keeping the page point under `focal` (a spot in the viewport,
+   * measured from its top left) under it, for a pinch, wheel zoom, or double tap.
+   */
+  setZoomAround(zoom: number, focal: { x: number; y: number }): void;
 };
 
 export type PdfRenderResult =
