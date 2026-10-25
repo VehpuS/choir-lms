@@ -26,6 +26,11 @@ export type ScoreInfo = {
 
 export type SheetMusicSurfaceProps = {
   document: LoadedSheetMusic;
+  /**
+   * The PDF page (0-based) to open on. The viewer draws the surface again when
+   * the window changes shape (a rotated phone), and this keeps the reader's place.
+   */
+  initialPage?: number;
   /** The latest request to scroll to a bar; each new one scrolls again. */
   jump: GoToJump | undefined;
   onFailed: (reason: ViewerFailureReason) => void;

@@ -39,6 +39,8 @@ export const usePdfPageControl = (options: {
   return {
     controls: buildPageControls(state, options.layout),
     onPageChange,
+    /** The page last reported for this source (0-based), for a surface that starts again. */
+    page: state?.page,
     next: () => state && goTo(stepPage(state, 1)),
     previous: () => state && goTo(stepPage(state, -1)),
     request,

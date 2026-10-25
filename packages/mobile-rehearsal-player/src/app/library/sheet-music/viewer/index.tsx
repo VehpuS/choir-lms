@@ -224,6 +224,7 @@ export const SheetMusicViewer = ({
         })
       }
       onFailureAction={handleFailureAction}
+      initialPage={pdfPages.page}
       onFitZoom={viewerZoom.onFitZoom}
       onPageChange={pdfPages.onPageChange}
       onZoomChange={viewerZoom.setZoom}

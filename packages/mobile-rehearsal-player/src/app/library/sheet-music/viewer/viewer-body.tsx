@@ -28,6 +28,8 @@ export type ViewerOutcome =
 
 type ViewerBodyProps = {
   failure: ViewerFailure | undefined;
+  /** The PDF page (0-based) to open on, so a surface drawn again keeps the reader's place. */
+  initialPage: number | undefined;
   jump: GoToJump | undefined;
   onFailed: (reason: ViewerFailureReason) => void;
   onFailureAction: (action: ViewerFailureAction) => void;
@@ -49,6 +51,7 @@ type ViewerBodyProps = {
 /** The area under the controls: the score, a spinner while it loads, or why it did not open. */
 export const ViewerBody = ({
   failure,
+  initialPage,
   jump,
   onFailed,
   onFailureAction,
@@ -86,6 +89,7 @@ export const ViewerBody = ({
       {state.status === 'loaded' ? (
         <SheetMusicSurface
           document={state.document}
+          initialPage={initialPage}
           jump={jump}
           key={`${source.id}:${source.format}`}
           onFailed={onFailed}

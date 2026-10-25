@@ -20,6 +20,7 @@ import {
 import { computeFitZoom } from './fit-zoom-model';
 import { VIEWER_MAX_PDF_ZOOM } from './model';
 import { PartPeekLabel, usePartPeek, type PeekHost } from './part-peek';
+import { useHostSizeChange } from './use-host-size-change';
 import type { SheetMusicSurfaceProps } from './sheet-music-surface-types';
 import {
   noteheadAtPoint,
@@ -34,14 +35,6 @@ type HostNode = PeekHost & {
   clientWidth: number;
   style: { overflow: string; scrollbarGutter: string };
 };
-type ResizeObserverLike = {
-  disconnect(): void;
-  observe(target: unknown): void;
-};
-type ResizeObserverConstructor = new (
-  callback: () => void,
-) => ResizeObserverLike;
-
 type Live = {
   /** Removes the PDF's pinch, wheel, and double-tap handling. */
   detachGestures?: () => void;
@@ -51,7 +44,6 @@ type Live = {
   score?: ScoreRendering;
 };
 
-const RESIZE_DEBOUNCE_MS = 150;
 /**
  * Draws the loaded document into a scrolling element: a column of pages for a
  * PDF, staves for MusicXML and MIDI. The viewer owns the part selection and
@@ -60,6 +52,7 @@ const RESIZE_DEBOUNCE_MS = 150;
  */
 export const SheetMusicSurface = ({
   document,
+  initialPage,
   jump,
   onFailed,
   onFitZoom,
@@ -75,6 +68,7 @@ export const SheetMusicSurface = ({
   const live = useRef<Live>({});
   // The latest values, read by effects that must not restart when they change.
   const latest = useRef({
+    initialPage,
     onFailed,
     onFitZoom,
     onPageChange,
@@ -86,6 +80,7 @@ export const SheetMusicSurface = ({
   });
 
   latest.current = {
+    initialPage,
     onFailed,
     onFitZoom,
     onPageChange,
@@ -144,7 +139,12 @@ export const SheetMusicSurface = ({
           return undefined;
         }
 
-        // The viewer shows the page from the start, before any scrolling.
+        // A surface drawn again (the window changed shape) opens where the
+        // reader was, before the page is reported.
+        if (latest.current.initialPage) {
+          result.rendering.goToPage(latest.current.initialPage);
+        }
+
         latest.current.onPageChange?.({
           page: result.rendering.currentPage(),
           pageCount: result.rendering.pageCount,
@@ -293,44 +293,13 @@ export const SheetMusicSurface = ({
   // strip or paged page fits its height), so a change in either (a rotated
   // phone, a resized window) lays them out again. Staves are one sideways strip
   // and do not depend on the width, but a change in height re-fits them.
-  useEffect(() => {
-    const Observer = (
-      globalThis as { ResizeObserver?: ResizeObserverConstructor }
-    ).ResizeObserver;
-
-    if (!host || !Observer) {
-      return undefined;
+  useHostSizeChange(host, ({ hasHeightChanged }) => {
+    if (host && hasHeightChanged) {
+      reportFit(live.current, host);
     }
 
-    let lastHeight = host.clientHeight;
-    let lastWidth = host.clientWidth;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const observer = new Observer(() => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        const hasHeightChanged = host.clientHeight !== lastHeight;
-
-        if (hasHeightChanged) {
-          lastHeight = host.clientHeight;
-          reportFit(live.current, host);
-        }
-
-        if (host.clientWidth === lastWidth && !hasHeightChanged) {
-          return;
-        }
-
-        lastWidth = host.clientWidth;
-        live.current.pdf?.setZoom(latest.current.zoom);
-      }, RESIZE_DEBOUNCE_MS);
-    });
-
-    observer.observe(host);
-
-    return () => {
-      clearTimeout(timer);
-      observer.disconnect();
-    };
-  }, [host]);
+    live.current.pdf?.setZoom(latest.current.zoom);
+  });
 
   return (
     <View style={styles.frame}>
