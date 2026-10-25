@@ -28,7 +28,7 @@
 
 - [x] 5.1 Verify in the browser preview with the 81-page `Radio Video V5.0 Score and Parts` PDF at phone width and a desktop width: each layout, a file with its own layout beside one without (including after reopening the app), clearing a file's layout, switching layouts mid-document, the page indicator, keyboard, swipe snapping (touch emulation), zoom and unzoom in `Pages`, rotating (width change), and memory staying flat. Note results per scenario in the spec. _Verified 2026-10-25; per-scenario results in `design.md` Decision 8. One failure found and fixed: rotating the phone reset the reader to page 1. A real touch fling could not be exercised in the pane (task 6.11)._
 - [x] 5.2 Update the README's viewer notes if they describe the PDF viewer, and run `openspec validate pdf-horizontal-paging`.
-- [ ] 5.3 Run lint, test, typecheck, and build for `mobile-rehearsal-player` through Nx.
+- [x] 5.3 Run lint, test, typecheck, and build for `mobile-rehearsal-player` through Nx. _Run 2026-10-26: lint, test, typecheck, and build pass for all five projects (`mobile-rehearsal-player` 2146 tests; models 102 + runtime 113 + google-drive, midi-notation, and the rest, 0 failures), `nx format:check --base=origin/main` and `nx sync:check` are clean._
 - [ ] 5.4 Archive `save-blocked-sheet-music-links-to-drive` first, then this change, after the user's go-ahead.
 
 ## 6. Future tasks (not in scope here)
@@ -44,3 +44,4 @@
 - [ ] 6.9 **Explore with a user before changing:** in `Pages` the wheel turns one page per flick (design Decision 7 says the vertical delta is applied sideways, which a snapping layout would undo); check the feel of the threshold and pause with a mouse wheel and a trackpad.
 - [ ] 6.10 **Explore with a user before changing:** the zoom is one number shared by every layout, so changing layout keeps it (for example, zoomed to 150% in `Scroll` and then switching to `Pages` shows a zoomed page with no snapping until the zoom returns to 100%). Decide whether a layout change should return to the new layout's fit, or keep the zoom as it is.
 - [ ] 6.11 Check swipe snapping in `Pages` with a real touch fling on a phone and a tablet (the browser pane cannot produce one), including a fast fling that should not skip a page and a slow drag that should settle on the nearer page.
+- [ ] 6.12 `packages/audio-library-runtime/src/lib/async-storage-practice-repository.ts` is 317 lines (over the 300-line `max-lines` warning in the repo lint). It predates this change and is the only lint warning in the workspace; split it by concern (for example the sheet music and loop helpers) in a change of its own.
