@@ -1,4 +1,8 @@
-import { WEB_AUDIO_CACHE_BUDGET_BYTES } from '../audio-cache/audio-cache-budget';
+import {
+  audioCacheBudgetStore,
+  resolveAudioCacheBudget,
+  type AudioCacheBudget,
+} from '../audio-cache/audio-cache-budget';
 
 type SavedTrackAudioCacheEntry = {
   blob: Blob;
@@ -7,6 +11,8 @@ type SavedTrackAudioCacheEntry = {
 
 export type SavedTrackAudioCache = {
   clear(): void;
+  /** Evicts least recently used files until the current size holds. */
+  enforceBudget(): void;
   /** Drops one file's bytes (used when the user removes its offline copy). */
   delete(driveFileId: string): void;
   /** The cached bytes for this file at this version, marking them recently used. */
@@ -23,7 +29,7 @@ export type SavedTrackAudioCache = {
  * whole budget is not kept.
  */
 export const createSavedTrackAudioCache = (
-  budgetBytes: number,
+  budgetBytes: AudioCacheBudget,
 ): SavedTrackAudioCache => {
   // Map iteration order is insertion order, so re-inserting on use keeps the
   // first entry the least recently used.
@@ -41,7 +47,20 @@ export const createSavedTrackAudioCache = (
     totalBytes -= entry.blob.size;
   };
 
+  const evictOverBudget = () => {
+    const limitBytes = resolveAudioCacheBudget(budgetBytes);
+
+    for (const [oldestId] of entries) {
+      if (totalBytes <= limitBytes) {
+        break;
+      }
+
+      remove(oldestId);
+    }
+  };
+
   return {
+    enforceBudget: evictOverBudget,
     delete(driveFileId) {
       remove(driveFileId);
     },
@@ -70,20 +89,14 @@ export const createSavedTrackAudioCache = (
     set(driveFileId, version, blob) {
       remove(driveFileId);
 
-      if (blob.size > budgetBytes) {
+      if (blob.size > resolveAudioCacheBudget(budgetBytes)) {
         return;
       }
 
       entries.set(driveFileId, { blob, version });
       totalBytes += blob.size;
 
-      for (const [oldestId] of entries) {
-        if (totalBytes <= budgetBytes) {
-          break;
-        }
-
-        remove(oldestId);
-      }
+      evictOverBudget();
     },
     sizeBytes() {
       return totalBytes;
@@ -92,5 +105,5 @@ export const createSavedTrackAudioCache = (
 };
 
 export const savedTrackAudioCache = createSavedTrackAudioCache(
-  WEB_AUDIO_CACHE_BUDGET_BYTES,
+  audioCacheBudgetStore.get,
 );

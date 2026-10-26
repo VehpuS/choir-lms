@@ -51,4 +51,17 @@ describe('saved track audio cache', () => {
     assert.equal(cache.get('file-a', 'v1'), null);
     assert.equal(cache.sizeBytes(), 0);
   });
+
+  it('evicts the oldest files when the size is lowered at runtime', () => {
+    let budget = 100;
+    const cache = createSavedTrackAudioCache(() => budget);
+
+    cache.set('file-a', 'v1', blobOf(40));
+    cache.set('file-b', 'v1', blobOf(40));
+    budget = 50;
+    cache.enforceBudget();
+
+    assert.equal(cache.get('file-a', 'v1'), null);
+    assert.notEqual(cache.get('file-b', 'v1'), null);
+  });
 });

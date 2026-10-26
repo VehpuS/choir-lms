@@ -1,16 +1,25 @@
+import {
+  resolveAudioCacheBudget,
+  type AudioCacheBudget,
+} from './audio-cache-budget';
 import type { AudioStore, AudioStoreEntry } from './audio-store-types';
 
 /** Files fall out of use rather than being rewritten on every read. */
 const TOUCH_INTERVAL_MS = 60 * 60 * 1000;
 
 type PersistentAudioCacheOptions = {
-  budgetBytes: number;
+  /** A getter lets the user change the cache size while the app runs. */
+  budgetBytes: AudioCacheBudget;
   now?: () => number;
   store: AudioStore;
 };
 
 export type PersistentAudioCache = {
+  /** Removes every automatic (not kept) file. */
+  clearAutomatic: () => Promise<void>;
   clear: () => Promise<void>;
+  /** Evicts least recently used automatic files until the current size holds. */
+  enforceBudget: () => Promise<void>;
   /** Every stored file's entry, without reading any audio. */
   list: () => Promise<AudioStoreEntry[]>;
   /**
@@ -73,7 +82,8 @@ export const createPersistentAudioCache = ({
     return result;
   };
 
-  const evictOverBudget = async (protectedId: string) => {
+  const evictOverBudget = async (protectedId?: string) => {
+    const limitBytes = resolveAudioCacheBudget(budgetBytes);
     const entries = await store.list();
     // Only automatic files count toward the budget; kept files are separate.
     let totalBytes = entries.reduce((total, entry) => {
@@ -84,7 +94,7 @@ export const createPersistentAudioCache = ({
       .sort((left, right) => left.touchedAt - right.touchedAt);
 
     for (const entry of oldestFirst) {
-      if (totalBytes <= budgetBytes) {
+      if (totalBytes <= limitBytes) {
         return;
       }
 
@@ -98,6 +108,32 @@ export const createPersistentAudioCache = ({
       await store.clear().catch(() => undefined);
       notify();
     },
+    clearAutomatic: () =>
+      enqueue(async () => {
+        try {
+          const entries = await store.list();
+
+          for (const entry of entries) {
+            if (!entry.pinned) {
+              await store.remove(entry.driveFileId);
+            }
+          }
+        } catch {
+          // Whatever could not be removed stays listed in the view.
+        }
+
+        notify();
+      }),
+    enforceBudget: () =>
+      enqueue(async () => {
+        try {
+          await evictOverBudget();
+        } catch {
+          // A failed eviction leaves the cache over its size until the next write.
+        }
+
+        notify();
+      }),
     async list() {
       return store.list().catch(() => []);
     },
@@ -170,7 +206,7 @@ export const createPersistentAudioCache = ({
 
           // An automatic file larger than the whole budget would only evict
           // everything else; a kept file is not bound by the budget.
-          if (!keep && blob.size > budgetBytes) {
+          if (!keep && blob.size > resolveAudioCacheBudget(budgetBytes)) {
             return;
           }
 

@@ -213,4 +213,36 @@ describe('persistent audio cache', () => {
     assert.equal(memory.records.size, 0);
     assert.equal(notifications, 4);
   });
+
+  it('evicts automatic files when the size is lowered at runtime', async () => {
+    const memory = createMemoryAudioStore();
+    const clock = { now: 1000 };
+    let budget = 100;
+    const cache = createPersistentAudioCache({
+      budgetBytes: () => budget,
+      now: () => clock.now,
+      store: memory.store,
+    });
+
+    await cache.write('file-a', 'v1', blobOf(40));
+    clock.now += 1;
+    await cache.write('file-b', 'v1', blobOf(40));
+    await cache.pin('file-a');
+    budget = 30;
+    await cache.enforceBudget();
+
+    // The kept file is not bound by the size; the automatic one no longer fits.
+    assert.deepEqual([...memory.records.keys()], ['file-a']);
+  });
+
+  it('clears automatic files and leaves kept ones', async () => {
+    const { cache, memory } = setup();
+
+    await cache.write('file-a', 'v1', blobOf(10));
+    await cache.write('file-b', 'v1', blobOf(10));
+    await cache.pin('file-a');
+    await cache.clearAutomatic();
+
+    assert.deepEqual([...memory.records.keys()], ['file-a']);
+  });
 });
