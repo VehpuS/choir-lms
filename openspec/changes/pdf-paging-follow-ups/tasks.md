@@ -27,7 +27,7 @@
 ## 5. Validation
 
 - [x] 5.1 Update the README's viewer notes if they describe the PDF layouts, and run `openspec validate pdf-paging-follow-ups`.
-- [ ] 5.2 Run lint, test, typecheck, and build for the touched projects through Nx, plus `nx format:check --base=origin/main` and `nx sync:check`.
+- [x] 5.2 Run lint, test, typecheck, and build for the touched projects through Nx, plus `nx format:check --base=origin/main` and `nx sync:check`.
 - [ ] 5.3 Sync the delta specs into `track-sheet-music` and archive this change after the owner's go-ahead.
 
 ## 6. Future tasks (not in scope here)
