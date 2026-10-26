@@ -5,7 +5,7 @@
 ## 2. Thumbnails in the renderer
 
 - [x] 2.1 Add `drawThumbnail` (and cancel) to `PdfRendering` and `pdf-renderer.web.ts`, rendering the existing `PdfPage` at a thumbnail scale; native returns unsupported. Spec the scale computation; check one render in the browser. (Specced with a fake page; the browser render check moves to 3.2, when the grid first calls `drawThumbnail`.)
-- [ ] 2.2 Add the serial thumbnail queue: one render at a time, current row first, cancel for rows out of range, release everything on close. Spec ordering, cancellation, and idempotent release with a fake drawer.
+- [x] 2.2 Add the serial thumbnail queue: one render at a time, current row first, cancel for rows out of range, release everything on close. Spec ordering, cancellation, and idempotent release with a fake drawer.
 
 ## 3. Sheet and indicator
 
