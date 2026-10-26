@@ -13,8 +13,10 @@ type PageIndicatorProps = {
 
 /**
  * A small button over the bottom of the page area that shows where the reader
- * is and opens `Go to page`. Only the pill takes touches: the rest of its
- * layer lets pinch and double-tap through to the page area.
+ * is and opens `Go to page`. The pill looks small, but its touch area is a
+ * full touch target (the pill centered in a transparent wrapper). Only that
+ * wrapper takes touches: the rest of the layer lets pinch and double-tap
+ * through to the page area.
  */
 export const PageIndicator = ({ onPress, text }: PageIndicatorProps) => {
   return (
@@ -24,11 +26,13 @@ export const PageIndicator = ({ onPress, text }: PageIndicatorProps) => {
         accessibilityRole="button"
         accessibilityValue={{ text }}
         onPress={onPress}
-        style={styles.pill}
+        style={styles.target}
       >
-        <Text accessibilityLiveRegion="polite" style={styles.text}>
-          {text}
-        </Text>
+        <View style={styles.pill}>
+          <Text accessibilityLiveRegion="polite" style={styles.text}>
+            {text}
+          </Text>
+        </View>
       </Pressable>
     </View>
   );
@@ -39,13 +43,19 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingBottom: appTheme.space.sm,
   },
   pill: {
     paddingHorizontal: appTheme.space.sm,
     paddingVertical: appTheme.space.xs,
     borderRadius: appTheme.radius.pill,
     backgroundColor: appTheme.colors.scrim,
+  },
+  // Keeps the touch area at the platform minimum whatever size the pill is.
+  target: {
+    minWidth: appTheme.space.touchTarget,
+    minHeight: appTheme.space.touchTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   text: {
     ...appTheme.type.rowMeta,
