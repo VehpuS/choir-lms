@@ -31,7 +31,11 @@ describe('PdfLayoutOptions', () => {
   afterEach(cleanup);
 
   it('offers the three layouts and marks the current one', () => {
-    renderOptions({ deviceLayout: 'pages', ownLayout: undefined });
+    renderOptions({
+      deviceLayout: 'pages',
+      isSpreadAvailable: false,
+      ownLayout: undefined,
+    });
 
     assert.ok(screen.getByLabelText('Scroll'));
     assert.ok(screen.getByLabelText('Pages, current'));
@@ -43,7 +47,11 @@ describe('PdfLayoutOptions', () => {
     const chosen: string[] = [];
 
     renderOptions(
-      { deviceLayout: 'scroll', ownLayout: undefined },
+      {
+        deviceLayout: 'scroll',
+        isSpreadAvailable: false,
+        ownLayout: undefined,
+      },
       { onSelect: (layout) => chosen.push(layout) },
     );
     fireEvent.press(screen.getByLabelText('Strip'));
@@ -55,7 +63,11 @@ describe('PdfLayoutOptions', () => {
     const toggles: boolean[] = [];
 
     renderOptions(
-      { deviceLayout: 'scroll', ownLayout: undefined },
+      {
+        deviceLayout: 'scroll',
+        isSpreadAvailable: false,
+        ownLayout: undefined,
+      },
       { onToggleOnlyForThisFile: (value) => toggles.push(value) },
     );
     const control = screen.getByLabelText('Only for this file');
@@ -66,7 +78,11 @@ describe('PdfLayoutOptions', () => {
   });
 
   it('has no own-layout note or reset for a file that follows the device', () => {
-    renderOptions({ deviceLayout: 'scroll', ownLayout: undefined });
+    renderOptions({
+      deviceLayout: 'scroll',
+      isSpreadAvailable: false,
+      ownLayout: undefined,
+    });
 
     assert.equal(hasRenderedText('This file uses its own layout'), false);
     assert.equal(hasRenderedText('Use the device layout'), false);
@@ -76,7 +92,7 @@ describe('PdfLayoutOptions', () => {
     let reset = 0;
 
     renderOptions(
-      { deviceLayout: 'pages', ownLayout: 'strip' },
+      { deviceLayout: 'pages', isSpreadAvailable: false, ownLayout: 'strip' },
       { onUseDeviceLayout: () => (reset += 1) },
     );
 
@@ -90,6 +106,7 @@ describe('PdfLayoutOptions', () => {
     renderOptions({
       changedDeviceTo: 'pages',
       deviceLayout: 'pages',
+      isSpreadAvailable: false,
       ownLayout: 'strip',
     });
 

@@ -16,6 +16,8 @@ import {
 type PdfLayoutSheetProps = {
   /** The device layout. */
   deviceLayout: PdfLayout;
+  /** Whether the viewer is wide enough to offer `Spread`. */
+  isSpreadAvailable: boolean;
   /** Saves a choice; says whether it went to the device or to the file. */
   onChoose: (
     layout: PdfLayout,
@@ -34,6 +36,7 @@ type PdfLayoutSheetProps = {
  */
 export const PdfLayoutSheet = ({
   deviceLayout,
+  isSpreadAvailable,
   onChoose,
   onClose,
   onUseDeviceLayout,
@@ -44,6 +47,7 @@ export const PdfLayoutSheet = ({
   const model = buildPdfLayoutSheetModel({
     changedDeviceTo,
     deviceLayout,
+    isSpreadAvailable,
     ownLayout,
   });
 

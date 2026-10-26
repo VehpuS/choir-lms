@@ -16,8 +16,11 @@ export type SheetMusicLocation =
 
 export type SheetMusicPartSelection = 'vocal' | 'all' | { include: string[] };
 
-/** How the web viewer lays out a PDF's pages. */
-export type PdfLayout = 'scroll' | 'pages' | 'strip';
+/**
+ * How the web viewer lays out a PDF's pages. `spread` shows two pages side by
+ * side and is offered only where the viewer is wide enough.
+ */
+export type PdfLayout = 'scroll' | 'pages' | 'strip' | 'spread';
 
 export const DEFAULT_PDF_LAYOUT: PdfLayout = 'scroll';
 
@@ -220,7 +223,10 @@ const isFormat = (value: unknown): value is SheetMusicFormat => {
 
 /** Reads a stored layout; anything but a known layout is `undefined`. */
 export const parsePdfLayout = (value: unknown): PdfLayout | undefined => {
-  return value === 'scroll' || value === 'pages' || value === 'strip'
+  return value === 'scroll' ||
+    value === 'pages' ||
+    value === 'strip' ||
+    value === 'spread'
     ? value
     : undefined;
 };

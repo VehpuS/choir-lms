@@ -14,6 +14,7 @@ describe('buildPdfLayoutSheetModel', () => {
   it('offers Scroll, Pages, and Strip in that order', () => {
     const model = buildPdfLayoutSheetModel({
       deviceLayout: 'scroll',
+      isSpreadAvailable: false,
       ownLayout: undefined,
     });
 
@@ -23,9 +24,43 @@ describe('buildPdfLayoutSheetModel', () => {
     );
   });
 
+  it('offers Spread last, only while the viewer is wide enough', () => {
+    const model = buildPdfLayoutSheetModel({
+      deviceLayout: 'scroll',
+      isSpreadAvailable: true,
+      ownLayout: undefined,
+    });
+
+    assert.deepEqual(
+      model.options.map((option) => option.label),
+      ['Scroll', 'Pages', 'Strip', 'Spread'],
+    );
+  });
+
+  it('marks Pages while a stored spread does not fit the viewer', () => {
+    const model = buildPdfLayoutSheetModel({
+      deviceLayout: 'spread',
+      isSpreadAvailable: false,
+      ownLayout: undefined,
+    });
+
+    assert.deepEqual(selectedLayouts(model), ['pages']);
+  });
+
+  it('marks Spread when it is stored and fits', () => {
+    const model = buildPdfLayoutSheetModel({
+      deviceLayout: 'scroll',
+      isSpreadAvailable: true,
+      ownLayout: 'spread',
+    });
+
+    assert.deepEqual(selectedLayouts(model), ['spread']);
+  });
+
   it('marks the device layout when the file has none of its own', () => {
     const model = buildPdfLayoutSheetModel({
       deviceLayout: 'pages',
+      isSpreadAvailable: false,
       ownLayout: undefined,
     });
 
@@ -37,6 +72,7 @@ describe('buildPdfLayoutSheetModel', () => {
   it("marks the file's own layout over the device layout and offers to clear it", () => {
     const model = buildPdfLayoutSheetModel({
       deviceLayout: 'pages',
+      isSpreadAvailable: false,
       ownLayout: 'strip',
     });
 
@@ -49,6 +85,7 @@ describe('buildPdfLayoutSheetModel', () => {
     const model = buildPdfLayoutSheetModel({
       changedDeviceTo: 'pages',
       deviceLayout: 'pages',
+      isSpreadAvailable: false,
       ownLayout: 'strip',
     });
 
@@ -63,6 +100,7 @@ describe('buildPdfLayoutSheetModel', () => {
     const model = buildPdfLayoutSheetModel({
       changedDeviceTo: 'strip',
       deviceLayout: 'strip',
+      isSpreadAvailable: false,
       ownLayout: undefined,
     });
 
@@ -73,10 +111,19 @@ describe('buildPdfLayoutSheetModel', () => {
   it('gives each layout its own glyph name', () => {
     const model = buildPdfLayoutSheetModel({
       deviceLayout: 'scroll',
+      isSpreadAvailable: false,
       ownLayout: undefined,
     });
 
     assert.equal(new Set(model.options.map((o) => o.icon)).size, 3);
+
+    const wide = buildPdfLayoutSheetModel({
+      deviceLayout: 'scroll',
+      isSpreadAvailable: true,
+      ownLayout: undefined,
+    });
+
+    assert.equal(new Set(wide.options.map((o) => o.icon)).size, 4);
   });
 });
 

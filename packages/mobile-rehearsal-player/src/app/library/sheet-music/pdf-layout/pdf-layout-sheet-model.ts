@@ -1,6 +1,7 @@
 import type { PdfLayout } from '@org/audio-library-models';
 
 import type { AppIconName } from '../../../components/app-icon/model';
+import { resolveEffectivePdfLayout } from '../renderers/pdf-spread-availability';
 
 export const PDF_LAYOUT_SHEET_EYEBROW = 'Sheet music';
 export const PDF_LAYOUT_SHEET_TITLE = 'Layout';
@@ -8,11 +9,17 @@ export const ONLY_FOR_THIS_FILE_LABEL = 'Only for this file';
 export const OWN_LAYOUT_NOTE = 'This file uses its own layout';
 export const USE_DEVICE_LAYOUT_LABEL = 'Use the device layout';
 
-const LAYOUT_ORDER: readonly PdfLayout[] = ['scroll', 'pages', 'strip'];
+const LAYOUT_ORDER: readonly PdfLayout[] = [
+  'scroll',
+  'pages',
+  'strip',
+  'spread',
+];
 
 export const PDF_LAYOUT_LABELS: Record<PdfLayout, string> = {
   pages: 'Pages',
   scroll: 'Scroll',
+  spread: 'Spread',
   strip: 'Strip',
 };
 
@@ -20,6 +27,7 @@ export const PDF_LAYOUT_LABELS: Record<PdfLayout, string> = {
 export const PDF_LAYOUT_ICONS: Record<PdfLayout, AppIconName> = {
   pages: 'pdf-layout-pages',
   scroll: 'pdf-layout-scroll',
+  spread: 'pdf-layout-spread',
   strip: 'pdf-layout-strip',
 };
 
@@ -48,9 +56,16 @@ export type PdfLayoutSheetModel = {
 export const buildPdfLayoutSheetModel = (input: {
   changedDeviceTo?: PdfLayout;
   deviceLayout: PdfLayout;
+  /** Whether the viewer is wide enough for `Spread`, which is offered only then. */
+  isSpreadAvailable: boolean;
   ownLayout: PdfLayout | undefined;
 }): PdfLayoutSheetModel => {
-  const shown = input.ownLayout ?? input.deviceLayout;
+  // A stored spread shows as pages while the viewer is narrow, so the sheet
+  // marks Pages, as the screen shows.
+  const shown = resolveEffectivePdfLayout(
+    input.ownLayout ?? input.deviceLayout,
+    input.isSpreadAvailable,
+  );
   const hasOwnLayout = input.ownLayout !== undefined;
 
   return {
@@ -59,7 +74,9 @@ export const buildPdfLayoutSheetModel = (input: {
       hasOwnLayout && input.changedDeviceTo
         ? `Device layout changed to ${PDF_LAYOUT_LABELS[input.changedDeviceTo]}. This file keeps its own layout.`
         : undefined,
-    options: LAYOUT_ORDER.map((layout) => ({
+    options: LAYOUT_ORDER.filter(
+      (layout) => layout !== 'spread' || input.isSpreadAvailable,
+    ).map((layout) => ({
       icon: PDF_LAYOUT_ICONS[layout],
       isSelected: layout === shown,
       label: PDF_LAYOUT_LABELS[layout],

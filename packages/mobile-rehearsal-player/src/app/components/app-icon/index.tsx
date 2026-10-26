@@ -10,6 +10,7 @@ import { ArrowSquareOutIcon } from 'phosphor-react-native/src/icons/ArrowSquareO
 import { ArrowsClockwiseIcon } from 'phosphor-react-native/src/icons/ArrowsClockwise';
 import { ArrowsLeftRightIcon } from 'phosphor-react-native/src/icons/ArrowsLeftRight';
 import { ArrowsVerticalIcon } from 'phosphor-react-native/src/icons/ArrowsVertical';
+import { BookOpenIcon } from 'phosphor-react-native/src/icons/BookOpen';
 import { CaretDownIcon } from 'phosphor-react-native/src/icons/CaretDown';
 import { CaretLeftIcon } from 'phosphor-react-native/src/icons/CaretLeft';
 import { CaretRightIcon } from 'phosphor-react-native/src/icons/CaretRight';
@@ -86,6 +87,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   ArrowsClockwise: ArrowsClockwiseIcon,
   ArrowsLeftRight: ArrowsLeftRightIcon,
   ArrowsVertical: ArrowsVerticalIcon,
+  BookOpen: BookOpenIcon,
   CaretDown: CaretDownIcon,
   CaretLeft: CaretLeftIcon,
   CaretRight: CaretRightIcon,

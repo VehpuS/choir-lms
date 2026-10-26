@@ -7,6 +7,8 @@ import { usePdfLayoutChoice } from './use-pdf-layout-choice';
 type PdfLayoutControlOptions = {
   /** Only a PDF has layouts; anything else gets no control. */
   isPdf: boolean;
+  /** Whether the viewer is wide enough to offer `Spread`. */
+  isSpreadAvailable: boolean;
   /** Called when the sheet closes. */
   onClosed?: () => void;
   onSaveSourceLayout: (sourceId: string, layout: PdfLayout | null) => void;
@@ -19,6 +21,7 @@ type PdfLayoutControlOptions = {
  */
 export const usePdfLayoutControl = ({
   isPdf,
+  isSpreadAvailable,
   onClosed,
   onSaveSourceLayout,
   source,
@@ -39,6 +42,7 @@ export const usePdfLayoutControl = ({
       isPdf && isOpen ? (
         <PdfLayoutSheet
           deviceLayout={choice.deviceLayout}
+          isSpreadAvailable={isSpreadAvailable}
           onChoose={choice.choose}
           onClose={() => {
             setIsOpen(false);

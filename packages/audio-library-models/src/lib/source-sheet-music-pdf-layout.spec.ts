@@ -37,6 +37,24 @@ describe('pdfLayout on a source', () => {
     );
   });
 
+  it('keeps a stored spread layout', () => {
+    const parsed = parseSourceSheetMusic([
+      buildStored('a', { pdfLayout: 'spread' }),
+    ]);
+
+    assert.equal(parsed?.[0]?.pdfLayout, 'spread');
+  });
+
+  it('reads data saved before spread existed unchanged', () => {
+    const parsed = parseSourceSheetMusic([
+      buildStored('a', { pdfLayout: 'pages' }),
+      buildStored('b', {}),
+    ]);
+
+    assert.equal(parsed?.[0]?.pdfLayout, 'pages');
+    assert.equal('pdfLayout' in (parsed?.[1] ?? {}), false);
+  });
+
   it('drops an unknown layout but keeps the source', () => {
     const parsed = parseSourceSheetMusic([
       buildStored('a', { pdfLayout: 'carousel' }),
@@ -48,8 +66,10 @@ describe('pdfLayout on a source', () => {
     assert.equal('pdfLayout' in (parsed?.[1] ?? {}), false);
   });
 
-  it('accepts only the three layouts', () => {
+  it('accepts only the four layouts', () => {
     assert.equal(parsePdfLayout('strip'), 'strip');
+    assert.equal(parsePdfLayout('spread'), 'spread');
+    assert.equal(parsePdfLayout('Spread'), undefined);
     assert.equal(parsePdfLayout('Strip'), undefined);
     assert.equal(parsePdfLayout(undefined), undefined);
   });

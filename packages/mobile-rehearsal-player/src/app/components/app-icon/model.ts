@@ -22,6 +22,7 @@ export type PhosphorGlyph =
   | 'Circle'
   | 'ClockCountdown'
   | 'ClockCounterClockwise'
+  | 'BookOpen'
   | 'Columns'
   | 'Copy'
   | 'DotsSixVertical'
@@ -135,10 +136,11 @@ export const APP_ICON_GLYPHS = {
 
   // Entities and navigation.
   'file-outline': regular('File'),
-  // The three PDF layouts: a column of pages, one page, pages side by side.
+  // The PDF layouts: a column of pages, one page, pages side by side, two pages open.
   'pdf-layout-scroll': regular('Rows'),
   'pdf-layout-pages': regular('File'),
   'pdf-layout-strip': regular('Columns'),
+  'pdf-layout-spread': regular('BookOpen'),
   'folder-outline': regular('Folder'),
   'folder-plus': filled('FolderPlus'),
   'folder-plus-outline': regular('FolderPlus'),

@@ -53,10 +53,15 @@ describe('app icon glyph map', () => {
 
   it('gives each PDF layout its own glyph', () => {
     const glyphs = (
-      ['pdf-layout-scroll', 'pdf-layout-pages', 'pdf-layout-strip'] as const
+      [
+        'pdf-layout-scroll',
+        'pdf-layout-pages',
+        'pdf-layout-strip',
+        'pdf-layout-spread',
+      ] as const
     ).map((name) => resolveAppIconGlyph(name).glyph);
 
-    assert.deepEqual(glyphs, ['Rows', 'File', 'Columns']);
+    assert.deepEqual(glyphs, ['Rows', 'File', 'Columns', 'BookOpen']);
     assert.equal(new Set(glyphs).size, glyphs.length);
   });
 

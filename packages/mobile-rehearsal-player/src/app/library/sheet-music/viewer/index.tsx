@@ -30,15 +30,12 @@ import {
   useMyPartsPreferences,
 } from '../my-parts/my-parts-store';
 import { buildRailPageGroup } from '../pdf-layout/page-rail-group';
-import { buildPageSteps } from '../pdf-layout/page-steps';
-import { usePdfLayoutControl } from '../pdf-layout/use-pdf-layout-control';
-import { usePdfPageControl } from '../pdf-layout/use-pdf-page-control';
-import { useGoToPageControl } from '../go-to-page/use-go-to-page-control';
 import { SourceChips } from './source-chips';
 import { useSheetMusicDocument } from './use-sheet-music-document';
 import { ViewerBody, type ViewerOutcome } from './viewer-body';
 import { resolveViewerFailure } from './viewer-failure';
 import { usePageAreaFocus } from './use-page-area-focus';
+import { usePdfViewerControls } from './use-pdf-viewer-controls';
 import { useViewerZoom } from './use-viewer-zoom';
 import { ViewerLayout } from './viewer-layout';
 import { ViewerToolbar } from './viewer-toolbar';
@@ -147,27 +144,14 @@ export const SheetMusicViewer = ({
   const info = outcome?.kind === 'ready' ? outcome.info : null;
   const isPdf = state.status === 'loaded' && state.document.format === 'pdf';
   const { after, focusRequest, returnFocus } = usePageAreaFocus();
-  const pdfLayout = usePdfLayoutControl({
+  const { goToPage, pageSteps, pdfLayout, pdfPages } = usePdfViewerControls({
+    after,
     isPdf,
-    onClosed: returnFocus,
-    onSaveSourceLayout: onChangePdfLayout,
+    onChangePdfLayout,
+    returnFocus,
     source,
   });
-  const pdfPages = usePdfPageControl({
-    layout: pdfLayout.layout,
-    sourceKey: source ? `${source.id}:${source.format}` : undefined,
-  });
-  const goToPage = useGoToPageControl({
-    layout: pdfLayout.layout,
-    onClosed: returnFocus,
-    onGo: pdfPages.goTo,
-    state: pdfPages.state,
-  });
   const viewerZoom = useViewerZoom(info !== null, maxViewerZoom(isPdf));
-  const pageSteps = buildPageSteps(pdfPages.controls, {
-    next: after(pdfPages.next),
-    previous: after(pdfPages.previous),
-  });
   const goTo = useGoTo();
   const canGoTo = info !== null && info.bars.barCount > 0;
   const hasParts = info !== null && hasPartChoice(info.parts);

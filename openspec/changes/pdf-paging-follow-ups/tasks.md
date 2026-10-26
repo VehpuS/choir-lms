@@ -18,7 +18,7 @@
 ## 4. Spread layout
 
 - [x] 4.1 Settle the width threshold for `Spread` by trying real widths with the owner, and record it in `design.md` (design Open Questions). (Owner: 360 px per page, available from 760 px; tuned in 4.6.)
-- [ ] 4.2 Add `spread` to `PdfLayout` in `@org/audio-library-models` with parsing specs (old data, unknown value, `spread` kept), and `isSpreadAvailable` with specs.
+- [x] 4.2 Add `spread` to `PdfLayout` in `@org/audio-library-models` with parsing specs (old data, unknown value, `spread` kept), and `isSpreadAvailable` with specs. (`isSpreadAvailable` and `resolveEffectivePdfLayout` live in the app's `renderers/pdf-spread-availability.ts`, since availability is a viewer-width rule. The sheet offers `Spread` only when available; the viewer passes `false` until 4.4 can draw it.)
 - [ ] 4.3 Add the `Spread` layout to `pdf-layout-model.ts`: spread boxes, the spread of a page and the pages of a spread, scroll-to-spread offsets, and an odd last page. Specs for each.
 - [ ] 4.4 Render `Spread` in `pdf-renderer.web.ts`: slot per spread, snapping only while fitted, lazy drawing of the current spread and one neighbor each side, paging by spread, the hidden scrollbar, and a layout-change anchor on the first page of the spread.
 - [ ] 4.5 Offer `Spread` in the layout sheet only when available, fall back to `Pages` when the viewer narrows (without rewriting the stored layout), and show `Pages 3-4 of 81` in the indicator. Model and component specs.
