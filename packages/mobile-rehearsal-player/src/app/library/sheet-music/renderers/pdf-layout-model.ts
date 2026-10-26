@@ -2,6 +2,7 @@ import type { PdfLayout } from '@org/audio-library-models';
 import { clamp } from 'es-toolkit';
 
 import { clampPdfZoom } from './pdf-page-layout';
+import { layoutSpread } from './pdf-spread-layout';
 
 export const PDF_PAGE_GAP_PX = 12;
 
@@ -22,7 +23,8 @@ export type PdfLayoutResult = {
   /**
    * Each page's stretch of the scrolling axis. In `pages` it is the page's
    * whole slot (the fitted page is centered in it), so scrolling to a span's
-   * start shows that page; elsewhere it is the page's own extent.
+   * start shows that page; in `spread` both pages share their spread's slot;
+   * elsewhere it is the page's own extent.
    */
   spans: PdfPageSpan[];
 };
@@ -147,8 +149,8 @@ const layoutPages = (
 
 /**
  * Places every page for a layout. Zoom is relative to the layout's fit: 1
- * fits the width in `scroll`, the whole page in `pages`, and the height in
- * `strip`.
+ * fits the width in `scroll`, the whole page in `pages`, the height in
+ * `strip`, and the whole pair of pages in `spread`.
  */
 export const computePdfLayout = (options: {
   container: PdfLayoutSize;
@@ -163,6 +165,10 @@ export const computePdfLayout = (options: {
     return layoutStrip(container, options.pages, zoom);
   }
 
+  if (options.layout === 'spread') {
+    return layoutSpread(container, options.pages, zoom);
+  }
+
   return options.layout === 'pages'
     ? layoutPages(container, options.pages, zoom)
     : layoutScroll(container, options.pages, zoom);
@@ -171,17 +177,27 @@ export const computePdfLayout = (options: {
 /**
  * The page at a scroll offset along the layout's axis, and how far through it
  * the offset is (0 at its start, 1 at its end). An offset in the gap between
- * pages belongs to the page before it.
+ * pages belongs to the page before it. Where pages share a slot (a spread) it
+ * is the first of them.
  */
 export const pageAtOffset = (
   layout: PdfLayoutResult,
   offset: number,
 ): PdfPagePosition => {
   const nextIndex = layout.spans.findIndex((span) => span.start > offset);
-  const index = Math.max(
+  let index = Math.max(
     0,
     nextIndex === -1 ? layout.spans.length - 1 : nextIndex - 1,
   );
+
+  // Pages that share a slot (a spread) are read as the first of them.
+  while (
+    index > 0 &&
+    layout.spans[index - 1]?.start === layout.spans[index]?.start
+  ) {
+    index -= 1;
+  }
+
   const span = layout.spans[index];
 
   return {
