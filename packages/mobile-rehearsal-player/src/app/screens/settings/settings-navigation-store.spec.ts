@@ -32,4 +32,29 @@ describe('settings navigation store', () => {
 
     assert.equal(notifications, 0);
   });
+
+  it('opens a category page, goes back to the list, then closes', () => {
+    const store = createSettingsNavigationStore();
+
+    store.open();
+    store.openPage('piano');
+    assert.equal(store.getPage(), 'piano');
+
+    store.back();
+    assert.equal(store.getPage(), null);
+    assert.equal(store.getSnapshot(), true);
+
+    store.back();
+    assert.equal(store.getSnapshot(), false);
+  });
+
+  it('starts at the category list each time it opens', () => {
+    const store = createSettingsNavigationStore();
+
+    store.openPage('my-parts');
+    store.close();
+    store.open();
+
+    assert.equal(store.getPage(), null);
+  });
 });

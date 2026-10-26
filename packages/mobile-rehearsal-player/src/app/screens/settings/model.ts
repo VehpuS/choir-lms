@@ -9,6 +9,7 @@ import {
   parsePianoPreferences,
   type PianoPreferences,
 } from '../../library/piano/piano-preferences';
+import type { SettingsCategoryKey } from './settings-navigation-store';
 import type { BulkChoicePreferences } from '../../library/selection/bulk-choices';
 
 export type SettingsPreferenceRow = {
@@ -19,13 +20,47 @@ export type SettingsPreferenceRow = {
 };
 
 export const SETTINGS_COPY = {
+  backLabel: 'Back to settings',
   closeLabel: 'Close settings',
   resetLabel: 'Ask each time for both',
-  sectionTitle: 'Selecting several items',
+  sectionTitle: 'Bulk selections',
   sectionBody:
     'What to do when a playback or playlist action meets playlists inside folders, or the same item more than once.',
   title: 'Settings',
 } as const;
+
+export type SettingsCategory = {
+  key: SettingsCategoryKey;
+  summary: string;
+  title: string;
+};
+
+// Order is the order of the category list. Offline storage joins it in 1.6.
+export const SETTINGS_CATEGORIES: readonly SettingsCategory[] = [
+  {
+    key: 'bulk-selections',
+    summary: 'What to do when several items are selected',
+    title: SETTINGS_COPY.sectionTitle,
+  },
+  { key: 'piano', summary: 'Sound and note names', title: 'Piano' },
+  { key: 'my-parts', summary: 'Your voice parts', title: 'My parts' },
+  {
+    key: 'search-sources',
+    summary: 'Where sheet music and lyrics are searched',
+    title: 'Search sources',
+  },
+];
+
+/** Piano settings only exist where the piano can play. */
+export const visibleSettingsCategories = (canPlayPiano: boolean) => {
+  return SETTINGS_CATEGORIES.filter(
+    (category) => category.key !== 'piano' || canPlayPiano,
+  );
+};
+
+export const findSettingsCategory = (key: SettingsCategoryKey) => {
+  return SETTINGS_CATEGORIES.find((category) => category.key === key);
+};
 
 const ASK_OPTION = { label: 'Ask each time', value: 'ask' } as const;
 
@@ -63,14 +98,13 @@ export const hasStoredBulkChoiceDefault = (
 };
 
 export const MY_PARTS_COPY = {
+  addHeading: 'Tap a part to add it',
   addLabel: 'Add a part',
   addPlaceholder: 'Part name',
-  body: 'Sheet music opens on the first part in this list that your score has. A whole name is tried first, then a close match, so "Alto" also finds "Alto 2". With no parts listed, it follows the part you viewed last. A part you picked for a piece stays as you left it.',
+  body: 'Sheet music opens on the first part in your list that your score has ("Alto" also finds "Alto 2").',
   customLabel: 'Other…',
-  emptyLabel: 'Automatic',
+  emptyLabel: 'No parts added. Sheet music opens the part you viewed last.',
   saveLabel: 'Add',
-  sectionTitle: 'Sheet music',
-  title: 'Your parts',
 } as const;
 
 /** The built-in names not yet on the list, for the quick-add chips. */
@@ -118,12 +152,11 @@ export const describeSearchSourceHost = (urlTemplate: string): string => {
 };
 
 export const PIANO_SETTINGS_COPY = {
-  body: 'The keyboard that opens over playback and the sheet music. Notes always sound at concert pitch.',
+  body: 'The keyboard that opens over playback and sheet music.',
   // Required by the samples' licence (CC BY 3.0): author, work, licence, and
   // a note that the recordings were trimmed and converted.
   credit:
     'Piano recordings: Salamander Grand Piano by Alexander Holm, licensed CC BY 3.0, trimmed and converted for this app.',
-  sectionTitle: 'Piano',
 } as const;
 
 export type PianoPreferenceKey = 'sound' | 'showAllNoteNames' | 'accidentals';
@@ -140,7 +173,7 @@ const OFF_VALUE = 'off';
 
 export const PIANO_PREFERENCE_ROWS: readonly PianoPreferenceRow[] = [
   {
-    body: 'The tone the keys and tapped notes make. A change applies from the next key.',
+    body: 'The tone of the keys and tapped notes.',
     key: 'sound',
     options: [
       { label: 'Piano', value: 'piano' },
@@ -149,22 +182,22 @@ export const PIANO_PREFERENCE_ROWS: readonly PianoPreferenceRow[] = [
     title: 'Sound',
   },
   {
-    body: 'Name every key, not only the C keys.',
+    body: 'Which keys are labelled.',
     key: 'showAllNoteNames',
     options: [
-      { label: 'Off', value: OFF_VALUE },
-      { label: 'On', value: ON_VALUE },
+      { label: 'C only', value: OFF_VALUE },
+      { label: 'All keys', value: ON_VALUE },
     ],
-    title: 'Show every note name',
+    title: 'Note names',
   },
   {
-    body: 'How black keys are spelled when they are named.',
+    body: 'How black keys are spelled.',
     key: 'accidentals',
     options: [
       { label: 'Sharps', value: 'sharps' },
       { label: 'Flats', value: 'flats' },
     ],
-    title: 'Black key names',
+    title: 'Black keys',
   },
 ];
 

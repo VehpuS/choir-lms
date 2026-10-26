@@ -10,6 +10,7 @@ import {
   SETTINGS_PREFERENCE_ROWS,
   buildPartPresetChips,
   hasStoredBulkChoiceDefault,
+  visibleSettingsCategories,
 } from './model.js';
 
 describe('settings model', () => {
@@ -68,7 +69,7 @@ describe('piano settings rows', () => {
   it('offers sound, every note name, and black key names in order', () => {
     assert.deepEqual(
       PIANO_PREFERENCE_ROWS.map(({ title }) => title),
-      ['Sound', 'Show every note name', 'Black key names'],
+      ['Sound', 'Note names', 'Black keys'],
     );
     assert.deepEqual(
       PIANO_PREFERENCE_ROWS.map(({ options }) =>
@@ -76,7 +77,7 @@ describe('piano settings rows', () => {
       ),
       [
         ['Piano', 'Organ'],
-        ['Off', 'On'],
+        ['C only', 'All keys'],
         ['Sharps', 'Flats'],
       ],
     );
@@ -109,5 +110,16 @@ describe('piano settings rows', () => {
     assert.deepEqual(pianoPreferencePatch('sound', 'organ'), {
       sound: 'organ',
     });
+  });
+
+  it('lists the categories in order and hides Piano where it cannot play', () => {
+    assert.deepEqual(
+      visibleSettingsCategories(true).map((category) => category.key),
+      ['bulk-selections', 'piano', 'my-parts', 'search-sources'],
+    );
+    assert.deepEqual(
+      visibleSettingsCategories(false).map((category) => category.key),
+      ['bulk-selections', 'my-parts', 'search-sources'],
+    );
   });
 });

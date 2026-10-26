@@ -24,9 +24,6 @@ export const PianoSection = () => {
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>
-        {PIANO_SETTINGS_COPY.sectionTitle}
-      </Text>
       <Text style={styles.body}>{PIANO_SETTINGS_COPY.body}</Text>
       {PIANO_PREFERENCE_ROWS.map((row) => (
         <View key={row.key} style={styles.row}>
@@ -40,9 +37,12 @@ export const PianoSection = () => {
             options={row.options}
             selectedValue={pianoPreferenceValue(preferences, row.key)}
           />
+          {/* The recordings are the Piano sound, so their credit sits with it. */}
+          {row.key === 'sound' ? (
+            <Text style={styles.credit}>{PIANO_SETTINGS_COPY.credit}</Text>
+          ) : null}
         </View>
       ))}
-      <Text style={styles.credit}>{PIANO_SETTINGS_COPY.credit}</Text>
     </View>
   );
 };
@@ -65,9 +65,4 @@ const styles = StyleSheet.create({
     fontWeight: appTheme.fontWeight.medium,
   },
   section: { gap: appTheme.space.sm },
-  sectionTitle: {
-    color: appTheme.colors.text,
-    fontSize: 17,
-    fontWeight: appTheme.fontWeight.medium,
-  },
 });

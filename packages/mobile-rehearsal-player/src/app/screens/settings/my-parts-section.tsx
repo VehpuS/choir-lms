@@ -39,47 +39,8 @@ export const MyPartsSection = () => {
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{MY_PARTS_COPY.sectionTitle}</Text>
-      <Text style={styles.title}>{MY_PARTS_COPY.title}</Text>
       <Text style={styles.body}>{MY_PARTS_COPY.body}</Text>
-      {parts.length === 0 ? (
-        <Text style={styles.empty}>{MY_PARTS_COPY.emptyLabel}</Text>
-      ) : (
-        <ReorderableList
-          getKey={normalizePartName}
-          getLabel={(name) => name}
-          items={parts}
-          onReorder={(next) => updateMyPartsPreferences({ parts: next })}
-          renderItem={(name, { controls, index, itemCount }) => (
-            <View
-              style={[
-                styles.partRow,
-                index < itemCount - 1 ? styles.partRowSeparated : undefined,
-              ]}
-            >
-              <Text style={styles.name}>{name}</Text>
-              {controls}
-              <Pressable
-                accessibilityLabel={`Remove ${name}`}
-                accessibilityRole="button"
-                onPress={() =>
-                  updateMyPartsPreferences({
-                    parts: removePartPreference(parts, name),
-                  })
-                }
-                style={styles.remove}
-              >
-                <AppIcon
-                  color={appTheme.colors.textMuted}
-                  name="close"
-                  size={REMOVE_ICON_SIZE}
-                />
-              </Pressable>
-            </View>
-          )}
-        />
-      )}
-      <Text style={styles.addHeading}>{MY_PARTS_COPY.addLabel}</Text>
+      <Text style={styles.addHeading}>{MY_PARTS_COPY.addHeading}</Text>
       <View style={styles.chips}>
         {buildPartPresetChips(parts).map((name) => (
           <InteractionChip
@@ -118,6 +79,43 @@ export const MyPartsSection = () => {
           />
         </View>
       ) : null}
+      {parts.length === 0 ? (
+        <Text style={styles.empty}>{MY_PARTS_COPY.emptyLabel}</Text>
+      ) : (
+        <ReorderableList
+          getKey={normalizePartName}
+          getLabel={(name) => name}
+          items={parts}
+          onReorder={(next) => updateMyPartsPreferences({ parts: next })}
+          renderItem={(name, { controls, index, itemCount }) => (
+            <View
+              style={[
+                styles.partRow,
+                index < itemCount - 1 ? styles.partRowSeparated : undefined,
+              ]}
+            >
+              <Text style={styles.name}>{name}</Text>
+              {controls}
+              <Pressable
+                accessibilityLabel={`Remove ${name}`}
+                accessibilityRole="button"
+                onPress={() =>
+                  updateMyPartsPreferences({
+                    parts: removePartPreference(parts, name),
+                  })
+                }
+                style={styles.remove}
+              >
+                <AppIcon
+                  color={appTheme.colors.textMuted}
+                  name="close"
+                  size={REMOVE_ICON_SIZE}
+                />
+              </Pressable>
+            </View>
+          )}
+        />
+      )}
     </View>
   );
 };
@@ -182,15 +180,5 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: appTheme.space.xs,
-  },
-  sectionTitle: {
-    color: appTheme.colors.text,
-    fontSize: 17,
-    fontWeight: appTheme.fontWeight.medium,
-  },
-  title: {
-    color: appTheme.colors.text,
-    fontSize: 15,
-    fontWeight: appTheme.fontWeight.medium,
   },
 });

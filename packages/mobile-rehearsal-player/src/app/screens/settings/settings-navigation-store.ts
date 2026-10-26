@@ -7,35 +7,64 @@ import { useSyncExternalStore } from 'react';
 
 type Listener = () => void;
 
+export type SettingsCategoryKey =
+  | 'bulk-selections'
+  | 'piano'
+  | 'my-parts'
+  | 'search-sources';
+
 export type SettingsNavigationStore = {
+  /** Goes from a category page to the category list, or closes from the list. */
+  back: () => void;
   close: () => void;
+  getPage: () => SettingsCategoryKey | null;
   getSnapshot: () => boolean;
   open: () => void;
+  openPage: (page: SettingsCategoryKey) => void;
   subscribe: (listener: Listener) => () => void;
 };
 
 export const createSettingsNavigationStore = (): SettingsNavigationStore => {
   let isOpen = false;
+  // `null` is the category list; opening and closing always return to it.
+  let page: SettingsCategoryKey | null = null;
   const listeners = new Set<Listener>();
 
-  const setOpen = (next: boolean) => {
-    if (next === isOpen) {
+  const setState = (
+    nextOpen: boolean,
+    nextPage: SettingsCategoryKey | null,
+  ) => {
+    if (nextOpen === isOpen && nextPage === page) {
       return;
     }
 
-    isOpen = next;
+    isOpen = nextOpen;
+    page = nextPage;
     listeners.forEach((listener) => {
       listener();
     });
   };
 
   return {
-    close: () => {
-      setOpen(false);
+    back: () => {
+      if (page === null) {
+        setState(false, null);
+
+        return;
+      }
+
+      setState(isOpen, null);
     },
+    close: () => {
+      setState(false, null);
+    },
+    getPage: () => page,
     getSnapshot: () => isOpen,
     open: () => {
-      setOpen(true);
+      setState(true, null);
+    },
+    openPage: (next) => {
+      setState(true, next);
     },
     subscribe: (listener) => {
       listeners.add(listener);
@@ -54,5 +83,12 @@ export const useIsSettingsOpen = () => {
   return useSyncExternalStore(
     settingsNavigationStore.subscribe,
     settingsNavigationStore.getSnapshot,
+  );
+};
+
+export const useSettingsPage = () => {
+  return useSyncExternalStore(
+    settingsNavigationStore.subscribe,
+    settingsNavigationStore.getPage,
   );
 };

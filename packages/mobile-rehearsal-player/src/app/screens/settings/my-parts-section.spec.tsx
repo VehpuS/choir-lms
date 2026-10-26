@@ -10,6 +10,7 @@ import {
 
 import { updateMyPartsPreferences } from '../../library/sheet-music/my-parts/my-parts-store';
 import { hasRenderedText } from '../../../test-support/rendered-text';
+import { MY_PARTS_COPY } from './model';
 import { MyPartsSection } from './my-parts-section';
 
 // The store is module-level state shared by every render, so each test
@@ -35,11 +36,11 @@ describe('MyPartsSection', () => {
     resetParts();
   });
 
-  it('starts on Automatic with no parts listed', () => {
+  it('starts with the empty-list note and no parts listed', () => {
     resetParts();
     render(<MyPartsSection />);
 
-    assert.ok(hasRenderedText('Automatic'));
+    assert.ok(hasRenderedText(MY_PARTS_COPY.emptyLabel));
     assert.equal(screen.queryByLabelText('Remove Alto'), null);
   });
 

@@ -1,57 +1,87 @@
 import { useRef } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { DestinationHeader } from '../../components/destination-header';
 import { useEscapeToDismiss } from '../../components/escape-to-dismiss/use-escape-to-dismiss';
 import { useFocusOnMount } from '../../components/focus-on-mount/use-focus-on-mount';
-import { OutlinedActionButton } from '../../components/outlined-action-button';
-import { SegmentedControl } from '../../components/segmented-control';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
-import {
-  bulkChoicePreferencesStore,
-  useBulkChoicePreferences,
-} from '../../library/selection/bulk-choice-preferences-store';
+import { pianoCapabilities } from '../../library/piano/piano-capabilities';
 import { scrollGutterStyles } from '../../components/scroll-gutter';
+import { darkScrollbarStyle } from '../../components/dark-scrollbar';
 import { appTheme } from '../../utils/theme';
+import { BulkSelectionsSection } from './bulk-selections-section';
+import { CategoryList } from './category-list';
 import {
   SETTINGS_COPY,
-  SETTINGS_PREFERENCE_ROWS,
-  hasStoredBulkChoiceDefault,
+  findSettingsCategory,
+  visibleSettingsCategories,
 } from './model';
 import { MyPartsSection } from './my-parts-section';
 import { PianoSection } from './piano-section';
 import { SearchSourcesSection } from './search-sources-section';
-import { settingsNavigationStore } from './settings-navigation-store';
-import { darkScrollbarStyle } from '../../components/dark-scrollbar';
+import {
+  settingsNavigationStore,
+  useSettingsPage,
+  type SettingsCategoryKey,
+} from './settings-navigation-store';
 
-// The one place stored defaults are shown and reset, so a default that skips
-// its prompt is never invisible (design "Bulk action preferences").
+const renderCategoryPage = (page: SettingsCategoryKey) => {
+  switch (page) {
+    case 'bulk-selections':
+      return <BulkSelectionsSection />;
+    case 'piano':
+      return <PianoSection />;
+    case 'my-parts':
+      return <MyPartsSection />;
+    case 'search-sources':
+      return (
+        <>
+          <SearchSourcesSection kind="sheet-music" />
+          <SearchSourcesSection kind="lyrics" />
+        </>
+      );
+  }
+};
+
+// Settings is a category list; each category opens its own page so no screen
+// scrolls through every option (task 1.8).
 export const SettingsScreen = () => {
-  const preferences = useBulkChoicePreferences();
+  const page = useSettingsPage();
   const screenRef = useRef<View>(null);
+  const category = page === null ? undefined : findSettingsCategory(page);
 
   // An overlay needs its own way out and its own focus: Escape or the back
-  // button closes it, and focus moves in so keyboard and screen-reader users
-  // do not stay on the page underneath (task 8.70).
-  useEscapeToDismiss(true, settingsNavigationStore.close);
+  // button steps from a page to the list, then closes it, and focus moves in
+  // so keyboard and screen-reader users do not stay on the page underneath
+  // (task 8.70).
+  useEscapeToDismiss(true, settingsNavigationStore.back);
   useFocusOnMount(screenRef);
 
   return (
     <View
-      accessibilityLabel={SETTINGS_COPY.title}
+      accessibilityLabel={category?.title ?? SETTINGS_COPY.title}
       accessible={false}
       ref={screenRef}
       style={styles.screen}
       tabIndex={-1}
     >
       <DestinationHeader
-        title={SETTINGS_COPY.title}
+        title={category?.title ?? SETTINGS_COPY.title}
         trailingAction={
-          <SurfaceIconButton
-            accessibilityLabel={SETTINGS_COPY.closeLabel}
-            icon="close"
-            onPress={settingsNavigationStore.close}
-          />
+          <View style={styles.actions}>
+            {category ? (
+              <SurfaceIconButton
+                accessibilityLabel={SETTINGS_COPY.backLabel}
+                icon="chevron-left"
+                onPress={settingsNavigationStore.back}
+              />
+            ) : null}
+            <SurfaceIconButton
+              accessibilityLabel={SETTINGS_COPY.closeLabel}
+              icon="close"
+              onPress={settingsNavigationStore.close}
+            />
+          </View>
         }
       />
       <ScrollView
@@ -62,75 +92,33 @@ export const SettingsScreen = () => {
         keyboardShouldPersistTaps="handled"
         style={[darkScrollbarStyle, scrollGutterStyles.scrollView]}
       >
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{SETTINGS_COPY.sectionTitle}</Text>
-          <Text style={styles.sectionBody}>{SETTINGS_COPY.sectionBody}</Text>
-        </View>
-        {SETTINGS_PREFERENCE_ROWS.map((row) => (
-          <View key={row.key} style={styles.row}>
-            <Text style={styles.rowTitle}>{row.title}</Text>
-            <Text style={styles.rowBody}>{row.body}</Text>
-            <SegmentedControl
-              accessibilityLabel={row.title}
-              onSelect={(value) => {
-                void bulkChoicePreferencesStore.update({ [row.key]: value });
-              }}
-              options={row.options}
-              selectedValue={preferences[row.key]}
-            />
-          </View>
-        ))}
-        <OutlinedActionButton
-          disabled={!hasStoredBulkChoiceDefault(preferences)}
-          label={SETTINGS_COPY.resetLabel}
-          onPress={() => {
-            void bulkChoicePreferencesStore.reset();
-          }}
-          variant="neutral"
-        />
-        <PianoSection />
-        <MyPartsSection />
-        <SearchSourcesSection kind="sheet-music" />
-        <SearchSourcesSection kind="lyrics" />
+        {category && page ? (
+          renderCategoryPage(page)
+        ) : (
+          <CategoryList
+            categories={visibleSettingsCategories(pianoCapabilities().canPlay)}
+            onSelect={(next) => {
+              settingsNavigationStore.openPage(next.key);
+            }}
+          />
+        )}
       </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  actions: {
+    flexDirection: 'row',
+    gap: appTheme.space.xs,
+  },
   content: {
     gap: appTheme.space.lg,
     paddingBottom: appTheme.space.xl,
-  },
-  row: {
-    gap: appTheme.space.xs,
-  },
-  rowBody: {
-    color: appTheme.colors.textMuted,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  rowTitle: {
-    color: appTheme.colors.text,
-    fontSize: 15,
-    fontWeight: appTheme.fontWeight.medium,
   },
   screen: {
     backgroundColor: appTheme.colors.bg,
     flex: 1,
     paddingHorizontal: appTheme.space.screenInset,
-  },
-  section: {
-    gap: appTheme.space.xs,
-  },
-  sectionBody: {
-    color: appTheme.colors.textMuted,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  sectionTitle: {
-    color: appTheme.colors.text,
-    fontSize: 17,
-    fontWeight: appTheme.fontWeight.medium,
   },
 });
