@@ -293,3 +293,41 @@ export const scrollOffsetForPoint = (
     ),
   };
 };
+
+/** The pages in view, first to last (equal when one page is). */
+export type PdfPageRange = { first: number; last: number };
+
+// A page counts as in view once this much of it is.
+const MIN_VISIBLE_FRACTION = 0.5;
+
+/**
+ * The pages that are mostly in view: every page of which at least half shows
+ * in the viewport. Where none is (one page bigger than the viewport), it is the
+ * single page under the viewport's middle, as `currentPageAt`.
+ */
+export const visiblePageRange = (
+  layout: PdfLayoutResult,
+  scrollOffset: number,
+  viewportSize: number,
+): PdfPageRange => {
+  const viewEnd = scrollOffset + viewportSize;
+  const inView = layout.spans.flatMap((span, index) => {
+    const overlap =
+      Math.min(span.start + span.size, viewEnd) -
+      Math.max(span.start, scrollOffset);
+
+    return overlap / Math.max(1, span.size) >= MIN_VISIBLE_FRACTION
+      ? [index]
+      : [];
+  });
+  const first = inView[0];
+  const last = inView[inView.length - 1];
+
+  if (first === undefined || last === undefined) {
+    const middle = currentPageAt(layout, scrollOffset, viewportSize);
+
+    return { first: middle, last: middle };
+  }
+
+  return { first, last };
+};

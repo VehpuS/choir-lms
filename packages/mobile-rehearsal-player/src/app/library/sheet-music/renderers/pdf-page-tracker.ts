@@ -1,3 +1,5 @@
+import type { PdfPageRange } from './pdf-layout-model';
+
 type ScrollTarget = {
   addEventListener(type: 'scroll', listener: () => void): void;
   removeEventListener(type: 'scroll', listener: () => void): void;
@@ -22,20 +24,20 @@ const requestBrowserFrame = (callback: () => void): void => {
 };
 
 /**
- * Calls `onChange` with the page when it changes. Scrolling is read at most
- * once a frame, and nothing is reported while the page stays the same, so a
- * viewer that sets state from it re-renders once per page, not once per scroll
- * event.
+ * Calls `onChange` with the pages in view when they change. Scrolling is read
+ * at most once a frame, and nothing is reported while the pages stay the same,
+ * so a viewer that sets state from it re-renders once per change, not once per
+ * scroll event.
  */
 export const createPageTracker = (options: {
   host: ScrollTarget;
-  onChange?: (page: number) => void;
-  pageOf: () => number;
+  onChange?: (range: PdfPageRange) => void;
+  rangeOf: () => PdfPageRange;
   /** Replaceable in specs; defaults to `requestAnimationFrame`. */
   requestFrame?: (callback: () => void) => void;
 }): PageTracker => {
   const requestFrame = options.requestFrame ?? requestBrowserFrame;
-  let lastPage = options.pageOf();
+  let last = options.rangeOf();
   let isFrameQueued = false;
   let isDisposed = false;
 
@@ -44,11 +46,11 @@ export const createPageTracker = (options: {
       return;
     }
 
-    const page = options.pageOf();
+    const range = options.rangeOf();
 
-    if (page !== lastPage) {
-      lastPage = page;
-      options.onChange?.(page);
+    if (range.first !== last.first || range.last !== last.last) {
+      last = range;
+      options.onChange?.(range);
     }
   };
 

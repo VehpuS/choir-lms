@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
   buildPageControls,
   formatPageIndicator,
+  pageStateOf,
   stepPage,
 } from './pdf-page-controls-model.js';
 
@@ -14,6 +15,39 @@ describe('formatPageIndicator', () => {
       'Page 3 of 81',
     );
     assert.equal(formatPageIndicator({ page: 0, pageCount: 1 }), 'Page 1 of 1');
+  });
+});
+
+describe('formatPageIndicator with several pages in view', () => {
+  it('shows a range of pages counted from 1', () => {
+    assert.equal(
+      formatPageIndicator({ lastPage: 4, page: 2, pageCount: 81 }),
+      'Pages 3-5 of 81',
+    );
+  });
+
+  it('shows one page when the last page is the first', () => {
+    assert.equal(
+      formatPageIndicator({ lastPage: 2, page: 2, pageCount: 81 }),
+      'Page 3 of 81',
+    );
+  });
+});
+
+describe('pageStateOf', () => {
+  it('keeps a lone page without a last page', () => {
+    assert.deepEqual(pageStateOf({ first: 4, last: 4 }, 81), {
+      page: 4,
+      pageCount: 81,
+    });
+  });
+
+  it('records the last page when several are in view', () => {
+    assert.deepEqual(pageStateOf({ first: 78, last: 80 }, 81), {
+      lastPage: 80,
+      page: 78,
+      pageCount: 81,
+    });
   });
 });
 

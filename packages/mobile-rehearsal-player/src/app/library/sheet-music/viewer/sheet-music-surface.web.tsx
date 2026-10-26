@@ -17,6 +17,7 @@ import {
   attachPdfZoomGestures,
   type GestureHost,
 } from './attach-pdf-zoom-gestures.web';
+import { pageStateOf } from '../pdf-layout/pdf-page-controls-model';
 import { computeFitZoom } from './fit-zoom-model';
 import { VIEWER_MAX_PDF_ZOOM } from './model';
 import { PartPeekLabel, usePartPeek, type PeekHost } from './part-peek';
@@ -123,11 +124,10 @@ export const SheetMusicSurface = ({
           bytes: document.bytes,
           container: host,
           layout: latest.current.pdfLayout,
-          onPageChange: (page) =>
-            latest.current.onPageChange?.({
-              page,
-              pageCount: next.pdf?.pageCount ?? 0,
-            }),
+          onPageChange: (range) =>
+            latest.current.onPageChange?.(
+              pageStateOf(range, next.pdf?.pageCount ?? 0),
+            ),
           zoom: latest.current.zoom,
         });
 
@@ -149,10 +149,12 @@ export const SheetMusicSurface = ({
         }
 
         latest.current.onThumbnailDrawer?.(result.rendering.drawThumbnail);
-        latest.current.onPageChange?.({
-          page: result.rendering.currentPage(),
-          pageCount: result.rendering.pageCount,
-        });
+        latest.current.onPageChange?.(
+          pageStateOf(
+            result.rendering.currentPageRange(),
+            result.rendering.pageCount,
+          ),
+        );
 
         next.detachGestures = attachPdfZoomGestures({
           host: host as unknown as GestureHost,

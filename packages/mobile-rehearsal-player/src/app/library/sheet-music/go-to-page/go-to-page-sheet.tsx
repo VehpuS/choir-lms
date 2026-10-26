@@ -18,6 +18,7 @@ import {
 export const GO_TO_PAGE_TITLE = 'Go to page';
 
 type GoToPageSheetProps = {
+  /** The first page in view (0-based). */
   currentPage: number;
   /** Draws a page into a canvas; absent where nothing can draw pages (native). */
   drawThumbnail?: (
@@ -25,6 +26,8 @@ type GoToPageSheetProps = {
     canvas: ThumbnailCanvas,
     cssWidth: number,
   ) => PdfThumbnailTask;
+  /** The last page in view when several show at once (a wide strip). */
+  lastPageInView?: number;
   layout: GoToPageLayout;
   onClose: () => void;
   /** Called with the chosen 0-based page; the caller closes the sheet. */
@@ -40,6 +43,7 @@ type GoToPageSheetProps = {
 export const GoToPageSheet = ({
   currentPage,
   drawThumbnail,
+  lastPageInView,
   layout,
   onClose,
   onGo,
@@ -80,7 +84,7 @@ export const GoToPageSheet = ({
       />
       <ThumbnailGrid
         currentPage={currentPage}
-        marked={markedPages(layout, currentPage, pageCount)}
+        marked={markedPages(layout, currentPage, pageCount, lastPageInView)}
         onChoose={onGo}
         pageCount={pageCount}
         queue={queue}

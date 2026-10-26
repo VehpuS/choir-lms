@@ -1,13 +1,16 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import type { PdfPageRange } from './pdf-layout-model.js';
 import { createPageTracker } from './pdf-page-tracker.js';
 
+const one = (page: number): PdfPageRange => ({ first: page, last: page });
+
 const setUp = (options: { initialPage?: number } = {}) => {
-  let page = options.initialPage ?? 0;
+  let range = one(options.initialPage ?? 0);
   const listeners = new Set<() => void>();
   const frames: Array<() => void> = [];
-  const changes: number[] = [];
+  const changes: PdfPageRange[] = [];
   const host = {
     addEventListener: (_type: 'scroll', listener: () => void) =>
       listeners.add(listener),
@@ -17,7 +20,7 @@ const setUp = (options: { initialPage?: number } = {}) => {
   const tracker = createPageTracker({
     host,
     onChange: (next) => changes.push(next),
-    pageOf: () => page,
+    rangeOf: () => range,
     requestFrame: (callback) => frames.push(callback),
   });
 
@@ -27,7 +30,10 @@ const setUp = (options: { initialPage?: number } = {}) => {
     runFrame: () => frames.splice(0).forEach((frame) => frame()),
     scroll: () => listeners.forEach((listener) => listener()),
     setPage: (next: number) => {
-      page = next;
+      range = one(next);
+    },
+    setRange: (next: PdfPageRange) => {
+      range = next;
     },
     tracker,
   };
@@ -42,7 +48,7 @@ describe('createPageTracker', () => {
     assert.deepEqual(changes, []);
 
     runFrame();
-    assert.deepEqual(changes, [3]);
+    assert.deepEqual(changes, [one(3)]);
   });
 
   it('reads the position once per frame however many scroll events arrive', () => {
@@ -54,10 +60,10 @@ describe('createPageTracker', () => {
         addEventListener: (_type, listener) => listeners.add(listener),
         removeEventListener: (_type, listener) => listeners.delete(listener),
       },
-      pageOf: () => {
+      rangeOf: () => {
         reads += 1;
 
-        return 0;
+        return one(0);
       },
       requestFrame: (callback) => frames.push(callback),
     });
@@ -72,6 +78,22 @@ describe('createPageTracker', () => {
     assert.equal(frames.length, 0);
     assert.equal(reads - readsAtStart, 1);
     tracker.dispose();
+  });
+
+  it('reports a change in the last page in view alone', () => {
+    const { changes, setRange, tracker } = setUp();
+
+    setRange({ first: 0, last: 2 });
+    tracker.check();
+    setRange({ first: 0, last: 2 });
+    tracker.check();
+    setRange({ first: 0, last: 3 });
+    tracker.check();
+
+    assert.deepEqual(changes, [
+      { first: 0, last: 2 },
+      { first: 0, last: 3 },
+    ]);
   });
 
   it('stays quiet while the page does not change', () => {
@@ -90,7 +112,7 @@ describe('createPageTracker', () => {
     tracker.check();
     tracker.check();
 
-    assert.deepEqual(changes, [5]);
+    assert.deepEqual(changes, [one(5)]);
   });
 
   it('stops listening and reporting once disposed', () => {

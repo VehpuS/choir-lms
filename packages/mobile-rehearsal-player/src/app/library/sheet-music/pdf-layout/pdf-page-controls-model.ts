@@ -1,8 +1,25 @@
 import type { PdfLayout } from '@org/audio-library-models';
 import { clamp } from 'es-toolkit';
 
-/** Where a PDF is: `page` counts from 0, `pageCount` is how many pages it has. */
-export type PdfPageState = { page: number; pageCount: number };
+/**
+ * Where a PDF is: `page` counts from 0 and is the first page in view,
+ * `lastPage` the last when several are (a wide `strip`), and `pageCount` is how
+ * many pages the document has.
+ */
+export type PdfPageState = {
+  lastPage?: number;
+  page: number;
+  pageCount: number;
+};
+
+/** The state for the pages in view; a single page leaves `lastPage` out. */
+export const pageStateOf = (
+  range: { first: number; last: number },
+  pageCount: number,
+): PdfPageState =>
+  range.last > range.first
+    ? { lastPage: range.last, page: range.first, pageCount }
+    : { page: range.first, pageCount };
 
 /** A request to move to a page; `token` makes a repeat of the same page a new request. */
 export type PdfPageRequest = { page: number; token: number };
@@ -10,16 +27,21 @@ export type PdfPageRequest = { page: number; token: number };
 export type PdfPageControls = {
   canGoNext: boolean;
   canGoPrevious: boolean;
-  /** `Page 3 of 81`; undefined until the document has pages. */
+  /** `Page 3 of 81` (`Pages 3-5 of 81` with several in view); undefined until the document has pages. */
   indicator: string | undefined;
   /** `Previous page` and `Next page` show only where whole pages are turned. */
   showSteps: boolean;
 };
 
+/** `Page 3 of 81`, or `Pages 3-5 of 81` while several pages are in view. */
 export const formatPageIndicator = ({
+  lastPage,
   page,
   pageCount,
-}: PdfPageState): string => `Page ${page + 1} of ${pageCount}`;
+}: PdfPageState): string =>
+  lastPage !== undefined && lastPage > page
+    ? `Pages ${page + 1}-${lastPage + 1} of ${pageCount}`
+    : `Page ${page + 1} of ${pageCount}`;
 
 /** The page one step from the current one, never past either end. */
 export const stepPage = (state: PdfPageState, delta: number): number => {

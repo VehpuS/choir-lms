@@ -1,3 +1,4 @@
+import type { PdfPageRange } from './pdf-layout-model';
 import type {
   PdfLayout,
   ResolvedPartSelection,
@@ -91,6 +92,11 @@ export type PdfRendering = {
   currentLayout(): PdfLayout;
   /** The page being read (0-based): the one under the middle of the viewport. */
   currentPage(): number;
+  /**
+   * The pages in view (0-based, first to last): several in `strip` when they
+   * are side by side, otherwise the page being read.
+   */
+  currentPageRange(): PdfPageRange;
   /** The zoom the pages are laid out at now (1 fits the layout: width, whole page, or height). */
   currentZoom(): number;
   /** Removes the pages and releases the document. */
@@ -132,7 +138,7 @@ export type PdfRenderer<Container> = {
     /** Defaults to `scroll`. */
     layout?: PdfLayout;
     /** Called with the page (0-based) when it changes, at most once a frame. */
-    onPageChange?: (page: number) => void;
+    onPageChange?: (range: PdfPageRange) => void;
     zoom?: number;
   }): Promise<PdfRenderResult>;
 };

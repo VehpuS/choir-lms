@@ -9,6 +9,7 @@ import {
   nearestPage,
   pageAtOffset,
   scrollOffsetForPage,
+  visiblePageRange,
 } from './pdf-layout-model.js';
 
 const LETTER = { height: 792, width: 612 };
@@ -269,5 +270,55 @@ describe('currentPageAt', () => {
 
   it('is the first page for an empty document', () => {
     assert.equal(currentPageAt(layoutOf('strip', []), 0, 300), 0);
+  });
+});
+
+describe('visiblePageRange', () => {
+  const WIDE_VIEWER = { height: 400, width: 900 };
+  const strip = (pageCount: number, zoom = 1) =>
+    layoutOf(
+      'strip',
+      Array.from({ length: pageCount }, () => LETTER),
+      zoom,
+      WIDE_VIEWER,
+    );
+
+  it('lists every page that is mostly in view, from the start edge', () => {
+    const layout = strip(10);
+
+    assert.deepEqual(visiblePageRange(layout, 0, 900), { first: 0, last: 2 });
+  });
+
+  it('starts at a page aligned to the start edge', () => {
+    const layout = strip(10);
+    const start = layout.spans[5]?.start ?? 0;
+
+    assert.deepEqual(visiblePageRange(layout, start, 900), {
+      first: 5,
+      last: 7,
+    });
+  });
+
+  it('drops a page once less than half of it shows', () => {
+    const layout = strip(10);
+    const span = layout.spans[3];
+    const offset = (span?.start ?? 0) + (span?.size ?? 0) * 0.6;
+
+    assert.equal(visiblePageRange(layout, offset, 900).first, 4);
+  });
+
+  it('keeps the last pages at the end of the document', () => {
+    const layout = strip(10);
+    const end = layout.contentWidth - 900;
+
+    assert.deepEqual(visiblePageRange(layout, end, 900), { first: 7, last: 9 });
+  });
+
+  it('is one page where a page is bigger than the viewer', () => {
+    const layout = layoutOf('pages', [LETTER, LETTER, LETTER], 4, WIDE_VIEWER);
+    const middle = currentPageAt(layout, 1500, 900);
+    const range = visiblePageRange(layout, 1500, 900);
+
+    assert.deepEqual(range, { first: middle, last: middle });
   });
 });

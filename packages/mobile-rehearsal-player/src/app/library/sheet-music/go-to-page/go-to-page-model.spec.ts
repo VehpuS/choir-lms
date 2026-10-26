@@ -57,6 +57,16 @@ describe('markedPages', () => {
     assert.deepEqual(markedPages('strip', 80, 81), [80]);
   });
 
+  it('marks every page in view in a wide strip', () => {
+    assert.deepEqual(markedPages('strip', 39, 81, 41), [39, 40, 41]);
+    assert.deepEqual(markedPages('strip', 78, 81, 80), [78, 79, 80]);
+  });
+
+  it('keeps the marks inside the document', () => {
+    assert.deepEqual(markedPages('strip', 79, 81, 99), [79, 80]);
+    assert.deepEqual(markedPages('strip', 5, 81, 2), [5]);
+  });
+
   it('marks both pages of the spread, pairing page 1 with page 2', () => {
     assert.deepEqual(markedPages('spread', 0, 81), [0, 1]);
     assert.deepEqual(markedPages('spread', 1, 81), [0, 1]);

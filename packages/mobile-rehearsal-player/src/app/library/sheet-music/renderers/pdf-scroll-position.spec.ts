@@ -30,6 +30,8 @@ const stateFor = (
 });
 
 const fakeHost = (): PdfScrollHost => ({
+  clientHeight: CONTAINER.height,
+  clientWidth: CONTAINER.width,
   scrollLeft: 0,
   scrollTop: 0,
   style: { scrollSnapType: '' },
@@ -175,5 +177,47 @@ describe('createPdfScroller readAnchor and restoreAnchor', () => {
     scroller.restoreAnchor({ fraction: 0.8, index: 1 });
 
     assert.equal(host.scrollLeft, box.state.layout.spans[2]?.start);
+  });
+});
+
+describe('createPdfScroller currentPage and currentRange', () => {
+  it('reads the page under the middle of the viewport', () => {
+    const { box, host, scroller } = setup(stateFor('scroll'));
+
+    host.scrollTop = (box.state.layout.spans[2]?.start ?? 0) + 10;
+
+    assert.equal(scroller.currentPage(), 2);
+    assert.deepEqual(scroller.currentRange(), { first: 2, last: 2 });
+  });
+
+  it('gives one page outside strip even when two are partly in view', () => {
+    const { box, host, scroller } = setup(stateFor('pages'));
+
+    host.scrollLeft = (box.state.layout.spans[1]?.start ?? 0) + 40;
+
+    assert.equal(scroller.currentRange().first, scroller.currentRange().last);
+  });
+
+  it('gives every page that is mostly in view in strip', () => {
+    // A wide viewer shows several side-by-side pages at once.
+    const box = { state: stateFor('strip') };
+    const host: PdfScrollHost = { ...fakeHost(), clientWidth: 900 };
+    const wide = computePdfLayout({
+      container: { height: CONTAINER.height, width: 900 },
+      layout: 'strip',
+      pages: Array.from({ length: PAGE_COUNT }, () => PAGE),
+      zoom: 1,
+    });
+
+    box.state = { ...box.state, layout: wide };
+
+    const scroller = createPdfScroller({ getState: () => box.state, host });
+
+    host.scrollLeft = wide.spans[1]?.start ?? 0;
+
+    const range = scroller.currentRange();
+
+    assert.equal(range.first, 1);
+    assert.ok(range.last > range.first);
   });
 });

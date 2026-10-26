@@ -1,16 +1,21 @@
 import type { PdfLayout } from '@org/audio-library-models';
 
 import {
+  currentPageAt,
   nearestPage,
   pageAtOffset,
   scrollOffsetForPage,
+  visiblePageRange,
   type PdfLayoutResult,
   type PdfPagePosition,
+  type PdfPageRange,
 } from './pdf-layout-model';
 import { isPdfSnapping, pdfSnapType } from './pdf-layout-style';
 
 /** The part of the host element the scroller reads and moves. */
 export type PdfScrollHost = {
+  clientHeight: number;
+  clientWidth: number;
   scrollLeft: number;
   scrollTop: number;
   style: { scrollSnapType: string };
@@ -25,6 +30,13 @@ export type PdfScrollState = {
 };
 
 export type PdfScroller = {
+  /** The page being read: the one under the middle of the viewport. */
+  currentPage(): number;
+  /**
+   * The pages in view. In `strip`, where several pages show side by side, every
+   * page that is mostly in view; elsewhere the one page being read.
+   */
+  currentRange(): PdfPageRange;
   /** The scroll offset along the layout's scrolling axis. */
   mainOffset(): number;
   /** The page at the viewport's start edge, and how far through it. */
@@ -74,6 +86,26 @@ export const createPdfScroller = (options: {
   const mainOffset = () =>
     getState().layout.axis === 'vertical' ? host.scrollTop : host.scrollLeft;
 
+  const viewportSize = () =>
+    getState().layout.axis === 'vertical'
+      ? host.clientHeight
+      : host.clientWidth;
+
+  const currentPage = () =>
+    currentPageAt(getState().layout, mainOffset(), viewportSize());
+
+  const currentRange = (): PdfPageRange => {
+    const { currentLayout, layout } = getState();
+
+    if (currentLayout === 'strip') {
+      return visiblePageRange(layout, mainOffset(), viewportSize());
+    }
+
+    const page = currentPage();
+
+    return { first: page, last: page };
+  };
+
   // The page at the viewport's start edge, and how far through it, are kept
   // across anything that changes the pages' sizes (zoom, a width change).
   const readAnchor = () => pageAtOffset(getState().layout, mainOffset());
@@ -98,6 +130,8 @@ export const createPdfScroller = (options: {
   };
 
   return {
+    currentPage,
+    currentRange,
     mainOffset,
     readAnchor,
     resetSnapping: () => {

@@ -3,7 +3,6 @@ import type { PdfLayout } from '@org/audio-library-models';
 
 import {
   computePdfLayout,
-  currentPageAt,
   nearestPage,
   pointOnPage,
   scrollOffsetForPoint,
@@ -161,13 +160,8 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
       }),
       host,
     });
-    const {
-      mainOffset,
-      readAnchor,
-      restoreAnchor,
-      scrollToPage,
-      updateSnapping,
-    } = scroller;
+    const { readAnchor, restoreAnchor, scrollToPage, updateSnapping } =
+      scroller;
 
     const settleZoom = () => {
       settleTimer = undefined;
@@ -188,16 +182,10 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     updateSnapping();
     observeAll();
 
-    const currentPage = () =>
-      currentPageAt(
-        layout,
-        mainOffset(),
-        layout.axis === 'vertical' ? host.clientHeight : host.clientWidth,
-      );
     const tracker = createPageTracker({
       host,
       onChange: onPageChange,
-      pageOf: currentPage,
+      rangeOf: scroller.currentRange,
     });
 
     // `hold` places the scroll once the pages have their new sizes; without
@@ -218,7 +206,8 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
 
     const rendering: PdfRendering = {
       currentLayout: () => currentLayout,
-      currentPage,
+      currentPage: scroller.currentPage,
+      currentPageRange: scroller.currentRange,
       currentZoom: () => currentZoom,
       dispose() {
         isDisposed = true;

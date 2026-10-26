@@ -41,14 +41,16 @@ export const pageRangeHint = (pageCount: number): string =>
   `1-${Math.max(1, pageCount)}`;
 
 /**
- * The pages to highlight in the grid: the current page, or in `spread` both
- * pages of the spread that holds it (page 1 pairs with page 2; an odd last
- * page is alone).
+ * The pages to highlight in the grid: the pages in view (`current` to
+ * `lastInView`, one unless several show side by side), or in `spread` both
+ * pages of the spread that holds the current page (page 1 pairs with page 2; an
+ * odd last page is alone).
  */
 export const markedPages = (
   layout: GoToPageLayout,
   current: number,
   pageCount: number,
+  lastInView: number = current,
 ): number[] => {
   if (pageCount <= 0) {
     return [];
@@ -57,7 +59,7 @@ export const markedPages = (
   const page = clamp(current, 0, pageCount - 1);
 
   if (layout !== 'spread') {
-    return [page];
+    return range(page, clamp(lastInView, page, pageCount - 1) + 1);
   }
 
   const first = page - (page % SPREAD_SIZE);

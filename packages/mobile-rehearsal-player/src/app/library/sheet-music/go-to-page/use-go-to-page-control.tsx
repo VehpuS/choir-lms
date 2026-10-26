@@ -53,6 +53,7 @@ export const useGoToPageControl = ({
         <GoToPageSheet
           currentPage={state.page}
           drawThumbnail={draw}
+          lastPageInView={state.lastPage}
           layout={layout}
           onClose={() => setIsOpen(false)}
           onGo={(page) => {
