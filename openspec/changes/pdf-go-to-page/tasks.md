@@ -15,7 +15,7 @@
 
 ## 4. Verify
 
-- [ ] 4.1 Browser check on the 81-page score at phone and desktop widths: opens fast, only near rows hold canvases, quick scroll does not stall the page behind, memory returns to baseline after close, soft-keyboard layout at phone width, and pinch/double-tap near the indicator still work.
+- [x] 4.1 Browser check on the 81-page score at phone and desktop widths: opens fast, only near rows hold canvases, quick scroll does not stall the page behind, memory returns to baseline after close, soft-keyboard layout at phone width, and pinch/double-tap near the indicator still work. (Done on the 81-page score at 375, 1100 px; the soft keyboard could not be emulated, see 5.4. Memory was judged by canvas count, which returns to 0, not by heap size.)
 - [ ] 4.2 In `Pages`, `Strip`, and `Scroll`, go by number and by thumbnail, including the first, last, and current page; when `Spread` exists, check the marked pair and landing.
 - [ ] 4.3 Update the README if the viewer's documented controls change, then validate: `nx run mobile-rehearsal-player:test`, `lint`, `typecheck`, and `format:check`.
 
@@ -24,3 +24,4 @@
 - [ ] 5.1 `renderers/pdf-renderer.web.ts` is over the 300-line guide (324 lines before this change, now more); extract the layout/zoom anchor handling into a helper with `code-move-checkpointed`.
 - [ ] 5.2 Return focus to the page area after the `Go to page` sheet closes. Not done in 3.3 because the `pdf-paging-follow-ups` 2.2 focus rule has not landed; when it does, apply it to this sheet (and the Layout sheet) in one place.
 - [ ] 5.3 Open question for the owner: the page indicator pill is small (about 26 px tall) for a touch target. Explore with a user whether to enlarge it (Apple HIG asks for 44 pt) before changing its look, since `pdf-paging-follow-ups` 6.7 also places Previous/Next beside it.
+- [ ] 5.4 Manual check on a real phone: with the soft keyboard open, the `Go to page` field and `Go` stay visible above the grid, and the sheet resizes to the visible area. It could not be emulated in the desktop browser pane, and the iOS Simulator has no signed-in library with a PDF.

@@ -34,7 +34,9 @@ export const ThumbnailCell = (
       return;
     }
 
-    const canvas = host.ownerDocument.createElement('canvas');
+    const canvas = host.ownerDocument.createElement('canvas') as DomCanvas & {
+      remove(): void;
+    };
 
     canvas.style.cssText = CANVAS_STYLE;
     host.appendChild(canvas);
@@ -42,6 +44,8 @@ export const ThumbnailCell = (
 
     return () => {
       queue.discard(index);
+      // Freed canvases must also leave the cell, or each effect run leaves one behind.
+      canvas.remove();
     };
   }, [cellWidth, index, queue]);
 
