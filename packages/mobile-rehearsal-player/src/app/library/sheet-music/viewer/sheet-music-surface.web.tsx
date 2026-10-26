@@ -17,6 +17,7 @@ import {
   attachPdfZoomGestures,
   type GestureHost,
 } from './attach-pdf-zoom-gestures.web';
+import { shouldTakeFocus, type FocusTarget } from './pdf-paging-input';
 import { pageStateOf } from '../pdf-layout/pdf-page-controls-model';
 import { computeFitZoom } from './fit-zoom-model';
 import { VIEWER_MAX_PDF_ZOOM } from './model';
@@ -53,6 +54,7 @@ type Live = {
  */
 export const SheetMusicSurface = ({
   document,
+  focusRequest,
   initialPage,
   jump,
   onFailed,
@@ -236,6 +238,23 @@ export const SheetMusicSurface = ({
       live.current = {};
     };
   }, [document, host]);
+
+  // Gives the page area the keyboard back, so the arrow keys and Page Up/Down
+  // still turn pages after a sheet closes or a toolbar button is used.
+  useEffect(() => {
+    if (!focusRequest || !host) {
+      return;
+    }
+
+    const page = host as unknown as {
+      focus(options: { preventScroll: boolean }): void;
+      ownerDocument: { activeElement: FocusTarget | null };
+    };
+
+    if (shouldTakeFocus(page.ownerDocument.activeElement)) {
+      page.focus({ preventScroll: true });
+    }
+  }, [focusRequest]);
 
   useEffect(() => {
     const rendering = live.current.score;

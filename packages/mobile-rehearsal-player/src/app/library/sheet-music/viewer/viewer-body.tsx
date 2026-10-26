@@ -31,6 +31,8 @@ export type ViewerOutcome =
 
 type ViewerBodyProps = {
   failure: ViewerFailure | undefined;
+  /** Changes when the page area should take keyboard focus back. */
+  focusRequest: number;
   /** The PDF page (0-based) to open on, so a surface drawn again keeps the reader's place. */
   initialPage: number | undefined;
   jump: GoToJump | undefined;
@@ -57,6 +59,7 @@ type ViewerBodyProps = {
 /** The area under the controls: the score, a spinner while it loads, or why it did not open. */
 export const ViewerBody = ({
   failure,
+  focusRequest,
   initialPage,
   jump,
   onFailed,
@@ -97,6 +100,7 @@ export const ViewerBody = ({
       {state.status === 'loaded' ? (
         <SheetMusicSurface
           document={state.document}
+          focusRequest={focusRequest}
           initialPage={initialPage}
           jump={jump}
           key={`${source.id}:${source.format}`}

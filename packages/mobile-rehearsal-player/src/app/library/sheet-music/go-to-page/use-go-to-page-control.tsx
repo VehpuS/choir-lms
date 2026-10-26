@@ -7,6 +7,8 @@ import { GoToPageSheet } from './go-to-page-sheet';
 
 type GoToPageControlOptions = {
   layout: PdfLayout;
+  /** Called when the sheet closes, whether a page was chosen or not. */
+  onClosed?: () => void;
   /** Moves the viewer to a page (0-based). */
   onGo: (page: number) => void;
   /** Where the PDF is; the sheet cannot open before it reports a page. */
@@ -21,6 +23,7 @@ type GoToPageControlOptions = {
  */
 export const useGoToPageControl = ({
   layout,
+  onClosed,
   onGo,
   state,
 }: GoToPageControlOptions): {
@@ -55,10 +58,14 @@ export const useGoToPageControl = ({
           drawThumbnail={draw}
           lastPageInView={state.lastPage}
           layout={layout}
-          onClose={() => setIsOpen(false)}
+          onClose={() => {
+            setIsOpen(false);
+            onClosed?.();
+          }}
           onGo={(page) => {
             setIsOpen(false);
             onGo(page);
+            onClosed?.();
           }}
           pageCount={state.pageCount}
         />

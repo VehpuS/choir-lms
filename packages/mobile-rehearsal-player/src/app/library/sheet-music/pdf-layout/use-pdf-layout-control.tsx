@@ -7,6 +7,8 @@ import { usePdfLayoutChoice } from './use-pdf-layout-choice';
 type PdfLayoutControlOptions = {
   /** Only a PDF has layouts; anything else gets no control. */
   isPdf: boolean;
+  /** Called when the sheet closes. */
+  onClosed?: () => void;
   onSaveSourceLayout: (sourceId: string, layout: PdfLayout | null) => void;
   source: SheetMusicSource | undefined;
 };
@@ -17,6 +19,7 @@ type PdfLayoutControlOptions = {
  */
 export const usePdfLayoutControl = ({
   isPdf,
+  onClosed,
   onSaveSourceLayout,
   source,
 }: PdfLayoutControlOptions): {
@@ -37,7 +40,10 @@ export const usePdfLayoutControl = ({
         <PdfLayoutSheet
           deviceLayout={choice.deviceLayout}
           onChoose={choice.choose}
-          onClose={() => setIsOpen(false)}
+          onClose={() => {
+            setIsOpen(false);
+            onClosed?.();
+          }}
           onUseDeviceLayout={choice.useDeviceLayout}
           ownLayout={choice.ownLayout}
         />

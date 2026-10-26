@@ -6,7 +6,7 @@
 ## 2. Zoom, focus, and scrollbar
 
 - [ ] 2.1 Reset zoom to 1 on a layout change while keeping the page and in-page fraction (design Decision 1). Spec: zoomed in `Scroll`, then `Pages` lands fitted and snapping; the page is kept.
-- [ ] 2.2 Return focus to the page area after a sheet closes or a toolbar action, never taking it from a text field (design Decision 2). A pure focus rule with a spec; a thin `.web` call in the viewer.
+- [x] 2.2 Return focus to the page area after a sheet closes or a toolbar action, never taking it from a text field (design Decision 2). A pure focus rule with a spec; a thin `.web` call in the viewer. (Built in `pdf-go-to-page` 5.2: `shouldTakeFocus`, the viewer's `focusRequest`, and the surface's focus call, for the Go to page and Layout sheets and the zoom, fit, and page-step buttons.)
 - [ ] 2.3 Hide the horizontal scrollbar in `Pages` and keep it in `Strip` (design Decision 4). Verify in the browser at phone and desktop widths.
 
 ## 3. Toolbar and page turns

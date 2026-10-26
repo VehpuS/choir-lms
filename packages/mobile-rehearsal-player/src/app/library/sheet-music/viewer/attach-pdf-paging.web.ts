@@ -3,6 +3,7 @@ import { clamp } from 'es-toolkit';
 
 import {
   INITIAL_WHEEL_TURN_STATE,
+  isEditableTarget,
   accumulateWheelTurn,
   isSidewaysWheel,
   pageKeyStep,
@@ -49,19 +50,6 @@ export type PdfPagingTarget = {
   currentZoom(): number;
   goToPage(index: number): void;
   readonly pageCount: number;
-};
-
-const TEXT_FIELD_TAGS: ReadonlySet<string> = new Set([
-  'INPUT',
-  'SELECT',
-  'TEXTAREA',
-]);
-
-const isEditableTarget = (target: EventTarget | null | undefined): boolean => {
-  return (
-    target?.isContentEditable === true ||
-    TEXT_FIELD_TAGS.has(target?.tagName ?? '')
-  );
 };
 
 /**

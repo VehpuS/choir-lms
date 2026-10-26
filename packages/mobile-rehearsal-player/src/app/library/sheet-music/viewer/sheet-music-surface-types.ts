@@ -32,6 +32,11 @@ export type SheetMusicSurfaceProps = {
    * the window changes shape (a rotated phone), and this keeps the reader's place.
    */
   initialPage?: number;
+  /**
+   * Each change asks the page area to take keyboard focus back (a sheet
+   * closed or a toolbar button was used), unless a text field has it.
+   */
+  focusRequest?: number;
   /** The latest request to scroll to a bar; each new one scrolls again. */
   jump: GoToJump | undefined;
   onFailed: (reason: ViewerFailureReason) => void;

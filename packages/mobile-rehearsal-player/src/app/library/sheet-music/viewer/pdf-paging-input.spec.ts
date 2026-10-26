@@ -4,8 +4,10 @@ import { describe, it } from 'node:test';
 import {
   INITIAL_WHEEL_TURN_STATE,
   accumulateWheelTurn,
+  isEditableTarget,
   isSidewaysWheel,
   pageKeyStep,
+  shouldTakeFocus,
   wheelDeltaPixels,
 } from './pdf-paging-input.js';
 
@@ -123,5 +125,33 @@ describe('accumulateWheelTurn', () => {
     const afterPause = accumulateWheelTurn(slow.state, 40, 1000);
 
     assert.equal(afterPause.step, 0);
+  });
+});
+
+describe('isEditableTarget and shouldTakeFocus', () => {
+  it('recognises text fields and editable content', () => {
+    for (const tagName of ['INPUT', 'TEXTAREA', 'SELECT']) {
+      assert.equal(isEditableTarget({ tagName }), true);
+    }
+
+    assert.equal(
+      isEditableTarget({ isContentEditable: true, tagName: 'DIV' }),
+      true,
+    );
+  });
+
+  it('does not treat buttons, the page area, or nothing as editable', () => {
+    assert.equal(isEditableTarget({ tagName: 'BUTTON' }), false);
+    assert.equal(isEditableTarget({ tagName: 'DIV' }), false);
+    assert.equal(isEditableTarget(null), false);
+    assert.equal(isEditableTarget(undefined), false);
+  });
+
+  it('takes focus back from a button, the body, or nothing, but not from a text field', () => {
+    assert.equal(shouldTakeFocus({ tagName: 'BUTTON' }), true);
+    assert.equal(shouldTakeFocus({ tagName: 'BODY' }), true);
+    assert.equal(shouldTakeFocus(null), true);
+    assert.equal(shouldTakeFocus({ tagName: 'INPUT' }), false);
+    assert.equal(shouldTakeFocus({ isContentEditable: true }), false);
   });
 });

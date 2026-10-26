@@ -36,6 +36,7 @@ import { SourceChips } from './source-chips';
 import { useSheetMusicDocument } from './use-sheet-music-document';
 import { ViewerBody, type ViewerOutcome } from './viewer-body';
 import { resolveViewerFailure } from './viewer-failure';
+import { usePageAreaFocus } from './use-page-area-focus';
 import { useViewerZoom } from './use-viewer-zoom';
 import { ViewerLayout } from './viewer-layout';
 import { ViewerToolbar } from './viewer-toolbar';
@@ -143,8 +144,10 @@ export const SheetMusicViewer = ({
   });
   const info = outcome?.kind === 'ready' ? outcome.info : null;
   const isPdf = state.status === 'loaded' && state.document.format === 'pdf';
+  const { after, focusRequest, returnFocus } = usePageAreaFocus();
   const pdfLayout = usePdfLayoutControl({
     isPdf,
+    onClosed: returnFocus,
     onSaveSourceLayout: onChangePdfLayout,
     source,
   });
@@ -154,6 +157,7 @@ export const SheetMusicViewer = ({
   });
   const goToPage = useGoToPageControl({
     layout: pdfLayout.layout,
+    onClosed: returnFocus,
     onGo: pdfPages.goTo,
     state: pdfPages.state,
   });
@@ -222,6 +226,7 @@ export const SheetMusicViewer = ({
   const body = (
     <ViewerBody
       failure={failure}
+      focusRequest={focusRequest}
       jump={goTo.jump}
       onFailed={(reason) =>
         setDrawn({
@@ -268,18 +273,18 @@ export const SheetMusicViewer = ({
       onTogglePlayback={onTogglePlayback}
       isFitted={viewerZoom.isFitted}
       maxZoom={viewerZoom.maxZoom}
-      onFit={info ? viewerZoom.fit : undefined}
+      onFit={info ? after(viewerZoom.fit) : undefined}
       onGoTo={canGoTo ? goTo.open : undefined}
-      onZoomIn={viewerZoom.zoomIn}
-      onZoomOut={viewerZoom.zoomOut}
+      onZoomIn={after(viewerZoom.zoomIn)}
+      onZoomOut={after(viewerZoom.zoomOut)}
       orientation={orientation}
       pageSteps={
         pdfPages.controls.showSteps
           ? {
               canGoNext: pdfPages.controls.canGoNext,
               canGoPrevious: pdfPages.controls.canGoPrevious,
-              onNext: pdfPages.next,
-              onPrevious: pdfPages.previous,
+              onNext: after(pdfPages.next),
+              onPrevious: after(pdfPages.previous),
             }
           : undefined
       }

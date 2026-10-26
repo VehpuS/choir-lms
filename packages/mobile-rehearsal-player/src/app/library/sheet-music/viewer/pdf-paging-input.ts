@@ -9,6 +9,33 @@ export type PagingKeyEvent = {
   metaKey?: boolean;
 };
 
+/** The part of an element the focus rule reads. */
+export type FocusTarget = {
+  isContentEditable?: boolean;
+  tagName?: string;
+};
+
+const TEXT_FIELD_TAGS: ReadonlySet<string> = new Set([
+  'INPUT',
+  'SELECT',
+  'TEXTAREA',
+]);
+
+/** Whether an element takes typed text, so keys and focus are left to it. */
+export const isEditableTarget = (
+  target: FocusTarget | null | undefined,
+): boolean =>
+  target?.isContentEditable === true ||
+  TEXT_FIELD_TAGS.has(target?.tagName ?? '');
+
+/**
+ * Whether the page area may take keyboard focus back (after a sheet closes or
+ * a toolbar button is used): never from a text field or editable content the
+ * user is typing in. `active` is the element that has focus now.
+ */
+export const shouldTakeFocus = (active: FocusTarget | null | undefined) =>
+  !isEditableTarget(active);
+
 const NEXT_KEYS: ReadonlySet<string> = new Set(['ArrowRight', 'PageDown']);
 const PREVIOUS_KEYS: ReadonlySet<string> = new Set(['ArrowLeft', 'PageUp']);
 
