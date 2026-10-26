@@ -42,7 +42,7 @@ Built as `pdf-page-turn.ts`. When the settle timer fires, the turner first puts 
 
 ### 6. Wheel in Pages stays one page per flick
 
-No behavior change decided. The threshold and pause stay as shipped; tune them with the owner in the browser preview (task 6.1).
+No behavior change. The owner tried the shipped threshold (about two notches) and pause (350 ms) with a wheel and a trackpad on 2026-10-26 and found the feel right (task 1.1).
 
 ### 7. Spread layout
 
@@ -64,6 +64,6 @@ A fourth layout in `pdf-layout-model.ts`. Slots are as wide as the container, ea
 
 ## Open Questions
 
-- The minimum readable width per page for `Spread` (a first guess is 360 px per page, so a viewer of at least about 760 px wide, and a landscape-ish aspect). Settle by trying real widths.
-- How the compact landscape side rail holds the page indicator and page buttons.
+- Settled (2026-10-26, owner): `Spread` needs 360 px per page, so `isSpreadAvailable` is true from a viewer width of 760 px (two pages plus margins). Width only; no aspect rule unless 4.6 shows one is needed. Tune with real widths in 4.6.
+- Settled (2026-10-26, owner): the compact landscape side rail keeps the page controls. `Previous page` and `Next page` sit in the rail with a small `n/81` label between them (a short form of the indicator, shown only in `Pages` and `Spread`); the indicator pill over the page is not used in the rail. On a short phone the rail scrolls rather than hiding a control. The rail's order is close, page group, zoom, `Layout`, piano, play.
 - Whether `Spread` should offer a "first page alone" pairing later (the owner chose pairing from page 1 for now).
