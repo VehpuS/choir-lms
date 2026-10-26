@@ -1,3 +1,7 @@
+## Scope
+
+This change builds the offline cache and its UI on web. Native storage, `react-native-track-player` playing local files, and the on-device checks are tracked in `native-playback-follow-ups` (tasks 1.10 and 1.11, moved 2026-10-27 at the user's direction). The `AudioStore` interface keeps the cache logic platform-neutral so native only adds a store.
+
 ## Context
 
 Web playback fetches the whole Drive `alt=media` response into a blob on every `add()`/`load()` (`saved-track-web-download.ts`) and revokes it on `reset()`/`stop()` (`saved-track-player-web-load.ts`). Nothing is reused: loop previews, track and loop starts of one file, and reloads each repeat a 3-8 MB download. Native uses `react-native-track-player` with the Drive URL and auth headers, so every start streams again. Waveform peaks already have a Drive-version-keyed, size-budgeted LRU (`waveform-peaks/peak-cache.ts`) over a platform store (`peak-store.web.ts` on IndexedDB, `peak-store.ts` on AsyncStorage); that is the pattern to follow for audio.
@@ -12,7 +16,7 @@ Web playback fetches the whole Drive `alt=media` response into a blob on every `
 - **Key and invalidation.** Entry key is `driveFileId`; the entry stores `modifiedTime` as its version (`resolveWaveformSourceVersion` is reused so audio and peaks agree). A lookup whose current `modifiedTime` differs drops the entry. Offline (no Drive metadata) an entry is served as-is and marked possibly stale.
 - **Layers.** A platform-neutral `audio-cache` (LRU, pin set, budget, in-flight map) over a `store` interface, as `peak-cache` does:
   - Web: in-memory blob map for the session (instant replays) backed by IndexedDB or Cache Storage for reloads. Blob URLs stay per-player-hold; `reset()` releases the hold, never revokes a cached blob's bytes.
-  - Native: files under the app's document directory via `expo-file-system` (a new direct dependency; present transitively in the lockfile), with an index in AsyncStorage. File system, not AsyncStorage, for bytes. Whether `react-native-track-player` plays a `file://` URL with the same transport and lock-screen behavior is task 1.4's spike, run before native work.
+  - Native (built in `native-playback-follow-ups` 1.10): files under the app's document directory via `expo-file-system` (a new direct dependency; present transitively in the lockfile), with an index in AsyncStorage. File system, not AsyncStorage, for bytes. Whether `react-native-track-player` plays a `file://` URL with the same transport and lock-screen behavior is that task's spike.
 - **Shared in-flight download.** One download per `driveFileId` + version. Each waiter holds a reference; `abortSavedTrackDownloads()` cancels only when the last waiter leaves (8.33: a superseded request must not cancel a download another waiter still needs).
 - **User-set cache size (user, 2026-10-26).** The budget is a per-device user setting, not only a constant: a `Cache size` control with preset steps (proposed 100 MB, 250 MB, 500 MB, 1 GB, 2 GB; defaults below) at the top of the offline files view and in Settings. Lowering it evicts least recently used unkept files immediately; if kept files alone exceed it they stay and the view says so. It covers the audio budget only (waveform peaks keep their own 64 MB; score files stay outside it). Presets and placement need a check with the user (task 1.6).
 - **Settings screen layout (user, 2026-10-26).** Settings already stacks Piano, My parts, two Search sources sections and more in one long scroll, and this change adds Offline storage. The change restructures it with a standard pattern: the likely choice is a top-level list of category rows (for example Piano, My parts, Search sources, Offline storage) each opening its own page, as iOS Settings does, rather than collapsible sections in one scroll. Options to compare with the user before building: nested pages, collapsible sections, or a segmented/tabbed layout (task 1.8).
@@ -31,5 +35,5 @@ Web playback fetches the whole Drive `alt=media` response into a blob on every `
 ## Order of work
 
 1. Web replay cache with shared in-flight (1.1 a-c, e), in-memory first, persistence behind the store interface.
-2. Offline model, UI decisions and native spike (1.3, 1.4).
-3. Native store, sign-out prompt, offline UI, then sheet music (1.5) and never-played waveforms (1.2).
+2. Offline model and UI decisions (1.3), then the Settings restructure (1.8).
+3. Sign-out prompt, offline files view, then sheet music (1.5) and never-played waveforms (1.2) on web. Native follows in `native-playback-follow-ups`.

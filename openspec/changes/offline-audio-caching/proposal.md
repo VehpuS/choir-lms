@@ -10,6 +10,10 @@ Playing the same Drive file again always downloads it again: on web every `add()
 - A decision on which tracks are kept offline: automatically (recently played), by choice (a `Keep offline` action), or both.
 - Sheet music offline: a track's opened score files (a Drive PDF, MusicXML or MIDI file) follow the same offline model as its audio, with the same budget and sign-out handling and an offline state in the viewer's source switcher. Linked pages such as MuseScore cannot be cached and say so. Whether score files share the audio cache or are kept with the track is a design question (they are small next to audio).
 
+## Scope
+
+Web first. Native storage and on-device behavior moved to `native-playback-follow-ups` on 2026-10-27.
+
 ## Impact
 
 Not scheduled. Needs a design (storage per platform, quota behavior, Drive version invalidation, sign-out handling for cached private audio and score files) and spec deltas before implementation. See `tasks.md` for the original notes.

@@ -1,8 +1,8 @@
 import type { AudioStore } from './audio-store-types';
 
 /**
- * Native keeps no persistent audio yet: where files live on iOS and Android
- * is decided by offline-audio-caching task 1.4. Until then every read misses.
+ * Native keeps no persistent audio yet: its store is built in
+ * native-playback-follow-ups task 1.10. Until then every read misses.
  */
 export const audioStore: AudioStore = {
   async clear() {
