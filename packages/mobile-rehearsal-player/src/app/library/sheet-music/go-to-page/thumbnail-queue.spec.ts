@@ -187,4 +187,20 @@ describe('createThumbnailQueue', () => {
 
     assert.equal(draws.length, 0);
   });
+
+  it('discards one page, freeing it and letting it be queued again', async () => {
+    const { draws, queue } = setup();
+    const first = canvas();
+
+    queue.enqueue(0, first, 120);
+    queue.discard(0);
+
+    assert.equal(draws[0]?.cancelled, true);
+    assert.equal(first.width, 0);
+
+    queue.enqueue(0, canvas(), 140);
+    await settle();
+
+    assert.equal(draws.length, 2);
+  });
 });

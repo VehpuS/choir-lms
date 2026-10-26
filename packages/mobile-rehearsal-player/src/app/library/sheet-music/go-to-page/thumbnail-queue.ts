@@ -15,6 +15,8 @@ type ThumbnailEntry = {
 export type ThumbnailQueue = {
   /** Queues a page's thumbnail; a page that is already queued or drawn is left alone. */
   enqueue(index: number, canvas: ThumbnailCanvas, cssWidth: number): void;
+  /** Cancels and releases one page's thumbnail, such as when its cell goes away. */
+  discard(index: number): void;
   /** Moves a queued page to the front, so it is drawn next. */
   prioritize(index: number): void;
   /** Cancels and releases every thumbnail. Safe to call again. */
@@ -79,6 +81,14 @@ export const createThumbnailQueue = (options: {
   };
 
   return {
+    discard(index) {
+      const entry = entries.get(index);
+
+      if (entry) {
+        free(entry);
+        entries.delete(index);
+      }
+    },
     enqueue(index, canvas, cssWidth) {
       if (isReleased || entries.has(index)) {
         return;

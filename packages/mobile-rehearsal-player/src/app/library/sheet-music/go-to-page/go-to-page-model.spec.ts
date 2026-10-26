@@ -8,6 +8,7 @@ import {
   THUMBNAIL_MAX_WIDTH,
   THUMBNAIL_MIN_WIDTH,
   thumbnailGrid,
+  thumbnailRowHeight,
   visibleRows,
 } from './go-to-page-model.js';
 
@@ -162,5 +163,12 @@ describe('thumbnailGrid', () => {
   it('never returns a zero-size cell', () => {
     assert.equal(thumbnailGrid(0).columns, 1);
     assert.ok(thumbnailGrid(0).cellWidth > 0);
+  });
+});
+
+describe('thumbnailRowHeight', () => {
+  it('adds the letter-shaped thumbnail, the page number, and the gap', () => {
+    // 85 px wide is 110 px tall on a letter page.
+    assert.equal(thumbnailRowHeight(85), 110 + 20 + 12);
   });
 });

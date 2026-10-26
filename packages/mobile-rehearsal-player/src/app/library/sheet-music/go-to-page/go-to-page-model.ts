@@ -10,6 +10,8 @@ export type GoToPageLayout = PdfLayout | 'spread';
 export const THUMBNAIL_MIN_WIDTH = 90;
 export const THUMBNAIL_MAX_WIDTH = 160;
 export const THUMBNAIL_GAP = 12;
+export const THUMBNAIL_PAGE_ASPECT = 11 / 8.5;
+export const THUMBNAIL_LABEL_HEIGHT = 20;
 const SPREAD_SIZE = 2;
 const WHOLE_NUMBER_PATTERN = /^\d+$/;
 
@@ -119,3 +121,9 @@ export const thumbnailGrid = (contentWidth: number): ThumbnailGrid => {
     columns,
   };
 };
+
+/** A grid row's height: the thumbnail (letter-shaped), its page number, and the gap below. */
+export const thumbnailRowHeight = (cellWidth: number): number =>
+  Math.ceil(cellWidth * THUMBNAIL_PAGE_ASPECT) +
+  THUMBNAIL_LABEL_HEIGHT +
+  THUMBNAIL_GAP;
