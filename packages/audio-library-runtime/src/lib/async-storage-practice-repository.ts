@@ -1,6 +1,4 @@
 import {
-  normalizePlaylist,
-  withResolvedTagAddedAt,
   type DriveAudioSource,
   type NamedLoop,
   type Playlist,
@@ -11,7 +9,6 @@ import {
 import {
   deleteLibraryFileLinkFromRepository,
   deleteLibraryFolderNodeFromRepository,
-  normalizeStoredLoops,
   normalizeStoredSources,
 } from './async-storage-practice-repository-helpers';
 
@@ -33,6 +30,8 @@ import {
 import {
   deleteLoopFromRepository,
   deletePlaylistFromRepository,
+  listLoopsFromRepository,
+  listPlaylistsFromRepository,
   saveLoopToRepository,
   savePlaylistToRepository,
 } from './loop-playlist-storage';
@@ -89,20 +88,8 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
     return deleteSourceFromRepository(this, ownerId, sourceId);
   }
 
-  async listLoops(ownerId: string) {
-    const storedLoops = await readStoredCollection<unknown>('loops', ownerId);
-    const normalizedLoops = normalizeStoredLoops({
-      loops: storedLoops,
-      sources: await this.listSources(ownerId),
-    }).map((loop) =>
-      withResolvedTagAddedAt(loop, loop.tagAddedAt, loop.createdAt),
-    );
-
-    if (JSON.stringify(storedLoops) !== JSON.stringify(normalizedLoops)) {
-      await writeStoredCollection('loops', ownerId, normalizedLoops);
-    }
-
-    return normalizedLoops;
+  async listLoops(ownerId: string): Promise<NamedLoop[]> {
+    return listLoopsFromRepository(this, ownerId);
   }
 
   async saveLoop(loop: NamedLoop) {
@@ -114,25 +101,7 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
   }
 
   async listPlaylists(ownerId: string) {
-    const playlists = await readStoredCollection<Playlist>(
-      'playlists',
-      ownerId,
-    );
-    const normalizedPlaylists = playlists.map((playlist) => {
-      const normalizedPlaylist = normalizePlaylist(playlist);
-
-      return withResolvedTagAddedAt(
-        normalizedPlaylist,
-        normalizedPlaylist.tagAddedAt,
-        normalizedPlaylist.createdAt,
-      );
-    });
-
-    if (JSON.stringify(playlists) !== JSON.stringify(normalizedPlaylists)) {
-      await writeStoredCollection('playlists', ownerId, normalizedPlaylists);
-    }
-
-    return normalizedPlaylists;
+    return listPlaylistsFromRepository(ownerId);
   }
 
   async savePlaylist(playlist: Playlist) {

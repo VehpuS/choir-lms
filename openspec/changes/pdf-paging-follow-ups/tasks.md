@@ -1,0 +1,37 @@
+## 1. Tune and verify what shipped
+
+- [ ] 1.1 **Explore with the owner in the browser preview:** wheel and trackpad paging in `Pages` (the threshold of about two notches and the pause); change the constants only if the feel is wrong (original 6.9). Spec any changed constant.
+- [ ] 1.2 Check swipe snapping in `Pages` with a real touch fling on a phone and a tablet (the browser pane cannot produce one): a fast fling must not skip a page and a slow drag must settle on the nearer page (original 6.11). Manual; record the result in `design.md`.
+
+## 2. Zoom, focus, and scrollbar
+
+- [ ] 2.1 Reset zoom to 1 on a layout change while keeping the page and in-page fraction (design Decision 1). Spec: zoomed in `Scroll`, then `Pages` lands fitted and snapping; the page is kept.
+- [ ] 2.2 Return focus to the page area after a sheet closes or a toolbar action, never taking it from a text field (design Decision 2). A pure focus rule with a spec; a thin `.web` call in the viewer.
+- [ ] 2.3 Hide the horizontal scrollbar in `Pages` and keep it in `Strip` (design Decision 4). Verify in the browser at phone and desktop widths.
+
+## 3. Toolbar and page turns
+
+- [ ] 3.1 **Explore with the owner before building:** how the compact landscape side rail holds the page indicator and page buttons (design Open Questions); update the design with the choice.
+- [ ] 3.2 Move `Previous page` and `Next page` beside the page indicator and keep the toolbar to zoom, `Layout`, piano, and play (original 6.7). A pure model for the indicator row with a spec; verify the phone-width `Pages` toolbar fits one row.
+- [ ] 3.3 Animate control and key page turns with a short smooth scroll, instant under reduced motion, suspending snap during the turn (design Decision 5). Specs for the reduced-motion decision and for repeated turns ending at the newest target; verify in the browser.
+
+## 4. Spread layout
+
+- [ ] 4.1 Settle the width threshold for `Spread` by trying real widths with the owner, and record it in `design.md` (design Open Questions).
+- [ ] 4.2 Add `spread` to `PdfLayout` in `@org/audio-library-models` with parsing specs (old data, unknown value, `spread` kept), and `isSpreadAvailable` with specs.
+- [ ] 4.3 Add the `Spread` layout to `pdf-layout-model.ts`: spread boxes, the spread of a page and the pages of a spread, scroll-to-spread offsets, and an odd last page. Specs for each.
+- [ ] 4.4 Render `Spread` in `pdf-renderer.web.ts`: slot per spread, snapping only while fitted, lazy drawing of the current spread and one neighbor each side, paging by spread, the hidden scrollbar, and a layout-change anchor on the first page of the spread.
+- [ ] 4.5 Offer `Spread` in the layout sheet only when available, fall back to `Pages` when the viewer narrows (without rewriting the stored layout), and show `Pages 3-4 of 81` in the indicator. Model and component specs.
+- [ ] 4.6 Verify in the browser at desktop and tablet widths: spread paging, resize to narrow and back, zoom and unzoom, a stored `spread` on a narrow viewer, an odd page count, and memory staying flat on the 81-page score.
+
+## 5. Validation
+
+- [ ] 5.1 Update the README's viewer notes if they describe the PDF layouts, and run `openspec validate pdf-paging-follow-ups`.
+- [ ] 5.2 Run lint, test, typecheck, and build for the touched projects through Nx, plus `nx format:check --base=origin/main` and `nx sync:check`.
+- [ ] 5.3 Sync the delta specs into `track-sheet-music` and archive this change after the owner's go-ahead.
+
+## 6. Future tasks (not in scope here)
+
+- [ ] 6.1 Right-to-left page order for documents that declare it; deferred until a real right-to-left file needs it (original 6.1). Explore with a user before changing.
+- [ ] 6.2 Add the layouts and page paging to native when native PDF rendering exists (`native-playback-follow-ups` 1.6; original 6.4).
+- [ ] 6.3 `Go to page` and thumbnails live in `pdf-go-to-page`; the 317-line repository file was split directly (original 6.12).

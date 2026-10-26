@@ -15,14 +15,14 @@ Explore with a user before changing:
 - **6.6 Smooth page turns.** `Previous page`, `Next page`, and arrow keys jump instantly; try a short smooth scroll, and whether it follows the device's reduced-motion setting.
 - **6.9 Wheel paging in `Pages`.** One page per flick (design Decision 7); check the threshold and pause feel with a mouse wheel and a trackpad.
 - **6.1 Right-to-left page order** for documents that declare it (design Open Questions).
-- **6.2 `Go to page`** entry from the page indicator, and page thumbnails.
+- **6.2 `Go to page`** entry from the page indicator, and page thumbnails. Moved to `pdf-go-to-page`.
 - **6.3 Two-page spreads** on a wide tablet or desktop window.
 
 Other follow-up work:
 
 - **6.4 Native.** Add the layouts and page paging to native when native PDF rendering exists (`native-playback-follow-ups` 1.6).
 - **6.11 Real touch-fling check** of swipe snapping in `Pages` on a phone and a tablet (the browser pane cannot produce one): a fast fling must not skip a page, and a slow drag must settle on the nearer page.
-- **6.12 Lint warning.** `packages/audio-library-runtime/src/lib/async-storage-practice-repository.ts` is 317 lines (over the 300-line `max-lines` warning). It predates the paging change and is the only lint warning in the workspace; split it by concern (for example the sheet music and loop helpers). This is unrelated to PDF paging and may be better as its own change.
+- **6.12 Lint warning.** Done directly (2026-10-26): list helpers moved into `loop-playlist-storage.ts`, file now 260 lines.
 
 ## Decisions so far
 
@@ -32,7 +32,7 @@ Other follow-up work:
 - **6.5:** hide the horizontal scrollbar in `Pages`, keep it in `Strip`.
 - **6.6:** a short (~200ms) smooth scroll for page turns, instant when the device asks for reduced motion.
 - **6.9:** keep one page per wheel flick; tune the threshold and pause by feel in the browser with the owner.
-- **6.2:** tapping the page indicator (every layout) opens a sheet with a page-number field above a thumbnail grid. Thumbnail rendering cost on a long score (81 pages) needs a design check; likely large enough to split into its own change.
+- **6.2:** moved to its own change, `pdf-go-to-page` (page-number field above a thumbnail grid, opened from the page indicator).
 - **6.3:** an opt-in fourth layout, `Spread`, offered in the Layout sheet only when the window is wide enough (never automatic). Pages pair from page 1 (1-2, 3-4). Details such as the width threshold and how paging steps (by spread) are for design.
 - **6.1:** deferred until a real right-to-left file needs it; stays recorded, no work planned.
 
@@ -44,10 +44,9 @@ None yet. Exploration decides which items change requirements.
 
 ### Modified Capabilities
 
-- `track-sheet-music`: expected for the items that change viewer behavior (6.1 to 6.3, 6.5 to 6.10); confirmed per item during exploration.
+- `track-sheet-music`: expected for the items that change viewer behavior (6.1 to 6.3, 6.5 to 6.10); adds `Spread` and the zoom, focus, scrollbar, and page-turn rules below.
 
 ## Impact
 
 - `packages/mobile-rehearsal-player` PDF viewer (`renderers/pdf-*`, toolbar, `Layout` sheet) and its specs.
-- `packages/audio-library-runtime` only for 6.12.
 - No dependency or data-model changes expected.

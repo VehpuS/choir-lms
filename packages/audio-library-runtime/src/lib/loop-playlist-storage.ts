@@ -10,6 +10,7 @@ import { normalizeStoredLoops } from './async-storage-practice-repository-helper
 import type { PracticeRepository } from './practice-repository';
 import {
   persistSynchronizedLibraryFileTree,
+  readStoredCollection,
   writeStoredCollection,
 } from './practice-repository-storage';
 
@@ -121,4 +122,44 @@ export async function deletePlaylistFromRepository(
   });
 
   return nextPlaylists;
+}
+
+export async function listLoopsFromRepository(
+  repository: PracticeRepository,
+  ownerId: string,
+): Promise<NamedLoop[]> {
+  const storedLoops = await readStoredCollection<unknown>('loops', ownerId);
+  const normalizedLoops = normalizeStoredLoops({
+    loops: storedLoops,
+    sources: await repository.listSources(ownerId),
+  }).map((loop) =>
+    withResolvedTagAddedAt(loop, loop.tagAddedAt, loop.createdAt),
+  );
+
+  if (JSON.stringify(storedLoops) !== JSON.stringify(normalizedLoops)) {
+    await writeStoredCollection('loops', ownerId, normalizedLoops);
+  }
+
+  return normalizedLoops;
+}
+
+export async function listPlaylistsFromRepository(
+  ownerId: string,
+): Promise<Playlist[]> {
+  const playlists = await readStoredCollection<Playlist>('playlists', ownerId);
+  const normalizedPlaylists = playlists.map((playlist) => {
+    const normalizedPlaylist = normalizePlaylist(playlist);
+
+    return withResolvedTagAddedAt(
+      normalizedPlaylist,
+      normalizedPlaylist.tagAddedAt,
+      normalizedPlaylist.createdAt,
+    );
+  });
+
+  if (JSON.stringify(playlists) !== JSON.stringify(normalizedPlaylists)) {
+    await writeStoredCollection('playlists', ownerId, normalizedPlaylists);
+  }
+
+  return normalizedPlaylists;
 }
