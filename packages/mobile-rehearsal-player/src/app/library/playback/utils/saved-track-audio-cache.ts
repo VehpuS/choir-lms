@@ -7,6 +7,8 @@ type SavedTrackAudioCacheEntry = {
 
 export type SavedTrackAudioCache = {
   clear(): void;
+  /** Drops one file's bytes (used when the user removes its offline copy). */
+  delete(driveFileId: string): void;
   /** The cached bytes for this file at this version, marking them recently used. */
   get(driveFileId: string, version: string): Blob | null;
   set(driveFileId: string, version: string, blob: Blob): void;
@@ -40,6 +42,9 @@ export const createSavedTrackAudioCache = (
   };
 
   return {
+    delete(driveFileId) {
+      remove(driveFileId);
+    },
     clear() {
       entries.clear();
       totalBytes = 0;

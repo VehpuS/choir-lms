@@ -23,6 +23,7 @@ import { useClearStaleLoopSource } from './use-clear-stale-loop-source';
 import { useDriveImportController } from './use-drive-import-controller';
 import { useLibraryFiles } from './use-library-files';
 import { useSavedLibrarySourcesInView } from './use-saved-library-sources-in-view';
+import { useOfflineRequestHandler } from '../offline/use-offline-request-handler';
 import { useOpenLoopBuilderForSource } from './use-open-loop-builder-for-source';
 import { useSavedRehearsalLibrary } from './use-saved-rehearsal-library';
 import { useSavedRehearsalLibraryRemovalActions } from './use-saved-rehearsal-library-removal-actions';
@@ -94,6 +95,14 @@ export const useRehearsalLibraryController = ({
     savedLoops: savedLoops.savedLoops,
     savedPlaylists: playlists.savedPlaylists,
     savedSources: savedLibrarySources,
+  });
+  useOfflineRequestHandler({
+    accessToken:
+      authState.status === 'authorized' ? authState.accessToken : undefined,
+    clearIssue: savedLibrary.clearOfflineIssue,
+    reportIssue: savedLibrary.reportOfflineIssue,
+    savedLibrarySources,
+    savedLoops: savedLoops.savedLoops,
   });
   const savedLibraryRemovalActions = useSavedRehearsalLibraryRemovalActions({
     deleteLoop: savedLoops.deleteLoop,

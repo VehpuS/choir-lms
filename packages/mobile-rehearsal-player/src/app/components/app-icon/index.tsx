@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { Icon } from 'phosphor-react-native';
 // Per-icon imports keep Metro from bundling all ~1,500 Phosphor glyphs, since
 // Metro does not tree-shake the package's barrel export.
+import { ArrowCircleDownIcon } from 'phosphor-react-native/src/icons/ArrowCircleDown';
 import { ArrowClockwiseIcon } from 'phosphor-react-native/src/icons/ArrowClockwise';
 import { ArrowCounterClockwiseIcon } from 'phosphor-react-native/src/icons/ArrowCounterClockwise';
 import { ArrowLineDownIcon } from 'phosphor-react-native/src/icons/ArrowLineDown';
@@ -79,6 +80,7 @@ import {
 export type { AppIconName } from './model';
 
 const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
+  ArrowCircleDown: ArrowCircleDownIcon,
   ArrowClockwise: ArrowClockwiseIcon,
   ArrowCounterClockwise: ArrowCounterClockwiseIcon,
   ArrowLineDown: ArrowLineDownIcon,

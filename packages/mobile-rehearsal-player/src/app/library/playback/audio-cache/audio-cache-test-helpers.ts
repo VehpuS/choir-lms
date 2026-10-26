@@ -22,6 +22,16 @@ export const createMemoryAudioStore = () => {
     async remove(driveFileId) {
       records.delete(driveFileId);
     },
+    async setPinned(driveFileId, pinned) {
+      const record = records.get(driveFileId);
+
+      if (record) {
+        records.set(driveFileId, {
+          ...record,
+          entry: { ...record.entry, pinned },
+        });
+      }
+    },
     async touch(driveFileId, touchedAt) {
       const record = records.get(driveFileId);
 

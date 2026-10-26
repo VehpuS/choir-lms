@@ -168,4 +168,11 @@ describe('app icon glyph map', () => {
     assert.equal(resolveSkipSecondsLabelSize(28), 10);
     assert.ok(resolveSkipSecondsLabelSize(22) < 22 / 2);
   });
+
+  it('gives a kept-offline file its own filled glyph, distinct from the selection check-circle', () => {
+    assert.notDeepEqual(
+      resolveAppIconGlyph('offline-kept'),
+      resolveAppIconGlyph('check-circle'),
+    );
+  });
 });

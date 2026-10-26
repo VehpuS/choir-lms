@@ -135,7 +135,8 @@ export const getSavedRehearsalLibraryStatusCopy = (
   }).length;
   const availableSourceCount = savedSourceCount - unavailableSourceCount;
 
-  if (options.issue?.kind === 'storage') {
+  // A failed `Keep offline` is shown here too, so it is seen from any view.
+  if (options.issue?.kind === 'storage' || options.issue?.kind === 'offline') {
     return {
       title: options.issue.title,
       message: options.issue.message,
@@ -194,7 +195,7 @@ export const getSavedRehearsalLibraryStatusCopy = (
 export const getSavedRehearsalLibrarySourceIssue = (
   issue: SavedRehearsalLibraryIssue | null,
   source: DriveLibrarySource,
-  kind: 'remove' | 'save',
+  kind: 'offline' | 'remove' | 'save',
 ) => {
   if (issue?.kind !== kind) {
     return undefined;

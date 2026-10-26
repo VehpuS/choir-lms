@@ -18,6 +18,9 @@ import {
   isSavedTrackPlaybackActive,
 } from '../../playback/utils/saved-track-playback-view-model';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
+import { createSourceOfflineMenuState } from '../../offline/offline-menu-action';
+import { resolveOfflineRowLeading } from '../../offline/offline-row-mark';
+import { useOfflineState } from '../../offline/offline-state';
 import { getSavedRehearsalLibrarySourceIssue } from '../../saved-rehearsal-library/view-model';
 import { ExplorerListRow } from '../explorer';
 import type { ExplorerRowSelection } from '../explorer/model';
@@ -122,8 +125,10 @@ export const BrowseSourceRow = ({
   );
   const isPlaying = isActive && playbackState === 'playing';
   const isAvailable = source.availability.status === 'available';
+  const offlineState = useOfflineState(source.driveFileId);
   const statusMessage =
     getSavedRehearsalLibrarySourceIssue(savedLibraryIssue, source, 'remove') ??
+    getSavedRehearsalLibrarySourceIssue(savedLibraryIssue, source, 'offline') ??
     getSavedTrackPlaybackItemIssue(playbackIssue, trackPlayableItem) ??
     getSourceStatusMessage(source);
   const durationLabel = formatLengthLabel(getSourceDisplayDurationMs(source));
@@ -149,6 +154,7 @@ export const BrowseSourceRow = ({
       }),
       sheetMusic: createSheetMusicMenuState({ id: source.id, kind: 'track' }),
       markers: createMarkersMenuState({ id: source.id, kind: 'track' }),
+      offline: createSourceOfflineMenuState(source),
       onAddToPlaylist: () => {
         openSourcePlaylistSelector(source.id);
       },
@@ -214,7 +220,10 @@ export const BrowseSourceRow = ({
           ) : null
         }
         metadata={
-          <RowMetaLine text={formatTracksRowMeta({ loopCount, source })} />
+          <RowMetaLine
+            leading={resolveOfflineRowLeading(offlineState)}
+            text={formatTracksRowMeta({ loopCount, source })}
+          />
         }
         onPress={() => {
           void toggleSourcePlayback(source);

@@ -15,7 +15,7 @@ type SavedRehearsalLibraryReader = Pick<
 >;
 
 export type SavedRehearsalLibraryIssue = {
-  kind: 'remove' | 'save' | 'storage';
+  kind: 'offline' | 'remove' | 'save' | 'storage';
   message: string;
   sourceId?: string;
   title: string;
@@ -60,6 +60,22 @@ const createMutationIssue = (
     kind,
     title: kind === 'save' ? 'Could not save track' : 'Could not remove track',
     message: detail ? `${fallbackMessage} ${detail}` : fallbackMessage,
+    sourceId,
+  };
+};
+
+/** A `Keep offline` that did not finish; the track itself is unaffected. */
+export const createOfflineIssue = (
+  sourceId: string,
+  sourceName: string,
+  error: unknown,
+): SavedRehearsalLibraryIssue => {
+  const detail = error instanceof Error ? error.message.trim() : '';
+
+  return {
+    kind: 'offline',
+    title: 'Could not keep offline',
+    message: `Couldn't keep "${sourceName}" offline.${detail ? ` ${detail}` : ''}`,
     sourceId,
   };
 };
@@ -208,9 +224,15 @@ export const useSavedRehearsalLibrary = () => {
 
   return {
     canMutateLibrary: issue?.kind !== 'storage',
+    clearOfflineIssue() {
+      setIssue((current) => (current?.kind === 'offline' ? null : current));
+    },
     issue,
     isLoading,
     pendingSourceId,
+    reportOfflineIssue(source: DriveLibrarySource, error: unknown) {
+      setIssue(createOfflineIssue(source.id, source.name, error));
+    },
     async refreshSources() {
       const nextSources = await loadSavedRehearsalLibrarySources(
         practiceRepository,

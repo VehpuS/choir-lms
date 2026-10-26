@@ -7,6 +7,8 @@ import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
 import { useHasLyrics } from '../../../components/saved-item-menu/saved-item-availability-context';
 import { resolveSavedLoopMenu } from '../../../components/saved-item-menu/saved-item-menus';
 import { createLyricsMenuState } from '../../../lyrics/utils/lyrics-menu-action';
+import { createOfflineMenuState } from '../../../offline/offline-menu-action';
+import { useOfflineState } from '../../../offline/offline-state';
 import { createMarkersMenuState } from '../../../markers/utils/markers-menu-action';
 import { createSheetMusicMenuState } from '../../../sheet-music/utils/sheet-music-menu-action';
 import {
@@ -114,6 +116,9 @@ export const SavedLoopListRow = ({
     void togglePlayableItemPlayback(playableItem);
   };
   const hasLyrics = useHasLyrics(loopCard.loop);
+  const offlineSource = playableItem?.source;
+  // Re-renders the row so its menu follows the file's offline state.
+  useOfflineState(offlineSource?.driveFileId ?? '');
   // The same loop menu as Files, with no view actions (task 2.12).
   const sheetActions = resolveSavedLoopMenu(
     {
@@ -141,6 +146,14 @@ export const SavedLoopListRow = ({
         playableItem !== null
           ? createMarkersMenuState({ id: loopCard.loop.id, kind: 'loop' })
           : undefined,
+      offline: offlineSource
+        ? createOfflineMenuState({
+            driveFileId: offlineSource.driveFileId,
+            id: loopCard.loop.id,
+            kind: 'loop',
+            modifiedTime: offlineSource.modifiedTime,
+          })
+        : undefined,
       onAddToPlaylist: () => {
         onOpenLoopPlaylistSelector(loopCard.loop.id);
       },

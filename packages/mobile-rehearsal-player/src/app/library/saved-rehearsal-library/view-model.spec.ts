@@ -270,6 +270,23 @@ describe('saved rehearsal library view-model', () => {
     );
   });
 
+  it('shows a failed Keep offline on the status card so any view sees it', () => {
+    const copy = getSavedRehearsalLibraryStatusCopy({
+      authState: AUTHORIZED_STATE,
+      isLoading: false,
+      issue: {
+        kind: 'offline',
+        sourceId: PLAYABLE_SOURCE.id,
+        title: 'Could not keep offline',
+        message: 'Couldn\'t keep "Warmup.mp3" offline.',
+      },
+      savedSources: [],
+    });
+
+    assert.equal(copy.tone, 'error');
+    assert.equal(copy.title, 'Could not keep offline');
+  });
+
   it('keeps save-specific failures off the section status card', () => {
     const copy = getSavedRehearsalLibraryStatusCopy({
       authState: AUTHORIZED_STATE,

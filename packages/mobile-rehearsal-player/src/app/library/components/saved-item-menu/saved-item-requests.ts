@@ -11,9 +11,11 @@ export type SavedItemRequestAction =
   | 'edit-loop'
   | 'edit-lyrics'
   | 'edit-tags'
+  | 'keep-offline'
   | 'make-loop'
   | 'markers'
   | 'remove-from-library'
+  | 'remove-offline'
   | 'sheet-music'
   | 'view-track-loops';
 
@@ -36,6 +38,9 @@ export const ADD_LYRICS_LABEL = 'Lyrics';
 export const EDIT_LYRICS_LABEL = 'Edit lyrics';
 export const SHEET_MUSIC_LABEL = 'Sheet music';
 export const MARKERS_LABEL = 'Markers';
+export const KEEP_OFFLINE_LABEL = 'Keep offline';
+export const REMOVE_OFFLINE_LABEL = 'Remove from offline';
+export const DOWNLOADING_OFFLINE_LABEL = 'Downloading…';
 export const ADD_MARKER_HERE_LABEL = 'Add marker here';
 
 export const requestSavedItemAction = (request: SavedItemRequest) => {

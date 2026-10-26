@@ -11,6 +11,10 @@ import {
   resolveSheetMusicMenuActions,
   type SheetMusicMenuState,
 } from '../../sheet-music/utils/sheet-music-menu-action';
+import {
+  resolveOfflineMenuActions,
+  type OfflineMenuState,
+} from '../../offline/offline-menu-action';
 import { resolveSavedLoopRowActions } from '../../loops/utils/saved-loop-row-actions';
 import { resolveSavedTrackRowActions } from '../../playback/utils/saved-track-row-actions';
 import type { PendingSourceLocationAction } from '../../saved-rehearsal-library/use-saved-source-original-location-actions';
@@ -52,6 +56,8 @@ export type SavedTrackMenuContext = {
   sheetMusic?: SheetMusicMenuState;
   /** Offers `Markers`; absent where markers are not offered. */
   markers?: MarkersMenuState;
+  /** Offers `Keep offline`; absent where offline storage is not available. */
+  offline?: OfflineMenuState;
   onAddToPlaylist: () => void;
   onAddToQueue: () => void;
   onEditTags: () => void;
@@ -114,6 +120,7 @@ export const resolveSavedTrackMenu = (
       ...resolveLyricsMenuActions(context.lyrics, placement.idPrefix),
       ...resolveSheetMusicMenuActions(context.sheetMusic, placement.idPrefix),
       ...resolveMarkersMenuActions(context.markers, placement.idPrefix),
+      ...resolveOfflineMenuActions(context.offline, placement.idPrefix),
     ],
     kind: 'track',
     removeAction,
@@ -137,6 +144,7 @@ export type SavedLoopMenuContext = {
   sheetMusic?: SheetMusicMenuState;
   /** Offers `Markers`; absent where markers are not offered. */
   markers?: MarkersMenuState;
+  offline?: OfflineMenuState;
   onAddToPlaylist: () => void;
   onAddToQueue: () => void;
   onEditLoop: () => void;
@@ -179,6 +187,7 @@ export const resolveSavedLoopMenu = (
       ...resolveLyricsMenuActions(context.lyrics, placement.idPrefix),
       ...resolveSheetMusicMenuActions(context.sheetMusic, placement.idPrefix),
       ...resolveMarkersMenuActions(context.markers, placement.idPrefix),
+      ...resolveOfflineMenuActions(context.offline, placement.idPrefix),
     ],
     kind: 'loop',
     removeAction,

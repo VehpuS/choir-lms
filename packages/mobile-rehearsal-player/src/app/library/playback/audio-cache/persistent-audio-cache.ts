@@ -1,4 +1,4 @@
-import type { AudioStore } from './audio-store-types';
+import type { AudioStore, AudioStoreEntry } from './audio-store-types';
 
 /** Files fall out of use rather than being rewritten on every read. */
 const TOUCH_INTERVAL_MS = 60 * 60 * 1000;
@@ -11,8 +11,20 @@ type PersistentAudioCacheOptions = {
 
 export type PersistentAudioCache = {
   clear: () => Promise<void>;
+  /** Every stored file's entry, without reading any audio. */
+  list: () => Promise<AudioStoreEntry[]>;
+  /**
+   * Keeps a stored file through automatic eviction. False when the file is not
+   * stored (it was never cached, or was too large for the budget).
+   */
+  pin: (driveFileId: string) => Promise<boolean>;
   /** The stored bytes for this file at this version, or null on a miss. */
   read: (driveFileId: string, sourceVersion: string) => Promise<Blob | null>;
+  /** Removes one stored file, kept or not. */
+  remove: (driveFileId: string) => Promise<void>;
+  /** Runs after any change to what is stored; returns an unsubscribe. */
+  subscribe: (listener: () => void) => () => void;
+  unpin: (driveFileId: string) => Promise<void>;
   write: (
     driveFileId: string,
     sourceVersion: string,
@@ -31,13 +43,26 @@ export const createPersistentAudioCache = ({
   now = Date.now,
   store,
 }: PersistentAudioCacheOptions): PersistentAudioCache => {
+  const listeners = new Set<() => void>();
+  const notify = () => {
+    listeners.forEach((listener) => {
+      listener();
+    });
+  };
+  const findEntry = async (driveFileId: string) => {
+    const entries = await store.list();
+
+    return entries.find((entry) => entry.driveFileId === driveFileId);
+  };
+
   const evictOverBudget = async (protectedId: string) => {
     const entries = await store.list();
     let totalBytes = entries.reduce((total, entry) => {
       return total + entry.sizeBytes;
     }, 0);
     const oldestFirst = entries
-      .filter((entry) => entry.driveFileId !== protectedId)
+      // Kept files stay even when they alone exceed the budget.
+      .filter((entry) => entry.driveFileId !== protectedId && !entry.pinned)
       .sort((left, right) => left.touchedAt - right.touchedAt);
 
     for (const entry of oldestFirst) {
@@ -53,6 +78,39 @@ export const createPersistentAudioCache = ({
   return {
     async clear() {
       await store.clear().catch(() => undefined);
+      notify();
+    },
+    async list() {
+      return store.list().catch(() => []);
+    },
+    async pin(driveFileId) {
+      try {
+        if (!(await findEntry(driveFileId))) {
+          return false;
+        }
+
+        await store.setPinned(driveFileId, true);
+        notify();
+
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    async remove(driveFileId) {
+      await store.remove(driveFileId).catch(() => undefined);
+      notify();
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    async unpin(driveFileId) {
+      await store.setPinned(driveFileId, false).catch(() => undefined);
+      notify();
     },
     async read(driveFileId, sourceVersion) {
       try {
@@ -63,7 +121,12 @@ export const createPersistentAudioCache = ({
         }
 
         if (record.entry.sourceVersion !== sourceVersion) {
-          await store.remove(driveFileId);
+          // A kept file is replaced by its next download (which keeps the
+          // pin) rather than dropped, so the user's choice is not lost.
+          if (!record.entry.pinned) {
+            await store.remove(driveFileId);
+            notify();
+          }
 
           return null;
         }
@@ -84,9 +147,12 @@ export const createPersistentAudioCache = ({
       }
 
       try {
+        const previous = await findEntry(driveFileId);
+
         await store.write(
           {
             driveFileId,
+            ...(previous?.pinned ? { pinned: true } : {}),
             sizeBytes: blob.size,
             sourceVersion,
             touchedAt: now(),
@@ -94,6 +160,7 @@ export const createPersistentAudioCache = ({
           blob,
         );
         await evictOverBudget(driveFileId);
+        notify();
       } catch {
         // A full or unavailable store leaves the in-memory copy in charge.
       }

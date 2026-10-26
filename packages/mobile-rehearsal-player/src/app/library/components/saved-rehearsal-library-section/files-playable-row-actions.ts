@@ -5,6 +5,7 @@ import {
   resolveSavedTrackMenu,
 } from '../saved-item-menu/saved-item-menus';
 import { createLyricsMenuState } from '../../lyrics/utils/lyrics-menu-action';
+import { createOfflineMenuState } from '../../offline/offline-menu-action';
 import { createMarkersMenuState } from '../../markers/utils/markers-menu-action';
 import { createSheetMusicMenuState } from '../../sheet-music/utils/sheet-music-menu-action';
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
@@ -96,6 +97,12 @@ export const resolveTrackMenuActions = (
         kind: 'track',
       }),
       markers: createMarkersMenuState({ id: row.source.id, kind: 'track' }),
+      offline: createOfflineMenuState({
+        driveFileId: row.source.driveFileId,
+        id: row.source.id,
+        kind: 'track',
+        modifiedTime: row.source.modifiedTime,
+      }),
       onAddToPlaylist: () => {
         options.onOpenSourcePlaylistSelector(row.source.id);
       },
@@ -165,6 +172,15 @@ export const resolveLoopMenuActions = (
       markers:
         row.source !== null
           ? createMarkersMenuState({ id: row.loop.id, kind: 'loop' })
+          : undefined,
+      offline:
+        row.source !== null
+          ? createOfflineMenuState({
+              driveFileId: row.source.driveFileId,
+              id: row.loop.id,
+              kind: 'loop',
+              modifiedTime: row.source.modifiedTime,
+            })
           : undefined,
       onAddToPlaylist: () => {
         options.onOpenLoopPlaylistSelector(row.loop.id);

@@ -110,6 +110,25 @@ export const createIndexedDbAudioStore = (): AudioStore => {
     return databasePromise;
   };
 
+  // Rewrites one small entry record, never the audio bytes.
+  const updateEntry = async (
+    driveFileId: string,
+    change: (entry: AudioStoreEntry) => AudioStoreEntry,
+  ) => {
+    const database = await getDatabase();
+    const transaction = database.transaction(ENTRY_STORE, 'readwrite');
+    const entries = transaction.objectStore(ENTRY_STORE);
+    const entry = (await requestResult(entries.get(driveFileId))) as
+      | AudioStoreEntry
+      | undefined;
+
+    if (entry) {
+      entries.put(change(entry));
+    }
+
+    await transactionDone(transaction);
+  };
+
   return {
     async clear() {
       const database = await getDatabase();
@@ -157,19 +176,11 @@ export const createIndexedDbAudioStore = (): AudioStore => {
       transaction.objectStore(ENTRY_STORE).delete(driveFileId);
       await transactionDone(transaction);
     },
+    async setPinned(driveFileId, pinned) {
+      await updateEntry(driveFileId, (entry) => ({ ...entry, pinned }));
+    },
     async touch(driveFileId, touchedAt) {
-      const database = await getDatabase();
-      const transaction = database.transaction(ENTRY_STORE, 'readwrite');
-      const entries = transaction.objectStore(ENTRY_STORE);
-      const entry = (await requestResult(entries.get(driveFileId))) as
-        | AudioStoreEntry
-        | undefined;
-
-      if (entry) {
-        entries.put({ ...entry, touchedAt });
-      }
-
-      await transactionDone(transaction);
+      await updateEntry(driveFileId, (entry) => ({ ...entry, touchedAt }));
     },
     async write(entry, blob) {
       const database = await getDatabase();

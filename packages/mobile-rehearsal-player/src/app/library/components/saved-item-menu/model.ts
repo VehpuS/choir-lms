@@ -43,6 +43,8 @@ export const SAVED_ITEM_ACTION_ORDER: Record<
     'Edit lyrics',
     'Sheet music',
     'Markers',
+    'Keep offline',
+    'Remove from offline',
   ],
   playlist: ['Add items', 'Edit tags'],
   track: [
@@ -59,11 +61,14 @@ export const SAVED_ITEM_ACTION_ORDER: Record<
     'Edit lyrics',
     'Sheet music',
     'Markers',
+    'Keep offline',
+    'Remove from offline',
   ],
 };
 
 // Transient labels that stand in for an action while it is busy or blocked.
 const PENDING_LABEL_SLOTS = new Map([
+  ['Downloading…', 'Keep offline'],
   ['Editing…', 'Edit loop'],
   ['Playlists unavailable', 'Add to playlist'],
   ['Preparing loop…', 'Make loop'],

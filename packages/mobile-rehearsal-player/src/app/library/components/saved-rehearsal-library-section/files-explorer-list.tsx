@@ -18,6 +18,11 @@ import type { ExplorerRowSelection } from '../explorer/model';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import { SavedTrackMenuProvenance } from '../saved-item-menu/saved-track-menu-provenance';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
+import { resolveOfflineRowLeading } from '../../offline/offline-row-mark';
+import {
+  offlineStateStore,
+  useOfflineRevision,
+} from '../../offline/offline-state';
 import { resolveFilesRowMenuTitle } from './files-row-actions';
 import type { SavedRehearsalLibraryFilesViewModel } from './files-view-model';
 
@@ -43,6 +48,10 @@ export const FilesExplorerList = (options: {
   setOpenMenuRowKey: (rowKey: string | null) => void;
   viewModel: SavedRehearsalLibraryFilesViewModel;
 }) => {
+  // Menus and marks are built per row, so the list re-renders when any
+  // file's offline state changes.
+  useOfflineRevision();
+
   return (
     <ExplorerListSurface>
       {options.rows.map((row, index) => {
@@ -112,7 +121,18 @@ export const FilesExplorerList = (options: {
                   </Text>
                 ) : null
               }
-              metadata={<RowMetaLine text={viewModelRow.metaLabel} />}
+              metadata={
+                <RowMetaLine
+                  leading={resolveOfflineRowLeading(
+                    offlineStateStore.getState(
+                      (row.kind === 'track' || row.kind === 'loop'
+                        ? row.source?.driveFileId
+                        : undefined) ?? '',
+                    ),
+                  )}
+                  text={viewModelRow.metaLabel}
+                />
+              }
               onPress={viewModelRow.onPress}
               selection={options.selection?.getRowSelection(row)}
               overflowTrigger={

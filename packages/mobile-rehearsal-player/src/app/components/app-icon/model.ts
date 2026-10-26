@@ -5,6 +5,7 @@
 // distinctness rules can be asserted in plain node tests.
 
 export type PhosphorGlyph =
+  | 'ArrowCircleDown'
   | 'ArrowClockwise'
   | 'ArrowCounterClockwise'
   | 'ArrowLineDown'
@@ -184,6 +185,9 @@ export const APP_ICON_GLYPHS = {
 
   // Account.
   'account-circle-outline': regular('UserCircle'),
+
+  // A file kept offline (a circled down arrow: the copy is on this device).
+  'offline-kept': filled('ArrowCircleDown'),
 
   // Selection.
   check: regular('Check'),

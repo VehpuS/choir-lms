@@ -17,6 +17,9 @@ export const audioStore: AudioStore = {
   async remove() {
     return undefined;
   },
+  async setPinned() {
+    return undefined;
+  },
   async touch() {
     return undefined;
   },

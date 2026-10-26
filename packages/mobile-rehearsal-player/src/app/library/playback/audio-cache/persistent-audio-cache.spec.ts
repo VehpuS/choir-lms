@@ -88,6 +88,9 @@ describe('persistent audio cache', () => {
         async remove() {
           throw new Error('unavailable');
         },
+        async setPinned() {
+          throw new Error('unavailable');
+        },
         async touch() {
           throw new Error('unavailable');
         },
@@ -110,5 +113,74 @@ describe('persistent audio cache', () => {
     await cache.clear();
 
     assert.equal(memory.records.size, 0);
+  });
+
+  it('skips a kept file when evicting, taking the next oldest instead', async () => {
+    const { cache, clock, memory } = setup(25);
+
+    await cache.write('file-a', 'v1', blobOf(10));
+    await cache.pin('file-a');
+    clock.now += 1;
+    await cache.write('file-b', 'v1', blobOf(10));
+    clock.now += 1;
+    await cache.write('file-c', 'v1', blobOf(10));
+
+    assert.deepEqual([...memory.records.keys()], ['file-a', 'file-c']);
+  });
+
+  it('keeps every kept file even when they alone exceed the budget', async () => {
+    const { cache, memory } = setup(15);
+
+    await cache.write('file-a', 'v1', blobOf(10));
+    await cache.pin('file-a');
+    await cache.write('file-b', 'v1', blobOf(10));
+    await cache.pin('file-b');
+    await cache.write('file-c', 'v1', blobOf(5));
+
+    // The file just written is protected too, so nothing is evicted at all.
+    assert.deepEqual([...memory.records.keys()].sort(), [
+      'file-a',
+      'file-b',
+      'file-c',
+    ]);
+  });
+
+  it('cannot pin a file that is not stored', async () => {
+    const { cache } = setup();
+
+    assert.equal(await cache.pin('missing'), false);
+  });
+
+  it('keeps the pin when a changed version is downloaded again', async () => {
+    const { cache, memory } = setup();
+
+    await cache.write('file-a', 'v1', blobOf(10));
+    await cache.pin('file-a');
+
+    assert.equal(await cache.read('file-a', 'v2'), null);
+    assert.equal(memory.records.size, 1);
+
+    await cache.write('file-a', 'v2', blobOf(12));
+
+    assert.equal(memory.records.get('file-a')?.entry.pinned, true);
+    assert.equal(memory.records.get('file-a')?.entry.sourceVersion, 'v2');
+  });
+
+  it('unpins and removes files, notifying subscribers of each change', async () => {
+    const { cache, memory } = setup();
+    let notifications = 0;
+
+    cache.subscribe(() => {
+      notifications += 1;
+    });
+    await cache.write('file-a', 'v1', blobOf(10));
+    await cache.pin('file-a');
+    await cache.unpin('file-a');
+    assert.equal(memory.records.get('file-a')?.entry.pinned, false);
+
+    await cache.remove('file-a');
+
+    assert.equal(memory.records.size, 0);
+    assert.equal(notifications, 4);
   });
 });
