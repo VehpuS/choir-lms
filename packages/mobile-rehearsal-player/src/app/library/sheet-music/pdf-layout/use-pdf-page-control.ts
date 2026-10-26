@@ -38,7 +38,11 @@ export const usePdfPageControl = (options: {
 
   return {
     controls: buildPageControls(state, options.layout),
+    /** Requests a move to a page (0-based). */
+    goTo,
     onPageChange,
+    /** Where the PDF is now; undefined until it reports a page. */
+    state,
     /** The page last reported for this source (0-based), for a surface that starts again. */
     page: state?.page,
     next: () => state && goTo(stepPage(state, 1)),

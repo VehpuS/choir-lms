@@ -58,6 +58,7 @@ export const SheetMusicSurface = ({
   onFitZoom,
   onRendered,
   onPageChange,
+  onThumbnailDrawer,
   onZoomChange,
   pageRequest,
   pdfLayout = DEFAULT_PDF_LAYOUT,
@@ -73,6 +74,7 @@ export const SheetMusicSurface = ({
     onFitZoom,
     onPageChange,
     onRendered,
+    onThumbnailDrawer,
     onZoomChange,
     pdfLayout,
     selection,
@@ -85,6 +87,7 @@ export const SheetMusicSurface = ({
     onFitZoom,
     onPageChange,
     onRendered,
+    onThumbnailDrawer,
     onZoomChange,
     pdfLayout,
     selection,
@@ -145,6 +148,7 @@ export const SheetMusicSurface = ({
           result.rendering.goToPage(latest.current.initialPage);
         }
 
+        latest.current.onThumbnailDrawer?.(result.rendering.drawThumbnail);
         latest.current.onPageChange?.({
           page: result.rendering.currentPage(),
           pageCount: result.rendering.pageCount,
@@ -218,6 +222,11 @@ export const SheetMusicSurface = ({
 
     return () => {
       isCancelled = true;
+
+      if (next.pdf) {
+        latest.current.onThumbnailDrawer?.(undefined);
+      }
+
       next.detachGestures?.();
       next.detachPaging?.();
       next.pdf?.dispose();

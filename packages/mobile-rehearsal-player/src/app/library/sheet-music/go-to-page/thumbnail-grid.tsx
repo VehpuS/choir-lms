@@ -48,36 +48,56 @@ export const ThumbnailGrid = ({
   queue,
 }: ThumbnailGridProps) => {
   const scrollRef = useRef<ScrollView>(null);
-  const hasPlacedCurrent = useRef(false);
+  const placedKey = useRef<string | undefined>(undefined);
+  const placedTop = useRef(0);
   const [size, setSize] = useState<Size>();
   const [scrollTop, setScrollTop] = useState(0);
-  const grid = size ? thumbnailGrid(size.width - GRID_PADDING * 2) : undefined;
+  const grid =
+    size && size.width > 0 && size.height > 0
+      ? thumbnailGrid(size.width)
+      : undefined;
   const rowHeight = grid ? thumbnailRowHeight(grid.cellWidth) : 0;
 
-  // On the first measure, bring the current page's row to the middle.
+  // Bring the current page's row to the middle when the grid is first measured,
+  // and again if its size then changes (a scrollbar appearing narrows the
+  // cells) before the reader has scrolled.
   useEffect(() => {
-    if (!grid || !size || hasPlacedCurrent.current) {
+    if (!grid || !size) {
       return;
     }
 
-    hasPlacedCurrent.current = true;
+    const key = `${grid.columns}x${grid.cellWidth}`;
+    const hasMoved = Math.abs(scrollTop - placedTop.current) >= 1;
+
+    if (placedKey.current === key || (placedKey.current && hasMoved)) {
+      return;
+    }
 
     const row = Math.floor(currentPage / grid.columns);
     const top = Math.max(0, row * rowHeight - (size.height - rowHeight) / 2);
 
+    placedKey.current = key;
+    placedTop.current = top;
     scrollRef.current?.scrollTo({ animated: false, y: top });
     setScrollTop(top);
-  }, [currentPage, grid, rowHeight, size]);
+  }, [currentPage, grid, rowHeight, scrollTop, size]);
 
   // The marked page draws first; cells add themselves before this runs.
   useEffect(() => {
     [...marked].reverse().forEach((page) => queue?.prioritize(page));
   }, [marked, queue, scrollTop]);
 
-  const onLayout = (event: LayoutChangeEvent) => {
-    const { height, width } = event.nativeEvent.layout;
+  // The height is the viewport's; the width is the content's, which a
+  // scrollbar that takes room (a mouse) makes narrower than the viewport.
+  const onViewportLayout = (event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout;
 
-    setSize({ height, width });
+    setSize((current) => ({ height, width: current?.width ?? 0 }));
+  };
+  const onContentLayout = (event: LayoutChangeEvent) => {
+    const { width } = event.nativeEvent.layout;
+
+    setSize((current) => ({ height: current?.height ?? 0, width }));
   };
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -106,32 +126,34 @@ export const ThumbnailGrid = ({
     <ScrollView
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
-      onLayout={onLayout}
+      onLayout={onViewportLayout}
       onScroll={onScroll}
       ref={scrollRef}
       scrollEventThrottle={16}
       style={[darkScrollbarStyle, styles.scroll]}
     >
-      {grid ? (
-        <>
-          <View style={{ height: firstRow * rowHeight }} />
-          {chunk(pages, grid.columns).map((row) => (
-            <View key={row[0]} style={[styles.row, { height: rowHeight }]}>
-              {row.map((page) => (
-                <ThumbnailCell
-                  cellWidth={grid.cellWidth}
-                  index={page}
-                  isMarked={markedPages.has(page)}
-                  key={page}
-                  onPress={onChoose}
-                  queue={queue}
-                />
-              ))}
-            </View>
-          ))}
-          <View style={{ height: (rowCount - 1 - lastRow) * rowHeight }} />
-        </>
-      ) : null}
+      <View onLayout={onContentLayout}>
+        {grid ? (
+          <>
+            <View style={{ height: firstRow * rowHeight }} />
+            {chunk(pages, grid.columns).map((row) => (
+              <View key={row[0]} style={[styles.row, { height: rowHeight }]}>
+                {row.map((page) => (
+                  <ThumbnailCell
+                    cellWidth={grid.cellWidth}
+                    index={page}
+                    isMarked={markedPages.has(page)}
+                    key={page}
+                    onPress={onChoose}
+                    queue={queue}
+                  />
+                ))}
+              </View>
+            ))}
+            <View style={{ height: (rowCount - 1 - lastRow) * rowHeight }} />
+          </>
+        ) : null}
+      </View>
     </ScrollView>
   );
 };

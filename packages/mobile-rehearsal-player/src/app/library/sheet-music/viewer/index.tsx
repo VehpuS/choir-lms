@@ -31,6 +31,7 @@ import {
 } from '../my-parts/my-parts-store';
 import { usePdfLayoutControl } from '../pdf-layout/use-pdf-layout-control';
 import { usePdfPageControl } from '../pdf-layout/use-pdf-page-control';
+import { useGoToPageControl } from '../go-to-page/use-go-to-page-control';
 import { SourceChips } from './source-chips';
 import { useSheetMusicDocument } from './use-sheet-music-document';
 import { ViewerBody, type ViewerOutcome } from './viewer-body';
@@ -151,6 +152,11 @@ export const SheetMusicViewer = ({
     layout: pdfLayout.layout,
     sourceKey: source ? `${source.id}:${source.format}` : undefined,
   });
+  const goToPage = useGoToPageControl({
+    layout: pdfLayout.layout,
+    onGo: pdfPages.goTo,
+    state: pdfPages.state,
+  });
   const viewerZoom = useViewerZoom(info !== null, maxViewerZoom(isPdf));
   const goTo = useGoTo();
   const canGoTo = info !== null && info.bars.barCount > 0;
@@ -226,7 +232,9 @@ export const SheetMusicViewer = ({
       onFailureAction={handleFailureAction}
       initialPage={pdfPages.page}
       onFitZoom={viewerZoom.onFitZoom}
+      onOpenGoToPage={goToPage.open}
       onPageChange={pdfPages.onPageChange}
+      onThumbnailDrawer={goToPage.onThumbnailDrawer}
       onZoomChange={viewerZoom.setZoom}
       onRendered={(next) =>
         setDrawn({
@@ -294,6 +302,7 @@ export const SheetMusicViewer = ({
           {body}
           {drawer}
           {pdfLayout.sheet}
+          {goToPage.sheet}
         </>
       }
       closeButton={closeButton}

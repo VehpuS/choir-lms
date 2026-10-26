@@ -19,7 +19,10 @@ import type {
 } from './model';
 import { SheetMusicSurface } from './sheet-music-surface';
 import type { GoToJump } from './go-to/use-go-to';
-import type { ScoreInfo } from './sheet-music-surface-types';
+import type {
+  ScoreInfo,
+  SheetMusicSurfaceProps,
+} from './sheet-music-surface-types';
 import type { SheetMusicDocumentState } from './use-sheet-music-document';
 
 export type ViewerOutcome =
@@ -34,7 +37,10 @@ type ViewerBodyProps = {
   onFailed: (reason: ViewerFailureReason) => void;
   onFailureAction: (action: ViewerFailureAction) => void;
   onFitZoom: (zoom: number) => void;
+  /** Opens `Go to page`; undefined until a PDF has reported its pages. */
+  onOpenGoToPage: (() => void) | undefined;
   onPageChange: (state: PdfPageState) => void;
+  onThumbnailDrawer: SheetMusicSurfaceProps['onThumbnailDrawer'];
   onZoomChange: (zoom: number) => void;
   onRendered: (info: ScoreInfo | null) => void;
   outcome: ViewerOutcome | undefined;
@@ -56,7 +62,9 @@ export const ViewerBody = ({
   onFailed,
   onFailureAction,
   onFitZoom,
+  onOpenGoToPage,
   onPageChange,
+  onThumbnailDrawer,
   onZoomChange,
   onRendered,
   outcome,
@@ -95,6 +103,7 @@ export const ViewerBody = ({
           onFailed={onFailed}
           onFitZoom={onFitZoom}
           onPageChange={onPageChange}
+          onThumbnailDrawer={onThumbnailDrawer}
           onZoomChange={onZoomChange}
           onRendered={onRendered}
           pageRequest={pageRequest}
@@ -103,8 +112,8 @@ export const ViewerBody = ({
           zoom={zoom}
         />
       ) : null}
-      {pageIndicator && outcome?.kind === 'ready' ? (
-        <PageIndicator text={pageIndicator} />
+      {pageIndicator && onOpenGoToPage && outcome?.kind === 'ready' ? (
+        <PageIndicator onPress={onOpenGoToPage} text={pageIndicator} />
       ) : null}
       {outcome?.kind !== 'ready' ? (
         <View pointerEvents="none" style={styles.loading}>

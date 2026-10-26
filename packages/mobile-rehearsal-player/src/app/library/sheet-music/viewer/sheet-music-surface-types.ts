@@ -12,6 +12,7 @@ import type {
   PdfPageState,
 } from '../pdf-layout/pdf-page-controls-model';
 import type { GoToJump } from './go-to/use-go-to';
+import type { PdfRendering } from '../renderers/sheet-music-renderer';
 import type { ViewerFailureReason } from './model';
 import type { LoadedSheetMusic } from './use-sheet-music-document';
 
@@ -43,6 +44,11 @@ export type SheetMusicSurfaceProps = {
    * so its readout and buttons follow. Not called for a score.
    */
   onZoomChange: (zoom: number) => void;
+  /**
+   * A PDF is open and can draw page thumbnails (`undefined` when it closes).
+   * Not called for a score.
+   */
+  onThumbnailDrawer?: (draw: PdfRendering['drawThumbnail'] | undefined) => void;
   /** A PDF's current page, when it opens and each time it changes. Not called for a score. */
   onPageChange?: (state: PdfPageState) => void;
   /** The latest request to turn a PDF to a page; each new one moves again. */
