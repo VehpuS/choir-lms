@@ -1,7 +1,8 @@
 ## 1. Tune and verify what shipped
 
+(1.2, the real touch-fling check, moved to follow-up 6.5; it needs a phone and a tablet.)
+
 - [x] 1.1 **Explore with the owner in the browser preview:** wheel and trackpad paging in `Pages` (the threshold of about two notches and the pause); change the constants only if the feel is wrong (original 6.9). Spec any changed constant. (Owner: feels right; constants unchanged.)
-- [ ] 1.2 Check swipe snapping in `Pages` with a real touch fling on a phone and a tablet (the browser pane cannot produce one): a fast fling must not skip a page and a slow drag must settle on the nearer page (original 6.11). Manual; record the result in `design.md`.
 
 ## 2. Zoom, focus, and scrollbar
 
@@ -35,4 +36,5 @@
 - [ ] 6.1 Right-to-left page order for documents that declare it; deferred until a real right-to-left file needs it (original 6.1). Explore with a user before changing.
 - [ ] 6.2 Add the layouts and page paging to native when native PDF rendering exists (`native-playback-follow-ups` 1.6; original 6.4).
 - [ ] 6.3 `Go to page` and thumbnails live in `pdf-go-to-page`; the 317-line repository file was split directly (original 6.12).
-- [ ] 6.4 Look at the page-turn slide (about 200 ms; the browser sets the real length) and the reduced-motion path in a foreground browser with the owner, on a phone-width and a desktop viewer; the Browser pane reports the page as hidden, so only end states were verified (found in 3.3). Slide ends are read from the scroll (`SMOOTH_TURN_IDLE_MS`, `SMOOTH_TURN_STALL_MS`); adjust only if it feels wrong.
+- [ ] 6.4 Follow-up (not blocking): look at the page-turn slide (about 200 ms; the browser sets the real length) and the reduced-motion path in a foreground browser with the owner, on a phone-width and a desktop viewer; the Browser pane reports the page as hidden, so only end states were verified (found in 3.3). Slide ends are read from the scroll (`SMOOTH_TURN_IDLE_MS`, `SMOOTH_TURN_STALL_MS`); adjust only if it feels wrong.
+- [ ] 6.5 Follow-up (moved from 1.2, not blocking): Check swipe snapping in `Pages` with a real touch fling on a phone and a tablet (the browser pane cannot produce one): a fast fling must not skip a page and a slow drag must settle on the nearer page (original 6.11). Manual; record the result in `design.md`.
