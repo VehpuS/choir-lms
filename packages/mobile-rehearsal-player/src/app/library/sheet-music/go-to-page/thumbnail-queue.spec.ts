@@ -103,13 +103,13 @@ describe('createThumbnailQueue', () => {
     assert.equal(draws.length, 1);
   });
 
-  it('cancels a drawing page that is no longer wanted and frees its canvas', async () => {
+  it('cancels a drawing page that is discarded and frees its canvas', async () => {
     const { draws, queue } = setup();
     const first = canvas();
 
     queue.enqueue(0, first, 120);
     queue.enqueue(1, canvas(), 120);
-    queue.retain([1]);
+    queue.discard(0);
 
     assert.equal(draws[0]?.cancelled, true);
     assert.equal(first.width, 0);
@@ -122,13 +122,13 @@ describe('createThumbnailQueue', () => {
     );
   });
 
-  it('drops queued pages that are no longer wanted without drawing them', async () => {
+  it('drops a queued page that is discarded without drawing it', async () => {
     const { draws, queue } = setup();
     const waiting = canvas();
 
     queue.enqueue(0, canvas(), 120);
     queue.enqueue(1, waiting, 120);
-    queue.retain([0]);
+    queue.discard(1);
     draws[0]?.finish();
     await settle();
 
@@ -136,7 +136,7 @@ describe('createThumbnailQueue', () => {
     assert.equal(waiting.width, 0);
   });
 
-  it('frees a finished thumbnail once its page is no longer wanted', async () => {
+  it('frees a finished thumbnail when it is discarded', async () => {
     const { draws, queue } = setup();
     const drawn = canvas();
 
@@ -144,22 +144,10 @@ describe('createThumbnailQueue', () => {
     draws[0]?.finish();
     await settle();
 
-    queue.retain([]);
+    queue.discard(0);
 
     assert.equal(drawn.width, 0);
     assert.equal(drawn.height, 0);
-  });
-
-  it('keeps wanted thumbnails drawn', async () => {
-    const { draws, queue } = setup();
-    const drawn = canvas();
-
-    queue.enqueue(0, drawn, 120);
-    draws[0]?.finish();
-    await settle();
-    queue.retain([0]);
-
-    assert.equal(drawn.width, 240);
   });
 
   it('releases everything, and releasing again changes nothing', async () => {

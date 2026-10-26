@@ -21,8 +21,6 @@ export type ThumbnailQueue = {
   prioritize(index: number): void;
   /** Cancels and releases every thumbnail. Safe to call again. */
   release(): void;
-  /** Cancels and releases every thumbnail whose page is not in `wanted`. */
-  retain(wanted: readonly number[]): void;
 };
 
 /**
@@ -118,16 +116,6 @@ export const createThumbnailQueue = (options: {
       isReleased = true;
       entries.forEach(free);
       entries.clear();
-    },
-    retain(wanted) {
-      const keep = new Set(wanted);
-
-      for (const [index, entry] of [...entries]) {
-        if (!keep.has(index)) {
-          free(entry);
-          entries.delete(index);
-        }
-      }
     },
   };
 };

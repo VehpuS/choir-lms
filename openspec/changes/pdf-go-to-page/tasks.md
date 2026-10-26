@@ -17,7 +17,7 @@
 
 - [x] 4.1 Browser check on the 81-page score at phone and desktop widths: opens fast, only near rows hold canvases, quick scroll does not stall the page behind, memory returns to baseline after close, soft-keyboard layout at phone width, and pinch/double-tap near the indicator still work. (Done on the 81-page score at 375, 1100 px; the soft keyboard could not be emulated, see 5.4. Memory was judged by canvas count, which returns to 0, not by heap size.)
 - [x] 4.2 In `Pages`, `Strip`, and `Scroll`, go by number and by thumbnail, including the first, last, and current page; when `Spread` exists, check the marked pair and landing. (Done in `Scroll`, `Pages`, and `Strip` at phone width on the 81-page score and a generated 81-page PDF: by number and by thumbnail, for the first, last, current, and a middle page, every case lands on the right page. `Spread` does not exist yet, so its marked pair and landing are covered by the `markedPages` spec only. Two older layout issues found along the way are 5.5 and 5.6.)
-- [ ] 4.3 Update the README if the viewer's documented controls change, then validate: `nx run mobile-rehearsal-player:test`, `lint`, `typecheck`, and `format:check`.
+- [x] 4.3 Update the README if the viewer's documented controls change, then validate: `nx run mobile-rehearsal-player:test`, `lint`, `typecheck`, and `format:check`.
 
 ## 5. Follow-ups (found while implementing; not in scope here)
 
