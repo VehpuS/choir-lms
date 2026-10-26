@@ -1,4 +1,8 @@
 import {
+  persistentAudioCache,
+  type PersistentAudioCache,
+} from '../audio-cache';
+import {
   savedTrackAudioCache,
   type SavedTrackAudioCache,
 } from './saved-track-audio-cache';
@@ -264,6 +268,8 @@ const resolveDownloadDependencies = (
 export type StartSavedTrackDownloadOptions = {
   /** Test seam; defaults to the app-wide cache. */
   cache?: SavedTrackAudioCache;
+  /** Test seam; defaults to the persisted cache (a no-op on native). */
+  persistence?: Pick<PersistentAudioCache, 'read' | 'write'>;
   /** False for background callers (waveform analysis) that survive a reset. */
   cancelOnReset?: boolean;
   /** Drive content version; without one the bytes are never reused. */
@@ -286,7 +292,11 @@ export const startSavedTrackDownload = async (
     Pick<SavedTrackDownloadDependencies, 'fetch'>,
   options: StartSavedTrackDownloadOptions = {},
 ): Promise<Blob> => {
-  const { cache = savedTrackAudioCache, cancelOnReset = true } = options;
+  const {
+    cache = savedTrackAudioCache,
+    cancelOnReset = true,
+    persistence = persistentAudioCache,
+  } = options;
   const driveFileId = parseDriveFileId(request.url);
   const version = options.version;
   const cacheable = driveFileId !== null && version !== undefined;
@@ -305,12 +315,32 @@ export const startSavedTrackDownload = async (
   if (!download) {
     const controller = new AbortController();
     const waiters = new Set<Waiter>();
-    const started: SharedDownload = {
-      controller,
-      promise: downloadSavedTrackBlob(
+    // A file persisted by an earlier session is read inside the shared
+    // promise, so callers that arrive meanwhile share the read too.
+    const loadSavedTrackBlob = async () => {
+      const persistedBlob = cacheable
+        ? await persistence.read(driveFileId, version)
+        : null;
+
+      if (persistedBlob) {
+        return persistedBlob;
+      }
+
+      const blob = await downloadSavedTrackBlob(
         { ...request, signal: controller.signal },
         resolveDownloadDependencies(dependencies),
-      ).then((blob) => {
+      );
+
+      if (cacheable) {
+        // Not awaited: the player must not wait on storage.
+        void persistence.write(driveFileId, version, blob);
+      }
+
+      return blob;
+    };
+    const started: SharedDownload = {
+      controller,
+      promise: loadSavedTrackBlob().then((blob) => {
         if (cacheable) {
           cache.set(driveFileId, version, blob);
         }

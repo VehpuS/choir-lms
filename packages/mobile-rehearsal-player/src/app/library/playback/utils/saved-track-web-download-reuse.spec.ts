@@ -186,4 +186,72 @@ describe('reused saved track downloads', () => {
 
     assert.deepEqual(sizes, [4, 4]);
   });
+
+  it('serves a file persisted by an earlier session without a request, then keeps it in memory', async () => {
+    const persisted = new Blob(['persisted']);
+    const cache = createSavedTrackAudioCache(100);
+    const controlled = createControlledFetch();
+    const persistence = {
+      read: async () => persisted,
+      write: async () => undefined,
+    };
+
+    const blob = await startSavedTrackDownload(
+      { url: TRACK_URL },
+      { fetch: controlled.fetch },
+      { cache, persistence, version: 'v1' },
+    );
+
+    assert.equal(blob, persisted);
+    assert.equal(controlled.requests(), 0);
+    assert.equal(cache.get('drive-file-1', 'v1'), persisted);
+  });
+
+  it('persists a finished download under its version without waiting on storage', async () => {
+    const cache = createSavedTrackAudioCache(100);
+    const controlled = createControlledFetch();
+    const writes: Array<{ id: string; version: string; size: number }> = [];
+    const persistence = {
+      read: async () => null,
+      // Never settles: the download must not wait for storage.
+      write: (id: string, version: string, blob: Blob) => {
+        writes.push({ id, size: blob.size, version });
+
+        return new Promise<void>(() => undefined);
+      },
+    };
+
+    controlled.finish();
+    await startSavedTrackDownload(
+      { url: TRACK_URL },
+      { fetch: controlled.fetch },
+      { cache, persistence, version: 'v1' },
+    );
+
+    assert.deepEqual(writes, [{ id: 'drive-file-1', size: 4, version: 'v1' }]);
+  });
+
+  it('never persists a download that has no version', async () => {
+    const cache = createSavedTrackAudioCache(100);
+    const controlled = createControlledFetch();
+    let touched = 0;
+    const persistence = {
+      read: async () => {
+        touched += 1;
+        return null;
+      },
+      write: async () => {
+        touched += 1;
+      },
+    };
+
+    controlled.finish();
+    await startSavedTrackDownload(
+      { url: TRACK_URL },
+      { fetch: controlled.fetch },
+      { cache, persistence },
+    );
+
+    assert.equal(touched, 0);
+  });
 });

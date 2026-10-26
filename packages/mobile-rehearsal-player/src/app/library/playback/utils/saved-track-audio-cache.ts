@@ -1,7 +1,4 @@
-const BYTES_PER_MEGABYTE = 1024 * 1024;
-
-/** Web default from the offline-audio-caching design; native sets its own. */
-export const DEFAULT_WEB_AUDIO_CACHE_BUDGET_BYTES = 200 * BYTES_PER_MEGABYTE;
+import { WEB_AUDIO_CACHE_BUDGET_BYTES } from '../audio-cache/audio-cache-budget';
 
 type SavedTrackAudioCacheEntry = {
   blob: Blob;
@@ -90,5 +87,5 @@ export const createSavedTrackAudioCache = (
 };
 
 export const savedTrackAudioCache = createSavedTrackAudioCache(
-  DEFAULT_WEB_AUDIO_CACHE_BUDGET_BYTES,
+  WEB_AUDIO_CACHE_BUDGET_BYTES,
 );
