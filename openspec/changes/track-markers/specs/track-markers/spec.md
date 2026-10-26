@@ -9,6 +9,11 @@ The system SHALL let a user save named markers on a saved track. A marker SHALL 
 - **WHEN** a track is loaded and the user chooses `Add marker here` at 1:12.4
 - **THEN** a marker named `Marker 1` is saved at 1:12.4, a confirmation offers `Rename`, and the marker is present after a restart
 
+#### Scenario: Adding from a loop's list stays inside the loop
+
+- **WHEN** the markers list is opened from a loop and the playhead is outside that loop
+- **THEN** `Add marker here` is not offered in the list (it is offered while the playhead is inside the loop, boundaries included), so a new marker is never hidden by the list it was added from
+
 #### Scenario: Automatic names do not collide
 
 - **WHEN** a track has markers `Marker 1` and `Marker 3` and the user adds another

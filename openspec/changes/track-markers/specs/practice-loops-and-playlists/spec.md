@@ -41,7 +41,7 @@ The loop editor SHALL let a user select the Start or End field and set it from a
 
 ### Requirement: Markers can become loops
 
-The system SHALL offer three ways to create loops from a track's markers, all using the existing loop validation and saving. `Loop to next marker` on a marker SHALL open the loop editor in create mode with that marker as start and the next marker in the displayed list as end (the track end for the last marker when the length is known), named after the marker. Selecting exactly two markers and pressing `Make loop` SHALL open the editor with the earlier as start and the later as end. `Create loops from markers` SHALL list the sections between consecutive explicit markers, with an `Include intro` option adding an `Intro` section from the start of the track to the first marker (off by default), name each section after its start marker, mark and uncheck sections that equal an existing loop of the track, that are too short to be a valid loop, or that reuse an existing loop name, and, on confirming, save the checked sections as loops. Loop-derived markers SHALL NOT be section boundaries.
+The system SHALL offer three ways to create loops from a track's markers, all using the existing loop validation and saving. `Loop to next marker` on a marker SHALL open the loop editor in create mode with that marker as start and the next marker in the displayed list as end (the track end for the last marker when the length is known), named after the marker. Selecting exactly two markers and pressing `Make loop` SHALL open the editor with the earlier as start and the later as end. `Create loops from markers` SHALL list the sections between consecutive explicit markers, with an `Include intro` option adding an `Intro` section from the start of the track to the first marker (off by default), name each section after its start marker, mark and uncheck sections that equal an existing loop of the track, or that are too short to be a valid loop, give a section that reuses a name already used by a loop of the track or an earlier section the smallest free ` (n)` suffix from 2, and, on confirming, save the checked sections as loops. Loop-derived markers SHALL NOT be section boundaries.
 
 #### Scenario: Loop to next marker
 
@@ -67,6 +67,11 @@ The system SHALL offer three ways to create loops from a track's markers, all us
 
 - **WHEN** a loop already covers exactly 1:00–2:00 of the track
 - **THEN** the `Chorus` section is listed unchecked, marked as already a loop
+
+#### Scenario: Repeated name is numbered
+
+- **WHEN** a section is named `Verse` and a loop of the track is already named `Verse`
+- **THEN** the section is listed checked as `Verse (2)` and saved with that name
 
 #### Scenario: Unknown length
 

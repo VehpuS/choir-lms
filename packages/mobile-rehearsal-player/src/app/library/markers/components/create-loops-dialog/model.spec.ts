@@ -81,17 +81,15 @@ describe('buildCreateLoopsModel', () => {
     assert.equal(model.confirmLabel, 'Create 2 loops');
   });
 
-  it('flags a name that is already used', () => {
+  it('numbers a name that is already used and keeps it checked', () => {
     const model = buildCreateLoopsModel(
       plan([{ name: 'chorus', startMs: 1, endMs: 2_000 }]),
       {},
     );
 
-    assert.equal(
-      model.rows[1]?.skipLabel,
-      SKIP_REASON_LABELS['duplicate-name'],
-    );
-    assert.equal(model.rows[1]?.isChecked, false);
+    assert.equal(model.rows[1]?.name, 'Chorus (2)');
+    assert.equal(model.rows[1]?.skipLabel, undefined);
+    assert.equal(model.rows[1]?.isChecked, true);
   });
 
   it('flags a section that runs past the end of a short track', () => {

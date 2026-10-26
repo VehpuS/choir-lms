@@ -13,7 +13,6 @@ export const NEEDS_DURATION_MESSAGE =
   'The last marker needs the track length, which is not known yet.';
 
 export const SKIP_REASON_LABELS: Record<MarkerSectionSkipReason, string> = {
-  'duplicate-name': 'A loop with this name already exists',
   'existing-loop': 'Already a loop',
   'past-end': 'Past the end of this audio',
   'too-short': 'Too short to be a loop',

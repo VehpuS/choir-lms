@@ -55,6 +55,18 @@ describe('buildMarkersSheetModel', () => {
     assert.equal(unloaded.canAddMarker, false);
   });
 
+  it('offers adding in a loop list only while the playhead is inside the loop', () => {
+    const range = { startMs: 10_000, endMs: 20_000 };
+    const offered = (currentPositionMs: number) =>
+      buildMarkersSheetModel(buildInput({ currentPositionMs, range }))
+        .canAddMarker;
+
+    assert.equal(offered(10_000), true);
+    assert.equal(offered(20_000), true);
+    assert.equal(offered(9_999), false);
+    assert.equal(offered(20_001), false);
+  });
+
   it('does not offer adding in a read-only library', () => {
     const model = buildMarkersSheetModel(
       buildInput({ canMutateLibrary: false }),

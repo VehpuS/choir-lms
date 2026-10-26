@@ -90,31 +90,42 @@ describe('planMarkerSections', () => {
     assert.equal(plan.sections[0]?.skipReason, 'existing-loop');
   });
 
-  it('flags a name already used by a loop or an earlier section', () => {
+  it('numbers a name already used by a loop or an earlier section', () => {
     const plan = planMarkerSections(
-      [marker('a', 0, 'Verse'), marker('b', 1_000, 'verse')],
+      [
+        marker('a', 0, 'Verse'),
+        marker('b', 1_000, 'verse'),
+        marker('c', 2_000, 'Verse'),
+      ],
       3_000,
       [{ name: 'Verse', startMs: 50, endMs: 60 }],
       NO_INTRO,
     );
 
     assert.deepEqual(
-      plan.sections.map((section) => section.skipReason),
-      ['duplicate-name', 'duplicate-name'],
+      plan.sections.map((section) => [section.name, section.skipReason]),
+      [
+        ['Verse (2)', undefined],
+        ['verse (3)', undefined],
+        ['Verse (4)', undefined],
+      ],
     );
   });
 
-  it('reuses a name only once among usable sections', () => {
+  it('does not let a skipped section claim its name', () => {
     const plan = planMarkerSections(
       [marker('a', 0, 'Verse'), marker('b', 1_000, 'Verse')],
       3_000,
-      [],
+      [{ name: 'Other', startMs: 0, endMs: 1_000 }],
       NO_INTRO,
     );
 
     assert.deepEqual(
-      plan.sections.map((section) => section.skipReason),
-      [undefined, 'duplicate-name'],
+      plan.sections.map((section) => [section.name, section.skipReason]),
+      [
+        ['Verse', 'existing-loop'],
+        ['Verse', undefined],
+      ],
     );
   });
 

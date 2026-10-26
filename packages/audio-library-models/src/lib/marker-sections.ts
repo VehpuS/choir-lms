@@ -3,11 +3,12 @@ import type { TrackMarker } from './track-markers.ts';
 
 export const INTRO_SECTION_NAME = 'Intro';
 
+const FIRST_DUPLICATE_SUFFIX = 2;
+
 export type MarkerSectionSkipReason =
   | 'existing-loop'
   | 'too-short'
-  | 'past-end'
-  | 'duplicate-name';
+  | 'past-end';
 
 export type MarkerSection = {
   /** Stable key for list rendering: the start marker id, or `intro`. */
@@ -36,7 +37,6 @@ const normalizeNameKey = (name: string): string => name.trim().toLowerCase();
 const classifySection = (
   section: MarkerSection,
   existingLoops: readonly ExistingLoopRange[],
-  usedNames: ReadonlySet<string>,
   durationMs?: number,
 ): MarkerSectionSkipReason | undefined => {
   if (!validateLoopRange(section.startMs, section.endMs).isValid) {
@@ -56,9 +56,28 @@ const classifySection = (
     return 'existing-loop';
   }
 
-  return usedNames.has(normalizeNameKey(section.name))
-    ? 'duplicate-name'
-    : undefined;
+  return undefined;
+};
+
+/**
+ * A name already used by a loop or an earlier section gets the smallest free
+ * ` (n)` suffix, so a repeated section name still makes a loop.
+ */
+const uniqueSectionName = (
+  name: string,
+  usedNames: ReadonlySet<string>,
+): string => {
+  if (!usedNames.has(normalizeNameKey(name))) {
+    return name;
+  }
+
+  let suffix = FIRST_DUPLICATE_SUFFIX;
+
+  while (usedNames.has(normalizeNameKey(`${name} (${suffix})`))) {
+    suffix += 1;
+  }
+
+  return `${name} (${suffix})`;
 };
 
 /**
@@ -112,18 +131,17 @@ export const planMarkerSections = (
     existingLoops.map((loop) => normalizeNameKey(loop.name)),
   );
   const sections = drafts.map((draft): MarkerSection => {
-    const skipReason = classifySection(
-      draft,
-      existingLoops,
-      usedNames,
-      durationMs,
-    );
+    const skipReason = classifySection(draft, existingLoops, durationMs);
 
-    if (!skipReason) {
-      usedNames.add(normalizeNameKey(draft.name));
+    if (skipReason) {
+      return { ...draft, skipReason };
     }
 
-    return skipReason ? { ...draft, skipReason } : draft;
+    const name = uniqueSectionName(draft.name, usedNames);
+
+    usedNames.add(normalizeNameKey(name));
+
+    return { ...draft, name };
   });
 
   return {

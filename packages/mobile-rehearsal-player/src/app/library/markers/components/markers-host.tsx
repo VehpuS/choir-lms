@@ -84,6 +84,7 @@ export const MarkersHost = ({ library, playback }: MarkersHostProps) => {
   const model = buildMarkersSheetModel({
     canMakeLoops: library.canMutateLoops,
     canMutateLibrary: library.canMutateLibrary,
+    currentPositionMs,
     derived: resolution.derived,
     durationMs: owner.durationMs,
     explicit: resolution.explicit,

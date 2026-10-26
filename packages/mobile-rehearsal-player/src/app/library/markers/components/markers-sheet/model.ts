@@ -90,6 +90,12 @@ export type MarkersSheetInput = {
   durationMs?: number;
   /** The owner (or one of its loops or copies) is the loaded item. */
   isOwnerLoaded: boolean;
+  /**
+   * Playhead position in the owner's audio; with a loop `range`, adding is
+   * offered only while it is inside the range, so a new marker is never
+   * hidden by the list it was added from.
+   */
+  currentPositionMs?: number;
   canMutateLibrary: boolean;
   /**
    * Whether markers can become loops from here (`Loop to next marker`,
@@ -223,6 +229,17 @@ const partitionPickerRows = (
   ];
 };
 
+const isPlayheadInRange = (
+  range: MarkerRange | undefined,
+  positionMs: number | undefined,
+): boolean => {
+  if (!range || positionMs === undefined) {
+    return true;
+  }
+
+  return positionMs >= range.startMs && positionMs <= range.endMs;
+};
+
 export const buildMarkersSheetModel = (
   input: MarkersSheetInput,
 ): MarkersSheetModel => {
@@ -253,7 +270,10 @@ export const buildMarkersSheetModel = (
     rows: orderedRows,
     isEmpty: rows.length === 0,
     emptyMessage: MARKERS_EMPTY_MESSAGE,
-    canAddMarker: input.isOwnerLoaded && input.canMutateLibrary,
+    canAddMarker:
+      input.isOwnerLoaded &&
+      input.canMutateLibrary &&
+      isPlayheadInRange(input.range, input.currentPositionMs),
     canCreateLoops:
       canMakeLoops && input.canMutateLibrary && input.explicit.length > 0,
     canSelect: canMakeLoops && usableCount >= MARKERS_SELECT_PAIR_SIZE,
