@@ -1,11 +1,8 @@
 import type { PdfLayout } from '@org/audio-library-models';
 import { clamp, range } from 'es-toolkit';
 
-/**
- * `spread` is named here as a plain string because the layout joins
- * `PdfLayout` with `pdf-paging-follow-ups`; this model works either way.
- */
-export type GoToPageLayout = PdfLayout | 'spread';
+/** The layout the viewer shows; a spread marks both of its pages. */
+export type GoToPageLayout = PdfLayout;
 
 export const THUMBNAIL_MIN_WIDTH = 90;
 export const THUMBNAIL_MAX_WIDTH = 160;

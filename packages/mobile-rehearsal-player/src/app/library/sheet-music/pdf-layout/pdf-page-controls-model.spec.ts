@@ -82,6 +82,48 @@ describe('stepPage', () => {
   });
 });
 
+describe('stepPage in spread', () => {
+  it('steps a spread at a time, landing on its first page', () => {
+    assert.equal(stepPage({ page: 2, pageCount: 81 }, 1, 'spread'), 4);
+    assert.equal(stepPage({ page: 4, pageCount: 81 }, -1, 'spread'), 2);
+  });
+
+  it('reaches a lone last page and stops there', () => {
+    assert.equal(stepPage({ page: 78, pageCount: 81 }, 1, 'spread'), 80);
+    assert.equal(stepPage({ page: 80, pageCount: 81 }, 1, 'spread'), 80);
+  });
+});
+
+describe('buildPageControls in spread', () => {
+  it('shows the step buttons and a range such as Pages 3-4 of 81', () => {
+    const controls = buildPageControls(
+      { lastPage: 3, page: 2, pageCount: 81 },
+      'spread',
+    );
+
+    assert.equal(controls.showSteps, true);
+    assert.equal(controls.indicator, 'Pages 3-4 of 81');
+    assert.equal(controls.shortIndicator, '3-4/81');
+  });
+
+  it('shows a lone last page as Page 81 of 81 and cannot go on', () => {
+    const controls = buildPageControls({ page: 80, pageCount: 81 }, 'spread');
+
+    assert.equal(controls.indicator, 'Page 81 of 81');
+    assert.equal(controls.canGoNext, false);
+    assert.equal(controls.canGoPrevious, true);
+  });
+
+  it('cannot go on from a pair that ends on the last page', () => {
+    const controls = buildPageControls(
+      { lastPage: 3, page: 2, pageCount: 4 },
+      'spread',
+    );
+
+    assert.equal(controls.canGoNext, false);
+  });
+});
+
 describe('buildPageControls', () => {
   it('shows nothing until the document has pages', () => {
     assert.deepEqual(buildPageControls(undefined, 'pages'), {

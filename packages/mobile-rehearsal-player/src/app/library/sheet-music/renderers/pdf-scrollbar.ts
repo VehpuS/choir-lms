@@ -1,5 +1,6 @@
 import type { PdfLayout } from '@org/audio-library-models';
 
+import { isPagedLayout } from './pdf-layout-style';
 import type { HostElement } from './pdf-web-types';
 
 const HIDDEN_ATTRIBUTE = 'data-pdf-scrollbar';
@@ -9,12 +10,12 @@ const STYLE_ELEMENT_ID = 'pdf-scrollbar-style';
 const HIDE_SCROLLBAR_CSS = `[${HIDDEN_ATTRIBUTE}="${HIDDEN_VALUE}"]{scrollbar-width:none;}[${HIDDEN_ATTRIBUTE}="${HIDDEN_VALUE}"]::-webkit-scrollbar{display:none;}`;
 
 /**
- * Whether the sideways scrollbar is hidden: in `pages`, swiping and the page
- * controls move the view and the page indicator shows the position. `strip`
- * keeps it because the reader scrolls freely there.
+ * Whether the sideways scrollbar is hidden: in `pages` and `spread`, swiping
+ * and the page controls move the view and the page indicator shows the
+ * position. `strip` keeps it because the reader scrolls freely there.
  */
 export const isPdfScrollbarHidden = (layout: PdfLayout): boolean => {
-  return layout === 'pages';
+  return isPagedLayout(layout);
 };
 
 const ensureScrollbarStyle = (host: HostElement): void => {

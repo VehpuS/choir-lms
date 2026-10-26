@@ -23,8 +23,12 @@ const COLUMN_STYLE =
 const ROW_STYLE =
   'display:flex;flex-direction:row;align-items:flex-start;min-height:100%;height:max-content;min-width:100%;width:max-content;';
 
-// `pages` and `strip` both scroll sideways in a row.
+// `pages`, `strip`, and `spread` all scroll sideways in a row.
 const isHorizontal = (layout: PdfLayout): boolean => layout !== 'scroll';
+
+/** Layouts that show whole pages (or pairs) and snap to them: `pages` and `spread`. */
+export const isPagedLayout = (layout: PdfLayout): boolean =>
+  layout === 'pages' || layout === 'spread';
 
 // A paged slot is a snap point at its start (the scroll margin widens the snap
 // area from the page to its whole slot); `always` keeps a fast swipe from
@@ -36,12 +40,12 @@ const SNAP_TYPE = 'x mandatory';
 const FIT_EPSILON = 1e-6;
 
 /**
- * Whether the host snaps to pages: only in `pages` while a page is fitted (or
- * smaller). A zoomed page is bigger than its slot, so snapping would fight
+ * Whether the host snaps to pages (or spreads): only in `pages` and `spread`
+ * while the view is fitted (or smaller). A zoomed page is bigger than its slot, so snapping would fight
  * panning.
  */
 export const isPdfSnapping = (layout: PdfLayout, zoom: number): boolean => {
-  return layout === 'pages' && zoom <= 1 + FIT_EPSILON;
+  return isPagedLayout(layout) && zoom <= 1 + FIT_EPSILON;
 };
 
 /** The host's `scroll-snap-type`; empty turns snapping off. */
@@ -64,24 +68,56 @@ export const pdfObserverMargin = (layout: PdfLayout): string => {
  * shows). Padding by the gutter's width makes that slot reachable.
  */
 export const pdfColumnStyle = (layout: PdfLayout, endPaddingPx = 0): string => {
-  if (layout === 'pages' && endPaddingPx > 0) {
+  if (isPagedLayout(layout) && endPaddingPx > 0) {
     return `${ROW_STYLE}padding-right:${endPaddingPx}px;`;
   }
 
   return isHorizontal(layout) ? ROW_STYLE : COLUMN_STYLE;
 };
 
+/** Where a page sits among the pages of its slot (`spread` has two to a slot). */
+export type PdfSlotRole = { isFirst: boolean; next?: PdfPageBox };
+
+// A spread's margins make its wrappers fill the slot exactly: the first page
+// takes the centering margin before it and the gap to its partner after it, the
+// second the rest of the slot after it. Only the first page is a snap point.
+const spreadPageStyle = (
+  box: PdfPageBox,
+  slot: PdfPageSpan,
+  role: PdfSlotRole,
+): string => {
+  const size = `width:${box.width}px;height:${box.height}px;`;
+  const right = box.left + box.width;
+  const after = role.next
+    ? role.next.left - right
+    : slot.start + slot.size - right;
+
+  if (!role.isFirst) {
+    return `${size}margin:${box.top}px ${after}px 0 0;${PAGE_BASE_STYLE}`;
+  }
+
+  const before = box.left - slot.start;
+
+  return `${size}margin:${box.top}px ${after}px 0 ${before}px;${PAGE_BASE_STYLE}${pageSnapStyle(before)}`;
+};
+
 /**
  * The style of one page's wrapper, sized from its box. `scroll` and `strip`
  * put the gap after the page; in `pages` the margins center the page in its
- * slot (`slot`), so the wrappers together fill each slot exactly.
+ * slot (`slot`), so the wrappers together fill each slot exactly; `spread`
+ * does the same for its pair (`role`).
  */
 export const pdfPageStyle = (
   layout: PdfLayout,
   box: PdfPageBox,
   slot?: PdfPageSpan,
+  role?: PdfSlotRole,
 ): string => {
   const size = `width:${box.width}px;height:${box.height}px;`;
+
+  if (layout === 'spread' && slot && role) {
+    return spreadPageStyle(box, slot, role);
+  }
 
   if (layout === 'pages' && slot) {
     const before = box.left - slot.start;

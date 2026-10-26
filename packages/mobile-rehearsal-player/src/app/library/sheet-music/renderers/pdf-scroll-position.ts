@@ -11,6 +11,11 @@ import {
   type PdfPageRange,
 } from './pdf-layout-model';
 import { isPdfSnapping, pdfSnapType } from './pdf-layout-style';
+import {
+  pagesOfSpread,
+  pagesPerSlotOf,
+  spreadOfPage,
+} from './pdf-spread-layout';
 
 /** The part of the host element the scroller reads and moves. */
 export type PdfScrollHost = {
@@ -76,7 +81,11 @@ export const createPdfScroller = (options: {
 
     if (isSnapping && !wasSnapping) {
       scrollToPage(
-        nearestPage(pageAtOffset(layout, host.scrollLeft), pageCount),
+        nearestPage(
+          pageAtOffset(layout, host.scrollLeft),
+          pageCount,
+          pagesPerSlotOf(currentLayout),
+        ),
       );
     }
 
@@ -103,6 +112,11 @@ export const createPdfScroller = (options: {
 
     const page = currentPage();
 
+    // A spread shows its two pages (or a lone last one).
+    if (currentLayout === 'spread') {
+      return pagesOfSpread(spreadOfPage(page), getState().pageCount);
+    }
+
     return { first: page, last: page };
   };
 
@@ -114,7 +128,9 @@ export const createPdfScroller = (options: {
     const { currentLayout, currentZoom, layout, pageCount } = getState();
 
     if (isPdfSnapping(currentLayout, currentZoom)) {
-      scrollToPage(nearestPage(anchor, pageCount));
+      scrollToPage(
+        nearestPage(anchor, pageCount, pagesPerSlotOf(currentLayout)),
+      );
 
       return;
     }

@@ -44,6 +44,8 @@ type ViewerBodyProps = {
   onFitZoom: (zoom: number) => void;
   /** Opens `Go to page`; undefined until a PDF has reported its pages. */
   onOpenGoToPage: (() => void) | undefined;
+  /** The page area's width, when a PDF is drawn and when it changes. */
+  onViewerWidth: (width: number) => void;
   onPageChange: (state: PdfPageState) => void;
   onThumbnailDrawer: SheetMusicSurfaceProps['onThumbnailDrawer'];
   onZoomChange: (zoom: number) => void;
@@ -72,6 +74,7 @@ export const ViewerBody = ({
   onFailureAction,
   onFitZoom,
   onOpenGoToPage,
+  onViewerWidth,
   onPageChange,
   onThumbnailDrawer,
   onZoomChange,
@@ -115,6 +118,7 @@ export const ViewerBody = ({
           onFitZoom={onFitZoom}
           onPageChange={onPageChange}
           onThumbnailDrawer={onThumbnailDrawer}
+          onViewerWidth={onViewerWidth}
           onZoomChange={onZoomChange}
           onRendered={onRendered}
           pageRequest={pageRequest}

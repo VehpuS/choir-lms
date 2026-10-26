@@ -7,7 +7,7 @@
 
 - [x] 2.1 Reset zoom to 1 on a layout change while keeping the page and in-page fraction (design Decision 1). Spec: zoomed in `Scroll`, then `Pages` lands fitted and snapping; the page is kept.
 - [x] 2.2 Return focus to the page area after a sheet closes or a toolbar action, never taking it from a text field (design Decision 2). A pure focus rule with a spec; a thin `.web` call in the viewer. (Built in `pdf-go-to-page` 5.2: `shouldTakeFocus`, the viewer's `focusRequest`, and the surface's focus call, for the Go to page and Layout sheets and the zoom, fit, and page-step buttons.)
-- [x] 2.3 Hide the horizontal scrollbar in `Pages` and keep it in `Strip` (design Decision 4). Verify in the browser at phone and desktop widths. (Done at phone width; the host gets a `data-pdf-scrollbar` mark in `Pages`, removed in the other layouts. Desktop width is checked with 4.6.)
+- [x] 2.3 Hide the horizontal scrollbar in `Pages` and keep it in `Strip` (design Decision 4). Verify in the browser at phone and desktop widths. (Done at phone width and, with `Spread`, at 1024 px; the host gets a `data-pdf-scrollbar` mark in `Pages`, removed in the other layouts. `Strip` kept its scrollbar at phone width.)
 
 ## 3. Toolbar and page turns
 
@@ -20,13 +20,13 @@
 - [x] 4.1 Settle the width threshold for `Spread` by trying real widths with the owner, and record it in `design.md` (design Open Questions). (Owner: 360 px per page, available from 760 px; tuned in 4.6.)
 - [x] 4.2 Add `spread` to `PdfLayout` in `@org/audio-library-models` with parsing specs (old data, unknown value, `spread` kept), and `isSpreadAvailable` with specs. (`isSpreadAvailable` and `resolveEffectivePdfLayout` live in the app's `renderers/pdf-spread-availability.ts`, since availability is a viewer-width rule. The sheet offers `Spread` only when available; the viewer passes `false` until 4.4 can draw it.)
 - [x] 4.3 Add the `Spread` layout to `pdf-layout-model.ts`: spread boxes, the spread of a page and the pages of a spread, scroll-to-spread offsets, and an odd last page. Specs for each. (In `pdf-spread-layout.ts`: both pages of a spread share one slot span, so `scrollOffsetForPage` lands on the spread from either page and `pageAtOffset` reads the first page; `stepTargetPage` steps by spread.)
-- [ ] 4.4 Render `Spread` in `pdf-renderer.web.ts`: slot per spread, snapping only while fitted, lazy drawing of the current spread and one neighbor each side, paging by spread, the hidden scrollbar, and a layout-change anchor on the first page of the spread.
-- [ ] 4.5 Offer `Spread` in the layout sheet only when available, fall back to `Pages` when the viewer narrows (without rewriting the stored layout), and show `Pages 3-4 of 81` in the indicator. Model and component specs.
-- [ ] 4.6 Verify in the browser at desktop and tablet widths: spread paging, resize to narrow and back, zoom and unzoom, a stored `spread` on a narrow viewer, an odd page count, and memory staying flat on the 81-page score.
+- [x] 4.4 Render `Spread` in `pdf-renderer.web.ts`: slot per spread, snapping only while fitted, lazy drawing of the current spread and one neighbor each side, paging by spread, the hidden scrollbar, and a layout-change anchor on the first page of the spread.
+- [x] 4.5 Offer `Spread` in the layout sheet only when available, fall back to `Pages` when the viewer narrows (without rewriting the stored layout), and show `Pages 3-4 of 81` in the indicator. Model and component specs.
+- [x] 4.6 Verify in the browser at desktop and tablet widths: spread paging, resize to narrow and back, zoom and unzoom, a stored `spread` on a narrow viewer, an odd page count, and memory staying flat on the 81-page score.
 
 ## 5. Validation
 
-- [ ] 5.1 Update the README's viewer notes if they describe the PDF layouts, and run `openspec validate pdf-paging-follow-ups`.
+- [x] 5.1 Update the README's viewer notes if they describe the PDF layouts, and run `openspec validate pdf-paging-follow-ups`.
 - [ ] 5.2 Run lint, test, typecheck, and build for the touched projects through Nx, plus `nx format:check --base=origin/main` and `nx sync:check`.
 - [ ] 5.3 Sync the delta specs into `track-sheet-music` and archive this change after the owner's go-ahead.
 

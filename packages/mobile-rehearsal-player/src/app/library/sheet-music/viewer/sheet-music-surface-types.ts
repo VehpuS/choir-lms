@@ -54,6 +54,8 @@ export type SheetMusicSurfaceProps = {
    * Not called for a score.
    */
   onThumbnailDrawer?: (draw: PdfRendering['drawThumbnail'] | undefined) => void;
+  /** The page area's width in pixels, when a PDF is drawn and when it changes. Not called for a score. */
+  onViewerWidth?: (width: number) => void;
   /** A PDF's current page, when it opens and each time it changes. Not called for a score. */
   onPageChange?: (state: PdfPageState) => void;
   /** The latest request to turn a PDF to a page; each new one moves again. */

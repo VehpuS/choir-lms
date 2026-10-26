@@ -1,5 +1,5 @@
 import type { PdfLayout } from '@org/audio-library-models';
-import { clamp } from 'es-toolkit';
+import { stepTargetPage } from '../renderers/pdf-spread-layout';
 
 /**
  * Where a PDF is: `page` counts from 0 and is the first page in view,
@@ -58,10 +58,21 @@ export const formatShortPageIndicator = ({
     ? `${page + 1}-${lastPage + 1}/${pageCount}`
     : `${page + 1}/${pageCount}`;
 
-/** The page one step from the current one, never past either end. */
-export const stepPage = (state: PdfPageState, delta: number): number => {
-  return clamp(state.page + delta, 0, Math.max(0, state.pageCount - 1));
-};
+/**
+ * The page one step from the current one, never past either end. A `spread`
+ * steps by spread and lands on its first page.
+ */
+export const stepPage = (
+  state: PdfPageState,
+  delta: number,
+  layout: PdfLayout = 'pages',
+): number =>
+  stepTargetPage({
+    from: state.page,
+    layout,
+    pageCount: state.pageCount,
+    step: delta,
+  });
 
 /** What the viewer shows for the page and how it may be turned. */
 export const buildPageControls = (
@@ -79,10 +90,11 @@ export const buildPageControls = (
   }
 
   return {
-    canGoNext: state.page < state.pageCount - 1,
+    // The last page in view, so a spread ending on the last page cannot go on.
+    canGoNext: (state.lastPage ?? state.page) < state.pageCount - 1,
     canGoPrevious: state.page > 0,
     indicator: formatPageIndicator(state),
     shortIndicator: formatShortPageIndicator(state),
-    showSteps: layout === 'pages',
+    showSteps: layout === 'pages' || layout === 'spread',
   };
 };

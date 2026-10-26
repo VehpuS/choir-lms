@@ -15,6 +15,26 @@ const PAGES_PER_SPREAD = 2;
 // Facing pages sit almost touching, like an open book.
 const SPREAD_GAP_PX = 4;
 
+/** Where a page sits in its slot, from the shared spans: first or second, and its partner's box. */
+export const slotRoleOf = (
+  layout: Pick<PdfLayoutResult, 'boxes' | 'spans'>,
+  index: number,
+): { isFirst: boolean; next?: PdfPageBox } => {
+  const start = layout.spans[index]?.start;
+
+  return {
+    isFirst: index === 0 || layout.spans[index - 1]?.start !== start,
+    next:
+      layout.spans[index + 1]?.start === start
+        ? layout.boxes[index + 1]
+        : undefined,
+  };
+};
+
+/** How many pages a layout puts in one slot: two in `spread`, else one. */
+export const pagesPerSlotOf = (layout: PdfLayout): number =>
+  layout === 'spread' ? PAGES_PER_SPREAD : 1;
+
 /** How many spreads a document of `pageCount` pages makes. */
 export const spreadCount = (pageCount: number): number =>
   Math.ceil(Math.max(0, pageCount) / PAGES_PER_SPREAD);

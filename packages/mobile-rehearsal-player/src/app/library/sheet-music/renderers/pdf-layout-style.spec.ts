@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import { PDF_PAGE_GAP_PX } from './pdf-layout-model.js';
 import {
+  isPagedLayout,
   isPdfSnapping,
   pdfColumnStyle,
   pdfObserverMargin,
@@ -30,6 +31,10 @@ describe('pdfColumnStyle', () => {
       assert.match(pdfColumnStyle(layout), /width:max-content/);
       assert.match(pdfColumnStyle(layout), /min-width:100%/);
     }
+  });
+
+  it('pads the end of a spread row too', () => {
+    assert.match(pdfColumnStyle('spread', 15), /padding-right:15px/);
   });
 
   it('pads the end of a pages row by the scrollbar gutter so the last slot is reachable', () => {
@@ -93,7 +98,69 @@ describe('pdfPageStyle in pages', () => {
   });
 });
 
+describe('pdfPageStyle in spread', () => {
+  // A 1000 px slot holding two 450 px pages with a 4 px gap, centered.
+  const slot = { size: 1000, start: 1000 };
+  const first = { height: 600, left: 1048, top: 0, width: 450 };
+  const second = { height: 600, left: 1502, top: 0, width: 450 };
+
+  it('gives the first page the centering margin and the gap to its partner', () => {
+    const style = pdfPageStyle('spread', first, slot, {
+      isFirst: true,
+      next: second,
+    });
+
+    // 48 before; 1502 - (1048 + 450) = 4 to the partner.
+    assert.match(style, /margin:0px 4px 0 48px;/);
+  });
+
+  it('gives the second page the rest of the slot after it, and no margin before', () => {
+    const style = pdfPageStyle('spread', second, slot, { isFirst: false });
+
+    // The slot ends at 2000; the page ends at 1952.
+    assert.match(style, /margin:0px 48px 0 0;/);
+  });
+
+  it('makes only the first page of a spread a snap point', () => {
+    const firstStyle = pdfPageStyle('spread', first, slot, {
+      isFirst: true,
+      next: second,
+    });
+    const secondStyle = pdfPageStyle('spread', second, slot, {
+      isFirst: false,
+    });
+
+    assert.match(firstStyle, /scroll-snap-align:start;/);
+    assert.match(firstStyle, /scroll-margin-left:48px;/);
+    assert.match(firstStyle, /scroll-snap-stop:always;/);
+    assert.doesNotMatch(secondStyle, /scroll-snap/);
+  });
+
+  it('fills the slot with a lone last page centered by its margins', () => {
+    const alone = { height: 600, left: 1275, top: 0, width: 450 };
+    const style = pdfPageStyle('spread', alone, slot, { isFirst: true });
+
+    // 275 before and 275 after a 450 px page fill the 1000 px slot.
+    assert.match(style, /margin:0px 275px 0 275px;/);
+  });
+});
+
+describe('isPagedLayout', () => {
+  it('is pages and spread', () => {
+    assert.equal(isPagedLayout('pages'), true);
+    assert.equal(isPagedLayout('spread'), true);
+    assert.equal(isPagedLayout('scroll'), false);
+    assert.equal(isPagedLayout('strip'), false);
+  });
+});
+
 describe('isPdfSnapping', () => {
+  it('snaps a spread while fitted, like pages', () => {
+    assert.equal(isPdfSnapping('spread', 1), true);
+    assert.equal(isPdfSnapping('spread', 1.5), false);
+    assert.equal(pdfSnapType('spread', 1), 'x mandatory');
+  });
+
   it('snaps in pages while fitted or zoomed out', () => {
     assert.equal(isPdfSnapping('pages', 1), true);
     assert.equal(isPdfSnapping('pages', 0.5), true);

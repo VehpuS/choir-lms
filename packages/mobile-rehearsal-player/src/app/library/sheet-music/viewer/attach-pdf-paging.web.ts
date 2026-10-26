@@ -1,6 +1,6 @@
 import type { PdfLayout } from '@org/audio-library-models';
-import { clamp } from 'es-toolkit';
 
+import { stepTargetPage } from '../renderers/pdf-spread-layout';
 import {
   INITIAL_WHEEL_TURN_STATE,
   isEditableTarget,
@@ -78,7 +78,12 @@ export const attachPdfPaging = ({
   // repeated presses add up.
   const turnBy = (step: number, animate: boolean) => {
     const from = pdf.pendingPage?.() ?? pdf.currentPage();
-    const target = clamp(from + step, 0, pdf.pageCount - 1);
+    const target = stepTargetPage({
+      from,
+      layout: pdf.currentLayout(),
+      pageCount: pdf.pageCount,
+      step,
+    });
 
     if (target !== from) {
       pdf.goToPage(target, { animate });

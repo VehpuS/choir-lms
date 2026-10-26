@@ -144,13 +144,14 @@ export const SheetMusicViewer = ({
   const info = outcome?.kind === 'ready' ? outcome.info : null;
   const isPdf = state.status === 'loaded' && state.document.format === 'pdf';
   const { after, focusRequest, returnFocus } = usePageAreaFocus();
-  const { goToPage, pageSteps, pdfLayout, pdfPages } = usePdfViewerControls({
-    after,
-    isPdf,
-    onChangePdfLayout,
-    returnFocus,
-    source,
-  });
+  const { goToPage, onViewerWidth, pageSteps, pdfLayout, pdfPages } =
+    usePdfViewerControls({
+      after,
+      isPdf,
+      onChangePdfLayout,
+      returnFocus,
+      source,
+    });
   const viewerZoom = useViewerZoom(info !== null, maxViewerZoom(isPdf));
   const goTo = useGoTo();
   const canGoTo = info !== null && info.bars.barCount > 0;
@@ -231,6 +232,7 @@ export const SheetMusicViewer = ({
       onOpenGoToPage={goToPage.open}
       onPageChange={pdfPages.onPageChange}
       onThumbnailDrawer={goToPage.onThumbnailDrawer}
+      onViewerWidth={onViewerWidth}
       onZoomChange={viewerZoom.setZoom}
       onRendered={(next) =>
         setDrawn({

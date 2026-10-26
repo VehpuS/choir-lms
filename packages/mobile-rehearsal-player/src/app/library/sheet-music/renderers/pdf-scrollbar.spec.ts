@@ -23,8 +23,9 @@ const createFakeHost = () => {
 };
 
 describe('isPdfScrollbarHidden', () => {
-  it('hides the sideways scrollbar in pages and keeps it in strip and scroll', () => {
+  it('hides the sideways scrollbar in pages and spread and keeps it in strip and scroll', () => {
     assert.equal(isPdfScrollbarHidden('pages'), true);
+    assert.equal(isPdfScrollbarHidden('spread'), true);
     assert.equal(isPdfScrollbarHidden('strip'), false);
     assert.equal(isPdfScrollbarHidden('scroll'), false);
   });

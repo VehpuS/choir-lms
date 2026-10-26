@@ -63,6 +63,7 @@ export const SheetMusicSurface = ({
   onRendered,
   onPageChange,
   onThumbnailDrawer,
+  onViewerWidth,
   onZoomChange,
   pageRequest,
   pdfLayout = DEFAULT_PDF_LAYOUT,
@@ -72,31 +73,22 @@ export const SheetMusicSurface = ({
   const [host, setHost] = useState<HostNode | null>(null);
   const live = useRef<Live>({});
   // The latest values, read by effects that must not restart when they change.
-  const latest = useRef({
+  const values = {
     initialPage,
     onFailed,
     onFitZoom,
     onPageChange,
     onRendered,
     onThumbnailDrawer,
-    onZoomChange,
-    pdfLayout,
-    selection,
-    zoom,
-  });
-
-  latest.current = {
-    initialPage,
-    onFailed,
-    onFitZoom,
-    onPageChange,
-    onRendered,
-    onThumbnailDrawer,
+    onViewerWidth,
     onZoomChange,
     pdfLayout,
     selection,
     zoom,
   };
+  const latest = useRef(values);
+
+  latest.current = values;
 
   // Tells the viewer which zoom fits the drawn score into the height this
   // element has; the viewer decides whether to use it (auto-fit is on).
@@ -151,6 +143,7 @@ export const SheetMusicSurface = ({
           result.rendering.goToPage(latest.current.initialPage);
         }
 
+        latest.current.onViewerWidth?.(host.clientWidth);
         latest.current.onThumbnailDrawer?.(result.rendering.drawThumbnail);
         latest.current.onPageChange?.(
           pageStateOf(
@@ -332,6 +325,10 @@ export const SheetMusicSurface = ({
     }
 
     live.current.pdf?.setZoom(latest.current.zoom);
+
+    if (host && live.current.pdf) {
+      latest.current.onViewerWidth?.(host.clientWidth);
+    }
   });
 
   return (

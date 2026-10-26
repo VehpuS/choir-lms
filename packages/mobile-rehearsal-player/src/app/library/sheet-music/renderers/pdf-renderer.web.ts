@@ -9,7 +9,12 @@ import {
   scrollOffsetForPoint,
   type PdfLayoutResult,
 } from './pdf-layout-model';
-import { pdfColumnStyle, pdfPageStyle } from './pdf-layout-style';
+import {
+  isPagedLayout,
+  pdfColumnStyle,
+  pdfPageStyle,
+} from './pdf-layout-style';
+import { pagesPerSlotOf, slotRoleOf } from './pdf-spread-layout';
 import { createPageObserver } from './pdf-page-observer';
 import { clampPdfZoom } from './pdf-page-layout';
 import { createPageDrawer, type PageEntry } from './pdf-page-drawer';
@@ -117,6 +122,7 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
             currentLayout,
             box,
             layout.spans[entry.index],
+            slotRoleOf(layout, entry.index),
           );
         }
       }
@@ -262,6 +268,8 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         }
 
         const anchor = readAnchor();
+        // The anchor is read in the layout being left, so its slot size counts.
+        const anchorPagesPerSlot = pagesPerSlotOf(currentLayout);
 
         turner.cancel();
         // A new layout starts fitted; the page and in-page fraction are kept.
@@ -271,9 +279,10 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         settleTimer = undefined;
         applyLayout();
 
-        // Whole pages show the page the reader is mostly on, from its start.
-        if (next === 'pages') {
-          scrollToPage(nearestPage(anchor, pages.length));
+        // Whole pages (or a spread) show the page the reader is mostly on,
+        // from its start; a spread's first page stands for the pair.
+        if (isPagedLayout(next)) {
+          scrollToPage(nearestPage(anchor, pages.length, anchorPagesPerSlot));
         } else {
           scrollToPage(anchor.index, anchor.fraction);
         }

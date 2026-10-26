@@ -230,12 +230,17 @@ export const scrollOffsetForPage = (
 /**
  * The page a reading position belongs to when a layout shows whole pages: the
  * next page once more than half of this one has scrolled past the edge.
+ * `pagesPerSlot` is how many pages the layout the position was read in puts in
+ * a slot (2 in `spread`, where the position's page is the first of its pair), so
+ * "the next one" is the next slot's first page.
  */
 export const nearestPage = (
   position: PdfPagePosition,
   pageCount: number,
+  pagesPerSlot = 1,
 ): number => {
-  const index = position.fraction > 0.5 ? position.index + 1 : position.index;
+  const index =
+    position.fraction > 0.5 ? position.index + pagesPerSlot : position.index;
 
   return clamp(index, 0, Math.max(0, pageCount - 1));
 };

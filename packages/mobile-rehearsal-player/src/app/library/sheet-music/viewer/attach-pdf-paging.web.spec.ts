@@ -127,6 +127,27 @@ describe('attachPdfPaging', () => {
     assert.deepEqual(goTo, [6, 7, 8]);
   });
 
+  it('steps a spread at a time in spread, from the first page of the pair', () => {
+    const { fire, goTo } = setUp({ layout: 'spread', page: 2 });
+
+    fire('keydown', { key: 'ArrowRight' });
+    fire('keydown', { key: 'ArrowRight' });
+    fire('keydown', { key: 'ArrowLeft' });
+
+    // 2 -> 4 -> 6, then back one spread from the page it reports (6) to 4.
+    assert.deepEqual(goTo, [4, 6, 4]);
+  });
+
+  it('does not turn past the last spread, even a lone last page', () => {
+    const { fire, goTo } = setUp({ layout: 'spread', page: 8 });
+
+    fire('keydown', { key: 'ArrowRight' });
+    fire('keydown', { key: 'ArrowRight' });
+
+    // Ten pages: the last spread starts on page 9 (index 8); there is no more.
+    assert.deepEqual(goTo, []);
+  });
+
   it('works in strip too', () => {
     const { fire, goTo } = setUp({ layout: 'strip', page: 2 });
 

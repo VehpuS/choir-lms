@@ -180,6 +180,59 @@ describe('createPdfScroller readAnchor and restoreAnchor', () => {
   });
 });
 
+describe('createPdfScroller in spread', () => {
+  it('reports the pair in view as the range and the first page as the page', () => {
+    const { host, scroller } = setup(stateFor('spread'));
+
+    // Each slot is 400 px wide; 400 is the second spread (pages 3 and 4).
+    host.scrollLeft = 400;
+
+    assert.equal(scroller.currentPage(), 2);
+    assert.deepEqual(scroller.currentRange(), { first: 2, last: 3 });
+  });
+
+  it('reports a lone last page as one page', () => {
+    const { host, scroller } = setup(stateFor('spread'));
+
+    host.scrollLeft = 800;
+
+    assert.deepEqual(scroller.currentRange(), { first: 4, last: 4 });
+  });
+
+  it('keeps the reader on the spread they are at when the view is half a pixel short of it', () => {
+    const { box, host, scroller } = setup(stateFor('spread'));
+
+    // The browser can leave the offset a hair before a slot's start (400).
+    host.scrollLeft = 399.5;
+
+    const anchor = scroller.readAnchor();
+
+    // A resize lays the slots out again; the reader stays on the second spread.
+    box.state = stateFor('spread');
+    scroller.restoreAnchor(anchor);
+
+    assert.equal(host.scrollLeft, 400);
+  });
+
+  it('settles on the nearer spread when snapping turns back on', () => {
+    const { box, host, scroller } = setup(stateFor('spread', 2));
+
+    host.scrollLeft = 390;
+    box.state = stateFor('spread');
+    scroller.updateSnapping();
+
+    assert.equal(host.scrollLeft, 400);
+  });
+
+  it('scrolls to the spread from the second of its pages', () => {
+    const { host, scroller } = setup(stateFor('spread'));
+
+    scroller.scrollToPage(3);
+
+    assert.equal(host.scrollLeft, 400);
+  });
+});
+
 describe('createPdfScroller currentPage and currentRange', () => {
   it('reads the page under the middle of the viewport', () => {
     const { box, host, scroller } = setup(stateFor('scroll'));

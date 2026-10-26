@@ -1,6 +1,7 @@
 import type { PdfLayout, SheetMusicSource } from '@org/audio-library-models';
 import { useState, type ReactNode } from 'react';
 
+import { resolveEffectivePdfLayout } from '../renderers/pdf-spread-availability';
 import { PdfLayoutSheet } from './pdf-layout-sheet';
 import { usePdfLayoutChoice } from './use-pdf-layout-choice';
 
@@ -16,7 +17,8 @@ type PdfLayoutControlOptions = {
 };
 
 /**
- * The PDF layout in effect, the toolbar's `Layout` button, and the sheet it
+ * The PDF layout in effect (a stored `spread` is `pages` while the viewer is
+ * too narrow for it), the toolbar's `Layout` button, and the sheet it
  * opens. `button` is undefined (and the sheet never shows) off a PDF.
  */
 export const usePdfLayoutControl = ({
@@ -31,13 +33,13 @@ export const usePdfLayoutControl = ({
   sheet: ReactNode;
 } => {
   const choice = usePdfLayoutChoice({ onSaveSourceLayout, source });
+  // A stored spread shows as pages while the viewer is too narrow for it.
+  const layout = resolveEffectivePdfLayout(choice.layout, isSpreadAvailable);
   const [isOpen, setIsOpen] = useState(false);
 
   return {
-    button: isPdf
-      ? { layout: choice.layout, onOpen: () => setIsOpen(true) }
-      : undefined,
-    layout: choice.layout,
+    button: isPdf ? { layout, onOpen: () => setIsOpen(true) } : undefined,
+    layout,
     sheet:
       isPdf && isOpen ? (
         <PdfLayoutSheet

@@ -237,6 +237,14 @@ describe('nearestPage', () => {
     assert.equal(nearestPage({ fraction: 0.51, index: 4 }, 10), 5);
   });
 
+  it('moves on by a whole slot when a layout holds two pages in one', () => {
+    // In a spread the position's page is the first of its pair, so the next
+    // slot starts two pages on.
+    assert.equal(nearestPage({ fraction: 0.4, index: 74 }, 81, 2), 74);
+    assert.equal(nearestPage({ fraction: 0.9995, index: 74 }, 81, 2), 76);
+    assert.equal(nearestPage({ fraction: 0.9, index: 80 }, 81, 2), 80);
+  });
+
   it('never goes past the last page or before the first', () => {
     assert.equal(nearestPage({ fraction: 0.9, index: 9 }, 10), 9);
     assert.equal(nearestPage({ fraction: 0, index: 0 }, 0), 0);
