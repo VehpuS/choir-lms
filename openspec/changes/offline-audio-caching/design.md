@@ -11,6 +11,13 @@ Web playback fetches the whole Drive `alt=media` response into a blob on every `
 - **Offline model: both.** An automatic LRU holds recently played audio within a budget; a `Keep offline` action pins a file so eviction skips it.
 - **Sign-out: ask.** Signing out of Drive asks whether to keep or clear offline copies. Clearing removes every cached audio and score file; keeping leaves them playable without a session.
 
+## Confirmed (user, 2026-10-27)
+
+- **Key, invalidation and quota policy** below (Key and invalidation, and the quota sentence of Budget) are confirmed as written.
+- **Cache size presets: 100 MB, 250 MB, 500 MB, 1 GB, 2 GB; the web default becomes 250 MB** (a selectable preset; the 200 MB constant from 1.1 changes to 250 MB when 1.6 adds the setting).
+- **Settings layout: a top-level list of category rows, each opening its own page** (task 1.8).
+- Still to explore with the user when built: the per-file offline state UI and menu placement (1.5, 1.6), and the offline files view layout (1.6).
+
 ## Proposed (confirm with the user before implementing)
 
 - **Key and invalidation.** Entry key is `driveFileId`; the entry stores `modifiedTime` as its version (`resolveWaveformSourceVersion` is reused so audio and peaks agree). A lookup whose current `modifiedTime` differs drops the entry. Offline (no Drive metadata) an entry is served as-is and marked possibly stale.
