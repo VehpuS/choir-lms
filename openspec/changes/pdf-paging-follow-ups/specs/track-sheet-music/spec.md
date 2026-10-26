@@ -117,6 +117,12 @@ The system SHALL place `Previous page` and `Next page` next to the page indicato
 - **THEN** the toolbar controls fit one row
 - **AND** `Previous page` and `Next page` sit beside the page indicator
 
+#### Scenario: Phone held sideways
+
+- **WHEN** a PDF is open in `Pages` or `Spread` on a phone held sideways, where the controls sit in a side rail
+- **THEN** `Previous page` and `Next page` sit in the rail around a short page label such as `3/81`, and pressing the label opens `Go to page`
+- **AND** the rail scrolls when its controls do not fit the screen's height, so none is out of reach
+
 #### Scenario: Ends of the document
 
 - **WHEN** the first or last page (or spread) is showing
