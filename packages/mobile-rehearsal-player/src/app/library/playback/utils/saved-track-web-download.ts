@@ -1,3 +1,7 @@
+import {
+  savedTrackAudioCache,
+  type SavedTrackAudioCache,
+} from './saved-track-audio-cache';
 import { emitSavedTrackDownloaded } from './saved-track-download-events';
 import {
   IDLE_SAVED_TRACK_DOWNLOAD_PROGRESS,
@@ -15,6 +19,7 @@ const DRIVE_FILE_ID_PATTERN = /\/files\/([^/?]+)/;
 const MS_PER_SECOND = 1000;
 
 let lastDownloadId = 0;
+let unkeyedDownloadCount = 0;
 
 type SavedTrackDownloadReader = {
   read(): Promise<{ done: boolean; value?: Uint8Array }>;
@@ -202,17 +207,34 @@ export const downloadSavedTrackBlob = async (
   }
 };
 
-// Downloads still running; `reset` / `stop` abort them so a superseded load
-// neither finishes into the player nor keeps using a slow connection.
-const inFlightDownloads = new Set<AbortController>();
+// Downloads still running, one per file and version. Each caller holds a
+// waiter; a download is cancelled only when its last waiter leaves, so a
+// superseded request never cancels bytes another caller still needs.
+type SharedDownload = {
+  controller: AbortController;
+  promise: Promise<Blob>;
+  waiters: Set<Waiter>;
+};
 
-/** Aborts every download still running (the player was reset or stopped). */
+type Waiter = {
+  cancelOnReset: boolean;
+  release: () => void;
+};
+
+const sharedDownloads = new Map<string, SharedDownload>();
+
+/**
+ * Releases every waiter that asked to be cancelled on reset (the player was
+ * reset or stopped). Downloads another caller still waits on keep running.
+ */
 export const abortSavedTrackDownloads = () => {
-  for (const controller of inFlightDownloads) {
-    controller.abort();
+  for (const download of sharedDownloads.values()) {
+    for (const waiter of [...download.waiters]) {
+      if (waiter.cancelOnReset) {
+        waiter.release();
+      }
+    }
   }
-
-  inFlightDownloads.clear();
 };
 
 const resolveDownloadDependencies = (
@@ -239,33 +261,106 @@ const resolveDownloadDependencies = (
   };
 };
 
+export type StartSavedTrackDownloadOptions = {
+  /** Test seam; defaults to the app-wide cache. */
+  cache?: SavedTrackAudioCache;
+  /** False for background callers (waveform analysis) that survive a reset. */
+  cancelOnReset?: boolean;
+  /** Drive content version; without one the bytes are never reused. */
+  version?: string;
+};
+
+const parseDriveFileId = (url: string) => {
+  return DRIVE_FILE_ID_PATTERN.exec(url)?.[1] ?? null;
+};
+
 /**
- * Starts a download that `abortSavedTrackDownloads` can cancel, filling in
+ * Downloads a Drive media URL, reusing cached bytes for the same file and
+ * version and sharing one in-flight download between concurrent callers.
+ * `abortSavedTrackDownloads` cancels it, once no waiter remains. Fills in
  * browser defaults for timers, clock, and the app-wide progress store.
  */
 export const startSavedTrackDownload = async (
   request: { headers?: Record<string, string>; url: string },
   dependencies: Partial<SavedTrackDownloadDependencies> &
     Pick<SavedTrackDownloadDependencies, 'fetch'>,
-) => {
-  const controller = new AbortController();
+  options: StartSavedTrackDownloadOptions = {},
+): Promise<Blob> => {
+  const { cache = savedTrackAudioCache, cancelOnReset = true } = options;
+  const driveFileId = parseDriveFileId(request.url);
+  const version = options.version;
+  const cacheable = driveFileId !== null && version !== undefined;
+  const cachedBlob = cacheable ? cache.get(driveFileId, version) : null;
 
-  inFlightDownloads.add(controller);
+  // Waveform analysis reuses these bytes rather than fetching the file again.
+  if (cachedBlob) {
+    emitSavedTrackDownloaded({ blob: cachedBlob, driveFileId });
 
-  try {
-    const blob = await downloadSavedTrackBlob(
-      { ...request, signal: controller.signal },
-      resolveDownloadDependencies(dependencies),
-    );
-
-    // Waveform analysis reuses these bytes rather than fetching the file again.
-    emitSavedTrackDownloaded({
-      blob,
-      driveFileId: DRIVE_FILE_ID_PATTERN.exec(request.url)?.[1] ?? null,
-    });
-
-    return blob;
-  } finally {
-    inFlightDownloads.delete(controller);
+    return cachedBlob;
   }
+
+  const shareKey = cacheable ? `${driveFileId}:${version}` : null;
+  let download = shareKey ? sharedDownloads.get(shareKey) : undefined;
+
+  if (!download) {
+    const controller = new AbortController();
+    const waiters = new Set<Waiter>();
+    const started: SharedDownload = {
+      controller,
+      promise: downloadSavedTrackBlob(
+        { ...request, signal: controller.signal },
+        resolveDownloadDependencies(dependencies),
+      ).then((blob) => {
+        if (cacheable) {
+          cache.set(driveFileId, version, blob);
+        }
+
+        emitSavedTrackDownloaded({ blob, driveFileId });
+
+        return blob;
+      }),
+      waiters,
+    };
+    // Downloads without a version are not shared, but reset must still reach
+    // them, so they live under a unique key.
+    const mapKey = shareKey ?? `unkeyed:${(unkeyedDownloadCount += 1)}`;
+    const settle = () => {
+      if (sharedDownloads.get(mapKey) === started) {
+        sharedDownloads.delete(mapKey);
+      }
+    };
+
+    started.promise.then(settle, settle);
+    sharedDownloads.set(mapKey, started);
+
+    download = started;
+  }
+
+  const sharedDownload = download;
+
+  return new Promise<Blob>((resolve, reject) => {
+    const waiter: Waiter = {
+      cancelOnReset,
+      release: () => {
+        sharedDownload.waiters.delete(waiter);
+        reject(createAbortError());
+
+        if (sharedDownload.waiters.size === 0) {
+          sharedDownload.controller.abort();
+        }
+      },
+    };
+
+    sharedDownload.waiters.add(waiter);
+    sharedDownload.promise.then(
+      (blob) => {
+        sharedDownload.waiters.delete(waiter);
+        resolve(blob);
+      },
+      (error: unknown) => {
+        sharedDownload.waiters.delete(waiter);
+        reject(error);
+      },
+    );
+  });
 };

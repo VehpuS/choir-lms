@@ -13,6 +13,8 @@ const SAVED_TRACK_PLAYER_WEB_PLAYER_PATCH = Symbol(
 type SavedTrackPlayerWebTrack = {
   contentType?: string;
   headers?: Record<string, string>;
+  /** Drive content version; lets the download be reused. */
+  sourceVersion?: string;
   url: string;
 };
 
@@ -78,6 +80,7 @@ const fetchSavedTrackBlobUrl = async (
   const trackBlob = await startSavedTrackDownload(
     { headers: track.headers, url: track.url },
     dependencies,
+    { version: track.sourceVersion },
   );
 
   return dependencies.urlApi.createObjectURL(trackBlob);

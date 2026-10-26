@@ -39,6 +39,8 @@ export type SavedTrackPlayerTrack = {
   duration?: number;
   contentType?: string;
   headers: Record<string, string>;
+  /** Drive `modifiedTime`, so web playback can reuse a finished download. */
+  sourceVersion?: string;
 };
 
 export type SavedTrackPlaybackRequest = {
@@ -226,6 +228,7 @@ export const createSavedTrackPlaybackRequest = (options: {
           ? playableItem.source.durationMs / 1000
           : undefined,
       contentType: playableItem.source.mimeType,
+      sourceVersion: playableItem.source.modifiedTime,
       headers: {
         Authorization: `Bearer ${options.accessToken}`,
       },

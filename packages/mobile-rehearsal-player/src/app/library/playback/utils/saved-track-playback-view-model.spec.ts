@@ -54,6 +54,7 @@ describe('saved track playback view-model', () => {
       description: 'Full track',
       duration: 185,
       contentType: 'audio/mpeg',
+      sourceVersion: PLAYABLE_SOURCE.modifiedTime,
       headers: {
         Authorization: 'Bearer drive-token',
       },
