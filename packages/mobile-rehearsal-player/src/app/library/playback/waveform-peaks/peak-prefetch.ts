@@ -15,6 +15,8 @@ type PeakPrefetchDependencies = {
 export type PeakPrefetchRequest = {
   headers: Record<string, string>;
   url: string;
+  /** Drive content version, so the download can be reused. */
+  version?: string;
 };
 
 /**

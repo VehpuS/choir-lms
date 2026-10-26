@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { subscribeToSavedTrackDownloads } from './saved-track-download-events.js';
 import { createSavedTrackAudioCache } from './saved-track-audio-cache.js';
 import {
   abortSavedTrackDownloads,
@@ -160,5 +161,29 @@ describe('reused saved track downloads', () => {
 
     await assert.rejects(player, isSavedTrackDownloadAbortError);
     assert.equal(controlled.signals[0]?.aborted, true);
+  });
+
+  it('announces cached bytes again so waveform analysis still gets them', async () => {
+    const cache = createSavedTrackAudioCache(100);
+    const controlled = createControlledFetch();
+    const sizes: number[] = [];
+    const stop = subscribeToSavedTrackDownloads((event) => {
+      sizes.push(event.blob.size);
+    });
+
+    controlled.finish();
+    await startSavedTrackDownload(
+      { url: TRACK_URL },
+      { fetch: controlled.fetch },
+      { cache, version: 'v1' },
+    );
+    await startSavedTrackDownload(
+      { url: TRACK_URL },
+      { fetch: controlled.fetch },
+      { cache, version: 'v1' },
+    );
+    stop();
+
+    assert.deepEqual(sizes, [4, 4]);
   });
 });

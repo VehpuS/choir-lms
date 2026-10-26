@@ -52,7 +52,11 @@ export const prefetchWaveformPeaks = (
 
   void prefetchPeaks({
     key: item.source.driveFileId,
-    request: { headers: track.headers, url: track.url },
+    request: {
+      headers: track.headers,
+      url: track.url,
+      version: track.sourceVersion,
+    },
     version: resolveWaveformSourceVersion(item.source.modifiedTime),
   }).catch(() => undefined);
 };
