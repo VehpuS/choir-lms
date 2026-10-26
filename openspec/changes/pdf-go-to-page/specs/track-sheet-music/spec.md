@@ -2,7 +2,7 @@
 
 ### Requirement: The page indicator opens a Go to page sheet
 
-The system SHALL make the page indicator of an open PDF in the web viewer a button, in every layout, that opens a `Go to page` sheet. The sheet SHALL contain a page-number field (counting from 1, prefilled with the current page) with a `Go` button, above a grid of page thumbnails. `Go` SHALL be enabled only when the field holds a whole number from 1 to the page count, and the sheet SHALL show that range. Choosing `Go` (or pressing Enter in the field) or choosing a thumbnail SHALL close the sheet and move the viewer to that page. In `Spread`, the page SHALL be shown in the spread that holds it, and both pages of the current spread SHALL be marked in the grid; otherwise the current page SHALL be marked.
+The system SHALL make the page indicator of an open PDF in the web viewer a button, in every layout, that opens a `Go to page` sheet. The sheet SHALL contain a page-number field (counting from 1, prefilled with the current page) with a `Go` button, above a grid of page thumbnails. `Go` SHALL be enabled only when the field holds a whole number from 1 to the page count, and the sheet SHALL show that range. Choosing `Go` (or pressing Enter in the field) or choosing a thumbnail SHALL close the sheet and move the viewer to that page. In `Spread`, the page SHALL be shown in the spread that holds it, and both pages of the current spread SHALL be marked in the grid; in a `Strip` wide enough to show several pages side by side, every page that is at least half in view SHALL be marked and the indicator SHALL read them as a range (for example `Pages 40-41 of 81`); otherwise the current page SHALL be marked. The indicator's touch area SHALL be at least 44 points tall and wide, and a text field in the sheet SHALL use text of at least 16 points so that iOS Safari does not zoom the page when it takes focus.
 
 #### Scenario: Opening the sheet
 
@@ -23,6 +23,16 @@ The system SHALL make the page indicator of an open PDF in the web viewer a butt
 
 - **WHEN** a user chooses the thumbnail of page 7
 - **THEN** the sheet closes and page 7 is shown
+
+#### Scenario: Wide Strip
+
+- **WHEN** a user in a `Strip` that shows about two pages at once chooses page 40
+- **THEN** page 40 is at the start edge, the indicator reads `Pages 40-41 of 81`, and the sheet marks both pages when reopened
+
+#### Scenario: Keyboard on a phone
+
+- **WHEN** a user taps the page-number field on a phone and the soft keyboard opens
+- **THEN** the field keeps focus, the viewer keeps its layout, and the field, `Go`, and the range stay in view above the keyboard
 
 #### Scenario: Go to page in Spread
 
