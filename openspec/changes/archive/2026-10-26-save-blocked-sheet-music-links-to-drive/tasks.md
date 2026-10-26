@@ -57,4 +57,4 @@
 
 ## 9. Archive (last)
 
-- [ ] 9.1 Archive this change, but only once every other task in this file is checked (including group 8) and the user gives the go-ahead. Do not archive while any task above is unchecked.
+- [x] 9.1 Archive this change, but only once every other task in this file is checked (including group 8) and the user gives the go-ahead. Do not archive while any task above is unchecked.
