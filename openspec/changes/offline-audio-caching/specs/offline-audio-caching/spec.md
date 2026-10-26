@@ -93,3 +93,36 @@ The system SHALL provide an offline files view opened from the user-icon session
 
 - **WHEN** no file is stored
 - **THEN** the view explains how to keep a file offline instead of showing an empty list
+
+### Requirement: The user can set the offline cache size
+
+The system SHALL let the user choose the size of the automatic audio cache from a set of preset sizes, from the offline files view and from Settings, and SHALL remember the choice on that device. Lowering the size SHALL immediately evict the least recently used files that are not kept offline until the cache fits. Files kept offline SHALL NOT be evicted by a lower size; when they alone exceed it, the system SHALL say the size is exceeded.
+
+#### Scenario: Lower the cache size
+
+- **WHEN** the cache holds 400 MB of automatic files and the user chooses 250 MB
+- **THEN** the least recently used automatic files are removed until 250 MB or less remains, and the offline files view shows the new total against 250 MB
+
+#### Scenario: Kept files exceed the chosen size
+
+- **WHEN** kept files total 300 MB and the user chooses 250 MB
+- **THEN** no kept file is removed, all automatic files are removed, and the view says the size is exceeded
+
+#### Scenario: The choice persists
+
+- **WHEN** the user chooses 1 GB and restarts the app
+- **THEN** the cache size is still 1 GB
+
+### Requirement: Settings groups its options into pages
+
+The system SHALL organize Settings so its options are reached without scrolling through every section: related options SHALL be grouped under named categories, and the offline storage options SHALL be one of them. Existing options SHALL keep their behavior and labels.
+
+#### Scenario: Open a category
+
+- **WHEN** the user opens Settings and chooses `Offline storage`
+- **THEN** the cache size, storage used and the link to the offline files view are shown, and the other categories' options are not on the same screen
+
+#### Scenario: Back to the categories
+
+- **WHEN** the user is inside a category and goes back
+- **THEN** the list of categories is shown again
