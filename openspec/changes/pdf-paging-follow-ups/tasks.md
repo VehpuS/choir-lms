@@ -35,3 +35,4 @@
 - [ ] 6.1 Right-to-left page order for documents that declare it; deferred until a real right-to-left file needs it (original 6.1). Explore with a user before changing.
 - [ ] 6.2 Add the layouts and page paging to native when native PDF rendering exists (`native-playback-follow-ups` 1.6; original 6.4).
 - [ ] 6.3 `Go to page` and thumbnails live in `pdf-go-to-page`; the 317-line repository file was split directly (original 6.12).
+- [ ] 6.4 Look at the page-turn slide (about 200 ms, the 300 ms settle) and the reduced-motion path in a foreground browser with the owner, on a phone-width and a desktop viewer; the Browser pane reports the page as hidden, so only end states were verified (found in 3.3). Adjust `SMOOTH_TURN_SETTLE_MS` only if the slide is cut short.
