@@ -1,6 +1,6 @@
 import { createTrackPlayableItem } from '@org/audio-library-models';
 
-import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
+import type { DriveAudioSource } from '@org/audio-library-models';
 import { persistentAudioCache } from '../playback/audio-cache';
 import { createSavedTrackDownloadProgressStore } from '../playback/utils/saved-track-download-progress';
 import { savedTrackAudioCache } from '../playback/utils/saved-track-audio-cache';
@@ -39,7 +39,7 @@ const keeping = createOfflineKeeping({
 });
 
 export const keepSourceOffline = (
-  source: DriveLibrarySource,
+  source: DriveAudioSource,
   accessToken: string,
 ): Promise<KeepOfflineResult> => {
   const { track } = createSavedTrackPlaybackRequest({

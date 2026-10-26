@@ -70,6 +70,8 @@ describe('resolveBulkActions offers per surface', () => {
       'add-to-playlist',
       'save-as-playlist',
       'edit-tags',
+      'keep-offline',
+      'remove-offline',
       'copy-to-folder',
       'move-to-folder',
       'delete-from-folder',
@@ -90,8 +92,22 @@ describe('resolveBulkActions offers per surface', () => {
       'add-to-queue',
       'add-to-playlist',
       'save-as-playlist',
+      'keep-offline',
+      'remove-offline',
       'remove-from-playlist',
     ]);
+  });
+
+  it('disables the offline actions with the playback ones when nothing would play', () => {
+    const actions = resolveBulkActions({
+      effectivePlayableCount: 0,
+      items: [folder],
+      surface: 'files',
+    });
+
+    for (const id of ['keep-offline', 'remove-offline'] as const) {
+      assert.equal(find(actions, id).isDisabled, true, id);
+    }
   });
 
   it('gives tag detail and Library search the same entity actions as the views', () => {

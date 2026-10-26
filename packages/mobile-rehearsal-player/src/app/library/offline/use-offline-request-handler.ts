@@ -1,12 +1,13 @@
 import type { NamedLoop } from '@org/audio-library-models';
 import { useEffect, useRef } from 'react';
 
-import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
+import type { DriveAudioSource } from '@org/audio-library-models';
 import {
   subscribeToSavedItemRequests,
   type SavedItemRequest,
 } from '../components/saved-item-menu/saved-item-requests';
 import { keepSourceOffline, removeSourceOffline } from './offline-actions';
+import { keepManyOffline, setOfflineBatchRunner } from './offline-batch';
 
 const TOO_LARGE_MESSAGE =
   'The file is larger than the offline cache size, so it was not kept.';
@@ -14,8 +15,8 @@ const TOO_LARGE_MESSAGE =
 type OfflineRequestHandlerOptions = {
   accessToken?: string;
   clearIssue: () => void;
-  reportIssue: (source: DriveLibrarySource, error: unknown) => void;
-  savedLibrarySources: readonly DriveLibrarySource[];
+  reportIssue: (source: DriveAudioSource, error: unknown) => void;
+  savedLibrarySources: readonly DriveAudioSource[];
   savedLoops: readonly NamedLoop[];
 };
 
@@ -44,6 +45,34 @@ export const useOfflineRequestHandler = (
   const latest = useRef(options);
 
   latest.current = options;
+
+  // Bulk and folder actions run through this runner, which holds the session.
+  useEffect(() => {
+    setOfflineBatchRunner({
+      keepSources: (sources) => {
+        const { accessToken } = latest.current;
+
+        if (!accessToken) {
+          return Promise.reject(
+            new Error('Reconnect Google Drive and try again.'),
+          );
+        }
+
+        return keepManyOffline(sources, (source) =>
+          keepSourceOffline(source, accessToken),
+        );
+      },
+      removeSources: async (sources) => {
+        await Promise.all(
+          sources.map((source) => removeSourceOffline(source.driveFileId)),
+        );
+      },
+    });
+
+    return () => {
+      setOfflineBatchRunner(null);
+    };
+  }, []);
 
   useEffect(() => {
     return subscribeToSavedItemRequests((request) => {

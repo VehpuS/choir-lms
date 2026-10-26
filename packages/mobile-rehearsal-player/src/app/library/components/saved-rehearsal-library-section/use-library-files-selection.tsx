@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, type ReactNode } from 'react';
 
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../storage/local-library-storage';
 import {
-  createFilesPlaybackExpansionContext,
   getFilesRowSelectionState,
   getKeysSubsumedByFolder,
   orderFilesSelectionByRows,
@@ -28,11 +27,13 @@ import { useLibrarySelectionServices } from '../../selection/library-selection-s
 import { getSelectionCountLabel } from '../../selection/selection-copy';
 import { SelectEntryButton } from '../../selection/select-entry-button';
 import { SelectionBar } from '../../selection/selection-bar';
+import { useFilesBulkOffline } from '../../selection/use-bulk-offline-actions';
 import { useBulkPlaybackActions } from '../../selection/use-bulk-playback-actions';
 import { useBulkTagEditor } from '../../selection/use-bulk-tag-editor';
 import { usePinnedBulkActionBar } from '../../selection/use-pinned-bulk-action-bar';
 import { useSelection } from '../../selection/use-selection';
 import type { ExplorerRowSelection } from '../explorer/model';
+import { useFilesExpansionContext } from './use-files-expansion-context';
 import { useLibraryFilesBulkNodeActions } from '../../selection/use-library-files-bulk-node-actions';
 
 export type FilesRowSelectionFactory = (
@@ -104,22 +105,7 @@ export const useLibraryFilesSelection = ({
         : { coveredKeys: new Set<string>(), partialKeys: new Set<string>() },
     [orderedItems, rows, tree],
   );
-  const expansionContext = useMemo(
-    () =>
-      createFilesPlaybackExpansionContext({
-        savedLoops: services.collections.loops,
-        savedPlaylists: services.collections.playlists,
-        savedSources: services.collections.sources,
-        searchOptions,
-        tree: tree ?? {
-          fileLinks: [],
-          folders: [],
-          rootFolderId: '',
-          version: 1,
-        },
-      }),
-    [searchOptions, services.collections, tree],
-  );
+  const expansionContext = useFilesExpansionContext({ searchOptions, tree });
 
   const createPlaylist = useCallback(
     async (playlist: Parameters<typeof services.createPlaylist>[0]) =>
@@ -143,6 +129,11 @@ export const useLibraryFilesSelection = ({
     queueItemsUpNext: services.queueItemsUpNext,
     updatePlaylist: services.updatePlaylist,
   });
+  const offline = useFilesBulkOffline({
+    context: expansionContext,
+    items: bulkItems,
+    onCompleted: selection.cancel,
+  });
 
   const nodeActions = useLibraryFilesBulkNodeActions({
     files,
@@ -161,12 +152,13 @@ export const useLibraryFilesSelection = ({
     () => ({
       'add-to-playlist': playback.run.addToPlaylist,
       'add-to-queue': playback.run.addToQueue,
+      ...offline.handlers,
       'edit-tags': tagEditor.open,
       'play-next': playback.run.playNext,
       'save-as-playlist': playback.run.saveAsPlaylist,
       ...nodeActions.handlers,
     }),
-    [nodeActions.handlers, playback.run, tagEditor.open],
+    [nodeActions.handlers, offline.handlers, playback.run, tagEditor.open],
   );
   const actions = useMemo<BulkAction[]>(
     () =>
@@ -303,6 +295,7 @@ export const useLibraryFilesSelection = ({
     bulkNodes: (
       <>
         {playback.nodes}
+        {offline.nodes}
         {nodeActions.nodes}
         {tagEditor.node}
       </>

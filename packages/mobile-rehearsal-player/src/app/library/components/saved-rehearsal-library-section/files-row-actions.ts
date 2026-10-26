@@ -1,6 +1,8 @@
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
 import { attachRowActionSections } from '../options-menu-sheet/row-action-sections';
+import { requestFolderOffline } from '../../offline/folder-offline-request';
+import { isOfflineStorageSupported } from '../../offline/offline-actions';
 import { resolveSavedPlaylistMenu } from '../saved-item-menu/saved-item-menus';
 import {
   resolveFileLinkViewActions,
@@ -43,7 +45,20 @@ const resolveFolderMenuActions = (
   options: ResolveFilesRowMenuActionsBaseOptions,
   row: Extract<LibraryFilesRow, { kind: 'folder' }>,
 ) => {
+  // Every track and loop beneath the folder; the Files selection handles it.
+  const offlineActions = isOfflineStorageSupported
+    ? (['keep-offline', 'remove-offline'] as const).map((action) => ({
+        id: `folder:${row.folder.id}:${action}`,
+        label:
+          action === 'keep-offline' ? 'Keep offline' : 'Remove from offline',
+        onPress: () => {
+          requestFolderOffline({ action, folderId: row.folder.id });
+        },
+        tone: 'secondary' as const,
+      }))
+    : [];
   const actions = [
+    ...offlineActions,
     {
       disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,
       id: `folder:${row.folder.id}:edit-tags`,

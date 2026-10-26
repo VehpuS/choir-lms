@@ -15,10 +15,12 @@ export type BulkActionId =
   | 'copy-to-folder'
   | 'delete-from-folder'
   | 'edit-tags'
+  | 'keep-offline'
   | 'move-to-folder'
   | 'play-next'
   | 'remove-from-library'
   | 'remove-from-playlist'
+  | 'remove-offline'
   | 'save-as-playlist';
 
 export const BULK_ACTION_LABELS: Record<BulkActionId, string> = {
@@ -27,10 +29,12 @@ export const BULK_ACTION_LABELS: Record<BulkActionId, string> = {
   'copy-to-folder': 'Copy to folder',
   'delete-from-folder': 'Delete from folder',
   'edit-tags': 'Edit tags',
+  'keep-offline': 'Keep offline',
   'move-to-folder': 'Move to folder',
   'play-next': 'Play next',
   'remove-from-library': 'Remove from library',
   'remove-from-playlist': 'Remove from playlist',
+  'remove-offline': 'Remove from offline',
   'save-as-playlist': 'Save as playlist',
 };
 
@@ -60,9 +64,15 @@ const PLAYBACK_AND_PLAYLIST_ACTIONS: readonly BulkActionId[] = [
   'add-to-playlist',
   'save-as-playlist',
 ];
+// Like playback, these expand folders and playlists into their audio files.
+const OFFLINE_ACTIONS: readonly BulkActionId[] = [
+  'keep-offline',
+  'remove-offline',
+];
 const ENTITY_ACTIONS: readonly BulkActionId[] = [
   ...PLAYBACK_AND_PLAYLIST_ACTIONS,
   'edit-tags',
+  ...OFFLINE_ACTIONS,
   'copy-to-folder',
   'remove-from-library',
 ];
@@ -71,6 +81,7 @@ const SURFACE_ACTIONS: Record<BulkSurface, readonly BulkActionId[]> = {
   files: [
     ...PLAYBACK_AND_PLAYLIST_ACTIONS,
     'edit-tags',
+    ...OFFLINE_ACTIONS,
     'copy-to-folder',
     'move-to-folder',
     'delete-from-folder',
@@ -80,15 +91,20 @@ const SURFACE_ACTIONS: Record<BulkSurface, readonly BulkActionId[]> = {
   loops: ENTITY_ACTIONS,
   // Selected rows here are entries, not library entities, so the actions that
   // act on entities (tags, copy, remove from library) are not offered.
-  'playlist-detail': [...PLAYBACK_AND_PLAYLIST_ACTIONS, 'remove-from-playlist'],
+  'playlist-detail': [
+    ...PLAYBACK_AND_PLAYLIST_ACTIONS,
+    ...OFFLINE_ACTIONS,
+    'remove-from-playlist',
+  ],
   playlists: ENTITY_ACTIONS,
   'tag-detail': ENTITY_ACTIONS,
   tracks: ENTITY_ACTIONS,
 };
 
-const PLAYBACK_ACTIONS: ReadonlySet<BulkActionId> = new Set(
-  PLAYBACK_AND_PLAYLIST_ACTIONS,
-);
+const PLAYBACK_ACTIONS: ReadonlySet<BulkActionId> = new Set([
+  ...PLAYBACK_AND_PLAYLIST_ACTIONS,
+  ...OFFLINE_ACTIONS,
+]);
 const DESTRUCTIVE_ACTIONS: ReadonlySet<BulkActionId> = new Set([
   'delete-from-folder',
   'remove-from-library',

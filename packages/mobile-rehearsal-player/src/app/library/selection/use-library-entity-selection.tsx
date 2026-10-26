@@ -24,6 +24,10 @@ import { useLibrarySelectionServices } from './library-selection-services';
 import { getSelectionCountLabel } from './selection-copy';
 import { SelectEntryButton } from './select-entry-button';
 import { SelectionBar } from './selection-bar';
+import {
+  createBulkOfflineHandlers,
+  useBulkOfflineActions,
+} from './use-bulk-offline-actions';
 import { useBulkPlaybackActions } from './use-bulk-playback-actions';
 import { useBulkTagEditor } from './use-bulk-tag-editor';
 import { usePinnedBulkActionBar } from './use-pinned-bulk-action-bar';
@@ -119,6 +123,13 @@ export const useLibraryEntitySelection = ({
     queueItemsUpNext: services.queueItemsUpNext,
     updatePlaylist: services.updatePlaylist,
   });
+  const offline = useBulkOfflineActions({
+    collections: collections,
+    context: expansionContext,
+    items: bulkItems,
+    onAcknowledge: services.acknowledge,
+    onCompleted: cancel,
+  });
   const getPlacementItems = useCallback(
     () => toEntityPlacementItems(orderedItems, folders),
     [folders, orderedItems],
@@ -142,6 +153,7 @@ export const useLibraryEntitySelection = ({
     () => ({
       'add-to-playlist': playback.run.addToPlaylist,
       'add-to-queue': playback.run.addToQueue,
+      ...createBulkOfflineHandlers(offline.run),
       'copy-to-folder': nodeActions.handlers['copy-to-folder'],
       'edit-tags': tagEditor.open,
       'play-next': playback.run.playNext,
@@ -220,6 +232,7 @@ export const useLibraryEntitySelection = ({
     bulkNodes: (
       <>
         {playback.nodes}
+        {offline.nodes}
         {nodeActions.nodes}
         {tagEditor.node}
       </>

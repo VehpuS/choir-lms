@@ -20,6 +20,10 @@ import { useLibrarySelectionServices } from './library-selection-services';
 import { getSelectionCountLabel } from './selection-copy';
 import { SelectEntryButton } from './select-entry-button';
 import { SelectionBar } from './selection-bar';
+import {
+  createBulkOfflineHandlers,
+  useBulkOfflineActions,
+} from './use-bulk-offline-actions';
 import { useBulkPlaybackActions } from './use-bulk-playback-actions';
 import { usePinnedBulkActionBar } from './use-pinned-bulk-action-bar';
 import { useSelection } from './use-selection';
@@ -99,6 +103,13 @@ export const usePlaylistDetailSelection = ({
     queueItemsUpNext: services.queueItemsUpNext,
     updatePlaylist: services.updatePlaylist,
   });
+  const offline = useBulkOfflineActions({
+    collections: services.collections,
+    context: expansionContext,
+    items: bulkItems,
+    onAcknowledge: services.acknowledge,
+    onCompleted: cancel,
+  });
 
   const removeFromPlaylist = useCallback(() => {
     if (!playlist || orderedItems.length === 0) {
@@ -128,6 +139,7 @@ export const usePlaylistDetailSelection = ({
     () => ({
       'add-to-playlist': playback.run.addToPlaylist,
       'add-to-queue': playback.run.addToQueue,
+      ...createBulkOfflineHandlers(offline.run),
       'play-next': playback.run.playNext,
       'remove-from-playlist': removeFromPlaylist,
       'save-as-playlist': playback.run.saveAsPlaylist,
@@ -205,6 +217,7 @@ export const usePlaylistDetailSelection = ({
     bulkNodes: (
       <>
         {playback.nodes}
+        {offline.nodes}
         {confirmationFlow.confirmationDialog}
       </>
     ),

@@ -15,6 +15,8 @@ export type LibraryFilesConfirmationDialogContent = {
   }>;
   confirmLabel: string;
   message: string;
+  /** `primary` for a confirmation that is not destructive; defaults to destructive. */
+  tone?: 'destructive' | 'primary';
   title: string;
 };
 
@@ -34,6 +36,8 @@ export const LibraryFilesConfirmationDialog = ({
   if (!content) {
     return null;
   }
+
+  const isPrimary = content.tone === 'primary';
 
   return (
     <CenteredDialogCard isVisible onRequestClose={onCancel}>
@@ -82,13 +86,19 @@ export const LibraryFilesConfirmationDialog = ({
           disabled={isMutating}
           onPress={onConfirm}
           style={({ pressed }) => [
-            styles.destructiveButton,
+            isPrimary ? styles.primaryButton : styles.destructiveButton,
             buttonInteractionGuardStyle,
             pressed && !isMutating ? styles.actionButtonPressed : undefined,
             isMutating ? styles.actionButtonDisabled : undefined,
           ]}
         >
-          <Text style={styles.destructiveButtonLabel}>
+          <Text
+            style={
+              isPrimary
+                ? styles.primaryButtonLabel
+                : styles.destructiveButtonLabel
+            }
+          >
             {isMutating ? 'Working...' : content.confirmLabel}
           </Text>
         </Pressable>

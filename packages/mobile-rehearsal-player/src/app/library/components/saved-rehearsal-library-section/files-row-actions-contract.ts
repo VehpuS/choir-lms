@@ -8,9 +8,11 @@ export type FilesDeleteFromFolderCopy = {
 
 export const FOLDER_ACTION_ORDER = new Map([
   ['Edit tags', 0],
-  ['Rename', 1],
-  ['Move to folder', 2],
-  ['Delete from folder', 3],
+  ['Keep offline', 1],
+  ['Remove from offline', 2],
+  ['Rename', 3],
+  ['Move to folder', 4],
+  ['Delete from folder', 5],
 ]);
 
 export type SavedRowActionLike = {
