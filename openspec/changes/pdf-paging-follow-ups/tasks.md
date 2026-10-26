@@ -12,7 +12,7 @@
 ## 3. Toolbar and page turns
 
 - [x] 3.1 **Explore with the owner before building:** how the compact landscape side rail holds the page indicator and page buttons (design Open Questions); update the design with the choice. (Owner: the rail keeps the controls, with `Previous`/`Next` and an `n/81` label; see design Open Questions.)
-- [ ] 3.2 Move `Previous page` and `Next page` beside the page indicator and keep the toolbar to zoom, `Layout`, piano, and play (original 6.7); in the compact landscape rail they sit in the rail around a short `n/81` label (design Open Questions). A pure model for the indicator row with a spec; verify the phone-width `Pages` toolbar fits one row.
+- [x] 3.2 Move `Previous page` and `Next page` beside the page indicator and keep the toolbar to zoom, `Layout`, piano, and play (original 6.7); in the compact landscape rail they sit in the rail around a short `n/81` label (design Open Questions). A pure model for the indicator row with a spec; verify the phone-width `Pages` toolbar fits one row. (Built: `Previous`/`Next` flank the indicator pill over the page with the pill's scrim; the compact rail shows `‹`, `n/81`, `›` and now scrolls. Verified at 400 px portrait and 812x375 landscape.)
 - [x] 3.3 Animate control and key page turns with a short smooth scroll, instant under reduced motion, suspending snap during the turn (design Decision 5). Specs for the reduced-motion decision and for repeated turns ending at the newest target; verify in the browser.
 
 ## 4. Spread layout
@@ -35,4 +35,4 @@
 - [ ] 6.1 Right-to-left page order for documents that declare it; deferred until a real right-to-left file needs it (original 6.1). Explore with a user before changing.
 - [ ] 6.2 Add the layouts and page paging to native when native PDF rendering exists (`native-playback-follow-ups` 1.6; original 6.4).
 - [ ] 6.3 `Go to page` and thumbnails live in `pdf-go-to-page`; the 317-line repository file was split directly (original 6.12).
-- [ ] 6.4 Look at the page-turn slide (about 200 ms, the 300 ms settle) and the reduced-motion path in a foreground browser with the owner, on a phone-width and a desktop viewer; the Browser pane reports the page as hidden, so only end states were verified (found in 3.3). Adjust `SMOOTH_TURN_SETTLE_MS` only if the slide is cut short.
+- [ ] 6.4 Look at the page-turn slide (about 200 ms; the browser sets the real length) and the reduced-motion path in a foreground browser with the owner, on a phone-width and a desktop viewer; the Browser pane reports the page as hidden, so only end states were verified (found in 3.3). Slide ends are read from the scroll (`SMOOTH_TURN_IDLE_MS`, `SMOOTH_TURN_STALL_MS`); adjust only if it feels wrong.

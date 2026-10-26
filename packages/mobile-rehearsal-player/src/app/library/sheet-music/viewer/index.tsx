@@ -29,6 +29,8 @@ import {
   updateMyPartsPreferences,
   useMyPartsPreferences,
 } from '../my-parts/my-parts-store';
+import { buildRailPageGroup } from '../pdf-layout/page-rail-group';
+import { buildPageSteps } from '../pdf-layout/page-steps';
 import { usePdfLayoutControl } from '../pdf-layout/use-pdf-layout-control';
 import { usePdfPageControl } from '../pdf-layout/use-pdf-page-control';
 import { useGoToPageControl } from '../go-to-page/use-go-to-page-control';
@@ -162,6 +164,10 @@ export const SheetMusicViewer = ({
     state: pdfPages.state,
   });
   const viewerZoom = useViewerZoom(info !== null, maxViewerZoom(isPdf));
+  const pageSteps = buildPageSteps(pdfPages.controls, {
+    next: after(pdfPages.next),
+    previous: after(pdfPages.previous),
+  });
   const goTo = useGoTo();
   const canGoTo = info !== null && info.bars.barCount > 0;
   const hasParts = info !== null && hasPartChoice(info.parts);
@@ -236,6 +242,7 @@ export const SheetMusicViewer = ({
       }
       onFailureAction={handleFailureAction}
       initialPage={pdfPages.page}
+      isCompact={isCompact}
       onFitZoom={viewerZoom.onFitZoom}
       onOpenGoToPage={goToPage.open}
       onPageChange={pdfPages.onPageChange}
@@ -250,6 +257,7 @@ export const SheetMusicViewer = ({
       outcome={outcome}
       pageIndicator={pdfPages.controls.indicator}
       pageRequest={pdfPages.request}
+      pageSteps={pageSteps}
       pdfLayout={pdfLayout.layout}
       selection={selection}
       source={source}
@@ -278,14 +286,13 @@ export const SheetMusicViewer = ({
       onZoomIn={after(viewerZoom.zoomIn)}
       onZoomOut={after(viewerZoom.zoomOut)}
       orientation={orientation}
-      pageSteps={
-        pdfPages.controls.showSteps
-          ? {
-              canGoNext: pdfPages.controls.canGoNext,
-              canGoPrevious: pdfPages.controls.canGoPrevious,
-              onNext: after(pdfPages.next),
-              onPrevious: after(pdfPages.previous),
-            }
+      pageGroup={
+        orientation === 'column'
+          ? buildRailPageGroup({
+              onOpen: goToPage.open,
+              shortIndicator: pdfPages.controls.shortIndicator,
+              steps: pageSteps,
+            })
           : undefined
       }
       pdfLayout={pdfLayout.button}

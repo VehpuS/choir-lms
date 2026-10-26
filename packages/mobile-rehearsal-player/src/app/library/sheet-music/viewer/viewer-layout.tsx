@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Modal, StyleSheet, Text, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
 import { ChipRow } from './chip-row';
@@ -61,10 +61,15 @@ export const ViewerLayout = ({
             <View style={styles.body}>{body}</View>
             {piano}
           </View>
-          <View style={styles.rail}>
+          {/* A short phone cannot fit every control, so the rail scrolls. */}
+          <ScrollView
+            contentContainerStyle={styles.railContent}
+            showsVerticalScrollIndicator={false}
+            style={styles.rail}
+          >
             {closeButton}
             {toolbar('column')}
-          </View>
+          </ScrollView>
         </View>
       </Modal>
     );
@@ -118,7 +123,14 @@ const styles = StyleSheet.create({
     gap: appTheme.space.md,
   },
   rail: {
+    flexGrow: 0,
+  },
+  // Fills the rail while the controls fit, so close stays at the top and the
+  // toolbar at the bottom; taller content scrolls.
+  railContent: {
     alignItems: 'center',
+    flexGrow: 1,
+    gap: appTheme.space.md,
     justifyContent: 'space-between',
   },
   screen: {

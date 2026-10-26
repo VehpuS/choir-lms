@@ -20,9 +20,9 @@ export type HostElement = Omit<DomElement, 'style'> & {
   clientWidth: number;
   /** Wider than `clientWidth` by a scrollbar or the gutter reserved for one. */
   offsetWidth: number;
-  addEventListener(type: 'scroll', listener: () => void): void;
+  addEventListener(type: 'scroll' | 'scrollend', listener: () => void): void;
   removeAttribute(name: string): void;
-  removeEventListener(type: 'scroll', listener: () => void): void;
+  removeEventListener(type: 'scroll' | 'scrollend', listener: () => void): void;
   scrollLeft: number;
   scrollTop: number;
   scrollTo(options: { behavior: 'smooth'; left: number; top: number }): void;

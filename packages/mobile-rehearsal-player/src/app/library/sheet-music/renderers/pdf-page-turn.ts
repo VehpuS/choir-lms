@@ -1,8 +1,14 @@
 // Snap is suspended while a smooth scroll runs (mandatory snapping fights a
-// programmatic scroll). After this long, a little over the ~200 ms the browser
-// takes, the view is put on the target (a no-op when the slide got there) and
-// snapping is restored, so a slow or stalled slide cannot snap back.
-export const SMOOTH_TURN_SETTLE_MS = 300;
+// programmatic scroll) and comes back when the slide has ended. Browsers set
+// the slide's length themselves (about 350 ms for a page in Chrome, longer for
+// several), so the end is read from the scroll itself: `scrollend` where it
+// exists, else a short quiet spell after the last scroll event. A slide that
+// never starts (a page that is not painting) is caught by the stall timer,
+// which puts the view on the target. Writing the offset mid-slide does not stop
+// the slide, and it overshoots, so a slide that is moving is never cut short.
+export const SMOOTH_TURN_STALL_MS = 700;
+export const SMOOTH_TURN_IDLE_MS = 150;
+const OFFSET_TOLERANCE_PX = 1;
 
 /** A turn slides only when it asked to and the device does not ask for less motion. */
 export const shouldAnimateTurn = (
@@ -12,6 +18,12 @@ export const shouldAnimateTurn = (
 
 /** The part of the host a turn moves. */
 export type PdfTurnHost = {
+  /** Reports the end of a smooth scroll (`scrollend`); absent where unsupported. */
+  addEventListener?(type: 'scroll' | 'scrollend', listener: () => void): void;
+  removeEventListener?(
+    type: 'scroll' | 'scrollend',
+    listener: () => void,
+  ): void;
   scrollLeft: number;
   scrollTo(options: { behavior: 'smooth'; left: number; top: number }): void;
   scrollTop: number;
@@ -44,23 +56,37 @@ export const createPdfPageTurner = (options: {
   const { host, prefersReducedMotion, setSnapping } = options;
   let pending: number | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let stopListening: (() => void) | undefined;
 
-  const finish = (target: { left: number; top: number }) => {
-    timer = undefined;
-    pending = undefined;
-    host.scrollLeft = target.left;
-    host.scrollTop = target.top;
-    setSnapping(true);
-  };
-
-  const cancel = () => {
-    if (timer === undefined) {
-      return;
-    }
-
+  const clear = () => {
     clearTimeout(timer);
     timer = undefined;
     pending = undefined;
+    stopListening?.();
+    stopListening = undefined;
+  };
+
+  const cancel = () => {
+    if (pending === undefined) {
+      return;
+    }
+
+    clear();
+    setSnapping(true);
+  };
+
+  const finish = (target: { left: number; top: number }) => {
+    clear();
+
+    // Only a slide that stalled is off its target; a finished one is not touched.
+    if (
+      Math.abs(host.scrollLeft - target.left) > OFFSET_TOLERANCE_PX ||
+      Math.abs(host.scrollTop - target.top) > OFFSET_TOLERANCE_PX
+    ) {
+      host.scrollLeft = target.left;
+      host.scrollTop = target.top;
+    }
+
     setSnapping(true);
   };
 
@@ -76,11 +102,26 @@ export const createPdfPageTurner = (options: {
         return;
       }
 
-      clearTimeout(timer);
+      clear();
       pending = index;
       setSnapping(false);
       host.scrollTo({ behavior: 'smooth', left, top });
-      timer = setTimeout(() => finish({ left, top }), SMOOTH_TURN_SETTLE_MS);
+
+      const onEnd = () => finish({ left, top });
+      const arm = (delay: number) => {
+        clearTimeout(timer);
+        timer = setTimeout(onEnd, delay);
+      };
+      // Each scroll event of the slide pushes the end back by the idle spell.
+      const onScroll = () => arm(SMOOTH_TURN_IDLE_MS);
+
+      host.addEventListener?.('scroll', onScroll);
+      host.addEventListener?.('scrollend', onEnd);
+      stopListening = () => {
+        host.removeEventListener?.('scroll', onScroll);
+        host.removeEventListener?.('scrollend', onEnd);
+      };
+      arm(SMOOTH_TURN_STALL_MS);
     },
   };
 };

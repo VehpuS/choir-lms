@@ -32,6 +32,8 @@ export type PdfPageControls = {
   canGoPrevious: boolean;
   /** `Page 3 of 81` (`Pages 3-5 of 81` with several in view); undefined until the document has pages. */
   indicator: string | undefined;
+  /** `3/81` (`3-5/81`): the indicator for a narrow place such as the landscape rail. */
+  shortIndicator: string | undefined;
   /** `Previous page` and `Next page` show only where whole pages are turned. */
   showSteps: boolean;
 };
@@ -45,6 +47,16 @@ export const formatPageIndicator = ({
   lastPage !== undefined && lastPage > page
     ? `Pages ${page + 1}-${lastPage + 1} of ${pageCount}`
     : `Page ${page + 1} of ${pageCount}`;
+
+/** `3/81`, or `3-5/81` while several pages are in view. */
+export const formatShortPageIndicator = ({
+  lastPage,
+  page,
+  pageCount,
+}: PdfPageState): string =>
+  lastPage !== undefined && lastPage > page
+    ? `${page + 1}-${lastPage + 1}/${pageCount}`
+    : `${page + 1}/${pageCount}`;
 
 /** The page one step from the current one, never past either end. */
 export const stepPage = (state: PdfPageState, delta: number): number => {
@@ -61,6 +73,7 @@ export const buildPageControls = (
       canGoNext: false,
       canGoPrevious: false,
       indicator: undefined,
+      shortIndicator: undefined,
       showSteps: false,
     };
   }
@@ -69,6 +82,7 @@ export const buildPageControls = (
     canGoNext: state.page < state.pageCount - 1,
     canGoPrevious: state.page > 0,
     indicator: formatPageIndicator(state),
+    shortIndicator: formatShortPageIndicator(state),
     showSteps: layout === 'pages',
   };
 };

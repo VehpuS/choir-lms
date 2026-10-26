@@ -7,6 +7,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
 import { PageIndicator } from '../pdf-layout/page-indicator';
+import type { PageSteps } from '../pdf-layout/page-steps';
 import type {
   PdfPageRequest,
   PdfPageState,
@@ -35,6 +36,8 @@ type ViewerBodyProps = {
   focusRequest: number;
   /** The PDF page (0-based) to open on, so a surface drawn again keeps the reader's place. */
   initialPage: number | undefined;
+  /** The compact landscape layout keeps the page controls in its rail, not over the page. */
+  isCompact: boolean;
   jump: GoToJump | undefined;
   onFailed: (reason: ViewerFailureReason) => void;
   onFailureAction: (action: ViewerFailureAction) => void;
@@ -49,6 +52,8 @@ type ViewerBodyProps = {
   /** `Page 3 of 81` for an open PDF; undefined for a score. */
   pageIndicator: string | undefined;
   pageRequest: PdfPageRequest | undefined;
+  /** `Previous page` and `Next page` beside the indicator; undefined where pages are not turned. */
+  pageSteps: PageSteps | undefined;
   pdfLayout: PdfLayout;
   selection: PartSelectionRequest | undefined;
   source: SheetMusicSource | undefined;
@@ -61,6 +66,7 @@ export const ViewerBody = ({
   failure,
   focusRequest,
   initialPage,
+  isCompact,
   jump,
   onFailed,
   onFailureAction,
@@ -73,6 +79,7 @@ export const ViewerBody = ({
   outcome,
   pageIndicator,
   pageRequest,
+  pageSteps,
   pdfLayout,
   selection,
   source,
@@ -116,8 +123,15 @@ export const ViewerBody = ({
           zoom={zoom}
         />
       ) : null}
-      {pageIndicator && onOpenGoToPage && outcome?.kind === 'ready' ? (
-        <PageIndicator onPress={onOpenGoToPage} text={pageIndicator} />
+      {!isCompact &&
+      pageIndicator &&
+      onOpenGoToPage &&
+      outcome?.kind === 'ready' ? (
+        <PageIndicator
+          onPress={onOpenGoToPage}
+          steps={pageSteps}
+          text={pageIndicator}
+        />
       ) : null}
       {outcome?.kind !== 'ready' ? (
         <View pointerEvents="none" style={styles.loading}>
