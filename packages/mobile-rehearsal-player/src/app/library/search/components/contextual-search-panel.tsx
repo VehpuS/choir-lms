@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     paddingRight: space.md,
     color: colors.text,
-    fontSize: 15,
+    fontSize: appTheme.type.input.fontSize,
     // The field row draws its own accent focus edge; drop the browser's inner
     // focus ring on web (no effect on native). Chrome ignores the width of an
     // `auto` outline, so the style is set too.

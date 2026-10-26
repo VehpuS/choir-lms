@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     color: appTheme.colors.text,
     flex: 1,
-    fontSize: 15,
+    fontSize: appTheme.type.input.fontSize,
     minHeight: appTheme.space.touchTarget,
     paddingHorizontal: appTheme.space.md,
   },

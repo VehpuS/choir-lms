@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     borderRadius: appTheme.radius.md,
     paddingHorizontal: appTheme.space.sm,
     color: appTheme.colors.text,
-    fontSize: appTheme.type.body.fontSize,
+    fontSize: appTheme.type.input.fontSize,
     backgroundColor: appTheme.colors.bg,
   },
   nudgeRow: {

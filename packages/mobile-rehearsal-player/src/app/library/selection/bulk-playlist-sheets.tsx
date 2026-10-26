@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     borderRadius: appTheme.radius.md,
     backgroundColor: appTheme.colors.surface,
     color: appTheme.colors.text,
-    fontSize: 15,
+    fontSize: appTheme.type.input.fontSize,
   },
   playlistList: {
     maxHeight: PLAYLIST_LIST_MAX_HEIGHT,

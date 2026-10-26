@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     borderRadius: appTheme.radius.md,
     paddingHorizontal: appTheme.space.md,
     color: appTheme.colors.text,
-    fontSize: 15,
+    fontSize: appTheme.type.input.fontSize,
     backgroundColor: appTheme.colors.surface,
   },
   scroll: {

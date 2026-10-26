@@ -248,7 +248,7 @@ export const loopEditorStyles = StyleSheet.create({
     borderColor: colors.borderButton,
     borderRadius: radius.md,
     color: colors.text,
-    fontSize: 15,
+    fontSize: type.input.fontSize,
   },
   pressed: {
     opacity: 0.8,

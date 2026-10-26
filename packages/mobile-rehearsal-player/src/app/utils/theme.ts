@@ -233,6 +233,12 @@ const type = {
   button: { fontSize: 13.5, fontWeight: fontWeight.medium },
   tabLabel: { fontSize: 10, fontWeight: fontWeight.medium },
   body: { fontSize: 14, fontWeight: fontWeight.regular },
+  /**
+   * Text typed into a field. iOS Safari zooms the page in when a field with
+   * text under 16 px gets focus (and leaves it zoomed), so a field never goes
+   * below this.
+   */
+  input: { fontSize: 16 },
   numericReadout: {
     color: nocturneColors.accentText,
     fontFamily: fontFamily.mono,

@@ -71,8 +71,7 @@ const styles = StyleSheet.create({
     borderRadius: appTheme.radius.md,
     paddingHorizontal: appTheme.space.md,
     color: appTheme.colors.text,
-    // 16 or more keeps iOS Safari from zooming the page in when the field is focused.
-    fontSize: 16,
+    fontSize: appTheme.type.input.fontSize,
     backgroundColor: appTheme.colors.surface,
   },
   header: {

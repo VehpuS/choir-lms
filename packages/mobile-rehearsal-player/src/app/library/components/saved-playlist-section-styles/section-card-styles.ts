@@ -77,7 +77,7 @@ export const playlistSectionCardStyles = {
     borderRadius: appTheme.radius.md,
     backgroundColor: PLAYLIST_INPUT_BACKGROUND,
     color: PLAYLIST_PRIMARY_TEXT,
-    fontSize: 15,
+    fontSize: appTheme.type.input.fontSize,
   },
   group: {
     gap: 12,

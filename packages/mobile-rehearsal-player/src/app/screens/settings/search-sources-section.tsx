@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     borderRadius: appTheme.radius.md,
     borderWidth: 1,
     color: appTheme.colors.text,
-    fontSize: 15,
+    fontSize: appTheme.type.input.fontSize,
     minHeight: appTheme.space.touchTarget,
     paddingHorizontal: appTheme.space.md,
   },

@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     color: appTheme.colors.primaryText,
+    fontSize: appTheme.type.input.fontSize,
     backgroundColor: appTheme.colors.surfaceBackground,
   },
   title: {

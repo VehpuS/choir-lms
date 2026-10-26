@@ -81,6 +81,7 @@ const styles = StyleSheet.create({
   },
   input: {
     ...appTheme.type.body,
+    fontSize: appTheme.type.input.fontSize,
     borderColor: appTheme.colors.border,
     borderRadius: appTheme.radius.md,
     borderWidth: 1,
