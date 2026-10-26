@@ -29,7 +29,7 @@
 - [x] 5.1 Verify in the browser preview with the 81-page `Radio Video V5.0 Score and Parts` PDF at phone width and a desktop width: each layout, a file with its own layout beside one without (including after reopening the app), clearing a file's layout, switching layouts mid-document, the page indicator, keyboard, swipe snapping (touch emulation), zoom and unzoom in `Pages`, rotating (width change), and memory staying flat. Note results per scenario in the spec. _Verified 2026-10-25; per-scenario results in `design.md` Decision 8. One failure found and fixed: rotating the phone reset the reader to page 1. A real touch fling could not be exercised in the pane (task 6.11)._
 - [x] 5.2 Update the README's viewer notes if they describe the PDF viewer, and run `openspec validate pdf-horizontal-paging`.
 - [x] 5.3 Run lint, test, typecheck, and build for `mobile-rehearsal-player` through Nx. _Run 2026-10-26: lint, test, typecheck, and build pass for all five projects (`mobile-rehearsal-player` 2146 tests; models 102 + runtime 113 + google-drive, midi-notation, and the rest, 0 failures), `nx format:check --base=origin/main` and `nx sync:check` are clean._
-- [ ] 5.4 Archive `save-blocked-sheet-music-links-to-drive` first, then this change, after the user's go-ahead.
+- [x] 5.4 Archive `save-blocked-sheet-music-links-to-drive` first, then this change, after the user's go-ahead.
 
 ## 6. Future tasks (not in scope here)
 
