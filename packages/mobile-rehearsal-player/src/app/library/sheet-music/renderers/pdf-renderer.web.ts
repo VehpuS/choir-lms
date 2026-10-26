@@ -21,13 +21,15 @@ import {
 import { createPageObserver } from './pdf-page-observer';
 import { clampPdfZoom } from './pdf-page-layout';
 import { createPageDrawer, type PageEntry } from './pdf-page-drawer';
+import { drawPdfThumbnail } from './pdf-thumbnail';
 import { createPageTracker } from './pdf-page-tracker';
-import type { HostElement, PdfDocument } from './pdf-web-types';
+import type { DomCanvas, HostElement, PdfDocument } from './pdf-web-types';
 import { isPasswordError, openPdf } from './pdfjs-loader';
 import type {
   PdfRenderer,
   PdfRenderResult,
   PdfRendering,
+  PdfThumbnailTask,
 } from './sheet-music-renderer';
 
 const DEFAULT_ZOOM = 1;
@@ -35,6 +37,13 @@ const DEFAULT_LAYOUT: PdfLayout = 'scroll';
 // A zoom stream (a pinch, a held wheel) redraws once, this long after the last
 // change; until then the drawn canvases are stretched by the browser.
 const ZOOM_SETTLE_MS = 150;
+
+// A thumbnail that was not drawn (no such page, or the viewer is closed).
+const NO_THUMBNAIL: PdfThumbnailTask = {
+  // Nothing is drawing, so there is nothing to cancel.
+  cancel: () => undefined,
+  done: Promise.resolve(false),
+};
 
 const failed = (
   reason: 'invalid-pdf' | 'password-protected',
@@ -262,6 +271,17 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         host.style.scrollSnapType = '';
         host.innerHTML = '';
         void doc.destroy();
+      },
+      drawThumbnail: (index, canvas, cssWidth) => {
+        const entry = pages[index];
+
+        return entry && !isDisposed
+          ? drawPdfThumbnail({
+              canvas: canvas as DomCanvas,
+              cssWidth,
+              page: entry.page,
+            })
+          : NO_THUMBNAIL;
       },
       goToPage(index) {
         scrollToPage(index);

@@ -40,6 +40,23 @@ export const computePdfRenderScale = (options: {
   return cssScale * Math.min(pixelRatio, pixelBudgetRatio);
 };
 
+/**
+ * The pdf.js render scale for a thumbnail `cssWidth` CSS pixels wide, drawn at
+ * the screen's pixel ratio (up to 2x). A thumbnail is far below the canvas cap.
+ */
+export const computeThumbnailScale = (options: {
+  cssWidth: number;
+  devicePixelRatio: number;
+  pageWidth: number;
+}): number => {
+  const pixelRatio = Math.min(
+    MAX_DEVICE_PIXEL_RATIO,
+    Math.max(1, options.devicePixelRatio),
+  );
+
+  return (options.cssWidth * pixelRatio) / Math.max(1, options.pageWidth);
+};
+
 /** Sizes one page for a column that fits the container's width at zoom 1. */
 export const computePdfPageLayout = (options: {
   containerWidth: number;
