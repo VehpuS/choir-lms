@@ -111,6 +111,11 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     const applyLayout = (canRetry = true): void => {
       const measured = { height: host.clientHeight, width: host.clientWidth };
 
+      column.style.cssText = pdfColumnStyle(
+        currentLayout,
+        host.offsetWidth - host.clientWidth,
+      );
+
       layout = computeLayout();
 
       for (const entry of pages) {
@@ -222,7 +227,6 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
       }
     };
 
-    column.style.cssText = pdfColumnStyle(currentLayout);
     pages.forEach((entry) => column.appendChild(entry.wrapper));
     host.innerHTML = '';
     host.appendChild(column);
@@ -296,7 +300,6 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         const anchor = readAnchor();
 
         currentLayout = next;
-        column.style.cssText = pdfColumnStyle(next);
         applyLayout();
 
         // Whole pages show the page the reader is mostly on, from its start.

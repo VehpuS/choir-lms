@@ -17,6 +17,8 @@ export type HostElement = Omit<DomElement, 'style'> & {
   style: { scrollSnapType: string };
   clientHeight: number;
   clientWidth: number;
+  /** Wider than `clientWidth` by a scrollbar or the gutter reserved for one. */
+  offsetWidth: number;
   addEventListener(type: 'scroll', listener: () => void): void;
   removeEventListener(type: 'scroll', listener: () => void): void;
   scrollLeft: number;

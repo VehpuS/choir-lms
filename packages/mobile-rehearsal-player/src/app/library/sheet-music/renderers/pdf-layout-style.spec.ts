@@ -25,6 +25,23 @@ describe('pdfColumnStyle', () => {
     assert.match(pdfColumnStyle('strip'), /flex-direction:row/);
   });
 
+  it('sizes a row to its pages, margins included, so the last slot is scrollable', () => {
+    for (const layout of ['pages', 'strip'] as const) {
+      assert.match(pdfColumnStyle(layout), /width:max-content/);
+      assert.match(pdfColumnStyle(layout), /min-width:100%/);
+    }
+  });
+
+  it('pads the end of a pages row by the scrollbar gutter so the last slot is reachable', () => {
+    assert.match(pdfColumnStyle('pages', 15), /padding-right:15px/);
+    assert.doesNotMatch(pdfColumnStyle('pages', 0), /padding-right/);
+  });
+
+  it('adds no end padding in the other layouts', () => {
+    assert.doesNotMatch(pdfColumnStyle('strip', 15), /padding-right/);
+    assert.doesNotMatch(pdfColumnStyle('scroll', 15), /padding-right/);
+  });
+
   it('starts a strip at the top so a zoomed page can be scrolled to', () => {
     assert.match(pdfColumnStyle('strip'), /align-items:flex-start/);
   });

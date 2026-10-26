@@ -16,9 +16,12 @@ const PAGE_BASE_STYLE = 'background:#fff;flex:none;';
 const COLUMN_STYLE =
   'display:flex;flex-direction:column;align-items:center;min-width:100%;width:max-content;';
 // Rows start at the top so a page taller than the viewer (zoomed in) can still
-// be scrolled to from its top edge.
+// be scrolled to from its top edge. The row is as wide as its pages' margin
+// boxes: an overflowing flex item's trailing margin is not scrollable, so
+// without this the last page's slot (its centering margin) is cut short and the
+// view cannot scroll that page into its snap position.
 const ROW_STYLE =
-  'display:flex;flex-direction:row;align-items:flex-start;min-height:100%;height:max-content;';
+  'display:flex;flex-direction:row;align-items:flex-start;min-height:100%;height:max-content;min-width:100%;width:max-content;';
 
 // `pages` and `strip` both scroll sideways in a row.
 const isHorizontal = (layout: PdfLayout): boolean => layout !== 'scroll';
@@ -53,8 +56,18 @@ export const pdfObserverMargin = (layout: PdfLayout): string => {
     : VERTICAL_OBSERVER_MARGIN;
 };
 
-/** The style of the element that holds every page. */
-export const pdfColumnStyle = (layout: PdfLayout): string => {
+/**
+ * The style of the element that holds every page. `endPaddingPx` is extra room
+ * after the last page in `pages`: the browser stops a sideways scroll short of
+ * the scrollport's outer width, so a reserved scrollbar gutter would keep the
+ * last slot from reaching its snap position (a sliver of the page before it
+ * shows). Padding by the gutter's width makes that slot reachable.
+ */
+export const pdfColumnStyle = (layout: PdfLayout, endPaddingPx = 0): string => {
+  if (layout === 'pages' && endPaddingPx > 0) {
+    return `${ROW_STYLE}padding-right:${endPaddingPx}px;`;
+  }
+
   return isHorizontal(layout) ? ROW_STYLE : COLUMN_STYLE;
 };
 
