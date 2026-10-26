@@ -7,7 +7,6 @@ import {
   type RehearsalLibraryFileLinkNode,
   type RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
-import { filter, sortBy } from 'es-toolkit/compat';
 
 import {
   deleteLibraryFileLinkFromRepository,
@@ -31,6 +30,12 @@ import {
   type LibraryTagChange,
   type RemovedEntityIds,
 } from './rehearsal-library-batch-operations';
+import {
+  deleteLoopFromRepository,
+  deletePlaylistFromRepository,
+  saveLoopToRepository,
+  savePlaylistToRepository,
+} from './loop-playlist-storage';
 import { deleteSourceFromRepository } from './delete-source-from-repository';
 import { saveSource } from './save-source';
 import {
@@ -101,54 +106,11 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
   }
 
   async saveLoop(loop: NamedLoop) {
-    const normalizedLoop = normalizeStoredLoops({
-      loops: [loop],
-      sources: await this.listSources(loop.ownerId),
-    })[0];
-
-    if (!normalizedLoop) {
-      throw new Error(
-        'Saved loops must preserve parent-track context through sourceId and sourceName.',
-      );
-    }
-
-    const loops = await this.listLoops(loop.ownerId);
-    const priorLoop = loops.find(
-      (existingLoop) => existingLoop.id === normalizedLoop.id,
-    );
-    const loopToSave: NamedLoop = withResolvedTagAddedAt(
-      normalizedLoop,
-      priorLoop?.tagAddedAt,
-      new Date().toISOString(),
-    );
-    const otherLoops = filter(
-      loops,
-      (existingLoop) => existingLoop.id !== loopToSave.id,
-    );
-    const nextLoops = sortBy([...otherLoops, loopToSave], ['name']);
-
-    await writeStoredCollection('loops', loop.ownerId, nextLoops);
-    await persistSynchronizedLibraryFileTree(this, loop.ownerId, {
-      loops: nextLoops,
-      playlists: await this.listPlaylists(loop.ownerId),
-      sources: await this.listSources(loop.ownerId),
-    });
-
-    return nextLoops;
+    return saveLoopToRepository(this, loop);
   }
 
   async deleteLoop(ownerId: string, loopId: string) {
-    const loops = await this.listLoops(ownerId);
-    const nextLoops = filter(loops, (loop) => loop.id !== loopId);
-
-    await writeStoredCollection('loops', ownerId, nextLoops);
-    await persistSynchronizedLibraryFileTree(this, ownerId, {
-      loops: nextLoops,
-      playlists: await this.listPlaylists(ownerId),
-      sources: await this.listSources(ownerId),
-    });
-
-    return nextLoops;
+    return deleteLoopFromRepository(this, ownerId, loopId);
   }
 
   async listPlaylists(ownerId: string) {
@@ -174,51 +136,11 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
   }
 
   async savePlaylist(playlist: Playlist) {
-    const normalizedPlaylist = normalizePlaylist(playlist);
-    const playlists = await this.listPlaylists(playlist.ownerId);
-    const priorPlaylist = playlists.find(
-      (existingPlaylist) => existingPlaylist.id === normalizedPlaylist.id,
-    );
-    const playlistToSave: Playlist = withResolvedTagAddedAt(
-      normalizedPlaylist,
-      priorPlaylist?.tagAddedAt,
-      new Date().toISOString(),
-    );
-    const otherPlaylists = filter(
-      playlists,
-      (existingPlaylist) => existingPlaylist.id !== playlistToSave.id,
-    );
-    const nextPlaylists = sortBy([...otherPlaylists, playlistToSave], ['name']);
-
-    await writeStoredCollection(
-      'playlists',
-      normalizedPlaylist.ownerId,
-      nextPlaylists,
-    );
-    await persistSynchronizedLibraryFileTree(this, normalizedPlaylist.ownerId, {
-      loops: await this.listLoops(normalizedPlaylist.ownerId),
-      playlists: nextPlaylists,
-      sources: await this.listSources(normalizedPlaylist.ownerId),
-    });
-
-    return nextPlaylists;
+    return savePlaylistToRepository(this, playlist);
   }
 
   async deletePlaylist(ownerId: string, playlistId: string) {
-    const playlists = await this.listPlaylists(ownerId);
-    const nextPlaylists = filter(
-      playlists,
-      (playlist) => playlist.id !== playlistId,
-    );
-
-    await writeStoredCollection('playlists', ownerId, nextPlaylists);
-    await persistSynchronizedLibraryFileTree(this, ownerId, {
-      loops: await this.listLoops(ownerId),
-      playlists: nextPlaylists,
-      sources: await this.listSources(ownerId),
-    });
-
-    return nextPlaylists;
+    return deletePlaylistFromRepository(this, ownerId, playlistId);
   }
 
   async listLibraryFileTree(ownerId: string) {
