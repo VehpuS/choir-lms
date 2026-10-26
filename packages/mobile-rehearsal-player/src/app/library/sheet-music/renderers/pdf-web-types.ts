@@ -6,6 +6,7 @@ export type DomElement = {
   innerHTML: string;
   style: { cssText: string };
 };
+export type DomStyleElement = { id: string; textContent: string | null };
 export type DomCanvas = DomElement & {
   getContext(kind: '2d'): unknown;
   height: number;
@@ -20,12 +21,17 @@ export type HostElement = Omit<DomElement, 'style'> & {
   /** Wider than `clientWidth` by a scrollbar or the gutter reserved for one. */
   offsetWidth: number;
   addEventListener(type: 'scroll', listener: () => void): void;
+  removeAttribute(name: string): void;
   removeEventListener(type: 'scroll', listener: () => void): void;
   scrollLeft: number;
   scrollTop: number;
+  setAttribute(name: string, value: string): void;
   ownerDocument: { createElement(tag: 'canvas'): DomCanvas } & {
     createElement(tag: 'div'): DomElement;
+    createElement(tag: 'style'): DomStyleElement;
   } & {
+    getElementById(id: string): unknown;
+    head: { appendChild(child: unknown): unknown };
     defaultView: {
       getComputedStyle(element: unknown): { overflowY: string };
     } | null;

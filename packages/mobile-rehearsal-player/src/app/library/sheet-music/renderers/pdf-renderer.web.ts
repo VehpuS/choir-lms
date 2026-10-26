@@ -14,6 +14,7 @@ import { clampPdfZoom } from './pdf-page-layout';
 import { createPageDrawer, type PageEntry } from './pdf-page-drawer';
 import { drawPdfThumbnail } from './pdf-thumbnail';
 import { createPageTracker } from './pdf-page-tracker';
+import { applyPdfScrollbar } from './pdf-scrollbar';
 import { createPdfScroller } from './pdf-scroll-position';
 import type { DomCanvas, HostElement, PdfDocument } from './pdf-web-types';
 import { isPasswordError, openPdf } from './pdfjs-loader';
@@ -93,6 +94,9 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     });
 
     const applyLayout = (canRetry = true): void => {
+      // Before measuring: a visible scrollbar takes room the pages must fit around.
+      applyPdfScrollbar(host, currentLayout);
+
       const measured = { height: host.clientHeight, width: host.clientWidth };
 
       column.style.cssText = pdfColumnStyle(
@@ -216,6 +220,7 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         observer?.disconnect();
         pages.forEach(release);
         host.style.scrollSnapType = '';
+        applyPdfScrollbar(host, undefined);
         host.innerHTML = '';
         void doc.destroy();
       },
@@ -237,7 +242,11 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
 
         const anchor = readAnchor();
 
+        // A new layout starts fitted; the page and in-page fraction are kept.
         currentLayout = next;
+        currentZoom = DEFAULT_ZOOM;
+        clearTimeout(settleTimer);
+        settleTimer = undefined;
         applyLayout();
 
         // Whole pages show the page the reader is mostly on, from its start.

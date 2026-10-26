@@ -112,7 +112,10 @@ export type PdfRendering = {
   ): PdfThumbnailTask;
   /** Scrolls to a page's start (0-based) in any layout and at any zoom. */
   goToPage(index: number): void;
-  /** Changes the layout, keeping the page at the viewport's start edge in view. */
+  /**
+   * Changes the layout, keeping the page at the viewport's start edge in view.
+   * The zoom returns to 1 (the new layout's fit); read `currentZoom` afterwards.
+   */
   setLayout(layout: PdfLayout): void;
   /**
    * Sets the zoom (1 fits the layout's width, whole page, or height) and lays the pages out again.

@@ -301,7 +301,13 @@ export const SheetMusicSurface = ({
   }, [jump]);
 
   useEffect(() => {
-    live.current.pdf?.setLayout(pdfLayout);
+    const pdf = live.current.pdf;
+
+    if (pdf && pdf.currentLayout() !== pdfLayout) {
+      pdf.setLayout(pdfLayout);
+      // The renderer starts the new layout fitted; the viewer's zoom follows.
+      latest.current.onZoomChange(pdf.currentZoom());
+    }
   }, [pdfLayout]);
 
   useEffect(() => {
