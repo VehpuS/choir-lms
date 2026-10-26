@@ -26,17 +26,17 @@ The system SHALL keep each downloaded Drive audio file, keyed by Drive file id a
 
 ### Requirement: Cached audio is bounded and can be kept offline
 
-The system SHALL hold automatically cached audio within a size budget and evict the least recently used entries first. A user SHALL be able to choose `Keep offline` for a file, which SHALL exempt it from automatic eviction until the user removes it. The system SHALL show the storage used against the budget and SHALL let the user clear the automatic cache or all offline files.
+The system SHALL hold automatically cached audio within a size budget (the cache size) and evict the least recently used automatic entries first. A user SHALL be able to choose `Keep offline` for a file, which SHALL exempt it from automatic eviction until the user removes it. Kept files SHALL be stored separately from the cache size: they SHALL NOT count toward it, and a kept file larger than the cache size SHALL still be kept. The system SHALL show the automatic cache used against the cache size and the space used by kept files as a separate figure, and SHALL let the user clear the automatic cache or all offline files.
 
 #### Scenario: Eviction skips kept files
 
 - **WHEN** the cache is over budget and the oldest entry is kept offline
 - **THEN** the oldest unkept entry is evicted instead
 
-#### Scenario: Kept files exceed the budget
+#### Scenario: Kept files do not use the cache size
 
-- **WHEN** kept files alone exceed the budget
-- **THEN** none of them is evicted and the storage view says the budget is exceeded
+- **WHEN** the cache size is 250 MB, 300 MB of files are kept offline, and 200 MB of other audio is cached automatically
+- **THEN** nothing is evicted, and the storage view shows 200 MB of 250 MB for the automatic cache and 300 MB kept
 
 ### Requirement: Cached audio plays without a Drive session
 
@@ -77,17 +77,17 @@ The system SHALL keep the opened score files (Drive PDF, MusicXML, MIDI) of a tr
 
 ### Requirement: A dedicated view lists offline files with their sizes
 
-The system SHALL provide an offline files view opened from the user-icon session menu. It SHALL list every offline audio and score file with its name, its size, and whether it is kept or automatic, SHALL show total storage used against the budget, and SHALL let the user remove one file, a selection of files, the automatic cache, or all offline files. Sizes SHALL be shown in human-readable units (KB, MB or GB) wherever they appear, and the list SHALL be sortable by size.
+The system SHALL provide an offline files view opened from the user-icon session menu. It SHALL list every offline audio and score file with its name, its size, and whether it is kept or automatic, SHALL show the automatic cache used against the cache size and the space used by kept files separately, and SHALL let the user remove one file, a selection of files, the automatic cache, or all offline files. Sizes SHALL be shown in human-readable units (KB, MB or GB) wherever they appear, and the list SHALL be sortable by size.
 
 #### Scenario: Browse and purge from the view
 
 - **WHEN** the user opens the offline files view, selects two files and chooses `Remove from offline`
-- **THEN** both files leave the list, the total used decreases by their combined size, and they are no longer playable offline
+- **THEN** both files leave the list, the storage used decreases by their combined size, and they are no longer playable offline
 
 #### Scenario: Sizes are clear
 
 - **WHEN** a 3,400,000-byte file and a 812,000-byte file are cached
-- **THEN** the rows read `3.2 MB` and `793 KB` and the total reads as used of the budget, for example `4.0 MB of 500 MB`
+- **THEN** the rows read `3.2 MB` and `793 KB` and the automatic cache reads as used of the cache size, for example `4.0 MB of 500 MB`
 
 #### Scenario: Nothing offline
 
@@ -96,17 +96,17 @@ The system SHALL provide an offline files view opened from the user-icon session
 
 ### Requirement: The user can set the offline cache size
 
-The system SHALL let the user choose the size of the automatic audio cache from a set of preset sizes, from the offline files view and from Settings, and SHALL remember the choice on that device. Lowering the size SHALL immediately evict the least recently used files that are not kept offline until the cache fits. Files kept offline SHALL NOT be evicted by a lower size; when they alone exceed it, the system SHALL say the size is exceeded.
+The system SHALL let the user choose the size of the automatic audio cache from a set of preset sizes, from the offline files view and from Settings, and SHALL remember the choice on that device. Lowering the size SHALL immediately evict the least recently used files that are not kept offline until the cache fits. The cache size SHALL cover automatic files only: files kept offline SHALL NOT be evicted by a lower size and SHALL NOT count toward it.
 
 #### Scenario: Lower the cache size
 
 - **WHEN** the cache holds 400 MB of automatic files and the user chooses 250 MB
 - **THEN** the least recently used automatic files are removed until 250 MB or less remains, and the offline files view shows the new total against 250 MB
 
-#### Scenario: Kept files exceed the chosen size
+#### Scenario: Kept files are unaffected by the chosen size
 
-- **WHEN** kept files total 300 MB and the user chooses 250 MB
-- **THEN** no kept file is removed, all automatic files are removed, and the view says the size is exceeded
+- **WHEN** kept files total 300 MB, 100 MB of automatic files are cached, and the user chooses 100 MB
+- **THEN** no kept file is removed, the automatic files stay (they fit), and the view shows 100 MB of 100 MB for the cache and 300 MB kept
 
 #### Scenario: The choice persists
 

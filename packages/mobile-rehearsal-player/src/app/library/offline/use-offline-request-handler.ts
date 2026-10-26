@@ -9,8 +9,8 @@ import {
 import { keepSourceOffline, removeSourceOffline } from './offline-actions';
 import { keepManyOffline, setOfflineBatchRunner } from './offline-batch';
 
-const TOO_LARGE_MESSAGE =
-  'The file is larger than the offline cache size, so it was not kept.';
+const NOT_STORED_MESSAGE =
+  'This device could not store the file. Its storage may be full.';
 
 type OfflineRequestHandlerOptions = {
   accessToken?: string;
@@ -108,8 +108,8 @@ export const useOfflineRequestHandler = (
       current.clearIssue();
       keepSourceOffline(source, current.accessToken).then(
         (result) => {
-          if (result === 'too-large') {
-            current.reportIssue(source, new Error(TOO_LARGE_MESSAGE));
+          if (result === 'not-stored') {
+            current.reportIssue(source, new Error(NOT_STORED_MESSAGE));
           }
         },
         (error: unknown) => {

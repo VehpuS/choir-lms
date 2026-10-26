@@ -8,8 +8,8 @@ export type OfflineBatchResult = {
   failed: number;
   firstError?: string;
   kept: number;
-  /** Files larger than the whole cache size, played but not kept. */
-  tooLarge: number;
+  /** Files the device refused to store (storage full or unavailable). */
+  notStored: number;
 };
 
 /**
@@ -21,7 +21,7 @@ export const keepManyOffline = async <Source>(
   keepOne: (source: Source) => Promise<KeepOfflineResult>,
   concurrency: number = BATCH_CONCURRENCY,
 ): Promise<OfflineBatchResult> => {
-  const result: OfflineBatchResult = { failed: 0, kept: 0, tooLarge: 0 };
+  const result: OfflineBatchResult = { failed: 0, kept: 0, notStored: 0 };
   let next = 0;
 
   const worker = async () => {
@@ -34,7 +34,7 @@ export const keepManyOffline = async <Source>(
         if ((await keepOne(source)) === 'kept') {
           result.kept += 1;
         } else {
-          result.tooLarge += 1;
+          result.notStored += 1;
         }
       } catch (error) {
         result.failed += 1;

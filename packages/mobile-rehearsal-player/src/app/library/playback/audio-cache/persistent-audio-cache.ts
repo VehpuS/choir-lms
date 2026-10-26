@@ -25,18 +25,25 @@ export type PersistentAudioCache = {
   /** Runs after any change to what is stored; returns an unsubscribe. */
   subscribe: (listener: () => void) => () => void;
   unpin: (driveFileId: string) => Promise<void>;
+  /**
+   * Stores a file. `keep` stores it pinned even when it is larger than the
+   * whole cache size: kept files are not part of the automatic cache.
+   */
   write: (
     driveFileId: string,
     sourceVersion: string,
     blob: Blob,
+    options?: { keep?: boolean },
   ) => Promise<void>;
 };
 
 /**
- * A versioned, size-capped store of downloaded audio keyed by Drive file. A
- * read at a different version drops the stale file, and a write evicts the
- * least recently used files past the budget. A storage failure is a miss,
- * never an error: playback must not depend on the cache.
+ * A versioned store of downloaded audio keyed by Drive file. The budget caps
+ * the automatic files only: a write evicts the least recently used automatic
+ * files past it, while kept (pinned) files are stored apart from that size and
+ * never evicted. A read at a different version drops a stale automatic file.
+ * A storage failure is a miss, never an error: playback must not depend on
+ * the cache.
  */
 export const createPersistentAudioCache = ({
   budgetBytes,
@@ -55,13 +62,24 @@ export const createPersistentAudioCache = ({
     return entries.find((entry) => entry.driveFileId === driveFileId);
   };
 
+  // Writes and pin changes run one at a time, so a background write of a file
+  // can never land on top of (and unpin) a keep that finished first.
+  let queue: Promise<unknown> = Promise.resolve();
+  const enqueue = <Result>(task: () => Promise<Result>): Promise<Result> => {
+    const result = queue.then(task, task);
+
+    queue = result.catch(() => undefined);
+
+    return result;
+  };
+
   const evictOverBudget = async (protectedId: string) => {
     const entries = await store.list();
+    // Only automatic files count toward the budget; kept files are separate.
     let totalBytes = entries.reduce((total, entry) => {
-      return total + entry.sizeBytes;
+      return entry.pinned ? total : total + entry.sizeBytes;
     }, 0);
     const oldestFirst = entries
-      // Kept files stay even when they alone exceed the budget.
       .filter((entry) => entry.driveFileId !== protectedId && !entry.pinned)
       .sort((left, right) => left.touchedAt - right.touchedAt);
 
@@ -83,24 +101,26 @@ export const createPersistentAudioCache = ({
     async list() {
       return store.list().catch(() => []);
     },
-    async pin(driveFileId) {
-      try {
-        if (!(await findEntry(driveFileId))) {
+    pin: (driveFileId) =>
+      enqueue(async () => {
+        try {
+          if (!(await findEntry(driveFileId))) {
+            return false;
+          }
+
+          await store.setPinned(driveFileId, true);
+          notify();
+
+          return true;
+        } catch {
           return false;
         }
-
-        await store.setPinned(driveFileId, true);
+      }),
+    remove: (driveFileId) =>
+      enqueue(async () => {
+        await store.remove(driveFileId).catch(() => undefined);
         notify();
-
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    async remove(driveFileId) {
-      await store.remove(driveFileId).catch(() => undefined);
-      notify();
-    },
+      }),
     subscribe(listener) {
       listeners.add(listener);
 
@@ -108,10 +128,11 @@ export const createPersistentAudioCache = ({
         listeners.delete(listener);
       };
     },
-    async unpin(driveFileId) {
-      await store.setPinned(driveFileId, false).catch(() => undefined);
-      notify();
-    },
+    unpin: (driveFileId) =>
+      enqueue(async () => {
+        await store.setPinned(driveFileId, false).catch(() => undefined);
+        notify();
+      }),
     async read(driveFileId, sourceVersion) {
       try {
         const record = await store.read(driveFileId);
@@ -140,30 +161,34 @@ export const createPersistentAudioCache = ({
         return null;
       }
     },
-    async write(driveFileId, sourceVersion, blob) {
-      // A file larger than the whole budget would only evict everything else.
-      if (blob.size > budgetBytes) {
-        return;
-      }
+    write: (driveFileId, sourceVersion, blob, options) =>
+      enqueue(async () => {
+        try {
+          const previous = await findEntry(driveFileId);
+          // A file that is already kept stays kept when it is downloaded again.
+          const keep = options?.keep === true || previous?.pinned === true;
 
-      try {
-        const previous = await findEntry(driveFileId);
+          // An automatic file larger than the whole budget would only evict
+          // everything else; a kept file is not bound by the budget.
+          if (!keep && blob.size > budgetBytes) {
+            return;
+          }
 
-        await store.write(
-          {
-            driveFileId,
-            ...(previous?.pinned ? { pinned: true } : {}),
-            sizeBytes: blob.size,
-            sourceVersion,
-            touchedAt: now(),
-          },
-          blob,
-        );
-        await evictOverBudget(driveFileId);
-        notify();
-      } catch {
-        // A full or unavailable store leaves the in-memory copy in charge.
-      }
-    },
+          await store.write(
+            {
+              driveFileId,
+              ...(keep ? { pinned: true } : {}),
+              sizeBytes: blob.size,
+              sourceVersion,
+              touchedAt: now(),
+            },
+            blob,
+          );
+          await evictOverBudget(driveFileId);
+          notify();
+        } catch {
+          // A full or unavailable store leaves the in-memory copy in charge.
+        }
+      }),
   };
 };

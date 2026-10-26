@@ -41,7 +41,7 @@ describe('bulk offline copy', () => {
 
   it('reports a clean keep, and every kind of problem on a partial one', () => {
     assert.deepEqual(
-      getKeepResultAcknowledgment({ failed: 0, kept: 3, tooLarge: 0 }),
+      getKeepResultAcknowledgment({ failed: 0, kept: 3, notStored: 0 }),
       { message: '3 files kept offline.', title: 'Kept offline' },
     );
     assert.deepEqual(
@@ -49,11 +49,11 @@ describe('bulk offline copy', () => {
         failed: 1,
         firstError: 'network',
         kept: 1,
-        tooLarge: 1,
+        notStored: 1,
       }),
       {
         message:
-          '1 file kept offline. 1 file could not be downloaded (network). 1 file did not fit the cache size.',
+          '1 file kept offline. 1 file could not be downloaded (network). 1 file could not be stored on this device.',
         title: 'Some files were not kept',
       },
     );

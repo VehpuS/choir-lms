@@ -17,8 +17,8 @@ export type OfflineKeepingDependencies = {
   state: Pick<OfflineStateStore, 'markDownloading'>;
 };
 
-/** `too-large`: the file fits no budget, so it was played but not kept. */
-export type KeepOfflineResult = 'kept' | 'too-large';
+/** `not-stored`: the device refused the file (storage full or unavailable). */
+export type KeepOfflineResult = 'kept' | 'not-stored';
 
 export const createOfflineKeeping = ({
   cache,
@@ -42,13 +42,14 @@ export const createOfflineKeeping = ({
       try {
         const blob = await download(request);
 
-        // The shared download stores the file without waiting for it, so the
-        // copy may not be there yet; writing it again is harmless.
-        if (!(await cache.pin(request.driveFileId))) {
-          await cache.write(request.driveFileId, request.version, blob);
-        }
+        // The shared download also stores the file, without waiting and
+        // without keeping it; storing it kept here (writes run in order) makes
+        // the keep independent of that background write.
+        await cache.write(request.driveFileId, request.version, blob, {
+          keep: true,
+        });
 
-        return (await cache.pin(request.driveFileId)) ? 'kept' : 'too-large';
+        return (await cache.pin(request.driveFileId)) ? 'kept' : 'not-stored';
       } finally {
         finish();
       }

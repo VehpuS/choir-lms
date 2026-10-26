@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import { keepManyOffline, uniqueSourcesByFile } from './offline-batch.js';
 
 describe('keeping many files offline', () => {
-  it('counts kept, too-large and failed files without stopping at a failure', async () => {
+  it('counts kept, not-stored and failed files without stopping at a failure', async () => {
     const result = await keepManyOffline(
       ['a', 'b', 'c', 'd'],
       async (source) => {
@@ -12,7 +12,7 @@ describe('keeping many files offline', () => {
           throw new Error('network');
         }
 
-        return source === 'c' ? 'too-large' : 'kept';
+        return source === 'c' ? 'not-stored' : 'kept';
       },
     );
 
@@ -20,7 +20,7 @@ describe('keeping many files offline', () => {
       failed: 1,
       firstError: 'network',
       kept: 2,
-      tooLarge: 1,
+      notStored: 1,
     });
   });
 
@@ -48,7 +48,7 @@ describe('keeping many files offline', () => {
     assert.deepEqual(await keepManyOffline([], async () => 'kept'), {
       failed: 0,
       kept: 0,
-      tooLarge: 0,
+      notStored: 0,
     });
   });
 

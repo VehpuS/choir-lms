@@ -75,8 +75,8 @@ export const getKeepResultAcknowledgment = (
     result.failed > 0
       ? `${formatFileCount(result.failed)} could not be downloaded${result.firstError ? ` (${result.firstError})` : ''}.`
       : '',
-    result.tooLarge > 0
-      ? `${formatFileCount(result.tooLarge)} did not fit the cache size.`
+    result.notStored > 0
+      ? `${formatFileCount(result.notStored)} could not be stored on this device.`
       : '',
   ].filter((text) => text.length > 0);
 

@@ -116,7 +116,7 @@ describe('persistent audio cache', () => {
   });
 
   it('skips a kept file when evicting, taking the next oldest instead', async () => {
-    const { cache, clock, memory } = setup(25);
+    const { cache, clock, memory } = setup(15);
 
     await cache.write('file-a', 'v1', blobOf(10));
     await cache.pin('file-a');
@@ -128,21 +128,51 @@ describe('persistent audio cache', () => {
     assert.deepEqual([...memory.records.keys()], ['file-a', 'file-c']);
   });
 
-  it('keeps every kept file even when they alone exceed the budget', async () => {
-    const { cache, memory } = setup(15);
+  it('does not count kept files toward the cache size', async () => {
+    const { cache, clock, memory } = setup(25);
 
-    await cache.write('file-a', 'v1', blobOf(10));
-    await cache.pin('file-a');
-    await cache.write('file-b', 'v1', blobOf(10));
-    await cache.pin('file-b');
-    await cache.write('file-c', 'v1', blobOf(5));
+    await cache.write('kept-a', 'v1', blobOf(40), { keep: true });
+    clock.now += 1;
+    await cache.write('auto-b', 'v1', blobOf(10));
+    clock.now += 1;
+    await cache.write('auto-c', 'v1', blobOf(10));
 
-    // The file just written is protected too, so nothing is evicted at all.
+    // 20 automatic bytes fit 25 although 60 bytes are stored in all.
     assert.deepEqual([...memory.records.keys()].sort(), [
-      'file-a',
-      'file-b',
-      'file-c',
+      'auto-b',
+      'auto-c',
+      'kept-a',
     ]);
+
+    clock.now += 1;
+    await cache.write('auto-d', 'v1', blobOf(10));
+
+    assert.deepEqual([...memory.records.keys()].sort(), [
+      'auto-c',
+      'auto-d',
+      'kept-a',
+    ]);
+  });
+
+  it('stores a kept file larger than the whole cache size', async () => {
+    const { cache, memory } = setup(10);
+
+    await cache.write('big', 'v1', blobOf(50), { keep: true });
+    await cache.write('auto', 'v1', blobOf(50));
+
+    assert.deepEqual([...memory.records.keys()], ['big']);
+    assert.equal(memory.records.get('big')?.entry.pinned, true);
+  });
+
+  it('keeps a kept file kept when a background write of it lands afterwards', async () => {
+    const { cache, memory } = setup();
+
+    await Promise.all([
+      cache.write('file-a', 'v1', blobOf(10), { keep: true }),
+      cache.write('file-a', 'v1', blobOf(10)),
+    ]);
+
+    assert.equal(memory.records.get('file-a')?.entry.pinned, true);
   });
 
   it('cannot pin a file that is not stored', async () => {

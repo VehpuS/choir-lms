@@ -79,14 +79,24 @@ describe('keeping a file offline', () => {
     assert.equal(calls.downloading, 0);
   });
 
-  it('reports a file larger than the whole budget as too large', async () => {
+  it('keeps a file larger than the whole cache size, since kept files are separate from it', async () => {
     const { keeping, memory } = setup({
       budgetBytes: 5,
       download: () => blobOf(10),
     });
 
-    assert.equal(await keeping.keepOffline(REQUEST), 'too-large');
-    assert.equal(memory.records.size, 0);
+    assert.equal(await keeping.keepOffline(REQUEST), 'kept');
+    assert.equal(memory.records.get('file-a')?.entry.pinned, true);
+  });
+
+  it('reports a file the device refuses to store as not stored', async () => {
+    const { keeping, memory } = setup({ download: () => blobOf(10) });
+
+    memory.store.write = async () => {
+      throw new Error('quota');
+    };
+
+    assert.equal(await keeping.keepOffline(REQUEST), 'not-stored');
   });
 
   it('removes a kept file’s stored and in-memory copies', async () => {
