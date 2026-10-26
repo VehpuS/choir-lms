@@ -5,6 +5,7 @@ import {
   computePdfLayout,
   nearestPage,
   pointOnPage,
+  scrollOffsetForPage,
   scrollOffsetForPoint,
   type PdfLayoutResult,
 } from './pdf-layout-model';
@@ -14,6 +15,7 @@ import { clampPdfZoom } from './pdf-page-layout';
 import { createPageDrawer, type PageEntry } from './pdf-page-drawer';
 import { drawPdfThumbnail } from './pdf-thumbnail';
 import { createPageTracker } from './pdf-page-tracker';
+import { createPdfPageTurner } from './pdf-page-turn';
 import { applyPdfScrollbar } from './pdf-scrollbar';
 import { createPdfScroller } from './pdf-scroll-position';
 import type { DomCanvas, HostElement, PdfDocument } from './pdf-web-types';
@@ -29,6 +31,7 @@ const DEFAULT_LAYOUT: PdfLayout = 'scroll';
 // A zoom stream (a pinch, a held wheel) redraws once, this long after the last
 // change; until then the drawn canvases are stretched by the browser.
 const ZOOM_SETTLE_MS = 150;
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
 const failed = (
   reason: 'invalid-pdf' | 'password-protected',
@@ -166,6 +169,20 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
     });
     const { readAnchor, restoreAnchor, scrollToPage, updateSnapping } =
       scroller;
+    const turner = createPdfPageTurner({
+      host,
+      prefersReducedMotion: () =>
+        host.ownerDocument.defaultView?.matchMedia?.(REDUCED_MOTION_QUERY)
+          .matches ?? false,
+      // Back on, the host's snapping follows the layout and zoom again.
+      setSnapping: (isOn) => {
+        if (isOn) {
+          updateSnapping();
+        } else {
+          host.style.scrollSnapType = '';
+        }
+      },
+    });
 
     const settleZoom = () => {
       settleTimer = undefined;
@@ -215,6 +232,7 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
       currentZoom: () => currentZoom,
       dispose() {
         isDisposed = true;
+        turner.cancel();
         tracker.dispose();
         clearTimeout(settleTimer);
         observer?.disconnect();
@@ -230,10 +248,13 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
           cssWidth,
           page: isDisposed ? undefined : pages[index]?.page,
         }),
-      goToPage(index) {
-        scrollToPage(index);
+      goToPage(index, options) {
+        const target = scrollOffsetForPage(layout, { fraction: 0, index });
+
+        turner.turn({ animate: options?.animate ?? false, index, ...target });
         tracker.check();
       },
+      pendingPage: turner.pendingPage,
       pageCount: pages.length,
       setLayout(next) {
         if (next === currentLayout) {
@@ -242,6 +263,7 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
 
         const anchor = readAnchor();
 
+        turner.cancel();
         // A new layout starts fitted; the page and in-page fraction are kept.
         currentLayout = next;
         currentZoom = DEFAULT_ZOOM;

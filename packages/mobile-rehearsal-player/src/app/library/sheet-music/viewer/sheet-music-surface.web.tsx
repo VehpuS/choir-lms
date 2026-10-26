@@ -12,6 +12,7 @@ import type {
   PdfRendering,
   ScoreRendering,
 } from '../renderers/sheet-music-renderer';
+import { syncPdfLayout } from './sync-pdf-layout';
 import { attachPdfPaging, type PagingHost } from './attach-pdf-paging.web';
 import {
   attachPdfZoomGestures,
@@ -301,18 +302,14 @@ export const SheetMusicSurface = ({
   }, [jump]);
 
   useEffect(() => {
-    const pdf = live.current.pdf;
-
-    if (pdf && pdf.currentLayout() !== pdfLayout) {
-      pdf.setLayout(pdfLayout);
-      // The renderer starts the new layout fitted; the viewer's zoom follows.
-      latest.current.onZoomChange(pdf.currentZoom());
-    }
+    syncPdfLayout(live.current.pdf, pdfLayout, latest.current.onZoomChange);
   }, [pdfLayout]);
 
   useEffect(() => {
     if (pageRequest) {
-      live.current.pdf?.goToPage(pageRequest.page);
+      live.current.pdf?.goToPage(pageRequest.page, {
+        animate: pageRequest.animate,
+      });
     }
   }, [pageRequest]);
 

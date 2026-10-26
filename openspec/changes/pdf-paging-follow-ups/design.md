@@ -38,6 +38,8 @@ The surface host (which owns the key handler, archived Decision 6) exposes a `fo
 
 Control and key turns call `scrollTo({ left, behavior })` with `smooth` unless `matchMedia('(prefers-reduced-motion: reduce)')` matches. Mandatory snapping can fight a programmatic smooth scroll, so the renderer suspends snap while a turn runs and restores it at the end (or on a timeout of about 300 ms if the scroll end event is missed). A turn started during another recomputes from the newest target. The reduced-motion check lives in a small pure function taking the media query result so it can be specified without a browser.
 
+Built as `pdf-page-turn.ts`. When the settle timer fires, the turner first puts the view on the target (a no-op when the slide arrived) and then restores snapping, so a slide slower than the timer, or one that never ran, cannot snap back to the old page. Only keys and the `Previous page` and `Next page` buttons slide; the wheel, a swipe, and `Go to page` (a jump of many pages) stay instant. The renderer reports the pending target (`pendingPage`) so quick repeated key presses add up. Verified in the browser pane for end states (one press, three quick presses, two back; snapping off during the turn and on after). The pane reports the page as hidden, so the look of the ~200 ms slide and the reduced-motion path still need a look in a foreground browser with the owner.
+
 ### 6. Wheel in Pages stays one page per flick
 
 No behavior change decided. The threshold and pause stay as shipped; tune them with the owner in the browser preview (task 6.1).

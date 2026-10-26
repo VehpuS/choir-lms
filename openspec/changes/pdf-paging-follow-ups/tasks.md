@@ -13,7 +13,7 @@
 
 - [ ] 3.1 **Explore with the owner before building:** how the compact landscape side rail holds the page indicator and page buttons (design Open Questions); update the design with the choice.
 - [ ] 3.2 Move `Previous page` and `Next page` beside the page indicator and keep the toolbar to zoom, `Layout`, piano, and play (original 6.7). A pure model for the indicator row with a spec; verify the phone-width `Pages` toolbar fits one row.
-- [ ] 3.3 Animate control and key page turns with a short smooth scroll, instant under reduced motion, suspending snap during the turn (design Decision 5). Specs for the reduced-motion decision and for repeated turns ending at the newest target; verify in the browser.
+- [x] 3.3 Animate control and key page turns with a short smooth scroll, instant under reduced motion, suspending snap during the turn (design Decision 5). Specs for the reduced-motion decision and for repeated turns ending at the newest target; verify in the browser.
 
 ## 4. Spread layout
 

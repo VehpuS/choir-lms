@@ -48,7 +48,9 @@ export type PdfPagingTarget = {
   currentLayout(): PdfLayout;
   currentPage(): number;
   currentZoom(): number;
-  goToPage(index: number): void;
+  goToPage(index: number, options?: { animate?: boolean }): void;
+  /** The page a smooth turn is heading to, if one is running. */
+  pendingPage?(): number | undefined;
   readonly pageCount: number;
 };
 
@@ -71,11 +73,15 @@ export const attachPdfPaging = ({
   const previousTabIndex = host.tabIndex;
   const previousOutline = host.style.outline;
 
-  const turnBy = (step: number) => {
-    const target = clamp(pdf.currentPage() + step, 0, pdf.pageCount - 1);
+  // Keys slide; the wheel (and a swipe) already move the view themselves.
+  // A turn during a slide builds on where the slide is heading, so quick
+  // repeated presses add up.
+  const turnBy = (step: number, animate: boolean) => {
+    const from = pdf.pendingPage?.() ?? pdf.currentPage();
+    const target = clamp(from + step, 0, pdf.pageCount - 1);
 
-    if (target !== pdf.currentPage()) {
-      pdf.goToPage(target);
+    if (target !== from) {
+      pdf.goToPage(target, { animate });
     }
   };
 
@@ -96,7 +102,7 @@ export const attachPdfPaging = ({
     }
 
     event.preventDefault();
-    turnBy(step);
+    turnBy(step, true);
   };
 
   const onWheel = (event: WheelEvent) => {
@@ -123,7 +129,7 @@ export const attachPdfPaging = ({
     wheelTurn = turned.state;
 
     if (turned.step !== 0) {
-      turnBy(turned.step);
+      turnBy(turned.step, false);
     }
   };
 

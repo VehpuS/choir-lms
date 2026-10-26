@@ -17,6 +17,9 @@ const setUp = (
     zoom: options.zoom ?? 1,
   };
   const goTo: number[] = [];
+  const animated: boolean[] = [];
+  // While a slide runs, the page it heads to; the reported page lags behind it.
+  let pending: number | undefined;
   const host = {
     addEventListener: (type: string, listener: unknown) => {
       handlers.set(type, listener as Handler);
@@ -41,10 +44,17 @@ const setUp = (
       currentLayout: () => state.layout,
       currentPage: () => state.page,
       currentZoom: () => state.zoom,
-      goToPage: (index) => {
+      goToPage: (index, turn) => {
         goTo.push(index);
-        state.page = index;
+        animated.push(turn?.animate ?? false);
+
+        if (turn?.animate) {
+          pending = index;
+        } else {
+          state.page = index;
+        }
       },
+      pendingPage: () => pending,
       pageCount: 10,
     },
   });
@@ -62,6 +72,7 @@ const setUp = (
   };
 
   return {
+    animated,
     advance: (ms: number) => {
       time += ms;
     },
@@ -92,6 +103,28 @@ describe('attachPdfPaging', () => {
     assert.equal(fire('keydown', { key: 'PageDown' }), true);
 
     assert.deepEqual(goTo, [6, 5, 4, 5]);
+  });
+
+  it('slides key turns but not wheel turns', () => {
+    const { advance, animated, fire } = setUp({ page: 5 });
+
+    fire('keydown', { key: 'ArrowRight' });
+    // Past the pause that follows a turn, then a flick of the wheel.
+    advance(5_000);
+    fire('wheel', { deltaMode: 0, deltaX: 0, deltaY: 400 });
+
+    assert.deepEqual(animated, [true, false]);
+  });
+
+  it('adds up quick repeated key turns on the page the slide is heading to', () => {
+    const { fire, goTo } = setUp({ page: 5 });
+
+    fire('keydown', { key: 'ArrowRight' });
+    fire('keydown', { key: 'ArrowRight' });
+    fire('keydown', { key: 'ArrowRight' });
+
+    // The reported page stays 5 while sliding; the targets still add up.
+    assert.deepEqual(goTo, [6, 7, 8]);
   });
 
   it('works in strip too', () => {

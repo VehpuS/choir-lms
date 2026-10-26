@@ -21,8 +21,11 @@ export const pageStateOf = (
     ? { lastPage: range.last, page: range.first, pageCount }
     : { page: range.first, pageCount };
 
-/** A request to move to a page; `token` makes a repeat of the same page a new request. */
-export type PdfPageRequest = { page: number; token: number };
+/**
+ * A request to move to a page; `token` makes a repeat of the same page a new
+ * request. `animate` asks for a short slide (a one-page step), not a jump.
+ */
+export type PdfPageRequest = { animate: boolean; page: number; token: number };
 
 export type PdfPageControls = {
   canGoNext: boolean;

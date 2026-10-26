@@ -32,9 +32,15 @@ export const usePdfPageControl = (options: {
     (next: PdfPageState) => setReported({ sourceKey, state: next }),
     [sourceKey],
   );
-  const goTo = (page: number) => {
-    setRequest((current) => ({ page, token: (current?.token ?? 0) + 1 }));
+  // Only the one-page steps slide; a jump (Go to page, a thumbnail) is instant.
+  const requestPage = (page: number, animate: boolean) => {
+    setRequest((current) => ({
+      animate,
+      page,
+      token: (current?.token ?? 0) + 1,
+    }));
   };
+  const goTo = (page: number) => requestPage(page, false);
 
   return {
     controls: buildPageControls(state, options.layout),
@@ -45,8 +51,8 @@ export const usePdfPageControl = (options: {
     state,
     /** The page last reported for this source (0-based), for a surface that starts again. */
     page: state?.page,
-    next: () => state && goTo(stepPage(state, 1)),
-    previous: () => state && goTo(stepPage(state, -1)),
+    next: () => state && requestPage(stepPage(state, 1), true),
+    previous: () => state && requestPage(stepPage(state, -1), true),
     request,
   };
 };

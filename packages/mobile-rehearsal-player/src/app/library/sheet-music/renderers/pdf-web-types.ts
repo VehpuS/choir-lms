@@ -25,6 +25,7 @@ export type HostElement = Omit<DomElement, 'style'> & {
   removeEventListener(type: 'scroll', listener: () => void): void;
   scrollLeft: number;
   scrollTop: number;
+  scrollTo(options: { behavior: 'smooth'; left: number; top: number }): void;
   setAttribute(name: string, value: string): void;
   ownerDocument: { createElement(tag: 'canvas'): DomCanvas } & {
     createElement(tag: 'div'): DomElement;
@@ -34,6 +35,7 @@ export type HostElement = Omit<DomElement, 'style'> & {
     head: { appendChild(child: unknown): unknown };
     defaultView: {
       getComputedStyle(element: unknown): { overflowY: string };
+      matchMedia?(query: string): { matches: boolean };
     } | null;
   };
   parentElement: HostElement | null;

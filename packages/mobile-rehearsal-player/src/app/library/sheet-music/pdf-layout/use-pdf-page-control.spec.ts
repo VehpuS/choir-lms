@@ -80,11 +80,33 @@ describe('usePdfPageControl', () => {
     await act(async () => {
       box.current?.next();
     });
-    assert.deepEqual(box.current?.request, { page: 6, token: 1 });
+    assert.deepEqual(box.current?.request, {
+      animate: true,
+      page: 6,
+      token: 1,
+    });
 
     await act(async () => {
       box.current?.previous();
     });
-    assert.deepEqual(box.current?.request, { page: 4, token: 2 });
+    assert.deepEqual(box.current?.request, {
+      animate: true,
+      page: 4,
+      token: 2,
+    });
+  });
+
+  it('jumps instantly when asked to go to a page', async () => {
+    const { box } = await mount('a');
+
+    await act(async () => {
+      box.current?.goTo(40);
+    });
+
+    assert.deepEqual(box.current?.request, {
+      animate: false,
+      page: 40,
+      token: 1,
+    });
   });
 });
