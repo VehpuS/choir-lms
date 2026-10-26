@@ -9,7 +9,7 @@
 
 ## 3. Sheet and indicator
 
-- [ ] 3.1 **Settle with the owner in the browser:** thumbnail width and columns per breakpoint (design Open Questions); record in `design.md`.
+- [x] 3.1 **Settle with the owner in the browser:** thumbnail width and columns per breakpoint (design Open Questions); record in `design.md`.
 - [ ] 3.2 Build the `Go to page` sheet frame: header with field, hint, and `Go`; virtualised grid; web `thumbnail-cell.web.tsx` with a placeholder sibling for native. Component specs for the header (disabled states, Enter submits, prefilled value).
 - [ ] 3.3 Make the page indicator a button that opens the sheet, with the accessible name `Go to page`, and wire the choice to the existing page request, then close the sheet and return focus to the page area (reuse the `pdf-paging-follow-ups` 2.2 rule if landed). Spec the indicator as a button.
 

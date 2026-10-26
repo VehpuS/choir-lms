@@ -58,6 +58,10 @@ The grid cell that owns a `<canvas>` is `thumbnail-cell.web.tsx`; the shared `.t
 
 The sheet calls the existing page request (`goTo` in `use-pdf-page-control`), then closes. The viewer returns focus to the page area after the sheet closes (the rule from `pdf-paging-follow-ups` Decision 2, applied once for all sheets). In `Spread`, `goToPage` already maps a page to the spread holding it; nothing here depends on `Spread` having shipped.
 
+### 6. Responsive thumbnail grid (settled with the owner, 2026-10-26)
+
+No breakpoint table: `thumbnailGrid(contentWidth)` fits as many columns as hold a **90 px** minimum cell with a **12 px** gap, and the cells share the leftover width, up to a **160 px** cap (the cap only binds in a single narrow column). The thumbnail draws at the cell width. Checked in a mock with score-like pages: a 343 px phone sheet (319 px of content after padding) gives 3 columns of about 98 px, a 700 px sheet 6, a 1100 px sheet 10. A 100 px minimum gave a phone only 2 columns. At this size the title page, dense and sparse pages, and page headings' position are distinguishable, but text is not readable, so the page number under each cell carries the meaning. Check on the real 81-page score in 3.2 and 4.1; real choral pages are denser than the mock.
+
 ## Risks / Trade-offs
 
 - [Thumbnails slow the main thread on heavy scores] -> serial queue, cancel on scroll-out, current row first; check on the 81-page score in the browser.
@@ -67,4 +71,4 @@ The sheet calls the existing page request (`goTo` in `use-pdf-page-control`), th
 
 ## Open Questions
 
-- Thumbnail width and column count per breakpoint (first guess: 120 px, 3 columns on a phone, more on wide windows); settle by looking at real widths.
+None.

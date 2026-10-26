@@ -7,6 +7,9 @@ import { clamp, range } from 'es-toolkit';
  */
 export type GoToPageLayout = PdfLayout | 'spread';
 
+export const THUMBNAIL_MIN_WIDTH = 90;
+export const THUMBNAIL_MAX_WIDTH = 160;
+export const THUMBNAIL_GAP = 12;
 const SPREAD_SIZE = 2;
 const WHOLE_NUMBER_PATTERN = /^\d+$/;
 
@@ -94,4 +97,25 @@ export const visibleRows = (options: {
     firstRow * columns,
     Math.min((lastRow + 1) * columns, pageCount),
   );
+};
+
+export type ThumbnailGrid = { cellWidth: number; columns: number };
+
+/**
+ * The grid for a given content width: as many columns as fit at the minimum
+ * thumbnail width, the cells sharing the leftover width (up to the maximum).
+ */
+export const thumbnailGrid = (contentWidth: number): ThumbnailGrid => {
+  const columns = Math.max(
+    1,
+    Math.floor(
+      (contentWidth + THUMBNAIL_GAP) / (THUMBNAIL_MIN_WIDTH + THUMBNAIL_GAP),
+    ),
+  );
+  const shared = (contentWidth - THUMBNAIL_GAP * (columns - 1)) / columns;
+
+  return {
+    cellWidth: clamp(shared, 1, THUMBNAIL_MAX_WIDTH),
+    columns,
+  };
 };

@@ -5,6 +5,9 @@ import {
   markedPages,
   pageRangeHint,
   parsePageNumber,
+  THUMBNAIL_MAX_WIDTH,
+  THUMBNAIL_MIN_WIDTH,
+  thumbnailGrid,
   visibleRows,
 } from './go-to-page-model.js';
 
@@ -119,5 +122,45 @@ describe('visibleRows', () => {
       visibleRows({ ...base, columns: 0, scrollTop: 0, viewportHeight: 200 }),
       [],
     );
+  });
+});
+
+describe('thumbnailGrid', () => {
+  it('fits three columns on a phone, with cells no narrower than the minimum', () => {
+    const grid = thumbnailGrid(319);
+
+    assert.equal(grid.columns, 3);
+    assert.ok(grid.cellWidth >= THUMBNAIL_MIN_WIDTH);
+  });
+
+  it('adds columns as the width grows', () => {
+    assert.equal(thumbnailGrid(676).columns, 6);
+    assert.equal(thumbnailGrid(1076).columns, 10);
+  });
+
+  it('starts a new column exactly when another minimum-width cell fits', () => {
+    // Three cells and two gaps at the minimum need 3 * 90 + 2 * 12 = 294.
+    assert.equal(thumbnailGrid(293).columns, 2);
+    assert.equal(thumbnailGrid(294).columns, 3);
+    assert.equal(thumbnailGrid(294).cellWidth, THUMBNAIL_MIN_WIDTH);
+  });
+
+  it('shares the leftover width so the cells fill the row', () => {
+    const { cellWidth, columns } = thumbnailGrid(319);
+
+    assert.ok(Math.abs(cellWidth * columns + 12 * (columns - 1) - 319) < 1e-9);
+  });
+
+  it('keeps one column, capped, when the sheet is narrower than two cells', () => {
+    assert.deepEqual(thumbnailGrid(120), { cellWidth: 120, columns: 1 });
+    assert.deepEqual(thumbnailGrid(190), {
+      cellWidth: THUMBNAIL_MAX_WIDTH,
+      columns: 1,
+    });
+  });
+
+  it('never returns a zero-size cell', () => {
+    assert.equal(thumbnailGrid(0).columns, 1);
+    assert.ok(thumbnailGrid(0).cellWidth > 0);
   });
 });
