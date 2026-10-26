@@ -5,7 +5,7 @@ import {
   type SheetMusicSource,
 } from '@org/audio-library-models';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, useWindowDimensions } from 'react-native';
+import { Platform } from 'react-native';
 
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { PianoOverlay } from '../../piano/components/piano-overlay';
@@ -13,7 +13,7 @@ import { registerPianoViewer } from '../../piano/piano-host-store';
 import { createSheetMusicLoader } from '../sheet-music-loader';
 import { GoToDrawer } from './go-to';
 import { useGoTo } from './go-to/use-go-to';
-import { isCompactViewerHeight } from './layout-model';
+import { useCompactViewer } from './use-compact-viewer';
 import {
   applyPartChip,
   filterViewableSources,
@@ -97,7 +97,7 @@ export const SheetMusicViewer = ({
   // and the shell's steps aside while this is open.
   useEffect(registerPianoViewer, []);
 
-  const isCompact = isCompactViewerHeight(useWindowDimensions().height);
+  const isCompact = useCompactViewer();
   const viewable = useMemo(() => filterViewableSources(sources), [sources]);
   const [sourceId, setSourceId] = useState(initialSourceId);
   const [chosen, setChosen] = useState<

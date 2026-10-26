@@ -9,3 +9,19 @@ export const COMPACT_VIEWER_MAX_HEIGHT = 500;
 export const isCompactViewerHeight = (windowHeight: number): boolean => {
   return windowHeight < COMPACT_VIEWER_MAX_HEIGHT;
 };
+
+/**
+ * Whether the viewer is compact now. While a text field has focus the soft
+ * keyboard shrinks the window, which would flip an upright phone into the
+ * compact layout and rebuild everything in it (a sheet's field would lose its
+ * focus), so the layout holds until the field is left.
+ */
+export const resolveCompactViewer = (options: {
+  isTyping: boolean;
+  previous: boolean;
+  windowHeight: number;
+}): boolean => {
+  return options.isTyping
+    ? options.previous
+    : isCompactViewerHeight(options.windowHeight);
+};
