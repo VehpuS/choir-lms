@@ -87,6 +87,21 @@ describe('drawPdfThumbnail', () => {
     assert.equal(await task.done, true);
   });
 
+  it('settles false and leaves the canvas alone when there is no page', async () => {
+    const canvas = fakeCanvas();
+    const task = drawPdfThumbnail({
+      canvas,
+      cssWidth: 120,
+      devicePixelRatio: 1,
+      page: undefined,
+    });
+
+    task.cancel();
+
+    assert.equal(canvas.width, 0);
+    assert.equal(await task.done, false);
+  });
+
   it('settles false when the render is cancelled', async () => {
     const { page, state } = fakePage(true);
     const task = drawPdfThumbnail({

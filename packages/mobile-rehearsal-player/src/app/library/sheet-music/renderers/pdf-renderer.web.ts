@@ -5,31 +5,23 @@ import {
   computePdfLayout,
   currentPageAt,
   nearestPage,
-  pageAtOffset,
   pointOnPage,
-  scrollOffsetForPage,
   scrollOffsetForPoint,
   type PdfLayoutResult,
-  type PdfPagePosition,
 } from './pdf-layout-model';
-import {
-  isPdfSnapping,
-  pdfColumnStyle,
-  pdfPageStyle,
-  pdfSnapType,
-} from './pdf-layout-style';
+import { pdfColumnStyle, pdfPageStyle } from './pdf-layout-style';
 import { createPageObserver } from './pdf-page-observer';
 import { clampPdfZoom } from './pdf-page-layout';
 import { createPageDrawer, type PageEntry } from './pdf-page-drawer';
 import { drawPdfThumbnail } from './pdf-thumbnail';
 import { createPageTracker } from './pdf-page-tracker';
+import { createPdfScroller } from './pdf-scroll-position';
 import type { DomCanvas, HostElement, PdfDocument } from './pdf-web-types';
 import { isPasswordError, openPdf } from './pdfjs-loader';
 import type {
   PdfRenderer,
   PdfRenderResult,
   PdfRendering,
-  PdfThumbnailTask,
 } from './sheet-music-renderer';
 
 const DEFAULT_ZOOM = 1;
@@ -37,13 +29,6 @@ const DEFAULT_LAYOUT: PdfLayout = 'scroll';
 // A zoom stream (a pinch, a held wheel) redraws once, this long after the last
 // change; until then the drawn canvases are stretched by the browser.
 const ZOOM_SETTLE_MS = 150;
-
-// A thumbnail that was not drawn (no such page, or the viewer is closed).
-const NO_THUMBNAIL: PdfThumbnailTask = {
-  // Nothing is drawing, so there is nothing to cancel.
-  cancel: () => undefined,
-  done: Promise.resolve(false),
-};
 
 const failed = (
   reason: 'invalid-pdf' | 'password-protected',
@@ -167,53 +152,22 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
       }
     };
 
-    const scrollToPage = (index: number, fraction = 0) => {
-      const target = scrollOffsetForPage(layout, { fraction, index });
-
-      host.scrollLeft = target.left;
-      host.scrollTop = target.top;
-    };
-
-    // Snapping is on only while a paged page is fitted. When it turns back on
-    // after a zoom, the view settles on the page the reader is mostly on.
-    let wasSnapping = false;
-    const updateSnapping = () => {
-      host.style.scrollSnapType = pdfSnapType(currentLayout, currentZoom);
-
-      const isSnapping = isPdfSnapping(currentLayout, currentZoom);
-
-      if (isSnapping && !wasSnapping) {
-        scrollToPage(
-          nearestPage(pageAtOffset(layout, host.scrollLeft), pages.length),
-        );
-      }
-
-      wasSnapping = isSnapping;
-    };
-
-    const mainOffset = () =>
-      layout.axis === 'vertical' ? host.scrollTop : host.scrollLeft;
-
-    // The page at the viewport's start edge, and how far through it, are kept
-    // across anything that changes the pages' sizes (zoom, a width change).
-    const readAnchor = () => pageAtOffset(layout, mainOffset());
-
-    const restoreAnchor = (anchor: PdfPagePosition) => {
-      if (isPdfSnapping(currentLayout, currentZoom)) {
-        scrollToPage(nearestPage(anchor, pages.length));
-
-        return;
-      }
-
-      // Only the scrolling axis moves; a pan across it is left alone.
-      const target = scrollOffsetForPage(layout, anchor);
-
-      if (layout.axis === 'vertical') {
-        host.scrollTop = target.top;
-      } else {
-        host.scrollLeft = target.left;
-      }
-    };
+    const scroller = createPdfScroller({
+      getState: () => ({
+        currentLayout,
+        currentZoom,
+        layout,
+        pageCount: pages.length,
+      }),
+      host,
+    });
+    const {
+      mainOffset,
+      readAnchor,
+      restoreAnchor,
+      scrollToPage,
+      updateSnapping,
+    } = scroller;
 
     const settleZoom = () => {
       settleTimer = undefined;
@@ -276,17 +230,12 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         host.innerHTML = '';
         void doc.destroy();
       },
-      drawThumbnail: (index, canvas, cssWidth) => {
-        const entry = pages[index];
-
-        return entry && !isDisposed
-          ? drawPdfThumbnail({
-              canvas: canvas as DomCanvas,
-              cssWidth,
-              page: entry.page,
-            })
-          : NO_THUMBNAIL;
-      },
+      drawThumbnail: (index, canvas, cssWidth) =>
+        drawPdfThumbnail({
+          canvas: canvas as DomCanvas,
+          cssWidth,
+          page: isDisposed ? undefined : pages[index]?.page,
+        }),
       goToPage(index) {
         scrollToPage(index);
         tracker.check();
@@ -309,7 +258,7 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
           scrollToPage(anchor.index, anchor.fraction);
         }
 
-        wasSnapping = false;
+        scroller.resetSnapping();
         updateSnapping();
 
         // The look-ahead margin follows the scroll axis, so the observer is
