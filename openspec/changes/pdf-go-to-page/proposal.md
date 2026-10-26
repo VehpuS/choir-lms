@@ -6,19 +6,21 @@ In an 81-page score, reaching a section means paging or scrolling through many p
 
 Decided with the owner (2026-10-26):
 
-- Tapping the page indicator, in every layout, opens a sheet with a page-number field (and a go button) above a grid of page thumbnails; choosing either moves the viewer to that page.
+- Tapping the page indicator, in every layout, opens a `Go to page` sheet with a page-number field (and a `Go` button) above a grid of page thumbnails; choosing either moves the viewer to that page and closes the sheet.
+- The field is 1-based and prefilled with the current page; `Go` is disabled until the value is a whole number from 1 to the page count (no silent clamping), and a hint shows the range.
+- Thumbnails are drawn lazily, one at a time, for the rows in view plus a margin, and every canvas is released when the sheet closes. The PDF rendering gains a way to draw a page into a small canvas.
+- In `Spread` (see `pdf-paging-follow-ups`), both pages of the current spread are marked, and any chosen page lands on the spread that holds it.
+- Web only: native has no PDF renderer yet (`native-playback-follow-ups` 1.6).
 
-Still to design (explore before building):
+Deferred, recorded here so it is not lost:
 
-- How thumbnails are drawn without holding 81 rendered pages in memory (small canvases, drawn lazily as the grid scrolls, released when it closes).
-- Whether the sheet can show part labels or bookmarks when the PDF has an outline.
-- How the sheet behaves in `Spread` (see `pdf-paging-follow-ups`).
+- Showing part labels or bookmarks from the PDF outline (`getOutline`). Many scans and exports have none, and each entry needs two async lookups to become a page. Build it when a real file with an outline needs it; the sheet leaves room for a section above the grid.
 
 ## Capabilities
 
 ### New Capabilities
 
-None expected.
+None.
 
 ### Modified Capabilities
 
@@ -27,4 +29,5 @@ None expected.
 ## Impact
 
 - `packages/mobile-rehearsal-player` PDF viewer: page indicator, a new sheet and its pure model, thumbnail drawing in the web renderer.
-- Depends on the page-tracking and scroll-to-page helpers already in the layout model.
+- Depends on the page-tracking and `goToPage` helpers already in the layout model and `PdfRendering`.
+- Shares the indicator with `pdf-paging-follow-ups` 6.7 (previous/next buttons move beside it) and the focus-return rule of 6.8; whichever lands second adapts.
