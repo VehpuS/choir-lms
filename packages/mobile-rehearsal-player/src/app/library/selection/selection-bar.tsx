@@ -33,7 +33,11 @@ type SelectionBarProps = {
   /** Shows a spinner while a selection source (select-all) is still loading. */
   isBusy?: boolean;
   busyLabel?: string;
-  onCancel: () => void;
+  /**
+   * Leaves selection. Omit it for a surface whose list is always selectable,
+   * where there is no mode to leave (the offline files view).
+   */
+  onCancel?: () => void;
   /**
    * Makes the count a button that opens what is selected (the Add basket's
    * review, task 8.68). Without it the count is plain text.
@@ -103,10 +107,12 @@ export const SelectionBar = ({
             onPress={secondaryAction.onPress}
           />
         ) : null}
-        <OutlinedActionButton
-          label={SELECTION_COPY.cancel}
-          onPress={onCancel}
-        />
+        {onCancel ? (
+          <OutlinedActionButton
+            label={SELECTION_COPY.cancel}
+            onPress={onCancel}
+          />
+        ) : null}
       </View>
       {helperText || isBusy ? (
         <View style={styles.helperRow}>

@@ -77,7 +77,7 @@ The system SHALL keep the opened score files (Drive PDF, MusicXML, MIDI) of a tr
 
 ### Requirement: A dedicated view lists offline files with their sizes
 
-The system SHALL provide an offline files view opened from the user-icon session menu. It SHALL list every offline audio and score file with its name, its size, and whether it is kept or automatic, SHALL show the automatic cache used against the cache size and the space used by kept files separately, and SHALL let the user remove one file, a selection of files, the automatic cache, or all offline files. Sizes SHALL be shown in human-readable units (KB, MB or GB) wherever they appear, and the list SHALL be sortable by size.
+The system SHALL provide an offline files view opened from the user-icon session menu. It SHALL list every offline audio and score file with its name, its size, and whether it is kept or automatic, SHALL show the automatic cache used against the cache size and the space used by kept files separately, and SHALL let the user remove one file, a selection of files, the automatic cache, or all offline files. Sizes SHALL be shown in human-readable units (KB, MB or GB) wherever they appear, and the list SHALL be sortable by size. Files SHALL be selectable directly, without first entering a selection mode.
 
 #### Scenario: Browse and purge from the view
 

@@ -17,7 +17,6 @@ import type {
 import type { OfflineStorageService } from '../../library/offline/offline-storage-service';
 import type { BulkAction } from '../../library/selection/bulk-action-model';
 import { getSelectionCountLabel } from '../../library/selection/selection-copy';
-import { SelectEntryButton } from '../../library/selection/select-entry-button';
 import { SelectionBar } from '../../library/selection/selection-bar';
 import { useLibraryFilesConfirmationFlow } from '../../library/selection/use-library-files-confirmation-flow';
 import { usePinnedBulkActionBar } from '../../library/selection/use-pinned-bulk-action-bar';
@@ -77,14 +76,17 @@ export const OfflineFilesContent = ({
   const selection = useSelection<OfflineFileRow>();
   const { cancel, deselectMany, enter, selectMany, selectedKeys, toggle } =
     selection;
+  // There is no separate select mode here: a row only ever selects, so the
+  // list is always selectable and "selecting" means something is selected.
+  const hasSelection = selection.selectedCount > 0;
   const allRows = useMemo(
     () => [...snapshot.kept, ...snapshot.automatic],
     [snapshot],
   );
 
-  // Escape or the back button steps out of selection first, then closes.
+  // Escape or the back button clears the selection first, then closes.
   useEscapeToDismiss(true, () => {
-    if (selection.isActive) {
+    if (hasSelection) {
       cancel();
 
       return;
@@ -124,8 +126,8 @@ export const OfflineFilesContent = ({
 
   usePinnedBulkActionBar(
     useMemo(
-      () => (selection.isActive ? { actions, overflowTitle } : null),
-      [actions, overflowTitle, selection.isActive],
+      () => (hasSelection ? { actions, overflowTitle } : null),
+      [actions, hasSelection, overflowTitle],
     ),
   );
 
@@ -150,13 +152,14 @@ export const OfflineFilesContent = ({
     rows.map((row) => (
       <OfflineFileRowView
         isSelected={selectedKeys.has(row.driveFileId)}
-        isSelecting={selection.isActive}
         key={row.driveFileId}
-        onEnterSelection={() => {
-          enter(toSelectionEntry(row));
-        }}
         onToggle={() => {
-          toggle(toSelectionEntry(row));
+          // The first press starts the selection; later presses toggle.
+          if (selection.isActive) {
+            toggle(toSelectionEntry(row));
+          } else {
+            enter(toSelectionEntry(row));
+          }
         }}
         row={row}
       />
@@ -175,9 +178,6 @@ export const OfflineFilesContent = ({
         title={OFFLINE_FILES_COPY.title}
         trailingAction={
           <View style={styles.actions}>
-            {!selection.isActive && !isEmpty ? (
-              <SelectEntryButton onPress={() => enter()} />
-            ) : null}
             <SurfaceIconButton
               accessibilityLabel={OFFLINE_FILES_COPY.closeLabel}
               icon="close"
@@ -186,9 +186,8 @@ export const OfflineFilesContent = ({
           </View>
         }
       />
-      {selection.isActive ? (
+      {isEmpty ? null : (
         <SelectionBar
-          onCancel={cancel}
           selectAll={{
             isAllSelected,
             isDisabled: allRows.length === 0,
@@ -196,7 +195,7 @@ export const OfflineFilesContent = ({
           }}
           selectedCount={selection.selectedCount}
         />
-      ) : null}
+      )}
       <ScrollView
         contentContainerStyle={[styles.content, scrollGutterStyles.content]}
         style={[darkScrollbarStyle, scrollGutterStyles.scrollView]}

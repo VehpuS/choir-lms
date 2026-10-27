@@ -12,17 +12,13 @@ const MIN_ROW_HEIGHT = 56;
 
 type OfflineFileRowViewProps = {
   isSelected: boolean;
-  isSelecting: boolean;
-  onEnterSelection: () => void;
   onToggle: () => void;
   row: OfflineFileRow;
 };
 
-/** One stored file: a name, a size, and a selection mark while selecting. */
+/** One stored file: a selection mark, a name and a size. */
 export const OfflineFileRowView = ({
   isSelected,
-  isSelecting,
-  onEnterSelection,
   onToggle,
   row,
 }: OfflineFileRowViewProps) => {
@@ -30,28 +26,20 @@ export const OfflineFileRowView = ({
     <View>
       <Pressable
         accessibilityLabel={`${row.name}, ${formatByteSize(row.sizeBytes)}`}
-        accessibilityRole={isSelecting ? 'checkbox' : 'button'}
-        {...ariaStateProps(
-          isSelecting ? { checked: isSelected } : undefined,
-          'checkbox',
-        )}
-        onLongPress={onEnterSelection}
-        onPress={isSelecting ? onToggle : onEnterSelection}
+        accessibilityRole="checkbox"
+        {...ariaStateProps({ checked: isSelected }, 'checkbox')}
+        onPress={onToggle}
         style={({ pressed }) => [
           styles.row,
           buttonInteractionGuardStyle,
           pressed ? styles.pressed : null,
         ]}
       >
-        {isSelecting ? (
-          <AppIcon
-            color={
-              isSelected ? appTheme.colors.accentText : appTheme.colors.icon
-            }
-            name={isSelected ? 'check-circle' : 'circle-outline'}
-            size={ICON_SIZE}
-          />
-        ) : null}
+        <AppIcon
+          color={isSelected ? appTheme.colors.accentText : appTheme.colors.icon}
+          name={isSelected ? 'check-circle' : 'circle-outline'}
+          size={ICON_SIZE}
+        />
         <Text numberOfLines={1} style={styles.name}>
           {row.name}
         </Text>

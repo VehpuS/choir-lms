@@ -112,10 +112,23 @@ describe('OfflineFilesContent', () => {
     assert.equal(bar?.actions[0]?.isDisabled, false);
   });
 
-  it('withdraws the pinned bar when the selection is cancelled', () => {
+  it('is selectable from the start, with no mode to enter or leave', () => {
+    renderView([entry({})]);
+
+    assert.ok(hasRenderedText('0 selected'));
+    assert.ok(screen.getByLabelText('Alto.mp3, 3.0 MB'));
+    assert.ok(screen.getByLabelText('Select all'));
+    assert.equal(screen.queryByLabelText('Select'), null);
+    assert.equal(screen.queryByLabelText('Cancel'), null);
+    assert.equal(pinnedBulkBarStore.getSnapshot(), null);
+  });
+
+  it('withdraws the pinned bar when the last selected file is deselected', () => {
     renderView([entry({})]);
     fireEvent.press(screen.getByLabelText('Alto.mp3, 3.0 MB'));
-    fireEvent.press(screen.getByLabelText('Cancel'));
+    assert.notEqual(pinnedBulkBarStore.getSnapshot(), null);
+
+    fireEvent.press(screen.getByLabelText('Alto.mp3, 3.0 MB'));
 
     assert.equal(pinnedBulkBarStore.getSnapshot(), null);
   });
