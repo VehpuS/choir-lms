@@ -278,7 +278,7 @@ export type StartSavedTrackDownloadOptions = {
   version?: string;
 };
 
-const parseDriveFileId = (url: string) => {
+export const parseDriveFileId = (url: string) => {
   return DRIVE_FILE_ID_PATTERN.exec(url)?.[1] ?? null;
 };
 

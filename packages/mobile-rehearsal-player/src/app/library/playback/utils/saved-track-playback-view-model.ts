@@ -9,6 +9,9 @@ import {
   type DriveAuthorizationState,
 } from '@org/google-drive';
 
+import { isDeviceOffline } from '../../offline/device-connection';
+import { canPlayStoredCopies } from '../../offline/stored-playback-support';
+import { StoredCopyUnavailableError } from './stored-copy-unavailable-error';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { SavedTrackPlaybackIssue } from './saved-track-playback-presentation';
 export {
@@ -41,6 +44,8 @@ export type SavedTrackPlayerTrack = {
   headers: Record<string, string>;
   /** Drive `modifiedTime`, so web playback can reuse a finished download. */
   sourceVersion?: string;
+  /** Play from the copy on this device only (no session, or offline). */
+  storedOnly?: boolean;
 };
 
 export type SavedTrackPlaybackRequest = {
@@ -65,6 +70,9 @@ const DRIVE_ACCESS_REQUIRED_MESSAGE =
   'Reconnect Google Drive before starting full-track playback from the saved rehearsal library.';
 const DRIVE_PLAYBACK_CONTINUE_REQUIRED_MESSAGE =
   'Reconnect Google Drive before saved-library playback can continue.';
+const NEEDS_CONNECTION_TITLE = 'Needs a connection';
+const NEEDS_CONNECTION_MESSAGE =
+  'This file is not stored on this device. Connect to play it, or keep it offline to play it without a connection.';
 const TRACK_PLAYER_ALREADY_INITIALIZED_CODE = 'player_already_initialized';
 const TRACK_PLAYER_ALREADY_INITIALIZED_MESSAGE =
   'already been initialized via setupPlayer';
@@ -199,6 +207,12 @@ export const createSavedTrackPlaybackPreconditionIssue = (
   }
 
   if (authState.status !== 'authorized' || !authState.accessToken) {
+    // Where audio is stored, an item can still play from its stored copy; a
+    // missing copy is reported when the load finds that out.
+    if (canPlayStoredCopies) {
+      return null;
+    }
+
     return {
       playableItemId: playableItem.id,
       sourceId: source.id,
@@ -210,11 +224,32 @@ export const createSavedTrackPlaybackPreconditionIssue = (
   return null;
 };
 
+/**
+ * A track plays from its stored copy alone, without Drive, where audio is
+ * stored and there is either no session or no network.
+ */
+export const resolveStoredOnly = (options: {
+  accessToken: string | null;
+  canPlayStoredCopies: boolean;
+  isOffline: boolean;
+}) => {
+  return (
+    options.canPlayStoredCopies &&
+    (options.accessToken === null || options.isOffline)
+  );
+};
+
 export const createSavedTrackPlaybackRequest = (options: {
-  accessToken: string;
+  /** `null` plays from the stored copy alone, as does being offline. */
+  accessToken: string | null;
   playableItem: PlayableItem;
 }): SavedTrackPlaybackRequest => {
   const { playableItem } = options;
+  const storedOnly = resolveStoredOnly({
+    accessToken: options.accessToken,
+    canPlayStoredCopies,
+    isOffline: isDeviceOffline(),
+  });
 
   return {
     playableItem,
@@ -229,17 +264,39 @@ export const createSavedTrackPlaybackRequest = (options: {
           : undefined,
       contentType: playableItem.source.mimeType,
       sourceVersion: playableItem.source.modifiedTime,
-      headers: {
-        Authorization: `Bearer ${options.accessToken}`,
-      },
+      headers:
+        options.accessToken === null || storedOnly
+          ? {}
+          : { Authorization: `Bearer ${options.accessToken}` },
+      ...(storedOnly ? { storedOnly } : {}),
     },
   };
+};
+
+const createStoredCopyUnavailableIssue = (
+  playableItem: PlayableItem,
+  error: StoredCopyUnavailableError,
+) => {
+  return {
+    playableItemId: playableItem.id,
+    sourceId: playableItem.sourceId,
+    title: error.isOffline
+      ? NEEDS_CONNECTION_TITLE
+      : 'Google Drive access required',
+    message: error.isOffline
+      ? NEEDS_CONNECTION_MESSAGE
+      : DRIVE_ACCESS_REQUIRED_MESSAGE,
+  } satisfies SavedTrackPlaybackIssue;
 };
 
 export const createSavedTrackPlaybackRuntimeIssue = (
   playableItem: PlayableItem,
   error: unknown,
 ) => {
+  if (error instanceof StoredCopyUnavailableError) {
+    return createStoredCopyUnavailableIssue(playableItem, error);
+  }
+
   const detail = error instanceof Error ? error.message.trim() : '';
   const fallbackMessage = `The saved rehearsal library could not play "${playableItem.title}".`;
 

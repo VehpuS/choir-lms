@@ -11,6 +11,7 @@ import {
   resolvePlaybackScrubPositionSeconds,
   resolvePlaybackSeekPositionSeconds,
 } from '../saved-track-playback-view-model';
+import { canPlayStoredCopies } from '../../../offline/stored-playback-support';
 import { getPlaybackShapingSession } from '../../shaping';
 import { isLoopPreviewItem } from '../loop-preview-item';
 import { getSavedTrackPlayer } from '../saved-track-player-interop';
@@ -225,7 +226,7 @@ export const createSavedTrackPlaybackRuntimeCommands = (
         return false;
       }
 
-      if (!options.authState.accessToken) {
+      if (!options.authState.accessToken && !canPlayStoredCopies) {
         return false;
       }
 
@@ -246,7 +247,7 @@ export const createSavedTrackPlaybackRuntimeCommands = (
       try {
         await loadPlayableItemIntoPlayer(
           playableItem,
-          options.authState.accessToken,
+          options.authState.accessToken ?? null,
           {
             initialPositionSeconds: nextPositionSeconds,
             shouldPlay: shouldResumePlayback,

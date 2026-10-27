@@ -54,11 +54,11 @@ export const createSavedTrackMarkerJumpCommand = (
     target: PlayableItem,
     positionSeconds: number,
   ): Promise<MarkerJumpOutcome> => {
-    const accessToken = options.authState.accessToken;
-
-    if (!runtime.canLoadPlayableItem(target) || !accessToken) {
+    if (!runtime.canLoadPlayableItem(target)) {
       return 'blocked';
     }
+
+    const accessToken = options.authState.accessToken ?? null;
 
     // Like standalone playback, leave any queue as soon as loading starts.
     options.setActivePlaylistSession(null);

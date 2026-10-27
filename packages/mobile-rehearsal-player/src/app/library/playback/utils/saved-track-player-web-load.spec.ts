@@ -4,8 +4,17 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { createSavedTrackDownloadProgressStore } from './saved-track-download-progress.js';
+import { savedTrackAudioCache } from './saved-track-audio-cache.js';
 import { patchSavedTrackPlayerWebRuntime } from './saved-track-player-web-load.js';
+import { StoredCopyUnavailableError } from './stored-copy-unavailable-error.js';
 import { isSavedTrackDownloadAbortError } from './saved-track-web-download.js';
+
+type SpecTrack = {
+  headers?: Record<string, string>;
+  sourceVersion?: string;
+  storedOnly?: boolean;
+  url: string;
+};
 
 describe('patchSavedTrackPlayerWebRuntime', () => {
   const createPatchedRuntime = () => {
@@ -49,15 +58,7 @@ describe('patchSavedTrackPlayerWebRuntime', () => {
       },
     };
     const runtime = {
-      async add(
-        tracks:
-          | { headers?: Record<string, string>; url: string }
-          | Array<{
-              headers?: Record<string, string>;
-              url: string;
-            }>,
-        insertBeforeIndex?: number,
-      ) {
+      async add(tracks: SpecTrack | SpecTrack[], insertBeforeIndex?: number) {
         addCalls.push({
           insertBeforeIndex,
           tracks: Array.isArray(tracks) ? tracks : [tracks],
@@ -292,5 +293,45 @@ describe('patchSavedTrackPlayerWebRuntime', () => {
     });
     assert.deepEqual(addCalls, []);
     assert.deepEqual(revokedUrls, []);
+  });
+
+  it('plays a stored-only track from the stored copy without fetching', async () => {
+    const { addCalls, fetchCalls, runtime } = createPatchedRuntime();
+    const driveUrl =
+      'https://www.googleapis.com/drive/v3/files/stored-file?alt=media';
+
+    savedTrackAudioCache.set('stored-file', 'v1', new Blob(['stored']));
+
+    try {
+      await runtime.setupPlayer();
+      await runtime.add({
+        headers: {},
+        sourceVersion: 'v1',
+        storedOnly: true,
+        url: driveUrl,
+      });
+    } finally {
+      savedTrackAudioCache.clear();
+    }
+
+    assert.deepEqual(fetchCalls, []);
+    assert.equal(addCalls[0]?.tracks[0]?.url, 'blob:track-1');
+  });
+
+  it('fails a stored-only track with no stored copy instead of handing the player the Drive url', async () => {
+    const { addCalls, fetchCalls, runtime } = createPatchedRuntime();
+
+    await runtime.setupPlayer();
+    await assert.rejects(
+      runtime.add({
+        headers: {},
+        sourceVersion: 'v1',
+        storedOnly: true,
+        url: 'https://www.googleapis.com/drive/v3/files/missing?alt=media',
+      }),
+      StoredCopyUnavailableError,
+    );
+    assert.deepEqual(fetchCalls, []);
+    assert.deepEqual(addCalls, []);
   });
 });

@@ -17,7 +17,8 @@ const trackPlayerState = getSavedTrackPlayerStateMap();
 
 export type LoadPlayableItemIntoPlayer = (
   playableItem: PlayableItem,
-  accessToken: string,
+  /** `null` plays from the stored copy alone. */
+  accessToken: string | null,
   options?: {
     initialPositionSeconds?: number;
     shouldPlay?: boolean;

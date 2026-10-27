@@ -1,3 +1,4 @@
+import { readStoredSavedTrackBlob } from './saved-track-stored-copy';
 import {
   abortSavedTrackDownloads,
   startSavedTrackDownload,
@@ -15,6 +16,8 @@ type SavedTrackPlayerWebTrack = {
   headers?: Record<string, string>;
   /** Drive content version; lets the download be reused. */
   sourceVersion?: string;
+  /** Play from the copy on this device only; never fetch from Drive. */
+  storedOnly?: boolean;
   url: string;
 };
 
@@ -90,6 +93,19 @@ const patchSavedTrackPlayerWebTrack = async (
   track: SavedTrackPlayerWebTrack,
   dependencies: SavedTrackPlayerWebDependencies,
 ) => {
+  if (track.storedOnly) {
+    const storedBlob = await readStoredSavedTrackBlob({
+      url: track.url,
+      version: track.sourceVersion,
+    });
+    const storedBlobUrl = dependencies.urlApi.createObjectURL(storedBlob);
+
+    return {
+      blobUrls: [storedBlobUrl],
+      track: { ...track, headers: {}, url: storedBlobUrl },
+    };
+  }
+
   const headers = getSavedTrackPlayerWebTrackHeaders(track);
 
   if (!headers) {

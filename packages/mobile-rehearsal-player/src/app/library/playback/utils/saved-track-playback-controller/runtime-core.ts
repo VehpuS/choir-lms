@@ -6,6 +6,7 @@ import {
   createSavedTrackPlaybackRequest,
   createSavedTrackPlaybackRuntimeIssue,
 } from '../saved-track-playback-view-model';
+import { canPlayStoredCopies } from '../../../offline/stored-playback-support';
 import { getPlaybackShapingSession } from '../../shaping';
 import { getPitchPreservingTrackOptions } from '../../shaping/pitch-preserving-track-options';
 import {
@@ -190,7 +191,7 @@ export const createSavedTrackPlaybackRuntimeCore = (
       return false;
     }
 
-    return Boolean(options.authState.accessToken);
+    return canPlayStoredCopies || Boolean(options.authState.accessToken);
   };
 
   /**
@@ -198,11 +199,11 @@ export const createSavedTrackPlaybackRuntimeCore = (
    * newer one (its web download was aborted); callers leave state alone then.
    */
   const loadPlayableItem = async (playableItem: PlayableItem) => {
-    const accessToken = options.authState.accessToken;
-
-    if (!canLoadPlayableItem(playableItem) || !accessToken) {
+    if (!canLoadPlayableItem(playableItem)) {
       return false;
     }
+
+    const accessToken = options.authState.accessToken ?? null;
 
     try {
       await loadPlayableItemIntoPlayer(playableItem, accessToken);
