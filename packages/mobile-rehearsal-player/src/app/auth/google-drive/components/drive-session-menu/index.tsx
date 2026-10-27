@@ -6,6 +6,7 @@ import { isOfflineStorageSupported } from '../../../../library/offline/offline-a
 import { offlineFilesNavigationStore } from '../../../../screens/offline-files/offline-files-navigation-store';
 import { settingsNavigationStore } from '../../../../screens/settings/settings-navigation-store';
 import { DriveSessionMenuPanel } from './drive-session-menu-panel';
+import { useForgetSessionPrompt } from './use-forget-session-prompt';
 import { DriveSessionMenuTrigger } from './drive-session-menu-trigger';
 import { useEscapeToDismiss } from '../../../../components/escape-to-dismiss/use-escape-to-dismiss';
 
@@ -35,6 +36,7 @@ export const DriveSessionMenu = ({
   statusCopy,
 }: DriveSessionMenuProps) => {
   useEscapeToDismiss(isVisible, onToggleVisibility);
+  const forgetSession = useForgetSessionPrompt(onClearAuthorization);
 
   return (
     <View style={styles.container}>
@@ -50,7 +52,7 @@ export const DriveSessionMenu = ({
           canClearAuthorization={canClearAuthorization}
           canStartAuthorization={canStartAuthorization}
           isBusy={isBusy}
-          onClearAuthorization={onClearAuthorization}
+          onClearAuthorization={forgetSession.requestForget}
           onOpenOfflineFiles={
             isOfflineStorageSupported
               ? () => {
@@ -69,6 +71,7 @@ export const DriveSessionMenu = ({
           statusCopy={statusCopy}
         />
       ) : null}
+      {forgetSession.dialog}
     </View>
   );
 };

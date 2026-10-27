@@ -2,20 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { audioCacheBudgetStore } from '../../library/playback/audio-cache/audio-cache-budget';
 import { persistentAudioCache } from '../../library/playback/audio-cache';
-import { savedTrackAudioCache } from '../../library/playback/utils/saved-track-audio-cache';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../library/storage/local-library-storage';
 import { practiceRepository } from '../../library/saved-rehearsal-library/use-saved-rehearsal-library';
 import {
   buildOfflineStorageSnapshot,
   type OfflineFileSort,
 } from '../../library/offline/offline-storage-model';
-import { createOfflineStorageService } from '../../library/offline/offline-storage-service';
+import { offlineStorageService } from '../../library/offline/offline-storage-instance';
 import type { AudioStoreEntry } from '../../library/playback/audio-cache/audio-store-types';
 
-const service = createOfflineStorageService({
-  cache: persistentAudioCache,
-  memory: savedTrackAudioCache,
-});
+const service = offlineStorageService;
 
 /** The library's file names, for entries stored without one. */
 const loadLibraryNames = async (): Promise<Map<string, string>> => {
