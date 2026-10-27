@@ -1,0 +1,45 @@
+## 1. Spikes (decide before building)
+
+Web is the build and verification target of this change. Native iOS and Android handling is deferred to `native-playback-follow-ups` (task 7.1 hands it over); no task here builds toward it beyond the capability gate in 3.1.
+
+- [ ] 1.1 Estimator accuracy: run pitchy on recorded choir voices (bass to soprano, breathy and loud) and a sine sweep; measure octave errors, latency, and CPU in the browser. Decide thresholds and frame size, or decide a neural swap is needed.
+- [ ] 1.2 Web capture: `getUserMedia` with echo cancellation, noise suppression and auto gain disabled, AudioWorklet frame delivery, and behaviour alongside the Shaka-backed track player.
+- [ ] 1.3 Confirm the licences of what is kept (pitchy LICENSE and `fft.js`) and note them in the README.
+
+- [x] 1.4 Review `design-source/pitch-mock.html` with the user and record the approved placement and look in the design before any UI task (4.1 onward) starts: the Practice tools control and menu, the monitor strip above the piano, the full-screen Pitch view (progression roll and focus panel), the piano detected state, the score marks, and the layouts with lyrics, piano, and sheet music.
+
+## 2. Pure detection logic
+
+- [ ] 2.1 Add note math to `audio-library-models`: frequency to MIDI and cents with a reference tuning, `matchSungNote` returning `'exact' | 'other-octave' | null` (tolerance ±50 cents; the caller decides whether to show `other-octave`) and `centsZone` (`precise` ≤10, `near` ≤25, `quarter-tone-off` ≤50, `off-pitch`). Spec boundaries, the same note in other octaves, and tuning changes.
+- [ ] 2.2 Scaffold `@org/pitch-detection` with the `nx-generate` skill, copying `midi-notation`'s package, tsconfig, and target setup; depend on `@org/audio-library-models` and pitchy; commit the manifest and `package-lock.json` together and run `npm ci`. Add the package to the CLAUDE.md workspace layout list and the README, noting that it is imported statically (unlike `midi-notation`).
+- [ ] 2.3 In that package add `PitchEstimator`, the pitchy-backed estimator, level and clarity gates, median smoother, and note segmenter with hold. Spec with synthetic sines, vibrato, silence, noise, octave jumps, and gaps. Confirm lint, test, typecheck, and build targets run through Nx.
+
+## 3. Capture and store
+
+- [ ] 3.1 Define the `PcmSource` interface (multiple subscribers over one shared microphone stream, frames carrying a capture timestamp, unprocessed audio; see design Decision 12) and `pitchCapabilities()` (like `pianoCapabilities()`), with the web implementation (`.web`) and a native file whose `canListen` is false, so the pitch controls are absent on native until `native-playback-follow-ups` builds it. Spec the capability gate.
+- [ ] 3.2 Build `PitchStore` and `usePitch`: permission flow, listening lifecycle (start only with a mounted consumer, stop on last unmount), pause when the app is not visible and resume without a prompt, interruption and recovery, headphones hint flag. Spec with a fake `PcmSource`.
+- [ ] 3.3 Add a test that nothing in the pipeline writes samples to storage or the network layer.
+
+## 4. Practice tools menu, monitor, and Pitch view
+
+- [ ] 4.1 Build the `Practice tools` menu: a model listing one toggle row per available tool (`Piano` from `pianoCapabilities().canPlay`, `Pitch detection` from `pitchCapabilities().canListen`; control absent when none), accessible labels with state, an active state while any tool is on, and a `Show other-octave matches` row listed only while the sheet music viewer is open. Build the floating anchored menu on the existing popover pattern (see the Drive session menu and the library search filter popover), with press-outside and Escape to dismiss and rows that toggle without closing. Spec the model. Check the first-run behaviour of `piano-toggle` and its tests; replace `usePianoToggle` consumers.
+- [ ] 4.2 Replace the three entry points with the shared `Practice tools` control: the tab bar `Piano` item (`shell-tab-bar.tsx` and its presentation model), the playback screen header button (`now-playing/index.tsx`), and the sheet music viewer toolbar button and compact rail (`viewer-toolbar.tsx`). Update their specs, the piano toggle spec, and the icon map. Verify in the browser preview on all three surfaces.
+- [ ] 4.3 Build the pure Pitch view model in the app: the store's history (note segments plus a cents trace at the frame rate, memory only, capped to the largest zoom window, dropped when listening stops), roll windowing (auto-centred vertical range, time zoom about 5 to 60 s, octave rows emphasised), the target (nearest note, or held), and the focus-panel trace including clamping beyond ±50 cents with a direction marker. Use `centsZone` for every colour and text label. Spec each, with synthetic histories.
+- [ ] 4.4 Build the monitor strip (note, cents gauge, short history, expand and close controls, idle, blocked, and paused states, the one-time headphones note) and its placement above the piano or the mini-player and tab bar; its on or off state is remembered and the menu row turns it on. Spec the model.
+- [ ] 4.5 Build the full-screen `Pitch` view as approved in the mock: header with close and settings, the readout with the zone in text, the focus panel, the progression roll with zoom, the readout bar (pitch, confidence, listen toggle, reference tuning, state), the landscape layout, and the settings sheet (sensitivity, reference tuning). Keep it keyboard-operable, with the note readout as a labelled value (no live region). Verify in the browser preview in portrait and landscape.
+- [ ] 4.6 Settings store: sensitivity, reference tuning (both edited from the Pitch view) and `Show other-octave matches` (default off, edited only from the viewer's Practice tools row). Spec the preference store, including that the other-octave value survives the row being absent.
+
+## 5. Piano and score
+
+- [ ] 5.1 Add the `detected` key state and the off-screen edge indicator to the piano overlay model and keyboard; spec the model.
+- [ ] 5.2 Add the score matcher beside `score-note-tags`, marking noteheads that carry `data-midi` with a single style rule keyed on the attribute (design Decision 14) instead of per-notehead writes. First confirm the rule reaches the strip renderer's copied runs (same document, no shadow root) and measure marking at note-change rate on a long score. Include transposing parts and the playing item's active pitch offset (session adjustment or stored adjusted track or loop transform; zero when nothing plays or the platform cannot shift pitch); show `Following track pitch ±N st` while the offset is not zero; clear on change; no marks for PDF. Spec the matcher for positive, negative, and zero offsets, a speed-only change, and an adjusted track, and verify in the browser preview.
+
+## 6. Verification and docs
+
+- [ ] 6.1 Verify the three surfaces together in the browser preview (with a muted track), including interruption and permission-denied paths, and that native shows no pitch controls.
+- [ ] 6.2 Update the README capability notes.
+
+## 7. Hand-off and archive
+
+- [ ] 7.1 Before archiving, update the artifacts of `native-playback-follow-ups` (README, `proposal.md`, `tasks.md`; write its design and spec deltas only if it is being scheduled) as needed so native support for this change is complete there. Add a task for native pitch detection that carries over: the capture-library spike (`react-native-audio-api` `AudioRecorder.onAudioReady` versus `@siteed/audio-studio`, with the findings and licence notes in this change's design); `PcmSource.native` and `pitchCapabilities().canListen`; microphone permission strings and the Expo config plugin options; coexistence with `react-native-track-player` (iOS audio session category and route, Android audio focus, lock-screen controls); listening only while the app is visible with no background-mode or foreground-service configuration; buffer size, latency, and CPU on a device; the headphones hint and track bleed on a device; and the on-device interruption and permission-denied paths. Cross-reference the existing items it depends on: 1.2 (native semitone pitch, so the score offset becomes non-zero), 1.6 (native sheet music viewer, for score marks), and 1.7 (native piano, for the detected key state). Confirm the final wording with the user before editing that change.
+- [ ] 7.2 Archive this change and sync its specs.

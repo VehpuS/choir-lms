@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pitch Detection Mock</title>
+<style>
+/* A decision page. Top: an interactive phone with controls for every combination. Below: the combinations that matter at a glance. Nocturne tokens copied from the app theme; nothing here is saved. */
+:root {
+  --bg: #101220; --ground: #161826; --surface: #232532; --surface-raised: #1b1e2c;
+  --text: #e9e9ed; --text-muted: #9397ab; --text-faint: #8e92a6;
+  --accent: #9184d9; --accent-text: #b5abfc; --accent-tint: #2b2741; --accent-deep: #423a6a;
+  --divider: #3f424d; --danger: #f28b82; --warning: #e6c17a; --success: #81c995;
+  --paper: #ffffff; --ink: #1b1c22;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); padding: 28px 16px 56px; line-height: 1.45; }
+main { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+h1 { font-size: 26px; line-height: 1.15; margin: 0 0 6px; font-weight: 650; letter-spacing: -0.01em; text-wrap: balance; }
+h2 { font-size: 16px; margin: 0 0 4px; font-weight: 650; }
+p { margin: 0; color: var(--text-muted); max-width: 66ch; }
+.kicker { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-text); margin-bottom: 8px; }
+button { font: inherit; }
+button:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+.stage { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 32px; align-items: start; }
+@media (max-width: 860px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+.controls { display: flex; flex-direction: column; gap: 16px; }
+.label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 6px; }
+.seg { display: flex; border: 1px solid var(--divider); border-radius: 12px; overflow: hidden; }
+.seg button { flex: 1; min-height: 44px; padding: 8px 10px; background: transparent; color: var(--text-muted); border: 0; border-right: 1px solid var(--divider); font-size: 13px; cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent-tint); color: var(--text); box-shadow: inset 0 0 0 1px var(--accent); }
+.checks { display: flex; flex-wrap: wrap; gap: 8px; }
+.check { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; border: 1px solid var(--divider); border-radius: 12px; background: transparent; color: var(--text-muted); font-size: 13px; cursor: pointer; }
+.check[aria-pressed="true"] { background: var(--accent-tint); color: var(--text); border-color: var(--accent); }
+select, input[type=range] { width: 100%; min-height: 44px; background: var(--surface); color: var(--text); border: 1px solid var(--divider); border-radius: 12px; padding: 0 12px; font: inherit; font-size: 14px; }
+input[type=range] { padding: 0; accent-color: var(--accent); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.hint { font-size: 12.5px; color: var(--text-faint); }
+
+/* phone */
+.phone { width: 380px; height: 720px; background: var(--ground); border: 1px solid var(--divider); border-radius: 34px; position: relative; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.45); display: flex; flex-direction: column; flex: none; }
+.gallery .phone { box-shadow: none; }
+.screen { flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; }
+.dock { flex: none; display: flex; flex-direction: column; }
+.scrim { position: absolute; inset: 0; z-index: 20; }
+
+/* buttons and icons */
+.ib { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--divider); background: transparent; color: var(--text); display: grid; place-items: center; cursor: pointer; padding: 0; flex: none; }
+.ib svg { width: 20px; height: 20px; }
+.ib[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-tint); color: var(--accent-text); }
+.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+/* playback screen */
+.hdr { display: flex; align-items: center; gap: 8px; padding: 16px 14px 6px; }
+.hdr .sp { flex: 1; min-width: 0; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-text); }
+.body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; padding: 4px 20px 10px; }
+.title { font-size: 22px; font-weight: 650; line-height: 1.15; }
+.subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.wave { flex: 1; min-height: 40px; max-height: 120px; display: flex; align-items: center; gap: 2px; position: relative; }
+.wave i { flex: 1; background: var(--accent); border-radius: 2px; opacity: .55; }
+.wave i.played { opacity: .95; }
+.wave b { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text); left: 38%; }
+.times { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+.transport { display: flex; align-items: center; justify-content: center; gap: 22px; }
+.ring { width: 58px; height: 58px; border: 1.5px solid var(--accent); border-radius: 50%; display: grid; place-items: center; box-shadow: 0 0 18px rgba(145,132,217,.28); }
+.ring::after { content: ""; width: 12px; height: 16px; border-left: 4px solid var(--accent-text); border-right: 4px solid var(--accent-text); }
+.shapes { text-align: center; font-size: 12px; color: var(--text-muted); font-family: var(--mono); }
+.lyrics { border-top: 1px solid var(--divider); padding-top: 10px; font-size: 14px; display: flex; flex-direction: column; gap: 3px; }
+.lyrics b { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); font-weight: 500; margin-bottom: 2px; }
+.lyrics span { color: var(--text-muted); }
+.lyrics span.now { color: var(--text); font-weight: 600; }
+
+/* library screen */
+.lib { flex: 1; min-height: 0; padding: 18px 16px 8px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.lib h3 { margin: 0 0 6px; font-size: 24px; }
+.li { display: flex; align-items: center; gap: 12px; min-height: 56px; border-bottom: 1px solid rgba(63,66,77,.55); }
+.li .art { width: 36px; height: 36px; border-radius: 8px; background: var(--accent-tint); flex: none; }
+.li b { display: block; font-size: 14.5px; font-weight: 600; }
+.li span { font-size: 12px; color: var(--text-muted); }
+.mini { height: 64px; background: var(--surface-raised); border-top: 1px solid var(--divider); display: flex; align-items: center; gap: 12px; padding: 0 14px; flex: none; }
+.mini .art { width: 40px; height: 40px; border-radius: 8px; background: var(--accent-tint); flex: none; }
+.mini .t { flex: 1; min-width: 0; }
+.mini .t b { display: block; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini .t span { font-size: 12px; color: var(--text-muted); }
+.mini .pp { width: 38px; height: 38px; border: 1.5px solid var(--accent); border-radius: 50%; display: grid; place-items: center; }
+.mini .pp::after { content: ""; width: 9px; height: 12px; border-left: 3px solid var(--accent-text); border-right: 3px solid var(--accent-text); }
+.ppbtn { width: 40px; height: 40px; border: 1.5px solid var(--accent); border-radius: 50%; display: grid; place-items: center; flex: none; }
+.ppbtn::after { content: ""; width: 9px; height: 12px; border-left: 3px solid var(--accent-text); border-right: 3px solid var(--accent-text); }
+.tabs { height: 58px; background: var(--surface-raised); border-top: 1px solid var(--divider); display: flex; flex: none; position: relative; }
+.tab { flex: 1; border: 0; background: transparent; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; cursor: pointer; position: relative; padding: 0; }
+.tab svg { width: 22px; height: 22px; }
+.tab[aria-pressed="true"] { color: var(--accent-text); }
+.tab[aria-pressed="true"]::before { content: ""; position: absolute; top: 0; width: 22px; height: 2px; background: var(--accent); border-radius: 2px; }
+
+/* viewer */
+.vbar { display: flex; align-items: center; gap: 8px; padding: 14px 12px 6px; }
+.vbar .tt { min-width: 0; flex: 1; }
+.vbar .tt b { display: block; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vbar .tt span { font-size: 11px; color: var(--text-muted); }
+.vrow { display: flex; align-items: center; gap: 6px; padding: 0 12px 8px; flex-wrap: wrap; }
+.chip { min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--divider); background: transparent; color: var(--text-muted); font-size: 12px; display: inline-flex; align-items: center; }
+.chip.on { border-color: var(--accent); background: var(--accent-tint); color: var(--text); }
+.chip.follow { border-color: var(--warning); color: var(--warning); background: rgba(230,193,122,.12); }
+.page { flex: 1; min-height: 0; margin: 0 12px 8px; background: var(--paper); border-radius: 6px; padding: 10px 6px; overflow: hidden; color: var(--ink); }
+.page .tl { text-align: center; font-family: Georgia, serif; font-size: 16px; }
+.page .st { text-align: center; font-family: Georgia, serif; font-size: 11px; color: #555; margin-bottom: 6px; }
+.page svg { display: block; width: 100%; height: auto; }
+
+/* monitor strip */
+.strip { height: 64px; background: var(--surface-raised); border-top: 1px solid var(--divider); display: flex; align-items: center; gap: 10px; padding: 0 10px 0 14px; flex: none; }
+.strip .note { width: 74px; flex: none; line-height: 1; }
+.strip .note b { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; }
+.strip .note span { display: block; margin-top: 3px; font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+.strip .note.idle b { color: var(--text-faint); font-size: 22px; }
+.gauge { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.bar { position: relative; height: 8px; border-radius: 4px; background: var(--surface); border: 1px solid var(--divider); }
+.bar::before { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1.5px; background: var(--text-faint); }
+.bar i { position: absolute; top: -3px; width: 12px; height: 14px; margin-left: -6px; border-radius: 4px; background: var(--accent); box-shadow: 0 0 10px rgba(145,132,217,.5); }
+.bar i.ok { background: var(--success); box-shadow: 0 0 10px rgba(129,201,149,.45); }
+.scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9.5px; color: var(--text-faint); }
+.spark { width: 78px; height: 40px; flex: none; }
+.msg { flex: 1; font-size: 13px; color: var(--text-muted); line-height: 1.3; }
+.msg b { color: var(--text); font-weight: 600; }
+.msg.warn b { color: var(--warning); }
+.strip .ib { width: 40px; height: 40px; }
+.hintbar { background: var(--accent-tint); color: var(--text); font-size: 12px; display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; border-top: 1px solid var(--accent-deep); flex: none; }
+.hintbar span { flex: 1; }
+.hintbar button { min-height: 32px; border: 1px solid var(--accent); background: transparent; color: var(--accent-text); border-radius: 999px; padding: 0 12px; font-size: 12px; cursor: pointer; }
+
+/* full pitch view */
+.phone.land { width: 780px; height: 380px; border-radius: 30px; }
+.fv { flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; background: var(--ground); }
+.fvhdr { display: flex; align-items: center; gap: 8px; padding: 14px 12px 4px; }
+.fvhdr b { flex: 1; font-size: 15px; }
+.land .fvhdr { padding: 8px 12px 2px; }
+.fvread { display: flex; align-items: baseline; gap: 10px; padding: 0 16px 6px; flex-wrap: wrap; min-height: 58px; }
+.fvread b { font-size: 42px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.05; }
+.fvread span { font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
+.fvread em { font-style: normal; font-size: 12px; border: 1px solid; border-radius: 999px; padding: 3px 10px; }
+.fvread .idle { font-size: 24px; color: var(--text-faint); }
+.fvread .warn { font-size: 16px; color: var(--warning); font-weight: 600; letter-spacing: 0; line-height: 1.3; }
+.fvfocus { padding: 0 12px 6px; }
+.fvrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.kick2 { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-faint); }
+.tgt { cursor: pointer; font-size: 12px; min-height: 30px; }
+.fvfocus svg, .fvroll svg { display: block; width: 100%; border-radius: 10px; }
+.fvroll { position: relative; flex: 1; min-height: 0; padding: 0 12px 8px; }
+.zoomb { position: absolute; right: 22px; bottom: 18px; display: flex; gap: 6px; align-items: center; }
+.zoomb span { font-family: var(--mono); font-size: 10.5px; color: var(--text-muted); background: rgba(27,30,44,.85); border-radius: 8px; padding: 3px 6px; }
+.zoomb button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--divider); background: rgba(27,30,44,.92); color: var(--text); font-size: 18px; cursor: pointer; }
+.fvbar { height: 64px; flex: none; background: #0b0c14; border-top: 1px solid var(--divider); display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 14px; }
+.kv small { display: block; font-size: 9.5px; letter-spacing: .1em; color: var(--text-faint); }
+.kv b { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+.mic { width: 48px; height: 48px; border-radius: 50%; border: 0; background: #1f9d55; color: #fff; display: grid; place-items: center; cursor: pointer; flex: none; }
+.mic svg { width: 22px; height: 22px; }
+.mic.off { background: var(--surface); border: 1px solid var(--divider); color: var(--text-muted); }
+.stat { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--success); flex: none; }
+.dot.warn { background: var(--warning); }
+.dot.off { background: var(--text-faint); }
+.land .fvmid { flex: 1; min-height: 0; display: flex; }
+.fvside { width: 232px; flex: none; display: flex; flex-direction: column; }
+.sheet2 { position: absolute; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--surface); border-top: 1px solid var(--divider); border-radius: 20px 20px 0 0; padding: 10px 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+.sheet2 h3 { margin: 4px 0 2px; font-size: 17px; }
+.opts { display: flex; flex-direction: column; }
+.opt { min-height: 48px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(63,66,77,.55); font-size: 14px; }
+.opt:last-child { border-bottom: 0; }
+.opt .m { margin-left: auto; font-family: var(--mono); font-size: 13px; color: var(--text); display: flex; gap: 10px; align-items: center; }
+.opt .m button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--divider); background: transparent; color: var(--text); font-size: 18px; }
+.mseg { display: flex; border: 1px solid var(--divider); border-radius: 10px; overflow: hidden; margin-left: auto; }
+.mseg span { padding: 9px 12px; font-size: 12px; color: var(--text-muted); border-right: 1px solid var(--divider); }
+.mseg span:last-child { border-right: 0; }
+.mseg span.on { background: var(--accent-tint); color: var(--text); box-shadow: inset 0 0 0 1px var(--accent); }
+.sw { width: 40px; height: 24px; border-radius: 12px; background: var(--surface); border: 1px solid var(--divider); position: relative; margin-left: auto; flex: none; }
+.sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--text-muted); }
+.sw.on { background: var(--accent-deep); border-color: var(--accent); }
+.sw.on::after { left: 18px; background: var(--accent-text); }
+.check[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+#live { overflow-x: auto; }
+.stage.landscape { grid-template-columns: minmax(0, 784px) minmax(0, 1fr); }
+
+/* piano */
+.piano { background: var(--surface-raised); border-top: 1px solid var(--divider); flex: none; }
+.phead { height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 10px 0 14px; }
+.phead .grab { width: 52px; height: 4px; border-radius: 4px; background: var(--divider); margin: 0 auto; }
+.phead small { font-size: 11px; color: var(--text-muted); font-family: var(--mono); width: 56px; }
+.keys { position: relative; height: 96px; margin: 0 0; background: #0c0d16; }
+.wk { position: absolute; top: 0; bottom: 0; background: #e9e9ed; border-right: 1px solid #3f424d; border-radius: 0 0 6px 6px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; font-size: 10px; color: #55596b; font-family: var(--mono); }
+.bk { position: absolute; top: 0; height: 58%; background: #1b1c22; border-radius: 0 0 4px 4px; z-index: 2; }
+.wk.det { background: #cfc9fb; box-shadow: inset 0 -14px 0 var(--accent), 0 0 18px rgba(145,132,217,.6); z-index: 1; }
+.wk.det::after { content: ""; position: absolute; bottom: 24px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.bk.det { background: var(--accent); box-shadow: 0 0 14px rgba(145,132,217,.7); }
+.edge { position: absolute; top: 8px; z-index: 3; background: var(--accent-tint); border: 1px solid var(--accent); color: var(--accent-text); border-radius: 999px; padding: 4px 10px; font-size: 12px; font-family: var(--mono); }
+.map { height: 24px; margin: 6px 10px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--divider); position: relative; }
+.map i { position: absolute; top: 2px; bottom: 2px; left: 42%; width: 12%; border: 1px solid var(--accent); background: var(--accent-tint); border-radius: 4px; }
+
+/* practice tools menu */
+.menu { position: absolute; z-index: 30; width: 236px; background: var(--surface); border: 1px solid var(--divider); border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,.55); padding: 6px 4px; }
+.menu h4 { margin: 4px 12px 2px; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-faint); font-weight: 500; }
+.mrow { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px; width: 100%; border: 0; background: transparent; color: var(--text); font-size: 15px; text-align: left; cursor: pointer; border-radius: 10px; }
+.mrow svg { width: 20px; height: 20px; color: var(--text-muted); }
+.mrow[aria-checked="true"] svg, .mrow[aria-checked="true"] { color: var(--accent-text); }
+
+/* gallery */
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(236px, 1fr)); gap: 22px 18px; }
+.gcell { display: flex; flex-direction: column; gap: 8px; }
+.gcell .cap b { display: block; font-size: 13.5px; }
+.gcell .cap span { font-size: 12px; color: var(--text-faint); }
+.gframe { width: 100%; aspect-ratio: 380 / 720; position: relative; }
+.gframe .phone { position: absolute; left: 0; top: 0; transform-origin: top left; pointer-events: none; }
+
+.card { border: 1px solid var(--divider); border-radius: 14px; padding: 16px; background: var(--surface-raised); display: flex; flex-direction: column; gap: 10px; }
+.card ul { margin: 0; padding-left: 18px; color: var(--text-muted); font-size: 13.5px; display: flex; flex-direction: column; gap: 6px; }
+.card li b { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="kicker">Pitch detection · design check</div>
+    <h1>The pitch monitor during playback</h1>
+    <p>An interactive phone with every combination of the tools, then the combinations that matter side by side. Turn tools on from the <b>Practice tools</b> control or from the switches below, change the sung note, and look at the playback screen, the library with the mini-player, and the sheet music viewer. Nothing here is saved or does any audio.</p>
+  </header>
+
+  <section class="stage" aria-label="Interactive mock">
+    <div id="live"></div>
+    <div class="controls">
+      <div><div class="label">Screen</div>
+        <div class="seg" id="c-layer">
+          <button data-v="playback">Playback</button><button data-v="library">Library</button><button data-v="viewer">Sheet music</button>
+        </div></div>
+      <div><div class="label">Tools and extras</div>
+        <div class="checks" id="c-checks">
+          <button class="check" data-k="piano">Piano</button>
+          <button class="check" data-k="lyrics">Lyrics (playback)</button>
+          <button class="check" data-k="soft" id="c-soft">Show other-octave matches (sheet music only)</button>
+          <button class="check" data-k="hint">First-time headphones note</button>
+        </div></div>
+      <div><div class="label">Pitch detection</div>
+        <div class="seg" id="c-pitch">
+          <button data-v="off">Off</button><button data-v="monitor">Monitor</button><button data-v="full">Full view</button>
+        </div></div>
+      <div class="row2">
+        <div><div class="label">Full view layout</div>
+          <div class="seg" id="c-land"><button data-v="0">Portrait</button><button data-v="1">Landscape</button></div></div>
+        <div><div class="label">Focus target</div>
+          <div class="seg" id="c-hold"><button data-v="0">Nearest</button><button data-v="1">Hold A3</button></div></div>
+      </div>
+      <div class="row2">
+        <div><div class="label">Sung note</div>
+          <select id="c-sung"></select></div>
+        <div><div class="label">Track pitch</div>
+          <div class="seg" id="c-offset"><button data-v="0">0 st</button><button data-v="-2">−2 st</button></div></div>
+      </div>
+      <div><div class="label">Cents off: <span id="c-cents-v"></span></div>
+        <input type="range" id="c-cents" min="-50" max="50" value="8" aria-label="Cents off"></div>
+      <div><div class="label">Microphone</div>
+        <select id="c-status">
+          <option value="listening">Listening</option>
+          <option value="denied">Blocked by the browser</option>
+          <option value="paused">Paused (app was in the background)</option>
+          <option value="stopped">Stopped (mic button in the Pitch view)</option>
+        </select></div>
+      <p class="hint">Try: Full view, sung A3, then drag cents from 8 to 40 and watch the zone change. Or hold A3 and sing B3. Then Sheet music, Piano on, Monitor, track pitch −2 st, sung G4: the written A4 notes are marked. Other-octave matches can only be changed from the Practice tools menu while Sheet music is showing.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Combinations at a glance</h2>
+    <p style="margin-bottom:14px">What each screen looks like with the tools in different states. The monitor is a slim strip above the piano, or above the mini-player and tab bar when there is no piano.</p>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <section class="card">
+    <h2>Decisions to approve</h2>
+    <ul>
+      <li><b>One Practice tools control</b> replaces the Piano tab, the playback header piano button, and the viewer toolbar piano button. It opens a floating menu with a switch per tool. The menu stays open while you toggle and closes on a press outside or Escape. <b>Show other-octave matches</b> appears in the menu only in the sheet music viewer, where it means something.</li>
+      <li><b>Two forms of one tool.</b> The monitor is a 64 pt strip docked above the piano (or above the mini-player and tab bar) and never covers the transport. Its expand button opens the full Pitch view, a full-screen study view. The earlier mid-size dock is gone.</li>
+      <li><b>Full Pitch view, portrait:</b> a large readout with the zone in words, a <i>Closeness</i> panel (cents against time, with Precise ±10, Near ±25 and Quarter tone ±50 bands), the progression roll (note bars on a labelled scale, coloured by zone, with zoom), and a readout bar with pitch, confidence, a microphone toggle, reference tuning and state. Sensitivity and reference tuning are in a settings sheet from the header.</li>
+      <li><b>Landscape:</b> the roll takes the width and the Closeness panel and readout sit in a column beside it, like the reference tuner.</li>
+      <li><b>Target:</b> by default the nearest note. <i>Target</i> holds A3 (in the real view, a note you pick), and the trace then measures distance from it, clamping at the panel edge with an arrow when it is beyond ±50.</li>
+      <li><b>Piano and score marks</b> as before: a filled accent key with a dot and glow; a filled notehead with halo for exact matches and a dashed ring for other-octave matches; a <i>Following track pitch</i> chip when the track is shifted.</li>
+      <li><b>Open question:</b> should the Pitch view offer a freeze or pause of the display, so a take can be studied after singing it? It is not in the mock or the spec yet.</li>
+      <li><b>Headphones</b> are assumed; the first time listening starts, one dismissible note says so.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+const NN = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+const name = m => NN[m % 12] + (Math.floor(m / 12) - 1);
+const SUNG = [null, 64, 67, 69, 71, 72, 76, 57, 55, 81];
+
+const ICON = {
+  tools: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>',
+  piano: '<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 5v14M15 5v14M7.5 5v8M12 5v8M16.5 5v8"/></svg>',
+  pitch: '<svg class="ic" viewBox="0 0 24 24"><path d="M3 12h2l2-6 3 12 3-9 2 5 2-3h4"/></svg>',
+  queue: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 7h12M4 12h12M4 17h8M19 14v6M16 17h6"/></svg>',
+  more: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg>',
+  down: '<svg class="ic" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
+  close: '<svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  expand: '<svg class="ic" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>',
+  shrink: '<svg class="ic" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
+  recents: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>',
+  add: '<svg class="ic" viewBox="0 0 24 24"><path d="M3 7h7l2 2h9v10H3z"/><path d="M12 11v6M9 14h6"/></svg>',
+  library: '<svg class="ic" viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>',
+};
+
+const fmtCents = c => (c > 0 ? '+' : c < 0 ? '−' : '±') + Math.abs(c);
+
+function strip(s) {
+  const tool = `<button class="ib" data-act="size" aria-label="Open full Pitch view">${ICON.expand}</button>`;
+  const close = `<button class="ib" data-act="pitch-off" aria-label="Close pitch detection">${ICON.close}</button>`;
+  let inner;
+  if (s.status === 'denied') {
+    inner = `<div class="msg warn"><b>Microphone blocked.</b> Allow it for this site in the address bar, then press Listen.</div>`;
+  } else if (s.status === 'paused') {
+    inner = `<div class="msg"><b>Paused</b> while the app was in the background. It resumes on its own.</div>`;
+  } else if (s.status === 'stopped') {
+    inner = `<div class="msg"><b>Not listening.</b> Open the Pitch view and press the microphone to start.</div>`;
+  } else if (s.sung == null) {
+    inner = `<div class="note idle"><b>Listening</b><span>sing a note</span></div>
+      <div class="gauge"><div class="bar"></div><div class="scale"><span>−50</span><span>0</span><span>+50</span></div></div>${sparkline(s)}`;
+  } else {
+    const ok = Math.abs(s.cents) <= 10;
+    inner = `<div class="note" role="img" aria-label="${name(s.sung)}, ${Math.abs(s.cents)} cents ${s.cents >= 0 ? 'sharp' : 'flat'}"><b>${name(s.sung)}</b><span>${fmtCents(s.cents)} cents</span></div>
+      <div class="gauge"><div class="bar"><i class="${ok ? 'ok' : ''}" style="left:${s.cents + 50}%"></i></div><div class="scale"><span>−50</span><span>0</span><span>+50</span></div></div>${sparkline(s)}`;
+  }
+  const hint = s.hint ? `<div class="hintbar"><span>Pitch detection assumes headphones. Speakers let the track and piano reach the microphone.</span><button data-act="hint-ok">Got it</button></div>` : '';
+  return `${hint}<div class="strip">${inner}<div style="display:flex;gap:2px">${tool}${close}</div></div>`;
+}
+
+function history(s, n) {
+  const base = [64, 64, 64, 67, 67, 67, 69, 69, 71, 71, 69, 69, 67, 67, 69, 69, 69, 69, 69, 69, 67, 67, 67, 67];
+  const h = base.slice(-n);
+  if (s.sung == null) { return h.map((m, i) => (i > n - 7 ? null : m)); }
+  return h.map((m, i) => (i > n - 8 ? s.sung : m));
+}
+
+function sparkline(s) {
+  const h = history(s, 14);
+  const bars = h.map((m, i) => {
+    if (m == null) { return ''; }
+    const y = 36 - (m - 60) * 1.5;
+    return `<rect x="${i * 5.6}" y="${y}" width="4" height="4" rx="1.5" fill="${i === h.length - 1 ? '#b5abfc' : '#9184d9'}" opacity="${0.35 + i / 22}"/>`;
+  }).join('');
+  return `<svg class="spark" viewBox="0 0 78 40" aria-hidden="true">${bars}</svg>`;
+}
+
+const ZONE = c => {
+  const a = Math.abs(c);
+  if (a <= 10) { return { label: 'Precise', color: '#81c995', fill: 'rgba(129,201,149,.14)' }; }
+  if (a <= 25) { return { label: 'Near', color: '#e6c17a', fill: 'rgba(230,193,122,.14)' }; }
+  if (a <= 50) { return { label: 'Quarter tone off', color: '#f0a070', fill: 'rgba(240,160,112,.14)' }; }
+  return { label: 'Off pitch', color: '#f28b82', fill: 'rgba(242,139,130,.14)' };
+};
+const HOLD = 57; // A3
+const ZOOMS = [6, 12, 24];
+const SEGS = [[0.4, 1.3, 57, -6], [1.9, 0.6, 59, 12], [2.7, 1.1, 60, 3], [4.0, 0.5, 60, -30], [4.8, 1.5, 57, 8], [6.5, 0.8, 55, -18], [7.5, 0.9, 57, 4], [8.7, 1.2, 60, 15], [10.0, 0.6, 59, -40]];
+const isBlack = m => [1, 3, 6, 8, 10].includes(m % 12);
+const MIC = '<svg class="ic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+
+function rollSvg(s, W, H) {
+  const LABEL = 38, rows = 18, plotW = W - LABEL, win = ZOOMS[s.zoom], NOW = 12;
+  const lo = s.sung != null && (s.sung < 52 || s.sung > 66) ? s.sung - 8 : 50;
+  const rh = H / rows;
+  const yOf = m => H - (m - lo + 1) * rh;
+  let o = '';
+  for (let m = lo; m < lo + rows; m++) {
+    const y = yOf(m);
+    o += `<rect x="${LABEL}" y="${y}" width="${plotW}" height="${rh}" fill="${isBlack(m) ? '#1b1e2b' : '#252938'}"/>`;
+    if (m % 12 === 0) { o += `<line x1="${LABEL}" x2="${W}" y1="${y + rh}" y2="${y + rh}" stroke="#5a5f78" stroke-width=".9"/>`; }
+    o += `<rect x="1" y="${y + 0.6}" width="${LABEL - 3}" height="${rh - 1.2}" rx="2" fill="${isBlack(m) ? '#2c2f3e' : '#e9e9ed'}"/><text x="${LABEL - 6}" y="${y + rh / 2 + 3}" text-anchor="end" font-size="9" font-family="monospace" fill="${isBlack(m) ? '#9397ab' : '#3a3d4b'}" font-weight="${m % 12 === 0 ? 700 : 400}">${name(m)}</text>`;
+  }
+  for (let k = 1; k < 6; k++) { const x = LABEL + plotW * (1 - k / 6); o += `<line x1="${x}" x2="${x}" y1="0" y2="${H}" stroke="#3a3e52" stroke-width=".6"/>`; }
+  const tgt = s.hold ? HOLD : s.sung;
+  if (tgt != null && tgt >= lo && tgt < lo + rows) { o += `<rect x="${LABEL}" y="${yOf(tgt)}" width="${plotW}" height="${rh}" fill="rgba(145,132,217,.16)" stroke="#9184d9" stroke-width=".8"/>`; }
+  const live = s.status === 'listening' && s.sung != null;
+  const segs = SEGS.concat(live ? [[10.8, 1.2, s.sung, s.cents]] : []);
+  segs.forEach(([t0, d, m, c], i) => {
+    if (m < lo || m >= lo + rows) { return; }
+    let x1 = LABEL + plotW * ((t0 - (NOW - win)) / win);
+    const x2 = x1 + (plotW * d) / win;
+    if (x2 < LABEL) { return; }
+    x1 = Math.max(x1, LABEL);
+    const w = Math.max(3, x2 - x1), z = ZONE(c), last = live && i === segs.length - 1;
+    o += `<rect x="${x1}" y="${yOf(m) + 1}" width="${w}" height="${rh - 2}" rx="3" fill="${z.color}" opacity=".92" ${last ? 'stroke="#fff" stroke-width="1.2"' : ''}/>`;
+    if (w > 26) { o += `<text x="${x1 + 4}" y="${yOf(m) + rh / 2 + 3}" font-size="9" font-family="monospace" fill="#1b1c22">${name(m)}</text>`; }
+  });
+  o += `<line x1="${W - 1}" x2="${W - 1}" y1="0" y2="${H}" stroke="#b5abfc" stroke-width="2"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-label="Pitch progression">${o}</svg>`;
+}
+
+function focusSvg(s, W, H) {
+  const R = 62, y = c => H / 2 - (c / R) * (H / 2 - 4);
+  let o = `<rect width="${W}" height="${H}" fill="#202330"/>`;
+  [[50, 'rgba(240,160,112,.16)'], [25, 'rgba(230,193,122,.18)'], [10, 'rgba(129,201,149,.24)']].forEach(([b, col]) => { o += `<rect x="0" y="${y(b)}" width="${W}" height="${y(-b) - y(b)}" fill="${col}"/>`; });
+  [[50, '¼ tone ±50'], [25, 'near ±25'], [10, 'precise ±10']].forEach(([v, lbl]) => {
+    o += `<line x1="0" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="#5a5f78" stroke-width=".6" stroke-dasharray="3 3"/><line x1="0" x2="${W}" y1="${y(-v)}" y2="${y(-v)}" stroke="#5a5f78" stroke-width=".6" stroke-dasharray="3 3"/>`;
+    o += `<text x="${W - 5}" y="${y(v) - 2.5}" text-anchor="end" font-size="8.5" font-family="monospace" fill="#a9adc2">${lbl}</text>`;
+  });
+  o += `<line x1="0" x2="${W}" y1="${y(0)}" y2="${y(0)}" stroke="#e9e9ed" stroke-width="1"/><text x="5" y="${y(0) - 3}" font-size="8.5" font-family="monospace" fill="#e9e9ed">in tune</text>`;
+  if (s.status === 'listening' && s.sung != null) {
+    const base = s.hold ? (s.sung - HOLD) * 100 + s.cents : s.cents, N = 40;
+    const pts = [];
+    for (let i = 0; i < N; i++) {
+      const wob = i === N - 1 ? 0 : 22 * Math.sin(i * 0.5) * (1 - i / N) * (i < N - 8 ? 1 : 0.3);
+      const c = Math.max(-58, Math.min(58, base + wob));
+      pts.push([4 + ((W - 84) * i) / (N - 1), y(c)]);
+    }
+    o += `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="#b5abfc" stroke-width="1.8" stroke-linejoin="round"/>`;
+    const [lx, ly] = pts[N - 1], z = ZONE(base);
+    o += `<circle cx="${lx}" cy="${ly}" r="5.5" fill="${z.color}" stroke="#101220" stroke-width="1.5"/>`;
+    if (Math.abs(base) > 50) { o += `<text x="${lx - 30}" y="${base > 0 ? 14 : H - 6}" font-size="11" fill="${z.color}">${base > 0 ? '▲' : '▼'} ${fmtCents(Math.round(base))}</text>`; }
+  } else {
+    o += `<text x="${W / 2}" y="${H / 2 + 22}" text-anchor="middle" font-size="11" fill="#8e92a6">Sing a note to see how close you are</text>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-label="Closeness to target">${o}</svg>`;
+}
+
+function fullView(s) {
+  const land = !!s.land, ok = s.status === 'listening';
+  const dist = s.sung == null ? null : (s.hold ? (s.sung - HOLD) * 100 + s.cents : s.cents);
+  const z = dist == null ? null : ZONE(dist);
+  let read;
+  if (s.status === 'denied') { read = `<div class="fvread"><b class="warn">Microphone blocked. Allow it for this site in the address bar, then press the microphone.</b></div>`; }
+  else if (s.status === 'paused') { read = `<div class="fvread"><b class="idle">Paused</b><span>while the app was in the background</span></div>`; }
+  else if (s.status === 'stopped') { read = `<div class="fvread"><b class="idle">Not listening</b><span>press the microphone</span></div>`; }
+  else if (s.sung == null) { read = `<div class="fvread"><b class="idle">Listening</b><span>sing a note</span></div>`; }
+  else {
+    const shown = s.hold ? `${fmtCents(Math.round(dist))} from A3` : `${fmtCents(s.cents)} cents`;
+    read = `<div class="fvread" role="img" aria-label="${name(s.sung)}, ${Math.abs(s.cents)} cents ${s.cents >= 0 ? 'sharp' : 'flat'}, ${z.label}"><b>${name(s.sung)}</b><span>${shown}</span><em style="color:${z.color};background:${z.fill};border-color:${z.color}">${z.label}</em></div>`;
+  }
+  const chip = `<button class="chip tgt ${s.hold ? 'on' : ''}" data-act="hold">Target: ${s.hold ? (land ? 'A3' : 'A3 (held)') : (land ? 'nearest' : 'nearest note')}</button>`;
+  const focus = `<div class="fvfocus"><div class="fvrow"><span class="kick2">Closeness</span>${chip}</div>${focusSvg(s, land ? 216 : 356, land ? 120 : 150)}</div>`;
+  const roll = `<div class="fvroll">${rollSvg(s, land ? 524 : 356, land ? 262 : 344)}<div class="zoomb"><span>${ZOOMS[s.zoom]} s</span><button data-act="zoom-out" aria-label="Zoom out">−</button><button data-act="zoom-in" aria-label="Zoom in">+</button></div></div>`;
+  const statusText = s.status === 'listening' ? 'Listening' : s.status === 'denied' ? 'Blocked' : s.status === 'paused' ? 'Paused' : 'Stopped';
+  const bar = `<div class="fvbar"><div class="kv"><small>PITCH</small><b>${ok && s.sung != null ? name(s.sung) : '--'}</b></div><div class="kv"><small>CONF</small><b>${ok && s.sung != null ? '92%' : '--'}</b></div>
+    <button class="mic ${ok ? '' : 'off'}" data-act="mic" aria-label="${ok ? 'Stop listening' : 'Start listening'}">${MIC}</button>
+    <div class="kv"><small>REF</small><b>A4 440 Hz</b></div><div class="stat"><i class="dot ${ok ? '' : s.status === 'stopped' ? 'off' : 'warn'}"></i>${statusText}</div></div>`;
+  const hdr = `<div class="fvhdr"><button class="ib" data-act="size" aria-label="Back to monitor">${ICON.down}</button><b>Pitch</b><button class="ib" data-act="fset" aria-label="Pitch settings">${ICON.tools}</button></div>`;
+  const hint = s.hint ? `<div class="hintbar"><span>Pitch detection assumes headphones.</span><button data-act="hint-ok">Got it</button></div>` : '';
+  const sheet = s.fset ? `<div class="scrim" data-act="fset"></div><div class="sheet2"><h3>Pitch settings</h3><div class="opts">
+      <div class="opt">Sensitivity<div class="mseg"><span>Low</span><span class="on">Normal</span><span>High</span></div></div>
+      <div class="opt">Reference tuning<div class="m"><button aria-label="Lower">−</button>A4 = 440 Hz<button aria-label="Raise">+</button></div></div></div>
+      <p class="hint" style="padding-top:4px">Pitch detection assumes headphones. Nothing you sing is recorded or sent anywhere.</p></div>` : '';
+  const body = land
+    ? `${hdr}${hint}<div class="fvmid">${roll}<div class="fvside">${read}${focus}</div></div>${bar}`
+    : `${hdr}${hint}${read}${focus}${roll}${bar}`;
+  return `<div class="fv ${land ? 'land' : ''}">${body}${sheet}</div>`;
+}
+
+function piano(s) {
+  const whites = [60, 62, 64, 65, 67, 69, 71, 72, 74, 76];
+  const blacks = [[61, 0], [63, 1], [66, 3], [68, 4], [70, 5], [73, 7], [75, 8]];
+  const active = s.pitch !== 'off' && s.status === 'listening' && s.sung != null;
+  const inView = active && s.sung >= 60 && s.sung <= 76;
+  const wk = whites.map((m, i) => `<div class="wk ${inView && s.sung === m ? 'det' : ''}" style="left:${i * 10}%;width:10%">${m % 12 === 0 ? name(m) : ''}</div>`).join('');
+  const bk = blacks.map(([m, i]) => `<div class="bk ${inView && s.sung === m ? 'det' : ''}" style="left:${(i + 1) * 10 - 3}%;width:6%"></div>`).join('');
+  let edge = '';
+  if (active && s.sung < 60) { edge = `<div class="edge" style="left:8px">◂ ${name(s.sung)}</div>`; }
+  if (active && s.sung > 76) { edge = `<div class="edge" style="right:8px">${name(s.sung)} ▸</div>`; }
+  return `<div class="piano"><div class="phead"><small>Vol 70%</small><div class="grab"></div><button class="ib" data-act="piano-off" aria-label="Close piano">${ICON.close}</button></div>
+    <div class="keys">${wk}${bk}${edge}</div><div class="map"><i></i></div></div>`;
+}
+
+function dockStack(s) {
+  let out = '';
+  if (s.pitch === 'monitor') { out += strip(s); }
+  if (s.piano) { out += piano(s); }
+  return out ? `<div class="dock">${out}</div>` : '';
+}
+
+function toolsBtn(s, extraStyle) {
+  const on = s.piano || s.pitch !== 'off';
+  return `<button class="ib" data-act="menu" aria-pressed="${on}" aria-label="Practice tools" ${extraStyle || ''}>${ICON.tools}</button>`;
+}
+
+function menu(s, pos) {
+  if (!s.menu) { return ''; }
+  const defs = [
+    ['piano', 'Piano', ICON.piano, s.piano],
+    ['pitch', 'Pitch detection', ICON.pitch, s.pitch !== 'off'],
+  ];
+  // The other-octave setting only means something next to a score.
+  if (s.layer === 'viewer') { defs.push(['soft', 'Show other-octave matches', ICON.pitch, s.soft]); }
+  const rows = defs.map(([k, label, icon, on]) => `<button class="mrow" role="switch" aria-checked="${on}" data-act="toggle-${k}">${icon}<span style="flex:1;font-size:${label.length > 18 ? 14 : 15}px">${label}</span><span class="sw ${on ? 'on' : ''}" style="margin-left:0"></span></button>`).join('');
+  return `<div class="scrim" data-act="menu-close"></div><div class="menu" style="${pos};width:${defs.length > 2 ? 268 : 236}px"><h4>Practice tools</h4>${rows}</div>`;
+}
+
+const WAVE = Array.from({ length: 56 }, (_, i) => 18 + Math.round(Math.abs(Math.sin(i * 0.7) * 22 + Math.sin(i * 0.21) * 16)));
+
+function playbackScreen(s) {
+  const wave = WAVE.map((h, i) => `<i class="${i < 21 ? 'played' : ''}" style="height:${h}px"></i>`).join('');
+  const lyrics = s.lyrics ? `<div class="lyrics"><b>Lyrics</b><span>Kyrie eleison, Kyrie eleison</span><span class="now">Christe eleison, Christe eleison</span><span>Kyrie eleison, Kyrie eleison</span></div>` : '';
+  return `<div class="screen">
+    <div class="hdr"><div class="sp">Now playing</div>
+      <button class="ib" aria-label="Show queue">${ICON.queue}</button>${toolsBtn(s)}
+      <button class="ib" aria-label="More actions">${ICON.more}</button><button class="ib" aria-label="Dismiss playback">${ICON.down}</button></div>
+    <div class="body">
+      <div><div class="title">Kyrie — Alto</div><div class="subtitle">Mass in G · Verse 2 loop</div></div>
+      <div class="wave">${wave}<b></b></div>
+      <div class="times"><span>0:42</span><span>1:58</span></div>
+      <div class="transport"><button class="ib" aria-label="Previous">⏮</button><div class="ring"></div><button class="ib" aria-label="Next">⏭</button></div>
+      <div class="shapes">${s.offset !== 0 ? `Speed 1.00× · Pitch ${s.offset} st` : 'Speed 1.00× · Pitch 0 st'}</div>
+      ${lyrics}
+    </div>
+    ${menu(s, 'top:60px;right:10px')}
+  </div>${dockStack(s)}`;
+}
+
+function libraryScreen(s) {
+  const rows = ['Kyrie — Alto', 'Kyrie — Soprano', 'Gloria — Tenor', 'Sanctus — Bass'].map((t, i) => `<div class="li"><div class="art"></div><div><b>${t}</b><span>${i === 0 ? 'Playing · Mass in G' : 'Mass in G'}</span></div></div>`).join('');
+  const on = s.piano || s.pitch !== 'off';
+  const tab = (icon, label, pressed) => `<button class="tab" aria-pressed="${pressed}">${icon}<span>${label}</span></button>`;
+  return `<div class="screen">
+    <div class="lib"><h3>Library</h3>${rows}</div>
+    ${menu(s, 'bottom:8px;right:8px')}
+  </div>
+  <div class="dock">${dockStack(s).replace(/^<div class="dock">|<\/div>$/g, '')}</div>
+  <div class="mini"><div class="art"></div><div class="t"><b>Kyrie — Alto</b><span>0:42 · Verse 2 loop</span></div><div class="pp"></div></div>
+  <div class="tabs">${tab(ICON.recents, 'Recents', false)}${tab(ICON.add, 'Add', false)}${tab(ICON.library, 'Library', true)}
+    <button class="tab" data-act="menu" aria-pressed="${on}" aria-label="Practice tools">${ICON.tools}<span>Practice tools</span></button></div>`;
+}
+
+/* A short alto line. steps count diatonic steps above C4 (0=C4 ... 8=D5, 9=E5). */
+const LINES = [
+  [5, 4, 5, 6, 7, 6, 5, 4],
+  [2, 4, 5, 5, 9, 7, 5, 4],
+];
+const STEP_MIDI = [60, 62, 64, 65, 67, 69, 71, 72, 74, 76];
+
+function scoreSvg(s) {
+  const active = s.pitch !== 'off' && s.status === 'listening' && s.sung != null;
+  const spacing = 8, left = 34, width = 316, perSys = 8;
+  let out = '';
+  LINES.forEach((line, si) => {
+    const top = 18 + si * 78; // top staff line y
+    const yE4 = top + 4 * spacing; // bottom line
+    const yOf = step => yE4 - (step - 2) * (spacing / 2);
+    for (let l = 0; l < 5; l++) { out += `<line x1="${left - 18}" x2="${left + width}" y1="${top + l * spacing}" y2="${top + l * spacing}" stroke="#222" stroke-width=".8"/>`; }
+    out += `<text x="${left - 16}" y="${top + 30}" font-size="38" font-family="serif" fill="#222">𝄞</text>`;
+    out += `<line x1="${left + width}" x2="${left + width}" y1="${top}" y2="${top + 4 * spacing}" stroke="#222" stroke-width="1.4"/>`;
+    [4].forEach(b => { const x = left + 14 + (b * (width - 20)) / perSys - 8; out += `<line x1="${x}" x2="${x}" y1="${top}" y2="${top + 4 * spacing}" stroke="#222" stroke-width=".8"/>`; });
+    line.forEach((step, ni) => {
+      const x = left + 14 + (ni * (width - 20)) / perSys + (ni >= 4 ? 4 : -2);
+      const y = yOf(step);
+      const midi = STEP_MIDI[step];
+      let kind = null;
+      if (active) {
+        const diff = s.sung - (midi + s.offset);
+        if (diff === 0) { kind = 'exact'; } else if (s.soft && diff % 12 === 0) { kind = 'soft'; }
+      }
+      if (step === 0) { out += `<line x1="${x - 9}" x2="${x + 9}" y1="${y}" y2="${y}" stroke="#222" stroke-width=".9"/>`; }
+      if (kind === 'exact') { out += `<circle cx="${x}" cy="${y}" r="11" fill="rgba(145,132,217,.30)"/>`; }
+      if (kind === 'soft') { out += `<circle cx="${x}" cy="${y}" r="10" fill="none" stroke="#796cbf" stroke-width="1.4" stroke-dasharray="3 2.5"/>`; }
+      out += `<ellipse cx="${x}" cy="${y}" rx="5.4" ry="3.9" transform="rotate(-20 ${x} ${y})" fill="${kind === 'exact' ? '#5a4cae' : '#1b1c22'}"/>`;
+      const up = step < 6;
+      out += `<line x1="${up ? x + 5 : x - 5}" x2="${up ? x + 5 : x - 5}" y1="${y}" y2="${up ? y - 26 : y + 26}" stroke="${kind === 'exact' ? '#5a4cae' : '#1b1c22'}" stroke-width="1.1"/>`;
+    });
+  });
+  return `<svg viewBox="0 0 368 170" aria-label="Score">${out}</svg>`;
+}
+
+function viewerScreen(s) {
+  const follow = s.offset !== 0 ? `<span class="chip follow">Following track pitch ${s.offset < 0 ? '−' : '+'}${Math.abs(s.offset)} st</span>` : '';
+  return `<div class="screen">
+    <div class="vbar"><button class="ib" aria-label="Close">${ICON.close}</button>
+      <div class="tt"><b>Kyrie — Alto</b><span>Mass in G · MusicXML</span></div>
+      ${toolsBtn(s)}<div class="ppbtn" aria-label="Pause"></div></div>
+    <div class="vrow"><span class="chip on">Alto</span><span class="chip">Soprano</span><span class="chip">Piano</span>${follow}</div>
+    <div class="page"><div class="tl">Kyrie</div><div class="st">Mass in G</div>${scoreSvg(s)}</div>
+    ${menu(s, 'top:56px;right:56px')}
+  </div>${dockStack(s)}`;
+}
+
+function renderPhone(s) {
+  if (s.pitch === 'full') { return `<div class="phone ${s.land ? 'land' : ''}">${fullView(s)}</div>`; }
+  const body = s.layer === 'playback' ? playbackScreen(s) : s.layer === 'library' ? libraryScreen(s) : viewerScreen(s);
+  return `<div class="phone">${body}</div>`;
+}
+
+/* interactive */
+const S = { layer: 'playback', piano: false, lyrics: false, soft: false, hint: false, pitch: 'monitor', menu: false, sung: 69, cents: 8, offset: 0, status: 'listening', land: false, hold: false, zoom: 1, fset: false };
+const live = document.getElementById('live');
+
+function paint() {
+  live.innerHTML = renderPhone(S);
+  document.querySelector('.stage').classList.toggle('landscape', S.pitch === 'full' && S.land);
+  document.querySelectorAll('#c-layer button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === S.layer));
+  document.querySelectorAll('#c-pitch button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === S.pitch));
+  document.querySelectorAll('#c-offset button').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.v) === S.offset));
+  document.querySelectorAll('#c-land button').forEach(b => b.setAttribute('aria-pressed', (b.dataset.v === '1') === S.land));
+  document.querySelectorAll('#c-hold button').forEach(b => b.setAttribute('aria-pressed', (b.dataset.v === '1') === S.hold));
+  document.querySelectorAll('#c-checks .check').forEach(b => b.setAttribute('aria-pressed', !!S[b.dataset.k]));
+  const soft = document.getElementById('c-soft');
+  soft.setAttribute('aria-disabled', S.layer === 'viewer' ? 'false' : 'true');
+  document.getElementById('c-sung').value = String(S.sung);
+  document.getElementById('c-cents').value = S.cents;
+  document.getElementById('c-cents-v').textContent = fmtCents(S.cents);
+  document.getElementById('c-status').value = S.status;
+}
+
+live.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) { return; }
+  const a = el.dataset.act;
+  if (a === 'menu') { S.menu = !S.menu; }
+  else if (a === 'menu-close') { S.menu = false; }
+  else if (a === 'toggle-piano') { S.piano = !S.piano; }
+  else if (a === 'toggle-pitch') { S.pitch = S.pitch === 'off' ? 'monitor' : 'off'; }
+  else if (a === 'piano-off') { S.piano = false; }
+  else if (a === 'pitch-off') { S.pitch = 'off'; }
+  else if (a === 'toggle-soft') { S.soft = !S.soft; }
+  else if (a === 'size') { S.pitch = S.pitch === 'monitor' ? 'full' : 'monitor'; S.fset = false; }
+  else if (a === 'hold') { S.hold = !S.hold; }
+  else if (a === 'mic') { S.status = S.status === 'listening' ? 'stopped' : 'listening'; }
+  else if (a === 'zoom-in') { S.zoom = Math.max(0, S.zoom - 1); }
+  else if (a === 'zoom-out') { S.zoom = Math.min(ZOOMS.length - 1, S.zoom + 1); }
+  else if (a === 'fset') { S.fset = !S.fset; }
+  else if (a === 'hint-ok') { S.hint = false; }
+  paint();
+});
+document.getElementById('c-layer').addEventListener('click', e => { if (e.target.dataset.v) { S.layer = e.target.dataset.v; S.menu = false; paint(); } });
+document.getElementById('c-pitch').addEventListener('click', e => { if (e.target.dataset.v) { S.pitch = e.target.dataset.v; paint(); } });
+document.getElementById('c-offset').addEventListener('click', e => { if (e.target.dataset.v != null) { S.offset = Number(e.target.dataset.v); paint(); } });
+document.getElementById('c-checks').addEventListener('click', e => { const b = e.target.closest('.check'); if (!b || b.getAttribute('aria-disabled') === 'true') { return; } S[b.dataset.k] = !S[b.dataset.k]; paint(); });
+document.getElementById('c-land').addEventListener('click', e => { if (e.target.dataset.v != null) { S.land = e.target.dataset.v === '1'; paint(); } });
+document.getElementById('c-hold').addEventListener('click', e => { if (e.target.dataset.v != null) { S.hold = e.target.dataset.v === '1'; paint(); } });
+document.getElementById('c-sung').addEventListener('change', e => { S.sung = e.target.value === 'null' ? null : Number(e.target.value); paint(); });
+document.getElementById('c-cents').addEventListener('input', e => { S.cents = Number(e.target.value); paint(); });
+document.getElementById('c-status').addEventListener('change', e => { S.status = e.target.value; paint(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.menu) { S.menu = false; paint(); } });
+
+const sungSel = document.getElementById('c-sung');
+sungSel.innerHTML = SUNG.map(m => `<option value="${m}">${m == null ? 'Silence' : name(m)}</option>`).join('');
+
+/* gallery */
+const base = { layer: 'playback', piano: false, lyrics: false, soft: false, hint: false, pitch: 'off', menu: false, sung: 69, cents: 8, offset: 0, status: 'listening', land: false, hold: false, zoom: 1, fset: false };
+const PRESETS = [
+  ['Playback, no tools', 'The playback screen as it is today, with the new Practice tools control in the header.', {}],
+  ['Playback + monitor', 'The strip sits at the bottom; the waveform shrinks a little.', { pitch: 'monitor', sung: 57, cents: -6 }],
+  ['Playback + lyrics + monitor', 'Lyrics keep their place; the waveform gives up the most height.', { pitch: 'monitor', lyrics: true, sung: 69, cents: 4 }],
+  ['Playback + piano + monitor', 'The strip is directly above the keyboard, and the sung A4 key is lit.', { pitch: 'monitor', piano: true, sung: 69, cents: 4 }],
+  ['Playback + lyrics + piano + monitor', 'Everything at once on a phone. The waveform is at its minimum.', { pitch: 'monitor', piano: true, lyrics: true, sung: 67, cents: -12 }],
+  ['Full Pitch view: precise', 'Opened from the monitor. Progression roll, focus panel, readout bar. A3 at +8 cents reads Precise.', { pitch: 'full', sung: 57, cents: 8 }],
+  ['Full Pitch view: a quarter tone off', 'Same note at +40 cents: the zone, bar colour and trace all move to the outer band.', { pitch: 'full', sung: 57, cents: 40 }],
+  ['Full Pitch view: holding a target', 'A3 is held and B3 is sung, so the trace is about 200 cents away and clamps to the edge.', { pitch: 'full', sung: 59, cents: 0, hold: true }],
+  ['Full Pitch view: settings', 'Sensitivity and reference tuning, from the header button.', { pitch: 'full', sung: 57, cents: 8, fset: true }],
+  ['Library: mini-player + monitor', 'The strip stacks above the mini-player and tab bar. The tab bar item is lit.', { layer: 'library', pitch: 'monitor', sung: 71, cents: 22 }],
+  ['Library: menu from the tab bar', 'Two rows only: the other-octave setting does not appear here.', { layer: 'library', menu: true, piano: true, pitch: 'off' }],
+  ['Sheet music + monitor', 'The sung A4 marks the A4 notes; no piano open.', { layer: 'viewer', pitch: 'monitor', sung: 69, cents: 3 }],
+  ['Sheet music + piano + monitor, track at −2 st', 'The score follows the shifted track: sung G4 marks written A4.', { layer: 'viewer', pitch: 'monitor', piano: true, sung: 67, cents: 6, offset: -2 }],
+  ['Sheet music, other-octave matches on', 'Sung E4: exact E4 notes filled, the E5 note gets the dashed ring.', { layer: 'viewer', pitch: 'monitor', soft: true, sung: 64, cents: -4 }],
+  ['Sheet music: menu with the octave row', 'The only place the other-octave setting lives: a third row in the viewer\'s menu.', { layer: 'viewer', menu: true, piano: true, pitch: 'monitor', sung: null }],
+  ['Playback, microphone blocked', 'Plain text instructions in the strip; nothing else changes.', { pitch: 'monitor', status: 'denied' }],
+  ['Playback, first-time headphones note', 'A one-time dismissible note above the strip.', { pitch: 'monitor', hint: true, sung: 69, cents: 0 }],
+  ['Full Pitch view, landscape', 'The progression takes the width; the focus panel sits beside it. Same as the reference tuner layout.', { pitch: 'full', land: true, sung: 57, cents: 8 }],
+  ['Full Pitch view, landscape, a quarter tone off', 'The trace and the bar for the current note sit in the outer band, and the word says so.', { pitch: 'full', land: true, sung: 60, cents: -38 }],
+];
+document.getElementById('gallery').innerHTML = PRESETS.map(([t, d, o]) => {
+  const s = Object.assign({}, base, o);
+  const wide = s.pitch === 'full' && s.land;
+  return `<div class="gcell" style="${wide ? 'grid-column: span 2' : ''}"><div class="gframe" data-w="${wide ? 780 : 380}" style="aspect-ratio:${wide ? '780 / 380' : '380 / 720'}">${renderPhone(s)}</div><div class="cap"><b>${t}</b><span>${d}</span></div></div>`;
+}).join('');
+
+function fitGallery() {
+  document.querySelectorAll('.gframe').forEach(f => {
+    f.querySelector('.phone').style.transform = `scale(${f.clientWidth / Number(f.dataset.w)})`;
+  });
+}
+window.addEventListener('resize', fitGallery);
+paint();
+fitGallery();
+</script>
+</body>
+</html>
