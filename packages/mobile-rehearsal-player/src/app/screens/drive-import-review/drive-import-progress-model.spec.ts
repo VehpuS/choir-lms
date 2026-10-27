@@ -287,11 +287,12 @@ describe('shouldShowDriveImportSpinner', () => {
     );
   });
 
-  it('shows the spinner when an executing phase has no total yet', () => {
+  it('shows the spinner when an executing phase has nothing to count', () => {
     assert.equal(
       shouldShowDriveImportSpinner({
         completedItems: 0,
         phase: 'saving-sources',
+        totalItems: 0,
       }),
       true,
     );
