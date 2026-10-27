@@ -5,6 +5,8 @@ export type AudioStoreEntry = {
   /** The Drive content version (`modifiedTime`) the bytes were downloaded at. */
   sourceVersion: string;
   touchedAt: number;
+  /** The Drive file name when the caller knew it; the view falls back to the library. */
+  name?: string;
   /** Kept offline by the user: automatic eviction never removes it. */
   pinned?: boolean;
 };

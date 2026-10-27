@@ -108,4 +108,14 @@ describe('keeping a file offline', () => {
     assert.equal(memory.records.size, 0);
     assert.deepEqual(calls.dropped, ['file-a']);
   });
+
+  it('stores the file name with a kept download', async () => {
+    const { cache, keeping } = setup({ download: () => blobOf(10) });
+
+    await keeping.keepOffline({ ...REQUEST, name: 'Soprano.mp3' });
+
+    const [stored] = await cache.list();
+
+    assert.equal(stored?.name, 'Soprano.mp3');
+  });
 });

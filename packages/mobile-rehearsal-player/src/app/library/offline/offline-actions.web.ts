@@ -19,7 +19,7 @@ export const isOfflineStorageSupported = true;
 // starting playback elsewhere does not cancel it.
 const keeping = createOfflineKeeping({
   cache: persistentAudioCache,
-  download: ({ headers, url, version }) => {
+  download: ({ headers, name, url, version }) => {
     return startSavedTrackDownload(
       { headers, url },
       {
@@ -31,7 +31,7 @@ const keeping = createOfflineKeeping({
         setTimer: (callback, delayMs) => setTimeout(callback, delayMs),
         store: createSavedTrackDownloadProgressStore(),
       },
-      { cancelOnReset: false, version },
+      { cancelOnReset: false, name, version },
     );
   },
   memory: savedTrackAudioCache,
@@ -54,6 +54,7 @@ export const keepSourceOffline = (
   return keeping.keepOffline({
     driveFileId: source.driveFileId,
     headers: track.headers,
+    name: source.name,
     url: track.url,
     version: track.sourceVersion,
   });

@@ -4,6 +4,8 @@ import type { OfflineStateStore } from './offline-state-store';
 export type KeepOfflineRequest = {
   driveFileId: string;
   headers?: Record<string, string>;
+  /** The Drive file name, stored so the offline files view can show it. */
+  name?: string;
   url: string;
   /** The Drive content version; a file without one cannot be cached. */
   version: string;
@@ -47,6 +49,7 @@ export const createOfflineKeeping = ({
         // the keep independent of that background write.
         await cache.write(request.driveFileId, request.version, blob, {
           keep: true,
+          name: request.name,
         });
 
         return (await cache.pin(request.driveFileId)) ? 'kept' : 'not-stored';

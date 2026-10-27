@@ -272,6 +272,8 @@ export type StartSavedTrackDownloadOptions = {
   persistence?: Pick<PersistentAudioCache, 'read' | 'write'>;
   /** False for background callers (waveform analysis) that survive a reset. */
   cancelOnReset?: boolean;
+  /** The Drive file name, stored with the bytes for the offline files view. */
+  name?: string;
   /** Drive content version; without one the bytes are never reused. */
   version?: string;
 };
@@ -333,7 +335,7 @@ export const startSavedTrackDownload = async (
 
       if (cacheable) {
         // Not awaited: the player must not wait on storage.
-        void persistence.write(driveFileId, version, blob);
+        void persistence.write(driveFileId, version, blob, options);
       }
 
       return blob;

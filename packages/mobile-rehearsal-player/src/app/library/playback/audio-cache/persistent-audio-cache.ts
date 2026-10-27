@@ -36,13 +36,14 @@ export type PersistentAudioCache = {
   unpin: (driveFileId: string) => Promise<void>;
   /**
    * Stores a file. `keep` stores it pinned even when it is larger than the
-   * whole cache size: kept files are not part of the automatic cache.
+   * whole cache size: kept files are not part of the automatic cache. `name`
+   * is the Drive file name, shown in the offline files view.
    */
   write: (
     driveFileId: string,
     sourceVersion: string,
     blob: Blob,
-    options?: { keep?: boolean },
+    options?: { keep?: boolean; name?: string },
   ) => Promise<void>;
 };
 
@@ -210,9 +211,13 @@ export const createPersistentAudioCache = ({
             return;
           }
 
+          // A later download that does not know the name keeps the one stored.
+          const name = options?.name ?? previous?.name;
+
           await store.write(
             {
               driveFileId,
+              ...(name ? { name } : {}),
               ...(keep ? { pinned: true } : {}),
               sizeBytes: blob.size,
               sourceVersion,
