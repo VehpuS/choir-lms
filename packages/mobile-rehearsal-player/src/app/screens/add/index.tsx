@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { useIsOfflineFilesOpen } from '../offline-files/offline-files-navigation-store';
 import { DriveSessionMenu } from '../../auth/google-drive/components/drive-session-menu';
 import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import { isScreenReaderEnabled } from '../../components/scoped-success-acknowledgment/is-screen-reader-enabled';
@@ -51,6 +52,7 @@ export const AddScreen = ({
   libraryController,
 }: AddScreenProps) => {
   const headerModel = getDestinationHeaderModel('add');
+  const isOfflineFilesOpen = useIsOfflineFilesOpen();
   const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
   const [isSessionMenuVisible, setIsSessionMenuVisible] = useState(false);
   const trackSavedFeedback = useScopedSuccessAcknowledgment<
@@ -136,7 +138,8 @@ export const AddScreen = ({
   const renderedPanels = ADD_SCREEN_DRIVE_PANEL_ORDER.map((panelKey) => {
     return (
       <DriveDiscoveryPanel
-        isDestinationActive={isActive}
+        // A selection ends when the offline files view opens over it (task 1.13).
+        isDestinationActive={isActive && !isOfflineFilesOpen}
         controller={libraryController}
         isSearchBarVisible={isSearchBarVisible}
         key={panelKey}

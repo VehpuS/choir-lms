@@ -5,6 +5,7 @@ import { SavedRehearsalLibrarySection } from '../../library/components/saved-reh
 import type { LibraryBrowseCreateDockMode } from '../../library/components/saved-rehearsal-library-section/types';
 import { useSavedRehearsalLibrarySearch } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search';
 import { useSavedRehearsalLibrarySearchPanel } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search-panel';
+import { useIsOfflineFilesOpen } from '../offline-files/offline-files-navigation-store';
 import { useIsBulkActionBarPinned } from '../../library/selection/use-pinned-bulk-action-bar';
 import { LoopPreviewPlaybackContext } from '../../library/loops/components/loop-preview-playback-context';
 import type { PlaylistDetailHeaderPlaybackAction } from '../../library/playlists/utils/saved-playlist-playback-view-model';
@@ -72,6 +73,7 @@ export const LibraryScreen = ({
   >(null);
   // The create dock gives way while a selection's bulk-action bar is pinned.
   const isBulkBarPinned = useIsBulkActionBarPinned();
+  const isOfflineFilesOpen = useIsOfflineFilesOpen();
   const scrollCoordination = useLibraryScreenScrollCoordination();
   const searchState = useSavedRehearsalLibrarySearch({
     savedLibrarySources: libraryController.savedLibrary.savedLibrarySources,
@@ -154,7 +156,9 @@ export const LibraryScreen = ({
             createPlaylist={libraryController.playlists.createPlaylist}
             deletePlaylist={libraryController.playlists.deletePlaylist}
             getCurrentScrollOffsetY={scrollCoordination.getCurrentScrollOffsetY}
-            isDestinationActive={isActive}
+            // A selection ends when the offline files view opens over it: both
+            // want the one pinned bulk-action bar (task 1.13).
+            isDestinationActive={isActive && !isOfflineFilesOpen}
             isPlaybackPreparing={playback.isPreparing}
             isPlaylistCreateDialogVisible={
               isFilesPlaylistCreateDialogVisible ||
