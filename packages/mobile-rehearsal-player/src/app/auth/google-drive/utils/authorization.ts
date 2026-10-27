@@ -8,7 +8,6 @@ import type { AuthSessionResult } from 'expo-auth-session';
 
 export {
   getDriveAuthorizationStatusCopy,
-  getDriveSessionDetails,
   getDriveSessionTriggerCopy,
 } from './drive-session-copy';
 export type {

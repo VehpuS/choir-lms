@@ -8,7 +8,6 @@ import {
   createAuthorizedDriveState,
   createExpiredDriveAuthorizationState,
   getDriveAuthorizationStatusCopy,
-  getDriveSessionDetails,
   getDriveSessionTriggerCopy,
   hasDriveWriteAccess,
   isDriveAuthorizationFailure,
@@ -151,31 +150,18 @@ describe('resolveDriveAuthorizationResult', () => {
     assert.equal(authorizedCopy.actionLabel, 'Refresh authorization');
   });
 
-  it('derives shell session trigger copy and session details from auth state', () => {
+  it('derives shell session trigger copy from the status copy', () => {
     const readyCopy = getDriveSessionTriggerCopy({
       actionLabel: 'Refresh authorization',
       message: 'This device has an active Drive session.',
       title: 'Google Drive is connected',
       tone: 'ready',
     });
-    const details = getDriveSessionDetails(
-      {
-        accessToken: 'drive-token',
-        expiresAt: '2026-05-25T10:30:00.000Z',
-        scope: DEFAULT_SCOPE,
-        status: 'authorized',
-      },
-      true,
-    );
 
     assert.deepEqual(readyCopy, {
-      body: 'Renew or forget this session here.',
       status: 'Connected',
       title: 'Drive connected',
     });
-    assert.equal(details.status, 'Connected');
-    assert.equal(details.request, 'Prepared');
-    assert.match(details.expiry, /\d{4}|\//);
   });
 
   it('detects invalid Drive authorization failures from runtime error text', () => {

@@ -8,7 +8,6 @@ export type DriveAuthorizationStatusCopy = {
 };
 
 export type DriveSessionTriggerCopy = {
-  body: string;
   status: string;
   title: string;
 };
@@ -16,22 +15,6 @@ export type DriveSessionTriggerCopy = {
 type DriveAuthorizationCopyOptions = {
   googleAuthConfigured: boolean;
   lastIssue?: string | null;
-};
-
-const TOKEN_LIFETIME_FALLBACK_LABEL = 'Managed by token lifetime';
-
-const formatExpirationLabel = (expiresAt?: string) => {
-  if (!expiresAt) {
-    return TOKEN_LIFETIME_FALLBACK_LABEL;
-  }
-
-  const parsedDate = new Date(expiresAt);
-
-  if (Number.isNaN(parsedDate.valueOf())) {
-    return TOKEN_LIFETIME_FALLBACK_LABEL;
-  }
-
-  return parsedDate.toLocaleString();
 };
 
 export const getDriveAuthorizationStatusCopy = (
@@ -104,7 +87,6 @@ export const getDriveSessionTriggerCopy = (
 ): DriveSessionTriggerCopy => {
   if (statusCopy.tone === 'ready') {
     return {
-      body: 'Renew or forget this session here.',
       status: 'Connected',
       title: 'Drive connected',
     };
@@ -112,7 +94,6 @@ export const getDriveSessionTriggerCopy = (
 
   if (statusCopy.tone === 'warning') {
     return {
-      body: 'Reconnect Google Drive here.',
       status: 'Needs attention',
       title: 'Session needs attention',
     };
@@ -120,33 +101,13 @@ export const getDriveSessionTriggerCopy = (
 
   if (statusCopy.tone === 'error') {
     return {
-      body: 'Finish Google setup for this build.',
       status: 'Setup required',
       title: 'Drive unavailable',
     };
   }
 
   return {
-    body: 'Connect Google Drive.',
     status: 'Connect',
     title: 'Connect Drive',
-  };
-};
-
-export const getDriveSessionDetails = (
-  state: DriveAuthorizationState,
-  requestReady: boolean,
-) => {
-  return {
-    expiry: formatExpirationLabel(state.expiresAt),
-    request: requestReady ? 'Prepared' : 'Preparing',
-    status:
-      state.status === 'authorized'
-        ? 'Connected'
-        : state.status === 'expired'
-          ? 'Expired'
-          : state.status === 'attention-required'
-            ? 'Needs attention'
-            : 'Not connected',
   };
 };

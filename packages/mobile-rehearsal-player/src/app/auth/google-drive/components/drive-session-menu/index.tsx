@@ -1,4 +1,3 @@
-import type { DriveAuthorizationState } from '@org/google-drive';
 import { StyleSheet, View } from 'react-native';
 
 import type { DriveAuthorizationStatusCopy } from '../../utils/authorization';
@@ -11,7 +10,6 @@ import { DriveSessionMenuTrigger } from './drive-session-menu-trigger';
 import { useEscapeToDismiss } from '../../../../components/escape-to-dismiss/use-escape-to-dismiss';
 
 type DriveSessionMenuProps = {
-  authState: DriveAuthorizationState;
   canClearAuthorization: boolean;
   canStartAuthorization: boolean;
   isBusy: boolean;
@@ -19,12 +17,10 @@ type DriveSessionMenuProps = {
   onClearAuthorization: () => void;
   onStartAuthorization: () => void;
   onToggleVisibility: () => void;
-  requestReady: boolean;
   statusCopy: DriveAuthorizationStatusCopy;
 };
 
 export const DriveSessionMenu = ({
-  authState,
   canClearAuthorization,
   canStartAuthorization,
   isBusy,
@@ -32,7 +28,6 @@ export const DriveSessionMenu = ({
   onClearAuthorization,
   onStartAuthorization,
   onToggleVisibility,
-  requestReady,
   statusCopy,
 }: DriveSessionMenuProps) => {
   useEscapeToDismiss(isVisible, onToggleVisibility);
@@ -48,7 +43,6 @@ export const DriveSessionMenu = ({
 
       {isVisible ? (
         <DriveSessionMenuPanel
-          authState={authState}
           canClearAuthorization={canClearAuthorization}
           canStartAuthorization={canStartAuthorization}
           isBusy={isBusy}
@@ -67,7 +61,6 @@ export const DriveSessionMenu = ({
             settingsNavigationStore.open();
           }}
           onStartAuthorization={onStartAuthorization}
-          requestReady={requestReady}
           statusCopy={statusCopy}
         />
       ) : null}

@@ -109,7 +109,6 @@ export const RecentsScreen = ({
         title={headerModel.title}
         trailingAction={
           <DriveSessionMenu
-            authState={authorization.authState}
             canClearAuthorization={authorization.canClearAuthorization}
             canStartAuthorization={authorization.canStartAuthorization}
             isBusy={authorization.isBusy}
@@ -125,7 +124,6 @@ export const RecentsScreen = ({
             onToggleVisibility={() => {
               setIsSessionMenuVisible((currentValue) => !currentValue);
             }}
-            requestReady={authorization.requestReady}
             statusCopy={authorization.statusCopy}
           />
         }

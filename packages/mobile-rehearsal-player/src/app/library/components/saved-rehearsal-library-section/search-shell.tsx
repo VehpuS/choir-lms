@@ -105,7 +105,6 @@ export const SavedRehearsalLibraryHeader = ({
           />
           {authorization ? (
             <DriveSessionMenu
-              authState={authorization.authState}
               canClearAuthorization={authorization.canClearAuthorization}
               canStartAuthorization={authorization.canStartAuthorization}
               isBusy={authorization.isBusy}
@@ -119,7 +118,6 @@ export const SavedRehearsalLibraryHeader = ({
                 void authorization.startAuthorization();
               }}
               onToggleVisibility={onToggleSessionMenu}
-              requestReady={authorization.requestReady}
               statusCopy={authorization.statusCopy}
             />
           ) : null}

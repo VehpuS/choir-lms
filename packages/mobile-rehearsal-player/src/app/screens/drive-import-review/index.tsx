@@ -64,7 +64,6 @@ export const DriveImportReviewScreen = ({
         title={headerCopy.title}
         trailingAction={
           <DriveSessionMenu
-            authState={authorization.authState}
             canClearAuthorization={authorization.canClearAuthorization}
             canStartAuthorization={authorization.canStartAuthorization}
             isBusy={authorization.isBusy}
@@ -80,7 +79,6 @@ export const DriveImportReviewScreen = ({
             onToggleVisibility={() => {
               setIsSessionMenuVisible((currentValue) => !currentValue);
             }}
-            requestReady={authorization.requestReady}
             statusCopy={authorization.statusCopy}
           />
         }
