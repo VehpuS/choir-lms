@@ -121,6 +121,7 @@
     "@org/audio-library-runtime": "^0.0.1",
     "@org/google-drive": "^0.0.1",
     "@org/midi-notation": "^0.0.1",
+    "@org/pitch-detection": "^0.0.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/slider": "5.0.1",
     "@soundtouchjs/audio-worklet": "^2.1.1",

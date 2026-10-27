@@ -47,6 +47,9 @@
     },
     {
       "path": "../midi-notation/tsconfig.lib.json"
+    },
+    {
+      "path": "../pitch-detection/tsconfig.lib.json"
     }
   ]
 }

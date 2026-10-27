@@ -16,9 +16,9 @@ Web is the build and verification target of this change. Native iOS and Android 
 
 ## 3. Capture and store
 
-- [ ] 3.1 Define the `PcmSource` interface (multiple subscribers over one shared microphone stream, frames carrying a capture timestamp, unprocessed audio; see design Decision 12) and `pitchCapabilities()` (like `pianoCapabilities()`), with the web implementation (`.web`) and a native file whose `canListen` is false, so the pitch controls are absent on native until `native-playback-follow-ups` builds it. Spec the capability gate.
-- [ ] 3.2 Build `PitchStore` and `usePitch`: permission flow, listening lifecycle (start only with a mounted consumer, stop on last unmount), pause when the app is not visible and resume without a prompt, interruption and recovery, headphones hint flag. Spec with a fake `PcmSource`.
-- [ ] 3.3 Add a test that nothing in the pipeline writes samples to storage or the network layer.
+- [x] 3.1 Define the `PcmSource` interface (multiple subscribers over one shared microphone stream, frames carrying a capture timestamp, unprocessed audio; see design Decision 12) and `pitchCapabilities()` (like `pianoCapabilities()`), with the web implementation (`.web`) and a native file whose `canListen` is false, so the pitch controls are absent on native until `native-playback-follow-ups` builds it. Spec the capability gate.
+- [x] 3.2 Build `PitchStore` and `usePitch`: permission flow, listening lifecycle (start only with a mounted consumer, stop on last unmount), pause when the app is not visible and resume without a prompt, interruption and recovery, headphones hint flag. Spec with a fake `PcmSource`.
+- [x] 3.3 Add a test that nothing in the pipeline writes samples to storage or the network layer.
 
 ## 4. Practice tools menu, monitor, and Pitch view
 
@@ -27,7 +27,7 @@ Web is the build and verification target of this change. Native iOS and Android 
 - [ ] 4.3 Build the pure Pitch view model in the app: the store's history (note segments plus a cents trace at the frame rate, memory only, capped to the largest zoom window, dropped when listening stops), roll windowing (auto-centred vertical range, time zoom about 5 to 60 s, octave rows emphasised), the target (nearest note, or held), and the focus-panel trace including clamping beyond ±50 cents with a direction marker. Use `centsZone` for every colour and text label. Spec each, with synthetic histories.
 - [ ] 4.4 Build the monitor strip (note, cents gauge, short history, expand and close controls, idle, blocked, and paused states, the one-time headphones note) and its placement above the piano or the mini-player and tab bar; its on or off state is remembered and the menu row turns it on. Spec the model.
 - [ ] 4.5 Build the full-screen `Pitch` view as approved in the mock: header with close and settings, the readout with the zone in text, the focus panel, the progression roll with zoom, the readout bar (pitch, confidence, listen toggle, reference tuning, state), the landscape layout, and the settings sheet (sensitivity, reference tuning). Keep it keyboard-operable, with the note readout as a labelled value (no live region). Verify in the browser preview in portrait and landscape.
-- [ ] 4.6 Settings store: sensitivity, reference tuning (both edited from the Pitch view) and `Show other-octave matches` (default off, edited only from the viewer's Practice tools row). Spec the preference store, including that the other-octave value survives the row being absent.
+- [ ] 4.6 Settings store: sensitivity, reference tuning (both edited from the Pitch view) and `Show other-octave matches` (default off, edited only from the viewer's Practice tools row). Spec the preference store, including that the other-octave value survives the row being absent. `PitchStore` (3.2) already exposes `setSensitivity` and `setReferenceHz` but keeps them in memory only; persist them here and load them into the store.
 
 ## 5. Piano and score
 
@@ -42,4 +42,10 @@ Web is the build and verification target of this change. Native iOS and Android 
 ## 7. Hand-off and archive
 
 - [ ] 7.1 Before archiving, update the artifacts of `native-playback-follow-ups` (README, `proposal.md`, `tasks.md`; write its design and spec deltas only if it is being scheduled) as needed so native support for this change is complete there. Add a task for native pitch detection that carries over: the capture-library spike (`react-native-audio-api` `AudioRecorder.onAudioReady` versus `@siteed/audio-studio`, with the findings and licence notes in this change's design); `PcmSource.native` and `pitchCapabilities().canListen`; microphone permission strings and the Expo config plugin options; coexistence with `react-native-track-player` (iOS audio session category and route, Android audio focus, lock-screen controls); listening only while the app is visible with no background-mode or foreground-service configuration; buffer size, latency, and CPU on a device; the headphones hint and track bleed on a device; and the on-device interruption and permission-denied paths. Cross-reference the existing items it depends on: 1.2 (native semitone pitch, so the score offset becomes non-zero), 1.6 (native sheet music viewer, for score marks), and 1.7 (native piano, for the detected key state). Confirm the final wording with the user before editing that change.
-- [ ] 7.2 Archive this change and sync its specs.
+- [ ] 7.2 Archive this change and sync its specs, once every task above and in section 8 is checked off (or section 8 items are moved into follow-up changes).
+
+## 8. Follow-ups found during implementation
+
+Out of scope for this change; do them after the planned tasks above, or move them into follow-up changes.
+
+- [ ] 8.1 `packages/mobile-rehearsal-player/src/app/library/playback/utils/saved-track-web-download.ts` is 319 lines and trips the `max-lines` lint warning (limit 300). Pre-existing; split it with `code-move-checkpointed`.
