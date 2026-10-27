@@ -144,7 +144,7 @@
     "metro-config": "*",
     "metro-resolver": "*",
     "opensheetmusicdisplay": "^2.2.1",
-    "pdfjs-dist": "3.11.174",
+    "pdfjs-dist": "4.2.67",
     "phosphor-react-native": "*",
     "react": "19.1.0",
     "react-native": "*",
