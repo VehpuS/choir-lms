@@ -43,7 +43,15 @@ describe('offline files copy', () => {
 
     assert.equal(content.title, 'Remove 2 files from offline?');
     assert.match(content.message, /frees 2\.0 MB/);
-    assert.match(content.message, /Includes 1 kept offline/);
+    assert.match(content.message, /including 1 file you kept offline/);
+    assert.match(content.message, /Kept files will stream again/);
+  });
+
+  it('keeps the plain streaming note when no kept file is selected', () => {
+    const { message } = getRemoveSelectionConfirmation([row({})]);
+
+    assert.doesNotMatch(message, /kept/);
+    assert.match(message, /play or keep them offline/);
   });
 
   it('says clear all includes kept files', () => {

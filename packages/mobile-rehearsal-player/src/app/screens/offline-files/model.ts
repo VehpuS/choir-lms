@@ -51,11 +51,18 @@ export const getRemoveSelectionConfirmation = (
   rows: readonly OfflineFileRow[],
 ): LibraryFilesConfirmationDialogContent => {
   const keptCount = rows.filter((row) => row.kept).length;
-  const keptNote = keptCount > 0 ? ` ${keptCount} kept offline.` : '';
+  const freed = `This frees ${formatByteSize(totalBytes(rows))}`;
+
+  // Kept files only stream again until the user keeps them once more, which
+  // differs from automatic ones, so the warning names the rule.
+  const message =
+    keptCount > 0
+      ? `${freed}, including ${pluralFiles(keptCount)} you kept offline. Kept files will stream again until you keep them offline again.`
+      : `${freed}. They will stream again until you play or keep them offline.`;
 
   return {
     confirmLabel: 'Remove',
-    message: `This frees ${formatByteSize(totalBytes(rows))}.${keptNote ? ` Includes${keptNote}` : ''} They will stream again until you play or keep them offline.`,
+    message,
     title: `Remove ${pluralFiles(rows.length)} from offline?`,
   };
 };
