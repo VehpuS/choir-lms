@@ -23,6 +23,8 @@ const SELECTION_SURFACES = [
   'library/selection/use-library-entity-selection.tsx',
   'library/components/saved-rehearsal-library-section/use-library-files-selection.tsx',
   'library/selection/use-playlist-detail-selection.tsx',
+  // The offline files view (task 1.6).
+  'screens/offline-files/index.tsx',
 ] as const;
 
 // Surfaces that reuse the shared entry icon to choose a few rows for one

@@ -8,11 +8,9 @@ import type { PlaylistPlaybackSession } from '../../../library/playlists/utils/s
 import type { PlaylistDraftIssue } from '../../../library/playlists/utils/saved-playlist-view-model';
 import type { PlaybackShapingControls } from '../../playback/shaping/shaping-surface-model';
 import { ShellPianoDock } from '../../../library/piano/components/shell-piano-dock';
-import { SettingsScreen } from '../../../screens/settings';
-import {
-  settingsNavigationStore,
-  useIsSettingsOpen,
-} from '../../../screens/settings/settings-navigation-store';
+import { offlineFilesNavigationStore } from '../../../screens/offline-files/offline-files-navigation-store';
+import { settingsNavigationStore } from '../../../screens/settings/settings-navigation-store';
+import { ShellOverlays } from './shell-overlays';
 import { styles } from '../mobile-shell-styles';
 import {
   SHELL_DESTINATIONS,
@@ -140,7 +138,6 @@ export const MobileShell = ({
 }: MobileShellProps) => {
   const [activeDestination, setActiveDestination] =
     useState<ShellDestinationKey>('library');
-  const isSettingsOpen = useIsSettingsOpen();
   const [activePlaybackSurface, setActivePlaybackSurface] =
     useState<PlaybackSurfaceKey | null>(null);
   const miniPlayerSummary = getMiniPlayerSummary({
@@ -214,11 +211,7 @@ export const MobileShell = ({
             </View>
           );
         })}
-        {isSettingsOpen ? (
-          <View style={styles.settingsOverlay}>
-            <SettingsScreen />
-          </View>
-        ) : null}
+        <ShellOverlays />
       </View>
 
       <ShellPianoDock isPlaybackSurfaceOpen={activePlaybackSurface !== null} />
@@ -237,6 +230,7 @@ export const MobileShell = ({
           onSelectDestination={(destination) => {
             // Settings covers the destinations, so choosing one leaves it.
             settingsNavigationStore.close();
+            offlineFilesNavigationStore.close();
             onCloseTagDetail();
             setActiveDestination(destination);
           }}

@@ -2,6 +2,8 @@ import type { DriveAuthorizationState } from '@org/google-drive';
 import { StyleSheet, View } from 'react-native';
 
 import type { DriveAuthorizationStatusCopy } from '../../utils/authorization';
+import { isOfflineStorageSupported } from '../../../../library/offline/offline-actions';
+import { offlineFilesNavigationStore } from '../../../../screens/offline-files/offline-files-navigation-store';
 import { settingsNavigationStore } from '../../../../screens/settings/settings-navigation-store';
 import { DriveSessionMenuPanel } from './drive-session-menu-panel';
 import { DriveSessionMenuTrigger } from './drive-session-menu-trigger';
@@ -49,6 +51,14 @@ export const DriveSessionMenu = ({
           canStartAuthorization={canStartAuthorization}
           isBusy={isBusy}
           onClearAuthorization={onClearAuthorization}
+          onOpenOfflineFiles={
+            isOfflineStorageSupported
+              ? () => {
+                  onToggleVisibility();
+                  offlineFilesNavigationStore.open();
+                }
+              : undefined
+          }
           onOpenSettings={() => {
             // The menu is open, so toggling closes it before Settings shows.
             onToggleVisibility();

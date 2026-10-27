@@ -16,6 +16,8 @@ type DriveSessionMenuPanelProps = {
   canStartAuthorization: boolean;
   isBusy: boolean;
   onClearAuthorization: () => void;
+  /** Absent where nothing is stored offline (native, for now). */
+  onOpenOfflineFiles?: () => void;
   onOpenSettings: () => void;
   onStartAuthorization: () => void;
   requestReady: boolean;
@@ -62,6 +64,7 @@ export const DriveSessionMenuPanel = ({
   canStartAuthorization,
   isBusy,
   onClearAuthorization,
+  onOpenOfflineFiles,
   onOpenSettings,
   onStartAuthorization,
   requestReady,
@@ -119,6 +122,13 @@ export const DriveSessionMenuPanel = ({
           <OutlinedActionButton
             label="Forget session"
             onPress={onClearAuthorization}
+            variant="neutral"
+          />
+        ) : null}
+        {onOpenOfflineFiles ? (
+          <OutlinedActionButton
+            label="Offline files"
+            onPress={onOpenOfflineFiles}
             variant="neutral"
           />
         ) : null}
