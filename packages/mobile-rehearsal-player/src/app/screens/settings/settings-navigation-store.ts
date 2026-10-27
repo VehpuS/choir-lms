@@ -11,7 +11,8 @@ export type SettingsCategoryKey =
   | 'bulk-selections'
   | 'piano'
   | 'my-parts'
-  | 'search-sources';
+  | 'search-sources'
+  | 'offline-storage';
 
 export type SettingsNavigationStore = {
   /** Goes from a category page to the category list, or closes from the list. */

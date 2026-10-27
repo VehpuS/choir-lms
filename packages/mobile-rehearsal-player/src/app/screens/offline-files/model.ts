@@ -1,4 +1,7 @@
-import { formatByteSize } from '../../library/offline/format-byte-size';
+import {
+  formatByteSize,
+  formatPresetSize,
+} from '../../library/offline/format-byte-size';
 import type { LibraryFilesConfirmationDialogContent } from '../../library/selection/library-files-confirmation-dialog';
 import type {
   OfflineFileRow,
@@ -29,7 +32,7 @@ export const OFFLINE_SORT_OPTIONS: ReadonlyArray<{
 
 /** `4.0 MB of 250 MB`: the automatic cache against the chosen cache size. */
 export const getAutomaticUsageLabel = (summary: OfflineStorageSummary) => {
-  return `${formatByteSize(summary.automaticBytes)} of ${formatByteSize(summary.budgetBytes)}`;
+  return `${formatByteSize(summary.automaticBytes)} of ${formatPresetSize(summary.budgetBytes)}`;
 };
 
 export const getKeptUsageLabel = (summary: OfflineStorageSummary) => {

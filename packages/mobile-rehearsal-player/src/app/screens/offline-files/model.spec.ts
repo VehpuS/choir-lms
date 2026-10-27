@@ -29,6 +29,10 @@ describe('offline files copy', () => {
 
     assert.equal(getAutomaticUsageLabel(summary), '4.0 MB of 250 MB');
     assert.equal(getKeptUsageLabel(summary), '300 MB kept');
+    assert.equal(
+      getAutomaticUsageLabel({ ...summary, budgetBytes: 1024 * MEGABYTE }),
+      '4.0 MB of 1 GB',
+    );
   });
 
   it('names the count, the size freed and any kept files being removed', () => {

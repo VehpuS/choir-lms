@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { formatByteSize } from './format-byte-size.js';
+import { formatByteSize, formatPresetSize } from './format-byte-size.js';
 
 describe('formatByteSize', () => {
   it('reads the spec examples', () => {
@@ -19,5 +19,10 @@ describe('formatByteSize', () => {
     assert.equal(formatByteSize(1023), '1023 B');
     assert.equal(formatByteSize(1024), '1.0 KB');
     assert.equal(formatByteSize(2 * 1024 ** 3), '2.0 GB');
+  });
+
+  it('formats a preset without a trailing .0', () => {
+    assert.equal(formatPresetSize(1024 ** 3), '1 GB');
+    assert.equal(formatPresetSize(250 * 1024 * 1024), '250 MB');
   });
 });

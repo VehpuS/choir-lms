@@ -25,3 +25,10 @@ export const formatByteSize = (bytes: number): string => {
 
   return `${text} ${UNITS[unitIndex]}`;
 };
+
+const TRAILING_ZERO_DECIMAL_PATTERN = /\.0(?= )/;
+
+/** A whole-unit size for a preset choice: `250 MB`, `1 GB`, never `1.0 GB`. */
+export const formatPresetSize = (bytes: number): string => {
+  return formatByteSize(bytes).replace(TRAILING_ZERO_DECIMAL_PATTERN, '');
+};

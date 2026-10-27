@@ -5,6 +5,8 @@ import {
   type SearchTemplateProblem,
 } from '@org/audio-library-models';
 
+import { formatPresetSize } from '../../library/offline/format-byte-size';
+import { AUDIO_CACHE_BUDGET_PRESETS_BYTES } from '../../library/playback/audio-cache/audio-cache-budget';
 import {
   parsePianoPreferences,
   type PianoPreferences,
@@ -35,7 +37,7 @@ export type SettingsCategory = {
   title: string;
 };
 
-// Order is the order of the category list. Offline storage joins it in 1.6.
+// Order is the order of the category list.
 export const SETTINGS_CATEGORIES: readonly SettingsCategory[] = [
   {
     key: 'bulk-selections',
@@ -49,13 +51,33 @@ export const SETTINGS_CATEGORIES: readonly SettingsCategory[] = [
     summary: 'Where sheet music and lyrics are searched',
     title: 'Search sources',
   },
+  {
+    key: 'offline-storage',
+    summary: 'Cache size and files kept on this device',
+    title: 'Offline storage',
+  },
 ];
 
-/** Piano settings only exist where the piano can play. */
-export const visibleSettingsCategories = (canPlayPiano: boolean) => {
-  return SETTINGS_CATEGORIES.filter(
-    (category) => category.key !== 'piano' || canPlayPiano,
-  );
+export type SettingsCategoryAvailability = {
+  canPlayPiano: boolean;
+  canStoreOffline: boolean;
+};
+
+/**
+ * Piano settings only exist where the piano can play, and Offline storage
+ * only where audio can be stored (web, until native follows).
+ */
+export const visibleSettingsCategories = ({
+  canPlayPiano,
+  canStoreOffline,
+}: SettingsCategoryAvailability) => {
+  return SETTINGS_CATEGORIES.filter((category) => {
+    if (category.key === 'piano') {
+      return canPlayPiano;
+    }
+
+    return category.key !== 'offline-storage' || canStoreOffline;
+  });
 };
 
 export const findSettingsCategory = (key: SettingsCategoryKey) => {
@@ -228,3 +250,16 @@ export const pianoPreferencePatch = (
     ? { sound: parsed.sound }
     : { accidentals: parsed.accidentals };
 };
+
+export const OFFLINE_STORAGE_COPY = {
+  body: 'Audio you play is kept on this device so it replays without downloading. Files you choose to keep offline are stored separately and never removed automatically.',
+  cacheSizeBody:
+    'How much recently played audio to keep. Lowering it removes the least recently used files now; kept files are not affected.',
+  cacheSizeTitle: 'Cache size',
+  openFilesLabel: 'Open offline files',
+  usedTitle: 'Storage used',
+} as const;
+
+export const OFFLINE_CACHE_SIZE_OPTIONS = AUDIO_CACHE_BUDGET_PRESETS_BYTES.map(
+  (bytes) => ({ label: formatPresetSize(bytes), value: String(bytes) }),
+);

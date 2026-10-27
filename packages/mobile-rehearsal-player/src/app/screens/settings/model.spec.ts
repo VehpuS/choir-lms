@@ -9,6 +9,7 @@ import {
   pianoPreferenceValue,
   SETTINGS_PREFERENCE_ROWS,
   buildPartPresetChips,
+  OFFLINE_CACHE_SIZE_OPTIONS,
   hasStoredBulkChoiceDefault,
   visibleSettingsCategories,
 } from './model.js';
@@ -114,12 +115,41 @@ describe('piano settings rows', () => {
 
   it('lists the categories in order and hides Piano where it cannot play', () => {
     assert.deepEqual(
-      visibleSettingsCategories(true).map((category) => category.key),
-      ['bulk-selections', 'piano', 'my-parts', 'search-sources'],
+      visibleSettingsCategories({
+        canPlayPiano: true,
+        canStoreOffline: true,
+      }).map((category) => category.key),
+      [
+        'bulk-selections',
+        'piano',
+        'my-parts',
+        'search-sources',
+        'offline-storage',
+      ],
     );
     assert.deepEqual(
-      visibleSettingsCategories(false).map((category) => category.key),
-      ['bulk-selections', 'my-parts', 'search-sources'],
+      visibleSettingsCategories({
+        canPlayPiano: false,
+        canStoreOffline: true,
+      }).map((category) => category.key),
+      ['bulk-selections', 'my-parts', 'search-sources', 'offline-storage'],
+    );
+  });
+
+  it('hides Offline storage where nothing can be stored', () => {
+    assert.equal(
+      visibleSettingsCategories({
+        canPlayPiano: true,
+        canStoreOffline: false,
+      }).some((category) => category.key === 'offline-storage'),
+      false,
+    );
+  });
+
+  it('offers the cache size presets with whole-unit labels', () => {
+    assert.deepEqual(
+      OFFLINE_CACHE_SIZE_OPTIONS.map((option) => option.label),
+      ['100 MB', '250 MB', '500 MB', '1 GB', '2 GB'],
     );
   });
 });

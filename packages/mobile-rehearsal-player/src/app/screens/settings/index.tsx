@@ -5,6 +5,7 @@ import { DestinationHeader } from '../../components/destination-header';
 import { useEscapeToDismiss } from '../../components/escape-to-dismiss/use-escape-to-dismiss';
 import { useFocusOnMount } from '../../components/focus-on-mount/use-focus-on-mount';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
+import { isOfflineStorageSupported } from '../../library/offline/offline-actions';
 import { pianoCapabilities } from '../../library/piano/piano-capabilities';
 import { scrollGutterStyles } from '../../components/scroll-gutter';
 import { darkScrollbarStyle } from '../../components/dark-scrollbar';
@@ -17,6 +18,7 @@ import {
   visibleSettingsCategories,
 } from './model';
 import { MyPartsSection } from './my-parts-section';
+import { OfflineStorageSection } from './offline-storage-section';
 import { PianoSection } from './piano-section';
 import { SearchSourcesSection } from './search-sources-section';
 import {
@@ -33,6 +35,8 @@ const renderCategoryPage = (page: SettingsCategoryKey) => {
       return <PianoSection />;
     case 'my-parts':
       return <MyPartsSection />;
+    case 'offline-storage':
+      return <OfflineStorageSection />;
     case 'search-sources':
       return (
         <>
@@ -96,7 +100,10 @@ export const SettingsScreen = () => {
           renderCategoryPage(page)
         ) : (
           <CategoryList
-            categories={visibleSettingsCategories(pianoCapabilities().canPlay)}
+            categories={visibleSettingsCategories({
+              canPlayPiano: pianoCapabilities().canPlay,
+              canStoreOffline: isOfflineStorageSupported,
+            })}
             onSelect={(next) => {
               settingsNavigationStore.openPage(next.key);
             }}
