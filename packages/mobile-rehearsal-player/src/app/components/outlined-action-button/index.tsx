@@ -57,7 +57,7 @@ export const OutlinedActionButton = ({
 
   return (
     <Pressable
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="button"
       accessibilityState={{ busy: isBusy, disabled: isDisabled, selected }}
       {...ariaStateProps({ busy: isBusy, disabled: isDisabled, selected })}

@@ -12,7 +12,9 @@ import { SurfaceIconButton } from '../../components/surface-icon-button';
 import type {
   OfflineFileRow,
   OfflineFileSort,
+  OfflineStorageSnapshot,
 } from '../../library/offline/offline-storage-model';
+import type { OfflineStorageService } from '../../library/offline/offline-storage-service';
 import type { BulkAction } from '../../library/selection/bulk-action-model';
 import { getSelectionCountLabel } from '../../library/selection/selection-copy';
 import { SelectEntryButton } from '../../library/selection/select-entry-button';
@@ -46,9 +48,31 @@ const toSelectionEntry = (row: OfflineFileRow) => ({
  * selection model and bars rather than a list design of its own.
  */
 export const OfflineFilesScreen = () => {
-  const screenRef = useRef<View>(null);
   const [sort, setSort] = useState<OfflineFileSort>('recent');
-  const { isLoading, service, snapshot } = useOfflineStorage(sort);
+  const storage = useOfflineStorage(sort);
+
+  return (
+    <OfflineFilesContent {...storage} onSortChange={setSort} sort={sort} />
+  );
+};
+
+type OfflineFilesContentProps = {
+  isLoading: boolean;
+  onSortChange: (sort: OfflineFileSort) => void;
+  service: OfflineStorageService;
+  snapshot: OfflineStorageSnapshot;
+  sort: OfflineFileSort;
+};
+
+/** The view itself, given its data, so it renders without browser storage. */
+export const OfflineFilesContent = ({
+  isLoading,
+  onSortChange,
+  service,
+  snapshot,
+  sort,
+}: OfflineFilesContentProps) => {
+  const screenRef = useRef<View>(null);
   const confirmationFlow = useLibraryFilesConfirmationFlow();
   const selection = useSelection<OfflineFileRow>();
   const { cancel, deselectMany, enter, selectMany, selectedKeys, toggle } =
@@ -196,7 +220,7 @@ export const OfflineFilesScreen = () => {
           <>
             <SegmentedControl
               accessibilityLabel="Sort offline files"
-              onSelect={setSort}
+              onSelect={onSortChange}
               options={OFFLINE_SORT_OPTIONS}
               selectedValue={sort}
             />

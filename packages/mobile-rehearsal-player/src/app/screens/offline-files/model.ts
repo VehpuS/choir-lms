@@ -15,7 +15,7 @@ export const OFFLINE_FILES_COPY = {
   clearAutomaticLabel: 'Clear automatic cache',
   closeLabel: 'Close offline files',
   emptyBody:
-    'Play a track and it is saved here automatically. Choose Keep offline from a track or loop menu to keep a file on this device until you remove it.',
+    'Play a track and it is saved here automatically. Choose "Keep offline" from a track or loop menu to keep a file on this device until you remove it.',
   emptyTitle: 'Nothing offline yet',
   keptTitle: 'Kept',
   removeLabel: 'Remove from offline',
