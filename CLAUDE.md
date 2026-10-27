@@ -77,6 +77,7 @@ openspec status --change "<change-name>"
 - `audio-library-runtime` — runtime/state logic built on the models package (depends on `audio-library-models`).
 - `google-drive` — Google Drive integration logic (depends on `audio-library-models`).
 - `midi-notation` — turns MIDI files into MusicXML staves and lists their parts (depends on `audio-library-models`). It is the app's only lazily loaded workspace project, imported dynamically by the sheet music viewer; Nx forbids static imports of a lazily loaded project, so keep it out of static imports and put anything shared in `audio-library-models`.
+- `pitch-detection` — turns microphone frames into sung notes: the `PitchEstimator` interface, a pitchy-backed estimator, level/clarity gates, a median smoother, and a note segmenter (depends on `audio-library-models`; pitchy is its only third-party dependency). Unlike `midi-notation` it is small enough to import statically; the lazy-loading rule does not apply. Note math shared with the piano and score (frequency to note and cents, `matchSungNote`, `centsZone`) lives in `audio-library-models`.
 - `mobile-rehearsal-player` — the Expo/React Native app; depends on all of the above.
 
 Shared packages are kept framework-agnostic; app-facing/framework-specific code lives in `mobile-rehearsal-player`. Prefer reusing/extending a shared package over duplicating domain logic in the app.

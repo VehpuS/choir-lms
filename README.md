@@ -91,6 +91,7 @@ The first change proposal for this direction is `add-mobile-rehearsal-player` un
 ## Repository Notes
 
 - `packages/` is the workspace home for future apps and shared libraries
+- `packages/pitch-detection` holds the framework-agnostic pitch-detection pipeline (estimator, gates, smoother, note segmenter); it is imported statically, unlike the lazily loaded `midi-notation`
 - `openspec/` contains proposals, designs, specs, and tasks for planned work
 - `nx.json` and the root TypeScript configuration provide workspace-level build and project settings
 - Cross-platform playback architecture details are documented in `docs/mobile-cross-platform-audio-playback.md`

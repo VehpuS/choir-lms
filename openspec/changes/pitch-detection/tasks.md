@@ -11,8 +11,8 @@ Web is the build and verification target of this change. Native iOS and Android 
 ## 2. Pure detection logic
 
 - [x] 2.1 Add note math to `audio-library-models`: frequency to MIDI and cents with a reference tuning, `matchSungNote` returning `'exact' | 'other-octave' | null` (tolerance ±50 cents; the caller decides whether to show `other-octave`) and `centsZone` (`precise` ≤10, `near` ≤25, `quarter-tone-off` ≤50, `off-pitch`). Spec boundaries, the same note in other octaves, and tuning changes.
-- [ ] 2.2 Scaffold `@org/pitch-detection` with the `nx-generate` skill, copying `midi-notation`'s package, tsconfig, and target setup; depend on `@org/audio-library-models` and pitchy; commit the manifest and `package-lock.json` together and run `npm ci`. Add the package to the CLAUDE.md workspace layout list and the README, noting that it is imported statically (unlike `midi-notation`).
-- [ ] 2.3 In that package add `PitchEstimator`, the pitchy-backed estimator, level and clarity gates, median smoother, and note segmenter with hold. Spec with synthetic sines, vibrato, silence, noise, octave jumps, and gaps. Confirm lint, test, typecheck, and build targets run through Nx.
+- [x] 2.2 Scaffold `@org/pitch-detection` with the `nx-generate` skill, copying `midi-notation`'s package, tsconfig, and target setup; depend on `@org/audio-library-models` and pitchy; commit the manifest and `package-lock.json` together and run `npm ci`. Add the package to the CLAUDE.md workspace layout list and the README, noting that it is imported statically (unlike `midi-notation`).
+- [x] 2.3 In that package add `PitchEstimator`, the pitchy-backed estimator, level and clarity gates, median smoother, and note segmenter with hold. Spec with synthetic sines, vibrato, silence, noise, octave jumps, and gaps. Confirm lint, test, typecheck, and build targets run through Nx.
 
 ## 3. Capture and store
 
