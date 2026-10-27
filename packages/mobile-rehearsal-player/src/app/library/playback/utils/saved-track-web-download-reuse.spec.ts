@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { createSavedTrackDownloadProgressStore } from './saved-track-download-progress.js';
 import { subscribeToSavedTrackDownloads } from './saved-track-download-events.js';
 import { createSavedTrackAudioCache } from './saved-track-audio-cache.js';
 import {
@@ -253,5 +254,59 @@ describe('reused saved track downloads', () => {
     );
 
     assert.equal(touched, 0);
+  });
+
+  it("shows a joined download in the joining caller's progress store and clears it after", async () => {
+    const cache = createSavedTrackAudioCache(100);
+    const controlled = createControlledFetch();
+    const prefetchStore = createSavedTrackDownloadProgressStore();
+    const playerStore = createSavedTrackDownloadProgressStore();
+    const prefetch = startSavedTrackDownload(
+      { url: TRACK_URL },
+      { fetch: controlled.fetch, store: prefetchStore },
+      { cache, cancelOnReset: false, version: 'v1' },
+    );
+
+    // Let the prefetch's download start before the player joins it.
+    await new Promise((resolve) => setImmediate(resolve));
+    const player = startSavedTrackDownload(
+      { url: TRACK_URL },
+      { fetch: controlled.fetch, store: playerStore },
+      { cache, version: 'v1' },
+    );
+
+    assert.equal(playerStore.getSnapshot().status, 'downloading');
+
+    controlled.finish();
+    await Promise.all([prefetch, player]);
+
+    assert.equal(playerStore.getSnapshot().status, 'idle');
+    assert.equal(prefetchStore.getSnapshot().status, 'idle');
+  });
+
+  it("clears a released waiter's progress while the download continues for another", async () => {
+    const cache = createSavedTrackAudioCache(100);
+    const controlled = createControlledFetch();
+    const playerStore = createSavedTrackDownloadProgressStore();
+    const prefetch = startSavedTrackDownload(
+      { url: TRACK_URL },
+      { fetch: controlled.fetch },
+      { cache, cancelOnReset: false, version: 'v1' },
+    );
+    const player = startSavedTrackDownload(
+      { url: TRACK_URL },
+      { fetch: controlled.fetch, store: playerStore },
+      { cache, version: 'v1' },
+    );
+
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(playerStore.getSnapshot().status, 'downloading');
+
+    abortSavedTrackDownloads();
+
+    assert.equal(playerStore.getSnapshot().status, 'idle');
+    controlled.finish();
+    await assert.rejects(player, isSavedTrackDownloadAbortError);
+    await prefetch;
   });
 });

@@ -10,6 +10,7 @@ import { emitSavedTrackDownloaded } from './saved-track-download-events';
 import {
   IDLE_SAVED_TRACK_DOWNLOAD_PROGRESS,
   savedTrackDownloadProgressStore,
+  type SavedTrackDownloadProgress,
   type SavedTrackDownloadProgressStore,
 } from './saved-track-download-progress';
 
@@ -216,6 +217,8 @@ export const downloadSavedTrackBlob = async (
 // superseded request never cancels bytes another caller still needs.
 type SharedDownload = {
   controller: AbortController;
+  /** Fans the download's progress out to every waiter's store. */
+  progress: SavedTrackDownloadProgressStore;
   promise: Promise<Blob>;
   waiters: Set<Waiter>;
 };
@@ -223,6 +226,46 @@ type SharedDownload = {
 type Waiter = {
   cancelOnReset: boolean;
   release: () => void;
+  store: SavedTrackDownloadProgressStore;
+};
+
+// A shared download serves several callers, each with its own progress store
+// (the player's, a background waveform prefetch's). Progress goes to every
+// waiter's store, so a player that joins a background download still shows
+// it. A store is cleared only while it still shows this download.
+const createFanOutProgressStore = (
+  getStores: () => SavedTrackDownloadProgressStore[],
+): SavedTrackDownloadProgressStore => {
+  let snapshot: SavedTrackDownloadProgress = IDLE_SAVED_TRACK_DOWNLOAD_PROGRESS;
+
+  return {
+    getSnapshot: () => snapshot,
+    publish(next) {
+      const previous = snapshot;
+
+      snapshot = next;
+
+      for (const store of getStores()) {
+        if (next.status !== 'idle') {
+          store.publish(next);
+        } else if (previous.status === 'downloading') {
+          clearStoreIfShowing(store, previous.downloadId);
+        }
+      }
+    },
+    subscribe: () => () => undefined,
+  };
+};
+
+const clearStoreIfShowing = (
+  store: SavedTrackDownloadProgressStore,
+  downloadId: number,
+) => {
+  const current = store.getSnapshot();
+
+  if (current.status === 'downloading' && current.downloadId === downloadId) {
+    store.publish(IDLE_SAVED_TRACK_DOWNLOAD_PROGRESS);
+  }
 };
 
 const sharedDownloads = new Map<string, SharedDownload>();
@@ -317,6 +360,9 @@ export const startSavedTrackDownload = async (
   if (!download) {
     const controller = new AbortController();
     const waiters = new Set<Waiter>();
+    const progress = createFanOutProgressStore(() => [
+      ...new Set([...waiters].map((waiter) => waiter.store)),
+    ]);
     // A file persisted by an earlier session is read inside the shared
     // promise, so callers that arrive meanwhile share the read too.
     const loadSavedTrackBlob = async () => {
@@ -330,7 +376,7 @@ export const startSavedTrackDownload = async (
 
       const blob = await downloadSavedTrackBlob(
         { ...request, signal: controller.signal },
-        resolveDownloadDependencies(dependencies),
+        { ...resolveDownloadDependencies(dependencies), store: progress },
       );
 
       if (cacheable) {
@@ -351,6 +397,7 @@ export const startSavedTrackDownload = async (
 
         return blob;
       }),
+      progress,
       waiters,
     };
     // Downloads without a version are not shared, but reset must still reach
@@ -371,19 +418,37 @@ export const startSavedTrackDownload = async (
   const sharedDownload = download;
 
   return new Promise<Blob>((resolve, reject) => {
+    const store = dependencies.store ?? savedTrackDownloadProgressStore;
     const waiter: Waiter = {
       cancelOnReset,
       release: () => {
         sharedDownload.waiters.delete(waiter);
         reject(createAbortError());
 
+        // The download may go on for other waiters; this one's store must
+        // not keep showing it.
+        const shown = sharedDownload.progress.getSnapshot();
+
+        if (shown.status === 'downloading') {
+          clearStoreIfShowing(store, shown.downloadId);
+        }
+
         if (sharedDownload.waiters.size === 0) {
           sharedDownload.controller.abort();
         }
       },
+      store,
     };
 
     sharedDownload.waiters.add(waiter);
+
+    // Joining a download already under way: show where it is now.
+    const joined = sharedDownload.progress.getSnapshot();
+
+    if (joined.status === 'downloading') {
+      store.publish(joined);
+    }
+
     sharedDownload.promise.then(
       (blob) => {
         sharedDownload.waiters.delete(waiter);
