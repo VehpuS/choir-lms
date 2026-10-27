@@ -17,6 +17,7 @@ import type {
   LibrarySearchEntityFilter,
   TagFilterMatchMode,
 } from '../../search/utils/saved-library-search-view-model';
+import type { SavedTrackPlaybackIssue } from '../../playback/utils/saved-track-playback-presentation';
 import type { FilesViewPlayback } from './files-row-playback-model';
 import type { FilesPlaylistAddMode } from './files-view-model';
 import type { LibraryFilesSuccessFeedback } from './library-files-success-feedback';
@@ -56,6 +57,7 @@ export type SavedRehearsalLibraryFilesViewProps = {
     typeof useRehearsalLibraryController
   >['originalLocation'];
   playback: FilesViewPlayback;
+  playbackIssue?: SavedTrackPlaybackIssue | null;
   playlistAddMode?: FilesPlaylistAddMode;
   searchState: {
     activeSearchQuery: string | null;

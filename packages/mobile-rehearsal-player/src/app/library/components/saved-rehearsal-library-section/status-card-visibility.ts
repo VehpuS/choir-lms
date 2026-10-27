@@ -24,11 +24,14 @@ export const shouldShowSavedLibraryStatusCard = (options: {
 };
 
 export const shouldShowPlaybackStatusCard = (options: {
+  /** The issue already shows on its own Files row. */
+  isIssueShownOnRow?: boolean;
   isSearchPanelVisible: boolean;
   statusTone: StatusTone | null;
 }) => {
   return (
     !options.isSearchPanelVisible &&
+    !options.isIssueShownOnRow &&
     options.statusTone !== null &&
     isActionableStatusTone(options.statusTone)
   );

@@ -6,8 +6,10 @@ import {
   type LibraryFilesExplorerState,
 } from '../../saved-rehearsal-library/library-files-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
+import type { SavedTrackPlaybackIssue } from '../../playback/utils/saved-track-playback-presentation';
 import type { AppIconName } from '../../../components/app-icon/model';
 import type { ExplorerBreadcrumbItem } from '../explorer/model';
+import { getFilesRowPlaybackIssue } from './files-row-playback-issue';
 import {
   formatFilesRowMeta,
   resolveFilesRowPlaybackPresentation,
@@ -195,6 +197,8 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
   onToggleSourcePlayback: (source: DriveLibrarySource) => Promise<void>;
   pendingLoopBuilderSourceId: string | null;
   playback: FilesViewPlayback;
+  /** Shown on the row of the file it belongs to. */
+  playbackIssue?: SavedTrackPlaybackIssue | null;
   playlistAddMode?: FilesPlaylistAddMode;
 }): SavedRehearsalLibraryFilesViewModel => {
   const explorer = options.explorer ?? options.files.explorer;
@@ -263,7 +267,9 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
         kind: row.kind,
         label: row.label,
         leadingIconName: playback.leadingIconName,
-        message: 'message' in row ? row.message : undefined,
+        message:
+          ('message' in row ? row.message : undefined) ??
+          getFilesRowPlaybackIssue(options.playbackIssue ?? null, row),
         metaLabel: formatFilesRowMeta({
           isPlaying: playback.isPlaying,
           supportingLabel: row.supportingLabel,

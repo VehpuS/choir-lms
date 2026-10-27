@@ -7,6 +7,8 @@ import { SavedRehearsalLibraryBrowseContent } from './browse-content';
 import { buildSavedRehearsalLibraryDetailSectionElements } from './detail-section-elements';
 import { useSavedItemRequestHandler } from '../saved-item-menu/use-saved-item-request-handler';
 import { SavedRehearsalLibrarySearchShell } from './search-shell';
+import { shouldRenderFilesExplorer } from './browse-content-model';
+import { isPlaybackIssueShownOnFilesRow } from './files-row-playback-issue';
 import { SavedRehearsalLibraryStatusCards } from './status-cards';
 import { savedRehearsalLibrarySectionStyles as styles } from './styles';
 import { SavedRehearsalLibraryTagEditorSheet } from './tag-editor-sheet';
@@ -37,6 +39,7 @@ export const SavedRehearsalLibrarySection = (
     pendingLoopId,
     pendingPlaylistId,
     pendingSourceId,
+    playbackIssue,
     playbackState,
     playlistIssue,
     queuePlayableItemsNext,
@@ -197,6 +200,13 @@ export const SavedRehearsalLibrarySection = (
           selectedView={selectedView}
         />
         <SavedRehearsalLibraryStatusCards
+          isPlaybackIssueShownOnRow={
+            shouldRenderFilesExplorer(selectedView) &&
+            isPlaybackIssueShownOnFilesRow(
+              playbackIssue,
+              libraryFiles.explorer?.rows,
+            )
+          }
           isSavedLibraryLoading={isSavedLibraryLoading}
           isSearchPanelVisible={isSearchPanelVisible}
           savedSourceCount={savedLibrarySources.length}

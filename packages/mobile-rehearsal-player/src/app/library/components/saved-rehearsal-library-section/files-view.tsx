@@ -54,6 +54,7 @@ export const SavedRehearsalLibraryFilesView = ({
   onViewTrackLoops,
   originalLocationActions,
   playback,
+  playbackIssue,
   playlistAddMode,
   searchState,
   onTogglePlayableItemPlayback,
@@ -160,6 +161,7 @@ export const SavedRehearsalLibraryFilesView = ({
     onTogglePlayableItemPlayback,
     onToggleSourcePlayback,
     playback,
+    playbackIssue,
     playlistAddMode,
   });
 

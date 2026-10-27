@@ -111,6 +111,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
     return (
       <>
         <SavedRehearsalLibraryFilesView
+          playbackIssue={playbackIssue}
           activePlayableItem={activePlayableItem}
           authorization={authorization}
           canMutateLibrary={canMutateLibrary}

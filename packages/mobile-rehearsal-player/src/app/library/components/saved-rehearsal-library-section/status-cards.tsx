@@ -6,6 +6,7 @@ import {
 import type { SavedRehearsalLibrarySectionProps } from './types';
 
 type SavedRehearsalLibraryStatusCardsProps = {
+  isPlaybackIssueShownOnRow: boolean;
   isSavedLibraryLoading: boolean;
   isSearchPanelVisible: boolean;
   savedSourceCount: number;
@@ -14,6 +15,7 @@ type SavedRehearsalLibraryStatusCardsProps = {
 };
 
 export const SavedRehearsalLibraryStatusCards = ({
+  isPlaybackIssueShownOnRow,
   isSavedLibraryLoading,
   isSearchPanelVisible,
   savedSourceCount,
@@ -27,6 +29,7 @@ export const SavedRehearsalLibraryStatusCards = ({
     statusTone: savedLibraryStatusCopy.tone,
   });
   const shouldShowPlaybackStatus = shouldShowPlaybackStatusCard({
+    isIssueShownOnRow: isPlaybackIssueShownOnRow,
     isSearchPanelVisible,
     statusTone: savedTrackPlaybackStatusCopy?.tone ?? null,
   });
