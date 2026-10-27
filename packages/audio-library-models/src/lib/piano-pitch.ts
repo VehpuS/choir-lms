@@ -82,9 +82,12 @@ export const midiToNoteName = (
   return `${midiToPitchName(midi, accidentals)}${octave}`;
 };
 
-/** Concert pitch, A4 = 440 Hz, equal temperament. */
-export const midiToFrequency = (midi: number): number => {
-  return A4_FREQUENCY_HZ * 2 ** ((midi - A4_MIDI) / SEMITONES_PER_OCTAVE);
+/** Equal temperament; concert pitch (A4 = 440 Hz) unless a reference is given. */
+export const midiToFrequency = (
+  midi: number,
+  referenceHz: number = A4_FREQUENCY_HZ,
+): number => {
+  return referenceHz * 2 ** ((midi - A4_MIDI) / SEMITONES_PER_OCTAVE);
 };
 
 export type MusicXmlPitch = {
