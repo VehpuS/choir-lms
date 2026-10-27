@@ -44,6 +44,26 @@ describe('offline storage service', () => {
     assert.deepEqual(calls.dropped, ['kept', 'auto-a']);
   });
 
+  it('removes a track’s score files with it', async () => {
+    const { memory, service } = await setup();
+
+    await memory.store.write(
+      {
+        driveFileId: 'score',
+        kind: 'score',
+        ownerIds: ['kept'],
+        pinned: true,
+        sizeBytes: 3,
+        sourceVersion: 'score',
+        touchedAt: 1,
+      },
+      blobOf(3),
+    );
+    await service.removeMany(['kept']);
+
+    assert.equal(memory.records.has('score'), false);
+  });
+
   it('clears the automatic cache and leaves kept files', async () => {
     const { calls, memory, service } = await setup();
 

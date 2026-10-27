@@ -14,7 +14,17 @@ const REQUEST = {
   version: 'v1',
 };
 
-const setup = (options: { budgetBytes?: number; download?: () => Blob }) => {
+const SCORE = {
+  driveFileId: 'score-1',
+  name: 'Full score.pdf',
+  url: 'https://drive.test/score-1',
+};
+
+const setup = (options: {
+  budgetBytes?: number;
+  download?: () => Blob;
+  downloadScore?: (request: { driveFileId: string }) => Blob;
+}) => {
   const memory = createMemoryAudioStore();
   const cache = createPersistentAudioCache({
     budgetBytes: options.budgetBytes ?? 100,
@@ -31,6 +41,13 @@ const setup = (options: { budgetBytes?: number; download?: () => Blob }) => {
       }
 
       return options.download();
+    },
+    downloadScore: async (request) => {
+      if (!options.downloadScore) {
+        throw new Error('network');
+      }
+
+      return options.downloadScore(request);
     },
     memory: {
       delete: (id) => {
@@ -117,5 +134,76 @@ describe('keeping a file offline', () => {
     const [stored] = await cache.list();
 
     assert.equal(stored?.name, 'Soprano.mp3');
+  });
+
+  it('keeps a track’s score files with it, owned by the track', async () => {
+    const { cache, keeping } = setup({
+      download: () => blobOf(10),
+      downloadScore: () => blobOf(3),
+    });
+
+    await keeping.keepOffline({ ...REQUEST, scores: [SCORE] });
+
+    const score = (await cache.list()).find(
+      ({ driveFileId }) => driveFileId === 'score-1',
+    );
+
+    assert.equal(score?.kind, 'score');
+    assert.equal(score?.pinned, true);
+    assert.deepEqual(score?.ownerIds, ['file-a']);
+    assert.equal(score?.name, 'Full score.pdf');
+  });
+
+  it('still keeps the audio when a score cannot be fetched', async () => {
+    const { cache, keeping } = setup({ download: () => blobOf(10) });
+
+    assert.equal(
+      await keeping.keepOffline({ ...REQUEST, scores: [SCORE] }),
+      'kept',
+    );
+    assert.deepEqual(
+      (await cache.list()).map(({ driveFileId }) => driveFileId),
+      ['file-a'],
+    );
+  });
+
+  it('adds scores when the track was already kept', async () => {
+    const { cache, keeping } = setup({
+      download: () => blobOf(10),
+      downloadScore: () => blobOf(3),
+    });
+
+    await keeping.keepOffline(REQUEST);
+    await keeping.keepOffline({ ...REQUEST, scores: [SCORE] });
+
+    assert.equal((await cache.list()).length, 2);
+  });
+
+  it('removes a track’s scores with it but keeps a score another kept track uses', async () => {
+    const { cache, keeping } = setup({
+      download: () => blobOf(10),
+      downloadScore: () => blobOf(3),
+    });
+
+    await keeping.keepOffline({ ...REQUEST, scores: [SCORE] });
+    await keeping.keepOffline({
+      ...REQUEST,
+      driveFileId: 'file-b',
+      scores: [SCORE],
+    });
+    await keeping.removeFromOffline('file-a');
+
+    const left = await cache.list();
+
+    assert.deepEqual(left.map(({ driveFileId }) => driveFileId).sort(), [
+      'file-b',
+      'score-1',
+    ]);
+    assert.deepEqual(left.find((e) => e.kind === 'score')?.ownerIds, [
+      'file-b',
+    ]);
+
+    await keeping.removeFromOffline('file-b');
+    assert.equal((await cache.list()).length, 0);
   });
 });

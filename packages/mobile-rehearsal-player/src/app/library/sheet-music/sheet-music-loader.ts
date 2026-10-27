@@ -63,7 +63,11 @@ export type SheetMusicLoaderDependencies = {
   fetch: FetchLike;
   /** The current Drive access token, or undefined when not signed in. */
   getDriveAccessToken: () => string | undefined;
+  /** True when the device reports no network; a stored copy is then tried first. */
+  isOffline?: () => boolean;
   maxBytes?: number;
+  /** A score kept offline, by Drive file id; null when none is stored. */
+  readStoredScore?: (fileId: string) => Promise<Uint8Array | null>;
   timeoutMs?: number;
 };
 
@@ -145,96 +149,150 @@ export const createSheetMusicLoader = (
     }
   };
 
+  // A kept Drive score plays without a session or a connection. The bytes
+  // are checked like a download, so a damaged copy is reported, not drawn.
+  const loadStored = async (
+    source: SheetMusicSource,
+    format: SheetMusicContentFormat,
+  ): Promise<SheetMusicLoadResult | null> => {
+    if (source.location.kind !== 'drive' || !dependencies.readStoredScore) {
+      return null;
+    }
+
+    try {
+      const bytes = await dependencies.readStoredScore(source.location.fileId);
+
+      if (!bytes) {
+        return null;
+      }
+
+      const check = inspectSheetMusicBytes(format, bytes);
+
+      return check.isValid
+        ? { bytes, format, isCompressed: check.isCompressed, status: 'loaded' }
+        : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const loadFromNetwork = async (
+    source: SheetMusicSource,
+    loadOptions?: { signal?: AbortSignal },
+  ): Promise<SheetMusicLoadResult> => {
+    if (!isLoadableFormat(source.format)) {
+      return failed('unsupported');
+    }
+
+    const request = resolveRequest(source, dependencies.getDriveAccessToken());
+
+    if (!request) {
+      return failed('needs-drive-access');
+    }
+
+    const controller = new AbortController();
+    const callerSignal = loadOptions?.signal;
+    let timedOut = false;
+    const onCallerAbort = () => controller.abort();
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutMs);
+
+    if (callerSignal?.aborted) {
+      clearTimeout(timer);
+      return failed('aborted');
+    }
+
+    callerSignal?.addEventListener('abort', onCallerAbort);
+
+    try {
+      const response = await dependencies.fetch(request.url, {
+        ...(request.headers ? { headers: request.headers } : {}),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        return failed(mapHttpFailure(source, response.status));
+      }
+
+      const declaredBytes = Number(
+        response.headers?.get(CONTENT_LENGTH_HEADER),
+      );
+
+      if (Number.isFinite(declaredBytes) && declaredBytes > maxBytes) {
+        return failed('too-large');
+      }
+
+      const bytes = new Uint8Array(await response.arrayBuffer());
+
+      if (bytes.byteLength > maxBytes) {
+        return failed('too-large');
+      }
+
+      const check = inspectSheetMusicBytes(source.format, bytes);
+
+      return check.isValid
+        ? {
+            bytes,
+            format: source.format,
+            isCompressed: check.isCompressed,
+            status: 'loaded',
+          }
+        : failed(check.reason);
+    } catch (error) {
+      if (callerSignal?.aborted && !timedOut) {
+        return failed('aborted');
+      }
+
+      if (timedOut) {
+        return failed('unavailable');
+      }
+
+      // `fetch` rejects with a TypeError when the request never completed.
+      // For a link on the web that can also be a host that refuses browser
+      // requests, so it is probed; anything else is just no connection.
+      if (!(error instanceof TypeError)) {
+        return failed('unavailable');
+      }
+
+      return failed(
+        source.location.kind === 'url'
+          ? await classifyNetworkFailure(request.url, controller.signal)
+          : 'offline',
+      );
+    } finally {
+      clearTimeout(timer);
+      callerSignal?.removeEventListener('abort', onCallerAbort);
+    }
+  };
+
   return {
     async load(source, loadOptions) {
       if (!isLoadableFormat(source.format)) {
         return failed('unsupported');
       }
 
-      const request = resolveRequest(
-        source,
-        dependencies.getDriveAccessToken(),
-      );
+      const hasNoSession =
+        source.location.kind === 'drive' && !dependencies.getDriveAccessToken();
 
-      if (!request) {
-        return failed('needs-drive-access');
+      // Offline or signed out, a kept copy is all there is to try.
+      if (hasNoSession || dependencies.isOffline?.()) {
+        const stored = await loadStored(source, source.format);
+
+        if (stored) {
+          return stored;
+        }
       }
 
-      const controller = new AbortController();
-      const callerSignal = loadOptions?.signal;
-      let timedOut = false;
-      const onCallerAbort = () => controller.abort();
-      const timer = setTimeout(() => {
-        timedOut = true;
-        controller.abort();
-      }, timeoutMs);
+      const result = await loadFromNetwork(source, loadOptions);
 
-      if (callerSignal?.aborted) {
-        clearTimeout(timer);
-        return failed('aborted');
+      // The connection dropped mid-session: fall back to the kept copy.
+      if (result.status === 'failed' && result.reason === 'offline') {
+        return (await loadStored(source, source.format)) ?? result;
       }
 
-      callerSignal?.addEventListener('abort', onCallerAbort);
-
-      try {
-        const response = await dependencies.fetch(request.url, {
-          ...(request.headers ? { headers: request.headers } : {}),
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          return failed(mapHttpFailure(source, response.status));
-        }
-
-        const declaredBytes = Number(
-          response.headers?.get(CONTENT_LENGTH_HEADER),
-        );
-
-        if (Number.isFinite(declaredBytes) && declaredBytes > maxBytes) {
-          return failed('too-large');
-        }
-
-        const bytes = new Uint8Array(await response.arrayBuffer());
-
-        if (bytes.byteLength > maxBytes) {
-          return failed('too-large');
-        }
-
-        const check = inspectSheetMusicBytes(source.format, bytes);
-
-        return check.isValid
-          ? {
-              bytes,
-              format: source.format,
-              isCompressed: check.isCompressed,
-              status: 'loaded',
-            }
-          : failed(check.reason);
-      } catch (error) {
-        if (callerSignal?.aborted && !timedOut) {
-          return failed('aborted');
-        }
-
-        if (timedOut) {
-          return failed('unavailable');
-        }
-
-        // `fetch` rejects with a TypeError when the request never completed.
-        // For a link on the web that can also be a host that refuses browser
-        // requests, so it is probed; anything else is just no connection.
-        if (!(error instanceof TypeError)) {
-          return failed('unavailable');
-        }
-
-        return failed(
-          source.location.kind === 'url'
-            ? await classifyNetworkFailure(request.url, controller.signal)
-            : 'offline',
-        );
-      } finally {
-        clearTimeout(timer);
-        callerSignal?.removeEventListener('abort', onCallerAbort);
-      }
+      return result;
     },
   };
 };

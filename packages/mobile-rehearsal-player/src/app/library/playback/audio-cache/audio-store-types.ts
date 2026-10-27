@@ -9,6 +9,13 @@ export type AudioStoreEntry = {
   name?: string;
   /** Kept offline by the user: automatic eviction never removes it. */
   pinned?: boolean;
+  /**
+   * A score file (PDF, MusicXML, MIDI) kept with a track rather than audio.
+   * Scores are only ever stored kept, so the audio cache size never sees them.
+   */
+  kind?: 'score';
+  /** For a score: the Drive file ids of the kept tracks that use it. */
+  ownerIds?: string[];
 };
 
 export type AudioStoreRecord = {

@@ -1,6 +1,10 @@
 import { createTrackPlayableItem } from '@org/audio-library-models';
 
-import type { DriveAudioSource } from '@org/audio-library-models';
+import type {
+  DriveAudioSource,
+  SheetMusicFormat,
+} from '@org/audio-library-models';
+import { buildDriveMediaUrl } from '@org/google-drive';
 import { persistentAudioCache } from '../playback/audio-cache';
 import { createSavedTrackDownloadProgressStore } from '../playback/utils/saved-track-download-progress';
 import { savedTrackAudioCache } from '../playback/utils/saved-track-audio-cache';
@@ -9,6 +13,7 @@ import { startSavedTrackDownload } from '../playback/utils/saved-track-web-downl
 import {
   createOfflineKeeping,
   type KeepOfflineResult,
+  type KeepScoreRequest,
 } from './offline-keeping';
 import { offlineStateStore } from './offline-state';
 
@@ -34,9 +39,45 @@ const keeping = createOfflineKeeping({
       { cancelOnReset: false, name, version },
     );
   },
+  downloadScore: async ({ headers, url }) => {
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      throw new Error(`Score download failed (${response.status}).`);
+    }
+
+    return response.blob();
+  },
   memory: savedTrackAudioCache,
   state: offlineStateStore,
 });
+
+// Linked pages cannot be stored, and only formats the viewer opens are worth it.
+const KEEPABLE_SCORE_FORMATS: readonly SheetMusicFormat[] = [
+  'pdf',
+  'musicxml',
+  'midi',
+];
+
+const collectDriveScores = (
+  source: DriveAudioSource,
+  accessToken: string,
+): KeepScoreRequest[] => {
+  return (source.sheetMusic ?? []).flatMap(({ format, location }) => {
+    if (location.kind !== 'drive' || !KEEPABLE_SCORE_FORMATS.includes(format)) {
+      return [];
+    }
+
+    return [
+      {
+        driveFileId: location.fileId,
+        headers: { Authorization: `Bearer ${accessToken}` },
+        name: location.name,
+        url: buildDriveMediaUrl(location.fileId),
+      },
+    ];
+  });
+};
 
 export const keepSourceOffline = (
   source: DriveAudioSource,
@@ -55,6 +96,7 @@ export const keepSourceOffline = (
     driveFileId: source.driveFileId,
     headers: track.headers,
     name: source.name,
+    scores: collectDriveScores(source, accessToken),
     url: track.url,
     version: track.sourceVersion,
   });

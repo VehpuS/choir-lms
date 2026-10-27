@@ -1,19 +1,34 @@
 import type { PersistentAudioCache } from '../playback/audio-cache';
 import type { OfflineStateStore } from './offline-state-store';
 
+/** A Drive score file (PDF, MusicXML, MIDI) kept with its track. */
+export type KeepScoreRequest = {
+  driveFileId: string;
+  headers?: Record<string, string>;
+  name: string;
+  url: string;
+};
+
+/** Scores carry no Drive version here; a keep always stores the current file. */
+export const SCORE_SOURCE_VERSION = 'score';
+
 export type KeepOfflineRequest = {
   driveFileId: string;
   headers?: Record<string, string>;
   /** The Drive file name, stored so the offline files view can show it. */
   name?: string;
+  /** The track's Drive score files, kept along with it. */
+  scores?: readonly KeepScoreRequest[];
   url: string;
   /** The Drive content version; a file without one cannot be cached. */
   version: string;
 };
 
 export type OfflineKeepingDependencies = {
-  cache: Pick<PersistentAudioCache, 'pin' | 'remove' | 'write'>;
+  cache: Pick<PersistentAudioCache, 'detachOwner' | 'pin' | 'remove' | 'write'>;
   download: (request: KeepOfflineRequest) => Promise<Blob>;
+  /** Fetches one score file; a failure leaves that score out. */
+  downloadScore?: (request: KeepScoreRequest) => Promise<Blob>;
   /** The in-memory copy, dropped with the stored one so nothing lingers. */
   memory: { delete: (driveFileId: string) => void };
   state: Pick<OfflineStateStore, 'markDownloading'>;
@@ -25,9 +40,29 @@ export type KeepOfflineResult = 'kept' | 'not-stored';
 export const createOfflineKeeping = ({
   cache,
   download,
+  downloadScore,
   memory,
   state,
 }: OfflineKeepingDependencies) => {
+  // Best effort: a score that cannot be fetched is skipped so the audio the
+  // user asked for is still kept; a later Keep offline tries it again.
+  const keepScores = async (request: KeepOfflineRequest) => {
+    for (const score of request.scores ?? []) {
+      try {
+        const blob = await downloadScore?.(score);
+
+        if (blob) {
+          await cache.write(score.driveFileId, SCORE_SOURCE_VERSION, blob, {
+            name: score.name,
+            score: { owner: request.driveFileId },
+          });
+        }
+      } catch {
+        // Skipped; see above.
+      }
+    }
+  };
+
   return {
     /**
      * Keeps a file offline: pins a stored copy, or downloads the file first
@@ -36,6 +71,8 @@ export const createOfflineKeeping = ({
      */
     async keepOffline(request: KeepOfflineRequest): Promise<KeepOfflineResult> {
       if (await cache.pin(request.driveFileId)) {
+        await keepScores(request);
+
         return 'kept';
       }
 
@@ -52,7 +89,13 @@ export const createOfflineKeeping = ({
           name: request.name,
         });
 
-        return (await cache.pin(request.driveFileId)) ? 'kept' : 'not-stored';
+        if (!(await cache.pin(request.driveFileId))) {
+          return 'not-stored';
+        }
+
+        await keepScores(request);
+
+        return 'kept';
       } finally {
         finish();
       }
@@ -60,6 +103,7 @@ export const createOfflineKeeping = ({
     async removeFromOffline(driveFileId: string): Promise<void> {
       memory.delete(driveFileId);
       await cache.remove(driveFileId);
+      await cache.detachOwner(driveFileId);
     },
   };
 };

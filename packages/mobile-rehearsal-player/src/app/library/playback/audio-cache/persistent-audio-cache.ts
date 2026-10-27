@@ -18,6 +18,11 @@ export type PersistentAudioCache = {
   /** Removes every automatic (not kept) file. */
   clearAutomatic: () => Promise<void>;
   clear: () => Promise<void>;
+  /**
+   * Stops a kept track from using its score files: a score no other kept
+   * track uses is removed, and one still shared stays for the others.
+   */
+  detachOwner: (ownerId: string) => Promise<void>;
   /** Evicts least recently used automatic files until the current size holds. */
   enforceBudget: () => Promise<void>;
   /** Every stored file's entry, without reading any audio. */
@@ -37,13 +42,19 @@ export type PersistentAudioCache = {
   /**
    * Stores a file. `keep` stores it pinned even when it is larger than the
    * whole cache size: kept files are not part of the automatic cache. `name`
-   * is the Drive file name, shown in the offline files view.
+   * is the Drive file name, shown in the offline files view. A score is
+   * stored kept for the track named by `owner`; owners accumulate across
+   * writes, so two tracks can share one score file.
    */
   write: (
     driveFileId: string,
     sourceVersion: string,
     blob: Blob,
-    options?: { keep?: boolean; name?: string },
+    options?: {
+      keep?: boolean;
+      name?: string;
+      score?: { owner: string };
+    },
   ) => Promise<void>;
 };
 
@@ -109,6 +120,35 @@ export const createPersistentAudioCache = ({
       await store.clear().catch(() => undefined);
       notify();
     },
+    detachOwner: (ownerId) =>
+      enqueue(async () => {
+        try {
+          const entries = await store.list();
+
+          for (const entry of entries) {
+            if (!entry.ownerIds?.includes(ownerId)) {
+              continue;
+            }
+
+            const ownerIds = entry.ownerIds.filter((id) => id !== ownerId);
+
+            if (ownerIds.length === 0) {
+              await store.remove(entry.driveFileId);
+              continue;
+            }
+
+            const record = await store.read(entry.driveFileId);
+
+            if (record) {
+              await store.write({ ...record.entry, ownerIds }, record.blob);
+            }
+          }
+        } catch {
+          // Whatever could not be detached stays listed in the view.
+        }
+
+        notify();
+      }),
     clearAutomatic: () =>
       enqueue(async () => {
         try {
@@ -203,7 +243,11 @@ export const createPersistentAudioCache = ({
         try {
           const previous = await findEntry(driveFileId);
           // A file that is already kept stays kept when it is downloaded again.
-          const keep = options?.keep === true || previous?.pinned === true;
+          const score = options?.score;
+          const keep =
+            options?.keep === true ||
+            score !== undefined ||
+            previous?.pinned === true;
 
           // An automatic file larger than the whole budget would only evict
           // everything else; a kept file is not bound by the budget.
@@ -213,12 +257,17 @@ export const createPersistentAudioCache = ({
 
           // A later download that does not know the name keeps the one stored.
           const name = options?.name ?? previous?.name;
+          const ownerIds = score
+            ? [...new Set([...(previous?.ownerIds ?? []), score.owner])]
+            : previous?.ownerIds;
 
           await store.write(
             {
               driveFileId,
               ...(name ? { name } : {}),
               ...(keep ? { pinned: true } : {}),
+              ...(score ? { kind: 'score' as const } : {}),
+              ...(ownerIds ? { ownerIds } : {}),
               sizeBytes: blob.size,
               sourceVersion,
               touchedAt: now(),

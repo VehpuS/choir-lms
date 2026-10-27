@@ -6,6 +6,8 @@ export type OfflineFileRow = {
   driveFileId: string;
   kept: boolean;
   name: string;
+  /** For a kept track: its score files, shown beneath it and removed with it. */
+  scores?: OfflineFileRow[];
   sizeBytes: number;
   touchedAt: number;
 };
@@ -67,8 +69,43 @@ export const buildOfflineStorageSnapshot = ({
       touchedAt: entry.touchedAt,
     };
   });
-  const kept = rows.filter((row) => row.kept).sort(compare);
-  const automatic = rows.filter((row) => !row.kept).sort(compare);
+  const scoreRows = new Map<string, OfflineFileRow>();
+
+  entries.forEach((entry, index) => {
+    if (entry.kind === 'score' && rows[index]) {
+      scoreRows.set(entry.driveFileId, rows[index]);
+    }
+  });
+
+  const trackRows = rows.filter((row) => !scoreRows.has(row.driveFileId));
+  const nestedScoreIds = new Set<string>();
+
+  entries.forEach((entry) => {
+    const scoreRow = scoreRows.get(entry.driveFileId);
+    const owners = (entry.ownerIds ?? []).flatMap((ownerId) => {
+      const owner = trackRows.find((row) => row.driveFileId === ownerId);
+
+      return owner ? [owner] : [];
+    });
+
+    if (!scoreRow || owners.length === 0) {
+      return;
+    }
+
+    nestedScoreIds.add(entry.driveFileId);
+    owners.forEach((owner) => {
+      owner.scores = [...(owner.scores ?? []), scoreRow].sort(bySizeDescending);
+    });
+  });
+
+  // A score whose track is gone still takes space, so it keeps a row of its own.
+  const orphanScores = [...scoreRows.values()].filter(
+    (row) => !nestedScoreIds.has(row.driveFileId),
+  );
+  const kept = [...trackRows.filter((row) => row.kept), ...orphanScores].sort(
+    compare,
+  );
+  const automatic = trackRows.filter((row) => !row.kept).sort(compare);
 
   return {
     automatic,
@@ -76,7 +113,8 @@ export const buildOfflineStorageSnapshot = ({
     summary: {
       automaticBytes: sumBytes(automatic),
       budgetBytes,
-      keptBytes: sumBytes(kept),
+      // Scores are counted once, however many tracks list them.
+      keptBytes: sumBytes(rows.filter((row) => row.kept)),
     },
   };
 };

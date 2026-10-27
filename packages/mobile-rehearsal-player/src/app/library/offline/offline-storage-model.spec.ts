@@ -85,4 +85,51 @@ describe('offline storage snapshot', () => {
       ['old-big', 'new-small'],
     );
   });
+
+  describe('score files', () => {
+    const track = entry({ driveFileId: 'track', pinned: true, sizeBytes: 50 });
+    const score = (overrides: Partial<AudioStoreEntry> = {}) =>
+      entry({
+        driveFileId: 'score',
+        kind: 'score',
+        name: 'Full score.pdf',
+        ownerIds: ['track'],
+        pinned: true,
+        sizeBytes: 4,
+        ...overrides,
+      });
+
+    it('nests a score under its kept track and counts it as kept', () => {
+      const snapshot = snapshotOf([track, score()]);
+
+      assert.equal(snapshot.kept.length, 1);
+      assert.deepEqual(
+        snapshot.kept[0]?.scores?.map(({ name }) => name),
+        ['Full score.pdf'],
+      );
+      assert.equal(snapshot.summary.keptBytes, 54);
+    });
+
+    it('lists a score under every track that uses it, counting it once', () => {
+      const other = entry({ driveFileId: 'other', pinned: true, sizeBytes: 6 });
+      const snapshot = snapshotOf([
+        track,
+        other,
+        score({ ownerIds: ['track', 'other'] }),
+      ]);
+
+      assert.equal(snapshot.kept.length, 2);
+      assert.ok(snapshot.kept.every(({ scores }) => scores?.length === 1));
+      assert.equal(snapshot.summary.keptBytes, 60);
+    });
+
+    it('gives a score whose track is gone a row of its own', () => {
+      const snapshot = snapshotOf([score({ ownerIds: ['gone'] })]);
+
+      assert.deepEqual(
+        snapshot.kept.map(({ driveFileId }) => driveFileId),
+        ['score'],
+      );
+    });
+  });
 });

@@ -3,7 +3,7 @@ import type { PersistentAudioCache } from '../playback/audio-cache';
 export type OfflineStorageServiceDependencies = {
   cache: Pick<
     PersistentAudioCache,
-    'clear' | 'clearAutomatic' | 'list' | 'remove'
+    'clear' | 'clearAutomatic' | 'detachOwner' | 'list' | 'remove'
   >;
   /** The in-memory copies, dropped with the stored ones so nothing lingers. */
   memory: { clear: () => void; delete: (driveFileId: string) => void };
@@ -39,6 +39,8 @@ export const createOfflineStorageService = ({
       for (const driveFileId of driveFileIds) {
         memory.delete(driveFileId);
         await cache.remove(driveFileId);
+        // A removed track takes its score files with it.
+        await cache.detachOwner(driveFileId);
       }
     },
   };
