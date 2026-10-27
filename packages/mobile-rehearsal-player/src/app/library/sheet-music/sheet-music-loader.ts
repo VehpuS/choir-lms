@@ -68,6 +68,11 @@ export type SheetMusicLoaderDependencies = {
   maxBytes?: number;
   /** A score kept offline, by Drive file id; null when none is stored. */
   readStoredScore?: (fileId: string) => Promise<Uint8Array | null>;
+  /**
+   * Called with a Drive score's bytes after a successful download, so a kept
+   * copy can follow edits made in Drive. Must not throw or be awaited.
+   */
+  onDriveScoreLoaded?: (fileId: string, bytes: Uint8Array) => void;
   timeoutMs?: number;
 };
 
@@ -286,6 +291,10 @@ export const createSheetMusicLoader = (
       }
 
       const result = await loadFromNetwork(source, loadOptions);
+
+      if (result.status === 'loaded' && source.location.kind === 'drive') {
+        dependencies.onDriveScoreLoaded?.(source.location.fileId, result.bytes);
+      }
 
       // The connection dropped mid-session: fall back to the kept copy.
       if (result.status === 'failed' && result.reason === 'offline') {

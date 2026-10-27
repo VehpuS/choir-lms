@@ -11,7 +11,7 @@ import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { PianoOverlay } from '../../piano/components/piano-overlay';
 import { registerPianoViewer } from '../../piano/piano-host-store';
 import { isDeviceOffline } from '../../offline/device-connection';
-import { readKeptScore } from '../../offline/read-kept-score';
+import { readKeptScore, refreshKeptScore } from '../../offline/read-kept-score';
 import { createSheetMusicLoader } from '../sheet-music-loader';
 import { GoToDrawer } from './go-to';
 import { useGoTo } from './go-to/use-go-to';
@@ -130,6 +130,9 @@ export const SheetMusicViewer = ({
         fetch: (input, init) => fetch(input, init),
         getDriveAccessToken: () => tokenReader.current(),
         isOffline: isDeviceOffline,
+        onDriveScoreLoaded: (fileId, bytes) => {
+          void refreshKeptScore(fileId, bytes, tokenReader.current());
+        },
         readStoredScore: readKeptScore,
       }),
     [],

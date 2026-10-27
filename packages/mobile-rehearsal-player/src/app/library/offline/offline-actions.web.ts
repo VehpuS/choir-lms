@@ -16,6 +16,7 @@ import {
   type KeepScoreRequest,
 } from './offline-keeping';
 import { offlineStateStore } from './offline-state';
+import { fetchScoreVersion } from './score-version';
 
 export const isOfflineStorageSupported = true;
 
@@ -59,27 +60,29 @@ const KEEPABLE_SCORE_FORMATS: readonly SheetMusicFormat[] = [
   'midi',
 ];
 
-const collectDriveScores = (
+const collectDriveScores = async (
   source: DriveAudioSource,
   accessToken: string,
-): KeepScoreRequest[] => {
-  return (source.sheetMusic ?? []).flatMap(({ format, location }) => {
-    if (location.kind !== 'drive' || !KEEPABLE_SCORE_FORMATS.includes(format)) {
-      return [];
-    }
-
-    return [
-      {
-        driveFileId: location.fileId,
-        headers: { Authorization: `Bearer ${accessToken}` },
-        name: location.name,
-        url: buildDriveMediaUrl(location.fileId),
-      },
-    ];
+): Promise<KeepScoreRequest[]> => {
+  const scores = (source.sheetMusic ?? []).flatMap(({ format, location }) => {
+    return location.kind === 'drive' && KEEPABLE_SCORE_FORMATS.includes(format)
+      ? [location]
+      : [];
   });
+
+  return Promise.all(
+    scores.map(async (location) => ({
+      driveFileId: location.fileId,
+      headers: { Authorization: `Bearer ${accessToken}` },
+      name: location.name,
+      url: buildDriveMediaUrl(location.fileId),
+      version:
+        (await fetchScoreVersion(location.fileId, accessToken)) ?? undefined,
+    })),
+  );
 };
 
-export const keepSourceOffline = (
+export const keepSourceOffline = async (
   source: DriveAudioSource,
   accessToken: string,
 ): Promise<KeepOfflineResult> => {
@@ -89,14 +92,14 @@ export const keepSourceOffline = (
   });
 
   if (track.sourceVersion === undefined) {
-    return Promise.reject(new Error('This file has no Drive version yet.'));
+    throw new Error('This file has no Drive version yet.');
   }
 
   return keeping.keepOffline({
     driveFileId: source.driveFileId,
     headers: track.headers,
     name: source.name,
-    scores: collectDriveScores(source, accessToken),
+    scores: await collectDriveScores(source, accessToken),
     url: track.url,
     version: track.sourceVersion,
   });

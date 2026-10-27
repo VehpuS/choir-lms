@@ -78,6 +78,9 @@ export const getKeepResultAcknowledgment = (
     result.notStored > 0
       ? `${formatFileCount(result.notStored)} could not be stored on this device.`
       : '',
+    (result.scoresSkipped ?? 0) > 0
+      ? `Sheet music for ${formatFileCount(result.scoresSkipped ?? 0)} could not be kept.`
+      : '',
   ].filter((text) => text.length > 0);
 
   return {

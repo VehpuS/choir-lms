@@ -8,9 +8,13 @@ import {
 } from '../components/saved-item-menu/saved-item-requests';
 import { keepSourceOffline, removeSourceOffline } from './offline-actions';
 import { keepManyOffline, setOfflineBatchRunner } from './offline-batch';
+import { findSourcesWithNewScores } from './kept-score-changes';
+import { offlineStateStore } from './offline-state';
 
 const NOT_STORED_MESSAGE =
   'This device could not store the file. Its storage may be full.';
+const SCORES_SKIPPED_MESSAGE =
+  'Kept offline, but some of its sheet music could not be kept. Try “Keep offline” again.';
 
 type OfflineRequestHandlerOptions = {
   accessToken?: string;
@@ -74,6 +78,36 @@ export const useOfflineRequestHandler = (
     };
   }, []);
 
+  // A score added to a track that is already kept is kept with it, without
+  // another Keep offline. The first pass only records what is there.
+  const scoreKeysRef = useRef(new Map<string, string>());
+
+  useEffect(() => {
+    const { accessToken, reportIssue } = latest.current;
+    const changed = findSourcesWithNewScores(
+      options.savedLibrarySources,
+      scoreKeysRef.current,
+      (driveFileId) => offlineStateStore.getState(driveFileId) === 'kept',
+    );
+
+    if (!accessToken) {
+      return;
+    }
+
+    for (const source of changed) {
+      keepSourceOffline(source, accessToken).then(
+        (result) => {
+          if (result === 'kept-partial') {
+            reportIssue(source, new Error(SCORES_SKIPPED_MESSAGE));
+          }
+        },
+        (error: unknown) => {
+          reportIssue(source, error);
+        },
+      );
+    }
+  }, [options.savedLibrarySources]);
+
   useEffect(() => {
     return subscribeToSavedItemRequests((request) => {
       if (
@@ -110,6 +144,8 @@ export const useOfflineRequestHandler = (
         (result) => {
           if (result === 'not-stored') {
             current.reportIssue(source, new Error(NOT_STORED_MESSAGE));
+          } else if (result === 'kept-partial') {
+            current.reportIssue(source, new Error(SCORES_SKIPPED_MESSAGE));
           }
         },
         (error: unknown) => {

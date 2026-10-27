@@ -47,6 +47,16 @@ describe('offline files copy', () => {
     assert.match(content.message, /Kept files will stream again/);
   });
 
+  it('counts a track’s nested scores once in the size freed', () => {
+    const shared = row({ driveFileId: 'score', sizeBytes: 1024 * 1024 });
+    const { message } = getRemoveSelectionConfirmation([
+      row({ driveFileId: 'a', scores: [shared], sizeBytes: 1024 * 1024 }),
+      row({ driveFileId: 'b', scores: [shared], sizeBytes: 1024 * 1024 }),
+    ]);
+
+    assert.match(message, /frees 3\.0 MB/);
+  });
+
   it('keeps the plain streaming note when no kept file is selected', () => {
     const { message } = getRemoveSelectionConfirmation([row({})]);
 

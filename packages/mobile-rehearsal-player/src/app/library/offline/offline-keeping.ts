@@ -7,9 +7,11 @@ export type KeepScoreRequest = {
   headers?: Record<string, string>;
   name: string;
   url: string;
+  /** The score's Drive `modifiedTime`; without one it is stored unversioned. */
+  version?: string;
 };
 
-/** Scores carry no Drive version here; a keep always stores the current file. */
+/** The version of a score whose Drive `modifiedTime` could not be read. */
 export const SCORE_SOURCE_VERSION = 'score';
 
 export type KeepOfflineRequest = {
@@ -25,7 +27,10 @@ export type KeepOfflineRequest = {
 };
 
 export type OfflineKeepingDependencies = {
-  cache: Pick<PersistentAudioCache, 'detachOwner' | 'pin' | 'remove' | 'write'>;
+  cache: Pick<
+    PersistentAudioCache,
+    'detachOwner' | 'pin' | 'read' | 'remove' | 'write'
+  >;
   download: (request: KeepOfflineRequest) => Promise<Blob>;
   /** Fetches one score file; a failure leaves that score out. */
   downloadScore?: (request: KeepScoreRequest) => Promise<Blob>;
@@ -34,8 +39,11 @@ export type OfflineKeepingDependencies = {
   state: Pick<OfflineStateStore, 'markDownloading'>;
 };
 
-/** `not-stored`: the device refused the file (storage full or unavailable). */
-export type KeepOfflineResult = 'kept' | 'not-stored';
+/**
+ * `kept-partial`: the audio is kept but some of its score files could not be.
+ * `not-stored`: the device refused the file (storage full or unavailable).
+ */
+export type KeepOfflineResult = 'kept' | 'kept-partial' | 'not-stored';
 
 export const createOfflineKeeping = ({
   cache,
@@ -45,22 +53,38 @@ export const createOfflineKeeping = ({
   state,
 }: OfflineKeepingDependencies) => {
   // Best effort: a score that cannot be fetched is skipped so the audio the
-  // user asked for is still kept; a later Keep offline tries it again.
+  // user asked for is still kept, and the count is returned so the caller can
+  // say so; a later Keep offline tries it again. A score already stored at
+  // the current Drive version is not downloaded again.
   const keepScores = async (request: KeepOfflineRequest) => {
-    for (const score of request.scores ?? []) {
-      try {
-        const blob = await downloadScore?.(score);
+    let skipped = 0;
 
-        if (blob) {
-          await cache.write(score.driveFileId, SCORE_SOURCE_VERSION, blob, {
-            name: score.name,
-            score: { owner: request.driveFileId },
-          });
+    for (const score of request.scores ?? []) {
+      const version = score.version ?? SCORE_SOURCE_VERSION;
+
+      try {
+        const blob =
+          (await cache.read(score.driveFileId, version)) ??
+          (await downloadScore?.(score));
+
+        if (!blob) {
+          skipped += 1;
+          continue;
         }
+
+        await cache.write(score.driveFileId, version, blob, {
+          name: score.name,
+          score: { owner: request.driveFileId },
+        });
       } catch {
-        // Skipped; see above.
+        skipped += 1;
       }
     }
+
+    return skipped;
+  };
+  const resultFor = (skippedScores: number): KeepOfflineResult => {
+    return skippedScores > 0 ? 'kept-partial' : 'kept';
   };
 
   return {
@@ -71,9 +95,7 @@ export const createOfflineKeeping = ({
      */
     async keepOffline(request: KeepOfflineRequest): Promise<KeepOfflineResult> {
       if (await cache.pin(request.driveFileId)) {
-        await keepScores(request);
-
-        return 'kept';
+        return resultFor(await keepScores(request));
       }
 
       const finish = state.markDownloading(request.driveFileId);
@@ -93,9 +115,7 @@ export const createOfflineKeeping = ({
           return 'not-stored';
         }
 
-        await keepScores(request);
-
-        return 'kept';
+        return resultFor(await keepScores(request));
       } finally {
         finish();
       }

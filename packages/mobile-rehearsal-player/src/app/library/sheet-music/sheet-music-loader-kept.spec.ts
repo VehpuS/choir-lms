@@ -14,11 +14,11 @@ type FakeResponse = Awaited<ReturnType<SheetMusicLoaderDependencies['fetch']>>;
 const bytesOf = (text: string) => Uint8Array.from(text, (c) => c.charCodeAt(0));
 const PDF_BODY = '%PDF-1.7 body';
 
-const respond = (body: string): FakeResponse => ({
+const respond = (body: string, status = 200): FakeResponse => ({
   arrayBuffer: async () => bytesOf(body).buffer as ArrayBuffer,
   headers: { get: () => null },
-  ok: true,
-  status: 200,
+  ok: status === 200,
+  status,
 });
 
 const source = (location: SheetMusicSource['location']): SheetMusicSource => ({
@@ -82,6 +82,25 @@ describe('createSheetMusicLoader kept copies', () => {
 
     await loader.load(DRIVE);
     assert.equal(calls.length, 1);
+  });
+
+  it('hands a freshly downloaded Drive score to the refresher, never a failed one', async () => {
+    const loaded: string[] = [];
+    const { loader } = setUp(async () => respond(PDF_BODY), {
+      onDriveScoreLoaded: (fileId) => {
+        loaded.push(fileId);
+      },
+    });
+    const failing = setUp(async () => respond(PDF_BODY, 500), {
+      onDriveScoreLoaded: (fileId) => {
+        loaded.push(`failed:${fileId}`);
+      },
+    });
+
+    await loader.load(DRIVE);
+    await failing.loader.load(DRIVE);
+
+    assert.deepEqual(loaded, ['file-1']);
   });
 
   it('falls back to the kept copy when the request cannot complete', async () => {

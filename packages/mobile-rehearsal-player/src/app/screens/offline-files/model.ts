@@ -43,8 +43,23 @@ const pluralFiles = (count: number) => {
   return count === 1 ? '1 file' : `${count} files`;
 };
 
+// A track's kept scores go with it, so they count too; a score shared by two
+// selected tracks counts once. (One shared with a track left kept is counted
+// although it stays, so the figure can run a little high.)
 const totalBytes = (rows: readonly OfflineFileRow[]) => {
-  return rows.reduce((total, row) => total + row.sizeBytes, 0);
+  const counted = new Set<string>();
+  let total = 0;
+
+  for (const row of rows) {
+    for (const file of [row, ...(row.scores ?? [])]) {
+      if (!counted.has(file.driveFileId)) {
+        counted.add(file.driveFileId);
+        total += file.sizeBytes;
+      }
+    }
+  }
+
+  return total;
 };
 
 export const getRemoveSelectionConfirmation = (

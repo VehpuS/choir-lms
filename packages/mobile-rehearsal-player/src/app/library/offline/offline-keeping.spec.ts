@@ -154,17 +154,50 @@ describe('keeping a file offline', () => {
     assert.equal(score?.name, 'Full score.pdf');
   });
 
-  it('still keeps the audio when a score cannot be fetched', async () => {
+  it('still keeps the audio when a score cannot be fetched, and says so', async () => {
     const { cache, keeping } = setup({ download: () => blobOf(10) });
 
     assert.equal(
       await keeping.keepOffline({ ...REQUEST, scores: [SCORE] }),
-      'kept',
+      'kept-partial',
     );
     assert.deepEqual(
       (await cache.list()).map(({ driveFileId }) => driveFileId),
       ['file-a'],
     );
+  });
+
+  it('downloads a score again only when its Drive version changed', async () => {
+    let scoreDownloads = 0;
+    const { cache, keeping } = setup({
+      download: () => blobOf(10),
+      downloadScore: () => {
+        scoreDownloads += 1;
+
+        return blobOf(3);
+      },
+    });
+    const keepAt = (version: string) => {
+      return keeping.keepOffline({
+        ...REQUEST,
+        scores: [{ ...SCORE, version }],
+      });
+    };
+
+    await keepAt('2026-01-01');
+    await keepAt('2026-01-01');
+    assert.equal(scoreDownloads, 1);
+
+    await keepAt('2026-02-01');
+    assert.equal(scoreDownloads, 2);
+
+    const score = (await cache.list()).find(
+      ({ driveFileId }) => driveFileId === 'score-1',
+    );
+
+    assert.equal(score?.sourceVersion, '2026-02-01');
+    assert.equal(score?.kind, 'score');
+    assert.deepEqual(score?.ownerIds, ['file-a']);
   });
 
   it('adds scores when the track was already kept', async () => {

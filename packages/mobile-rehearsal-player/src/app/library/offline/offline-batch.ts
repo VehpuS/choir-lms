@@ -10,6 +10,8 @@ export type OfflineBatchResult = {
   kept: number;
   /** Files the device refused to store (storage full or unavailable). */
   notStored: number;
+  /** Kept files whose sheet music could not all be kept with them. */
+  scoresSkipped?: number;
 };
 
 /**
@@ -31,10 +33,16 @@ export const keepManyOffline = async <Source>(
       next += 1;
 
       try {
-        if ((await keepOne(source)) === 'kept') {
-          result.kept += 1;
-        } else {
+        const outcome = await keepOne(source);
+
+        if (outcome === 'not-stored') {
           result.notStored += 1;
+        } else {
+          result.kept += 1;
+
+          if (outcome === 'kept-partial') {
+            result.scoresSkipped = (result.scoresSkipped ?? 0) + 1;
+          }
         }
       } catch (error) {
         result.failed += 1;

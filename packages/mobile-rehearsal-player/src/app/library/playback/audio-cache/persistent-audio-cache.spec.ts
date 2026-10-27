@@ -196,6 +196,23 @@ describe('persistent audio cache', () => {
     assert.equal(memory.records.get('file-a')?.entry.sourceVersion, 'v2');
   });
 
+  it('keeps a score’s kind, owners and pin when it is downloaded again at a new version', async () => {
+    const { cache, memory } = setup();
+
+    await cache.write('score-1', 'v1', blobOf(3), {
+      name: 'Score.pdf',
+      score: { owner: 'track-a' },
+    });
+    await cache.write('score-1', 'v2', blobOf(4));
+
+    const entry = memory.records.get('score-1')?.entry;
+
+    assert.equal(entry?.kind, 'score');
+    assert.equal(entry?.pinned, true);
+    assert.deepEqual(entry?.ownerIds, ['track-a']);
+    assert.equal(entry?.sourceVersion, 'v2');
+  });
+
   it('unpins and removes files, notifying subscribers of each change', async () => {
     const { cache, memory } = setup();
     let notifications = 0;

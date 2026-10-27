@@ -266,7 +266,9 @@ export const createPersistentAudioCache = ({
               driveFileId,
               ...(name ? { name } : {}),
               ...(keep ? { pinned: true } : {}),
-              ...(score ? { kind: 'score' as const } : {}),
+              ...(score || previous?.kind === 'score'
+                ? { kind: 'score' as const }
+                : {}),
               ...(ownerIds ? { ownerIds } : {}),
               sizeBytes: blob.size,
               sourceVersion,
