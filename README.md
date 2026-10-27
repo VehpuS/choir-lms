@@ -92,6 +92,7 @@ The first change proposal for this direction is `add-mobile-rehearsal-player` un
 
 - `packages/` is the workspace home for future apps and shared libraries
 - `packages/pitch-detection` holds the framework-agnostic pitch-detection pipeline (estimator, gates, smoother, note segmenter); it is imported statically, unlike the lazily loaded `midi-notation`
+- Pitch detection third-party licences (both permissive, checked against the installed packages): `pitchy` 4.1.0 (MIT, Copyright 2018-2021 Ian Johnson; its README's licence section is copied from another project, the `LICENSE` file is the authority) and its dependency `fft.js` 4.0.4 (MIT, Copyright Fedor Indutny 2017)
 - `openspec/` contains proposals, designs, specs, and tasks for planned work
 - `nx.json` and the root TypeScript configuration provide workspace-level build and project settings
 - Cross-platform playback architecture details are documented in `docs/mobile-cross-platform-audio-playback.md`

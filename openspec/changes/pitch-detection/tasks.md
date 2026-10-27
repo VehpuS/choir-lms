@@ -4,8 +4,10 @@ Web is the build and verification target of this change. Native iOS and Android 
 
 - [x] 1.1 Estimator accuracy: run pitchy on recorded choir voices (bass to soprano, breathy and loud) and a sine sweep; measure octave errors, latency, and CPU in the browser. Decide thresholds and frame size, or decide a neural swap is needed.
   - Result (Snow V1: six `(short).m4a` voice guides scored against the matching shortened V1.2 MIDI, frames within 150 ms of a note boundary ignored, 2048-sample frames at a 1024 hop): at `normal` 84.6% of sung frames read the exact note, 11.6% are missed, and octave, semitone and other errors are 1.3%, 1.1% and 1.4%. 366 of 381 notes (96%) are found; onset latency median 23 ms, 90th percentile 171 ms (raw estimator 17 and 89 ms). About 0.2 ms CPU per frame. `low` gives 80.5% exact and 3.4% of rests falsely active; `high` gives 87.1% but 22.1% of rests falsely active, so the starting gates (low, normal, high) stay as they are. Octave errors are worst in bass (3.3%) and alto (2.5%), which the other-octave display already covers. Decision: keep pitchy, the 2048/1024 frame, and the current gates; no neural swap. Not covered: the guides are rendered, clean audio, not live voices, and latency in the browser. Both move to the live check in 6.1.
-- [ ] 1.2 Web capture: `getUserMedia` with echo cancellation, noise suppression and auto gain disabled, AudioWorklet frame delivery, and behaviour alongside the Shaka-backed track player.
-- [ ] 1.3 Confirm the licences of what is kept (pitchy LICENSE and `fft.js`) and note them in the README.
+- [x] 1.2 Web capture: `getUserMedia` with echo cancellation, noise suppression and auto gain disabled, AudioWorklet frame delivery, and behaviour alongside the Shaka-backed track player.
+  - Partial result (Browser pane, Chrome 152): the capture code in `pcm-source.web.ts` already implements this. AudioWorklet delivery checked with an oscillator standing in for the mic (the pane blocks `getUserMedia`, permission `denied`): the worklet loaded from a Blob URL, 336 blocks arrived in 0.97 s against 335 expected, largest gap 2.9 ms (one 128-sample block), 220 Hz read back as 219.4 Hz, base latency 5.8 ms. Still to check in a real browser with a microphone: the constraints are honoured (`track.getSettings()` shows echo cancellation, noise suppression and auto gain off), and capture keeps running while the Shaka-backed player plays a track. Both moved to the live check in 6.1.
+- [x] 1.3 Confirm the licences of what is kept (pitchy LICENSE and `fft.js`) and note them in the README.
+  - Result: installed `pitchy` 4.1.0 ships an MIT `LICENSE` (Ian Johnson) and `fft.js` 4.0.4 is MIT (Fedor Indutny); the design's "0BSD" note was wrong and is corrected. Recorded in the README Repository Notes.
 
 - [x] 1.4 Review `design-source/pitch-mock.html` with the user and record the approved placement and look in the design before any UI task (4.1 onward) starts: the Practice tools control and menu, the monitor strip above the piano, the full-screen Pitch view (progression roll and focus panel), the piano detected state, the score marks, and the layouts with lyrics, piano, and sheet music.
 
@@ -37,7 +39,7 @@ Web is the build and verification target of this change. Native iOS and Android 
 
 ## 6. Verification and docs
 
-- [ ] 6.1 Verify the three surfaces together in the browser preview (with a muted track), including interruption and permission-denied paths, and that native shows no pitch controls. Also sing a few single notes live (a bass-range and a soprano-range note, soft and loud) and confirm the readings and the sensitivity setting against a real voice and room, and check browser latency.
+- [ ] 6.1 Verify the three surfaces together in the browser preview (with a muted track), including interruption and permission-denied paths, and that native shows no pitch controls. Also sing a few single notes live (a bass-range and a soprano-range note, soft and loud) and confirm the readings and the sensitivity setting against a real voice and room, and check browser latency. Carried over from 1.2: with a real microphone, confirm `track.getSettings()` reports echo cancellation, noise suppression and auto gain off, and that capture keeps running while the Shaka-backed player plays a track.
 - [ ] 6.2 Update the README capability notes.
 
 ## 7. Hand-off and archive
