@@ -2,7 +2,8 @@
 
 Web is the build and verification target of this change. Native iOS and Android handling is deferred to `native-playback-follow-ups` (task 7.1 hands it over); no task here builds toward it beyond the capability gate in 3.1.
 
-- [ ] 1.1 Estimator accuracy: run pitchy on recorded choir voices (bass to soprano, breathy and loud) and a sine sweep; measure octave errors, latency, and CPU in the browser. Decide thresholds and frame size, or decide a neural swap is needed.
+- [x] 1.1 Estimator accuracy: run pitchy on recorded choir voices (bass to soprano, breathy and loud) and a sine sweep; measure octave errors, latency, and CPU in the browser. Decide thresholds and frame size, or decide a neural swap is needed.
+  - Result (Snow V1: six `(short).m4a` voice guides scored against the matching shortened V1.2 MIDI, frames within 150 ms of a note boundary ignored, 2048-sample frames at a 1024 hop): at `normal` 84.6% of sung frames read the exact note, 11.6% are missed, and octave, semitone and other errors are 1.3%, 1.1% and 1.4%. 366 of 381 notes (96%) are found; onset latency median 23 ms, 90th percentile 171 ms (raw estimator 17 and 89 ms). About 0.2 ms CPU per frame. `low` gives 80.5% exact and 3.4% of rests falsely active; `high` gives 87.1% but 22.1% of rests falsely active, so the starting gates (low, normal, high) stay as they are. Octave errors are worst in bass (3.3%) and alto (2.5%), which the other-octave display already covers. Decision: keep pitchy, the 2048/1024 frame, and the current gates; no neural swap. Not covered: the guides are rendered, clean audio, not live voices, and latency in the browser. Both move to the live check in 6.1.
 - [ ] 1.2 Web capture: `getUserMedia` with echo cancellation, noise suppression and auto gain disabled, AudioWorklet frame delivery, and behaviour alongside the Shaka-backed track player.
 - [ ] 1.3 Confirm the licences of what is kept (pitchy LICENSE and `fft.js`) and note them in the README.
 
@@ -36,7 +37,7 @@ Web is the build and verification target of this change. Native iOS and Android 
 
 ## 6. Verification and docs
 
-- [ ] 6.1 Verify the three surfaces together in the browser preview (with a muted track), including interruption and permission-denied paths, and that native shows no pitch controls.
+- [ ] 6.1 Verify the three surfaces together in the browser preview (with a muted track), including interruption and permission-denied paths, and that native shows no pitch controls. Also sing a few single notes live (a bass-range and a soprano-range note, soft and loud) and confirm the readings and the sensitivity setting against a real voice and room, and check browser latency.
 - [ ] 6.2 Update the README capability notes.
 
 ## 7. Hand-off and archive
