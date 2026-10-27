@@ -5,6 +5,7 @@ import { appTheme } from '../../utils/theme';
 import {
   getDriveImportProgressCopy,
   getDriveImportProgressRatio,
+  shouldShowDriveImportSpinner,
 } from './drive-import-progress-model';
 
 const { colors, space } = appTheme;
@@ -18,7 +19,8 @@ type ImportProgressSectionProps = {
 
 // Phased import progress: the phase as a row title, the monospace count, and
 // a 2px accent line (the mini-player's progress treatment) once the total is
-// known. Before that the spinner is the only claim the screen makes.
+// known. While preparing, or before the total is known, the spinner is the
+// only claim the screen makes.
 export const ImportProgressSection = ({
   progress,
 }: ImportProgressSectionProps) => {
@@ -28,7 +30,7 @@ export const ImportProgressSection = ({
   return (
     <View style={styles.section}>
       <View style={styles.row}>
-        {ratio === null ? (
+        {shouldShowDriveImportSpinner(progress) ? (
           <ActivityIndicator
             accessibilityLabel="Import in progress"
             color={colors.accent}
@@ -41,7 +43,7 @@ export const ImportProgressSection = ({
             : `${copy.completedItems} of ${copy.totalItems}`}
         </Text>
       </View>
-      {ratio === null ? null : (
+      {ratio === null || progress.phase === 'preparing' ? null : (
         // `aria-value*` rather than `accessibilityValue`: react-native-web does
         // not map the latter, and React Native reads both forms natively.
         <View

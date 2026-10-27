@@ -12,6 +12,7 @@ import {
   getDriveImportCompletionTone,
   getDriveImportProgressCopy,
   getDriveImportProgressRatio,
+  shouldShowDriveImportSpinner,
   getDriveImportRetryLabel,
   getFailedDriveImportOutcomes,
   resolveDriveImportReviewHeaderMode,
@@ -37,7 +38,7 @@ describe('getDriveImportProgressCopy', () => {
       getDriveImportProgressCopy({ completedItems: 2, phase: 'preparing' }),
       {
         completedItems: 2,
-        phaseLabel: 'Preparing Drive contents',
+        phaseLabel: 'Calculating import summary',
         totalItems: null,
       },
     );
@@ -271,5 +272,39 @@ describe('getDriveImportCompletionTone', () => {
     assert.equal(getDriveImportCompletionTone('partial-failure'), 'warning');
     assert.equal(getDriveImportCompletionTone('failed'), 'error');
     assert.equal(getDriveImportCompletionTone('cancelled'), 'neutral');
+  });
+});
+
+describe('shouldShowDriveImportSpinner', () => {
+  it('shows the spinner while preparing even when the folder total is known', () => {
+    assert.equal(
+      shouldShowDriveImportSpinner({
+        completedItems: 0,
+        phase: 'preparing',
+        totalItems: 3,
+      }),
+      true,
+    );
+  });
+
+  it('shows the spinner when an executing phase has no total yet', () => {
+    assert.equal(
+      shouldShowDriveImportSpinner({
+        completedItems: 0,
+        phase: 'saving-sources',
+      }),
+      true,
+    );
+  });
+
+  it('hides the spinner for an executing phase with a known total', () => {
+    assert.equal(
+      shouldShowDriveImportSpinner({
+        completedItems: 1,
+        phase: 'saving-sources',
+        totalItems: 4,
+      }),
+      false,
+    );
   });
 });

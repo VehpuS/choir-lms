@@ -41,7 +41,7 @@ export const getDriveImportProgressCopy = (
   completedItems: progress.completedItems,
   phaseLabel:
     progress.phase === 'preparing'
-      ? 'Preparing Drive contents'
+      ? 'Calculating import summary'
       : EXECUTION_PHASE_LABELS[progress.phase],
   totalItems: progress.totalItems ?? null,
 });
@@ -63,6 +63,17 @@ export const getDriveImportProgressRatio = (
     Math.max(0, progress.completedItems / progress.totalItems),
   );
 };
+
+/**
+ * Preparing has no work the user can see (folders are enumerated and the plan
+ * is built), so it always shows the spinner, even once the folder total is
+ * known; a still line at 0% would read as a stalled screen.
+ */
+export const shouldShowDriveImportSpinner = (
+  progress: DriveImportProgress,
+): boolean =>
+  progress.phase === 'preparing' ||
+  getDriveImportProgressRatio(progress) === null;
 
 export type DriveImportCompletionStatusCopy = {
   description: string;
