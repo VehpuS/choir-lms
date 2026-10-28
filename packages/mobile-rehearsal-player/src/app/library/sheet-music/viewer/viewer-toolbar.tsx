@@ -4,7 +4,8 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { CompactPlaybackAction } from '../../../components/compact-playback-action';
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
-import { usePianoToggle } from '../../piano/piano-toggle';
+import { PracticeToolsControl } from '../../practice-tools/practice-tools-control';
+import type { PracticeTools } from '../../practice-tools/use-practice-tools';
 import { PDF_LAYOUT_ICONS } from '../pdf-layout/pdf-layout-sheet-model';
 import { appTheme } from '../../../utils/theme';
 import { VIEWER_MAX_ZOOM, VIEWER_MIN_ZOOM, formatViewerZoom } from './model';
@@ -29,6 +30,8 @@ type ViewerToolbarProps = {
   maxZoom?: number;
   /** `column` is the compact layout's side rail; `row` runs along the bottom. */
   orientation: 'column' | 'row';
+  /** Held by the viewer: the rail's menu is drawn outside the scrolling rail. */
+  practiceTools: PracticeTools;
   zoom: number;
 };
 
@@ -46,10 +49,10 @@ export const ViewerToolbar = ({
   orientation,
   pageGroup,
   pdfLayout,
+  practiceTools,
   zoom,
 }: ViewerToolbarProps) => {
   const isColumn = orientation === 'column';
-  const pianoToggle = usePianoToggle();
   // In a column the larger zoom is on top, as a slider reads.
   const zoomOut = (
     <SurfaceIconButton
@@ -95,15 +98,33 @@ export const ViewerToolbar = ({
       onPress={onGoTo}
     />
   ) : null;
-  const pianoButton = pianoToggle ? (
-    <SurfaceIconButton
-      accessibilityLabel={pianoToggle.accessibilityLabel}
-      icon="piano-keyboard"
-      key="piano"
-      onPress={pianoToggle.toggle}
-      selected={pianoToggle.selected}
+  // The viewer is where `Show other-octave matches` means something, so its
+  // menu is the one that lists it. In the side rail the menu opens sideways,
+  // toward the score; along the bottom it opens upward.
+  const practiceToolsButton = (
+    <PracticeToolsControl
+      anchorStyle={styles.menuAnchor}
+      isSheetMusicOpen
+      key="practice-tools"
+      menuPlacement={styles.menuAboveBar}
+      showMenu={!isColumn}
+      tools={practiceTools}
+      renderTrigger={({
+        accessibilityLabel,
+        isActive,
+        isExpanded,
+        onPress,
+      }) => (
+        <SurfaceIconButton
+          accessibilityLabel={accessibilityLabel}
+          expanded={isExpanded}
+          icon="practice-tools"
+          onPress={onPress}
+          selected={isActive}
+        />
+      )}
     />
-  ) : null;
+  );
   const zoomValue = (
     <Text
       accessibilityLiveRegion="polite"
@@ -126,7 +147,7 @@ export const ViewerToolbar = ({
               layoutButton,
               pageGroup,
               goToButton,
-              pianoButton,
+              practiceToolsButton,
             ]
           : [
               zoomOut,
@@ -136,7 +157,7 @@ export const ViewerToolbar = ({
               layoutButton,
               pageGroup,
               goToButton,
-              pianoButton,
+              practiceToolsButton,
             ]}
       </View>
       <CompactPlaybackAction
@@ -163,12 +184,17 @@ const styles = StyleSheet.create({
   zoom: {
     flexDirection: 'row',
     flexShrink: 1,
-    // Zoom, fit, go to, and piano plus play do not fit one row on a narrow
+    // Zoom, fit, go to, and practice tools plus play do not fit one row on a narrow
     // phone, so the controls wrap rather than run off the edge.
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: appTheme.space.sm,
   },
+  // The button sits mid-row, so the menu is placed against the whole toolbar
+  // (a static anchor leaves the toolbar as the positioned parent) to keep it
+  // inside the screen. In the side rail the viewer draws the menu itself.
+  menuAnchor: { position: 'static' },
+  menuAboveBar: { bottom: '100%', left: 0, marginBottom: appTheme.space.xs },
   zoomColumn: {
     flexDirection: 'column',
     gap: appTheme.space.xs,

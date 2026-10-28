@@ -39,6 +39,8 @@ import { resolveViewerFailure } from './viewer-failure';
 import { usePageAreaFocus } from './use-page-area-focus';
 import { usePdfViewerControls } from './use-pdf-viewer-controls';
 import { useViewerZoom } from './use-viewer-zoom';
+import { practiceToolsOverlay } from '../../practice-tools/practice-tools-overlay';
+import { usePracticeTools } from '../../practice-tools/use-practice-tools';
 import { ViewerLayout } from './viewer-layout';
 import { ViewerToolbar } from './viewer-toolbar';
 import { useBestEffortKeepAwake } from '../../../hooks/use-best-effort-keep-awake';
@@ -99,6 +101,7 @@ export const SheetMusicViewer = ({
   useEffect(registerPianoViewer, []);
 
   const isCompact = useCompactViewer();
+  const practiceTools = usePracticeTools({ isSheetMusicOpen: true });
   const viewable = useMemo(() => filterViewableSources(sources), [sources]);
   const [sourceId, setSourceId] = useState(initialSourceId);
   const [chosen, setChosen] = useState<
@@ -289,6 +292,7 @@ export const SheetMusicViewer = ({
           : undefined
       }
       pdfLayout={pdfLayout.button}
+      practiceTools={practiceTools}
       zoom={viewerZoom.zoom}
     />
   );
@@ -314,6 +318,7 @@ export const SheetMusicViewer = ({
       isCompact={isCompact}
       notices={hasParts ? <PartNotices info={info} /> : null}
       onClose={onClose}
+      overlay={(placement) => practiceToolsOverlay(practiceTools, placement)}
       ownerName={ownerName}
       partChips={partChips}
       piano={

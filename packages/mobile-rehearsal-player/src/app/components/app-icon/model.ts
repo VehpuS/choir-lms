@@ -188,6 +188,7 @@ export const APP_ICON_GLYPHS = {
   // Practice tools: the one control (and menu) that holds the piano and pitch
   // detection, and the pitch detection row's microphone.
   'practice-tools': regular('Toolbox'),
+  'practice-tools-filled': filled('Toolbox'),
   'microphone-outline': regular('Microphone'),
 
   // Account.

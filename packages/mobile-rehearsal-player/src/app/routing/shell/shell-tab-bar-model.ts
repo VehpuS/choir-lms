@@ -48,22 +48,22 @@ export const getShellTabPresentation = (
 };
 
 /**
- * The piano's tab: a toggle rather than a destination, so it is open or
- * closed instead of active. Open reads like an active tab (accent colour,
- * mark, filled glyph); the open piano itself docks above the tab bar.
+ * The Practice tools tab: a menu trigger rather than a destination, so it is
+ * on or off instead of active. It reads like an active tab (accent colour,
+ * mark, filled glyph) while any tool is on; the tools dock above the tab bar.
  */
-export const getPianoTabPresentation = (
-  isOpen: boolean,
+export const getPracticeToolsTabPresentation = (
+  isActive: boolean,
 ): ShellTabPresentation => {
-  return isOpen
+  return isActive
     ? {
         color: ACTIVE_TAB_COLOR,
-        iconName: 'piano-keyboard-filled',
+        iconName: 'practice-tools-filled',
         showActiveMark: true,
       }
     : {
         color: INACTIVE_TAB_COLOR,
-        iconName: 'piano-keyboard',
+        iconName: 'practice-tools',
         showActiveMark: false,
       };
 };

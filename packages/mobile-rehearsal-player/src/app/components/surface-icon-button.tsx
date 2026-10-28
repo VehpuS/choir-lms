@@ -16,6 +16,8 @@ import { ariaStateProps } from './aria-state';
 export type SurfaceIconButtonProps = {
   accessibilityLabel: string;
   disabled?: boolean;
+  /** For a button that opens a menu: whether the menu is showing. */
+  expanded?: boolean;
   icon: AppIconName;
   onPress: () => void;
   selected?: boolean;
@@ -27,6 +29,7 @@ export type SurfaceIconButtonProps = {
 export const SurfaceIconButton = ({
   accessibilityLabel,
   disabled = false,
+  expanded,
   icon,
   onPress,
   selected = false,
@@ -46,6 +49,7 @@ export const SurfaceIconButton = ({
       }}
       {...ariaStateProps({
         disabled,
+        expanded,
         selected,
       })}
       {...interactionGuardProps}

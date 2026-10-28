@@ -3,9 +3,9 @@ import { Pressable, Text, View } from 'react-native';
 import { AppIcon } from '../../components/app-icon';
 import { styles } from './mobile-shell-styles';
 import { SHELL_DESTINATIONS, type ShellDestinationKey } from './shell-model';
-import { usePianoToggle } from '../../library/piano/piano-toggle';
+import { PracticeToolsControl } from '../../library/practice-tools/practice-tools-control';
 import {
-  getPianoTabPresentation,
+  getPracticeToolsTabPresentation,
   getShellTabPresentation,
 } from './shell-tab-bar-model';
 
@@ -20,12 +20,6 @@ export const ShellTabBar = ({
   activeDestination,
   onSelectDestination,
 }: ShellTabBarProps) => {
-  // The piano needs no track, so it lives here rather than in the mini-player.
-  const pianoToggle = usePianoToggle();
-  const pianoPresentation = getPianoTabPresentation(
-    pianoToggle?.selected ?? false,
-  );
-
   return (
     <View style={styles.tabBar}>
       {SHELL_DESTINATIONS.map((destination) => {
@@ -63,33 +57,48 @@ export const ShellTabBar = ({
           </Pressable>
         );
       })}
-      {pianoToggle ? (
-        <Pressable
-          accessibilityLabel={pianoToggle.accessibilityLabel}
-          accessibilityRole="button"
-          accessibilityState={{ selected: pianoToggle.selected }}
-          onPress={pianoToggle.toggle}
-          style={({ pressed }) => [
-            styles.tab,
-            pressed ? styles.tabPressed : null,
-          ]}
-        >
-          <View
-            style={[
-              styles.tabMark,
-              pianoPresentation.showActiveMark ? styles.tabMarkActive : null,
-            ]}
-          />
-          <AppIcon
-            color={pianoPresentation.color}
-            name={pianoPresentation.iconName}
-            size={TAB_ICON_SIZE}
-          />
-          <Text style={[styles.tabLabel, { color: pianoPresentation.color }]}>
-            Piano
-          </Text>
-        </Pressable>
-      ) : null}
+      {/* The tools need no track, so they live here rather than in the mini-player. */}
+      <PracticeToolsControl
+        anchorStyle={styles.tabAnchor}
+        menuPlacement={styles.practiceToolsMenu}
+        renderTrigger={({
+          accessibilityLabel,
+          isActive,
+          isExpanded,
+          onPress,
+        }) => {
+          const presentation = getPracticeToolsTabPresentation(isActive);
+
+          return (
+            <Pressable
+              accessibilityLabel={accessibilityLabel}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: isExpanded, selected: isActive }}
+              aria-expanded={isExpanded}
+              onPress={onPress}
+              style={({ pressed }) => [
+                styles.tab,
+                pressed ? styles.tabPressed : null,
+              ]}
+            >
+              <View
+                style={[
+                  styles.tabMark,
+                  presentation.showActiveMark ? styles.tabMarkActive : null,
+                ]}
+              />
+              <AppIcon
+                color={presentation.color}
+                name={presentation.iconName}
+                size={TAB_ICON_SIZE}
+              />
+              <Text style={[styles.tabLabel, { color: presentation.color }]}>
+                Practice tools
+              </Text>
+            </Pressable>
+          );
+        }}
+      />
     </View>
   );
 };

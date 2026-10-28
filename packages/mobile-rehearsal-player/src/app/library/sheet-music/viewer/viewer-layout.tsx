@@ -1,9 +1,18 @@
 import type { ReactNode } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  type ViewStyle,
+} from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
 import { ChipRow } from './chip-row';
 import { ChipDivider } from './part-chips';
+
+const RAIL_OVERLAY_OFFSET = 76;
 
 type ViewerLayoutProps = {
   /** The score, with anything laid over it. */
@@ -14,6 +23,11 @@ type ViewerLayoutProps = {
   /** Why the shown parts are not what was asked for, when they are not. */
   notices: ReactNode;
   onClose: () => void;
+  /**
+   * Drawn over the compact layout, outside the rail's scroll view (which
+   * would clip it); given where to sit, beside the rail.
+   */
+  overlay?: (placement: ViewStyle) => ReactNode;
   ownerName: string;
   partChips: ReactNode;
   /** The docked piano; sits under the score, which shrinks to make room. */
@@ -34,6 +48,7 @@ export const ViewerLayout = ({
   isCompact,
   notices,
   onClose,
+  overlay,
   ownerName,
   partChips,
   piano,
@@ -70,6 +85,7 @@ export const ViewerLayout = ({
             {closeButton}
             {toolbar('column')}
           </ScrollView>
+          {overlay?.(styles.railOverlay)}
         </View>
       </Modal>
     );
@@ -124,6 +140,11 @@ const styles = StyleSheet.create({
   },
   rail: {
     flexGrow: 0,
+  },
+  // Clears the rail and the screen inset, so an overlay sits beside the rail.
+  railOverlay: {
+    right: RAIL_OVERLAY_OFFSET,
+    bottom: appTheme.space.lg,
   },
   // Fills the rail while the controls fit, so close stays at the top and the
   // toolbar at the bottom; taller content scrolls.

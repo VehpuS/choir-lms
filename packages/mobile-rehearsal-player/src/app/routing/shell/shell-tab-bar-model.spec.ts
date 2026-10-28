@@ -5,7 +5,7 @@ import { resolveAppIconGlyph } from '../../components/app-icon/model.js';
 import { appTheme } from '../../utils/theme.js';
 import { SHELL_DESTINATIONS } from './shell-model.js';
 import {
-  getPianoTabPresentation,
+  getPracticeToolsTabPresentation,
   getShellTabPresentation,
 } from './shell-tab-bar-model.js';
 
@@ -50,18 +50,18 @@ describe('shell tab bar model', () => {
   });
 });
 
-describe('piano tab presentation', () => {
-  it('reads like an active tab while the piano is open', () => {
-    const open = getPianoTabPresentation(true);
+describe('practice tools tab presentation', () => {
+  it('reads like an active tab while any tool is on', () => {
+    const open = getPracticeToolsTabPresentation(true);
 
     assert.equal(open.showActiveMark, true);
     assert.equal(open.color, appTheme.colors.accentText);
     assert.equal(resolveAppIconGlyph(open.iconName).weight, 'fill');
   });
 
-  it('is muted and regular weight, with the same glyph, while closed', () => {
-    const open = getPianoTabPresentation(true);
-    const closed = getPianoTabPresentation(false);
+  it('is muted and regular weight, with the same glyph, while every tool is off', () => {
+    const open = getPracticeToolsTabPresentation(true);
+    const closed = getPracticeToolsTabPresentation(false);
 
     assert.equal(closed.showActiveMark, false);
     assert.equal(closed.color, appTheme.colors.textMuted);

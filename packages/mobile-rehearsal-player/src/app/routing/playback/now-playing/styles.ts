@@ -42,6 +42,9 @@ export const nowPlayingStyles = StyleSheet.create({
     gap: space.md,
     paddingHorizontal: space.sheetInset,
     paddingTop: space.sm,
+    // Above the body, so the Practice tools menu opening from here is not
+    // painted over by the title and waveform.
+    zIndex: 2,
   },
   headerKicker: {
     ...type.kicker,
@@ -51,6 +54,8 @@ export const nowPlayingStyles = StyleSheet.create({
   headerStatus: {
     flexShrink: 1,
   },
+  // The Practice tools menu opens downward from the header button.
+  practiceToolsMenu: { top: '100%', right: 0, marginTop: appTheme.space.xs },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',

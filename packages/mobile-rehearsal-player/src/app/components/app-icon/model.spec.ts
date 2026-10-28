@@ -28,7 +28,10 @@ describe('app icon glyph map', () => {
   });
 
   it('gives the practice tools and pitch detection their own glyphs', () => {
-    assert.deepEqual(namesUsingGlyph('Toolbox'), ['practice-tools']);
+    assert.deepEqual(namesUsingGlyph('Toolbox'), [
+      'practice-tools',
+      'practice-tools-filled',
+    ]);
     assert.deepEqual(namesUsingGlyph('Microphone'), ['microphone-outline']);
   });
 

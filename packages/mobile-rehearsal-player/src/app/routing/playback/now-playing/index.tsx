@@ -11,7 +11,7 @@ import { FadedRule } from '../../../components/faded-rule';
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { LyricsSection } from '../../../library/lyrics/components/lyrics-section';
 import { OptionsMenuSheet } from '../../../library/components/options-menu-sheet';
-import { usePianoToggle } from '../../../library/piano/piano-toggle';
+import { PracticeToolsControl } from '../../../library/practice-tools/practice-tools-control';
 import { appTheme } from '../../../utils/theme';
 import type {
   NowPlayingSurfaceSummary,
@@ -136,7 +136,6 @@ const TitleBlock = ({
 export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
   const { summary } = props;
   const [isMenuVisible, setIsMenuVisible] = useState(false);
-  const pianoToggle = usePianoToggle();
   const menuActions = useNowPlayingMenuActions({
     activePlayableItem: props.activePlayableItem,
     closeMenu: () => {
@@ -164,14 +163,23 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
               onPress={props.onShowQueue}
             />
           ) : null}
-          {pianoToggle ? (
-            <SurfaceIconButton
-              accessibilityLabel={pianoToggle.accessibilityLabel}
-              icon="piano-keyboard"
-              onPress={pianoToggle.toggle}
-              selected={pianoToggle.selected}
-            />
-          ) : null}
+          <PracticeToolsControl
+            menuPlacement={styles.practiceToolsMenu}
+            renderTrigger={({
+              accessibilityLabel,
+              isActive,
+              isExpanded,
+              onPress,
+            }) => (
+              <SurfaceIconButton
+                accessibilityLabel={accessibilityLabel}
+                expanded={isExpanded}
+                icon="practice-tools"
+                onPress={onPress}
+                selected={isActive}
+              />
+            )}
+          />
           {menuActions.length > 0 ? (
             <SurfaceIconButton
               accessibilityLabel="More actions"

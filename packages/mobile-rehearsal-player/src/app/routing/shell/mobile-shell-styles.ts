@@ -136,6 +136,10 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: TAB_GAP,
   },
+  // The Practice tools tab sits in a wrapper that anchors its menu; the wrapper
+  // takes the tab's share of the row and the menu opens upward from it.
+  tabAnchor: { flex: 1 },
+  practiceToolsMenu: { bottom: '100%', right: 0, marginBottom: space.xs },
   tabPressed: {
     opacity: PRESSED_OPACITY,
   },
