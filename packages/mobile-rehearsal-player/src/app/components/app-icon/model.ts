@@ -40,6 +40,7 @@ export type PhosphorGlyph =
   | 'ListPlus'
   | 'MagnifyingGlass'
   | 'MagnifyingGlassPlus'
+  | 'Microphone'
   | 'Minus'
   | 'MinusCircle'
   | 'MusicNote'
@@ -67,6 +68,7 @@ export type PhosphorGlyph =
   | 'SpeakerX'
   | 'Tag'
   | 'TextAlignLeft'
+  | 'Toolbox'
   | 'Trash'
   | 'UserCircle'
   | 'Waveform'
@@ -182,6 +184,11 @@ export const APP_ICON_GLYPHS = {
   'piano-keyboard': regular('PianoKeys'),
   // The same glyph filled, for the tab bar's piano item while the piano is open.
   'piano-keyboard-filled': filled('PianoKeys'),
+
+  // Practice tools: the one control (and menu) that holds the piano and pitch
+  // detection, and the pitch detection row's microphone.
+  'practice-tools': regular('Toolbox'),
+  'microphone-outline': regular('Microphone'),
 
   // Account.
   'account-circle-outline': regular('UserCircle'),
