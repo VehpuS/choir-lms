@@ -10,8 +10,6 @@ const input = (overrides: Partial<PracticeToolsInput>): PracticeToolsInput => {
   return {
     piano: null,
     pitch: null,
-    otherOctave: { checked: false },
-    isSheetMusicOpen: false,
     ...overrides,
   };
 };
@@ -22,7 +20,7 @@ const rowIds = (overrides: Partial<PracticeToolsInput>) => {
 
 describe('practice tools model', () => {
   it('is absent when no tool is available', () => {
-    const model = getPracticeToolsModel(input({ isSheetMusicOpen: true }));
+    const model = getPracticeToolsModel(input({}));
 
     assert.equal(model.isVisible, false);
     assert.deepEqual(model.rows, []);
@@ -60,69 +58,10 @@ describe('practice tools model', () => {
     );
   });
 
-  it('lists the other-octave row only while the sheet music viewer is open', () => {
-    const tools = { piano: { checked: false }, pitch: { checked: false } };
-
-    assert.deepEqual(rowIds({ ...tools, isSheetMusicOpen: false }), [
-      'piano',
-      'pitch',
-    ]);
-    assert.deepEqual(rowIds({ ...tools, isSheetMusicOpen: true }), [
-      'piano',
-      'pitch',
-      'other-octave',
-    ]);
-  });
-
-  it('keeps the other-octave value and does not let it count as an active tool', () => {
-    const model = getPracticeToolsModel(
-      input({
-        piano: { checked: false },
-        isSheetMusicOpen: true,
-        otherOctave: { checked: true },
-      }),
-    );
-
-    assert.equal(model.isActive, false);
-    assert.equal(model.rows.at(-1)?.checked, true);
-  });
-
-  it('never offers the other-octave setting without a tool to go with it', () => {
+  it('never lists a setting as a row, whatever surface is open', () => {
     assert.deepEqual(
-      rowIds({ isSheetMusicOpen: true, otherOctave: { checked: true } }),
-      [],
-    );
-  });
-
-  it('omits the other-octave row where the setting is not wired', () => {
-    assert.deepEqual(
-      rowIds({
-        piano: { checked: false },
-        isSheetMusicOpen: true,
-        otherOctave: null,
-      }),
-      ['piano'],
-    );
-  });
-
-  it('sets the other-octave row apart as a setting, with its own icon and a helper line', () => {
-    const model = getPracticeToolsModel(
-      input({
-        piano: { checked: false },
-        pitch: { checked: false },
-        otherOctave: { checked: false },
-        isSheetMusicOpen: true,
-      }),
-    );
-    const [piano, pitch, otherOctave] = model.rows;
-
-    assert.equal(piano.startsGroup, undefined);
-    assert.equal(pitch.icon, 'microphone-outline');
-    assert.equal(otherOctave.icon, 'music-notes-plus');
-    assert.equal(otherOctave.startsGroup, true);
-    assert.equal(
-      otherOctave.description,
-      'Also lightly marks the same note in other octaves',
+      rowIds({ piano: { checked: false }, pitch: { checked: false } }),
+      ['piano', 'pitch'],
     );
   });
 });

@@ -8,6 +8,7 @@ import { PracticeToolsControl } from '../../practice-tools/practice-tools-contro
 import type { PracticeTools } from '../../practice-tools/use-practice-tools';
 import { PDF_LAYOUT_ICONS } from '../pdf-layout/pdf-layout-sheet-model';
 import { appTheme } from '../../../utils/theme';
+import { useOtherOctaveToggle } from './use-other-octave-toggle';
 import { VIEWER_MAX_ZOOM, VIEWER_MIN_ZOOM, formatViewerZoom } from './model';
 
 type ViewerToolbarProps = {
@@ -21,6 +22,8 @@ type ViewerToolbarProps = {
   onFit: (() => void) | undefined;
   /** The page group of the compact rail (`Previous page`, `3/81`, `Next page`); absent elsewhere. */
   pageGroup?: ReactNode;
+  /** A score is open (not a PDF), so its `Show other-octave matches` toggle is offered. */
+  isScore: boolean;
   /** Opens the PDF `Layout` sheet; absent unless a PDF is open. */
   pdfLayout?: { layout: PdfLayout; onOpen: () => void };
   onTogglePlayback: () => void;
@@ -40,6 +43,7 @@ export const ViewerToolbar = ({
   isFitted,
   isPlaybackToggleDisabled,
   isPlaying,
+  isScore,
   maxZoom = VIEWER_MAX_ZOOM,
   onFit,
   onGoTo,
@@ -53,6 +57,7 @@ export const ViewerToolbar = ({
   zoom,
 }: ViewerToolbarProps) => {
   const isColumn = orientation === 'column';
+  const otherOctave = useOtherOctaveToggle(isScore);
   // In a column the larger zoom is on top, as a slider reads.
   const zoomOut = (
     <SurfaceIconButton
@@ -98,13 +103,22 @@ export const ViewerToolbar = ({
       onPress={onGoTo}
     />
   ) : null;
-  // The viewer is where `Show other-octave matches` means something, so its
-  // menu is the one that lists it. In the side rail the menu opens sideways,
-  // toward the score; along the bottom it opens upward.
+  // A setting of the score, so it sits with the score's controls rather than
+  // in the Practice tools menu.
+  const otherOctaveButton = otherOctave ? (
+    <SurfaceIconButton
+      accessibilityLabel={otherOctave.accessibilityLabel}
+      icon="music-notes-plus"
+      key="other-octave"
+      onPress={otherOctave.onToggle}
+      selected={otherOctave.isOn}
+    />
+  ) : null;
+  // In the side rail the Practice tools menu opens sideways, toward the
+  // score; along the bottom it opens upward.
   const practiceToolsButton = (
     <PracticeToolsControl
       anchorStyle={styles.menuAnchor}
-      isSheetMusicOpen
       key="practice-tools"
       menuPlacement={styles.menuAboveBar}
       showMenu={!isColumn}
@@ -147,6 +161,7 @@ export const ViewerToolbar = ({
               layoutButton,
               pageGroup,
               goToButton,
+              otherOctaveButton,
               practiceToolsButton,
             ]
           : [
@@ -157,6 +172,7 @@ export const ViewerToolbar = ({
               layoutButton,
               pageGroup,
               goToButton,
+              otherOctaveButton,
               practiceToolsButton,
             ]}
       </View>

@@ -39,10 +39,10 @@ The tab bar SHALL include a `Practice tools` item after the destinations, in the
 - **WHEN** the user presses `Practice tools` in the sheet music viewer and turns on `Piano`
 - **THEN** the keyboard docks under the score and the score area shrinks to the space above it
 
-#### Scenario: Other-octave matches row
+#### Scenario: Other-octave matches is not a practice tool
 
-- **WHEN** the user opens `Practice tools` from the sheet music viewer
-- **THEN** the menu lists `Show other-octave matches` with its state, and the same menu opened from the tab bar or the playback screen does not
+- **WHEN** the user opens `Practice tools` from any surface, including the sheet music viewer
+- **THEN** the menu lists only `Piano` and `Pitch detection`; `Show other-octave matches` is a toggle in the viewer's toolbar, shown only beside a MusicXML or MIDI score where pitch detection is available
 
 #### Scenario: Only one tool available
 

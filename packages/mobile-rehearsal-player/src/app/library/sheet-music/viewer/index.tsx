@@ -103,7 +103,7 @@ export const SheetMusicViewer = ({
   useEffect(registerPianoViewer, []);
 
   const isCompact = useCompactViewer();
-  const practiceTools = usePracticeTools({ isSheetMusicOpen: true });
+  const practiceTools = usePracticeTools();
   const viewable = useMemo(() => filterViewableSources(sources), [sources]);
   const [sourceId, setSourceId] = useState(initialSourceId);
   const [chosen, setChosen] = useState<
@@ -279,6 +279,7 @@ export const SheetMusicViewer = ({
       onZoomIn={after(viewerZoom.zoomIn)}
       onZoomOut={after(viewerZoom.zoomOut)}
       orientation={orientation}
+      isScore={info !== null && !isPdf}
       pageGroup={
         orientation === 'column'
           ? buildRailPageGroup({

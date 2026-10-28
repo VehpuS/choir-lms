@@ -18,8 +18,6 @@ type PracticeToolsControlProps = {
   menuPlacement: ViewStyle;
   /** Lets a flex row (the tab bar) give the anchor a share of its width. */
   anchorStyle?: ViewStyle;
-  /** The viewer adds the other-octave row; every other surface omits it. */
-  isSheetMusicOpen?: boolean;
   /**
    * Tools state held by the caller, so the menu can be drawn elsewhere (the
    * viewer's scrolling rail would clip it). Omit to let the control own it.
@@ -38,11 +36,10 @@ export const PracticeToolsControl = ({
   renderTrigger,
   menuPlacement,
   anchorStyle,
-  isSheetMusicOpen = false,
   tools: providedTools,
   showMenu = true,
 }: PracticeToolsControlProps) => {
-  const ownTools = usePracticeTools({ isSheetMusicOpen });
+  const ownTools = usePracticeTools();
   const tools = providedTools ?? ownTools;
 
   if (!tools.model.isVisible) {
