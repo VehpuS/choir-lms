@@ -6,6 +6,7 @@ import {
 import { DEFAULT_REFERENCE_HZ } from '@org/audio-library-models';
 
 import type { VisibilitySource } from './app-visibility';
+import { createPitchHistory, type PitchHistory } from './view/pitch-history';
 import { PcmSourceError, type PcmSource } from './pcm-source-types';
 import {
   AUTO_START_STATUSES,
@@ -24,6 +25,11 @@ export * from './pitch-store-types';
 
 export type PitchStore = {
   getState: () => PitchState;
+  /**
+   * What the Pitch view draws: note segments and a cents trace, in memory
+   * only. Read it on the display frame; it is cleared when listening stops.
+   */
+  history: PitchHistory;
   subscribe: (listener: () => void) => () => void;
   /** Registers a mounted consumer; listening stops when the last releases. */
   acquire: () => () => void;
@@ -48,6 +54,7 @@ export const createPitchStore = ({
   storage: PitchFlagStorage;
 }): PitchStore => {
   const pipeline = createPitchPipeline({ estimator: createPitchyEstimator() });
+  const history = createPitchHistory();
   const listeners = new Set<() => void>();
   let consumers = 0;
   let explained = false;
@@ -99,6 +106,7 @@ export const createPitchStore = ({
     stopCapture?.();
     stopCapture = null;
     pipeline.reset();
+    history.clear();
   };
 
   const begin = async () => {
@@ -118,6 +126,8 @@ export const createPitchStore = ({
             sampleRate: frame.sampleRate,
             timestampMs: frame.captureTimeSec * 1000,
           });
+
+          history.push(frame.captureTimeSec * 1000, reading);
 
           // Idle frames are the common case while nobody sings; skip them.
           if (reading.active || state.reading.active) {
@@ -141,6 +151,7 @@ export const createPitchStore = ({
 
           stopCapture = null;
           pipeline.reset();
+          history.clear();
           update({ status: 'interrupted', reading: IDLE_READING });
           retryTimer = setTimeout(() => reconcile(false), PITCH_RETRY_MS);
         },
@@ -215,6 +226,7 @@ export const createPitchStore = ({
 
   return {
     getState: () => state,
+    history,
     subscribe: (listener) => {
       listeners.add(listener);
 

@@ -301,6 +301,39 @@ describe('pitch store: readings', () => {
     assert.equal(ctx.store.getState().reading.active, false);
   });
 
+  it('records the sung note in the history while listening', async () => {
+    const ctx = setup({ permission: 'granted' });
+
+    await listenGranted(ctx);
+    feed(ctx.source, 440, 20);
+
+    const { segments, trace } = ctx.store.history.getSnapshot();
+
+    assert.equal(segments.at(-1)?.midi, A4);
+    assert.ok(trace.length > 0);
+  });
+
+  it('drops the history when listening stops', async () => {
+    const ctx = setup({ permission: 'granted' });
+
+    await listenGranted(ctx);
+    feed(ctx.source, 440, 20);
+    ctx.store.stopListening();
+
+    assert.deepEqual(ctx.store.history.getSnapshot().segments, []);
+    assert.deepEqual(ctx.store.history.getSnapshot().trace, []);
+  });
+
+  it('drops the history when the platform ends the stream', async () => {
+    const ctx = setup({ permission: 'granted' });
+
+    await listenGranted(ctx);
+    feed(ctx.source, 440, 20);
+    ctx.source.end();
+
+    assert.deepEqual(ctx.store.history.getSnapshot().segments, []);
+  });
+
   it('applies the reference tuning', async () => {
     const ctx = setup({ permission: 'granted' });
 
