@@ -8,6 +8,7 @@ import {
   pianoKeyLabel,
   type PianoLabelOptions,
 } from '../../keyboard-layout';
+import type { DetectedEdge } from '../../piano-detected-model';
 import { clampScrollLeft } from '../../piano-overlay-model';
 import { createKeyGestures } from '../../piano-key-gestures';
 import { capturePointer, pointRelativeTo, readPointer } from './pointer-events';
@@ -15,8 +16,14 @@ import { capturePointer, pointRelativeTo, readPointer } from './pointer-events';
 const { colors, radius } = appTheme;
 const LABEL_FONT_SIZE = 10;
 const WHEEL_SCROLL_FACTOR = 1;
+const DETECTED_BAR_HEIGHT = 14;
+const EDGE_INSET = 8;
 
 type PianoKeyboardProps = {
+  /** The key the singer's note lights, while it is in view. */
+  detectedMidi?: number | null;
+  /** Points toward the sung key while it is scrolled out of view. */
+  detectedEdge?: DetectedEdge | null;
   keyHeight: number;
   layout: KeyboardLayout;
   labelOptions: PianoLabelOptions;
@@ -41,6 +48,8 @@ type WheelEvent = {
  * beneath, or a horizontal wheel / trackpad gesture on the keys.
  */
 export const PianoKeyboard = ({
+  detectedMidi = null,
+  detectedEdge = null,
   keyHeight,
   layout,
   labelOptions,
@@ -157,10 +166,14 @@ export const PianoKeyboard = ({
               key={key.midi}
               style={[
                 styles.whiteKey,
+                detectedMidi === key.midi ? styles.whiteKeyDetected : null,
                 sounding.has(key.midi) ? styles.whiteKeyPressed : null,
                 { left: key.left, width: key.width },
               ]}
             >
+              {detectedMidi === key.midi ? (
+                <View style={styles.detectedBar} />
+              ) : null}
               {label ? <Text style={styles.whiteLabel}>{label}</Text> : null}
             </View>
           );
@@ -173,6 +186,7 @@ export const PianoKeyboard = ({
               key={key.midi}
               style={[
                 styles.blackKey,
+                detectedMidi === key.midi ? styles.blackKeyDetected : null,
                 sounding.has(key.midi) ? styles.blackKeyPressed : null,
                 {
                   height: keyHeight * BLACK_KEY_HEIGHT_RATIO,
@@ -186,6 +200,22 @@ export const PianoKeyboard = ({
           );
         })}
       </View>
+      {detectedEdge ? (
+        <View
+          accessibilityLabel={detectedEdge.spokenLabel}
+          pointerEvents="none"
+          style={[
+            styles.edge,
+            detectedEdge.side === 'left' ? styles.edgeLeft : styles.edgeRight,
+          ]}
+        >
+          <Text style={styles.edgeLabel}>
+            {detectedEdge.side === 'left'
+              ? `◂ ${detectedEdge.label}`
+              : `${detectedEdge.label} ▸`}
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 };
@@ -212,6 +242,21 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: radius.nudge,
     borderBottomRightRadius: radius.nudge,
   },
+  // Sung, not played: a lighter key with an accent bar, so it never reads as
+  // a pressed key (which stays the stronger accent).
+  whiteKeyDetected: {
+    backgroundColor: colors.accentRamp[200],
+    // Keeps a key's label clear of the bar.
+    paddingBottom: DETECTED_BAR_HEIGHT + 6,
+  },
+  detectedBar: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    left: 0,
+    height: DETECTED_BAR_HEIGHT,
+    backgroundColor: colors.accent,
+  },
   whiteKeyPressed: { backgroundColor: colors.accentRamp[300] },
   blackKey: {
     position: 'absolute',
@@ -225,7 +270,24 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: radius.sm,
     borderBottomRightRadius: radius.sm,
   },
+  blackKeyDetected: {
+    backgroundColor: colors.accentRamp[600],
+    borderColor: colors.accentText,
+  },
   blackKeyPressed: { backgroundColor: colors.accent },
+  edge: {
+    position: 'absolute',
+    top: EDGE_INSET,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceAccent,
+  },
+  edgeLeft: { left: EDGE_INSET },
+  edgeRight: { right: EDGE_INSET },
+  edgeLabel: { color: colors.accentOnTint, fontSize: 12 },
   whiteLabel: {
     color: colors.neutral[600],
     fontSize: LABEL_FONT_SIZE,

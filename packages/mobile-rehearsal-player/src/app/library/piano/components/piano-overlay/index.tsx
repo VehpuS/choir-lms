@@ -20,6 +20,8 @@ import {
 import { useComputerKeyboardPiano } from '../../use-computer-keyboard-piano';
 import { usePianoSound } from '../../use-piano-sound';
 import { PianoKeyboard } from './piano-keyboard';
+import { getDetectedKeys } from '../../piano-detected-model';
+import { useSungMidi } from '../../../pitch/use-sung-midi';
 import { PianoOverlayHeader } from './piano-overlay-header';
 import { PianoScrollStrip } from './piano-scroll-strip';
 
@@ -120,6 +122,13 @@ const PianoOverlayBody = ({
     );
   };
 
+  const detected = getDetectedKeys({
+    sungMidi: useSungMidi(),
+    layout,
+    scrollLeft,
+    viewportWidth,
+  });
+
   return (
     <View style={styles.overlay} testID="piano-overlay">
       <PianoOverlayHeader
@@ -138,6 +147,8 @@ const PianoOverlayBody = ({
         volume={preferences.volume}
       />
       <PianoKeyboard
+        detectedEdge={detected.edge}
+        detectedMidi={detected.midi}
         keyHeight={keyHeight}
         labelOptions={preferences}
         layout={layout}
