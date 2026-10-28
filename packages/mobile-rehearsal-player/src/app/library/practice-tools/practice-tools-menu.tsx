@@ -83,7 +83,6 @@ export const PracticeToolsMenu = ({
               />
               <View style={styles.rowText}>
                 <Text
-                  numberOfLines={1}
                   style={[
                     styles.rowLabel,
                     row.checked ? styles.rowLabelOn : null,
