@@ -6,7 +6,11 @@ import {
   closePitchMonitor,
   openPitchMonitor,
 } from '../pitch/pitch-monitor-controller';
-import { usePitchMonitorOpen } from '../pitch/use-pitch';
+import {
+  getPitchSettings,
+  usePitchMonitorOpen,
+  usePitchSettings,
+} from '../pitch/use-pitch';
 import {
   setPianoPreferences,
   usePianoPreferences,
@@ -26,20 +30,22 @@ export type PracticeTools = {
 };
 
 /**
- * Backs the shared Practice tools control and menu. The piano and `Pitch
- * detection` rows are live; `Show other-octave matches` binds to the
- * preference store in 4.6, so it is absent (null) until then.
+ * Backs the shared Practice tools control and menu: the piano, `Pitch
+ * detection`, and (in the viewer) `Show other-octave matches`, which is a
+ * pitch setting, so it is offered only where pitch detection is.
  */
 export const usePracticeTools = (options: {
   isSheetMusicOpen: boolean;
 }): PracticeTools => {
   const { isOpen: isPianoOpen } = usePianoPreferences();
   const isMonitorOpen = usePitchMonitorOpen();
+  const { showOtherOctave } = usePitchSettings();
+  const canListen = pitchCapabilities().canListen;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const model = getPracticeToolsModel({
     piano: pianoCapabilities().canPlay ? { checked: isPianoOpen } : null,
-    pitch: pitchCapabilities().canListen ? { checked: isMonitorOpen } : null,
-    otherOctave: null,
+    pitch: canListen ? { checked: isMonitorOpen } : null,
+    otherOctave: canListen ? { checked: showOtherOctave } : null,
     isSheetMusicOpen: options.isSheetMusicOpen,
   });
 
@@ -54,6 +60,8 @@ export const usePracticeTools = (options: {
       } else if (id === 'pitch') {
         // Switching it on starts listening; off stops it (design Decision 6).
         (isMonitorOpen ? closePitchMonitor : openPitchMonitor)();
+      } else if (id === 'other-octave') {
+        getPitchSettings().set({ showOtherOctave: !showOtherOctave });
       }
     },
   };
