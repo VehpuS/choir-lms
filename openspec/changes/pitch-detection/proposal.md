@@ -18,7 +18,7 @@ Singers rehearse against a recording, a score, and sometimes the piano, but the 
 
 ### New Capabilities
 
-- `pitch-detection`: microphone permission and capture, the detection pipeline (estimator, gating, smoothing, note segmentation), the full Pitch view, the playback monitor, settings (reference tuning, other-octave matches, sensitivity), privacy, and failure states.
+- `pitch-detection`: microphone permission and capture, the detection pipeline (estimator, gating, smoothing, note segmentation), the full Pitch view, the playback monitor, settings (other-octave matches, sensitivity), privacy, and failure states.
 
 ### Modified Capabilities
 

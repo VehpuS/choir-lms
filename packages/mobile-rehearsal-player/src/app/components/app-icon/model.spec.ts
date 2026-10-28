@@ -35,6 +35,10 @@ describe('app icon glyph map', () => {
     assert.deepEqual(namesUsingGlyph('Microphone'), ['microphone-outline']);
   });
 
+  it('gives the Pitch view expand control its own glyph', () => {
+    assert.deepEqual(namesUsingGlyph('ArrowsOut'), ['arrow-expand']);
+  });
+
   it('gives markers their own flag glyph', () => {
     assert.deepEqual(namesUsingGlyph('Flag'), ['flag-outline']);
   });

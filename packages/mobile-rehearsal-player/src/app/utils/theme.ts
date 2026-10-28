@@ -45,6 +45,8 @@ const statusHues = {
   danger: { hex: '#f28b82', rgb: '242,139,130' },
   warning: { hex: '#e6c17a', rgb: '230,193,122' },
   success: { hex: '#81c995', rgb: '129,201,149' },
+  /** Between warning and danger: the Pitch view's quarter tone off. */
+  caution: { hex: '#f0a070', rgb: '240,160,112' },
 } as const;
 const STATUS_FILL_ALPHA = 0.12;
 const STATUS_EDGE_ALPHA = 0.4;
@@ -98,6 +100,9 @@ const nocturneColors = {
   warning: statusHues.warning.hex,
   warningFill: `rgba(${statusHues.warning.rgb},${STATUS_FILL_ALPHA})`,
   warningEdge: `rgba(${statusHues.warning.rgb},${STATUS_EDGE_ALPHA})`,
+  caution: statusHues.caution.hex,
+  cautionFill: `rgba(${statusHues.caution.rgb},${STATUS_FILL_ALPHA})`,
+  cautionEdge: `rgba(${statusHues.caution.rgb},${STATUS_EDGE_ALPHA})`,
   success: statusHues.success.hex,
   successFill: `rgba(${statusHues.success.rgb},${STATUS_FILL_ALPHA})`,
   successEdge: `rgba(${statusHues.success.rgb},${STATUS_EDGE_ALPHA})`,

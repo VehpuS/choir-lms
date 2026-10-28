@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
@@ -11,6 +12,7 @@ import {
   type MonitorNotice,
 } from '../view/pitch-monitor-model';
 import { PitchMonitorNote } from './pitch-monitor-note';
+import { PitchView } from './pitch-view';
 
 /** The strip's height with its top border; the dock height counts it. */
 export const PITCH_MONITOR_HEIGHT = 65;
@@ -24,6 +26,7 @@ const { colors, space } = appTheme;
  */
 export const PitchMonitorStrip = () => {
   const { state, store } = usePitch();
+  const [isViewOpen, setIsViewOpen] = useState(false);
   const model = getMonitorModel(state);
   const act = (action: MonitorAction) => {
     if (action === 'continue') {
@@ -81,12 +84,18 @@ export const PitchMonitorStrip = () => {
         ) : null}
         <View style={styles.controls}>
           <SurfaceIconButton
+            accessibilityLabel="Open full view"
+            icon="arrow-expand"
+            onPress={() => setIsViewOpen(true)}
+          />
+          <SurfaceIconButton
             accessibilityLabel="Close pitch detection"
             icon="close"
             onPress={closePitchMonitor}
           />
         </View>
       </View>
+      <PitchView isVisible={isViewOpen} onClose={() => setIsViewOpen(false)} />
     </View>
   );
 };

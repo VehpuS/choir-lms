@@ -13,6 +13,7 @@ export type PhosphorGlyph =
   | 'ArrowSquareOut'
   | 'ArrowsClockwise'
   | 'ArrowsLeftRight'
+  | 'ArrowsOut'
   | 'ArrowsVertical'
   | 'CaretDown'
   | 'CaretLeft'
@@ -190,6 +191,8 @@ export const APP_ICON_GLYPHS = {
   'practice-tools': regular('Toolbox'),
   'practice-tools-filled': filled('Toolbox'),
   'microphone-outline': regular('Microphone'),
+  // Opens the full Pitch view from the monitor strip.
+  'arrow-expand': regular('ArrowsOut'),
 
   // Account.
   'account-circle-outline': regular('UserCircle'),

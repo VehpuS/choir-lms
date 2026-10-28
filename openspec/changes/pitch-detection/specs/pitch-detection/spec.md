@@ -40,7 +40,7 @@ The system SHALL listen to the microphone only after the user turns listening on
 
 ### Requirement: The detected note is shown with name, octave, and cents
 
-While listening, the system SHALL report the sung note as a name with octave (for example `A3`), the offset in cents from that note (rounded, with a sign), and a confidence. It SHALL show nothing for silence, noise, or unclear sound, and SHALL hold the last note briefly so the display does not flicker between syllables. Reference tuning SHALL default to A4 = 440 Hz and be adjustable.
+While listening, the system SHALL report the sung note as a name with octave (for example `A3`), the offset in cents from that note (rounded, with a sign), and a confidence. It SHALL show nothing for silence, noise, or unclear sound, and SHALL hold the last note briefly so the display does not flicker between syllables. Notes SHALL be measured against A4 = 440 Hz, which is fixed: there is no tuning setting.
 
 #### Scenario: A steady note
 
@@ -63,9 +63,9 @@ The system SHALL provide a full-screen `Pitch` view, opened from the monitor's e
 
 - **The pitch progression:** sung notes as bars on a note-labelled vertical scale that scrolls in time, with the current note at the leading edge. Each bar SHALL be coloured by its accuracy zone, and the time window SHALL be adjustable by zoom (about 5 to 60 seconds).
 - **A focus panel:** how close the singing is to one target note, drawn as cents over time against labelled bands. The zones SHALL be `Precise` (within 10 cents), `Near` (within 25 cents), and `Quarter tone off` (up to 50 cents), and the current zone SHALL also be stated in text, not only by colour. The target SHALL default to the nearest note; the user MAY hold a chosen note, in which case the distance SHALL be measured from it, including beyond 50 cents (clamped, with a marker for the direction).
-- **A readout bar:** the current pitch, the confidence, a control to stop and start listening, the reference tuning, and the state.
+- **A readout bar:** the current pitch, the confidence, a control to stop and start listening, and the state.
 
-Sensitivity and reference tuning SHALL be adjustable from the view. In landscape the progression SHALL take the width and the focus panel SHALL sit beside it. Opening, using, and closing the view SHALL NOT pause, seek, or otherwise alter playback. The view and its history SHALL NOT persist anything: the history lives in memory only and is dropped when listening stops.
+Sensitivity SHALL be adjustable from the view. In landscape the progression SHALL take the width and the focus panel SHALL sit beside it. Opening, using, and closing the view SHALL NOT pause, seek, or otherwise alter playback. The view and its history SHALL NOT persist anything: the history lives in memory only and is dropped when listening stops.
 
 #### Scenario: Watch the progression
 
