@@ -200,11 +200,12 @@ const styles = StyleSheet.create({
   zoom: {
     flexDirection: 'row',
     flexShrink: 1,
-    // Zoom, fit, go to, and practice tools plus play do not fit one row on a narrow
-    // phone, so the controls wrap rather than run off the edge.
+    // The small gap lets zoom, fit, go to, the other-octave toggle, and
+    // practice tools share one row beside play on a 427 px phone; narrower
+    // screens still wrap rather than run off the edge.
     flexWrap: 'wrap',
     alignItems: 'center',
-    gap: appTheme.space.sm,
+    gap: appTheme.space.xxs,
   },
   // The button sits mid-row, so the menu is placed against the whole toolbar
   // (a static anchor leaves the toolbar as the positioned parent) to keep it
