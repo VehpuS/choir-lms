@@ -5,6 +5,7 @@ import { createKeyboardLayout, PIANO_STRIP_WIDTH } from './keyboard-layout.js';
 import {
   capHeightStep,
   clampScrollLeft,
+  wheelScrollDelta,
   mapWindow,
   octaveTicks,
   PIANO_HANDLE_HEIGHT,
@@ -151,5 +152,17 @@ describe('octave ticks', () => {
         (middleC.left + middleC.width / 2) / wide.stripWidth - tick.position,
       ) < 1e-9,
     );
+  });
+});
+
+describe('wheelScrollDelta', () => {
+  it('follows horizontal movement, and vertical only while Shift is held', () => {
+    assert.equal(wheelScrollDelta({ deltaX: 12, deltaY: 40 }), 12);
+    assert.equal(
+      wheelScrollDelta({ deltaX: 12, deltaY: 40, shiftKey: true }),
+      40,
+    );
+    assert.equal(wheelScrollDelta({ deltaY: 40 }), 0);
+    assert.equal(wheelScrollDelta({}), 0);
   });
 });

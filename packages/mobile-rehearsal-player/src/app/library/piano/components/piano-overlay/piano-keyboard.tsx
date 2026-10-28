@@ -12,6 +12,7 @@ import type { DetectedEdge } from '../../piano-detected-model';
 import { clampScrollLeft } from '../../piano-overlay-model';
 import { createKeyGestures } from '../../piano-key-gestures';
 import { capturePointer, pointRelativeTo, readPointer } from './pointer-events';
+import { useWheelScroll } from './use-wheel-scroll';
 
 const { colors, radius } = appTheme;
 const LABEL_FONT_SIZE = 10;
@@ -33,13 +34,6 @@ type PianoKeyboardProps = {
   onViewportWidthChange: (width: number) => void;
   scrollLeft: number;
   sounding: ReadonlySet<number>;
-};
-
-type WheelEvent = {
-  deltaX?: number;
-  deltaY?: number;
-  shiftKey?: boolean;
-  preventDefault?: () => void;
 };
 
 /**
@@ -105,6 +99,16 @@ export const PianoKeyboard = ({
     onViewportWidthChange(width);
   };
 
+  useWheelScroll(surfaceRef, (delta) => {
+    onScrollLeftChange(
+      clampScrollLeft(
+        scrollLeft + delta * WHEEL_SCROLL_FACTOR,
+        viewportWidth,
+        layout.stripWidth,
+      ),
+    );
+  });
+
   const webProps = {
     onPointerDown: (event: unknown) => {
       const { id, x, y } = stripPoint(event);
@@ -122,20 +126,6 @@ export const PianoKeyboard = ({
     },
     onPointerCancel: (event: unknown) => {
       gestures.pointerCancel(readPointer(event).id);
-    },
-    onWheel: (event: WheelEvent) => {
-      const delta = event.shiftKey ? (event.deltaY ?? 0) : (event.deltaX ?? 0);
-
-      if (delta !== 0) {
-        event.preventDefault?.();
-        onScrollLeftChange(
-          clampScrollLeft(
-            scrollLeft + delta * WHEEL_SCROLL_FACTOR,
-            viewportWidth,
-            layout.stripWidth,
-          ),
-        );
-      }
     },
   };
 

@@ -130,3 +130,15 @@ export const octaveTicks = (): OctaveTick[] => {
       position: (key.left + key.width / 2) / stripWidth,
     }));
 };
+
+/**
+ * How far a wheel or trackpad gesture scrolls the keys: the horizontal
+ * movement, or the vertical one while Shift is held (a plain mouse wheel).
+ */
+export const wheelScrollDelta = (event: {
+  deltaX?: number;
+  deltaY?: number;
+  shiftKey?: boolean;
+}): number => {
+  return event.shiftKey ? (event.deltaY ?? 0) : (event.deltaX ?? 0);
+};
