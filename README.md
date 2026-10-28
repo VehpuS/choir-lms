@@ -29,6 +29,7 @@ For the MVP, the player is expected to support:
 - optional sheet music links per track, opened in a full-screen viewer (see [Sheet music](#sheet-music))
 - named markers at points of a track, shown as flags on the waveform, that jump playback and turn into loops (see [Markers](#markers))
 - a piano for checking pitches against the track and the score (see [Piano](#piano))
+- pitch detection that shows the note you sing, in tune or not, against the piano and the score (see [Pitch detection](#pitch-detection))
 - native mobile transport integration where practical, including background playback and lock-screen controls
 
 The MVP explicitly does not include offline playback, document collaboration, score annotation, recording overlays, or broader rehearsal management workflows.
@@ -70,11 +71,21 @@ A saved track can hold up to 200 named markers, such as `Verse 2` or `Bridge`, e
 
 A singer checking a pitch can open an 88-key piano (A0 to C8) over the app without leaving the track or the score. It is a web-only capability for now: native has no piano sound, so its controls are absent there (tracked in `native-playback-follow-ups`).
 
-- **Opening it:** the `Piano` item in the tab bar (it needs no track, so it works before anything has played and after playback ends), in the header of the playback screen (beside the more actions button), and in the sheet music viewer's controls. It docks above the mini-player and tab bar (under the score in the viewer, where the score area shrinks to fit), never pauses, ducks, or moves the track, and remembers whether it is open, its height, and where it was scrolled. Drag its handle to one of three heights (a short landscape window caps it at the smallest); `Close piano` closes it everywhere.
+- **Opening it:** the `Practice tools` menu (the tab bar item, the playback screen header, and the sheet music viewer's controls all open the same menu; it needs no track, so it works before anything has played and after playback ends), It docks above the mini-player and tab bar (under the score in the viewer, where the score area shrinks to fit), never pauses, ducks, or moves the track, and remembers whether it is open, its height, and where it was scrolled. Drag its handle to one of three heights (a short landscape window caps it at the smallest); `Close piano` closes it everywhere.
 - **Playing:** keys sound while held, with several fingers at once, and sliding across keys plays a glissando. A touch that begins on a key plays and never scrolls; the strip beneath the keys, a labelled map of the octaves (C1 to C8), scrolls the keyboard. Notes are concert pitch (A4 = 440 Hz) and do not follow the track's pitch shaping. It opens on middle C, or on the range of the part shown in the sheet music viewer. C keys carry their octave (`C4`).
 - **Computer keyboard:** with the piano open on a desktop browser, the `A S D F G H J K L ;` row plays the white keys from middle C and the `W E T Y U O P` row the black keys; `Z` and `X` move an octave down or up. Shortcuts and typing in text fields are left alone.
 - **Tapping the score:** tapping a notehead in MusicXML or MIDI sheet music sounds its pitch (at least 350 ms) and lights the key; a part's transposition is applied, rests and tied continuations do nothing, and a PDF is not tappable.
-- **Settings:** a list of categories (`Bulk selections`, `Piano`, `My parts`, `Search sources`), each opening its own page; back or Escape returns to the list. The `Piano` page chooses the sound (`Piano` is a synthesized tone for now; recorded samples are planned, `Organ` is a simple oscillator), whether every key is named, and how black keys are spelled (sharps or flats). The piano's volume is in its handle row and is separate from the track's.
+- **Settings:** a list of categories (`Bulk selections`, `Piano`, `Pitch detection`, `My parts`, `Search sources`, and `Offline storage` where audio can be stored), each opening its own page; back or Escape returns to the list. The `Piano` page chooses the sound (`Piano` is a synthesized tone for now; recorded samples are planned, `Organ` is a simple oscillator), whether every key is named, and how black keys are spelled (sharps or flats). The piano's volume is in its handle row and is separate from the track's.
+
+## Pitch detection
+
+A singer can turn on the microphone and see the note they are singing, how far it is from the nearest note in cents, and whether that is precise, near, a quarter tone off, or off pitch (always stated in words as well as colour). Like the piano it is web-only for now: native has no microphone capture, so its controls are absent there (tracked in `native-playback-follow-ups`).
+
+- **Turning it on:** `Pitch detection` in the `Practice tools` menu. The first `Listen` explains why the microphone is needed before the browser asks. Nothing you sing is recorded, stored, or sent anywhere; it assumes headphones, because sound from speakers reaches the microphone and is detected like singing.
+- **Monitor strip:** the note, a cents gauge, and a short history, docked above the piano or the mini-player. It remembers whether it is on, and shows idle, blocked, paused (while the app is in the background), and interrupted states, recovering by itself when the microphone returns.
+- **Pitch view:** the strip's expand button opens a full-screen view with a large readout, a focus panel tracing closeness to a target (the nearest note, or one you hold), and a progression roll you can zoom from about 5 to 60 seconds. It has a landscape layout and does not touch playback.
+- **Minimum volume:** sounds quieter than a cutoff (-60 to -20 dB, default -40) are ignored. Set it from the Pitch view's settings sheet or the `Pitch detection` page in Settings, over a live level meter, so it sits just above the room noise.
+- **On the piano and the score:** the sung key lights up (with an edge pill pointing to it when it is off screen), and in MusicXML or MIDI sheet music the matching noteheads are marked. A transposing part is handled, and while the playing track is shifted in pitch the score follows the shifted note and says `Following track pitch ±N st`. `Show other-octave matches` (in the sheet music viewer's `Practice tools` menu) also marks the same note in other octaves. A PDF is never marked.
 
 ## Product Direction
 
