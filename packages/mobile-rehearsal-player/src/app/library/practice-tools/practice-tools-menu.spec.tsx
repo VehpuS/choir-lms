@@ -54,6 +54,23 @@ describe('PracticeToolsMenu', () => {
     assert.ok(screen.getByLabelText('Show other-octave matches, off'));
   });
 
+  it('explains the other-octave row with a helper line, and no other row', () => {
+    renderMenu({ pianoOn: false, sheetMusic: true });
+
+    assert.ok(
+      hasRenderedText('Also lightly marks the same note in other octaves'),
+    );
+  });
+
+  it('shows no helper line without a score', () => {
+    renderMenu({ pianoOn: false, sheetMusic: false });
+
+    assert.equal(
+      hasRenderedText('Also lightly marks the same note in other octaves'),
+      false,
+    );
+  });
+
   it('toggles a tool without closing the menu', () => {
     const { toggled, closed } = renderMenu({
       pianoOn: false,

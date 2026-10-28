@@ -35,6 +35,10 @@ describe('app icon glyph map', () => {
     assert.deepEqual(namesUsingGlyph('Microphone'), ['microphone-outline']);
   });
 
+  it('gives the other-octave setting its own glyph', () => {
+    assert.deepEqual(namesUsingGlyph('MusicNotesPlus'), ['music-notes-plus']);
+  });
+
   it('gives the Pitch view expand control its own glyph', () => {
     assert.deepEqual(namesUsingGlyph('ArrowsOut'), ['arrow-expand']);
   });

@@ -46,6 +46,7 @@ export type PhosphorGlyph =
   | 'MinusCircle'
   | 'MusicNote'
   | 'MusicNotes'
+  | 'MusicNotesPlus'
   | 'MusicNotesSimple'
   | 'Pause'
   | 'PencilSimple'
@@ -191,6 +192,8 @@ export const APP_ICON_GLYPHS = {
   'practice-tools': regular('Toolbox'),
   'practice-tools-filled': filled('Toolbox'),
   'microphone-outline': regular('Microphone'),
+  // The viewer-only `Show other-octave matches` setting: more notes marked.
+  'music-notes-plus': regular('MusicNotesPlus'),
   // Opens the full Pitch view from the monitor strip.
   'arrow-expand': regular('ArrowsOut'),
 

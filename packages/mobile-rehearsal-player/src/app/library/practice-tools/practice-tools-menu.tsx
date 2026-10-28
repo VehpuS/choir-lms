@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -59,37 +60,48 @@ export const PracticeToolsMenu = ({
       <View style={[styles.panel, placement]}>
         <Text style={styles.title}>{model.menuTitle}</Text>
         {model.rows.map((row) => (
-          <Pressable
-            accessibilityLabel={row.accessibilityLabel}
-            accessibilityRole="switch"
-            accessibilityState={{ checked: row.checked }}
-            {...ariaStateProps({ checked: row.checked }, 'switch')}
-            {...interactionGuardProps}
-            key={row.id}
-            onPress={() => onToggle(row.id)}
-            style={({ pressed }) => [
-              styles.row,
-              buttonInteractionGuardStyle,
-              pressed ? styles.rowPressed : null,
-            ]}
-          >
-            <AppIcon
-              color={row.checked ? colors.accentText : colors.textMuted}
-              name={row.icon}
-              size={ICON_SIZE}
-            />
-            <Text
-              numberOfLines={1}
-              style={[styles.rowLabel, row.checked ? styles.rowLabelOn : null]}
+          <Fragment key={row.id}>
+            {row.startsGroup ? <View style={styles.divider} /> : null}
+            <Pressable
+              accessibilityHint={row.description}
+              accessibilityLabel={row.accessibilityLabel}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: row.checked }}
+              {...ariaStateProps({ checked: row.checked }, 'switch')}
+              {...interactionGuardProps}
+              onPress={() => onToggle(row.id)}
+              style={({ pressed }) => [
+                styles.row,
+                buttonInteractionGuardStyle,
+                pressed ? styles.rowPressed : null,
+              ]}
             >
-              {row.label}
-            </Text>
-            <View style={[styles.track, row.checked ? styles.trackOn : null]}>
-              <View
-                style={[styles.thumb, row.checked ? styles.thumbOn : null]}
+              <AppIcon
+                color={row.checked ? colors.accentText : colors.textMuted}
+                name={row.icon}
+                size={ICON_SIZE}
               />
-            </View>
-          </Pressable>
+              <View style={styles.rowText}>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.rowLabel,
+                    row.checked ? styles.rowLabelOn : null,
+                  ]}
+                >
+                  {row.label}
+                </Text>
+                {row.description ? (
+                  <Text style={styles.rowDescription}>{row.description}</Text>
+                ) : null}
+              </View>
+              <View style={[styles.track, row.checked ? styles.trackOn : null]}>
+                <View
+                  style={[styles.thumb, row.checked ? styles.thumbOn : null]}
+                />
+              </View>
+            </Pressable>
+          </Fragment>
         ))}
       </View>
     </>
@@ -134,8 +146,15 @@ const styles = StyleSheet.create({
     borderRadius: appTheme.radius.md,
   },
   rowPressed: { backgroundColor: colors.bg },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginVertical: space.xs,
+    marginHorizontal: space.md,
+    backgroundColor: colors.divider,
+  },
+  rowText: { flex: 1, paddingVertical: space.xs },
+  rowDescription: { color: colors.textMuted, fontSize: 12, lineHeight: 16 },
   rowLabel: {
-    flex: 1,
     color: colors.text,
     fontSize: 15,
   },

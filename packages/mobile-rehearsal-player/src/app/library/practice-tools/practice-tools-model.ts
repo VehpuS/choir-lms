@@ -9,6 +9,10 @@ export type PracticeToolRow = {
   checked: boolean;
   /** Names the tool and its state, since the switch alone is not read out. */
   accessibilityLabel: string;
+  /** A muted line under the label, for a row that needs explaining. */
+  description?: string;
+  /** A divider is drawn above this row: it is a setting, not a tool. */
+  startsGroup?: boolean;
 };
 
 export type PracticeToolsModel = {
@@ -39,12 +43,15 @@ const TOOL_ROWS = [
   { id: 'pitch', label: 'Pitch detection', icon: 'microphone-outline' },
 ] as const;
 const OTHER_OCTAVE_LABEL = 'Show other-octave matches';
+const OTHER_OCTAVE_DESCRIPTION =
+  'Also lightly marks the same note in other octaves';
 
 const buildRow = (
   id: PracticeToolId,
   label: string,
   icon: AppIconName,
   checked: boolean,
+  extras: Pick<PracticeToolRow, 'description' | 'startsGroup'> = {},
 ): PracticeToolRow => {
   return {
     id,
@@ -52,6 +59,7 @@ const buildRow = (
     icon,
     checked,
     accessibilityLabel: `${label}, ${checked ? 'on' : 'off'}`,
+    ...extras,
   };
 };
 
@@ -81,8 +89,9 @@ export const getPracticeToolsModel = (
       buildRow(
         'other-octave',
         OTHER_OCTAVE_LABEL,
-        'microphone-outline',
+        'music-notes-plus',
         input.otherOctave.checked,
+        { description: OTHER_OCTAVE_DESCRIPTION, startsGroup: true },
       ),
     );
   }

@@ -104,4 +104,25 @@ describe('practice tools model', () => {
       ['piano'],
     );
   });
+
+  it('sets the other-octave row apart as a setting, with its own icon and a helper line', () => {
+    const model = getPracticeToolsModel(
+      input({
+        piano: { checked: false },
+        pitch: { checked: false },
+        otherOctave: { checked: false },
+        isSheetMusicOpen: true,
+      }),
+    );
+    const [piano, pitch, otherOctave] = model.rows;
+
+    assert.equal(piano.startsGroup, undefined);
+    assert.equal(pitch.icon, 'microphone-outline');
+    assert.equal(otherOctave.icon, 'music-notes-plus');
+    assert.equal(otherOctave.startsGroup, true);
+    assert.equal(
+      otherOctave.description,
+      'Also lightly marks the same note in other octaves',
+    );
+  });
 });
