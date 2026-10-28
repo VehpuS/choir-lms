@@ -62,6 +62,12 @@ export type SheetMusicSurfaceProps = {
   pageRequest?: PdfPageRequest;
   /** How a PDF's pages are laid out; defaults to `scroll`. Not used for a score. */
   pdfLayout?: PdfLayout;
+  /**
+   * Semitones the playing item's pitch is shifted; the sung note marks the
+   * written note this far below it. Zero when unshifted or nothing plays. Not
+   * used for a PDF.
+   */
+  pitchOffset?: number;
   selection: PartSelectionRequest | undefined;
   zoom: number;
 };

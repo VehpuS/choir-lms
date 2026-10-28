@@ -30,6 +30,7 @@ import {
   useScoreNoteTaps,
   type TapHost,
 } from './use-score-note-taps';
+import { useScorePitchMarks } from './use-score-pitch-marks';
 
 // The app's TypeScript config carries no DOM library, so the slice of the DOM
 // used here is described structurally.
@@ -67,6 +68,7 @@ export const SheetMusicSurface = ({
   onZoomChange,
   pageRequest,
   pdfLayout = DEFAULT_PDF_LAYOUT,
+  pitchOffset = 0,
   selection,
   zoom,
 }: SheetMusicSurfaceProps) => {
@@ -278,6 +280,8 @@ export const SheetMusicSurface = ({
     press: piano.press,
     release: piano.release,
   });
+
+  useScorePitchMarks(host, { isScore: document.format !== 'pdf', pitchOffset });
 
   const peek = usePartPeek(
     host,

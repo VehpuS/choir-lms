@@ -57,6 +57,8 @@ type ViewerBodyProps = {
   /** `Previous page` and `Next page` beside the indicator; undefined where pages are not turned. */
   pageSteps: PageSteps | undefined;
   pdfLayout: PdfLayout;
+  /** Semitones the playing item is shifted, for the score marks. */
+  pitchOffset: number;
   selection: PartSelectionRequest | undefined;
   source: SheetMusicSource | undefined;
   state: SheetMusicDocumentState;
@@ -84,6 +86,7 @@ export const ViewerBody = ({
   pageRequest,
   pageSteps,
   pdfLayout,
+  pitchOffset,
   selection,
   source,
   state,
@@ -123,6 +126,7 @@ export const ViewerBody = ({
           onRendered={onRendered}
           pageRequest={pageRequest}
           pdfLayout={pdfLayout}
+          pitchOffset={pitchOffset}
           selection={selection}
           zoom={zoom}
         />

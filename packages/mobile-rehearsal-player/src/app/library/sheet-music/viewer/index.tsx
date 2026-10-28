@@ -12,7 +12,6 @@ import { registerPianoViewer } from '../../piano/piano-host-store';
 import { isDeviceOffline } from '../../offline/device-connection';
 import { readKeptScore, refreshKeptScore } from '../../offline/read-kept-score';
 import { createSheetMusicLoader } from '../sheet-music-loader';
-import { GoToDrawer } from './go-to';
 import { useGoTo } from './go-to/use-go-to';
 import { useCompactViewer } from './use-compact-viewer';
 import {
@@ -23,7 +22,7 @@ import {
   resolveExternalUrl,
   type ViewerFailureAction,
 } from './model';
-import { PartChips, PartNotices } from './part-chips';
+import { PartChips } from './part-chips';
 import { buildMyPartChip, learnPartName } from '../my-parts/my-parts-model';
 import { useRequestedSelection } from '../my-parts/use-requested-selection';
 import {
@@ -41,7 +40,10 @@ import { useViewerZoom } from './use-viewer-zoom';
 import { practiceToolsOverlay } from '../../practice-tools/practice-tools-overlay';
 import { usePracticeTools } from '../../practice-tools/use-practice-tools';
 import { ViewerLayout } from './viewer-layout';
+import { ViewerGoToDrawer } from './viewer-go-to-drawer';
+import { ViewerNotices } from './viewer-notices';
 import { ViewerPracticeDock } from './viewer-practice-dock';
+import { usePitchFollow } from './use-track-pitch-offset';
 import { ViewerToolbar } from './viewer-toolbar';
 import { useBestEffortKeepAwake } from '../../../hooks/use-best-effort-keep-awake';
 
@@ -166,6 +168,8 @@ export const SheetMusicViewer = ({
   const goTo = useGoTo();
   const canGoTo = info !== null && info.bars.barCount > 0;
   const hasParts = info !== null && hasPartChoice(info.parts);
+  // The score follows the playing track's pitch shift while it is marked.
+  const follow = usePitchFollow(info !== null, !isPlaybackToggleDisabled);
   const hasSwitcher = viewable.length > 1 && source !== undefined;
 
   const handleFailureAction = (action: ViewerFailureAction) => {
@@ -255,21 +259,14 @@ export const SheetMusicViewer = ({
       pageRequest={pdfPages.request}
       pageSteps={pageSteps}
       pdfLayout={pdfLayout.layout}
+      pitchOffset={follow.pitchOffset}
       selection={selection}
       source={source}
       state={state}
       zoom={viewerZoom.zoom}
     />
   );
-  const drawer =
-    goTo.isOpen && canGoTo ? (
-      <GoToDrawer
-        bars={info.bars}
-        onClose={goTo.close}
-        onJump={goTo.jumpTo}
-        visibleParts={info.resolved.visible}
-      />
-    ) : null;
+  const drawer = <ViewerGoToDrawer goTo={goTo} info={info} />;
   const toolbar = (orientation: 'column' | 'row') => (
     <ViewerToolbar
       isPlaybackToggleDisabled={isPlaybackToggleDisabled}
@@ -316,7 +313,12 @@ export const SheetMusicViewer = ({
       }
       closeButton={closeButton}
       isCompact={isCompact}
-      notices={hasParts ? <PartNotices info={info} /> : null}
+      notices={
+        <ViewerNotices
+          partInfo={hasParts ? info : null}
+          pitchOffsetLabel={follow.offsetLabel}
+        />
+      }
       onClose={onClose}
       overlay={(placement) => practiceToolsOverlay(practiceTools, placement)}
       ownerName={ownerName}
