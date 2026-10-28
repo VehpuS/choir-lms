@@ -5,7 +5,8 @@ import {
   createPitchSettingsStore,
   DEFAULT_PITCH_SETTINGS,
   parsePitchSettings,
-  PITCH_SENSITIVITY_KEY,
+  PITCH_LEGACY_SENSITIVITY_KEY,
+  PITCH_LEVEL_CUTOFF_KEY,
   PITCH_SHOW_OTHER_OCTAVE_KEY,
 } from './pitch-settings.js';
 
@@ -27,25 +28,46 @@ describe('parsePitchSettings', () => {
   it('defaults when nothing is stored', () => {
     assert.deepEqual(parsePitchSettings({}), DEFAULT_PITCH_SETTINGS);
     assert.equal(DEFAULT_PITCH_SETTINGS.showOtherOctave, false);
-    assert.equal(DEFAULT_PITCH_SETTINGS.sensitivity, 'normal');
+    assert.equal(DEFAULT_PITCH_SETTINGS.levelCutoffDb, -40);
   });
 
   it('reads valid stored values', () => {
     assert.deepEqual(
-      parsePitchSettings({ sensitivity: 'high', showOtherOctave: 'true' }),
-      { sensitivity: 'high', showOtherOctave: true },
+      parsePitchSettings({ levelCutoffDb: '-30', showOtherOctave: 'true' }),
+      { levelCutoffDb: -30, showOtherOctave: true },
     );
   });
 
   it('falls back to defaults for anything odd', () => {
     assert.deepEqual(
-      parsePitchSettings({ sensitivity: 'loud', showOtherOctave: 'yes' }),
+      parsePitchSettings({ levelCutoffDb: 'loud', showOtherOctave: 'yes' }),
       DEFAULT_PITCH_SETTINGS,
     );
     assert.deepEqual(
-      parsePitchSettings({ sensitivity: null, showOtherOctave: null }),
+      parsePitchSettings({ levelCutoffDb: null, showOtherOctave: null }),
       DEFAULT_PITCH_SETTINGS,
     );
+  });
+});
+
+describe('parsePitchSettings cutoff', () => {
+  it('clamps a stored cutoff into range', () => {
+    assert.equal(
+      parsePitchSettings({ levelCutoffDb: '-95' }).levelCutoffDb,
+      -60,
+    );
+    assert.equal(parsePitchSettings({ levelCutoffDb: '0' }).levelCutoffDb, -20);
+  });
+
+  it('maps a retired sensitivity once, and prefers the new value', () => {
+    const cutoff = (legacySensitivity: string, levelCutoffDb?: string) =>
+      parsePitchSettings({ legacySensitivity, levelCutoffDb }).levelCutoffDb;
+
+    assert.equal(cutoff('low'), -34);
+    assert.equal(cutoff('normal'), -40);
+    assert.equal(cutoff('high'), -48);
+    assert.equal(cutoff('loud'), -40);
+    assert.equal(cutoff('high', '-30'), -30);
   });
 });
 
@@ -53,7 +75,7 @@ describe('pitch settings store', () => {
   it('loads what was stored and tells subscribers', async () => {
     const settings = createPitchSettingsStore(
       memoryStorage({
-        [PITCH_SENSITIVITY_KEY]: 'low',
+        [PITCH_LEVEL_CUTOFF_KEY]: '-30',
         [PITCH_SHOW_OTHER_OCTAVE_KEY]: 'true',
       }),
     );
@@ -65,7 +87,7 @@ describe('pitch settings store', () => {
     await settle();
 
     assert.deepEqual(settings.get(), {
-      sensitivity: 'low',
+      levelCutoffDb: -30,
       showOtherOctave: true,
     });
     assert.ok(notified > 0);
@@ -75,11 +97,11 @@ describe('pitch settings store', () => {
     const storage = memoryStorage();
     const settings = createPitchSettingsStore(storage);
 
-    settings.set({ sensitivity: 'high' });
+    settings.set({ levelCutoffDb: -30 });
     settings.set({ showOtherOctave: true });
     await settle();
 
-    assert.equal(storage.values[PITCH_SENSITIVITY_KEY], 'high');
+    assert.equal(storage.values[PITCH_LEVEL_CUTOFF_KEY], '-30');
     assert.equal(storage.values[PITCH_SHOW_OTHER_OCTAVE_KEY], 'true');
 
     settings.set({ showOtherOctave: false });
@@ -91,22 +113,22 @@ describe('pitch settings store', () => {
     const storage = memoryStorage();
     const settings = createPitchSettingsStore(storage);
 
-    settings.set({ sensitivity: 'low' });
+    settings.set({ levelCutoffDb: -30 });
     await settle();
 
-    assert.deepEqual(Object.keys(storage.values), [PITCH_SENSITIVITY_KEY]);
+    assert.deepEqual(Object.keys(storage.values), [PITCH_LEVEL_CUTOFF_KEY]);
   });
 
-  it('keeps the other-octave value while only sensitivity is changed', async () => {
+  it('keeps the other-octave value while only the cutoff is changed', async () => {
     const settings = createPitchSettingsStore(
       memoryStorage({ [PITCH_SHOW_OTHER_OCTAVE_KEY]: 'true' }),
     );
 
     await settings.load();
-    settings.set({ sensitivity: 'high' });
+    settings.set({ levelCutoffDb: -30 });
 
     assert.equal(settings.get().showOtherOctave, true);
-    assert.equal(settings.get().sensitivity, 'high');
+    assert.equal(settings.get().levelCutoffDb, -30);
   });
 
   it('survives the viewer row being absent: the value is read with no row involved', async () => {
@@ -121,17 +143,39 @@ describe('pitch settings store', () => {
   it('lets a choice made before the stored values arrived win', async () => {
     const settings = createPitchSettingsStore(
       memoryStorage({
-        [PITCH_SENSITIVITY_KEY]: 'low',
+        [PITCH_LEVEL_CUTOFF_KEY]: '-30',
         [PITCH_SHOW_OTHER_OCTAVE_KEY]: 'true',
       }),
     );
 
     settings.subscribe(() => undefined);
-    settings.set({ sensitivity: 'high' });
+    settings.set({ levelCutoffDb: -30 });
     await settle();
 
-    assert.equal(settings.get().sensitivity, 'high');
+    assert.equal(settings.get().levelCutoffDb, -30);
     assert.equal(settings.get().showOtherOctave, true);
+  });
+
+  it('clamps a chosen cutoff before keeping it', async () => {
+    const storage = memoryStorage();
+    const settings = createPitchSettingsStore(storage);
+
+    settings.set({ levelCutoffDb: -5 });
+    await settle();
+
+    assert.equal(settings.get().levelCutoffDb, -20);
+    assert.equal(storage.values[PITCH_LEVEL_CUTOFF_KEY], '-20');
+  });
+
+  it('carries a retired sensitivity over once by saving it under the new key', async () => {
+    const storage = memoryStorage({ [PITCH_LEGACY_SENSITIVITY_KEY]: 'high' });
+    const settings = createPitchSettingsStore(storage);
+
+    await settings.load();
+    await settle();
+
+    assert.equal(settings.get().levelCutoffDb, -48);
+    assert.equal(storage.values[PITCH_LEVEL_CUTOFF_KEY], '-48');
   });
 
   it('stops notifying after unsubscribe', async () => {
@@ -144,7 +188,7 @@ describe('pitch settings store', () => {
     await settle();
     unsubscribe();
     const before = notified;
-    settings.set({ sensitivity: 'low' });
+    settings.set({ levelCutoffDb: -30 });
 
     assert.equal(notified, before);
   });
@@ -160,9 +204,9 @@ describe('pitch settings store', () => {
     });
 
     await settings.load();
-    settings.set({ sensitivity: 'high' });
+    settings.set({ levelCutoffDb: -30 });
     await settle();
 
-    assert.equal(settings.get().sensitivity, 'high');
+    assert.equal(settings.get().levelCutoffDb, -30);
   });
 });

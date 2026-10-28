@@ -1,7 +1,10 @@
 import {
+  clampLevelCutoffDb,
   createPitchPipeline,
   createPitchyEstimator,
-  type Sensitivity,
+  DEFAULT_LEVEL_CUTOFF_DB,
+  frameLevelDb,
+  SILENCE_DB,
 } from '@org/pitch-detection';
 import { DEFAULT_REFERENCE_HZ } from '@org/audio-library-models';
 
@@ -31,6 +34,13 @@ export type PitchStore = {
    */
   history: PitchHistory;
   subscribe: (listener: () => void) => () => void;
+  /**
+   * The live input level (dBFS), measured on every frame including the ones
+   * the gates reject. It has its own subscription, apart from `PitchState`,
+   * so only a surface drawing a meter redraws per frame.
+   */
+  getLevelDb: () => number;
+  subscribeLevel: (listener: () => void) => () => void;
   /** Registers a mounted consumer; listening stops when the last releases. */
   acquire: () => () => void;
   /** The user pressed `Listen`. */
@@ -40,7 +50,7 @@ export type PitchStore = {
   stopListening: () => void;
   dismissHeadphonesNote: () => void;
   dismissBackgroundNotice: () => void;
-  setSensitivity: (sensitivity: Sensitivity) => void;
+  setLevelCutoffDb: (cutoffDb: number) => void;
   setReferenceHz: (referenceHz: number) => void;
 };
 
@@ -56,6 +66,8 @@ export const createPitchStore = ({
   const pipeline = createPitchPipeline({ estimator: createPitchyEstimator() });
   const history = createPitchHistory();
   const listeners = new Set<() => void>();
+  const levelListeners = new Set<() => void>();
+  let levelDb = SILENCE_DB;
   let consumers = 0;
   let explained = false;
   let headphonesDismissed = false;
@@ -70,7 +82,7 @@ export const createPitchStore = ({
     reading: IDLE_READING,
     headphonesNotePending: false,
     backgroundNoticePending: false,
-    sensitivity: 'normal',
+    levelCutoffDb: DEFAULT_LEVEL_CUTOFF_DB,
     referenceHz: DEFAULT_REFERENCE_HZ,
   };
 
@@ -93,6 +105,15 @@ export const createPitchStore = ({
     listeners.forEach((listener) => listener());
   };
 
+  const setLevel = (next: number) => {
+    if (next === levelDb) {
+      return;
+    }
+
+    levelDb = next;
+    levelListeners.forEach((listener) => listener());
+  };
+
   const clearRetry = () => {
     if (retryTimer) {
       clearTimeout(retryTimer);
@@ -107,6 +128,7 @@ export const createPitchStore = ({
     stopCapture = null;
     pipeline.reset();
     history.clear();
+    setLevel(SILENCE_DB);
   };
 
   const begin = async () => {
@@ -120,6 +142,8 @@ export const createPitchStore = ({
           if (thisAttempt !== attempt) {
             return;
           }
+
+          setLevel(frameLevelDb(frame.samples));
 
           const reading = pipeline.process({
             samples: frame.samples,
@@ -152,6 +176,7 @@ export const createPitchStore = ({
           stopCapture = null;
           pipeline.reset();
           history.clear();
+          setLevel(SILENCE_DB);
           update({ status: 'interrupted', reading: IDLE_READING });
           retryTimer = setTimeout(() => reconcile(false), PITCH_RETRY_MS);
         },
@@ -234,6 +259,14 @@ export const createPitchStore = ({
         listeners.delete(listener);
       };
     },
+    getLevelDb: () => levelDb,
+    subscribeLevel: (listener) => {
+      levelListeners.add(listener);
+
+      return () => {
+        levelListeners.delete(listener);
+      };
+    },
     acquire: () => {
       consumers += 1;
       reconcile(false);
@@ -280,9 +313,11 @@ export const createPitchStore = ({
       update({ headphonesNotePending: false });
     },
     dismissBackgroundNotice: () => update({ backgroundNoticePending: false }),
-    setSensitivity: (sensitivity) => {
-      pipeline.setSensitivity(sensitivity);
-      update({ sensitivity });
+    setLevelCutoffDb: (cutoffDb) => {
+      const levelCutoffDb = clampLevelCutoffDb(cutoffDb);
+
+      pipeline.setLevelCutoffDb(levelCutoffDb);
+      update({ levelCutoffDb });
     },
     setReferenceHz: (referenceHz) => {
       pipeline.setReferenceHz(referenceHz);

@@ -20,9 +20,7 @@ import {
 
 const A3 = 57;
 
-const newPipeline = (
-  options: { sensitivity?: 'low' | 'normal' | 'high' } = {},
-) => {
+const newPipeline = (options: { levelCutoffDb?: number } = {}) => {
   return createPitchPipeline({
     estimator: createPitchyEstimator(),
     ...options,
@@ -61,13 +59,27 @@ describe('createPitchPipeline', () => {
     }
   });
 
-  it('ignores a very quiet note unless sensitivity is raised', () => {
+  it('ignores a note below the minimum volume until the cutoff is lowered', () => {
+    // Amplitude 0.006 is about -47.5 dB RMS.
     const quiet = renderSine(midiToFrequency(A3), 1, 0.006);
 
     assert.ok(readings(newPipeline(), quiet).every((item) => !item.active));
     assert.ok(
-      last(readings(newPipeline({ sensitivity: 'high' }), quiet)).active,
+      last(readings(newPipeline({ levelCutoffDb: -55 }), quiet)).active,
     );
+
+    const pipeline = newPipeline();
+
+    pipeline.setLevelCutoffDb(-55);
+    assert.ok(last(readings(pipeline, quiet)).active);
+  });
+
+  it('keeps clamping the cutoff to its range', () => {
+    const quiet = renderSine(midiToFrequency(A3), 1, 0.006);
+    const pipeline = newPipeline({ levelCutoffDb: 10 });
+
+    // Clamped down to -20 dB, so the quiet note is still ignored.
+    assert.ok(readings(pipeline, quiet).every((item) => !item.active));
   });
 
   it('keeps one note through vibrato', () => {

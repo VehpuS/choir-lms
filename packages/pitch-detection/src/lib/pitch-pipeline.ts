@@ -8,13 +8,13 @@ import { createMedianSmoother } from './median-smoother.ts';
 import { createNoteSegmenter } from './note-segmenter.ts';
 import type { PitchEstimator } from './pitch-estimator.ts';
 import {
-  DEFAULT_SENSITIVITY,
-  GATES_BY_SENSITIVITY,
+  clampLevelCutoffDb,
+  DEFAULT_LEVEL_CUTOFF_DB,
+  frameLevelDb,
   MAX_VOICE_HZ,
+  MIN_CLARITY,
   MIN_VOICE_HZ,
-  rootMeanSquare,
-  type Sensitivity,
-} from './sensitivity.ts';
+} from './level-gate.ts';
 
 const CENTS_PER_SEMITONE = 100;
 
@@ -43,7 +43,7 @@ export type PitchReading =
 
 export type PitchPipeline = {
   process: (frame: PitchFrame) => PitchReading;
-  setSensitivity: (sensitivity: Sensitivity) => void;
+  setLevelCutoffDb: (cutoffDb: number) => void;
   setReferenceHz: (referenceHz: number) => void;
   reset: () => void;
 };
@@ -52,23 +52,23 @@ type Voiced = { midi: number; clarity: number };
 
 export const createPitchPipeline = ({
   estimator,
-  sensitivity = DEFAULT_SENSITIVITY,
+  levelCutoffDb = DEFAULT_LEVEL_CUTOFF_DB,
   referenceHz = DEFAULT_REFERENCE_HZ,
 }: {
   estimator: PitchEstimator;
-  sensitivity?: Sensitivity;
+  levelCutoffDb?: number;
   referenceHz?: number;
 }): PitchPipeline => {
   const smoother = createMedianSmoother();
   const segmenter = createNoteSegmenter();
-  let gates = GATES_BY_SENSITIVITY[sensitivity];
+  let cutoffDb = clampLevelCutoffDb(levelCutoffDb);
   let reference = referenceHz;
   let lastDisplay: Extract<PitchReading, { active: true }> | null = null;
 
   // Level gate, estimator, clarity gate and range gate: a fractional MIDI
   // note when the frame is clearly a voice, otherwise null.
   const detect = (frame: PitchFrame): Voiced | null => {
-    if (rootMeanSquare(frame.samples) < gates.minRms) {
+    if (frameLevelDb(frame.samples) < cutoffDb) {
       return null;
     }
 
@@ -76,7 +76,7 @@ export const createPitchPipeline = ({
 
     if (
       !estimate ||
-      estimate.clarity < gates.minClarity ||
+      estimate.clarity < MIN_CLARITY ||
       estimate.frequencyHz < MIN_VOICE_HZ ||
       estimate.frequencyHz > MAX_VOICE_HZ
     ) {
@@ -130,8 +130,8 @@ export const createPitchPipeline = ({
       // No pitch this frame: keep showing the last reading, marked as held.
       return lastDisplay ? { ...lastDisplay, held: true } : { active: false };
     },
-    setSensitivity: (next) => {
-      gates = GATES_BY_SENSITIVITY[next];
+    setLevelCutoffDb: (next) => {
+      cutoffDb = clampLevelCutoffDb(next);
     },
     setReferenceHz: (next) => {
       reference = next;

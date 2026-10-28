@@ -10,7 +10,7 @@ import {
 
 import { SurfaceIconButton } from '../../../../components/surface-icon-button';
 import { appTheme } from '../../../../utils/theme';
-import { setPitchSensitivity, usePitch } from '../../use-pitch';
+import { setPitchLevelCutoffDb, usePitch } from '../../use-pitch';
 import { buildFocusTrace, resolveTarget } from '../../view/pitch-focus-model';
 import {
   stepRollZoom,
@@ -149,8 +149,9 @@ const PitchViewContent = ({ onClose }: { onClose: () => void }) => {
       {isSettingsOpen ? (
         <PitchSettingsSheet
           onClose={() => setIsSettingsOpen(false)}
-          onSelectSensitivity={setPitchSensitivity}
-          sensitivity={state.sensitivity}
+          cutoffDb={state.levelCutoffDb}
+          isListening={state.status === 'listening'}
+          onChangeCutoffDb={setPitchLevelCutoffDb}
         />
       ) : null}
     </View>

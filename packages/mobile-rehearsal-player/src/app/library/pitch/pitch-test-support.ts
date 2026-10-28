@@ -22,6 +22,7 @@ export const sineFrames = (
   frequencyHz: number,
   count: number,
   startSec = 1,
+  amplitude = 0.5,
 ): PcmFrame[] => {
   const frames: PcmFrame[] = [];
 
@@ -32,7 +33,7 @@ export const sineFrames = (
     for (let sample = 0; sample < FRAME_SIZE; sample++) {
       const time = captureTimeSec - (FRAME_SIZE - sample) / SAMPLE_RATE;
 
-      samples[sample] = 0.5 * Math.sin(2 * Math.PI * frequencyHz * time);
+      samples[sample] = amplitude * Math.sin(2 * Math.PI * frequencyHz * time);
     }
 
     frames.push({ samples, sampleRate: SAMPLE_RATE, captureTimeSec });

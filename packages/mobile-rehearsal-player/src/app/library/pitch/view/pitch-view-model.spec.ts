@@ -20,7 +20,7 @@ const stateWith = (patch: Partial<PitchState>): PitchState => ({
   reading: IDLE_READING,
   headphonesNotePending: false,
   backgroundNoticePending: false,
-  sensitivity: 'normal',
+  levelCutoffDb: -40,
   referenceHz: 440,
   ...patch,
 });

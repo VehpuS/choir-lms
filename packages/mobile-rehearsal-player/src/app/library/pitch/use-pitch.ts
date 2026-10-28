@@ -37,23 +37,28 @@ export const getPitchStore = (): PitchStore => {
       storage: AsyncStorage,
     });
 
-    // The remembered sensitivity applies to the pipeline once it is read.
+    // The remembered cutoff applies to the pipeline once it is read.
     const store = shared;
 
     void getPitchSettings()
       .load()
-      .then((settings) => store.setSensitivity(settings.sensitivity));
+      .then((settings) => store.setLevelCutoffDb(settings.levelCutoffDb));
   }
 
   return shared;
 };
 
-/** Saves the sensitivity and applies it to the running pipeline. */
-export const setPitchSensitivity = (
-  sensitivity: PitchSettings['sensitivity'],
-) => {
-  getPitchSettings().set({ sensitivity });
-  getPitchStore().setSensitivity(sensitivity);
+/** Saves the minimum volume and applies it to the running pipeline. */
+export const setPitchLevelCutoffDb = (levelCutoffDb: number) => {
+  getPitchSettings().set({ levelCutoffDb });
+  getPitchStore().setLevelCutoffDb(levelCutoffDb);
+};
+
+/** The live input level (dBFS); redraws on every frame, so read it sparingly. */
+export const usePitchLevelDb = (): number => {
+  const store = getPitchStore();
+
+  return useSyncExternalStore(store.subscribeLevel, store.getLevelDb);
 };
 
 export const usePitchSettings = (): PitchSettings => {

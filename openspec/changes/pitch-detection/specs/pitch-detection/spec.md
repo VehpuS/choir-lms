@@ -65,7 +65,7 @@ The system SHALL provide a full-screen `Pitch` view, opened from the monitor's e
 - **A focus panel:** how close the singing is to one target note, drawn as cents over time against labelled bands. The zones SHALL be `Precise` (within 10 cents), `Near` (within 25 cents), and `Quarter tone off` (up to 50 cents), and the current zone SHALL also be stated in text, not only by colour. The target SHALL default to the nearest note; the user MAY hold a chosen note, in which case the distance SHALL be measured from it, including beyond 50 cents (clamped, with a marker for the direction).
 - **A readout bar:** the current pitch, the confidence, a control to stop and start listening, and the state.
 
-Sensitivity SHALL be adjustable from the view. In landscape the progression SHALL take the width and the focus panel SHALL sit beside it. Opening, using, and closing the view SHALL NOT pause, seek, or otherwise alter playback. The view and its history SHALL NOT persist anything: the history lives in memory only and is dropped when listening stops.
+The minimum volume SHALL be adjustable from the view, beside a live level meter. In landscape the progression SHALL take the width and the focus panel SHALL sit beside it. Opening, using, and closing the view SHALL NOT pause, seek, or otherwise alter playback. The view and its history SHALL NOT persist anything: the history lives in memory only and is dropped when listening stops.
 
 #### Scenario: Watch the progression
 
@@ -154,9 +154,9 @@ The system SHALL stop capturing from the microphone whenever the app is not visi
 - **WHEN** the app is visible beside another app on a device that supports it
 - **THEN** listening continues
 
-### Requirement: Sensitivity and failure states are visible
+### Requirement: Minimum volume and failure states are visible
 
-The system SHALL offer a `Sensitivity` setting (low, normal, high) that changes how quiet or unclear a sound may be and still count, and SHALL show a clear state when the microphone is unavailable, interrupted (for example by a call), or taken by another app, and recover when it returns. Pitch detection SHALL assume the user wears headphones: it SHALL NOT try to remove the playing track or the piano from the microphone signal, and SHALL NOT pause detection while the track plays or a piano key sounds. The first time listening starts, the system SHALL tell the user once that it assumes headphones, because sound from speakers reaches the microphone and is detected like singing.
+The system SHALL offer a `Minimum volume` setting, a cutoff from -60 to -20 dB (default -40 dB), drawn over a live level meter so the user can set it just above the room noise; sounds quieter than the cutoff SHALL be ignored, while the clarity gate stays fixed. A choice stored under the earlier Low, Normal, or High setting SHALL carry over once as a cutoff. The system SHALL show a clear state when the microphone is unavailable, interrupted (for example by a call), or taken by another app, and recover when it returns. Pitch detection SHALL assume the user wears headphones: it SHALL NOT try to remove the playing track or the piano from the microphone signal, and SHALL NOT pause detection while the track plays or a piano key sounds. The first time listening starts, the system SHALL tell the user once that it assumes headphones, because sound from speakers reaches the microphone and is detected like singing.
 
 #### Scenario: Interruption
 

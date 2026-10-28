@@ -3,7 +3,6 @@ import {
   midiToNoteName,
   type CentsZone,
 } from '@org/audio-library-models';
-import type { Sensitivity } from '@org/pitch-detection';
 
 import type { PitchState } from '../pitch-store-types';
 import {
@@ -25,13 +24,6 @@ const WARNING_STATUSES: readonly PitchState['status'][] = [
   'unavailable',
   'in-use',
 ];
-
-export const SENSITIVITY_LABELS: Record<Sensitivity, string> = {
-  low: 'Low',
-  normal: 'Normal',
-  high: 'High',
-};
-export const SENSITIVITIES: readonly Sensitivity[] = ['low', 'normal', 'high'];
 
 export type PitchViewLayout = 'portrait' | 'landscape';
 

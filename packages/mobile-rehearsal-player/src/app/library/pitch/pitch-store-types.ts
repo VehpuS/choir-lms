@@ -1,4 +1,4 @@
-import type { PitchReading, Sensitivity } from '@org/pitch-detection';
+import type { PitchReading } from '@org/pitch-detection';
 
 import type { PcmPermission } from './pcm-source-types';
 
@@ -24,7 +24,8 @@ export type PitchState = {
   headphonesNotePending: boolean;
   /** Listening just resumed after pausing in the background. */
   backgroundNoticePending: boolean;
-  sensitivity: Sensitivity;
+  /** Sounds quieter than this (dBFS) are ignored. */
+  levelCutoffDb: number;
   referenceHz: number;
 };
 
