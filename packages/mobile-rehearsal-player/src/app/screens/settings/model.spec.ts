@@ -116,12 +116,14 @@ describe('piano settings rows', () => {
   it('lists the categories in order and hides Piano where it cannot play', () => {
     assert.deepEqual(
       visibleSettingsCategories({
+        canListenForPitch: true,
         canPlayPiano: true,
         canStoreOffline: true,
       }).map((category) => category.key),
       [
         'bulk-selections',
         'piano',
+        'pitch',
         'my-parts',
         'search-sources',
         'offline-storage',
@@ -129,6 +131,7 @@ describe('piano settings rows', () => {
     );
     assert.deepEqual(
       visibleSettingsCategories({
+        canListenForPitch: false,
         canPlayPiano: false,
         canStoreOffline: true,
       }).map((category) => category.key),
@@ -136,9 +139,21 @@ describe('piano settings rows', () => {
     );
   });
 
+  it('hides Pitch detection where the microphone cannot be listened to', () => {
+    assert.equal(
+      visibleSettingsCategories({
+        canListenForPitch: false,
+        canPlayPiano: true,
+        canStoreOffline: true,
+      }).some((category) => category.key === 'pitch'),
+      false,
+    );
+  });
+
   it('hides Offline storage where nothing can be stored', () => {
     assert.equal(
       visibleSettingsCategories({
+        canListenForPitch: true,
         canPlayPiano: true,
         canStoreOffline: false,
       }).some((category) => category.key === 'offline-storage'),

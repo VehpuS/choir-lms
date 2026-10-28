@@ -10,6 +10,7 @@ type Listener = () => void;
 export type SettingsCategoryKey =
   | 'bulk-selections'
   | 'piano'
+  | 'pitch'
   | 'my-parts'
   | 'search-sources'
   | 'offline-storage';

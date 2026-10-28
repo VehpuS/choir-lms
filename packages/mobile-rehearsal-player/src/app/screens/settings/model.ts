@@ -45,6 +45,11 @@ export const SETTINGS_CATEGORIES: readonly SettingsCategory[] = [
     title: SETTINGS_COPY.sectionTitle,
   },
   { key: 'piano', summary: 'Sound and note names', title: 'Piano' },
+  {
+    key: 'pitch',
+    summary: 'How quiet a sound may be and still count',
+    title: 'Pitch detection',
+  },
   { key: 'my-parts', summary: 'Your voice parts', title: 'My parts' },
   {
     key: 'search-sources',
@@ -59,21 +64,28 @@ export const SETTINGS_CATEGORIES: readonly SettingsCategory[] = [
 ];
 
 export type SettingsCategoryAvailability = {
+  canListenForPitch: boolean;
   canPlayPiano: boolean;
   canStoreOffline: boolean;
 };
 
 /**
- * Piano settings only exist where the piano can play, and Offline storage
- * only where audio can be stored (web, until native follows).
+ * Piano settings only exist where the piano can play, Pitch detection only
+ * where the microphone can be listened to, and Offline storage only where
+ * audio can be stored (web, until native follows).
  */
 export const visibleSettingsCategories = ({
+  canListenForPitch,
   canPlayPiano,
   canStoreOffline,
 }: SettingsCategoryAvailability) => {
   return SETTINGS_CATEGORIES.filter((category) => {
     if (category.key === 'piano') {
       return canPlayPiano;
+    }
+
+    if (category.key === 'pitch') {
+      return canListenForPitch;
     }
 
     return category.key !== 'offline-storage' || canStoreOffline;
@@ -263,3 +275,7 @@ export const OFFLINE_STORAGE_COPY = {
 export const OFFLINE_CACHE_SIZE_OPTIONS = AUDIO_CACHE_BUDGET_PRESETS_BYTES.map(
   (bytes) => ({ label: formatPresetSize(bytes), value: String(bytes) }),
 );
+
+export const PITCH_SETTINGS_COPY = {
+  body: 'Listens through the microphone to show the note you sing. Nothing you sing is recorded or sent anywhere.',
+} as const;
