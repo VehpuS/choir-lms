@@ -24,7 +24,7 @@ import { NowPlayingSurface } from './now-playing';
 import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
 
 import { appTheme } from '../../utils/theme';
-import { usePianoDockHeight } from '../../library/piano/use-piano-dock-height';
+import { usePracticeDockHeight } from '../../library/practice-tools/use-practice-dock-height';
 
 type PlaybackSurfaceMode = 'now-playing' | 'queue' | 'shaping';
 
@@ -116,7 +116,7 @@ export const PlaybackSurface = ({
   const translateY = useRef(new Animated.Value(32)).current;
   // While the piano is open the shell floats it over the bottom of this
   // sheet, so the sheet stops above it and keeps its transport in view.
-  const pianoDockHeight = usePianoDockHeight();
+  const pianoDockHeight = usePracticeDockHeight();
   const canRenderQueue = surface === 'queue' && queueSummary;
   const canRenderNowPlaying = surface === 'now-playing' && nowPlayingSummary;
   const canRenderShaping = surface === 'shaping' && nowPlayingSummary;

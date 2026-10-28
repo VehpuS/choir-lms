@@ -2,6 +2,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useSyncExternalStore } from 'react';
 
 import { appVisibility } from './app-visibility';
+import {
+  createPitchMonitorPreference,
+  type PitchMonitorPreference,
+} from './pitch-monitor-preference';
 import { getPcmSource } from './pcm-source';
 import {
   createPitchStore,
@@ -33,4 +37,19 @@ export const usePitch = (): { state: PitchState; store: PitchStore } => {
   useEffect(() => store.acquire(), [store]);
 
   return { state, store };
+};
+
+let sharedMonitorPreference: PitchMonitorPreference | null = null;
+
+/** Whether the monitor strip is on, remembered per device; created on first use. */
+export const getPitchMonitorPreference = (): PitchMonitorPreference => {
+  sharedMonitorPreference ??= createPitchMonitorPreference(AsyncStorage);
+
+  return sharedMonitorPreference;
+};
+
+export const usePitchMonitorOpen = (): boolean => {
+  const preference = getPitchMonitorPreference();
+
+  return useSyncExternalStore(preference.subscribe, preference.isOpen);
 };

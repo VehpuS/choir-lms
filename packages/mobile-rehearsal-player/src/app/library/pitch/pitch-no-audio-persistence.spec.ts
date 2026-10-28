@@ -43,7 +43,8 @@ const sourceFiles = (directory: string): string[] =>
   readdirSync(directory)
     .filter((name) => /\.tsx?$/.test(name) && !/\.spec\.tsx?$/.test(name))
     // The hook is the one place the real key-value store is imported, and it
-    // only hands the store to `createPitchStore`, which writes two flags.
+    // only hands it to `createPitchStore`, which writes two flags, and to the
+    // monitor preference, which writes the strip's on or off flag.
     .filter((name) => name !== 'use-pitch.ts')
     .filter((name) => name !== 'pitch-test-support.ts')
     .map((name) => join(directory, name));

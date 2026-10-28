@@ -8,7 +8,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 
 import { SurfaceIconButton } from '../../../components/surface-icon-button';
-import { PianoOverlay } from '../../piano/components/piano-overlay';
 import { registerPianoViewer } from '../../piano/piano-host-store';
 import { isDeviceOffline } from '../../offline/device-connection';
 import { readKeptScore, refreshKeptScore } from '../../offline/read-kept-score';
@@ -42,6 +41,7 @@ import { useViewerZoom } from './use-viewer-zoom';
 import { practiceToolsOverlay } from '../../practice-tools/practice-tools-overlay';
 import { usePracticeTools } from '../../practice-tools/use-practice-tools';
 import { ViewerLayout } from './viewer-layout';
+import { ViewerPracticeDock } from './viewer-practice-dock';
 import { ViewerToolbar } from './viewer-toolbar';
 import { useBestEffortKeepAwake } from '../../../hooks/use-best-effort-keep-awake';
 
@@ -322,10 +322,9 @@ export const SheetMusicViewer = ({
       ownerName={ownerName}
       partChips={partChips}
       piano={
-        <PianoOverlay
+        <ViewerPracticeDock
           focusRange={info?.noteRange}
-          // A short landscape window needs the height for the score.
-          heightLimit={isCompact ? 'compact' : undefined}
+          isCompact={isCompact}
         />
       }
       sourceChips={sourceChips}

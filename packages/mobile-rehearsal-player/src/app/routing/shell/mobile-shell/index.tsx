@@ -7,7 +7,7 @@ import type { SavedTrackPlaybackState } from '../../../library/playback/utils/sa
 import type { PlaylistPlaybackSession } from '../../../library/playlists/utils/saved-playlist-playback-view-model';
 import type { PlaylistDraftIssue } from '../../../library/playlists/utils/saved-playlist-view-model';
 import type { PlaybackShapingControls } from '../../playback/shaping/shaping-surface-model';
-import { ShellPianoDock } from '../../../library/piano/components/shell-piano-dock';
+import { ShellPracticeDock } from '../../../library/practice-tools/shell-practice-dock';
 import { offlineFilesNavigationStore } from '../../../screens/offline-files/offline-files-navigation-store';
 import { settingsNavigationStore } from '../../../screens/settings/settings-navigation-store';
 import { ShellOverlays } from './shell-overlays';
@@ -214,7 +214,9 @@ export const MobileShell = ({
         <ShellOverlays />
       </View>
 
-      <ShellPianoDock isPlaybackSurfaceOpen={activePlaybackSurface !== null} />
+      <ShellPracticeDock
+        isPlaybackSurfaceOpen={activePlaybackSurface !== null}
+      />
 
       <PinnedBulkActionBarHost>
         <MobileShellMiniPlayerDock
