@@ -1,3 +1,3 @@
 # native-playback-follow-ups
 
-Native-only waveform peaks, peak storage checks and semitone pitch, moved out of nocturne-visual-system-and-playback-shaping until native becomes a priority target.
+Native-only waveform peaks, peak storage checks, semitone pitch, offline storage, sheet music, piano and pitch detection (microphone capture), moved out of the changes that shipped web-first until native becomes a priority target.

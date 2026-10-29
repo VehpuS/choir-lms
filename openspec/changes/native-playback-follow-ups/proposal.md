@@ -1,6 +1,6 @@
 ## Why
 
-`nocturne-visual-system-and-playback-shaping` shipped the Nocturne visual system, real-audio waveforms and playback shaping, verified on web. Native iOS and Android were deliberately out of scope (decided 2026-10-02 and 2026-10-06), which left three native-only items. They are tracked here so that change can be archived without losing them.
+`nocturne-visual-system-and-playback-shaping` shipped the Nocturne visual system, real-audio waveforms and playback shaping, verified on web. Native iOS and Android were deliberately out of scope (decided 2026-10-02 and 2026-10-06), which left several native-only items. They are tracked here so that change can be archived without losing them.
 
 ## What Changes
 
@@ -8,6 +8,7 @@
 - Peak storage on device: confirm the AsyncStorage budget, eviction and quota-error behavior once native has an extractor.
 - Native offline audio and score storage (moved 2026-10-27 from `offline-audio-caching`): the native `AudioStore`, `react-native-track-player` playing from local files, and the on-device checks of the offline UX.
 - Semitone pitch on native: web has independent pitch through a SoundTouch worklet; native shows the inert fallback (`canShapePitch`) until a native pitch path exists.
+- Native pitch detection (moved from `pitch-detection`): microphone capture on iOS and Android behind the existing `PcmSource` seam, so the monitor strip, the Pitch view, the Settings page, the detected piano key and the score marks work on native. The web pipeline, store and views are shared and already built; native needs a capture source, permission strings, and coexistence with `react-native-track-player`.
 
 ## Impact
 
