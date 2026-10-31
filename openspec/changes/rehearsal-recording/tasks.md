@@ -6,7 +6,7 @@ Web is the build and verification target. Native handling is deferred to `native
 - [ ] 1.2 Latency sources: read `outputLatency`, `baseLatency`, and `getOutputTimestamp` on Chrome, Safari, and Firefox with speakers, wired headphones, and Bluetooth; compare to a loopback measurement. Decide whether the estimate is worth showing and whether the click calibration is reliable enough to offer (design Decision 3).
 - [ ] 1.3 Overlay sync: schedule an `AudioBufferSourceNode` against the media element, run play, pause, seek, and loop wrap for a few minutes with the track at 1×, 0.7× and 1.3×, and measure drift and clicks. Decide the tolerance and crossfade length (design Decision 5).
 - [ ] 1.4 Mixdown render: in the browser, render a ten-minute take over a track at 0.7× with a pitch shift through an `OfflineAudioContext` and the SoundTouch processor; measure time and memory, and compare the result with a live capture of the same playback. Decide the chunk size, and whether a long mixdown needs a worker.
-- [ ] 1.5 Review a mock of the recording strip (with marker context), takes list (with spans and loop takes), overlay balance and sync controls, and the opt-in calibration flow with the user, and record the approved placement and look in the design before any UI task (5.1 onward).
+- [ ] 1.5 Review `design-source/recording-mock.html` (open it in a browser) with the user: the recording strip (with marker context), save sheet, takes list (with spans and loop takes), overlay balance and sync controls, the opt-in calibration flow, the export dialog, the offline files rows, and the punch-range sheet. Record the approved placement and look in the design before any UI task (5.1 onward).
 
 ## 2. Models and pure logic
 

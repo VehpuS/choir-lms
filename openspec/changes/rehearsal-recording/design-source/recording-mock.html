@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rehearsal Recording Mock</title>
+<style>
+/* A decision page for the rehearsal-recording change. Top: one interactive phone with a button for each state. Below: every screen at a glance. Nocturne tokens copied from the app theme and the pitch mock; nothing here is saved or recorded. */
+:root {
+  --bg: #101220; --ground: #161826; --surface: #232532; --surface-raised: #1b1e2c;
+  --text: #e9e9ed; --text-muted: #9397ab; --text-faint: #8e92a6;
+  --accent: #9184d9; --accent-text: #b5abfc; --accent-tint: #2b2741; --accent-deep: #423a6a;
+  --divider: #3f424d; --danger: #f28b82; --warning: #e6c17a; --success: #81c995;
+  --rec: #ff5d5d; --take: #6fd0c4; --take-tint: rgba(111,208,196,.16);
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); padding: 28px 16px 56px; line-height: 1.45; }
+main { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+h1 { font-size: 26px; line-height: 1.15; margin: 0 0 6px; font-weight: 650; letter-spacing: -0.01em; text-wrap: balance; }
+h2 { font-size: 16px; margin: 0 0 4px; font-weight: 650; }
+p { margin: 0; color: var(--text-muted); max-width: 70ch; }
+ul.dec { margin: 8px 0 0; padding-left: 18px; color: var(--text-muted); font-size: 13.5px; max-width: 78ch; }
+ul.dec li { margin: 3px 0; }
+ul.dec b { color: var(--text); font-weight: 600; }
+.kicker { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-text); margin-bottom: 8px; }
+button { font: inherit; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+.stage { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 32px; align-items: start; }
+@media (max-width: 860px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+.controls { display: flex; flex-direction: column; gap: 16px; }
+.label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 6px; }
+.checks { display: flex; flex-wrap: wrap; gap: 8px; }
+.check { min-height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid var(--divider); border-radius: 12px; background: transparent; color: var(--text-muted); font-size: 13px; cursor: pointer; }
+.check[aria-pressed="true"] { background: var(--accent-tint); color: var(--text); border-color: var(--accent); }
+.hint { font-size: 12.5px; color: var(--text-faint); }
+
+/* phone */
+.phone { width: 380px; height: 720px; background: var(--ground); border: 1px solid var(--divider); border-radius: 34px; position: relative; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.45); display: flex; flex-direction: column; flex: none; }
+.gallery .phone { box-shadow: none; }
+.screen { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.scrim { position: absolute; inset: 0; z-index: 20; background: rgba(8,9,16,.5); }
+.ib { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--divider); background: transparent; color: var(--text); display: grid; place-items: center; cursor: pointer; padding: 0; flex: none; }
+.ib[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-tint); color: var(--accent-text); }
+.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* playback screen */
+.hdr { display: flex; align-items: center; gap: 8px; padding: 16px 14px 6px; }
+.hdr .sp { flex: 1; min-width: 0; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-text); }
+.body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; padding: 4px 20px 10px; overflow: hidden; }
+.title { font-size: 22px; font-weight: 650; line-height: 1.15; }
+.subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.wavewrap { position: relative; margin-top: 6px; }
+.wave { height: 76px; display: flex; align-items: center; gap: 2px; position: relative; }
+.wave i { flex: 1; background: var(--accent); border-radius: 2px; opacity: .5; }
+.wave i.played { opacity: .95; }
+.wave i.rec { background: var(--rec); opacity: .9; }
+.wave b.head { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text); }
+.wave .loop { position: absolute; top: 0; bottom: 0; background: rgba(230,193,122,.14); border-left: 2px solid var(--warning); border-right: 2px solid var(--warning); border-radius: 3px; }
+.flag { position: absolute; top: -17px; transform: translateX(-1px); font-size: 9.5px; color: var(--text-muted); border-left: 1.5px solid var(--text-faint); padding-left: 4px; white-space: nowrap; line-height: 1.1; }
+.flag.next { color: var(--accent-text); border-color: var(--accent); }
+.lane { height: 22px; margin-top: 6px; position: relative; border-radius: 6px; background: rgba(255,255,255,.03); }
+.lane span { position: absolute; top: 0; bottom: 0; border-radius: 6px; background: var(--take-tint); border: 1px solid var(--take); font-size: 10px; color: var(--take); display: flex; align-items: center; padding: 0 7px; white-space: nowrap; overflow: hidden; }
+.times { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.chip { min-height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--divider); background: transparent; color: var(--text-muted); font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+.chip .ic { width: 14px; height: 14px; }
+.chip.lock { border-color: var(--warning); color: var(--warning); background: rgba(230,193,122,.1); }
+.chip.on { border-color: var(--accent); background: var(--accent-tint); color: var(--text); }
+.chip.take { border-color: var(--take); color: var(--take); background: var(--take-tint); }
+.transport { display: flex; align-items: center; justify-content: center; gap: 22px; margin-top: auto; padding-bottom: 6px; }
+.ring { width: 54px; height: 54px; border: 1.5px solid var(--accent); border-radius: 50%; display: grid; place-items: center; box-shadow: 0 0 18px rgba(145,132,217,.28); }
+.ring::after { content: ""; width: 12px; height: 16px; border-left: 4px solid var(--accent-text); border-right: 4px solid var(--accent-text); }
+
+/* docks */
+.dock { flex: none; display: flex; flex-direction: column; }
+.strip { background: var(--surface-raised); border-top: 1px solid var(--divider); display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; min-height: 68px; }
+.strip .grow { flex: 1; min-width: 0; }
+.strip .big { font-family: var(--mono); font-size: 22px; font-weight: 650; display: flex; align-items: center; gap: 8px; }
+.recdot { width: 11px; height: 11px; border-radius: 50%; background: var(--rec); box-shadow: 0 0 10px rgba(255,93,93,.7); }
+.strip .mk { font-size: 12px; color: var(--text-muted); line-height: 1.3; }
+.strip .mk b { color: var(--text); font-weight: 600; }
+.strip .msg { font-size: 13px; color: var(--text-muted); line-height: 1.3; }
+.strip .msg b { color: var(--text); }
+.strip .msg.warn b { color: var(--warning); }
+.stop { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--rec); display: grid; place-items: center; cursor: pointer; flex: none; }
+.stop::after { content: ""; width: 14px; height: 14px; border-radius: 3px; background: #1b1c22; }
+.btn { min-height: 36px; border: 1px solid var(--accent); background: transparent; color: var(--accent-text); border-radius: 999px; padding: 0 14px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.btn.primary { background: var(--accent); color: #14121f; font-weight: 600; }
+.btn.danger { border-color: var(--danger); color: var(--danger); }
+.btn.quiet { border-color: var(--divider); color: var(--text-muted); }
+.panel { background: var(--surface-raised); border-top: 1px solid var(--divider); padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+.prow { display: flex; align-items: center; gap: 8px; }
+.prow .k { width: 54px; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); flex: none; }
+.prow input[type=range] { flex: 1; accent-color: var(--take); min-width: 0; }
+.prow .end { font-size: 11px; color: var(--text-muted); width: 34px; flex: none; text-align: center; }
+.step { min-width: 40px; height: 34px; border-radius: 10px; border: 1px solid var(--divider); background: transparent; color: var(--text); font-family: var(--mono); font-size: 12px; cursor: pointer; padding: 0 6px; }
+.val { font-family: var(--mono); font-size: 14px; font-weight: 600; min-width: 62px; text-align: center; color: var(--take); }
+.links { display: flex; gap: 14px; font-size: 12px; }
+.links a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.mini { height: 56px; background: var(--surface-raised); border-top: 1px solid var(--divider); display: flex; align-items: center; gap: 12px; padding: 0 14px; flex: none; font-size: 13px; color: var(--text-muted); }
+
+/* menus and sheets */
+.menu { position: absolute; z-index: 30; right: 12px; top: 58px; width: 252px; background: var(--surface); border: 1px solid var(--divider); border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,.55); padding: 6px 4px; }
+.menu h4 { margin: 4px 12px 2px; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-faint); font-weight: 500; }
+.mrow { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 12px; width: 100%; border: 0; background: transparent; color: var(--text); font-size: 15px; text-align: left; cursor: pointer; }
+.mrow .ic { color: var(--text-muted); }
+.mrow[aria-checked="true"], .mrow[aria-checked="true"] .ic { color: var(--accent-text); }
+.mrow .sw { margin-left: auto; }
+.mrow.dis { opacity: .45; }
+.sw { width: 40px; height: 24px; border-radius: 12px; background: var(--surface); border: 1px solid var(--divider); position: relative; flex: none; }
+.sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--text-muted); }
+.sw.on { background: var(--accent-deep); border-color: var(--accent); }
+.sw.on::after { left: 18px; background: var(--accent-text); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 25; max-height: 86%; overflow: hidden; background: var(--surface); border-top: 1px solid var(--divider); border-radius: 20px 20px 0 0; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.sheet .grab { width: 40px; height: 4px; border-radius: 4px; background: var(--divider); margin: 0 auto 4px; flex: none; }
+.sheet h3 { margin: 2px 0 0; font-size: 17px; }
+.sheet .sub { font-size: 12.5px; color: var(--text-muted); }
+.sheet .acts { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field small { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); }
+.input { min-height: 40px; border: 1px solid var(--divider); border-radius: 10px; background: var(--ground); color: var(--text); padding: 0 12px; display: flex; align-items: center; font-size: 14px; gap: 8px; }
+.seg { display: flex; border: 1px solid var(--divider); border-radius: 12px; overflow: hidden; }
+.seg span { flex: 1; text-align: center; padding: 10px 6px; font-size: 13px; color: var(--text-muted); border-right: 1px solid var(--divider); }
+.seg span:last-child { border-right: 0; }
+.seg span.on { background: var(--accent-tint); color: var(--text); box-shadow: inset 0 0 0 1px var(--accent); }
+.optrow { display: flex; align-items: center; gap: 10px; min-height: 44px; border-bottom: 1px solid rgba(63,66,77,.55); font-size: 14px; }
+.optrow:last-child { border-bottom: 0; }
+.optrow small { display: block; color: var(--text-muted); font-size: 12px; }
+.optrow .r { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+.prog { height: 8px; border-radius: 4px; background: var(--ground); overflow: hidden; border: 1px solid var(--divider); }
+.prog i { display: block; height: 100%; background: var(--accent); }
+.note { border: 1px solid var(--divider); border-radius: 12px; padding: 10px 12px; font-size: 12.5px; color: var(--text-muted); }
+.note.warn { border-color: var(--warning); color: var(--warning); background: rgba(230,193,122,.08); }
+.note.ok { border-color: var(--success); color: var(--success); background: rgba(129,201,149,.08); }
+.note.bad { border-color: var(--danger); color: var(--danger); background: rgba(242,139,130,.08); }
+
+/* takes list */
+.take { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(63,66,77,.55); }
+.take:last-child { border-bottom: 0; }
+.radio { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--text-faint); flex: none; display: grid; place-items: center; }
+.radio.on { border-color: var(--take); }
+.radio.on::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--take); }
+.take .t { flex: 1; min-width: 0; }
+.take .t b { display: flex; gap: 6px; align-items: center; font-size: 14px; font-weight: 600; }
+.take .t span { display: block; font-size: 12px; color: var(--text-muted); }
+.tag { font-size: 10px; border: 1px solid var(--divider); border-radius: 999px; padding: 1px 7px; color: var(--text-muted); font-weight: 500; }
+.tag.loop { border-color: var(--warning); color: var(--warning); }
+.tag.chg { border-color: var(--danger); color: var(--danger); }
+.total { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); font-family: var(--mono); padding-top: 6px; }
+
+/* gallery */
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(236px, 1fr)); gap: 22px 18px; }
+.gcell { display: flex; flex-direction: column; gap: 8px; }
+.gcell .cap b { display: block; font-size: 13.5px; }
+.gcell .cap span { font-size: 12px; color: var(--text-faint); }
+.gframe { width: 100%; aspect-ratio: 380 / 720; position: relative; }
+.gframe .phone { position: absolute; left: 0; top: 0; transform-origin: top left; pointer-events: none; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="kicker">rehearsal-recording · design mock</div>
+    <h1>Record, overlay, adjust, and export a take</h1>
+    <p>An interactive phone and a gallery of every screen the change adds. Press the state buttons or use the controls inside the phone. Nothing is recorded or saved. This is the page for task 1.5: approve or mark up what you want changed.</p>
+    <ul class="dec">
+      <li><b>Where it lives:</b> a third row, <b>Recording</b>, in the Practice tools menu. Turning it on opens the recording strip in the dock, like the pitch monitor.</li>
+      <li><b>While recording:</b> red dot and elapsed time, the marker just passed and the next one, and the speed and pitch chip locked. Stop is always one tap.</li>
+      <li><b>After stopping:</b> a short save sheet with the name, <b>Keep the original with this take</b> (on), and the size.</li>
+      <li><b>Takes list:</b> choose one take to overlay; spans read as marker names; loop takes are tagged; a changed original is flagged. Export and delete live in each row's menu.</li>
+      <li><b>Overlay:</b> picking a take applies its stored speed and pitch and locks those controls. A balance slider and a <b>Sync</b> control sit in the dock; calibration with clicks is a quiet link, never required.</li>
+      <li><b>Export:</b> recording or mix, to the device or to Drive, with the folder and name confirmed first.</li>
+      <li><b>Punch ranges</b> (last slice) arm a take between two markers or the loop ends.</li>
+    </ul>
+  </header>
+
+  <section class="stage" aria-label="Interactive phone">
+    <div id="live"></div>
+    <div class="controls">
+      <div><div class="label">Recording</div><div class="checks" id="g-rec"></div></div>
+      <div><div class="label">Takes and overlay</div><div class="checks" id="g-take"></div></div>
+      <div><div class="label">Sync and calibration</div><div class="checks" id="g-sync"></div></div>
+      <div><div class="label">Export and storage</div><div class="checks" id="g-exp"></div></div>
+      <div><div class="label">Last slice</div><div class="checks" id="g-late"></div></div>
+      <p class="hint">Inside the phone: the toolbox opens Practice tools, rows and buttons respond, the balance slider and Sync steps move.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Every screen</h2>
+    <p>The same renderer at a glance. Captions say which spec requirement each one covers.</p>
+    <div class="gallery" id="gallery" style="margin-top:16px"></div>
+  </section>
+</main>
+
+<script>
+const I = {
+  tool: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 8h16v11H4zM9 8V5h6v3M4 13h16"/></svg>',
+  mic: '<svg class="ic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  rec: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>',
+  piano: '<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 6v12M12 6v12M16 6v12"/></svg>',
+  pitch: '<svg class="ic" viewBox="0 0 24 24"><path d="M3 15c3-8 5 6 9-2s6 3 9-4"/></svg>',
+  lock: '<svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  dots: '<svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>',
+  down: '<svg class="ic" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
+  back: '<svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
+  drive: '<svg class="ic" viewBox="0 0 24 24"><path d="M9 4h6l6 10-3 5H6l-3-5zM9 4l6 10M15 4L9 14"/></svg>',
+  dl: '<svg class="ic" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>',
+  close: '<svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+};
+const MARKS = [[0.06, 'Intro'], [0.28, 'Verse 2'], [0.55, 'Chorus'], [0.8, 'Bridge']];
+const BARS = Array.from({ length: 64 }, (_, i) => 18 + 52 * Math.abs(Math.sin(i * 0.7) * Math.cos(i * 0.23)) + (i % 5) * 3);
+const TAKES = [
+  { id: 1, name: 'Take 1', span: 'Verse 2 → Chorus', when: 'Today 10:42', len: '0:41', size: '3.6 MB', loop: false, changed: false, shaping: '0.7× · +2' },
+  { id: 2, name: 'Take 2', span: 'Chorus, 3 passes', when: 'Today 10:58', len: '1:12', size: '6.2 MB', loop: true, changed: false, shaping: '0.7× · +2' },
+  { id: 3, name: 'Take 3', span: '1:42 → 2:10', when: 'Yesterday', len: '0:28', size: '2.4 MB', loop: false, changed: true, shaping: '1× · 0' }
+];
+const BASE = { tools: false, rec: 'off', sheet: null, take: null, balance: 50, nudge: 12, expKind: 'mix', expDest: 'drive', expStep: 'choose', cal: 'intro', stop: 'saved', loopTrack: false, sel: null, armed: false };
+
+const S = Object.assign({}, BASE);
+const PRESETS = {
+  idle: {},
+  tools: { tools: true },
+  explain: { rec: 'explain' },
+  blocked: { rec: 'blocked' },
+  recording: { rec: 'recording' },
+  recloop: { rec: 'recording', loopTrack: true },
+  stopped: { rec: 'stopped', stop: 'hidden' },
+  short: { rec: 'stopped', stop: 'short' },
+  save: { rec: 'saving' },
+  takes: { sheet: 'takes' },
+  overlay: { take: 1 },
+  overlayloop: { take: 2, loopTrack: true },
+  changed: { take: 3, sheet: 'takes' },
+  sync: { take: 1, sheet: 'sync' },
+  cal: { take: 1, sheet: 'cal', cal: 'intro' },
+  calrun: { take: 1, sheet: 'cal', cal: 'running' },
+  calfail: { take: 1, sheet: 'cal', cal: 'fail' },
+  expchoose: { take: 1, sheet: 'export', expStep: 'choose' },
+  expprog: { take: 1, sheet: 'export', expStep: 'progress' },
+  expdone: { take: 1, sheet: 'export', expStep: 'done' },
+  expfail: { take: 1, sheet: 'export', expStep: 'fail' },
+  expnone: { take: 3, sheet: 'export', expStep: 'nosource', expKind: 'mix' },
+  offline: { sheet: 'offline' },
+  punch: { sheet: 'punch' },
+  armed: { rec: 'armed', armed: true }
+};
+
+function wave(s) {
+  const frac = s.rec === 'recording' ? 0.55 : 0.38;
+  const start = 0.28;
+  const bars = BARS.map((h, i) => {
+    const f = i / BARS.length;
+    const cls = s.rec === 'recording' && f >= start && f < frac ? 'rec' : f < frac ? 'played' : '';
+    return `<i class="${cls}" style="height:${h}%"></i>`;
+  }).join('');
+  const flags = MARKS.map(([f, n]) => {
+    const next = s.rec === 'recording' && n === 'Chorus' ? ' next' : '';
+    return `<span class="flag${next}" style="left:${f * 100}%">${n}</span>`;
+  }).join('');
+  const loop = s.loopTrack ? '<span class="loop" style="left:55%;width:25%"></span>' : '';
+  const lane = s.take ? `<div class="lane" aria-label="Take lane"><span style="left:28%;width:${s.loopTrack ? 52 : 27}%">${TAKES[s.take - 1].name}${s.loopTrack ? ' · 3 passes' : ''}</span></div>` : '';
+  return `<div class="wavewrap"><div class="wave" role="img" aria-label="Track waveform">${loop}${bars}<b class="head" style="left:${frac * 100}%"></b></div>${flags}${lane}</div>
+  <div class="times"><span>${s.rec === 'recording' ? '1:18' : '0:54'}</span><span>3:25</span></div>`;
+}
+
+function shapeChip(s) {
+  const locked = s.rec === 'recording' || s.take;
+  const txt = s.take ? TAKES[s.take - 1].shaping : '0.7× · +2';
+  const why = s.rec === 'recording' ? 'Locked while recording' : s.take ? 'Locked to this take' : '';
+  return `<div class="chips"><span class="chip ${locked ? 'lock' : 'on'}">${locked ? I.lock : ''}<span>${txt.replace('·', '·')}</span></span>${locked ? `<span class="hint">${why}</span>` : ''}${s.take ? `<span class="chip take">${TAKES[s.take - 1].name}</span>` : ''}</div>`;
+}
+
+function strip(s) {
+  const rec = s.rec;
+  if (rec === 'explain') {
+    return `<div class="strip"><div class="msg grow"><b>Recording keeps audio on this device.</b> Takes are saved under this track until you delete them. Use headphones: speakers let the track reach the microphone.</div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn primary" data-act="continue">Continue</button><button class="btn quiet" data-act="close-rec">Not now</button></div></div>`;
+  }
+  if (rec === 'blocked') {
+    return `<div class="strip"><div class="msg warn grow"><b>Microphone blocked.</b> Allow it for this site in the browser's address bar settings, then press Record.</div><button class="btn" data-act="start">Record</button></div>`;
+  }
+  if (rec === 'recording') {
+    const where = s.loopTrack ? '<b>Loop pass 2</b> of the Chorus loop<br>Chorus → Bridge · 0:52' : 'Passed <b>Verse 2</b> · 0:38<br>Next <b>Chorus</b> · 1:05';
+    return `<div class="strip"><div class="grow"><div class="big"><span class="recdot"></span>0:42</div></div><div class="mk grow" style="flex:1.4">${where}</div><button class="stop" data-act="stop" aria-label="Stop recording"></button></div>`;
+  }
+  if (rec === 'armed') {
+    return `<div class="strip"><div class="msg grow"><b>Armed: Chorus → Bridge.</b> Recording starts when playback reaches Chorus and stops at Bridge.</div><button class="btn danger" data-act="disarm">Cancel</button></div>`;
+  }
+  if (rec === 'stopped') {
+    const m = s.stop === 'short' ? '<b>Too short.</b> A take under one second is not saved.' : s.stop === 'full' ? '<b>Take stopped at 10:00.</b> That is the longest take. Saved as Take 4.' : '<b>Take stopped: the app was hidden.</b> Saved as Take 4 (0:42).';
+    return `<div class="strip"><div class="msg grow">${m}</div><button class="btn" data-act="${s.stop === 'short' ? 'start' : 'save'}">${s.stop === 'short' ? 'Record' : 'Review'}</button></div>`;
+  }
+  if (rec === 'idle' || rec === 'off') { return ''; }
+  return `<div class="strip"><div class="msg grow"><b>Ready.</b> Seek to where you want to start, then press Record.</div><button class="btn primary" data-act="start" style="display:flex;gap:6px;align-items:center">${I.rec}Record</button></div>`;
+}
+
+function overlayPanel(s) {
+  if (!s.take || s.rec === 'recording') { return ''; }
+  const t = TAKES[s.take - 1];
+  const nudge = (s.nudge > 0 ? '+' : '') + s.nudge + ' ms';
+  return `<div class="panel" aria-label="Overlay controls">
+    <div class="prow"><button class="chip take" data-act="takes" style="min-height:34px">${t.name} · ${t.span}${I.down}</button><span style="flex:1"></span><button class="ib" style="width:34px;height:34px" data-act="deselect" aria-label="Deselect take">${I.close}</button></div>
+    <div class="prow"><span class="k">Balance</span><span class="end">Track</span><input type="range" min="0" max="100" value="${s.balance}" data-act="balance" aria-label="Balance between track and take"><span class="end">Take</span></div>
+    <div class="prow"><span class="k">Sync</span><button class="step" data-act="n-10">−10</button><button class="step" data-act="n-1">−1</button><span class="val">${nudge}</span><button class="step" data-act="n+1">+1</button><button class="step" data-act="n+10">+10</button></div>
+    <div class="links"><a data-act="n-reset">Reset</a><a data-act="n-device">Use for this device</a><a data-act="cal">Calibrate with clicks…</a></div>
+  </div>`;
+}
+
+function tools(s) {
+  const recOn = s.rec !== 'off' && s.rec !== 'idle';
+  const row = (icon, label, on, act, dis) => `<button class="mrow ${dis ? 'dis' : ''}" role="switch" aria-checked="${on}" data-act="${act}">${icon}<span>${label}</span><span class="sw ${on ? 'on' : ''}"></span></button>`;
+  return `<div class="menu" role="menu"><h4>Practice tools</h4>${row(I.piano, 'Piano', false, 'noop')}${row(I.mic, 'Pitch detection', false, 'noop')}${row(I.rec, 'Recording', recOn, 'toggle-rec')}</div>`;
+}
+
+function sheetSave() {
+  return `<div class="sheet"><div class="grab"></div><h3>Take saved</h3><div class="sub">0:42 · 3.6 MB · Verse 2 → Chorus</div>
+    <div class="field"><small>Name</small><div class="input">Take 4</div></div>
+    <div class="optrow"><div>Keep the original with this take<small>Adds about 9 MB shared with other takes of this track. Lets the overlay and mix work if the track changes.</small></div><span class="sw on" style="margin-left:auto"></span></div>
+    <div class="acts"><button class="btn danger" data-act="discard">Delete take</button><button class="btn primary" data-act="done-save">Done</button></div></div>`;
+}
+
+function sheetTakes(s) {
+  const rows = TAKES.map((t) => `<div class="take"><span class="radio ${s.take === t.id ? 'on' : ''}" data-act="pick-${t.id}" role="radio" aria-checked="${s.take === t.id}"></span>
+    <div class="t" data-act="pick-${t.id}"><b>${t.name}${t.loop ? '<span class="tag loop">Loop</span>' : ''}${t.changed ? '<span class="tag chg">Original track changed</span>' : ''}</b><span>${t.span} · ${t.len} · ${t.size}</span><span>${t.when} · recorded against ${t.shaping}</span></div>
+    <button class="ib" style="width:34px;height:34px" data-act="exp-${t.id}" aria-label="Take options">${I.dots}</button></div>`).join('');
+  const chg = s.take === 3 ? '<div class="note warn">The track on Drive no longer matches this take. The overlay plays against the copy kept with the take.</div>' : '';
+  return `<div class="sheet"><div class="grab"></div><h3>Takes</h3><div class="sub">This track · stored on this device</div>${rows}${chg}<div class="total"><span>3 takes · 12.2 MB</span><span>Kept original 9 MB</span></div><div class="sub">Row menu: Rename · Export recording · Export mix · Delete</div></div>`;
+}
+
+function sheetSync() {
+  return `<div class="sheet"><div class="grab"></div><h3>Sync</h3><div class="sub">If your voice sounds early or late against the track, nudge it until it lines up. Changes sound at once and are saved with the take.</div>
+    <div class="prow"><button class="step" data-act="n-10">−10</button><button class="step" data-act="n-1">−1</button><span class="val">${(S.nudge > 0 ? '+' : '') + S.nudge} ms</span><button class="step" data-act="n+1">+1</button><button class="step" data-act="n+10">+10</button></div>
+    <div class="prow"><span class="end">−250</span><input type="range" min="-250" max="250" value="${S.nudge}" style="flex:1;accent-color:var(--take)"><span class="end">+250</span></div>
+    <div class="optrow"><div>Use for this device<small>Next takes on this output start with ${(S.nudge > 0 ? '+' : '') + S.nudge} ms already applied.</small></div><button class="btn" style="margin-left:auto" data-act="n-device">Save</button></div>
+    <div class="links"><a data-act="n-reset">Reset to 0</a><a data-act="cal">Measure with clicks (optional)…</a></div></div>`;
+}
+
+function sheetCal(s) {
+  const step = s.cal;
+  const body = step === 'intro'
+    ? '<div class="sub">Optional. The app plays a few clicks and listens for them to measure your device\'s delay. The clicks must reach the microphone: use speakers, or hold one headphone against the microphone. You can always adjust by hand with Sync instead.</div><div class="acts"><button class="btn quiet" data-act="sheet-sync">Adjust by hand</button><button class="btn primary" data-act="cal-run">Play clicks</button></div>'
+    : step === 'running'
+      ? '<div class="sub">Playing clicks and listening…</div><div class="prog"><i style="width:55%"></i></div><div class="acts"><button class="btn quiet" data-act="cal-intro">Cancel</button></div>'
+      : step === 'ok'
+        ? '<div class="note ok">Measured 74 ms for this output. Saved as the default for “Bluetooth headphones”. Existing takes keep what they were recorded with.</div><div class="acts"><button class="btn primary" data-act="cal-intro">Done</button></div>'
+        : '<div class="note bad">The clicks were not heard. Use speakers, or hold a headphone against the microphone, then try again. Your previous value is unchanged.</div><div class="acts"><button class="btn quiet" data-act="sheet-sync">Adjust by hand</button><button class="btn primary" data-act="cal-run">Try again</button></div>';
+  return `<div class="sheet"><div class="grab"></div><h3>Calibrate with clicks</h3>${body}</div>`;
+}
+
+function sheetExport(s) {
+  const t = TAKES[(s.take || 1) - 1];
+  const kind = s.expKind, drive = s.expDest === 'drive';
+  const seg = (a, b, onFirst) => `<div class="seg"><span class="${onFirst ? 'on' : ''}" data-act="${a[0]}">${a[1]}</span><span class="${onFirst ? '' : 'on'}" data-act="${b[0]}">${b[1]}</span></div>`;
+  if (s.expStep === 'progress') {
+    return `<div class="sheet"><div class="grab"></div><h3>Exporting ${kind === 'mix' ? 'mix' : 'recording'}</h3><div class="sub">${t.name} · ${drive ? 'Choir / Recordings' : 'Downloads'}</div><div class="prog"><i style="width:62%"></i></div><div class="sub">${kind === 'mix' ? 'Rendering and uploading' : 'Uploading'} · 62%</div><div class="acts"><button class="btn quiet" data-act="exp-cancel">Cancel</button></div></div>`;
+  }
+  if (s.expStep === 'done') {
+    return `<div class="sheet"><div class="grab"></div><h3>Exported</h3><div class="note ok">${drive ? 'Saved to Choir / Recordings as “Soprano – Take 1 (mix).wav”.' : 'Downloaded “Soprano – Take 1 (mix).wav”.'}</div><div class="acts"><button class="btn primary" data-act="exp-cancel">Done</button></div></div>`;
+  }
+  if (s.expStep === 'fail') {
+    return `<div class="sheet"><div class="grab"></div><h3>Export failed</h3><div class="note bad">Google Drive says you are out of storage. The take is unchanged.</div><div class="acts"><button class="btn quiet" data-act="exp-cancel">Close</button><button class="btn primary" data-act="exp-go">Try again</button></div></div>`;
+  }
+  const none = s.expStep === 'nosource' ? '<div class="note warn">The mix is unavailable: this take has no kept copy of the original and the track has changed. The bare recording can still be exported.</div>' : '';
+  return `<div class="sheet"><div class="grab"></div><h3>Export ${t.name}</h3>
+    ${seg(['kind-rec', 'Recording only'], ['kind-mix', 'Mix with track'], kind === 'rec')}
+    ${none}
+    ${kind === 'mix' ? '<div class="prow"><span class="k">Balance</span><span class="end">Track</span><input type="range" min="0" max="100" value="50" style="flex:1;accent-color:var(--take)"><span class="end">Take</span></div><div class="hint">Plays as you heard it while recording: 0.7×, +2, the Chorus loop passes.</div>' : '<div class="hint">Your voice only, at its natural speed. About 3.6 MB.</div>'}
+    ${seg(['dest-drive', 'Save to Drive'], ['dest-dl', 'Download'], drive)}
+    ${drive ? '<div class="field"><small>Folder</small><div class="input">' + I.drive + 'Choir / Recordings<span style="margin-left:auto;color:var(--accent-text);font-size:12px">Change</span></div></div>' : ''}
+    <div class="field"><small>Name</small><div class="input">Soprano – ${t.name}${kind === 'mix' ? ' (mix)' : ''}.wav</div></div>
+    <div class="hint">${drive ? 'Nothing is written to Drive until you confirm. Drive asks for permission here if needed.' : 'Saved by the browser. No Drive permission or network needed.'}</div>
+    <div class="acts"><button class="btn quiet" data-act="exp-cancel">Cancel</button><button class="btn primary" data-act="exp-go" ${none && kind === 'mix' ? 'disabled style="opacity:.4"' : ''}>${drive ? 'Save to Drive' : 'Download'}</button></div></div>`;
+}
+
+function sheetOffline() {
+  return `<div class="sheet"><div class="grab"></div><h3>Offline files</h3><div class="sub">Cache 148 MB of 500 MB</div>
+    <div class="optrow"><div>Sleep Song – Soprano<small>Kept offline · 9.1 MB</small></div></div>
+    <div class="optrow"><div>Hymn 4 – Bass<small>Cached · 6.4 MB</small></div></div>
+    <div class="sub" style="margin-top:6px">Recordings</div>
+    <div class="optrow"><div>Takes<small>3 takes on this device. Not part of the cache budget; only you delete them.</small></div><span class="r">12.2 MB</span></div>
+    <div class="optrow"><div>Originals kept for takes<small>Sleep Song – Soprano · used by 3 takes</small></div><span class="r">9.1 MB</span></div></div>`;
+}
+
+function sheetPunch() {
+  return `<div class="sheet"><div class="grab"></div><h3>Record between markers</h3><div class="sub">Arm a take so it starts and stops by itself. You can still stop it by hand.</div>
+    <div class="field"><small>Start at</small><div class="seg"><span>Verse 2</span><span class="on">Chorus</span><span>Bridge</span><span>Loop start</span></div></div>
+    <div class="field"><small>Stop at</small><div class="seg"><span>Chorus</span><span class="on">Bridge</span><span>End</span><span>Loop end</span></div></div>
+    <div class="acts"><button class="btn quiet" data-act="close-sheet">Cancel</button><button class="btn primary" data-act="arm">Arm</button></div></div>`;
+}
+
+function render(s, live) {
+  const sheet = s.sheet === 'takes' ? sheetTakes(s) : s.sheet === 'sync' ? sheetSync() : s.sheet === 'cal' ? sheetCal(s) : s.sheet === 'export' ? sheetExport(s) : s.sheet === 'offline' ? sheetOffline() : s.sheet === 'punch' ? sheetPunch() : s.rec === 'saving' ? sheetSave() : '';
+  const menu = s.tools ? tools(s) : '';
+  const scrim = (sheet || menu) ? `<div class="scrim" data-act="close-sheet"></div>` : '';
+  const mk = s.rec === 'recording' ? '' : '';
+  return `<div class="phone" data-live="${live ? 1 : 0}"><div class="screen">
+    <div class="hdr"><button class="ib" aria-label="Back">${I.back}</button><span class="sp">Now playing</span>
+      <button class="ib" aria-label="Takes" data-act="takes">${I.rec}</button>
+      <button class="ib" aria-label="Practice tools" aria-pressed="${s.tools || (s.rec !== 'off' && s.rec !== 'idle')}" data-act="tools">${I.tool}</button></div>
+    <div class="body"><div><div class="title">Sleep Song – Soprano</div><div class="subtitle">Verse 2 · Choir rehearsal</div></div>
+      ${wave(s)}${shapeChip(s)}
+      <div class="transport"><div class="ring"></div></div></div>
+    <div class="dock">${overlayPanel(s)}${strip(s)}<div class="mini">Sleep Song – Soprano · ${s.rec === 'recording' ? 'Recording' : 'Playing'}</div></div>
+    ${mk}</div>${scrim}${menu}${sheet}</div>`;
+}
+
+function mount(s) { $('#live').innerHTML = render(s, true); }
+const $ = (q) => document.querySelector(q);
+
+function apply(patch) { Object.assign(S, BASE, patch); mount(S); }
+function button(group, label, key) {
+  const b = document.createElement('button');
+  b.className = 'check'; b.textContent = label; b.setAttribute('aria-pressed', 'false');
+  b.onclick = () => { apply(PRESETS[key]); document.querySelectorAll('.check').forEach((c) => c.setAttribute('aria-pressed', c === b ? 'true' : 'false')); };
+  $(group).appendChild(b);
+}
+[['idle', 'Idle'], ['tools', 'Practice tools menu'], ['explain', 'First run'], ['blocked', 'Mic blocked'], ['recording', 'Recording'], ['recloop', 'Recording a loop'], ['stopped', 'Stopped (app hidden)'], ['short', 'Too short'], ['save', 'Save sheet']].forEach(([k, l]) => button('#g-rec', l, k));
+[['takes', 'Takes list'], ['overlay', 'Overlay'], ['overlayloop', 'Loop take overlay'], ['changed', 'Original changed']].forEach(([k, l]) => button('#g-take', l, k));
+[['sync', 'Sync sheet'], ['cal', 'Calibrate: intro'], ['calrun', 'Calibrate: running'], ['calfail', 'Calibrate: not heard']].forEach(([k, l]) => button('#g-sync', l, k));
+[['expchoose', 'Export'], ['expprog', 'Exporting'], ['expdone', 'Exported'], ['expfail', 'Export failed'], ['expnone', 'No mix available'], ['offline', 'Offline files']].forEach(([k, l]) => button('#g-exp', l, k));
+[['punch', 'Record between markers'], ['armed', 'Armed']].forEach(([k, l]) => button('#g-late', l, k));
+
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]');
+  if (!el || !el.closest('[data-live="1"]')) { return; }
+  const a = el.dataset.act;
+  const p = {};
+  if (a === 'tools') { S.tools = !S.tools; S.sheet = null; }
+  else if (a === 'close-sheet') { S.tools = false; S.sheet = null; if (S.rec === 'saving') { S.rec = 'off'; } }
+  else if (a === 'toggle-rec') { S.rec = S.rec === 'off' || S.rec === 'idle' ? 'explain' : 'off'; }
+  else if (a === 'continue') { S.rec = 'ready'; }
+  else if (a === 'close-rec') { S.rec = 'off'; }
+  else if (a === 'start') { S.rec = 'recording'; }
+  else if (a === 'stop') { S.rec = 'saving'; }
+  else if (a === 'save') { S.rec = 'saving'; }
+  else if (a === 'done-save' || a === 'discard') { S.rec = 'ready'; S.sheet = null; }
+  else if (a === 'takes') { S.sheet = 'takes'; S.tools = false; }
+  else if (a.startsWith('pick-')) { S.take = Number(a.slice(5)); }
+  else if (a.startsWith('exp-') && a !== 'exp-go' && a !== 'exp-cancel') { S.take = Number(a.slice(4)); S.sheet = 'export'; S.expStep = 'choose'; }
+  else if (a === 'deselect') { S.take = null; }
+  else if (a === 'n-10') { S.nudge = Math.max(-250, S.nudge - 10); }
+  else if (a === 'n-1') { S.nudge = Math.max(-250, S.nudge - 1); }
+  else if (a === 'n+1') { S.nudge = Math.min(250, S.nudge + 1); }
+  else if (a === 'n+10') { S.nudge = Math.min(250, S.nudge + 10); }
+  else if (a === 'n-reset') { S.nudge = 0; }
+  else if (a === 'n-device') { S.sheet = 'sync'; }
+  else if (a === 'sheet-sync') { S.sheet = 'sync'; }
+  else if (a === 'cal') { S.sheet = 'cal'; S.cal = 'intro'; }
+  else if (a === 'cal-run') { S.cal = 'running'; mount(S); setTimeout(() => { S.cal = 'ok'; mount(S); }, 1200); return; }
+  else if (a === 'cal-intro') { S.sheet = null; S.cal = 'intro'; }
+  else if (a === 'kind-rec') { S.expKind = 'rec'; if (S.expStep === 'nosource') { S.expStep = 'choose'; } }
+  else if (a === 'kind-mix') { S.expKind = 'mix'; }
+  else if (a === 'dest-drive') { S.expDest = 'drive'; }
+  else if (a === 'dest-dl') { S.expDest = 'dl'; }
+  else if (a === 'exp-go') { S.expStep = 'progress'; mount(S); setTimeout(() => { S.expStep = 'done'; mount(S); }, 1400); return; }
+  else if (a === 'exp-cancel') { S.sheet = null; S.expStep = 'choose'; }
+  else if (a === 'arm') { S.rec = 'armed'; S.sheet = null; }
+  else if (a === 'disarm') { S.rec = 'ready'; }
+  mount(S);
+  void p;
+});
+document.addEventListener('input', (e) => {
+  const el = e.target.closest('[data-act="balance"]');
+  if (el) { S.balance = Number(el.value); }
+});
+
+/* gallery */
+const G = [
+  ['tools', 'Practice tools menu', 'Recording is the third row (recording-mic availability gate).'],
+  ['explain', 'First take', 'Explains storage and headphones before the microphone is requested.'],
+  ['blocked', 'Microphone blocked', 'Reason in words, nothing recorded.'],
+  ['recording', 'Recording', 'Indicator, elapsed time, marker context, locked shaping.'],
+  ['recloop', 'Recording a loop', 'Loop take: passes counted, loop shown on the waveform.'],
+  ['stopped', 'Stopped safely', 'Reason shown; what was captured is kept.'],
+  ['short', 'Too short', 'Under one second is discarded with a note.'],
+  ['save', 'Save sheet', 'Name, size, and Keep the original with this take.'],
+  ['takes', 'Takes list', 'Spans as marker names, loop and changed tags, row menu.'],
+  ['overlay', 'Overlay', 'Take lane aligned under the track, balance, Sync, locked shaping.'],
+  ['overlayloop', 'Loop take overlay', 'Pass n over pass n; silent after the last pass.'],
+  ['changed', 'Original track changed', 'Take stays playable; overlay uses the kept copy.'],
+  ['sync', 'Sync sheet', '1 ms and 10 ms steps, ±250 ms, reset, Use for this device.'],
+  ['cal', 'Calibrate with clicks', 'Opt-in; offers adjusting by hand instead.'],
+  ['calfail', 'Clicks not heard', 'Says why and points to the manual control.'],
+  ['expchoose', 'Export', 'Recording or mix, Drive or download, folder and name.'],
+  ['expprog', 'Exporting', 'Progress with cancel; large files upload in chunks.'],
+  ['expdone', 'Exported', 'Shows the file name and where it went.'],
+  ['expfail', 'Export failed', 'Names the reason; take unchanged.'],
+  ['expnone', 'No mix available', 'Only without a kept original; recording still exports.'],
+  ['offline', 'Offline files', 'Takes and kept originals listed apart from the cache budget.'],
+  ['punch', 'Record between markers', 'Last slice: pick start and stop markers or loop ends.'],
+  ['armed', 'Armed', 'Waits for the start marker; Cancel always works.']
+];
+const gal = $('#gallery');
+G.forEach(([k, t, d]) => {
+  const cell = document.createElement('div'); cell.className = 'gcell';
+  cell.innerHTML = `<div class="gframe">${render(Object.assign({}, BASE, PRESETS[k]), false)}</div><div class="cap"><b>${t}</b><span>${d}</span></div>`;
+  gal.appendChild(cell);
+});
+function fit() {
+  document.querySelectorAll('.gframe').forEach((f) => { const ph = f.firstElementChild; ph.style.transform = `scale(${f.clientWidth / 380})`; });
+}
+addEventListener('resize', fit);
+apply(PRESETS.idle);
+fit();
+</script>
+</body>
+</html>
