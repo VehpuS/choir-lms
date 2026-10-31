@@ -238,7 +238,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent-text
       <li><b>Where they show:</b> a track lists its own recordings and, in a <b>Loops</b> section, its loops' recordings. A loop lists only its own. A recording on an adjusted copy shows under the copy and under its parent, labelled with the adjustment.</li>
       <li><b>Opening one</b> restores its context, locked: the loop, the adjusted copy, or the recorded segment only, with its speed and pitch applied (even if never saved). <b>Leave recording</b> restores what you had.</li>
       <li><b>Punch in / out:</b> <b>Record ▾ → Record between…</b> opens a sheet with the waveform. Drag the In and Out handles (they snap to markers), tap marker flags, or type times; set a pre-roll; <b>Arm</b>. Play from the pre-roll and it starts and stops itself.</li>
-      <li><b>Storage:</b> the raw recording is kept on the device and never purged; only you delete it. What is cached and purgeable is the <b>overlay segment</b> (the stretch of the original track a recording covers); keep a recording's overlay offline per recording or in bulk. <b>Auto-export</b> copies recordings to a Drive folder (set in Settings), as the recording, the mix, or both.</li>
+      <li><b>Storage:</b> the raw recording is kept on the device and never purged; only you delete it. There is no recordings cache: the overlay uses the track's existing caches, and <b>Keep track offline</b> on a recording makes the overlay work offline. <b>Auto-export</b> copies recordings to a Drive folder (set in Settings), as the recording, the mix, or both, over Wi-Fi by default where the browser can tell.</li>
       <li><b>Library:</b> a <b>Recordings</b> view to browse, search, filter, and act on all of them. Recordings can be queued and added to playlists.</li>
     </ul>
   </header>
@@ -298,14 +298,13 @@ const tagsOf = (r) => [
   r.copy ? `<span class="tag adj">${r.copy}</span>` : '',
   r.changed ? '<span class="tag chg">Original changed</span>' : '',
   r.drv === 'ok' ? '<span class="tag kept">On Drive</span>' : r.drv === 'pending' ? '<span class="tag auto" data-act="status">Upload pending</span>' : r.drv === 'failed' ? '<span class="tag gone" data-act="status">Upload failed</span>' : '',
-  r.ov === 'kept' ? '<span class="tag adj">Overlay offline</span>' : '',
   r.net ? '<span class="tag chg">Needs connection</span>' : ''
 ].join('');
 
 const BASE = {
   screen: 'play', tools: false, rec: 'off', sheet: null, ctx: null, loopTrack: false, view: 'track', panelFrom: 'track',
   balance: 50, nudge: 12, expKind: 'mix', expDest: 'drive', expStep: 'choose', cal: 'intro', stop: 'hidden',
-  autoExp: true, expWhat: 'both', pin: 550, pout: 800, pre: 3, after: true, lib: { q: '', f: 'all', sel: [], mode: false }, menuRec: 1, plSheet: false,
+  autoExp: true, expWhat: 'both', wifi: 'wifi', pin: 550, pout: 800, pre: 3, after: true, lib: { q: '', f: 'all', sel: [], mode: false }, menuRec: 1, plSheet: false,
   prompt: 'one', remember: false, setPolicy: 'ask', choose: [true, true, false]
 };
 const S = Object.assign({}, BASE, { lib: { q: '', f: 'all', sel: [], mode: false } });
@@ -445,7 +444,7 @@ function libScreen(s) {
   const F = [['all', 'All'], ['whole', 'Whole track'], ['segment', 'Segment'], ['loop', 'Loop'], ['adjusted', 'Adjusted'], ['drive', 'On Drive'], ['nodrive', 'Not on Drive']];
   const chips = F.map(([k, l]) => `<span class="chip ${s.lib.f === k ? 'on' : ''}" data-act="f-${k}">${l}</span>`).join('');
   const list = rows.length ? rows.map((r) => recRow(r, true, s.lib.mode ? s.lib.sel.includes(r.id) : null)).join('') : '<div class="note">No recordings match.</div>';
-  const bar = s.lib.mode ? `<div class="selbar"><div class="cnt">${s.lib.sel.length} selected</div><div class="row"><button class="btn quiet" data-act="b-next">Play next</button><button class="btn quiet" data-act="b-queue">Add to queue</button><button class="btn quiet" data-act="b-pl">Add to playlist</button><button class="btn quiet" data-act="b-keep">Keep overlay offline</button><button class="btn quiet" data-act="b-exp">Export</button><button class="btn danger" data-act="b-del">Delete</button></div></div>` : `<div class="mini"><div class="art">${I.rec}</div><div><b>Sleep Song – Soprano</b>Playing</div><div class="pp"></div></div>`;
+  const bar = s.lib.mode ? `<div class="selbar"><div class="cnt">${s.lib.sel.length} selected</div><div class="row"><button class="btn quiet" data-act="b-next">Play next</button><button class="btn quiet" data-act="b-queue">Add to queue</button><button class="btn quiet" data-act="b-pl">Add to playlist</button><button class="btn quiet" data-act="b-keep">Keep track offline</button><button class="btn quiet" data-act="b-exp">Export</button><button class="btn danger" data-act="b-del">Delete</button></div></div>` : `<div class="mini"><div class="art">${I.rec}</div><div><b>Sleep Song – Soprano</b>Playing</div><div class="pp"></div></div>`;
   return `<div class="screen"><div class="lib"><div class="top"><h3>Library</h3><button class="ib" data-act="sel-mode" aria-pressed="${s.lib.mode}" aria-label="Select">${I.list}</button></div>
     <div class="seg"><span data-act="seg-t">Tracks</span><span data-act="seg-p">Playlists</span><span class="on">Recordings</span></div>
     <div class="input">${I.search}<input data-act="q" placeholder="Search recordings, tracks, loops, markers" value="${s.lib.q.replace(/"/g, '&quot;')}"><button class="ib" style="width:30px;height:30px;border:0" data-act="filter" aria-label="Filters and sort">${I.filter}</button></div>
@@ -472,11 +471,12 @@ function playlistScreen(s) {
 function settingsScreen(s) {
   const seg = (v, l) => `<span class="${s.expWhat === v ? 'on' : ''}" data-act="what-${v}">${l}</span>`;
   const auto = s.autoExp ? `<div class="setrow"><div>Folder<small>Created in My Drive if missing</small></div><span class="r">Choir Recordings ›</span></div>
+    <div class="cap2">Upload over</div><div class="seg"><span class="${s.wifi === 'wifi' ? 'on' : ''}" data-act="wifi-wifi">Wi-Fi only</span><span class="${s.wifi === 'any' ? 'on' : ''}" data-act="wifi-any">Any connection</span></div>
+    <div class="hint">${s.wifi === 'wifi' ? 'This browser cannot tell Wi-Fi from mobile data, so uploads run on any connection. Browsers that can tell will wait for Wi-Fi.' : 'Uploads run whenever there is a connection.'}</div>
     <div class="cap2">Export</div><div class="seg">${seg('rec', 'Recording only')}${seg('mix', 'Mix')}${seg('both', 'Both')}</div>
     <div class="setrow"><div>Back up existing recordings<small>3 recordings are not on Drive yet</small></div><button class="btn" data-act="close-sheet">Back up</button></div>` : '';
   return `<div class="screen"><div class="lib"><div class="top"><button class="ib">${I.back}</button><h3 style="font-size:20px">Settings · Recordings</h3></div>
     <div class="setrow"><div>Storage used<small>Recordings are never removed automatically</small></div><span class="r">61 MB</span></div>
-    <div class="setrow"><div>Overlay cache size<small>Track segments kept for fast and offline overlay. Purged first when full.</small></div><span class="r">100 MB</span></div>
     <div class="setrow"><div>Auto-export to Drive<small>${s.autoExp ? 'Uploads each new recording in the background' : 'Off. Copy new recordings to Drive automatically.'}</small></div><span class="sw ${s.autoExp ? 'on' : ''}" data-act="autoexp" style="margin-left:auto"></span></div>
     ${auto}</div></div>`;
 }
@@ -486,9 +486,6 @@ function offlineScreen() {
     <div class="group">Tracks<b>3</b></div>
     <div class="optrow"><div>Sleep Song – Soprano<small>Kept offline</small></div><span class="r">9.1 MB</span></div>
     <div class="optrow"><div>Hymn 4 – Bass<small>Cached</small></div><span class="r">6.4 MB</span></div>
-    <div class="group">Recording overlay audio<b>11 MB of 100 MB</b></div>
-    <div class="optrow"><div>Chorus loop · Recording 2<small>Automatic · purged first</small></div><span class="r">3.1 MB</span></div>
-    <div class="optrow"><div>Verse 2 → Chorus · Recording 1<small>Kept offline</small></div><span class="r">2.7 MB</span></div>
     <div class="group">Recordings<b>61 MB · never removed automatically</b></div>
     ${RECS.slice(0, 3).map((r) => `<div class="optrow"><div>${r.name} · ${TRACKS[r.track].split(' –')[0]}<small>${r.span} · delete only</small></div><span class="r">${r.size}</span></div>`).join('')}</div></div>`;
 }
@@ -509,7 +506,7 @@ function recMenu() {
 }
 function sheetSave(s) {
   const auto = s.autoExp
-    ? `<div class="optrow"><div>Auto-export is on<small>Uploading ${s.expWhat === 'rec' ? 'the recording' : s.expWhat === 'mix' ? 'the mix' : 'the recording and the mix'} to Choir Recordings…</small></div><span class="r">62%</span></div>`
+    ? `<div class="optrow"><div>Auto-export is on<small>Uploading ${s.expWhat === 'rec' ? 'the recording' : s.expWhat === 'mix' ? 'the mix' : 'the recording and the mix'} to Choir Recordings (Wi-Fi only)…</small></div><span class="r">62%</span></div>`
     : `<div class="optrow"><div>Auto-export is off<small>Copy new recordings to Drive automatically.</small></div><button class="btn" style="margin-left:auto" data-act="to-settings">Turn on…</button></div>`;
   return `<div class="sheet"><div class="grab"></div><h3>Recording saved</h3><div class="sub">0:42 · 3.6 MB · Verse 2 → Chorus · recorded against 0.7× +2</div>
     <div class="field"><small>Name</small><div class="input">Recording 6</div></div>
@@ -586,7 +583,7 @@ function sheetPunch(s) {
 function sheetRowMenu(s) {
   const r = rec(s.menuRec);
   return `<div class="sheet"><div class="grab"></div><h3>${r.name}</h3><div class="sub">${TRACKS[r.track]} · ${r.span}</div>
-    ${[['Play', I.rec], ['Play next', I.list], ['Add to queue', I.list], ['Add to playlist…', I.list], [r.ov === 'kept' ? 'Remove overlay from offline' : r.ov === 'track' ? 'Overlay uses the track' : 'Keep overlay offline', I.pin], ['Export…', I.drive], ['Rename', I.dots]].map(([l, ic]) => `<button class="mrow" data-act="close-sheet">${ic}<span>${l}</span></button>`).join('')}
+    ${[['Play', I.rec], ['Play next', I.list], ['Add to queue', I.list], ['Add to playlist…', I.list], [r.ov === 'kept' ? 'Remove track from offline' : 'Keep track offline (whole track)', I.pin], ['Export…', I.drive], ['Rename', I.dots]].map(([l, ic]) => `<button class="mrow" data-act="close-sheet">${ic}<span>${l}</span></button>`).join('')}
     <button class="mrow danger" data-act="close-sheet">${I.close}<span>Delete…</span></button></div>`;
 }
 function sheetFilter() {
@@ -679,6 +676,7 @@ document.addEventListener('click', (e) => {
   else if (a === 'autoexp') { S.autoExp = !S.autoExp; }
   else if (a === 'to-settings') { S.rec = 'ready'; S.sheet = null; S.screen = 'settings'; }
   else if (a.startsWith('what-')) { S.expWhat = a.slice(5); }
+  else if (a.startsWith('wifi-')) { S.wifi = a.slice(5); }
   else if (a === 'status') { S.sheet = 'status'; }
   else if (a === 'done-save' || a === 'discard') { S.rec = 'ready'; S.sheet = null; }
   else if (a === 'panel') { S.sheet = 'panel'; S.tools = false; }
@@ -786,10 +784,10 @@ const G = [
   ['pl', 'Playlist', 'Recordings sit with tracks and loops; removed ones are skipped.'],
   ['plq', 'Queue', 'Play next and Add to queue work for recordings.'],
   ['Storage, settings, auto-export', null],
-  ['settings', 'Settings · Recordings', 'Storage used, overlay cache size, auto-export, folder, and what to export.'],
+  ['settings', 'Settings · Recordings', 'Storage used, auto-export, folder, what to export, and Wi-Fi only.'],
   ['settingsoff', 'Auto-export off', 'The default; one switch to turn on.'],
   ['status', 'Drive status', 'Per export: On Drive, or failed with the reason and Retry.'],
-  ['offline', 'Offline files', 'Overlay segments (purgeable) apart from recordings (delete only).'],
+  ['offline', 'Offline files', 'Tracks as before; recordings in their own group, delete only.'],
   ['Export', null],
   ['expchoose', 'Export', 'Recording only or mix; Drive or download; name and folder.'],
   ['expprog', 'Exporting', 'Progress and cancel.'],

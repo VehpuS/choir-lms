@@ -128,7 +128,7 @@ The system SHALL keep the pitch detection pipeline free of any audio persistence
 - **THEN** one microphone stream serves both and only the recording's audio is stored
 
 ### Requirement: A recording stores the metadata needed to rebuild its overlay and mix
-The system SHALL store with each recording the original track audio it was recorded against (Drive file id, name, content version, duration), its owner chain (the parent track, the saved adjusted copy with its adjustment values, and the loop with its range), its shaping, the markers within its span, the punch range if any, and its timeline. The system SHALL describe the recording from this metadata rather than from the live library, and SHALL NOT keep a copy of the original track audio.
+The system SHALL store with each recording the original track audio it was recorded against (Drive file id, name, content version, duration), its owner chain (the parent track, the saved adjusted copy with its adjustment values, and the loop with its range), its shaping, its balance, an engine version tag, the markers within its span, the punch range if any, and its timeline, so that a mix can be rebuilt from this metadata, the bare recording, and the original track audio alone. The system SHALL describe the recording from this metadata rather than from the live library, and SHALL NOT keep a copy of the original track audio.
 
 #### Scenario: Track renamed
 - **WHEN** the track is renamed after the recording was made

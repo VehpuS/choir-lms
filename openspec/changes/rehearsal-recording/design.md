@@ -91,11 +91,13 @@ A recording is a record owned by the track or loop it was made on (Decision 10),
 - `source`: the Drive file id, file name, content version (`modifiedTime`, the value the audio cache already keys on), and duration of the track audio it was recorded against.
 - `lineage`: the owner chain at recording time: the parent track (file id, name), the saved adjusted copy if any (id, name, and its adjustment values: speed, pitch), and the loop if any (id, name, start and end). The adjustment values are stored even when the adjusted copy is later deleted, and for session adjustments that were never saved the values are in `shaping`.
 - `shaping`: `{ rate, pitchSemitones }`, read once at the start and constant for the recording.
+- `balance`: the balance last set for the recording (0 to 100, default 50), the default for exports and playlist playback.
+- `engineVersion`: a version tag for the shaping and mixing code that produced and renders the recording, so a render can say when its algorithms differ from the ones in use.
 - `markers`: the markers inside the recording's span (name and position) as they were.
 - `punch`: the armed in and out points and the pre-roll, when the recording was started from a punch range.
 - `timeline`: a list of segments, one per uninterrupted stretch of playback while recording: `{ recordingStartMs, recordingEndMs, trackStartMs, held }`, where a paused track is a segment with `held` set (the position holds) and a seek or loop wrap starts a new segment at the new position; the track position advances by `shaping.rate` per unit of recording time in every other segment. Looking up a track position returns every recording time that was sung against it, which is one for a plain recording and one per pass for a loop recording. Latency compensation is already applied inside the segment boundaries (Decision 3).
 
-Lists, spans, and exports read this record rather than the live library, so a renamed track, moved markers, or a deleted loop do not change a recording's description. The audio the overlay and the mix need is resolved from `source` when wanted (Decision 13).
+**The mix is replicable from this record.** A mix is a pure function of three things: this metadata, the bare recording's audio, and the original track audio at `source.contentVersion`. The record holds every other input the render needs (the timeline, the stored shaping, the compensation and nudge, the balance, the punch range, the output layout derived from the original), and the render has no other state: no live session, no cache, no clock. The same inputs on the same `engineVersion` give the same mix, which a golden-signal test checks. Lists, spans, and exports read this record rather than the live library, so a renamed track, moved markers, or a deleted loop do not change a recording's description. The audio the overlay and the mix need is resolved from `source` when wanted (Decision 13).
 
 ### Decision 10: Ownership, loops, and adjusted tracks decide where a recording shows
 
@@ -131,27 +133,25 @@ Each export goes either to the device or to Drive. `Download` saves the file thr
 
 Alternatives: mix from the current live shaping state; rejected because the mix would not match what was sung against. Capture the mixed output live while recording; rejected because it would fix the balance at record time and miss seeks the user makes later.
 
-### Decision 13: The original audio is found from metadata, and its overlay segment is a purgeable cache
+### Decision 13: The original audio is found from metadata; recordings add no cache of their own
 
-A recording does not store, pin, or own any copy of the track's audio. The overlay and the mix ask the normal track audio path for `source.driveFileId`, which serves it from the recent playback cache, the offline store, or Drive, whichever has it. A track the user has kept offline is already there. Consequences:
+A recording does not store, pin, or own any copy of the track's audio, and the recording feature adds no audio cache. The overlay and the mix ask the normal track audio path for `source.driveFileId`, which serves it from the recent playback cache, the offline store, or Drive, whichever has it. Consequences:
 
-- Overlay and mix are rebuildable from metadata alone, as long as the original can be fetched.
+- Overlay and mix are rebuildable from metadata alone, as long as the original and the bare recording are available (Decision 9).
 - If the file's content version differs from `source.contentVersion`, the overlay plays against the current file and says `Original track changed`: alignment may be off, and the sync control can compensate. The mix export warns the same way and goes ahead only if the user confirms.
 - If the original cannot be fetched (deleted, or offline and not stored), the recording plays alone, and the overlay says why; the recording alone can still be exported.
 
-**The overlay segment cache** is what is cached and purged for fast and offline overlay. The first time a recording's overlay plays, the stretch of the original that the recording covers (its recorded range, decoded to WAV at natural speed; shaping is applied live as usual) is stored in a separate, purgeable cache, keyed by file id, content version, and range. A short loop or segment becomes a few megabytes and starts instantly; a whole-track recording would be larger than the compressed original, so it uses the track path (Decision 13's first paragraph) and is not segment-cached. The cache has its own size setting (default 100 MB, beside the cache sizes in Settings) and removes the least recently played segment first. A purged segment is rebuilt from the original on the next play.
+**Why no overlay cache.** The track plays through the existing player, which loads the whole file once (on web it is fetched with auth headers into a blob URL) and already has a purgeable recent-playback cache and a `Keep offline` store. The Web Audio voice plays only the recording. A separate cache of the decoded stretch of the original would help only if the track were played from it, and that needs a second transport next to the existing player and a decode of audio the player already holds. The mix export decodes the track once per render. So the existing track caches are the performance layer: a track that was just played is still cached, and a track kept offline is always there. Spike 1.3 measures the time to the first overlay sound with the track cached and with it evicted; a cache is revisited only if that is too slow.
 
-**Keeping a recording's overlay offline** pins its segment (or, for a whole-track recording, nothing extra is needed beyond keeping the track offline, and the row says so): it is exempt from purging and works without a connection or Drive. It is a per-recording action in the row menu and in bulk, and removing it returns the segment to the purgeable cache. Keeping a track offline already makes every recording of it overlay-capable offline, so keeping a track never prompts about recordings, and keeping a recording's overlay offline does not keep its track. Lists flag `Needs connection for overlay` when neither the segment nor the track is stored.
+**Offline overlay** therefore means the track is stored. A recording's row menu offers `Keep track offline` and `Remove track from offline`, which call the existing track actions (and say they apply to the whole track and all its recordings), and bulk selections do the same for the tracks involved. Keeping a track offline never asks about its recordings, because recordings are always on the device (Decision 4). Lists flag `Needs connection for overlay` when the track is neither cached nor kept.
 
-Alternatives: pin a copy of the original with each recording (an earlier draft, as an option); rejected as a second copy and an option the user would have to understand. Cache a rendered composite of the recording over the track at the saved balance; rejected because the balance and sync change live, so only the original's segment is stable (an open question below).
-
+Alternatives: pin a copy of the original with each recording (an earlier draft, as an option); rejected as a second copy and an option the user would have to understand. A purgeable cache of the original's covered segment, or of a rendered composite at the saved balance; rejected for the reasons above, and because the balance and sync are live.
 ### Decision 14: Storage settings and the offline files view
 
-Settings gains a `Recordings` group beside the offline settings: the `Overlay cache size` (default 100 MB), the total used by recordings (read-only, with the line `Recordings are never removed automatically`), and the auto-export settings (Decision 19). The offline files view lists the overlay segments in their own group with their state (`Automatic`, `Kept offline`) and sizes, and lists recordings in a separate group with their sizes and a `Delete` action only; recordings are never listed as cache.
-
+Settings gains a `Recordings` group beside the offline settings: the total used by recordings (read-only, with the line `Recordings are never removed automatically`) and the auto-export settings (Decision 19). The offline files view lists recordings in their own group with their sizes and a `Delete` action only; recordings are never listed as cache, and there is no recordings cache size.
 ### Decision 15: A Library Recordings view
 
-The Library gains a `Recordings` view beside the tracks and playlists views, listing every recording on the device with: a search field (recording name, track title, loop name, marker names in its span), filters (`Whole track`, `Segment`, `Loop`, `Adjusted`, `On Drive`, `Not on Drive`, `Original changed`, `Needs connection for overlay`, and a track picker), a sort (newest, track, length, name), and rows showing the name, the track and span, the tags (loop, adjusted, Drive export status, overlay offline), length, and size. Selecting rows enters the shared multi-selection with the bulk actions that apply: `Play`, `Play next`, `Add to queue`, `Add to playlist`, `Keep overlay offline` or `Remove from offline`, `Export`, and `Delete`. Opening a row opens its context (Decision 11). Recordings are still not library files: the view is a projection of the recordings store, and the Files tree and track search never list them.
+The Library gains a `Recordings` view beside the tracks and playlists views, listing every recording on the device with: a search field (recording name, track title, loop name, marker names in its span), filters (`Whole track`, `Segment`, `Loop`, `Adjusted`, `On Drive`, `Not on Drive`, `Original changed`, `Needs connection for overlay`, and a track picker), a sort (newest, track, length, name), and rows showing the name, the track and span, the tags (loop, adjusted, Drive export status, needs a connection for overlay), length, and size. Selecting rows enters the shared multi-selection with the bulk actions that apply: `Play`, `Play next`, `Add to queue`, `Add to playlist`, `Keep track offline` or `Remove track from offline`, `Export`, and `Delete`. Opening a row opens its context (Decision 11). Recordings are still not library files: the view is a projection of the recordings store, and the Files tree and track search never list them.
 
 ### Decision 16: Recordings in playlists and the queue
 
@@ -182,6 +182,7 @@ A setting, `Auto-export recordings to Drive` (off by default), copies each new r
 - **What is exported:** the same files as manual export (Decision 12), named from the metadata, with the mix at the default balance and the compensation and nudge the recording had when saved. A later nudge or balance change does not re-export; the user can export again by hand.
 - **Status and idempotence:** each recording stores its exports (kind, file id, folder, time) and shows `On Drive`, `Upload pending`, or `Upload failed` with a `Retry`. An export is never repeated for the same kind, and renaming a recording does not rename the Drive file.
 - **Deleting:** deleting a recording never deletes its Drive copies.
+- **Connection (Wi-Fi):** an `Upload over` setting, `Wi-Fi only` (the default) or `Any connection`. Browsers expose the connection type only partly: the Network Information API reports `wifi`, `ethernet`, or `cellular` in Chrome on Android, and Safari and Firefox do not implement it, with desktop usually unknown. So uploads wait only when the browser reports a cellular connection; when it reports Wi-Fi or ethernet they run, and when it cannot tell they run on any connection. The setting row and the first-time explanation say this in words (`This browser cannot tell Wi-Fi from mobile data, so uploads run on any connection`), so the default is honest rather than a silent no-op. The native build can use real network information later.
 - **Settings change:** changing the folder or the kind applies to new recordings; a `Back up existing recordings` action exports the ones that are not yet on Drive.
 
 Alternatives: auto-export only after wifi; deferred (a setting later). Export on a schedule; rejected as slower feedback for a one-off action. Make Drive the home of the recording; rejected: the device copy stays the source of truth and export is a copy.
@@ -190,7 +191,9 @@ Alternatives: auto-export only after wifi; deferred (a setting later). Export on
 
 - [The device store fills up or the browser clears site data] → Persistent storage requested, the used total shown, failed writes reported without losing what was captured, export and auto-export as the way to keep a copy elsewhere.
 - [Auto-export to Drive fails or the mix cannot be rendered in the background] → A queue with retry and visible status; the recording alone is exported first; a failed mix does not block it.
-- [The overlay segment cache is purged and the original is gone] → The recording still plays alone and exports; the mix needs the original.
+- [The overlay starts slowly when the track is not cached] → Spike 1.3 measures it; the track's existing caches are the performance layer, and a cache is added only if the measurement requires it.
+- [Wi-Fi-only cannot be enforced in most browsers] → Best-effort with an honest explanation; any connection when unknown.
+- [A mix drifts from what was exported earlier] → The mix is a pure function of metadata, recording, and original at a content version, with an engine version tag and a golden-signal test.
 - [Mix render is slow or memory-heavy for long recordings] → Chunked render with Int16 encoding, progress and cancel; spike 1.4 measures a ten-minute mix with a shaped track.
 - [Offline SoundTouch output differs from the live graph] → Spike 1.4 compares a render with a live capture; accept small differences, document them.
 - [Large uploads fail partway] → Resumable upload with retry from the last chunk.
@@ -212,8 +215,6 @@ New database and new package; nothing existing is migrated. The `PcmSource` chan
 
 ## Open Questions
 
-- Should auto-export wait for wifi, or is a plain online check enough?
-- Should the overlay cache also store a rendered composite of the recording over the track (faster start, but the balance and sync are live), or only the original's segment?
 - Is a 10-minute cap right for a full rehearsal piece, or should it be larger once memory is measured?
 - Does Safari honour `getOutputTimestamp` and `outputLatency` well enough, or does it need the manual path as its default?
 - Should a playlist recording play over its track at the saved balance only, or may a playlist entry choose recording-only?

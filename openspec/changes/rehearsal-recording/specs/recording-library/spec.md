@@ -56,7 +56,7 @@ The system SHALL list a recording made on a saved adjusted track under the adjus
 - **THEN** its recordings remain listed under the parent track with their stored adjustment label
 
 ### Requirement: The Library has a Recordings view with search, filters, sorting, and bulk actions
-The system SHALL provide a Recordings view in the Library listing every recording on the device. It SHALL offer search by recording name, track title, loop name, and marker names in the span; filters for whole track, segment, loop, adjusted, on Drive, not on Drive, original changed, needs a connection for overlay, and a track; and sorting by newest, track, length, and name. Each row SHALL show the name, the track and span, tags, length, size, the Drive export status, and whether the overlay is kept offline. Selecting rows SHALL use the shared multi-selection with the bulk actions `Play next`, `Add to queue`, `Add to playlist`, `Keep overlay offline` or `Remove from offline`, `Export`, and `Delete`.
+The system SHALL provide a Recordings view in the Library listing every recording on the device. It SHALL offer search by recording name, track title, loop name, and marker names in the span; filters for whole track, segment, loop, adjusted, on Drive, not on Drive, original changed, needs a connection for overlay, and a track; and sorting by newest, track, length, and name. Each row SHALL show the name, the track and span, tags, length, size, the Drive export status, and whether the overlay needs a connection. Selecting rows SHALL use the shared multi-selection with the bulk actions `Play next`, `Add to queue`, `Add to playlist`, `Keep track offline` or `Remove track from offline`, `Export`, and `Delete`.
 
 #### Scenario: Search by marker name
 - **WHEN** the user searches for "Chorus"
@@ -70,9 +70,9 @@ The system SHALL provide a Recordings view in the Library listing every recordin
 - **WHEN** the user chooses `Not on Drive`
 - **THEN** only recordings with no export to Drive are listed
 
-#### Scenario: Bulk keep overlay offline
-- **WHEN** the user selects three recordings and chooses `Keep overlay offline`
-- **THEN** their overlay segments are kept and each row shows it
+#### Scenario: Bulk keep tracks offline
+- **WHEN** the user selects three recordings and chooses `Keep track offline`
+- **THEN** their tracks are kept offline and the rows no longer need a connection for overlay
 
 #### Scenario: Open a recording
 - **WHEN** the user opens a row

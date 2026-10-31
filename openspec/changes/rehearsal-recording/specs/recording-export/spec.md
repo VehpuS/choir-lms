@@ -110,3 +110,41 @@ The system SHALL show for each recording whether it is on Drive, pending, or fai
 #### Scenario: Back up existing
 - **WHEN** the user chooses `Back up existing recordings`
 - **THEN** recordings with missing exports are queued under the current settings
+
+### Requirement: Auto-export uploads over Wi-Fi by default, where the browser can tell
+The system SHALL offer an `Upload over` setting for auto-export with `Wi-Fi only` as the default and `Any connection`, SHALL hold uploads while the browser reports a cellular connection under `Wi-Fi only`, and SHALL tell the user in the setting and when turning auto-export on that browsers which cannot report the connection type upload on any connection.
+
+#### Scenario: Default
+- **WHEN** the user turns on auto-export
+- **THEN** `Wi-Fi only` is selected and the explanation is shown
+
+#### Scenario: Cellular reported
+- **WHEN** the browser reports a cellular connection and the setting is `Wi-Fi only`
+- **THEN** uploads wait as pending until a Wi-Fi or ethernet connection is reported or the setting changes
+
+#### Scenario: Type unknown
+- **WHEN** the browser cannot report the connection type
+- **THEN** uploads run on any connection and the setting row says that this browser cannot tell Wi-Fi from mobile data
+
+#### Scenario: Any connection
+- **WHEN** the setting is `Any connection`
+- **THEN** uploads run whenever there is a connection
+
+### Requirement: A mix is replicable from the recording's metadata
+The system SHALL build a mix only from the recording's stored metadata, the bare recording's audio, and the original track audio at the stored content version, with no dependence on a live session, a cache, or the current time, so that the same inputs on the same engine version give the same mix.
+
+#### Scenario: Rebuilt after a cache clear
+- **WHEN** the caches are cleared and the original is fetched again from Drive
+- **THEN** exporting the mix gives the same result as before
+
+#### Scenario: Rebuilt on another day
+- **WHEN** a mix is exported twice with the same nudge, balance, and original
+- **THEN** both files contain the same audio
+
+#### Scenario: Uses the stored settings
+- **WHEN** the recording was made against 0.7× and +2 with a punch range
+- **THEN** the mix uses that speed, that pitch, and that range regardless of what the session is set to now
+
+#### Scenario: Engine version differs
+- **WHEN** the engine version of the recording differs from the one in use
+- **THEN** the export dialog notes that the render may differ slightly from the original

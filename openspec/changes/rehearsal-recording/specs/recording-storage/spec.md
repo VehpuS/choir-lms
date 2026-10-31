@@ -31,7 +31,7 @@ The system SHALL show the total space recordings use in Settings and the offline
 - **THEN** the system says so, does not report success, and offers `Export` of the captured audio before it is lost
 
 ### Requirement: Deleting a recording is explicit and removes everything it owns
-The system SHALL delete a recording only when the user confirms, and SHALL remove its audio, metadata, overlay segment, and playlist references together, showing playlist entries as removed. Deleting a recording SHALL NOT delete copies of it already exported to Drive.
+The system SHALL delete a recording only when the user confirms, and SHALL remove its audio, metadata, and playlist references together, showing playlist entries as removed. Deleting a recording SHALL NOT delete copies of it already exported to Drive.
 
 #### Scenario: Delete
 - **WHEN** the user confirms deleting a recording
@@ -45,59 +45,40 @@ The system SHALL delete a recording only when the user confirms, and SHALL remov
 - **WHEN** a recording that was exported to Drive is deleted
 - **THEN** the files on Drive are untouched
 
-### Requirement: The overlay segment cache is purgeable and rebuilt on demand
-The system SHALL cache, for fast and offline overlay playback, the stretch of the original track that a recording covers as an overlay segment, in a store separate from recordings and from track audio, held within an overlay cache size and removed least recently played first. A purged segment SHALL be rebuilt from the original on the next play. A whole-track recording SHALL use the normal track audio path instead of a segment.
+### Requirement: A recording's overlay depends on its track being available, and the track can be kept offline from the recording
+The system SHALL play a recording's overlay from the normal track audio (playback cache, offline store, or Drive), SHALL NOT keep a copy of the track for the recording, and SHALL offer `Keep track offline` and `Remove track from offline` on a recording's row menu and for a selection, applying the existing track actions and saying they apply to the whole track and all its recordings. Keeping a track offline SHALL NOT ask about its recordings.
 
-#### Scenario: First overlay play
-- **WHEN** the overlay of a loop recording plays for the first time
-- **THEN** the loop's stretch of the original is stored as an overlay segment
-
-#### Scenario: Budget exceeded
-- **WHEN** overlay segments exceed the overlay cache size
-- **THEN** the least recently played segment is removed first, and no recording is removed
-
-#### Scenario: Purged segment
-- **WHEN** a recording's overlay segment was purged and the original is available
-- **THEN** the overlay plays after the segment is rebuilt from the original
-
-#### Scenario: Whole-track recording
-- **WHEN** a whole-track recording's overlay plays
-- **THEN** it uses the track audio path and no segment is stored
-
-### Requirement: A recording's overlay can be kept offline individually and in bulk
-The system SHALL let the user keep a recording's overlay offline, or remove it from the offline store, one at a time from its row menu and the Library view and in bulk from a selection. A kept overlay segment SHALL be exempt from purging and SHALL play without a connection or Drive session. Removing it from the offline store SHALL return it to the purgeable cache and SHALL NOT delete the recording. Keeping a track offline SHALL NOT ask about its recordings, and SHALL make every recording of it overlay-capable offline.
-
-#### Scenario: Keep one
-- **WHEN** the user chooses `Keep overlay offline` on a loop recording
-- **THEN** its segment is stored, shown as kept, and exempt from purging
+#### Scenario: Keep the track offline from a recording
+- **WHEN** the user chooses `Keep track offline` on a recording
+- **THEN** its track is kept offline as if kept from the library, the row says it applies to the whole track, and the overlay works without a connection
 
 #### Scenario: Offline overlay
-- **WHEN** the device is offline and a recording's overlay was kept
+- **WHEN** the device is offline and the recording's track is stored
 - **THEN** the overlay plays without a connection
 
-#### Scenario: Not kept and offline
-- **WHEN** the device is offline and neither the segment nor the track is stored
+#### Scenario: Track not stored
+- **WHEN** the device is offline and the recording's track is neither cached nor kept
 - **THEN** the recording plays alone and a message says the overlay needs a connection
 
+#### Scenario: Bulk
+- **WHEN** the user selects three recordings of two tracks and chooses `Keep track offline`
+- **THEN** the two tracks are kept offline
+
 #### Scenario: Remove from offline
-- **WHEN** the user chooses `Remove from offline`
-- **THEN** the segment returns to the purgeable cache and the recording remains
+- **WHEN** the user chooses `Remove track from offline` on a recording
+- **THEN** the track returns to the cache as it would from the library and the recordings remain
 
 #### Scenario: Keeping a track offline
-- **WHEN** the user keeps a track with recordings offline
-- **THEN** no question about recordings is asked, and its recordings can overlay offline
-
-#### Scenario: Whole-track recording
-- **WHEN** the user opens the menu of a whole-track recording
-- **THEN** it says the overlay uses the track and offers to keep the track offline instead
+- **WHEN** the user keeps a track with recordings offline from the library
+- **THEN** no question about recordings is asked
 
 ### Requirement: The offline files view and Settings show recordings storage separately
-The system SHALL list overlay segments in their own group in the offline files view with their state and size, SHALL list recordings in a separate group with their sizes and only a delete action, and SHALL provide the overlay cache size on the settings page that holds the offline cache size, with a default of 100 MB.
+The system SHALL list recordings in their own group in the offline files view with their sizes and only a delete action, never as cache, and SHALL show the total used by recordings in Settings with the line that recordings are never removed automatically. There SHALL be no size limit or cache setting for recordings.
 
-#### Scenario: Groups
+#### Scenario: Recordings group
 - **WHEN** the user opens the offline files view
-- **THEN** overlay segments show `Automatic` or `Kept offline`, recordings show their sizes, and recordings are not listed as cache
+- **THEN** recordings appear in their own group with their sizes and a delete action, apart from track audio
 
-#### Scenario: Change the size
-- **WHEN** the user sets the overlay cache size to 50 MB
-- **THEN** automatic segments beyond it are removed least recently played first and recordings are untouched
+#### Scenario: No size setting
+- **WHEN** the user opens the recordings settings
+- **THEN** the total used is shown and no cache size is offered for recordings
