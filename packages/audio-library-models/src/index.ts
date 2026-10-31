@@ -22,3 +22,6 @@ export * from './lib/marker-sections.ts';
 export * from './lib/track-marker-list.ts';
 export * from './lib/track-markers.ts';
 export * from './lib/waveform-peaks.ts';
+export * from './lib/recording.ts';
+export * from './lib/recording-timeline.ts';
+export * from './lib/recording-visibility.ts';
