@@ -1,6 +1,7 @@
 import type { VisibilitySource } from './app-visibility';
 import {
   PcmSourceError,
+  type PcmBlock,
   type PcmFrame,
   type PcmPermission,
   type PcmSource,
@@ -51,6 +52,7 @@ export type FakePcmSource = PcmSource & {
   /** Makes the next `subscribe` wait until `release` is called. */
   holdNext: () => () => void;
   emit: (frame: PcmFrame) => void;
+  emitBlock: (block: PcmBlock) => void;
   interrupt: () => void;
   recover: () => void;
   end: () => void;
@@ -114,7 +116,8 @@ export const createFakePcmSource = (
 
       return release;
     },
-    emit: (frame) => [...subscribers].forEach((s) => s.onFrame(frame)),
+    emit: (frame) => [...subscribers].forEach((s) => s.onFrame?.(frame)),
+    emitBlock: (block) => [...subscribers].forEach((s) => s.onBlock?.(block)),
     interrupt: () => [...subscribers].forEach((s) => s.onInterrupted?.()),
     recover: () => [...subscribers].forEach((s) => s.onRecovered?.()),
     end: () => {

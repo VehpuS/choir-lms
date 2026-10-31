@@ -18,8 +18,8 @@ Web is the build and verification target. Native handling is deferred to `native
 
 ## 3. Capture
 
-- [ ] 3.1 Add `recordingCapabilities()` (like `pitchCapabilities()`): web with microphone and IndexedDB can record, native cannot. Spec the gate.
-- [ ] 3.2 Extend `PcmSource` with the optional `onBlock` stream and run the frame assembler only when a subscriber wants frames (design Decision 1). Update the shared-source spec; confirm the pitch store specs and the no-persistence guard still pass.
+- [x] 3.1 Add `recordingCapabilities()` (like `pitchCapabilities()`): web with microphone and IndexedDB can record, native cannot. Spec the gate.
+- [x] 3.2 Extend `PcmSource` with the optional `onBlock` stream and run the frame assembler only when a subscriber wants frames (design Decision 1). Update the shared-source spec; confirm the pitch store specs and the no-persistence guard still pass.
 - [ ] 3.3 Build the `Recorder`: subscribes for blocks, converts to Int16, tracks elapsed time, enforces the ten-minute cap, stops on every reason in the spec and keeps what was captured, discards recordings under one second. Spec with a fake `PcmSource`.
 - [ ] 3.4 Add a guard test that only the recording code writes audio samples, alongside the existing pitch guard.
 - [ ] 3.5 Capture the metadata (design Decision 9): source file id, name, content version and duration; lineage with the adjusted copy's adjustment values and the loop and range; shaping read once at the start; the markers within the span; the punch range. Spec with a renamed track, moved markers, a deleted loop, and a replaced file; confirm no copy of the track audio is written.

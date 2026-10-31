@@ -113,7 +113,8 @@ const openMicrophone = async (emitter: PcmEmitter): Promise<OpenMicrophone> => {
     throw toPcmSourceError(error);
   }
 
-  const assembler = createFrameAssembler();
+  let assembler = createFrameAssembler();
+  let assembling = false;
   const tap = new NodeCtor(context, PROCESSOR_NAME);
   // A node with no path to the destination may never be pulled, so route it
   // through a silent gain.
@@ -127,9 +128,26 @@ const openMicrophone = async (emitter: PcmEmitter): Promise<OpenMicrophone> => {
 
   silent.gain.value = 0;
   tap.port.onmessage = ({ data }) => {
-    assembler
-      .push(data.samples, data.timeSec, context.sampleRate)
-      .forEach((frame) => emitter.frame(frame));
+    emitter.block({
+      samples: data.samples,
+      sampleRate: context.sampleRate,
+      startTimeSec: data.timeSec,
+    });
+
+    // Frames are assembled only while someone wants them, and the assembler
+    // starts clean each time that begins so a stale partial frame never leaks.
+    const wanted = emitter.wantsFrames();
+
+    if (wanted && !assembling) {
+      assembler = createFrameAssembler();
+    }
+    assembling = wanted;
+
+    if (wanted) {
+      assembler
+        .push(data.samples, data.timeSec, context.sampleRate)
+        .forEach((frame) => emitter.frame(frame));
+    }
   };
   context.createMediaStreamSource(stream).connect(tap);
   tap.connect(silent);

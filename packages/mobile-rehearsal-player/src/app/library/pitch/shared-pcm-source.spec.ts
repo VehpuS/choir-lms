@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { PcmSourceError, type PcmFrame } from './pcm-source-types.js';
+import {
+  PcmSourceError,
+  type PcmBlock,
+  type PcmFrame,
+} from './pcm-source-types.js';
 import { createSharedPcmSource, type PcmEmitter } from './shared-pcm-source.js';
 
 const frame: PcmFrame = {
@@ -143,5 +147,39 @@ describe('createSharedPcmSource', () => {
     emitter().recovered();
 
     assert.deepEqual(events, ['interrupted', 'recovered']);
+  });
+
+  it('delivers blocks only to subscribers that ask for them, and frames only to frame subscribers', async () => {
+    const { source, emitter } = setup();
+    const block: PcmBlock = {
+      samples: new Float32Array(128),
+      sampleRate: 44100,
+      startTimeSec: 2,
+    };
+    const frames: PcmFrame[] = [];
+    const blocks: PcmBlock[] = [];
+
+    await source.subscribe({ onFrame: (f) => frames.push(f) });
+    await source.subscribe({ onBlock: (b) => blocks.push(b) });
+    emitter().block(block);
+    emitter().frame(frame);
+
+    assert.deepEqual(blocks, [block]);
+    assert.deepEqual(frames, [frame]);
+  });
+
+  it('reports whether anyone wants frames, so assembling can be skipped', async () => {
+    const { source, emitter } = setup();
+    const leaveRecorder = await source.subscribe({ onBlock: () => undefined });
+
+    assert.equal(emitter().wantsFrames(), false);
+
+    const leavePitch = await source.subscribe({ onFrame: () => undefined });
+
+    assert.equal(emitter().wantsFrames(), true);
+
+    leavePitch();
+    assert.equal(emitter().wantsFrames(), false);
+    leaveRecorder();
   });
 });

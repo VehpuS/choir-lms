@@ -10,6 +10,18 @@ export type PcmFrame = {
   captureTimeSec: number;
 };
 
+/**
+ * A contiguous run of mono samples straight from capture: unlike frames,
+ * consecutive blocks never overlap, so a recorder can concatenate them.
+ * Subscribers must not modify `samples`; they are shared between them.
+ */
+export type PcmBlock = {
+  samples: Float32Array;
+  sampleRate: number;
+  /** Capture time in seconds of the block's first sample, on the audio context clock. */
+  startTimeSec: number;
+};
+
 export type PcmPermission = 'unknown' | 'prompt' | 'granted' | 'denied';
 
 export type PcmSourceFailure = 'denied' | 'unavailable' | 'in-use';
@@ -25,7 +37,10 @@ export class PcmSourceError extends Error {
 }
 
 export type PcmSubscriber = {
-  onFrame: (frame: PcmFrame) => void;
+  /** Overlapping analysis frames; the frame assembler runs only while someone wants these. */
+  onFrame?: (frame: PcmFrame) => void;
+  /** Contiguous blocks for recording (rehearsal-recording design Decision 1). */
+  onBlock?: (block: PcmBlock) => void;
   /** Capture is paused by the system (a call, another app) and may recover. */
   onInterrupted?: () => void;
   onRecovered?: () => void;
@@ -34,8 +49,8 @@ export type PcmSubscriber = {
 };
 
 /**
- * The shared microphone. Several subscribers (pitch detection today, a
- * recorder later) can listen at once over one stream: it opens when the first
+ * The shared microphone. Several subscribers (pitch detection and the
+ * recorder) can listen at once over one stream: it opens when the first
  * subscribes and closes after the last leaves. Audio is unprocessed (no echo
  * cancellation, noise suppression or gain control). Nothing here stores audio.
  */

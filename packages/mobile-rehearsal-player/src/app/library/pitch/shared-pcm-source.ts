@@ -1,4 +1,5 @@
 import type {
+  PcmBlock,
   PcmFrame,
   PcmPermission,
   PcmSource,
@@ -8,6 +9,9 @@ import type {
 /** What an opened microphone calls back into. */
 export type PcmEmitter = {
   frame: (frame: PcmFrame) => void;
+  block: (block: PcmBlock) => void;
+  /** Whether any subscriber wants frames, so the platform can skip assembling them. */
+  wantsFrames: () => boolean;
   interrupted: () => void;
   recovered: () => void;
   /** The platform closed the stream; every subscriber must resubscribe. */
@@ -36,7 +40,10 @@ export const createSharedPcmSource = ({
   };
 
   const emitter: PcmEmitter = {
-    frame: (frame) => each((subscriber) => subscriber.onFrame(frame)),
+    frame: (frame) => each((subscriber) => subscriber.onFrame?.(frame)),
+    block: (block) => each((subscriber) => subscriber.onBlock?.(block)),
+    wantsFrames: () =>
+      [...subscribers].some((subscriber) => subscriber.onFrame !== undefined),
     interrupted: () => each((subscriber) => subscriber.onInterrupted?.()),
     recovered: () => each((subscriber) => subscriber.onRecovered?.()),
     ended: () => {
