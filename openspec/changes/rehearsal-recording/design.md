@@ -5,27 +5,29 @@
 - **Overlapping frames.** `PcmSource` delivers 2048-sample analysis frames at a 1024-sample hop (`pcm-frame-assembler.ts`). Consecutive frames share half their samples, so a recorder cannot concatenate them.
 - **No shared clock.** `captureTimeSec` is the capture `AudioContext`'s `currentTime`, and that context belongs to the microphone path. The track plays through a media element (react-native-track-player on Shaka), whose `currentTime` is a different clock. The only other `AudioContext` is created by the pitch shifter, and only while pitch shaping is active. Decision 12's "clock shared with playback" is therefore not true yet.
 
-Other facts that shape the design: playback on web is `window.rntp.getMediaElement()`; the SoundTouch worklet already routes that element through an `AudioContext` for pitch shifting; the offline `AudioStore` is an IndexedDB store with eviction and a budget meant for downloaded tracks; the `drive.file` scope and a Drive upload exist but are not used here.
+Other facts that shape the design: playback on web is `window.rntp.getMediaElement()`; the SoundTouch worklet already routes that element through an `AudioContext` for pitch shifting; the offline `AudioStore` is an IndexedDB store with an automatic cache (least-recently-used eviction within a size budget) and a pinned `Keep offline` tier; the library (markers, lyrics, loops, playlists) is device-local state keyed by track, with markers and lyrics owned by the track and not library entities; adjusted tracks are `DriveAudioSource` records with `adjustment.sourceRef`, and loops belong to a track or to an adjusted copy; the `drive.file` scope and a Drive upload exist but are not used here.
 
 ## Goals / Non-Goals
 
 **Goals:**
 
-- Record a take while a track plays, at any speed and pitch shaping, and store a timeline of which track positions it was sung against, accurate to a few milliseconds after compensation.
-- Let the user start and stop a take by hand at any point, over any segment of the song or an active loop, with the nearby markers shown.
-- Play a take with its track and keep them in sync through play, pause, seek, and loop wrap, without ever shaping the take. A take's speed and pitch are fixed at recording and again at playback.
-- Own a local store for takes that eviction of cached tracks can never touch.
+- Record while a track plays, at any shaping, and store a timeline of which track positions the recording was sung against, accurate to a few milliseconds after compensation.
+- Let the user start and stop by hand at any point, over any segment, an active loop, or a punch range, with the nearby markers shown.
+- Play a recording with its track in sync through play, pause, seek, and loop wrap, without ever shaping the recording, and open it in exactly the context it was made in.
+- Keep each recording self-contained metadata, so overlay and export can be rebuilt from it without keeping copies of the original audio.
+- Follow the offline model of tracks for the recording audio: automatic and kept tiers, never kept implicitly.
+- Make recordings browsable (per track, per loop, and across the library), queueable, and usable in playlists without becoming library files.
+- Export a recording and a mix, as a download or to new Drive files.
 - Put the sync and gain logic in one reusable, testable place.
-- Keep each take a self-contained entry, independent of later changes to its track, markers, and loops.
-- Export a bare recording and a mixdown, as a download or to new Drive files.
 
 **Non-Goals:**
 
-- Compressed export formats (MP3, AAC); a browser has no encoder for them and adding one is its own decision.
 - Echo cancellation: headphones are assumed, as in pitch detection.
-- Stretching or transposing a take to follow a track at a different speed than the one it was recorded against.
+- Stretching or transposing a recording to follow a track at a different speed.
+- Compressed export formats (MP3, AAC); a browser has no encoder for them and adding one is its own decision.
 - Native platforms.
-- Crash recovery of a take in progress.
+- Crash recovery of a recording in progress.
+- Syncing recordings between devices (they live on the device that made them, plus whatever the user exports).
 
 ## Decisions
 
@@ -35,113 +37,171 @@ Other facts that shape the design: playback on web is `window.rntp.getMediaEleme
 
 ### Decision 2: One timeline, mapped by sampled anchors
 
-The recorder needs "track position at each captured sample", and the track may be paused, sought, looped, or running at a rate other than 1 while it records (the rate itself is fixed for the whole take, Decision 6). The two clocks are related through `performance.now()`: `AudioContext.getOutputTimestamp()` maps the capture context to it, and the media element's `currentTime` is sampled with `performance.now()` anchors (on `timeupdate` and a short interval while recording). A least-squares line over the recent anchors within one uninterrupted stretch of playback gives track position as a function of `performance.now()` with the jitter averaged out, and its slope is the effective rate. A seek, loop wrap, pause, or resume ends one stretch and starts the next. Because the rate is known and constant, each fit only has to find the offset (and may check the slope against the known rate). The recorder turns the stretches into the take's timeline (Decision 9). Alternative: route the media element into the capture context so one clock rules both. Rejected for now: it would force every track through Web Audio even when no one records, and the pitch shifter shows the cost. A spike (task 1.1) measures the error of the anchor approach; if it is worse than about 10 ms, the single-context route is revisited.
+The recorder needs "track position at each captured sample", and the track may be paused, sought, looped, or running at a rate other than 1 while it records (the rate itself is fixed for the whole recording, Decision 6). The two clocks are related through `performance.now()`: `AudioContext.getOutputTimestamp()` maps the capture context to it, and the media element's `currentTime` is sampled with `performance.now()` anchors (on `timeupdate` and a short interval while recording). A least-squares line over the recent anchors within one uninterrupted stretch of playback gives track position as a function of `performance.now()` with the jitter averaged out. A seek, loop wrap, pause, or resume ends one stretch and starts the next. Because the rate is known and constant, each fit only has to find the offset (and may check the slope against the known rate). The recorder turns the stretches into the recording's timeline (Decision 9). Alternative: route the media element into the capture context so one clock rules both. Rejected for now: it would force every track through Web Audio even when no one records, and the pitch shifter shows the cost. A spike (task 1.1) measures the error of the anchor approach; if it is worse than about 10 ms, the single-context route is revisited.
 
 ### Decision 3: Latency is estimated, nudged by hand, and optionally measured
 
-The take's audio is late relative to the track by the output latency (track to ears, `AudioContext.outputLatency`, which differs for speakers, wired, and Bluetooth headphones) plus the input latency (voice to sample). The browser reports these only roughly. The compensation is a shift in wall-clock time: the track position a sample is filed under is the position the track had `latency` earlier, so it stays right at any playback rate. The approach puts the manual path first, since not every user can or wants to run a loopback:
+The recording's audio is late relative to the track by the output latency (track to ears, `AudioContext.outputLatency`, which differs for speakers, wired, and Bluetooth headphones) plus the input latency (voice to sample). The browser reports these only roughly. The compensation is a shift in wall-clock time: the track position a sample is filed under is the position the track had `latency` earlier, so it stays right at any playback rate. The manual path comes first, since not every user can or wants to run a loopback:
 
 1. **Default:** `outputLatency` plus `baseLatency` from the browser, used until the user sets something better, and labelled as an estimate.
-2. **Nudge (the main manual path):** the overlay shows a `Sync` control right beside the balance: minus and plus buttons in 1 ms and 10 ms steps, a slider to ±250 ms, a reset, and a `Use for this device` action that stores the nudge as the compensation default for the current output device label, so the next take starts already adjusted. The nudge is saved with the take and can be changed at any time, and changes sound immediately while the overlay plays.
+2. **Nudge (the main manual path):** the overlay shows a `Sync` control right beside the balance: minus and plus buttons in 1 ms and 10 ms steps, a slider to ±250 ms, a reset, and a `Use for this device` action that stores the nudge as the compensation default for the current output device label, so the next recording starts already adjusted. The nudge is saved with the recording and can be changed at any time, and changes sound immediately while the overlay plays.
 3. **Click calibration (opt-in):** offered as a secondary action in the same panel, never prompted for and never required. It plays a few clicks through the current output and finds them in the microphone signal by cross-correlation, which measures the true round trip, and saves the result as that device's default just as `Use for this device` does. It needs the clicks to reach the microphone, so it says to use speakers or hold the headphone to the microphone, and why. It does not need the user to tap in time, which would add human reaction time.
 
-The compensation applied at recording time is stored on the take, and the nudge separately, so changing the device default never silently moves old takes. Alternative: loopback as the primary path; rejected because it fails for headphone users and for noisy rooms, and the nudge needs to work for everyone.
+The compensation applied at recording time is stored on the recording, and the nudge separately, so changing the device default never silently moves old recordings. Alternative: loopback as the primary path; rejected because it fails for headphone users and for noisy rooms, and the nudge needs to work for everyone.
 
-### Decision 4: Takes are WAV in their own IndexedDB store
+### Decision 4: Recordings are WAV in their own IndexedDB store, with the tracks' two tiers
 
-Takes are written as 16-bit mono WAV at the capture sample rate: lossless, sample-accurate, trivial to decode, about 5 MB per minute at 44.1 kHz. The recorder converts blocks to Int16 as they arrive (half the memory of Float32), caps a take at 10 minutes, and writes the WAV and the take record in one transaction on stop. A new database holds `takes` (the metadata, no bytes) and `take-audio` (the Blob), keyed by take id and indexed by owner track. It has its own budget with a visible total in the existing offline files view area, and never evicts automatically: only the user deletes takes. Alternatives: MediaRecorder with Opus (small, but lossy, a second microphone path, no sample-accurate start); reusing the offline `AudioStore` (shares budget and eviction rules with downloaded tracks, which suits neither).
+Recordings are written as 16-bit mono WAV at the capture sample rate: lossless, sample-accurate, trivial to decode, about 5 MB per minute at 44.1 kHz. The recorder converts blocks to Int16 as they arrive (half the memory of Float32), caps a recording at 10 minutes, and writes the WAV and the recording record in one transaction on stop. A new database holds `recordings` (the metadata, no bytes) and `recording-audio` (the Blob), keyed by recording id and indexed by owner. Its storage follows the offline model of tracks, but separately from the track audio store so neither budget eats the other:
+
+- **Automatic tier:** every new recording starts here, counted against a recordings cache size (default 200 MB, set in the same settings page as the track cache size) and removed least recently played first when the budget is exceeded. A recording that is selected or playing is never removed.
+- **Kept tier:** `Keep offline` on a recording exempts it from eviction until the user removes it, and kept recordings do not count toward the recordings cache size.
+
+Removing a recording from the store deletes its audio and its metadata together (the recording is gone, as a deleted file would be), so the design makes the risk visible: an automatic recording shows a `Not kept offline` badge with a one-tap `Keep offline`, the save sheet says so, an `Export` is one step away, and the first time automatic recordings are about to be removed the user is told which ones and offered to keep them. Alternatives: MediaRecorder with Opus (small, but lossy, a second microphone path, no sample-accurate start); reusing the track `AudioStore` (shares budget and eviction rules with downloaded tracks, so a day of recording could evict the tracks being practised); never evicting (simpler, but unlike the offline behaviour users already know, and unbounded).
 
 ### Decision 5: The overlay rides the track's media element
 
-The track keeps playing through the existing player. The take plays through an `AudioContext` as an `AudioBufferSourceNode` (the decoded WAV) into a gain node, started at `contextTime` computed from the track position, the take's timeline (Decision 9), and the nudge. A sync controller (in `audio-mixing`) watches the media element and does the following:
+The track keeps playing through the existing player. The recording plays through an `AudioContext` as an `AudioBufferSourceNode` (the decoded WAV) into a gain node, started at `contextTime` computed from the track position, the recording's timeline (Decision 9), and the nudge. A sync controller (in `audio-mixing`) watches the media element and does the following:
 
-- **Play:** look up the take time for the current track position in the take's timeline and schedule the source there (part-way in when the track is already inside the take).
+- **Play:** look up the recording time for the current track position in the timeline and schedule the source there (part-way in when the track is already inside the recording).
 - **Pause:** stop the source; position is derived from the track, so nothing else is remembered.
 - **Seek and loop wrap:** stop and reschedule at the newly looked-up position (a source node cannot seek).
-- **Drift:** compare expected and actual take position every 250 ms and reschedule when the error exceeds a tolerance (initially 20 ms), with a short crossfade to avoid clicks. This always applies, because the track's speed cannot differ from the take's while a take is selected (Decision 6).
+- **Drift:** compare expected and actual recording position every 250 ms and reschedule when the error exceeds a tolerance (initially 20 ms), with a short crossfade to avoid clicks. This always applies, because the track's speed cannot differ from the recording's while one is selected (Decision 6).
 
-The balance control sets the two gains: the take's gain node, and the track's volume on the media element (or the pitch graph's gain when active). Alternative: decode the track and play both from buffers on one context, replacing the transport. Rejected: it changes the whole playback stack for one feature, and long tracks would need decoding in memory. This transport-through-the-element design also suits `composite-tracks`, whose stems could be several elements or buffers behind the same controller; the controller depends on a small `Transport` and `Voice` interface, not on Web Audio.
+The balance control sets the two gains: the recording's gain node, and the track's volume on the media element (or the pitch graph's gain when active). Alternative: decode the track and play both from buffers on one context, replacing the transport. Rejected: it changes the whole playback stack for one feature, and long tracks would need decoding in memory. This transport-through-the-element design also suits `composite-tracks`, whose stems could be several elements or buffers behind the same controller; the controller depends on a small `Transport` and `Voice` interface, not on Web Audio.
 
-### Decision 6: Shaping touches only the track; the take is never shaped
+### Decision 6: Shaping touches only the track; the recording is never shaped
 
-Playback shaping (speed and pitch) is a property of the background track. A take is recorded from the microphone in real time and is always played at its natural speed and pitch, so the singer hears their own voice as sung. Consequences:
+Playback shaping (speed and pitch) is a property of the background track. A recording is captured from the microphone in real time and is always played at its natural speed and pitch, so the singer hears their own voice as sung. Consequences:
 
-- **Recording under shaping is allowed, but the shaping is fixed for the take.** The speed and pitch in effect when the take starts (a saved adjusted track, or a session adjustment already set) are read once, stored on the take (Decision 9), and the speed and pitch controls are disabled while the take records, with a note saying why. A take sung against a track at 0.7× knows that one second of the take covered 0.7 s of track throughout. Changing speed mid-take is not supported: the user stops the take, adjusts, and starts a new one. Pitch shifts change nothing about timing, and are stored only so the take can say what it was recorded against.
-- **Playback uses the take's shaping, and it is fixed too.** Selecting a take applies the speed and pitch stored on it to the session and locks the speed and pitch controls with a note ("Locked to this take's speed and pitch"); deselecting the take restores the shaping that was set before and unlocks them. The take therefore always plays against the track exactly as it was sung against it, stays aligned for its whole length, and never needs a stretched or resampled copy. Playing a take with other speed or pitch is not supported: the user exports a mixdown (Decision 12) and plays that file with the ordinary track controls. This is expected to be a rare need.
+- **Recording under shaping is allowed, but the shaping is fixed for the recording.** The speed and pitch in effect when it starts (a saved adjusted track, or a session adjustment already set) are read once, stored on the recording (Decision 9), and the speed and pitch controls are disabled while it records, with a note saying why. A recording sung against a track at 0.7× knows that one second of it covered 0.7 s of track throughout. Changing speed mid-recording is not supported: the user stops, adjusts, and starts a new one. Pitch shifts change nothing about timing, and are stored only so the recording can say what it was recorded against.
+- **Playback uses the stored shaping, and it is fixed too.** Opening or selecting a recording applies the speed and pitch stored on it to the session and locks those controls with a note ("Locked to this recording's speed and pitch"); leaving the recording restores the shaping that was set before and unlocks them. The recording therefore always plays against the track exactly as it was sung against it and stays aligned for its whole length. Playing a recording with other speed or pitch is not supported: the user exports a mix (Decision 12) and plays that file with the ordinary track controls. This is expected to be a rare need.
 
-Alternatives: gate recording and overlay to normal speed; rejected because slowed practice is the main use of the app. Let the track change speed under a selected take, with the take free-running or stretched by its own SoundTouch node; rejected because the free-running take drifts apart and stretching alters the singer's voice, and the exported mixdown already covers the use.
+Alternatives: gate recording and overlay to normal speed; rejected because slowed practice is the main use of the app. Let the track change speed under a selected recording, with the recording free-running or stretched by its own SoundTouch node; rejected because the free-running recording drifts apart and stretching alters the singer's voice, and the exported mix already covers the use.
 
 ### Decision 7: A new framework-agnostic package, `@org/audio-mixing`
 
-It holds the alignment math (the timeline lookup in both directions, nudge), the sync controller against `Transport` and `Voice` interfaces, the balance-to-gain mapping, and the clock-anchor fit from Decision 2, with injected clocks and timers so it is tested with fakes. It depends on `audio-library-models`, which also gets the `Take` type and its helpers. The Web Audio and media-element implementations stay in the app. `composite-tracks` will use the same controller for stems. Alternative: keep everything in the app; rejected because the README of `composite-tracks` already asks for one mixer designed once, and a package gives the logic a clean boundary and tests.
+It holds the alignment math (the timeline lookup in both directions, nudge), the sync controller against `Transport` and `Voice` interfaces, the balance-to-gain mapping, and the clock-anchor fit from Decision 2, with injected clocks and timers so it is tested with fakes. It depends on `audio-library-models`, which also gets the `Recording` type and its helpers. The Web Audio and media-element implementations stay in the app. `composite-tracks` will use the same controller for stems. Alternative: keep everything in the app; rejected because the README of `composite-tracks` already asks for one mixer designed once, and a package gives the logic a clean boundary and tests.
 
 ### Decision 8: Consent, indicator, and stopping
 
-Recording is separate from the pitch tool's explanation: the first time the user starts a take, a short note says that audio is recorded and kept on this device under the track until deleted, and names the headphones assumption. While recording, the strip shows a clear recording state with elapsed time and a stop control. A take stops, keeping what was captured, when the user stops it, the app is hidden, the microphone is interrupted or ends, the track ends, storage fails, or the 10-minute cap is reached; the reason is shown. A take under one second is discarded with a note. Takes show their size, and deleting one frees it immediately. The pitch no-persistence guard test stays as is; a new guard test confirms the recording code is the only place that writes audio samples.
+Recording is separate from the pitch tool's explanation: the first time the user starts a recording, a short note says that audio is recorded and kept on this device under the track until removed, and names the headphones assumption. While recording, the strip shows a clear recording state with elapsed time and a stop control. A recording stops, keeping what was captured, when the user stops it, the app is hidden, the microphone is interrupted or ends, the track ends, storage fails, an armed punch range reaches its out point, or the 10-minute cap is reached; the reason is shown. A recording under one second is discarded with a note. The pitch no-persistence guard test stays as is; a new guard test confirms the recording code is the only place that writes audio samples.
 
-### Decision 9: Ownership and the model
+### Decision 9: Metadata makes a recording self-contained
 
-A take records `ownerTrackId` using the same owner resolution that markers and lyrics use, so a take stays with the track when it is played from a playlist or an adjusted copy. It carries `id`, `name` (default `Take 1`, `Take 2`, …), `createdAt`, `durationMs`, `sampleRate`, `appliedLatencyMs`, `nudgeMs`, `sizeBytes`, an optional `loop` reference with its range, a `shaping` record (`{ rate, pitchSemitones }`, read once at the start and constant for the take), and a `timeline`. The timeline is a list of segments, one per uninterrupted stretch of playback while recording: `{ takeStartMs, takeEndMs, trackStartMs, held }`, where a paused track is a segment with `held` set (the position holds) and a seek or loop wrap starts a new segment at the new position; the track position advances by `shaping.rate` per unit of take time in every other segment. Looking up a track position returns every take time that was sung against it, which is one for a plain take and one per pass for a loop take. Latency compensation is already applied inside the segment boundaries (Decision 3). Several takes per track are allowed; the overlay plays one at a time.
+A recording is a record owned by the track or loop it was made on (Decision 10), and it carries enough to rebuild its overlay and its mix without any copy of the original audio:
 
-The take is also a snapshot, so that it does not depend on the track staying as it was. At recording time it stores a `source` record: the Drive file id, file name, content version (`modifiedTime`, the same value the offline cache keys on), track duration, whether the track was an adjusted copy and what it was adjusted from, plus the title and the loop (name and range) and the markers inside the take's span (name and position) as they were. Shaping and the punch range are already in the timeline and the optional armed range. Listings, spans, and exports read this snapshot rather than the live library. The live track is consulted only for two things: finding the take again (by the owner key) and playing the overlay against audio. A take whose track is renamed, retagged, or whose markers and loops change keeps its recorded names; the audio itself is kept with the take (Decision 13), so the overlay and the mixdown keep working even if the track is later deleted or replaced on Drive. The take shows `Original track changed` when the live track's content version no longer matches, and the overlay then plays against the kept copy rather than the live file.
+- `id`, `name` (default `Recording 1`, `Recording 2`, …), `createdAt`, `durationMs`, `sampleRate`, `sizeBytes`, `appliedLatencyMs`, `nudgeMs`, and the storage tier.
+- `source`: the Drive file id, file name, content version (`modifiedTime`, the value the audio cache already keys on), and duration of the track audio it was recorded against.
+- `lineage`: the owner chain at recording time: the parent track (file id, name), the saved adjusted copy if any (id, name, and its adjustment values: speed, pitch), and the loop if any (id, name, start and end). The adjustment values are stored even when the adjusted copy is later deleted, and for session adjustments that were never saved the values are in `shaping`.
+- `shaping`: `{ rate, pitchSemitones }`, read once at the start and constant for the recording.
+- `markers`: the markers inside the recording's span (name and position) as they were.
+- `punch`: the armed in and out points and the pre-roll, when the recording was started from a punch range.
+- `timeline`: a list of segments, one per uninterrupted stretch of playback while recording: `{ recordingStartMs, recordingEndMs, trackStartMs, held }`, where a paused track is a segment with `held` set (the position holds) and a seek or loop wrap starts a new segment at the new position; the track position advances by `shaping.rate` per unit of recording time in every other segment. Looking up a track position returns every recording time that was sung against it, which is one for a plain recording and one per pass for a loop recording. Latency compensation is already applied inside the segment boundaries (Decision 3).
 
-### Decision 10: Segments, loops, and marker context
+Lists, spans, and exports read this record rather than the live library, so a renamed track, moved markers, or a deleted loop do not change a recording's description. The audio the overlay and the mix need is resolved from `source` when wanted (Decision 13).
 
-Recording always starts and stops by hand, from wherever the track is. To record a segment, the user seeks (or uses a marker or loop to jump) and starts the take, then stops it; the take covers whatever stretch of the song played in between, including seeks. Nothing requires a take to start at the beginning of the track or to end with it.
+### Decision 10: Ownership, loops, and adjusted tracks decide where a recording shows
 
-When a loop is active as the take starts, the take is a loop take: it keeps a reference to the loop and its range, may span several passes, and is listed under the loop as well as under the track. With the take selected and the same loop active, pass n of the track plays pass n of the take; after the last recorded pass the take is silent, so a two-pass take does not repeat itself under a ten-pass loop (the user can start a new take). Without a loop, a take selected for a track plays wherever its timeline says.
+A recording is owned by exactly one entity, the one it was made on: a track, a saved adjusted track, or a loop (of a track or of an adjusted track). Loops are top-level entities with their own view, so:
 
-Marker context is read-only: the recording strip shows the previous and next marker names and positions beside the elapsed time; the takes list shows a take's span as marker names when its edges fall within a few seconds of markers (for example `Verse 2 → Chorus`) and as times otherwise. Marker lookups reuse the markers owner resolution and are optional: a track with no markers just shows times.
+- **A recording made on a loop** belongs to the loop. The loop's view lists only recordings made on that loop. The parent track shows them only in its `Loops` section, grouped by loop, and never in its main list of whole-track and segment recordings.
+- **A recording made on an adjusted track** belongs to the adjusted track and is also listed under its parent track, labelled with the adjustment (for example `0.7×, +2`). If the recording was made on a loop of the adjusted track, it is listed in the adjusted track's `Loops` section and in the parent's `Loops` section, and in the loop's own view.
+- **A recording made over a session adjustment that was never saved** belongs to the track, with the adjustment values stored in `shaping` and `lineage`.
+- **Not library files:** like markers and lyrics, recordings are not tracks. They do not appear in the Files tree or in track search results. They appear in the playback screen's Recordings panel, in loop and adjusted-track views as described, in the Library `Recordings` view (Decision 15), and in playlists and queues as playlist items (Decision 16).
 
-### Decision 11: Punch ranges are the last slice
+The Recordings panel is a viewer, like lyrics and sheet music, and opens from the playback screen whether or not the Recording tool is on. The tool only controls the recording strip and the start and arm controls. The panel's header badge counts the recordings the view lists.
 
-Arming a take to start and stop at a chosen marker, or at a loop's ends (punch in and out), is built after everything above works. It adds an armed state (`Record from Chorus to Bridge`) that begins the take when playback reaches the in point and ends it at the out point. Since manual start and stop and loop takes already exist, punch ranges only add automatic triggers, and the slice can be cut without leaving a gap. The in point uses the same position tracking as the timeline so the first sample lands within the same tolerance.
+### Decision 11: Opening a recording restores its recorded context, locked
 
-### Decision 12: Export a bare recording and a mixdown, to the device or to Drive
+Selecting a recording from any list opens its track in the context it was made in:
 
-Each export goes either to the device or to Drive. `Download` saves the file through the browser with no permission and no network. `Save to Drive` creates a new file in a folder the user chooses, using the destination step of `sheet-music-save-to-drive` (nothing is written before the user confirms the folder, and the `drive.file` scope is asked for only at that point). Both are 16-bit WAV, named from the snapshot (`<Track> - <Take name>` and `<Track> - <Take name> (mix)`) and editable in the dialog.
+- **A loop recording** opens the loop (the loop entity's view), with the loop's range as the only playable range.
+- **A recording of an adjusted track** opens the adjusted track, with its adjustment active.
+- **A segment or punch recording** opens the owning track limited to the recorded range, from the first to the last track position the timeline covers. The waveform, position, and seeking show only that range.
+- **A session adjustment** is applied to the session for the recording: the stored speed and pitch are set and locked.
 
-- **Bare recording:** the stored WAV, uploaded as it is. No decode, no track.
-- **Mixdown:** rendered offline in the browser to reproduce what the singer heard, using only the snapshot and the timeline: for each timeline segment, the matching stretch of the original track at the take's stored rate and pitch (silence while the track was paused), placed in recording time, then the take placed with its applied compensation and nudge, mixed at the balance chosen in the export dialog. Loop passes, seeks, pauses, and a punch range therefore come out as they happened, because the timeline already records them. The render uses an `OfflineAudioContext`, the same SoundTouch processor that live shaping uses, and the kept copy of the original audio (Decision 13). Output is stereo if the track is, otherwise mono, at the track's sample rate, with the take resampled to it.
-- **Source availability:** the mixdown reads the kept copy, so it does not depend on Drive. Only a take saved without a kept copy (the user turned it off, or it was freed) can lack one; the dialog then says why the mixdown is unavailable and still offers the bare recording.
-- **Upload:** the existing helper is a single multipart request with a 25 MB limit; a ten-minute mono take is about 50 MB and a stereo mixdown double that. `google-drive` gains a resumable upload with progress, cancel, and retry from the last chunk, and the existing `needs-write-access`, `quota`, `folder-not-writable`, and `offline` failures map to the same user messages. A successful export reports the file name and folder; the new file is an ordinary Drive file and will appear as a track if its folder is in the library.
+In every case the view says `Recording: <name>`, the range, the speed and pitch, and the loop are locked, and one control, `Leave recording`, returns to the previous context and shaping. While open, the balance and the sync control are available, and the recording and its track play together. Playback never needs a different speed because the context carries the one it was made with.
+
+### Decision 12: Export a recording and a mix, to the device or to Drive
+
+Each export goes either to the device or to Drive. `Download` saves the file through the browser with no permission and no network. `Save to Drive` creates a new file in a folder the user chooses, using the destination step of `sheet-music-save-to-drive` (nothing is written before the user confirms the folder, and the `drive.file` scope is asked for only at that point). Both are 16-bit WAV, named from the metadata (`<Track> - <Recording name>` and `<Track> - <Recording name> (mix)`) and editable in the dialog.
+
+- **Recording only:** the stored WAV, uploaded as it is. No decode, no track.
+- **Mix:** rendered offline in the browser to reproduce what the singer heard, using only the metadata and the timeline: for each timeline segment, the matching stretch of the original track at the recording's stored rate and pitch (silence while the track was paused), placed in recording time, then the recording placed with its applied compensation and nudge, mixed at the balance chosen in the export dialog. Loop passes, seeks, pauses, and a punch range therefore come out as they happened, because the timeline already records them. The render uses an `OfflineAudioContext`, the same SoundTouch processor that live shaping uses, and the original audio resolved as in Decision 13. Output is stereo if the track is, otherwise mono, at the track's sample rate, with the recording resampled to it.
+- **Source availability:** if the original cannot be resolved (deleted on Drive, no connection and not stored offline), the dialog says why the mix is unavailable and still offers the recording alone.
+- **Upload:** the existing helper is a single multipart request with a 25 MB limit; a ten-minute mono recording is about 50 MB and a stereo mix double that. `google-drive` gains a resumable upload with progress, cancel, and retry from the last chunk, and the existing `needs-write-access`, `quota`, `folder-not-writable`, and `offline` failures map to the same user messages. A successful export reports the file name and folder; the new file is an ordinary Drive file and will appear as a track if its folder is in the library.
 - **Memory:** the render holds the mixed buffer (a ten-minute stereo mix at 44.1 kHz is about 100 MB as Float32), so the render works in chunks and encodes to Int16 as it goes, staying near the size of the output.
 
-Alternatives: mixdown from the current live shaping state (what the user hears now) rather than the recorded one; rejected because the mix would not match what was sung against. Capture the mixed output live while recording; rejected because it would fix the balance at record time and miss seeks the user makes later. Compressed formats; rejected for now (Non-Goals).
+Alternatives: mix from the current live shaping state; rejected because the mix would not match what was sung against. Capture the mixed output live while recording; rejected because it would fix the balance at record time and miss seeks the user makes later.
 
-### Decision 13: The original audio is kept as an offline entry owned by the takes
+### Decision 13: The original audio is found from metadata, never copied
 
-When a take is saved, the original track's audio is kept offline through the existing audio store, as a pinned entry that automatic eviction never removes. The store is keyed by Drive file id and holds one version, so a take's copy needs its own key: the entry is stored under `<driveFileId>@<contentVersion>` with the ids of the takes that use it as owners (the same owner list scores already use). Several takes of the same track and version share one entry; if the track is already kept offline at that version, the existing bytes are adopted by adding the take as an owner instead of copying them. The entry is removed when the last owning take is deleted. Because it counts as pinned offline data, it appears in the offline files view next to the takes total, labelled as kept for takes, and its size is included in what the take reports. Saving a take offers `Keep the original with this take`, on by default and optional to save space; a take without it plays alone and exports only the bare recording once the live track changes.
+A recording does not store, pin, or own any copy of the track's audio. The overlay and the mix ask the normal track audio path for `source.driveFileId`, which serves it from the recent playback cache, the offline store, or Drive, whichever has it. Recording a track means it was just played, so it is normally in the cache, and a track the user has kept offline is already there; no recording feature changes either. The audio stays pinned only by the user's own `Keep offline` on the track. Consequences:
 
-Alternative: store the copy inside the takes database; rejected because it would duplicate the file the offline cache may already hold and would sit outside the offline files view and its budget controls.
+- Overlay and mix are rebuildable from metadata alone, as long as the original can be fetched.
+- If the file's content version differs from `source.contentVersion`, the overlay plays against the current file and says `Original track changed`: alignment may be off, and the sync control can compensate. The mix export warns the same way and goes ahead only if the user confirms.
+- If the original cannot be fetched (deleted, or offline and not stored), the recording plays alone, and the overlay says why; the recording alone can still be exported.
+- Recordings do not protect their track's audio from cache eviction, and keeping a recording offline does not keep its track offline (and the reverse, Decision 14). Lists flag a recording whose overlay would need a download (`Needs connection for overlay`) when the track is neither cached nor kept.
+
+Alternative: pin a copy of the original with each recording (what an earlier draft did, as an option). Rejected: a second copy of the same file, an option the user would have to understand, and the same result is reached by the normal caches.
+
+### Decision 14: Keeping a track offline asks about its recordings
+
+Keeping a track offline never keeps its recordings. When the user chooses `Keep offline` for a track (or several, by bulk action) that has recordings, a prompt asks: `Keep its N recordings offline too?` with `Keep all`, `Choose…` (the list with a switch per recording), and `Not now`, plus a `Remember my choice` check. The remembered choice is a setting, `Recordings when keeping tracks offline`, with the values `Ask`, `Always keep them`, and `Never keep them`, on the same settings page as the offline cache size, and it applies to bulk actions as well. Individual recordings can be kept or removed from the offline store at any time from their row menu, the Recordings panel, the Library view, and bulk actions. Removing a track from offline does not change its recordings, and keeping a recording offline does not change its track.
+
+The offline files view lists recordings in their own group with their tier and sizes, and the recordings total beside the cache size. Alternative: keep recordings with a track automatically when the track is kept, as it does with sheet music; rejected, since recordings can be large and are the user's own audio, so the choice is theirs.
+
+### Decision 15: A Library Recordings view
+
+The Library gains a `Recordings` view beside the tracks and playlists views, listing every recording on the device with: a search field (recording name, track title, loop name, marker names in its span), filters (`Whole track`, `Segment`, `Loop`, `Adjusted`, `Kept offline`, `Not kept`, `Original changed`, and a track picker), a sort (newest, track, length, name), and rows showing the name, the track and span, the tags (loop, adjusted, offline state), length, and size. Selecting rows enters the shared multi-selection with the bulk actions that apply: `Play`, `Play next`, `Add to queue`, `Add to playlist`, `Keep offline` or `Remove from offline`, `Export`, and `Delete`. Opening a row opens its context (Decision 11). Recordings are still not library files: the view is a projection of the recordings store, and the Files tree and track search never list them.
+
+### Decision 16: Recordings in playlists and the queue
+
+A playlist entry can reference a recording, as it can a track or a loop. Playing one opens its context (Decision 11), plays the recording over its track at the saved balance for that recording, stops at the end of the recorded range, and moves to the next item; shaping is the recording's own and is restored for the next item. A recording that is no longer in the store (removed, or evicted) shows as unavailable and is skipped with a message, as removed tracks are. `Play next`, `Add to queue`, and `Add to playlist` work from every recording list, the Library view, and bulk selection.
+
+### Decision 17: Segments, loops, and marker context
+
+Recording always starts and stops by hand, from wherever the track is. To record a segment, the user seeks (or uses a marker or loop to jump) and starts the recording, then stops it; it covers whatever stretch of the song played in between, including seeks. Nothing requires it to start at the beginning of the track or to end with it. When a loop is active as the recording starts, it is a loop recording (Decision 10): its owner is the loop, and it may span several passes. With the loop active and the recording selected, pass n of the loop plays pass n of the recording; after the last recorded pass the recording is silent.
+
+Marker context is read-only: the recording strip shows the previous and next marker names and positions beside the elapsed time; lists show a recording's span as marker names when its edges fall within a few seconds of markers (for example `Verse 2 → Chorus`) and as times otherwise. Marker lookups reuse the markers owner resolution and are optional: a track with no markers just shows times.
+
+### Decision 18: Punch ranges are set up on the waveform, and are the last slice
+
+A punch range is an in point and an out point, and records only between them. It is set up in a sheet reached from the strip's `Record` split button (`Record now` or `Record between…`), with the waveform at the top so the points are seen where they fall:
+
+- **Setting a point:** drag the `In` and `Out` handles on the waveform; tap a marker flag to snap `In` (first tap) or `Out` (second tap); pick `In` or `Out` from marker chips; or type a time and nudge it by 100 ms or 1 s. Handles snap to markers and loop ends within a few pixels, and the sheet shows the nearest marker names.
+- **Shortcuts:** `Use active loop` fills both points from the loop (and makes it a loop recording); `Use current position` sets `In` to the playhead.
+- **Pre-roll:** a stepper (0 to 10 s, default 3 s) sets how far before `In` playback starts when armed, so the singer hears the lead-in.
+- **Arm:** shows the range on the waveform and arms the strip. Pressing play (or `Play from pre-roll`) seeks to `In` minus the pre-roll and plays; a countdown shows `Recording in 3, 2, 1` and the recording begins at `In`; it ends at `Out`, and the strip shows the remaining time. `Stop` or `Disarm` works at any time, and playback continues or stops past `Out` according to a `Keep playing after Out` switch.
+
+The first sample lands within the same tolerance as manual starts because the in point is evaluated on the same position tracking as the timeline. Since manual start and stop and loop recordings already exist, punch ranges only add automatic triggers, so the slice can be cut without leaving a gap.
 
 ## Risks / Trade-offs
 
-- [Keeping originals costs storage, tens of megabytes per track] → Shared across takes of the same version, adopted from the offline cache when already present, visible in the offline files view, and optional per take.
-- [Mixdown render is slow or memory-heavy for long takes] → Chunked render with Int16 encoding, progress and cancel, and spike 1.4 measures the time and memory of a ten-minute mixdown with a shaped track.
+- [Automatic recordings can be removed to free space] → A `Not kept offline` badge with one-tap `Keep offline`, a save sheet note, a warning before the first removal listing the recordings, never removing a recording that is selected or playing, and export one step away. A minimum age before removal is an open question.
+- [Mix render is slow or memory-heavy for long recordings] → Chunked render with Int16 encoding, progress and cancel; spike 1.4 measures a ten-minute mix with a shaped track.
 - [Offline SoundTouch output differs from the live graph] → Spike 1.4 compares a render with a live capture; accept small differences, document them.
 - [Large uploads fail partway] → Resumable upload with retry from the last chunk.
-- [The original track changes before a mixdown] → The snapshot's content version detects it, the dialog says so, and the bare recording stays available.
-
+- [The original track changes or is gone] → `Original track changed` warning, overlay against the current file with the sync control, recording alone and export still available.
 - [Clock anchors are noisier than expected] → Spike 1.1 measures it; fall back to routing the element into one context.
-- [Browser latency values are wrong, especially Bluetooth] → A quick nudge that can be saved as the device default; opt-in click calibration for those who want a measurement; the default is labelled as an estimate.
+- [Browser latency values are wrong, especially Bluetooth] → A quick nudge that can be saved as the device default; opt-in click calibration; the default is labelled as an estimate.
 - [Loopback calibration is awkward for headphone users] → It is opt-in and never required; the nudge is the main path.
-- [Users want to hear a take at another speed] → Not supported by design; the mixdown export plus the ordinary track controls covers it.
+- [Users want to hear a recording at another speed] → Not supported by design; the mix export plus the ordinary track controls covers it.
 - [The timeline must be right across pauses, seeks, and loop wraps] → Spike 1.1 includes these; the lookup is pure and specified with synthetic timelines.
-- [Drift or clicks when rescheduling] → A tolerance, a short crossfade, and reschedule on every transport event; checked live in 6.x.
-- [Memory growth during long takes] → Int16 conversion on arrival, 10-minute cap.
-- [Storage quota or eviction by the browser] → Request persistent storage when the first take is saved, show sizes, and report write failures as a stop reason.
-- [A decoded take plus the track in memory] → A take is mono 16-bit before decode; only the selected take is decoded.
-- [Scope is larger than the original "bare record" slice] → The tasks put the sync and latency spikes first so the plan can be cut back before UI work begins.
+- [Drift or clicks when rescheduling] → A tolerance, a short crossfade, and reschedule on every transport event; checked live.
+- [Memory growth during long recordings] → Int16 conversion on arrival, 10-minute cap.
+- [Storage quota or eviction by the browser] → Request persistent storage when the first recording is saved, show sizes, and report write failures as a stop reason.
+- [Visibility rules for loops and adjusted tracks are easy to get wrong] → One pure model decides where every recording is listed, specified with synthetic libraries (a loop on an adjusted track, a deleted adjusted copy, a session adjustment).
+- [Scope is large] → The tasks put the sync and latency spikes first, and punch ranges last, so the plan can be cut back before UI work begins.
 
 ## Migration Plan
 
-New database and new package; nothing existing is migrated. The `PcmSource` change is additive (an optional `onBlock`), and the pitch pipeline keeps using frames. Rollback is removing the tool row; stored takes stay in their own database and are harmless.
+New database and new package; nothing existing is migrated. The `PcmSource` change is additive (an optional `onBlock`), and the pitch pipeline keeps using frames. Rollback is removing the tool row and the Library view; stored recordings stay in their own database and are harmless.
 
 ## Open Questions
 
-- Is `Keep the original with this take` right as on by default, or should it follow whether the track is already kept offline?
-- Should the overlay allow two takes at once to compare, or one at a time as designed?
+- Should an automatic recording have a minimum age (for example a week) or be protected until first exported or played twice before it can be removed, given that removal deletes it?
 - Is a 10-minute cap right for a full rehearsal piece, or should it be larger once memory is measured?
-- After the last recorded pass of a loop take, is silence right, or should the take repeat or the last pass hold?
 - Does Safari honour `getOutputTimestamp` and `outputLatency` well enough, or does it need the manual path as its default?
+- Should a playlist recording play over its track at the saved balance only, or may a playlist entry choose recording-only?
+- After the last recorded pass of a loop recording, is silence right, or should the recording repeat or the last pass hold?
