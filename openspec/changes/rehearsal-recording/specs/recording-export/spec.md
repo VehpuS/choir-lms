@@ -68,3 +68,45 @@ The system SHALL request the Drive write permission only when the user confirms 
 #### Scenario: Failure
 - **WHEN** the upload fails
 - **THEN** the system names the reason, the recording is unchanged, and the user can try again
+
+### Requirement: Recordings can be exported to Drive automatically, as a setting
+The system SHALL offer a setting, off by default, to copy each new recording to Drive automatically. Turning it on SHALL ask for the Drive write permission once, offer a dedicated folder (default `Choir Recordings`, created if missing, or any folder the user picks), and let the user choose to export the recording only, the mix, or both. The save sheet SHALL show whether auto-export is on and what will be uploaded.
+
+#### Scenario: Turning it on
+- **WHEN** the user turns on auto-export in Settings
+- **THEN** the system requests the write permission, shows the folder `Choir Recordings` with a way to change it, and shows the choice of recording only, mix, or both
+
+#### Scenario: Default off
+- **WHEN** the user records without changing settings
+- **THEN** nothing is uploaded automatically and the save sheet offers `Turn on auto-export`
+
+#### Scenario: Export after saving
+- **WHEN** auto-export is on with `Both` and a recording is saved
+- **THEN** the recording alone and the mix are uploaded to the chosen folder in the background without blocking the user
+
+#### Scenario: Offline or signed out
+- **WHEN** there is no connection or Drive session when a recording is saved
+- **THEN** the exports wait as pending and run when both are available
+
+#### Scenario: Mix cannot be built
+- **WHEN** the original track cannot be fetched for a mix
+- **THEN** the mix is marked failed with the reason and the recording alone is still uploaded
+
+### Requirement: Each recording shows its export status and exports are not repeated or undone
+The system SHALL show for each recording whether it is on Drive, pending, or failed, with a way to retry a failure, SHALL NOT upload the same kind of export twice for a recording, and SHALL NOT delete Drive copies when a recording is deleted or renamed.
+
+#### Scenario: Status
+- **WHEN** a recording's exports have completed
+- **THEN** its row shows `On Drive`
+
+#### Scenario: Retry
+- **WHEN** an export failed
+- **THEN** the row shows `Upload failed` with the reason and a `Retry`
+
+#### Scenario: No duplicates
+- **WHEN** a recording already has a recording-only export and the setting is `Both`
+- **THEN** only the missing mix is uploaded
+
+#### Scenario: Back up existing
+- **WHEN** the user chooses `Back up existing recordings`
+- **THEN** recordings with missing exports are queued under the current settings

@@ -11,15 +11,15 @@ The system SHALL keep recordings as children of the track, adjusted track, or lo
 - **WHEN** the user browses the Files tree
 - **THEN** recordings are not listed
 
-### Requirement: The Recordings panel is viewable whether or not the Recording tool is on
-The system SHALL provide a Recordings panel on the playback screen, opened like lyrics and sheet music, that lists the recordings for the open track and is available when the Recording tool is off. The panel SHALL show a count of what it lists.
+### Requirement: The Recordings panel is opened from the playback overflow and works whether or not the Recording tool is on
+The system SHALL provide a `Recordings` action in the playback screen's `More actions` menu that opens a panel listing the recordings for the open track, without a top-level button or count badge. The action SHALL be available when the Recording tool is off and SHALL show a muted count in the menu row.
 
 #### Scenario: Tool off
 - **WHEN** the Recording tool is off and the open track has recordings
-- **THEN** the Recordings control is shown with a count and opens the panel
+- **THEN** `Recordings` in `More actions` opens the panel and the playback header shows no recordings button or badge
 
 #### Scenario: No recordings
-- **WHEN** the open track has no recordings and the tool is off
+- **WHEN** the open track has no recordings
 - **THEN** the panel opens and explains how to record
 
 ### Requirement: A track lists its own recordings and, in a Loops section, its loops' recordings
@@ -56,7 +56,7 @@ The system SHALL list a recording made on a saved adjusted track under the adjus
 - **THEN** its recordings remain listed under the parent track with their stored adjustment label
 
 ### Requirement: The Library has a Recordings view with search, filters, sorting, and bulk actions
-The system SHALL provide a Recordings view in the Library listing every recording on the device. It SHALL offer search by recording name, track title, loop name, and marker names in the span; filters for whole track, segment, loop, adjusted, kept offline, not kept, original changed, and a track; and sorting by newest, track, length, and name. Each row SHALL show the name, the track and span, tags, length, size, and offline state. Selecting rows SHALL use the shared multi-selection with the bulk actions `Play next`, `Add to queue`, `Add to playlist`, `Keep offline` or `Remove from offline`, `Export`, and `Delete`.
+The system SHALL provide a Recordings view in the Library listing every recording on the device. It SHALL offer search by recording name, track title, loop name, and marker names in the span; filters for whole track, segment, loop, adjusted, on Drive, not on Drive, original changed, needs a connection for overlay, and a track; and sorting by newest, track, length, and name. Each row SHALL show the name, the track and span, tags, length, size, the Drive export status, and whether the overlay is kept offline. Selecting rows SHALL use the shared multi-selection with the bulk actions `Play next`, `Add to queue`, `Add to playlist`, `Keep overlay offline` or `Remove from offline`, `Export`, and `Delete`.
 
 #### Scenario: Search by marker name
 - **WHEN** the user searches for "Chorus"
@@ -66,13 +66,13 @@ The system SHALL provide a Recordings view in the Library listing every recordin
 - **WHEN** the user chooses the `Loop` filter
 - **THEN** only loop recordings are listed
 
-#### Scenario: Filter to not kept
-- **WHEN** the user chooses `Not kept`
-- **THEN** only automatic recordings that may be removed to free space are listed
+#### Scenario: Filter to not on Drive
+- **WHEN** the user chooses `Not on Drive`
+- **THEN** only recordings with no export to Drive are listed
 
-#### Scenario: Bulk keep offline
-- **WHEN** the user selects three recordings and chooses `Keep offline`
-- **THEN** all three move to the kept tier and show it
+#### Scenario: Bulk keep overlay offline
+- **WHEN** the user selects three recordings and chooses `Keep overlay offline`
+- **THEN** their overlay segments are kept and each row shows it
 
 #### Scenario: Open a recording
 - **WHEN** the user opens a row
@@ -93,8 +93,8 @@ The system SHALL let recordings be added to playlists and to the queue with `Pla
 - **WHEN** a playlist reaches a recording
 - **THEN** the track opens in the recording's context, plays the recorded range with the recording, and moves to the next item at the end of the range
 
-#### Scenario: Recording no longer stored
-- **WHEN** a playlist recording has been removed or evicted
+#### Scenario: Recording deleted
+- **WHEN** a playlist recording has been deleted
 - **THEN** it shows as unavailable, is skipped with a message, and the rest of the playlist continues
 
 #### Scenario: Play next

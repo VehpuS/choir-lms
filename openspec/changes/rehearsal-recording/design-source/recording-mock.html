@@ -234,11 +234,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent-text
     <h1>Record, view, overlay, and manage recordings</h1>
     <p>An interactive phone and a gallery of every screen the change adds. Press the state buttons, or use the controls inside the phone (rows open, switches switch, handles drag, search types). Nothing is recorded or saved. This is the page for task 1.5: approve or mark up what you want changed.</p>
     <ul class="dec">
-      <li><b>Recordings are not files.</b> They live under their track or loop. The playback screen has a <b>Recordings</b> button with a count, available even when the Recording tool is off. The tool only controls the strip.</li>
+      <li><b>Recordings are not files.</b> They live under their track or loop. Open them from <b>More actions → Recordings</b> (no top-level button or badge), whether or not the Recording tool is on. The tool only controls the strip.</li>
       <li><b>Where they show:</b> a track lists its own recordings and, in a <b>Loops</b> section, its loops' recordings. A loop lists only its own. A recording on an adjusted copy shows under the copy and under its parent, labelled with the adjustment.</li>
       <li><b>Opening one</b> restores its context, locked: the loop, the adjusted copy, or the recorded segment only, with its speed and pitch applied (even if never saved). <b>Leave recording</b> restores what you had.</li>
       <li><b>Punch in / out:</b> <b>Record ▾ → Record between…</b> opens a sheet with the waveform. Drag the In and Out handles (they snap to markers), tap marker flags, or type times; set a pre-roll; <b>Arm</b>. Play from the pre-roll and it starts and stops itself.</li>
-      <li><b>Storage:</b> a recording is on the device, automatic (may be removed to free space) or kept offline. Keeping a track offline <b>asks</b> about its recordings, with a remembered default in Settings. The original track audio is never copied; it comes from the normal caches or Drive.</li>
+      <li><b>Storage:</b> the raw recording is kept on the device and never purged; only you delete it. What is cached and purgeable is the <b>overlay segment</b> (the stretch of the original track a recording covers); keep a recording's overlay offline per recording or in bulk. <b>Auto-export</b> copies recordings to a Drive folder (set in Settings), as the recording, the mix, or both.</li>
       <li><b>Library:</b> a <b>Recordings</b> view to browse, search, filter, and act on all of them. Recordings can be queued and added to playlists.</li>
     </ul>
   </header>
@@ -282,13 +282,13 @@ const nearest = (f) => MARKS.reduce((a, m) => (Math.abs(m[0] - f) < Math.abs(a[0
 
 /* the recordings: a small library. track: 'T' (Sleep Song), 'A' (its 0.7x copy), 'H' (Hymn 4). */
 const RECS = [
-  { id: 1, name: 'Recording 1', track: 'T', kind: 'segment', span: 'Verse 2 → Chorus', a: 0.28, b: 0.55, when: 'Today 10:42', len: '0:41', size: '3.6 MB', tier: 'kept', shaping: '0.7× · +2', saved: false },
-  { id: 2, name: 'Recording 2', track: 'T', kind: 'loop', loop: 'Chorus', span: '3 passes', a: 0.55, b: 0.8, when: 'Today 10:58', len: '1:12', size: '6.2 MB', tier: 'auto', shaping: '1× · 0' },
-  { id: 3, name: 'Recording 3', track: 'A', kind: 'whole', span: 'Whole track', a: 0, b: 1, when: 'Yesterday', len: '3:25', size: '17 MB', tier: 'auto', shaping: '0.7× · +2', copy: '0.7× copy' },
-  { id: 4, name: 'Recording 4', track: 'A', kind: 'loop', loop: 'Bridge', span: '2 passes', a: 0.8, b: 1, when: 'Yesterday', len: '0:35', size: '3.0 MB', tier: 'auto', shaping: '0.7× · +2', copy: '0.7× copy' },
-  { id: 5, name: 'Recording 5', track: 'T', kind: 'punch', span: 'Chorus → Bridge', a: 0.55, b: 0.8, when: 'Oct 29', len: '0:27', size: '2.3 MB', tier: 'auto', shaping: '1× · 0' },
-  { id: 6, name: 'Recording 1', track: 'H', kind: 'segment', span: '1:42 → 2:10', a: 0.5, b: 0.63, when: 'Oct 28', len: '0:28', size: '2.4 MB', tier: 'auto', shaping: '1× · 0', changed: true },
-  { id: 7, name: 'Recording 2', track: 'H', kind: 'whole', span: 'Whole track', a: 0, b: 1, when: 'Oct 27', len: '4:02', size: '20 MB', tier: 'kept', shaping: '1× · 0' }
+  { id: 1, name: 'Recording 1', track: 'T', kind: 'segment', span: 'Verse 2 → Chorus', a: 0.28, b: 0.55, when: 'Today 10:42', len: '0:41', size: '3.6 MB', drv: 'ok', ov: null, shaping: '0.7× · +2' },
+  { id: 2, name: 'Recording 2', track: 'T', kind: 'loop', loop: 'Chorus', span: '3 passes', a: 0.55, b: 0.8, when: 'Today 10:58', len: '1:12', size: '6.2 MB', drv: 'ok', ov: 'kept', shaping: '1× · 0' },
+  { id: 3, name: 'Recording 3', track: 'A', kind: 'whole', span: 'Whole track', a: 0, b: 1, when: 'Yesterday', len: '3:25', size: '17 MB', drv: 'pending', ov: null, shaping: '0.7× · +2', copy: '0.7× copy' },
+  { id: 4, name: 'Recording 4', track: 'A', kind: 'loop', loop: 'Bridge', span: '2 passes', a: 0.8, b: 1, when: 'Yesterday', len: '0:35', size: '3.0 MB', drv: 'failed', ov: null, shaping: '0.7× · +2', copy: '0.7× copy' },
+  { id: 5, name: 'Recording 5', track: 'T', kind: 'punch', span: 'Chorus → Bridge', a: 0.55, b: 0.8, when: 'Oct 29', len: '0:27', size: '2.3 MB', drv: 'none', ov: null, shaping: '1× · 0' },
+  { id: 6, name: 'Recording 1', track: 'H', kind: 'segment', span: '1:42 → 2:10', a: 0.5, b: 0.63, when: 'Oct 28', len: '0:28', size: '2.4 MB', drv: 'none', ov: null, shaping: '1× · 0', changed: true, net: true },
+  { id: 7, name: 'Recording 2', track: 'H', kind: 'whole', span: 'Whole track', a: 0, b: 1, when: 'Oct 27', len: '4:02', size: '20 MB', drv: 'ok', ov: 'track', shaping: '1× · 0' }
 ];
 const TRACKS = { T: 'Sleep Song – Soprano', A: 'Sleep Song – Soprano (0.7× copy)', H: 'Hymn 4 – Bass' };
 const rec = (id) => RECS.find((r) => r.id === id);
@@ -296,15 +296,16 @@ const tagsOf = (r) => [
   r.kind === 'loop' ? `<span class="tag loop">Loop · ${r.loop}</span>` : '',
   r.kind === 'punch' ? '<span class="tag punch">Punch</span>' : '',
   r.copy ? `<span class="tag adj">${r.copy}</span>` : '',
-  r.saved === false ? '<span class="tag adj">Unsaved 0.7× +2</span>' : '',
   r.changed ? '<span class="tag chg">Original changed</span>' : '',
-  r.tier === 'kept' ? `<span class="tag kept">${'Kept offline'}</span>` : '<span class="tag auto">Not kept</span>'
+  r.drv === 'ok' ? '<span class="tag kept">On Drive</span>' : r.drv === 'pending' ? '<span class="tag auto" data-act="status">Upload pending</span>' : r.drv === 'failed' ? '<span class="tag gone" data-act="status">Upload failed</span>' : '',
+  r.ov === 'kept' ? '<span class="tag adj">Overlay offline</span>' : '',
+  r.net ? '<span class="tag chg">Needs connection</span>' : ''
 ].join('');
 
 const BASE = {
   screen: 'play', tools: false, rec: 'off', sheet: null, ctx: null, loopTrack: false, view: 'track', panelFrom: 'track',
   balance: 50, nudge: 12, expKind: 'mix', expDest: 'drive', expStep: 'choose', cal: 'intro', stop: 'hidden',
-  keepSw: false, pin: 550, pout: 800, pre: 3, after: true, lib: { q: '', f: 'all', sel: [], mode: false }, menuRec: 1, plSheet: false,
+  autoExp: true, expWhat: 'both', pin: 550, pout: 800, pre: 3, after: true, lib: { q: '', f: 'all', sel: [], mode: false }, menuRec: 1, plSheet: false,
   prompt: 'one', remember: false, setPolicy: 'ask', choose: [true, true, false]
 };
 const S = Object.assign({}, BASE, { lib: { q: '', f: 'all', sel: [], mode: false } });
@@ -314,14 +315,12 @@ const PRESETS = {
   recording: P({ rec: 'recording' }), recloop: P({ rec: 'recording', loopTrack: true }),
   stopped: P({ rec: 'stopped' }), short: P({ rec: 'stopped', stop: 'short' }), save: P({ rec: 'saving' }),
   panel: P({ sheet: 'panel' }), panelA: P({ sheet: 'panel', view: 'adjusted' }), panelP: P({ sheet: 'panel', view: 'parent' }), loopview: P({ screen: 'loop' }), loopA: P({ screen: 'loop', view: 'adjusted' }),
-  ctxseg: P({ ctx: 1 }), ctxloop: P({ ctx: 2, loopTrack: true }), ctxadj: P({ ctx: 3 }), ctxunsaved: P({ ctx: 1, sheet: null }),
-  sync: P({ ctx: 1, sheet: 'sync' }), cal: P({ ctx: 1, sheet: 'cal' }), calfail: P({ ctx: 1, sheet: 'cal', cal: 'fail' }),
+  ctxseg: P({ ctx: 1 }), ctxloop: P({ ctx: 2, loopTrack: true }), ctxadj: P({ ctx: 3 }),   sync: P({ ctx: 1, sheet: 'sync' }), cal: P({ ctx: 1, sheet: 'cal' }), calfail: P({ ctx: 1, sheet: 'cal', cal: 'fail' }),
   punch: P({ rec: 'ready', sheet: 'punch' }), punchbad: P({ rec: 'ready', sheet: 'punch', pin: 600, pout: 560 }), armed: P({ rec: 'armed' }), count: P({ rec: 'countdown' }), punchrec: P({ rec: 'punchrec' }),
   lib: P({ screen: 'library' }), libf: P({ screen: 'library', lib: { q: '', f: 'loop', sel: [], mode: false } }), libs: P({ screen: 'library', lib: { q: 'chorus', f: 'all', sel: [], mode: false } }),
   libsel: P({ screen: 'library', lib: { q: '', f: 'all', sel: [2, 5, 6], mode: true } }), libmenu: P({ screen: 'library', sheet: 'rowmenu' }), libfilter: P({ screen: 'library', sheet: 'filter' }), addpl: P({ screen: 'library', sheet: 'addpl', lib: { q: '', f: 'all', sel: [2, 5], mode: true } }),
   pl: P({ screen: 'playlist' }), plq: P({ screen: 'playlist', sheet: 'queue' }),
-  keep1: P({ screen: 'keeptrack', sheet: 'prompt', prompt: 'one' }), keepc: P({ screen: 'keeptrack', sheet: 'prompt', prompt: 'choose' }), keepb: P({ screen: 'keeptrack', sheet: 'prompt', prompt: 'bulk' }),
-  settings: P({ screen: 'settings' }), offline: P({ screen: 'offline' }), removal: P({ screen: 'offline', sheet: 'removal' }),
+  settings: P({ screen: 'settings' }), settingsoff: P({ screen: 'settings', autoExp: false }), offline: P({ screen: 'offline' }), status: P({ screen: 'library', sheet: 'status' }), more: P({ sheet: 'more' }), saveoff: P({ rec: 'saving', autoExp: false }),
   expchoose: P({ ctx: 1, sheet: 'export' }), expprog: P({ ctx: 1, sheet: 'export', expStep: 'progress' }), expdone: P({ ctx: 1, sheet: 'export', expStep: 'done' }), expfail: P({ ctx: 1, sheet: 'export', expStep: 'fail' }), expchg: P({ ctx: 6, sheet: 'export', expStep: 'changed' }), expnone: P({ ctx: 6, sheet: 'export', expStep: 'nosource', expKind: 'mix' })
 };
 
@@ -362,7 +361,7 @@ function shapeChips(s) {
   const txt = c ? c.shaping : '0.7× · +2';
   const why = c ? 'Locked to this recording' : locked ? 'Locked while recording' : '';
   const range = c && c.kind !== 'whole' ? `<span class="chip lock">${I.lock}${fmtT(c.a)} – ${fmtT(c.b)}</span>` : '';
-  return `<div class="chips"><span class="chip ${locked ? 'lock' : 'on'}">${locked ? I.lock : ''}${txt}</span>${range}${why ? `<span class="hint" style="width:100%">${why}${c && c.saved === false ? ' · unsaved adjustment applied' : ''}</span>` : ''}</div>`;
+  return `<div class="chips"><span class="chip ${locked ? 'lock' : 'on'}">${locked ? I.lock : ''}${txt}</span>${range}${why ? `<span class="hint" style="width:100%">${why}</span>` : ''}</div>`;
 }
 function ctxbar(s) {
   if (!s.ctx) { return ''; }
@@ -403,8 +402,8 @@ function playScreen(s) {
   const sub = s.ctx ? TRACKS[rec(s.ctx).track] : 'Verse 2 · Choir rehearsal';
   return `<div class="screen">
     <div class="hdr"><button class="ib" aria-label="Back">${I.back}</button><span class="sp">${s.ctx ? 'Recording' : 'Now playing'}</span>
-      <button class="ib" aria-label="Recordings" data-act="panel">${I.rec}<span class="badge">${s.view === 'adjusted' ? 3 : 4}</span></button>
-      <button class="ib" aria-label="Practice tools" aria-pressed="${toolsOn}" data-act="tools">${I.tool}</button></div>
+      <button class="ib" aria-label="Practice tools" aria-pressed="${toolsOn}" data-act="tools">${I.tool}</button>
+      <button class="ib" aria-label="More actions" data-act="more">${I.dots}</button></div>
     <div class="body"><div><div class="title">${s.ctx ? TRACKS[rec(s.ctx).track].split(' (')[0] : 'Sleep Song – Soprano'}</div><div class="subtitle">${s.ctx ? sub : 'Verse 2 · Choir rehearsal'}</div></div>
       ${ctxbar(s)}${wave(s)}${shapeChips(s)}
       <div class="transport"><div class="ring"></div></div></div>
@@ -415,10 +414,9 @@ function playScreen(s) {
 function loopScreen(s) {
   const adj = s.view === 'adjusted';
   const rows = RECS.filter((r) => r.kind === 'loop' && (adj ? r.loop === 'Bridge' : r.loop === 'Chorus'));
-  return `<div class="screen"><div class="hdr"><button class="ib">${I.back}</button><span class="sp">Loop</span><button class="ib" aria-pressed="true" data-act="panel">${I.rec}<span class="badge">${rows.length}</span></button></div>
+  return `<div class="screen"><div class="hdr"><button class="ib">${I.back}</button><span class="sp">Loop</span><button class="ib" aria-label="More actions" data-act="more">${I.dots}</button></div>
     <div class="body"><div><div class="title">${adj ? 'Bridge' : 'Chorus'}</div><div class="subtitle">${adj ? 'Loop of Sleep Song (0.7× copy) · 2:44 – 3:25' : 'Loop of Sleep Song – Soprano · 1:50 – 2:44'}</div></div>
       <div class="group">Recordings on this loop<b>${rows.length}</b></div>
-      <div class="note" style="font-size:12px">Only recordings made on this loop are listed. Recordings of the whole track, other loops, or segments are on the track.</div>
       <div>${rows.map((r) => recRow(r, false)).join('')}</div></div></div>`;
 }
 function recRow(r, withTrack, sel) {
@@ -437,17 +435,17 @@ function libRows(s) {
     if (f === 'segment') { return r.kind === 'segment' || r.kind === 'punch'; }
     if (f === 'loop') { return r.kind === 'loop'; }
     if (f === 'adjusted') { return !!r.copy || r.saved === false; }
-    if (f === 'kept') { return r.tier === 'kept'; }
-    if (f === 'auto') { return r.tier === 'auto'; }
+    if (f === 'drive') { return r.drv === 'ok'; }
+    if (f === 'nodrive') { return r.drv !== 'ok'; }
     return true;
   });
 }
 function libScreen(s) {
   const rows = libRows(s);
-  const F = [['all', 'All'], ['whole', 'Whole track'], ['segment', 'Segment'], ['loop', 'Loop'], ['adjusted', 'Adjusted'], ['kept', 'Kept offline'], ['auto', 'Not kept']];
+  const F = [['all', 'All'], ['whole', 'Whole track'], ['segment', 'Segment'], ['loop', 'Loop'], ['adjusted', 'Adjusted'], ['drive', 'On Drive'], ['nodrive', 'Not on Drive']];
   const chips = F.map(([k, l]) => `<span class="chip ${s.lib.f === k ? 'on' : ''}" data-act="f-${k}">${l}</span>`).join('');
   const list = rows.length ? rows.map((r) => recRow(r, true, s.lib.mode ? s.lib.sel.includes(r.id) : null)).join('') : '<div class="note">No recordings match.</div>';
-  const bar = s.lib.mode ? `<div class="selbar"><div class="cnt">${s.lib.sel.length} selected</div><div class="row"><button class="btn quiet" data-act="b-next">Play next</button><button class="btn quiet" data-act="b-queue">Add to queue</button><button class="btn quiet" data-act="b-pl">Add to playlist</button><button class="btn quiet" data-act="b-keep">Keep offline</button><button class="btn quiet" data-act="b-exp">Export</button><button class="btn danger" data-act="b-del">Delete</button></div></div>` : `<div class="mini"><div class="art">${I.rec}</div><div><b>Sleep Song – Soprano</b>Playing</div><div class="pp"></div></div>`;
+  const bar = s.lib.mode ? `<div class="selbar"><div class="cnt">${s.lib.sel.length} selected</div><div class="row"><button class="btn quiet" data-act="b-next">Play next</button><button class="btn quiet" data-act="b-queue">Add to queue</button><button class="btn quiet" data-act="b-pl">Add to playlist</button><button class="btn quiet" data-act="b-keep">Keep overlay offline</button><button class="btn quiet" data-act="b-exp">Export</button><button class="btn danger" data-act="b-del">Delete</button></div></div>` : `<div class="mini"><div class="art">${I.rec}</div><div><b>Sleep Song – Soprano</b>Playing</div><div class="pp"></div></div>`;
   return `<div class="screen"><div class="lib"><div class="top"><h3>Library</h3><button class="ib" data-act="sel-mode" aria-pressed="${s.lib.mode}" aria-label="Select">${I.list}</button></div>
     <div class="seg"><span data-act="seg-t">Tracks</span><span data-act="seg-p">Playlists</span><span class="on">Recordings</span></div>
     <div class="input">${I.search}<input data-act="q" placeholder="Search recordings, tracks, loops, markers" value="${s.lib.q.replace(/"/g, '&quot;')}"><button class="ib" style="width:30px;height:30px;border:0" data-act="filter" aria-label="Filters and sort">${I.filter}</button></div>
@@ -465,28 +463,22 @@ function playlistScreen(s) {
       <div class="ptitem"><div class="art">⟲</div><div><b>Chorus<span class="tag loop">Loop</span></b><span class="s">Sleep Song – Soprano · 0:54</span></div></div>
       <div class="ptitem"><div class="art rc">${I.rec}</div><div><b>Recording 2<span class="tag loop">Loop · Chorus</span><span class="tag">Recording</span></b><span class="s">Sleep Song – Soprano · 3 passes · 1:12</span></div><span class="r">${I.dots}</span></div>
       <div class="ptitem"><div class="art rc">${I.rec}</div><div><b>Recording 5<span class="tag punch">Punch</span><span class="tag">Recording</span></b><span class="s">Sleep Song · Chorus → Bridge · 0:27</span></div><span class="r">${I.dots}</span></div>
-      <div class="ptitem dis"><div class="art rc">${I.rec}</div><div><b>Recording 9<span class="tag gone">Unavailable</span></b><span class="s">Removed to free space · skipped when playing</span></div></div>
+      <div class="ptitem dis"><div class="art rc">${I.rec}</div><div><b>Recording 9<span class="tag gone">Unavailable</span></b><span class="s">Deleted · skipped when playing</span></div></div>
     </div><div class="note" style="font-size:12px">A recording plays over its track in its recorded context, stops at the end of the recorded range, then the next item starts.</div></div>
     <div class="mini"><div class="art">${I.rec}</div><div><b>Recording 2 · Chorus</b>Playlist · 3 of 5</div><div class="pp"></div></div></div>`;
 }
 
 /* ---------- keep-offline, settings, offline files ---------- */
-function keepScreen() {
-  return `<div class="screen"><div class="lib"><div class="top"><button class="ib">${I.back}</button><h3 style="font-size:20px">Library</h3></div>
-    <div class="seg"><span class="on">Tracks</span><span>Playlists</span><span>Recordings</span></div>
-    <div class="list"><div class="ptitem"><div class="art">♪</div><div><b>Sleep Song – Soprano</b><span class="s">3:25 · 4 recordings</span></div><span class="r">${I.dots}</span></div>
-    <div class="ptitem"><div class="art">♪</div><div><b>Hymn 4 – Bass</b><span class="s">4:02 · 2 recordings</span></div></div>
-    <div class="ptitem"><div class="art">♪</div><div><b>Kyrie – Alto</b><span class="s">2:51</span></div></div></div></div></div>`;
-}
 function settingsScreen(s) {
-  const seg = (v, l) => `<span class="${s.setPolicy === v ? 'on' : ''}" data-act="pol-${v}">${l}</span>`;
-  return `<div class="screen"><div class="lib"><div class="top"><button class="ib">${I.back}</button><h3 style="font-size:20px">Settings · Offline</h3></div>
-    <div class="setrow"><div>Cache size<small>Track audio that is not kept offline</small></div><span class="r">500 MB</span></div>
-    <div class="setrow"><div>Recordings cache size<small>Recordings that are not kept offline. Oldest played are removed first.</small></div><span class="r">200 MB</span></div>
-    <div class="cap2" style="margin-top:6px">Recordings when keeping tracks offline</div>
-    <div class="seg">${seg('ask', 'Ask')}${seg('always', 'Always keep them')}${seg('never', 'Never keep them')}</div>
-    <div class="hint">Applies when you keep one or several tracks offline. Recordings are never kept automatically unless you choose “Always”.</div>
-    <div class="setrow"><div>Offline files<small>Tracks, scores, and recordings</small></div><span class="r">›</span></div></div></div>`;
+  const seg = (v, l) => `<span class="${s.expWhat === v ? 'on' : ''}" data-act="what-${v}">${l}</span>`;
+  const auto = s.autoExp ? `<div class="setrow"><div>Folder<small>Created in My Drive if missing</small></div><span class="r">Choir Recordings ›</span></div>
+    <div class="cap2">Export</div><div class="seg">${seg('rec', 'Recording only')}${seg('mix', 'Mix')}${seg('both', 'Both')}</div>
+    <div class="setrow"><div>Back up existing recordings<small>3 recordings are not on Drive yet</small></div><button class="btn" data-act="close-sheet">Back up</button></div>` : '';
+  return `<div class="screen"><div class="lib"><div class="top"><button class="ib">${I.back}</button><h3 style="font-size:20px">Settings · Recordings</h3></div>
+    <div class="setrow"><div>Storage used<small>Recordings are never removed automatically</small></div><span class="r">61 MB</span></div>
+    <div class="setrow"><div>Overlay cache size<small>Track segments kept for fast and offline overlay. Purged first when full.</small></div><span class="r">100 MB</span></div>
+    <div class="setrow"><div>Auto-export to Drive<small>${s.autoExp ? 'Uploads each new recording in the background' : 'Off. Copy new recordings to Drive automatically.'}</small></div><span class="sw ${s.autoExp ? 'on' : ''}" data-act="autoexp" style="margin-left:auto"></span></div>
+    ${auto}</div></div>`;
 }
 function offlineScreen() {
   return `<div class="screen"><div class="lib"><div class="top"><button class="ib">${I.back}</button><h3 style="font-size:20px">Offline files</h3></div>
@@ -494,9 +486,11 @@ function offlineScreen() {
     <div class="group">Tracks<b>3</b></div>
     <div class="optrow"><div>Sleep Song – Soprano<small>Kept offline</small></div><span class="r">9.1 MB</span></div>
     <div class="optrow"><div>Hymn 4 – Bass<small>Cached</small></div><span class="r">6.4 MB</span></div>
-    <div class="group">Recordings<b>Cache 18 MB of 200 MB · Kept 24 MB</b></div>
-    ${RECS.slice(0, 4).map((r) => `<div class="optrow"><div>${r.name} · ${TRACKS[r.track].split(' –')[0]}<small>${r.tier === 'kept' ? 'Kept offline' : 'Automatic'} · ${r.span}</small></div><span class="r">${r.size}</span></div>`).join('')}
-    <div class="hint">Select to keep, remove from offline, or delete.</div></div></div>`;
+    <div class="group">Recording overlay audio<b>11 MB of 100 MB</b></div>
+    <div class="optrow"><div>Chorus loop · Recording 2<small>Automatic · purged first</small></div><span class="r">3.1 MB</span></div>
+    <div class="optrow"><div>Verse 2 → Chorus · Recording 1<small>Kept offline</small></div><span class="r">2.7 MB</span></div>
+    <div class="group">Recordings<b>61 MB · never removed automatically</b></div>
+    ${RECS.slice(0, 3).map((r) => `<div class="optrow"><div>${r.name} · ${TRACKS[r.track].split(' –')[0]}<small>${r.span} · delete only</small></div><span class="r">${r.size}</span></div>`).join('')}</div></div>`;
 }
 
 /* ---------- sheets ---------- */
@@ -505,13 +499,21 @@ function toolsMenu(s) {
   const row = (icon, label, on, act) => `<button class="mrow" role="switch" aria-checked="${on}" data-act="${act}">${icon}<span>${label}</span><span class="sw ${on ? 'on' : ''}"></span></button>`;
   return `<div class="menu" role="menu"><h4>Practice tools</h4>${row(I.piano, 'Piano', false, 'noop')}${row(I.mic, 'Pitch detection', false, 'noop')}${row(I.rec, 'Recording', recOn, 'toggle-rec')}</div>`;
 }
+function moreMenu(s) {
+  const n = s.view === 'adjusted' ? 3 : 4;
+  const row = (ic, l, act, mute) => `<button class="mrow" data-act="${act}">${ic}<span>${l}</span>${mute ? `<span style="margin-left:auto;color:var(--text-faint);font-size:13px">${mute}</span>` : ''}</button>`;
+  return `<div class="menu" role="menu"><h4>More actions</h4>${row(I.list, 'Make loop', 'close-sheet')}${row(I.pin, 'Add marker here', 'close-sheet')}${row(I.list, 'Markers…', 'close-sheet')}${row(I.rec, 'Recordings', 'panel', n)}</div>`;
+}
 function recMenu() {
   return `<div class="menu low" role="menu"><button class="mrow" data-act="start">${I.rec}<span>Record now</span></button><button class="mrow" data-act="punch">${I.lock}<span>Record between…</span></button></div>`;
 }
 function sheetSave(s) {
+  const auto = s.autoExp
+    ? `<div class="optrow"><div>Auto-export is on<small>Uploading ${s.expWhat === 'rec' ? 'the recording' : s.expWhat === 'mix' ? 'the mix' : 'the recording and the mix'} to Choir Recordings…</small></div><span class="r">62%</span></div>`
+    : `<div class="optrow"><div>Auto-export is off<small>Copy new recordings to Drive automatically.</small></div><button class="btn" style="margin-left:auto" data-act="to-settings">Turn on…</button></div>`;
   return `<div class="sheet"><div class="grab"></div><h3>Recording saved</h3><div class="sub">0:42 · 3.6 MB · Verse 2 → Chorus · recorded against 0.7× +2</div>
     <div class="field"><small>Name</small><div class="input">Recording 6</div></div>
-    <div class="optrow"><div>Keep offline<small>${s.keepSw ? 'Kept: it will not be removed to free space.' : 'Not kept: it may be removed to free space. Keep it offline or export it to be safe.'}</small></div><span class="sw ${s.keepSw ? 'on' : ''}" data-act="keepsw" style="margin-left:auto"></span></div>
+    <div class="note">Saved on this device. Recordings are never removed automatically.</div>${auto}
     <div class="acts"><button class="btn danger" data-act="discard">Delete</button><button class="btn" data-act="export">Export…</button><button class="btn primary" data-act="done-save">Done</button></div></div>`;
 }
 function sheetPanel(s) {
@@ -524,8 +526,7 @@ function sheetPanel(s) {
   const sect = (nm) => `<div class="group">${nm} loop<b>${loops.filter((r) => r.loop === nm).length}</b></div>${loops.filter((r) => r.loop === nm).map((r) => recRow(r, false)).join('')}`;
   return `<div class="sheet"><div class="grab"></div><h3>Recordings</h3><div class="sub">${title} · stored on this device${v === 'parent' ? ' · includes recordings of its 0.7× copy' : ''}</div>
     <div class="group">This track<b>${main.length}</b></div>${main.length ? main.map((r) => recRow(r, false)).join('') : '<div class="sub">None yet.</div>'}
-    ${names.length ? `<div class="group" style="margin-top:12px;color:var(--warning)">Loops</div>${names.map(sect).join('')}` : ''}
-    <div class="total"><span>Recording tool is off: viewing works anyway</span></div></div>`;
+    ${names.length ? `<div class="group" style="margin-top:12px;color:var(--warning)">Loops</div>${names.map(sect).join('')}` : ''}</div>`;
 }
 function sheetSync(s) {
   const v = (s.nudge > 0 ? '+' : '') + s.nudge;
@@ -585,7 +586,7 @@ function sheetPunch(s) {
 function sheetRowMenu(s) {
   const r = rec(s.menuRec);
   return `<div class="sheet"><div class="grab"></div><h3>${r.name}</h3><div class="sub">${TRACKS[r.track]} · ${r.span}</div>
-    ${[['Play', I.rec], ['Play next', I.list], ['Add to queue', I.list], ['Add to playlist…', I.list], [r.tier === 'kept' ? 'Remove from offline' : 'Keep offline', I.pin], ['Export…', I.drive], ['Rename', I.dots]].map(([l, ic]) => `<button class="mrow" data-act="close-sheet">${ic}<span>${l}</span></button>`).join('')}
+    ${[['Play', I.rec], ['Play next', I.list], ['Add to queue', I.list], ['Add to playlist…', I.list], [r.ov === 'kept' ? 'Remove overlay from offline' : r.ov === 'track' ? 'Overlay uses the track' : 'Keep overlay offline', I.pin], ['Export…', I.drive], ['Rename', I.dots]].map(([l, ic]) => `<button class="mrow" data-act="close-sheet">${ic}<span>${l}</span></button>`).join('')}
     <button class="mrow danger" data-act="close-sheet">${I.close}<span>Delete…</span></button></div>`;
 }
 function sheetFilter() {
@@ -607,28 +608,16 @@ function sheetQueue() {
     <div class="ptitem"><div class="art">♪</div><div><b>Hymn 4 – Bass</b><span class="s">Track · 4:02</span></div></div>
     <div class="ptitem"><div class="art rc">${I.rec}</div><div><b>Recording 1<span class="tag chg">Original changed</span></b><span class="s">Hymn 4 · 1:42 → 2:10</span></div></div></div>`;
 }
-function sheetPrompt(s) {
-  const cb = `<div class="cb" data-act="remember"><i class="${s.remember ? 'on' : ''}">${s.remember ? I.check : ''}</i>Remember my choice</div>`;
-  if (s.prompt === 'choose') {
-    const rows = ['Recording 1 · Verse 2 → Chorus · 3.6 MB', 'Recording 2 · Chorus loop · 6.2 MB', 'Recording 5 · Chorus → Bridge · 2.3 MB'].map((t, i) => `<div class="optrow"><div>${t}</div><span class="sw ${s.choose[i] ? 'on' : ''}" data-act="ch-${i}" style="margin-left:auto"></span></div>`).join('');
-    return `<div class="sheet"><div class="grab"></div><h3>Choose recordings to keep</h3><div class="sub">Sleep Song – Soprano</div>${rows}${cb}<div class="acts"><button class="btn quiet" data-act="close-sheet">Back</button><button class="btn primary" data-act="close-sheet">Keep ${s.choose.filter(Boolean).length}</button></div></div>`;
-  }
-  const bulk = s.prompt === 'bulk';
-  return `<div class="sheet"><div class="grab"></div><h3>${bulk ? 'Keep 5 tracks offline' : 'Keep Sleep Song – Soprano offline'}</h3>
-    <div class="sub">${bulk ? '3 of these tracks have 7 recordings (31 MB): Sleep Song 4, Hymn 4 2, Evening Prayer 1.' : 'It has 3 recordings (12.1 MB). Recordings are not kept unless you say so.'}</div>
-    <div class="note">Keep ${bulk ? 'those recordings' : 'its recordings'} offline too?</div>${cb}
-    <div class="acts"><button class="btn quiet" data-act="close-sheet">Not now</button><button class="btn" data-act="keep-choose">Choose…</button><button class="btn primary" data-act="close-sheet">Keep all</button></div></div>`;
-}
-function sheetRemoval() {
-  return `<div class="sheet"><div class="grab"></div><h3>Free up space?</h3><div class="sub">The recordings cache is over 200 MB. These automatic recordings are next to be removed. Removing deletes them.</div>
-    <div class="optrow"><div>Recording 3 · Sleep Song (0.7× copy)<small>Yesterday · played once</small></div><span class="r">17 MB</span></div>
-    <div class="optrow"><div>Recording 1 · Hymn 4<small>Oct 28 · never replayed</small></div><span class="r">2.4 MB</span></div>
-    <div class="acts"><button class="btn danger" data-act="close-sheet">Let them go</button><button class="btn primary" data-act="close-sheet">Keep them</button></div></div>`;
+function sheetStatus() {
+  return `<div class="sheet"><div class="grab"></div><h3>Drive status · Recording 3</h3><div class="sub">Auto-export to Choir Recordings</div>
+    <div class="optrow"><div>Recording only<small>Sleep Song – Recording 3.wav</small></div><span class="tag kept">On Drive</span></div>
+    <div class="optrow"><div>Mix<small>The original track could not be fetched (offline)</small></div><span class="tag gone">Failed</span></div>
+    <div class="acts"><button class="btn quiet" data-act="close-sheet">Close</button><button class="btn primary" data-act="close-sheet">Retry mix</button></div></div>`;
 }
 
 /* ---------- render ---------- */
 function render(s, live) {
-  const screens = { play: playScreen, loop: loopScreen, library: libScreen, playlist: playlistScreen, keeptrack: keepScreen, settings: settingsScreen, offline: offlineScreen };
+  const screens = { play: playScreen, loop: loopScreen, library: libScreen, playlist: playlistScreen, settings: settingsScreen, offline: offlineScreen };
   let sheet = '';
   if (s.sheet === 'panel') { sheet = sheetPanel(s); }
   else if (s.sheet === 'sync') { sheet = sheetSync(s); }
@@ -639,10 +628,9 @@ function render(s, live) {
   else if (s.sheet === 'filter') { sheet = sheetFilter(); }
   else if (s.sheet === 'addpl') { sheet = sheetAddPl(); }
   else if (s.sheet === 'queue') { sheet = sheetQueue(); }
-  else if (s.sheet === 'prompt') { sheet = sheetPrompt(s); }
-  else if (s.sheet === 'removal') { sheet = sheetRemoval(); }
+  else if (s.sheet === 'status') { sheet = sheetStatus(); }
   else if (s.rec === 'saving') { sheet = sheetSave(s); }
-  const menu = s.tools ? toolsMenu(s) : s.sheet === 'recmenu' ? recMenu() : '';
+  const menu = s.tools ? toolsMenu(s) : s.sheet === 'recmenu' ? recMenu() : s.sheet === 'more' ? moreMenu(s) : '';
   const scrim = (sheet || menu) ? '<div class="scrim" data-act="close-sheet"></div>' : '';
   return `<div class="phone" data-live="${live ? 1 : 0}">${(screens[s.screen] || playScreen)(s)}${scrim}${menu}${sheet}</div>`;
 }
@@ -651,12 +639,12 @@ function apply(preset) { const keep = JSON.parse(JSON.stringify(preset)); Object
 
 /* controls */
 const GROUPS = [
-  ['Recording strip', [['idle', 'Idle'], ['tools', 'Practice tools menu'], ['explain', 'First run'], ['blocked', 'Mic blocked'], ['ready', 'Ready (Record ▾)'], ['recording', 'Recording'], ['recloop', 'Recording a loop'], ['stopped', 'Stopped'], ['short', 'Too short'], ['save', 'Save sheet']]],
+  ['Recording strip', [['idle', 'Idle'], ['tools', 'Practice tools menu'], ['explain', 'First run'], ['blocked', 'Mic blocked'], ['ready', 'Ready (Record ▾)'], ['recording', 'Recording'], ['recloop', 'Recording a loop'], ['stopped', 'Stopped'], ['short', 'Too short'], ['save', 'Save sheet'], ['saveoff', 'Save sheet (auto-export off)']]],
   ['Punch in / out', [['punch', 'Setup sheet'], ['punchbad', 'Invalid range'], ['armed', 'Armed'], ['count', 'Countdown'], ['punchrec', 'Recording in range']]],
-  ['Viewing recordings (tool off)', [['panel', 'Track panel'], ['panelA', 'Adjusted copy panel'], ['panelP', 'Parent panel'], ['loopview', 'Loop view'], ['loopA', 'Loop of adjusted copy']]],
+  ['Viewing recordings (tool off)', [['more', 'More actions menu'], ['panel', 'Track panel'], ['panelA', 'Adjusted copy panel'], ['panelP', 'Parent panel'], ['loopview', 'Loop view'], ['loopA', 'Loop of adjusted copy']]],
   ['Opening one (locked)', [['ctxseg', 'Segment'], ['ctxloop', 'Loop'], ['ctxadj', 'Adjusted copy'], ['sync', 'Sync'], ['cal', 'Calibrate'], ['calfail', 'Not heard']]],
   ['Library, playlists, queue', [['lib', 'Recordings view'], ['libs', 'Search “chorus”'], ['libf', 'Filter: loop'], ['libfilter', 'Filters sheet'], ['libmenu', 'Row menu'], ['libsel', 'Selection + bulk'], ['addpl', 'Add to playlist'], ['pl', 'Playlist'], ['plq', 'Queue']]],
-  ['Storage and offline', [['keep1', 'Keep track: prompt'], ['keepc', 'Choose…'], ['keepb', 'Bulk prompt'], ['settings', 'Settings'], ['offline', 'Offline files'], ['removal', 'First removal']]],
+  ['Storage, settings, auto-export', [['settings', 'Settings · auto-export on'], ['settingsoff', 'Settings · auto-export off'], ['status', 'Drive status'], ['offline', 'Offline files']]],
   ['Export', [['expchoose', 'Export'], ['expprog', 'Exporting'], ['expdone', 'Exported'], ['expfail', 'Failed'], ['expchg', 'Original changed'], ['expnone', 'Mix unavailable']]]
 ];
 GROUPS.forEach(([title, items]) => {
@@ -669,7 +657,7 @@ GROUPS.forEach(([title, items]) => {
   });
   $('#controls').appendChild(d);
 });
-const hintEl = document.createElement('p'); hintEl.className = 'hint'; hintEl.textContent = 'Inside the phone: the toolbox opens Practice tools; Recordings opens the panel (works with the tool off); rows open a recording in its locked context; the punch handles drag; the Library search and filter chips work.'; $('#controls').appendChild(hintEl);
+const hintEl = document.createElement('p'); hintEl.className = 'hint'; hintEl.textContent = 'Inside the phone: the toolbox opens Practice tools; More actions → Recordings opens the panel (works with the tool off); rows open a recording in its locked context; the punch handles drag; the Library search and filter chips work.'; $('#controls').appendChild(hintEl);
 
 document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-act]');
@@ -683,11 +671,15 @@ document.addEventListener('click', (e) => {
   else if (a === 'continue') { S.rec = 'ready'; }
   else if (a === 'close-rec') { S.rec = 'off'; }
   else if (a === 'start') { S.rec = 'recording'; S.sheet = null; }
+  else if (a === 'more') { S.sheet = S.sheet === 'more' ? null : 'more'; S.tools = false; }
   else if (a === 'recmenu') { S.sheet = S.sheet === 'recmenu' ? null : 'recmenu'; }
   else if (a === 'punch') { S.sheet = 'punch'; }
   else if (a === 'stop') { S.rec = 'saving'; }
   else if (a === 'save') { S.rec = 'saving'; }
-  else if (a === 'keepsw') { S.keepSw = !S.keepSw; }
+  else if (a === 'autoexp') { S.autoExp = !S.autoExp; }
+  else if (a === 'to-settings') { S.rec = 'ready'; S.sheet = null; S.screen = 'settings'; }
+  else if (a.startsWith('what-')) { S.expWhat = a.slice(5); }
+  else if (a === 'status') { S.sheet = 'status'; }
   else if (a === 'done-save' || a === 'discard') { S.rec = 'ready'; S.sheet = null; }
   else if (a === 'panel') { S.sheet = 'panel'; S.tools = false; }
   else if (a.startsWith('open-')) { S.ctx = num('open-'); S.screen = 'play'; S.sheet = null; S.rec = 'off'; }
@@ -761,7 +753,9 @@ const G = [
   ['recording', 'Recording', 'Indicator, elapsed time, marker context, locked shaping.'],
   ['recloop', 'Recording a loop', 'Owned by the loop; passes counted.'],
   ['stopped', 'Stopped safely', 'Reason shown; what was captured is kept.'],
-  ['save', 'Save sheet', 'Not kept by default; Keep offline and Export are one tap.'],
+  ['save', 'Save sheet', 'Saved on this device, never removed; auto-export status; Export.'],
+  ['saveoff', 'Save sheet, auto-export off', 'Offers Turn on… for auto-export.'],
+  ['more', 'More actions menu', 'Recordings sits here with a muted count; no header badge.'],
   ['Punch in / out', null],
   ['punch', 'Setup sheet', 'Drag handles (snap to markers), tap flags, type times, pre-roll.'],
   ['punchbad', 'Invalid range', 'Out must come after In.'],
@@ -775,7 +769,7 @@ const G = [
   ['loopview', 'Loop view', 'Only recordings made on this loop.'],
   ['loopA', 'Loop of an adjusted copy', 'Also listed under the copy and its parent.'],
   ['Opening a recording', null],
-  ['ctxseg', 'Segment context', 'Only the recorded range; unsaved 0.7× +2 applied; all locked.'],
+  ['ctxseg', 'Segment context', 'Only the recorded range; its 0.7× +2 applied; all locked.'],
   ['ctxloop', 'Loop context', 'The loop opens; passes follow the loop.'],
   ['ctxadj', 'Adjusted copy context', 'Whole copy with its adjustment locked.'],
   ['sync', 'Sync sheet', '1 ms and 10 ms steps, ±250 ms, Use for this device.'],
@@ -791,13 +785,11 @@ const G = [
   ['addpl', 'Add to playlist', 'From the row menu or a selection.'],
   ['pl', 'Playlist', 'Recordings sit with tracks and loops; removed ones are skipped.'],
   ['plq', 'Queue', 'Play next and Add to queue work for recordings.'],
-  ['Storage and offline', null],
-  ['keep1', 'Keep track offline: ask', 'Recordings are never kept silently.'],
-  ['keepc', 'Choose recordings', 'A switch per recording.'],
-  ['keepb', 'Bulk keep', 'One prompt for several tracks.'],
-  ['settings', 'Settings · Offline', 'Remembered default and recordings cache size.'],
-  ['offline', 'Offline files', 'Recordings group with tiers; track audio apart.'],
-  ['removal', 'First removal notice', 'Lists what will be deleted; Keep them or Let them go.'],
+  ['Storage, settings, auto-export', null],
+  ['settings', 'Settings · Recordings', 'Storage used, overlay cache size, auto-export, folder, and what to export.'],
+  ['settingsoff', 'Auto-export off', 'The default; one switch to turn on.'],
+  ['status', 'Drive status', 'Per export: On Drive, or failed with the reason and Retry.'],
+  ['offline', 'Offline files', 'Overlay segments (purgeable) apart from recordings (delete only).'],
   ['Export', null],
   ['expchoose', 'Export', 'Recording only or mix; Drive or download; name and folder.'],
   ['expprog', 'Exporting', 'Progress and cancel.'],

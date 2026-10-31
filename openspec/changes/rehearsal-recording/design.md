@@ -15,9 +15,9 @@ Other facts that shape the design: playback on web is `window.rntp.getMediaEleme
 - Let the user start and stop by hand at any point, over any segment, an active loop, or a punch range, with the nearby markers shown.
 - Play a recording with its track in sync through play, pause, seek, and loop wrap, without ever shaping the recording, and open it in exactly the context it was made in.
 - Keep each recording self-contained metadata, so overlay and export can be rebuilt from it without keeping copies of the original audio.
-- Follow the offline model of tracks for the recording audio: automatic and kept tiers, never kept implicitly.
+- Keep the raw recording in dedicated storage that is never purged automatically, and cache only the derived overlay material, which can be purged.
 - Make recordings browsable (per track, per loop, and across the library), queueable, and usable in playlists without becoming library files.
-- Export a recording and a mix, as a download or to new Drive files.
+- Export a recording and a mix, as a download or to new Drive files, by hand or automatically.
 - Put the sync and gain logic in one reusable, testable place.
 
 **Non-Goals:**
@@ -27,7 +27,7 @@ Other facts that shape the design: playback on web is `window.rntp.getMediaEleme
 - Compressed export formats (MP3, AAC); a browser has no encoder for them and adding one is its own decision.
 - Native platforms.
 - Crash recovery of a recording in progress.
-- Syncing recordings between devices (they live on the device that made them, plus whatever the user exports).
+- Syncing recordings between devices (they live on the device that made them; exports and auto-export give Drive copies, not sync).
 
 ## Decisions
 
@@ -49,14 +49,11 @@ The recording's audio is late relative to the track by the output latency (track
 
 The compensation applied at recording time is stored on the recording, and the nudge separately, so changing the device default never silently moves old recordings. Alternative: loopback as the primary path; rejected because it fails for headphone users and for noisy rooms, and the nudge needs to work for everyone.
 
-### Decision 4: Recordings are WAV in their own IndexedDB store, with the tracks' two tiers
+### Decision 4: Recordings are WAV in their own, never-purged IndexedDB store
 
-Recordings are written as 16-bit mono WAV at the capture sample rate: lossless, sample-accurate, trivial to decode, about 5 MB per minute at 44.1 kHz. The recorder converts blocks to Int16 as they arrive (half the memory of Float32), caps a recording at 10 minutes, and writes the WAV and the recording record in one transaction on stop. A new database holds `recordings` (the metadata, no bytes) and `recording-audio` (the Blob), keyed by recording id and indexed by owner. Its storage follows the offline model of tracks, but separately from the track audio store so neither budget eats the other:
+Recordings are written as 16-bit mono WAV at the capture sample rate: lossless, sample-accurate, trivial to decode, about 5 MB per minute at 44.1 kHz. The recorder converts blocks to Int16 as they arrive (half the memory of Float32), caps a recording at 10 minutes, and writes the WAV and the recording record in one transaction on stop. A new database holds `recordings` (the metadata, no bytes) and `recording-audio` (the Blob), keyed by recording id and indexed by owner.
 
-- **Automatic tier:** every new recording starts here, counted against a recordings cache size (default 200 MB, set in the same settings page as the track cache size) and removed least recently played first when the budget is exceeded. A recording that is selected or playing is never removed.
-- **Kept tier:** `Keep offline` on a recording exempts it from eviction until the user removes it, and kept recordings do not count toward the recordings cache size.
-
-Removing a recording from the store deletes its audio and its metadata together (the recording is gone, as a deleted file would be), so the design makes the risk visible: an automatic recording shows a `Not kept offline` badge with a one-tap `Keep offline`, the save sheet says so, an `Export` is one step away, and the first time automatic recordings are about to be removed the user is told which ones and offered to keep them. Alternatives: MediaRecorder with Opus (small, but lossy, a second microphone path, no sample-accurate start); reusing the track `AudioStore` (shares budget and eviction rules with downloaded tracks, so a day of recording could evict the tracks being practised); never evicting (simpler, but unlike the offline behaviour users already know, and unbounded).
+The raw recording is the user's own work and cannot be recreated, so this store has no cache tier and no budget: nothing removes a recording except the user deleting it. Cache clearing, offline-cache eviction, forgetting a Drive session, and signing out do not touch it. The app asks the browser for persistent storage when the first recording is saved, shows the total used in Settings and the offline files view, and reports a failed write (quota or a blocked store) as a stop reason without losing what was captured, so the user can export it. Safety beyond the device comes from export (Decision 12) and auto-export (Decision 19). Alternatives: MediaRecorder with Opus (small, but lossy, a second microphone path, no sample-accurate start); the track `AudioStore` (its eviction and budget rules would put recordings at risk); automatic and kept tiers like tracks (an earlier draft; rejected because evicting a raw recording destroys it).
 
 ### Decision 5: The overlay rides the track's media element
 
@@ -84,7 +81,7 @@ It holds the alignment math (the timeline lookup in both directions, nudge), the
 
 ### Decision 8: Consent, indicator, and stopping
 
-Recording is separate from the pitch tool's explanation: the first time the user starts a recording, a short note says that audio is recorded and kept on this device under the track until removed, and names the headphones assumption. While recording, the strip shows a clear recording state with elapsed time and a stop control. A recording stops, keeping what was captured, when the user stops it, the app is hidden, the microphone is interrupted or ends, the track ends, storage fails, an armed punch range reaches its out point, or the 10-minute cap is reached; the reason is shown. A recording under one second is discarded with a note. The pitch no-persistence guard test stays as is; a new guard test confirms the recording code is the only place that writes audio samples.
+Recording is separate from the pitch tool's explanation: the first time the user starts a recording, a short note says that audio is recorded and kept on this device under the track until the user deletes it (never removed automatically), that it can be exported or auto-exported to Drive, and names the headphones assumption. While recording, the strip shows a clear recording state with elapsed time and a stop control. A recording stops, keeping what was captured, when the user stops it, the app is hidden, the microphone is interrupted or ends, the track ends, storage fails, an armed punch range reaches its out point, or the 10-minute cap is reached; the reason is shown. A recording under one second is discarded with a note. The pitch no-persistence guard test stays as is; a new guard test confirms the recording code is the only place that writes audio samples.
 
 ### Decision 9: Metadata makes a recording self-contained
 
@@ -109,7 +106,7 @@ A recording is owned by exactly one entity, the one it was made on: a track, a s
 - **A recording made over a session adjustment that was never saved** belongs to the track, with the adjustment values stored in `shaping` and `lineage`.
 - **Not library files:** like markers and lyrics, recordings are not tracks. They do not appear in the Files tree or in track search results. They appear in the playback screen's Recordings panel, in loop and adjusted-track views as described, in the Library `Recordings` view (Decision 15), and in playlists and queues as playlist items (Decision 16).
 
-The Recordings panel is a viewer, like lyrics and sheet music, and opens from the playback screen whether or not the Recording tool is on. The tool only controls the recording strip and the start and arm controls. The panel's header badge counts the recordings the view lists.
+The Recordings panel is a viewer, like lyrics and sheet music, and opens from a `Recordings` action in the playback screen's `More actions` menu (beside `Make loop` and `Add marker here`), whether or not the Recording tool is on. There is no top-level button or count badge, since recording is occasional; the menu row shows a muted count. The tool only controls the recording strip and the start and arm controls.
 
 ### Decision 11: Opening a recording restores its recorded context, locked
 
@@ -118,7 +115,7 @@ Selecting a recording from any list opens its track in the context it was made i
 - **A loop recording** opens the loop (the loop entity's view), with the loop's range as the only playable range.
 - **A recording of an adjusted track** opens the adjusted track, with its adjustment active.
 - **A segment or punch recording** opens the owning track limited to the recorded range, from the first to the last track position the timeline covers. The waveform, position, and seeking show only that range.
-- **A session adjustment** is applied to the session for the recording: the stored speed and pitch are set and locked.
+- **Any other adjustment** (speed and pitch set on the session) is applied for the recording: the stored speed and pitch are set and locked. The view does not distinguish adjustments that were saved as a track from ones that were not.
 
 In every case the view says `Recording: <name>`, the range, the speed and pitch, and the loop are locked, and one control, `Leave recording`, returns to the previous context and shaping. While open, the balance and the sync control are available, and the recording and its track play together. Playback never needs a different speed because the context carries the one it was made with.
 
@@ -134,30 +131,31 @@ Each export goes either to the device or to Drive. `Download` saves the file thr
 
 Alternatives: mix from the current live shaping state; rejected because the mix would not match what was sung against. Capture the mixed output live while recording; rejected because it would fix the balance at record time and miss seeks the user makes later.
 
-### Decision 13: The original audio is found from metadata, never copied
+### Decision 13: The original audio is found from metadata, and its overlay segment is a purgeable cache
 
-A recording does not store, pin, or own any copy of the track's audio. The overlay and the mix ask the normal track audio path for `source.driveFileId`, which serves it from the recent playback cache, the offline store, or Drive, whichever has it. Recording a track means it was just played, so it is normally in the cache, and a track the user has kept offline is already there; no recording feature changes either. The audio stays pinned only by the user's own `Keep offline` on the track. Consequences:
+A recording does not store, pin, or own any copy of the track's audio. The overlay and the mix ask the normal track audio path for `source.driveFileId`, which serves it from the recent playback cache, the offline store, or Drive, whichever has it. A track the user has kept offline is already there. Consequences:
 
 - Overlay and mix are rebuildable from metadata alone, as long as the original can be fetched.
 - If the file's content version differs from `source.contentVersion`, the overlay plays against the current file and says `Original track changed`: alignment may be off, and the sync control can compensate. The mix export warns the same way and goes ahead only if the user confirms.
 - If the original cannot be fetched (deleted, or offline and not stored), the recording plays alone, and the overlay says why; the recording alone can still be exported.
-- Recordings do not protect their track's audio from cache eviction, and keeping a recording offline does not keep its track offline (and the reverse, Decision 14). Lists flag a recording whose overlay would need a download (`Needs connection for overlay`) when the track is neither cached nor kept.
 
-Alternative: pin a copy of the original with each recording (what an earlier draft did, as an option). Rejected: a second copy of the same file, an option the user would have to understand, and the same result is reached by the normal caches.
+**The overlay segment cache** is what is cached and purged for fast and offline overlay. The first time a recording's overlay plays, the stretch of the original that the recording covers (its recorded range, decoded to WAV at natural speed; shaping is applied live as usual) is stored in a separate, purgeable cache, keyed by file id, content version, and range. A short loop or segment becomes a few megabytes and starts instantly; a whole-track recording would be larger than the compressed original, so it uses the track path (Decision 13's first paragraph) and is not segment-cached. The cache has its own size setting (default 100 MB, beside the cache sizes in Settings) and removes the least recently played segment first. A purged segment is rebuilt from the original on the next play.
 
-### Decision 14: Keeping a track offline asks about its recordings
+**Keeping a recording's overlay offline** pins its segment (or, for a whole-track recording, nothing extra is needed beyond keeping the track offline, and the row says so): it is exempt from purging and works without a connection or Drive. It is a per-recording action in the row menu and in bulk, and removing it returns the segment to the purgeable cache. Keeping a track offline already makes every recording of it overlay-capable offline, so keeping a track never prompts about recordings, and keeping a recording's overlay offline does not keep its track. Lists flag `Needs connection for overlay` when neither the segment nor the track is stored.
 
-Keeping a track offline never keeps its recordings. When the user chooses `Keep offline` for a track (or several, by bulk action) that has recordings, a prompt asks: `Keep its N recordings offline too?` with `Keep all`, `Choose…` (the list with a switch per recording), and `Not now`, plus a `Remember my choice` check. The remembered choice is a setting, `Recordings when keeping tracks offline`, with the values `Ask`, `Always keep them`, and `Never keep them`, on the same settings page as the offline cache size, and it applies to bulk actions as well. Individual recordings can be kept or removed from the offline store at any time from their row menu, the Recordings panel, the Library view, and bulk actions. Removing a track from offline does not change its recordings, and keeping a recording offline does not change its track.
+Alternatives: pin a copy of the original with each recording (an earlier draft, as an option); rejected as a second copy and an option the user would have to understand. Cache a rendered composite of the recording over the track at the saved balance; rejected because the balance and sync change live, so only the original's segment is stable (an open question below).
 
-The offline files view lists recordings in their own group with their tier and sizes, and the recordings total beside the cache size. Alternative: keep recordings with a track automatically when the track is kept, as it does with sheet music; rejected, since recordings can be large and are the user's own audio, so the choice is theirs.
+### Decision 14: Storage settings and the offline files view
+
+Settings gains a `Recordings` group beside the offline settings: the `Overlay cache size` (default 100 MB), the total used by recordings (read-only, with the line `Recordings are never removed automatically`), and the auto-export settings (Decision 19). The offline files view lists the overlay segments in their own group with their state (`Automatic`, `Kept offline`) and sizes, and lists recordings in a separate group with their sizes and a `Delete` action only; recordings are never listed as cache.
 
 ### Decision 15: A Library Recordings view
 
-The Library gains a `Recordings` view beside the tracks and playlists views, listing every recording on the device with: a search field (recording name, track title, loop name, marker names in its span), filters (`Whole track`, `Segment`, `Loop`, `Adjusted`, `Kept offline`, `Not kept`, `Original changed`, and a track picker), a sort (newest, track, length, name), and rows showing the name, the track and span, the tags (loop, adjusted, offline state), length, and size. Selecting rows enters the shared multi-selection with the bulk actions that apply: `Play`, `Play next`, `Add to queue`, `Add to playlist`, `Keep offline` or `Remove from offline`, `Export`, and `Delete`. Opening a row opens its context (Decision 11). Recordings are still not library files: the view is a projection of the recordings store, and the Files tree and track search never list them.
+The Library gains a `Recordings` view beside the tracks and playlists views, listing every recording on the device with: a search field (recording name, track title, loop name, marker names in its span), filters (`Whole track`, `Segment`, `Loop`, `Adjusted`, `On Drive`, `Not on Drive`, `Original changed`, `Needs connection for overlay`, and a track picker), a sort (newest, track, length, name), and rows showing the name, the track and span, the tags (loop, adjusted, Drive export status, overlay offline), length, and size. Selecting rows enters the shared multi-selection with the bulk actions that apply: `Play`, `Play next`, `Add to queue`, `Add to playlist`, `Keep overlay offline` or `Remove from offline`, `Export`, and `Delete`. Opening a row opens its context (Decision 11). Recordings are still not library files: the view is a projection of the recordings store, and the Files tree and track search never list them.
 
 ### Decision 16: Recordings in playlists and the queue
 
-A playlist entry can reference a recording, as it can a track or a loop. Playing one opens its context (Decision 11), plays the recording over its track at the saved balance for that recording, stops at the end of the recorded range, and moves to the next item; shaping is the recording's own and is restored for the next item. A recording that is no longer in the store (removed, or evicted) shows as unavailable and is skipped with a message, as removed tracks are. `Play next`, `Add to queue`, and `Add to playlist` work from every recording list, the Library view, and bulk selection.
+A playlist entry can reference a recording, as it can a track or a loop. Playing one opens its context (Decision 11), plays the recording over its track at the saved balance for that recording, stops at the end of the recorded range, and moves to the next item; shaping is the recording's own and is restored for the next item. A recording that was deleted shows as unavailable and is skipped with a message, as removed tracks are. `Play next`, `Add to queue`, and `Add to playlist` work from every recording list, the Library view, and bulk selection.
 
 ### Decision 17: Segments, loops, and marker context
 
@@ -176,9 +174,23 @@ A punch range is an in point and an out point, and records only between them. It
 
 The first sample lands within the same tolerance as manual starts because the in point is evaluated on the same position tracking as the timeline. Since manual start and stop and loop recordings already exist, punch ranges only add automatic triggers, so the slice can be cut without leaving a gap.
 
+### Decision 19: Auto-export copies recordings to Drive in the background
+
+A setting, `Auto-export recordings to Drive` (off by default), copies each new recording to Drive without a prompt. Turning it on asks for the `drive.file` write permission once, offers a dedicated folder (default `Choir Recordings`, created in My Drive if it does not exist, or any folder the user picks with the existing destination step), and a choice of what to export: `Recording only`, `Mix`, or `Both`. The save sheet shows the state (`Auto-export is off · Turn on…`, or what will be uploaded and where).
+
+- **When:** after a recording is saved, a background queue exports it when a Drive session and a connection exist, retrying later when they do not. A mix export also needs the original (Decision 13); if it cannot be fetched, the mix is marked failed with the reason and the recording alone still goes.
+- **What is exported:** the same files as manual export (Decision 12), named from the metadata, with the mix at the default balance and the compensation and nudge the recording had when saved. A later nudge or balance change does not re-export; the user can export again by hand.
+- **Status and idempotence:** each recording stores its exports (kind, file id, folder, time) and shows `On Drive`, `Upload pending`, or `Upload failed` with a `Retry`. An export is never repeated for the same kind, and renaming a recording does not rename the Drive file.
+- **Deleting:** deleting a recording never deletes its Drive copies.
+- **Settings change:** changing the folder or the kind applies to new recordings; a `Back up existing recordings` action exports the ones that are not yet on Drive.
+
+Alternatives: auto-export only after wifi; deferred (a setting later). Export on a schedule; rejected as slower feedback for a one-off action. Make Drive the home of the recording; rejected: the device copy stays the source of truth and export is a copy.
+
 ## Risks / Trade-offs
 
-- [Automatic recordings can be removed to free space] → A `Not kept offline` badge with one-tap `Keep offline`, a save sheet note, a warning before the first removal listing the recordings, never removing a recording that is selected or playing, and export one step away. A minimum age before removal is an open question.
+- [The device store fills up or the browser clears site data] → Persistent storage requested, the used total shown, failed writes reported without losing what was captured, export and auto-export as the way to keep a copy elsewhere.
+- [Auto-export to Drive fails or the mix cannot be rendered in the background] → A queue with retry and visible status; the recording alone is exported first; a failed mix does not block it.
+- [The overlay segment cache is purged and the original is gone] → The recording still plays alone and exports; the mix needs the original.
 - [Mix render is slow or memory-heavy for long recordings] → Chunked render with Int16 encoding, progress and cancel; spike 1.4 measures a ten-minute mix with a shaped track.
 - [Offline SoundTouch output differs from the live graph] → Spike 1.4 compares a render with a live capture; accept small differences, document them.
 - [Large uploads fail partway] → Resumable upload with retry from the last chunk.
@@ -200,7 +212,8 @@ New database and new package; nothing existing is migrated. The `PcmSource` chan
 
 ## Open Questions
 
-- Should an automatic recording have a minimum age (for example a week) or be protected until first exported or played twice before it can be removed, given that removal deletes it?
+- Should auto-export wait for wifi, or is a plain online check enough?
+- Should the overlay cache also store a rendered composite of the recording over the track (faster start, but the balance and sync are live), or only the original's segment?
 - Is a 10-minute cap right for a full rehearsal piece, or should it be larger once memory is measured?
 - Does Safari honour `getOutputTimestamp` and `outputLatency` well enough, or does it need the manual path as its default?
 - Should a playlist recording play over its track at the saved balance only, or may a playlist entry choose recording-only?

@@ -12,7 +12,7 @@ The system SHALL list a `Recording` row in the `Practice tools` menu only on pla
 - **THEN** the `Recording` row is absent
 
 ### Requirement: Recording starts only on an explicit action and explains storage first
-The system SHALL start capturing only when the user starts a recording. The first time, it SHALL show a note that audio is recorded and kept on this device under the track until removed, and that headphones are assumed, and it SHALL NOT request the microphone until the user continues. This explanation SHALL be separate from the pitch detection explanation.
+The system SHALL start capturing only when the user starts a recording. The first time, it SHALL show a note that audio is recorded and kept on this device under the track until you delete it (never removed automatically), that it can be exported or auto-exported to Drive, and that headphones are assumed, and it SHALL NOT request the microphone until the user continues. This explanation SHALL be separate from the pitch detection explanation.
 
 #### Scenario: First recording
 - **WHEN** the user starts a recording for the first time

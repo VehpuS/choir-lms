@@ -15,9 +15,9 @@ The system SHALL open a selected recording in the context it was made in: the lo
 - **WHEN** the user opens a recording made on a saved adjusted track
 - **THEN** the adjusted track opens with its adjustment active and locked
 
-#### Scenario: Unsaved adjustment
+#### Scenario: Adjustment that is not a saved track
 - **WHEN** the user opens a recording that was made with a session adjustment of 0.7× and +2
-- **THEN** the track opens with 0.7× and +2 applied and locked, and the adjustment is not saved as a track
+- **THEN** the track opens with 0.7× and +2 applied and locked, without creating or saving an adjusted track, and the view does not label the adjustment as unsaved
 
 #### Scenario: Leaving the recording
 - **WHEN** the user chooses `Leave recording`
@@ -80,22 +80,26 @@ The system SHALL play a recording with the track's speed and pitch set to those 
 - **THEN** the controls stay locked, and the exported mix can be played with the ordinary track controls
 
 ### Requirement: The original track audio is found from the recording's metadata
-The system SHALL fetch the original track audio for the overlay from the normal playback cache, the offline store, or Drive using the recording's stored file id, without keeping or pinning a copy for the recording. If the content version differs, it SHALL play the overlay against the current file and say `Original track changed`. If the original cannot be fetched, it SHALL play the recording alone and say why.
+The system SHALL fetch the original track audio for the overlay from the normal playback cache, the offline store, or Drive using the recording's stored file id, without keeping or pinning a copy of the track for the recording, and SHALL use the recording's overlay segment when one is cached. If the content version differs, it SHALL play the overlay against the current file and say `Original track changed`. If the original cannot be fetched, it SHALL play the recording alone and say why.
 
 #### Scenario: Track in the cache
 - **WHEN** the original track audio is in the playback cache or kept offline
 - **THEN** the overlay plays without a download
 
+#### Scenario: Overlay segment cached
+- **WHEN** the recording's overlay segment is cached
+- **THEN** the overlay starts from it without fetching the track
+
 #### Scenario: Track evicted
-- **WHEN** the original was removed from the cache and the device is online
-- **THEN** the overlay downloads it from Drive through the normal track path and then plays
+- **WHEN** the original and the segment were removed from the caches and the device is online
+- **THEN** the overlay downloads the original from Drive through the normal track path and then plays
 
 #### Scenario: Original changed
 - **WHEN** the file's content version differs from the one the recording was made against
 - **THEN** the overlay plays against the current file, shows `Original track changed`, and the sync control remains available
 
 #### Scenario: Original unavailable
-- **WHEN** the original was deleted, or the device is offline and the track is not stored
+- **WHEN** the original was deleted, or the device is offline and neither the segment nor the track is stored
 - **THEN** the recording plays alone with a message saying the overlay needs the original track
 
 ### Requirement: A balance control sets the mix of track and recording
