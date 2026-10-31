@@ -20,6 +20,9 @@
     },
     {
       "path": "./packages/pitch-detection"
+    },
+    {
+      "path": "./packages/audio-mixing"
     }
   ]
 }
