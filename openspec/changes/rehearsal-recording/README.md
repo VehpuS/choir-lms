@@ -1,6 +1,6 @@
 # rehearsal-recording
 
-Record rehearsal takes against a track: punch in and out based on playback, and optionally overlay a take on the original. Explored after `pitch-detection`; no proposal, design, specs, or tasks yet.
+Record rehearsal takes against a track: punch in and out based on playback, and optionally overlay a take on the original. Explored after `pitch-detection`. Proposed 2026-10-31: see `proposal.md`, `design.md`, `specs/`, and `tasks.md`. The notes below are the first exploration and are superseded where they disagree (the first slice now includes overlay and calibration).
 
 ## Notes carried over from the first exploration (2026-10-27)
 
