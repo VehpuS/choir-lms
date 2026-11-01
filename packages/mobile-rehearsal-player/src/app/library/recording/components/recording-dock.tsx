@@ -27,7 +27,13 @@ import {
   type StripAction,
 } from '../recording-strip-model';
 import { useRecordingStripOpen } from '../recording-strip-store';
+import {
+  getSaveSheetModel,
+  resolveRecordingName,
+  type AutoExportState,
+} from '../recording-save-sheet-model';
 import { getRecordingsStore } from '../recordings-store-instance';
+import { RecordingSaveSheet } from './recording-save-sheet';
 import { RECORDING_STRIP_HEIGHT, RecordingStrip } from './recording-strip';
 
 const MS_PER_SECOND = 1000;
@@ -37,6 +43,9 @@ const useIsStripShown = (): boolean => {
 
   return isOpen && recordingCapabilities().canRecord;
 };
+
+// Auto-export has no setting yet (task 10.5); until then the sheet offers to turn it on.
+const AUTO_EXPORT_OFF: AutoExportState = { kind: 'off' };
 
 const newRecordingId = () =>
   `rec-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -117,6 +126,37 @@ const RecordingDockContent = ({
     });
   }, [session]);
 
+  const openRecordingsSettings = useCallback(() => {
+    session.dismiss();
+    settingsNavigationStore.open();
+    settingsNavigationStore.openPage('recordings');
+  }, [session]);
+
+  const saved = state.phase === 'stopped' ? state.savedRecording : undefined;
+
+  const renameSaved = useCallback(
+    (typed: string) => {
+      if (!saved) {
+        return;
+      }
+
+      const name = resolveRecordingName(typed, saved.name);
+
+      if (name !== saved.name) {
+        void getRecordingsStore().update(saved.id, { name });
+      }
+    },
+    [saved],
+  );
+
+  const deleteSaved = useCallback(() => {
+    if (saved) {
+      void getRecordingsStore().delete(saved.id);
+    }
+
+    session.dismiss();
+  }, [saved, session]);
+
   const onAction = useCallback(
     (action: StripAction) => {
       if (action === 'record') {
@@ -128,15 +168,32 @@ const RecordingDockContent = ({
       } else if (action === 'stop') {
         void session.stop();
       } else if (action === 'open-settings') {
-        session.dismiss();
-        settingsNavigationStore.open();
-        settingsNavigationStore.openPage('recordings');
+        openRecordingsSettings();
       }
     },
-    [record, session],
+    [openRecordingsSettings, record, session],
   );
 
-  return <RecordingStrip model={model} onAction={onAction} />;
+  return (
+    <>
+      <RecordingStrip model={model} onAction={onAction} />
+      {saved ? (
+        <RecordingSaveSheet
+          key={saved.id}
+          model={getSaveSheetModel({
+            recording: saved,
+            autoExport: AUTO_EXPORT_OFF,
+            stop: state.stopMessage,
+          })}
+          name={saved.name}
+          onDelete={deleteSaved}
+          onDone={session.dismiss}
+          onRename={renameSaved}
+          onTurnOnAutoExport={openRecordingsSettings}
+        />
+      ) : null}
+    </>
+  );
 };
 
 /** The strip, only where the platform can record and the user turned the tool on. */
