@@ -6,7 +6,11 @@
 export type RecordingChunkWriter = {
   /** Called once, before the first chunk. */
   begin: (format: { sampleRate: number }) => Promise<void>;
-  /** Appends one chunk of mono Int16 samples; rejects when storage refuses it. */
+  /**
+   * Appends one chunk of mono Int16 samples; rejects when storage refuses it.
+   * It must be all-or-nothing: the recorder retries a rejected chunk, so a
+   * failed append must leave nothing behind that a retry could duplicate.
+   */
   append: (chunk: Int16Array, progress: { elapsedMs: number }) => Promise<void>;
   /** Marks the recording complete with what was written. */
   finalize: (summary: {

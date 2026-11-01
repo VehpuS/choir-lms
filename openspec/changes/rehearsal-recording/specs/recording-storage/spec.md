@@ -30,6 +30,10 @@ The system SHALL show the total space recordings use in Settings and the offline
 - **WHEN** the user opens the recordings settings
 - **THEN** the total used by recordings is shown with the line that recordings are never removed automatically
 
+#### Scenario: Transient write failure
+- **WHEN** writing a chunk fails and a retry within a few seconds succeeds
+- **THEN** the recording continues without a gap and without a duplicated chunk, and no failure is shown
+
 #### Scenario: Out of space
 - **WHEN** saving a recording fails because storage is full
 - **THEN** the system says so, does not report success, keeps every chunk written before the failure, and offers `Export` of what was saved

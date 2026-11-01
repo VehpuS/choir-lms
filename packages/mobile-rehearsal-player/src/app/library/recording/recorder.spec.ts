@@ -23,10 +23,13 @@ const block = (index: number, value = 0.5): PcmBlock => ({
   startTimeSec: 5 + (index * BLOCK) / SAMPLE_RATE,
 });
 
-const createFakeWriter = (options: { failAppendAt?: number } = {}) => {
+const createFakeWriter = (
+  options: { failAppendAt?: number; failures?: number } = {},
+) => {
   const log: string[] = [];
   const chunks: Int16Array[] = [];
   let appends = 0;
+  let failuresLeft = options.failures ?? Number.POSITIVE_INFINITY;
   const writer: RecordingChunkWriter = {
     begin: async ({ sampleRate }) => {
       log.push(`begin ${sampleRate}`);
@@ -34,7 +37,12 @@ const createFakeWriter = (options: { failAppendAt?: number } = {}) => {
     append: async (chunk) => {
       appends += 1;
 
-      if (appends === options.failAppendAt) {
+      if (
+        options.failAppendAt !== undefined &&
+        appends >= options.failAppendAt &&
+        failuresLeft > 0
+      ) {
+        failuresLeft -= 1;
         throw new Error('quota');
       }
 
@@ -55,17 +63,25 @@ const setup = (
   options: {
     estimate?: () => Promise<{ quota?: number; usage?: number } | null>;
     failAppendAt?: number;
+    failures?: number;
   } = {},
 ) => {
   const source = createFakePcmSource('granted');
   const visibility = createFakeVisibility();
-  const fake = createFakeWriter({ failAppendAt: options.failAppendAt });
+  const sleeps: number[] = [];
+  const fake = createFakeWriter({
+    failAppendAt: options.failAppendAt,
+    failures: options.failures,
+  });
   const recorder = createRecorder({
     source,
     writer: fake.writer,
     visibility,
     estimate: options.estimate ?? (async () => ROOMY),
     chunkMs: CHUNK_MS,
+    sleep: async (ms) => {
+      sleeps.push(ms);
+    },
   });
   const feed = (count: number, from = 0) => {
     for (let i = 0; i < count; i += 1) {
@@ -73,7 +89,7 @@ const setup = (
     }
   };
 
-  return { source, visibility, recorder, feed, ...fake };
+  return { source, visibility, recorder, feed, sleeps, ...fake };
 };
 
 describe('createRecorder', () => {
@@ -133,6 +149,38 @@ describe('createRecorder', () => {
     }
   });
 
+  it('retries a failed chunk and keeps recording when a retry succeeds', async () => {
+    const t = setup({ failAppendAt: 2, failures: 2 });
+
+    await t.recorder.start();
+    t.feed(25);
+    await settle();
+    const result = await t.recorder.stop();
+
+    assert.equal(result.reason, 'user');
+    assert.equal(result.durationMs, 2500);
+    assert.deepEqual(
+      t.chunks.map((c) => c.length),
+      [1000, 1000, 500],
+    );
+    assert.deepEqual(t.sleeps, [250, 500]);
+  });
+
+  it('does not duplicate or reorder a chunk that needed a retry', async () => {
+    const t = setup({ failAppendAt: 1, failures: 1 });
+
+    await t.recorder.start();
+    t.feed(10, 0);
+    t.source.emitBlock({ ...block(10, -0.5) });
+    t.feed(9, 11);
+    await settle();
+    await t.recorder.stop();
+
+    assert.equal(t.chunks.length, 2);
+    assert.equal(t.chunks[0]?.[0], 16384);
+    assert.equal(t.chunks[1]?.[0], -16383);
+  });
+
   it('stops with storage-failed on a failed write and keeps the chunks already written', async () => {
     const t = setup({ failAppendAt: 2 });
 
@@ -145,6 +193,8 @@ describe('createRecorder', () => {
     assert.equal(result.status, 'saved');
     assert.equal(result.durationMs, 1000);
     assert.equal(t.chunks.length, 1);
+    // One try plus a retry per delay, then it gives up.
+    assert.deepEqual(t.sleeps, [250, 500, 1000]);
   });
 
   it('stops with storage-full when the estimate runs out during a recording', async () => {

@@ -36,6 +36,8 @@ const WAV_MAX_BYTES = 0xffff_ffff;
 const MAX_DATA_BYTES = WAV_MAX_BYTES - WAV_HEADER_BYTES;
 const MS_PER_SECOND = 1000;
 const PROGRESS_INTERVAL_MS = 250;
+/** Waits between attempts to write one chunk; a chunk is tried once plus once per delay. */
+export const CHUNK_RETRY_DELAYS_MS: readonly number[] = [250, 500, 1000];
 
 export type StartRecordingResult =
   | { ok: true }
@@ -59,11 +61,18 @@ export type RecorderOptions = {
   visibility?: VisibilitySource;
   onProgress?: (progress: RecorderProgress) => void;
   chunkMs?: number;
+  retryDelaysMs?: readonly number[];
+  /** Waits between retries; replaced in specs so they do not sleep. */
+  sleep?: (ms: number) => Promise<void>;
 };
 
 export const createRecorder = (options: RecorderOptions): Recorder => {
   const { source, writer, estimate, visibility, onProgress } = options;
   const chunkMs = options.chunkMs ?? RECORDING_CHUNK_MS;
+  const retryDelaysMs = options.retryDelaysMs ?? CHUNK_RETRY_DELAYS_MS;
+  const sleep =
+    options.sleep ??
+    ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
   let recording = false;
   let stopping: Promise<RecorderResult> | null = null;
   let unsubscribe: (() => void) | null = null;
@@ -112,22 +121,44 @@ export const createRecorder = (options: RecorderOptions): Recorder => {
     }
   };
 
+  const appendWithRetry = async (samples: Int16Array): Promise<boolean> => {
+    const progress = {
+      elapsedMs:
+        ((writtenSamples + samples.length) / sampleRate) * MS_PER_SECOND,
+    };
+
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        await writer.append(samples, progress);
+        return true;
+      } catch {
+        const delay = retryDelaysMs[attempt];
+
+        if (delay === undefined) {
+          return false;
+        }
+
+        await sleep(delay);
+      }
+    }
+  };
+
   const writeChunk = (samples: Int16Array) => {
     enqueue(async () => {
       if (failed) {
         return;
       }
 
-      try {
-        await writer.append(samples, {
-          elapsedMs:
-            ((writtenSamples + samples.length) / sampleRate) * MS_PER_SECOND,
-        });
-        writtenSamples += samples.length;
-      } catch {
+      // Capture goes on while a chunk is retried, so a brief storage hiccup
+      // costs nothing; only a failure that outlasts every retry stops it.
+      const written = await appendWithRetry(samples);
+
+      if (!written) {
         fail('storage-failed');
         return;
       }
+
+      writtenSamples += samples.length;
 
       await refreshStorage();
     });
