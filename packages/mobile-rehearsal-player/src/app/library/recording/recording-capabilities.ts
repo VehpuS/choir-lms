@@ -41,3 +41,10 @@ export const recordingCapabilities = (): RecordingCapabilities => {
     hasIndexedDb: browser.indexedDB !== undefined,
   });
 };
+
+/** Whether recordings can be stored and listed here, which viewing and Settings need. */
+export const recordingsStorageSupported = (): boolean => {
+  const browser = globalThis as { indexedDB?: unknown };
+
+  return Platform.OS === 'web' && browser.indexedDB !== undefined;
+};

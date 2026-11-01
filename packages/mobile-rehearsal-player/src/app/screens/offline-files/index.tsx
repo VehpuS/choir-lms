@@ -21,6 +21,7 @@ import { SelectionBar } from '../../library/selection/selection-bar';
 import { useLibraryFilesConfirmationFlow } from '../../library/selection/use-library-files-confirmation-flow';
 import { usePinnedBulkActionBar } from '../../library/selection/use-pinned-bulk-action-bar';
 import { useSelection } from '../../library/selection/use-selection';
+import { useRecordingsStorage } from '../../library/recording/use-recordings-storage';
 import { appTheme } from '../../utils/theme';
 import {
   OFFLINE_FILES_COPY,
@@ -33,6 +34,7 @@ import {
 } from './model';
 import { offlineFilesNavigationStore } from './offline-files-navigation-store';
 import { OfflineFileRowView } from './offline-file-row';
+import { RecordingsGroup } from './recordings-group';
 import { useOfflineStorage } from './use-offline-storage';
 
 const toSelectionEntry = (row: OfflineFileRow) => ({
@@ -73,6 +75,7 @@ export const OfflineFilesContent = ({
 }: OfflineFilesContentProps) => {
   const screenRef = useRef<View>(null);
   const confirmationFlow = useLibraryFilesConfirmationFlow();
+  const recordings = useRecordingsStorage();
   const selection = useSelection<OfflineFileRow>();
   const { cancel, deselectMany, enter, selectMany, selectedKeys, toggle } =
     selection;
@@ -264,6 +267,11 @@ export const OfflineFilesContent = ({
             </View>
           </>
         )}
+        <RecordingsGroup
+          onDelete={recordings.deleteRecording}
+          requestConfirmation={confirmationFlow.requestConfirmation}
+          summary={recordings.summary}
+        />
       </ScrollView>
       {confirmationFlow.confirmationDialog}
     </View>

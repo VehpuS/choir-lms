@@ -8,6 +8,7 @@ import { SurfaceIconButton } from '../../components/surface-icon-button';
 import { isOfflineStorageSupported } from '../../library/offline/offline-actions';
 import { pianoCapabilities } from '../../library/piano/piano-capabilities';
 import { pitchCapabilities } from '../../library/pitch/pitch-capabilities';
+import { recordingsStorageSupported } from '../../library/recording/recording-capabilities';
 import { scrollGutterStyles } from '../../components/scroll-gutter';
 import { darkScrollbarStyle } from '../../components/dark-scrollbar';
 import { appTheme } from '../../utils/theme';
@@ -22,6 +23,7 @@ import { MyPartsSection } from './my-parts-section';
 import { OfflineStorageSection } from './offline-storage-section';
 import { PianoSection } from './piano-section';
 import { PitchSection } from './pitch-section';
+import { RecordingsSection } from './recordings-section';
 import { SearchSourcesSection } from './search-sources-section';
 import {
   settingsNavigationStore,
@@ -41,6 +43,8 @@ const renderCategoryPage = (page: SettingsCategoryKey) => {
       return <MyPartsSection />;
     case 'offline-storage':
       return <OfflineStorageSection />;
+    case 'recordings':
+      return <RecordingsSection />;
     case 'search-sources':
       return (
         <>
@@ -108,6 +112,7 @@ export const SettingsScreen = () => {
               canListenForPitch: pitchCapabilities().canListen,
               canPlayPiano: pianoCapabilities().canPlay,
               canStoreOffline: isOfflineStorageSupported,
+              canStoreRecordings: recordingsStorageSupported(),
             })}
             onSelect={(next) => {
               settingsNavigationStore.openPage(next.key);

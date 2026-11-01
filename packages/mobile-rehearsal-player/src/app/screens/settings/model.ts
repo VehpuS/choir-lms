@@ -5,6 +5,7 @@ import {
   type SearchTemplateProblem,
 } from '@org/audio-library-models';
 
+import { RECORDINGS_STORAGE_COPY } from '../../library/recording/recordings-storage-model';
 import { formatPresetSize } from '../../library/offline/format-byte-size';
 import { AUDIO_CACHE_BUDGET_PRESETS_BYTES } from '../../library/playback/audio-cache/audio-cache-budget';
 import {
@@ -61,23 +62,31 @@ export const SETTINGS_CATEGORIES: readonly SettingsCategory[] = [
     summary: 'Cache size and files kept on this device',
     title: 'Offline storage',
   },
+  {
+    key: 'recordings',
+    summary: RECORDINGS_STORAGE_COPY.settingsSummary,
+    title: RECORDINGS_STORAGE_COPY.settingsTitle,
+  },
 ];
 
 export type SettingsCategoryAvailability = {
   canListenForPitch: boolean;
   canPlayPiano: boolean;
   canStoreOffline: boolean;
+  canStoreRecordings: boolean;
 };
 
 /**
  * Piano settings only exist where the piano can play, Pitch detection only
  * where the microphone can be listened to, and Offline storage only where
- * audio can be stored (web, until native follows).
+ * audio can be stored (web, until native follows). Recordings, likewise, only
+ * where they can be stored.
  */
 export const visibleSettingsCategories = ({
   canListenForPitch,
   canPlayPiano,
   canStoreOffline,
+  canStoreRecordings,
 }: SettingsCategoryAvailability) => {
   return SETTINGS_CATEGORIES.filter((category) => {
     if (category.key === 'piano') {
@@ -86,6 +95,10 @@ export const visibleSettingsCategories = ({
 
     if (category.key === 'pitch') {
       return canListenForPitch;
+    }
+
+    if (category.key === 'recordings') {
+      return canStoreRecordings;
     }
 
     return category.key !== 'offline-storage' || canStoreOffline;

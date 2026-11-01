@@ -119,6 +119,7 @@ describe('piano settings rows', () => {
         canListenForPitch: true,
         canPlayPiano: true,
         canStoreOffline: true,
+        canStoreRecordings: true,
       }).map((category) => category.key),
       [
         'bulk-selections',
@@ -127,6 +128,7 @@ describe('piano settings rows', () => {
         'my-parts',
         'search-sources',
         'offline-storage',
+        'recordings',
       ],
     );
     assert.deepEqual(
@@ -134,8 +136,15 @@ describe('piano settings rows', () => {
         canListenForPitch: false,
         canPlayPiano: false,
         canStoreOffline: true,
+        canStoreRecordings: true,
       }).map((category) => category.key),
-      ['bulk-selections', 'my-parts', 'search-sources', 'offline-storage'],
+      [
+        'bulk-selections',
+        'my-parts',
+        'search-sources',
+        'offline-storage',
+        'recordings',
+      ],
     );
   });
 
@@ -145,6 +154,7 @@ describe('piano settings rows', () => {
         canListenForPitch: false,
         canPlayPiano: true,
         canStoreOffline: true,
+        canStoreRecordings: true,
       }).some((category) => category.key === 'pitch'),
       false,
     );
@@ -156,9 +166,24 @@ describe('piano settings rows', () => {
         canListenForPitch: true,
         canPlayPiano: true,
         canStoreOffline: false,
+        canStoreRecordings: true,
       }).some((category) => category.key === 'offline-storage'),
       false,
     );
+  });
+
+  it('shows Recordings only where recordings can be stored, independent of offline storage', () => {
+    const keys = (canStoreOffline: boolean, canStoreRecordings: boolean) =>
+      visibleSettingsCategories({
+        canListenForPitch: true,
+        canPlayPiano: true,
+        canStoreOffline,
+        canStoreRecordings,
+      }).map((category) => category.key);
+
+    assert.equal(keys(true, true).includes('recordings'), true);
+    assert.equal(keys(true, false).includes('recordings'), false);
+    assert.equal(keys(false, true).includes('recordings'), true);
   });
 
   it('offers the cache size presets with whole-unit labels', () => {

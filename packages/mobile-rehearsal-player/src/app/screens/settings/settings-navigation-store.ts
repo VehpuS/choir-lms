@@ -13,7 +13,8 @@ export type SettingsCategoryKey =
   | 'pitch'
   | 'my-parts'
   | 'search-sources'
-  | 'offline-storage';
+  | 'offline-storage'
+  | 'recordings';
 
 export type SettingsNavigationStore = {
   /** Goes from a category page to the category list, or closes from the list. */
