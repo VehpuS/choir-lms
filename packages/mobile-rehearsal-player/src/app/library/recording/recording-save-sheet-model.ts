@@ -5,6 +5,13 @@ import {
   type Recording,
 } from '@org/audio-library-models';
 
+import {
+  describeMarkerSpan,
+  describeShaping,
+  formatRange,
+  getRecordedSpan,
+} from './recording-description';
+
 import type { RecordingStopMessage } from './recording-stop-messages';
 
 export const MAX_RECORDING_NAME_LENGTH = 80;
@@ -23,9 +30,6 @@ export const SAVE_SHEET_COPY = {
   confirmDeleteLabel: 'Tap again to delete',
   doneLabel: 'Done',
 } as const;
-
-const MARKER_ARROW = ' → ';
-const RANGE_DASH = '–';
 
 /** What the auto-export setting amounts to for this recording (design Decision 19). */
 export type AutoExportState =
@@ -59,65 +63,6 @@ export type SaveSheetModel = {
   notice?: string;
   storedNote: string;
   autoExport: SaveSheetAutoExport;
-};
-
-const formatRange = (startMs: number, endMs: number): string => {
-  return `${formatRecordingDuration(startMs)}${RANGE_DASH}${formatRecordingDuration(endMs)}`;
-};
-
-const formatSpeed = (rate: number): string => {
-  return `${Number(rate.toFixed(2))}×`;
-};
-
-const formatPitch = (semitones: number): string => {
-  return `${semitones > 0 ? '+' : ''}${semitones}`;
-};
-
-/** `recorded against 0.7× +2`, or nothing when the track played unshaped. */
-const describeShaping = (shaping: Recording['shaping']): string | null => {
-  const parts = [
-    shaping.rate === 1 ? null : formatSpeed(shaping.rate),
-    shaping.pitchSemitones === 0 ? null : formatPitch(shaping.pitchSemitones),
-  ].filter((part): part is string => part !== null);
-
-  return parts.length > 0 ? `recorded against ${parts.join(' ')}` : null;
-};
-
-/** The marker at or just before a position, from the markers the recording saved. */
-const markerNameAt = (
-  markers: Recording['markers'],
-  positionMs: number,
-): string | undefined => {
-  return [...markers]
-    .filter((marker) => marker.positionMs <= positionMs)
-    .sort((a, b) => a.positionMs - b.positionMs)
-    .at(-1)?.name;
-};
-
-const describeMarkerSpan = (
-  recording: Recording,
-  range: { startMs: number; endMs: number },
-): string | undefined => {
-  const from = markerNameAt(recording.markers, range.startMs);
-  const to = markerNameAt(recording.markers, range.endMs);
-
-  if (from && to && from !== to) {
-    return `${from}${MARKER_ARROW}${to}`;
-  }
-
-  return from ?? to;
-};
-
-/** First to last moment of recording time that had the track moving. */
-const getRecordedSpan = (recording: Recording) => {
-  const moving = recording.timeline.filter((segment) => !segment.held);
-
-  return moving.length === 0
-    ? { startMs: 0, endMs: recording.durationMs }
-    : {
-        startMs: Math.min(...moving.map((s) => s.recordingStartMs)),
-        endMs: Math.max(...moving.map((s) => s.recordingEndMs)),
-      };
 };
 
 const AUTO_EXPORT_WHAT = {

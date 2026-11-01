@@ -9,6 +9,8 @@ import {
   requestSavedItemAction,
   resolveSavedItemShortcuts,
 } from '../../../library/components/saved-item-menu/saved-item-requests';
+import { RECORDINGS_MENU_LABEL } from '../../../library/recording/recordings-panel-model';
+import { useRecordingsMenuCount } from '../../../library/recording/use-recordings-menu-count';
 import { requestLoopBuilder } from '../../../library/loops/utils/loop-builder-request';
 import {
   resolveNowPlayingAddMarkerRequest,
@@ -36,6 +38,7 @@ export const useNowPlayingMenuActions = (options: {
     isSaved,
   });
   const hasLyrics = useHasLyrics(activePlayableItem);
+  const recordingsCount = useRecordingsMenuCount(activePlayableItem);
 
   return [
     ...(makeLoopRequest
@@ -76,6 +79,19 @@ export const useNowPlayingMenuActions = (options: {
                 onPress: () => {
                   closeMenu();
                   requestSavedItemAction(addMarkerRequest);
+                },
+                tone: undefined,
+              },
+              {
+                id: 'recordings',
+                label: RECORDINGS_MENU_LABEL,
+                meta: recordingsCount,
+                onPress: () => {
+                  closeMenu();
+                  requestSavedItemAction({
+                    ...addMarkerRequest,
+                    action: 'recordings',
+                  });
                 },
                 tone: undefined,
               },

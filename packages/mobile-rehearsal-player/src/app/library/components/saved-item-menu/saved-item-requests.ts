@@ -14,6 +14,7 @@ export type SavedItemRequestAction =
   | 'keep-offline'
   | 'make-loop'
   | 'markers'
+  | 'recordings'
   | 'remove-from-library'
   | 'remove-offline'
   | 'sheet-music'

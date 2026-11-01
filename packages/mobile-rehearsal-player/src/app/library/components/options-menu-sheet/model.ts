@@ -6,6 +6,8 @@ export type OptionsMenuAction = {
   icon?: AppIconName;
   id: string;
   label: string;
+  /** A muted note beside the label, such as a count. */
+  meta?: string;
   onPress: () => void;
   /**
    * Optional grouping key for long menus. Actions sharing a section render

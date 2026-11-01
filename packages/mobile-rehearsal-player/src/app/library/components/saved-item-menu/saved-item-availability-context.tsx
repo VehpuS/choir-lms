@@ -69,3 +69,12 @@ export const useLyricsFor = (
 ): SourceLyricsResolution => {
   return useContext(SavedItemAvailabilityContext).lyricsFor(item.sourceId);
 };
+
+/** Which saved sources and loops exist, for views that only need to know that. */
+export const useSavedLibraryIds = () => {
+  const { savedLoopIds, savedSourceIds } = useContext(
+    SavedItemAvailabilityContext,
+  );
+
+  return { savedLoopIds, savedSourceIds };
+};

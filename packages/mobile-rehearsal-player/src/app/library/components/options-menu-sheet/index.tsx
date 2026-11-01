@@ -93,6 +93,7 @@ export const OptionsMenuSheet = ({
                     icon={resolveMenuActionIcon(action)}
                     key={action.id}
                     label={action.label}
+                    meta={action.meta}
                     onPress={action.onPress}
                     tone={ACTION_TONE_TO_ROW_TONE[action.tone]}
                   />
