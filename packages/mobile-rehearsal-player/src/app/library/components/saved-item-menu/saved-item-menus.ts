@@ -8,6 +8,10 @@ import {
   type MarkersMenuState,
 } from '../../markers/utils/markers-menu-action';
 import {
+  resolveRecordingsMenuActions,
+  type RecordingsMenuState,
+} from '../../recording/recordings-menu-action';
+import {
   resolveSheetMusicMenuActions,
   type SheetMusicMenuState,
 } from '../../sheet-music/utils/sheet-music-menu-action';
@@ -56,6 +60,8 @@ export type SavedTrackMenuContext = {
   sheetMusic?: SheetMusicMenuState;
   /** Offers `Markers`; absent where markers are not offered. */
   markers?: MarkersMenuState;
+  /** Offers `Recordings`; absent where recordings cannot be listed. */
+  recordings?: RecordingsMenuState;
   /** Offers `Keep offline`; absent where offline storage is not available. */
   offline?: OfflineMenuState;
   onAddToPlaylist: () => void;
@@ -120,6 +126,7 @@ export const resolveSavedTrackMenu = (
       ...resolveLyricsMenuActions(context.lyrics, placement.idPrefix),
       ...resolveSheetMusicMenuActions(context.sheetMusic, placement.idPrefix),
       ...resolveMarkersMenuActions(context.markers, placement.idPrefix),
+      ...resolveRecordingsMenuActions(context.recordings, placement.idPrefix),
       ...resolveOfflineMenuActions(context.offline, placement.idPrefix),
     ],
     kind: 'track',
@@ -144,6 +151,8 @@ export type SavedLoopMenuContext = {
   sheetMusic?: SheetMusicMenuState;
   /** Offers `Markers`; absent where markers are not offered. */
   markers?: MarkersMenuState;
+  /** Offers `Recordings`; absent where recordings cannot be listed. */
+  recordings?: RecordingsMenuState;
   offline?: OfflineMenuState;
   onAddToPlaylist: () => void;
   onAddToQueue: () => void;
@@ -187,6 +196,7 @@ export const resolveSavedLoopMenu = (
       ...resolveLyricsMenuActions(context.lyrics, placement.idPrefix),
       ...resolveSheetMusicMenuActions(context.sheetMusic, placement.idPrefix),
       ...resolveMarkersMenuActions(context.markers, placement.idPrefix),
+      ...resolveRecordingsMenuActions(context.recordings, placement.idPrefix),
       ...resolveOfflineMenuActions(context.offline, placement.idPrefix),
     ],
     kind: 'loop',

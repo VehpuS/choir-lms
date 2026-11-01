@@ -10,6 +10,7 @@ import { createLyricsMenuState } from '../../../lyrics/utils/lyrics-menu-action'
 import { createOfflineMenuState } from '../../../offline/offline-menu-action';
 import { useOfflineState } from '../../../offline/offline-state';
 import { createMarkersMenuState } from '../../../markers/utils/markers-menu-action';
+import { createRecordingsMenuState } from '../../../recording/recordings-menu-action';
 import { createSheetMusicMenuState } from '../../../sheet-music/utils/sheet-music-menu-action';
 import {
   getSavedTrackPlaybackActionCopy,
@@ -146,6 +147,10 @@ export const SavedLoopListRow = ({
         playableItem !== null
           ? createMarkersMenuState({ id: loopCard.loop.id, kind: 'loop' })
           : undefined,
+      recordings: createRecordingsMenuState({
+        id: loopCard.loop.id,
+        kind: 'loop',
+      }),
       offline: offlineSource
         ? createOfflineMenuState({
             driveFileId: offlineSource.driveFileId,

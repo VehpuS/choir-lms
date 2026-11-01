@@ -27,6 +27,7 @@ import type { ExplorerRowSelection } from '../explorer/model';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import { createLyricsMenuState } from '../../lyrics/utils/lyrics-menu-action';
 import { createMarkersMenuState } from '../../markers/utils/markers-menu-action';
+import { createRecordingsMenuState } from '../../recording/recordings-menu-action';
 import { createSheetMusicMenuState } from '../../sheet-music/utils/sheet-music-menu-action';
 import { useHasLyrics } from '../saved-item-menu/saved-item-availability-context';
 import { resolveSavedTrackMenu } from '../saved-item-menu/saved-item-menus';
@@ -154,6 +155,7 @@ export const BrowseSourceRow = ({
       }),
       sheetMusic: createSheetMusicMenuState({ id: source.id, kind: 'track' }),
       markers: createMarkersMenuState({ id: source.id, kind: 'track' }),
+      recordings: createRecordingsMenuState({ id: source.id, kind: 'track' }),
       offline: createSourceOfflineMenuState(source),
       onAddToPlaylist: () => {
         openSourcePlaylistSelector(source.id);
