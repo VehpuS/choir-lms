@@ -13,6 +13,9 @@ export const RECORDING_STRIP_COPY = {
   explainBody:
     'It is saved under this track and never removed automatically; only you delete it. You can export it or copy it to Drive. Use headphones.',
   explainTitle: 'Recording keeps audio on this device.',
+  armedBody: 'Press play to start. Stop cancels.',
+  armedStopLabel: 'Cancel recording',
+  armedTitle: 'Waiting for playback.',
   noTrackBody: 'Play or open a track to record with it.',
   noTrackTitle: 'No track loaded.',
   notNowLabel: 'Not now',
@@ -23,6 +26,7 @@ export const RECORDING_STRIP_COPY = {
     'Export or delete recordings under “Settings”, then “Recordings”, to make room.',
   refusedTitle: 'Not enough space to record.',
   settingsLabel: 'Settings',
+  pausedStatus: 'Paused with track',
   stopLabel: 'Stop recording',
 } as const;
 
@@ -70,9 +74,17 @@ export type RecordingStripModel =
       primary: StripButton;
     }
   | {
+      kind: 'armed';
+      title: string;
+      body: string;
+      stop: StripButton;
+    }
+  | {
       kind: 'recording';
       /** The elapsed time, `m:ss`. */
       clock: string;
+      /** `Paused with track` while the track is paused, else absent. */
+      status?: string;
       timeLeft: TimeLeftReadout | null;
       passed?: string;
       next?: string;
@@ -108,6 +120,7 @@ export const getRecordingStripModel = (
     return {
       kind: 'recording',
       clock,
+      ...(session.paused ? { status: RECORDING_STRIP_COPY.pausedStatus } : {}),
       timeLeft: session.timeLeft,
       ...(input.markers.passed
         ? { passed: `Passed ${formatMarkerReference(input.markers.passed)}` }
@@ -116,7 +129,18 @@ export const getRecordingStripModel = (
         ? { next: `Next ${formatMarkerReference(input.markers.next)}` }
         : {}),
       stop: { action: 'stop', label: RECORDING_STRIP_COPY.stopLabel },
-      accessibilityLabel: `Recording, ${clock}`,
+      accessibilityLabel: session.paused
+        ? `Recording paused, ${clock}`
+        : `Recording, ${clock}`,
+    };
+  }
+
+  if (session.phase === 'armed') {
+    return {
+      kind: 'armed',
+      title: RECORDING_STRIP_COPY.armedTitle,
+      body: RECORDING_STRIP_COPY.armedBody,
+      stop: { action: 'stop', label: RECORDING_STRIP_COPY.armedStopLabel },
     };
   }
 

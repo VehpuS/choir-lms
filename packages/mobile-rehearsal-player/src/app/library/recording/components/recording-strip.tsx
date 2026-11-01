@@ -61,6 +61,27 @@ const ActionButton = ({
   </Pressable>
 );
 
+const StopButton = ({
+  button,
+  onAction,
+}: {
+  button: StripButton;
+  onAction: (action: StripAction) => void;
+}) => (
+  <Pressable
+    accessibilityLabel={button.label}
+    accessibilityRole="button"
+    onPress={() => onAction(button.action)}
+    style={({ pressed }) => [
+      styles.stop,
+      buttonInteractionGuardStyle,
+      pressed ? styles.pressed : null,
+    ]}
+  >
+    <AppIcon color={colors.bg} name="stop" size={20} />
+  </Pressable>
+);
+
 const Message = ({
   title,
   body,
@@ -101,6 +122,11 @@ export const RecordingStrip = ({ model, onAction }: RecordingStripProps) => {
             <TimeLeft readout={model.timeLeft} />
           </View>
           <View style={styles.markers}>
+            {model.status ? (
+              <Text numberOfLines={1} style={styles.statusLine}>
+                {model.status}
+              </Text>
+            ) : null}
             {model.passed ? (
               <Text numberOfLines={1} style={styles.markerLine}>
                 {model.passed}
@@ -112,18 +138,14 @@ export const RecordingStrip = ({ model, onAction }: RecordingStripProps) => {
               </Text>
             ) : null}
           </View>
-          <Pressable
-            accessibilityLabel={model.stop.label}
-            accessibilityRole="button"
-            onPress={() => onAction(model.stop.action)}
-            style={({ pressed }) => [
-              styles.stop,
-              buttonInteractionGuardStyle,
-              pressed ? styles.pressed : null,
-            ]}
-          >
-            <AppIcon color={colors.bg} name="stop" size={20} />
-          </Pressable>
+          <StopButton button={model.stop} onAction={onAction} />
+        </>
+      ) : model.kind === 'armed' ? (
+        <>
+          <View style={styles.messageColumn}>
+            <Message body={model.body} title={model.title} />
+          </View>
+          <StopButton button={model.stop} onAction={onAction} />
         </>
       ) : model.kind === 'ready' ? (
         <>
@@ -207,6 +229,11 @@ const styles = StyleSheet.create({
   messageProblem: { color: colors.warning },
   messageTitle: { color: colors.text, fontWeight: appTheme.fontWeight.medium },
   pressed: { opacity: 0.7 },
+  statusLine: {
+    color: colors.warning,
+    fontSize: 12,
+    fontWeight: appTheme.fontWeight.medium,
+  },
   stop: {
     alignItems: 'center',
     backgroundColor: colors.danger,

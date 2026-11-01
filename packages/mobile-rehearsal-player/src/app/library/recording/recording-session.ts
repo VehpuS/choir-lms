@@ -3,6 +3,8 @@ import type {
   RecordingTimelineSegment,
 } from '@org/audio-library-models';
 
+import type { Transport } from '@org/audio-mixing';
+
 import type { VisibilitySource } from '../pitch/app-visibility';
 import type { PcmSource } from '../pitch/pcm-source-types';
 import { createRecorder, type Recorder } from './recorder';
@@ -36,12 +38,16 @@ export type RecordingSessionPhase =
   | 'explain'
   | 'blocked'
   | 'refused'
+  /** Record was pressed while the track was not playing; nothing is kept yet. */
+  | 'armed'
   | 'recording'
   | 'stopped';
 
 export type RecordingSessionState = {
   phase: RecordingSessionPhase;
   elapsedMs: number;
+  /** The take is paused because its track is (phase `recording` only). */
+  paused?: boolean;
   /** Only present when the time left matters (under 30 minutes). */
   timeLeft: TimeLeftReadout | null;
   blockedReason?: 'denied' | 'in-use' | 'unavailable';
@@ -57,6 +63,12 @@ export type RecordingStartRequest = {
   getTimeline: (elapsedMs: number) => RecordingTimelineSegment[];
   /** The first sample's `performance.now()` time, to anchor the timeline to. */
   onCaptureStart?: (wallMs: number) => void;
+  /**
+   * The track's transport. The take follows it: it waits for play when armed,
+   * pauses with a pause, and continues on resume (design Decision 17).
+   * Without one the take just runs.
+   */
+  transport?: Transport;
   /** Releases what tracks the transport; called once the recording is over or never began. */
   dispose?: () => void;
 };
@@ -107,8 +119,11 @@ export const createRecordingSession = (
   let recorder: Recorder | null = null;
   let pending: (() => Promise<RecordingStartRequest>) | null = null;
   let activeRequest: RecordingStartRequest | null = null;
+  let unfollowTransport: (() => void) | null = null;
 
   const disposeRequest = () => {
+    unfollowTransport?.();
+    unfollowTransport = null;
     activeRequest?.dispose?.();
     activeRequest = null;
   };
@@ -121,8 +136,18 @@ export const createRecordingSession = (
   };
 
   const toStopped = (result: RecorderResult, saved?: Recording) => {
+    const wasArmed = state.phase === 'armed';
+
     recorder = null;
     disposeRequest();
+
+    // Stopping before the track ever played is disarming, not a failed take.
+    if (wasArmed && result.status === 'discarded') {
+      set({ phase: 'idle', paused: undefined, timeLeft: null });
+
+      return;
+    }
+
     set({
       phase: 'stopped',
       stopMessage: describeRecordingStop(result.reason, result.status),
@@ -131,8 +156,30 @@ export const createRecordingSession = (
     });
   };
 
+  /** Starts, pauses and resumes the take with its track. */
+  const followTransport = (take: Recorder, transport?: Transport) => {
+    if (!transport) {
+      return;
+    }
+
+    unfollowTransport = transport.subscribe(() => {
+      if (transport.isPlaying()) {
+        take.resume();
+        set({ phase: 'recording', paused: false });
+      } else {
+        take.pause();
+
+        if (state.phase === 'recording') {
+          set({ paused: true });
+        }
+      }
+    });
+  };
+
   const begin = async (build: () => Promise<RecordingStartRequest>) => {
     const request = await build();
+    // A take with no transport just runs; with one it starts when the track plays.
+    const isPlaying = request.transport?.isPlaying() ?? true;
 
     activeRequest = request;
     let saved: Recording | undefined;
@@ -165,14 +212,17 @@ export const createRecordingSession = (
         });
       },
       onCaptureStart: request.onCaptureStart,
+      startPaused: !isPlaying,
       onStopped: (result) => toStopped(result, saved),
     });
     const started = await next.start();
 
     if (started.ok) {
       recorder = next;
+      followTransport(next, request.transport);
       set({
-        phase: 'recording',
+        phase: isPlaying ? 'recording' : 'armed',
+        paused: false,
         elapsedMs: 0,
         stopMessage: undefined,
         savedRecording: undefined,
@@ -210,7 +260,11 @@ export const createRecordingSession = (
       set({ timeLeft: getTimeLeftReadout(left) });
     },
     requestStart: async (build) => {
-      if (state.phase === 'recording' || state.phase === 'explain') {
+      if (
+        state.phase === 'recording' ||
+        state.phase === 'armed' ||
+        state.phase === 'explain'
+      ) {
         return;
       }
 

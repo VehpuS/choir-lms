@@ -30,6 +30,27 @@ const model = (
   });
 
 describe('recording strip model', () => {
+  it('waits for playback while armed, with a cancel control', () => {
+    const armed = model({ phase: 'armed' });
+
+    assert.ok(armed.kind === 'armed');
+    assert.equal(armed.title, 'Waiting for playback.');
+    assert.equal(armed.stop.action, 'stop');
+  });
+
+  it('says the take is paused with its track and stops the clock label', () => {
+    const paused = model({ phase: 'recording', paused: true, elapsedMs: 5000 });
+
+    assert.ok(paused.kind === 'recording');
+    assert.equal(paused.status, 'Paused with track');
+    assert.equal(paused.accessibilityLabel, 'Recording paused, 0:05');
+    assert.equal(
+      (model({ phase: 'recording', elapsedMs: 5000 }) as { status?: string })
+        .status,
+      undefined,
+    );
+  });
+
   it('asks for a track when none is loaded', () => {
     assert.equal(model({}, { hasTrack: false }).kind, 'no-track');
   });

@@ -66,6 +66,7 @@ const setup = (
     failAppendAt?: number;
     failures?: number;
     onCaptureStart?: (wallMs: number) => void;
+    startPaused?: boolean;
   } = {},
 ) => {
   const source = createFakePcmSource('granted');
@@ -82,6 +83,7 @@ const setup = (
     estimate: options.estimate ?? (async () => ROOMY),
     chunkMs: CHUNK_MS,
     onCaptureStart: options.onCaptureStart,
+    startPaused: options.startPaused,
     nowMs: () => ARRIVAL_WALL_MS,
     sleep: async (ms) => {
       sleeps.push(ms);
@@ -97,6 +99,54 @@ const setup = (
 };
 
 describe('createRecorder', () => {
+  it('keeps nothing and does not move the clock while paused, then continues', async () => {
+    const t = setup();
+
+    await t.recorder.start();
+    t.feed(5); // 0.5 s kept
+    t.recorder.pause();
+    t.feed(20, 5); // 2 s dropped
+    t.recorder.resume();
+    t.feed(10, 25); // 1 s kept
+    const result = await t.recorder.stop();
+
+    assert.ok(result.status === 'saved');
+    assert.equal(result.sampleCount, 1500);
+  });
+
+  it('starts paused without beginning the take, and reports the start when resumed', async () => {
+    const reported: number[] = [];
+    const t = setup({
+      startPaused: true,
+      onCaptureStart: (wallMs) => reported.push(wallMs),
+    });
+
+    await t.recorder.start();
+    t.feed(10);
+
+    assert.deepEqual(reported, []);
+    assert.deepEqual(t.log, []);
+
+    t.recorder.resume();
+    t.feed(15, 10);
+    const result = await t.recorder.stop();
+
+    assert.equal(reported.length, 1);
+    assert.ok(result.status === 'saved');
+    assert.equal(result.sampleCount, 1500);
+  });
+
+  it('discards an armed take stopped before anything was kept, without touching storage', async () => {
+    const t = setup({ startPaused: true });
+
+    await t.recorder.start();
+    t.feed(10);
+    const result = await t.recorder.stop();
+
+    assert.equal(result.status, 'discarded');
+    assert.deepEqual(t.log, []);
+  });
+
   it("reports the first sample's wall time from the block, else from its arrival", async () => {
     const reported: number[] = [];
     const t = setup({ onCaptureStart: (wallMs) => reported.push(wallMs) });

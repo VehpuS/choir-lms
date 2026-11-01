@@ -51,6 +51,13 @@ export type Recorder = {
   start: () => Promise<StartRecordingResult>;
   /** Stops once; later calls return the first stop's result. */
   stop: (reason?: RecordingStopReason) => Promise<RecorderResult>;
+  /**
+   * Drops incoming audio until `resume`: nothing is kept and elapsed time does
+   * not move, so a take paused with its track holds no silence (design
+   * Decision 17). Pausing before the first sample means the take has not begun.
+   */
+  pause: () => void;
+  resume: () => void;
   isRecording: () => boolean;
 };
 
@@ -68,6 +75,8 @@ export type RecorderOptions = {
    * gives one, else the moment the block arrived.
    */
   onCaptureStart?: (wallMs: number) => void;
+  /** Opens paused, so no audio is kept before `resume` (an armed take). */
+  startPaused?: boolean;
   /** Wall clock for the fallback above; replaced in specs. */
   nowMs?: () => number;
   chunkMs?: number;
@@ -84,6 +93,7 @@ export const createRecorder = (options: RecorderOptions): Recorder => {
     options.sleep ??
     ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
   let recording = false;
+  let paused = options.startPaused ?? false;
   let stopping: Promise<RecorderResult> | null = null;
   let unsubscribe: (() => void) | null = null;
   let unwatchVisibility: (() => void) | null = null;
@@ -199,7 +209,7 @@ export const createRecorder = (options: RecorderOptions): Recorder => {
   };
 
   const accept = (block: PcmBlock) => {
-    if (stopping) {
+    if (stopping || paused) {
       return;
     }
 
@@ -307,6 +317,12 @@ export const createRecorder = (options: RecorderOptions): Recorder => {
 
   return {
     isRecording: () => recording,
+    pause: () => {
+      paused = true;
+    },
+    resume: () => {
+      paused = false;
+    },
     stop,
     start: async () => {
       const left = await readRecordingTimeLeft(estimate, PRECHECK_SAMPLE_RATE);

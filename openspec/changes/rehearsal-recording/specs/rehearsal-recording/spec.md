@@ -61,8 +61,16 @@ The system SHALL record while a track plays and SHALL store a timeline mapping t
 - **THEN** the timeline starts a new segment at the new track position
 
 #### Scenario: Pause during a recording
-- **WHEN** the track is paused while recording continues
-- **THEN** the timeline holds the track position for that stretch
+- **WHEN** the track is paused while a recording is in progress
+- **THEN** the recording pauses with it, its elapsed time stops, no silence is stored, and resuming playback continues the same recording with the timeline continuing from the track position at resume
+
+#### Scenario: Record pressed while the track is not playing
+- **WHEN** the user presses `Record` while the track is stopped or paused
+- **THEN** the recording is armed and shows that it is waiting for playback, nothing is kept, and the recording starts when the track plays
+
+#### Scenario: Disarm before playback
+- **WHEN** a recording is armed and the user stops it before the track plays
+- **THEN** nothing is saved and the strip returns to ready
 
 #### Scenario: No track playing
 - **WHEN** no track is loaded

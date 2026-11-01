@@ -109,6 +109,7 @@ export const buildRecordingStartRequest = (
     return {
       draft,
       getTimeline: tracker.getTimeline,
+      transport: options.transport,
       onCaptureStart: tracker.setOriginWallMs,
       dispose: tracker.dispose,
     };

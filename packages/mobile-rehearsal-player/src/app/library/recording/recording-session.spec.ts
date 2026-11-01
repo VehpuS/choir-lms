@@ -1,106 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import {
-  DEFAULT_PLAYBACK_SHAPING,
-  type DriveAudioSource,
-} from '@org/audio-library-models';
-
-import {
-  createFakePcmSource,
-  createFakeVisibility,
-  settle,
-} from '../pitch/pitch-test-support.js';
-import { captureRecordingStart } from './recording-metadata.js';
-import {
-  RECORDING_EXPLAINED_KEY,
-  createRecordingSession,
-  type RecordingFlagStorage,
-  type RecordingStartRequest,
-} from './recording-session.js';
-import { createRecordingsStore } from './recordings-store.js';
-import { createMemoryRecordingsBackend } from './recordings-test-support.js';
-
-const track = {
-  id: 'track-1',
-  provider: 'google-drive',
-  driveFileId: 'drive-1',
-  name: 'Song.mp3',
-  mimeType: 'audio/mpeg',
-  durationMs: 60_000,
-  modifiedTime: 'v1',
-  createdAt: 'x',
-  availability: { status: 'available' },
-} as DriveAudioSource;
-
-const request = (): RecordingStartRequest => ({
-  draft: captureRecordingStart({
-    id: 'rec-1',
-    createdAt: '2026-01-01T00:00:00.000Z',
-    playing: track,
-    parent: track,
-    shaping: DEFAULT_PLAYBACK_SHAPING,
-    markers: [],
-    existingNames: [],
-    appliedLatencyMs: 0,
-  }),
-  getTimeline: (elapsedMs) => [
-    {
-      recordingStartMs: 0,
-      recordingEndMs: elapsedMs,
-      trackStartMs: 0,
-      held: false,
-    },
-  ],
-});
-
-const flags = (initial: Record<string, string> = {}) => {
-  const values = { ...initial };
-  const storage: RecordingFlagStorage = {
-    getItem: async (key) => values[key] ?? null,
-    setItem: async (key, value) => {
-      values[key] = value;
-    },
-  };
-
-  return { storage, values };
-};
-
-const setup = (
-  options: {
-    explained?: boolean;
-    estimate?: { quota: number; usage: number } | null;
-  } = {},
-) => {
-  const memory = createMemoryRecordingsBackend();
-  const store = createRecordingsStore(memory.backend);
-  const source = createFakePcmSource('granted');
-  const visibility = createFakeVisibility();
-  const f = flags(
-    options.explained === false ? {} : { [RECORDING_EXPLAINED_KEY]: 'true' },
-  );
-  const session = createRecordingSession({
-    source,
-    store,
-    visibility,
-    storage: f.storage,
-    estimate: async () =>
-      options.estimate === undefined
-        ? { quota: 100e9, usage: 0 }
-        : options.estimate,
-  });
-  const feed = (blocks: number) => {
-    for (let i = 0; i < blocks; i += 1) {
-      source.emitBlock({
-        samples: new Float32Array(4800).fill(0.25),
-        sampleRate: 48_000,
-        startTimeSec: 1 + i * 0.1,
-      });
-    }
-  };
-
-  return { session, source, visibility, store, flags: f, feed };
-};
+import { settle } from '../pitch/pitch-test-support.js';
+import { RECORDING_EXPLAINED_KEY } from './recording-session.js';
+import { request, setup } from './recording-session-test-support.js';
 
 describe('recording session', () => {
   it('records on the first request when the explanation was already accepted', async () => {
@@ -218,6 +121,44 @@ describe('recording session', () => {
 
     assert.equal(plenty.session.getState().timeLeft, null);
     assert.equal(low.session.getState().timeLeft?.tone, 'normal');
+  });
+
+  it('saves a recording started mid-track and stopped by hand with the span it covered', async () => {
+    const t = setup();
+    const position = 90_000;
+    let listeners = 0;
+
+    await t.session.requestStart(async () => ({
+      ...request(),
+      getTimeline: (elapsedMs) => [
+        {
+          recordingStartMs: 0,
+          recordingEndMs: elapsedMs,
+          trackStartMs: position,
+          held: false,
+        },
+      ],
+      dispose: () => {
+        listeners -= 1;
+      },
+    }));
+    listeners += 1;
+    t.feed(25); // 2.5 s
+    await t.session.stop();
+
+    const saved = t.session.getState().savedRecording;
+
+    assert.deepEqual(saved?.timeline, [
+      {
+        recordingStartMs: 0,
+        recordingEndMs: 2500,
+        trackStartMs: position,
+        held: false,
+      },
+    ]);
+    // Stopping releases the request but never touches the track.
+    assert.equal(listeners, 0);
+    assert.equal(position, 90_000);
   });
 
   it('anchors the request to the first sample and releases it when the recording ends', async () => {

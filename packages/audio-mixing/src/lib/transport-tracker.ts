@@ -135,15 +135,30 @@ export const createTransportTracker = (
       }
     });
 
-    return stretches.slice(firstIndex).map((stretch, index) => {
+    // Time with the track paused is not part of the take: the recorder drops
+    // that audio, so every later change moves earlier by the pause before it.
+    let pausedMs = 0;
+    const changes: TrackStateChange[] = [];
+
+    stretches.slice(firstIndex).forEach((stretch, index, kept) => {
       const atWallMs = index === 0 ? origin : stretch.startWallMs;
 
-      return {
-        atMs: atWallMs - origin,
+      if (!stretch.playing) {
+        const endWallMs = kept[index + 1]?.startWallMs ?? atWallMs;
+
+        pausedMs += endWallMs - atWallMs;
+
+        return;
+      }
+
+      changes.push({
+        atMs: atWallMs - origin - pausedMs,
         trackMs: trackAt(stretch, atWallMs),
-        playing: stretch.playing,
-      };
+        playing: true,
+      });
     });
+
+    return changes;
   };
 
   return {

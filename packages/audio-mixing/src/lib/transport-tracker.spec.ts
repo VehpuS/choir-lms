@@ -105,7 +105,7 @@ describe('createTransportTracker', () => {
     assert.equal(timeline[1]?.trackStartMs, 90_000);
   });
 
-  it('holds the track position while paused, then resumes from it', () => {
+  it('leaves paused time out of the take and continues from where it paused', () => {
     const run = setup();
 
     run.advance(2_000);
@@ -114,7 +114,8 @@ describe('createTransportTracker', () => {
     run.play();
     run.advance(1_000);
 
-    const timeline = run.tracker.getTimeline(6_000);
+    // Six seconds passed, but the recorder kept three: two before the pause, one after.
+    const timeline = run.tracker.getTimeline(3_000);
 
     assert.deepEqual(
       timeline.map((segment) => [
@@ -125,8 +126,7 @@ describe('createTransportTracker', () => {
       ]),
       [
         [0, 2_000, 30_000, false],
-        [2_000, 5_000, 32_000, true],
-        [5_000, 6_000, 32_000, false],
+        [2_000, 3_000, 32_000, false],
       ],
     );
   });
