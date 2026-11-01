@@ -88,6 +88,13 @@ export const toWallMs = (
     return undefined;
   }
 
+  // A context whose output clock has not started yet reports zero for both.
+  // Using that would put the block on the audio clock instead of
+  // `performance.now()`, so the caller falls back to the arrival time.
+  if (stamp.performanceTime <= 0) {
+    return undefined;
+  }
+
   return (
     stamp.performanceTime + (captureSec - stamp.contextTime) * MS_PER_SECOND
   );
