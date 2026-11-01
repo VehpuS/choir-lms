@@ -20,6 +20,7 @@ const STEP_ICON_SIZE = 22;
 
 type PitchControlProps = {
   canShapePitch: boolean;
+  disabled?: boolean;
   onSetPitchSemitones: (semitones: number) => void;
   pitchSemitones: number;
 };
@@ -64,6 +65,7 @@ const StepButton = ({
  */
 export const PitchControl = ({
   canShapePitch,
+  disabled = false,
   onSetPitchSemitones,
   pitchSemitones,
 }: PitchControlProps) => {
@@ -98,7 +100,7 @@ export const PitchControl = ({
       <View style={styles.stepperRow}>
         <StepButton
           accessibilityLabel={model.decreaseLabel}
-          disabled={!model.canStepDown}
+          disabled={disabled || !model.canStepDown}
           icon="minus"
           onPress={() => step(-PITCH_STEP_SEMITONES)}
         />
@@ -120,7 +122,7 @@ export const PitchControl = ({
         </View>
         <StepButton
           accessibilityLabel={model.increaseLabel}
-          disabled={!model.canStepUp}
+          disabled={disabled || !model.canStepUp}
           icon="plus"
           onPress={() => step(PITCH_STEP_SEMITONES)}
         />

@@ -15,6 +15,7 @@ const SAMPLE_RATE = 1000;
 const BLOCK = 100;
 /** A tiny chunk (one second at the test rate) so specs stay small. */
 const CHUNK_MS = 1000;
+const ARRIVAL_WALL_MS = 7_000;
 const ROOMY = { quota: 100e9, usage: 0 };
 
 const block = (index: number, value = 0.5): PcmBlock => ({
@@ -64,6 +65,7 @@ const setup = (
     estimate?: () => Promise<{ quota?: number; usage?: number } | null>;
     failAppendAt?: number;
     failures?: number;
+    onCaptureStart?: (wallMs: number) => void;
   } = {},
 ) => {
   const source = createFakePcmSource('granted');
@@ -79,6 +81,8 @@ const setup = (
     visibility,
     estimate: options.estimate ?? (async () => ROOMY),
     chunkMs: CHUNK_MS,
+    onCaptureStart: options.onCaptureStart,
+    nowMs: () => ARRIVAL_WALL_MS,
     sleep: async (ms) => {
       sleeps.push(ms);
     },
@@ -93,6 +97,26 @@ const setup = (
 };
 
 describe('createRecorder', () => {
+  it("reports the first sample's wall time from the block, else from its arrival", async () => {
+    const reported: number[] = [];
+    const t = setup({ onCaptureStart: (wallMs) => reported.push(wallMs) });
+
+    await t.recorder.start();
+    t.source.emitBlock({ ...block(0), wallStartMs: 1234 });
+    t.feed(2, 1);
+    await t.recorder.stop();
+
+    const fallback = setup({
+      onCaptureStart: (wallMs) => reported.push(wallMs),
+    });
+
+    await fallback.recorder.start();
+    fallback.feed(1);
+    await fallback.recorder.stop();
+
+    assert.deepEqual(reported, [1234, ARRIVAL_WALL_MS]);
+  });
+
   it('writes full chunks as it records and the partial tail on stop', async () => {
     const t = setup();
 

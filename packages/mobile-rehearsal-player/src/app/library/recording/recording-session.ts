@@ -55,6 +55,10 @@ export type RecordingStartRequest = {
   draft: RecordingDraft;
   /** The timeline as it stands at `elapsedMs` of the recording. */
   getTimeline: (elapsedMs: number) => RecordingTimelineSegment[];
+  /** The first sample's `performance.now()` time, to anchor the timeline to. */
+  onCaptureStart?: (wallMs: number) => void;
+  /** Releases what tracks the transport; called once the recording is over or never began. */
+  dispose?: () => void;
 };
 
 export type RecordingSessionDependencies = {
@@ -102,6 +106,12 @@ export const createRecordingSession = (
   let state = INITIAL_STATE;
   let recorder: Recorder | null = null;
   let pending: (() => Promise<RecordingStartRequest>) | null = null;
+  let activeRequest: RecordingStartRequest | null = null;
+
+  const disposeRequest = () => {
+    activeRequest?.dispose?.();
+    activeRequest = null;
+  };
 
   const set = (
     next: Partial<RecordingSessionState> & { phase?: RecordingSessionPhase },
@@ -112,6 +122,7 @@ export const createRecordingSession = (
 
   const toStopped = (result: RecorderResult, saved?: Recording) => {
     recorder = null;
+    disposeRequest();
     set({
       phase: 'stopped',
       stopMessage: describeRecordingStop(result.reason, result.status),
@@ -122,6 +133,8 @@ export const createRecordingSession = (
 
   const begin = async (build: () => Promise<RecordingStartRequest>) => {
     const request = await build();
+
+    activeRequest = request;
     let saved: Recording | undefined;
     const writer = createRecordingWriter({
       store: deps.store,
@@ -151,6 +164,7 @@ export const createRecordingSession = (
                 }),
         });
       },
+      onCaptureStart: request.onCaptureStart,
       onStopped: (result) => toStopped(result, saved),
     });
     const started = await next.start();
@@ -166,6 +180,8 @@ export const createRecordingSession = (
 
       return;
     }
+
+    disposeRequest();
 
     if (started.reason === 'storage-low') {
       set({ phase: 'refused', timeLeft: null });

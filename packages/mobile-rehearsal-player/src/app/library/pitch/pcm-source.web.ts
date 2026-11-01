@@ -33,6 +33,7 @@ class PcmTap extends AudioWorkletProcessor {
 }
 registerProcessor('${PROCESSOR_NAME}', PcmTap);
 `;
+const MS_PER_SECOND = 1000;
 const PERMISSION_STATES: readonly PcmPermission[] = [
   'prompt',
   'granted',
@@ -70,6 +71,26 @@ const loadWorklet = async (context: MicAudioContextLike) => {
   } finally {
     Urls.revokeObjectURL(url);
   }
+};
+
+/**
+ * Maps a time on the capture context's clock to `performance.now()` using the
+ * context's own pairing of the two clocks (rehearsal-recording design
+ * Decision 2). Read per block so any drift between the clocks is followed.
+ */
+export const toWallMs = (
+  context: Pick<MicAudioContextLike, 'getOutputTimestamp'>,
+  captureSec: number,
+): number | undefined => {
+  const stamp = context.getOutputTimestamp?.();
+
+  if (stamp?.contextTime === undefined || stamp.performanceTime === undefined) {
+    return undefined;
+  }
+
+  return (
+    stamp.performanceTime + (captureSec - stamp.contextTime) * MS_PER_SECOND
+  );
 };
 
 const openMicrophone = async (emitter: PcmEmitter): Promise<OpenMicrophone> => {
@@ -132,6 +153,7 @@ const openMicrophone = async (emitter: PcmEmitter): Promise<OpenMicrophone> => {
       samples: data.samples,
       sampleRate: context.sampleRate,
       startTimeSec: data.timeSec,
+      wallStartMs: toWallMs(context, data.timeSec),
     });
 
     // Frames are assembled only while someone wants them, and the assembler

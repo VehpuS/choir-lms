@@ -220,6 +220,41 @@ describe('recording session', () => {
     assert.equal(low.session.getState().timeLeft?.tone, 'normal');
   });
 
+  it('anchors the request to the first sample and releases it when the recording ends', async () => {
+    const t = setup();
+    const events: string[] = [];
+
+    await t.session.requestStart(async () => ({
+      ...request(),
+      onCaptureStart: (wallMs) => events.push(`origin ${wallMs}`),
+      dispose: () => events.push('dispose'),
+    }));
+    t.source.emitBlock({
+      samples: new Float32Array(4800).fill(0.25),
+      sampleRate: 48_000,
+      startTimeSec: 1,
+      wallStartMs: 42,
+    });
+    await t.session.stop();
+
+    assert.deepEqual(events, ['origin 42', 'dispose']);
+  });
+
+  it('releases the request when the microphone cannot be opened', async () => {
+    const t = setup();
+    let disposed = 0;
+
+    t.source.failNext('denied');
+    await t.session.requestStart(async () => ({
+      ...request(),
+      dispose: () => {
+        disposed += 1;
+      },
+    }));
+
+    assert.equal(disposed, 1);
+  });
+
   it('ignores a second start while already recording', async () => {
     const t = setup();
 

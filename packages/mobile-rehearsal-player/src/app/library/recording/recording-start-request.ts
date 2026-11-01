@@ -1,4 +1,9 @@
 import { omit } from 'es-toolkit';
+import {
+  createTransportTracker,
+  type SyncTimers,
+  type Transport,
+} from '@org/audio-mixing';
 import type {
   DriveAudioSource,
   PlayableItem,
@@ -22,6 +27,14 @@ export type BuildStartRequestOptions = {
   id: string;
   createdAt: string;
   appliedLatencyMs?: number;
+  /**
+   * The track's transport. With it the timeline follows pauses, seeks and loop
+   * wraps; without it the timeline is one plain stretch from `positionMs`.
+   */
+  transport?: Transport;
+  /** Wall clock the transport is sampled against; `performance.now()` in the app. */
+  nowMs?: () => number;
+  timers?: SyncTimers;
 };
 
 /** The saved track under a playing adjusted copy: the copy's own audio with the source's identity. */
@@ -56,9 +69,7 @@ export const getRecordingOwnerForItem = (
 
 /**
  * What the session needs to start: the metadata draft for the item and a
- * timeline. The timeline here is one plain stretch from where Record was
- * pressed; seeks, pauses and loop wraps are added when the transport is
- * tracked (task 5.3).
+ * timeline that follows the transport (rehearsal-recording design Decision 2).
  */
 export const buildRecordingStartRequest = (
   options: BuildStartRequestOptions,
@@ -73,6 +84,7 @@ export const buildRecordingStartRequest = (
           endMs: item.range.endMs,
         }
       : null;
+  const appliedLatencyMs = options.appliedLatencyMs ?? 0;
   const draft = captureRecordingStart({
     id: options.id,
     createdAt: options.createdAt,
@@ -82,8 +94,25 @@ export const buildRecordingStartRequest = (
     shaping,
     markers: options.markers,
     existingNames: options.existingNames,
-    appliedLatencyMs: options.appliedLatencyMs ?? 0,
+    appliedLatencyMs,
   });
+
+  if (options.transport && options.nowMs) {
+    const tracker = createTransportTracker({
+      transport: options.transport,
+      rate: shaping.speedMultiplier,
+      latencyMs: appliedLatencyMs,
+      nowMs: options.nowMs,
+      timers: options.timers,
+    });
+
+    return {
+      draft,
+      getTimeline: tracker.getTimeline,
+      onCaptureStart: tracker.setOriginWallMs,
+      dispose: tracker.dispose,
+    };
+  }
 
   return {
     draft,

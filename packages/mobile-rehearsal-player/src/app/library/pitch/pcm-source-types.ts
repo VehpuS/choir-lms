@@ -20,6 +20,12 @@ export type PcmBlock = {
   sampleRate: number;
   /** Capture time in seconds of the block's first sample, on the audio context clock. */
   startTimeSec: number;
+  /**
+   * The same moment on the `performance.now()` clock, in milliseconds, where
+   * the platform can map its audio clock to it (the clock the track's media
+   * element is sampled against). Absent when it cannot.
+   */
+  wallStartMs?: number;
 };
 
 export type PcmPermission = 'unknown' | 'prompt' | 'granted' | 'denied';

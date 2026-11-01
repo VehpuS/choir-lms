@@ -40,6 +40,8 @@ export type MicAudioContextLike = {
   audioWorklet: { addModule: (url: string) => Promise<void> };
   createMediaStreamSource: (stream: MediaStreamLike) => MicAudioNodeLike;
   createGain: () => MicAudioNodeLike & { gain: { value: number } };
+  /** Pairs a context time with a `performance.now()` time; absent in older browsers. */
+  getOutputTimestamp?: () => { contextTime?: number; performanceTime?: number };
   resume: () => Promise<void>;
   close: () => Promise<void>;
   onstatechange: (() => void) | null;

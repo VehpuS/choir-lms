@@ -17,6 +17,7 @@ import { getPlaybackShapingEngine } from '../../playback/shaping';
 import { getMarkerContext } from '../recording-marker-context';
 import { recordingCapabilities } from '../recording-capabilities';
 import { getRecordingSession } from '../recording-session-instance';
+import { getRecordingTransport } from '../recording-transport';
 import {
   buildRecordingStartRequest,
   getRecordingOwnerForItem,
@@ -110,6 +111,8 @@ const RecordingDockContent = ({
         existingNames: existing.map((recording) => recording.name),
         id: newRecordingId(),
         createdAt: new Date().toISOString(),
+        transport: getRecordingTransport() ?? undefined,
+        nowMs: () => performance.now(),
       });
     });
   }, [session]);

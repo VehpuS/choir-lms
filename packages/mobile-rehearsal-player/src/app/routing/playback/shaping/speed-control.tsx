@@ -27,11 +27,13 @@ import {
 const KEYBOARD_STEP = 0.05;
 
 type SpeedControlProps = {
+  disabled?: boolean;
   onSetSpeedMultiplier: (multiplier: number) => void;
   speedMultiplier: number;
 };
 
 export const SpeedControl = ({
+  disabled = false,
   onSetSpeedMultiplier,
   speedMultiplier,
 }: SpeedControlProps) => {
@@ -81,7 +83,11 @@ export const SpeedControl = ({
       <View
         {...interactionGuardProps}
         onLayout={onLayout}
-        style={[continuousInteractionGuardStyle, styles.sliderFrame]}
+        style={[
+          continuousInteractionGuardStyle,
+          styles.sliderFrame,
+          disabled ? styles.disabled : null,
+        ]}
       >
         <AccessibleSlider
           label="Speed"
@@ -93,6 +99,7 @@ export const SpeedControl = ({
           valueText={getSpeedControlModel(draft).readout}
         >
           <Slider
+            disabled={disabled}
             maximumTrackTintColor={appTheme.colors.divider}
             maximumValue={model.maximum}
             minimumTrackTintColor={appTheme.colors.accent}

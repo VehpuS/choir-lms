@@ -62,6 +62,14 @@ export type RecorderOptions = {
   onProgress?: (progress: RecorderProgress) => void;
   /** Called once when the recording ends, for whatever reason, including ones the recorder saw itself. */
   onStopped?: (result: RecorderResult) => void;
+  /**
+   * Called with the first sample's `performance.now()` time, so the track's
+   * timeline can be anchored to it; the block's own mapping when the platform
+   * gives one, else the moment the block arrived.
+   */
+  onCaptureStart?: (wallMs: number) => void;
+  /** Wall clock for the fallback above; replaced in specs. */
+  nowMs?: () => number;
   chunkMs?: number;
   retryDelaysMs?: readonly number[];
   /** Waits between retries; replaced in specs so they do not sleep. */
@@ -169,6 +177,9 @@ export const createRecorder = (options: RecorderOptions): Recorder => {
   const begin = (block: PcmBlock) => {
     sampleRate = block.sampleRate;
     captureStartSec = block.startTimeSec;
+    options.onCaptureStart?.(
+      block.wallStartMs ?? (options.nowMs ?? (() => performance.now()))(),
+    );
     chunkSamples = Math.round((sampleRate * chunkMs) / MS_PER_SECOND);
     chunk = new Int16Array(chunkSamples);
     enqueue(async () => {

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import type { TransportEvent } from '@org/audio-mixing';
 import {
   DEFAULT_PLAYBACK_SHAPING,
   createAdjustedTrackSource,
@@ -46,6 +47,29 @@ const loop: NamedLoop = {
   updatedAt: 'x',
 };
 
+/** A transport the spec moves by hand, with the listener count to check cleanup. */
+const createHandTransport = (positionMs: number) => {
+  const listeners = new Set<(event: TransportEvent) => void>();
+  let position = positionMs;
+
+  return {
+    transport: {
+      getPositionMs: () => position,
+      isPlaying: () => true,
+      subscribe: (listener: (event: TransportEvent) => void) => {
+        listeners.add(listener);
+
+        return () => listeners.delete(listener);
+      },
+    },
+    seek: (to: number) => {
+      position = to;
+      listeners.forEach((listener) => listener('seek' as TransportEvent));
+    },
+    listenerCount: () => listeners.size,
+  };
+};
+
 const base = {
   positionMs: 12_000,
   markers: [{ name: 'Verse 2', positionMs: 11_000 }],
@@ -74,6 +98,39 @@ describe('buildRecordingStartRequest', () => {
         held: false,
       },
     ]);
+  });
+
+  it('follows the transport through a seek, anchored to the first sample', () => {
+    const fake = createHandTransport(12_000);
+    let now = 1000;
+    const request = buildRecordingStartRequest({
+      ...base,
+      item: createTrackPlayableItem(track),
+      transport: fake.transport,
+      nowMs: () => now,
+      timers: { setInterval: () => 0, clearInterval: () => undefined },
+    });
+
+    request.onCaptureStart?.(1000);
+    now = 3000;
+    fake.seek(40_000);
+    now = 4000;
+
+    const timeline = request.getTimeline(3000);
+
+    assert.deepEqual(
+      timeline.map((segment) => [
+        segment.recordingStartMs,
+        segment.trackStartMs,
+      ]),
+      [
+        [0, 12_000],
+        [2000, 40_000],
+      ],
+    );
+
+    request.dispose?.();
+    assert.equal(fake.listenerCount(), 0);
   });
 
   it('makes a loop recording when a loop is playing', () => {

@@ -93,7 +93,8 @@ export const ShapingSurface = ({
   onClose,
   summary,
 }: ShapingSurfaceProps) => {
-  const canReset = canResetShaping(controls.ambient);
+  const isLocked = Boolean(controls.lockedReason);
+  const canReset = canResetShaping(controls.ambient) && !isLocked;
   const overrideNote = getItemOverrideNote(controls);
 
   return (
@@ -146,6 +147,11 @@ export const ShapingSurface = ({
           ) : null}
         </View>
 
+        {controls.lockedReason ? (
+          <Text accessibilityLiveRegion="polite" style={styles.overrideNote}>
+            {controls.lockedReason}
+          </Text>
+        ) : null}
         {overrideNote ? (
           <Text accessibilityLiveRegion="polite" style={styles.overrideNote}>
             {overrideNote}
@@ -154,12 +160,14 @@ export const ShapingSurface = ({
         {/* The sliders edit the session (ambient); an adjusted item's own
             transform is what plays, and the note above says so. */}
         <SpeedControl
+          disabled={isLocked}
           onSetSpeedMultiplier={controls.onSetSpeedMultiplier}
           speedMultiplier={controls.ambient.speedMultiplier}
         />
         <FadedRule />
         <PitchControl
           canShapePitch={controls.canShapePitch}
+          disabled={isLocked}
           onSetPitchSemitones={controls.onSetPitchSemitones}
           pitchSemitones={controls.ambient.pitchSemitones}
         />

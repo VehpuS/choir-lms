@@ -51,12 +51,20 @@ export type PlaybackShapingControls = {
   /** What is applied now: the item's own transform, else the ambient. */
   effective: ShapingAxes;
   isItemTransformActive: boolean;
+  /**
+   * Why the controls cannot change now, or `null`/absent when they can. A
+   * recording keeps the speed and pitch it started with (design Decision 6).
+   */
+  lockedReason?: string | null;
   onReset: () => void;
   onSetPitchSemitones: (semitones: number) => void;
   onSetSpeedMultiplier: (multiplier: number) => void;
   /** Absent where saving is not wired (previews, tests). */
   save?: PlaybackShapingSaveControls;
 };
+
+export const SHAPING_LOCKED_WHILE_RECORDING =
+  'Locked while recording. Stop the recording to change speed and pitch.';
 
 export const SESSION_SCOPE_STATEMENT =
   'Applies to this session only until saved.';
