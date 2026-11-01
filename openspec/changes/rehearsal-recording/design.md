@@ -26,7 +26,7 @@ Other facts that shape the design: playback on web is `window.rntp.getMediaEleme
 - Stretching or transposing a recording to follow a track at a different speed.
 - Compressed export formats (MP3, AAC); a browser has no encoder for them and adding one is its own decision.
 - Native platforms.
-- Crash recovery of a recording in progress.
+- Crash recovery of a recording in progress. The chunked store leaves a recording marked `recording` with its checkpointed timeline if the app dies; recovering it is a possible follow-up (tasks 14.2), not part of this change.
 - Syncing recordings between devices (they live on the device that made them; exports and auto-export give Drive copies, not sync).
 
 ## Decisions
@@ -51,13 +51,13 @@ The compensation applied at recording time is stored on the recording, and the n
 
 ### Decision 4: Recordings are WAV in their own, never-purged IndexedDB store
 
-Recordings are written as 16-bit mono WAV at the capture sample rate: lossless, sample-accurate, trivial to decode, about 5 MB per minute at 44.1 kHz. The recorder converts blocks to Int16 as they arrive (half the memory of Float32), caps a recording at 10 minutes, and writes the WAV and the recording record in one transaction on stop. A new database holds `recordings` (the metadata, no bytes) and `recording-audio` (the Blob), keyed by recording id and indexed by owner.
+Recordings are written as 16-bit mono WAV at the capture sample rate: lossless, sample-accurate, trivial to decode, about 5 MB per minute at 44.1 kHz. The recorder converts blocks to Int16 as they arrive (half the memory of Float32) and writes them to storage **while recording**, in chunks of about ten seconds (about 900 KB), so memory use stays at one chunk however long the take runs and a recording is limited by free storage, not by a fixed length (Decision 20). A new database holds `recordings` (the metadata, no bytes) and `recording-audio` (the chunks as Blobs, keyed by recording id and chunk index). The recording record is created when recording starts, marked `recording`, and each chunk write also checkpoints the timeline captured so far, so everything written is already safe if a later write fails; stopping writes the final timeline and size and clears the mark. A WAV is assembled on demand as a header followed by the chunks (a `Blob` of blobs, not copied into memory), for export and for decoding.
 
-The raw recording is the user's own work and cannot be recreated, so this store has no cache tier and no budget: nothing removes a recording except the user deleting it. Cache clearing, offline-cache eviction, forgetting a Drive session, and signing out do not touch it. The app asks the browser for persistent storage when the first recording is saved, shows the total used in Settings and the offline files view, and reports a failed write (quota or a blocked store) as a stop reason without losing what was captured, so the user can export it. Safety beyond the device comes from export (Decision 12) and auto-export (Decision 19). Alternatives: MediaRecorder with Opus (small, but lossy, a second microphone path, no sample-accurate start); the track `AudioStore` (its eviction and budget rules would put recordings at risk); automatic and kept tiers like tracks (an earlier draft; rejected because evicting a raw recording destroys it).
+The raw recording is the user's own work and cannot be recreated, so this store has no cache tier and no budget: nothing removes a recording except the user deleting it. Cache clearing, offline-cache eviction, forgetting a Drive session, and signing out do not touch it. The app asks the browser for persistent storage when the first recording is saved, shows the total used in Settings and the offline files view, and reports a failed write (quota or a blocked store) as a stop reason: every chunk written before the failure is kept and only the unwritten tail (up to one chunk) can be lost, so the user can still export what was saved. Safety beyond the device comes from export (Decision 12) and auto-export (Decision 19). Alternatives: MediaRecorder with Opus (small, but lossy, a second microphone path, no sample-accurate start); the track `AudioStore` (its eviction and budget rules would put recordings at risk); automatic and kept tiers like tracks (an earlier draft; rejected because evicting a raw recording destroys it).
 
 ### Decision 5: The overlay rides the track's media element
 
-The track keeps playing through the existing player. The recording plays through an `AudioContext` as an `AudioBufferSourceNode` (the decoded WAV) into a gain node, started at `contextTime` computed from the track position, the recording's timeline (Decision 9), and the nudge. A sync controller (in `audio-mixing`) watches the media element and does the following:
+The track keeps playing through the existing player. The recording plays through an `AudioContext` as `AudioBufferSourceNode`s (the WAV decoded a window at a time, about thirty seconds, with the next window decoded ahead of the playhead, because a long recording cannot be held decoded in memory) into a gain node, started at `contextTime` computed from the track position, the recording's timeline (Decision 9), and the nudge. A sync controller (in `audio-mixing`) watches the media element and does the following:
 
 - **Play:** look up the recording time for the current track position in the timeline and schedule the source there (part-way in when the track is already inside the recording).
 - **Pause:** stop the source; position is derived from the track, so nothing else is remembered.
@@ -81,7 +81,7 @@ It holds the alignment math (the timeline lookup in both directions, nudge), the
 
 ### Decision 8: Consent, indicator, and stopping
 
-Recording is separate from the pitch tool's explanation: the first time the user starts a recording, a short note says that audio is recorded and kept on this device under the track until the user deletes it (never removed automatically), that it can be exported or auto-exported to Drive, and names the headphones assumption. While recording, the strip shows a clear recording state with elapsed time and a stop control. A recording stops, keeping what was captured, when the user stops it, the app is hidden, the microphone is interrupted or ends, the track ends, storage fails, an armed punch range reaches its out point, or the 10-minute cap is reached; the reason is shown. A recording under one second is discarded with a note. The pitch no-persistence guard test stays as is; a new guard test confirms the recording code is the only place that writes audio samples.
+Recording is separate from the pitch tool's explanation: the first time the user starts a recording, a short note says that audio is recorded and kept on this device under the track until the user deletes it (never removed automatically), that it can be exported or auto-exported to Drive, and names the headphones assumption. While recording, the strip shows a clear recording state with elapsed time and a stop control. A recording stops, keeping what was captured, when the user stops it, the app is hidden, the microphone is interrupted or ends, the track ends, storage fails or runs low (Decision 20), an armed punch range reaches its out point, or the recording reaches the WAV format's size limit; the reason is shown. A recording under one second is discarded with a note. The pitch no-persistence guard test stays as is; a new guard test confirms the recording code is the only place that writes audio samples.
 
 ### Decision 9: Metadata makes a recording self-contained
 
@@ -187,6 +187,18 @@ A setting, `Auto-export recordings to Drive` (off by default), copies each new r
 
 Alternatives: auto-export only after wifi; deferred (a setting later). Export on a schedule; rejected as slower feedback for a one-off action. Make Drive the home of the recording; rejected: the device copy stays the source of truth and export is a copy.
 
+### Decision 20: Recording length is limited by free storage and shown like a memory card
+
+There is no fixed maximum length. The limit is the storage the browser will give this site, read from `navigator.storage.estimate()` (quota minus usage) less a reserve (`RECORDING_STORAGE_RESERVE_BYTES`, initially 50 MB) kept for metadata and the app's other stores. Recording time left is that remaining space divided by the recording's byte rate (sample rate × 2 bytes).
+
+- **Before recording:** the strip shows `About 1 h 20 min left`. If less than a minute is left, recording is refused with a message that says why and points to the Recordings total in Settings, where recordings can be exported and deleted.
+- **While recording:** the readout counts down, re-read at every chunk write because other tabs and downloads also use space. Under five minutes left it changes to a warning style. When none is left the recording stops, keeping everything written, with the reason `Storage is full`.
+- **Honest wording:** browsers report quota coarsely (some round it, some reserve a share of the disk), so the text says `About` and the hard stop remains a failed write (`QuotaExceededError`), which is handled exactly like running out.
+- **No estimate available:** where `estimate()` is missing the strip shows no remaining time and the recording runs until a write fails.
+- **Format ceiling:** a 16-bit WAV cannot exceed 4 GiB (about thirteen hours of mono at 44.1 kHz). The recording stops there with its own reason; the readout never promises more than that.
+
+The mix export and the overlay do not hold a long recording in memory: the mix is rendered and encoded in chunks (Decision 12) and the overlay decodes by window (Decision 5). Alternative: a fixed ten-minute cap, rejected because a full movement can run longer and the cap was a guess rather than a measurement.
+
 ## Risks / Trade-offs
 
 - [The device store fills up or the browser clears site data] → Persistent storage requested, the used total shown, failed writes reported without losing what was captured, export and auto-export as the way to keep a copy elsewhere.
@@ -194,7 +206,7 @@ Alternatives: auto-export only after wifi; deferred (a setting later). Export on
 - [The overlay starts slowly when the track is not cached] → Spike 1.3 measures it; the track's existing caches are the performance layer, and a cache is added only if the measurement requires it.
 - [Wi-Fi-only cannot be enforced in most browsers] → Best-effort with an honest explanation; any connection when unknown.
 - [A mix drifts from what was exported earlier] → The mix is a pure function of metadata, recording, and original at a content version, with an engine version tag and a golden-signal test.
-- [Mix render is slow or memory-heavy for long recordings] → Chunked render with Int16 encoding, progress and cancel; spike 1.4 measures a ten-minute mix with a shaped track.
+- [Mix render is slow or memory-heavy for long recordings] → Chunked render with Int16 encoding, progress and cancel; spike 1.4 measures a ten-minute mix with a shaped track and times a longer one.
 - [Offline SoundTouch output differs from the live graph] → Spike 1.4 compares a render with a live capture; accept small differences, document them.
 - [Large uploads fail partway] → Resumable upload with retry from the last chunk.
 - [The original track changes or is gone] → `Original track changed` warning, overlay against the current file with the sync control, recording alone and export still available.
@@ -204,8 +216,11 @@ Alternatives: auto-export only after wifi; deferred (a setting later). Export on
 - [Users want to hear a recording at another speed] → Not supported by design; the mix export plus the ordinary track controls covers it.
 - [The timeline must be right across pauses, seeks, and loop wraps] → Spike 1.1 includes these; the lookup is pure and specified with synthetic timelines.
 - [Drift or clicks when rescheduling] → A tolerance, a short crossfade, and reschedule on every transport event; checked live.
-- [Memory growth during long recordings] → Int16 conversion on arrival, 10-minute cap.
-- [Storage quota or eviction by the browser] → Request persistent storage when the first recording is saved, show sizes, and report write failures as a stop reason.
+- [Memory growth during long recordings] → Int16 conversion on arrival and chunked writes while recording, so memory stays at one chunk; the limit is free storage (Decision 20).
+- [The storage estimate is coarse or wrong] → Wording says `About`, the readout is re-read at every chunk, and a failed write is handled as running out, with everything already written kept.
+- [A long recording cannot be decoded whole for the overlay] → The voice decodes a window at a time ahead of the playhead; measured in the 7.1 and 9.1 checks.
+- [A very long mix is slow to render] → Chunked render with progress and cancel; spike 1.4 times a long mix.
+- [Storage quota or eviction by the browser] → Request persistent storage when the first recording is saved, show sizes and time left, and report write failures as a stop reason with the written chunks kept.
 - [Visibility rules for loops and adjusted tracks are easy to get wrong] → One pure model decides where every recording is listed, specified with synthetic libraries (a loop on an adjusted track, a deleted adjusted copy, a session adjustment).
 - [Scope is large] → The tasks put the sync and latency spikes first, and punch ranges last, so the plan can be cut back before UI work begins.
 
@@ -215,7 +230,7 @@ New database and new package; nothing existing is migrated. The `PcmSource` chan
 
 ## Open Questions
 
-- Is a 10-minute cap right for a full rehearsal piece, or should it be larger once memory is measured?
+- Is a 50 MB reserve and a five-minute warning right, and how accurate is `storage.estimate()` in Safari and Firefox? (Task 3.6 measures it.)
 - Does Safari honour `getOutputTimestamp` and `outputLatency` well enough, or does it need the manual path as its default?
 - Should a playlist recording play over its track at the saved balance only, or may a playlist entry choose recording-only?
 - After the last recorded pass of a loop recording, is silence right, or should the recording repeat or the last pass hold?

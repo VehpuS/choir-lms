@@ -20,14 +20,15 @@ Web is the build and verification target. Native handling is deferred to `native
 
 - [x] 3.1 Add `recordingCapabilities()` (like `pitchCapabilities()`): web with microphone and IndexedDB can record, native cannot. Spec the gate.
 - [x] 3.2 Extend `PcmSource` with the optional `onBlock` stream and run the frame assembler only when a subscriber wants frames (design Decision 1). Update the shared-source spec; confirm the pitch store specs and the no-persistence guard still pass.
-- [ ] 3.3 Build the `Recorder`: subscribes for blocks, converts to Int16, tracks elapsed time, enforces the ten-minute cap, stops on every reason in the spec and keeps what was captured, discards recordings under one second. Spec with a fake `PcmSource`.
+- [ ] 3.3 Build the `Recorder`: subscribes for blocks, converts to Int16, tracks elapsed time, hands Int16 chunks (about ten seconds) to a chunk writer as they fill, stops on every reason in the spec and keeps what was captured, discards recordings under one second, and stops at the WAV 4 GiB limit. Spec with a fake `PcmSource` and a fake chunk writer.
 - [ ] 3.4 Add a guard test that only the recording code writes audio samples, alongside the existing pitch guard.
 - [ ] 3.5 Capture the metadata (design Decision 9): source file id, name, content version and duration; lineage with the adjusted copy's adjustment values and the loop and range; shaping read once at the start; the markers within the span; the punch range. Spec with a renamed track, moved markers, a deleted loop, and a replaced file; confirm no copy of the track audio is written.
+- [ ] 3.6 Storage limit (design Decision 20): a pure model of free space (quota minus usage minus the reserve) to time left, the warning and refusal thresholds, and the `Storage is full` stop; wire `navigator.storage.estimate()` behind an interface, re-read at each chunk. Spec the model and the no-estimate case; measure how accurate the estimate is in Chrome, Safari, and Firefox and record the result in the design.
 
 ## 4. Storage
 
-- [ ] 4.1 Build the recordings store (IndexedDB, `.web`, with a native file that is unavailable): `recordings` and `recording-audio` stores, list by owner and across the library, read, rename, delete (with its playlist references), one-transaction write, total size, and a persistent-storage request. Nothing removes a recording except delete. Spec with a fake IndexedDB, including write failure and that cache clearing, track eviction, sign-out, and forgetting a Drive session leave recordings alone.
-- [ ] 4.2 Handle a failed write: keep what was captured, say why, and offer `Export` before it is lost. Spec.
+- [ ] 4.1 Build the recordings store (IndexedDB, `.web`, with a native file that is unavailable): `recordings` and `recording-audio` (chunk blobs keyed by recording id and index) stores, list by owner and across the library, read, rename, delete (with its playlist references), create the record at the start and append a chunk with its timeline checkpoint, finalize on stop, assemble a WAV blob from the chunks without copying, total size, and a persistent-storage request. Nothing removes a recording except delete. Spec with a fake IndexedDB, including write failure and that cache clearing, track eviction, sign-out, and forgetting a Drive session leave recordings alone.
+- [ ] 4.2 Handle a failed chunk write: keep every chunk already written, say why, and offer `Export` of what was saved. Spec.
 - [ ] 4.3 Add `Keep track offline` and `Remove track from offline` to a recording's row menu and bulk selection by calling the existing track keep-offline actions, with wording that they apply to the whole track and its recordings, and the `Needs connection for overlay` flag. Check the existing keep-offline and offline state code first. Spec, including that keeping a track offline asks nothing about recordings and that recordings are never listed as cache.
 - [ ] 4.4 Settings: add a `Recordings` group beside the offline settings with the recordings total and the line that recordings are never removed automatically, and the auto-export settings (10.5). Add a recordings group to the offline files view (sizes, delete only). Spec the models.
 - [ ] 4.5 Resolve the original audio from the recording's metadata through the normal track path (playback cache, offline store, Drive), with the content-version check, `Original track changed`, and the unavailable cases; confirm no pinning or copying of the track. Check that keeping a track offline asks nothing about recordings. Spec with a cached, an evicted, a changed, and a deleted original.
@@ -48,7 +49,7 @@ Web is the build and verification target. Native handling is deferred to `native
 
 ## 7. Overlay playback
 
-- [ ] 7.1 Implement the web `Transport` and `Voice` for the controller (media element and `AudioBufferSourceNode`), including decode of the selected recording only and the missing-audio failure.
+- [ ] 7.1 Implement the web `Transport` and `Voice` for the controller (media element and `AudioBufferSourceNode`), including windowed decode of the selected recording only (about thirty seconds at a time, the next window decoded ahead of the playhead, no whole-recording decode) and the missing-audio failure.
 - [ ] 7.2 Add the balance control to the recording context; spec the model and verify in the browser preview with a playing track.
 - [ ] 7.3 Loop recordings: play pass n over pass n and go silent after the last pass. Verify in the browser preview with a three-pass recording.
 - [ ] 7.4 Build the sync control: 1 ms and 10 ms steps, slider to ±250 ms, reset, audible immediately, saved with the recording, and `Use for this device` storing the default per output device label. Spec the model and the device default store.
@@ -89,3 +90,8 @@ Web is the build and verification target. Native handling is deferred to `native
 
 - [ ] 13.1 Hand native recording and overlay to `native-playback-follow-ups` (audio session, permissions, background behaviour).
 - [ ] 13.2 Archive the change and sync the specs.
+
+## 14. Follow-ups (to explore with the user before any implementation)
+
+- [ ] 14.1 Show the remaining recording time in the design mock and the strip (task 5.2): where the readout sits, its warning style, and the low-storage refusal message. Review with the user before building it; split into a follow-up change if it does not belong here.
+- [ ] 14.2 Recover a recording left in progress by a crash or a closed tab: the chunked store keeps its audio and a timeline checkpoint, so it could be offered on the next launch. Explore with the user whether and how to surface it.

@@ -102,7 +102,7 @@ The system SHALL show the previous and next marker names and positions beside th
 - **THEN** the span is shown as times and recording works as usual
 
 ### Requirement: A recording stops safely and keeps what was captured
-The system SHALL stop a recording, keep the audio captured so far, and show the reason when the user stops it, the app is hidden, the microphone is interrupted or ends, the track ends, storage fails, an armed punch range reaches its out point, or the recording reaches ten minutes. A recording shorter than one second SHALL be discarded with a note.
+The system SHALL stop a recording, keep the audio captured so far, and show the reason when the user stops it, the app is hidden, the microphone is interrupted or ends, the track ends, storage fails or runs out, an armed punch range reaches its out point, or the recording reaches the 4 GiB limit of the audio format. A recording shorter than one second SHALL be discarded with a note.
 
 #### Scenario: App hidden
 - **WHEN** the app becomes hidden during a recording
@@ -112,9 +112,40 @@ The system SHALL stop a recording, keep the audio captured so far, and show the 
 - **WHEN** writing the recording fails
 - **THEN** the system says the recording could not be saved and why, and does not report success
 
+#### Scenario: Storage fills up
+- **WHEN** the storage available to recordings runs out during a recording
+- **THEN** the recording stops, everything written so far is kept, and the reason `Storage is full` is shown
+
 #### Scenario: Very short recording
 - **WHEN** the user stops a recording after less than one second
 - **THEN** nothing is stored and a note says the recording was too short
+
+### Requirement: Recording time left is shown from the available storage
+The system SHALL limit a recording by the storage the browser makes available, not by a fixed length. Before and during a recording the system SHALL show the approximate recording time left, SHALL warn when little is left, and SHALL refuse to start with an explanation when less than a minute is left. Where the browser cannot report available storage, the system SHALL show no time left and SHALL stop only when a write fails.
+
+#### Scenario: Time left before recording
+- **WHEN** the recording strip is ready to record
+- **THEN** it shows about how much recording time the free storage allows
+
+#### Scenario: Counting down
+- **WHEN** a recording is in progress
+- **THEN** the time left counts down and is re-read from the browser as chunks are written
+
+#### Scenario: Warning
+- **WHEN** less than five minutes of recording time is left
+- **THEN** the readout changes to a warning
+
+#### Scenario: Not enough space to start
+- **WHEN** less than a minute of recording time is left and the user starts a recording
+- **THEN** nothing is recorded and a message explains that storage is low and points to the Recordings settings where recordings can be exported or deleted
+
+#### Scenario: No estimate available
+- **WHEN** the browser cannot report available storage
+- **THEN** no time left is shown and the recording runs until a write fails
+
+#### Scenario: Long recording
+- **WHEN** a recording runs for an hour with enough storage
+- **THEN** it is not stopped by its length
 
 ### Requirement: Pitch detection still stores no audio
 The system SHALL keep the pitch detection pipeline free of any audio persistence, and only the recording code SHALL write audio samples to storage.

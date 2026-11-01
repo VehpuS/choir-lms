@@ -3,9 +3,13 @@
 ### Requirement: Recordings are stored in dedicated storage that is never purged automatically
 The system SHALL store each recording's raw audio and metadata on the device in storage separate from the track audio store, as lossless 16-bit mono audio, and SHALL NOT remove a recording except when the user deletes it. Clearing caches, evicting offline audio, forgetting a Drive session, and signing out SHALL NOT remove recordings.
 
+#### Scenario: Stored while recording
+- **WHEN** a recording is in progress
+- **THEN** its audio is written to storage in chunks as it is captured, so memory use does not grow with its length
+
 #### Scenario: Stored on stop
 - **WHEN** a recording stops
-- **THEN** its audio and metadata are written together and it is listed
+- **THEN** its final metadata and timeline are written and it is listed with everything captured
 
 #### Scenario: Cache cleared
 - **WHEN** the user clears the audio cache or the cache evicts tracks to stay within its size
@@ -20,7 +24,7 @@ The system SHALL store each recording's raw audio and metadata on the device in 
 - **THEN** the track audio cache and its size are unchanged
 
 ### Requirement: Storage use is visible and failures keep what was captured
-The system SHALL show the total space recordings use in Settings and the offline files view, SHALL request persistent storage when the first recording is saved, and SHALL, when a write fails, keep what was captured, say why, and offer to export it.
+The system SHALL show the total space recordings use in Settings and the offline files view, SHALL request persistent storage when the first recording is saved, and SHALL, when a write fails, keep everything already written, say why, and offer to export it.
 
 #### Scenario: Total shown
 - **WHEN** the user opens the recordings settings
@@ -28,7 +32,7 @@ The system SHALL show the total space recordings use in Settings and the offline
 
 #### Scenario: Out of space
 - **WHEN** saving a recording fails because storage is full
-- **THEN** the system says so, does not report success, and offers `Export` of the captured audio before it is lost
+- **THEN** the system says so, does not report success, keeps every chunk written before the failure, and offers `Export` of what was saved
 
 ### Requirement: Deleting a recording is explicit and removes everything it owns
 The system SHALL delete a recording only when the user confirms, and SHALL remove its audio, metadata, and playlist references together, showing playlist entries as removed. Deleting a recording SHALL NOT delete copies of it already exported to Drive.
