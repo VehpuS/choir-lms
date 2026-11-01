@@ -29,11 +29,11 @@ export type RecordingStartInput = {
   /** The saved track itself; the same as `playing` unless that is an adjusted copy. */
   parent: DriveAudioSource;
   /** The active loop, which then owns the recording. */
-  loop?: NamedLoop | null;
+  loop?: Pick<NamedLoop, 'endMs' | 'id' | 'name' | 'startMs'> | null;
   /** The speed and pitch in effect now; read once and fixed for the recording. */
   shaping: PlaybackShaping;
   /** The owner's markers, as resolved through the markers owner. */
-  markers: readonly TrackMarker[];
+  markers: readonly Pick<TrackMarker, 'name' | 'positionMs'>[];
   existingNames: readonly string[];
   appliedLatencyMs: number;
   punch?: RecordingPunch;

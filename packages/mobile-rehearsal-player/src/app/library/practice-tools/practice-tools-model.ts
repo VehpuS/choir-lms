@@ -1,6 +1,6 @@
 import type { AppIconName } from '../../components/app-icon';
 
-export type PracticeToolId = 'piano' | 'pitch';
+export type PracticeToolId = 'piano' | 'pitch' | 'recording';
 
 export type PracticeToolRow = {
   id: PracticeToolId;
@@ -27,6 +27,7 @@ export type PracticeToolState = { checked: boolean } | null;
 export type PracticeToolsInput = {
   piano: PracticeToolState;
   pitch: PracticeToolState;
+  recording: PracticeToolState;
 };
 
 export const PRACTICE_TOOLS_LABEL = 'Practice tools';
@@ -34,6 +35,7 @@ export const PRACTICE_TOOLS_LABEL = 'Practice tools';
 const TOOL_ROWS = [
   { id: 'piano', label: 'Piano', icon: 'piano-keyboard' },
   { id: 'pitch', label: 'Pitch detection', icon: 'microphone-outline' },
+  { id: 'recording', label: 'Recording', icon: 'record' },
 ] as const;
 
 const buildRow = (
@@ -52,8 +54,9 @@ const buildRow = (
 };
 
 /**
- * One toggle row per available tool; the control is absent when there are
- * none. Settings (such as `Show other-octave matches`) are not rows here: they
+ * One toggle row per available tool (the Recording row controls only the
+ * recording strip and the start controls; viewing recordings does not depend
+ * on it); the control is absent when there are none. Settings (such as `Show other-octave matches`) are not rows here: they
  * live with the surface they affect.
  */
 export const getPracticeToolsModel = (
@@ -62,7 +65,7 @@ export const getPracticeToolsModel = (
   const rows: PracticeToolRow[] = [];
 
   TOOL_ROWS.forEach(({ id, label, icon }) => {
-    const state = id === 'piano' ? input.piano : input.pitch;
+    const state = input[id];
 
     if (state) {
       rows.push(buildRow(id, label, icon, state.checked));

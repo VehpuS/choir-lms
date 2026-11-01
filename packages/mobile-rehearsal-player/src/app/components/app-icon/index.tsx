@@ -49,6 +49,8 @@ import { PencilSimpleIcon } from 'phosphor-react-native/src/icons/PencilSimple';
 import { MicrophoneIcon } from 'phosphor-react-native/src/icons/Microphone';
 import { PianoKeysIcon } from 'phosphor-react-native/src/icons/PianoKeys';
 import { PlayIcon } from 'phosphor-react-native/src/icons/Play';
+import { RecordIcon } from 'phosphor-react-native/src/icons/Record';
+import { StopIcon } from 'phosphor-react-native/src/icons/Stop';
 import { PlayCircleIcon } from 'phosphor-react-native/src/icons/PlayCircle';
 import { PlaylistIcon } from 'phosphor-react-native/src/icons/Playlist';
 import { PlusIcon } from 'phosphor-react-native/src/icons/Plus';
@@ -129,6 +131,8 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   Pause: PauseIcon,
   PencilSimple: PencilSimpleIcon,
   Microphone: MicrophoneIcon,
+  Record: RecordIcon,
+  Stop: StopIcon,
   PianoKeys: PianoKeysIcon,
   Play: PlayIcon,
   PlayCircle: PlayCircleIcon,

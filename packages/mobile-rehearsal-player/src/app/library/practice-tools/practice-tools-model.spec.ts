@@ -10,6 +10,7 @@ const input = (overrides: Partial<PracticeToolsInput>): PracticeToolsInput => {
   return {
     piano: null,
     pitch: null,
+    recording: null,
     ...overrides,
   };
 };
@@ -26,23 +27,32 @@ describe('practice tools model', () => {
     assert.deepEqual(model.rows, []);
   });
 
-  it('lists a row per available tool, piano first', () => {
+  it('lists a row per available tool, piano first and Recording last', () => {
     assert.deepEqual(
-      rowIds({ piano: { checked: false }, pitch: { checked: false } }),
-      ['piano', 'pitch'],
+      rowIds({
+        piano: { checked: false },
+        pitch: { checked: false },
+        recording: { checked: false },
+      }),
+      ['piano', 'pitch', 'recording'],
     );
+    assert.deepEqual(rowIds({ recording: { checked: false } }), ['recording']);
     assert.deepEqual(rowIds({ pitch: { checked: false } }), ['pitch']);
     assert.deepEqual(rowIds({ piano: { checked: false } }), ['piano']);
   });
 
   it('names each tool and its state for assistive technology', () => {
     const model = getPracticeToolsModel(
-      input({ piano: { checked: true }, pitch: { checked: false } }),
+      input({
+        piano: { checked: true },
+        pitch: { checked: false },
+        recording: { checked: true },
+      }),
     );
 
     assert.deepEqual(
       model.rows.map((row) => row.accessibilityLabel),
-      ['Piano, on', 'Pitch detection, off'],
+      ['Piano, on', 'Pitch detection, off', 'Recording, on'],
     );
     assert.equal(model.triggerLabel, 'Practice tools');
   });
@@ -63,5 +73,18 @@ describe('practice tools model', () => {
       rowIds({ piano: { checked: false }, pitch: { checked: false } }),
       ['piano', 'pitch'],
     );
+  });
+
+  it('shows the Recording row alone when it is the only tool, and not at all where it cannot record', () => {
+    const only = getPracticeToolsModel(
+      input({ recording: { checked: false } }),
+    );
+
+    assert.equal(only.isVisible, true);
+    assert.deepEqual(
+      only.rows.map((row) => row.label),
+      ['Recording'],
+    );
+    assert.equal(getPracticeToolsModel(input({})).isVisible, false);
   });
 });

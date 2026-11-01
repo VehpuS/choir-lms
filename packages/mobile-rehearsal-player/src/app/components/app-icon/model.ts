@@ -56,6 +56,7 @@ export type PhosphorGlyph =
   | 'Playlist'
   | 'Plus'
   | 'Queue'
+  | 'Record'
   | 'Repeat'
   | 'RepeatOnce'
   | 'Rows'
@@ -68,6 +69,7 @@ export type PhosphorGlyph =
   | 'SpeakerHigh'
   | 'SpeakerLow'
   | 'SpeakerX'
+  | 'Stop'
   | 'Tag'
   | 'TextAlignLeft'
   | 'Toolbox'
@@ -194,6 +196,10 @@ export const APP_ICON_GLYPHS = {
   'microphone-outline': regular('Microphone'),
   // The viewer-only `Show other-octave matches` setting: more notes marked.
   'music-notes-plus': regular('MusicNotesPlus'),
+  // The Recording tool's row, and the strip's stop control: a record dot and a
+  // stop square, kept apart from the pitch detection microphone.
+  record: regular('Record'),
+  stop: filled('Stop'),
   // Opens the full Pitch view from the monitor strip.
   'arrow-expand': regular('ArrowsOut'),
 

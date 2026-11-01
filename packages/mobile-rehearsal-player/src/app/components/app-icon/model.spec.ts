@@ -35,6 +35,11 @@ describe('app icon glyph map', () => {
     assert.deepEqual(namesUsingGlyph('Microphone'), ['microphone-outline']);
   });
 
+  it('gives the Recording tool its own record and stop glyphs, apart from the microphone', () => {
+    assert.deepEqual(namesUsingGlyph('Record'), ['record']);
+    assert.deepEqual(namesUsingGlyph('Stop'), ['stop']);
+  });
+
   it('gives the other-octave setting its own glyph', () => {
     assert.deepEqual(namesUsingGlyph('MusicNotesPlus'), ['music-notes-plus']);
   });

@@ -1,10 +1,15 @@
+import type { PlayableItem } from '@org/audio-library-models';
 import { StyleSheet, View } from 'react-native';
 
 import { PianoOverlay } from '../piano/components/piano-overlay';
 import { useIsPianoViewerOpen } from '../piano/piano-host-store';
 import { PitchMonitorDock } from '../pitch/components/pitch-monitor-dock';
+import { RecordingDock } from '../recording/components/recording-dock';
 
 type ShellPracticeDockProps = {
+  /** The playing item and position, which the recording strip records against. */
+  activePlayableItem: PlayableItem | null;
+  playbackPositionSeconds: number;
   /** The playback sheet covers the shell, so the tools float over it. */
   isPlaybackSurfaceOpen: boolean;
 };
@@ -18,7 +23,9 @@ type ShellPracticeDockProps = {
  * does not remount it.
  */
 export const ShellPracticeDock = ({
+  activePlayableItem,
   isPlaybackSurfaceOpen,
+  playbackPositionSeconds,
 }: ShellPracticeDockProps) => {
   if (useIsPianoViewerOpen()) {
     return null;
@@ -30,6 +37,10 @@ export const ShellPracticeDock = ({
       style={isPlaybackSurfaceOpen ? styles.floating : undefined}
     >
       <PitchMonitorDock />
+      <RecordingDock
+        item={activePlayableItem}
+        positionSeconds={playbackPositionSeconds}
+      />
       <PianoOverlay />
     </View>
   );

@@ -215,7 +215,9 @@ export const MobileShell = ({
       </View>
 
       <ShellPracticeDock
+        activePlayableItem={activePlayableItem}
         isPlaybackSurfaceOpen={activePlaybackSurface !== null}
+        playbackPositionSeconds={playbackPositionSeconds}
       />
 
       <PinnedBulkActionBarHost>

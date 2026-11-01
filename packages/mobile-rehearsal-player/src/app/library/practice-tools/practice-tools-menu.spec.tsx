@@ -18,6 +18,7 @@ const renderMenu = (options: { pianoOn: boolean }) => {
   const model = getPracticeToolsModel({
     piano: { checked: options.pianoOn },
     pitch: { checked: false },
+    recording: { checked: false },
   });
 
   render(

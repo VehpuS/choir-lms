@@ -7,6 +7,11 @@ import {
   openPitchMonitor,
 } from '../pitch/pitch-monitor-controller';
 import { usePitchMonitorOpen } from '../pitch/use-pitch';
+import { recordingCapabilities } from '../recording/recording-capabilities';
+import {
+  toggleRecordingStrip,
+  useRecordingStripOpen,
+} from '../recording/recording-strip-store';
 import {
   setPianoPreferences,
   usePianoPreferences,
@@ -26,17 +31,21 @@ export type PracticeTools = {
 };
 
 /**
- * Backs the shared Practice tools control and menu: the piano and `Pitch
- * detection`.
+ * Backs the shared Practice tools control and menu: the piano, `Pitch
+ * detection` and `Recording`.
  */
 export const usePracticeTools = (): PracticeTools => {
   const { isOpen: isPianoOpen } = usePianoPreferences();
   const isMonitorOpen = usePitchMonitorOpen();
+  const isStripOpen = useRecordingStripOpen();
   const canListen = pitchCapabilities().canListen;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const model = getPracticeToolsModel({
     piano: pianoCapabilities().canPlay ? { checked: isPianoOpen } : null,
     pitch: canListen ? { checked: isMonitorOpen } : null,
+    recording: recordingCapabilities().canRecord
+      ? { checked: isStripOpen }
+      : null,
   });
 
   return {
@@ -50,6 +59,10 @@ export const usePracticeTools = (): PracticeTools => {
       } else if (id === 'pitch') {
         // Switching it on starts listening; off stops it (design Decision 6).
         (isMonitorOpen ? closePitchMonitor : openPitchMonitor)();
+      } else if (id === 'recording') {
+        // Switching it on only shows the strip; nothing records until Record
+        // is pressed (design Decision 8). Off stops a running recording.
+        toggleRecordingStrip();
       }
     },
   };

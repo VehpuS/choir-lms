@@ -60,6 +60,8 @@ export type RecorderOptions = {
   estimate: StorageEstimateSource;
   visibility?: VisibilitySource;
   onProgress?: (progress: RecorderProgress) => void;
+  /** Called once when the recording ends, for whatever reason, including ones the recorder saw itself. */
+  onStopped?: (result: RecorderResult) => void;
   chunkMs?: number;
   retryDelaysMs?: readonly number[];
   /** Waits between retries; replaced in specs so they do not sleep. */
@@ -283,7 +285,11 @@ export const createRecorder = (options: RecorderOptions): Recorder => {
     reason: RecordingStopReason = 'user',
   ): Promise<RecorderResult> => {
     firstStopReason ??= reason;
-    stopping ??= finish(firstStopReason);
+    stopping ??= finish(firstStopReason).then((result) => {
+      options.onStopped?.(result);
+
+      return result;
+    });
 
     return stopping;
   };
