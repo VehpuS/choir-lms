@@ -87,6 +87,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent-text
 .strip { background: var(--surface-raised); border-top: 1px solid var(--divider); display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; min-height: 68px; }
 .strip .grow { flex: 1; min-width: 0; }
 .strip .big { font-family: var(--mono); font-size: 22px; font-weight: 650; display: flex; align-items: center; gap: 8px; }
+.warnline { color: var(--warning); font-size: 12px; font-weight: 600; }
 .recdot { width: 11px; height: 11px; border-radius: 50%; background: var(--rec); box-shadow: 0 0 10px rgba(255,93,93,.7); flex: none; }
 .strip .mk { font-size: 12px; color: var(--text-muted); line-height: 1.3; }
 .strip .mk b { color: var(--text); font-weight: 600; }
@@ -312,6 +313,7 @@ const P = (o) => Object.assign({}, BASE, { lib: { q: '', f: 'all', sel: [], mode
 const PRESETS = {
   idle: P({}), tools: P({ tools: true }), explain: P({ rec: 'explain' }), blocked: P({ rec: 'blocked' }), ready: P({ rec: 'ready' }),
   recording: P({ rec: 'recording' }), recloop: P({ rec: 'recording', loopTrack: true }),
+  readylow: P({ rec: 'ready', low: 25 }), reclow: P({ rec: 'recording', low: 4 }), refused: P({ rec: 'refused' }), full: P({ rec: 'stopped', stop: 'full' }),
   stopped: P({ rec: 'stopped' }), short: P({ rec: 'stopped', stop: 'short' }), save: P({ rec: 'saving' }),
   panel: P({ sheet: 'panel' }), panelA: P({ sheet: 'panel', view: 'adjusted' }), panelP: P({ sheet: 'panel', view: 'parent' }), loopview: P({ screen: 'loop' }), loopA: P({ screen: 'loop', view: 'adjusted' }),
   ctxseg: P({ ctx: 1 }), ctxloop: P({ ctx: 2, loopTrack: true }), ctxadj: P({ ctx: 3 }),   sync: P({ ctx: 1, sheet: 'sync' }), cal: P({ ctx: 1, sheet: 'cal' }), calfail: P({ ctx: 1, sheet: 'cal', cal: 'fail' }),
@@ -370,20 +372,22 @@ function ctxbar(s) {
 }
 function strip(s) {
   const r = s.rec;
-  if (r === 'explain') { return `<div class="strip"><div class="msg grow"><b>Recording keeps audio on this device.</b> It is saved under this track and may be removed to free space unless you keep it offline or export it. Use headphones.</div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn primary" data-act="continue">Continue</button><button class="btn quiet" data-act="close-rec">Not now</button></div></div>`; }
+  if (r === 'explain') { return `<div class="strip"><div class="msg grow"><b>Recording keeps audio on this device.</b> It is saved under this track and never removed automatically; only you delete it. You can export it or copy it to Drive. Use headphones.</div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn primary" data-act="continue">Continue</button><button class="btn quiet" data-act="close-rec">Not now</button></div></div>`; }
   if (r === 'blocked') { return `<div class="strip"><div class="msg warn grow"><b>Microphone blocked.</b> Allow it for this site in the browser's settings, then press Record.</div><button class="btn" data-act="start">Record</button></div>`; }
   if (r === 'recording') {
     const where = s.loopTrack ? '<b>Loop pass 2</b> · Chorus loop<br>Next pass in 0:09' : 'Passed <b>Verse 2</b> · 0:38<br>Next <b>Chorus</b> · 1:05';
-    return `<div class="strip"><div class="grow"><div class="big"><span class="recdot"></span>0:42</div></div><div class="mk grow" style="flex:1.4">${where}</div><button class="stop" data-act="stop" aria-label="Stop recording"></button></div>`;
+    const left = s.low ? `<div class="${s.low < 5 ? 'warnline' : 'hint'}">About ${s.low} min left</div>` : '';
+    return `<div class="strip"><div class="grow"><div class="big"><span class="recdot"></span>0:42</div>${left}</div><div class="mk grow" style="flex:1.4">${where}</div><button class="stop" data-act="stop" aria-label="Stop recording"></button></div>`;
   }
   if (r === 'armed') { return `<div class="strip"><div class="msg grow"><b>Armed · Chorus → Bridge</b> (0:51 long). Press play to start from 3 s before Chorus.</div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn primary" data-act="count">Play</button><button class="btn quiet" data-act="disarm">Disarm</button></div></div>`; }
   if (r === 'countdown') { return `<div class="strip"><div class="big grow" style="color:var(--rec)"><span class="recdot"></span>Recording in 2…</div><div class="mk grow">Chorus at 1:50<br>Pre-roll playing</div><button class="btn quiet" data-act="disarm">Disarm</button></div>`; }
   if (r === 'punchrec') { return `<div class="strip"><div class="grow"><div class="big"><span class="recdot"></span>0:14</div></div><div class="mk grow" style="flex:1.4"><b>Stops at Bridge</b> in 0:37<br>Armed range · Chorus → Bridge</div><button class="stop" data-act="stop" aria-label="Stop recording"></button></div>`; }
   if (r === 'stopped') {
-    const m = s.stop === 'short' ? '<b>Too short.</b> A recording under one second is not saved.' : '<b>Recording stopped: the app was hidden.</b> Saved as Recording 6 (0:42).';
-    return `<div class="strip"><div class="msg grow">${m}</div><button class="btn" data-act="${s.stop === 'short' ? 'start' : 'save'}">${s.stop === 'short' ? 'Record' : 'Review'}</button></div>`;
+    const m = s.stop === 'short' ? '<b>Too short.</b> A recording under one second is not saved.' : s.stop === 'full' ? '<b>Storage is full, so the recording stopped.</b> Everything up to that point was saved as Recording 6 (41:12). Export or delete recordings to free space.' : '<b>Recording stopped: the app was hidden.</b> Saved as Recording 6 (0:42).';
+    return `<div class="strip"><div class="msg grow">${m}</div><button class="btn" data-act="${s.stop === 'short' ? 'start' : 'save'}">${s.stop === 'short' ? 'Record' : s.stop === 'full' ? 'Export…' : 'Review'}</button></div>`;
   }
-  if (r === 'ready' || r === 'saving') { return `<div class="strip"><div class="msg grow"><b>Ready.</b> Seek to where you want to start.</div><div class="split"><button class="btn rec" data-act="start">${I.rec}Record</button><button class="btn recdrop" data-act="recmenu" aria-label="More">${I.down}</button></div></div>`; }
+  if (r === 'refused') { return `<div class="strip"><div class="msg warn grow"><b>Not enough space to record.</b> About 40 seconds left. Export or delete recordings in Settings → Recordings.</div><button class="btn" data-act="to-settings">Settings</button></div>`; }
+  if (r === 'ready' || r === 'saving') { return `<div class="strip"><div class="msg grow"><b>Ready.</b> ${s.low ? `<span class="${s.low < 5 ? 'warnline' : ''}">About ${s.low} min left.</span> ` : ''}Seek to where you want to start.</div><div class="split"><button class="btn rec" data-act="start">${I.rec}Record</button><button class="btn recdrop" data-act="recmenu" aria-label="More">${I.down}</button></div></div>`; }
   return '';
 }
 function overlayPanel(s) {
@@ -636,7 +640,7 @@ function apply(preset) { const keep = JSON.parse(JSON.stringify(preset)); Object
 
 /* controls */
 const GROUPS = [
-  ['Recording strip', [['idle', 'Idle'], ['tools', 'Practice tools menu'], ['explain', 'First run'], ['blocked', 'Mic blocked'], ['ready', 'Ready (Record ▾)'], ['recording', 'Recording'], ['recloop', 'Recording a loop'], ['stopped', 'Stopped'], ['short', 'Too short'], ['save', 'Save sheet'], ['saveoff', 'Save sheet (auto-export off)']]],
+  ['Recording strip', [['idle', 'Idle'], ['tools', 'Practice tools menu'], ['explain', 'First run'], ['blocked', 'Mic blocked'], ['ready', 'Ready (Record ▾)'], ['recording', 'Recording'], ['recloop', 'Recording a loop'], ['readylow', 'Ready · 25 min left'], ['reclow', 'Recording · 4 min left'], ['refused', 'Too little space'], ['full', 'Storage full'], ['stopped', 'Stopped'], ['short', 'Too short'], ['save', 'Save sheet'], ['saveoff', 'Save sheet (auto-export off)']]],
   ['Punch in / out', [['punch', 'Setup sheet'], ['punchbad', 'Invalid range'], ['armed', 'Armed'], ['count', 'Countdown'], ['punchrec', 'Recording in range']]],
   ['Viewing recordings (tool off)', [['more', 'More actions menu'], ['panel', 'Track panel'], ['panelA', 'Adjusted copy panel'], ['panelP', 'Parent panel'], ['loopview', 'Loop view'], ['loopA', 'Loop of adjusted copy']]],
   ['Opening one (locked)', [['ctxseg', 'Segment'], ['ctxloop', 'Loop'], ['ctxadj', 'Adjusted copy'], ['sync', 'Sync'], ['cal', 'Calibrate'], ['calfail', 'Not heard']]],
@@ -750,6 +754,10 @@ const G = [
   ['ready', 'Ready', 'Split button: Record now, or Record between…'],
   ['recording', 'Recording', 'Indicator, elapsed time, marker context, locked shaping.'],
   ['recloop', 'Recording a loop', 'Owned by the loop; passes counted.'],
+  ['readylow', 'Ready, space getting low', 'Time left appears only when under 30 minutes.'],
+  ['reclow', 'Recording, under 5 minutes left', 'The readout turns to a warning style.'],
+  ['refused', 'Too little space to start', 'Under a minute left: refused, with the way to free space.'],
+  ['full', 'Storage full', 'Stops safely; everything written is kept; offers Export.'],
   ['stopped', 'Stopped safely', 'Reason shown; what was captured is kept.'],
   ['save', 'Save sheet', 'Saved on this device, never removed; auto-export status; Export.'],
   ['saveoff', 'Save sheet, auto-export off', 'Offers Turn on… for auto-export.'],

@@ -121,15 +121,19 @@ The system SHALL stop a recording, keep the audio captured so far, and show the 
 - **THEN** nothing is stored and a note says the recording was too short
 
 ### Requirement: Recording time left is shown from the available storage
-The system SHALL limit a recording by the storage the browser makes available, not by a fixed length. Before and during a recording the system SHALL show the approximate recording time left, SHALL warn when little is left, and SHALL refuse to start with an explanation when less than a minute is left. Where the browser cannot report available storage, the system SHALL show no time left and SHALL stop only when a write fails.
+The system SHALL limit a recording by the storage the browser makes available, not by a fixed length. The system SHALL show the approximate recording time left only when 30 minutes or less remain, before and during a recording, SHALL change it to a warning style when less than five minutes remain, and SHALL refuse to start with an explanation when less than a minute remains. Where the browser cannot report available storage, the system SHALL show no time left and SHALL stop only when a write fails.
 
-#### Scenario: Time left before recording
-- **WHEN** the recording strip is ready to record
-- **THEN** it shows about how much recording time the free storage allows
+#### Scenario: Plenty of space
+- **WHEN** more than 30 minutes of recording time is left
+- **THEN** no time left is shown
+
+#### Scenario: Space getting low
+- **WHEN** 30 minutes or less of recording time is left
+- **THEN** the strip shows about how much is left, before and during a recording
 
 #### Scenario: Counting down
-- **WHEN** a recording is in progress
-- **THEN** the time left counts down and is re-read from the browser as chunks are written
+- **WHEN** the time left is shown during a recording
+- **THEN** it counts down and is re-read from the browser as chunks are written
 
 #### Scenario: Warning
 - **WHEN** less than five minutes of recording time is left

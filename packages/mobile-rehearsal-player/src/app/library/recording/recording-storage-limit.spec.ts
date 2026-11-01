@@ -6,6 +6,7 @@ import {
   bytesPerSecond,
   canStartRecording,
   formatTimeLeft,
+  getTimeLeftReadout,
   readRecordingTimeLeft,
   resolveRecordingTimeLeft,
 } from './recording-storage-limit.js';
@@ -90,5 +91,31 @@ describe('formatTimeLeft', () => {
     assert.equal(formatTimeLeft(12 * 60_000), 'About 12 min left');
     assert.equal(formatTimeLeft(2 * 60 * 60_000), 'About 2 h left');
     assert.equal(formatTimeLeft(30_000), 'Less than a minute left');
+  });
+});
+
+describe('getTimeLeftReadout', () => {
+  const readout = (minutes: number) =>
+    getTimeLeftReadout(
+      resolveRecordingTimeLeft(readingWithMinutes(minutes), SAMPLE_RATE),
+    );
+
+  it('shows nothing while there is plenty of space or no estimate', () => {
+    assert.equal(readout(120), null);
+    assert.equal(readout(31), null);
+    assert.equal(getTimeLeftReadout({ state: 'unknown' }), null);
+  });
+
+  it('shows the time left under 30 minutes, as a warning under five', () => {
+    assert.deepEqual(readout(25), {
+      text: 'About 25 min left',
+      tone: 'normal',
+    });
+    assert.equal(readout(4)?.tone, 'warning');
+    assert.equal(readout(0.5)?.text, 'Less than a minute left');
+    assert.deepEqual(getTimeLeftReadout({ state: 'full', timeLeftMs: 0 }), {
+      text: 'Less than a minute left',
+      tone: 'warning',
+    });
   });
 });

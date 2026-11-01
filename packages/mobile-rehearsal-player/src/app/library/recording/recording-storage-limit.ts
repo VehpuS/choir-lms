@@ -12,6 +12,8 @@ const MINUTES_PER_HOUR = 60;
 
 /** Left for the metadata and the app's other stores; recording never eats into it. */
 export const RECORDING_STORAGE_RESERVE_BYTES = 50 * BYTES_PER_MB;
+/** The readout appears only below this: plenty of space needs no number. */
+export const RECORDING_TIME_LEFT_VISIBLE_MS = 30 * MS_PER_MINUTE;
 /** Below this the readout turns into a warning. */
 export const RECORDING_WARNING_TIME_LEFT_MS = 5 * MS_PER_MINUTE;
 /** Below this a new recording is refused. */
@@ -105,6 +107,29 @@ export const formatTimeLeft = (timeLeftMs: number): string => {
   return rest === 0
     ? `About ${hours} h left`
     : `About ${hours} h ${rest} min left`;
+};
+
+export type TimeLeftReadout = { text: string; tone: 'normal' | 'warning' };
+
+/**
+ * What the strip shows for the time left, or `null` when it should show
+ * nothing: no estimate, or more than 30 minutes left. Under five minutes the
+ * readout is a warning. (Refusing to start is `canStartRecording`.)
+ */
+export const getTimeLeftReadout = (
+  timeLeft: RecordingTimeLeft,
+): TimeLeftReadout | null => {
+  if (
+    timeLeft.state === 'unknown' ||
+    timeLeft.timeLeftMs >= RECORDING_TIME_LEFT_VISIBLE_MS
+  ) {
+    return null;
+  }
+
+  return {
+    text: formatTimeLeft(timeLeft.timeLeftMs),
+    tone: timeLeft.state === 'ok' ? 'normal' : 'warning',
+  };
 };
 
 /** The browser's own estimate, where it has one. */

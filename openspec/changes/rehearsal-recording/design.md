@@ -191,13 +191,17 @@ Alternatives: auto-export only after wifi; deferred (a setting later). Export on
 
 There is no fixed maximum length. The limit is the storage the browser will give this site, read from `navigator.storage.estimate()` (quota minus usage) less a reserve (`RECORDING_STORAGE_RESERVE_BYTES`, initially 50 MB) kept for metadata and the app's other stores. Recording time left is that remaining space divided by the recording's byte rate (sample rate × 2 bytes).
 
-- **Before recording:** the strip shows `About 1 h 20 min left`. If less than a minute is left, recording is refused with a message that says why and points to the Recordings total in Settings, where recordings can be exported and deleted.
-- **While recording:** the readout counts down, re-read at every chunk write because other tabs and downloads also use space. Under five minutes left it changes to a warning style. When none is left the recording stops, keeping everything written, with the reason `Storage is full`.
+- **Shown only when it matters (approved in the mock review):** there is no readout while plenty of space is left. Under 30 minutes left the strip shows `About 25 min left`, before recording and while recording (beside the elapsed time). Under five minutes it changes to a warning style. If less than a minute is left, recording is refused with a message that says why and points to the Recordings total in Settings, where recordings can be exported and deleted.
+- **While recording:** the readout, once shown, counts down, re-read at every chunk write because other tabs and downloads also use space. When none is left the recording stops, keeping everything written, with the reason `Storage is full`.
 - **Honest wording:** browsers report quota coarsely (some round it, some reserve a share of the disk), so the text says `About` and the hard stop remains a failed write (`QuotaExceededError`), which is handled exactly like running out.
 - **No estimate available:** where `estimate()` is missing the strip shows no remaining time and the recording runs until a write fails.
 - **Format ceiling:** a 16-bit WAV cannot exceed 4 GiB (about thirteen hours of mono at 44.1 kHz). The recording stops there with its own reason; the readout never promises more than that.
 
 The mix export and the overlay do not hold a long recording in memory: the mix is rendered and encoded in chunks (Decision 12) and the overlay decodes by window (Decision 5). Alternative: a fixed ten-minute cap, rejected because a full movement can run longer and the cap was a guess rather than a measurement.
+
+### Mock review (task 1.5)
+
+The design mock (`design-source/recording-mock.html`) was reviewed and approved as is on 2026-11-01: the Recording tool row, the strip, `More actions → Recordings`, the locked context, the punch-range sheet, the Library Recordings view, playlists and queue, Settings and offline files, and the export dialog. The review added the low-space states (ready under 30 minutes left, recording under five, refused, `Storage is full`) and corrected the first-run note to say recordings are never removed automatically.
 
 ## Risks / Trade-offs
 
