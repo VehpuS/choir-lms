@@ -119,6 +119,7 @@
     "@expo/metro-config": "*",
     "@miblanchard/react-native-slider": "^2.6.0",
     "@org/audio-library-runtime": "^0.0.1",
+    "@org/audio-mixing": "^0.0.1",
     "@org/google-drive": "^0.0.1",
     "@org/midi-notation": "^0.0.1",
     "@org/pitch-detection": "^0.0.1",

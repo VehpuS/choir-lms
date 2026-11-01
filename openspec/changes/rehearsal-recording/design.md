@@ -230,7 +230,7 @@ New database and new package; nothing existing is migrated. The `PcmSource` chan
 
 ## Open Questions
 
-- Is a 50 MB reserve and a five-minute warning right, and how accurate is `storage.estimate()` in Safari and Firefox? (Task 3.6 measures it.)
+- Is a 50 MB reserve and a five-minute warning right, and how accurate is `storage.estimate()` in Safari and Firefox? Chrome 152 (desktop, embedded) reported a 6.5 GB quota with almost nothing used, about twenty hours of 44.1 kHz mono. Task 3.7 measures the other browsers.
 - Does Safari honour `getOutputTimestamp` and `outputLatency` well enough, or does it need the manual path as its default?
 - Should a playlist recording play over its track at the saved balance only, or may a playlist entry choose recording-only?
 - After the last recorded pass of a loop recording, is silence right, or should the recording repeat or the last pass hold?

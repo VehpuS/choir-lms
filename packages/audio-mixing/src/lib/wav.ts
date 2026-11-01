@@ -113,6 +113,19 @@ export const floatToInt16 = (samples: Float32Array): Int16Array => {
   return out;
 };
 
+/** Converts into `target` starting at `offset`, so a recorder fills one buffer without allocating per block. */
+export const floatToInt16Into = (
+  samples: Float32Array,
+  target: Int16Array,
+  offset: number,
+): void => {
+  samples.forEach((sample, index) => {
+    const scaled = Math.round(sample * INT16_MAX);
+
+    target[offset + index] = Math.min(INT16_MAX, Math.max(INT16_MIN, scaled));
+  });
+};
+
 export const int16ToFloat = (samples: Int16Array): Float32Array => {
   const out = new Float32Array(samples.length);
 

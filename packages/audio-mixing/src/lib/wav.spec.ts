@@ -7,6 +7,7 @@ import {
   encodeWavHeader,
   encodeWavParts,
   floatToInt16,
+  floatToInt16Into,
   int16ToFloat,
 } from './wav.ts';
 
@@ -56,6 +57,16 @@ describe('WAV encoding', () => {
     assert.ok(
       Math.abs((int16ToFloat(Int16Array.of(16384))[0] ?? 0) - 0.5) < 1e-4,
     );
+  });
+});
+
+describe('floatToInt16Into', () => {
+  it('fills the target from an offset and leaves the rest untouched', () => {
+    const target = new Int16Array(5).fill(7);
+
+    floatToInt16Into(Float32Array.of(1, -1), target, 2);
+
+    assert.deepEqual([...target], [7, 7, 32767, -32767, 7]);
   });
 });
 

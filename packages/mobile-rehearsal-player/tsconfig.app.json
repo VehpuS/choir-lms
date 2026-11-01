@@ -50,6 +50,9 @@
     },
     {
       "path": "../pitch-detection/tsconfig.lib.json"
+    },
+    {
+      "path": "../audio-mixing/tsconfig.lib.json"
     }
   ]
 }
