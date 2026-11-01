@@ -272,13 +272,13 @@ describe('what never removes a recording', () => {
   // session live in these places; none may reach the recordings store.
   const clearingCode = [
     ...files(join(appSource, 'library/playback/audio-cache')),
+    ...files(join(appSource, 'library/offline')),
     ...files(join(appSource, 'auth')),
-    join(appSource, 'library/offline/offline-storage-service.ts'),
   ];
 
   it('is the case that cache, eviction, sign-out, and session code never touch the recordings store', () => {
     const offenders = clearingCode.filter((path) =>
-      /recordings-store|recordings-backend|choirlms-recordings/.test(
+      /recordings-store|recordings-backend|choirlms-recordings|library\/recording\/|\.\.\/recording\//.test(
         readFileSync(path, 'utf8'),
       ),
     );
