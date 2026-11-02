@@ -10,6 +10,11 @@ import {
   useRecordingMixState,
 } from './recording-mix-store';
 import { getRecordingMix } from './recording-mix-model';
+import {
+  clearRecordingSync,
+  startRecordingSync,
+  useRecordingSyncState,
+} from './recording-sync-store';
 import { setRecordingOverlayStatus } from './recording-overlay-status';
 import { takePendingPreviewBalance } from './recording-preview-request';
 import {
@@ -49,6 +54,7 @@ export const RecordingOverlayHost = ({
     playback.playbackState !== 'none';
   const [overlay, setOverlay] = useState<RecordingOverlayHandle | null>(null);
   const { balance, recordingId: mixedRecordingId } = useRecordingMixState();
+  const { nudgeMs, recordingId: syncedRecordingId } = useRecordingSyncState();
 
   useEffect(() => {
     if (!recordingId || !isLoaded) {
@@ -71,6 +77,7 @@ export const RecordingOverlayHost = ({
           recording.balance,
           takePendingPreviewBalance(recording.id),
         );
+        startRecordingSync(recording.id, recording.nudgeMs);
 
         const { range } = item ?? {};
 
@@ -98,6 +105,7 @@ export const RecordingOverlayHost = ({
       dispose?.();
       setOverlay(null);
       clearRecordingMix();
+      clearRecordingSync();
       setRecordingOverlayStatus({ kind: 'idle' });
       // The next item plays at the volume the slider says, with no balance.
       setTrackGain(1);
@@ -121,6 +129,12 @@ export const RecordingOverlayHost = ({
     setTrackGain(mix.volumeShare);
     applyTrackVolume(mix.trackVolume);
   }, [balance, mixedRecordingId, overlay, playback.volumeLevel, recordingId]);
+
+  useEffect(() => {
+    if (syncedRecordingId !== null && syncedRecordingId === recordingId) {
+      overlay?.setNudgeMs(nudgeMs);
+    }
+  }, [nudgeMs, overlay, recordingId, syncedRecordingId]);
 
   return null;
 };

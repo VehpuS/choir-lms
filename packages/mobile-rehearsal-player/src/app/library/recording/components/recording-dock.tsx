@@ -37,6 +37,8 @@ import {
   setRecordingMixBalanceFor,
   syncRecordingMixSaved,
 } from '../overlay/recording-mix-store';
+import { getOutputDeviceKey } from '../overlay/output-device-key';
+import { getDeviceLatency } from '../overlay/recording-device-latency';
 import { requestRecordingPreview } from '../overlay/recording-preview-request';
 import { RecordingSaveSheet } from './recording-save-sheet';
 import { RECORDING_STRIP_HEIGHT, RecordingStrip } from './recording-strip';
@@ -111,8 +113,14 @@ const RecordingDockContent = ({
         getRecordingOwnerForItem(current),
       );
       const shaping = getPlaybackShapingEngine().getState();
+      // What the user saved with `Use for this device` for the output in use;
+      // recordings already made keep the compensation they were filed with.
+      const deviceLatencyMs = await getDeviceLatency(
+        await getOutputDeviceKey(),
+      );
 
       return buildRecordingStartRequest({
+        appliedLatencyMs: deviceLatencyMs ?? 0,
         item: current,
         positionMs: at,
         markers: markersRef.current,

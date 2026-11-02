@@ -113,11 +113,23 @@ export const startRecordingOverlay = async (
       recording,
     });
 
+    let appliedNudgeMs = recording.nudgeMs;
+
     setRecordingOverlayStatus({ kind: 'sounding' });
 
     return {
       setLevel: (level) => {
         output.gain.value = level;
+      },
+      setNudgeMs: (value) => {
+        // The host re-applies the saved value on start; restarting the voice
+        // for an unchanged nudge would only add a needless fade.
+        if (value === appliedNudgeMs) {
+          return;
+        }
+
+        appliedNudgeMs = value;
+        controller.setNudgeMs(value);
       },
       dispose: () => {
         controller.dispose();
