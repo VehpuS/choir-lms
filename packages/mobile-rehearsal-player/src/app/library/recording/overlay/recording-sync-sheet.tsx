@@ -13,6 +13,7 @@ import {
   MenuGroup,
   MenuRow,
 } from '../../components/options-menu-sheet/menu-group';
+import { CALIBRATION_ENTRY_LABEL } from './recording-calibration-model';
 import {
   formatNudge,
   SHARED_DEVICE_KEY,
@@ -36,6 +37,8 @@ type RecordingSyncSheetProps = {
   nudgeMs: number;
   onChange: (nudgeMs: number) => void;
   onClose: () => void;
+  /** Opens the optional click calibration. */
+  onMeasure: () => void;
   /** Keeps the compensation this nudge shows for the output in use. */
   onSave: () => void;
   canSave: boolean;
@@ -51,12 +54,14 @@ export const RecordingSyncSheet = ({
   nudgeMs,
   onChange,
   onClose,
+  onMeasure,
   onSave,
   saveDetail,
 }: RecordingSyncSheetProps) => (
   <BottomSheetSurface
     footer={
       <MenuGroup>
+        <MenuRow label={CALIBRATION_ENTRY_LABEL} onPress={onMeasure} />
         <MenuRow label="Done" onPress={onClose} tone="preferred" />
       </MenuGroup>
     }

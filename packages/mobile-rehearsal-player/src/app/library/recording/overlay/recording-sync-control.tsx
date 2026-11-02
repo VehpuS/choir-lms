@@ -21,7 +21,9 @@ import {
   SYNC_RESET_LABEL,
   SYNC_USE_FOR_DEVICE_LABEL,
 } from './recording-sync-model';
+import { RecordingCalibrationSheet } from './recording-calibration-sheet';
 import { RecordingSyncSheet } from './recording-sync-sheet';
+import { useClickCalibration } from './use-click-calibration';
 import {
   setRecordingNudge,
   useRecordingSyncState,
@@ -78,10 +80,14 @@ const useSaveNudge = (recordingId: string | null, nudgeMs: number) => {
  */
 export const RecordingSyncControl = () => {
   const { nudgeMs, recordingId } = useRecordingSyncState();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [sheet, setSheet] = useState<'none' | 'sync' | 'calibrate'>('none');
   const [appliedLatencyMs, setAppliedLatencyMs] = useState(0);
   const [deviceKey, setDeviceKey] = useState('');
   const [deviceLatencyMs, setDeviceLatencyMs] = useState<number | null>(null);
+  const calibration = useClickCalibration({
+    deviceKey,
+    onSaved: setDeviceLatencyMs,
+  });
 
   useSaveNudge(recordingId, nudgeMs);
 
@@ -153,18 +159,38 @@ export const RecordingSyncControl = () => {
         />
         <OutlinedActionButton
           label={SYNC_USE_FOR_DEVICE_LABEL}
-          onPress={() => setIsSheetOpen(true)}
+          onPress={() => setSheet('sync')}
         />
       </View>
-      {isSheetOpen ? (
+      {sheet === 'sync' ? (
         <RecordingSyncSheet
           canSave={canUseNudgeForDevice(forDevice, nudgeMs, deviceLatencyMs)}
           deviceKey={deviceKey}
           nudgeMs={nudgeMs}
           onChange={setRecordingNudge}
-          onClose={() => setIsSheetOpen(false)}
+          onClose={() => setSheet('none')}
+          onMeasure={() => {
+            calibration.reset();
+            setSheet('calibrate');
+          }}
           onSave={saveForDevice}
           saveDetail={describeDeviceDefault(deviceLatencyMs ?? nextLatency)}
+        />
+      ) : null}
+      {sheet === 'calibrate' ? (
+        <RecordingCalibrationSheet
+          deviceKey={deviceKey}
+          onAdjustByHand={() => {
+            calibration.cancel();
+            setSheet('sync');
+          }}
+          onCancel={calibration.cancel}
+          onClose={() => {
+            calibration.cancel();
+            setSheet('none');
+          }}
+          onPlay={calibration.start}
+          phase={calibration.phase}
         />
       ) : null}
     </View>

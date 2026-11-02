@@ -26,7 +26,7 @@ export type {
 } from './recording-overlay';
 
 /** The slice of the browser's `AudioContext` the overlay uses (this build has no DOM types). */
-type OverlayAudioContext = Omit<VoiceContext, 'createGain'> & {
+export type OverlayAudioContext = Omit<VoiceContext, 'createGain'> & {
   destination: VoiceNode;
   resume: () => Promise<void>;
   createGain: () => VoiceGain & { disconnect: () => void };
@@ -35,7 +35,7 @@ type OverlayAudioContext = Omit<VoiceContext, 'createGain'> & {
 let sharedContext: OverlayAudioContext | null = null;
 
 /** One output context for every overlay, created on first use after a user action. */
-const getOverlayContext = (): OverlayAudioContext | null => {
+export const getOverlayContext = (): OverlayAudioContext | null => {
   const Ctor = (globalThis as { AudioContext?: new () => OverlayAudioContext })
     .AudioContext;
 
