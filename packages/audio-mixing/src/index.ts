@@ -9,3 +9,5 @@ export * from './lib/wav.ts';
 export * from './lib/wav-window-reader.ts';
 export * from './lib/windowed-voice.ts';
 export * from './lib/loop-aware-transport.ts';
+export * from './lib/mix-render-plan.ts';
+export * from './lib/mix-renderer.ts';
