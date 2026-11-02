@@ -33,6 +33,11 @@ import {
   type AutoExportState,
 } from '../recording-save-sheet-model';
 import { getRecordingsStore } from '../recordings-store-instance';
+import {
+  setRecordingMixBalanceFor,
+  syncRecordingMixSaved,
+} from '../overlay/recording-mix-store';
+import { requestRecordingPreview } from '../overlay/recording-preview-request';
 import { RecordingSaveSheet } from './recording-save-sheet';
 import { RECORDING_STRIP_HEIGHT, RecordingStrip } from './recording-strip';
 
@@ -152,7 +157,9 @@ const RecordingDockContent = ({
   const setSavedBalance = useCallback(
     (balance: number) => {
       if (saved && balance !== saved.balance) {
-        void getRecordingsStore().update(saved.id, { balance });
+        void getRecordingsStore()
+          .update(saved.id, { balance })
+          .then(() => syncRecordingMixSaved(saved.id, balance));
       }
     },
     [saved],
@@ -199,7 +206,20 @@ const RecordingDockContent = ({
           onDelete={deleteSaved}
           onDone={session.dismiss}
           onRename={renameSaved}
+          onPreview={(balance) =>
+            requestRecordingPreview({
+              kind: 'play',
+              recordingId: saved.id,
+              balance,
+            })
+          }
+          onPreviewBalanceChange={(balance) =>
+            setRecordingMixBalanceFor(saved.id, balance)
+          }
           onSetBalance={setSavedBalance}
+          onStopPreview={() =>
+            requestRecordingPreview({ kind: 'stop', recordingId: saved.id })
+          }
           onTurnOnAutoExport={openRecordingsSettings}
         />
       ) : null}

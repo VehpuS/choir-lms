@@ -11,6 +11,7 @@ import {
 } from './recording-mix-store';
 import { getRecordingMix } from './recording-mix-model';
 import { setRecordingOverlayStatus } from './recording-overlay-status';
+import { takePendingPreviewBalance } from './recording-preview-request';
 import {
   startRecordingOverlay,
   type RecordingOverlayHandle,
@@ -63,7 +64,12 @@ export const RecordingOverlayHost = ({
           return null;
         }
 
-        startRecordingMix(recording.id, recording.balance);
+        // A preview may have asked to start at a balance that is not saved yet.
+        startRecordingMix(
+          recording.id,
+          recording.balance,
+          takePendingPreviewBalance(recording.id),
+        );
 
         return startRecordingOverlay(recording);
       })

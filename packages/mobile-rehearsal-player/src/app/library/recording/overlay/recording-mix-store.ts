@@ -30,13 +30,37 @@ const publish = (next: RecordingMixState) => {
 
 export const getRecordingMixState = () => state;
 
+/**
+ * Begins the mix of a playing recording at its saved balance, or at
+ * `startBalance` when a preview asked to hear a balance that is not saved yet.
+ */
 export const startRecordingMix = (
   recordingId: string,
   savedBalance: number,
+  startBalance: number = savedBalance,
 ) => {
-  const balance = clampRecordingBalance(savedBalance);
+  publish({
+    recordingId,
+    balance: clampRecordingBalance(startBalance),
+    savedBalance: clampRecordingBalance(savedBalance),
+  });
+};
 
-  publish({ recordingId, balance, savedBalance: balance });
+/** Something outside playback kept this balance for the recording. */
+export const syncRecordingMixSaved = (recordingId: string, balance: number) => {
+  if (state.recordingId === recordingId) {
+    publish({ ...state, savedBalance: clampRecordingBalance(balance) });
+  }
+};
+
+/** A live move for one recording; ignored when another is playing. */
+export const setRecordingMixBalanceFor = (
+  recordingId: string,
+  balance: number,
+) => {
+  if (state.recordingId === recordingId) {
+    publish({ ...state, balance: clampRecordingBalance(balance) });
+  }
 };
 
 /** The current position is now the recording's saved balance. */

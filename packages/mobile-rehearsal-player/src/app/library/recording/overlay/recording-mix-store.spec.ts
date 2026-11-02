@@ -5,6 +5,8 @@ import {
   clearRecordingMix,
   getRecordingMixState,
   markRecordingMixSaved,
+  setRecordingMixBalanceFor,
+  syncRecordingMixSaved,
   setRecordingMixBalance,
   startRecordingMix,
 } from './recording-mix-store.js';
@@ -68,5 +70,33 @@ describe('recording mix store', () => {
       balance: 50,
       savedBalance: 50,
     });
+  });
+
+  it('can start at a balance that is not saved yet, for a preview', () => {
+    startRecordingMix('r1', 50, 90);
+
+    assert.equal(getRecordingMixState().balance, 90);
+    assert.equal(getRecordingMixState().savedBalance, 50);
+  });
+
+  it('moves only the recording that is playing', () => {
+    startRecordingMix('r1', 50);
+    setRecordingMixBalanceFor('other', 10);
+
+    assert.equal(getRecordingMixState().balance, 50);
+
+    setRecordingMixBalanceFor('r1', 10);
+
+    assert.equal(getRecordingMixState().balance, 10);
+  });
+
+  it('notes a balance kept elsewhere without moving the live one', () => {
+    startRecordingMix('r1', 50);
+    setRecordingMixBalance(70);
+    syncRecordingMixSaved('r1', 70);
+    syncRecordingMixSaved('other', 5);
+
+    assert.equal(getRecordingMixState().savedBalance, 70);
+    assert.equal(getRecordingMixState().balance, 70);
   });
 });

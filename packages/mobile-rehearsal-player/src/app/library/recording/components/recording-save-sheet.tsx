@@ -27,6 +27,12 @@ type RecordingSaveSheetProps = {
   balance: number;
   /** Called with the balance when the sheet is done or leaves for export. */
   onSetBalance: (balance: number) => void;
+  /** Plays the recording over its track at this balance, so it can be heard. */
+  onPreview: (balance: number) => void;
+  /** The balance moved while it may be playing; the sound follows it. */
+  onPreviewBalanceChange: (balance: number) => void;
+  /** Stops a preview when the sheet is left. */
+  onStopPreview: () => void;
   /** Called with whatever is typed when the sheet is done or leaves the name field. */
   onRename: (typed: string) => void;
   onDone: () => void;
@@ -53,7 +59,10 @@ export const RecordingSaveSheet = ({
   onDone,
   onExport,
   onRename,
+  onPreview,
+  onPreviewBalanceChange,
   onSetBalance,
+  onStopPreview,
   onTurnOnAutoExport,
 }: RecordingSaveSheetProps) => {
   const [typed, setTyped] = useState(name);
@@ -61,7 +70,13 @@ export const RecordingSaveSheet = ({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const { autoExport } = model;
 
+  const changeBalance = (next: number) => {
+    setBalance(next);
+    onPreviewBalanceChange(next);
+  };
+
   const finish = () => {
+    onStopPreview();
     onRename(typed);
     onSetBalance(balance);
     onDone();
@@ -75,6 +90,7 @@ export const RecordingSaveSheet = ({
             <MenuRow
               label={SAVE_SHEET_COPY.exportLabel}
               onPress={() => {
+                onStopPreview();
                 onRename(typed);
                 onSetBalance(balance);
                 onExport();
@@ -87,9 +103,14 @@ export const RecordingSaveSheet = ({
                 ? SAVE_SHEET_COPY.confirmDeleteLabel
                 : SAVE_SHEET_COPY.deleteLabel
             }
-            onPress={() =>
-              confirmingDelete ? onDelete() : setConfirmingDelete(true)
-            }
+            onPress={() => {
+              if (confirmingDelete) {
+                onStopPreview();
+                onDelete();
+              } else {
+                setConfirmingDelete(true);
+              }
+            }}
             tone="destructive"
           />
           <MenuRow
@@ -128,8 +149,17 @@ export const RecordingSaveSheet = ({
           />
         </View>
         <View style={styles.field}>
-          <Text style={styles.fieldLabel}>{SAVE_SHEET_COPY.balanceLabel}</Text>
-          <RecordingBalanceSlider onChange={setBalance} value={balance} />
+          <View style={styles.balanceHeader}>
+            <Text style={styles.fieldLabel}>
+              {SAVE_SHEET_COPY.balanceLabel}
+            </Text>
+            <OutlinedActionButton
+              icon="play"
+              label={SAVE_SHEET_COPY.previewLabel}
+              onPress={() => onPreview(balance)}
+            />
+          </View>
+          <RecordingBalanceSlider onChange={changeBalance} value={balance} />
           <Detail>{SAVE_SHEET_COPY.balanceNote}</Detail>
         </View>
         <Detail>{model.storedNote}</Detail>
@@ -164,6 +194,11 @@ const styles = StyleSheet.create({
   },
   autoExportText: { flex: 1, gap: space.xxs },
   autoExportTitle: { ...type.rowTitle, color: colors.text },
+  balanceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   body: { gap: space.sm },
   detail: { ...type.rowMeta, color: colors.textMuted },
   field: { gap: space.xxs },

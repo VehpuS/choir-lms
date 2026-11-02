@@ -148,6 +148,11 @@ The system SHALL provide a balance control between the track and the recording t
 - **WHEN** the user moves the balance and chooses `Save as default`
 - **THEN** that position becomes the recording's saved balance for later playback, queues, playlists, and the export default
 
+#### Scenario: Previewing a balance set outside playback
+
+- **WHEN** the user is setting a recording's balance in the save sheet or the export dialog and chooses `Preview`
+- **THEN** the recording plays over its track at the balance shown, moving the balance changes the sound at once, and leaving the sheet or dialog stops the preview without saving anything the user did not keep
+
 #### Scenario: Centre
 
 - **WHEN** the balance is centred

@@ -8,8 +8,7 @@ import {
 } from '../library/markers/hooks/use-playback-markers';
 import { MarkerAddHost } from '../library/markers/components/marker-add-host';
 import { MarkersHost } from '../library/markers/components/markers-host';
-import { RecordingsHost } from '../library/recording/components/recordings-host';
-import { RecordingOverlayHost } from '../library/recording/overlay/recording-overlay-host';
+import { RecordingHosts } from '../library/recording/components/recording-hosts';
 import { SheetMusicHost } from '../library/sheet-music/manager/sheet-music-host';
 import { SavedItemAvailabilityProvider } from '../library/components/saved-item-menu/saved-item-availability-context';
 import { isLoopPreviewItem } from '../library/playback/utils/loop-preview-item';
@@ -310,11 +309,10 @@ export const AppRouter = () => {
           library={libraryController.savedLibrary}
           playback={playback}
         />
-        <RecordingsHost
+        <RecordingHosts
           library={libraryController.savedLibrary}
           playback={playback}
         />
-        <RecordingOverlayHost playback={playback} />
       </PlaybackMarkersProvider>
     </SavedItemAvailabilityProvider>
   );

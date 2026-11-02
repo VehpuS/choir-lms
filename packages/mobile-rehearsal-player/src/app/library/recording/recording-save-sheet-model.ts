@@ -21,7 +21,8 @@ export const SAVE_SHEET_COPY = {
   nameLabel: 'Name',
   balanceLabel: 'Starting balance',
   balanceNote:
-    'Where it starts when played, queued, or exported. You can still change it while listening.',
+    'Where it starts when played, queued, or exported. Preview plays it over the track so you can hear the balance.',
+  previewLabel: 'Preview',
   storedNote:
     'Saved on this device. Recordings are never removed automatically.',
   autoExportOff: 'Auto-export is off',
