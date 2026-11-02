@@ -3,10 +3,12 @@ import {
   createTrackPlayableItem,
   isSourcePlayable,
   normalizePlaylist,
+  resolveRecordingPlayableItem,
   type DriveAudioSource,
   type NamedLoop,
   type PlayableItem,
   type Playlist,
+  type Recording,
   type RehearsalLibraryFileLinkNode,
   type RehearsalLibraryFolderNode,
   type RehearsalQueueMode,
@@ -43,6 +45,7 @@ export const resolvePlaylistItems = (
   playlist: Playlist,
   loops: NamedLoop[],
   sources: DriveAudioSource[],
+  recordings: readonly Recording[] = [],
 ) => {
   const normalizedPlaylist = normalizePlaylist(playlist);
   const loopsById: Partial<Record<string, NamedLoop>> = keyBy(
@@ -54,7 +57,28 @@ export const resolvePlaylistItems = (
     (source) => source.id,
   );
 
+  const recordingsById = keyBy(recordings, (recording) => recording.id);
+
   return flatMap(normalizedPlaylist.items, (entry) => {
+    // A recording plays in the context it was made in; one that was deleted,
+    // or whose track left the library, is unavailable and skipped.
+    if (entry.recordingId) {
+      const recording = recordingsById[entry.recordingId];
+      const item = recording
+        ? resolveRecordingPlayableItem(recording, { loops, sources })
+        : null;
+
+      return item
+        ? [
+            {
+              ...item,
+              playlistId: normalizedPlaylist.id,
+              playlistEntryId: entry.id,
+            },
+          ]
+        : [];
+    }
+
     const source = sourcesById[entry.sourceId];
 
     if (!source || !isSourcePlayable(source)) {
@@ -167,9 +191,15 @@ export const createPlaybackQueue = (
     mode?: RehearsalQueueMode;
     repeatMode?: RepeatMode;
     random?: () => number;
+    recordings?: readonly Recording[];
   },
 ): PlaybackQueue => {
-  const items = resolvePlaylistItems(playlist, loops, sources);
+  const items = resolvePlaylistItems(
+    playlist,
+    loops,
+    sources,
+    options?.recordings,
+  );
   const mode = options?.mode ?? 'ordered';
   const repeatMode = options?.repeatMode ?? 'off';
 

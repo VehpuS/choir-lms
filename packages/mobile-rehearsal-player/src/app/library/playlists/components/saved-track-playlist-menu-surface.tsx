@@ -31,6 +31,8 @@ type SavedTrackPlaylistMenuSurfaceProps = {
   onSubmitNewPlaylist: () => void;
   playlists: Playlist[];
   selectedLoop: NamedLoop | null;
+  /** What a recording picker is adding, as the sheet title (e.g. a name or `3 recordings`). */
+  selectedRecordingTitle?: string | null;
   selectedSource: DriveLibrarySource | null;
   step: SavedTrackPlaylistMenuState['step'];
 };
@@ -53,17 +55,21 @@ export const SavedTrackPlaylistMenuSurface = ({
   onSubmitNewPlaylist,
   playlists,
   selectedLoop,
+  selectedRecordingTitle = null,
   selectedSource,
   step,
 }: SavedTrackPlaylistMenuSurfaceProps) => {
-  if (step === 'hidden' || (!selectedSource && !selectedLoop)) {
+  if (
+    step === 'hidden' ||
+    (!selectedSource && !selectedLoop && selectedRecordingTitle === null)
+  ) {
     return null;
   }
 
   const menuCopy = selectedSource
     ? getSavedTrackContextMenuCopy(selectedSource)
     : {
-        title: selectedLoop?.name ?? 'Saved loop',
+        title: selectedRecordingTitle ?? selectedLoop?.name ?? 'Saved loop',
       };
 
   return (

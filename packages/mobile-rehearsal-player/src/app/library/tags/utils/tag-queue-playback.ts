@@ -1,3 +1,4 @@
+import { getRecordingsSnapshot } from '../../recording/recordings-store-instance';
 import {
   createLoopPlayableItem,
   createTrackPlayableItem,
@@ -47,7 +48,12 @@ export const resolveTagQueuePlayableItems = (
     }
 
     if (match.kind === 'playlist') {
-      return resolvePlaylistItems(match.item, options.loops, options.sources);
+      return resolvePlaylistItems(
+        match.item,
+        options.loops,
+        options.sources,
+        getRecordingsSnapshot(),
+      );
     }
 
     return resolveFolderPlayableItems(

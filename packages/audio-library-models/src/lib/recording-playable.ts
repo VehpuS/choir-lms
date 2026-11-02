@@ -1,12 +1,16 @@
 import type { PlaybackShaping } from './playback-shaping.ts';
 import type { Recording } from './recording.ts';
-import type { RecordingOpenContext } from './recording-visibility.ts';
+import {
+  getRecordingOpenContext,
+  type RecordingOpenContext,
+} from './recording-visibility.ts';
 import {
   createLoopPlayableItem,
   createTrackPlayableItem,
   type DriveAudioSource,
   type NamedLoop,
   type PlayableItem,
+  type PlaylistEntry,
 } from './rehearsal-domain.ts';
 
 /**
@@ -78,4 +82,56 @@ export const isRangeLimitedRecordingItem = (
       durationMs === undefined ||
       item.range.endMs < durationMs)
   );
+};
+
+/**
+ * The playable item for a recording, or `null` when its track (or adjusted
+ * copy) has left the library, since a recording holds no copy of the audio.
+ */
+export const resolveRecordingPlayableItem = (
+  recording: Pick<
+    Recording,
+    'id' | 'name' | 'lineage' | 'shaping' | 'source' | 'timeline'
+  >,
+  library: {
+    sources: readonly DriveAudioSource[];
+    loops: readonly NamedLoop[];
+  },
+): PlayableItem | null => {
+  const context = getRecordingOpenContext(recording, library);
+  const source = context
+    ? library.sources.find(({ id }) => id === context.sourceId)
+    : undefined;
+
+  if (!context || !source) {
+    return null;
+  }
+
+  const loop = context.loopId
+    ? library.loops.find(({ id }) => id === context.loopId)
+    : undefined;
+
+  return createRecordingPlayableItem({ recording, context, source, loop });
+};
+
+/** A playlist entry that plays a recording in the context it was made in. */
+export const createPlaylistEntryFromRecording = (
+  recording: Pick<Recording, 'id' | 'name' | 'lineage'>,
+  createdAt: string,
+  options?: { playlistId?: string; sortIndex?: number },
+): PlaylistEntry => {
+  const { adjusted, loop, track } = recording.lineage;
+
+  return {
+    id: `entry:recording:${recording.id}:${createdAt}`,
+    playlistId: options?.playlistId ?? '',
+    sortIndex: options?.sortIndex ?? 0,
+    kind: loop ? 'loop' : 'track',
+    sourceId: adjusted?.id ?? track.id,
+    ...(loop ? { loopId: loop.id } : {}),
+    recordingId: recording.id,
+    title: recording.name,
+    description: `${DESCRIPTION_PREFIX} · ${loop?.name ?? track.name}`,
+    createdAt,
+  };
 };

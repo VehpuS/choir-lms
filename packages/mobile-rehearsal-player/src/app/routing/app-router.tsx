@@ -312,6 +312,7 @@ export const AppRouter = () => {
         <RecordingHosts
           library={libraryController.savedLibrary}
           playback={playback}
+          playlists={libraryController.playlists}
         />
       </PlaybackMarkersProvider>
     </SavedItemAvailabilityProvider>

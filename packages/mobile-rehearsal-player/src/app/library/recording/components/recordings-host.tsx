@@ -1,4 +1,4 @@
-import type { NamedLoop, Recording } from '@org/audio-library-models';
+import type { NamedLoop, Playlist, Recording } from '@org/audio-library-models';
 import { useEffect, useMemo, useState } from 'react';
 
 import { subscribeToSavedItemRequests } from '../../components/saved-item-menu/saved-item-requests';
@@ -6,9 +6,16 @@ import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-mo
 import { resolveRecordingPlayback } from '../recording-playback-item';
 import type { RecordingsView } from '../recordings-panel-model';
 import type { useSavedTrackPlayback } from '../../playback/hooks/use-saved-track-playback';
+import { getRecordingsStore } from '../recordings-store-instance';
+import { RecordingPlaylistPicker } from './recording-playlist-picker';
 import { RecordingsPanel } from './recordings-panel';
 
 type RecordingsHostProps = {
+  playlists: {
+    savedPlaylists: Playlist[];
+    createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
+    updatePlaylist: (playlist: Playlist) => Promise<Playlist | null>;
+  };
   library: {
     savedLibrarySources: readonly DriveLibrarySource[];
     savedLoops: readonly NamedLoop[];
@@ -19,18 +26,34 @@ type RecordingsHostProps = {
   >;
 };
 
+type PlaylistTarget = Recording | null;
+
 type PanelTarget = { view: RecordingsView; viewName: string };
 
 /**
  * Opens the Recordings panel when the playback menu asks for it over the
  * saved-item request channel, for a track, an adjusted track, or a loop.
  */
-export const RecordingsHost = ({ library, playback }: RecordingsHostProps) => {
+export const RecordingsHost = ({
+  library,
+  playback,
+  playlists,
+}: RecordingsHostProps) => {
   const { savedLibrarySources, savedLoops } = library;
   const [target, setTarget] = useState<PanelTarget | null>(null);
+  const [playlistTarget, setPlaylistTarget] = useState<PlaylistTarget>(null);
 
   useEffect(() => {
     return subscribeToSavedItemRequests((request) => {
+      if (request.action === 'add-recording-to-playlist') {
+        // From the playback menu: the recording that is playing.
+        void getRecordingsStore()
+          .get(request.id)
+          .then((recording) => setPlaylistTarget(recording));
+
+        return;
+      }
+
       if (request.action !== 'recordings') {
         return;
       }
@@ -73,8 +96,20 @@ export const RecordingsHost = ({ library, playback }: RecordingsHostProps) => {
     [savedLibrarySources, savedLoops],
   );
 
+  const picker = playlistTarget ? (
+    <RecordingPlaylistPicker
+      createPlaylist={playlists.createPlaylist}
+      // The sheet closing is the feedback here; the playback sheet has no toast.
+      onAdded={() => undefined}
+      onClose={() => setPlaylistTarget(null)}
+      playlists={playlists.savedPlaylists}
+      recordings={[playlistTarget]}
+      updatePlaylist={playlists.updatePlaylist}
+    />
+  ) : null;
+
   if (!target) {
-    return null;
+    return picker;
   }
 
   const playRecording = (recording: Recording): string | null => {
@@ -98,6 +133,7 @@ export const RecordingsHost = ({ library, playback }: RecordingsHostProps) => {
       library={recordingLibrary}
       onClose={() => setTarget(null)}
       onPlay={playRecording}
+      playlists={playlists}
       sources={tracks}
       view={target.view}
       viewName={target.viewName}

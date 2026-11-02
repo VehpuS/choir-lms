@@ -3,6 +3,7 @@ import type {
   NamedLoop,
   PlayableItem,
   Playlist,
+  Recording,
   RehearsalQueueMode,
   RepeatMode,
 } from '@org/audio-library-models';
@@ -14,6 +15,7 @@ import {
   type PlaybackQueue,
 } from '@org/audio-library-runtime';
 
+import { getRecordingsSnapshot } from '../../recording/recordings-store-instance';
 import type { SavedTrackPlaybackState } from '../../playback/utils/saved-track-playback-view-model';
 export {
   canShowQueuePlaylistActions,
@@ -68,6 +70,8 @@ type BuildPlaylistPlaybackSessionOptions = {
   mode: RehearsalQueueMode;
   playlist: Playlist;
   random?: () => number;
+  /** Defaults to the recordings snapshot; recording entries resolve against it. */
+  recordings?: readonly Recording[];
   repeatMode: RepeatMode;
   sources: DriveAudioSource[];
   startEntryId?: string;
@@ -137,6 +141,7 @@ export const buildPlaylistPlaybackSession = (
     };
   }
 
+  const recordings = options.recordings ?? getRecordingsSnapshot();
   const queue = createPlaybackQueue(
     options.playlist,
     options.loops,
@@ -144,6 +149,7 @@ export const buildPlaylistPlaybackSession = (
     {
       mode: options.mode,
       random: options.random,
+      recordings,
       repeatMode: options.repeatMode,
     },
   );
@@ -194,6 +200,7 @@ export const buildPlaylistPlaybackSession = (
               options.playlist,
               options.loops,
               options.sources,
+              recordings,
             )
           : undefined,
     } satisfies PlaylistPlaybackSession,

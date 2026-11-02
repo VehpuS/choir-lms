@@ -1,10 +1,13 @@
 import {
   isSourcePlayable,
+  resolveRecordingPlayableItem,
   type NamedLoop,
   type Playlist,
+  type Recording,
 } from '@org/audio-library-models';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
+import { getRecordingsSnapshot } from '../../recording/recordings-store-instance';
 
 type PlaylistEntry = Playlist['items'][number];
 
@@ -258,7 +261,25 @@ export const isSavedPlaylistEntryPlayable = (options: {
   entry: PlaylistEntry;
   savedLoops: NamedLoop[];
   savedSources: DriveLibrarySource[];
+  /** Defaults to the recordings snapshot; recording entries resolve against it. */
+  recordings?: readonly Recording[];
 }) => {
+  // A recording entry plays while the recording exists and its track is still
+  // in the library; a deleted one reads as unavailable and is skipped.
+  if (options.entry.recordingId) {
+    const recording = (options.recordings ?? getRecordingsSnapshot()).find(
+      ({ id }) => id === options.entry.recordingId,
+    );
+
+    return (
+      recording !== undefined &&
+      resolveRecordingPlayableItem(recording, {
+        loops: options.savedLoops,
+        sources: options.savedSources,
+      }) !== null
+    );
+  }
+
   const source = options.savedSources.find((savedSource) => {
     return savedSource.id === options.entry.sourceId;
   });

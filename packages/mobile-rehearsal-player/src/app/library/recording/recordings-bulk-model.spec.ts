@@ -60,9 +60,9 @@ describe('getRecordingsBulkModel', () => {
 
     assert.deepEqual(
       model.actions.map((action) => action.id),
-      ['play-next', 'add-to-queue', 'offline', 'delete'],
+      ['play-next', 'add-to-queue', 'add-to-playlist', 'offline', 'delete'],
     );
-    assert.equal(model.actions[3].tone, 'destructive');
+    assert.equal(model.actions[4].tone, 'destructive');
   });
 
   it('plays the recordings whose track is still in the library and counts the rest', () => {

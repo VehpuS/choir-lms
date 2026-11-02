@@ -3,10 +3,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { createPlaylistEntryFromRecording } from '@org/audio-library-models';
+
 import {
   clampQueuePosition,
   resolveQueueMoveTargetIndex,
 } from '../../../components/queue-move-position-dialog/model.js';
+import { buildRecordingFixture } from '../../recording/recording-fixtures.js';
+import { getSavedPlaylistEntryDetailLabel } from './saved-playlist-view-model.js';
 import {
   buildWarmupsPlaylist,
   buildWarmupsQueuePlaylist,
@@ -262,6 +266,54 @@ describe('isDetailDraftBehindStoredEntries', () => {
         [entry('a'), entry('b')],
       ),
       true,
+    );
+  });
+});
+
+describe('recording playlist entries', () => {
+  const recording = buildRecordingFixture({
+    id: 'rec-1',
+    lineage: {
+      track: {
+        id: PLAYABLE_SOURCE.id,
+        driveFileId: PLAYABLE_SOURCE.driveFileId,
+        name: PLAYABLE_SOURCE.name,
+      },
+    },
+  });
+  const entry = createPlaylistEntryFromRecording(recording, 'now');
+
+  it('plays while the recording exists and its track is in the library', () => {
+    const base = { entry, savedLoops: [], savedSources: [PLAYABLE_SOURCE] };
+
+    assert.equal(
+      isSavedPlaylistEntryPlayable({ ...base, recordings: [recording] }),
+      true,
+    );
+    assert.equal(
+      isSavedPlaylistEntryPlayable({ ...base, recordings: [] }),
+      false,
+    );
+    assert.equal(
+      isSavedPlaylistEntryPlayable({
+        ...base,
+        recordings: [recording],
+        savedSources: [],
+      }),
+      false,
+    );
+  });
+
+  it('marks the row with a recording indicator and says when it was deleted', () => {
+    const options = { entry, savedLoops: [], savedSources: [PLAYABLE_SOURCE] };
+
+    assert.equal(
+      getSavedPlaylistEntryDetailLabel({ ...options, recordings: [recording] }),
+      `Recording • ${PLAYABLE_SOURCE.name}`,
+    );
+    assert.equal(
+      getSavedPlaylistEntryDetailLabel({ ...options, recordings: [] }),
+      `Recording deleted • ${PLAYABLE_SOURCE.name}`,
     );
   });
 });

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
@@ -9,7 +9,11 @@ import {
 } from '../../components/options-menu-sheet/menu-group';
 import { useOfflineRevision } from '../../offline/offline-state';
 import { offlineStateStore } from '../../offline/offline-state';
-import type { DriveAudioSource, Recording } from '@org/audio-library-models';
+import type {
+  DriveAudioSource,
+  Playlist,
+  Recording,
+} from '@org/audio-library-models';
 import {
   getRecordingsPanelModel,
   type RecordingRow as RecordingRowModel,
@@ -36,6 +40,11 @@ type RecordingsPanelProps = {
    * cannot be played, which the panel shows; the host closes the panel on success.
    */
   onPlay: (recording: Recording) => string | null;
+  playlists: {
+    savedPlaylists: Playlist[];
+    createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
+    updatePlaylist: (playlist: Playlist) => Promise<Playlist | null>;
+  };
 };
 
 const Section = ({
@@ -72,6 +81,7 @@ export const RecordingsPanel = ({
   library,
   onClose,
   onPlay,
+  playlists,
   sources,
   view,
   viewName,
@@ -95,8 +105,15 @@ export const RecordingsPanel = ({
     [library, recordings, revision, sources, view, viewName],
   );
   const rows = [...model.main, ...model.loops.flatMap((group) => group.rows)];
+  const [notice, setNotice] = useState<string | null>(null);
   const { dialogs, openMenu, play, playIssue } = useRecordingRowMenu({
     onPlay,
+    playlistServices: {
+      createPlaylist: playlists.createPlaylist,
+      onAdded: (acknowledgment) => setNotice(acknowledgment.message),
+      playlists: playlists.savedPlaylists,
+      updatePlaylist: playlists.updatePlaylist,
+    },
     recordings,
     refresh,
     rows,
@@ -117,6 +134,7 @@ export const RecordingsPanel = ({
       >
         <View style={styles.body}>
           <Text style={styles.subtitle}>{model.subtitle}</Text>
+          {notice ? <Text style={styles.subtitle}>{notice}</Text> : null}
           {playIssue ? <Text style={styles.issue}>{playIssue}</Text> : null}
           <Section
             onOpenMenu={openMenu}

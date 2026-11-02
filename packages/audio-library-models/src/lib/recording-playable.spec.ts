@@ -2,9 +2,15 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  createPlaylistEntryFromRecording,
   createRecordingPlayableItem,
   isRangeLimitedRecordingItem,
+  resolveRecordingPlayableItem,
 } from './recording-playable.ts';
+import {
+  addRecordingToPlaylist,
+  createPlaylist,
+} from './rehearsal-playlists.ts';
 import type { RecordingOpenContext } from './recording-visibility.ts';
 import type { DriveAudioSource, NamedLoop } from './rehearsal-domain.ts';
 
@@ -143,5 +149,73 @@ describe('createRecordingPlayableItem', () => {
     });
 
     assert.equal(isRangeLimitedRecordingItem(item), false);
+  });
+});
+
+const storedRecording = {
+  ...recording,
+  source: {
+    driveFileId: 'd1',
+    name: 'Song',
+    contentVersion: 'v',
+    durationMs: 240_000,
+  },
+  shaping,
+  timeline: [
+    {
+      recordingStartMs: 0,
+      recordingEndMs: 5_000,
+      trackStartMs: 12_000,
+      held: false,
+    },
+  ],
+};
+
+describe('resolveRecordingPlayableItem', () => {
+  it('plays the recording on its track, or is unavailable once the track is gone', () => {
+    const item = resolveRecordingPlayableItem(storedRecording, {
+      sources: [source],
+      loops: [],
+    });
+
+    assert.equal(item?.recordingId, 'r1');
+    assert.equal(
+      resolveRecordingPlayableItem(storedRecording, { sources: [], loops: [] }),
+      null,
+    );
+  });
+});
+
+describe('recording playlist entries', () => {
+  it('describes a track recording and a loop recording by where they were made', () => {
+    const track = createPlaylistEntryFromRecording(recording, 'now');
+    const onLoop = createPlaylistEntryFromRecording(
+      {
+        ...recording,
+        lineage: {
+          ...recording.lineage,
+          loop: { id: 'l1', name: 'Chorus', startMs: 0, endMs: 1 },
+        },
+      },
+      'now',
+    );
+
+    assert.deepEqual(
+      [track.kind, track.sourceId, track.recordingId, track.description],
+      ['track', 't1', 'r1', 'Recording · Song'],
+    );
+    assert.deepEqual(
+      [onLoop.kind, onLoop.loopId, onLoop.description],
+      ['loop', 'l1', 'Recording · Chorus'],
+    );
+  });
+
+  it('appends a recording to a playlist at the end', () => {
+    const playlist = createPlaylist({ name: 'Set', ownerId: 'me' });
+    const next = addRecordingToPlaylist(playlist, recording);
+
+    assert.equal(next.items.length, 1);
+    assert.equal(next.items[0].recordingId, 'r1');
+    assert.equal(next.items[0].sortIndex, 0);
   });
 });

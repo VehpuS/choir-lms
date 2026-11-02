@@ -6,8 +6,10 @@ import {
   getSourceDisplayDurationMs,
   type NamedLoop,
   type Playlist,
+  type Recording,
 } from '@org/audio-library-models';
 
+import { getRecordingsSnapshot } from '../../recording/recordings-store-instance';
 import type { OptionsMenuAction } from '../../components/options-menu-sheet/model';
 import {
   formatDurationLabel,
@@ -119,6 +121,18 @@ const getLoopEntryRangeLabel = (loop: NamedLoop) => {
   ].join(' • ');
 };
 
+// `Recording • <where it was made>`; a deleted recording says so instead of
+// passing as playable.
+const getRecordingEntryLabel = (
+  entry: Playlist['items'][number],
+  recordings: readonly Recording[] = getRecordingsSnapshot(),
+) => {
+  const exists = recordings.some(({ id }) => id === entry.recordingId);
+  const where = (entry.description ?? 'Recording').replace(/^Recording · /, '');
+
+  return exists ? `Recording • ${where}` : `Recording deleted • ${where}`;
+};
+
 export const validatePlaylistName = (name: string) => {
   return name.trim() ? null : PLAYLIST_NAME_REQUIRED_ISSUE;
 };
@@ -191,7 +205,12 @@ export const getSavedPlaylistEntryDetailLabel = (options: {
   entry: Playlist['items'][number];
   savedLoops: NamedLoop[];
   savedSources: DriveLibrarySource[];
+  recordings?: readonly Recording[];
 }) => {
+  if (options.entry.recordingId) {
+    return getRecordingEntryLabel(options.entry, options.recordings);
+  }
+
   if (options.entry.kind === 'loop') {
     const loop = options.savedLoops.find((savedLoop) => {
       return savedLoop.id === options.entry.loopId;

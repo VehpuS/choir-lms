@@ -18,6 +18,7 @@ import {
   createSavedTrackPlaybackRuntimeIssue,
   type SavedTrackPlaybackIssue,
 } from '../../utils/saved-track-playback-view-model';
+import { refreshRecordingsSnapshot } from '../../../recording/recordings-store-instance';
 import { getPlaybackShapingSession } from '../../shaping';
 import { mapPlaylistPlaybackIssue } from './shared';
 
@@ -40,10 +41,13 @@ type StartPlaylistPlaybackOptions = {
 export const startPlaylistPlayback = async (
   options: StartPlaylistPlaybackOptions,
 ) => {
+  // Recording entries resolve against the snapshot, so it must not be behind.
+  const recordings = await refreshRecordingsSnapshot();
   const nextSession = buildPlaylistPlaybackSession({
     loops: options.loops,
     mode: options.mode,
     playlist: options.playlist,
+    recordings,
     repeatMode: options.playlistRepeatMode,
     sources: options.sources,
     startEntryId: options.startEntryId,

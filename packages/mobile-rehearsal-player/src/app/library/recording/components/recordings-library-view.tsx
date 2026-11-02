@@ -14,6 +14,7 @@ import {
   useOfflineRevision,
 } from '../../offline/offline-state';
 import { resolveRecordingPlayback } from '../recording-playback-item';
+import { useLibrarySelectionServices } from '../../selection/library-selection-services';
 import { RECORDINGS_SORT_OPTIONS } from '../recordings-library-controls-model';
 import {
   getRecordingsLibraryModel,
@@ -78,7 +79,14 @@ export const RecordingsLibraryView = ({
     // `revision` changes whenever any file's offline state does.
     [filters, query, recordings, revision, sort, tracks],
   );
+  const services = useLibrarySelectionServices();
   const { dialogs, openMenu, play, playIssue } = useRecordingRowMenu({
+    playlistServices: {
+      createPlaylist: services.createPlaylist,
+      onAdded: services.acknowledge,
+      playlists: services.collections.playlists,
+      updatePlaylist: services.updatePlaylist,
+    },
     onPlay: (recording) => {
       const resolution = resolveRecordingPlayback(recording, {
         sources,

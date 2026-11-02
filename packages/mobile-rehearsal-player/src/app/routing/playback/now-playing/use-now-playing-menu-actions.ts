@@ -69,7 +69,17 @@ export const useNowPlayingMenuActions = (options: {
           label: shortcut.label,
           onPress: () => {
             closeMenu();
-            requestSavedItemAction(shortcut.request);
+            requestSavedItemAction(
+              // A playing recording adds itself, not the track or loop under it.
+              shortcut.id === 'add-to-playlist' &&
+                activePlayableItem.recordingId
+                ? {
+                    action: 'add-recording-to-playlist',
+                    id: activePlayableItem.recordingId,
+                    kind: 'track',
+                  }
+                : shortcut.request,
+            );
           },
           tone: shortcut.tone,
         };

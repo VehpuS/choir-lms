@@ -103,6 +103,13 @@ export type PlaylistEntry = {
   kind: PlayableItemKind;
   sourceId: string;
   loopId?: string;
+  /**
+   * Set when the entry plays a recording over its track in the context it was
+   * made in (rehearsal-recording design Decision 16). `kind`, `sourceId` and
+   * `loopId` then describe where it was made, for code that does not know
+   * about recordings.
+   */
+  recordingId?: string;
   title: string;
   description?: string;
   createdAt: string;

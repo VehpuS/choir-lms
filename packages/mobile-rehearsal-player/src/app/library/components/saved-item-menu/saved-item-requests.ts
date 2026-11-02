@@ -7,6 +7,7 @@ import type { PlayableItem } from '@org/audio-library-models';
 // of owning copies.
 export type SavedItemRequestAction =
   | 'add-marker-here'
+  | 'add-recording-to-playlist'
   | 'add-to-playlist'
   | 'edit-loop'
   | 'edit-lyrics'
@@ -22,7 +23,10 @@ export type SavedItemRequestAction =
 
 export type SavedItemRequest = {
   action: SavedItemRequestAction;
-  /** The loop's id for a loop, the track's source id for a track. */
+  /**
+   * The loop's id for a loop, the track's source id for a track; for
+   * `add-recording-to-playlist`, the recording's id (with kind `track`).
+   */
   id: string;
   kind: 'loop' | 'track';
   /** `add-marker-here` only: where to add (a waveform press); else the playhead. */

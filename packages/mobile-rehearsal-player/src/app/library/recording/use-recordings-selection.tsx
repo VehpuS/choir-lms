@@ -21,6 +21,7 @@ import { SelectEntryButton } from '../selection/select-entry-button';
 import { SelectionBar } from '../selection/selection-bar';
 import { usePinnedBulkActionBar } from '../selection/use-pinned-bulk-action-bar';
 import { useSelection } from '../selection/use-selection';
+import { RecordingPlaylistPicker } from './components/recording-playlist-picker';
 import { DeleteRecordingsDialog } from './components/recording-row-dialogs';
 import { runRecordingOfflineAction } from './recording-offline';
 import {
@@ -69,6 +70,7 @@ export const useRecordingsSelection = ({
   const selection = useSelection<Recording>();
   const { cancel, deselectMany, enter, prune, selectMany, toggle } = selection;
   const [isDeleteVisible, setIsDeleteVisible] = useState(false);
+  const [isPlaylistVisible, setIsPlaylistVisible] = useState(false);
   const ids = useMemo(() => recordings.map(({ id }) => id), [recordings]);
 
   // Selection ends when the tab is left, and drops recordings that no longer exist.
@@ -98,6 +100,12 @@ export const useRecordingsSelection = ({
 
   const run = useCallback(
     (id: RecordingsBulkActionId) => {
+      if (id === 'add-to-playlist') {
+        setIsPlaylistVisible(true);
+
+        return;
+      }
+
       if (id === 'delete') {
         setIsDeleteVisible(true);
 
@@ -183,7 +191,19 @@ export const useRecordingsSelection = ({
   };
 
   return {
-    dialogs: isDeleteVisible ? (
+    dialogs: isPlaylistVisible ? (
+      <RecordingPlaylistPicker
+        createPlaylist={services.createPlaylist}
+        onAdded={(acknowledgment) => {
+          services.acknowledge(acknowledgment);
+          cancel();
+        }}
+        onClose={() => setIsPlaylistVisible(false)}
+        playlists={services.collections.playlists}
+        recordings={selected}
+        updatePlaylist={services.updatePlaylist}
+      />
+    ) : isDeleteVisible ? (
       <DeleteRecordingsDialog
         onCancel={() => setIsDeleteVisible(false)}
         onDelete={() => void deleteSelected()}
