@@ -7,3 +7,4 @@ export * from './drive-source-location-resolver';
 export * from './google-drive-core';
 export * from './google-drive-discovery';
 export * from './drive-write-scope';
+export * from './drive-resumable-upload';

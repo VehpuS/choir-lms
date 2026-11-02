@@ -1,9 +1,9 @@
-const DRIVE_UPLOAD_ENDPOINT =
+export const DRIVE_UPLOAD_ENDPOINT =
   'https://www.googleapis.com/upload/drive/v3/files';
-const UPLOAD_FIELDS = 'id,name,mimeType';
+export const UPLOAD_FIELDS = 'id,name,mimeType';
 const MULTIPART_BOUNDARY = 'choirlms-upload-boundary';
 const DEFAULT_MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
-const DEFAULT_MIME_TYPE = 'application/octet-stream';
+export const DEFAULT_MIME_TYPE = 'application/octet-stream';
 
 const UNAUTHORIZED_STATUS = 401;
 const FORBIDDEN_STATUS = 403;
@@ -115,7 +115,7 @@ const readErrorReason = async (response: {
   }
 };
 
-const mapUploadFailure = async (response: {
+export const mapUploadFailure = async (response: {
   json(): Promise<unknown>;
   status: number;
 }): Promise<DriveUploadFailureReason> => {
@@ -148,7 +148,10 @@ const mapUploadFailure = async (response: {
     : 'folder-not-writable';
 };
 
-const isAbort = (error: unknown, signal: AbortSignal | undefined): boolean => {
+export const isAbort = (
+  error: unknown,
+  signal: AbortSignal | undefined,
+): boolean => {
   return (
     signal?.aborted === true ||
     (error instanceof Error && error.name === ABORT_ERROR_NAME)
