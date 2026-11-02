@@ -14,6 +14,7 @@ import {
   getSavedTrackPlayerModule,
 } from '../saved-track-player-interop';
 import { ensureSavedTrackPlayerReady } from '../saved-track-player-runtime';
+import { getTrackGain } from '../../track-gain';
 import { isSavedTrackDownloadAbortError } from '../saved-track-web-download';
 import {
   type SavedTrackPlaybackControllerOptions,
@@ -143,7 +144,9 @@ export const createSavedTrackPlaybackRuntimeCore = (
         getSavedTrackPlayerModule().PitchAlgorithm,
       ),
     });
-    await trackPlayer.setVolume(options.volumeLevelRef.current);
+    await trackPlayer.setVolume(
+      options.volumeLevelRef.current * getTrackGain(),
+    );
     await applyAmbientShaping(playbackRequest.playableItem.transform);
 
     if (initialPositionSeconds > 0) {

@@ -18,6 +18,7 @@ import { getSavedTrackPlayer } from '../saved-track-player-interop';
 import { ensureSavedTrackPlayerReady } from '../saved-track-player-runtime';
 import { isSavedTrackDownloadAbortError } from '../saved-track-web-download';
 import { createSavedTrackPlaybackRuntimeCore } from './runtime-core';
+import { getTrackGain } from '../../track-gain';
 import {
   canResumeSavedTrackPlayback,
   isActivePlaybackSource,
@@ -202,7 +203,9 @@ export const createSavedTrackPlaybackRuntimeCommands = (
 
       try {
         await ensureSavedTrackPlayerReady();
-        await getSavedTrackPlayer().setVolume(normalizedVolumeLevel);
+        await getSavedTrackPlayer().setVolume(
+          normalizedVolumeLevel * getTrackGain(),
+        );
       } catch (error) {
         const currentPlayableItem = options.activePlayableItemRef.current;
 

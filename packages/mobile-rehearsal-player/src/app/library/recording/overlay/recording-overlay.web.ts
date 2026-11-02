@@ -99,6 +99,9 @@ export const startRecordingOverlay = async (
     setRecordingOverlayStatus({ kind: 'sounding' });
 
     return {
+      setLevel: (level) => {
+        output.gain.value = level;
+      },
       dispose: () => {
         controller.dispose();
         voice.dispose();
