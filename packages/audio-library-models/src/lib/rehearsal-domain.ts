@@ -68,6 +68,11 @@ export type PlayableItem = {
   description?: string;
   /** The item's own speed and pitch (an adjusted track or loop). */
   transform?: PlaybackShaping;
+  /**
+   * Set when the item plays a recording over its track in the context it was
+   * made in; range, speed and pitch are then fixed to the recording's.
+   */
+  recordingId?: string;
 };
 
 export type NamedLoop = {

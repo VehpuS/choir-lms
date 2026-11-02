@@ -71,7 +71,7 @@ The balance control sets the two gains: the recording's gain node, and the track
 Playback shaping (speed and pitch) is a property of the background track. A recording is captured from the microphone in real time and is always played at its natural speed and pitch, so the singer hears their own voice as sung. Consequences:
 
 - **Recording under shaping is allowed, but the shaping is fixed for the recording.** The speed and pitch in effect when it starts (a saved adjusted track, or a session adjustment already set) are read once, stored on the recording (Decision 9), and the speed and pitch controls are disabled while it records, with a note saying why. A recording sung against a track at 0.7× knows that one second of it covered 0.7 s of track throughout. Changing speed mid-recording is not supported: the user stops, adjusts, and starts a new one. Pitch shifts change nothing about timing, and are stored only so the recording can say what it was recorded against.
-- **Playback uses the stored shaping, and it is fixed too.** Opening or selecting a recording applies the speed and pitch stored on it to the session and locks those controls with a note ("Locked to this recording's speed and pitch"); leaving the recording restores the shaping that was set before and unlocks them. The recording therefore always plays against the track exactly as it was sung against it and stays aligned for its whole length. Playing a recording with other speed or pitch is not supported: the user exports a mix (Decision 12) and plays that file with the ordinary track controls. This is expected to be a rare need.
+- **Playback uses the stored shaping, and it is fixed too.** Playing a recording applies the speed and pitch stored on it and locks those controls with a note ("Locked to this recording's speed and pitch"); playing anything else (another track, loop, or recording, or the next queue item) loads that item's own shaping and unlocks them, exactly as moving between tracks does today. The recording therefore always plays against the track exactly as it was sung against it and stays aligned for its whole length. Playing a recording with other speed or pitch is not supported: the user exports a mix (Decision 12) and plays that file with the ordinary track controls. This is expected to be a rare need.
 
 Alternatives: gate recording and overlay to normal speed; rejected because slowed practice is the main use of the app. Let the track change speed under a selected recording, with the recording free-running or stretched by its own SoundTouch node; rejected because the free-running recording drifts apart and stretching alters the singer's voice, and the exported mix already covers the use.
 
@@ -110,16 +110,16 @@ A recording is owned by exactly one entity, the one it was made on: a track, a s
 
 The Recordings panel is a viewer, like lyrics and sheet music, and opens from a `Recordings` action in the playback screen's `More actions` menu (beside `Make loop` and `Add marker here`), whether or not the Recording tool is on. There is no top-level button or count badge, since recording is occasional; the menu row shows a muted count. The tool only controls the recording strip and the start and arm controls.
 
-### Decision 11: Opening a recording restores its recorded context, locked
+### Decision 11: A recording is a playable item that plays in the context it was made in, locked
 
-Selecting a recording from any list opens its track in the context it was made in:
+A recording is a playable item like a track or a loop (user decision 2026-11-02): it is played, queued, and added to playlists, and playing another item replaces it. It is only reached from overflow actions and lists, never as a library file. Selecting a recording from any list plays it, on its track, in the context it was made in:
 
-- **A loop recording** opens the loop (the loop entity's view), with the loop's range as the only playable range.
-- **A recording of an adjusted track** opens the adjusted track, with its adjustment active.
-- **A segment or punch recording** opens the owning track limited to the recorded range, from the first to the last track position the timeline covers. The waveform, position, and seeking show only that range.
+- **A loop recording** plays the loop, with the loop's range as the only playable range.
+- **A recording of an adjusted track** plays the adjusted track, with its adjustment active.
+- **A segment or punch recording** plays the owning track limited to the recorded range, from the first to the last track position the timeline covers. The waveform, position, and seeking show only that range, and playback stops at the end of the range and returns to its start.
 - **Any other adjustment** (speed and pitch set on the session) is applied for the recording: the stored speed and pitch are set and locked. The view does not distinguish adjustments that were saved as a track from ones that were not.
 
-In every case the view says `Recording: <name>`, the range, the speed and pitch, and the loop are locked, and one control, `Leave recording`, returns to the previous context and shaping. While open, the balance and the sync control are available, and the recording and its track play together. Playback never needs a different speed because the context carries the one it was made with.
+The item is titled with the recording's name and described by where it was made (`Recording · <loop>`, `Recording · <adjustment>`, or `Recording · <span>`). While it is the active item, the range, the loop, the speed, and the pitch are locked, with a note saying why, and the balance and the sync control are available. There is no separate `Leave recording` control: choosing another item leaves it, as with any track, and the previous shaping is not restored because no other item expects it. Playback never needs a different speed because the item carries the one it was made with.
 
 ### Decision 12: Export a recording and a mix, to the device or to Drive
 
@@ -157,7 +157,7 @@ The Library gains a `Recordings` view beside the tracks and playlists views, lis
 
 ### Decision 16: Recordings in playlists and the queue
 
-A playlist entry can reference a recording, as it can a track or a loop. Playing one opens its context (Decision 11), plays the recording over its track at the saved balance for that recording, stops at the end of the recorded range, and moves to the next item; shaping is the recording's own and is restored for the next item. A recording that was deleted shows as unavailable and is skipped with a message, as removed tracks are. `Play next`, `Add to queue`, and `Add to playlist` work from every recording list, the Library view, and bulk selection.
+A playlist entry can reference a recording, as it can a track or a loop. Playing one plays it in its recorded context (Decision 11), plays the recording over its track at the saved balance for that recording, stops at the end of the recorded range, and moves to the next item; shaping is the recording's own and is restored for the next item. A recording that was deleted shows as unavailable and is skipped with a message, as removed tracks are. `Play next`, `Add to queue`, and `Add to playlist` work from every recording list, the Library view, and bulk selection.
 
 ### Decision 17: Segments, loops, and marker context
 

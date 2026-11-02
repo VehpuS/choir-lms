@@ -1,7 +1,9 @@
+import type { PlayableItem } from '@org/audio-library-models';
+
 import type { usePlaybackShaping } from '../../../library/playback/shaping/use-playback-shaping';
 import { useRecordingActive } from '../../../library/recording/use-recording-active';
 import {
-  SHAPING_LOCKED_WHILE_RECORDING,
+  resolveShapingLockedReason,
   type PlaybackShapingControls,
 } from './shaping-surface-model';
 
@@ -14,31 +16,34 @@ const reportShapingFailure = (error: unknown) => {
 /** Adapts the session hook's promise-returning setters to the surfaces' callbacks. */
 export const usePlaybackShapingControls = (
   shaping: ReturnType<typeof usePlaybackShaping>,
+  activeItem: Pick<PlayableItem, 'recordingId'> | null = null,
 ): PlaybackShapingControls => {
   const isRecording = useRecordingActive();
+  const lockedReason = resolveShapingLockedReason({ activeItem, isRecording });
+  const isLocked = lockedReason !== null;
 
   return {
     ambient: shaping.ambient,
     canShapePitch: shaping.canShapePitch,
     effective: shaping.effective,
     isItemTransformActive: shaping.isItemTransformActive,
-    lockedReason: isRecording ? SHAPING_LOCKED_WHILE_RECORDING : null,
+    lockedReason,
     onReset: () => {
-      if (isRecording) {
+      if (isLocked) {
         return;
       }
 
       shaping.reset().catch(reportShapingFailure);
     },
     onSetPitchSemitones: (semitones) => {
-      if (isRecording) {
+      if (isLocked) {
         return;
       }
 
       shaping.setPitchSemitones(semitones).catch(reportShapingFailure);
     },
     onSetSpeedMultiplier: (multiplier) => {
-      if (isRecording) {
+      if (isLocked) {
         return;
       }
 

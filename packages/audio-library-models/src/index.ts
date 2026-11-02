@@ -25,3 +25,4 @@ export * from './lib/waveform-peaks.ts';
 export * from './lib/recording.ts';
 export * from './lib/recording-timeline.ts';
 export * from './lib/recording-visibility.ts';
+export * from './lib/recording-playable.ts';

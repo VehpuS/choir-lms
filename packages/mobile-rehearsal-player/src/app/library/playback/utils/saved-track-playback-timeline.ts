@@ -1,4 +1,8 @@
-import type { PlayableItem, RepeatMode } from '@org/audio-library-models';
+import {
+  isRangeLimitedRecordingItem,
+  type PlayableItem,
+  type RepeatMode,
+} from '@org/audio-library-models';
 
 const LOOP_RANGE_END_TOLERANCE_MS = 250;
 const DEFAULT_PLAYBACK_VOLUME_LEVEL = 1;
@@ -8,17 +12,22 @@ export const hasSavedTrackPlaybackReachedRangeEnd = (options: {
   playbackState: string | undefined;
   positionSeconds: number;
 }) => {
+  const item = options.activePlayableItem;
+
+  // A loop ends at its range end; so does a recording of a part of a track,
+  // which plays only the stretch that was recorded.
   if (
-    options.activePlayableItem?.kind !== 'loop' ||
+    !item ||
+    (item.kind !== 'loop' && !isRangeLimitedRecordingItem(item)) ||
     options.playbackState !== 'playing' ||
-    options.activePlayableItem.range.endMs === null
+    item.range.endMs === null
   ) {
     return false;
   }
 
   return (
     Math.round(options.positionSeconds * 1000) >=
-    options.activePlayableItem.range.endMs - LOOP_RANGE_END_TOLERANCE_MS
+    item.range.endMs - LOOP_RANGE_END_TOLERANCE_MS
   );
 };
 
@@ -68,6 +77,8 @@ export const hydratePlayableItemDuration = (options: {
 }) => {
   if (
     options.playableItem.kind !== 'track' ||
+    // A recording's range is the recorded stretch, not the file's length.
+    options.playableItem.recordingId !== undefined ||
     !Number.isFinite(options.durationSeconds) ||
     options.durationSeconds <= 0
   ) {

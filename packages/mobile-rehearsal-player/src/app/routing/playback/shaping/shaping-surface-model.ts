@@ -66,6 +66,25 @@ export type PlaybackShapingControls = {
 export const SHAPING_LOCKED_WHILE_RECORDING =
   'Locked while recording. Stop the recording to change speed and pitch.';
 
+export const SHAPING_LOCKED_TO_RECORDING =
+  'Locked to this recording’s speed and pitch. Play another item to change them.';
+
+/**
+ * Why speed and pitch cannot change now: a recording being made keeps what it
+ * started with, and a recording being played keeps what it was made with
+ * (design Decisions 6 and 11). `null` when they are free.
+ */
+export const resolveShapingLockedReason = (options: {
+  activeItem: { recordingId?: string } | null;
+  isRecording: boolean;
+}): string | null => {
+  if (options.isRecording) {
+    return SHAPING_LOCKED_WHILE_RECORDING;
+  }
+
+  return options.activeItem?.recordingId ? SHAPING_LOCKED_TO_RECORDING : null;
+};
+
 export const SESSION_SCOPE_STATEMENT =
   'Applies to this session only until saved.';
 /**

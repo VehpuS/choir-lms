@@ -237,7 +237,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent-text
     <ul class="dec">
       <li><b>Recordings are not files.</b> They live under their track or loop. Open them from <b>More actions → Recordings</b> (no top-level button or badge), whether or not the Recording tool is on. The tool only controls the strip.</li>
       <li><b>Where they show:</b> a track lists its own recordings and, in a <b>Loops</b> section, its loops' recordings. A loop lists only its own. A recording on an adjusted copy shows under the copy and under its parent, labelled with the adjustment.</li>
-      <li><b>Opening one</b> restores its context, locked: the loop, the adjusted copy, or the recorded segment only, with its speed and pitch applied (even if never saved). <b>Leave recording</b> restores what you had.</li>
+      <li><b>Playing one</b> plays it as an item in its recorded context, locked: the loop, the adjusted copy, or the recorded segment only, with its speed and pitch applied (even if never saved). Playing anything else leaves it; there is no separate Leave control (user decision 2026-11-02).</li>
       <li><b>Punch in / out:</b> <b>Record ▾ → Record between…</b> opens a sheet with the waveform. Drag the In and Out handles (they snap to markers), tap marker flags, or type times; set a pre-roll; <b>Arm</b>. Play from the pre-roll and it starts and stops itself.</li>
       <li><b>Storage:</b> the raw recording is kept on the device and never purged; only you delete it. There is no recordings cache: the overlay uses the track's existing caches, and <b>Keep track offline</b> on a recording makes the overlay work offline. <b>Auto-export</b> copies recordings to a Drive folder (set in Settings), as the recording, the mix, or both, over Wi-Fi by default where the browser can tell.</li>
       <li><b>Library:</b> a <b>Recordings</b> view to browse, search, filter, and act on all of them. Recordings can be queued and added to playlists.</li>
@@ -368,7 +368,7 @@ function ctxbar(s) {
   if (!s.ctx) { return ''; }
   const c = rec(s.ctx);
   const where = c.kind === 'loop' ? `Loop · ${c.loop}` : c.copy ? `Adjusted · ${c.copy}` : c.kind === 'whole' ? 'Whole track' : c.span;
-  return `<div class="ctxbar"><span class="g"><b>Recording: ${c.name}</b><br>${where}</span><button class="btn quiet" data-act="leave" style="min-height:32px">Leave recording</button></div>`;
+  return `<div class="ctxbar"><span class="g"><b>Recording: ${c.name}</b><br>${where}</span></div>`;
 }
 function strip(s) {
   const r = s.rec;

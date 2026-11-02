@@ -10,7 +10,10 @@ export const useAppRouterPlaybackShaping = (options: {
   playback: ReturnType<typeof useSavedTrackPlayback>;
 }) => {
   const { libraryController, playback } = options;
-  const shapingControls = usePlaybackShapingControls(playback.shaping);
+  const shapingControls = usePlaybackShapingControls(
+    playback.shaping,
+    playback.activePlayableItem,
+  );
   const save = useAdjustedShapingSave({
     activeItem: playback.activePlayableItem,
     effective: shapingControls.effective,

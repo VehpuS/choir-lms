@@ -70,3 +70,19 @@ describe('now playing add marker request', () => {
     );
   });
 });
+
+describe('now playing menu model for a recording item', () => {
+  it('offers no new loop while a recording is the active item', () => {
+    assert.equal(
+      resolveNowPlayingMakeLoopRequest({
+        activePlayableItem: {
+          ...createTrackPlayableItem(PLAYABLE_SOURCE),
+          transform: undefined,
+          recordingId: 'r1',
+        },
+        playbackPositionSeconds: 3,
+      }),
+      null,
+    );
+  });
+});

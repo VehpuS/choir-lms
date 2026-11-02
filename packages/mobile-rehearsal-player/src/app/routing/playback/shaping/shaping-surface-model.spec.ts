@@ -11,7 +11,10 @@ import {
   getPracticeShapingTiles,
   getSpeedControlModel,
   getTempoSourceChips,
+  resolveShapingLockedReason,
   resolveSpeedSliderValue,
+  SHAPING_LOCKED_TO_RECORDING,
+  SHAPING_LOCKED_WHILE_RECORDING,
   stepPitchSemitones,
 } from './shaping-surface-model.js';
 
@@ -224,6 +227,39 @@ describe('reset and practice tiles', () => {
       pitchTile?.accessibilityLabel.includes(
         'Not available on this device yet',
       ),
+    );
+  });
+});
+
+describe('resolveShapingLockedReason', () => {
+  it('is free when nothing is recorded or playing a recording', () => {
+    assert.equal(
+      resolveShapingLockedReason({ activeItem: null, isRecording: false }),
+      null,
+    );
+    assert.equal(
+      resolveShapingLockedReason({ activeItem: {}, isRecording: false }),
+      null,
+    );
+  });
+
+  it('locks while recording, and says so first', () => {
+    assert.equal(
+      resolveShapingLockedReason({
+        activeItem: { recordingId: 'r1' },
+        isRecording: true,
+      }),
+      SHAPING_LOCKED_WHILE_RECORDING,
+    );
+  });
+
+  it('locks to the recording while one is the active item', () => {
+    assert.equal(
+      resolveShapingLockedReason({
+        activeItem: { recordingId: 'r1' },
+        isRecording: false,
+      }),
+      SHAPING_LOCKED_TO_RECORDING,
     );
   });
 });

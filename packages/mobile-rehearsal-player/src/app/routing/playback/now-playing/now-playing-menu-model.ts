@@ -24,6 +24,7 @@ export const resolveNowPlayingMakeLoopRequest = (options: {
   if (
     activePlayableItem.kind !== 'track' ||
     activePlayableItem.transform ||
+    activePlayableItem.recordingId ||
     activePlayableItem.source.availability.status !== 'available'
   ) {
     return null;

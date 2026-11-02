@@ -12,7 +12,7 @@ import type { OptionsMenuAction } from '../../components/options-menu-sheet/mode
 import { useOfflineRevision } from '../../offline/offline-state';
 import { offlineStateStore } from '../../offline/offline-state';
 import { getOfflineBatchRunner } from '../../offline/offline-batch';
-import type { DriveAudioSource } from '@org/audio-library-models';
+import type { DriveAudioSource, Recording } from '@org/audio-library-models';
 import { runRecordingOfflineAction } from '../recording-offline';
 import {
   getRecordingsPanelModel,
@@ -40,6 +40,11 @@ type RecordingsPanelProps = {
     loops: readonly { id: string }[];
   };
   onClose: () => void;
+  /**
+   * Plays a recording in its recorded context. Returns a message when it
+   * cannot be played, which the panel shows; the host closes the panel on success.
+   */
+  onPlay: (recording: Recording) => string | null;
 };
 
 type OpenDialog = { kind: 'menu' | 'rename' | 'delete'; id: string } | null;
@@ -48,15 +53,22 @@ const Section = ({
   rows,
   title,
   onOpenMenu,
+  onPlay,
 }: {
   rows: RecordingRowModel[];
   title: string;
   onOpenMenu: (id: string) => void;
+  onPlay: (id: string) => void;
 }) => (
   <View style={styles.section}>
     <Text style={styles.sectionTitle}>{`${title} · ${rows.length}`}</Text>
     {rows.map((row) => (
-      <RecordingRow key={row.id} onOpenMenu={onOpenMenu} row={row} />
+      <RecordingRow
+        key={row.id}
+        onOpenMenu={onOpenMenu}
+        onPlay={onPlay}
+        row={row}
+      />
     ))}
   </View>
 );
@@ -70,6 +82,7 @@ const Section = ({
 export const RecordingsPanel = ({
   library,
   onClose,
+  onPlay,
   sources,
   view,
   viewName,
@@ -77,6 +90,7 @@ export const RecordingsPanel = ({
   const { recordings, refresh } = useRecordingsList();
   const revision = useOfflineRevision();
   const [open, setOpen] = useState<OpenDialog>(null);
+  const [playIssue, setPlayIssue] = useState<string | null>(null);
   const model = useMemo(
     () =>
       getRecordingsPanelModel({
@@ -118,7 +132,22 @@ export const RecordingsPanel = ({
     setOpen(null);
   };
 
+  const play = (id: string) => {
+    const recording = recordings?.find((candidate) => candidate.id === id);
+
+    setOpen(null);
+
+    if (recording) {
+      setPlayIssue(onPlay(recording));
+    }
+  };
+
   const menuActions = (row: RecordingRowModel): OptionsMenuAction[] => [
+    {
+      id: 'play',
+      label: 'Play',
+      onPress: () => play(row.id),
+    },
     {
       id: 'offline',
       label: row.offline.label,
@@ -161,8 +190,10 @@ export const RecordingsPanel = ({
       >
         <View style={styles.body}>
           <Text style={styles.subtitle}>{model.subtitle}</Text>
+          {playIssue ? <Text style={styles.issue}>{playIssue}</Text> : null}
           <Section
             onOpenMenu={(id) => setOpen({ kind: 'menu', id })}
+            onPlay={play}
             rows={model.main}
             title={model.mainTitle}
           />
@@ -176,6 +207,7 @@ export const RecordingsPanel = ({
                 <Section
                   key={group.loopId}
                   onOpenMenu={(id) => setOpen({ kind: 'menu', id })}
+                  onPlay={play}
                   rows={group.rows}
                   title={`${group.name} loop`}
                 />
@@ -212,6 +244,7 @@ export const RecordingsPanel = ({
 
 const styles = StyleSheet.create({
   body: { gap: space.sm },
+  issue: { ...type.rowMeta, color: colors.danger },
   loopsTitle: { ...type.sectionHead, color: colors.warning },
   section: { gap: space.xxs },
   sectionTitle: { ...type.sectionHead, color: colors.textMuted },

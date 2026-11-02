@@ -95,7 +95,8 @@ export const ShapingSurface = ({
 }: ShapingSurfaceProps) => {
   const isLocked = Boolean(controls.lockedReason);
   const canReset = canResetShaping(controls.ambient) && !isLocked;
-  const overrideNote = getItemOverrideNote(controls);
+  // A locked recording says why in its own note, not that the controls set the session.
+  const overrideNote = isLocked ? null : getItemOverrideNote(controls);
 
   return (
     <View style={nowPlayingStyles.sheet}>

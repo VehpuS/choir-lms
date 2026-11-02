@@ -204,7 +204,9 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
         <TitleBlock
           downloadLabel={props.downloadLabel}
           onEditLoop={
-            props.activePlayableItem.loopId
+            // A recording's loop is locked while it plays (design Decision 11).
+            props.activePlayableItem.loopId &&
+            !props.activePlayableItem.recordingId
               ? () => {
                   props.onEditActiveLoop(props.activePlayableItem.loopId ?? '');
                 }

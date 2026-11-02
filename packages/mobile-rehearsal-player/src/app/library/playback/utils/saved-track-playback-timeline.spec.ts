@@ -5,6 +5,7 @@ import { describe, it } from 'node:test';
 
 import {
   createLoopPlayableItem,
+  createRecordingPlayableItem,
   createTrackPlayableItem,
 } from '@org/audio-library-models';
 
@@ -145,5 +146,69 @@ describe('saved track playback timeline helpers', () => {
     assert.equal(normalizePlaybackVolumeLevel(0.45), 0.45);
     assert.equal(normalizePlaybackVolumeLevel(1.8), 1);
     assert.equal(normalizePlaybackVolumeLevel(Number.NaN), 1);
+  });
+});
+
+describe('recording items in the playback timeline helpers', () => {
+  const segment = createRecordingPlayableItem({
+    recording: {
+      id: 'r1',
+      name: 'Take',
+      lineage: {
+        track: { id: PLAYABLE_SOURCE.id, driveFileId: 'd', name: 'Song' },
+      },
+    },
+    context: {
+      kind: 'track',
+      sourceId: PLAYABLE_SOURCE.id,
+      range: { startMs: 5000, endMs: 15_000 },
+      shaping: { rate: 1, pitchSemitones: 0 },
+    },
+    source: { ...PLAYABLE_SOURCE, durationMs: 60_000 },
+  });
+
+  it('stops a segment recording at the end of its recorded range', () => {
+    assert.equal(
+      hasSavedTrackPlaybackReachedRangeEnd({
+        activePlayableItem: segment,
+        playbackState: 'playing',
+        positionSeconds: 14.9,
+      }),
+      true,
+    );
+    assert.equal(
+      hasSavedTrackPlaybackReachedRangeEnd({
+        activePlayableItem: segment,
+        playbackState: 'playing',
+        positionSeconds: 10,
+      }),
+      false,
+    );
+  });
+
+  it('keeps the recorded range when the file duration arrives', () => {
+    const hydrated = hydratePlayableItemDuration({
+      durationSeconds: 61,
+      playableItem: segment,
+    });
+
+    assert.deepEqual(hydrated.range, { startMs: 5000, endMs: 15_000 });
+  });
+
+  it('keeps a recording inside its range when seeking', () => {
+    assert.equal(
+      resolvePlaybackScrubPositionSeconds({
+        activePlayableItem: segment,
+        requestedPositionSeconds: 40,
+      }),
+      15,
+    );
+    assert.equal(
+      resolvePlaybackScrubPositionSeconds({
+        activePlayableItem: segment,
+        requestedPositionSeconds: 1,
+      }),
+      5,
+    );
   });
 });

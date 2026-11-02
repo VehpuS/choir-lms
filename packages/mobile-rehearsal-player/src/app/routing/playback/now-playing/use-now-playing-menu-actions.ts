@@ -59,6 +59,10 @@ export const useNowPlayingMenuActions = (options: {
       item: activePlayableItem,
     })
       .filter(({ id }) => !(makeLoopRequest && id === 'make-loop'))
+      // A recording plays in the loop it was made on; the loop is locked.
+      .filter(
+        ({ id }) => !(activePlayableItem.recordingId && id === 'edit-loop'),
+      )
       .flatMap((shortcut) => {
         const action = {
           id: shortcut.id,
