@@ -106,6 +106,7 @@ export const LibraryScreen = ({
     playlistDetailPlayback,
     searchPanel,
     searchState,
+    selectedView,
   });
   return (
     <View style={styles.screen}>

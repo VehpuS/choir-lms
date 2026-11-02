@@ -9,6 +9,7 @@ export type SavedRehearsalLibraryView =
   | 'tracks'
   | 'loops'
   | 'playlists'
+  | 'recordings'
   | 'tags';
 
 export type SavedRehearsalLibraryViewOption = {
@@ -42,6 +43,7 @@ export const SAVED_REHEARSAL_LIBRARY_VIEW_OPTIONS: readonly SavedRehearsalLibrar
     { label: 'Tracks', value: 'tracks' },
     { label: 'Loops', value: 'loops' },
     { label: 'Playlists', value: 'playlists' },
+    { label: 'Recordings', value: 'recordings' },
     { label: 'Tags', value: 'tags' },
   ];
 
@@ -63,6 +65,11 @@ const SAVED_REHEARSAL_LIBRARY_VIEW_COPY: Record<
     body: 'Open, create, and manage saved rehearsal playlists in one place.',
     eyebrow: 'Library',
     title: 'Playlists',
+  },
+  recordings: {
+    body: 'Every recording on this device, with search, filters, and sorting.',
+    eyebrow: 'Library',
+    title: 'Recordings',
   },
   tags: {
     body: 'Browse every tag in use across your saved library, with usage counts, sorting, and search.',
@@ -99,6 +106,15 @@ const SAVED_REHEARSAL_LIBRARY_VISIBLE_SECTIONS: Record<
     showLoopSection: false,
     showPlaylistCards: true,
     showPlaylistSection: true,
+    showSourceGroup: false,
+  },
+  recordings: {
+    // The Recordings view renders its own list (rehearsal-recording 8.2), so
+    // none of the shared browse sections mount for it.
+    showLoopBrowseList: false,
+    showLoopSection: false,
+    showPlaylistCards: false,
+    showPlaylistSection: false,
     showSourceGroup: false,
   },
   tags: {

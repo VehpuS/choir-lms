@@ -12,6 +12,10 @@ const { colors, radius, space, type } = appTheme;
 
 type RecordingRowProps = {
   row: RecordingRowModel;
+  /** The Library view names the track first, since its rows are not under one. */
+  trackName?: string;
+  /** `On Drive`, `Upload pending`, `Upload failed`; absent when never exported. */
+  driveLabel?: string;
   onOpenMenu: (id: string) => void;
   /** A tap on the row plays the recording; the options button opens its menu. */
   onPlay: (id: string) => void;
@@ -19,9 +23,11 @@ type RecordingRowProps = {
 
 /** One recording in a list: name and tags, span and size, when and how it was shaped. */
 export const RecordingRow = ({
-  row,
+  driveLabel,
   onOpenMenu,
   onPlay,
+  row,
+  trackName,
 }: RecordingRowProps) => (
   <View style={styles.row}>
     <Pressable
@@ -55,10 +61,10 @@ export const RecordingRow = ({
         ))}
       </View>
       <Text numberOfLines={1} style={styles.meta}>
-        {row.detail}
+        {trackName ? `${trackName} · ${row.detail}` : row.detail}
       </Text>
       <Text numberOfLines={1} style={styles.meta}>
-        {row.meta}
+        {driveLabel ? `${row.meta} · ${driveLabel}` : row.meta}
       </Text>
     </Pressable>
     <Pressable

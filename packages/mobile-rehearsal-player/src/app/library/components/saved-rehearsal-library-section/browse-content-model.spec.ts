@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { resolveSearchNoResultsMessage } from './browse-content-model';
+import {
+  resolveSearchNoResultsMessage,
+  shouldRenderRecordingsView,
+} from './browse-content-model';
 
 describe('resolveSearchNoResultsMessage', () => {
   it('names what was searched for each view that has no matches', () => {
@@ -72,5 +75,23 @@ describe('resolveSearchNoResultsMessage', () => {
         null,
       );
     }
+  });
+});
+
+describe('the Recordings view', () => {
+  it('renders only for the recordings view', () => {
+    assert.equal(shouldRenderRecordingsView('recordings'), true);
+    assert.equal(shouldRenderRecordingsView('tracks'), false);
+  });
+
+  it('leaves its empty state to the view itself', () => {
+    assert.equal(
+      resolveSearchNoResultsMessage({
+        query: 'chorus',
+        resultCounts: { files: 0, loops: 0, playlists: 0, tracks: 0 },
+        view: 'recordings',
+      }),
+      null,
+    );
   });
 });

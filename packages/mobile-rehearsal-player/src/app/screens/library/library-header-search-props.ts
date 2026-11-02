@@ -1,3 +1,5 @@
+import { shouldRenderRecordingsView } from '../../library/components/saved-rehearsal-library-section/browse-content-model';
+import type { SavedRehearsalLibraryView } from '../../library/saved-rehearsal-library/detail-mode';
 import type { SearchPanelVisibility } from '../../library/components/saved-rehearsal-library-section/search-shell';
 import type { useSavedRehearsalLibrarySearch } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search';
 import type { useSavedRehearsalLibrarySearchPanel } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search-panel';
@@ -25,12 +27,14 @@ export const resolveLibraryHeaderSearchProps = (options: {
   playlistDetailPlayback: PlaylistDetailHeaderPlaybackAction | null;
   searchPanel: ReturnType<typeof useSavedRehearsalLibrarySearchPanel>;
   searchState: ReturnType<typeof useSavedRehearsalLibrarySearch>;
+  selectedView?: SavedRehearsalLibraryView;
 }): LibraryHeaderSearchProps => {
   const {
     detailSearchActions,
     playlistDetailPlayback,
     searchPanel,
     searchState,
+    selectedView,
   } = options;
 
   if (detailSearchActions) {
@@ -47,7 +51,9 @@ export const resolveLibraryHeaderSearchProps = (options: {
   }
 
   return {
-    canShowSearch: !playlistDetailPlayback,
+    canShowSearch:
+      !playlistDetailPlayback &&
+      !shouldRenderRecordingsView(selectedView ?? 'files'),
     handleFilterActionPress: searchPanel.handleFilterActionPress,
     handleSearchActionPress: searchPanel.handleSearchActionPress,
     hasActiveFilters: resolveHasActiveLibraryFilters(

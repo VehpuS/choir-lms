@@ -3,7 +3,9 @@ import { View } from 'react-native';
 import { LibrarySelectionServicesProvider } from '../../selection/library-selection-services';
 import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-track-playlist-menu-surface';
 import { resolveHasActiveLibraryFilters } from '../../search/utils/saved-library-search-view-model';
+import { RecordingsLibraryView } from '../../recording/components/recordings-library-view';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
+import { shouldRenderRecordingsView } from './browse-content-model';
 import { buildSavedRehearsalLibraryDetailSectionElements } from './detail-section-elements';
 import { useSavedItemRequestHandler } from '../saved-item-menu/use-saved-item-request-handler';
 import { SavedRehearsalLibrarySearchShell } from './search-shell';
@@ -213,6 +215,14 @@ export const SavedRehearsalLibrarySection = (
           savedLibraryStatusCopy={savedLibraryStatusCopy}
           savedTrackPlaybackStatusCopy={savedTrackPlaybackStatusCopy}
         />
+        {shouldRenderBrowseContent &&
+        shouldRenderRecordingsView(selectedView) ? (
+          <RecordingsLibraryView
+            loops={savedLoops}
+            onPlayItem={props.togglePlayableItemPlayback}
+            sources={savedLibrarySources}
+          />
+        ) : null}
         {shouldRenderBrowseContent ? (
           <SavedRehearsalLibraryBrowseContent
             {...props}

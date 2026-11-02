@@ -34,6 +34,14 @@ export const shouldRenderSavedTagsList = (
   return selectedView === 'tags';
 };
 
+// The Recordings view carries its own search, filters and sort, so the shared
+// header search stays out of its way.
+export const shouldRenderRecordingsView = (
+  selectedView: SavedRehearsalLibraryView,
+) => {
+  return selectedView === 'recordings';
+};
+
 export const shouldRenderFilesLoopBuilder = (options: {
   activeLibrarySearchQuery: string | null;
   selectedTrack: PlayableItem | null;
@@ -84,7 +92,9 @@ export const resolveSearchNoResultsMessage = (options: {
 }): string | null => {
   const noun = SEARCH_NO_RESULTS_NOUNS[options.view];
   const resultCount =
-    options.view === 'tags' ? 0 : options.resultCounts[options.view];
+    options.view === 'tags' || options.view === 'recordings'
+      ? 0
+      : options.resultCounts[options.view];
 
   if (!noun || !options.query || resultCount > 0) {
     return null;
