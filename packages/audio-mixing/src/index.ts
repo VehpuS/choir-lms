@@ -11,3 +11,4 @@ export * from './lib/windowed-voice.ts';
 export * from './lib/loop-aware-transport.ts';
 export * from './lib/mix-render-plan.ts';
 export * from './lib/mix-renderer.ts';
+export * from './lib/soundtouch-track-stretcher.ts';
