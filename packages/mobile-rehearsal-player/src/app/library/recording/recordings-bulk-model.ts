@@ -18,7 +18,7 @@ import { resolveRecordingPlayback } from './recording-playback-item';
  * What the Library `Recordings` view's bulk bar offers for a selection
  * (rehearsal-recording design Decision 15): `Play next` and `Add to queue`
  * for the recordings that can still play, the one offline action for their
- * tracks, and `Delete`. `Add to playlist` opens the playlist sheet (task 8.4) and `Export` with the export dialog (task 10.3).
+ * tracks, and `Delete`. `Add to playlist` opens the playlist sheet (task 8.4) and `Export` the export dialog (task 10.3).
  */
 
 export const NO_QUEUE_REASON = 'Start playing something to use the queue.';
@@ -30,6 +30,7 @@ export type RecordingsBulkActionId =
   | 'add-to-queue'
   | 'add-to-playlist'
   | 'offline'
+  | 'export'
   | 'delete';
 
 export type RecordingsBulkAction = {
@@ -99,6 +100,7 @@ export const getRecordingsBulkModel = (
         isDisabled: offline.disabled,
         disabledReason: offline.note,
       },
+      { id: 'export', label: 'Export' },
       { id: 'delete', label: 'Delete', tone: 'destructive' },
     ],
     playable,

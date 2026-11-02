@@ -1,8 +1,10 @@
+import { RecordingExportHost } from './recording-export-host';
 import { RecordingOverlayHost } from '../overlay/recording-overlay-host';
 import { RecordingPreviewHost } from '../overlay/recording-preview-host';
 import { RecordingsHost } from './recordings-host';
 
 type RecordingHostsProps = {
+  authorization: Parameters<typeof RecordingExportHost>[0]['authorization'];
   library: Parameters<typeof RecordingsHost>[0]['library'];
   playlists: Parameters<typeof RecordingsHost>[0]['playlists'];
   playback: Parameters<typeof RecordingsHost>[0]['playback'] &
@@ -12,6 +14,7 @@ type RecordingHostsProps = {
 
 /** Everything the router hosts for recordings: the panel, the overlay sound, and balance previews. */
 export const RecordingHosts = ({
+  authorization,
   library,
   playback,
   playlists,
@@ -22,6 +25,7 @@ export const RecordingHosts = ({
       playback={playback}
       playlists={playlists}
     />
+    <RecordingExportHost authorization={authorization} library={library} />
     <RecordingOverlayHost playback={playback} />
     <RecordingPreviewHost library={library} playback={playback} />
   </>

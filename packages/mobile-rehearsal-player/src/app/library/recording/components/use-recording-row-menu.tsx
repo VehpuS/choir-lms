@@ -14,6 +14,7 @@ import { runRecordingOfflineAction } from '../recording-offline';
 import { resolveRecordingName } from '../recording-save-sheet-model';
 import { getRecordingsStore } from '../recordings-store-instance';
 import type { RecordingRow } from '../recordings-panel-model';
+import { requestRecordingExport } from '../export/recording-export-request';
 import { RecordingPlaylistPicker } from './recording-playlist-picker';
 import {
   DeleteRecordingDialog,
@@ -157,6 +158,14 @@ export const useRecordingRowMenu = ({
         if (runner) {
           void runRecordingOfflineAction(row.offline, runner);
         }
+      },
+    },
+    {
+      id: 'export',
+      label: 'Export…',
+      onPress: () => {
+        close();
+        requestRecordingExport({ recordingIds: [row.id] });
       },
     },
     {

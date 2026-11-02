@@ -21,6 +21,7 @@ import { SelectEntryButton } from '../selection/select-entry-button';
 import { SelectionBar } from '../selection/selection-bar';
 import { usePinnedBulkActionBar } from '../selection/use-pinned-bulk-action-bar';
 import { useSelection } from '../selection/use-selection';
+import { requestRecordingExport } from './export/recording-export-request';
 import { RecordingPlaylistPicker } from './components/recording-playlist-picker';
 import { DeleteRecordingsDialog } from './components/recording-row-dialogs';
 import { runRecordingOfflineAction } from './recording-offline';
@@ -102,6 +103,15 @@ export const useRecordingsSelection = ({
     (id: RecordingsBulkActionId) => {
       if (id === 'add-to-playlist') {
         setIsPlaylistVisible(true);
+
+        return;
+      }
+
+      if (id === 'export') {
+        requestRecordingExport({
+          recordingIds: selected.map((recording) => recording.id),
+        });
+        cancel();
 
         return;
       }

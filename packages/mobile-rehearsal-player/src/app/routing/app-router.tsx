@@ -310,6 +310,7 @@ export const AppRouter = () => {
           playback={playback}
         />
         <RecordingHosts
+          authorization={authorization}
           library={libraryController.savedLibrary}
           playback={playback}
           playlists={libraryController.playlists}

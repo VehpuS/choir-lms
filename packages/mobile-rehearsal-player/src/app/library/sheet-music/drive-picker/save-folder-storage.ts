@@ -40,9 +40,10 @@ const parseSaveFolder = (value: unknown): DriveSaveFolder | undefined => {
 /** The folder last saved to, or undefined when none is stored or it is unreadable. */
 export const restoreSaveFolder = async (
   storage: SaveFolderStorage = AsyncStorage,
+  key: string = SAVE_FOLDER_KEY,
 ): Promise<DriveSaveFolder | undefined> => {
   try {
-    const stored = await storage.getItem(SAVE_FOLDER_KEY);
+    const stored = await storage.getItem(key);
 
     return stored === null ? undefined : parseSaveFolder(JSON.parse(stored));
   } catch {
@@ -53,9 +54,10 @@ export const restoreSaveFolder = async (
 export const rememberSaveFolder = async (
   folder: DriveSaveFolder,
   storage: SaveFolderStorage = AsyncStorage,
+  key: string = SAVE_FOLDER_KEY,
 ): Promise<void> => {
   try {
-    await storage.setItem(SAVE_FOLDER_KEY, JSON.stringify(folder));
+    await storage.setItem(key, JSON.stringify(folder));
   } catch {
     // The choice still applies for this session.
   }

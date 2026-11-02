@@ -138,7 +138,10 @@ export const describeMixAvailability = (
 ): MixAvailability => {
   if (resolution.status === 'unavailable') {
     return {
-      message: `The mix is unavailable: ${resolution.message} The recording alone can still be exported.`,
+      message: [
+        `The mix is unavailable: ${resolution.message}`,
+        'The recording alone can still be exported.',
+      ].join(' '),
       state: 'unavailable',
     };
   }

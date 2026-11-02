@@ -39,6 +39,7 @@ import {
 } from '../overlay/recording-mix-store';
 import { getOutputDeviceKey } from '../overlay/output-device-key';
 import { getDeviceLatency } from '../overlay/recording-device-latency';
+import { requestRecordingExport } from '../export/recording-export-request';
 import { requestRecordingPreview } from '../overlay/recording-preview-request';
 import { RecordingSaveSheet } from './recording-save-sheet';
 import { RECORDING_STRIP_HEIGHT, RecordingStrip } from './recording-strip';
@@ -213,6 +214,10 @@ const RecordingDockContent = ({
           name={saved.name}
           onDelete={deleteSaved}
           onDone={session.dismiss}
+          onExport={() => {
+            requestRecordingExport({ recordingIds: [saved.id] });
+            session.dismiss();
+          }}
           onRename={renameSaved}
           onPreview={(balance) =>
             requestRecordingPreview({
