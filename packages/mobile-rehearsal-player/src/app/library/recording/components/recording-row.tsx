@@ -6,6 +6,10 @@ import {
   interactionGuardProps,
 } from '../../../components/interaction-guard';
 import { appTheme } from '../../../utils/theme';
+import {
+  resolveExplorerRowSelection,
+  type ExplorerRowSelection,
+} from '../../components/explorer/model';
 import type { RecordingRow as RecordingRowModel } from '../recordings-panel-model';
 
 const { colors, radius, space, type } = appTheme;
@@ -16,6 +20,8 @@ type RecordingRowProps = {
   trackName?: string;
   /** `On Drive`, `Upload pending`, `Upload failed`; absent when never exported. */
   driveLabel?: string;
+  /** Selection wiring from the Library view; in selection mode a tap toggles. */
+  selection?: ExplorerRowSelection;
   onOpenMenu: (id: string) => void;
   /** A tap on the row plays the recording; the options button opens its menu. */
   onPlay: (id: string) => void;
@@ -27,61 +33,81 @@ export const RecordingRow = ({
   onOpenMenu,
   onPlay,
   row,
+  selection,
   trackName,
-}: RecordingRowProps) => (
-  <View style={styles.row}>
-    <Pressable
-      accessibilityHint="Plays this recording"
-      accessibilityLabel={`${row.name}. ${row.detail}`}
-      accessibilityRole="button"
-      {...interactionGuardProps}
-      onPress={() => onPlay(row.id)}
-      style={({ pressed }) => [
-        styles.text,
-        buttonInteractionGuardStyle,
-        pressed ? styles.pressed : null,
-      ]}
-    >
-      <View style={styles.titleLine}>
-        <Text numberOfLines={1} style={styles.name}>
-          {row.name}
-        </Text>
-        {row.tags.map((tag) => (
-          <Text
-            key={`${tag.kind}-${tag.label}`}
-            style={[
-              styles.tag,
-              tag.kind === 'changed' || tag.kind === 'connection'
-                ? styles.tagWarning
-                : null,
-            ]}
-          >
-            {tag.label}
+}: RecordingRowProps) => {
+  const resolved = resolveExplorerRowSelection(selection, () => onPlay(row.id));
+
+  return (
+    <View style={styles.row}>
+      {resolved.glyph ? (
+        <AppIcon
+          color={resolved.glyph.color}
+          name={resolved.glyph.name}
+          size={22}
+        />
+      ) : null}
+      <Pressable
+        accessibilityHint={
+          resolved.onLongPress || !selection?.isActive
+            ? 'Plays this recording'
+            : 'Toggles selection'
+        }
+        accessibilityLabel={`${row.name}. ${row.detail}`}
+        accessibilityRole={resolved.role}
+        aria-checked={resolved.ariaChecked}
+        {...interactionGuardProps}
+        onLongPress={resolved.onLongPress}
+        onPress={resolved.onPress}
+        style={({ pressed }) => [
+          styles.text,
+          buttonInteractionGuardStyle,
+          pressed ? styles.pressed : null,
+        ]}
+      >
+        <View style={styles.titleLine}>
+          <Text numberOfLines={1} style={styles.name}>
+            {row.name}
           </Text>
-        ))}
-      </View>
-      <Text numberOfLines={1} style={styles.meta}>
-        {trackName ? `${trackName} · ${row.detail}` : row.detail}
-      </Text>
-      <Text numberOfLines={1} style={styles.meta}>
-        {driveLabel ? `${row.meta} · ${driveLabel}` : row.meta}
-      </Text>
-    </Pressable>
-    <Pressable
-      accessibilityLabel={`Options for ${row.name}`}
-      accessibilityRole="button"
-      {...interactionGuardProps}
-      onPress={() => onOpenMenu(row.id)}
-      style={({ pressed }) => [
-        styles.options,
-        buttonInteractionGuardStyle,
-        pressed ? styles.pressed : null,
-      ]}
-    >
-      <AppIcon color={colors.textMuted} name="dots-vertical" size={20} />
-    </Pressable>
-  </View>
-);
+          {row.tags.map((tag) => (
+            <Text
+              key={`${tag.kind}-${tag.label}`}
+              style={[
+                styles.tag,
+                tag.kind === 'changed' || tag.kind === 'connection'
+                  ? styles.tagWarning
+                  : null,
+              ]}
+            >
+              {tag.label}
+            </Text>
+          ))}
+        </View>
+        <Text numberOfLines={1} style={styles.meta}>
+          {trackName ? `${trackName} · ${row.detail}` : row.detail}
+        </Text>
+        <Text numberOfLines={1} style={styles.meta}>
+          {driveLabel ? `${row.meta} · ${driveLabel}` : row.meta}
+        </Text>
+      </Pressable>
+      {resolved.hidesTrailingControls ? null : (
+        <Pressable
+          accessibilityLabel={`Options for ${row.name}`}
+          accessibilityRole="button"
+          {...interactionGuardProps}
+          onPress={() => onOpenMenu(row.id)}
+          style={({ pressed }) => [
+            styles.options,
+            buttonInteractionGuardStyle,
+            pressed ? styles.pressed : null,
+          ]}
+        >
+          <AppIcon color={colors.textMuted} name="dots-vertical" size={20} />
+        </Pressable>
+      )}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   meta: { ...type.rowMeta, color: colors.textMuted },

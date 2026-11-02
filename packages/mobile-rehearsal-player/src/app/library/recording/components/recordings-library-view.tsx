@@ -24,6 +24,7 @@ import { useRecordingsList } from '../use-recordings-list';
 import { RecordingRow } from './recording-row';
 import { RecordingsLibraryFilterSheet } from './recordings-library-filter-sheet';
 import { useRecordingRowMenu } from './use-recording-row-menu';
+import { useRecordingsSelection } from '../use-recordings-selection';
 
 const { colors, radius, space, type } = appTheme;
 
@@ -58,6 +59,7 @@ export const RecordingsLibraryView = ({
     () => sources.filter((source) => !source.adjustment),
     [sources],
   );
+  const library = useMemo(() => ({ sources, loops }), [loops, sources]);
   const model = useMemo(
     () =>
       getRecordingsLibraryModel({
@@ -96,6 +98,23 @@ export const RecordingsLibraryView = ({
     rows: model.rows,
   });
 
+  const shownRecordings = useMemo(
+    () =>
+      model.rows.flatMap(({ id }) => {
+        const recording = recordings?.find((candidate) => candidate.id === id);
+
+        return recording ? [recording] : [];
+      }),
+    [model.rows, recordings],
+  );
+  const selection = useRecordingsSelection({
+    library,
+    recordings: shownRecordings,
+    refresh,
+    stateOf: (driveFileId) => offlineStateStore.getState(driveFileId),
+    tracks,
+  });
+
   return (
     <View style={styles.view}>
       <TextInput
@@ -123,6 +142,7 @@ export const RecordingsLibraryView = ({
           onPress={() => setIsFilterSheetVisible(true)}
           variant={model.activeFilterCount > 0 ? 'selected' : 'action'}
         />
+        {selection.entryButton}
         {RECORDINGS_SORT_OPTIONS.map((option) => (
           <InteractionChip
             accessibilityLabel={`Sort by ${option.label}`}
@@ -134,6 +154,7 @@ export const RecordingsLibraryView = ({
           />
         ))}
       </ScrollView>
+      {selection.selectionBar}
       {playIssue ? <Text style={styles.issue}>{playIssue}</Text> : null}
       {recordings && model.emptyMessage ? (
         <Text style={styles.empty}>{model.emptyMessage}</Text>
@@ -145,10 +166,14 @@ export const RecordingsLibraryView = ({
           onOpenMenu={openMenu}
           onPlay={play}
           row={row}
+          selection={
+            selection.isActive ? selection.getRowSelection(row.id) : undefined
+          }
           trackName={row.trackName}
         />
       ))}
       {dialogs}
+      {selection.dialogs}
       {isFilterSheetVisible ? (
         <RecordingsLibraryFilterSheet
           filters={filters}

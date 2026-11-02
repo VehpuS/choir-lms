@@ -23,6 +23,8 @@ const SELECTION_SURFACES = [
   'library/selection/use-library-entity-selection.tsx',
   'library/components/saved-rehearsal-library-section/use-library-files-selection.tsx',
   'library/selection/use-playlist-detail-selection.tsx',
+  // The Library Recordings view (rehearsal-recording task 8.3).
+  'library/recording/use-recordings-selection.tsx',
   // The offline files view is always selectable, so it renders no entry icon
   // (task 1.17) and is not listed.
 ] as const;

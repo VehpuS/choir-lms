@@ -94,3 +94,25 @@ export const DeleteRecordingDialog = ({
     </View>
   </CenteredDialogCard>
 );
+
+type DeleteRecordingsDialogProps = {
+  title: string;
+  onCancel: () => void;
+  onDelete: () => void;
+};
+
+/** The confirmation for deleting a selection of recordings. */
+export const DeleteRecordingsDialog = ({
+  title,
+  onCancel,
+  onDelete,
+}: DeleteRecordingsDialogProps) => (
+  <CenteredDialogCard isVisible onRequestClose={onCancel}>
+    <Text style={styles.groupTitle}>{title}</Text>
+    <Text style={styles.sectionBody}>{DELETE_RECORDING_NOTE}</Text>
+    <View style={styles.actionRow}>
+      <DialogButton label="Cancel" onPress={onCancel} />
+      <DialogButton label="Delete" onPress={onDelete} primary />
+    </View>
+  </CenteredDialogCard>
+);
