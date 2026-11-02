@@ -149,6 +149,15 @@ const RecordingDockContent = ({
     [saved],
   );
 
+  const setSavedBalance = useCallback(
+    (balance: number) => {
+      if (saved && balance !== saved.balance) {
+        void getRecordingsStore().update(saved.id, { balance });
+      }
+    },
+    [saved],
+  );
+
   const deleteSaved = useCallback(() => {
     if (saved) {
       void getRecordingsStore().delete(saved.id);
@@ -185,10 +194,12 @@ const RecordingDockContent = ({
             autoExport: AUTO_EXPORT_OFF,
             stop: state.stopMessage,
           })}
+          balance={saved.balance}
           name={saved.name}
           onDelete={deleteSaved}
           onDone={session.dismiss}
           onRename={renameSaved}
+          onSetBalance={setSavedBalance}
           onTurnOnAutoExport={openRecordingsSettings}
         />
       ) : null}

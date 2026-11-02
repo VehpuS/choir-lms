@@ -19,6 +19,9 @@ export const MAX_RECORDING_NAME_LENGTH = 80;
 export const SAVE_SHEET_COPY = {
   title: 'Recording saved',
   nameLabel: 'Name',
+  balanceLabel: 'Starting balance',
+  balanceNote:
+    'Where it starts when played, queued, or exported. You can still change it while listening.',
   storedNote:
     'Saved on this device. Recordings are never removed automatically.',
   autoExportOff: 'Auto-export is off',

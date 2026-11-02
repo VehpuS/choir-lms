@@ -3,15 +3,23 @@ import { useSyncExternalStore } from 'react';
 
 /**
  * The balance of the recording that is playing, shared by the control that
- * sets it and the host that applies it. It starts from the balance saved with
- * the recording and is written back when the user lets go of the slider.
+ * moves it and the host that applies it. It starts from the balance saved with
+ * the recording and changes only for this listening session; the saved value
+ * changes only when the user keeps it (`markRecordingMixSaved`).
  */
 export type RecordingMixState = {
   recordingId: string | null;
+  /** What is sounding now. */
   balance: number;
+  /** What is saved with the recording. */
+  savedBalance: number;
 };
 
-const NONE: RecordingMixState = { recordingId: null, balance: 50 };
+const NONE: RecordingMixState = {
+  recordingId: null,
+  balance: 50,
+  savedBalance: 50,
+};
 const listeners = new Set<() => void>();
 let state: RecordingMixState = NONE;
 
@@ -22,8 +30,20 @@ const publish = (next: RecordingMixState) => {
 
 export const getRecordingMixState = () => state;
 
-export const startRecordingMix = (recordingId: string, balance: number) => {
-  publish({ recordingId, balance: clampRecordingBalance(balance) });
+export const startRecordingMix = (
+  recordingId: string,
+  savedBalance: number,
+) => {
+  const balance = clampRecordingBalance(savedBalance);
+
+  publish({ recordingId, balance, savedBalance: balance });
+};
+
+/** The current position is now the recording's saved balance. */
+export const markRecordingMixSaved = () => {
+  if (state.recordingId !== null) {
+    publish({ ...state, savedBalance: state.balance });
+  }
 };
 
 export const setRecordingMixBalance = (balance: number) => {

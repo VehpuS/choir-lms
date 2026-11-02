@@ -126,12 +126,27 @@ The system SHALL fetch the original track audio for the overlay from the normal 
 
 ### Requirement: A balance control sets the mix of track and recording
 
-The system SHALL provide a balance control between the track and the recording, remembered per recording, that includes the extremes of track only and recording only.
+The system SHALL provide a balance control between the track and the recording that includes the extremes of track only and recording only. A recording SHALL start at the balance saved with it, moving the control SHALL change only the current listening session, and the user SHALL be able to keep the current position as the recording's saved balance.
 
 #### Scenario: Recording only
 
 - **WHEN** the balance is set fully to the recording
 - **THEN** the track is silent and the recording sounds
+
+#### Scenario: Starting balance
+
+- **WHEN** the user plays a recording whose saved balance is 70
+- **THEN** the control starts at 70 and the track is turned down accordingly
+
+#### Scenario: Live adjustment is not saved
+
+- **WHEN** the user moves the balance while listening and plays the recording again later
+- **THEN** it starts at the saved balance, not the moved one
+
+#### Scenario: Save as default
+
+- **WHEN** the user moves the balance and chooses `Save as default`
+- **THEN** that position becomes the recording's saved balance for later playback, queues, playlists, and the export default
 
 #### Scenario: Centre
 

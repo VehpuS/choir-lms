@@ -52,3 +52,13 @@ export const describeBalance = (balance: number): string => {
 
   return value === CENTRE ? 'Even' : `${value} out of 100 toward the recording`;
 };
+
+export const SAVE_BALANCE_LABEL = 'Save as default';
+
+/** Whether the live balance differs from the saved one, so keeping it means something. */
+export const canSaveBalanceAsDefault = (
+  balance: number,
+  savedBalance: number,
+): boolean => {
+  return clampRecordingBalance(balance) !== clampRecordingBalance(savedBalance);
+};

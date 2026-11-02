@@ -64,7 +64,7 @@ The track keeps playing through the existing player. The recording plays through
 - **Seek and loop wrap:** stop and reschedule at the newly looked-up position (a source node cannot seek).
 - **Drift:** compare expected and actual recording position every 250 ms and reschedule when the error exceeds a tolerance (initially 20 ms), with a short crossfade to avoid clicks. This always applies, because the track's speed cannot differ from the recording's while one is selected (Decision 6).
 
-The balance control sets the two gains: the recording's gain node, and the track's volume on the media element (or the pitch graph's gain when active). Alternative: decode the track and play both from buffers on one context, replacing the transport. Rejected: it changes the whole playback stack for one feature, and long tracks would need decoding in memory. This transport-through-the-element design also suits `composite-tracks`, whose stems could be several elements or buffers behind the same controller; the controller depends on a small `Transport` and `Voice` interface, not on Web Audio.
+The balance control (live for the session; the recording starts at its saved balance, Decision 9) sets the two gains: the recording's gain node, and the track's volume on the media element (or the pitch graph's gain when active). Alternative: decode the track and play both from buffers on one context, replacing the transport. Rejected: it changes the whole playback stack for one feature, and long tracks would need decoding in memory. This transport-through-the-element design also suits `composite-tracks`, whose stems could be several elements or buffers behind the same controller; the controller depends on a small `Transport` and `Voice` interface, not on Web Audio.
 
 ### Decision 6: Shaping touches only the track; the recording is never shaped
 
@@ -91,7 +91,7 @@ A recording is a record owned by the track or loop it was made on (Decision 10),
 - `source`: the Drive file id, file name, content version (`modifiedTime`, the value the audio cache already keys on), and duration of the track audio it was recorded against.
 - `lineage`: the owner chain at recording time: the parent track (file id, name), the saved adjusted copy if any (id, name, and its adjustment values: speed, pitch), and the loop if any (id, name, start and end). The adjustment values are stored even when the adjusted copy is later deleted, and for session adjustments that were never saved the values are in `shaping`.
 - `shaping`: `{ rate, pitchSemitones }`, read once at the start and constant for the recording.
-- `balance`: the balance last set for the recording (0 to 100, default 50), the default for exports and playlist playback.
+- `balance`: the saved balance of the recording (0 to 100, default 50): where it starts when played, and the default for exports and for playlist and queue playback. It changes only on purpose (user decision 2026-11-02): from a slider in the save sheet, from `Save as default` beside the balance control while it plays, or by keeping the value chosen in the export dialog. Moving the balance control while listening is a live adjustment for that session only.
 - `engineVersion`: a version tag for the shaping and mixing code that produced and renders the recording, so a render can say when its algorithms differ from the ones in use.
 - `markers`: the markers inside the recording's span (name and position) as they were.
 - `punch`: the armed in and out points and the pre-roll, when the recording was started from a punch range.

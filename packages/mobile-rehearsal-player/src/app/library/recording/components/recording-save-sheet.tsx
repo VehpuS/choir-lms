@@ -3,6 +3,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { appTheme } from '../../../utils/theme';
+import { RecordingBalanceSlider } from '../overlay/recording-balance-slider';
 import { BottomSheetSurface } from '../../components/bottom-sheet-surface';
 import {
   MenuGroup,
@@ -22,6 +23,10 @@ type RecordingSaveSheetProps = {
   model: SaveSheetModel;
   /** The saved name; the field starts on it. */
   name: string;
+  /** The saved balance the slider starts at (0 to 100). */
+  balance: number;
+  /** Called with the balance when the sheet is done or leaves for export. */
+  onSetBalance: (balance: number) => void;
   /** Called with whatever is typed when the sheet is done or leaves the name field. */
   onRename: (typed: string) => void;
   onDone: () => void;
@@ -42,19 +47,23 @@ const Detail = ({ children }: { children: string }) => (
  */
 export const RecordingSaveSheet = ({
   model,
+  balance: savedBalance,
   name,
   onDelete,
   onDone,
   onExport,
   onRename,
+  onSetBalance,
   onTurnOnAutoExport,
 }: RecordingSaveSheetProps) => {
   const [typed, setTyped] = useState(name);
+  const [balance, setBalance] = useState(savedBalance);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const { autoExport } = model;
 
   const finish = () => {
     onRename(typed);
+    onSetBalance(balance);
     onDone();
   };
 
@@ -67,6 +76,7 @@ export const RecordingSaveSheet = ({
               label={SAVE_SHEET_COPY.exportLabel}
               onPress={() => {
                 onRename(typed);
+                onSetBalance(balance);
                 onExport();
               }}
             />
@@ -116,6 +126,11 @@ export const RecordingSaveSheet = ({
             style={styles.input}
             value={typed}
           />
+        </View>
+        <View style={styles.field}>
+          <Text style={styles.fieldLabel}>{SAVE_SHEET_COPY.balanceLabel}</Text>
+          <RecordingBalanceSlider onChange={setBalance} value={balance} />
+          <Detail>{SAVE_SHEET_COPY.balanceNote}</Detail>
         </View>
         <Detail>{model.storedNote}</Detail>
         <View style={styles.autoExport}>
