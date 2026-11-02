@@ -152,7 +152,7 @@ export const formatRecordedAt = (createdAt: string, now: Date): string => {
 };
 
 /** The track changed on Drive since the recording was made against it. */
-const isOriginalChanged = (
+export const isOriginalChanged = (
   recording: Recording,
   sources: readonly DriveAudioSource[],
 ): boolean => {
