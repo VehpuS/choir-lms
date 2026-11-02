@@ -6,3 +6,5 @@ export * from './lib/transport-tracker.ts';
 export * from './lib/click-calibration.ts';
 export * from './lib/engine-version.ts';
 export * from './lib/wav.ts';
+export * from './lib/wav-window-reader.ts';
+export * from './lib/windowed-voice.ts';

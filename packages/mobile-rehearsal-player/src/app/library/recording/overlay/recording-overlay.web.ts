@@ -1,0 +1,114 @@
+import type { Recording } from '@org/audio-library-models';
+import {
+  createSyncController,
+  createWavWindowReader,
+  createWindowedVoice,
+  type VoiceContext,
+  type VoiceGain,
+  type VoiceNode,
+} from '@org/audio-mixing';
+
+import { getRecordingsStore } from '../recordings-store-instance';
+import { getRecordingTransport } from '../recording-transport';
+import {
+  MISSING_RECORDING_AUDIO_MESSAGE,
+  setRecordingOverlayStatus,
+} from './recording-overlay-status';
+import type { RecordingOverlayHandle } from './recording-overlay';
+
+export type { RecordingOverlayHandle } from './recording-overlay';
+
+/** The slice of the browser's `AudioContext` the overlay uses (this build has no DOM types). */
+type OverlayAudioContext = Omit<VoiceContext, 'createGain'> & {
+  destination: VoiceNode;
+  resume: () => Promise<void>;
+  createGain: () => VoiceGain & { disconnect: () => void };
+};
+
+let sharedContext: OverlayAudioContext | null = null;
+
+/** One output context for every overlay, created on first use after a user action. */
+const getOverlayContext = (): OverlayAudioContext | null => {
+  const Ctor = (globalThis as { AudioContext?: new () => OverlayAudioContext })
+    .AudioContext;
+
+  if (!Ctor) {
+    return null;
+  }
+
+  sharedContext = sharedContext ?? new Ctor();
+
+  return sharedContext;
+};
+
+const reportMissing = () =>
+  setRecordingOverlayStatus({
+    kind: 'missing-audio',
+    message: MISSING_RECORDING_AUDIO_MESSAGE,
+  });
+
+/**
+ * Plays the recording over the playing track: the controller watches the
+ * track's media element and keeps a windowed voice in step with it. Returns
+ * `null` when there is nothing to attach to; says so when the recording's
+ * audio cannot be read, and then only the track plays.
+ */
+export const startRecordingOverlay = async (
+  recording: Recording,
+): Promise<RecordingOverlayHandle | null> => {
+  const transport = getRecordingTransport();
+  const context = getOverlayContext();
+
+  if (!transport || !context) {
+    return null;
+  }
+
+  try {
+    const blob = await getRecordingsStore().getWavBlob(recording.id);
+
+    if (!blob) {
+      reportMissing();
+
+      return null;
+    }
+
+    const reader = await createWavWindowReader(blob);
+
+    // A recording that says it has audio but has none stored is missing it.
+    if (reader.sampleCount === 0) {
+      reportMissing();
+
+      return null;
+    }
+
+    // The user pressed play, so the context may resume; a suspended one is silent.
+    await context.resume().catch(() => undefined);
+
+    const output = context.createGain();
+
+    output.connect(context.destination);
+
+    const voice = createWindowedVoice({
+      context,
+      output,
+      reader,
+      onUnavailable: reportMissing,
+    });
+    const controller = createSyncController({ transport, voice, recording });
+
+    setRecordingOverlayStatus({ kind: 'sounding' });
+
+    return {
+      dispose: () => {
+        controller.dispose();
+        voice.dispose();
+        output.disconnect();
+        setRecordingOverlayStatus({ kind: 'idle' });
+      },
+    };
+  } catch {
+    reportMissing();
+
+    return null;
+  }
+};

@@ -1,3 +1,4 @@
+import { RecordingOverlayNotice } from '../../../library/recording/overlay/recording-overlay-notice';
 import type {
   PlayableItem,
   RehearsalQueueMode,
@@ -214,6 +215,9 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
           }
           summary={summary}
         />
+        {props.activePlayableItem.recordingId ? (
+          <RecordingOverlayNotice />
+        ) : null}
 
         <NowPlayingTimeline
           activePlayableItem={props.activePlayableItem}
