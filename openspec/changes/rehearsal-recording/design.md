@@ -205,6 +205,18 @@ The mix export and the overlay do not hold a long recording in memory: the mix i
 
 The design mock (`design-source/recording-mock.html`) was reviewed and approved as is on 2026-11-01: the Recording tool row, the strip, `More actions → Recordings`, the locked context, the punch-range sheet, the Library Recordings view, playlists and queue, Settings and offline files, and the export dialog. The review added the low-space states (ready under 30 minutes left, recording under five, refused, `Storage is full`) and corrected the first-run note to say recordings are never removed automatically.
 
+### Decision 21: A recording has its own level, with Normalize and a limiter
+
+Balance only favours one side and never raises either above its own level, and a microphone recorded with echo cancellation, noise suppression, and auto gain off (Decision 1) is often far quieter than a mastered track. So a recording has a **level** in decibels, separate from balance (user decision 2026-11-02): `levelDb`, from -12 to +18, default 0 (as recorded), saved with the recording like the saved balance and following the same rules (the live control changes the session, `Save as default` and the save sheet keep it, and a `Preview` is offered wherever it is set without playback).
+
+- **Applied:** the recording's output gain is balance times playback volume times the level's linear gain. The balance mapping stays as it is.
+- **Normalize:** one tap scans the stored recording a window at a time for its peak (the reader from Decision 5, no decode) and sets the level that puts the peak at -1 dBFS, clamped to the range. It is a suggestion the user can move afterwards.
+- **Limiter:** the sum of a boosted recording and a full-level track can exceed full scale, and so can a plain centre balance today. A limiter (a compressor with a high ratio, fast attack, and a ceiling just under full scale) sits on the overlay's output, and the offline mix render applies the same peak limiting before it converts to 16-bit, so playback and export agree and nothing wraps or clips hard.
+- **Export:** the mix applies the level and the limiter. `Export recording only` stays the untouched capture; the export dialog says so, and may offer to apply the level.
+- **Track level is out of scope here.** Boosting or normalizing whole tracks changes the playback engine (the media element's volume cannot exceed 1), has no native equivalent yet, and raises who owns the level (track, adjusted copy, or loop). It is a separate OpenSpec change (task 14.8).
+
+Alternatives: fold the boost into the balance slider's range; rejected because balance and loudness are different questions, and one control would hide which is wrong. Normalize on save automatically; rejected because it rewrites what the user chose without telling them, where a suggestion does not.
+
 ## Risks / Trade-offs
 
 - [The device store fills up or the browser clears site data] → Persistent storage requested, the used total shown, failed writes reported without losing what was captured, export and auto-export as the way to keep a copy elsewhere.

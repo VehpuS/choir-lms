@@ -209,3 +209,37 @@ The system SHALL show a message and play the track alone when a recording cannot
 
 - **WHEN** a recording's audio cannot be read from storage
 - **THEN** the track plays alone and a message says the recording is unavailable
+
+### Requirement: A recording has its own level, with Normalize and a limiter
+
+The system SHALL let the user set a level for a recording from 12 dB below to 18 dB above its recorded level, separate from the balance, SHALL start the recording at its saved level, SHALL change only the current session when the level is moved while listening, and SHALL let the user keep the position as the saved level. It SHALL offer a Normalize action that sets the level at which the recording's peak reaches -1 dBFS. It SHALL limit the combined output so that a boosted recording over a full-level track does not clip, in playback and in an exported mix.
+
+#### Scenario: A quiet recording is boosted
+
+- **WHEN** the user raises a recording's level by 12 dB
+- **THEN** the recording sounds four times as strong relative to the track at the same balance
+
+#### Scenario: Normalize
+
+- **WHEN** the user chooses Normalize on a recording whose peak is -13 dBFS
+- **THEN** the level becomes +12 dB and the user can still move it
+
+#### Scenario: Normalize cannot exceed the range
+
+- **WHEN** a recording's peak is lower than the boost range can lift to -1 dBFS
+- **THEN** the level stops at the top of the range and says so
+
+#### Scenario: The saved level is the starting level
+
+- **WHEN** the user plays a recording whose saved level is +6 dB
+- **THEN** it starts at +6 dB, and moving the level while listening does not change the saved value until the user keeps it
+
+#### Scenario: No clipping
+
+- **WHEN** a boosted recording plays over a loud track at the centre balance
+- **THEN** the combined output is limited instead of clipping
+
+#### Scenario: Previewing a level set outside playback
+
+- **WHEN** the user is setting the level in the save sheet or the export dialog and chooses Preview
+- **THEN** the recording plays over its track at the balance and level shown, and they follow the controls while it plays
