@@ -41,7 +41,8 @@ const applyTrackVolume = (trackVolume: number) => {
 export const RecordingOverlayHost = ({
   playback,
 }: RecordingOverlayHostProps) => {
-  const recordingId = playback.activePlayableItem?.recordingId;
+  const item = playback.activePlayableItem;
+  const recordingId = item?.recordingId;
   const isLoaded =
     playback.playbackState !== undefined &&
     playback.playbackState !== 'loading' &&
@@ -71,7 +72,14 @@ export const RecordingOverlayHost = ({
           takePendingPreviewBalance(recording.id),
         );
 
-        return startRecordingOverlay(recording);
+        const { range } = item ?? {};
+
+        return startRecordingOverlay(recording, {
+          // Only a recording of a loop, playing in that loop, repeats in passes.
+          ...(recording.lineage.loop && range && range.endMs !== null
+            ? { loopRange: { startMs: range.startMs, endMs: range.endMs } }
+            : {}),
+        });
       })
       .then((handle) => {
         if (isDisposed) {

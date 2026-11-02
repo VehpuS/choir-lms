@@ -1,5 +1,6 @@
 import type { Recording } from '@org/audio-library-models';
 import {
+  createLoopAwareTransport,
   createSyncController,
   createWavWindowReader,
   createWindowedVoice,
@@ -14,9 +15,15 @@ import {
   MISSING_RECORDING_AUDIO_MESSAGE,
   setRecordingOverlayStatus,
 } from './recording-overlay-status';
-import type { RecordingOverlayHandle } from './recording-overlay';
+import type {
+  RecordingOverlayHandle,
+  RecordingOverlayOptions,
+} from './recording-overlay';
 
-export type { RecordingOverlayHandle } from './recording-overlay';
+export type {
+  RecordingOverlayHandle,
+  RecordingOverlayOptions,
+} from './recording-overlay';
 
 /** The slice of the browser's `AudioContext` the overlay uses (this build has no DOM types). */
 type OverlayAudioContext = Omit<VoiceContext, 'createGain'> & {
@@ -55,6 +62,7 @@ const reportMissing = () =>
  */
 export const startRecordingOverlay = async (
   recording: Recording,
+  options: RecordingOverlayOptions = {},
 ): Promise<RecordingOverlayHandle | null> => {
   const transport = getRecordingTransport();
   const context = getOverlayContext();
@@ -94,7 +102,16 @@ export const startRecordingOverlay = async (
       reader,
       onUnavailable: reportMissing,
     });
-    const controller = createSyncController({ transport, voice, recording });
+    // A loop repeating arrives as a seek; counting it as a pass is what lets
+    // pass n of the recording play over pass n of the loop.
+    const loopTransport = options.loopRange
+      ? createLoopAwareTransport({ transport, range: options.loopRange })
+      : null;
+    const controller = createSyncController({
+      transport: loopTransport ?? transport,
+      voice,
+      recording,
+    });
 
     setRecordingOverlayStatus({ kind: 'sounding' });
 
@@ -104,6 +121,7 @@ export const startRecordingOverlay = async (
       },
       dispose: () => {
         controller.dispose();
+        loopTransport?.dispose();
         voice.dispose();
         output.disconnect();
         setRecordingOverlayStatus({ kind: 'idle' });

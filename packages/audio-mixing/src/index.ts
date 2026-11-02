@@ -8,3 +8,4 @@ export * from './lib/engine-version.ts';
 export * from './lib/wav.ts';
 export * from './lib/wav-window-reader.ts';
 export * from './lib/windowed-voice.ts';
+export * from './lib/loop-aware-transport.ts';
