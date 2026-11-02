@@ -82,6 +82,17 @@ export const useRecordingExport = ({
     void restoreSaveFolder(undefined, EXPORT_FOLDER_KEY).then((stored) => {
       if (isCurrent) {
         setRemembered(stored);
+
+        // Start on the folder used last, so a repeat export is one tap; nothing
+        // is written until the user confirms.
+        const last = stored?.path.at(-1);
+
+        if (last) {
+          setFolder(
+            (current) =>
+              current ?? { folderId: last.id, folderName: last.name },
+          );
+        }
       }
     });
 
