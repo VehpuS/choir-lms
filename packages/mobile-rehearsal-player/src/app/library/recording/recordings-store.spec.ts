@@ -161,6 +161,47 @@ describe('recordings store', () => {
     assert.equal(t.chunkCount('1'), 1);
   });
 
+  it('keeps both of two updates made at once, such as a rename and a recorded export', async () => {
+    const t = setup();
+    const exports = {
+      done: [
+        {
+          driveFileId: 'file-1',
+          exportedAt: '2026-11-02T10:00:00.000Z',
+          fileName: 'Song - Recording 1.wav',
+          folderId: 'folder-1',
+          folderName: 'Choir Recordings',
+          kind: 'recording' as const,
+        },
+      ],
+      failed: [],
+    };
+
+    await record(t, '1', [Int16Array.of(7, 8)]);
+    await Promise.all([
+      t.store.update('1', { name: 'Take two' }),
+      t.store.update('1', { exports }),
+      t.store.update('1', { balance: 30 }),
+    ]);
+    const stored = await t.store.get('1');
+
+    assert.equal(stored?.name, 'Take two');
+    assert.equal(stored?.balance, 30);
+    assert.deepEqual(stored?.exports, exports);
+  });
+
+  it('works a patch out from the stored recording, in turn with other updates', async () => {
+    const t = setup();
+
+    await record(t, '1', [Int16Array.of(7, 8)]);
+    await Promise.all([
+      t.store.modify('1', (stored) => ({ name: `${stored.name}!` })),
+      t.store.modify('1', (stored) => ({ name: `${stored.name}?` })),
+    ]);
+
+    assert.equal((await t.store.get('1'))?.name, 'Recording 1!?');
+  });
+
   it('removes the record and its chunks on delete, and the total drops', async () => {
     const t = setup();
 

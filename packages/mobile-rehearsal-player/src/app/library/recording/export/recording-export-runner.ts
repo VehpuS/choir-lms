@@ -50,6 +50,15 @@ export type ExportRunnerDependencies = {
   upload: typeof uploadDriveFileResumable;
   makeBlob: (parts: Uint8Array[], type: string) => Blob;
   saveToDevice: (fileName: string, blob: Blob) => Promise<void> | void;
+  /** Called once a copy reached Drive, to keep it in the recording's export record. */
+  recordUploaded?: (
+    recording: Recording,
+    entry: {
+      kind: ExportKind;
+      file: { id: string; name: string };
+      folder: { folderId: string; folderName: string };
+    },
+  ) => Promise<void> | void;
 };
 
 type Dispatch = (event: ExportRunEvent) => void;
@@ -193,6 +202,16 @@ const deliver = async (
   });
 
   if (result.status === 'uploaded') {
+    try {
+      await deps.recordUploaded?.(item.recording, {
+        file: result.file,
+        folder: plan.folder,
+        kind: plan.kind,
+      });
+    } catch {
+      // The copy is on Drive; failing to note it only means a later export may repeat it.
+    }
+
     dispatch({ recordingId, savedTo, type: 'item-done' });
   } else if (result.status === 'failed') {
     // A failure keeps its session when retrying can use it (the reducer decides).

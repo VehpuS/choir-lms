@@ -10,6 +10,7 @@ import {
   resolveRecordingOriginal,
   type OriginalAudioDependencies,
 } from '../recording-original';
+import { recordDriveExportDone } from './record-drive-export';
 import { decodeTrackAudio } from './decode-track-audio';
 import type { ExportRunnerDependencies } from './recording-export-runner';
 import { saveRecordingFile } from './save-recording-file';
@@ -67,6 +68,11 @@ export const createRecordingExportDependencies = (options: {
     decodeTrack: decodeTrackAudio,
     makeBlob: (parts, type) => new WAV_BLOB_CONSTRUCTOR(parts, { type }),
     readRecording: (id) => getRecordingsStore().getWavBlob(id),
+    recordUploaded: (recording, entry) =>
+      recordDriveExportDone(getRecordingsStore(), recording.id, {
+        ...entry,
+        now: new Date(),
+      }),
     resolveOriginal: (recording) =>
       resolveRecordingOriginal(recording, originalDependencies),
     saveToDevice: saveRecordingFile,

@@ -66,6 +66,30 @@ export type RecordingPunch = {
   preRollMs: number;
 };
 
+export type RecordingExportKind = 'recording' | 'mix';
+
+/** A copy of the recording that reached Drive. Drive copies are never deleted by the app. */
+export type RecordingExportDone = {
+  kind: RecordingExportKind;
+  driveFileId: string;
+  fileName: string;
+  folderId: string;
+  folderName: string;
+  exportedAt: string;
+};
+
+/** An export that did not complete, kept so the row can say why and offer a retry. */
+export type RecordingExportFailure = {
+  kind: RecordingExportKind;
+  reason: string;
+  failedAt: string;
+};
+
+export type RecordingExports = {
+  done: RecordingExportDone[];
+  failed: RecordingExportFailure[];
+};
+
 export type RecordingMarker = Pick<TrackMarker, 'name' | 'positionMs'>;
 
 export type Recording = {
@@ -87,6 +111,8 @@ export type Recording = {
   markers: RecordingMarker[];
   punch?: RecordingPunch;
   timeline: RecordingTimelineSegment[];
+  /** What has been copied to Drive; absent on recordings made before exports were kept. */
+  exports?: RecordingExports;
 };
 
 export type RecordingOwner =

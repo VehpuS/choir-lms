@@ -57,6 +57,10 @@ export const createRecordingsStore = (
   options: { requestPersistence?: () => Promise<unknown> } = {},
 ): RecordingsStore => {
   let persistenceRequested = false;
+  // Updates read the record and write it back, so two at once (the export
+  // queue recording a copy while the user renames) would lose one. They run in
+  // turn instead.
+  let updateChain: Promise<unknown> = Promise.resolve();
 
   const requireRecord = async (id: string) => {
     const record = await backend.getRecord(id);
@@ -126,10 +130,30 @@ export const createRecordingsStore = (
         .filter((recording) => sameOwner(recording, owner))
         .sort(byNewest),
     listIncomplete: () => listWhere('recording'),
-    update: async (id, patch) => {
-      const record = await requireRecord(id);
+    modify: (id, patchFrom) => {
+      const run = updateChain.then(async () => {
+        const record = await requireRecord(id);
 
-      await backend.putRecord({ ...record, ...patch });
+        await backend.putRecord({
+          ...record,
+          ...patchFrom(stripStorage(record)),
+        });
+      });
+
+      updateChain = run.catch(() => undefined);
+
+      return run;
+    },
+    update: (id, patch) => {
+      const run = updateChain.then(async () => {
+        const record = await requireRecord(id);
+
+        await backend.putRecord({ ...record, ...patch });
+      });
+
+      updateChain = run.catch(() => undefined);
+
+      return run;
     },
     getWavBlob: async (id) => {
       const record = await backend.getRecord(id);
@@ -169,6 +193,7 @@ export const createUnavailableRecordingsStore = (): RecordingsStore => {
     list: async () => [],
     listByOwner: async () => [],
     listIncomplete: async () => [],
+    modify: reject,
     update: reject,
     getWavBlob: async () => null,
     delete: reject,

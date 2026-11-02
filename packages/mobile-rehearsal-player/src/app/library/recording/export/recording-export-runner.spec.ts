@@ -249,6 +249,44 @@ describe('runRecordingExports', () => {
     assert.equal(second.state.items[0]?.status, 'done');
   });
 
+  it('hands each uploaded copy to recordUploaded, and never for a download', async () => {
+    const recorded: Array<{
+      id: string;
+      kind: string;
+      file: string;
+      folder: string;
+    }> = [];
+    const { deps } = setUp({
+      recordUploaded: (recording, entry) => {
+        recorded.push({
+          file: entry.file.id,
+          folder: entry.folder.folderId,
+          id: recording.id,
+          kind: entry.kind,
+        });
+      },
+    });
+
+    await run(plan({}, ['a', 'b']), deps);
+    await run(plan({ destination: 'download' }, ['c']), deps);
+
+    assert.deepEqual(recorded, [
+      { file: 'new-1', folder: 'folder-1', id: 'a', kind: 'recording' },
+      { file: 'new-1', folder: 'folder-1', id: 'b', kind: 'recording' },
+    ]);
+  });
+
+  it('still reports done when noting the copy fails', async () => {
+    const { deps } = setUp({
+      recordUploaded: () => {
+        throw new Error('store unavailable');
+      },
+    });
+    const { state } = await run(plan(), deps);
+
+    assert.equal(state.items[0]?.status, 'done');
+  });
+
   it('fails with a missing permission when there is no access token', async () => {
     const { deps, uploads } = setUp();
     const { state } = await run(plan({ accessToken: undefined }), deps);
