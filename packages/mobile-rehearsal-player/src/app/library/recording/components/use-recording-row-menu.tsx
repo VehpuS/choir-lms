@@ -1,9 +1,14 @@
-import type { Playlist, Recording } from '@org/audio-library-models';
+import type {
+  PlayableItem,
+  Playlist,
+  Recording,
+} from '@org/audio-library-models';
 import { useState, type ReactNode } from 'react';
 
 import type { BulkAcknowledgment } from '../../selection/bulk-playback-run';
 import { OptionsMenuSheet } from '../../components/options-menu-sheet';
 import type { OptionsMenuAction } from '../../components/options-menu-sheet/model';
+import { getRecordingsQueueAcknowledgment } from '../recordings-bulk-model';
 import { getOfflineBatchRunner } from '../../offline/offline-batch';
 import { runRecordingOfflineAction } from '../recording-offline';
 import { resolveRecordingName } from '../recording-save-sheet-model';
@@ -28,6 +33,17 @@ export type RecordingPlaylistServices = {
   onAdded: (acknowledgment: BulkAcknowledgment) => void;
 };
 
+/** What `Play next` and `Add to queue` need; the menu offers them only when given. */
+export type RecordingQueueServices = {
+  /** False when nothing is playing, so there is no queue to add to. */
+  canQueue: boolean;
+  /** Resolves a recording to what would be queued, or why it cannot be. */
+  resolve: (recording: Recording) => PlayableItem | null;
+  queueNext: (items: PlayableItem[]) => unknown;
+  queueUpNext: (items: PlayableItem[]) => unknown;
+  onQueued: (acknowledgment: BulkAcknowledgment) => void;
+};
+
 type UseRecordingRowMenuOptions = {
   recordings: readonly Recording[] | null;
   rows: readonly RecordingRow[];
@@ -35,6 +51,7 @@ type UseRecordingRowMenuOptions = {
   /** Plays a recording; returns a message when it cannot be played. */
   onPlay: (recording: Recording) => string | null;
   playlistServices?: RecordingPlaylistServices;
+  queueServices?: RecordingQueueServices;
 };
 
 /**
@@ -45,6 +62,7 @@ type UseRecordingRowMenuOptions = {
 export const useRecordingRowMenu = ({
   onPlay,
   playlistServices,
+  queueServices,
   recordings,
   refresh,
   rows,
@@ -63,6 +81,27 @@ export const useRecordingRowMenu = ({
     if (recording) {
       setPlayIssue(onPlay(recording));
     }
+  };
+
+  const queue = (id: string, action: 'play-next' | 'add-to-queue') => {
+    const recording = recordings?.find((candidate) => candidate.id === id);
+    const item = recording ? queueServices?.resolve(recording) : null;
+
+    close();
+
+    if (!queueServices || !item) {
+      return;
+    }
+
+    (action === 'play-next'
+      ? queueServices.queueNext
+      : queueServices.queueUpNext)([item]);
+    queueServices.onQueued(
+      getRecordingsQueueAcknowledgment(action, {
+        playable: [item],
+        leftOutCount: 0,
+      }),
+    );
   };
 
   const rename = async (typed: string) => {
@@ -89,6 +128,14 @@ export const useRecordingRowMenu = ({
 
   const menuActions = (row: RecordingRow): OptionsMenuAction[] => [
     { id: 'play', label: 'Play', onPress: () => play(row.id) },
+    ...(queueServices
+      ? (['play-next', 'add-to-queue'] as const).map((action) => ({
+          id: action,
+          label: action === 'play-next' ? 'Play next' : 'Add to queue',
+          disabled: !queueServices.canQueue,
+          onPress: () => queue(row.id, action),
+        }))
+      : []),
     ...(playlistServices
       ? [
           {

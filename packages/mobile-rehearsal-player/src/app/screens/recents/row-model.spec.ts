@@ -92,6 +92,28 @@ describe('recents row model', () => {
     );
   });
 
+  it('labels a recording and shows how long the recorded part lasts', () => {
+    const track = createTrackPlayableItem(PLAYABLE_SOURCE);
+    const recentRehearsal = buildRecentRehearsalItem({
+      activePlayableItem: {
+        ...track,
+        recordingId: 'rec-1',
+        range: { startMs: 60_000, endMs: 80_000 },
+      },
+      activePlaylistSession: null,
+      playedAt: PLAYED_AT,
+    });
+
+    assert.equal(
+      getRecentRowMeta({
+        isPlaying: false,
+        now: TWO_HOURS_LATER,
+        recentRehearsal,
+      }),
+      'Recording · Last played 2 hr ago · 0:20',
+    );
+  });
+
   it('counts recent items with singular and plural labels', () => {
     assert.equal(getRecentItemCountLabel(1), '1 item');
     assert.equal(getRecentItemCountLabel(5), '5 items');

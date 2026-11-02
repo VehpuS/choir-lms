@@ -87,6 +87,20 @@ export const RecordingsLibraryView = ({
       playlists: services.collections.playlists,
       updatePlaylist: services.updatePlaylist,
     },
+    queueServices: {
+      canQueue: services.canQueue,
+      onQueued: services.acknowledge,
+      queueNext: services.queueItemsNext,
+      queueUpNext: services.queueItemsUpNext,
+      resolve: (recording) => {
+        const resolution = resolveRecordingPlayback(recording, {
+          sources,
+          loops,
+        });
+
+        return resolution.kind === 'item' ? resolution.item : null;
+      },
+    },
     onPlay: (recording) => {
       const resolution = resolveRecordingPlayback(recording, {
         sources,

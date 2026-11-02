@@ -21,7 +21,10 @@ import {
 } from '../recordings-panel-model';
 import { useRecordingsList } from '../use-recordings-list';
 import { RecordingRow } from './recording-row';
-import { useRecordingRowMenu } from './use-recording-row-menu';
+import {
+  useRecordingRowMenu,
+  type RecordingQueueServices,
+} from './use-recording-row-menu';
 
 const { colors, space, type } = appTheme;
 
@@ -40,6 +43,8 @@ type RecordingsPanelProps = {
    * cannot be played, which the panel shows; the host closes the panel on success.
    */
   onPlay: (recording: Recording) => string | null;
+  /** Queueing a recording, when something is playing. */
+  queue: RecordingQueueServices;
   playlists: {
     savedPlaylists: Playlist[];
     createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
@@ -82,6 +87,7 @@ export const RecordingsPanel = ({
   onClose,
   onPlay,
   playlists,
+  queue,
   sources,
   view,
   viewName,
@@ -114,6 +120,7 @@ export const RecordingsPanel = ({
       playlists: playlists.savedPlaylists,
       updatePlaylist: playlists.updatePlaylist,
     },
+    queueServices: { ...queue, onQueued: (ack) => setNotice(ack.message) },
     recordings,
     refresh,
     rows,

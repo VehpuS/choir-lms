@@ -22,7 +22,10 @@ type RecordingsHostProps = {
   };
   playback: Pick<
     ReturnType<typeof useSavedTrackPlayback>,
-    'togglePlayableItemPlayback'
+    | 'activePlayableItem'
+    | 'queuePlayableItemsNext'
+    | 'queuePlayableItemsUpNext'
+    | 'togglePlayableItemPlayback'
   >;
 };
 
@@ -134,6 +137,20 @@ export const RecordingsHost = ({
       onClose={() => setTarget(null)}
       onPlay={playRecording}
       playlists={playlists}
+      queue={{
+        canQueue: playback.activePlayableItem !== null,
+        onQueued: () => undefined,
+        queueNext: playback.queuePlayableItemsNext,
+        queueUpNext: playback.queuePlayableItemsUpNext,
+        resolve: (recording) => {
+          const resolution = resolveRecordingPlayback(recording, {
+            sources: savedLibrarySources,
+            loops: savedLoops,
+          });
+
+          return resolution.kind === 'item' ? resolution.item : null;
+        },
+      }}
       sources={tracks}
       view={target.view}
       viewName={target.viewName}

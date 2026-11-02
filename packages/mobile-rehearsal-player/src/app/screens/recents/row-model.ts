@@ -26,6 +26,7 @@ const KIND_LABELS: Record<RecentRehearsalKind, string | null> = {
   track: null,
 };
 
+const RECORDING_LABEL = 'Recording';
 const PLAYING_ICON: AppIconName = 'waveform';
 const PLAYING_LABEL = 'Playing now';
 const META_SEPARATOR = ' · ';
@@ -46,14 +47,27 @@ const getTrackDurationLabel = (recentRehearsal: RecentRehearsalItem) => {
     return undefined;
   }
 
-  const { source, transform } = recentRehearsal.playableItem;
+  const { range, recordingId, source, transform } =
+    recentRehearsal.playableItem;
+  // A recording of part of a track lasts as long as that part, not the track.
+  const playedMs =
+    recordingId !== undefined && range.endMs !== null
+      ? range.endMs - range.startMs
+      : source.durationMs;
 
   return formatDurationLabel(
-    source.durationMs !== undefined && transform
-      ? getAdjustedDurationMs(source.durationMs, transform.speedMultiplier)
-      : source.durationMs,
+    playedMs !== undefined && transform
+      ? getAdjustedDurationMs(playedMs, transform.speedMultiplier)
+      : playedMs,
   );
 };
+
+/** A recording says so, since its title alone looks like any other item. */
+const getKindLabel = (recentRehearsal: RecentRehearsalItem) =>
+  recentRehearsal.kind !== 'playlist' &&
+  recentRehearsal.playableItem.recordingId !== undefined
+    ? RECORDING_LABEL
+    : KIND_LABELS[recentRehearsal.kind];
 
 /** An adjusted track or loop shows its transform in its meta line. */
 const getTransformLabel = (recentRehearsal: RecentRehearsalItem) => {
@@ -78,7 +92,7 @@ export const getRecentRowMeta = (options: {
 }) => {
   const { recentRehearsal } = options;
   const parts = [
-    options.isPlaying ? null : KIND_LABELS[recentRehearsal.kind],
+    options.isPlaying ? null : getKindLabel(recentRehearsal),
     getTransformLabel(recentRehearsal),
     options.isPlaying
       ? PLAYING_LABEL
