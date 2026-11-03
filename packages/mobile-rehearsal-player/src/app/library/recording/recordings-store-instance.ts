@@ -39,7 +39,26 @@ export const refreshRecordingsSnapshot = async (): Promise<
   return snapshot;
 };
 
-const MUTATIONS = ['create', 'complete', 'update', 'delete'] as const;
+const MUTATIONS = ['create', 'complete', 'update', 'modify', 'delete'] as const;
+
+export type RecordingsChange = (typeof MUTATIONS)[number];
+
+const changeListeners = new Set<(change: RecordingsChange) => void>();
+
+/**
+ * Tells a view or the export queue that a recording was saved, edited or
+ * deleted, including by something other than the view itself (the queue
+ * recording a copy on Drive).
+ */
+export const subscribeToRecordingsChange = (
+  listener: (change: RecordingsChange) => void,
+) => {
+  changeListeners.add(listener);
+
+  return () => {
+    changeListeners.delete(listener);
+  };
+};
 
 /** The store with every change followed by a snapshot refresh. */
 const withSnapshotRefresh = (store: RecordingsStore): RecordingsStore => {
@@ -51,6 +70,7 @@ const withSnapshotRefresh = (store: RecordingsStore): RecordingsStore => {
     (wrapped[name] as unknown) = async (...args: never[]) => {
       await original(...args);
       await refreshRecordingsSnapshot();
+      changeListeners.forEach((listener) => listener(name));
     };
   });
 

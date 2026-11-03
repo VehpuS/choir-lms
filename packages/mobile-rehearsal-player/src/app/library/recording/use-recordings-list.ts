@@ -1,7 +1,10 @@
 import type { Recording } from '@org/audio-library-models';
 import { useCallback, useEffect, useState } from 'react';
 
-import { getRecordingsStore } from './recordings-store-instance';
+import {
+  getRecordingsStore,
+  subscribeToRecordingsChange,
+} from './recordings-store-instance';
 
 /**
  * Every recording on the device, read from the store when a view opens and
@@ -20,6 +23,11 @@ export const useRecordingsList = () => {
 
   useEffect(() => {
     void refresh();
+
+    // A change made elsewhere (the export queue noting a copy on Drive) updates the rows too.
+    return subscribeToRecordingsChange(() => {
+      void refresh();
+    });
   }, [refresh]);
 
   return { recordings, refresh };
