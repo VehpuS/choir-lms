@@ -53,23 +53,31 @@ type RecordingsPanelProps = {
 };
 
 const Section = ({
+  driveLabelOf,
+  isDriveFailed,
   rows,
   title,
   onOpenMenu,
   onPlay,
+  onRetryDrive,
 }: {
+  driveLabelOf: (id: string) => string | undefined;
+  isDriveFailed: (id: string) => boolean;
   rows: RecordingRowModel[];
   title: string;
   onOpenMenu: (id: string) => void;
   onPlay: (id: string) => void;
+  onRetryDrive: (id: string) => void;
 }) => (
   <View style={styles.section}>
     <Text style={styles.sectionTitle}>{`${title} · ${rows.length}`}</Text>
     {rows.map((row) => (
       <RecordingRow
+        driveLabel={driveLabelOf(row.id)}
         key={row.id}
         onOpenMenu={onOpenMenu}
         onPlay={onPlay}
+        onRetryDrive={isDriveFailed(row.id) ? onRetryDrive : undefined}
         row={row}
       />
     ))}
@@ -112,7 +120,15 @@ export const RecordingsPanel = ({
   );
   const rows = [...model.main, ...model.loops.flatMap((group) => group.rows)];
   const [notice, setNotice] = useState<string | null>(null);
-  const { dialogs, openMenu, play, playIssue } = useRecordingRowMenu({
+  const {
+    dialogs,
+    driveLabelOf,
+    isDriveFailed,
+    openMenu,
+    play,
+    playIssue,
+    retryDrive,
+  } = useRecordingRowMenu({
     onPlay,
     playlistServices: {
       createPlaylist: playlists.createPlaylist,
@@ -144,8 +160,11 @@ export const RecordingsPanel = ({
           {notice ? <Text style={styles.subtitle}>{notice}</Text> : null}
           {playIssue ? <Text style={styles.issue}>{playIssue}</Text> : null}
           <Section
+            driveLabelOf={driveLabelOf}
+            isDriveFailed={isDriveFailed}
             onOpenMenu={openMenu}
             onPlay={play}
+            onRetryDrive={retryDrive}
             rows={model.main}
             title={model.mainTitle}
           />
@@ -157,9 +176,12 @@ export const RecordingsPanel = ({
               <Text style={styles.loopsTitle}>{model.loopsTitle}</Text>
               {model.loops.map((group) => (
                 <Section
+                  driveLabelOf={driveLabelOf}
+                  isDriveFailed={isDriveFailed}
                   key={group.loopId}
                   onOpenMenu={openMenu}
                   onPlay={play}
+                  onRetryDrive={retryDrive}
                   rows={group.rows}
                   title={`${group.name} loop`}
                 />

@@ -74,6 +74,13 @@ const FAILURE_MESSAGES: Record<ExportFailureReason, string> = {
 export const exportFailureMessage = (reason: ExportFailureReason): string =>
   FAILURE_MESSAGES[reason];
 
+const UNKNOWN_FAILURE_MESSAGE = 'The export did not complete.';
+
+/** For a reason read back from storage, which may predate or postdate this list. */
+export const describeStoredFailure = (reason: string): string =>
+  (FAILURE_MESSAGES as Record<string, string | undefined>)[reason] ??
+  UNKNOWN_FAILURE_MESSAGE;
+
 /** Failures that retrying the same upload can fix, so the session is kept. */
 export const isRetryableFailure = (reason: ExportFailureReason): boolean =>
   reason === 'offline' || reason === 'unavailable';

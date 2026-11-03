@@ -22,6 +22,8 @@ import {
   type RecordingsSort,
 } from '../recordings-library-model';
 import { useRecordingsList } from '../use-recordings-list';
+import { useAutoExportSettings } from '../export/auto-export-settings-store';
+import { getRowExportStatus } from '../export/row-export-status';
 import { RecordingRow } from './recording-row';
 import { RecordingsLibraryFilterSheet } from './recordings-library-filter-sheet';
 import { useRecordingRowMenu } from './use-recording-row-menu';
@@ -61,6 +63,7 @@ export const RecordingsLibraryView = ({
     [sources],
   );
   const library = useMemo(() => ({ sources, loops }), [loops, sources]);
+  const exportSettings = useAutoExportSettings();
   const model = useMemo(
     () =>
       getRecordingsLibraryModel({
@@ -72,53 +75,61 @@ export const RecordingsLibraryView = ({
           sources: tracks,
           stateOf: (driveFileId) => offlineStateStore.getState(driveFileId),
         },
-        // The export record arrives with task 10.4.
-        exportStatusOf: () => 'none',
+        exportStatusOf: (id) => {
+          const recording = recordings?.find(
+            (candidate) => candidate.id === id,
+          );
+
+          return recording
+            ? getRowExportStatus(recording, exportSettings)
+            : 'none';
+        },
         now: new Date(),
       }),
     // `revision` changes whenever any file's offline state does.
-    [filters, query, recordings, revision, sort, tracks],
+    [exportSettings, filters, query, recordings, revision, sort, tracks],
   );
   const services = useLibrarySelectionServices();
-  const { dialogs, openMenu, play, playIssue } = useRecordingRowMenu({
-    playlistServices: {
-      createPlaylist: services.createPlaylist,
-      onAdded: services.acknowledge,
-      playlists: services.collections.playlists,
-      updatePlaylist: services.updatePlaylist,
-    },
-    queueServices: {
-      canQueue: services.canQueue,
-      onQueued: services.acknowledge,
-      queueNext: services.queueItemsNext,
-      queueUpNext: services.queueItemsUpNext,
-      resolve: (recording) => {
+  const { dialogs, isDriveFailed, openMenu, play, playIssue, retryDrive } =
+    useRecordingRowMenu({
+      playlistServices: {
+        createPlaylist: services.createPlaylist,
+        onAdded: services.acknowledge,
+        playlists: services.collections.playlists,
+        updatePlaylist: services.updatePlaylist,
+      },
+      queueServices: {
+        canQueue: services.canQueue,
+        onQueued: services.acknowledge,
+        queueNext: services.queueItemsNext,
+        queueUpNext: services.queueItemsUpNext,
+        resolve: (recording) => {
+          const resolution = resolveRecordingPlayback(recording, {
+            sources,
+            loops,
+          });
+
+          return resolution.kind === 'item' ? resolution.item : null;
+        },
+      },
+      onPlay: (recording) => {
         const resolution = resolveRecordingPlayback(recording, {
           sources,
           loops,
         });
 
-        return resolution.kind === 'item' ? resolution.item : null;
+        if (resolution.kind === 'unavailable') {
+          return resolution.message;
+        }
+
+        onPlayItem(resolution.item);
+
+        return null;
       },
-    },
-    onPlay: (recording) => {
-      const resolution = resolveRecordingPlayback(recording, {
-        sources,
-        loops,
-      });
-
-      if (resolution.kind === 'unavailable') {
-        return resolution.message;
-      }
-
-      onPlayItem(resolution.item);
-
-      return null;
-    },
-    recordings,
-    refresh,
-    rows: model.rows,
-  });
+      recordings,
+      refresh,
+      rows: model.rows,
+    });
 
   const shownRecordings = useMemo(
     () =>
@@ -187,6 +198,7 @@ export const RecordingsLibraryView = ({
           key={row.id}
           onOpenMenu={openMenu}
           onPlay={play}
+          onRetryDrive={isDriveFailed(row.id) ? retryDrive : undefined}
           row={row}
           selection={
             selection.isActive ? selection.getRowSelection(row.id) : undefined

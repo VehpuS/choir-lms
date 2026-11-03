@@ -20,6 +20,8 @@ type RecordingRowProps = {
   trackName?: string;
   /** `On Drive`, `Upload pending`, `Upload failed`; absent when never exported. */
   driveLabel?: string;
+  /** Shown as a `Retry` beside the options when the upload failed. */
+  onRetryDrive?: (id: string) => void;
   /** Selection wiring from the Library view; in selection mode a tap toggles. */
   selection?: ExplorerRowSelection;
   onOpenMenu: (id: string) => void;
@@ -32,6 +34,7 @@ export const RecordingRow = ({
   driveLabel,
   onOpenMenu,
   onPlay,
+  onRetryDrive,
   row,
   selection,
   trackName,
@@ -90,6 +93,21 @@ export const RecordingRow = ({
           {driveLabel ? `${row.meta} · ${driveLabel}` : row.meta}
         </Text>
       </Pressable>
+      {onRetryDrive && !resolved.hidesTrailingControls ? (
+        <Pressable
+          accessibilityLabel={`Retry upload for ${row.name}`}
+          accessibilityRole="button"
+          {...interactionGuardProps}
+          onPress={() => onRetryDrive(row.id)}
+          style={({ pressed }) => [
+            styles.retry,
+            buttonInteractionGuardStyle,
+            pressed ? styles.pressed : null,
+          ]}
+        >
+          <Text style={styles.retryLabel}>Retry</Text>
+        </Pressable>
+      ) : null}
       {resolved.hidesTrailingControls ? null : (
         <Pressable
           accessibilityLabel={`Options for ${row.name}`}
@@ -110,6 +128,12 @@ export const RecordingRow = ({
 };
 
 const styles = StyleSheet.create({
+  retry: {
+    minHeight: space.touchTarget,
+    justifyContent: 'center',
+    paddingHorizontal: space.sm,
+  },
+  retryLabel: { ...type.rowMeta, color: colors.accent },
   meta: { ...type.rowMeta, color: colors.textMuted },
   name: { ...type.rowTitle, color: colors.text, flexShrink: 1 },
   options: {

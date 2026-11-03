@@ -239,7 +239,16 @@ export const createAutoExportQueue = (options: AutoExportQueueOptions) => {
           return;
         }
 
-        const recordings: Recording[] = await store.list();
+        let recordings: Recording[];
+
+        try {
+          recordings = await store.list();
+        } catch {
+          // Where recordings cannot be stored there is nothing to export.
+          publish({ gate });
+
+          return;
+        }
         const [job] = getAutoExportJobs(
           recordings,
           options.getSettings(),

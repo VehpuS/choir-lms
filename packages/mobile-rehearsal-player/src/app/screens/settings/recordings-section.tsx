@@ -4,12 +4,18 @@ import { RECORDINGS_STORAGE_COPY } from '../../library/recording/recordings-stor
 import type { RecordingsStorageSummary } from '../../library/recording/recordings-storage-model';
 import { useRecordingsStorage } from '../../library/recording/use-recordings-storage';
 import { appTheme } from '../../utils/theme';
+import { RecordingsAutoExportSection } from './recordings-auto-export-section';
 
 /** What recordings use, and the promise that nothing removes them but you. */
 export const RecordingsSection = () => {
   const { isLoading, summary } = useRecordingsStorage();
 
-  return <RecordingsSectionView isLoading={isLoading} summary={summary} />;
+  return (
+    <View style={styles.page}>
+      <RecordingsSectionView isLoading={isLoading} summary={summary} />
+      <RecordingsAutoExportSection />
+    </View>
+  );
 };
 
 /** The page itself, given its data, so it renders without browser storage. */
@@ -46,6 +52,7 @@ export const RecordingsSectionView = ({
 };
 
 const styles = StyleSheet.create({
+  page: { gap: appTheme.space.lg },
   body: {
     color: appTheme.colors.textMuted,
     fontSize: 13,

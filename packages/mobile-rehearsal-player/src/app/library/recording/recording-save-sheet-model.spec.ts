@@ -194,6 +194,24 @@ describe('save sheet model', () => {
     assert.equal(autoExport.percent, 62);
   });
 
+  it('says what will be uploaded, not that it is uploading, until an upload runs', () => {
+    const { autoExport } = getSaveSheetModel({
+      recording: recording(),
+      autoExport: {
+        kind: 'on',
+        what: 'recording',
+        folderName: 'Choir Recordings',
+        wifiOnly: false,
+      },
+    });
+
+    assert.equal(
+      autoExport.detail,
+      'Will upload the recording to Choir Recordings.',
+    );
+    assert.equal(autoExport.percent, undefined);
+  });
+
   it('drops the Wi-Fi note for any connection', () => {
     const { autoExport } = getSaveSheetModel({
       recording: recording(),
@@ -205,7 +223,7 @@ describe('save sheet model', () => {
       },
     });
 
-    assert.equal(autoExport.detail, 'Uploading the mix to Choir Recordings…');
+    assert.equal(autoExport.detail, 'Will upload the mix to Choir Recordings.');
   });
 
   it('carries a stop warning but not a routine stop', () => {

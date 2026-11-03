@@ -14,15 +14,30 @@ import { runRecordingOfflineAction } from '../recording-offline';
 import { resolveRecordingName } from '../recording-save-sheet-model';
 import { getRecordingsStore } from '../recordings-store-instance';
 import type { RecordingRow } from '../recordings-panel-model';
+import { retryAutoExport } from '../export/auto-export-controller';
+import { useAutoExportSettings } from '../export/auto-export-settings-store';
 import { requestRecordingExport } from '../export/recording-export-request';
+import {
+  getExportKindLines,
+  getRowExportStatus,
+  type RowExportStatus,
+} from '../export/row-export-status';
+import { RecordingDriveStatusSheet } from './recording-drive-status-sheet';
 import { RecordingPlaylistPicker } from './recording-playlist-picker';
 import {
   DeleteRecordingDialog,
   RenameRecordingDialog,
 } from './recording-row-dialogs';
 
+const DRIVE_STATUS_LABELS: Record<RowExportStatus, string | undefined> = {
+  failed: 'Upload failed',
+  none: undefined,
+  pending: 'Upload pending',
+  'on-drive': 'On Drive',
+};
+
 type OpenDialog = {
-  kind: 'menu' | 'rename' | 'delete' | 'playlist';
+  kind: 'menu' | 'rename' | 'delete' | 'playlist' | 'drive-status';
   id: string;
 } | null;
 
@@ -69,6 +84,7 @@ export const useRecordingRowMenu = ({
   rows,
 }: UseRecordingRowMenuOptions) => {
   const [open, setOpen] = useState<OpenDialog>(null);
+  const exportSettings = useAutoExportSettings();
   const [playIssue, setPlayIssue] = useState<string | null>(null);
   const target = rows.find((row) => row.id === open?.id);
   const targetRecording = recordings?.find(({ id }) => id === open?.id);
@@ -127,6 +143,12 @@ export const useRecordingRowMenu = ({
     close();
   };
 
+  const statusOf = (id: string): RowExportStatus => {
+    const recording = recordings?.find((candidate) => candidate.id === id);
+
+    return recording ? getRowExportStatus(recording, exportSettings) : 'none';
+  };
+
   const menuActions = (row: RecordingRow): OptionsMenuAction[] => [
     { id: 'play', label: 'Play', onPress: () => play(row.id) },
     ...(queueServices
@@ -160,6 +182,15 @@ export const useRecordingRowMenu = ({
         }
       },
     },
+    ...(statusOf(row.id) === 'none'
+      ? []
+      : [
+          {
+            id: 'drive-status',
+            label: 'Drive status…',
+            onPress: () => setOpen({ kind: 'drive-status', id: row.id }),
+          },
+        ]),
     {
       id: 'export',
       label: 'Export…',
@@ -198,6 +229,22 @@ export const useRecordingRowMenu = ({
           recordings={[targetRecording]}
         />
       ) : null}
+      {target && targetRecording && open?.kind === 'drive-status' ? (
+        <RecordingDriveStatusSheet
+          destination={
+            exportSettings.enabled
+              ? exportSettings.folder?.folderName
+              : undefined
+          }
+          lines={getExportKindLines(targetRecording, exportSettings)}
+          name={target.name}
+          onClose={close}
+          onRetry={() => {
+            close();
+            void retryAutoExport(targetRecording.id);
+          }}
+        />
+      ) : null}
       {target && open?.kind === 'rename' ? (
         <RenameRecordingDialog
           name={target.name}
@@ -217,6 +264,11 @@ export const useRecordingRowMenu = ({
 
   return {
     dialogs,
+    /** `On Drive`, `Upload pending`, `Upload failed`, or nothing, for a row's last line. */
+    driveLabelOf: (id: string): string | undefined =>
+      DRIVE_STATUS_LABELS[statusOf(id)],
+    retryDrive: (id: string) => void retryAutoExport(id),
+    isDriveFailed: (id: string) => statusOf(id) === 'failed',
     openMenu: (id: string) => setOpen({ kind: 'menu', id }),
     play,
     playIssue,

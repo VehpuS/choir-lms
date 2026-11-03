@@ -88,7 +88,10 @@ const describeAutoExport = (state: AutoExportState): SaveSheetAutoExport => {
 
   return {
     title: SAVE_SHEET_COPY.autoExportOn,
-    detail: `Uploading ${AUTO_EXPORT_WHAT[state.what]} to ${where}…`,
+    detail:
+      state.percent === undefined
+        ? `Will upload ${AUTO_EXPORT_WHAT[state.what]} to ${where}.`
+        : `Uploading ${AUTO_EXPORT_WHAT[state.what]} to ${where}…`,
     ...(state.percent === undefined ? {} : { percent: state.percent }),
   };
 };

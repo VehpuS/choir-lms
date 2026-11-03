@@ -39,6 +39,9 @@ import {
 } from '../overlay/recording-mix-store';
 import { getOutputDeviceKey } from '../overlay/output-device-key';
 import { getDeviceLatency } from '../overlay/recording-device-latency';
+import { useAutoExportController } from '../export/auto-export-controller';
+import { DEFAULT_EXPORT_FOLDER_NAME } from '../export/auto-export-settings';
+import { useAutoExportSettings } from '../export/auto-export-settings-store';
 import { requestRecordingExport } from '../export/recording-export-request';
 import { requestRecordingPreview } from '../overlay/recording-preview-request';
 import { RecordingSaveSheet } from './recording-save-sheet';
@@ -54,6 +57,8 @@ const useIsStripShown = (): boolean => {
 
 // Auto-export has no setting yet (task 10.5); until then the sheet offers to turn it on.
 const AUTO_EXPORT_OFF: AutoExportState = { kind: 'off' };
+
+const PERCENT = 100;
 
 const newRecordingId = () =>
   `rec-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -147,6 +152,22 @@ const RecordingDockContent = ({
   }, [session]);
 
   const saved = state.phase === 'stopped' ? state.savedRecording : undefined;
+  const exportSettings = useAutoExportSettings();
+  const { status: exportStatus } = useAutoExportController();
+  // What the saved take will do: nothing, wait, or upload (with progress while it does).
+  const autoExport: AutoExportState = exportSettings.enabled
+    ? {
+        folderName:
+          exportSettings.folder?.folderName ?? DEFAULT_EXPORT_FOLDER_NAME,
+        kind: 'on',
+        percent:
+          saved && exportStatus.running?.recordingId === saved.id
+            ? Math.round(exportStatus.running.progress * PERCENT)
+            : undefined,
+        what: exportSettings.what,
+        wifiOnly: exportSettings.uploadOver === 'wifi',
+      }
+    : AUTO_EXPORT_OFF;
 
   const renameSaved = useCallback(
     (typed: string) => {
@@ -207,7 +228,7 @@ const RecordingDockContent = ({
           key={saved.id}
           model={getSaveSheetModel({
             recording: saved,
-            autoExport: AUTO_EXPORT_OFF,
+            autoExport,
             stop: state.stopMessage,
           })}
           balance={saved.balance}

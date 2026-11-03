@@ -27,6 +27,10 @@ const PROPER_NAMES: ReadonlySet<string> = new Set([
   // Part of the Salamander Grand Piano credit in Settings.
   'Piano',
   'Recents',
+  // The default Drive folder for auto-exported recordings is `Choir Recordings`
+  // (rehearsal-recording design Decision 19), and `Wi-Fi` is the network brand.
+  'Recordings',
+  'Wi-Fi',
   'iOS',
 ]);
 

@@ -65,6 +65,18 @@ describe('findSentenceCaseViolations', () => {
     );
   });
 
+  it('allows the network brand and the default Drive folder name', () => {
+    assert.deepEqual(findSentenceCaseViolations('Uploads wait for Wi-Fi.'), []);
+    assert.deepEqual(
+      findSentenceCaseViolations('Choir Recordings is where uploads go.'),
+      [],
+    );
+    assert.deepEqual(
+      findSentenceCaseViolations('Choir Folders is where uploads go.'),
+      ['Folders'],
+    );
+  });
+
   it('restarts the rule at each sentence', () => {
     assert.deepEqual(
       findSentenceCaseViolations('Saved. Open the queue. Close It.'),
