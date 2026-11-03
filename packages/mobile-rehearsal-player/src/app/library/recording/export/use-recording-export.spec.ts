@@ -35,7 +35,7 @@ const fakeDependencies = (
     sampleRate: 1000,
   }),
   makeBlob: () => ({}) as Blob,
-  readRecording: async () => ({ size: 5 }) as Blob,
+  readRecording: async () => ({ size: 1000 }) as Blob,
   resolveOriginal: async () => readyOriginal,
   saveToDevice: () => undefined,
   upload: async () => ({ status: 'aborted' }),

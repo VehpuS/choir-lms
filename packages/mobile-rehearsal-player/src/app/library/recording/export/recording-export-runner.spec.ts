@@ -1,146 +1,19 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { encodeWavParts } from '@org/audio-mixing';
+
+import { reduceExportRun } from './recording-export-model';
 import {
-  encodeWavParts,
-  floatToInt16,
-  type DecodedTrack,
-} from '@org/audio-mixing';
-import type { DriveResumableUploadResult } from '@org/google-drive';
-
-import { buildRecordingFixture } from '../recording-fixtures';
-import type { OriginalResolution } from '../recording-original';
-import {
-  createExportRun,
-  reduceExportRun,
-  type ExportRun,
-  type ExportRunEvent,
-} from './recording-export-model';
-import {
-  runRecordingExports,
-  type ExportPlan,
-  type ExportRunnerDependencies,
-} from './recording-export-runner';
-
-const SAMPLE_RATE = 1000;
-const DURATION_MS = 1000;
-const FOLDER = { folderId: 'folder-1', folderName: 'Choir Recordings' };
-
-// The app's `Blob` type is React Native's, which takes only strings and blobs;
-// the specs run on Node's, which takes bytes too.
-const NodeBlob = Blob as unknown as new (
-  parts: unknown[],
-  options?: { type?: string },
-) => Blob;
-
-const toBlob = (parts: unknown[], type?: string): Blob =>
-  new NodeBlob(parts, type ? { type } : undefined);
-
-const storedWav = (): Blob => {
-  const samples = floatToInt16(new Float32Array(SAMPLE_RATE).fill(0.1));
-
-  return toBlob(
-    encodeWavParts([samples], { channels: 1, sampleRate: SAMPLE_RATE }),
-  );
-};
-
-const track: DecodedTrack = {
-  channels: [new Float32Array(SAMPLE_RATE * 3).fill(0.2)],
-  sampleRate: SAMPLE_RATE,
-};
-
-const readyOriginal: OriginalResolution = {
-  changed: false,
-  load: async () => toBlob(['original']),
-  origin: 'stored',
-  status: 'ready',
-};
-
-const recordingFor = (id: string) =>
-  buildRecordingFixture({
-    durationMs: DURATION_MS,
-    id,
-    name: `Recording ${id}`,
-    sampleRate: SAMPLE_RATE,
-    timeline: [
-      {
-        held: false,
-        recordingEndMs: DURATION_MS,
-        recordingStartMs: 0,
-        trackStartMs: 0,
-      },
-    ],
-  });
-
-const setUp = (
-  overrides: Partial<ExportRunnerDependencies> = {},
-  uploadResult: DriveResumableUploadResult = {
-    file: { id: 'new-1', name: 'x.wav' },
-    status: 'uploaded',
-  },
-) => {
-  const saved: Array<{ fileName: string; size: number }> = [];
-  const uploads: Array<Record<string, unknown>> = [];
-  const deps: ExportRunnerDependencies = {
-    decodeTrack: async () => track,
-    makeBlob: (parts, type) => toBlob(parts, type),
-    readRecording: async () => storedWav(),
-    resolveOriginal: async () => readyOriginal,
-    saveToDevice: (fileName, blob) => {
-      saved.push({ fileName, size: blob.size });
-    },
-    upload: async (options) => {
-      uploads.push(options as unknown as Record<string, unknown>);
-      options.onSession?.('https://upload/session');
-      options.onProgress?.(options.source.size, options.source.size);
-
-      return uploadResult;
-    },
-    ...overrides,
-  };
-
-  return { deps, saved, uploads };
-};
-
-const run = async (
-  plan: ExportPlan,
-  deps: ExportRunnerDependencies,
-  signal = new AbortController().signal,
-) => {
-  const events: ExportRunEvent[] = [];
-  let state: ExportRun = createExportRun(
-    plan.items.map((item) => ({
-      fileName: item.fileName,
-      recordingId: item.recording.id,
-    })),
-  );
-
-  await runRecordingExports(plan, deps, {
-    dispatch: (event) => {
-      events.push(event);
-      state = reduceExportRun(state, event);
-    },
-    signal,
-  });
-
-  return { events, state };
-};
-
-const plan = (
-  overrides: Partial<ExportPlan> = {},
-  ids = ['a'],
-): ExportPlan => ({
-  accessToken: 'token',
-  balance: 50,
-  destination: 'drive',
-  folder: FOLDER,
-  items: ids.map((id) => ({
-    fileName: `${id}.wav`,
-    recording: recordingFor(id),
-  })),
-  kind: 'recording',
-  ...overrides,
-});
+  SAMPLE_RATE,
+  toBlob,
+  storedWav,
+  readyOriginal,
+  recordingFor,
+  setUp,
+  run,
+  plan,
+} from './recording-export-test-helpers';
 
 describe('runRecordingExports', () => {
   it('downloads the stored recording as it is', async () => {
@@ -285,6 +158,22 @@ describe('runRecordingExports', () => {
     const { state } = await run(plan(), deps);
 
     assert.equal(state.items[0]?.status, 'done');
+  });
+
+  it('treats a recording with no stored audio as missing, and uploads nothing', async () => {
+    const emptyWav = toBlob(
+      encodeWavParts([new Int16Array(0)], {
+        channels: 1,
+        sampleRate: SAMPLE_RATE,
+      }),
+    );
+    const { deps, uploads } = setUp({ readRecording: async () => emptyWav });
+    const recordingOnly = await run(plan(), deps);
+    const mix = await run(plan({ kind: 'mix' }), deps);
+
+    assert.equal(recordingOnly.state.items[0]?.failure, 'recording-missing');
+    assert.equal(mix.state.items[0]?.failure, 'recording-missing');
+    assert.equal(uploads.length, 0);
   });
 
   it('fails with a missing permission when there is no access token', async () => {

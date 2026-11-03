@@ -1,4 +1,5 @@
 import type { Recording } from '@org/audio-library-models';
+import { WAV_HEADER_BYTES } from '@org/audio-mixing';
 import type {
   DriveUploadSource,
   uploadDriveFileResumable,
@@ -85,7 +86,9 @@ const prepareFile = async (
   if (plan.kind === 'recording') {
     const blob = await deps.readRecording(recordingId);
 
-    if (!blob) {
+    // A record whose audio was never stored reads as a WAV of the header
+    // alone; exporting that would put an empty file on Drive and call it done.
+    if (!blob || blob.size <= WAV_HEADER_BYTES) {
       dispatch({
         reason: 'recording-missing',
         recordingId,

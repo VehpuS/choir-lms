@@ -58,6 +58,10 @@ export const renderRecordingMix = async (
     }
 
     reader = await createWavWindowReader(blob);
+
+    if (reader.sampleCount === 0) {
+      return { reason: 'recording-missing', status: 'failed' };
+    }
   } catch {
     // A stored file that is not a readable WAV is as good as missing.
     return { reason: 'recording-missing', status: 'failed' };
