@@ -65,7 +65,9 @@ export type RecordingsStore = {
   listIncomplete: () => Promise<Recording[]>;
   update: (
     id: string,
-    patch: Partial<Pick<Recording, 'balance' | 'exports' | 'name' | 'nudgeMs'>>,
+    patch: Partial<
+      Pick<Recording, 'balance' | 'exports' | 'levelDb' | 'name' | 'nudgeMs'>
+    >,
   ) => Promise<void>;
   /**
    * Like `update`, but the patch is worked out from the stored recording inside
@@ -76,7 +78,9 @@ export type RecordingsStore = {
     id: string,
     patchFrom: (
       recording: Recording,
-    ) => Partial<Pick<Recording, 'balance' | 'exports' | 'name' | 'nudgeMs'>>,
+    ) => Partial<
+      Pick<Recording, 'balance' | 'exports' | 'levelDb' | 'name' | 'nudgeMs'>
+    >,
   ) => Promise<void>;
   /** The recording as a WAV file, assembled from its chunks without copying them. */
   getWavBlob: (id: string) => Promise<Blob | null>;

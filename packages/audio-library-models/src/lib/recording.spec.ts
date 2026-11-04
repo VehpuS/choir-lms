@@ -3,7 +3,12 @@ import { describe, it } from 'node:test';
 
 import {
   clampNudgeMs,
+  DEFAULT_RECORDING_LEVEL_DB,
   clampRecordingBalance,
+  clampRecordingLevelDb,
+  dbToLinear,
+  getRecordingLevelDb,
+  linearToDb,
   formatRecordingDuration,
   formatRecordingSize,
   getRecordingOwner,
@@ -71,5 +76,29 @@ describe('formatting and clamps', () => {
   it('clamps balance to 0..100 with 50 as the fallback', () => {
     assert.equal(clampRecordingBalance(140), 100);
     assert.equal(clampRecordingBalance(Number.NaN), 50);
+  });
+});
+
+describe('recording level', () => {
+  it('clamps to -12..+18 dB in tenths, with 0 as the fallback', () => {
+    assert.equal(clampRecordingLevelDb(40), 18);
+    assert.equal(clampRecordingLevelDb(-40), -12);
+    assert.equal(clampRecordingLevelDb(3.14159), 3.1);
+    assert.equal(clampRecordingLevelDb(Number.NaN), DEFAULT_RECORDING_LEVEL_DB);
+    assert.equal(clampRecordingLevelDb(Number.POSITIVE_INFINITY), 0);
+  });
+
+  it('reads a recording with no level as 0 dB, and a stored one clamped', () => {
+    assert.equal(getRecordingLevelDb(buildRecording()), 0);
+    assert.equal(getRecordingLevelDb({ levelDb: 6 }), 6);
+    assert.equal(getRecordingLevelDb({ levelDb: 99 }), 18);
+  });
+
+  it('converts decibels to a gain factor and back', () => {
+    assert.equal(dbToLinear(0), 1);
+    assert.ok(Math.abs(dbToLinear(6) - 1.9953) < 1e-3);
+    assert.ok(Math.abs(dbToLinear(-6) - 0.5012) < 1e-3);
+    assert.ok(Math.abs(linearToDb(dbToLinear(12.5)) - 12.5) < 1e-9);
+    assert.equal(linearToDb(0), Number.NEGATIVE_INFINITY);
   });
 });

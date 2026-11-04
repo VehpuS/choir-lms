@@ -161,6 +161,21 @@ describe('recordings store', () => {
     assert.equal(t.chunkCount('1'), 1);
   });
 
+  it('keeps a level once set, and a recording made before levels has none', async () => {
+    const t = setup();
+
+    await record(t, '1', [Int16Array.of(7, 8)]);
+
+    assert.equal((await t.store.get('1'))?.levelDb, undefined);
+
+    await t.store.update('1', { levelDb: 7.5 });
+    await t.store.modify('1', (recording) => ({
+      levelDb: (recording.levelDb ?? 0) + 1,
+    }));
+
+    assert.equal((await t.store.get('1'))?.levelDb, 8.5);
+  });
+
   it('keeps both of two updates made at once, such as a rename and a recorded export', async () => {
     const t = setup();
     const exports = {

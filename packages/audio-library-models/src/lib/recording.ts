@@ -16,6 +16,12 @@ export const MAX_NUDGE_MS = 250;
 export const DEFAULT_RECORDING_BALANCE = 50;
 export const MIN_RECORDING_BALANCE = 0;
 export const MAX_RECORDING_BALANCE = 100;
+/** The recording's own level, in decibels, from as recorded (0) to a boost (design Decision 21). */
+export const DEFAULT_RECORDING_LEVEL_DB = 0;
+export const MIN_RECORDING_LEVEL_DB = -12;
+export const MAX_RECORDING_LEVEL_DB = 18;
+const DB_PER_DECADE = 20;
+const LEVEL_DB_STEP = 10;
 
 const RECORDING_NAME_PREFIX = 'Recording';
 const AUTOMATIC_RECORDING_NAME_PATTERN = /^Recording (\d+)$/;
@@ -107,6 +113,11 @@ export type Recording = {
   shaping: RecordingShaping;
   /** 0 is all track, 100 all recording; the default for exports and playlists. */
   balance: number;
+  /**
+   * The recording's loudness against the track, in dB. Absent on recordings made
+   * before levels existed, which read as 0; use `getRecordingLevelDb`.
+   */
+  levelDb?: number;
   engineVersion: number;
   markers: RecordingMarker[];
   punch?: RecordingPunch;
@@ -168,6 +179,30 @@ export const clampRecordingBalance = (value: number): number => {
     ? round(clamp(value, MIN_RECORDING_BALANCE, MAX_RECORDING_BALANCE))
     : DEFAULT_RECORDING_BALANCE;
 };
+
+/** Keeps a level inside its range, in tenths of a dB; anything that is not a number is 0 dB. */
+export const clampRecordingLevelDb = (value: number): number => {
+  return Number.isFinite(value)
+    ? Math.round(
+        clamp(value, MIN_RECORDING_LEVEL_DB, MAX_RECORDING_LEVEL_DB) *
+          LEVEL_DB_STEP,
+      ) / LEVEL_DB_STEP
+    : DEFAULT_RECORDING_LEVEL_DB;
+};
+
+/** The level a recording plays and mixes at; older recordings have none stored and read as 0 dB. */
+export const getRecordingLevelDb = (
+  recording: Pick<Recording, 'levelDb'>,
+): number =>
+  clampRecordingLevelDb(recording.levelDb ?? DEFAULT_RECORDING_LEVEL_DB);
+
+/** Decibels as a gain factor: 0 dB is 1, +6 dB about 2. */
+export const dbToLinear = (db: number): number =>
+  Math.pow(LEVEL_DB_STEP, db / DB_PER_DECADE);
+
+/** A gain factor in decibels; silence is minus infinity. */
+export const linearToDb = (linear: number): number =>
+  linear > 0 ? DB_PER_DECADE * Math.log10(linear) : Number.NEGATIVE_INFINITY;
 
 /** `m:ss`, rounding down to whole seconds. */
 export const formatRecordingDuration = (durationMs: number): string => {
