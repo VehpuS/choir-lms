@@ -9,6 +9,7 @@ import {
   type VoiceNode,
 } from '@org/audio-mixing';
 
+import { createOverlayLimiter, type LimiterContext } from './overlay-limiter';
 import { getRecordingsStore } from '../recordings-store-instance';
 import { getRecordingTransport } from '../recording-transport';
 import {
@@ -30,7 +31,7 @@ export type OverlayAudioContext = Omit<VoiceContext, 'createGain'> & {
   destination: VoiceNode;
   resume: () => Promise<void>;
   createGain: () => VoiceGain & { disconnect: () => void };
-};
+} & LimiterContext;
 
 let sharedContext: OverlayAudioContext | null = null;
 
@@ -93,8 +94,11 @@ export const startRecordingOverlay = async (
     await context.resume().catch(() => undefined);
 
     const output = context.createGain();
+    // The recording's own output is limited so a boosted level does not clip.
+    const limiter = createOverlayLimiter(context);
 
-    output.connect(context.destination);
+    output.connect(limiter.input as unknown as VoiceNode);
+    limiter.output.connect(context.destination);
 
     const voice = createWindowedVoice({
       context,
@@ -136,6 +140,7 @@ export const startRecordingOverlay = async (
         loopTransport?.dispose();
         voice.dispose();
         output.disconnect();
+        limiter.disconnect();
         setRecordingOverlayStatus({ kind: 'idle' });
       },
     };

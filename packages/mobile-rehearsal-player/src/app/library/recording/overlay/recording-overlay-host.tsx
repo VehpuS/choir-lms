@@ -1,3 +1,4 @@
+import { getRecordingLevelDb } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
 
 import type { useSavedTrackPlayback } from '../../playback/hooks/use-saved-track-playback';
@@ -53,6 +54,8 @@ export const RecordingOverlayHost = ({
     playback.playbackState !== 'loading' &&
     playback.playbackState !== 'none';
   const [overlay, setOverlay] = useState<RecordingOverlayHandle | null>(null);
+  // The recording's saved level; the live level and Normalize arrive with the control (15.4).
+  const [levelDb, setLevelDb] = useState(0);
   const { balance, recordingId: mixedRecordingId } = useRecordingMixState();
   const { nudgeMs, recordingId: syncedRecordingId } = useRecordingSyncState();
 
@@ -70,6 +73,8 @@ export const RecordingOverlayHost = ({
         if (!recording || isDisposed) {
           return null;
         }
+
+        setLevelDb(getRecordingLevelDb(recording));
 
         // A preview may have asked to start at a balance that is not saved yet.
         startRecordingMix(
@@ -122,13 +127,21 @@ export const RecordingOverlayHost = ({
 
     const mix = getRecordingMix({
       balance,
+      levelDb,
       volumeLevel: playback.volumeLevel,
     });
 
     overlay?.setLevel(mix.recordingLevel);
     setTrackGain(mix.volumeShare);
     applyTrackVolume(mix.trackVolume);
-  }, [balance, mixedRecordingId, overlay, playback.volumeLevel, recordingId]);
+  }, [
+    balance,
+    levelDb,
+    mixedRecordingId,
+    overlay,
+    playback.volumeLevel,
+    recordingId,
+  ]);
 
   useEffect(() => {
     if (syncedRecordingId !== null && syncedRecordingId === recordingId) {

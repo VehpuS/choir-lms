@@ -7,6 +7,58 @@ import {
   getRecordingMix,
 } from './recording-mix-model.js';
 
+describe('recording mix with a level', () => {
+  const near = (actual: number, expected: number) =>
+    assert.ok(Math.abs(actual - expected) < 1e-3, `${actual} vs ${expected}`);
+
+  it('leaves everything as it was at 0 dB or with no level', () => {
+    const plain = getRecordingMix({ balance: 50, volumeLevel: 0.8 });
+
+    assert.deepEqual(
+      getRecordingMix({ balance: 50, levelDb: 0, volumeLevel: 0.8 }),
+      plain,
+    );
+  });
+
+  it('raises only the recording, by the level, on top of balance and volume', () => {
+    const boosted = getRecordingMix({
+      balance: 50,
+      levelDb: 6,
+      volumeLevel: 0.5,
+    });
+
+    near(boosted.recordingLevel, 0.5 * 1.9953);
+    assert.equal(boosted.trackVolume, 0.5);
+    assert.equal(boosted.volumeShare, 1);
+  });
+
+  it('lowers the recording for a negative level, and still silences it at balance 0', () => {
+    near(
+      getRecordingMix({ balance: 100, levelDb: -6, volumeLevel: 1 })
+        .recordingLevel,
+      0.5012,
+    );
+    assert.equal(
+      getRecordingMix({ balance: 0, levelDb: 18, volumeLevel: 1 })
+        .recordingLevel,
+      0,
+    );
+  });
+
+  it('keeps a level that is out of range inside it', () => {
+    near(
+      getRecordingMix({ balance: 100, levelDb: 99, volumeLevel: 1 })
+        .recordingLevel,
+      7.9433,
+    );
+    near(
+      getRecordingMix({ balance: 100, levelDb: -99, volumeLevel: 1 })
+        .recordingLevel,
+      0.2512,
+    );
+  });
+});
+
 describe('recording mix', () => {
   it('silences the track when the balance is fully on the recording', () => {
     assert.deepEqual(getRecordingMix({ balance: 100, volumeLevel: 1 }), {

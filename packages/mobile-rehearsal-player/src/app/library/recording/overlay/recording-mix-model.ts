@@ -1,4 +1,8 @@
-import { clampRecordingBalance } from '@org/audio-library-models';
+import {
+  clampRecordingBalance,
+  clampRecordingLevelDb,
+  dbToLinear,
+} from '@org/audio-library-models';
 import { balanceToGains } from '@org/audio-mixing';
 
 /**
@@ -18,7 +22,7 @@ export type RecordingMix = {
   volumeShare: number;
   /** The track's volume: its share times the playback volume. */
   trackVolume: number;
-  /** Level of the recording's own output. */
+  /** Level of the recording's own output: balance, volume and the recording's level. */
   recordingLevel: number;
 };
 
@@ -26,6 +30,8 @@ export const getRecordingMix = (options: {
   balance: number;
   /** The playback volume, 0 to 1. */
   volumeLevel: number;
+  /** The recording's own level in dB (design Decision 21); absent is as recorded. */
+  levelDb?: number;
 }): RecordingMix => {
   const { recordingGain, trackGain } = balanceToGains(
     clampRecordingBalance(options.balance),
@@ -34,7 +40,10 @@ export const getRecordingMix = (options: {
   return {
     volumeShare: trackGain,
     trackVolume: trackGain * options.volumeLevel,
-    recordingLevel: recordingGain * options.volumeLevel,
+    recordingLevel:
+      recordingGain *
+      options.volumeLevel *
+      dbToLinear(clampRecordingLevelDb(options.levelDb ?? 0)),
   };
 };
 
