@@ -1,5 +1,4 @@
-import { RecordingBalanceControl } from '../../../library/recording/overlay/recording-balance-control';
-import { RecordingSyncControl } from '../../../library/recording/overlay/recording-sync-control';
+import { RecordingMixPanel } from '../../../library/recording/overlay/recording-mix-panel';
 import { RecordingOverlayNotice } from '../../../library/recording/overlay/recording-overlay-notice';
 import type {
   PlayableItem,
@@ -220,8 +219,7 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
         {props.activePlayableItem.recordingId ? (
           <>
             <RecordingOverlayNotice />
-            <RecordingBalanceControl />
-            <RecordingSyncControl />
+            <RecordingMixPanel />
           </>
         ) : null}
 
