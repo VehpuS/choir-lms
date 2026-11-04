@@ -12,3 +12,6 @@ export * from './lib/loop-aware-transport.ts';
 export * from './lib/mix-render-plan.ts';
 export * from './lib/mix-renderer.ts';
 export * from './lib/soundtouch-track-stretcher.ts';
+export * from './lib/punch-range.ts';
+export * from './lib/punch-machine.ts';
+export * from './lib/punch-controller.ts';
