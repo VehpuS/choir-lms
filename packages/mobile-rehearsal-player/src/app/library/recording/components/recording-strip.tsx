@@ -147,12 +147,42 @@ export const RecordingStrip = ({ model, onAction }: RecordingStripProps) => {
           </View>
           <StopButton button={model.stop} onAction={onAction} />
         </>
+      ) : model.kind === 'punch-armed' ? (
+        <>
+          <View style={styles.messageColumn}>
+            <Message body={model.body} title={model.title} />
+          </View>
+          <View style={styles.buttonRow}>
+            <ActionButton button={model.primary} onAction={onAction} />
+            <ActionButton
+              button={model.disarm}
+              onAction={onAction}
+              primary={false}
+            />
+          </View>
+        </>
+      ) : model.kind === 'punch-countdown' ? (
+        <>
+          <View style={styles.messageColumn}>
+            <Message body={model.body} title={model.title} />
+          </View>
+          <ActionButton
+            button={model.disarm}
+            onAction={onAction}
+            primary={false}
+          />
+        </>
       ) : model.kind === 'ready' ? (
         <>
           <View style={styles.messageColumn}>
             <Message body={model.body} title={model.title} />
             <TimeLeft readout={model.timeLeft} />
           </View>
+          <ActionButton
+            button={model.between}
+            onAction={onAction}
+            primary={false}
+          />
           <ActionButton button={model.primary} onAction={onAction} />
         </>
       ) : model.kind === 'no-track' ? (
@@ -207,6 +237,7 @@ const styles = StyleSheet.create({
   },
   actionLabel: { color: colors.accentText, fontSize: 13 },
   actionPrimary: { borderWidth: 1, borderColor: colors.accent },
+  buttonRow: { alignItems: 'center', flexDirection: 'row' },
   buttons: { gap: 2 },
   clock: {
     color: colors.text,

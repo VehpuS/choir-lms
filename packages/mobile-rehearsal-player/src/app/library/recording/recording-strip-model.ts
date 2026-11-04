@@ -4,6 +4,7 @@ import {
   formatMarkerReference,
   type MarkerContext,
 } from './recording-marker-context';
+import type { PunchState } from '@org/audio-mixing';
 import type { RecordingSessionState } from './recording-session';
 import type { TimeLeftReadout } from './recording-storage-limit';
 
@@ -21,6 +22,10 @@ export const RECORDING_STRIP_COPY = {
   notNowLabel: 'Not now',
   readyBody: 'Seek to where you want to start.',
   readyTitle: 'Ready.',
+  betweenLabel: 'Between…',
+  disarmLabel: 'Disarm',
+  playPunchLabel: 'Play',
+  punchCountdownBody: 'Pre-roll playing.',
   recordLabel: 'Record',
   refusedBody:
     'Export or delete recordings under “Settings”, then “Recordings”, to make room.',
@@ -51,7 +56,10 @@ export type StripAction =
   | 'record'
   | 'stop'
   | 'dismiss'
-  | 'open-settings';
+  | 'open-settings'
+  | 'record-between'
+  | 'play-punch'
+  | 'disarm';
 
 export type StripButton = { action: StripAction; label: string };
 
@@ -72,6 +80,21 @@ export type RecordingStripModel =
       body: string;
       timeLeft: TimeLeftReadout | null;
       primary: StripButton;
+      /** `Record between…`, which opens the punch-range sheet. */
+      between: StripButton;
+    }
+  | {
+      kind: 'punch-armed';
+      title: string;
+      body: string;
+      primary: StripButton;
+      disarm: StripButton;
+    }
+  | {
+      kind: 'punch-countdown';
+      title: string;
+      body: string;
+      disarm: StripButton;
     }
   | {
       kind: 'armed';
@@ -102,7 +125,52 @@ export type RecordingStripInput = {
   hasTrack: boolean;
   session: RecordingSessionState;
   markers: MarkerContext;
+  /** An armed punch range and how to name its span, e.g. `Chorus → Bridge`. */
+  punch?: { state: PunchState; span: string };
 };
+
+const DISARM: StripButton = {
+  action: 'disarm',
+  label: RECORDING_STRIP_COPY.disarmLabel,
+};
+
+/** The strip while a punch range waits for playback or counts down to its in point. */
+const getPunchStrip = (
+  punch: RecordingStripInput['punch'],
+): RecordingStripModel | null => {
+  const range = punch?.state.range;
+
+  if (!punch || !range) {
+    return null;
+  }
+
+  if (punch.state.phase === 'armed') {
+    return {
+      kind: 'punch-armed',
+      title: `Armed · ${punch.span}`,
+      body: `Press play to start ${formatSecondsLong(range.preRollMs)} before the in point.`,
+      primary: {
+        action: 'play-punch',
+        label: RECORDING_STRIP_COPY.playPunchLabel,
+      },
+      disarm: DISARM,
+    };
+  }
+
+  if (punch.state.phase === 'countdown') {
+    return {
+      kind: 'punch-countdown',
+      title: `Recording in ${punch.state.countdownSeconds ?? 0}…`,
+      body: RECORDING_STRIP_COPY.punchCountdownBody,
+      disarm: DISARM,
+    };
+  }
+
+  return null;
+};
+
+const MS_PER_SECOND = 1000;
+const formatSecondsLong = (ms: number) => `${Math.round(ms / MS_PER_SECOND)} s`;
 
 /**
  * What the recording strip shows (design Decisions 8, 17 and 20): a state per
@@ -133,6 +201,13 @@ export const getRecordingStripModel = (
         ? `Recording paused, ${clock}`
         : `Recording, ${clock}`,
     };
+  }
+
+  const punchStrip = getPunchStrip(input.punch);
+
+  // A take being captured was handled above and always wins.
+  if (punchStrip) {
+    return punchStrip;
   }
 
   if (session.phase === 'armed') {
@@ -202,5 +277,9 @@ export const getRecordingStripModel = (
     body: RECORDING_STRIP_COPY.readyBody,
     timeLeft: session.timeLeft,
     primary: { action: 'record', label: RECORDING_STRIP_COPY.recordLabel },
+    between: {
+      action: 'record-between',
+      label: RECORDING_STRIP_COPY.betweenLabel,
+    },
   };
 };

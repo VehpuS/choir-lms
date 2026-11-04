@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
+import { disarmPunch } from './punch/punch-instance';
 import { getRecordingSession } from './recording-session-instance';
 
 const listeners = new Set<() => void>();
@@ -29,6 +30,7 @@ export const openRecordingStrip = () => publish(true);
 
 /** Closing the strip while recording stops the recording first, keeping it. */
 export const closeRecordingStrip = () => {
+  disarmPunch();
   void getRecordingSession().stop();
   getRecordingSession().dismiss();
   publish(false);

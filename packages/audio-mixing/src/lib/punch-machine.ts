@@ -97,10 +97,16 @@ const stepWaiting = (
     return unchanged({ phase: 'armed', range });
   }
 
-  if (
+  // Having counted down through the pre-roll, a late poll (a busy or throttled
+  // page) still starts the take: its timeline holds the true start position.
+  // Without that run-up only a play that begins right at the in point does.
+  const isPastIn =
     positionMs >= range.inMs &&
-    positionMs <= range.inMs + PUNCH_START_TOLERANCE_MS
-  ) {
+    positionMs < range.outMs &&
+    (state.phase === 'countdown' ||
+      positionMs <= range.inMs + PUNCH_START_TOLERANCE_MS);
+
+  if (isPastIn) {
     return {
       effects: [{ type: 'start-recording' }],
       state: {

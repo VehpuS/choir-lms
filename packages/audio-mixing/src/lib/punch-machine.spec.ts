@@ -126,6 +126,22 @@ describe('stepPunch', () => {
     });
   });
 
+  describe('a late poll after the countdown', () => {
+    it('still starts the take, since the pre-roll was heard first', () => {
+      const result = run([tick(28_500), tick(31_200)], armed());
+
+      assert.deepEqual(result.effects, [{ type: 'start-recording' }]);
+      assert.equal(result.state.phase, 'recording');
+    });
+
+    it('does not start one past Out', () => {
+      const result = run([tick(28_500), tick(41_000)], armed());
+
+      assert.equal(result.state.phase, 'armed');
+      assert.deepEqual(result.effects, []);
+    });
+  });
+
   describe('recording between In and Out', () => {
     const recording = () => run([tick(30_020)], armed()).state;
 

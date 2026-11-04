@@ -16,6 +16,18 @@ import {
 import { getPlaybackShapingEngine } from '../../playback/shaping';
 import { getMarkerContext } from '../recording-marker-context';
 import { recordingCapabilities } from '../recording-capabilities';
+import {
+  armPunch,
+  closePunchSheet,
+  disarmPunch,
+  openPunchSheet,
+  playPunchFromPreRoll,
+  usePunchSheetOpen,
+  usePunchState,
+} from '../punch/punch-instance';
+import { getPunchSpanText } from '../punch/punch-sheet-model';
+import { PunchSheet } from '../punch/punch-sheet';
+import { loopOf, usePunchTrackDuration } from '../punch/use-punch-track';
 import { getRecordingSession } from '../recording-session-instance';
 import { getRecordingTransport } from '../recording-transport';
 import {
@@ -98,11 +110,31 @@ const RecordingDockContent = ({
       ? resolveWaveformMarkers(item, resolution, lookup.filter)
       : [];
   }, [item, lookup]);
+  const punchState = usePunchState();
+  const isPunchSheetOpen = usePunchSheetOpen();
+  const trackDurationMs = usePunchTrackDuration(isPunchSheetOpen);
   const model = getRecordingStripModel({
     hasTrack: item !== null,
     session: state,
     markers: getMarkerContext(markers, positionMs),
+    punch: punchState.range
+      ? {
+          span: getPunchSpanText(
+            punchState.range.inMs,
+            punchState.range.outMs,
+            markers,
+          ),
+          state: punchState,
+        }
+      : undefined,
   });
+  const itemId = item?.id;
+
+  // A punch range belongs to the track it was set on.
+  useEffect(() => {
+    disarmPunch();
+    closePunchSheet();
+  }, [itemId]);
   const markersRef = useRef(markers);
 
   markersRef.current = markers;
@@ -215,6 +247,12 @@ const RecordingDockContent = ({
         void session.stop();
       } else if (action === 'open-settings') {
         openRecordingsSettings();
+      } else if (action === 'record-between') {
+        openPunchSheet();
+      } else if (action === 'play-punch') {
+        playPunchFromPreRoll();
+      } else if (action === 'disarm') {
+        disarmPunch();
       }
     },
     [openRecordingsSettings, record, session],
@@ -223,6 +261,20 @@ const RecordingDockContent = ({
   return (
     <>
       <RecordingStrip model={model} onAction={onAction} />
+      {isPunchSheetOpen && item && trackDurationMs > 0 ? (
+        <PunchSheet
+          activeLoop={loopOf(item)}
+          durationMs={trackDurationMs}
+          item={item}
+          markers={markers}
+          onArm={(range) => {
+            closePunchSheet();
+            armPunch(range);
+          }}
+          onClose={closePunchSheet}
+          positionMs={positionMs}
+        />
+      ) : null}
       {saved ? (
         <RecordingSaveSheet
           key={saved.id}

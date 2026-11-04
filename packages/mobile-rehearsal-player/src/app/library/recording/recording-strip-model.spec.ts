@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import type { PunchState } from '@org/audio-mixing';
+
 import type { RecordingSessionState } from './recording-session.js';
 import {
   getRecordingStripModel,
@@ -161,5 +163,68 @@ describe('recording strip model', () => {
       model({ phase: 'recording' }, { hasTrack: false }).kind,
       'recording',
     );
+  });
+
+  it('offers Record between… beside Record when ready', () => {
+    const ready = model();
+
+    assert.ok(ready.kind === 'ready');
+    assert.equal(ready.between.action, 'record-between');
+  });
+
+  describe('with an armed punch range', () => {
+    const range = {
+      inMs: 110_000,
+      keepPlayingAfterOut: false,
+      outMs: 125_000,
+      preRollMs: 3000,
+    };
+    const withPunch = (state: PunchState) =>
+      getRecordingStripModel({
+        hasTrack: true,
+        markers: {},
+        punch: { span: 'Chorus → Bridge', state },
+        session: session(),
+      });
+
+    it('names the span and offers Play and Disarm while it waits', () => {
+      const armed = withPunch({ phase: 'armed', range });
+
+      assert.ok(armed.kind === 'punch-armed');
+      assert.equal(armed.title, 'Armed · Chorus → Bridge');
+      assert.match(armed.body, /3 s before/);
+      assert.deepEqual(
+        [armed.primary.action, armed.disarm.action],
+        ['play-punch', 'disarm'],
+      );
+    });
+
+    it('counts down to the in point and can still be disarmed', () => {
+      const counting = withPunch({
+        countdownSeconds: 2,
+        phase: 'countdown',
+        range,
+      });
+
+      assert.ok(counting.kind === 'punch-countdown');
+      assert.equal(counting.title, 'Recording in 2…');
+      assert.equal(counting.disarm.action, 'disarm');
+    });
+
+    it('shows the ordinary strip once the range is no longer waiting', () => {
+      assert.equal(withPunch({ phase: 'idle' }).kind, 'ready');
+      assert.equal(withPunch({ phase: 'recording', range }).kind, 'ready');
+    });
+
+    it('never hides a take that is being captured', () => {
+      const recording = getRecordingStripModel({
+        hasTrack: true,
+        markers: {},
+        punch: { span: 'x', state: { phase: 'armed', range } },
+        session: session({ phase: 'recording', elapsedMs: 1000 }),
+      });
+
+      assert.equal(recording.kind, 'recording');
+    });
   });
 });
