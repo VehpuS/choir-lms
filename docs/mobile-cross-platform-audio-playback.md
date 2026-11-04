@@ -52,6 +52,9 @@ flowchart TD
   - `packages/mobile-rehearsal-player/src/app/library/playback/utils/saved-track-download-progress.ts`
 - Playback shaping engine, pitch capability, and the web pitch graph:
   - `packages/mobile-rehearsal-player/src/app/library/playback/shaping/`
+- Recording overlay (web only; see [Recording Overlay](#recording-overlay-web)):
+  - `packages/mobile-rehearsal-player/src/app/library/recording/overlay/`
+  - `packages/audio-mixing/src/lib/sync-controller.ts`
 - Player setup and capability sync:
   - `packages/mobile-rehearsal-player/src/app/library/playback/utils/saved-track-player-runtime.ts`
 - Playback request construction (Drive URL + auth headers):
@@ -128,6 +131,19 @@ Speed and pitch are two independent axes (design Decision 6 of `nocturne-visual-
 - Pacing and redundant writes (`playback-shaping-session.ts`, `coalesced-runner.ts`): the displayed value follows the finger at once, but the player is only sent changed values, one run at a time, at most once per 120 ms, with the newest value always last; loads rewrite both values. Every rate or pitch change makes a player re-synchronize its audio (AVPlayer rewrites `rate` on each call, ExoPlayer reconfigures its speed processor, the browser re-initializes its time-stretch), so an unpaced slider drag (about 60 changes a second) is heard as stutter and jumps in speed. A pitch tap no longer rewrites the rate and a speed change no longer rewrites the pitch.
 - `reset()` on the player between items (`loadIntoPlayer` resets and re-adds the track) may drop the native rate; the session wiring (task 5.3) must re-apply the active shaping after each load.
 
+## Recording Overlay (Web)
+
+A recording plays together with its track without changing how the track plays (design Decision 5 of `rehearsal-recording`). The track keeps going through the player above; the recording is a second voice that follows it. Native has no overlay or recording yet (`native-playback-follow-ups`).
+
+- **Transport:** `recording-transport.web.ts` wraps the player's media element (`globalThis.rntp.getMediaElement()`) as a `Transport` (`getPositionMs`, `isPlaying`, and `play`, `pause`, `seek` events); `createLoopAwareTransport` adds the loop wrap. `recording-transport.ts` returns `null` on native.
+- **Voice and sync:** `recording-overlay.web.ts` creates one shared `AudioContext` and plays the recording's WAV through it a window at a time (`createWavWindowReader`, `createWindowedVoice`) into a gain node. `createSyncController` (in `@org/audio-mixing`) looks up the recording position for the track position in the recording's timeline, starts the voice on play, stops it on pause, and restarts it on a seek or a loop wrap; every 250 ms it reschedules the voice when it has drifted by more than about 20 ms.
+- **Host:** `recording-overlay-host.tsx` follows the active playback item. A recording item starts one overlay; playing anything else, or another recording, ends it and gives the track its full volume back. It waits for the track to load so it attaches to the element that is playing.
+- **Balance and latency:** `recording-mix-store.ts` holds the live balance, which `recording-overlay-host.tsx` turns into the recording's gain and the track's volume (`setTrackGain`); `recording-sync-store.ts` and `recording-sync-model.ts` hold the latency nudge, which `recording-device-latency.ts` can save per output device (`output-device-key.web.ts`); `click-calibration-*.ts` measures the real round trip.
+- **Shaping:** the track is shaped (speed and pitch) as usual; the recording is never shaped. A recording item locks the shaping controls to the speed and pitch stored on the recording, so it stays aligned (`reset()` between items re-applies them like any other load).
+- **Preview:** the save sheet and export dialog preview a balance through `recording-preview-host.tsx` and `recording-preview-request.ts`, using the same overlay.
+- **Original audio:** an overlay or a mix needs the original track, found from the recording's own metadata (Drive file id and content version) through the normal playback cache, the offline store or Drive (`recording-original.ts`); nothing is copied per recording.
+- **Mix render:** an exported mix does not use the live path. `renderMix` in `@org/audio-mixing` renders it offline in chunks from the metadata, the recording and the decoded original, with a SoundTouch stretcher so the track is at the speed and pitch it had while recording.
+
 ## Slow Connections (Web)
 
 Web playback cannot stream an authenticated Drive file: the media element cannot send the `Authorization` header, so the web patch downloads the **whole file** (`GET …/files/<id>?alt=media`) into a blob before TrackPlayer gets it. Playback therefore starts only when the download finishes, and that takes as long as the connection needs. Measured on 2026-09-30 on a connection the browser reported as `3g` (1.3 Mbps, 350 ms RTT): a 3:08 MP3 took **92.7 s** to download. Native streams directly and has no download step.
@@ -166,6 +182,7 @@ How to tell a slow connection from a playback bug in the browser:
 - Silence the preview with `media.volume = 0`. Setting `media.muted = true` makes Chrome pause the element as background media, which shows up as `Paused` while the position keeps advancing. The media element is not in the DOM, so patch `HTMLMediaElement.prototype.play` to set the volume.
 - To trace a start, wrap `HTMLMediaElement.play` / `pause` / `load`, `URL.createObjectURL` / `revokeObjectURL`, `Storage.prototype.setItem` and `console.error`, and log a timeline relative to the click. A plain start makes one `play()` call; the web TrackPlayer's `add` ends in `goToIndex` → `play`, so a start while the player was already running also shows the app's explicit `play()` as a second, no-op call.
 - Expect a few `net::ERR_FILE_NOT_FOUND` blob requests next to `206` ones around a track change (the previous source's last range request); the Drive `400` errors seen while browsing are metadata calls that ask for `durationMillis`, not playback.
+- Recording in the preview pane: the pane blocks the microphone, so inject a fake one before the page asks (an `AudioContext` oscillator into `createMediaStreamDestination`, returned from a patched `navigator.mediaDevices.getUserMedia`). The pane also reports the page hidden about every two seconds, which stops a take as in the background (`hidden`, shown as `too short` under a second), and throttles timers to one second; override `document.visibilityState` and stop `visibilitychange` in capture to test a take, and expect starts and stops to be up to a second late there.
 - The `mobile-web-runtime-debugging` skill has the full recipe and the scripted-pointer notes.
 
 ## When To Update This Doc
@@ -177,3 +194,4 @@ Update this document whenever any of the following changes:
 - web blob patch mechanics or cleanup behavior
 - background remote-event command bridge shape
 - dependency strategy for TrackPlayer web runtime, including `shaka-player`
+- the recording overlay path (the transport, the voice, the sync controller, or how the track's volume and shaping are shared with it)

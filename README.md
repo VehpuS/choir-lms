@@ -30,9 +30,10 @@ For the MVP, the player is expected to support:
 - named markers at points of a track, shown as flags on the waveform, that jump playback and turn into loops (see [Markers](#markers))
 - a piano for checking pitches against the track and the score (see [Piano](#piano))
 - pitch detection that shows the note you sing, in tune or not, against the piano and the score (see [Pitch detection](#pitch-detection))
+- rehearsal recordings: sing over a playing track, hear the take back with the track, and export it (see [Recording](#recording))
 - native mobile transport integration where practical, including background playback and lock-screen controls
 
-The MVP explicitly does not include offline playback, document collaboration, score annotation, recording overlays, or broader rehearsal management workflows.
+The MVP explicitly does not include offline playback, document collaboration, score annotation, or broader rehearsal management workflows.
 
 ## Lyrics
 
@@ -87,6 +88,20 @@ A singer can turn on the microphone and see the note they are singing, how far i
 - **Minimum volume:** sounds quieter than a cutoff (-60 to -20 dB, default -40) are ignored. Set it from the Pitch view's settings sheet or the `Pitch detection` page in Settings, over a live level meter, so it sits just above the room noise.
 - **On the piano and the score:** the sung key lights up (with an edge pill pointing to it when it is off screen), and in MusicXML or MIDI sheet music the matching noteheads are marked. A transposing part is handled, and while the playing track is shifted in pitch the score follows the shifted note and says `Following track pitch ±N st`. `Show other-octave matches` (a toggle in the sheet music viewer's toolbar, shown only beside a score) also marks the same note in other octaves. A PDF is never marked.
 
+## Recording
+
+A singer can record their own voice over a playing track, then play the take back together with the track to check timing, blend and entrances. Like pitch detection it is web-only for now: native has no microphone capture, so its controls are absent there (tracked in `native-playback-follow-ups`).
+
+- **Turning it on:** `Recording` in the `Practice tools` menu. The first `Record` explains that audio is kept on this device until you delete it, and assumes headphones. Recording stops, keeping what was captured, when you stop it, the app goes to the background, the microphone ends, the track ends, or storage runs low; the reason is shown.
+- **What a recording is:** a child of the track or loop it was made on, not a library file. It stores a timeline that maps its audio to track positions (so seeks, pauses and loop passes are kept) plus the speed, pitch, markers and loop in play, enough to rebuild the overlay and a mix later. Speed and pitch are fixed while recording and while playing a recording back.
+- **Where they are:** `Recordings` in the playback screen's `More actions` menu (this track or loop), and the `Recordings` view in the Library (all of them, with search, filters, sort and bulk actions). Recordings can be queued and added to playlists, and a recording opens its track in the context it was made in.
+- **Storage:** 16-bit mono WAV in its own IndexedDB store that nothing clears automatically; only you delete a recording. Settings and the offline files view show the space used, and the strip shows the time left once under 30 minutes.
+- **Playing it back:** the recording plays through Web Audio over the track's own media element and stays in step through play, pause, seek and loop wrap, with a balance control and a latency `Nudge` that can be saved per output device, or measured with the click calibration.
+- **Export:** the recording alone or a mix over the original track as it was heard, to a download or to Drive (resumable upload, so long files work). Automatic export of copies to Drive is off by default and set under `Settings`, `Recordings`: a folder, recording or mix or both, and Wi-Fi only; the queue runs while the app is open, and deleting a recording never deletes its Drive copies.
+- **Punch ranges:** `Between…` beside `Record` opens a sheet with the waveform; set `In` and `Out` by dragging (snapping to markers and loop ends), tapping marker flags or typing times, choose a pre-roll, and `Arm`. Playing from the pre-roll counts down and the take starts and stops by itself. A range from `Use active loop` is saved as a loop recording.
+
+The sync, mixing and punch logic is in `packages/audio-mixing`; the app side is `packages/mobile-rehearsal-player/src/app/library/recording/`. The overlay path is described in `docs/mobile-cross-platform-audio-playback.md`.
+
 ## Product Direction
 
 This repository is intentionally scaffolded as an Nx workspace rather than a single app so the system can grow into a library of apps and shared packages over time.
@@ -103,7 +118,7 @@ The first change proposal for this direction is `add-mobile-rehearsal-player` un
 
 - `packages/` is the workspace home for future apps and shared libraries
 - `packages/pitch-detection` holds the framework-agnostic pitch-detection pipeline (estimator, gates, smoother, note segmenter); it is imported statically, unlike the lazily loaded `midi-notation`
-- `packages/audio-mixing` holds the framework-agnostic recording sync logic (clock-anchor fit, timeline builder, balance gains, sync controller); the web `Transport` and `Voice` implementations live in the app
+- `packages/audio-mixing` holds the framework-agnostic recording logic (clock-anchor fit, timeline builder, balance gains, sync controller, the offline mix renderer with its SoundTouch stretcher, and the punch range model, state machine and controller); the web `Transport` and `Voice` implementations live in the app
 - Pitch detection third-party licences (both permissive, checked against the installed packages): `pitchy` 4.1.0 (MIT, Copyright 2018-2021 Ian Johnson; its README's licence section is copied from another project, the `LICENSE` file is the authority) and its dependency `fft.js` 4.0.4 (MIT, Copyright Fedor Indutny 2017)
 - `openspec/` contains proposals, designs, specs, and tasks for planned work
 - `nx.json` and the root TypeScript configuration provide workspace-level build and project settings

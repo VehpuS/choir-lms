@@ -78,7 +78,7 @@ openspec status --change "<change-name>"
 - `google-drive` — Google Drive integration logic (depends on `audio-library-models`).
 - `midi-notation` — turns MIDI files into MusicXML staves and lists their parts (depends on `audio-library-models`). It is the app's only lazily loaded workspace project, imported dynamically by the sheet music viewer; Nx forbids static imports of a lazily loaded project, so keep it out of static imports and put anything shared in `audio-library-models`.
 - `pitch-detection` — turns microphone frames into sung notes: the `PitchEstimator` interface, a pitchy-backed estimator, level/clarity gates, a median smoother, and a note segmenter (depends on `audio-library-models`; pitchy is its only third-party dependency). Unlike `midi-notation` it is small enough to import statically; the lazy-loading rule does not apply. Note math shared with the piano and score (frequency to note and cents, `matchSungNote`, `centsZone`) lives in `audio-library-models`.
-- `audio-mixing` — keeps a recording in step with its track: the clock-anchor fit, the recording timeline builder, the balance-to-gain mapping, and the sync controller against small `Transport` and `Voice` interfaces with injected clocks (depends on `audio-library-models`). Web Audio and media-element implementations stay in the app; it is small enough to import statically.
+- `audio-mixing` — keeps a recording in step with its track: the clock-anchor fit, the recording timeline builder, the balance-to-gain mapping, the sync controller against small `Transport` and `Voice` interfaces with injected clocks, the offline mix renderer (`renderMix`, with a SoundTouch-backed `TrackStretcher` that loads `@soundtouchjs/core` by dynamic `import()` because it is ESM-only), and the punch range model, state machine and controller (depends on `audio-library-models`). Web Audio and media-element implementations stay in the app; it is small enough to import statically.
 - `mobile-rehearsal-player` — the Expo/React Native app; depends on all of the above.
 
 Shared packages are kept framework-agnostic; app-facing/framework-specific code lives in `mobile-rehearsal-player`. Prefer reusing/extending a shared package over duplicating domain logic in the app.
@@ -87,7 +87,7 @@ Shared packages are kept framework-agnostic; app-facing/framework-specific code 
 
 - `src/app/App.tsx` + `src/app/routing/AppRouter.tsx` — a custom router; this app does **not** use Expo Router file-based routing.
 - `src/app/screens/` — screen composition (grows into a folder with `index.tsx` when a screen needs multiple files).
-- `src/app/library/` — the core domain surfaces, split by feature: `drive`, `loops`, `playlists`, `playback`, `search`, `saved-rehearsal-library`, `storage`, plus shared `components`, `hooks`, `utils` for that domain.
+- `src/app/library/` — the core domain surfaces, split by feature: `drive`, `loops`, `playlists`, `playback`, `recording`, `search`, `saved-rehearsal-library`, `storage`, plus shared `components`, `hooks`, `utils` for that domain.
 - `src/app/components/` — cross-feature shared components only; feature-local UI stays with its owning feature.
 - `src/config/` — runtime/config-only files.
 - Platform divergence uses `.ios`/`.android`/`.native`/`.web` file siblings behind a shared API, rather than branching logic inline.

@@ -125,7 +125,7 @@ The piano is currently opened from three places: the shell tab bar (`Piano` item
 A rehearsal recording feature is planned as its own change (`rehearsal-recording`), explored after this one. It would capture from the same microphone path, so `PcmSource` is shaped for more than one consumer even though only pitch detection uses it here:
 
 - **Fan-out:** the source can have several subscribers at once and owns the single microphone stream, starting when the first subscribes and stopping after the last leaves. Pitch detection and a recorder must not each open the microphone.
-- **Timestamped frames:** each frame carries a capture time on a clock shared with playback where the platform allows it (the audio context time on web), so a later recorder can align a take to track time. Pitch detection ignores the timestamp.
+- **Timestamped frames:** each frame carries a capture time on a clock shared with playback where the platform allows it (the audio context time on web), so a later recorder can align a take to track time. Pitch detection ignores the timestamp. (Added 2026-11-04: there turned out to be no clock shared with playback; see Decisions 1 and 2 of `openspec/changes/rehearsal-recording/design.md`.)
 - **Unprocessed audio:** capture keeps echo cancellation, noise suppression, and auto gain off on web, which suits both pitch work and a faithful recording.
 - **Nothing stored here:** the pitch pipeline keeps and writes no samples; the "nothing is stored" requirement belongs to pitch detection. Storing audio is an explicit, separate feature with its own consent and storage rules, owned by the recording change.
 
