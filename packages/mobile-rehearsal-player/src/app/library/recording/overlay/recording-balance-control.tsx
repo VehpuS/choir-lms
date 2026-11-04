@@ -4,24 +4,24 @@ import { OutlinedActionButton } from '../../../components/outlined-action-button
 import { appTheme } from '../../../utils/theme';
 import { getRecordingsStore } from '../recordings-store-instance';
 import { RecordingBalanceSlider } from './recording-balance-slider';
-import {
-  canSaveBalanceAsDefault,
-  SAVE_BALANCE_LABEL,
-} from './recording-mix-model';
+import { RecordingLevelControl } from './recording-level-control';
+import { canSaveMixAsDefault, SAVE_MIX_LABEL } from './recording-level-model';
 import {
   markRecordingMixSaved,
   setRecordingMixBalance,
+  setRecordingMixLevel,
   useRecordingMixState,
 } from './recording-mix-store';
 
 /**
- * Balance between the track and the recording that is playing. Moving it
- * changes the sound for this listening session only; `Save as default` keeps
- * the position as the recording's saved balance, which exports and playlists
- * start from (rehearsal-recording design Decisions 5 and 9).
+ * Balance and level of the recording that is playing. Moving either changes
+ * the sound for this listening session only; `Save as default` keeps both as
+ * the recording's saved values, which exports and playlists start from
+ * (rehearsal-recording design Decisions 5, 9 and 21).
  */
 export const RecordingBalanceControl = () => {
-  const { balance, recordingId, savedBalance } = useRecordingMixState();
+  const { balance, levelDb, recordingId, savedBalance, savedLevelDb } =
+    useRecordingMixState();
 
   if (recordingId === null) {
     return null;
@@ -29,7 +29,7 @@ export const RecordingBalanceControl = () => {
 
   const saveAsDefault = () => {
     void getRecordingsStore()
-      .update(recordingId, { balance })
+      .update(recordingId, { balance, levelDb })
       .then(markRecordingMixSaved)
       .catch(() => undefined);
   };
@@ -40,10 +40,18 @@ export const RecordingBalanceControl = () => {
         onChange={setRecordingMixBalance}
         value={balance}
       />
-      {canSaveBalanceAsDefault(balance, savedBalance) ? (
+      <RecordingLevelControl
+        levelDb={levelDb}
+        onChange={setRecordingMixLevel}
+        recordingId={recordingId}
+      />
+      {canSaveMixAsDefault(
+        { balance, levelDb },
+        { balance: savedBalance, levelDb: savedLevelDb },
+      ) ? (
         <View style={styles.actions}>
           <OutlinedActionButton
-            label={SAVE_BALANCE_LABEL}
+            label={SAVE_MIX_LABEL}
             onPress={saveAsDefault}
           />
         </View>

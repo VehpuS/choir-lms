@@ -5,9 +5,12 @@ import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-mo
 import type { useSavedTrackPlayback } from '../../playback/hooks/use-saved-track-playback';
 import { resolveRecordingPlayback } from '../recording-playback-item';
 import { getRecordingsStore } from '../recordings-store-instance';
-import { setRecordingMixBalanceFor } from './recording-mix-store';
 import {
-  setPendingPreviewBalance,
+  setRecordingMixBalanceFor,
+  setRecordingMixLevelFor,
+} from './recording-mix-store';
+import {
+  setPendingPreview,
   subscribeToRecordingPreview,
   type RecordingPreviewRequest,
 } from './recording-preview-request';
@@ -25,7 +28,7 @@ type RecordingPreviewHostProps = {
 
 /**
  * Plays a recording over its track on behalf of a place that is setting its
- * balance, at the balance on screen, and stops it again when that place
+ * balance and level, at the balance on screen, and stops it again when that place
  * closes. A recording that is already the active item just follows the new
  * balance; one that is not is started with that balance instead of its saved
  * one (the saved balance is untouched until the user keeps it).
@@ -57,6 +60,10 @@ export const RecordingPreviewHost = ({
       if (active && isActive) {
         setRecordingMixBalanceFor(request.recordingId, request.balance);
 
+        if (request.levelDb !== undefined) {
+          setRecordingMixLevelFor(request.recordingId, request.levelDb);
+        }
+
         if (!isPlaying) {
           await player.togglePlayableItemPlayback(active);
         }
@@ -76,7 +83,10 @@ export const RecordingPreviewHost = ({
         return;
       }
 
-      setPendingPreviewBalance(request.recordingId, request.balance);
+      setPendingPreview(request.recordingId, {
+        balance: request.balance,
+        levelDb: request.levelDb,
+      });
       await player.togglePlayableItemPlayback(resolution.item);
     };
 

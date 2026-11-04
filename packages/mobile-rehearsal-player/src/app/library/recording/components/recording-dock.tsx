@@ -1,4 +1,7 @@
-import type { PlayableItem } from '@org/audio-library-models';
+import {
+  getRecordingLevelDb,
+  type PlayableItem,
+} from '@org/audio-library-models';
 import {
   useCallback,
   useEffect,
@@ -40,16 +43,12 @@ import {
   type AutoExportState,
 } from '../recording-save-sheet-model';
 import { getRecordingsStore } from '../recordings-store-instance';
-import {
-  setRecordingMixBalanceFor,
-  syncRecordingMixSaved,
-} from '../overlay/recording-mix-store';
 import { useAutoExportController } from '../export/auto-export-controller';
 import { DEFAULT_EXPORT_FOLDER_NAME } from '../export/auto-export-settings';
 import { useAutoExportSettings } from '../export/auto-export-settings-store';
 import { requestRecordingExport } from '../export/recording-export-request';
-import { requestRecordingPreview } from '../overlay/recording-preview-request';
 import { useRecordingStarter } from './use-recording-starter';
+import { useSavedRecordingMix } from './use-saved-recording-mix';
 import { RecordingSaveSheet } from './recording-save-sheet';
 import { RECORDING_STRIP_HEIGHT, RecordingStrip } from './recording-strip';
 
@@ -192,16 +191,7 @@ const RecordingDockContent = ({
     [saved],
   );
 
-  const setSavedBalance = useCallback(
-    (balance: number) => {
-      if (saved && balance !== saved.balance) {
-        void getRecordingsStore()
-          .update(saved.id, { balance })
-          .then(() => syncRecordingMixSaved(saved.id, balance));
-      }
-    },
-    [saved],
-  );
+  const savedMix = useSavedRecordingMix(saved);
 
   const deleteSaved = useCallback(() => {
     if (saved) {
@@ -268,6 +258,8 @@ const RecordingDockContent = ({
             stop: state.stopMessage,
           })}
           balance={saved.balance}
+          levelDb={getRecordingLevelDb(saved)}
+          recordingId={saved.id}
           name={saved.name}
           onDelete={deleteSaved}
           onDone={session.dismiss}
@@ -276,20 +268,10 @@ const RecordingDockContent = ({
             session.dismiss();
           }}
           onRename={renameSaved}
-          onPreview={(balance) =>
-            requestRecordingPreview({
-              kind: 'play',
-              recordingId: saved.id,
-              balance,
-            })
-          }
-          onPreviewBalanceChange={(balance) =>
-            setRecordingMixBalanceFor(saved.id, balance)
-          }
-          onSetBalance={setSavedBalance}
-          onStopPreview={() =>
-            requestRecordingPreview({ kind: 'stop', recordingId: saved.id })
-          }
+          onPreview={savedMix.preview}
+          onPreviewMixChange={savedMix.changeMix}
+          onSetMix={savedMix.setSavedMix}
+          onStopPreview={savedMix.stopPreview}
           onTurnOnAutoExport={openRecordingsSettings}
         />
       ) : null}

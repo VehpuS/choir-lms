@@ -17,7 +17,7 @@ import {
   useRecordingSyncState,
 } from './recording-sync-store';
 import { setRecordingOverlayStatus } from './recording-overlay-status';
-import { takePendingPreviewBalance } from './recording-preview-request';
+import { takePendingPreview } from './recording-preview-request';
 import {
   startRecordingOverlay,
   type RecordingOverlayHandle,
@@ -54,9 +54,11 @@ export const RecordingOverlayHost = ({
     playback.playbackState !== 'loading' &&
     playback.playbackState !== 'none';
   const [overlay, setOverlay] = useState<RecordingOverlayHandle | null>(null);
-  // The recording's saved level; the live level and Normalize arrive with the control (15.4).
-  const [levelDb, setLevelDb] = useState(0);
-  const { balance, recordingId: mixedRecordingId } = useRecordingMixState();
+  const {
+    balance,
+    levelDb,
+    recordingId: mixedRecordingId,
+  } = useRecordingMixState();
   const { nudgeMs, recordingId: syncedRecordingId } = useRecordingSyncState();
 
   useEffect(() => {
@@ -74,14 +76,15 @@ export const RecordingOverlayHost = ({
           return null;
         }
 
-        setLevelDb(getRecordingLevelDb(recording));
+        // A preview may have asked to start at a balance and level that are not saved yet.
+        const preview = takePendingPreview(recording.id);
 
-        // A preview may have asked to start at a balance that is not saved yet.
-        startRecordingMix(
-          recording.id,
-          recording.balance,
-          takePendingPreviewBalance(recording.id),
-        );
+        startRecordingMix(recording.id, {
+          savedBalance: recording.balance,
+          savedLevelDb: getRecordingLevelDb(recording),
+          startBalance: preview?.balance,
+          startLevelDb: preview?.levelDb,
+        });
         startRecordingSync(recording.id, recording.nudgeMs);
 
         const { range } = item ?? {};

@@ -4,6 +4,8 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { appTheme } from '../../../utils/theme';
 import { RecordingBalanceSlider } from '../overlay/recording-balance-slider';
+import { RecordingLevelControl } from '../overlay/recording-level-control';
+import type { SavedMix } from './use-saved-recording-mix';
 import { BottomSheetSurface } from '../../components/bottom-sheet-surface';
 import {
   MenuGroup,
@@ -23,14 +25,16 @@ type RecordingSaveSheetProps = {
   model: SaveSheetModel;
   /** The saved name; the field starts on it. */
   name: string;
-  /** The saved balance the slider starts at (0 to 100). */
+  recordingId: string;
+  /** The saved balance the slider starts at (0 to 100), and the saved level in dB. */
   balance: number;
-  /** Called with the balance when the sheet is done or leaves for export. */
-  onSetBalance: (balance: number) => void;
-  /** Plays the recording over its track at this balance, so it can be heard. */
-  onPreview: (balance: number) => void;
-  /** The balance moved while it may be playing; the sound follows it. */
-  onPreviewBalanceChange: (balance: number) => void;
+  levelDb: number;
+  /** Called with both when the sheet is done or leaves for export. */
+  onSetMix: (mix: SavedMix) => void;
+  /** Plays the recording over its track at this balance and level, so it can be heard. */
+  onPreview: (mix: SavedMix) => void;
+  /** Either moved while it may be playing; the sound follows it. */
+  onPreviewMixChange: (mix: SavedMix) => void;
   /** Stops a preview when the sheet is left. */
   onStopPreview: () => void;
   /** Called with whatever is typed when the sheet is done or leaves the name field. */
@@ -54,31 +58,39 @@ const Detail = ({ children }: { children: string }) => (
 export const RecordingSaveSheet = ({
   model,
   balance: savedBalance,
+  levelDb: savedLevelDb,
+  recordingId,
   name,
   onDelete,
   onDone,
   onExport,
   onRename,
   onPreview,
-  onPreviewBalanceChange,
-  onSetBalance,
+  onPreviewMixChange,
+  onSetMix,
   onStopPreview,
   onTurnOnAutoExport,
 }: RecordingSaveSheetProps) => {
   const [typed, setTyped] = useState(name);
   const [balance, setBalance] = useState(savedBalance);
+  const [levelDb, setLevelDb] = useState(savedLevelDb);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const { autoExport } = model;
 
   const changeBalance = (next: number) => {
     setBalance(next);
-    onPreviewBalanceChange(next);
+    onPreviewMixChange({ balance: next, levelDb });
+  };
+
+  const changeLevel = (next: number) => {
+    setLevelDb(next);
+    onPreviewMixChange({ balance, levelDb: next });
   };
 
   const finish = () => {
     onStopPreview();
     onRename(typed);
-    onSetBalance(balance);
+    onSetMix({ balance, levelDb });
     onDone();
   };
 
@@ -92,7 +104,7 @@ export const RecordingSaveSheet = ({
               onPress={() => {
                 onStopPreview();
                 onRename(typed);
-                onSetBalance(balance);
+                onSetMix({ balance, levelDb });
                 onExport();
               }}
             />
@@ -156,10 +168,15 @@ export const RecordingSaveSheet = ({
             <OutlinedActionButton
               icon="play"
               label={SAVE_SHEET_COPY.previewLabel}
-              onPress={() => onPreview(balance)}
+              onPress={() => onPreview({ balance, levelDb })}
             />
           </View>
           <RecordingBalanceSlider onChange={changeBalance} value={balance} />
+          <RecordingLevelControl
+            levelDb={levelDb}
+            onChange={changeLevel}
+            recordingId={recordingId}
+          />
           <Detail>{SAVE_SHEET_COPY.balanceNote}</Detail>
         </View>
         <Detail>{model.storedNote}</Detail>

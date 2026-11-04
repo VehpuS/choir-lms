@@ -6,14 +6,15 @@
  * player (rehearsal-recording design Decision 5).
  */
 export type RecordingPreviewRequest =
-  | { kind: 'play'; recordingId: string; balance: number }
+  | { kind: 'play'; recordingId: string; balance: number; levelDb?: number }
   | { kind: 'stop'; recordingId: string };
 
 type Listener = (request: RecordingPreviewRequest) => void;
 
 const listeners = new Set<Listener>();
-/** The balance a preview wants for the next start of a recording, until it is used. */
-const pendingBalances = new Map<string, number>();
+/** The balance and level a preview wants for the next start of a recording, until used. */
+export type PendingPreview = { balance: number; levelDb?: number };
+const pendingPreviews = new Map<string, PendingPreview>();
 
 export const requestRecordingPreview = (request: RecordingPreviewRequest) => {
   listeners.forEach((listener) => listener(request));
@@ -27,20 +28,20 @@ export const subscribeToRecordingPreview = (listener: Listener) => {
   };
 };
 
-export const setPendingPreviewBalance = (
+export const setPendingPreview = (
   recordingId: string,
-  balance: number,
+  preview: PendingPreview,
 ) => {
-  pendingBalances.set(recordingId, balance);
+  pendingPreviews.set(recordingId, preview);
 };
 
-/** The balance to start at, once; the saved one applies from then on. */
-export const takePendingPreviewBalance = (
+/** What to start at, once; the saved balance and level apply from then on. */
+export const takePendingPreview = (
   recordingId: string,
-): number | undefined => {
-  const balance = pendingBalances.get(recordingId);
+): PendingPreview | undefined => {
+  const preview = pendingPreviews.get(recordingId);
 
-  pendingBalances.delete(recordingId);
+  pendingPreviews.delete(recordingId);
 
-  return balance;
+  return preview;
 };

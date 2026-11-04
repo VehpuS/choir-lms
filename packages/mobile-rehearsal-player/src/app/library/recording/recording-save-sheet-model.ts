@@ -19,9 +19,9 @@ export const MAX_RECORDING_NAME_LENGTH = 80;
 export const SAVE_SHEET_COPY = {
   title: 'Recording saved',
   nameLabel: 'Name',
-  balanceLabel: 'Starting balance',
+  balanceLabel: 'Starting balance and level',
   balanceNote:
-    'Where it starts when played, queued, or exported. Preview plays it over the track so you can hear the balance.',
+    'Where they start when played, queued, or exported. Preview plays it over the track so you can hear them. Normalize sets the level that puts the loudest part just under full volume.',
   previewLabel: 'Preview',
   storedNote:
     'Saved on this device. Recordings are never removed automatically.',

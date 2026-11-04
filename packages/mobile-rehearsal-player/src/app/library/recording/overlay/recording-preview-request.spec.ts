@@ -3,9 +3,9 @@ import { afterEach, describe, it } from 'node:test';
 
 import {
   requestRecordingPreview,
-  setPendingPreviewBalance,
+  setPendingPreview,
   subscribeToRecordingPreview,
-  takePendingPreviewBalance,
+  takePendingPreview,
   type RecordingPreviewRequest,
 } from './recording-preview-request.js';
 
@@ -31,17 +31,17 @@ describe('recording preview request', () => {
   });
 
   it('hands a pending preview balance over once', () => {
-    setPendingPreviewBalance('r1', 90);
+    setPendingPreview('r1', { balance: 90, levelDb: 4 });
 
-    assert.equal(takePendingPreviewBalance('r1'), 90);
-    assert.equal(takePendingPreviewBalance('r1'), undefined);
+    assert.deepEqual(takePendingPreview('r1'), { balance: 90, levelDb: 4 });
+    assert.equal(takePendingPreview('r1'), undefined);
   });
 
   it('keeps each recording’s pending balance apart', () => {
-    setPendingPreviewBalance('r1', 10);
-    setPendingPreviewBalance('r2', 20);
+    setPendingPreview('r1', { balance: 10 });
+    setPendingPreview('r2', { balance: 20 });
 
-    assert.equal(takePendingPreviewBalance('r2'), 20);
-    assert.equal(takePendingPreviewBalance('r1'), 10);
+    assert.deepEqual(takePendingPreview('r2'), { balance: 20 });
+    assert.deepEqual(takePendingPreview('r1'), { balance: 10 });
   });
 });
