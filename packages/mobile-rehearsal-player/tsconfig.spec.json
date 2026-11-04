@@ -7,7 +7,10 @@
     "jsx": "react-jsx",
     "noEmit": true,
     "noUnusedLocals": false,
-    "tsBuildInfoFile": "dist/tsconfig.spec.tsbuildinfo"
+    "composite": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "incremental": false
   },
   "include": [
     "src/**/*.ts",
