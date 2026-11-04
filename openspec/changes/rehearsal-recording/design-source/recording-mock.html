@@ -108,6 +108,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent-text
 .prow .k { width: 58px; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); flex: none; }
 .prow input[type=range] { flex: 1; accent-color: var(--mine); min-width: 0; }
 .prow .end { font-size: 11px; color: var(--text-muted); width: 34px; flex: none; text-align: center; }
+.prow .end.r { width: 56px; font-family: var(--mono); color: var(--text); }
+.mixhead { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 36px; background: transparent; border: 0; padding: 0; color: var(--text); font: inherit; cursor: pointer; text-align: left; }
+.mixhead .mh { font-size: 13px; font-weight: 600; }
+.mixhead .ms { flex: 1; text-align: right; font-size: 12px; color: var(--text-muted); font-family: var(--mono); }
+.mixhead svg { width: 16px; height: 16px; flex: none; color: var(--text-muted); }
 .step { min-width: 40px; height: 34px; border-radius: 10px; border: 1px solid var(--divider); background: transparent; color: var(--text); font-family: var(--mono); font-size: 12px; cursor: pointer; padding: 0 6px; }
 .val { font-family: var(--mono); font-size: 14px; font-weight: 600; min-width: 62px; text-align: center; color: var(--mine); }
 .links { display: flex; gap: 14px; font-size: 12px; flex-wrap: wrap; }
@@ -304,7 +309,7 @@ const tagsOf = (r) => [
 
 const BASE = {
   screen: 'play', tools: false, rec: 'off', sheet: null, ctx: null, loopTrack: false, view: 'track', panelFrom: 'track',
-  balance: 50, nudge: 12, expKind: 'mix', expDest: 'drive', expStep: 'choose', cal: 'intro', stop: 'hidden',
+  balance: 50, level: 4.5, normMsg: '', mixOpen: true, nudge: 12, expKind: 'mix', expDest: 'drive', expStep: 'choose', cal: 'intro', stop: 'hidden',
   autoExp: true, expWhat: 'both', wifi: 'wifi', pin: 550, pout: 800, pre: 3, after: true, lib: { q: '', f: 'all', sel: [], mode: false }, menuRec: 1, plSheet: false,
   prompt: 'one', remember: false, setPolicy: 'ask', choose: [true, true, false]
 };
@@ -316,7 +321,7 @@ const PRESETS = {
   readylow: P({ rec: 'ready', low: 25 }), reclow: P({ rec: 'recording', low: 4 }), refused: P({ rec: 'refused' }), full: P({ rec: 'stopped', stop: 'full' }),
   stopped: P({ rec: 'stopped' }), short: P({ rec: 'stopped', stop: 'short' }), save: P({ rec: 'saving' }),
   panel: P({ sheet: 'panel' }), panelA: P({ sheet: 'panel', view: 'adjusted' }), panelP: P({ sheet: 'panel', view: 'parent' }), loopview: P({ screen: 'loop' }), loopA: P({ screen: 'loop', view: 'adjusted' }),
-  ctxseg: P({ ctx: 1 }), ctxloop: P({ ctx: 2, loopTrack: true }), ctxadj: P({ ctx: 3 }),   sync: P({ ctx: 1, sheet: 'sync' }), cal: P({ ctx: 1, sheet: 'cal' }), calfail: P({ ctx: 1, sheet: 'cal', cal: 'fail' }),
+  ctxseg: P({ ctx: 1 }), ctxloop: P({ ctx: 2, loopTrack: true }), ctxadj: P({ ctx: 3 }), ctxmix: P({ ctx: 1, mixOpen: false }),   sync: P({ ctx: 1, sheet: 'sync' }), cal: P({ ctx: 1, sheet: 'cal' }), calfail: P({ ctx: 1, sheet: 'cal', cal: 'fail' }),
   punch: P({ rec: 'ready', sheet: 'punch' }), punchbad: P({ rec: 'ready', sheet: 'punch', pin: 600, pout: 560 }), armed: P({ rec: 'armed' }), count: P({ rec: 'countdown' }), punchrec: P({ rec: 'punchrec' }),
   lib: P({ screen: 'library' }), libf: P({ screen: 'library', lib: { q: '', f: 'loop', sel: [], mode: false } }), libs: P({ screen: 'library', lib: { q: 'chorus', f: 'all', sel: [], mode: false } }),
   libsel: P({ screen: 'library', lib: { q: '', f: 'all', sel: [2, 5, 6], mode: true } }), libmenu: P({ screen: 'library', sheet: 'rowmenu' }), libfilter: P({ screen: 'library', sheet: 'filter' }), addpl: P({ screen: 'library', sheet: 'addpl', lib: { q: '', f: 'all', sel: [2, 5], mode: true } }),
@@ -390,13 +395,22 @@ function strip(s) {
   if (r === 'ready' || r === 'saving') { return `<div class="strip"><div class="msg grow"><b>Ready.</b> ${s.low ? `<span class="${s.low < 5 ? 'warnline' : ''}">About ${s.low} min left.</span> ` : ''}Seek to where you want to start.</div><div class="split"><button class="btn rec" data-act="start">${I.rec}Record</button><button class="btn recdrop" data-act="recmenu" aria-label="More">${I.down}</button></div></div>`; }
   return '';
 }
+const levelText = (v) => (v === 0 ? '0 dB' : (v > 0 ? '+' : '−') + Math.abs(v) + ' dB');
+const balanceText = (b) => (b <= 0 ? 'Track only' : b >= 100 ? 'Recording only' : b === 50 ? 'Even' : b + ' / 100');
 function overlayPanel(s) {
   if (!s.ctx || s.rec === 'recording') { return ''; }
   const nudge = (s.nudge > 0 ? '+' : '') + s.nudge + ' ms';
-  return `<div class="panel" aria-label="Recording controls">
-    <div class="prow"><span class="k">Balance</span><span class="end">Track</span><input type="range" min="0" max="100" value="${s.balance}" data-act="balance" aria-label="Balance between track and recording"><span class="end">Mine</span></div>
+  const summary = balanceText(s.balance) + ' · ' + levelText(s.level) + ' · ' + nudge;
+  const rows = `
+    <div class="prow"><span class="k">Balance</span><span class="end">Track</span><input type="range" min="0" max="100" value="${s.balance}" data-act="balance" aria-label="Balance between track and recording"><span class="end r">Mine</span></div>
+    <div class="prow"><span class="k">Level</span><span class="end"></span><input type="range" min="-12" max="18" step="0.5" value="${s.level}" data-act="level" aria-label="Recording level"><span class="end r">${levelText(s.level)}</span></div>
+    <div class="prow"><span class="hint" style="flex:1">${s.normMsg}</span><div class="links"><a data-act="mix-save">Save as default</a><a data-act="normalize">Normalize</a></div></div>
     <div class="prow"><span class="k">Sync</span><button class="step" data-act="n-10">−10</button><button class="step" data-act="n-1">−1</button><span class="val">${nudge}</span><button class="step" data-act="n+1">+1</button><button class="step" data-act="n+10">+10</button></div>
-    <div class="links"><a data-act="n-reset">Reset</a><a data-act="n-device">Use for this device</a><a data-act="cal">Calibrate with clicks…</a><a data-act="export">Export…</a></div>
+    <div class="links"><a data-act="n-reset">Reset</a><a data-act="n-device">Use for this device</a><a data-act="cal">Calibrate with clicks…</a></div>`;
+  return `<div class="panel" aria-label="Recording controls">
+    <button class="mixhead" data-act="mix-toggle" aria-expanded="${s.mixOpen}"><span class="mh">Balance and sync</span>${s.mixOpen ? '' : '<span class="ms">' + summary + '</span>'}${s.mixOpen ? '<span style="flex:1"></span>' + I.down.replace('<svg', '<svg style="transform:rotate(180deg)"') : I.down}</button>
+    ${s.mixOpen ? rows : ''}
+    <div class="links"><a data-act="export">Export…</a></div>
   </div>`;
 }
 const recCount = () => RECS.filter((r) => r.track === 'T' || r.track === 'A').length;
@@ -692,6 +706,9 @@ document.addEventListener('click', (e) => {
   else if (a === 'n+1') { S.nudge = Math.min(250, S.nudge + 1); }
   else if (a === 'n+10') { S.nudge = Math.min(250, S.nudge + 10); }
   else if (a === 'n-reset') { S.nudge = 0; }
+  else if (a === 'mix-toggle') { S.mixOpen = !S.mixOpen; }
+  else if (a === 'normalize') { S.level = 9.5; S.normMsg = 'Loudest part set to just under full volume.'; }
+  else if (a === 'mix-save') { S.normMsg = 'Saved as the default for this recording.'; }
   else if (a === 'n-device' || a === 'sheet-sync') { S.sheet = 'sync'; }
   else if (a === 'cal') { S.sheet = 'cal'; S.cal = 'intro'; }
   else if (a === 'cal-run') { S.cal = 'running'; mount(); setTimeout(() => { S.cal = 'ok'; mount(); }, 1200); return; }
@@ -737,6 +754,7 @@ document.addEventListener('input', (e) => {
   if (!el) { return; }
   const a = el.dataset.act;
   if (a === 'balance') { S.balance = Number(el.value); }
+  else if (a === 'level') { S.level = Number(el.value); S.normMsg = ''; mount(); }
   else if (a === 'q') { S.lib.q = el.value; S.focusQ = true; mount(); }
   else if (a === 'pin' || a === 'pout') {
     let v = Number(el.value);
@@ -778,6 +796,7 @@ const G = [
   ['ctxseg', 'Segment context', 'Only the recorded range; its 0.7× +2 applied; all locked.'],
   ['ctxloop', 'Loop context', 'The loop opens; passes follow the loop.'],
   ['ctxadj', 'Adjusted copy context', 'Whole copy with its adjustment locked.'],
+  ['ctxmix', 'Balance and sync, collapsed', 'One line with balance, level and sync; tap to open. Open shows aligned sliders, Normalize and Save as default.'],
   ['sync', 'Sync sheet', '1 ms and 10 ms steps, ±250 ms, Use for this device.'],
   ['cal', 'Calibrate (opt-in)', 'Offers adjusting by hand instead.'],
   ['calfail', 'Clicks not heard', 'Says why; manual path stays.'],
