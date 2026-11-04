@@ -8,6 +8,11 @@ import {
 } from '../../../components/interaction-guard';
 import { appTheme } from '../../../utils/theme';
 import {
+  MIX_LABEL_WIDTH,
+  MIX_LEFT_END_WIDTH,
+  MIX_RIGHT_END_WIDTH,
+} from './recording-mix-layout';
+import {
   LEVEL_CONTROL_LABEL,
   LEVEL_HEADING,
   LEVEL_MAX_DB,
@@ -34,6 +39,7 @@ export const RecordingLevelSlider = ({
 }: RecordingLevelSliderProps) => (
   <View style={styles.row}>
     <Text style={styles.heading}>{LEVEL_HEADING}</Text>
+    <View style={styles.leftEnd} />
     <View
       {...interactionGuardProps}
       style={[continuousInteractionGuardStyle, styles.slider]}
@@ -64,12 +70,17 @@ export const RecordingLevelSlider = ({
 );
 
 const styles = StyleSheet.create({
-  heading: { ...type.rowMeta, color: colors.textMuted },
+  heading: {
+    ...type.rowMeta,
+    color: colors.textMuted,
+    width: MIX_LABEL_WIDTH,
+  },
+  leftEnd: { width: MIX_LEFT_END_WIDTH },
   readout: {
     ...type.rowMeta,
     color: colors.text,
     fontVariant: ['tabular-nums'],
-    minWidth: 56,
+    width: MIX_RIGHT_END_WIDTH,
     textAlign: 'right',
   },
   row: {

@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { appTheme } from '../../../utils/theme';
 import { getRecordingsStore } from '../recordings-store-instance';
 import { RecordingLevelSlider } from './recording-level-slider';
+import { RecordingMixLink } from './recording-mix-link';
 import { NORMALIZE_LABEL, NORMALIZE_MESSAGES } from './recording-level-model';
 import { normalizeRecording } from './recording-normalize';
 
@@ -14,6 +14,8 @@ type RecordingLevelControlProps = {
   recordingId: string;
   levelDb: number;
   onChange: (levelDb: number) => void;
+  /** Other actions for the same line, to the left of `Normalize` (`Save as default`). */
+  extraActions?: ReactNode;
 };
 
 /**
@@ -23,6 +25,7 @@ type RecordingLevelControlProps = {
  * can be moved afterwards, and its message stays until it is.
  */
 export const RecordingLevelControl = ({
+  extraActions,
   levelDb,
   onChange,
   recordingId,
@@ -80,7 +83,8 @@ export const RecordingLevelControl = ({
             {message}
           </Text>
         ) : null}
-        <OutlinedActionButton
+        {extraActions}
+        <RecordingMixLink
           disabled={isScanning}
           label={NORMALIZE_LABEL}
           onPress={() => void normalize()}
@@ -94,7 +98,7 @@ const styles = StyleSheet.create({
   actions: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: space.sm,
+    gap: space.md,
     justifyContent: 'flex-end',
     paddingBottom: space.xs,
   },

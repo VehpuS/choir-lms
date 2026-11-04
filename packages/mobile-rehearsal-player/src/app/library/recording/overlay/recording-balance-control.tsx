@@ -1,10 +1,9 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
-import { OutlinedActionButton } from '../../../components/outlined-action-button';
-import { appTheme } from '../../../utils/theme';
 import { getRecordingsStore } from '../recordings-store-instance';
 import { RecordingBalanceSlider } from './recording-balance-slider';
 import { RecordingLevelControl } from './recording-level-control';
+import { RecordingMixLink } from './recording-mix-link';
 import { canSaveMixAsDefault, SAVE_MIX_LABEL } from './recording-level-model';
 import {
   markRecordingMixSaved,
@@ -41,25 +40,18 @@ export const RecordingBalanceControl = () => {
         value={balance}
       />
       <RecordingLevelControl
+        extraActions={
+          canSaveMixAsDefault(
+            { balance, levelDb },
+            { balance: savedBalance, levelDb: savedLevelDb },
+          ) ? (
+            <RecordingMixLink label={SAVE_MIX_LABEL} onPress={saveAsDefault} />
+          ) : null
+        }
         levelDb={levelDb}
         onChange={setRecordingMixLevel}
         recordingId={recordingId}
       />
-      {canSaveMixAsDefault(
-        { balance, levelDb },
-        { balance: savedBalance, levelDb: savedLevelDb },
-      ) ? (
-        <View style={styles.actions}>
-          <OutlinedActionButton
-            label={SAVE_MIX_LABEL}
-            onPress={saveAsDefault}
-          />
-        </View>
-      ) : null}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  actions: { alignItems: 'flex-end', paddingBottom: appTheme.space.xs },
-});

@@ -8,7 +8,13 @@ import {
 } from '../../../components/interaction-guard';
 import { appTheme } from '../../../utils/theme';
 import {
+  MIX_LABEL_WIDTH,
+  MIX_LEFT_END_WIDTH,
+  MIX_RIGHT_END_WIDTH,
+} from './recording-mix-layout';
+import {
   BALANCE_CONTROL_LABEL,
+  BALANCE_HEADING,
   BALANCE_MAX_LABEL,
   BALANCE_MIN_LABEL,
   describeBalance,
@@ -33,7 +39,8 @@ export const RecordingBalanceSlider = ({
   value,
 }: RecordingBalanceSliderProps) => (
   <View style={styles.row}>
-    <Text style={styles.end}>{BALANCE_MIN_LABEL}</Text>
+    <Text style={styles.heading}>{BALANCE_HEADING}</Text>
+    <Text style={styles.leftEnd}>{BALANCE_MIN_LABEL}</Text>
     <View
       {...interactionGuardProps}
       style={[continuousInteractionGuardStyle, styles.slider]}
@@ -59,12 +66,27 @@ export const RecordingBalanceSlider = ({
         />
       </AccessibleSlider>
     </View>
-    <Text style={styles.end}>{BALANCE_MAX_LABEL}</Text>
+    <Text style={styles.rightEnd}>{BALANCE_MAX_LABEL}</Text>
   </View>
 );
 
 const styles = StyleSheet.create({
-  end: { ...type.rowMeta, color: colors.textMuted },
+  heading: {
+    ...type.rowMeta,
+    color: colors.textMuted,
+    width: MIX_LABEL_WIDTH,
+  },
+  leftEnd: {
+    ...type.rowMeta,
+    color: colors.textMuted,
+    width: MIX_LEFT_END_WIDTH,
+  },
+  rightEnd: {
+    ...type.rowMeta,
+    color: colors.textMuted,
+    textAlign: 'right',
+    width: MIX_RIGHT_END_WIDTH,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

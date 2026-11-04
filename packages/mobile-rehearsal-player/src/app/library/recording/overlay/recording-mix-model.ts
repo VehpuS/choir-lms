@@ -11,6 +11,7 @@ import { balanceToGains } from '@org/audio-mixing';
  * volume still decides how loud the pair is, so both sides are scaled by it.
  */
 
+export const BALANCE_HEADING = 'Balance';
 export const BALANCE_MIN_LABEL = 'Track';
 export const BALANCE_MAX_LABEL = 'Mine';
 export const BALANCE_CONTROL_LABEL = 'Balance between track and recording';
