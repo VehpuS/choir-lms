@@ -183,7 +183,7 @@ describe('recording strip model', () => {
       getRecordingStripModel({
         hasTrack: true,
         markers: {},
-        punch: { span: 'Chorus → Bridge', state },
+        punch: { outLabel: 'Bridge', span: 'Chorus → Bridge', state },
         session: session(),
       });
 
@@ -216,11 +216,33 @@ describe('recording strip model', () => {
       assert.equal(withPunch({ phase: 'recording', range }).kind, 'ready');
     });
 
+    it('shows where a punch take stops and how long is left, in place of the markers', () => {
+      const recording = getRecordingStripModel({
+        hasTrack: true,
+        markers: { next: { name: 'Coda', positionMs: 1000 } },
+        punch: {
+          outLabel: 'Bridge',
+          span: 'Chorus → Bridge',
+          state: { phase: 'recording', range, remainingMs: 37_000 },
+        },
+        session: session({ phase: 'recording', elapsedMs: 14_000 }),
+      });
+
+      assert.ok(recording.kind === 'recording');
+      assert.equal(recording.punchStops, 'Stops at Bridge in 0:37');
+      assert.equal(recording.punchRange, 'Range · Chorus → Bridge');
+      assert.equal(recording.next, undefined);
+    });
+
     it('never hides a take that is being captured', () => {
       const recording = getRecordingStripModel({
         hasTrack: true,
         markers: {},
-        punch: { span: 'x', state: { phase: 'armed', range } },
+        punch: {
+          outLabel: 'x',
+          span: 'x',
+          state: { phase: 'armed', range },
+        },
         session: session({ phase: 'recording', elapsedMs: 1000 }),
       });
 

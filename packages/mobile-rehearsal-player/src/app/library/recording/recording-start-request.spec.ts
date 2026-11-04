@@ -190,4 +190,58 @@ describe('getRecordingOwnerForItem', () => {
       id: 'track-1',
     });
   });
+
+  describe('with a punch range', () => {
+    const range = {
+      inMs: 12_000,
+      keepPlayingAfterOut: false,
+      outMs: 18_000,
+      preRollMs: 3000,
+    };
+
+    it('stores the range on a track recording', () => {
+      const request = buildRecordingStartRequest({
+        ...base,
+        item: createTrackPlayableItem(track),
+        punch: range,
+      });
+
+      assert.deepEqual(request.draft.punch, {
+        inMs: 12_000,
+        outMs: 18_000,
+        preRollMs: 3000,
+      });
+      assert.equal(request.draft.lineage.loop, undefined);
+    });
+
+    it('is a loop recording only when the range is the active loop', () => {
+      const item = createLoopPlayableItem(loop, track);
+      const fromLoop = buildRecordingStartRequest({
+        ...base,
+        item,
+        punch: {
+          ...range,
+          inMs: 10_000,
+          loop: { endMs: 20_000, id: 'loop-1', name: 'Verse', startMs: 10_000 },
+          outMs: 20_000,
+        },
+      });
+      const edited = buildRecordingStartRequest({
+        ...base,
+        item,
+        punch: range,
+      });
+
+      assert.equal(fromLoop.draft.lineage.loop?.id, 'loop-1');
+      assert.equal(edited.draft.lineage.loop, undefined);
+      assert.deepEqual(getRecordingOwnerForItem(item, range), {
+        kind: 'track',
+        id: 'track-1',
+      });
+      assert.deepEqual(
+        getRecordingOwnerForItem(item, { loop: fromLoop.draft.lineage.loop }),
+        { kind: 'loop', id: 'loop-1' },
+      );
+    });
+  });
 });

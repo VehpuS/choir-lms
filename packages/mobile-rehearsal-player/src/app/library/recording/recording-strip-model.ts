@@ -111,6 +111,9 @@ export type RecordingStripModel =
       timeLeft: TimeLeftReadout | null;
       passed?: string;
       next?: string;
+      /** While a punch range records: where it stops and the range, in place of the markers. */
+      punchStops?: string;
+      punchRange?: string;
       stop: StripButton;
       accessibilityLabel: string;
     }
@@ -126,7 +129,44 @@ export type RecordingStripInput = {
   session: RecordingSessionState;
   markers: MarkerContext;
   /** An armed punch range and how to name its span, e.g. `Chorus → Bridge`. */
-  punch?: { state: PunchState; span: string };
+  punch?: { state: PunchState; span: string; outLabel: string };
+};
+
+/** Beside the clock: the markers around the take, or where a punch range stops. */
+const getRecordingMarkerLines = (input: RecordingStripInput) => {
+  const punchLines = getPunchRecordingLines(input.punch);
+
+  if (punchLines.punchStops) {
+    return punchLines;
+  }
+
+  return {
+    ...(input.markers.passed
+      ? { passed: `Passed ${formatMarkerReference(input.markers.passed)}` }
+      : {}),
+    ...(input.markers.next
+      ? { next: `Next ${formatMarkerReference(input.markers.next)}` }
+      : {}),
+  };
+};
+
+/** While a punch range records: where it stops and in how long. */
+const getPunchRecordingLines = (
+  punch: RecordingStripInput['punch'],
+): { punchStops?: string; punchRange?: string } => {
+  if (!punch || punch.state.phase !== 'recording') {
+    return {};
+  }
+
+  const left =
+    punch.state.remainingMs === undefined
+      ? ''
+      : ` in ${formatRecordingDuration(punch.state.remainingMs)}`;
+
+  return {
+    punchRange: `Range · ${punch.span}`,
+    punchStops: `Stops at ${punch.outLabel}${left}`,
+  };
 };
 
 const DISARM: StripButton = {
@@ -190,12 +230,7 @@ export const getRecordingStripModel = (
       clock,
       ...(session.paused ? { status: RECORDING_STRIP_COPY.pausedStatus } : {}),
       timeLeft: session.timeLeft,
-      ...(input.markers.passed
-        ? { passed: `Passed ${formatMarkerReference(input.markers.passed)}` }
-        : {}),
-      ...(input.markers.next
-        ? { next: `Next ${formatMarkerReference(input.markers.next)}` }
-        : {}),
+      ...getRecordingMarkerLines(input),
       stop: { action: 'stop', label: RECORDING_STRIP_COPY.stopLabel },
       accessibilityLabel: session.paused
         ? `Recording paused, ${clock}`

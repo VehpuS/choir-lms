@@ -8,7 +8,7 @@ import type { Transport } from '@org/audio-mixing';
 import type { VisibilitySource } from '../pitch/app-visibility';
 import type { PcmSource } from '../pitch/pcm-source-types';
 import { createRecorder, type Recorder } from './recorder';
-import type { RecorderResult } from './recorder-types';
+import type { RecorderResult, RecordingStopReason } from './recorder-types';
 import type { RecordingDraft } from './recording-metadata';
 import {
   describeRecordingStop,
@@ -95,7 +95,14 @@ export type RecordingSession = {
   confirmExplanation: () => Promise<void>;
   /** Cancels the explanation or clears a message, back to ready. */
   dismiss: () => void;
-  stop: () => Promise<void>;
+  /** Stops the take, keeping what was captured; `out-point` when a punch range ended it. */
+  stop: (reason?: RecordingStopReason) => Promise<void>;
+  /**
+   * Runs `proceed` once the first-time explanation is done: at once if it
+   * already is, else after the user continues. Arming a punch range goes
+   * through it, because the explanation cannot interrupt a take.
+   */
+  afterExplanation: (proceed: () => void) => Promise<void>;
 };
 
 const INITIAL_STATE: RecordingSessionState = {
@@ -118,6 +125,7 @@ export const createRecordingSession = (
   let state = INITIAL_STATE;
   let recorder: Recorder | null = null;
   let pending: (() => Promise<RecordingStartRequest>) | null = null;
+  let afterExplained: (() => void) | null = null;
   let activeRequest: RecordingStartRequest | null = null;
   let unfollowTransport: (() => void) | null = null;
 
@@ -281,10 +289,27 @@ export const createRecordingSession = (
 
       await begin(build);
     },
-    confirmExplanation: async () => {
-      const build = pending;
+    afterExplanation: async (proceed) => {
+      const explained = await deps.storage
+        .getItem(RECORDING_EXPLAINED_KEY)
+        .catch(() => null);
+
+      if (explained === EXPLAINED_VALUE) {
+        proceed();
+
+        return;
+      }
 
       pending = null;
+      afterExplained = proceed;
+      set({ phase: 'explain' });
+    },
+    confirmExplanation: async () => {
+      const build = pending;
+      const proceed = afterExplained;
+
+      pending = null;
+      afterExplained = null;
       await deps.storage
         .setItem(RECORDING_EXPLAINED_KEY, EXPLAINED_VALUE)
         .catch(() => undefined);
@@ -293,13 +318,16 @@ export const createRecordingSession = (
       if (build) {
         await begin(build);
       }
+
+      proceed?.();
     },
     dismiss: () => {
       pending = null;
+      afterExplained = null;
       set({ phase: 'idle', stopMessage: undefined, blockedReason: undefined });
     },
-    stop: async () => {
-      await recorder?.stop('user');
+    stop: async (reason = 'user') => {
+      await recorder?.stop(reason);
     },
   };
 };

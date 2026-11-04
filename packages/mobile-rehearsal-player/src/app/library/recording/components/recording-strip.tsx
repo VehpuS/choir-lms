@@ -127,6 +127,16 @@ export const RecordingStrip = ({ model, onAction }: RecordingStripProps) => {
                 {model.status}
               </Text>
             ) : null}
+            {model.punchStops ? (
+              <Text numberOfLines={1} style={styles.markerLine}>
+                {model.punchStops}
+              </Text>
+            ) : null}
+            {model.punchRange ? (
+              <Text numberOfLines={1} style={styles.markerLine}>
+                {model.punchRange}
+              </Text>
+            ) : null}
             {model.passed ? (
               <Text numberOfLines={1} style={styles.markerLine}>
                 {model.passed}

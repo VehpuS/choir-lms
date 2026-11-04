@@ -13,7 +13,6 @@ import {
   resolvePlayableMarkersItem,
   resolveWaveformMarkers,
 } from '../../markers/utils/waveform-markers';
-import { getPlaybackShapingEngine } from '../../playback/shaping';
 import { getMarkerContext } from '../recording-marker-context';
 import { recordingCapabilities } from '../recording-capabilities';
 import {
@@ -25,15 +24,11 @@ import {
   usePunchSheetOpen,
   usePunchState,
 } from '../punch/punch-instance';
+import { formatPunchTime, getNearestMarkerName } from '@org/audio-mixing';
 import { getPunchSpanText } from '../punch/punch-sheet-model';
 import { PunchSheet } from '../punch/punch-sheet';
 import { loopOf, usePunchTrackDuration } from '../punch/use-punch-track';
 import { getRecordingSession } from '../recording-session-instance';
-import { getRecordingTransport } from '../recording-transport';
-import {
-  buildRecordingStartRequest,
-  getRecordingOwnerForItem,
-} from '../recording-start-request';
 import {
   getRecordingStripModel,
   type StripAction,
@@ -49,13 +44,12 @@ import {
   setRecordingMixBalanceFor,
   syncRecordingMixSaved,
 } from '../overlay/recording-mix-store';
-import { getOutputDeviceKey } from '../overlay/output-device-key';
-import { getDeviceLatency } from '../overlay/recording-device-latency';
 import { useAutoExportController } from '../export/auto-export-controller';
 import { DEFAULT_EXPORT_FOLDER_NAME } from '../export/auto-export-settings';
 import { useAutoExportSettings } from '../export/auto-export-settings-store';
 import { requestRecordingExport } from '../export/recording-export-request';
 import { requestRecordingPreview } from '../overlay/recording-preview-request';
+import { useRecordingStarter } from './use-recording-starter';
 import { RecordingSaveSheet } from './recording-save-sheet';
 import { RECORDING_STRIP_HEIGHT, RecordingStrip } from './recording-strip';
 
@@ -71,9 +65,6 @@ const useIsStripShown = (): boolean => {
 const AUTO_EXPORT_OFF: AutoExportState = { kind: 'off' };
 
 const PERCENT = 100;
-
-const newRecordingId = () =>
-  `rec-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 type RecordingDockProps = {
   item: PlayableItem | null;
@@ -119,6 +110,9 @@ const RecordingDockContent = ({
     markers: getMarkerContext(markers, positionMs),
     punch: punchState.range
       ? {
+          outLabel:
+            getNearestMarkerName(punchState.range.outMs, markers) ??
+            formatPunchTime(punchState.range.outMs),
           span: getPunchSpanText(
             punchState.range.inMs,
             punchState.range.outMs,
@@ -130,6 +124,20 @@ const RecordingDockContent = ({
   });
   const itemId = item?.id;
 
+  // A punch take that stopped for another reason, or never started, ends the punch.
+  const sessionPhase = state.phase;
+
+  useEffect(() => {
+    if (
+      punchState.phase === 'recording' &&
+      (sessionPhase === 'stopped' ||
+        sessionPhase === 'blocked' ||
+        sessionPhase === 'refused')
+    ) {
+      disarmPunch();
+    }
+  }, [punchState.phase, sessionPhase]);
+
   // A punch range belongs to the track it was set on.
   useEffect(() => {
     disarmPunch();
@@ -139,43 +147,11 @@ const RecordingDockContent = ({
 
   markersRef.current = markers;
 
-  const record = useCallback(() => {
-    void session.requestStart(async () => {
-      const { item: current, positionMs: at } = latest.current;
-
-      if (!current) {
-        throw new Error('No track to record');
-      }
-
-      const existing = await getRecordingsStore().listByOwner(
-        getRecordingOwnerForItem(current),
-      );
-      const shaping = getPlaybackShapingEngine().getState();
-      // What the user saved with `Use for this device` for the output in use;
-      // recordings already made keep the compensation they were filed with.
-      const deviceLatencyMs = await getDeviceLatency(
-        await getOutputDeviceKey(),
-      );
-
-      return buildRecordingStartRequest({
-        appliedLatencyMs: deviceLatencyMs ?? 0,
-        item: current,
-        positionMs: at,
-        markers: markersRef.current,
-        shaping: {
-          speedMultiplier:
-            shaping.speed.kind === 'multiplier' ? shaping.speed.multiplier : 1,
-          pitchSemitones: shaping.pitchSemitones,
-          tempoSource: 'multiplier',
-        },
-        existingNames: existing.map((recording) => recording.name),
-        id: newRecordingId(),
-        createdAt: new Date().toISOString(),
-        transport: getRecordingTransport() ?? undefined,
-        nowMs: () => performance.now(),
-      });
-    });
-  }, [session]);
+  const { record, startPunchTake } = useRecordingStarter({
+    latest,
+    markersRef,
+    session,
+  });
 
   const openRecordingsSettings = useCallback(() => {
     session.dismiss();
@@ -244,6 +220,8 @@ const RecordingDockContent = ({
       } else if (action === 'not-now' || action === 'dismiss') {
         session.dismiss();
       } else if (action === 'stop') {
+        // Stopping a punch take ends the punch too, so playback is not paused later.
+        disarmPunch();
         void session.stop();
       } else if (action === 'open-settings') {
         openRecordingsSettings();
@@ -269,7 +247,13 @@ const RecordingDockContent = ({
           markers={markers}
           onArm={(range) => {
             closePunchSheet();
-            armPunch(range);
+            session.dismiss();
+            void session.afterExplanation(() => {
+              armPunch(range, {
+                start: () => startPunchTake(range),
+                stop: (reason) => void session.stop(reason),
+              });
+            });
           }}
           onClose={closePunchSheet}
           positionMs={positionMs}

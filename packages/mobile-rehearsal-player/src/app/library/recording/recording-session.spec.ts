@@ -204,4 +204,61 @@ describe('recording session', () => {
 
     assert.equal(t.source.subscribeCalls(), 1);
   });
+
+  describe('afterExplanation', () => {
+    it('proceeds at once when the explanation was already accepted', async () => {
+      const t = setup();
+      let proceeded = 0;
+
+      await t.session.afterExplanation(() => {
+        proceeded += 1;
+      });
+
+      assert.equal(proceeded, 1);
+      assert.equal(t.session.getState().phase, 'idle');
+    });
+
+    it('explains first, and proceeds only after Continue', async () => {
+      const t = setup({ explained: false });
+      let proceeded = 0;
+
+      await t.session.afterExplanation(() => {
+        proceeded += 1;
+      });
+
+      assert.equal(t.session.getState().phase, 'explain');
+      assert.equal(proceeded, 0);
+
+      await t.session.confirmExplanation();
+
+      assert.equal(proceeded, 1);
+      assert.equal(t.session.getState().phase, 'idle');
+      assert.equal(t.source.subscribeCalls(), 0);
+    });
+
+    it('drops what was waiting when the explanation is dismissed', async () => {
+      const t = setup({ explained: false });
+      let proceeded = 0;
+
+      await t.session.afterExplanation(() => {
+        proceeded += 1;
+      });
+      t.session.dismiss();
+      await t.session.confirmExplanation();
+
+      assert.equal(proceeded, 0);
+    });
+  });
+
+  it('says a take ended by a punch range stopped at the end of the range', async () => {
+    const t = setup();
+
+    await t.session.requestStart(async () => request());
+    t.feed(25);
+    await t.session.stop('out-point');
+
+    const { stopMessage } = t.session.getState();
+
+    assert.match(stopMessage?.message ?? '', /end of the range/);
+  });
 });

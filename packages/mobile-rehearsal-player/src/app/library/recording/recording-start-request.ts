@@ -1,6 +1,8 @@
 import { omit } from 'es-toolkit';
 import {
   createTransportTracker,
+  toRecordingPunch,
+  type PunchRange,
   type SyncTimers,
   type Transport,
 } from '@org/audio-mixing';
@@ -32,6 +34,11 @@ export type BuildStartRequestOptions = {
    * wraps; without it the timeline is one plain stretch from `positionMs`.
    */
   transport?: Transport;
+  /**
+   * The armed punch range this take records. It is stored on the recording, and
+   * the take is a loop recording only when the range came from the active loop.
+   */
+  punch?: PunchRange;
   /** Wall clock the transport is sampled against; `performance.now()` in the app. */
   nowMs?: () => number;
   timers?: SyncTimers;
@@ -57,8 +64,10 @@ export const resolveParentSource = (
 /** Who owns a recording made on this item: its loop, its adjusted copy, or the track. */
 export const getRecordingOwnerForItem = (
   item: PlayableItem,
+  /** A punch range that is not the loop's own is filed under the track. */
+  punch?: Partial<PunchRange>,
 ): RecordingOwner => {
-  if (item.kind === 'loop' && item.loopId) {
+  if (item.kind === 'loop' && item.loopId && (!punch || punch.loop)) {
     return { kind: 'loop', id: item.loopId };
   }
 
@@ -75,7 +84,7 @@ export const buildRecordingStartRequest = (
   options: BuildStartRequestOptions,
 ): RecordingStartRequest => {
   const { item, positionMs, shaping } = options;
-  const loop =
+  const itemLoop =
     item.kind === 'loop' && item.loopId && item.range.endMs !== null
       ? {
           id: item.loopId,
@@ -84,6 +93,8 @@ export const buildRecordingStartRequest = (
           endMs: item.range.endMs,
         }
       : null;
+  // A punch range on a loop item is a loop recording only while it is the loop's own range.
+  const loop = options.punch ? (options.punch.loop ?? null) : itemLoop;
   const appliedLatencyMs = options.appliedLatencyMs ?? 0;
   const draft = captureRecordingStart({
     id: options.id,
@@ -95,6 +106,7 @@ export const buildRecordingStartRequest = (
     markers: options.markers,
     existingNames: options.existingNames,
     appliedLatencyMs,
+    ...(options.punch ? { punch: toRecordingPunch(options.punch) } : {}),
   });
 
   if (options.transport && options.nowMs) {

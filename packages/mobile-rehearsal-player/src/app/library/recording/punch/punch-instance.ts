@@ -9,7 +9,9 @@ import { useSyncExternalStore } from 'react';
 
 import { getPlaybackShapingEngine } from '../../playback/shaping';
 import { getSavedTrackPlayer } from '../../playback/utils/saved-track-player-interop';
+import type { RecordingStopReason } from '../recorder-types';
 import { getRecordingTransport } from '../recording-transport';
+import { createPunchRecorder } from './punch-recorder';
 
 const MS_PER_SECOND = 1000;
 const listeners = new Set<() => void>();
@@ -36,6 +38,8 @@ const FINISHED_PHASES: ReadonlySet<PunchState['phase']> = new Set([
 export const getPunchState = (): PunchState =>
   controller?.getState() ?? IDLE_PUNCH;
 
+const getPunchPhase = () => getPunchState().phase;
+
 const release = () => {
   unsubscribe?.();
   controller?.dispose();
@@ -50,12 +54,14 @@ const currentRate = () => {
   return speed.kind === 'multiplier' ? speed.multiplier : 1;
 };
 
-/**
- * Arms a punch range against the playing track. The recording side is joined
- * to the session in task 11.3, so until then an armed range counts down and
- * ends without a take.
- */
-export const armPunch = (range: PunchRange): boolean => {
+/** What a punch range does to the recording session. */
+export type PunchTake = {
+  start: () => void;
+  stop: (reason: RecordingStopReason) => void;
+};
+
+/** Arms a punch range against the playing track; `take` starts and stops the recording at its points. */
+export const armPunch = (range: PunchRange, take: PunchTake): boolean => {
   const transport = getRecordingTransport();
 
   if (!transport) {
@@ -76,7 +82,11 @@ export const armPunch = (range: PunchRange): boolean => {
           () => undefined,
         ),
     },
-    recorder: { start: () => undefined, stop: () => undefined },
+    recorder: createPunchRecorder({
+      getPhase: getPunchPhase,
+      start: take.start,
+      stop: take.stop,
+    }),
     transport,
   });
   unsubscribe = controller.subscribe(() => {
