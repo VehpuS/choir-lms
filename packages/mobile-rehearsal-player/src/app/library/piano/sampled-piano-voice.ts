@@ -1,5 +1,9 @@
 import { nearestSample, SAMPLE_MIDIS } from './piano-samples';
-import type { PianoNoteHandle, PianoVoice } from './piano-voice';
+import {
+  pianoVolumeToGain,
+  type PianoNoteHandle,
+  type PianoVoice,
+} from './piano-voice';
 import type { AudioBufferLike, AudioContextLike } from './web-audio-types';
 
 const ATTACK_SECONDS = 0.005;
@@ -154,7 +158,7 @@ export const createSampledPianoVoice = (
     load,
     noteOn,
     setVolume: (volume) => {
-      master.gain.value = volume;
+      master.gain.value = pianoVolumeToGain(volume);
       options.fallback.setVolume(volume);
     },
     dispose: () => {

@@ -20,3 +20,18 @@ export type PianoVoice = {
 
 /** At most this many notes sound at once; the oldest is released first. */
 export const MAX_PIANO_VOICES = 10;
+
+/** Up to here the slider maps straight to gain, as it always has. */
+const UNITY_VOLUME = 0.7;
+/** Gain at the slider's top, so the piano can be heard over a loud track. */
+const MAX_VOLUME_GAIN = 3;
+
+/**
+ * Maps the 0–1 slider to master gain. Below `UNITY_VOLUME` it is linear, so
+ * existing levels sound the same; above it the gain climbs to `MAX_VOLUME_GAIN`.
+ */
+export const pianoVolumeToGain = (volume: number): number => {
+  if (volume <= UNITY_VOLUME) return volume;
+  const boostShare = (volume - UNITY_VOLUME) / (1 - UNITY_VOLUME);
+  return UNITY_VOLUME + boostShare * (MAX_VOLUME_GAIN - UNITY_VOLUME);
+};

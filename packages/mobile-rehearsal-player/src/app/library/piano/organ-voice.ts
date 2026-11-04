@@ -1,6 +1,10 @@
 import { midiToFrequency } from '@org/audio-library-models';
 
-import type { PianoNoteHandle, PianoVoice } from './piano-voice';
+import {
+  pianoVolumeToGain,
+  type PianoNoteHandle,
+  type PianoVoice,
+} from './piano-voice';
 import type { AudioContextLike, GainNodeLike } from './web-audio-types';
 
 const ATTACK_SECONDS = 0.02;
@@ -81,7 +85,7 @@ export const createOrganVoice = (context: AudioContextLike): PianoVoice => {
     load: async () => undefined,
     noteOn,
     setVolume: (volume) => {
-      master.gain.value = volume;
+      master.gain.value = pianoVolumeToGain(volume);
     },
     dispose: () => {
       [...live].forEach((release) => {
