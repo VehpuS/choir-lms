@@ -1,7 +1,9 @@
 import type { PlayableItem } from '@org/audio-library-models';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Platform,
   View,
+  type GestureResponderEvent,
   type LayoutChangeEvent,
   type StyleProp,
   type ViewStyle,
@@ -23,6 +25,7 @@ import {
   isWaveformScrubReady,
   resolvePlaybackWaveformBars,
   resolveWaveformCommitRatio,
+  resolveWaveformLocationXFromPage,
   resolveWaveformRatioFromLocation,
 } from './model';
 import {
@@ -78,6 +81,7 @@ export const PlaybackWaveform = ({
   const [draftRatio, setDraftRatio] = useState<number | null>(null);
   const draftRatioRef = useRef<number | null>(null);
   const [layoutWidth, setLayoutWidth] = useState(0);
+  const containerRef = useRef<View>(null);
   const waveformHeight = WAVEFORM_HEIGHT[variant];
   const peaks = useWaveformPeaks(activePlayableItem.source);
   const bars = useMemo(() => {
@@ -155,6 +159,28 @@ export const PlaybackWaveform = ({
     onScrubToPosition(nextPositionSeconds);
   };
 
+  // react-native-web reports `locationX` against the element under the pointer,
+  // which drifts from the waveform's own left edge, so on web measure from the
+  // page position against the container's bounding box instead.
+  const resolveLocationX = (event: GestureResponderEvent) => {
+    const { locationX, pageX } = event.nativeEvent;
+    const node = containerRef.current as unknown as {
+      getBoundingClientRect?: () => { left: number };
+    } | null;
+
+    if (Platform.OS !== 'web' || !node?.getBoundingClientRect) {
+      return locationX;
+    }
+
+    const pageScrollX = (globalThis as { scrollX?: number }).scrollX ?? 0;
+
+    return resolveWaveformLocationXFromPage({
+      containerLeft: node.getBoundingClientRect().left,
+      pageScrollX,
+      pageX,
+    });
+  };
+
   const updateDraftRatio = (locationX: number) => {
     if (!canScrub) {
       return 0;
@@ -178,19 +204,20 @@ export const PlaybackWaveform = ({
       accessibilityLabel={interactive ? 'Playback waveform' : undefined}
       accessible={interactive}
       {...interactionGuardProps}
+      ref={containerRef}
       onLayout={(event: LayoutChangeEvent) => {
         setLayoutWidth(event.nativeEvent.layout.width);
       }}
       onMoveShouldSetResponder={() => canScrub}
       onResponderGrant={(event) => {
-        longPress.start(event.nativeEvent.locationX);
-        updateDraftRatio(event.nativeEvent.locationX);
+        longPress.start(resolveLocationX(event));
+        updateDraftRatio(resolveLocationX(event));
       }}
       onResponderMove={(event) => {
-        longPress.move(event.nativeEvent.locationX);
+        longPress.move(resolveLocationX(event));
 
         if (!longPress.hasFired()) {
-          updateDraftRatio(event.nativeEvent.locationX);
+          updateDraftRatio(resolveLocationX(event));
         }
       }}
       onResponderRelease={(event) => {
@@ -207,7 +234,7 @@ export const PlaybackWaveform = ({
         const nextRatio = resolveWaveformCommitRatio({
           draftRatio: draftRatioRef.current,
           layoutWidth,
-          locationX: event.nativeEvent.locationX,
+          locationX: resolveLocationX(event),
         });
 
         draftRatioRef.current = nextRatio;

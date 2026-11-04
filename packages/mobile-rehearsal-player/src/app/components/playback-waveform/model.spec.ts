@@ -21,6 +21,7 @@ import {
   isWaveformBarPlayed,
   isWaveformScrubReady,
   resolveWaveformCommitRatio,
+  resolveWaveformLocationXFromPage,
   resolveWaveformRatioFromLocation,
 } from './model.js';
 
@@ -151,5 +152,40 @@ describe('PlaybackWaveformModel', () => {
     assert.equal(getProgressLineWidth(-0.5), '0%');
     assert.equal(getProgressLineWidth(0.5), '50%');
     assert.equal(getProgressLineWidth(3), '100%');
+  });
+});
+
+describe('resolveWaveformLocationXFromPage', () => {
+  it('measures the pointer from the waveform left edge, not the page edge', () => {
+    assert.equal(
+      resolveWaveformLocationXFromPage({
+        containerLeft: 100,
+        pageScrollX: 0,
+        pageX: 240,
+      }),
+      140,
+    );
+  });
+
+  it('accounts for horizontal page scroll', () => {
+    assert.equal(
+      resolveWaveformLocationXFromPage({
+        containerLeft: 100,
+        pageScrollX: 50,
+        pageX: 240,
+      }),
+      90,
+    );
+  });
+
+  it('is negative left of the waveform so the ratio clamps to zero', () => {
+    const locationX = resolveWaveformLocationXFromPage({
+      containerLeft: 100,
+      pageScrollX: 0,
+      pageX: 60,
+    });
+
+    assert.equal(locationX, -40);
+    assert.equal(resolveWaveformRatioFromLocation(locationX, 280), 0);
   });
 });

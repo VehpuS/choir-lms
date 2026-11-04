@@ -44,6 +44,18 @@ export const resolveWaveformRatioFromLocation = (
   return clampWaveformRatio(locationX / layoutWidth);
 };
 
+/**
+ * Pointer x within the waveform from page coordinates: the page x minus the
+ * waveform's left edge on the page (viewport left plus page scroll).
+ */
+export const resolveWaveformLocationXFromPage = (options: {
+  containerLeft: number;
+  pageScrollX: number;
+  pageX: number;
+}) => {
+  return options.pageX - (options.containerLeft + options.pageScrollX);
+};
+
 export const isWaveformScrubReady = (options: {
   hasScrubRange: boolean;
   interactive: boolean;

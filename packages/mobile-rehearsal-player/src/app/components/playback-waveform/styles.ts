@@ -7,7 +7,10 @@ export const waveformStyles = StyleSheet.create({
   container: {
     position: 'relative',
     overflow: 'hidden',
-  },
+    // Dragging to scrub must not select text on web; react-native-web honors
+    // `userSelect`, React Native's types do not list it.
+    userSelect: 'none',
+  } as ViewStyle,
   compactContainer: {
     minHeight: 44,
     paddingHorizontal: 8,
