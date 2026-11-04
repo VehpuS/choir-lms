@@ -26,13 +26,15 @@ export const EXPORT_COPY = {
   title: 'Export',
   kindRecordingLabel: 'Recording only',
   kindMixLabel: 'Mix with track',
-  recordingHint: 'Your voice only, at its natural speed.',
+  recordingHint:
+    'Your voice only, at its natural speed, exactly as recorded. The level is not applied.',
   mixHint:
-    'Plays as you heard it while recording, with the recording mixed in.',
+    'Plays as you heard it while recording, with the recording mixed in at this balance and level.',
+  bulkLevelHint: 'Each recording uses its own saved level.',
   balanceLabel: 'Balance',
   balanceTrackEnd: 'Track',
   balanceRecordingEnd: 'Mine',
-  keepBalanceLabel: 'Keep as the saved balance',
+  keepBalanceLabel: 'Keep as the saved balance and level',
   previewLabel: 'Preview',
   destinationDriveLabel: 'Save to Drive',
   destinationDownloadLabel: 'Download',

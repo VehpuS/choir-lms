@@ -16,6 +16,7 @@ import {
 } from '../export/recording-export-model';
 import type { useRecordingExport } from '../export/use-recording-export';
 import { RecordingBalanceSlider } from '../overlay/recording-balance-slider';
+import { RecordingLevelControl } from '../overlay/recording-level-control';
 import { RecordingExportProgress } from './recording-export-progress';
 
 const { colors, radius, space, type } = appTheme;
@@ -32,6 +33,9 @@ const DESTINATION_OPTIONS: ReadonlyArray<{
   { label: EXPORT_COPY.destinationDownloadLabel, value: 'download' },
 ];
 
+/** The balance and level the dialog is setting. */
+export type ExportMix = { balance: number; levelDb: number };
+
 type RecordingExportSheetProps = {
   recordings: readonly Recording[];
   state: ReturnType<typeof useRecordingExport>;
@@ -40,9 +44,9 @@ type RecordingExportSheetProps = {
   onAllowSaving: () => void;
   onChooseFolder: () => void;
   onClose: () => void;
-  onKeepBalance: (balance: number) => void;
-  onPreview: (balance: number) => void;
-  onPreviewBalanceChange: (balance: number) => void;
+  onKeepMix: (mix: ExportMix) => void;
+  onPreview: (mix: ExportMix) => void;
+  onPreviewMixChange: (mix: ExportMix) => void;
   onStopPreview: () => void;
 };
 
@@ -53,9 +57,9 @@ export const RecordingExportSheet = ({
   onAllowSaving,
   onChooseFolder,
   onClose,
-  onKeepBalance,
+  onKeepMix,
   onPreview,
-  onPreviewBalanceChange,
+  onPreviewMixChange,
   onStopPreview,
   recordings,
   state,
@@ -116,7 +120,7 @@ export const RecordingExportSheet = ({
               onStopPreview();
 
               if (keepBalance && isMix) {
-                onKeepBalance(state.balance);
+                onKeepMix({ balance: state.balance, levelDb: state.levelDb });
               }
 
               void state.start();
@@ -161,17 +165,34 @@ export const RecordingExportSheet = ({
                 <OutlinedActionButton
                   icon="play"
                   label={EXPORT_COPY.previewLabel}
-                  onPress={() => onPreview(state.balance)}
+                  onPress={() =>
+                    onPreview({
+                      balance: state.balance,
+                      levelDb: state.levelDb,
+                    })
+                  }
                 />
               ) : null}
             </View>
             <RecordingBalanceSlider
               onChange={(next) => {
                 state.setBalance(next);
-                onPreviewBalanceChange(next);
+                onPreviewMixChange({ balance: next, levelDb: state.levelDb });
               }}
               value={state.balance}
             />
+            {first && state.isSingle ? (
+              <RecordingLevelControl
+                levelDb={state.levelDb}
+                onChange={(next) => {
+                  state.setLevelDb(next);
+                  onPreviewMixChange({ balance: state.balance, levelDb: next });
+                }}
+                recordingId={first.id}
+              />
+            ) : (
+              <Text style={styles.hint}>{EXPORT_COPY.bulkLevelHint}</Text>
+            )}
             <Text style={styles.hint}>{EXPORT_COPY.mixHint}</Text>
             {state.isSingle ? (
               <Pressable

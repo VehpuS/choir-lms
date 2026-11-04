@@ -76,7 +76,7 @@ export const setUp = (
     status: 'uploaded',
   },
 ) => {
-  const saved: Array<{ fileName: string; size: number }> = [];
+  const saved: Array<{ fileName: string; size: number; blob: Blob }> = [];
   const uploads: Array<Record<string, unknown>> = [];
   const deps: ExportRunnerDependencies = {
     decodeTrack: async () => track,
@@ -84,7 +84,7 @@ export const setUp = (
     readRecording: async () => storedWav(),
     resolveOriginal: async () => readyOriginal,
     saveToDevice: (fileName, blob) => {
-      saved.push({ fileName, size: blob.size });
+      saved.push({ blob, fileName, size: blob.size });
     },
     upload: async (options) => {
       uploads.push(options as unknown as Record<string, unknown>);

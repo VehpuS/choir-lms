@@ -1,4 +1,4 @@
-import type { Recording } from '@org/audio-library-models';
+import { getRecordingLevelDb, type Recording } from '@org/audio-library-models';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
@@ -58,6 +58,10 @@ export const useRecordingExport = ({
   const [kind, setKind] = useState<ExportKind>('recording');
   const [destination, setDestination] = useState<ExportDestination>('drive');
   const [balance, setBalance] = useState(recordings[0]?.balance ?? 50);
+  // One level for a single recording; a bulk export uses each recording's own saved level.
+  const [levelDb, setLevelDb] = useState(
+    recordings[0] ? getRecordingLevelDb(recordings[0]) : 0,
+  );
   const [typedName, setTypedName] = useState<string | null>(null);
   const [folder, setFolder] = useState<ExportFolder>();
   const [remembered, setRemembered] = useState<DriveSaveFolder>();
@@ -162,13 +166,30 @@ export const useRecordingExport = ({
       controllerRef.current = controller;
 
       await runRecordingExports(
-        { accessToken, balance, destination, folder, items, kind },
+        {
+          accessToken,
+          balance,
+          destination,
+          folder,
+          items,
+          kind,
+          levelDb: items.length === 1 ? levelDb : undefined,
+        },
         dependencies,
         { dispatch, signal: controller.signal },
       );
       controllerRef.current = null;
     },
-    [accessToken, balance, destination, dependencies, dispatch, folder, kind],
+    [
+      accessToken,
+      balance,
+      destination,
+      dependencies,
+      dispatch,
+      folder,
+      kind,
+      levelDb,
+    ],
   );
 
   const start = useCallback(async () => {
@@ -248,6 +269,7 @@ export const useRecordingExport = ({
     folderPickerStart: createFolderPickerNavigation({ remembered }),
     isSingle,
     kind,
+    levelDb,
     nameValue:
       typedName ??
       (recordings[0] ? defaultExportFileName(recordings[0], kind) : ''),
@@ -255,6 +277,7 @@ export const useRecordingExport = ({
     run,
     setBalance,
     setDestination,
+    setLevelDb,
     setKind,
     setTypedName,
     start,

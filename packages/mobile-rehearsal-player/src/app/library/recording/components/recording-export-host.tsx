@@ -7,7 +7,11 @@ import { DriveFolderPickerSheet } from '../../sheet-music/drive-picker/drive-fol
 import { createRecordingExportDependencies } from '../export/create-export-dependencies';
 import { subscribeToRecordingExport } from '../export/recording-export-request';
 import { useRecordingExport } from '../export/use-recording-export';
-import { setRecordingMixBalanceFor } from '../overlay/recording-mix-store';
+import {
+  setRecordingMixBalanceFor,
+  setRecordingMixLevelFor,
+  syncRecordingMixSaved,
+} from '../overlay/recording-mix-store';
 import { requestRecordingPreview } from '../overlay/recording-preview-request';
 import { getRecordingsStore } from '../recordings-store-instance';
 import { RecordingExportSheet } from './recording-export-sheet';
@@ -74,22 +78,27 @@ const ExportDialog = ({
       }}
       onChooseFolder={() => setIsPickingFolder(true)}
       onClose={onClose}
-      onKeepBalance={(balance) => {
+      onKeepMix={(mix) => {
         if (first) {
-          void getRecordingsStore().update(first.id, { balance });
+          void getRecordingsStore()
+            .update(first.id, mix)
+            .then(() => syncRecordingMixSaved(first.id, mix));
         }
       }}
-      onPreview={(balance) =>
+      onPreview={(mix) =>
         first &&
         requestRecordingPreview({
-          balance,
+          ...mix,
           kind: 'play',
           recordingId: first.id,
         })
       }
-      onPreviewBalanceChange={(balance) =>
-        first && setRecordingMixBalanceFor(first.id, balance)
-      }
+      onPreviewMixChange={(mix) => {
+        if (first) {
+          setRecordingMixBalanceFor(first.id, mix.balance);
+          setRecordingMixLevelFor(first.id, mix.levelDb);
+        }
+      }}
       onStopPreview={() =>
         first &&
         requestRecordingPreview({ kind: 'stop', recordingId: first.id })

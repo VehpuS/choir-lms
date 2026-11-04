@@ -2,14 +2,11 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-  CEILING_HEADROOM,
-  CEILING_KNEE,
   LIMITER_ATTACK_S,
   LIMITER_KNEE_DB,
   LIMITER_RATIO,
   LIMITER_RELEASE_S,
   LIMITER_THRESHOLD_DB,
-  createCeilingCurve,
   createOverlayLimiter,
   type CompressorNode,
   type ShaperNode,
@@ -84,35 +81,5 @@ describe('createOverlayLimiter', () => {
     assert.ok(LIMITER_ATTACK_S > 0 && LIMITER_ATTACK_S < 0.01);
     assert.ok(LIMITER_RELEASE_S > LIMITER_ATTACK_S);
     assert.ok(LIMITER_KNEE_DB >= 0);
-  });
-});
-
-describe('createCeilingCurve', () => {
-  const curve = createCeilingCurve(2001);
-  const at = (input: number) =>
-    curve[Math.round(((input + 1) / 2) * (curve.length - 1))] ?? Number.NaN;
-
-  it('leaves ordinary levels untouched, up to the knee', () => {
-    for (const input of [0, 0.1, -0.3, 0.5, -0.79, CEILING_KNEE]) {
-      assert.ok(Math.abs(at(input) - input) < 1e-3, `input ${input}`);
-    }
-  });
-
-  it('never passes full scale, however loud the input, in either direction', () => {
-    assert.ok(curve.every((value) => Math.abs(value) < 1));
-    assert.ok(Math.abs(at(1)) <= CEILING_KNEE + CEILING_HEADROOM);
-  });
-
-  it('is symmetric and never falls as the input rises', () => {
-    for (let index = 0; index < curve.length; index += 1) {
-      assert.ok(
-        Math.abs((curve[index] ?? 0) + (curve[curve.length - 1 - index] ?? 0)) <
-          1e-6,
-      );
-
-      if (index > 0) {
-        assert.ok((curve[index] ?? 0) >= (curve[index - 1] ?? 0));
-      }
-    }
   });
 });

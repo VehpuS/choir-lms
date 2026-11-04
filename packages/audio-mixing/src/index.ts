@@ -16,3 +16,4 @@ export * from './lib/punch-range.ts';
 export * from './lib/punch-machine.ts';
 export * from './lib/punch-controller.ts';
 export * from './lib/peak-normalize.ts';
+export * from './lib/mix-limiter.ts';

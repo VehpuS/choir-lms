@@ -1,4 +1,8 @@
-import type { Recording } from '@org/audio-library-models';
+import {
+  dbToLinear,
+  getRecordingLevelDb,
+  type Recording,
+} from '@org/audio-library-models';
 import { WAV_HEADER_BYTES } from '@org/audio-mixing';
 import type {
   DriveUploadSource,
@@ -38,6 +42,11 @@ export type ExportPlan = {
   destination: ExportDestination;
   /** 0 is all track, 100 all recording; only a mix reads it. */
   balance: number;
+  /**
+   * The recording's level in dB for a mix; absent means each recording's own
+   * saved level (an auto-export and a bulk export).
+   */
+  levelDb?: number;
   folder?: { folderId: string; folderName: string };
   /** Required for Drive; absent means the write permission is missing. */
   accessToken?: string;
@@ -115,6 +124,9 @@ const prepareFile = async (
     item.recording,
     {
       balance: plan.balance,
+      levelGain: dbToLinear(
+        plan.levelDb ?? getRecordingLevelDb(item.recording),
+      ),
       onProgress: (progress) =>
         dispatch({ progress, recordingId, type: 'item-progress' }),
       signal,

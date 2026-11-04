@@ -4,4 +4,8 @@
  * change would make the same inputs render a different mix, so a stored
  * recording can say its mix was made by other algorithms than the ones in use.
  */
-export const MIX_ENGINE_VERSION = 1;
+/**
+ * 2: the mix render limits the sum (a peak limiter and a ceiling) before it
+ * converts to 16-bit, where version 1 clipped hard.
+ */
+export const MIX_ENGINE_VERSION = 2;

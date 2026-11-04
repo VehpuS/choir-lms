@@ -2,6 +2,7 @@ import type { Recording } from '@org/audio-library-models';
 
 import { balanceToGains } from './balance-gains.ts';
 import { MIX_ENGINE_VERSION } from './engine-version.ts';
+import { createMixLimiter } from './mix-limiter.ts';
 import { planMixRender, type MixPlanSegment } from './mix-render-plan.ts';
 import { floatToInt16 } from './wav.ts';
 import type { PcmWindowReader } from './wav-window-reader.ts';
@@ -178,6 +179,8 @@ export const renderMix = async (
   const recordingGain = gains.recordingGain * (options.levelGain ?? UNIT_GAIN);
   const channelCount = stretcher.channels;
   const openStreams = new Map<MixPlanSegment, OpenStream>();
+  // One limiter for the whole render, so its gain carries across chunks.
+  const limiter = createMixLimiter(stretcher.sampleRate);
 
   try {
     for (let start = 0; start < plan.totalFrames; start += chunkFrames) {
@@ -219,6 +222,8 @@ export const renderMix = async (
             (channel[frame] ?? 0) + voice;
         });
       }
+
+      limiter.process(interleaved, channelCount);
 
       await options.write(floatToInt16(interleaved));
       options.onProgress?.(end, plan.totalFrames);
