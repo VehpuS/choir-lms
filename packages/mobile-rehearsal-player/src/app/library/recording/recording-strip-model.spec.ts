@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import type { PunchState } from '@org/audio-mixing';
 
+import { buildRecordingFixture } from './recording-fixtures.js';
 import type { RecordingSessionState } from './recording-session.js';
 import {
   getRecordingStripModel,
@@ -156,6 +157,20 @@ describe('recording strip model', () => {
     assert.ok(stopped.kind === 'stopped');
     assert.equal(stopped.isProblem, true);
     assert.equal(stopped.primary.action, 'dismiss');
+  });
+
+  it('leaves a saved take to its save sheet instead of repeating its message', () => {
+    const saved = model({
+      phase: 'stopped',
+      savedRecording: buildRecordingFixture(),
+      stopMessage: {
+        message: 'Recording saved.',
+        isProblem: false,
+        offerExport: false,
+      },
+    });
+
+    assert.notEqual(saved.kind, 'stopped');
   });
 
   it('keeps showing the recording while it records even if the track is unloaded', () => {

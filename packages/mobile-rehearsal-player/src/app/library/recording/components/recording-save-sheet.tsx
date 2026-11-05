@@ -6,18 +6,22 @@ import { appTheme } from '../../../utils/theme';
 import { RecordingBalanceSlider } from '../overlay/recording-balance-slider';
 import { RecordingLevelControl } from '../overlay/recording-level-control';
 import type { SavedMix } from './use-saved-recording-mix';
+import { LibraryFilesConfirmationDialog } from '../../selection/library-files-confirmation-dialog';
 import { BottomSheetSurface } from '../../components/bottom-sheet-surface';
 import {
   MenuGroup,
   MenuRow,
 } from '../../components/options-menu-sheet/menu-group';
 import {
+  getSaveSheetDeleteConfirmation,
   MAX_RECORDING_NAME_LENGTH,
   SAVE_SHEET_COPY,
   type SaveSheetModel,
 } from '../recording-save-sheet-model';
 
 const { colors, space, radius, type } = appTheme;
+
+const MARKER_SPAN_LINES = 2;
 
 export const RECORDING_NAME_FIELD_LABEL = 'Recording name';
 
@@ -53,7 +57,7 @@ const Detail = ({ children }: { children: string }) => (
 /**
  * The sheet shown when a take has been saved (design Decisions 8 and 19): the
  * name to edit, what was recorded, where it lives, and the auto-export state.
- * Delete asks twice, because the take is not recoverable.
+ * Delete asks first in a dialog, because the take is not recoverable.
  */
 export const RecordingSaveSheet = ({
   model,
@@ -110,19 +114,8 @@ export const RecordingSaveSheet = ({
             />
           ) : null}
           <MenuRow
-            label={
-              confirmingDelete
-                ? SAVE_SHEET_COPY.confirmDeleteLabel
-                : SAVE_SHEET_COPY.deleteLabel
-            }
-            onPress={() => {
-              if (confirmingDelete) {
-                onStopPreview();
-                onDelete();
-              } else {
-                setConfirmingDelete(true);
-              }
-            }}
+            label={SAVE_SHEET_COPY.deleteLabel}
+            onPress={() => setConfirmingDelete(true)}
             tone="destructive"
           />
           <MenuRow
@@ -140,11 +133,15 @@ export const RecordingSaveSheet = ({
       <View style={styles.body}>
         <Detail>{model.summary}</Detail>
         {model.markerSpan ? (
-          <Text style={styles.markerSpan}>{model.markerSpan}</Text>
+          <Text numberOfLines={MARKER_SPAN_LINES} style={styles.markerSpan}>
+            {model.markerSpan}
+          </Text>
         ) : null}
         {model.timeSpan ? <Detail>{model.timeSpan}</Detail> : null}
         {model.notice ? (
-          <Text style={styles.notice}>{model.notice}</Text>
+          <Text style={model.noticeIsProblem ? styles.notice : styles.detail}>
+            {model.notice}
+          </Text>
         ) : null}
         <View style={styles.field}>
           <Text style={styles.fieldLabel}>{SAVE_SHEET_COPY.nameLabel}</Text>
@@ -196,6 +193,20 @@ export const RecordingSaveSheet = ({
           ) : null}
         </View>
       </View>
+      <LibraryFilesConfirmationDialog
+        content={
+          confirmingDelete
+            ? getSaveSheetDeleteConfirmation(typed || name)
+            : null
+        }
+        isMutating={false}
+        onCancel={() => setConfirmingDelete(false)}
+        onConfirm={() => {
+          setConfirmingDelete(false);
+          onStopPreview();
+          onDelete();
+        }}
+      />
     </BottomSheetSurface>
   );
 };

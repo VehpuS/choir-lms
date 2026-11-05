@@ -31,7 +31,8 @@ export const SAVE_SHEET_COPY = {
   turnOnLabel: 'Turn on…',
   exportLabel: 'Export…',
   deleteLabel: 'Delete',
-  confirmDeleteLabel: 'Tap again to delete',
+  confirmDeleteTitle: 'Delete this recording?',
+  confirmDeleteLabel: 'Delete',
   doneLabel: 'Done',
 } as const;
 
@@ -63,8 +64,10 @@ export type SaveSheetModel = {
   markerSpan?: string;
   /** `Track 0:38–1:20 · recording 0:00–0:42`, absent when the track never advanced. */
   timeSpan?: string;
-  /** Why the take stopped, when that is worth a warning. */
+  /** Why the take stopped, when it was not the user pressing Stop. */
   notice?: string;
+  /** Whether the stop may have lost audio, so the notice is a warning. */
+  noticeIsProblem?: boolean;
   storedNote: string;
   autoExport: SaveSheetAutoExport;
 };
@@ -131,7 +134,11 @@ export const getSaveSheetModel = (input: SaveSheetInput): SaveSheetModel => {
           timeSpan: `Track ${formatRange(trackRange.startMs, trackRange.endMs)} · recording ${formatRange(recorded.startMs, recorded.endMs)}`,
         }
       : {}),
-    ...(stop?.isProblem ? { notice: stop.message } : {}),
+    // The strip's message gives way to this sheet, so every stop the user did
+    // not ask for is explained here.
+    ...(stop && !stop.isUserStop
+      ? { notice: stop.message, noticeIsProblem: stop.isProblem }
+      : {}),
     storedNote: SAVE_SHEET_COPY.storedNote,
     autoExport: describeAutoExport(input.autoExport),
   };
@@ -149,3 +156,10 @@ export const resolveRecordingName = (
 
   return trimmed.length > 0 ? trimmed : currentName;
 };
+
+/** What the delete confirmation says; the take cannot be recovered once deleted. */
+export const getSaveSheetDeleteConfirmation = (name: string) => ({
+  confirmLabel: SAVE_SHEET_COPY.confirmDeleteLabel,
+  message: `This permanently removes “${name}” from this device. A copy already exported to Drive is not deleted.`,
+  title: SAVE_SHEET_COPY.confirmDeleteTitle,
+});

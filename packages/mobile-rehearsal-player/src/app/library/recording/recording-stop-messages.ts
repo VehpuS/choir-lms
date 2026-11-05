@@ -7,10 +7,17 @@ export type RecordingStopMessage = {
   isProblem: boolean;
   /** Whether to offer `Export` of what was saved before anything else is lost. */
   offerExport: boolean;
+  /** The user pressed Stop: the take saved as expected, so there is nothing to explain. */
+  isUserStop?: boolean;
 };
 
 const MESSAGES: Record<RecordingStopReason, RecordingStopMessage> = {
-  user: { message: 'Recording saved.', isProblem: false, offerExport: false },
+  user: {
+    message: 'Recording saved.',
+    isProblem: false,
+    isUserStop: true,
+    offerExport: false,
+  },
   hidden: {
     message:
       'Recording stopped when the app went to the background. It was saved.',

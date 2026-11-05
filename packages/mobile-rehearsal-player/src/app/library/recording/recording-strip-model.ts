@@ -254,7 +254,12 @@ export const getRecordingStripModel = (
     };
   }
 
-  if (session.phase === 'stopped' && session.stopMessage) {
+  // A saved take's message moves to its save sheet, so the strip stays quiet.
+  if (
+    session.phase === 'stopped' &&
+    session.stopMessage &&
+    !session.savedRecording
+  ) {
     return {
       kind: 'stopped',
       message: session.stopMessage.message,

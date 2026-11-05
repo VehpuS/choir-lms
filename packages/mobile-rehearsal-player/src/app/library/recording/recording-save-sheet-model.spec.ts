@@ -3,10 +3,13 @@ import { describe, it } from 'node:test';
 
 import type { Recording } from '@org/audio-library-models';
 
+import { describeRecordingStop } from './recording-stop-messages.js';
 import {
+  getSaveSheetDeleteConfirmation,
   getSaveSheetModel,
   MAX_RECORDING_NAME_LENGTH,
   resolveRecordingName,
+  SAVE_SHEET_COPY,
   type AutoExportState,
 } from './recording-save-sheet-model.js';
 
@@ -238,12 +241,32 @@ describe('save sheet model', () => {
       stop: {
         message: 'Recording saved.',
         isProblem: false,
+        isUserStop: true,
         offerExport: false,
       },
     });
 
     assert.equal(warned.notice, 'Storage is full.');
+    assert.equal(warned.noticeIsProblem, true);
     assert.equal(routine.notice, undefined);
+  });
+
+  it('explains a stop the user did not ask for, without a warning', () => {
+    const atEnd = getSaveSheetModel({
+      recording: recording(),
+      autoExport: OFF,
+      stop: describeRecordingStop('track-ended'),
+    });
+
+    assert.ok(atEnd.notice?.includes('end of the track'));
+    assert.equal(atEnd.noticeIsProblem, false);
+  });
+
+  it('names the recording in the delete confirmation', () => {
+    const content = getSaveSheetDeleteConfirmation('Take 3');
+
+    assert.ok(content.message.includes('Take 3'));
+    assert.equal(content.confirmLabel, SAVE_SHEET_COPY.confirmDeleteLabel);
   });
 });
 
