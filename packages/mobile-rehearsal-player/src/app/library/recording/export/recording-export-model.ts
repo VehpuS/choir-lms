@@ -41,6 +41,7 @@ export const EXPORT_COPY = {
   folderLabel: 'Folder',
   changeFolderLabel: 'Change',
   chooseFolderLabel: 'Choose a folder',
+  lastFolderNote: 'The last folder you used.',
   nameLabel: 'Name',
   driveNote:
     'Nothing is written to Drive until you confirm. Drive asks for permission here if needed.',

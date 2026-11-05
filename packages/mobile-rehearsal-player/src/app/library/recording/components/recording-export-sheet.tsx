@@ -15,8 +15,10 @@ import {
   type ExportKind,
 } from '../export/recording-export-model';
 import type { useRecordingExport } from '../export/use-recording-export';
-import { RecordingBalanceSlider } from '../overlay/recording-balance-slider';
-import { RecordingLevelControl } from '../overlay/recording-level-control';
+import {
+  RecordingExportMixSection,
+  type ExportMix,
+} from './recording-export-mix-section';
 import { RecordingExportProgress } from './recording-export-progress';
 
 const { colors, radius, space, type } = appTheme;
@@ -32,9 +34,6 @@ const DESTINATION_OPTIONS: ReadonlyArray<{
   { label: EXPORT_COPY.destinationDriveLabel, value: 'drive' },
   { label: EXPORT_COPY.destinationDownloadLabel, value: 'download' },
 ];
-
-/** The balance and level the dialog is setting. */
-export type ExportMix = { balance: number; levelDb: number };
 
 type RecordingExportSheetProps = {
   recordings: readonly Recording[];
@@ -158,55 +157,14 @@ export const RecordingExportSheet = ({
           </Text>
         ) : null}
         {isMix ? (
-          <View style={styles.field}>
-            <View style={styles.header}>
-              <Text style={styles.label}>{EXPORT_COPY.balanceLabel}</Text>
-              {state.isSingle ? (
-                <OutlinedActionButton
-                  icon="play"
-                  label={EXPORT_COPY.previewLabel}
-                  onPress={() =>
-                    onPreview({
-                      balance: state.balance,
-                      levelDb: state.levelDb,
-                    })
-                  }
-                />
-              ) : null}
-            </View>
-            <RecordingBalanceSlider
-              onChange={(next) => {
-                state.setBalance(next);
-                onPreviewMixChange({ balance: next, levelDb: state.levelDb });
-              }}
-              value={state.balance}
-            />
-            {first && state.isSingle ? (
-              <RecordingLevelControl
-                levelDb={state.levelDb}
-                onChange={(next) => {
-                  state.setLevelDb(next);
-                  onPreviewMixChange({ balance: state.balance, levelDb: next });
-                }}
-                recordingId={first.id}
-              />
-            ) : (
-              <Text style={styles.hint}>{EXPORT_COPY.bulkLevelHint}</Text>
-            )}
-            <Text style={styles.hint}>{EXPORT_COPY.mixHint}</Text>
-            {state.isSingle ? (
-              <Pressable
-                accessibilityLabel={EXPORT_COPY.keepBalanceLabel}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: keepBalance }}
-                onPress={() => setKeepBalance(!keepBalance)}
-              >
-                <Text style={styles.link}>
-                  {`${keepBalance ? '☑' : '☐'} ${EXPORT_COPY.keepBalanceLabel}`}
-                </Text>
-              </Pressable>
-            ) : null}
-          </View>
+          <RecordingExportMixSection
+            keepBalance={keepBalance}
+            onKeepBalanceChange={setKeepBalance}
+            onPreview={onPreview}
+            onPreviewMixChange={onPreviewMixChange}
+            recordings={recordings}
+            state={state}
+          />
         ) : (
           <Text style={styles.hint}>
             {`${EXPORT_COPY.recordingHint}${first && state.isSingle ? ` About ${formatRecordingSize(first.sizeBytes)}.` : ''}`}
@@ -243,6 +201,9 @@ export const RecordingExportSheet = ({
               </Text>
               <Text style={styles.link}>{EXPORT_COPY.changeFolderLabel}</Text>
             </View>
+            {state.folder ? (
+              <Text style={styles.hint}>{EXPORT_COPY.lastFolderNote}</Text>
+            ) : null}
           </Pressable>
         ) : null}
         {state.isSingle ? (
@@ -252,7 +213,7 @@ export const RecordingExportSheet = ({
               accessibilityLabel="File name"
               autoCorrect={false}
               onChangeText={state.setTypedName}
-              style={styles.nameInput}
+              style={[styles.nameInput, styles.leftToRight]}
               value={state.nameValue}
             />
           </View>
@@ -288,6 +249,8 @@ const styles = StyleSheet.create({
   },
   label: { ...type.rowMeta, color: colors.textMuted },
   link: { ...type.rowMeta, color: colors.accent },
+  // A right-to-left track name in the file name must not flip the field.
+  leftToRight: { textAlign: 'left', writingDirection: 'ltr' },
   nameInput: {
     minHeight: space.touchTarget,
     borderWidth: 1,
