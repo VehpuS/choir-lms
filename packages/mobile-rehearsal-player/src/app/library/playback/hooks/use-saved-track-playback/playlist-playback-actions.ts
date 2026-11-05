@@ -13,6 +13,7 @@ import {
   getPlaylistPlaybackCurrentItem,
   type PlaylistPlaybackSession,
 } from '../../../playlists/utils/saved-playlist-playback-view-model';
+import { getSkippedItemsIssue } from '../../../playlists/utils/saved-playlist-skipped-items';
 import type { SavedTrackPlaybackController } from '../../utils/saved-track-playback-controller';
 import {
   createSavedTrackPlaybackRuntimeIssue,
@@ -97,6 +98,12 @@ export const startPlaylistPlayback = async (
 
   try {
     await options.playbackController.loadPlayableItem(firstPlayableItem);
+
+    const skippedIssue = getSkippedItemsIssue(nextSession.session);
+
+    if (skippedIssue) {
+      options.setIssue(mapPlaylistPlaybackIssue(skippedIssue));
+    }
   } catch (error) {
     options.setIssue(
       createSavedTrackPlaybackRuntimeIssue(firstPlayableItem, error),

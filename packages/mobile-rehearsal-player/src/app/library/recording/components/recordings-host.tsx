@@ -1,5 +1,5 @@
 import type { NamedLoop, Playlist, Recording } from '@org/audio-library-models';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { subscribeToSavedItemRequests } from '../../components/saved-item-menu/saved-item-requests';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
@@ -7,6 +7,8 @@ import { resolveRecordingPlayback } from '../recording-playback-item';
 import type { RecordingsView } from '../recordings-panel-model';
 import type { useSavedTrackPlayback } from '../../playback/hooks/use-saved-track-playback';
 import { getRecordingsStore } from '../recordings-store-instance';
+import type { BulkAcknowledgment } from '../../selection/bulk-playback-run';
+import { RecordingNoticeDialog } from './recording-notice-dialog';
 import { RecordingPlaylistPicker } from './recording-playlist-picker';
 import { RecordingsPanel } from './recordings-panel';
 
@@ -45,6 +47,10 @@ export const RecordingsHost = ({
   const { savedLibrarySources, savedLoops } = library;
   const [target, setTarget] = useState<PanelTarget | null>(null);
   const [playlistTarget, setPlaylistTarget] = useState<PlaylistTarget>(null);
+  const [addedNotice, setAddedNotice] = useState<BulkAcknowledgment | null>(
+    null,
+  );
+  const dismissNotice = useCallback(() => setAddedNotice(null), []);
 
   useEffect(() => {
     return subscribeToSavedItemRequests((request) => {
@@ -102,17 +108,29 @@ export const RecordingsHost = ({
   const picker = playlistTarget ? (
     <RecordingPlaylistPicker
       createPlaylist={playlists.createPlaylist}
-      // The sheet closing is the feedback here; the playback sheet has no toast.
-      onAdded={() => undefined}
+      // The playback sheet has no toast, so the confirmation is its own dialog.
+      onAdded={setAddedNotice}
       onClose={() => setPlaylistTarget(null)}
       playlists={playlists.savedPlaylists}
       recordings={[playlistTarget]}
       updatePlaylist={playlists.updatePlaylist}
     />
   ) : null;
+  const notice = addedNotice ? (
+    <RecordingNoticeDialog
+      message={addedNotice.message}
+      onDismiss={dismissNotice}
+      title={addedNotice.title}
+    />
+  ) : null;
 
   if (!target) {
-    return picker;
+    return (
+      <>
+        {picker}
+        {notice}
+      </>
+    );
   }
 
   const playRecording = (recording: Recording): string | null => {
@@ -132,28 +150,31 @@ export const RecordingsHost = ({
   };
 
   return (
-    <RecordingsPanel
-      library={recordingLibrary}
-      onClose={() => setTarget(null)}
-      onPlay={playRecording}
-      playlists={playlists}
-      queue={{
-        canQueue: playback.activePlayableItem !== null,
-        onQueued: () => undefined,
-        queueNext: playback.queuePlayableItemsNext,
-        queueUpNext: playback.queuePlayableItemsUpNext,
-        resolve: (recording) => {
-          const resolution = resolveRecordingPlayback(recording, {
-            sources: savedLibrarySources,
-            loops: savedLoops,
-          });
+    <>
+      {notice}
+      <RecordingsPanel
+        library={recordingLibrary}
+        onClose={() => setTarget(null)}
+        onPlay={playRecording}
+        playlists={playlists}
+        queue={{
+          canQueue: playback.activePlayableItem !== null,
+          onQueued: () => undefined,
+          queueNext: playback.queuePlayableItemsNext,
+          queueUpNext: playback.queuePlayableItemsUpNext,
+          resolve: (recording) => {
+            const resolution = resolveRecordingPlayback(recording, {
+              sources: savedLibrarySources,
+              loops: savedLoops,
+            });
 
-          return resolution.kind === 'item' ? resolution.item : null;
-        },
-      }}
-      sources={tracks}
-      view={target.view}
-      viewName={target.viewName}
-    />
+            return resolution.kind === 'item' ? resolution.item : null;
+          },
+        }}
+        sources={tracks}
+        view={target.view}
+        viewName={target.viewName}
+      />
+    </>
   );
 };
