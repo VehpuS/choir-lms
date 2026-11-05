@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
+  FlatList,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -48,6 +48,21 @@ export const RecordingTrackPicker = ({
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const shown = filterTrackOptions(options, query);
+  // `Any track` leads the list until a search narrows it.
+  const rows: Array<{
+    key: string;
+    label: string;
+    trackId: string | undefined;
+  }> = [
+    ...(query.trim() === ''
+      ? [{ key: 'any', label: ANY_TRACK_LABEL, trackId: undefined }]
+      : []),
+    ...shown.map((option) => ({
+      key: option.trackId,
+      label: getTrackOptionLabel(option),
+      trackId: option.trackId,
+    })),
+  ];
   const valueLabel = getTrackFilterValueLabel(options, trackId);
 
   const close = () => {
@@ -87,26 +102,23 @@ export const RecordingTrackPicker = ({
           style={styles.search}
           value={query}
         />
-        <ScrollView style={styles.list}>
-          {query.trim() === '' ? (
-            <OptionRow
-              isSelected={trackId === undefined}
-              label={ANY_TRACK_LABEL}
-              onPress={() => choose(undefined)}
-            />
-          ) : null}
-          {shown.map((option) => (
-            <OptionRow
-              isSelected={trackId === option.trackId}
-              key={option.trackId}
-              label={getTrackOptionLabel(option)}
-              onPress={() => choose(option.trackId)}
-            />
-          ))}
-          {shown.length === 0 ? (
+        {/* A virtualized list, so a library of thousands of tracks stays smooth. */}
+        <FlatList
+          data={rows}
+          keyboardShouldPersistTaps="handled"
+          keyExtractor={(row) => row.key}
+          ListEmptyComponent={
             <Text style={styles.empty}>{TRACK_PICKER_EMPTY_MESSAGE}</Text>
-          ) : null}
-        </ScrollView>
+          }
+          renderItem={({ item }) => (
+            <OptionRow
+              isSelected={item.trackId === trackId}
+              label={item.label}
+              onPress={() => choose(item.trackId)}
+            />
+          )}
+          style={styles.list}
+        />
       </CenteredDialogCard>
     </>
   );

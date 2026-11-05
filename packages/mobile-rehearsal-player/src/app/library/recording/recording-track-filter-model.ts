@@ -18,15 +18,21 @@ export const getTrackFilterValueLabel = (
   return chosen ? optionLabel(chosen) : ANY_TRACK_LABEL;
 };
 
-/** The tracks whose name contains the typed text, ignoring case; all when it is blank. */
+const COMBINING_MARKS = /[\u0300-\u036f]/g;
+
+/** Lower case with accents removed, so `faure` finds `Fauré` however it was typed. */
+const toSearchKey = (text: string): string =>
+  text.normalize('NFD').replace(COMBINING_MARKS, '').toLocaleLowerCase();
+
+/** The tracks whose name contains the typed text, ignoring case and accents; all when blank. */
 export const filterTrackOptions = (
   options: readonly RecordingTrackOption[],
   query: string,
 ): RecordingTrackOption[] => {
-  const needle = query.trim().toLocaleLowerCase();
+  const needle = toSearchKey(query.trim());
 
   return options.filter(
-    (option) => !needle || option.name.toLocaleLowerCase().includes(needle),
+    (option) => !needle || toSearchKey(option.name).includes(needle),
   );
 };
 

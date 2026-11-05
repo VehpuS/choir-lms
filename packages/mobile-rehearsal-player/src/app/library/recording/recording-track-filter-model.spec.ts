@@ -19,6 +19,14 @@ describe('track filter model', () => {
     assert.equal(getTrackFilterValueLabel(options, 'gone'), ANY_TRACK_LABEL);
   });
 
+  it('finds an accented name from plain or decomposed typing', () => {
+    const accented = [{ trackId: 'f', name: 'Ici-bas! - Fauré', count: 2 }];
+
+    assert.equal(filterTrackOptions(accented, 'faure').length, 1);
+    assert.equal(filterTrackOptions(accented, 'FAURÉ').length, 1);
+    assert.equal(filterTrackOptions(accented, 'faure\u0301').length, 1);
+  });
+
   it('narrows the tracks by typed text without caring about case', () => {
     assert.deepEqual(
       filterTrackOptions(options, ' AVE ').map((option) => option.trackId),
