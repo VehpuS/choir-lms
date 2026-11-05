@@ -63,6 +63,12 @@ export type RecordingsStore = {
   listByOwner: (owner: RecordingOwner) => Promise<Recording[]>;
   /** Recordings a crash or a failed finalize left unfinished. */
   listIncomplete: () => Promise<Recording[]>;
+  /**
+   * Finishes a take a crash left unfinished, from the checkpoint written with
+   * its last chunk. A take with no audio saved is removed instead, and `null`
+   * is returned.
+   */
+  recoverIncomplete: (id: string) => Promise<Recording | null>;
   update: (
     id: string,
     patch: Partial<

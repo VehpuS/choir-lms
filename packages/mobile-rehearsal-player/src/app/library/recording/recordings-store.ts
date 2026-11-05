@@ -130,6 +130,23 @@ export const createRecordingsStore = (
         .filter((recording) => sameOwner(recording, owner))
         .sort(byNewest),
     listIncomplete: () => listWhere('recording'),
+    recoverIncomplete: async (id) => {
+      const record = await backend.getRecord(id);
+
+      if (record?.status !== 'recording') {
+        return null;
+      }
+
+      if (record.chunkCount === 0) {
+        await backend.deleteRecording(id);
+
+        return null;
+      }
+
+      await backend.putRecord({ ...record, status: 'complete' });
+
+      return stripStorage(record);
+    },
     modify: (id, patchFrom) => {
       const run = updateChain.then(async () => {
         const record = await requireRecord(id);
@@ -193,6 +210,7 @@ export const createUnavailableRecordingsStore = (): RecordingsStore => {
     list: async () => [],
     listByOwner: async () => [],
     listIncomplete: async () => [],
+    recoverIncomplete: reject,
     modify: reject,
     update: reject,
     getWavBlob: async () => null,

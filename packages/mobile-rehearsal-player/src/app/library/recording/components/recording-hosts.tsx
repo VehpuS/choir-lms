@@ -1,4 +1,5 @@
 import { RecordingAutoExportHost } from './recording-auto-export-host';
+import { RecordingInterruptedHost } from './recording-interrupted-host';
 import { RecordingExportHost } from './recording-export-host';
 import { RecordingOverlayHost } from '../overlay/recording-overlay-host';
 import { RecordingPreviewHost } from '../overlay/recording-preview-host';
@@ -27,6 +28,7 @@ export const RecordingHosts = ({
       playlists={playlists}
     />
     <RecordingExportHost authorization={authorization} library={library} />
+    <RecordingInterruptedHost />
     <RecordingAutoExportHost authorization={authorization} library={library} />
     <RecordingOverlayHost playback={playback} />
     <RecordingPreviewHost library={library} playback={playback} />

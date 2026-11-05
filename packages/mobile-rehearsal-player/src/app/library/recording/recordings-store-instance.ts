@@ -39,7 +39,14 @@ export const refreshRecordingsSnapshot = async (): Promise<
   return snapshot;
 };
 
-const MUTATIONS = ['create', 'complete', 'update', 'modify', 'delete'] as const;
+const MUTATIONS = [
+  'create',
+  'complete',
+  'update',
+  'modify',
+  'delete',
+  'recoverIncomplete',
+] as const;
 
 export type RecordingsChange = (typeof MUTATIONS)[number];
 
