@@ -12,6 +12,7 @@ import { AdjustedSaveRename } from './adjusted-save-rename';
 import { PitchControl } from './pitch-control';
 import { SpeedControl } from './speed-control';
 import {
+  isShapingFooterShown,
   SESSION_SCOPE_STATEMENT,
   canResetShaping,
   getItemOverrideNote,
@@ -173,17 +174,19 @@ export const ShapingSurface = ({
           pitchSemitones={controls.ambient.pitchSemitones}
         />
       </ScrollView>
-      <View style={styles.footer}>
-        <View style={styles.footerNote}>
-          <AppIcon
-            color={appTheme.colors.accentText}
-            name="information-outline"
-            size={INFO_ICON_SIZE}
-          />
-          <Text style={styles.footerText}>{SESSION_SCOPE_STATEMENT}</Text>
+      {isShapingFooterShown(controls.lockedReason) ? (
+        <View style={styles.footer}>
+          <View style={styles.footerNote}>
+            <AppIcon
+              color={appTheme.colors.accentText}
+              name="information-outline"
+              size={INFO_ICON_SIZE}
+            />
+            <Text style={styles.footerText}>{SESSION_SCOPE_STATEMENT}</Text>
+          </View>
+          {controls.save ? <SaveActions save={controls.save} /> : null}
         </View>
-        {controls.save ? <SaveActions save={controls.save} /> : null}
-      </View>
+      ) : null}
     </View>
   );
 };

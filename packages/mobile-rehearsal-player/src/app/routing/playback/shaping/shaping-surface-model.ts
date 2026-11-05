@@ -85,6 +85,15 @@ export const resolveShapingLockedReason = (options: {
   return options.activeItem?.recordingId ? SHAPING_LOCKED_TO_RECORDING : null;
 };
 
+/**
+ * The session-scope note and the save actions describe what the controls do
+ * to the session. While a take or a recording fixes speed and pitch, nothing
+ * is session-scoped or savable, so the footer says nothing (task 14.7).
+ */
+export const isShapingFooterShown = (
+  lockedReason: string | null | undefined,
+): boolean => !lockedReason;
+
 export const SESSION_SCOPE_STATEMENT =
   'Applies to this session only until saved.';
 /**

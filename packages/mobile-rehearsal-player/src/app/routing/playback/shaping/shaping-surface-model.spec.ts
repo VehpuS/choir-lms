@@ -11,6 +11,7 @@ import {
   getPracticeShapingTiles,
   getSpeedControlModel,
   getTempoSourceChips,
+  isShapingFooterShown,
   resolveShapingLockedReason,
   resolveSpeedSliderValue,
   SHAPING_LOCKED_TO_RECORDING,
@@ -261,5 +262,12 @@ describe('resolveShapingLockedReason', () => {
       }),
       SHAPING_LOCKED_TO_RECORDING,
     );
+  });
+});
+
+describe('isShapingFooterShown', () => {
+  it('shows the session note and save actions only while the controls are free', () => {
+    assert.equal(isShapingFooterShown(null), true);
+    assert.equal(isShapingFooterShown(SHAPING_LOCKED_TO_RECORDING), false);
   });
 });
