@@ -103,11 +103,13 @@ export const setup = (
 export const createHandTransport = (playing: boolean) => {
   const listeners = new Set<(event: TransportEvent) => void>();
   let isPlaying = playing;
+  let hasEnded = false;
 
   return {
     transport: {
       getPositionMs: () => 0,
       isPlaying: () => isPlaying,
+      hasEnded: () => hasEnded,
       subscribe: (listener: (event: TransportEvent) => void) => {
         listeners.add(listener);
 
@@ -117,6 +119,12 @@ export const createHandTransport = (playing: boolean) => {
     set: (next: boolean) => {
       isPlaying = next;
       listeners.forEach((listener) => listener(next ? 'play' : 'pause'));
+    },
+    /** The track plays out to its end, which the element reports as a pause. */
+    end: () => {
+      isPlaying = false;
+      hasEnded = true;
+      listeners.forEach((listener) => listener('pause'));
     },
     listenerCount: () => listeners.size,
   };

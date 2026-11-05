@@ -174,6 +174,9 @@ export const createRecordingSession = (
       if (transport.isPlaying()) {
         take.resume();
         set({ phase: 'recording', paused: false });
+      } else if (transport.hasEnded?.()) {
+        // The track ran out: the take ends with it (design Decision 8).
+        void take.stop('track-ended');
       } else {
         take.pause();
 

@@ -15,6 +15,11 @@ export type Transport = {
   /** Track position in original-audio milliseconds. */
   getPositionMs: () => number;
   isPlaying: () => boolean;
+  /**
+   * Whether the track stopped because it reached its end (reported as a pause).
+   * Absent where the transport cannot tell a finished track from a paused one.
+   */
+  hasEnded?: () => boolean;
   /** Reports play, pause, seek and loop wrap; returns an unsubscribe. */
   subscribe: (listener: (event: TransportEvent) => void) => () => void;
 };

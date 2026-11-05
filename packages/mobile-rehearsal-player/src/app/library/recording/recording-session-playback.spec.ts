@@ -70,6 +70,26 @@ describe('recording session', () => {
     assert.equal(t.session.getState().savedRecording?.durationMs, 2500);
   });
 
+  it('stops and saves the take when the track plays out to its end', async () => {
+    const t = setup();
+    const track = createHandTransport(true);
+
+    await t.session.requestStart(async () => ({
+      ...request(),
+      transport: track.transport,
+    }));
+    t.feed(15); // 1.5 s
+    track.end();
+    await settle();
+
+    const state = t.session.getState();
+
+    assert.equal(state.phase, 'stopped');
+    assert.equal(state.savedRecording?.durationMs, 1500);
+    assert.ok(state.stopMessage?.message.includes('end of the track'));
+    assert.equal(track.listenerCount(), 0);
+  });
+
   it('disarms without a message when stopped before the track plays', async () => {
     const t = setup();
     const track = createHandTransport(false);

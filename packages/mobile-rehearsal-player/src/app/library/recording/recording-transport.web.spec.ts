@@ -39,9 +39,12 @@ describe('createMediaElementTransport', () => {
     fake.element.paused = true;
     assert.equal(transport.isPlaying(), false);
 
+    assert.equal(transport.hasEnded?.(), false);
+
     fake.element.paused = false;
     fake.element.ended = true;
     assert.equal(transport.isPlaying(), false);
+    assert.equal(transport.hasEnded?.(), true);
   });
 
   it('reports play, pause, a finished track as a pause, and seeks', () => {

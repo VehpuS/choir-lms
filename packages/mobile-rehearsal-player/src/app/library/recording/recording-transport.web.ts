@@ -25,6 +25,7 @@ export const createMediaElementTransport = (
 ): Transport => ({
   getPositionMs: () => element.currentTime * MS_PER_SECOND,
   isPlaying: () => !element.paused && !element.ended,
+  hasEnded: () => element.ended,
   subscribe: (listener) => {
     const handlers = ELEMENT_EVENTS.map(([type, event]) => {
       const handler = () => listener(event);
