@@ -89,7 +89,7 @@ Web is the build and verification target. Native handling is deferred to `native
 
 ## 13. Hand-off
 
-- [ ] 13.1 Hand native recording and overlay to `native-playback-follow-ups` (audio session, permissions, background behaviour).
+- [x] 13.1 Hand native recording and overlay to `native-playback-follow-ups` (audio session, permissions, background behaviour). Done 2026-11-05: added as task 1.13 there, with the capture, storage, transport and clock, overlay voice, audio session and permissions, latency and export work.
 - [ ] 13.2 Archive the change and sync the specs.
 
 ## 14. Follow-ups (to explore with the user before any implementation)
