@@ -29,4 +29,3 @@ Moved here on 2026-10-12 from `nocturne-visual-system-and-playback-shaping` (gro
   - (e) **Audio session, permissions and background:** the iOS microphone usage string and an audio session category that records while the track plays, `android.permission.RECORD_AUDIO`, and what a take does when the app is backgrounded, interrupted by a call or Siri, or loses the microphone (the stop reasons exist: `hidden`, `interrupted`, `microphone-ended`).
   - (f) **Latency:** output and input latency differ per device and route; the nudge, `Use for this device` and the click calibration need on-device checks (design Decision 3), and the headphones assumption needs wording for phones.
   - (g) **Export:** save to the device (share sheet or Files) instead of a browser download, and the Drive upload and Wi-Fi hold with real network information.
-
