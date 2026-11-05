@@ -1,49 +1,46 @@
-import { createCeilingCurve } from '@org/audio-mixing';
+import {
+  MIX_LIMITER_PROCESSOR_NAME,
+  createCeilingCurve,
+  getMixLimiterWorkletSource,
+} from '@org/audio-mixing';
 
 /**
  * The limiter on the recording's own output (rehearsal-recording design
- * Decision 21): a compressor with a high ratio and a fast attack that evens out
- * peaks, then a ceiling curve that no sample can pass, so a boosted recording
- * never clips by itself. The ceiling is defined once, in `@org/audio-mixing`,
- * and the exported mix ends in the same one. The compressor alone is not a ceiling (the browser
- * adds make-up gain, and a +18 dB boost still overshoots), hence the curve. It
- * covers the recording only; the track reaches the browser's output through
- * the media element, so the sum of the two is limited only in an exported mix.
+ * Decision 21, task 14.19): the same peak limiter and ceiling the exported mix
+ * ends in, run as an `AudioWorklet` so the sound while playing is what the
+ * export contains. The browser's `DynamicsCompressorNode` was used before, but
+ * it adds make-up gain that an offline render cannot match, which made the live
+ * overlay about 0.9 dB louder for quiet recordings. Where a worklet is not
+ * available (an insecure page, an old browser) only the ceiling curve is
+ * applied: quiet audio is untouched and nothing reaches full scale, but peaks
+ * are not eased down first. It covers the recording only; the track reaches
+ * the browser's output through the media element, so the sum of the two is
+ * limited only in an exported mix.
  */
-
-/** The level above which the compressor starts to act, a little under full scale. */
-export const LIMITER_THRESHOLD_DB = -1.5;
-export const LIMITER_KNEE_DB = 0;
-/** The highest ratio the node allows, which makes it act as a limiter. */
-export const LIMITER_RATIO = 20;
-/** Seconds; short enough to catch a peak before it is heard as clipping. */
-export const LIMITER_ATTACK_S = 0.002;
-export const LIMITER_RELEASE_S = 0.12;
-type LimiterParam = { value: number };
 
 type ConnectableNode = {
   connect: (destination: unknown) => unknown;
   disconnect: () => void;
 };
 
-/** The slice of the browser's `DynamicsCompressorNode` the limiter sets. */
-export type CompressorNode = ConnectableNode & {
-  threshold: LimiterParam;
-  knee: LimiterParam;
-  ratio: LimiterParam;
-  attack: LimiterParam;
-  release: LimiterParam;
-};
-
-/** The slice of the browser's `WaveShaperNode` the limiter sets. */
+/** The slice of the browser's `WaveShaperNode` the fallback sets. */
 export type ShaperNode = ConnectableNode & {
   curve: Float32Array | null;
   oversample: string;
 };
 
 export type LimiterContext = {
-  createDynamicsCompressor: () => CompressorNode;
   createWaveShaper: () => ShaperNode;
+  /** Absent where worklets are not supported. */
+  audioWorklet?: { addModule: (url: string) => Promise<void> };
+};
+
+/** What the limiter needs from the page, so it runs without a browser in specs. */
+export type LimiterHost = {
+  /** Makes the worklet node for a context that loaded the processor. */
+  createLimiterNode: (context: LimiterContext, name: string) => ConnectableNode;
+  /** A URL a worklet can load the source from. */
+  createModuleUrl: (source: string) => string;
 };
 
 /** A limiter: connect into `input`, and `output` onward. */
@@ -53,25 +50,87 @@ export type Limiter = {
   disconnect: () => void;
 };
 
-export const createOverlayLimiter = (context: LimiterContext): Limiter => {
-  const compressor = context.createDynamicsCompressor();
-  const ceiling = context.createWaveShaper();
+type BrowserGlobals = {
+  AudioWorkletNode?: new (context: unknown, name: string) => ConnectableNode;
+  Blob?: new (parts: string[], options: { type: string }) => unknown;
+  URL?: { createObjectURL: (blob: unknown) => string };
+};
 
-  compressor.threshold.value = LIMITER_THRESHOLD_DB;
-  compressor.knee.value = LIMITER_KNEE_DB;
-  compressor.ratio.value = LIMITER_RATIO;
-  compressor.attack.value = LIMITER_ATTACK_S;
-  compressor.release.value = LIMITER_RELEASE_S;
-  ceiling.curve = createCeilingCurve();
-  ceiling.oversample = '2x';
-  compressor.connect(ceiling);
+const browserHost = (): LimiterHost => {
+  const scope = globalThis as unknown as BrowserGlobals;
 
   return {
-    disconnect: () => {
-      compressor.disconnect();
-      ceiling.disconnect();
+    createLimiterNode: (context, name) => {
+      if (!scope.AudioWorkletNode) {
+        throw new Error('AudioWorkletNode is not available');
+      }
+
+      return new scope.AudioWorkletNode(context, name);
     },
-    input: compressor,
+    createModuleUrl: (source) => {
+      if (!scope.Blob || !scope.URL) {
+        throw new Error('Blob URLs are not available');
+      }
+
+      return scope.URL.createObjectURL(
+        new scope.Blob([source], { type: 'text/javascript' }),
+      );
+    },
+  };
+};
+
+// A context loads the processor once; later overlays reuse it.
+const loadedContexts = new WeakSet<object>();
+
+const loadProcessor = async (context: LimiterContext, host: LimiterHost) => {
+  if (!context.audioWorklet) {
+    return false;
+  }
+
+  if (loadedContexts.has(context)) {
+    return true;
+  }
+
+  try {
+    await context.audioWorklet.addModule(
+      host.createModuleUrl(getMixLimiterWorkletSource()),
+    );
+    loadedContexts.add(context);
+
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const createCeiling = (context: LimiterContext): ShaperNode => {
+  const ceiling = context.createWaveShaper();
+
+  ceiling.curve = createCeilingCurve();
+  ceiling.oversample = '2x';
+
+  return ceiling;
+};
+
+export const createOverlayLimiter = async (
+  context: LimiterContext,
+  host: LimiterHost = browserHost(),
+): Promise<Limiter> => {
+  if (await loadProcessor(context, host)) {
+    try {
+      const node = host.createLimiterNode(context, MIX_LIMITER_PROCESSOR_NAME);
+
+      return { disconnect: () => node.disconnect(), input: node, output: node };
+    } catch {
+      // Fall through to the ceiling alone.
+    }
+  }
+
+  const ceiling = createCeiling(context);
+
+  return {
+    disconnect: () => ceiling.disconnect(),
+    input: ceiling,
     output: ceiling,
   };
 };

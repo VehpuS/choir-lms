@@ -95,7 +95,7 @@ export const startRecordingOverlay = async (
 
     const output = context.createGain();
     // The recording's own output is limited so a boosted level does not clip.
-    const limiter = createOverlayLimiter(context);
+    const limiter = await createOverlayLimiter(context);
 
     output.connect(limiter.input as unknown as VoiceNode);
     limiter.output.connect(context.destination);
