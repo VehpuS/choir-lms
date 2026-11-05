@@ -15,6 +15,7 @@ import {
   RECORDINGS_KIND_OPTIONS,
   toggleChoice,
 } from '../recordings-library-controls-model';
+import { RecordingTrackPicker } from './recording-track-picker';
 import type {
   RecordingTrackOption,
   RecordingsFilters,
@@ -122,24 +123,14 @@ export const RecordingsLibraryFilterSheet = ({
         />
       </Group>
       {trackOptions.length > 0 ? (
-        <Group title="Track">
-          {trackOptions.map((option) => (
-            <InteractionChip
-              accessibilitySelected={filters.trackId === option.trackId}
-              key={option.trackId}
-              label={`${option.name} · ${option.count}`}
-              onPress={() =>
-                onChange({
-                  ...filters,
-                  trackId: toggleChoice(filters.trackId, option.trackId),
-                })
-              }
-              variant={
-                filters.trackId === option.trackId ? 'selected' : 'action'
-              }
-            />
-          ))}
-        </Group>
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Track</Text>
+          <RecordingTrackPicker
+            onChange={(trackId) => onChange({ ...filters, trackId })}
+            options={trackOptions}
+            trackId={filters.trackId}
+          />
+        </View>
       ) : null}
     </View>
   </BottomSheetSurface>
