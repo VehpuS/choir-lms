@@ -95,13 +95,14 @@ describe('RecordingsAutoExportSectionView', () => {
     assert.deepEqual(calls, ['allow']);
   });
 
-  it('changes the folder, what is exported and the connection, and backs up', () => {
+  it('changes the folder and asks before backing up', () => {
     const { calls, getByLabelText } = setUp(on);
 
     fireEvent.press(getByLabelText('Folder Choir Recordings'));
     fireEvent.press(getByLabelText('Back up'));
 
-    assert.deepEqual(calls, ['folder', 'back-up']);
+    // The confirmation is a dialog (not in the test tree), so nothing runs yet.
+    assert.deepEqual(calls, ['folder']);
   });
 
   it('turns off with a tap while on, and leaves Back up disabled with nothing to add', () => {

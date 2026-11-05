@@ -23,6 +23,7 @@ import {
 } from '../../library/recording/export/drive-session-bridge';
 import { useRecordingsList } from '../../library/recording/use-recordings-list';
 import { appTheme } from '../../utils/theme';
+import { RecordingsAutoExportBackUpRow } from './recordings-auto-export-back-up-row';
 import {
   AUTO_EXPORT_COPY,
   buildAutoExportSettingsView,
@@ -110,9 +111,11 @@ export const RecordingsAutoExportSectionView = ({
               <Text style={styles.rowTitle}>
                 {AUTO_EXPORT_COPY.folderTitle}
               </Text>
-              <Text style={view.folder.isError ? styles.error : styles.body}>
-                {view.folder.note}
-              </Text>
+              {view.folder.note ? (
+                <Text style={view.folder.isError ? styles.error : styles.body}>
+                  {view.folder.note}
+                </Text>
+              ) : null}
             </View>
             <Text style={styles.value}>{view.folder.name}</Text>
             <Text style={styles.link}>
@@ -142,17 +145,10 @@ export const RecordingsAutoExportSectionView = ({
           />
           <Text style={styles.body}>{AUTO_EXPORT_COPY.whatNote}</Text>
         </View>
-        <View style={styles.row}>
-          <View style={styles.rowText}>
-            <Text style={styles.rowTitle}>{AUTO_EXPORT_COPY.backUpTitle}</Text>
-            <Text style={styles.body}>{view.backUp.detail}</Text>
-          </View>
-          <OutlinedActionButton
-            disabled={view.backUp.count === 0}
-            label={AUTO_EXPORT_COPY.backUpLabel}
-            onPress={onBackUp}
-          />
-        </View>
+        <RecordingsAutoExportBackUpRow
+          backUp={view.backUp}
+          onConfirm={onBackUp}
+        />
       </>
     ) : null}
   </View>

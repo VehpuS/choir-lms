@@ -8,6 +8,7 @@ import { buildRecordingFixture } from '../../library/recording/recording-fixture
 import {
   AUTO_EXPORT_COPY,
   buildAutoExportSettingsView,
+  getBackUpConfirmation,
 } from './recordings-auto-export-model';
 
 const on: AutoExportSettings = {
@@ -41,6 +42,10 @@ describe('buildAutoExportSettingsView', () => {
     assert.equal(off.allow, undefined);
   });
 
+  it('drops the folder-creation note once a folder is chosen', () => {
+    assert.equal(view().folder?.note, undefined);
+  });
+
   it('asks for the permission while it is on without one, and shows the folder', () => {
     const missing = view({ hasWriteAccess: false });
 
@@ -57,6 +62,7 @@ describe('buildAutoExportSettingsView', () => {
     });
 
     assert.equal(none.folder?.name, 'Choir Recordings');
+    assert.equal(none.folder?.note, AUTO_EXPORT_COPY.folderNote);
     assert.equal(none.folder?.isError, false);
     assert.equal(failed.folder?.isError, true);
     assert.match(failed.folder?.note ?? '', /out of storage/);
@@ -122,5 +128,19 @@ describe('buildAutoExportSettingsView', () => {
     assert.equal(one.backUp.detail, '1 recording is not on Drive yet.');
     assert.equal(two.backUp.detail, '2 recordings are not on Drive yet.');
     assert.equal(view().backUp.detail, AUTO_EXPORT_COPY.backUpNone);
+  });
+
+  it('sizes the back-up and says what the confirmation will do', () => {
+    const old = buildRecordingFixture({
+      createdAt: '2026-10-01T00:00:00.000Z',
+      id: 'old',
+      sizeBytes: 2_097_152,
+    });
+    const { backUp } = view({ recordings: [old] });
+    const confirmation = getBackUpConfirmation(backUp);
+
+    assert.equal(backUp.sizeBytes, 2_097_152);
+    assert.ok(confirmation.message.startsWith('1 recording (2.0 MB)'));
+    assert.ok(confirmation.message.includes('Turning auto-export off pauses'));
   });
 });

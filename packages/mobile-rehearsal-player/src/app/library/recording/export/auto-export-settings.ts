@@ -98,14 +98,19 @@ export const parseAutoExportSettings = (value: unknown): AutoExportSettings => {
  * Recordings the setting would export but leaves alone because they were made
  * before it: what `Back up existing recordings` would add.
  */
-export const countRecordingsToBackUp = (
+export const listRecordingsToBackUp = (
   recordings: readonly Recording[],
   settings: AutoExportSettings,
-): number =>
+): Recording[] =>
   settings.eligibleFrom === null
-    ? 0
+    ? []
     : recordings.filter(
         (recording) =>
           recording.createdAt < (settings.eligibleFrom ?? '') &&
           getMissingExportKinds(recording, settings.what).length > 0,
-      ).length;
+      );
+
+export const countRecordingsToBackUp = (
+  recordings: readonly Recording[],
+  settings: AutoExportSettings,
+): number => listRecordingsToBackUp(recordings, settings).length;

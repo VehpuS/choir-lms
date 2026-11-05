@@ -50,70 +50,72 @@ export const RecordingRow = ({
           size={22}
         />
       ) : null}
-      <Pressable
-        accessibilityHint={
-          resolved.onLongPress || !selection?.isActive
-            ? 'Plays this recording'
-            : 'Toggles selection'
-        }
-        accessibilityLabel={`${row.name}. ${row.detail}`}
-        accessibilityRole={resolved.role}
-        aria-checked={resolved.ariaChecked}
-        {...interactionGuardProps}
-        onLongPress={resolved.onLongPress}
-        onPress={resolved.onPress}
-        style={({ pressed }) => [
-          styles.text,
-          buttonInteractionGuardStyle,
-          pressed ? styles.pressed : null,
-        ]}
-      >
-        <View style={styles.titleLine}>
-          <Text numberOfLines={1} style={styles.name}>
-            {row.name}
-          </Text>
-          {row.tags.map((tag) => (
-            <Text
-              key={`${tag.kind}-${tag.label}`}
-              style={[
-                styles.tag,
-                tag.kind === 'changed' || tag.kind === 'connection'
-                  ? styles.tagWarning
-                  : null,
-              ]}
-            >
-              {tag.label}
-            </Text>
-          ))}
-        </View>
-        {/* On its own line, so a right-to-left name does not scramble the span and size. */}
-        {trackName ? (
-          <Text numberOfLines={1} style={[styles.meta, styles.trackName]}>
-            {trackName}
-          </Text>
-        ) : null}
-        <Text numberOfLines={1} style={styles.meta}>
-          {row.detail}
-        </Text>
-        <Text numberOfLines={1} style={styles.meta}>
-          {driveLabel ? `${row.meta} · ${driveLabel}` : row.meta}
-        </Text>
-      </Pressable>
-      {onRetryDrive && !resolved.hidesTrailingControls ? (
+      <View style={styles.textColumn}>
         <Pressable
-          accessibilityLabel={`Retry upload for ${row.name}`}
-          accessibilityRole="button"
+          accessibilityHint={
+            resolved.onLongPress || !selection?.isActive
+              ? 'Plays this recording'
+              : 'Toggles selection'
+          }
+          accessibilityLabel={`${row.name}. ${row.detail}`}
+          accessibilityRole={resolved.role}
+          aria-checked={resolved.ariaChecked}
           {...interactionGuardProps}
-          onPress={() => onRetryDrive(row.id)}
+          onLongPress={resolved.onLongPress}
+          onPress={resolved.onPress}
           style={({ pressed }) => [
-            styles.retry,
+            styles.text,
             buttonInteractionGuardStyle,
             pressed ? styles.pressed : null,
           ]}
         >
-          <Text style={styles.retryLabel}>Retry</Text>
+          <View style={styles.titleLine}>
+            <Text numberOfLines={1} style={styles.name}>
+              {row.name}
+            </Text>
+            {row.tags.map((tag) => (
+              <Text
+                key={`${tag.kind}-${tag.label}`}
+                style={[
+                  styles.tag,
+                  tag.kind === 'changed' || tag.kind === 'connection'
+                    ? styles.tagWarning
+                    : null,
+                ]}
+              >
+                {tag.label}
+              </Text>
+            ))}
+          </View>
+          {/* On its own line, so a right-to-left name does not scramble the span and size. */}
+          {trackName ? (
+            <Text numberOfLines={1} style={[styles.meta, styles.trackName]}>
+              {trackName}
+            </Text>
+          ) : null}
+          <Text numberOfLines={1} style={styles.meta}>
+            {row.detail}
+          </Text>
+          <Text numberOfLines={1} style={styles.meta}>
+            {driveLabel ? `${row.meta} · ${driveLabel}` : row.meta}
+          </Text>
         </Pressable>
-      ) : null}
+        {onRetryDrive && !resolved.hidesTrailingControls ? (
+          <Pressable
+            accessibilityLabel={`Retry upload for ${row.name}`}
+            accessibilityRole="button"
+            {...interactionGuardProps}
+            onPress={() => onRetryDrive(row.id)}
+            style={({ pressed }) => [
+              styles.retry,
+              buttonInteractionGuardStyle,
+              pressed ? styles.pressed : null,
+            ]}
+          >
+            <Text style={styles.retryLabel}>Retry upload</Text>
+          </Pressable>
+        ) : null}
+      </View>
       {resolved.hidesTrailingControls ? null : (
         <Pressable
           accessibilityLabel={`Options for ${row.name}`}
@@ -134,11 +136,13 @@ export const RecordingRow = ({
 };
 
 const styles = StyleSheet.create({
+  // The retry sits under the row's text, so it never squeezes the last line.
   retry: {
+    alignSelf: 'flex-start',
     minHeight: space.touchTarget,
     justifyContent: 'center',
-    paddingHorizontal: space.sm,
   },
+  textColumn: { flex: 1 },
   retryLabel: { ...type.rowMeta, color: colors.accent },
   meta: { ...type.rowMeta, color: colors.textMuted },
   trackName: { textAlign: 'left' },
@@ -166,7 +170,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.xs,
   },
   tagWarning: { color: colors.warning },
-  text: { flex: 1, gap: 2 },
+  text: { gap: 2 },
   titleLine: {
     flexDirection: 'row',
     alignItems: 'center',

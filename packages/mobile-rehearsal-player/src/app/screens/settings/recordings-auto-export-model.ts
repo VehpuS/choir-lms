@@ -1,4 +1,4 @@
-import type { Recording } from '@org/audio-library-models';
+import { formatRecordingSize, type Recording } from '@org/audio-library-models';
 
 import type { AutoExportFolderState } from '../../library/recording/export/auto-export-controller';
 import type { AutoExportStatus } from '../../library/recording/export/auto-export-queue';
@@ -9,7 +9,7 @@ import type {
 import { exportFailureMessage } from '../../library/recording/export/recording-export-model';
 import {
   DEFAULT_EXPORT_FOLDER_NAME,
-  countRecordingsToBackUp,
+  listRecordingsToBackUp,
 } from '../../library/recording/export/auto-export-settings';
 
 /**
@@ -28,6 +28,8 @@ export const AUTO_EXPORT_COPY = {
   allowLabel: 'Allow saving',
   folderTitle: 'Folder',
   folderNote: 'Created in My Drive if missing.',
+  backUpConfirmLabel: 'Back up',
+  backUpConfirmTitle: 'Back up existing recordings?',
   changeFolderLabel: 'Change',
   uploadOverTitle: 'Upload over',
   uploadOverWifiLabel: 'Wi-Fi only',
@@ -60,11 +62,11 @@ export type AutoExportSettingsView = {
   /** Shown while the permission is missing. */
   allow?: { title: string; body: string; label: string };
   /** Present once auto-export is on. */
-  folder?: { name: string; note: string; isError: boolean };
+  folder?: { name: string; note: string | undefined; isError: boolean };
   uploadOverNote: string;
   /** What the queue is doing or waiting for, in words. */
   statusNote?: string;
-  backUp: { detail: string; count: number };
+  backUp: { detail: string; count: number; sizeBytes: number };
 };
 
 export const buildAutoExportSettingsView = (input: {
@@ -76,7 +78,8 @@ export const buildAutoExportSettingsView = (input: {
   recordings: readonly Recording[];
 }): AutoExportSettingsView => {
   const { folderState, settings, status } = input;
-  const count = countRecordingsToBackUp(input.recordings, settings);
+  const toBackUp = listRecordingsToBackUp(input.recordings, settings);
+  const count = toBackUp.length;
   const uploadOverNote =
     settings.uploadOver === 'any'
       ? AUTO_EXPORT_COPY.uploadOverAnyNote
@@ -85,6 +88,10 @@ export const buildAutoExportSettingsView = (input: {
         : AUTO_EXPORT_COPY.uploadOverUnknownNote;
   const backUp = {
     count,
+    sizeBytes: toBackUp.reduce(
+      (sum, recording) => sum + recording.sizeBytes,
+      0,
+    ),
     detail:
       count === 0
         ? AUTO_EXPORT_COPY.backUpNone
@@ -121,12 +128,26 @@ export const buildAutoExportSettingsView = (input: {
     folder: {
       isError: folderFailed,
       name: settings.folder?.folderName ?? DEFAULT_EXPORT_FOLDER_NAME,
+      // The note explains where a folder will appear; once one is chosen it is stale.
       note: folderFailed
         ? exportFailureMessage(folderState.reason)
-        : AUTO_EXPORT_COPY.folderNote,
+        : settings.folder
+          ? undefined
+          : AUTO_EXPORT_COPY.folderNote,
     },
     statusNote,
     switchDetail: AUTO_EXPORT_COPY.switchOn,
     uploadOverNote,
   };
 };
+
+/** The dialog that asks before a back-up starts, with what it will upload. */
+export const getBackUpConfirmation = (backUp: {
+  count: number;
+  sizeBytes: number;
+}) => ({
+  confirmLabel: AUTO_EXPORT_COPY.backUpConfirmLabel,
+  message: `${backUp.count} ${backUp.count === 1 ? 'recording' : 'recordings'} (${formatRecordingSize(backUp.sizeBytes)}) will upload in the background. Turning auto-export off pauses the uploads.`,
+  title: AUTO_EXPORT_COPY.backUpConfirmTitle,
+  tone: 'primary' as const,
+});
