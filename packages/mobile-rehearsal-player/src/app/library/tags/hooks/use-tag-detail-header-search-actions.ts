@@ -19,8 +19,18 @@ const TAG_DETAIL_SEARCH_ACCESSIBILITY_LABEL = "Search this tag's matches";
 const TAG_DETAIL_SHOW_FILTERS_ACCESSIBILITY_LABEL =
   'Show sort and filter controls';
 
+type HeaderSearchLabels = Pick<
+  TagDetailHeaderSearchActions,
+  | 'closeSearchAccessibilityLabel'
+  | 'hideFiltersAccessibilityLabel'
+  | 'searchAccessibilityLabel'
+  | 'showFiltersAccessibilityLabel'
+>;
+
 type UseTagDetailHeaderSearchActionsOptions = {
   hasActiveFilters: boolean;
+  /** Accessibility labels for another view that registers its own header controls. */
+  labels?: Partial<HeaderSearchLabels>;
   isFilterPopoverVisible: boolean;
   isSearchBarVisible: boolean;
   onDetailSearchActionsChange?: (
@@ -34,6 +44,7 @@ export const useTagDetailHeaderSearchActions = ({
   hasActiveFilters,
   isFilterPopoverVisible,
   isSearchBarVisible,
+  labels,
   onDetailSearchActionsChange,
   onToggleFilterPopover,
   onToggleSearchBar,
@@ -56,16 +67,21 @@ export const useTagDetailHeaderSearchActions = ({
 
     onDetailSearchActionsChange({
       closeSearchAccessibilityLabel:
+        labels?.closeSearchAccessibilityLabel ??
         TAG_DETAIL_CLOSE_SEARCH_ACCESSIBILITY_LABEL,
       hasActiveFilters,
       hideFiltersAccessibilityLabel:
+        labels?.hideFiltersAccessibilityLabel ??
         TAG_DETAIL_HIDE_FILTERS_ACCESSIBILITY_LABEL,
       isFilterPopoverVisible,
       isSearchBarVisible,
       onFilterActionPress: handleFilterActionPress,
       onSearchActionPress: handleSearchActionPress,
-      searchAccessibilityLabel: TAG_DETAIL_SEARCH_ACCESSIBILITY_LABEL,
+      searchAccessibilityLabel:
+        labels?.searchAccessibilityLabel ??
+        TAG_DETAIL_SEARCH_ACCESSIBILITY_LABEL,
       showFiltersAccessibilityLabel:
+        labels?.showFiltersAccessibilityLabel ??
         TAG_DETAIL_SHOW_FILTERS_ACCESSIBILITY_LABEL,
     });
 
@@ -78,6 +94,10 @@ export const useTagDetailHeaderSearchActions = ({
     hasActiveFilters,
     isFilterPopoverVisible,
     isSearchBarVisible,
+    labels?.closeSearchAccessibilityLabel,
+    labels?.hideFiltersAccessibilityLabel,
+    labels?.searchAccessibilityLabel,
+    labels?.showFiltersAccessibilityLabel,
     onDetailSearchActionsChange,
   ]);
 };

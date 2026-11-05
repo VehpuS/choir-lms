@@ -86,8 +86,14 @@ export const RecordingRow = ({
             </Text>
           ))}
         </View>
+        {/* On its own line, so a right-to-left name does not scramble the span and size. */}
+        {trackName ? (
+          <Text numberOfLines={1} style={[styles.meta, styles.trackName]}>
+            {trackName}
+          </Text>
+        ) : null}
         <Text numberOfLines={1} style={styles.meta}>
-          {trackName ? `${trackName} · ${row.detail}` : row.detail}
+          {row.detail}
         </Text>
         <Text numberOfLines={1} style={styles.meta}>
           {driveLabel ? `${row.meta} · ${driveLabel}` : row.meta}
@@ -135,6 +141,7 @@ const styles = StyleSheet.create({
   },
   retryLabel: { ...type.rowMeta, color: colors.accent },
   meta: { ...type.rowMeta, color: colors.textMuted },
+  trackName: { textAlign: 'left' },
   name: { ...type.rowTitle, color: colors.text, flexShrink: 1 },
   options: {
     width: space.touchTarget,

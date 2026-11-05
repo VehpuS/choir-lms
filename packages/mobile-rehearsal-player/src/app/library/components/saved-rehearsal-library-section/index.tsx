@@ -219,6 +219,7 @@ export const SavedRehearsalLibrarySection = (
         shouldRenderRecordingsView(selectedView) ? (
           <RecordingsLibraryView
             loops={savedLoops}
+            onDetailSearchActionsChange={props.onDetailSearchActionsChange}
             onPlayItem={props.togglePlayableItemPlayback}
             sources={savedLibrarySources}
           />

@@ -8,6 +8,12 @@ import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
 import { InteractionChip } from '../../components/interaction-chip';
+import { RecentSearchSuggestions } from '../../search/components/recent-search-suggestions';
+import { useRecentSearchHistory } from '../../search/hooks/use-recent-search-history';
+import {
+  useTagDetailHeaderSearchActions,
+  type TagDetailHeaderSearchActions,
+} from '../../tags/hooks/use-tag-detail-header-search-actions';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import {
   offlineStateStore,
@@ -32,12 +38,23 @@ import { useRecordingsSelection } from '../use-recordings-selection';
 const { colors, radius, space, type } = appTheme;
 
 const SEARCH_PLACEHOLDER = 'Search recordings';
+const RECENT_SEARCH_STORAGE_KEY = 'choirlms.recordings.recent-searches';
+const HEADER_LABELS = {
+  closeSearchAccessibilityLabel: 'Close search',
+  hideFiltersAccessibilityLabel: 'Hide recording filters',
+  searchAccessibilityLabel: 'Search recordings',
+  showFiltersAccessibilityLabel: 'Show recording filters',
+};
 
 type RecordingsLibraryViewProps = {
   sources: readonly DriveLibrarySource[];
   loops: readonly NamedLoop[];
   /** Plays a resolved recording item (the shared playable-item toggle). */
   onPlayItem: (item: PlayableItem) => unknown;
+  /** Puts this view's search and filter controls in the Library header. */
+  onDetailSearchActionsChange?: (
+    actions: TagDetailHeaderSearchActions | null,
+  ) => void;
 };
 
 /**
@@ -48,6 +65,7 @@ type RecordingsLibraryViewProps = {
  */
 export const RecordingsLibraryView = ({
   loops,
+  onDetailSearchActionsChange,
   onPlayItem,
   sources,
 }: RecordingsLibraryViewProps) => {
@@ -57,6 +75,10 @@ export const RecordingsLibraryView = ({
   const [filters, setFilters] = useState<RecordingsFilters>({});
   const [sort, setSort] = useState<RecordingsSort>('newest');
   const [isFilterSheetVisible, setIsFilterSheetVisible] = useState(false);
+  const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
+  const { recentSearchTerms, recordSearchTerm } = useRecentSearchHistory({
+    storageKey: RECENT_SEARCH_STORAGE_KEY,
+  });
   // Only plain saved tracks own the originals the offline actions read.
   const tracks = useMemo<DriveAudioSource[]>(
     () => sources.filter((source) => !source.adjustment),
@@ -89,6 +111,15 @@ export const RecordingsLibraryView = ({
     // `revision` changes whenever any file's offline state does.
     [exportSettings, filters, query, recordings, revision, sort, tracks],
   );
+  useTagDetailHeaderSearchActions({
+    hasActiveFilters: model.activeFilterCount > 0,
+    isFilterPopoverVisible: isFilterSheetVisible,
+    isSearchBarVisible,
+    labels: HEADER_LABELS,
+    onDetailSearchActionsChange,
+    onToggleFilterPopover: () => setIsFilterSheetVisible((shown) => !shown),
+    onToggleSearchBar: () => setIsSearchBarVisible((shown) => !shown),
+  });
   const services = useLibrarySelectionServices();
   const { dialogs, isDriveFailed, openMenu, play, playIssue, retryDrive } =
     useRecordingRowMenu({
@@ -150,31 +181,33 @@ export const RecordingsLibraryView = ({
 
   return (
     <View style={styles.view}>
-      <TextInput
-        accessibilityLabel={SEARCH_PLACEHOLDER}
-        autoCorrect={false}
-        onChangeText={setQuery}
-        placeholder={SEARCH_PLACEHOLDER}
-        placeholderTextColor={colors.textMuted}
-        returnKeyType="search"
-        style={styles.search}
-        value={query}
-      />
+      {isSearchBarVisible ? (
+        <>
+          <TextInput
+            accessibilityLabel={SEARCH_PLACEHOLDER}
+            autoCorrect={false}
+            autoFocus
+            onChangeText={setQuery}
+            onSubmitEditing={() => recordSearchTerm(query)}
+            placeholder={SEARCH_PLACEHOLDER}
+            placeholderTextColor={colors.textMuted}
+            returnKeyType="search"
+            style={styles.search}
+            value={query}
+          />
+          {query === '' ? (
+            <RecentSearchSuggestions
+              onSelectRecentSearchTerm={setQuery}
+              recentSearchTerms={recentSearchTerms}
+            />
+          ) : null}
+        </>
+      ) : null}
       <ScrollView
         contentContainerStyle={styles.controls}
         horizontal
         showsHorizontalScrollIndicator={false}
       >
-        <InteractionChip
-          accessibilityLabel="Filter recordings"
-          label={
-            model.activeFilterCount > 0
-              ? `Filters · ${model.activeFilterCount}`
-              : 'Filters'
-          }
-          onPress={() => setIsFilterSheetVisible(true)}
-          variant={model.activeFilterCount > 0 ? 'selected' : 'action'}
-        />
         {selection.entryButton}
         {RECORDINGS_SORT_OPTIONS.map((option) => (
           <InteractionChip
