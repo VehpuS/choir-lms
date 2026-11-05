@@ -7,7 +7,10 @@ import {
 import { createLyricsMenuState } from '../../lyrics/utils/lyrics-menu-action';
 import { createOfflineMenuState } from '../../offline/offline-menu-action';
 import { createMarkersMenuState } from '../../markers/utils/markers-menu-action';
-import { createRecordingsMenuState } from '../../recording/recordings-menu-action';
+import {
+  createLoopRecordingsMenuState,
+  createSourceRecordingsMenuState,
+} from '../../recording/recordings-menu-action';
 import { createSheetMusicMenuState } from '../../sheet-music/utils/sheet-music-menu-action';
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
@@ -98,10 +101,10 @@ export const resolveTrackMenuActions = (
         kind: 'track',
       }),
       markers: createMarkersMenuState({ id: row.source.id, kind: 'track' }),
-      recordings: createRecordingsMenuState({
-        id: row.source.id,
-        kind: 'track',
-      }),
+      recordings: createSourceRecordingsMenuState(
+        row.source,
+        options.recordingCountFor,
+      ),
       offline: createOfflineMenuState({
         driveFileId: row.source.driveFileId,
         id: row.source.id,
@@ -178,7 +181,10 @@ export const resolveLoopMenuActions = (
         row.source !== null
           ? createMarkersMenuState({ id: row.loop.id, kind: 'loop' })
           : undefined,
-      recordings: createRecordingsMenuState({ id: row.loop.id, kind: 'loop' }),
+      recordings: createLoopRecordingsMenuState(
+        row.loop.id,
+        options.recordingCountFor,
+      ),
       offline:
         row.source !== null
           ? createOfflineMenuState({

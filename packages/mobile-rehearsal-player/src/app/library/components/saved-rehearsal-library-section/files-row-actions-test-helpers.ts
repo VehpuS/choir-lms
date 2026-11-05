@@ -85,6 +85,7 @@ export const createBaseOptions = () => {
       canQueueAsNext: true,
       canReconnectLibrarySource: true,
       hasLyricsFor: () => false,
+      recordingCountFor: () => 0,
       isLoopBuilderPreparing: false,
       isLoopMutating: false,
       isPlaylistMutating: false,

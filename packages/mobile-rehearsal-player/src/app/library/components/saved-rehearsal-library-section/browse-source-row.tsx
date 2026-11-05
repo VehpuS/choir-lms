@@ -27,9 +27,12 @@ import type { ExplorerRowSelection } from '../explorer/model';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import { createLyricsMenuState } from '../../lyrics/utils/lyrics-menu-action';
 import { createMarkersMenuState } from '../../markers/utils/markers-menu-action';
-import { createRecordingsMenuState } from '../../recording/recordings-menu-action';
+import { createSourceRecordingsMenuState } from '../../recording/recordings-menu-action';
 import { createSheetMusicMenuState } from '../../sheet-music/utils/sheet-music-menu-action';
-import { useHasLyrics } from '../saved-item-menu/saved-item-availability-context';
+import {
+  useHasLyrics,
+  useRecordingCountFor,
+} from '../saved-item-menu/saved-item-availability-context';
 import { resolveSavedTrackMenu } from '../saved-item-menu/saved-item-menus';
 import { SavedTrackMenuProvenance } from '../saved-item-menu/saved-track-menu-provenance';
 import {
@@ -120,6 +123,7 @@ export const BrowseSourceRow = ({
 }: BrowseSourceRowProps) => {
   const trackPlayableItem = createTrackPlayableItem(source);
   const hasLyrics = useHasLyrics({ sourceId: source.id });
+  const recordingCountFor = useRecordingCountFor();
   const isActive = isSavedTrackPlaybackActive(
     activePlayableItem,
     trackPlayableItem,
@@ -155,7 +159,7 @@ export const BrowseSourceRow = ({
       }),
       sheetMusic: createSheetMusicMenuState({ id: source.id, kind: 'track' }),
       markers: createMarkersMenuState({ id: source.id, kind: 'track' }),
-      recordings: createRecordingsMenuState({ id: source.id, kind: 'track' }),
+      recordings: createSourceRecordingsMenuState(source, recordingCountFor),
       offline: createSourceOfflineMenuState(source),
       onAddToPlaylist: () => {
         openSourcePlaylistSelector(source.id);
@@ -289,9 +293,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'right',
   },
-  indexActive: {
-    color: appTheme.colors.accentText,
-  },
+  indexActive: { color: appTheme.colors.accentText },
   rowMessage: {
     color: appTheme.colors.danger,
     fontSize: 12,
@@ -306,7 +308,5 @@ const styles = StyleSheet.create({
     ...appTheme.type.rowTitle,
     color: appTheme.colors.text,
   },
-  rowTitleActive: {
-    color: appTheme.colors.accentText,
-  },
+  rowTitleActive: { color: appTheme.colors.accentText },
 });

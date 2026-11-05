@@ -2,6 +2,7 @@ import type { PlayableItem } from '@org/audio-library-models';
 import { createContext, useContext, type ReactNode } from 'react';
 
 import type { SourceLyricsResolution } from '../../lyrics/hooks/use-source-lyrics';
+import type { RecordingsMenuTarget } from '../../recording/recordings-menu-count';
 
 type SavedItemAvailability = {
   /**
@@ -11,6 +12,8 @@ type SavedItemAvailability = {
   hasLyricsFor: (sourceId: string) => boolean;
   /** The lyrics shown for an item (named by its source id) and their owner. */
   lyricsFor: (sourceId: string) => SourceLyricsResolution;
+  /** How many recordings an item has, for the count on its `Recordings` menu row. */
+  recordingCountFor: (target: RecordingsMenuTarget) => number;
   savedLoopIds: ReadonlySet<string>;
   savedSourceIds: ReadonlySet<string>;
 };
@@ -18,6 +21,7 @@ type SavedItemAvailability = {
 const EMPTY_AVAILABILITY: SavedItemAvailability = {
   hasLyricsFor: () => false,
   lyricsFor: () => ({ lyrics: undefined, owner: null }),
+  recordingCountFor: () => 0,
   savedLoopIds: new Set(),
   savedSourceIds: new Set(),
 };
@@ -56,6 +60,11 @@ export const useIsPlayableItemSaved = (
 /** For menus built in plain functions that cannot read context themselves. */
 export const useHasLyricsFor = () => {
   return useContext(SavedItemAvailabilityContext).hasLyricsFor;
+};
+
+/** For menus built in plain functions: how many recordings an item has. */
+export const useRecordingCountFor = () => {
+  return useContext(SavedItemAvailabilityContext).recordingCountFor;
 };
 
 /** Whether lyrics exist for the track that owns this item's lyrics. */

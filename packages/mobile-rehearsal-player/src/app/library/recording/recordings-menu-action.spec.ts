@@ -29,7 +29,10 @@ const listen = () => {
 describe('recordings menu action', () => {
   it('offers nothing where recordings cannot be stored', () => {
     assert.equal(
-      createRecordingsMenuState({ id: 't1', kind: 'track' }, () => false),
+      createRecordingsMenuState(
+        { count: 2, id: 't1', kind: 'track' },
+        () => false,
+      ),
       undefined,
     );
     assert.deepEqual(resolveRecordingsMenuActions(undefined, 'row'), []);
@@ -38,13 +41,14 @@ describe('recordings menu action', () => {
   it('offers one Recordings action that asks for the panel of a track', () => {
     const requests = listen();
     const state = createRecordingsMenuState(
-      { id: 't1', kind: 'track' },
+      { count: 2, id: 't1', kind: 'track' },
       () => true,
     );
     const [action] = resolveRecordingsMenuActions(state, 'row');
 
     assert.equal(action?.id, 'row:recordings');
     assert.equal(action?.label, 'Recordings');
+    assert.equal(action?.meta, '2');
 
     action?.onPress();
 
@@ -57,12 +61,21 @@ describe('recordings menu action', () => {
     const requests = listen();
 
     createRecordingsMenuState(
-      { id: 'loop-1', kind: 'loop' },
+      { count: 1, id: 'loop-1', kind: 'loop' },
       () => true,
     )?.onOpenRecordings();
 
     assert.deepEqual(requests, [
       { action: 'recordings', id: 'loop-1', kind: 'loop' },
     ]);
+  });
+
+  it('leaves the row out when the item has no recordings', () => {
+    const state = createRecordingsMenuState(
+      { count: 0, id: 't1', kind: 'track' },
+      () => true,
+    );
+
+    assert.deepEqual(resolveRecordingsMenuActions(state, 'row'), []);
   });
 });

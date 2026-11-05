@@ -4,13 +4,16 @@ import { StyleSheet } from 'react-native';
 import { OverflowMenuTrigger } from '../../../../components/overflow-menu-trigger';
 import type { ExplorerRowSelection } from '../../../components/explorer/model';
 import { OptionsMenuSheet } from '../../../components/options-menu-sheet';
-import { useHasLyrics } from '../../../components/saved-item-menu/saved-item-availability-context';
+import {
+  useHasLyrics,
+  useRecordingCountFor,
+} from '../../../components/saved-item-menu/saved-item-availability-context';
 import { resolveSavedLoopMenu } from '../../../components/saved-item-menu/saved-item-menus';
 import { createLyricsMenuState } from '../../../lyrics/utils/lyrics-menu-action';
 import { createOfflineMenuState } from '../../../offline/offline-menu-action';
 import { useOfflineState } from '../../../offline/offline-state';
 import { createMarkersMenuState } from '../../../markers/utils/markers-menu-action';
-import { createRecordingsMenuState } from '../../../recording/recordings-menu-action';
+import { createLoopRecordingsMenuState } from '../../../recording/recordings-menu-action';
 import { createSheetMusicMenuState } from '../../../sheet-music/utils/sheet-music-menu-action';
 import {
   getSavedTrackPlaybackActionCopy,
@@ -117,6 +120,7 @@ export const SavedLoopListRow = ({
     void togglePlayableItemPlayback(playableItem);
   };
   const hasLyrics = useHasLyrics(loopCard.loop);
+  const recordingCountFor = useRecordingCountFor();
   const offlineSource = playableItem?.source;
   // Re-renders the row so its menu follows the file's offline state.
   useOfflineState(offlineSource?.driveFileId ?? '');
@@ -147,10 +151,10 @@ export const SavedLoopListRow = ({
         playableItem !== null
           ? createMarkersMenuState({ id: loopCard.loop.id, kind: 'loop' })
           : undefined,
-      recordings: createRecordingsMenuState({
-        id: loopCard.loop.id,
-        kind: 'loop',
-      }),
+      recordings: createLoopRecordingsMenuState(
+        loopCard.loop.id,
+        recordingCountFor,
+      ),
       offline: offlineSource
         ? createOfflineMenuState({
             driveFileId: offlineSource.driveFileId,

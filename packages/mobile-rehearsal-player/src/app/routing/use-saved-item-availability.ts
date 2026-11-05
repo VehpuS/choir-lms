@@ -1,6 +1,9 @@
 import type { NamedLoop } from '@org/audio-library-models';
 import { useEffect, useMemo } from 'react';
 
+import { countRecordingsFor } from '../library/recording/recordings-menu-count';
+import type { RecordingsMenuTarget } from '../library/recording/recordings-menu-count';
+import { useRecordingsSnapshot } from '../library/recording/use-recordings-snapshot';
 import { resolveSourceLyrics } from '../library/lyrics/hooks/use-source-lyrics';
 
 import { subscribeToSavedItemRequests } from '../library/components/saved-item-menu/saved-item-requests';
@@ -15,6 +18,7 @@ export const useSavedItemAvailability = (options: {
   savedSources: readonly DriveLibrarySource[];
 }) => {
   const { onViewTrackLoops, savedLoops, savedSources } = options;
+  const recordings = useRecordingsSnapshot();
   const savedSourceIds = useMemo(() => {
     return new Set(savedSources.map((source) => source.id));
   }, [savedSources]);
@@ -38,5 +42,14 @@ export const useSavedItemAvailability = (options: {
     return lyricsFor(sourceId).lyrics !== undefined;
   };
 
-  return { hasLyricsFor, lyricsFor, savedLoopIds, savedSourceIds };
+  const recordingCountFor = (target: RecordingsMenuTarget) =>
+    countRecordingsFor(target, recordings, { savedLoopIds, savedSourceIds });
+
+  return {
+    hasLyricsFor,
+    lyricsFor,
+    recordingCountFor,
+    savedLoopIds,
+    savedSourceIds,
+  };
 };

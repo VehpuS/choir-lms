@@ -1,5 +1,6 @@
 import type { NamedLoop, PlayableItem } from '@org/audio-library-models';
 
+import type { RecordingsMenuTarget } from '../../recording/recordings-menu-count';
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { PendingSourceLocationAction } from '../../saved-rehearsal-library/use-saved-source-original-location-actions';
 
@@ -15,6 +16,7 @@ export type ResolveFilesRowMenuActionsBaseOptions = {
   canQueueAsNext: boolean;
   canReconnectLibrarySource: boolean;
   hasLyricsFor: (sourceId: string) => boolean;
+  recordingCountFor: (target: RecordingsMenuTarget) => number;
   isLoopBuilderPreparing: boolean;
   isLoopMutating: boolean;
   pendingLoopBuilderSourceId: string | null;
