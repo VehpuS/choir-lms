@@ -37,7 +37,7 @@ The design mock (`design-source/composite-mock.html`) covers every screen below 
 
 ### Decision 1: A composite is a library record that references stems, and a playable item of its own
 
-A `CompositeTrack` record (in `audio-library-models`, stored in local library storage like adjusted tracks) holds an id, a name, `stems: { id, trackId, name, offsetMs, mine }[]`, a default mix, saved presets, sheet music added to the composite, the last lyrics stem, and creation time. It stores references (library track ids), never audio. A composite becomes a `PlayableItem` of a new kind beside track, loop and recording, so queue, playlist and mini-player code that already branches on item kind handles it in one new case.
+A `CompositeTrack` record (in `audio-library-models`, stored in local library storage like adjusted tracks) holds an id, a name, `stems: { id, trackId, name, offsetMs, mine }[]`, a default mix, saved presets, sheet music added to the composite, the last lyrics stem, and creation time. It stores references (library track ids), never audio. A composite becomes a `PlayableItem` of a new `composite` kind beside track and loop (a recording stays a track item with `recordingId`), so queue, playlist and mini-player code that already branches on item kind handles it in one new case.
 
 A composite must have at least two stems when created. Removing stems down to one asks to delete the composite instead. Deleting a composite deletes none of its stems.
 
