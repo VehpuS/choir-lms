@@ -212,3 +212,22 @@ Run in the Browser pane (Chrome, `deviceMemory` 32, JS heap limit 4 GB) with nin
 - **Not measured:** CPU on a phone, compressed-format decode time (Drive stems are likely MP3 or M4A, so the first prepare is slower than the figures above), and real-time glitching under load (the pane was in the background). The 11.1 browser check covers audible glitches with the pane in front.
 
 **Decision (tier rule):** **prepared storage only.** The in-memory path would add a second voice implementation for a faster first open that the numbers do not show, and it needs a memory budget that browsers cannot report reliably. The only budget is storage: before preparing, estimate `Σ(duration × sampleRate × 2 bytes × channels)` and compare it with `navigator.storage.estimate()` where available, falling back to attempting the write and handling the failure (task 4.3). Task 2.7 becomes the storage estimate and fit check (no tier), and task 4.4 is dropped. Decision 9's "tiered" wording is superseded by this; the user-facing behaviour (first play `Preparing stems · first time only`, quick later opens) is unchanged, and the in-memory path stays an option to revisit if first-open time proves a problem on real devices.
+
+### 1.4 Export render (2026-11-07)
+
+Run in Node 22 against the same `@soundtouchjs/core` `Stretch` and `SoundTouch` stages that `createSoundTouchStretcher` uses, with the pipeline fed from a per-block sum of N synthetic stems instead of a decoded track (the stretcher pulls a stream, so a sum is just a different producer of the input block). 4-minute stems, 44.1 kHz, stereo out. The script was throwaway.
+
+| Case (stems, rate, pitch, block)   | Time for the shaping stages | RSS peak | Output length               | Level (output RMS ÷ input RMS) |
+| ---------------------------------- | --------------------------- | -------- | --------------------------- | ------------------------------ |
+| 9 stems, 0.7×, +2 st, 4096 frames  | 4.4 s (55× real time)       | 54 MB    | 345.5 s (342.9 s plus tail) | 0.98                           |
+| 9 stems, 0.7×, +2 st, 65536 frames | 4.3 s                       | 69 MB    | 345.8 s                     | 0.98                           |
+| 4 stems, 1.3×, −2 st, 4096 frames  | 2.6 s                       | 52 MB    | 186.0 s (184.6 s plus tail) | 0.99                           |
+| 9 stems, 1.0×, 0 st, 4096 frames   | 2.4 s                       | 51 MB    | 241.9 s (240 s plus tail)   | 0.99                           |
+
+The synthetic stem generator took more time than the shaping (8.5 s for nine stems), so the table gives the shaping stages alone; real stems come from window readers and add the read and sum cost, which spike 1.3 measured at tens of milliseconds per 30 s window.
+
+**Findings.** Shaping a summed nine-stem, four-minute mix costs about 4 s of CPU and stays near 55 MB resident, so the render is dominated by reading and summing the stems, not by the stretcher. Block size barely matters. The summed peak reached 1.83 before the limiter with nine stems at the same level, so the limiter after the stretcher (as `renderMix` already applies it) is required, not optional. Level through the stretcher is preserved to within 2%. The output ends about 2.6 s later than `duration ÷ rate` because the pipeline is flushed with silence, as the stretcher already does; the render trims the tail to the plan's length.
+
+**Not measured:** the comparison with a live capture of the same mix. A live capture needs real-time playback and a listener, and the live and offline paths are different pitch engines (the AudioWorklet and the pure-JS core), so the level and pitch parity check belongs in task 10.1's spec (against a known small case) and 11.1's manual check.
+
+**Decision (chunk size and worker):** **summed in blocks of 4096 frames inside chunks of one second of output, in the main thread, yielding to the event loop between chunks, as `renderMix` does today. No worker.** The CPU cost (about 1.7% of real time for the stretcher) does not justify a worker, and keeping it on the main thread avoids moving the window readers and IndexedDB access. Revisit only if 11.1 shows the UI stalling during an export. Task 10.1 uses these values.
