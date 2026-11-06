@@ -187,3 +187,28 @@ Run in the Browser pane against the app's own SoundTouch processor, with `Offlin
 - **Not measured: how it sounds.** The offline checks measure pitch, clicks and alignment, not artefacts of the pitch node on real voices at 0.7×. The listening check is part of 11.1 with real stems.
 
 **Decision (speed method):** source `playbackRate` per voice plus the pitch node with `playbackRate` mirrored. **What the windowed voice needs for a rate:** a `rate` option; windows scheduled at `anchor + (windowStartMs − fromMs) / (1000 × rate)` with `source.playbackRate = rate`; a 64-sample baked crossfade overlap; and a rate change handled as a re-anchor (stop with the fade, restart at the current media position), like a seek. Task 3.2 is updated.
+
+### 1.3 Voices, memory and first open (2026-11-07)
+
+Run in the Browser pane (Chrome, `deviceMemory` 32, JS heap limit 4 GB) with nine synthetic 4-minute 44.1 kHz stereo WAV stems (about 40 MB each, four of them with channels that differ slightly and five with identical channels). The rows below are what was measured; the page was throwaway.
+
+| Measure                                              | Result                                                                                                      |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Decoded size per stem (float32 stereo)               | 81 MB, so 4 stems about 325 MB and 9 stems about 730 MB (computed; `AudioBuffer` memory is off the JS heap) |
+| Decode time per stem (WAV)                           | 93 to 182 ms                                                                                                |
+| Prepared size, 16-bit PCM                            | 20 MB per mono stem, 40 MB per stereo stem; 262 MB for the nine                                             |
+| Prepare time per stem (decode, convert, store)       | 155 to 199 ms, one stem at a time                                                                           |
+| Press play to sound, in memory                       | 0.2 ms to start the sources, after every stem is decoded again (about 150 ms each for WAV)                  |
+| Press play to sound, prepared, warm                  | first window of all nine stems read in 12 ms, plus about 38 ms to build the buffers                         |
+| Read and build one 30 s window for nine stems        | 13 to 24 ms read, 37 to 38 ms build; the same at a loop start                                               |
+| Main-thread long tasks over 12 s with nine voices    | none                                                                                                        |
+| Timer lateness while nine voices play (100 ms timer) | not usable: the pane was in the background and timers were throttled to about 1 s                           |
+
+**Findings.**
+
+- **A warm open from prepared storage is as quick as the in-memory path in practice.** The in-memory start itself is instant, but the memory path must decode every stem on every open (about 150 ms per stem for WAV, more for MP3 and M4A), while prepared storage decodes once and then needs about 50 ms to be playing. Memory is no hard limit with prepared storage: only a few windows per stem are ever decoded.
+- **A loop wrap is cheap.** Reading and building the window at the loop start costs about 60 ms for nine stems, well inside the 12 s read-ahead; a very short loop needs the loop-start window built before the loop end (task 3.7), which this cost makes easy.
+- **Mono detection pays off** for stems that are really mono (half the storage and half the work); it must compare the channels fully, not by sampling, to be exact (the spike sampled every 97th sample, which is enough to measure but not to ship).
+- **Not measured:** CPU on a phone, compressed-format decode time (Drive stems are likely MP3 or M4A, so the first prepare is slower than the figures above), and real-time glitching under load (the pane was in the background). The 11.1 browser check covers audible glitches with the pane in front.
+
+**Decision (tier rule):** **prepared storage only.** The in-memory path would add a second voice implementation for a faster first open that the numbers do not show, and it needs a memory budget that browsers cannot report reliably. The only budget is storage: before preparing, estimate `Σ(duration × sampleRate × 2 bytes × channels)` and compare it with `navigator.storage.estimate()` where available, falling back to attempting the write and handling the failure (task 4.3). Task 2.7 becomes the storage estimate and fit check (no tier), and task 4.4 is dropped. Decision 9's "tiered" wording is superseded by this; the user-facing behaviour (first play `Preparing stems · first time only`, quick later opens) is unchanged, and the in-memory path stays an option to revisit if first-open time proves a problem on real devices.
