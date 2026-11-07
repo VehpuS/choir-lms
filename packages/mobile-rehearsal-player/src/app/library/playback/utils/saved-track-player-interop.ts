@@ -1,5 +1,12 @@
 import { useEffect } from 'react';
 
+import { getAppCompositeAwarePlayer } from '../../composite/playback/composite-aware-player';
+import {
+  useActiveCompositeEngine,
+  useCompositePlaybackState,
+  useCompositeProgress,
+  useCompositeQueueEnded,
+} from '../../composite/playback/use-active-composite';
 import { patchSavedTrackPlayerWebRuntime } from './saved-track-player-web-load';
 
 type TrackPlayerModule = typeof import('react-native-track-player');
@@ -256,10 +263,14 @@ export const getSavedTrackPlayerModule = (
   return support.module;
 };
 
+/** The media element's player; an active composite answers the transport calls. */
 export const getSavedTrackPlayer = (
   dependencies: ResolveSavedTrackPlayerSupportDependencies = {},
 ) => {
-  return getSavedTrackPlayerModule(dependencies).default;
+  return getAppCompositeAwarePlayer(
+    getSavedTrackPlayerModule(dependencies).default,
+    getSavedTrackPlayerStateMap(dependencies),
+  );
 };
 
 export const getSavedTrackPlayerEventMap = (
@@ -296,24 +307,23 @@ export const registerSavedTrackPlayerPlaybackService = (
 
 export const useSavedTrackPlayerPlaybackState = () => {
   const support = resolveSavedTrackPlayerSupport();
+  const composite = useCompositePlaybackState(getSavedTrackPlayerStateMap());
+  const playback = support.module
+    ? support.module.usePlaybackState()
+    : { state: undefined };
 
-  if (!support.module) {
-    return {
-      state: undefined,
-    };
-  }
-
-  return support.module.usePlaybackState();
+  return composite ?? playback;
 };
 
 export const useSavedTrackPlayerProgress = (updateIntervalMs: number) => {
   const support = resolveSavedTrackPlayerSupport();
+  const engine = useActiveCompositeEngine();
+  const composite = useCompositeProgress(engine, updateIntervalMs);
+  const progress = support.module
+    ? support.module.useProgress(updateIntervalMs)
+    : FALLBACK_PROGRESS;
 
-  if (!support.module) {
-    return FALLBACK_PROGRESS;
-  }
-
-  return support.module.useProgress(updateIntervalMs);
+  return composite ?? progress;
 };
 
 export const useSavedTrackPlayerEvents = (
@@ -321,6 +331,12 @@ export const useSavedTrackPlayerEvents = (
   handler: (event: { type: string; message?: string }) => void,
 ) => {
   const support = resolveSavedTrackPlayerSupport();
+
+  useCompositeQueueEnded(
+    eventTypes,
+    getSavedTrackPlayerEventMap().PlaybackQueueEnded,
+    handler,
+  );
 
   if (!support.module) {
     useEffect(() => undefined, [eventTypes, handler]);

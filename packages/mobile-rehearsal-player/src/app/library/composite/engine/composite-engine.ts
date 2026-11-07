@@ -10,7 +10,7 @@ import {
 } from '@org/audio-mixing';
 
 /**
- * The composite's Web Audio engine (composite-tracks design Decision 4): per
+ * The Web Audio engine of a composite (composite-tracks design Decision 4): per
  * stem a windowed voice into a stem gain, all into one sum bus, then the pitch
  * stage when the sum is shaped, the mix limiter, a master gain and the output.
  * The `AudioContext` clock is the only clock. Playing from a position schedules
@@ -36,8 +36,8 @@ export type EngineContext = VoiceContext & {
 
 /**
  * Shapes the summed signal. The source voices already play at `rate`, so the
- * stage is told the same rate and the semitones and compensates the speed's
- * pitch change itself (spike 1.2).
+ * stage is told the same rate and the semitones and compensates the pitch change
+ * that the speed causes, itself (spike 1.2).
  */
 export type PitchStage = {
   input: VoiceNode;
@@ -62,7 +62,7 @@ export type CompositeEngineOptions = {
   limiter: { input: VoiceNode; output: VoiceNode };
   /** Absent where audio worklets are not available; the speed then also moves the pitch. */
   pitchStage?: PitchStage | null;
-  /** A stem's gain when the engine is built (the session mix, already resolved). */
+  /** The gain of each stem when the engine is built (the session mix, already resolved). */
   initialGains?: Readonly<Record<string, number>>;
   timers?: SyncTimers;
   createVoice?: (
@@ -80,6 +80,9 @@ export type CompositeEngine = {
   readonly canCompensatePitch: boolean;
   getState: () => CompositeEngineState;
   getPositionMs: () => number;
+  getRate: () => number;
+  /** The master level, 0 to 1. */
+  getVolume: () => number;
   subscribe: (listener: () => void) => () => void;
   play: () => void;
   pause: () => void;
@@ -87,7 +90,6 @@ export type CompositeEngine = {
   setStemGains: (gains: Readonly<Record<string, number>>) => void;
   setRate: (rate: number) => void;
   setPitchSemitones: (semitones: number) => void;
-  /** The master level, 0 to 1. */
   setVolume: (volume: number) => void;
   dispose: () => void;
 };
@@ -113,13 +115,13 @@ export const createCompositeEngine = (
   const { context, limiter } = options;
   const pitchStage = options.pitchStage ?? null;
   const timers = options.timers ?? defaultTimers;
+  const listeners = new Set<() => void>();
   const durationMs = Math.max(
     0,
     ...options.stems.map((stem) =>
       Math.max(0, stem.offsetMs + stem.reader.durationMs),
     ),
   );
-  const listeners = new Set<() => void>();
   const sum = context.createGain();
   const dry = context.createGain();
   const wet = context.createGain();
@@ -137,6 +139,7 @@ export const createCompositeEngine = (
 
   let state: CompositeEngineState = 'paused';
   let rate = NEUTRAL_RATE;
+  let volume = 1;
   let pitchSemitones = NO_PITCH;
   // The clock: media position `anchorMs` at context time `anchorTime`, moving at `rate`.
   let anchorMs = 0;
@@ -249,6 +252,8 @@ export const createCompositeEngine = (
     canCompensatePitch: pitchStage !== null,
     getState: () => state,
     getPositionMs,
+    getRate: () => rate,
+    getVolume: () => volume,
     subscribe: (listener) => {
       listeners.add(listener);
 
@@ -331,8 +336,9 @@ export const createCompositeEngine = (
       applyShapePath();
       notify();
     },
-    setVolume: (volume) => {
-      rampGain(context, master, Math.min(1, Math.max(0, volume)));
+    setVolume: (nextVolume) => {
+      volume = Math.min(1, Math.max(0, nextVolume));
+      rampGain(context, master, volume);
     },
     dispose: () => {
       disposed = true;

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { useActiveCompositeEngine } from '../composite/playback/use-active-composite';
 import { pianoCapabilities } from '../piano/piano-capabilities';
 import { pitchCapabilities } from '../pitch/pitch-capabilities';
 import {
@@ -38,14 +39,18 @@ export const usePracticeTools = (): PracticeTools => {
   const { isOpen: isPianoOpen } = usePianoPreferences();
   const isMonitorOpen = usePitchMonitorOpen();
   const isStripOpen = useRecordingStripOpen();
+  // Recording follows the media element's clock, which a composite does not
+  // have, so the entry is hidden while a composite is playing (design Decision 5).
+  const isCompositeActive = useActiveCompositeEngine() !== null;
   const canListen = pitchCapabilities().canListen;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const model = getPracticeToolsModel({
     piano: pianoCapabilities().canPlay ? { checked: isPianoOpen } : null,
     pitch: canListen ? { checked: isMonitorOpen } : null,
-    recording: recordingCapabilities().canRecord
-      ? { checked: isStripOpen }
-      : null,
+    recording:
+      recordingCapabilities().canRecord && !isCompositeActive
+        ? { checked: isStripOpen }
+        : null,
   });
 
   return {
