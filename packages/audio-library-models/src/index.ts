@@ -32,3 +32,4 @@ export * from './lib/composite-mine.ts';
 export * from './lib/composite-availability.ts';
 export * from './lib/composite-content.ts';
 export * from './lib/waveform-composite.ts';
+export * from './lib/composite-storage-fit.ts';
