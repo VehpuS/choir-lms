@@ -20,7 +20,7 @@ The design mock (`design-source/composite-mock.html`) covers every screen below 
 - Keep the stems exactly together through play, pause, seek, loop wrap and speed and pitch changes.
 - Shape the sum once (speed and pitch), and keep the sum from clipping.
 - Make composites ordinary items in lists, playlists and the queue, with loops and markers of their own and lyrics and sheet music taken from the stems.
-- Not treat memory as a hard limit: composites larger than memory play from prepared storage.
+- Not treat memory as a hard limit: every composite plays from prepared storage.
 - Export the current mix to a WAV file.
 - Reuse `@org/audio-mixing` and the recording export dialog rather than building a second mixer.
 
@@ -83,20 +83,18 @@ Speed and pitch from the playback shaping session apply to the sum, through the 
 
 Peaks are computed once per stem (from decoded audio at load or preparation) and cached with the stem. The composite waveform combines them with the current gains per column as `sqrt(Σ (gain × peak)²)` clipped to 1: stems are mostly incoherent voices, so adding squares is closer than adding amplitudes. It is an approximation and is labelled as the mix, not a measurement. Recomputing it on a gain change is a cheap pass over precomputed columns.
 
-### Decision 9: Playback is tiered: memory when it fits, prepared storage when it does not
+### Decision 9: Playback is from prepared storage only
 
-Decoded audio is large: 3:25 of stereo float is about 72 MB per stem, so a four-stem composite is about 290 MB and nine stems about 650 MB. Memory is not treated as a hard limit.
+Decoded audio is large: 3:25 of stereo float is about 72 MB per stem, so a four-stem composite is about 290 MB and nine stems about 650 MB. Memory is not treated as a hard limit, so every composite plays from prepared stems (spike 1.3 measured an in-memory path and found no faster open worth a second voice implementation).
 
-- **Prepared stems:** each stem is decoded one at a time and written to a local store as 16-bit PCM in chunks (like recording audio), as mono when both channels are identical, resampled to the context rate. About 36 MB per stereo stem for 3:25, half that for mono. This is the path that works for any size: memory is a few windows per stem and storage is N stems.
-- **In memory:** when the decoded size fits comfortably, the stems are decoded to `AudioBuffer`s and played directly, which makes seeks and loop wraps immediate and needs no store.
+- **Prepared stems:** each stem is decoded one at a time and written to a local store as 16-bit PCM in chunks (like recording audio), as mono when both channels are identical, resampled to the context rate. About 36 MB per stereo stem for 3:25, half that for mono. Memory is a few windows per stem and storage is N stems.
+- The only budget is storage: the needed bytes are estimated before preparing and compared with the browser's storage estimate (task 2.7), falling back to attempting the write and handling the failure.
 
-The app picks the tier at load from an estimated decoded size against a budget; the rule and numbers come from spike 1.3 (`navigator.deviceMemory` is Chrome only, so it cannot be the only signal), and the first rule is deliberately conservative. Tasks build the prepared path first, because it is needed regardless; the in-memory path is added only if the spike shows its faster open is worth a second voice implementation.
-
-Prepared stems are a cache: rebuildable from the stems' tracks, listed in the offline files view, and cleared by `Clear all` (Decision 12). The first play of a composite that needs preparation shows `Preparing stems · first time only`; later opens read the store.
+Prepared stems are a cache: rebuildable from the stems' tracks, listed in the offline files view, and cleared by `Clear all` (Decision 12). The first play of any composite shows `Preparing stems · first time only`; later opens read the store.
 
 The summing happens at playback, but the inputs must stay separate in storage because the sum depends on the live gains, mute and solo. A later optimisation could pre-render the stems the user is not adjusting into one cached bed (a `focus` mode), so a preset like `Bass louder` needs about two streams instead of N; it costs a render on first use and again when those levels change, so it is not part of this change.
 
-_Alternative: one path, always from prepared storage._ Simpler, but every first open of even a small composite pays the preparation time. Kept as the fallback if the spike shows the in-memory path is not worth it.
+_Alternative: also an in-memory path for small composites._ Rejected by spike 1.3: it decodes every stem on every open and needs a memory budget that browsers cannot report reliably. Revisit only if first-open time proves a problem on real devices.
 
 ### Decision 10: Loading waits for every stem
 
@@ -129,7 +127,7 @@ Stem-set types, `resolveStemGains`, offset and duration math, and the multi-sour
 
 - [Routing a non-media-element source through the controller touches many call sites] → the wrapper at the interop (Decision 5), a written list of media-element assumptions first (task 1.1), and composite playback behind the capability gate until it passes.
 - [Shaping the sum may sound worse or schedule badly with windowed voices at a rate other than 1] → spike 1.2 on real voice stems before building UI; fallback is speed-only until pitch on the sum is clean.
-- [Memory estimates are unreliable across browsers] → prepared storage works for every size, so a wrong tier choice costs a longer load, not a crash; the first rule is conservative.
+- [Browsers cannot report memory or free storage reliably] → memory is bounded to a few windows per stem; the storage estimate may say `unknown`, in which case preparing is attempted and a failure is handled (task 4.3).
 - [Preparing stems is slow and uses storage] → one-time per composite, progress and an explanation, rebuildable, cleared with offline files; mono where possible.
 - [Whole-file Drive downloads for N stems on a slow connection] → the same progress as a track (per stem), `Keep offline` on the composite, and prepared stems make later opens independent of Drive.
 - [Many concurrent windowed voices cost CPU and storage reads] → measured in spike 1.3 with nine stems; windows are read ahead per voice as the recording overlay already does.
@@ -144,9 +142,7 @@ Additive: a `composites` collection in local library storage and a store of prep
 
 ## Open Questions
 
-- The tier rule: the budget and the signal (decoded-size estimate against a fixed conservative budget, `deviceMemory` where present, or a measured allocation test). Decided by spike 1.3.
-- Speed on the sum: source `playbackRate` with pitch compensation or the SoundTouch tempo parameter. Decided by spike 1.2.
-- Whether the in-memory path is worth building at all once the prepared path exists (task 1.3's first-open timing).
+- Speed on the sum: decided by spike 1.2 (source `playbackRate` per voice, pitch node rate mirrored).
 - The tolerance at which differing stem lengths warn (one second is the starting value).
 - Exact wording of the offline files group and the first-play explanation (tasks 8.x, 5.x).
 

@@ -183,7 +183,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent-text
       <li><b>A library item.</b> It has its own row with a Composite badge and a stem count, and appears in Recents, search, playlists and the queue. The Library gets a Composites filter.</li>
       <li><b>Made from tracks.</b> Select tracks in the Library; Composite is one bulk action among the others and is only highlighted when the tracks are the same length. Each stem gets a name, guessed from the track name and editable.</li>
       <li><b>Mix on the playback screen.</b> A collapsible Mix panel: presets, then a row per stem with mute, solo and a 0 to 150% volume. Tweaks are a session mix until saved as a preset; the waveform follows the mix.</li>
-      <li><b>Loads, then plays.</b> One loading state shows n of N stems ready. A big composite is prepared once, takes longer the first time, and opens quickly after. Memory is only mentioned when it is a problem.</li>
+      <li><b>Loads, then plays.</b> One loading state shows n of N stems ready. A composite is prepared once on its first play, which takes longer, and opens quickly after. Memory is never mentioned.</li>
       <li><b>Lyrics and sheet music come from the stems.</b> Sheet music is combined from every stem with duplicates removed; lyrics have a picker when more than one stem has them.</li>
     </ul>
   </header>
@@ -283,15 +283,15 @@ function mixPanel(S) {
 }
 function playScreen(S) {
   const loading = S.screen === 'loading';
-  const sub = loading ? (S.prep ? `Preparing stems · ${S.loaded} of 9 · first time only` : `Loading stems · ${S.loaded} of 4 ready`) : '4 stems · Choir rehearsal';
+  const sub = loading ? (S.prep ? `Preparing stems · ${S.loaded} of 4 · first time only` : `Loading stems · ${S.loaded} of 4 ready`) : '4 stems · Choir rehearsal';
   return `<div class="screen">
     <div class="hdr"><button class="ib" aria-label="Close">${I.down}</button><div class="sp" style="text-align:center">Composite</div><button class="ib" aria-label="More actions">${I.more}</button></div>
     <div class="body">
       <div><div class="title">Ubi caritas · SATB</div><div class="subtitle">${sub}</div></div>
       ${loading ? (S.prep ? `<div style="margin-top:28px;display:flex;flex-direction:column;gap:10px">
-        <div class="prog"><i style="width:${Math.round(S.loaded / 9 * 100)}%"></i></div>
-        <div class="optrow">Preparing Alto 2…<span class="r">${S.loaded} of 9</span></div>
-        <div class="hint">This is a large composite, so it takes longer the first time. The prepared stems are kept on this device, and next time it opens quickly.</div></div>`
+        <div class="prog"><i style="width:${Math.round(S.loaded / 4 * 100)}%"></i></div>
+        <div class="optrow">Preparing Tenor…<span class="r">${S.loaded} of 4</span></div>
+        <div class="hint">The first play takes longer because the stems are prepared. They are kept on this device, and next time it opens quickly.</div></div>`
       : `<div style="margin-top:28px;display:flex;flex-direction:column;gap:10px">
         <div class="prog"><i style="width:${S.loaded * 25 - 12}%"></i></div>
         ${S.stems.map((x, i) => `<div class="optrow">${i < S.loaded ? I.check : '<span style="width:15px"></span>'}${x.name}<span class="r">${i < S.loaded ? 'ready' : i === S.loaded ? 'decoding…' : 'waiting'}</span></div>`).join('')}
@@ -339,14 +339,13 @@ function libraryScreen(S) {
     ${tabs()}</div>`;
 }
 function createSheet(S) {
-  const big = S.sheet === 'large' || S.sheet === 'nospace';
+  const big = S.sheet === 'nospace';
   const stems = big
     ? [['Soprano 1', 'Soprano 1'], ['Soprano 2', 'Soprano 2'], ['Alto 1', 'Alto 1'], ['Alto 2', 'Alto 2'], ['Tenor 1', 'Tenor 1'], ['Tenor 2', 'Tenor 2'], ['Bass 1', 'Bass 1'], ['Bass 2', 'Bass 2'], ['Piano', 'Piano']]
     : [['Ubi caritas · Soprano', 'Soprano', DUR], ['Ubi caritas · Alto', 'Alto', DUR], ['Ubi caritas · Tenor', 'Tenor', '3:19'], ['Ubi caritas · Bass', 'Bass', DUR], ['Ubi caritas · piano guide', 'Piano guide', DUR, 1]];
   const rows = stems.map((x) => `<div class="cstem"><div class="t">${x[0]}<span>${x[2] || DUR}${x[2] === '3:19' ? ' · 6 s short, padded' : ''}${x[3] ? ' · named from the track' : ''}</span></div>
     <span class="nameinput" aria-label="Stem name">${x[1]}</span></div>`).join('');
-  const notes = S.sheet === 'create' ? '<div class="note warn">Tenor is 6 s shorter than the others, so it is padded with silence at the end. If a stem starts late instead, set an offset on it after creating.</div>'
-    : S.sheet === 'large' ? '<div class="note info"><b>This is a large composite.</b> The first time it plays, the stems are prepared and loading takes longer. After that it opens quickly.</div>'
+  const notes = S.sheet === 'create' ? '<div class="note warn">Tenor is 6 s shorter than the others, so it is padded with silence at the end. If a stem starts late instead, set an offset on it after creating.</div><div class="note info">The first time it plays, the stems are prepared and loading takes longer. After that it opens quickly.</div>'
     : '<div class="note bad"><b>There is not enough room to prepare this composite on this device.</b> Free some space: clear offline files (you can keep them again later), or export and delete recordings in Settings. If that is not enough, remove stems or choose shorter tracks.</div>';
   return `<div class="scrim"></div><div class="sheet"><div class="grab"></div>
     <h3>New composite</h3><div class="sub">Plays these stems together as one track.</div>
@@ -410,7 +409,7 @@ function render(S) {
   else { body = playScreen(S); }
   const mini = S.screen === 'library' ? '' : '';
   let layer = '';
-  if (['create', 'large', 'nospace'].includes(S.sheet)) { layer = createSheet(S); }
+  if (['create', 'nospace'].includes(S.sheet)) { layer = createSheet(S); }
   if (S.sheet === 'lyrics') { layer = lyricsSheet(S); }
   if (S.sheet === 'music') { layer = sheetMusicSheet(S); }
   if (S.sheet === 'stem') { layer = stemSheet(S); }
@@ -423,10 +422,9 @@ const SCENES = {
   library: { label: 'Library', cap: ['Library with a Composite', 'A composite is a normal row with a Composite badge and a stem count; the Composites chip filters to them. Stems stay listed as tracks.'], S: () => scene({ s: { screen: 'library' } }) },
   select: { label: 'Select tracks', cap: ['Select tracks', 'Make composite is one bulk action beside Add to playlist, Queue and Keep offline. These tracks differ in length, so it is not emphasised.'], S: () => scene({ s: { screen: 'select' } }) },
   selectfit: { label: 'Same length', cap: ['Select tracks of equal length', 'When every selected track is the same length the action is tinted and the line says so, because that suggests they are stems of one piece.'], S: () => scene({ s: { screen: 'select', fit: true } }) },
-  create: { label: 'New composite', cap: ['New composite', 'Each stem has a name, guessed from the track name and editable. A track with no recognisable part (piano guide) is named after the track. There is no memory message when there is nothing to report.'], S: () => scene({ s: { screen: 'select', sheet: 'create' } }) },
-  large: { label: 'Large composite', cap: ['Large composite', 'Past what fits in memory the composite still works: it is prepared once, on first play. The sheet says so and does not block.'], S: () => scene({ s: { screen: 'select', sheet: 'large' } }) },
+  create: { label: 'New composite', cap: ['New composite', 'Each stem has a name, guessed from the track name and editable. A track with no recognisable part (piano guide) is named after the track. The info note says the first play prepares the stems; there is no message about memory.'], S: () => scene({ s: { screen: 'select', sheet: 'create' } }) },
   nospace: { label: 'No room', cap: ['Not enough room', 'The only hard stop is storage on the device. No counts. It leads with freeing space (a one-tap Clear offline files, which opens the existing Clear all confirmation) and puts removing stems last.'], S: () => scene({ s: { screen: 'select', sheet: 'nospace' } }) },
-  prepare: { label: 'Preparing', cap: ['Preparing a large composite', 'First play only. Progress, why it is slower, and that the next open is quick.'], S: () => scene({ s: { screen: 'loading', loaded: 3, prep: true } }) },
+  prepare: { label: 'Preparing', cap: ['Preparing a composite', 'First play of any composite. Progress, why it is slower, and that the next open is quick.'], S: () => scene({ s: { screen: 'loading', loaded: 3, prep: true } }) },
   loading: { label: 'Loading', cap: ['Loading stems', 'All stems load and decode before play, with progress per stem.'], S: () => scene({ s: { screen: 'loading', loaded: 2 } }) },
   play: { label: 'Playing', cap: ['Mix panel open', 'Each stem has mute, solo and a 0 to 150% volume. Your part is marked from the part preferences. The waveform follows the mix.'], S: () => scene({}) },
   without: { label: 'Without Bass', cap: ['Part-minus-one', 'The Without Bass preset mutes your part. The row dims, and the closed panel reads "Without Bass · 3 of 4 sounding".'], S: () => scene({ preset: 'without' }) },
