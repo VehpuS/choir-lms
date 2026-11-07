@@ -1,4 +1,7 @@
-import type { PlayableItem } from '@org/audio-library-models';
+import {
+  isCompositeSource,
+  type PlayableItem,
+} from '@org/audio-library-models';
 import type { Dispatch, SetStateAction } from 'react';
 
 import {
@@ -44,7 +47,7 @@ export const resolveSavedTrackDuration = async (
   options: ResolveSavedTrackDurationOptions,
 ) => {
   // A composite has no file to probe: its length comes from its stems.
-  if (playableItem.kind === 'composite') {
+  if (isCompositeSource(playableItem.source)) {
     return playableItem.source.durationMs ?? null;
   }
 

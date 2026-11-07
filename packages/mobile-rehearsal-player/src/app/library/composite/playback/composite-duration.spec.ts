@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createCompositePlayableItem } from '@org/audio-library-models';
+import {
+  createCompositePlayableItem,
+  createLoopPlayableItem,
+} from '@org/audio-library-models';
 
 import { resolveSavedTrackDuration } from '../../playback/utils/saved-track-duration-resolution';
 
@@ -32,5 +35,25 @@ describe('composite duration resolution', () => {
     const item = createCompositePlayableItem(composite);
 
     assert.equal(await resolveSavedTrackDuration(item, unusedOptions), null);
+  });
+
+  it('does the same for a loop of a composite, which is a loop item over the composite source', async () => {
+    const parent = createCompositePlayableItem(composite, {
+      durationMs: 187_500,
+    });
+    const loop = createLoopPlayableItem(
+      {
+        id: 'l1',
+        name: 'Bar 5',
+        sourceId: 'c1',
+        sourceName: 'Ubi caritas',
+        startMs: 65_000,
+        endMs: 95_000,
+        createdAt: 'now',
+      } as never,
+      parent.source,
+    );
+
+    assert.equal(await resolveSavedTrackDuration(loop, unusedOptions), 187_500);
   });
 });

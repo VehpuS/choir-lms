@@ -4,6 +4,7 @@ import {
   parseSourceSheetMusic,
   type SheetMusicSource,
 } from './source-sheet-music.ts';
+import { parseTrackMarkers, type TrackMarker } from './track-markers.ts';
 import { classifyVoiceSection, VOICE_SECTION_LABELS } from './voice-section.ts';
 
 /**
@@ -60,6 +61,8 @@ export type CompositeTrack = {
   presets: CompositeMixPreset[];
   /** Sheet music added to the composite itself, beyond what the stems link. */
   sheetMusic?: SheetMusicSource[];
+  /** Named points in composite time; stems' markers are never shown (composite-tracks spec). */
+  markers?: TrackMarker[];
   /** The stem whose lyrics were picked last. */
   lyricsStemId?: string;
   createdAt: string;
@@ -312,6 +315,7 @@ export const parseCompositeTrack = (value: unknown): CompositeTrack | null => {
     (preset) => preset.id,
   );
   const sheetMusic = parseSourceSheetMusic(value.sheetMusic);
+  const markers = parseTrackMarkers(value.markers);
 
   return {
     id: value.id,
@@ -320,6 +324,7 @@ export const parseCompositeTrack = (value: unknown): CompositeTrack | null => {
     defaultMix: parseCompositeMix(value.defaultMix),
     presets,
     ...(sheetMusic ? { sheetMusic } : {}),
+    ...(markers ? { markers } : {}),
     ...(isString(value.lyricsStemId) && stemIds.has(value.lyricsStemId)
       ? { lyricsStemId: value.lyricsStemId }
       : {}),

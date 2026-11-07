@@ -235,6 +235,43 @@ describe('windowed voice at a rate', () => {
   });
 });
 
+describe('windowed voice restart ahead of time', () => {
+  it('lets the old run sound until the new one begins', async () => {
+    const fake = createFakeContext();
+    const voice = createWindowedVoice({
+      context: fake.context,
+      output: fake.output,
+      reader: createReader(70_000).reader,
+      timers: createManualTimers().timers,
+    });
+
+    voice.start(0);
+    await settle();
+    voice.start(10_000, 100.3);
+    await settle();
+
+    // The first run fades out from the new run's start, not from now.
+    assert.ok(Math.abs((fake.started[0]?.stoppedAt ?? 0) - 100.315) < 1e-9);
+    assert.equal(fake.started[1]?.when, 100.3);
+  });
+
+  it('still fades out now for a restart without a time', async () => {
+    const fake = createFakeContext();
+    const voice = createWindowedVoice({
+      context: fake.context,
+      output: fake.output,
+      reader: createReader(70_000).reader,
+      timers: createManualTimers().timers,
+    });
+
+    voice.start(0);
+    await settle();
+    voice.start(10_000);
+
+    assert.ok(Math.abs((fake.started[0]?.stoppedAt ?? 0) - 100.015) < 1e-9);
+  });
+});
+
 describe('windowed voice overlap', () => {
   it('reads the overlap after the body and bakes complementary fades', async () => {
     const fake = createFakeContext();

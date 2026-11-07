@@ -1,4 +1,7 @@
-import type { PlayableItem } from '@org/audio-library-models';
+import {
+  isCompositeSource,
+  type PlayableItem,
+} from '@org/audio-library-models';
 
 import { loadCompositeEngine } from '../../../composite/playback/composite-engine-loader';
 import { loadCompositeItemIntoPlayer } from '../../../composite/playback/load-composite-item';
@@ -124,7 +127,7 @@ export const createSavedTrackPlaybackRuntimeCore = (
   ) => {
     // A composite has no Drive file or media element: it loads through its own
     // engine (task 3.5), after the player is reset to release the last track.
-    if (playableItem.kind === 'composite') {
+    if (isCompositeSource(playableItem.source)) {
       if (loadOptions?.syncActivePlayableItem !== false) {
         options.setActivePlayableItem(playableItem);
       }

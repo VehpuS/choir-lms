@@ -172,8 +172,13 @@ export const createWindowedVoice = (
 
   const positionOf = (current: Run) => positionAt(current, context.currentTime);
 
-  const release = (current: Run, fade: boolean) => {
-    const now = context.currentTime;
+  // `at` is when the fade begins: now, or the start of the run that replaces it.
+  const release = (
+    current: Run,
+    fade: boolean,
+    at: number = context.currentTime,
+  ) => {
+    const now = at;
 
     current.sources.forEach(({ source, gain }) => {
       try {
@@ -303,7 +308,9 @@ export const createWindowedVoice = (
       }
 
       if (run) {
-        release(run, true);
+        // Sounds until the new run begins: a restart scheduled ahead (a loop
+        // wrap) must not cut the old audio early.
+        release(run, true, Math.max(context.currentTime, when ?? 0));
       }
 
       const current: Run = {

@@ -42,6 +42,36 @@ const toLibraryMap = (library: CompositeLibrary) => {
   return new Map(library.sources.map((source) => [source.id, source]));
 };
 
+/**
+ * Whether a source is a composite's synthetic one. A loop of a composite is a
+ * `loop` item over such a source, so the engine is chosen by the source and not
+ * by the item kind.
+ */
+export const isCompositeSource = (
+  source: Pick<DriveAudioSource, 'mimeType'>,
+): boolean => source.mimeType === COMPOSITE_MIME_TYPE;
+
+/**
+ * Synthetic sources to add to the saved sources wherever an owner is resolved
+ * (markers, loops, lyrics, sheet music), so a composite is its own owner
+ * through the code that already walks `sources`.
+ */
+export const createCompositeOwnerSources = (
+  composites: readonly Pick<
+    CompositeTrack,
+    'id' | 'name' | 'createdAt' | 'stems' | 'markers'
+  >[],
+  library: CompositeLibrary,
+): DriveAudioSource[] => {
+  return composites.map((composite) =>
+    createCompositeSource(composite, {
+      durationMs: getCompositeLibraryDurationMs(composite, library),
+      isAvailable:
+        getCompositeLibraryState(composite, library) !== 'unavailable',
+    }),
+  );
+};
+
 /** Whether the item is a composite, whose `source` is synthetic. */
 export const isCompositeItem = (item: Pick<PlayableItem, 'kind'>): boolean =>
   item.kind === 'composite';
@@ -78,7 +108,7 @@ export const getCompositeLibraryDurationMs = (
 
 /** The synthetic source: no Drive file, the composite id as its own id. */
 export const createCompositeSource = (
-  composite: Pick<CompositeTrack, 'id' | 'name' | 'createdAt'>,
+  composite: Pick<CompositeTrack, 'id' | 'name' | 'createdAt' | 'markers'>,
   options: { durationMs?: number; isAvailable?: boolean } = {},
 ): DriveAudioSource => {
   return {
@@ -90,6 +120,7 @@ export const createCompositeSource = (
     ...(options.durationMs !== undefined
       ? { durationMs: options.durationMs }
       : {}),
+    ...(composite.markers ? { markers: composite.markers } : {}),
     createdAt: composite.createdAt,
     availability:
       options.isAvailable === false
@@ -99,7 +130,10 @@ export const createCompositeSource = (
 };
 
 export const createCompositePlayableItem = (
-  composite: Pick<CompositeTrack, 'id' | 'name' | 'createdAt' | 'stems'>,
+  composite: Pick<
+    CompositeTrack,
+    'id' | 'name' | 'createdAt' | 'stems' | 'markers'
+  >,
   options: {
     durationMs?: number;
     isAvailable?: boolean;
@@ -129,7 +163,10 @@ export const createCompositePlayableItem = (
  * missing (the composite is unavailable and does not start).
  */
 export const resolveCompositePlayableItem = (
-  composite: Pick<CompositeTrack, 'id' | 'name' | 'createdAt' | 'stems'>,
+  composite: Pick<
+    CompositeTrack,
+    'id' | 'name' | 'createdAt' | 'stems' | 'markers'
+  >,
   library: CompositeLibrary,
   options: { playlistId?: string; playlistEntryId?: string } = {},
 ): PlayableItem | null => {

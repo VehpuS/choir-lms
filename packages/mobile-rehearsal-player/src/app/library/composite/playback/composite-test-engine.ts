@@ -10,6 +10,7 @@ export const createTestEngine = (durationMs = 60_000) => {
   const state = {
     value: 'paused' as CompositeEngineState,
     positionMs: 0,
+    loop: null as { startMs: number; endMs: number } | null,
     rate: 1,
     volume: 1,
     disposed: false,
@@ -41,6 +42,10 @@ export const createTestEngine = (durationMs = 60_000) => {
     seek: record('seek', (ms: number) => {
       state.positionMs = ms;
     }),
+    setLoop: record('setLoop', (loop) => {
+      state.loop = loop;
+    }),
+    getLoop: () => state.loop,
     setStemGains: record('setStemGains'),
     setRate: record('setRate', (rate: number) => {
       state.rate = rate;

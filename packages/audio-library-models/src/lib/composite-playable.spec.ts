@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { deriveLoopMarkers } from './track-marker-list.ts';
+import { resolveMarkerOwner } from './track-markers.ts';
+import { createLoopPlayableItem } from './rehearsal-domain.ts';
 import {
+  createCompositeOwnerSources,
   createCompositePlayableItem,
+  isCompositeSource,
   createPlaylistEntryFromComposite,
   getCompositeBadgeLabel,
   isCompositeItem,
@@ -108,5 +113,66 @@ describe('composite playlist entry', () => {
 
   it('labels one stem in the singular', () => {
     assert.equal(getCompositeBadgeLabel(1), 'Composite · 1 stem');
+  });
+});
+
+describe('a composite as an owner', () => {
+  const library = { sources: [track('t1', 100_000), track('t2', 100_000)] };
+  const withMarkers = {
+    ...composite,
+    markers: [
+      { id: 'm1', name: 'Verse', positionMs: 30_000, createdAt: 'now' },
+    ],
+  } as unknown as typeof composite;
+
+  it('is its own marker owner through its synthetic source', () => {
+    const sources = createCompositeOwnerSources([composite], library);
+    const owner = resolveMarkerOwner({ id: 'c1', sourceId: 'c1' }, sources);
+
+    assert.equal(owner?.id, 'c1');
+    assert.equal(isCompositeSource(sources[0]), true);
+  });
+
+  it('carries the composite markers on its source and none from the stems', () => {
+    const [source] = createCompositeOwnerSources([withMarkers], library);
+
+    assert.equal(source.markers?.length, 1);
+    assert.equal(
+      createCompositeOwnerSources([composite], library)[0].markers,
+      undefined,
+    );
+  });
+
+  it('owns the loops made on it, in composite time', () => {
+    const [source] = createCompositeOwnerSources([composite], library);
+    const loop = {
+      id: 'l1',
+      name: 'Bar 5',
+      sourceId: 'c1',
+      sourceName: 'Ubi caritas',
+      startMs: 65_000,
+      endMs: 95_000,
+      createdAt: 'now',
+    };
+    const derived = deriveLoopMarkers('c1', [loop], [source]);
+    const item = createLoopPlayableItem(loop as never, source);
+
+    assert.deepEqual(
+      derived.map((marker) => marker.positionMs),
+      [65_000, 95_000],
+    );
+    assert.equal(item.kind, 'loop');
+    assert.equal(isCompositeSource(item.source), true);
+    assert.deepEqual(item.range, { startMs: 65_000, endMs: 95_000 });
+  });
+
+  it('marks a composite with no stems left as unavailable', () => {
+    const [source] = createCompositeOwnerSources([composite], { sources: [] });
+
+    assert.equal(source.availability.status, 'unavailable');
+  });
+
+  it('does not treat a Drive source as a composite', () => {
+    assert.equal(isCompositeSource({ mimeType: 'audio/mpeg' }), false);
   });
 });

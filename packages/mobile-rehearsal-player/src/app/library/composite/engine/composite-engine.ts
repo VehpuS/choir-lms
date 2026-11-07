@@ -1,13 +1,19 @@
 import {
   COMPOSITE_OVERLAP_SAMPLES,
   createWindowedVoice,
-  type PcmWindowReader,
   type SyncTimers,
-  type VoiceContext,
   type VoiceGain,
-  type VoiceNode,
   type WindowedVoice,
 } from '@org/audio-mixing';
+
+import type {
+  CompositeEngine,
+  CompositeEngineOptions,
+  CompositeEngineState,
+  EngineContext,
+  EngineLoop,
+  EngineStem,
+} from './composite-engine-types';
 
 /**
  * The Web Audio engine of a composite (composite-tracks design Decision 4): per
@@ -25,74 +31,21 @@ export const ENGINE_START_LEAD_S = 0.05;
 /** A gain change ramps over this long, so a slider drag or a mute never clicks. */
 export const GAIN_RAMP_S = 0.02;
 const ENDED_POLL_MS = 100;
+/** How far before the loop end the wrap is scheduled, so the voices read the loop start first. */
+const LOOP_LOOKAHEAD_S = 0.4;
 const MS_PER_SECOND = 1000;
 const NEUTRAL_RATE = 1;
 const NO_PITCH = 0;
 
-export type EngineContext = VoiceContext & {
-  destination: VoiceNode;
-  resume: () => Promise<void>;
-};
-
-/**
- * Shapes the summed signal. The source voices already play at `rate`, so the
- * stage is told the same rate and the semitones and compensates the pitch change
- * that the speed causes, itself (spike 1.2).
- */
-export type PitchStage = {
-  input: VoiceNode;
-  output: VoiceNode;
-  update: (shape: { rate: number; pitchSemitones: number }) => void;
-  dispose: () => void;
-};
-
-export type EngineStem = {
-  id: string;
-  /** Later when positive, earlier (start trimmed) when negative. */
-  offsetMs: number;
-  reader: PcmWindowReader;
-};
-
-export type CompositeEngineState = 'paused' | 'playing' | 'ended';
-
-export type CompositeEngineOptions = {
-  context: EngineContext;
-  stems: readonly EngineStem[];
-  /** Connect into `input`, and `output` onward; the same ceiling the export ends in. */
-  limiter: { input: VoiceNode; output: VoiceNode };
-  /** Absent where audio worklets are not available; the speed then also moves the pitch. */
-  pitchStage?: PitchStage | null;
-  /** The gain of each stem when the engine is built (the session mix, already resolved). */
-  initialGains?: Readonly<Record<string, number>>;
-  timers?: SyncTimers;
-  createVoice?: (
-    output: VoiceNode,
-    reader: PcmWindowReader,
-    onUnavailable: (error: unknown) => void,
-  ) => WindowedVoice;
-  /** A stem whose audio cannot be read; the rest keep playing. */
-  onStemUnavailable?: (stemId: string, error: unknown) => void;
-};
-
-export type CompositeEngine = {
-  readonly durationMs: number;
-  /** False without a pitch stage: a speed other than 1 then changes the pitch too. */
-  readonly canCompensatePitch: boolean;
-  getState: () => CompositeEngineState;
-  getPositionMs: () => number;
-  getRate: () => number;
-  /** The master level, 0 to 1. */
-  getVolume: () => number;
-  subscribe: (listener: () => void) => () => void;
-  play: () => void;
-  pause: () => void;
-  seek: (positionMs: number) => void;
-  setStemGains: (gains: Readonly<Record<string, number>>) => void;
-  setRate: (rate: number) => void;
-  setPitchSemitones: (semitones: number) => void;
-  setVolume: (volume: number) => void;
-  dispose: () => void;
-};
+export type {
+  CompositeEngine,
+  CompositeEngineOptions,
+  CompositeEngineState,
+  EngineContext,
+  EngineLoop,
+  EngineStem,
+  PitchStage,
+} from './composite-engine-types';
 
 type StemSlot = { stem: EngineStem; gain: VoiceGain; voice: WindowedVoice };
 
@@ -145,6 +98,10 @@ export const createCompositeEngine = (
   let anchorMs = 0;
   let anchorTime = 0;
   let disposed = false;
+  let loop: EngineLoop | null = null;
+  // While a wrap is scheduled the clock describes the loop start in the future;
+  // `before` keeps the clock that is still sounding until then.
+  let wrap: { at: number; before: { ms: number; time: number } } | null = null;
 
   const slots: StemSlot[] = options.stems.map((stem) => {
     const gain = context.createGain();
@@ -174,6 +131,14 @@ export const createCompositeEngine = (
   const notify = () => listeners.forEach((listener) => listener());
 
   const positionAt = (time: number) => {
+    if (wrap && time < wrap.at) {
+      return Math.min(
+        loop?.endMs ?? durationMs,
+        wrap.before.ms +
+          Math.max(0, time - wrap.before.time) * MS_PER_SECOND * rate,
+      );
+    }
+
     return Math.min(
       durationMs,
       anchorMs + Math.max(0, time - anchorTime) * MS_PER_SECOND * rate,
@@ -202,9 +167,11 @@ export const createCompositeEngine = (
   const stopVoices = () => slots.forEach(({ voice }) => voice.stop());
 
   /** Starts every voice on one context time from the composite position `positionMs`. */
-  const startVoices = (positionMs: number) => {
-    const when = context.currentTime + ENGINE_START_LEAD_S;
-
+  const startVoices = (
+    positionMs: number,
+    when: number = context.currentTime + ENGINE_START_LEAD_S,
+  ) => {
+    wrap = null;
     anchorMs = positionMs;
     anchorTime = when;
 
@@ -232,7 +199,44 @@ export const createCompositeEngine = (
     }
   };
 
+  /** Schedules the next wrap of the loop, once the end is within the lookahead. */
+  const pollLoop = () => {
+    if (!loop || state !== 'playing') {
+      return;
+    }
+
+    const now = context.currentTime;
+
+    if (wrap) {
+      if (now >= wrap.at) {
+        wrap = null;
+        notify();
+      }
+
+      return;
+    }
+
+    const position = positionAt(now);
+    const endsAt = now + (loop.endMs - position) / (MS_PER_SECOND * rate);
+
+    if (position >= loop.endMs) {
+      // Already past the end (the loop was set late): start over right away.
+      startVoices(loop.startMs);
+
+      return;
+    }
+
+    if (endsAt - now <= LOOP_LOOKAHEAD_S) {
+      const before = { ms: anchorMs, time: anchorTime };
+
+      startVoices(loop.startMs, endsAt);
+      wrap = { at: endsAt, before };
+    }
+  };
+
   const poll = () => {
+    pollLoop();
+
     if (state === 'playing' && positionAt(context.currentTime) >= durationMs) {
       stopVoices();
       anchorMs = durationMs;
@@ -279,6 +283,7 @@ export const createCompositeEngine = (
       }
 
       anchorMs = positionAt(context.currentTime);
+      wrap = null;
       stopVoices();
       setState('paused');
     },
@@ -294,6 +299,19 @@ export const createCompositeEngine = (
 
       notify();
     },
+    setLoop: (nextLoop) => {
+      const valid =
+        nextLoop && nextLoop.endMs > nextLoop.startMs && nextLoop.startMs >= 0;
+
+      if (state === 'playing' && wrap) {
+        // Pick up the new range from where the sound is now.
+        restartFrom(positionAt(context.currentTime));
+      }
+
+      loop = valid ? nextLoop : null;
+      notify();
+    },
+    getLoop: () => loop,
     setStemGains: (gains) => {
       for (const { stem, gain } of slots) {
         const target = gains[stem.id];
