@@ -8,6 +8,8 @@ import {
 } from 'react';
 import { Platform } from 'react-native';
 
+import { getActiveCompositeEngine } from '../../../composite/playback/active-composite';
+import { useCompositeLoopSync } from '../../../composite/playback/use-composite-loop';
 import type { PlaylistPlaybackSession } from '../../../playlists/utils/saved-playlist-playback-view-model';
 import type { SavedTrackPlaybackController } from '../../utils/saved-track-playback-controller';
 import type { SavedTrackPlaybackControllerOptions } from '../../utils/saved-track-playback-controller/shared';
@@ -93,6 +95,13 @@ export const useSavedTrackPlaybackEffects = ({
   useEffect(() => {
     repeatModeRef.current = playlistRepeatMode;
   }, [playlistRepeatMode, repeatModeRef]);
+
+  // A repeating composite wraps in its engine, without the gap of a seek back.
+  useCompositeLoopSync({
+    isInPlaylistSession: activePlaylistSession !== null,
+    item: activePlayableItem,
+    repeatMode: playlistRepeatMode,
+  });
 
   useEffect(() => {
     playbackStateRef.current.playbackState = playbackState;
@@ -272,7 +281,10 @@ export const useSavedTrackPlaybackEffects = ({
         playbackState,
         positionSeconds: progressPositionSeconds,
       }) ||
-      !activePlayableItem
+      !activePlayableItem ||
+      // A composite engine that loops wraps by itself; seeking back here too
+      // would restart it a second time.
+      getActiveCompositeEngine()?.getLoop()
     ) {
       return;
     }
