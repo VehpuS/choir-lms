@@ -27,3 +27,4 @@ export * from './lib/recording-exports.ts';
 export * from './lib/recording-timeline.ts';
 export * from './lib/recording-visibility.ts';
 export * from './lib/recording-playable.ts';
+export * from './lib/composite-track.ts';
