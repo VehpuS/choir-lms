@@ -87,7 +87,7 @@ Peaks are computed once per stem (from decoded audio at load or preparation) and
 
 Decoded audio is large: 3:25 of stereo float is about 72 MB per stem, so a four-stem composite is about 290 MB and nine stems about 650 MB. Memory is not treated as a hard limit, so every composite plays from prepared stems (spike 1.3 measured an in-memory path and found no faster open worth a second voice implementation).
 
-- **Prepared stems:** each stem is decoded one at a time and written to a local store as 16-bit PCM in chunks (like recording audio), as mono when both channels are identical, resampled to the context rate. About 36 MB per stereo stem for 3:25, half that for mono. Memory is a few windows per stem and storage is N stems.
+- **Prepared stems:** each stem is decoded one at a time and written to a local store as 16-bit mono PCM in chunks (like recording audio), resampled to the context rate. Stereo stems are mixed down to mono when prepared (decided 2026-11-08, see Spike results). About 18 MB per stem for 3:25. Memory is a few windows per stem and storage is N stems.
 - The only budget is storage: the needed bytes are estimated before preparing and compared with the browser's storage estimate (task 2.7), falling back to attempting the write and handling the failure.
 
 Prepared stems are a cache: rebuildable from the stems' tracks, listed in the offline files view, and cleared by `Clear all` (Decision 12). The first play of any composite shows `Preparing stems · first time only`; later opens read the store.
@@ -227,3 +227,11 @@ The synthetic stem generator took more time than the shaping (8.5 s for nine ste
 **Not measured:** the comparison with a live capture of the same mix. A live capture needs real-time playback and a listener, and the live and offline paths are different pitch engines (the AudioWorklet and the pure-JS core), so the level and pitch parity check belongs in task 10.1's spec (against a known small case) and 11.1's manual check.
 
 **Decision (chunk size and worker):** **summed in blocks of 4096 frames inside chunks of one second of output, in the main thread, yielding to the event loop between chunks, as `renderMix` does today. No worker.** The CPU cost (about 1.7% of real time for the stretcher) does not justify a worker, and keeping it on the main thread avoids moving the window readers and IndexedDB access. Revisit only if 11.1 shows the UI stalling during an export. Task 10.1 uses these values.
+
+### Decision: prepared stems are always mono (2026-11-08, with the user)
+
+The windowed voice and `createWavWindowReader` are mono only, and a stem is one voice in a choir mix, so **every stem is prepared as mono**: a stereo stem has its two channels averaged when it is decoded, and a stem whose channels are identical gives the same result. This replaces the earlier idea of detecting identical channels and keeping real stereo otherwise.
+
+- **Storage:** one channel at 16 bit, so about 18 MB for 3:25 at 44.1 kHz whatever the source, and the storage estimate (task 2.7) counts one channel.
+- **Not lost that matters:** stereo placement inside a single-voice stem. A stem that is a stereo mix of several parts is outside the intended use and sounds as its mono sum.
+- **Consequences:** no stereo reader, voice or engine path; no identical-channel detection in preparation (task 4.2); the spec's mono-detection wording and the estimate's channel count are simplified (see the tasks). Revisit only if real stems turn out to need stereo.

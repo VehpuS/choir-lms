@@ -35,7 +35,7 @@ The system SHALL tell the user, in the create sheet, that a composite is prepare
 
 ### Requirement: Prepared stems are a rebuildable cache
 
-The system SHALL keep prepared stems in a local store as a cache that is not the source of truth: each stem SHALL be rebuilt from its track when missing, a prepared stem SHALL be replaced when its track's content changes, and a stem that is mono or has identical channels SHALL be prepared as mono. Prepared stems SHALL be listed in the offline files view with their sizes and SHALL NOT be counted as recordings.
+The system SHALL keep prepared stems in a local store as a cache that is not the source of truth: each stem SHALL be rebuilt from its track when missing, a prepared stem SHALL be replaced when its track's content changes, and every stem SHALL be prepared as mono (a stereo stem has its channels averaged). Prepared stems SHALL be listed in the offline files view with their sizes and SHALL NOT be counted as recordings.
 
 #### Scenario: Missing prepared stem
 
@@ -47,10 +47,10 @@ The system SHALL keep prepared stems in a local store as a cache that is not the
 - **WHEN** a stem's track file changed in Drive
 - **THEN** the prepared stem is replaced the next time the composite plays
 
-#### Scenario: Mono stem
+#### Scenario: Stereo stem
 
-- **WHEN** a stem's two channels are identical
-- **THEN** it is prepared as mono and uses about half the storage
+- **WHEN** a stem's track is stereo
+- **THEN** it is prepared as mono, with its two channels averaged, and uses about half the storage a stereo copy would
 
 ### Requirement: Running out of storage is the only hard stop, and it offers ways to free space
 
