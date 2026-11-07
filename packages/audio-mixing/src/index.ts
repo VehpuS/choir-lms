@@ -18,3 +18,5 @@ export * from './lib/punch-controller.ts';
 export * from './lib/peak-normalize.ts';
 export * from './lib/mix-limiter.ts';
 export * from './lib/mix-limiter-worklet.ts';
+export * from './lib/stem-gains.ts';
+export * from './lib/composite-mix.ts';
