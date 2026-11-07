@@ -29,3 +29,4 @@ export * from './lib/recording-visibility.ts';
 export * from './lib/recording-playable.ts';
 export * from './lib/composite-track.ts';
 export * from './lib/composite-mine.ts';
+export * from './lib/composite-availability.ts';
