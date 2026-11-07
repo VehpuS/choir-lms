@@ -1,3 +1,5 @@
+import { createPlaylistEntryFromComposite } from './composite-playable.ts';
+import type { CompositeTrack } from './composite-track.ts';
 import { createPlaylistEntryFromRecording } from './recording-playable.ts';
 import type { Recording } from './recording.ts';
 import {
@@ -185,6 +187,24 @@ export const addRecordingToPlaylist = (
     [
       ...playlist.items,
       createPlaylistEntryFromRecording(recording, updatedAt, {
+        playlistId: playlist.id,
+        sortIndex: playlist.items.length,
+      }),
+    ],
+    updatedAt,
+  );
+};
+
+export const addCompositeToPlaylist = (
+  playlist: Playlist,
+  composite: Pick<CompositeTrack, 'id' | 'name' | 'stems'>,
+  updatedAt: string = new Date().toISOString(),
+): Playlist => {
+  return updatePlaylistItems(
+    playlist,
+    [
+      ...playlist.items,
+      createPlaylistEntryFromComposite(composite, updatedAt, {
         playlistId: playlist.id,
         sortIndex: playlist.items.length,
       }),

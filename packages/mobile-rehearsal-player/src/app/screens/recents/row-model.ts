@@ -15,12 +15,14 @@ import {
 export type RecentRowTileTone = 'active' | 'outline';
 
 const KIND_ICONS: Record<RecentRehearsalKind, AppIconName> = {
+  composite: 'tune-variant',
   loop: 'repeat',
   playlist: 'playlist-music-outline',
   track: 'music-note-outline',
 };
 
 const KIND_LABELS: Record<RecentRehearsalKind, string | null> = {
+  composite: 'Composite',
   loop: 'Loop',
   playlist: 'Playlist',
   track: null,

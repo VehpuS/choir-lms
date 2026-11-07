@@ -3,7 +3,9 @@ import {
   createTrackPlayableItem,
   isSourcePlayable,
   normalizePlaylist,
+  resolveCompositePlayableItem,
   resolveRecordingPlayableItem,
+  type CompositeTrack,
   type DriveAudioSource,
   type NamedLoop,
   type PlayableItem,
@@ -46,6 +48,7 @@ export const resolvePlaylistItems = (
   loops: NamedLoop[],
   sources: DriveAudioSource[],
   recordings: readonly Recording[] = [],
+  composites: readonly CompositeTrack[] = [],
 ) => {
   const normalizedPlaylist = normalizePlaylist(playlist);
   const loopsById: Partial<Record<string, NamedLoop>> = keyBy(
@@ -77,6 +80,22 @@ export const resolvePlaylistItems = (
             },
           ]
         : [];
+    }
+
+    // A composite entry names the composite, not an audio source. One that was
+    // deleted, whose stems are all gone, or that this build does not know is
+    // unavailable and skipped.
+    if (entry.kind === 'composite') {
+      const composite = composites.find(({ id }) => id === entry.sourceId);
+      const item = composite
+        ? resolveCompositePlayableItem(
+            composite,
+            { sources },
+            { playlistId: normalizedPlaylist.id, playlistEntryId: entry.id },
+          )
+        : null;
+
+      return item ? [item] : [];
     }
 
     const source = sourcesById[entry.sourceId];
@@ -192,6 +211,7 @@ export const createPlaybackQueue = (
     repeatMode?: RepeatMode;
     random?: () => number;
     recordings?: readonly Recording[];
+    composites?: readonly CompositeTrack[];
   },
 ): PlaybackQueue => {
   const items = resolvePlaylistItems(
@@ -199,6 +219,7 @@ export const createPlaybackQueue = (
     loops,
     sources,
     options?.recordings,
+    options?.composites,
   );
   const mode = options?.mode ?? 'ordered';
   const repeatMode = options?.repeatMode ?? 'off';

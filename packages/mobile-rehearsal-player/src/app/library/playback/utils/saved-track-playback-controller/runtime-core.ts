@@ -1,5 +1,8 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
+import { loadCompositeEngine } from '../../../composite/playback/composite-engine-loader';
+import { loadCompositeItemIntoPlayer } from '../../../composite/playback/load-composite-item';
+
 import { type LoadPlayableItemIntoPlayer } from '../saved-track-duration-resolution';
 import {
   createSavedTrackPlaybackPreconditionIssue,
@@ -119,6 +122,27 @@ export const createSavedTrackPlaybackRuntimeCore = (
     accessToken,
     loadOptions,
   ) => {
+    // A composite has no Drive file or media element: it loads through its own
+    // engine (task 3.5), after the player is reset to release the last track.
+    if (playableItem.kind === 'composite') {
+      if (loadOptions?.syncActivePlayableItem !== false) {
+        options.setActivePlayableItem(playableItem);
+      }
+
+      await ensureSavedTrackPlayerReady();
+
+      return loadCompositeItemIntoPlayer({
+        item: playableItem,
+        player: getSavedTrackPlayer(),
+        loadEngine: (item) => loadCompositeEngine(item, {}),
+        volume: options.volumeLevelRef.current * getTrackGain(),
+        initialPositionSeconds:
+          loadOptions?.initialPositionSeconds ??
+          playableItem.range.startMs / 1000,
+        shouldPlay: loadOptions?.shouldPlay ?? true,
+      });
+    }
+
     const playbackRequest = createSavedTrackPlaybackRequest({
       accessToken,
       playableItem,

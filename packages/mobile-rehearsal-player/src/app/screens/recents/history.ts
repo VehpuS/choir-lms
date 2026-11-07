@@ -3,7 +3,7 @@ import type { PlayableItem } from '@org/audio-library-models';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { PlaylistPlaybackSession } from '../../library/playlists/utils/saved-playlist-playback-view-model';
 
-export type RecentRehearsalKind = 'track' | 'loop' | 'playlist';
+export type RecentRehearsalKind = 'track' | 'loop' | 'composite' | 'playlist';
 
 export type RecentRehearsalItem = {
   id: string;
@@ -53,7 +53,7 @@ const readPlayableItem = (value: unknown): PlayableItem | null => {
     return null;
   }
 
-  if (kind !== 'track' && kind !== 'loop') {
+  if (kind !== 'track' && kind !== 'loop' && kind !== 'composite') {
     return null;
   }
 
@@ -93,7 +93,10 @@ const parseRecentRehearsalItem = (
   return {
     id,
     kind:
-      kind === 'playlist' || kind === 'track' || kind === 'loop'
+      kind === 'playlist' ||
+      kind === 'track' ||
+      kind === 'loop' ||
+      kind === 'composite'
         ? kind
         : playableItem.kind,
     playedAt,

@@ -53,7 +53,8 @@ export type PlayableRange = {
   endMs: number | null;
 };
 
-export type PlayableItemKind = 'track' | 'loop';
+/** A composite is a playable item of its own; a recording stays a track item with `recordingId`. */
+export type PlayableItemKind = 'track' | 'loop' | 'composite';
 
 export type PlayableItem = {
   id: string;
@@ -134,7 +135,10 @@ export type Playlist = {
   updatedAt: string;
 };
 
-export type RehearsalLibraryEntityKind = PlayableItemKind | 'playlist';
+/** Composites join the library selection with the Library surfaces (composite-tracks 5.1 and 7.1). */
+export type RehearsalLibraryEntityKind =
+  | Exclude<PlayableItemKind, 'composite'>
+  | 'playlist';
 
 export type RehearsalLibraryFolderNode = {
   id: string;

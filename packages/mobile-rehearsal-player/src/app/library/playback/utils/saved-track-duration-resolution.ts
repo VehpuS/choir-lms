@@ -43,6 +43,11 @@ export const resolveSavedTrackDuration = async (
   playableItem: PlayableItem,
   options: ResolveSavedTrackDurationOptions,
 ) => {
+  // A composite has no file to probe: its length comes from its stems.
+  if (playableItem.kind === 'composite') {
+    return playableItem.source.durationMs ?? null;
+  }
+
   const accessToken = options.accessToken;
 
   if (!accessToken) {
