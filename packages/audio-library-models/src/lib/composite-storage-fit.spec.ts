@@ -18,21 +18,14 @@ const estimator = (
 });
 
 describe('estimatePreparedStemBytes', () => {
-  it('is duration × rate × 2 bytes × channels', () => {
+  it('is duration × rate × 2 bytes: one channel whatever the source', () => {
     assert.equal(
-      estimatePreparedStemBytes({ durationMs: 1000, channels: 2 }, RATE),
-      RATE * 2 * 2,
-    );
-    assert.equal(
-      estimatePreparedStemBytes({ durationMs: 1000, channels: 1 }, RATE),
+      estimatePreparedStemBytes({ durationMs: 1000 }, RATE),
       RATE * 2,
     );
-  });
-
-  it('counts a stem whose channels are not known yet as stereo', () => {
     assert.equal(
       estimatePreparedStemBytes({ durationMs: THREE_MINUTES_MS }, RATE),
-      THREE_MINUTES_MS * 2 * 2 * (RATE / 1000),
+      THREE_MINUTES_MS * 2 * (RATE / 1000),
     );
   });
 
@@ -45,9 +38,9 @@ describe('estimatePreparedStemBytes', () => {
 describe('estimateCompositeBytesNeeded', () => {
   it('sums the stems and skips those already prepared', () => {
     const stems = [
-      { durationMs: 1000, channels: 2 as const },
-      { durationMs: 1000, channels: 1 as const },
-      { durationMs: 1000, channels: 2 as const, prepared: true },
+      { durationMs: 1000 },
+      { durationMs: 2000 },
+      { durationMs: 1000, prepared: true },
     ];
 
     assert.equal(estimateCompositeBytesNeeded(stems, RATE), RATE * 2 * 3);
@@ -56,8 +49,8 @@ describe('estimateCompositeBytesNeeded', () => {
 
 describe('checkCompositeStorageFit', () => {
   const stems = [
-    { durationMs: THREE_MINUTES_MS, channels: 2 as const },
-    { durationMs: THREE_MINUTES_MS, channels: 1 as const },
+    { durationMs: THREE_MINUTES_MS },
+    { durationMs: THREE_MINUTES_MS },
   ];
 
   it('fits when the room left covers the bytes needed', async () => {

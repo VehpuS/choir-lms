@@ -1,26 +1,20 @@
 /**
  * Whether a composite's prepared stems fit in the browser's storage
  * (composite-tracks design Decision 9, spike 1.3: prepared storage only, no
- * memory tier). Prepared stems are 16-bit PCM at the context rate, mono when
- * both channels are identical.
+ * memory tier). Prepared stems are 16-bit mono PCM at the context rate whatever
+ * the source's channels (the mono decision in the design's Spike results).
  */
 
 export const PREPARED_BYTES_PER_SAMPLE = 2;
 const MS_PER_SECOND = 1000;
-const STEREO_CHANNELS = 2;
 
 export type PreparedStemSize = {
   durationMs: number;
-  /**
-   * 1 for a stem whose channels are identical, else 2. Unknown before the stem
-   * is decoded, which counts as stereo (the larger figure).
-   */
-  channels?: 1 | 2;
   /** Already in the prepared store, so it needs no more room. */
   prepared?: boolean;
 };
 
-/** Bytes one prepared stem takes: duration × sample rate × 2 bytes × channels. */
+/** Bytes one prepared stem takes: duration × sample rate × 2 bytes (one channel). */
 export const estimatePreparedStemBytes = (
   stem: PreparedStemSize,
   sampleRate: number,
@@ -30,10 +24,7 @@ export const estimatePreparedStemBytes = (
   }
 
   return Math.ceil(
-    (stem.durationMs / MS_PER_SECOND) *
-      sampleRate *
-      PREPARED_BYTES_PER_SAMPLE *
-      (stem.channels ?? STEREO_CHANNELS),
+    (stem.durationMs / MS_PER_SECOND) * sampleRate * PREPARED_BYTES_PER_SAMPLE,
   );
 };
 
