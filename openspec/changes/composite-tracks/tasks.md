@@ -74,7 +74,7 @@ Web is the build and verification target. Native is deferred to `native-playback
 
 ## 11. Verification and docs
 
-- [ ] 11.1 Verify in the browser preview: create from four stems, play, mute, solo, presets, shaping, loop wrap, seek, a missing stem, a large composite (preparing, then quick), offline, and export. Fix anything found.
+- [ ] 11.1 Verify in the browser preview: create from four stems, play, mute, solo, presets, shaping, loop wrap, seek, a missing stem, first play (preparing, then quick), offline, and export. Fix anything found.
 - [ ] 11.2 Update `docs/mobile-cross-platform-audio-playback.md` (composite engine, tiers, prepared stems, wrapper), the README and the CLAUDE.md notes (workspace layout and `@org/audio-mixing` description).
 - [ ] 11.3 Run the affected Nx targets (`lint`, `test`, `typecheck`, `build`) for `audio-library-models`, `audio-mixing` and `mobile-rehearsal-player`, and clear Problems in every touched file.
 

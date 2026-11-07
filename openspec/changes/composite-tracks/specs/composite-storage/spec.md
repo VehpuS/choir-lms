@@ -2,16 +2,11 @@
 
 ### Requirement: Memory is not a hard limit on the number of stems
 
-The system SHALL NOT enforce a fixed stem count or a fixed memory limit for a composite. When the decoded stems fit comfortably in memory the system MAY play them from memory; otherwise it SHALL prepare the stems once into local storage and play them from there a window at a time, so that memory use stays bounded by a few windows per stem.
+The system SHALL NOT enforce a fixed stem count or a fixed memory limit for a composite. Every composite SHALL be prepared once into local storage and played from there a window at a time, so that memory use stays bounded by a few windows per stem whatever the number or length of the stems.
 
-#### Scenario: Small composite
+#### Scenario: Any size of composite
 
-- **WHEN** a composite's decoded stems fit comfortably in memory
-- **THEN** it plays without a preparation step
-
-#### Scenario: Large composite
-
-- **WHEN** a composite's decoded stems would not fit comfortably in memory
+- **WHEN** a composite has few or many stems, short or long
 - **THEN** it is prepared once, then plays from the prepared stems, and playback still starts together and seeks and loops work
 
 #### Scenario: No memory message when nothing is wrong
@@ -19,13 +14,13 @@ The system SHALL NOT enforce a fixed stem count or a fixed memory limit for a co
 - **WHEN** a composite is created or played and nothing is wrong
 - **THEN** the system shows no message about memory
 
-### Requirement: A large composite says it needs preparation
+### Requirement: A composite says it needs preparation on its first play
 
-The system SHALL tell the user, in the create sheet, that a large composite is prepared on its first play and takes longer to load then, and SHALL show `Preparing stems · first time only` with progress on that first play. Later opens SHALL read the prepared stems and open quickly. The create sheet SHALL NOT block creation for this reason.
+The system SHALL tell the user, in the create sheet, that a composite is prepared on its first play and takes longer to load then, and SHALL show `Preparing stems · first time only` with progress on that first play. Later opens SHALL read the prepared stems and open quickly. The create sheet SHALL NOT block creation for this reason.
 
 #### Scenario: Create sheet
 
-- **WHEN** the user makes a large composite
+- **WHEN** the user makes a composite
 - **THEN** the sheet shows an informational note that the first play takes longer, and `Create` is available
 
 #### Scenario: First play

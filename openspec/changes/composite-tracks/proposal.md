@@ -10,7 +10,7 @@ Choirs rehearse from part tracks: a track with one voice louder, or a mix with o
 - **Live mixer on the playback screen:** a collapsible `Mix` panel with a row per stem (mute, solo, volume from 0 to 150%), a presets menu (`All parts`, `Without <my part>`, `<My part> louder`, and presets the user saves), and `Save as preset`. Mix changes are a session mix until saved. Solo and mute follow the usual mixer rules; the waveform follows the mix.
 - **One shaped output:** the stems are summed and the sum is shaped as a whole, so speed and pitch apply to the mix and not to each stem; a limiter guards the sum.
 - **Loads, then plays:** one loading state shows progress per stem and playback starts only when every stem is ready, so the mix never changes while the user sings. A stem that cannot be loaded is flagged and skipped, with a way to re-link or remove it.
-- **Memory is not a hard limit.** When the decoded stems fit comfortably the composite plays from memory. Otherwise its stems are prepared once into local storage and played a window at a time (the way the recording overlay plays a take), with a longer first load and a quick open after. The only hard stop is storage on the device, and its message leads with freeing space (a `Clear offline files` button) before changing the composite.
+- **Memory is not a hard limit.** Every composite's stems are prepared once into local storage on its first play and played a window at a time (the way the recording overlay plays a take), with a longer first load and a quick open after. The only hard stop is storage on the device, and its message leads with freeing space (a `Clear offline files` button) before changing the composite.
 - **Loops, markers, lyrics, sheet music:** a composite owns its loops and markers, which are positions in the shared audio time. Its sheet music is combined from every stem's sources with duplicates removed (and sheet music can be added to the composite itself); its lyrics are read from the stems, with a picker when more than one stem has them.
 - **Export the mix:** the current mix and shaping rendered to a 16-bit WAV through the recording export dialog and destinations (download, or new Drive files).
 - Extend `@org/audio-mixing` with the stem-set model (names, offsets, mute and solo resolution, gains) and a multi-source render; the Web Audio graph and worklet wiring stay in the app.
@@ -24,7 +24,7 @@ Not in this change: native iOS and Android (handed to `native-playback-follow-up
 
 - `composite-tracks`: the composite as a library item and where it appears, making one from selected tracks, stem names, alignment and offsets, missing stems, and what a composite owns or reads from its stems (loops, markers, lyrics, sheet music).
 - `composite-mixing`: the live mixer, mute, solo and gain rules, presets and the session mix, one shaped and limited output, the waveform, loading and sync, and following the transport (play, pause, seek, loop wrap).
-- `composite-storage`: playing from memory or from prepared stems, the first-load behaviour, the storage stop and its mitigations, and how prepared stems relate to offline files and Clear all.
+- `composite-storage`: playing from prepared stems, the first-load behaviour, the storage stop and its mitigations, and how prepared stems relate to offline files and Clear all.
 - `composite-export`: exporting the current mix to a WAV on the device or in Drive.
 
 ### Modified Capabilities
