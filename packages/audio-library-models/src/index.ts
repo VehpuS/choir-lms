@@ -28,3 +28,4 @@ export * from './lib/recording-timeline.ts';
 export * from './lib/recording-visibility.ts';
 export * from './lib/recording-playable.ts';
 export * from './lib/composite-track.ts';
+export * from './lib/composite-mine.ts';
