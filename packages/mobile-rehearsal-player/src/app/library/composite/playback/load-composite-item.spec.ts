@@ -59,6 +59,29 @@ describe('loadCompositeItemIntoPlayer', () => {
     ]);
   });
 
+  it('applies the session shaping after activating the engine and before it plays', async () => {
+    const test = createTestEngine();
+
+    await loadCompositeItemIntoPlayer({
+      item,
+      player: { reset: async () => undefined },
+      loadEngine: async () => test.engine,
+      volume: 1,
+      initialPositionSeconds: 0,
+      shouldPlay: true,
+      applyShaping: async () => {
+        assert.equal(getActiveCompositeEngine(), test.engine);
+        test.engine.setRate(0.7);
+      },
+    });
+
+    assert.deepEqual(test.calls, [
+      ['setVolume', 1],
+      ['setRate', 0.7],
+      ['play'],
+    ]);
+  });
+
   it('loads paused and from the start when asked', async () => {
     const test = createTestEngine();
 

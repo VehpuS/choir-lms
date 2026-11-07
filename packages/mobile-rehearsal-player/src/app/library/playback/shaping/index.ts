@@ -1,3 +1,5 @@
+import { getActiveCompositeEngine } from '../../composite/playback/active-composite';
+import { wrapPitchShifterForComposite } from '../../composite/playback/composite-aware-pitch-shifter';
 import { createPlaybackShapingEngine } from './playback-shaping-engine';
 import {
   createPlaybackShapingSession,
@@ -29,7 +31,10 @@ let sharedSession: PlaybackShapingSession | null = null;
 /** The app-wide engine over the shared track player (created on first use). */
 export const getPlaybackShapingEngine = (): PlaybackShapingEngine => {
   sharedEngine ??= createPlaybackShapingEngine({
-    pitchShifter: createDefaultPitchShifter(),
+    pitchShifter: wrapPitchShifterForComposite(
+      createDefaultPitchShifter(),
+      getActiveCompositeEngine,
+    ),
     // Resolved per call, so starting a queue (which only resets the session)
     // never needs the native player.
     player: { setRate: (rate) => getSavedTrackPlayer().setRate(rate) },

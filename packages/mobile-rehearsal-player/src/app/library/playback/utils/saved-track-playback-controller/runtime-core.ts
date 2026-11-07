@@ -140,6 +140,7 @@ export const createSavedTrackPlaybackRuntimeCore = (
           loadOptions?.initialPositionSeconds ??
           playableItem.range.startMs / 1000,
         shouldPlay: loadOptions?.shouldPlay ?? true,
+        applyShaping: () => applyAmbientShaping(),
       });
     }
 

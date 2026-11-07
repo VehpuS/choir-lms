@@ -17,6 +17,8 @@ export type LoadCompositeItemOptions = {
   volume: number;
   initialPositionSeconds: number;
   shouldPlay: boolean;
+  /** Applies the session speed and pitch to the new engine, before it plays. */
+  applyShaping?: () => Promise<void>;
 };
 
 /**
@@ -34,6 +36,7 @@ export const loadCompositeItemIntoPlayer = async (
 
   setActiveCompositeEngine(engine);
   engine.setVolume(options.volume);
+  await options.applyShaping?.();
 
   if (options.initialPositionSeconds > 0) {
     engine.seek(options.initialPositionSeconds * MS_PER_SECOND);
