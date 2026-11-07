@@ -23,6 +23,8 @@ export type VoiceBuffer = {
 };
 export type VoiceSource = VoiceNode & {
   buffer: VoiceBuffer | null;
+  /** Absent in the recording overlay's fakes; the composite engine sets it for shaped playback. */
+  playbackRate?: { value: number };
   start: (when: number, offsetSeconds?: number) => void;
   stop: (when?: number) => void;
 };
@@ -46,6 +48,9 @@ const PUMP_MS = 1000;
 const MS_PER_SECOND = 1000;
 const MIN_WINDOW_TAIL_MS = 5;
 
+/** Samples of the next window baked into the end of each window (spike 1.2: 64 samples, 1.5 ms). */
+export const COMPOSITE_OVERLAP_SAMPLES = 64;
+
 export type WindowedVoiceOptions = {
   context: VoiceContext;
   /** Where the voice connects: the balance gain, then the context output. */
@@ -54,15 +59,36 @@ export type WindowedVoiceOptions = {
   windowMs?: number;
   lookaheadMs?: number;
   fadeMs?: number;
+  /**
+   * Samples of the next window baked into the tail of each window as
+   * complementary linear fades (fade-out on the tail, fade-in on the next
+   * window's head). Windows placed at a rate other than 1 land on fractions of
+   * a sample and click at the join without it. Zero (the default) leaves the
+   * recording overlay's butt joints as they were.
+   */
+  overlapSamples?: number;
+  /** Media seconds per second of context time; 1 by default (spike 1.2). */
+  rate?: number;
   timers?: SyncTimers;
   /** Called once, the first time a window cannot be read. */
   onUnavailable?: (error: unknown) => void;
 };
 
-export type WindowedVoice = Voice & { dispose: () => void };
+export type WindowedVoice = Omit<Voice, 'start'> & {
+  /**
+   * Starts at this media position. `when` is a context time to start at (now by
+   * default), so several voices can begin on the same instant; a `when` in the
+   * future holds the voice silent until then.
+   */
+  start: (recordingMs: number, when?: number) => void;
+  /** Changes the rate; while playing, it re-anchors at the current position like a seek. */
+  setRate: (rate: number) => void;
+  dispose: () => void;
+};
 
 /** One uninterrupted start: windows are placed on the context clock from here. */
 type Run = {
+  rate: number;
   fromMs: number;
   startedAt: number;
   scheduledThroughMs: number;
@@ -76,6 +102,56 @@ const defaultTimers: SyncTimers = {
     globalThis.clearInterval(handle as ReturnType<typeof setInterval>),
 };
 
+const MIN_RATE = 0.25;
+const MAX_RATE = 4;
+
+const sanitizeRate = (value: number | undefined): number => {
+  return value !== undefined && Number.isFinite(value) && value > 0
+    ? Math.min(MAX_RATE, Math.max(MIN_RATE, value))
+    : 1;
+};
+
+type OverlapFades = {
+  overlapSamples: number;
+  /** Fade the first `overlapSamples` in (a window that follows another). */
+  head: boolean;
+  /** Fade the last `overlapSamples` out (a window that is followed by another). */
+  tail: boolean;
+  /** Samples of the window proper; the overlap is read after them. */
+  bodySamples: number;
+};
+
+/**
+ * Complementary linear fades over the same media samples: window k carries the
+ * first samples of window k + 1 after its body and fades them out, window k + 1
+ * fades its own first samples in. Played together over the join they sum to
+ * the signal whatever sample the join rounds to.
+ */
+const bakeOverlapFades = (samples: Float32Array, fades: OverlapFades) => {
+  const { overlapSamples, bodySamples } = fades;
+
+  if (overlapSamples === 0) {
+    return;
+  }
+
+  if (fades.head) {
+    const length = Math.min(overlapSamples, samples.length);
+
+    for (let index = 0; index < length; index += 1) {
+      samples[index] *= (index + 1) / (overlapSamples + 1);
+    }
+  }
+
+  // Only a window that really carries the next window's samples fades out.
+  if (fades.tail && samples.length > bodySamples) {
+    const length = samples.length - bodySamples;
+
+    for (let index = 0; index < length; index += 1) {
+      samples[bodySamples + index] *= 1 - (index + 1) / (length + 1);
+    }
+  }
+};
+
 export const createWindowedVoice = (
   options: WindowedVoiceOptions,
 ): WindowedVoice => {
@@ -84,11 +160,17 @@ export const createWindowedVoice = (
   const lookaheadMs = options.lookaheadMs ?? DEFAULT_LOOKAHEAD_MS;
   const fadeSeconds = (options.fadeMs ?? DEFAULT_FADE_MS) / MS_PER_SECOND;
   const timers = options.timers ?? defaultTimers;
+  const overlapSamples = Math.max(0, Math.floor(options.overlapSamples ?? 0));
+  let rate = sanitizeRate(options.rate);
   let run: Run | null = null;
   let isUnavailable = false;
 
-  const positionOf = (current: Run) =>
-    current.fromMs + (context.currentTime - current.startedAt) * MS_PER_SECOND;
+  // Held at the start position until the run's (possibly future) start time.
+  const positionAt = (current: Run, time: number) =>
+    current.fromMs +
+    Math.max(0, time - current.startedAt) * MS_PER_SECOND * current.rate;
+
+  const positionOf = (current: Run) => positionAt(current, context.currentTime);
 
   const release = (current: Run, fade: boolean) => {
     const now = context.currentTime;
@@ -135,7 +217,7 @@ export const createWindowedVoice = (
         (windowStartMs / MS_PER_SECOND) * reader.sampleRate,
       );
       const count = Math.round((windowMs / MS_PER_SECOND) * reader.sampleRate);
-      const samples = await reader.read(startSample, count);
+      const samples = await reader.read(startSample, count + overlapSamples);
 
       if (run !== current) {
         return;
@@ -147,15 +229,24 @@ export const createWindowedVoice = (
 
       const now = context.currentTime;
       const idealWhen =
-        current.startedAt + (windowStartMs - current.fromMs) / MS_PER_SECOND;
+        current.startedAt +
+        (windowStartMs - current.fromMs) / (MS_PER_SECOND * current.rate);
       // Where the playhead is within this window now: part-way in when the run
       // began inside it, or when the read finished after the window was due.
-      const playheadMs =
-        current.fromMs + (now - current.startedAt) * MS_PER_SECOND;
+      // Buffer seconds, so the rate does not enter the offset.
+      const playheadMs = positionAt(current, now);
       const offsetSeconds = Math.max(
         0,
         (playheadMs - windowStartMs) / MS_PER_SECOND,
       );
+      const isFirstWindow = index === Math.floor(current.fromMs / windowMs);
+
+      bakeOverlapFades(samples, {
+        overlapSamples,
+        head: !isFirstWindow,
+        tail: windowStartMs + windowMs < reader.durationMs,
+        bodySamples: count,
+      });
       const windowSeconds = samples.length / reader.sampleRate;
 
       current.scheduledThroughMs = windowStartMs + windowMs;
@@ -166,13 +257,20 @@ export const createWindowedVoice = (
 
       const source = context.createBufferSource();
       const gain = context.createGain();
-      const when = Math.max(now, idealWhen);
+      // A run that begins inside this window (or at a future time) sounds
+      // from its own start, not from where the window would have begun.
+      const when = Math.max(now, idealWhen, current.startedAt);
 
       source.buffer = buffer;
+
+      if (source.playbackRate) {
+        source.playbackRate.value = current.rate;
+      }
+
       source.connect(gain);
       gain.connect(output);
       // The first window of a run fades in, so a restart never clicks.
-      if (index === Math.floor(current.fromMs / windowMs) || idealWhen < now) {
+      if (isFirstWindow || idealWhen < now) {
         gain.gain.setValueAtTime(0, when);
         gain.gain.linearRampToValueAtTime(1, when + fadeSeconds);
       }
@@ -198,8 +296,8 @@ export const createWindowedVoice = (
 
   const handle = timers.setInterval(pump, PUMP_MS);
 
-  return {
-    start: (recordingMs) => {
+  const voice: WindowedVoice = {
+    start: (recordingMs, when) => {
       if (isUnavailable) {
         return;
       }
@@ -209,8 +307,9 @@ export const createWindowedVoice = (
       }
 
       const current: Run = {
+        rate,
         fromMs: recordingMs,
-        startedAt: context.currentTime,
+        startedAt: when ?? context.currentTime,
         scheduledThroughMs: Math.floor(recordingMs / windowMs) * windowMs,
         loading: false,
         sources: [],
@@ -223,6 +322,24 @@ export const createWindowedVoice = (
       if (run) {
         release(run, true);
         run = null;
+      }
+    },
+    setRate: (nextRate) => {
+      const wanted = sanitizeRate(nextRate);
+
+      if (wanted === rate) {
+        return;
+      }
+
+      const position = run ? positionOf(run) : null;
+
+      rate = wanted;
+
+      if (run && position !== null && !isUnavailable) {
+        // Re-anchor: stop with the fade and restart at the current position.
+        release(run, true);
+        run = null;
+        voice.start(position);
       }
     },
     getPositionMs: () => {
@@ -243,4 +360,6 @@ export const createWindowedVoice = (
       }
     },
   };
+
+  return voice;
 };
