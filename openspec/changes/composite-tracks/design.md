@@ -235,3 +235,12 @@ The windowed voice and `createWavWindowReader` are mono only, and a stem is one 
 - **Storage:** one channel at 16 bit, so about 18 MB for 3:25 at 44.1 kHz whatever the source, and the storage estimate (task 2.7) counts one channel.
 - **Not lost that matters:** stereo placement inside a single-voice stem. A stem that is a stereo mix of several parts is outside the intended use and sounds as its mono sum.
 - **Consequences:** no stereo reader, voice or engine path; no identical-channel detection in preparation (task 4.2); the spec's mono-detection wording and the estimate's channel count are simplified (see the tasks). Revisit only if real stems turn out to need stereo.
+
+### 4.3 How the browser reports a full device (2026-11-08)
+
+Two signals, both handled by `resolveCompositeRoom` (`library/composite/prepared/composite-room.ts`):
+
+- **Before preparing:** `navigator.storage.estimate()` gives `quota` and `usage`. Task 2.7's `checkCompositeStorageFit` compares them with the bytes needed; `does-not-fit` is the no-room state, and a missing or unusable estimate is `unknown`, which attempts the write instead. The estimate is deliberately approximate (browsers may round or pad it), so it is never trusted to say a write will succeed.
+- **During a write:** a transaction that runs out of space aborts and `transaction.error` is a `QuotaExceededError` `DOMException`; the prepared-stem backend rejects with it, and `prepareStem` removes the half-written stem and rethrows it. Older Firefox used `NS_ERROR_DOM_QUOTA_REACHED` and some engines set only `code` 22, so `isStorageFullError` accepts the name, the legacy code or a message containing `quota`. Any other error is not treated as lack of room.
+
+This is from the platform's documented behaviour; the real error from a forced quota failure is to be confirmed in the browser during 4.5 or 11.1, and the check widened if it differs.
