@@ -30,6 +30,7 @@ export const getStemNameFieldLabel = (trackName: string) =>
 
 type CompositeCreateSheetProps = {
   tracks: readonly CreateSheetTrack[];
+  unreadableTrackIds?: readonly string[];
   onCancel: () => void;
   onCreate: (draft: CompositeDraft) => void;
   /** Opens the existing `Clear all` confirmation; the button is left out without it (task 9.2). */
@@ -52,6 +53,7 @@ const Note = ({ children, tone }: { children: string; tone: NoteTone }) => (
  */
 export const CompositeCreateSheet = ({
   tracks,
+  unreadableTrackIds,
   onCancel,
   onClearOfflineFiles,
   onCreate,
@@ -59,7 +61,7 @@ export const CompositeCreateSheet = ({
   const [compositeName, setCompositeName] = useState<string | null>(null);
   const [stemNames, setStemNames] = useState<Record<string, string>>({});
   const fit = useCompositeStorageFit(tracks);
-  const input = { tracks, compositeName, stemNames, fit };
+  const input = { tracks, compositeName, stemNames, fit, unreadableTrackIds };
   const model = resolveCreateSheetModel(input);
   const { room } = model;
 
@@ -131,6 +133,9 @@ export const CompositeCreateSheet = ({
         ) : null}
         {model.waitingNote ? (
           <Note tone="info">{model.waitingNote}</Note>
+        ) : null}
+        {model.unreadableNote ? (
+          <Note tone="problem">{model.unreadableNote}</Note>
         ) : null}
         <Note tone="info">{model.firstPlayNote}</Note>
         {room.kind === 'no-room' ? (

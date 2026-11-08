@@ -61,7 +61,7 @@ export type CompositeLoaderDependencies = {
 type LibraryStemTrack = StemTrack & { source: DriveAudioSource };
 
 /** The track's audio through the normal path: the caches, the offline store, then Drive. */
-const fetchTrackBlob: CompositeLoaderDependencies['fetchBlob'] = async (
+export const fetchTrackBlob: CompositeLoaderDependencies['fetchBlob'] = async (
   source,
   accessToken,
 ) => {

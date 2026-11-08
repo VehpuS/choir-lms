@@ -34,6 +34,8 @@ export const CREATE_SHEET_COPY = {
   firstPlayNote:
     'The first time it plays, the stems are prepared and loading takes longer. After that it opens quickly.',
   waitingNote: 'Reading the lengths of the tracks…',
+  unreadableNote:
+    'The length of a track could not be read. Check your connection and try again.',
   createLabel: 'Create',
   cancelLabel: 'Cancel',
   clearOfflineLabel: 'Clear offline files…',
@@ -62,6 +64,8 @@ export type CreateSheetInput = {
   stemNames: Readonly<Record<string, string>>;
   /** Whether the stems fit in the browser's storage (task 2.7). */
   fit: StorageFit;
+  /** Tracks whose length could not be read; waiting on them would never end. */
+  unreadableTrackIds?: readonly string[];
 };
 
 export type CreateSheetRow = {
@@ -80,6 +84,8 @@ export type CreateSheetModel = {
   firstPlayNote: string;
   /** Shown while a track's length is not known yet. */
   waitingNote: string | null;
+  /** Set when a length could not be read: `Create` stays unavailable. */
+  unreadableNote: string | null;
   room: CompositeRoomState;
   canCreate: boolean;
 };
@@ -180,6 +186,11 @@ export const resolveCreateSheetModel = (
     return row;
   });
   const room = resolveCompositeRoom({ fit: input.fit });
+  const hasUnreadable = input.tracks.some(
+    (track) =>
+      track.durationMs === undefined &&
+      input.unreadableTrackIds?.includes(track.id),
+  );
 
   return {
     compositeName:
@@ -188,7 +199,9 @@ export const resolveCreateSheetModel = (
     rows,
     lengthWarning: describeLengthWarning(shorterRows),
     firstPlayNote: CREATE_SHEET_COPY.firstPlayNote,
-    waitingNote: lengths.waiting ? CREATE_SHEET_COPY.waitingNote : null,
+    waitingNote:
+      lengths.waiting && !hasUnreadable ? CREATE_SHEET_COPY.waitingNote : null,
+    unreadableNote: hasUnreadable ? CREATE_SHEET_COPY.unreadableNote : null,
     room,
     canCreate: !lengths.waiting && room.kind === 'ok',
   };

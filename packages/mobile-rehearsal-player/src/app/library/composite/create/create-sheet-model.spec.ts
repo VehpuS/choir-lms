@@ -138,6 +138,17 @@ describe('resolveCreateSheetModel lengths', () => {
     assert.equal(model.canCreate, false);
     assert.equal(model.lengthWarning, null);
   });
+
+  it('stops waiting and says so when a length could not be read', () => {
+    const model = resolveCreateSheetModel({
+      ...input([SATB[0], track('Ubi caritas · Alto')]),
+      unreadableTrackIds: ['Ubi caritas · Alto'],
+    });
+
+    assert.equal(model.waitingNote, null);
+    assert.equal(model.unreadableNote, CREATE_SHEET_COPY.unreadableNote);
+    assert.equal(model.canCreate, false);
+  });
 });
 
 describe('resolveCreateSheetModel room and notes', () => {

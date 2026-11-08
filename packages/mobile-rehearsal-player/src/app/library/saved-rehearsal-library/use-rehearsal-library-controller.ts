@@ -272,6 +272,7 @@ export const useRehearsalLibraryController = ({
       sheetMusic: sourceSheetMusic,
       saveLoop: savedLoops.saveLoop,
       saveSource: savedLibrary.saveSource,
+      saveResolvedSourceDuration: savedLibrary.saveResolvedSourceDuration,
       savedSourceIds,
       savedTrackPlaybackStatusCopy,
       openLoopBuilderForSource,
