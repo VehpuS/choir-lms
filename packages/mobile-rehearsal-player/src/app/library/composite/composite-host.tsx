@@ -9,6 +9,7 @@ import {
 } from './create/composite-create-request';
 import type { CreateSheetTrack } from './create/create-sheet-model';
 import { getLibraryTrack, publishLibraryTracks } from './library-tracks';
+import { CompositeStemOptionsHost } from './stem-options/composite-stem-options-host';
 import { registerCompositeEngineLoader } from './playback/register-composite-engine-loader';
 import {
   getCompositeStore,
@@ -56,18 +57,22 @@ export const CompositeHost = ({ library }: CompositeHostProps) => {
     [requestedTrackIds, sources],
   );
 
-  if (requestedTrackIds === null || tracks.length === 0) {
-    return null;
-  }
+  const createSheet =
+    requestedTrackIds === null || tracks.length === 0 ? null : (
+      <CompositeCreateSheet
+        onCancel={closeCompositeCreate}
+        onCreate={(draft) => {
+          closeCompositeCreate();
+          void getCompositeStore().create(draft, { partPreferences: parts });
+        }}
+        tracks={tracks}
+      />
+    );
 
   return (
-    <CompositeCreateSheet
-      onCancel={closeCompositeCreate}
-      onCreate={(draft) => {
-        closeCompositeCreate();
-        void getCompositeStore().create(draft, { partPreferences: parts });
-      }}
-      tracks={tracks}
-    />
+    <>
+      {createSheet}
+      <CompositeStemOptionsHost sources={sources} />
+    </>
   );
 };
