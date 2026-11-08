@@ -47,7 +47,6 @@ const setup = (library: DriveAudioSource[]) => {
     {
       getComposite: (id) => (id === 'c1' ? composite : undefined),
       getTrack: (trackId) => library.find((s) => s.id === trackId),
-      getAccessToken: () => 'token',
       onStemsFailed: (_id, list) => failed.push(list.map((f) => f.stemId)),
     },
     {
@@ -80,7 +79,7 @@ describe('createCompositeEngineLoader', () => {
   it('prepares every stem from the library and builds the engine', async () => {
     const t = setup([source('t1', 'v1'), source('t2', 'v1')]);
 
-    await t.loader(item, {});
+    await t.loader(item, { accessToken: 'token' });
 
     assert.deepEqual(t.built, [['s1', 's2']]);
     assert.deepEqual(t.fetched, ['token', 'token']);

@@ -34,3 +34,4 @@ export * from './lib/composite-content.ts';
 export * from './lib/waveform-composite.ts';
 export * from './lib/composite-storage-fit.ts';
 export * from './lib/composite-playable.ts';
+export * from './lib/composite-edit.ts';

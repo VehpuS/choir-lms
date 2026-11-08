@@ -24,7 +24,7 @@ export type LoadCompositeEngineOptions = {
   createEngine: (options: {
     stems: EngineStem[];
     initialGains: Record<string, number>;
-  }) => CompositeEngine | Promise<CompositeEngine>;
+  }) => Promise<CompositeEngine>;
   /** The mix the engine starts with; the composite's default mix when absent. */
   initialMix?: CompositeMix;
   signal?: AbortSignal;

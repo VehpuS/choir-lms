@@ -1,0 +1,152 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import type { CompositeTrack } from '@org/audio-library-models';
+
+import { createCompositeStore, type CompositeStorage } from './composite-store';
+
+const DRAFT = {
+  name: 'Ubi caritas',
+  stems: [
+    { trackId: 't-s', name: 'Soprano' },
+    { trackId: 't-a', name: 'Alto' },
+    { trackId: 't-b', name: 'Bass' },
+  ],
+};
+
+const setup = (initial: CompositeTrack[] = []) => {
+  let saved = initial;
+  const deleted: string[] = [];
+  const storage: CompositeStorage = {
+    list: async () => saved,
+    update: async (change) => {
+      saved = change(saved);
+
+      return saved;
+    },
+  };
+  const store = createCompositeStore({
+    storage,
+    onDeleted: (id) => deleted.push(id),
+  });
+
+  return { store, deleted, saved: () => saved };
+};
+
+describe('composite store', () => {
+  it('creates a composite, saves it and tells subscribers', async () => {
+    const t = setup();
+    let notified = 0;
+
+    t.store.subscribe(() => {
+      notified += 1;
+    });
+
+    const composite = await t.store.create(DRAFT, {
+      partPreferences: ['Bass'],
+    });
+
+    assert.equal(composite?.name, 'Ubi caritas');
+    assert.equal(composite?.stems.find((s) => s.mine)?.name, 'Bass');
+    assert.deepEqual(t.store.getSnapshot(), t.saved());
+    assert.equal(notified, 1);
+  });
+
+  it('does not create from fewer than two tracks', async () => {
+    const t = setup();
+
+    assert.equal(
+      await t.store.create({ name: 'x', stems: [DRAFT.stems[0]] }),
+      null,
+    );
+    assert.deepEqual(t.store.getSnapshot(), []);
+  });
+
+  it('loads what is saved on refresh', async () => {
+    const first = setup();
+    const made = await first.store.create(DRAFT);
+    const later = setup(made ? [made] : []);
+
+    assert.deepEqual(later.store.getSnapshot(), []);
+    await later.store.refresh();
+    assert.equal(later.store.getSnapshot().length, 1);
+  });
+
+  it('renames the composite and edits its stems', async () => {
+    const t = setup();
+    const made = await t.store.create(DRAFT);
+
+    assert.ok(made);
+    await t.store.rename(made.id, 'Evening set');
+    await t.store.renameStem(made.id, 'stem-2', 'Alto 1');
+    await t.store.setStemOffset(made.id, 'stem-3', 250);
+    await t.store.setStemMine(made.id, 'stem-1', true);
+    await t.store.relinkStem(made.id, 'stem-2', 't-new');
+
+    const [saved] = t.saved();
+
+    assert.equal(saved.name, 'Evening set');
+    assert.deepEqual(
+      saved.stems.map((s) => [s.name, s.offsetMs, s.mine, s.trackId]),
+      [
+        ['Soprano', 0, true, 't-s'],
+        ['Alto 1', 0, false, 't-new'],
+        ['Bass', 250, false, 't-b'],
+      ],
+    );
+  });
+
+  it('edits only the composite it was asked about', async () => {
+    const t = setup();
+    const one = await t.store.create(DRAFT);
+    const two = await t.store.create({ ...DRAFT, name: 'Locus iste' });
+
+    assert.ok(one && two);
+    await t.store.rename(one.id, 'Changed');
+
+    assert.deepEqual(
+      t.saved().map((c) => c.name),
+      ['Changed', 'Locus iste'],
+    );
+  });
+
+  it('removes a stem, and asks instead of leaving a single stem', async () => {
+    const t = setup();
+    const made = await t.store.create(DRAFT);
+
+    assert.ok(made);
+    assert.equal(await t.store.removeStem(made.id, 'stem-2'), 'removed');
+    assert.equal(t.saved()[0].stems.length, 2);
+    assert.equal(await t.store.removeStem(made.id, 'stem-1'), 'ask-delete');
+    assert.equal(t.saved()[0].stems.length, 2);
+    assert.equal(await t.store.removeStem(made.id, 'nope'), 'unchanged');
+  });
+
+  it('deletes a composite, tells the owner of what was prepared, and keeps the others', async () => {
+    const t = setup();
+    const one = await t.store.create(DRAFT);
+    const two = await t.store.create({ ...DRAFT, name: 'Locus iste' });
+
+    assert.ok(one && two);
+    await t.store.remove(one.id);
+
+    assert.deepEqual(
+      t.store.getSnapshot().map((c) => c.id),
+      [two.id],
+    );
+    assert.deepEqual(t.deleted, [one.id]);
+  });
+
+  it('stops notifying a subscriber that left', async () => {
+    const t = setup();
+    let notified = 0;
+    const unsubscribe = t.store.subscribe(() => {
+      notified += 1;
+    });
+
+    unsubscribe();
+    await t.store.create(DRAFT);
+
+    assert.equal(notified, 0);
+  });
+});

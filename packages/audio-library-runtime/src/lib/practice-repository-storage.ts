@@ -15,7 +15,7 @@ import {
   type RehearsalLibraryEntityCollections,
 } from './rehearsal-library-files';
 
-type StoredCollectionKind = 'sources' | 'loops' | 'playlists';
+type StoredCollectionKind = 'sources' | 'loops' | 'playlists' | 'composites';
 
 type CanonicalCollectionReader = {
   listLoops(ownerId: string): Promise<NamedLoop[]>;

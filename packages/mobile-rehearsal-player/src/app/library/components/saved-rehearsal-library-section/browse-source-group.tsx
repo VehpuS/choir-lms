@@ -11,6 +11,8 @@ import {
   type BrowseSourceRowSharedProps,
 } from './browse-source-row';
 import { resolveTracksPlayAllItems } from './browse-source-row-model';
+import { compositeCapabilities } from '../../composite/composite-capabilities';
+import { requestCompositeCreate } from '../../composite/create/composite-create-request';
 import { useLibraryEntitySelection } from '../../selection/use-library-entity-selection';
 import type { SavedRehearsalLibrarySectionProps } from './types';
 
@@ -43,6 +45,10 @@ export const BrowseSourceGroup = ({
       [sources],
     ),
     surface: 'tracks',
+    // Offered only where a composite can be played; native shows none.
+    onMakeComposite: compositeCapabilities().canPlayComposites
+      ? requestCompositeCreate
+      : undefined,
   });
 
   if (sources.length === 0) {

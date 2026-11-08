@@ -137,7 +137,7 @@ export const createSavedTrackPlaybackRuntimeCore = (
       return loadCompositeItemIntoPlayer({
         item: playableItem,
         player: getSavedTrackPlayer(),
-        loadEngine: (item) => loadCompositeEngine(item, {}),
+        loadEngine: (item) => loadCompositeEngine(item, { accessToken }),
         volume: options.volumeLevelRef.current * getTrackGain(),
         initialPositionSeconds:
           loadOptions?.initialPositionSeconds ??

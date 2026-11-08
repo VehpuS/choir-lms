@@ -31,8 +31,6 @@ import type { CompositeEngineLoader } from './composite-engine-loader';
 export type CompositeLoaderHost = {
   getComposite: (compositeId: string) => CompositeTrack | undefined;
   getTrack: (trackId: string) => DriveAudioSource | undefined;
-  /** `null` when signed out; stems then come from this device alone. */
-  getAccessToken: () => string | null;
   /** Stems that could not load, so the Mix panel can flag them `Stem missing`. */
   onStemsFailed?: (
     compositeId: string,
@@ -122,7 +120,7 @@ export const createCompositeEngineLoader = (
       throw new Error(COMPOSITE_UNAVAILABLE_MESSAGE);
     }
 
-    const accessToken = host.getAccessToken();
+    const accessToken = options.accessToken ?? null;
     const decode = async (blob: Blob): Promise<DecodedStem> => {
       // The context decodes at its own rate, so no resampling is usually needed.
       const buffer = await context.decodeAudioData(await blob.arrayBuffer());

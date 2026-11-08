@@ -12,7 +12,11 @@ import type { CompositeEngine } from '../engine/composite-engine';
  */
 export type CompositeEngineLoader = (
   item: PlayableItem,
-  options: { signal?: AbortSignal },
+  options: {
+    signal?: AbortSignal;
+    /** `null` when signed out; stems then come from this device alone. */
+    accessToken?: string | null;
+  },
 ) => Promise<CompositeEngine>;
 
 let registeredLoader: CompositeEngineLoader | null = null;

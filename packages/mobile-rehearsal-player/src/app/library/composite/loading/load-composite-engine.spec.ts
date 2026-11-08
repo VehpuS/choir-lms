@@ -54,7 +54,7 @@ const setup = (failing: string[] = []) => {
     loadCompositeEngineFromStems({
       composite,
       loadStem,
-      createEngine: (options) => {
+      createEngine: async (options) => {
         built.push({
           stems: options.stems.map(({ id, offsetMs }) => ({ id, offsetMs })),
           initialGains: options.initialGains,

@@ -2,6 +2,7 @@ import {
   checkStemLengths,
   guessStemName,
   isStemNameGuessedFromSection,
+  type CompositeDraft,
   STEM_LENGTH_TOLERANCE_MS,
   stemLengthDifferenceSeconds,
   type StorageFit,
@@ -191,12 +192,6 @@ export const resolveCreateSheetModel = (
     room,
     canCreate: !lengths.waiting && room.kind === 'ok',
   };
-};
-
-export type CompositeDraft = {
-  name: string;
-  /** In the order the tracks were selected. */
-  stems: Array<{ trackId: string; name: string }>;
 };
 
 /**

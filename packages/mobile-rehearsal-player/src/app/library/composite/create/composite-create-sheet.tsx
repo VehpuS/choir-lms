@@ -1,3 +1,4 @@
+import type { CompositeDraft } from '@org/audio-library-models';
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -17,7 +18,6 @@ import {
   MAX_COMPOSITE_NAME_LENGTH,
   MAX_STEM_NAME_LENGTH,
   resolveCreateSheetModel,
-  type CompositeDraft,
   type CreateSheetTrack,
 } from './create-sheet-model';
 import { useCompositeStorageFit } from './use-composite-storage-fit';

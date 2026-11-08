@@ -30,6 +30,7 @@ export const MENU_ACTION_ICONS: Readonly<Record<string, AppIconName>> = {
   'Keep offline': 'offline-kept',
   'Keep track offline': 'offline-kept',
   Lyrics: 'text-align-left',
+  'Make composite…': 'tune-variant',
   'Make loop': 'repeat',
   Markers: 'flag-outline',
   'Move to end': 'arrow-collapse-down',

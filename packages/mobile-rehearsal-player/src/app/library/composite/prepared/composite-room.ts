@@ -14,7 +14,7 @@ export const NO_ROOM_MESSAGE =
 /** In the order they are shown: the cheapest and most reversible first. */
 export const NO_ROOM_SUGGESTIONS = [
   'Clear offline files (you can keep them again later).',
-  'Export and delete recordings in Settings.',
+  'Export and delete recordings in "Settings".',
   'If that is not enough, remove stems or choose shorter tracks.',
 ] as const;
 

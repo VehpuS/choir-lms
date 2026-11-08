@@ -6,8 +6,8 @@ import {
   PlaybackMarkersProvider,
   usePlaybackMarkersValue,
 } from '../library/markers/hooks/use-playback-markers';
-import { MarkerAddHost } from '../library/markers/components/marker-add-host';
-import { MarkersHost } from '../library/markers/components/markers-host';
+import { MarkerHosts } from '../library/markers/components/marker-hosts';
+import { CompositeHost } from '../library/composite/composite-host';
 import { RecordingHosts } from '../library/recording/components/recording-hosts';
 import { SheetMusicHost } from '../library/sheet-music/manager/sheet-music-host';
 import { SavedItemAvailabilityProvider } from '../library/components/saved-item-menu/saved-item-availability-context';
@@ -301,14 +301,11 @@ export const AppRouter = () => {
           library={libraryController.savedLibrary}
           playback={playback}
         />
-        <MarkersHost
+        <MarkerHosts
           library={libraryController.savedLibrary}
           playback={playback}
         />
-        <MarkerAddHost
-          library={libraryController.savedLibrary}
-          playback={playback}
-        />
+        <CompositeHost library={libraryController.savedLibrary} />
         <RecordingHosts
           authorization={authorization}
           library={libraryController.savedLibrary}

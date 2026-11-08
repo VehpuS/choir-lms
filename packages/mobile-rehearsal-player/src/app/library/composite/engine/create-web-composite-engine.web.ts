@@ -126,7 +126,9 @@ export const createWebCompositeEngine = async (options: {
   const context = getCompositeAudioContext();
 
   if (!context) {
-    throw new Error('Web Audio is not available.');
+    throw new Error(
+      'This browser does not support the audio features composites need.',
+    );
   }
 
   const [pitchStage, limiter] = await Promise.all([
