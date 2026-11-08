@@ -35,7 +35,7 @@ const getWebScope = () => globalThis as unknown as WebScope;
 
 // `addModule` rejects scripts served without a JavaScript MIME type, and the
 // dev server serves unknown asset extensions as octet-stream.
-const loadProcessorModuleUrl = async () => {
+export const loadProcessorModuleUrl = async () => {
   const processorUrl = Asset.fromModule(processorAsset).uri;
   const response = await fetch(processorUrl);
 
