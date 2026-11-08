@@ -7,6 +7,7 @@ import type { PcmWindowReader } from '@org/audio-mixing';
 import { createTestEngine } from '../playback/composite-test-engine';
 import {
   loadCompositeEngineFromStems,
+  NO_ROOM_TO_PREPARE_MESSAGE,
   NO_STEMS_LOADED_MESSAGE,
 } from './load-composite-engine';
 import type { LoadStem } from './composite-stem-loader';
@@ -113,5 +114,38 @@ describe('loadCompositeEngineFromStems', () => {
     await assert.rejects(t.run(), new RegExp(NO_STEMS_LOADED_MESSAGE));
     assert.equal(t.built.length, 0);
     assert.deepEqual(t.failures, [['a', 'b', 'c']]);
+  });
+});
+
+describe('loadCompositeEngineFromStems when the device is full', () => {
+  const fullDevice = () =>
+    Object.assign(new Error('The quota has been exceeded.'), {
+      name: 'QuotaExceededError',
+    });
+
+  it('fails the whole load with the no-room message instead of dropping the stem', async () => {
+    const t = setup();
+    const loadStem: LoadStem = async ({ stemId }) => {
+      if (stemId === 'b') {
+        throw fullDevice();
+      }
+
+      return reader(1000);
+    };
+
+    await assert.rejects(
+      t.run({ loadStem }),
+      (error: Error) => error.message === NO_ROOM_TO_PREPARE_MESSAGE,
+    );
+    assert.deepEqual(t.built, []);
+    assert.deepEqual(t.failures, []);
+  });
+
+  it('still treats other failures as a missing stem', async () => {
+    const t = setup(['b']);
+
+    await t.run();
+
+    assert.deepEqual(t.failures, [['b']]);
   });
 });
