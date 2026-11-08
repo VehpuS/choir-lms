@@ -18,7 +18,10 @@ import {
   createStemLoader,
   type StemTrack,
 } from '../loading/create-stem-loader';
-import { loadCompositeEngineFromStems } from '../loading/load-composite-engine';
+import {
+  loadCompositeEngineFromStems,
+  type LoadCompositeEngineOptions,
+} from '../loading/load-composite-engine';
 import type { DecodedStem } from '../prepared/prepare-stem-signal';
 import { getPreparedStemStore } from '../prepared/prepared-stem-instance';
 import type { PreparedStemStore } from '../prepared/prepared-stem-types';
@@ -54,7 +57,7 @@ export type CompositeLoaderDependencies = {
     track: DriveAudioSource,
     accessToken: string | null,
   ) => Promise<Blob>;
-  createEngine: typeof createWebCompositeEngine;
+  createEngine: LoadCompositeEngineOptions['createEngine'];
 };
 
 type LibraryStemTrack = StemTrack & { source: DriveAudioSource };

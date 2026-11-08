@@ -209,3 +209,48 @@ describe('resolveBulkActions disabled reasons', () => {
     assert.equal(find(actions, 'remove-from-library').isDisabled, false);
   });
 });
+
+describe('resolveBulkActions Make composite', () => {
+  const two = [track, { ...track, entityId: 'u', key: 'k-u' }];
+  const offerOn = (surface: BulkSurface, emphasised: boolean) =>
+    resolveBulkActions({
+      effectivePlayableCount: 2,
+      items: two,
+      makeComposite: { emphasised },
+      surface,
+    });
+
+  it('is first in the overflow, straight after Add to playlist, when the lengths differ', () => {
+    const actions = offerOn('tracks', false);
+
+    assert.deepEqual(idsOf(actions).slice(0, 5), [
+      'play-next',
+      'add-to-queue',
+      'add-to-playlist',
+      'make-composite',
+      'save-as-playlist',
+    ]);
+    assert.equal(find(actions, 'make-composite').label, 'Make composite…');
+    assert.equal(find(actions, 'make-composite').tone, 'neutral');
+  });
+
+  it('takes the third bar slot, tinted, when the tracks are the same length', () => {
+    const actions = offerOn('tracks', true);
+
+    assert.deepEqual(idsOf(actions).slice(0, 4), [
+      'play-next',
+      'add-to-queue',
+      'make-composite',
+      'add-to-playlist',
+    ]);
+    assert.equal(find(actions, 'make-composite').tone, 'accent');
+  });
+
+  it('is left off without an offer, and on every surface but Tracks', () => {
+    assert.ok(!idsOf(resolve('tracks', two)).includes('make-composite'));
+
+    for (const surface of ['files', 'loops', 'playlists'] as const) {
+      assert.ok(!idsOf(offerOn(surface, true)).includes('make-composite'));
+    }
+  });
+});

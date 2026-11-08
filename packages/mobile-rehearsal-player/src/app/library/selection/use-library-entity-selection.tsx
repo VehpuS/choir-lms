@@ -21,6 +21,7 @@ import {
   type EntitySelectionRef,
 } from './entity-selection';
 import { useLibrarySelectionServices } from './library-selection-services';
+import { resolveMakeCompositeSelection } from './make-composite-selection';
 import { getSelectionCountLabel } from './selection-copy';
 import { SelectEntryButton } from './select-entry-button';
 import { SelectionBar } from './selection-bar';
@@ -50,6 +51,12 @@ export type LibraryEntitySelectionControls = {
 };
 
 type UseLibraryEntitySelectionOptions = {
+  /**
+   * Opens the composite create sheet for the selected tracks. Passed only
+   * where composites can be made (Tracks, on a platform that can play them);
+   * without it `Make composite…` is not offered.
+   */
+  onMakeComposite?: (trackIds: readonly string[]) => void;
   /** The rows on screen in display order; `Select all` covers exactly these. */
   rows: readonly EntitySelectionRef[];
   surface: Exclude<BulkSurface, 'files' | 'library-search' | 'playlist-detail'>;
@@ -62,6 +69,7 @@ type UseLibraryEntitySelectionOptions = {
  * shared action hooks the Files view uses.
  */
 export const useLibraryEntitySelection = ({
+  onMakeComposite,
   rows,
   surface,
 }: UseLibraryEntitySelectionOptions): LibraryEntitySelectionControls => {
@@ -149,6 +157,15 @@ export const useLibraryEntitySelection = ({
     targets: tagTargets,
   });
 
+  const makeComposite = useMemo(
+    () =>
+      resolveMakeCompositeSelection({
+        canMakeComposite: onMakeComposite !== undefined,
+        items: bulkItems,
+        sources: collections.sources,
+      }),
+    [bulkItems, collections.sources, onMakeComposite],
+  );
   const handlers = useMemo<BulkActionHandlers>(
     () => ({
       'add-to-playlist': playback.run.addToPlaylist,
@@ -156,11 +173,24 @@ export const useLibraryEntitySelection = ({
       ...createBulkOfflineHandlers(offline.run),
       'copy-to-folder': nodeActions.handlers['copy-to-folder'],
       'edit-tags': tagEditor.open,
+      ...(onMakeComposite
+        ? {
+            'make-composite': () => {
+              onMakeComposite(makeComposite.trackIds);
+            },
+          }
+        : {}),
       'play-next': playback.run.playNext,
       'remove-from-library': nodeActions.handlers['remove-from-library'],
       'save-as-playlist': playback.run.saveAsPlaylist,
     }),
-    [nodeActions.handlers, playback.run, tagEditor.open],
+    [
+      makeComposite.trackIds,
+      nodeActions.handlers,
+      onMakeComposite,
+      playback.run,
+      tagEditor.open,
+    ],
   );
   const actions = useMemo<BulkAction[]>(
     () =>
@@ -170,12 +200,14 @@ export const useLibraryEntitySelection = ({
         resolved: resolveBulkActions({
           effectivePlayableCount: playback.effectivePlayableCount,
           items: bulkItems,
+          makeComposite: makeComposite.offer,
           surface,
         }),
       }),
     [
       bulkItems,
       handlers,
+      makeComposite.offer,
       playback.canQueue,
       playback.effectivePlayableCount,
       surface,
@@ -245,6 +277,7 @@ export const useLibraryEntitySelection = ({
     isActive: selection.isActive,
     selectionBar: selection.isActive ? (
       <SelectionBar
+        helperText={makeComposite.lengthLine ?? undefined}
         onCancel={cancel}
         selectAll={{
           isAllSelected,

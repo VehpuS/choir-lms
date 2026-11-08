@@ -1,3 +1,4 @@
+import type { MakeCompositeOffer } from './make-composite-selection';
 import type { BulkSelectionItem } from './playback-expansion';
 
 export type BulkSurface =
@@ -16,6 +17,7 @@ export type BulkActionId =
   | 'delete-from-folder'
   | 'edit-tags'
   | 'keep-offline'
+  | 'make-composite'
   | 'move-to-folder'
   | 'play-next'
   | 'remove-from-library'
@@ -30,6 +32,7 @@ export const BULK_ACTION_LABELS: Record<BulkActionId, string> = {
   'delete-from-folder': 'Delete from folder',
   'edit-tags': 'Edit tags',
   'keep-offline': 'Keep offline',
+  'make-composite': 'Make composite…',
   'move-to-folder': 'Move to folder',
   'play-next': 'Play next',
   'remove-from-library': 'Remove from library',
@@ -45,13 +48,15 @@ export type ResolvedBulkAction = {
   id: BulkActionId;
   isDisabled: boolean;
   label: string;
-  tone: 'destructive' | 'neutral';
+  tone: 'accent' | 'destructive' | 'neutral';
 };
 
 type ResolveBulkActionsOptions = {
   /** Effective item count from `expandSelectionForPlayback`. */
   effectivePlayableCount: number;
   items: readonly BulkSelectionItem[];
+  /** Offers `Make composite…` (Tracks only); absent or null leaves it off. */
+  makeComposite?: MakeCompositeOffer | null;
   surface: BulkSurface;
 };
 
@@ -162,10 +167,38 @@ const getDisabledCheck = (
  * order, each with whether it can run now and why not. Pure data: handlers are
  * attached by the surface, so the rules can be tested without UI.
  */
+const MAKE_COMPOSITE_SURFACE: BulkSurface = 'tracks';
+const MAKE_COMPOSITE_FOLLOWS: BulkActionId = 'add-to-playlist';
+
+/**
+ * Where `Make composite…` goes: first in the overflow sheet, straight after
+ * `Add to playlist`. When the tracks are all the same length it is emphasised
+ * and takes the slot in front of `Add to playlist`, so it stays on the bar
+ * (the bar keeps its three visible actions).
+ */
+const placeMakeComposite = (
+  ids: readonly BulkActionId[],
+  offer: MakeCompositeOffer,
+): BulkActionId[] => {
+  const anchor = ids.indexOf(MAKE_COMPOSITE_FOLLOWS);
+  const at = offer.emphasised ? anchor : anchor + 1;
+
+  return [...ids.slice(0, at), 'make-composite', ...ids.slice(at)];
+};
+
+/**
+ * The bulk actions a surface offers for the current selection, in display
+ * order, each with whether it can run now and why not. Pure data: handlers are
+ * attached by the surface, so the rules can be tested without UI.
+ */
 export const resolveBulkActions = (
   options: ResolveBulkActionsOptions,
-): ResolvedBulkAction[] =>
-  SURFACE_ACTIONS[options.surface].map((id) => {
+): ResolvedBulkAction[] => {
+  const offer =
+    options.surface === MAKE_COMPOSITE_SURFACE ? options.makeComposite : null;
+  const ids = SURFACE_ACTIONS[options.surface];
+
+  return (offer ? placeMakeComposite(ids, offer) : ids).map((id) => {
     const { excludedFolderCount, reason } = getDisabledCheck(id, options);
 
     return {
@@ -174,6 +207,11 @@ export const resolveBulkActions = (
       id,
       isDisabled: reason !== null,
       label: BULK_ACTION_LABELS[id],
-      tone: DESTRUCTIVE_ACTIONS.has(id) ? 'destructive' : 'neutral',
+      tone: DESTRUCTIVE_ACTIONS.has(id)
+        ? 'destructive'
+        : id === 'make-composite' && offer?.emphasised
+          ? 'accent'
+          : 'neutral',
     };
   });
+};
