@@ -42,6 +42,7 @@ export const assembleBulkActions = (options: {
     return [
       {
         ...(disabledReason === undefined ? {} : { disabledReason }),
+        ...(action.barLabel === undefined ? {} : { barLabel: action.barLabel }),
         id: action.id,
         isDisabled: action.isDisabled || isQueueBlocked,
         label: action.label,

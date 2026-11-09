@@ -140,6 +140,7 @@ export const useLibraryFilesSelection = ({
   const { handlers: makeCompositeHandlers, selection: makeComposite } =
     useFilesMakeComposite({
       items: bulkItems,
+      onCreated: selection.cancel,
       sources: services.collections.sources,
     });
   const handlers = useMemo<BulkActionHandlers>(

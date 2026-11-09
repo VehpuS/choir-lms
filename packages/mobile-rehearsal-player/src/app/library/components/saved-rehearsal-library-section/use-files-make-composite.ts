@@ -23,6 +23,8 @@ type FilesMakeComposite = {
 export const useFilesMakeComposite = (options: {
   items: readonly BulkSelectionItem[];
   sources: Parameters<typeof resolveMakeCompositeSelection>[0]['sources'];
+  /** Ends the selection once a composite was created (not on cancel). */
+  onCreated: () => void;
 }): FilesMakeComposite => {
   const canMakeComposite = compositeCapabilities().canPlayComposites;
   const selection = useMemo(
@@ -39,11 +41,11 @@ export const useFilesMakeComposite = (options: {
       canMakeComposite
         ? {
             'make-composite': () => {
-              requestCompositeCreate(selection.trackIds);
+              requestCompositeCreate(selection.trackIds, options.onCreated);
             },
           }
         : {},
-    [canMakeComposite, selection.trackIds],
+    [canMakeComposite, options.onCreated, selection.trackIds],
   );
 
   return { handlers, selection };

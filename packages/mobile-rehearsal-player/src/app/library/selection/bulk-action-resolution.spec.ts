@@ -231,6 +231,8 @@ describe('resolveBulkActions Make composite', () => {
       'save-as-playlist',
     ]);
     assert.equal(find(actions, 'make-composite').label, 'Make composite…');
+    // The bar needs a shorter label to fit at phone width.
+    assert.equal(find(actions, 'make-composite').barLabel, 'Composite…');
     assert.equal(find(actions, 'make-composite').tone, 'neutral');
   });
 

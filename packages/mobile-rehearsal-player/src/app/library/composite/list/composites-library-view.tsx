@@ -41,8 +41,7 @@ import { resolveCompositeOfflineMenuActions } from './composite-offline-menu';
 import { CompositePlaylistPicker } from './composite-playlist-picker';
 import { CompositeRenameSheet } from './composite-rename-sheet';
 import {
-  COMPOSITES_EMPTY_HINT,
-  COMPOSITES_EMPTY_TITLE,
+  COMPOSITES_EMPTY_MESSAGE,
   buildCompositeLibraryRows,
   resolveCompositesNoResultsMessage,
   type CompositeLibraryRow,
@@ -118,8 +117,7 @@ export const CompositesLibraryView = ({
   if (composites.length === 0) {
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyTitle}>{COMPOSITES_EMPTY_TITLE}</Text>
-        <Text style={styles.emptyHint}>{COMPOSITES_EMPTY_HINT}</Text>
+        <Text style={styles.emptyMessage}>{COMPOSITES_EMPTY_MESSAGE}</Text>
       </View>
     );
   }
@@ -256,7 +254,11 @@ export const CompositesLibraryView = ({
 const styles = StyleSheet.create({
   empty: { gap: appTheme.space.sm, paddingVertical: appTheme.space.lg },
   emptyHint: { ...appTheme.type.rowMeta, color: appTheme.colors.textMuted },
-  emptyTitle: { ...appTheme.type.rowTitle, color: appTheme.colors.text },
+  emptyMessage: {
+    ...appTheme.type.body,
+    color: appTheme.colors.textMuted,
+    lineHeight: 20,
+  },
   group: { gap: appTheme.space.md },
   overflow: { position: 'relative', right: 0, top: 0 },
   title: { ...appTheme.type.rowTitle, color: appTheme.colors.text },

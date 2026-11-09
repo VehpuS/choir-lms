@@ -9,6 +9,8 @@ export type BulkAction = {
   disabledReason?: string;
   icon?: AppIconName;
   id: string;
+  /** A shorter label for the bar, where the width is tight; the sheet keeps `label`. */
+  barLabel?: string;
   isDisabled?: boolean;
   label: string;
   onPress: () => void;

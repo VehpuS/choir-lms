@@ -41,7 +41,14 @@ export const BULK_ACTION_LABELS: Record<BulkActionId, string> = {
   'save-as-playlist': 'Save as playlist',
 };
 
+// Bar labels that must be shorter than the sheet's (`Make compo…` truncated at
+// phone width, composite-tracks 12.6); the full name stays in the overflow.
+const BULK_BAR_LABELS: Partial<Record<BulkActionId, string>> = {
+  'make-composite': 'Composite…',
+};
+
 export type ResolvedBulkAction = {
+  barLabel?: string;
   disabledReason?: string;
   /** Selected folders an action leaves out (copy, remove from library). */
   excludedFolderCount: number;
@@ -212,6 +219,7 @@ export const resolveBulkActions = (
       id,
       isDisabled: reason !== null,
       label: BULK_ACTION_LABELS[id],
+      ...(BULK_BAR_LABELS[id] ? { barLabel: BULK_BAR_LABELS[id] } : {}),
       tone: DESTRUCTIVE_ACTIONS.has(id)
         ? 'destructive'
         : id === 'make-composite' && offer?.emphasised

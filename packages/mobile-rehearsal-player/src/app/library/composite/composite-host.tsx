@@ -7,6 +7,7 @@ import { useMyPartsPreferences } from '../sheet-music/my-parts/my-parts-store';
 import { CompositeCreateSheet } from './create/composite-create-sheet';
 import {
   closeCompositeCreate,
+  completeCompositeCreate,
   useCompositeCreateRequest,
 } from './create/composite-create-request';
 import type { CreateSheetTrack } from './create/create-sheet-model';
@@ -98,7 +99,7 @@ export const CompositeHost = ({
           requestClearOfflineFiles({ onCleared })
         }
         onCreate={(draft, folderId) => {
-          closeCompositeCreate();
+          completeCompositeCreate();
           void getCompositeStore().create(draft, {
             folderId,
             partPreferences: parts,

@@ -6,6 +6,7 @@ import { useSyncExternalStore } from 'react';
  * that renders the sheet is mounted once for the app.
  */
 let request: readonly string[] | null = null;
+let onCreated: (() => void) | undefined;
 const listeners = new Set<() => void>();
 
 const publish = (next: readonly string[] | null) => {
@@ -13,12 +14,29 @@ const publish = (next: readonly string[] | null) => {
   listeners.forEach((listener) => listener());
 };
 
-export const requestCompositeCreate = (trackIds: readonly string[]): void => {
+/**
+ * `onCreated` runs only when the sheet's `Create` is pressed (not on cancel),
+ * so the asker can end its selection then (composite-tracks 12.7).
+ */
+export const requestCompositeCreate = (
+  trackIds: readonly string[],
+  whenCreated?: () => void,
+): void => {
+  onCreated = whenCreated;
   publish([...trackIds]);
 };
 
 export const closeCompositeCreate = (): void => {
+  onCreated = undefined;
   publish(null);
+};
+
+/** `Create` was pressed: tell the asker, then close the sheet. */
+export const completeCompositeCreate = (): void => {
+  const notify = onCreated;
+
+  closeCompositeCreate();
+  notify?.();
 };
 
 export const useCompositeCreateRequest = (): readonly string[] | null =>

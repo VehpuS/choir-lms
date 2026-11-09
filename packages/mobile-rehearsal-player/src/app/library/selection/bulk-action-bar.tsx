@@ -67,7 +67,7 @@ export const BulkActionBar = ({
             fill
             icon={action.icon}
             key={action.id}
-            label={action.label}
+            label={action.barLabel ?? action.label}
             onPress={() => {
               press(action);
             }}

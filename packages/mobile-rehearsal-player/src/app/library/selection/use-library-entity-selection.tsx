@@ -56,7 +56,10 @@ type UseLibraryEntitySelectionOptions = {
    * where composites can be made (Tracks, on a platform that can play them);
    * without it `Make composite…` is not offered.
    */
-  onMakeComposite?: (trackIds: readonly string[]) => void;
+  onMakeComposite?: (
+    trackIds: readonly string[],
+    onCreated: () => void,
+  ) => void;
   /** The rows on screen in display order; `Select all` covers exactly these. */
   rows: readonly EntitySelectionRef[];
   surface: Exclude<BulkSurface, 'files' | 'library-search' | 'playlist-detail'>;
@@ -176,7 +179,8 @@ export const useLibraryEntitySelection = ({
       ...(onMakeComposite
         ? {
             'make-composite': () => {
-              onMakeComposite(makeComposite.trackIds);
+              // A created composite ends the selection; a cancelled sheet keeps it.
+              onMakeComposite(makeComposite.trackIds, cancel);
             },
           }
         : {}),
@@ -185,6 +189,7 @@ export const useLibraryEntitySelection = ({
       'save-as-playlist': playback.run.saveAsPlaylist,
     }),
     [
+      cancel,
       makeComposite.trackIds,
       nodeActions.handlers,
       onMakeComposite,

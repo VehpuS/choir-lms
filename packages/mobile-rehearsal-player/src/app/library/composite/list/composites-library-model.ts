@@ -17,9 +17,10 @@ import { formatDurationLabel } from '../../drive/utils/drive-library-metadata';
  * stems can play now. Pure; the view and the store sit around it.
  */
 
-export const COMPOSITES_EMPTY_TITLE = 'No composites yet';
-export const COMPOSITES_EMPTY_HINT =
-  'Select two or more tracks in “Tracks”, then choose “Make composite…”.';
+// One message line, like Recordings and Tags: what is missing, then how to add
+// one (composite-tracks 12.17).
+export const COMPOSITES_EMPTY_MESSAGE =
+  'No composites yet. Select two or more tracks in “Tracks”, then choose “Composite…”.';
 const META_SEPARATOR = ' · ';
 
 export type CompositeLibraryRow = {
