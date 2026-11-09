@@ -2,6 +2,7 @@ import { resolveSavedPlaylistMenu } from '../../components/saved-item-menu/saved
 import {
   createPlaylist,
   formatTransformLabel,
+  getCompositeLibraryDurationMs,
   getLoopDisplayDurationMs,
   getSourceDisplayDurationMs,
   type CompositeTrack,
@@ -67,10 +68,24 @@ const pluralize = (count: number, noun: string) => {
 };
 
 const getPlaylistEntryDurationMs = (options: {
+  composites?: readonly CompositeTrack[];
   entry: Playlist['items'][number];
   savedLoops: NamedLoop[];
   savedSources: DriveLibrarySource[];
 }) => {
+  // A composite entry's source id is the composite's, not a track's.
+  if (options.entry.kind === 'composite') {
+    const composite = options.composites?.find(
+      ({ id }) => id === options.entry.sourceId,
+    );
+
+    return composite
+      ? getCompositeLibraryDurationMs(composite, {
+          sources: options.savedSources,
+        })
+      : undefined;
+  }
+
   if (options.entry.kind === 'loop') {
     const loop = options.savedLoops.find((savedLoop) => {
       return savedLoop.id === options.entry.loopId;
@@ -87,6 +102,7 @@ const getPlaylistEntryDurationMs = (options: {
 };
 
 const getPlaylistDurationLabel = (options: {
+  composites: readonly CompositeTrack[];
   playlist: Playlist;
   savedLoops: NamedLoop[];
   savedSources: DriveLibrarySource[];
@@ -96,6 +112,7 @@ const getPlaylistDurationLabel = (options: {
       return (
         totalDuration +
         (getPlaylistEntryDurationMs({
+          composites: options.composites,
           entry,
           savedLoops: options.savedLoops,
           savedSources: options.savedSources,
@@ -185,11 +202,13 @@ export const resolveSelectedPlaylist = (
 
 export const getSavedPlaylistDetailSummary = (options: {
   activeSession: PlaylistPlaybackSession | null;
+  composites?: readonly CompositeTrack[];
   playlist: Playlist;
   savedLoops: NamedLoop[];
   savedSources: DriveLibrarySource[];
 }): SavedPlaylistDetailSummary => {
   const durationLabel = getPlaylistDurationLabel({
+    composites: options.composites ?? getCompositesSnapshot(),
     playlist: options.playlist,
     savedLoops: options.savedLoops,
     savedSources: options.savedSources,

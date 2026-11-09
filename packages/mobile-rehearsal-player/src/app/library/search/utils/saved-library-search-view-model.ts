@@ -6,7 +6,8 @@ export type LibrarySearchEntityFilter =
   | 'all'
   | 'tracks'
   | 'loops'
-  | 'playlists';
+  | 'playlists'
+  | 'composites';
 
 export type TagFilterMatchMode = 'all' | 'any';
 

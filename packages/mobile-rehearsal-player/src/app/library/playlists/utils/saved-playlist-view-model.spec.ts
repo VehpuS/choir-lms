@@ -3,7 +3,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createPlaylist } from '@org/audio-library-models';
+import {
+  createPlaylist,
+  createPlaylistEntryFromComposite,
+  type CompositeTrack,
+} from '@org/audio-library-models';
 
 import {
   PLAYABLE_SOURCE,
@@ -187,6 +191,46 @@ describe('saved playlist view-model', () => {
         metadataLabel: '',
         title: 'Warmups',
       },
+    );
+  });
+
+  it('counts a composite entry by its stems in the playlist total', () => {
+    const composite: CompositeTrack = {
+      createdAt: '2026-05-12T00:00:00.000Z',
+      defaultMix: { levels: {} },
+      id: 'composite-1',
+      name: 'Seeded SATB',
+      presets: [],
+      stems: [
+        {
+          id: 's1',
+          mine: false,
+          name: 'Alto',
+          offsetMs: 0,
+          trackId: PLAYABLE_SOURCE.id,
+        },
+      ],
+    };
+    const playlist = {
+      ...createPlaylist({
+        createdAt: '2026-05-12T00:00:00.000Z',
+        name: 'Rehearsal',
+        ownerId: 'user-1',
+      }),
+      items: [
+        createPlaylistEntryFromComposite(composite, '2026-05-12T00:00:00.000Z'),
+      ],
+    };
+
+    assert.equal(
+      getSavedPlaylistDetailSummary({
+        activeSession: null,
+        composites: [composite],
+        playlist,
+        savedLoops: [],
+        savedSources: [PLAYABLE_SOURCE],
+      }).metadataLabel,
+      '3:05 total',
     );
   });
 

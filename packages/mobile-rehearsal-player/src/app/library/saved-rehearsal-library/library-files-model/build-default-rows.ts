@@ -178,11 +178,16 @@ export const buildDefaultRows = (options: {
     }
 
     if (fileLink.entityKind === 'composite') {
-      // Composites carry no tags and have no entity filter choice yet (12.14),
-      // so any filter hides them.
       const composite = savedCompositesById.get(fileLink.entityId);
 
-      if (hasActiveFilter || !composite) {
+      // Composites carry no tags: a tag filter hides them, the `Composites`
+      // type choice shows them (12.14).
+      if (
+        !composite ||
+        (hasActiveFilter &&
+          (selectedTags.length > 0 ||
+            !matchesEntityFilter(entityFilter, 'composites')))
+      ) {
         return [] as LibraryFilesRow[];
       }
 

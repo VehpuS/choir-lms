@@ -10,20 +10,32 @@ type PlaylistEntry = Playlist['items'][number];
 
 export type PlaylistEntrySelectionItem = {
   entityId: string;
-  entityKind: 'loop' | 'track';
+  entityKind: 'composite' | 'loop' | 'track';
   entryId: string;
 };
 
 export const toPlaylistEntrySelectionEntry = (
   entry: PlaylistEntry,
 ): SelectionEntry<PlaylistEntrySelectionItem> => ({
-  // An entry plays its loop when it has one, otherwise its track.
-  item:
-    entry.kind === 'loop' && entry.loopId !== undefined
-      ? { entityId: entry.loopId, entityKind: 'loop', entryId: entry.id }
-      : { entityId: entry.sourceId, entityKind: 'track', entryId: entry.id },
+  item: toSelectionItem(entry),
   key: entry.id,
 });
+
+// An entry plays its composite, or its loop when it has one, otherwise its
+// track (composite-tracks 12.15: a composite entry used to map to a track id).
+const toSelectionItem = (entry: PlaylistEntry): PlaylistEntrySelectionItem => {
+  if (entry.kind === 'composite') {
+    return {
+      entityId: entry.sourceId,
+      entityKind: 'composite',
+      entryId: entry.id,
+    };
+  }
+
+  return entry.kind === 'loop' && entry.loopId !== undefined
+    ? { entityId: entry.loopId, entityKind: 'loop', entryId: entry.id }
+    : { entityId: entry.sourceId, entityKind: 'track', entryId: entry.id };
+};
 
 export const toPlaylistEntryBulkItem = (
   item: PlaylistEntrySelectionItem,

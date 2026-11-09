@@ -8,4 +8,5 @@ export const ENTITY_FILTER_OPTIONS: {
   { label: 'Tracks', value: 'tracks' },
   { label: 'Loops', value: 'loops' },
   { label: 'Playlists', value: 'playlists' },
+  { label: 'Composites', value: 'composites' },
 ];

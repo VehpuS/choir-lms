@@ -152,7 +152,22 @@ describe('library-files model composites', () => {
     );
   });
 
-  it('hides composites under a type filter or a tag filter', () => {
+  it('shows only composites under the Composites type filter', () => {
+    const state = buildState({
+      activeSearchQuery: null,
+      entityFilter: 'composites',
+      searchScope: 'all-files',
+      selectedTagFilters: [],
+      tagFilterMatchMode: 'all',
+    });
+
+    assert.deepEqual(
+      state.rows.map((row) => row.kind),
+      ['composite'],
+    );
+  });
+
+  it('hides composites under another type filter or a tag filter', () => {
     const base = {
       activeSearchQuery: null,
       searchScope: 'all-files' as const,

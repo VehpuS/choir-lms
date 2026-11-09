@@ -38,6 +38,20 @@ describe('playlist entry selection', () => {
     );
   });
 
+  it('plays the composite of a composite entry, not a track of that id', () => {
+    const entry = {
+      id: 'e3',
+      kind: 'composite',
+      sourceId: 'c',
+    } as unknown as Entry;
+
+    assert.deepEqual(toPlaylistEntrySelectionEntry(entry).item, {
+      entityId: 'c',
+      entityKind: 'composite',
+      entryId: 'e3',
+    });
+  });
+
   it('reduces an item to the playlist-entry bulk item', () => {
     assert.deepEqual(
       toPlaylistEntryBulkItem({

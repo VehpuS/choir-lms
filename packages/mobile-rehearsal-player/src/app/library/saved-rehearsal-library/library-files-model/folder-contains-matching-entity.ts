@@ -71,7 +71,7 @@ export const folderContainsMatchingEntity = (options: {
 
     if (fileLink.entityKind === 'composite') {
       return (
-        options.entityFilter === 'all' &&
+        matchesEntityFilter(options.entityFilter, 'composites') &&
         options.selectedTags.length === 0 &&
         !!options.savedCompositesById?.has(fileLink.entityId)
       );

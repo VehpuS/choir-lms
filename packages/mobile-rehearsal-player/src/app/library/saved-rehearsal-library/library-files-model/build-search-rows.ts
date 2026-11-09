@@ -227,13 +227,17 @@ export const buildSearchRows = (options: {
     }
 
     if (fileLink.entityKind === 'composite') {
-      // Composites carry no tags and have no entity filter choice yet (12.14),
-      // so any filter hides them. The query matches the name or a stem name.
+      // Composites carry no tags, so a tag filter hides them; the `Composites`
+      // entity choice (12.14) shows only them. The query matches the name or
+      // a stem name.
       const composite = savedCompositesById.get(fileLink.entityId);
 
       if (
         !composite ||
-        options.searchOptions.entityFilter !== 'all' ||
+        !matchesEntityFilter(
+          options.searchOptions.entityFilter,
+          'composites',
+        ) ||
         selectedTags.length > 0
       ) {
         return [] as LibraryFilesRow[];
