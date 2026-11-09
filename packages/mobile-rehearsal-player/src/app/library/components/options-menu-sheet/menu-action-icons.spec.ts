@@ -7,6 +7,10 @@ import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { APP_ICON_GLYPHS } from '../../../components/app-icon/model.js';
+import {
+  KEEP_STEMS_OFFLINE_LABEL,
+  REMOVE_STEMS_OFFLINE_LABEL,
+} from '../../composite/list/composite-offline.js';
 import { BULK_ACTION_LABELS } from '../../selection/bulk-action-resolution.js';
 import { SAVED_ITEM_ACTION_ORDER } from '../saved-item-menu/model.js';
 import {
@@ -66,6 +70,18 @@ describe('menu action icons', () => {
     for (const label of labels) {
       assert.ok(MENU_ACTION_ICONS[label], `no icon for "${label}"`);
     }
+  });
+
+  it('gives the composite offline actions the same icons as the track ones', () => {
+    // Their labels are constants, which the label scan above cannot see.
+    assert.equal(
+      MENU_ACTION_ICONS[KEEP_STEMS_OFFLINE_LABEL],
+      MENU_ACTION_ICONS['Keep offline'],
+    );
+    assert.equal(
+      MENU_ACTION_ICONS[REMOVE_STEMS_OFFLINE_LABEL],
+      MENU_ACTION_ICONS['Remove from offline'],
+    );
   });
 
   it('maps only to icons the app icon set defines', () => {
