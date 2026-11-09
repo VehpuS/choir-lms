@@ -36,8 +36,12 @@ type CompositeCreateSheetProps = {
   onCreate: (draft: CompositeDraft, folderId?: string) => void;
   /** Where the composite can be saved; the `Save in` field is left out without it. */
   saveIn?: SaveInOptions;
-  /** Opens the existing `Clear all` confirmation; the button is left out without it (task 9.2). */
-  onClearOfflineFiles?: () => void;
+  /**
+   * Opens the existing `Clear all` confirmation; the button is left out without
+   * it (task 9.2). `onCleared` runs after the files are cleared, and the sheet
+   * then checks the room again.
+   */
+  onClearOfflineFiles?: (onCleared: () => void) => void;
 };
 
 type NoteTone = 'info' | 'warning' | 'problem';
@@ -68,7 +72,8 @@ export const CompositeCreateSheet = ({
   const chosenFolder = saveIn?.folders.find(({ id }) => id === chosenFolderId);
   const [compositeName, setCompositeName] = useState<string | null>(null);
   const [stemNames, setStemNames] = useState<Record<string, string>>({});
-  const fit = useCompositeStorageFit(tracks);
+  const [roomCheck, setRoomCheck] = useState(0);
+  const fit = useCompositeStorageFit(tracks, undefined, roomCheck);
   const input = { tracks, compositeName, stemNames, fit, unreadableTrackIds };
   const model = resolveCreateSheetModel(input);
   const { room } = model;
@@ -80,7 +85,9 @@ export const CompositeCreateSheet = ({
           {room.kind === 'no-room' && onClearOfflineFiles ? (
             <MenuRow
               label={CREATE_SHEET_COPY.clearOfflineLabel}
-              onPress={onClearOfflineFiles}
+              onPress={() =>
+                onClearOfflineFiles(() => setRoomCheck((check) => check + 1))
+              }
             />
           ) : null}
           <MenuRow

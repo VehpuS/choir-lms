@@ -5,7 +5,6 @@ import { darkScrollbarStyle } from '../../components/dark-scrollbar';
 import { DestinationHeader } from '../../components/destination-header';
 import { useEscapeToDismiss } from '../../components/escape-to-dismiss/use-escape-to-dismiss';
 import { useFocusOnMount } from '../../components/focus-on-mount/use-focus-on-mount';
-import { OutlinedActionButton } from '../../components/outlined-action-button';
 import { scrollGutterStyles } from '../../components/scroll-gutter';
 import { SegmentedControl } from '../../components/segmented-control';
 import { SurfaceIconButton } from '../../components/surface-icon-button';
@@ -21,6 +20,7 @@ import { SelectionBar } from '../../library/selection/selection-bar';
 import { useLibraryFilesConfirmationFlow } from '../../library/selection/use-library-files-confirmation-flow';
 import { usePinnedBulkActionBar } from '../../library/selection/use-pinned-bulk-action-bar';
 import { useSelection } from '../../library/selection/use-selection';
+import { OfflineFilesFooter } from './offline-files-footer';
 import { PreparedCompositesGroup } from './prepared-composites-group';
 import { usePreparedComposites } from '../../library/composite/prepared/use-prepared-composites';
 import { useRecordingsStorage } from '../../library/recording/use-recordings-storage';
@@ -29,8 +29,6 @@ import {
   OFFLINE_FILES_COPY,
   OFFLINE_SORT_OPTIONS,
   getAutomaticUsageLabel,
-  getClearAllConfirmation,
-  getClearAutomaticConfirmation,
   getKeptUsageLabel,
   getRemoveSelectionConfirmation,
 } from './model';
@@ -250,32 +248,13 @@ export const OfflineFilesContent = ({
                 {renderRows(snapshot.automatic)}
               </View>
             ) : null}
-            <View style={styles.footerActions}>
-              <OutlinedActionButton
-                disabled={snapshot.automatic.length === 0}
-                label={OFFLINE_FILES_COPY.clearAutomaticLabel}
-                onPress={() => {
-                  confirmationFlow.requestConfirmation({
-                    content: getClearAutomaticConfirmation(snapshot.automatic),
-                    onConfirm: service.clearAutomatic,
-                  });
-                }}
-                variant="neutral"
-              />
-              <OutlinedActionButton
-                label={OFFLINE_FILES_COPY.clearAllLabel}
-                onPress={() => {
-                  confirmationFlow.requestConfirmation({
-                    content: getClearAllConfirmation(allRows, prepared.summary),
-                    onConfirm: async () => {
-                      await service.clearAll();
-                      await prepared.clearAll();
-                    },
-                  });
-                }}
-                variant="destructive"
-              />
-            </View>
+            <OfflineFilesFooter
+              allRows={allRows}
+              automaticRows={snapshot.automatic}
+              prepared={prepared}
+              requestConfirmation={confirmationFlow.requestConfirmation}
+              service={service}
+            />
           </>
         )}
         <PreparedCompositesGroup summary={prepared.summary} />
@@ -311,9 +290,6 @@ const styles = StyleSheet.create({
     color: appTheme.colors.text,
     fontSize: 17,
     fontWeight: appTheme.fontWeight.medium,
-  },
-  footerActions: {
-    gap: appTheme.space.sm,
   },
   screen: {
     backgroundColor: appTheme.colors.bg,

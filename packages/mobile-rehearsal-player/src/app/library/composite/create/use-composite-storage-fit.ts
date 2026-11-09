@@ -33,6 +33,8 @@ const getBrowserEstimator = (): StorageEstimator | undefined => {
 export const useCompositeStorageFit = (
   tracks: readonly CreateSheetTrack[],
   estimator: StorageEstimator | undefined = getBrowserEstimator(),
+  /** Changes when room was freed, so the estimate is read again (task 9.2). */
+  recheckToken = 0,
 ): StorageFit => {
   const [fit, setFit] = useState<StorageFit>('unknown');
   // A string key, so the effect reruns when lengths change but not on every render.
@@ -55,7 +57,7 @@ export const useCompositeStorageFit = (
       current = false;
     };
     // `tracks` is represented by its lengths.
-  }, [estimator, lengthsKey]);
+  }, [estimator, lengthsKey, recheckToken]);
 
   return fit;
 };

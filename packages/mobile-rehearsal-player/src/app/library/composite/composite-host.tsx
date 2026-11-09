@@ -1,6 +1,8 @@
 import type { DriveAudioSource } from '@org/audio-library-models';
 import { useEffect, useMemo } from 'react';
 
+import { ClearOfflineFilesHost } from '../../screens/offline-files/clear-offline-files-host';
+import { requestClearOfflineFiles } from '../offline/clear-offline-files-request';
 import { useMyPartsPreferences } from '../sheet-music/my-parts/my-parts-store';
 import { CompositeCreateSheet } from './create/composite-create-sheet';
 import {
@@ -87,6 +89,9 @@ export const CompositeHost = ({ accessToken, library }: CompositeHostProps) => {
     requestedTrackIds === null || tracks.length === 0 ? null : (
       <CompositeCreateSheet
         onCancel={closeCompositeCreate}
+        onClearOfflineFiles={(onCleared) =>
+          requestClearOfflineFiles({ onCleared })
+        }
         onCreate={(draft, folderId) => {
           closeCompositeCreate();
           void getCompositeStore().create(draft, {
@@ -103,6 +108,7 @@ export const CompositeHost = ({ accessToken, library }: CompositeHostProps) => {
   return (
     <>
       {createSheet}
+      <ClearOfflineFilesHost />
       <CompositeStemOptionsHost sources={sources} />
     </>
   );
