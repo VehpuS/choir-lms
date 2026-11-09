@@ -9,7 +9,7 @@ import {
 } from '@testing-library/react-native/pure';
 
 import type { CompositeTrack } from '@org/audio-library-models';
-import { createDefaultMix } from '@org/audio-mixing';
+import { createDefaultMix, startSessionMix } from '@org/audio-mixing';
 
 import { hasRenderedText } from '../../../../test-support/rendered-text';
 import { CompositeMixPanelView } from './composite-mix-panel';
@@ -42,8 +42,12 @@ const renderPanel = (
     <CompositeMixPanelView
       composite={composite}
       library={libraryOf(['t-s', 't-b'])}
-      mix={composite.defaultMix}
+      session={startSessionMix(composite)}
+      onChoosePreset={record('preset')}
+      onMakeDefault={record('make-default')}
       onOpenOptions={record('options')}
+      onResetMix={record('reset')}
+      onSavePreset={record('save')}
       onRemove={record('remove')}
       onSetVolume={record('volume')}
       onToggleMute={record('mute')}
@@ -75,6 +79,13 @@ describe('CompositeMixPanelView', () => {
     fireEvent.press(screen.getByLabelText('Bass options'));
 
     assert.deepEqual(calls, ['mute:s', 'solo:b', 'options:b']);
+  });
+
+  it('shows the preset the mix has as a chip and offers Save as preset', () => {
+    renderPanel();
+
+    assert.ok(screen.getByLabelText('Mix preset: All parts'));
+    assert.ok(screen.getByLabelText('Save as preset'));
   });
 
   it('closes to one line with the summary', () => {

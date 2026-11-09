@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { CompositeTrack } from '@org/audio-library-models';
-import { resolveStemGains } from '@org/audio-mixing';
+import { resolveStemGains, type SessionMix } from '@org/audio-mixing';
 
 import { AppIcon } from '../../../components/app-icon';
 import { buttonInteractionGuardStyle } from '../../../components/interaction-guard';
@@ -16,6 +16,13 @@ import {
 } from '../store/composite-store-instance';
 import { buildMixPanelModel, MIX_PANEL_TITLE } from './mix-panel-model';
 import { MixStemRow } from './mix-stem-row';
+import { PresetsSheet } from './presets-sheet';
+import {
+  buildPresetMenuModel,
+  SAVE_PRESET_LABEL,
+  type PresetMenuRow,
+} from './preset-model';
+import { SavePresetSheet } from './save-preset-sheet';
 import { dispatchSessionMix, useSessionMix } from './session-mix-store';
 
 const { colors, space, type } = appTheme;
@@ -23,13 +30,17 @@ const CHEVRON_SIZE = 18;
 
 type CompositeMixPanelViewProps = {
   composite: Pick<CompositeTrack, 'id' | 'stems' | 'presets' | 'defaultMix'>;
-  mix: Parameters<typeof buildMixPanelModel>[0]['mix'];
+  session: SessionMix;
   library: Parameters<typeof buildMixPanelModel>[0]['library'];
   onToggleMute: (stemId: string) => void;
   onToggleSolo: (stemId: string) => void;
   onSetVolume: (stemId: string, volume: number) => void;
   onOpenOptions: (stemId: string) => void;
   onRemove: (stemId: string) => void;
+  onChoosePreset: (row: PresetMenuRow) => void;
+  onResetMix: () => void;
+  onMakeDefault: () => void;
+  onSavePreset: (options: { name: string; makeDefault: boolean }) => void;
 };
 
 /**
@@ -39,11 +50,16 @@ type CompositeMixPanelViewProps = {
 export const CompositeMixPanelView = ({
   composite,
   library,
-  mix,
+  onChoosePreset,
+  onMakeDefault,
+  onResetMix,
+  onSavePreset,
+  session,
   ...handlers
 }: CompositeMixPanelViewProps) => {
   const [isOpen, setIsOpen] = useState(true);
-  const model = buildMixPanelModel({ composite, mix, library });
+  const [sheet, setSheet] = useState<'presets' | 'save' | null>(null);
+  const model = buildMixPanelModel({ composite, mix: session.mix, library });
 
   return (
     <View style={styles.panel}>
@@ -75,11 +91,63 @@ export const CompositeMixPanelView = ({
       </Pressable>
       {isOpen ? (
         <>
-          <Text style={styles.preset}>{model.summary}</Text>
+          <View style={styles.presetRow}>
+            <Pressable
+              accessibilityLabel={`Mix preset: ${model.presetName}`}
+              accessibilityRole="button"
+              onPress={() => setSheet('presets')}
+              style={[styles.chip, buttonInteractionGuardStyle]}
+            >
+              <Text style={styles.chipText}>{model.presetName}</Text>
+              <AppIcon
+                color={colors.textMuted}
+                name="chevron-down"
+                size={CHEVRON_SIZE}
+              />
+            </Pressable>
+            <View style={styles.spacer} />
+            <Pressable
+              accessibilityLabel={SAVE_PRESET_LABEL}
+              accessibilityRole="button"
+              hitSlop={space.xs}
+              onPress={() => setSheet('save')}
+              style={buttonInteractionGuardStyle}
+            >
+              <Text style={styles.link}>{SAVE_PRESET_LABEL}</Text>
+            </Pressable>
+          </View>
           {model.rows.map((row) => (
             <MixStemRow key={row.stemId} row={row} {...handlers} />
           ))}
         </>
+      ) : null}
+      {sheet === 'presets' ? (
+        <PresetsSheet
+          model={buildPresetMenuModel(composite, session)}
+          onChoose={(row) => {
+            setSheet(null);
+            onChoosePreset(row);
+          }}
+          onClose={() => setSheet(null)}
+          onMakeDefault={() => {
+            setSheet(null);
+            onMakeDefault();
+          }}
+          onReset={() => {
+            setSheet(null);
+            onResetMix();
+          }}
+        />
+      ) : null}
+      {sheet === 'save' ? (
+        <SavePresetSheet
+          existingPresets={composite.presets}
+          onCancel={() => setSheet(null)}
+          onSave={(options) => {
+            setSheet(null);
+            onSavePreset(options);
+          }}
+        />
       ) : null}
     </View>
   );
@@ -98,7 +166,8 @@ export const CompositeMixPanel = ({ compositeId }: { compositeId: string }) => {
 };
 
 const ConnectedPanel = ({ composite }: { composite: CompositeTrack }) => {
-  const { mix } = useSessionMix(composite);
+  const session = useSessionMix(composite);
+  const { mix } = session;
   const engine = useActiveCompositeEngine();
   const library = useMemo(
     () =>
@@ -121,10 +190,28 @@ const ConnectedPanel = ({ composite }: { composite: CompositeTrack }) => {
     <CompositeMixPanelView
       composite={composite}
       library={library}
-      mix={mix}
+      session={session}
       onOpenOptions={(stemId) =>
         requestStemOptions({ compositeId: composite.id, stemId })
       }
+      onChoosePreset={(row) =>
+        dispatchSessionMix(composite, { type: 'apply', mix: row.mix })
+      }
+      onMakeDefault={() => {
+        dispatchSessionMix(composite, { type: 'set-default', mix });
+        void getCompositeStore().setDefaultMix(composite.id, mix);
+      }}
+      onResetMix={() => dispatchSessionMix(composite, { type: 'reset' })}
+      onSavePreset={({ name, makeDefault }) => {
+        if (makeDefault) {
+          dispatchSessionMix(composite, { type: 'set-default', mix });
+        }
+        void getCompositeStore().saveMixPreset(composite.id, {
+          name,
+          mix,
+          makeDefault,
+        });
+      }}
       onRemove={(stemId) => {
         void getCompositeStore()
           .removeStem(composite.id, stemId)
@@ -156,7 +243,23 @@ const styles = StyleSheet.create({
     minHeight: space.touchTarget,
   },
   panel: { gap: space.xs },
-  preset: { ...type.rowMeta, color: colors.textMuted },
+  chip: {
+    alignItems: 'center',
+    borderColor: colors.accent,
+    borderRadius: 999,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: space.sm,
+    minHeight: 32,
+    paddingHorizontal: space.lg,
+  },
+  chipText: { ...type.rowMeta, color: colors.text },
+  link: {
+    ...type.rowMeta,
+    color: colors.accentText,
+    textDecorationLine: 'underline',
+  },
+  presetRow: { alignItems: 'center', flexDirection: 'row', gap: space.md },
   pressed: { opacity: 0.7 },
   spacer: { flex: 1 },
   summary: {

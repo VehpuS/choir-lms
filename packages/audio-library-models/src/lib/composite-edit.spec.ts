@@ -7,10 +7,13 @@ import {
   removeCompositeStem,
   renameComposite,
   renameCompositeStem,
+  saveCompositeMixPreset,
+  setCompositeDefaultMix,
   setCompositeStemMine,
   setCompositeStemOffset,
   type CompositeDraft,
 } from './composite-edit.ts';
+import type { CompositeTrack } from './composite-track.ts';
 
 const CREATED_AT = '2026-11-08T10:00:00.000Z';
 
@@ -181,5 +184,75 @@ describe('editing a composite', () => {
 
     assert.ok(removed.outcome === 'removed');
     assert.equal(removed.composite.lyricsStemId, undefined);
+  });
+});
+
+describe('mix presets', () => {
+  const base = createCompositeTrack({
+    draft: {
+      name: 'Song',
+      stems: [
+        { trackId: 'a', name: 'Alto' },
+        { trackId: 'b', name: 'Bass' },
+      ],
+    },
+  }) as CompositeTrack;
+  const mix = {
+    levels: {
+      'stem-1': { volume: 40, muted: false, soloed: false },
+      gone: { volume: 10, muted: true, soloed: false },
+    },
+  };
+
+  it('saves a named preset without touching the default, dropping levels of unknown stems', () => {
+    const saved = saveCompositeMixPreset(base, {
+      name: '  Bass   softer ',
+      mix,
+      createId: () => 'p1',
+    });
+
+    assert.deepEqual(saved.presets, [
+      {
+        id: 'p1',
+        name: 'Bass softer',
+        mix: { levels: { 'stem-1': mix.levels['stem-1'] } },
+      },
+    ]);
+    assert.deepEqual(saved.defaultMix, base.defaultMix);
+  });
+
+  it('can make the saved mix the default', () => {
+    const saved = saveCompositeMixPreset(base, {
+      name: 'Soft',
+      mix,
+      makeDefault: true,
+    });
+
+    assert.equal(saved.defaultMix.levels['stem-1'].volume, 40);
+  });
+
+  it('replaces a preset of the same name ignoring case, and ignores an empty name', () => {
+    const first = saveCompositeMixPreset(base, {
+      name: 'Soft',
+      mix,
+      createId: () => 'p1',
+    });
+    const again = saveCompositeMixPreset(first, {
+      name: 'soft',
+      mix: { levels: {} },
+      createId: () => 'p2',
+    });
+
+    assert.equal(again.presets.length, 1);
+    assert.equal(again.presets[0].id, 'p1');
+    assert.equal(again.presets[0].name, 'soft');
+    assert.equal(saveCompositeMixPreset(base, { name: '   ', mix }), base);
+  });
+
+  it('sets the default mix', () => {
+    assert.equal(
+      setCompositeDefaultMix(base, mix).defaultMix.levels['stem-1'].volume,
+      40,
+    );
   });
 });

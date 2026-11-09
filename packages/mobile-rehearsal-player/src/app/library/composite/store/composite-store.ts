@@ -3,10 +3,13 @@ import {
   relinkCompositeStem,
   removeCompositeStem,
   renameComposite,
+  saveCompositeMixPreset,
+  setCompositeDefaultMix,
   renameCompositeStem,
   setCompositeStemMine,
   setCompositeStemOffset,
   type CompositeDraft,
+  type CompositeMix,
   type CompositeTrack,
   type RemoveCompositeStemResult,
 } from '@org/audio-library-models';
@@ -58,6 +61,12 @@ export type CompositeStore = {
     stemId: string,
     trackId: string,
   ) => Promise<void>;
+  /** Saves the mix as a named preset (same name replaces); optionally as the default. */
+  saveMixPreset: (
+    compositeId: string,
+    options: { name: string; mix: CompositeMix; makeDefault?: boolean },
+  ) => Promise<void>;
+  setDefaultMix: (compositeId: string, mix: CompositeMix) => Promise<void>;
   /** `ask-delete` when one stem would be left: nothing changes and the caller asks. */
   removeStem: (
     compositeId: string,
@@ -146,6 +155,12 @@ export const createCompositeStore = (
       edit(compositeId, (composite) =>
         relinkCompositeStem(composite, stemId, trackId),
       ),
+    saveMixPreset: (compositeId, preset) =>
+      edit(compositeId, (composite) =>
+        saveCompositeMixPreset(composite, preset),
+      ),
+    setDefaultMix: (compositeId, mix) =>
+      edit(compositeId, (composite) => setCompositeDefaultMix(composite, mix)),
     removeStem: async (compositeId, stemId) => {
       let outcome: RemoveCompositeStemResult['outcome'] = 'unchanged';
 

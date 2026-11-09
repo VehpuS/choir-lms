@@ -176,6 +176,18 @@ describe('session mix', () => {
     assert.equal(canResetSessionMix(list, state), false);
     assert.equal(state.mix.levels.Alto.volume, 60);
   });
+
+  it('resets to a new saved default once it is set', () => {
+    const list = stems('Bass');
+    let state = startSessionMix(composite());
+    const without = getBuiltInMixPresets(list)[1];
+
+    state = reduceSessionMix(state, { type: 'set-default', mix: without.mix });
+    assert.equal(canResetSessionMix(list, state), true);
+
+    state = reduceSessionMix(state, { type: 'reset' });
+    assert.equal(state.mix.levels.Bass.muted, true);
+  });
 });
 
 describe('pruneMixToStems', () => {

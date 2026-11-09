@@ -183,6 +183,8 @@ export type SessionMixAction =
   | { type: 'toggle-mute'; stemId: string }
   | { type: 'toggle-solo'; stemId: string }
   | { type: 'apply'; mix: CompositeMix }
+  /** The composite's saved default changed; `reset` returns to this. */
+  | { type: 'set-default'; mix: CompositeMix }
   | { type: 'reset' };
 
 /** A session starts from the composite's default mix and resets when the item changes. */
@@ -235,6 +237,8 @@ export const reduceSessionMix = (
       };
     case 'apply':
       return { ...state, mix: action.mix };
+    case 'set-default':
+      return { ...state, savedDefault: action.mix };
     case 'reset':
       return { ...state, mix: state.savedDefault };
   }

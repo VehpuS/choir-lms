@@ -6,7 +6,11 @@ import {
   removeStem,
   type RemoveStemResult,
 } from './composite-availability.ts';
-import type { CompositeStem, CompositeTrack } from './composite-track.ts';
+import type {
+  CompositeMix,
+  CompositeStem,
+  CompositeTrack,
+} from './composite-track.ts';
 
 /**
  * Creating and editing a composite record (composite-tracks design Decisions 1
@@ -171,3 +175,72 @@ export const removeCompositeStem = (
       }
     : result;
 };
+
+export const MAX_MIX_PRESET_NAME_LENGTH = 40;
+
+const keepStemLevels = (
+  composite: CompositeTrack,
+  mix: CompositeMix,
+): CompositeMix => ({
+  levels: Object.fromEntries(
+    composite.stems
+      .filter((stem) => mix.levels[stem.id] !== undefined)
+      .map((stem) => [stem.id, mix.levels[stem.id]]),
+  ),
+});
+
+/**
+ * Saves a mix as a named preset (composite-tracks design Decision 7). A name
+ * that is already saved (ignoring case) replaces that preset's levels, so a
+ * preset is never listed twice; an empty name changes nothing. `makeDefault`
+ * also makes the mix the one the composite starts from.
+ */
+export const saveCompositeMixPreset = (
+  composite: CompositeTrack,
+  options: {
+    name: string;
+    mix: CompositeMix;
+    makeDefault?: boolean;
+    createId?: () => string;
+  },
+): CompositeTrack => {
+  const name = cleanName(options.name, MAX_MIX_PRESET_NAME_LENGTH);
+
+  if (!name) {
+    return composite;
+  }
+
+  const mix = keepStemLevels(composite, options.mix);
+  const sameName = (candidate: string) =>
+    candidate.toLowerCase() === name.toLowerCase();
+  const existing = composite.presets.find((preset) => sameName(preset.name));
+  const presets = existing
+    ? composite.presets.map((preset) =>
+        preset === existing ? { ...preset, name, mix } : preset,
+      )
+    : [
+        ...composite.presets,
+        {
+          id:
+            options.createId?.() ??
+            `preset-${Math.random().toString(36).slice(2, 10)}`,
+          name,
+          mix,
+        },
+      ];
+
+  return {
+    ...composite,
+    presets,
+    ...(options.makeDefault ? { defaultMix: mix } : {}),
+  };
+};
+
+/** The mix the composite starts from each time it plays. */
+export const setCompositeDefaultMix = (
+  composite: CompositeTrack,
+  mix: CompositeMix,
+): CompositeTrack => ({
+  ...composite,
+  defaultMix: keepStemLevels(composite, mix),
+});

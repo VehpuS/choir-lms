@@ -96,6 +96,22 @@ describe('composite store', () => {
     );
   });
 
+  it('saves a preset, optionally as the default, and sets the default', async () => {
+    const t = setup();
+    const made = await t.store.create(DRAFT);
+    const mix = {
+      levels: { 'stem-1': { volume: 40, muted: false, soloed: false } },
+    };
+
+    assert.ok(made);
+    await t.store.saveMixPreset(made.id, { name: 'Soft', mix });
+    assert.equal(t.saved()[0].presets[0].name, 'Soft');
+    assert.deepEqual(t.saved()[0].defaultMix, { levels: {} });
+
+    await t.store.setDefaultMix(made.id, mix);
+    assert.equal(t.saved()[0].defaultMix.levels['stem-1'].volume, 40);
+  });
+
   it('edits only the composite it was asked about', async () => {
     const t = setup();
     const one = await t.store.create(DRAFT);
