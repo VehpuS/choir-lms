@@ -40,30 +40,30 @@
 
 ## 6. Backup and restore UI (`mobile-rehearsal-player`)
 
-- [ ] 6.1 `Back up library` action with the write-scope check, recordings picker (off by default, size total) and confirmation
-- [ ] 6.2 Restore sheet listing backups, with the `Add to my library` / `Replace my library` choice and neither preselected
-- [ ] 6.3 Replace flow: pre-restore backup with all recordings, stop on failure, confirmation naming what is replaced, success message pointing at the undo backup
-- [ ] 6.4 Specs for the pure view models; verify in the browser preview with the disposable test library
+- [x] 6.1 `Back up library` action with the write-scope check, recordings picker (off by default, size total) and confirmation
+- [x] 6.2 Restore sheet listing backups, with the `Add to my library` / `Replace my library` choice and neither preselected
+- [x] 6.3 Replace flow: pre-restore backup with all recordings, stop on failure, confirmation naming what is replaced, success message pointing at the undo backup
+- [ ] 6.4 Specs for the pure view models (done: `bundle-flow-model.spec.ts`, `bundle-service.spec.ts`); verify in the browser preview with the disposable test library (signed-out paths verified: the account menu entries, the `Allow saving to Drive` sheet and the folder `Share…` action; the signed-in flows need the user to sign in with Drive access)
 
 ## 7. Share and import UI (`mobile-rehearsal-player`)
 
-- [ ] 7.1 `Share` action on a library folder: preview with counts, left-out references and recordings choice and the choice to include the outside items its playlists use (off by default, with how many would be added), then write to `Shares` and show how to open it in Drive
-- [ ] 7.2 Import list of bundles (own and `Shared with me`) and the import preview (new, reused, dropped, needs access)
-- [ ] 7.3 Destination chooser and import progress with cancel; show `Imported from` on the import root folder
-- [ ] 7.4 Specs for the view models; verify in the browser preview
+- [x] 7.1 `Share` action on a library folder: preview with counts, left-out references and recordings choice and the choice to include the outside items its playlists use (off by default, with how many would be added), then write to `Shares` and show how to open it in Drive
+- [x] 7.2 Import list of bundles (own and `Shared with me`) and the import preview (new, reused, dropped, needs access)
+- [x] 7.3 Destination chooser and import progress with cancel; show `Imported from` on the import root folder
+- [ ] 7.4 Specs for the view models (done); verify in the browser preview (needs the user to sign in, together with 9.1)
 
 ## 8. Missing-access guide
 
-- [ ] 8.1 Group needs-access sources by owner, falling back to the bundle author, and detect a shared original folder from `sourceLocation`
-- [ ] 8.2 `Open in Drive`, `Email owner` (mailto), `Copy list` and `Check again` actions; copy that does not claim a cause
-- [ ] 8.3 `needs-access` row state with `Open in Drive` and `Remove from library`, playback blocked with the clear message, recovery on a successful check
-- [ ] 8.4 Specs for grouping, mailto and copy text, and recovery keeping loops and links
+- [x] 8.1 Group needs-access sources by owner, falling back to the bundle author, and detect a shared original folder from `sourceLocation`
+- [x] 8.2 `Open in Drive`, `Email owner` (mailto), `Copy list` and `Check again` actions; copy that does not claim a cause
+- [x] 8.3 `needs-access` row state with `Open in Drive` and `Remove from library`, playback blocked with the clear message, recovery on a successful check
+- [x] 8.4 Specs for grouping, mailto and copy text, and recovery keeping loops and links
 
 ## 9. Wrap-up
 
 - [ ] 9.1 Manual verification with two Google accounts: share a folder, import with and without access, request access, check again (needs the user to sign in)
-- [ ] 9.2 Update the README and the architecture notes for the new package responsibilities
-- [ ] 9.3 Run lint, test, typecheck and build for the affected projects through Nx
+- [x] 9.2 Update the README and the architecture notes for the new package responsibilities
+- [x] 9.3 Run lint, test, typecheck and build for the affected projects through Nx
 
 ## 10. Future tasks (found while implementing; explore with a user before building)
 
@@ -71,3 +71,7 @@
 - [ ] 10.0 Concurrent edits while an import or replace runs are not serialized against the bulk collection writes; block or queue UI edits during an import (decide with a user before 6.x/7.x)
 - [ ] 10.1 Playlist entries that play a recording (`recordingId`) are dropped from bundles and counted as left out; carry them once recordings travel in a bundle end to end
 - [ ] 10.2 Restoring recording audio into the web IndexedDB store, and what native should do while it has no recordings store (decide with the user before 6.x)
+- [ ] 10.3 `Copy list` uses the clipboard on the web and the system share sheet on a phone, because no clipboard module is installed; add `expo-clipboard` if a true copy is wanted on native (a dependency change, so decide first)
+- [ ] 10.4 The Replace confirmation does not yet show the upload size of the recordings that the safety backup will add; compute it from the recordings picker data
+- [ ] 10.5 Restoring recording audio from a bundle is not built (see 10.2); Replace leaves the on-device recordings in place and the safety backup keeps their audio
+- [ ] 10.6 Derived caches (audio cache, prepared stems, offline copies) of tracks that a Replace removes are not dropped yet; `replaceLibrary` returns the removed ids for this

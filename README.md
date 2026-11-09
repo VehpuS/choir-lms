@@ -114,6 +114,18 @@ A composite plays several stems (one track per voice) together as one item, so a
 
 The mixing, offline render and mix logic are in `packages/audio-mixing`, the record and its rules in `packages/audio-library-models`, and the app side is `packages/mobile-rehearsal-player/src/app/library/composite/`. The engine and the player wrapper are described in `docs/mobile-cross-platform-audio-playback.md`.
 
+## Backup, restore and sharing
+
+The library lives on the device, so it can be saved to Drive and handed to others as a **bundle**: one JSON file of the organization (folders, tags, loops, playlists, composites, markers, lyrics, sheet music links), never the audio. Audio stays on Drive and is found again by its Drive file id.
+
+- **Back up library** (account menu): writes a dated bundle to `Choir LMS / Backups`; the five newest are kept and older ones go to the Drive trash after a new one is saved. Recordings are left out unless you choose them.
+- **Restore from backup:** choose `Add to my library` (a new `Imported …` folder; nothing you have changes) or `Replace my library`. Replace first saves a backup of the current library, with all recordings, and stops if that fails; the swap is one commit and an interrupted swap is finished or rolled back on the next load. The safety backup is listed as `Before restore` and is the undo.
+- **Share…** (folder menu): writes a bundle of the folder and the loops, playlists and composites that depend on it to `Choir LMS / Shares`. You can also include the items its playlists use from other folders. The app never changes Drive permissions: share the file in Drive yourself, and singers also need access to the audio files.
+- **Import shared library** (account menu): lists bundles you own and those shared with you, previews what will be added, reused (same Drive file) and skipped, then adds them in a new folder. The folder is marked `Imported from <author>`.
+- **Missing access:** a file you can't open is still imported and shown as unavailable. `Get access…` opens a guide that groups files by owner with `Open in Drive`, `Email owner`, `Copy list` and `Check again`.
+
+Writing needs the `drive.file` scope; reading and importing need only the read-only scope. The format and parser are in `packages/audio-library-models` (`library-bundle*`), the builder, import planner, executor and `replaceLibrary` are in `packages/audio-library-runtime`, the Drive helpers are in `packages/google-drive` (`drive-library-bundle-*`, `drive-file-access`), and the app side is `packages/mobile-rehearsal-player/src/app/library/bundle/`. Recording audio is uploaded on backup but not yet restored.
+
 ## Product Direction
 
 This repository is intentionally scaffolded as an Nx workspace rather than a single app so the system can grow into a library of apps and shared packages over time.
