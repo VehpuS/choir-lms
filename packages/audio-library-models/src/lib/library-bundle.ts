@@ -46,13 +46,6 @@ export type LibraryBundleOwner = {
   email?: string;
 };
 
-/** Where an imported entity came from; never set on a reused source. */
-export type ImportedFrom = {
-  author: string;
-  bundleName: string;
-  importedAt: string;
-};
-
 export type LibraryBundleAdjustment = {
   /** Bundle-local id of the saved track this one is adjusted from. */
   sourceRef: string;

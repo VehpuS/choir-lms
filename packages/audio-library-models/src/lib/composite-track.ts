@@ -1,5 +1,6 @@
 import { clamp, isString, round, uniqBy } from 'es-toolkit';
 
+import { parseImportedFrom, type ImportedFrom } from './imported-from.ts';
 import {
   parseSourceSheetMusic,
   type SheetMusicSource,
@@ -65,6 +66,7 @@ export type CompositeTrack = {
   markers?: TrackMarker[];
   /** The stem whose lyrics were picked last. */
   lyricsStemId?: string;
+  importedFrom?: ImportedFrom;
   createdAt: string;
 };
 
@@ -316,6 +318,7 @@ export const parseCompositeTrack = (value: unknown): CompositeTrack | null => {
   );
   const sheetMusic = parseSourceSheetMusic(value.sheetMusic);
   const markers = parseTrackMarkers(value.markers);
+  const importedFrom = parseImportedFrom(value.importedFrom);
 
   return {
     id: value.id,
@@ -325,6 +328,7 @@ export const parseCompositeTrack = (value: unknown): CompositeTrack | null => {
     presets,
     ...(sheetMusic ? { sheetMusic } : {}),
     ...(markers ? { markers } : {}),
+    ...(importedFrom ? { importedFrom } : {}),
     ...(isString(value.lyricsStemId) && stemIds.has(value.lyricsStemId)
       ? { lyricsStemId: value.lyricsStemId }
       : {}),

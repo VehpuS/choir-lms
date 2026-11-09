@@ -1,4 +1,5 @@
 import type { DriveSourceLocation } from './drive-source-location.js';
+import type { ImportedFrom } from './imported-from.ts';
 import type { PlaybackShaping } from './playback-shaping.js';
 import type { SourceAvailability } from './source-availability.js';
 import type { SourceLyrics } from './source-lyrics.js';
@@ -44,6 +45,7 @@ export type DriveAudioSource = {
   markers?: TrackMarker[];
   sourceLocation?: DriveSourceLocation;
   adjustment?: SourceAdjustment;
+  importedFrom?: ImportedFrom;
   createdAt: string;
   availability: SourceAvailability;
 };
@@ -87,6 +89,7 @@ export type NamedLoop = {
   endMs: number;
   /** Present on an adjusted loop: the loop plays with this speed and pitch. */
   transform?: PlaybackShaping;
+  importedFrom?: ImportedFrom;
   ownerId: string;
   createdAt: string;
   updatedAt: string;
@@ -130,6 +133,7 @@ export type Playlist = {
   tags?: string[];
   tagAddedAt?: Record<string, string>;
   items: PlaylistEntry[];
+  importedFrom?: ImportedFrom;
   ownerId: string;
   createdAt: string;
   updatedAt: string;
@@ -144,6 +148,7 @@ export type RehearsalLibraryFolderNode = {
   parentFolderId: string | null;
   tags?: string[];
   tagAddedAt?: Record<string, string>;
+  importedFrom?: ImportedFrom;
   createdAt: string;
 };
 

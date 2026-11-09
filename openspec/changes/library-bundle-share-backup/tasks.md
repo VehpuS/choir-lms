@@ -15,11 +15,11 @@
 
 ## 3. Import planner (`audio-library-runtime`)
 
-- [ ] 3.1 Read the Drive import planner/classification and the placement plan, and note in this task what is reused
-- [ ] 3.2 Plan an additive import: new import folder, recreated tree, name conflicts via the placement rules, id mapping for all entities
-- [ ] 3.3 Reuse a source with a matching `driveFileId`, merge tags, fill lyrics, sheet music and markers only where empty
-- [ ] 3.4 Record `importedFrom` on created entities and the import root, never on reused sources
-- [ ] 3.5 Specs: reuse, tag merge, content kept, conflicts, partial-failure retry does not duplicate
+- [x] 3.1 Read the Drive import planner/classification and the placement plan, and note in this task what is reused (reused: the placement rules' `resolveRehearsalLibraryAvailableNodeName` and sibling-name lookup for the import root name and sibling names; the Drive import's convention that a plain track's id is `drive:<driveFileId>` so reuse by Drive file and retries are automatic. Not reused: the Drive import planner and its classification, which are app-side and shaped around Drive folder enumeration rather than a bundle)
+- [x] 3.2 Plan an additive import: new import folder, recreated tree, name conflicts via the placement rules, id mapping for all entities
+- [x] 3.3 Reuse a source with a matching `driveFileId`, merge tags, fill lyrics, sheet music and markers only where empty
+- [x] 3.4 Record `importedFrom` on created entities and the import root, never on reused sources (done: `importedFrom` is optional on tracks, loops, playlists, composites and folders and survives storage; composite parsing keeps it)
+- [x] 3.5 Specs: reuse, tag merge, content kept, conflicts, partial-failure retry does not duplicate
 
 ## 4. Import execution and replace (`audio-library-runtime`)
 

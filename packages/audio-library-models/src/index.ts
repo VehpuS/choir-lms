@@ -1,3 +1,4 @@
+export * from './lib/imported-from.ts';
 export * from './lib/adjusted-entities.ts';
 export * from './lib/drive-source-location.ts';
 export * from './lib/part-selection.ts';

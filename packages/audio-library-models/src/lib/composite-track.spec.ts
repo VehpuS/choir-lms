@@ -190,4 +190,22 @@ describe('parseCompositeTrack', () => {
     assert.equal(parseCompositeTrack(null), null);
     assert.equal(parseCompositeTrack(compositeRecord({ name: '' })), null);
   });
+
+  it('keeps where an imported composite came from and drops a malformed mark', () => {
+    const importedFrom = {
+      author: 'Dana',
+      bundleName: 'backup.json',
+      importedAt: '2026-12-01T09:00:00.000Z',
+    };
+
+    assert.deepEqual(
+      parseCompositeTrack(compositeRecord({ importedFrom }))?.importedFrom,
+      importedFrom,
+    );
+    assert.equal(
+      parseCompositeTrack(compositeRecord({ importedFrom: { author: 1 } }))
+        ?.importedFrom,
+      undefined,
+    );
+  });
 });
