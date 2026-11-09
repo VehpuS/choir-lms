@@ -88,7 +88,12 @@ export const createLibraryFilesOperations = ({
       tree,
     }),
     getTrackRemoveFromLibraryImpact(sourceId: string) {
-      return getTrackRemoveFromLibraryImpact(tree, options, sourceId);
+      return getTrackRemoveFromLibraryImpact(
+        tree,
+        options,
+        sourceId,
+        getCompositesSnapshot(),
+      );
     },
     async createFolder(name: string): Promise<LibraryFilesOperationResult> {
       if (!tree) {

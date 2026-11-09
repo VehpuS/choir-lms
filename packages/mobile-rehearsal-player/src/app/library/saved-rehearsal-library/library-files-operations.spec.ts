@@ -224,6 +224,8 @@ describe('library-files operations', () => {
     assert.deepEqual(operations.getTrackRemoveFromLibraryImpact(SOURCE.id), {
       adjustedTrackCount: 0,
       adjustedTrackNames: [],
+      compositeCount: 0,
+      compositeNames: [],
       fileLinkCount: 2,
       fileLinkNames: [
         'Full Choir.mp3 (Library)',

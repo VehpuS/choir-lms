@@ -1,4 +1,7 @@
-import type { RehearsalLibraryFileTree } from '@org/audio-library-models';
+import type {
+  CompositeTrack,
+  RehearsalLibraryFileTree,
+} from '@org/audio-library-models';
 
 import type { UseLibraryFilesOptions } from './library-files-operation-helpers';
 
@@ -12,6 +15,9 @@ export const getTrackRemoveFromLibraryImpact = (
     'savedLoops' | 'savedPlaylists' | 'savedSources'
   >,
   sourceId: string,
+  // Composites that use the track as a stem stay, with that stem missing, so
+  // the dialog lists them (composite-tracks 12.25).
+  composites: readonly Pick<CompositeTrack, 'name' | 'stems'>[] = [],
 ) => {
   const foldersById = new Map(
     tree?.folders.map((folder) => {
@@ -50,9 +56,15 @@ export const getTrackRemoveFromLibraryImpact = (
       });
   });
 
+  const usingComposites = composites.filter(({ stems }) => {
+    return stems.some(({ trackId }) => removedSourceIds.has(trackId));
+  });
+
   return {
     adjustedTrackCount: adjustedTracks.length,
     adjustedTrackNames: adjustedTracks.map((track) => track.name),
+    compositeCount: usingComposites.length,
+    compositeNames: usingComposites.map(({ name }) => name),
     fileLinkCount: fileLinks.length,
     fileLinkNames: fileLinks.map((fileLink) => {
       const displayName =

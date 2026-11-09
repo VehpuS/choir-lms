@@ -49,6 +49,8 @@ describe('getBulkRemoveFromLibraryConfirmation', () => {
   const impact = {
     adjustedTrackCount: 1,
     adjustedTrackNames: ['A fast'],
+    compositeCount: 0,
+    compositeNames: [],
     fileLinkCount: 2,
     fileLinkNames: ['A', 'A fast'],
     loopCount: 0,

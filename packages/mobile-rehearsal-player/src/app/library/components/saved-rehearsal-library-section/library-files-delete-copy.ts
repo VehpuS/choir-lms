@@ -42,6 +42,7 @@ export const formatTrackRemoveFromLibraryImpactMessage = (
 ) => {
   const totalAffectedItems =
     impact.adjustedTrackCount +
+    impact.compositeCount +
     impact.loopCount +
     impact.fileLinkCount +
     impact.playlistEntryCount;
@@ -63,6 +64,10 @@ export const getTrackRemoveFromLibraryAffectedSections = (
         'Adjusted tracks',
         impact.adjustedTrackCount,
       ),
+    },
+    {
+      items: impact.compositeNames,
+      title: formatAffectedSectionTitle('Composites', impact.compositeCount),
     },
     {
       items: impact.loopNames,

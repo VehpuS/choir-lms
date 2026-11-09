@@ -20,6 +20,8 @@ const impact = (overrides: Partial<ReturnType<typeof empty>> = {}) => ({
 const empty = () => ({
   adjustedTrackCount: 0,
   adjustedTrackNames: [] as string[],
+  compositeCount: 0,
+  compositeNames: [],
   fileLinkCount: 0,
   fileLinkNames: [] as string[],
   loopCount: 0,
@@ -39,6 +41,8 @@ const impacts: Record<string, ReturnType<typeof empty>> = {
   a: impact({
     adjustedTrackCount: 1,
     adjustedTrackNames: ['A fast'],
+    compositeCount: 0,
+    compositeNames: [],
     fileLinkCount: 2,
     fileLinkNames: ['A', 'A fast'],
     loopCount: 1,

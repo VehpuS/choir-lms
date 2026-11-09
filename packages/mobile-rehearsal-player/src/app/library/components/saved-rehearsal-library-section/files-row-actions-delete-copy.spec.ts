@@ -56,6 +56,8 @@ describe('Files delete and removal copy', () => {
     const message = formatTrackRemoveFromLibraryImpactMessage(row, {
       adjustedTrackCount: 0,
       adjustedTrackNames: [],
+      compositeCount: 0,
+      compositeNames: [],
       fileLinkCount: 2,
       fileLinkNames: ['Original track link', 'Practice copy'],
       loopCount: 1,
@@ -74,6 +76,8 @@ describe('Files delete and removal copy', () => {
       getTrackRemoveFromLibraryAffectedSections({
         adjustedTrackCount: 0,
         adjustedTrackNames: [],
+        compositeCount: 0,
+        compositeNames: [],
         fileLinkCount: 2,
         fileLinkNames: ['Original track link', 'Practice copy'],
         loopCount: 1,

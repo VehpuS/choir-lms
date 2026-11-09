@@ -66,6 +66,7 @@ export const getBulkRemoveFromLibraryConfirmation = (options: {
     { items: names.loops, label: 'Loops' },
     { items: names.playlists, label: 'Playlists' },
     { items: impact.adjustedTrackNames, label: 'Adjusted tracks' },
+    { items: impact.compositeNames, label: 'Composites' },
     { items: impact.loopNames, label: 'Saved loops' },
     { items: impact.fileLinkNames, label: 'Folder links' },
     { items: impact.playlistEntryTitles, label: 'Playlist entries' },

@@ -7,6 +7,8 @@ import { SOURCE } from './files-row-actions-test-helpers';
 const NO_IMPACT = {
   adjustedTrackCount: 0,
   adjustedTrackNames: [],
+  compositeCount: 0,
+  compositeNames: [],
   fileLinkCount: 0,
   fileLinkNames: [],
   loopCount: 0,
@@ -39,6 +41,8 @@ describe('createTrackRemoveFromLibraryConfirmation', () => {
       {
         adjustedTrackCount: 1,
         adjustedTrackNames: ['Full Choir • +2 st'],
+        compositeCount: 0,
+        compositeNames: [],
         fileLinkCount: 2,
         fileLinkNames: ['Library', 'Advent'],
         loopCount: 1,

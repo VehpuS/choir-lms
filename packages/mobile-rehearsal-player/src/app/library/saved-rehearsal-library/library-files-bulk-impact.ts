@@ -3,6 +3,8 @@ import type { UseLibraryFilesOptions } from './library-files-operation-helpers';
 export type BulkRemoveFromLibraryImpact = {
   adjustedTrackCount: number;
   adjustedTrackNames: string[];
+  compositeCount: number;
+  compositeNames: string[];
   fileLinkCount: number;
   fileLinkNames: string[];
   loopCount: number;
@@ -37,6 +39,7 @@ export const aggregateTrackRemoveImpacts = (options: {
     ...new Set(impacts.flatMap(pick)),
   ];
   const adjustedTrackNames = union((impact) => impact.adjustedTrackNames);
+  const compositeNames = union((impact) => impact.compositeNames);
   const fileLinkNames = union((impact) => impact.fileLinkNames);
   const loopNames = union((impact) => impact.loopNames);
   const playlistEntryTitles = union((impact) => impact.playlistEntryTitles);
@@ -44,6 +47,8 @@ export const aggregateTrackRemoveImpacts = (options: {
   return {
     adjustedTrackCount: adjustedTrackNames.length,
     adjustedTrackNames,
+    compositeCount: compositeNames.length,
+    compositeNames,
     fileLinkCount: fileLinkNames.length,
     fileLinkNames,
     loopCount: loopNames.length,
