@@ -29,6 +29,12 @@ export type CompositeStoreOptions = {
    * next `refresh`), to drop what was prepared for it.
    */
   onDeleted?: (compositeId: string) => void;
+  /**
+   * Awaited after a new composite is saved and before it is published, so
+   * whatever files it (the Files folder) is in place when listeners read it.
+   * A failure is ignored: the composite stays where the tree sync put it.
+   */
+  onCreated?: (composite: CompositeTrack) => Promise<void>;
 };
 
 export type CompositeStore = {
@@ -133,12 +139,13 @@ export const createCompositeStore = (
         return null;
       }
 
-      publish(
-        await options.storage.update((composites) => [
-          ...composites,
-          composite,
-        ]),
-      );
+      const next = await options.storage.update((composites) => [
+        ...composites,
+        composite,
+      ]);
+
+      await options.onCreated?.(composite).catch(() => undefined);
+      publish(next);
 
       return composite;
     },

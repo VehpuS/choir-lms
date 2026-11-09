@@ -5,6 +5,8 @@ import {
 import { useEffect, useSyncExternalStore } from 'react';
 import type { CompositeTrack } from '@org/audio-library-models';
 
+import { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
+import { placeNewComposite } from './place-new-composite';
 import { getPreparedStemStore } from '../prepared/prepared-stem-instance';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../storage/local-library-storage';
 import { createCompositeStore, type CompositeStore } from './composite-store';
@@ -21,6 +23,12 @@ export const getCompositeStore = (): CompositeStore => {
         update: (change) =>
           updateStoredComposites(LOCAL_REHEARSAL_LIBRARY_OWNER_ID, change),
       },
+      onCreated: (composite) =>
+        placeNewComposite({
+          composite,
+          ownerId: LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+          repository: new AsyncStoragePracticeRepository(),
+        }),
       // Prepared stems are a cache of this composite; they go with it.
       onDeleted: (compositeId) => {
         void getPreparedStemStore()

@@ -207,3 +207,30 @@ describe('composite store', () => {
     assert.equal(notified, 0);
   });
 });
+
+describe('composite store placement hook', () => {
+  it('awaits onCreated before publishing and survives its failure', async () => {
+    const order: string[] = [];
+    let saved: CompositeTrack[] = [];
+    const store = createCompositeStore({
+      storage: {
+        list: async () => saved,
+        update: async (change) => {
+          saved = change(saved);
+
+          return saved;
+        },
+      },
+      onCreated: async () => {
+        order.push('placed');
+        throw new Error('storage unavailable');
+      },
+    });
+
+    store.subscribe(() => order.push('published'));
+    await store.create(DRAFT);
+
+    assert.deepEqual(order, ['placed', 'published']);
+    assert.equal(store.getSnapshot().length, 1);
+  });
+});
