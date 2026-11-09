@@ -10,13 +10,18 @@ import AsyncStorage, {
   type AsyncStorageStatic,
 } from '@react-native-async-storage/async-storage';
 
+import { recoverInterruptedLibraryReplace } from './library-replace-storage';
 import {
   parseStoredRehearsalLibraryFileTree,
   syncRehearsalLibraryFileTree,
   type RehearsalLibraryEntityCollections,
 } from './rehearsal-library-files';
 
-type StoredCollectionKind = 'sources' | 'loops' | 'playlists' | 'composites';
+export type StoredCollectionKind =
+  | 'sources'
+  | 'loops'
+  | 'playlists'
+  | 'composites';
 
 type CanonicalCollectionReader = {
   listComposites(ownerId: string): Promise<CompositeTrack[]>;
@@ -55,15 +60,17 @@ const runSerializedLibraryFileTreeOperation = <Result>(
   return thisTurn;
 };
 
-const storageKey = (entity: StoredCollectionKind, ownerId: string) => {
+export const storageKey = (entity: StoredCollectionKind, ownerId: string) => {
   return `choirlms:practice:${entity}:${ownerId}`;
 };
 
-const libraryFileTreeStorageKey = (ownerId: string) => {
+export const libraryFileTreeStorageKey = (ownerId: string) => {
   return `choirlms:practice:library-tree:${ownerId}`;
 };
 
 const readStoredLibraryFileTree = async (ownerId: string) => {
+  await recoverInterruptedLibraryReplace(ownerId);
+
   const value = await asyncStorage.getItem(libraryFileTreeStorageKey(ownerId));
 
   return parseStoredRehearsalLibraryFileTree(value);
@@ -73,6 +80,8 @@ export const readStoredCollection = async <Entity>(
   entity: StoredCollectionKind,
   ownerId: string,
 ): Promise<Entity[]> => {
+  await recoverInterruptedLibraryReplace(ownerId);
+
   const value = await asyncStorage.getItem(storageKey(entity, ownerId));
 
   if (!value) {

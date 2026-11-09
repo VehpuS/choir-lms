@@ -5,3 +5,6 @@ export * from './lib/composite-placement.ts';
 export * from './lib/library-bundle-builder.ts';
 export * from './lib/library-bundle-selection.ts';
 export * from './lib/library-bundle-import-plan.ts';
+export * from './lib/library-bundle-import-executor.ts';
+export * from './lib/library-bundle-import-storage.ts';
+export * from './lib/library-replace-storage.ts';

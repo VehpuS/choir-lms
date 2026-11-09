@@ -23,10 +23,10 @@
 
 ## 4. Import execution and replace (`audio-library-runtime`)
 
-- [ ] 4.1 Execute an import plan through the repository write queue with outcomes, progress and cancel, following the Drive import executor's shape
-- [ ] 4.2 Add `replaceLibrary(ownerId, state)` to the repository: stage new values, one swap marker write, tree last
-- [ ] 4.3 Recover an interrupted swap on load (finish or roll back) so the library is never half replaced
-- [ ] 4.4 Specs: replace commits once, interrupted swap recovers, derived caches left alone except for removed sources
+- [x] 4.1 Execute an import plan through the repository write queue with outcomes, progress and cancel, following the Drive import executor's shape (done: phases tracks, composites, loops, playlists, tree with one bulk write each, so imported items sit only in the import folder; stops at the first failure and resumes by re-planning with the same import id. Deviation: entities are written in bulk through new repository methods `importLibraryEntities` / `importLibraryTreeNodes` rather than per-entity saves, which would give each item a stray root link and re-read every collection per item)
+- [x] 4.2 Add `replaceLibrary(ownerId, state)` to the repository: stage new values, one swap marker write, tree last
+- [x] 4.3 Recover an interrupted swap on load (finish or roll back) so the library is never half replaced
+- [x] 4.4 Specs: replace commits once, interrupted swap recovers, derived caches left alone except for removed sources
 
 ## 5. Drive I/O (`google-drive`)
 
@@ -66,5 +66,6 @@
 
 ## 10. Future tasks (found while implementing; explore with a user before building)
 
+- [ ] 10.0 Concurrent edits while an import or replace runs are not serialized against the bulk collection writes; block or queue UI edits during an import (decide with a user before 6.x/7.x)
 - [ ] 10.1 Playlist entries that play a recording (`recordingId`) are dropped from bundles and counted as left out; carry them once recordings travel in a bundle end to end
 - [ ] 10.2 Restoring recording audio into the web IndexedDB store, and what native should do while it has no recordings store (decide with the user before 6.x)

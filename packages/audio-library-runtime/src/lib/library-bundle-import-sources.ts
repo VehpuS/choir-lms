@@ -120,6 +120,13 @@ export const mergeBundleIntoExistingSource = (
   };
 };
 
+const isFromThisImport = (
+  source: DriveAudioSource,
+  importedFrom: ImportedFrom,
+) =>
+  source.importedFrom?.importedAt === importedFrom.importedAt &&
+  source.importedFrom.bundleName === importedFrom.bundleName;
+
 /**
  * Decides, for every bundle track, whether the library already has it (same
  * Drive file: reuse and merge) or it is created, and gives adjusted tracks
@@ -141,6 +148,8 @@ export const planImportedSources = (options: {
   const needsAccessFor = (driveFileId: string) =>
     options.needsAccessDriveFileIds?.has(driveFileId) ?? false;
   const sourceIds = new Map<string, string>();
+  // Tracks a previous attempt of this same import already wrote.
+  const ownedExistingIds: string[] = [];
   const newSources: DriveAudioSource[] = [];
   const updatedByLibraryId = new Map<string, DriveAudioSource>();
   let reusedTracks = 0;
@@ -154,7 +163,10 @@ export const planImportedSources = (options: {
     const existing = existingByDriveFileId.get(bundleSource.driveFileId);
     const id = createImportedSourceId(bundleSource.driveFileId);
 
-    if (existing) {
+    if (existing && isFromThisImport(existing, importedFrom)) {
+      sourceIds.set(bundleSource.id, existing.id);
+      ownedExistingIds.push(existing.id);
+    } else if (existing) {
       sourceIds.set(bundleSource.id, existing.id);
       reusedTracks += 1;
 
@@ -207,6 +219,7 @@ export const planImportedSources = (options: {
   return {
     sourceIds,
     newSources,
+    ownedExistingIds,
     updatedSources: [...updatedByLibraryId.values()],
     reusedTracks,
     needsAccessTracks,

@@ -5,6 +5,7 @@ import {
   type LibraryBundle,
   type NamedLoop,
   type Playlist,
+  type RehearsalLibraryEntityKind,
   type RehearsalLibraryFileLinkNode,
   type RehearsalLibraryFileTree,
   type RehearsalLibraryFolderNode,
@@ -63,6 +64,12 @@ export type LibraryBundleImportPlan = {
   folders: RehearsalLibraryFolderNode[];
   /** New tracks, adjusted tracks included, in write order (originals first). */
   newSources: DriveAudioSource[];
+  /**
+   * Every entity this import owns, whether or not a previous attempt already
+   * wrote it: the executor drops the default root link of exactly these once
+   * their import link is in place.
+   */
+  ownedEntities: { kind: RehearsalLibraryEntityKind; id: string }[];
   /** Existing tracks that gain tags or fill empty content. */
   updatedSources: DriveAudioSource[];
   loops: NamedLoop[];
@@ -130,6 +137,7 @@ export const planLibraryBundleImport = (
   const {
     sourceIds,
     newSources,
+    ownedExistingIds,
     updatedSources,
     reusedTracks,
     needsAccessTracks,
@@ -280,6 +288,14 @@ export const planLibraryBundleImport = (
     rootFolderExists: existingRoot !== undefined,
     folders: skipIfPresent(folders, folderExists),
     newSources: skipIfPresent(newSources, sourceExists),
+    ownedEntities: [
+      ...[...newSources.map((source) => source.id), ...ownedExistingIds].map(
+        (id) => ({ kind: 'track' as const, id }),
+      ),
+      ...loops.map(({ id }) => ({ kind: 'loop' as const, id })),
+      ...playlists.map(({ id }) => ({ kind: 'playlist' as const, id })),
+      ...composites.map(({ id }) => ({ kind: 'composite' as const, id })),
+    ],
     updatedSources,
     loops: skipIfPresent(loops, loopExists),
     playlists: skipIfPresent(playlists, playlistExists),
@@ -297,7 +313,7 @@ export const planLibraryBundleImport = (
     },
   };
 
-  plan.summary.alreadyImported = alreadyImported;
+  plan.summary.alreadyImported = alreadyImported + ownedExistingIds.length;
 
   return plan;
 };

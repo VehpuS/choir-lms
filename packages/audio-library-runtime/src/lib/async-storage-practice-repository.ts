@@ -17,6 +17,16 @@ import {
   listStoredComposites,
   updateStoredComposites,
 } from './composites-storage';
+import {
+  importLibraryEntities,
+  importLibraryTreeNodes,
+  type ImportedEntities,
+  type ImportedTreeNodes,
+} from './library-bundle-import-storage';
+import {
+  replaceLibraryStorage,
+  type ReplacementLibraryState,
+} from './library-replace-storage';
 import type { PracticeRepository } from './practice-repository';
 import {
   persistSynchronizedLibraryFileTree,
@@ -161,6 +171,25 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
     },
   ) {
     return saveLibraryNodesToRepository(this, ownerId, nodes);
+  }
+
+  /** Writes imported entities in bulk, one write per collection (see the import storage notes). */
+  async importLibraryEntities(ownerId: string, entities: ImportedEntities) {
+    return importLibraryEntities(ownerId, entities);
+  }
+
+  /**
+   * Replaces the whole library in one commit (staged, then swapped with a
+   * single marker write; an interrupted swap is finished on the next read).
+   * Returns the tracks that no longer exist so their caches can be dropped.
+   */
+  async replaceLibrary(ownerId: string, state: ReplacementLibraryState) {
+    return replaceLibraryStorage(ownerId, state);
+  }
+
+  /** Writes an import's folders and links with one tree write. */
+  async importLibraryTreeNodes(ownerId: string, nodes: ImportedTreeNodes) {
+    return importLibraryTreeNodes(this, ownerId, nodes);
   }
 
   async removeLibraryFileLinks(ownerId: string, fileLinkIds: string[]) {
