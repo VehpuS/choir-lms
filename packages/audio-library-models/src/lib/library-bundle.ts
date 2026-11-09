@@ -2,6 +2,13 @@ import type { CompositeTrack } from './composite-track.ts';
 import type { DriveSourceLocation } from './drive-source-location.ts';
 import type { PlaybackShaping } from './playback-shaping.ts';
 import type {
+  RecordingMarker,
+  RecordingPunch,
+  RecordingShaping,
+  RecordingSource,
+  RecordingTimelineSegment,
+} from './recording.ts';
+import type {
   PlayableItemKind,
   RehearsalLibraryEntityKind,
 } from './rehearsal-domain.ts';
@@ -16,8 +23,8 @@ import type { TrackMarker } from './track-markers.ts';
  * ids of the device that wrote it and import is a pure id-mapping problem.
  * Audio is never embedded; sources are addressed by their global Drive file id.
  *
- * Recordings are not part of the format yet: the parser ignores a
- * `recordings` field like any unknown field until the recordings task adds it.
+ * Recordings are optional and carry metadata only; their audio is referenced
+ * on Drive or marked as still to be uploaded (design Decision 9).
  */
 
 /** The bundle format this app writes and fully understands. */
@@ -131,6 +138,39 @@ export type LibraryBundlePlaylist = {
   updatedAt: string;
 };
 
+/** Where a recording's audio is: a Drive copy, or not uploaded yet (the writer uploads it). */
+export type LibraryBundleRecordingAudio =
+  | { kind: 'drive'; driveFileId: string; fileName: string }
+  | { kind: 'not-uploaded' };
+
+/** What a recording was sung against, by bundle-local ids. */
+export type LibraryBundleRecordingLineage = {
+  trackId: string;
+  adjustedId?: string;
+  loopId?: string;
+};
+
+export type LibraryBundleRecording = {
+  id: string;
+  name: string;
+  createdAt: string;
+  durationMs: number;
+  sampleRate: number;
+  sizeBytes: number;
+  appliedLatencyMs: number;
+  nudgeMs: number;
+  source: RecordingSource;
+  lineage: LibraryBundleRecordingLineage;
+  shaping: RecordingShaping;
+  balance: number;
+  levelDb?: number;
+  engineVersion: number;
+  markers: RecordingMarker[];
+  punch?: RecordingPunch;
+  timeline: RecordingTimelineSegment[];
+  audio: LibraryBundleRecordingAudio;
+};
+
 /** A composite whose stems name bundle-local source ids. */
 export type LibraryBundleComposite = CompositeTrack;
 
@@ -145,6 +185,8 @@ export type LibraryBundle = {
   loops: LibraryBundleLoop[];
   playlists: LibraryBundlePlaylist[];
   composites: LibraryBundleComposite[];
+  /** Present only when the writer chose to include recordings. */
+  recordings?: LibraryBundleRecording[];
 };
 
 /** What the parser dropped, so a preview can say how much of a bundle was damaged. */
@@ -156,6 +198,7 @@ export type LibraryBundleDropCounts = {
   playlists: number;
   playlistEntries: number;
   composites: number;
+  recordings: number;
 };
 
 export type LibraryBundleRefusal =

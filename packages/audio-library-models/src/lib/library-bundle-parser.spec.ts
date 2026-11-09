@@ -39,12 +39,11 @@ describe('parseLibraryBundle', () => {
     assert.deepEqual(result.bundle, createLibraryBundleFixture());
   });
 
-  it('ignores fields it does not know, including recordings for now', () => {
+  it('ignores fields it does not know', () => {
     const result = expectOk(
       parse(
         damaged((bundle) => {
           bundle.futureField = { a: 1 };
-          bundle.recordings = [{ id: 'r1' }];
           bundle.sources[0].colour = 'red';
         }),
       ),
@@ -52,7 +51,54 @@ describe('parseLibraryBundle', () => {
 
     assert.equal(result.droppedTotal, 0);
     assert.equal('colour' in result.bundle.sources[0], false);
-    assert.equal('recordings' in result.bundle, false);
+  });
+
+  it('keeps recordings that resolve and drops, counting, those that do not', () => {
+    const recording = (id: string, lineage: Record<string, string>) => ({
+      id,
+      name: 'Recording 1',
+      createdAt: '2026-11-09T10:00:00.000Z',
+      durationMs: 10000,
+      sampleRate: 44100,
+      sizeBytes: 882000,
+      source: { driveFileId: 'drive-1', name: 'Soprano' },
+      lineage,
+      shaping: { rate: 1, pitchSemitones: 0 },
+      balance: 50,
+      markers: [],
+      timeline: [
+        {
+          recordingStartMs: 0,
+          recordingEndMs: 10000,
+          trackStartMs: 0,
+          held: false,
+        },
+      ],
+      audio: { kind: 'drive', driveFileId: 'drive-rec', fileName: 'r.webm' },
+    });
+    const result = expectOk(
+      parse(
+        damaged((bundle) => {
+          bundle.recordings = [
+            recording('r1', { trackId: 'b-src-1', loopId: 'b-loop-1' }),
+            recording('r2', { trackId: 'nowhere' }),
+            recording('r3', { trackId: 'b-src-1', adjustedId: 'b-src-2' }),
+            { id: 'r4' },
+          ];
+        }),
+      ),
+    );
+
+    assert.deepEqual(
+      result.bundle.recordings?.map((r) => r.id),
+      ['r1'],
+    );
+    assert.deepEqual(result.bundle.recordings?.[0].audio, {
+      kind: 'drive',
+      driveFileId: 'drive-rec',
+      fileName: 'r.webm',
+    });
+    assert.equal(result.dropped.recordings, 3);
   });
 
   it('drops a loop whose source is not in the bundle and counts it', () => {

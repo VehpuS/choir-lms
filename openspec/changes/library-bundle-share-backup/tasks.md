@@ -8,10 +8,10 @@
 
 ## 2. Bundle builder (`audio-library-runtime`)
 
-- [ ] 2.1 Build a whole-library bundle from repository state, re-keying entities to bundle-local ids and rewriting every cross reference
-- [ ] 2.2 Build a folder bundle: subtree, dependents (loops, adjusted tracks, playlists, composites) via the existing bulk-impact logic, with a count of references left out
-- [ ] 2.3 Include recordings only when selected; reference an existing Drive copy from `RecordingExports`, otherwise mark the audio for upload (confirm how recording metadata is stored on web and native first)
-- [ ] 2.4 Specs: ids rewritten, no device ids leak, dependents included, outside references counted, recordings off by default
+- [x] 2.1 Build a whole-library bundle from repository state, re-keying entities to bundle-local ids and rewriting every cross reference
+- [x] 2.2 Build a folder bundle: subtree, dependents (loops, adjusted tracks, playlists, composites) via the existing bulk-impact logic, with a count of references left out (done in `library-bundle-selection.ts`; the existing bulk-impact code is app-side and removal-oriented, so the dependents logic is a pure runtime function instead. Dependents living elsewhere get a top-level link in the bundle; loops and composites linked in the folder whose tracks are outside are dropped and counted)
+- [x] 2.3 Include recordings only when selected; reference an existing Drive copy from `RecordingExports`, otherwise mark the audio for upload (confirmed: recordings live only in a web IndexedDB store, native has none, outside the repository. Decided with the user: metadata-only format now. Done: `LibraryBundleRecording` with lineage re-keyed and audio `drive` or `not-uploaded`, builder returns `recordingsToUpload` and `uploadSizeBytes`. Reading recordings from IndexedDB, uploading the audio and restoring it are app-side and belong to 6.x and 7.x)
+- [x] 2.4 Specs: ids rewritten, no device ids leak, dependents included, outside references counted, recordings off by default
 
 ## 3. Import planner (`audio-library-runtime`)
 
@@ -63,3 +63,8 @@
 - [ ] 9.1 Manual verification with two Google accounts: share a folder, import with and without access, request access, check again (needs the user to sign in)
 - [ ] 9.2 Update the README and the architecture notes for the new package responsibilities
 - [ ] 9.3 Run lint, test, typecheck and build for the affected projects through Nx
+
+## 10. Future tasks (found while implementing; explore with a user before building)
+
+- [ ] 10.1 Playlist entries that play a recording (`recordingId`) are dropped from bundles and counted as left out; carry them once recordings travel in a bundle end to end
+- [ ] 10.2 Restoring recording audio into the web IndexedDB store, and what native should do while it has no recordings store (decide with the user before 6.x)

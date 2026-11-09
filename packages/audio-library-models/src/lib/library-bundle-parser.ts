@@ -21,6 +21,7 @@ import {
   parseBundlePlaylist,
   parseBundleSource,
 } from './library-bundle-entities.ts';
+import { parseBundleRecording } from './library-bundle-recordings.ts';
 import {
   upgradeLibraryBundleRecord,
   type LibraryBundleUpgradeSteps,
@@ -198,6 +199,7 @@ const resolveBundle = (
   const rawLoops = asArray(record.loops);
   const rawPlaylists = asArray(record.playlists);
   const rawComposites = asArray(record.composites);
+  const rawRecordings = asArray(record.recordings);
 
   const sources = keepResolvableSources(
     uniqBy(
@@ -269,6 +271,22 @@ const resolveBundle = (
       (link.parentFolderId === null || folderIds.has(link.parentFolderId)),
   );
 
+  const loopIdSet = new Set(loops.map((loop) => loop.id));
+  const adjustedIds = new Set(
+    sources.filter((source) => source.adjustment).map((source) => source.id),
+  );
+  const recordings = uniqBy(
+    rawRecordings.flatMap((entry) => parseBundleRecording(entry) ?? []),
+    (recording) => recording.id,
+  ).filter(({ lineage }) => {
+    return (
+      sourceIds.has(lineage.trackId) &&
+      (lineage.adjustedId === undefined ||
+        adjustedIds.has(lineage.adjustedId)) &&
+      (lineage.loopId === undefined || loopIdSet.has(lineage.loopId))
+    );
+  });
+
   const dropped: LibraryBundleDropCounts = {
     sources: countDropped(rawSources.length, sources.length),
     folders: countDropped(rawFolders.length, folders.length),
@@ -277,6 +295,7 @@ const resolveBundle = (
     playlists: countDropped(rawPlaylists.length, playlists.length),
     playlistEntries: droppedPlaylistEntries,
     composites: countDropped(rawComposites.length, composites.length),
+    recordings: countDropped(rawRecordings.length, recordings.length),
   };
   const bundle: LibraryBundle = {
     formatVersion,
@@ -289,6 +308,7 @@ const resolveBundle = (
     loops,
     playlists,
     composites,
+    ...(recordings.length > 0 ? { recordings } : {}),
   };
 
   return {
