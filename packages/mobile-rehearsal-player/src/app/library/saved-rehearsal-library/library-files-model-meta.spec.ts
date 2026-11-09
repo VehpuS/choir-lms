@@ -5,6 +5,7 @@ import { describe, it } from 'node:test';
 import type { Playlist, PlaylistEntry } from '@org/audio-library-models';
 
 import {
+  buildFolderRow,
   buildPlaylistRow,
   buildTrackRow,
   countLoopsBySourceId,
@@ -170,5 +171,48 @@ describe('countLoopsBySourceId', () => {
     ]);
 
     assert.equal(counts.get(AVAILABLE_SOURCE.id), 1);
+  });
+});
+
+describe('folder rows from an import', () => {
+  const counts = {
+    compositeCount: 0,
+    folderCount: 0,
+    loopCount: 3,
+    playlistCount: 0,
+    totalCount: 3,
+    trackCount: 14,
+    unknownCount: 0,
+  };
+  const folder = {
+    createdAt: '2026-11-09T10:00:00.000Z',
+    id: 'folder-1',
+    name: 'Imported Messiah 2026-11-09',
+    parentFolderId: 'folder:library-root',
+  };
+
+  it('says where an imported folder came from', () => {
+    const row = buildFolderRow({
+      childCounts: counts,
+      folder: {
+        ...folder,
+        importedFrom: {
+          author: 'Dana Director',
+          bundleName: 'b.json',
+          importedAt: '2026-11-09T10:00:00.000Z',
+        },
+      },
+    });
+
+    assert.match(row.supportingLabel ?? '', /Imported from Dana Director$/);
+  });
+
+  it('leaves an ordinary folder’s label alone', () => {
+    assert.equal(
+      buildFolderRow({ childCounts: counts, folder }).supportingLabel?.includes(
+        'Imported',
+      ),
+      false,
+    );
   });
 });

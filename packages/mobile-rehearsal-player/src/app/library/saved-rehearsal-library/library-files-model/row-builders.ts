@@ -226,7 +226,15 @@ export const buildFolderRow = (options: {
     folder: options.folder,
     kind: 'folder',
     label: options.folder.name,
-    supportingLabel: formatFolderSupportingLabel(options.childCounts),
+    supportingLabel: [
+      formatFolderSupportingLabel(options.childCounts),
+      // The folder an import created says where it came from; nothing inside does.
+      options.folder.importedFrom
+        ? `Imported from ${options.folder.importedFrom.author}`
+        : undefined,
+    ]
+      .filter(Boolean)
+      .join(ROW_META_SEPARATOR),
   };
 };
 

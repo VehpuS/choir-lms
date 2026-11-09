@@ -243,7 +243,7 @@ export const planLibraryBundleImport = (
       parentFolderId: parentFolderId(folder.parentFolderId),
       ...(folder.tags ? { tags: folder.tags } : {}),
       ...(folder.tagAddedAt ? { tagAddedAt: folder.tagAddedAt } : {}),
-      importedFrom,
+      // Only the import root carries the mark, so rows inside stay quiet.
       createdAt: importedAt,
     }),
   );
