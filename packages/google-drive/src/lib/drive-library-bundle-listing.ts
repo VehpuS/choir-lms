@@ -4,12 +4,14 @@ import {
   type DriveUploadFailureReason,
 } from './drive-file-upload';
 import {
+  BUNDLE_COUNTS_PROPERTY_KEY,
   BUNDLE_PROPERTY_KEY,
   BUNDLE_PROPERTY_VALUE,
   DRIVE_FILES_ENDPOINT,
   JSON_MIME_TYPE,
   type BundleRequestOptions,
   type DriveBundleFetch,
+  type LibraryBundleCounts,
 } from './drive-library-bundle-files';
 import {
   getBundleFileKind,
@@ -29,6 +31,8 @@ export type DriveBundleListing = {
   /** In the user's own bundle folders, or shared with them by someone else. */
   origin: 'mine' | 'shared';
   kind: LibraryBundleFileKind | 'unknown';
+  /** Counts the writer stored on the file, when present. */
+  counts?: LibraryBundleCounts;
   /** Carries the app's property; false for a file found only by its name. */
   marked: boolean;
 };
@@ -51,6 +55,20 @@ export const MARKED_QUERY = `appProperties has { key='${BUNDLE_PROPERTY_KEY}' an
 // Fallback for a copy or download that dropped the property: the names the app writes.
 const NAME_FALLBACK_QUERY = `(name contains 'choir-lms-' and mimeType = '${JSON_MIME_TYPE}')`;
 
+const parseCounts = (value: unknown): LibraryBundleCounts | undefined => {
+  const parts = typeof value === 'string' ? value.split(',').map(Number) : [];
+  const [tracks, loops, playlists] = parts;
+
+  return parts.length === 3 &&
+    parts.every((part) => Number.isInteger(part) && part >= 0)
+    ? {
+        tracks: tracks as number,
+        loops: loops as number,
+        playlists: playlists as number,
+      }
+    : undefined;
+};
+
 export const toListing = (
   file: RawFile,
   origin: DriveBundleListing['origin'],
@@ -68,6 +86,7 @@ export const toListing = (
     return null;
   }
 
+  const counts = parseCounts(file.appProperties?.[BUNDLE_COUNTS_PROPERTY_KEY]);
   const [owner] = file.owners ?? [];
   const ownerName =
     typeof owner?.displayName === 'string' ? owner.displayName : undefined;
@@ -93,6 +112,7 @@ export const toListing = (
           },
         }
       : {}),
+    ...(counts ? { counts } : {}),
     origin,
     kind: kind ?? 'unknown',
     marked,

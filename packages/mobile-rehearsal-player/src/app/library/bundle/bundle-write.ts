@@ -11,6 +11,7 @@ import {
   type LibraryBundleFileKind,
 } from '@org/google-drive';
 
+import { countBundleContents } from './read-bundle';
 import {
   describeBundleFailure,
   type BundleCancelled,
@@ -141,7 +142,13 @@ export const buildAndWriteBundle = async (
 
   options.onProgress?.('uploading');
 
+  const contents = countBundleContents(bundle);
   const uploaded = await deps.drive.uploadBundle({
+    counts: {
+      tracks: contents.tracks,
+      loops: contents.loops,
+      playlists: contents.playlists,
+    },
     folderId: options.folder.id,
     json: JSON.stringify(bundle),
     name: fileName,

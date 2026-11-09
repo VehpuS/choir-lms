@@ -25,6 +25,7 @@ export type BundleDriveApi = {
     signal?: AbortSignal,
   ): Promise<EnsureLibraryBundleFoldersResult>;
   uploadBundle(options: {
+    counts?: { tracks: number; loops: number; playlists: number };
     folderId: string;
     json: string;
     name: string;

@@ -1,3 +1,4 @@
+import { omit } from 'es-toolkit';
 import {
   createRehearsalLibraryRootFolderNode,
   planLibraryBundleImport,
@@ -18,11 +19,7 @@ import { buildAndWriteBundle } from './bundle-write';
 
 const withoutProvenance = <Item extends { importedFrom?: unknown }>(
   item: Item,
-): Item => {
-  const { importedFrom: _importedFrom, ...rest } = item;
-
-  return rest as Item;
-};
+): Item => omit(item, ['importedFrom']) as Item;
 
 /**
  * The whole library a bundle describes, as one state to swap in. It reuses the

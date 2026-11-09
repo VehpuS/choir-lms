@@ -10,6 +10,14 @@ export const JSON_MIME_TYPE = 'application/json';
 export const BUNDLE_PROPERTY_KEY = 'choirlmsBundle';
 export const BUNDLE_PROPERTY_VALUE = 'v1';
 
+export const BUNDLE_COUNTS_PROPERTY_KEY = 'choirlmsCounts';
+
+export type LibraryBundleCounts = {
+  tracks: number;
+  loops: number;
+  playlists: number;
+};
+
 /** Marks a file as a bundle the app wrote, so discovery does not rely on names alone. */
 export const BUNDLE_APP_PROPERTIES = {
   [BUNDLE_PROPERTY_KEY]: BUNDLE_PROPERTY_VALUE,
@@ -38,6 +46,8 @@ export type BundleRequestOptions = {
 
 export type UploadLibraryBundleOptions = {
   accessToken: string;
+  /** `tracks,loops,playlists` for the list to show without opening the file. */
+  counts?: LibraryBundleCounts;
   fetch?: ResumableFetch;
   folderId: string;
   /** The serialized bundle. */
@@ -62,7 +72,12 @@ export const uploadLibraryBundle = async (
 ): Promise<UploadLibraryBundleResult> => {
   const result = await uploadDriveFileResumable({
     accessToken: options.accessToken,
-    appProperties: BUNDLE_APP_PROPERTIES,
+    appProperties: options.counts
+      ? {
+          ...BUNDLE_APP_PROPERTIES,
+          [BUNDLE_COUNTS_PROPERTY_KEY]: `${options.counts.tracks},${options.counts.loops},${options.counts.playlists}`,
+        }
+      : BUNDLE_APP_PROPERTIES,
     fetch: options.fetch,
     folderId: options.folderId,
     mimeType: JSON_MIME_TYPE,

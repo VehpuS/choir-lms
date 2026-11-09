@@ -251,3 +251,50 @@ describe('readLibraryBundleText', () => {
     );
   });
 });
+
+describe('bundle counts on the file', () => {
+  it('stores counts when given and reads them back in the listing', async () => {
+    const upload = fakeDrive(({ method }) =>
+      method === 'POST'
+        ? { status: 200, headers: { Location: 'https://upload/session' } }
+        : { status: 200, body: { id: 'f1', name: 'b.json' } },
+    );
+
+    await uploadLibraryBundle({
+      accessToken: 't',
+      counts: { tracks: 46, loops: 12, playlists: 5 },
+      fetch: upload.resumable,
+      folderId: 'backups',
+      json: '{}',
+      name: 'b.json',
+    });
+
+    assert.deepEqual(JSON.parse(upload.calls[0].body ?? '{}').appProperties, {
+      choirlmsBundle: 'v1',
+      choirlmsCounts: '46,12,5',
+    });
+
+    const list = fakeDrive(() => ({
+      status: 200,
+      body: {
+        files: [
+          file('a', 'choir-lms-backup-a.json', {
+            appProperties: { choirlmsBundle: 'v1', choirlmsCounts: '46,12,5' },
+          }),
+          file('b', 'choir-lms-backup-b.json', {
+            appProperties: { choirlmsBundle: 'v1', choirlmsCounts: 'oops' },
+          }),
+        ],
+      },
+    }));
+    const result = await listLibraryBundles({
+      accessToken: 't',
+      fetch: list.fetch,
+    });
+
+    assert.deepEqual(
+      result.status === 'ok' ? result.bundles.map((b) => b.counts) : null,
+      [{ tracks: 46, loops: 12, playlists: 5 }, undefined],
+    );
+  });
+});
