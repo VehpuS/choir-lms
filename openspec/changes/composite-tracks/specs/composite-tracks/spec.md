@@ -183,3 +183,32 @@ The system SHALL offer composite creation and playback only where composite play
 
 - **WHEN** a composite appears in a list on a native device
 - **THEN** it is shown as unavailable with a message that composites play on web for now
+
+### Requirement: A composite is managed as a file in the Files explorer
+
+The system SHALL list a composite in the Files explorer as a file in a folder, with its `Composite · N stems` badge, and SHALL give it the actions a track, loop or playlist file has there: play, queue, add to playlist, move to a folder, keep offline (for all its stems), rename and delete. The stems SHALL stay where they are, and moving or removing a composite SHALL NOT move or remove them. A new composite SHALL be saved in the folder of the first selected track, and the create sheet SHALL let the user choose another folder.
+
+#### Scenario: A composite appears in its folder
+
+- **WHEN** the user creates a composite from tracks in the folder `Ubi caritas`
+- **THEN** the Files explorer lists the composite in `Ubi caritas` beside its stems, with the composite badge
+
+#### Scenario: Moving a composite leaves its stems
+
+- **WHEN** the user moves a composite to another folder with `Move to folder…`
+- **THEN** only the composite moves, and its stem tracks stay in their folders
+
+#### Scenario: Choosing the folder when creating
+
+- **WHEN** the user changes `Save in` on the create sheet to another folder and creates the composite
+- **THEN** the composite is listed in that folder
+
+#### Scenario: Deleting a composite
+
+- **WHEN** the user confirms `Delete composite`
+- **THEN** the composite, its prepared stems and its file are removed, and its stems stay in the library as tracks
+
+#### Scenario: Searching Files
+
+- **WHEN** the user searches in Files for part of a composite's name
+- **THEN** the composite is among the results, with its badge

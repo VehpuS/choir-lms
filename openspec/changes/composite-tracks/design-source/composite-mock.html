@@ -316,7 +316,7 @@ function libRow(n, sub, opts = {}) {
   return `<div class="ptitem ${opts.dis ? 'dis' : ''}">
     ${opts.pick !== undefined ? `<span class="cb ${opts.pick ? 'on' : ''}">${opts.pick ? I.check : ''}</span>` : ''}
     <span class="art ${opts.co ? 'co' : ''}">${opts.co ? I.layers : I.note}</span>
-    <div><b>${n}${opts.co ? '<span class="tag co">Composite · ' + opts.co + ' stems</span>' : ''}${opts.tag ? `<span class="tag ${opts.tagc || ''}">${opts.tag}</span>` : ''}</b><span class="s">${sub}</span></div></div>`;
+    <div><b>${n}${opts.co ? '<span class="tag co">Composite · ' + opts.co + ' stems</span>' : ''}${opts.tag ? `<span class="tag ${opts.tagc || ''}">${opts.tag}</span>` : ''}</b><span class="s">${sub}</span></div>${opts.menu ? '<span class="r" style="margin-left:auto;color:var(--text-muted);font-size:18px;letter-spacing:2px" aria-label="Options">···</span>' : ''}</div>`;
 }
 function tabs() { return '<div class="tabbar"><span>Recents</span><span>Add</span><span class="on">Library</span><span>Settings</span></div>'; }
 function libraryScreen(S) {
@@ -326,17 +326,45 @@ function libraryScreen(S) {
     <div class="bulk"><button class="btn quiet">Add to playlist</button><button class="btn quiet">Queue</button><button class="btn quiet">Keep offline</button><button class="btn ${S.fit ? 'suggest' : 'quiet'}" data-act="tocreate">Make composite…</button></div></div>`;
   return `<div class="screen"><div class="lib">
     <div class="top"><h3>Library</h3><button class="ib" aria-label="Select tracks" data-act="${sel ? 'noop' : 'toselect'}">${I.check}</button></div>
-    <div class="fchips"><span class="chip on">All</span><span class="chip">Offline</span><span class="chip">Recordings</span><span class="chip mine">Composites</span></div>
+    <div class="fchips"><span class="chip">Files</span><span class="chip ${S.view === 'composites' ? '' : 'on'}">Tracks</span><span class="chip">Loops</span><span class="chip">Playlists</span><span class="chip mine ${S.view === 'composites' ? 'on' : ''}">Composites</span></div>
     <div class="list">
-      ${libRow('Ubi caritas · SATB', DUR + ' · Composite', { co: 4 })}
-      ${libRow('Ubi caritas · Soprano', DUR, { pick: sel ? true : undefined })}
+      ${S.view === 'composites' ? libRow('Ubi caritas · SATB', DUR + ' · 4 stems', { co: 4 }) + libRow('Locus iste · SATB', '2:41 · 1 stem missing', { co: 4 }) : ''}
+      ${S.view === 'composites' ? '' : `${libRow('Ubi caritas · Soprano', DUR, { pick: sel ? true : undefined })}
       ${libRow('Ubi caritas · Alto', DUR, { pick: sel ? true : undefined })}
       ${libRow('Ubi caritas · Tenor', t, { pick: sel ? true : undefined })}
       ${libRow('Ubi caritas · Bass', DUR, { pick: sel ? true : undefined })}
-      ${libRow('Locus iste', '2:41', { pick: sel ? false : undefined })}
+      ${libRow('Locus iste', '2:41', { pick: sel ? false : undefined })}`}
     </div></div>
     ${sel ? bulk : ''}
     ${tabs()}</div>`;
+}
+
+function filesScreen(S) {
+  return `<div class="screen"><div class="lib">
+    <div class="top"><h3>Library</h3><button class="ib" aria-label="Select" data-act="noop">${I.check}</button></div>
+    <div class="fchips"><span class="chip on">Files</span><span class="chip">Tracks</span><span class="chip">Loops</span><span class="chip">Playlists</span><span class="chip mine">Composites</span></div>
+    <div class="cap2">Current folder · Library › Ubi caritas</div>
+    <div class="list">
+      ${libRow('Ubi caritas · SATB', DUR + ' · 4 stems', { co: 4, menu: true })}
+      ${libRow('Ubi caritas · Soprano', DUR)}
+      ${libRow('Ubi caritas · Alto', DUR)}
+      ${libRow('Ubi caritas · Tenor', '3:19')}
+      ${libRow('Ubi caritas · Bass', DUR)}
+    </div></div>
+    ${tabs()}</div>`;
+}
+function fileMenu() {
+  const row = (t, c) => `<div class="optrow" style="padding:0 12px;${c || ''}">${t}</div>`;
+  return `<div class="scrim" data-act="closesheet"></div><div class="sheet"><div class="grab"></div>
+    <h3>Ubi caritas · SATB</h3><div class="sub">Composite · 4 stems</div>
+    ${row('Play next')}${row('Add to queue')}${row('Add to playlist')}${row('Move to folder…')}${row('Keep all stems offline')}${row('Rename')}${row('Delete composite', 'color:var(--danger)')}</div>`;
+}
+function moveSheet() {
+  const f = (n, on) => `<div class="optrow" style="padding:0 12px;${on ? 'color:var(--accent-text)' : ''}">${I.layers.replace('layers', 'layers')}${n}${on ? '<span class="r">current</span>' : ''}</div>`;
+  return `<div class="scrim" data-act="closesheet"></div><div class="sheet"><div class="grab"></div>
+    <h3>Move to folder</h3><div class="sub">Ubi caritas · SATB. Its stems stay where they are.</div>
+    ${f('Library')}${f('Ubi caritas', true)}${f('Rehearsals 2026')}
+    <div class="acts"><button class="btn quiet" data-act="closesheet">Cancel</button><button class="btn primary" data-act="closesheet">Move here</button></div></div>`;
 }
 function createSheet(S) {
   const big = S.sheet === 'nospace';
@@ -350,6 +378,7 @@ function createSheet(S) {
   return `<div class="scrim"></div><div class="sheet"><div class="grab"></div>
     <h3>New composite</h3><div class="sub">Plays these stems together as one track.</div>
     <div class="field"><small>Name</small><div class="input">Ubi caritas · SATB</div></div>
+    <div class="field"><small>Save in</small><div class="input">Library › Ubi caritas</div><span class="sub" style="font-size:11.5px">The folder of the first selected track. Change it here or later with Move to folder.</span></div>
     <div class="cap2" style="display:flex;justify-content:space-between"><span>Track</span><span>Stem name</span></div>
     <div style="overflow:auto;max-height:${big ? 220 : 270}px">${rows}</div>
     ${notes}
@@ -405,7 +434,8 @@ function exportSheet() {
 /* ---------- scenes ---------- */
 function render(S) {
   let body;
-  if (S.screen === 'library' || S.screen === 'select') { body = libraryScreen(S); }
+  if (S.screen === 'files') { body = filesScreen(S); }
+  else if (S.screen === 'library' || S.screen === 'select') { body = libraryScreen(S); }
   else { body = playScreen(S); }
   const mini = S.screen === 'library' ? '' : '';
   let layer = '';
@@ -415,11 +445,17 @@ function render(S) {
   if (S.sheet === 'stem') { layer = stemSheet(S); }
   if (S.sheet === 'save') { layer = saveSheet(S); }
   if (S.sheet === 'export') { layer = exportSheet(S); }
+  if (S.sheet === 'filemenu') { layer = fileMenu(); }
+  if (S.sheet === 'move') { layer = moveSheet(); }
   return `<div class="phone">${body}${mini}${layer}</div>`;
 }
 const scene = (over) => { const S = base(); Object.assign(S, over.s || {}); if (over.preset) { applyPreset(S, over.preset); } return S; };
 const SCENES = {
-  library: { label: 'Library', cap: ['Library with a Composite', 'A composite is a normal row with a Composite badge and a stem count; the Composites chip filters to them. Stems stay listed as tracks.'], S: () => scene({ s: { screen: 'library' } }) },
+  library: { label: 'Library', cap: ['Library with a Composite', 'The Library has a view switcher: Files, Tracks, Loops, Playlists, Composites. A composite is its own item (a file in Files, a row in Composites), not a row in Tracks; its stems stay listed as tracks.'], S: () => scene({ s: { screen: 'library' } }) },
+  files: { label: 'Files', cap: ['A composite is a file', 'In the Files view a composite sits in a folder like a track or a playlist, with the Composite badge and stem count. The stems stay where they are, as tracks.'], S: () => scene({ s: { screen: 'files' } }) },
+  filemenu: { label: 'File menu', cap: ['Composite file menu', 'Play, queue, add to playlist, Move to folder, Keep all stems offline, rename and delete (the stems stay). Same place and wording as a track or playlist row.'], S: () => scene({ s: { screen: 'files', sheet: 'filemenu' } }) },
+  move: { label: 'Move to folder', cap: ['Move to folder', 'Moves only the composite. Its stems stay in their own folders.'], S: () => scene({ s: { screen: 'files', sheet: 'move' } }) },
+  compview: { label: 'Composites view', cap: ['Composites view', 'The Library view that lists every composite wherever it lives in Files, for a quick way back. A missing stem is noted on the row.'], S: () => scene({ s: { screen: 'library', view: 'composites' } }) },
   select: { label: 'Select tracks', cap: ['Select tracks', 'Make composite is one bulk action beside Add to playlist, Queue and Keep offline. These tracks differ in length, so it is not emphasised.'], S: () => scene({ s: { screen: 'select' } }) },
   selectfit: { label: 'Same length', cap: ['Select tracks of equal length', 'When every selected track is the same length the action is tinted and the line says so, because that suggests they are stems of one piece.'], S: () => scene({ s: { screen: 'select', fit: true } }) },
   create: { label: 'New composite', cap: ['New composite', 'Each stem has a name, guessed from the track name and editable. A track with no recognisable part (piano guide) is named after the track. The info note says the first play prepares the stems; there is no message about memory.'], S: () => scene({ s: { screen: 'select', sheet: 'create' } }) },
