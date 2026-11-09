@@ -21,6 +21,8 @@ import { SelectionBar } from '../../library/selection/selection-bar';
 import { useLibraryFilesConfirmationFlow } from '../../library/selection/use-library-files-confirmation-flow';
 import { usePinnedBulkActionBar } from '../../library/selection/use-pinned-bulk-action-bar';
 import { useSelection } from '../../library/selection/use-selection';
+import { PreparedCompositesGroup } from './prepared-composites-group';
+import { usePreparedComposites } from '../../library/composite/prepared/use-prepared-composites';
 import { useRecordingsStorage } from '../../library/recording/use-recordings-storage';
 import { appTheme } from '../../utils/theme';
 import {
@@ -76,6 +78,7 @@ export const OfflineFilesContent = ({
   const screenRef = useRef<View>(null);
   const confirmationFlow = useLibraryFilesConfirmationFlow();
   const recordings = useRecordingsStorage();
+  const prepared = usePreparedComposites();
   const selection = useSelection<OfflineFileRow>();
   const { cancel, deselectMany, enter, selectMany, selectedKeys, toggle } =
     selection;
@@ -168,6 +171,9 @@ export const OfflineFilesContent = ({
       />
     ));
   const isEmpty = allRows.length === 0;
+  // Prepared composite stems are offline files too: with only those, the view
+  // still lists them and offers `Clear all`.
+  const hasNothing = isEmpty && prepared.summary.count === 0;
 
   return (
     <View
@@ -211,7 +217,7 @@ export const OfflineFilesContent = ({
             {getKeptUsageLabel(snapshot.summary)}
           </Text>
         </View>
-        {isLoading ? null : isEmpty ? (
+        {isLoading ? null : hasNothing ? (
           <View style={styles.empty}>
             <Text style={styles.emptyTitle}>
               {OFFLINE_FILES_COPY.emptyTitle}
@@ -220,12 +226,14 @@ export const OfflineFilesContent = ({
           </View>
         ) : (
           <>
-            <SegmentedControl
-              accessibilityLabel="Sort offline files"
-              onSelect={onSortChange}
-              options={OFFLINE_SORT_OPTIONS}
-              selectedValue={sort}
-            />
+            {isEmpty ? null : (
+              <SegmentedControl
+                accessibilityLabel="Sort offline files"
+                onSelect={onSortChange}
+                options={OFFLINE_SORT_OPTIONS}
+                selectedValue={sort}
+              />
+            )}
             {snapshot.kept.length > 0 ? (
               <View>
                 <Text style={styles.sectionTitle}>
@@ -258,8 +266,11 @@ export const OfflineFilesContent = ({
                 label={OFFLINE_FILES_COPY.clearAllLabel}
                 onPress={() => {
                   confirmationFlow.requestConfirmation({
-                    content: getClearAllConfirmation(allRows),
-                    onConfirm: service.clearAll,
+                    content: getClearAllConfirmation(allRows, prepared.summary),
+                    onConfirm: async () => {
+                      await service.clearAll();
+                      await prepared.clearAll();
+                    },
                   });
                 }}
                 variant="destructive"
@@ -267,6 +278,7 @@ export const OfflineFilesContent = ({
             </View>
           </>
         )}
+        <PreparedCompositesGroup summary={prepared.summary} />
         <RecordingsGroup
           onDelete={recordings.deleteRecording}
           requestConfirmation={confirmationFlow.requestConfirmation}

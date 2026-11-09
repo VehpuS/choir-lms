@@ -71,3 +71,38 @@ describe('offline files copy', () => {
     );
   });
 });
+
+describe('getClearAllConfirmation with prepared composites', () => {
+  it('says the prepared audio goes too and that composites stay', () => {
+    const content = getClearAllConfirmation([], {
+      count: 2,
+      totalBytes: 4_000_000,
+    });
+
+    assert.match(
+      content.message,
+      /^This removes the prepared audio of 2 composites/,
+    );
+    assert.match(content.message, /Composites, tracks and recordings stay/);
+  });
+
+  it('adds the prepared audio after the files', () => {
+    const content = getClearAllConfirmation(
+      [{ driveFileId: 'a', sizeBytes: 1_000_000 } as never],
+      { count: 1, totalBytes: 1_000_000 },
+    );
+
+    assert.match(
+      content.message,
+      /1 file .*It also removes the prepared audio of 1 composite /,
+    );
+  });
+
+  it('is unchanged without prepared audio', () => {
+    const content = getClearAllConfirmation([
+      { driveFileId: 'a', sizeBytes: 1_000_000 } as never,
+    ]);
+
+    assert.doesNotMatch(content.message, /prepared/);
+  });
+});

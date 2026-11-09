@@ -65,6 +65,13 @@ export type PreparedStemWriter = {
   abort: () => Promise<void>;
 };
 
+export type PreparedCompositeUsage = {
+  compositeId: string;
+  /** Stems with a complete or partly written copy. */
+  stemCount: number;
+  sizeBytes: number;
+};
+
 export type PreparedStemStore = {
   /** Starts a stem, replacing anything stored for it (an older version or a half-written stem). */
   begin: (
@@ -79,6 +86,8 @@ export type PreparedStemStore = {
   has: (key: PreparedStemKey) => Promise<boolean>;
   sizeBytes: () => Promise<number>;
   sizeBytesOfComposite: (compositeId: string) => Promise<number>;
+  /** Each composite that has prepared stems, with their total size, for the offline files view. */
+  listComposites: () => Promise<PreparedCompositeUsage[]>;
   deleteComposite: (compositeId: string) => Promise<void>;
   deleteAll: () => Promise<void>;
 };

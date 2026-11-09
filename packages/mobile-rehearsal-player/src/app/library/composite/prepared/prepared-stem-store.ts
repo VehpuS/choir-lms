@@ -6,6 +6,7 @@ import {
 
 import {
   PreparedStemsUnavailableError,
+  type PreparedCompositeUsage,
   type PreparedStemKey,
   type PreparedStemsBackend,
   type PreparedStemStore,
@@ -137,6 +138,23 @@ export const createPreparedStemStore = (
         .filter((record) => record.compositeId === compositeId)
         .reduce((sum, record) => sum + record.sizeBytes, 0);
     },
+    listComposites: async () => {
+      const usage = new Map<string, PreparedCompositeUsage>();
+
+      for (const record of await backend.listRecords()) {
+        const entry = usage.get(record.compositeId) ?? {
+          compositeId: record.compositeId,
+          stemCount: 0,
+          sizeBytes: 0,
+        };
+
+        entry.stemCount += 1;
+        entry.sizeBytes += record.sizeBytes;
+        usage.set(record.compositeId, entry);
+      }
+
+      return [...usage.values()];
+    },
     deleteComposite: async (compositeId) => {
       const records = await backend.listRecords();
 
@@ -164,6 +182,7 @@ export const createUnavailablePreparedStemStore = (): PreparedStemStore => ({
   getPeaks: async () => null,
   sizeBytes: async () => 0,
   sizeBytesOfComposite: async () => 0,
+  listComposites: async () => [],
   deleteComposite: async () => undefined,
   deleteAll: async () => undefined,
 });

@@ -90,10 +90,32 @@ export const getClearAutomaticConfirmation = (
   title: 'Clear the automatic cache?',
 });
 
+type PreparedUsage = { count: number; totalBytes: number };
+
+const pluralComposites = (count: number) => {
+  return count === 1 ? '1 composite' : `${count} composites`;
+};
+
+/**
+ * `Clear all` also clears prepared composite stems (composite-tracks 9.1), and
+ * the confirmation says so, and says that nothing but that cache is lost.
+ */
 export const getClearAllConfirmation = (
   rows: readonly OfflineFileRow[],
-): LibraryFilesConfirmationDialogContent => ({
-  confirmLabel: 'Clear all',
-  message: `This removes ${pluralFiles(rows.length)} (${formatByteSize(totalBytes(rows))}), including files you kept offline.`,
-  title: 'Clear all offline files?',
-});
+  prepared: PreparedUsage = { count: 0, totalBytes: 0 },
+): LibraryFilesConfirmationDialogContent => {
+  const files =
+    rows.length > 0
+      ? `This removes ${pluralFiles(rows.length)} (${formatByteSize(totalBytes(rows))}), including files you kept offline.`
+      : undefined;
+  const preparedNote =
+    prepared.count > 0
+      ? `${files ? 'It also removes' : 'This removes'} the prepared audio of ${pluralComposites(prepared.count)} (${formatByteSize(prepared.totalBytes)}). Composites, tracks and recordings stay, and a composite prepares again the next time you play it.`
+      : undefined;
+
+  return {
+    confirmLabel: 'Clear all',
+    message: [files, preparedNote].filter(Boolean).join(' '),
+    title: 'Clear all offline files?',
+  };
+};

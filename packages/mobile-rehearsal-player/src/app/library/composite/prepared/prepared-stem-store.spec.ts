@@ -148,6 +148,27 @@ describe('prepared stem store', () => {
     assert.equal(await t.store.sizeBytes(), 6 * BYTES_PER_SAMPLE);
   });
 
+  it('lists each composite with its stem count and size', async () => {
+    const t = setup();
+
+    await prepare(t, key({ stemId: 'a' }), [Int16Array.of(1, 2, 3)]);
+    await prepare(t, key({ stemId: 'b' }), [Int16Array.of(1, 2)]);
+    await prepare(t, key({ compositeId: 'composite-2' }), [Int16Array.of(1)]);
+
+    assert.deepEqual(await t.store.listComposites(), [
+      {
+        compositeId: 'composite-1',
+        stemCount: 2,
+        sizeBytes: 5 * BYTES_PER_SAMPLE,
+      },
+      {
+        compositeId: 'composite-2',
+        stemCount: 1,
+        sizeBytes: BYTES_PER_SAMPLE,
+      },
+    ]);
+  });
+
   it('deletes one composite or everything', async () => {
     const t = setup();
 
