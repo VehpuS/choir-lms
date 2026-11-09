@@ -38,3 +38,6 @@ export * from './lib/composite-playable.ts';
 export * from './lib/composite-edit.ts';
 export * from './lib/composite-sheet-music-edit.ts';
 export * from './lib/composite-lyrics-edit.ts';
+export * from './lib/library-bundle.ts';
+export * from './lib/library-bundle-parser.ts';
+export * from './lib/library-bundle-upgrade.ts';

@@ -13,6 +13,8 @@ const UNRESOLVED_REASON_MESSAGES: Record<
     'Access to this file was revoked, so its current Drive location cannot be checked right now.',
   'authorization-required':
     'Reconnect Google Drive to check this file’s current Drive location.',
+  'needs-access':
+    'This file has not been shared with you yet, so its Drive location cannot be opened.',
   missing:
     'This file could not be found in Google Drive, so its current location cannot be opened.',
   network:

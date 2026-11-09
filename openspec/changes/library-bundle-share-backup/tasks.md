@@ -1,10 +1,10 @@
 ## 1. Bundle model and parser (`audio-library-models`)
 
-- [ ] 1.1 Define bundle types (`LibraryBundle`, scope, bundle-local ids, per-source owner, `importedFrom`) and the current `formatVersion`
-- [ ] 1.2 Add `needs-access` to the source availability reasons and make existing exhaustive switches handle it
-- [ ] 1.3 Implement the tolerant parser: unknown fields ignored, malformed or unresolved entities dropped and counted, newer version refused, "not a bundle" refused
-- [ ] 1.4 Add version-upgrade steps scaffolding and a spec proving an older fixture upgrades
-- [ ] 1.5 Specs for the parser using representative fixtures (valid, damaged, newer, not JSON)
+- [x] 1.1 Define bundle types (`LibraryBundle`, scope, bundle-local ids, per-source owner, `importedFrom`) and the current `formatVersion` (done: `library-bundle.ts`; adjusted tracks stay in `sources` with `adjustment`, as in the library; `recordings` is left out of the type until 2.3 and the parser ignores it, dropping playlist entries that carry a `recordingId`; `importedFrom` is defined but not yet on bundle entities, since it is set on import)
+- [x] 1.2 Add `needs-access` to the source availability reasons and make existing exhaustive switches handle it
+- [x] 1.3 Implement the tolerant parser: unknown fields ignored, malformed or unresolved entities dropped and counted, newer version refused, "not a bundle" refused
+- [x] 1.4 Add version-upgrade steps scaffolding and a spec proving an older fixture upgrades
+- [x] 1.5 Specs for the parser using representative fixtures (valid, damaged, newer, not JSON)
 
 ## 2. Bundle builder (`audio-library-runtime`)
 
