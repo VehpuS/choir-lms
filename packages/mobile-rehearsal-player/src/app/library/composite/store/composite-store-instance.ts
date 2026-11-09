@@ -8,6 +8,7 @@ import type { CompositeTrack } from '@org/audio-library-models';
 import { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
 import { placeNewComposite } from './place-new-composite';
 import { getPreparedStemStore } from '../prepared/prepared-stem-instance';
+import { pruneOrphanPreparedStems } from '../prepared/prune-orphan-prepared-stems';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../storage/local-library-storage';
 import { createCompositeStore, type CompositeStore } from './composite-store';
 
@@ -48,7 +49,17 @@ export const getCompositesSnapshot = (): readonly CompositeTrack[] => {
 
   if (!hasRequestedFirstRead) {
     hasRequestedFirstRead = true;
-    void store.refresh().catch(() => undefined);
+    // Only a read that worked may prune: a failed one would look like "no
+    // composites" and delete every prepared stem.
+    void store
+      .refresh()
+      .then(() =>
+        pruneOrphanPreparedStems(
+          getPreparedStemStore(),
+          store.getSnapshot().map(({ id }) => id),
+        ),
+      )
+      .catch(() => undefined);
   }
 
   return store.getSnapshot();

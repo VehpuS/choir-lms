@@ -1,5 +1,6 @@
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
+import { buildDeleteCompositeDialog } from '../../composite/list/composite-row-actions';
 import { getDeleteFromFolderConfirmationCopy } from './files-row-actions';
 import type { LibraryFilesConfirmationDialogContent } from '../../selection/library-files-confirmation-dialog';
 import { formatFolderDeleteImpactMessage } from './library-files-delete-copy';
@@ -18,6 +19,25 @@ type RequestLibraryFilesDeleteConfirmationOptions = {
   onShowSuccessFeedback?: (feedback: LibraryFilesSuccessFeedback) => void;
   requestConfirmation: (confirmation: PendingLibraryFilesConfirmation) => void;
   row: LibraryFilesRow;
+};
+
+// The last link of a composite deletes the composite, so it says what the
+// Composites view's dialog says: the stems stay in the library as tracks.
+const resolveFileLinkDeleteCopy = (
+  row: Exclude<LibraryFilesRow, { kind: 'folder' }>,
+  isLastLink: boolean,
+): LibraryFilesConfirmationDialogContent => {
+  if (row.kind === 'composite' && isLastLink) {
+    return buildDeleteCompositeDialog({
+      name: row.composite.name,
+      stemCount: row.composite.stems.length,
+    });
+  }
+
+  return getDeleteFromFolderConfirmationCopy({
+    isLastLink,
+    itemName: row.label,
+  });
 };
 
 export const requestLibraryFilesDeleteConfirmation = ({
@@ -56,10 +76,7 @@ export const requestLibraryFilesDeleteConfirmation = ({
   }
 
   const impact = files.getFileLinkDeleteImpact(row.fileLink);
-  const copy = getDeleteFromFolderConfirmationCopy({
-    isLastLink: impact.isLastLink,
-    itemName: row.label,
-  });
+  const copy = resolveFileLinkDeleteCopy(row, impact.isLastLink);
 
   requestConfirmation({
     content: copy,
