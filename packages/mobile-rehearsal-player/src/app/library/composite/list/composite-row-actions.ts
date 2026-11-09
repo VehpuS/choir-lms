@@ -6,8 +6,8 @@ import type { OptionsMenuAction } from '../../components/options-menu-sheet/mode
 /**
  * What a composite row's menu offers and says (composite-tracks 7.1): play and
  * queue like any item, rename, and delete, which keeps the stems as tracks.
- * `Keep offline` joins in 7.3. Pure; the view and
- * the store sit around it.
+ * `Keep all stems offline` (7.3) sits before rename. Pure; the view and the
+ * store sit around it.
  */
 
 export const ADD_TO_PLAYLIST_LABEL = 'Add to playlist';
@@ -24,6 +24,8 @@ export const resolveCompositeRowMenu = (options: {
   canQueueAsNext: boolean;
   /** Playlists can be changed now (they are loaded and not mid-save). */
   canAddToPlaylist: boolean;
+  /** The offline rows (`composite-offline.ts`); none where unsupported. */
+  offlineActions?: OptionsMenuAction[];
   onAddToPlaylist: () => void;
   onPlayNext: () => void;
   onAddToQueue: () => void;
@@ -52,6 +54,7 @@ export const resolveCompositeRowMenu = (options: {
       disabled: !options.canAddToPlaylist,
       onPress: options.onAddToPlaylist,
     },
+    ...(options.offlineActions ?? []),
     { id: 'rename', label: RENAME_LABEL, onPress: options.onRename },
     {
       id: 'delete',

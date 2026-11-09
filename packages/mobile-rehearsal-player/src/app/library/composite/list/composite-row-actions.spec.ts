@@ -22,6 +22,25 @@ const labels = (options: { isPlayable: boolean; canQueueAsNext: boolean }) =>
   );
 
 describe('resolveCompositeRowMenu', () => {
+  it('places the offline rows before rename', () => {
+    const offline = [
+      { id: 'o', label: 'Keep all stems offline', onPress: noop },
+    ];
+    const result = resolveCompositeRowMenu({
+      ...handlers,
+      isPlayable: true,
+      canQueueAsNext: false,
+      offlineActions: offline,
+    }).map((action) => action.label);
+
+    assert.deepEqual(result, [
+      'Add to playlist',
+      'Keep all stems offline',
+      'Rename',
+      'Delete composite',
+    ]);
+  });
+
   it('offers the queue actions, rename and delete for a playable composite while something plays', () => {
     assert.deepEqual(labels({ isPlayable: true, canQueueAsNext: true }), [
       'Play next',

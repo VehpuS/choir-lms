@@ -12,6 +12,12 @@ import { EqualizerMark } from '../../../components/equalizer-mark';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { RowMetaLine } from '../../../components/row-meta-line';
 import { appTheme } from '../../../utils/theme';
+import { getOfflineBatchRunner } from '../../offline/offline-batch';
+import { isOfflineStorageSupported } from '../../offline/offline-actions';
+import {
+  offlineStateStore,
+  useOfflineRevision,
+} from '../../offline/offline-state';
 import {
   ExplorerListRow,
   ExplorerListSurface,
@@ -32,6 +38,12 @@ import {
   getCompositeStore,
   useComposites,
 } from '../store/composite-store-instance';
+import {
+  resolveCompositeOfflineActions,
+  resolveCompositeOfflineSources,
+  resolveCompositeOfflineState,
+  runCompositeOffline,
+} from './composite-offline';
 import {
   buildDeleteCompositeDialog,
   resolveCompositeRowMenu,
@@ -84,6 +96,8 @@ export const CompositesLibraryView = ({
 }: CompositesLibraryViewProps) => {
   const { acknowledge } = useLibrarySelectionServices();
   const composites = useComposites();
+  // Re-render when a stem file's offline state changes.
+  useOfflineRevision();
   const [menuId, setMenuId] = useState<string | null>(null);
   const [renameId, setRenameId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -98,6 +112,30 @@ export const CompositesLibraryView = ({
   const noResults = resolveCompositesNoResultsMessage(searchQuery, rows.length);
   const findComposite = (id: string | null) =>
     composites.find((composite) => composite.id === id);
+  const offlineActionsFor = (id: string) => {
+    const composite = composites.find((entry) => entry.id === id);
+
+    if (!isOfflineStorageSupported || !composite) {
+      return [];
+    }
+
+    const files = resolveCompositeOfflineSources(composite, sources);
+    const run = (kind: 'keep' | 'remove') => {
+      void runCompositeOffline({
+        kind,
+        runner: getOfflineBatchRunner(),
+        sources: files,
+      }).then(acknowledge);
+    };
+
+    return resolveCompositeOfflineActions({
+      ...resolveCompositeOfflineState(files, (id) =>
+        offlineStateStore.getState(id),
+      ),
+      onKeep: () => run('keep'),
+      onRemove: () => run('remove'),
+    });
+  };
   const itemFor = (row: CompositeLibraryRow) => {
     const composite = findComposite(row.id);
 
@@ -134,6 +172,7 @@ export const CompositesLibraryView = ({
             isPlayable: item !== null && availability.available,
             canQueueAsNext,
             canAddToPlaylist: canMutatePlaylists && !isPlaylistMutating,
+            offlineActions: offlineActionsFor(row.id),
             onAddToPlaylist: () => setPlaylistId(row.id),
             onPlayNext: () => item && queuePlayableItemNext(item),
             onAddToQueue: () => item && queuePlayableItemUpNext(item),
