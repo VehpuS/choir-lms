@@ -1,14 +1,13 @@
 import {
-  createSheetMusicSource,
-  normalizeSheetMusicLabel,
+  addToSheetMusicList,
+  changeInSheetMusicList,
   parseSourceSheetMusic,
+  removeFromSheetMusicList,
   replaceSourceLocationWithDrive,
-  type SavedDriveFile,
   type DriveAudioSource,
-  type PdfLayout,
-  type SheetMusicFormat,
-  type SheetMusicLocation,
-  type SheetMusicPartSelection,
+  type SavedDriveFile,
+  type SheetMusicAddition,
+  type SheetMusicChange,
   type SheetMusicSource,
 } from '@org/audio-library-models';
 import { omit } from 'es-toolkit/compat';
@@ -19,23 +18,7 @@ type SheetMusicRepository = {
   listSources(ownerId: string): Promise<DriveAudioSource[]>;
 };
 
-export type SheetMusicAddition = {
-  format: SheetMusicFormat;
-  label: string;
-  location: SheetMusicLocation;
-  partSelection?: SheetMusicPartSelection;
-};
-
-/** `partSelection: null` returns a source to the default (vocal parts). */
-export type SheetMusicChange = {
-  label?: string;
-  partSelection?: SheetMusicPartSelection | null;
-  /** `pdfLayout: null` removes the file's own layout (the device layout applies). */
-  pdfLayout?: PdfLayout | null;
-};
-
-const createSheetMusicId = () =>
-  `sheet-music:${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+export type { SheetMusicAddition, SheetMusicChange };
 
 /**
  * Applies a change to one track's `sheetMusic` list and nothing else. The
@@ -83,15 +66,9 @@ export const addSheetMusicSourceToRepository = (
   sourceId: string,
   addition: SheetMusicAddition,
 ) => {
-  return updateSourceSheetMusic(repository, ownerId, sourceId, (current) => {
-    const created = createSheetMusicSource({
-      ...addition,
-      id: createSheetMusicId(),
-      addedAt: new Date().toISOString(),
-    });
-
-    return created ? [...current, created] : current;
-  });
+  return updateSourceSheetMusic(repository, ownerId, sourceId, (current) =>
+    addToSheetMusicList(current, addition),
+  );
 };
 
 export const updateSheetMusicSourceInRepository = (
@@ -102,33 +79,7 @@ export const updateSheetMusicSourceInRepository = (
   change: SheetMusicChange,
 ) => {
   return updateSourceSheetMusic(repository, ownerId, sourceId, (current) =>
-    current.map((entry) => {
-      if (entry.id !== sheetMusicId) {
-        return entry;
-      }
-
-      // An unusable label keeps the old one rather than blanking the row.
-      const label =
-        change.label === undefined
-          ? undefined
-          : normalizeSheetMusicLabel(change.label);
-      const withoutSelection = omit(entry, ['partSelection', 'pdfLayout']);
-      const partSelection =
-        change.partSelection === undefined
-          ? entry.partSelection
-          : (change.partSelection ?? undefined);
-      const pdfLayout =
-        change.pdfLayout === undefined
-          ? entry.pdfLayout
-          : (change.pdfLayout ?? undefined);
-
-      return {
-        ...withoutSelection,
-        label: label ?? entry.label,
-        ...(partSelection ? { partSelection } : {}),
-        ...(pdfLayout ? { pdfLayout } : {}),
-      };
-    }),
+    changeInSheetMusicList(current, sheetMusicId, change),
   );
 };
 
@@ -139,7 +90,7 @@ export const removeSheetMusicSourceFromRepository = (
   sheetMusicId: string,
 ) => {
   return updateSourceSheetMusic(repository, ownerId, sourceId, (current) =>
-    current.filter((entry) => entry.id !== sheetMusicId),
+    removeFromSheetMusicList(current, sheetMusicId),
   );
 };
 

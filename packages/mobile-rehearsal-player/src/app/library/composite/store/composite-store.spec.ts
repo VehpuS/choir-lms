@@ -153,6 +153,26 @@ describe('composite store', () => {
     assert.equal(t.saved()[0].defaultMix.levels['stem-1'].volume, 40);
   });
 
+  it('keeps sheet music on the composite: add, rename, remove', async () => {
+    const t = setup();
+    const made = await t.store.create(DRAFT);
+
+    assert.ok(made);
+    await t.store.addSheetMusic(made.id, {
+      format: 'pdf',
+      label: 'Score',
+      location: { kind: 'drive', fileId: 'f1', name: 'score.pdf' },
+    });
+
+    const [added] = t.saved()[0].sheetMusic ?? [];
+
+    assert.equal(added.label, 'Score');
+    await t.store.changeSheetMusic(made.id, added.id, { label: 'Full score' });
+    assert.equal(t.saved()[0].sheetMusic?.[0].label, 'Full score');
+    await t.store.removeSheetMusic(made.id, added.id);
+    assert.equal(t.saved()[0].sheetMusic, undefined);
+  });
+
   it('edits only the composite it was asked about', async () => {
     const t = setup();
     const one = await t.store.create(DRAFT);

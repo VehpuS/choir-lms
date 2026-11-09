@@ -1,4 +1,8 @@
 import {
+  addCompositeSheetMusic,
+  changeCompositeSheetMusic,
+  removeCompositeSheetMusic,
+  replaceCompositeSheetMusicWithDrive,
   createCompositeTrack,
   relinkCompositeStem,
   removeCompositeStem,
@@ -12,6 +16,9 @@ import {
   type CompositeMix,
   type CompositeTrack,
   type RemoveCompositeStemResult,
+  type SavedDriveFile,
+  type SheetMusicAddition,
+  type SheetMusicChange,
 } from '@org/audio-library-models';
 
 /** Where composites are kept: the runtime's `composites` collection in production. */
@@ -79,6 +86,25 @@ export type CompositeStore = {
     options: { name: string; mix: CompositeMix; makeDefault?: boolean },
   ) => Promise<void>;
   setDefaultMix: (compositeId: string, mix: CompositeMix) => Promise<void>;
+  /** Sheet music kept on the composite itself; a stem's own files are edited on its track. */
+  addSheetMusic: (
+    compositeId: string,
+    addition: SheetMusicAddition,
+  ) => Promise<void>;
+  changeSheetMusic: (
+    compositeId: string,
+    sheetMusicId: string,
+    change: SheetMusicChange,
+  ) => Promise<void>;
+  removeSheetMusic: (
+    compositeId: string,
+    sheetMusicId: string,
+  ) => Promise<void>;
+  replaceSheetMusicWithDrive: (
+    compositeId: string,
+    sheetMusicId: string,
+    file: SavedDriveFile,
+  ) => Promise<void>;
   /** `ask-delete` when one stem would be left: nothing changes and the caller asks. */
   removeStem: (
     compositeId: string,
@@ -186,6 +212,22 @@ export const createCompositeStore = (
       ),
     setDefaultMix: (compositeId, mix) =>
       edit(compositeId, (composite) => setCompositeDefaultMix(composite, mix)),
+    addSheetMusic: (compositeId, addition) =>
+      edit(compositeId, (composite) =>
+        addCompositeSheetMusic(composite, addition),
+      ),
+    changeSheetMusic: (compositeId, sheetMusicId, change) =>
+      edit(compositeId, (composite) =>
+        changeCompositeSheetMusic(composite, sheetMusicId, change),
+      ),
+    removeSheetMusic: (compositeId, sheetMusicId) =>
+      edit(compositeId, (composite) =>
+        removeCompositeSheetMusic(composite, sheetMusicId),
+      ),
+    replaceSheetMusicWithDrive: (compositeId, sheetMusicId, file) =>
+      edit(compositeId, (composite) =>
+        replaceCompositeSheetMusicWithDrive(composite, sheetMusicId, file),
+      ),
     removeStem: async (compositeId, stemId) => {
       let outcome: RemoveCompositeStemResult['outcome'] = 'unchanged';
 

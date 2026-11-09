@@ -36,6 +36,17 @@ describe('resolveSavedItemShortcuts', () => {
     );
   });
 
+  it('offers a playing composite its combined sheet music, even though it is not a saved track', () => {
+    assert.deepEqual(
+      resolveSavedItemShortcuts({
+        hasLyrics: false,
+        isSaved: false,
+        item: { kind: 'composite', sourceId: 'c1' },
+      }).map(({ id, request }) => [id, request.action, request.id]),
+      [['sheet-music', 'composite-sheet-music', 'c1']],
+    );
+  });
+
   it('offers the library item actions for a saved track, including its loops', () => {
     const shortcuts = resolveSavedItemShortcuts({
       hasLyrics: false,

@@ -4,6 +4,8 @@ import { describe, it } from 'node:test';
 import {
   buildCompositeLyricsPicker,
   buildCompositeSheetMusic,
+  describeSheetMusicUse,
+  findCompositeSheetMusicOwner,
 } from './composite-content.ts';
 import type { SheetMusicSource } from './source-sheet-music.ts';
 
@@ -161,5 +163,56 @@ describe('buildCompositeLyricsPicker', () => {
     assert.equal(picker.empty, true);
     assert.equal(picker.selectedStemId, undefined);
     assert.equal(picker.withoutLyrics.length, 4);
+  });
+});
+
+describe('describeSheetMusicUse', () => {
+  const used = (names: string[], all = false, added = false) => ({
+    usedByStems: names.map((name) => ({ id: name, name })),
+    usedByAllStems: all,
+    addedToComposite: added,
+  });
+
+  it('words each case of use', () => {
+    assert.equal(
+      describeSheetMusicUse(used(['S', 'A', 'T', 'B'], true)),
+      'Used by all 4 stems',
+    );
+    assert.equal(describeSheetMusicUse(used(['Bass'])), 'Used by Bass');
+    assert.equal(
+      describeSheetMusicUse(used(['Soprano', 'Alto', 'Tenor'])),
+      'Used by Soprano, Alto and Tenor',
+    );
+    assert.equal(
+      describeSheetMusicUse(used([], false, true)),
+      'Added to this composite',
+    );
+    assert.equal(
+      describeSheetMusicUse(used(['Bass'], false, true)),
+      'Added to this composite · Used by Bass',
+    );
+  });
+});
+
+describe('findCompositeSheetMusicOwner', () => {
+  const withMusic = stems.map((stem) => ({
+    ...stem,
+    sheetMusic: stem.id === 'Bass' ? [driveSource('part', 'bass-part')] : [],
+  }));
+
+  it('finds the stem that holds a source, then the composite, else nothing', () => {
+    const added = [driveSource('midi', 'midi')];
+
+    assert.deepEqual(findCompositeSheetMusicOwner(withMusic, added, 'part'), {
+      kind: 'stem',
+      stemId: 'Bass',
+    });
+    assert.deepEqual(findCompositeSheetMusicOwner(withMusic, added, 'midi'), {
+      kind: 'composite',
+    });
+    assert.equal(
+      findCompositeSheetMusicOwner(withMusic, added, 'x'),
+      undefined,
+    );
   });
 });

@@ -132,3 +132,55 @@ export const buildCompositeLyricsPicker = (
     empty: choices.length === 0,
   };
 };
+
+export type CompositeSheetMusicOwner =
+  | { kind: 'composite' }
+  | { kind: 'stem'; stemId: string };
+
+/**
+ * Which record holds the source with this id, so an edit lands where the file
+ * is linked: a stem's own list, or the composite's. The id of a union entry is
+ * the first record's, so one id names one record.
+ */
+export const findCompositeSheetMusicOwner = (
+  stems: readonly StemSheetMusic[],
+  compositeSheetMusic: readonly SheetMusicSource[],
+  sheetMusicId: string,
+): CompositeSheetMusicOwner | undefined => {
+  const stem = stems.find((candidate) =>
+    candidate.sheetMusic?.some((source) => source.id === sheetMusicId),
+  );
+
+  if (stem) {
+    return { kind: 'stem', stemId: stem.id };
+  }
+
+  return compositeSheetMusic.some((source) => source.id === sheetMusicId)
+    ? { kind: 'composite' }
+    : undefined;
+};
+
+const joinNames = (names: readonly string[]): string => {
+  if (names.length <= 1) {
+    return names.join('');
+  }
+
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+};
+
+/** The line under a row: `Used by all 4 stems`, `Used by Bass`, `Added to this composite`. */
+export const describeSheetMusicUse = (
+  entry: Pick<
+    CompositeSheetMusicEntry,
+    'usedByStems' | 'usedByAllStems' | 'addedToComposite'
+  >,
+): string => {
+  const used = entry.usedByAllStems
+    ? `Used by all ${entry.usedByStems.length} stems`
+    : entry.usedByStems.length > 0
+      ? `Used by ${joinNames(entry.usedByStems.map(({ name }) => name))}`
+      : undefined;
+  const added = entry.addedToComposite ? 'Added to this composite' : undefined;
+
+  return [added, used].filter(Boolean).join(' · ');
+};

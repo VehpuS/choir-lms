@@ -9,6 +9,8 @@ import { OptionsMenuSheet } from '../../components/options-menu-sheet';
 import { describeSheetMusicRow } from './model';
 
 type SheetMusicRowProps = {
+  /** A composite's file that a stem links: renamed and removed on that track, not here. */
+  canEdit?: boolean;
   disabled: boolean;
   onAction: (source: SheetMusicSource) => void;
   onRemove: (source: SheetMusicSource) => void;
@@ -16,16 +18,20 @@ type SheetMusicRowProps = {
   /** Offered for a link, where the browser may not let the app read the file. */
   onSaveToDrive?: (source: SheetMusicSource) => void;
   source: SheetMusicSource;
+  /** Who uses the file (a composite's combined list), under the format. */
+  useLine?: string;
 };
 
 /** One source in the manager: its label and format, `View` (or open), rename, remove. */
 export const SheetMusicRow = ({
+  canEdit = true,
   disabled,
   onAction,
   onRemove,
   onRename,
   onSaveToDrive,
   source,
+  useLine,
 }: SheetMusicRowProps) => {
   const [draftLabel, setDraftLabel] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -67,47 +73,21 @@ export const SheetMusicRow = ({
   const closeMenu = () => {
     setIsMenuOpen(false);
   };
-
-  return (
-    <View style={styles.row}>
-      <View style={styles.main}>
-        <View style={styles.summary}>
-          <Text numberOfLines={2} style={styles.label}>
-            {source.label}
-          </Text>
-          <Text style={styles.detail}>{row.detail}</Text>
-          {row.hint ? <Text style={styles.detail}>{row.hint}</Text> : null}
-        </View>
-        <OutlinedActionButton
-          label={row.actionLabel}
-          onPress={() => {
-            onAction(source);
-          }}
-          variant="accent"
-        />
-        <OverflowMenuTrigger
-          accessibilityLabel={`${source.label} options`}
-          disabled={disabled}
-          onPress={() => {
-            setIsMenuOpen(true);
-          }}
-          style={styles.overflowTrigger}
-        />
-      </View>
-      <OptionsMenuSheet
-        actions={[
-          ...(onSaveToDrive && source.location.kind === 'url'
-            ? [
-                {
-                  id: 'save-to-drive',
-                  label: 'Save to Drive',
-                  onPress: () => {
-                    closeMenu();
-                    onSaveToDrive(source);
-                  },
-                },
-              ]
-            : []),
+  const menuActions = [
+    ...(onSaveToDrive && source.location.kind === 'url'
+      ? [
+          {
+            id: 'save-to-drive',
+            label: 'Save to Drive',
+            onPress: () => {
+              closeMenu();
+              onSaveToDrive(source);
+            },
+          },
+        ]
+      : []),
+    ...(canEdit
+      ? [
           {
             id: 'rename',
             label: 'Rename',
@@ -123,9 +103,43 @@ export const SheetMusicRow = ({
               closeMenu();
               onRemove(source);
             },
-            tone: 'destructive',
+            tone: 'destructive' as const,
           },
-        ]}
+        ]
+      : []),
+  ];
+
+  return (
+    <View style={styles.row}>
+      <View style={styles.main}>
+        <View style={styles.summary}>
+          <Text numberOfLines={2} style={styles.label}>
+            {source.label}
+          </Text>
+          <Text style={styles.detail}>{row.detail}</Text>
+          {useLine ? <Text style={styles.detail}>{useLine}</Text> : null}
+          {row.hint ? <Text style={styles.detail}>{row.hint}</Text> : null}
+        </View>
+        <OutlinedActionButton
+          label={row.actionLabel}
+          onPress={() => {
+            onAction(source);
+          }}
+          variant="accent"
+        />
+        {menuActions.length > 0 ? (
+          <OverflowMenuTrigger
+            accessibilityLabel={`${source.label} options`}
+            disabled={disabled}
+            onPress={() => {
+              setIsMenuOpen(true);
+            }}
+            style={styles.overflowTrigger}
+          />
+        ) : null}
+      </View>
+      <OptionsMenuSheet
+        actions={menuActions}
         isVisible={isMenuOpen}
         onClose={closeMenu}
         title={source.label}

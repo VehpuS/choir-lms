@@ -2,7 +2,7 @@ import {
   detectSheetMusicFormat,
   type NamedLoop,
 } from '@org/audio-library-models';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';
 
 import type { useGoogleDriveAuthorization } from '../../../auth/google-drive/hooks/use-authorization';
@@ -17,6 +17,18 @@ import { suggestSheetMusicQuery } from '../sheet-music-search-terms';
 import { SheetMusicViewer } from '../viewer';
 import { isViewableSource, resolveExternalUrl } from '../viewer/model';
 import { createDriveAddition } from '../drive-picker/model';
+import {
+  COMPOSITE_SHEET_MUSIC_ADD_LABEL,
+  COMPOSITE_SHEET_MUSIC_EMPTY_MESSAGE,
+  COMPOSITE_SHEET_MUSIC_LIMIT_MESSAGE,
+  buildCompositeSheetMusicView,
+  resolveCompositeSheetMusicOwner,
+} from '../../composite/content/composite-sheet-music-model';
+import {
+  getCompositeStore,
+  useComposites,
+} from '../../composite/store/composite-store-instance';
+import { resolveCompositeSheetMusicOps } from '../../composite/content/composite-sheet-music-ops';
 import { DriveSheetMusicPickerSheet } from '../drive-picker/drive-sheet-music-picker-sheet';
 import { SheetMusicManagerSheet } from './sheet-music-manager-sheet';
 import type { SaveLinkOutcome } from '../save-to-drive/save-flow-model';
@@ -59,7 +71,21 @@ export const SheetMusicHost = ({
   playback,
 }: SheetMusicHostProps) => {
   const { savedLibrarySources, savedLoops, sheetMusic } = library;
-  const [item, setItem] = useState<SheetMusicItem | null>(null);
+  const [trackItem, setItem] = useState<SheetMusicItem | null>(null);
+  // A composite shows the combined list of its stems (composite-tracks 8.1).
+  const [compositeId, setCompositeId] = useState<string | null>(null);
+  const composites = useComposites();
+  const composite = compositeId
+    ? composites.find(({ id }) => id === compositeId)
+    : undefined;
+  const compositeView = useMemo(
+    () =>
+      composite
+        ? buildCompositeSheetMusicView(composite, savedLibrarySources)
+        : null,
+    [composite, savedLibrarySources],
+  );
+  const item = trackItem;
   const [viewerSourceId, setViewerSourceId] = useState<string | null>(null);
   const [isPickingFromDrive, setIsPickingFromDrive] = useState(false);
   // Remounting the manager after a Drive pick returns it to the list.
@@ -71,9 +97,17 @@ export const SheetMusicHost = ({
 
   useEffect(() => {
     return subscribeToSavedItemRequests((request) => {
+      if (request.action === 'composite-sheet-music') {
+        setItem(null);
+        setCompositeId(request.id);
+        return;
+      }
+
       if (request.action !== 'sheet-music') {
         return;
       }
+
+      setCompositeId(null);
 
       if (request.kind === 'loop') {
         const loop = savedLoops.find(({ id }) => id === request.id);
@@ -88,7 +122,22 @@ export const SheetMusicHost = ({
     });
   }, [savedLibrarySources, savedLoops]);
 
-  const resolution = item ? sheetMusic.sheetMusicFor(item) : null;
+  const ops = resolveCompositeSheetMusicOps({
+    composite,
+    savedLibrarySources,
+    sheetMusic,
+    store: getCompositeStore(),
+    trackItem,
+    view: compositeView,
+  });
+  const resolution = composite
+    ? {
+        owner: resolveCompositeSheetMusicOwner(composite, savedLibrarySources),
+        sheetMusic: compositeView?.sources ?? [],
+      }
+    : item
+      ? sheetMusic.sheetMusicFor(item)
+      : null;
   const currentSources = resolution?.sheetMusic;
   // Read when an upload finishes, which can be long after the sheet opened.
   const sourcesRef = useRef(currentSources);
@@ -108,7 +157,7 @@ export const SheetMusicHost = ({
     }
   }, [currentSources, openAfterCount]);
 
-  if (!item || !resolution?.owner) {
+  if (!ops || !resolution?.owner) {
     return null;
   }
 
@@ -134,9 +183,7 @@ export const SheetMusicHost = ({
         return 'source-removed';
       }
 
-      if (
-        !(await sheetMusic.replaceSheetMusicWithDrive(item, sourceId, file))
-      ) {
+      if (!(await ops.replaceWithDrive(sourceId, file))) {
         return 'failed';
       }
 
@@ -151,8 +198,7 @@ export const SheetMusicHost = ({
     const wasAdded =
       format !== 'refused' &&
       format !== 'link' &&
-      (await sheetMusic.addSheetMusic(
-        item,
+      (await ops.add(
         createDriveAddition({
           format,
           id: file.fileId,
@@ -177,7 +223,7 @@ export const SheetMusicHost = ({
       <SheetMusicManagerSheet
         key={managerKey}
         canMutate={true}
-        onAddLink={(addition) => sheetMusic.addSheetMusic(item, addition)}
+        onAddLink={ops.add}
         onChooseDevice={
           CAN_SAVE_TO_DRIVE
             ? () => setSaveTarget({ kind: 'device' })
@@ -186,8 +232,21 @@ export const SheetMusicHost = ({
         onChooseDrive={() => {
           setIsPickingFromDrive(true);
         }}
+        combined={
+          compositeView
+            ? {
+                addLabel: COMPOSITE_SHEET_MUSIC_ADD_LABEL,
+                editableIds: compositeView.editableIds,
+                emptyMessage: COMPOSITE_SHEET_MUSIC_EMPTY_MESSAGE,
+                limitMessage: COMPOSITE_SHEET_MUSIC_LIMIT_MESSAGE,
+                ownCount: compositeView.ownCount,
+                useLines: compositeView.useLines,
+              }
+            : undefined
+        }
         onClose={() => {
           setItem(null);
+          setCompositeId(null);
           setSaveTarget(null);
           setViewerSourceId(null);
           setIsPickingFromDrive(false);
@@ -201,10 +260,8 @@ export const SheetMusicHost = ({
 
           openExternal(resolveExternalUrl(source));
         }}
-        onRemove={(source) => sheetMusic.removeSheetMusic(item, source.id)}
-        onRename={(source, label) =>
-          sheetMusic.updateSheetMusic(item, source.id, { label })
-        }
+        onRemove={(source) => ops.remove(source.id)}
+        onRename={(source, label) => ops.update(source.id, { label })}
         onSaveToDrive={
           CAN_SAVE_TO_DRIVE
             ? (source) => setSaveTarget({ kind: 'link', sourceId: source.id })
@@ -222,14 +279,12 @@ export const SheetMusicHost = ({
             setIsPickingFromDrive(false);
           }}
           onPick={(file) => {
-            void sheetMusic
-              .addSheetMusic(item, createDriveAddition(file))
-              .then((wasAdded) => {
-                if (wasAdded) {
-                  setIsPickingFromDrive(false);
-                  setManagerKey((key) => key + 1);
-                }
-              });
+            void ops.add(createDriveAddition(file)).then((wasAdded) => {
+              if (wasAdded) {
+                setIsPickingFromDrive(false);
+                setManagerKey((key) => key + 1);
+              }
+            });
           }}
           onReconnectDrive={authorization.startAuthorization}
         />
@@ -243,10 +298,10 @@ export const SheetMusicHost = ({
           }
           isPlaying={playback.playbackState === 'playing'}
           onChangePartSelection={(sourceId, partSelection) => {
-            void sheetMusic.updateSheetMusic(item, sourceId, { partSelection });
+            void ops.update(sourceId, { partSelection });
           }}
           onChangePdfLayout={(sourceId, pdfLayout) => {
-            void sheetMusic.updateSheetMusic(item, sourceId, { pdfLayout });
+            void ops.update(sourceId, { pdfLayout });
           }}
           onClose={() => {
             setViewerSourceId(null);

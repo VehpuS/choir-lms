@@ -9,6 +9,7 @@ export type SavedItemRequestAction =
   | 'add-marker-here'
   | 'add-recording-to-playlist'
   | 'add-to-playlist'
+  | 'composite-sheet-music'
   | 'edit-loop'
   | 'edit-lyrics'
   | 'edit-tags'
@@ -24,7 +25,8 @@ export type SavedItemRequestAction =
 export type SavedItemRequest = {
   action: SavedItemRequestAction;
   /**
-   * The loop's id for a loop, the track's source id for a track; for
+   * The loop's id for a loop, the track's source id for a track, the composite's
+   * id for a `composite-*` action (its `kind` is then unused); for
    * `add-recording-to-playlist`, the recording's id (with kind `track`).
    */
   id: string;
@@ -82,6 +84,21 @@ export const resolveSavedItemShortcuts = (options: {
   item: Pick<PlayableItem, 'kind' | 'loopId' | 'sourceId'>;
 }): SavedItemShortcut[] => {
   const { isSaved, item } = options;
+
+  // A composite is not a saved track; what it offers is read from its stems.
+  if (item.kind === 'composite') {
+    return [
+      {
+        id: 'sheet-music',
+        label: SHEET_MUSIC_LABEL,
+        request: {
+          action: 'composite-sheet-music',
+          id: item.sourceId,
+          kind: 'track',
+        },
+      },
+    ];
+  }
 
   if (!isSaved) {
     return [];

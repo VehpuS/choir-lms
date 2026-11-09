@@ -18,6 +18,18 @@ import { darkScrollbarStyle } from '../../../components/dark-scrollbar';
 
 type SheetMusicManagerSheetProps = {
   canMutate: boolean;
+  /** Overrides for a composite's combined list; a track's list needs none. */
+  combined?: {
+    /** The footer button: `Add sheet music to this composite`. */
+    addLabel: string;
+    /** Sources the composite can rename and remove (the others belong to a stem). */
+    editableIds: ReadonlySet<string>;
+    emptyMessage: string;
+    limitMessage: string;
+    /** How many sources the composite holds itself, for the per-record limit. */
+    ownCount: number;
+    useLines: ReadonlyMap<string, string>;
+  };
   onAddLink: (addition: LinkAddition) => Promise<boolean>;
   onChooseDevice?: () => void;
   onChooseDrive?: () => void;
@@ -36,6 +48,7 @@ type SheetMusicManagerSheetProps = {
 /** The `Sheet music` manager: the track's sources, `Add sheet music`, and the limit. */
 export const SheetMusicManagerSheet = ({
   canMutate,
+  combined,
   onAddLink,
   onChooseDevice,
   onChooseDrive,
@@ -51,7 +64,9 @@ export const SheetMusicManagerSheet = ({
 }: SheetMusicManagerSheetProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const confirmation = useLibraryFilesConfirmationFlow();
-  const isAtLimit = hasReachedSheetMusicLimit(sources.length);
+  const isAtLimit = hasReachedSheetMusicLimit(
+    combined?.ownCount ?? sources.length,
+  );
 
   const requestRemove = (source: SheetMusicSource) => {
     confirmation.requestConfirmation({
@@ -75,7 +90,7 @@ export const SheetMusicManagerSheet = ({
             <OutlinedActionButton
               disabled={!canMutate || isAtLimit}
               icon="plus"
-              label="Add sheet music"
+              label={combined?.addLabel ?? 'Add sheet music'}
               onPress={() => {
                 setIsAdding(true);
               }}
@@ -117,11 +132,13 @@ export const SheetMusicManagerSheet = ({
         >
           {sources.length === 0 ? (
             <Text style={styles.copy}>
-              No sheet music yet. Add a score or a part for this track.
+              {combined?.emptyMessage ??
+                'No sheet music yet. Add a score or a part for this track.'}
             </Text>
           ) : null}
           {sources.map((source) => (
             <SheetMusicRow
+              canEdit={combined ? combined.editableIds.has(source.id) : true}
               disabled={!canMutate}
               key={source.id}
               onAction={onOpenSource}
@@ -131,9 +148,14 @@ export const SheetMusicManagerSheet = ({
               }}
               onSaveToDrive={onSaveToDrive}
               source={source}
+              useLine={combined?.useLines.get(source.id)}
             />
           ))}
-          {isAtLimit ? <Text style={styles.copy}>{LIMIT_MESSAGE}</Text> : null}
+          {isAtLimit ? (
+            <Text style={styles.copy}>
+              {combined?.limitMessage ?? LIMIT_MESSAGE}
+            </Text>
+          ) : null}
         </ScrollView>
       )}
       {confirmation.confirmationDialog}
