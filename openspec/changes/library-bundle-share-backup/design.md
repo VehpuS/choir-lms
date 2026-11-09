@@ -43,6 +43,8 @@ Parsing happens once, at the edge. Unknown fields are ignored, malformed entitie
 
 Sharing a folder subtree collects its tracks, then the loops and adjusted tracks owned by those tracks, playlists whose entries are all (or any) in scope, and composites whose stems are in scope. A playlist or composite that points outside the subtree keeps its in-scope parts; references to outside items are removed and reported in the export preview as `N references to items outside this folder were left out`. Reuses the impact logic in `library-files-bulk-impact`.
 
+The user can instead choose `Include the items its playlists use from other folders`, off by default. Outside items are then found once from the folder's own contents (tracks, loops and composites its playlists, composites and linked loops point at, plus each composite's stems), so pulling one in never snowballs into more playlists. A pulled-in track brings only the loops something refers to, not every loop it owns. They land at the top level of the bundle (their original folders are not recreated), so an import places them in the import root. The preview builds the bundle both ways to show `N items from other folders would be added`. Sharing more than the folder is why it is opt-in: the extra items' names, tags and Drive links go to everyone who can open the bundle.
+
 Alternative: refuse to export subtrees with outside references (too strict for real folders).
 
 ### 5. Where bundles live on Drive

@@ -12,6 +12,7 @@
 - [x] 2.2 Build a folder bundle: subtree, dependents (loops, adjusted tracks, playlists, composites) via the existing bulk-impact logic, with a count of references left out (done in `library-bundle-selection.ts`; the existing bulk-impact code is app-side and removal-oriented, so the dependents logic is a pure runtime function instead. Dependents living elsewhere get a top-level link in the bundle; loops and composites linked in the folder whose tracks are outside are dropped and counted)
 - [x] 2.3 Include recordings only when selected; reference an existing Drive copy from `RecordingExports`, otherwise mark the audio for upload (confirmed: recordings live only in a web IndexedDB store, native has none, outside the repository. Decided with the user: metadata-only format now. Done: `LibraryBundleRecording` with lineage re-keyed and audio `drive` or `not-uploaded`, builder returns `recordingsToUpload` and `uploadSizeBytes`. Reading recordings from IndexedDB, uploading the audio and restoring it are app-side and belong to 6.x and 7.x)
 - [x] 2.4 Specs: ids rewritten, no device ids leak, dependents included, outside references counted, recordings off by default
+- [x] 2.5 Optional `includeOutsideReferences` for a folder bundle: pull in the outside tracks, composites and referenced loops that the folder's playlists, composites and linked loops use, without snowballing, with `includedOutsideItemCount` for the preview (added at the user's request after the UI mock; spec, design and specs updated)
 
 ## 3. Import planner (`audio-library-runtime`)
 
@@ -46,7 +47,7 @@
 
 ## 7. Share and import UI (`mobile-rehearsal-player`)
 
-- [ ] 7.1 `Share` action on a library folder: preview with counts, left-out references and recordings choice, then write to `Shares` and show how to open it in Drive
+- [ ] 7.1 `Share` action on a library folder: preview with counts, left-out references and recordings choice and the choice to include the outside items its playlists use (off by default, with how many would be added), then write to `Shares` and show how to open it in Drive
 - [ ] 7.2 Import list of bundles (own and `Shared with me`) and the import preview (new, reused, dropped, needs access)
 - [ ] 7.3 Destination chooser and import progress with cancel; show `Imported from` on the import root folder
 - [ ] 7.4 Specs for the view models; verify in the browser preview

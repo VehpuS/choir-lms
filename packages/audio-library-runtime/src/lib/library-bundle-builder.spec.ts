@@ -153,3 +153,60 @@ describe('buildLibraryBundle for a folder', () => {
     assert.equal(lonely.leftOutReferenceCount, 2);
   });
 });
+
+describe('buildLibraryBundle for a folder with outside references included', () => {
+  const withOutside = () =>
+    buildLibraryBundle({
+      input: input(),
+      scope: { kind: 'folder', folderId: 'folder:messiah' },
+      author: AUTHOR,
+      createdAt: AT,
+      includeOutsideReferences: true,
+    });
+
+  it('brings in what the folder’s playlists and composites use, and leaves nothing out', () => {
+    const { bundle, leftOutReferenceCount, includedOutsideItemCount } =
+      withOutside();
+
+    assert.deepEqual(
+      bundle.sources.map((s) => s.name),
+      ['Soprano', 'Alto', 'Elsewhere', 'Soprano slow'],
+    );
+    assert.equal(bundle.playlists[0].items.length, 4);
+    assert.equal(bundle.composites.length, 2);
+    assert.equal(
+      bundle.composites.every((c) => c.stems.length === 2),
+      true,
+    );
+    assert.equal(leftOutReferenceCount, 0);
+    assert.equal(includedOutsideItemCount, 1);
+  });
+
+  it('does not pull in loops nothing refers to, or unrelated playlists', () => {
+    const { bundle } = withOutside();
+
+    assert.deepEqual(
+      bundle.loops.map((l) => l.name),
+      ['Entrance'],
+    );
+    assert.equal(bundle.playlists.length, 1);
+  });
+
+  it('puts the outside items at the top of the bundle and parses cleanly', () => {
+    const { bundle } = withOutside();
+    const elsewhere = bundle.sources.find((s) => s.name === 'Elsewhere');
+    const link = bundle.fileLinks.find((l) => l.entityId === elsewhere?.id);
+
+    assert.equal(link?.parentFolderId, null);
+    assert.equal(parseLibraryBundle(JSON.stringify(bundle)).status, 'ok');
+  });
+
+  it('adds nothing and changes nothing when the option is off', () => {
+    const { includedOutsideItemCount } = build({
+      kind: 'folder',
+      folderId: 'folder:messiah',
+    });
+
+    assert.equal(includedOutsideItemCount, 0);
+  });
+});

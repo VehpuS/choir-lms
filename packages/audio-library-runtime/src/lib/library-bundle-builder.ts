@@ -30,6 +30,8 @@ export type BuildLibraryBundleOptions = {
   createdAt: string;
   /** Drive owners by `driveFileId`, looked up at export; absent when unknown. */
   ownersByDriveFileId?: Readonly<Record<string, LibraryBundleOwner>>;
+  /** Folder scope: also include the outside items the folder's playlists refer to. */
+  includeOutsideReferences?: boolean;
   /** Every recording the device has; only the selected ones are written. */
   recordings?: readonly Recording[];
   /** Recordings the user chose to include; none by default (library-bundle spec). */
@@ -40,6 +42,8 @@ export type BuildLibraryBundleResult = {
   bundle: LibraryBundle;
   /** `N references to items outside this folder were left out`. */
   leftOutReferenceCount: number;
+  /** Outside tracks and composites added by `includeOutsideReferences`. */
+  includedOutsideItemCount: number;
   /** Included recordings whose audio has no Drive copy; the writer uploads them. */
   recordingsToUpload: { id: string; sizeBytes: number }[];
   /** Total audio bytes the writer would upload, shown before anything uploads. */
@@ -77,7 +81,9 @@ export const buildLibraryBundle = (
   options: BuildLibraryBundleOptions,
 ): BuildLibraryBundleResult => {
   const { input, scope } = options;
-  const selection = selectLibraryBundleContents(input, scope);
+  const selection = selectLibraryBundleContents(input, scope, {
+    includeOutsideReferences: options.includeOutsideReferences,
+  });
   const sourceIds = createIdMap('s');
   const loopIds = createIdMap('l');
   const playlistIds = createIdMap('p');
@@ -246,6 +252,7 @@ export const buildLibraryBundle = (
   return {
     bundle,
     leftOutReferenceCount: selection.leftOutReferenceCount,
+    includedOutsideItemCount: selection.includedOutsideItemCount,
     recordingsToUpload,
     uploadSizeBytes: recordingsToUpload.reduce(
       (total, { sizeBytes }) => total + sizeBytes,

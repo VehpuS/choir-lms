@@ -44,6 +44,17 @@ export type LibraryBundleSelection = {
   unlinked: { kind: RehearsalLibraryEntityKind; id: string }[];
   /** References to items outside the scope that were removed or left out. */
   leftOutReferenceCount: number;
+  /** Tracks and composites from outside the folder that were added because `includeOutsideReferences` was set. */
+  includedOutsideItemCount: number;
+};
+
+export type LibraryBundleSelectionOptions = {
+  /**
+   * Folder scope only: also bring in the items outside the folder that its
+   * playlists, composites and loops refer to, instead of leaving those
+   * references out. They sit at the top of the bundle.
+   */
+  includeOutsideReferences?: boolean;
 };
 
 const collectSubtree = (
@@ -97,9 +108,90 @@ const selectSources = (
   return new Set([...ids].filter((id) => byId.has(id)));
 };
 
+type LinkedEntityIds = Record<RehearsalLibraryEntityKind, ReadonlySet<string>>;
+
+/**
+ * What a folder's playlists, composites and loops point at outside it, found
+ * once from the folder's own contents so pulling one item in never snowballs
+ * into more playlists (design Decision 4).
+ */
+const collectOutsideReferences = (
+  input: LibraryBundleInput,
+  linked: LinkedEntityIds,
+) => {
+  const baseSourceIds = selectSources(input.sources, linked.track);
+  const baseCompositeIds = new Set([
+    ...linked.composite,
+    ...input.composites
+      .filter((composite) =>
+        composite.stems.some((stem) => baseSourceIds.has(stem.trackId)),
+      )
+      .map((composite) => composite.id),
+  ]);
+  const baseLoopIds = new Set(
+    input.loops
+      .filter((loop) => baseSourceIds.has(loop.sourceId))
+      .map((loop) => loop.id),
+  );
+  const playlists = input.playlists.filter(
+    (playlist) =>
+      linked.playlist.has(playlist.id) ||
+      playlist.items.some((entry) =>
+        isEntryInScope(entry, baseSourceIds, baseLoopIds, baseCompositeIds),
+      ),
+  );
+  const loopById = new Map(input.loops.map((loop) => [loop.id, loop]));
+  const trackIds = new Set(linked.track);
+  const compositeIds = new Set(linked.composite);
+  const loopIds = new Set<string>();
+
+  for (const loopId of linked.loop) {
+    const loop = loopById.get(loopId);
+
+    if (loop) {
+      loopIds.add(loop.id);
+      trackIds.add(loop.sourceId);
+    }
+  }
+
+  for (const entry of playlists.flatMap((playlist) => playlist.items)) {
+    if (entry.recordingId !== undefined) {
+      continue;
+    }
+
+    if (entry.kind === 'composite') {
+      compositeIds.add(entry.sourceId);
+    } else if (entry.kind === 'loop' && entry.loopId !== undefined) {
+      const loop = loopById.get(entry.loopId);
+
+      if (loop) {
+        loopIds.add(loop.id);
+        trackIds.add(loop.sourceId);
+      }
+    } else {
+      trackIds.add(entry.sourceId);
+    }
+  }
+
+  for (const composite of input.composites) {
+    if (compositeIds.has(composite.id)) {
+      composite.stems.forEach((stem) => trackIds.add(stem.trackId));
+    }
+  }
+
+  return {
+    baseSourceIds,
+    trackIds,
+    compositeIds,
+    loopIds,
+    playlistIds: new Set(playlists.map((playlist) => playlist.id)),
+  };
+};
+
 export const selectLibraryBundleContents = (
   input: LibraryBundleInput,
   scope: LibraryBundleSelectionScope,
+  options?: LibraryBundleSelectionOptions,
 ): LibraryBundleSelection => {
   const { tree } = input;
   const rootFolderId =
@@ -115,21 +207,41 @@ export const selectLibraryBundleContents = (
         .map((link) => link.entityId),
     );
 
+  const expansion =
+    scope.kind === 'folder' && options?.includeOutsideReferences
+      ? collectOutsideReferences(input, {
+          track: linkedIds('track'),
+          loop: linkedIds('loop'),
+          composite: linkedIds('composite'),
+          playlist: linkedIds('playlist'),
+        })
+      : null;
   let leftOut = 0;
   const sourceIds =
     scope.kind === 'library'
       ? new Set(input.sources.map((source) => source.id))
-      : selectSources(input.sources, linkedIds('track'));
+      : selectSources(input.sources, expansion?.trackIds ?? linkedIds('track'));
   const sources = input.sources.filter((source) => sourceIds.has(source.id));
 
-  const loops = input.loops.filter((loop) => sourceIds.has(loop.sourceId));
+  // A track pulled in from outside brings only the loops something refers to,
+  // not every loop it owns.
+  const loops = input.loops.filter(
+    (loop) =>
+      sourceIds.has(loop.sourceId) &&
+      (!expansion ||
+        expansion.baseSourceIds.has(loop.sourceId) ||
+        expansion.loopIds.has(loop.id)),
+  );
   const linkedLoopIds = linkedIds('loop');
   leftOut += input.loops.filter(
     (loop) => linkedLoopIds.has(loop.id) && !sourceIds.has(loop.sourceId),
   ).length;
   const loopIds = new Set(loops.map((loop) => loop.id));
 
-  const linkedCompositeIds = linkedIds('composite');
+  const linkedCompositeIds = new Set([
+    ...linkedIds('composite'),
+    ...(expansion?.compositeIds ?? []),
+  ]);
   const composites: CompositeTrack[] = [];
 
   for (const composite of input.composites) {
@@ -153,6 +265,10 @@ export const selectLibraryBundleContents = (
   const compositeIds = new Set(composites.map((composite) => composite.id));
   const linkedPlaylistIds = linkedIds('playlist');
   const playlists = input.playlists.filter((playlist) => {
+    if (expansion) {
+      return expansion.playlistIds.has(playlist.id);
+    }
+
     return (
       scope.kind === 'library' ||
       linkedPlaylistIds.has(playlist.id) ||
@@ -197,6 +313,15 @@ export const selectLibraryBundleContents = (
     fileLinks,
     // Library scope mirrors the library: it never invents links for strays.
     unlinked: scope.kind === 'library' ? [] : unlinked,
+    includedOutsideItemCount: expansion
+      ? sources.filter(
+          (source) =>
+            !expansion.baseSourceIds.has(source.id) && !source.adjustment,
+        ).length +
+        composites.filter(
+          (composite) => !linkedIds('composite').has(composite.id),
+        ).length
+      : 0,
     leftOutReferenceCount:
       leftOut +
       countLeftOutPlaylistEntries(playlists, sourceIds, loopIds, compositeIds),

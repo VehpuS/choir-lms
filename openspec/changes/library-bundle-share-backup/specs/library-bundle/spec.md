@@ -50,7 +50,7 @@ The system SHALL parse and validate a bundle at the point it is read, before any
 
 ### Requirement: A folder bundle includes the dependents of its contents
 
-The system SHALL, when building a bundle for a library folder, include the folder's subtree, the loops and adjusted tracks owned by its tracks, and the playlists and composites that refer to its tracks. References from an included playlist or composite to items outside the folder SHALL be removed and counted, and the count SHALL be shown before anything is written.
+The system SHALL, when building a bundle for a library folder, include the folder's subtree, the loops and adjusted tracks owned by its tracks, and the playlists and composites that refer to its tracks. By default, references from an included playlist or composite to items outside the folder SHALL be removed and counted, and the count SHALL be shown before anything is written. The user MAY instead choose to include the outside items those playlists, composites and loops refer to, in which case nothing is removed on their account.
 
 #### Scenario: Loops and adjusted tracks travel with their track
 
@@ -62,6 +62,19 @@ The system SHALL, when building a bundle for a library folder, include the folde
 - **WHEN** an exported playlist also holds a track from outside the folder
 - **THEN** the playlist is exported with only its in-folder entries
 - **AND** the export preview shows how many references were left out
+
+#### Scenario: Outside references can be included instead
+
+- **WHEN** the user chooses to include the items outside the folder that its playlists, composites and loops refer to
+- **THEN** those tracks, and the composites they belong to, are added to the bundle at its top level
+- **AND** the playlists and composites keep every entry and stem, and nothing is reported as left out except recordings
+- **AND** loops and playlists of those outside items that nothing in the folder refers to are not added
+
+#### Scenario: Including outside items is the user's choice
+
+- **WHEN** a user starts a share
+- **THEN** the outside items are not included unless the user chooses to
+- **AND** the preview shows how many outside items would be added
 
 #### Scenario: Composite with missing stems
 

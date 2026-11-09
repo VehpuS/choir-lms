@@ -19,6 +19,7 @@ The system SHALL let a user share a library folder by writing a bundle of it to 
 
 - **WHEN** a user reviews a share
 - **THEN** the preview shows counts of tracks, loops, playlists and composites, the references left out, and the recordings choice
+- **AND** it offers to include the outside items the folder's playlists refer to, showing how many would be added, and updates its counts when the choice changes
 
 ### Requirement: Bundles shared with the user can be found
 
