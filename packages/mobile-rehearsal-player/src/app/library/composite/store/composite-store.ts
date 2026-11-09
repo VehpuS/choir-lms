@@ -24,7 +24,10 @@ export type CompositeStorage = {
 
 export type CompositeStoreOptions = {
   storage: CompositeStorage;
-  /** Called after a composite is deleted, to drop what was prepared for it. */
+  /**
+   * Called after a composite is deleted, here or elsewhere (noticed on the
+   * next `refresh`), to drop what was prepared for it.
+   */
   onDeleted?: (compositeId: string) => void;
 };
 
@@ -107,8 +110,18 @@ export const createCompositeStore = (
         listeners.delete(listener);
       };
     },
+    // A composite can also be removed outside this store (deleting its file or
+    // folder in Files), so a composite that vanished since the last read has
+    // its prepared stems dropped here too.
     refresh: async () => {
-      publish(await options.storage.list());
+      const previousIds = snapshot.map(({ id }) => id);
+      const next = await options.storage.list();
+      const nextIds = new Set(next.map(({ id }) => id));
+
+      publish(next);
+      previousIds
+        .filter((id) => !nextIds.has(id))
+        .forEach((id) => options.onDeleted?.(id));
     },
     create: async (draft, createOptions) => {
       const composite = createCompositeTrack({

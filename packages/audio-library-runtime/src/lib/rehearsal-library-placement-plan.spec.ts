@@ -25,6 +25,7 @@ const verse = source('Verse.mp3');
 const chorus = source('Chorus.mp3');
 const otherVerse = { ...source('Other.mp3'), name: 'verse.mp3' };
 const entityCollections = {
+  composites: [],
   loops: [],
   playlists: [],
   sources: [verse, chorus, otherVerse],

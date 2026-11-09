@@ -83,6 +83,7 @@ afterEach(() => {
 });
 
 const CANONICAL_COLLECTION_READER = {
+  listComposites: () => Promise.resolve([]),
   async listLoops() {
     return [];
   },

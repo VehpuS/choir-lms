@@ -22,9 +22,20 @@ type CreatePlaybackExpansionContextOptions = {
   tree: RehearsalLibraryFileTree;
 };
 
-const toFolderChild = (
-  link: RehearsalLibraryFileTree['fileLinks'][number],
-): FolderChild => ({ entityId: link.entityId, kind: link.entityKind });
+type FileLink = RehearsalLibraryFileTree['fileLinks'][number];
+type ExpandableFileLink = FileLink & {
+  entityKind: Exclude<FileLink['entityKind'], 'composite'>;
+};
+
+// A composite in a folder is not expanded by bulk playback yet: it joins with
+// the Files surfaces (composite-tracks 7.5).
+const isExpandableFileLink = (link: FileLink): link is ExpandableFileLink =>
+  link.entityKind !== 'composite';
+
+const toFolderChild = (link: ExpandableFileLink): FolderChild => ({
+  entityId: link.entityId,
+  kind: link.entityKind,
+});
 
 // A playlist entry plays its track, or its loop when it has one.
 const toPlaybackRef = (
@@ -61,7 +72,10 @@ export const createPlaybackExpansionContext = ({
             }),
           ),
         ...tree.fileLinks
-          .filter((link) => link.parentFolderId === folderId)
+          .filter(
+            (link): link is ExpandableFileLink =>
+              link.parentFolderId === folderId && isExpandableFileLink(link),
+          )
           .map(toFolderChild),
       ];
 

@@ -64,6 +64,7 @@ export const resolveTagQueuePlayableItems = (
       options.fileLinks,
       options.loops,
       options.sources,
+      getCompositesSnapshot(),
     );
   });
 

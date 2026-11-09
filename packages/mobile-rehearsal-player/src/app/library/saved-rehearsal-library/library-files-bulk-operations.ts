@@ -60,6 +60,8 @@ export {
   type BulkRemoveFromLibraryImpact,
 } from './library-files-bulk-impact';
 
+import { getCompositesSnapshot } from '../composite/store/composite-store-instance';
+
 export const createLibraryFilesBulkOperations = ({
   options,
   practiceRepository,
@@ -67,7 +69,9 @@ export const createLibraryFilesBulkOperations = ({
   setTree,
   tree,
 }: LibraryFilesBulkOperationsOptions) => {
+  // Composites are files too, so placement conflicts count their names.
   const entityCollections = {
+    composites: [...getCompositesSnapshot()],
     loops: options.savedLoops,
     playlists: options.savedPlaylists,
     sources: options.savedSources,

@@ -1,4 +1,5 @@
 import type {
+  CompositeTrack,
   DriveAudioSource,
   NamedLoop,
   Playlist,
@@ -15,6 +16,12 @@ export type PracticeRepository = {
     options?: { fileLink?: RehearsalLibraryFileLinkNode },
   ): Promise<DriveAudioSource[]>;
   deleteSource(ownerId: string, sourceId: string): Promise<DriveAudioSource[]>;
+  listComposites(ownerId: string): Promise<CompositeTrack[]>;
+  /** Removes the composite record; its stems stay in the library as tracks. */
+  deleteComposite(
+    ownerId: string,
+    compositeId: string,
+  ): Promise<CompositeTrack[]>;
   listLoops(ownerId: string): Promise<NamedLoop[]>;
   saveLoop(loop: NamedLoop): Promise<NamedLoop[]>;
   deleteLoop(ownerId: string, loopId: string): Promise<NamedLoop[]>;

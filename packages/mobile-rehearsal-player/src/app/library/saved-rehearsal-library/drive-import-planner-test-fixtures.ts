@@ -22,6 +22,7 @@ export const createLibraryState = (options?: {
   sources?: DriveAudioSource[];
 }): DriveImportLibraryState => ({
   entityCollections: {
+    composites: [],
     loops: [],
     playlists: [],
     sources: options?.sources ?? [],

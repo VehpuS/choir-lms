@@ -32,7 +32,8 @@ export type FilesSelectionItem =
   | { folderId: string; kind: 'folder' }
   | {
       entityId: string;
-      entityKind: RehearsalLibraryEntityKind;
+      // Composite rows join Files selection with composite-tracks 7.5.
+      entityKind: Exclude<RehearsalLibraryEntityKind, 'composite'>;
       fileLinkId: string;
       kind: 'link';
     };
@@ -45,16 +46,22 @@ export const toFilesSelectionEntry = (
 ): SelectionEntry<FilesSelectionItem> => {
   const key = getLibraryFilesRowNodeKey(row);
 
+  if (row.kind === 'folder') {
+    return { item: { folderId: row.folder.id, kind: 'folder' }, key };
+  }
+
+  if (row.fileLink.entityKind === 'composite') {
+    // No composite rows are built until 7.5, so this cannot be reached yet.
+    throw new Error('Composite files cannot be selected yet.');
+  }
+
   return {
-    item:
-      row.kind === 'folder'
-        ? { folderId: row.folder.id, kind: 'folder' }
-        : {
-            entityId: row.fileLink.entityId,
-            entityKind: row.fileLink.entityKind,
-            fileLinkId: row.fileLink.id,
-            kind: 'link',
-          },
+    item: {
+      entityId: row.fileLink.entityId,
+      entityKind: row.fileLink.entityKind,
+      fileLinkId: row.fileLink.id,
+      kind: 'link',
+    },
     key,
   };
 };

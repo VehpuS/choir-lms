@@ -5,7 +5,7 @@ import type {
 } from '@org/audio-library-models';
 import {
   resolveRehearsalLibraryTagMatches,
-  type RehearsalLibraryEntityCollections,
+  type RehearsalLibraryTagCollections,
 } from '@org/audio-library-runtime';
 import { useMemo, useState } from 'react';
 
@@ -30,7 +30,7 @@ const TAG_DETAIL_EYEBROW = 'Tag';
 const TAG_DETAIL_CLOSE_ACCESSIBILITY_LABEL = 'Close tag detail';
 
 type TagDetailSectionProps = {
-  entityCollections: RehearsalLibraryEntityCollections;
+  entityCollections: RehearsalLibraryTagCollections;
   fileLinks: RehearsalLibraryFileLinkNode[];
   folders: RehearsalLibraryFolderNode[];
   onClose: () => void;

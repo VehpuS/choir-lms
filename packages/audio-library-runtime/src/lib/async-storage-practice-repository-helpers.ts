@@ -20,6 +20,7 @@ import {
 } from './rehearsal-library-files';
 
 type LibraryFolderDeletionRepository = {
+  deleteComposite(ownerId: string, compositeId: string): Promise<unknown[]>;
   deleteLoop(ownerId: string, loopId: string): Promise<NamedLoop[]>;
   deletePlaylist(ownerId: string, playlistId: string): Promise<unknown[]>;
   deleteSource(ownerId: string, sourceId: string): Promise<DriveAudioSource[]>;
@@ -240,6 +241,8 @@ export const deleteLibraryFileLinkFromRepository = async (
     await repository.deleteSource(ownerId, fileLink.entityId);
   } else if (fileLink.entityKind === 'loop') {
     await repository.deleteLoop(ownerId, fileLink.entityId);
+  } else if (fileLink.entityKind === 'composite') {
+    await repository.deleteComposite(ownerId, fileLink.entityId);
   } else {
     await repository.deletePlaylist(ownerId, fileLink.entityId);
   }

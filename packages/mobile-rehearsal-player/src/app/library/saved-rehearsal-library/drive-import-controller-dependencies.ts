@@ -52,13 +52,17 @@ export const createDriveImportControllerDependencies = (
     });
   },
   async loadLibraryState() {
-    const [sources, loops, playlists, tree] = await Promise.all([
+    const [sources, loops, playlists, composites, tree] = await Promise.all([
       practiceRepository.listSources(LOCAL_REHEARSAL_LIBRARY_OWNER_ID),
       practiceRepository.listLoops(LOCAL_REHEARSAL_LIBRARY_OWNER_ID),
       practiceRepository.listPlaylists(LOCAL_REHEARSAL_LIBRARY_OWNER_ID),
+      practiceRepository.listComposites(LOCAL_REHEARSAL_LIBRARY_OWNER_ID),
       practiceRepository.listLibraryFileTree(LOCAL_REHEARSAL_LIBRARY_OWNER_ID),
     ]);
 
-    return { entityCollections: { loops, playlists, sources }, tree };
+    return {
+      entityCollections: { composites, loops, playlists, sources },
+      tree,
+    };
   },
 });

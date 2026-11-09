@@ -3,7 +3,14 @@ import {
   type RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
 
-import type { RehearsalLibraryEntityCollections } from './rehearsal-library-files';
+import type { RehearsalLibraryEntityCollections as FileEntityCollections } from './rehearsal-library-files';
+
+/** Composites carry no tags, so tag views take the collections without them. */
+export type RehearsalLibraryTagCollections = Omit<
+  FileEntityCollections,
+  'composites'
+>;
+type RehearsalLibraryEntityCollections = RehearsalLibraryTagCollections;
 
 export type RehearsalLibraryTagUsage = {
   tag: string;

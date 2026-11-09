@@ -156,6 +156,7 @@ export const resolveFolderPlayableItems = (
   fileLinks: RehearsalLibraryFileLinkNode[],
   loops: NamedLoop[],
   sources: DriveAudioSource[],
+  composites: readonly CompositeTrack[] = [],
 ): PlayableItem[] => {
   const subtreeFolderIds = resolveRehearsalLibraryFolderSubtreeIds(
     folder.id,
@@ -181,6 +182,17 @@ export const resolveFolderPlayableItems = (
       return source && isSourcePlayable(source)
         ? [createTrackPlayableItem(source)]
         : [];
+    }
+
+    // A composite in a folder plays as one item; one with every stem gone is
+    // unavailable and skipped, like a track that cannot play.
+    if (fileLink.entityKind === 'composite') {
+      const composite = composites.find(({ id }) => id === fileLink.entityId);
+      const item = composite
+        ? resolveCompositePlayableItem(composite, { sources })
+        : null;
+
+      return item ? [item] : [];
     }
 
     if (fileLink.entityKind === 'loop') {

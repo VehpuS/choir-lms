@@ -1,4 +1,5 @@
 import {
+  type CompositeTrack,
   type DriveAudioSource,
   type NamedLoop,
   type Playlist,
@@ -12,6 +13,10 @@ import {
   normalizeStoredSources,
 } from './async-storage-practice-repository-helpers';
 
+import {
+  listStoredComposites,
+  updateStoredComposites,
+} from './composites-storage';
 import type { PracticeRepository } from './practice-repository';
 import {
   persistSynchronizedLibraryFileTree,
@@ -98,6 +103,19 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
 
   async deleteLoop(ownerId: string, loopId: string) {
     return deleteLoopFromRepository(this, ownerId, loopId);
+  }
+
+  async listComposites(ownerId: string): Promise<CompositeTrack[]> {
+    return listStoredComposites(ownerId);
+  }
+
+  async deleteComposite(
+    ownerId: string,
+    compositeId: string,
+  ): Promise<CompositeTrack[]> {
+    return updateStoredComposites(ownerId, (composites) =>
+      composites.filter(({ id }) => id !== compositeId),
+    );
   }
 
   async listPlaylists(ownerId: string) {

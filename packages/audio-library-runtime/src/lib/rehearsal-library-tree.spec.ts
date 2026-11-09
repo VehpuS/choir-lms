@@ -89,6 +89,7 @@ describe('rehearsal-library file-tree helpers', () => {
         ],
       },
       entityCollections: {
+        composites: [],
         loops: [SAVED_LOOP],
         playlists: [PLAYLIST],
         sources: [AVAILABLE_SOURCE],

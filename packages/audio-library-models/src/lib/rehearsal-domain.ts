@@ -135,10 +135,8 @@ export type Playlist = {
   updatedAt: string;
 };
 
-/** Composites join the library selection with the Library surfaces (composite-tracks 5.1 and 7.1). */
-export type RehearsalLibraryEntityKind =
-  | Exclude<PlayableItemKind, 'composite'>
-  | 'playlist';
+/** A composite is a file like a track, loop or playlist (composite-tracks 7.4). */
+export type RehearsalLibraryEntityKind = PlayableItemKind | 'playlist';
 
 export type RehearsalLibraryFolderNode = {
   id: string;

@@ -46,6 +46,7 @@ export async function saveLoopToRepository(
 
   await writeStoredCollection('loops', loop.ownerId, nextLoops);
   await persistSynchronizedLibraryFileTree(repository, loop.ownerId, {
+    composites: await repository.listComposites(loop.ownerId),
     loops: nextLoops,
     playlists: await repository.listPlaylists(loop.ownerId),
     sources: await repository.listSources(loop.ownerId),
@@ -64,6 +65,7 @@ export async function deleteLoopFromRepository(
 
   await writeStoredCollection('loops', ownerId, nextLoops);
   await persistSynchronizedLibraryFileTree(repository, ownerId, {
+    composites: await repository.listComposites(ownerId),
     loops: nextLoops,
     playlists: await repository.listPlaylists(ownerId),
     sources: await repository.listSources(ownerId),
@@ -95,6 +97,7 @@ export async function savePlaylistToRepository(
 
   await writeStoredCollection('playlists', ownerId, nextPlaylists);
   await persistSynchronizedLibraryFileTree(repository, ownerId, {
+    composites: await repository.listComposites(ownerId),
     loops: await repository.listLoops(ownerId),
     playlists: nextPlaylists,
     sources: await repository.listSources(ownerId),
@@ -116,6 +119,7 @@ export async function deletePlaylistFromRepository(
 
   await writeStoredCollection('playlists', ownerId, nextPlaylists);
   await persistSynchronizedLibraryFileTree(repository, ownerId, {
+    composites: await repository.listComposites(ownerId),
     loops: await repository.listLoops(ownerId),
     playlists: nextPlaylists,
     sources: await repository.listSources(ownerId),

@@ -40,6 +40,7 @@ export const createPlanState = async (
   repository: AsyncStoragePracticeRepository,
 ) => ({
   entityCollections: {
+    composites: await repository.listComposites(OWNER_ID),
     loops: await repository.listLoops(OWNER_ID),
     playlists: await repository.listPlaylists(OWNER_ID),
     sources: await repository.listSources(OWNER_ID),

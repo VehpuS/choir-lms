@@ -2,6 +2,7 @@ import {
   normalizeLibraryEntityTags,
   normalizePlaylist,
   withResolvedTagAddedAt,
+  type CompositeTrack,
   type DriveAudioSource,
   type NamedLoop,
   type Playlist,
@@ -10,6 +11,7 @@ import {
   type RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
 
+import { updateStoredComposites } from './composites-storage';
 import {
   applyRehearsalLibraryFileLinkMutation,
   applyRehearsalLibraryFolderMutation,
@@ -29,6 +31,7 @@ import {
 // once (design Decision 10): a reload never shows half an action. Each takes
 // the repository only for its list/save reads.
 type BatchRepository = {
+  listComposites(ownerId: string): Promise<CompositeTrack[]>;
   listLoops(ownerId: string): Promise<NamedLoop[]>;
   listPlaylists(ownerId: string): Promise<Playlist[]>;
   listSources(ownerId: string): Promise<DriveAudioSource[]>;
@@ -36,6 +39,7 @@ type BatchRepository = {
 };
 
 export type RemovedEntityIds = {
+  compositeIds?: readonly string[];
   loopIds?: readonly string[];
   playlistIds?: readonly string[];
   sourceIds?: readonly string[];
@@ -121,7 +125,12 @@ const removeEntities = async (
   ]);
   const removedLoopIds = new Set(options.entities.loopIds ?? []);
   const removedPlaylistIds = new Set(options.entities.playlistIds ?? []);
+  const removedCompositeIds = new Set(options.entities.compositeIds ?? []);
   const next: RehearsalLibraryEntityCollections = {
+    // The stems stay as tracks; only the composite record goes.
+    composites: before.composites.filter(
+      ({ id }) => !removedCompositeIds.has(id),
+    ),
     loops: before.loops.filter((loop) => {
       return (
         !removedLoopIds.has(loop.id) && !removedSourceIds.has(loop.sourceId)
@@ -146,6 +155,12 @@ const removeEntities = async (
   await writeStoredCollection('loops', ownerId, next.loops);
   await writeStoredCollection('playlists', ownerId, next.playlists);
   await writeStoredCollection('sources', ownerId, next.sources);
+
+  if (removedCompositeIds.size > 0) {
+    await updateStoredComposites(ownerId, (composites) =>
+      composites.filter(({ id }) => !removedCompositeIds.has(id)),
+    );
+  }
 
   const prunedTree = options.removedFileLinkIds
     ? {
@@ -195,7 +210,7 @@ export const removeLibraryFileLinksFromRepository = async (
       !remainingEntityKeys.has(`${fileLink.entityKind}:${fileLink.entityId}`)
     );
   });
-  const idsOfKind = (kind: 'track' | 'loop' | 'playlist') => [
+  const idsOfKind = (kind: 'track' | 'loop' | 'playlist' | 'composite') => [
     ...new Set(
       lastLinkEntities
         .filter((fileLink) => fileLink.entityKind === kind)
@@ -205,6 +220,7 @@ export const removeLibraryFileLinksFromRepository = async (
 
   return removeEntities(repository, ownerId, {
     entities: {
+      compositeIds: idsOfKind('composite'),
       loopIds: idsOfKind('loop'),
       playlistIds: idsOfKind('playlist'),
       sourceIds: idsOfKind('track'),
@@ -277,6 +293,8 @@ export const updateLibraryTagsInRepository = async (
     return targetKeys.has(`${kind}:${id}`);
   };
   const next: RehearsalLibraryEntityCollections = {
+    // Composites carry no tags.
+    composites: before.composites,
     loops: before.loops.map((loop) => {
       return isTarget('loop', loop.id)
         ? applyTagChange(loop, change, now)

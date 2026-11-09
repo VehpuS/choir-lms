@@ -27,6 +27,12 @@ const resolveRehearsalLibraryEntityName = (
     return entityCollections.loops.find((loop) => loop.id === entityId)?.name;
   }
 
+  if (entityKind === 'composite') {
+    return entityCollections.composites.find(
+      (composite) => composite.id === entityId,
+    )?.name;
+  }
+
   return entityCollections.playlists.find(
     (playlist) => playlist.id === entityId,
   )?.name;

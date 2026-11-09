@@ -1,4 +1,5 @@
 import type {
+  CompositeTrack,
   DriveAudioSource,
   NamedLoop,
   Playlist,
@@ -18,6 +19,7 @@ import {
 type StoredCollectionKind = 'sources' | 'loops' | 'playlists' | 'composites';
 
 type CanonicalCollectionReader = {
+  listComposites(ownerId: string): Promise<CompositeTrack[]>;
   listLoops(ownerId: string): Promise<NamedLoop[]>;
   listPlaylists(ownerId: string): Promise<Playlist[]>;
   listSources(ownerId: string): Promise<DriveAudioSource[]>;
@@ -125,6 +127,7 @@ export const loadCanonicalCollections = async (
   ownerId: string,
 ): Promise<RehearsalLibraryEntityCollections> => {
   return {
+    composites: await repository.listComposites(ownerId),
     loops: await repository.listLoops(ownerId),
     playlists: await repository.listPlaylists(ownerId),
     sources: await repository.listSources(ownerId),
@@ -138,6 +141,12 @@ export const hasCanonicalEntity = (
   if (fileLink.entityKind === 'track') {
     return entityCollections.sources.some(
       (source) => source.id === fileLink.entityId,
+    );
+  }
+
+  if (fileLink.entityKind === 'composite') {
+    return entityCollections.composites.some(
+      (composite) => composite.id === fileLink.entityId,
     );
   }
 

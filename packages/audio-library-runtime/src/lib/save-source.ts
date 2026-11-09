@@ -18,7 +18,11 @@ import {
 
 type SourceSaveRepository = Pick<
   PracticeRepository,
-  'listLibraryFileTree' | 'listLoops' | 'listPlaylists' | 'listSources'
+  | 'listComposites'
+  | 'listLibraryFileTree'
+  | 'listLoops'
+  | 'listPlaylists'
+  | 'listSources'
 >;
 
 export const saveSource = async (options: {
@@ -42,6 +46,7 @@ export const saveSource = async (options: {
   );
   const nextSources = sortBy([...otherSources, sourceToSave], ['name']);
   const entityCollections = {
+    composites: await options.repository.listComposites(options.ownerId),
     loops: await options.repository.listLoops(options.ownerId),
     playlists: await options.repository.listPlaylists(options.ownerId),
     sources: nextSources,

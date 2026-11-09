@@ -1,5 +1,6 @@
 import {
   withResolvedTagAddedAt,
+  type CompositeTrack,
   type DriveAudioSource,
   type NamedLoop,
   type Playlist,
@@ -10,6 +11,7 @@ import {
 } from '@org/audio-library-models';
 
 export type RehearsalLibraryEntityCollections = {
+  composites: CompositeTrack[];
   loops: NamedLoop[];
   playlists: Playlist[];
   sources: DriveAudioSource[];
@@ -48,7 +50,12 @@ export const resolveBackfilledCreatedAt = (createdAt: unknown): string => {
 const isRehearsalLibraryEntityKind = (
   value: unknown,
 ): value is RehearsalLibraryEntityKind => {
-  return value === 'track' || value === 'loop' || value === 'playlist';
+  return (
+    value === 'track' ||
+    value === 'loop' ||
+    value === 'playlist' ||
+    value === 'composite'
+  );
 };
 
 const isRehearsalLibraryFolderNode = (
@@ -183,6 +190,10 @@ const buildExpectedEntityReferences = (
     ...entityCollections.playlists.map((playlist) => ({
       entityId: playlist.id,
       entityKind: 'playlist' as const,
+    })),
+    ...entityCollections.composites.map((composite) => ({
+      entityId: composite.id,
+      entityKind: 'composite' as const,
     })),
   ];
 };

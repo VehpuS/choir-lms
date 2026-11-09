@@ -59,6 +59,7 @@ describe('resolveRehearsalLibraryCopyVisibleName', () => {
         ],
       },
       entityCollections: {
+        composites: [],
         loops: [],
         playlists: [],
         sources: [AVAILABLE_SOURCE],
@@ -107,6 +108,7 @@ describe('resolveRehearsalLibraryCopyVisibleName', () => {
         ],
       },
       entityCollections: {
+        composites: [],
         loops: [],
         playlists: [],
         sources: [AVAILABLE_SOURCE],

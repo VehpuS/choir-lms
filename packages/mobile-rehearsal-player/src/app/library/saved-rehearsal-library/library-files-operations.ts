@@ -8,6 +8,7 @@ import {
 } from '@org/audio-library-runtime';
 import type { Dispatch, SetStateAction } from 'react';
 
+import { getCompositesSnapshot } from '../composite/store/composite-store-instance';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../storage/local-library-storage';
 import type { LibraryFilesExplorerState } from './library-files-model';
 import {
@@ -175,6 +176,7 @@ export const createLibraryFilesOperations = ({
           optionsForCopy.visibleName ??
           resolveRehearsalLibraryCopyVisibleName({
             entityCollections: {
+              composites: [...getCompositesSnapshot()],
               loops: options.savedLoops,
               playlists: options.savedPlaylists,
               sources: options.savedSources,

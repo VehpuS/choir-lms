@@ -30,10 +30,51 @@ const setup = (initial: CompositeTrack[] = []) => {
     onDeleted: (id) => deleted.push(id),
   });
 
-  return { store, deleted, saved: () => saved };
+  return {
+    store,
+    deleted,
+    saved: () => saved,
+    setSaved: (next: CompositeTrack[]) => {
+      saved = next;
+    },
+  };
+};
+
+const storageRemove = async (
+  t: ReturnType<typeof setup>,
+  compositeId: string,
+) => {
+  t.setSaved(t.saved().filter(({ id }) => id !== compositeId));
 };
 
 describe('composite store', () => {
+  it('drops the prepared stems of a composite removed outside the store, once', async () => {
+    const t = setup();
+    const composite = await t.store.create(DRAFT);
+
+    assert.ok(composite);
+
+    // Removed behind the store's back, as deleting its file in Files does.
+    await storageRemove(t, composite.id);
+    await t.store.refresh();
+    await t.store.refresh();
+
+    assert.deepEqual(t.deleted, [composite.id]);
+    assert.deepEqual(t.store.getSnapshot(), []);
+  });
+
+  it('does not report anything deleted on the first read', async () => {
+    const composite = await setup().store.create(DRAFT);
+
+    assert.ok(composite);
+
+    const t = setup([composite]);
+
+    await t.store.refresh();
+
+    assert.deepEqual(t.deleted, []);
+  });
+
   it('creates a composite, saves it and tells subscribers', async () => {
     const t = setup();
     let notified = 0;

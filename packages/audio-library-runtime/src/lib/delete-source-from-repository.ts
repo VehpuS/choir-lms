@@ -49,6 +49,7 @@ export const deleteSourceFromRepository = async (
   await writeStoredCollection('playlists', ownerId, nextPlaylists);
   await writeStoredCollection('sources', ownerId, nextSources);
   await persistSynchronizedLibraryFileTree(repository, ownerId, {
+    composites: await repository.listComposites(ownerId),
     loops: nextLoops,
     playlists: nextPlaylists,
     sources: nextSources,
