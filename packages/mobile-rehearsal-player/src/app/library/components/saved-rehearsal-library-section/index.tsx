@@ -5,7 +5,11 @@ import { SavedTrackPlaylistMenuSurface } from '../../playlists/components/saved-
 import { resolveHasActiveLibraryFilters } from '../../search/utils/saved-library-search-view-model';
 import { RecordingsLibraryView } from '../../recording/components/recordings-library-view';
 import { SavedRehearsalLibraryBrowseContent } from './browse-content';
-import { shouldRenderRecordingsView } from './browse-content-model';
+import {
+  shouldRenderCompositesView,
+  shouldRenderRecordingsView,
+} from './browse-content-model';
+import { CompositesLibraryView } from '../../composite/list/composites-library-view';
 import { buildSavedRehearsalLibraryDetailSectionElements } from './detail-section-elements';
 import { useSavedItemRequestHandler } from '../saved-item-menu/use-saved-item-request-handler';
 import { SavedRehearsalLibrarySearchShell } from './search-shell';
@@ -222,6 +226,19 @@ export const SavedRehearsalLibrarySection = (
             onDetailSearchActionsChange={props.onDetailSearchActionsChange}
             onPlayItem={props.togglePlayableItemPlayback}
             sources={savedLibrarySources}
+          />
+        ) : null}
+        {shouldRenderBrowseContent &&
+        shouldRenderCompositesView(selectedView) ? (
+          <CompositesLibraryView
+            activePlayableItem={activePlayableItem}
+            canQueueAsNext={activePlayableItem !== null}
+            playbackState={playbackState}
+            queuePlayableItemNext={props.queuePlayableItemNext}
+            queuePlayableItemUpNext={props.queuePlayableItemUpNext}
+            searchQuery={searchState.activeLibrarySearchQuery}
+            sources={savedLibrarySources}
+            togglePlayableItemPlayback={props.togglePlayableItemPlayback}
           />
         ) : null}
         {shouldRenderBrowseContent ? (

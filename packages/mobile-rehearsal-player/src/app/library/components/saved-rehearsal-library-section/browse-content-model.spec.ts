@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   resolveSearchNoResultsMessage,
+  shouldRenderCompositesView,
   shouldRenderRecordingsView,
 } from './browse-content-model';
 
@@ -93,5 +94,12 @@ describe('the Recordings view', () => {
       }),
       null,
     );
+  });
+});
+
+describe('shouldRenderCompositesView', () => {
+  it('is true only for the Composites view', () => {
+    assert.equal(shouldRenderCompositesView('composites'), true);
+    assert.equal(shouldRenderCompositesView('tracks'), false);
   });
 });

@@ -42,6 +42,13 @@ export const shouldRenderRecordingsView = (
   return selectedView === 'recordings';
 };
 
+// The Composites view renders its own list from the composite store.
+export const shouldRenderCompositesView = (
+  selectedView: SavedRehearsalLibraryView,
+) => {
+  return selectedView === 'composites';
+};
+
 export const shouldRenderFilesLoopBuilder = (options: {
   activeLibrarySearchQuery: string | null;
   selectedTrack: PlayableItem | null;
