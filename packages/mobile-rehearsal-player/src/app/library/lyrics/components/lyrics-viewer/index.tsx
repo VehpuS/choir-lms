@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import { CompositeLyricsPicker } from '../../../composite/content/composite-lyrics-picker';
+import { getCompositeStore } from '../../../composite/store/composite-store-instance';
 import { describeLyricsOwner } from '../../../composite/content/composite-lyrics-model';
 import { requestSavedItemAction } from '../../../components/saved-item-menu/saved-item-requests';
 import { useLyricsFor } from '../../../components/saved-item-menu/saved-item-availability-context';
@@ -42,6 +44,15 @@ export const LyricsViewerHost = ({
   const close = () => {
     setView(null);
   };
+  // A composite can switch the stem whose lyrics are read, as in the section.
+  const picker = composite ? (
+    <CompositeLyricsPicker
+      info={composite}
+      onSelect={(stemId) => {
+        void getCompositeStore().setLyricsStem(composite.compositeId, stemId);
+      }}
+    />
+  ) : null;
 
   if (view.mode === 'peek') {
     return (
@@ -59,6 +70,7 @@ export const LyricsViewerHost = ({
           setView({ ...view, mode: 'reading' });
         }}
         ownerName={describeLyricsOwner(owner.name, composite?.stemName)}
+        picker={picker}
         text={lyrics.text}
       />
     );
@@ -71,6 +83,7 @@ export const LyricsViewerHost = ({
       onClose={close}
       onTogglePlayback={onTogglePlayback}
       ownerName={describeLyricsOwner(owner.name, composite?.stemName)}
+      picker={picker}
       text={lyrics.text}
     />
   );

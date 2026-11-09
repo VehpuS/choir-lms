@@ -11,6 +11,7 @@ import {
 import { appTheme } from '../../../utils/theme';
 import {
   MAX_VOLUME_PERCENT,
+  RELINK_LABEL,
   REMOVE_LABEL,
   STEM_MISSING_HINT,
   STEM_MISSING_LABEL,
@@ -32,6 +33,7 @@ type MixStemRowProps = {
   onSetVolume: (stemId: string, volume: number) => void;
   onOpenOptions: (stemId: string) => void;
   onRemove: (stemId: string) => void;
+  onRelink: (stemId: string) => void;
 };
 
 const getSliderNumber = (value: number | number[]) =>
@@ -76,6 +78,7 @@ const MuteSoloButton = ({
 /** One stem: mute, solo, a 0 to 150% volume, its options; or the missing state. */
 export const MixStemRow = ({
   onOpenOptions,
+  onRelink,
   onRemove,
   onSetVolume,
   onToggleMute,
@@ -105,6 +108,15 @@ export const MixStemRow = ({
         <Text numberOfLines={2} style={[styles.subline, styles.hint]}>
           {STEM_MISSING_HINT}
         </Text>
+        <Pressable
+          accessibilityLabel={`${RELINK_LABEL} ${row.name}`}
+          accessibilityRole="button"
+          hitSlop={space.xs}
+          onPress={() => onRelink(row.stemId)}
+          style={buttonInteractionGuardStyle}
+        >
+          <Text style={styles.link}>{RELINK_LABEL}</Text>
+        </Pressable>
         <Pressable
           accessibilityLabel={`${REMOVE_LABEL} ${row.name}`}
           accessibilityRole="button"

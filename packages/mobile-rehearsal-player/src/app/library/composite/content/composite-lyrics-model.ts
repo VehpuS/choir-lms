@@ -69,13 +69,13 @@ export const resolveCompositeLyrics = (
   };
 };
 
-/** `Stem 2 (Baritone.m4a)`: the stem the lyrics belong to, then its track. */
+/** `Baritone.m4a (Stem 2)`: the track the lyrics belong to, then the stem. */
 export const describeLyricsOwner = (
   trackName: string,
   stemName?: string,
 ): string => {
   return stemName && stemName !== trackName
-    ? `${stemName} (${trackName})`
+    ? `${trackName} (${stemName})`
     : trackName;
 };
 

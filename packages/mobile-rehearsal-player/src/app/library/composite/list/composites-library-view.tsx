@@ -17,6 +17,8 @@ import {
   ExplorerListRow,
   ExplorerListSurface,
 } from '../../components/explorer';
+import { useHasLyricsFor } from '../../components/saved-item-menu/saved-item-availability-context';
+import { LibraryEmptyState } from '../../components/library-empty-state';
 import { OptionsMenuSheet } from '../../components/options-menu-sheet';
 import {
   isSavedTrackPlaybackActive,
@@ -35,6 +37,7 @@ import {
 } from '../store/composite-store-instance';
 import {
   buildDeleteCompositeDialog,
+  resolveCompositeContentActions,
   resolveCompositeRowMenu,
 } from './composite-row-actions';
 import { resolveCompositeOfflineMenuActions } from './composite-offline-menu';
@@ -42,6 +45,7 @@ import { CompositePlaylistPicker } from './composite-playlist-picker';
 import { CompositeRenameSheet } from './composite-rename-sheet';
 import {
   COMPOSITES_EMPTY_MESSAGE,
+  COMPOSITES_EMPTY_TITLE,
   buildCompositeLibraryRows,
   resolveCompositesNoResultsMessage,
   type CompositeLibraryRow,
@@ -87,6 +91,7 @@ export const CompositesLibraryView = ({
   const composites = useComposites();
   // Re-render when a stem file's offline state changes.
   useOfflineRevision();
+  const hasLyricsFor = useHasLyricsFor();
   const [menuId, setMenuId] = useState<string | null>(null);
   const [renameId, setRenameId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -116,9 +121,10 @@ export const CompositesLibraryView = ({
 
   if (composites.length === 0) {
     return (
-      <View style={styles.empty}>
-        <Text style={styles.emptyMessage}>{COMPOSITES_EMPTY_MESSAGE}</Text>
-      </View>
+      <LibraryEmptyState
+        message={COMPOSITES_EMPTY_MESSAGE}
+        title={COMPOSITES_EMPTY_TITLE}
+      />
     );
   }
 
@@ -143,6 +149,10 @@ export const CompositesLibraryView = ({
             isPlayable: item !== null && availability.available,
             canQueueAsNext,
             canAddToPlaylist: canMutatePlaylists && !isPlaylistMutating,
+            contentActions: resolveCompositeContentActions({
+              compositeId: row.id,
+              hasLyrics: hasLyricsFor(row.id),
+            }),
             offlineActions: offlineActionsFor(row.id),
             onAddToPlaylist: () => setPlaylistId(row.id),
             onPlayNext: () => item && queuePlayableItemNext(item),
@@ -252,13 +262,7 @@ export const CompositesLibraryView = ({
 };
 
 const styles = StyleSheet.create({
-  empty: { gap: appTheme.space.sm, paddingVertical: appTheme.space.lg },
   emptyHint: { ...appTheme.type.rowMeta, color: appTheme.colors.textMuted },
-  emptyMessage: {
-    ...appTheme.type.body,
-    color: appTheme.colors.textMuted,
-    lineHeight: 20,
-  },
   group: { gap: appTheme.space.md },
   overflow: { position: 'relative', right: 0, top: 0 },
   title: { ...appTheme.type.rowTitle, color: appTheme.colors.text },

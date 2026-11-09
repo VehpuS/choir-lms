@@ -9,6 +9,8 @@ type MeasurableScrollView = ScrollView & {
   ) => void;
 };
 
+const REVEAL_TOP_MARGIN = 80;
+
 export const useLibraryScreenScrollCoordination = () => {
   const [isPlaylistReorderDragActive, setIsPlaylistReorderDragActiveState] =
     useState(false);
@@ -104,6 +106,21 @@ export const useLibraryScreenScrollCoordination = () => {
         animated: false,
         y: nextOffset,
       });
+    },
+    /** Scrolls so a point given in window coordinates sits near the top. */
+    scrollToWindowY(windowY: number) {
+      const maxOffset = Math.max(
+        contentHeightRef.current - viewportHeightRef.current,
+        0,
+      );
+      const target =
+        scrollOffsetYRef.current +
+        (windowY - viewportTopInWindowRef.current) -
+        REVEAL_TOP_MARGIN;
+      const nextOffset = Math.max(0, Math.min(target, maxOffset));
+
+      scrollOffsetYRef.current = nextOffset;
+      scrollViewRef.current?.scrollTo({ animated: true, y: nextOffset });
     },
     scrollViewRef,
     setPlaylistReorderDragActive,

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { SavedRehearsalLibrarySection } from '../../library/components/saved-rehearsal-library-section';
@@ -11,6 +11,7 @@ import { LoopPreviewPlaybackContext } from '../../library/loops/components/loop-
 import type { PlaylistDetailHeaderPlaybackAction } from '../../library/playlists/utils/saved-playlist-playback-view-model';
 import type { SavedRehearsalLibraryView } from '../../library/saved-rehearsal-library/detail-mode';
 import type { TagDetailHeaderSearchActions } from '../../library/tags/hooks/use-tag-detail-header-search-actions';
+import { registerRevealScroller } from '../../library/saved-rehearsal-library/track-reveal-store';
 import { appTheme } from '../../utils/theme';
 import { LibraryFilesCreateControls } from './library-files-create-controls';
 import { resolveLibraryHeaderSearchProps } from './library-header-search-props';
@@ -75,6 +76,8 @@ export const LibraryScreen = ({
   const isBulkBarPinned = useIsBulkActionBarPinned();
   const isOfflineFilesOpen = useIsOfflineFilesOpen();
   const scrollCoordination = useLibraryScreenScrollCoordination();
+  const { scrollToWindowY } = scrollCoordination;
+  useEffect(() => registerRevealScroller(scrollToWindowY), [scrollToWindowY]);
   const searchState = useSavedRehearsalLibrarySearch({
     savedLibrarySources: libraryController.savedLibrary.savedLibrarySources,
     savedLoops: libraryController.savedLibrary.savedLoops,

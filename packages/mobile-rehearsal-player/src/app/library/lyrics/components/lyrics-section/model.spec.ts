@@ -37,8 +37,8 @@ describe('resolveLyricsSectionModel for a composite', () => {
       ),
       {
         kind: 'filled',
-        ownerName: 'Soprano (Kyrie.mp3)',
-        sharedFromName: 'Soprano (Kyrie.mp3)',
+        ownerName: 'Kyrie.mp3 (Soprano)',
+        sharedFromName: 'Kyrie.mp3 (Soprano)',
         text: 'Kyrie eleison',
       },
     );
@@ -50,7 +50,7 @@ describe('resolveLyricsSectionModel for a composite', () => {
         { kind: 'composite', sourceId: 'c1' },
         { lyrics: undefined, owner: OWNER, composite },
       ),
-      { kind: 'empty', ownerName: 'Soprano (Kyrie.mp3)' },
+      { kind: 'empty', ownerName: 'Kyrie.mp3 (Soprano)' },
     );
   });
 });

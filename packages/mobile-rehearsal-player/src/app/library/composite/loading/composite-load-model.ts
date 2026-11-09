@@ -31,11 +31,22 @@ export type CompositeLoadingModel = {
   hint: string;
 };
 
-const STATUS_LABELS: Record<StemLoadProgress['status'], string> = {
-  ready: 'ready',
-  loading: 'loading…',
-  waiting: 'waiting',
-  failed: 'could not load',
+// What a working stem is doing depends on the phase: fetching its file, or
+// preparing it for the mix (composite-tracks 12.12).
+const getStatusLabel = (
+  status: StemLoadProgress['status'],
+  phase: CompositeLoadPhase,
+): string => {
+  switch (status) {
+    case 'ready':
+      return 'ready';
+    case 'loading':
+      return phase === 'preparing' ? 'preparing…' : 'downloading…';
+    case 'waiting':
+      return 'waiting';
+    case 'failed':
+      return 'could not load';
+  }
 };
 
 export const buildCompositeLoadingModel = (input: {
@@ -54,7 +65,7 @@ export const buildCompositeLoadingModel = (input: {
           {
             stemId: entry.stemId,
             name,
-            statusLabel: STATUS_LABELS[entry.status],
+            statusLabel: getStatusLabel(entry.status, phase),
             isReady: entry.status === 'ready',
           },
         ];

@@ -45,7 +45,11 @@ const renderPanel = (
       session={startSessionMix(composite)}
       onChoosePreset={record('preset')}
       onExport={record('export')}
+      onDeletePreset={record('delete-preset')}
       onMakeDefault={record('make-default')}
+      onMakePresetDefault={record('preset-default')}
+      onRelink={record('relink')}
+      onRenamePreset={record('rename-preset')}
       onOpenOptions={record('options')}
       onResetMix={record('reset')}
       onSavePreset={record('save')}
@@ -62,6 +66,15 @@ const renderPanel = (
 
 describe('CompositeMixPanelView', () => {
   afterEach(cleanup);
+
+  it('offers Re-link and Remove on a missing stem', () => {
+    const calls = renderPanel({ library: libraryOf(['t-s']) });
+
+    fireEvent.press(screen.getByLabelText('Re-link Bass'));
+    fireEvent.press(screen.getByLabelText('Remove Bass'));
+
+    assert.deepEqual(calls, ['relink:b', 'remove:b']);
+  });
 
   it('starts open with a row per stem and marks the user’s part', () => {
     renderPanel();

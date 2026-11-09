@@ -103,7 +103,7 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
       ) : null}
       {model.kind === 'filled' ? (
         <>
-          {model.sharedFromName ? (
+          {model.sharedFromName && !pickedComposite?.showPicker ? (
             <Text numberOfLines={1} style={styles.note}>
               {`Lyrics for ${model.sharedFromName}`}
             </Text>

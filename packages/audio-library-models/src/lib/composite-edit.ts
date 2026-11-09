@@ -244,3 +244,40 @@ export const setCompositeDefaultMix = (
   ...composite,
   defaultMix: keepStemLevels(composite, mix),
 });
+
+/**
+ * Renames a saved preset (12.11). An empty name, or a name another saved
+ * preset already has (ignoring case), changes nothing so presets stay unique.
+ */
+export const renameCompositeMixPreset = (
+  composite: CompositeTrack,
+  presetId: string,
+  rawName: string,
+): CompositeTrack => {
+  const name = cleanName(rawName, MAX_MIX_PRESET_NAME_LENGTH);
+  const taken = composite.presets.some(
+    (preset) =>
+      preset.id !== presetId &&
+      preset.name.toLowerCase() === name.toLowerCase(),
+  );
+
+  if (!name || taken || !composite.presets.some((p) => p.id === presetId)) {
+    return composite;
+  }
+
+  return {
+    ...composite,
+    presets: composite.presets.map((preset) =>
+      preset.id === presetId ? { ...preset, name } : preset,
+    ),
+  };
+};
+
+/** Deletes a saved preset; the default mix keeps its levels. */
+export const deleteCompositeMixPreset = (
+  composite: CompositeTrack,
+  presetId: string,
+): CompositeTrack => ({
+  ...composite,
+  presets: composite.presets.filter((preset) => preset.id !== presetId),
+});

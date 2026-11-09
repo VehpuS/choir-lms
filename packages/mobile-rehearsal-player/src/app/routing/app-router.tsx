@@ -19,6 +19,7 @@ import type { SavedRehearsalLibraryView } from '../library/saved-rehearsal-libra
 import { useRehearsalLibraryController } from '../library/saved-rehearsal-library/use-rehearsal-library-controller';
 import { AddScreen } from '../screens/add';
 import { LibraryScreen } from '../screens/library';
+import { useTrackRevealNavigation } from './use-track-reveal-navigation';
 import { AppRouterRecentsScreen } from '../screens/recents/app-router-recents-screen';
 import {
   appendRecentRehearsalItem,
@@ -50,6 +51,10 @@ export const AppRouter = () => {
   const libraryViewRequest =
     useRequestChannel<SavedRehearsalLibraryView>('files');
   const tagRequest = useRequestChannel<string | null>(null);
+  useTrackRevealNavigation({
+    openLibrary: () => destinationRequest.request('library'),
+    openTracksView: () => libraryViewRequest.request('tracks'),
+  });
   const closeTagDetailRequest = useRequestSignal();
   // The loop editor is a sheet over whatever is showing, so the playback
   // sheet stays open beneath it and audio keeps playing (Decision 12).

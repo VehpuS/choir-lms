@@ -9,7 +9,11 @@ import {
   startSessionMix,
 } from '@org/audio-mixing';
 
-import { buildPresetMenuModel, resolveSavePresetModel } from './preset-model';
+import {
+  buildPresetMenuModel,
+  resolveRenamePresetModel,
+  resolveSavePresetModel,
+} from './preset-model';
 
 const stem = (id: string, name: string, mine = false) => ({
   id,
@@ -89,5 +93,34 @@ describe('resolveSavePresetModel', () => {
 
     assert.equal(model.replacesNote, 'Replaces the saved preset “Soft”.');
     assert.equal(model.canSave, true);
+  });
+});
+
+describe('resolveRenamePresetModel', () => {
+  const presets = [
+    { id: 'a', name: 'Soft' },
+    { id: 'b', name: 'Loud' },
+  ];
+
+  it('allows a new free name', () => {
+    assert.equal(
+      resolveRenamePresetModel(' Quiet  ', presets[0], presets).canRename,
+      true,
+    );
+  });
+
+  it('refuses an empty name, an unchanged name and a name another preset has', () => {
+    assert.equal(
+      resolveRenamePresetModel(' ', presets[0], presets).canRename,
+      false,
+    );
+    assert.equal(
+      resolveRenamePresetModel('Soft', presets[0], presets).canRename,
+      false,
+    );
+    assert.equal(
+      resolveRenamePresetModel('loud', presets[0], presets).canRename,
+      false,
+    );
   });
 });

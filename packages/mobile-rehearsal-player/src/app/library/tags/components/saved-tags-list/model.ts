@@ -6,8 +6,9 @@ const pluralize = (count: number, noun: string) => {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 };
 
+export const EMPTY_SAVED_TAGS_TITLE = 'No tags yet';
 export const EMPTY_SAVED_TAGS_MESSAGE =
-  'No tags yet. Tag a track, loop, playlist, or folder in your library to see it here.';
+  'Tag a track, loop, playlist, or folder in your library to see it here.';
 
 export const NO_SAVED_TAGS_SEARCH_RESULTS_MESSAGE =
   'No tags match your search.';

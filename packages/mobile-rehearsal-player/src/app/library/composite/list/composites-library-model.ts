@@ -19,8 +19,9 @@ import { formatDurationLabel } from '../../drive/utils/drive-library-metadata';
 
 // One message line, like Recordings and Tags: what is missing, then how to add
 // one (composite-tracks 12.17).
+export const COMPOSITES_EMPTY_TITLE = 'No composites yet';
 export const COMPOSITES_EMPTY_MESSAGE =
-  'No composites yet. Select two or more tracks in “Tracks”, then choose “Composite…”.';
+  'Select two or more tracks in “Tracks”, then choose “Composite…”.';
 const META_SEPARATOR = ' · ';
 
 export type CompositeLibraryRow = {

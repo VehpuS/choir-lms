@@ -9,10 +9,12 @@ import {
   ExplorerListRow,
   ExplorerListSurface,
 } from '../../../components/explorer';
+import { LibraryEmptyState } from '../../../components/library-empty-state';
 import { formatSectionCount } from '../../../components/saved-rehearsal-library-section/section-count-label';
 import { SearchHighlightedText } from '../../../search/components/search-highlighted-text';
 import {
   EMPTY_SAVED_TAGS_MESSAGE,
+  EMPTY_SAVED_TAGS_TITLE,
   NO_SAVED_TAGS_SEARCH_RESULTS_MESSAGE,
   filterSavedTagUsageByQuery,
   getSavedTagUsageRowMetadataLabel,
@@ -41,7 +43,12 @@ export const SavedTagsList = ({
   }, [filteredTagUsage, sortState]);
 
   if (tagUsage.length === 0) {
-    return <Text style={styles.emptyMessage}>{EMPTY_SAVED_TAGS_MESSAGE}</Text>;
+    return (
+      <LibraryEmptyState
+        message={EMPTY_SAVED_TAGS_MESSAGE}
+        title={EMPTY_SAVED_TAGS_TITLE}
+      />
+    );
   }
 
   return (

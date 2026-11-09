@@ -1,4 +1,7 @@
-import { resolveCompositeRowMenu } from '../../composite/list/composite-row-actions';
+import {
+  resolveCompositeContentActions,
+  resolveCompositeRowMenu,
+} from '../../composite/list/composite-row-actions';
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
 import { attachRowActionSections } from '../options-menu-sheet/row-action-sections';
@@ -24,6 +27,10 @@ export const resolveCompositeFileMenuActions = (
   const base = resolveCompositeRowMenu({
     canAddToPlaylist: options.canMutatePlaylists && !options.isPlaylistMutating,
     canQueueAsNext: options.canQueueAsNext,
+    contentActions: resolveCompositeContentActions({
+      compositeId: row.composite.id,
+      hasLyrics: options.hasLyricsFor(row.composite.id),
+    }),
     isPlayable: playableItem !== null,
     offlineActions: options.getCompositeOfflineActions(row.composite),
     onAddToPlaylist: () => {

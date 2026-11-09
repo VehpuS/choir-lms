@@ -8,6 +8,7 @@ import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
 import { InteractionChip } from '../../components/interaction-chip';
+import { LibraryEmptyState } from '../../components/library-empty-state';
 import { RecentSearchSuggestions } from '../../search/components/recent-search-suggestions';
 import { useRecentSearchHistory } from '../../search/hooks/use-recent-search-history';
 import {
@@ -23,6 +24,8 @@ import { resolveRecordingPlayback } from '../recording-playback-item';
 import { useLibrarySelectionServices } from '../../selection/library-selection-services';
 import { RECORDINGS_SORT_OPTIONS } from '../recordings-library-controls-model';
 import {
+  EMPTY_LIBRARY_MESSAGE,
+  EMPTY_LIBRARY_TITLE,
   getRecordingsLibraryModel,
   type RecordingsFilters,
   type RecordingsSort,
@@ -222,7 +225,12 @@ export const RecordingsLibraryView = ({
       </ScrollView>
       {selection.selectionBar}
       {playIssue ? <Text style={styles.issue}>{playIssue}</Text> : null}
-      {recordings && model.emptyMessage ? (
+      {recordings && model.emptyMessage === EMPTY_LIBRARY_MESSAGE ? (
+        <LibraryEmptyState
+          message={EMPTY_LIBRARY_MESSAGE}
+          title={EMPTY_LIBRARY_TITLE}
+        />
+      ) : recordings && model.emptyMessage ? (
         <Text style={styles.empty}>{model.emptyMessage}</Text>
       ) : null}
       {model.rows.map((row) => (

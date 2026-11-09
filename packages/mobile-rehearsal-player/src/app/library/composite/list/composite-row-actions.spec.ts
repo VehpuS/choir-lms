@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   buildDeleteCompositeDialog,
+  resolveCompositeContentActions,
   resolveCompositeRowMenu,
   resolveRenameModel,
 } from './composite-row-actions';
@@ -20,6 +21,40 @@ const labels = (options: { isPlayable: boolean; canQueueAsNext: boolean }) =>
   resolveCompositeRowMenu({ ...options, ...handlers }).map(
     (action) => action.label,
   );
+
+describe('resolveCompositeContentActions', () => {
+  it('reads Lyrics, or Edit lyrics once the composite has some, then Sheet music', () => {
+    const read = (hasLyrics: boolean) =>
+      resolveCompositeContentActions({ compositeId: 'c1', hasLyrics }).map(
+        (action) => action.label,
+      );
+
+    assert.deepEqual(read(false), ['Lyrics', 'Sheet music']);
+    assert.deepEqual(read(true), ['Edit lyrics', 'Sheet music']);
+  });
+
+  it('sits between the playlist row and the offline rows', () => {
+    const result = resolveCompositeRowMenu({
+      ...handlers,
+      canQueueAsNext: false,
+      contentActions: resolveCompositeContentActions({
+        compositeId: 'c1',
+        hasLyrics: false,
+      }),
+      isPlayable: true,
+      offlineActions: [
+        { id: 'o', label: 'Keep all stems offline', onPress: noop },
+      ],
+    }).map((action) => action.label);
+
+    assert.deepEqual(result.slice(0, 4), [
+      'Add to playlist',
+      'Lyrics',
+      'Sheet music',
+      'Keep all stems offline',
+    ]);
+  });
+});
 
 describe('resolveCompositeRowMenu', () => {
   it('places the offline rows before rename', () => {

@@ -112,3 +112,29 @@ export const resolveSavePresetModel = (
       : null,
   };
 };
+
+export const MANAGE_PRESETS_LABEL = 'Manage saved presets…';
+export const MANAGE_PRESETS_TITLE = 'Saved presets';
+export const RENAME_PRESET_LABEL = 'Rename';
+export const DELETE_PRESET_LABEL = 'Delete preset';
+export const DELETE_PRESET_QUESTION =
+  'Delete this preset? This cannot be undone.';
+export const KEEP_PRESET_LABEL = 'Keep';
+export const BACK_LABEL = 'Back';
+
+export type RenamePresetModel = { name: string; canRename: boolean };
+
+/** A rename needs a new name that no other saved preset has (ignoring case). */
+export const resolveRenamePresetModel = (
+  rawName: string,
+  preset: { id: string; name: string },
+  presets: readonly { id: string; name: string }[],
+): RenamePresetModel => {
+  const name = collapse(rawName).slice(0, MAX_PRESET_NAME_LENGTH);
+  const taken = presets.some(
+    (other) =>
+      other.id !== preset.id && other.name.toLowerCase() === name.toLowerCase(),
+  );
+
+  return { name, canRename: name.length > 0 && !taken && name !== preset.name };
+};

@@ -16,6 +16,7 @@ import { useTrackDurations } from './create/use-track-durations';
 import { getLibraryTrack, publishLibraryTracks } from './library-tracks';
 import { CompositePlaylistRequestHost } from './composite-playlist-request-host';
 import { CompositeExportHost } from './export/composite-export-host';
+import { RelinkHost } from './relink/relink-host';
 import { CompositeStemOptionsHost } from './stem-options/composite-stem-options-host';
 import { registerCompositeEngineLoader } from './playback/register-composite-engine-loader';
 import { isActiveCompositeDeleted } from './playback/pause-when-deleted';
@@ -166,6 +167,7 @@ export const CompositeHost = ({
       <ClearOfflineFilesHost />
       <CompositeExportHost authorization={authorization} />
       <CompositeStemOptionsHost sources={sources} />
+      <RelinkHost sources={sources} />
     </>
   );
 };

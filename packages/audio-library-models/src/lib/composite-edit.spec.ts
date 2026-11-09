@@ -3,6 +3,8 @@ import { describe, it } from 'node:test';
 
 import {
   createCompositeTrack,
+  deleteCompositeMixPreset,
+  renameCompositeMixPreset,
   relinkCompositeStem,
   removeCompositeStem,
   renameComposite,
@@ -254,5 +256,69 @@ describe('mix presets', () => {
       setCompositeDefaultMix(base, mix).defaultMix.levels['stem-1'].volume,
       40,
     );
+  });
+});
+
+describe('renaming and deleting presets', () => {
+  const base = createCompositeTrack({
+    draft: {
+      name: 'Song',
+      stems: [
+        { trackId: 'a', name: 'Alto' },
+        { trackId: 'b', name: 'Bass' },
+      ],
+    },
+  }) as CompositeTrack;
+  const withPresets = ['Soft', 'Loud'].reduce(
+    (composite, name) =>
+      saveCompositeMixPreset(composite, {
+        name,
+        mix: { levels: {} },
+        createId: () => `id-${name}`,
+      }),
+    base,
+  );
+
+  it('renames a preset, keeping its id and levels', () => {
+    const renamed = renameCompositeMixPreset(withPresets, 'id-Soft', ' Quiet ');
+
+    assert.deepEqual(
+      renamed.presets.map((preset) => [preset.id, preset.name]),
+      [
+        ['id-Soft', 'Quiet'],
+        ['id-Loud', 'Loud'],
+      ],
+    );
+  });
+
+  it('refuses an empty name, a name another preset has, and an unknown id', () => {
+    assert.equal(
+      renameCompositeMixPreset(withPresets, 'id-Soft', ' '),
+      withPresets,
+    );
+    assert.equal(
+      renameCompositeMixPreset(withPresets, 'id-Soft', 'loud'),
+      withPresets,
+    );
+    assert.equal(
+      renameCompositeMixPreset(withPresets, 'nope', 'X'),
+      withPresets,
+    );
+  });
+
+  it('allows a case-only change of the preset own name', () => {
+    const renamed = renameCompositeMixPreset(withPresets, 'id-Soft', 'SOFT');
+
+    assert.equal(renamed.presets[0].name, 'SOFT');
+  });
+
+  it('deletes a preset and leaves the default mix', () => {
+    const deleted = deleteCompositeMixPreset(withPresets, 'id-Soft');
+
+    assert.deepEqual(
+      deleted.presets.map((preset) => preset.id),
+      ['id-Loud'],
+    );
+    assert.deepEqual(deleted.defaultMix, withPresets.defaultMix);
   });
 });

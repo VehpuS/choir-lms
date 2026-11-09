@@ -39,13 +39,26 @@ describe('buildCompositeLoadingModel', () => {
       model.rows.map((row) => [row.name, row.statusLabel]),
       [
         ['Soprano', 'ready'],
-        ['Alto', 'loading…'],
+        ['Alto', 'downloading…'],
         ['Tenor', 'waiting'],
       ],
     );
     assert.equal(model.hint, LOADING_HINT);
     assert.equal(model.currentLabel, null);
     assert.equal(model.progressFraction, 0.5);
+  });
+
+  it('says a working stem is preparing, not downloading, in the preparing phase', () => {
+    const model = buildCompositeLoadingModel({
+      phase: 'preparing',
+      stems,
+      names,
+    });
+
+    assert.equal(
+      model.rows.find((row) => row.name === 'Alto')?.statusLabel,
+      'preparing…',
+    );
   });
 
   it('explains the first play while preparing, naming the stem in progress', () => {

@@ -182,6 +182,9 @@ export const MobileShell = ({
     }
 
     setActiveDestination(requestedDestination);
+    // The playback sheet covers every destination, so showing one means
+    // collapsing the sheet (composite-tracks 12.8: `Show original track`).
+    setActivePlaybackSurface(null);
   }, [requestedDestination, requestedDestinationRequestId]);
 
   return (

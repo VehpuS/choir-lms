@@ -37,7 +37,7 @@ const buildRow = (isPlayable: boolean): LibraryFilesRow => ({
 });
 
 describe('resolveFilesRowMenuActions for a composite file', () => {
-  it('offers queue, playlist, move, rename and delete, in that order', () => {
+  it('offers queue, playlist, lyrics, sheet music, move, rename and delete, in that order', () => {
     const { options } = createBaseOptions();
     const labels = resolveFilesRowMenuActions({
       ...options,
@@ -49,6 +49,8 @@ describe('resolveFilesRowMenuActions for a composite file', () => {
       'Add to queue',
       'Add to playlist',
       'Move to folder',
+      'Lyrics',
+      'Sheet music',
       'Rename',
       'Delete composite',
     ]);

@@ -31,7 +31,7 @@ describe('CompositeLoadingPanel', () => {
 
     assert.ok(hasRenderedText('Loading stems · 1 of 2 ready'));
     assert.ok(hasRenderedText('Soprano'));
-    assert.ok(hasRenderedText('loading…'));
+    assert.ok(hasRenderedText('downloading…'));
   });
 
   it('says it is the first time while preparing, with the stem in progress', () => {

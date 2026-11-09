@@ -10,6 +10,7 @@ import {
   BUILT_IN_GROUP_LABEL,
   DEFAULT_META,
   MAKE_DEFAULT_LABEL,
+  MANAGE_PRESETS_LABEL,
   PRESETS_MENU_TITLE,
   RESET_LABEL,
   SAVED_GROUP_LABEL,
@@ -25,6 +26,8 @@ type PresetsSheetProps = {
   onChoose: (row: PresetMenuRow) => void;
   onReset: () => void;
   onMakeDefault: () => void;
+  /** Opens the sheet that renames and deletes saved presets. */
+  onManage: () => void;
 };
 
 const presetLabel = (row: PresetMenuRow) =>
@@ -36,6 +39,7 @@ export const PresetsSheet = ({
   onChoose,
   onClose,
   onMakeDefault,
+  onManage,
   onReset,
 }: PresetsSheetProps) => {
   const renderRows = (rows: PresetMenuRow[]) =>
@@ -66,6 +70,9 @@ export const PresetsSheet = ({
           <>
             <Text style={styles.group}>{SAVED_GROUP_LABEL}</Text>
             <MenuGroup>{renderRows(model.saved)}</MenuGroup>
+            <MenuGroup>
+              <MenuRow label={MANAGE_PRESETS_LABEL} onPress={onManage} />
+            </MenuGroup>
           </>
         ) : null}
         {model.canReset || model.canMakeDefault ? (

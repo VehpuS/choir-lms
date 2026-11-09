@@ -81,7 +81,7 @@ describe('resolveCompositeLyrics', () => {
 });
 
 describe('lyrics wording', () => {
-  it('names the stem and its track', () => {
+  it('names the track, then the stem', () => {
     const result = resolveCompositeLyrics(composite(), [
       track('t1', 'Sop.m4a', 'la'),
       track('t2', 'Alto.m4a'),
@@ -90,7 +90,7 @@ describe('lyrics wording', () => {
 
     assert.equal(
       describeLyricsOwner(result.owner?.name ?? '', result.composite.stemName),
-      'Soprano (Sop.m4a)',
+      'Sop.m4a (Soprano)',
     );
     assert.equal(describeLyricsOwner('Sop.m4a'), 'Sop.m4a');
   });

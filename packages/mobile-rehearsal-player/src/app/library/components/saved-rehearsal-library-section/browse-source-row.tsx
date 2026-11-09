@@ -4,6 +4,8 @@ import {
 } from '@org/audio-library-models';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useRevealHighlight } from '../../saved-rehearsal-library/use-reveal-highlight';
+
 import { EqualizerMark } from '../../../components/equalizer-mark';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { RowMetaLine } from '../../../components/row-meta-line';
@@ -122,6 +124,7 @@ export const BrowseSourceRow = ({
   toggleSourcePlayback,
 }: BrowseSourceRowProps) => {
   const trackPlayableItem = createTrackPlayableItem(source);
+  const reveal = useRevealHighlight(source.id);
   const hasLyrics = useHasLyrics({ sourceId: source.id });
   const recordingCountFor = useRecordingCountFor();
   const isActive = isSavedTrackPlaybackActive(
@@ -197,7 +200,10 @@ export const BrowseSourceRow = ({
   );
 
   return (
-    <View>
+    <View
+      ref={reveal.ref}
+      style={reveal.isHighlighted ? styles.revealed : undefined}
+    >
       <ExplorerListRow
         actions={
           <>
@@ -293,6 +299,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'right',
   },
+  revealed: { backgroundColor: appTheme.colors.accentRegionFill },
   indexActive: { color: appTheme.colors.accentText },
   rowMessage: {
     color: appTheme.colors.danger,

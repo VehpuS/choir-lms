@@ -23,8 +23,9 @@ import {
  */
 
 export const RECORDINGS_VIEW_TITLE = 'Recordings';
+export const EMPTY_LIBRARY_TITLE = 'No recordings yet';
 export const EMPTY_LIBRARY_MESSAGE =
-  'No recordings yet. Open a track, turn on “Recording” in “Practice tools”, and press “Record”.';
+  'Open a track, turn on “Recording” in “Practice tools”, and press “Record”.';
 export const NO_MATCHES_MESSAGE = 'No recordings match.';
 
 export type RecordingsSort = 'newest' | 'track' | 'length' | 'name';

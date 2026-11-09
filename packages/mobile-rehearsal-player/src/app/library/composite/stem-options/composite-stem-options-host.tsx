@@ -1,5 +1,6 @@
 import type { DriveAudioSource } from '@org/audio-library-models';
 
+import { requestTrackReveal } from '../../saved-rehearsal-library/track-reveal-store';
 import {
   getCompositeStore,
   useComposites,
@@ -59,6 +60,14 @@ export const CompositeStemOptionsHost = ({
           stemId,
           stepOffsetMs(model.offsetMs, deltaMs),
         )
+      }
+      onShowOriginalTrack={
+        stem && track
+          ? () => {
+              closeStemOptions();
+              requestTrackReveal(track.id);
+            }
+          : undefined
       }
       onToggleMine={(mine) => void store.setStemMine(compositeId, stemId, mine)}
     />

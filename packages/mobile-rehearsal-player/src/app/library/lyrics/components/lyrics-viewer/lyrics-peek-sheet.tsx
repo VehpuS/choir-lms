@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -21,6 +22,8 @@ type LyricsPeekSheetProps = {
   onEdit: () => void;
   onExpand: () => void;
   ownerName: string;
+  /** A composite's stem chips; null for any other item. */
+  picker?: ReactNode;
   text: string;
 };
 
@@ -30,6 +33,7 @@ export const LyricsPeekSheet = ({
   onEdit,
   onExpand,
   ownerName,
+  picker,
   text,
 }: LyricsPeekSheetProps) => {
   const { height } = useWindowDimensions();
@@ -42,6 +46,7 @@ export const LyricsPeekSheet = ({
       onClose={onClose}
       title={ownerName}
     >
+      {picker}
       <ScrollView
         style={[
           darkScrollbarStyle,

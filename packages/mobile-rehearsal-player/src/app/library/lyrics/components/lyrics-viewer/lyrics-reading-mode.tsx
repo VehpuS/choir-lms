@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
@@ -30,6 +31,8 @@ type LyricsReadingModeProps = {
   onClose: () => void;
   onTogglePlayback: () => void;
   ownerName: string;
+  /** A composite's stem chips; null for any other item. */
+  picker?: ReactNode;
   text: string;
 };
 
@@ -44,6 +47,7 @@ export const LyricsReadingMode = ({
   onClose,
   onTogglePlayback,
   ownerName,
+  picker,
   text,
 }: LyricsReadingModeProps) => {
   const size = useLyricsTextSize();
@@ -69,6 +73,7 @@ export const LyricsReadingMode = ({
           options={TEXT_SIZE_OPTIONS}
           selectedValue={size}
         />
+        {picker}
         <ScrollView
           contentContainerStyle={styles.column}
           style={[darkScrollbarStyle, styles.scroll]}

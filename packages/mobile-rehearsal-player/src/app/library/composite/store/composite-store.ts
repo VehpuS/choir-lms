@@ -8,6 +8,8 @@ import {
   relinkCompositeStem,
   removeCompositeStem,
   renameComposite,
+  deleteCompositeMixPreset,
+  renameCompositeMixPreset,
   saveCompositeMixPreset,
   setCompositeDefaultMix,
   renameCompositeStem,
@@ -87,6 +89,13 @@ export type CompositeStore = {
     options: { name: string; mix: CompositeMix; makeDefault?: boolean },
   ) => Promise<void>;
   setDefaultMix: (compositeId: string, mix: CompositeMix) => Promise<void>;
+  /** A taken or empty name changes nothing. */
+  renameMixPreset: (
+    compositeId: string,
+    presetId: string,
+    name: string,
+  ) => Promise<void>;
+  deleteMixPreset: (compositeId: string, presetId: string) => Promise<void>;
   /** Sheet music kept on the composite itself; a stem's own files are edited on its track. */
   addSheetMusic: (
     compositeId: string,
@@ -212,6 +221,14 @@ export const createCompositeStore = (
     saveMixPreset: (compositeId, preset) =>
       edit(compositeId, (composite) =>
         saveCompositeMixPreset(composite, preset),
+      ),
+    renameMixPreset: (compositeId, presetId, name) =>
+      edit(compositeId, (composite) =>
+        renameCompositeMixPreset(composite, presetId, name),
+      ),
+    deleteMixPreset: (compositeId, presetId) =>
+      edit(compositeId, (composite) =>
+        deleteCompositeMixPreset(composite, presetId),
       ),
     setDefaultMix: (compositeId, mix) =>
       edit(compositeId, (composite) => setCompositeDefaultMix(composite, mix)),

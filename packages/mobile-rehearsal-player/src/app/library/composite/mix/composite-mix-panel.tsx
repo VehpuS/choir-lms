@@ -22,7 +22,9 @@ import {
   EXPORT_MIX_LABEL,
   MIX_PANEL_TITLE,
 } from './mix-panel-model';
+import { requestRelink } from '../relink/relink-request';
 import { MixStemRow } from './mix-stem-row';
+import { ManagePresetsSheet } from './manage-presets-sheet';
 import { PresetsSheet } from './presets-sheet';
 import {
   buildPresetMenuModel,
@@ -44,9 +46,13 @@ type CompositeMixPanelViewProps = {
   onSetVolume: (stemId: string, volume: number) => void;
   onOpenOptions: (stemId: string) => void;
   onRemove: (stemId: string) => void;
+  onRelink: (stemId: string) => void;
   onChoosePreset: (row: PresetMenuRow) => void;
   onResetMix: () => void;
   onMakeDefault: () => void;
+  onMakePresetDefault: (row: PresetMenuRow) => void;
+  onRenamePreset: (presetId: string, name: string) => void;
+  onDeletePreset: (presetId: string) => void;
   onSavePreset: (options: { name: string; makeDefault: boolean }) => void;
   onExport: () => void;
 };
@@ -60,14 +66,19 @@ export const CompositeMixPanelView = ({
   library,
   onChoosePreset,
   onExport,
+  onDeletePreset,
   onMakeDefault,
+  onMakePresetDefault,
+  onRenamePreset,
   onResetMix,
   onSavePreset,
   session,
   ...handlers
 }: CompositeMixPanelViewProps) => {
   const [isOpen, setIsOpen] = useState(true);
-  const [sheet, setSheet] = useState<'presets' | 'save' | null>(null);
+  const [sheet, setSheet] = useState<'presets' | 'save' | 'manage' | null>(
+    null,
+  );
   const model = buildMixPanelModel({ composite, mix: session.mix, library });
 
   return (
@@ -151,10 +162,20 @@ export const CompositeMixPanelView = ({
             setSheet(null);
             onMakeDefault();
           }}
+          onManage={() => setSheet('manage')}
           onReset={() => {
             setSheet(null);
             onResetMix();
           }}
+        />
+      ) : null}
+      {sheet === 'manage' ? (
+        <ManagePresetsSheet
+          onClose={() => setSheet(null)}
+          onDelete={onDeletePreset}
+          onMakeDefault={onMakePresetDefault}
+          onRename={onRenamePreset}
+          presets={buildPresetMenuModel(composite, session).saved}
         />
       ) : null}
       {sheet === 'save' ? (
@@ -231,6 +252,16 @@ const ConnectedPanel = ({ composite }: { composite: CompositeTrack }) => {
         dispatchSessionMix(composite, { type: 'set-default', mix });
         void getCompositeStore().setDefaultMix(composite.id, mix);
       }}
+      onDeletePreset={(presetId) =>
+        void getCompositeStore().deleteMixPreset(composite.id, presetId)
+      }
+      onMakePresetDefault={(row) => {
+        dispatchSessionMix(composite, { type: 'set-default', mix: row.mix });
+        void getCompositeStore().setDefaultMix(composite.id, row.mix);
+      }}
+      onRenamePreset={(presetId, name) =>
+        void getCompositeStore().renameMixPreset(composite.id, presetId, name)
+      }
       onResetMix={() => dispatchSessionMix(composite, { type: 'reset' })}
       onSavePreset={({ name, makeDefault }) => {
         if (makeDefault) {
@@ -242,6 +273,9 @@ const ConnectedPanel = ({ composite }: { composite: CompositeTrack }) => {
           makeDefault,
         });
       }}
+      onRelink={(stemId) =>
+        requestRelink({ compositeId: composite.id, stemId })
+      }
       onRemove={(stemId) => {
         void getCompositeStore()
           .removeStem(composite.id, stemId)
