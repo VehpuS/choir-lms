@@ -74,4 +74,4 @@ None. The storage key and shape stay compatible. Unparseable stored rows are dro
 
 - Which entry point supplies the saved playlist menu handlers inside Recents (see the risk above)? Decision (task 4.2, confirmed with the user): extend the saved item request channel with `playlist-add-items`, `playlist-edit-tags` and `playlist-remove` requests (`kind: 'playlist'`), which the Library section runs with its own by-id playlist handlers. The Recents playlist row menu is `resolveSavedPlaylistMenu` with `Queue playlist` and `View in library` as its view actions.
 - Resume mode (found in task 3.1): playlists have no saved queue mode, so resume starts `ordered` from `lastEntryId`; the Decisions text above that mentions a saved mode is superseded.
-- Should a playlist row show its track count, or the last track's title, in its meta line? Default: `Playlist · Last played …`.
+- Should a playlist row show its track count, or the last track's title, in its meta line? Resolved with the user: no, it stays `Playlist · Last played …`.
