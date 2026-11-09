@@ -64,8 +64,8 @@ The system SHALL provide direct shortcuts to recent rehearsal context so users c
 #### Scenario: Resume controls map to one explicit recent item
 
 - **WHEN** Recents shows a resume row for a recent rehearsal item
-- **THEN** the row labels the exact target item title that will play
-- **AND** the row play icon resumes that labeled item only (not a generic or ambiguous card-level target)
+- **THEN** the row labels the exact target item title, or the playlist name for a playlist row, that will play
+- **AND** the row play icon resumes that labeled item or playlist only (not a generic or ambiguous card-level target)
 
 #### Scenario: Multiple recents are presented as per-item rows
 
@@ -76,7 +76,7 @@ The system SHALL provide direct shortcuts to recent rehearsal context so users c
 
 #### Scenario: Recent-item overflow includes queue acceleration and library handoff actions
 
-- **WHEN** a user opens the vertical-ellipsis menu on a recent rehearsal row
+- **WHEN** a user opens the vertical-ellipsis menu on a track, loop or composite recent row
 - **THEN** the menu includes `Play next` and `Add to queue` actions for queue acceleration
 - **AND** the menu includes a `View in library` action to open the same item in Library context
 
@@ -107,10 +107,86 @@ The system SHALL provide direct shortcuts to recent rehearsal context so users c
 - **WHEN** a user has no saved tracks, loops, or playlists
 - **THEN** the system provides a clear path from empty-state guidance to Drive discovery, first save, and playback start without requiring pre-existing library content
 
-#### Scenario: Recents can surface shortcut metadata such as popular tags
+#### Scenario: Playing a playlist records one recent entry for the playlist
 
-- **WHEN** Recents is enabled as an acceleration surface
-- **THEN** the system may show shortcut metadata such as popular tags without making Recents a required step for core discovery or playback
+- **WHEN** a user plays a saved playlist and its session advances through several tracks
+- **THEN** Recents holds one entry for that playlist and no entry for the individual tracks played from it
+- **AND** other recent items are not evicted by the playlist's tracks
+
+#### Scenario: Advancing within a playlist updates its entry in place
+
+- **WHEN** a saved playlist session moves to another track
+- **THEN** the playlist's recent entry records that track as its last played track and updates its last played time
+- **AND** the entry moves to the top of Recents without adding another row
+
+#### Scenario: Starting a playlist from a track records that track
+
+- **WHEN** a user starts a saved playlist from one of its tracks
+- **THEN** Recents records the playlist, not the track, with that track as its last played track
+
+#### Scenario: Entry is not recorded before the playlist's own track is active
+
+- **WHEN** a saved playlist session has started but its first track has not yet loaded and another item is still the active item
+- **THEN** the system does not record that other item against the playlist's entry
+
+#### Scenario: Resuming a playlist row continues from its last track
+
+- **WHEN** a user resumes a playlist row and the row's last played track is still in the playlist
+- **THEN** the playlist plays as a playlist session starting at that track
+
+#### Scenario: Resuming a playlist row falls back to the start of the playlist
+
+- **WHEN** a user resumes a playlist row and its last played track has been removed from the playlist
+- **THEN** the playlist plays as a playlist session starting at its first track
+
+#### Scenario: A deleted playlist is not shown in Recents
+
+- **WHEN** a recent playlist entry refers to a playlist that no longer exists
+- **THEN** Recents does not show that entry
+
+#### Scenario: A standalone item queued into a playlist session records as itself
+
+- **WHEN** a saved playlist session plays a track, loop or composite that was queued into it and belongs to no saved playlist
+- **THEN** Recents records that item as a track, loop or composite and leaves the running playlist's entry unchanged
+
+#### Scenario: An item queued from another playlist records that playlist
+
+- **WHEN** a saved playlist session plays an item queued from a different saved playlist
+- **THEN** Recents records that other playlist with the item as its last played track
+- **AND** the running playlist's entry is unchanged
+
+#### Scenario: A transient queue does not become a recent playlist
+
+- **WHEN** a user plays items from the transient `Current queue`
+- **THEN** Recents records each played item as a track, loop or composite and records no playlist entry
+
+#### Scenario: Old per-track playlist history is discarded
+
+- **WHEN** the app restores stored recents that contain per-track playlist rows from before playlists became recent entries
+- **THEN** those rows are dropped and the remaining recents are restored as before
+
+#### Scenario: Playlist row overflow reuses the playlist menu and adds Queue playlist
+
+- **WHEN** a user opens the vertical-ellipsis menu on a playlist recent row
+- **THEN** the menu shows the saved playlist menu actions, including `View in library`
+- **AND** the menu includes a `Queue playlist` action
+
+#### Scenario: Queue playlist appends the playlist's items without interrupting playback
+
+- **WHEN** a user is playing an item and chooses `Queue playlist` on a playlist recent row
+- **THEN** the playlist's playable items are appended to the queue in playlist order
+- **AND** current playback continues uninterrupted
+- **AND** items that cannot be resolved are skipped
+
+#### Scenario: Queue playlist seeds a transient queue from standalone playback
+
+- **WHEN** a user is playing one standalone item and chooses `Queue playlist`
+- **THEN** the system creates the same transient queue behavior used by `Add to queue` on other surfaces
+
+#### Scenario: Queue playlist is unavailable while nothing is playing
+
+- **WHEN** nothing is playing
+- **THEN** the `Queue playlist` action is disabled
 
 ### Requirement: Loop creation uses smart naming defaults
 
