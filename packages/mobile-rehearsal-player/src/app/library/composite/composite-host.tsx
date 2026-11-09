@@ -1,5 +1,5 @@
-import type { DriveAudioSource } from '@org/audio-library-models';
-import { useEffect, useMemo } from 'react';
+import type { DriveAudioSource, PlayableItem } from '@org/audio-library-models';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { ClearOfflineFilesHost } from '../../screens/offline-files/clear-offline-files-host';
 import { requestClearOfflineFiles } from '../offline/clear-offline-files-request';
@@ -18,12 +18,19 @@ import { CompositePlaylistRequestHost } from './composite-playlist-request-host'
 import { CompositeExportHost } from './export/composite-export-host';
 import { CompositeStemOptionsHost } from './stem-options/composite-stem-options-host';
 import { registerCompositeEngineLoader } from './playback/register-composite-engine-loader';
+import { isActiveCompositeDeleted } from './playback/pause-when-deleted';
 import {
   getCompositeStore,
   getCompositesSnapshot,
+  useComposites,
 } from './store/composite-store-instance';
 
 type CompositeHostProps = {
+  /** The playing item, and the way to stop it when its composite is deleted. */
+  playback: {
+    activePlayableItem: PlayableItem | null;
+    pauseActivePlayback: () => Promise<unknown>;
+  };
   /** Where `Add to playlist` from the playback menu writes. */
   playlists: Parameters<typeof CompositePlaylistRequestHost>[0]['playlists'];
   /** The Drive session: its token for stems, its write access for exports. */
@@ -45,12 +52,34 @@ type CompositeHostProps = {
 export const CompositeHost = ({
   authorization,
   library,
+  playback,
   playlists,
 }: CompositeHostProps) => {
   const accessToken = authorization.authState.accessToken ?? null;
   const sources = library.savedLibrarySources;
   const requestedTrackIds = useCompositeCreateRequest();
   const { parts } = useMyPartsPreferences();
+  const composites = useComposites();
+  const previousIds = useRef<readonly string[]>([]);
+  const { activePlayableItem, pauseActivePlayback } = playback;
+
+  // A composite deleted while it plays would keep playing from a cache that is
+  // gone, so playback is paused (composite-tracks 12.13).
+  useEffect(() => {
+    const currentIds = composites.map(({ id }) => id);
+
+    if (
+      isActiveCompositeDeleted({
+        activeItem: activePlayableItem,
+        currentIds,
+        previousIds: previousIds.current,
+      })
+    ) {
+      void pauseActivePlayback();
+    }
+
+    previousIds.current = currentIds;
+  }, [activePlayableItem, composites, pauseActivePlayback]);
 
   // Published during render's commit, before any playback can start from it.
   useEffect(() => {

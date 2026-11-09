@@ -105,6 +105,13 @@ export const resolveSynchronizedPlayableItem = (
     return null;
   }
 
+  // A composite is not one saved track or loop: its source id is the
+  // composite's, so looking it up among the tracks would find nothing and the
+  // sync would pause it (composite-tracks 12.16). It stays as it is.
+  if (options.playableItem.kind === 'composite') {
+    return options.playableItem;
+  }
+
   const nextSource = options.sources.find((source) => {
     return source.id === options.playableItem?.sourceId;
   });

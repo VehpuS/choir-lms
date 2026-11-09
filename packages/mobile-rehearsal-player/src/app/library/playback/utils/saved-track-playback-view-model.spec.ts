@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  createCompositePlayableItem,
   createLoopPlayableItem,
   createTrackPlayableItem,
 } from '@org/audio-library-models';
@@ -268,6 +269,25 @@ describe('saved track playback view-model', () => {
 
     assert.equal(syncedTrack, null);
     assert.equal(hasPlayableItemChanged(activeTrack, syncedTrack), true);
+  });
+
+  it('keeps an active composite as it is, since it is neither a saved track nor a loop', () => {
+    const activeComposite = createCompositePlayableItem({
+      createdAt: '2026-05-10T10:00:00.000Z',
+      id: 'composite-1',
+      markers: [],
+      name: 'Seeded SATB',
+      stems: [],
+    });
+
+    assert.equal(
+      resolveSynchronizedPlayableItem({
+        loops: [],
+        playableItem: activeComposite,
+        sources: [],
+      }),
+      activeComposite,
+    );
   });
 
   it('resolves to null when the active loop has been removed from the library', () => {
