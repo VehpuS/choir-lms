@@ -23,6 +23,7 @@ import {
   updatePlaylistPlaybackRepeatMode,
   type PlaylistPlaybackSession,
 } from '../../../playlists/utils/saved-playlist-playback-view-model';
+import { removeCompositeFromPlaybackSession } from '../../../playlists/utils/playlist-playback-queue-state';
 import { hasPlayableItemChanged } from '../../utils/saved-track-playback-view-model';
 
 type CreateSavedTrackQueueEditActionsOptions = {
@@ -151,6 +152,23 @@ export const createSavedTrackQueueEditActions = ({
           ? movePlaylistPlaybackQueueItemToStart(currentSession, index)
           : currentSession;
       });
+    },
+    /**
+     * A composite was deleted: it leaves the queue and, if it is what the
+     * player shows, the player is cleared (composite-tracks 12.13). The caller
+     * pauses the audio first.
+     */
+    removeCompositeFromPlayback(compositeId: string) {
+      const active = activePlayableItemRef.current;
+
+      if (active?.kind === 'composite' && active.sourceId === compositeId) {
+        activePlayableItemRef.current = null;
+        setActivePlayableItem(null);
+      }
+
+      setActivePlaylistSession((currentSession) =>
+        removeCompositeFromPlaybackSession(currentSession, compositeId),
+      );
     },
     removeQueueItem(index: number) {
       setActivePlaylistSession((currentSession) => {

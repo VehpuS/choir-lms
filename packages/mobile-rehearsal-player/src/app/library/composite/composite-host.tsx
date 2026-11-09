@@ -30,6 +30,7 @@ type CompositeHostProps = {
   playback: {
     activePlayableItem: PlayableItem | null;
     pauseActivePlayback: () => Promise<unknown>;
+    removeCompositeFromPlayback: (compositeId: string) => void;
   };
   /** Where `Add to playlist` from the playback menu writes. */
   playlists: Parameters<typeof CompositePlaylistRequestHost>[0]['playlists'];
@@ -61,12 +62,20 @@ export const CompositeHost = ({
   const { parts } = useMyPartsPreferences();
   const composites = useComposites();
   const previousIds = useRef<readonly string[]>([]);
-  const { activePlayableItem, pauseActivePlayback } = playback;
+  const {
+    activePlayableItem,
+    pauseActivePlayback,
+    removeCompositeFromPlayback,
+  } = playback;
 
-  // A composite deleted while it plays would keep playing from a cache that is
-  // gone, so playback is paused (composite-tracks 12.13).
+  // A composite deleted while it plays or waits in the queue would keep
+  // playing from a cache that is gone, so the audio is paused and the composite
+  // leaves the player and the queue (composite-tracks 12.13).
   useEffect(() => {
     const currentIds = composites.map(({ id }) => id);
+    const deletedIds = previousIds.current.filter(
+      (id) => !currentIds.includes(id),
+    );
 
     if (
       isActiveCompositeDeleted({
@@ -78,8 +87,14 @@ export const CompositeHost = ({
       void pauseActivePlayback();
     }
 
+    deletedIds.forEach(removeCompositeFromPlayback);
     previousIds.current = currentIds;
-  }, [activePlayableItem, composites, pauseActivePlayback]);
+  }, [
+    activePlayableItem,
+    composites,
+    pauseActivePlayback,
+    removeCompositeFromPlayback,
+  ]);
 
   // Published during render's commit, before any playback can start from it.
   useEffect(() => {

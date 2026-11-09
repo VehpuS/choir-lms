@@ -354,3 +354,47 @@ export const queuePlayableItemDuringPlayback = (
     playableItems: [playableItem],
   });
 };
+
+/**
+ * Takes a deleted composite out of the queue (composite-tracks 12.13). When it
+ * is the item that was playing the session ends, since the player is cleared
+ * too; otherwise the other items keep their order and the current one stays
+ * current.
+ */
+export const removeCompositeFromPlaybackSession = (
+  session: PlaylistPlaybackSession | null,
+  compositeId: string,
+): PlaylistPlaybackSession | null => {
+  if (!session) {
+    return session;
+  }
+
+  const isDeleted = (item: PlayableItem) =>
+    item.kind === 'composite' && item.sourceId === compositeId;
+  const { items } = session.queue;
+  const current = items[session.currentIndex];
+
+  if (current && isDeleted(current)) {
+    return null;
+  }
+
+  const kept = items.filter((item) => !isDeleted(item));
+
+  if (kept.length === items.length) {
+    return session;
+  }
+
+  const removedBeforeCurrent = items
+    .slice(0, session.currentIndex)
+    .filter(isDeleted).length;
+
+  return {
+    ...session,
+    currentIndex: session.currentIndex - removedBeforeCurrent,
+    requestedItemCount: Math.max(
+      0,
+      session.requestedItemCount - (items.length - kept.length),
+    ),
+    queue: { ...session.queue, items: kept },
+  };
+};
