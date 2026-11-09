@@ -1,3 +1,4 @@
+import { CompositeMixPanel } from '../../../library/composite/mix/composite-mix-panel';
 import { RecordingMixPanel } from '../../../library/recording/overlay/recording-mix-panel';
 import { RecordingOverlayNotice } from '../../../library/recording/overlay/recording-overlay-notice';
 import type {
@@ -246,6 +247,10 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
           supportsQueueNavigation={summary.supportsQueueNavigation}
           title={summary.title}
         />
+
+        {props.activePlayableItem.kind === 'composite' ? (
+          <CompositeMixPanel compositeId={props.activePlayableItem.source.id} />
+        ) : null}
 
         <FadedRule />
         {props.activeRepeatMode ? (
