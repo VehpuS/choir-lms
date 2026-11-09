@@ -3,7 +3,7 @@ import { afterEach, describe, it } from 'node:test';
 
 import {
   subscribeToSavedItemRequests,
-  type SavedItemRequest,
+  type SavedLibraryRequest,
 } from '../../components/saved-item-menu/saved-item-requests';
 import {
   createSheetMusicMenuState,
@@ -43,7 +43,7 @@ describe('createSheetMusicMenuState', () => {
   });
 
   it('asks the request channel to open sheet music for the track or loop', () => {
-    const requests: SavedItemRequest[] = [];
+    const requests: SavedLibraryRequest[] = [];
 
     unsubscribe = subscribeToSavedItemRequests((request) => {
       requests.push(request);

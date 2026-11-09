@@ -17,7 +17,7 @@
 ## 4. Recents UI
 
 - [x] 4.1 Make the row model handle the playlist variant (icon, `Playlist · Last played …` meta, no duration or transform), with `row-model.spec.ts` cases.
-- [ ] 4.2 Resolve how Recents gets the saved playlist menu handlers (record the answer in `design.md` open questions), then build the playlist row menu from `resolveSavedPlaylistMenu` plus `View in library`.
+- [x] 4.2 Resolve how Recents gets the saved playlist menu handlers (record the answer in `design.md` open questions), then build the playlist row menu from `resolveSavedPlaylistMenu` plus `View in library`.
 - [x] 4.3 Add the `Queue playlist` action to `overflow-actions.ts` (disabled while nothing is playing), with tests.
 - [x] 4.4 Implement `Queue playlist`: resolve the playlist's items with `resolvePlaylistItems` and append them through `queuePlayableItemsAsUpNext`; test order, skipped items and transient queue seeding.
 - [x] 4.5 Make `isRecentItemInLibrary` and the other track-assuming call sites handle the playlist variant.

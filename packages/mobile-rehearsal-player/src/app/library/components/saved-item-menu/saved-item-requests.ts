@@ -23,6 +23,19 @@ export type SavedItemRequestAction =
   | 'sheet-music'
   | 'view-track-loops';
 
+/** Playlist actions: Recents' playlist rows reuse the saved playlist menu. */
+export type SavedPlaylistRequestAction =
+  | 'playlist-add-items'
+  | 'playlist-edit-tags'
+  | 'playlist-remove';
+
+export type SavedPlaylistRequest = {
+  action: SavedPlaylistRequestAction;
+  /** The playlist's id. */
+  id: string;
+  kind: 'playlist';
+};
+
 export type SavedItemRequest = {
   action: SavedItemRequestAction;
   /**
@@ -38,7 +51,10 @@ export type SavedItemRequest = {
   markerKey?: string;
 };
 
-type Listener = (request: SavedItemRequest) => void;
+/** Everything a menu can ask the Library for over this channel. */
+export type SavedLibraryRequest = SavedItemRequest | SavedPlaylistRequest;
+
+type Listener = (request: SavedLibraryRequest) => void;
 
 const listeners = new Set<Listener>();
 
@@ -51,7 +67,7 @@ export const REMOVE_OFFLINE_LABEL = 'Remove from offline';
 export const DOWNLOADING_OFFLINE_LABEL = 'Downloading…';
 export const ADD_MARKER_HERE_LABEL = 'Add marker here';
 
-export const requestSavedItemAction = (request: SavedItemRequest) => {
+export const requestSavedItemAction = (request: SavedLibraryRequest) => {
   listeners.forEach((listener) => {
     listener(request);
   });

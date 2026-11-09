@@ -6,17 +6,20 @@ import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-mo
 import type { SavedRehearsalLibraryView } from '../../saved-rehearsal-library/detail-mode';
 import {
   subscribeToSavedItemRequests,
-  type SavedItemRequest,
+  type SavedLibraryRequest,
 } from './saved-item-requests';
 
 type SavedItemRequestHandlers = {
   openLoopEditor: (loop: NamedLoop) => void;
   openLoopPlaylistSelector: (loopId: string) => void;
   openLoopTagEditor: (loop: NamedLoop) => void;
+  openPlaylistAddItems: (playlistId: string) => void;
+  openPlaylistTagEditor: (playlistId: string) => void;
   openSourcePlaylistSelector: (sourceId: string) => void;
   openSourceTagEditor: (source: DriveLibrarySource) => void;
   openTrackLoopView: (sourceId: string) => void;
   removeLoop: (loop: NamedLoop) => void;
+  removePlaylist: (playlistId: string) => void;
   removeSource: (source: DriveLibrarySource) => void;
   savedLibrarySources: readonly DriveLibrarySource[];
   savedLoops: readonly NamedLoop[];
@@ -30,7 +33,19 @@ export const useSavedItemRequestHandler = (
   handlers: SavedItemRequestHandlers,
 ) => {
   useEffect(() => {
-    return subscribeToSavedItemRequests((request: SavedItemRequest) => {
+    return subscribeToSavedItemRequests((request: SavedLibraryRequest) => {
+      if (request.kind === 'playlist') {
+        if (request.action === 'playlist-add-items') {
+          handlers.openPlaylistAddItems(request.id);
+        } else if (request.action === 'playlist-edit-tags') {
+          handlers.openPlaylistTagEditor(request.id);
+        } else {
+          handlers.removePlaylist(request.id);
+        }
+
+        return;
+      }
+
       if (request.kind === 'loop') {
         const loop = handlers.savedLoops.find(({ id }) => id === request.id);
 

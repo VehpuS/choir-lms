@@ -70,6 +70,6 @@ None. The storage key and shape stay compatible. Unparseable stored rows are dro
 
 ## Open Questions
 
-- Which entry point supplies the saved playlist menu handlers inside Recents (see the risk above)? Finding (task 4.2): the saved item request channel (`saved-item-requests.ts`) only carries `track`/`loop` requests, and the playlist flows (add items, tag editor, remove confirmation) are owned by the Library section's orchestration, so Recents cannot reach them today. Until decided, the playlist row menu offers `Queue playlist` and `View in library` only.
+- Which entry point supplies the saved playlist menu handlers inside Recents (see the risk above)? Decision (task 4.2, confirmed with the user): extend the saved item request channel with `playlist-add-items`, `playlist-edit-tags` and `playlist-remove` requests (`kind: 'playlist'`), which the Library section runs with its own by-id playlist handlers. The Recents playlist row menu is `resolveSavedPlaylistMenu` with `Queue playlist` and `View in library` as its view actions.
 - Resume mode (found in task 3.1): playlists have no saved queue mode, so resume starts `ordered` from `lastEntryId`; the Decisions text above that mentions a saved mode is superseded.
 - Should a playlist row show its track count, or the last track's title, in its meta line? Default: `Playlist · Last played …`.

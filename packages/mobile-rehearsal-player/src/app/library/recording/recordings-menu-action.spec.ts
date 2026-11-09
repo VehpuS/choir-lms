@@ -3,7 +3,7 @@ import { afterEach, describe, it } from 'node:test';
 
 import {
   subscribeToSavedItemRequests,
-  type SavedItemRequest,
+  type SavedLibraryRequest,
 } from '../components/saved-item-menu/saved-item-requests.js';
 import {
   createRecordingsMenuState,
@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 const listen = () => {
-  const requests: SavedItemRequest[] = [];
+  const requests: SavedLibraryRequest[] = [];
 
   unsubscribers.push(
     subscribeToSavedItemRequests((request) => requests.push(request)),

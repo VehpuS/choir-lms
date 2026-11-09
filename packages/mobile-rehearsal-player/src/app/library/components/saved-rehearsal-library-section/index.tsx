@@ -141,10 +141,15 @@ export const SavedRehearsalLibrarySection = (
     openLoopEditor: loopState.openLoopEditor,
     openLoopPlaylistSelector: trackPlaylistMenu.openLoopPlaylistSelector,
     openLoopTagEditor: tagEditor.openLoopTagEditor,
+    openPlaylistAddItems: (playlistId) => {
+      handleOpenFilesAddItems({ playlistId });
+    },
+    openPlaylistTagEditor: tagEditor.openPlaylistTagEditor,
     openSourcePlaylistSelector: trackPlaylistMenu.openSourcePlaylistSelector,
     openSourceTagEditor: tagEditor.openSourceTagEditor,
     openTrackLoopView: loopState.openTrackLoopView,
     removeLoop,
+    removePlaylist: playlistState.handleDeletePlaylist,
     removeSource,
     savedLibrarySources,
     savedLoops,
