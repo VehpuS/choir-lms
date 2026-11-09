@@ -1,12 +1,15 @@
 import {
   isSourcePlayable,
   resolveRecordingPlayableItem,
+  type CompositeTrack,
   type NamedLoop,
   type Playlist,
   type Recording,
 } from '@org/audio-library-models';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
+import { isCompositeEntryPlayable } from '../../composite/list/composite-playlist-entry';
+import { getCompositesSnapshot } from '../../composite/store/composite-store-instance';
 import { getRecordingsSnapshot } from '../../recording/recordings-store-instance';
 
 type PlaylistEntry = Playlist['items'][number];
@@ -263,7 +266,18 @@ export const isSavedPlaylistEntryPlayable = (options: {
   savedSources: DriveLibrarySource[];
   /** Defaults to the recordings snapshot; recording entries resolve against it. */
   recordings?: readonly Recording[];
+  /** Defaults to the composites snapshot; composite entries resolve against it. */
+  composites?: readonly CompositeTrack[];
 }) => {
+  // A composite entry plays while the composite exists and one stem can sound.
+  if (options.entry.kind === 'composite') {
+    return isCompositeEntryPlayable({
+      entry: options.entry,
+      composites: options.composites ?? getCompositesSnapshot(),
+      library: { sources: options.savedSources },
+    });
+  }
+
   // A recording entry plays while the recording exists and its track is still
   // in the library; a deleted one reads as unavailable and is skipped.
   if (options.entry.recordingId) {

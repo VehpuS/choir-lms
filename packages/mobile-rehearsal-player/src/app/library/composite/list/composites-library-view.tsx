@@ -1,6 +1,7 @@
 import {
   resolveCompositePlayableItem,
   type DriveAudioSource,
+  type Playlist,
   type PlayableItem,
 } from '@org/audio-library-models';
 import { useMemo, useState } from 'react';
@@ -21,6 +22,7 @@ import {
   type SavedTrackPlaybackState,
 } from '../../playback/utils/saved-track-playback-view-model';
 import { SearchHighlightedText } from '../../search/components/search-highlighted-text';
+import { useLibrarySelectionServices } from '../../selection/library-selection-services';
 import { LibraryFilesConfirmationDialog } from '../../selection/library-files-confirmation-dialog';
 import {
   compositeCapabilities,
@@ -34,6 +36,7 @@ import {
   buildDeleteCompositeDialog,
   resolveCompositeRowMenu,
 } from './composite-row-actions';
+import { CompositePlaylistPicker } from './composite-playlist-picker';
 import { CompositeRenameSheet } from './composite-rename-sheet';
 import {
   COMPOSITES_EMPTY_HINT,
@@ -45,13 +48,18 @@ import {
 
 type CompositesLibraryViewProps = {
   activePlayableItem: PlayableItem | null;
+  canMutatePlaylists: boolean;
   canQueueAsNext: boolean;
+  createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
+  isPlaylistMutating: boolean;
   playbackState: SavedTrackPlaybackState | undefined;
   queuePlayableItemNext: (item: PlayableItem) => void;
   queuePlayableItemUpNext: (item: PlayableItem) => void;
+  savedPlaylists: Playlist[];
   searchQuery: string | null;
   sources: readonly DriveAudioSource[];
   togglePlayableItemPlayback: (item: PlayableItem) => Promise<void>;
+  updatePlaylist: (playlist: Playlist) => Promise<Playlist | null>;
 };
 
 /**
@@ -61,18 +69,25 @@ type CompositesLibraryViewProps = {
  */
 export const CompositesLibraryView = ({
   activePlayableItem,
+  canMutatePlaylists,
   canQueueAsNext,
+  createPlaylist,
+  isPlaylistMutating,
   playbackState,
   queuePlayableItemNext,
   queuePlayableItemUpNext,
+  savedPlaylists,
   searchQuery,
   sources,
   togglePlayableItemPlayback,
+  updatePlaylist,
 }: CompositesLibraryViewProps) => {
+  const { acknowledge } = useLibrarySelectionServices();
   const composites = useComposites();
   const [menuId, setMenuId] = useState<string | null>(null);
   const [renameId, setRenameId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [playlistId, setPlaylistId] = useState<string | null>(null);
   const library = useMemo(() => ({ sources }), [sources]);
   const availability = resolveCompositeAvailability(compositeCapabilities());
   const rows = useMemo(
@@ -100,6 +115,7 @@ export const CompositesLibraryView = ({
 
   const renaming = findComposite(renameId);
   const deleting = findComposite(deleteId);
+  const addingToPlaylist = findComposite(playlistId);
 
   return (
     <View style={styles.group}>
@@ -117,6 +133,8 @@ export const CompositesLibraryView = ({
           const menu = resolveCompositeRowMenu({
             isPlayable: item !== null && availability.available,
             canQueueAsNext,
+            canAddToPlaylist: canMutatePlaylists && !isPlaylistMutating,
+            onAddToPlaylist: () => setPlaylistId(row.id),
             onPlayNext: () => item && queuePlayableItemNext(item),
             onAddToQueue: () => item && queuePlayableItemUpNext(item),
             onRename: () => setRenameId(row.id),
@@ -181,6 +199,16 @@ export const CompositesLibraryView = ({
           );
         })}
       </ExplorerListSurface>
+      {addingToPlaylist ? (
+        <CompositePlaylistPicker
+          composite={addingToPlaylist}
+          createPlaylist={createPlaylist}
+          onAdded={acknowledge}
+          onClose={() => setPlaylistId(null)}
+          playlists={savedPlaylists}
+          updatePlaylist={updatePlaylist}
+        />
+      ) : null}
       {renaming ? (
         <CompositeRenameSheet
           currentName={renaming.name}

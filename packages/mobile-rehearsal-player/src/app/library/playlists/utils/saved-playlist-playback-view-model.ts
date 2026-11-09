@@ -1,4 +1,5 @@
 import type {
+  CompositeTrack,
   DriveAudioSource,
   NamedLoop,
   PlayableItem,
@@ -15,6 +16,7 @@ import {
   type PlaybackQueue,
 } from '@org/audio-library-runtime';
 
+import { getCompositesSnapshot } from '../../composite/store/composite-store-instance';
 import { getRecordingsSnapshot } from '../../recording/recordings-store-instance';
 import type { SavedTrackPlaybackState } from '../../playback/utils/saved-track-playback-view-model';
 export {
@@ -72,6 +74,8 @@ type BuildPlaylistPlaybackSessionOptions = {
   random?: () => number;
   /** Defaults to the recordings snapshot; recording entries resolve against it. */
   recordings?: readonly Recording[];
+  /** Defaults to the composites snapshot; composite entries resolve against it. */
+  composites?: readonly CompositeTrack[];
   repeatMode: RepeatMode;
   sources: DriveAudioSource[];
   startEntryId?: string;
@@ -142,6 +146,7 @@ export const buildPlaylistPlaybackSession = (
   }
 
   const recordings = options.recordings ?? getRecordingsSnapshot();
+  const composites = options.composites ?? getCompositesSnapshot();
   const queue = createPlaybackQueue(
     options.playlist,
     options.loops,
@@ -150,6 +155,7 @@ export const buildPlaylistPlaybackSession = (
       mode: options.mode,
       random: options.random,
       recordings,
+      composites,
       repeatMode: options.repeatMode,
     },
   );
@@ -201,6 +207,7 @@ export const buildPlaylistPlaybackSession = (
               options.loops,
               options.sources,
               recordings,
+              composites,
             )
           : undefined,
     } satisfies PlaylistPlaybackSession,

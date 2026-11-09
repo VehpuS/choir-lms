@@ -92,7 +92,7 @@ export const RecordingPlaylistPicker = ({
       onSubmitNewPlaylist={() => void create()}
       playlists={playlists}
       selectedLoop={null}
-      selectedRecordingTitle={getPlaylistPickerTitle(recordings)}
+      selectedItemTitle={getPlaylistPickerTitle(recordings)}
       selectedSource={null}
       step={step}
     />

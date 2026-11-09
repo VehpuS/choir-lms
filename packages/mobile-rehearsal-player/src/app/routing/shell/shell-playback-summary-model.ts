@@ -245,6 +245,14 @@ export const getQueueItemDetail = (playableItem: PlayableItem) => {
     getPlayableItemDurationMs(playableItem),
   );
 
+  // A composite says so, with its stem count (the item's description).
+  if (playableItem.kind === 'composite') {
+    return compact([
+      playableItem.description || 'Composite',
+      durationLabel,
+    ]).join(ROW_META_SEPARATOR);
+  }
+
   return compact([
     playableItem.transform ? 'Adjusted track' : 'Track',
     transformLabel,

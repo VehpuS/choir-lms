@@ -1,4 +1,5 @@
 import type { Playlist } from '@org/audio-library-models';
+import type { AppIconName } from '../../../../components/app-icon/model';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 
@@ -20,6 +21,11 @@ type PlaylistEntry = Playlist['items'][number];
 
 const DEFAULT_PLAYLIST_ADD_ITEMS_ACTION_LABEL = 'Add items';
 const SELECTION_ROW_GLYPH_SIZE = 20;
+const ENTRY_KIND_ICONS: Record<PlaylistEntry['kind'], AppIconName> = {
+  composite: 'tune-variant',
+  loop: 'repeat',
+  track: 'music-note-outline',
+};
 
 export const SavedPlaylistDetailItemsList = (props: {
   addItemsActionLabel: string | null;
@@ -128,7 +134,7 @@ export const SavedPlaylistDetailItemsList = (props: {
               leadingIcon={
                 <AppIcon
                   color={appTheme.colors.icon}
-                  name={entry.kind === 'loop' ? 'repeat' : 'music-note-outline'}
+                  name={ENTRY_KIND_ICONS[entry.kind]}
                   size={SELECTION_ROW_GLYPH_SIZE}
                 />
               }

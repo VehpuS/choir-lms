@@ -1,10 +1,13 @@
 import {
+  addCompositeToPlaylist,
   addLoopToPlaylist,
   addTrackToPlaylist,
+  type CompositeTrack,
   type NamedLoop,
   type Playlist,
 } from '@org/audio-library-models';
 
+import { getCompositesSnapshot } from '../../composite/store/composite-store-instance';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { PlaylistPlaybackSession } from './saved-playlist-playback-view-model';
 import {
@@ -24,6 +27,13 @@ const createMissingLoopIssue = (loopTitle: string): PlaylistDraftIssue => {
   };
 };
 
+const createMissingCompositeIssue = (title: string): PlaylistDraftIssue => {
+  return {
+    title: 'Queued composite unavailable',
+    message: `The queue item "${title}" is no longer in your library. Remove it from the queue before saving this playlist.`,
+  };
+};
+
 const getQueueEntryTimestamp = (baseTimestamp: string, itemIndex: number) => {
   const baseMs = Date.parse(baseTimestamp);
   const timestampMs = Number.isNaN(baseMs)
@@ -35,6 +45,7 @@ const getQueueEntryTimestamp = (baseTimestamp: string, itemIndex: number) => {
 
 const captureQueueItemsIntoPlaylist = (options: {
   baseTimestamp: string;
+  composites: readonly CompositeTrack[];
   playlist: Playlist;
   savedLoops: NamedLoop[];
   savedSources: DriveLibrarySource[];
@@ -80,6 +91,24 @@ const captureQueueItemsIntoPlaylist = (options: {
       continue;
     }
 
+    // A composite is saved by reference, never as a track of its own.
+    if (queueItem.kind === 'composite') {
+      const composite = options.composites.find(({ id }) => {
+        return id === queueItem.sourceId;
+      });
+
+      if (!composite) {
+        return {
+          issue: createMissingCompositeIssue(queueItem.title),
+          playlist: null,
+          unsavedSources: [],
+        };
+      }
+
+      playlist = addCompositeToPlaylist(playlist, composite, entryTimestamp);
+      continue;
+    }
+
     const savedLoop = options.savedLoops.find((loop) => {
       return loop.id === queueItem.loopId;
     });
@@ -103,6 +132,8 @@ const captureQueueItemsIntoPlaylist = (options: {
 };
 
 export const appendQueueItemsToPlaylist = (options: {
+  /** Defaults to the composites snapshot. */
+  composites?: readonly CompositeTrack[];
   now?: string;
   playlist: Playlist;
   savedLoops: NamedLoop[];
@@ -112,6 +143,7 @@ export const appendQueueItemsToPlaylist = (options: {
   return captureQueueItemsIntoPlaylist({
     baseTimestamp:
       options.now ?? options.playlist.updatedAt ?? new Date().toISOString(),
+    composites: options.composites ?? getCompositesSnapshot(),
     playlist: options.playlist,
     savedLoops: options.savedLoops,
     savedSources: options.savedSources,
@@ -120,6 +152,8 @@ export const appendQueueItemsToPlaylist = (options: {
 };
 
 export const replaceQueueItemsInPlaylist = (options: {
+  /** Defaults to the composites snapshot. */
+  composites?: readonly CompositeTrack[];
   now?: string;
   playlist: Playlist;
   savedLoops: NamedLoop[];
@@ -130,6 +164,7 @@ export const replaceQueueItemsInPlaylist = (options: {
 
   return captureQueueItemsIntoPlaylist({
     baseTimestamp,
+    composites: options.composites ?? getCompositesSnapshot(),
     playlist: {
       ...options.playlist,
       items: [],
@@ -142,6 +177,8 @@ export const replaceQueueItemsInPlaylist = (options: {
 };
 
 export const buildSavedPlaylistFromQueue = (options: {
+  /** Defaults to the composites snapshot. */
+  composites?: readonly CompositeTrack[];
   createId?: (ownerId: string, createdAt: string) => string;
   name: string;
   now?: string;
@@ -171,6 +208,7 @@ export const buildSavedPlaylistFromQueue = (options: {
 
   return captureQueueItemsIntoPlaylist({
     baseTimestamp: playlistResult.playlist.createdAt,
+    composites: options.composites ?? getCompositesSnapshot(),
     playlist: playlistResult.playlist,
     savedLoops: options.savedLoops,
     savedSources: options.savedSources,

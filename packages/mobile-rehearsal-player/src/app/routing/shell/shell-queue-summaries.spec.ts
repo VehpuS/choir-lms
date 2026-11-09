@@ -5,6 +5,7 @@ import { describe, it } from 'node:test';
 
 import {
   addTrackToPlaylist,
+  createCompositePlayableItem,
   createPlaylist,
   createTrackPlayableItem,
 } from '@org/audio-library-models';
@@ -245,5 +246,33 @@ describe('shell queue summaries', () => {
         'entry:track:drive:alto-line:2026-05-12T00:02:00.000Z',
       ],
     );
+  });
+
+  it('words a queued composite with its badge and length, not as a track', () => {
+    const stem = (id: string) => ({
+      id,
+      trackId: `t-${id}`,
+      name: id,
+      offsetMs: 0,
+      mine: false,
+    });
+    const session = queuePlayableItemDuringPlayback({
+      activePlayableItem: createTrackPlayableItem(PLAYABLE_SOURCE),
+      playableItem: createCompositePlayableItem(
+        {
+          id: 'c1',
+          name: 'Ubi',
+          createdAt: '2026-11-09T00:00:00.000Z',
+          stems: [stem('s'), stem('a'), stem('t'), stem('b')],
+        },
+        { durationMs: 168_000 },
+      ),
+      position: 'up-next',
+      repeatMode: 'off',
+      session: null,
+    });
+    const summary = getUpNextSurfaceSummary({ activePlaylistSession: session });
+
+    assert.equal(summary?.items[1]?.detail, 'Composite · 4 stems · 2:48');
   });
 });

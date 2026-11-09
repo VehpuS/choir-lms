@@ -1,3 +1,4 @@
+import { getCompositesSnapshot } from '../../composite/store/composite-store-instance';
 import { getRecordingsSnapshot } from '../../recording/recordings-store-instance';
 import {
   createLoopPlayableItem,
@@ -53,6 +54,7 @@ export const resolveTagQueuePlayableItems = (
         options.loops,
         options.sources,
         getRecordingsSnapshot(),
+        getCompositesSnapshot(),
       );
     }
 

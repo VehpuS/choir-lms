@@ -232,13 +232,18 @@ export const SavedRehearsalLibrarySection = (
         shouldRenderCompositesView(selectedView) ? (
           <CompositesLibraryView
             activePlayableItem={activePlayableItem}
+            canMutatePlaylists={props.canMutatePlaylists}
             canQueueAsNext={activePlayableItem !== null}
+            createPlaylist={createPlaylist}
+            isPlaylistMutating={isPlaylistMutating}
             playbackState={playbackState}
             queuePlayableItemNext={props.queuePlayableItemNext}
             queuePlayableItemUpNext={props.queuePlayableItemUpNext}
+            savedPlaylists={savedPlaylists}
             searchQuery={searchState.activeLibrarySearchQuery}
             sources={savedLibrarySources}
             togglePlayableItemPlayback={props.togglePlayableItemPlayback}
+            updatePlaylist={updatePlaylist}
           />
         ) : null}
         {shouldRenderBrowseContent ? (

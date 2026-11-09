@@ -4,11 +4,14 @@ import {
   formatTransformLabel,
   getLoopDisplayDurationMs,
   getSourceDisplayDurationMs,
+  type CompositeTrack,
   type NamedLoop,
   type Playlist,
   type Recording,
 } from '@org/audio-library-models';
 
+import { getCompositeEntryLabel } from '../../composite/list/composite-playlist-entry';
+import { getCompositesSnapshot } from '../../composite/store/composite-store-instance';
 import { getRecordingsSnapshot } from '../../recording/recordings-store-instance';
 import type { OptionsMenuAction } from '../../components/options-menu-sheet/model';
 import {
@@ -206,7 +209,16 @@ export const getSavedPlaylistEntryDetailLabel = (options: {
   savedLoops: NamedLoop[];
   savedSources: DriveLibrarySource[];
   recordings?: readonly Recording[];
+  composites?: readonly CompositeTrack[];
 }) => {
+  if (options.entry.kind === 'composite') {
+    return getCompositeEntryLabel({
+      entry: options.entry,
+      composites: options.composites ?? getCompositesSnapshot(),
+      library: { sources: options.savedSources },
+    });
+  }
+
   if (options.entry.recordingId) {
     return getRecordingEntryLabel(options.entry, options.recordings);
   }
