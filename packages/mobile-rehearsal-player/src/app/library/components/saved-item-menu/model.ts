@@ -2,6 +2,8 @@ import { omit } from 'es-toolkit';
 
 import type { DriveLibrarySourceAction } from '../../drive/utils/drive-library-source-actions';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
+import { isNeedsAccessSource } from '../../bundle/access-guide-model';
+import { requestBundleFlow } from '../../bundle/bundle-flow-request';
 import { getOriginalDriveLocationViewModel } from '../../saved-rehearsal-library/original-drive-location-view-model';
 import type { PendingSourceLocationAction } from '../../saved-rehearsal-library/use-saved-source-original-location-actions';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
@@ -188,6 +190,8 @@ export const splitSavedItemRowActions = (
  * Drive`, with the shared `Checking Drive…` pending label while a lookup for
  * this track is in flight.
  */
+const GET_ACCESS_LABEL = 'Get access…';
+
 export const resolveSavedTrackDriveActions = (options: {
   canReconnect: boolean;
   idPrefix: string;
@@ -202,7 +206,11 @@ export const resolveSavedTrackDriveActions = (options: {
   const isPending = pending?.sourceId === options.source.id;
   const actions: SavedItemMenuAction[] = [];
 
-  if (options.source.availability.status !== 'available') {
+  // A file that needs access is repaired by getting access, not by
+  // reconnecting, and Drive cannot show where it lives.
+  const needsAccess = isNeedsAccessSource(options.source);
+
+  if (options.source.availability.status !== 'available' && !needsAccess) {
     actions.push({
       disabled: !options.canReconnect,
       id: `${options.idPrefix}:reconnect`,
@@ -212,7 +220,17 @@ export const resolveSavedTrackDriveActions = (options: {
     });
   }
 
-  if (originalLocation.canShowInAdd) {
+  if (needsAccess) {
+    // The guide lists every file that needs access, grouped by owner.
+    actions.push({
+      id: `${options.idPrefix}:get-access`,
+      label: GET_ACCESS_LABEL,
+      onPress: () => requestBundleFlow({ kind: 'access-guide' }),
+      tone: 'secondary',
+    });
+  }
+
+  if (originalLocation.canShowInAdd && !needsAccess) {
     actions.push({
       disabled: isPending,
       id: `${options.idPrefix}:show-in-add`,

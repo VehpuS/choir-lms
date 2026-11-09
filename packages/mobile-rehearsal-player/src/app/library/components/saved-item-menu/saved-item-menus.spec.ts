@@ -319,3 +319,37 @@ describe('composeSavedItemMenu', () => {
     ]);
   });
 });
+
+describe('a track that needs access', () => {
+  const NEEDS_ACCESS_SOURCE = {
+    ...SOURCE,
+    availability: {
+      message: 'Can’t open this file. Ask the owner to share it with you.',
+      reason: 'needs-access' as const,
+      status: 'unavailable' as const,
+    },
+  };
+
+  it('offers getting access instead of reconnecting or showing it in Add', () => {
+    const labels = resolveSavedTrackMenu(
+      trackContext({ source: NEEDS_ACCESS_SOURCE }),
+      { idPrefix: 'track:needs-access' },
+    ).map((action) => action.label);
+
+    assert.equal(labels.includes('Reconnect'), false);
+    assert.equal(labels.includes('Show in Add'), false);
+    assert.equal(labels.includes('Open in Google Drive'), true);
+    assert.equal(labels.includes('Get access…'), true);
+    assert.equal(labels.includes('Remove from library'), true);
+  });
+
+  it('still offers Reconnect for a track whose sign-in expired', () => {
+    const labels = resolveSavedTrackMenu(
+      trackContext({ source: UNAVAILABLE_SOURCE }),
+      { idPrefix: 'track:expired' },
+    ).map((action) => action.label);
+
+    assert.equal(labels.includes('Reconnect'), true);
+    assert.equal(labels.includes('Get access…'), false);
+  });
+});

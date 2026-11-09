@@ -3,6 +3,10 @@ import { useState } from 'react';
 import type { DriveFolder } from '@org/google-drive';
 
 import type { DriveLibrarySource } from '../drive/utils/drive-library-view-model';
+import {
+  getDriveFileOpenUrl,
+  isNeedsAccessSource,
+} from '../bundle/access-guide-model';
 import { getDriveSourceLocationIssueCopy } from './drive-source-location-issue-copy';
 import { openDriveFileInGoogleDrive } from './open-drive-file-in-google-drive';
 import { openSavedSourceOriginalFolderInGoogleDrive } from './open-saved-source-original-location';
@@ -125,6 +129,15 @@ export const useSavedSourceOriginalLocationActions = (options: {
       });
     },
     openSourceInGoogleDrive(source: DriveLibrarySource) {
+      // A file that needs access cannot be looked up in Drive, so its own page
+      // opens directly: that is where Drive's Request access lives.
+      if (isNeedsAccessSource(source)) {
+        setSourceLocationIssue(null);
+        void options.openUrl(getDriveFileOpenUrl(source.driveFileId));
+
+        return;
+      }
+
       withAccessToken(
         source,
         'open-in-google-drive',

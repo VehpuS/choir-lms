@@ -25,6 +25,7 @@ const ROW_ACTION_SECTION_BY_LABEL = new Map<string, RowActionSection>([
   ['Reconnect', 'organize'],
   ['Show in Add', 'organize'],
   ['Open in Google Drive', 'organize'],
+  ['Get access…', 'organize'],
   ['Checking Drive…', 'organize'],
   ['Create a copy', 'organize'],
   ['Edit tags', 'organize'],
