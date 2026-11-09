@@ -160,6 +160,11 @@ The system SHALL provide direct shortcuts to recent rehearsal context so users c
 - **WHEN** a user plays items from the transient `Current queue`
 - **THEN** Recents records each played item as a track, loop or composite and records no playlist entry
 
+#### Scenario: Recents can surface shortcut metadata such as popular tags
+
+- **WHEN** Recents is enabled as an acceleration surface
+- **THEN** the system may show shortcut metadata such as popular tags without making Recents a required step for core discovery or playback
+
 #### Scenario: Old per-track playlist history is discarded
 
 - **WHEN** the app restores stored recents that contain per-track playlist rows from before playlists became recent entries
