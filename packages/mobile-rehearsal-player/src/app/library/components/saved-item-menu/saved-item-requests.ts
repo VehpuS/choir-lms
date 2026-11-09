@@ -9,6 +9,7 @@ export type SavedItemRequestAction =
   | 'add-marker-here'
   | 'add-recording-to-playlist'
   | 'add-to-playlist'
+  | 'composite-add-to-playlist'
   | 'composite-sheet-music'
   | 'edit-loop'
   | 'edit-lyrics'
@@ -88,6 +89,15 @@ export const resolveSavedItemShortcuts = (options: {
   // A composite is not a saved track; what it offers is read from its stems.
   if (item.kind === 'composite') {
     return [
+      {
+        id: 'add-to-playlist',
+        label: 'Add to playlist',
+        request: {
+          action: 'composite-add-to-playlist',
+          id: item.sourceId,
+          kind: 'track',
+        },
+      },
       {
         id: 'edit-lyrics',
         label: options.hasLyrics ? EDIT_LYRICS_LABEL : ADD_LYRICS_LABEL,

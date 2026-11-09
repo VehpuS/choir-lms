@@ -44,6 +44,7 @@ describe('resolveSavedItemShortcuts', () => {
         item: { kind: 'composite', sourceId: 'c1' },
       }).map(({ id, request }) => [id, request.action, request.id]),
       [
+        ['add-to-playlist', 'composite-add-to-playlist', 'c1'],
         ['edit-lyrics', 'edit-lyrics', 'c1'],
         ['sheet-music', 'composite-sheet-music', 'c1'],
       ],

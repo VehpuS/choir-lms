@@ -33,6 +33,7 @@ export type PlaylistState = Pick<
   ReturnType<typeof useSavedRehearsalLibraryPlaylistState>,
   | 'cardRenamePlaylistId'
   | 'cardRenamePlaylistName'
+  | 'addCompositeToSelectedPlaylist'
   | 'addLoopToSelectedPlaylist'
   | 'addSourceToSelectedPlaylist'
   | 'closeFilesAddItems'

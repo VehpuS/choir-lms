@@ -1,6 +1,7 @@
 import { aggregateRehearsalLibraryTags } from '@org/audio-library-runtime';
 import { cloneElement, useMemo } from 'react';
 
+import { useComposites } from '../../composite/store/composite-store-instance';
 import { SavedTagsList } from '../../tags/components/saved-tags-list';
 import {
   resolveFreshEntityForTagEditor,
@@ -85,6 +86,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
     selectedView,
   });
 
+  const savedComposites = useComposites();
   const tagUsage = useMemo(() => {
     return aggregateRehearsalLibraryTags({
       entityCollections: {
@@ -151,6 +153,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
             isSavedLibraryMutating,
             onDone: onDoneAddingFilesPlaylistItems,
             playlistState,
+            savedComposites,
             savedLibrarySources,
             savedLoops,
           })}

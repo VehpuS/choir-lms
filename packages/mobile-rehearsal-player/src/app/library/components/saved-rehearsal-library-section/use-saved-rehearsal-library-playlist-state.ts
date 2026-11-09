@@ -1,7 +1,9 @@
 import {
+  addCompositeToPlaylist,
   addLoopToPlaylist,
   addTrackToPlaylist,
   renamePlaylist,
+  type CompositeTrack,
   type NamedLoop,
   type Playlist,
 } from '@org/audio-library-models';
@@ -110,6 +112,13 @@ export const useSavedRehearsalLibraryPlaylistState = ({
   };
 
   return {
+    async addCompositeToSelectedPlaylist(
+      composite: Pick<CompositeTrack, 'id' | 'name' | 'stems'>,
+    ) {
+      return persistSelectedPlaylist((playlist) => {
+        return addCompositeToPlaylist(playlist, composite);
+      });
+    },
     async addLoopToSelectedPlaylist(loop: NamedLoop) {
       return persistSelectedPlaylist((playlist) => {
         return addLoopToPlaylist(playlist, loop);

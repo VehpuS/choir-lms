@@ -28,6 +28,7 @@ export type FilesPlaylistAddMode = {
   canMutatePlaylists: boolean;
   isPlaylistMutating: boolean;
   isSavedLibraryMutating: boolean;
+  onAddComposite: (compositeId: string) => void;
   onAddLoop: (loopId: string) => void;
   onDone: () => void;
   onAddSource: (sourceId: string) => void;
@@ -72,7 +73,7 @@ export const getFilesPlaylistAddModeCopy = (options: {
 }) => {
   return {
     message:
-      `Choose tracks or loops from ${options.currentFolderName}, then return to ` +
+      `Choose tracks, loops or composites from ${options.currentFolderName}, then return to ` +
       `${options.playlistName} when the running order looks right.`,
     title: `Add items to ${options.playlistName}`,
   };
@@ -82,7 +83,10 @@ const buildFilesPlaylistAddAction = (
   row: LibraryFilesExplorerState['rows'][number],
   playlistAddMode?: FilesPlaylistAddMode,
 ): FilesPlaylistAddAction | undefined => {
-  if (!playlistAddMode || (row.kind !== 'track' && row.kind !== 'loop')) {
+  if (
+    !playlistAddMode ||
+    (row.kind !== 'track' && row.kind !== 'loop' && row.kind !== 'composite')
+  ) {
     return undefined;
   }
 
@@ -100,6 +104,11 @@ const buildFilesPlaylistAddAction = (
     onPress: () => {
       if (row.kind === 'track') {
         playlistAddMode.onAddSource(row.source.id);
+        return;
+      }
+
+      if (row.kind === 'composite') {
+        playlistAddMode.onAddComposite(row.composite.id);
         return;
       }
 

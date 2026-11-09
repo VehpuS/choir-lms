@@ -14,6 +14,7 @@ import type { CreateSheetTrack } from './create/create-sheet-model';
 import { useSaveInOptions } from './create/use-save-in-options';
 import { useTrackDurations } from './create/use-track-durations';
 import { getLibraryTrack, publishLibraryTracks } from './library-tracks';
+import { CompositePlaylistRequestHost } from './composite-playlist-request-host';
 import { CompositeExportHost } from './export/composite-export-host';
 import { CompositeStemOptionsHost } from './stem-options/composite-stem-options-host';
 import { registerCompositeEngineLoader } from './playback/register-composite-engine-loader';
@@ -23,6 +24,8 @@ import {
 } from './store/composite-store-instance';
 
 type CompositeHostProps = {
+  /** Where `Add to playlist` from the playback menu writes. */
+  playlists: Parameters<typeof CompositePlaylistRequestHost>[0]['playlists'];
   /** The Drive session: its token for stems, its write access for exports. */
   authorization: Parameters<typeof CompositeExportHost>[0]['authorization'];
   library: {
@@ -42,6 +45,7 @@ type CompositeHostProps = {
 export const CompositeHost = ({
   authorization,
   library,
+  playlists,
 }: CompositeHostProps) => {
   const accessToken = authorization.authState.accessToken ?? null;
   const sources = library.savedLibrarySources;
@@ -114,6 +118,7 @@ export const CompositeHost = ({
   return (
     <>
       {createSheet}
+      <CompositePlaylistRequestHost playlists={playlists} />
       <ClearOfflineFilesHost />
       <CompositeExportHost authorization={authorization} />
       <CompositeStemOptionsHost sources={sources} />

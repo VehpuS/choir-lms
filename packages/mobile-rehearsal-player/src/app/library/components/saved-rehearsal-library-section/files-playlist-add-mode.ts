@@ -1,4 +1,4 @@
-import type { NamedLoop } from '@org/audio-library-models';
+import type { CompositeTrack, NamedLoop } from '@org/audio-library-models';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import type { PlaylistState } from './browse-content-types';
@@ -15,6 +15,7 @@ export const resolveFilesPlaylistAddMode = (options: {
   isSavedLibraryMutating: boolean;
   onDone: () => void;
   playlistState: PlaylistState;
+  savedComposites: readonly CompositeTrack[];
   savedLibrarySources: DriveLibrarySource[];
   savedLoops: NamedLoop[];
 }): FilesPlaylistAddMode | undefined => {
@@ -31,6 +32,17 @@ export const resolveFilesPlaylistAddMode = (options: {
     canMutatePlaylists: options.canMutatePlaylists,
     isPlaylistMutating: options.isPlaylistMutating,
     isSavedLibraryMutating: options.isSavedLibraryMutating,
+    onAddComposite: (compositeId) => {
+      const composite = options.savedComposites.find(({ id }) => {
+        return id === compositeId;
+      });
+
+      if (!composite) {
+        return;
+      }
+
+      void playlistState.addCompositeToSelectedPlaylist(composite);
+    },
     onAddLoop: (loopId) => {
       const loop = options.savedLoops.find((currentLoop) => {
         return currentLoop.id === loopId;

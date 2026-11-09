@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   createDriveAudioSource,
+  type CompositeTrack,
   type NamedLoop,
   type Playlist,
   type RehearsalLibraryFileTree,
@@ -245,6 +246,9 @@ describe('SavedRehearsalLibraryFilesView', () => {
         canMutatePlaylists: true,
         isPlaylistMutating: false,
         isSavedLibraryMutating: false,
+        onAddComposite() {
+          return undefined;
+        },
         onAddLoop(loopId: string) {
           addedLoopIds.push(loopId);
         },
@@ -285,5 +289,72 @@ describe('SavedRehearsalLibraryFilesView', () => {
 
     assert.deepEqual(addedSourceIds, [SOURCE.id]);
     assert.deepEqual(addedLoopIds, [LOOP.id]);
+  });
+  it('offers `Add` for a composite in Files add-items mode', () => {
+    const composite: CompositeTrack = {
+      createdAt: '2026-07-01T00:00:00.000Z',
+      defaultMix: { levels: {} },
+      id: 'composite-1',
+      name: 'Seeded SATB',
+      presets: [],
+      stems: [
+        {
+          id: 's1',
+          mine: false,
+          name: 'Alto',
+          offsetMs: 0,
+          trackId: SOURCE.id,
+        },
+      ],
+    };
+    const { files } = createFilesStub(
+      buildLibraryFilesExplorerState({
+        currentFolderId: 'folder-warmups',
+        savedComposites: [composite],
+        savedLoops: [],
+        savedPlaylists: [],
+        savedSources: [SOURCE],
+        tree: {
+          ...TREE,
+          fileLinks: [
+            {
+              entityId: composite.id,
+              entityKind: 'composite',
+              id: `file-link:composite:${composite.id}`,
+              parentFolderId: 'folder-warmups',
+            },
+          ],
+        },
+      }),
+    );
+    const addedCompositeIds: string[] = [];
+    const viewModel = buildSavedRehearsalLibraryFilesViewModel({
+      activePlayableItem: null,
+      files,
+      onOpenPlaylist: () => undefined,
+      onTogglePlayableItemPlayback: async () => undefined,
+      onToggleSourcePlayback: async () => undefined,
+      pendingLoopBuilderSourceId: null,
+      playback: IDLE_PLAYBACK,
+      playlistAddMode: {
+        canMutatePlaylists: true,
+        isPlaylistMutating: false,
+        isSavedLibraryMutating: false,
+        onAddComposite: (compositeId: string) => {
+          addedCompositeIds.push(compositeId);
+        },
+        onAddLoop: () => undefined,
+        onAddSource: () => undefined,
+        onDone: () => undefined,
+        playlistName: PLAYLIST.name,
+      },
+    });
+    const row = viewModel?.rows.find(({ label }) => label === composite.name);
+
+    assert.equal(row?.addAction?.label, 'Add');
+
+    row?.addAction?.onPress();
+
+    assert.deepEqual(addedCompositeIds, [composite.id]);
   });
 });
