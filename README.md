@@ -102,6 +102,18 @@ A singer can record their own voice over a playing track, then play the take bac
 
 The sync, mixing and punch logic is in `packages/audio-mixing`; the app side is `packages/mobile-rehearsal-player/src/app/library/recording/`. The overlay path is described in `docs/mobile-cross-platform-audio-playback.md`.
 
+## Composite tracks
+
+A composite plays several stems (one track per voice) together as one item, so a singer can mute their own part, hear the others and rehearse against them. Like recording it is web-only for now.
+
+- **Making one:** select two or more tracks in the Library (the Tracks or the Files view) and choose `Make composite…`. The sheet names it, names each stem, and picks where it is saved (`Save in`). A composite is a file in the Library like a track, loop or playlist; it also has a `Composites` view, a row badge (`Composite · 4 stems`), search, Recents, playlists and the queue.
+- **The Mix panel:** on the playback screen, a row per stem with mute, solo and a 0 to 150% level, `Your part` for the stem that is yours, built-in presets (`All parts`, `Without <your part>`, `<Your part> louder`), saved presets, a default mix and `Reset`. A stem whose track is gone shows `Stem missing`. Speed and pitch apply to the whole mix.
+- **First play:** each stem is prepared once (`Preparing stems · first time only`) and kept on the device, so later opens are quick. The offline files view lists `Prepared composites` and `Clear all` clears them; a full device says so and offers `Clear offline files…`.
+- **Lyrics and sheet music:** read from the stems. Sheet music is the combined list (each file once, with who uses it, and files you add to the composite); lyrics show the stem you pick.
+- **Export:** `Export…` renders the current mix, speed and pitch as a 16-bit WAV, to a download or to Drive.
+
+The mixing, offline render and mix logic are in `packages/audio-mixing`, the record and its rules in `packages/audio-library-models`, and the app side is `packages/mobile-rehearsal-player/src/app/library/composite/`. The engine and the player wrapper are described in `docs/mobile-cross-platform-audio-playback.md`.
+
 ## Product Direction
 
 This repository is intentionally scaffolded as an Nx workspace rather than a single app so the system can grow into a library of apps and shared packages over time.
@@ -118,7 +130,7 @@ The first change proposal for this direction is `add-mobile-rehearsal-player` un
 
 - `packages/` is the workspace home for future apps and shared libraries
 - `packages/pitch-detection` holds the framework-agnostic pitch-detection pipeline (estimator, gates, smoother, note segmenter); it is imported statically, unlike the lazily loaded `midi-notation`
-- `packages/audio-mixing` holds the framework-agnostic recording logic (clock-anchor fit, timeline builder, balance gains, sync controller, the offline mix renderer with its SoundTouch stretcher, and the punch range model, state machine and controller); the web `Transport` and `Voice` implementations live in the app
+- `packages/audio-mixing` holds the framework-agnostic recording and composite logic (clock-anchor fit, timeline builder, balance gains, sync controller, the offline mix renderer with its SoundTouch stretcher, the punch range model, state machine and controller, and for composites the stem gains, mix presets and session mix, and `renderComposite` with its SoundTouch sum shaper); the web `Transport` and `Voice` implementations and the composite engine live in the app
 - Pitch detection third-party licences (both permissive, checked against the installed packages): `pitchy` 4.1.0 (MIT, Copyright 2018-2021 Ian Johnson; its README's licence section is copied from another project, the `LICENSE` file is the authority) and its dependency `fft.js` 4.0.4 (MIT, Copyright Fedor Indutny 2017)
 - `openspec/` contains proposals, designs, specs, and tasks for planned work
 - `nx.json` and the root TypeScript configuration provide workspace-level build and project settings
