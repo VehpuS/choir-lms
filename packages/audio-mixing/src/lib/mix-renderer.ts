@@ -4,6 +4,7 @@ import { balanceToGains } from './balance-gains.ts';
 import { MIX_ENGINE_VERSION } from './engine-version.ts';
 import { createMixLimiter } from './mix-limiter.ts';
 import { planMixRender, type MixPlanSegment } from './mix-render-plan.ts';
+import { readResampledWindow } from './pcm-resampled-window.ts';
 import { floatToInt16 } from './wav.ts';
 import type { PcmWindowReader } from './wav-window-reader.ts';
 
@@ -125,50 +126,6 @@ const fillTrack = async (
   }
 };
 
-/** Linear-resampled recording samples for output frames `[chunkStart, chunkEnd)`. */
-const readRecording = async (
-  reader: PcmWindowReader,
-  offsetFrames: number,
-  outputSampleRate: number,
-  chunkStart: number,
-  chunkEnd: number,
-): Promise<Float32Array> => {
-  const frames = chunkEnd - chunkStart;
-  const out = new Float32Array(frames);
-  const step = reader.sampleRate / outputSampleRate;
-  // Positions come from the absolute output frame, so a chunk boundary never
-  // changes a sample.
-  const positionOf = (frame: number) => (frame - offsetFrames) * step;
-  const first = Math.max(0, Math.floor(positionOf(chunkStart)));
-  const last = Math.min(
-    reader.sampleCount,
-    Math.ceil(positionOf(chunkEnd - 1)) + 2,
-  );
-
-  if (last <= first) {
-    return out;
-  }
-
-  const window = await reader.read(first, last - first);
-
-  for (let index = 0; index < frames; index += 1) {
-    const position = positionOf(chunkStart + index);
-
-    if (position < 0 || position > reader.sampleCount - 1) {
-      continue;
-    }
-
-    const base = Math.floor(position);
-    const fraction = position - base;
-    const before = window[base - first] ?? 0;
-    const after = window[base + 1 - first] ?? before;
-
-    out[index] = before + (after - before) * fraction;
-  }
-
-  return out;
-};
-
 export const renderMix = async (
   options: RenderMixOptions,
 ): Promise<RenderMixResult> => {
@@ -205,7 +162,7 @@ export const renderMix = async (
         openStreams,
       );
 
-      const recording = await readRecording(
+      const recording = await readResampledWindow(
         reader,
         plan.recordingOffsetFrames,
         stretcher.sampleRate,

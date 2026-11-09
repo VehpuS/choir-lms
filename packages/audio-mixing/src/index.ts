@@ -20,3 +20,7 @@ export * from './lib/mix-limiter.ts';
 export * from './lib/mix-limiter-worklet.ts';
 export * from './lib/stem-gains.ts';
 export * from './lib/composite-mix.ts';
+export * from './lib/pcm-resampled-window.ts';
+export * from './lib/composite-render-plan.ts';
+export * from './lib/composite-renderer.ts';
+export * from './lib/soundtouch-sum-shaper.ts';
