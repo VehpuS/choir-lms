@@ -1,5 +1,7 @@
 import type {
+  CompositeTrack,
   NamedLoop,
+  PlayableItem,
   Playlist,
   RehearsalLibraryFileLinkNode,
   RehearsalLibraryFolderNode,
@@ -77,11 +79,23 @@ export type LibraryFilesPlaylistRow = {
   supportingLabel: string;
 };
 
+export type LibraryFilesCompositeRow = {
+  composite: CompositeTrack;
+  fileLink: RehearsalLibraryFileLinkNode;
+  kind: 'composite';
+  label: string;
+  message?: string;
+  /** Null when every stem is missing: the row shows but does not start. */
+  playableItem: PlayableItem | null;
+  supportingLabel: string;
+};
+
 export type LibraryFilesRow =
   | LibraryFilesFolderRow
   | LibraryFilesTrackRow
   | LibraryFilesLoopRow
-  | LibraryFilesPlaylistRow;
+  | LibraryFilesPlaylistRow
+  | LibraryFilesCompositeRow;
 
 export type LibraryFilesExplorerState = {
   breadcrumbs: LibraryFilesBreadcrumb[];
@@ -90,6 +104,7 @@ export type LibraryFilesExplorerState = {
 };
 
 export type LibraryFilesFolderChildCounts = {
+  compositeCount: number;
   folderCount: number;
   loopCount: number;
   playlistCount: number;

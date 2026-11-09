@@ -3,6 +3,7 @@ import type {
   NamedLoop,
   PlayableItem,
   Playlist,
+  CompositeTrack,
 } from '@org/audio-library-models';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 
@@ -44,6 +45,7 @@ type UseBulkPlaybackActionsOptions = {
   /** Something is playing; `Play next` and `Add to queue` need a queue to join. */
   canQueue: boolean;
   collections: {
+    composites?: readonly CompositeTrack[];
     loops: NamedLoop[];
     playlists: Playlist[];
     sources: DriveAudioSource[];
@@ -199,6 +201,7 @@ export const useBulkPlaybackActions = ({
       const result = appendRefsToPlaylist({
         playlist,
         refs,
+        savedComposites: collections.composites,
         savedLoops: collections.loops,
         savedSources: collections.sources,
       });
@@ -236,6 +239,7 @@ export const useBulkPlaybackActions = ({
       name: draftName,
       ownerId,
       refs,
+      savedComposites: collections.composites,
       savedLoops: collections.loops,
       savedSources: collections.sources,
     });

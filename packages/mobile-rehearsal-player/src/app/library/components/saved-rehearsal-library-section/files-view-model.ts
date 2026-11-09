@@ -229,6 +229,14 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
       return;
     }
 
+    if (row.kind === 'composite') {
+      if (row.playableItem) {
+        void options.onTogglePlayableItemPlayback(row.playableItem);
+      }
+
+      return;
+    }
+
     options.onOpenPlaylist(row.playlist.id);
   };
 
@@ -239,7 +247,8 @@ export const buildSavedRehearsalLibraryFilesViewModel = (options: {
     rows: explorer.rows.map((row) => {
       const disabled =
         (row.kind === 'track' && !row.isPlayable) ||
-        (row.kind === 'loop' && row.playableItem === null);
+        ((row.kind === 'loop' || row.kind === 'composite') &&
+          row.playableItem === null);
       const addAction = buildFilesPlaylistAddAction(
         row,
         options.playlistAddMode,

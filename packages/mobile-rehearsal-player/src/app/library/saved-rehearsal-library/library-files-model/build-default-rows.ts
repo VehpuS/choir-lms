@@ -1,4 +1,5 @@
 import type {
+  CompositeTrack,
   NamedLoop,
   Playlist,
   RehearsalLibraryFileTree,
@@ -15,6 +16,7 @@ import {
 } from '../../search/utils/saved-library-search-view-model';
 import { folderContainsMatchingEntity } from './folder-contains-matching-entity';
 import {
+  buildCompositeRow,
   buildEntityNameByKey,
   buildFolderChildCounts,
   buildFolderRow,
@@ -36,6 +38,7 @@ export const buildDefaultRows = (options: {
   entityFilter?: LibrarySearchEntityFilter;
   entityNameByKey: ReturnType<typeof buildEntityNameByKey>;
   openedAtByNodeKey?: Readonly<Record<string, string>>;
+  savedComposites?: readonly CompositeTrack[];
   savedLoops: NamedLoop[];
   savedPlaylists: Playlist[];
   savedSources: DriveLibrarySource[];
@@ -64,6 +67,11 @@ export const buildDefaultRows = (options: {
       return [playlist.id, playlist] as const;
     }),
   );
+  const savedCompositesById = new Map(
+    (options.savedComposites ?? []).map((composite) => {
+      return [composite.id, composite] as const;
+    }),
+  );
   const loopCountBySourceId = countLoopsBySourceId(options.savedLoops);
   const childFolders = options.tree.folders
     .filter((folder) => {
@@ -89,6 +97,7 @@ export const buildDefaultRows = (options: {
         entityFilter,
         folderId: folder.id,
         matchMode: tagFilterMatchMode,
+        savedCompositesById,
         savedLoopsById,
         savedPlaylistsById,
         savedSourcesById,
@@ -164,6 +173,25 @@ export const buildDefaultRows = (options: {
           fileLink,
           loop,
           source: savedSourcesById.get(loop.sourceId) ?? null,
+        }),
+      ];
+    }
+
+    if (fileLink.entityKind === 'composite') {
+      // Composites carry no tags and have no entity filter choice yet (12.14),
+      // so any filter hides them.
+      const composite = savedCompositesById.get(fileLink.entityId);
+
+      if (hasActiveFilter || !composite) {
+        return [] as LibraryFilesRow[];
+      }
+
+      return [
+        buildCompositeRow({
+          composite,
+          entityNameByKey: options.entityNameByKey,
+          fileLink,
+          savedSources: options.savedSources,
         }),
       ];
     }

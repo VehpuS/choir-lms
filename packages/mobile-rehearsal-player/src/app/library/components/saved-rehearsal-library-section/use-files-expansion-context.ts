@@ -27,6 +27,7 @@ export const useFilesExpansionContext = (options: {
   return useMemo(
     () =>
       createFilesPlaybackExpansionContext({
+        savedComposites: collections.composites,
         savedLoops: collections.loops,
         savedPlaylists: collections.playlists,
         savedSources: collections.sources,

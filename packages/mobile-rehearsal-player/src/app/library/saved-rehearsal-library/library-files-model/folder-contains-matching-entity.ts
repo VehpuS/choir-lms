@@ -17,6 +17,8 @@ export const folderContainsMatchingEntity = (options: {
   entityFilter: LibrarySearchEntityFilter;
   folderId: string;
   matchMode: TagFilterMatchMode;
+  /** Composites match only an unfiltered folder (no tags, no filter choice yet). */
+  savedCompositesById?: ReadonlyMap<string, unknown>;
   savedLoopsById: ReadonlyMap<string, NamedLoop>;
   savedPlaylistsById: ReadonlyMap<string, Playlist>;
   savedSourcesById: ReadonlyMap<string, DriveLibrarySource>;
@@ -64,6 +66,14 @@ export const folderContainsMatchingEntity = (options: {
           selectedTags: options.selectedTags,
           tags: loop.tags,
         })
+      );
+    }
+
+    if (fileLink.entityKind === 'composite') {
+      return (
+        options.entityFilter === 'all' &&
+        options.selectedTags.length === 0 &&
+        !!options.savedCompositesById?.has(fileLink.entityId)
       );
     }
 

@@ -6,25 +6,25 @@
 /** One selected row, reduced to what bulk actions need. `key` is the selection identity. */
 export type BulkSelectionItem =
   | { folderId: string; key: string; kind: 'folder' }
-  | { entityId: string; key: string; kind: 'track' | 'loop' }
+  | { entityId: string; key: string; kind: 'track' | 'loop' | 'composite' }
   | { key: string; kind: 'playlist'; playlistId: string }
   // A playlist-detail entry: the occurrence itself, not the track or loop.
   | {
       entityId: string;
-      entityKind: 'track' | 'loop';
+      entityKind: 'track' | 'loop' | 'composite';
       key: string;
       kind: 'playlist-entry';
     };
 
 export type PlaybackRef = {
   entityId: string;
-  kind: 'track' | 'loop';
+  kind: 'track' | 'loop' | 'composite';
 };
 
 /** A folder's child in the Files view's current display order. */
 export type FolderChild =
   | { folderId: string; kind: 'folder' }
-  | { entityId: string; kind: 'track' | 'loop' | 'playlist' };
+  | { entityId: string; kind: 'track' | 'loop' | 'composite' | 'playlist' };
 
 export type PlaybackExpansionContext = {
   /** The folder's children in the order the Files view currently sorts them. */
@@ -133,6 +133,7 @@ const expandItem = (
       };
     case 'track':
     case 'loop':
+    case 'composite':
       return {
         isContainer: false,
         playlistLinkCount: 0,

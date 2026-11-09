@@ -2,6 +2,7 @@ import type {
   DriveAudioSource,
   NamedLoop,
   PlayableItem,
+  CompositeTrack,
 } from '@org/audio-library-models';
 
 import {
@@ -44,7 +45,11 @@ export type PreparedBulkPlayback = {
  * they store entries rather than play them.
  */
 export const prepareBulkPlayback = (options: {
-  collections: { loops: NamedLoop[]; sources: DriveAudioSource[] };
+  collections: {
+    composites?: readonly CompositeTrack[];
+    loops: NamedLoop[];
+    sources: DriveAudioSource[];
+  };
   context: PlaybackExpansionContext;
   expansionOptions: PlaybackExpansionOptions;
   items: readonly BulkSelectionItem[];

@@ -1,4 +1,10 @@
-import type { NamedLoop, PlayableItem } from '@org/audio-library-models';
+import type {
+  CompositeTrack,
+  NamedLoop,
+  PlayableItem,
+} from '@org/audio-library-models';
+
+import type { OptionsMenuAction } from '../options-menu-sheet/model';
 
 import type { RecordingsMenuTarget } from '../../recording/recordings-menu-count';
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
@@ -6,7 +12,10 @@ import type { PendingSourceLocationAction } from '../../saved-rehearsal-library/
 
 export type FileLinkLibraryFilesRow = Extract<
   LibraryFilesRow,
-  { kind: 'loop' } | { kind: 'playlist' } | { kind: 'track' }
+  | { kind: 'composite' }
+  | { kind: 'loop' }
+  | { kind: 'playlist' }
+  | { kind: 'track' }
 >;
 
 export type ResolveFilesRowMenuActionsBaseOptions = {
@@ -15,6 +24,10 @@ export type ResolveFilesRowMenuActionsBaseOptions = {
   canMutatePlaylists: boolean;
   canQueueAsNext: boolean;
   canReconnectLibrarySource: boolean;
+  /** The composite menu's `Keep all stems offline` rows; none where unsupported. */
+  getCompositeOfflineActions: (
+    composite: Pick<CompositeTrack, 'stems'>,
+  ) => OptionsMenuAction[];
   hasLyricsFor: (sourceId: string) => boolean;
   recordingCountFor: (target: RecordingsMenuTarget) => number;
   isLoopBuilderPreparing: boolean;
@@ -25,6 +38,7 @@ export type ResolveFilesRowMenuActionsBaseOptions = {
   onCreateFileLinkCopy: (row: FileLinkLibraryFilesRow) => void;
   onDeleteFileNode: (row: LibraryFilesRow) => void;
   onMoveFileNode: (row: LibraryFilesRow) => void;
+  onOpenCompositePlaylistSelector: (compositeId: string) => void;
   onOpenFolder: (folderId: string) => void;
   onOpenFolderTagEditor: (folderId: string) => void;
   onEditLoop: (loop: NamedLoop) => void;

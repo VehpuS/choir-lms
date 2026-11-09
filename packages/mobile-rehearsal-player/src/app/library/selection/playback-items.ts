@@ -2,6 +2,8 @@ import {
   createLoopPlayableItem,
   createTrackPlayableItem,
   isSourcePlayable,
+  resolveCompositePlayableItem,
+  type CompositeTrack,
   type DriveAudioSource,
   type NamedLoop,
   type PlayableItem,
@@ -24,17 +26,30 @@ export type PlaybackItemsResolution = {
  */
 export const resolvePlaybackRefsToPlayableItems = (
   refs: readonly PlaybackRef[],
-  collections: { loops: NamedLoop[]; sources: DriveAudioSource[] },
+  collections: {
+    composites?: readonly CompositeTrack[];
+    loops: NamedLoop[];
+    sources: DriveAudioSource[];
+  },
 ): PlaybackItemsResolution => {
   const sourcesById = keyBy(collections.sources, (source) => source.id);
   const loopsById = keyBy(collections.loops, (loop) => loop.id);
+  const compositesById = keyBy(
+    [...(collections.composites ?? [])],
+    (composite) => composite.id,
+  );
   const playableItems: PlayableItem[] = [];
 
   for (const ref of refs) {
     const playable =
       ref.kind === 'track'
         ? createTrackItem(sourcesById[ref.entityId])
-        : createLoopItem(loopsById[ref.entityId], sourcesById);
+        : ref.kind === 'composite'
+          ? createCompositeItem(
+              compositesById[ref.entityId],
+              collections.sources,
+            )
+          : createLoopItem(loopsById[ref.entityId], sourcesById);
 
     if (playable) {
       playableItems.push(playable);
@@ -61,5 +76,14 @@ const createLoopItem = (
 
   return loop && source && isSourcePlayable(source)
     ? createLoopPlayableItem(loop, source)
+    : null;
+};
+
+const createCompositeItem = (
+  composite: CompositeTrack | undefined,
+  sources: readonly DriveAudioSource[],
+) => {
+  return composite
+    ? resolveCompositePlayableItem(composite, { sources })
     : null;
 };

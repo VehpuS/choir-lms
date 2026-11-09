@@ -4,7 +4,9 @@ import {
   createLoopPlayableItem,
   formatTransformLabel,
   getLoopDisplayDurationMs,
+  resolveCompositePlayableItem,
   getSourceDisplayDurationMs,
+  type CompositeTrack,
   type NamedLoop,
   type Playlist,
   type RehearsalLibraryFileLinkNode,
@@ -12,6 +14,7 @@ import {
   type RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
 
+import { buildCompositeLibraryRow } from '../../composite/list/composites-library-model';
 import {
   formatLengthLabel,
   type DriveLibrarySource,
@@ -25,6 +28,7 @@ import {
   formatUnavailableTrackMetaLabel,
 } from './track-meta';
 import type {
+  LibraryFilesCompositeRow,
   LibraryFilesFolderChildCounts,
   LibraryFilesFolderRow,
   LibraryFilesLoopRow,
@@ -68,6 +72,9 @@ const formatFolderSupportingLabel = (counts: LibraryFilesFolderChildCounts) => {
     counts.playlistCount > 0
       ? formatPluralizedCount(counts.playlistCount, 'playlist')
       : undefined,
+    counts.compositeCount > 0
+      ? formatPluralizedCount(counts.compositeCount, 'composite')
+      : undefined,
   ]);
   const folderSegment =
     counts.folderCount > 0
@@ -93,6 +100,7 @@ const createEntityReferenceKey = (
 };
 
 export const buildEntityNameByKey = (options: {
+  savedComposites?: readonly Pick<CompositeTrack, 'id' | 'name'>[];
   savedLoops: NamedLoop[];
   savedPlaylists: Playlist[];
   savedSources: DriveLibrarySource[];
@@ -109,6 +117,13 @@ export const buildEntityNameByKey = (options: {
 
   for (const playlist of options.savedPlaylists) {
     names.set(createEntityReferenceKey('playlist', playlist.id), playlist.name);
+  }
+
+  for (const composite of options.savedComposites ?? []) {
+    names.set(
+      createEntityReferenceKey('composite', composite.id),
+      composite.name,
+    );
   }
 
   return names;
@@ -155,6 +170,7 @@ export const buildFolderChildCounts = (options: {
   tree: RehearsalLibraryFileTree;
 }): LibraryFilesFolderChildCounts => {
   const counts: LibraryFilesFolderChildCounts = {
+    compositeCount: 0,
     folderCount: 0,
     loopCount: 0,
     playlistCount: 0,
@@ -185,6 +201,9 @@ export const buildFolderChildCounts = (options: {
         break;
       case 'playlist':
         counts.playlistCount += 1;
+        break;
+      case 'composite':
+        counts.compositeCount += 1;
         break;
       case 'track':
         counts.trackCount += 1;
@@ -338,5 +357,30 @@ export const buildPlaylistRow = (options: {
     label: resolveFileLinkLabel(options),
     playlist: options.playlist,
     supportingLabel: parts.join(ROW_META_SEPARATOR),
+  };
+};
+
+export const buildCompositeRow = (options: {
+  composite: CompositeTrack;
+  entityNameByKey: LibraryFilesEntityNameByKey;
+  fileLink: RehearsalLibraryFileLinkNode;
+  savedSources: readonly DriveLibrarySource[];
+}): LibraryFilesCompositeRow => {
+  const libraryRow = buildCompositeLibraryRow(options.composite, {
+    sources: options.savedSources,
+  });
+
+  return {
+    composite: options.composite,
+    fileLink: options.fileLink,
+    kind: 'composite',
+    label: resolveFileLinkLabel(options),
+    message: libraryRow.isPlayable ? undefined : libraryRow.meta,
+    playableItem: resolveCompositePlayableItem(options.composite, {
+      sources: options.savedSources,
+    }),
+    supportingLabel: compact([libraryRow.badge, libraryRow.meta]).join(
+      ROW_META_SEPARATOR,
+    ),
   };
 };

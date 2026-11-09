@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type {
   NamedLoop,
   PlayableItem,
@@ -9,6 +10,9 @@ import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-mo
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { useRehearsalLibraryController } from '../../saved-rehearsal-library/use-rehearsal-library-controller';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
+import { CompositePlaylistPicker } from '../../composite/list/composite-playlist-picker';
+import { resolveCompositeOfflineMenuActions } from '../../composite/list/composite-offline-menu';
+import { useLibrarySelectionServices } from '../../selection/library-selection-services';
 import { FeedbackCard } from '../feedback-card';
 import { OptionsMenuSheet } from '../options-menu-sheet';
 import {
@@ -91,6 +95,14 @@ export const useLibraryFilesRowActionFlows = ({
   originalLocationActions,
 }: UseLibraryFilesRowActionFlowsOptions) => {
   const confirmationFlow = useLibraryFilesConfirmationFlow();
+  const { acknowledge, collections, createPlaylist, updatePlaylist } =
+    useLibrarySelectionServices();
+  const [compositePlaylistId, setCompositePlaylistId] = useState<string | null>(
+    null,
+  );
+  const compositeForPlaylist =
+    collections.composites?.find(({ id }) => id === compositePlaylistId) ??
+    null;
   const hasLyricsFor = useHasLyricsFor();
   const recordingCountFor = useRecordingCountFor();
   const {
@@ -150,6 +162,12 @@ export const useLibraryFilesRowActionFlows = ({
         canMutateLoops,
         canMutatePlaylists,
         canQueueAsNext,
+        getCompositeOfflineActions: (composite) =>
+          resolveCompositeOfflineMenuActions({
+            acknowledge,
+            composite,
+            sources: collections.sources,
+          }),
         hasLyricsFor,
         recordingCountFor,
         canReconnectLibrarySource: Boolean(
@@ -175,6 +193,7 @@ export const useLibraryFilesRowActionFlows = ({
             files.explorer?.currentFolder.id ?? null,
           );
         },
+        onOpenCompositePlaylistSelector: setCompositePlaylistId,
         onOpenFolder(folderId) {
           files.openFolder(folderId);
         },
@@ -278,6 +297,18 @@ export const useLibraryFilesRowActionFlows = ({
         ) : null}
       </OptionsMenuSheet>
     ),
+    compositePlaylistPicker: compositeForPlaylist ? (
+      <CompositePlaylistPicker
+        composite={compositeForPlaylist}
+        createPlaylist={createPlaylist}
+        onAdded={acknowledge}
+        onClose={() => {
+          setCompositePlaylistId(null);
+        }}
+        playlists={collections.playlists}
+        updatePlaylist={updatePlaylist}
+      />
+    ) : null,
     isRenamingPlaylist: pendingRenameRow?.kind === 'playlist',
     renameDialog: (
       <>

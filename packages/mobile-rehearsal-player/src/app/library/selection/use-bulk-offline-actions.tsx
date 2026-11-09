@@ -1,4 +1,8 @@
-import type { DriveAudioSource, NamedLoop } from '@org/audio-library-models';
+import type {
+  CompositeTrack,
+  DriveAudioSource,
+  NamedLoop,
+} from '@org/audio-library-models';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 
 import {
@@ -31,7 +35,11 @@ type PendingOfflineAction = {
 };
 
 type UseBulkOfflineActionsOptions = {
-  collections: { loops: NamedLoop[]; sources: DriveAudioSource[] };
+  collections: {
+    composites?: readonly CompositeTrack[];
+    loops: NamedLoop[];
+    sources: DriveAudioSource[];
+  };
   context: PlaybackExpansionContext;
   /** The selection in display order. */
   items: readonly BulkSelectionItem[];
@@ -137,7 +145,10 @@ export const useBulkOfflineActions = ({
       }
 
       const sources = uniqueSourcesByFile(
-        playableItems.map((item) => item.source),
+        // Composite stems are kept through the composite's own action (7.3).
+        playableItems
+          .filter((item) => item.kind !== 'composite')
+          .map((item) => item.source),
       ).filter((source) => {
         const state = offlineStateStore.getState(source.driveFileId);
 

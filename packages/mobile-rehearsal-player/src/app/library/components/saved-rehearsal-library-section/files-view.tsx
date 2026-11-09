@@ -269,6 +269,7 @@ export const SavedRehearsalLibraryFilesView = ({
       {selection.bulkNodes}
       {rowActionFlows.destinationPicker}
       {rowActionFlows.renameDialog}
+      {rowActionFlows.compositePlaylistPicker}
     </View>
   );
 };

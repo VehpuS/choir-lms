@@ -1,6 +1,8 @@
 import {
   addLoopToPlaylist,
+  addCompositeToPlaylist,
   addTrackToPlaylist,
+  type CompositeTrack,
   type DriveAudioSource,
   type NamedLoop,
   type Playlist,
@@ -39,9 +41,12 @@ export const countRefsAlreadyInPlaylist = (
 ): number => {
   const trackIds = new Set<string>();
   const loopIds = new Set<string>();
+  const compositeIds = new Set<string>();
 
   for (const entry of playlist.items) {
-    if (entry.kind === 'loop' && entry.loopId) {
+    if (entry.kind === 'composite') {
+      compositeIds.add(entry.sourceId);
+    } else if (entry.kind === 'loop' && entry.loopId) {
       loopIds.add(entry.loopId);
     } else if (entry.kind === 'track') {
       trackIds.add(entry.sourceId);
@@ -49,7 +54,14 @@ export const countRefsAlreadyInPlaylist = (
   }
 
   return refs.filter((ref) => {
-    return (ref.kind === 'track' ? trackIds : loopIds).has(ref.entityId);
+    const ids =
+      ref.kind === 'track'
+        ? trackIds
+        : ref.kind === 'composite'
+          ? compositeIds
+          : loopIds;
+
+    return ids.has(ref.entityId);
   }).length;
 };
 
@@ -62,6 +74,7 @@ export const appendRefsToPlaylist = (options: {
   now?: string;
   playlist: Playlist;
   refs: readonly PlaybackRef[];
+  savedComposites?: readonly CompositeTrack[];
   savedLoops: NamedLoop[];
   savedSources: DriveAudioSource[];
 }): BulkPlaylistResult => {
@@ -96,6 +109,20 @@ export const appendRefsToPlaylist = (options: {
       continue;
     }
 
+    if (ref.kind === 'composite') {
+      const composite = options.savedComposites?.find(
+        ({ id }) => id === ref.entityId,
+      );
+
+      if (!composite) {
+        missingCount += 1;
+        continue;
+      }
+
+      playlist = addCompositeToPlaylist(playlist, composite, timestamp);
+      continue;
+    }
+
     const loop = options.savedLoops.find(({ id }) => id === ref.entityId);
 
     if (!loop) {
@@ -116,6 +143,7 @@ export const buildPlaylistFromRefs = (options: {
   now?: string;
   ownerId: string;
   refs: readonly PlaybackRef[];
+  savedComposites?: readonly CompositeTrack[];
   savedLoops: NamedLoop[];
   savedSources: DriveAudioSource[];
 }): BulkPlaylistResult => {
@@ -134,6 +162,7 @@ export const buildPlaylistFromRefs = (options: {
     now: built.playlist.createdAt,
     playlist: built.playlist,
     refs: options.refs,
+    savedComposites: options.savedComposites,
     savedLoops: options.savedLoops,
     savedSources: options.savedSources,
   });

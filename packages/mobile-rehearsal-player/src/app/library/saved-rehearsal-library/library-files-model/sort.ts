@@ -15,6 +15,7 @@ const NON_FOLDER_TYPE_ORDER: Record<
   track: 0,
   loop: 1,
   playlist: 2,
+  composite: 3,
 };
 
 const normalizeName = (value: string) => {
@@ -49,6 +50,8 @@ const resolveRowDateAddedTimestamp = (row: LibraryFilesRow) => {
       return parseTimestamp(row.loop.createdAt);
     case 'playlist':
       return parseTimestamp(row.playlist.createdAt);
+    case 'composite':
+      return parseTimestamp(row.composite.createdAt);
   }
 };
 

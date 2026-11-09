@@ -12,12 +12,7 @@ import { EqualizerMark } from '../../../components/equalizer-mark';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
 import { RowMetaLine } from '../../../components/row-meta-line';
 import { appTheme } from '../../../utils/theme';
-import { getOfflineBatchRunner } from '../../offline/offline-batch';
-import { isOfflineStorageSupported } from '../../offline/offline-actions';
-import {
-  offlineStateStore,
-  useOfflineRevision,
-} from '../../offline/offline-state';
+import { useOfflineRevision } from '../../offline/offline-state';
 import {
   ExplorerListRow,
   ExplorerListSurface,
@@ -39,15 +34,10 @@ import {
   useComposites,
 } from '../store/composite-store-instance';
 import {
-  resolveCompositeOfflineActions,
-  resolveCompositeOfflineSources,
-  resolveCompositeOfflineState,
-  runCompositeOffline,
-} from './composite-offline';
-import {
   buildDeleteCompositeDialog,
   resolveCompositeRowMenu,
 } from './composite-row-actions';
+import { resolveCompositeOfflineMenuActions } from './composite-offline-menu';
 import { CompositePlaylistPicker } from './composite-playlist-picker';
 import { CompositeRenameSheet } from './composite-rename-sheet';
 import {
@@ -115,26 +105,9 @@ export const CompositesLibraryView = ({
   const offlineActionsFor = (id: string) => {
     const composite = composites.find((entry) => entry.id === id);
 
-    if (!isOfflineStorageSupported || !composite) {
-      return [];
-    }
-
-    const files = resolveCompositeOfflineSources(composite, sources);
-    const run = (kind: 'keep' | 'remove') => {
-      void runCompositeOffline({
-        kind,
-        runner: getOfflineBatchRunner(),
-        sources: files,
-      }).then(acknowledge);
-    };
-
-    return resolveCompositeOfflineActions({
-      ...resolveCompositeOfflineState(files, (id) =>
-        offlineStateStore.getState(id),
-      ),
-      onKeep: () => run('keep'),
-      onRemove: () => run('remove'),
-    });
+    return composite
+      ? resolveCompositeOfflineMenuActions({ acknowledge, composite, sources })
+      : [];
   };
   const itemFor = (row: CompositeLibraryRow) => {
     const composite = findComposite(row.id);

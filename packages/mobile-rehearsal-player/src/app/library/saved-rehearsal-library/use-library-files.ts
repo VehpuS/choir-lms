@@ -6,6 +6,10 @@ import { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+  getCompositeStore,
+  useComposites,
+} from '../composite/store/composite-store-instance';
+import {
   LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
   verifyLocalLibraryStorage,
 } from '../storage/local-library-storage';
@@ -64,9 +68,15 @@ export const useLibraryFiles = (
   >(null);
   const pendingDriveImportFolderIdRef = useRef<string | null>(null);
   const [tree, setTree] = useState<RehearsalLibraryFileTree | null>(null);
+  const composites = useComposites();
+  // A composite created or deleted changes the tree (its file link), so its
+  // ids join the key that re-reads the tree from storage.
   const canonicalIdsKey = useMemo(() => {
-    return buildCanonicalIdsKey(options);
-  }, [options]);
+    return [
+      buildCanonicalIdsKey(options),
+      composites.map(({ id }) => id).join('|'),
+    ].join('::');
+  }, [composites, options]);
 
   const refresh = async () => {
     const storageReady = await verifyLocalLibraryStorage();
@@ -113,6 +123,17 @@ export const useLibraryFiles = (
     void refresh();
   }, [canonicalIdsKey]);
 
+  // A Files delete can remove composites behind the store's back (a folder, or
+  // the last link); the store notices on its next read and drops their
+  // prepared stems.
+  useEffect(() => {
+    if (tree) {
+      void getCompositeStore()
+        .refresh()
+        .catch(() => undefined);
+    }
+  }, [tree]);
+
   const resolveExplorerState = (searchOptions?: LibraryFilesSearchOptions) => {
     if (!tree) {
       return null;
@@ -120,6 +141,7 @@ export const useLibraryFiles = (
 
     return buildLibraryFilesExplorerState({
       currentFolderId: currentFolderId ?? tree.rootFolderId,
+      savedComposites: composites,
       savedLoops: options.savedLoops,
       savedPlaylists: options.savedPlaylists,
       savedSources: options.savedSources,
@@ -130,7 +152,7 @@ export const useLibraryFiles = (
 
   const explorer = useMemo(() => {
     return resolveExplorerState();
-  }, [currentFolderId, options, tree]);
+  }, [composites, currentFolderId, options, tree]);
 
   const destinationFolders = useMemo(() => {
     if (!tree) {

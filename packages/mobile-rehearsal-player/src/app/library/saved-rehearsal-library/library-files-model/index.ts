@@ -1,4 +1,5 @@
 import type {
+  CompositeTrack,
   NamedLoop,
   Playlist,
   RehearsalLibraryFileTree,
@@ -26,6 +27,7 @@ import type {
 
 export const buildLibraryFilesExplorerState = (options: {
   currentFolderId: string;
+  savedComposites?: readonly CompositeTrack[];
   savedLoops: NamedLoop[];
   savedPlaylists: Playlist[];
   savedSources: DriveLibrarySource[];
@@ -48,6 +50,7 @@ export const buildLibraryFilesExplorerState = (options: {
         currentFolder,
         entityNameByKey,
         foldersById,
+        savedComposites: options.savedComposites,
         savedLoops: options.savedLoops,
         savedPlaylists: options.savedPlaylists,
         savedSources: options.savedSources,
@@ -59,6 +62,7 @@ export const buildLibraryFilesExplorerState = (options: {
         entityFilter: options.searchOptions?.entityFilter,
         entityNameByKey,
         openedAtByNodeKey: options.searchOptions?.openedAtByNodeKey,
+        savedComposites: options.savedComposites,
         savedLoops: options.savedLoops,
         savedPlaylists: options.savedPlaylists,
         savedSources: options.savedSources,
@@ -81,6 +85,7 @@ export const buildLibraryFilesExplorerState = (options: {
 
 export type {
   LibraryFilesBreadcrumb,
+  LibraryFilesCompositeRow,
   LibraryFilesExplorerState,
   LibraryFilesFolderRow,
   LibraryFilesLoopRow,

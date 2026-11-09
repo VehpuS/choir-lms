@@ -1,4 +1,5 @@
 import type {
+  CompositeTrack,
   NamedLoop,
   Playlist,
   RehearsalLibraryEntityKind,
@@ -32,8 +33,7 @@ export type FilesSelectionItem =
   | { folderId: string; kind: 'folder' }
   | {
       entityId: string;
-      // Composite rows join Files selection with composite-tracks 7.5.
-      entityKind: Exclude<RehearsalLibraryEntityKind, 'composite'>;
+      entityKind: RehearsalLibraryEntityKind;
       fileLinkId: string;
       kind: 'link';
     };
@@ -48,11 +48,6 @@ export const toFilesSelectionEntry = (
 
   if (row.kind === 'folder') {
     return { item: { folderId: row.folder.id, kind: 'folder' }, key };
-  }
-
-  if (row.fileLink.entityKind === 'composite') {
-    // No composite rows are built until 7.5, so this cannot be reached yet.
-    throw new Error('Composite files cannot be selected yet.');
   }
 
   return {
@@ -224,6 +219,7 @@ const toFolderChild = (row: LibraryFilesRow): FolderChild =>
  * the order the Files view would list them under the current sort and filters.
  */
 export const createFilesPlaybackExpansionContext = (options: {
+  savedComposites?: readonly CompositeTrack[];
   savedLoops: NamedLoop[];
   savedPlaylists: Playlist[];
   savedSources: DriveLibrarySource[];
@@ -240,6 +236,7 @@ export const createFilesPlaybackExpansionContext = (options: {
     orderChildren: (folderId) =>
       buildLibraryFilesExplorerState({
         currentFolderId: folderId,
+        savedComposites: options.savedComposites,
         savedLoops: options.savedLoops,
         savedPlaylists: options.savedPlaylists,
         savedSources: options.savedSources,
@@ -295,10 +292,19 @@ export const toFilesTagTargets = (
   >();
 
   for (const item of items) {
-    const target =
-      item.kind === 'folder'
-        ? { id: item.folderId, kind: 'folder' as const }
-        : { id: item.entityId, kind: item.entityKind };
+    if (item.kind === 'folder') {
+      const target = { id: item.folderId, kind: 'folder' as const };
+
+      targets.set(`${target.kind}:${target.id}`, target);
+      continue;
+    }
+
+    // Composites carry no tags, so a tag change leaves them out.
+    if (item.entityKind === 'composite') {
+      continue;
+    }
+
+    const target = { id: item.entityId, kind: item.entityKind };
 
     targets.set(`${target.kind}:${target.id}`, target);
   }

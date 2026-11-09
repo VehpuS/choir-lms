@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef } from 'react';
 
+import { useComposites } from '../../composite/store/composite-store-instance';
 import { type LibrarySelectionServices } from '../../selection/library-selection-services';
 import { createLibraryFilesSuccessFeedback } from './library-files-success-feedback';
 import type { SavedRehearsalLibrarySectionProps } from './types';
@@ -36,6 +37,7 @@ export const useSelectionServicesValue = ({
   savedPlaylists,
   updatePlaylist,
 }: Options): LibrarySelectionServices => {
+  const composites = useComposites();
   // `libraryFiles.bulk` is rebuilt on every render; reading it through a ref
   // keeps `updateTags` stable so consumers do not re-run on each render.
   const libraryFilesRef = useRef(libraryFiles);
@@ -56,6 +58,7 @@ export const useSelectionServicesValue = ({
       },
       canQueue: activePlayableItem !== null,
       collections: {
+        composites,
         loops: savedLoops,
         playlists: savedPlaylists,
         sources: savedLibrarySources,
@@ -71,6 +74,7 @@ export const useSelectionServicesValue = ({
     }),
     [
       activePlayableItem,
+      composites,
       createPlaylist,
       isDestinationActive,
       libraryFiles,

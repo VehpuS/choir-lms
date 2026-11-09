@@ -39,6 +39,7 @@ const PAUSE_LABEL = 'Pause';
 
 const KIND_ICONS: Record<LibraryFilesRow['kind'], AppIconName> = {
   folder: 'folder-outline',
+  composite: 'tune-variant',
   loop: 'repeat',
   playlist: 'playlist-music-outline',
   track: 'music-note-outline',
@@ -63,7 +64,9 @@ const getRowPlayableItem = (row: LibraryFilesRow): PlayableItem | null => {
     return row.isPlayable ? createTrackPlayableItem(row.source) : null;
   }
 
-  return row.kind === 'loop' ? row.playableItem : null;
+  return row.kind === 'loop' || row.kind === 'composite'
+    ? row.playableItem
+    : null;
 };
 
 const isPlaylistActive = (

@@ -4,6 +4,7 @@ import { attachRowActionSections } from '../options-menu-sheet/row-action-sectio
 import { requestFolderOffline } from '../../offline/folder-offline-request';
 import { isOfflineStorageSupported } from '../../offline/offline-actions';
 import { resolveSavedPlaylistMenu } from '../saved-item-menu/saved-item-menus';
+import { resolveCompositeFileMenuActions } from './files-composite-row-actions';
 import {
   resolveFileLinkViewActions,
   resolveLoopMenuActions,
@@ -108,6 +109,8 @@ export const resolveFilesRowMenuActions = (
   switch (options.row.kind) {
     case 'folder':
       return resolveFolderMenuActions(options, options.row);
+    case 'composite':
+      return resolveCompositeFileMenuActions(options, options.row);
     case 'loop':
       return resolveLoopMenuActions(options, options.row);
     case 'playlist':

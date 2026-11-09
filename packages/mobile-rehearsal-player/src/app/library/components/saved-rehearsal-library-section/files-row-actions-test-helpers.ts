@@ -57,6 +57,7 @@ export const createBaseOptions = () => {
     folderTags: [] as string[],
     loopBuilders: [] as string[],
     loopEdits: [] as string[],
+    compositePlaylists: [] as string[],
     loopPlaylists: [] as string[],
     loopTags: [] as string[],
     moves: [] as string[],
@@ -84,6 +85,7 @@ export const createBaseOptions = () => {
       canMutatePlaylists: true,
       canQueueAsNext: true,
       canReconnectLibrarySource: true,
+      getCompositeOfflineActions: () => [],
       hasLyricsFor: () => false,
       recordingCountFor: () => 0,
       isLoopBuilderPreparing: false,
@@ -103,6 +105,9 @@ export const createBaseOptions = () => {
       },
       onMoveFileNode(row: LibraryFilesRow) {
         calls.moves.push(row.kind);
+      },
+      onOpenCompositePlaylistSelector(compositeId: string) {
+        calls.compositePlaylists.push(compositeId);
       },
       onOpenFolder(folderId: string) {
         calls.folders.push(folderId);

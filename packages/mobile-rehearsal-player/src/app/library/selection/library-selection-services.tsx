@@ -4,6 +4,7 @@ import type {
   PlayableItem,
   Playlist,
   RehearsalLibraryFolderNode,
+  CompositeTrack,
 } from '@org/audio-library-models';
 import { createContext, useContext } from 'react';
 
@@ -23,6 +24,7 @@ export type LibrarySelectionServices = {
   /** Something is playing; `Play next` and `Add to queue` need a queue to join. */
   canQueue: boolean;
   collections: {
+    composites?: readonly CompositeTrack[];
     loops: NamedLoop[];
     playlists: Playlist[];
     sources: DriveAudioSource[];

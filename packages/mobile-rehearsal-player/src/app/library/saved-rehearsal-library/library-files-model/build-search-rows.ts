@@ -1,4 +1,5 @@
 import type {
+  CompositeTrack,
   NamedLoop,
   Playlist,
   RehearsalLibraryFileTree,
@@ -12,8 +13,10 @@ import {
   normalizeSearchQuery,
   normalizeSelectedTags,
 } from '../../search/utils/saved-library-search-view-model';
+import { compositeMatchesQuery } from '../../composite/list/composites-library-model';
 import { buildScopedFolderIds, prefixContainingPath } from './pathing';
 import {
+  buildCompositeRow,
   buildEntityNameByKey,
   buildFolderChildCounts,
   buildFolderRow,
@@ -47,6 +50,7 @@ export const buildSearchRows = (options: {
   currentFolder: RehearsalLibraryFolderNode;
   entityNameByKey: ReturnType<typeof buildEntityNameByKey>;
   foldersById: ReadonlyMap<string, RehearsalLibraryFolderNode>;
+  savedComposites?: readonly CompositeTrack[];
   savedLoops: NamedLoop[];
   savedPlaylists: Playlist[];
   savedSources: DriveLibrarySource[];
@@ -77,6 +81,11 @@ export const buildSearchRows = (options: {
   const savedPlaylistsById = new Map(
     options.savedPlaylists.map((playlist) => {
       return [playlist.id, playlist] as const;
+    }),
+  );
+  const savedCompositesById = new Map(
+    (options.savedComposites ?? []).map((composite) => {
+      return [composite.id, composite] as const;
     }),
   );
   const loopCountBySourceId = countLoopsBySourceId(options.savedLoops);
@@ -201,6 +210,43 @@ export const buildSearchRows = (options: {
           loop.sourceName,
         ])
       ) {
+        return [] as LibraryFilesRow[];
+      }
+
+      return [
+        {
+          ...row,
+          supportingLabel: prefixContainingPath({
+            currentFolderId: options.currentFolder.id,
+            foldersById: options.foldersById,
+            parentFolderId: fileLink.parentFolderId,
+            supportingLabel: row.supportingLabel,
+          }),
+        },
+      ];
+    }
+
+    if (fileLink.entityKind === 'composite') {
+      // Composites carry no tags and have no entity filter choice yet (12.14),
+      // so any filter hides them. The query matches the name or a stem name.
+      const composite = savedCompositesById.get(fileLink.entityId);
+
+      if (
+        !composite ||
+        options.searchOptions.entityFilter !== 'all' ||
+        selectedTags.length > 0
+      ) {
+        return [] as LibraryFilesRow[];
+      }
+
+      const row = buildCompositeRow({
+        composite,
+        entityNameByKey: options.entityNameByKey,
+        fileLink,
+        savedSources: options.savedSources,
+      });
+
+      if (!compositeMatchesQuery(composite, normalizedQuery)) {
         return [] as LibraryFilesRow[];
       }
 
