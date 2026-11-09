@@ -203,13 +203,7 @@ export const applyAccessCheck = (
 
   return {
     updatedSources: recovered.map((source) => {
-      const {
-        message: _message,
-        reason: _reason,
-        ...rest
-      } = source.availability;
-
-      return { ...source, availability: { ...rest, status: 'available' } };
+      return { ...source, availability: { status: 'available' } };
     }),
     recoveredCount: recoveredIds.size,
     stillNeedingCount: sources.filter(

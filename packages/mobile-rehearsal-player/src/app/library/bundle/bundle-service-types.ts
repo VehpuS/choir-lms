@@ -42,6 +42,8 @@ export type BundleDriveApi = {
     | { status: 'aborted' }
     | { status: 'failed'; reason: DriveUploadFailureReason }
   >;
+  /** Who is signed in, for the bundle's author; null when Drive will not say. */
+  currentUser(signal?: AbortSignal): Promise<LibraryBundleAuthor | null>;
   list(signal?: AbortSignal): Promise<ListLibraryBundlesResult>;
   read(fileId: string, signal?: AbortSignal): Promise<ReadLibraryBundleResult>;
   prune(options: {
@@ -79,7 +81,6 @@ export type BundleLibraryAccess = {
 export type BundleServiceDependencies = {
   drive: BundleDriveApi;
   library: BundleLibraryAccess;
-  author: LibraryBundleAuthor;
   now?: () => Date;
   createId?: () => string;
 };

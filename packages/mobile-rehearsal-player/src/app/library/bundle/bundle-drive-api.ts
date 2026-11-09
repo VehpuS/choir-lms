@@ -3,6 +3,7 @@ import {
   ensureLibraryBundleFolders,
   listLibraryBundles,
   lookupDriveFileOwners,
+  lookupDriveUser,
   probeDriveFilesAccess,
   pruneLibraryBackups,
   readLibraryBundleText,
@@ -11,6 +12,8 @@ import {
 } from '@org/google-drive';
 
 import type { BundleDriveApi } from './bundle-service-types';
+
+const ANONYMOUS_AUTHOR = 'A Choir LMS user';
 
 /** The bundle Drive calls for one signed-in session. */
 export const createBundleDriveApi = (accessToken: string): BundleDriveApi => ({
@@ -37,6 +40,16 @@ export const createBundleDriveApi = (accessToken: string): BundleDriveApi => ({
     return result.status === 'aborted'
       ? { status: 'aborted' }
       : { status: 'failed', reason: result.reason };
+  },
+  currentUser: async (signal) => {
+    const user = await lookupDriveUser({ accessToken, signal });
+
+    return user
+      ? {
+          name: user.name ?? user.email ?? ANONYMOUS_AUTHOR,
+          ...(user.email ? { email: user.email } : {}),
+        }
+      : null;
   },
   list: (signal) => listLibraryBundles({ accessToken, signal }),
   read: (fileId, signal) =>

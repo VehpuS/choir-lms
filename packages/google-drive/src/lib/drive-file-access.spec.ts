@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   lookupDriveFileOwners,
+  lookupDriveUser,
   probeDriveFilesAccess,
 } from './drive-file-access';
 import type { DriveBundleFetch } from './drive-library-bundle-files';
@@ -110,6 +111,28 @@ describe('lookupDriveFileOwners', () => {
     assert.deepEqual(
       [...owners.entries()],
       [['a', { name: 'Ann', email: 'ann@example.com' }]],
+    );
+  });
+});
+
+describe('lookupDriveUser', () => {
+  it('returns the signed-in user, and null on any failure', async () => {
+    const ok = fakeDrive(() => ({
+      status: 200,
+      body: { user: { displayName: 'Dana', emailAddress: 'dana@example.com' } },
+    }));
+    const failing = fakeDrive(() => ({ status: 401 }));
+
+    assert.deepEqual(
+      await lookupDriveUser({ accessToken: 't', fetch: ok.fetch }),
+      {
+        name: 'Dana',
+        email: 'dana@example.com',
+      },
+    );
+    assert.equal(
+      await lookupDriveUser({ accessToken: 't', fetch: failing.fetch }),
+      null,
     );
   });
 });

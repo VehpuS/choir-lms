@@ -166,6 +166,7 @@ export const createFakeDrive = (options: FakeDriveOptions = {}) => {
         ]),
       ),
     }),
+    currentUser: async () => ({ name: 'Dana', email: 'dana@example.com' }),
     owners: async () =>
       new Map([['d-alt', { name: 'Ann', email: 'ann@example.com' }]]),
   };
@@ -188,7 +189,6 @@ export const createFakeDependencies = (
   };
   const deps: BundleServiceDependencies = {
     drive,
-    author: { name: 'Dana', email: 'dana@example.com' },
     now: () => NOW,
     createId: () => 'import-1',
     library: {

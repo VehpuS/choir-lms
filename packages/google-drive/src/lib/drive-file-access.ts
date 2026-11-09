@@ -176,3 +176,45 @@ export const lookupDriveFileOwners = async (
 
   return owners;
 };
+
+export type DriveUserIdentity = { name?: string; email?: string };
+
+/**
+ * The signed-in user's name and email, for the author of a bundle. Best
+ * effort: any failure returns `null` and the bundle is written without a name.
+ */
+export const lookupDriveUser = async (
+  options: AccessOptions,
+): Promise<DriveUserIdentity | null> => {
+  const send =
+    options.fetch ?? (globalThis.fetch as unknown as DriveBundleFetch);
+
+  try {
+    const response = await send(
+      'https://www.googleapis.com/drive/v3/about?fields=user(displayName,emailAddress)',
+      {
+        headers: authorization(options.accessToken),
+        method: 'GET',
+        signal: options.signal,
+      },
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const { user } = (await response.json()) as {
+      user?: { displayName?: unknown; emailAddress?: unknown };
+    };
+    const name =
+      typeof user?.displayName === 'string' ? user.displayName : undefined;
+    const email =
+      typeof user?.emailAddress === 'string' ? user.emailAddress : undefined;
+
+    return name || email
+      ? { ...(name ? { name } : {}), ...(email ? { email } : {}) }
+      : null;
+  } catch {
+    return null;
+  }
+};

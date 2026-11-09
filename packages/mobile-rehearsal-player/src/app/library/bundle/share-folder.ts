@@ -27,7 +27,7 @@ export const previewShare = async (
   const common = {
     input,
     scope: { kind: 'folder' as const, folderId },
-    author: deps.author,
+    author: { name: 'Preview' },
     createdAt: (deps.now?.() ?? new Date()).toISOString(),
   };
   const without = buildLibraryBundle(common);

@@ -20,6 +20,8 @@ import {
   type BundleServiceDependencies,
 } from './bundle-service-types';
 
+const ANONYMOUS_AUTHOR = { name: 'A Choir LMS user' };
+
 export type WrittenBundle = {
   status: 'ok';
   fileId: string;
@@ -78,7 +80,7 @@ export const buildAndWriteBundle = async (
   const built = buildLibraryBundle({
     input,
     scope: options.scope,
-    author: deps.author,
+    author: (await deps.drive.currentUser(options.signal)) ?? ANONYMOUS_AUTHOR,
     createdAt: now.toISOString(),
     ownersByDriveFileId,
     includeOutsideReferences: options.includeOutsideReferences,
