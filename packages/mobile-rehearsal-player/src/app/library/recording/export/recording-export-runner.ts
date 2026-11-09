@@ -161,23 +161,46 @@ const prepareFile = async (
   };
 };
 
-const deliver = async (
-  item: ExportRunItem,
+/** What `deliverExportFile` needs to know about the file being delivered. */
+export type DeliveredFile = {
+  /** The key the run's events carry for this file. */
+  id: string;
+  fileName: string;
+  /** A Drive session from an earlier attempt, to continue from. */
+  resumeUri?: string;
+};
+
+export type DeliveryTarget = Pick<
+  ExportPlan,
+  'accessToken' | 'destination' | 'folder'
+>;
+
+/**
+ * Hands a finished WAV to its destination: a download, or a resumable Drive
+ * upload that reports its progress and session. Shared by the recording and
+ * the composite exports, which differ only in how the file is made.
+ */
+export const deliverExportFile = async (
+  file: DeliveredFile,
   blob: Blob,
-  plan: ExportPlan,
-  deps: ExportRunnerDependencies,
+  target: DeliveryTarget,
+  deps: Pick<ExportRunnerDependencies, 'saveToDevice' | 'upload'>,
   dispatch: Dispatch,
   signal: AbortSignal,
+  onUploaded?: (
+    uploaded: { id: string; name: string },
+    folder: { folderId: string; folderName: string },
+  ) => Promise<void> | void,
 ): Promise<void> => {
-  const recordingId = item.recording.id;
+  const recordingId = file.id;
   const savedTo = describeDestination(
-    plan.destination,
-    plan.folder?.folderName,
+    target.destination,
+    target.folder?.folderName,
   );
 
-  if (plan.destination === 'download') {
+  if (target.destination === 'download') {
     try {
-      await deps.saveToDevice(item.fileName, blob);
+      await deps.saveToDevice(file.fileName, blob);
       dispatch({ recordingId, savedTo, type: 'item-done' });
     } catch {
       dispatch({ reason: 'download', recordingId, type: 'item-failed' });
@@ -188,7 +211,7 @@ const deliver = async (
 
   dispatch({ recordingId, status: 'uploading', type: 'item-started' });
 
-  if (!plan.accessToken || !plan.folder) {
+  if (!target.accessToken || !target.folder) {
     dispatch({
       reason: 'needs-write-access',
       recordingId,
@@ -199,10 +222,10 @@ const deliver = async (
   }
 
   const result = await deps.upload({
-    accessToken: plan.accessToken,
-    folderId: plan.folder.folderId,
+    accessToken: target.accessToken,
+    folderId: target.folder.folderId,
     mimeType: WAV_MIME_TYPE,
-    name: item.fileName,
+    name: file.fileName,
     onProgress: (uploaded, total) =>
       dispatch({
         progress: total === 0 ? 1 : uploaded / total,
@@ -211,18 +234,14 @@ const deliver = async (
       }),
     onSession: (resumeUri) =>
       dispatch({ recordingId, resumeUri, type: 'item-session' }),
-    resumeUri: item.resumeUri,
+    resumeUri: file.resumeUri,
     signal,
     source: blobUploadSource(blob),
   });
 
   if (result.status === 'uploaded') {
     try {
-      await deps.recordUploaded?.(item.recording, {
-        file: result.file,
-        folder: plan.folder,
-        kind: plan.kind,
-      });
+      await onUploaded?.(result.file, target.folder);
     } catch {
       // The copy is on Drive; failing to note it only means a later export may repeat it.
     }
@@ -241,6 +260,33 @@ const deliver = async (
     dispatch({ reason: result.reason, recordingId, type: 'item-failed' });
   }
 };
+
+const deliver = (
+  item: ExportRunItem,
+  blob: Blob,
+  plan: ExportPlan,
+  deps: ExportRunnerDependencies,
+  dispatch: Dispatch,
+  signal: AbortSignal,
+): Promise<void> =>
+  deliverExportFile(
+    {
+      fileName: item.fileName,
+      id: item.recording.id,
+      resumeUri: item.resumeUri,
+    },
+    blob,
+    plan,
+    deps,
+    dispatch,
+    signal,
+    (file, folder) =>
+      deps.recordUploaded?.(item.recording, {
+        file,
+        folder,
+        kind: plan.kind,
+      }),
+  );
 
 export const runRecordingExports = async (
   plan: ExportPlan,

@@ -19,6 +19,10 @@ export type ExportFailureReason =
   | 'recording-missing'
   /** The original track could not be fetched or decoded. */
   | 'original'
+  /** A stem of a composite could not be loaded or prepared. */
+  | 'stem'
+  /** The device is full, so a stem could not be prepared. */
+  | 'no-room'
   | 'render'
   | 'download';
 
@@ -70,6 +74,9 @@ const FAILURE_MESSAGES: Record<ExportFailureReason, string> = {
   'recording-missing': 'The recording could not be read from this device.',
   original:
     'The original track could not be fetched, so the mix could not be made.',
+  stem: 'A stem could not be loaded, so the mix could not be made.',
+  'no-room':
+    'There is not enough room on this device to prepare the stems. Clear offline files and try again.',
   render: 'The mix could not be made.',
   download: 'The browser could not save the file.',
 };
