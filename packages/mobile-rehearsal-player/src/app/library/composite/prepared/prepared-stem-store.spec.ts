@@ -184,4 +184,25 @@ describe('unavailable prepared stem store', () => {
       PreparedStemsUnavailableError,
     );
   });
+
+  it('keeps the peaks with a finished stem and reads none for another version', async () => {
+    const t = setup();
+    const peaks = {
+      buckets: Uint8Array.of(10, 200),
+      durationMs: 2000,
+      formatVersion: 1,
+    };
+    const writer = await t.store.begin(key(), { sampleRate: SAMPLE_RATE });
+
+    await writer.write(Int16Array.of(1, 2, 3));
+    assert.equal(await t.store.getPeaks(key()), null);
+
+    await writer.finish(peaks);
+
+    assert.deepEqual(await t.store.getPeaks(key()), peaks);
+    assert.equal(
+      await t.store.getPeaks({ ...key(), contentVersion: 'newer' }),
+      null,
+    );
+  });
 });

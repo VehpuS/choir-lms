@@ -124,8 +124,10 @@ export const resolvePlaybackWaveformBars = (options: {
   barCount: number;
   item: PlayableItem;
   peaks: WaveformPeaks | null;
+  /** Replaces the loudest-point scaling, so a composite mix keeps its levels. */
+  gain?: number;
 }): number[] => {
-  const { barCount, item, peaks } = options;
+  const { barCount, gain, item, peaks } = options;
 
   if (!peaks) {
     return Array.from({ length: barCount }, () => FLAT_WAVEFORM_BAR_AMPLITUDE);
@@ -138,7 +140,7 @@ export const resolvePlaybackWaveformBars = (options: {
       startMs: item.range.startMs,
     },
     barCount,
-    getWaveformPeakGain(peaks),
+    gain ?? getWaveformPeakGain(peaks),
   ).map(shapeWaveformBarHeight);
 };
 

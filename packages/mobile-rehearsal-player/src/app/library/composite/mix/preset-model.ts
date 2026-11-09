@@ -28,7 +28,7 @@ export const MAKE_DEFAULT_LABEL = 'Make this mix the default';
 export const SAVE_PRESET_LABEL = 'Save as preset';
 export const SAVE_PRESET_TITLE = 'Save mix as preset';
 export const SAVE_PRESET_HINT =
-  'Saved with this composite. Pick it again from the Mix panel.';
+  'Saved with this composite. Pick it again from the “Mix” panel.';
 export const PRESET_NAME_LABEL = 'Preset name';
 export const MAKE_DEFAULT_SWITCH_LABEL = 'Start with this mix';
 export const MAX_PRESET_NAME_LENGTH = MAX_MIX_PRESET_NAME_LENGTH;

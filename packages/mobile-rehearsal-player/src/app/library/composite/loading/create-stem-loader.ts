@@ -41,7 +41,7 @@ const UNVERSIONED = 'unversioned';
 const DOWNLOAD_SHARE = 0.6;
 const FULL_PROGRESS = 1;
 
-const preparedKeyFor = (
+export const preparedKeyFor = (
   compositeId: string,
   stemId: string,
   track: StemTrack,

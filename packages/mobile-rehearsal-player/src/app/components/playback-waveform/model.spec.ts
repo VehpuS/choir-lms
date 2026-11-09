@@ -94,6 +94,28 @@ describe('PlaybackWaveformModel', () => {
     assert.deepEqual(bars, Array(5).fill(FLAT_WAVEFORM_BAR_AMPLITUDE));
   });
 
+  it('keeps a given gain instead of scaling the loudest point to full height', () => {
+    const item = createTrackPlayableItem({
+      ...PLAYABLE_SOURCE,
+      durationMs: 4000,
+    });
+    const quiet = createPeaks([50, 50, 50, 50]);
+    const scaled = resolvePlaybackWaveformBars({
+      barCount: 2,
+      item,
+      peaks: quiet,
+    });
+    const fixed = resolvePlaybackWaveformBars({
+      barCount: 2,
+      gain: 1,
+      item,
+      peaks: quiet,
+    });
+
+    assert.ok(scaled[0] > 0.99);
+    assert.ok(fixed[0] < 0.4);
+  });
+
   it('keeps the loudest bar at full height and pulls mid-level bars down', () => {
     assert.equal(shapeWaveformBarHeight(1), 1);
     assert.equal(shapeWaveformBarHeight(0), 0);

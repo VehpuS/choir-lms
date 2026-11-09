@@ -80,3 +80,13 @@ export const useSessionMix = (composite: StoreComposite): SessionMix =>
     () => store.get(composite),
     () => store.get(composite),
   );
+
+/** The session mix of a composite that may not exist (yet); null without one. */
+export const useOptionalSessionMix = (
+  composite: StoreComposite | undefined,
+): SessionMix | null =>
+  useSyncExternalStore(
+    store.subscribe,
+    () => (composite ? store.get(composite) : null),
+    () => (composite ? store.get(composite) : null),
+  );

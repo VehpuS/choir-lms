@@ -1,3 +1,4 @@
+import type { WaveformPeaks } from '@org/audio-library-models';
 import type { PcmWindowReader } from '@org/audio-mixing';
 
 /**
@@ -23,6 +24,8 @@ export type StoredPreparedStem = PreparedStemKey & {
   chunkCount: number;
   sampleCount: number;
   sizeBytes: number;
+  /** For the composite waveform (design Decision 8); absent for a silent or very short stem. */
+  peaks?: WaveformPeaks;
 };
 
 /**
@@ -57,7 +60,7 @@ export type PreparedStemWriter = {
   /** Rejects when the chunk cannot be stored (storage full); nothing partial is kept readable. */
   write: (samples: Int16Array) => Promise<void>;
   /** Marks the stem readable. Without it the stem stays unreadable. */
-  finish: () => Promise<void>;
+  finish: (peaks?: WaveformPeaks | null) => Promise<void>;
   /** Removes what was written so far. Safe to call after a failure. */
   abort: () => Promise<void>;
 };
@@ -70,6 +73,8 @@ export type PreparedStemStore = {
   ) => Promise<PreparedStemWriter>;
   /** A complete stem at this content version, as a window reader; null otherwise. */
   open: (key: PreparedStemKey) => Promise<PcmWindowReader | null>;
+  /** The stem's waveform peaks, when it is complete at this version and has them. */
+  getPeaks: (key: PreparedStemKey) => Promise<WaveformPeaks | null>;
   /** Whether `open` would find the stem. */
   has: (key: PreparedStemKey) => Promise<boolean>;
   sizeBytes: () => Promise<number>;

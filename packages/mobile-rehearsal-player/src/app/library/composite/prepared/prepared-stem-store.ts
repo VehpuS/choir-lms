@@ -90,8 +90,12 @@ export const createPreparedStemStore = (
         );
         record = next;
       },
-      finish: async () => {
-        record = { ...record, status: 'complete' };
+      finish: async (peaks) => {
+        record = {
+          ...record,
+          status: 'complete',
+          ...(peaks ? { peaks } : {}),
+        };
         await backend.putRecord(record);
       },
       abort: () => backend.deleteStem(id),
@@ -120,6 +124,7 @@ export const createPreparedStemStore = (
       );
     },
     has: async (key) => (await find(key)) !== null,
+    getPeaks: async (key) => (await find(key))?.peaks ?? null,
     sizeBytes: async () => {
       const records = await backend.listRecords();
 
@@ -156,6 +161,7 @@ export const createUnavailablePreparedStemStore = (): PreparedStemStore => ({
   begin: () => Promise.reject(new PreparedStemsUnavailableError()),
   open: async () => null,
   has: async () => false,
+  getPeaks: async () => null,
   sizeBytes: async () => 0,
   sizeBytesOfComposite: async () => 0,
   deleteComposite: async () => undefined,

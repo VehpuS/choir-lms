@@ -43,6 +43,7 @@ import {
   SCRUB_INDICATOR_STYLE,
   waveformStyles,
 } from './styles';
+import { useCompositeWaveform } from '../../library/composite/waveform/use-composite-waveform';
 import { useWaveformPeaks } from '../../library/playback/waveform-peaks/use-waveform-peaks';
 import {
   continuousInteractionGuardStyle,
@@ -83,14 +84,23 @@ export const PlaybackWaveform = ({
   const [layoutWidth, setLayoutWidth] = useState(0);
   const containerRef = useRef<View>(null);
   const waveformHeight = WAVEFORM_HEIGHT[variant];
-  const peaks = useWaveformPeaks(activePlayableItem.source);
+  const trackPeaks = useWaveformPeaks(activePlayableItem.source);
+  // A composite draws the mix of its stems, which follows the session mix.
+  const compositeWaveform = useCompositeWaveform(
+    activePlayableItem.kind === 'composite'
+      ? activePlayableItem.source.id
+      : null,
+  );
+  const peaks = compositeWaveform?.peaks ?? trackPeaks;
+  const peakGain = compositeWaveform?.gain;
   const bars = useMemo(() => {
     return resolvePlaybackWaveformBars({
       barCount: WAVEFORM_BAR_COUNT[variant],
+      gain: peakGain,
       item: activePlayableItem,
       peaks,
     });
-  }, [activePlayableItem, peaks, variant]);
+  }, [activePlayableItem, peakGain, peaks, variant]);
   const { endSeconds, startSeconds } =
     getPlaybackBoundsSeconds(activePlayableItem);
   const hasScrubRange = endSeconds > startSeconds;

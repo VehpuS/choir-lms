@@ -78,6 +78,7 @@ export const prepareStem = async (
     throw new Error('The stem has no audio.');
   }
 
+  const peaks = computeWaveformPeaks([mono], targetSampleRate);
   const writer = await store.begin(key, { sampleRate: targetSampleRate });
 
   try {
@@ -93,7 +94,8 @@ export const prepareStem = async (
     }
 
     throwIfAborted(signal);
-    await writer.finish();
+    // Kept with the stem, so a later open can draw the waveform without decoding.
+    await writer.finish(peaks);
   } catch (error) {
     // Cancelled, or the device is full: remove the part so nothing half-written stays.
     await writer.abort().catch(() => undefined);
@@ -105,6 +107,6 @@ export const prepareStem = async (
   return {
     sampleCount: mono.length,
     durationMs: (mono.length / targetSampleRate) * MS_PER_SECOND,
-    peaks: computeWaveformPeaks([mono], targetSampleRate),
+    peaks,
   };
 };
