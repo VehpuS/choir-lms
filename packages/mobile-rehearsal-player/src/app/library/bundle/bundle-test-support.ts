@@ -167,6 +167,7 @@ export const createFakeDrive = (options: FakeDriveOptions = {}) => {
       ),
     }),
     currentUser: async () => ({ name: 'Dana', email: 'dana@example.com' }),
+    downloadAudio: async () => ({ status: 'failed', reason: 'unavailable' }),
     owners: async () =>
       new Map([['d-alt', { name: 'Ann', email: 'ann@example.com' }]]),
   };
@@ -196,6 +197,9 @@ export const createFakeDependencies = (
       load: async () => options.input ?? libraryInput(),
       recordings: async () => options.recordings ?? [],
       readRecordingAudio: async () => new Uint8Array([1, 2, 3]),
+      recordingsSupported: () => true,
+      hasRecording: async () => false,
+      saveRecording: async () => undefined,
       onLibraryChanged: async () => {
         calls.changed += 1;
       },

@@ -266,7 +266,7 @@ export type PhaseLine = { label: string; state: 'done' | 'now' | 'next' };
 
 const PHASE_ORDER: Record<'backup' | 'replace' | 'share', BundlePhase[]> = {
   backup: ['folders', 'reading', 'recordings', 'uploading', 'pruning'],
-  replace: ['safety-backup', 'replacing'],
+  replace: ['safety-backup', 'replacing', 'restoring-recordings'],
   share: ['folders', 'reading', 'recordings', 'uploading'],
 };
 
@@ -276,6 +276,7 @@ const PHASE_LABEL: Record<BundlePhase, string> = {
   recordings: 'Uploading recording audio',
   uploading: 'Uploading the library file',
   pruning: 'Removing backups beyond 5',
+  'restoring-recordings': 'Restoring recordings from Drive',
   'safety-backup': 'Saving a backup of your current library',
   replacing: 'Replacing your library',
 };
@@ -287,7 +288,9 @@ export const buildPhaseLines = (
   options: { includesRecordings: boolean },
 ): PhaseLine[] => {
   const phases = PHASE_ORDER[flow].filter(
-    (phase) => phase !== 'recordings' || options.includesRecordings,
+    (phase) =>
+      (phase !== 'recordings' && phase !== 'restoring-recordings') ||
+      options.includesRecordings,
   );
   const currentIndex = current ? phases.indexOf(current) : -1;
 
@@ -296,4 +299,59 @@ export const buildPhaseLines = (
     state:
       index < currentIndex ? 'done' : index === currentIndex ? 'now' : 'next',
   }));
+};
+
+export type RecordingRestoreChoice =
+  | { kind: 'choice'; title: string; detail: string }
+  | { kind: 'note'; text: string };
+
+/**
+ * What the preview and the Replace confirmation say about a bundle's
+ * recordings: a checkbox where they can be restored, a plain note where they
+ * cannot (a phone has no recordings store yet), nothing when there are none.
+ */
+export const describeRecordingRestoreChoice = (options: {
+  count: number;
+  bytes: number;
+  supported: boolean;
+}): RecordingRestoreChoice | null => {
+  if (options.count === 0) {
+    return null;
+  }
+
+  return options.supported
+    ? {
+        kind: 'choice',
+        title: `Also restore ${pluralize(options.count, 'recording')}`,
+        detail: `Downloads ${formatRecordingSize(options.bytes)} of audio from Drive. Off by default.`,
+      }
+    : {
+        kind: 'note',
+        text: `${pluralize(options.count, 'recording')} in this file can’t be restored on this device yet. They stay in the file on Drive.`,
+      };
+};
+
+/** A line for the finished sheet; null when nothing about recordings needs saying. */
+export const describeRecordingRestoreOutcome = (
+  outcome: {
+    restored: number;
+    alreadyHere: number;
+    failed: number;
+    cancelled: boolean;
+  } | null,
+): string | null => {
+  if (
+    !outcome ||
+    outcome.restored + outcome.alreadyHere + outcome.failed === 0
+  ) {
+    return outcome?.cancelled ? 'Recordings were not restored.' : null;
+  }
+
+  const parts = [
+    `${pluralize(outcome.restored + outcome.alreadyHere, 'recording')} restored`,
+    outcome.failed > 0 ? `${outcome.failed} couldn’t be restored` : null,
+    outcome.cancelled ? 'stopped before the rest' : null,
+  ].filter(Boolean);
+
+  return `${parts.join('; ')}.`;
 };

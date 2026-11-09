@@ -6,6 +6,7 @@ import {
   lookupDriveUser,
   probeDriveFilesAccess,
   pruneLibraryBackups,
+  readDriveFileBytes,
   readLibraryBundleText,
   uploadDriveFileResumable,
   uploadLibraryBundle,
@@ -51,6 +52,8 @@ export const createBundleDriveApi = (accessToken: string): BundleDriveApi => ({
         }
       : null;
   },
+  downloadAudio: (fileId, signal) =>
+    readDriveFileBytes({ accessToken, fileId, signal }),
   list: (signal) => listLibraryBundles({ accessToken, signal }),
   read: (fileId, signal) =>
     readLibraryBundleText({ accessToken, fileId, signal }),

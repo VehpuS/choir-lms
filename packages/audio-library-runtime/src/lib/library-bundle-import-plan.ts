@@ -77,6 +77,8 @@ export type LibraryBundleImportPlan = {
   composites: CompositeTrack[];
   fileLinks: RehearsalLibraryFileLinkNode[];
   summary: LibraryBundleImportSummary;
+  /** Bundle-local id to library id, for what refers back into the bundle (recordings). */
+  idMaps: { sources: Record<string, string>; loops: Record<string, string> };
 };
 
 const IMPORT_ROOT_PREFIX = 'Imported';
@@ -298,6 +300,10 @@ export const planLibraryBundleImport = (
       ...composites.map(({ id }) => ({ kind: 'composite' as const, id })),
     ],
     updatedSources,
+    idMaps: {
+      sources: Object.fromEntries(sourceIds),
+      loops: Object.fromEntries(loopIds),
+    },
     loops: skipIfPresent(loops, loopExists),
     playlists: skipIfPresent(playlists, playlistExists),
     composites: skipIfPresent(composites, compositeExists),

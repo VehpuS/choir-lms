@@ -8,6 +8,8 @@ import {
   buildPhaseLines,
   buildRecordingPicker,
   buildRestoreRows,
+  describeRecordingRestoreChoice,
+  describeRecordingRestoreOutcome,
   describeReplaceConfirmation,
   describeShareLeftOut,
   formatBundleDate,
@@ -208,6 +210,12 @@ describe('progress lines', () => {
       buildPhaseLines('replace', 'replacing', { includesRecordings: true }).map(
         (l) => l.state,
       ),
+      ['done', 'now', 'next'],
+    );
+    assert.deepEqual(
+      buildPhaseLines('replace', 'replacing', {
+        includesRecordings: false,
+      }).map((l) => l.state),
       ['done', 'now'],
     );
   });
@@ -241,5 +249,61 @@ describe('upload size of the safety backup', () => {
       3_000,
     );
     assert.equal(sumRecordingUploadBytes([]), 0);
+  });
+});
+
+describe('recording restore wording', () => {
+  it('offers a checkbox where recordings can be restored, a note where not, and nothing when there are none', () => {
+    const choice = describeRecordingRestoreChoice({
+      count: 2,
+      bytes: 3_250_000,
+      supported: true,
+    });
+
+    assert.equal(choice?.kind, 'choice');
+    assert.match(
+      choice?.kind === 'choice' ? choice.title : '',
+      /Also restore 2 recordings/,
+    );
+    assert.match(
+      choice?.kind === 'choice' ? choice.detail : '',
+      /3\.1 MB.*Off by default/,
+    );
+    assert.match(
+      (
+        describeRecordingRestoreChoice({
+          count: 1,
+          bytes: 1,
+          supported: false,
+        }) as { text: string }
+      ).text,
+      /1 recording in this file can’t be restored on this device yet/,
+    );
+    assert.equal(
+      describeRecordingRestoreChoice({ count: 0, bytes: 0, supported: true }),
+      null,
+    );
+  });
+
+  it('summarises how many were restored and how many failed', () => {
+    assert.equal(
+      describeRecordingRestoreOutcome({
+        restored: 2,
+        alreadyHere: 1,
+        failed: 1,
+        cancelled: false,
+      }),
+      '3 recordings restored; 1 couldn’t be restored.',
+    );
+    assert.equal(describeRecordingRestoreOutcome(null), null);
+    assert.equal(
+      describeRecordingRestoreOutcome({
+        restored: 0,
+        alreadyHere: 0,
+        failed: 0,
+        cancelled: false,
+      }),
+      null,
+    );
   });
 });

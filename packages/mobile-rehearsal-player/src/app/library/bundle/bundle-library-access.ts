@@ -1,3 +1,4 @@
+import { storeRestoredRecording } from './store-restored-recording';
 import { loadCanonicalLibraryState } from './load-library-state';
 import { recordingsStorageSupported } from '../recording/recording-capabilities';
 import { getRecordingsStore } from '../recording/recordings-store-instance';
@@ -30,6 +31,11 @@ export const createBundleLibraryAccess = (options: {
 
     return blob ? new Uint8Array(await blob.arrayBuffer()) : null;
   },
+  recordingsSupported: recordingsStorageSupported,
+  hasRecording: async (recordingId) =>
+    (await getRecordingsStore().get(recordingId)) !== null,
+  saveRecording: (recording, samples) =>
+    storeRestoredRecording(getRecordingsStore(), recording, samples),
   repository: practiceRepository,
   onLibraryChanged: options.onLibraryChanged,
 });

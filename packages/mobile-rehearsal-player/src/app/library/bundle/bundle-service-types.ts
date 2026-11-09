@@ -11,6 +11,7 @@ import type {
   EnsureLibraryBundleFoldersResult,
   ListLibraryBundlesResult,
   PruneBackupsResult,
+  ReadDriveFileBytesResult,
   ReadLibraryBundleResult,
   UploadLibraryBundleResult,
 } from '@org/google-drive';
@@ -44,6 +45,11 @@ export type BundleDriveApi = {
   >;
   /** Who is signed in, for the bundle's author; null when Drive will not say. */
   currentUser(signal?: AbortSignal): Promise<LibraryBundleAuthor | null>;
+  /** Downloads a Drive file's bytes, for the audio of a bundle recording. */
+  downloadAudio(
+    fileId: string,
+    signal?: AbortSignal,
+  ): Promise<ReadDriveFileBytesResult>;
   list(signal?: AbortSignal): Promise<ListLibraryBundlesResult>;
   read(fileId: string, signal?: AbortSignal): Promise<ReadLibraryBundleResult>;
   prune(options: {
@@ -68,6 +74,11 @@ export type BundleLibraryAccess = {
   /** Every recording on this device; empty where nothing is stored. */
   recordings(): Promise<readonly Recording[]>;
   readRecordingAudio(recordingId: string): Promise<Uint8Array | null>;
+  /** Whether recordings can be stored here; the web only, for now. */
+  recordingsSupported(): boolean;
+  hasRecording(recordingId: string): Promise<boolean>;
+  /** Stores a restored recording with its 16-bit mono samples. */
+  saveRecording(recording: Recording, samples: Int16Array): Promise<void>;
   repository: LibraryBundleImportRepository & {
     replaceLibrary(
       ownerId: string,
@@ -100,6 +111,7 @@ export type BundlePhase =
   | 'recordings'
   | 'uploading'
   | 'pruning'
+  | 'restoring-recordings'
   | 'safety-backup'
   | 'replacing';
 

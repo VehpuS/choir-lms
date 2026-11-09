@@ -48,14 +48,19 @@ export const RestoreImportResultSteps = ({
           {state.kind === 'replace' ? (
             <PhaseList
               lines={buildPhaseLines('replace', state.phase, {
-                includesRecordings: false,
+                includesRecordings: state.phase === 'restoring-recordings',
               })}
             />
           ) : (
-            <SheetText>
-              Cancelling keeps what was already added; adding again won’t
-              duplicate it.
-            </SheetText>
+            <>
+              <SheetText>
+                Cancelling keeps what was already added; adding again won’t
+                duplicate it.
+              </SheetText>
+              {state.phase === 'restoring-recordings' ? (
+                <SheetText>Restoring recordings from Drive…</SheetText>
+              ) : null}
+            </>
           )}
         </BottomSheetSurface>
       );
@@ -104,6 +109,9 @@ export const RestoreImportResultSteps = ({
               {`${pluralize(state.needsAccessCount, 'file')} need${state.needsAccessCount === 1 ? 's' : ''} access.`}
             </SheetText>
           ) : null}
+          {state.recordingsLine ? (
+            <SheetText>{state.recordingsLine}</SheetText>
+          ) : null}
         </BottomSheetSurface>
       );
     case 'replace-done':
@@ -128,6 +136,9 @@ export const RestoreImportResultSteps = ({
           <SheetText>
             {`Changed your mind? Your previous library is saved as “${state.safetyBackupName}” in “Choir LMS / Backups”. Restore it with Replace my library to undo.`}
           </SheetText>
+          {state.recordingsLine ? (
+            <SheetText>{state.recordingsLine}</SheetText>
+          ) : null}
         </BottomSheetSurface>
       );
     case 'refused':

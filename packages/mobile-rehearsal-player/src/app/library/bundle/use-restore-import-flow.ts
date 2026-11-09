@@ -1,53 +1,23 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { DriveBundleListing } from '@org/google-drive';
 
-import { sumRecordingUploadBytes } from './bundle-flow-model';
-import { buildFolderChoices, type FolderChoice } from './folder-choices';
 import {
-  buildImportPreview,
-  runImport,
-  type ImportPreview,
-} from './import-bundle';
+  describeRecordingRestoreOutcome,
+  sumRecordingUploadBytes,
+} from './bundle-flow-model';
+import { buildFolderChoices } from './folder-choices';
+import { buildImportPreview, runImport } from './import-bundle';
 import { listBundleChoices, readBundle } from './read-bundle';
 import { replaceLibraryFromBundle } from './replace-library';
-import type {
-  BundlePhase,
-  BundleServiceDependencies,
-} from './bundle-service-types';
+import type { BundleServiceDependencies } from './bundle-service-types';
 import { useAbortableTask } from './use-abortable-task';
-import type { ReadBundleResult } from './read-bundle';
+import type {
+  FlowMode,
+  ReadOk,
+  RestoreImportState,
+} from './restore-import-state';
 
-export type FlowMode = 'restore' | 'import';
-type ReadOk = Extract<ReadBundleResult, { status: 'ok' }>;
-
-export type RestoreImportState =
-  | { step: 'closed' }
-  | { step: 'loading'; mode: FlowMode }
-  | { step: 'list'; mode: FlowMode; bundles: DriveBundleListing[] }
-  /** Restore only: the user picks Add or Replace; neither is preselected. */
-  | { step: 'choose'; read: ReadOk; choice: 'add' | 'replace' | null }
-  | { step: 'reading'; mode: FlowMode }
-  | { step: 'preview'; mode: FlowMode; read: ReadOk; preview: ImportPreview }
-  | {
-      step: 'destination';
-      read: ReadOk;
-      preview: ImportPreview;
-      folders: FolderChoice[];
-      destinationId: string;
-    }
-  | { step: 'confirm-replace'; read: ReadOk; uploadBytes: number }
-  | { step: 'permission'; read: ReadOk }
-  | { step: 'running'; kind: 'import' | 'replace'; phase: BundlePhase | null }
-  | {
-      step: 'import-done';
-      needsAccessCount: number;
-      folderName: string;
-      failedMessage: string | null;
-      wasCancelled: boolean;
-    }
-  | { step: 'replace-done'; safetyBackupName: string }
-  | { step: 'refused'; message: string }
-  | { step: 'failed'; message: string; librarySafe: boolean };
+export type { FlowMode, RestoreImportState } from './restore-import-state';
 
 type Options = {
   deps: BundleServiceDependencies | null;
@@ -120,7 +90,13 @@ export const useRestoreImportFlow = ({
         return;
       }
 
-      setState({ step: 'preview', mode, read, preview });
+      setState({
+        step: 'preview',
+        mode,
+        read,
+        preview,
+        restoreRecordings: false,
+      });
     },
     [deps, task],
   );
@@ -154,6 +130,16 @@ export const useRestoreImportFlow = ({
     [deps, task, toPreview],
   );
 
+  const toggleRestoreRecordings = useCallback(() => {
+    setState((current) =>
+      current.step === 'preview' ||
+      current.step === 'confirm-replace' ||
+      current.step === 'permission'
+        ? { ...current, restoreRecordings: !current.restoreRecordings }
+        : current,
+    );
+  }, []);
+
   const choose = useCallback((choice: 'add' | 'replace') => {
     setState((current) =>
       current.step === 'choose' ? { ...current, choice } : current,
@@ -162,13 +148,14 @@ export const useRestoreImportFlow = ({
 
   /** The safety backup saves every recording; the size is what would upload. */
   const toConfirmReplace = useCallback(
-    async (read: ReadOk) => {
+    async (read: ReadOk, restoreRecordings = false) => {
       const recordings = deps ? await deps.library.recordings() : [];
 
       setState({
         step: 'confirm-replace',
         read,
         uploadBytes: sumRecordingUploadBytes(recordings),
+        restoreRecordings,
       });
     },
     [deps],
@@ -200,6 +187,7 @@ export const useRestoreImportFlow = ({
       preview: state.preview,
       folders,
       destinationId: input.tree.rootFolderId,
+      restoreRecordings: state.restoreRecordings,
     });
   }, [deps, state]);
 
@@ -214,12 +202,21 @@ export const useRestoreImportFlow = ({
       return;
     }
 
-    const { preview, destinationId } = state;
+    const { preview, destinationId, restoreRecordings } = state;
 
     setState({ step: 'running', kind: 'import', phase: null });
 
     const run = await task.run((signal) =>
-      runImport(deps, { preview, destinationFolderId: destinationId, signal }),
+      runImport(deps, {
+        preview,
+        destinationFolderId: destinationId,
+        restoreRecordings,
+        signal,
+        onPhase: (phase) =>
+          setState((current) =>
+            current.step === 'running' ? { ...current, phase } : current,
+          ),
+      }),
     );
 
     if (run.status === 'cancelled') {
@@ -238,17 +235,18 @@ export const useRestoreImportFlow = ({
       folderName: run.plan.rootFolder.name,
       failedMessage: failed?.error ?? null,
       wasCancelled: run.result.status === 'cancelled',
+      recordingsLine: describeRecordingRestoreOutcome(run.recordings),
     });
   }, [deps, state, task]);
 
   const startReplace = useCallback(
-    async (read: ReadOk) => {
+    async (read: ReadOk, restoreRecordings: boolean) => {
       if (!deps) {
         return;
       }
 
       if (!hasWriteAccess) {
-        setState({ step: 'permission', read });
+        setState({ step: 'permission', read, restoreRecordings });
 
         return;
       }
@@ -260,6 +258,7 @@ export const useRestoreImportFlow = ({
           bundle: read.bundle,
           bundleName: read.bundleName,
           isOwn: read.isOwn,
+          restoreRecordings,
           signal,
           onProgress: (phase) =>
             setState((current) =>
@@ -281,6 +280,7 @@ export const useRestoreImportFlow = ({
         setState({
           step: 'replace-done',
           safetyBackupName: result.safetyBackupName,
+          recordingsLine: describeRecordingRestoreOutcome(result.recordings),
         });
       }
     },
@@ -289,13 +289,13 @@ export const useRestoreImportFlow = ({
 
   const confirmReplace = useCallback(() => {
     if (state.step === 'confirm-replace') {
-      void startReplace(state.read);
+      void startReplace(state.read, state.restoreRecordings);
     }
   }, [startReplace, state]);
 
   useEffect(() => {
     if (state.step === 'permission' && hasWriteAccess) {
-      void toConfirmReplace(state.read);
+      void toConfirmReplace(state.read, state.restoreRecordings);
     }
   }, [hasWriteAccess, state, toConfirmReplace]);
 
@@ -312,6 +312,8 @@ export const useRestoreImportFlow = ({
     continueChoice,
     chooseDestination,
     selectDestination,
+    toggleRestoreRecordings,
+    recordingsSupported: deps?.library.recordingsSupported() ?? false,
     startImport,
     confirmReplace,
     close,

@@ -5,6 +5,7 @@ import { BottomSheetSurface } from '../components/bottom-sheet-surface';
 import { FeedbackCard } from '../components/feedback-card';
 import {
   buildImportPreviewTiles,
+  describeRecordingRestoreChoice,
   describeReplaceConfirmation,
   pluralize,
 } from './bundle-flow-model';
@@ -13,6 +14,42 @@ import { countBundleContents } from './read-bundle';
 import type { useRestoreImportFlow } from './use-restore-import-flow';
 
 type Flow = ReturnType<typeof useRestoreImportFlow>;
+
+/** The recordings line of a preview or a Replace confirmation: a checkbox, a note, or nothing. */
+const RecordingChoice = ({
+  flow,
+  read,
+  restoreRecordings,
+}: {
+  flow: Flow;
+  read: Extract<Flow['state'], { step: 'choose' }>['read'];
+  restoreRecordings: boolean;
+}) => {
+  const choice = describeRecordingRestoreChoice({
+    count: read.bundle.recordings?.length ?? 0,
+    bytes: (read.bundle.recordings ?? []).reduce(
+      (total, recording) => total + recording.sizeBytes,
+      0,
+    ),
+    supported: flow.recordingsSupported,
+  });
+
+  if (!choice) {
+    return null;
+  }
+
+  return choice.kind === 'choice' ? (
+    <ChoiceRow
+      checked={restoreRecordings}
+      detail={choice.detail}
+      kind="checkbox"
+      onPress={flow.toggleRestoreRecordings}
+      title={choice.title}
+    />
+  ) : (
+    <SheetText>{choice.text}</SheetText>
+  );
+};
 
 const FOOTER_GAP = 8;
 
@@ -75,6 +112,11 @@ export const RestoreImportPreviewSteps = ({
             </SheetText>
           ) : null}
           {droppedLine ? <SheetText>{droppedLine}</SheetText> : null}
+          <RecordingChoice
+            flow={flow}
+            read={state.read}
+            restoreRecordings={state.restoreRecordings}
+          />
         </BottomSheetSurface>
       );
     }
@@ -148,6 +190,11 @@ export const RestoreImportPreviewSteps = ({
             <SheetText>{copy.fromLine}</SheetText>
           ) : null}
           <SheetText>{copy.safety}</SheetText>
+          <RecordingChoice
+            flow={flow}
+            read={state.read}
+            restoreRecordings={state.restoreRecordings}
+          />
         </BottomSheetSurface>
       );
     }

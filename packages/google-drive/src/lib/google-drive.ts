@@ -14,3 +14,4 @@ export * from './drive-library-bundle-files';
 export * from './drive-file-access';
 export * from './drive-library-bundle-listing';
 export * from './drive-library-bundle-prune';
+export * from './drive-file-bytes';

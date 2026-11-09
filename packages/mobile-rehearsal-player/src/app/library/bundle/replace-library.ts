@@ -4,6 +4,7 @@ import {
   planLibraryBundleImport,
   REHEARSAL_LIBRARY_FILE_TREE_VERSION,
   REHEARSAL_LIBRARY_ROOT_FOLDER_ID,
+  type LibraryBundleImportPlan,
   type ReplacementLibraryState,
 } from '@org/audio-library-runtime';
 import type { LibraryBundle } from '@org/audio-library-models';
@@ -16,6 +17,10 @@ import {
   type BundleServiceDependencies,
 } from './bundle-service-types';
 import { buildAndWriteBundle } from './bundle-write';
+import {
+  restoreBundleRecordings,
+  type RecordingRestoreOutcome,
+} from './restore-bundle-recordings';
 
 const withoutProvenance = <Item extends { importedFrom?: unknown }>(
   item: Item,
@@ -27,14 +32,17 @@ const withoutProvenance = <Item extends { importedFrom?: unknown }>(
  * the bundle's top level sits at the library root. A user's own backup comes
  * back unmarked; someone else's keeps its `Imported from` marks.
  */
-export const buildReplacementState = (options: {
+export const buildReplacement = (options: {
   bundle: LibraryBundle;
   bundleName: string;
   isOwn: boolean;
   ownerId: string;
   importedAt: string;
   needsAccessDriveFileIds?: ReadonlySet<string>;
-}): ReplacementLibraryState => {
+}): {
+  state: ReplacementLibraryState;
+  idMaps: LibraryBundleImportPlan['idMaps'];
+} => {
   const rootId = REHEARSAL_LIBRARY_ROOT_FOLDER_ID;
   const plan = planLibraryBundleImport({
     bundle: options.bundle,
@@ -64,7 +72,7 @@ export const buildReplacementState = (options: {
   const lift = (parentFolderId: string) =>
     parentFolderId === plan.rootFolder.id ? rootId : parentFolderId;
 
-  return {
+  const state: ReplacementLibraryState = {
     sources: plan.newSources.map(clean),
     loops: plan.loops.map(clean),
     playlists: plan.playlists.map(clean),
@@ -87,10 +95,22 @@ export const buildReplacementState = (options: {
       })),
     },
   };
+
+  return { state, idMaps: plan.idMaps };
 };
 
+/** The state alone, for callers that do not restore recordings. */
+export const buildReplacementState = (
+  options: Parameters<typeof buildReplacement>[0],
+): ReplacementLibraryState => buildReplacement(options).state;
+
 export type ReplaceResult =
-  | { status: 'ok'; safetyBackupName: string; removedSourceIds: string[] }
+  | {
+      status: 'ok';
+      safetyBackupName: string;
+      removedSourceIds: string[];
+      recordings: RecordingRestoreOutcome | null;
+    }
   /** The safety backup failed or was cancelled; the library is untouched. */
   | (BundleFailure & { libraryChanged: false })
   | BundleCancelled;
@@ -106,6 +126,8 @@ export const replaceLibraryFromBundle = async (
     bundle: LibraryBundle;
     bundleName: string;
     isOwn: boolean;
+    /** Also bring the bundle's recordings back from Drive (web only). */
+    restoreRecordings?: boolean;
     signal?: AbortSignal;
     onProgress?: BundleProgress;
   },
@@ -143,18 +165,30 @@ export const replaceLibraryFromBundle = async (
   options.onProgress?.('replacing');
 
   const now = (deps.now?.() ?? new Date()).toISOString();
+  const replacement = buildReplacement({
+    bundle: options.bundle,
+    bundleName: options.bundleName,
+    isOwn: options.isOwn,
+    ownerId: deps.library.ownerId,
+    importedAt: now,
+  });
   const { removedSourceIds } = await deps.library.repository.replaceLibrary(
     deps.library.ownerId,
-    buildReplacementState({
-      bundle: options.bundle,
-      bundleName: options.bundleName,
-      isOwn: options.isOwn,
-      ownerId: deps.library.ownerId,
-      importedAt: now,
-    }),
+    replacement.state,
   );
 
   await deps.library.onLibraryChanged();
+
+  // After the commit: a recording that fails here never undoes the replace.
+  const restoredRecordings = options.restoreRecordings
+    ? await restoreBundleRecordings(deps, {
+        bundle: options.bundle,
+        idMaps: replacement.idMaps,
+        key: `replace-${now}`,
+        signal: options.signal,
+        onProgress: options.onProgress,
+      })
+    : null;
   // Housekeeping after the commit; the library is already replaced.
   await deps.drive.prune({
     backupsFolderId: folders.folders.backups.id,
@@ -162,5 +196,10 @@ export const replaceLibraryFromBundle = async (
     signal: options.signal,
   });
 
-  return { status: 'ok', safetyBackupName: safety.fileName, removedSourceIds };
+  return {
+    status: 'ok',
+    safetyBackupName: safety.fileName,
+    removedSourceIds,
+    recordings: restoredRecordings,
+  };
 };

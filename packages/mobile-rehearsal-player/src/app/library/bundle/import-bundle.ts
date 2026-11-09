@@ -10,8 +10,13 @@ import {
 
 import type {
   BundleCancelled,
+  BundleProgress,
   BundleServiceDependencies,
 } from './bundle-service-types';
+import {
+  restoreBundleRecordings,
+  type RecordingRestoreOutcome,
+} from './restore-bundle-recordings';
 
 export type ImportPreview = {
   bundle: LibraryBundle;
@@ -123,6 +128,7 @@ export type ImportRunResult =
       status: 'done';
       result: LibraryBundleImportResult;
       plan: LibraryBundleImportPlan;
+      recordings: RecordingRestoreOutcome | null;
     }
   | BundleCancelled;
 
@@ -132,8 +138,11 @@ export const runImport = async (
   options: {
     preview: ImportPreview;
     destinationFolderId: string;
+    /** Also bring the bundle's recordings back from Drive (web only). */
+    restoreRecordings?: boolean;
     signal?: AbortSignal;
     onProgress?: (progress: LibraryBundleImportProgress) => void;
+    onPhase?: BundleProgress;
   },
 ): Promise<ImportRunResult> => {
   const plan = await planFor(
@@ -151,8 +160,24 @@ export const runImport = async (
 
   await deps.library.onLibraryChanged();
 
-  return result.status === 'cancelled' &&
+  if (
+    result.status === 'cancelled' &&
     result.outcomes.every(({ status }) => status !== 'done')
-    ? { status: 'cancelled' }
-    : { status: 'done', result, plan };
+  ) {
+    return { status: 'cancelled' };
+  }
+
+  // Only a finished import has the tracks and loops the recordings attach to.
+  const recordings =
+    options.restoreRecordings && result.status === 'completed'
+      ? await restoreBundleRecordings(deps, {
+          bundle: options.preview.bundle,
+          idMaps: plan.idMaps,
+          key: options.preview.importId,
+          signal: options.signal,
+          onProgress: options.onPhase,
+        })
+      : null;
+
+  return { status: 'done', result, plan, recordings };
 };
