@@ -92,7 +92,10 @@ export const resolveSearchNoResultsMessage = (options: {
 }): string | null => {
   const noun = SEARCH_NO_RESULTS_NOUNS[options.view];
   const resultCount =
-    options.view === 'tags' || options.view === 'recordings'
+    options.view === 'tags' ||
+    options.view === 'recordings' ||
+    // The Composites view counts and words its own empty state (7.1c).
+    options.view === 'composites'
       ? 0
       : options.resultCounts[options.view];
 

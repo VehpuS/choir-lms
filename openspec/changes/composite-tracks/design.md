@@ -110,7 +110,7 @@ _Alternative: a reference stem chosen at creation._ Rejected in review: it is on
 
 ### Decision 12: Composites join the library surfaces; offline and storage reuse what exists
 
-- **Lists:** a composite row has a `Composite · N stems` badge in the Library, Recents, search and playlists, with a `Composites` filter in the Library. A playlist entry kind `composite` references the composite id, like the recording kind.
+- **Lists:** a composite row has a `Composite · N stems` badge in the Library, Recents, search and playlists, with a `Composites` view in the Library (decided 2026-11-09: the Library has a view switcher rather than the mock's filter chips, and a composite is a first-class item like a loop, so it gets its own view and a `composites` search entity filter instead of sharing the Tracks list). A playlist entry kind `composite` references the composite id, like the recording kind.
 - **Selection:** the Library bulk bar gains `Make composite…` beside the others; it is only emphasised, with a note, when every selected track has the same duration (to within the same tolerance as Decision 3). It needs two or more tracks.
 - **Offline:** `Keep offline` on a composite keeps every stem's track offline through the existing track actions, and a composite is playable offline when all stems are stored or prepared. `Clear all` in the offline files view also clears prepared stems, which are listed there as `Prepared composites`.
 - **No room:** when preparing or loading fails for storage, the message gives no counts and leads with freeing space: a `Clear offline files…` button that opens the existing `Clear all` confirmation, then exporting and deleting recordings in Settings, and last removing stems or choosing shorter tracks.

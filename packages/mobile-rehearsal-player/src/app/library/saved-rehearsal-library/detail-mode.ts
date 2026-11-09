@@ -9,6 +9,7 @@ export type SavedRehearsalLibraryView =
   | 'tracks'
   | 'loops'
   | 'playlists'
+  | 'composites'
   | 'recordings'
   | 'tags';
 
@@ -43,6 +44,7 @@ export const SAVED_REHEARSAL_LIBRARY_VIEW_OPTIONS: readonly SavedRehearsalLibrar
     { label: 'Tracks', value: 'tracks' },
     { label: 'Loops', value: 'loops' },
     { label: 'Playlists', value: 'playlists' },
+    { label: 'Composites', value: 'composites' },
     { label: 'Recordings', value: 'recordings' },
     { label: 'Tags', value: 'tags' },
   ];
@@ -65,6 +67,11 @@ const SAVED_REHEARSAL_LIBRARY_VIEW_COPY: Record<
     body: 'Open, create, and manage saved rehearsal playlists in one place.',
     eyebrow: 'Library',
     title: 'Playlists',
+  },
+  composites: {
+    body: 'Mix several tracks as stems, with a volume, mute and solo for each part.',
+    eyebrow: 'Library',
+    title: 'Composites',
   },
   recordings: {
     body: 'Every recording on this device, with search, filters, and sorting.',
@@ -106,6 +113,15 @@ const SAVED_REHEARSAL_LIBRARY_VISIBLE_SECTIONS: Record<
     showLoopSection: false,
     showPlaylistCards: true,
     showPlaylistSection: true,
+    showSourceGroup: false,
+  },
+  composites: {
+    // The Composites view renders its own list (composite-tracks 7.1), so
+    // none of the shared browse sections mount for it.
+    showLoopBrowseList: false,
+    showLoopSection: false,
+    showPlaylistCards: false,
+    showPlaylistSection: false,
     showSourceGroup: false,
   },
   recordings: {

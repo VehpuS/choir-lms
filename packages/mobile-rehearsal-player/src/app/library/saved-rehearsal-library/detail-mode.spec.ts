@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  SAVED_REHEARSAL_LIBRARY_VIEW_OPTIONS,
   resolveSavedRehearsalLibraryDetailMode,
   resolveSavedRehearsalLibraryViewCopy,
   resolveSavedRehearsalLibraryVisibleSections,
@@ -126,5 +127,27 @@ describe('saved rehearsal library detail view-model', () => {
       eyebrow: 'Library',
       title: 'Tags',
     });
+  });
+
+  it('lists a Composites view after Playlists that renders its own list', () => {
+    const values = SAVED_REHEARSAL_LIBRARY_VIEW_OPTIONS.map(
+      (option) => option.value,
+    );
+
+    assert.equal(values.indexOf('composites'), values.indexOf('playlists') + 1);
+    assert.equal(
+      resolveSavedRehearsalLibraryViewCopy('composites').title,
+      'Composites',
+    );
+    assert.deepEqual(
+      resolveSavedRehearsalLibraryVisibleSections('composites'),
+      {
+        showLoopBrowseList: false,
+        showLoopSection: false,
+        showPlaylistCards: false,
+        showPlaylistSection: false,
+        showSourceGroup: false,
+      },
+    );
   });
 });
