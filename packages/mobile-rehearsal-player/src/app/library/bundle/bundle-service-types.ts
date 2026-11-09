@@ -108,7 +108,7 @@ export type BundleProgress = (phase: BundlePhase) => void;
 const FAILURE_COPY: Record<DriveUploadFailureReason, string> = {
   'needs-write-access': 'Allow saving to Drive and try again.',
   quota: 'Drive is full, so nothing could be saved.',
-  'folder-not-writable': 'The Choir LMS folder in Drive could not be used.',
+  'folder-not-writable': 'The “Choir LMS” folder in Drive could not be used.',
   offline: 'You appear to be offline.',
   'too-large': 'The file was too large to save.',
   unavailable: 'Drive could not be reached. Try again in a moment.',

@@ -250,7 +250,7 @@ export const describeReplaceConfirmation = (options: {
     options.uploadBytes > 0
       ? ` (${formatRecordingSize(options.uploadBytes)} to upload)`
       : ''
-  } — is saved to Choir LMS / Backups. If that fails, nothing changes.`,
+  } — is saved to “Choir LMS / Backups”. If that fails, nothing changes.`,
   confirmLabel: 'Back up, then replace',
 });
 
