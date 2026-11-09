@@ -15,6 +15,8 @@ export type LibraryFilesConfirmationDialogContent = {
   }>;
   confirmLabel: string;
   message: string;
+  /** A note rather than a question: only the confirm button is shown. */
+  isNote?: boolean;
   /** `primary` for a confirmation that is not destructive; defaults to destructive. */
   tone?: 'destructive' | 'primary';
   title: string;
@@ -66,20 +68,22 @@ export const LibraryFilesConfirmationDialog = ({
         </ScrollView>
       ) : null}
       <View style={styles.actionRow}>
-        <Pressable
-          accessibilityRole="button"
-          {...interactionGuardProps}
-          disabled={isMutating}
-          onPress={onCancel}
-          style={({ pressed }) => [
-            styles.secondaryButton,
-            buttonInteractionGuardStyle,
-            pressed && !isMutating ? styles.actionButtonPressed : undefined,
-            isMutating ? styles.actionButtonDisabled : undefined,
-          ]}
-        >
-          <Text style={styles.secondaryButtonLabel}>Cancel</Text>
-        </Pressable>
+        {content.isNote ? null : (
+          <Pressable
+            accessibilityRole="button"
+            {...interactionGuardProps}
+            disabled={isMutating}
+            onPress={onCancel}
+            style={({ pressed }) => [
+              styles.secondaryButton,
+              buttonInteractionGuardStyle,
+              pressed && !isMutating ? styles.actionButtonPressed : undefined,
+              isMutating ? styles.actionButtonDisabled : undefined,
+            ]}
+          >
+            <Text style={styles.secondaryButtonLabel}>Cancel</Text>
+          </Pressable>
+        )}
         <Pressable
           accessibilityRole="button"
           {...interactionGuardProps}

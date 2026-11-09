@@ -1,10 +1,13 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
+import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { FeedbackCard } from '../../components/feedback-card';
 import { type DriveLibraryStatusCopy } from '../utils/drive-library-view-model';
 import { appTheme } from '../../../utils/theme';
 
 type DriveLibraryStatusCardProps = {
+  /** A button under the message, for a status the user can act on. */
+  action?: { label: string; onPress: () => void };
   isLoading: boolean;
   loadingLabel?: string;
   statusCopy: DriveLibraryStatusCopy;
@@ -13,6 +16,7 @@ type DriveLibraryStatusCardProps = {
 const SECONDARY_TEXT = appTheme.colors.textMuted;
 
 export const DriveLibraryStatusCard = ({
+  action,
   isLoading,
   loadingLabel = 'Refreshing Google Drive…',
   statusCopy,
@@ -25,6 +29,8 @@ export const DriveLibraryStatusCard = ({
             <ActivityIndicator color={SECONDARY_TEXT} size="small" />
             <Text style={styles.loadingLabel}>{loadingLabel}</Text>
           </View>
+        ) : action ? (
+          <OutlinedActionButton label={action.label} onPress={action.onPress} />
         ) : null
       }
       message={statusCopy.message}

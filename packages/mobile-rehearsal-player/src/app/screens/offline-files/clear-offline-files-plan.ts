@@ -11,9 +11,12 @@ import { getClearAllConfirmation } from './model';
 
 export const NOTHING_TO_CLEAR_CONTENT: LibraryFilesConfirmationDialogContent = {
   confirmLabel: 'OK',
+  // A note, not a question: one neutral `OK`, no `Cancel` beside it.
+  isNote: true,
   message:
     'There are no offline files or prepared composites to clear. You can export and delete recordings in "Settings", or remove stems or choose shorter tracks.',
   title: 'Nothing to clear',
+  tone: 'primary',
 };
 
 export type ClearOfflineFilesPlan = {

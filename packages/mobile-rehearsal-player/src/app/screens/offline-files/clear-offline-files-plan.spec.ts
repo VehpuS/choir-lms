@@ -35,4 +35,9 @@ describe('resolveClearOfflineFilesPlan', () => {
     assert.equal(plan.clears, false);
     assert.equal(plan.content, NOTHING_TO_CLEAR_CONTENT);
   });
+
+  it('shows the nothing-to-clear note as a note with a neutral OK', () => {
+    assert.equal(NOTHING_TO_CLEAR_CONTENT.isNote, true);
+    assert.equal(NOTHING_TO_CLEAR_CONTENT.tone, 'primary');
+  });
 });
