@@ -58,6 +58,8 @@ export type DriveResumableUploadResult =
 
 export type UploadDriveFileResumableOptions = {
   accessToken: string;
+  /** Custom properties set on the created file, readable by the app later. */
+  appProperties?: Record<string, string>;
   chunkBytes?: number;
   fetch?: ResumableFetch;
   folderId: string;
@@ -141,6 +143,9 @@ export const uploadDriveFileResumable = async (
           body: JSON.stringify({
             name: options.name,
             parents: [options.folderId],
+            ...(options.appProperties
+              ? { appProperties: options.appProperties }
+              : {}),
           }),
           headers: {
             ...authorization,

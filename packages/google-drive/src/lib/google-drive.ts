@@ -9,3 +9,8 @@ export * from './google-drive-discovery';
 export * from './drive-write-scope';
 export * from './drive-resumable-upload';
 export * from './drive-folder-ensure';
+export * from './drive-library-bundle-folders';
+export * from './drive-library-bundle-files';
+export * from './drive-file-access';
+export * from './drive-library-bundle-listing';
+export * from './drive-library-bundle-prune';

@@ -30,12 +30,12 @@
 
 ## 5. Drive I/O (`google-drive`)
 
-- [ ] 5.1 Ensure `Choir LMS/Backups` and `Choir LMS/Shares` using the folder-ensure helper
-- [ ] 5.2 Upload a bundle with the `choirlmsBundle` app property and a dated name, using the resumable uploader; no partial file left listed on failure
-- [ ] 5.3 List bundles from the user's folders and `Shared with me`, with the name-pattern fallback; verify early that `appProperties` of shared files are readable with the read-only scope
-- [ ] 5.4 Prune old backups to the limit after a successful write, only app-created files, never an uncommitted pre-restore backup
-- [ ] 5.5 Per-file access probe with bounded concurrency, and owner lookup for export
-- [ ] 5.6 Specs for each helper with a fake Drive client
+- [x] 5.1 Ensure `Choir LMS/Backups` and `Choir LMS/Shares` using the folder-ensure helper
+- [x] 5.2 Upload a bundle with the `choirlmsBundle` app property and a dated name, using the resumable uploader; no partial file left listed on failure
+- [x] 5.3 List bundles from the user's folders and `Shared with me`, with the name-pattern fallback; verify early that `appProperties` of shared files are readable with the read-only scope (not verifiable offline: listing falls back to the name pattern, so shared bundles are found either way; check it with two accounts in 9.1. Share files are named `choir-lms-share-<folder> <date>.json` so the fallback can recognise them, a small change from the design's `<folder name> <date>.json`)
+- [x] 5.4 Prune old backups to the limit after a successful write, only app-created files, never an uncommitted pre-restore backup
+- [x] 5.5 Per-file access probe with bounded concurrency, and owner lookup for export
+- [x] 5.6 Specs for each helper with a fake Drive client
 
 ## 6. Backup and restore UI (`mobile-rehearsal-player`)
 
@@ -66,6 +66,7 @@
 
 ## 10. Future tasks (found while implementing; explore with a user before building)
 
+- [ ] 10.00 Drive `contains` matching on `choir-lms-` names is unverified against the live API (token and hyphen handling); confirm in 9.1 and, if it misses, list by `mimeType` and filter by name on the client
 - [ ] 10.0 Concurrent edits while an import or replace runs are not serialized against the bulk collection writes; block or queue UI edits during an import (decide with a user before 6.x/7.x)
 - [ ] 10.1 Playlist entries that play a recording (`recordingId`) are dropped from bundles and counted as left out; carry them once recordings travel in a bundle end to end
 - [ ] 10.2 Restoring recording audio into the web IndexedDB store, and what native should do while it has no recordings store (decide with the user before 6.x)
