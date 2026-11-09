@@ -136,6 +136,14 @@ const hasDriveCopy = (recording: Recording) =>
     (entry) => entry.kind === 'recording',
   );
 
+/** Audio the safety backup would upload: every recording that has no Drive copy yet. */
+export const sumRecordingUploadBytes = (
+  recordings: readonly Recording[],
+): number =>
+  recordings
+    .filter((recording) => !hasDriveCopy(recording))
+    .reduce((total, recording) => total + recording.sizeBytes, 0);
+
 /** Recordings are never preselected; the detail says whether choosing one uploads audio. */
 export const buildRecordingPicker = (
   recordings: readonly Recording[],

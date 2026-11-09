@@ -12,6 +12,7 @@ import {
   describeShareLeftOut,
   formatBundleDate,
   readableBundleName,
+  sumRecordingUploadBytes,
 } from './bundle-flow-model';
 import { recording } from './bundle-test-support';
 
@@ -209,5 +210,36 @@ describe('progress lines', () => {
       ),
       ['done', 'now'],
     );
+  });
+});
+
+describe('upload size of the safety backup', () => {
+  it('counts only recordings that have no Drive copy', () => {
+    const onDrive = recording('rec-b', {
+      sizeBytes: 9_000,
+      exports: {
+        done: [
+          {
+            kind: 'recording',
+            driveFileId: 'd',
+            fileName: 'f',
+            folderId: 'f',
+            folderName: 'F',
+            exportedAt: '',
+          },
+        ],
+        failed: [],
+      },
+    });
+
+    assert.equal(
+      sumRecordingUploadBytes([
+        recording('rec-a', { sizeBytes: 1_000 }),
+        onDrive,
+        recording('rec-c', { sizeBytes: 2_000 }),
+      ]),
+      3_000,
+    );
+    assert.equal(sumRecordingUploadBytes([]), 0);
   });
 });

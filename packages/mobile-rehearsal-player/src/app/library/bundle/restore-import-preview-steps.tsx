@@ -120,7 +120,7 @@ export const RestoreImportPreviewSteps = ({
         counts,
         isOwn: state.read.isOwn,
         authorName: state.read.bundle.author.name,
-        uploadBytes: 0,
+        uploadBytes: state.uploadBytes,
       });
 
       return (

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { DriveBundleListing } from '@org/google-drive';
 
+import { sumRecordingUploadBytes } from './bundle-flow-model';
 import { buildFolderChoices, type FolderChoice } from './folder-choices';
 import {
   buildImportPreview,
@@ -34,7 +35,7 @@ export type RestoreImportState =
       folders: FolderChoice[];
       destinationId: string;
     }
-  | { step: 'confirm-replace'; read: ReadOk }
+  | { step: 'confirm-replace'; read: ReadOk; uploadBytes: number }
   | { step: 'permission'; read: ReadOk }
   | { step: 'running'; kind: 'import' | 'replace'; phase: BundlePhase | null }
   | {
@@ -159,6 +160,20 @@ export const useRestoreImportFlow = ({
     );
   }, []);
 
+  /** The safety backup saves every recording; the size is what would upload. */
+  const toConfirmReplace = useCallback(
+    async (read: ReadOk) => {
+      const recordings = deps ? await deps.library.recordings() : [];
+
+      setState({
+        step: 'confirm-replace',
+        read,
+        uploadBytes: sumRecordingUploadBytes(recordings),
+      });
+    },
+    [deps],
+  );
+
   const continueChoice = useCallback(() => {
     if (state.step !== 'choose' || !state.choice) {
       return;
@@ -167,9 +182,9 @@ export const useRestoreImportFlow = ({
     if (state.choice === 'add') {
       void toPreview('restore', state.read);
     } else {
-      setState({ step: 'confirm-replace', read: state.read });
+      void toConfirmReplace(state.read);
     }
-  }, [state, toPreview]);
+  }, [state, toConfirmReplace, toPreview]);
 
   const chooseDestination = useCallback(async () => {
     if (state.step !== 'preview' || !deps) {
@@ -280,9 +295,9 @@ export const useRestoreImportFlow = ({
 
   useEffect(() => {
     if (state.step === 'permission' && hasWriteAccess) {
-      setState({ step: 'confirm-replace', read: state.read });
+      void toConfirmReplace(state.read);
     }
-  }, [hasWriteAccess, state]);
+  }, [hasWriteAccess, state, toConfirmReplace]);
 
   const close = useCallback(() => {
     task.cancel();

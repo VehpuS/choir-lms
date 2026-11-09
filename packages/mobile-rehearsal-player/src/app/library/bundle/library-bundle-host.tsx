@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react';
 
 import type { useGoogleDriveAuthorization } from '../../auth/google-drive/hooks/use-authorization';
+import { getPreparedStemStore } from '../composite/prepared/prepared-stem-instance';
+import { pruneOrphanPreparedStems } from '../composite/prepared/prune-orphan-prepared-stems';
 import { getCompositeStore } from '../composite/store/composite-store-instance';
 import { AccessGuideSheet } from './access-guide-sheet';
 import { BackupSheet } from './backup-sheet';
@@ -51,10 +53,18 @@ export const LibraryBundleHost = ({
             library: createBundleLibraryAccess({
               // Composites live in their own store, which keeps a copy.
               onLibraryChanged: async () => {
+                const composites = getCompositeStore();
+
                 await Promise.all([
                   latestRefresh.current(),
-                  getCompositeStore().refresh(),
+                  composites.refresh(),
                 ]);
+                // A replace can remove composites; their prepared stems are a
+                // cache of them and go too (only after a read that worked).
+                await pruneOrphanPreparedStems(
+                  getPreparedStemStore(),
+                  composites.getSnapshot().map(({ id }) => id),
+                ).catch(() => undefined);
               },
             }),
           }
