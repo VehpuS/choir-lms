@@ -99,6 +99,17 @@ The system SHALL provide direct shortcuts to recent rehearsal context so users c
 - **WHEN** a recent playlist entry refers to a playlist that no longer exists
 - **THEN** Recents does not show that entry
 
+#### Scenario: A standalone item queued into a playlist session records as itself
+
+- **WHEN** a saved playlist session plays a track, loop or composite that was queued into it and belongs to no saved playlist
+- **THEN** Recents records that item as a track, loop or composite and leaves the running playlist's entry unchanged
+
+#### Scenario: An item queued from another playlist records that playlist
+
+- **WHEN** a saved playlist session plays an item queued from a different saved playlist
+- **THEN** Recents records that other playlist with the item as its last played track
+- **AND** the running playlist's entry is unchanged
+
 #### Scenario: A transient queue does not become a recent playlist
 
 - **WHEN** a user plays items from the transient `Current queue`

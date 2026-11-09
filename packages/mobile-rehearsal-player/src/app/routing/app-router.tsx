@@ -1,5 +1,5 @@
 import { aggregateRehearsalLibraryTags } from '@org/audio-library-runtime';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useGoogleDriveAuthorization } from '../auth/google-drive/hooks/use-authorization';
 import { LyricsHosts } from '../library/lyrics/components/lyrics-hosts';
 import {
@@ -110,6 +110,10 @@ export const AppRouter = () => {
     libraryController.playlists.savedPlaylists,
   ]);
 
+  // Read by the recording effect without re-running it when the library changes.
+  const savedPlaylistsRef = useRef(libraryController.playlists.savedPlaylists);
+  savedPlaylistsRef.current = libraryController.playlists.savedPlaylists;
+
   const { handleSaveQueueAsPlaylist, handleUpdateQueuePlaylist } =
     useAppRouterQueuePlaylistActions({ libraryController, playback });
 
@@ -149,6 +153,8 @@ export const AppRouter = () => {
       activePlayableItem,
       activePlaylistSession: playback.activePlaylistSession,
       playedAt: new Date().toISOString(),
+      resolvePlaylistName: (playlistId) =>
+        savedPlaylistsRef.current.find(({ id }) => id === playlistId)?.name ?? null,
     });
 
     if (!recentToRecord) return;

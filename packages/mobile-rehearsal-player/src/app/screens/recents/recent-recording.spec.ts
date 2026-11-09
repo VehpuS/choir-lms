@@ -122,4 +122,79 @@ describe('getRecentRehearsalToRecord', () => {
 
     assert.equal(recorded, null);
   });
+
+  it('records a standalone track queued into a saved playlist session as the track', () => {
+    const queued = createTrackPlayableItem(PLAYABLE_SOURCE);
+
+    const recorded = getRecentRehearsalToRecord({
+      activePlayableItem: queued,
+      activePlaylistSession: sessionOf('playlist-1', [
+        entryItem('a', 'entry-1'),
+        queued,
+      ]),
+      playedAt: PLAYED_AT,
+    });
+
+    assert.equal(recorded?.kind, 'track');
+    assert.equal(recorded?.id, queued.id);
+  });
+
+  it('records an item queued from another saved playlist as that playlist', () => {
+    const fromOther = {
+      ...entryItem('x', 'other-entry'),
+      playlistId: 'playlist-2',
+    };
+
+    const recorded = getRecentRehearsalToRecord({
+      activePlayableItem: fromOther,
+      activePlaylistSession: sessionOf('playlist-1', [
+        entryItem('a', 'entry-1'),
+        fromOther,
+      ]),
+      playedAt: PLAYED_AT,
+      resolvePlaylistName: (id) => (id === 'playlist-2' ? 'Sunday set' : null),
+    });
+
+    assert.equal(recorded?.id, 'playlist-2');
+    assert.equal(
+      recorded?.kind === 'playlist' ? recorded.lastEntryId : null,
+      'other-entry',
+    );
+    assert.equal(recorded?.title, 'Sunday set');
+  });
+
+  it('records nothing for another playlist whose name cannot be resolved', () => {
+    const fromOther = {
+      ...entryItem('x', 'other-entry'),
+      playlistId: 'playlist-2',
+    };
+
+    assert.equal(
+      getRecentRehearsalToRecord({
+        activePlayableItem: fromOther,
+        activePlaylistSession: sessionOf('playlist-1', [fromOther]),
+        playedAt: PLAYED_AT,
+      }),
+      null,
+    );
+  });
+
+  it('records nothing for the previous other-playlist item before the new session loads', () => {
+    const previous = {
+      ...entryItem('x', 'other-entry'),
+      playlistId: 'playlist-2',
+    };
+
+    assert.equal(
+      getRecentRehearsalToRecord({
+        activePlayableItem: previous,
+        activePlaylistSession: sessionOf('playlist-1', [
+          entryItem('a', 'entry-1'),
+        ]),
+        playedAt: PLAYED_AT,
+        resolvePlaylistName: () => 'Sunday set',
+      }),
+      null,
+    );
+  });
 });

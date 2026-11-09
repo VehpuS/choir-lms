@@ -12,13 +12,22 @@ type RecentRecordingOptions = {
   activePlayableItem: PlayableItem;
   activePlaylistSession: PlaylistPlaybackSession | null;
   playedAt: string;
+  /**
+   * The name of a saved playlist, for items queued from a playlist other than
+   * the running one. Absent or unresolved means that playlist cannot be
+   * recorded.
+   */
+  resolvePlaylistName?: (playlistId: string) => string | null;
 };
 
 /**
- * Decides what the active item adds to Recents, or null for nothing:
- * - a saved playlist session records the playlist (one row however many of
- *   its tracks play), with the active track as its last entry;
- * - the transient `Current queue` and standalone playback record the item.
+ * Decides what the active item adds to Recents, or null for nothing. An item
+ * is recorded as what it belongs to:
+ * - an item of the running saved playlist records that playlist (one row
+ *   however many of its tracks play), with the item as its last entry;
+ * - an item queued from another saved playlist records that playlist;
+ * - a standalone item queued into the session, the transient `Current queue`
+ *   and standalone playback record the item itself.
  */
 export const getRecentRehearsalToRecord = (
   options: RecentRecordingOptions,
@@ -33,25 +42,39 @@ export const getRecentRehearsalToRecord = (
   }
 
   const entryId = activePlayableItem.playlistEntryId;
+  const sessionItems = activePlaylistSession.queue.items;
 
   // A playlist session starts before its first item loads, so for a moment
-  // the active item is whatever played before. Recording it against the
-  // playlist would write a stale entry id; the effect runs again once the
-  // playlist's own item is active.
-  const isInSessionQueue =
-    entryId !== undefined &&
-    activePlaylistSession.queue.items.some(
-      (item) => item.playlistEntryId === entryId,
-    );
+  // the active item is whatever played before. It is not in the session's
+  // queue, and recording it would write a stale entry or item; the effect
+  // runs again once the session's own item is active.
+  const isInSessionQueue = entryId
+    ? sessionItems.some((item) => item.playlistEntryId === entryId)
+    : sessionItems.some((item) => item.id === activePlayableItem.id);
 
-  if (!entryId || !isInSessionQueue) {
+  if (!isInSessionQueue) {
+    return null;
+  }
+
+  if (!entryId) {
+    return buildRecentRehearsalItem({ activePlayableItem, playedAt });
+  }
+
+  const playlistId = activePlayableItem.playlistId;
+  const isOwnItem =
+    !playlistId || playlistId === activePlaylistSession.playlistId;
+  const playlistName = isOwnItem
+    ? activePlaylistSession.playlistName
+    : options.resolvePlaylistName?.(playlistId);
+
+  if (!playlistName) {
     return null;
   }
 
   return buildRecentPlaylistItem({
     lastEntryId: entryId,
     playedAt,
-    playlistId: activePlaylistSession.playlistId,
-    playlistName: activePlaylistSession.playlistName,
+    playlistId: isOwnItem ? activePlaylistSession.playlistId : playlistId,
+    playlistName,
   });
 };
