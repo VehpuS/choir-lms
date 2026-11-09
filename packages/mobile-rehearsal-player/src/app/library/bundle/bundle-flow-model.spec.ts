@@ -134,7 +134,7 @@ describe('share left-out card', () => {
         includeOutside: false,
         leftOutReferenceCount: 4,
         outsideItemCount: 4,
-      }).tone,
+      })?.tone,
       'warn',
     );
     assert.equal(
