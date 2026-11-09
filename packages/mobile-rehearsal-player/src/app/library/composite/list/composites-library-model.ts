@@ -112,3 +112,13 @@ export const buildCompositeLibraryRows = (options: {
     [(row) => normalize(row.name)],
   );
 };
+
+/** What a search that matches no composite says, so the area is not left blank. */
+export const resolveCompositesNoResultsMessage = (
+  query: string | null,
+  rowCount: number,
+): string | null => {
+  const trimmed = query?.trim();
+
+  return trimmed && rowCount === 0 ? `No composites match “${trimmed}”.` : null;
+};

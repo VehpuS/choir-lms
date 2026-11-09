@@ -39,6 +39,7 @@ import {
   COMPOSITES_EMPTY_HINT,
   COMPOSITES_EMPTY_TITLE,
   buildCompositeLibraryRows,
+  resolveCompositesNoResultsMessage,
   type CompositeLibraryRow,
 } from './composites-library-model';
 
@@ -79,6 +80,7 @@ export const CompositesLibraryView = ({
       buildCompositeLibraryRows({ composites, library, query: searchQuery }),
     [composites, library, searchQuery],
   );
+  const noResults = resolveCompositesNoResultsMessage(searchQuery, rows.length);
   const findComposite = (id: string | null) =>
     composites.find((composite) => composite.id === id);
   const itemFor = (row: CompositeLibraryRow) => {
@@ -104,6 +106,7 @@ export const CompositesLibraryView = ({
       {availability.available ? null : (
         <Text style={styles.emptyHint}>{availability.message}</Text>
       )}
+      {noResults ? <Text style={styles.emptyHint}>{noResults}</Text> : null}
       <ExplorerListSurface>
         {rows.map((row) => {
           const item = itemFor(row);

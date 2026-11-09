@@ -7,6 +7,7 @@ import {
   buildCompositeLibraryRow,
   buildCompositeLibraryRows,
   compositeMatchesQuery,
+  resolveCompositesNoResultsMessage,
 } from './composites-library-model';
 
 const stem = (id: string, name: string): CompositeTrack['stems'][number] => ({
@@ -109,5 +110,17 @@ describe('buildCompositeLibraryRows', () => {
       }).map((row) => row.id),
       ['b'],
     );
+  });
+});
+
+describe('resolveCompositesNoResultsMessage', () => {
+  it('names the query when nothing matches and stays quiet otherwise', () => {
+    assert.equal(
+      resolveCompositesNoResultsMessage(' tenor ', 0),
+      'No composites match “tenor”.',
+    );
+    assert.equal(resolveCompositesNoResultsMessage('tenor', 2), null);
+    assert.equal(resolveCompositesNoResultsMessage(null, 0), null);
+    assert.equal(resolveCompositesNoResultsMessage('  ', 0), null);
   });
 });

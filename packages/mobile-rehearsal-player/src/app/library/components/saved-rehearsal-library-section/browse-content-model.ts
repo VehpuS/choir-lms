@@ -101,7 +101,7 @@ export const resolveSearchNoResultsMessage = (options: {
   const resultCount =
     options.view === 'tags' ||
     options.view === 'recordings' ||
-    // The Composites view counts and words its own empty state (7.1c).
+    // The Composites view words its own no-results message.
     options.view === 'composites'
       ? 0
       : options.resultCounts[options.view];

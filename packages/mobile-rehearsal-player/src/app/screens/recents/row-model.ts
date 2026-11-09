@@ -45,7 +45,11 @@ export const getRecentRowPresentation = (options: {
 };
 
 const getTrackDurationLabel = (recentRehearsal: RecentRehearsalItem) => {
-  if (recentRehearsal.kind !== 'track') {
+  // A composite's source carries the length of its longest stem.
+  if (
+    recentRehearsal.kind !== 'track' &&
+    recentRehearsal.kind !== 'composite'
+  ) {
     return undefined;
   }
 
@@ -65,11 +69,20 @@ const getTrackDurationLabel = (recentRehearsal: RecentRehearsalItem) => {
 };
 
 /** A recording says so, since its title alone looks like any other item. */
-const getKindLabel = (recentRehearsal: RecentRehearsalItem) =>
-  recentRehearsal.kind !== 'playlist' &&
-  recentRehearsal.playableItem.recordingId !== undefined
+const getKindLabel = (recentRehearsal: RecentRehearsalItem) => {
+  if (recentRehearsal.kind === 'playlist') {
+    return KIND_LABELS.playlist;
+  }
+
+  if (recentRehearsal.kind === 'composite') {
+    // The item's description is the library badge: `Composite · 4 stems`.
+    return recentRehearsal.playableItem.description || KIND_LABELS.composite;
+  }
+
+  return recentRehearsal.playableItem.recordingId !== undefined
     ? RECORDING_LABEL
     : KIND_LABELS[recentRehearsal.kind];
+};
 
 /** An adjusted track or loop shows its transform in its meta line. */
 const getTransformLabel = (recentRehearsal: RecentRehearsalItem) => {

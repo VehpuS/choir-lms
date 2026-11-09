@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createTrackPlayableItem } from '@org/audio-library-models';
+import {
+  createCompositePlayableItem,
+  createTrackPlayableItem,
+} from '@org/audio-library-models';
 
 import { PLAYABLE_SOURCE } from '../../test-utils/library-test-fixtures.js';
 import {
@@ -111,6 +114,39 @@ describe('recents row model', () => {
         recentRehearsal,
       }),
       'Recording · Last played 2 hr ago · 0:20',
+    );
+  });
+
+  it('leads a composite with its badge and shows its length', () => {
+    const stem = (id: string) => ({
+      id,
+      trackId: `t-${id}`,
+      name: id,
+      offsetMs: 0,
+      mine: false,
+    });
+    const recentRehearsal = buildRecentRehearsalItem({
+      activePlayableItem: createCompositePlayableItem(
+        {
+          id: 'c1',
+          name: 'Ubi',
+          createdAt: PLAYED_AT,
+          stems: [stem('s'), stem('a'), stem('t'), stem('b')],
+        },
+        { durationMs: 168_000 },
+      ),
+      activePlaylistSession: null,
+      playedAt: PLAYED_AT,
+    });
+
+    assert.equal(recentRehearsal.kind, 'composite');
+    assert.equal(
+      getRecentRowMeta({
+        isPlaying: false,
+        now: TWO_HOURS_LATER,
+        recentRehearsal,
+      }),
+      'Composite · 4 stems · Last played 2 hr ago · 2:48',
     );
   });
 
