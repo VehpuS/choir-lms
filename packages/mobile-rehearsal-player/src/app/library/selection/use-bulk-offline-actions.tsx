@@ -18,6 +18,7 @@ import {
   type LibraryFilesConfirmationDialogContent,
 } from './library-files-confirmation-dialog';
 import { useFolderOfflineRequests } from '../offline/use-folder-offline-requests';
+import { resolveBulkOfflineFiles } from './bulk-offline-files';
 import { useLibrarySelectionServices } from './library-selection-services';
 import { useBulkChoices } from './bulk-choices-prompt/use-bulk-choices';
 import {
@@ -145,10 +146,7 @@ export const useBulkOfflineActions = ({
       }
 
       const sources = uniqueSourcesByFile(
-        // Composite stems are kept through the composite's own action (7.3).
-        playableItems
-          .filter((item) => item.kind !== 'composite')
-          .map((item) => item.source),
+        resolveBulkOfflineFiles(playableItems, collections),
       ).filter((source) => {
         const state = offlineStateStore.getState(source.driveFileId);
 
