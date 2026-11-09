@@ -8,6 +8,8 @@ import { AppIcon } from '../../../components/app-icon';
 import { buttonInteractionGuardStyle } from '../../../components/interaction-guard';
 import { appTheme } from '../../../utils/theme';
 import { getLibraryTrack } from '../library-tracks';
+import { CompositeLoadingPanel } from '../loading/composite-loading-panel';
+import { useCompositeLoadState } from '../loading/composite-load-state';
 import { useActiveCompositeEngine } from '../playback/use-active-composite';
 import { requestStemOptions } from '../stem-options/stem-options-request';
 import {
@@ -166,6 +168,7 @@ export const CompositeMixPanel = ({ compositeId }: { compositeId: string }) => {
 };
 
 const ConnectedPanel = ({ composite }: { composite: CompositeTrack }) => {
+  const loadState = useCompositeLoadState();
   const session = useSessionMix(composite);
   const { mix } = session;
   const engine = useActiveCompositeEngine();
@@ -185,6 +188,16 @@ const ConnectedPanel = ({ composite }: { composite: CompositeTrack }) => {
   useEffect(() => {
     engine?.setStemGains(resolveStemGains(composite.stems, mix));
   }, [composite.stems, engine, mix]);
+
+  // While this composite loads there is nothing to mix yet (design mock).
+  if (loadState?.compositeId === composite.id) {
+    return (
+      <CompositeLoadingPanel
+        names={new Map(composite.stems.map((stem) => [stem.id, stem.name]))}
+        state={loadState}
+      />
+    );
+  }
 
   return (
     <CompositeMixPanelView

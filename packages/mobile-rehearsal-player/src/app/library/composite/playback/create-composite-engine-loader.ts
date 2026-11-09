@@ -13,9 +13,14 @@ import {
   createWebCompositeEngine,
   getCompositeAudioContext,
 } from '../engine/create-web-composite-engine';
+import {
+  getCompositeLoadStore,
+  type CompositeLoadStore,
+} from '../loading/composite-load-state';
 import type { StemLoadFailure } from '../loading/composite-stem-loader';
 import {
   createStemLoader,
+  needsPreparing,
   type StemTrack,
 } from '../loading/create-stem-loader';
 import {
@@ -56,6 +61,8 @@ export type CompositeLoaderDependencies = {
     accessToken: string | null,
   ) => Promise<Blob>;
   createEngine: LoadCompositeEngineOptions['createEngine'];
+  /** Where per-stem progress is published for the playback screen. */
+  loadState: CompositeLoadStore;
 };
 
 type LibraryStemTrack = StemTrack & { source: DriveAudioSource };
@@ -95,6 +102,7 @@ const defaultDependencies = (): CompositeLoaderDependencies => ({
   store: getPreparedStemStore(),
   fetchBlob: fetchTrackBlob,
   createEngine: createWebCompositeEngine,
+  loadState: getCompositeLoadStore(),
 });
 
 /**
@@ -133,26 +141,43 @@ export const createCompositeEngineLoader = (
       };
     };
 
-    return loadCompositeEngineFromStems({
-      composite,
-      signal: options.signal,
-      loadStem: createStemLoader<LibraryStemTrack>({
-        compositeId: composite.id,
-        stems: composite.stems,
-        getTrack: (trackId) => {
-          const source = host.getTrack(trackId);
+    const stemLoaderDependencies = {
+      compositeId: composite.id,
+      stems: composite.stems,
+      getTrack: (trackId: string) => {
+        const source = host.getTrack(trackId);
 
-          return source
-            ? { id: source.id, version: source.modifiedTime, source }
-            : undefined;
-        },
-        store: dependencies.store,
-        fetchBlob: (track) => dependencies.fetchBlob(track.source, accessToken),
-        decode,
-        targetSampleRate: context.sampleRate,
-      }),
-      createEngine: dependencies.createEngine,
-      onStemsFailed: (failed) => host.onStemsFailed?.(composite.id, failed),
-    });
+        return source
+          ? { id: source.id, version: source.modifiedTime, source }
+          : undefined;
+      },
+      store: dependencies.store,
+      fetchBlob: (track: LibraryStemTrack) =>
+        dependencies.fetchBlob(track.source, accessToken),
+      decode,
+      targetSampleRate: context.sampleRate,
+    };
+    // A storage error here only costs the explanation: the load itself reports it.
+    const isFirstTime = await needsPreparing(stemLoaderDependencies).catch(
+      () => false,
+    );
+    const progress = dependencies.loadState.begin(
+      composite.id,
+      composite.stems.map((stem) => stem.id),
+      isFirstTime ? 'preparing' : 'loading',
+    );
+
+    try {
+      return await loadCompositeEngineFromStems({
+        composite,
+        signal: options.signal,
+        loadStem: createStemLoader<LibraryStemTrack>(stemLoaderDependencies),
+        onProgress: progress.update,
+        createEngine: dependencies.createEngine,
+        onStemsFailed: (failed) => host.onStemsFailed?.(composite.id, failed),
+      });
+    } finally {
+      progress.end();
+    }
   };
 };

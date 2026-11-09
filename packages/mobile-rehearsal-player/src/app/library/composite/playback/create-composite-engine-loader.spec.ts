@@ -7,6 +7,7 @@ import type {
   PlayableItem,
 } from '@org/audio-library-models';
 
+import { createCompositeLoadStore } from '../loading/composite-load-state';
 import { createPreparedStemStore } from '../prepared/prepared-stem-store';
 import { createMemoryPreparedStemsBackend } from '../prepared/prepared-stem-test-support';
 import { createTestEngine } from './composite-test-engine';
@@ -43,6 +44,11 @@ const setup = (library: DriveAudioSource[]) => {
   const built: string[][] = [];
   const failed: string[][] = [];
   const fetched: Array<string | null> = [];
+  const loadState = createCompositeLoadStore();
+  // The phase the playback screen would show, and a null once the load ends.
+  const seen: Array<string | null> = [];
+
+  loadState.subscribe(() => seen.push(loadState.get()?.phase ?? null));
   const loader = createCompositeEngineLoader(
     {
       getComposite: (id) => (id === 'c1' ? composite : undefined),
@@ -58,6 +64,7 @@ const setup = (library: DriveAudioSource[]) => {
           getChannelData: () => new Float32Array(RATE).fill(0.1),
         }),
       }),
+      loadState,
       store: createPreparedStemStore(memory.backend),
       fetchBlob: async (track, token) => {
         fetched.push(token);
@@ -72,7 +79,7 @@ const setup = (library: DriveAudioSource[]) => {
     },
   );
 
-  return { built, failed, fetched, loader, memory };
+  return { built, failed, fetched, loader, memory, seen };
 };
 
 describe('createCompositeEngineLoader', () => {
@@ -84,6 +91,26 @@ describe('createCompositeEngineLoader', () => {
     assert.deepEqual(t.built, [['s1', 's2']]);
     assert.deepEqual(t.fetched, ['token', 'token']);
     assert.equal(t.memory.recordIds().length, 2);
+  });
+
+  it('shows preparing the first time and loading afterwards, and clears when done', async () => {
+    const t = setup([source('t1', 'v1'), source('t2', 'v1')]);
+
+    await t.loader(item, {});
+    assert.equal(t.seen[0], 'preparing');
+    assert.equal(t.seen.at(-1), null);
+
+    t.seen.length = 0;
+    await t.loader(item, {});
+    assert.equal(t.seen[0], 'loading');
+    assert.equal(t.seen.at(-1), null);
+  });
+
+  it('clears the loading state when the load fails', async () => {
+    const t = setup([]);
+
+    await assert.rejects(t.loader(item, {}));
+    assert.equal(t.seen.at(-1) ?? null, null);
   });
 
   it('plays the stems whose tracks are still in the library and reports the rest', async () => {

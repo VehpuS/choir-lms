@@ -41,6 +41,49 @@ const UNVERSIONED = 'unversioned';
 const DOWNLOAD_SHARE = 0.6;
 const FULL_PROGRESS = 1;
 
+const preparedKeyFor = (
+  compositeId: string,
+  stemId: string,
+  track: StemTrack,
+): PreparedStemKey => ({
+  compositeId,
+  stemId,
+  contentVersion: track.version ?? UNVERSIONED,
+});
+
+/**
+ * Whether opening this composite has to prepare any stem: a stem whose track
+ * has no prepared copy at its current version. That is the `first time only`
+ * case the playback screen explains; a track that is gone does not count (it
+ * is flagged missing, not prepared).
+ */
+export const needsPreparing = async <Track extends StemTrack>(
+  dependencies: Pick<
+    StemLoaderDependencies<Track>,
+    'compositeId' | 'stems' | 'getTrack' | 'store'
+  >,
+): Promise<boolean> => {
+  for (const stem of dependencies.stems) {
+    const track = dependencies.getTrack(stem.trackId);
+
+    if (!track) {
+      continue;
+    }
+
+    const isPrepared =
+      track.version !== undefined &&
+      (await dependencies.store.has(
+        preparedKeyFor(dependencies.compositeId, stem.id, track),
+      ));
+
+    if (!isPrepared) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 /**
  * Loads one stem as a window reader (composite-tracks design Decisions 9 and
  * 10): a stem already prepared at the track's current version is simply
@@ -61,11 +104,7 @@ export const createStemLoader = <Track extends StemTrack>(
       throw new StemMissingError(stemId);
     }
 
-    const key: PreparedStemKey = {
-      compositeId: dependencies.compositeId,
-      stemId,
-      contentVersion: track.version ?? UNVERSIONED,
-    };
+    const key = preparedKeyFor(dependencies.compositeId, stemId, track);
 
     if (track.version !== undefined && (await dependencies.store.has(key))) {
       const prepared = await dependencies.store.open(key);
