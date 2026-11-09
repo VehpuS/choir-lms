@@ -1,18 +1,35 @@
 import { isLoopPreviewItem } from '../../library/playback/utils/loop-preview-item';
 import type { PlayableItem } from '@org/audio-library-models';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { PlaylistPlaybackSession } from '../../library/playlists/utils/saved-playlist-playback-view-model';
 
 export type RecentRehearsalKind = 'track' | 'loop' | 'composite' | 'playlist';
 
-export type RecentRehearsalItem = {
+/** A single track, loop or composite that can be played on its own. */
+export type RecentPlayableRehearsalItem = {
   id: string;
-  kind: RecentRehearsalKind;
+  kind: Exclude<RecentRehearsalKind, 'playlist'>;
   playedAt: string;
   playableItem: PlayableItem;
-  playlistName: string | null;
   title: string;
 };
+
+/**
+ * A saved playlist, one row however many of its tracks have played. It has no
+ * `playableItem`: resuming it restarts the playlist session, not one track.
+ */
+export type RecentPlaylistRehearsalItem = {
+  id: string;
+  kind: 'playlist';
+  lastEntryId: string;
+  playedAt: string;
+  playlistName: string;
+  /** The playlist name, so row code that shows a title keeps working. */
+  title: string;
+};
+
+export type RecentRehearsalItem =
+  | RecentPlayableRehearsalItem
+  | RecentPlaylistRehearsalItem;
 
 type RecentRehearsalStorage = Pick<
   typeof AsyncStorage,
@@ -21,8 +38,14 @@ type RecentRehearsalStorage = Pick<
 
 type BuildRecentRehearsalItemOptions = {
   activePlayableItem: PlayableItem;
-  activePlaylistSession: PlaylistPlaybackSession | null;
   playedAt: string;
+};
+
+type BuildRecentPlaylistItemOptions = {
+  lastEntryId: string;
+  playedAt: string;
+  playlistId: string;
+  playlistName: string;
 };
 
 const MAX_RECENT_REHEARSAL_ITEMS = 5;
@@ -71,13 +94,33 @@ const readPlayableItem = (value: unknown): PlayableItem | null => {
   return value as PlayableItem;
 };
 
-const parseRecentRehearsalItem = (
-  value: unknown,
-): RecentRehearsalItem | null => {
-  if (!isRecord(value)) {
+const parseRecentPlaylistItem = (
+  value: Record<string, unknown>,
+): RecentPlaylistRehearsalItem | null => {
+  const id = readString(value.id);
+  const playlistName = readString(value.playlistName);
+  const lastEntryId = readString(value.lastEntryId);
+  const playedAt = readString(value.playedAt);
+
+  // Per-track `playlist` rows from before playlists became recent entries
+  // carry a `playableItem` and no `lastEntryId`, so they fail here and drop.
+  if (!id || !playlistName || !lastEntryId || !playedAt) {
     return null;
   }
 
+  return {
+    id,
+    kind: 'playlist',
+    lastEntryId,
+    playedAt,
+    playlistName,
+    title: playlistName,
+  };
+};
+
+const parseRecentPlayableItem = (
+  value: Record<string, unknown>,
+): RecentPlayableRehearsalItem | null => {
   const playableItem = readPlayableItem(value.playableItem);
   const id = readString(value.id);
   const title = readString(value.title);
@@ -87,60 +130,79 @@ const parseRecentRehearsalItem = (
     return null;
   }
 
-  const playlistName = readString(value.playlistName);
-  const kind = readString(value.kind);
-
   return {
     id,
-    kind:
-      kind === 'playlist' ||
-      kind === 'track' ||
-      kind === 'loop' ||
-      kind === 'composite'
-        ? kind
-        : playableItem.kind,
+    kind: playableItem.kind,
     playedAt,
     playableItem,
-    playlistName,
     title,
   };
 };
 
-const getRecentRehearsalItemId = (options: {
-  activePlayableItem: PlayableItem;
-  activePlaylistSession: PlaylistPlaybackSession | null;
-}) => {
-  const playlistId = options.activePlaylistSession?.playlistId;
-  const playlistEntryId = options.activePlayableItem.playlistEntryId;
-
-  if (playlistId && playlistEntryId) {
-    return `${playlistId}:${playlistEntryId}`;
+const parseRecentRehearsalItem = (
+  value: unknown,
+): RecentRehearsalItem | null => {
+  if (!isRecord(value)) {
+    return null;
   }
 
-  return options.activePlayableItem.id;
+  return value.kind === 'playlist'
+    ? parseRecentPlaylistItem(value)
+    : parseRecentPlayableItem(value);
 };
 
 export const buildRecentRehearsalItem = (
   options: BuildRecentRehearsalItemOptions,
-): RecentRehearsalItem => {
+): RecentPlayableRehearsalItem => {
   return {
-    id: getRecentRehearsalItemId(options),
-    kind: options.activePlaylistSession
-      ? 'playlist'
-      : options.activePlayableItem.kind,
+    id: options.activePlayableItem.id,
+    kind: options.activePlayableItem.kind,
     playedAt: options.playedAt,
     playableItem: options.activePlayableItem,
-    playlistName: options.activePlaylistSession?.playlistName ?? null,
     title: options.activePlayableItem.title,
   };
+};
+
+export const buildRecentPlaylistItem = (
+  options: BuildRecentPlaylistItemOptions,
+): RecentPlaylistRehearsalItem => {
+  return {
+    id: options.playlistId,
+    kind: 'playlist',
+    lastEntryId: options.lastEntryId,
+    playedAt: options.playedAt,
+    playlistName: options.playlistName,
+    title: options.playlistName,
+  };
+};
+
+/**
+ * Records a playlist run: replaces the playlist's entry by id, moves it to the
+ * front and keeps the cap. Only playlist rows are replaced, so a track whose id
+ * happened to match never evicts it.
+ */
+export const upsertRecentPlaylist = (
+  currentHistory: RecentRehearsalItem[],
+  nextItem: RecentPlaylistRehearsalItem,
+) => {
+  const otherItems = currentHistory.filter((item) => {
+    return item.kind !== 'playlist' || item.id !== nextItem.id;
+  });
+
+  return [nextItem, ...otherItems].slice(0, MAX_RECENT_REHEARSAL_ITEMS);
 };
 
 export const appendRecentRehearsalItem = (
   currentHistory: RecentRehearsalItem[],
   nextItem: RecentRehearsalItem,
 ) => {
+  if (nextItem.kind === 'playlist') {
+    return upsertRecentPlaylist(currentHistory, nextItem);
+  }
+
+  // Playlist rows share the id space of playlists, not of playable items.
   const deduplicatedHistory = currentHistory.filter((item) => {
-    return item.id !== nextItem.id;
+    return item.kind === 'playlist' || item.id !== nextItem.id;
   });
 
   return [nextItem, ...deduplicatedHistory].slice(
@@ -170,7 +232,10 @@ export const restoreRecentRehearsalHistory = async (
         .map(parseRecentRehearsalItem)
         .filter((item): item is RecentRehearsalItem => item !== null)
         // Previews recorded before they were excluded (task 8.95).
-        .filter((item) => !isLoopPreviewItem(item.playableItem))
+        .filter(
+          (item) =>
+            item.kind === 'playlist' || !isLoopPreviewItem(item.playableItem),
+        )
         .slice(0, MAX_RECENT_REHEARSAL_ITEMS)
     );
   } catch {

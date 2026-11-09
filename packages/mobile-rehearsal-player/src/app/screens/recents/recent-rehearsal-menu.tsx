@@ -7,7 +7,7 @@ import {
   resolveSavedItemShortcuts,
 } from '../../library/components/saved-item-menu/saved-item-requests';
 import { OptionsMenuSheet } from '../../library/components/options-menu-sheet';
-import type { RecentRehearsalItem } from './history';
+import type { RecentPlayableRehearsalItem } from './history';
 import { getRecentsOverflowActionState } from './overflow-actions';
 
 type RecentRehearsalMenuProps = {
@@ -18,7 +18,7 @@ type RecentRehearsalMenuProps = {
   onQueueNext: () => void;
   onQueueUpNext: () => void;
   onViewInLibrary: () => void;
-  recentRehearsal: RecentRehearsalItem;
+  recentRehearsal: RecentPlayableRehearsalItem;
 };
 
 // A Recents row's menu: its own actions (queueing, `View in library`) and the

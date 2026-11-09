@@ -6,40 +6,27 @@ import { createTrackPlayableItem } from '@org/audio-library-models';
 import { PLAYABLE_SOURCE } from '../../test-utils/library-test-fixtures.js';
 import {
   appendRecentRehearsalItem,
+  buildRecentPlaylistItem,
   buildRecentRehearsalItem,
   getRecentRehearsalLastPlayedLabel,
   persistRecentRehearsalHistory,
   restoreRecentRehearsalHistory,
+  upsertRecentPlaylist,
 } from './history.js';
 
-describe('buildRecentRehearsalItem', () => {
-  it('tags history entries as playlist items while playlist playback is active', () => {
-    const playableItem = createTrackPlayableItem(PLAYABLE_SOURCE);
-
-    const item = buildRecentRehearsalItem({
-      activePlayableItem: {
-        ...playableItem,
-        playlistEntryId: 'entry-1',
-      },
-      activePlaylistSession: {
-        currentIndex: 0,
-        hasCompleted: false,
-        playlistId: 'playlist-1',
-        playlistName: 'Warmups',
-        queue: {
-          items: [playableItem],
-          mode: 'ordered',
-          playlistId: 'playlist-1',
-          repeatMode: 'off',
-        },
-        requestedItemCount: 1,
-      },
+describe('buildRecentPlaylistItem', () => {
+  it('identifies the playlist by its id and titles it with its name', () => {
+    const item = buildRecentPlaylistItem({
+      lastEntryId: 'entry-1',
       playedAt: '2026-06-01T09:00:00.000Z',
+      playlistId: 'playlist-1',
+      playlistName: 'Warmups',
     });
 
     assert.equal(item.kind, 'playlist');
-    assert.equal(item.playlistName, 'Warmups');
-    assert.equal(item.id, 'playlist-1:entry-1');
+    assert.equal(item.id, 'playlist-1');
+    assert.equal(item.title, 'Warmups');
+    assert.equal(item.lastEntryId, 'entry-1');
   });
 });
 
@@ -55,12 +42,10 @@ describe('appendRecentRehearsalItem', () => {
     const initialHistory = [
       buildRecentRehearsalItem({
         activePlayableItem: firstTrack,
-        activePlaylistSession: null,
         playedAt: '2026-06-01T08:30:00.000Z',
       }),
       buildRecentRehearsalItem({
         activePlayableItem: secondTrack,
-        activePlaylistSession: null,
         playedAt: '2026-06-01T08:00:00.000Z',
       }),
     ];
@@ -69,7 +54,6 @@ describe('appendRecentRehearsalItem', () => {
       initialHistory,
       buildRecentRehearsalItem({
         activePlayableItem: firstTrack,
-        activePlaylistSession: null,
         playedAt: '2026-06-01T09:00:00.000Z',
       }),
     );
@@ -81,6 +65,75 @@ describe('appendRecentRehearsalItem', () => {
   });
 });
 
+const storageReturning = (storedValue: string) => ({
+  async getItem() {
+    return storedValue;
+  },
+  async removeItem() {
+    throw new Error('not used');
+  },
+  async setItem() {
+    throw new Error('not used');
+  },
+});
+
+describe('upsertRecentPlaylist', () => {
+  const playlistAt = (playlistId: string, lastEntryId: string, hour: number) =>
+    buildRecentPlaylistItem({
+      lastEntryId,
+      playedAt: `2026-06-01T0${hour}:00:00.000Z`,
+      playlistId,
+      playlistName: playlistId,
+    });
+  const trackAt = (id: string) =>
+    buildRecentRehearsalItem({
+      activePlayableItem: createTrackPlayableItem({
+        ...PLAYABLE_SOURCE,
+        id,
+        name: `${id}.mp3`,
+      }),
+      playedAt: '2026-06-01T07:00:00.000Z',
+    });
+
+  it('updates the playlist entry in place instead of adding a row', () => {
+    const history = upsertRecentPlaylist(
+      [playlistAt('p1', 'entry-1', 8)],
+      playlistAt('p1', 'entry-2', 9),
+    );
+
+    assert.equal(history.length, 1);
+    assert.equal(
+      history[0]?.kind === 'playlist' && history[0].lastEntryId,
+      'entry-2',
+    );
+    assert.equal(history[0]?.playedAt, '2026-06-01T09:00:00.000Z');
+  });
+
+  it('moves the playlist to the front without disturbing the others', () => {
+    const history = upsertRecentPlaylist(
+      [trackAt('a'), playlistAt('p1', 'entry-1', 8), trackAt('b')],
+      playlistAt('p1', 'entry-3', 9),
+    );
+
+    assert.deepEqual(
+      history.map((item) => item.id),
+      ['p1', 'track:a', 'track:b'],
+    );
+  });
+
+  it('evicts the oldest item once the cap of five is exceeded', () => {
+    const history = upsertRecentPlaylist(
+      ['a', 'b', 'c', 'd', 'e'].map(trackAt),
+      playlistAt('p1', 'entry-1', 9),
+    );
+
+    assert.deepEqual(
+      history.map((item) => item.id),
+      ['p1', 'track:a', 'track:b', 'track:c', 'track:d'],
+    );
+  });
+});
+
 describe('recent rehearsal persistence', () => {
   it('writes and restores compact history data', async () => {
     const store = new Map<string, string>();
@@ -89,7 +142,6 @@ describe('recent rehearsal persistence', () => {
     const history = [
       buildRecentRehearsalItem({
         activePlayableItem: playableItem,
-        activePlaylistSession: null,
         playedAt: '2026-06-01T09:00:00.000Z',
       }),
     ];
@@ -133,7 +185,6 @@ describe('recent rehearsal persistence', () => {
       [track, preview].map((playableItem) =>
         buildRecentRehearsalItem({
           activePlayableItem: playableItem,
-          activePlaylistSession: null,
           playedAt: '2026-06-01T09:00:00.000Z',
         }),
       ),
@@ -152,8 +203,48 @@ describe('recent rehearsal persistence', () => {
     });
 
     assert.deepEqual(
-      restoredHistory.map((item) => item.playableItem.id),
+      restoredHistory.map((item) => item.id),
       [track.id],
+    );
+  });
+
+  it('round-trips a playlist entry', async () => {
+    const playlist = buildRecentPlaylistItem({
+      lastEntryId: 'entry-2',
+      playedAt: '2026-06-01T09:00:00.000Z',
+      playlistId: 'playlist-1',
+      playlistName: 'Warmups',
+    });
+
+    const restoredHistory = await restoreRecentRehearsalHistory(
+      storageReturning(JSON.stringify([playlist])),
+    );
+
+    assert.deepEqual(restoredHistory, [playlist]);
+  });
+
+  it('drops per-track playlist rows stored before playlists were entries', async () => {
+    const track = createTrackPlayableItem(PLAYABLE_SOURCE);
+    const oldPlaylistRow = {
+      id: 'playlist-1:entry-1',
+      kind: 'playlist',
+      playedAt: '2026-06-01T09:00:00.000Z',
+      playableItem: track,
+      playlistName: 'Warmups',
+      title: track.title,
+    };
+    const keptTrack = buildRecentRehearsalItem({
+      activePlayableItem: track,
+      playedAt: '2026-06-01T08:00:00.000Z',
+    });
+
+    const restoredHistory = await restoreRecentRehearsalHistory(
+      storageReturning(JSON.stringify([oldPlaylistRow, keptTrack])),
+    );
+
+    assert.deepEqual(
+      restoredHistory.map((item) => item.id),
+      [keptTrack.id],
     );
   });
 

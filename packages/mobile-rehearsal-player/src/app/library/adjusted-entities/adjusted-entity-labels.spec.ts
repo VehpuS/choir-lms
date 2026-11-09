@@ -120,7 +120,6 @@ describe('adjusted entities in Recents', () => {
       now: NOW,
       recentRehearsal: buildRecentRehearsalItem({
         activePlayableItem: playableItem,
-        activePlaylistSession: null,
         playedAt: PLAYED_AT,
       }),
     });

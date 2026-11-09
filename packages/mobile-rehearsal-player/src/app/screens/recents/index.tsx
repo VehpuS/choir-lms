@@ -12,8 +12,12 @@ import { getDestinationHeaderModel } from '../../components/destination-header-m
 import { FadedRule } from '../../components/faded-rule';
 import { InteractionChip } from '../../library/components/interaction-chip';
 import { appTheme } from '../../utils/theme';
-import type { RecentRehearsalItem } from './history';
+import type {
+  RecentPlaylistRehearsalItem,
+  RecentRehearsalItem,
+} from './history';
 
+import { RecentPlaylistMenu } from './recent-playlist-menu';
 import { RecentRehearsalMenu } from './recent-rehearsal-menu';
 import { RecentRehearsalRow } from './recent-rehearsal-row';
 import { getRecentItemCountLabel } from './row-model';
@@ -27,6 +31,7 @@ import { recentsScreenStyles as styles } from './styles';
 import { scrollGutterStyles } from '../../components/scroll-gutter';
 
 export type RecentsScreenProps = {
+  activePlaylistId: string | null;
   activePlayableItemId: string | null;
   authorization: DriveSessionMenuController;
   canQueueAsNext: boolean;
@@ -36,6 +41,7 @@ export type RecentsScreenProps = {
   recentRehearsalHistory: RecentRehearsalItem[];
   onQueueRecentPlaybackNext: (recentRehearsal: RecentRehearsalItem) => void;
   onQueueRecentPlaybackUpNext: (recentRehearsal: RecentRehearsalItem) => void;
+  onQueueRecentPlaylist: (recentPlaylist: RecentPlaylistRehearsalItem) => void;
   onResumeRecentPlayback: (recentRehearsal: RecentRehearsalItem) => void;
   onSelectRecentShortcutTag: (shortcutTag: string) => void;
   onViewAllTags: () => void;
@@ -53,6 +59,7 @@ const AUDIO_FORMAT_LABEL = join(
 );
 
 export const RecentsScreen = ({
+  activePlaylistId,
   activePlayableItemId,
   authorization,
   canQueueAsNext,
@@ -62,6 +69,7 @@ export const RecentsScreen = ({
   recentRehearsalHistory,
   onQueueRecentPlaybackNext,
   onQueueRecentPlaybackUpNext,
+  onQueueRecentPlaylist,
   onResumeRecentPlayback,
   onSelectRecentShortcutTag,
   onViewAllTags,
@@ -153,7 +161,9 @@ export const RecentsScreen = ({
                 isLast={index === recentRehearsalHistory.length - 1}
                 isPlaying={
                   isPlaybackActive &&
-                  recentRehearsal.playableItem.id === activePlayableItemId
+                  (recentRehearsal.kind === 'playlist'
+                    ? recentRehearsal.id === activePlaylistId
+                    : recentRehearsal.playableItem.id === activePlayableItemId)
                 }
                 onOpenOptions={() => {
                   setActiveOptionsRecentId(recentRehearsal.id);
@@ -163,24 +173,42 @@ export const RecentsScreen = ({
                 }}
                 recentRehearsal={recentRehearsal}
               />
-              <RecentRehearsalMenu
-                canQueueAsNext={canQueueAsNext}
-                isInLibrary={isRecentItemInLibrary(recentRehearsal)}
-                isVisible={activeOptionsRecentId === recentRehearsal.id}
-                onClose={() => {
-                  setActiveOptionsRecentId(null);
-                }}
-                onQueueNext={() => {
-                  onQueueRecentPlaybackNext(recentRehearsal);
-                }}
-                onQueueUpNext={() => {
-                  onQueueRecentPlaybackUpNext(recentRehearsal);
-                }}
-                onViewInLibrary={() => {
-                  onViewRecentInLibrary(recentRehearsal);
-                }}
-                recentRehearsal={recentRehearsal}
-              />
+              {recentRehearsal.kind === 'playlist' ? (
+                <RecentPlaylistMenu
+                  canQueueAsNext={canQueueAsNext}
+                  isInLibrary={isRecentItemInLibrary(recentRehearsal)}
+                  isVisible={activeOptionsRecentId === recentRehearsal.id}
+                  onClose={() => {
+                    setActiveOptionsRecentId(null);
+                  }}
+                  onQueuePlaylist={() => {
+                    onQueueRecentPlaylist(recentRehearsal);
+                  }}
+                  onViewInLibrary={() => {
+                    onViewRecentInLibrary(recentRehearsal);
+                  }}
+                  recentPlaylist={recentRehearsal}
+                />
+              ) : (
+                <RecentRehearsalMenu
+                  canQueueAsNext={canQueueAsNext}
+                  isInLibrary={isRecentItemInLibrary(recentRehearsal)}
+                  isVisible={activeOptionsRecentId === recentRehearsal.id}
+                  onClose={() => {
+                    setActiveOptionsRecentId(null);
+                  }}
+                  onQueueNext={() => {
+                    onQueueRecentPlaybackNext(recentRehearsal);
+                  }}
+                  onQueueUpNext={() => {
+                    onQueueRecentPlaybackUpNext(recentRehearsal);
+                  }}
+                  onViewInLibrary={() => {
+                    onViewRecentInLibrary(recentRehearsal);
+                  }}
+                  recentRehearsal={recentRehearsal}
+                />
+              )}
             </View>
           ))}
         </View>

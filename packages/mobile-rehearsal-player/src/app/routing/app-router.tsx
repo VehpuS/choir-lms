@@ -23,10 +23,10 @@ import { useTrackRevealNavigation } from './use-track-reveal-navigation';
 import { AppRouterRecentsScreen } from '../screens/recents/app-router-recents-screen';
 import {
   appendRecentRehearsalItem,
-  buildRecentRehearsalItem,
   persistRecentRehearsalHistory,
   restoreRecentRehearsalHistory,
 } from '../screens/recents/history';
+import { getRecentRehearsalToRecord } from '../screens/recents/recent-recording';
 import { MobileShell } from './shell/mobile-shell';
 import type { ShellDestinationKey } from './shell/shell-model';
 import { getPlaybackShapingContextLabel } from './shell/shell-playback-summary-model';
@@ -145,14 +145,18 @@ export const AppRouter = () => {
 
     if (isLoopPreviewItem(activePlayableItem)) return;
 
+    const recentToRecord = getRecentRehearsalToRecord({
+      activePlayableItem,
+      activePlaylistSession: playback.activePlaylistSession,
+      playedAt: new Date().toISOString(),
+    });
+
+    if (!recentToRecord) return;
+
     setRecentRehearsalHistory((currentHistory) => {
       const nextHistory = appendRecentRehearsalItem(
         currentHistory,
-        buildRecentRehearsalItem({
-          activePlayableItem,
-          activePlaylistSession: playback.activePlaylistSession,
-          playedAt: new Date().toISOString(),
-        }),
+        recentToRecord,
       );
 
       void persistRecentRehearsalHistory(nextHistory);
@@ -202,7 +206,10 @@ export const AppRouter = () => {
               playback={playback}
               recentRehearsalHistory={recentRehearsalHistory}
               savedLoopIds={savedItemAvailability.savedLoopIds}
+              savedLoops={libraryController.savedLibrary.savedLoops}
+              savedPlaylists={libraryController.playlists.savedPlaylists}
               savedSourceIds={savedItemAvailability.savedSourceIds}
+              savedSources={libraryController.savedLibrary.savedLibrarySources}
               savedTrackCount={libraryController.savedLibrary.trackCount}
             />
           }

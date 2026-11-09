@@ -8,8 +8,8 @@ import {
 
 import { PLAYABLE_SOURCE } from '../../test-utils/library-test-fixtures.js';
 import {
+  buildRecentPlaylistItem,
   buildRecentRehearsalItem,
-  type RecentRehearsalKind,
 } from './history.js';
 import {
   getRecentItemCountLabel,
@@ -20,11 +20,19 @@ import {
 const PLAYED_AT = '2026-06-01T09:00:00.000Z';
 const TWO_HOURS_LATER = new Date('2026-06-01T11:00:00.000Z');
 
-const buildRecent = (kind: RecentRehearsalKind) => {
+const buildRecent = (kind: 'track' | 'loop' | 'playlist') => {
+  if (kind === 'playlist') {
+    return buildRecentPlaylistItem({
+      lastEntryId: 'entry-1',
+      playedAt: PLAYED_AT,
+      playlistId: 'playlist-1',
+      playlistName: 'Warmups',
+    });
+  }
+
   return {
     ...buildRecentRehearsalItem({
       activePlayableItem: createTrackPlayableItem(PLAYABLE_SOURCE),
-      activePlaylistSession: null,
       playedAt: PLAYED_AT,
     }),
     kind,
@@ -32,6 +40,18 @@ const buildRecent = (kind: RecentRehearsalKind) => {
 };
 
 describe('recents row model', () => {
+  it('shows a playlist row without a duration or transform', () => {
+    assert.equal(
+      getRecentRowMeta({
+        isPlaying: false,
+        now: TWO_HOURS_LATER,
+        recentRehearsal: buildRecent('playlist'),
+      }),
+      'Playlist · Last played 2 hr ago',
+    );
+    assert.equal(buildRecent('playlist').title, 'Warmups');
+  });
+
   it('gives each kind its own outlined glyph', () => {
     assert.deepEqual(
       getRecentRowPresentation({ isPlaying: false, kind: 'track' }),
@@ -103,7 +123,6 @@ describe('recents row model', () => {
         recordingId: 'rec-1',
         range: { startMs: 60_000, endMs: 80_000 },
       },
-      activePlaylistSession: null,
       playedAt: PLAYED_AT,
     });
 
@@ -135,7 +154,6 @@ describe('recents row model', () => {
         },
         { durationMs: 168_000 },
       ),
-      activePlaylistSession: null,
       playedAt: PLAYED_AT,
     });
 
