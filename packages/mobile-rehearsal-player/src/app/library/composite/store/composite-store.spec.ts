@@ -173,6 +173,15 @@ describe('composite store', () => {
     assert.equal(t.saved()[0].sheetMusic, undefined);
   });
 
+  it('remembers whose lyrics the composite shows', async () => {
+    const t = setup();
+    const made = await t.store.create(DRAFT);
+
+    assert.ok(made);
+    await t.store.setLyricsStem(made.id, 'stem-2');
+    assert.equal(t.saved()[0].lyricsStemId, 'stem-2');
+  });
+
   it('edits only the composite it was asked about', async () => {
     const t = setup();
     const one = await t.store.create(DRAFT);

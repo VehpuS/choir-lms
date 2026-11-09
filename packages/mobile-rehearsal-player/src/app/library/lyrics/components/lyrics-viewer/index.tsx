@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { describeLyricsOwner } from '../../../composite/content/composite-lyrics-model';
 import { requestSavedItemAction } from '../../../components/saved-item-menu/saved-item-requests';
 import { useLyricsFor } from '../../../components/saved-item-menu/saved-item-availability-context';
 import {
@@ -25,7 +26,9 @@ export const LyricsViewerHost = ({
   onTogglePlayback,
 }: LyricsViewerHostProps) => {
   const [view, setView] = useState<LyricsViewRequest | null>(null);
-  const { lyrics, owner } = useLyricsFor({ sourceId: view?.sourceId ?? '' });
+  const { composite, lyrics, owner } = useLyricsFor({
+    sourceId: view?.sourceId ?? '',
+  });
 
   useEffect(() => {
     return subscribeToLyricsViewRequests(setView);
@@ -55,7 +58,7 @@ export const LyricsViewerHost = ({
         onExpand={() => {
           setView({ ...view, mode: 'reading' });
         }}
-        ownerName={owner.name}
+        ownerName={describeLyricsOwner(owner.name, composite?.stemName)}
         text={lyrics.text}
       />
     );
@@ -67,7 +70,7 @@ export const LyricsViewerHost = ({
       isPlaying={isPlaying}
       onClose={close}
       onTogglePlayback={onTogglePlayback}
-      ownerName={owner.name}
+      ownerName={describeLyricsOwner(owner.name, composite?.stemName)}
       text={lyrics.text}
     />
   );

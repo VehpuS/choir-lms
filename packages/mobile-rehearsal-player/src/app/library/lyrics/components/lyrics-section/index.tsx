@@ -7,6 +7,8 @@ import {
   View,
 } from 'react-native';
 
+import { CompositeLyricsPicker } from '../../../composite/content/composite-lyrics-picker';
+import { getCompositeStore } from '../../../composite/store/composite-store-instance';
 import { OutlinedActionButton } from '../../../../components/outlined-action-button';
 import { darkScrollbarStyle } from '../../../../components/dark-scrollbar';
 import { appTheme } from '../../../../utils/theme';
@@ -47,6 +49,7 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
 
   const textStyle = resolveLyricsTextStyle(textSize);
   const previewHeight = textStyle.lineHeight * LYRICS_PREVIEW_LINES;
+  // For a composite the id names the composite; the editor edits the picked stem.
   const editLyrics = () => {
     requestSavedItemAction({
       action: 'edit-lyrics',
@@ -54,6 +57,7 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
       kind: 'track',
     });
   };
+  const pickedComposite = resolution.composite;
 
   return (
     <View style={styles.section}>
@@ -86,6 +90,17 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
           )}
         </View>
       </View>
+      {pickedComposite ? (
+        <CompositeLyricsPicker
+          info={pickedComposite}
+          onSelect={(stemId) => {
+            void getCompositeStore().setLyricsStem(
+              pickedComposite.compositeId,
+              stemId,
+            );
+          }}
+        />
+      ) : null}
       {model.kind === 'filled' ? (
         <>
           {model.sharedFromName ? (

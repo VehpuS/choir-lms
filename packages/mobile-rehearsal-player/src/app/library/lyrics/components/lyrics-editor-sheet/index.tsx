@@ -32,6 +32,8 @@ export type LyricsEditorSheetProps = {
   lyrics: SourceLyrics | undefined;
   /** The track that owns the lyrics (a loop or adjusted track edits its parent's). */
   ownerName: string;
+  /** What the lookup starts from when it differs from `ownerName` (a composite stem's track). */
+  searchName?: string;
   trackDurationMs?: number;
   onAcknowledgeDisclosure: () => void;
   onClose: () => void;
@@ -53,6 +55,7 @@ export const LyricsEditorSheet = ({
   lookupClient,
   lyrics,
   ownerName,
+  searchName,
   trackDurationMs,
   onAcknowledgeDisclosure,
   onClose,
@@ -62,7 +65,7 @@ export const LyricsEditorSheet = ({
 }: LyricsEditorSheetProps) => {
   const [state, dispatch] = useReducer(
     lyricsEditorReducer,
-    { hasAcknowledgedDisclosure, lyrics, trackName: ownerName },
+    { hasAcknowledgedDisclosure, lyrics, trackName: searchName ?? ownerName },
     createLyricsEditorState,
   );
   const confirmation = useLibraryFilesConfirmationFlow();

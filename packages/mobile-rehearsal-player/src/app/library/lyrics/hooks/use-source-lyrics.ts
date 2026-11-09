@@ -5,6 +5,7 @@ import {
 } from '@org/audio-library-models';
 import { useCallback } from 'react';
 
+import type { CompositeLyricsInfo } from '../../composite/content/composite-lyrics-model';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import {
   enqueueLibraryWrite,
@@ -22,6 +23,8 @@ export type SourceLyricsResolution = {
   lyrics: SourceLyrics | undefined;
   /** The saved track that owns the lyrics, or null when it no longer exists. */
   owner: DriveLibrarySource | null;
+  /** Set for a composite: the stem the lyrics come from and the picker's choices. */
+  composite?: CompositeLyricsInfo;
 };
 
 export const resolveSourceLyrics = (

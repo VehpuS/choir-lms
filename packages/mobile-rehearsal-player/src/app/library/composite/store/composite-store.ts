@@ -1,4 +1,5 @@
 import {
+  setCompositeLyricsStem,
   addCompositeSheetMusic,
   changeCompositeSheetMusic,
   removeCompositeSheetMusic,
@@ -105,6 +106,8 @@ export type CompositeStore = {
     sheetMusicId: string,
     file: SavedDriveFile,
   ) => Promise<void>;
+  /** Remembers whose lyrics the composite shows. */
+  setLyricsStem: (compositeId: string, stemId: string) => Promise<void>;
   /** `ask-delete` when one stem would be left: nothing changes and the caller asks. */
   removeStem: (
     compositeId: string,
@@ -227,6 +230,10 @@ export const createCompositeStore = (
     replaceSheetMusicWithDrive: (compositeId, sheetMusicId, file) =>
       edit(compositeId, (composite) =>
         replaceCompositeSheetMusicWithDrive(composite, sheetMusicId, file),
+      ),
+    setLyricsStem: (compositeId, stemId) =>
+      edit(compositeId, (composite) =>
+        setCompositeLyricsStem(composite, stemId),
       ),
     removeStem: async (compositeId, stemId) => {
       let outcome: RemoveCompositeStemResult['outcome'] = 'unchanged';

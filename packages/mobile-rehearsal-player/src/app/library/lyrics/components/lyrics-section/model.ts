@@ -1,5 +1,6 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
+import { describeLyricsOwner } from '../../../composite/content/composite-lyrics-model';
 import type { SourceLyricsResolution } from '../../hooks/use-source-lyrics';
 
 export const LYRICS_PREVIEW_LINES = 4;
@@ -40,16 +41,22 @@ export const resolveLyricsSectionModel = (
     return { kind: 'hidden' };
   }
 
+  // A composite names the stem the lyrics come from, then its track.
+  const ownerName = describeLyricsOwner(
+    owner.name,
+    resolution.composite?.stemName,
+  );
+
   if (!lyrics) {
-    return { kind: 'empty', ownerName: owner.name };
+    return { kind: 'empty', ownerName };
   }
 
   const isShared = item.kind === 'loop' || owner.id !== item.sourceId;
 
   return {
     kind: 'filled',
-    ownerName: owner.name,
-    sharedFromName: isShared ? owner.name : null,
+    ownerName,
+    sharedFromName: isShared ? ownerName : null,
     text: lyrics.text,
   };
 };

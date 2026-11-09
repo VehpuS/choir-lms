@@ -89,6 +89,11 @@ export const resolveSavedItemShortcuts = (options: {
   if (item.kind === 'composite') {
     return [
       {
+        id: 'edit-lyrics',
+        label: options.hasLyrics ? EDIT_LYRICS_LABEL : ADD_LYRICS_LABEL,
+        request: { action: 'edit-lyrics', id: item.sourceId, kind: 'track' },
+      },
+      {
         id: 'sheet-music',
         label: SHEET_MUSIC_LABEL,
         request: {

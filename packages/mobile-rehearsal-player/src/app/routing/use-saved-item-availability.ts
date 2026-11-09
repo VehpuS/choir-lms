@@ -4,6 +4,8 @@ import { useEffect, useMemo } from 'react';
 import { countRecordingsFor } from '../library/recording/recordings-menu-count';
 import type { RecordingsMenuTarget } from '../library/recording/recordings-menu-count';
 import { useRecordingsSnapshot } from '../library/recording/use-recordings-snapshot';
+import { resolveCompositeLyrics } from '../library/composite/content/composite-lyrics-model';
+import { useComposites } from '../library/composite/store/composite-store-instance';
 import { resolveSourceLyrics } from '../library/lyrics/hooks/use-source-lyrics';
 
 import { subscribeToSavedItemRequests } from '../library/components/saved-item-menu/saved-item-requests';
@@ -19,6 +21,7 @@ export const useSavedItemAvailability = (options: {
 }) => {
   const { onViewTrackLoops, savedLoops, savedSources } = options;
   const recordings = useRecordingsSnapshot();
+  const composites = useComposites();
   const savedSourceIds = useMemo(() => {
     return new Set(savedSources.map((source) => source.id));
   }, [savedSources]);
@@ -34,8 +37,15 @@ export const useSavedItemAvailability = (options: {
     });
   });
 
-  // A track, adjusted track, or loop shows the lyrics of its owning track.
+  // A track, adjusted track, or loop shows the lyrics of its owning track; a
+  // composite shows those of its picked stem (composite-tracks 8.2).
   const lyricsFor = (sourceId: string) => {
+    const composite = composites.find(({ id }) => id === sourceId);
+
+    if (composite) {
+      return resolveCompositeLyrics(composite, savedSources);
+    }
+
     return resolveSourceLyrics({ id: sourceId, sourceId }, savedSources);
   };
   const hasLyricsFor = (sourceId: string) => {

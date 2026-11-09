@@ -18,6 +18,43 @@ const LYRICS = {
   origin: 'typed',
 } as const;
 
+describe('resolveLyricsSectionModel for a composite', () => {
+  const composite = {
+    compositeId: 'c1',
+    choices: [],
+    selectedStemId: 's1',
+    stemName: 'Soprano',
+    showPicker: false,
+    withoutLyricsNames: [],
+    isChoosingWhereToAdd: false,
+  };
+
+  it('names the picked stem and its track', () => {
+    assert.deepEqual(
+      resolveLyricsSectionModel(
+        { kind: 'composite', sourceId: 'c1' },
+        { lyrics: LYRICS, owner: OWNER, composite },
+      ),
+      {
+        kind: 'filled',
+        ownerName: 'Soprano (Kyrie.mp3)',
+        sharedFromName: 'Soprano (Kyrie.mp3)',
+        text: 'Kyrie eleison',
+      },
+    );
+  });
+
+  it('offers adding on the picked stem when no stem has lyrics', () => {
+    assert.deepEqual(
+      resolveLyricsSectionModel(
+        { kind: 'composite', sourceId: 'c1' },
+        { lyrics: undefined, owner: OWNER, composite },
+      ),
+      { kind: 'empty', ownerName: 'Soprano (Kyrie.mp3)' },
+    );
+  });
+});
+
 describe('resolveLyricsSectionModel', () => {
   it('shows the lyrics of a playing track without a shared note', () => {
     assert.deepEqual(

@@ -2,6 +2,11 @@ import type { NamedLoop } from '@org/audio-library-models';
 import { useEffect, useMemo, useState } from 'react';
 import { Linking } from 'react-native';
 
+import {
+  describeLyricsOwner,
+  resolveCompositeLyrics,
+} from '../../composite/content/composite-lyrics-model';
+import { useComposites } from '../../composite/store/composite-store-instance';
 import { subscribeToSavedItemRequests } from '../../components/saved-item-menu/saved-item-requests';
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
 import {
@@ -31,6 +36,9 @@ type LyricsEditorHostProps = {
 export const LyricsEditorHost = ({ library }: LyricsEditorHostProps) => {
   const { lyrics, savedLoops, savedLibrarySources: savedSources } = library;
   const [item, setItem] = useState<LyricsItem | null>(null);
+  // Set when the editor was opened from a composite: the stem's name is shown.
+  const [stemName, setStemName] = useState<string | null>(null);
+  const composites = useComposites();
   const [hasAcknowledgedDisclosure, setHasAcknowledgedDisclosure] = useState<
     boolean | null
   >(null);
@@ -50,6 +58,19 @@ export const LyricsEditorHost = ({ library }: LyricsEditorHostProps) => {
         return;
       }
 
+      const composite = composites.find(({ id }) => id === request.id);
+
+      if (composite) {
+        // Lyrics of a composite are the picked stem's: edit that stem's track.
+        const resolved = resolveCompositeLyrics(composite, savedSources);
+
+        setStemName(resolved.composite.stemName ?? null);
+        setItem(resolved.owner);
+        return;
+      }
+
+      setStemName(null);
+
       if (request.kind === 'loop') {
         const loop = savedLoops.find(({ id }) => id === request.id);
 
@@ -61,7 +82,7 @@ export const LyricsEditorHost = ({ library }: LyricsEditorHostProps) => {
 
       setItem(source ?? null);
     });
-  }, [savedLoops, savedSources]);
+  }, [composites, savedLoops, savedSources]);
 
   const resolution = item ? lyrics.lyricsFor(item) : null;
 
@@ -98,7 +119,11 @@ export const LyricsEditorHost = ({ library }: LyricsEditorHostProps) => {
           close();
         }
       }}
-      ownerName={resolution.owner.name}
+      ownerName={describeLyricsOwner(
+        resolution.owner.name,
+        stemName ?? undefined,
+      )}
+      searchName={resolution.owner.name}
       trackDurationMs={resolution.owner.durationMs}
     />
   );

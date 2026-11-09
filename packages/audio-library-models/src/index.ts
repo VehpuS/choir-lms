@@ -37,3 +37,4 @@ export * from './lib/composite-storage-fit.ts';
 export * from './lib/composite-playable.ts';
 export * from './lib/composite-edit.ts';
 export * from './lib/composite-sheet-music-edit.ts';
+export * from './lib/composite-lyrics-edit.ts';
