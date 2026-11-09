@@ -107,7 +107,7 @@ describe('buildLibraryBundle recordings', () => {
       kind: 'not-uploaded',
     });
     assert.deepEqual(result.recordingsToUpload, [
-      { id: 'r1', sizeBytes: 1_000 },
+      { id: 'r1', recordingId: 'rec-a', sizeBytes: 1_000 },
     ]);
     assert.equal(result.uploadSizeBytes, 1_000);
   });

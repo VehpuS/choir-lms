@@ -45,7 +45,13 @@ export type BuildLibraryBundleResult = {
   /** Outside tracks and composites added by `includeOutsideReferences`. */
   includedOutsideItemCount: number;
   /** Included recordings whose audio has no Drive copy; the writer uploads them. */
-  recordingsToUpload: { id: string; sizeBytes: number }[];
+  recordingsToUpload: {
+    /** The id in the bundle. */
+    id: string;
+    /** The recording's own id, to read its audio. */
+    recordingId: string;
+    sizeBytes: number;
+  }[];
   /** Total audio bytes the writer would upload, shown before anything uploads. */
   uploadSizeBytes: number;
 };
@@ -194,7 +200,7 @@ export const buildLibraryBundle = (
     selection.loops.map((loop) => [loop.id, loopIds.get(loop.id) ?? '']),
   );
   const selected = options.selectedRecordingIds ?? new Set<string>();
-  const recordings = (options.recordings ?? [])
+  const builtRecordings = (options.recordings ?? [])
     .filter((recording) => selected.has(recording.id))
     .flatMap((recording, index) => {
       const built = buildRecording(recording, `r${index + 1}`, {
@@ -202,11 +208,16 @@ export const buildLibraryBundle = (
         loops: loopIdMap,
       });
 
-      return built ? [built] : [];
+      return built ? [{ built, recordingId: recording.id }] : [];
     });
-  const recordingsToUpload = recordings
-    .filter((recording) => recording.audio.kind === 'not-uploaded')
-    .map(({ id, sizeBytes }) => ({ id, sizeBytes }));
+  const recordings = builtRecordings.map(({ built }) => built);
+  const recordingsToUpload = builtRecordings
+    .filter(({ built }) => built.audio.kind === 'not-uploaded')
+    .map(({ built, recordingId }) => ({
+      id: built.id,
+      recordingId,
+      sizeBytes: built.sizeBytes,
+    }));
 
   const bundle: LibraryBundle = {
     formatVersion: CURRENT_LIBRARY_BUNDLE_FORMAT_VERSION,

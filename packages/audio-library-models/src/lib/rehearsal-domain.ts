@@ -46,6 +46,11 @@ export type DriveAudioSource = {
   sourceLocation?: DriveSourceLocation;
   adjustment?: SourceAdjustment;
   importedFrom?: ImportedFrom;
+  /**
+   * Who owned the Drive file when it was shared in a bundle; the access guide
+   * groups files that need access by this.
+   */
+  owner?: { name?: string; email?: string };
   createdAt: string;
   availability: SourceAvailability;
 };

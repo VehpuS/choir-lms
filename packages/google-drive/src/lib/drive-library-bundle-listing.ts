@@ -156,26 +156,24 @@ export const listFiles = async (
 };
 
 /**
- * Bundles the user can open: those in their own `Backups` and `Shares`
- * folders, and those shared with them. A file is recognised by the app's
+ * Bundles the user can open: those they own (found without needing the
+ * folders to exist, so listing works with read-only access), or, when
+ * `folderIds` is given, those in exactly those folders, plus those shared
+ * with them. A file is recognised by the app's
  * property or, if a copy dropped it, by the names the app writes.
  */
 export const listLibraryBundles = async (
-  options: BundleRequestOptions & { folderIds: readonly string[] },
+  options: BundleRequestOptions & { folderIds?: readonly string[] },
 ): Promise<ListLibraryBundlesResult> => {
   const marker = `(${MARKED_QUERY} or ${NAME_FALLBACK_QUERY})`;
-  const parents = options.folderIds
+  const parents = (options.folderIds ?? [])
     .map((id) => `'${id}' in parents`)
     .join(' or ');
+  const ownQuery = options.folderIds
+    ? parents && `trashed = false and (${parents}) and ${marker}`
+    : `trashed = false and 'me' in owners and ${marker}`;
   const searches: Array<[string, DriveBundleListing['origin']]> = [
-    ...(parents
-      ? [
-          [`trashed = false and (${parents}) and ${marker}`, 'mine'] as [
-            string,
-            'mine',
-          ],
-        ]
-      : []),
+    ...(ownQuery ? [[ownQuery, 'mine'] as [string, 'mine']] : []),
     [`trashed = false and sharedWithMe and ${marker}`, 'shared'],
   ];
   const byId = new Map<string, DriveBundleListing>();

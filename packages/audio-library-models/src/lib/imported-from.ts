@@ -5,6 +5,8 @@
  */
 export type ImportedFrom = {
   author: string;
+  /** The author's email when the bundle had one; the access guide's fallback contact. */
+  authorEmail?: string;
   bundleName: string;
   importedAt: string;
 };
@@ -15,11 +17,19 @@ export const parseImportedFrom = (value: unknown): ImportedFrom | undefined => {
     return undefined;
   }
 
-  const { author, bundleName, importedAt } = value as Record<string, unknown>;
+  const { author, authorEmail, bundleName, importedAt } = value as Record<
+    string,
+    unknown
+  >;
 
   return typeof author === 'string' &&
     typeof bundleName === 'string' &&
     typeof importedAt === 'string'
-    ? { author, bundleName, importedAt }
+    ? {
+        author,
+        ...(typeof authorEmail === 'string' ? { authorEmail } : {}),
+        bundleName,
+        importedAt,
+      }
     : undefined;
 };

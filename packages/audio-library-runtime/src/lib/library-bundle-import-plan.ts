@@ -112,6 +112,7 @@ export const planLibraryBundleImport = (
   const { entityCollections, tree } = state;
   const importedFrom: ImportedFrom = {
     author: bundle.author.name,
+    ...(bundle.author.email ? { authorEmail: bundle.author.email } : {}),
     bundleName: options.bundleName,
     importedAt,
   };

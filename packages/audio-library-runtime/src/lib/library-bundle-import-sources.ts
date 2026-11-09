@@ -54,6 +54,7 @@ export const createSourceFromBundle = (options: {
       ? { sourceLocation: bundleSource.sourceLocation }
       : {}),
     ...(options.adjustment ? { adjustment: options.adjustment } : {}),
+    ...(bundleSource.owner ? { owner: bundleSource.owner } : {}),
     importedFrom,
     createdAt: importedFrom.importedAt,
     availability: options.needsAccess
