@@ -100,6 +100,27 @@ describe('session mix store', () => {
     assert.equal(store.get(other).mix.levels.a.muted, false);
   });
 
+  it('peeks at the mix without starting, replacing or notifying a session', () => {
+    const store = createSessionMixStore();
+    let calls = 0;
+
+    store.subscribe(() => {
+      calls += 1;
+    });
+    store.dispatch(composite, { type: 'set-volume', stemId: 's', volume: 40 });
+    calls = 0;
+
+    // The playing composite's own session, as it is now.
+    assert.equal(store.peek(composite).mix.levels.s.volume, 40);
+
+    // Another composite reads its default and leaves the playing session alone.
+    const other = { ...composite, id: 'c2' };
+
+    assert.equal(store.peek(other).mix.levels.s.volume, 100);
+    assert.equal(store.get(composite).mix.levels.s.volume, 40);
+    assert.equal(calls, 0);
+  });
+
   it('notifies subscribers on a change', () => {
     const store = createSessionMixStore();
     let calls = 0;

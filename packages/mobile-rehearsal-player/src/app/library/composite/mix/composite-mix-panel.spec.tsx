@@ -44,6 +44,7 @@ const renderPanel = (
       library={libraryOf(['t-s', 't-b'])}
       session={startSessionMix(composite)}
       onChoosePreset={record('preset')}
+      onExport={record('export')}
       onMakeDefault={record('make-default')}
       onOpenOptions={record('options')}
       onResetMix={record('reset')}
@@ -69,6 +70,14 @@ describe('CompositeMixPanelView', () => {
     assert.ok(screen.getByLabelText('Mute Soprano'));
     assert.ok(screen.getByLabelText('Solo Bass'));
     assert.ok(hasRenderedText('Your part'));
+  });
+
+  it('offers Export… and reports it', () => {
+    const calls = renderPanel();
+
+    fireEvent.press(screen.getByLabelText('Export…'));
+
+    assert.deepEqual(calls, ['export']);
   });
 
   it('reports mute, solo and options for the stem that was pressed', () => {

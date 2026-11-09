@@ -13,6 +13,7 @@ import type { CreateSheetTrack } from './create/create-sheet-model';
 import { useSaveInOptions } from './create/use-save-in-options';
 import { useTrackDurations } from './create/use-track-durations';
 import { getLibraryTrack, publishLibraryTracks } from './library-tracks';
+import { CompositeExportHost } from './export/composite-export-host';
 import { CompositeStemOptionsHost } from './stem-options/composite-stem-options-host';
 import { registerCompositeEngineLoader } from './playback/register-composite-engine-loader';
 import {
@@ -21,8 +22,8 @@ import {
 } from './store/composite-store-instance';
 
 type CompositeHostProps = {
-  /** The Drive token, or null with no session. */
-  accessToken: string | null;
+  /** The Drive session: its token for stems, its write access for exports. */
+  authorization: Parameters<typeof CompositeExportHost>[0]['authorization'];
   library: {
     savedLibrarySources: readonly DriveAudioSource[];
     saveResolvedSourceDuration: (
@@ -37,7 +38,11 @@ type CompositeHostProps = {
  * to the engine loader, registers the loader once where composites can play,
  * and shows the create sheet when `Make composite…` asks for it.
  */
-export const CompositeHost = ({ accessToken, library }: CompositeHostProps) => {
+export const CompositeHost = ({
+  authorization,
+  library,
+}: CompositeHostProps) => {
+  const accessToken = authorization.authState.accessToken ?? null;
   const sources = library.savedLibrarySources;
   const requestedTrackIds = useCompositeCreateRequest();
   const { parts } = useMyPartsPreferences();
@@ -109,6 +114,7 @@ export const CompositeHost = ({ accessToken, library }: CompositeHostProps) => {
     <>
       {createSheet}
       <ClearOfflineFilesHost />
+      <CompositeExportHost authorization={authorization} />
       <CompositeStemOptionsHost sources={sources} />
     </>
   );

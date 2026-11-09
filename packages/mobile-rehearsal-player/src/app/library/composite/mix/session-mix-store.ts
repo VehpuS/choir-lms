@@ -20,6 +20,12 @@ type StoreComposite = Pick<CompositeTrack, 'id' | 'stems' | 'defaultMix'>;
 export type SessionMixStore = {
   /** The session for this composite; a different composite starts a new one. */
   get: (composite: StoreComposite) => SessionMix;
+  /**
+   * The mix this composite would sound with, without starting or replacing a
+   * session: the current one, else the composite's own default. For readers
+   * that must not disturb the live mix (the export, task 10.3).
+   */
+  peek: (composite: StoreComposite) => SessionMix;
   dispatch: (composite: StoreComposite, action: SessionMixAction) => void;
   subscribe: (listener: () => void) => () => void;
 };
@@ -44,6 +50,10 @@ export const createSessionMixStore = (): SessionMixStore => {
 
   return {
     get,
+    peek: (composite) =>
+      current?.compositeId === composite.id
+        ? current.session
+        : startSessionMix(composite),
     dispatch: (composite, action) => {
       const before = get(composite);
       const after = reduceSessionMix(before, action);
@@ -73,6 +83,10 @@ export const dispatchSessionMix = (
 ): void => {
   store.dispatch(composite, action);
 };
+
+/** The mix without touching the session; see `SessionMixStore.peek`. */
+export const peekSessionMix = (composite: StoreComposite): SessionMix =>
+  store.peek(composite);
 
 export const useSessionMix = (composite: StoreComposite): SessionMix =>
   useSyncExternalStore(

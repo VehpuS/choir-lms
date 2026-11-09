@@ -16,6 +16,11 @@ import {
   type CompositeExportPlan,
 } from './composite-export-runner';
 
+// The platform's Blob, typed by what the test passes it.
+const BlobConstructor = Blob as unknown as new (
+  parts: unknown[],
+  options?: { type?: string },
+) => Blob;
 const RATE = 1000;
 const WAV_HEADER_BYTES = 44;
 
@@ -65,7 +70,7 @@ const setup = (overrides: Partial<CompositeExportDependencies> = {}) => {
 
       return constantReader(500, stemId === 's1' ? 0.2 : 0.4);
     }) satisfies LoadStem,
-    makeBlob: (parts, type) => new Blob(parts as BlobPart[], { type }),
+    makeBlob: (parts, type) => new BlobConstructor(parts, { type }),
     sampleRate: RATE,
     saveToDevice: (name, blob) => {
       calls.saved.push({ name, size: blob.size });

@@ -19,6 +19,7 @@ import {
  */
 
 export const MIX_PANEL_TITLE = 'Mix';
+export const EXPORT_MIX_LABEL = 'Export…';
 export const YOUR_PART_LABEL = 'Your part';
 export const STEM_MISSING_LABEL = 'Stem missing';
 export const STEM_MISSING_HINT = 'Not in Drive or on this device';

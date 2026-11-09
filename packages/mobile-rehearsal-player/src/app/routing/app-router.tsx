@@ -306,7 +306,7 @@ export const AppRouter = () => {
           playback={playback}
         />
         <CompositeHost
-          accessToken={authorization.authState.accessToken ?? null}
+          authorization={authorization}
           library={libraryController.savedLibrary}
         />
         <RecordingHosts

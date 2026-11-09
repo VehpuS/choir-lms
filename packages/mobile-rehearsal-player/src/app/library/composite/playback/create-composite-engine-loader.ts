@@ -43,7 +43,7 @@ export type CompositeLoaderHost = {
   ) => void;
 };
 
-type AudioDecoder = {
+export type AudioDecoder = {
   sampleRate: number;
   decodeAudioData: (audio: ArrayBuffer) => Promise<{
     numberOfChannels: number;
@@ -97,6 +97,48 @@ export const fetchTrackBlob: CompositeLoaderDependencies['fetchBlob'] = async (
   );
 };
 
+/**
+ * What a composite's stem loader needs, from the app's pieces: shared by the
+ * engine loader and the mix export, so both prepare stems the same way.
+ */
+export const buildStemLoaderDependencies = (options: {
+  accessToken: string | null;
+  composite: Pick<CompositeTrack, 'id' | 'stems'>;
+  context: AudioDecoder;
+  dependencies: Pick<CompositeLoaderDependencies, 'store' | 'fetchBlob'>;
+  getTrack: (trackId: string) => DriveAudioSource | undefined;
+}) => {
+  const { accessToken, composite, context, dependencies } = options;
+  const decode = async (blob: Blob): Promise<DecodedStem> => {
+    // The context decodes at its own rate, so no resampling is usually needed.
+    const buffer = await context.decodeAudioData(await blob.arrayBuffer());
+
+    return {
+      channels: Array.from({ length: buffer.numberOfChannels }, (_, index) =>
+        buffer.getChannelData(index),
+      ),
+      sampleRate: buffer.sampleRate,
+    };
+  };
+
+  return {
+    compositeId: composite.id,
+    stems: composite.stems,
+    getTrack: (trackId: string) => {
+      const source = options.getTrack(trackId);
+
+      return source
+        ? { id: source.id, version: source.modifiedTime, source }
+        : undefined;
+    },
+    store: dependencies.store,
+    fetchBlob: (track: LibraryStemTrack) =>
+      dependencies.fetchBlob(track.source, accessToken),
+    decode,
+    targetSampleRate: context.sampleRate,
+  };
+};
+
 const defaultDependencies = (): CompositeLoaderDependencies => ({
   getContext: getCompositeAudioContext,
   store: getPreparedStemStore(),
@@ -128,35 +170,13 @@ export const createCompositeEngineLoader = (
       throw new Error(COMPOSITE_UNAVAILABLE_MESSAGE);
     }
 
-    const accessToken = options.accessToken ?? null;
-    const decode = async (blob: Blob): Promise<DecodedStem> => {
-      // The context decodes at its own rate, so no resampling is usually needed.
-      const buffer = await context.decodeAudioData(await blob.arrayBuffer());
-
-      return {
-        channels: Array.from({ length: buffer.numberOfChannels }, (_, index) =>
-          buffer.getChannelData(index),
-        ),
-        sampleRate: buffer.sampleRate,
-      };
-    };
-
-    const stemLoaderDependencies = {
-      compositeId: composite.id,
-      stems: composite.stems,
-      getTrack: (trackId: string) => {
-        const source = host.getTrack(trackId);
-
-        return source
-          ? { id: source.id, version: source.modifiedTime, source }
-          : undefined;
-      },
-      store: dependencies.store,
-      fetchBlob: (track: LibraryStemTrack) =>
-        dependencies.fetchBlob(track.source, accessToken),
-      decode,
-      targetSampleRate: context.sampleRate,
-    };
+    const stemLoaderDependencies = buildStemLoaderDependencies({
+      accessToken: options.accessToken ?? null,
+      composite,
+      context,
+      dependencies,
+      getTrack: host.getTrack,
+    });
     // A storage error here only costs the explanation: the load itself reports it.
     const isFirstTime = await needsPreparing(stemLoaderDependencies).catch(
       () => false,

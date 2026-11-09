@@ -7,6 +7,7 @@ import { resolveStemGains, type SessionMix } from '@org/audio-mixing';
 import { AppIcon } from '../../../components/app-icon';
 import { buttonInteractionGuardStyle } from '../../../components/interaction-guard';
 import { appTheme } from '../../../utils/theme';
+import { requestCompositeExport } from '../export/composite-export-request';
 import { getLibraryTrack } from '../library-tracks';
 import { CompositeLoadingPanel } from '../loading/composite-loading-panel';
 import { useCompositeLoadState } from '../loading/composite-load-state';
@@ -16,7 +17,11 @@ import {
   getCompositeStore,
   useComposites,
 } from '../store/composite-store-instance';
-import { buildMixPanelModel, MIX_PANEL_TITLE } from './mix-panel-model';
+import {
+  buildMixPanelModel,
+  EXPORT_MIX_LABEL,
+  MIX_PANEL_TITLE,
+} from './mix-panel-model';
 import { MixStemRow } from './mix-stem-row';
 import { PresetsSheet } from './presets-sheet';
 import {
@@ -43,6 +48,7 @@ type CompositeMixPanelViewProps = {
   onResetMix: () => void;
   onMakeDefault: () => void;
   onSavePreset: (options: { name: string; makeDefault: boolean }) => void;
+  onExport: () => void;
 };
 
 /**
@@ -53,6 +59,7 @@ export const CompositeMixPanelView = ({
   composite,
   library,
   onChoosePreset,
+  onExport,
   onMakeDefault,
   onResetMix,
   onSavePreset,
@@ -116,6 +123,15 @@ export const CompositeMixPanelView = ({
               style={buttonInteractionGuardStyle}
             >
               <Text style={styles.link}>{SAVE_PRESET_LABEL}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityLabel={EXPORT_MIX_LABEL}
+              accessibilityRole="button"
+              hitSlop={space.xs}
+              onPress={onExport}
+              style={buttonInteractionGuardStyle}
+            >
+              <Text style={styles.link}>{EXPORT_MIX_LABEL}</Text>
             </Pressable>
           </View>
           {model.rows.map((row) => (
@@ -204,6 +220,7 @@ const ConnectedPanel = ({ composite }: { composite: CompositeTrack }) => {
       composite={composite}
       library={library}
       session={session}
+      onExport={() => requestCompositeExport({ compositeId: composite.id })}
       onOpenOptions={(stemId) =>
         requestStemOptions({ compositeId: composite.id, stemId })
       }
