@@ -38,6 +38,7 @@ export const MENU_ACTION_ICONS: Readonly<Record<string, AppIconName>> = {
   'Move to position': 'list-numbers',
   'Move to start': 'arrow-collapse-up',
   'Open in Google Drive': 'open-in-new',
+  'Queue playlist': 'playlist-plus',
   Pause: 'pause',
   Play: 'play-outline',
   'Play next': 'skip-next-outline',

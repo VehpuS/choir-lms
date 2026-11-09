@@ -7,11 +7,13 @@
 ## Goals / Non-Goals
 
 **Goals:**
+
 - One Recents row per saved playlist, updated as it plays.
 - Resuming a playlist restores the playlist session, at the last track when it still exists.
 - Playlist rows reuse the saved playlist menu and add `Queue playlist`.
 
 **Non-Goals:**
+
 - Migrating old per-track playlist rows.
 - Changing the five-item cap.
 - Recording transient queues as recents.

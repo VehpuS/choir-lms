@@ -24,6 +24,14 @@
 
 ## 5. Validation
 
-- [ ] 5.1 Verify in the browser preview: play a playlist through several tracks and see one row; resume it from Recents; remove its last track and resume; queue it from Recents during playback.
-- [ ] 5.2 Update the README if the Recents description changes.
-- [ ] 5.3 Run `lint`, `test`, `typecheck` and `build` for `mobile-rehearsal-player` and clear Problems in touched files.
+- [x] 5.1 Verify in the browser preview: play a playlist through several tracks and see one row; resume it from Recents; remove its last track and resume; queue it from Recents during playback.
+- [x] 5.2 Update the README if the Recents description changes.
+- [x] 5.3 Run `lint`, `test`, `typecheck` and `build` for `mobile-rehearsal-player` and clear Problems in touched files.
+
+## 6. Follow-ups found during implementation
+
+Raised while building; not part of the original plan. Explore each with the user before implementing, and split into a follow-up change where it is not about playlists in Recents.
+
+- [ ] 6.1 Items appended to a saved playlist session with `Add to queue`, `Play next` or `Queue playlist` have no entry of that playlist, so branch 2 of the recording rule records nothing and they never reach Recents (before this change they recorded as per-track playlist rows). Queued items from another playlist carry that playlist's entry ids and would be recorded against the running playlist with a `lastEntryId` it cannot resume (resume then falls back to the top). Explore with the user whether such items should record as tracks, as their own playlist, or not at all, then update the recording rule and spec.
+- [ ] 6.2 Manual check not done in the browser preview: advancing through several tracks of one playlist and resuming after removing the last played entry. The preview's Drive session had expired, and the playlists with playable local items held a single playable composite, so this is covered by unit tests only (`recent-recording.spec.ts`, `recent-playlist.spec.ts`). Re-verify once a multi-item playable playlist is available.
+- [ ] 6.3 A playlist row shows no track count or last track title. The design defaults to `Playlist · Last played …`; ask the user whether the meta line should say more (see design open questions).

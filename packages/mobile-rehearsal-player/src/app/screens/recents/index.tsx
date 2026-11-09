@@ -20,7 +20,7 @@ import type {
 import { RecentPlaylistMenu } from './recent-playlist-menu';
 import { RecentRehearsalMenu } from './recent-rehearsal-menu';
 import { RecentRehearsalRow } from './recent-rehearsal-row';
-import { getRecentItemCountLabel } from './row-model';
+import { getRecentItemCountLabel, isRecentRowPlaying } from './row-model';
 import {
   RECENTS_SHORTCUT_TAG_CAP,
   getRecentsContinuePracticingCopy,
@@ -159,12 +159,12 @@ export const RecentsScreen = ({
             <View key={recentRehearsal.id}>
               <RecentRehearsalRow
                 isLast={index === recentRehearsalHistory.length - 1}
-                isPlaying={
-                  isPlaybackActive &&
-                  (recentRehearsal.kind === 'playlist'
-                    ? recentRehearsal.id === activePlaylistId
-                    : recentRehearsal.playableItem.id === activePlayableItemId)
-                }
+                isPlaying={isRecentRowPlaying({
+                  activePlayableItemId,
+                  activePlaylistId,
+                  isPlaybackActive,
+                  recentRehearsal,
+                })}
                 onOpenOptions={() => {
                   setActiveOptionsRecentId(recentRehearsal.id);
                 }}

@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
 import type { DriveLibrarySource } from '../../library/drive/utils/drive-library-view-model';
+import { isTransientQueueSession } from '../../library/playlists/utils/playlist-playback-queue-state';
 import type { useSavedTrackPlayback } from '../../library/playback/hooks/use-saved-track-playback';
 
 import type {
@@ -81,7 +82,11 @@ export const AppRouterRecentsScreen = ({
   return (
     <RecentsScreen
       activePlayableItemId={playback.activePlayableItem?.id ?? null}
-      activePlaylistId={playback.activePlaylistSession?.playlistId ?? null}
+      activePlaylistId={
+        isTransientQueueSession(playback.activePlaylistSession)
+          ? null
+          : (playback.activePlaylistSession?.playlistId ?? null)
+      }
       authorization={authorization}
       canQueueAsNext={playback.activePlayableItem !== null}
       isPlaybackActive={playback.playbackState === 'playing'}

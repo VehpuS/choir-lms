@@ -124,3 +124,31 @@ export const getRecentRowMeta = (options: {
 export const getRecentItemCountLabel = (count: number) => {
   return `${count} ${count === 1 ? 'item' : 'items'}`;
 };
+
+/**
+ * Whether a row is the one playing now. Inside a saved playlist session the
+ * playlist's row is playing, not a standalone row for the same item.
+ * `activePlaylistId` is null outside a saved playlist session (the transient
+ * `Current queue` included), where an item's own row is the one playing.
+ */
+export const isRecentRowPlaying = (options: {
+  activePlayableItemId: string | null;
+  activePlaylistId: string | null;
+  isPlaybackActive: boolean;
+  recentRehearsal: RecentRehearsalItem;
+}) => {
+  const { recentRehearsal } = options;
+
+  if (!options.isPlaybackActive) {
+    return false;
+  }
+
+  if (recentRehearsal.kind === 'playlist') {
+    return recentRehearsal.id === options.activePlaylistId;
+  }
+
+  return (
+    options.activePlaylistId === null &&
+    recentRehearsal.playableItem.id === options.activePlayableItemId
+  );
+};

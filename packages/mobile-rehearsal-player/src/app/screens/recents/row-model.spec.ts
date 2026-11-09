@@ -15,6 +15,7 @@ import {
   getRecentItemCountLabel,
   getRecentRowMeta,
   getRecentRowPresentation,
+  isRecentRowPlaying,
 } from './row-model.js';
 
 const PLAYED_AT = '2026-06-01T09:00:00.000Z';
@@ -171,5 +172,45 @@ describe('recents row model', () => {
   it('counts recent items with singular and plural labels', () => {
     assert.equal(getRecentItemCountLabel(1), '1 item');
     assert.equal(getRecentItemCountLabel(5), '5 items');
+  });
+});
+
+describe('isRecentRowPlaying', () => {
+  const track = buildRecent('track');
+  const playlist = buildRecent('playlist');
+  const playlistId = 'playlist-1';
+  const base = {
+    activePlayableItemId: track.id,
+    activePlaylistId: null,
+    isPlaybackActive: true,
+  };
+
+  it('marks an item row playing when it is the active standalone item', () => {
+    assert.equal(isRecentRowPlaying({ ...base, recentRehearsal: track }), true);
+  });
+
+  it('marks the playlist row, not a standalone row of the same item, inside a playlist session', () => {
+    const inPlaylist = { ...base, activePlaylistId: playlistId };
+
+    assert.equal(
+      isRecentRowPlaying({ ...inPlaylist, recentRehearsal: playlist }),
+      true,
+    );
+    assert.equal(
+      isRecentRowPlaying({ ...inPlaylist, recentRehearsal: track }),
+      false,
+    );
+  });
+
+  it('marks nothing playing while paused', () => {
+    assert.equal(
+      isRecentRowPlaying({
+        ...base,
+        activePlaylistId: playlistId,
+        isPlaybackActive: false,
+        recentRehearsal: playlist,
+      }),
+      false,
+    );
   });
 });
