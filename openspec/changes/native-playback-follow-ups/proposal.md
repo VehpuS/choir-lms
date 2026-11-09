@@ -9,6 +9,7 @@
 - Native offline audio and score storage (moved 2026-10-27 from `offline-audio-caching`): the native `AudioStore`, `react-native-track-player` playing from local files, and the on-device checks of the offline UX.
 - Semitone pitch on native: web has independent pitch through a SoundTouch worklet; native shows the inert fallback (`canShapePitch`) until a native pitch path exists.
 - Native pitch detection (moved from `pitch-detection`): microphone capture on iOS and Android behind the existing `PcmSource` seam, so the monitor strip, the Pitch view, the Settings page, the detected piano key and the score marks work on native. The web pipeline, store and views are shared and already built; native needs a capture source, permission strings, and coexistence with `react-native-track-player`.
+- Native composite tracks (moved from `composite-tracks`): a native multi-stem engine behind the existing player seam, a native prepared-stem store, a native file save for the mix export, and the device checks. The engine and the prepared-stem store are web-only in `composite-tracks`; the record, the mix model, the offline renderer and the Library surfaces are shared.
 
 ## Impact
 

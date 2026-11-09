@@ -147,6 +147,13 @@ Additive: a `composites` collection in local library storage and a store of prep
 - The tolerance at which differing stem lengths warn (one second is the starting value).
 - Exact wording of the offline files group and the first-play explanation (tasks 8.x, 5.x).
 
+## Later Optimisations
+
+Recorded on 2026-11-09 as follow-up work, not part of this change. Each needs its own proposal when it is picked up.
+
+- **`focus` mode (pre-rendered bed):** while the user adjusts only one or two stems, the engine still plays every stem as its own voice. A `focus` mode would render the stems the user is *not* adjusting into one cached bed (a single mono stream, prepared like a stem and keyed by the stems, their gains and offsets), then play the bed plus the focused stems, cutting the voices and the read-ahead cost for large composites (nine or more stems). It needs a cache key that changes with the mix, invalidation when a gain on a bedded stem changes, and a way to leave the mode without a gap. The prepared-stem store and `renderComposite` already give the pieces (a render to PCM and chunked storage); measure first on a real nine-stem composite on a phone (spike 1.3 measured laptop numbers).
+- **Syncing composites between devices:** composites are saved locally only (the `composite-storage` spec), like adjusted tracks, so a composite made on one device is not on another. Sync would store the record (name, stems by Drive file id, offsets, presets, sheet music and lyrics picks) in Drive or the app's account storage and rebuild prepared stems on each device (they are a cache). It needs identity for stems that survives a track being re-added (the `modifiedTime` version is the prepared-stem key today), conflict rules for edits on two devices, and a decision about whether loops and markers (stored against the composite id) sync with it. This belongs with whatever syncing of the wider library the app adopts, not with composites alone.
+
 ## Spike results
 
 ### 1.1 Controller audit (2026-11-07)
