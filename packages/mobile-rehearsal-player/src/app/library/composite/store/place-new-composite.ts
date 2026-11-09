@@ -26,15 +26,19 @@ export type CompositePlacementRepository = {
  */
 export const placeNewComposite = async (options: {
   composite: CompositeTrack;
+  /** The folder the user chose in `Save in`; absent means the default. */
+  folderId?: string;
   ownerId: string;
   repository: CompositePlacementRepository;
 }): Promise<void> => {
   const { composite, ownerId, repository } = options;
   const tree = await repository.listLibraryFileTree(ownerId);
-  const folderId = resolveCompositeFolderId(
-    tree,
-    composite.stems.map((stem) => stem.trackId),
-  );
+  const folderId =
+    options.folderId ??
+    resolveCompositeFolderId(
+      tree,
+      composite.stems.map((stem) => stem.trackId),
+    );
 
   if (folderId === tree.rootFolderId) {
     return;

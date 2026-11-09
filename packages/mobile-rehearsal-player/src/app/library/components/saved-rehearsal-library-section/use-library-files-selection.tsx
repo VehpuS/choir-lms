@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, type ReactNode } from 'react';
+import { useCallback, useMemo, type ReactNode } from 'react';
 
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../storage/local-library-storage';
 import {
@@ -33,6 +33,8 @@ import { useBulkTagEditor } from '../../selection/use-bulk-tag-editor';
 import { usePinnedBulkActionBar } from '../../selection/use-pinned-bulk-action-bar';
 import { useSelection } from '../../selection/use-selection';
 import type { ExplorerRowSelection } from '../explorer/model';
+import { useFilesSelectionLifecycle } from './use-files-selection-lifecycle';
+import { useFilesMakeComposite } from './use-files-make-composite';
 import { useFilesExpansionContext } from './use-files-expansion-context';
 import { useLibraryFilesBulkNodeActions } from '../../selection/use-library-files-bulk-node-actions';
 
@@ -70,25 +72,12 @@ export const useLibraryFilesSelection = ({
   const selection = useSelection<FilesSelectionItem>();
   const { tree } = files;
 
-  // Selection ends when the tab is left, and drops nodes the tree no longer
-  // has (deleted, moved away by a bulk action) without leaving the mode.
-  useEffect(() => {
-    if (!services.isDestinationActive) {
-      selection.cancel();
-    }
-  }, [selection.cancel, services.isDestinationActive]);
-  const { prune } = selection;
-
-  useEffect(() => {
-    if (tree) {
-      prune(
-        new Set([
-          ...tree.folders.map(({ id }) => id),
-          ...tree.fileLinks.map(({ id }) => id),
-        ]),
-      );
-    }
-  }, [prune, tree]);
+  useFilesSelectionLifecycle({
+    cancel: selection.cancel,
+    isDestinationActive: services.isDestinationActive,
+    prune: selection.prune,
+    tree,
+  });
 
   const orderedItems = useMemo(
     () => orderFilesSelectionByRows(selection.selectedItems, rows),
@@ -148,17 +137,29 @@ export const useLibraryFilesSelection = ({
     onCompleted: selection.cancel,
     targets: tagTargets,
   });
+  const { handlers: makeCompositeHandlers, selection: makeComposite } =
+    useFilesMakeComposite({
+      items: bulkItems,
+      sources: services.collections.sources,
+    });
   const handlers = useMemo<BulkActionHandlers>(
     () => ({
       'add-to-playlist': playback.run.addToPlaylist,
       'add-to-queue': playback.run.addToQueue,
       ...offline.handlers,
       'edit-tags': tagEditor.open,
+      ...makeCompositeHandlers,
       'play-next': playback.run.playNext,
       'save-as-playlist': playback.run.saveAsPlaylist,
       ...nodeActions.handlers,
     }),
-    [nodeActions.handlers, offline.handlers, playback.run, tagEditor.open],
+    [
+      makeCompositeHandlers,
+      nodeActions.handlers,
+      offline.handlers,
+      playback.run,
+      tagEditor.open,
+    ],
   );
   const actions = useMemo<BulkAction[]>(
     () =>
@@ -168,10 +169,17 @@ export const useLibraryFilesSelection = ({
         resolved: resolveBulkActions({
           effectivePlayableCount: playback.effectivePlayableCount,
           items: bulkItems,
+          makeComposite: makeComposite.offer,
           surface: 'files',
         }),
       }),
-    [bulkItems, handlers, playback.canQueue, playback.effectivePlayableCount],
+    [
+      bulkItems,
+      handlers,
+      makeComposite.offer,
+      playback.canQueue,
+      playback.effectivePlayableCount,
+    ],
   );
   const overflowTitle = getSelectionCountLabel(selection.selectedCount);
 
@@ -308,6 +316,7 @@ export const useLibraryFilesSelection = ({
     isActive: selection.isActive,
     selectionBar: selection.isActive ? (
       <SelectionBar
+        helperText={makeComposite.lengthLine ?? undefined}
         onCancel={selection.cancel}
         selectAll={{
           isAllSelected,

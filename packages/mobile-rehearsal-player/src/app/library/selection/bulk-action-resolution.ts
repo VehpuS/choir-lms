@@ -55,7 +55,7 @@ type ResolveBulkActionsOptions = {
   /** Effective item count from `expandSelectionForPlayback`. */
   effectivePlayableCount: number;
   items: readonly BulkSelectionItem[];
-  /** Offers `Make composite…` (Tracks only); absent or null leaves it off. */
+  /** Offers `Make composite…` (Tracks and Files); absent or null leaves it off. */
   makeComposite?: MakeCompositeOffer | null;
   surface: BulkSurface;
 };
@@ -167,7 +167,11 @@ const getDisabledCheck = (
  * order, each with whether it can run now and why not. Pure data: handlers are
  * attached by the surface, so the rules can be tested without UI.
  */
-const MAKE_COMPOSITE_SURFACE: BulkSurface = 'tracks';
+// Tracks and Files (a tracks-only selection; folders and other files are not stems).
+const MAKE_COMPOSITE_SURFACES: ReadonlySet<BulkSurface> = new Set([
+  'files',
+  'tracks',
+]);
 const MAKE_COMPOSITE_FOLLOWS: BulkActionId = 'add-to-playlist';
 
 /**
@@ -194,8 +198,9 @@ const placeMakeComposite = (
 export const resolveBulkActions = (
   options: ResolveBulkActionsOptions,
 ): ResolvedBulkAction[] => {
-  const offer =
-    options.surface === MAKE_COMPOSITE_SURFACE ? options.makeComposite : null;
+  const offer = MAKE_COMPOSITE_SURFACES.has(options.surface)
+    ? options.makeComposite
+    : null;
   const ids = SURFACE_ACTIONS[options.surface];
 
   return (offer ? placeMakeComposite(ids, offer) : ids).map((id) => {

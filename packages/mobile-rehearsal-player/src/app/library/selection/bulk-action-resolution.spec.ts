@@ -246,10 +246,20 @@ describe('resolveBulkActions Make composite', () => {
     assert.equal(find(actions, 'make-composite').tone, 'accent');
   });
 
-  it('is left off without an offer, and on every surface but Tracks', () => {
-    assert.ok(!idsOf(resolve('tracks', two)).includes('make-composite'));
+  it('is offered on Files too, in the same place as on Tracks', () => {
+    assert.deepEqual(idsOf(offerOn('files', false)).slice(0, 4), [
+      'play-next',
+      'add-to-queue',
+      'add-to-playlist',
+      'make-composite',
+    ]);
+  });
 
-    for (const surface of ['files', 'loops', 'playlists'] as const) {
+  it('is left off without an offer, and on every surface but Tracks and Files', () => {
+    assert.ok(!idsOf(resolve('tracks', two)).includes('make-composite'));
+    assert.ok(!idsOf(resolve('files', two)).includes('make-composite'));
+
+    for (const surface of ['loops', 'playlists'] as const) {
       assert.ok(!idsOf(offerOn(surface, true)).includes('make-composite'));
     }
   });

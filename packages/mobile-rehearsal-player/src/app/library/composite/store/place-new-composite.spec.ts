@@ -75,4 +75,34 @@ describe('placeNewComposite', () => {
 
     assert.deepEqual(saved, []);
   });
+
+  it('saves in the folder the user chose', async () => {
+    const { repository, saved } = setup(treeWithTrackIn('root'));
+
+    await placeNewComposite({
+      composite: COMPOSITE,
+      folderId: 'folder-advent',
+      ownerId: 'o',
+      repository,
+    });
+
+    assert.deepEqual(
+      saved.map((link) => link.parentFolderId),
+      ['folder-advent'],
+    );
+  });
+
+  it('keeps the root link when the user chose the root over a stem folder', async () => {
+    const { repository, saved } = setup(treeWithTrackIn('folder-sets'));
+
+    await placeNewComposite({
+      composite: COMPOSITE,
+      folderId: 'root',
+      ownerId: 'o',
+      repository,
+    });
+
+    // The tree sync already linked it at the root.
+    assert.deepEqual(saved, []);
+  });
 });

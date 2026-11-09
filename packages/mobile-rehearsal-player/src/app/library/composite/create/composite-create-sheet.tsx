@@ -20,6 +20,7 @@ import {
   resolveCreateSheetModel,
   type CreateSheetTrack,
 } from './create-sheet-model';
+import type { SaveInOptions } from './save-in-model';
 import { useCompositeStorageFit } from './use-composite-storage-fit';
 
 const { colors, space, radius, type } = appTheme;
@@ -32,7 +33,9 @@ type CompositeCreateSheetProps = {
   tracks: readonly CreateSheetTrack[];
   unreadableTrackIds?: readonly string[];
   onCancel: () => void;
-  onCreate: (draft: CompositeDraft) => void;
+  onCreate: (draft: CompositeDraft, folderId?: string) => void;
+  /** Where the composite can be saved; the `Save in` field is left out without it. */
+  saveIn?: SaveInOptions;
   /** Opens the existing `Clear all` confirmation; the button is left out without it (task 9.2). */
   onClearOfflineFiles?: () => void;
 };
@@ -57,7 +60,12 @@ export const CompositeCreateSheet = ({
   onCancel,
   onClearOfflineFiles,
   onCreate,
+  saveIn,
 }: CompositeCreateSheetProps) => {
+  const [folderId, setFolderId] = useState<string | null>(null);
+  const [isPickingFolder, setIsPickingFolder] = useState(false);
+  const chosenFolderId = folderId ?? saveIn?.defaultFolderId;
+  const chosenFolder = saveIn?.folders.find(({ id }) => id === chosenFolderId);
   const [compositeName, setCompositeName] = useState<string | null>(null);
   const [stemNames, setStemNames] = useState<Record<string, string>>({});
   const fit = useCompositeStorageFit(tracks);
@@ -78,7 +86,7 @@ export const CompositeCreateSheet = ({
           <MenuRow
             disabled={!model.canCreate}
             label={CREATE_SHEET_COPY.createLabel}
-            onPress={() => onCreate(buildCompositeDraft(input))}
+            onPress={() => onCreate(buildCompositeDraft(input), chosenFolderId)}
             tone="preferred"
           />
           <MenuRow label={CREATE_SHEET_COPY.cancelLabel} onPress={onCancel} />
@@ -103,6 +111,34 @@ export const CompositeCreateSheet = ({
             value={model.compositeName}
           />
         </View>
+        {saveIn && chosenFolder ? (
+          <View style={styles.field}>
+            <Text style={styles.fieldLabel}>
+              {CREATE_SHEET_COPY.saveInLabel}
+            </Text>
+            <MenuGroup>
+              <MenuRow
+                accessibilityLabel={`${CREATE_SHEET_COPY.saveInLabel}: ${chosenFolder.label}`}
+                label={chosenFolder.label}
+                onPress={() => setIsPickingFolder((isOpen) => !isOpen)}
+              />
+              {isPickingFolder
+                ? saveIn.folders
+                    .filter(({ id }) => id !== chosenFolderId)
+                    .map((option) => (
+                      <MenuRow
+                        key={option.id}
+                        label={option.label}
+                        onPress={() => {
+                          setFolderId(option.id);
+                          setIsPickingFolder(false);
+                        }}
+                      />
+                    ))
+                : null}
+            </MenuGroup>
+          </View>
+        ) : null}
         <View style={styles.columns}>
           <Text style={styles.fieldLabel}>{CREATE_SHEET_COPY.trackColumn}</Text>
           <Text style={styles.fieldLabel}>{CREATE_SHEET_COPY.stemColumn}</Text>

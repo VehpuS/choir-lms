@@ -34,7 +34,10 @@ export type CompositeStoreOptions = {
    * whatever files it (the Files folder) is in place when listeners read it.
    * A failure is ignored: the composite stays where the tree sync put it.
    */
-  onCreated?: (composite: CompositeTrack) => Promise<void>;
+  onCreated?: (
+    composite: CompositeTrack,
+    placement: { folderId?: string },
+  ) => Promise<void>;
 };
 
 export type CompositeStore = {
@@ -45,7 +48,7 @@ export type CompositeStore = {
   /** Null when the draft cannot make a composite (fewer than two distinct tracks). */
   create: (
     draft: CompositeDraft,
-    options?: { partPreferences?: readonly string[] },
+    options?: { folderId?: string; partPreferences?: readonly string[] },
   ) => Promise<CompositeTrack | null>;
   rename: (compositeId: string, name: string) => Promise<void>;
   /** Deletes the composite and its presets; the stems' tracks stay in the library. */
@@ -144,7 +147,9 @@ export const createCompositeStore = (
         composite,
       ]);
 
-      await options.onCreated?.(composite).catch(() => undefined);
+      await options
+        .onCreated?.(composite, { folderId: createOptions?.folderId })
+        .catch(() => undefined);
       publish(next);
 
       return composite;

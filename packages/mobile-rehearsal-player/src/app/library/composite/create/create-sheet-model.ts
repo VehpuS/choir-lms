@@ -28,6 +28,7 @@ export const CREATE_SHEET_COPY = {
   title: 'New composite',
   subtitle: 'Plays these stems together as one track.',
   nameLabel: 'Name',
+  saveInLabel: 'Save in',
   trackColumn: 'Track',
   stemColumn: 'Stem name',
   namedFromTrack: 'named from the track',

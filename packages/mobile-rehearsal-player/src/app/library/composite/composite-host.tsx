@@ -8,6 +8,7 @@ import {
   useCompositeCreateRequest,
 } from './create/composite-create-request';
 import type { CreateSheetTrack } from './create/create-sheet-model';
+import { useSaveInOptions } from './create/use-save-in-options';
 import { useTrackDurations } from './create/use-track-durations';
 import { getLibraryTrack, publishLibraryTracks } from './library-tracks';
 import { CompositeStemOptionsHost } from './stem-options/composite-stem-options-host';
@@ -54,6 +55,7 @@ export const CompositeHost = ({ accessToken, library }: CompositeHostProps) => {
     });
   }, []);
 
+  const saveIn = useSaveInOptions(requestedTrackIds);
   const requestedSources = useMemo(
     () =>
       (requestedTrackIds ?? []).flatMap((id) => {
@@ -85,10 +87,14 @@ export const CompositeHost = ({ accessToken, library }: CompositeHostProps) => {
     requestedTrackIds === null || tracks.length === 0 ? null : (
       <CompositeCreateSheet
         onCancel={closeCompositeCreate}
-        onCreate={(draft) => {
+        onCreate={(draft, folderId) => {
           closeCompositeCreate();
-          void getCompositeStore().create(draft, { partPreferences: parts });
+          void getCompositeStore().create(draft, {
+            folderId,
+            partPreferences: parts,
+          });
         }}
+        saveIn={saveIn ?? undefined}
         tracks={tracks}
         unreadableTrackIds={learned.unreadableTrackIds}
       />

@@ -23,9 +23,10 @@ export const getCompositeStore = (): CompositeStore => {
         update: (change) =>
           updateStoredComposites(LOCAL_REHEARSAL_LIBRARY_OWNER_ID, change),
       },
-      onCreated: (composite) =>
+      onCreated: (composite, placement) =>
         placeNewComposite({
           composite,
+          folderId: placement.folderId,
           ownerId: LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
           repository: new AsyncStoragePracticeRepository(),
         }),
