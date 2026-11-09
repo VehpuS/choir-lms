@@ -357,14 +357,16 @@ function fileMenu() {
   const row = (t, c) => `<div class="optrow" style="padding:0 12px;${c || ''}">${t}</div>`;
   return `<div class="scrim" data-act="closesheet"></div><div class="sheet"><div class="grab"></div>
     <h3>Ubi caritas · SATB</h3><div class="sub">Composite · 4 stems</div>
-    ${row('Play next')}${row('Add to queue')}${row('Add to playlist')}${row('Move to folder…')}${row('Keep all stems offline')}${row('Rename')}${row('Delete composite', 'color:var(--danger)')}</div>`;
+    ${row('Play next')}${row('Add to queue')}${row('Add to playlist')}${row('Move to folder')}${row('Keep all stems offline')}${row('Rename')}${row('Delete composite', 'color:var(--danger)')}</div>`;
 }
 function moveSheet() {
-  const f = (n, on) => `<div class="optrow" style="padding:0 12px;${on ? 'color:var(--accent-text)' : ''}">${I.layers.replace('layers', 'layers')}${n}${on ? '<span class="r">current</span>' : ''}</div>`;
+  // The shared Files destination picker (as for tracks, loops and playlists).
+  const f = (n) => `<div class="optrow" style="padding:0 12px;">${I.layers}${n}<span class="r">open</span></div>`;
   return `<div class="scrim" data-act="closesheet"></div><div class="sheet"><div class="grab"></div>
-    <h3>Move to folder</h3><div class="sub">Ubi caritas · SATB. Its stems stay where they are.</div>
-    ${f('Library')}${f('Ubi caritas', true)}${f('Rehearsals 2026')}
-    <div class="acts"><button class="btn quiet" data-act="closesheet">Cancel</button><button class="btn primary" data-act="closesheet">Move here</button></div></div>`;
+    <h3>Move to Library › Ubi caritas</h3><div class="sub">Ubi caritas · SATB. Its stems stay where they are.</div>
+    ${f('Rehearsals 2026')}
+    <div class="optrow" style="padding:0 12px;color:var(--accent-text)">Move here (current folder)</div>
+    <div class="acts"><button class="btn quiet" data-act="closesheet">Cancel</button></div></div>`;
 }
 function createSheet(S) {
   const big = S.sheet === 'nospace';
@@ -378,7 +380,7 @@ function createSheet(S) {
   return `<div class="scrim"></div><div class="sheet"><div class="grab"></div>
     <h3>New composite</h3><div class="sub">Plays these stems together as one track.</div>
     <div class="field"><small>Name</small><div class="input">Ubi caritas · SATB</div></div>
-    <div class="field"><small>Save in</small><div class="input">Library › Ubi caritas</div><span class="sub" style="font-size:11.5px">The folder of the first selected track. Change it here or later with Move to folder.</span></div>
+    <div class="field"><small>Save in</small><div class="input" aria-label="Save in: Library / Ubi caritas">Library / Ubi caritas</div><span class="sub" style="font-size:11.5px">Tap to choose another folder; the list opens in place. Defaults to the folder of the first selected track.</span></div>
     <div class="cap2" style="display:flex;justify-content:space-between"><span>Track</span><span>Stem name</span></div>
     <div style="overflow:auto;max-height:${big ? 220 : 270}px">${rows}</div>
     ${notes}
@@ -454,7 +456,7 @@ const SCENES = {
   library: { label: 'Library', cap: ['Library with a Composite', 'The Library has a view switcher: Files, Tracks, Loops, Playlists, Composites. A composite is its own item (a file in Files, a row in Composites), not a row in Tracks; its stems stay listed as tracks.'], S: () => scene({ s: { screen: 'library' } }) },
   files: { label: 'Files', cap: ['A composite is a file', 'In the Files view a composite sits in a folder like a track or a playlist, with the Composite badge and stem count. The stems stay where they are, as tracks.'], S: () => scene({ s: { screen: 'files' } }) },
   filemenu: { label: 'File menu', cap: ['Composite file menu', 'Play, queue, add to playlist, Move to folder, Keep all stems offline, rename and delete (the stems stay). Same place and wording as a track or playlist row.'], S: () => scene({ s: { screen: 'files', sheet: 'filemenu' } }) },
-  move: { label: 'Move to folder', cap: ['Move to folder', 'Moves only the composite. Its stems stay in their own folders.'], S: () => scene({ s: { screen: 'files', sheet: 'move' } }) },
+  move: { label: 'Move to folder', cap: ['Move to folder', 'Moves only the composite, through the same destination picker as every other file. Its stems stay in their own folders.'], S: () => scene({ s: { screen: 'files', sheet: 'move' } }) },
   compview: { label: 'Composites view', cap: ['Composites view', 'The Library view that lists every composite wherever it lives in Files, for a quick way back. A missing stem is noted on the row.'], S: () => scene({ s: { screen: 'library', view: 'composites' } }) },
   select: { label: 'Select tracks', cap: ['Select tracks', 'Make composite is one bulk action beside Add to playlist, Queue and Keep offline. These tracks differ in length, so it is not emphasised.'], S: () => scene({ s: { screen: 'select' } }) },
   selectfit: { label: 'Same length', cap: ['Select tracks of equal length', 'When every selected track is the same length the action is tinted and the line says so, because that suggests they are stems of one piece.'], S: () => scene({ s: { screen: 'select', fit: true } }) },
