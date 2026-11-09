@@ -11,6 +11,8 @@ type DriveSessionMenuPanelProps = {
   canStartAuthorization: boolean;
   isBusy: boolean;
   onClearAuthorization: () => void;
+  /** Opens a library bundle flow: back up, restore, or import a shared library. */
+  onOpenBundleFlow?: (kind: 'backup' | 'restore' | 'import') => void;
   /** Absent where nothing is stored offline (native, for now). */
   onOpenOfflineFiles?: () => void;
   onOpenSettings: () => void;
@@ -57,6 +59,7 @@ export const DriveSessionMenuPanel = ({
   canStartAuthorization,
   isBusy,
   onClearAuthorization,
+  onOpenBundleFlow,
   onOpenOfflineFiles,
   onOpenSettings,
   onStartAuthorization,
@@ -99,6 +102,25 @@ export const DriveSessionMenuPanel = ({
             onPress={onClearAuthorization}
             variant="neutral"
           />
+        ) : null}
+        {onOpenBundleFlow ? (
+          <>
+            <OutlinedActionButton
+              label="Back up library"
+              onPress={() => onOpenBundleFlow('backup')}
+              variant="neutral"
+            />
+            <OutlinedActionButton
+              label="Restore from backup"
+              onPress={() => onOpenBundleFlow('restore')}
+              variant="neutral"
+            />
+            <OutlinedActionButton
+              label="Import shared library"
+              onPress={() => onOpenBundleFlow('import')}
+              variant="neutral"
+            />
+          </>
         ) : null}
         {onOpenOfflineFiles ? (
           <OutlinedActionButton

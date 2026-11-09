@@ -27,6 +27,7 @@ import {
   restoreRecentRehearsalHistory,
 } from '../screens/recents/history';
 import { getRecentRehearsalToRecord } from '../screens/recents/recent-recording';
+import { LibraryBundleHost } from '../library/bundle/library-bundle-host';
 import { MobileShell } from './shell/mobile-shell';
 import type { ShellDestinationKey } from './shell/shell-model';
 import { getPlaybackShapingContextLabel } from './shell/shell-playback-summary-model';
@@ -154,7 +155,8 @@ export const AppRouter = () => {
       activePlaylistSession: playback.activePlaylistSession,
       playedAt: new Date().toISOString(),
       resolvePlaylistName: (playlistId) =>
-        savedPlaylistsRef.current.find(({ id }) => id === playlistId)?.name ?? null,
+        savedPlaylistsRef.current.find(({ id }) => id === playlistId)?.name ??
+        null,
     });
 
     if (!recentToRecord) return;
@@ -334,6 +336,10 @@ export const AppRouter = () => {
           library={libraryController.savedLibrary}
           playback={playback}
           playlists={libraryController.playlists}
+        />
+        <LibraryBundleHost
+          authorization={authorization}
+          onLibraryChanged={libraryController.refreshAll}
         />
       </PlaybackMarkersProvider>
     </SavedItemAvailabilityProvider>

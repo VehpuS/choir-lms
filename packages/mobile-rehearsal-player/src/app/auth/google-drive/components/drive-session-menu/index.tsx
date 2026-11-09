@@ -4,6 +4,7 @@ import type { DriveAuthorizationStatusCopy } from '../../utils/authorization';
 import { isOfflineStorageSupported } from '../../../../library/offline/offline-actions';
 import { offlineFilesNavigationStore } from '../../../../screens/offline-files/offline-files-navigation-store';
 import { settingsNavigationStore } from '../../../../screens/settings/settings-navigation-store';
+import { requestBundleFlow } from '../../../../library/bundle/bundle-flow-request';
 import { DriveSessionMenuPanel } from './drive-session-menu-panel';
 import { useForgetSessionPrompt } from './use-forget-session-prompt';
 import { DriveSessionMenuTrigger } from './drive-session-menu-trigger';
@@ -47,6 +48,10 @@ export const DriveSessionMenu = ({
           canStartAuthorization={canStartAuthorization}
           isBusy={isBusy}
           onClearAuthorization={forgetSession.requestForget}
+          onOpenBundleFlow={(kind) => {
+            onToggleVisibility();
+            requestBundleFlow({ kind });
+          }}
           onOpenOfflineFiles={
             isOfflineStorageSupported
               ? () => {

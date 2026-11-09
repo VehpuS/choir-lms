@@ -57,6 +57,7 @@ export const MENU_ACTION_ICONS: Readonly<Record<string, AppIconName>> = {
   Rename: 'pencil-outline',
   'Rename playlist': 'pencil-outline',
   'Save as playlist': 'content-save-outline',
+  'Share…': 'open-in-new',
   'Save to library': 'plus',
   'Sheet music': 'sheet-music-outline',
   'Show in Add': 'folder-outline',

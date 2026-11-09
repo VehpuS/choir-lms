@@ -1,6 +1,7 @@
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { OptionsMenuAction } from '../options-menu-sheet/model';
 import { attachRowActionSections } from '../options-menu-sheet/row-action-sections';
+import { requestBundleFlow } from '../../bundle/bundle-flow-request';
 import { requestFolderOffline } from '../../offline/folder-offline-request';
 import { isOfflineStorageSupported } from '../../offline/offline-actions';
 import { resolveSavedPlaylistMenu } from '../saved-item-menu/saved-item-menus';
@@ -68,6 +69,17 @@ const resolveFolderMenuActions = (
         options.onOpenFolderTagEditor(row.folder.id);
       },
       tone: 'secondary' as const,
+    },
+    {
+      id: `folder:${row.folder.id}:share`,
+      label: 'Share…',
+      onPress: () => {
+        requestBundleFlow({
+          kind: 'share',
+          folderId: row.folder.id,
+          folderName: row.folder.name,
+        });
+      },
     },
     {
       disabled: !options.canMutateLibrary || options.isSavedLibraryMutating,

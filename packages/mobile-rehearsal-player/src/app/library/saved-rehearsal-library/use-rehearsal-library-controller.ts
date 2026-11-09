@@ -223,6 +223,15 @@ export const useRehearsalLibraryController = ({
   };
 
   return {
+    /** Reloads every list the screens hold, for when the library changed under them (import, restore). */
+    async refreshAll() {
+      await Promise.all([
+        libraryFiles.refresh(),
+        savedLibrary.refreshSources(),
+        savedLoops.refreshLoops(),
+        playlists.refreshPlaylists(),
+      ]);
+    },
     confirmationDialog: savedLibraryRemovalActions.confirmationDialog,
     driveImport,
     discovery: buildDriveDiscoveryView({

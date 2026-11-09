@@ -10,9 +10,10 @@ export const FOLDER_ACTION_ORDER = new Map([
   ['Edit tags', 0],
   ['Keep offline', 1],
   ['Remove from offline', 2],
-  ['Rename', 3],
-  ['Move to folder', 4],
-  ['Delete from folder', 5],
+  ['Share…', 3],
+  ['Rename', 4],
+  ['Move to folder', 5],
+  ['Delete from folder', 6],
 ]);
 
 export type SavedRowActionLike = {

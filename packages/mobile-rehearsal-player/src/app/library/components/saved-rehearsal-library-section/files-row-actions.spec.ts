@@ -304,7 +304,7 @@ describe('resolveFilesRowMenuActions', () => {
 
     assert.deepEqual(
       actions.map((action) => action.label),
-      ['Edit tags', 'Rename', 'Move to folder', 'Delete from folder'],
+      ['Edit tags', 'Share…', 'Rename', 'Move to folder', 'Delete from folder'],
     );
     assert.deepEqual(calls.folders, []);
 
