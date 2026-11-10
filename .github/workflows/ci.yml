@@ -13,6 +13,12 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
+    env:
+      # Print one character per passing test and details only for failures.
+      # The default reporter writes ~900 KB of TAP, and Nx exits right after
+      # dumping a failed task's output, so the runner's stdout pipe (64 KB)
+      # cuts it off and the actual failure never reaches the log.
+      NODE_OPTIONS: --test-reporter=dot
     steps:
       - uses: actions/checkout@v5
         with:
