@@ -7,7 +7,8 @@
 - [x] 1.3 Fake microphone fed by the stem (launch flags, WAV transcode helper) and a recording-capable session option
 - [ ] 1.4 Page helpers (`openTab`, `openTrackMenu`, `expectToast`, `expectNoConsoleErrors`) and trace + console capture on failure
 - [ ] 1.5 Fixture builders for loops, playlist items, tags, markers, lyrics, composites and recordings, each with a round-trip spec
-- [ ] 1.6 Migrate the older scenarios onto `runScenario`; `browser-test` `--scenario=` filter
+- [ ] 1.6 Migrate the older scenarios onto `runScenario` (the `--scenario=` filter is done in 1.7)
+- [x] 1.7 CI time: the audio tap runs on an `AudioWorklet` (a main-thread script processor dropped audio under CI load and read as clicks); `run-scenarios.ts` runs scenarios in parallel, to the end, with timings and `--scenario=` / `--lane=`; slow scenarios go in the opt-in `*.matrix.scenario.ts` lane (`browser-test-matrix` target and a manual / `browser-matrix`-label workflow); the `browser` job runs alongside `main` instead of after it, with a timeout
 
 ## 2. Scenarios (one subtask per area; each offline)
 
@@ -29,7 +30,7 @@
 
 - [ ] 3.1 `browser-test-coverage` skill with `.claude/skills/` symlink
 - [ ] 3.2 `AGENTS.md`, `CLAUDE.md`, testing policy and `mobile-web-runtime-debugging` updates; refresh `tools/browser-session/README.md`
-- [ ] 3.3a `browser-test-matrix` target (device descriptors, CPU throttling, sample rates; `--browser=webkit` on demand with `requires` skipping, WebKit installed only by that target)
+- [ ] 3.3a The matrix lane (the target and workflow exist from 1.7): fill it with the device descriptor, CPU throttling and sample-rate scenarios; add `--browser=webkit` on demand with `requires` skipping, WebKit installed only by that workflow
 - [ ] 3.3 CI uploads traces; confirm total `browser` job time and note whether sharding is needed
 
 ## Follow-ups
@@ -38,3 +39,4 @@ Unrelated bugs, findings, ideas, improvements and questions met while implementi
 
 - [ ] F.1 `tools/browser-session/` is outside every lint and typecheck target (seen in 1.1), so scenario and helper TypeScript is never checked by `nx lint`; add a typecheck/lint target (and `tsconfig`) covering it and fix what it finds
 - [ ] F.2 Playing a Drive track on web logs `Failed to load resource: net::ERR_FILE_NOT_FOUND` for a `blob:` URL (seen in 1.2, a generated tone played from the Library tab); find out whether the player revokes a blob URL too early or this is harmless, then fix or document it as baseline noise
+- [ ] F.3 Cache the Expo browser-test export across CI runs (about 115 s of the `browser` job); it only changes when app inputs change, so most test-only PRs would hit it (seen in 1.7)

@@ -34,12 +34,22 @@ session that has the pre-installed browser.
 
 ```sh
 npm exec -- nx run mobile-rehearsal-player:build-browser-test
-npx tsx tools/browser-session/track-rename.scenario.ts <outDir>
-# or every scenario, as automated browser tests (builds first):
-npm exec -- nx run mobile-rehearsal-player:browser-test
+npx tsx tools/browser-session/track-rename.scenario.ts <outDir>   # one scenario, directly
+npm exec -- nx run mobile-rehearsal-player:browser-test           # the default lane (builds first)
+npm exec -- nx run mobile-rehearsal-player:browser-test --scenario=rename   # only files whose name contains "rename"
+npm exec -- nx run mobile-rehearsal-player:browser-test-matrix    # the opt-in lane
 ```
 
-CI runs `browser-test` in its own `browser` job after the `main` job passes
+`run-scenarios.ts` runs scenarios three at a time, runs every one to the end
+(a failure does not hide the rest), and prints a timing line each plus a
+summary. **Lanes:** `*.scenario.ts` is the default lane, run by CI on every
+pull request. `*.matrix.scenario.ts` is for the slow or machine-sensitive
+scenarios (device profiles, CPU throttling, sample rates, long tracks); name a
+new one that way when it takes more than a few seconds or needs a quiet CPU.
+It runs on demand: from the Actions tab (`Browser matrix` workflow), or by
+putting the `browser-matrix` label on a pull request.
+
+CI runs `browser-test` in its own `browser` job, alongside the `main` job
 (Chromium comes from `npx playwright install`; `playwright` is a pinned
 devDependency). Screenshots land in `browser-session-output/` (ignored).
 

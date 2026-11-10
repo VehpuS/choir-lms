@@ -12,7 +12,7 @@ import type { BrowserContext, Page } from 'playwright';
 // Only audio that goes through Web Audio is seen, which is the pitch-shifted
 // path (the SoundTouch worklet). Plain media-element playback does not pass
 // through Web Audio; assert that through the element instead.
-const TAP_BUFFER_SAMPLES = 4096;
+const TAP_BLOCK_SAMPLES = 4096;
 
 export type AudioOutput = { sampleRate: number; samples: Float32Array };
 
@@ -21,50 +21,95 @@ export type AudioOutput = { sampleRate: number; samples: Float32Array };
  * `addInitScript` would be serialised after tsx has added helper calls
  * (`__name`) that do not exist in the page.
  */
-const buildTapScript = (bufferSamples: number, forcedSampleRate: number) => `
+const buildTapScript = (blockSamples: number, forcedSampleRate: number) => `
 (() => {
   const state = { blocks: [], sampleRate: 0 };
   window.__audioTap = state;
 
   const BaseContext = window.AudioContext;
   const forced = ${forcedSampleRate};
+  const originalConnect = AudioNode.prototype.connect;
+  // Runs on the audio thread, so a busy page cannot make it drop audio (a
+  // main-thread script processor does, which reads as clicks). It mixes to
+  // mono and posts blocks of ${blockSamples} samples.
+  const processorSource = \`
+    class AudioTap extends AudioWorkletProcessor {
+      constructor() {
+        super();
+        this.block = new Float32Array(${blockSamples});
+        this.filled = 0;
+      }
+      process(inputs) {
+        const input = inputs[0];
+
+        if (input.length === 0) {
+          return true;
+        }
+
+        const frames = input[0].length;
+
+        for (let frame = 0; frame < frames; frame += 1) {
+          let sum = 0;
+
+          for (let channel = 0; channel < input.length; channel += 1) {
+            sum += input[channel][frame];
+          }
+
+          this.block[this.filled] = sum / input.length;
+          this.filled += 1;
+
+          if (this.filled === this.block.length) {
+            this.port.postMessage(this.block);
+            this.block = new Float32Array(this.block.length);
+            this.filled = 0;
+          }
+        }
+
+        return true;
+      }
+    }
+    registerProcessor('audio-tap', AudioTap);
+  \`;
+  const moduleUrl = URL.createObjectURL(
+    new Blob([processorSource], { type: 'text/javascript' }),
+  );
 
   class TappedAudioContext extends BaseContext {
     constructor(contextOptions) {
       super(forced ? { ...contextOptions, sampleRate: forced } : contextOptions);
       state.sampleRate = this.sampleRate;
+      // Sources wired to the speakers before the worklet has loaded (a few
+      // milliseconds) are attached to the tap as soon as it is ready.
+      this.__tapWaiting = new Set();
+      this.__tapNode = null;
+      this.audioWorklet.addModule(moduleUrl).then(() => {
+        const node = new AudioWorkletNode(this, 'audio-tap', {
+          numberOfOutputs: 1,
+          outputChannelCount: [1],
+        });
+        const silent = this.createGain();
 
-      // A script processor only runs when connected onward, so it goes
-      // through a silent gain; what it copies is the mono mix.
-      const recorder = this.createScriptProcessor(${bufferSamples}, 2, 1);
-      const silent = this.createGain();
-
-      silent.gain.value = 0;
-      recorder.onaudioprocess = (event) => {
-        const left = event.inputBuffer.getChannelData(0);
-        const right =
-          event.inputBuffer.numberOfChannels > 1
-            ? event.inputBuffer.getChannelData(1)
-            : left;
-
-        state.blocks.push(
-          Float32Array.from(left, (sample, index) => (sample + right[index]) / 2),
-        );
-      };
-      recorder.connect(silent);
-      silent.connect(this.destination);
-      this.__tapInput = recorder;
+        silent.gain.value = 0;
+        node.port.onmessage = (event) => state.blocks.push(event.data);
+        originalConnect.call(node, silent);
+        originalConnect.call(silent, this.destination);
+        this.__tapNode = node;
+        this.__tapWaiting.forEach((source) => originalConnect.call(source, node));
+        this.__tapWaiting.clear();
+      });
     }
   }
 
-  const originalConnect = AudioNode.prototype.connect;
-
   AudioNode.prototype.connect = function (destination, ...rest) {
     const result = originalConnect.call(this, destination, ...rest);
-    const tapInput = this.context.__tapInput;
+    const owner = this.context;
 
-    if (tapInput && destination === this.context.destination && this !== tapInput) {
-      originalConnect.call(this, tapInput);
+    if (owner.__tapWaiting && destination === owner.destination) {
+      if (owner.__tapNode) {
+        originalConnect.call(this, owner.__tapNode);
+      } else {
+        owner.__tapWaiting.add(this);
+      }
     }
 
     return result;
@@ -79,7 +124,7 @@ export const installAudioOutputTap = async (
   options: { sampleRate?: number } = {},
 ) => {
   await context.addInitScript(
-    buildTapScript(TAP_BUFFER_SAMPLES, options.sampleRate ?? 0),
+    buildTapScript(TAP_BLOCK_SAMPLES, options.sampleRate ?? 0),
   );
 };
 

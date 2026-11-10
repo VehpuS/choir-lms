@@ -114,7 +114,18 @@
         ],
         "options": {
           "cwd": ".",
-          "command": "for scenario in tools/browser-session/*.scenario.ts; do tsx \"$scenario\" browser-session-output || exit 1; done"
+          "command": "tsx tools/browser-session/run-scenarios.ts browser-session-output"
+        }
+      },
+      "browser-test-matrix": {
+        "executor": "nx:run-commands",
+        "cache": false,
+        "dependsOn": [
+          "build-browser-test"
+        ],
+        "options": {
+          "cwd": ".",
+          "command": "tsx tools/browser-session/run-scenarios.ts browser-session-output --lane=matrix"
         }
       },
       "test-file": {

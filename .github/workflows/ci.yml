@@ -48,10 +48,13 @@ jobs:
         run: npm exec -- nx run-many -t lint test typecheck build --all --outputStyle=static
 
   # Drives the web export in Chromium against a mock library (no Google
-  # sign-in), so it runs only once the unit-level checks above have passed.
+  # sign-in). It has its own install and build, so it runs alongside `main`
+  # instead of after it: the pull request waits for the slower of the two, not
+  # their sum. The slow device-matrix scenarios are not run here; see
+  # `browser-matrix.yml`.
   browser:
-    needs: main
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
 

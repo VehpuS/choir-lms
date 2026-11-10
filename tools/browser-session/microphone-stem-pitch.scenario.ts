@@ -13,10 +13,12 @@ import {
 import { runScenario } from './scenario-runner';
 
 // Proves the fake microphone: the page's microphone stream carries the choir
-// stem, and the shipped pitch pipeline reads E4, C#4, C4 from it. The device
-// loops the 3.3 s file, so we listen across two loops and look for the
-// sequence rather than depend on where the capture happened to start.
-const CAPTURE_SECONDS = 8;
+// stem, and the shipped pitch pipeline reads E4, C♯4, C4 from it. The device
+// loops the file, so we look for the sequence in a window rather than depend
+// on where the capture happened to start.
+// The stem loops every ~3.8 s and its three notes span ~2 s, so a 6 s window
+// always holds the whole sequence once, wherever the capture starts.
+const CAPTURE_SECONDS = 6;
 // The stem holds E4, C♯4 and C4 in turn, so the pipeline's note segmenter
 // should report all three, and so should the raw frames.
 const MIN_FRAME_LEVEL = 0.02;
