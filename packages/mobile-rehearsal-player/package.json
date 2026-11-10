@@ -93,6 +93,10 @@
         "inputs": [
           "default",
           "^production",
+          "!{projectRoot}/src/**/*.spec.ts",
+          "!{projectRoot}/src/**/*.spec.tsx",
+          "!{projectRoot}/src/test-support/**/*",
+          "!{projectRoot}/dist-browser-test/**/*",
           "{workspaceRoot}/package-lock.json"
         ],
         "outputs": [

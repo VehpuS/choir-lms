@@ -49,6 +49,18 @@ jobs:
 
       - run: npm ci
 
+      # The Expo export only changes with app inputs, so most test-only pull
+      # requests restore it. Nx keys its own cache entries; this keeps the
+      # cache directory between runs (newest wins, any earlier one restores).
+      - name: Restore the Nx cache
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-browser-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            nx-browser-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+            nx-browser-${{ runner.os }}-
+
       - name: Install the browser
         run: npx playwright install --with-deps ${{ inputs.browser || 'chromium' }}
 
