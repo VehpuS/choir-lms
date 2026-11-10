@@ -25,7 +25,7 @@
   - [x] 2.9b Backup scenario: allow saving, back up, the bundle and its audio land in Drive
   - [x] 2.9c Restore and import scenario: preview a bundle, additive import result, restore replaces
   - [x] 2.9d Share and access guide scenario: share-folder and the access guide against mock Drive responses
-- [ ] 2.10 Recordings, including the stem's pitches: E4, C♯4, C4 in order through the app's segmenter
+- [x] 2.10 Recordings, including the stem's pitches: E4, C♯4, C4 in order through the app's segmenter
 - [ ] 2.11 Composite tracks
 - [ ] 2.12 Settings
 - [ ] 2.13 Sheet music beyond PDF (full MusicXML as `.musicxml` and `.mxl`, and MIDI-derived notation)
@@ -49,4 +49,4 @@ Unrelated bugs, findings, ideas, improvements and questions met while implementi
 - [ ] F.6 Recents must not list the item that is playing right now (today a playing playlist shows as "Playing now", duplicating the mini-player; seen in 2.3). An item appears in Recents only once it is no longer playing, for example after the app is closed and reopened. Update the `playlists` scenario, which currently expects "Playing now" in Recents, to cover: not listed while playing, listed after a reload, and View in library from there (relates to F.5)
 - [ ] F.7 Recents lists a played playlist as the playlist only, never its individual tracks or loops (including after the app is reopened, and when the tracks were played through the playlist); add a browser scenario that plays a playlist, reloads, and checks Recents shows one entry
 - [ ] F.8 Investigate two audio glitches measured in 2.5 (`playback-slowdown-quality.matrix`): (a) about one click per 10 to 12 s on the pitch-shifted (Web Audio shaper) path, at 1x speed with +2 semitones, on both 44.1 kHz and 48 kHz profiles; (b) a rare ~22 ms gap with two clicks within about two seconds after changing speed (captured through the media element, so it may be the browser's time-stretcher or the capture path). Find out which are the app's, fix what is, then tighten `MAX_CLICKS` and `MAX_DROPOUT_MS` in that scenario to 0
-- [ ] F.9 The Practice tools tab and panel have no browser coverage (seen in 2.1 and 2.5: with a track playing there are two "Practice tools" buttons, the tab and one in the mini-player, and tapping the tab while the playback sheet is open is blocked); decide what it should show and add a scenario
+- [ ] F.9 Practice tools: Pitch detection and Recording are covered (2.10, through the playback sheet's toolbox), but the Piano tool and the bottom-bar Practice tools tab are not; with a track playing there are two "Practice tools" buttons (the tab and the sheet's toolbox) and tapping the tab while the playback sheet is open is blocked (seen in 2.1 and 2.5); decide what the tab should show and add scenarios for Piano and the tab
