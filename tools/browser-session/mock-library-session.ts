@@ -3,6 +3,7 @@ import { createServer, type Server } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 import { chromium, type Browser, type Page } from 'playwright';
 
+import { fulfillMedia } from './mock-media';
 import {
   buildMockDriveStorageEntries,
   installMockDriveRoutes,
@@ -128,13 +129,7 @@ export const openMockLibrarySession = async (options: {
   }, entries);
 
   for (const [fileUrl, file] of Object.entries(options.webFiles ?? {})) {
-    await context.route(fileUrl, (route) =>
-      route.fulfill({
-        body: file.body,
-        contentType: file.contentType,
-        headers: { 'access-control-allow-origin': '*' },
-      }),
-    );
+    await context.route(fileUrl, (route) => fulfillMedia(route, file));
   }
 
   const page = await context.newPage();

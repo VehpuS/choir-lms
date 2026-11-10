@@ -1,5 +1,7 @@
 import type { BrowserContext } from 'playwright';
 
+import { fulfillMedia, type MockMedia } from './mock-media';
+
 // A deliberately small stand-in for Google Drive, so the browser suite can run
 // authorised and expired sessions without a real sign-in. Grow it when a test
 // needs more: add a field to `MockDriveAccount` and one branch to the route.
@@ -34,6 +36,8 @@ export type MockDriveAccount =
       inaccessibleFileIds?: string[];
       /** What a Drive file listing returns. */
       files?: unknown[];
+      /** Bytes Drive serves for `files/<id>?alt=media`, by Drive file id. */
+      media?: Record<string, MockMedia>;
     };
 
 export type MockDriveRecorder = {
@@ -79,6 +83,7 @@ export const installMockDriveRoutes = async (
     account.state === 'authorized' ? (account.inaccessibleFileIds ?? []) : [],
   );
   const files = account.state === 'authorized' ? (account.files ?? []) : [];
+  const media = account.state === 'authorized' ? (account.media ?? {}) : {};
 
   await context.route(DRIVE_API_PATTERN, (route) => {
     const request = route.request();
@@ -96,6 +101,24 @@ export const installMockDriveRoutes = async (
 
     const fileId = DRIVE_FILE_PATH_PATTERN.exec(url.pathname)?.[1];
     const isMissing = fileId !== undefined && inaccessible.has(fileId);
+
+    if (
+      fileId !== undefined &&
+      !isMissing &&
+      url.searchParams.get('alt') === 'media'
+    ) {
+      const file = media[fileId];
+
+      return file
+        ? fulfillMedia(route, file)
+        : route.fulfill({
+            body: JSON.stringify({ error: { code: 404 } }),
+            contentType: 'application/json',
+            headers: CORS_HEADERS,
+            status: NOT_FOUND_STATUS,
+          });
+    }
+
     const body = fileId === undefined ? { files } : { id: fileId };
 
     return route.fulfill({
