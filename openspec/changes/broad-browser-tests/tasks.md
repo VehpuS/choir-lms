@@ -33,8 +33,8 @@
 
 ## 3. Agent guidance and CI
 
-- [ ] 3.1 `browser-test-coverage` skill with `.claude/skills/` symlink
-- [ ] 3.2 `AGENTS.md`, `CLAUDE.md`, testing policy and `mobile-web-runtime-debugging` updates; refresh `tools/browser-session/README.md`
+- [x] 3.1 `browser-test-coverage` skill with `.claude/skills/` symlink
+- [x] 3.2 `AGENTS.md`, `CLAUDE.md`, testing policy and `mobile-web-runtime-debugging` updates; refresh `tools/browser-session/README.md`
 - [ ] 3.3a The matrix lane (the target and workflow exist from 1.7): fill it with the device descriptor, CPU throttling and sample-rate scenarios; add `--browser=webkit` on demand with `requires` skipping, WebKit installed only by that workflow
 - [ ] 3.3 CI uploads traces; confirm total `browser` job time and note whether sharding is needed
 

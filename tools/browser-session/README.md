@@ -90,5 +90,6 @@ The browser build (`build-browser-test`) is the normal web export with a
 placeholder Google web client id, so Reconnect is enabled without real credentials.
 
 Without a `drive` account every saved track is unavailable, which is enough for library, playlist
-and menu flows; playback needs real audio and is out of scope. To cover another
-flow, add a `*.scenario.ts` that builds a library and drives `session.page`.
+and menu flows. Playback, recordings and pitch run on generated audio (`buildToneMedia`), the
+stem fixture and the fake microphone. To cover another flow, add a `*.scenario.ts` (see the
+`browser-test-coverage` skill) that builds a library and drives `session.page`.
