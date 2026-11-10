@@ -51,6 +51,7 @@ session that has the pre-installed browser.
 - `mock-recordings.ts` — `recordings: [...]` seeds recording records; `readRecordedAudio(page)` reads every stored recording and its real audio back from the app's IndexedDB (16-bit chunks) so a scenario can run it through the pitch pipeline. `recordings.scenario.ts` records a take with the stem as the microphone (consent, timer, save sheet, name, the take holds E4, C♯4, C4, listed, played, renamed, deleted); `pitch-detection.scenario.ts` turns on Pitch detection and reads E4, C♯4, C4 from the app's pitch monitor (a label like `C4, 17 cents flat`).
 - `mock-lyrics.ts` — `lyricsLookup: [...]` on the session answers the app's Look up (LRCLIB, `lrclib.net/api/search`) with the given candidates; `session.lyricsSearches` records what was searched.
 - `markers.scenario.ts` / `lyrics.scenario.ts` — add, rename, jump to, loop between and delete markers; view, edit, delete, type and look up lyrics (consent first, kept only on Save).
+- `composites.scenario.ts` — Composites list, playing one, the Mix panel (mute, solo, built-in preset, Save as preset stored with the composite), the export sheet, and Re-link for a stem whose track is gone.
 - `add-to-playlist-snackbar.scenario.ts` — issue #36.
 - `sheet-music-pdf.scenario.ts` — opens a real four-page PDF as a track's sheet music; the score is a web link whose bytes `webFiles` serves (CORS open), so no Drive is needed.
 - `drive-access-banner.scenario.ts` — issue #40, expired session: one single-line

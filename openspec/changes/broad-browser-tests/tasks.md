@@ -26,7 +26,7 @@
   - [x] 2.9c Restore and import scenario: preview a bundle, additive import result, restore replaces
   - [x] 2.9d Share and access guide scenario: share-folder and the access guide against mock Drive responses
 - [x] 2.10 Recordings, including the stem's pitches: E4, C♯4, C4 in order through the app's segmenter
-- [ ] 2.11 Composite tracks
+- [x] 2.11 Composite tracks (list, play, Mix panel mute/solo, built-in and saved presets, export sheet, re-link a missing stem)
 - [ ] 2.12 Settings
 - [ ] 2.13 Sheet music beyond PDF (full MusicXML as `.musicxml` and `.mxl`, and MIDI-derived notation)
 
