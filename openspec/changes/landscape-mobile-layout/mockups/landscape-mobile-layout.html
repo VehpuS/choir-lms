@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Landscape mobile layout mock</title>
+    <style>
+      :root {
+        --bg: #161826;
+        --surface: #232532;
+        --raised: #1b1e2c;
+        --text: #e9e9ed;
+        --muted: #9397ab;
+        --accent: #9184d9;
+        --accentText: #b5abfc;
+        --danger: #f28b82;
+        --line: #2e3140;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px 16px 48px;
+        background: #0d0f1a;
+        color: var(--text);
+        font:
+          14px/1.4 -apple-system,
+          system-ui,
+          Segoe UI,
+          Roboto,
+          sans-serif;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 4px;
+      }
+      h2 {
+        font-size: 15px;
+        margin: 32px 0 2px;
+      }
+      p {
+        color: var(--muted);
+        margin: 0 0 12px;
+        max-width: 760px;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 28px;
+        align-items: flex-start;
+      }
+      figure {
+        margin: 0;
+      }
+      figcaption {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 6px;
+        max-width: 844px;
+      }
+      /* A landscape iPhone viewport: 844 x 390 points. */
+      .phone {
+        position: relative;
+        width: 844px;
+        height: 390px;
+        overflow: hidden;
+        border: 2px solid #3a3d52;
+        border-radius: 28px;
+        background: var(--bg);
+        display: flex;
+      }
+      .phone.bug {
+        background: #fff;
+      }
+      .inset {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 47px;
+        background: #000;
+        opacity: 0;
+      }
+      .notch {
+        position: absolute;
+        left: 0;
+        top: 130px;
+        width: 14px;
+        height: 130px;
+        background: #000;
+        border-radius: 0 8px 8px 0;
+        z-index: 9;
+      }
+      .rail {
+        width: 111px;
+        padding: 12px 8px 12px 47px;
+        background: var(--raised);
+        border-right: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: center;
+        flex: none;
+      }
+      .rail .tab {
+        width: 100%;
+        text-align: center;
+        font-size: 10px;
+        color: var(--muted);
+        padding: 8px 0;
+        border-radius: 10px;
+      }
+      .rail .tab i {
+        display: block;
+        font-style: normal;
+        font-size: 18px;
+      }
+      .rail .tab.on {
+        color: var(--accentText);
+        background: rgba(145, 132, 217, 0.14);
+      }
+      .main {
+        flex: 1;
+        min-width: 0;
+        padding: 12px 14px;
+        overflow: hidden;
+      }
+      .main h3 {
+        margin: 0 0 8px;
+        font-size: 17px;
+      }
+      .item {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 8px 10px;
+        background: var(--surface);
+        border-radius: 10px;
+        margin-bottom: 6px;
+      }
+      .item .art {
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        background: #343750;
+        flex: none;
+      }
+      .item b {
+        display: block;
+        font-weight: 600;
+      }
+      .item small {
+        color: var(--muted);
+      }
+      .pane {
+        width: 280px;
+        flex: none;
+        background: var(--raised);
+        border-left: 1px solid var(--line);
+        padding: 12px 16px 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .pane .art {
+        height: 92px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #3a3560, #232532);
+      }
+      .pane b {
+        font-size: 15px;
+      }
+      .bar {
+        height: 3px;
+        border-radius: 2px;
+        background: var(--line);
+        position: relative;
+      }
+      .bar::after {
+        content: '';
+        position: absolute;
+        inset: 0 62% 0 0;
+        background: var(--accent);
+        border-radius: 2px;
+      }
+      .transport {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 22px;
+      }
+      .transport .play {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--accent);
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        color: #161826;
+      }
+      .chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        font-size: 11px;
+        padding: 3px 8px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+      }
+      .two {
+        display: flex;
+        flex: 1;
+      }
+      .col {
+        flex: 1;
+        padding: 14px 16px;
+        min-width: 0;
+      }
+      .col + .col {
+        border-left: 1px solid var(--line);
+        background: var(--raised);
+      }
+      .side {
+        width: 220px;
+        flex: none;
+        background: var(--raised);
+        border-left: 1px solid var(--line);
+        padding: 12px 16px 12px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .meter {
+        height: 70px;
+        border-radius: 8px;
+        background: var(--surface);
+        display: grid;
+        place-items: center;
+        font:
+          600 26px ui-monospace,
+          Menlo,
+          monospace;
+        color: var(--accentText);
+      }
+      .keys {
+        position: absolute;
+        left: 111px;
+        right: 0;
+        bottom: 0;
+        height: 0;
+      }
+      .callout {
+        position: absolute;
+        background: var(--danger);
+        color: #161826;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+        z-index: 5;
+      }
+      .gap {
+        position: absolute;
+        background: #fff;
+      }
+      table {
+        border-collapse: collapse;
+        color: var(--muted);
+      }
+      td,
+      th {
+        border: 1px solid var(--line);
+        padding: 6px 12px;
+        text-align: left;
+        font-weight: 400;
+      }
+      th {
+        color: var(--text);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Landscape mobile layout</h1>
+    <p>
+      Mock for issue #46, for approval before Part 2 is built. All frames are an
+      iPhone on its side, 844 × 390 points, with the notch on the left. Colours
+      follow the app's Nocturne theme. This is a design reference, not shipped
+      code.
+    </p>
+
+    <h2>0. Today: the bug (Part 1 fixes this)</h2>
+    <p>
+      The page does not fill the viewport, so white shows through, and the
+      portrait layout is just stretched.
+    </p>
+    <div class="row">
+      <figure>
+        <div class="phone bug">
+          <div class="notch"></div>
+          <div
+            style="
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 844px;
+              height: 300px;
+              background: var(--bg);
+              padding: 12px 60px;
+            "
+          >
+            <h3 style="margin: 0 0 8px">Recents</h3>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Ubi caritas</b><small>Sopranos · 3:12</small></span>
+            </div>
+          </div>
+          <div class="callout" style="left: 300px; top: 320px">
+            white gap: root is shorter than the viewport
+          </div>
+          <div class="callout" style="left: 0; top: 20px; background: #e6c17a">
+            insets ignored
+          </div>
+        </div>
+        <figcaption>
+          Part 1: the root fills the dynamic viewport, paints the app
+          background, and pads by safe-area insets on every edge.
+        </figcaption>
+      </figure>
+    </div>
+
+    <h2>1. Library with the Now Playing pane</h2>
+    <p>
+      Rail on the leading edge, content in the middle, Now Playing on the
+      trailing side. Browsing never covers playback.
+    </p>
+    <div class="row">
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <nav class="rail">
+            <div class="tab"><i>⟲</i>Recents</div>
+            <div class="tab"><i>＋</i>Add</div>
+            <div class="tab on"><i>♫</i>Library</div>
+          </nav>
+          <div class="main">
+            <h3>Library</h3>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Ubi caritas</b><small>Sopranos · 3:12</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Locus iste</b><small>Full choir · 2:48</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Cantate Domino</b><small>Altos · 4:05</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Nunc dimittis</b><small>Basses · 3:40</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Ave verum corpus</b><small>Tenors · 2:55</small></span>
+            </div>
+          </div>
+          <aside class="pane">
+            <div class="art"></div>
+            <div>
+              <b>Ubi caritas</b><br /><small style="color: var(--muted)"
+                >Sopranos · Bars 5–12 loop</small
+              >
+            </div>
+            <div class="bar"></div>
+            <div class="transport">
+              <span>⏮</span><span class="play">▶</span><span>⏭</span>
+            </div>
+            <div class="chips">
+              <span class="chip">Loop</span><span class="chip">0.85×</span
+              ><span class="chip">Queue</span>
+            </div>
+          </aside>
+        </div>
+        <figcaption>
+          Nothing playing: the pane is hidden and the Library uses the full
+          width.
+        </figcaption>
+      </figure>
+    </div>
+
+    <h2>2. Full playback view: controls left, queue or shaping right</h2>
+    <p>
+      Switching between Now Playing, Queue and Shaping changes only the right
+      column.
+    </p>
+    <div class="row">
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="two" style="padding-left: 47px">
+            <div class="col">
+              <div
+                class="pane"
+                style="width: auto; border: 0; background: none; padding: 0"
+              >
+                <div class="art" style="height: 110px"></div>
+                <div>
+                  <b>Ubi caritas</b><br /><small style="color: var(--muted)"
+                    >Sopranos</small
+                  >
+                </div>
+                <div class="bar"></div>
+                <div class="transport">
+                  <span>⏮</span><span class="play">▶</span><span>⏭</span>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="chips" style="margin-bottom: 10px">
+                <span class="chip">Now playing</span>
+                <span
+                  class="chip"
+                  style="color: var(--accentText); border-color: var(--accent)"
+                  >Queue</span
+                >
+                <span class="chip">Shaping</span>
+              </div>
+              <div class="item">
+                <span class="art"></span
+                ><span><b>Ubi caritas</b><small>Playing</small></span>
+              </div>
+              <div class="item">
+                <span class="art"></span
+                ><span><b>Locus iste</b><small>Up next</small></span>
+              </div>
+              <div class="item">
+                <span class="art"></span
+                ><span><b>Cantate Domino</b><small>Then</small></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </figure>
+    </div>
+
+    <h2>3. Practice tools beside the content</h2>
+    <p>
+      Pitch monitor and recording take a trailing column instead of a strip, so
+      the list keeps its full height. The piano is a full-width keyboard that
+      scrolls sideways.
+    </p>
+    <div class="row">
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <nav class="rail">
+            <div class="tab"><i>⟲</i>Recents</div>
+            <div class="tab"><i>＋</i>Add</div>
+            <div class="tab on"><i>♫</i>Library</div>
+          </nav>
+          <div class="main">
+            <h3>Library</h3>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Ubi caritas</b><small>Sopranos · 3:12</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Locus iste</b><small>Full choir · 2:48</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Cantate Domino</b><small>Altos · 4:05</small></span>
+            </div>
+          </div>
+          <aside class="side">
+            <div class="chips">
+              <span
+                class="chip"
+                style="color: var(--accentText); border-color: var(--accent)"
+                >Pitch</span
+              ><span class="chip">Piano</span><span class="chip">Record</span>
+            </div>
+            <div class="meter">A4</div>
+            <small style="color: var(--muted)">+8 cents · sharp</small>
+            <div class="bar"></div>
+            <div class="transport" style="font-size: 16px">
+              <span>● Record</span><span>⏺ 0:00</span>
+            </div>
+          </aside>
+        </div>
+        <figcaption>
+          A tool panel opens beside the content and takes the pane's place while
+          it is open; the Now Playing pane returns when the tool is closed.
+        </figcaption>
+      </figure>
+    </div>
+
+    <h2>4. Layout classes</h2>
+    <table>
+      <tr>
+        <th>Class</th>
+        <th>Window</th>
+        <th>Navigation</th>
+        <th>Playback</th>
+      </tr>
+      <tr>
+        <td>compact</td>
+        <td>width &lt; 600</td>
+        <td>Bottom tabs</td>
+        <td>Mini-player band</td>
+      </tr>
+      <tr>
+        <td>wide-short</td>
+        <td>width ≥ 600 and height &lt; 500</td>
+        <td>Side rail</td>
+        <td>Now Playing pane</td>
+      </tr>
+    </table>
+    <p style="margin-top: 8px">
+      A 40-point band around each threshold prevents flipping when the keyboard
+      or browser chrome resizes the window.
+    </p>
+  </body>
+</html>
