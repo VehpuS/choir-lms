@@ -1,9 +1,15 @@
 import {
+  renameTrackInRepository,
+  type TrackRenameCopies,
+  type TrackRenameResult,
+} from './rename-track';
+import {
   type CompositeTrack,
   type DriveAudioSource,
   type NamedLoop,
   type Playlist,
   type RehearsalLibraryFileLinkNode,
+  type RehearsalLibraryFileTree,
   type RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
 
@@ -99,6 +105,14 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
     });
   }
 
+  /** Renames a track and, as chosen, the Files copies that carry its name. */
+  async renameTrack(
+    ownerId: string,
+    options: { copies: TrackRenameCopies; name: string; sourceId: string },
+  ): Promise<TrackRenameResult> {
+    return renameTrackInRepository(this, ownerId, options);
+  }
+
   async deleteSource(ownerId: string, sourceId: string) {
     return deleteSourceFromRepository(this, ownerId, sourceId);
   }
@@ -154,7 +168,7 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
   async saveLibraryFileLink(
     ownerId: string,
     fileLink: RehearsalLibraryFileLinkNode,
-  ) {
+  ): Promise<RehearsalLibraryFileTree> {
     return this.saveLibraryNodes(ownerId, { fileLinks: [fileLink] });
   }
 
@@ -169,7 +183,7 @@ export class AsyncStoragePracticeRepository implements PracticeRepository {
       fileLinks?: RehearsalLibraryFileLinkNode[];
       folders?: RehearsalLibraryFolderNode[];
     },
-  ) {
+  ): Promise<RehearsalLibraryFileTree> {
     return saveLibraryNodesToRepository(this, ownerId, nodes);
   }
 

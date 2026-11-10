@@ -1,4 +1,10 @@
-import type { DriveAudioSource, Playlist } from '@org/audio-library-models';
+import type {
+  DriveAudioSource,
+  Playlist,
+  RehearsalLibraryFileLinkNode,
+  RehearsalLibraryFileTree,
+  RehearsalLibraryFolderNode,
+} from '@org/audio-library-models';
 
 /** The device owner the app reads its local library under. */
 export const MOCK_LIBRARY_OWNER_ID = 'local-device-user';
@@ -7,7 +13,15 @@ const MOCK_TIMESTAMP = '2026-01-01T00:00:00.000Z';
 const MOCK_AUDIO_MIME_TYPE = 'audio/mpeg';
 const STORAGE_KEY_PREFIX = 'choirlms:practice';
 
+/** The root of the Files tree (`REHEARSAL_LIBRARY_ROOT_FOLDER_ID`, kept in step by a spec). */
+export const MOCK_LIBRARY_ROOT_FOLDER_ID = 'folder:library-root';
+const LIBRARY_TREE_STORAGE_KEY_PREFIX = 'choirlms:practice:library-tree';
+
 export type MockLibrary = {
+  /** Files copies of tracks; a track without one gets a root copy on load. */
+  fileLinks?: RehearsalLibraryFileLinkNode[];
+  /** Files folders beneath the root. */
+  folders?: RehearsalLibraryFolderNode[];
   playlists: Playlist[];
   sources: DriveAudioSource[];
 };
@@ -50,6 +64,33 @@ export const buildMockPlaylist = (
   };
 };
 
+export const buildMockFolder = (
+  name: string,
+  overrides: Partial<RehearsalLibraryFolderNode> = {},
+): RehearsalLibraryFolderNode => ({
+  id: `mock-folder-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+  name,
+  parentFolderId: MOCK_LIBRARY_ROOT_FOLDER_ID,
+  createdAt: MOCK_TIMESTAMP,
+  ...overrides,
+});
+
+/** A Files copy of a track, in `folder` (the root by default). */
+export const buildMockTrackCopy = (
+  source: DriveAudioSource,
+  options: {
+    folder?: RehearsalLibraryFolderNode;
+    id?: string;
+    visibleName?: string;
+  } = {},
+): RehearsalLibraryFileLinkNode => ({
+  id: options.id ?? `mock-copy-${source.id}-${options.folder?.id ?? 'root'}`,
+  parentFolderId: options.folder?.id ?? MOCK_LIBRARY_ROOT_FOLDER_ID,
+  entityKind: 'track',
+  entityId: source.id,
+  ...(options.visibleName ? { visibleName: options.visibleName } : {}),
+});
+
 /** A small choir library: a few part tracks and two empty playlists. */
 export const buildDefaultMockLibrary = (): MockLibrary => ({
   playlists: [buildMockPlaylist('Sunday Set'), buildMockPlaylist('Warmups')],
@@ -74,4 +115,56 @@ export const buildMockLibraryStorageEntries = (
   [`${STORAGE_KEY_PREFIX}:playlists:${ownerId}`]: JSON.stringify(
     library.playlists,
   ),
+  ...buildMockLibraryTreeEntries(library, ownerId),
 });
+
+const buildMockLibraryTreeEntries = (
+  library: MockLibrary,
+  ownerId: string,
+): Record<string, string> => {
+  if (!library.folders && !library.fileLinks) {
+    return {};
+  }
+
+  const tree: RehearsalLibraryFileTree = {
+    version: 1,
+    rootFolderId: MOCK_LIBRARY_ROOT_FOLDER_ID,
+    folders: [
+      {
+        id: MOCK_LIBRARY_ROOT_FOLDER_ID,
+        name: 'Library',
+        parentFolderId: null,
+        createdAt: MOCK_TIMESTAMP,
+      },
+      ...(library.folders ?? []),
+    ],
+    fileLinks: library.fileLinks ?? [],
+  };
+
+  return {
+    [`${LIBRARY_TREE_STORAGE_KEY_PREFIX}:${ownerId}`]: JSON.stringify(tree),
+  };
+};
+
+/**
+ * A library for renaming: "Alto Part" has copies in two folders (one named on
+ * purpose), "Soprano Part" has only its one copy.
+ */
+export const buildTrackRenameMockLibrary = (): MockLibrary => {
+  const alto = buildMockSource('Alto Part');
+  const soprano = buildMockSource('Soprano Part');
+  const rehearsal = buildMockFolder('Rehearsal');
+  const archive = buildMockFolder('Archive');
+
+  return {
+    folders: [rehearsal, archive],
+    fileLinks: [
+      buildMockTrackCopy(alto),
+      buildMockTrackCopy(alto, { folder: rehearsal }),
+      buildMockTrackCopy(alto, { folder: archive, visibleName: 'Alto (old)' }),
+      buildMockTrackCopy(soprano),
+    ],
+    playlists: [],
+    sources: [alto, soprano],
+  };
+};

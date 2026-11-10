@@ -3,20 +3,24 @@ import type {
   RehearsalLibraryFileTree,
   RehearsalLibraryFolderNode,
 } from '@org/audio-library-models';
-import type { AsyncStoragePracticeRepository } from '@org/audio-library-runtime';
+import type {
+  AsyncStoragePracticeRepository,
+  TrackRenameCopies,
+} from '@org/audio-library-runtime';
 import type { Dispatch, SetStateAction } from 'react';
 
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../storage/local-library-storage';
 import {
   createLibraryFilesIssue,
   resolveLibraryFilesSuggestedName,
+  type LibraryFilesEntityRefreshCallbacks,
   type LibraryFilesIssue,
   type LibraryFilesOperationResult,
   type UseLibraryFilesOptions,
 } from './library-files-operation-helpers';
 
 type LibraryFilesRenameOperationsOptions = {
-  options: UseLibraryFilesOptions;
+  options: UseLibraryFilesOptions & Partial<LibraryFilesEntityRefreshCallbacks>;
   practiceRepository: AsyncStoragePracticeRepository;
   setIssue: Dispatch<SetStateAction<LibraryFilesIssue | null>>;
   setTree: Dispatch<SetStateAction<RehearsalLibraryFileTree | null>>;
@@ -53,6 +57,56 @@ export const createLibraryFilesRenameOperations = ({
   };
 
   return {
+    /**
+     * Renames the track entry, and the copies that follow it (see
+     * `TrackRenameCopies`), as one change. `parentFolderId` is the folder of
+     * the copy the user renamed, for the suggested name after a clash.
+     */
+    async renameTrack(optionsForRename: {
+      copies: TrackRenameCopies;
+      name: string;
+      parentFolderId?: string;
+      sourceId: string;
+    }): Promise<LibraryFilesOperationResult> {
+      const trimmedName = optionsForRename.name.trim();
+
+      if (!trimmedName) {
+        const issue = {
+          message: 'Enter a track name.',
+          title: 'Track name required',
+        } satisfies LibraryFilesIssue;
+
+        setIssue(issue);
+        return { didComplete: false, issue };
+      }
+
+      try {
+        const result = await practiceRepository.renameTrack(
+          LOCAL_REHEARSAL_LIBRARY_OWNER_ID,
+          { ...optionsForRename, name: trimmedName },
+        );
+
+        setTree(result.tree);
+        setIssue(null);
+        await options.refreshSavedSources?.();
+        return { didComplete: true, issue: null };
+      } catch (error) {
+        const issue = createLibraryFilesIssue({
+          error,
+          fallbackMessage: `The track could not be renamed to "${trimmedName}".`,
+          fallbackTitle: 'Could not rename track',
+          recovery(conflictingName) {
+            return buildSuggestedNameRecovery({
+              parentFolderId: optionsForRename.parentFolderId ?? null,
+              targetName: conflictingName,
+            });
+          },
+        });
+
+        setIssue(issue);
+        return { didComplete: false, issue };
+      }
+    },
     async renameFileLink(optionsForRename: {
       fileLink: RehearsalLibraryFileLinkNode;
       name: string;

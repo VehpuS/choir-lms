@@ -46,3 +46,34 @@ jobs:
       - name: Full checks (push to main)
         if: github.event_name == 'push'
         run: npm exec -- nx run-many -t lint test typecheck build --all --outputStyle=static
+
+  # Drives the web export in Chromium against a mock library (no Google
+  # sign-in), so it runs only once the unit-level checks above have passed.
+  browser:
+    needs: main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser tests
+        run: npm exec -- nx run mobile-rehearsal-player:browser-test --outputStyle=static
+
+      # Screenshots of each step (and of the failure, if any) for review.
+      - name: Upload browser test screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-screenshots
+          path: browser-session-output/
+          if-no-files-found: ignore

@@ -123,6 +123,7 @@ describe('piano settings rows', () => {
       }).map((category) => category.key),
       [
         'bulk-selections',
+        'renaming',
         'piano',
         'pitch',
         'my-parts',
@@ -140,6 +141,7 @@ describe('piano settings rows', () => {
       }).map((category) => category.key),
       [
         'bulk-selections',
+        'renaming',
         'my-parts',
         'search-sources',
         'offline-storage',

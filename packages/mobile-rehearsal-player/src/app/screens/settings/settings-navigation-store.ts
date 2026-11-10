@@ -14,7 +14,8 @@ export type SettingsCategoryKey =
   | 'my-parts'
   | 'search-sources'
   | 'offline-storage'
-  | 'recordings';
+  | 'recordings'
+  | 'renaming';
 
 export type SettingsNavigationStore = {
   /** Goes from a category page to the category list, or closes from the list. */

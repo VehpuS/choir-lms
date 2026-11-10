@@ -12,7 +12,11 @@ import {
   savedPlaylistSectionStyles as styles,
 } from '../saved-playlist-section-styles';
 
+const DEFAULT_DESCRIPTION =
+  'Update the visible name in this library files location.';
+
 type LibraryFilesRenameDialogProps = {
+  description?: string;
   isMutating: boolean;
   isVisible: boolean;
   issue: LibraryFilesIssue | null;
@@ -24,6 +28,7 @@ type LibraryFilesRenameDialogProps = {
 };
 
 export const LibraryFilesRenameDialog = ({
+  description = DEFAULT_DESCRIPTION,
   isMutating,
   isVisible,
   issue,
@@ -40,9 +45,7 @@ export const LibraryFilesRenameDialog = ({
   return (
     <CenteredDialogCard isVisible={isVisible} onRequestClose={onCancel}>
       <Text style={styles.groupTitle}>Rename</Text>
-      <Text style={styles.sectionBody}>
-        Update the visible name in this library files location.
-      </Text>
+      <Text style={styles.sectionBody}>{description}</Text>
       <TextInput
         autoCapitalize="words"
         autoCorrect={false}

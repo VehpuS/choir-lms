@@ -24,6 +24,7 @@ import { OfflineStorageSection } from './offline-storage-section';
 import { PianoSection } from './piano-section';
 import { PitchSection } from './pitch-section';
 import { RecordingsSection } from './recordings-section';
+import { RenamingSection } from './renaming-section';
 import { SearchSourcesSection } from './search-sources-section';
 import {
   settingsNavigationStore,
@@ -45,6 +46,8 @@ const renderCategoryPage = (page: SettingsCategoryKey) => {
       return <OfflineStorageSection />;
     case 'recordings':
       return <RecordingsSection />;
+    case 'renaming':
+      return <RenamingSection />;
     case 'search-sources':
       return (
         <>

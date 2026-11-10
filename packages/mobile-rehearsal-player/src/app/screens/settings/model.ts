@@ -45,6 +45,11 @@ export const SETTINGS_CATEGORIES: readonly SettingsCategory[] = [
     summary: 'What to do when several items are selected',
     title: SETTINGS_COPY.sectionTitle,
   },
+  {
+    key: 'renaming',
+    summary: 'What to do when a track has several copies',
+    title: 'Renaming',
+  },
   { key: 'piano', summary: 'Sound and note names', title: 'Piano' },
   {
     key: 'pitch',
@@ -143,6 +148,17 @@ export const hasStoredBulkChoiceDefault = (
     preferences.repeatedItems !== 'ask'
   );
 };
+
+export const RENAMING_COPY = {
+  body: 'What to do when you rename a copy of a track that has several copies.',
+  rowTitle: 'Renaming a track with several copies',
+} as const;
+
+export const RENAMING_OPTIONS = [
+  { label: 'Ask each time', value: 'ask' },
+  { label: 'All copies', value: 'all' },
+  { label: 'This copy only', value: 'this' },
+] as const;
 
 export const MY_PARTS_COPY = {
   addHeading: 'Tap a part to add it',
