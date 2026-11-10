@@ -14,6 +14,10 @@ const NEEDS_ACCESS_MESSAGE =
 const MISSING_MESSAGE =
   'This file could not be found in Google Drive, so its current location cannot be opened.';
 const BANNER_TITLES = ['Drive disconnected', 'Connect Google Drive'];
+const SUMMARY_CARD_TITLES = [
+  'Saved rehearsal library ready',
+  'Saved rehearsal library needs attention',
+];
 const MAX_CHIP_HEIGHT_PX = 28;
 
 const fine = buildMockSource('Alto Part', {
@@ -68,5 +72,11 @@ void runScenario({
       assert.equal(await page.getByText(message).count(), 0, message);
     }
     pass('No sentence on the rows');
+
+    // 4. No summary card repeats what the chips already say.
+    for (const title of SUMMARY_CARD_TITLES) {
+      assert.equal(await page.getByText(title).count(), 0, title);
+    }
+    pass('No summary card above the rows');
   },
 });
