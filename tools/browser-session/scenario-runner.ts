@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { Page } from 'playwright';
 
 import type { MockLibrary } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
+import type { MockStoredRecording } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-entities';
 import type { DeviceProfile } from './device-profiles';
 import type { MockDriveAccount } from './mock-drive-session';
 import {
@@ -34,6 +35,8 @@ export const runScenario = async (options: {
   audioTap?: boolean | { sampleRate?: number };
   /** Emulate a device; see `openMockLibrarySession`. */
   profile?: DeviceProfile;
+  /** Recordings to seed; see `openMockLibrarySession`. */
+  recordings?: MockStoredRecording[];
   /** A fake microphone playing the choir stem; see `openMockLibrarySession`. */
   microphone?: boolean;
   /** Pixel density for the session; see `openMockLibrarySession`. */
@@ -52,6 +55,7 @@ export const runScenario = async (options: {
     library: options.library,
     profile: options.profile,
     microphone: options.microphone,
+    recordings: options.recordings,
     webFiles: options.webFiles,
   });
   const { page } = session;

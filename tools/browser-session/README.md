@@ -12,6 +12,12 @@ session that has the pre-installed browser.
   `packages/mobile-rehearsal-player/src/test-support/mock-library/` —
   `buildMockSource`, `buildMockPlaylist`, `buildDefaultMockLibrary`. A spec
   keeps the storage keys in step with `@org/audio-library-runtime`.
+- `mock-library-entities.ts` (same folder as the fixtures) — builders for what a
+  scenario seeds beyond tracks: `buildMockLoop`, `withMockPlaylistItems`,
+  `withMockTags`, `buildMockMarker`, `buildMockLyrics`, `buildMockComposite`,
+  `buildMockRecording`. Put loops and composites on `MockLibrary`; pass
+  `recordings` to the session (seeded into IndexedDB, records only, no audio).
+  A spec reads them back through the real runtime, so they stay in step with it.
 - `mock-drive-session.ts` — a small mock Google Drive. `drive: { state }` on
   `openMockLibrarySession` / `runScenario` is `'signed-out'` (default), `'expired'`
   or `'authorized'` (with optional `files` and `inaccessibleFileIds`). It seeds the

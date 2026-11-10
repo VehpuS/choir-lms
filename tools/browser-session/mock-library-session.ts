@@ -16,12 +16,14 @@ import {
   prepareStemMicrophoneWav,
 } from './fake-microphone';
 import { fulfillMedia } from './mock-media';
+import { seedMockRecordings } from './mock-recordings';
 import {
   buildMockDriveStorageEntries,
   installMockDriveRoutes,
   type MockDriveAccount,
   type MockDriveRecorder,
 } from './mock-drive-session';
+import type { MockStoredRecording } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-entities';
 import {
   buildMockLibraryStorageEntries,
   type MockLibrary,
@@ -136,6 +138,11 @@ export const openMockLibrarySession = async (options: {
    * audio tap, which it turns on) a forced audio sample rate.
    */
   profile?: DeviceProfile;
+  /**
+   * Finished recordings to seed into the app's recordings database (records
+   * only, no audio), built with `buildMockRecording`.
+   */
+  recordings?: MockStoredRecording[];
   /** Pixel density; 1 keeps screenshots small, 2-3 matches a phone screen. */
   deviceScaleFactor?: number;
   viewport?: { height: number; width: number };
@@ -170,6 +177,10 @@ export const openMockLibrarySession = async (options: {
 
   if (options.microphone) {
     await context.grantPermissions(['microphone'], { origin: url });
+  }
+
+  if (options.recordings?.length) {
+    await seedMockRecordings(context, options.recordings);
   }
 
   const drive = options.drive ?? { state: 'signed-out' as const };
