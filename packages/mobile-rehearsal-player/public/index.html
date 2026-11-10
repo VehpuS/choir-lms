@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="%LANG_ISO_CODE%">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <!--
+      viewport-fit=cover lets the page reach the screen edges (the notch side in
+      landscape); the app pads by the safe-area insets itself.
+    -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
+    />
+    <title>%WEB_TITLE%</title>
+    <!-- The `react-native-web` recommended style reset, https://necolas.github.io/react-native-web/docs/setup/#root-element, with the app's own background and the dynamic viewport height. -->
+    <style id="expo-reset">
+      /*
+        The page paints the app background (appTheme.colors.bg, guarded by
+        web-entry-html.spec.ts) so no white shows when the window is taller or
+        wider than the app for a moment, for example while an iPhone rotates.
+      */
+      html,
+      body {
+        background-color: #161826;
+        color-scheme: dark;
+        height: 100%;
+        margin: 0;
+      }
+      /* dvh follows the visible height as browser chrome and rotation change it. */
+      @supports (height: 100dvh) {
+        html,
+        body {
+          height: 100dvh;
+        }
+      }
+      /* These styles disable body scrolling if you are using <ScrollView> */
+      body {
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
+      /* These styles make the root element full-height */
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript> You need to enable JavaScript to run this app. </noscript>
+    <!-- The root element for your Expo app. -->
+    <div id="root"></div>
+  </body>
+</html>
