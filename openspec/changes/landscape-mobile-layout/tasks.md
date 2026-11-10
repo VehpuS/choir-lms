@@ -2,7 +2,7 @@
 
 - [x] 1.1 Review `mockups/landscape-mobile-layout.html` and this proposal; approved as drawn (600/500 thresholds, side rail, tool panel takes the Now Playing pane's place while open)
 - [x] 1.2 Capture the app at 844 × 390 with `tools/browser-session/capture-landscape-views.ts` and extend the mock (Recents, Add, playback tabs, side sheets, practice tools, viewers, composites)
-- [ ] 1.3 Approve the additions to the mock (four-entry rail, header add button, side sheets, compact piano, tabbed playback view)
+- [ ] 1.3 Approve the additions to the mock (four-entry rail, header add button, side sheets, compact piano with full screen, tabbed playback view)
 
 ## 2. Part 1: fill the viewport
 
@@ -19,6 +19,7 @@
 - [ ] 3.4 Two-column playback sheet with Lyrics, Queue, Shaping and Mix tabs
 - [ ] 3.4a `AdaptiveSheet`: bottom sheet in compact, trailing side sheet in wide-short, for the track menu, add to playlist, account menu and other bottom sheets
 - [ ] 3.5 Practice dock `side` placement (pitch, recording, piano)
+- [ ] 3.5a Piano full screen: `presentation` prop, remembered preference, slim bar with auto-hide, playing chip, with specs and a browser scenario
 - [ ] 3.6 Sheet-music and lyrics viewers use the full height
 - [ ] 3.7 Keyboard-safe inputs on the web
 - [ ] 3.8 Landscape device profile and scenarios for navigation, the pane and the practice tools

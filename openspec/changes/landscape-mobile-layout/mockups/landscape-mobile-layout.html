@@ -464,6 +464,71 @@
         margin: 4px 0 0;
         max-width: 844px;
       }
+
+      .fs-top {
+        position: absolute;
+        left: 47px;
+        right: 0;
+        top: 0;
+        height: 40px;
+        background: var(--raised);
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 14px;
+        font-size: 12px;
+        color: var(--muted);
+        z-index: 4;
+      }
+      .fs-top .grow {
+        flex: 1;
+      }
+      .fs-keys {
+        position: absolute;
+        left: 47px;
+        right: 0;
+        top: 40px;
+        bottom: 0;
+        background: #fff;
+        display: flex;
+      }
+      .fs-keys span {
+        flex: 1;
+        border-right: 1px solid #bbb;
+      }
+      .fs-keys b {
+        position: absolute;
+        top: 0;
+        width: 2.6%;
+        height: 58%;
+        background: #161826;
+        border-radius: 0 0 5px 5px;
+      }
+      .fs-keys .lit {
+        background: var(--accent);
+      }
+      .fs-keys i {
+        position: absolute;
+        bottom: 8px;
+        font:
+          600 11px ui-monospace,
+          monospace;
+        color: #555;
+        font-style: normal;
+      }
+      .mini-ov {
+        position: absolute;
+        right: 12px;
+        top: 48px;
+        background: rgba(27, 30, 44, 0.92);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 6px 10px;
+        font-size: 12px;
+        color: var(--accentText);
+        z-index: 5;
+      }
     </style>
   </head>
   <body>
@@ -1181,7 +1246,7 @@
             </div>
           </aside>
           <div class="kbdbar">
-            🔈 ▬▬ 🔍 ▬▬ <span style="margin-left: auto">✕</span>
+            🔈 ▬▬ 🔍 ▬▬ <span style="margin-left: auto">⤢ &nbsp; ✕</span>
           </div>
           <div class="kbd">
             <span></span><span></span><span></span><span></span><span></span
@@ -1235,7 +1300,7 @@
             </div>
           </aside>
           <div class="kbdbar">
-            🔈 ▬▬ 🔍 ▬▬ <span style="margin-left: auto">✕</span>
+            🔈 ▬▬ 🔍 ▬▬ <span style="margin-left: auto">⤢ &nbsp; ✕</span>
           </div>
           <div class="kbd">
             <span></span><span></span><span></span><span></span><span></span
@@ -1247,6 +1312,86 @@
         <figcaption>
           All three: pitch and recording share the trailing panel, the piano
           sits below the content; the list still shows a row.
+        </figcaption>
+      </figure>
+    </div>
+    <h2>5b. Piano full screen</h2>
+    <p>
+      In the wide-short layout the piano has a <b>Full screen</b> option (⤢ in
+      the piano bar, next to Close). Full screen hides the rail, the Now Playing
+      pane and the content: the keyboard fills the window height, with a slim
+      40-point bar for volume, zoom, the sung-note readout,
+      <b>Exit full screen</b> (⤡) and Close. The keys keep their sung-note
+      highlight and the pitch arrow. The choice is remembered on the device and
+      the piano reopens the same way. Playback keeps running; a floating chip
+      shows the playing title and a pause button.
+    </p>
+    <div class="row">
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="fs-top">
+            <span>🔈 ▬▬▬</span><span>🔍 ▬▬▬</span><span class="grow"></span
+            ><span style="color: var(--accentText)">C♯4 · 17 cents flat</span
+            ><span class="ic">⤡</span><span class="ic">✕</span>
+          </div>
+          <div class="fs-keys">
+            <span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><b style="left: 3.1%"></b
+            ><b style="left: 7.7%"></b><b style="left: 16.8%"></b
+            ><b style="left: 21.4%"></b><b style="left: 26%"></b
+            ><b style="left: 35.2%"></b><b style="left: 39.8%"></b
+            ><b style="left: 49%"></b><b style="left: 53.6%"></b
+            ><b style="left: 58.2%"></b><b style="left: 67.4%"></b
+            ><b style="left: 72%"></b><b style="left: 81.2%"></b
+            ><b style="left: 85.8%"></b><b style="left: 90.4%"></b
+            ><b class="lit" style="left: 44.4%"></b><i style="left: 1.5%">C3</i
+            ><i style="left: 32.5%">C4</i><i style="left: 63.4%">C5</i>
+          </div>
+        </div>
+        <figcaption>
+          Full screen: the bar at the top, the keyboard at the full remaining
+          height (about 350 points of key).
+        </figcaption>
+      </figure>
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <div
+            class="fs-top"
+            style="background: transparent; border: 0; pointer-events: none"
+          ></div>
+          <div class="fs-keys" style="top: 0"><span></span></div>
+          <div class="fs-keys">
+            <span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><b style="left: 3.1%"></b
+            ><b style="left: 7.7%"></b><b style="left: 16.8%"></b
+            ><b style="left: 21.4%"></b><b style="left: 26%"></b
+            ><b style="left: 35.2%"></b><b style="left: 39.8%"></b
+            ><b style="left: 49%"></b><b style="left: 53.6%"></b
+            ><b style="left: 58.2%"></b><b style="left: 67.4%"></b
+            ><b style="left: 72%"></b><b style="left: 81.2%"></b
+            ><b style="left: 85.8%"></b><b style="left: 90.4%"></b
+            ><b class="lit" style="left: 44.4%"></b><i style="left: 1.5%">C3</i
+            ><i style="left: 32.5%">C4</i><i style="left: 63.4%">C5</i>
+          </div>
+          <div class="mini-ov">⏸ Ubi caritas · 0:42</div>
+          <div
+            class="ic"
+            style="position: absolute; right: 12px; top: 12px; z-index: 6"
+          >
+            ⤡
+          </div>
+        </div>
+        <figcaption>
+          Immersive variant, bar hidden after a few seconds of no touch: only a
+          small ⤡ and a playing chip remain; a tap shows the bar again.
         </figcaption>
       </figure>
     </div>

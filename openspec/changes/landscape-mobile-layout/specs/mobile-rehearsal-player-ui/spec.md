@@ -92,3 +92,29 @@ In the wide-short layout, the piano SHALL dock at the bottom of the content area
 
 - **WHEN** the piano and the pitch monitor are both open in the wide-short layout
 - **THEN** the screen header stays visible and at least one content row is visible
+
+### Requirement: The piano can go full screen in wide-short
+
+In the wide-short layout, the piano SHALL offer a full screen option from its controls bar. Full screen SHALL hide the rail, the Now Playing pane and the content and show the keyboard at the full window height with a slim bar for volume, zoom, the sung-note readout, Exit full screen and Close. The choice SHALL be remembered on the device. Playback SHALL continue and a floating chip SHALL show the playing title and a pause control. The sung-note highlight and the out-of-view arrow SHALL work as in the compact keyboard.
+
+#### Scenario: Enter and exit
+
+- **WHEN** the user taps Full screen on the piano in the wide-short layout
+- **THEN** the keyboard fills the window height and the rail and content are hidden
+- **AND WHEN** the user taps Exit full screen
+- **THEN** the compact keyboard and the rest of the shell return
+
+#### Scenario: Remembered
+
+- **WHEN** the piano was closed in full screen and the user opens it again
+- **THEN** it opens in full screen
+
+#### Scenario: Playback continues
+
+- **WHEN** a track is playing and the piano is full screen
+- **THEN** the track keeps playing and a chip with its title and a pause control is visible
+
+#### Scenario: Back to compact
+
+- **WHEN** the window leaves the wide-short layout while the piano is full screen
+- **THEN** the piano shows as in the compact layout and the full screen choice is kept for the next time
