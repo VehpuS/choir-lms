@@ -17,11 +17,8 @@ import { runScenario } from './scenario-runner';
 // loops the 3.3 s file, so we listen across two loops and look for the
 // sequence rather than depend on where the capture happened to start.
 const CAPTURE_SECONDS = 8;
-// What the stem actually does (measured): E4 held for about 0.3 s, a slide
-// down through D#4, D4 and C#4 (C#4 only for about 0.1 s), then C4 held. So the
-// note segmenter, which wants 80 ms of stability, reports E4 then C4, while
-// the raw frames also pass through C#4.
-const SEGMENTED_NOTES = ['E4', 'C4'] as const;
+// The stem holds E4, C♯4 and C4 in turn, so the pipeline's note segmenter
+// should report all three, and so should the raw frames.
 const MIN_FRAME_LEVEL = 0.02;
 const MIN_FRAME_CLARITY = 0.8;
 const A4_MIDI = 69;
@@ -103,13 +100,13 @@ void runScenario({
     console.log(`segmented: ${segmented.join(' ')}`);
     console.log(`frames: ${frames.join(' ')}`);
 
-    if (!containsInOrder(segmented, SEGMENTED_NOTES)) {
+    if (!containsInOrder(segmented, CHOIR_STEM_NOTES)) {
       throw new Error(
-        `the pitch pipeline should read ${SEGMENTED_NOTES.join(', ')}, read ${segmented.join(' ')}`,
+        `the pitch pipeline should read ${CHOIR_STEM_NOTES.join(', ')}, read ${segmented.join(' ')}`,
       );
     }
 
-    pass('the pitch pipeline reads E4 then C4 from the fake microphone');
+    pass('the pitch pipeline reads E4, C♯4, C4 from the fake microphone');
 
     if (!containsInOrder(frames, CHOIR_STEM_NOTES)) {
       throw new Error(
@@ -117,6 +114,6 @@ void runScenario({
       );
     }
 
-    pass('the raw frames pass through E4, C#4, C4 in order');
+    pass('the raw frames pass through E4, C♯4, C4 in order');
   },
 });

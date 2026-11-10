@@ -40,7 +40,12 @@ export const prepareStemMicrophoneWav = async (): Promise<string> => {
         const context = new OfflineAudioContext(1, 1, sampleRate);
         const decoded = await context.decodeAudioData(bytes.buffer);
 
-        return Array.from(decoded.getChannelData(0));
+        // Mix to mono: the stem is stereo.
+        const left = decoded.getChannelData(0);
+        const right =
+          decoded.numberOfChannels > 1 ? decoded.getChannelData(1) : left;
+
+        return Array.from(left, (sample, index) => (sample + right[index]) / 2);
       },
       {
         base64: readFixtureBytes(CHOIR_STEM_FILE).toString('base64'),

@@ -20,7 +20,7 @@
 - [ ] 2.7 Tags and search
 - [ ] 2.8 Drive flows (import review, reconnect, offline files)
 - [ ] 2.9 Backup, restore and share (bundles generated with the runtime builder)
-- [ ] 2.10 Recordings, including the stem's pitches: E4 then C4 through the app's segmenter, and E4, C♯4, C4 in the raw frames (C♯4 is a brief slide, measured in 1.3)
+- [ ] 2.10 Recordings, including the stem's pitches: E4, C♯4, C4 in order through the app's segmenter
 - [ ] 2.11 Composite tracks
 - [ ] 2.12 Settings
 - [ ] 2.13 Sheet music beyond PDF (full MusicXML as `.musicxml` and `.mxl`, and MIDI-derived notation)

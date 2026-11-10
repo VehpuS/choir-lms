@@ -15,8 +15,9 @@ export const CHOIR_MUSICXML_FILE = 'choir-arrangement.musicxml';
 export const CHOIR_MIDI_FILE = 'choir-arrangement.mid';
 
 /**
- * The notes the stem sings, in order: E4, C♯4, then C4 (the app's spelling; C♯4 is a brief slide between the two held notes). Pitch scenarios assert
- * this progression from the stem (about 3.3 s, 16 kHz mono AAC).
+ * The notes the stem sings, in order, each held: E4, C♯4, then C4 (the app's
+ * spelling). The stem is about 3.8 s of 48 kHz stereo AAC, recorded against
+ * the deployed app.
  */
 export const CHOIR_STEM_NOTES = ['E4', 'C♯4', 'C4'] as const;
 
