@@ -55,3 +55,16 @@ export const createLibraryFilesRenameSuccessFeedback = (options: {
     title: 'Renamed',
   });
 };
+
+export const createPlaylistAddSuccessFeedback = (options: {
+  isNewPlaylist: boolean;
+  itemLabel: string;
+  playlistName: string;
+}): LibraryFilesSuccessFeedback => {
+  return createLibraryFilesSuccessFeedback({
+    message: options.isNewPlaylist
+      ? `${options.itemLabel} is the first item in ${options.playlistName}.`
+      : `${options.itemLabel} was added to ${options.playlistName}.`,
+    title: options.isNewPlaylist ? 'Playlist created' : 'Added to playlist',
+  });
+};

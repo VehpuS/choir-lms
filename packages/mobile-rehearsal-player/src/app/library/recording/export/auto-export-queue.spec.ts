@@ -128,13 +128,16 @@ describe('createAutoExportQueue', () => {
     await t.clock.advance(29_000);
     assert.equal(t.uploads.length, 1);
 
+    // The retry runs real async work (store, blob reads), so wait for its
+    // effect: a fixed number of event-loop turns is too few on a loaded runner.
     await t.clock.advance(1_000);
-    assert.equal(t.uploads.length, 2);
+    await waitUntil(() => t.uploads.length === 2);
 
     await t.clock.advance(119_000);
     assert.equal(t.uploads.length, 2);
 
     await t.clock.advance(1_000);
+    await waitUntil(() => t.memory.read('a')?.exports?.done.length === 2);
     // The third attempt succeeds, then the mix follows.
     assert.deepEqual(t.uploads.map((upload) => upload.name).slice(0, 3), [
       'Song - Recording a.wav',
