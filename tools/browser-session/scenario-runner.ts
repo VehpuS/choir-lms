@@ -35,6 +35,8 @@ export const runScenario = async (options: {
   audioTap?: boolean | { sampleRate?: number };
   /** Emulate a device; see `openMockLibrarySession`. */
   profile?: DeviceProfile;
+  /** Record the media elements the app plays; see `openMockLibrarySession`. */
+  mediaProbe?: boolean;
   /** Recordings to seed; see `openMockLibrarySession`. */
   recordings?: MockStoredRecording[];
   /** A fake microphone playing the choir stem; see `openMockLibrarySession`. */
@@ -54,6 +56,7 @@ export const runScenario = async (options: {
     audioTap: options.audioTap,
     library: options.library,
     profile: options.profile,
+    mediaProbe: options.mediaProbe,
     microphone: options.microphone,
     recordings: options.recordings,
     webFiles: options.webFiles,

@@ -15,6 +15,7 @@ import {
   fakeMicrophoneLaunchArgs,
   prepareStemMicrophoneWav,
 } from './fake-microphone';
+import { installMediaProbe } from './media-probe';
 import { fulfillMedia } from './mock-media';
 import { seedMockRecordings } from './mock-recordings';
 import {
@@ -143,6 +144,11 @@ export const openMockLibrarySession = async (options: {
    * only, no audio), built with `buildMockRecording`.
    */
   recordings?: MockStoredRecording[];
+  /**
+   * Records the media elements the app plays so a scenario can read their
+   * position, speed and state with `readMediaState(page)`.
+   */
+  mediaProbe?: boolean;
   /** Pixel density; 1 keeps screenshots small, 2-3 matches a phone screen. */
   deviceScaleFactor?: number;
   viewport?: { height: number; width: number };
@@ -177,6 +183,10 @@ export const openMockLibrarySession = async (options: {
 
   if (options.microphone) {
     await context.grantPermissions(['microphone'], { origin: url });
+  }
+
+  if (options.mediaProbe) {
+    await installMediaProbe(context);
   }
 
   if (options.recordings?.length) {

@@ -15,7 +15,7 @@
 - [x] 2.1 Shell navigation and view restore
 - [x] 2.2 Library tracks and files (search, folders, bulk selection)
 - [x] 2.3 Playlists
-- [ ] 2.4 Loops
+- [x] 2.4 Loops
 - [ ] 2.5 Playback, speed/pitch and queue, with the slowdown quality checks, readout/engine agreement and a ten-minute track
 - [ ] 2.6 Markers and lyrics
 - [ ] 2.7 Tags and search

@@ -36,6 +36,8 @@ session that has the pre-installed browser.
 - `shell-navigation.scenario.ts` — tabs, Library chip and Files folder kept, reload, phone and desktop layout.
 - `library-files-organize.scenario.ts` / `library-files-bulk.scenario.ts` — Files search, create folder, move, delete with confirmation; selection bar, bulk Add to playlist, and the remembered "Include playlists?" choice.
 - `playlists.scenario.ts` — create, rename, reorder, remove with Undo, delete with confirmation, and finding a played playlist in Recents.
+- `media-probe.ts` — `mediaProbe: true` on the session records the media elements the app plays; `readMediaState(page)` returns the latest one's `currentTime`, `paused`, `playbackRate` and `duration` (the player's element is outside the DOM).
+- `loops.scenario.ts` — make a loop, trim it with the steppers, see it under its track and in Loops, edit it, and play it from its start (with a whole-track control).
 - `add-to-playlist-snackbar.scenario.ts` — issue #36.
 - `sheet-music-pdf.scenario.ts` — opens a real four-page PDF as a track's sheet music; the score is a web link whose bytes `webFiles` serves (CORS open), so no Drive is needed.
 - `drive-access-banner.scenario.ts` — issue #40, expired session: one single-line
