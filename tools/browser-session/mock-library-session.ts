@@ -61,6 +61,8 @@ export const openMockLibrarySession = async (options: {
   library: MockLibrary;
   /** Files served at absolute URLs, so links in the library load without a network. */
   webFiles?: Record<string, MockWebFile>;
+  /** Pixel density; 1 keeps screenshots small, 2-3 matches a phone screen. */
+  deviceScaleFactor?: number;
   viewport?: { height: number; width: number };
 }): Promise<MockLibrarySession> => {
   const server = await startStaticServer(options.distDir ?? DEFAULT_DIST_DIR);
@@ -69,7 +71,7 @@ export const openMockLibrarySession = async (options: {
   const url = `http://127.0.0.1:${port}/`;
   const browser = await chromium.launch();
   const context = await browser.newContext({
-    deviceScaleFactor: 1,
+    deviceScaleFactor: options.deviceScaleFactor ?? 1,
     viewport: options.viewport ?? { height: 844, width: 390 },
   });
   const entries = buildMockLibraryStorageEntries(options.library);

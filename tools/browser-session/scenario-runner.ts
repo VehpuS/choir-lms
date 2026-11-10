@@ -26,6 +26,8 @@ export type ScenarioContext = {
  */
 export const runScenario = async (options: {
   library: MockLibrary;
+  /** Pixel density for the session; see `openMockLibrarySession`. */
+  deviceScaleFactor?: number;
   webFiles?: Record<string, MockWebFile>;
   steps: (context: ScenarioContext) => Promise<void>;
 }) => {
@@ -34,6 +36,7 @@ export const runScenario = async (options: {
   mkdirSync(outDir, { recursive: true });
 
   const session = await openMockLibrarySession({
+    deviceScaleFactor: options.deviceScaleFactor,
     library: options.library,
     webFiles: options.webFiles,
   });

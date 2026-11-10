@@ -21,7 +21,11 @@ const EXPECTED_PAGE_COUNT = 4;
 // pdf.js draws page canvases lazily, so only a floor on drawn canvases is checked.
 const MIN_DRAWN_CANVASES = 1;
 
+// A phone screen is 2-3x; at 1x the staves in the screenshot look blurry.
+const SCREENSHOT_SCALE_FACTOR = 3;
+
 void runScenario({
+  deviceScaleFactor: SCREENSHOT_SCALE_FACTOR,
   library: {
     playlists: [],
     sources: [
