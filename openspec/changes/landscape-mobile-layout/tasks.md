@@ -8,8 +8,8 @@
 
 - [x] 2.1 Browser scenario (failing first): rotate to a landscape phone size; the shell fills the viewport and no edge shows a non-app colour (written; fails on html/body background and `viewport-fit=cover`, passes root size and scroll in Chromium)
 - [x] 2.2 Web root fills the dynamic viewport with the app background; `viewport-fit=cover` (`public/index.html` template: app background on html and body, `100dvh` with a `100%` fallback, `viewport-fit=cover`; `web-entry-html.spec.ts` keeps the colour in step with the theme)
-- [ ] 2.3 Safe-area insets on all edges (`safe-area-insets.web.ts` plus native sibling), applied to the shell, dock and sheets
-- [ ] 2.4 Re-measure on rotation so the layout settles without a scroll
+- [ ] 2.3 Safe-area edges, rescoped after the iPhone check (see design.md "Safe areas"): the shell already pads all four edges (`react-native-web`'s `SafeAreaView`), so no probe hook is needed. Remaining: (a) the bottom dock's band (and later the rail) paints its colour under the side and bottom insets so it reaches the screen edges while its content stays inset; (b) check every sheet, dialog and the piano viewer (they render outside the shell's `SafeAreaView`) and pad them by the insets where they do not; with a browser scenario for what Chromium can show, and a manual iPhone check for the rest
+- [ ] 2.4 Re-measure on rotation so the layout settles without a scroll (check on the device first: the iPhone check after 2.2 showed no stale layout, so this may need nothing)
 
 ## 3. Part 2: landscape layout (after approval)
 
@@ -27,7 +27,7 @@
 
 ## 4. Verification
 
-- [ ] 4.1 Manual check on an iPhone as a home-screen web app in both orientations
+- [ ] 4.1 Manual check (after 2.2, on an iPhone in Safari and as a home-screen app in landscape: the white bands are gone; the tab bar band stops at the safe-area insets) on an iPhone as a home-screen web app in both orientations
 
 ## Follow-ups
 
