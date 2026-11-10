@@ -52,6 +52,7 @@ session that has the pre-installed browser.
 - `mock-lyrics.ts` — `lyricsLookup: [...]` on the session answers the app's Look up (LRCLIB, `lrclib.net/api/search`) with the given candidates; `session.lyricsSearches` records what was searched.
 - `markers.scenario.ts` / `lyrics.scenario.ts` — add, rename, jump to, loop between and delete markers; view, edit, delete, type and look up lyrics (consent first, kept only on Save).
 - `composites.scenario.ts` — Composites list, playing one, the Mix panel (mute, solo, built-in preset, Save as preset stored with the composite), the export sheet, and Re-link for a stem whose track is gone.
+- `settings.scenario.ts` — the Settings categories, Bulk selections and Renaming preferences (change, saved, kept after a reload, reset to Ask each time).
 - `add-to-playlist-snackbar.scenario.ts` — issue #36.
 - `sheet-music-pdf.scenario.ts` — opens a real four-page PDF as a track's sheet music; the score is a web link whose bytes `webFiles` serves (CORS open), so no Drive is needed.
 - `drive-access-banner.scenario.ts` — issue #40, expired session: one single-line
