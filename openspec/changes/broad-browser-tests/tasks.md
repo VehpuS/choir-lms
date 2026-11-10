@@ -16,7 +16,7 @@
 - [x] 2.2 Library tracks and files (search, folders, bulk selection)
 - [x] 2.3 Playlists
 - [x] 2.4 Loops
-- [ ] 2.5 Playback, speed/pitch and queue, with the slowdown quality checks, readout/engine agreement and a ten-minute track
+- [x] 2.5 Playback, speed/pitch and queue, with the slowdown quality checks, readout/engine agreement and a ten-minute track
 - [ ] 2.6 Markers and lyrics
 - [ ] 2.7 Tags and search
 - [ ] 2.8 Drive flows (import review, reconnect, offline files)
@@ -44,3 +44,5 @@ Unrelated bugs, findings, ideas, improvements and questions met while implementi
 - [ ] F.5 Review: tapping the title of a playing playlist in Recents does nothing visible; only the row menu (View in library) opens it, and that lands on Library > Playlists, not the playlist detail (seen in 2.3); confirm this is intended
 - [ ] F.6 Recents must not list the item that is playing right now (today a playing playlist shows as "Playing now", duplicating the mini-player; seen in 2.3). An item appears in Recents only once it is no longer playing, for example after the app is closed and reopened. Update the `playlists` scenario, which currently expects "Playing now" in Recents, to cover: not listed while playing, listed after a reload, and View in library from there (relates to F.5)
 - [ ] F.7 Recents lists a played playlist as the playlist only, never its individual tracks or loops (including after the app is reopened, and when the tracks were played through the playlist); add a browser scenario that plays a playlist, reloads, and checks Recents shows one entry
+- [ ] F.8 Investigate two audio glitches measured in 2.5 (`playback-slowdown-quality.matrix`): (a) about one click per 10 to 12 s on the pitch-shifted (Web Audio shaper) path, at 1x speed with +2 semitones, on both 44.1 kHz and 48 kHz profiles; (b) a rare ~22 ms gap with two clicks within about two seconds after changing speed (captured through the media element, so it may be the browser's time-stretcher or the capture path). Find out which are the app's, fix what is, then tighten `MAX_CLICKS` and `MAX_DROPOUT_MS` in that scenario to 0
+- [ ] F.9 The Practice tools tab and panel have no browser coverage (seen in 2.1 and 2.5: with a track playing there are two "Practice tools" buttons, the tab and one in the mini-player, and tapping the tab while the playback sheet is open is blocked); decide what it should show and add a scenario
