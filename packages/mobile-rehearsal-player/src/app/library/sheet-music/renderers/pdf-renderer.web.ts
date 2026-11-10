@@ -71,6 +71,9 @@ export const createPdfRenderer = (): PdfRenderer<PdfContainer> => ({
         wrapper: host.ownerDocument.createElement('div'),
       }));
     } catch (error) {
+      // The viewer shows only a generic failure card, so keep the cause visible.
+      console.warn('Could not open the PDF', error);
+
       return failed(
         isPasswordError(error) ? 'password-protected' : 'invalid-pdf',
       );

@@ -1,5 +1,6 @@
 import type {
   DriveAudioSource,
+  SheetMusicSource,
   Playlist,
   RehearsalLibraryFileLinkNode,
   RehearsalLibraryFileTree,
@@ -168,3 +169,17 @@ export const buildTrackRenameMockLibrary = (): MockLibrary => {
     sources: [alto, soprano],
   };
 };
+
+/** A PDF score linked from a web address; the browser session serves the bytes. */
+export const buildMockPdfSheetMusic = (
+  label: string,
+  url: string,
+  overrides: Partial<SheetMusicSource> = {},
+): SheetMusicSource => ({
+  id: `mock-sheet-music-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+  label,
+  location: { kind: 'url', url },
+  format: 'pdf',
+  addedAt: MOCK_TIMESTAMP,
+  ...overrides,
+});
