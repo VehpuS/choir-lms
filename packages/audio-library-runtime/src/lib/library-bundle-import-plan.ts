@@ -78,7 +78,11 @@ export type LibraryBundleImportPlan = {
   fileLinks: RehearsalLibraryFileLinkNode[];
   summary: LibraryBundleImportSummary;
   /** Bundle-local id to library id, for what refers back into the bundle (recordings). */
-  idMaps: { sources: Record<string, string>; loops: Record<string, string> };
+  idMaps: {
+    sources: Record<string, string>;
+    loops: Record<string, string>;
+    recordings: Record<string, string>;
+  };
 };
 
 const IMPORT_ROOT_PREFIX = 'Imported';
@@ -187,6 +191,12 @@ export const planLibraryBundleImport = (
     })),
     importedFrom,
   }));
+  const recordingIds = new Map(
+    (bundle.recordings ?? []).map((recording) => [
+      recording.id,
+      `recording:${key}:${recording.id}`,
+    ]),
+  );
   const playlists: Playlist[] = bundle.playlists.map((playlist) => {
     const playlistId = mapped(playlistIds, playlist.id);
 
@@ -205,6 +215,11 @@ export const planLibraryBundleImport = (
             : mapped(sourceIds, entry.sourceId),
         ...(entry.loopId !== undefined
           ? { loopId: mapped(loopIds, entry.loopId) }
+          : {}),
+        // The recording may not be restored; playback skips an entry whose
+        // recording is not on the device, and a later restore brings it back.
+        ...(entry.recordingId !== undefined
+          ? { recordingId: mapped(recordingIds, entry.recordingId) }
           : {}),
       })),
     };
@@ -303,6 +318,7 @@ export const planLibraryBundleImport = (
     idMaps: {
       sources: Object.fromEntries(sourceIds),
       loops: Object.fromEntries(loopIds),
+      recordings: Object.fromEntries(recordingIds),
     },
     loops: skipIfPresent(loops, loopExists),
     playlists: skipIfPresent(playlists, playlistExists),

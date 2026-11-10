@@ -287,6 +287,19 @@ const resolveBundle = (
     );
   });
 
+  // An entry that plays a recording is only as good as the recording it names.
+  const recordingIds = new Set(recordings.map((recording) => recording.id));
+  const playlistsWithRecordings = playlists.map((playlist) => {
+    const items = playlist.items.filter(
+      (item) =>
+        item.recordingId === undefined || recordingIds.has(item.recordingId),
+    );
+
+    droppedPlaylistEntries += playlist.items.length - items.length;
+
+    return { ...playlist, items };
+  });
+
   const dropped: LibraryBundleDropCounts = {
     sources: countDropped(rawSources.length, sources.length),
     folders: countDropped(rawFolders.length, folders.length),
@@ -306,7 +319,7 @@ const resolveBundle = (
     folders,
     fileLinks,
     loops,
-    playlists,
+    playlists: playlistsWithRecordings,
     composites,
     ...(recordings.length > 0 ? { recordings } : {}),
   };

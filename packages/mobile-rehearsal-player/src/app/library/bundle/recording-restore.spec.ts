@@ -8,10 +8,7 @@ import type {
 import { encodeWavParts } from '@org/audio-mixing';
 
 import { createFakeDependencies, SOPRANO, AT } from './bundle-test-support';
-import {
-  createRestoredRecordingId,
-  toRestoredRecording,
-} from './recording-restore-model';
+import { toRestoredRecording } from './recording-restore-model';
 import { restoreBundleRecordings } from './restore-bundle-recordings';
 import { storeRestoredRecording } from './store-restored-recording';
 
@@ -38,7 +35,13 @@ const bundleRecording = (
   ...overrides,
 });
 
-const idMaps = { sources: { s1: SOPRANO.id }, loops: { l1: 'loop-1' } };
+const idMaps = {
+  sources: { s1: SOPRANO.id },
+  loops: { l1: 'loop-1' },
+  recordings: Object.fromEntries(
+    ['r1', 'r2', 'r3', 'r4'].map((id) => [id, `recording:k:${id}`]),
+  ),
+};
 const context = (extra = {}) => ({
   idMaps,
   sources: [SOPRANO],
@@ -145,7 +148,6 @@ describe('restoreBundleRecordings', () => {
     const outcome = await restoreBundleRecordings(deps, {
       bundle: bundle([bundleRecording('r1')]),
       idMaps,
-      key: 'k',
     });
 
     assert.deepEqual(outcome, {
@@ -178,7 +180,6 @@ describe('restoreBundleRecordings', () => {
         }),
       ]),
       idMaps,
-      key: 'k',
     });
 
     assert.equal(outcome.restored, 2);
@@ -195,7 +196,6 @@ describe('restoreBundleRecordings', () => {
       await restoreBundleRecordings(deps, {
         bundle: bundle([bundleRecording('r1')]),
         idMaps,
-        key: 'k',
       }),
       { restored: 0, alreadyHere: 0, failed: 0, cancelled: false },
     );
@@ -210,7 +210,6 @@ describe('restoreBundleRecordings', () => {
     const outcome = await restoreBundleRecordings(deps, {
       bundle: bundle([bundleRecording('r1')]),
       idMaps,
-      key: 'k',
       signal: controller.signal,
     });
 
@@ -259,9 +258,5 @@ describe('storeRestoredRecording', () => {
       /disk/,
     );
     assert.equal(log.at(-1), 'delete');
-  });
-
-  it('builds ids from the key and the bundle id', () => {
-    assert.equal(createRestoredRecordingId('imp1', 'r2'), 'recording:imp1:r2');
   });
 });

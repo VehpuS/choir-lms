@@ -173,7 +173,6 @@ export const runImport = async (
       ? await restoreBundleRecordings(deps, {
           bundle: options.preview.bundle,
           idMaps: plan.idMaps,
-          key: options.preview.importId,
           signal: options.signal,
           onProgress: options.onPhase,
         })

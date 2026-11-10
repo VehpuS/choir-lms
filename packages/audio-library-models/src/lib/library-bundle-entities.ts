@@ -244,8 +244,7 @@ const parsePlaylistEntry = (
     !isNonEmptyString(value.id) ||
     !isNonEmptyString(value.sourceId) ||
     !PLAYABLE_KINDS.includes(value.kind as PlayableItemKind) ||
-    // Recordings are not part of the format yet; such an entry is dropped.
-    value.recordingId !== undefined
+    (value.recordingId !== undefined && !isNonEmptyString(value.recordingId))
   ) {
     return null;
   }
@@ -263,6 +262,9 @@ const parsePlaylistEntry = (
     sourceId: value.sourceId,
     ...(kind === 'loop' && isNonEmptyString(value.loopId)
       ? { loopId: value.loopId }
+      : {}),
+    ...(isNonEmptyString(value.recordingId)
+      ? { recordingId: value.recordingId }
       : {}),
     title: isString(value.title) ? value.title : '',
     ...(isString(value.description) ? { description: value.description } : {}),

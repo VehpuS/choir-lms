@@ -2,7 +2,6 @@ import { decodeWav } from '@org/audio-mixing';
 import type { LibraryBundle } from '@org/audio-library-models';
 
 import {
-  createRestoredRecordingId,
   toRestoredRecording,
   type RecordingRestoreContext,
 } from './recording-restore-model';
@@ -23,16 +22,14 @@ export type RecordingRestoreOutcome = {
 /**
  * Downloads the chosen bundle recordings from Drive and stores them on this
  * device, attached to the tracks and loops the import or replace created.
- * Failures are counted, not fatal: the library is already in place. Ids derive
- * from `key`, so a retry skips what an earlier try restored.
+ * Failures are counted, not fatal: the library is already in place. Ids come from
+ * the planner (derived from the import id), so a retry skips what an earlier try restored.
  */
 export const restoreBundleRecordings = async (
   deps: BundleServiceDependencies,
   options: {
     bundle: LibraryBundle;
     idMaps: RecordingRestoreContext['idMaps'];
-    /** Stable for one import or replace and its retries. */
-    key: string;
     signal?: AbortSignal;
     onProgress?: BundleProgress;
   },
@@ -66,10 +63,12 @@ export const restoreBundleRecordings = async (
       return outcome;
     }
 
-    const id = createRestoredRecordingId(options.key, bundleRecording.id);
-    const recording = toRestoredRecording(bundleRecording, id, context);
+    const id = options.idMaps.recordings[bundleRecording.id];
+    const recording = id
+      ? toRestoredRecording(bundleRecording, id, context)
+      : null;
 
-    if (!recording || bundleRecording.audio.kind !== 'drive') {
+    if (!id || !recording || bundleRecording.audio.kind !== 'drive') {
       outcome.failed += 1;
       continue;
     }

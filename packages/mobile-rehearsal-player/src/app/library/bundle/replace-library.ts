@@ -38,6 +38,8 @@ export const buildReplacement = (options: {
   isOwn: boolean;
   ownerId: string;
   importedAt: string;
+  /** Unique per replace, so restored recording ids never collide with an earlier replace's. */
+  importId?: string;
   needsAccessDriveFileIds?: ReadonlySet<string>;
 }): {
   state: ReplacementLibraryState;
@@ -48,7 +50,7 @@ export const buildReplacement = (options: {
     bundle: options.bundle,
     bundleName: options.bundleName,
     destinationFolderId: rootId,
-    importId: 'replace',
+    importId: options.importId ?? 'replace',
     importedAt: options.importedAt,
     ownerId: options.ownerId,
     state: {
@@ -171,6 +173,7 @@ export const replaceLibraryFromBundle = async (
     isOwn: options.isOwn,
     ownerId: deps.library.ownerId,
     importedAt: now,
+    importId: `replace-${now}`,
   });
   const { removedSourceIds } = await deps.library.repository.replaceLibrary(
     deps.library.ownerId,
@@ -184,7 +187,6 @@ export const replaceLibraryFromBundle = async (
     ? await restoreBundleRecordings(deps, {
         bundle: options.bundle,
         idMaps: replacement.idMaps,
-        key: `replace-${now}`,
         signal: options.signal,
         onProgress: options.onProgress,
       })

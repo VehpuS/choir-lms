@@ -15,14 +15,16 @@ import type {
 
 export type RecordingRestoreContext = {
   /** Bundle id to library id, from the import or replace that just ran. */
-  idMaps: { sources: Record<string, string>; loops: Record<string, string> };
+  idMaps: {
+    sources: Record<string, string>;
+    loops: Record<string, string>;
+    /** The ids the planner gave the recordings, so playlist entries line up. */
+    recordings: Record<string, string>;
+  };
   sources: readonly DriveAudioSource[];
   loops: readonly NamedLoop[];
   now: string;
 };
-
-export const createRestoredRecordingId = (key: string, bundleId: string) =>
-  `recording:${key}:${bundleId}`;
 
 export const toRestoredRecording = (
   bundleRecording: LibraryBundleRecording,

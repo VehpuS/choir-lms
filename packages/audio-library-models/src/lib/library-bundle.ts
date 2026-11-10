@@ -116,6 +116,12 @@ export type LibraryBundlePlaylistEntry = {
   sourceId: string;
   /** Bundle-local loop id when `kind` is `loop`. */
   loopId?: string;
+  /**
+   * Bundle-local recording id when the entry plays a recording; `sourceId` and
+   * `loopId` then describe the context it was made in. The recording must be in
+   * the bundle, or the entry is dropped.
+   */
+  recordingId?: string;
   title: string;
   description?: string;
   createdAt: string;

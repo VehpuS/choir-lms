@@ -1,3 +1,4 @@
+import { omit } from 'es-toolkit';
 import {
   CURRENT_LIBRARY_BUNDLE_FORMAT_VERSION,
   type LibraryBundle,
@@ -6,6 +7,7 @@ import {
   type LibraryBundleFolder,
   type LibraryBundleOwner,
   type LibraryBundlePlaylist,
+  type Playlist,
   type Recording,
   type RehearsalLibraryEntityKind,
 } from '@org/audio-library-models';
@@ -54,6 +56,36 @@ export type BuildLibraryBundleResult = {
   }[];
   /** Total audio bytes the writer would upload, shown before anything uploads. */
   uploadSizeBytes: number;
+};
+
+type ScopeSets = {
+  sourceIdSet: ReadonlySet<string>;
+  loopIdSet: ReadonlySet<string>;
+  compositeIdSet: ReadonlySet<string>;
+};
+
+/**
+ * An entry is written when it is in scope; one that plays a recording also
+ * needs that recording in the bundle, and is judged by its context otherwise.
+ */
+const isRecordingEntryIncluded = (
+  entry: Playlist['items'][number],
+  bundleRecordingIds: ReadonlyMap<string, string>,
+  { sourceIdSet, loopIdSet, compositeIdSet }: ScopeSets,
+): boolean => {
+  if (entry.recordingId === undefined) {
+    return isEntryInScope(entry, sourceIdSet, loopIdSet, compositeIdSet);
+  }
+
+  return (
+    bundleRecordingIds.has(entry.recordingId) &&
+    isEntryInScope(
+      omit(entry, ['recordingId']),
+      sourceIdSet,
+      loopIdSet,
+      compositeIdSet,
+    )
+  );
 };
 
 /** Hands out `<prefix>1`, `<prefix>2`, ... so ids are stable for a given library. */
@@ -132,6 +164,32 @@ export const buildLibraryBundle = (
     ]),
   );
 
+  const loopIdMap = new Map(
+    selection.loops.map((loop) => [loop.id, loopIds.get(loop.id) ?? '']),
+  );
+  const selected = options.selectedRecordingIds ?? new Set<string>();
+  const builtRecordings = (options.recordings ?? [])
+    .filter((recording) => selected.has(recording.id))
+    .flatMap((recording, index) => {
+      const built = buildRecording(recording, `r${index + 1}`, {
+        sources: sourceIdMap,
+        loops: loopIdMap,
+      });
+
+      return built ? [{ built, recordingId: recording.id }] : [];
+    });
+  const recordings = builtRecordings.map(({ built }) => built);
+  const bundleRecordingIds = new Map(
+    builtRecordings.map(({ built, recordingId }) => [recordingId, built.id]),
+  );
+  const recordingsToUpload = builtRecordings
+    .filter(({ built }) => built.audio.kind === 'not-uploaded')
+    .map(({ built, recordingId }) => ({
+      id: built.id,
+      recordingId,
+      sizeBytes: built.sizeBytes,
+    }));
+
   const folders: LibraryBundleFolder[] = selection.folders.map((folder) => ({
     id: folderIds.get(folder.id) ?? '',
     name: folder.name,
@@ -153,7 +211,11 @@ export const buildLibraryBundle = (
         : {}),
       items: playlist.items
         .filter((entry) =>
-          isEntryInScope(entry, sourceIdSet, loopIdSet, compositeIdSet),
+          isRecordingEntryIncluded(entry, bundleRecordingIds, {
+            sourceIdSet,
+            loopIdSet,
+            compositeIdSet,
+          }),
         )
         .map((entry, index) => ({
           id: `${playlistIds.get(playlist.id)}-e${index + 1}`,
@@ -165,6 +227,9 @@ export const buildLibraryBundle = (
               : (sourceIds.get(entry.sourceId) ?? ''),
           ...(entry.kind === 'loop' && entry.loopId !== undefined
             ? { loopId: loopIds.get(entry.loopId) ?? '' }
+            : {}),
+          ...(entry.recordingId !== undefined
+            ? { recordingId: bundleRecordingIds.get(entry.recordingId) ?? '' }
             : {}),
           title: entry.title,
           ...(entry.description !== undefined
@@ -196,28 +261,9 @@ export const buildLibraryBundle = (
     })),
   ];
 
-  const loopIdMap = new Map(
-    selection.loops.map((loop) => [loop.id, loopIds.get(loop.id) ?? '']),
-  );
-  const selected = options.selectedRecordingIds ?? new Set<string>();
-  const builtRecordings = (options.recordings ?? [])
-    .filter((recording) => selected.has(recording.id))
-    .flatMap((recording, index) => {
-      const built = buildRecording(recording, `r${index + 1}`, {
-        sources: sourceIdMap,
-        loops: loopIdMap,
-      });
-
-      return built ? [{ built, recordingId: recording.id }] : [];
-    });
-  const recordings = builtRecordings.map(({ built }) => built);
-  const recordingsToUpload = builtRecordings
-    .filter(({ built }) => built.audio.kind === 'not-uploaded')
-    .map(({ built, recordingId }) => ({
-      id: built.id,
-      recordingId,
-      sizeBytes: built.sizeBytes,
-    }));
+  const includedRecordingEntryCount = playlists
+    .flatMap((playlist) => playlist.items)
+    .filter((entry) => entry.recordingId !== undefined).length;
 
   const bundle: LibraryBundle = {
     formatVersion: CURRENT_LIBRARY_BUNDLE_FORMAT_VERSION,
@@ -262,7 +308,9 @@ export const buildLibraryBundle = (
 
   return {
     bundle,
-    leftOutReferenceCount: selection.leftOutReferenceCount,
+    // Recording entries the bundle now carries are no longer left out.
+    leftOutReferenceCount:
+      selection.leftOutReferenceCount - includedRecordingEntryCount,
     includedOutsideItemCount: selection.includedOutsideItemCount,
     recordingsToUpload,
     uploadSizeBytes: recordingsToUpload.reduce(
