@@ -65,5 +65,7 @@ export type PdfDocument = {
   numPages: number;
 };
 export type PdfJs = {
-  getDocument(source: { data: Uint8Array }): { promise: Promise<PdfDocument> };
+  getDocument(source: { data: Uint8Array; isEvalSupported?: boolean }): {
+    promise: Promise<PdfDocument>;
+  };
 };

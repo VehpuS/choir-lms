@@ -6,6 +6,7 @@ import type { MockLibrary } from '../../packages/mobile-rehearsal-player/src/tes
 import {
   openMockLibrarySession,
   type MockLibrarySession,
+  type MockWebFile,
 } from './mock-library-session';
 
 export type ScenarioContext = {
@@ -25,13 +26,17 @@ export type ScenarioContext = {
  */
 export const runScenario = async (options: {
   library: MockLibrary;
+  webFiles?: Record<string, MockWebFile>;
   steps: (context: ScenarioContext) => Promise<void>;
 }) => {
   const outDir = process.argv[2] ?? 'browser-session-output';
 
   mkdirSync(outDir, { recursive: true });
 
-  const session = await openMockLibrarySession({ library: options.library });
+  const session = await openMockLibrarySession({
+    library: options.library,
+    webFiles: options.webFiles,
+  });
   const { page } = session;
   const results: string[] = [];
   const shot = async (name: string) => {

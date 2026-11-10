@@ -11,8 +11,8 @@ let pdfjsPromise: Promise<PdfJs> | undefined;
 const loadPdfjs = (): Promise<PdfJs> => {
   pdfjsPromise ??= (async () => {
     const [pdfModule, workerModule] = await Promise.all([
-      import('pdfjs-dist/build/pdf.mjs'),
-      import('pdfjs-dist/build/pdf.worker.mjs'),
+      import('pdfjs-dist/build/pdf'),
+      import('pdfjs-dist/build/pdf.worker'),
     ]);
     const worker = workerModule as {
       default?: unknown;
@@ -46,8 +46,13 @@ export const openPdf = async (bytes: Uint8Array) => {
   const pdfjs = await loadPdfjs();
 
   // pdf.js may take ownership of the buffer, so it gets its own copy.
-  const doc: PdfDocument = await pdfjs.getDocument({ data: bytes.slice() })
-    .promise;
+  const doc: PdfDocument = await pdfjs.getDocument({
+    data: bytes.slice(),
+    // Scores come from links and shared files, so the font-compiling `eval`
+    // path stays off (CVE-2024-4367). Staying on pdf.js 3.x is deliberate:
+    // 4.x ships top-level `await`, which Metro's web bundle cannot run.
+    isEvalSupported: false,
+  }).promise;
   const pages = await Promise.all(
     Array.from({ length: doc.numPages }, async (_, index) => {
       const page = await doc.getPage(index + 1);

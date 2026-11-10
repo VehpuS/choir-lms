@@ -44,6 +44,9 @@ const startStaticServer = (distDir: string): Promise<Server> =>
     server.listen(0, () => resolve(server));
   });
 
+/** A file the mock web serves at an address, with CORS open so the app may read it. */
+export type MockWebFile = { body: Buffer; contentType: string };
+
 export type MockLibrarySession = {
   browser: Browser;
   close: () => Promise<void>;
@@ -56,6 +59,8 @@ export type MockLibrarySession = {
 export const openMockLibrarySession = async (options: {
   distDir?: string;
   library: MockLibrary;
+  /** Files served at absolute URLs, so links in the library load without a network. */
+  webFiles?: Record<string, MockWebFile>;
   viewport?: { height: number; width: number };
 }): Promise<MockLibrarySession> => {
   const server = await startStaticServer(options.distDir ?? DEFAULT_DIST_DIR);
@@ -75,6 +80,16 @@ export const openMockLibrarySession = async (options: {
       window.localStorage.setItem(key, value);
     }
   }, entries);
+
+  for (const [fileUrl, file] of Object.entries(options.webFiles ?? {})) {
+    await context.route(fileUrl, (route) =>
+      route.fulfill({
+        body: file.body,
+        contentType: file.contentType,
+        headers: { 'access-control-allow-origin': '*' },
+      }),
+    );
+  }
 
   const page = await context.newPage();
 
