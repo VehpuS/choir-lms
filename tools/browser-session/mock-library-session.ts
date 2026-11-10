@@ -80,8 +80,11 @@ export type MockWebFile = { body: Buffer; contentType: string };
 
 /**
  * Console errors the app is known to log that a scenario need not fail on:
- * the web player's early blob URL release (follow-up F.2 in the browser tests
- * change) and requests the offline guard already reports on its own.
+ * `ERR_FILE_NOT_FOUND` for a `blob:` URL, which is harmless (follow-up F.2 in
+ * the browser tests change): it is Shaka's own MediaSource URL, created and
+ * revoked inside Shaka when the app then sets the media element's `src` to its
+ * own audio blob, which stays alive until reset or stop. And requests the
+ * offline guard already reports on its own.
  */
 const BASELINE_CONSOLE_ERRORS = [
   /Failed to load resource: net::ERR_FILE_NOT_FOUND/,
