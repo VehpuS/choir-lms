@@ -28,3 +28,7 @@
 ## 4. Verification
 
 - [ ] 4.1 Manual check on an iPhone as a home-screen web app in both orientations
+
+## Follow-ups
+
+- [ ] F.1 Mixed Hebrew and Latin text in the playback sheet subtitle renders in the wrong order (`of 20 13 · אור-פנד-לנד-2026-12-09`, right-aligned and reversed). Seen on an iPhone in the playback sheet for a track whose folder or name contains Hebrew; the title is fine. Probably needs bidi isolation (`dir="auto"` or Unicode isolates around the name) in the subtitle; check the other places that join a position, a folder and a name into one string.
