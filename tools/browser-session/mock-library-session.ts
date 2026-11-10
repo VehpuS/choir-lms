@@ -193,9 +193,14 @@ export const openMockLibrarySession = async (options: {
     });
   }
 
-  if (options.microphone) {
-    await context.grantPermissions(['microphone'], { origin: url });
-  }
+  // The microphone only when the scenario asks for it; the clipboard always,
+  // so "Copy" buttons can be checked by reading the clipboard back.
+  await context.grantPermissions(
+    options.microphone
+      ? ['clipboard-read', 'clipboard-write', 'microphone']
+      : ['clipboard-read', 'clipboard-write'],
+    { origin: url },
+  );
 
   if (options.mediaProbe) {
     await installMediaProbe(context);

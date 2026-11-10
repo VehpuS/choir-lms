@@ -67,6 +67,11 @@ export type MockDriveRecorder = {
   apiRequests: string[];
   /** The `q` of every Drive file listing the app made (browse and search). */
   listQueries: string[];
+  /**
+   * Drive ids Drive answers 404 for. A scenario can remove an id to simulate the
+   * owner sharing the file, or add one to take access away.
+   */
+  inaccessible: Set<string>;
   /** Every sign-in page address the app opened. */
   signInRequests: string[];
   /** The Drive files as they are now: what the app created, uploaded or changed. */
@@ -117,15 +122,16 @@ export const installMockDriveRoutes = async (
   account: MockDriveAccount,
 ): Promise<MockDriveRecorder> => {
   const store = new MockDriveStore();
+  const inaccessible = new Set(
+    account.state === 'authorized' ? (account.inaccessibleFileIds ?? []) : [],
+  );
   const recorder: MockDriveRecorder = {
     apiRequests: [],
+    inaccessible,
     listQueries: [],
     signInRequests: [],
     store,
   };
-  const inaccessible = new Set(
-    account.state === 'authorized' ? (account.inaccessibleFileIds ?? []) : [],
-  );
   const media = account.state === 'authorized' ? (account.media ?? {}) : {};
 
   if (account.state === 'authorized') {

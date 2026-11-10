@@ -20,11 +20,11 @@
 - [x] 2.6 Markers and lyrics
 - [x] 2.7 Tags and search
 - [x] 2.8 Drive flows (import review, reconnect, offline files)
-- [ ] 2.9 Backup, restore and share (bundles generated with the runtime builder), in four slices:
+- [x] 2.9 Backup, restore and share (bundles generated with the runtime builder), in four slices:
   - [x] 2.9a A writable in-memory mock Drive: a Drive query evaluator (name, name contains, mimeType, `'<id>' in parents`, `'me' in owners`, `sharedWithMe`, `trashed`, `appProperties has {…}`, and/or/parentheses) with a spec; create, multipart and resumable upload, patch, delete, `about`; an authorized session that can hold the write scope
   - [x] 2.9b Backup scenario: allow saving, back up, the bundle and its audio land in Drive
   - [x] 2.9c Restore and import scenario: preview a bundle, additive import result, restore replaces
-  - [ ] 2.9d Share and access guide scenario: share-folder and the access guide against mock Drive responses
+  - [x] 2.9d Share and access guide scenario: share-folder and the access guide against mock Drive responses
 - [ ] 2.10 Recordings, including the stem's pitches: E4, C♯4, C4 in order through the app's segmenter
 - [ ] 2.11 Composite tracks
 - [ ] 2.12 Settings
