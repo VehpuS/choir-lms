@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 import { appTheme } from '../../utils/theme';
+import { SHELL_LAYERS } from './shell-layers';
 
 const { colors, space } = appTheme;
 
@@ -23,6 +24,7 @@ export const styles = StyleSheet.create({
   },
   contentViewport: {
     flex: 1,
+    zIndex: SHELL_LAYERS.contentViewport,
     paddingHorizontal: space.screenInset,
   },
   destinationPanel: {
@@ -46,6 +48,7 @@ export const styles = StyleSheet.create({
     display: 'none',
   },
   bottomDock: {
+    zIndex: SHELL_LAYERS.bottomDock,
     borderTopWidth: 1,
     borderTopColor: colors.borderSubtle,
     backgroundColor: colors.surfaceRaised,

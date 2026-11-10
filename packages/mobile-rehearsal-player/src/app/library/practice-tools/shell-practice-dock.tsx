@@ -1,6 +1,7 @@
 import type { PlayableItem } from '@org/audio-library-models';
 import { StyleSheet, View } from 'react-native';
 
+import { SHELL_LAYERS } from '../../routing/shell/shell-layers';
 import { PianoOverlay } from '../piano/components/piano-overlay';
 import { useIsPianoViewerOpen } from '../piano/piano-host-store';
 import { PitchMonitorDock } from '../pitch/components/pitch-monitor-dock';
@@ -46,15 +47,12 @@ export const ShellPracticeDock = ({
   );
 };
 
-// Above the playback sheet, which sits at zIndex 15.
-const PLAYBACK_SHEET_Z_INDEX = 15;
-
 const styles = StyleSheet.create({
   floating: {
     position: 'absolute',
     right: 0,
     bottom: 0,
     left: 0,
-    zIndex: PLAYBACK_SHEET_Z_INDEX + 5,
+    zIndex: SHELL_LAYERS.floatingPracticeDock,
   },
 });
