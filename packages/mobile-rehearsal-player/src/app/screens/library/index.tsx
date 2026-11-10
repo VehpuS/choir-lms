@@ -34,6 +34,8 @@ export const LibraryScreen = ({
   playback,
   requestedLoopEditId,
   requestedLoopEditRequestId,
+  requestedPlaylistId,
+  requestedPlaylistRequestId,
   requestedTag,
   requestedTagRequestId,
   requestedView,
@@ -206,6 +208,8 @@ export const LibraryScreen = ({
             }
             requestedLoopEditId={requestedLoopEditId}
             requestedLoopEditRequestId={requestedLoopEditRequestId}
+            requestedPlaylistId={requestedPlaylistId}
+            requestedPlaylistRequestId={requestedPlaylistRequestId}
             requestedTag={requestedTag}
             requestedTagRequestId={requestedTagRequestId}
             savedLibraryIssue={libraryController.savedLibrary.savedLibraryIssue}

@@ -12,6 +12,7 @@ import {
   buildRecentRehearsalItem,
 } from './history.js';
 import {
+  excludeCurrentRecents,
   getRecentItemCountLabel,
   getRecentRowMeta,
   getRecentRowPresentation,
@@ -211,6 +212,42 @@ describe('isRecentRowPlaying', () => {
         recentRehearsal: playlist,
       }),
       false,
+    );
+  });
+});
+
+describe('excludeCurrentRecents', () => {
+  const track = buildRecent('track');
+  const playlist = buildRecent('playlist');
+  const history = [playlist, track];
+
+  it('leaves out the current standalone item and keeps the rest', () => {
+    assert.deepEqual(
+      excludeCurrentRecents(history, {
+        activePlayableItemId: track.id,
+        activePlaylistId: null,
+      }),
+      [playlist],
+    );
+  });
+
+  it('leaves out the current playlist, and keeps a track that only plays inside it', () => {
+    assert.deepEqual(
+      excludeCurrentRecents(history, {
+        activePlayableItemId: track.id,
+        activePlaylistId: 'playlist-1',
+      }),
+      [track],
+    );
+  });
+
+  it('keeps everything when nothing is current, as after the app is reopened', () => {
+    assert.deepEqual(
+      excludeCurrentRecents(history, {
+        activePlayableItemId: null,
+        activePlaylistId: null,
+      }),
+      history,
     );
   });
 });

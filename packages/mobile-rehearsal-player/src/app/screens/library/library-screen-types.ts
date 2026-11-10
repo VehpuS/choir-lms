@@ -34,6 +34,8 @@ export type LibraryScreenProps = {
   playback: SavedTrackPlaybackController;
   requestedLoopEditId?: string | null;
   requestedLoopEditRequestId?: number;
+  requestedPlaylistId?: string | null;
+  requestedPlaylistRequestId?: number;
   requestedTag?: string | null;
   requestedTagRequestId?: number;
   requestedView?: SavedRehearsalLibraryView;

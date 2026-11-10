@@ -32,6 +32,8 @@ type UseSavedRehearsalLibrarySectionOrchestrationOptions = Pick<
   | 'playlistIssue'
   | 'requestedLoopEditId'
   | 'requestedLoopEditRequestId'
+  | 'requestedPlaylistId'
+  | 'requestedPlaylistRequestId'
   | 'requestedTag'
   | 'requestedTagRequestId'
   | 'saveLoop'
@@ -75,6 +77,8 @@ export const useSavedRehearsalLibrarySectionOrchestration = ({
   playlistIssue,
   requestedLoopEditId,
   requestedLoopEditRequestId,
+  requestedPlaylistId,
+  requestedPlaylistRequestId,
   requestedTag,
   requestedTagRequestId,
   saveLoop,
@@ -134,6 +138,9 @@ export const useSavedRehearsalLibrarySectionOrchestration = ({
     openTagDetail: sectionState.tagDetailState.openTagDetail,
     requestedLoopEditId,
     requestedLoopEditRequestId,
+    openPlaylistDetail: sectionState.playlistState.openPlaylistDetail,
+    requestedPlaylistId,
+    requestedPlaylistRequestId,
     requestedTag,
     requestedTagRequestId,
     savedLibrarySources,

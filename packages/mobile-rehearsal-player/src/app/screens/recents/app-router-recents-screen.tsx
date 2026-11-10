@@ -17,6 +17,7 @@ import {
   resolvePlaylistResumeEntryId,
   resolveRecentPlaylistItems,
 } from './recent-playlist';
+import { excludeCurrentRecents } from './row-model';
 
 type AppRouterRecentsPlayback = Pick<
   ReturnType<typeof useSavedTrackPlayback>,
@@ -34,6 +35,8 @@ type AppRouterRecentsScreenProps = {
   authorization: DriveSessionMenuController;
   libraryTagUsage: RehearsalLibraryTagUsage[];
   onRequestLibraryDestination: () => void;
+  /** Opens a saved playlist's own page in the Library. */
+  onRequestPlaylistDetail: (playlistId: string) => void;
   onSelectTag: (tag: string) => void;
   onViewAllTags: () => void;
   playback: AppRouterRecentsPlayback;
@@ -50,6 +53,7 @@ export const AppRouterRecentsScreen = ({
   authorization,
   libraryTagUsage,
   onRequestLibraryDestination,
+  onRequestPlaylistDetail,
   onSelectTag,
   onViewAllTags,
   playback,
@@ -61,13 +65,33 @@ export const AppRouterRecentsScreen = ({
   savedSources,
   savedTrackCount,
 }: AppRouterRecentsScreenProps) => {
-  // A playlist that was deleted leaves a stale row; hide it (it ages out).
+  const activePlaylistId = isTransientQueueSession(
+    playback.activePlaylistSession,
+  )
+    ? null
+    : (playback.activePlaylistSession?.playlistId ?? null);
+  const activePlayableItemId = playback.activePlayableItem?.id ?? null;
+
+  // A playlist that was deleted leaves a stale row; hide it (it ages out). The
+  // item that is current in the player is not listed either: the mini-player
+  // already shows it, and it joins Recents once it is no longer current, for
+  // example after the app is reopened.
   const visibleHistory = useMemo(() => {
-    return filterRecentsToExistingPlaylists(
+    const existing = filterRecentsToExistingPlaylists(
       recentRehearsalHistory,
       savedPlaylists,
     );
-  }, [recentRehearsalHistory, savedPlaylists]);
+
+    return excludeCurrentRecents(existing, {
+      activePlayableItemId,
+      activePlaylistId,
+    });
+  }, [
+    activePlayableItemId,
+    activePlaylistId,
+    recentRehearsalHistory,
+    savedPlaylists,
+  ]);
 
   const findLibraryForPlaylist = (
     recentPlaylist: RecentPlaylistRehearsalItem,
@@ -81,12 +105,8 @@ export const AppRouterRecentsScreen = ({
 
   return (
     <RecentsScreen
-      activePlayableItemId={playback.activePlayableItem?.id ?? null}
-      activePlaylistId={
-        isTransientQueueSession(playback.activePlaylistSession)
-          ? null
-          : (playback.activePlaylistSession?.playlistId ?? null)
-      }
+      activePlayableItemId={activePlayableItemId}
+      activePlaylistId={activePlaylistId}
       authorization={authorization}
       canQueueAsNext={playback.activePlayableItem !== null}
       isPlaybackActive={playback.playbackState === 'playing'}
@@ -148,7 +168,12 @@ export const AppRouterRecentsScreen = ({
       }}
       onSelectRecentShortcutTag={onSelectTag}
       onViewAllTags={onViewAllTags}
-      onViewRecentInLibrary={() => {
+      onViewRecentInLibrary={(recentRehearsal) => {
+        if (recentRehearsal.kind === 'playlist') {
+          onRequestPlaylistDetail(recentRehearsal.id);
+          return;
+        }
+
         onRequestLibraryDestination();
       }}
       savedTrackCount={savedTrackCount}

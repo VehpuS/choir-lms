@@ -152,3 +152,25 @@ export const isRecentRowPlaying = (options: {
     recentRehearsal.playableItem.id === options.activePlayableItemId
   );
 };
+
+/**
+ * Recents leaves out what is current in the player (playing or paused): the
+ * mini-player already shows it, and it is listed once it is no longer current,
+ * for example after the app is reopened. Inside a saved playlist session the
+ * playlist is the current item, not its tracks.
+ */
+export const excludeCurrentRecents = (
+  history: readonly RecentRehearsalItem[],
+  current: {
+    activePlayableItemId: string | null;
+    activePlaylistId: string | null;
+  },
+): RecentRehearsalItem[] =>
+  history.filter(
+    (recentRehearsal) =>
+      !isRecentRowPlaying({
+        ...current,
+        isPlaybackActive: current.activePlayableItemId !== null,
+        recentRehearsal,
+      }),
+  );

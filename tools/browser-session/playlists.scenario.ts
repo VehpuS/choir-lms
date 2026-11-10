@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import type { Page } from 'playwright';
 
 import {
@@ -194,18 +195,56 @@ void runScenario({
       .getByText(/Playing · Sunday Set · 1 of 2/)
       .first()
       .waitFor({ timeout: 10_000 });
+    // The playlist that is playing is not in Recents (the mini-player shows it);
+    // neither are its tracks.
     await openTab(page, 'Recents');
-    await page.getByText('Playing now').waitFor({ timeout: WAIT_MS });
-    await shot('4-recents');
-    // The row's menu opens it in the library.
+    await page
+      .getByText('Recents', { exact: true })
+      .first()
+      .waitFor({ timeout: WAIT_MS });
+    await shot('4-recents-while-playing');
+    for (const name of ['Sunday Set', 'Alto Part', 'Soprano Part']) {
+      await page
+        .getByLabel(`More actions for ${name}`)
+        .waitFor({ state: 'detached', timeout: 1000 })
+        .catch(() => {
+          throw new Error(`${name} is listed in Recents while it is playing`);
+        });
+    }
+    pass('The playing playlist, and its tracks, are not listed in Recents');
+
+    // After the app is reopened nothing is playing: the playlist is listed
+    // once, as the playlist and not as its tracks.
+    await page.reload();
+    await openTab(page, 'Recents');
+    await page
+      .getByLabel('More actions for Sunday Set')
+      .waitFor({ timeout: WAIT_MS });
+    await shot('5-recents-after-reload');
+    assert.equal(
+      await page.getByLabel('More actions for Sunday Set').count(),
+      1,
+    );
+    for (const track of ['Alto Part', 'Soprano Part']) {
+      assert.equal(
+        await page.getByLabel(`More actions for ${track}`).count(),
+        0,
+        `${track} is listed in Recents`,
+      );
+    }
+    pass('After a reload Recents lists the playlist once, not its tracks');
+
+    // View in library opens the playlist itself.
     await page.getByLabel('More actions for Sunday Set').click();
     await page.getByText('View in library', { exact: true }).click();
-    // It lands on Library > Playlists with the playlist as it was left.
-    await page.getByText(/PLAYLISTS \(2\)/i).waitFor({ timeout: WAIT_MS });
+    // The detail shows its playback controls and its items.
     await page
-      .getByText('2 items · 2 tracks · 0 loops')
+      .getByText('Playback controls', { exact: false })
       .waitFor({ timeout: WAIT_MS });
-    await shot('5-opened-from-recents');
-    pass('A played playlist is in Recents and View in library finds it');
+    await page
+      .getByText('Tricky bars', { exact: true })
+      .waitFor({ timeout: WAIT_MS });
+    await shot('6-opened-from-recents');
+    pass('View in library from Recents opens the playlist detail');
   },
 });
