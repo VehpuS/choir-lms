@@ -36,7 +36,7 @@
 - [x] 3.1 `browser-test-coverage` skill with `.claude/skills/` symlink
 - [x] 3.2 `AGENTS.md`, `CLAUDE.md`, testing policy and `mobile-web-runtime-debugging` updates; refresh `tools/browser-session/README.md`
 - [x] 3.3a The matrix lane: `slowdown-quality.ts` is shared by `playback-slowdown-quality.matrix` (quick profiles plus the 4x CPU phone) and the new `playback-device-matrix.matrix` (iPhone 14, iPad, a 6x CPU phone, a 22.05 kHz desktop); `--browser=chromium|webkit|firefox` on `run-scenarios.ts` and `browser` / `lane` inputs on the `Browser matrix` workflow; `requires` (and the implied Chromium need of the fake microphone and CPU throttling) skips a scenario instead of failing it. WebKit could not be installed in the sandbox this was written in, so a WebKit run is still to be tried from the workflow
-- [ ] 3.3 CI uploads traces; confirm total `browser` job time and note whether sharding is needed
+- [x] 3.3 CI uploads traces (the `browser` and `browser-matrix` jobs upload `browser-session-output/`, which holds `failure-trace.zip` and `failure-console.txt` on a failure); total `browser` job time confirmed on CI at the end of section 3: `browser` 4m09s with 34 default-lane scenarios, alongside `main` at 4m53s, and the opt-in `matrix` job 6m15s (limit 30 min), all green on the same head. The `browser` job is now shorter than `main`, so a PR does not wait on it and sharding is not needed; revisit if the default lane grows past `main` or the matrix job nears its limit
 
 ## Follow-ups
 
