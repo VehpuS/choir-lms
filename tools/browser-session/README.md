@@ -40,6 +40,8 @@ session that has the pre-installed browser.
 - `loops.scenario.ts` — make a loop, trim it with the steppers, see it under its track and in Loops, edit it, and play it from its start (with a whole-track control).
 - `playback.scenario.ts` / `playback-long-track.scenario.ts` — play, pause, seek, the queue (next, previous, reorder, shuffle), speed and pitch (readout, player rate and audio clock agree), and a ten-minute track.
 - `playback-slowdown-quality.matrix.scenario.ts` — measures the audio the player produces at 1x, 0.75x, 0.5x, 0.25x and +2 semitones on three device profiles (`captureMediaOutput` for speed, the audio tap for the pitch shifter), against baseline-plus-margin thresholds. Slow: matrix lane.
+- `mock-lyrics.ts` — `lyricsLookup: [...]` on the session answers the app's Look up (LRCLIB, `lrclib.net/api/search`) with the given candidates; `session.lyricsSearches` records what was searched.
+- `markers.scenario.ts` / `lyrics.scenario.ts` — add, rename, jump to, loop between and delete markers; view, edit, delete, type and look up lyrics (consent first, kept only on Save).
 - `add-to-playlist-snackbar.scenario.ts` — issue #36.
 - `sheet-music-pdf.scenario.ts` — opens a real four-page PDF as a track's sheet music; the score is a web link whose bytes `webFiles` serves (CORS open), so no Drive is needed.
 - `drive-access-banner.scenario.ts` — issue #40, expired session: one single-line

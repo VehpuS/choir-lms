@@ -16,6 +16,11 @@ import {
   prepareStemMicrophoneWav,
 } from './fake-microphone';
 import { installMediaProbe } from './media-probe';
+import {
+  installMockLyricsLookup,
+  type MockLyricsCandidate,
+  type MockLyricsRecorder,
+} from './mock-lyrics';
 import { fulfillMedia } from './mock-media';
 import { seedMockRecordings } from './mock-recordings';
 import {
@@ -105,6 +110,8 @@ export type MockLibrarySession = {
    * blocked by the guard) and marks it as expected, so the scenario still passes.
    */
   expectBlockedRequest: (urlPart: string) => void;
+  /** Searches the app made of the lyrics lookup service (see `lyricsLookup`). */
+  lyricsSearches: MockLyricsRecorder['searches'];
   /** What the mock Drive was asked; empty when the session has no `drive`. */
   drive: MockDriveRecorder;
   page: Page;
@@ -144,6 +151,11 @@ export const openMockLibrarySession = async (options: {
    * only, no audio), built with `buildMockRecording`.
    */
   recordings?: MockStoredRecording[];
+  /**
+   * What the lyrics lookup service (LRCLIB) answers a search with; searches are
+   * recorded in `session.lyricsSearches`.
+   */
+  lyricsLookup?: MockLyricsCandidate[];
   /**
    * Records the media elements the app plays so a scenario can read their
    * position, speed and state with `readMediaState(page)`.
@@ -216,6 +228,10 @@ export const openMockLibrarySession = async (options: {
   });
 
   const recorder = await installMockDriveRoutes(context, drive);
+  // After the guard, so this mock is checked first.
+  const lyricsRecorder = options.lyricsLookup
+    ? await installMockLyricsLookup(context, options.lyricsLookup)
+    : { searches: [] };
 
   // Runs before any app code, so the library is there on first read.
   await context.addInitScript((storageEntries) => {
@@ -281,6 +297,7 @@ export const openMockLibrarySession = async (options: {
         );
       }
     },
+    lyricsSearches: lyricsRecorder.searches,
     expectBlockedRequest: (urlPart) => {
       const index = blockedRequests.findIndex((blocked) =>
         blocked.includes(urlPart),

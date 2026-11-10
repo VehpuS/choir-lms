@@ -4,6 +4,7 @@ import type { Page } from 'playwright';
 
 import type { MockLibrary } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
 import type { MockStoredRecording } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-entities';
+import type { MockLyricsCandidate } from './mock-lyrics';
 import type { DeviceProfile } from './device-profiles';
 import type { MockDriveAccount } from './mock-drive-session';
 import {
@@ -35,6 +36,8 @@ export const runScenario = async (options: {
   audioTap?: boolean | { sampleRate?: number };
   /** Emulate a device; see `openMockLibrarySession`. */
   profile?: DeviceProfile;
+  /** Lyrics lookup results; see `openMockLibrarySession`. */
+  lyricsLookup?: MockLyricsCandidate[];
   /** Record the media elements the app plays; see `openMockLibrarySession`. */
   mediaProbe?: boolean;
   /** Recordings to seed; see `openMockLibrarySession`. */
@@ -56,6 +59,7 @@ export const runScenario = async (options: {
     audioTap: options.audioTap,
     library: options.library,
     profile: options.profile,
+    lyricsLookup: options.lyricsLookup,
     mediaProbe: options.mediaProbe,
     microphone: options.microphone,
     recordings: options.recordings,
