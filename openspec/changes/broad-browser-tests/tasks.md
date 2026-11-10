@@ -29,6 +29,7 @@
 - [x] 2.11 Composite tracks (list, play, Mix panel mute/solo, built-in and saved presets, export sheet, re-link a missing stem)
 - [x] 2.12 Settings (categories, Bulk selections and Renaming preferences change, save, survive a reload, reset)
 - [x] 2.13 Sheet music beyond PDF (full MusicXML as `.musicxml` and `.mxl`, and MIDI-derived notation); about 12 s, so it stays in the default lane for now
+- [x] 2.14 Sung pitches marked on the rendered score: with the stem as the microphone and Pitch detection on, the open MusicXML and MIDI scores mark the noteheads of E4, C♯4, C4 in turn (the `data-score-pitch-marks` style targets `data-midi` 64, 61, 60, and those noteheads exist in the drawn score); the other-octave setting adds the soft marks; about 16 s alone, so like 2.13 it stays in the default lane for now
 
 ## 3. Agent guidance and CI
 
