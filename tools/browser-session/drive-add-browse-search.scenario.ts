@@ -64,7 +64,27 @@ void runScenario({
     await shot('2-folder');
     pass('Opening a folder lists what is inside it');
 
-    // Search by name looks in every folder.
+    // Inside a folder, search is limited to that folder.
+    await page.getByLabel('Search Google Drive').click();
+    await page.getByRole('textbox').first().fill('bass');
+    await page.keyboard.press('Enter');
+    await page.getByText('No search results').waitFor({ timeout: WAIT_MS });
+    await waitUntil(
+      async () =>
+        session.drive.listQueries.some(
+          (query) =>
+            query.includes(`'${FOLDER_ID}' in parents`) &&
+            query.includes("name contains 'bass'"),
+        ),
+      'the search inside the folder was not limited to it',
+    );
+    await shot('3-search-in-folder');
+    pass('Searching inside a folder looks only in that folder');
+
+    // From My Drive, a name search looks in every folder.
+    await page.getByLabel('Close search').click();
+    await page.getByLabel('Select My Drive').click();
+    await visibleText(page, 'Alto Part.mp3').waitFor({ timeout: WAIT_MS });
     await page.getByLabel('Search Google Drive').click();
     await page.getByRole('textbox').first().fill('bass');
     await page.keyboard.press('Enter');
@@ -72,21 +92,17 @@ void runScenario({
     await page
       .getByText('CURRENT SEARCH SCOPE', { exact: false })
       .waitFor({ timeout: WAIT_MS });
-    if (!queried("name contains 'bass'")) {
-      throw new Error('the search did not ask Drive for the name');
-    }
-
     if (await visibleText(page, 'Alto Part.mp3').count()) {
       throw new Error('the search listed a file that does not match');
     }
 
-    await shot('3-search-bass');
-    pass('Searching a name lists only the matching files');
+    await shot('4-search-bass');
+    pass('Searching a name from My Drive lists only the matching files');
 
     await page.getByRole('textbox').first().fill('tenor');
     await page.keyboard.press('Enter');
     await visibleText(page, 'Tenor Part.mp3').waitFor({ timeout: WAIT_MS });
-    await shot('4-search-tenor');
-    pass('A name search finds a file inside a folder');
+    await shot('5-search-tenor');
+    pass('A name search from My Drive finds a file inside a folder');
   },
 });
