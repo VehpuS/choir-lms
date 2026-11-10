@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { Page } from 'playwright';
 
 import type { MockLibrary } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
+import type { MockDriveAccount } from './mock-drive-session';
 import {
   openMockLibrarySession,
   type MockLibrarySession,
@@ -26,6 +27,8 @@ export type ScenarioContext = {
  */
 export const runScenario = async (options: {
   library: MockLibrary;
+  /** The Google Drive account to sign in as; see `openMockLibrarySession`. */
+  drive?: MockDriveAccount;
   /** Pixel density for the session; see `openMockLibrarySession`. */
   deviceScaleFactor?: number;
   webFiles?: Record<string, MockWebFile>;
@@ -37,6 +40,7 @@ export const runScenario = async (options: {
 
   const session = await openMockLibrarySession({
     deviceScaleFactor: options.deviceScaleFactor,
+    drive: options.drive,
     library: options.library,
     webFiles: options.webFiles,
   });

@@ -72,6 +72,22 @@
           "command": "expo export --clear"
         }
       },
+      "build-browser-test": {
+        "executor": "nx:run-commands",
+        "cache": true,
+        "inputs": [
+          "default",
+          "^production",
+          "{workspaceRoot}/package-lock.json"
+        ],
+        "outputs": [
+          "{workspaceRoot}/packages/mobile-rehearsal-player/dist-browser-test"
+        ],
+        "options": {
+          "cwd": "packages/mobile-rehearsal-player",
+          "command": "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=browser-test-client.apps.googleusercontent.com expo export --clear --output-dir dist-browser-test"
+        }
+      },
       "eas-build": {
         "executor": "@nx/expo:build",
         "cache": false,
@@ -94,7 +110,7 @@
         "executor": "nx:run-commands",
         "cache": false,
         "dependsOn": [
-          "build"
+          "build-browser-test"
         ],
         "options": {
           "cwd": ".",
