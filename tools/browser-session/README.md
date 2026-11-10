@@ -91,6 +91,8 @@ microphone or CPU throttling needs Chromium by itself; add `requires: ['chromium
 The matrix lane runs the slowdown quality checks (`slowdown-quality.ts`) on `QUICK_PROFILES`
 and `MATRIX_PROFILES` (`device-profiles.ts`).
 
+The TypeScript here is checked by `nx run mobile-rehearsal-player:typecheck-browser-tests` (part of `lint`), using `tools/browser-session/tsconfig.json`.
+
 CI runs `browser-test` in its own `browser` job, alongside the `main` job
 (Chromium comes from `npx playwright install`; `playwright` is a pinned
 devDependency). Screenshots land in `browser-session-output/` (ignored).

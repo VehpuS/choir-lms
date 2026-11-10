@@ -6,7 +6,7 @@ import {
   buildMockTrackCopy,
 } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
 import { buildMockBundleFile } from './mock-bundles';
-import { openTrackMenu, waitForTrack, waitUntil } from './page-helpers';
+import { waitForTrack, waitUntil } from './page-helpers';
 import { runScenario } from './scenario-runner';
 
 // Sharing and the access guide. Share a folder: a bundle of its tracks is

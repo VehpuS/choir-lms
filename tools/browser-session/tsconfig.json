@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "lib": ["es2022", "dom"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "composite": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "incremental": false
+  },
+  "include": ["./*.ts"]
+}

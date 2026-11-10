@@ -42,7 +42,7 @@
 
 Unrelated bugs, findings, ideas, improvements and questions met while implementing or browser testing are recorded here as `F.n` subtasks, done after the planned tasks and before archiving.
 
-- [ ] F.1 `tools/browser-session/` is outside every lint and typecheck target (seen in 1.1), so scenario and helper TypeScript is never checked by `nx lint`; add a typecheck/lint target (and `tsconfig`) covering it and fix what it finds
+- [x] F.1 `tools/browser-session/` is outside every lint and typecheck target (seen in 1.1), so scenario and helper TypeScript is never checked by `nx lint`; added `tools/browser-session/tsconfig.json` and the `typecheck-browser-tests` target (a dependency of `lint`); it found one unused import, now removed
 - [ ] F.2 Playing a Drive track on web logs `Failed to load resource: net::ERR_FILE_NOT_FOUND` for a `blob:` URL (seen in 1.2, a generated tone played from the Library tab); find out whether the player revokes a blob URL too early or this is harmless, then fix or document it as baseline noise
 - [ ] F.3 Cache the Expo browser-test export across CI runs (about 115 s of the `browser` job); it only changes when app inputs change, so most test-only PRs would hit it (seen in 1.7)
 - [ ] F.4 Review: the bulk Add to playlist picker (Library Files selection) has no "New playlist" option, while the single-track Add to playlist picker does (seen in 2.2); decide whether the bulk picker should offer it too
