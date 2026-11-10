@@ -55,6 +55,7 @@ session that has the pre-installed browser.
 - `settings.scenario.ts` — the Settings categories, Bulk selections and Renaming preferences (change, saved, kept after a reload, reset to Ask each time).
 - `add-to-playlist-snackbar.scenario.ts` — issue #36.
 - `sheet-music-pdf.scenario.ts` — opens a real four-page PDF as a track's sheet music; the score is a web link whose bytes `webFiles` serves (CORS open), so no Drive is needed.
+- `sheet-music-scores.scenario.ts` — the full MusicXML arrangement as `.musicxml` and as `.mxl` (zipped in the scenario) and the MIDI arrangement turned into notation; each opens in the viewer with a chip per part.
 - `drive-access-banner.scenario.ts` — issue #40, expired session: one single-line
   banner, quiet rows, Reconnect opens sign-in.
 - `drive-access-chips.scenario.ts` — issue #40, authorised session: no banner,

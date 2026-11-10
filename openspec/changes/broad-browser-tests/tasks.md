@@ -28,7 +28,7 @@
 - [x] 2.10 Recordings, including the stem's pitches: E4, C♯4, C4 in order through the app's segmenter
 - [x] 2.11 Composite tracks (list, play, Mix panel mute/solo, built-in and saved presets, export sheet, re-link a missing stem)
 - [x] 2.12 Settings (categories, Bulk selections and Renaming preferences change, save, survive a reload, reset)
-- [ ] 2.13 Sheet music beyond PDF (full MusicXML as `.musicxml` and `.mxl`, and MIDI-derived notation)
+- [x] 2.13 Sheet music beyond PDF (full MusicXML as `.musicxml` and `.mxl`, and MIDI-derived notation); about 12 s, so it stays in the default lane for now
 
 ## 3. Agent guidance and CI
 
