@@ -172,7 +172,7 @@ The currently implemented automated tests run through Nx `test` targets and exec
 - For targeted mobile test runs, use:
   - `npm exec -- nx run mobile-rehearsal-player:test-file -- --file=src/path/to/file.spec.ts`
   - `npm exec -- nx run mobile-rehearsal-player:test-pattern -- --pattern='src/**/*.spec.ts'`
-- Browser tests drive the web export in Chromium against a mock library (no Google sign-in): `npm exec -- nx run mobile-rehearsal-player:browser-test`. Scenarios and the mock library tooling are described in [tools/browser-session/README.md](tools/browser-session/README.md); the target is not part of CI.
+- Browser tests drive the web export in Chromium against a mock library (no Google sign-in): `npm exec -- nx run mobile-rehearsal-player:browser-test`. Scenarios and the mock library tooling are described in [tools/browser-session/README.md](tools/browser-session/README.md); CI runs it in the `browser` job once the unit-level checks pass.
 
 ### Google OAuth for mobile manual testing
 

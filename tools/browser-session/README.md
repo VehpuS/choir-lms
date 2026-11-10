@@ -27,8 +27,9 @@ npx tsx tools/browser-session/track-rename.scenario.ts <outDir>
 npm exec -- nx run mobile-rehearsal-player:browser-test
 ```
 
-`browser-test` is not part of CI: it needs the Playwright browser the remote
-sessions pre-install. Screenshots land in `browser-session-output/` (ignored).
+CI runs `browser-test` in its own `browser` job after the `main` job passes
+(Chromium comes from `npx playwright install`; `playwright` is a pinned
+devDependency). Screenshots land in `browser-session-output/` (ignored).
 
 Tracks show as "unavailable" (no Drive), which is enough for library, playlist
 and menu flows; playback needs real audio and is out of scope. To cover another

@@ -9,7 +9,9 @@ Issue #42. A track has two names: the track entry (shown in Tracks, playlists an
 - Files: renaming a copy of a track that has several copies asks `Rename all copies and the track` or `Rename this copy only`. A `Remember my choice` switch stores the answer on the device and the prompt is skipped afterwards.
 - A name that clashes inside a folder stops the whole rename and leaves the track as it was; the existing `Use "<name>"` recovery is offered.
 
-Not included: a setting to clear the remembered choice (follow-up), renaming loops or playlists (unchanged).
+- Settings gets a `Renaming` page (`Ask each time`, `All copies`, `This copy only`) that shows, changes and clears the remembered choice, like Bulk selections does for its defaults.
+
+Not included: renaming loops or playlists (unchanged).
 
 ## Capabilities
 

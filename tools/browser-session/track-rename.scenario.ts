@@ -21,6 +21,7 @@ import { runScenario, type ScenarioContext } from './scenario-runner';
 const WAIT_MS = 5000;
 // Dialogs fade in; a screenshot taken sooner catches them half-drawn.
 const DIALOG_SETTLE_MS = 500;
+const CHOICE_KEY = 'choirlms.library.track-rename-copies-choice';
 const SOURCES_KEY = storageKey('sources', MOCK_LIBRARY_OWNER_ID);
 const TREE_KEY = libraryFileTreeStorageKey(MOCK_LIBRARY_OWNER_ID);
 
@@ -28,6 +29,9 @@ const trackNames = async ({ session }: ScenarioContext) =>
   ((await session.readStored<DriveAudioSource[]>(SOURCES_KEY)) ?? [])
     .map(({ name }) => name)
     .sort();
+
+const storedChoice = ({ page }: ScenarioContext) =>
+  page.evaluate((key) => window.localStorage.getItem(key), CHOICE_KEY);
 
 const copyNames = async ({ session }: ScenarioContext) => {
   const tree = await session.readStored<RehearsalLibraryFileTree>(TREE_KEY);
@@ -116,5 +120,25 @@ void runScenario({
     assert.equal(await page.getByText('Rename this copy only').count(), 0);
     assert.ok((await trackNames(context)).includes('Alto Final'));
     pass('Remembered choice skips the prompt');
+
+    // 6. Settings > Renaming clears the remembered choice, so the prompt returns.
+    await page.getByLabel('Open Drive session menu').first().click();
+    await page.getByText('Settings', { exact: true }).click();
+    await page.getByLabel('Renaming').click();
+    await page.waitForTimeout(DIALOG_SETTLE_MS);
+    await shot('7-settings-renaming');
+    assert.equal(await storedChoice(context), 'all');
+    await page.getByLabel('Ask each time').click();
+    await page.waitForFunction(
+      (key) => window.localStorage.getItem(key) === null,
+      CHOICE_KEY,
+      { timeout: WAIT_MS },
+    );
+    await page.getByLabel('Close settings').click();
+    await renameFromMenu(context, 'Alto Final', 'Alto Again');
+    await page.getByText('Rename this copy only').waitFor({ timeout: WAIT_MS });
+    await shot('8-prompt-after-clearing');
+    await page.getByText('Cancel', { exact: true }).last().click();
+    pass('Clearing the choice in Settings brings the prompt back');
   },
 });

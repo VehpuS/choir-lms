@@ -42,3 +42,17 @@ Renaming the only Files copy of a track SHALL also rename the track. When the tr
 
 - **WHEN** a rename would clash with another item in a copy's folder
 - **THEN** nothing is renamed and the user is offered a suggested name
+
+### Requirement: The remembered rename choice can be changed in Settings
+
+Settings SHALL have a `Renaming` page showing the remembered answer to the copies prompt as `Ask each time`, `All copies` or `This copy only`. Choosing `Ask each time` SHALL clear the remembered answer so the prompt returns, and a change SHALL apply to the Files rename flow at once.
+
+#### Scenario: Clear the choice
+
+- **WHEN** a user picks `Ask each time` on the `Renaming` page
+- **THEN** the next rename of a track with several copies shows the prompt
+
+#### Scenario: Change the choice
+
+- **WHEN** a user picks `This copy only` on the `Renaming` page
+- **THEN** the next rename of a track with several copies renames only that copy without asking

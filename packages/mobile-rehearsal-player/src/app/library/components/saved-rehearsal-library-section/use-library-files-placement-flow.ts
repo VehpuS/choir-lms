@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { LibraryFilesIssue } from '../../saved-rehearsal-library/library-files-operation-helpers';
@@ -8,9 +8,9 @@ import {
   type TrackRenameCopiesChoice,
 } from '../../saved-rehearsal-library/track-rename-model';
 import {
-  persistTrackRenameCopiesChoice,
-  restoreTrackRenameCopiesChoice,
-} from '../../saved-rehearsal-library/track-rename-preference-storage';
+  trackRenameChoiceStore,
+  useTrackRenameCopiesChoice,
+} from '../../saved-rehearsal-library/track-rename-choice-store';
 import {
   applySuggestedNameToRow,
   isSameRow,
@@ -53,12 +53,7 @@ export const useLibraryFilesPlacementFlow = ({
   const [pendingCopiesChoiceName, setPendingCopiesChoiceName] = useState<
     string | null
   >(null);
-  const [rememberedCopiesChoice, setRememberedCopiesChoice] =
-    useState<TrackRenameCopiesChoice | null>(null);
-
-  useEffect(() => {
-    void restoreTrackRenameCopiesChoice().then(setRememberedCopiesChoice);
-  }, []);
+  const rememberedCopiesChoice = useTrackRenameCopiesChoice();
 
   const getFolderName = (folderId: string) => {
     return files.destinationFolders.find((destination) => {
@@ -202,8 +197,7 @@ export const useLibraryFilesPlacementFlow = ({
     }
 
     if (remember) {
-      setRememberedCopiesChoice(choice);
-      void persistTrackRenameCopiesChoice(choice);
+      void trackRenameChoiceStore.set(choice);
     }
 
     runRename(
