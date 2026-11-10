@@ -37,6 +37,19 @@ export const QUICK_PROFILES: DeviceProfile[] = [
   buildProfile('Desktop Chrome', 1, 44_100),
 ];
 
+/**
+ * The matrix lane's profiles beyond the quick ones: an iPhone and an iPad
+ * viewport (Chromium's audio, not Safari's), a phone with the CPU slowed six
+ * times, and a desktop at the lowest sample rate, so every device, CPU speed
+ * and sample rate is exercised at least once without the full cross product.
+ */
+export const MATRIX_PROFILES: DeviceProfile[] = [
+  buildProfile('iPhone 14', 1, 44_100),
+  buildProfile('iPad (gen 7)', 1, 48_000),
+  buildProfile('Pixel 7', 6, 48_000),
+  buildProfile('Desktop Chrome', 1, 22_050),
+];
+
 /** Every device, CPU speed and sample rate, for the matrix target. */
 export const FULL_PROFILES: DeviceProfile[] = DEVICES.flatMap((device) =>
   CPU_THROTTLES.flatMap((cpu) =>

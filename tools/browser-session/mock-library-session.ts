@@ -2,7 +2,9 @@ import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 import { writeFileSync } from 'node:fs';
-import { chromium, type Browser, type Page } from 'playwright';
+import type { Browser, Page } from 'playwright';
+
+import { browserTypeFor, selectedBrowserName } from './browser-choice';
 
 import {
   installAudioOutputTap,
@@ -169,10 +171,12 @@ export const openMockLibrarySession = async (options: {
   const address = server.address();
   const port = typeof address === 'object' && address ? address.port : 0;
   const url = `http://127.0.0.1:${port}/`;
-  const browser = await chromium.launch({
-    args: options.microphone
-      ? fakeMicrophoneLaunchArgs(await prepareStemMicrophoneWav())
-      : [],
+  const browserName = selectedBrowserName();
+  const browser = await browserTypeFor(browserName).launch({
+    args:
+      options.microphone && browserName === 'chromium'
+        ? fakeMicrophoneLaunchArgs(await prepareStemMicrophoneWav())
+        : [],
   });
   const context = await browser.newContext({
     ...(options.profile ? contextOptionsFor(options.profile) : {}),

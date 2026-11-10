@@ -2,6 +2,11 @@ import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from 'playwright';
 
+import {
+  selectedBrowserName,
+  unmetRequirement,
+  type BrowserName,
+} from './browser-choice';
 import type { MockLibrary } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
 import type { MockStoredRecording } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-entities';
 import type { MockLyricsCandidate } from './mock-lyrics';
@@ -46,9 +51,23 @@ export const runScenario = async (options: {
   microphone?: boolean;
   /** Pixel density for the session; see `openMockLibrarySession`. */
   deviceScaleFactor?: number;
+  /** Browsers the scenario needs (any of them); others skip it. Fake microphone and CPU throttling imply Chromium. */
+  requires?: readonly BrowserName[];
   webFiles?: Record<string, MockWebFile>;
   steps: (context: ScenarioContext) => Promise<void>;
 }) => {
+  const skipReason = unmetRequirement({
+    cpuThrottle: options.profile?.cpuThrottle,
+    microphone: options.microphone,
+    requires: options.requires,
+  });
+
+  if (skipReason) {
+    console.log(`SKIP ${skipReason} (${selectedBrowserName()})`);
+
+    return;
+  }
+
   const outDir = process.argv[2] ?? 'browser-session-output';
 
   mkdirSync(outDir, { recursive: true });

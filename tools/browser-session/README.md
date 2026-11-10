@@ -82,6 +82,15 @@ new one that way when it takes more than a few seconds or needs a quiet CPU.
 It runs on demand: from the Actions tab (`Browser matrix` workflow), or by
 putting the `browser-matrix` label on a pull request.
 
+Other browsers: `run-scenarios.ts ... --browser=webkit` (or `firefox`; install it with
+`npx playwright install webkit`), or the `Browser matrix` workflow's `browser` and `lane`
+inputs. Chromium is the default and the only one on every PR. A scenario using the fake
+microphone or CPU throttling needs Chromium by itself; add `requires: ['chromium']` to
+`runScenario` for any other Chromium-only feature, and it prints `SKIP` under another browser.
+`BROWSER_TEST_BROWSER` is how the choice reaches each scenario (`browser-choice.ts`).
+The matrix lane runs the slowdown quality checks (`slowdown-quality.ts`) on `QUICK_PROFILES`
+and `MATRIX_PROFILES` (`device-profiles.ts`).
+
 CI runs `browser-test` in its own `browser` job, alongside the `main` job
 (Chromium comes from `npx playwright install`; `playwright` is a pinned
 devDependency). Screenshots land in `browser-session-output/` (ignored).

@@ -4,8 +4,24 @@ name: Browser matrix
 # throttling, sample rates, long tracks) are opt-in so every pull request stays
 # fast. Run them from the Actions tab (workflow dispatch), or put the
 # `browser-matrix` label on a pull request; they then re-run on each push to it.
+#
+# WebKit (or Firefox) runs on demand too: dispatch with `browser` set to it
+# (and `lane` default to run the everyday scenarios there). A scenario that needs
+# a Chromium-only feature (the fake microphone, CPU throttling) is skipped, not
+# failed. The browser is installed only when asked for.
 on:
   workflow_dispatch:
+    inputs:
+      browser:
+        description: Browser to run the scenarios in
+        type: choice
+        options: [chromium, webkit, firefox]
+        default: chromium
+      lane:
+        description: Which scenarios to run
+        type: choice
+        options: [matrix, default]
+        default: matrix
   pull_request:
     types: [labeled, synchronize]
 
@@ -33,11 +49,14 @@ jobs:
 
       - run: npm ci
 
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install the browser
+        run: npx playwright install --with-deps ${{ inputs.browser || 'chromium' }}
 
-      - name: Browser matrix tests
-        run: npm exec -- nx run mobile-rehearsal-player:browser-test-matrix --outputStyle=static
+      - name: Build the browser test export
+        run: npm exec -- nx run mobile-rehearsal-player:build-browser-test --outputStyle=static
+
+      - name: Browser tests (${{ inputs.lane || 'matrix' }} lane, ${{ inputs.browser || 'chromium' }})
+        run: npx tsx tools/browser-session/run-scenarios.ts browser-session-output --lane=${{ inputs.lane || 'matrix' }} --browser=${{ inputs.browser || 'chromium' }}
 
       - name: Upload browser matrix screenshots
         if: always()

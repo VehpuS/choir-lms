@@ -35,7 +35,7 @@
 
 - [x] 3.1 `browser-test-coverage` skill with `.claude/skills/` symlink
 - [x] 3.2 `AGENTS.md`, `CLAUDE.md`, testing policy and `mobile-web-runtime-debugging` updates; refresh `tools/browser-session/README.md`
-- [ ] 3.3a The matrix lane (the target and workflow exist from 1.7): fill it with the device descriptor, CPU throttling and sample-rate scenarios; add `--browser=webkit` on demand with `requires` skipping, WebKit installed only by that workflow
+- [x] 3.3a The matrix lane: `slowdown-quality.ts` is shared by `playback-slowdown-quality.matrix` (quick profiles plus the 4x CPU phone) and the new `playback-device-matrix.matrix` (iPhone 14, iPad, a 6x CPU phone, a 22.05 kHz desktop); `--browser=chromium|webkit|firefox` on `run-scenarios.ts` and `browser` / `lane` inputs on the `Browser matrix` workflow; `requires` (and the implied Chromium need of the fake microphone and CPU throttling) skips a scenario instead of failing it. WebKit could not be installed in the sandbox this was written in, so a WebKit run is still to be tried from the workflow
 - [ ] 3.3 CI uploads traces; confirm total `browser` job time and note whether sharding is needed
 
 ## Follow-ups

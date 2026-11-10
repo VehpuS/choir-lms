@@ -3,11 +3,13 @@ import { readdirSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 import { basename, join } from 'node:path';
 
+import { BROWSER_ENV_VARIABLE, isBrowserName } from './browser-choice';
+
 // Runs the browser scenarios: several at a time, every one to the end (a failure
 // does not hide the rest), with a timing line each and a summary.
 //
 //   tsx tools/browser-session/run-scenarios.ts <outDir> [--scenario=<text>]
-//     [--lane=default|matrix] [--parallel=<n>]
+//     [--lane=default|matrix] [--parallel=<n>] [--browser=chromium|webkit|firefox]
 //
 // Lanes: `*.scenario.ts` run by default. `*.matrix.scenario.ts` (device
 // matrices, long tracks, other browsers: slow or sensitive to machine speed)
@@ -31,6 +33,23 @@ const readFlag = (name: string): string | undefined =>
     .find((argument) => argument.startsWith(`--${name}=`))
     ?.slice(name.length + 3);
 
+/** `--browser=<name>` reaches each scenario through the environment. */
+const browserEnvironment = (): Record<string, string> => {
+  const browser = readFlag('browser');
+
+  if (browser === undefined) {
+    return {};
+  }
+
+  if (!isBrowserName(browser)) {
+    throw new Error(
+      `Unknown --browser=${browser}; use chromium, firefox or webkit.`,
+    );
+  }
+
+  return { [BROWSER_ENV_VARIABLE]: browser };
+};
+
 const listScenarios = (lane: Lane, filter: string | undefined): string[] =>
   readdirSync(SCENARIO_DIR)
     .filter((file) => file.endsWith(SCENARIO_SUFFIX))
@@ -42,7 +61,7 @@ const runScenario = (file: string, outDir: string): Promise<ScenarioResult> =>
   new Promise((resolve) => {
     const started = Date.now();
     const child = spawn('npx', ['tsx', join(SCENARIO_DIR, file), outDir], {
-      env: process.env,
+      env: { ...process.env, ...browserEnvironment() },
     });
     let output = '';
 
