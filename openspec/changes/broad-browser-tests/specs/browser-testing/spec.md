@@ -110,3 +110,21 @@ Scenarios SHALL include a multi-minute track and the full-length score and MIDI 
 
 - **WHEN** a scenario seeks near the end of a ten-minute tone track
 - **THEN** the position, progress bar and a loop set there behave as in a short track
+
+### Requirement: WebKit on demand
+
+The suite SHALL run under Chromium by default, and SHALL be runnable under WebKit on demand through the matrix target, skipping scenarios that require Chromium-only features instead of failing them.
+
+#### Scenario: Run under WebKit
+
+- **WHEN** an agent runs the matrix target with `--browser=webkit`
+- **THEN** browser-neutral scenarios run in WebKit and scenarios that require Chromium are reported as skipped
+
+### Requirement: Fixture size budget
+
+Committed test fixtures SHALL stay under a documented size budget, checked by a spec, and are stored in Git without LFS.
+
+#### Scenario: Fixtures grow past the budget
+
+- **WHEN** the fixture directory exceeds the budget
+- **THEN** the spec fails and points to the decision about LFS

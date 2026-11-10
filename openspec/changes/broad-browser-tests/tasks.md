@@ -1,7 +1,7 @@
 ## 1. Tooling
 
 - [ ] 1.1 Network guard in `openMockLibrarySession` and `runScenario` (fails on undeclared hosts), with a scenario that proves it
-- [ ] 1.0 Commit fixtures: `choir-stem.m4a`, the full MIDI file and the full MusicXML score under `src/test-support/fixtures/`, with a spec that checks they exist and parse
+- [ ] 1.0 Commit fixtures: `choir-stem.m4a`, the full MIDI file and the full MusicXML score under `src/test-support/fixtures/`, with a spec that checks they exist, parse, and keep the fixture directory under the size budget; `.gitattributes` entry for the MusicXML
 - [ ] 1.2 `buildToneWav` and Drive/web-link media serving with `Range` support, serving the stem as `audio/mp4` and an AAC codec probe
 - [ ] 1.3a Audio output tap, forced sample rate, CPU throttle and device profiles (quick and full), plus the PCM quality analyzer (pitch drift, clicks, dropouts, clipping, loudness) with unit specs on synthetic signals
 - [ ] 1.3 Fake microphone fed by the stem (launch flags, WAV transcode helper) and a recording-capable session option
@@ -29,5 +29,5 @@
 
 - [ ] 3.1 `browser-test-coverage` skill with `.claude/skills/` symlink
 - [ ] 3.2 `AGENTS.md`, `CLAUDE.md`, testing policy and `mobile-web-runtime-debugging` updates; refresh `tools/browser-session/README.md`
-- [ ] 3.3a `browser-test-matrix` target (device descriptors, CPU throttling, sample rates; WebKit per the decision)
+- [ ] 3.3a `browser-test-matrix` target (device descriptors, CPU throttling, sample rates; `--browser=webkit` on demand with `requires` skipping, WebKit installed only by that target)
 - [ ] 3.3 CI uploads traces; confirm total `browser` job time and note whether sharding is needed
