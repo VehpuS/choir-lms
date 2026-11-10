@@ -56,8 +56,18 @@ const startStaticServer = (distDir: string): Promise<Server> =>
 export type MockWebFile = { body: Buffer; contentType: string };
 
 export type MockLibrarySession = {
+  /**
+   * Throws if the page requested anything outside the local server that the
+   * scenario had not mocked (`runScenario` calls this after the steps).
+   */
+  assertNoBlockedRequests: () => void;
   browser: Browser;
   close: () => Promise<void>;
+  /**
+   * Asserts the app tried to reach `urlPart` (an undeclared external request,
+   * blocked by the guard) and marks it as expected, so the scenario still passes.
+   */
+  expectBlockedRequest: (urlPart: string) => void;
   /** What the mock Drive was asked; empty when the session has no `drive`. */
   drive: MockDriveRecorder;
   page: Page;
@@ -91,6 +101,23 @@ export const openMockLibrarySession = async (options: {
     ...buildMockLibraryStorageEntries(options.library),
     ...buildMockDriveStorageEntries(drive),
   };
+  // Registered first: Playwright runs the most recently added matching route,
+  // so every mock installed after this (Drive, web files) wins and the guard
+  // only sees what a scenario forgot to mock. Offline by construction.
+  const blockedRequests: string[] = [];
+
+  await context.route('**/*', (route) => {
+    const requestUrl = route.request().url();
+
+    if (new URL(requestUrl).origin === new URL(url).origin) {
+      return route.fallback();
+    }
+
+    blockedRequests.push(requestUrl);
+
+    return route.abort('blockedbyclient');
+  });
+
   const recorder = await installMockDriveRoutes(context, drive);
 
   // Runs before any app code, so the library is there on first read.
@@ -115,12 +142,30 @@ export const openMockLibrarySession = async (options: {
   await page.goto(url);
 
   return {
+    assertNoBlockedRequests: () => {
+      if (blockedRequests.length > 0) {
+        throw new Error(
+          `Unmocked external request(s) blocked: ${blockedRequests.join(', ')}. Mock them (drive, webFiles) or fix the app.`,
+        );
+      }
+    },
     browser,
     close: async () => {
       await browser.close();
       server.close();
     },
     drive: recorder,
+    expectBlockedRequest: (urlPart) => {
+      const index = blockedRequests.findIndex((blocked) =>
+        blocked.includes(urlPart),
+      );
+
+      if (index < 0) {
+        throw new Error(`Expected a blocked request containing ${urlPart}`);
+      }
+
+      blockedRequests.splice(index, 1);
+    },
     page,
     readStored: async <T = unknown>(key: string) => {
       const raw = await page.evaluate(

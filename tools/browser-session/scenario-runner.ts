@@ -57,6 +57,8 @@ export const runScenario = async (options: {
       session,
       shot,
     });
+    // Offline guarantee: a request to an undeclared host fails the scenario.
+    session.assertNoBlockedRequests();
   } catch (error) {
     await shot('failure');
     results.push(`FAIL ${(error as Error).message.split('\n')[0]}`);
