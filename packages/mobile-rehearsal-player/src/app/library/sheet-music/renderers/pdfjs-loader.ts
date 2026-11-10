@@ -11,8 +11,8 @@ let pdfjsPromise: Promise<PdfJs> | undefined;
 const loadPdfjs = (): Promise<PdfJs> => {
   pdfjsPromise ??= (async () => {
     const [pdfModule, workerModule] = await Promise.all([
-      import('pdfjs-dist/build/pdf'),
-      import('pdfjs-dist/build/pdf.worker'),
+      import('pdfjs-dist/build/pdf.mjs'),
+      import('pdfjs-dist/build/pdf.worker.mjs'),
     ]);
     const worker = workerModule as {
       default?: unknown;
