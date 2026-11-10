@@ -100,6 +100,7 @@ export const useSavedRehearsalLibrarySectionOrchestration = ({
     isPlaybackPreparing,
     isPlaylistCreateDialogVisible,
     libraryFiles,
+    onShowLibraryFilesSuccessFeedback,
     openLoopBuilderForSource,
     pendingLoopBuilderSourceId,
     pendingLoopId,

@@ -44,6 +44,7 @@ type UseSavedRehearsalLibrarySectionStateParams = Pick<
   | 'updatePlaylist'
   | 'togglePlaylistPlayback'
   | 'openLoopBuilderForSource'
+  | 'onShowLibraryFilesSuccessFeedback'
 >;
 
 export const useSavedRehearsalLibrarySectionState = ({
@@ -54,6 +55,7 @@ export const useSavedRehearsalLibrarySectionState = ({
   isPlaybackPreparing,
   isPlaylistCreateDialogVisible = false,
   libraryFiles,
+  onShowLibraryFilesSuccessFeedback,
   openLoopBuilderForSource,
   pendingLoopBuilderSourceId,
   pendingLoopId,
@@ -106,6 +108,7 @@ export const useSavedRehearsalLibrarySectionState = ({
   const setSelectedView = externalSetSelectedView ?? setInternalSelectedView;
   const trackPlaylistMenu = useSavedRehearsalLibraryTrackPlaylistMenu({
     createPlaylist,
+    onShowSuccessFeedback: onShowLibraryFilesSuccessFeedback,
     savedLibrarySources,
     savedLoops,
     setSelectedPlaylistId: playlistState.setSelectedPlaylistId,

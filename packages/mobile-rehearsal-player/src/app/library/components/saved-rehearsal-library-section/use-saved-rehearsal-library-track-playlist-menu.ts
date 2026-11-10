@@ -7,6 +7,8 @@ import {
 import { useEffect, useReducer, useState } from 'react';
 
 import type { DriveLibrarySource } from '../../drive/utils/drive-library-view-model';
+import { createPlaylistAddSuccessFeedback } from './library-files-success-feedback';
+import type { LibraryFilesSuccessFeedback } from './library-files-success-feedback';
 import {
   buildSavedPlaylist,
   type PlaylistDraftIssue,
@@ -19,6 +21,7 @@ import {
 
 type UseSavedRehearsalLibraryTrackPlaylistMenuOptions = {
   createPlaylist: (playlist: Playlist) => Promise<Playlist | null>;
+  onShowSuccessFeedback?: (feedback: LibraryFilesSuccessFeedback) => void;
   savedLibrarySources: DriveLibrarySource[];
   savedLoops: NamedLoop[];
   setSelectedPlaylistId: (playlistId: string) => void;
@@ -27,6 +30,7 @@ type UseSavedRehearsalLibraryTrackPlaylistMenuOptions = {
 
 export const useSavedRehearsalLibraryTrackPlaylistMenu = ({
   createPlaylist,
+  onShowSuccessFeedback,
   savedLibrarySources,
   savedLoops,
   setSelectedPlaylistId,
@@ -95,6 +99,13 @@ export const useSavedRehearsalLibraryTrackPlaylistMenu = ({
       );
 
       if (persistedPlaylist) {
+        onShowSuccessFeedback?.(
+          createPlaylistAddSuccessFeedback({
+            isNewPlaylist: false,
+            itemLabel: selectedTrackMenuSource.name,
+            playlistName: persistedPlaylist.name,
+          }),
+        );
         closeTrackPlaylistMenu();
       }
 
@@ -113,6 +124,13 @@ export const useSavedRehearsalLibraryTrackPlaylistMenu = ({
     );
 
     if (persistedPlaylist) {
+      onShowSuccessFeedback?.(
+        createPlaylistAddSuccessFeedback({
+          isNewPlaylist: false,
+          itemLabel: selectedTrackMenuLoop.name,
+          playlistName: persistedPlaylist.name,
+        }),
+      );
       closeTrackPlaylistMenu();
     }
   };
@@ -178,6 +196,15 @@ export const useSavedRehearsalLibraryTrackPlaylistMenu = ({
           }
 
           setSelectedPlaylistId(createdPlaylist.id);
+          onShowSuccessFeedback?.(
+            createPlaylistAddSuccessFeedback({
+              isNewPlaylist: true,
+              itemLabel:
+                (selectedTrackMenuSource ?? selectedTrackMenuLoop)?.name ??
+                'Item',
+              playlistName: createdPlaylist.name,
+            }),
+          );
           closeTrackPlaylistMenu();
         })();
       },
