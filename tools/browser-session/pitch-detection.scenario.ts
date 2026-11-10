@@ -37,7 +37,7 @@ void runScenario({
     }, 'the track did not start playing');
     await page.getByLabel(/^Now playing:/).click();
     // Two buttons share the name: the tab, and the toolbox in the playback sheet (last).
-    await page.getByLabel('Practice tools').last().click();
+    await page.getByLabel('Playback practice tools').click();
     await page.getByLabel('Pitch detection, off').click();
     await page.getByLabel('Pitch detection, on').waitFor({ timeout: WAIT_MS });
     await page

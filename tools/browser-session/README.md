@@ -57,6 +57,7 @@ session that has the pre-installed browser.
 - `sheet-music-pdf.scenario.ts` — opens a real four-page PDF as a track's sheet music; the score is a web link whose bytes `webFiles` serves (CORS open), so no Drive is needed.
 - `sheet-music-scores.scenario.ts` — the full MusicXML arrangement as `.musicxml` and as `.mxl` (zipped in the scenario) and the MIDI arrangement turned into notation; each opens in the viewer with a chip per part.
 - `score-pitch-marks.scenario.ts` — with the stem as the microphone and Pitch detection on, the open MusicXML and MIDI-derived scores mark the noteheads (`data-midi` 64, 61, 60 in the `style[data-score-pitch-marks]` rules) for E4, C♯4, C4 in turn, the marked notehead is painted in the accent colour, and Show other-octave matches adds more marks.
+- `practice-tools.scenario.ts` — the Practice tools tab and its menu, the piano keyboard and its controls, Close piano, and the playback screen's separately named `Playback practice tools` button (use `getByLabel('Practice tools', { exact: true })` for the tab).
 - `drive-access-banner.scenario.ts` — issue #40, expired session: one single-line
   banner, quiet rows, Reconnect opens sign-in.
 - `drive-access-chips.scenario.ts` — issue #40, authorised session: no banner,

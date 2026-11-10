@@ -69,7 +69,7 @@ void runScenario({
     await page.getByLabel(/^Now playing:/).click();
 
     // Turn the tool on, record, and stop.
-    await page.getByLabel('Practice tools').last().click();
+    await page.getByLabel('Playback practice tools').click();
     await page.getByLabel('Recording, off').click();
     await page
       .getByText('Ready. Seek to where you want to start.')

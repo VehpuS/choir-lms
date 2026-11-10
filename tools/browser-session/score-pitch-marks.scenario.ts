@@ -66,7 +66,7 @@ void runScenario({
       return state !== null && !state.paused;
     }, 'the track did not start playing');
     await page.getByLabel(/^Now playing:/).click();
-    await page.getByLabel('Practice tools').last().click();
+    await page.getByLabel('Playback practice tools').click();
     await page.getByLabel('Pitch detection, off').click();
     await page.getByLabel('Pitch detection, on').waitFor({ timeout: WAIT_MS });
     await page

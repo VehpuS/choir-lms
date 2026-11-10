@@ -31,6 +31,11 @@ export type PracticeToolsInput = {
 };
 
 export const PRACTICE_TOOLS_LABEL = 'Practice tools';
+/**
+ * The same control on the playback screen. It has its own name so it is not
+ * confused with the bottom tab of the same menu while the screen is open.
+ */
+export const PLAYBACK_PRACTICE_TOOLS_LABEL = 'Playback practice tools';
 
 const TOOL_ROWS = [
   { id: 'piano', label: 'Piano', icon: 'piano-keyboard' },
