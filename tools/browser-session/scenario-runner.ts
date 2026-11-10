@@ -51,6 +51,8 @@ export const runScenario = async (options: {
   microphone?: boolean;
   /** Pixel density for the session; see `openMockLibrarySession`. */
   deviceScaleFactor?: number;
+  /** Window size in points, for example a landscape phone; see `openMockLibrarySession`. */
+  viewport?: { height: number; width: number };
   /** Browsers the scenario needs (any of them); others skip it. Fake microphone and CPU throttling imply Chromium. */
   requires?: readonly BrowserName[];
   webFiles?: Record<string, MockWebFile>;
@@ -82,6 +84,7 @@ export const runScenario = async (options: {
     mediaProbe: options.mediaProbe,
     microphone: options.microphone,
     recordings: options.recordings,
+    viewport: options.viewport,
     webFiles: options.webFiles,
   });
   const { page } = session;

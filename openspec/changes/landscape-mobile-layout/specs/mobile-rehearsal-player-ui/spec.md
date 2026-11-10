@@ -30,7 +30,7 @@ The system SHALL choose a layout class from the window size: `compact` below 600
 
 ### Requirement: Wide-short navigation uses a side rail
 
-In the wide-short layout, Recents, Add and Library SHALL be reached from a rail on the leading edge, with the same destinations and active state as the bottom tabs.
+In the wide-short layout, Library, Add, Recents and the Practice tools menu SHALL be reached from a rail on the leading edge, with the same entries and active state as the bottom tabs. The Library's add button SHALL be a header action rather than a floating button over the list.
 
 #### Scenario: Switch destination
 
@@ -39,7 +39,7 @@ In the wide-short layout, Recents, Add and Library SHALL be reached from a rail 
 
 ### Requirement: Now Playing stays visible while browsing in wide-short
 
-In the wide-short layout, the mini-player SHALL be a Now Playing pane beside the content with the title, transport, progress, loop and speed. When nothing is playing the pane SHALL be hidden and the content SHALL use the full width. Opening the full playback view SHALL show its controls and the Queue or Shaping surface side by side.
+In the wide-short layout, the mini-player SHALL be a Now Playing pane beside the content with the title, transport, progress, loop and speed. When nothing is playing the pane SHALL be hidden and the content SHALL use the full width. Opening the full playback view SHALL show its controls (waveform, transport, speed, pitch, loop, volume) and one surface (Lyrics, Queue, Shaping, or Mix for a composite) side by side, with no control below the fold.
 
 #### Scenario: Browse while playing
 
@@ -69,3 +69,26 @@ In the wide-short layout, the piano, pitch monitor and recording controls SHALL 
 
 - **WHEN** the user closes the tool while a track is playing
 - **THEN** the Now Playing pane returns
+
+### Requirement: Menus and sheets are not clipped in wide-short
+
+In the wide-short layout, menus and sheets that are bottom sheets in the compact layout SHALL open as a trailing side sheet no wider than 380 points that uses the full height and scrolls inside, so every action is reachable.
+
+#### Scenario: Track menu
+
+- **WHEN** the user opens a track's overflow menu in the wide-short layout
+- **THEN** every action is reachable by scrolling the side sheet
+
+#### Scenario: Account menu over a practice tool
+
+- **WHEN** a practice tool is open and the user opens the account menu
+- **THEN** the menu is fully reachable and not covered by the tool
+
+### Requirement: The piano does not cover the header in wide-short
+
+In the wide-short layout, the piano SHALL dock at the bottom of the content area, right of the rail, at a compact height, and SHALL NOT cover the screen header or leave the content with no visible row when the pitch monitor is also open.
+
+#### Scenario: Piano with the pitch monitor
+
+- **WHEN** the piano and the pitch monitor are both open in the wide-short layout
+- **THEN** the screen header stays visible and at least one content row is visible

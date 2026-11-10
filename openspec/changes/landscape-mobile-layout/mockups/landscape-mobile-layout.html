@@ -281,73 +281,327 @@
       th {
         color: var(--text);
       }
+
+      .cap {
+        display: block;
+        width: 844px;
+        height: 390px;
+        border: 2px solid #3a3d52;
+        border-radius: 28px;
+        object-fit: cover;
+      }
+      .pair {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .pair figure {
+        max-width: 844px;
+      }
+      .rail.four {
+        gap: 2px;
+        padding-top: 8px;
+      }
+      .rail.four .tab {
+        padding: 5px 0;
+      }
+      .rail.four .tab i {
+        font-size: 16px;
+      }
+      .sheetside {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: 380px;
+        background: var(--surface);
+        border-left: 1px solid var(--line);
+        padding: 14px 16px;
+        z-index: 6;
+        box-shadow: -12px 0 30px rgba(0, 0, 0, 0.4);
+      }
+      .scrim {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 5;
+      }
+      .sheetside .opt {
+        padding: 11px 4px;
+        border-bottom: 1px solid var(--line);
+      }
+      .sheetside h3 {
+        margin: 0 0 6px;
+        font-size: 16px;
+      }
+      .kbd {
+        position: absolute;
+        left: 111px;
+        right: 0;
+        bottom: 0;
+        height: 104px;
+        background: #fff;
+        border-top: 1px solid var(--line);
+        display: flex;
+        z-index: 4;
+      }
+      .kbd span {
+        flex: 1;
+        border-right: 1px solid #bbb;
+      }
+      .kbd b {
+        position: absolute;
+        top: 0;
+        width: 3.2%;
+        height: 62px;
+        background: #161826;
+        border-radius: 0 0 4px 4px;
+      }
+      .kbdbar {
+        position: absolute;
+        left: 111px;
+        right: 0;
+        bottom: 104px;
+        height: 34px;
+        background: var(--raised);
+        border-top: 1px solid var(--line);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 0 12px;
+        font-size: 11px;
+        color: var(--muted);
+        z-index: 4;
+      }
+      .stem {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        background: var(--surface);
+        border-radius: 8px;
+        margin-bottom: 5px;
+        font-size: 12px;
+      }
+      .stem .sl {
+        flex: 1;
+        height: 4px;
+        background: var(--line);
+        border-radius: 2px;
+        position: relative;
+      }
+      .stem .sl::after {
+        content: '';
+        position: absolute;
+        inset: 0 30% 0 0;
+        background: var(--accent);
+        border-radius: 2px;
+      }
+      .page {
+        flex: 1;
+        background: #fff;
+        margin: 10px;
+        border-radius: 4px;
+        color: #222;
+        padding: 14px;
+        font:
+          12px/1.5 Georgia,
+          serif;
+        overflow: hidden;
+      }
+      .stave {
+        height: 1px;
+        background: #222;
+        margin: 6px 0;
+        box-shadow:
+          0 4px #222,
+          0 8px #222,
+          0 12px #222,
+          0 16px #222;
+      }
+      .fab {
+        position: absolute;
+        right: 16px;
+        bottom: 14px;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #161826;
+        display: grid;
+        place-items: center;
+        font-size: 22px;
+        z-index: 3;
+      }
+      .hdr {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      .hdr h3 {
+        margin: 0;
+        flex: 1;
+      }
+      .ic {
+        width: 30px;
+        height: 30px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .ic.add {
+        background: var(--accent);
+        color: #161826;
+        border-color: var(--accent);
+      }
+      .note {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 4px 0 0;
+        max-width: 844px;
+      }
     </style>
   </head>
   <body>
     <h1>Landscape mobile layout</h1>
     <p>
-      Mock for issue #46, for approval before Part 2 is built. All frames are an
-      iPhone on its side, 844 × 390 points, with the notch on the left. Colours
-      follow the app's Nocturne theme. This is a design reference, not shipped
-      code.
+      Mock for issue #46. All frames are an iPhone on its side, 844 × 390
+      points, notch on the left, Nocturne colours. Section 0 is captured from
+      the real app by the browser tests; sections 1 to 7 are the proposed
+      arrangement for each surface. Design reference, not shipped code.
     </p>
-
-    <h2>0. Today: the bug (Part 1 fixes this)</h2>
+    <h2>0. Captured from the app today</h2>
     <p>
-      The page does not fill the viewport, so white shows through, and the
-      portrait layout is just stretched.
+      Real screenshots from the browser-test export at 844 × 390 (Chromium, mock
+      library, touch off). They show what needs to change; the generator is
+      <code>tools/browser-session/capture-landscape-views.ts</code>.
     </p>
-    <div class="row">
+    <div class="pair">
       <figure>
-        <div class="phone bug">
-          <div class="notch"></div>
-          <div
-            style="
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 844px;
-              height: 300px;
-              background: var(--bg);
-              padding: 12px 60px;
-            "
-          >
-            <h3 style="margin: 0 0 8px">Recents</h3>
-            <div class="item">
-              <span class="art"></span
-              ><span><b>Ubi caritas</b><small>Sopranos · 3:12</small></span>
-            </div>
-          </div>
-          <div class="callout" style="left: 300px; top: 320px">
-            white gap: root is shorter than the viewport
-          </div>
-          <div class="callout" style="left: 0; top: 20px; background: #e6c17a">
-            insets ignored
-          </div>
-        </div>
+        <img
+          class="cap"
+          src="captures/today-library.png"
+          alt="Library: the mini-player and tab bar take a third of the height; the add button sits on the row actions; about 1.5 rows show."
+        />
         <figcaption>
-          Part 1: the root fills the dynamic viewport, paints the app
-          background, and pads by safe-area insets on every edge.
+          Library: the mini-player and tab bar take a third of the height; the
+          add button sits on the row actions; about 1.5 rows show.
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          class="cap"
+          src="captures/today-mini-player.png"
+          alt="Playing: Alto Part, the mini-player and tabs leave one row of content."
+        />
+        <figcaption>
+          Playing: Alto Part, the mini-player and tabs leave one row of content.
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          class="cap"
+          src="captures/today-playback-sheet.png"
+          alt="Playback sheet: the portrait stack. Waveform and transport fill the first screen."
+        />
+        <figcaption>
+          Playback sheet: the portrait stack. Waveform and transport fill the
+          first screen.
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          class="cap"
+          src="captures/today-playback-sheet-scrolled.png"
+          alt="Speed, pitch, loop, volume and lyrics are below the fold and the queue button is out of reach without scrolling."
+        />
+        <figcaption>
+          Speed, pitch, loop, volume and lyrics are below the fold and the queue
+          button is out of reach without scrolling.
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          class="cap"
+          src="captures/today-pitch-and-piano.png"
+          alt="Pitch strip and piano together: the header and add button paint over the strip and no content is left."
+        />
+        <figcaption>
+          Pitch strip and piano together: the header and add button paint over
+          the strip and no content is left.
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          class="cap"
+          src="captures/today-track-menu.png"
+          alt="Overflow sheet: clipped at the third item; the list scrolls inside a short window."
+        />
+        <figcaption>
+          Overflow sheet: clipped at the third item; the list scrolls inside a
+          short window.
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          class="cap"
+          src="captures/today-account-menu.png"
+          alt="Account menu over the piano: clipped by the bottom of the screen."
+        />
+        <figcaption>
+          Account menu over the piano: clipped by the bottom of the screen.
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          class="cap"
+          src="captures/today-sheet-music.png"
+          alt="Sheet music viewer"
+        />
+        <figcaption>
+          Sheet music viewer: already full height with a trailing control column
+          (close, zoom, page, tools, play). It stays as it is.
         </figcaption>
       </figure>
     </div>
-
-    <h2>1. Library with the Now Playing pane</h2>
+    <h2>1. Library with the rail</h2>
     <p>
-      Rail on the leading edge, content in the middle, Now Playing on the
-      trailing side. Browsing never covers playback.
+      The rail has four entries: Library, Add, Recents and Practice tools (which
+      opens the tools menu, as the tab does today). The add button moves into
+      the header as <b>+</b> so it never covers a row; the chip row scrolls
+      sideways.
     </p>
     <div class="row">
       <figure>
         <div class="phone">
           <div class="notch"></div>
-          <nav class="rail">
-            <div class="tab"><i>⟲</i>Recents</div>
-            <div class="tab"><i>＋</i>Add</div>
+          <nav class="rail four">
             <div class="tab on"><i>♫</i>Library</div>
+            <div class="tab"><i>＋</i>Add</div>
+            <div class="tab"><i>⟲</i>Recents</div>
+            <div class="tab"><i>🧰</i>Tools</div>
           </nav>
           <div class="main">
-            <h3>Library</h3>
+            <div class="hdr">
+              <h3>Library</h3>
+              <span class="ic">≡</span><span class="ic">⌕</span
+              ><span class="ic add">＋</span><span class="ic">◉</span>
+            </div>
+            <div class="chips" style="margin-bottom: 8px">
+              <span
+                class="chip"
+                style="color: var(--accentText); border-color: var(--accent)"
+                >Files</span
+              ><span class="chip">Tracks</span><span class="chip">Loops</span
+              ><span class="chip">Playlists</span
+              ><span class="chip">Composites</span
+              ><span class="chip">Recordings</span
+              ><span class="chip">Tags</span>
+            </div>
             <div class="item">
               <span class="art"></span
               ><span><b>Ubi caritas</b><small>Sopranos · 3:12</small></span>
@@ -364,16 +618,57 @@
               <span class="art"></span
               ><span><b>Nunc dimittis</b><small>Basses · 3:40</small></span>
             </div>
+          </div>
+        </div>
+        <figcaption>
+          Nothing playing: the pane is hidden and the list uses the full width.
+        </figcaption>
+      </figure>
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <nav class="rail four">
+            <div class="tab on"><i>♫</i>Library</div>
+            <div class="tab"><i>＋</i>Add</div>
+            <div class="tab"><i>⟲</i>Recents</div>
+            <div class="tab"><i>🧰</i>Tools</div>
+          </nav>
+          <div class="main">
+            <div class="hdr">
+              <h3>Library</h3>
+              <span class="ic">≡</span><span class="ic">⌕</span
+              ><span class="ic add">＋</span><span class="ic">◉</span>
+            </div>
+            <div class="chips" style="margin-bottom: 8px">
+              <span
+                class="chip"
+                style="color: var(--accentText); border-color: var(--accent)"
+                >Files</span
+              ><span class="chip">Tracks</span><span class="chip">Loops</span
+              ><span class="chip">Playlists</span>
+            </div>
             <div class="item">
               <span class="art"></span
-              ><span><b>Ave verum corpus</b><small>Tenors · 2:55</small></span>
+              ><span><b>Ubi caritas</b><small>Sopranos · 3:12</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Locus iste</b><small>Full choir · 2:48</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Cantate Domino</b><small>Altos · 4:05</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Nunc dimittis</b><small>Basses · 3:40</small></span>
             </div>
           </div>
           <aside class="pane">
-            <div class="art"></div>
+            <div class="art" style="height: 70px"></div>
             <div>
               <b>Ubi caritas</b><br /><small style="color: var(--muted)"
-                >Sopranos · Bars 5–12 loop</small
+                >Sopranos · loop 5–12</small
               >
             </div>
             <div class="bar"></div>
@@ -381,22 +676,111 @@
               <span>⏮</span><span class="play">▶</span><span>⏭</span>
             </div>
             <div class="chips">
-              <span class="chip">Loop</span><span class="chip">0.85×</span
-              ><span class="chip">Queue</span>
+              <span class="chip">0.85×</span><span class="chip">+0 st</span
+              ><span class="chip">Loop</span>
             </div>
           </aside>
         </div>
         <figcaption>
-          Nothing playing: the pane is hidden and the Library uses the full
-          width.
+          Playing: the Now Playing pane sits beside the list (280 points), the
+          list keeps about 4 rows.
         </figcaption>
       </figure>
     </div>
-
-    <h2>2. Full playback view: controls left, queue or shaping right</h2>
+    <h2>2. Recents and Add</h2>
     <p>
-      Switching between Now Playing, Queue and Shaping changes only the right
-      column.
+      Both are single-column text and lists today; in landscape they keep one
+      column but cap line length and put the Drive tabs in the header row.
+    </p>
+    <div class="row">
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <nav class="rail four">
+            <div class="tab"><i>♫</i>Library</div>
+            <div class="tab"><i>＋</i>Add</div>
+            <div class="tab on"><i>⟲</i>Recents</div>
+            <div class="tab"><i>🧰</i>Tools</div>
+          </nav>
+          <div class="main">
+            <div class="hdr">
+              <h3>Recents</h3>
+              <span class="ic">◉</span>
+            </div>
+            <div style="display: flex; gap: 14px">
+              <div style="flex: 1">
+                <small style="color: var(--muted)"
+                  >Recent rehearsal entry points</small
+                >
+                <div class="item">
+                  <span class="art"></span
+                  ><span><b>Ubi caritas</b><small>Sopranos · 3:12</small></span>
+                </div>
+                <div class="item">
+                  <span class="art"></span
+                  ><span
+                    ><b>Locus iste</b><small>Full choir · 2:48</small></span
+                  >
+                </div>
+                <div class="item">
+                  <span class="art"></span
+                  ><span><b>Cantate Domino</b><small>Altos · 4:05</small></span>
+                </div>
+              </div>
+              <div style="flex: 1">
+                <small style="color: var(--muted)">Popular tags</small>
+                <div class="chips" style="margin-top: 8px">
+                  <span class="chip">Soprano</span
+                  ><span class="chip">Easter</span
+                  ><span class="chip">Advent</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption>
+          Recents: entry points and tags side by side when there is room.
+        </figcaption>
+      </figure>
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <nav class="rail four">
+            <div class="tab"><i>♫</i>Library</div>
+            <div class="tab on"><i>＋</i>Add</div>
+            <div class="tab"><i>⟲</i>Recents</div>
+            <div class="tab"><i>🧰</i>Tools</div>
+          </nav>
+          <div class="main">
+            <div class="hdr">
+              <h3>Add</h3>
+              <span
+                class="chip"
+                style="color: var(--accentText); border-color: var(--accent)"
+                >My Drive</span
+              ><span class="chip">Shared with you</span><span class="ic">⟳</span
+              ><span class="ic">⌕</span><span class="ic">◉</span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Rehearsal</b><small>Folder</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Easter 2026</b><small>Folder</small></span>
+            </div>
+          </div>
+        </div>
+        <figcaption>
+          Add: the My Drive and Shared with you tabs join the header row.
+        </figcaption>
+      </figure>
+    </div>
+    <h2>3. Full playback view</h2>
+    <p>
+      Controls on the left (waveform, transport, speed, pitch, loop, volume) and
+      one surface on the right; Lyrics, Queue and Shaping are tabs, so nothing
+      is below the fold.
     </p>
     <div class="row">
       <figure>
@@ -404,67 +788,326 @@
           <div class="notch"></div>
           <div class="two" style="padding-left: 47px">
             <div class="col">
-              <div
-                class="pane"
-                style="width: auto; border: 0; background: none; padding: 0"
-              >
-                <div class="art" style="height: 110px"></div>
-                <div>
-                  <b>Ubi caritas</b><br /><small style="color: var(--muted)"
-                    >Sopranos</small
-                  >
-                </div>
-                <div class="bar"></div>
-                <div class="transport">
-                  <span>⏮</span><span class="play">▶</span><span>⏭</span>
-                </div>
+              <div class="hdr">
+                <span class="chip">PLAYING</span><span style="flex: 1"></span
+                ><span class="ic">🧰</span><span class="ic">⋮</span
+                ><span class="ic">⌄</span>
               </div>
+              <b style="font-size: 18px">Ubi caritas</b>
+              <div
+                style="
+                  display: flex;
+                  gap: 2px;
+                  height: 36px;
+                  align-items: center;
+                  margin: 6px 0;
+                "
+              >
+                <span
+                  style="
+                    flex: 1;
+                    height: 70%;
+                    background: var(--accent);
+                    border-radius: 1px;
+                  "
+                ></span
+                ><span
+                  style="
+                    flex: 1;
+                    height: 70%;
+                    background: var(--accent);
+                    border-radius: 1px;
+                  "
+                ></span
+                ><span
+                  style="
+                    flex: 1;
+                    height: 70%;
+                    background: var(--accent);
+                    border-radius: 1px;
+                  "
+                ></span
+                ><span
+                  style="
+                    flex: 1;
+                    height: 70%;
+                    background: var(--accent);
+                    border-radius: 1px;
+                  "
+                ></span
+                ><span
+                  style="
+                    flex: 1;
+                    height: 70%;
+                    background: var(--accent);
+                    border-radius: 1px;
+                  "
+                ></span
+                ><span
+                  style="
+                    flex: 1;
+                    height: 70%;
+                    background: var(--accent);
+                    border-radius: 1px;
+                  "
+                ></span
+                ><span style="flex: 1; height: 100%; background: #fff"></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span
+                ><span
+                  style="flex: 1; height: 60%; background: var(--line)"
+                ></span>
+              </div>
+              <div class="transport">
+                <span>↺15</span><span class="play">❚❚</span><span>↻15</span>
+              </div>
+              <div class="chips" style="margin-top: 10px">
+                <span class="chip">Speed 1.00×</span
+                ><span class="chip">Pitch 0 st</span
+                ><span class="chip">⟲ Loop</span>
+              </div>
+              <div class="bar" style="margin-top: 12px"></div>
             </div>
             <div class="col">
               <div class="chips" style="margin-bottom: 10px">
-                <span class="chip">Now playing</span>
                 <span
                   class="chip"
                   style="color: var(--accentText); border-color: var(--accent)"
-                  >Queue</span
-                >
-                <span class="chip">Shaping</span>
+                  >Lyrics</span
+                ><span class="chip">Queue</span
+                ><span class="chip">Shaping</span>
               </div>
-              <div class="item">
-                <span class="art"></span
-                ><span><b>Ubi caritas</b><small>Playing</small></span>
-              </div>
-              <div class="item">
-                <span class="art"></span
-                ><span><b>Locus iste</b><small>Up next</small></span>
-              </div>
-              <div class="item">
-                <span class="art"></span
-                ><span><b>Cantate Domino</b><small>Then</small></span>
+              <div style="line-height: 2; font-size: 15px">
+                Kyrie eleison<br /><b style="color: var(--accentText)"
+                  >Christe eleison</b
+                ><br />Kyrie eleison<br />Gloria in excelsis Deo
               </div>
             </div>
           </div>
         </div>
+        <figcaption>
+          Lyrics tab: the lyrics scroll on the right while the controls stay
+          put.
+        </figcaption>
+      </figure>
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="two" style="padding-left: 47px">
+            <div class="col">
+              <div class="hdr"><span class="chip">PLAYING</span></div>
+              <b style="font-size: 18px">Ubi caritas</b>
+              <div class="bar" style="margin: 12px 0"></div>
+              <div class="transport">
+                <span>↺15</span><span class="play">❚❚</span><span>↻15</span>
+              </div>
+              <div class="chips" style="margin-top: 10px">
+                <span class="chip">Speed 1.00×</span
+                ><span class="chip">Pitch 0 st</span>
+              </div>
+            </div>
+            <div class="col">
+              <div class="chips" style="margin-bottom: 10px">
+                <span class="chip">Lyrics</span
+                ><span
+                  class="chip"
+                  style="color: var(--accentText); border-color: var(--accent)"
+                  >Queue</span
+                ><span class="chip">Shaping</span>
+              </div>
+              <div class="item">
+                <span class="art"></span
+                ><span><b>Ubi caritas</b><small>Sopranos · 3:12</small></span>
+              </div>
+              <div class="item">
+                <span class="art"></span
+                ><span><b>Locus iste</b><small>Full choir · 2:48</small></span>
+              </div>
+              <div class="item">
+                <span class="art"></span
+                ><span><b>Cantate Domino</b><small>Altos · 4:05</small></span>
+              </div>
+              <div class="item">
+                <span class="art"></span
+                ><span><b>Nunc dimittis</b><small>Basses · 3:40</small></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption>
+          Queue tab: reorder and play from the right column; the transport stays
+          on the left.
+        </figcaption>
       </figure>
     </div>
-
-    <h2>3. Practice tools beside the content</h2>
+    <h2>4. Menus and sheets become side sheets</h2>
     <p>
-      Pitch monitor and recording take a trailing column instead of a strip, so
-      the list keeps its full height. The piano is a full-width keyboard that
-      scrolls sideways.
+      Bottom sheets (track menu, add to playlist, account, queue actions) open
+      as a trailing side sheet up to 380 points wide, full height, scrolling
+      inside, with a scrim. Nothing is clipped by a short window.
     </p>
     <div class="row">
       <figure>
         <div class="phone">
           <div class="notch"></div>
-          <nav class="rail">
-            <div class="tab"><i>⟲</i>Recents</div>
-            <div class="tab"><i>＋</i>Add</div>
+          <nav class="rail four">
             <div class="tab on"><i>♫</i>Library</div>
+            <div class="tab"><i>＋</i>Add</div>
+            <div class="tab"><i>⟲</i>Recents</div>
+            <div class="tab"><i>🧰</i>Tools</div>
           </nav>
           <div class="main">
-            <h3>Library</h3>
+            <div class="hdr"><h3>Library</h3></div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Ubi caritas</b><small>Sopranos · 3:12</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Locus iste</b><small>Full choir · 2:48</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Cantate Domino</b><small>Altos · 4:05</small></span>
+            </div>
+          </div>
+          <div class="scrim"></div>
+          <div class="sheetside">
+            <h3>Alto Part</h3>
+            <div class="opt">⟲ Make loop</div>
+            <div class="opt">☰ Add to playlist</div>
+            <div class="opt">▭ Show in Add</div>
+            <div class="opt">↗ Open in Google Drive</div>
+            <div class="opt">✎ Rename</div>
+            <div class="opt">♪ Sheet music</div>
+          </div>
+        </div>
+        <figcaption>
+          Track menu: every action reachable by scrolling the side sheet.
+        </figcaption>
+      </figure>
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <nav class="rail four">
+            <div class="tab on"><i>♫</i>Library</div>
+            <div class="tab"><i>＋</i>Add</div>
+            <div class="tab"><i>⟲</i>Recents</div>
+            <div class="tab"><i>🧰</i>Tools</div>
+          </nav>
+          <div class="main">
+            <div class="hdr">
+              <h3>Library</h3>
+              <span class="ic">◉</span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Ubi caritas</b><small>Sopranos · 3:12</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Locus iste</b><small>Full choir · 2:48</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Cantate Domino</b><small>Altos · 4:05</small></span>
+            </div>
+          </div>
+          <div class="scrim"></div>
+          <div class="sheetside">
+            <h3>
+              Drive connected <small style="color: #81c995">CONNECTED</small>
+            </h3>
+            <div class="opt">Refresh authorization</div>
+            <div class="opt">Forget session</div>
+            <div class="opt">Back up library</div>
+            <div class="opt">Restore from backup</div>
+            <div class="opt">Settings</div>
+          </div>
+        </div>
+        <figcaption>
+          Account menu: same side sheet, above any open practice tool.
+        </figcaption>
+      </figure>
+    </div>
+    <h2>5. Practice tools</h2>
+    <p>
+      Pitch and Recording open in the trailing panel (replacing the Now Playing
+      pane while open). The piano keeps its full-width keyboard but at a compact
+      height (104 points) with its controls in a 34-point bar, docked at the
+      bottom of the content area to the right of the rail, so it never covers
+      the header or the add button.
+    </p>
+    <div class="row">
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <nav class="rail four">
+            <div class="tab"><i>♫</i>Library</div>
+            <div class="tab"><i>＋</i>Add</div>
+            <div class="tab"><i>⟲</i>Recents</div>
+            <div class="tab"><i>🧰</i>Tools</div>
+          </nav>
+          <div class="main">
+            <div class="hdr">
+              <h3>Library</h3>
+              <span class="ic add">＋</span>
+            </div>
             <div class="item">
               <span class="art"></span
               ><span><b>Ubi caritas</b><small>Sopranos · 3:12</small></span>
@@ -484,42 +1127,232 @@
                 class="chip"
                 style="color: var(--accentText); border-color: var(--accent)"
                 >Pitch</span
-              ><span class="chip">Piano</span><span class="chip">Record</span>
+              ><span class="chip">Piano</span><span class="chip">Record</span
+              ><span class="ic" style="margin-left: auto">✕</span>
             </div>
-            <div class="meter">A4</div>
-            <small style="color: var(--muted)">+8 cents · sharp</small>
+            <div class="meter">E4</div>
+            <small style="color: var(--muted)">C♯4, 17 cents flat</small>
             <div class="bar"></div>
-            <div class="transport" style="font-size: 16px">
-              <span>● Record</span><span>⏺ 0:00</span>
+            <div class="chips">
+              <span class="chip">⤢ Full view</span
+              ><span class="chip">Min volume</span>
             </div>
           </aside>
         </div>
+        <figcaption>Pitch monitor in the trailing panel.</figcaption>
+      </figure>
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <nav class="rail four">
+            <div class="tab"><i>♫</i>Library</div>
+            <div class="tab"><i>＋</i>Add</div>
+            <div class="tab"><i>⟲</i>Recents</div>
+            <div class="tab"><i>🧰</i>Tools</div>
+          </nav>
+          <div class="main">
+            <div class="hdr">
+              <h3>Library</h3>
+              <span class="ic add">＋</span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Ubi caritas</b><small>Sopranos · 3:12</small></span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Locus iste</b><small>Full choir · 2:48</small></span>
+            </div>
+          </div>
+          <aside class="pane">
+            <div class="art" style="height: 70px"></div>
+            <div>
+              <b>Ubi caritas</b><br /><small style="color: var(--muted)"
+                >Sopranos · loop 5–12</small
+              >
+            </div>
+            <div class="bar"></div>
+            <div class="transport">
+              <span>⏮</span><span class="play">▶</span><span>⏭</span>
+            </div>
+            <div class="chips">
+              <span class="chip">0.85×</span><span class="chip">+0 st</span
+              ><span class="chip">Loop</span>
+            </div>
+          </aside>
+          <div class="kbdbar">
+            🔈 ▬▬ 🔍 ▬▬ <span style="margin-left: auto">✕</span>
+          </div>
+          <div class="kbd">
+            <span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><span></span><b style="left: 5%"></b
+            ><b style="left: 11%"></b><b style="left: 22%"></b
+            ><b style="left: 28%"></b><b style="left: 34%"></b
+            ><b style="left: 45%"></b><b style="left: 51%"></b
+            ><b style="left: 62%"></b><b style="left: 68%"></b
+            ><b style="left: 74%"></b>
+          </div>
+        </div>
         <figcaption>
-          A tool panel opens beside the content and takes the pane's place while
-          it is open; the Now Playing pane returns when the tool is closed.
+          Piano: a compact keyboard at the bottom; the Now Playing pane stays
+          because the keyboard is not a trailing panel.
+        </figcaption>
+      </figure>
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <nav class="rail four">
+            <div class="tab"><i>♫</i>Library</div>
+            <div class="tab"><i>＋</i>Add</div>
+            <div class="tab"><i>⟲</i>Recents</div>
+            <div class="tab"><i>🧰</i>Tools</div>
+          </nav>
+          <div class="main">
+            <div class="hdr">
+              <h3>Library</h3>
+              <span class="ic add">＋</span>
+            </div>
+            <div class="item">
+              <span class="art"></span
+              ><span><b>Ubi caritas</b><small>Sopranos · 3:12</small></span>
+            </div>
+          </div>
+          <aside class="side">
+            <div class="chips">
+              <span
+                class="chip"
+                style="color: var(--accentText); border-color: var(--accent)"
+                >Pitch</span
+              ><span class="chip">Record</span
+              ><span class="ic" style="margin-left: auto">✕</span>
+            </div>
+            <div class="meter" style="height: 44px">E4</div>
+            <div class="bar"></div>
+            <div class="transport" style="font-size: 14px">
+              <span>● Record</span><span>0:12</span>
+            </div>
+          </aside>
+          <div class="kbdbar">
+            🔈 ▬▬ 🔍 ▬▬ <span style="margin-left: auto">✕</span>
+          </div>
+          <div class="kbd">
+            <span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><span></span>
+          </div>
+        </div>
+        <figcaption>
+          All three: pitch and recording share the trailing panel, the piano
+          sits below the content; the list still shows a row.
         </figcaption>
       </figure>
     </div>
-
-    <h2>4. Layout classes</h2>
+    <h2>6. Sheet music, lyrics and composites</h2>
+    <p>
+      Viewers take the full window height. Sheet music gets a thin control
+      column on the trailing side (pages, part chips, go to page); the composite
+      Mix panel becomes a stem list beside the transport.
+    </p>
+    <div class="row">
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <div style="flex: 1; display: flex; padding-left: 47px">
+            <div class="page">
+              <b>Soprano score</b>
+              <div class="stave"></div>
+              <div class="stave"></div>
+              <div class="stave"></div>
+              <div class="stave"></div>
+            </div>
+            <div class="side" style="width: 150px">
+              <div class="hdr"><b>Page 1 of 4</b></div>
+              <div class="chips">
+                <span class="chip">◀</span><span class="chip">▶</span>
+              </div>
+              <div class="chip" style="margin-top: 6px; align-self: flex-start">
+                Go to page
+              </div>
+              <div class="chip" style="align-self: flex-start">
+                Part: Soprano
+              </div>
+              <div class="chip" style="align-self: flex-start">Pitch marks</div>
+              <div style="margin-top: auto" class="ic">✕</div>
+            </div>
+          </div>
+        </div>
+        <figcaption>
+          Sheet music: the page uses the full height; the control column
+          collapses to icons on tap.
+        </figcaption>
+      </figure>
+      <figure>
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="two" style="padding-left: 47px">
+            <div class="col">
+              <div class="hdr">
+                <span class="chip">PLAYING · Kyrie mix</span>
+              </div>
+              <div class="transport" style="margin-top: 20px">
+                <span>↺15</span><span class="play">❚❚</span><span>↻15</span>
+              </div>
+              <div class="bar" style="margin: 16px 0"></div>
+              <div class="chips">
+                <span class="chip">1.00×</span><span class="chip">0 st</span>
+              </div>
+            </div>
+            <div class="col">
+              <div class="chips" style="margin-bottom: 8px">
+                <span
+                  class="chip"
+                  style="color: var(--accentText); border-color: var(--accent)"
+                  >Mix</span
+                ><span class="chip">Lyrics</span><span class="chip">Queue</span>
+              </div>
+              <div class="stem">
+                <b>Soprano (me)</b><span class="sl"></span>M S
+              </div>
+              <div class="stem"><b>Alto</b><span class="sl"></span>M S</div>
+              <div class="stem"><b>Tenor</b><span class="sl"></span>M S</div>
+              <div class="chips">
+                <span class="chip">All parts ▾</span
+                ><span class="chip">Save as preset</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption>
+          Composite: Mix is another tab in the right column; every stem row is
+          visible at once.
+        </figcaption>
+      </figure>
+    </div>
+    <h2>7. Layout classes</h2>
     <table>
       <tr>
         <th>Class</th>
         <th>Window</th>
         <th>Navigation</th>
         <th>Playback</th>
+        <th>Sheets and menus</th>
       </tr>
       <tr>
         <td>compact</td>
         <td>width &lt; 600</td>
         <td>Bottom tabs</td>
         <td>Mini-player band</td>
+        <td>Bottom sheets</td>
       </tr>
       <tr>
         <td>wide-short</td>
         <td>width ≥ 600 and height &lt; 500</td>
-        <td>Side rail</td>
+        <td>Side rail (4 entries)</td>
         <td>Now Playing pane</td>
+        <td>Trailing side sheets</td>
       </tr>
     </table>
     <p style="margin-top: 8px">
