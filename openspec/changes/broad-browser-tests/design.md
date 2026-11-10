@@ -38,20 +38,23 @@ Existing: add-to-playlist snackbar, Drive access banner and chips, track rename,
 
 ## Fixtures (decided)
 
-- Choir stem: committed as above (from the user's Drive link).
+- Choir stem: committed as above (from the user's Drive link). Its sung notes are E4, then C#4, then C; the pitch scenarios assert exactly that progression.
 - Library bundles for backup, restore and import: generated in the scenario with the `audio-library-runtime` bundle builder, so they follow the code's format and upgrade steps rather than a frozen file.
-- Score fixtures: a MusicXML score (7 parts: Soprano, Mezzo-soprano, Alto, Tenor, Baritone, Bass, Beatbox; 861 measures; 1.6 MB raw, about 39 KB gzipped) and a Standard MIDI file (format 1, 7 tracks, 62 KB). The MusicXML is committed gzipped-as-`.mxl` or trimmed (see open questions) rather than as 1.6 MB of XML.
-- Pitch: recording and pitch scenarios assert E4, then C#4, then C4 from the stem, as well as the take lifecycle.
+- Score fixtures, **kept full length** so the viewer is not tested only on toy input: the MusicXML (7 parts: Soprano, Mezzo-soprano, Alto, Tenor, Baritone, Bass, Beatbox; 861 measures; 1.6 MB) is committed untrimmed as `.musicxml`, with its compressed `.mxl` form (about 39 KB, which the loader accepts) built from it in the scenario to cover both paths; and the Standard MIDI file (format 1, 7 tracks, 62 KB). Both are the user's own arrangements, so there is no licensing concern. The stem is unrelated to the score, so score-follow and "my parts" scenarios use the score on its own (the stem is not time-aligned to it).
+- Long audio: generated tones of several minutes (`buildToneWav({ seconds: 600 })`, served with `Range`) stand in for a long track, so seeking, the progress bar, loops late in a track and waveform extraction are not only tried on a three-second file. They are generated in memory, so nothing large is committed.
+
+## Playback quality at reduced speed, on varied devices
+
+Slowing a track must not make it sound sloppy. The web path uses the SoundTouch AudioWorklet pitch shifter (`web-pitch-shifter.web.ts`) on a Web Audio `AudioContext`. A scenario cannot listen, so it measures the audio the app produces:
+
+- **Tap the output.** An init script wraps `AudioContext` to (a) force a device sample rate and (b) copy what reaches `destination` into a PCM buffer the scenario reads back. Analysis runs in Node over that buffer.
+- **Checks at 1x, 0.75x, 0.5x and 0.25x** on the long tone and the stem: pitch stays on the source note within a tolerance in cents (using the `pitch-detection` package, so the same estimator the app ships), loudness stays within a band of the 1x render, there are no clicks (a cap on the largest sample-to-sample jump after smoothing out the signal), no dropouts (no silent run inside a sounding region longer than a few milliseconds), and no clipping. Pitch shift (semitones) is checked the same way: the detected note moves by exactly the requested interval at constant speed.
+- **Device matrix**, each a profile applied by the helper: Playwright's device descriptors (a recent iPhone, a mid-range Pixel, an iPad, a desktop window), CPU throttling through the DevTools protocol (1x, 4x and 6x slowdown, to simulate low-end phones, where a worklet that misses its deadline shows up as dropouts), and forced `AudioContext` sample rates (22.05, 44.1, 48 kHz; the source is 16 kHz for the stem and 44.1 kHz for tones, so the resample path is exercised both ways). A quick profile (one phone, one desktop, 1x) runs on every PR; the full matrix is a separate `browser-test-matrix` target so CI time stays bounded.
+- **Honest limits.** Emulation changes viewport, touch and CPU speed, not the audio stack: real iOS Safari audio is WebKit's, not Chromium's. Adding WebKit and Firefox to the matrix (Playwright supports both) is proposed as a later step and listed under open questions; native iOS/Android playback is out of scope for the browser suite (it needs `react-native-track-player` on device).
+- **Readout versus engine.** Speed scenarios assert both the on-screen speed readout and the media element's `playbackRate` and the shaper's applied tempo, so a UI that shows 0.5x while the engine runs at 1x fails.
 
 ## Open questions
 
-- MusicXML size: commit it as compressed `.mxl` (about 39 KB; does the app's loader accept `.mxl`, or only `.musicxml`?), or trim to the first N measures of each part for a small readable `.musicxml`? My default: trim to about 16 measures, keep all 7 parts.
-- Are the 3 files fine to commit publicly in this repo (licensing or privacy of the recording and score)?
-- Should the stem be treated as the sung part in the pitch/piano scenarios too (for example the "my parts" and score-follow overlays), or do you have a score that matches it?
-- Real playback speed: should speed/pitch scenarios assert only the readout, or also measure the media element's `playbackRate` (my default: both)?
-
-## Risks
-
-- Flaky timing around playback: mitigated by fixed-length fixtures and waiting on UI state, never fixed sleeps.
-- Suite runtime in CI: scenarios are independent, so the target can later shard by file glob if it passes a few minutes.
-- Fake-device Chromium flags are Chromium-only; the suite stays Chromium-only.
+- WebKit (and Firefox) alongside Chromium for the matrix: Playwright can install them, which adds CI time and download size. Add WebKit for the iOS-web audio path now, or keep the first cut Chromium-only? My default: Chromium for every PR, WebKit nightly or on demand through the matrix target.
+- Quality thresholds (cents tolerance, click and dropout limits) are best calibrated against a first measured baseline; my default is to set them at the baseline plus a margin once subtask 2.5 runs, and record the numbers in the scenario so a change is visible in review. OK?
+- Is the 1.6 MB MusicXML plus 62 KB MIDI acceptable to commit as they are (my default, given the point of a long fixture)?

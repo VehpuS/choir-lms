@@ -1,8 +1,9 @@
 ## 1. Tooling
 
 - [ ] 1.1 Network guard in `openMockLibrarySession` and `runScenario` (fails on undeclared hosts), with a scenario that proves it
-- [ ] 1.0 Commit fixtures: `choir-stem.m4a`, MIDI file and score (form per open questions) under `src/test-support/fixtures/`, with a spec that checks they exist and parse
+- [ ] 1.0 Commit fixtures: `choir-stem.m4a`, the full MIDI file and the full MusicXML score under `src/test-support/fixtures/`, with a spec that checks they exist and parse
 - [ ] 1.2 `buildToneWav` and Drive/web-link media serving with `Range` support, serving the stem as `audio/mp4` and an AAC codec probe
+- [ ] 1.3a Audio output tap, forced sample rate, CPU throttle and device profiles (quick and full), plus the PCM quality analyzer (pitch drift, clicks, dropouts, clipping, loudness) with unit specs on synthetic signals
 - [ ] 1.3 Fake microphone fed by the stem (launch flags, WAV transcode helper) and a recording-capable session option
 - [ ] 1.4 Page helpers (`openTab`, `openTrackMenu`, `expectToast`, `expectNoConsoleErrors`) and trace + console capture on failure
 - [ ] 1.5 Fixture builders for loops, playlist items, tags, markers, lyrics, composites and recordings, each with a round-trip spec
@@ -14,7 +15,7 @@
 - [ ] 2.2 Library tracks and files (search, folders, bulk selection)
 - [ ] 2.3 Playlists
 - [ ] 2.4 Loops
-- [ ] 2.5 Playback, speed/pitch and queue
+- [ ] 2.5 Playback, speed/pitch and queue, with the slowdown quality checks, readout/engine agreement and a ten-minute track
 - [ ] 2.6 Markers and lyrics
 - [ ] 2.7 Tags and search
 - [ ] 2.8 Drive flows (import review, reconnect, offline files)
@@ -22,10 +23,11 @@
 - [ ] 2.10 Recordings, including the E4 / C#4 / C4 pitch progression from the stem
 - [ ] 2.11 Composite tracks
 - [ ] 2.12 Settings
-- [ ] 2.13 Sheet music beyond PDF (MusicXML score and MIDI-derived notation)
+- [ ] 2.13 Sheet music beyond PDF (full MusicXML as `.musicxml` and `.mxl`, and MIDI-derived notation)
 
 ## 3. Agent guidance and CI
 
 - [ ] 3.1 `browser-test-coverage` skill with `.claude/skills/` symlink
 - [ ] 3.2 `AGENTS.md`, `CLAUDE.md`, testing policy and `mobile-web-runtime-debugging` updates; refresh `tools/browser-session/README.md`
+- [ ] 3.3a `browser-test-matrix` target (device descriptors, CPU throttling, sample rates; WebKit per the decision)
 - [ ] 3.3 CI uploads traces; confirm total `browser` job time and note whether sharding is needed

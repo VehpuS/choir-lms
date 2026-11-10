@@ -82,3 +82,31 @@ Library bundles used by backup, restore and import scenarios SHALL be generated 
 
 - **WHEN** the bundle format gains an upgrade step
 - **THEN** the restore scenario exercises it without editing a stored bundle
+
+### Requirement: Slowed playback stays clean across devices
+
+The suite SHALL measure the audio the web engine produces at reduced speeds and shifted pitch and SHALL fail on pitch drift, clicks, dropouts, clipping or large loudness changes, on a quick device profile for every run and on a full device matrix (device descriptors, CPU throttling and audio sample rates) through a separate target.
+
+#### Scenario: Half speed keeps the pitch
+
+- **WHEN** a scenario plays the stem at 0.5x with pitch preserved
+- **THEN** the detected notes are still E4, C#4 and C within the tolerance
+
+#### Scenario: A slow device does not drop audio
+
+- **WHEN** the scenario plays at 0.5x with the CPU throttled 4x
+- **THEN** the captured output has no silent gap inside a sounding region longer than the allowed limit
+
+#### Scenario: Readout and engine agree
+
+- **WHEN** a user sets speed to 0.5x
+- **THEN** the readout, the media element's `playbackRate` and the shaper's tempo all report 0.5x
+
+### Requirement: Long and full-size fixtures
+
+Scenarios SHALL include a multi-minute track and the full-length score and MIDI fixtures, not only short samples.
+
+#### Scenario: Seek late in a long track
+
+- **WHEN** a scenario seeks near the end of a ten-minute tone track
+- **THEN** the position, progress bar and a loop set there behave as in a short track
