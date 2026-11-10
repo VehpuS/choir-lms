@@ -69,6 +69,8 @@ session that has the pre-installed browser.
   copies prompt, the remembered choice), seeded with
   `buildTrackRenameMockLibrary` (folders and Files copies).
 
+- `capture-landscape-views.ts` — not a test (no `.scenario.` in the name, so no lane runs it): captures the app's surfaces at 844 × 390 (a phone on its side) for design work, via `runScenario`'s `viewport` option. A state it cannot reach is logged as `SKIPPED` rather than failed. Output feeds `openspec/changes/landscape-mobile-layout/mockups/captures/`.
+
 ```sh
 npm exec -- nx run mobile-rehearsal-player:build-browser-test
 npx tsx tools/browser-session/track-rename.scenario.ts <outDir>   # one scenario, directly
