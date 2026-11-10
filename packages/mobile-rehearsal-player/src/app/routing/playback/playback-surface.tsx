@@ -25,6 +25,7 @@ import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-ges
 
 import { appTheme } from '../../utils/theme';
 import { usePracticeDockHeight } from '../../library/practice-tools/use-practice-dock-height';
+import { SHELL_LAYERS } from '../shell/shell-layers';
 
 type PlaybackSurfaceMode = 'now-playing' | 'queue' | 'shaping';
 
@@ -286,7 +287,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    zIndex: 15,
+    zIndex: SHELL_LAYERS.playbackSheet,
   },
   backdrop: {
     position: 'absolute',

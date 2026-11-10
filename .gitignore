@@ -69,3 +69,5 @@ cache/
 .env.*.local
 
 .playwright-mcp
+# TypeScript incremental build output
+*.tsbuildinfo
