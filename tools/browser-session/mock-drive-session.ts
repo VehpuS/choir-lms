@@ -14,6 +14,10 @@ const DRIVE_AUTH_SESSION_KEY = 'choirlms.google-drive.authorization';
 const DRIVE_API_PATTERN = /^https:\/\/www\.googleapis\.com\/drive\/v3\//;
 const SIGN_IN_PATTERN = /^https:\/\/accounts\.google\.com\//;
 const DRIVE_FILE_PATH_PATTERN = /\/drive\/v3\/files\/([^/?]+)/;
+const NAME_CONTAINS_PATTERN = /name contains '((?:[^'\\]|\\.)*)'/;
+const ESCAPED_CHARACTER_PATTERN = /\\(.)/g;
+const IN_PARENTS_PATTERN = /'([^']+)' in parents/;
+const ROOT_FOLDER_ID = 'root';
 const MOCK_ACCESS_TOKEN = 'mock-drive-access-token';
 const AUTHORIZED_FOR_MS = 60 * 60 * 1000;
 const NOT_FOUND_STATUS = 404;
@@ -40,9 +44,39 @@ export type MockDriveAccount =
       media?: Record<string, MockMedia>;
     };
 
+type MockDriveFile = { name?: string; parents?: string[] };
+
+/**
+ * What a Drive file listing returns for a query: only the parts the app uses,
+ * the folder (`'<id>' in parents`; a file with no `parents` is in My Drive's
+ * root) and the name (`name contains '<text>'`, case-insensitive). Anything
+ * else in the query is ignored, so every file you give is a candidate.
+ */
+const filterListing = (files: unknown[], query: string): unknown[] => {
+  const parent = IN_PARENTS_PATTERN.exec(query)?.[1];
+  const text = NAME_CONTAINS_PATTERN.exec(query)?.[1]
+    ?.replace(ESCAPED_CHARACTER_PATTERN, '$1')
+    .toLowerCase();
+
+  return (files as MockDriveFile[]).filter((file) => {
+    // A name search looks in every folder; a browse looks in one.
+    const inFolder =
+      text !== undefined ||
+      parent === undefined ||
+      (file.parents ?? [ROOT_FOLDER_ID]).includes(parent);
+
+    return (
+      inFolder &&
+      (text === undefined || (file.name ?? '').toLowerCase().includes(text))
+    );
+  });
+};
+
 export type MockDriveRecorder = {
   /** Every Drive API request the app made, as `METHOD path`. */
   apiRequests: string[];
+  /** The `q` of every Drive file listing the app made (browse and search). */
+  listQueries: string[];
   /** Every sign-in page address the app opened. */
   signInRequests: string[];
 };
@@ -78,7 +112,11 @@ export const installMockDriveRoutes = async (
   context: BrowserContext,
   account: MockDriveAccount,
 ): Promise<MockDriveRecorder> => {
-  const recorder: MockDriveRecorder = { apiRequests: [], signInRequests: [] };
+  const recorder: MockDriveRecorder = {
+    apiRequests: [],
+    listQueries: [],
+    signInRequests: [],
+  };
   const inaccessible = new Set(
     account.state === 'authorized' ? (account.inaccessibleFileIds ?? []) : [],
   );
@@ -100,6 +138,11 @@ export const installMockDriveRoutes = async (
     recorder.apiRequests.push(`${request.method()} ${url.pathname}`);
 
     const fileId = DRIVE_FILE_PATH_PATTERN.exec(url.pathname)?.[1];
+
+    if (fileId === undefined && url.searchParams.has('q')) {
+      recorder.listQueries.push(url.searchParams.get('q') ?? '');
+    }
+
     const isMissing = fileId !== undefined && inaccessible.has(fileId);
 
     if (
@@ -119,7 +162,10 @@ export const installMockDriveRoutes = async (
           });
     }
 
-    const body = fileId === undefined ? { files } : { id: fileId };
+    const body =
+      fileId === undefined
+        ? { files: filterListing(files, url.searchParams.get('q') ?? '') }
+        : { id: fileId };
 
     return route.fulfill({
       body: JSON.stringify(isMissing ? { error: { code: 404 } } : body),

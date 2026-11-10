@@ -93,3 +93,11 @@ export const waitUntil = async (
 
   throw new Error(message);
 };
+
+/**
+ * The visible element with exactly this text. Screens stay mounted behind the
+ * one in front (Library under Recents, say), so a plain `getByText` can match
+ * a hidden copy first.
+ */
+export const visibleText = (page: Page, text: string) =>
+  page.getByText(text, { exact: true }).filter({ visible: true }).first();
