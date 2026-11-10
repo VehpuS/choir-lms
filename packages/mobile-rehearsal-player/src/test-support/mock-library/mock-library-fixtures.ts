@@ -145,6 +145,53 @@ export const buildMockLibraryStorageEntries = (
   ...buildMockLibraryTreeEntries(library, ownerId),
 });
 
+/**
+ * The Files tree for a library, as the runtime's bundle builder reads it: the
+ * folders and copies the library gives, plus a copy in the root for every
+ * track, loop and playlist that has none (the app adds those when it loads).
+ */
+export const buildMockLibraryTree = (
+  library: MockLibrary,
+): RehearsalLibraryFileTree => {
+  const links = [...(library.fileLinks ?? [])];
+  const linked = new Set(links.map(({ entityId }) => entityId));
+  const unlinked: [RehearsalLibraryFileLinkNode['entityKind'], string][] = [
+    ...library.sources.map((source) => ['track', source.id] as const),
+    ...(library.loops ?? []).map((loop) => ['loop', loop.id] as const),
+    ...library.playlists.map((playlist) => ['playlist', playlist.id] as const),
+    ...(library.composites ?? []).map(
+      (composite) => ['composite', composite.id] as const,
+    ),
+  ].filter(([, id]) => !linked.has(id)) as [
+    RehearsalLibraryFileLinkNode['entityKind'],
+    string,
+  ][];
+
+  for (const [entityKind, entityId] of unlinked) {
+    links.push({
+      entityId,
+      entityKind,
+      id: `mock-copy-${entityId}-root`,
+      parentFolderId: MOCK_LIBRARY_ROOT_FOLDER_ID,
+    });
+  }
+
+  return {
+    version: 1,
+    rootFolderId: MOCK_LIBRARY_ROOT_FOLDER_ID,
+    folders: [
+      {
+        id: MOCK_LIBRARY_ROOT_FOLDER_ID,
+        name: 'Library',
+        parentFolderId: null,
+        createdAt: MOCK_TIMESTAMP,
+      },
+      ...(library.folders ?? []),
+    ],
+    fileLinks: links,
+  };
+};
+
 const buildMockLibraryTreeEntries = (
   library: MockLibrary,
   ownerId: string,
