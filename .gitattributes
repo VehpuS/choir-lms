@@ -1,0 +1,3 @@
+
+# Committed test fixtures: skip in review diffs and language stats.
+packages/mobile-rehearsal-player/src/test-support/fixtures/*.musicxml -diff linguist-generated
