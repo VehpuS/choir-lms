@@ -1,5 +1,7 @@
 import { NO_ROOM_TO_PREPARE_MESSAGE } from '../../composite/loading/load-composite-engine';
 import { requestClearOfflineFiles } from '../../offline/clear-offline-files-request';
+import { DriveSessionBanner } from '../../drive/components/drive-session-banner';
+import { getDriveSessionBannerCopy } from '../../drive/utils/drive-access-copy';
 import { DriveLibraryStatusCard } from '../../drive/components/drive-library-status-card';
 import {
   shouldShowPlaybackStatusCard,
@@ -8,6 +10,7 @@ import {
 import type { SavedRehearsalLibrarySectionProps } from './types';
 
 type SavedRehearsalLibraryStatusCardsProps = {
+  authorization?: SavedRehearsalLibrarySectionProps['authorization'];
   isPlaybackIssueShownOnRow: boolean;
   isSavedLibraryLoading: boolean;
   isSearchPanelVisible: boolean;
@@ -17,6 +20,7 @@ type SavedRehearsalLibraryStatusCardsProps = {
 };
 
 export const SavedRehearsalLibraryStatusCards = ({
+  authorization,
   isPlaybackIssueShownOnRow,
   isSavedLibraryLoading,
   isSearchPanelVisible,
@@ -36,9 +40,28 @@ export const SavedRehearsalLibraryStatusCards = ({
     statusTone: savedTrackPlaybackStatusCopy?.tone ?? null,
   });
 
+  // A disconnected session is one fault, so it gets one line (issue #40)
+  // instead of the paragraph card, and only while saved tracks are affected.
+  const sessionBannerCopy =
+    authorization && savedSourceCount > 0
+      ? getDriveSessionBannerCopy(authorization.authState.status)
+      : null;
+
   return (
     <>
-      {shouldShowSavedLibraryStatus ? (
+      {sessionBannerCopy && authorization && !isSearchPanelVisible ? (
+        <DriveSessionBanner
+          copy={sessionBannerCopy}
+          isBusy={authorization.isBusy}
+          onPressAction={
+            authorization.canStartAuthorization
+              ? () => {
+                  void authorization.startAuthorization();
+                }
+              : undefined
+          }
+        />
+      ) : shouldShowSavedLibraryStatus ? (
         <DriveLibraryStatusCard
           isLoading={false}
           statusCopy={savedLibraryStatusCopy}

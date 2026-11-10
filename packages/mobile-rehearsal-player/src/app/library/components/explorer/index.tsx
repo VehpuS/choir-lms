@@ -32,6 +32,8 @@ type ExplorerListRowProps = {
   accessibilityLabel?: string;
   actions?: ReactNode;
   active?: boolean;
+  /** Dim the copy only; the row stays pressable (a row that opens Reconnect). */
+  dimmed?: boolean;
   disabled?: boolean;
   /** Keep the controls at full strength while the row cannot be pressed. */
   disabledKeepsControls?: boolean;
@@ -172,6 +174,7 @@ export const ExplorerListRow = ({
   accessibilityLabel,
   actions,
   active = false,
+  dimmed = false,
   disabled = false,
   disabledKeepsControls = false,
   leadingIcon,
@@ -228,7 +231,9 @@ export const ExplorerListRow = ({
       <View
         style={[
           styles.rowCopy,
-          disabled && disabledKeepsControls ? styles.rowDisabled : undefined,
+          (disabled && disabledKeepsControls) || dimmed
+            ? styles.rowDisabled
+            : undefined,
         ]}
       >
         {title}

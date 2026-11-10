@@ -258,6 +258,10 @@ export const SavedRehearsalLibraryBrowseContent = ({
           canMutateLoops={canMutateLoops}
           canMutatePlaylists={canMutatePlaylists}
           canQueueAsNext={canQueueAsNext}
+          isDriveSessionDisconnected={
+            authorization !== undefined &&
+            authorization.authState.status !== 'authorized'
+          }
           canReconnectSource={Boolean(
             authorization?.canStartAuthorization && !authorization.isBusy,
           )}

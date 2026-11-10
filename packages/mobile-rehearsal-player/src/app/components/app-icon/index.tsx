@@ -20,6 +20,7 @@ import { CaretUpIcon } from 'phosphor-react-native/src/icons/CaretUp';
 import { CheckIcon } from 'phosphor-react-native/src/icons/Check';
 import { CheckCircleIcon } from 'phosphor-react-native/src/icons/CheckCircle';
 import { CircleIcon } from 'phosphor-react-native/src/icons/Circle';
+import { CloudSlashIcon } from 'phosphor-react-native/src/icons/CloudSlash';
 import { ClockCountdownIcon } from 'phosphor-react-native/src/icons/ClockCountdown';
 import { ClockCounterClockwiseIcon } from 'phosphor-react-native/src/icons/ClockCounterClockwise';
 import { ColumnsIcon } from 'phosphor-react-native/src/icons/Columns';
@@ -57,6 +58,7 @@ import { PlusIcon } from 'phosphor-react-native/src/icons/Plus';
 import { QueueIcon } from 'phosphor-react-native/src/icons/Queue';
 import { RepeatIcon } from 'phosphor-react-native/src/icons/Repeat';
 import { RepeatOnceIcon } from 'phosphor-react-native/src/icons/RepeatOnce';
+import { WarningIcon } from 'phosphor-react-native/src/icons/Warning';
 import { RowsIcon } from 'phosphor-react-native/src/icons/Rows';
 import { ShuffleIcon } from 'phosphor-react-native/src/icons/Shuffle';
 import { SkipBackIcon } from 'phosphor-react-native/src/icons/SkipBack';
@@ -104,6 +106,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   Check: CheckIcon,
   CheckCircle: CheckCircleIcon,
   Circle: CircleIcon,
+  CloudSlash: CloudSlashIcon,
   ClockCountdown: ClockCountdownIcon,
   ClockCounterClockwise: ClockCounterClockwiseIcon,
   Columns: ColumnsIcon,
@@ -156,6 +159,7 @@ const PHOSPHOR_COMPONENTS: Record<PhosphorGlyph, Icon> = {
   Trash: TrashIcon,
   Toolbox: ToolboxIcon,
   UserCircle: UserCircleIcon,
+  Warning: WarningIcon,
   Waveform: WaveformIcon,
   X: XIcon,
   XCircle: XCircleIcon,

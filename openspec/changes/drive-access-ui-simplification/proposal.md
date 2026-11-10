@@ -10,4 +10,4 @@ Issue #40: when Google Drive is disconnected or expired, every saved track row r
 
 ## Status
 
-Mock awaiting approval. No implementation, specs or tasks yet.
+Mock approved. Implemented: global `DriveSessionBanner`, dimmed Tracks rows with a cloud-slash icon (tap opens Reconnect), and short `AccessChip` labels for file-level reasons. The needs-access chip uses the warning glyph instead of the mock's lock, because the repo bans lock icons (pitch-lock guard).
