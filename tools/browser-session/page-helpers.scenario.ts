@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import { buildDefaultMockLibrary } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
 import {
   chooseMenuItem,
+  expectNoHorizontalOverflow,
+  expectTabsInViewport,
   expectToast,
   openTab,
   openTrackMenu,
@@ -54,6 +56,31 @@ void runScenario({
 
     session.expectNoConsoleErrors([/boom from the page/]);
     pass('console errors are reported unless ignored');
+
+    // The layout helpers pass on a sound page and fail on a broken one.
+    await expectNoHorizontalOverflow(page);
+    await expectTabsInViewport(page, ['Library', 'Add', 'Recents']);
+    await page.evaluate(() => {
+      const wide = document.createElement('div');
+
+      wide.style.cssText =
+        'width:5000px;height:1px;position:absolute;top:0;left:0';
+      document.body.appendChild(wide);
+    });
+
+    let overflowReported = false;
+
+    try {
+      await expectNoHorizontalOverflow(page);
+    } catch {
+      overflowReported = true;
+    }
+
+    if (!overflowReported) {
+      throw new Error('expectNoHorizontalOverflow missed a sideways overflow');
+    }
+
+    pass('layout helpers pass a sound page and report an overflow');
 
     // Last step: saving the evidence ends the trace.
     const evidenceDir = mkdtempSync(join(tmpdir(), 'evidence-'));

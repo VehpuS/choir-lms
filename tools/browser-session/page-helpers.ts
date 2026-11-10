@@ -35,3 +35,36 @@ export const expectToast = async (
 ) => {
   await page.getByText(text).first().waitFor({ timeout: timeoutMs });
 };
+
+/** Fails when the page scrolls sideways, which is a layout break at that width. */
+export const expectNoHorizontalOverflow = async (page: Page) => {
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  );
+
+  if (overflow > 0) {
+    throw new Error(`The page overflows sideways by ${overflow}px`);
+  }
+};
+
+/** Fails unless every named tab button sits fully inside the viewport. */
+export const expectTabsInViewport = async (page: Page, tabs: AppTab[]) => {
+  const viewport = page.viewportSize();
+
+  for (const tab of tabs) {
+    const box = await page
+      .getByRole('button', { exact: true, name: tab })
+      .boundingBox();
+
+    if (
+      !box ||
+      !viewport ||
+      box.x < 0 ||
+      box.y < 0 ||
+      box.x + box.width > viewport.width ||
+      box.y + box.height > viewport.height
+    ) {
+      throw new Error(`The ${tab} tab is not fully on screen`);
+    }
+  }
+};

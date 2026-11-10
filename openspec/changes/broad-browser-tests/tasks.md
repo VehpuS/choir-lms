@@ -12,7 +12,7 @@
 
 ## 2. Scenarios (one subtask per area; each offline)
 
-- [ ] 2.1 Shell navigation and view restore
+- [x] 2.1 Shell navigation and view restore
 - [ ] 2.2 Library tracks and files (search, folders, bulk selection)
 - [ ] 2.3 Playlists
 - [ ] 2.4 Loops

@@ -33,6 +33,7 @@ session that has the pre-installed browser.
   a short baseline of known errors is ignored). A failing scenario also writes
   `failure-trace.zip` (`npx playwright show-trace <file>`) and
   `failure-console.txt` next to `failure.png`; CI uploads them with the screenshots.
+- `shell-navigation.scenario.ts` — tabs, Library chip and Files folder kept, reload, phone and desktop layout.
 - `add-to-playlist-snackbar.scenario.ts` — issue #36.
 - `sheet-music-pdf.scenario.ts` — opens a real four-page PDF as a track's sheet music; the score is a web link whose bytes `webFiles` serves (CORS open), so no Drive is needed.
 - `drive-access-banner.scenario.ts` — issue #40, expired session: one single-line
