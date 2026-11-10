@@ -31,6 +31,8 @@ const READ_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
 const WRITE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 const AUTHORIZED_FOR_MS = 60 * 60 * 1000;
 const NOT_FOUND_STATUS = 404;
+const FOUND_STATUS = 302;
+const SIGN_IN_TOKEN_SECONDS = 3600;
 const NO_CONTENT_STATUS = 204;
 const OK_STATUS = 200;
 const RESUME_INCOMPLETE_STATUS = 308;
@@ -43,9 +45,9 @@ const CORS_HEADERS = {
 
 export type MockDriveAccount =
   /** Never signed in: the app has no stored session. */
-  | { state: 'signed-out' }
+  | { state: 'signed-out'; completeSignIn?: boolean }
   /** Was signed in; the token ran out, so the app offers Reconnect. */
-  | { state: 'expired' }
+  | { state: 'expired'; completeSignIn?: boolean }
   | {
       state: 'authorized';
       /** Drive ids Drive answers 404 for, as for a file never shared with the user. */
@@ -103,6 +105,25 @@ export const buildMockDriveStorageEntries = (
       scope: account.writeAccess ? `${READ_SCOPE} ${WRITE_SCOPE}` : READ_SCOPE,
     }),
   };
+};
+
+/**
+ * Where the stub sign-in sends the browser back: the app's own redirect address
+ * with an access token in the fragment (the implicit flow the app asked for),
+ * echoing the request's `state`. This is a sign-in that was just completed.
+ */
+const buildSignInRedirect = (signInUrl: string): string => {
+  const request = new URL(signInUrl);
+  const redirectUri = request.searchParams.get('redirect_uri') ?? '';
+  const result = new URLSearchParams({
+    access_token: MOCK_ACCESS_TOKEN,
+    expires_in: String(SIGN_IN_TOKEN_SECONDS),
+    scope: request.searchParams.get('scope') ?? READ_SCOPE,
+    state: request.searchParams.get('state') ?? '',
+    token_type: 'Bearer',
+  });
+
+  return `${redirectUri}#${result.toString()}`;
 };
 
 const json = (route: Route, body: unknown, status: number = OK_STATUS) =>
@@ -289,8 +310,18 @@ export const installMockDriveRoutes = async (
     return json(route, record ? store.toJson(record) : { id: fileId });
   });
 
+  const completesSignIn =
+    account.state !== 'authorized' && account.completeSignIn;
+
   await context.route(SIGN_IN_PATTERN, (route) => {
     recorder.signInRequests.push(route.request().url());
+
+    if (completesSignIn) {
+      return route.fulfill({
+        headers: { location: buildSignInRedirect(route.request().url()) },
+        status: FOUND_STATUS,
+      });
+    }
 
     return route.fulfill({
       body: '<title>Mock Google sign-in</title><p>Mock Google sign-in</p>',

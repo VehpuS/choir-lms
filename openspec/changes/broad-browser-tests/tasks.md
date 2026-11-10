@@ -31,6 +31,8 @@
 - [x] 2.13 Sheet music beyond PDF (full MusicXML as `.musicxml` and `.mxl`, and MIDI-derived notation); about 12 s, so it stays in the default lane for now
 - [x] 2.14 Sung pitches marked on the rendered score: with the stem as the microphone and Pitch detection on, the open MusicXML and MIDI scores mark the noteheads of E4, C♯4, C4 in turn (the `data-score-pitch-marks` style targets `data-midi` 64, 61, 60, and those noteheads exist in the drawn score); the other-octave setting adds the soft marks; about 16 s alone, so like 2.13 it stays in the default lane for now
 
+- [x] 2.15 Piano and the full-screen pitch tool, added on request after the planned scenarios: `piano.scenario.ts` (a new session that is not signed in: the key lights and plays a C4, heard in the audio tap), `piano-after-sign-in.scenario.ts` (the mock Drive can now complete a Google sign-in through the app's popup flow, `completeSignIn: true`; a key pressed right after it plays, with the piano opened before or after), `piano-during-playback.scenario.ts` (a key plays under a playing track, which keeps moving), `piano-pitch-highlight.scenario.ts` (the sung E4, C♯4, C4 light their keys in view, and an arrow names them when the keyboard is scrolled out of view to either side) and `pitch-full-view.scenario.ts` (Open full view, the readout, holding a target, zoom, the minimum volume, Stop, Back to monitor); shared steps in `piano-helpers.ts`
+
 ## 3. Agent guidance and CI
 
 - [x] 3.1 `browser-test-coverage` skill with `.claude/skills/` symlink
