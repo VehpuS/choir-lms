@@ -76,7 +76,9 @@ export const runScenario = async (options: {
   } catch (error) {
     await shot('failure');
     await session.saveFailureEvidence(outDir);
-    results.push(`FAIL ${(error as Error).message.split('\n')[0]}`);
+    results.push(
+      `FAIL ${(error as Error).message.split('\n').slice(0, 5).join(' | ')}`,
+    );
     process.exitCode = 1;
   } finally {
     console.log(results.join('\n'));

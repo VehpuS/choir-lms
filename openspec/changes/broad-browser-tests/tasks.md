@@ -14,7 +14,7 @@
 
 - [x] 2.1 Shell navigation and view restore
 - [x] 2.2 Library tracks and files (search, folders, bulk selection)
-- [ ] 2.3 Playlists
+- [x] 2.3 Playlists
 - [ ] 2.4 Loops
 - [ ] 2.5 Playback, speed/pitch and queue, with the slowdown quality checks, readout/engine agreement and a ten-minute track
 - [ ] 2.6 Markers and lyrics
@@ -41,3 +41,4 @@ Unrelated bugs, findings, ideas, improvements and questions met while implementi
 - [ ] F.2 Playing a Drive track on web logs `Failed to load resource: net::ERR_FILE_NOT_FOUND` for a `blob:` URL (seen in 1.2, a generated tone played from the Library tab); find out whether the player revokes a blob URL too early or this is harmless, then fix or document it as baseline noise
 - [ ] F.3 Cache the Expo browser-test export across CI runs (about 115 s of the `browser` job); it only changes when app inputs change, so most test-only PRs would hit it (seen in 1.7)
 - [ ] F.4 Review: the bulk Add to playlist picker (Library Files selection) has no "New playlist" option, while the single-track Add to playlist picker does (seen in 2.2); decide whether the bulk picker should offer it too
+- [ ] F.5 Review: tapping the title of a playing playlist in Recents does nothing visible; only the row menu (View in library) opens it, and that lands on Library > Playlists, not the playlist detail (seen in 2.3); confirm this is intended

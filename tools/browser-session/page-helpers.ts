@@ -68,3 +68,28 @@ export const expectTabsInViewport = async (page: Page, tabs: AppTab[]) => {
     }
   }
 };
+
+const POLL_INTERVAL_MS = 100;
+const POLL_TIMEOUT_MS = 5000;
+
+/**
+ * Polls `check` until it is true, for state that follows a click a moment later
+ * (a saved value, a re-ordered row). Throws `message` if it never is.
+ */
+export const waitUntil = async (
+  check: () => Promise<boolean>,
+  message: string,
+  timeoutMs: number = POLL_TIMEOUT_MS,
+) => {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    if (await check()) {
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+  }
+
+  throw new Error(message);
+};
