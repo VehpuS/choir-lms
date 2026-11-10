@@ -4,6 +4,13 @@ import { extname, join, normalize } from 'node:path';
 import { chromium, type Browser, type Page } from 'playwright';
 
 import {
+  installAudioOutputTap,
+  readAudioOutput,
+  resetAudioOutput,
+  type AudioOutput,
+} from './audio-output-tap';
+import { contextOptionsFor, type DeviceProfile } from './device-profiles';
+import {
   fakeMicrophoneLaunchArgs,
   prepareStemMicrophoneWav,
 } from './fake-microphone';
@@ -76,6 +83,10 @@ export type MockLibrarySession = {
   /** What the mock Drive was asked; empty when the session has no `drive`. */
   drive: MockDriveRecorder;
   page: Page;
+  /** What reached the speakers since the last reset (needs `audioTap` or a `profile`). */
+  readAudioOutput: () => Promise<AudioOutput>;
+  /** Forgets the captured audio so far. */
+  resetAudioOutput: () => Promise<void>;
   /** Reads what the app persisted under a storage key (parsed JSON), or null. */
   readStored: <T = unknown>(key: string) => Promise<T | null>;
   url: string;
@@ -93,6 +104,16 @@ export const openMockLibrarySession = async (options: {
    * fake capture device); permission is granted with no prompt.
    */
   microphone?: boolean;
+  /**
+   * Copies the page's audio output into a buffer (`readAudioOutput`), and
+   * optionally forces the sample rate its audio contexts run at.
+   */
+  audioTap?: boolean | { sampleRate?: number };
+  /**
+   * Emulates a device: its viewport and touch, a slower CPU, and (with the
+   * audio tap, which it turns on) a forced audio sample rate.
+   */
+  profile?: DeviceProfile;
   /** Pixel density; 1 keeps screenshots small, 2-3 matches a phone screen. */
   deviceScaleFactor?: number;
   viewport?: { height: number; width: number };
@@ -107,9 +128,24 @@ export const openMockLibrarySession = async (options: {
       : [],
   });
   const context = await browser.newContext({
-    deviceScaleFactor: options.deviceScaleFactor ?? 1,
-    viewport: options.viewport ?? { height: 844, width: 390 },
+    ...(options.profile ? contextOptionsFor(options.profile) : {}),
+    deviceScaleFactor:
+      options.deviceScaleFactor ?? (options.profile ? undefined : 1),
+    viewport:
+      options.viewport ??
+      (options.profile ? undefined : { height: 844, width: 390 }),
   });
+  const audioTap =
+    options.audioTap ??
+    (options.profile ? { sampleRate: options.profile.sampleRate } : false);
+
+  if (audioTap) {
+    await installAudioOutputTap(context, {
+      sampleRate:
+        typeof audioTap === 'object' ? audioTap.sampleRate : undefined,
+    });
+  }
+
   if (options.microphone) {
     await context.grantPermissions(['microphone'], { origin: url });
   }
@@ -150,6 +186,13 @@ export const openMockLibrarySession = async (options: {
   }
 
   const page = await context.newPage();
+  const throttle = options.profile?.cpuThrottle ?? 1;
+
+  if (throttle > 1) {
+    const devtools = await context.newCDPSession(page);
+
+    await devtools.send('Emulation.setCPUThrottlingRate', { rate: throttle });
+  }
 
   await page.goto(url);
 
@@ -179,6 +222,8 @@ export const openMockLibrarySession = async (options: {
       blockedRequests.splice(index, 1);
     },
     page,
+    readAudioOutput: () => readAudioOutput(page),
+    resetAudioOutput: () => resetAudioOutput(page),
     readStored: async <T = unknown>(key: string) => {
       const raw = await page.evaluate(
         (storageKey) => window.localStorage.getItem(storageKey),

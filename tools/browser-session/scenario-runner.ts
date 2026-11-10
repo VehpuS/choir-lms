@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { Page } from 'playwright';
 
 import type { MockLibrary } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
+import type { DeviceProfile } from './device-profiles';
 import type { MockDriveAccount } from './mock-drive-session';
 import {
   openMockLibrarySession,
@@ -29,6 +30,10 @@ export const runScenario = async (options: {
   library: MockLibrary;
   /** The Google Drive account to sign in as; see `openMockLibrarySession`. */
   drive?: MockDriveAccount;
+  /** Capture the audio output; see `openMockLibrarySession`. */
+  audioTap?: boolean | { sampleRate?: number };
+  /** Emulate a device; see `openMockLibrarySession`. */
+  profile?: DeviceProfile;
   /** A fake microphone playing the choir stem; see `openMockLibrarySession`. */
   microphone?: boolean;
   /** Pixel density for the session; see `openMockLibrarySession`. */
@@ -43,7 +48,9 @@ export const runScenario = async (options: {
   const session = await openMockLibrarySession({
     deviceScaleFactor: options.deviceScaleFactor,
     drive: options.drive,
+    audioTap: options.audioTap,
     library: options.library,
+    profile: options.profile,
     microphone: options.microphone,
     webFiles: options.webFiles,
   });
