@@ -1,6 +1,7 @@
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { extname, join, normalize } from 'node:path';
+import { writeFileSync } from 'node:fs';
 import { chromium, type Browser, type Page } from 'playwright';
 
 import {
@@ -67,7 +68,28 @@ const startStaticServer = (distDir: string): Promise<Server> =>
 /** A file the mock web serves at an address, with CORS open so the app may read it. */
 export type MockWebFile = { body: Buffer; contentType: string };
 
+/**
+ * Console errors the app is known to log that a scenario need not fail on:
+ * the web player's early blob URL release (follow-up F.2 in the browser tests
+ * change) and requests the offline guard already reports on its own.
+ */
+const BASELINE_CONSOLE_ERRORS = [
+  /Failed to load resource: net::ERR_FILE_NOT_FOUND/,
+  /Failed to load resource: net::ERR_BLOCKED_BY_CLIENT/,
+];
+
 export type MockLibrarySession = {
+  /**
+   * Throws if the app logged console errors or uncaught page errors, apart
+   * from the known baseline and any `ignore` patterns. Opt in per step.
+   */
+  expectNoConsoleErrors: (ignore?: RegExp[]) => void;
+  /**
+   * Writes what a failing scenario needs to be debugged into `outDir`:
+   * `failure-trace.zip` (open with `npx playwright show-trace`) and
+   * `failure-console.txt` (the console errors and warnings seen).
+   */
+  saveFailureEvidence: (outDir: string) => Promise<void>;
   /**
    * Throws if the page requested anything outside the local server that the
    * scenario had not mocked (`runScenario` calls this after the steps).
@@ -185,7 +207,20 @@ export const openMockLibrarySession = async (options: {
     await context.route(fileUrl, (route) => fulfillMedia(route, file));
   }
 
+  // Recorded for the whole run; kept only when a scenario fails.
+  await context.tracing.start({ screenshots: true, snapshots: true });
+
   const page = await context.newPage();
+  const consoleLog: { text: string; type: string }[] = [];
+
+  page.on('console', (message) => {
+    if (['error', 'warning'].includes(message.type())) {
+      consoleLog.push({ text: message.text(), type: message.type() });
+    }
+  });
+  page.on('pageerror', (error) => {
+    consoleLog.push({ text: `Uncaught: ${error.message}`, type: 'error' });
+  });
   const throttle = options.profile?.cpuThrottle ?? 1;
 
   if (throttle > 1) {
@@ -210,6 +245,21 @@ export const openMockLibrarySession = async (options: {
       server.close();
     },
     drive: recorder,
+    expectNoConsoleErrors: (ignore = []) => {
+      const unexpected = consoleLog.filter(
+        ({ text, type }) =>
+          type === 'error' &&
+          ![...BASELINE_CONSOLE_ERRORS, ...ignore].some((pattern) =>
+            pattern.test(text),
+          ),
+      );
+
+      if (unexpected.length > 0) {
+        throw new Error(
+          `Console errors: ${unexpected.map(({ text }) => text.slice(0, 160)).join(' | ')}`,
+        );
+      }
+    },
     expectBlockedRequest: (urlPart) => {
       const index = blockedRequests.findIndex((blocked) =>
         blocked.includes(urlPart),
@@ -222,6 +272,13 @@ export const openMockLibrarySession = async (options: {
       blockedRequests.splice(index, 1);
     },
     page,
+    saveFailureEvidence: async (outDir) => {
+      await context.tracing.stop({ path: join(outDir, 'failure-trace.zip') });
+      writeFileSync(
+        join(outDir, 'failure-console.txt'),
+        consoleLog.map(({ text, type }) => `${type}: ${text}`).join('\n'),
+      );
+    },
     readAudioOutput: () => readAudioOutput(page),
     resetAudioOutput: () => resetAudioOutput(page),
     readStored: async <T = unknown>(key: string) => {

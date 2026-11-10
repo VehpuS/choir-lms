@@ -71,6 +71,7 @@ export const runScenario = async (options: {
     session.assertNoBlockedRequests();
   } catch (error) {
     await shot('failure');
+    await session.saveFailureEvidence(outDir);
     results.push(`FAIL ${(error as Error).message.split('\n')[0]}`);
     process.exitCode = 1;
   } finally {
