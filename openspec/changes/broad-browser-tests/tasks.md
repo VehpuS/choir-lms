@@ -13,7 +13,7 @@
 ## 2. Scenarios (one subtask per area; each offline)
 
 - [x] 2.1 Shell navigation and view restore
-- [ ] 2.2 Library tracks and files (search, folders, bulk selection)
+- [x] 2.2 Library tracks and files (search, folders, bulk selection)
 - [ ] 2.3 Playlists
 - [ ] 2.4 Loops
 - [ ] 2.5 Playback, speed/pitch and queue, with the slowdown quality checks, readout/engine agreement and a ten-minute track
