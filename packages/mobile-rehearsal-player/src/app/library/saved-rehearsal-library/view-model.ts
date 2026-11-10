@@ -177,18 +177,20 @@ export const getSavedRehearsalLibraryStatusCopy = (
     };
   }
 
+  // Per-file problems already show on their own rows (a chip or a message), so
+  // this summary is neutral: it is never raised as a card that repeats them.
   if (availableSourceCount === 0) {
     return {
       title: 'Saved rehearsal library needs attention',
       message: `${formatAttentionCount(unavailableSourceCount)} remain saved but are currently unavailable.`,
-      tone: 'warning',
+      tone: 'neutral',
     };
   }
 
   return {
     title: 'Saved rehearsal library ready',
     message: `${pluralize(availableSourceCount, 'saved track')} available, plus ${formatAttentionCount(unavailableSourceCount)}.`,
-    tone: 'warning',
+    tone: 'neutral',
   };
 };
 

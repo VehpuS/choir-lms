@@ -1,5 +1,6 @@
 # Add files here to ignore them from prettier formatting
 /dist
+/dist-browser-test
 /coverage
 /.nx/cache
 /.nx/workspace-data

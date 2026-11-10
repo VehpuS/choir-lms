@@ -4,6 +4,12 @@ import { extname, join, normalize } from 'node:path';
 import { chromium, type Browser, type Page } from 'playwright';
 
 import {
+  buildMockDriveStorageEntries,
+  installMockDriveRoutes,
+  type MockDriveAccount,
+  type MockDriveRecorder,
+} from './mock-drive-session';
+import {
   buildMockLibraryStorageEntries,
   type MockLibrary,
 } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
@@ -12,7 +18,9 @@ import {
 // (with the single-page fallback Pages uses), seeds a mock library into
 // localStorage before the app starts, and hands back a Playwright page. No
 // Google sign-in or network is involved, so any remote session can drive it.
-const DEFAULT_DIST_DIR = 'packages/mobile-rehearsal-player/dist';
+// Built by `build-browser-test`: the same app with a placeholder Google client
+// id, so Reconnect is enabled (nothing real is ever contacted).
+const DEFAULT_DIST_DIR = 'packages/mobile-rehearsal-player/dist-browser-test';
 const CONTENT_TYPES: Record<string, string> = {
   '.css': 'text/css',
   '.html': 'text/html',
@@ -50,6 +58,8 @@ export type MockWebFile = { body: Buffer; contentType: string };
 export type MockLibrarySession = {
   browser: Browser;
   close: () => Promise<void>;
+  /** What the mock Drive was asked; empty when the session has no `drive`. */
+  drive: MockDriveRecorder;
   page: Page;
   /** Reads what the app persisted under a storage key (parsed JSON), or null. */
   readStored: <T = unknown>(key: string) => Promise<T | null>;
@@ -58,6 +68,8 @@ export type MockLibrarySession = {
 
 export const openMockLibrarySession = async (options: {
   distDir?: string;
+  /** The Google Drive account the app is signed in as; none by default (signed out). */
+  drive?: MockDriveAccount;
   library: MockLibrary;
   /** Files served at absolute URLs, so links in the library load without a network. */
   webFiles?: Record<string, MockWebFile>;
@@ -74,7 +86,12 @@ export const openMockLibrarySession = async (options: {
     deviceScaleFactor: options.deviceScaleFactor ?? 1,
     viewport: options.viewport ?? { height: 844, width: 390 },
   });
-  const entries = buildMockLibraryStorageEntries(options.library);
+  const drive = options.drive ?? { state: 'signed-out' as const };
+  const entries = {
+    ...buildMockLibraryStorageEntries(options.library),
+    ...buildMockDriveStorageEntries(drive),
+  };
+  const recorder = await installMockDriveRoutes(context, drive);
 
   // Runs before any app code, so the library is there on first read.
   await context.addInitScript((storageEntries) => {
@@ -103,6 +120,7 @@ export const openMockLibrarySession = async (options: {
       await browser.close();
       server.close();
     },
+    drive: recorder,
     page,
     readStored: async <T = unknown>(key: string) => {
       const raw = await page.evaluate(

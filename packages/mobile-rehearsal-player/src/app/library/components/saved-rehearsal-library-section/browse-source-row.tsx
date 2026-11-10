@@ -4,6 +4,9 @@ import {
 } from '@org/audio-library-models';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { AccessChip } from '../../drive/components/access-chip';
+import { getSourceAccessChip } from '../../drive/utils/drive-access-copy';
+import { AppIcon } from '../../../components/app-icon';
 import { useRevealHighlight } from '../../saved-rehearsal-library/use-reveal-highlight';
 
 import { EqualizerMark } from '../../../components/equalizer-mark';
@@ -61,6 +64,8 @@ export type BrowseSourceRowSharedProps = Pick<
 > & {
   canQueueAsNext: boolean;
   canReconnectSource: boolean;
+  /** Session-level fault: the global banner speaks, so the row stays quiet. */
+  isDriveSessionDisconnected: boolean;
   onReconnectSource: () => void;
   isLoopMutating: boolean;
   isPlaylistMutating: boolean;
@@ -100,6 +105,7 @@ export const BrowseSourceRow = ({
   canQueueAsNext,
   canReconnectSource,
   index,
+  isDriveSessionDisconnected,
   isLoopMutating,
   isMenuOpen,
   isPlaylistMutating,
@@ -138,11 +144,20 @@ export const BrowseSourceRow = ({
   const isPlaying = isActive && playbackState === 'playing';
   const isAvailable = source.availability.status === 'available';
   const offlineState = useOfflineState(source.driveFileId);
+  // File-level reasons get a short chip; the full sentence stays in the menu.
+  // While the session is disconnected neither shows, the banner covers it.
+  const accessChip = isDriveSessionDisconnected
+    ? null
+    : getSourceAccessChip(source);
+  const availabilityMessage =
+    isDriveSessionDisconnected || accessChip
+      ? undefined
+      : getSourceStatusMessage(source);
   const statusMessage =
     getSavedRehearsalLibrarySourceIssue(savedLibraryIssue, source, 'remove') ??
     getSavedRehearsalLibrarySourceIssue(savedLibraryIssue, source, 'offline') ??
     getSavedTrackPlaybackItemIssue(playbackIssue, trackPlayableItem) ??
-    getSourceStatusMessage(source);
+    availabilityMessage;
   const durationLabel = formatLengthLabel(getSourceDisplayDurationMs(source));
   // The same track menu as Files; its only view action is `Rename`, since the
   // other view actions act on a Files link (task 2.12).
@@ -225,14 +240,31 @@ export const BrowseSourceRow = ({
       <ExplorerListRow
         actions={
           <>
+            {isDriveSessionDisconnected ? (
+              <View style={styles.sessionIcon}>
+                <AppIcon
+                  color={appTheme.colors.textFaint}
+                  name="cloud-slash"
+                  size={SESSION_ICON_SIZE}
+                />
+              </View>
+            ) : accessChip ? (
+              <AccessChip chip={accessChip} />
+            ) : null}
             {isPlaying ? <EqualizerMark style={styles.equalizer} /> : null}
             {durationLabel ? (
               <Text style={styles.duration}>{durationLabel}</Text>
             ) : null}
           </>
         }
-        // Selection can still pick an unavailable row, for removal.
-        disabled={!isAvailable && !selection?.isActive}
+        // Selection can still pick an unavailable row, for removal. A
+        // disconnected row stays pressable: it opens Reconnect.
+        disabled={
+          !isAvailable &&
+          !selection?.isActive &&
+          !(isDriveSessionDisconnected && canReconnectSource)
+        }
+        dimmed={isDriveSessionDisconnected}
         leadingIcon={
           <Text
             style={[styles.index, isActive ? styles.indexActive : undefined]}
@@ -256,6 +288,11 @@ export const BrowseSourceRow = ({
           />
         }
         onPress={() => {
+          if (isDriveSessionDisconnected && !isAvailable) {
+            onReconnectSource();
+            return;
+          }
+
           void toggleSourcePlayback(source);
         }}
         selection={selection}
@@ -300,6 +337,8 @@ export const BrowseSourceRow = ({
 // Fills the explorer's 20pt leading slot; right-aligned so 9 and 10 line up.
 const INDEX_COLUMN_WIDTH = 20;
 const EQUALIZER_GAP = 10;
+const SESSION_ICON_SIZE = 16;
+const SESSION_ICON_GAP = 10;
 
 const styles = StyleSheet.create({
   duration: {
@@ -317,6 +356,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'right',
   },
+  sessionIcon: { marginRight: SESSION_ICON_GAP },
   revealed: { backgroundColor: appTheme.colors.accentRegionFill },
   indexActive: { color: appTheme.colors.accentText },
   rowMessage: {

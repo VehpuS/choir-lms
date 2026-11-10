@@ -22,6 +22,7 @@ export type PhosphorGlyph =
   | 'Check'
   | 'CheckCircle'
   | 'Circle'
+  | 'CloudSlash'
   | 'ClockCountdown'
   | 'ClockCounterClockwise'
   | 'BookOpen'
@@ -75,6 +76,7 @@ export type PhosphorGlyph =
   | 'Toolbox'
   | 'Trash'
   | 'UserCircle'
+  | 'Warning'
   | 'Waveform'
   | 'X'
   | 'XCircle';
@@ -179,6 +181,10 @@ export const APP_ICON_GLYPHS = {
   'skip-next-outline': regular('SkipForward'),
   'arrow-collapse-up': regular('ArrowLineUp'),
   'arrow-collapse-down': regular('ArrowLineDown'),
+
+  // Drive access: the session is disconnected, or a file needs attention.
+  'cloud-slash': regular('CloudSlash'),
+  'alert-outline': regular('Warning'),
 
   // Notes and statements (the session-scope line on the shaping sheet).
   'information-outline': regular('Info'),

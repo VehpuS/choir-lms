@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Drive access UI mock</title>
+    <style>
+      :root {
+        --bg: #161826;
+        --surface: #232532;
+        --raised: #1b1e2c;
+        --text: #e9e9ed;
+        --muted: #9397ab;
+        --faint: #8e92a6;
+        --accent: #9184d9;
+        --accentText: #b5abfc;
+        --warn: #e6c17a;
+        --danger: #f28b82;
+        --ok: #81c995;
+        --line: #2e3140;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #0d0f1a;
+        color: var(--text);
+        font:
+          14px/1.4 -apple-system,
+          system-ui,
+          Segoe UI,
+          Roboto,
+          sans-serif;
+        padding: 24px 16px;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 4px;
+      }
+      p.lead {
+        color: var(--muted);
+        margin: 0 0 24px;
+        max-width: 760px;
+      }
+      .grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 28px;
+        align-items: flex-start;
+      }
+      .col {
+        width: 390px;
+      }
+      .col h2 {
+        font-size: 14px;
+        margin: 0 0 4px;
+      }
+      .col p {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 0 0 10px;
+        min-height: 48px;
+      }
+      .phone {
+        width: 390px;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        overflow: hidden;
+        padding-bottom: 12px;
+      }
+      .title {
+        font-size: 22px;
+        font-weight: 700;
+        padding: 18px 16px 8px;
+      }
+      .banner {
+        margin: 4px 16px 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border-radius: 12px;
+        background: rgba(230, 193, 122, 0.12);
+        border: 1px solid rgba(230, 193, 122, 0.4);
+      }
+      .banner .t {
+        flex: 1;
+        color: var(--warn);
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .btn {
+        background: var(--accent);
+        color: #161826;
+        border: 0;
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .ghost {
+        background: transparent;
+        color: var(--accentText);
+        border: 1px solid var(--accent);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-top: 1px solid var(--line);
+      }
+      .idx {
+        width: 20px;
+        text-align: right;
+        color: var(--faint);
+        font:
+          12px ui-monospace,
+          monospace;
+      }
+      .body {
+        flex: 1;
+        min-width: 0;
+      }
+      .name {
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .meta {
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .msg {
+        color: var(--danger);
+        font-size: 12px;
+        line-height: 17px;
+      }
+      .dim .name,
+      .dim .meta {
+        opacity: 0.55;
+      }
+      .dur {
+        color: var(--faint);
+        font:
+          12px ui-monospace,
+          monospace;
+      }
+      .dots {
+        color: var(--muted);
+        letter-spacing: 1px;
+        font-weight: 700;
+      }
+      .chip {
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 2px 8px;
+        border: 1px solid;
+        white-space: nowrap;
+      }
+      .chip.w {
+        color: var(--warn);
+        border-color: rgba(230, 193, 122, 0.4);
+        background: rgba(230, 193, 122, 0.12);
+      }
+      .chip.d {
+        color: var(--danger);
+        border-color: rgba(242, 139, 130, 0.4);
+        background: rgba(242, 139, 130, 0.12);
+      }
+      svg {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex: none;
+      }
+      .ico {
+        color: var(--faint);
+      }
+      .note {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .tag {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #161826;
+        border-radius: 6px;
+        padding: 1px 6px;
+        margin-left: 6px;
+        vertical-align: middle;
+      }
+      .rec {
+        background: var(--ok);
+      }
+      .cur {
+        background: var(--danger);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Issue #40 — Drive access / reconnection UI</h1>
+    <p class="lead">
+      Rendered at a 390pt phone width using the Nocturne tokens. Session-level
+      problems (signed out, expired) move to <b>one global banner</b>; rows stay
+      quiet. Only file-specific problems show on a row, as a one-line chip plus
+      an icon from the existing Phosphor set.
+    </p>
+    <svg style="display: none">
+      <defs>
+        <symbol id="cloud-slash" viewBox="0 0 24 24">
+          <path d="M3 3l18 18" />
+          <path
+            d="M8 18a5 5 0 0 1-1-9.9M10 6.3A6 6 0 0 1 18 10a4 4 0 0 1 1.5 7.7"
+          />
+        </symbol>
+        <symbol id="lock" viewBox="0 0 24 24">
+          <rect x="5" y="11" width="14" height="9" rx="2" />
+          <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+        </symbol>
+        <symbol id="warn" viewBox="0 0 24 24">
+          <path d="M12 4l9 16H3z" />
+          <path d="M12 10v4M12 17h.01" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <div class="grid">
+      <div class="col">
+        <h2>Today <span class="tag cur">CURRENT</span></h2>
+        <p>
+          Banner paragraph plus a 2-line red message on every row. 12 tracks =
+          12 identical errors.
+        </p>
+        <div class="phone">
+          <div class="title">Library</div>
+          <div class="banner" style="display: block">
+            <div style="color: var(--warn); font-weight: 600">
+              Saved tracks need Drive access
+            </div>
+            <div
+              style="color: var(--muted); font-size: 12px; margin-top: 2, px"
+            >
+              12 saved tracks remain visible in the rehearsal library, but
+              reconnect Google Drive before playback, loops, or playlists can
+              use them.
+            </div>
+          </div>
+          <div class="row">
+            <span class="idx">01</span>
+            <div class="body">
+              <div class="name">Ave Verum – Soprano</div>
+              <div class="meta">Tenor · 2 loops</div>
+              <div class="msg">
+                Reconnect Google Drive to restore this saved rehearsal track.
+              </div>
+            </div>
+            <span class="dur">3:42</span><span class="dots">⋮</span>
+          </div>
+          <div class="row">
+            <span class="idx">02</span>
+            <div class="body">
+              <div class="name">Ave Verum – Alto</div>
+              <div class="meta">Alto</div>
+              <div class="msg">
+                Reconnect Google Drive to restore this saved rehearsal track.
+              </div>
+            </div>
+            <span class="dur">3:40</span><span class="dots">⋮</span>
+          </div>
+          <div class="row">
+            <span class="idx">03</span>
+            <div class="body">
+              <div class="name">Locus Iste – Full mix</div>
+              <div class="meta">Full</div>
+              <div class="msg">
+                Reconnect Google Drive to restore this saved rehearsal track.
+              </div>
+            </div>
+            <span class="dur">2:15</span><span class="dots">⋮</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <h2>A · Session expired <span class="tag rec">PROPOSED</span></h2>
+        <p>
+          One single-line banner with an action. Rows lose their message; they
+          dim and gain a cloud-slash icon. Menu keeps <i>Reconnect</i>.
+        </p>
+        <div class="phone">
+          <div class="title">Library</div>
+          <div class="banner">
+            <svg style="color: var(--warn)"><use href="#cloud-slash" /></svg
+            ><span class="t">Drive disconnected</span
+            ><button class="btn">Reconnect</button>
+          </div>
+          <div class="row dim">
+            <span class="idx">01</span>
+            <div class="body">
+              <div class="name">Ave Verum – Soprano</div>
+              <div class="meta">Tenor · 2 loops</div>
+            </div>
+            <svg class="ico"><use href="#cloud-slash" /></svg
+            ><span class="dur">3:42</span><span class="dots">⋮</span>
+          </div>
+          <div class="row dim">
+            <span class="idx">02</span>
+            <div class="body">
+              <div class="name">Ave Verum – Alto</div>
+              <div class="meta">Alto</div>
+            </div>
+            <svg class="ico"><use href="#cloud-slash" /></svg
+            ><span class="dur">3:40</span><span class="dots">⋮</span>
+          </div>
+          <div class="row dim">
+            <span class="idx">03</span>
+            <div class="body">
+              <div class="name">Locus Iste – Full mix</div>
+              <div class="meta">Full</div>
+            </div>
+            <svg class="ico"><use href="#cloud-slash" /></svg
+            ><span class="dur">2:15</span><span class="dots">⋮</span>
+          </div>
+          <div class="note" style="padding: 0 16px">
+            Tapping a dimmed row re-opens the same Reconnect flow instead of
+            failing silently. Tracks kept offline stay playable and are not
+            dimmed.
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <h2>B · Never signed in</h2>
+        <p>
+          Same layout, neutral wording and “Connect” (no warning tone: nothing
+          broke).
+        </p>
+        <div class="phone">
+          <div class="title">Library</div>
+          <div
+            class="banner"
+            style="
+              background: rgba(145, 132, 217, 0.12);
+              border-color: rgba(145, 132, 217, 0.4);
+            "
+          >
+            <svg style="color: var(--accentText)">
+              <use href="#cloud-slash" /></svg
+            ><span class="t" style="color: var(--accentText)"
+              >Connect Google Drive</span
+            ><button class="btn">Connect</button>
+          </div>
+          <div class="row dim">
+            <span class="idx">01</span>
+            <div class="body">
+              <div class="name">Ave Verum – Soprano</div>
+              <div class="meta">Tenor · 2 loops</div>
+            </div>
+            <svg class="ico"><use href="#cloud-slash" /></svg
+            ><span class="dur">3:42</span><span class="dots">⋮</span>
+          </div>
+          <div class="row dim">
+            <span class="idx">02</span>
+            <div class="body">
+              <div class="name">Ave Verum – Alto</div>
+              <div class="meta">Alto</div>
+            </div>
+            <svg class="ico"><use href="#cloud-slash" /></svg
+            ><span class="dur">3:40</span><span class="dots">⋮</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <h2>C · Connected, file-specific issues</h2>
+        <p>
+          No banner. Only the affected row shows a short chip (≤ ~14 chars) and
+          the full sentence lives in the row menu / detail sheet.
+        </p>
+        <div class="phone">
+          <div class="title">Library</div>
+          <div class="row">
+            <span class="idx">01</span>
+            <div class="body">
+              <div class="name">Ave Verum – Soprano</div>
+              <div class="meta">Tenor · 2 loops</div>
+            </div>
+            <span class="dur">3:42</span><span class="dots">⋮</span>
+          </div>
+          <div class="row">
+            <span class="idx">02</span>
+            <div class="body">
+              <div class="name">Ave Verum – Alto</div>
+              <div class="meta">Alto</div>
+            </div>
+            <span class="chip w"
+              ><svg style="width: 11px; height: 11px; vertical-align: -1px">
+                <use href="#lock" />
+              </svg>
+              Needs access</span
+            ><span class="dots">⋮</span>
+          </div>
+          <div class="row dim">
+            <span class="idx">03</span>
+            <div class="body">
+              <div class="name">Locus Iste – Full mix</div>
+              <div class="meta">Full</div>
+            </div>
+            <span class="chip d"
+              ><svg style="width: 11px; height: 11px; vertical-align: -1px">
+                <use href="#warn" />
+              </svg>
+              Not found</span
+            ><span class="dots">⋮</span>
+          </div>
+          <div class="row">
+            <span class="idx">04</span>
+            <div class="body">
+              <div class="name">Salve Regina</div>
+              <div class="meta">Bass</div>
+            </div>
+            <span class="chip w">Offline</span><span class="dots">⋮</span>
+          </div>
+          <div class="note" style="padding: 0 16px">
+            Copy map: needs-access → “Needs access”, missing → “Not found”,
+            access-revoked → “Access removed”, network → “Offline” (global
+            banner if all fail).
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="lead" style="margin-top: 28px">
+      <b>Decision proposed:</b> a global banner when the <i>session</i> is
+      expired/disconnected (every row would otherwise repeat the same fix);
+      per-row chips only when the <i>file</i> is the problem. All copy fits one
+      line at 390pt.
+    </p>
+  </body>
+</html>

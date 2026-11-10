@@ -211,6 +211,7 @@ export const SavedRehearsalLibrarySection = (
           selectedView={selectedView}
         />
         <SavedRehearsalLibraryStatusCards
+          authorization={props.authorization}
           isPlaybackIssueShownOnRow={
             shouldRenderFilesExplorer(selectedView) &&
             isPlaybackIssueShownOnFilesRow(
