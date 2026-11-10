@@ -17,6 +17,9 @@ session that has the pre-installed browser.
   app persisted), and exits non-zero on failure.
 - `add-to-playlist-snackbar.scenario.ts` — issue #36.
 - `sheet-music-pdf.scenario.ts` — opens a real four-page PDF as a track's sheet music; the score is a web link whose bytes `webFiles` serves (CORS open), so no Drive is needed.
+- `drive-access-banner.scenario.ts` — issue #40 (a disconnected session shows one
+  single-line banner and quiet rows; the mock has no sign-in, so file-level chips
+  are covered by component specs instead).
 - `track-rename.scenario.ts` — issue #42 (renaming from Tracks and Files, the
   copies prompt, the remembered choice), seeded with
   `buildTrackRenameMockLibrary` (folders and Files copies).
