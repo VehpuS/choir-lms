@@ -48,10 +48,13 @@ jobs:
         run: npm exec -- nx run-many -t lint test typecheck build --all --outputStyle=static
 
   # Drives the web export in Chromium against a mock library (no Google
-  # sign-in), so it runs only once the unit-level checks above have passed.
+  # sign-in). It has its own install and build, so it runs alongside `main`
+  # instead of after it: the pull request waits for the slower of the two, not
+  # their sum. The slow device-matrix scenarios are not run here; see
+  # `browser-matrix.yml`.
   browser:
-    needs: main
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
 
@@ -62,6 +65,18 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - run: npm ci
+
+      # The Expo export only changes with app inputs, so most test-only pull
+      # requests restore it. Nx keys its own cache entries; this keeps the
+      # cache directory between runs (newest wins, any earlier one restores).
+      - name: Restore the Nx cache
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-browser-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            nx-browser-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+            nx-browser-${{ runner.os }}-
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium

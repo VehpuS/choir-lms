@@ -71,6 +71,9 @@ export type SavedRehearsalLibrarySectionProps = {
   removeSourceWithoutConfirmation: (source: DriveLibrarySource) => void;
   requestedLoopEditId?: string | null;
   requestedLoopEditRequestId?: number;
+  /** Open this playlist's detail (from Recents); `requestedPlaylistRequestId` re-fires a repeat. */
+  requestedPlaylistId?: string | null;
+  requestedPlaylistRequestId?: number;
   requestedTag?: string | null;
   requestedTagRequestId?: number;
   libraryFiles: UseLibraryFilesResult;

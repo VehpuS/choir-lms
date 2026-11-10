@@ -1,0 +1,79 @@
+name: Browser matrix
+
+# The slow browser scenarios (`*.matrix.scenario.ts`: device profiles, CPU
+# throttling, sample rates, long tracks) are opt-in so every pull request stays
+# fast. Run them from the Actions tab (workflow dispatch), or put the
+# `browser-matrix` label on a pull request; they then re-run on each push to it.
+#
+# WebKit (or Firefox) runs on demand too: dispatch with `browser` set to it
+# (and `lane` default to run the everyday scenarios there). A scenario that needs
+# a Chromium-only feature (the fake microphone, CPU throttling) is skipped, not
+# failed. The browser is installed only when asked for.
+on:
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: Browser to run the scenarios in
+        type: choice
+        options: [chromium, webkit, firefox]
+        default: chromium
+      lane:
+        description: Which scenarios to run
+        type: choice
+        options: [matrix, default]
+        default: matrix
+  pull_request:
+    types: [labeled, synchronize]
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: browser-matrix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  matrix:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'browser-matrix')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+
+      # The Expo export only changes with app inputs, so most test-only pull
+      # requests restore it. Nx keys its own cache entries; this keeps the
+      # cache directory between runs (newest wins, any earlier one restores).
+      - name: Restore the Nx cache
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-browser-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            nx-browser-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+            nx-browser-${{ runner.os }}-
+
+      - name: Install the browser
+        run: npx playwright install --with-deps ${{ inputs.browser || 'chromium' }}
+
+      - name: Build the browser test export
+        run: npm exec -- nx run mobile-rehearsal-player:build-browser-test --outputStyle=static
+
+      - name: Browser tests (${{ inputs.lane || 'matrix' }} lane, ${{ inputs.browser || 'chromium' }})
+        run: npx tsx tools/browser-session/run-scenarios.ts browser-session-output --lane=${{ inputs.lane || 'matrix' }} --browser=${{ inputs.browser || 'chromium' }}
+
+      - name: Upload browser matrix screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-matrix-screenshots
+          path: browser-session-output/
+          if-no-files-found: ignore

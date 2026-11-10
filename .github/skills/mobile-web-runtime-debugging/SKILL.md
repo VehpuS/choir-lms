@@ -13,6 +13,14 @@ description: >
 Use this skill for `packages/mobile-rehearsal-player` when the problem reproduces
 on web or only becomes diagnosable through a live browser session.
 
+## Keep the repro as a test
+
+Once a browser-only failure is understood, capture it as a scenario in
+`tools/browser-session/` (mock library, mock Drive, generated audio, so no sign-in)
+with the `browser-test-coverage` skill, instead of leaving it as a manual script.
+That suite is also the quickest repro when the failure does not need real Google
+authentication.
+
 ## Goals
 
 - Reproduce the failure on a fresh bundle and a fresh page.

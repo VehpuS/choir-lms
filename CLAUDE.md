@@ -49,6 +49,17 @@ npm exec -- nx run mobile-rehearsal-player:test-pattern -- --pattern='src/**/*.s
 
 Tests run via `tsx --test` using Node's built-in `node:test` + `node:assert/strict` — **not** Jest or Vitest, even though `jest-expo` appears as a dependency for ecosystem compatibility only. Mobile component specs use `@testing-library/react-native/pure` through the `src/test-support/` preload (see the testing policy). Match each package's existing `*.spec.ts`/`*.spec.tsx` naming; don't introduce `*.test.*` files or `__tests__` directories.
 
+Browser scenarios (Playwright driving the web export against a mock library, mock Drive, generated audio and a fake microphone; no network, no Google sign-in):
+
+```sh
+npm exec -- nx run mobile-rehearsal-player:build-browser-test      # the export the scenarios serve
+npx tsx tools/browser-session/run-scenarios.ts browser-session-output --scenario=<text>   # one scenario
+npm exec -- nx run mobile-rehearsal-player:browser-test            # default lane (CI `browser` job)
+npm exec -- nx run mobile-rehearsal-player:browser-test-matrix     # slow lane: device profiles, CPU, sample rates
+```
+
+Add or extend a scenario for any user-visible web change, and reproduce browser bugs as a failing scenario first; use the `browser-test-coverage` skill and read `tools/browser-session/README.md`.
+
 Mobile-specific:
 
 ```sh

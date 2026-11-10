@@ -52,6 +52,8 @@ export const AppRouter = () => {
   const libraryViewRequest =
     useRequestChannel<SavedRehearsalLibraryView>('files');
   const tagRequest = useRequestChannel<string | null>(null);
+  // Opens a saved playlist's detail in the Library (from Recents).
+  const playlistRequest = useRequestChannel<string | null>(null);
   useTrackRevealNavigation({
     openLibrary: () => destinationRequest.request('library'),
     openTracksView: () => libraryViewRequest.request('tracks'),
@@ -203,6 +205,11 @@ export const AppRouter = () => {
               onRequestLibraryDestination={() => {
                 destinationRequest.request('library');
               }}
+              onRequestPlaylistDetail={(playlistId) => {
+                destinationRequest.request('library');
+                libraryViewRequest.request('playlists');
+                playlistRequest.request(playlistId);
+              }}
               onSelectTag={(tag) => {
                 tagRequest.request(tag);
                 destinationRequest.request('library');
@@ -237,6 +244,8 @@ export const AppRouter = () => {
                 destinationRequest.request('add');
               }}
               playback={playback}
+              requestedPlaylistId={playlistRequest.value}
+              requestedPlaylistRequestId={playlistRequest.requestId}
               requestedLoopEditId={loopEditRequest.value}
               requestedLoopEditRequestId={loopEditRequest.requestId}
               requestedTag={tagRequest.value}

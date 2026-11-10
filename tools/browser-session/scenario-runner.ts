@@ -2,7 +2,15 @@ import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from 'playwright';
 
+import {
+  selectedBrowserName,
+  unmetRequirement,
+  type BrowserName,
+} from './browser-choice';
 import type { MockLibrary } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
+import type { MockStoredRecording } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-entities';
+import type { MockLyricsCandidate } from './mock-lyrics';
+import type { DeviceProfile } from './device-profiles';
 import type { MockDriveAccount } from './mock-drive-session';
 import {
   openMockLibrarySession,
@@ -29,11 +37,37 @@ export const runScenario = async (options: {
   library: MockLibrary;
   /** The Google Drive account to sign in as; see `openMockLibrarySession`. */
   drive?: MockDriveAccount;
+  /** Capture the audio output; see `openMockLibrarySession`. */
+  audioTap?: boolean | { sampleRate?: number };
+  /** Emulate a device; see `openMockLibrarySession`. */
+  profile?: DeviceProfile;
+  /** Lyrics lookup results; see `openMockLibrarySession`. */
+  lyricsLookup?: MockLyricsCandidate[];
+  /** Record the media elements the app plays; see `openMockLibrarySession`. */
+  mediaProbe?: boolean;
+  /** Recordings to seed; see `openMockLibrarySession`. */
+  recordings?: MockStoredRecording[];
+  /** A fake microphone playing the choir stem; see `openMockLibrarySession`. */
+  microphone?: boolean;
   /** Pixel density for the session; see `openMockLibrarySession`. */
   deviceScaleFactor?: number;
+  /** Browsers the scenario needs (any of them); others skip it. Fake microphone and CPU throttling imply Chromium. */
+  requires?: readonly BrowserName[];
   webFiles?: Record<string, MockWebFile>;
   steps: (context: ScenarioContext) => Promise<void>;
 }) => {
+  const skipReason = unmetRequirement({
+    cpuThrottle: options.profile?.cpuThrottle,
+    microphone: options.microphone,
+    requires: options.requires,
+  });
+
+  if (skipReason) {
+    console.log(`SKIP ${skipReason} (${selectedBrowserName()})`);
+
+    return;
+  }
+
   const outDir = process.argv[2] ?? 'browser-session-output';
 
   mkdirSync(outDir, { recursive: true });
@@ -41,7 +75,13 @@ export const runScenario = async (options: {
   const session = await openMockLibrarySession({
     deviceScaleFactor: options.deviceScaleFactor,
     drive: options.drive,
+    audioTap: options.audioTap,
     library: options.library,
+    profile: options.profile,
+    lyricsLookup: options.lyricsLookup,
+    mediaProbe: options.mediaProbe,
+    microphone: options.microphone,
+    recordings: options.recordings,
     webFiles: options.webFiles,
   });
   const { page } = session;
@@ -57,9 +97,14 @@ export const runScenario = async (options: {
       session,
       shot,
     });
+    // Offline guarantee: a request to an undeclared host fails the scenario.
+    session.assertNoBlockedRequests();
   } catch (error) {
     await shot('failure');
-    results.push(`FAIL ${(error as Error).message.split('\n')[0]}`);
+    await session.saveFailureEvidence(outDir);
+    results.push(
+      `FAIL ${(error as Error).message.split('\n').slice(0, 5).join(' | ')}`,
+    );
     process.exitCode = 1;
   } finally {
     console.log(results.join('\n'));

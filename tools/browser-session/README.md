@@ -12,6 +12,12 @@ session that has the pre-installed browser.
   `packages/mobile-rehearsal-player/src/test-support/mock-library/` —
   `buildMockSource`, `buildMockPlaylist`, `buildDefaultMockLibrary`. A spec
   keeps the storage keys in step with `@org/audio-library-runtime`.
+- `mock-library-entities.ts` (same folder as the fixtures) — builders for what a
+  scenario seeds beyond tracks: `buildMockLoop`, `withMockPlaylistItems`,
+  `withMockTags`, `buildMockMarker`, `buildMockLyrics`, `buildMockComposite`,
+  `buildMockRecording`. Put loops and composites on `MockLibrary`; pass
+  `recordings` to the session (seeded into IndexedDB, records only, no audio).
+  A spec reads them back through the real runtime, so they stay in step with it.
 - `mock-drive-session.ts` — a small mock Google Drive. `drive: { state }` on
   `openMockLibrarySession` / `runScenario` is `'signed-out'` (default), `'expired'`
   or `'authorized'` (with optional `files` and `inaccessibleFileIds`). It seeds the
@@ -22,8 +28,39 @@ session that has the pre-installed browser.
 - `scenario-runner.ts` — `runScenario({ library, steps })` opens the session,
   gives the steps `page`, `shot`, `pass` and `session.readStored(key)` (what the
   app persisted), and exits non-zero on failure.
+- `page-helpers.ts` — `openTab`, `waitForTrack`, `openTrackMenu`, `chooseMenuItem`,
+  `expectToast`; and `session.expectNoConsoleErrors(ignore?)` (opt in per step;
+  a short baseline of known errors is ignored). A failing scenario also writes
+  `failure-trace.zip` (`npx playwright show-trace <file>`) and
+  `failure-console.txt` next to `failure.png`; CI uploads them with the screenshots.
+- `shell-navigation.scenario.ts` — tabs, Library chip and Files folder kept, reload, phone and desktop layout.
+- `library-files-organize.scenario.ts` / `library-files-bulk.scenario.ts` — Files search, create folder, move, delete with confirmation; selection bar, bulk Add to playlist, and the remembered "Include playlists?" choice.
+- `playlists.scenario.ts` — create, rename, reorder, remove with Undo, delete with confirmation, and finding a played playlist in Recents.
+- `media-probe.ts` — `mediaProbe: true` on the session records the media elements the app plays; `readMediaState(page)` returns the latest one's `currentTime`, `paused`, `playbackRate` and `duration` (the player's element is outside the DOM).
+- `loops.scenario.ts` — make a loop, trim it with the steppers, see it under its track and in Loops, edit it, and play it from its start (with a whole-track control).
+- `playback.scenario.ts` / `playback-long-track.scenario.ts` — play, pause, seek, the queue (next, previous, reorder, shuffle), speed and pitch (readout, player rate and audio clock agree), and a ten-minute track.
+- `playback-slowdown-quality.matrix.scenario.ts` — measures the audio the player produces at 1x, 0.75x, 0.5x, 0.25x and +2 semitones on three device profiles (`captureMediaOutput` for speed, the audio tap for the pitch shifter), against baseline-plus-margin thresholds. Slow: matrix lane.
+- The mock Drive is writable and keeps its files in memory (`mock-drive-store.ts`): `files.create`, multipart and resumable upload, patch (rename, trash, parents, app properties), delete, `about`, and download of what was uploaded. `session.drive.store` is the live store, so a scenario can read what the app wrote. `files.list` queries are evaluated by `test-support/mock-drive/drive-query.ts` (name, name contains, mimeType, `'<id>' in parents`, `'me' in owners`, `sharedWithMe`, `trashed`, `appProperties has {…}`, and/or/parentheses; a query it does not understand throws). `writeAccess: true` on an authorized account stores the Drive write scope, so backup does not ask for it. `mock-drive-writes.scenario.ts` proves all of this.
+- (Older note) The mock Drive answers file listings the way Drive does for two parts of the query: `'<id>' in parents` (a file with no `parents` is in the root) and `name contains '<text>'` (case-insensitive, any folder); `session.drive.listQueries` records every `q`. Give `files` objects with `id`, `name`, `mimeType`, `size`, `parents`.
+- `tags.scenario.ts` / `library-filters.scenario.ts` / `drive-add-browse-search.scenario.ts` — edit, view and remove tags and see them in Tags and Recents; search scope and the Any/All tag filter; browse, open a folder and search in the Add tab. `visibleText(page, text)` picks the visible element, since screens stay mounted behind the one in front.
+- The mock Drive also answers a single-file request (`files/<id>`) with the matching object from `files`, which the import needs to read a file's name and type.
+- `drive-import.scenario.ts` / `drive-offline-and-session.scenario.ts` — save from the Add tab, select and review an import (counts, Flatten, already in the library), confirm; Keep offline (downloaded once, played from the kept copy, with a not-kept control), Offline files and Clear all, and Forget session. Reconnect after an expired session is in `drive-access-banner.scenario.ts`.
+- `backup.scenario.ts` — back up from the session menu: the bundle lands in `Choir LMS / Backups`, is marked, is read back with the app's own `parseLibraryBundle` (tracks, lyrics, markers, tags, loop, playlist, no access token), and only the newest five backups are kept; without the write permission the app asks first (Not now writes nothing, Allow starts the sign-in).
+- `mock-bundles.ts` — `buildMockBundleFile({ library, fileName, folderId, author, sharedWithMe })` builds a bundle with the runtime's own `buildLibraryBundle` (so it follows the code's format) and returns the Drive file object and its bytes, to put in the account's `files` and `media`. `restore-import.scenario.ts` uses it: Restore lists the backup; Add to my library previews, then adds the new items in a new folder and reuses what you have; Replace saves a backup first, can be cancelled, and is undone by restoring that backup.
+- `share-and-access.scenario.ts` — Share a folder (a marked bundle of just that folder goes to `Choir LMS / Shares`, no audio); Import shared library with the "need access" warning, the access guide grouped by owner, Copy list (the clipboard is granted in every session), and Check again after `session.drive.inaccessible.clear()` simulates the owner sharing the files.
+- `mock-recordings.ts` — `recordings: [...]` seeds recording records; `readRecordedAudio(page)` reads every stored recording and its real audio back from the app's IndexedDB (16-bit chunks) so a scenario can run it through the pitch pipeline. `recordings.scenario.ts` records a take with the stem as the microphone (consent, timer, save sheet, name, the take holds E4, C♯4, C4, listed, played, renamed, deleted); `pitch-detection.scenario.ts` turns on Pitch detection and reads E4, C♯4, C4 from the app's pitch monitor (a label like `C4, 17 cents flat`).
+- `mock-lyrics.ts` — `lyricsLookup: [...]` on the session answers the app's Look up (LRCLIB, `lrclib.net/api/search`) with the given candidates; `session.lyricsSearches` records what was searched.
+- `markers.scenario.ts` / `lyrics.scenario.ts` — add, rename, jump to, loop between and delete markers; view, edit, delete, type and look up lyrics (consent first, kept only on Save).
+- `composites.scenario.ts` — Composites list, playing one, the Mix panel (mute, solo, built-in preset, Save as preset stored with the composite), the export sheet, and Re-link for a stem whose track is gone.
+- `settings.scenario.ts` — the Settings categories, Bulk selections and Renaming preferences (change, saved, kept after a reload, reset to Ask each time).
 - `add-to-playlist-snackbar.scenario.ts` — issue #36.
 - `sheet-music-pdf.scenario.ts` — opens a real four-page PDF as a track's sheet music; the score is a web link whose bytes `webFiles` serves (CORS open), so no Drive is needed.
+- `sheet-music-scores.scenario.ts` — the full MusicXML arrangement as `.musicxml` and as `.mxl` (zipped in the scenario) and the MIDI arrangement turned into notation; each opens in the viewer with a chip per part.
+- `score-pitch-marks.scenario.ts` — with the stem as the microphone and Pitch detection on, the open MusicXML and MIDI-derived scores mark the noteheads (`data-midi` 64, 61, 60 in the `style[data-score-pitch-marks]` rules) for E4, C♯4, C4 in turn, the marked notehead is painted in the accent colour, and Show other-octave matches adds more marks.
+- `practice-tools.scenario.ts` — the Practice tools tab and its menu, the piano keyboard and its controls, Close piano, and the playback screen's separately named `Playback practice tools` button (use `getByLabel('Practice tools', { exact: true })` for the tab).
+- `piano.scenario.ts` / `piano-after-sign-in.scenario.ts` / `piano-during-playback.scenario.ts` — the piano in a new session that is not signed in, straight after signing in (the piano open before or after), and under a playing track: a held key is shown pressed and the audio tap hears its pitch. `drive: { completeSignIn: true, state: 'signed-out' | 'expired' }` makes the stub sign-in page send the browser back to the app with an access token, so Connect/Reconnect really signs in. `piano-helpers.ts` has `openPiano`, `holdKey`, `keyColor` and `expectTone`.
+- `piano-pitch-highlight.scenario.ts` — with Pitch detection on and the stem as the microphone, the sung keys light up in view (E4, C♯4, C4), and an arrow names the note when the keyboard is scrolled out of view, in both directions.
+- `pitch-full-view.scenario.ts` — the full-screen pitch tool: Open full view, the readout, holding a target note, zoom, the minimum volume, Stop, and Back to monitor.
 - `drive-access-banner.scenario.ts` — issue #40, expired session: one single-line
   banner, quiet rows, Reconnect opens sign-in.
 - `drive-access-chips.scenario.ts` — issue #40, authorised session: no banner,
@@ -34,12 +71,33 @@ session that has the pre-installed browser.
 
 ```sh
 npm exec -- nx run mobile-rehearsal-player:build-browser-test
-npx tsx tools/browser-session/track-rename.scenario.ts <outDir>
-# or every scenario, as automated browser tests (builds first):
-npm exec -- nx run mobile-rehearsal-player:browser-test
+npx tsx tools/browser-session/track-rename.scenario.ts <outDir>   # one scenario, directly
+npm exec -- nx run mobile-rehearsal-player:browser-test           # the default lane (builds first)
+npm exec -- nx run mobile-rehearsal-player:browser-test --scenario=rename   # only files whose name contains "rename"
+npm exec -- nx run mobile-rehearsal-player:browser-test-matrix    # the opt-in lane
 ```
 
-CI runs `browser-test` in its own `browser` job after the `main` job passes
+`run-scenarios.ts` runs scenarios three at a time, runs every one to the end
+(a failure does not hide the rest), and prints a timing line each plus a
+summary. **Lanes:** `*.scenario.ts` is the default lane, run by CI on every
+pull request. `*.matrix.scenario.ts` is for the slow or machine-sensitive
+scenarios (device profiles, CPU throttling, sample rates, long tracks); name a
+new one that way when it takes more than a few seconds or needs a quiet CPU.
+It runs on demand: from the Actions tab (`Browser matrix` workflow), or by
+putting the `browser-matrix` label on a pull request.
+
+Other browsers: `run-scenarios.ts ... --browser=webkit` (or `firefox`; install it with
+`npx playwright install webkit`), or the `Browser matrix` workflow's `browser` and `lane`
+inputs. Chromium is the default and the only one on every PR. A scenario using the fake
+microphone or CPU throttling needs Chromium by itself; add `requires: ['chromium']` to
+`runScenario` for any other Chromium-only feature, and it prints `SKIP` under another browser.
+`BROWSER_TEST_BROWSER` is how the choice reaches each scenario (`browser-choice.ts`).
+The matrix lane runs the slowdown quality checks (`slowdown-quality.ts`) on `QUICK_PROFILES`
+and `MATRIX_PROFILES` (`device-profiles.ts`).
+
+The TypeScript here is checked by `nx run mobile-rehearsal-player:typecheck-browser-tests` (part of `lint`), using `tools/browser-session/tsconfig.json`.
+
+CI runs `browser-test` in its own `browser` job, alongside the `main` job
 (Chromium comes from `npx playwright install`; `playwright` is a pinned
 devDependency). Screenshots land in `browser-session-output/` (ignored).
 
@@ -47,5 +105,6 @@ The browser build (`build-browser-test`) is the normal web export with a
 placeholder Google web client id, so Reconnect is enabled without real credentials.
 
 Without a `drive` account every saved track is unavailable, which is enough for library, playlist
-and menu flows; playback needs real audio and is out of scope. To cover another
-flow, add a `*.scenario.ts` that builds a library and drives `session.page`.
+and menu flows. Playback, recordings and pitch run on generated audio (`buildToneMedia`), the
+stem fixture and the fake microphone. To cover another flow, add a `*.scenario.ts` (see the
+`browser-test-coverage` skill) that builds a library and drives `session.page`.

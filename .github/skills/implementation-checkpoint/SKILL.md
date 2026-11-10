@@ -27,13 +27,14 @@ Use this skill after a focused implementation slice is validated and before movi
    - the key files changed
    - the automated tests or validation that ran
    - the remaining risk or manual test need
-3. Ask the user for feedback on the implementation before starting another subtask.
-4. If the change touches behavior that benefits from manual verification, ask the user for a concrete pass or fail report and suggest 1-3 direct test steps.
-5. Propose a focused commit message that matches the completed slice.
-6. Ask whether to create the commit now. Only commit after explicit approval.
-7. If approved, inspect `git status`, ensure only the intended slice is included, and create the commit.
-8. If the user reports issues or rejects the slice, reopen the same task, fix it, and rerun the same validation before proposing another commit.
-9. Resume the next numbered subtask only after feedback, manual verification, and commit handling are finished, or after the user explicitly opts out.
+3. List any follow-ups parked in `tasks.md` during this slice (unrelated bugs, findings, ideas, improvements, implementation questions), with their ids, so the user can reprioritize them. They are done after the planned tasks and before the change is archived, not in this slice.
+4. Ask the user for feedback on the implementation before starting another subtask.
+5. If the change touches behavior that benefits from manual verification, ask the user for a concrete pass or fail report and suggest 1-3 direct test steps.
+6. Propose a focused commit message that matches the completed slice.
+7. Ask whether to create the commit now. Only commit after explicit approval.
+8. If approved, inspect `git status`, ensure only the intended slice is included, and create the commit.
+9. If the user reports issues or rejects the slice, reopen the same task, fix it, and rerun the same validation before proposing another commit.
+10. Resume the next numbered subtask only after feedback, manual verification, and commit handling are finished, or after the user explicitly opts out.
 
 ## Output Template
 
@@ -42,6 +43,7 @@ Use this skill after a focused implementation slice is validated and before movi
 
 - Subtask: <id and title>
 - Validation: <tests or checks>
+- Follow-ups parked: <ids and one-liners, or none>
 - Manual verification needed: <yes or no, plus steps if yes>
 - Suggested commit: <message>
 

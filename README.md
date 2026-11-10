@@ -172,7 +172,7 @@ The currently implemented automated tests run through Nx `test` targets and exec
 - For targeted mobile test runs, use:
   - `npm exec -- nx run mobile-rehearsal-player:test-file -- --file=src/path/to/file.spec.ts`
   - `npm exec -- nx run mobile-rehearsal-player:test-pattern -- --pattern='src/**/*.spec.ts'`
-- Browser tests drive the web export in Chromium against a mock library (no Google sign-in): `npm exec -- nx run mobile-rehearsal-player:browser-test`. Scenarios and the mock library tooling are described in [tools/browser-session/README.md](tools/browser-session/README.md); CI runs it in the `browser` job once the unit-level checks pass.
+- Browser tests drive the web export in Chromium against a mock library (no Google sign-in): `npm exec -- nx run mobile-rehearsal-player:browser-test`. Scenarios and the mock library tooling are described in [tools/browser-session/README.md](tools/browser-session/README.md); CI runs it in the `browser` job alongside the unit-level checks. Slow device and audio-quality scenarios are an opt-in lane (`browser-test-matrix`, the `Browser matrix` workflow or the `browser-matrix` PR label). Agents add or extend a scenario with every user-visible web change (`browser-test-coverage` skill).
 
 ### Google OAuth for mobile manual testing
 

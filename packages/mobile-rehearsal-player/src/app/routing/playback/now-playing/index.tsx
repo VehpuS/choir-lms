@@ -15,6 +15,7 @@ import { SurfaceIconButton } from '../../../components/surface-icon-button';
 import { LyricsSection } from '../../../library/lyrics/components/lyrics-section';
 import { OptionsMenuSheet } from '../../../library/components/options-menu-sheet';
 import { PracticeToolsControl } from '../../../library/practice-tools/practice-tools-control';
+import { PLAYBACK_PRACTICE_TOOLS_LABEL } from '../../../library/practice-tools/practice-tools-model';
 import { appTheme } from '../../../utils/theme';
 import type {
   NowPlayingSurfaceSummary,
@@ -168,14 +169,9 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
           ) : null}
           <PracticeToolsControl
             menuPlacement={styles.practiceToolsMenu}
-            renderTrigger={({
-              accessibilityLabel,
-              isActive,
-              isExpanded,
-              onPress,
-            }) => (
+            renderTrigger={({ isActive, isExpanded, onPress }) => (
               <SurfaceIconButton
-                accessibilityLabel={accessibilityLabel}
+                accessibilityLabel={PLAYBACK_PRACTICE_TOOLS_LABEL}
                 expanded={isExpanded}
                 icon="practice-tools"
                 onPress={onPress}

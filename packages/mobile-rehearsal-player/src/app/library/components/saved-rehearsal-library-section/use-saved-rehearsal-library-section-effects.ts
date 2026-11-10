@@ -18,6 +18,9 @@ type UseSavedRehearsalLibrarySectionEffectsOptions = {
   openTagDetail: (tag: string) => void;
   requestedLoopEditId?: string | null;
   requestedLoopEditRequestId?: number;
+  openPlaylistDetail: (playlistId: string) => void;
+  requestedPlaylistId?: SavedRehearsalLibrarySectionProps['requestedPlaylistId'];
+  requestedPlaylistRequestId?: SavedRehearsalLibrarySectionProps['requestedPlaylistRequestId'];
   requestedTag?: SavedRehearsalLibrarySectionProps['requestedTag'];
   requestedTagRequestId?: SavedRehearsalLibrarySectionProps['requestedTagRequestId'];
   savedLibrarySources: SavedRehearsalLibrarySectionProps['savedLibrarySources'];
@@ -39,6 +42,9 @@ export const useSavedRehearsalLibrarySectionEffects = ({
   openTagDetail,
   requestedLoopEditId,
   requestedLoopEditRequestId,
+  openPlaylistDetail,
+  requestedPlaylistId,
+  requestedPlaylistRequestId,
   requestedTag,
   requestedTagRequestId,
   savedLibrarySources,
@@ -66,6 +72,22 @@ export const useSavedRehearsalLibrarySectionEffects = ({
     handledTagRequestIdRef.current = requestedTagRequestId;
     openTagDetail(requestedTag);
   }, [openTagDetail, requestedTag, requestedTagRequestId]);
+
+  // Opens the detail of a playlist another surface asked to show (Recents).
+  const handledPlaylistRequestIdRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (
+      !requestedPlaylistId ||
+      requestedPlaylistRequestId === undefined ||
+      handledPlaylistRequestIdRef.current === requestedPlaylistRequestId
+    ) {
+      return;
+    }
+
+    handledPlaylistRequestIdRef.current = requestedPlaylistRequestId;
+    openPlaylistDetail(requestedPlaylistId);
+  }, [openPlaylistDetail, requestedPlaylistId, requestedPlaylistRequestId]);
 
   // Opens the loop editor for a loop another surface asked to edit (the
   // playback sheet's loop chip). Waits for the loops to load, then handles

@@ -13,6 +13,7 @@ import {
   buildTrackRenameMockLibrary,
   MOCK_LIBRARY_OWNER_ID,
 } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
+import { openTrackMenu, waitForTrack } from './page-helpers';
 import { runScenario, type ScenarioContext } from './scenario-runner';
 
 // Live check for issue #42 (track renaming). Usage, after
@@ -46,7 +47,7 @@ const renameFromMenu = async (
   trackName: string,
   nextName: string,
 ) => {
-  await page.getByLabel(`${trackName} options`).first().click();
+  await openTrackMenu(page, trackName);
   await page.getByText('Rename', { exact: true }).last().click();
   const input = page.getByRole('textbox');
 
@@ -65,11 +66,11 @@ void runScenario({
   steps: async (context) => {
     const { page, pass, shot } = context;
 
-    await page.getByLabel('Alto Part options').first().waitFor();
+    await waitForTrack(page, 'Alto Part');
 
     // 1. Tracks view: Rename is an overflow action and renames the track.
     await openView(context, 'Tracks');
-    await page.getByLabel('Soprano Part options').first().click();
+    await openTrackMenu(page, 'Soprano Part');
     await page.getByText('Rename', { exact: true }).waitFor();
     await shot('1-tracks-overflow-rename');
     await page.getByText('Cancel', { exact: true }).last().click();
