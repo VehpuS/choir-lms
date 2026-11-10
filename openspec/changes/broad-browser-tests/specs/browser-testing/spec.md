@@ -28,6 +28,16 @@ The helpers SHALL provide a generated tone file of known length served as Drive 
 - **WHEN** a scenario records a take
 - **THEN** the take is saved and listed without real audio hardware
 
+#### Scenario: Pitches from a real stem
+
+- **WHEN** a scenario feeds the committed choir stem to the pitch detector through the fake microphone
+- **THEN** the detected notes are E4, then C#4, then C4
+
+#### Scenario: A real compressed file plays
+
+- **WHEN** a scenario plays the stem as an AAC `.m4a` Drive file
+- **THEN** it decodes and plays through the same path as a real Drive file
+
 ### Requirement: Coverage of user-critical flows
 
 The suite SHALL contain at least one scenario for each area listed in the design: shell navigation, library tracks and files, playlists, loops, playback and queue, markers and lyrics, tags and search, Drive flows, backup/restore/share, recordings, composite tracks, settings and sheet music.
@@ -63,3 +73,12 @@ Repository agent guidance SHALL tell future sessions to add or extend a browser 
 
 - **WHEN** a session is asked to fix a web-reproducible bug
 - **THEN** the guidance directs it to write a failing scenario before the fix and keep it afterwards
+
+### Requirement: Fixtures follow the code
+
+Library bundles used by backup, restore and import scenarios SHALL be generated with the runtime's bundle builder, not stored as frozen files, and committed media and score fixtures SHALL be small and live under `src/test-support/fixtures/`.
+
+#### Scenario: Bundle format changes
+
+- **WHEN** the bundle format gains an upgrade step
+- **THEN** the restore scenario exercises it without editing a stored bundle

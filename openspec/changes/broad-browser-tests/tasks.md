@@ -1,8 +1,9 @@
 ## 1. Tooling
 
 - [ ] 1.1 Network guard in `openMockLibrarySession` and `runScenario` (fails on undeclared hosts), with a scenario that proves it
-- [ ] 1.2 `buildToneWav` and Drive/web-link media serving with `Range` support
-- [ ] 1.3 Fake microphone launch flags and a recording-capable session option
+- [ ] 1.0 Commit fixtures: `choir-stem.m4a`, MIDI file and score (form per open questions) under `src/test-support/fixtures/`, with a spec that checks they exist and parse
+- [ ] 1.2 `buildToneWav` and Drive/web-link media serving with `Range` support, serving the stem as `audio/mp4` and an AAC codec probe
+- [ ] 1.3 Fake microphone fed by the stem (launch flags, WAV transcode helper) and a recording-capable session option
 - [ ] 1.4 Page helpers (`openTab`, `openTrackMenu`, `expectToast`, `expectNoConsoleErrors`) and trace + console capture on failure
 - [ ] 1.5 Fixture builders for loops, playlist items, tags, markers, lyrics, composites and recordings, each with a round-trip spec
 - [ ] 1.6 Migrate the older scenarios onto `runScenario`; `browser-test` `--scenario=` filter
@@ -17,11 +18,11 @@
 - [ ] 2.6 Markers and lyrics
 - [ ] 2.7 Tags and search
 - [ ] 2.8 Drive flows (import review, reconnect, offline files)
-- [ ] 2.9 Backup, restore and share
-- [ ] 2.10 Recordings
+- [ ] 2.9 Backup, restore and share (bundles generated with the runtime builder)
+- [ ] 2.10 Recordings, including the E4 / C#4 / C4 pitch progression from the stem
 - [ ] 2.11 Composite tracks
 - [ ] 2.12 Settings
-- [ ] 2.13 Sheet music beyond PDF
+- [ ] 2.13 Sheet music beyond PDF (MusicXML score and MIDI-derived notation)
 
 ## 3. Agent guidance and CI
 
