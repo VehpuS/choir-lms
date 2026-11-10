@@ -27,6 +27,8 @@ import { buildLibraryFilesDestinationPicker } from './library-files-destination-
 import { getRowSource, getTrackRowSource } from './files-row-identity';
 import { useLibraryFilesPlacementFlow } from './use-library-files-placement-flow';
 import { LibraryFilesRenameDialog } from './library-files-rename-dialog';
+import { TrackRenameCopiesDialog } from './track-rename-copies-dialog';
+import { countTrackCopies } from '../../saved-rehearsal-library/track-rename-model';
 import { type LibraryFilesSuccessFeedback } from './library-files-success-feedback';
 import { useLibraryFilesConfirmationFlow } from '../../selection/use-library-files-confirmation-flow';
 
@@ -106,13 +108,16 @@ export const useLibraryFilesRowActionFlows = ({
   const hasLyricsFor = useHasLyricsFor();
   const recordingCountFor = useRecordingCountFor();
   const {
+    clearCopiesChoice,
     clearDestinationIssue,
     clearRenameIssue,
     currentDestinationPickerFolderId,
     destinationIssue,
     handleSubmitDestination,
+    handleChooseCopies,
     handleSubmitRename,
     isFileActionMutating,
+    pendingCopiesChoiceName,
     pendingDestinationAction,
     pendingRenameRow,
     renameDraftName,
@@ -314,7 +319,9 @@ export const useLibraryFilesRowActionFlows = ({
       <>
         <LibraryFilesRenameDialog
           isMutating={isFileActionMutating}
-          isVisible={pendingRenameRow !== null}
+          isVisible={
+            pendingRenameRow !== null && pendingCopiesChoiceName === null
+          }
           issue={renameIssue}
           onCancel={() => {
             clearRenameIssue();
@@ -330,6 +337,19 @@ export const useLibraryFilesRowActionFlows = ({
             handleSubmitRename();
           }}
           value={renameDraftName}
+        />
+        <TrackRenameCopiesDialog
+          copyCount={
+            pendingRenameRow?.kind === 'track'
+              ? countTrackCopies(files.fileLinks, pendingRenameRow.source.id)
+              : 0
+          }
+          isMutating={isFileActionMutating}
+          isVisible={pendingCopiesChoiceName !== null}
+          newName={pendingCopiesChoiceName?.trim() ?? ''}
+          onCancel={clearCopiesChoice}
+          onChoose={handleChooseCopies}
+          previousName={pendingRenameRow?.label ?? ''}
         />
         {confirmationFlow.confirmationDialog}
       </>

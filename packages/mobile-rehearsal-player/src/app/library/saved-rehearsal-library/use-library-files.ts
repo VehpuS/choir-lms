@@ -275,6 +275,7 @@ export const useLibraryFiles = (
     refresh,
     rootFolderId: tree?.rootFolderId ?? null,
     renameFileLink: operations.renameFileLink,
+    renameTrack: operations.renameTrack,
     renameFolder: operations.renameFolder,
     saveFolderTags: operations.saveFolderTags,
     tree,

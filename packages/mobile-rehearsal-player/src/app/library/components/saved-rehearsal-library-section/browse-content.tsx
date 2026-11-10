@@ -15,6 +15,7 @@ import { BrowseSourceGroup } from './browse-source-group';
 import { resolveFilesPlaylistAddMode } from './files-playlist-add-mode';
 import { SavedRehearsalLibraryFilesView } from './files-view';
 import { SearchNoResults } from './search-no-results';
+import { useTracksRename } from './use-tracks-rename';
 
 export const SavedRehearsalLibraryBrowseContent = ({
   activePlayableItem,
@@ -87,6 +88,10 @@ export const SavedRehearsalLibraryBrowseContent = ({
   });
 
   const savedComposites = useComposites();
+  const tracksRename = useTracksRename({
+    files: libraryFiles,
+    onShowSuccessFeedback: onShowLibraryFilesSuccessFeedback,
+  });
   const tagUsage = useMemo(() => {
     return aggregateRehearsalLibraryTags({
       entityCollections: {
@@ -266,6 +271,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
           isSavedLibraryMutating={isSavedLibraryMutating}
           onOpenLoopBuilderForSource={openLoopBuilderForSource}
           onOpenSourceTagEditor={onOpenSourceTagEditor}
+          onRenameSource={tracksRename.onRenameSource}
           openSourcePlaylistSelector={
             trackPlaylistMenu.openSourcePlaylistSelector
           }
@@ -298,6 +304,7 @@ export const SavedRehearsalLibraryBrowseContent = ({
         }}
         view={selectedView}
       />
+      {tracksRename.renameDialog}
     </>
   );
 };

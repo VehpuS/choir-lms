@@ -69,6 +69,9 @@ export type BrowseSourceRowSharedProps = Pick<
   onOpenSourceTagEditor: (
     source: SavedRehearsalLibrarySectionProps['savedLibrarySources'][number],
   ) => void;
+  onRenameSource: (
+    source: SavedRehearsalLibrarySectionProps['savedLibrarySources'][number],
+  ) => void;
   openTrackLoopView: (sourceId: string) => void;
   openSourcePlaylistSelector: (sourceId: string) => void;
   pendingLoopBuilderSourceId: string | null;
@@ -107,6 +110,7 @@ export const BrowseSourceRow = ({
   onOpenMenu,
   onOpenSourceTagEditor,
   onReconnectSource,
+  onRenameSource,
   openSourcePlaylistSelector,
   originalLocationActions,
   openTrackLoopView,
@@ -140,7 +144,8 @@ export const BrowseSourceRow = ({
     getSavedTrackPlaybackItemIssue(playbackIssue, trackPlayableItem) ??
     getSourceStatusMessage(source);
   const durationLabel = formatLengthLabel(getSourceDisplayDurationMs(source));
-  // The same track menu as Files, with no view actions (task 2.12).
+  // The same track menu as Files; its only view action is `Rename`, since the
+  // other view actions act on a Files link (task 2.12).
   const sheetActions = resolveSavedTrackMenu(
     {
       canMutateLibrary,
@@ -196,7 +201,20 @@ export const BrowseSourceRow = ({
         originalLocationActions.pendingSourceLocationAction,
       source,
     },
-    { idPrefix: `track:${source.id}` },
+    {
+      idPrefix: `track:${source.id}`,
+      viewActions: [
+        {
+          disabled: !canMutateLibrary || isSavedLibraryMutating,
+          id: `track:${source.id}:rename`,
+          label: 'Rename',
+          onPress: () => {
+            onRenameSource(source);
+          },
+          tone: 'secondary',
+        },
+      ],
+    },
   );
 
   return (

@@ -71,3 +71,4 @@ cache/
 .playwright-mcp
 # TypeScript incremental build output
 *.tsbuildinfo
+browser-session-output/

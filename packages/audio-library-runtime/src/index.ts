@@ -8,4 +8,8 @@ export * from './lib/library-bundle-import-plan.ts';
 export * from './lib/library-bundle-import-executor.ts';
 export * from './lib/library-bundle-import-storage.ts';
 export * from './lib/library-replace-storage.ts';
-export { storageKey } from './lib/practice-repository-storage.ts';
+export {
+  libraryFileTreeStorageKey,
+  storageKey,
+} from './lib/practice-repository-storage.ts';
+export * from './lib/rename-track.ts';

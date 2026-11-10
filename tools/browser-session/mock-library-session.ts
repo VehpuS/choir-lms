@@ -48,6 +48,8 @@ export type MockLibrarySession = {
   browser: Browser;
   close: () => Promise<void>;
   page: Page;
+  /** Reads what the app persisted under a storage key (parsed JSON), or null. */
+  readStored: <T = unknown>(key: string) => Promise<T | null>;
   url: string;
 };
 
@@ -85,6 +87,14 @@ export const openMockLibrarySession = async (options: {
       server.close();
     },
     page,
+    readStored: async <T = unknown>(key: string) => {
+      const raw = await page.evaluate(
+        (storageKey) => window.localStorage.getItem(storageKey),
+        key,
+      );
+
+      return raw === null ? null : (JSON.parse(raw) as T);
+    },
     url,
   };
 };

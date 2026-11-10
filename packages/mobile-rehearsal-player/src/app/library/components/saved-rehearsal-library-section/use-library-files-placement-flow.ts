@@ -1,8 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import type { LibraryFilesRow } from '../../saved-rehearsal-library/library-files-model';
 import type { LibraryFilesIssue } from '../../saved-rehearsal-library/library-files-operation-helpers';
 import type { UseLibraryFilesResult } from '../../saved-rehearsal-library/use-library-files';
+import {
+  planFilesRename,
+  type TrackRenameCopiesChoice,
+} from '../../saved-rehearsal-library/track-rename-model';
+import {
+  persistTrackRenameCopiesChoice,
+  restoreTrackRenameCopiesChoice,
+} from '../../saved-rehearsal-library/track-rename-preference-storage';
 import {
   applySuggestedNameToRow,
   isSameRow,
@@ -41,6 +49,17 @@ export const useLibraryFilesPlacementFlow = ({
   const [renameIssue, setRenameIssue] = useState<LibraryFilesIssue | null>(
     null,
   );
+  // The new name waiting on "rename all copies, or just this one?".
+  const [pendingCopiesChoiceName, setPendingCopiesChoiceName] = useState<
+    string | null
+  >(null);
+  const [rememberedCopiesChoice, setRememberedCopiesChoice] =
+    useState<TrackRenameCopiesChoice | null>(null);
+
+  useEffect(() => {
+    void restoreTrackRenameCopiesChoice().then(setRememberedCopiesChoice);
+  }, []);
+
   const getFolderName = (folderId: string) => {
     return files.destinationFolders.find((destination) => {
       return destination.folder.id === folderId;
@@ -100,22 +119,25 @@ export const useLibraryFilesPlacementFlow = ({
     })();
   };
 
-  const handleSubmitRename = (suggestedName?: string) => {
-    if (!pendingRenameRow) {
-      return;
-    }
-
-    const nextDraftName = suggestedName ?? renameDraftName;
-
+  const runRename = (
+    row: LibraryFilesRow,
+    nextDraftName: string,
+    plan: 'copy-only' | 'track-and-copies',
+  ) => {
     clearRenameIssue();
+    setPendingCopiesChoiceName(null);
     setIsFileActionMutating(true);
 
     void (async () => {
-      const result = await renameFilesRow({
-        files,
-        name: nextDraftName,
-        row: pendingRenameRow,
-      });
+      const result =
+        plan === 'track-and-copies' && row.kind === 'track'
+          ? await files.renameTrack({
+              copies: 'all',
+              name: nextDraftName,
+              parentFolderId: row.fileLink.parentFolderId,
+              sourceId: row.source.id,
+            })
+          : await renameFilesRow({ files, name: nextDraftName, row });
 
       setIsFileActionMutating(false);
 
@@ -125,7 +147,7 @@ export const useLibraryFilesPlacementFlow = ({
         setPendingRenameRow(null);
         setRenameDraftName('');
         setPendingDestinationAction((currentValue) => {
-          if (!currentValue || !isSameRow(currentValue.row, pendingRenameRow)) {
+          if (!currentValue || !isSameRow(currentValue.row, row)) {
             return currentValue;
           }
 
@@ -138,7 +160,7 @@ export const useLibraryFilesPlacementFlow = ({
         onShowSuccessFeedback?.(
           createLibraryFilesRenameSuccessFeedback({
             nextName,
-            previousName: pendingRenameRow.label,
+            previousName: row.label,
           }),
         );
 
@@ -150,14 +172,60 @@ export const useLibraryFilesPlacementFlow = ({
     })();
   };
 
+  const handleSubmitRename = (suggestedName?: string) => {
+    if (!pendingRenameRow) {
+      return;
+    }
+
+    const nextDraftName = suggestedName ?? renameDraftName;
+    const plan = planFilesRename({
+      fileLinks: files.fileLinks,
+      remembered: rememberedCopiesChoice,
+      row: pendingRenameRow,
+    });
+
+    if (plan === 'ask') {
+      clearRenameIssue();
+      setPendingCopiesChoiceName(nextDraftName);
+      return;
+    }
+
+    runRename(pendingRenameRow, nextDraftName, plan);
+  };
+
+  const handleChooseCopies = (
+    choice: TrackRenameCopiesChoice,
+    remember: boolean,
+  ) => {
+    if (!pendingRenameRow || pendingCopiesChoiceName === null) {
+      return;
+    }
+
+    if (remember) {
+      setRememberedCopiesChoice(choice);
+      void persistTrackRenameCopiesChoice(choice);
+    }
+
+    runRename(
+      pendingRenameRow,
+      pendingCopiesChoiceName,
+      choice === 'all' ? 'track-and-copies' : 'copy-only',
+    );
+  };
+
   return {
     clearDestinationIssue,
     clearRenameIssue,
     currentDestinationPickerFolderId,
     destinationIssue,
     handleSubmitDestination,
+    clearCopiesChoice() {
+      setPendingCopiesChoiceName(null);
+    },
+    handleChooseCopies,
     handleSubmitRename,
     isFileActionMutating,
+    pendingCopiesChoiceName,
     pendingDestinationAction,
     pendingRenameRow,
     renameDraftName,

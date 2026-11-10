@@ -12,12 +12,23 @@ session that has the pre-installed browser.
   `packages/mobile-rehearsal-player/src/test-support/mock-library/` —
   `buildMockSource`, `buildMockPlaylist`, `buildDefaultMockLibrary`. A spec
   keeps the storage keys in step with `@org/audio-library-runtime`.
-- `add-to-playlist-snackbar.scenario.ts` — example scenario (issue #36).
+- `scenario-runner.ts` — `runScenario({ library, steps })` opens the session,
+  gives the steps `page`, `shot`, `pass` and `session.readStored(key)` (what the
+  app persisted), and exits non-zero on failure.
+- `add-to-playlist-snackbar.scenario.ts` — issue #36.
+- `track-rename.scenario.ts` — issue #42 (renaming from Tracks and Files, the
+  copies prompt, the remembered choice), seeded with
+  `buildTrackRenameMockLibrary` (folders and Files copies).
 
 ```sh
 npm exec -- nx run mobile-rehearsal-player:build
-npx tsx tools/browser-session/add-to-playlist-snackbar.scenario.ts <outDir>
+npx tsx tools/browser-session/track-rename.scenario.ts <outDir>
+# or every scenario, as automated browser tests (builds first):
+npm exec -- nx run mobile-rehearsal-player:browser-test
 ```
+
+`browser-test` is not part of CI: it needs the Playwright browser the remote
+sessions pre-install. Screenshots land in `browser-session-output/` (ignored).
 
 Tracks show as "unavailable" (no Drive), which is enough for library, playlist
 and menu flows; playback needs real audio and is out of scope. To cover another
