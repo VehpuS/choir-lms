@@ -7,7 +7,7 @@
 - [x] 1.3 Fake microphone fed by the stem (launch flags, WAV transcode helper) and a recording-capable session option
 - [x] 1.4 Page helpers (`openTab`, `openTrackMenu`, `expectToast`, `expectNoConsoleErrors`) and trace + console capture on failure
 - [x] 1.5 Fixture builders for loops, playlist items, tags, markers, lyrics, composites and recordings, each with a round-trip spec
-- [ ] 1.6 Migrate the older scenarios onto `runScenario` (the `--scenario=` filter is done in 1.7)
+- [x] 1.6 Migrate the older scenarios onto `runScenario` (the `--scenario=` filter is done in 1.7)
 - [x] 1.7 CI time: the audio tap runs on an `AudioWorklet` (a main-thread script processor dropped audio under CI load and read as clicks); `run-scenarios.ts` runs scenarios in parallel, to the end, with timings and `--scenario=` / `--lane=`; slow scenarios go in the opt-in `*.matrix.scenario.ts` lane (`browser-test-matrix` target and a manual / `browser-matrix`-label workflow); the `browser` job runs alongside `main` instead of after it, with a timeout
 
 ## 2. Scenarios (one subtask per area; each offline)

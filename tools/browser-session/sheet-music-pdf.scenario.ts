@@ -5,6 +5,7 @@ import {
   buildMockPdfSheetMusic,
   buildMockSource,
 } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
+import { openTrackMenu, waitForTrack } from './page-helpers';
 import { runScenario } from './scenario-runner';
 
 // Opens a real four-page PDF as a track's sheet music, with no Google session:
@@ -35,10 +36,10 @@ void runScenario({
     ],
   },
   steps: async ({ page, pass, shot }) => {
-    await page.getByLabel(`${TRACK_NAME} options`).first().waitFor();
+    await waitForTrack(page, TRACK_NAME);
 
     // 1. The track menu opens the manager, which lists the linked PDF.
-    await page.getByLabel(`${TRACK_NAME} options`).first().click();
+    await openTrackMenu(page, TRACK_NAME);
     await page.getByText('Sheet music', { exact: true }).last().click();
     await page.getByText(SCORE_LABEL).first().waitFor({ timeout: WAIT_MS });
     await shot('1-manager-lists-pdf');

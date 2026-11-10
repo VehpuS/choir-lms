@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 
 import { buildMockSource } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
+import { waitForTrack } from './page-helpers';
 import { runScenario } from './scenario-runner';
 
 // Live check for issue #40 with an AUTHORISED mock Drive session: the session
@@ -42,9 +43,9 @@ void runScenario({
   drive: { state: 'authorized' },
   library: { playlists: [], sources: [fine, needsAccess, missing] },
   steps: async ({ page, pass, shot }) => {
-    await page.getByLabel('Alto Part options').first().waitFor();
+    await waitForTrack(page, 'Alto Part');
     await page.getByText('Tracks', { exact: true }).first().click();
-    await page.getByLabel('Bass Part options').first().waitFor();
+    await waitForTrack(page, 'Bass Part');
 
     // 1. A connected session shows no banner.
     for (const title of BANNER_TITLES) {

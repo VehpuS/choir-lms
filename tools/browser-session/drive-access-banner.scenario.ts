@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 
 import { buildTrackRenameMockLibrary } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
+import { waitForTrack } from './page-helpers';
 import { runScenario } from './scenario-runner';
 
 // Live check for issue #40 (simplified Drive access UI) with an EXPIRED mock
@@ -23,9 +24,9 @@ void runScenario({
   drive: { state: 'expired' },
   library: buildTrackRenameMockLibrary(),
   steps: async ({ page, pass, session, shot }) => {
-    await page.getByLabel('Alto Part options').first().waitFor();
+    await waitForTrack(page, 'Alto Part');
     await page.getByText('Tracks', { exact: true }).first().click();
-    await page.getByLabel('Soprano Part options').first().waitFor();
+    await waitForTrack(page, 'Soprano Part');
 
     // 1. A disconnected session shows exactly one banner, not one per track.
     const banner = page.getByText(BANNER_TITLE, { exact: true });
