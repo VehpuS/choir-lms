@@ -165,7 +165,9 @@ export const installMockDriveRoutes = async (
     const body =
       fileId === undefined
         ? { files: filterListing(files, url.searchParams.get('q') ?? '') }
-        : { id: fileId };
+        : ((files as { id?: string }[]).find((file) => file.id === fileId) ?? {
+            id: fileId,
+          });
 
     return route.fulfill({
       body: JSON.stringify(isMissing ? { error: { code: 404 } } : body),

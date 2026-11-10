@@ -19,7 +19,7 @@
 - [x] 2.5 Playback, speed/pitch and queue, with the slowdown quality checks, readout/engine agreement and a ten-minute track
 - [x] 2.6 Markers and lyrics
 - [x] 2.7 Tags and search
-- [ ] 2.8 Drive flows (import review, reconnect, offline files)
+- [x] 2.8 Drive flows (import review, reconnect, offline files)
 - [ ] 2.9 Backup, restore and share (bundles generated with the runtime builder)
 - [ ] 2.10 Recordings, including the stem's pitches: E4, C♯4, C4 in order through the app's segmenter
 - [ ] 2.11 Composite tracks
