@@ -6,7 +6,7 @@
 
 ## 2. Part 1: fill the viewport
 
-- [ ] 2.1 Browser scenario (failing first): rotate to a landscape phone size; the shell fills the viewport and no edge shows a non-app colour
+- [x] 2.1 Browser scenario (failing first): rotate to a landscape phone size; the shell fills the viewport and no edge shows a non-app colour (written; fails on html/body background and `viewport-fit=cover`, passes root size and scroll in Chromium)
 - [ ] 2.2 Web root fills the dynamic viewport with the app background; `viewport-fit=cover`
 - [ ] 2.3 Safe-area insets on all edges (`safe-area-insets.web.ts` plus native sibling), applied to the shell, dock and sheets
 - [ ] 2.4 Re-measure on rotation so the layout settles without a scroll
