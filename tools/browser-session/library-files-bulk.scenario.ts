@@ -103,6 +103,34 @@ void runScenario({
     await shot('2-added-to-playlist');
     pass('A bulk Add to playlist saves both tracks in the playlist');
 
+    // The picker also offers New playlist…, like the single-track one (F.4).
+    await startSelecting();
+    await pick('Alto Part');
+    await pick('Soprano Part');
+    await page.getByLabel('More actions').click();
+    await page.getByText('Add to playlist', { exact: true }).click();
+    await page.getByText('New playlist…', { exact: true }).click();
+    await page.getByLabel('Playlist name').fill('Fresh Set');
+    await page.getByText('Create', { exact: true }).click();
+    await page.waitForFunction(
+      ([key]) => {
+        const saved = JSON.parse(
+          window.localStorage.getItem(key as string) ?? '[]',
+        );
+
+        return saved.some(
+          (item: StoredPlaylist) =>
+            item.name === 'Fresh Set' && item.items.length === 2,
+        );
+      },
+      [PLAYLISTS_KEY],
+      { timeout: WAIT_MS },
+    );
+    await shot('2b-new-playlist-from-picker');
+    pass(
+      'New playlist… in the bulk picker creates a playlist holding the selection',
+    );
+
     // A folder holding a playlist asks; Skip + Remember is saved...
     await startSelecting();
     await pick('Rehearsal');

@@ -31,13 +31,16 @@ type BulkPlaylistTargetSheetProps = {
   isVisible: boolean;
   issue: PlaylistDraftIssue | null;
   onClose: () => void;
+  /** Opens the name sheet; the new playlist then receives the selection. */
+  onNewPlaylist: () => void;
   onSelectPlaylist: (playlist: Playlist) => void;
   playlists: readonly Playlist[];
   selectedCountLabel: string;
 };
 
 // `Add to playlist` for a selection: pick the playlist the effective items are
-// appended to. Creating a new one is `Save as playlist`.
+// appended to, or `New playlist…` (the same as `Save as playlist`), like the
+// single-track picker.
 export const BulkPlaylistTargetSheet = ({
   blockedPlaylistIds,
   getAlreadyHeldCount,
@@ -45,6 +48,7 @@ export const BulkPlaylistTargetSheet = ({
   isVisible,
   issue,
   onClose,
+  onNewPlaylist,
   onSelectPlaylist,
   playlists,
   selectedCountLabel,
@@ -55,6 +59,16 @@ export const BulkPlaylistTargetSheet = ({
     onClose={onClose}
     title="Add to playlist"
   >
+    <MenuGroup>
+      <MenuRow
+        align="leading"
+        disabled={isMutating}
+        icon="plus"
+        label="New playlist…"
+        onPress={onNewPlaylist}
+        tone="accent"
+      />
+    </MenuGroup>
     {playlists.length > 0 ? (
       <ScrollView
         keyboardShouldPersistTaps="handled"
@@ -89,7 +103,7 @@ export const BulkPlaylistTargetSheet = ({
       </ScrollView>
     ) : (
       <FeedbackCard
-        message={'Use "Save as playlist" to make one from this selection.'}
+        message={'Choose "New playlist…" to make one from this selection.'}
         size="compact"
         title="No playlists yet"
       />

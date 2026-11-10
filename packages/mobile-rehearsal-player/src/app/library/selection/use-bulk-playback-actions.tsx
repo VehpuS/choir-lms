@@ -286,6 +286,11 @@ export const useBulkPlaybackActions = ({
         isVisible={step === 'target'}
         issue={issue}
         onClose={close}
+        onNewPlaylist={() => {
+          // The choices were settled when the picker opened; keep them.
+          setIssue(null);
+          setStep('name');
+        }}
         onSelectPlaylist={(playlist) => {
           void addToPlaylist(playlist);
         }}
