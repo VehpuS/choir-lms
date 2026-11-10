@@ -58,9 +58,14 @@ In the wide-short layout, the mini-player SHALL be a Now Playing pane beside the
 
 ### Requirement: Practice tools open beside the content in wide-short
 
-In the wide-short layout, the piano, pitch monitor and recording controls SHALL open as a panel beside the content rather than as strips that reduce its height, and the sheet-music and lyrics viewers SHALL use the full window height.
+In the wide-short layout, the piano, pitch monitor and recording controls SHALL open as a panel on the trailing side, in place of the Now Playing pane while open, rather than as strips that reduce the content's height, and the sheet-music and lyrics viewers SHALL use the full window height.
 
 #### Scenario: Pitch monitor in landscape
 
 - **WHEN** the user starts the pitch monitor in the wide-short layout
-- **THEN** it shows in a trailing panel and the content keeps its full height
+- **THEN** it shows in the trailing panel in place of the Now Playing pane, the content keeps its full height and playback continues
+
+#### Scenario: Tool closed
+
+- **WHEN** the user closes the tool while a track is playing
+- **THEN** the Now Playing pane returns

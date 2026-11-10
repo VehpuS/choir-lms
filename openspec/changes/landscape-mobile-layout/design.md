@@ -25,6 +25,16 @@ The shell (`routing/shell/mobile-shell`) is a column: content viewport, practice
 
 `mockups/landscape-mobile-layout.html` is a standalone page (no build, no network) that draws the iPhone landscape viewport at 844 × 390 with the app's colours: the current bug, then the proposed Now Playing, Library and practice-tool arrangements, plus the layout-class thresholds. It is a design reference like the other `mock.html` files in `openspec/changes/`, not shipped code.
 
+## Approved decisions
+
+Approved on issue #46 against the mock:
+
+- Thresholds stay at 600 wide and 500 high, with the 40-point hysteresis band.
+- Landscape navigation is the side rail, not bottom tabs.
+- The Now Playing pane and the practice tools share the trailing side: a tool panel takes the pane's place while it is open, and the pane returns when the tool is closed. Playback keeps running and the rail still reaches the full playback view.
+
+Part 2 is cleared to build after Part 1 ships, one task at a time.
+
 ## Risks
 
 - Safe-area probing differs across iOS versions; the scenario profile uses explicit insets, and a manual check on a device is a verification task.

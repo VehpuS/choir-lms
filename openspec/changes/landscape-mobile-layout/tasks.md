@@ -1,6 +1,6 @@
 ## 1. Approval
 
-- [ ] 1.1 Review `mockups/landscape-mobile-layout.html` and this proposal; approve or amend Part 2 before any Part 2 task starts
+- [x] 1.1 Review `mockups/landscape-mobile-layout.html` and this proposal; approved as drawn (600/500 thresholds, side rail, tool panel takes the Now Playing pane's place while open)
 
 ## 2. Part 1: fill the viewport
 
