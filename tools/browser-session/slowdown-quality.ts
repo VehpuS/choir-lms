@@ -26,10 +26,12 @@ const PITCH_STEPS = 2;
 const SEMITONES_PER_OCTAVE = 12;
 // Thresholds are the measured baseline plus a margin (see design.md, "Decisions
 // on the open questions"), and every result is printed so a change shows up in
-// review. The baseline is not silent: about one click per 10 s on the
-// pitch-shifted path, and a rare ~22 ms gap with two clicks after a speed
-// change (follow-up F.8), so a 3 s window may hold two clicks and one such gap.
-// Tighten these to 0 when F.8 is fixed.
+// review. The baseline is not silent, and follow-up F.8 traced why: a clean
+// oscillator fed straight into the SoundTouch worklet at +2 semitones clicks
+// about once a minute with no app code involved, and a bare `<audio>` element
+// clicks once when its `playbackRate` changes to or from 1x (the browser's own
+// time-stretcher). So a 3 s window may hold a click or two, which is not the
+// app's to fix; the limits stay until the library or browser changes.
 const MAX_PITCH_ERROR_CENTS = 15;
 const MAX_CLICKS = 2;
 const MAX_DROPOUT_MS = 25;
