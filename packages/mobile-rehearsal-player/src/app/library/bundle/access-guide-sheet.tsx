@@ -17,7 +17,6 @@ type AccessGuideSheetProps = { flow: ReturnType<typeof useAccessGuideFlow> };
 
 const COPY_RESULT_COPY = {
   copied: 'Copied.',
-  shared: 'Choose where to send the list.',
   failed: 'Couldn’t copy the list.',
 } as const;
 

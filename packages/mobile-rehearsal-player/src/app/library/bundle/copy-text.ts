@@ -1,29 +1,15 @@
-import { Platform, Share } from 'react-native';
-
-export type CopyResult = 'copied' | 'shared' | 'failed';
+export type CopyResult = 'copied' | 'failed';
 
 /**
- * Puts text where the user can paste it into any chat app: the clipboard on
- * the web, the system share sheet (which has Copy) on a phone. The share sheet
- * stands in for a clipboard module so no dependency is added for this.
+ * Puts text on the clipboard so the user can paste it into any chat app.
+ * `expo-clipboard` is loaded on demand: it covers the web and both phones, and
+ * keeps the native module out of anything that only imports this file.
  */
 export const copyText = async (text: string): Promise<CopyResult> => {
   try {
-    const clipboard = (
-      globalThis as {
-        navigator?: { clipboard?: { writeText(text: string): Promise<void> } };
-      }
-    ).navigator?.clipboard;
+    const { setStringAsync } = await import('expo-clipboard');
 
-    if (Platform.OS === 'web' && clipboard) {
-      await clipboard.writeText(text);
-
-      return 'copied';
-    }
-
-    await Share.share({ message: text });
-
-    return 'shared';
+    return (await setStringAsync(text)) ? 'copied' : 'failed';
   } catch {
     return 'failed';
   }

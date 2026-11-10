@@ -189,6 +189,7 @@
     "expo": "*",
     "expo-asset": "~12.0.13",
     "expo-auth-session": "~7.0.11",
+    "expo-clipboard": "~8.0.8",
     "expo-constants": "~18.0.13",
     "expo-dev-client": "~6.0.21",
     "expo-keep-awake": "~15.0.8",
