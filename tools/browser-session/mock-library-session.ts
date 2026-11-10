@@ -3,6 +3,10 @@ import { createServer, type Server } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 import { chromium, type Browser, type Page } from 'playwright';
 
+import {
+  fakeMicrophoneLaunchArgs,
+  prepareStemMicrophoneWav,
+} from './fake-microphone';
 import { fulfillMedia } from './mock-media';
 import {
   buildMockDriveStorageEntries,
@@ -84,6 +88,11 @@ export const openMockLibrarySession = async (options: {
   library: MockLibrary;
   /** Files served at absolute URLs, so links in the library load without a network. */
   webFiles?: Record<string, MockWebFile>;
+  /**
+   * Gives the page a microphone that plays the choir stem in a loop (Chromium's
+   * fake capture device); permission is granted with no prompt.
+   */
+  microphone?: boolean;
   /** Pixel density; 1 keeps screenshots small, 2-3 matches a phone screen. */
   deviceScaleFactor?: number;
   viewport?: { height: number; width: number };
@@ -92,11 +101,19 @@ export const openMockLibrarySession = async (options: {
   const address = server.address();
   const port = typeof address === 'object' && address ? address.port : 0;
   const url = `http://127.0.0.1:${port}/`;
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({
+    args: options.microphone
+      ? fakeMicrophoneLaunchArgs(await prepareStemMicrophoneWav())
+      : [],
+  });
   const context = await browser.newContext({
     deviceScaleFactor: options.deviceScaleFactor ?? 1,
     viewport: options.viewport ?? { height: 844, width: 390 },
   });
+  if (options.microphone) {
+    await context.grantPermissions(['microphone'], { origin: url });
+  }
+
   const drive = options.drive ?? { state: 'signed-out' as const };
   const entries = {
     ...buildMockLibraryStorageEntries(options.library),

@@ -29,6 +29,8 @@ export const runScenario = async (options: {
   library: MockLibrary;
   /** The Google Drive account to sign in as; see `openMockLibrarySession`. */
   drive?: MockDriveAccount;
+  /** A fake microphone playing the choir stem; see `openMockLibrarySession`. */
+  microphone?: boolean;
   /** Pixel density for the session; see `openMockLibrarySession`. */
   deviceScaleFactor?: number;
   webFiles?: Record<string, MockWebFile>;
@@ -42,6 +44,7 @@ export const runScenario = async (options: {
     deviceScaleFactor: options.deviceScaleFactor,
     drive: options.drive,
     library: options.library,
+    microphone: options.microphone,
     webFiles: options.webFiles,
   });
   const { page } = session;

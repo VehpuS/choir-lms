@@ -4,7 +4,7 @@
 - [x] 1.0 Commit fixtures: `choir-stem.m4a`, the full MIDI file and the full MusicXML score under `src/test-support/fixtures/`, with a spec that checks they exist, parse, and keep the fixture directory under the size budget; `.gitattributes` entry for the MusicXML
 - [x] 1.2 `buildToneWav` and Drive/web-link media serving with `Range` support, serving the stem as `audio/mp4` and an AAC codec probe
 - [ ] 1.3a Audio output tap, forced sample rate, CPU throttle and device profiles (quick and full), plus the PCM quality analyzer (pitch drift, clicks, dropouts, clipping, loudness) with unit specs on synthetic signals
-- [ ] 1.3 Fake microphone fed by the stem (launch flags, WAV transcode helper) and a recording-capable session option
+- [x] 1.3 Fake microphone fed by the stem (launch flags, WAV transcode helper) and a recording-capable session option
 - [ ] 1.4 Page helpers (`openTab`, `openTrackMenu`, `expectToast`, `expectNoConsoleErrors`) and trace + console capture on failure
 - [ ] 1.5 Fixture builders for loops, playlist items, tags, markers, lyrics, composites and recordings, each with a round-trip spec
 - [ ] 1.6 Migrate the older scenarios onto `runScenario`; `browser-test` `--scenario=` filter
@@ -20,7 +20,7 @@
 - [ ] 2.7 Tags and search
 - [ ] 2.8 Drive flows (import review, reconnect, offline files)
 - [ ] 2.9 Backup, restore and share (bundles generated with the runtime builder)
-- [ ] 2.10 Recordings, including the E4 / C#4 / C4 pitch progression from the stem
+- [ ] 2.10 Recordings, including the stem's pitches: E4 then C4 through the app's segmenter, and E4, C♯4, C4 in the raw frames (C♯4 is a brief slide, measured in 1.3)
 - [ ] 2.11 Composite tracks
 - [ ] 2.12 Settings
 - [ ] 2.13 Sheet music beyond PDF (full MusicXML as `.musicxml` and `.mxl`, and MIDI-derived notation)
