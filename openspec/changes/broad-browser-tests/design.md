@@ -20,21 +20,21 @@ Today's harness (`tools/browser-session/`) serves the `build-browser-test` expor
 
 Existing: add-to-playlist snackbar, Drive access banner and chips, track rename, sheet music PDF.
 
-| Area | Scenarios (each offline) |
-| --- | --- |
-| Shell and navigation | Tabs (Library, Add, Recents) switch and keep state; deep view restore on reload; narrow and wide viewport layout |
-| Library: Tracks and Files | Empty library state; search/filter tracks; Files folder navigation, create folder, move, delete with confirm; bulk selection bar and remembered bulk choices |
-| Playlists | Create, rename, reorder, remove item, delete; open from Recents |
-| Loops | Create a loop from a track at a position, edit range, appears under the track, plays from loop start |
-| Playback | Play a tone track (state, progress, seek), mini-player to full sheet, speed/pitch controls change the readout, queue add/reorder/remove, ordered vs shuffle |
-| Markers and lyrics | Add/rename/delete a marker and jump to it; lyrics open and edit |
-| Tags and search | Tag a track, filter by tag; Add tab local search; Drive search with the mock account |
-| Drive flows | Authorized add-from-Drive review and import basket; expired session reconnect; offline files download and clear |
-| Backup, restore, share | Backup produces a bundle file (download captured); restore/import preview of a bundle fixture, additive import result; share-folder and access guide wording against mock Drive responses |
-| Recordings | Record with the fake microphone, stop, save sheet, appears in Recordings, play back, delete; storage-limit message |
-| Composite tracks | Create from stems, mute/solo, mix preset, export button state; relink missing stem |
-| Settings | Bulk selections and Renaming preferences show, change, clear; persists across reload |
-| Sheet music | Existing PDF scenario plus MusicXML/MIDI-derived score opens |
+| Area                      | Scenarios (each offline)                                                                                                                                                                  |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shell and navigation      | Tabs (Library, Add, Recents) switch and keep state; deep view restore on reload; narrow and wide viewport layout                                                                          |
+| Library: Tracks and Files | Empty library state; search/filter tracks; Files folder navigation, create folder, move, delete with confirm; bulk selection bar and remembered bulk choices                              |
+| Playlists                 | Create, rename, reorder, remove item, delete; open from Recents                                                                                                                           |
+| Loops                     | Create a loop from a track at a position, edit range, appears under the track, plays from loop start                                                                                      |
+| Playback                  | Play a tone track (state, progress, seek), mini-player to full sheet, speed/pitch controls change the readout, queue add/reorder/remove, ordered vs shuffle                               |
+| Markers and lyrics        | Add/rename/delete a marker and jump to it; lyrics open and edit                                                                                                                           |
+| Tags and search           | Tag a track, filter by tag; Add tab local search; Drive search with the mock account                                                                                                      |
+| Drive flows               | Authorized add-from-Drive review and import basket; expired session reconnect; offline files download and clear                                                                           |
+| Backup, restore, share    | Backup produces a bundle file (download captured); restore/import preview of a bundle fixture, additive import result; share-folder and access guide wording against mock Drive responses |
+| Recordings                | Record with the fake microphone, stop, save sheet, appears in Recordings, play back, delete; storage-limit message                                                                        |
+| Composite tracks          | Create from stems, mute/solo, mix preset, export button state; relink missing stem                                                                                                        |
+| Settings                  | Bulk selections and Renaming preferences show, change, clear; persists across reload                                                                                                      |
+| Sheet music               | Existing PDF scenario plus MusicXML/MIDI-derived score opens                                                                                                                              |
 
 ## Fixtures (decided)
 
