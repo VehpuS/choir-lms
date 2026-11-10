@@ -31,3 +31,7 @@
 - [ ] 3.2 `AGENTS.md`, `CLAUDE.md`, testing policy and `mobile-web-runtime-debugging` updates; refresh `tools/browser-session/README.md`
 - [ ] 3.3a `browser-test-matrix` target (device descriptors, CPU throttling, sample rates; `--browser=webkit` on demand with `requires` skipping, WebKit installed only by that target)
 - [ ] 3.3 CI uploads traces; confirm total `browser` job time and note whether sharding is needed
+
+## Follow-ups
+
+Unrelated bugs, findings, ideas, improvements and questions met while implementing or browser testing are recorded here as `F.n` subtasks, done after the planned tasks and before archiving.

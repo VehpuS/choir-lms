@@ -34,15 +34,19 @@ This skill turns OpenSpec implementation into a reviewed loop instead of a rapid
    - fix any newly introduced warnings or errors in touched files
    - if warnings remain only outside touched files, call that out explicitly
 9. If validation fails but the defect is still local to the slice, repair it and rerun the same validation before expanding scope.
-10. Once the slice passes:
+10. Park unrelated discoveries instead of fixing them. If implementing or browser testing turned up a bug, finding, idea, improvement, or implementation question outside the current subtask, add it to `tasks.md` under a `## Follow-ups` section that comes after the planned tasks (create it if absent), numbered in the same style (for example `F.1`), with a one-line description, where it was seen, and the repro or scenario if any. Do not fix it in this slice. If it truly blocks the current subtask, stop and ask the user before widening scope.
+11. Once the slice passes:
 
 - update only the completed checkbox in `tasks.md`
 - stop implementation
 - hand off to `implementation-checkpoint`
 
-11. Do not start the next unchecked subtask until the user explicitly says to continue.
+12. Do not start the next unchecked subtask until the user explicitly says to continue.
+13. Run follow-ups after the last planned subtask, one at a time through this same loop, and before archiving the change. When archiving, check that no `## Follow-ups` item is left unchecked unless the user explicitly dropped or deferred it (record which in `tasks.md`).
 
 ## Guardrails
+
+- Surfaced follow-ups go in `tasks.md`, not into the current diff; list them in the checkpoint summary.
 
 - Default to one commit per completed numbered subtask.
 - Do not mark a task complete before code, tests, and validation line up.
