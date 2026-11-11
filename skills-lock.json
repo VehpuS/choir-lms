@@ -1,11 +1,17 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
+    "modern-web-guidance": {
+      "source": "GoogleChrome/modern-web-guidance",
+      "sourceType": "github",
+      "skillPath": "skills/modern-web-guidance/SKILL.md",
+      "computedHash": "9e69ce00dc314b64f6664031b70295ea46c7de93ac682c624808df6e48e08b66"
+    },
     "ui-mobile": {
       "source": "alinaqi/maggy",
       "sourceType": "github",
       "skillPath": "skills/ui-mobile/SKILL.md",
-      "computedHash": "14062e337cf61370d269b46ff1a9144535956ab1776d4ab8c82a7b980bcf92ce"
+      "computedHash": "80d09cc7bed5ea65f25c19ed1fe31fd02e6f800192b098af5f66fcfe2568aaf5"
     }
   }
 }
