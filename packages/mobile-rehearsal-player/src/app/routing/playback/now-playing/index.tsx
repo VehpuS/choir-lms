@@ -184,7 +184,12 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
             />
           ) : null}
           <PracticeToolsControl
-            menuPlacement={styles.practiceToolsMenu}
+            isOverPlaybackView
+            menuPlacement={
+              isColumn
+                ? styles.practiceToolsMenuColumn
+                : styles.practiceToolsMenu
+            }
             renderTrigger={({ isActive, isExpanded, onPress }) => (
               <SurfaceIconButton
                 accessibilityLabel={PLAYBACK_PRACTICE_TOOLS_LABEL}

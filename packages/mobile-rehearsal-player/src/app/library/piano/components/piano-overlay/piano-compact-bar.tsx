@@ -10,6 +10,8 @@ const { colors, space } = appTheme;
 const ICON_SIZE = 18;
 /** The sliders are as tall as the bar, so the bar stays at its 34 pt. */
 const SLIDER_HEIGHT = PIANO_COMPACT_BAR_HEIGHT;
+/** Narrower than the docked row's 104, so the minimap keeps room beside the pane. */
+const COMPACT_CONTROL_WIDTH = 72;
 
 type PianoCompactBarProps = {
   keyWidth: number;
@@ -86,7 +88,7 @@ const styles = StyleSheet.create({
     height: PIANO_COMPACT_BAR_HEIGHT,
     paddingLeft: space.md,
   },
-  control: { marginRight: space.sm },
+  control: { marginRight: space.sm, width: COMPACT_CONTROL_WIDTH },
   button: {
     alignItems: 'center',
     height: PIANO_COMPACT_BAR_HEIGHT,

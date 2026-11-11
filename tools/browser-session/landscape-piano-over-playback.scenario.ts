@@ -5,7 +5,7 @@ import { readMediaState } from './media-probe';
 import { buildToneMedia } from './mock-media';
 import { waitForTrack, waitUntil } from './page-helpers';
 import { WAIT_MS } from './piano-helpers';
-import { settledBox } from './safe-area-helpers';
+import { emulateInsets, settledBox } from './safe-area-helpers';
 import { runScenario } from './scenario-runner';
 
 // Issue #46 (device feedback after #56): opening the piano from the full
@@ -109,6 +109,43 @@ void runScenario({
       throw new Error('the playback view moved while the piano was open');
     }
 
+    // Device feedback: the tools menu opened from the playback view's
+    // header was clipped by the sheet's edge ("PRACTICE TOOLS" lost its first
+    // letter). With a Dynamic Island inset, every row stays inside the sheet.
+    await emulateInsets(page);
+    await toolsButton.click();
+    const row = page.getByLabel('Piano, off');
+
+    await row.waitFor({ timeout: WAIT_MS });
+    await settledBox(row);
+
+    const clipped = await row.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+
+      for (let node = element.parentElement; node; node = node.parentElement) {
+        const { overflowX } = getComputedStyle(node);
+
+        if (overflowX !== 'visible') {
+          const box = node.getBoundingClientRect();
+
+          if (rect.left < box.left - 1 || rect.right > box.right + 1) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    });
+
+    if (clipped) {
+      throw new Error(
+        'the practice tools menu is clipped by the playback sheet',
+      );
+    }
+
+    await shot('3-tools-menu');
+    pass('The practice tools menu fits inside the playback sheet');
+    await page.keyboard.press('Escape');
     await shot('2-view-whole');
     pass(
       'Closing the piano leaves the playback view whole, track paused by the chip',
