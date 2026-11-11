@@ -6,6 +6,8 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { appTheme } from '../../utils/theme';
+
 type SafeAreaFrameProps = {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
@@ -31,8 +33,21 @@ export const SafeAreaFrame = ({ children, style }: SafeAreaFrameProps) => (
   </SafeAreaView>
 );
 
+/**
+ * A full-screen surface in its own Modal (a viewer): the same frame with the
+ * app background behind it. An opaque Modal is white on the web, so the
+ * background has to be the frame's own, and it then fills the inset strips
+ * too while the content stays clear of them.
+ */
+export const SafeAreaScreen = ({ children }: { children: ReactNode }) => (
+  <SafeAreaFrame style={styles.screen}>{children}</SafeAreaFrame>
+);
+
 const styles = StyleSheet.create({
   frame: {
     flex: 1,
+  },
+  screen: {
+    backgroundColor: appTheme.colors.bg,
   },
 });

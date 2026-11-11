@@ -21,6 +21,7 @@ import {
   PlaylistRenameDialog,
 } from './playlist-rename-dialog';
 import { SavedPlaylistDetailItemsList } from './saved-playlist-detail-items-list';
+import { SafeAreaFrame } from '../../../components/safe-area-frame';
 
 type PlaylistEntry = Playlist['items'][number];
 
@@ -185,27 +186,29 @@ export const SavedPlaylistDetailCard = (props: {
         transparent
         visible={props.removalNotice !== null}
       >
-        <View style={styles.snackbarModalOverlay} pointerEvents="box-none">
-          <View style={[styles.snackbarCard, styles.modalSnackbarCard]}>
-            <Text style={styles.snackbarMessage}>
-              {props.removalNotice?.entry.title} removed from{' '}
-              {detailSummary.title}.
-            </Text>
-            <View style={styles.actionRow}>
-              <OutlinedActionButton
-                disabled={props.isMutating}
-                label="Undo"
-                onPress={props.onUndoRemoveItem}
-                variant="accent"
-              />
-              <OutlinedActionButton
-                disabled={props.isMutating}
-                label="Dismiss"
-                onPress={props.onDismissRemovalNotice}
-              />
+        <SafeAreaFrame>
+          <View style={styles.snackbarModalOverlay} pointerEvents="box-none">
+            <View style={[styles.snackbarCard, styles.modalSnackbarCard]}>
+              <Text style={styles.snackbarMessage}>
+                {props.removalNotice?.entry.title} removed from{' '}
+                {detailSummary.title}.
+              </Text>
+              <View style={styles.actionRow}>
+                <OutlinedActionButton
+                  disabled={props.isMutating}
+                  label="Undo"
+                  onPress={props.onUndoRemoveItem}
+                  variant="accent"
+                />
+                <OutlinedActionButton
+                  disabled={props.isMutating}
+                  label="Dismiss"
+                  onPress={props.onDismissRemovalNotice}
+                />
+              </View>
             </View>
           </View>
-        </View>
+        </SafeAreaFrame>
       </Modal>
     </SavedLibraryDetailCardShell>
   );

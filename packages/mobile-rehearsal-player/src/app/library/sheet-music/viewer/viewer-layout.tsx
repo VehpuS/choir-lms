@@ -11,6 +11,7 @@ import {
 import { appTheme } from '../../../utils/theme';
 import { ChipRow } from './chip-row';
 import { ChipDivider } from './part-chips';
+import { SafeAreaScreen } from '../../../components/safe-area-frame';
 
 const RAIL_OVERLAY_OFFSET = 76;
 
@@ -59,67 +60,71 @@ export const ViewerLayout = ({
   if (isCompact) {
     return (
       <Modal animationType="slide" onRequestClose={onClose} visible>
-        <View style={[styles.screen, styles.screenCompact]}>
-          <View style={styles.compactMain}>
-            {sourceChips || partChips ? (
-              <ChipRow accessibilityLabel="Sources and parts">
-                {sourceChips}
-                {sourceChips && partChips ? <ChipDivider /> : null}
-                {partChips}
-              </ChipRow>
-            ) : sourceLabel ? (
-              <Text numberOfLines={1} style={styles.subtitle}>
-                {`${ownerName} · ${sourceLabel}`}
-              </Text>
-            ) : null}
-            {notices}
-            <View style={styles.body}>{body}</View>
-            {piano}
+        <SafeAreaScreen>
+          <View style={[styles.screen, styles.screenCompact]}>
+            <View style={styles.compactMain}>
+              {sourceChips || partChips ? (
+                <ChipRow accessibilityLabel="Sources and parts">
+                  {sourceChips}
+                  {sourceChips && partChips ? <ChipDivider /> : null}
+                  {partChips}
+                </ChipRow>
+              ) : sourceLabel ? (
+                <Text numberOfLines={1} style={styles.subtitle}>
+                  {`${ownerName} · ${sourceLabel}`}
+                </Text>
+              ) : null}
+              {notices}
+              <View style={styles.body}>{body}</View>
+              {piano}
+            </View>
+            {/* A short phone cannot fit every control, so the rail scrolls. */}
+            <ScrollView
+              contentContainerStyle={styles.railContent}
+              showsVerticalScrollIndicator={false}
+              style={styles.rail}
+            >
+              {closeButton}
+              {toolbar('column')}
+            </ScrollView>
+            {overlay?.(styles.railOverlay)}
           </View>
-          {/* A short phone cannot fit every control, so the rail scrolls. */}
-          <ScrollView
-            contentContainerStyle={styles.railContent}
-            showsVerticalScrollIndicator={false}
-            style={styles.rail}
-          >
-            {closeButton}
-            {toolbar('column')}
-          </ScrollView>
-          {overlay?.(styles.railOverlay)}
-        </View>
+        </SafeAreaScreen>
       </Modal>
     );
   }
 
   return (
     <Modal animationType="slide" onRequestClose={onClose} visible>
-      <View style={styles.screen}>
-        <View style={styles.header}>
-          <View style={styles.titles}>
-            <Text numberOfLines={1} style={styles.title}>
-              {ownerName}
-            </Text>
-            {sourceLabel ? (
-              <Text numberOfLines={1} style={styles.subtitle}>
-                {sourceLabel}
+      <SafeAreaScreen>
+        <View style={styles.screen}>
+          <View style={styles.header}>
+            <View style={styles.titles}>
+              <Text numberOfLines={1} style={styles.title}>
+                {ownerName}
               </Text>
-            ) : null}
+              {sourceLabel ? (
+                <Text numberOfLines={1} style={styles.subtitle}>
+                  {sourceLabel}
+                </Text>
+              ) : null}
+            </View>
+            {closeButton}
           </View>
-          {closeButton}
+          {sourceChips ? (
+            <ChipRow accessibilityLabel="Sheet music sources">
+              {sourceChips}
+            </ChipRow>
+          ) : null}
+          {partChips ? (
+            <ChipRow accessibilityLabel="Parts">{partChips}</ChipRow>
+          ) : null}
+          {notices}
+          <View style={styles.body}>{body}</View>
+          {piano}
+          {toolbar('row')}
         </View>
-        {sourceChips ? (
-          <ChipRow accessibilityLabel="Sheet music sources">
-            {sourceChips}
-          </ChipRow>
-        ) : null}
-        {partChips ? (
-          <ChipRow accessibilityLabel="Parts">{partChips}</ChipRow>
-        ) : null}
-        {notices}
-        <View style={styles.body}>{body}</View>
-        {piano}
-        {toolbar('row')}
-      </View>
+      </SafeAreaScreen>
     </Modal>
   );
 };

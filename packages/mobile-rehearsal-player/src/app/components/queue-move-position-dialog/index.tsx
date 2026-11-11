@@ -11,6 +11,7 @@ import {
 import { AccessibleSlider } from '../accessible-slider';
 
 import { clampQueuePosition, resolveQueueMoveTargetIndex } from './model';
+import { SafeAreaFrame } from '../safe-area-frame';
 
 type QueueMovePositionDialogProps = {
   bodyText?: string;
@@ -63,117 +64,121 @@ export const QueueMovePositionDialog = ({
       visible={isVisible}
     >
       <View style={styles.overlay}>
-        <View style={styles.card}>
-          <Text style={styles.title}>Move to position</Text>
-          <Text style={styles.body}>
-            {bodyText ??
-              `Choose a new queue position for ${itemTitle}. Playback continues while the queue updates.`}
-          </Text>
-
-          <View style={styles.positionSummaryRow}>
-            <View style={styles.positionChip}>
-              <Text style={styles.positionChipLabel}>Current</Text>
-              <Text style={styles.positionChipValue}>
-                {currentPosition} of {itemCount}
+        <SafeAreaFrame>
+          <View style={styles.placement}>
+            <View style={styles.card}>
+              <Text style={styles.title}>Move to position</Text>
+              <Text style={styles.body}>
+                {bodyText ??
+                  `Choose a new queue position for ${itemTitle}. Playback continues while the queue updates.`}
               </Text>
+
+              <View style={styles.positionSummaryRow}>
+                <View style={styles.positionChip}>
+                  <Text style={styles.positionChipLabel}>Current</Text>
+                  <Text style={styles.positionChipValue}>
+                    {currentPosition} of {itemCount}
+                  </Text>
+                </View>
+                <View style={styles.positionChip}>
+                  <Text style={styles.positionChipLabel}>Move to</Text>
+                  <Text style={styles.positionChipValue}>
+                    {targetPosition} of {itemCount}
+                  </Text>
+                </View>
+              </View>
+
+              <View
+                {...interactionGuardProps}
+                style={continuousInteractionGuardStyle}
+              >
+                <AccessibleSlider
+                  label="Move to position"
+                  maximum={itemCount}
+                  minimum={1}
+                  onChange={(nextValue) => {
+                    setDraftPosition(
+                      resolveQueueMoveTargetIndex({
+                        itemCount,
+                        sliderValue: nextValue,
+                      }) + 1,
+                    );
+                  }}
+                  step={1}
+                  value={draftPosition}
+                  valueText={`${draftPosition} of ${itemCount}`}
+                >
+                  <Slider
+                    animateTransitions={false}
+                    maximumTrackTintColor={appTheme.colors.divider}
+                    maximumValue={itemCount}
+                    minimumTrackTintColor={appTheme.colors.accent}
+                    minimumValue={1}
+                    onSlidingComplete={(nextValue) => {
+                      setDraftPosition(
+                        resolveQueueMoveTargetIndex({
+                          itemCount,
+                          sliderValue: nextValue,
+                        }) + 1,
+                      );
+                    }}
+                    onValueChange={(nextValue) => {
+                      setDraftPosition(
+                        resolveQueueMoveTargetIndex({
+                          itemCount,
+                          sliderValue: nextValue,
+                        }) + 1,
+                      );
+                    }}
+                    step={1}
+                    thumbTintColor={appTheme.colors.accent}
+                    thumbTouchSize={{ width: 36, height: 36 }}
+                    trackClickable
+                    value={draftPosition}
+                  />
+                </AccessibleSlider>
+              </View>
+
+              <View style={styles.scaleRow}>
+                <Text style={styles.scaleLabel}>1</Text>
+                <Text style={styles.scaleLabel}>{itemCount}</Text>
+              </View>
+
+              <View style={styles.actionRow}>
+                <Pressable
+                  accessibilityRole="button"
+                  {...interactionGuardProps}
+                  onPress={onCancel}
+                  style={({ pressed }) => [
+                    styles.secondaryButton,
+                    buttonInteractionGuardStyle,
+                    pressed ? styles.buttonPressed : undefined,
+                  ]}
+                >
+                  <Text style={styles.secondaryButtonLabel}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  {...interactionGuardProps}
+                  disabled={isSubmittingDisabled}
+                  onPress={() => {
+                    onSubmit(targetIndex);
+                  }}
+                  style={({ pressed }) => [
+                    styles.primaryButton,
+                    buttonInteractionGuardStyle,
+                    pressed && !isSubmittingDisabled
+                      ? styles.buttonPressed
+                      : undefined,
+                    isSubmittingDisabled ? styles.buttonDisabled : undefined,
+                  ]}
+                >
+                  <Text style={styles.primaryButtonLabel}>Move item</Text>
+                </Pressable>
+              </View>
             </View>
-            <View style={styles.positionChip}>
-              <Text style={styles.positionChipLabel}>Move to</Text>
-              <Text style={styles.positionChipValue}>
-                {targetPosition} of {itemCount}
-              </Text>
-            </View>
           </View>
-
-          <View
-            {...interactionGuardProps}
-            style={continuousInteractionGuardStyle}
-          >
-            <AccessibleSlider
-              label="Move to position"
-              maximum={itemCount}
-              minimum={1}
-              onChange={(nextValue) => {
-                setDraftPosition(
-                  resolveQueueMoveTargetIndex({
-                    itemCount,
-                    sliderValue: nextValue,
-                  }) + 1,
-                );
-              }}
-              step={1}
-              value={draftPosition}
-              valueText={`${draftPosition} of ${itemCount}`}
-            >
-              <Slider
-                animateTransitions={false}
-                maximumTrackTintColor={appTheme.colors.divider}
-                maximumValue={itemCount}
-                minimumTrackTintColor={appTheme.colors.accent}
-                minimumValue={1}
-                onSlidingComplete={(nextValue) => {
-                  setDraftPosition(
-                    resolveQueueMoveTargetIndex({
-                      itemCount,
-                      sliderValue: nextValue,
-                    }) + 1,
-                  );
-                }}
-                onValueChange={(nextValue) => {
-                  setDraftPosition(
-                    resolveQueueMoveTargetIndex({
-                      itemCount,
-                      sliderValue: nextValue,
-                    }) + 1,
-                  );
-                }}
-                step={1}
-                thumbTintColor={appTheme.colors.accent}
-                thumbTouchSize={{ width: 36, height: 36 }}
-                trackClickable
-                value={draftPosition}
-              />
-            </AccessibleSlider>
-          </View>
-
-          <View style={styles.scaleRow}>
-            <Text style={styles.scaleLabel}>1</Text>
-            <Text style={styles.scaleLabel}>{itemCount}</Text>
-          </View>
-
-          <View style={styles.actionRow}>
-            <Pressable
-              accessibilityRole="button"
-              {...interactionGuardProps}
-              onPress={onCancel}
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                buttonInteractionGuardStyle,
-                pressed ? styles.buttonPressed : undefined,
-              ]}
-            >
-              <Text style={styles.secondaryButtonLabel}>Cancel</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              {...interactionGuardProps}
-              disabled={isSubmittingDisabled}
-              onPress={() => {
-                onSubmit(targetIndex);
-              }}
-              style={({ pressed }) => [
-                styles.primaryButton,
-                buttonInteractionGuardStyle,
-                pressed && !isSubmittingDisabled
-                  ? styles.buttonPressed
-                  : undefined,
-                isSubmittingDisabled ? styles.buttonDisabled : undefined,
-              ]}
-            >
-              <Text style={styles.primaryButtonLabel}>Move item</Text>
-            </Pressable>
-          </View>
-        </View>
+        </SafeAreaFrame>
       </View>
     </Modal>
   );
@@ -206,10 +211,14 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
+    backgroundColor: appTheme.colors.scrim,
+  },
+  // Inside the safe-area frame, so the scrim still reaches the screen edges.
+  placement: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: appTheme.colors.scrim,
   },
   positionChip: {
     flex: 1,
