@@ -11,6 +11,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { SafeAreaFrame } from '../../../components/safe-area-frame';
 import {
   resolveKeyboardAvoidingBehavior,
   resolveModalSurfaceLayout,
@@ -54,15 +55,7 @@ export const ModalSurfaceBase = ({
     >
       <KeyboardAvoidingView
         behavior={resolveKeyboardAvoidingBehavior(Platform.OS)}
-        style={[
-          styles.overlay,
-          {
-            alignItems: layout.alignItems,
-            backgroundColor: backdropColor,
-            justifyContent: layout.justifyContent,
-            padding: layout.padding,
-          },
-        ]}
+        style={[styles.overlay, { backgroundColor: backdropColor }]}
       >
         {dismissOnBackdropPress ? (
           <Pressable
@@ -71,15 +64,31 @@ export const ModalSurfaceBase = ({
             style={styles.backdrop}
           />
         ) : null}
-        <View
-          style={[
-            styles.surface,
-            { maxHeight: resolveModalSurfaceMaxHeight(placement) },
-            surfaceStyle,
-          ]}
-        >
-          {children}
-        </View>
+        {/* The backdrop above reaches the screen edges; the surface keeps clear of the safe areas. */}
+        <SafeAreaFrame>
+          {/* The layout's padding sits inside the frame: a padding on the frame itself would replace the inset. */}
+          <View
+            pointerEvents="box-none"
+            style={[
+              styles.placement,
+              {
+                alignItems: layout.alignItems,
+                justifyContent: layout.justifyContent,
+                padding: layout.padding,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.surface,
+                { maxHeight: resolveModalSurfaceMaxHeight(placement) },
+                surfaceStyle,
+              ]}
+            >
+              {children}
+            </View>
+          </View>
+        </SafeAreaFrame>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -90,6 +99,9 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   overlay: {
+    flex: 1,
+  },
+  placement: {
     flex: 1,
   },
   surface: {

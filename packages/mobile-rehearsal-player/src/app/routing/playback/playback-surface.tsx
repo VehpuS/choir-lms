@@ -23,6 +23,7 @@ import type {
 import { NowPlayingSurface } from './now-playing';
 import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
 
+import { SafeAreaFrame } from '../../components/safe-area-frame';
 import { appTheme } from '../../utils/theme';
 import { usePracticeDockHeight } from '../../library/practice-tools/use-practice-dock-height';
 import { SHELL_LAYERS } from '../shell/shell-layers';
@@ -203,9 +204,13 @@ export const PlaybackSurface = ({
         onPress={dismissSurface}
         style={styles.backdrop}
       />
-      <View
-        pointerEvents="box-none"
-        style={[styles.sheetContainer, { paddingBottom: pianoDockHeight }]}
+      <SafeAreaFrame
+        // A padding here replaces the bottom inset, so only set it when the
+        // piano dock needs room (the dock then sits above the home indicator).
+        style={[
+          styles.sheetContainer,
+          pianoDockHeight > 0 ? { paddingBottom: pianoDockHeight } : null,
+        ]}
       >
         <Animated.View
           {...sheetFramePanHandlers}
@@ -275,7 +280,7 @@ export const PlaybackSurface = ({
             />
           ) : null}
         </Animated.View>
-      </View>
+      </SafeAreaFrame>
     </View>
   );
 };
