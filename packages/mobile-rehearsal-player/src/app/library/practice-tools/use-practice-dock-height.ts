@@ -14,10 +14,16 @@ export const usePracticeDockHeight = ({
 }: {
   isPlaybackSurfaceOpen: boolean;
 }): number => {
+  // Over the playback view in wide-short the piano is full screen: no height.
+  const isPianoFullScreen =
+    useLayoutClass() === 'wide-short' && isPlaybackSurfaceOpen;
   const pianoHeight = usePianoDockHeight();
   const stripsHeight = usePitchMonitorDockHeight() + useRecordingDockHeight();
   const areStripsInPanel =
     useLayoutClass() === 'wide-short' && !isPlaybackSurfaceOpen;
 
-  return pianoHeight + (areStripsInPanel ? 0 : stripsHeight);
+  return (
+    (isPianoFullScreen ? 0 : pianoHeight) +
+    (areStripsInPanel ? 0 : stripsHeight)
+  );
 };

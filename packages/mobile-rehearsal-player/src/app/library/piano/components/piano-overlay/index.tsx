@@ -56,6 +56,11 @@ type PianoOverlayProps = {
    * fills the window in its own Modal.
    */
   presentation?: PianoPresentation;
+  /**
+   * False where full screen is the only fit (over the playback view): the bar
+   * offers no Exit, and Back or Escape closes the piano instead.
+   */
+  canExitFullScreen?: boolean;
   /** The playing track, for the full-screen piano's floating chip. */
   playingChip?: PianoPlayingChip | null;
 };
@@ -67,6 +72,7 @@ type PianoOverlayBodyProps = PianoOverlayProps;
 const PianoOverlayBody = ({
   focusRange,
   heightLimit,
+  canExitFullScreen = true,
   playingChip = null,
   presentation = 'docked',
 }: PianoOverlayBodyProps) => {
@@ -183,6 +189,7 @@ const PianoOverlayBody = ({
       <PianoFullScreenFrame
         bar={(isContentShown) => (
           <PianoFullScreenBar
+            canExit={canExitFullScreen}
             isAutoHideOn={preferences.isBarAutoHidden}
             isContentShown={isContentShown}
             keyWidth={preferences.keyWidth}
@@ -202,9 +209,7 @@ const PianoOverlayBody = ({
           />
         )}
         isAutoHideOn={preferences.isBarAutoHidden}
-        onExit={() => {
-          setFullScreen(false);
-        }}
+        onExit={canExitFullScreen ? () => setFullScreen(false) : closePiano}
         onHeightChange={setWindowHeight}
         playingChip={playingChip}
       >

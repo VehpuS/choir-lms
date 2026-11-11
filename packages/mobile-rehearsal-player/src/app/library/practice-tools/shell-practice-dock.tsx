@@ -43,7 +43,9 @@ export const ShellPracticeDock = ({
   const layoutClass = useLayoutClass();
   const presentation = resolvePianoPresentation(
     layoutClass,
-    usePianoPreferences().isFullScreen,
+    // Over the two-column playback view the keyboard cannot share the window
+    // (the sheet would be squeezed and clipped), so it is full screen there.
+    usePianoPreferences().isFullScreen || isPlaybackSurfaceOpen,
   );
   const isStripsInPanel =
     layoutClass === 'wide-short' && !isPlaybackSurfaceOpen;
@@ -66,7 +68,11 @@ export const ShellPracticeDock = ({
           />
         </>
       )}
-      <PianoOverlay playingChip={playingChip} presentation={presentation} />
+      <PianoOverlay
+        canExitFullScreen={!isPlaybackSurfaceOpen}
+        playingChip={playingChip}
+        presentation={presentation}
+      />
     </View>
   );
 };

@@ -10,6 +10,8 @@ const ICON_SIZE = 18;
 const SLIDER_HEIGHT = PIANO_FULL_SCREEN_BAR_HEIGHT;
 
 type PianoFullScreenBarProps = {
+  /** False over the playback view, where there is no smaller piano to return to. */
+  canExit: boolean;
   isAutoHideOn: boolean;
   /** False while auto-hide has hidden the controls; only Exit stays on screen. */
   isContentShown: boolean;
@@ -31,6 +33,7 @@ type PianoFullScreenBarProps = {
  * only Exit full screen stays; any touch brings the rest back.
  */
 export const PianoFullScreenBar = ({
+  canExit,
   isAutoHideOn,
   isContentShown,
   keyWidth,
@@ -76,14 +79,16 @@ export const PianoFullScreenBar = ({
         <Text style={styles.pillLabel}>Auto-hide</Text>
       </Pressable>
     </View>
-    <Pressable
-      accessibilityLabel="Exit full screen"
-      accessibilityRole="button"
-      onPress={onExitFullScreen}
-      style={styles.button}
-    >
-      <AppIcon color={colors.icon} name="arrow-collapse" size={ICON_SIZE} />
-    </Pressable>
+    {canExit ? (
+      <Pressable
+        accessibilityLabel="Exit full screen"
+        accessibilityRole="button"
+        onPress={onExitFullScreen}
+        style={styles.button}
+      >
+        <AppIcon color={colors.icon} name="arrow-collapse" size={ICON_SIZE} />
+      </Pressable>
+    ) : null}
     <Pressable
       accessibilityLabel="Close piano"
       accessibilityRole="button"
