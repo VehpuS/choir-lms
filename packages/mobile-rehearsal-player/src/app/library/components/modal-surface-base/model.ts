@@ -44,8 +44,8 @@ export const resolveModalSurfaceMaxHeight = (
 // bottom (or a dialog centered in the screen) would sit under it. Padding the
 // bottom by the keyboard's height lifts the surface above it and shrinks the
 // room the height cap works from, so the scroll area gives way and the footer
-// stays visible. Android resizes its window itself and the web has no
-// on-screen keyboard to cover anything, so neither needs it.
+// stays visible. Android resizes its window itself. The web (iOS Safari) is
+// covered by `useKeyboardInset`, which reads the visual viewport.
 export const resolveKeyboardAvoidingBehavior = (
   platform: string,
 ): 'padding' | undefined => {
