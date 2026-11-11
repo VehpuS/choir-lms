@@ -77,7 +77,10 @@ void runScenario({
       page.getByLabel('Pause', { exact: true }),
       'Pause',
     );
-    const text = await boxOf(page.getByText(/^Kyrie eleison/), 'the lyrics');
+    const text = await boxOf(
+      page.getByRole('dialog').getByText(/^Kyrie eleison/),
+      'the lyrics',
+    );
 
     await shot('1-lyrics');
 
