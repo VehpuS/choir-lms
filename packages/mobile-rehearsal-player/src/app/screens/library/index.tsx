@@ -6,17 +6,19 @@ import type { LibraryBrowseCreateDockMode } from '../../library/components/saved
 import { useSavedRehearsalLibrarySearch } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search';
 import { useSavedRehearsalLibrarySearchPanel } from '../../library/components/saved-rehearsal-library-section/use-saved-rehearsal-library-search-panel';
 import { useIsOfflineFilesOpen } from '../offline-files/offline-files-navigation-store';
-import { useIsBulkActionBarPinned } from '../../library/selection/use-pinned-bulk-action-bar';
 import { LoopPreviewPlaybackContext } from '../../library/loops/components/loop-preview-playback-context';
 import type { PlaylistDetailHeaderPlaybackAction } from '../../library/playlists/utils/saved-playlist-playback-view-model';
 import type { SavedRehearsalLibraryView } from '../../library/saved-rehearsal-library/detail-mode';
 import type { TagDetailHeaderSearchActions } from '../../library/tags/hooks/use-tag-detail-header-search-actions';
 import { registerRevealScroller } from '../../library/saved-rehearsal-library/track-reveal-store';
 import { appTheme } from '../../utils/theme';
-import { LibraryFilesCreateControls } from './library-files-create-controls';
+import {
+  LibraryCreateControls,
+  useLibraryCreateDockPlacement,
+} from './library-create-controls';
 import { resolveLibraryHeaderSearchProps } from './library-header-search-props';
-import { LibraryPlaylistCreateControls } from './library-playlist-create-controls';
 import { LibrarySuccessToast } from './library-success-toast';
+import { LibraryHeaderCreateAction } from './library-header-create-action';
 import { LibraryScreenHeader } from './library-screen-header';
 import type { LibraryScreenProps } from './library-screen-types';
 import { useLibraryFilesSessionRestoration } from './use-library-files-session-restoration';
@@ -74,8 +76,7 @@ export const LibraryScreen = ({
   const playlistSelectionHandlerRef = useRef<
     ((playlistId: string) => void) | null
   >(null);
-  // The create dock gives way while a selection's bulk-action bar is pinned.
-  const isBulkBarPinned = useIsBulkActionBarPinned();
+  const createDock = useLibraryCreateDockPlacement();
   const isOfflineFilesOpen = useIsOfflineFilesOpen();
   const scrollCoordination = useLibraryScreenScrollCoordination();
   const { scrollToWindowY } = scrollCoordination;
@@ -117,6 +118,14 @@ export const LibraryScreen = ({
     <View style={styles.screen}>
       <LibraryScreenHeader
         authorization={authorization}
+        createAction={
+          <LibraryHeaderCreateAction
+            canMutatePlaylists={libraryController.playlists.canMutatePlaylists}
+            dockMode={browseCreateDockMode}
+            files={libraryController.savedLibrary.files}
+            isHidden={!createDock.isInHeader}
+          />
+        }
         detailSearchActions={detailSearchActions}
         headerSearchProps={headerSearchProps}
         isSessionMenuVisible={isSessionMenuVisible}
@@ -133,7 +142,7 @@ export const LibraryScreen = ({
         contentContainerStyle={[
           styles.content,
           scrollGutterStyles.content,
-          browseCreateDockMode !== null && !isBulkBarPinned
+          createDock.isFloating && browseCreateDockMode !== null
             ? styles.contentWithCreateDock
             : null,
         ]}
@@ -258,26 +267,19 @@ export const LibraryScreen = ({
         onFocus={librarySuccessFeedback.onFocus}
         onOpenFolder={openFeedbackFolder}
       />
-      <LibraryFilesCreateControls
-        createPlaylist={libraryController.playlists.createPlaylist}
-        files={libraryController.savedLibrary.files}
-        isVisible={browseCreateDockMode === 'files' && !isBulkBarPinned}
-        onPlaylistCreateDialogVisibilityChange={
+      <LibraryCreateControls
+        dockMode={browseCreateDockMode}
+        isFloating={createDock.isFloating}
+        libraryController={libraryController}
+        onFilesPlaylistCreateDialogVisibilityChange={
           setIsFilesPlaylistCreateDialogVisible
         }
-        onRequestAddDestination={onRequestAddDestination}
-        onShowSuccessFeedback={librarySuccessFeedback.show}
-        playlistIssue={libraryController.playlists.issue}
-      />
-      <LibraryPlaylistCreateControls
-        canMutatePlaylists={libraryController.playlists.canMutatePlaylists}
-        createPlaylist={libraryController.playlists.createPlaylist}
-        isVisible={browseCreateDockMode === 'playlists' && !isBulkBarPinned}
-        onPlaylistCreateDialogVisibilityChange={
+        onPlaylistsCreateDialogVisibilityChange={
           setIsPlaylistsDockCreateDialogVisible
         }
-        onSelectPlaylist={handlePlaylistCreated}
-        playlistIssue={libraryController.playlists.issue}
+        onRequestAddDestination={onRequestAddDestination}
+        onSelectCreatedPlaylist={handlePlaylistCreated}
+        onShowSuccessFeedback={librarySuccessFeedback.show}
       />
     </View>
   );

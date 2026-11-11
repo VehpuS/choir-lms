@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
 import type { DriveSessionMenuController } from '../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
@@ -8,6 +9,7 @@ import type { LibraryHeaderSearchProps } from './library-header-search-props';
 
 type LibraryScreenHeaderProps = {
   authorization: DriveSessionMenuController;
+  createAction?: ReactNode;
   detailSearchActions: TagDetailHeaderSearchActions | null;
   headerSearchProps: LibraryHeaderSearchProps;
   isSessionMenuVisible: boolean;
@@ -18,6 +20,7 @@ type LibraryScreenHeaderProps = {
 
 export const LibraryScreenHeader = ({
   authorization,
+  createAction,
   detailSearchActions,
   headerSearchProps,
   isSessionMenuVisible,
@@ -40,6 +43,7 @@ export const LibraryScreenHeader = ({
         closeSearchAccessibilityLabel={
           detailSearchActions?.closeSearchAccessibilityLabel
         }
+        createAction={createAction}
         handleFilterActionPress={headerSearchProps.handleFilterActionPress}
         handleSearchActionPress={headerSearchProps.handleSearchActionPress}
         hasActiveFilters={headerSearchProps.hasActiveFilters}

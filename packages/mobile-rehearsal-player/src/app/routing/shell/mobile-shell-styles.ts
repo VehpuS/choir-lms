@@ -11,6 +11,8 @@ const PROGRESS_LINE_HEIGHT = 2;
 const TAB_MARK_WIDTH = 16;
 const TAB_MARK_HEIGHT = 2;
 const TAB_GAP = 5;
+// The wide-short layout's side rail: wide enough for a `Recents` label.
+const RAIL_WIDTH = 84;
 const PRESSED_OPACITY = 0.88;
 const DISABLED_OPACITY = 0.5;
 
@@ -21,6 +23,14 @@ export const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
     backgroundColor: colors.bg,
+  },
+  // The wide-short layout puts the side rail and the main column side by side.
+  screenRow: {
+    flexDirection: 'row',
+  },
+  mainColumn: {
+    flex: 1,
+    minWidth: 0,
   },
   contentViewport: {
     flex: 1,
@@ -143,6 +153,27 @@ export const styles = StyleSheet.create({
   // takes the tab's share of the row and the menu opens upward from it.
   tabAnchor: { flex: 1 },
   practiceToolsMenu: { bottom: '100%', right: 0, marginBottom: space.xs },
+  // The rail's entries stack; the menu opens to the right of its entry,
+  // over the content, and grows upward from the entry's bottom edge.
+  practiceToolsRailMenu: { bottom: 0, left: '100%', marginLeft: space.xs },
+  // The side rail (wide-short): the tab bar's entries in a column, on the same
+  // raised surface with a hairline on the content side.
+  rail: {
+    width: RAIL_WIDTH,
+    zIndex: SHELL_LAYERS.bottomDock,
+    paddingVertical: space.sm,
+    gap: space.xs,
+    borderRightWidth: 1,
+    borderRightColor: colors.borderSubtle,
+    backgroundColor: colors.surfaceRaised,
+  },
+  railTab: {
+    minHeight: space.touchTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: TAB_GAP,
+    paddingVertical: space.xs,
+  },
   tabPressed: {
     opacity: PRESSED_OPACITY,
   },

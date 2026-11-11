@@ -6,4 +6,8 @@ export {
   type LayoutClass,
   type WindowSize,
 } from './model';
-export { useLayoutClass } from './use-layout-class';
+export {
+  LayoutClassProvider,
+  useLayoutClass,
+  useWindowLayoutClass,
+} from './use-layout-class';

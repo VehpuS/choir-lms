@@ -1,4 +1,5 @@
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import type { ReactNode } from 'react';
 
 import { DriveSessionMenu } from '../../../auth/google-drive/components/drive-session-menu';
 import type { DriveSessionMenuController } from '../../../auth/google-drive/components/drive-session-menu/drive-session-menu-controller';
@@ -23,6 +24,8 @@ type SavedRehearsalLibraryHeaderProps = {
   authorization?: DriveSessionMenuController;
   canShowSearch: boolean;
   closeSearchAccessibilityLabel?: string;
+  /** A `+` that creates, shown in the header when the layout has no room for a floating one. */
+  createAction?: ReactNode;
   handleFilterActionPress: () => void;
   handleSearchActionPress: () => void;
   hasActiveFilters: boolean;
@@ -53,6 +56,7 @@ export const SavedRehearsalLibraryHeader = ({
   authorization,
   canShowSearch,
   closeSearchAccessibilityLabel,
+  createAction,
   handleFilterActionPress,
   handleSearchActionPress,
   hasActiveFilters,
@@ -103,6 +107,7 @@ export const SavedRehearsalLibraryHeader = ({
             showFiltersAccessibilityLabel={showFiltersAccessibilityLabel}
             tone="hero"
           />
+          {createAction}
           {authorization ? (
             <DriveSessionMenu
               canClearAuthorization={authorization.canClearAuthorization}

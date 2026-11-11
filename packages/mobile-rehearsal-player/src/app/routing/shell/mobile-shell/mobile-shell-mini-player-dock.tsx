@@ -18,7 +18,7 @@ import {
 import { ShellTabBar } from '../shell-tab-bar';
 import { appTheme } from '../../../utils/theme';
 import { ariaStateProps } from '../../../components/aria-state';
-import { dockBleedStyle } from '../dock-bleed';
+import { dockBleedBesideRailStyle, dockBleedStyle } from '../dock-bleed';
 import { LEFT_TO_RIGHT_LINE_STYLE } from '../../../utils/bidi-isolate';
 
 const MINI_PLAYER_TOGGLE_ICON_SIZE = 20;
@@ -36,6 +36,11 @@ type MobileShellMiniPlayerDockProps = {
   onTogglePlayback: () => void;
   playbackState: SavedTrackPlaybackState | undefined;
   playbackToggleLabel: string;
+  /**
+   * False in the wide-short layout, where the side rail replaces the tabs and
+   * takes the leading edge (so the dock bleeds only to the trailing edge).
+   */
+  showTabBar?: boolean;
 };
 
 export const MobileShellMiniPlayerDock = ({
@@ -50,6 +55,7 @@ export const MobileShellMiniPlayerDock = ({
   onTogglePlayback,
   playbackState,
   playbackToggleLabel,
+  showTabBar = true,
 }: MobileShellMiniPlayerDockProps) => {
   const lyricsResolution = useLyricsFor({
     sourceId: activePlayableItem?.sourceId ?? '',
@@ -62,7 +68,12 @@ export const MobileShellMiniPlayerDock = ({
     : null;
 
   return (
-    <View style={[styles.bottomDock, dockBleedStyle]}>
+    <View
+      style={[
+        styles.bottomDock,
+        showTabBar ? dockBleedStyle : dockBleedBesideRailStyle,
+      ]}
+    >
       {miniPlayerSummary ? (
         <View style={styles.miniPlayer}>
           <Pressable
@@ -170,10 +181,12 @@ export const MobileShellMiniPlayerDock = ({
           />
         </View>
       ) : null}
-      <ShellTabBar
-        activeDestination={activeDestination}
-        onSelectDestination={onSelectDestination}
-      />
+      {showTabBar ? (
+        <ShellTabBar
+          activeDestination={activeDestination}
+          onSelectDestination={onSelectDestination}
+        />
+      ) : null}
     </View>
   );
 };

@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 
 import { AppIcon } from '../../components/app-icon';
+import { railBleedStyle } from './dock-bleed';
 import { styles } from './mobile-shell-styles';
 import { SHELL_DESTINATIONS, type ShellDestinationKey } from './shell-model';
 import { PracticeToolsControl } from '../../library/practice-tools/practice-tools-control';
@@ -12,16 +13,29 @@ import {
 type ShellTabBarProps = {
   activeDestination: ShellDestinationKey;
   onSelectDestination: (destination: ShellDestinationKey) => void;
+  /**
+   * `horizontal` is the bottom tab bar; `vertical` is the side rail of the
+   * wide-short layout: the same entries and active state in a column, with the
+   * Practice tools menu opening to the right of its entry.
+   */
+  orientation?: 'horizontal' | 'vertical';
 };
 
 const TAB_ICON_SIZE = 21;
+// The rail is narrow, so its Practice tools entry reads `Tools`; its accessible
+// name stays the full `Practice tools`.
+const RAIL_PRACTICE_TOOLS_LABEL = 'Tools';
 
 export const ShellTabBar = ({
   activeDestination,
   onSelectDestination,
+  orientation = 'horizontal',
 }: ShellTabBarProps) => {
+  const isRail = orientation === 'vertical';
+  const tabStyle = isRail ? styles.railTab : styles.tab;
+
   return (
-    <View style={styles.tabBar}>
+    <View style={isRail ? [styles.rail, railBleedStyle] : styles.tabBar}>
       {SHELL_DESTINATIONS.map((destination) => {
         const isActive = destination.key === activeDestination;
         const presentation = getShellTabPresentation(destination.key, isActive);
@@ -36,7 +50,7 @@ export const ShellTabBar = ({
               onSelectDestination(destination.key);
             }}
             style={({ pressed }) => [
-              styles.tab,
+              tabStyle,
               pressed ? styles.tabPressed : null,
             ]}
           >
@@ -59,8 +73,10 @@ export const ShellTabBar = ({
       })}
       {/* The tools need no track, so they live here rather than in the mini-player. */}
       <PracticeToolsControl
-        anchorStyle={styles.tabAnchor}
-        menuPlacement={styles.practiceToolsMenu}
+        anchorStyle={isRail ? undefined : styles.tabAnchor}
+        menuPlacement={
+          isRail ? styles.practiceToolsRailMenu : styles.practiceToolsMenu
+        }
         renderTrigger={({
           accessibilityLabel,
           isActive,
@@ -77,7 +93,7 @@ export const ShellTabBar = ({
               aria-expanded={isExpanded}
               onPress={onPress}
               style={({ pressed }) => [
-                styles.tab,
+                tabStyle,
                 pressed ? styles.tabPressed : null,
               ]}
             >
@@ -93,7 +109,7 @@ export const ShellTabBar = ({
                 size={TAB_ICON_SIZE}
               />
               <Text style={[styles.tabLabel, { color: presentation.color }]}>
-                Practice tools
+                {isRail ? RAIL_PRACTICE_TOOLS_LABEL : 'Practice tools'}
               </Text>
             </Pressable>
           );

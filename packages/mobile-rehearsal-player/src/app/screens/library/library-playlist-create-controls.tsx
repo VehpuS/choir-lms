@@ -11,6 +11,7 @@ import {
   type SavedPlaylistIssue,
 } from '../../library/playlists/utils/saved-playlist-view-model';
 import { LOCAL_REHEARSAL_LIBRARY_OWNER_ID } from '../../library/storage/local-library-storage';
+import { subscribeToPlaylistCreateRequests } from './library-playlist-create-request';
 
 type LibraryPlaylistCreateControlsProps = {
   canMutatePlaylists: boolean;
@@ -38,6 +39,19 @@ export const LibraryPlaylistCreateControls = ({
   useEffect(() => {
     onPlaylistCreateDialogVisibilityChange?.(isPlaylistDialogVisible);
   }, [isPlaylistDialogVisible, onPlaylistCreateDialogVisibilityChange]);
+
+  // The wide-short layout's header `+` asks for this dialog.
+  useEffect(() => {
+    return subscribeToPlaylistCreateRequests(() => {
+      if (!canMutatePlaylists) {
+        return;
+      }
+
+      setPlaylistDraftIssue(null);
+      setPlaylistDraftName('');
+      setIsPlaylistDialogVisible(true);
+    });
+  }, [canMutatePlaylists]);
 
   const handleSubmitPlaylist = useCallback(() => {
     const buildResult = buildSavedPlaylist({

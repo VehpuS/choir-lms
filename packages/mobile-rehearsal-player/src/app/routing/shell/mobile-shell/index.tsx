@@ -11,14 +11,16 @@ import { ShellPracticeDock } from '../../../library/practice-tools/shell-practic
 import { offlineFilesNavigationStore } from '../../../screens/offline-files/offline-files-navigation-store';
 import { settingsNavigationStore } from '../../../screens/settings/settings-navigation-store';
 import { ShellOverlays } from './shell-overlays';
+import { LayoutClassProvider, useWindowLayoutClass } from '../layout-class';
+import { ShellTabBar } from '../shell-tab-bar';
 import { styles } from '../mobile-shell-styles';
 import {
-  SHELL_DESTINATIONS,
   getMiniPlayerSummary,
   getNowPlayingSurfaceSummary,
   getUpNextSurfaceSummary,
   type ShellDestinationKey,
 } from '../shell-model';
+import { MobileShellDestinationPanels } from './mobile-shell-destination-panels';
 import { MobileShellMiniPlayerDock } from './mobile-shell-mini-player-dock';
 import { MobileShellPlaybackSurface } from './mobile-shell-playback-surface';
 import { MobileShellQueuePlaylistDialogs } from './mobile-shell-queue-playlist-dialogs';
@@ -82,15 +84,6 @@ export type MobileShellProps = {
   playbackShaping: PlaybackShapingControls;
   playbackState: SavedTrackPlaybackState | undefined;
   savedLibraryConfirmationDialog: ReactNode;
-};
-
-const PANEL_BY_DESTINATION: Record<
-  ShellDestinationKey,
-  keyof Pick<MobileShellProps, 'recentsScreen' | 'libraryScreen' | 'addScreen'>
-> = {
-  recents: 'recentsScreen',
-  add: 'addScreen',
-  library: 'libraryScreen',
 };
 
 export const MobileShell = ({
@@ -187,33 +180,26 @@ export const MobileShell = ({
     setActivePlaybackSurface(null);
   }, [requestedDestination, requestedDestinationRequestId]);
 
-  return (
-    <SafeAreaView style={styles.screen}>
+  const layoutClass = useWindowLayoutClass();
+  const isWideShort = layoutClass === 'wide-short';
+  const handleSelectDestination = (destination: ShellDestinationKey) => {
+    // Settings covers the destinations, so choosing one leaves it.
+    settingsNavigationStore.close();
+    offlineFilesNavigationStore.close();
+    onCloseTagDetail();
+    setActiveDestination(destination);
+  };
+  // The content, the practice tools and the dock: the whole shell in the
+  // compact layout, the column beside the rail in the wide-short one.
+  const mainColumn = (
+    <>
       <View style={styles.contentViewport}>
-        {SHELL_DESTINATIONS.map((destination) => {
-          const panelKey = PANEL_BY_DESTINATION[destination.key];
-          const isPanelActive = activeDestination === destination.key;
-          const panel =
-            panelKey === 'libraryScreen'
-              ? libraryScreen(isPanelActive)
-              : panelKey === 'addScreen'
-                ? addScreen(isPanelActive)
-                : recentsScreen;
-
-          return (
-            <View
-              key={destination.key}
-              style={[
-                styles.destinationPanel,
-                isPanelActive
-                  ? styles.destinationPanelActive
-                  : styles.destinationPanelHidden,
-              ]}
-            >
-              {panel}
-            </View>
-          );
-        })}
+        <MobileShellDestinationPanels
+          activeDestination={activeDestination}
+          addScreen={addScreen}
+          libraryScreen={libraryScreen}
+          recentsScreen={recentsScreen}
+        />
         <ShellOverlays />
       </View>
 
@@ -234,94 +220,110 @@ export const MobileShell = ({
           onOpenNowPlaying={() => {
             setActivePlaybackSurface('now-playing');
           }}
-          onSelectDestination={(destination) => {
-            // Settings covers the destinations, so choosing one leaves it.
-            settingsNavigationStore.close();
-            offlineFilesNavigationStore.close();
-            onCloseTagDetail();
-            setActiveDestination(destination);
-          }}
+          onSelectDestination={handleSelectDestination}
           onTogglePlayback={onTogglePlayback}
           playbackState={playbackState}
           playbackToggleLabel={playbackToggleLabel}
+          showTabBar={!isWideShort}
         />
       </PinnedBulkActionBarHost>
+    </>
+  );
 
-      <MobileShellPlaybackSurface
-        activePlayableItem={activePlayableItem}
-        activeQueueMode={activeQueueMode}
-        activeRepeatMode={activeRepeatMode}
-        canSeekActivePlayback={canSeekActivePlayback}
-        canSkipNextItem={canSkipNextItem}
-        canSkipPreviousItem={canSkipPreviousItem}
-        downloadLabel={playbackDownloadLabel}
-        isPlaybackLoading={isPlaybackPreparing}
-        isPlaybackToggleDisabled={isPlaybackToggleDisabled}
-        isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
-        nowPlayingSummary={nowPlayingSummary}
-        onAdjustPlaybackVolume={onSetPlaybackVolume}
-        onEditActiveLoop={onEditActiveLoop}
-        onMoveQueueItem={onMoveQueueItem}
-        onMoveQueueItemToEnd={onMoveQueueItemToEnd}
-        onMoveQueueItemToStart={onMoveQueueItemToStart}
-        onClose={() => {
-          setActivePlaybackSurface(null);
-          queuePlaylistState.closeQueueDialogs();
-        }}
-        onPlayQueueItem={onPlayQueueItem}
-        onRemoveQueueItem={onRemoveQueueItem}
-        onRequestUpdateQueuePlaylist={queuePlaylistState.openUpdateDialog}
-        onSeekBackward={onSeekBackward}
-        onSeekForward={onSeekForward}
-        onSeekToPosition={onSeekToPosition}
-        onSaveQueueAsPlaylist={() => {
-          queuePlaylistState.openSaveDialog();
-        }}
-        onSelectQueueMode={onSelectQueueMode}
-        onSelectRepeatMode={onSelectRepeatMode}
-        onShowNowPlaying={() => {
-          setActivePlaybackSurface('now-playing');
-        }}
-        onShowQueue={() => {
-          setActivePlaybackSurface('queue');
-        }}
-        onShowShaping={() => {
-          setActivePlaybackSurface('shaping');
-        }}
-        onSkipNextItem={onSkipNextItem}
-        onSkipPreviousItem={onSkipPreviousItem}
-        onTogglePlayback={onTogglePlayback}
-        playbackPositionSeconds={playbackPositionSeconds}
-        playbackToggleLabel={playbackToggleLabel}
-        playbackVolumeLevel={playbackVolumeLevel}
-        queueSummary={upNextSummary}
-        shaping={playbackShaping}
-        surface={activePlaybackSurface}
-      />
+  return (
+    <LayoutClassProvider value={layoutClass}>
+      <SafeAreaView
+        style={[styles.screen, isWideShort ? styles.screenRow : null]}
+      >
+        {isWideShort ? (
+          <ShellTabBar
+            activeDestination={activeDestination}
+            onSelectDestination={handleSelectDestination}
+            orientation="vertical"
+          />
+        ) : null}
+        {isWideShort ? (
+          <View style={styles.mainColumn}>{mainColumn}</View>
+        ) : (
+          mainColumn
+        )}
 
-      <MobileShellQueuePlaylistDialogs
-        isMutating={isSavingQueueAsPlaylist}
-        isSaveDialogVisible={queuePlaylistState.isSaveDialogVisible}
-        isUpdateDialogVisible={queuePlaylistState.isUpdateDialogVisible}
-        issue={queuePlaylistState.issue}
-        onCancelSave={queuePlaylistState.closeSaveDialog}
-        onCancelUpdate={queuePlaylistState.closeUpdateDialog}
-        onChangeDraftName={queuePlaylistState.onDraftNameChange}
-        onSubmitSave={() => {
-          void (async () => {
-            await queuePlaylistState.submitSave();
-          })();
-        }}
-        onSubmitUpdate={() => {
-          void (async () => {
-            await queuePlaylistState.submitUpdate();
-          })();
-        }}
-        queuePlaylistDraftName={queuePlaylistState.queuePlaylistDraftName}
-        updateAction={queuePlaylistState.updateAction}
-      />
+        <MobileShellPlaybackSurface
+          activePlayableItem={activePlayableItem}
+          activeQueueMode={activeQueueMode}
+          activeRepeatMode={activeRepeatMode}
+          canSeekActivePlayback={canSeekActivePlayback}
+          canSkipNextItem={canSkipNextItem}
+          canSkipPreviousItem={canSkipPreviousItem}
+          downloadLabel={playbackDownloadLabel}
+          isPlaybackLoading={isPlaybackPreparing}
+          isPlaybackToggleDisabled={isPlaybackToggleDisabled}
+          isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
+          nowPlayingSummary={nowPlayingSummary}
+          onAdjustPlaybackVolume={onSetPlaybackVolume}
+          onEditActiveLoop={onEditActiveLoop}
+          onMoveQueueItem={onMoveQueueItem}
+          onMoveQueueItemToEnd={onMoveQueueItemToEnd}
+          onMoveQueueItemToStart={onMoveQueueItemToStart}
+          onClose={() => {
+            setActivePlaybackSurface(null);
+            queuePlaylistState.closeQueueDialogs();
+          }}
+          onPlayQueueItem={onPlayQueueItem}
+          onRemoveQueueItem={onRemoveQueueItem}
+          onRequestUpdateQueuePlaylist={queuePlaylistState.openUpdateDialog}
+          onSeekBackward={onSeekBackward}
+          onSeekForward={onSeekForward}
+          onSeekToPosition={onSeekToPosition}
+          onSaveQueueAsPlaylist={() => {
+            queuePlaylistState.openSaveDialog();
+          }}
+          onSelectQueueMode={onSelectQueueMode}
+          onSelectRepeatMode={onSelectRepeatMode}
+          onShowNowPlaying={() => {
+            setActivePlaybackSurface('now-playing');
+          }}
+          onShowQueue={() => {
+            setActivePlaybackSurface('queue');
+          }}
+          onShowShaping={() => {
+            setActivePlaybackSurface('shaping');
+          }}
+          onSkipNextItem={onSkipNextItem}
+          onSkipPreviousItem={onSkipPreviousItem}
+          onTogglePlayback={onTogglePlayback}
+          playbackPositionSeconds={playbackPositionSeconds}
+          playbackToggleLabel={playbackToggleLabel}
+          playbackVolumeLevel={playbackVolumeLevel}
+          queueSummary={upNextSummary}
+          shaping={playbackShaping}
+          surface={activePlaybackSurface}
+        />
 
-      {savedLibraryConfirmationDialog}
-    </SafeAreaView>
+        <MobileShellQueuePlaylistDialogs
+          isMutating={isSavingQueueAsPlaylist}
+          isSaveDialogVisible={queuePlaylistState.isSaveDialogVisible}
+          isUpdateDialogVisible={queuePlaylistState.isUpdateDialogVisible}
+          issue={queuePlaylistState.issue}
+          onCancelSave={queuePlaylistState.closeSaveDialog}
+          onCancelUpdate={queuePlaylistState.closeUpdateDialog}
+          onChangeDraftName={queuePlaylistState.onDraftNameChange}
+          onSubmitSave={() => {
+            void (async () => {
+              await queuePlaylistState.submitSave();
+            })();
+          }}
+          onSubmitUpdate={() => {
+            void (async () => {
+              await queuePlaylistState.submitUpdate();
+            })();
+          }}
+          queuePlaylistDraftName={queuePlaylistState.queuePlaylistDraftName}
+          updateAction={queuePlaylistState.updateAction}
+        />
+
+        {savedLibraryConfirmationDialog}
+      </SafeAreaView>
+    </LayoutClassProvider>
   );
 };

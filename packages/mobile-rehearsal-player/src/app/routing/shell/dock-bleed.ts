@@ -7,3 +7,12 @@ import type { ViewStyle } from 'react-native';
  * version is `dock-bleed.web.ts`.
  */
 export const dockBleedStyle: ViewStyle = {};
+
+/**
+ * The dock's bleed when a side rail takes the leading edge: only the trailing
+ * edge and the bottom reach the screen.
+ */
+export const dockBleedBesideRailStyle: ViewStyle = {};
+
+/** The same for the side rail of the wide-short layout (left, top and bottom). */
+export const railBleedStyle: ViewStyle = {};
