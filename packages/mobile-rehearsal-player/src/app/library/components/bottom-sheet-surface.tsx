@@ -4,6 +4,7 @@ import { ModalSurfaceBase } from './modal-surface-base';
 import { SectionHeading } from './section-heading';
 
 import { darkScrollbarStyle } from '../../components/dark-scrollbar';
+import { useLayoutClass } from '../../routing/shell/layout-class';
 import { appTheme } from '../../utils/theme';
 
 type BottomSheetSurfaceProps = {
@@ -40,6 +41,10 @@ export const BottomSheetSurface = ({
   title,
   titleNumberOfLines = 1,
 }: BottomSheetSurfaceProps) => {
+  // A wide, short window has no height for a bottom sheet's list, so the same
+  // sheet is a full-height panel against the trailing edge there.
+  const isSideSheet = useLayoutClass() === 'wide-short';
+
   if (!isVisible) {
     return null;
   }
@@ -50,9 +55,10 @@ export const BottomSheetSurface = ({
       isVisible={isVisible}
       onRequestClose={onClose}
       placement="bottom"
-      surfaceStyle={styles.sheet}
+      presentation={isSideSheet ? 'side-sheet' : 'default'}
+      surfaceStyle={[styles.sheet, isSideSheet ? styles.sideSheet : null]}
     >
-      <View style={styles.grabber} />
+      {isSideSheet ? null : <View style={styles.grabber} />}
       {eyebrow || title ? (
         <SectionHeading
           eyebrow={eyebrow}
@@ -118,6 +124,15 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: appTheme.radius.sheet,
     borderTopRightRadius: appTheme.radius.sheet,
     backgroundColor: CARD_BACKGROUND,
+  },
+  // Against the trailing edge: rounded on the side that faces the content, and
+  // no bottom margin for a home indicator (the safe-area frame handles it).
+  sideSheet: {
+    borderTopLeftRadius: appTheme.radius.sheet,
+    borderBottomLeftRadius: appTheme.radius.sheet,
+    borderTopRightRadius: 0,
+    paddingTop: appTheme.space.md,
+    paddingBottom: appTheme.space.md,
   },
   title: {
     ...appTheme.type.sheetTitle,
