@@ -21,15 +21,6 @@ export const dockBleedStyle = {
   paddingRight: RIGHT,
 } as unknown as ViewStyle;
 
-// Beside the rail only the trailing edge and the bottom bleed: the leading
-// inset is the rail's.
-export const dockBleedBesideRailStyle = {
-  marginBottom: `calc(-1 * ${BOTTOM})`,
-  marginRight: `calc(-1 * ${RIGHT})`,
-  paddingBottom: BOTTOM,
-  paddingRight: RIGHT,
-} as unknown as ViewStyle;
-
 // The rail grows into the padding on its leading edge and above and below it
 // in the same way, so its background reaches the screen edge it sits against.
 export const railBleedStyle = {
@@ -38,5 +29,16 @@ export const railBleedStyle = {
   marginTop: `calc(-1 * ${TOP})`,
   paddingBottom: BOTTOM,
   paddingLeft: LEFT,
+  paddingTop: TOP,
+} as unknown as ViewStyle;
+
+// The pane sits against the trailing edge: it grows into the padding there and
+// above and below it.
+export const paneBleedStyle = {
+  marginBottom: `calc(-1 * ${BOTTOM})`,
+  marginRight: `calc(-1 * ${RIGHT})`,
+  marginTop: `calc(-1 * ${TOP})`,
+  paddingBottom: BOTTOM,
+  paddingRight: RIGHT,
   paddingTop: TOP,
 } as unknown as ViewStyle;

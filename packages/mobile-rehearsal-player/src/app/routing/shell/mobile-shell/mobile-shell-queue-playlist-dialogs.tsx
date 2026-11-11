@@ -1,53 +1,42 @@
-import type { PlaylistDraftIssue } from '../../../library/playlists/utils/saved-playlist-view-model';
 import { QueuePlaylistSaveDialog } from '../../queue/queue-playlist-save-dialog';
 import { QueuePlaylistUpdateDialog } from '../../queue/queue-playlist-update-dialog';
-import type { QueuePlaylistUpdateAction } from './queue-playlist-dialog-state';
+import type { useMobileShellQueuePlaylistState } from './use-mobile-shell-queue-playlist-state';
 
 type MobileShellQueuePlaylistDialogsProps = {
   isMutating: boolean;
-  isSaveDialogVisible: boolean;
-  isUpdateDialogVisible: boolean;
-  issue: PlaylistDraftIssue | null;
-  onCancelSave: () => void;
-  onCancelUpdate: () => void;
-  onChangeDraftName: (value: string) => void;
-  onSubmitSave: () => void;
-  onSubmitUpdate: () => void;
-  queuePlaylistDraftName: string;
-  updateAction: QueuePlaylistUpdateAction | null;
+  state: ReturnType<typeof useMobileShellQueuePlaylistState>;
 };
 
 export const MobileShellQueuePlaylistDialogs = ({
   isMutating,
-  isSaveDialogVisible,
-  isUpdateDialogVisible,
-  issue,
-  onCancelSave,
-  onCancelUpdate,
-  onChangeDraftName,
-  onSubmitSave,
-  onSubmitUpdate,
-  queuePlaylistDraftName,
-  updateAction,
+  state,
 }: MobileShellQueuePlaylistDialogsProps) => {
   return (
     <>
       <QueuePlaylistSaveDialog
         isMutating={isMutating}
-        isVisible={isSaveDialogVisible}
-        issue={issue}
-        onCancel={onCancelSave}
-        onChange={onChangeDraftName}
-        onSubmit={onSubmitSave}
-        value={queuePlaylistDraftName}
+        isVisible={state.isSaveDialogVisible}
+        issue={state.issue}
+        onCancel={state.closeSaveDialog}
+        onChange={state.onDraftNameChange}
+        onSubmit={() => {
+          void (async () => {
+            await state.submitSave();
+          })();
+        }}
+        value={state.queuePlaylistDraftName}
       />
       <QueuePlaylistUpdateDialog
-        action={updateAction}
+        action={state.updateAction}
         isMutating={isMutating}
-        isVisible={isUpdateDialogVisible}
-        issue={issue}
-        onCancel={onCancelUpdate}
-        onSubmit={onSubmitUpdate}
+        isVisible={state.isUpdateDialogVisible}
+        issue={state.issue}
+        onCancel={state.closeUpdateDialog}
+        onSubmit={() => {
+          void (async () => {
+            await state.submitUpdate();
+          })();
+        }}
       />
     </>
   );

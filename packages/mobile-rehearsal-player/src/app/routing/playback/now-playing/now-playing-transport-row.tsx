@@ -28,6 +28,11 @@ export type NowPlayingTransportRowProps = {
   playbackToggleLabel: string;
   supportsQueueNavigation: boolean;
   title: string;
+  /**
+   * Shows only these controls, in this order, instead of the sheet's full row
+   * (the wide-short Now Playing pane has room for previous, play and next).
+   */
+  controls?: readonly NowPlayingTransportControl[];
 };
 
 type TransportButtonModel = {
@@ -122,9 +127,9 @@ const getSecondaryButton = (
 };
 
 export const NowPlayingTransportRow = (props: NowPlayingTransportRowProps) => {
-  const controls = getNowPlayingTransportControls(
-    props.supportsQueueNavigation,
-  );
+  const controls =
+    props.controls ??
+    getNowPlayingTransportControls(props.supportsQueueNavigation);
   const playbackToggle = getPlaybackToggleControlModel({
     playbackToggleLabel: props.playbackToggleLabel,
     title: props.title,

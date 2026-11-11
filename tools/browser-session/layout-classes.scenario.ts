@@ -1,6 +1,8 @@
 import type { Page } from 'playwright';
 
 import { buildMockSource } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
+import { readMediaState } from './media-probe';
+import { buildToneMedia } from './mock-media';
 import { waitForTrack, waitUntil } from './page-helpers';
 import { runScenario } from './scenario-runner';
 
@@ -9,8 +11,12 @@ import { runScenario } from './scenario-runner';
 // directly, at the sizes that matter: which layout each window gets, exactly at
 // the thresholds, and that the hysteresis band holds in a real browser.
 //
-//   compact    bottom tabs along the bottom, the floating + over the list
-//   wide-short side rail on the leading edge, the + in the header
+//   compact    bottom tabs along the bottom, the floating + over the list,
+//              the mini-player band above the tabs
+//   wide-short side rail on the leading edge, the + in the header, the Now
+//              Playing pane on the trailing side
+//
+// A track plays throughout, so the mini-player or the pane is always there.
 //
 // Every slice that changes the wide-short layout adds what must stay the same
 // upright here.
@@ -22,12 +28,14 @@ const BOTTOM_EDGE_GAP = 60;
 const RAIL_MAX_RIGHT = 120;
 const HEADER_MAX_BOTTOM = 130;
 
-const alto = buildMockSource('Alto Part');
+const TONE_SECONDS = 30;
+const alto = buildMockSource('Alto Part', { durationMs: TONE_SECONDS * 1000 });
 
 const libraryEntry = (page: Page) =>
   page.getByRole('button', { exact: true, name: 'Library' });
 
 const createButton = (page: Page) => page.getByLabel(/^Create in /);
+const nowPlaying = (page: Page) => page.getByLabel(/^Now playing:/);
 
 // After a resize the window reports its new size first and React re-renders the
 // layout a frame later, so wait for both before reading the result.
@@ -54,6 +62,7 @@ const resizeTo = async (page: Page, size: Size) => {
 const readLayout = async (page: Page, size: Size) => {
   const tab = await libraryEntry(page).boundingBox();
   const create = await createButton(page).boundingBox();
+  const player = await nowPlaying(page).boundingBox();
 
   if (!tab) {
     return { layout: null, detail: 'the Library entry is not on screen' };
@@ -65,17 +74,26 @@ const readLayout = async (page: Page, size: Size) => {
   const isInHeader =
     create !== null && create.y + create.height <= HEADER_MAX_BOTTOM;
 
-  if (isAlongBottom && isFloating) {
-    return { layout: 'compact' as const, detail: 'bottom tabs and floating +' };
+  const isPlayerBand = player !== null && player.y > size.height / 2;
+  const isPlayerPane = player !== null && player.x > size.width / 2;
+
+  if (isAlongBottom && isFloating && isPlayerBand) {
+    return {
+      layout: 'compact' as const,
+      detail: 'bottom tabs, floating + and mini-player band',
+    };
   }
 
-  if (isOnLeadingEdge && isInHeader) {
-    return { layout: 'wide-short' as const, detail: 'side rail and header +' };
+  if (isOnLeadingEdge && isInHeader && isPlayerPane) {
+    return {
+      layout: 'wide-short' as const,
+      detail: 'side rail, header + and Now Playing pane',
+    };
   }
 
   return {
     layout: null,
-    detail: `tab ${JSON.stringify(tab)}, create ${JSON.stringify(create)}`,
+    detail: `tab ${JSON.stringify(tab)}, create ${JSON.stringify(create)}, player ${JSON.stringify(player)}`,
   };
 };
 
@@ -104,9 +122,20 @@ const COMPACT_SIZES: [string, Size][] = [
 ];
 
 void runScenario({
+  drive: {
+    media: { [alto.driveFileId]: buildToneMedia({ seconds: TONE_SECONDS }) },
+    state: 'authorized',
+  },
   library: { playlists: [], sources: [alto] },
+  mediaProbe: true,
   steps: async ({ page, pass, shot }) => {
     await waitForTrack(page, 'Alto Part');
+    await page.getByLabel('Play Alto Part').first().click();
+    await waitUntil(async () => {
+      const state = await readMediaState(page);
+
+      return state !== null && !state.paused;
+    }, 'the track did not start playing');
 
     for (const [name, size] of COMPACT_SIZES) {
       await expectLayoutAt(page, size, 'compact');

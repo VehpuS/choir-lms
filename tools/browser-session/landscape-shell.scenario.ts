@@ -1,6 +1,8 @@
 import type { Locator, Page } from 'playwright';
 
 import { buildMockSource } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
+import { readMediaState } from './media-probe';
+import { buildToneMedia } from './mock-media';
 import { waitForTrack, waitUntil } from './page-helpers';
 import { runScenario } from './scenario-runner';
 
@@ -13,13 +15,27 @@ const PORTRAIT = { height: 844, width: 390 };
 const WAIT_MS = 5000;
 const RAIL_MAX_RIGHT = 120;
 const HEADER_MAX_BOTTOM = 130;
+const BAND_HEIGHT = 60;
 
-const alto = buildMockSource('Alto Part');
+const TONE_SECONDS = 30;
+const PANE_WIDTH = 280;
+const PANE_TOLERANCE = 20;
+
+const alto = buildMockSource('Alto Part', { durationMs: TONE_SECONDS * 1000 });
+const nowPlaying = (page: Page) => page.getByLabel(/^Now playing:/);
+
+const isPlaying = (page: Page, expected: boolean) =>
+  waitUntil(
+    async () => (await readMediaState(page))?.paused === !expected,
+    expected ? 'the track did not play' : 'the track did not pause',
+  );
 
 const entry = (page: Page, name: string) =>
   name === 'Practice tools'
     ? page.getByLabel('Practice tools', { exact: true })
     : page.getByRole('button', { exact: true, name });
+
+const createButton = (page: Page) => page.getByLabel(/^Create in /);
 
 const boxOf = async (target: Locator, name: string) => {
   const box = await target.boundingBox();
@@ -32,7 +48,12 @@ const boxOf = async (target: Locator, name: string) => {
 };
 
 void runScenario({
+  drive: {
+    media: { [alto.driveFileId]: buildToneMedia({ seconds: TONE_SECONDS }) },
+    state: 'authorized',
+  },
   library: { playlists: [], sources: [alto] },
+  mediaProbe: true,
   steps: async ({ page, pass, shot }) => {
     await waitForTrack(page, 'Alto Part');
     await page.setViewportSize(LANDSCAPE);
@@ -122,6 +143,65 @@ void runScenario({
     await page.getByText('Cancel', { exact: true }).last().click();
     pass('The Playlists Create button is in the header and opens its dialog');
 
+    // Nothing playing: no pane, and the list keeps the whole width.
+    await page.getByText('Files', { exact: true }).first().click();
+    if ((await nowPlaying(page).count()) !== 0) {
+      throw new Error('a Now Playing pane is shown while nothing plays');
+    }
+
+    const widthBefore = (await boxOf(createButton(page), 'the Create button'))
+      .x;
+
+    // Playing: the pane takes the trailing side and the content gives up its
+    // width; the bottom mini-player band is gone.
+    await page.getByLabel('Play Alto Part').first().click();
+    await isPlaying(page, true);
+    await nowPlaying(page).waitFor({ timeout: WAIT_MS });
+
+    const pane = await boxOf(nowPlaying(page), 'the Now Playing pane');
+
+    if (pane.x < LANDSCAPE.width - PANE_WIDTH - PANE_TOLERANCE) {
+      throw new Error(
+        `the pane is not on the trailing side (x ${Math.round(pane.x)})`,
+      );
+    }
+
+    if (pane.y + pane.height > LANDSCAPE.height - BAND_HEIGHT) {
+      throw new Error('the pane sits along the bottom like the mini-player');
+    }
+
+    await waitUntil(async () => {
+      const box = await createButton(page).boundingBox();
+
+      return box !== null && widthBefore - box.x >= PANE_WIDTH - PANE_TOLERANCE;
+    }, 'the content did not give up the pane width');
+    await shot('4-now-playing-pane');
+    pass(
+      'Playing shows the Now Playing pane on the trailing side; the list narrows',
+    );
+
+    // Browsing keeps the pane and the playback.
+    await entry(page, 'Add').click();
+    await page
+      .getByText('My Drive', { exact: true })
+      .first()
+      .waitFor({ timeout: WAIT_MS });
+    await entry(page, 'Recents').click();
+    await entry(page, 'Library').click();
+    await nowPlaying(page).waitFor({ timeout: WAIT_MS });
+    await isPlaying(page, true);
+    pass('The pane stays and playback continues while browsing');
+
+    // The pane controls the playback, and its title opens the full view.
+    await page.getByLabel('Pause Alto Part').last().click();
+    await isPlaying(page, false);
+    await page.getByLabel('Resume Alto Part').last().click();
+    await isPlaying(page, true);
+    await nowPlaying(page).click();
+    await page.getByLabel('Dismiss playback').waitFor({ timeout: WAIT_MS });
+    await page.getByLabel('Dismiss playback').click();
+    pass('The pane pauses and resumes playback, and opens the full view');
+
     // Practice tools open beside the rail, over the content.
     await entry(page, 'Practice tools').click();
     const piano = page.getByLabel('Piano, off');
@@ -160,9 +240,14 @@ void runScenario({
 
       return box !== null && box.y > PORTRAIT.height / 2;
     }, 'the floating Create button did not return');
+    await waitUntil(async () => {
+      const box = await nowPlaying(page).boundingBox();
+
+      return box !== null && box.y > PORTRAIT.height - 200;
+    }, 'the mini-player did not return to the bottom');
     await shot('5-portrait');
     pass(
-      'Turning the window upright brings back the bottom tabs and the floating +',
+      'Turning the window upright brings back the bottom tabs, the floating + and the mini-player band',
     );
   },
   viewport: PORTRAIT,

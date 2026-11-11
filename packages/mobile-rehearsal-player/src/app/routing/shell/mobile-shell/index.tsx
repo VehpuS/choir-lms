@@ -14,19 +14,14 @@ import { ShellOverlays } from './shell-overlays';
 import { LayoutClassProvider, useWindowLayoutClass } from '../layout-class';
 import { ShellTabBar } from '../shell-tab-bar';
 import { styles } from '../mobile-shell-styles';
-import {
-  getMiniPlayerSummary,
-  getNowPlayingSurfaceSummary,
-  getUpNextSurfaceSummary,
-  type ShellDestinationKey,
-} from '../shell-model';
+import type { ShellDestinationKey } from '../shell-model';
 import { MobileShellDestinationPanels } from './mobile-shell-destination-panels';
 import { MobileShellMiniPlayerDock } from './mobile-shell-mini-player-dock';
+import { NowPlayingPane } from './now-playing-pane';
 import { MobileShellPlaybackSurface } from './mobile-shell-playback-surface';
 import { MobileShellQueuePlaylistDialogs } from './mobile-shell-queue-playlist-dialogs';
+import { useMobileShellPlaybackSummaries } from './use-mobile-shell-playback-summaries';
 import { useMobileShellQueuePlaylistState } from './use-mobile-shell-queue-playlist-state';
-import { useSavedTrackDownloadProgress } from '../../../library/playback/hooks/use-saved-track-download-progress';
-import { getPlaybackDownloadLabel } from '../../../library/playback/utils/saved-track-download-label';
 
 type PlaybackSurfaceKey = 'now-playing' | 'queue' | 'shaping';
 
@@ -133,29 +128,19 @@ export const MobileShell = ({
     useState<ShellDestinationKey>('library');
   const [activePlaybackSurface, setActivePlaybackSurface] =
     useState<PlaybackSurfaceKey | null>(null);
-  const miniPlayerSummary = getMiniPlayerSummary({
+  const {
+    miniPlayerSummary,
+    nowPlayingSummary,
+    playbackDownloadLabel,
+    upNextSummary,
+  } = useMobileShellPlaybackSummaries({
     activePlayableItem,
     activePlaylistSession,
     isPlaybackPreparing,
     playbackPositionSeconds,
+    playbackShapingLabel,
     playbackState,
-    shapingLabel: playbackShapingLabel,
   });
-  const nowPlayingSummary = getNowPlayingSurfaceSummary({
-    activePlayableItem,
-    activePlaylistSession,
-    isPlaybackPreparing,
-    playbackPositionSeconds,
-    playbackState,
-    shapingLabel: playbackShapingLabel,
-  });
-  // Web playback downloads the whole file before it can play (8.33), so the
-  // mini-player and sheet say how far that download has got.
-  const downloadProgress = useSavedTrackDownloadProgress();
-  const playbackDownloadLabel = isPlaybackPreparing
-    ? getPlaybackDownloadLabel(downloadProgress)
-    : null;
-  const upNextSummary = getUpNextSurfaceSummary({ activePlaylistSession });
   const queuePlaylistState = useMobileShellQueuePlaylistState({
     canShowQueuePlaylistActions,
     hasMiniPlayerSummary: miniPlayerSummary !== null,
@@ -182,6 +167,9 @@ export const MobileShell = ({
 
   const layoutClass = useWindowLayoutClass();
   const isWideShort = layoutClass === 'wide-short';
+  const openNowPlaying = () => {
+    setActivePlaybackSurface('now-playing');
+  };
   const handleSelectDestination = (destination: ShellDestinationKey) => {
     // Settings covers the destinations, so choosing one leaves it.
     settingsNavigationStore.close();
@@ -210,22 +198,21 @@ export const MobileShell = ({
       />
 
       <PinnedBulkActionBarHost>
-        <MobileShellMiniPlayerDock
-          activeDestination={activeDestination}
-          activePlayableItem={activePlayableItem}
-          downloadLabel={playbackDownloadLabel}
-          isPlaybackLoading={isPlaybackPreparing}
-          isPlaybackToggleDisabled={isPlaybackToggleDisabled}
-          miniPlayerSummary={miniPlayerSummary}
-          onOpenNowPlaying={() => {
-            setActivePlaybackSurface('now-playing');
-          }}
-          onSelectDestination={handleSelectDestination}
-          onTogglePlayback={onTogglePlayback}
-          playbackState={playbackState}
-          playbackToggleLabel={playbackToggleLabel}
-          showTabBar={!isWideShort}
-        />
+        {isWideShort ? null : (
+          <MobileShellMiniPlayerDock
+            activeDestination={activeDestination}
+            activePlayableItem={activePlayableItem}
+            downloadLabel={playbackDownloadLabel}
+            isPlaybackLoading={isPlaybackPreparing}
+            isPlaybackToggleDisabled={isPlaybackToggleDisabled}
+            miniPlayerSummary={miniPlayerSummary}
+            onOpenNowPlaying={openNowPlaying}
+            onSelectDestination={handleSelectDestination}
+            onTogglePlayback={onTogglePlayback}
+            playbackState={playbackState}
+            playbackToggleLabel={playbackToggleLabel}
+          />
+        )}
       </PinnedBulkActionBarHost>
     </>
   );
@@ -247,6 +234,27 @@ export const MobileShell = ({
         ) : (
           mainColumn
         )}
+        {isWideShort && miniPlayerSummary ? (
+          <NowPlayingPane
+            activePlayableItem={activePlayableItem}
+            canSkipNextItem={canSkipNextItem}
+            canSkipPreviousItem={canSkipPreviousItem}
+            downloadLabel={playbackDownloadLabel}
+            isPlaybackLoading={isPlaybackPreparing}
+            isPlaybackToggleDisabled={isPlaybackToggleDisabled}
+            loopLabel={nowPlayingSummary?.loopRange?.label ?? null}
+            miniPlayerSummary={miniPlayerSummary}
+            onOpenNowPlaying={openNowPlaying}
+            onSkipNextItem={onSkipNextItem}
+            onSkipPreviousItem={onSkipPreviousItem}
+            onTogglePlayback={onTogglePlayback}
+            playbackToggleLabel={playbackToggleLabel}
+            shapingLabel={nowPlayingSummary?.shapingLabel ?? null}
+            supportsQueueNavigation={
+              nowPlayingSummary?.supportsQueueNavigation ?? false
+            }
+          />
+        ) : null}
 
         <MobileShellPlaybackSurface
           activePlayableItem={activePlayableItem}
@@ -302,24 +310,7 @@ export const MobileShell = ({
 
         <MobileShellQueuePlaylistDialogs
           isMutating={isSavingQueueAsPlaylist}
-          isSaveDialogVisible={queuePlaylistState.isSaveDialogVisible}
-          isUpdateDialogVisible={queuePlaylistState.isUpdateDialogVisible}
-          issue={queuePlaylistState.issue}
-          onCancelSave={queuePlaylistState.closeSaveDialog}
-          onCancelUpdate={queuePlaylistState.closeUpdateDialog}
-          onChangeDraftName={queuePlaylistState.onDraftNameChange}
-          onSubmitSave={() => {
-            void (async () => {
-              await queuePlaylistState.submitSave();
-            })();
-          }}
-          onSubmitUpdate={() => {
-            void (async () => {
-              await queuePlaylistState.submitUpdate();
-            })();
-          }}
-          queuePlaylistDraftName={queuePlaylistState.queuePlaylistDraftName}
-          updateAction={queuePlaylistState.updateAction}
+          state={queuePlaylistState}
         />
 
         {savedLibraryConfirmationDialog}
