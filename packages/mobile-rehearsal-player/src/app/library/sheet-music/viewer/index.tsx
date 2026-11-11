@@ -283,8 +283,7 @@ export const SheetMusicViewer = ({
       pageGroup={
         orientation === 'column'
           ? buildRailPageGroup({
-              onOpen: goToPage.open,
-              shortIndicator: pdfPages.controls.shortIndicator,
+              isReady: Boolean(goToPage.open && pdfPages.controls.indicator),
               steps: pageSteps,
             })
           : undefined
