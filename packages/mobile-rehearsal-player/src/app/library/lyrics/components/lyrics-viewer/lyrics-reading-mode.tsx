@@ -1,19 +1,12 @@
 import type { ReactNode } from 'react';
-import {
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
 import { SegmentedControl } from '../../../../components/segmented-control';
 import { SurfaceIconButton } from '../../../../components/surface-icon-button';
 import { darkScrollbarStyle } from '../../../../components/dark-scrollbar';
 import { SafeAreaScreen } from '../../../../components/safe-area-frame';
-import { getLayoutClass } from '../../../../routing/shell/layout-class';
+import { useWindowOnlyLayoutClass } from '../../../../routing/shell/layout-class';
 import { appTheme } from '../../../../utils/theme';
 import {
   LYRICS_TEXT_SIZES,
@@ -65,12 +58,7 @@ export const LyricsReadingMode = ({
   const size = useLyricsTextSize();
   // A phone on its side: the size control and play / pause join the title row,
   // so the text keeps the height they would take as rows of their own.
-  // This view is opened by a host above the shell, so it reads the window
-  // itself rather than the shell's layout class (no hysteresis: a Modal is
-  // rarely resized while it is open).
-  const { height, width } = useWindowDimensions();
-  const isWideShort =
-    getLayoutClass({ height, width }, 'compact') === 'wide-short';
+  const isWideShort = useWindowOnlyLayoutClass() === 'wide-short';
 
   useBestEffortKeepAwake(KEEP_AWAKE_TAG);
 

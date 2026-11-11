@@ -6,6 +6,7 @@ import { OutlinedActionButton } from '../../../../components/outlined-action-but
 import { SurfaceIconButton } from '../../../../components/surface-icon-button';
 import { FeedbackCard } from '../../../components/feedback-card';
 import { ModalSurfaceBase } from '../../../components/modal-surface-base';
+import { useWindowOnlyLayoutClass } from '../../../../routing/shell/layout-class';
 import { appTheme } from '../../../../utils/theme';
 import {
   LOOP_EDITOR_SEEK_SECONDS,
@@ -78,6 +79,9 @@ const LoopEditorContent = (
   props: LoopEditorSurfaceProps & { selectedTrack: PlayableItem },
 ) => {
   const { selectedTrack } = props;
+  // A phone on its side: two columns, so nothing needs a scroll (F.3). The
+  // editor is opened by a host above the shell, so it reads the window itself.
+  const isWideShort = useWindowOnlyLayoutClass() === 'wide-short';
   const range = { endMs: props.endMs, startMs: props.startMs };
   const pick = useLoopEditorMarkers({
     editingLoopId: props.editingLoopId,
@@ -100,6 +104,91 @@ const LoopEditorContent = (
     );
   };
 
+  const title = (
+    <Text numberOfLines={2} style={styles.title}>
+      {selectedTrack.source.name}
+    </Text>
+  );
+  const waveform = (
+    <LoopEditorWaveform
+      isLoading={props.isPreparing}
+      isShort={isWideShort}
+      areMarkersShown={pick.areMarkersShown}
+      markers={pick.markers}
+      onToggleMarkers={pick.canPick ? pick.toggleMarkers : undefined}
+      onFlagPress={pick.pickFromFlag}
+      onNudgeBoundary={props.onNudgeBoundary}
+      onRangeChange={props.onRangeChange}
+      playbackPositionSeconds={props.previewTimeline?.positionSeconds ?? 0}
+      range={range}
+      selectedTrack={selectedTrack}
+      trackDurationMs={props.rangeMaximumMs}
+    />
+  );
+  const rangeCards = (
+    <LoopEditorRangeCards
+      armedBoundary={pick.armed}
+      isLoading={props.isPreparing}
+      onNudgeBoundary={props.onNudgeBoundary}
+      onPickMarker={pick.canPick ? pick.openPickerFor : undefined}
+      onToggleArm={pick.canPick ? pick.toggleArm : undefined}
+      range={range}
+      trackDurationMs={props.rangeMaximumMs}
+    />
+  );
+  const transport = (
+    <LoopEditorTransport
+      canSeek={props.previewTimeline?.canScrub ?? false}
+      canSetBoundaryFromPosition={props.canSetBoundaryFromPosition}
+      isPreviewLoading={props.isPreviewLoading}
+      onSeekBackward={() => {
+        seekPreviewBy(-LOOP_EDITOR_SEEK_SECONDS);
+      }}
+      onSeekForward={() => {
+        seekPreviewBy(LOOP_EDITOR_SEEK_SECONDS);
+      }}
+      onSetBoundaryFromPosition={props.onSetBoundaryFromPosition}
+      onTogglePreview={props.onTogglePreview}
+      previewActionLabel={props.previewActionLabel}
+      previewDisabled={props.previewDisabled || props.isPreparing}
+      previewIconName={props.previewIconName}
+    />
+  );
+  const nameAndSave = (
+    <>
+      <TextInput
+        accessibilityLabel="Loop name"
+        autoCorrect={false}
+        onChangeText={props.onLoopNameChange}
+        placeholder="Name this practice loop"
+        placeholderTextColor={appTheme.colors.textFaint}
+        returnKeyType="done"
+        style={styles.nameInput}
+        value={props.loopName}
+      />
+
+      {props.builderIssue && !props.isPreparing ? (
+        <FeedbackCard
+          message={props.builderIssue.message}
+          title={props.builderIssue.title}
+          tone="error"
+        />
+      ) : null}
+
+      <OutlinedActionButton
+        accessibilityLabel={props.saveActionLabel}
+        disabled={!props.canSaveLoop}
+        fill
+        isBusy={props.isSavingLoop}
+        label={
+          props.isSavingLoop ? props.savingActionLabel : props.saveActionLabel
+        }
+        onPress={props.onSaveLoop}
+        variant="accent"
+      />
+    </>
+  );
+
   return (
     <ModalSurfaceBase
       animationType="slide"
@@ -109,7 +198,7 @@ const LoopEditorContent = (
       placement="bottom"
       surfaceStyle={styles.sheet}
     >
-      <View style={styles.grabber} />
+      {isWideShort ? null : <View style={styles.grabber} />}
       <View style={styles.header}>
         <Text style={styles.kicker}>{props.eyebrowLabel}</Text>
         <SurfaceIconButton
@@ -118,87 +207,35 @@ const LoopEditorContent = (
           onPress={props.onClose}
         />
       </View>
-      <ScrollView
-        contentContainerStyle={styles.bodyContent}
-        keyboardShouldPersistTaps="handled"
-        style={[darkScrollbarStyle, styles.body]}
-      >
-        <Text numberOfLines={2} style={styles.title}>
-          {selectedTrack.source.name}
-        </Text>
-
-        <LoopEditorWaveform
-          isLoading={props.isPreparing}
-          areMarkersShown={pick.areMarkersShown}
-          markers={pick.markers}
-          onToggleMarkers={pick.canPick ? pick.toggleMarkers : undefined}
-          onFlagPress={pick.pickFromFlag}
-          onNudgeBoundary={props.onNudgeBoundary}
-          onRangeChange={props.onRangeChange}
-          playbackPositionSeconds={props.previewTimeline?.positionSeconds ?? 0}
-          range={range}
-          selectedTrack={selectedTrack}
-          trackDurationMs={props.rangeMaximumMs}
-        />
-
-        <LoopEditorRangeCards
-          armedBoundary={pick.armed}
-          isLoading={props.isPreparing}
-          onNudgeBoundary={props.onNudgeBoundary}
-          onPickMarker={pick.canPick ? pick.openPickerFor : undefined}
-          onToggleArm={pick.canPick ? pick.toggleArm : undefined}
-          range={range}
-          trackDurationMs={props.rangeMaximumMs}
-        />
-
-        <LoopEditorTransport
-          canSeek={props.previewTimeline?.canScrub ?? false}
-          canSetBoundaryFromPosition={props.canSetBoundaryFromPosition}
-          isPreviewLoading={props.isPreviewLoading}
-          onSeekBackward={() => {
-            seekPreviewBy(-LOOP_EDITOR_SEEK_SECONDS);
-          }}
-          onSeekForward={() => {
-            seekPreviewBy(LOOP_EDITOR_SEEK_SECONDS);
-          }}
-          onSetBoundaryFromPosition={props.onSetBoundaryFromPosition}
-          onTogglePreview={props.onTogglePreview}
-          previewActionLabel={props.previewActionLabel}
-          previewDisabled={props.previewDisabled || props.isPreparing}
-          previewIconName={props.previewIconName}
-        />
-
-        <TextInput
-          accessibilityLabel="Loop name"
-          autoCorrect={false}
-          onChangeText={props.onLoopNameChange}
-          placeholder="Name this practice loop"
-          placeholderTextColor={appTheme.colors.textFaint}
-          returnKeyType="done"
-          style={styles.nameInput}
-          value={props.loopName}
-        />
-
-        {props.builderIssue && !props.isPreparing ? (
-          <FeedbackCard
-            message={props.builderIssue.message}
-            title={props.builderIssue.title}
-            tone="error"
-          />
-        ) : null}
-
-        <OutlinedActionButton
-          accessibilityLabel={props.saveActionLabel}
-          disabled={!props.canSaveLoop}
-          fill
-          isBusy={props.isSavingLoop}
-          label={
-            props.isSavingLoop ? props.savingActionLabel : props.saveActionLabel
-          }
-          onPress={props.onSaveLoop}
-          variant="accent"
-        />
-      </ScrollView>
+      {isWideShort ? (
+        <View style={styles.columns}>
+          <View style={styles.waveColumn}>
+            {title}
+            {waveform}
+            {transport}
+          </View>
+          <ScrollView
+            contentContainerStyle={styles.controlsContent}
+            keyboardShouldPersistTaps="handled"
+            style={[darkScrollbarStyle, styles.controlsColumn]}
+          >
+            {rangeCards}
+            {nameAndSave}
+          </ScrollView>
+        </View>
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.bodyContent}
+          keyboardShouldPersistTaps="handled"
+          style={[darkScrollbarStyle, styles.body]}
+        >
+          {title}
+          {waveform}
+          {rangeCards}
+          {transport}
+          {nameAndSave}
+        </ScrollView>
+      )}
       {pick.conflictText ? (
         <LoopEditorPickConflictDialog
           {...pick.conflictText}

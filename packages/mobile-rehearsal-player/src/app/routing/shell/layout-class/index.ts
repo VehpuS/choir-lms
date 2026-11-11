@@ -10,4 +10,5 @@ export {
   LayoutClassProvider,
   useLayoutClass,
   useWindowLayoutClass,
+  useWindowOnlyLayoutClass,
 } from './use-layout-class';
