@@ -5,9 +5,11 @@ A composite stem references a library track by id. A recording is stored separat
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Add a recording to a composite as a stem, aligned and mixable like any other stem.
 
 **Non-Goals:**
+
 - Recording live over a composite's mix.
 - Changing how recordings are made over a track.
 

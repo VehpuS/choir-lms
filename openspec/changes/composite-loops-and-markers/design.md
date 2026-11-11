@@ -5,10 +5,12 @@
 ## Goals / Non-Goals
 
 **Goals:**
+
 - A composite can own loops and markers in composite time, listed and played like a track's.
 - One write path per kind: markers on the composite record, loops in the loops collection.
 
 **Non-Goals:**
+
 - Copying stem markers into a composite.
 - Recording over a composite (see `composite-recording-stems`).
 - Per-stem loops.
