@@ -8,8 +8,10 @@
 
 - [x] 2.1 Browser scenario (failing first): rotate to a landscape phone size; the shell fills the viewport and no edge shows a non-app colour (written; fails on html/body background and `viewport-fit=cover`, passes root size and scroll in Chromium)
 - [x] 2.2 Web root fills the dynamic viewport with the app background; `viewport-fit=cover` (`public/index.html` template: app background on html and body, `100dvh` with a `100%` fallback, `viewport-fit=cover`; `web-entry-html.spec.ts` keeps the colour in step with the theme)
-- [ ] 2.3 Safe-area insets on all edges (`safe-area-insets.web.ts` plus native sibling), applied to the shell, dock and sheets
-- [ ] 2.4 Re-measure on rotation so the layout settles without a scroll
+- [x] 2.3a Sheets, dialogs and the playback overlay keep clear of the safe areas. They render outside the shell's `SafeAreaView` (a Modal, or an absolutely positioned overlay), so the iPhone check showed rows and the dismiss button under the Dynamic Island. New `SafeAreaFrame` (`components/safe-area-frame`), used by `ModalSurfaceBase` (every bottom sheet and centered dialog) and the playback overlay; the backdrop still reaches the screen edges. Browser scenario `landscape-safe-areas` uses Chromium's safe-area emulation to check the options sheet and the playback sheet (failed before, passes now)
+- [ ] 2.3b The full-screen Modals that do not go through `ModalSurfaceBase` (sheet music viewer, lyrics reading mode, pitch full view, queue move dialog, saved playlist detail) use `SafeAreaFrame`; scenario coverage for the ones Chromium can reach
+- [ ] 2.3c The bottom dock band (mini-player and tab bar, and later the rail) paints its colour under the side and bottom insets so it reaches the screen edges while its content stays inset
+- [ ] 2.4 Re-measure on rotation so the layout settles without a scroll (check on the device first: the iPhone check after 2.2 showed no stale layout, so this may need nothing)
 
 ## 3. Part 2: landscape layout (after approval)
 
@@ -27,4 +29,8 @@
 
 ## 4. Verification
 
-- [ ] 4.1 Manual check on an iPhone as a home-screen web app in both orientations
+- [ ] 4.1 Manual check (after 2.2, on an iPhone in Safari and as a home-screen app in landscape: the white bands are gone; the tab bar band stops at the safe-area insets) on an iPhone as a home-screen web app in both orientations
+
+## Follow-ups
+
+- [ ] F.1 Mixed Hebrew and Latin text in the playback sheet subtitle renders in the wrong order (`of 20 13 · אור-פנד-לנד-2026-12-09`, right-aligned and reversed). Seen on an iPhone in the playback sheet for a track whose folder or name contains Hebrew; the title is fine. Probably needs bidi isolation (`dir="auto"` or Unicode isolates around the name) in the subtitle; check the other places that join a position, a folder and a name into one string.
