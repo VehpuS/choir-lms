@@ -6,12 +6,16 @@ import {
   centredScrollOffset,
   createKeyboardLayout,
   middleCScrollOffset,
-  PIANO_KEY_HEIGHTS,
   rescaledScrollOffset,
 } from '../../keyboard-layout';
 import { pianoCapabilities } from '../../piano-capabilities';
 import type { PianoHeightStep } from '../../keyboard-layout';
-import { capHeightStep, clampScrollLeft } from '../../piano-overlay-model';
+import {
+  capHeightStep,
+  clampScrollLeft,
+  pianoKeyHeightFor,
+  type PianoPresentation,
+} from '../../piano-overlay-model';
 import {
   setPianoPreferences,
   setPianoScrollLeft,
@@ -22,6 +26,7 @@ import { usePianoSound } from '../../use-piano-sound';
 import { PianoKeyboard } from './piano-keyboard';
 import { getDetectedKeys } from '../../piano-detected-model';
 import { useSungMidi } from '../../../pitch/use-sung-midi';
+import { PianoCompactBar } from './piano-compact-bar';
 import { PianoOverlayHeader } from './piano-overlay-header';
 import { PianoScrollStrip } from './piano-scroll-strip';
 
@@ -41,6 +46,11 @@ type PianoOverlayProps = {
    * landscape window caps it at `compact` so the score keeps its height.
    */
   heightLimit?: PianoHeightStep;
+  /**
+   * `docked` (the default) is the upright piano; `compact-bar` is the
+   * wide-short layout's slim bar over a fixed-height keyboard.
+   */
+  presentation?: PianoPresentation;
 };
 
 type PianoOverlayBodyProps = PianoOverlayProps;
@@ -50,6 +60,7 @@ type PianoOverlayBodyProps = PianoOverlayProps;
 const PianoOverlayBody = ({
   focusRange,
   heightLimit,
+  presentation = 'docked',
 }: PianoOverlayBodyProps) => {
   const preferences = usePianoPreferences();
   const sound = usePianoSound();
@@ -57,7 +68,7 @@ const PianoOverlayBody = ({
   useComputerKeyboardPiano(sound.press, sound.release);
   const [viewportWidth, setViewportWidth] = useState(0);
   const heightStep = capHeightStep(preferences.heightStep, heightLimit);
-  const keyHeight = PIANO_KEY_HEIGHTS[heightStep];
+  const keyHeight = pianoKeyHeightFor(presentation, heightStep);
   const layout = useMemo(
     () => createKeyboardLayout(preferences.keyWidth),
     [preferences.keyWidth],
@@ -122,6 +133,14 @@ const PianoOverlayBody = ({
     );
   };
 
+  const isCompactBar = presentation === 'compact-bar';
+  const changeVolume = (volume: number) => {
+    setPianoPreferences({ volume });
+  };
+  const closePiano = () => {
+    setPianoPreferences({ isOpen: false });
+  };
+
   const detected = getDetectedKeys({
     sungMidi: useSungMidi(),
     layout,
@@ -131,21 +150,31 @@ const PianoOverlayBody = ({
 
   return (
     <View style={styles.overlay} testID="piano-overlay">
-      <PianoOverlayHeader
-        heightStep={heightStep}
-        keyWidth={preferences.keyWidth}
-        onChangeHeightStep={(heightStep) => {
-          setPianoPreferences({ heightStep });
-        }}
-        onChangeKeyWidth={changeKeyWidth}
-        onChangeVolume={(volume) => {
-          setPianoPreferences({ volume });
-        }}
-        onClose={() => {
-          setPianoPreferences({ isOpen: false });
-        }}
-        volume={preferences.volume}
-      />
+      {isCompactBar ? (
+        <PianoCompactBar
+          keyWidth={preferences.keyWidth}
+          onChangeKeyWidth={changeKeyWidth}
+          onChangeVolume={changeVolume}
+          onClose={closePiano}
+          onScrollLeftChange={scrollByUser}
+          scrollLeft={scrollLeft}
+          stripWidth={layout.stripWidth}
+          viewportWidth={viewportWidth}
+          volume={preferences.volume}
+        />
+      ) : (
+        <PianoOverlayHeader
+          heightStep={heightStep}
+          keyWidth={preferences.keyWidth}
+          onChangeHeightStep={(heightStep) => {
+            setPianoPreferences({ heightStep });
+          }}
+          onChangeKeyWidth={changeKeyWidth}
+          onChangeVolume={changeVolume}
+          onClose={closePiano}
+          volume={preferences.volume}
+        />
+      )}
       <PianoKeyboard
         detectedEdge={detected.edge}
         detectedMidi={detected.midi}
@@ -159,12 +188,14 @@ const PianoOverlayBody = ({
         scrollLeft={scrollLeft}
         sounding={sound.sounding}
       />
-      <PianoScrollStrip
-        onScrollLeftChange={scrollByUser}
-        scrollLeft={scrollLeft}
-        stripWidth={layout.stripWidth}
-        viewportWidth={viewportWidth}
-      />
+      {isCompactBar ? null : (
+        <PianoScrollStrip
+          onScrollLeftChange={scrollByUser}
+          scrollLeft={scrollLeft}
+          stripWidth={layout.stripWidth}
+          viewportWidth={viewportWidth}
+        />
+      )}
     </View>
   );
 };

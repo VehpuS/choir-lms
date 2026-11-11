@@ -17,9 +17,13 @@ const { colors, space } = appTheme;
 const STOP_SIZE = 44;
 const DOT_SIZE = 10;
 
+/** `panel` stacks the parts for the wide-short layout's 280-point trailing panel. */
+export type RecordingStripPresentation = 'strip' | 'panel';
+
 type RecordingStripProps = {
   model: RecordingStripModel;
   onAction: (action: StripAction) => void;
+  presentation?: RecordingStripPresentation;
 };
 
 const TimeLeft = ({ readout }: { readout: TimeLeftReadout | null }) => {
@@ -105,9 +109,16 @@ const Message = ({
  * first-time explanation to the clock and stop control while recording, and
  * the message once it stops. It only renders a model; the session decides.
  */
-export const RecordingStrip = ({ model, onAction }: RecordingStripProps) => {
+export const RecordingStrip = ({
+  model,
+  onAction,
+  presentation = 'strip',
+}: RecordingStripProps) => {
   return (
-    <View accessibilityLabel="Recording" style={styles.strip}>
+    <View
+      accessibilityLabel="Recording"
+      style={[styles.strip, presentation === 'panel' ? styles.panel : null]}
+    >
       {model.kind === 'recording' ? (
         <>
           <View
@@ -127,26 +138,14 @@ export const RecordingStrip = ({ model, onAction }: RecordingStripProps) => {
                 {model.status}
               </Text>
             ) : null}
-            {model.punchStops ? (
-              <Text numberOfLines={1} style={styles.markerLine}>
-                {model.punchStops}
-              </Text>
-            ) : null}
-            {model.punchRange ? (
-              <Text numberOfLines={1} style={styles.markerLine}>
-                {model.punchRange}
-              </Text>
-            ) : null}
-            {model.passed ? (
-              <Text numberOfLines={1} style={styles.markerLine}>
-                {model.passed}
-              </Text>
-            ) : null}
-            {model.next ? (
-              <Text numberOfLines={1} style={styles.markerLine}>
-                {model.next}
-              </Text>
-            ) : null}
+            {[model.punchStops, model.punchRange, model.passed, model.next].map(
+              (line, index) =>
+                line ? (
+                  <Text key={index} numberOfLines={1} style={styles.markerLine}>
+                    {line}
+                  </Text>
+                ) : null,
+            )}
           </View>
           <StopButton button={model.stop} onAction={onAction} />
         </>
@@ -269,6 +268,13 @@ const styles = StyleSheet.create({
   messageColumn: { flex: 1, gap: 2, minWidth: 0 },
   messageProblem: { color: colors.warning },
   messageTitle: { color: colors.text, fontWeight: appTheme.fontWeight.medium },
+  panel: {
+    alignItems: 'stretch',
+    flexDirection: 'column',
+    height: undefined,
+    minHeight: RECORDING_STRIP_HEIGHT,
+    paddingVertical: space.sm,
+  },
   pressed: { opacity: 0.7 },
   statusLine: {
     color: colors.warning,

@@ -1,10 +1,18 @@
-import { StyleSheet, Text, View } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import type { DriveAuthorizationStatusCopy } from '../../utils/authorization';
 import { getDriveSessionTriggerCopy } from '../../utils/authorization';
 
 import { OutlinedActionButton } from '../../../../components/outlined-action-button';
 import { appTheme } from '../../../../utils/theme';
+import { useLayoutClass } from '../../../../routing/shell/layout-class';
+import { getAccountMenuMaxHeight } from './drive-session-menu-model';
 
 type DriveSessionMenuPanelProps = {
   canClearAuthorization: boolean;
@@ -66,75 +74,84 @@ export const DriveSessionMenuPanel = ({
   statusCopy,
 }: DriveSessionMenuPanelProps) => {
   const triggerCopy = getDriveSessionTriggerCopy(statusCopy);
+  const maxHeight = getAccountMenuMaxHeight(
+    useLayoutClass(),
+    useWindowDimensions().height,
+  );
 
   return (
     <View style={styles.panel}>
-      <View style={styles.panelHeader}>
-        <View style={styles.panelHeaderCopy}>
-          <Text style={styles.panelTitle}>{triggerCopy.title}</Text>
-        </View>
-        <View
-          style={[styles.statusBadge, getStatusBadgeStyle(statusCopy.tone)]}
-        >
-          <Text
-            style={[
-              styles.statusBadgeLabel,
-              getStatusBadgeLabelStyle(statusCopy.tone),
-            ]}
+      <ScrollView
+        contentContainerStyle={styles.panelContent}
+        style={{ maxHeight }}
+      >
+        <View style={styles.panelHeader}>
+          <View style={styles.panelHeaderCopy}>
+            <Text style={styles.panelTitle}>{triggerCopy.title}</Text>
+          </View>
+          <View
+            style={[styles.statusBadge, getStatusBadgeStyle(statusCopy.tone)]}
           >
-            {triggerCopy.status}
-          </Text>
+            <Text
+              style={[
+                styles.statusBadgeLabel,
+                getStatusBadgeLabelStyle(statusCopy.tone),
+              ]}
+            >
+              {triggerCopy.status}
+            </Text>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.actions}>
-        <OutlinedActionButton
-          disabled={!canStartAuthorization}
-          isBusy={isBusy}
-          label={statusCopy.actionLabel}
-          onPress={onStartAuthorization}
-          variant="accent"
-        />
-
-        {canClearAuthorization ? (
+        <View style={styles.actions}>
           <OutlinedActionButton
-            label="Forget session"
-            onPress={onClearAuthorization}
+            disabled={!canStartAuthorization}
+            isBusy={isBusy}
+            label={statusCopy.actionLabel}
+            onPress={onStartAuthorization}
+            variant="accent"
+          />
+
+          {canClearAuthorization ? (
+            <OutlinedActionButton
+              label="Forget session"
+              onPress={onClearAuthorization}
+              variant="neutral"
+            />
+          ) : null}
+          {onOpenBundleFlow ? (
+            <>
+              <OutlinedActionButton
+                label="Back up library"
+                onPress={() => onOpenBundleFlow('backup')}
+                variant="neutral"
+              />
+              <OutlinedActionButton
+                label="Restore from backup"
+                onPress={() => onOpenBundleFlow('restore')}
+                variant="neutral"
+              />
+              <OutlinedActionButton
+                label="Import shared library"
+                onPress={() => onOpenBundleFlow('import')}
+                variant="neutral"
+              />
+            </>
+          ) : null}
+          {onOpenOfflineFiles ? (
+            <OutlinedActionButton
+              label="Offline files"
+              onPress={onOpenOfflineFiles}
+              variant="neutral"
+            />
+          ) : null}
+          <OutlinedActionButton
+            label="Settings"
+            onPress={onOpenSettings}
             variant="neutral"
           />
-        ) : null}
-        {onOpenBundleFlow ? (
-          <>
-            <OutlinedActionButton
-              label="Back up library"
-              onPress={() => onOpenBundleFlow('backup')}
-              variant="neutral"
-            />
-            <OutlinedActionButton
-              label="Restore from backup"
-              onPress={() => onOpenBundleFlow('restore')}
-              variant="neutral"
-            />
-            <OutlinedActionButton
-              label="Import shared library"
-              onPress={() => onOpenBundleFlow('import')}
-              variant="neutral"
-            />
-          </>
-        ) : null}
-        {onOpenOfflineFiles ? (
-          <OutlinedActionButton
-            label="Offline files"
-            onPress={onOpenOfflineFiles}
-            variant="neutral"
-          />
-        ) : null}
-        <OutlinedActionButton
-          label="Settings"
-          onPress={onOpenSettings}
-          variant="neutral"
-        />
-      </View>
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -147,11 +164,13 @@ const styles = StyleSheet.create({
     top: appTheme.space.touchTarget + appTheme.space.xs,
     right: 0,
     width: 286,
-    gap: appTheme.space.lg,
-    padding: 16,
     borderRadius: appTheme.radius.md,
     backgroundColor: appTheme.colors.surface,
     ...appTheme.elevation.raised,
+  },
+  panelContent: {
+    gap: appTheme.space.lg,
+    padding: 16,
   },
   panelHeader: {
     flexDirection: 'row',

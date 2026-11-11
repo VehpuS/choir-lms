@@ -19,12 +19,20 @@ export const PITCH_MONITOR_HEIGHT = 65;
 
 const { colors, space } = appTheme;
 
+/** `panel` is the strip inside the wide-short layout's trailing practice panel. */
+export type PitchMonitorPresentation = 'strip' | 'panel';
+
 /**
  * The compact monitor (design Decision 6): the sung note, a cents gauge and a
  * few seconds of history, docked above the piano or the mini-player. It is a
  * consumer of the pitch store, so mounting it is what lets the microphone open.
  */
-export const PitchMonitorStrip = () => {
+export const PitchMonitorStrip = ({
+  presentation = 'strip',
+}: {
+  presentation?: PitchMonitorPresentation;
+}) => {
+  const isPanel = presentation === 'panel';
   const { state, store } = usePitch();
   const [isViewOpen, setIsViewOpen] = useState(false);
   const model = getMonitorModel(state);
@@ -46,7 +54,7 @@ export const PitchMonitorStrip = () => {
   return (
     <View style={styles.dock}>
       {model.notice ? (
-        <View style={styles.notice}>
+        <View style={isPanel ? styles.panelNotice : styles.notice}>
           <Text style={styles.noticeText}>{model.notice.text}</Text>
           <Pressable
             accessibilityRole="button"
@@ -57,7 +65,10 @@ export const PitchMonitorStrip = () => {
           </Pressable>
         </View>
       ) : null}
-      <View accessibilityLabel="Pitch monitor" style={styles.strip}>
+      <View
+        accessibilityLabel="Pitch monitor"
+        style={[styles.strip, isPanel ? styles.panelStrip : null]}
+      >
         {model.note ? (
           <PitchMonitorNote
             note={model.note}
@@ -65,7 +76,10 @@ export const PitchMonitorStrip = () => {
           />
         ) : (
           <View style={styles.messageColumn}>
-            <Text numberOfLines={3} style={styles.message}>
+            <Text
+              numberOfLines={isPanel ? undefined : 3}
+              style={styles.message}
+            >
               <Text style={styles.messageTitle}>{model.message?.title} </Text>
               {model.message?.body}
             </Text>
@@ -112,6 +126,20 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.divider,
     backgroundColor: colors.surfaceRaised,
+  },
+  // In the trailing panel the strip may grow, since a message wraps at 280 pt.
+  panelStrip: { height: undefined, minHeight: PITCH_MONITOR_HEIGHT },
+  // Sits in the flow above the strip, not floating over the panel's top.
+  panelNotice: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: space.sm,
+    paddingVertical: space.xs,
+    paddingLeft: space.md,
+    paddingRight: space.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.accentBorderDeep,
+    backgroundColor: colors.surfaceAccent,
   },
   messageColumn: { flex: 1, minWidth: 0 },
   message: {
