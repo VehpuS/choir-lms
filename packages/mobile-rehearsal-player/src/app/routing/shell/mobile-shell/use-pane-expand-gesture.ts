@@ -11,7 +11,7 @@ import {
 } from './pane-expand-model';
 
 /**
- * Web pointer handlers for the Now Playing pane's backdrop: dragging it toward the centre of the window (leftward, as the pane is at
+ * Web pointer handlers for the whole Now Playing pane (its controls included, since pointer events bubble): dragging it toward the centre of the window (leftward, as the pane is at
  * the trailing edge) opens the playback view, and the pane's content shifts with
  * the finger meanwhile. `wasDragged` lets the click that follows a drag be
  * ignored, so a drag that does not open is not taken for a tap. The pane is a
@@ -32,7 +32,8 @@ export const usePaneExpandGesture = (onExpand: () => void) => {
     onPointerDown: (event: unknown) => {
       const sample = readPointer(event);
 
-      capturePointer(event);
+      // Not captured yet: capturing at once would send the click that ends a
+      // plain tap to the pane instead of the button under the finger.
       wasDragged.current = false;
       start.current = { id: sample.id, x: sample.clientX, y: sample.clientY };
     },
@@ -49,7 +50,12 @@ export const usePaneExpandGesture = (onExpand: () => void) => {
         dy: sample.clientY - origin.y,
       };
 
-      wasDragged.current = wasDragged.current || isDrag(drag);
+      if (!wasDragged.current && isDrag(drag)) {
+        // From here on it is a drag: keep its events coming outside the pane.
+        capturePointer(event);
+        wasDragged.current = true;
+      }
+
       setShift(dragShiftOffset(drag));
     },
     onPointerUp: (event: unknown) => {

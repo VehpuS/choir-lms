@@ -22,6 +22,10 @@ const HANDLE_THICKNESS = 4;
 const HANDLE_OPACITY = 0.6;
 const PERCENT = 100;
 const LYRICS_ICON_SIZE = 18;
+// The pane is dragged sideways to open the playback view; without this a touch
+// screen takes the pan for a scroll and cancels the pointer after a few points.
+// react-native-web passes `touchAction` through, but its types do not list it.
+const PANE_TOUCH_ACTION = { touchAction: 'none', userSelect: 'none' } as object;
 const QUEUE_CONTROLS = [
   'previous-item',
   'toggle-playback',
@@ -83,13 +87,15 @@ export const NowPlayingPane = ({
   const gesture = usePaneExpandGesture(onOpenNowPlaying);
 
   return (
-    <View style={[styles.pane, paneBleedStyle]}>
+    <View
+      {...gesture.handlers}
+      style={[styles.pane, paneBleedStyle, PANE_TOUCH_ACTION]}
+    >
       {/* The whole pane opens the playback view: this backdrop sits behind the
           controls and takes a tap or a drag toward the centre anywhere they are not. The
           title below stays the one accessible button, so it is not hidden from
           assistive technology, and the controls are not nested inside it. */}
       <Pressable
-        {...gesture.handlers}
         accessible={false}
         onPress={() => {
           if (!gesture.wasDragged.current) {
@@ -112,7 +118,11 @@ export const NowPlayingPane = ({
         <Pressable
           accessibilityLabel={miniPlayerSummary.accessibilityLabel}
           accessibilityRole="button"
-          onPress={onOpenNowPlaying}
+          onPress={() => {
+            if (!gesture.wasDragged.current) {
+              onOpenNowPlaying();
+            }
+          }}
           style={({ pressed }) => [
             styles.copy,
             pressed ? styles.pressed : null,

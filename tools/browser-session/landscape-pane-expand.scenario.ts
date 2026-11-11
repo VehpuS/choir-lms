@@ -137,6 +137,62 @@ void runScenario({
       'Dragging the pane toward the centre opens the playback view; a short drag or an upward one does not',
     );
 
+    // A drag may start on the title too, not only on the empty backdrop.
+    const titleBox = await boxOf(pane, 'the pane title');
+    const titleX = titleBox.x + titleBox.width / 2;
+    const titleY = titleBox.y + titleBox.height / 2;
+
+    await page.mouse.move(titleX, titleY);
+    await page.mouse.down();
+    await page.mouse.move(titleX - LONG_DRAG, titleY, { steps: 8 });
+    await page.mouse.up();
+    // Sample the sheet's close button while it settles: it comes in from the
+    // trailing edge, so it moves sideways and not up or down.
+    // A string script: the runner's transpiler would add helpers to a function
+    // body that do not exist in the page.
+    const samples = await page.evaluate<{ x: number; y: number }[]>(`
+      new Promise((resolve) => {
+        const found = [];
+        const read = () => {
+          const el = document.querySelector('[aria-label="Dismiss playback"]');
+
+          if (el) {
+            const rect = el.getBoundingClientRect();
+
+            found.push({ x: rect.x, y: rect.y });
+          }
+
+          if (found.length < 12) {
+            requestAnimationFrame(read);
+          } else {
+            resolve(found);
+          }
+        };
+
+        requestAnimationFrame(read);
+      })
+    `);
+    const xs = samples.map((sample) => sample.x);
+    const ys = samples.map((sample) => sample.y);
+
+    if (samples.length === 0) {
+      throw new Error('dragging from the title did not open the playback view');
+    }
+
+    if (
+      Math.max(...ys) - Math.min(...ys) > 1 ||
+      Math.max(...xs) - Math.min(...xs) < 2
+    ) {
+      throw new Error(
+        `the playback view did not slide in sideways (${JSON.stringify(samples)})`,
+      );
+    }
+
+    await close(page);
+    pass(
+      'A drag that starts on the title opens the view, which slides in sideways',
+    );
+
     // The pane's own controls keep working without opening it.
     await page
       .getByLabel(/^Pause/)
