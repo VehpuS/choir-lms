@@ -18,6 +18,7 @@ import {
 import { ShellTabBar } from '../shell-tab-bar';
 import { appTheme } from '../../../utils/theme';
 import { ariaStateProps } from '../../../components/aria-state';
+import { dockBleedStyle } from '../dock-bleed';
 
 const MINI_PLAYER_TOGGLE_ICON_SIZE = 20;
 
@@ -60,7 +61,7 @@ export const MobileShellMiniPlayerDock = ({
     : null;
 
   return (
-    <View style={styles.bottomDock}>
+    <View style={[styles.bottomDock, dockBleedStyle]}>
       {miniPlayerSummary ? (
         <View style={styles.miniPlayer}>
           <Pressable
