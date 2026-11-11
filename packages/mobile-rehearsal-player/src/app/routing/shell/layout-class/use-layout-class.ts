@@ -20,6 +20,18 @@ export const useWindowLayoutClass = (): LayoutClass => {
   return next;
 };
 
+/**
+ * The layout class from the window alone, for surfaces opened by a host above
+ * the shell (the lyrics reading mode, the loop editor), which the shell's
+ * provider does not reach. No hysteresis: a sheet is rarely resized while it is
+ * open.
+ */
+export const useWindowOnlyLayoutClass = (): LayoutClass => {
+  const { height, width } = useWindowDimensions();
+
+  return getLayoutClass({ height, width }, 'compact');
+};
+
 const LayoutClassContext = createContext<LayoutClass>('compact');
 
 export const LayoutClassProvider = LayoutClassContext.Provider;

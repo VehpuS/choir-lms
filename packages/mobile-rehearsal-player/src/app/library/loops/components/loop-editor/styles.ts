@@ -7,6 +7,8 @@ const { colors, fontFamily, fontWeight, radius, space, type } = appTheme;
 // Screen 1g: the loop editor, the one place a full-screen waveform appears.
 const WAVEFORM_HEIGHT = 160;
 const WAVEFORM_BAR_AREA_HEIGHT = 112;
+const WAVEFORM_HEIGHT_SHORT = 104;
+const WAVEFORM_BAR_AREA_HEIGHT_SHORT = 56;
 const HANDLE_HIT_WIDTH = space.touchTarget;
 const HANDLE_LINE_WIDTH = 2;
 const BADGE_SIZE = 22;
@@ -18,6 +20,7 @@ const RING_GLOW_RADIUS = 18;
 const VALUE_SIZE = 18;
 const GRABBER_WIDTH = 52;
 const GRABBER_HEIGHT = 4;
+const CONTROLS_COLUMN_WIDTH = 300;
 
 export const loopEditorStyles = StyleSheet.create({
   sheet: {
@@ -56,6 +59,28 @@ export const loopEditorStyles = StyleSheet.create({
     paddingTop: space.lg,
     paddingBottom: space.xxl,
   },
+  // Wide-short: the waveform column (title, waveform, preview transport) wide on
+  // the left, the steppers, name and Save in a scrolling column on the right.
+  columns: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: space.lg,
+    paddingHorizontal: space.sheetInset,
+    paddingTop: space.sm,
+    paddingBottom: space.md,
+  },
+  waveColumn: {
+    flex: 1,
+    gap: space.sm,
+    minWidth: 0,
+  },
+  controlsColumn: {
+    width: CONTROLS_COLUMN_WIDTH,
+    flexGrow: 0,
+  },
+  controlsContent: {
+    gap: space.md,
+  },
   title: {
     ...type.destinationTitle,
     color: colors.text,
@@ -64,6 +89,10 @@ export const loopEditorStyles = StyleSheet.create({
     height: WAVEFORM_HEIGHT,
     justifyContent: 'flex-end',
   },
+  // The wide-short editor: a shorter waveform, so the preview transport and its
+  // Set start / Set end buttons fit under it in a 390-point window.
+  waveformShort: { height: WAVEFORM_HEIGHT_SHORT },
+  barRowShort: { height: WAVEFORM_BAR_AREA_HEIGHT_SHORT },
   barRow: {
     height: WAVEFORM_BAR_AREA_HEIGHT,
     flexDirection: 'row',

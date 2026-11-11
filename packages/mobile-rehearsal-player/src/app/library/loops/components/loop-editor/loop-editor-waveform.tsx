@@ -39,12 +39,16 @@ import { loopEditorStyles as styles } from './styles';
 
 const BAR_COUNT = 72;
 const BAR_AREA_HEIGHT = 112;
+/** The same, for the shorter wide-short waveform (see `styles.barRowShort`). */
+const BAR_AREA_HEIGHT_SHORT = 56;
 const PERCENT = 100;
 const MARKERS_TOGGLE_ICON_SIZE = 14;
 
 type LoopEditorWaveformProps = {
   /** The track's length is still being resolved. */
   isLoading: boolean;
+  /** A shorter waveform, for the wide-short layout's 390-point window. */
+  isShort?: boolean;
   /** Read-only marker flags across the whole track; pressing one picks it. */
   markers?: readonly WaveformMarker[];
   /** The show / hide control in the scale row; absent when there are no markers. */
@@ -74,6 +78,7 @@ const HANDLE_LABELS: Record<
 export const LoopEditorWaveform = ({
   isLoading,
   areMarkersShown = true,
+  isShort = false,
   markers,
   onFlagPress,
   onToggleMarkers,
@@ -209,7 +214,7 @@ export const LoopEditorWaveform = ({
         onLayout={(event: LayoutChangeEvent) => {
           setLayoutWidth(event.nativeEvent.layout.width);
         }}
-        style={styles.waveform}
+        style={[styles.waveform, isShort ? styles.waveformShort : null]}
       >
         {loadingLabel ? (
           <View
@@ -232,7 +237,10 @@ export const LoopEditorWaveform = ({
             },
           ]}
         />
-        <View pointerEvents="none" style={styles.barRow}>
+        <View
+          pointerEvents="none"
+          style={[styles.barRow, isShort ? styles.barRowShort : null]}
+        >
           {bars.map((amplitude, index) => {
             const isInside = isLoopEditorBarInRegion({
               barCount: bars.length,
@@ -251,7 +259,10 @@ export const LoopEditorWaveform = ({
                       : appTheme.colors.divider,
                     height: Math.max(
                       MIN_BAR_HEIGHT.scrubber,
-                      Math.round(amplitude * BAR_AREA_HEIGHT),
+                      Math.round(
+                        amplitude *
+                          (isShort ? BAR_AREA_HEIGHT_SHORT : BAR_AREA_HEIGHT),
+                      ),
                     ),
                   },
                 ]}
