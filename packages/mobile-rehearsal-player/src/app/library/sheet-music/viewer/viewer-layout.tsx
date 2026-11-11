@@ -13,7 +13,8 @@ import { ChipRow } from './chip-row';
 import { ChipDivider } from './part-chips';
 import { SafeAreaScreen } from '../../../components/safe-area-frame';
 
-const RAIL_OVERLAY_OFFSET = 76;
+// Two 44-point buttons side by side, the gap and the screen inset.
+const RAIL_OVERLAY_OFFSET = 124;
 
 type ViewerLayoutProps = {
   /** The score, with anything laid over it. */

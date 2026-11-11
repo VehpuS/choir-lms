@@ -9,7 +9,8 @@ type PageRailGroupProps = {
 };
 
 /**
- * The page step buttons in the compact landscape side rail. The `Page N of M`
+ * The page step buttons in the compact landscape side rail, side by side to
+ * save height. The `Page N of M`
  * chip that opens `Go to page` floats over the page, as it does upright, so
  * the rail carries only the buttons.
  */
@@ -40,7 +41,7 @@ export const buildRailPageGroup = ({
 
 const styles = StyleSheet.create({
   group: {
-    alignItems: 'center',
+    flexDirection: 'row',
     gap: appTheme.space.xs,
   },
 });
