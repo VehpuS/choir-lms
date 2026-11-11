@@ -58,7 +58,6 @@ export const ViewerToolbar = ({
 }: ViewerToolbarProps) => {
   const isColumn = orientation === 'column';
   const otherOctave = useOtherOctaveToggle(isScore);
-  // In a column the larger zoom is on top, as a slider reads.
   const zoomOut = (
     <SurfaceIconButton
       accessibilityLabel="Zoom out"
@@ -154,9 +153,12 @@ export const ViewerToolbar = ({
       <View style={[styles.zoom, isColumn ? styles.zoomColumn : undefined]}>
         {isColumn
           ? [
-              zoomIn,
+              // Side by side, so the rail fits a short window without scrolling.
+              <View key="zoom-pair" style={styles.zoomPair}>
+                {zoomOut}
+                {zoomIn}
+              </View>,
               zoomValue,
-              zoomOut,
               fitButton,
               layoutButton,
               pageGroup,
@@ -214,6 +216,10 @@ const styles = StyleSheet.create({
   menuAboveBar: { bottom: '100%', left: 0, marginBottom: appTheme.space.xs },
   zoomColumn: {
     flexDirection: 'column',
+    gap: appTheme.space.xs,
+  },
+  zoomPair: {
+    flexDirection: 'row',
     gap: appTheme.space.xs,
   },
   zoomValue: {

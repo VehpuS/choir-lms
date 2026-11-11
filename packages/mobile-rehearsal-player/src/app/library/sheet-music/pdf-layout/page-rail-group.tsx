@@ -1,80 +1,47 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { appTheme } from '../../../utils/theme';
-import { PAGE_INDICATOR_LABEL } from './page-indicator';
 import { PageStepButton, type PageSteps } from './page-steps';
 
 type PageRailGroupProps = {
-  /** Opens the `Go to page` sheet. */
-  onPress: () => void;
-  /** `Previous page` and `Next page` around the label; absent where pages are not turned. */
-  steps?: PageSteps;
-  /** `3/81`. */
-  text: string;
+  /** `Previous page` and `Next page`. */
+  steps: PageSteps;
 };
 
 /**
- * The page controls in the compact landscape side rail: `Previous page`, a
- * short `3/81` label that opens `Go to page`, and `Next page`. The rail is too
- * narrow for the pill that floats over the page elsewhere.
+ * The page step buttons in the compact landscape side rail, side by side to
+ * save height. The `Page N of M`
+ * chip that opens `Go to page` floats over the page, as it does upright, so
+ * the rail carries only the buttons.
  */
-export const PageRailGroup = ({ onPress, steps, text }: PageRailGroupProps) => {
+export const PageRailGroup = ({ steps }: PageRailGroupProps) => {
   return (
     <View style={styles.group}>
-      {steps ? <PageStepButton direction="previous" steps={steps} /> : null}
-      <Pressable
-        accessibilityLabel={PAGE_INDICATOR_LABEL}
-        accessibilityRole="button"
-        accessibilityValue={{ text }}
-        onPress={onPress}
-        style={styles.label}
-      >
-        <Text accessibilityLiveRegion="polite" style={styles.text}>
-          {text}
-        </Text>
-      </Pressable>
-      {steps ? <PageStepButton direction="next" steps={steps} /> : null}
+      <PageStepButton direction="previous" steps={steps} />
+      <PageStepButton direction="next" steps={steps} />
     </View>
   );
 };
 
 /**
- * The rail's page group, or nothing until the open PDF has reported its pages
- * (`shortIndicator`) and `Go to page` can open (`onOpen`). It carries a `key`
- * because the toolbar lays it out in a list.
+ * The rail's page group, or nothing where pages are not turned (the
+ * continuous layout) or until the open PDF has reported its pages (`isReady`).
+ * It carries a `key` because the toolbar lays it out in a list.
  */
 export const buildRailPageGroup = ({
-  onOpen,
-  shortIndicator,
+  isReady,
   steps,
 }: {
-  onOpen: (() => void) | undefined;
-  shortIndicator: string | undefined;
+  isReady: boolean;
   steps: PageSteps | undefined;
 }) =>
-  shortIndicator && onOpen ? (
-    <PageRailGroup
-      key="page-group"
-      onPress={onOpen}
-      steps={steps}
-      text={shortIndicator}
-    />
+  isReady && steps ? (
+    <PageRailGroup key="page-group" steps={steps} />
   ) : undefined;
 
 const styles = StyleSheet.create({
   group: {
-    alignItems: 'center',
+    flexDirection: 'row',
     gap: appTheme.space.xs,
-  },
-  // Keeps the touch area at the platform minimum whatever the text is.
-  label: {
-    minHeight: appTheme.space.touchTarget,
-    minWidth: appTheme.space.touchTarget,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    ...appTheme.type.rowMeta,
-    color: appTheme.colors.text,
   },
 });
