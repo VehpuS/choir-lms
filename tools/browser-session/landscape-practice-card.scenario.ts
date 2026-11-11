@@ -49,7 +49,7 @@ const turnOn = async (page: Page, label: string) => {
   await page.getByLabel('Playback practice tools').click();
   await page.getByLabel(`${label}, off`).click();
   await page.getByLabel(`${label}, on`).waitFor({ timeout: WAIT_MS });
-  // Escape closes the menu (tapping outside it does not in the playback view: F.6).
+  // Escape closes the menu (tapping outside it works too: landscape-tools-menu-dismiss).
   await page.keyboard.press('Escape');
   await page
     .getByLabel(`${label}, on`)
