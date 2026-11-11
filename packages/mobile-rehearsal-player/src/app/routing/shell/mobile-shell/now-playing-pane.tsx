@@ -25,7 +25,7 @@ const LYRICS_ICON_SIZE = 18;
 // The pane is dragged sideways to open the playback view; without this a touch
 // screen takes the pan for a scroll and cancels the pointer after a few points.
 // react-native-web passes `touchAction` through, but its types do not list it.
-const PANE_TOUCH_ACTION = { touchAction: 'none', userSelect: 'none' } as object;
+const PANE_DRAG_SURFACE = { touchAction: 'none', userSelect: 'none' } as object;
 const QUEUE_CONTROLS = [
   'previous-item',
   'toggle-playback',
@@ -89,7 +89,7 @@ export const NowPlayingPane = ({
   return (
     <View
       {...gesture.handlers}
-      style={[styles.pane, paneBleedStyle, PANE_TOUCH_ACTION]}
+      style={[styles.pane, paneBleedStyle, PANE_DRAG_SURFACE]}
     >
       {/* The whole pane opens the playback view: this backdrop sits behind the
           controls and takes a tap or a drag toward the centre anywhere they are not. The

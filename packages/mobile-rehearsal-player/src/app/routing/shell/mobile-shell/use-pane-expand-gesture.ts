@@ -5,6 +5,7 @@ import {
   readPointer,
 } from '../../../library/piano/components/piano-overlay/pointer-events';
 import {
+  canStartPaneDrag,
   dragShiftOffset,
   isDrag,
   shouldExpandOnDrag,
@@ -28,9 +29,26 @@ export const usePaneExpandGesture = (onExpand: () => void) => {
   };
 
   const handlers = {
+    // Bubbles from a child: a touch is first captured by the control it lands
+    // on, and handing that capture to the pane (below) reports the control's
+    // loss here. Only the pane losing the pointer itself ends the drag.
+    onLostPointerCapture: (event: unknown) => {
+      const { currentTarget, target } = event as {
+        currentTarget?: unknown;
+        target?: unknown;
+      };
+
+      if (target === currentTarget) {
+        reset();
+      }
+    },
     onPointerCancel: reset,
     onPointerDown: (event: unknown) => {
       const sample = readPointer(event);
+
+      if (!canStartPaneDrag(sample)) {
+        return;
+      }
 
       // Not captured yet: capturing at once would send the click that ends a
       // plain tap to the pane instead of the button under the finger.

@@ -17,6 +17,7 @@ import { CompactPlaybackContent } from './compact-playback-content';
 import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
 import { getPlaybackSurfaceMotion } from './playback-surface-motion';
 import type { PlaybackSurfaceProps } from './playback-surface-props';
+import { useReduceMotion } from './use-reduce-motion';
 import { WideShortPlaybackContent } from './wide-short-playback-content';
 
 export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
@@ -24,6 +25,7 @@ export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
   const isWideShort = useLayoutClass() === 'wide-short';
   const { axis, enterOffset, exitOffset } =
     getPlaybackSurfaceMotion(isWideShort);
+  const reduceMotion = useReduceMotion();
   const offset = useRef(new Animated.Value(enterOffset)).current;
   // The compact sheet slides in again when its content is replaced by another
   // surface; the wide-short sheet keeps its columns and only changes a tab, so
@@ -39,6 +41,12 @@ export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
   const canRenderShaping = surface === 'shaping' && nowPlayingSummary;
 
   const dismissSurface = () => {
+    // Asked for less motion: close at once rather than sliding away.
+    if (reduceMotion) {
+      onClose();
+      return;
+    }
+
     Animated.timing(offset, {
       toValue: exitOffset,
       duration: 180,
@@ -62,6 +70,11 @@ export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
   };
 
   useEffect(() => {
+    if (reduceMotion) {
+      offset.setValue(0);
+      return;
+    }
+
     offset.setValue(enterOffset);
 
     Animated.spring(offset, {
@@ -71,7 +84,7 @@ export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
       toValue: 0,
       useNativeDriver: true,
     }).start();
-  }, [animationKey, enterOffset, offset]);
+  }, [animationKey, enterOffset, offset, reduceMotion]);
 
   const panResponder = useMemo(() => {
     return PanResponder.create({
@@ -97,7 +110,7 @@ export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
         resetSurfacePosition();
       },
     });
-  }, [offset]);
+  }, [offset, reduceMotion]);
   // The drag-down dismissal is the upright sheet's; the wide-short sheet slides
   // along the horizontal axis and closes by its button, the scrim or Escape.
   const sheetFramePanHandlers =

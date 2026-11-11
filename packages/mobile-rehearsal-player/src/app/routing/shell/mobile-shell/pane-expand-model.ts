@@ -28,3 +28,18 @@ export const dragShiftOffset = (drag: Drag): number => {
 export const isDrag = ({ dx, dy }: Drag): boolean => {
   return Math.hypot(dx, dy) >= DRAG_SLOP;
 };
+
+/**
+ * Only the primary pointer starts a drag: the main mouse button (a right-click
+ * opens the browser's menu) or the first finger (a second one is a pinch or a
+ * stray palm, not a drag of the pane).
+ */
+export const canStartPaneDrag = ({
+  button,
+  isPrimary,
+}: {
+  button: number;
+  isPrimary: boolean;
+}): boolean => {
+  return button === 0 && isPrimary;
+};

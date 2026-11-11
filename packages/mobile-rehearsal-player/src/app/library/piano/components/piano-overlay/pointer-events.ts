@@ -6,6 +6,8 @@ import type { View } from 'react-native';
 // structurally. react-native-web hands these handlers the DOM event, with
 // the original under `nativeEvent` on some versions.
 type DomPointerEvent = {
+  button?: number;
+  isPrimary?: boolean;
   pointerId: number;
   clientX: number;
   clientY: number;
@@ -19,7 +21,11 @@ type RectElement = {
 };
 
 export type PointerSample = {
+  /** The button that changed (0 is the primary button, or a touch or pen contact); 0 when the event does not say. */
+  button: number;
   id: number;
+  /** False for the second and later fingers of a multi-touch gesture. */
+  isPrimary: boolean;
   clientX: number;
   clientY: number;
 };
@@ -29,7 +35,9 @@ export const readPointer = (event: unknown): PointerSample => {
   const source = wrapped.nativeEvent ?? wrapped;
 
   return {
+    button: source.button ?? 0,
     id: source.pointerId,
+    isPrimary: source.isPrimary ?? true,
     clientX: source.clientX,
     clientY: source.clientY,
   };

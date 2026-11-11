@@ -193,6 +193,31 @@ void runScenario({
       'A drag that starts on the title opens the view, which slides in sideways',
     );
 
+    // The same drag with a finger: a touch pointer is cancelled by the browser
+    // when the element allows a pan (`touch-action`), which a mouse never
+    // shows, so this is the check for the device.
+    const cdp = await page.context().newCDPSession(page);
+
+    await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+    const touch = (
+      type: 'touchStart' | 'touchMove' | 'touchEnd',
+      x: number,
+      y: number,
+    ) =>
+      cdp.send('Input.dispatchTouchEvent', {
+        touchPoints: type === 'touchEnd' ? [] : [{ x, y }],
+        type,
+      });
+
+    await touch('touchStart', titleX, titleY);
+    for (let step = 1; step <= 8; step += 1) {
+      await touch('touchMove', titleX - (LONG_DRAG * step) / 8, titleY);
+    }
+    await touch('touchEnd', titleX - LONG_DRAG, titleY);
+    await page.getByLabel('Dismiss playback').waitFor({ timeout: WAIT_MS });
+    await close(page);
+    pass('A finger drag from the title opens the playback view too');
+
     // The pane's own controls keep working without opening it.
     await page
       .getByLabel(/^Pause/)
