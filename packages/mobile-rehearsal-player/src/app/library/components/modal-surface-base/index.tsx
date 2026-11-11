@@ -16,7 +16,9 @@ import {
   resolveKeyboardAvoidingBehavior,
   resolveModalSurfaceLayout,
   resolveModalSurfaceMaxHeight,
+  resolveSideSheetSurfaceStyle,
   type ModalSurfacePlacement,
+  type ModalSurfacePresentation,
 } from './model';
 
 type ModalSurfaceBaseProps = {
@@ -28,6 +30,8 @@ type ModalSurfaceBaseProps = {
   animationType?: ModalProps['animationType'];
   dismissOnBackdropPress?: boolean;
   placement?: ModalSurfacePlacement;
+  /** `side-sheet` shows a bottom sheet as a full-height panel on the trailing edge. */
+  presentation?: ModalSurfacePresentation;
 };
 
 export const ModalSurfaceBase = ({
@@ -38,13 +42,15 @@ export const ModalSurfaceBase = ({
   isVisible,
   onRequestClose,
   placement = 'bottom',
+  presentation = 'default',
   surfaceStyle,
 }: ModalSurfaceBaseProps) => {
   if (!isVisible) {
     return null;
   }
 
-  const layout = resolveModalSurfaceLayout(placement);
+  const layout = resolveModalSurfaceLayout(placement, presentation);
+  const isSideSheet = presentation === 'side-sheet';
 
   return (
     <Modal
@@ -81,8 +87,14 @@ export const ModalSurfaceBase = ({
             <View
               style={[
                 styles.surface,
-                { maxHeight: resolveModalSurfaceMaxHeight(placement) },
+                {
+                  maxHeight: resolveModalSurfaceMaxHeight(
+                    placement,
+                    presentation,
+                  ),
+                },
                 surfaceStyle,
+                isSideSheet ? resolveSideSheetSurfaceStyle() : null,
               ]}
             >
               {children}

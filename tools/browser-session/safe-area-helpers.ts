@@ -19,7 +19,7 @@ const SETTLE_ATTEMPTS = 30;
 
 // Sheets and viewers slide or fade in; measuring mid-animation gives a
 // position the user never sees, so wait until two reads agree.
-const settledBox = async (target: Locator) => {
+export const settledBox = async (target: Locator) => {
   let previous = await target.boundingBox();
 
   for (let attempt = 0; attempt < SETTLE_ATTEMPTS; attempt += 1) {

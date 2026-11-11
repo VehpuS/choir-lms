@@ -62,6 +62,12 @@ type NowPlayingSurfaceProps = {
   playbackPositionSeconds: number;
   playbackToggleLabel: string;
   playbackVolumeLevel: number;
+  /**
+   * `column` is the left half of the wide-short playback view: no grabber,
+   * no Show queue button, and without the lyrics and a composite's mix, which
+   * are tabs on the right.
+   */
+  layout?: 'sheet' | 'column';
   queueSummary: UpNextSurfaceSummary | null;
   summary: NowPlayingSurfaceSummary;
 };
@@ -104,16 +110,19 @@ const LoopRangeChip = ({
 
 const TitleBlock = ({
   downloadLabel,
+  isCompact,
   onEditLoop,
   summary,
 }: {
   downloadLabel: string | null;
+  /** One line for the title: the column has little height to spare. */
+  isCompact: boolean;
   onEditLoop?: () => void;
   summary: NowPlayingSurfaceSummary;
 }) => {
   return (
     <View style={styles.titleBlock}>
-      <Text numberOfLines={2} style={styles.title}>
+      <Text numberOfLines={isCompact ? 1 : 2} style={styles.title}>
         {summary.title}
       </Text>
       {summary.collectionLabel ? (
@@ -143,6 +152,7 @@ const TitleBlock = ({
 
 export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
   const { summary } = props;
+  const isColumn = props.layout === 'column';
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const menuActions = useNowPlayingMenuActions({
     activePlayableItem: props.activePlayableItem,
@@ -153,8 +163,8 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
   });
 
   return (
-    <View style={styles.sheet}>
-      <View style={styles.grabber} />
+    <View style={isColumn ? styles.column : styles.sheet}>
+      {isColumn ? null : <View style={styles.grabber} />}
       <View style={styles.header}>
         {/* The status stands in for a title: the sheet says what it is by its content. */}
         <Text
@@ -164,7 +174,9 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
           {summary.statusLabel}
         </Text>
         <View style={styles.headerActions}>
-          {summary.supportsQueueNavigation && props.queueSummary ? (
+          {!isColumn &&
+          summary.supportsQueueNavigation &&
+          props.queueSummary ? (
             <SurfaceIconButton
               accessibilityLabel="Show queue"
               icon="view-list"
@@ -201,11 +213,14 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.bodyContent}
-        style={[darkScrollbarStyle, styles.body]}
+        contentContainerStyle={
+          isColumn ? styles.bodyContentColumn : styles.bodyContent
+        }
+        style={[darkScrollbarStyle, isColumn ? styles.bodyFill : styles.body]}
       >
         <TitleBlock
           downloadLabel={props.downloadLabel}
+          isCompact={isColumn}
           onEditLoop={
             // A recording's loop is locked while it plays (design Decision 11).
             props.activePlayableItem.loopId &&
@@ -248,7 +263,7 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
           title={summary.title}
         />
 
-        {props.activePlayableItem.kind === 'composite' ? (
+        {!isColumn && props.activePlayableItem.kind === 'composite' ? (
           <CompositeMixPanel compositeId={props.activePlayableItem.source.id} />
         ) : null}
 
@@ -272,7 +287,7 @@ export const NowPlayingSurface = (props: NowPlayingSurfaceProps) => {
           onSetPlaybackVolume={props.onAdjustPlaybackVolume}
           volumeLevel={props.playbackVolumeLevel}
         />
-        <LyricsSection item={props.activePlayableItem} />
+        {isColumn ? null : <LyricsSection item={props.activePlayableItem} />}
       </ScrollView>
       <OptionsMenuSheet
         actions={menuActions}

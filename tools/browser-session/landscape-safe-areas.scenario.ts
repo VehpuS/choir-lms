@@ -1,3 +1,5 @@
+import type { Page } from 'playwright';
+
 import { buildMockSource } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
 import { readMediaState } from './media-probe';
 import { buildToneMedia } from './mock-media';
@@ -14,6 +16,41 @@ const TONE_SECONDS = 30;
 const WAIT_MS = 5000;
 const TOLERANCE_PX = 1;
 
+type Band = { bottom: number; left: number; right: number } | null;
+
+// The navigation band is the nearest painted ancestor holding both the Library
+// and the Practice tools entries: the rail, or the bottom tab bar.
+const readNavigationBand = async (page: Page): Promise<Band> => {
+  const libraryEntry = page.getByRole('button', {
+    exact: true,
+    name: 'Library',
+  });
+  const toolsEntry = page.getByLabel('Practice tools', { exact: true });
+
+  return libraryEntry.evaluate(
+    (first, second) => {
+      let node: HTMLElement | null = first.parentElement;
+
+      while (
+        node &&
+        !(
+          node.contains(second) &&
+          getComputedStyle(node).backgroundColor !== 'rgba(0, 0, 0, 0)'
+        )
+      ) {
+        node = node.parentElement;
+      }
+
+      const rect = node?.getBoundingClientRect();
+
+      return rect
+        ? { bottom: rect.bottom, left: rect.left, right: rect.right }
+        : null;
+    },
+    await toolsEntry.elementHandle(),
+  );
+};
+
 const alto = buildMockSource('Alto Part', { durationMs: TONE_SECONDS * 1000 });
 
 void runScenario({
@@ -28,8 +65,8 @@ void runScenario({
     await waitForTrack(page, 'Alto Part');
     await emulateInsets(page);
 
-    // The tab bar band reaches the left, right and bottom screen edges (its
-    // colour fills the inset strips) while the tabs stay clear of the insets.
+    // The navigation band reaches the screen edges (its colour fills the inset
+    // strips) while its entries stay clear of the insets.
     const libraryTab = page.getByRole('button', {
       exact: true,
       name: 'Library',
@@ -40,42 +77,22 @@ void runScenario({
     await expectClear(libraryTab, 'the Library tab');
     await expectClear(toolsTab, 'the Practice tools tab');
 
-    const band = await libraryTab.evaluate(
-      (first, second) => {
-        // The band is the nearest painted ancestor holding both tabs.
-        let node: HTMLElement | null = first.parentElement;
+    const band = await readNavigationBand(page);
 
-        while (
-          node &&
-          !(
-            node.contains(second) &&
-            getComputedStyle(node).backgroundColor !== 'rgba(0, 0, 0, 0)'
-          )
-        ) {
-          node = node.parentElement;
-        }
-
-        const rect = node?.getBoundingClientRect();
-
-        return rect
-          ? { bottom: rect.bottom, left: rect.left, right: rect.right }
-          : null;
-      },
-      await toolsTab.elementHandle(),
-    );
-
+    // At this size the tabs are the side rail: its background reaches the
+    // leading and bottom edges, so it needs no right edge of its own.
     if (
       !band ||
       band.left > TOLERANCE_PX ||
-      band.right < LANDSCAPE.width - TOLERANCE_PX ||
       band.bottom < LANDSCAPE.height - TOLERANCE_PX
     ) {
       throw new Error(
-        `the tab bar band does not reach the screen edges: ${JSON.stringify(band)}`,
+        `the rail does not reach the leading and bottom screen edges: ${JSON.stringify(band)}`,
       );
     }
 
-    pass('The tab bar band reaches the screen edges and its tabs stay clear');
+    pass('The rail reaches the screen edges and its entries stay clear');
+
     // A bottom sheet: its rows and its Cancel button stay clear of the insets.
     await page.getByLabel('Alto Part options').first().click();
     await page.getByText('Make loop', { exact: true }).waitFor({
@@ -112,6 +129,39 @@ void runScenario({
       'the Forward 15 seconds button',
     );
     pass('The playback sheet keeps its buttons clear of the insets');
+
+    // Upright (the compact layout), the bottom tab bar reaches the left, right
+    // and bottom edges, with insets like an iPhone's held upright.
+    const portrait = { height: 844, width: 390 };
+    const cdp = await page.context().newCDPSession(page);
+
+    await page.getByLabel('Dismiss playback').click();
+    await page.setViewportSize(portrait);
+    await cdp.send('Emulation.setSafeAreaInsetsOverride', {
+      insets: { bottom: 34, left: 20, right: 20, top: 47 },
+    });
+    await waitUntil(async () => {
+      const upright = await readNavigationBand(page);
+
+      return upright !== null && upright.right > portrait.width / 2;
+    }, 'the bottom tab bar did not return');
+
+    const upright = await readNavigationBand(page);
+
+    await shot('3-portrait-tab-bar');
+
+    if (
+      !upright ||
+      upright.left > TOLERANCE_PX ||
+      upright.right < portrait.width - TOLERANCE_PX ||
+      upright.bottom < portrait.height - TOLERANCE_PX
+    ) {
+      throw new Error(
+        `the tab bar band does not reach the screen edges: ${JSON.stringify(upright)}`,
+      );
+    }
+
+    pass('The bottom tab bar reaches the screen edges when held upright');
   },
   viewport: LANDSCAPE,
 });

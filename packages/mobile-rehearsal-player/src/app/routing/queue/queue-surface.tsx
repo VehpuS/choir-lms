@@ -24,6 +24,8 @@ type QueueSurfaceProps = {
   activeQueueMode: RehearsalQueueMode;
   activeRepeatMode: RepeatMode;
   dragHandleProps?: ComponentProps<typeof View>;
+  /** Shown as a tab of the wide-short playback view: no grabber or header of its own. */
+  embedded?: boolean;
   isSavingQueueAsPlaylist: boolean;
   isPlaybackLoading: boolean;
   isPlaybackToggleDisabled: boolean;
@@ -63,6 +65,7 @@ export const QueueSurface = ({
   activeQueueMode,
   activeRepeatMode,
   dragHandleProps,
+  embedded = false,
   isSavingQueueAsPlaylist,
   isPlaybackLoading,
   isPlaybackToggleDisabled,
@@ -111,30 +114,37 @@ export const QueueSurface = ({
     : -1;
 
   return (
-    <View style={nowPlayingStyles.sheet}>
-      <View {...dragHandleProps} style={styles.dragRegion}>
-        <View style={nowPlayingStyles.grabber} />
-        <View style={nowPlayingStyles.header}>
-          <Text style={nowPlayingStyles.headerKicker}>Up next</Text>
-          <View style={nowPlayingStyles.headerActions}>
-            <SurfaceIconButton
-              accessibilityLabel="Show now playing"
-              icon="play-circle-outline"
-              onPress={onShowNowPlaying}
-            />
-            <SurfaceIconButton
-              accessibilityLabel="Dismiss queue"
-              icon="chevron-down"
-              onPress={onClose}
-            />
+    <View style={embedded ? nowPlayingStyles.column : nowPlayingStyles.sheet}>
+      {embedded ? null : (
+        <View {...dragHandleProps} style={styles.dragRegion}>
+          <View style={nowPlayingStyles.grabber} />
+          <View style={nowPlayingStyles.header}>
+            <Text style={nowPlayingStyles.headerKicker}>Up next</Text>
+            <View style={nowPlayingStyles.headerActions}>
+              <SurfaceIconButton
+                accessibilityLabel="Show now playing"
+                icon="play-circle-outline"
+                onPress={onShowNowPlaying}
+              />
+              <SurfaceIconButton
+                accessibilityLabel="Dismiss queue"
+                icon="chevron-down"
+                onPress={onClose}
+              />
+            </View>
           </View>
         </View>
-      </View>
+      )}
 
-      <View style={styles.titleBlock}>
-        <Text numberOfLines={2} style={styles.title}>
-          {summary.title}
-        </Text>
+      <View
+        style={[styles.titleBlock, embedded ? styles.titleBlockEmbedded : null]}
+      >
+        {/* The tab already says Queue, so an embedded panel skips the big title. */}
+        {embedded ? null : (
+          <Text numberOfLines={2} style={styles.title}>
+            {summary.title}
+          </Text>
+        )}
         <Text numberOfLines={1} style={styles.meta}>
           {summary.metaLabel}
         </Text>

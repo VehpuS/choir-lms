@@ -69,6 +69,11 @@ session that has the pre-installed browser.
   copies prompt, the remembered choice), seeded with
   `buildTrackRenameMockLibrary` (folders and Files copies).
 
+- `layout-classes.scenario.ts` — the guard for the shell's layout classes (issue #46): which layout each window size gets (upright phone, small phone, keyboard up, tablets, desktop: bottom tabs and the floating `+`; 844 × 390: side rail and header `+`), the 600 × 500 thresholds, and the hysteresis band. **Extend it with what must stay unchanged upright whenever a slice changes the wide-short layout.**
+- `landscape-shell.scenario.ts` — the wide-short shell: the rail's four entries, switching screens, the header `+` in Files and Playlists, the Practice tools menu beside the rail, and turning upright.
+- `landscape-safe-areas.scenario.ts` / `landscape-safe-area-viewers.scenario.ts` / `safe-area-helpers.ts` — Chromium's emulated safe-area insets (`Emulation.setSafeAreaInsetsOverride`): the rail and tab bar reach the screen edges, and sheets, the playback overlay, the viewers, dialogs and the snackbar keep their controls clear of the insets.
+- `landscape-viewport.scenario.ts` — the page fills the window with the app background and `viewport-fit=cover`, through a rotation.
+- `rtl-names.scenario.ts` — a Hebrew playlist name keeps the line around it left-to-right.
 - `capture-landscape-views.ts` — not a test (no `.scenario.` in the name, so no lane runs it): captures the app's surfaces at 844 × 390 (a phone on its side) for design work, via `runScenario`'s `viewport` option. A state it cannot reach is logged as `SKIPPED` rather than failed. Output feeds `openspec/changes/landscape-mobile-layout/mockups/captures/`.
 
 ```sh

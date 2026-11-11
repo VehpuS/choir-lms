@@ -7,3 +7,9 @@ import type { ViewStyle } from 'react-native';
  * version is `dock-bleed.web.ts`.
  */
 export const dockBleedStyle: ViewStyle = {};
+
+/** The same for the side rail of the wide-short layout (left, top and bottom). */
+export const railBleedStyle: ViewStyle = {};
+
+/** And for the Now Playing pane on the trailing edge (right, top and bottom). */
+export const paneBleedStyle: ViewStyle = {};

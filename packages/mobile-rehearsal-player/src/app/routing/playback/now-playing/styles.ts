@@ -28,6 +28,21 @@ export const nowPlayingStyles = StyleSheet.create({
     ...appTheme.elevation.sheet,
     borderBottomWidth: 0,
   },
+  // One column of the wide-short playback view: the view draws the sheet around
+  // both columns, so this one has no background, corners or grabber of its own.
+  column: {
+    flex: 1,
+    minWidth: 0,
+  },
+  bodyFill: {
+    flex: 1,
+  },
+  bodyContentColumn: {
+    gap: space.md,
+    paddingHorizontal: space.sheetInset,
+    paddingTop: space.sm,
+    paddingBottom: space.md,
+  },
   grabber: {
     alignSelf: 'center',
     width: GRABBER_WIDTH,

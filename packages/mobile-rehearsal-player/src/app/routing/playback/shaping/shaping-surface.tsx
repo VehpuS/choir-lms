@@ -84,6 +84,8 @@ const SaveActions = ({ save }: { save: PlaybackShapingSaveControls }) => {
 type ShapingSurfaceProps = {
   controls: PlaybackShapingControls;
   dragHandleProps?: ComponentProps<typeof View>;
+  /** Shown as a tab of the wide-short playback view: no grabber or header; Reset moves into the body. */
+  embedded?: boolean;
   onClose: () => void;
   summary: NowPlayingSurfaceSummary;
 };
@@ -91,6 +93,7 @@ type ShapingSurfaceProps = {
 /** Screen 1i: speed and pitch for the session, and saving it as an adjusted loop or track. */
 export const ShapingSurface = ({
   controls,
+  embedded = false,
   onClose,
   summary,
 }: ShapingSurfaceProps) => {
@@ -99,49 +102,64 @@ export const ShapingSurface = ({
   // A locked recording says why in its own note, not that the controls set the session.
   const overrideNote = isLocked ? null : getItemOverrideNote(controls);
 
+  const resetButton = (
+    <Pressable
+      accessibilityLabel="Reset speed and pitch"
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !canReset }}
+      {...ariaStateProps({ disabled: !canReset })}
+      disabled={!canReset}
+      onPress={controls.onReset}
+      style={({ pressed }) => [
+        styles.resetButton,
+        pressed && canReset ? styles.pressed : null,
+      ]}
+    >
+      <Text
+        style={[styles.resetLabel, canReset ? null : styles.resetLabelDisabled]}
+      >
+        Reset
+      </Text>
+    </Pressable>
+  );
+
   return (
-    <View style={nowPlayingStyles.sheet}>
-      <View style={nowPlayingStyles.grabber} />
-      <View style={nowPlayingStyles.header}>
-        <Text style={nowPlayingStyles.headerKicker}>Speed & pitch</Text>
-        <View style={nowPlayingStyles.headerActions}>
-          <Pressable
-            accessibilityLabel="Reset speed and pitch"
-            accessibilityRole="button"
-            accessibilityState={{ disabled: !canReset }}
-            {...ariaStateProps({ disabled: !canReset })}
-            disabled={!canReset}
-            onPress={controls.onReset}
-            style={({ pressed }) => [
-              styles.resetButton,
-              pressed && canReset ? styles.pressed : null,
-            ]}
-          >
-            <Text
-              style={[
-                styles.resetLabel,
-                canReset ? null : styles.resetLabelDisabled,
-              ]}
-            >
-              Reset
-            </Text>
-          </Pressable>
-          <SurfaceIconButton
-            accessibilityLabel="Close speed and pitch"
-            icon="chevron-down"
-            onPress={onClose}
-          />
-        </View>
-      </View>
+    <View style={embedded ? nowPlayingStyles.column : nowPlayingStyles.sheet}>
+      {embedded ? null : (
+        <>
+          <View style={nowPlayingStyles.grabber} />
+          <View style={nowPlayingStyles.header}>
+            <Text style={nowPlayingStyles.headerKicker}>Speed & pitch</Text>
+            <View style={nowPlayingStyles.headerActions}>
+              {resetButton}
+              <SurfaceIconButton
+                accessibilityLabel="Close speed and pitch"
+                icon="chevron-down"
+                onPress={onClose}
+              />
+            </View>
+          </View>
+        </>
+      )}
 
       <ScrollView
-        contentContainerStyle={nowPlayingStyles.bodyContent}
+        contentContainerStyle={
+          embedded
+            ? nowPlayingStyles.bodyContentColumn
+            : nowPlayingStyles.bodyContent
+        }
         style={[darkScrollbarStyle, nowPlayingStyles.body]}
       >
+        {embedded ? (
+          <View style={styles.embeddedReset}>{resetButton}</View>
+        ) : null}
         <View style={styles.contextBlock}>
-          <Text numberOfLines={1} style={styles.contextTitle}>
-            {summary.title}
-          </Text>
+          {/* The tab says what this is and the left column names the track. */}
+          {embedded ? null : (
+            <Text numberOfLines={1} style={styles.contextTitle}>
+              {summary.title}
+            </Text>
+          )}
           {summary.loopRange ? (
             <Text style={styles.contextMeta}>
               Loop · {summary.loopRange.label}
