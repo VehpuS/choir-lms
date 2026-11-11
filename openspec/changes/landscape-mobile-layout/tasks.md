@@ -15,7 +15,7 @@
 
 ## 3. Part 2: landscape layout (after approval)
 
-- [ ] 3.1 `getLayoutClass` model with hysteresis and `useLayoutClass`, with specs
+- [x] 3.1 `getLayoutClass` model with hysteresis and `useLayoutClass` (`routing/shell/layout-class/`): compact below 600 wide; wide-short at 600 or more wide and under 500 high; once wide-short it stays until the window is under 560 wide or 540 or more high. Nine specs cover the thresholds, the band both ways and the keyboard and browser-chrome cases. The hook is a thin wrapper over `useWindowDimensions` and a ref, so it is exercised by the browser scenarios from 3.2 on, not on its own
 - [ ] 3.2 `WideShortShell` with the four-entry vertical rail; Library add button as a header action
 - [ ] 3.3 Now Playing pane in place of the mini-player
 - [ ] 3.4 Two-column playback sheet with Lyrics, Queue, Shaping and Mix tabs
