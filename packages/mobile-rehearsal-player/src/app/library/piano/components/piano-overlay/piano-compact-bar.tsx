@@ -16,6 +16,7 @@ type PianoCompactBarProps = {
   onChangeKeyWidth: (width: number) => void;
   onChangeVolume: (volume: number) => void;
   onClose: () => void;
+  onFullScreen: () => void;
   onScrollLeftChange: (scrollLeft: number) => void;
   scrollLeft: number;
   stripWidth: number;
@@ -25,13 +26,14 @@ type PianoCompactBarProps = {
 
 /**
  * The wide-short piano's controls: volume, key width, the minimap (which is
- * how the keys scroll, so it stays) and close, in one 34 pt row above the keys.
+ * how the keys scroll, so it stays), Full screen and close, in one 34 pt row above the keys.
  */
 export const PianoCompactBar = ({
   keyWidth,
   onChangeKeyWidth,
   onChangeVolume,
   onClose,
+  onFullScreen,
   onScrollLeftChange,
   scrollLeft,
   stripWidth,
@@ -58,6 +60,14 @@ export const PianoCompactBar = ({
       stripWidth={stripWidth}
       viewportWidth={viewportWidth}
     />
+    <Pressable
+      accessibilityLabel="Full screen"
+      accessibilityRole="button"
+      onPress={onFullScreen}
+      style={styles.button}
+    >
+      <AppIcon color={colors.icon} name="arrow-expand" size={ICON_SIZE} />
+    </Pressable>
     <Pressable
       accessibilityLabel="Close piano"
       accessibilityRole="button"

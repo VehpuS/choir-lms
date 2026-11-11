@@ -30,30 +30,73 @@ export const pianoOverlayHeight = (step: PianoHeightStep): number => {
 export const PIANO_COMPACT_BAR_HEIGHT = 34;
 export const PIANO_COMPACT_KEY_HEIGHT = 104;
 
-/** `docked`: the upright piano with its grabber; `compact-bar`: the wide-short one. */
-export type PianoPresentation = 'docked' | 'compact-bar';
+/**
+ * The full-screen piano's bar: the keys take the window height below it. It
+ * keeps its height while its controls are hidden, so the keys never resize
+ * under a finger.
+ */
+export const PIANO_FULL_SCREEN_BAR_HEIGHT = 40;
+/** How long the full-screen bar waits for a touch before it hides, if asked to. */
+export const PIANO_BAR_HIDE_DELAY_MS = 4000;
+/** The least key height the full-screen piano draws, before its window is measured. */
+export const PIANO_FULL_SCREEN_MIN_KEY_HEIGHT = PIANO_COMPACT_KEY_HEIGHT;
 
+/**
+ * `docked`: the upright piano with its grabber; `compact-bar`: the wide-short
+ * one; `fullscreen`: the wide-short piano that fills the window.
+ */
+export type PianoPresentation = 'docked' | 'compact-bar' | 'fullscreen';
+
+/** Full screen applies only in wide-short; elsewhere the choice is kept, not used. */
 export const resolvePianoPresentation = (
   layoutClass: LayoutClass,
+  isFullScreenPreferred = false,
 ): PianoPresentation => {
-  return layoutClass === 'wide-short' ? 'compact-bar' : 'docked';
+  if (layoutClass !== 'wide-short') {
+    return 'docked';
+  }
+
+  return isFullScreenPreferred ? 'fullscreen' : 'compact-bar';
 };
 
-/** The key height a presentation draws; only the docked piano has steps. */
+/** The key height that fills a measured window below the full-screen bar. */
+export const fullScreenKeyHeight = (windowHeight: number): number => {
+  return Math.max(
+    windowHeight - PIANO_FULL_SCREEN_BAR_HEIGHT,
+    PIANO_FULL_SCREEN_MIN_KEY_HEIGHT,
+  );
+};
+
+/**
+ * The key height a presentation draws; only the docked piano has steps, and
+ * the full-screen one fills the measured window height.
+ */
 export const pianoKeyHeightFor = (
   presentation: PianoPresentation,
   step: PianoHeightStep,
+  windowHeight = 0,
 ): number => {
+  if (presentation === 'fullscreen') {
+    return fullScreenKeyHeight(windowHeight);
+  }
+
   return presentation === 'compact-bar'
     ? PIANO_COMPACT_KEY_HEIGHT
     : PIANO_KEY_HEIGHTS[step];
 };
 
-/** Total height of the piano in a presentation, without its top border. */
+/**
+ * Total height the piano takes from the shell in a presentation, without its
+ * top border. Full screen takes none: it covers the shell instead.
+ */
 export const pianoPresentationHeight = (
   presentation: PianoPresentation,
   step: PianoHeightStep,
 ): number => {
+  if (presentation === 'fullscreen') {
+    return 0;
+  }
+
   return presentation === 'compact-bar'
     ? PIANO_COMPACT_BAR_HEIGHT + PIANO_COMPACT_KEY_HEIGHT
     : pianoOverlayHeight(step);

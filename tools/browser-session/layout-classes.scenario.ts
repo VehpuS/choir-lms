@@ -157,6 +157,10 @@ const expectCompactTools = async (page: Page, size: Size, name: string) => {
     throw new Error(`${name}: the piano lost its height grabber`);
   }
 
+  if ((await page.getByLabel('Full screen').count()) !== 0) {
+    throw new Error(`${name}: the piano offers full screen outside wide-short`);
+  }
+
   if ((await page.getByLabel('Piano position').count()) !== 1) {
     throw new Error(`${name}: the piano lost its minimap row`);
   }

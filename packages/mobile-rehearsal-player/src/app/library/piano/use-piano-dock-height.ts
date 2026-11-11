@@ -10,8 +10,8 @@ const DOCK_BORDER_WIDTH = 1;
 
 /** How tall the open piano dock is, or 0 when closed or unavailable. */
 export const usePianoDockHeight = (): number => {
-  const { heightStep, isOpen } = usePianoPreferences();
-  const presentation = resolvePianoPresentation(useLayoutClass());
+  const { heightStep, isFullScreen, isOpen } = usePianoPreferences();
+  const presentation = resolvePianoPresentation(useLayoutClass(), isFullScreen);
 
   if (!isOpen || !pianoCapabilities().canPlay) {
     return 0;

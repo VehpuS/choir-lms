@@ -30,6 +30,14 @@ export type PianoPreferences = {
   accidentals: Accidentals;
   showAllNoteNames: boolean;
   isOpen: boolean;
+  /**
+   * The wide-short layout opens the piano full screen. Kept in every layout
+   * (and ignored outside wide-short), so turning the phone upright and back
+   * does not lose the choice.
+   */
+  isFullScreen: boolean;
+  /** Full screen hides its controls after a few seconds without a touch. */
+  isBarAutoHidden: boolean;
   heightStep: PianoHeightStep;
   /** White key width in pt, 40–100; the keyboard layout derives the rest. */
   keyWidth: number;
@@ -42,6 +50,8 @@ export const DEFAULT_PIANO_PREFERENCES: PianoPreferences = {
   accidentals: 'sharps',
   showAllNoteNames: false,
   isOpen: false,
+  isFullScreen: false,
+  isBarAutoHidden: false,
   heightStep: 'regular',
   keyWidth: DEFAULT_WHITE_KEY_WIDTH,
   scrollLeft: 0,
@@ -98,6 +108,11 @@ export const parsePianoPreferences = (
       defaults.showAllNoteNames,
     ),
     isOpen: parseBoolean(raw.isOpen, defaults.isOpen),
+    isFullScreen: parseBoolean(raw.isFullScreen, defaults.isFullScreen),
+    isBarAutoHidden: parseBoolean(
+      raw.isBarAutoHidden,
+      defaults.isBarAutoHidden,
+    ),
     heightStep:
       PIANO_HEIGHT_STEPS.find((step) => step === raw.heightStep) ??
       defaults.heightStep,

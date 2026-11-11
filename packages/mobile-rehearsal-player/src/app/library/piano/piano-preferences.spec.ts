@@ -50,6 +50,41 @@ describe('piano preferences', () => {
     assert.equal(parsed.scrollLeft, 0);
   });
 
+  it('defaults full screen and the auto-hide off and reads them back', () => {
+    assert.equal(DEFAULT_PIANO_PREFERENCES.isFullScreen, false);
+    assert.equal(DEFAULT_PIANO_PREFERENCES.isBarAutoHidden, false);
+    assert.equal(
+      parsePianoPreferences({ isFullScreen: 'true' }).isFullScreen,
+      true,
+    );
+    assert.equal(
+      parsePianoPreferences({ isBarAutoHidden: 'true' }).isBarAutoHidden,
+      true,
+    );
+    assert.equal(
+      parsePianoPreferences({ isFullScreen: 'maybe' }).isFullScreen,
+      false,
+    );
+  });
+
+  it('remembers full screen on the device across a restore', async () => {
+    const storage = memoryStorage();
+
+    await persistPianoPreferences(
+      { isFullScreen: true, isOpen: true },
+      storage,
+    );
+
+    const restored = await restorePianoPreferences(storage);
+
+    assert.equal(restored.isFullScreen, true);
+    assert.equal(restored.isOpen, true);
+    assert.equal(
+      pianoStorageKey('isFullScreen'),
+      'choirlms.piano.isFullScreen',
+    );
+  });
+
   it('defaults the key width to 40 pt', () => {
     assert.equal(DEFAULT_PIANO_PREFERENCES.keyWidth, 40);
     assert.equal(parsePianoPreferences({}).keyWidth, 40);
@@ -71,6 +106,8 @@ describe('piano preferences', () => {
       accidentals: 'flats',
       showAllNoteNames: true,
       isOpen: true,
+      isFullScreen: true,
+      isBarAutoHidden: true,
       heightStep: 'tall',
       keyWidth: 64,
       scrollLeft: 812,

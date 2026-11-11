@@ -4,8 +4,10 @@ import { StyleSheet, View } from 'react-native';
 import { SHELL_LAYERS } from '../../routing/shell/shell-layers';
 import { useLayoutClass } from '../../routing/shell/layout-class';
 import { PianoOverlay } from '../piano/components/piano-overlay';
+import type { PianoPlayingChip } from '../piano/components/piano-overlay/piano-playing-chip';
 import { resolvePianoPresentation } from '../piano/piano-overlay-model';
 import { useIsPianoViewerOpen } from '../piano/piano-host-store';
+import { usePianoPreferences } from '../piano/piano-preferences';
 import { PitchMonitorDock } from '../pitch/components/pitch-monitor-dock';
 import { RecordingDock } from '../recording/components/recording-dock';
 
@@ -15,6 +17,8 @@ type ShellPracticeDockProps = {
   playbackPositionSeconds: number;
   /** The playback sheet covers the shell, so the tools float over it. */
   isPlaybackSurfaceOpen: boolean;
+  /** The playing track, for the chip over the full-screen piano. */
+  playingChip: PianoPlayingChip | null;
 };
 
 /**
@@ -34,10 +38,15 @@ export const ShellPracticeDock = ({
   activePlayableItem,
   isPlaybackSurfaceOpen,
   playbackPositionSeconds,
+  playingChip,
 }: ShellPracticeDockProps) => {
-  const presentation = resolvePianoPresentation(useLayoutClass());
+  const layoutClass = useLayoutClass();
+  const presentation = resolvePianoPresentation(
+    layoutClass,
+    usePianoPreferences().isFullScreen,
+  );
   const isStripsInPanel =
-    presentation === 'compact-bar' && !isPlaybackSurfaceOpen;
+    layoutClass === 'wide-short' && !isPlaybackSurfaceOpen;
 
   if (useIsPianoViewerOpen()) {
     return null;
@@ -57,7 +66,7 @@ export const ShellPracticeDock = ({
           />
         </>
       )}
-      <PianoOverlay presentation={presentation} />
+      <PianoOverlay playingChip={playingChip} presentation={presentation} />
     </View>
   );
 };

@@ -17,6 +17,7 @@ import { styles } from '../mobile-shell-styles';
 import type { ShellDestinationKey } from '../shell-model';
 import { MobileShellDestinationPanels } from './mobile-shell-destination-panels';
 import { MobileShellMiniPlayerDock } from './mobile-shell-mini-player-dock';
+import { getPianoPlayingChip } from './piano-playing-chip-model';
 import { ShellTrailingPane } from './shell-trailing-pane';
 import { MobileShellPlaybackSurface } from './mobile-shell-playback-surface';
 import { MobileShellQueuePlaylistDialogs } from './mobile-shell-queue-playlist-dialogs';
@@ -195,6 +196,12 @@ export const MobileShell = ({
         activePlayableItem={activePlayableItem}
         isPlaybackSurfaceOpen={activePlaybackSurface !== null}
         playbackPositionSeconds={playbackPositionSeconds}
+        playingChip={getPianoPlayingChip({
+          miniPlayerSummary,
+          onTogglePlayback,
+          playbackState,
+          playbackToggleLabel,
+        })}
       />
 
       <PinnedBulkActionBarHost>
@@ -290,9 +297,7 @@ export const MobileShell = ({
           }}
           onSelectQueueMode={onSelectQueueMode}
           onSelectRepeatMode={onSelectRepeatMode}
-          onShowNowPlaying={() => {
-            setActivePlaybackSurface('now-playing');
-          }}
+          onShowNowPlaying={openNowPlaying}
           onShowQueue={() => {
             setActivePlaybackSurface('queue');
           }}

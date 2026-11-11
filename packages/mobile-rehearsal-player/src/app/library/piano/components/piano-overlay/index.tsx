@@ -26,7 +26,11 @@ import { usePianoSound } from '../../use-piano-sound';
 import { PianoKeyboard } from './piano-keyboard';
 import { getDetectedKeys } from '../../piano-detected-model';
 import { useSungMidi } from '../../../pitch/use-sung-midi';
+import { useSungReadout } from '../../../pitch/use-sung-readout';
 import { PianoCompactBar } from './piano-compact-bar';
+import { PianoFullScreenBar } from './piano-full-screen-bar';
+import { PianoFullScreenFrame } from './piano-full-screen-frame';
+import type { PianoPlayingChip } from './piano-playing-chip';
 import { PianoOverlayHeader } from './piano-overlay-header';
 import { PianoScrollStrip } from './piano-scroll-strip';
 
@@ -48,9 +52,12 @@ type PianoOverlayProps = {
   heightLimit?: PianoHeightStep;
   /**
    * `docked` (the default) is the upright piano; `compact-bar` is the
-   * wide-short layout's slim bar over a fixed-height keyboard.
+   * wide-short layout's slim bar over a fixed-height keyboard; `fullscreen`
+   * fills the window in its own Modal.
    */
   presentation?: PianoPresentation;
+  /** The playing track, for the full-screen piano's floating chip. */
+  playingChip?: PianoPlayingChip | null;
 };
 
 type PianoOverlayBodyProps = PianoOverlayProps;
@@ -60,6 +67,7 @@ type PianoOverlayBodyProps = PianoOverlayProps;
 const PianoOverlayBody = ({
   focusRange,
   heightLimit,
+  playingChip = null,
   presentation = 'docked',
 }: PianoOverlayBodyProps) => {
   const preferences = usePianoPreferences();
@@ -68,7 +76,9 @@ const PianoOverlayBody = ({
   useComputerKeyboardPiano(sound.press, sound.release);
   const [viewportWidth, setViewportWidth] = useState(0);
   const heightStep = capHeightStep(preferences.heightStep, heightLimit);
-  const keyHeight = pianoKeyHeightFor(presentation, heightStep);
+  // Only full screen measures its window; the others have a fixed height.
+  const [windowHeight, setWindowHeight] = useState(0);
+  const keyHeight = pianoKeyHeightFor(presentation, heightStep, windowHeight);
   const layout = useMemo(
     () => createKeyboardLayout(preferences.keyWidth),
     [preferences.keyWidth],
@@ -140,6 +150,10 @@ const PianoOverlayBody = ({
   const closePiano = () => {
     setPianoPreferences({ isOpen: false });
   };
+  const setFullScreen = (isFullScreen: boolean) => {
+    setPianoPreferences({ isFullScreen });
+  };
+  const sungReadout = useSungReadout();
 
   const detected = getDetectedKeys({
     sungMidi: useSungMidi(),
@@ -147,6 +161,57 @@ const PianoOverlayBody = ({
     scrollLeft,
     viewportWidth,
   });
+
+  const keyboard = (
+    <PianoKeyboard
+      detectedEdge={detected.edge}
+      detectedMidi={detected.midi}
+      keyHeight={keyHeight}
+      labelOptions={preferences}
+      layout={layout}
+      onPress={sound.press}
+      onRelease={sound.release}
+      onScrollLeftChange={scrollByUser}
+      onViewportWidthChange={setViewportWidth}
+      scrollLeft={scrollLeft}
+      sounding={sound.sounding}
+    />
+  );
+
+  if (presentation === 'fullscreen') {
+    return (
+      <PianoFullScreenFrame
+        bar={(isContentShown) => (
+          <PianoFullScreenBar
+            isAutoHideOn={preferences.isBarAutoHidden}
+            isContentShown={isContentShown}
+            keyWidth={preferences.keyWidth}
+            onChangeKeyWidth={changeKeyWidth}
+            onChangeVolume={changeVolume}
+            onClose={closePiano}
+            onExitFullScreen={() => {
+              setFullScreen(false);
+            }}
+            onToggleAutoHide={() => {
+              setPianoPreferences({
+                isBarAutoHidden: !preferences.isBarAutoHidden,
+              });
+            }}
+            sungReadout={sungReadout}
+            volume={preferences.volume}
+          />
+        )}
+        isAutoHideOn={preferences.isBarAutoHidden}
+        onExit={() => {
+          setFullScreen(false);
+        }}
+        onHeightChange={setWindowHeight}
+        playingChip={playingChip}
+      >
+        {keyboard}
+      </PianoFullScreenFrame>
+    );
+  }
 
   return (
     <View style={styles.overlay} testID="piano-overlay">
@@ -156,6 +221,9 @@ const PianoOverlayBody = ({
           onChangeKeyWidth={changeKeyWidth}
           onChangeVolume={changeVolume}
           onClose={closePiano}
+          onFullScreen={() => {
+            setFullScreen(true);
+          }}
           onScrollLeftChange={scrollByUser}
           scrollLeft={scrollLeft}
           stripWidth={layout.stripWidth}
@@ -175,19 +243,7 @@ const PianoOverlayBody = ({
           volume={preferences.volume}
         />
       )}
-      <PianoKeyboard
-        detectedEdge={detected.edge}
-        detectedMidi={detected.midi}
-        keyHeight={keyHeight}
-        labelOptions={preferences}
-        layout={layout}
-        onPress={sound.press}
-        onRelease={sound.release}
-        onScrollLeftChange={scrollByUser}
-        onViewportWidthChange={setViewportWidth}
-        scrollLeft={scrollLeft}
-        sounding={sound.sounding}
-      />
+      {keyboard}
       {isCompactBar ? null : (
         <PianoScrollStrip
           onScrollLeftChange={scrollByUser}
