@@ -37,7 +37,12 @@ export type PracticeTools = {
  * Backs the shared Practice tools control and menu: the piano, `Pitch
  * detection` and `Recording`.
  */
-export const usePracticeTools = (): PracticeTools => {
+export const usePracticeTools = ({
+  isOverPlaybackView = false,
+}: {
+  /** Over the playback view in wide-short the piano is always full screen. */
+  isOverPlaybackView?: boolean;
+} = {}): PracticeTools => {
   const { isFullScreen, isOpen: isPianoOpen } = usePianoPreferences();
   const layoutClass = useLayoutClass();
   const isMonitorOpen = usePitchMonitorOpen();
@@ -69,7 +74,10 @@ export const usePracticeTools = (): PracticeTools => {
         // open underneath until the piano is left; close it now.
         if (
           !isPianoOpen &&
-          resolvePianoPresentation(layoutClass, isFullScreen) === 'fullscreen'
+          resolvePianoPresentation(
+            layoutClass,
+            isFullScreen || isOverPlaybackView,
+          ) === 'fullscreen'
         ) {
           setIsMenuOpen(false);
         }

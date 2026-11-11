@@ -25,6 +25,8 @@ type PracticeToolsControlProps = {
   tools?: PracticeTools;
   /** False when the caller draws the menu itself. */
   showMenu?: boolean;
+  /** Set by the playback view, where a wide-short piano is always full screen. */
+  isOverPlaybackView?: boolean;
 };
 
 /**
@@ -38,8 +40,9 @@ export const PracticeToolsControl = ({
   anchorStyle,
   tools: providedTools,
   showMenu = true,
+  isOverPlaybackView = false,
 }: PracticeToolsControlProps) => {
-  const ownTools = usePracticeTools();
+  const ownTools = usePracticeTools({ isOverPlaybackView });
   const tools = providedTools ?? ownTools;
 
   if (!tools.model.isVisible) {

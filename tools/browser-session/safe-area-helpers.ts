@@ -14,6 +14,15 @@ export const emulateInsets = async (page: Page) => {
   await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets: INSETS });
 };
 
+/** Back to no insets, for steps that follow a check made beside the notch. */
+export const clearInsets = async (page: Page) => {
+  const cdp = await page.context().newCDPSession(page);
+
+  await cdp.send('Emulation.setSafeAreaInsetsOverride', {
+    insets: { bottom: 0, left: 0, right: 0, top: 0 },
+  });
+};
+
 const SETTLE_POLL_MS = 100;
 const SETTLE_ATTEMPTS = 30;
 

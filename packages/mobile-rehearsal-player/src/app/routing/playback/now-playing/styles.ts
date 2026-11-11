@@ -71,6 +71,14 @@ export const nowPlayingStyles = StyleSheet.create({
   },
   // The Practice tools menu opens downward from the header button.
   practiceToolsMenu: { top: '100%', right: 0, marginTop: appTheme.space.xs },
+  // In the two-column view the left column is ~240 points between the sheet's
+  // edge and the button, so the default 268-point menu hung out past the edge.
+  practiceToolsMenuColumn: {
+    top: '100%',
+    right: 0,
+    marginTop: appTheme.space.xs,
+    width: 232,
+  },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',

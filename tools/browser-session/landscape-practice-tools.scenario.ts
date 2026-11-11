@@ -4,7 +4,7 @@ import { buildMockSource } from '../../packages/mobile-rehearsal-player/src/test
 import { readMediaState } from './media-probe';
 import { buildToneMedia } from './mock-media';
 import { waitForTrack, waitUntil } from './page-helpers';
-import { settledBox } from './safe-area-helpers';
+import { clearInsets, emulateInsets, settledBox } from './safe-area-helpers';
 import { runScenario } from './scenario-runner';
 
 // Issue #46, Part 2 (task 3.5): in the wide-short layout (a phone on its side)
@@ -205,6 +205,42 @@ void runScenario({
     pass(
       'The piano is a 104-point keyboard with a slim bar; the header and pane stay',
     );
+
+    // Device feedback: beside a Dynamic Island with the pane open the main
+    // column is about 360 points wide; the minimap was squeezed to ~40 points
+    // and its octave labels piled up. It stays usable, with no overlapping labels.
+    await emulateInsets(page);
+    const map = await boxOf(
+      page.getByTestId('piano-scroll-strip'),
+      'the minimap',
+    );
+
+    if (map.width < 80) {
+      throw new Error(
+        `the piano minimap is only ${Math.round(map.width)} points wide`,
+      );
+    }
+
+    const labels = await page
+      .getByTestId('piano-scroll-strip')
+      .getByText(/^C\d$/)
+      .evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const { left, right } = node.getBoundingClientRect();
+
+          return { left, right };
+        }),
+      );
+
+    labels.sort((a, b) => a.left - b.left);
+    labels.forEach((label, index) => {
+      if (index > 0 && label.left < labels[index - 1].right) {
+        throw new Error('the minimap octave labels overlap');
+      }
+    });
+    await shot('4b-piano-narrow');
+    pass('The minimap stays usable beside the pane and an inset');
+    await clearInsets(page);
 
     // Everything open: the header and one row stay visible above the piano.
     await turnOn(page, 'Pitch detection');

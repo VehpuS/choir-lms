@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../../../utils/theme';
@@ -15,6 +15,8 @@ const { colors, radius, space } = appTheme;
 const PERCENT = 100;
 const TICK_FONT_SIZE = 10;
 const OCTAVE_TICKS = octaveTicks();
+/** Below this width the nine octave labels run together, so only the ticks show. */
+const MIN_LABELLED_MAP_WIDTH = 240;
 
 type PianoScrollStripProps = {
   /** The slim bar of the wide-short layout: it fills the row and is 34 pt tall. */
@@ -39,6 +41,7 @@ export const PianoScrollStrip = ({
 }: PianoScrollStripProps) => {
   const mapRef = useRef<View>(null);
   const isDragging = useRef(false);
+  const [mapWidth, setMapWidth] = useState(0);
   const window = mapWindow(scrollLeft, viewportWidth, stripWidth);
 
   const seek = (event: unknown) => {
@@ -72,6 +75,9 @@ export const PianoScrollStrip = ({
     <View
       {...webProps}
       accessibilityLabel="Piano position"
+      onLayout={(event) => {
+        setMapWidth(event.nativeEvent.layout.width);
+      }}
       ref={mapRef}
       style={[styles.strip, isInBar ? styles.stripInBar : null]}
       testID="piano-scroll-strip"
@@ -83,7 +89,9 @@ export const PianoScrollStrip = ({
           style={[styles.tick, { left: `${tick.position * PERCENT}%` }]}
         >
           <View style={styles.tickMark} />
-          <Text style={styles.tickLabel}>{tick.label}</Text>
+          {mapWidth >= MIN_LABELLED_MAP_WIDTH ? (
+            <Text style={styles.tickLabel}>{tick.label}</Text>
+          ) : null}
         </View>
       ))}
       <View
