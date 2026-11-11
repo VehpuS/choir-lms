@@ -20,7 +20,10 @@ export const PITCH_MONITOR_HEIGHT = 65;
 const { colors, space } = appTheme;
 
 /** `panel` is the strip inside the wide-short layout's trailing practice panel. */
-export type PitchMonitorPresentation = 'strip' | 'panel';
+export type PitchMonitorPresentation = 'strip' | 'panel' | 'slim';
+
+/** The `slim` strip: one 48-point row with no history, for the viewers' short window. */
+export const PITCH_MONITOR_SLIM_HEIGHT = 48;
 
 /**
  * The compact monitor (design Decision 6): the sung note, a cents gauge and a
@@ -33,6 +36,7 @@ export const PitchMonitorStrip = ({
   presentation?: PitchMonitorPresentation;
 }) => {
   const isPanel = presentation === 'panel';
+  const isSlim = presentation === 'slim';
   const { state, store } = usePitch();
   const [isViewOpen, setIsViewOpen] = useState(false);
   const model = getMonitorModel(state);
@@ -54,7 +58,12 @@ export const PitchMonitorStrip = ({
   return (
     <View style={styles.dock}>
       {model.notice ? (
-        <View style={isPanel ? styles.panelNotice : styles.notice}>
+        <View
+          style={[
+            isPanel ? styles.panelNotice : styles.notice,
+            isSlim ? styles.slimNotice : null,
+          ]}
+        >
           <Text style={styles.noticeText}>{model.notice.text}</Text>
           <Pressable
             accessibilityRole="button"
@@ -67,12 +76,18 @@ export const PitchMonitorStrip = ({
       ) : null}
       <View
         accessibilityLabel="Pitch monitor"
-        style={[styles.strip, isPanel ? styles.panelStrip : null]}
+        style={[
+          styles.strip,
+          isPanel ? styles.panelStrip : null,
+          isSlim ? styles.slimStrip : null,
+        ]}
       >
         {model.note ? (
           <PitchMonitorNote
             note={model.note}
-            sparkline={buildSparkline(store.history.getSnapshot())}
+            sparkline={
+              isSlim ? [] : buildSparkline(store.history.getSnapshot())
+            }
           />
         ) : (
           <View style={styles.messageColumn}>
@@ -127,6 +142,8 @@ const styles = StyleSheet.create({
     borderTopColor: colors.divider,
     backgroundColor: colors.surfaceRaised,
   },
+  slimStrip: { height: PITCH_MONITOR_SLIM_HEIGHT },
+  slimNotice: { bottom: PITCH_MONITOR_SLIM_HEIGHT },
   // In the trailing panel the strip may grow, since a message wraps at 280 pt.
   panelStrip: { height: undefined, minHeight: PITCH_MONITOR_HEIGHT },
   // Sits in the flow above the strip, not floating over the panel's top.

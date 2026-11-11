@@ -18,7 +18,8 @@ type PianoCompactBarProps = {
   onChangeKeyWidth: (width: number) => void;
   onChangeVolume: (volume: number) => void;
   onClose: () => void;
-  onFullScreen: () => void;
+  /** Absent where full screen is not offered (the viewer). */
+  onFullScreen?: () => void;
   onScrollLeftChange: (scrollLeft: number) => void;
   scrollLeft: number;
   stripWidth: number;
@@ -62,14 +63,16 @@ export const PianoCompactBar = ({
       stripWidth={stripWidth}
       viewportWidth={viewportWidth}
     />
-    <Pressable
-      accessibilityLabel="Full screen"
-      accessibilityRole="button"
-      onPress={onFullScreen}
-      style={styles.button}
-    >
-      <AppIcon color={colors.icon} name="arrow-expand" size={ICON_SIZE} />
-    </Pressable>
+    {onFullScreen ? (
+      <Pressable
+        accessibilityLabel="Full screen"
+        accessibilityRole="button"
+        onPress={onFullScreen}
+        style={styles.button}
+      >
+        <AppIcon color={colors.icon} name="arrow-expand" size={ICON_SIZE} />
+      </Pressable>
+    ) : null}
     <Pressable
       accessibilityLabel="Close piano"
       accessibilityRole="button"
