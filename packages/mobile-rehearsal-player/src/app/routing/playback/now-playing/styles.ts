@@ -30,9 +30,14 @@ export const nowPlayingStyles = StyleSheet.create({
   },
   // One column of the wide-short playback view: the view draws the sheet around
   // both columns, so this one has no background, corners or grabber of its own.
+  // The left column holds the header's practice tools menu, whose backdrop is
+  // fixed over the whole sheet. Every view is its own stacking layer on web, so
+  // without a layer of its own above the right column (a later sibling) the
+  // backdrop sat under it and a tap there never dismissed the menu (F.6).
   column: {
     flex: 1,
     minWidth: 0,
+    zIndex: 1,
   },
   bodyFill: {
     flex: 1,
