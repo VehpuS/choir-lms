@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react';
 
 import { PracticeToolsPanel } from '../../../library/practice-tools/practice-tools-panel';
+import { useIsPianoViewerOpen } from '../../../library/piano/piano-host-store';
 import { useHasPracticePanelTool } from '../../../library/practice-tools/use-practice-panel';
 import { NowPlayingPane } from './now-playing-pane';
 
@@ -30,8 +31,11 @@ export const ShellTrailingPane = ({
   ...paneProps
 }: ShellTrailingPaneProps) => {
   const hasPanelTool = useHasPracticePanelTool();
+  // The sheet music viewer mounts its own pitch monitor above the shell, so the
+  // panel steps aside while it is open (one monitor, one set of listeners).
+  const isViewerOpen = useIsPianoViewerOpen();
 
-  if (hasPanelTool && !isPlaybackSurfaceOpen) {
+  if (hasPanelTool && !isPlaybackSurfaceOpen && !isViewerOpen) {
     return (
       <PracticeToolsPanel
         activePlayableItem={paneProps.activePlayableItem}

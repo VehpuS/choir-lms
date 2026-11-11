@@ -61,6 +61,8 @@ type PianoOverlayProps = {
    * offers no Exit, and Back or Escape closes the piano instead.
    */
   canExitFullScreen?: boolean;
+  /** False in the sheet music viewer, where the shell owns the full screen choice. */
+  canGoFullScreen?: boolean;
   /** The playing track, for the full-screen piano's floating chip. */
   playingChip?: PianoPlayingChip | null;
 };
@@ -73,6 +75,7 @@ const PianoOverlayBody = ({
   focusRange,
   heightLimit,
   canExitFullScreen = true,
+  canGoFullScreen = true,
   playingChip = null,
   presentation = 'docked',
 }: PianoOverlayBodyProps) => {
@@ -226,9 +229,7 @@ const PianoOverlayBody = ({
           onChangeKeyWidth={changeKeyWidth}
           onChangeVolume={changeVolume}
           onClose={closePiano}
-          onFullScreen={() => {
-            setFullScreen(true);
-          }}
+          onFullScreen={canGoFullScreen ? () => setFullScreen(true) : undefined}
           onScrollLeftChange={scrollByUser}
           scrollLeft={scrollLeft}
           stripWidth={layout.stripWidth}

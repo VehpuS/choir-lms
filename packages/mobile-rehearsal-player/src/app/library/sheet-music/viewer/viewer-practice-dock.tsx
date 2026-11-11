@@ -8,18 +8,23 @@ type ViewerPracticeDockProps = {
   isCompact: boolean;
 };
 
-/** The viewer's own pitch monitor and piano, since it paints above the shell's. */
+/**
+ * The viewer's own pitch monitor and piano, since it paints above the shell's.
+ * In a short window (a phone on its side) they are the slim row and the
+ * 138-point compact keyboard, so the score keeps a usable page; the piano has
+ * no Full screen button here, since the shell owns that choice.
+ */
 export const ViewerPracticeDock = ({
   focusRange,
   isCompact,
 }: ViewerPracticeDockProps) => {
   return (
     <>
-      <PitchMonitorDock />
+      <PitchMonitorDock presentation={isCompact ? 'slim' : 'strip'} />
       <PianoOverlay
+        canGoFullScreen={false}
         focusRange={focusRange}
-        // A short landscape window needs the height for the score.
-        heightLimit={isCompact ? 'compact' : undefined}
+        presentation={isCompact ? 'compact-bar' : 'docked'}
       />
     </>
   );
