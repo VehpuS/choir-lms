@@ -11,6 +11,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { useKeyboardInset } from '../../../components/keyboard-safe/use-keyboard-inset';
 import { SafeAreaFrame } from '../../../components/safe-area-frame';
 import {
   resolveKeyboardAvoidingBehavior,
@@ -45,6 +46,10 @@ export const ModalSurfaceBase = ({
   presentation = 'default',
   surfaceStyle,
 }: ModalSurfaceBaseProps) => {
+  // On the web the soft keyboard covers the bottom without resizing anything:
+  // pad by its height so the surface, and its scroll area, end above it.
+  const keyboardInset = useKeyboardInset();
+
   if (!isVisible) {
     return null;
   }
@@ -81,6 +86,7 @@ export const ModalSurfaceBase = ({
                 alignItems: layout.alignItems,
                 justifyContent: layout.justifyContent,
                 padding: layout.padding,
+                paddingBottom: Number(layout.padding ?? 0) + keyboardInset,
               },
             ]}
           >
