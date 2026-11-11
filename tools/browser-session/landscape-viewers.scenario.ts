@@ -151,6 +151,22 @@ void runScenario({
 
     pass('With the piano and pitch on, the score keeps at least 140 points');
 
+    // F.7: the page chip is the same over the page in landscape as upright
+    // (`Page 1 of 4`), not a short `1/4` label in the rail.
+    const chip = page.getByLabel('Go to page', { exact: true });
+
+    await chip.waitFor({ timeout: WAIT_MS });
+    await waitUntil(
+      async () => /^Page \d+ of \d+$/.test(await chip.innerText()),
+      'the landscape page chip does not read "Page N of M"',
+    );
+
+    if ((await page.getByText(/^\d+\/\d+$/).count()) !== 0) {
+      throw new Error('the rail still shows a short page label');
+    }
+
+    pass('Landscape shows the Page N of M chip over the page, as upright does');
+
     // Upright keeps the docked piano with its grabber.
     await page.setViewportSize(PORTRAIT);
     await page.getByLabel('Piano height').waitFor({ timeout: WAIT_MS });

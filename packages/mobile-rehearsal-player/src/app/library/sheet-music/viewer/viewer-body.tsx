@@ -36,7 +36,7 @@ type ViewerBodyProps = {
   focusRequest: number;
   /** The PDF page (0-based) to open on, so a surface drawn again keeps the reader's place. */
   initialPage: number | undefined;
-  /** The compact landscape layout keeps the page controls in its rail, not over the page. */
+  /** The compact landscape layout keeps the page step buttons in its rail; the `Page N of M` chip still floats over the page. */
   isCompact: boolean;
   jump: GoToJump | undefined;
   onFailed: (reason: ViewerFailureReason) => void;
@@ -131,13 +131,10 @@ export const ViewerBody = ({
           zoom={zoom}
         />
       ) : null}
-      {!isCompact &&
-      pageIndicator &&
-      onOpenGoToPage &&
-      outcome?.kind === 'ready' ? (
+      {pageIndicator && onOpenGoToPage && outcome?.kind === 'ready' ? (
         <PageIndicator
           onPress={onOpenGoToPage}
-          steps={pageSteps}
+          steps={isCompact ? undefined : pageSteps}
           text={pageIndicator}
         />
       ) : null}
