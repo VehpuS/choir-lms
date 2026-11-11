@@ -7,6 +7,7 @@ import type { LibraryBundleImportPlan } from '@org/audio-library-runtime';
 import type { DriveBundleListing } from '@org/google-drive';
 
 import type { BundlePhase } from './bundle-service-types';
+import { isolateBidi } from '../../utils/bidi-isolate';
 
 /**
  * Pure view models for the Backup, Restore, Share and Import sheets: what each
@@ -151,7 +152,7 @@ export const buildRecordingPicker = (
 ) => {
   const rows: RecordingPickerRow[] = recordings.map((recording) => ({
     id: recording.id,
-    title: `${recording.name} · ${recording.source.name}`,
+    title: `${isolateBidi(recording.name)} · ${isolateBidi(recording.source.name)}`,
     detail: hasDriveCopy(recording)
       ? 'On Drive already · no upload'
       : `${formatRecordingSize(recording.sizeBytes)} · will upload`,

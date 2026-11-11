@@ -19,6 +19,7 @@ import { ShellTabBar } from '../shell-tab-bar';
 import { appTheme } from '../../../utils/theme';
 import { ariaStateProps } from '../../../components/aria-state';
 import { dockBleedStyle } from '../dock-bleed';
+import { LEFT_TO_RIGHT_LINE_STYLE } from '../../../utils/bidi-isolate';
 
 const MINI_PLAYER_TOGGLE_ICON_SIZE = 20;
 
@@ -89,7 +90,10 @@ export const MobileShellMiniPlayerDock = ({
                 style={styles.miniPlayerTitle}
                 text={miniPlayerSummary.title}
               />
-              <Text numberOfLines={1} style={styles.miniPlayerContext}>
+              <Text
+                numberOfLines={1}
+                style={[styles.miniPlayerContext, LEFT_TO_RIGHT_LINE_STYLE]}
+              >
                 {downloadLabel ?? miniPlayerSummary.context}
               </Text>
             </View>
