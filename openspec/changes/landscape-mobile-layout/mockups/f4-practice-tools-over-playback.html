@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>F.4 mock: pitch and recording over the playback view</title>
+    <style>
+      :root {
+        --bg: #161826;
+        --surface: #232532;
+        --raised: #1b1e2c;
+        --text: #e9e9ed;
+        --muted: #9397ab;
+        --accent: #9184d9;
+        --accentText: #b5abfc;
+        --danger: #f28b82;
+        --good: #7fd6a0;
+        --line: #2e3140;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px 16px 56px;
+        background: #0d0f1a;
+        color: var(--text);
+        font:
+          14px/1.4 -apple-system,
+          system-ui,
+          Segoe UI,
+          Roboto,
+          sans-serif;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 4px;
+      }
+      h2 {
+        font-size: 15px;
+        margin: 36px 0 2px;
+      }
+      p {
+        color: var(--muted);
+        margin: 0 0 12px;
+        max-width: 780px;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 28px;
+        align-items: flex-start;
+      }
+      figure {
+        margin: 0;
+      }
+      figcaption {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 6px;
+        max-width: 844px;
+      }
+      .tag {
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 99px;
+        font-size: 11px;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        margin-left: 6px;
+      }
+      .tag.rec {
+        color: var(--accentText);
+        border-color: var(--accent);
+      }
+      .tag.bad {
+        color: var(--danger);
+        border-color: var(--danger);
+      }
+
+      /* A 844 x 390 phone on its side, with the two-column playback view. */
+      .phone {
+        position: relative;
+        width: 844px;
+        height: 390px;
+        overflow: hidden;
+        border-radius: 22px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+      }
+      .sheet {
+        position: absolute;
+        inset: 14px 58px 14px 58px;
+        display: flex;
+        border-radius: 22px 22px 0 0;
+        border: 1px solid var(--line);
+        background: var(--raised);
+        overflow: hidden;
+      }
+      .left {
+        width: 50%;
+        padding: 14px 16px;
+        border-right: 1px solid var(--line);
+      }
+      .right {
+        flex: 1;
+        padding: 14px 16px;
+        position: relative;
+      }
+      .kicker {
+        color: var(--accentText);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+      }
+      .title {
+        font-size: 26px;
+        margin: 8px 0 4px;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .wave {
+        height: 56px;
+        margin: 12px 0 8px;
+        background: repeating-linear-gradient(
+          90deg,
+          var(--accent) 0 2px,
+          transparent 2px 7px
+        );
+        opacity: 0.55;
+        mask: linear-gradient(transparent, #000 25% 75%, transparent);
+      }
+      .transport {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 22px;
+        margin: 8px 0;
+      }
+      .transport b {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        border: 2px solid var(--accent);
+      }
+      .transport i {
+        width: 26px;
+        height: 26px;
+        border: 2px solid var(--muted);
+        border-radius: 8px;
+      }
+      .tiles {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .tiles span {
+        flex: 1;
+        height: 44px;
+        border: 1px solid var(--accent);
+        border-radius: 8px;
+        padding: 4px 8px;
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .tabs {
+        display: flex;
+        gap: 8px;
+      }
+      .chip {
+        padding: 6px 14px;
+        border-radius: 99px;
+        border: 1px solid var(--line);
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .chip.on {
+        color: var(--accentText);
+        border-color: var(--accent);
+      }
+      .lines {
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.9;
+      }
+      .rail {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 58px;
+        background: #11131f;
+      }
+
+      /* Today's bug: the strips take the sheet's height. */
+      .strip {
+        position: absolute;
+        left: 58px;
+        right: 58px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 16px;
+        background: var(--surface);
+        border-top: 1px solid var(--line);
+        font-size: 12px;
+        color: var(--muted);
+        z-index: 3;
+      }
+      .strip b {
+        font-size: 26px;
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      /* Floating card */
+      .card {
+        position: absolute;
+        right: 14px;
+        bottom: 12px;
+        width: 268px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: var(--surface);
+        border: 1px solid var(--accent);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        z-index: 4;
+      }
+      .card .head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      .card .head span:last-child {
+        font-size: 14px;
+        letter-spacing: 0;
+      }
+      .note {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .note b {
+        font-size: 28px;
+        font-weight: 500;
+        line-height: 1;
+      }
+      .note small {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .gauge {
+        flex: 1;
+        height: 6px;
+        border-radius: 3px;
+        background: var(--line);
+        position: relative;
+      }
+      .gauge::after {
+        content: '';
+        position: absolute;
+        left: 44%;
+        top: -3px;
+        width: 10px;
+        height: 12px;
+        border-radius: 3px;
+        background: var(--good);
+      }
+      .rec-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--line);
+      }
+      .rec-btn {
+        flex: 1;
+        text-align: center;
+        padding: 7px;
+        border-radius: 99px;
+        border: 1px solid var(--accent);
+        color: var(--accentText);
+        font-size: 12px;
+      }
+      .rec-btn::before {
+        content: '● ';
+        color: var(--danger);
+      }
+      .clock {
+        font-variant-numeric: tabular-nums;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .pill {
+        position: absolute;
+        right: 14px;
+        bottom: 12px;
+        padding: 8px 14px;
+        border-radius: 99px;
+        background: var(--surface);
+        border: 1px solid var(--accent);
+        font-size: 13px;
+        z-index: 4;
+      }
+      .pill i {
+        color: var(--danger);
+        font-style: normal;
+      }
+
+      /* Tab alternative */
+      .panelbox {
+        margin-top: 14px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface);
+      }
+
+      /* Full screen alternative */
+      .full {
+        position: absolute;
+        inset: 0;
+        background: var(--bg);
+        z-index: 5;
+      }
+      .full .bar {
+        height: 40px;
+        background: var(--raised);
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        gap: 16px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .full .bar b {
+        font-size: 18px;
+        color: var(--text);
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>F.4: pitch and recording over the playback view</h1>
+    <p>
+      In the landscape layout, opening Pitch or Recording from the full playback
+      view floats full-width strips at the bottom, and the two-column sheet is
+      squeezed above them (the piano already goes full screen there). Four
+      options, drawn at 844 × 390 with a Dynamic Island inset on each side.
+      <b>Suggested: B.</b>
+    </p>
+
+    <h2>A. Today <span class="tag bad">the bug</span></h2>
+    <div class="row">
+      <figure>
+        <div class="phone">
+          <div class="rail"></div>
+          <div class="sheet" style="bottom: 130px">
+            <div class="left">
+              <div class="kicker">PLAYING</div>
+              <div class="title">The Cave Y</div>
+              <div class="sub">2 of 20</div>
+            </div>
+            <div class="right">
+              <div class="tabs">
+                <span class="chip on">Lyrics</span>
+                <span class="chip">Queue</span>
+              </div>
+            </div>
+          </div>
+          <div class="strip" style="bottom: 65px; height: 65px">
+            <b>E4</b> −8 cents ▬▬▬▬▬▬▬▬▬▬▬▬ ⤢ ✕
+          </div>
+          <div class="strip" style="bottom: 0; height: 65px">
+            <span style="color: var(--danger)">●</span> Ready. Seek to where you
+            want to start. &nbsp; Between… &nbsp; Record
+          </div>
+        </div>
+        <figcaption>
+          Pitch and recording on: 130 of 390 points are strips, the transport
+          and the speed tiles are gone from the left column, and the title is
+          clipped.
+        </figcaption>
+      </figure>
+    </div>
+
+    <h2>
+      B. A floating card over the right column
+      <span class="tag rec">suggested</span>
+    </h2>
+    <p>
+      One small card in the lower trailing corner, over the tab panel (Lyrics,
+      Queue and the rest are tall lists that scroll under it). It holds the
+      pitch readout and the Record control; each tool's row appears only while
+      that tool is on. The left column, with the transport and the speed and
+      pitch tiles, is untouched, so the sheet keeps its full height.
+    </p>
+    <div class="row">
+      <figure>
+        <div class="phone">
+          <div class="rail"></div>
+          <div class="sheet">
+            <div class="left">
+              <div class="kicker">PLAYING</div>
+              <div class="title">The Cave Y</div>
+              <div class="sub">2 of 20</div>
+              <div class="wave"></div>
+              <div class="transport"><i></i><b></b><i></i></div>
+              <div class="tiles">
+                <span>SPEED<br />1.00×</span><span>PITCH<br />0 st</span
+                ><span></span>
+              </div>
+            </div>
+            <div class="right">
+              <div class="tabs">
+                <span class="chip on">Lyrics</span>
+                <span class="chip">Queue</span>
+                <span class="chip">Speed &amp; pitch</span>
+              </div>
+              <div class="lines">
+                Kyrie eleison<br />Christe eleison<br />Kyrie eleison<br />Kyrie
+                eleison<br />Christe eleison
+              </div>
+              <div class="card">
+                <div class="head">
+                  <span>PRACTICE TOOLS</span><span>⌄</span>
+                </div>
+                <div class="note">
+                  <div><b>E4</b><small>−8 cents</small></div>
+                  <div class="gauge"></div>
+                  <span style="font-size: 14px">⤢</span>
+                </div>
+                <div class="rec-row">
+                  <span class="rec-btn">Record</span>
+                  <span class="clock">0:00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption>
+          Pitch and Recording both on. The card is 268 points wide and about 120
+          tall, in the sheet's own safe area. The chevron collapses it to the
+          pill in the next frame. Only the lyrics' last lines sit under it, and
+          the list scrolls.
+        </figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone">
+          <div class="rail"></div>
+          <div class="sheet">
+            <div class="left">
+              <div class="kicker">PLAYING</div>
+              <div class="title">The Cave Y</div>
+              <div class="sub">2 of 20</div>
+              <div class="wave"></div>
+              <div class="transport"><i></i><b></b><i></i></div>
+              <div class="tiles">
+                <span>SPEED<br />1.00×</span><span>PITCH<br />0 st</span
+                ><span></span>
+              </div>
+            </div>
+            <div class="right">
+              <div class="tabs">
+                <span class="chip on">Lyrics</span>
+                <span class="chip">Queue</span>
+                <span class="chip">Speed &amp; pitch</span>
+              </div>
+              <div class="lines">
+                Kyrie eleison<br />Christe eleison<br />Kyrie eleison<br />Kyrie
+                eleison<br />Christe eleison<br />Kyrie eleison
+              </div>
+              <div class="pill"><i>●</i> 0:42 &nbsp; E4 −8¢</div>
+            </div>
+          </div>
+        </div>
+        <figcaption>
+          Collapsed, and while recording: a pill with the take's clock and the
+          sung note. Tapping it opens the card, where Stop lives. Recording is
+          never hidden, so a take cannot be forgotten.
+        </figcaption>
+      </figure>
+    </div>
+
+    <h2>C. A tab in the right column <span class="tag">alternative</span></h2>
+    <div class="row">
+      <figure>
+        <div class="phone">
+          <div class="rail"></div>
+          <div class="sheet">
+            <div class="left">
+              <div class="kicker">PLAYING</div>
+              <div class="title">The Cave Y</div>
+              <div class="sub">2 of 20</div>
+              <div class="wave"></div>
+              <div class="transport"><i></i><b></b><i></i></div>
+              <div class="tiles">
+                <span>SPEED<br />1.00×</span><span>PITCH<br />0 st</span
+                ><span></span>
+              </div>
+            </div>
+            <div class="right">
+              <div class="tabs">
+                <span class="chip">Lyrics</span>
+                <span class="chip">Queue</span>
+                <span class="chip">Speed</span>
+                <span class="chip on">Pitch</span>
+                <span class="chip">Record</span>
+              </div>
+              <div class="panelbox">
+                <div class="note">
+                  <div><b>E4</b><small>−8 cents</small></div>
+                  <div class="gauge"></div>
+                </div>
+              </div>
+              <div class="panelbox">
+                <div class="rec-row" style="border: 0; margin: 0; padding: 0">
+                  <span class="rec-btn">Record</span>
+                  <span class="clock">0:00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption>
+          Nothing floats, but the tab row is already full at five chips, and you
+          cannot read the lyrics while watching the pitch: the main reason to
+          use the tools together.
+        </figcaption>
+      </figure>
+    </div>
+
+    <h2>D. Full screen, like the piano <span class="tag">alternative</span></h2>
+    <div class="row">
+      <figure>
+        <div class="phone">
+          <div class="full">
+            <div class="bar">
+              <b>E4</b> −8 cents <span>▬▬▬▬▬▬▬▬▬▬▬▬▬▬</span>
+              <span style="color: var(--danger)">●</span> Record
+              <span style="margin-left: auto">⤡ &nbsp; ✕</span>
+            </div>
+            <div
+              style="
+                height: 340px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--muted);
+              "
+            >
+              big pitch roll / readout, a pause chip over the lower edge
+            </div>
+          </div>
+        </div>
+        <figcaption>
+          Simple and consistent with the piano, but you leave the playback view
+          (the transport, lyrics and queue) to use it, and the pitch view
+          already exists as its own full screen.
+        </figcaption>
+      </figure>
+    </div>
+
+    <h2>Why B</h2>
+    <p>
+      The playback view is a reading and listening surface: lyrics, queue and
+      the transport matter while you sing. A card keeps all of it in view and
+      costs one corner of the right panel, which scrolls. The piano needs the
+      whole width, so it stays full screen there; Pitch and Recording are small
+      enough for a card. B also gives Recording its one safety rule (the pill
+      stays visible while a take runs).
+    </p>
+  </body>
+</html>
