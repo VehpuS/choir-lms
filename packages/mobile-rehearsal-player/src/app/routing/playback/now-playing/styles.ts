@@ -38,9 +38,9 @@ export const nowPlayingStyles = StyleSheet.create({
     flex: 1,
   },
   bodyContentColumn: {
-    gap: space.md,
+    gap: space.sm,
     paddingHorizontal: space.sheetInset,
-    paddingTop: space.sm,
+    paddingTop: space.xs,
     paddingBottom: space.md,
   },
   grabber: {

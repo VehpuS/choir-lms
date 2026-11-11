@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 import { appTheme } from '../../utils/theme';
+import { RAIL_WIDTH } from './shell-dimensions';
 import { SHELL_LAYERS } from './shell-layers';
 
 const { colors, space } = appTheme;
@@ -11,8 +12,6 @@ const PROGRESS_LINE_HEIGHT = 2;
 const TAB_MARK_WIDTH = 16;
 const TAB_MARK_HEIGHT = 2;
 const TAB_GAP = 5;
-// The wide-short layout's side rail: wide enough for a `Recents` label.
-const RAIL_WIDTH = 84;
 const PRESSED_OPACITY = 0.88;
 const DISABLED_OPACITY = 0.5;
 
@@ -161,7 +160,7 @@ export const styles = StyleSheet.create({
   rail: {
     width: RAIL_WIDTH,
     zIndex: SHELL_LAYERS.bottomDock,
-    paddingVertical: space.sm,
+    paddingVertical: space.md,
     gap: space.xs,
     borderRightWidth: 1,
     borderRightColor: colors.borderSubtle,

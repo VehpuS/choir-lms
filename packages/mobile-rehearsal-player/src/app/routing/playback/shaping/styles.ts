@@ -164,6 +164,11 @@ export const shapingStyles = StyleSheet.create({
     paddingTop: space.md,
     paddingBottom: space.xl,
   },
+  // Inside the scrolling body, which already pads the sides.
+  footerEmbedded: {
+    paddingHorizontal: 0,
+    paddingBottom: space.sm,
+  },
   footerNote: {
     flexDirection: 'row',
     alignItems: 'center',
