@@ -5,26 +5,26 @@ import {
   readPointer,
 } from '../../../library/piano/components/piano-overlay/pointer-events';
 import {
-  dragLiftOffset,
+  dragShiftOffset,
   isDrag,
   shouldExpandOnDrag,
 } from './pane-expand-model';
 
 /**
- * Web pointer handlers for the Now Playing pane's backdrop: dragging up opens
- * the playback view (the way it slides in), and the pane's content lifts with
+ * Web pointer handlers for the Now Playing pane's backdrop: dragging it toward the centre of the window (leftward, as the pane is at
+ * the trailing edge) opens the playback view, and the pane's content shifts with
  * the finger meanwhile. `wasDragged` lets the click that follows a drag be
  * ignored, so a drag that does not open is not taken for a tap. The pane is a
  * web-only surface (the wide-short layout does not occur on native).
  */
 export const usePaneExpandGesture = (onExpand: () => void) => {
-  const [lift, setLift] = useState(0);
+  const [shift, setShift] = useState(0);
   const wasDragged = useRef(false);
   const start = useRef<{ id: number; x: number; y: number } | null>(null);
 
   const reset = () => {
     start.current = null;
-    setLift(0);
+    setShift(0);
   };
 
   const handlers = {
@@ -50,7 +50,7 @@ export const usePaneExpandGesture = (onExpand: () => void) => {
       };
 
       wasDragged.current = wasDragged.current || isDrag(drag);
-      setLift(dragLiftOffset(drag));
+      setShift(dragShiftOffset(drag));
     },
     onPointerUp: (event: unknown) => {
       const sample = readPointer(event);
@@ -71,5 +71,5 @@ export const usePaneExpandGesture = (onExpand: () => void) => {
     },
   };
 
-  return { handlers, lift, wasDragged };
+  return { handlers, shift, wasDragged };
 };
