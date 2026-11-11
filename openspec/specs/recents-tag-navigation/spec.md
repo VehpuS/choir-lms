@@ -1,11 +1,8 @@
 # recents-tag-navigation Specification
 
 ## Purpose
-
 TBD - created by syncing change recents-tag-integration. Update Purpose after archive.
-
 ## Requirements
-
 ### Requirement: Recents surfaces tags actually in use across the saved library
 
 The system SHALL replace the static placeholder shortcut chips on Recents with a derived list of tags present on saved tracks, loops, playlists, and folders, using the same tag normalization (trim, whitespace collapse, case-insensitive dedupe) already applied by the tag editor.

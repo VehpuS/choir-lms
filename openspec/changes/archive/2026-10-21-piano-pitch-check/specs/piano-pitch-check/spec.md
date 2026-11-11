@@ -185,3 +185,4 @@ The overlay SHALL include a `Key width` slider that sets the white key width fro
 
 - **WHEN** the view is at the lowest or highest keys and the user widens the keys
 - **THEN** the view stays at that end without gaps
+

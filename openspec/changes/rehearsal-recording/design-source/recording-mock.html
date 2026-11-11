@@ -1,1902 +1,423 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Rehearsal Recording Mock</title>
-    <style>
-      /* A decision page for the rehearsal-recording change. Top: one interactive phone with a button for each state. Below: every screen at a glance. Nocturne tokens copied from the app theme and the pitch mock; nothing here is saved or recorded. */
-      :root {
-        --bg: #101220;
-        --ground: #161826;
-        --surface: #232532;
-        --surface-raised: #1b1e2c;
-        --text: #e9e9ed;
-        --text-muted: #9397ab;
-        --text-faint: #8e92a6;
-        --accent: #9184d9;
-        --accent-text: #b5abfc;
-        --accent-tint: #2b2741;
-        --accent-deep: #423a6a;
-        --divider: #3f424d;
-        --danger: #f28b82;
-        --warning: #e6c17a;
-        --success: #81c995;
-        --rec: #ff5d5d;
-        --mine: #6fd0c4;
-        --mine-tint: rgba(111, 208, 196, 0.16);
-        --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-        --sans:
-          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-          Arial, sans-serif;
-        color-scheme: dark;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font-family: var(--sans);
-        padding: 28px 16px 56px;
-        line-height: 1.45;
-      }
-      main {
-        max-width: 1120px;
-        margin: 0 auto;
-        display: flex;
-        flex-direction: column;
-        gap: 32px;
-      }
-      h1 {
-        font-size: 26px;
-        line-height: 1.15;
-        margin: 0 0 6px;
-        font-weight: 650;
-        letter-spacing: -0.01em;
-        text-wrap: balance;
-      }
-      h2 {
-        font-size: 16px;
-        margin: 0 0 4px;
-        font-weight: 650;
-      }
-      p {
-        margin: 0;
-        color: var(--text-muted);
-        max-width: 70ch;
-      }
-      ul.dec {
-        margin: 8px 0 0;
-        padding-left: 18px;
-        color: var(--text-muted);
-        font-size: 13.5px;
-        max-width: 80ch;
-      }
-      ul.dec li {
-        margin: 3px 0;
-      }
-      ul.dec b {
-        color: var(--text);
-        font-weight: 600;
-      }
-      .kicker {
-        font-size: 11px;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--accent-text);
-        margin-bottom: 8px;
-      }
-      button {
-        font: inherit;
-      }
-      button:focus-visible,
-      input:focus-visible {
-        outline: 2px solid var(--accent-text);
-        outline-offset: 2px;
-      }
-      .stage {
-        display: grid;
-        grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
-        gap: 32px;
-        align-items: start;
-      }
-      @media (max-width: 860px) {
-        .stage {
-          grid-template-columns: minmax(0, 1fr);
-        }
-      }
-      .controls {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-      .label {
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--text-faint);
-        margin-bottom: 6px;
-      }
-      .checks {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-      .check {
-        min-height: 36px;
-        display: inline-flex;
-        align-items: center;
-        padding: 0 12px;
-        border: 1px solid var(--divider);
-        border-radius: 12px;
-        background: transparent;
-        color: var(--text-muted);
-        font-size: 12.5px;
-        cursor: pointer;
-      }
-      .check[aria-pressed='true'] {
-        background: var(--accent-tint);
-        color: var(--text);
-        border-color: var(--accent);
-      }
-      .hint {
-        font-size: 12.5px;
-        color: var(--text-faint);
-      }
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rehearsal Recording Mock</title>
+<style>
+/* A decision page for the rehearsal-recording change. Top: one interactive phone with a button for each state. Below: every screen at a glance. Nocturne tokens copied from the app theme and the pitch mock; nothing here is saved or recorded. */
+:root {
+  --bg: #101220; --ground: #161826; --surface: #232532; --surface-raised: #1b1e2c;
+  --text: #e9e9ed; --text-muted: #9397ab; --text-faint: #8e92a6;
+  --accent: #9184d9; --accent-text: #b5abfc; --accent-tint: #2b2741; --accent-deep: #423a6a;
+  --divider: #3f424d; --danger: #f28b82; --warning: #e6c17a; --success: #81c995;
+  --rec: #ff5d5d; --mine: #6fd0c4; --mine-tint: rgba(111,208,196,.16);
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); padding: 28px 16px 56px; line-height: 1.45; }
+main { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+h1 { font-size: 26px; line-height: 1.15; margin: 0 0 6px; font-weight: 650; letter-spacing: -0.01em; text-wrap: balance; }
+h2 { font-size: 16px; margin: 0 0 4px; font-weight: 650; }
+p { margin: 0; color: var(--text-muted); max-width: 70ch; }
+ul.dec { margin: 8px 0 0; padding-left: 18px; color: var(--text-muted); font-size: 13.5px; max-width: 80ch; }
+ul.dec li { margin: 3px 0; }
+ul.dec b { color: var(--text); font-weight: 600; }
+.kicker { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-text); margin-bottom: 8px; }
+button { font: inherit; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+.stage { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 32px; align-items: start; }
+@media (max-width: 860px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+.controls { display: flex; flex-direction: column; gap: 14px; }
+.label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 6px; }
+.checks { display: flex; flex-wrap: wrap; gap: 6px; }
+.check { min-height: 36px; display: inline-flex; align-items: center; padding: 0 12px; border: 1px solid var(--divider); border-radius: 12px; background: transparent; color: var(--text-muted); font-size: 12.5px; cursor: pointer; }
+.check[aria-pressed="true"] { background: var(--accent-tint); color: var(--text); border-color: var(--accent); }
+.hint { font-size: 12.5px; color: var(--text-faint); }
 
-      /* phone */
-      .phone {
-        width: 380px;
-        height: 720px;
-        background: var(--ground);
-        border: 1px solid var(--divider);
-        border-radius: 34px;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
-        display: flex;
-        flex-direction: column;
-        flex: none;
-      }
-      .gallery .phone {
-        box-shadow: none;
-      }
-      .screen {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-      }
-      .scrim {
-        position: absolute;
-        inset: 0;
-        z-index: 20;
-        background: rgba(8, 9, 16, 0.5);
-      }
-      .ib {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        border: 1px solid var(--divider);
-        background: transparent;
-        color: var(--text);
-        display: grid;
-        place-items: center;
-        cursor: pointer;
-        padding: 0;
-        flex: none;
-        position: relative;
-      }
-      .ib[aria-pressed='true'] {
-        border-color: var(--accent);
-        background: var(--accent-tint);
-        color: var(--accent-text);
-      }
-      .ib .badge {
-        position: absolute;
-        top: -4px;
-        right: -4px;
-        min-width: 17px;
-        height: 17px;
-        border-radius: 9px;
-        background: var(--mine);
-        color: #10241f;
-        font-size: 10px;
-        font-weight: 700;
-        display: grid;
-        place-items: center;
-        padding: 0 4px;
-      }
-      .ic {
-        width: 20px;
-        height: 20px;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 1.7;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        flex: none;
-      }
-      .ic.sm {
-        width: 15px;
-        height: 15px;
-      }
+/* phone */
+.phone { width: 380px; height: 720px; background: var(--ground); border: 1px solid var(--divider); border-radius: 34px; position: relative; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.45); display: flex; flex-direction: column; flex: none; }
+.gallery .phone { box-shadow: none; }
+.screen { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.scrim { position: absolute; inset: 0; z-index: 20; background: rgba(8,9,16,.5); }
+.ib { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--divider); background: transparent; color: var(--text); display: grid; place-items: center; cursor: pointer; padding: 0; flex: none; position: relative; }
+.ib[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-tint); color: var(--accent-text); }
+.ib .badge { position: absolute; top: -4px; right: -4px; min-width: 17px; height: 17px; border-radius: 9px; background: var(--mine); color: #10241f; font-size: 10px; font-weight: 700; display: grid; place-items: center; padding: 0 4px; }
+.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.ic.sm { width: 15px; height: 15px; }
 
-      /* playback screen */
-      .hdr {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 16px 14px 6px;
-      }
-      .hdr .sp {
-        flex: 1;
-        min-width: 0;
-        font-size: 11px;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--accent-text);
-      }
-      .body {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding: 4px 20px 10px;
-        overflow: hidden;
-      }
-      .title {
-        font-size: 22px;
-        font-weight: 650;
-        line-height: 1.15;
-      }
-      .subtitle {
-        font-size: 13px;
-        color: var(--text-muted);
-        margin-top: 2px;
-      }
-      .ctxbar {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        border: 1px solid var(--mine);
-        background: var(--mine-tint);
-        border-radius: 12px;
-        padding: 7px 8px 7px 12px;
-        font-size: 12.5px;
-      }
-      .ctxbar b {
-        color: var(--mine);
-      }
-      .ctxbar span.g {
-        flex: 1;
-        min-width: 0;
-        line-height: 1.3;
-        color: var(--text-muted);
-      }
-      .wavewrap {
-        position: relative;
-        margin-top: 16px;
-      }
-      .wave {
-        height: 76px;
-        display: flex;
-        align-items: center;
-        gap: 2px;
-        position: relative;
-      }
-      .wave i {
-        flex: 1;
-        background: var(--accent);
-        border-radius: 2px;
-        opacity: 0.5;
-      }
-      .wave i.played {
-        opacity: 0.95;
-      }
-      .wave i.rec {
-        background: var(--rec);
-        opacity: 0.9;
-      }
-      .wave i.pz {
-        background: var(--rec);
-        opacity: 0.65;
-      }
-      .wave b.head {
-        position: absolute;
-        top: -4px;
-        bottom: -4px;
-        width: 2px;
-        background: var(--text);
-      }
-      .wave .loop {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        background: rgba(230, 193, 122, 0.14);
-        border-left: 2px solid var(--warning);
-        border-right: 2px solid var(--warning);
-        border-radius: 3px;
-      }
-      .wave .punch {
-        position: absolute;
-        top: -2px;
-        bottom: -2px;
-        background: repeating-linear-gradient(
-          135deg,
-          rgba(255, 93, 93, 0.22) 0 6px,
-          rgba(255, 93, 93, 0.08) 6px 12px
-        );
-        border-left: 2px solid var(--rec);
-        border-right: 2px solid var(--rec);
-        border-radius: 3px;
-      }
-      .flag {
-        position: absolute;
-        top: -17px;
-        transform: translateX(-1px);
-        font-size: 9.5px;
-        color: var(--text-muted);
-        border-left: 1.5px solid var(--text-faint);
-        padding-left: 4px;
-        white-space: nowrap;
-        line-height: 1.1;
-      }
-      .flag.next {
-        color: var(--accent-text);
-        border-color: var(--accent);
-      }
-      .flag.hot {
-        color: var(--rec);
-        border-color: var(--rec);
-      }
-      .lane {
-        height: 22px;
-        margin-top: 6px;
-        position: relative;
-        border-radius: 6px;
-        background: rgba(255, 255, 255, 0.03);
-      }
-      .lane span {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        border-radius: 6px;
-        background: var(--mine-tint);
-        border: 1px solid var(--mine);
-        font-size: 10px;
-        color: var(--mine);
-        display: flex;
-        align-items: center;
-        padding: 0 7px;
-        white-space: nowrap;
-        overflow: hidden;
-      }
-      .times {
-        display: flex;
-        justify-content: space-between;
-        font-family: var(--mono);
-        font-size: 11px;
-        color: var(--text-muted);
-        margin-top: 6px;
-      }
-      .chips {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .chip {
-        min-height: 30px;
-        padding: 0 12px;
-        border-radius: 999px;
-        border: 1px solid var(--divider);
-        background: transparent;
-        color: var(--text-muted);
-        font-size: 12px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        cursor: pointer;
-        white-space: nowrap;
-      }
-      .chip .ic {
-        width: 14px;
-        height: 14px;
-      }
-      .chip.lock {
-        border-color: var(--warning);
-        color: var(--warning);
-        background: rgba(230, 193, 122, 0.1);
-      }
-      .chip.on {
-        border-color: var(--accent);
-        background: var(--accent-tint);
-        color: var(--text);
-      }
-      .chip.mine {
-        border-color: var(--mine);
-        color: var(--mine);
-        background: var(--mine-tint);
-      }
-      .transport {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 22px;
-        margin-top: auto;
-        padding-bottom: 6px;
-      }
-      .ring {
-        width: 54px;
-        height: 54px;
-        border: 1.5px solid var(--accent);
-        border-radius: 50%;
-        display: grid;
-        place-items: center;
-        box-shadow: 0 0 18px rgba(145, 132, 217, 0.28);
-      }
-      .ring::after {
-        content: '';
-        width: 12px;
-        height: 16px;
-        border-left: 4px solid var(--accent-text);
-        border-right: 4px solid var(--accent-text);
-      }
+/* playback screen */
+.hdr { display: flex; align-items: center; gap: 8px; padding: 16px 14px 6px; }
+.hdr .sp { flex: 1; min-width: 0; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-text); }
+.body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; padding: 4px 20px 10px; overflow: hidden; }
+.title { font-size: 22px; font-weight: 650; line-height: 1.15; }
+.subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.ctxbar { display: flex; align-items: center; gap: 8px; border: 1px solid var(--mine); background: var(--mine-tint); border-radius: 12px; padding: 7px 8px 7px 12px; font-size: 12.5px; }
+.ctxbar b { color: var(--mine); }
+.ctxbar span.g { flex: 1; min-width: 0; line-height: 1.3; color: var(--text-muted); }
+.wavewrap { position: relative; margin-top: 16px; }
+.wave { height: 76px; display: flex; align-items: center; gap: 2px; position: relative; }
+.wave i { flex: 1; background: var(--accent); border-radius: 2px; opacity: .5; }
+.wave i.played { opacity: .95; }
+.wave i.rec { background: var(--rec); opacity: .9; }
+.wave i.pz { background: var(--rec); opacity: .65; }
+.wave b.head { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text); }
+.wave .loop { position: absolute; top: 0; bottom: 0; background: rgba(230,193,122,.14); border-left: 2px solid var(--warning); border-right: 2px solid var(--warning); border-radius: 3px; }
+.wave .punch { position: absolute; top: -2px; bottom: -2px; background: repeating-linear-gradient(135deg, rgba(255,93,93,.22) 0 6px, rgba(255,93,93,.08) 6px 12px); border-left: 2px solid var(--rec); border-right: 2px solid var(--rec); border-radius: 3px; }
+.flag { position: absolute; top: -17px; transform: translateX(-1px); font-size: 9.5px; color: var(--text-muted); border-left: 1.5px solid var(--text-faint); padding-left: 4px; white-space: nowrap; line-height: 1.1; }
+.flag.next { color: var(--accent-text); border-color: var(--accent); }
+.flag.hot { color: var(--rec); border-color: var(--rec); }
+.lane { height: 22px; margin-top: 6px; position: relative; border-radius: 6px; background: rgba(255,255,255,.03); }
+.lane span { position: absolute; top: 0; bottom: 0; border-radius: 6px; background: var(--mine-tint); border: 1px solid var(--mine); font-size: 10px; color: var(--mine); display: flex; align-items: center; padding: 0 7px; white-space: nowrap; overflow: hidden; }
+.times { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.chip { min-height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--divider); background: transparent; color: var(--text-muted); font-size: 12px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
+.chip .ic { width: 14px; height: 14px; }
+.chip.lock { border-color: var(--warning); color: var(--warning); background: rgba(230,193,122,.1); }
+.chip.on { border-color: var(--accent); background: var(--accent-tint); color: var(--text); }
+.chip.mine { border-color: var(--mine); color: var(--mine); background: var(--mine-tint); }
+.transport { display: flex; align-items: center; justify-content: center; gap: 22px; margin-top: auto; padding-bottom: 6px; }
+.ring { width: 54px; height: 54px; border: 1.5px solid var(--accent); border-radius: 50%; display: grid; place-items: center; box-shadow: 0 0 18px rgba(145,132,217,.28); }
+.ring::after { content: ""; width: 12px; height: 16px; border-left: 4px solid var(--accent-text); border-right: 4px solid var(--accent-text); }
 
-      /* docks */
-      .dock {
-        flex: none;
-        display: flex;
-        flex-direction: column;
-      }
-      .strip {
-        background: var(--surface-raised);
-        border-top: 1px solid var(--divider);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 10px 8px 14px;
-        min-height: 68px;
-      }
-      .strip .grow {
-        flex: 1;
-        min-width: 0;
-      }
-      .strip .big {
-        font-family: var(--mono);
-        font-size: 22px;
-        font-weight: 650;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .warnline {
-        color: var(--warning);
-        font-size: 12px;
-        font-weight: 600;
-      }
-      .recdot {
-        width: 11px;
-        height: 11px;
-        border-radius: 50%;
-        background: var(--rec);
-        box-shadow: 0 0 10px rgba(255, 93, 93, 0.7);
-        flex: none;
-      }
-      .strip .mk {
-        font-size: 12px;
-        color: var(--text-muted);
-        line-height: 1.3;
-      }
-      .strip .mk b {
-        color: var(--text);
-        font-weight: 600;
-      }
-      .strip .msg {
-        font-size: 13px;
-        color: var(--text-muted);
-        line-height: 1.3;
-      }
-      .strip .msg b {
-        color: var(--text);
-      }
-      .strip .msg.warn b {
-        color: var(--warning);
-      }
-      .stop {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        border: 0;
-        background: var(--rec);
-        display: grid;
-        place-items: center;
-        cursor: pointer;
-        flex: none;
-      }
-      .stop::after {
-        content: '';
-        width: 14px;
-        height: 14px;
-        border-radius: 3px;
-        background: #1b1c22;
-      }
-      .btn {
-        min-height: 36px;
-        border: 1px solid var(--accent);
-        background: transparent;
-        color: var(--accent-text);
-        border-radius: 999px;
-        padding: 0 14px;
-        font-size: 13px;
-        cursor: pointer;
-        white-space: nowrap;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .btn.primary {
-        background: var(--accent);
-        color: #14121f;
-        font-weight: 600;
-      }
-      .btn.danger {
-        border-color: var(--danger);
-        color: var(--danger);
-      }
-      .btn.quiet {
-        border-color: var(--divider);
-        color: var(--text-muted);
-      }
-      .btn.rec {
-        background: var(--rec);
-        border-color: var(--rec);
-        color: #1b1c22;
-        font-weight: 650;
-        border-radius: 999px 0 0 999px;
-        padding-right: 10px;
-      }
-      .btn.recdrop {
-        background: var(--rec);
-        border-color: var(--rec);
-        color: #1b1c22;
-        border-radius: 0 999px 999px 0;
-        padding: 0 10px;
-        border-left: 1px solid rgba(0, 0, 0, 0.25);
-      }
-      .split {
-        display: inline-flex;
-      }
-      .panel {
-        background: var(--surface-raised);
-        border-top: 1px solid var(--divider);
-        padding: 10px 14px 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .prow {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .prow .k {
-        width: 58px;
-        font-size: 10.5px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--text-faint);
-        flex: none;
-      }
-      .prow input[type='range'] {
-        flex: 1;
-        accent-color: var(--mine);
-        min-width: 0;
-      }
-      .prow .end {
-        font-size: 11px;
-        color: var(--text-muted);
-        width: 34px;
-        flex: none;
-        text-align: center;
-      }
-      .prow .end.r {
-        width: 56px;
-        font-family: var(--mono);
-        color: var(--text);
-      }
-      .mixhead {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        min-height: 36px;
-        background: transparent;
-        border: 0;
-        padding: 0;
-        color: var(--text);
-        font: inherit;
-        cursor: pointer;
-        text-align: left;
-      }
-      .mixhead .mh {
-        font-size: 13px;
-        font-weight: 600;
-      }
-      .mixhead .ms {
-        flex: 1;
-        text-align: right;
-        font-size: 12px;
-        color: var(--text-muted);
-        font-family: var(--mono);
-      }
-      .mixhead svg {
-        width: 16px;
-        height: 16px;
-        flex: none;
-        color: var(--text-muted);
-      }
-      .step {
-        min-width: 40px;
-        height: 34px;
-        border-radius: 10px;
-        border: 1px solid var(--divider);
-        background: transparent;
-        color: var(--text);
-        font-family: var(--mono);
-        font-size: 12px;
-        cursor: pointer;
-        padding: 0 6px;
-      }
-      .val {
-        font-family: var(--mono);
-        font-size: 14px;
-        font-weight: 600;
-        min-width: 62px;
-        text-align: center;
-        color: var(--mine);
-      }
-      .links {
-        display: flex;
-        gap: 14px;
-        font-size: 12px;
-        flex-wrap: wrap;
-      }
-      .links a {
-        color: var(--accent-text);
-        text-decoration: underline;
-        text-underline-offset: 3px;
-        cursor: pointer;
-      }
-      .mini {
-        height: 56px;
-        background: var(--surface-raised);
-        border-top: 1px solid var(--divider);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 0 14px;
-        flex: none;
-        font-size: 13px;
-        color: var(--text-muted);
-      }
-      .mini b {
-        color: var(--text);
-        display: block;
-        font-size: 13.5px;
-      }
-      .mini .art {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        background: var(--accent-tint);
-        flex: none;
-        display: grid;
-        place-items: center;
-        color: var(--mine);
-      }
-      .mini .pp {
-        margin-left: auto;
-        width: 34px;
-        height: 34px;
-        border: 1.5px solid var(--accent);
-        border-radius: 50%;
-        flex: none;
-      }
+/* docks */
+.dock { flex: none; display: flex; flex-direction: column; }
+.strip { background: var(--surface-raised); border-top: 1px solid var(--divider); display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; min-height: 68px; }
+.strip .grow { flex: 1; min-width: 0; }
+.strip .big { font-family: var(--mono); font-size: 22px; font-weight: 650; display: flex; align-items: center; gap: 8px; }
+.warnline { color: var(--warning); font-size: 12px; font-weight: 600; }
+.recdot { width: 11px; height: 11px; border-radius: 50%; background: var(--rec); box-shadow: 0 0 10px rgba(255,93,93,.7); flex: none; }
+.strip .mk { font-size: 12px; color: var(--text-muted); line-height: 1.3; }
+.strip .mk b { color: var(--text); font-weight: 600; }
+.strip .msg { font-size: 13px; color: var(--text-muted); line-height: 1.3; }
+.strip .msg b { color: var(--text); }
+.strip .msg.warn b { color: var(--warning); }
+.stop { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--rec); display: grid; place-items: center; cursor: pointer; flex: none; }
+.stop::after { content: ""; width: 14px; height: 14px; border-radius: 3px; background: #1b1c22; }
+.btn { min-height: 36px; border: 1px solid var(--accent); background: transparent; color: var(--accent-text); border-radius: 999px; padding: 0 14px; font-size: 13px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.btn.primary { background: var(--accent); color: #14121f; font-weight: 600; }
+.btn.danger { border-color: var(--danger); color: var(--danger); }
+.btn.quiet { border-color: var(--divider); color: var(--text-muted); }
+.btn.rec { background: var(--rec); border-color: var(--rec); color: #1b1c22; font-weight: 650; border-radius: 999px 0 0 999px; padding-right: 10px; }
+.btn.recdrop { background: var(--rec); border-color: var(--rec); color: #1b1c22; border-radius: 0 999px 999px 0; padding: 0 10px; border-left: 1px solid rgba(0,0,0,.25); }
+.split { display: inline-flex; }
+.panel { background: var(--surface-raised); border-top: 1px solid var(--divider); padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+.prow { display: flex; align-items: center; gap: 8px; }
+.prow .k { width: 58px; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); flex: none; }
+.prow input[type=range] { flex: 1; accent-color: var(--mine); min-width: 0; }
+.prow .end { font-size: 11px; color: var(--text-muted); width: 34px; flex: none; text-align: center; }
+.prow .end.r { width: 56px; font-family: var(--mono); color: var(--text); }
+.mixhead { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 36px; background: transparent; border: 0; padding: 0; color: var(--text); font: inherit; cursor: pointer; text-align: left; }
+.mixhead .mh { font-size: 13px; font-weight: 600; }
+.mixhead .ms { flex: 1; text-align: right; font-size: 12px; color: var(--text-muted); font-family: var(--mono); }
+.mixhead svg { width: 16px; height: 16px; flex: none; color: var(--text-muted); }
+.step { min-width: 40px; height: 34px; border-radius: 10px; border: 1px solid var(--divider); background: transparent; color: var(--text); font-family: var(--mono); font-size: 12px; cursor: pointer; padding: 0 6px; }
+.val { font-family: var(--mono); font-size: 14px; font-weight: 600; min-width: 62px; text-align: center; color: var(--mine); }
+.links { display: flex; gap: 14px; font-size: 12px; flex-wrap: wrap; }
+.links a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.mini { height: 56px; background: var(--surface-raised); border-top: 1px solid var(--divider); display: flex; align-items: center; gap: 12px; padding: 0 14px; flex: none; font-size: 13px; color: var(--text-muted); }
+.mini b { color: var(--text); display: block; font-size: 13.5px; }
+.mini .art { width: 36px; height: 36px; border-radius: 8px; background: var(--accent-tint); flex: none; display: grid; place-items: center; color: var(--mine); }
+.mini .pp { margin-left: auto; width: 34px; height: 34px; border: 1.5px solid var(--accent); border-radius: 50%; flex: none; }
 
-      /* menus and sheets */
-      .menu {
-        position: absolute;
-        z-index: 30;
-        right: 12px;
-        top: 58px;
-        width: 252px;
-        background: var(--surface);
-        border: 1px solid var(--divider);
-        border-radius: 16px;
-        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
-        padding: 6px 4px;
-      }
-      .menu.low {
-        top: auto;
-        bottom: 90px;
-        right: 14px;
-      }
-      .menu h4 {
-        margin: 4px 12px 2px;
-        font-size: 10px;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--text-faint);
-        font-weight: 500;
-      }
-      .mrow {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-height: 44px;
-        padding: 0 12px;
-        width: 100%;
-        border: 0;
-        background: transparent;
-        color: var(--text);
-        font-size: 14.5px;
-        text-align: left;
-        cursor: pointer;
-      }
-      .mrow .ic {
-        color: var(--text-muted);
-      }
-      .mrow[aria-checked='true'],
-      .mrow[aria-checked='true'] .ic {
-        color: var(--accent-text);
-      }
-      .mrow .sw {
-        margin-left: auto;
-      }
-      .mrow.danger,
-      .mrow.danger .ic {
-        color: var(--danger);
-      }
-      .sw {
-        width: 40px;
-        height: 24px;
-        border-radius: 12px;
-        background: var(--surface);
-        border: 1px solid var(--divider);
-        position: relative;
-        flex: none;
-        cursor: pointer;
-      }
-      .sw::after {
-        content: '';
-        position: absolute;
-        top: 2px;
-        left: 2px;
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        background: var(--text-muted);
-      }
-      .sw.on {
-        background: var(--accent-deep);
-        border-color: var(--accent);
-      }
-      .sw.on::after {
-        left: 18px;
-        background: var(--accent-text);
-      }
-      .sheet {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 25;
-        max-height: 90%;
-        overflow: hidden;
-        background: var(--surface);
-        border-top: 1px solid var(--divider);
-        border-radius: 20px 20px 0 0;
-        padding: 8px 16px 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .sheet .grab {
-        width: 40px;
-        height: 4px;
-        border-radius: 4px;
-        background: var(--divider);
-        margin: 0 auto 4px;
-        flex: none;
-      }
-      .sheet h3 {
-        margin: 2px 0 0;
-        font-size: 17px;
-      }
-      .sheet .sub {
-        font-size: 12.5px;
-        color: var(--text-muted);
-      }
-      .sheet .acts {
-        display: flex;
-        gap: 8px;
-        justify-content: flex-end;
-        margin-top: 4px;
-        flex-wrap: wrap;
-      }
-      .field {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-      .field small,
-      .cap2 {
-        font-size: 10.5px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--text-faint);
-      }
-      .input {
-        min-height: 40px;
-        border: 1px solid var(--divider);
-        border-radius: 10px;
-        background: var(--ground);
-        color: var(--text);
-        padding: 0 12px;
-        display: flex;
-        align-items: center;
-        font-size: 14px;
-        gap: 8px;
-      }
-      .input input {
-        flex: 1;
-        min-width: 0;
-        background: transparent;
-        border: 0;
-        color: var(--text);
-        font: inherit;
-        font-size: 14px;
-        outline: none;
-      }
-      .seg {
-        display: flex;
-        border: 1px solid var(--divider);
-        border-radius: 12px;
-        overflow: hidden;
-      }
-      .seg span {
-        flex: 1;
-        text-align: center;
-        padding: 9px 6px;
-        font-size: 13px;
-        color: var(--text-muted);
-        border-right: 1px solid var(--divider);
-        cursor: pointer;
-        white-space: nowrap;
-      }
-      .seg span:last-child {
-        border-right: 0;
-      }
-      .seg span.on {
-        background: var(--accent-tint);
-        color: var(--text);
-        box-shadow: inset 0 0 0 1px var(--accent);
-      }
-      .optrow {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-height: 44px;
-        border-bottom: 1px solid rgba(63, 66, 77, 0.55);
-        font-size: 14px;
-      }
-      .optrow:last-child {
-        border-bottom: 0;
-      }
-      .optrow small {
-        display: block;
-        color: var(--text-muted);
-        font-size: 12px;
-      }
-      .optrow .r {
-        margin-left: auto;
-        font-family: var(--mono);
-        font-size: 12px;
-        color: var(--text-muted);
-        white-space: nowrap;
-      }
-      .prog {
-        height: 8px;
-        border-radius: 4px;
-        background: var(--ground);
-        overflow: hidden;
-        border: 1px solid var(--divider);
-      }
-      .prog i {
-        display: block;
-        height: 100%;
-        background: var(--accent);
-      }
-      .note {
-        border: 1px solid var(--divider);
-        border-radius: 12px;
-        padding: 10px 12px;
-        font-size: 12.5px;
-        color: var(--text-muted);
-      }
-      .note.warn {
-        border-color: var(--warning);
-        color: var(--warning);
-        background: rgba(230, 193, 122, 0.08);
-      }
-      .note.ok {
-        border-color: var(--success);
-        color: var(--success);
-        background: rgba(129, 201, 149, 0.08);
-      }
-      .note.bad {
-        border-color: var(--danger);
-        color: var(--danger);
-        background: rgba(242, 139, 130, 0.08);
-      }
-      .cb {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 13px;
-        color: var(--text-muted);
-        min-height: 36px;
-        cursor: pointer;
-      }
-      .cb i {
-        width: 20px;
-        height: 20px;
-        border-radius: 6px;
-        border: 1.5px solid var(--text-faint);
-        display: grid;
-        place-items: center;
-        flex: none;
-      }
-      .cb i.on {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: #14121f;
-      }
+/* menus and sheets */
+.menu { position: absolute; z-index: 30; right: 12px; top: 58px; width: 252px; background: var(--surface); border: 1px solid var(--divider); border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,.55); padding: 6px 4px; }
+.menu.low { top: auto; bottom: 90px; right: 14px; }
+.menu h4 { margin: 4px 12px 2px; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-faint); font-weight: 500; }
+.mrow { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; width: 100%; border: 0; background: transparent; color: var(--text); font-size: 14.5px; text-align: left; cursor: pointer; }
+.mrow .ic { color: var(--text-muted); }
+.mrow[aria-checked="true"], .mrow[aria-checked="true"] .ic { color: var(--accent-text); }
+.mrow .sw { margin-left: auto; }
+.mrow.danger, .mrow.danger .ic { color: var(--danger); }
+.sw { width: 40px; height: 24px; border-radius: 12px; background: var(--surface); border: 1px solid var(--divider); position: relative; flex: none; cursor: pointer; }
+.sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--text-muted); }
+.sw.on { background: var(--accent-deep); border-color: var(--accent); }
+.sw.on::after { left: 18px; background: var(--accent-text); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 25; max-height: 90%; overflow: hidden; background: var(--surface); border-top: 1px solid var(--divider); border-radius: 20px 20px 0 0; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.sheet .grab { width: 40px; height: 4px; border-radius: 4px; background: var(--divider); margin: 0 auto 4px; flex: none; }
+.sheet h3 { margin: 2px 0 0; font-size: 17px; }
+.sheet .sub { font-size: 12.5px; color: var(--text-muted); }
+.sheet .acts { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; flex-wrap: wrap; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field small, .cap2 { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); }
+.input { min-height: 40px; border: 1px solid var(--divider); border-radius: 10px; background: var(--ground); color: var(--text); padding: 0 12px; display: flex; align-items: center; font-size: 14px; gap: 8px; }
+.input input { flex: 1; min-width: 0; background: transparent; border: 0; color: var(--text); font: inherit; font-size: 14px; outline: none; }
+.seg { display: flex; border: 1px solid var(--divider); border-radius: 12px; overflow: hidden; }
+.seg span { flex: 1; text-align: center; padding: 9px 6px; font-size: 13px; color: var(--text-muted); border-right: 1px solid var(--divider); cursor: pointer; white-space: nowrap; }
+.seg span:last-child { border-right: 0; }
+.seg span.on { background: var(--accent-tint); color: var(--text); box-shadow: inset 0 0 0 1px var(--accent); }
+.optrow { display: flex; align-items: center; gap: 10px; min-height: 44px; border-bottom: 1px solid rgba(63,66,77,.55); font-size: 14px; }
+.optrow:last-child { border-bottom: 0; }
+.optrow small { display: block; color: var(--text-muted); font-size: 12px; }
+.optrow .r { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.prog { height: 8px; border-radius: 4px; background: var(--ground); overflow: hidden; border: 1px solid var(--divider); }
+.prog i { display: block; height: 100%; background: var(--accent); }
+.note { border: 1px solid var(--divider); border-radius: 12px; padding: 10px 12px; font-size: 12.5px; color: var(--text-muted); }
+.note.warn { border-color: var(--warning); color: var(--warning); background: rgba(230,193,122,.08); }
+.note.ok { border-color: var(--success); color: var(--success); background: rgba(129,201,149,.08); }
+.note.bad { border-color: var(--danger); color: var(--danger); background: rgba(242,139,130,.08); }
+.cb { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-muted); min-height: 36px; cursor: pointer; }
+.cb i { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--text-faint); display: grid; place-items: center; flex: none; }
+.cb i.on { background: var(--accent); border-color: var(--accent); color: #14121f; }
 
-      /* recording rows */
-      .rec-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 0;
-        border-bottom: 1px solid rgba(63, 66, 77, 0.55);
-        min-height: 56px;
-        cursor: pointer;
-      }
-      .rec-row:last-child {
-        border-bottom: 0;
-      }
-      .rec-row .t {
-        flex: 1;
-        min-width: 0;
-      }
-      .rec-row .t b {
-        display: flex;
-        gap: 6px;
-        align-items: center;
-        font-size: 14px;
-        font-weight: 600;
-        flex-wrap: wrap;
-      }
-      .rec-row .t span {
-        display: block;
-        font-size: 12px;
-        color: var(--text-muted);
-      }
-      .tag {
-        font-size: 10px;
-        border: 1px solid var(--divider);
-        border-radius: 999px;
-        padding: 1px 7px;
-        color: var(--text-muted);
-        font-weight: 500;
-        white-space: nowrap;
-      }
-      .tag.loop {
-        border-color: var(--warning);
-        color: var(--warning);
-      }
-      .tag.adj {
-        border-color: var(--accent);
-        color: var(--accent-text);
-      }
-      .tag.chg {
-        border-color: var(--danger);
-        color: var(--danger);
-      }
-      .tag.kept {
-        border-color: var(--success);
-        color: var(--success);
-      }
-      .tag.auto {
-        border-color: var(--divider);
-        color: var(--text-faint);
-      }
-      .tag.punch {
-        border-color: var(--rec);
-        color: var(--rec);
-      }
-      .tag.gone {
-        border-color: var(--danger);
-        color: var(--danger);
-      }
-      .group {
-        font-size: 10.5px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--text-faint);
-        margin: 8px 0 0;
-        display: flex;
-        justify-content: space-between;
-      }
-      .group b {
-        color: var(--text-muted);
-        font-weight: 500;
-        letter-spacing: 0;
-        text-transform: none;
-        font-size: 12px;
-      }
-      .total {
-        display: flex;
-        justify-content: space-between;
-        font-size: 12px;
-        color: var(--text-muted);
-        font-family: var(--mono);
-        padding-top: 6px;
-      }
-      .rad {
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        border: 1.5px solid var(--text-faint);
-        flex: none;
-        display: grid;
-        place-items: center;
-        color: #14121f;
-      }
-      .rad.on {
-        background: var(--accent);
-        border-color: var(--accent);
-      }
+/* recording rows */
+.rec-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(63,66,77,.55); min-height: 56px; cursor: pointer; }
+.rec-row:last-child { border-bottom: 0; }
+.rec-row .t { flex: 1; min-width: 0; }
+.rec-row .t b { display: flex; gap: 6px; align-items: center; font-size: 14px; font-weight: 600; flex-wrap: wrap; }
+.rec-row .t span { display: block; font-size: 12px; color: var(--text-muted); }
+.tag { font-size: 10px; border: 1px solid var(--divider); border-radius: 999px; padding: 1px 7px; color: var(--text-muted); font-weight: 500; white-space: nowrap; }
+.tag.loop { border-color: var(--warning); color: var(--warning); }
+.tag.adj { border-color: var(--accent); color: var(--accent-text); }
+.tag.chg { border-color: var(--danger); color: var(--danger); }
+.tag.kept { border-color: var(--success); color: var(--success); }
+.tag.auto { border-color: var(--divider); color: var(--text-faint); }
+.tag.punch { border-color: var(--rec); color: var(--rec); }
+.tag.gone { border-color: var(--danger); color: var(--danger); }
+.group { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); margin: 8px 0 0; display: flex; justify-content: space-between; }
+.group b { color: var(--text-muted); font-weight: 500; letter-spacing: 0; text-transform: none; font-size: 12px; }
+.total { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); font-family: var(--mono); padding-top: 6px; }
+.rad { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--text-faint); flex: none; display: grid; place-items: center; color: #14121f; }
+.rad.on { background: var(--accent); border-color: var(--accent); }
 
-      /* library, playlist, settings screens */
-      .lib {
-        flex: 1;
-        min-height: 0;
-        padding: 16px 16px 8px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        overflow: hidden;
-      }
-      .lib h3 {
-        margin: 0;
-        font-size: 24px;
-      }
-      .lib .top {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .lib .top h3 {
-        flex: 1;
-      }
-      .fchips {
-        display: flex;
-        gap: 6px;
-        overflow: hidden;
-        flex: none;
-        flex-wrap: wrap;
-      }
-      .list {
-        flex: 1;
-        min-height: 0;
-        overflow: hidden;
-      }
-      .ptitem {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-height: 58px;
-        border-bottom: 1px solid rgba(63, 66, 77, 0.55);
-      }
-      .ptitem .art {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        background: var(--accent-tint);
-        flex: none;
-        display: grid;
-        place-items: center;
-        color: var(--accent-text);
-      }
-      .ptitem .art.rc {
-        background: var(--mine-tint);
-        color: var(--mine);
-      }
-      .ptitem b {
-        display: flex;
-        gap: 6px;
-        align-items: center;
-        font-size: 14px;
-        flex-wrap: wrap;
-      }
-      .ptitem span.s {
-        display: block;
-        font-size: 12px;
-        color: var(--text-muted);
-      }
-      .ptitem.dis {
-        opacity: 0.5;
-      }
-      .ptitem .r {
-        margin-left: auto;
-        color: var(--text-faint);
-      }
-      .selbar {
-        background: var(--surface-raised);
-        border-top: 1px solid var(--divider);
-        padding: 8px 10px 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        flex: none;
-      }
-      .selbar .row {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-      }
-      .selbar .cnt {
-        font-size: 13px;
-        color: var(--text);
-      }
-      .setrow {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-height: 52px;
-        border-bottom: 1px solid rgba(63, 66, 77, 0.55);
-        font-size: 14.5px;
-      }
-      .setrow small {
-        display: block;
-        color: var(--text-muted);
-        font-size: 12px;
-      }
-      .setrow .r {
-        margin-left: auto;
-        font-family: var(--mono);
-        font-size: 13px;
-        color: var(--text-muted);
-      }
+/* library, playlist, settings screens */
+.lib { flex: 1; min-height: 0; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+.lib h3 { margin: 0; font-size: 24px; }
+.lib .top { display: flex; align-items: center; gap: 8px; }
+.lib .top h3 { flex: 1; }
+.fchips { display: flex; gap: 6px; overflow: hidden; flex: none; flex-wrap: wrap; }
+.list { flex: 1; min-height: 0; overflow: hidden; }
+.ptitem { display: flex; align-items: center; gap: 12px; min-height: 58px; border-bottom: 1px solid rgba(63,66,77,.55); }
+.ptitem .art { width: 36px; height: 36px; border-radius: 8px; background: var(--accent-tint); flex: none; display: grid; place-items: center; color: var(--accent-text); }
+.ptitem .art.rc { background: var(--mine-tint); color: var(--mine); }
+.ptitem b { display: flex; gap: 6px; align-items: center; font-size: 14px; flex-wrap: wrap; }
+.ptitem span.s { display: block; font-size: 12px; color: var(--text-muted); }
+.ptitem.dis { opacity: .5; }
+.ptitem .r { margin-left: auto; color: var(--text-faint); }
+.selbar { background: var(--surface-raised); border-top: 1px solid var(--divider); padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 8px; flex: none; }
+.selbar .row { display: flex; gap: 6px; flex-wrap: wrap; }
+.selbar .cnt { font-size: 13px; color: var(--text); }
+.setrow { display: flex; align-items: center; gap: 10px; min-height: 52px; border-bottom: 1px solid rgba(63,66,77,.55); font-size: 14.5px; }
+.setrow small { display: block; color: var(--text-muted); font-size: 12px; }
+.setrow .r { margin-left: auto; font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
 
-      /* punch setup */
-      .pwave {
-        position: relative;
-        height: 84px;
-        margin-top: 22px;
-      }
-      .pwave .bars {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        gap: 2px;
-      }
-      .pwave .bars i {
-        flex: 1;
-        background: var(--accent);
-        opacity: 0.4;
-        border-radius: 2px;
-      }
-      .pwave .bars i.in {
-        background: var(--rec);
-        opacity: 0.85;
-      }
-      .pwave .sel {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        background: rgba(255, 93, 93, 0.12);
-        border-left: 2px solid var(--rec);
-        border-right: 2px solid var(--rec);
-        pointer-events: none;
-      }
-      .pwave .lbl {
-        position: absolute;
-        top: -18px;
-        font-size: 10.5px;
-        font-family: var(--mono);
-        color: var(--rec);
-        transform: translateX(-50%);
-        white-space: nowrap;
-        background: var(--surface);
-        padding: 0 3px;
-      }
-      .pwave input[type='range'] {
-        position: absolute;
-        left: -8px;
-        width: calc(100% + 16px);
-        top: 0;
-        height: 100%;
-        margin: 0;
-        appearance: none;
-        -webkit-appearance: none;
-        background: transparent;
-        pointer-events: none;
-      }
-      .pwave input[type='range']::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        pointer-events: auto;
-        width: 16px;
-        height: 100%;
-        background: transparent;
-        border: 0;
-        cursor: ew-resize;
-      }
-      .pwave input[type='range']::-moz-range-thumb {
-        pointer-events: auto;
-        width: 16px;
-        height: 84px;
-        background: transparent;
-        border: 0;
-        cursor: ew-resize;
-        border-radius: 0;
-      }
-      .pwave .grip {
-        position: absolute;
-        top: 50%;
-        width: 14px;
-        height: 30px;
-        margin: -15px 0 0 -7px;
-        border-radius: 7px;
-        background: var(--rec);
-        box-shadow: 0 0 0 3px rgba(255, 93, 93, 0.25);
-        pointer-events: none;
-      }
-      .pflags {
-        position: relative;
-        height: 18px;
-        margin-top: 2px;
-      }
-      .pflags span {
-        position: absolute;
-        font-size: 9.5px;
-        color: var(--text-muted);
-        transform: translateX(-50%);
-        cursor: pointer;
-        padding: 2px 4px;
-        border-radius: 6px;
-        white-space: nowrap;
-      }
-      .pflags span:hover {
-        background: var(--accent-tint);
-        color: var(--text);
-      }
-      .ptime {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .ptime .k {
-        width: 34px;
-        font-size: 11px;
-        color: var(--rec);
-        font-weight: 650;
-        letter-spacing: 0.06em;
-      }
-      .ptime .v {
-        font-family: var(--mono);
-        font-size: 15px;
-        font-weight: 650;
-        min-width: 56px;
-      }
-      .ptime .nm {
-        font-size: 11.5px;
-        color: var(--text-muted);
-        flex: 1;
-        min-width: 0;
-      }
+/* punch setup */
+.pwave { position: relative; height: 84px; margin-top: 22px; }
+.pwave .bars { position: absolute; inset: 0; display: flex; align-items: center; gap: 2px; }
+.pwave .bars i { flex: 1; background: var(--accent); opacity: .4; border-radius: 2px; }
+.pwave .bars i.in { background: var(--rec); opacity: .85; }
+.pwave .sel { position: absolute; top: 0; bottom: 0; background: rgba(255,93,93,.12); border-left: 2px solid var(--rec); border-right: 2px solid var(--rec); pointer-events: none; }
+.pwave .lbl { position: absolute; top: -18px; font-size: 10.5px; font-family: var(--mono); color: var(--rec); transform: translateX(-50%); white-space: nowrap; background: var(--surface); padding: 0 3px; }
+.pwave input[type=range] { position: absolute; left: -8px; width: calc(100% + 16px); top: 0; height: 100%; margin: 0; appearance: none; -webkit-appearance: none; background: transparent; pointer-events: none; }
+.pwave input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; pointer-events: auto; width: 16px; height: 100%; background: transparent; border: 0; cursor: ew-resize; }
+.pwave input[type=range]::-moz-range-thumb { pointer-events: auto; width: 16px; height: 84px; background: transparent; border: 0; cursor: ew-resize; border-radius: 0; }
+.pwave .grip { position: absolute; top: 50%; width: 14px; height: 30px; margin: -15px 0 0 -7px; border-radius: 7px; background: var(--rec); box-shadow: 0 0 0 3px rgba(255,93,93,.25); pointer-events: none; }
+.pflags { position: relative; height: 18px; margin-top: 2px; }
+.pflags span { position: absolute; font-size: 9.5px; color: var(--text-muted); transform: translateX(-50%); cursor: pointer; padding: 2px 4px; border-radius: 6px; white-space: nowrap; }
+.pflags span:hover { background: var(--accent-tint); color: var(--text); }
+.ptime { display: flex; align-items: center; gap: 6px; }
+.ptime .k { width: 34px; font-size: 11px; color: var(--rec); font-weight: 650; letter-spacing: .06em; }
+.ptime .v { font-family: var(--mono); font-size: 15px; font-weight: 650; min-width: 56px; }
+.ptime .nm { font-size: 11.5px; color: var(--text-muted); flex: 1; min-width: 0; }
 
-      /* gallery */
-      .gallery {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(236px, 1fr));
-        gap: 22px 18px;
-      }
-      .gcell {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .gcell .cap b {
-        display: block;
-        font-size: 13.5px;
-      }
-      .gcell .cap span {
-        font-size: 12px;
-        color: var(--text-faint);
-      }
-      .gframe {
-        width: 100%;
-        aspect-ratio: 380 / 720;
-        position: relative;
-      }
-      .gframe .phone {
-        position: absolute;
-        left: 0;
-        top: 0;
-        transform-origin: top left;
-        pointer-events: none;
-      }
-      .gh {
-        grid-column: 1 / -1;
-        margin-top: 10px;
-      }
-      .gh h2 {
-        margin: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <header>
-        <div class="kicker">rehearsal-recording · design mock</div>
-        <h1>Record, view, overlay, and manage recordings</h1>
-        <p>
-          An interactive phone and a gallery of every screen the change adds.
-          Press the state buttons, or use the controls inside the phone (rows
-          open, switches switch, handles drag, search types). Nothing is
-          recorded or saved. This is the page for task 1.5: approve or mark up
-          what you want changed.
-        </p>
-        <ul class="dec">
-          <li>
-            <b>Recordings are not files.</b> They live under their track or
-            loop. Open them from <b>More actions → Recordings</b> (no top-level
-            button or badge), whether or not the Recording tool is on. The tool
-            only controls the strip.
-          </li>
-          <li>
-            <b>Where they show:</b> a track lists its own recordings and, in a
-            <b>Loops</b> section, its loops' recordings. A loop lists only its
-            own. A recording on an adjusted copy shows under the copy and under
-            its parent, labelled with the adjustment.
-          </li>
-          <li>
-            <b>Playing one</b> plays it as an item in its recorded context,
-            locked: the loop, the adjusted copy, or the recorded segment only,
-            with its speed and pitch applied (even if never saved). Playing
-            anything else leaves it; there is no separate Leave control (user
-            decision 2026-11-02).
-          </li>
-          <li>
-            <b>Punch in / out:</b> <b>Record ▾ → Record between…</b> opens a
-            sheet with the waveform. Drag the In and Out handles (they snap to
-            markers), tap marker flags, or type times; set a pre-roll;
-            <b>Arm</b>. Play from the pre-roll and it starts and stops itself.
-          </li>
-          <li>
-            <b>Storage:</b> the raw recording is kept on the device and never
-            purged; only you delete it. There is no recordings cache: the
-            overlay uses the track's existing caches, and
-            <b>Keep track offline</b> on a recording makes the overlay work
-            offline. <b>Auto-export</b> copies recordings to a Drive folder (set
-            in Settings), as the recording, the mix, or both, over Wi-Fi by
-            default where the browser can tell.
-          </li>
-          <li>
-            <b>Library:</b> a <b>Recordings</b> view to browse, search, filter,
-            and act on all of them. Recordings can be queued and added to
-            playlists.
-          </li>
-        </ul>
-      </header>
+/* gallery */
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(236px, 1fr)); gap: 22px 18px; }
+.gcell { display: flex; flex-direction: column; gap: 8px; }
+.gcell .cap b { display: block; font-size: 13.5px; }
+.gcell .cap span { font-size: 12px; color: var(--text-faint); }
+.gframe { width: 100%; aspect-ratio: 380 / 720; position: relative; }
+.gframe .phone { position: absolute; left: 0; top: 0; transform-origin: top left; pointer-events: none; }
+.gh { grid-column: 1 / -1; margin-top: 10px; }
+.gh h2 { margin: 0; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="kicker">rehearsal-recording · design mock</div>
+    <h1>Record, view, overlay, and manage recordings</h1>
+    <p>An interactive phone and a gallery of every screen the change adds. Press the state buttons, or use the controls inside the phone (rows open, switches switch, handles drag, search types). Nothing is recorded or saved. This is the page for task 1.5: approve or mark up what you want changed.</p>
+    <ul class="dec">
+      <li><b>Recordings are not files.</b> They live under their track or loop. Open them from <b>More actions → Recordings</b> (no top-level button or badge), whether or not the Recording tool is on. The tool only controls the strip.</li>
+      <li><b>Where they show:</b> a track lists its own recordings and, in a <b>Loops</b> section, its loops' recordings. A loop lists only its own. A recording on an adjusted copy shows under the copy and under its parent, labelled with the adjustment.</li>
+      <li><b>Playing one</b> plays it as an item in its recorded context, locked: the loop, the adjusted copy, or the recorded segment only, with its speed and pitch applied (even if never saved). Playing anything else leaves it; there is no separate Leave control (user decision 2026-11-02).</li>
+      <li><b>Punch in / out:</b> <b>Record ▾ → Record between…</b> opens a sheet with the waveform. Drag the In and Out handles (they snap to markers), tap marker flags, or type times; set a pre-roll; <b>Arm</b>. Play from the pre-roll and it starts and stops itself.</li>
+      <li><b>Storage:</b> the raw recording is kept on the device and never purged; only you delete it. There is no recordings cache: the overlay uses the track's existing caches, and <b>Keep track offline</b> on a recording makes the overlay work offline. <b>Auto-export</b> copies recordings to a Drive folder (set in Settings), as the recording, the mix, or both, over Wi-Fi by default where the browser can tell.</li>
+      <li><b>Library:</b> a <b>Recordings</b> view to browse, search, filter, and act on all of them. Recordings can be queued and added to playlists.</li>
+    </ul>
+  </header>
 
-      <section class="stage" aria-label="Interactive phone">
-        <div id="live"></div>
-        <div class="controls" id="controls"></div>
-      </section>
+  <section class="stage" aria-label="Interactive phone">
+    <div id="live"></div>
+    <div class="controls" id="controls"></div>
+  </section>
 
-      <section>
-        <h2>Every screen</h2>
-        <p>The same renderer at a glance.</p>
-        <div class="gallery" id="gallery" style="margin-top: 16px"></div>
-      </section>
-    </main>
+  <section>
+    <h2>Every screen</h2>
+    <p>The same renderer at a glance.</p>
+    <div class="gallery" id="gallery" style="margin-top:16px"></div>
+  </section>
+</main>
 
-    <script>
-      const $ = (q) => document.querySelector(q);
-      const I = {
-        tool: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 8h16v11H4zM9 8V5h6v3M4 13h16"/></svg>',
-        mic: '<svg class="ic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
-        rec: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>',
-        piano:
-          '<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 6v12M12 6v12M16 6v12"/></svg>',
-        lock: '<svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
-        dots: '<svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>',
-        down: '<svg class="ic" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
-        back: '<svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
-        drive:
-          '<svg class="ic" viewBox="0 0 24 24"><path d="M9 4h6l6 10-3 5H6l-3-5zM9 4l6 10M15 4L9 14"/></svg>',
-        close:
-          '<svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
-        search:
-          '<svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>',
-        filter:
-          '<svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
-        check:
-          '<svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;stroke-width:3"><path d="M5 12l5 5 9-10"/></svg>',
-        list: '<svg class="ic" viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9"/></svg>',
-        pin: '<svg class="ic sm" viewBox="0 0 24 24"><path d="M12 3v10M8 13h8M12 13v8"/></svg>',
-      };
-      const TRACK_LEN = 205;
-      const MARKS = [
-        [0.06, 'Intro'],
-        [0.28, 'Verse 2'],
-        [0.55, 'Chorus'],
-        [0.8, 'Bridge'],
-      ];
-      const BARS = Array.from(
-        { length: 64 },
-        (_, i) =>
-          18 +
-          52 * Math.abs(Math.sin(i * 0.7) * Math.cos(i * 0.23)) +
-          (i % 5) * 3,
-      );
-      const fmtT = (f) => {
-        const s = Math.round(f * TRACK_LEN);
-        return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
-      };
-      const nearest = (f) =>
-        MARKS.reduce((a, m) =>
-          Math.abs(m[0] - f) < Math.abs(a[0] - f) ? m : a,
-        );
+<script>
+const $ = (q) => document.querySelector(q);
+const I = {
+  tool: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 8h16v11H4zM9 8V5h6v3M4 13h16"/></svg>',
+  mic: '<svg class="ic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  rec: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>',
+  piano: '<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 6v12M12 6v12M16 6v12"/></svg>',
+  lock: '<svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  dots: '<svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>',
+  down: '<svg class="ic" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
+  back: '<svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
+  drive: '<svg class="ic" viewBox="0 0 24 24"><path d="M9 4h6l6 10-3 5H6l-3-5zM9 4l6 10M15 4L9 14"/></svg>',
+  close: '<svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  search: '<svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>',
+  filter: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
+  check: '<svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px;stroke-width:3"><path d="M5 12l5 5 9-10"/></svg>',
+  list: '<svg class="ic" viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9"/></svg>',
+  pin: '<svg class="ic sm" viewBox="0 0 24 24"><path d="M12 3v10M8 13h8M12 13v8"/></svg>'
+};
+const TRACK_LEN = 205;
+const MARKS = [[0.06, 'Intro'], [0.28, 'Verse 2'], [0.55, 'Chorus'], [0.8, 'Bridge']];
+const BARS = Array.from({ length: 64 }, (_, i) => 18 + 52 * Math.abs(Math.sin(i * 0.7) * Math.cos(i * 0.23)) + (i % 5) * 3);
+const fmtT = (f) => { const s = Math.round(f * TRACK_LEN); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const nearest = (f) => MARKS.reduce((a, m) => (Math.abs(m[0] - f) < Math.abs(a[0] - f) ? m : a));
 
-      /* the recordings: a small library. track: 'T' (Sleep Song), 'A' (its 0.7x copy), 'H' (Hymn 4). */
-      const RECS = [
-        {
-          id: 1,
-          name: 'Recording 1',
-          track: 'T',
-          kind: 'segment',
-          span: 'Verse 2 → Chorus',
-          a: 0.28,
-          b: 0.55,
-          when: 'Today 10:42',
-          len: '0:41',
-          size: '3.6 MB',
-          drv: 'ok',
-          ov: null,
-          shaping: '0.7× · +2',
-        },
-        {
-          id: 2,
-          name: 'Recording 2',
-          track: 'T',
-          kind: 'loop',
-          loop: 'Chorus',
-          span: '3 passes',
-          a: 0.55,
-          b: 0.8,
-          when: 'Today 10:58',
-          len: '1:12',
-          size: '6.2 MB',
-          drv: 'ok',
-          ov: 'kept',
-          shaping: '1× · 0',
-        },
-        {
-          id: 3,
-          name: 'Recording 3',
-          track: 'A',
-          kind: 'whole',
-          span: 'Whole track',
-          a: 0,
-          b: 1,
-          when: 'Yesterday',
-          len: '3:25',
-          size: '17 MB',
-          drv: 'pending',
-          ov: null,
-          shaping: '0.7× · +2',
-          copy: '0.7× copy',
-        },
-        {
-          id: 4,
-          name: 'Recording 4',
-          track: 'A',
-          kind: 'loop',
-          loop: 'Bridge',
-          span: '2 passes',
-          a: 0.8,
-          b: 1,
-          when: 'Yesterday',
-          len: '0:35',
-          size: '3.0 MB',
-          drv: 'failed',
-          ov: null,
-          shaping: '0.7× · +2',
-          copy: '0.7× copy',
-        },
-        {
-          id: 5,
-          name: 'Recording 5',
-          track: 'T',
-          kind: 'punch',
-          span: 'Chorus → Bridge',
-          a: 0.55,
-          b: 0.8,
-          when: 'Oct 29',
-          len: '0:27',
-          size: '2.3 MB',
-          drv: 'none',
-          ov: null,
-          shaping: '1× · 0',
-        },
-        {
-          id: 6,
-          name: 'Recording 1',
-          track: 'H',
-          kind: 'segment',
-          span: '1:42 → 2:10',
-          a: 0.5,
-          b: 0.63,
-          when: 'Oct 28',
-          len: '0:28',
-          size: '2.4 MB',
-          drv: 'none',
-          ov: null,
-          shaping: '1× · 0',
-          changed: true,
-          net: true,
-        },
-        {
-          id: 7,
-          name: 'Recording 2',
-          track: 'H',
-          kind: 'whole',
-          span: 'Whole track',
-          a: 0,
-          b: 1,
-          when: 'Oct 27',
-          len: '4:02',
-          size: '20 MB',
-          drv: 'ok',
-          ov: 'track',
-          shaping: '1× · 0',
-        },
-      ];
-      const TRACKS = {
-        T: 'Sleep Song – Soprano',
-        A: 'Sleep Song – Soprano (0.7× copy)',
-        H: 'Hymn 4 – Bass',
-      };
-      const rec = (id) => RECS.find((r) => r.id === id);
-      const tagsOf = (r) =>
-        [
-          r.kind === 'loop'
-            ? `<span class="tag loop">Loop · ${r.loop}</span>`
-            : '',
-          r.kind === 'punch' ? '<span class="tag punch">Punch</span>' : '',
-          r.copy ? `<span class="tag adj">${r.copy}</span>` : '',
-          r.changed ? '<span class="tag chg">Original changed</span>' : '',
-          r.drv === 'ok'
-            ? '<span class="tag kept">On Drive</span>'
-            : r.drv === 'pending'
-              ? '<span class="tag auto" data-act="status">Upload pending</span>'
-              : r.drv === 'failed'
-                ? '<span class="tag gone" data-act="status">Upload failed</span>'
-                : '',
-          r.net ? '<span class="tag chg">Needs connection</span>' : '',
-        ].join('');
+/* the recordings: a small library. track: 'T' (Sleep Song), 'A' (its 0.7x copy), 'H' (Hymn 4). */
+const RECS = [
+  { id: 1, name: 'Recording 1', track: 'T', kind: 'segment', span: 'Verse 2 → Chorus', a: 0.28, b: 0.55, when: 'Today 10:42', len: '0:41', size: '3.6 MB', drv: 'ok', ov: null, shaping: '0.7× · +2' },
+  { id: 2, name: 'Recording 2', track: 'T', kind: 'loop', loop: 'Chorus', span: '3 passes', a: 0.55, b: 0.8, when: 'Today 10:58', len: '1:12', size: '6.2 MB', drv: 'ok', ov: 'kept', shaping: '1× · 0' },
+  { id: 3, name: 'Recording 3', track: 'A', kind: 'whole', span: 'Whole track', a: 0, b: 1, when: 'Yesterday', len: '3:25', size: '17 MB', drv: 'pending', ov: null, shaping: '0.7× · +2', copy: '0.7× copy' },
+  { id: 4, name: 'Recording 4', track: 'A', kind: 'loop', loop: 'Bridge', span: '2 passes', a: 0.8, b: 1, when: 'Yesterday', len: '0:35', size: '3.0 MB', drv: 'failed', ov: null, shaping: '0.7× · +2', copy: '0.7× copy' },
+  { id: 5, name: 'Recording 5', track: 'T', kind: 'punch', span: 'Chorus → Bridge', a: 0.55, b: 0.8, when: 'Oct 29', len: '0:27', size: '2.3 MB', drv: 'none', ov: null, shaping: '1× · 0' },
+  { id: 6, name: 'Recording 1', track: 'H', kind: 'segment', span: '1:42 → 2:10', a: 0.5, b: 0.63, when: 'Oct 28', len: '0:28', size: '2.4 MB', drv: 'none', ov: null, shaping: '1× · 0', changed: true, net: true },
+  { id: 7, name: 'Recording 2', track: 'H', kind: 'whole', span: 'Whole track', a: 0, b: 1, when: 'Oct 27', len: '4:02', size: '20 MB', drv: 'ok', ov: 'track', shaping: '1× · 0' }
+];
+const TRACKS = { T: 'Sleep Song – Soprano', A: 'Sleep Song – Soprano (0.7× copy)', H: 'Hymn 4 – Bass' };
+const rec = (id) => RECS.find((r) => r.id === id);
+const tagsOf = (r) => [
+  r.kind === 'loop' ? `<span class="tag loop">Loop · ${r.loop}</span>` : '',
+  r.kind === 'punch' ? '<span class="tag punch">Punch</span>' : '',
+  r.copy ? `<span class="tag adj">${r.copy}</span>` : '',
+  r.changed ? '<span class="tag chg">Original changed</span>' : '',
+  r.drv === 'ok' ? '<span class="tag kept">On Drive</span>' : r.drv === 'pending' ? '<span class="tag auto" data-act="status">Upload pending</span>' : r.drv === 'failed' ? '<span class="tag gone" data-act="status">Upload failed</span>' : '',
+  r.net ? '<span class="tag chg">Needs connection</span>' : ''
+].join('');
 
-      const BASE = {
-        screen: 'play',
-        tools: false,
-        rec: 'off',
-        sheet: null,
-        ctx: null,
-        loopTrack: false,
-        view: 'track',
-        panelFrom: 'track',
-        balance: 50,
-        level: 4.5,
-        normMsg: '',
-        mixOpen: true,
-        nudge: 12,
-        expKind: 'mix',
-        expDest: 'drive',
-        expStep: 'choose',
-        cal: 'intro',
-        stop: 'hidden',
-        autoExp: true,
-        expWhat: 'both',
-        wifi: 'wifi',
-        pin: 550,
-        pout: 800,
-        pre: 3,
-        after: true,
-        lib: { q: '', f: 'all', sel: [], mode: false },
-        menuRec: 1,
-        plSheet: false,
-        prompt: 'one',
-        remember: false,
-        setPolicy: 'ask',
-        choose: [true, true, false],
-      };
-      const S = Object.assign({}, BASE, {
-        lib: { q: '', f: 'all', sel: [], mode: false },
-      });
-      const P = (o) =>
-        Object.assign(
-          {},
-          BASE,
-          { lib: { q: '', f: 'all', sel: [], mode: false } },
-          o,
-        );
-      const PRESETS = {
-        idle: P({}),
-        tools: P({ tools: true }),
-        explain: P({ rec: 'explain' }),
-        blocked: P({ rec: 'blocked' }),
-        ready: P({ rec: 'ready' }),
-        recording: P({ rec: 'recording' }),
-        recloop: P({ rec: 'recording', loopTrack: true }),
-        readylow: P({ rec: 'ready', low: 25 }),
-        reclow: P({ rec: 'recording', low: 4 }),
-        refused: P({ rec: 'refused' }),
-        full: P({ rec: 'stopped', stop: 'full' }),
-        stopped: P({ rec: 'stopped' }),
-        short: P({ rec: 'stopped', stop: 'short' }),
-        save: P({ rec: 'saving' }),
-        panel: P({ sheet: 'panel' }),
-        panelA: P({ sheet: 'panel', view: 'adjusted' }),
-        panelP: P({ sheet: 'panel', view: 'parent' }),
-        loopview: P({ screen: 'loop' }),
-        loopA: P({ screen: 'loop', view: 'adjusted' }),
-        ctxseg: P({ ctx: 1 }),
-        ctxloop: P({ ctx: 2, loopTrack: true }),
-        ctxadj: P({ ctx: 3 }),
-        ctxmix: P({ ctx: 1, mixOpen: false }),
-        sync: P({ ctx: 1, sheet: 'sync' }),
-        cal: P({ ctx: 1, sheet: 'cal' }),
-        calfail: P({ ctx: 1, sheet: 'cal', cal: 'fail' }),
-        punch: P({ rec: 'ready', sheet: 'punch' }),
-        punchbad: P({ rec: 'ready', sheet: 'punch', pin: 600, pout: 560 }),
-        armed: P({ rec: 'armed' }),
-        count: P({ rec: 'countdown' }),
-        punchrec: P({ rec: 'punchrec' }),
-        lib: P({ screen: 'library' }),
-        libf: P({
-          screen: 'library',
-          lib: { q: '', f: 'loop', sel: [], mode: false },
-        }),
-        libs: P({
-          screen: 'library',
-          lib: { q: 'chorus', f: 'all', sel: [], mode: false },
-        }),
-        libsel: P({
-          screen: 'library',
-          lib: { q: '', f: 'all', sel: [2, 5, 6], mode: true },
-        }),
-        libmenu: P({ screen: 'library', sheet: 'rowmenu' }),
-        libfilter: P({ screen: 'library', sheet: 'filter' }),
-        addpl: P({
-          screen: 'library',
-          sheet: 'addpl',
-          lib: { q: '', f: 'all', sel: [2, 5], mode: true },
-        }),
-        pl: P({ screen: 'playlist' }),
-        plq: P({ screen: 'playlist', sheet: 'queue' }),
-        settings: P({ screen: 'settings' }),
-        settingsoff: P({ screen: 'settings', autoExp: false }),
-        offline: P({ screen: 'offline' }),
-        status: P({ screen: 'library', sheet: 'status' }),
-        more: P({ sheet: 'more' }),
-        saveoff: P({ rec: 'saving', autoExp: false }),
-        expchoose: P({ ctx: 1, sheet: 'export' }),
-        expprog: P({ ctx: 1, sheet: 'export', expStep: 'progress' }),
-        expdone: P({ ctx: 1, sheet: 'export', expStep: 'done' }),
-        expfail: P({ ctx: 1, sheet: 'export', expStep: 'fail' }),
-        expchg: P({ ctx: 6, sheet: 'export', expStep: 'changed' }),
-        expnone: P({
-          ctx: 6,
-          sheet: 'export',
-          expStep: 'nosource',
-          expKind: 'mix',
-        }),
-      };
+const BASE = {
+  screen: 'play', tools: false, rec: 'off', sheet: null, ctx: null, loopTrack: false, view: 'track', panelFrom: 'track',
+  balance: 50, level: 4.5, normMsg: '', mixOpen: true, nudge: 12, expKind: 'mix', expDest: 'drive', expStep: 'choose', cal: 'intro', stop: 'hidden',
+  autoExp: true, expWhat: 'both', wifi: 'wifi', pin: 550, pout: 800, pre: 3, after: true, lib: { q: '', f: 'all', sel: [], mode: false }, menuRec: 1, plSheet: false,
+  prompt: 'one', remember: false, setPolicy: 'ask', choose: [true, true, false]
+};
+const S = Object.assign({}, BASE, { lib: { q: '', f: 'all', sel: [], mode: false } });
+const P = (o) => Object.assign({}, BASE, { lib: { q: '', f: 'all', sel: [], mode: false } }, o);
+const PRESETS = {
+  idle: P({}), tools: P({ tools: true }), explain: P({ rec: 'explain' }), blocked: P({ rec: 'blocked' }), ready: P({ rec: 'ready' }),
+  recording: P({ rec: 'recording' }), recloop: P({ rec: 'recording', loopTrack: true }),
+  readylow: P({ rec: 'ready', low: 25 }), reclow: P({ rec: 'recording', low: 4 }), refused: P({ rec: 'refused' }), full: P({ rec: 'stopped', stop: 'full' }),
+  stopped: P({ rec: 'stopped' }), short: P({ rec: 'stopped', stop: 'short' }), save: P({ rec: 'saving' }),
+  panel: P({ sheet: 'panel' }), panelA: P({ sheet: 'panel', view: 'adjusted' }), panelP: P({ sheet: 'panel', view: 'parent' }), loopview: P({ screen: 'loop' }), loopA: P({ screen: 'loop', view: 'adjusted' }),
+  ctxseg: P({ ctx: 1 }), ctxloop: P({ ctx: 2, loopTrack: true }), ctxadj: P({ ctx: 3 }), ctxmix: P({ ctx: 1, mixOpen: false }),   sync: P({ ctx: 1, sheet: 'sync' }), cal: P({ ctx: 1, sheet: 'cal' }), calfail: P({ ctx: 1, sheet: 'cal', cal: 'fail' }),
+  punch: P({ rec: 'ready', sheet: 'punch' }), punchbad: P({ rec: 'ready', sheet: 'punch', pin: 600, pout: 560 }), armed: P({ rec: 'armed' }), count: P({ rec: 'countdown' }), punchrec: P({ rec: 'punchrec' }),
+  lib: P({ screen: 'library' }), libf: P({ screen: 'library', lib: { q: '', f: 'loop', sel: [], mode: false } }), libs: P({ screen: 'library', lib: { q: 'chorus', f: 'all', sel: [], mode: false } }),
+  libsel: P({ screen: 'library', lib: { q: '', f: 'all', sel: [2, 5, 6], mode: true } }), libmenu: P({ screen: 'library', sheet: 'rowmenu' }), libfilter: P({ screen: 'library', sheet: 'filter' }), addpl: P({ screen: 'library', sheet: 'addpl', lib: { q: '', f: 'all', sel: [2, 5], mode: true } }),
+  pl: P({ screen: 'playlist' }), plq: P({ screen: 'playlist', sheet: 'queue' }),
+  settings: P({ screen: 'settings' }), settingsoff: P({ screen: 'settings', autoExp: false }), offline: P({ screen: 'offline' }), status: P({ screen: 'library', sheet: 'status' }), more: P({ sheet: 'more' }), saveoff: P({ rec: 'saving', autoExp: false }),
+  expchoose: P({ ctx: 1, sheet: 'export' }), expprog: P({ ctx: 1, sheet: 'export', expStep: 'progress' }), expdone: P({ ctx: 1, sheet: 'export', expStep: 'done' }), expfail: P({ ctx: 1, sheet: 'export', expStep: 'fail' }), expchg: P({ ctx: 6, sheet: 'export', expStep: 'changed' }), expnone: P({ ctx: 6, sheet: 'export', expStep: 'nosource', expKind: 'mix' })
+};
 
-      /* ---------- playback screen pieces ---------- */
-      function wave(s) {
-        const c = s.ctx ? rec(s.ctx) : null;
-        const rng = c ? [c.a, c.b] : [0, 1];
-        const span = rng[1] - rng[0];
-        const to = (f) => (f - rng[0]) / span; // fraction inside the visible range
-        let head = c ? 0.4 : 0.38;
-        if (s.rec === 'recording') {
-          head = 0.55;
-        }
-        if (s.rec === 'punchrec') {
-          head = 0.68;
-        }
-        if (s.rec === 'countdown') {
-          head = 0.34;
-        }
-        const n = BARS.length;
-        const bars = BARS.map((h, i) => {
-          const f = i / n;
-          let cls = f < head ? 'played' : '';
-          if (s.rec === 'recording' && f >= 0.28 && f < head) {
-            cls = 'rec';
-          }
-          if (s.rec === 'punchrec' && f >= 0.55 && f < head) {
-            cls = 'rec';
-          }
-          return `<i class="${cls}" style="height:${h}%"></i>`;
-        }).join('');
-        const flags = MARKS.filter(([f]) => f >= rng[0] && f <= rng[1])
-          .map(([f, nm]) => {
-            const next =
-              (s.rec === 'recording' && nm === 'Chorus') ||
-              (s.rec === 'armed' && nm === 'Chorus')
-                ? ' next'
-                : '';
-            return `<span class="flag${next}" style="left:${to(f) * 100}%">${nm}</span>`;
-          })
-          .join('');
-        const loop =
-          s.loopTrack && !c
-            ? '<span class="loop" style="left:55%;width:25%"></span>'
-            : c && c.kind === 'loop'
-              ? '<span class="loop" style="left:0;width:100%;border-radius:0"></span>'
-              : '';
-        const pz =
-          s.rec === 'armed' || s.rec === 'countdown' || s.rec === 'punchrec'
-            ? '<span class="punch" style="left:55%;width:25%"></span>'
-            : '';
-        const lane = c
-          ? `<div class="lane"><span style="left:0;width:${c.kind === 'loop' ? 100 : 100}%">${c.name}${c.kind === 'loop' ? ' · ' + c.span : ''}</span></div>`
-          : '';
-        const t0 = c ? fmtT(rng[0]) : '0:00',
-          t1 = c ? fmtT(rng[1]) : '3:25';
-        const cur = c
-          ? fmtT(rng[0] + (rng[1] - rng[0]) * 0.4)
-          : s.rec === 'recording'
-            ? '1:52'
-            : '1:18';
-        const headPos = c ? 40 : head * 100;
-        return `<div class="wavewrap"><div class="wave" role="img" aria-label="Track waveform">${loop}${pz}${bars}<b class="head" style="left:${headPos}%"></b></div>${flags}${lane}</div>
+/* ---------- playback screen pieces ---------- */
+function wave(s) {
+  const c = s.ctx ? rec(s.ctx) : null;
+  const rng = c ? [c.a, c.b] : [0, 1];
+  const span = rng[1] - rng[0];
+  const to = (f) => (f - rng[0]) / span; // fraction inside the visible range
+  let head = c ? 0.4 : 0.38;
+  if (s.rec === 'recording') { head = 0.55; }
+  if (s.rec === 'punchrec') { head = 0.68; }
+  if (s.rec === 'countdown') { head = 0.34; }
+  const n = BARS.length;
+  const bars = BARS.map((h, i) => {
+    const f = i / n;
+    let cls = f < head ? 'played' : '';
+    if (s.rec === 'recording' && f >= 0.28 && f < head) { cls = 'rec'; }
+    if (s.rec === 'punchrec' && f >= 0.55 && f < head) { cls = 'rec'; }
+    return `<i class="${cls}" style="height:${h}%"></i>`;
+  }).join('');
+  const flags = MARKS.filter(([f]) => f >= rng[0] && f <= rng[1]).map(([f, nm]) => {
+    const next = (s.rec === 'recording' && nm === 'Chorus') || (s.rec === 'armed' && nm === 'Chorus') ? ' next' : '';
+    return `<span class="flag${next}" style="left:${to(f) * 100}%">${nm}</span>`;
+  }).join('');
+  const loop = s.loopTrack && !c ? '<span class="loop" style="left:55%;width:25%"></span>' : (c && c.kind === 'loop' ? '<span class="loop" style="left:0;width:100%;border-radius:0"></span>' : '');
+  const pz = (s.rec === 'armed' || s.rec === 'countdown' || s.rec === 'punchrec') ? '<span class="punch" style="left:55%;width:25%"></span>' : '';
+  const lane = c ? `<div class="lane"><span style="left:0;width:${c.kind === 'loop' ? 100 : 100}%">${c.name}${c.kind === 'loop' ? ' · ' + c.span : ''}</span></div>` : '';
+  const t0 = c ? fmtT(rng[0]) : '0:00', t1 = c ? fmtT(rng[1]) : '3:25';
+  const cur = c ? fmtT(rng[0] + (rng[1] - rng[0]) * 0.4) : (s.rec === 'recording' ? '1:52' : '1:18');
+  const headPos = c ? 40 : head * 100;
+  return `<div class="wavewrap"><div class="wave" role="img" aria-label="Track waveform">${loop}${pz}${bars}<b class="head" style="left:${headPos}%"></b></div>${flags}${lane}</div>
   <div class="times"><span>${c ? t0 : ''}</span><span>${cur}</span><span>${c ? t1 : '3:25'}</span></div>`;
-      }
-      function shapeChips(s) {
-        const c = s.ctx ? rec(s.ctx) : null;
-        const locked = s.rec === 'recording' || s.rec === 'punchrec' || c;
-        const txt = c ? c.shaping : '0.7× · +2';
-        const why = c
-          ? 'Locked to this recording'
-          : locked
-            ? 'Locked while recording'
-            : '';
-        const range =
-          c && c.kind !== 'whole'
-            ? `<span class="chip lock">${I.lock}${fmtT(c.a)} – ${fmtT(c.b)}</span>`
-            : '';
-        return `<div class="chips"><span class="chip ${locked ? 'lock' : 'on'}">${locked ? I.lock : ''}${txt}</span>${range}${why ? `<span class="hint" style="width:100%">${why}</span>` : ''}</div>`;
-      }
-      function ctxbar(s) {
-        if (!s.ctx) {
-          return '';
-        }
-        const c = rec(s.ctx);
-        const where =
-          c.kind === 'loop'
-            ? `Loop · ${c.loop}`
-            : c.copy
-              ? `Adjusted · ${c.copy}`
-              : c.kind === 'whole'
-                ? 'Whole track'
-                : c.span;
-        return `<div class="ctxbar"><span class="g"><b>Recording: ${c.name}</b><br>${where}</span></div>`;
-      }
-      function strip(s) {
-        const r = s.rec;
-        if (r === 'explain') {
-          return `<div class="strip"><div class="msg grow"><b>Recording keeps audio on this device.</b> It is saved under this track and never removed automatically; only you delete it. You can export it or copy it to Drive. Use headphones.</div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn primary" data-act="continue">Continue</button><button class="btn quiet" data-act="close-rec">Not now</button></div></div>`;
-        }
-        if (r === 'blocked') {
-          return `<div class="strip"><div class="msg warn grow"><b>Microphone blocked.</b> Allow it for this site in the browser's settings, then press Record.</div><button class="btn" data-act="start">Record</button></div>`;
-        }
-        if (r === 'recording') {
-          const where = s.loopTrack
-            ? '<b>Loop pass 2</b> · Chorus loop<br>Next pass in 0:09'
-            : 'Passed <b>Verse 2</b> · 0:38<br>Next <b>Chorus</b> · 1:05';
-          const left = s.low
-            ? `<div class="${s.low < 5 ? 'warnline' : 'hint'}">About ${s.low} min left</div>`
-            : '';
-          return `<div class="strip"><div class="grow"><div class="big"><span class="recdot"></span>0:42</div>${left}</div><div class="mk grow" style="flex:1.4">${where}</div><button class="stop" data-act="stop" aria-label="Stop recording"></button></div>`;
-        }
-        if (r === 'armed') {
-          return `<div class="strip"><div class="msg grow"><b>Armed · Chorus → Bridge</b> (0:51 long). Press play to start from 3 s before Chorus.</div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn primary" data-act="count">Play</button><button class="btn quiet" data-act="disarm">Disarm</button></div></div>`;
-        }
-        if (r === 'countdown') {
-          return `<div class="strip"><div class="big grow" style="color:var(--rec)"><span class="recdot"></span>Recording in 2…</div><div class="mk grow">Chorus at 1:50<br>Pre-roll playing</div><button class="btn quiet" data-act="disarm">Disarm</button></div>`;
-        }
-        if (r === 'punchrec') {
-          return `<div class="strip"><div class="grow"><div class="big"><span class="recdot"></span>0:14</div></div><div class="mk grow" style="flex:1.4"><b>Stops at Bridge</b> in 0:37<br>Armed range · Chorus → Bridge</div><button class="stop" data-act="stop" aria-label="Stop recording"></button></div>`;
-        }
-        if (r === 'stopped') {
-          const m =
-            s.stop === 'short'
-              ? '<b>Too short.</b> A recording under one second is not saved.'
-              : s.stop === 'full'
-                ? '<b>Storage is full, so the recording stopped.</b> Everything up to that point was saved as Recording 6 (41:12). Export or delete recordings to free space.'
-                : '<b>Recording stopped: the app was hidden.</b> Saved as Recording 6 (0:42).';
-          return `<div class="strip"><div class="msg grow">${m}</div><button class="btn" data-act="${s.stop === 'short' ? 'start' : 'save'}">${s.stop === 'short' ? 'Record' : s.stop === 'full' ? 'Export…' : 'Review'}</button></div>`;
-        }
-        if (r === 'refused') {
-          return `<div class="strip"><div class="msg warn grow"><b>Not enough space to record.</b> About 40 seconds left. Export or delete recordings in Settings → Recordings.</div><button class="btn" data-act="to-settings">Settings</button></div>`;
-        }
-        if (r === 'ready' || r === 'saving') {
-          return `<div class="strip"><div class="msg grow"><b>Ready.</b> ${s.low ? `<span class="${s.low < 5 ? 'warnline' : ''}">About ${s.low} min left.</span> ` : ''}Seek to where you want to start.</div><div class="split"><button class="btn rec" data-act="start">${I.rec}Record</button><button class="btn recdrop" data-act="recmenu" aria-label="More">${I.down}</button></div></div>`;
-        }
-        return '';
-      }
-      const levelText = (v) =>
-        v === 0 ? '0 dB' : (v > 0 ? '+' : '−') + Math.abs(v) + ' dB';
-      const balanceText = (b) =>
-        b <= 0
-          ? 'Track only'
-          : b >= 100
-            ? 'Recording only'
-            : b === 50
-              ? 'Even'
-              : b + ' / 100';
-      function overlayPanel(s) {
-        if (!s.ctx || s.rec === 'recording') {
-          return '';
-        }
-        const nudge = (s.nudge > 0 ? '+' : '') + s.nudge + ' ms';
-        const summary =
-          balanceText(s.balance) + ' · ' + levelText(s.level) + ' · ' + nudge;
-        const rows = `
+}
+function shapeChips(s) {
+  const c = s.ctx ? rec(s.ctx) : null;
+  const locked = s.rec === 'recording' || s.rec === 'punchrec' || c;
+  const txt = c ? c.shaping : '0.7× · +2';
+  const why = c ? 'Locked to this recording' : locked ? 'Locked while recording' : '';
+  const range = c && c.kind !== 'whole' ? `<span class="chip lock">${I.lock}${fmtT(c.a)} – ${fmtT(c.b)}</span>` : '';
+  return `<div class="chips"><span class="chip ${locked ? 'lock' : 'on'}">${locked ? I.lock : ''}${txt}</span>${range}${why ? `<span class="hint" style="width:100%">${why}</span>` : ''}</div>`;
+}
+function ctxbar(s) {
+  if (!s.ctx) { return ''; }
+  const c = rec(s.ctx);
+  const where = c.kind === 'loop' ? `Loop · ${c.loop}` : c.copy ? `Adjusted · ${c.copy}` : c.kind === 'whole' ? 'Whole track' : c.span;
+  return `<div class="ctxbar"><span class="g"><b>Recording: ${c.name}</b><br>${where}</span></div>`;
+}
+function strip(s) {
+  const r = s.rec;
+  if (r === 'explain') { return `<div class="strip"><div class="msg grow"><b>Recording keeps audio on this device.</b> It is saved under this track and never removed automatically; only you delete it. You can export it or copy it to Drive. Use headphones.</div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn primary" data-act="continue">Continue</button><button class="btn quiet" data-act="close-rec">Not now</button></div></div>`; }
+  if (r === 'blocked') { return `<div class="strip"><div class="msg warn grow"><b>Microphone blocked.</b> Allow it for this site in the browser's settings, then press Record.</div><button class="btn" data-act="start">Record</button></div>`; }
+  if (r === 'recording') {
+    const where = s.loopTrack ? '<b>Loop pass 2</b> · Chorus loop<br>Next pass in 0:09' : 'Passed <b>Verse 2</b> · 0:38<br>Next <b>Chorus</b> · 1:05';
+    const left = s.low ? `<div class="${s.low < 5 ? 'warnline' : 'hint'}">About ${s.low} min left</div>` : '';
+    return `<div class="strip"><div class="grow"><div class="big"><span class="recdot"></span>0:42</div>${left}</div><div class="mk grow" style="flex:1.4">${where}</div><button class="stop" data-act="stop" aria-label="Stop recording"></button></div>`;
+  }
+  if (r === 'armed') { return `<div class="strip"><div class="msg grow"><b>Armed · Chorus → Bridge</b> (0:51 long). Press play to start from 3 s before Chorus.</div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn primary" data-act="count">Play</button><button class="btn quiet" data-act="disarm">Disarm</button></div></div>`; }
+  if (r === 'countdown') { return `<div class="strip"><div class="big grow" style="color:var(--rec)"><span class="recdot"></span>Recording in 2…</div><div class="mk grow">Chorus at 1:50<br>Pre-roll playing</div><button class="btn quiet" data-act="disarm">Disarm</button></div>`; }
+  if (r === 'punchrec') { return `<div class="strip"><div class="grow"><div class="big"><span class="recdot"></span>0:14</div></div><div class="mk grow" style="flex:1.4"><b>Stops at Bridge</b> in 0:37<br>Armed range · Chorus → Bridge</div><button class="stop" data-act="stop" aria-label="Stop recording"></button></div>`; }
+  if (r === 'stopped') {
+    const m = s.stop === 'short' ? '<b>Too short.</b> A recording under one second is not saved.' : s.stop === 'full' ? '<b>Storage is full, so the recording stopped.</b> Everything up to that point was saved as Recording 6 (41:12). Export or delete recordings to free space.' : '<b>Recording stopped: the app was hidden.</b> Saved as Recording 6 (0:42).';
+    return `<div class="strip"><div class="msg grow">${m}</div><button class="btn" data-act="${s.stop === 'short' ? 'start' : 'save'}">${s.stop === 'short' ? 'Record' : s.stop === 'full' ? 'Export…' : 'Review'}</button></div>`;
+  }
+  if (r === 'refused') { return `<div class="strip"><div class="msg warn grow"><b>Not enough space to record.</b> About 40 seconds left. Export or delete recordings in Settings → Recordings.</div><button class="btn" data-act="to-settings">Settings</button></div>`; }
+  if (r === 'ready' || r === 'saving') { return `<div class="strip"><div class="msg grow"><b>Ready.</b> ${s.low ? `<span class="${s.low < 5 ? 'warnline' : ''}">About ${s.low} min left.</span> ` : ''}Seek to where you want to start.</div><div class="split"><button class="btn rec" data-act="start">${I.rec}Record</button><button class="btn recdrop" data-act="recmenu" aria-label="More">${I.down}</button></div></div>`; }
+  return '';
+}
+const levelText = (v) => (v === 0 ? '0 dB' : (v > 0 ? '+' : '−') + Math.abs(v) + ' dB');
+const balanceText = (b) => (b <= 0 ? 'Track only' : b >= 100 ? 'Recording only' : b === 50 ? 'Even' : b + ' / 100');
+function overlayPanel(s) {
+  if (!s.ctx || s.rec === 'recording') { return ''; }
+  const nudge = (s.nudge > 0 ? '+' : '') + s.nudge + ' ms';
+  const summary = balanceText(s.balance) + ' · ' + levelText(s.level) + ' · ' + nudge;
+  const rows = `
     <div class="prow"><span class="k">Balance</span><span class="end">Track</span><input type="range" min="0" max="100" value="${s.balance}" data-act="balance" aria-label="Balance between track and recording"><span class="end r">Mine</span></div>
     <div class="prow"><span class="k">Level</span><span class="end"></span><input type="range" min="-12" max="18" step="0.5" value="${s.level}" data-act="level" aria-label="Recording level"><span class="end r">${levelText(s.level)}</span></div>
     <div class="prow"><span class="hint" style="flex:1">${s.normMsg}</span><div class="links"><a data-act="mix-save">Save as default</a><a data-act="normalize">Normalize</a></div></div>
     <div class="prow"><span class="k">Sync</span><button class="step" data-act="n-10">−10</button><button class="step" data-act="n-1">−1</button><span class="val">${nudge}</span><button class="step" data-act="n+1">+1</button><button class="step" data-act="n+10">+10</button></div>
     <div class="links"><a data-act="n-reset">Reset</a><a data-act="n-device">Use for this device</a><a data-act="cal">Calibrate with clicks…</a></div>`;
-        return `<div class="panel" aria-label="Recording controls">
+  return `<div class="panel" aria-label="Recording controls">
     <button class="mixhead" data-act="mix-toggle" aria-expanded="${s.mixOpen}"><span class="mh">Balance and sync</span>${s.mixOpen ? '' : '<span class="ms">' + summary + '</span>'}${s.mixOpen ? '<span style="flex:1"></span>' + I.down.replace('<svg', '<svg style="transform:rotate(180deg)"') : I.down}</button>
     ${s.mixOpen ? rows : ''}
     <div class="links"><a data-act="export">Export…</a></div>
   </div>`;
-      }
-      const recCount = () =>
-        RECS.filter((r) => r.track === 'T' || r.track === 'A').length;
-      function playScreen(s) {
-        const toolsOn = s.tools || s.rec !== 'off';
-        const sub = s.ctx
-          ? TRACKS[rec(s.ctx).track]
-          : 'Verse 2 · Choir rehearsal';
-        return `<div class="screen">
+}
+const recCount = () => RECS.filter((r) => r.track === 'T' || r.track === 'A').length;
+function playScreen(s) {
+  const toolsOn = s.tools || (s.rec !== 'off');
+  const sub = s.ctx ? TRACKS[rec(s.ctx).track] : 'Verse 2 · Choir rehearsal';
+  return `<div class="screen">
     <div class="hdr"><button class="ib" aria-label="Back">${I.back}</button><span class="sp">${s.ctx ? 'Recording' : 'Now playing'}</span>
       <button class="ib" aria-label="Practice tools" aria-pressed="${toolsOn}" data-act="tools">${I.tool}</button>
       <button class="ib" aria-label="More actions" data-act="more">${I.dots}</button></div>
@@ -1904,104 +425,55 @@
       ${ctxbar(s)}${wave(s)}${shapeChips(s)}
       <div class="transport"><div class="ring"></div></div></div>
     <div class="dock">${overlayPanel(s)}${strip(s)}<div class="mini"><div class="art">${s.ctx ? I.rec : ''}</div><div><b>Sleep Song – Soprano</b>${s.rec === 'recording' || s.rec === 'punchrec' ? 'Recording' : s.ctx ? 'Playing recording' : 'Playing'}</div><div class="pp"></div></div></div></div>`;
-      }
+}
 
-      /* ---------- loop view ---------- */
-      function loopScreen(s) {
-        const adj = s.view === 'adjusted';
-        const rows = RECS.filter(
-          (r) =>
-            r.kind === 'loop' &&
-            (adj ? r.loop === 'Bridge' : r.loop === 'Chorus'),
-        );
-        return `<div class="screen"><div class="hdr"><button class="ib">${I.back}</button><span class="sp">Loop</span><button class="ib" aria-label="More actions" data-act="more">${I.dots}</button></div>
+/* ---------- loop view ---------- */
+function loopScreen(s) {
+  const adj = s.view === 'adjusted';
+  const rows = RECS.filter((r) => r.kind === 'loop' && (adj ? r.loop === 'Bridge' : r.loop === 'Chorus'));
+  return `<div class="screen"><div class="hdr"><button class="ib">${I.back}</button><span class="sp">Loop</span><button class="ib" aria-label="More actions" data-act="more">${I.dots}</button></div>
     <div class="body"><div><div class="title">${adj ? 'Bridge' : 'Chorus'}</div><div class="subtitle">${adj ? 'Loop of Sleep Song (0.7× copy) · 2:44 – 3:25' : 'Loop of Sleep Song – Soprano · 1:50 – 2:44'}</div></div>
       <div class="group">Recordings on this loop<b>${rows.length}</b></div>
       <div>${rows.map((r) => recRow(r, false)).join('')}</div></div></div>`;
-      }
-      function recRow(r, withTrack, sel) {
-        const lead =
-          sel != null
-            ? `<span class="rad ${sel ? 'on' : ''}">${sel ? I.check : ''}</span>`
-            : '';
-        return `<div class="rec-row" data-act="open-${r.id}">${lead}<div class="t"><b>${r.name}${tagsOf(r)}</b><span>${withTrack ? TRACKS[r.track] + ' · ' : ''}${r.span} · ${r.len} · ${r.size}</span><span>${r.when} · ${r.shaping}</span></div>
+}
+function recRow(r, withTrack, sel) {
+  const lead = sel != null ? `<span class="rad ${sel ? 'on' : ''}">${sel ? I.check : ''}</span>` : '';
+  return `<div class="rec-row" data-act="open-${r.id}">${lead}<div class="t"><b>${r.name}${tagsOf(r)}</b><span>${withTrack ? TRACKS[r.track] + ' · ' : ''}${r.span} · ${r.len} · ${r.size}</span><span>${r.when} · ${r.shaping}</span></div>
     <button class="ib" style="width:34px;height:34px" data-act="rowmenu-${r.id}" aria-label="Options">${I.dots}</button></div>`;
-      }
+}
 
-      /* ---------- library ---------- */
-      function libRows(s) {
-        const q = s.lib.q.trim().toLowerCase(),
-          f = s.lib.f;
-        return RECS.filter((r) => {
-          const hay = (
-            r.name +
-            ' ' +
-            TRACKS[r.track] +
-            ' ' +
-            (r.loop || '') +
-            ' ' +
-            r.span
-          ).toLowerCase();
-          if (q && !hay.includes(q)) {
-            return false;
-          }
-          if (f === 'whole') {
-            return r.kind === 'whole';
-          }
-          if (f === 'segment') {
-            return r.kind === 'segment' || r.kind === 'punch';
-          }
-          if (f === 'loop') {
-            return r.kind === 'loop';
-          }
-          if (f === 'adjusted') {
-            return !!r.copy || r.saved === false;
-          }
-          if (f === 'drive') {
-            return r.drv === 'ok';
-          }
-          if (f === 'nodrive') {
-            return r.drv !== 'ok';
-          }
-          return true;
-        });
-      }
-      function libScreen(s) {
-        const rows = libRows(s);
-        const F = [
-          ['all', 'All'],
-          ['whole', 'Whole track'],
-          ['segment', 'Segment'],
-          ['loop', 'Loop'],
-          ['adjusted', 'Adjusted'],
-          ['drive', 'On Drive'],
-          ['nodrive', 'Not on Drive'],
-        ];
-        const chips = F.map(
-          ([k, l]) =>
-            `<span class="chip ${s.lib.f === k ? 'on' : ''}" data-act="f-${k}">${l}</span>`,
-        ).join('');
-        const list = rows.length
-          ? rows
-              .map((r) =>
-                recRow(r, true, s.lib.mode ? s.lib.sel.includes(r.id) : null),
-              )
-              .join('')
-          : '<div class="note">No recordings match.</div>';
-        const bar = s.lib.mode
-          ? `<div class="selbar"><div class="cnt">${s.lib.sel.length} selected</div><div class="row"><button class="btn quiet" data-act="b-next">Play next</button><button class="btn quiet" data-act="b-queue">Add to queue</button><button class="btn quiet" data-act="b-pl">Add to playlist</button><button class="btn quiet" data-act="b-keep">Keep track offline</button><button class="btn quiet" data-act="b-exp">Export</button><button class="btn danger" data-act="b-del">Delete</button></div></div>`
-          : `<div class="mini"><div class="art">${I.rec}</div><div><b>Sleep Song – Soprano</b>Playing</div><div class="pp"></div></div>`;
-        return `<div class="screen"><div class="lib"><div class="top"><h3>Library</h3><button class="ib" data-act="sel-mode" aria-pressed="${s.lib.mode}" aria-label="Select">${I.list}</button></div>
+/* ---------- library ---------- */
+function libRows(s) {
+  const q = s.lib.q.trim().toLowerCase(), f = s.lib.f;
+  return RECS.filter((r) => {
+    const hay = (r.name + ' ' + TRACKS[r.track] + ' ' + (r.loop || '') + ' ' + r.span).toLowerCase();
+    if (q && !hay.includes(q)) { return false; }
+    if (f === 'whole') { return r.kind === 'whole'; }
+    if (f === 'segment') { return r.kind === 'segment' || r.kind === 'punch'; }
+    if (f === 'loop') { return r.kind === 'loop'; }
+    if (f === 'adjusted') { return !!r.copy || r.saved === false; }
+    if (f === 'drive') { return r.drv === 'ok'; }
+    if (f === 'nodrive') { return r.drv !== 'ok'; }
+    return true;
+  });
+}
+function libScreen(s) {
+  const rows = libRows(s);
+  const F = [['all', 'All'], ['whole', 'Whole track'], ['segment', 'Segment'], ['loop', 'Loop'], ['adjusted', 'Adjusted'], ['drive', 'On Drive'], ['nodrive', 'Not on Drive']];
+  const chips = F.map(([k, l]) => `<span class="chip ${s.lib.f === k ? 'on' : ''}" data-act="f-${k}">${l}</span>`).join('');
+  const list = rows.length ? rows.map((r) => recRow(r, true, s.lib.mode ? s.lib.sel.includes(r.id) : null)).join('') : '<div class="note">No recordings match.</div>';
+  const bar = s.lib.mode ? `<div class="selbar"><div class="cnt">${s.lib.sel.length} selected</div><div class="row"><button class="btn quiet" data-act="b-next">Play next</button><button class="btn quiet" data-act="b-queue">Add to queue</button><button class="btn quiet" data-act="b-pl">Add to playlist</button><button class="btn quiet" data-act="b-keep">Keep track offline</button><button class="btn quiet" data-act="b-exp">Export</button><button class="btn danger" data-act="b-del">Delete</button></div></div>` : `<div class="mini"><div class="art">${I.rec}</div><div><b>Sleep Song – Soprano</b>Playing</div><div class="pp"></div></div>`;
+  return `<div class="screen"><div class="lib"><div class="top"><h3>Library</h3><button class="ib" data-act="sel-mode" aria-pressed="${s.lib.mode}" aria-label="Select">${I.list}</button></div>
     <div class="seg"><span data-act="seg-t">Tracks</span><span data-act="seg-p">Playlists</span><span class="on">Recordings</span></div>
     <div class="input">${I.search}<input data-act="q" placeholder="Search recordings, tracks, loops, markers" value="${s.lib.q.replace(/"/g, '&quot;')}"><button class="ib" style="width:30px;height:30px;border:0" data-act="filter" aria-label="Filters and sort">${I.filter}</button></div>
     <div class="fchips">${chips}</div>
     <div class="group">${rows.length} recordings<b>Sort: Newest</b></div>
     <div class="list">${list}</div></div>${bar}</div>`;
-      }
+}
 
-      /* ---------- playlist ---------- */
-      function playlistScreen(s) {
-        return `<div class="screen"><div class="lib"><div class="top"><button class="ib">${I.back}</button><h3 style="font-size:20px">Sunday warm-ups</h3></div>
+/* ---------- playlist ---------- */
+function playlistScreen(s) {
+  return `<div class="screen"><div class="lib"><div class="top"><button class="ib">${I.back}</button><h3 style="font-size:20px">Sunday warm-ups</h3></div>
     <div class="group">5 items · plays in order<b>Edit</b></div>
     <div class="list">
       <div class="ptitem"><div class="art">♪</div><div><b>Sleep Song – Soprano</b><span class="s">Track · 3:25</span></div></div>
@@ -2011,134 +483,93 @@
       <div class="ptitem dis"><div class="art rc">${I.rec}</div><div><b>Recording 9<span class="tag gone">Unavailable</span></b><span class="s">Deleted · skipped when playing</span></div></div>
     </div><div class="note" style="font-size:12px">A recording plays over its track in its recorded context, stops at the end of the recorded range, then the next item starts.</div></div>
     <div class="mini"><div class="art">${I.rec}</div><div><b>Recording 2 · Chorus</b>Playlist · 3 of 5</div><div class="pp"></div></div></div>`;
-      }
+}
 
-      /* ---------- keep-offline, settings, offline files ---------- */
-      function settingsScreen(s) {
-        const seg = (v, l) =>
-          `<span class="${s.expWhat === v ? 'on' : ''}" data-act="what-${v}">${l}</span>`;
-        const auto = s.autoExp
-          ? `<div class="setrow"><div>Folder<small>Created in My Drive if missing</small></div><span class="r">Choir Recordings ›</span></div>
+/* ---------- keep-offline, settings, offline files ---------- */
+function settingsScreen(s) {
+  const seg = (v, l) => `<span class="${s.expWhat === v ? 'on' : ''}" data-act="what-${v}">${l}</span>`;
+  const auto = s.autoExp ? `<div class="setrow"><div>Folder<small>Created in My Drive if missing</small></div><span class="r">Choir Recordings ›</span></div>
     <div class="cap2">Upload over</div><div class="seg"><span class="${s.wifi === 'wifi' ? 'on' : ''}" data-act="wifi-wifi">Wi-Fi only</span><span class="${s.wifi === 'any' ? 'on' : ''}" data-act="wifi-any">Any connection</span></div>
     <div class="hint">${s.wifi === 'wifi' ? 'This browser cannot tell Wi-Fi from mobile data, so uploads run on any connection. Browsers that can tell will wait for Wi-Fi.' : 'Uploads run whenever there is a connection.'}</div>
     <div class="cap2">Export</div><div class="seg">${seg('rec', 'Recording only')}${seg('mix', 'Mix')}${seg('both', 'Both')}</div>
-    <div class="setrow"><div>Back up existing recordings<small>3 recordings are not on Drive yet</small></div><button class="btn" data-act="close-sheet">Back up</button></div>`
-          : '';
-        return `<div class="screen"><div class="lib"><div class="top"><button class="ib">${I.back}</button><h3 style="font-size:20px">Settings · Recordings</h3></div>
+    <div class="setrow"><div>Back up existing recordings<small>3 recordings are not on Drive yet</small></div><button class="btn" data-act="close-sheet">Back up</button></div>` : '';
+  return `<div class="screen"><div class="lib"><div class="top"><button class="ib">${I.back}</button><h3 style="font-size:20px">Settings · Recordings</h3></div>
     <div class="setrow"><div>Storage used<small>Recordings are never removed automatically</small></div><span class="r">61 MB</span></div>
     <div class="setrow"><div>Auto-export to Drive<small>${s.autoExp ? 'Uploads each new recording in the background' : 'Off. Copy new recordings to Drive automatically.'}</small></div><span class="sw ${s.autoExp ? 'on' : ''}" data-act="autoexp" style="margin-left:auto"></span></div>
     ${auto}</div></div>`;
-      }
-      function offlineScreen() {
-        return `<div class="screen"><div class="lib"><div class="top"><button class="ib">${I.back}</button><h3 style="font-size:20px">Offline files</h3></div>
+}
+function offlineScreen() {
+  return `<div class="screen"><div class="lib"><div class="top"><button class="ib">${I.back}</button><h3 style="font-size:20px">Offline files</h3></div>
     <div class="note">Cache 148 MB of 500 MB · Kept 312 MB</div>
     <div class="group">Tracks<b>3</b></div>
     <div class="optrow"><div>Sleep Song – Soprano<small>Kept offline</small></div><span class="r">9.1 MB</span></div>
     <div class="optrow"><div>Hymn 4 – Bass<small>Cached</small></div><span class="r">6.4 MB</span></div>
     <div class="group">Recordings<b>61 MB · never removed automatically</b></div>
-    ${RECS.slice(0, 3)
-      .map(
-        (r) =>
-          `<div class="optrow"><div>${r.name} · ${TRACKS[r.track].split(' –')[0]}<small>${r.span} · delete only</small></div><span class="r">${r.size}</span></div>`,
-      )
-      .join('')}</div></div>`;
-      }
+    ${RECS.slice(0, 3).map((r) => `<div class="optrow"><div>${r.name} · ${TRACKS[r.track].split(' –')[0]}<small>${r.span} · delete only</small></div><span class="r">${r.size}</span></div>`).join('')}</div></div>`;
+}
 
-      /* ---------- sheets ---------- */
-      function toolsMenu(s) {
-        const recOn = s.rec !== 'off';
-        const row = (icon, label, on, act) =>
-          `<button class="mrow" role="switch" aria-checked="${on}" data-act="${act}">${icon}<span>${label}</span><span class="sw ${on ? 'on' : ''}"></span></button>`;
-        return `<div class="menu" role="menu"><h4>Practice tools</h4>${row(I.piano, 'Piano', false, 'noop')}${row(I.mic, 'Pitch detection', false, 'noop')}${row(I.rec, 'Recording', recOn, 'toggle-rec')}</div>`;
-      }
-      function moreMenu(s) {
-        const n = s.view === 'adjusted' ? 3 : 4;
-        const row = (ic, l, act, mute) =>
-          `<button class="mrow" data-act="${act}">${ic}<span>${l}</span>${mute ? `<span style="margin-left:auto;color:var(--text-faint);font-size:13px">${mute}</span>` : ''}</button>`;
-        return `<div class="menu" role="menu"><h4>More actions</h4>${row(I.list, 'Make loop', 'close-sheet')}${row(I.pin, 'Add marker here', 'close-sheet')}${row(I.list, 'Markers…', 'close-sheet')}${row(I.rec, 'Recordings', 'panel', n)}</div>`;
-      }
-      function recMenu() {
-        return `<div class="menu low" role="menu"><button class="mrow" data-act="start">${I.rec}<span>Record now</span></button><button class="mrow" data-act="punch">${I.lock}<span>Record between…</span></button></div>`;
-      }
-      function sheetSave(s) {
-        const auto = s.autoExp
-          ? `<div class="optrow"><div>Auto-export is on<small>Uploading ${s.expWhat === 'rec' ? 'the recording' : s.expWhat === 'mix' ? 'the mix' : 'the recording and the mix'} to Choir Recordings (Wi-Fi only)…</small></div><span class="r">62%</span></div>`
-          : `<div class="optrow"><div>Auto-export is off<small>Copy new recordings to Drive automatically.</small></div><button class="btn" style="margin-left:auto" data-act="to-settings">Turn on…</button></div>`;
-        return `<div class="sheet"><div class="grab"></div><h3>Recording saved</h3><div class="sub">0:42 · 3.6 MB · Verse 2 → Chorus · recorded against 0.7× +2</div>
+/* ---------- sheets ---------- */
+function toolsMenu(s) {
+  const recOn = s.rec !== 'off';
+  const row = (icon, label, on, act) => `<button class="mrow" role="switch" aria-checked="${on}" data-act="${act}">${icon}<span>${label}</span><span class="sw ${on ? 'on' : ''}"></span></button>`;
+  return `<div class="menu" role="menu"><h4>Practice tools</h4>${row(I.piano, 'Piano', false, 'noop')}${row(I.mic, 'Pitch detection', false, 'noop')}${row(I.rec, 'Recording', recOn, 'toggle-rec')}</div>`;
+}
+function moreMenu(s) {
+  const n = s.view === 'adjusted' ? 3 : 4;
+  const row = (ic, l, act, mute) => `<button class="mrow" data-act="${act}">${ic}<span>${l}</span>${mute ? `<span style="margin-left:auto;color:var(--text-faint);font-size:13px">${mute}</span>` : ''}</button>`;
+  return `<div class="menu" role="menu"><h4>More actions</h4>${row(I.list, 'Make loop', 'close-sheet')}${row(I.pin, 'Add marker here', 'close-sheet')}${row(I.list, 'Markers…', 'close-sheet')}${row(I.rec, 'Recordings', 'panel', n)}</div>`;
+}
+function recMenu() {
+  return `<div class="menu low" role="menu"><button class="mrow" data-act="start">${I.rec}<span>Record now</span></button><button class="mrow" data-act="punch">${I.lock}<span>Record between…</span></button></div>`;
+}
+function sheetSave(s) {
+  const auto = s.autoExp
+    ? `<div class="optrow"><div>Auto-export is on<small>Uploading ${s.expWhat === 'rec' ? 'the recording' : s.expWhat === 'mix' ? 'the mix' : 'the recording and the mix'} to Choir Recordings (Wi-Fi only)…</small></div><span class="r">62%</span></div>`
+    : `<div class="optrow"><div>Auto-export is off<small>Copy new recordings to Drive automatically.</small></div><button class="btn" style="margin-left:auto" data-act="to-settings">Turn on…</button></div>`;
+  return `<div class="sheet"><div class="grab"></div><h3>Recording saved</h3><div class="sub">0:42 · 3.6 MB · Verse 2 → Chorus · recorded against 0.7× +2</div>
     <div class="field"><small>Name</small><div class="input">Recording 6</div></div>
     <div class="note">Saved on this device. Recordings are never removed automatically.</div>${auto}
     <div class="acts"><button class="btn danger" data-act="discard">Delete</button><button class="btn" data-act="export">Export…</button><button class="btn primary" data-act="done-save">Done</button></div></div>`;
-      }
-      function sheetPanel(s) {
-        const v = s.view;
-        const mine = (r) =>
-          v === 'adjusted'
-            ? r.track === 'A'
-            : v === 'parent'
-              ? r.track === 'T' || r.track === 'A'
-              : r.track === 'T';
-        const main = RECS.filter(
-          (r) =>
-            mine(r) &&
-            r.kind !== 'loop' &&
-            !(r.track === 'A' && v === 'parent' && false),
-        );
-        const loops = RECS.filter((r) => mine(r) && r.kind === 'loop');
-        const names = [...new Set(loops.map((r) => r.loop))];
-        const title =
-          v === 'adjusted' ? 'Sleep Song (0.7× copy)' : 'Sleep Song – Soprano';
-        const sect = (nm) =>
-          `<div class="group">${nm} loop<b>${loops.filter((r) => r.loop === nm).length}</b></div>${loops
-            .filter((r) => r.loop === nm)
-            .map((r) => recRow(r, false))
-            .join('')}`;
-        return `<div class="sheet"><div class="grab"></div><h3>Recordings</h3><div class="sub">${title} · stored on this device${v === 'parent' ? ' · includes recordings of its 0.7× copy' : ''}</div>
+}
+function sheetPanel(s) {
+  const v = s.view;
+  const mine = (r) => (v === 'adjusted' ? r.track === 'A' : v === 'parent' ? (r.track === 'T' || r.track === 'A') : r.track === 'T');
+  const main = RECS.filter((r) => mine(r) && r.kind !== 'loop' && !(r.track === 'A' && v === 'parent' && false));
+  const loops = RECS.filter((r) => mine(r) && r.kind === 'loop');
+  const names = [...new Set(loops.map((r) => r.loop))];
+  const title = v === 'adjusted' ? 'Sleep Song (0.7× copy)' : 'Sleep Song – Soprano';
+  const sect = (nm) => `<div class="group">${nm} loop<b>${loops.filter((r) => r.loop === nm).length}</b></div>${loops.filter((r) => r.loop === nm).map((r) => recRow(r, false)).join('')}`;
+  return `<div class="sheet"><div class="grab"></div><h3>Recordings</h3><div class="sub">${title} · stored on this device${v === 'parent' ? ' · includes recordings of its 0.7× copy' : ''}</div>
     <div class="group">This track<b>${main.length}</b></div>${main.length ? main.map((r) => recRow(r, false)).join('') : '<div class="sub">None yet.</div>'}
     ${names.length ? `<div class="group" style="margin-top:12px;color:var(--warning)">Loops</div>${names.map(sect).join('')}` : ''}</div>`;
-      }
-      function sheetSync(s) {
-        const v = (s.nudge > 0 ? '+' : '') + s.nudge;
-        return `<div class="sheet"><div class="grab"></div><h3>Sync</h3><div class="sub">If your voice sounds early or late against the track, nudge it until it lines up. Changes sound at once and are saved with the recording.</div>
+}
+function sheetSync(s) {
+  const v = (s.nudge > 0 ? '+' : '') + s.nudge;
+  return `<div class="sheet"><div class="grab"></div><h3>Sync</h3><div class="sub">If your voice sounds early or late against the track, nudge it until it lines up. Changes sound at once and are saved with the recording.</div>
     <div class="prow"><button class="step" data-act="n-10">−10</button><button class="step" data-act="n-1">−1</button><span class="val">${v} ms</span><button class="step" data-act="n+1">+1</button><button class="step" data-act="n+10">+10</button></div>
     <div class="prow"><span class="end">−250</span><input type="range" min="-250" max="250" value="${s.nudge}" style="flex:1;accent-color:var(--mine)"><span class="end">+250</span></div>
     <div class="optrow"><div>Use for this device<small>Next recordings on this output start with ${v} ms already applied.</small></div><button class="btn" style="margin-left:auto" data-act="n-device">Save</button></div>
     <div class="links"><a data-act="n-reset">Reset to 0</a><a data-act="cal">Measure with clicks (optional)…</a></div></div>`;
-      }
-      function sheetCal(s) {
-        const step = s.cal;
-        const body =
-          step === 'intro'
-            ? '<div class="sub">Optional. The app plays a few clicks and listens for them to measure your device\'s delay. The clicks must reach the microphone: use speakers, or hold one headphone against the microphone. You can always adjust by hand with Sync instead.</div><div class="acts"><button class="btn quiet" data-act="sheet-sync">Adjust by hand</button><button class="btn primary" data-act="cal-run">Play clicks</button></div>'
-            : step === 'running'
-              ? '<div class="sub">Playing clicks and listening…</div><div class="prog"><i style="width:55%"></i></div><div class="acts"><button class="btn quiet" data-act="cal-intro">Cancel</button></div>'
-              : step === 'ok'
-                ? '<div class="note ok">Measured 74 ms for this output. Saved as the default for “Bluetooth headphones”. Existing recordings keep what they were recorded with.</div><div class="acts"><button class="btn primary" data-act="cal-intro">Done</button></div>'
-                : '<div class="note bad">The clicks were not heard. Use speakers, or hold a headphone against the microphone, then try again. Your previous value is unchanged.</div><div class="acts"><button class="btn quiet" data-act="sheet-sync">Adjust by hand</button><button class="btn primary" data-act="cal-run">Try again</button></div>';
-        return `<div class="sheet"><div class="grab"></div><h3>Calibrate with clicks</h3>${body}</div>`;
-      }
-      function sheetExport(s) {
-        const r = rec(s.ctx || 1);
-        const kind = s.expKind,
-          drive = s.expDest === 'drive';
-        const seg = (a, b, first) =>
-          `<div class="seg"><span class="${first ? 'on' : ''}" data-act="${a[0]}">${a[1]}</span><span class="${first ? '' : 'on'}" data-act="${b[0]}">${b[1]}</span></div>`;
-        const base = TRACKS[r.track].split(' (')[0];
-        if (s.expStep === 'progress') {
-          return `<div class="sheet"><div class="grab"></div><h3>Exporting ${kind === 'mix' ? 'mix' : 'recording'}</h3><div class="sub">${r.name} · ${drive ? 'Choir / Recordings' : 'Downloads'}</div><div class="prog"><i style="width:62%"></i></div><div class="sub">${kind === 'mix' ? 'Rendering and uploading' : 'Uploading'} · 62%</div><div class="acts"><button class="btn quiet" data-act="exp-cancel">Cancel</button></div></div>`;
-        }
-        if (s.expStep === 'done') {
-          return `<div class="sheet"><div class="grab"></div><h3>Exported</h3><div class="note ok">${drive ? `Saved to Choir / Recordings as “${base} – ${r.name} (mix).wav”.` : `Downloaded “${base} – ${r.name} (mix).wav”.`}</div><div class="acts"><button class="btn primary" data-act="exp-cancel">Done</button></div></div>`;
-        }
-        if (s.expStep === 'fail') {
-          return `<div class="sheet"><div class="grab"></div><h3>Export failed</h3><div class="note bad">Google Drive says you are out of storage. The recording is unchanged.</div><div class="acts"><button class="btn quiet" data-act="exp-cancel">Close</button><button class="btn primary" data-act="exp-go">Try again</button></div></div>`;
-        }
-        const warn =
-          s.expStep === 'changed'
-            ? '<div class="note warn">The track on Drive changed since this was recorded. The mix may not line up. Export anyway?</div>'
-            : s.expStep === 'nosource'
-              ? '<div class="note warn">The mix is unavailable: the original track cannot be fetched (deleted on Drive, or offline and not stored). The recording alone can still be exported.</div>'
-              : '';
-        return `<div class="sheet"><div class="grab"></div><h3>Export ${r.name}</h3>
+}
+function sheetCal(s) {
+  const step = s.cal;
+  const body = step === 'intro'
+    ? '<div class="sub">Optional. The app plays a few clicks and listens for them to measure your device\'s delay. The clicks must reach the microphone: use speakers, or hold one headphone against the microphone. You can always adjust by hand with Sync instead.</div><div class="acts"><button class="btn quiet" data-act="sheet-sync">Adjust by hand</button><button class="btn primary" data-act="cal-run">Play clicks</button></div>'
+    : step === 'running' ? '<div class="sub">Playing clicks and listening…</div><div class="prog"><i style="width:55%"></i></div><div class="acts"><button class="btn quiet" data-act="cal-intro">Cancel</button></div>'
+      : step === 'ok' ? '<div class="note ok">Measured 74 ms for this output. Saved as the default for “Bluetooth headphones”. Existing recordings keep what they were recorded with.</div><div class="acts"><button class="btn primary" data-act="cal-intro">Done</button></div>'
+        : '<div class="note bad">The clicks were not heard. Use speakers, or hold a headphone against the microphone, then try again. Your previous value is unchanged.</div><div class="acts"><button class="btn quiet" data-act="sheet-sync">Adjust by hand</button><button class="btn primary" data-act="cal-run">Try again</button></div>';
+  return `<div class="sheet"><div class="grab"></div><h3>Calibrate with clicks</h3>${body}</div>`;
+}
+function sheetExport(s) {
+  const r = rec(s.ctx || 1);
+  const kind = s.expKind, drive = s.expDest === 'drive';
+  const seg = (a, b, first) => `<div class="seg"><span class="${first ? 'on' : ''}" data-act="${a[0]}">${a[1]}</span><span class="${first ? '' : 'on'}" data-act="${b[0]}">${b[1]}</span></div>`;
+  const base = TRACKS[r.track].split(' (')[0];
+  if (s.expStep === 'progress') { return `<div class="sheet"><div class="grab"></div><h3>Exporting ${kind === 'mix' ? 'mix' : 'recording'}</h3><div class="sub">${r.name} · ${drive ? 'Choir / Recordings' : 'Downloads'}</div><div class="prog"><i style="width:62%"></i></div><div class="sub">${kind === 'mix' ? 'Rendering and uploading' : 'Uploading'} · 62%</div><div class="acts"><button class="btn quiet" data-act="exp-cancel">Cancel</button></div></div>`; }
+  if (s.expStep === 'done') { return `<div class="sheet"><div class="grab"></div><h3>Exported</h3><div class="note ok">${drive ? `Saved to Choir / Recordings as “${base} – ${r.name} (mix).wav”.` : `Downloaded “${base} – ${r.name} (mix).wav”.`}</div><div class="acts"><button class="btn primary" data-act="exp-cancel">Done</button></div></div>`; }
+  if (s.expStep === 'fail') { return `<div class="sheet"><div class="grab"></div><h3>Export failed</h3><div class="note bad">Google Drive says you are out of storage. The recording is unchanged.</div><div class="acts"><button class="btn quiet" data-act="exp-cancel">Close</button><button class="btn primary" data-act="exp-go">Try again</button></div></div>`; }
+  const warn = s.expStep === 'changed' ? '<div class="note warn">The track on Drive changed since this was recorded. The mix may not line up. Export anyway?</div>' : s.expStep === 'nosource' ? '<div class="note warn">The mix is unavailable: the original track cannot be fetched (deleted on Drive, or offline and not stored). The recording alone can still be exported.</div>' : '';
+  return `<div class="sheet"><div class="grab"></div><h3>Export ${r.name}</h3>
     ${seg(['kind-rec', 'Recording only'], ['kind-mix', 'Mix with track'], kind === 'rec')}${warn}
     ${kind === 'mix' ? `<div class="prow"><span class="k">Balance</span><span class="end">Track</span><input type="range" min="0" max="100" value="50" style="flex:1;accent-color:var(--mine)"><span class="end">Mine</span></div><div class="hint">Plays as you heard it while recording: ${r.shaping.replace('·', ',')}${r.kind === 'loop' ? ', the loop passes' : ''}.</div>` : '<div class="hint">Your voice only, at its natural speed. About ' + r.size + '.</div>'}
     ${seg(['dest-drive', 'Save to Drive'], ['dest-dl', 'Download'], drive)}
@@ -2146,25 +577,15 @@
     <div class="field"><small>Name</small><div class="input">${base} – ${r.name}${kind === 'mix' ? ' (mix)' : ''}.wav</div></div>
     <div class="hint">${drive ? 'Nothing is written to Drive until you confirm. Drive asks for permission here if needed.' : 'Saved by the browser. No Drive permission or network needed.'}</div>
     <div class="acts"><button class="btn quiet" data-act="exp-cancel">Cancel</button><button class="btn primary" data-act="exp-go" ${s.expStep === 'nosource' && kind === 'mix' ? 'disabled style="opacity:.4"' : ''}>${s.expStep === 'changed' ? 'Export anyway' : drive ? 'Save to Drive' : 'Download'}</button></div></div>`;
-      }
-      function sheetPunch(s) {
-        const a = Math.min(s.pin, s.pout),
-          b = Math.max(s.pin, s.pout),
-          bad = s.pout <= s.pin;
-        const fa = s.pin / 1000,
-          fb = s.pout / 1000;
-        const bars = BARS.map((h, i) => {
-          const f = i / BARS.length;
-          return `<i class="${f >= fa && f < fb ? 'in' : ''}" style="height:${h}%"></i>`;
-        }).join('');
-        const flags = MARKS.map(
-          ([f, nm]) =>
-            `<span style="left:${f * 100}%" data-act="flag-${nm}">${nm}</span>`,
-        ).join('');
-        const len = Math.max(0, Math.round((fb - fa) * TRACK_LEN));
-        const mi = nearest(fa),
-          mo = nearest(fb);
-        return `<div class="sheet"><div class="grab"></div><h3>Record between markers</h3><div class="sub">Drag the handles, tap a marker flag (first tap sets In, second sets Out), or type a time. Recording starts and stops by itself.</div>
+}
+function sheetPunch(s) {
+  const a = Math.min(s.pin, s.pout), b = Math.max(s.pin, s.pout), bad = s.pout <= s.pin;
+  const fa = s.pin / 1000, fb = s.pout / 1000;
+  const bars = BARS.map((h, i) => { const f = i / BARS.length; return `<i class="${f >= fa && f < fb ? 'in' : ''}" style="height:${h}%"></i>`; }).join('');
+  const flags = MARKS.map(([f, nm]) => `<span style="left:${f * 100}%" data-act="flag-${nm}">${nm}</span>`).join('');
+  const len = Math.max(0, Math.round((fb - fa) * TRACK_LEN));
+  const mi = nearest(fa), mo = nearest(fb);
+  return `<div class="sheet"><div class="grab"></div><h3>Record between markers</h3><div class="sub">Drag the handles, tap a marker flag (first tap sets In, second sets Out), or type a time. Recording starts and stops by itself.</div>
     <div class="pwave"><span class="lbl" style="left:${fa * 100}%">In ${fmtT(fa)}</span><span class="lbl" style="left:${Math.max(fb * 100, fa * 100 + 22)}%;color:var(--rec)">Out ${fmtT(fb)}</span>
       <div class="bars">${bars}</div><div class="sel" style="left:${a / 10}%;width:${(b - a) / 10}%"></div>
       <input type="range" min="0" max="1000" value="${s.pin}" data-act="pin" aria-label="In point"><input type="range" min="0" max="1000" value="${s.pout}" data-act="pout" aria-label="Out point">
@@ -2176,693 +597,244 @@
     <div class="prow"><span class="k" style="width:auto">Pre-roll</span><button class="step" data-act="pre-1">−</button><span class="val" style="color:var(--text);min-width:44px">${s.pre} s</span><button class="step" data-act="pre+1">+</button><span style="flex:1"></span><span class="hint">Keep playing after Out</span><span class="sw ${s.after ? 'on' : ''}" data-act="after"></span></div>
     ${bad ? '<div class="note bad">Out must come after In.</div>' : `<div class="note">Records <b style="color:var(--text)">${len} s</b> · ${mi[1]} → ${mo[1]}. Press play and it starts ${s.pre} s before ${fmtT(fa)}, records from ${fmtT(fa)} to ${fmtT(fb)}.</div>`}
     <div class="acts"><button class="btn quiet" data-act="close-sheet">Cancel</button><button class="btn primary" data-act="arm" ${bad ? 'disabled style="opacity:.4"' : ''}>Arm</button></div></div>`;
-      }
-      function sheetRowMenu(s) {
-        const r = rec(s.menuRec);
-        return `<div class="sheet"><div class="grab"></div><h3>${r.name}</h3><div class="sub">${TRACKS[r.track]} · ${r.span}</div>
-    ${[
-      ['Play', I.rec],
-      ['Play next', I.list],
-      ['Add to queue', I.list],
-      ['Add to playlist…', I.list],
-      [
-        r.ov === 'kept'
-          ? 'Remove track from offline'
-          : 'Keep track offline (whole track)',
-        I.pin,
-      ],
-      ['Export…', I.drive],
-      ['Rename', I.dots],
-    ]
-      .map(
-        ([l, ic]) =>
-          `<button class="mrow" data-act="close-sheet">${ic}<span>${l}</span></button>`,
-      )
-      .join('')}
+}
+function sheetRowMenu(s) {
+  const r = rec(s.menuRec);
+  return `<div class="sheet"><div class="grab"></div><h3>${r.name}</h3><div class="sub">${TRACKS[r.track]} · ${r.span}</div>
+    ${[['Play', I.rec], ['Play next', I.list], ['Add to queue', I.list], ['Add to playlist…', I.list], [r.ov === 'kept' ? 'Remove track from offline' : 'Keep track offline (whole track)', I.pin], ['Export…', I.drive], ['Rename', I.dots]].map(([l, ic]) => `<button class="mrow" data-act="close-sheet">${ic}<span>${l}</span></button>`).join('')}
     <button class="mrow danger" data-act="close-sheet">${I.close}<span>Delete…</span></button></div>`;
-      }
-      function sheetFilter() {
-        return `<div class="sheet"><div class="grab"></div><h3>Filters and sort</h3>
+}
+function sheetFilter() {
+  return `<div class="sheet"><div class="grab"></div><h3>Filters and sort</h3>
     <div class="field"><small>Track</small><div class="input">All tracks<span style="margin-left:auto">${I.down}</span></div></div>
     <div class="optrow"><div>Original changed</div><span class="sw" style="margin-left:auto"></span></div>
     <div class="optrow"><div>Needs a connection for overlay</div><span class="sw" style="margin-left:auto"></span></div>
     <div class="field"><small>Sort</small><div class="seg"><span class="on">Newest</span><span>Track</span><span>Length</span><span>Name</span></div></div>
     <div class="acts"><button class="btn quiet" data-act="close-sheet">Reset</button><button class="btn primary" data-act="close-sheet">Done</button></div></div>`;
-      }
-      function sheetAddPl() {
-        return `<div class="sheet"><div class="grab"></div><h3>Add 2 recordings to a playlist</h3>
+}
+function sheetAddPl() {
+  return `<div class="sheet"><div class="grab"></div><h3>Add 2 recordings to a playlist</h3>
     <div class="optrow"><div>Sunday warm-ups<small>5 items</small></div></div><div class="optrow"><div>Concert set<small>12 items</small></div></div><div class="optrow"><div>Alto drills<small>3 items</small></div></div>
     <div class="optrow"><div>New playlist…</div></div><div class="acts"><button class="btn quiet" data-act="close-sheet">Cancel</button></div></div>`;
-      }
-      function sheetQueue() {
-        return `<div class="sheet"><div class="grab"></div><h3>Up next</h3><div class="sub">Playing: Recording 2 · Chorus loop</div>
+}
+function sheetQueue() {
+  return `<div class="sheet"><div class="grab"></div><h3>Up next</h3><div class="sub">Playing: Recording 2 · Chorus loop</div>
     <div class="ptitem"><div class="art rc">${I.rec}</div><div><b>Recording 5<span class="tag punch">Punch</span></b><span class="s">Sleep Song · Chorus → Bridge · 0:27</span></div></div>
     <div class="ptitem"><div class="art">♪</div><div><b>Hymn 4 – Bass</b><span class="s">Track · 4:02</span></div></div>
     <div class="ptitem"><div class="art rc">${I.rec}</div><div><b>Recording 1<span class="tag chg">Original changed</span></b><span class="s">Hymn 4 · 1:42 → 2:10</span></div></div></div>`;
-      }
-      function sheetStatus() {
-        return `<div class="sheet"><div class="grab"></div><h3>Drive status · Recording 3</h3><div class="sub">Auto-export to Choir Recordings</div>
+}
+function sheetStatus() {
+  return `<div class="sheet"><div class="grab"></div><h3>Drive status · Recording 3</h3><div class="sub">Auto-export to Choir Recordings</div>
     <div class="optrow"><div>Recording only<small>Sleep Song – Recording 3.wav</small></div><span class="tag kept">On Drive</span></div>
     <div class="optrow"><div>Mix<small>The original track could not be fetched (offline)</small></div><span class="tag gone">Failed</span></div>
     <div class="acts"><button class="btn quiet" data-act="close-sheet">Close</button><button class="btn primary" data-act="close-sheet">Retry mix</button></div></div>`;
-      }
+}
 
-      /* ---------- render ---------- */
-      function render(s, live) {
-        const screens = {
-          play: playScreen,
-          loop: loopScreen,
-          library: libScreen,
-          playlist: playlistScreen,
-          settings: settingsScreen,
-          offline: offlineScreen,
-        };
-        let sheet = '';
-        if (s.sheet === 'panel') {
-          sheet = sheetPanel(s);
-        } else if (s.sheet === 'sync') {
-          sheet = sheetSync(s);
-        } else if (s.sheet === 'cal') {
-          sheet = sheetCal(s);
-        } else if (s.sheet === 'export') {
-          sheet = sheetExport(s);
-        } else if (s.sheet === 'punch') {
-          sheet = sheetPunch(s);
-        } else if (s.sheet === 'rowmenu') {
-          sheet = sheetRowMenu(s);
-        } else if (s.sheet === 'filter') {
-          sheet = sheetFilter();
-        } else if (s.sheet === 'addpl') {
-          sheet = sheetAddPl();
-        } else if (s.sheet === 'queue') {
-          sheet = sheetQueue();
-        } else if (s.sheet === 'status') {
-          sheet = sheetStatus();
-        } else if (s.rec === 'saving') {
-          sheet = sheetSave(s);
-        }
-        const menu = s.tools
-          ? toolsMenu(s)
-          : s.sheet === 'recmenu'
-            ? recMenu()
-            : s.sheet === 'more'
-              ? moreMenu(s)
-              : '';
-        const scrim =
-          sheet || menu
-            ? '<div class="scrim" data-act="close-sheet"></div>'
-            : '';
-        return `<div class="phone" data-live="${live ? 1 : 0}">${(screens[s.screen] || playScreen)(s)}${scrim}${menu}${sheet}</div>`;
-      }
-      function mount() {
-        $('#live').innerHTML = render(S, true);
-        const q = document.querySelector('#live [data-act="q"]');
-        if (q && S.focusQ) {
-          q.focus();
-          q.setSelectionRange(q.value.length, q.value.length);
-          S.focusQ = false;
-        }
-      }
-      function apply(preset) {
-        const keep = JSON.parse(JSON.stringify(preset));
-        Object.keys(S).forEach((k) => delete S[k]);
-        Object.assign(S, keep);
-        mount();
-      }
+/* ---------- render ---------- */
+function render(s, live) {
+  const screens = { play: playScreen, loop: loopScreen, library: libScreen, playlist: playlistScreen, settings: settingsScreen, offline: offlineScreen };
+  let sheet = '';
+  if (s.sheet === 'panel') { sheet = sheetPanel(s); }
+  else if (s.sheet === 'sync') { sheet = sheetSync(s); }
+  else if (s.sheet === 'cal') { sheet = sheetCal(s); }
+  else if (s.sheet === 'export') { sheet = sheetExport(s); }
+  else if (s.sheet === 'punch') { sheet = sheetPunch(s); }
+  else if (s.sheet === 'rowmenu') { sheet = sheetRowMenu(s); }
+  else if (s.sheet === 'filter') { sheet = sheetFilter(); }
+  else if (s.sheet === 'addpl') { sheet = sheetAddPl(); }
+  else if (s.sheet === 'queue') { sheet = sheetQueue(); }
+  else if (s.sheet === 'status') { sheet = sheetStatus(); }
+  else if (s.rec === 'saving') { sheet = sheetSave(s); }
+  const menu = s.tools ? toolsMenu(s) : s.sheet === 'recmenu' ? recMenu() : s.sheet === 'more' ? moreMenu(s) : '';
+  const scrim = (sheet || menu) ? '<div class="scrim" data-act="close-sheet"></div>' : '';
+  return `<div class="phone" data-live="${live ? 1 : 0}">${(screens[s.screen] || playScreen)(s)}${scrim}${menu}${sheet}</div>`;
+}
+function mount() { $('#live').innerHTML = render(S, true); const q = document.querySelector('#live [data-act="q"]'); if (q && S.focusQ) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); S.focusQ = false; } }
+function apply(preset) { const keep = JSON.parse(JSON.stringify(preset)); Object.keys(S).forEach((k) => delete S[k]); Object.assign(S, keep); mount(); }
 
-      /* controls */
-      const GROUPS = [
-        [
-          'Recording strip',
-          [
-            ['idle', 'Idle'],
-            ['tools', 'Practice tools menu'],
-            ['explain', 'First run'],
-            ['blocked', 'Mic blocked'],
-            ['ready', 'Ready (Record ▾)'],
-            ['recording', 'Recording'],
-            ['recloop', 'Recording a loop'],
-            ['readylow', 'Ready · 25 min left'],
-            ['reclow', 'Recording · 4 min left'],
-            ['refused', 'Too little space'],
-            ['full', 'Storage full'],
-            ['stopped', 'Stopped'],
-            ['short', 'Too short'],
-            ['save', 'Save sheet'],
-            ['saveoff', 'Save sheet (auto-export off)'],
-          ],
-        ],
-        [
-          'Punch in / out',
-          [
-            ['punch', 'Setup sheet'],
-            ['punchbad', 'Invalid range'],
-            ['armed', 'Armed'],
-            ['count', 'Countdown'],
-            ['punchrec', 'Recording in range'],
-          ],
-        ],
-        [
-          'Viewing recordings (tool off)',
-          [
-            ['more', 'More actions menu'],
-            ['panel', 'Track panel'],
-            ['panelA', 'Adjusted copy panel'],
-            ['panelP', 'Parent panel'],
-            ['loopview', 'Loop view'],
-            ['loopA', 'Loop of adjusted copy'],
-          ],
-        ],
-        [
-          'Opening one (locked)',
-          [
-            ['ctxseg', 'Segment'],
-            ['ctxloop', 'Loop'],
-            ['ctxadj', 'Adjusted copy'],
-            ['sync', 'Sync'],
-            ['cal', 'Calibrate'],
-            ['calfail', 'Not heard'],
-          ],
-        ],
-        [
-          'Library, playlists, queue',
-          [
-            ['lib', 'Recordings view'],
-            ['libs', 'Search “chorus”'],
-            ['libf', 'Filter: loop'],
-            ['libfilter', 'Filters sheet'],
-            ['libmenu', 'Row menu'],
-            ['libsel', 'Selection + bulk'],
-            ['addpl', 'Add to playlist'],
-            ['pl', 'Playlist'],
-            ['plq', 'Queue'],
-          ],
-        ],
-        [
-          'Storage, settings, auto-export',
-          [
-            ['settings', 'Settings · auto-export on'],
-            ['settingsoff', 'Settings · auto-export off'],
-            ['status', 'Drive status'],
-            ['offline', 'Offline files'],
-          ],
-        ],
-        [
-          'Export',
-          [
-            ['expchoose', 'Export'],
-            ['expprog', 'Exporting'],
-            ['expdone', 'Exported'],
-            ['expfail', 'Failed'],
-            ['expchg', 'Original changed'],
-            ['expnone', 'Mix unavailable'],
-          ],
-        ],
-      ];
-      GROUPS.forEach(([title, items]) => {
-        const d = document.createElement('div');
-        d.innerHTML = `<div class="label">${title}</div><div class="checks"></div>`;
-        items.forEach(([k, l]) => {
-          const b = document.createElement('button');
-          b.className = 'check';
-          b.textContent = l;
-          b.setAttribute('aria-pressed', 'false');
-          b.onclick = () => {
-            apply(PRESETS[k]);
-            document
-              .querySelectorAll('.check')
-              .forEach((c) =>
-                c.setAttribute('aria-pressed', c === b ? 'true' : 'false'),
-              );
-          };
-          d.querySelector('.checks').appendChild(b);
-        });
-        $('#controls').appendChild(d);
-      });
-      const hintEl = document.createElement('p');
-      hintEl.className = 'hint';
-      hintEl.textContent =
-        'Inside the phone: the toolbox opens Practice tools; More actions → Recordings opens the panel (works with the tool off); rows open a recording in its locked context; the punch handles drag; the Library search and filter chips work.';
-      $('#controls').appendChild(hintEl);
+/* controls */
+const GROUPS = [
+  ['Recording strip', [['idle', 'Idle'], ['tools', 'Practice tools menu'], ['explain', 'First run'], ['blocked', 'Mic blocked'], ['ready', 'Ready (Record ▾)'], ['recording', 'Recording'], ['recloop', 'Recording a loop'], ['readylow', 'Ready · 25 min left'], ['reclow', 'Recording · 4 min left'], ['refused', 'Too little space'], ['full', 'Storage full'], ['stopped', 'Stopped'], ['short', 'Too short'], ['save', 'Save sheet'], ['saveoff', 'Save sheet (auto-export off)']]],
+  ['Punch in / out', [['punch', 'Setup sheet'], ['punchbad', 'Invalid range'], ['armed', 'Armed'], ['count', 'Countdown'], ['punchrec', 'Recording in range']]],
+  ['Viewing recordings (tool off)', [['more', 'More actions menu'], ['panel', 'Track panel'], ['panelA', 'Adjusted copy panel'], ['panelP', 'Parent panel'], ['loopview', 'Loop view'], ['loopA', 'Loop of adjusted copy']]],
+  ['Opening one (locked)', [['ctxseg', 'Segment'], ['ctxloop', 'Loop'], ['ctxadj', 'Adjusted copy'], ['sync', 'Sync'], ['cal', 'Calibrate'], ['calfail', 'Not heard']]],
+  ['Library, playlists, queue', [['lib', 'Recordings view'], ['libs', 'Search “chorus”'], ['libf', 'Filter: loop'], ['libfilter', 'Filters sheet'], ['libmenu', 'Row menu'], ['libsel', 'Selection + bulk'], ['addpl', 'Add to playlist'], ['pl', 'Playlist'], ['plq', 'Queue']]],
+  ['Storage, settings, auto-export', [['settings', 'Settings · auto-export on'], ['settingsoff', 'Settings · auto-export off'], ['status', 'Drive status'], ['offline', 'Offline files']]],
+  ['Export', [['expchoose', 'Export'], ['expprog', 'Exporting'], ['expdone', 'Exported'], ['expfail', 'Failed'], ['expchg', 'Original changed'], ['expnone', 'Mix unavailable']]]
+];
+GROUPS.forEach(([title, items]) => {
+  const d = document.createElement('div');
+  d.innerHTML = `<div class="label">${title}</div><div class="checks"></div>`;
+  items.forEach(([k, l]) => {
+    const b = document.createElement('button'); b.className = 'check'; b.textContent = l; b.setAttribute('aria-pressed', 'false');
+    b.onclick = () => { apply(PRESETS[k]); document.querySelectorAll('.check').forEach((c) => c.setAttribute('aria-pressed', c === b ? 'true' : 'false')); };
+    d.querySelector('.checks').appendChild(b);
+  });
+  $('#controls').appendChild(d);
+});
+const hintEl = document.createElement('p'); hintEl.className = 'hint'; hintEl.textContent = 'Inside the phone: the toolbox opens Practice tools; More actions → Recordings opens the panel (works with the tool off); rows open a recording in its locked context; the punch handles drag; the Library search and filter chips work.'; $('#controls').appendChild(hintEl);
 
-      document.addEventListener('click', (e) => {
-        const el = e.target.closest('[data-act]');
-        if (!el || !el.closest('[data-live="1"]')) {
-          return;
-        }
-        if (el.tagName === 'INPUT') {
-          return;
-        }
-        const a = el.dataset.act;
-        const num = (p) => Number(a.slice(p.length));
-        if (a === 'tools') {
-          S.tools = !S.tools;
-          S.sheet = null;
-        } else if (a === 'close-sheet') {
-          S.tools = false;
-          S.sheet = null;
-          if (S.rec === 'saving') {
-            S.rec = 'ready';
-          }
-        } else if (a === 'toggle-rec') {
-          S.rec = S.rec === 'off' ? 'explain' : 'off';
-        } else if (a === 'continue') {
-          S.rec = 'ready';
-        } else if (a === 'close-rec') {
-          S.rec = 'off';
-        } else if (a === 'start') {
-          S.rec = 'recording';
-          S.sheet = null;
-        } else if (a === 'more') {
-          S.sheet = S.sheet === 'more' ? null : 'more';
-          S.tools = false;
-        } else if (a === 'recmenu') {
-          S.sheet = S.sheet === 'recmenu' ? null : 'recmenu';
-        } else if (a === 'punch') {
-          S.sheet = 'punch';
-        } else if (a === 'stop') {
-          S.rec = 'saving';
-        } else if (a === 'save') {
-          S.rec = 'saving';
-        } else if (a === 'autoexp') {
-          S.autoExp = !S.autoExp;
-        } else if (a === 'to-settings') {
-          S.rec = 'ready';
-          S.sheet = null;
-          S.screen = 'settings';
-        } else if (a.startsWith('what-')) {
-          S.expWhat = a.slice(5);
-        } else if (a.startsWith('wifi-')) {
-          S.wifi = a.slice(5);
-        } else if (a === 'status') {
-          S.sheet = 'status';
-        } else if (a === 'done-save' || a === 'discard') {
-          S.rec = 'ready';
-          S.sheet = null;
-        } else if (a === 'panel') {
-          S.sheet = 'panel';
-          S.tools = false;
-        } else if (a.startsWith('open-')) {
-          S.ctx = num('open-');
-          S.screen = 'play';
-          S.sheet = null;
-          S.rec = 'off';
-        } else if (a === 'leave') {
-          S.ctx = null;
-        } else if (a.startsWith('rowmenu-')) {
-          S.menuRec = num('rowmenu-');
-          S.sheet = 'rowmenu';
-        } else if (a === 'n-10') {
-          S.nudge = Math.max(-250, S.nudge - 10);
-        } else if (a === 'n-1') {
-          S.nudge = Math.max(-250, S.nudge - 1);
-        } else if (a === 'n+1') {
-          S.nudge = Math.min(250, S.nudge + 1);
-        } else if (a === 'n+10') {
-          S.nudge = Math.min(250, S.nudge + 10);
-        } else if (a === 'n-reset') {
-          S.nudge = 0;
-        } else if (a === 'mix-toggle') {
-          S.mixOpen = !S.mixOpen;
-        } else if (a === 'normalize') {
-          S.level = 9.5;
-          S.normMsg = 'Loudest part set to just under full volume.';
-        } else if (a === 'mix-save') {
-          S.normMsg = 'Saved as the default for this recording.';
-        } else if (a === 'n-device' || a === 'sheet-sync') {
-          S.sheet = 'sync';
-        } else if (a === 'cal') {
-          S.sheet = 'cal';
-          S.cal = 'intro';
-        } else if (a === 'cal-run') {
-          S.cal = 'running';
-          mount();
-          setTimeout(() => {
-            S.cal = 'ok';
-            mount();
-          }, 1200);
-          return;
-        } else if (a === 'cal-intro') {
-          S.sheet = null;
-          S.cal = 'intro';
-        } else if (a === 'export') {
-          S.sheet = 'export';
-          S.expStep = 'choose';
-          if (!S.ctx) {
-            S.ctx = 1;
-          }
-        } else if (a === 'kind-rec') {
-          S.expKind = 'rec';
-          if (S.expStep === 'nosource') {
-            S.expStep = 'choose';
-          }
-        } else if (a === 'kind-mix') {
-          S.expKind = 'mix';
-        } else if (a === 'dest-drive') {
-          S.expDest = 'drive';
-        } else if (a === 'dest-dl') {
-          S.expDest = 'dl';
-        } else if (a === 'exp-go') {
-          S.expStep = 'progress';
-          mount();
-          setTimeout(() => {
-            S.expStep = 'done';
-            mount();
-          }, 1400);
-          return;
-        } else if (a === 'exp-cancel') {
-          S.sheet = null;
-          S.expStep = 'choose';
-        } else if (a.startsWith('flag-')) {
-          const f = MARKS.find((m) => m[1] === a.slice(5))[0] * 1000;
-          if (S.flagTap) {
-            S.pout = f;
-            S.flagTap = false;
-          } else {
-            S.pin = f;
-            S.flagTap = true;
-          }
-        } else if (a === 'pi-1000') {
-          S.pin = Math.max(0, S.pin - 5);
-        } else if (a === 'pi+1000') {
-          S.pin = Math.min(1000, S.pin + 5);
-        } else if (a === 'po-1000') {
-          S.pout = Math.max(0, S.pout - 5);
-        } else if (a === 'po+1000') {
-          S.pout = Math.min(1000, S.pout + 5);
-        } else if (a === 'use-loop') {
-          S.pin = 550;
-          S.pout = 800;
-        } else if (a === 'use-head') {
-          S.pin = 380;
-        } else if (a === 'pre-1') {
-          S.pre = Math.max(0, S.pre - 1);
-        } else if (a === 'pre+1') {
-          S.pre = Math.min(10, S.pre + 1);
-        } else if (a === 'after') {
-          S.after = !S.after;
-        } else if (a === 'arm') {
-          S.rec = 'armed';
-          S.sheet = null;
-        } else if (a === 'count') {
-          S.rec = 'countdown';
-          mount();
-          setTimeout(() => {
-            S.rec = 'punchrec';
-            mount();
-          }, 1400);
-          return;
-        } else if (a === 'disarm') {
-          S.rec = 'ready';
-        } else if (a.startsWith('f-')) {
-          S.lib.f = a.slice(2);
-        } else if (a === 'filter') {
-          S.sheet = 'filter';
-        } else if (a === 'sel-mode') {
-          S.lib.mode = !S.lib.mode;
-          S.lib.sel = [];
-        } else if (a === 'b-pl') {
-          S.sheet = 'addpl';
-        } else if (a === 'remember') {
-          S.remember = !S.remember;
-        } else if (a === 'keep-choose') {
-          S.prompt = 'choose';
-        } else if (a.startsWith('ch-')) {
-          const i = num('ch-');
-          S.choose[i] = !S.choose[i];
-        } else if (a.startsWith('pol-')) {
-          S.setPolicy = a.slice(4);
-        }
-        if (a.startsWith('open-') && S.screen === 'library') {
-          return;
-        }
-        mount();
-      });
-      /* in the library, a click on a row selects it in selection mode */
-      document.addEventListener(
-        'click',
-        (e) => {
-          const row = e.target.closest('#live .rec-row');
-          if (
-            row &&
-            S.screen === 'library' &&
-            S.lib.mode &&
-            !e.target.closest('[data-act^="rowmenu"]')
-          ) {
-            e.stopImmediatePropagation();
-            const id = Number(row.dataset.act.slice(5));
-            const i = S.lib.sel.indexOf(id);
-            if (i >= 0) {
-              S.lib.sel.splice(i, 1);
-            } else {
-              S.lib.sel.push(id);
-            }
-            mount();
-          }
-        },
-        true,
-      );
-      document.addEventListener('input', (e) => {
-        const el = e.target.closest('#live [data-act]');
-        if (!el) {
-          return;
-        }
-        const a = el.dataset.act;
-        if (a === 'balance') {
-          S.balance = Number(el.value);
-        } else if (a === 'level') {
-          S.level = Number(el.value);
-          S.normMsg = '';
-          mount();
-        } else if (a === 'q') {
-          S.lib.q = el.value;
-          S.focusQ = true;
-          mount();
-        } else if (a === 'pin' || a === 'pout') {
-          let v = Number(el.value);
-          const hit = MARKS.find(([f]) => Math.abs(f * 1000 - v) < 14); // snap to a marker within ~3 s
-          if (hit) {
-            v = hit[0] * 1000;
-          }
-          S[a] = v;
-          mount();
-        }
-      });
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]');
+  if (!el || !el.closest('[data-live="1"]')) { return; }
+  if (el.tagName === 'INPUT') { return; }
+  const a = el.dataset.act;
+  const num = (p) => Number(a.slice(p.length));
+  if (a === 'tools') { S.tools = !S.tools; S.sheet = null; }
+  else if (a === 'close-sheet') { S.tools = false; S.sheet = null; if (S.rec === 'saving') { S.rec = 'ready'; } }
+  else if (a === 'toggle-rec') { S.rec = S.rec === 'off' ? 'explain' : 'off'; }
+  else if (a === 'continue') { S.rec = 'ready'; }
+  else if (a === 'close-rec') { S.rec = 'off'; }
+  else if (a === 'start') { S.rec = 'recording'; S.sheet = null; }
+  else if (a === 'more') { S.sheet = S.sheet === 'more' ? null : 'more'; S.tools = false; }
+  else if (a === 'recmenu') { S.sheet = S.sheet === 'recmenu' ? null : 'recmenu'; }
+  else if (a === 'punch') { S.sheet = 'punch'; }
+  else if (a === 'stop') { S.rec = 'saving'; }
+  else if (a === 'save') { S.rec = 'saving'; }
+  else if (a === 'autoexp') { S.autoExp = !S.autoExp; }
+  else if (a === 'to-settings') { S.rec = 'ready'; S.sheet = null; S.screen = 'settings'; }
+  else if (a.startsWith('what-')) { S.expWhat = a.slice(5); }
+  else if (a.startsWith('wifi-')) { S.wifi = a.slice(5); }
+  else if (a === 'status') { S.sheet = 'status'; }
+  else if (a === 'done-save' || a === 'discard') { S.rec = 'ready'; S.sheet = null; }
+  else if (a === 'panel') { S.sheet = 'panel'; S.tools = false; }
+  else if (a.startsWith('open-')) { S.ctx = num('open-'); S.screen = 'play'; S.sheet = null; S.rec = 'off'; }
+  else if (a === 'leave') { S.ctx = null; }
+  else if (a.startsWith('rowmenu-')) { S.menuRec = num('rowmenu-'); S.sheet = 'rowmenu'; }
+  else if (a === 'n-10') { S.nudge = Math.max(-250, S.nudge - 10); }
+  else if (a === 'n-1') { S.nudge = Math.max(-250, S.nudge - 1); }
+  else if (a === 'n+1') { S.nudge = Math.min(250, S.nudge + 1); }
+  else if (a === 'n+10') { S.nudge = Math.min(250, S.nudge + 10); }
+  else if (a === 'n-reset') { S.nudge = 0; }
+  else if (a === 'mix-toggle') { S.mixOpen = !S.mixOpen; }
+  else if (a === 'normalize') { S.level = 9.5; S.normMsg = 'Loudest part set to just under full volume.'; }
+  else if (a === 'mix-save') { S.normMsg = 'Saved as the default for this recording.'; }
+  else if (a === 'n-device' || a === 'sheet-sync') { S.sheet = 'sync'; }
+  else if (a === 'cal') { S.sheet = 'cal'; S.cal = 'intro'; }
+  else if (a === 'cal-run') { S.cal = 'running'; mount(); setTimeout(() => { S.cal = 'ok'; mount(); }, 1200); return; }
+  else if (a === 'cal-intro') { S.sheet = null; S.cal = 'intro'; }
+  else if (a === 'export') { S.sheet = 'export'; S.expStep = 'choose'; if (!S.ctx) { S.ctx = 1; } }
+  else if (a === 'kind-rec') { S.expKind = 'rec'; if (S.expStep === 'nosource') { S.expStep = 'choose'; } }
+  else if (a === 'kind-mix') { S.expKind = 'mix'; }
+  else if (a === 'dest-drive') { S.expDest = 'drive'; }
+  else if (a === 'dest-dl') { S.expDest = 'dl'; }
+  else if (a === 'exp-go') { S.expStep = 'progress'; mount(); setTimeout(() => { S.expStep = 'done'; mount(); }, 1400); return; }
+  else if (a === 'exp-cancel') { S.sheet = null; S.expStep = 'choose'; }
+  else if (a.startsWith('flag-')) { const f = MARKS.find((m) => m[1] === a.slice(5))[0] * 1000; if (S.flagTap) { S.pout = f; S.flagTap = false; } else { S.pin = f; S.flagTap = true; } }
+  else if (a === 'pi-1000') { S.pin = Math.max(0, S.pin - 5); }
+  else if (a === 'pi+1000') { S.pin = Math.min(1000, S.pin + 5); }
+  else if (a === 'po-1000') { S.pout = Math.max(0, S.pout - 5); }
+  else if (a === 'po+1000') { S.pout = Math.min(1000, S.pout + 5); }
+  else if (a === 'use-loop') { S.pin = 550; S.pout = 800; }
+  else if (a === 'use-head') { S.pin = 380; }
+  else if (a === 'pre-1') { S.pre = Math.max(0, S.pre - 1); }
+  else if (a === 'pre+1') { S.pre = Math.min(10, S.pre + 1); }
+  else if (a === 'after') { S.after = !S.after; }
+  else if (a === 'arm') { S.rec = 'armed'; S.sheet = null; }
+  else if (a === 'count') { S.rec = 'countdown'; mount(); setTimeout(() => { S.rec = 'punchrec'; mount(); }, 1400); return; }
+  else if (a === 'disarm') { S.rec = 'ready'; }
+  else if (a.startsWith('f-')) { S.lib.f = a.slice(2); }
+  else if (a === 'filter') { S.sheet = 'filter'; }
+  else if (a === 'sel-mode') { S.lib.mode = !S.lib.mode; S.lib.sel = []; }
+  else if (a === 'b-pl') { S.sheet = 'addpl'; }
+  else if (a === 'remember') { S.remember = !S.remember; }
+  else if (a === 'keep-choose') { S.prompt = 'choose'; }
+  else if (a.startsWith('ch-')) { const i = num('ch-'); S.choose[i] = !S.choose[i]; }
+  else if (a.startsWith('pol-')) { S.setPolicy = a.slice(4); }
+  if (a.startsWith('open-') && S.screen === 'library') { return; }
+  mount();
+});
+/* in the library, a click on a row selects it in selection mode */
+document.addEventListener('click', (e) => {
+  const row = e.target.closest('#live .rec-row');
+  if (row && S.screen === 'library' && S.lib.mode && !e.target.closest('[data-act^="rowmenu"]')) { e.stopImmediatePropagation(); const id = Number(row.dataset.act.slice(5)); const i = S.lib.sel.indexOf(id); if (i >= 0) { S.lib.sel.splice(i, 1); } else { S.lib.sel.push(id); } mount(); }
+}, true);
+document.addEventListener('input', (e) => {
+  const el = e.target.closest('#live [data-act]');
+  if (!el) { return; }
+  const a = el.dataset.act;
+  if (a === 'balance') { S.balance = Number(el.value); }
+  else if (a === 'level') { S.level = Number(el.value); S.normMsg = ''; mount(); }
+  else if (a === 'q') { S.lib.q = el.value; S.focusQ = true; mount(); }
+  else if (a === 'pin' || a === 'pout') {
+    let v = Number(el.value);
+    const hit = MARKS.find(([f]) => Math.abs(f * 1000 - v) < 14); // snap to a marker within ~3 s
+    if (hit) { v = hit[0] * 1000; }
+    S[a] = v; mount();
+  }
+});
 
-      /* gallery */
-      const G = [
-        ['Strip and recording', null],
-        [
-          'tools',
-          'Practice tools menu',
-          'Recording is the third row; it controls only the strip.',
-        ],
-        [
-          'explain',
-          'First recording',
-          'Storage and headphones explained before the microphone.',
-        ],
-        ['ready', 'Ready', 'Split button: Record now, or Record between…'],
-        [
-          'recording',
-          'Recording',
-          'Indicator, elapsed time, marker context, locked shaping.',
-        ],
-        ['recloop', 'Recording a loop', 'Owned by the loop; passes counted.'],
-        [
-          'readylow',
-          'Ready, space getting low',
-          'Time left appears only when under 30 minutes.',
-        ],
-        [
-          'reclow',
-          'Recording, under 5 minutes left',
-          'The readout turns to a warning style.',
-        ],
-        [
-          'refused',
-          'Too little space to start',
-          'Under a minute left: refused, with the way to free space.',
-        ],
-        [
-          'full',
-          'Storage full',
-          'Stops safely; everything written is kept; offers Export.',
-        ],
-        [
-          'stopped',
-          'Stopped safely',
-          'Reason shown; what was captured is kept.',
-        ],
-        [
-          'save',
-          'Save sheet',
-          'Saved on this device, never removed; auto-export status; Export.',
-        ],
-        [
-          'saveoff',
-          'Save sheet, auto-export off',
-          'Offers Turn on… for auto-export.',
-        ],
-        [
-          'more',
-          'More actions menu',
-          'Recordings sits here with a muted count; no header badge.',
-        ],
-        ['Punch in / out', null],
-        [
-          'punch',
-          'Setup sheet',
-          'Drag handles (snap to markers), tap flags, type times, pre-roll.',
-        ],
-        ['punchbad', 'Invalid range', 'Out must come after In.'],
-        [
-          'armed',
-          'Armed',
-          'Range hatched on the waveform; Play starts from the pre-roll.',
-        ],
-        ['count', 'Countdown', 'Pre-roll plays; recording starts at In.'],
-        [
-          'punchrec',
-          'Recording in range',
-          'Remaining time to Out; stop works any time.',
-        ],
-        ['Where recordings show', null],
-        [
-          'panel',
-          'Track panel',
-          'Own recordings plus a Loops section; tool is off.',
-        ],
-        ['panelA', 'Adjusted copy panel', 'Its own recordings and its loops.'],
-        ['panelP', 'Parent panel', "Includes the copy's recordings, labelled."],
-        ['loopview', 'Loop view', 'Only recordings made on this loop.'],
-        [
-          'loopA',
-          'Loop of an adjusted copy',
-          'Also listed under the copy and its parent.',
-        ],
-        ['Opening a recording', null],
-        [
-          'ctxseg',
-          'Segment context',
-          'Only the recorded range; its 0.7× +2 applied; all locked.',
-        ],
-        ['ctxloop', 'Loop context', 'The loop opens; passes follow the loop.'],
-        [
-          'ctxadj',
-          'Adjusted copy context',
-          'Whole copy with its adjustment locked.',
-        ],
-        [
-          'ctxmix',
-          'Balance and sync, collapsed',
-          'One line with balance, level and sync; tap to open. Open shows aligned sliders, Normalize and Save as default.',
-        ],
-        [
-          'sync',
-          'Sync sheet',
-          '1 ms and 10 ms steps, ±250 ms, Use for this device.',
-        ],
-        ['cal', 'Calibrate (opt-in)', 'Offers adjusting by hand instead.'],
-        ['calfail', 'Clicks not heard', 'Says why; manual path stays.'],
-        ['Library, playlists, queue', null],
-        [
-          'lib',
-          'Recordings view',
-          'Search, filter chips, sort, rows with tags and offline state.',
-        ],
-        ['libs', 'Search', 'Matches name, track, loop, or marker names.'],
-        [
-          'libf',
-          'Filter: loops',
-          'Whole, segment, loop, adjusted, kept, not kept.',
-        ],
-        [
-          'libfilter',
-          'Filters and sort',
-          'Track picker, original changed, overlay needs a connection.',
-        ],
-        [
-          'libmenu',
-          'Row menu',
-          'Play, queue, playlist, offline, export, rename, delete.',
-        ],
-        [
-          'libsel',
-          'Selection and bulk',
-          'The shared bulk bar with recording actions.',
-        ],
-        ['addpl', 'Add to playlist', 'From the row menu or a selection.'],
-        [
-          'pl',
-          'Playlist',
-          'Recordings sit with tracks and loops; removed ones are skipped.',
-        ],
-        ['plq', 'Queue', 'Play next and Add to queue work for recordings.'],
-        ['Storage, settings, auto-export', null],
-        [
-          'settings',
-          'Settings · Recordings',
-          'Storage used, auto-export, folder, what to export, and Wi-Fi only.',
-        ],
-        [
-          'settingsoff',
-          'Auto-export off',
-          'The default; one switch to turn on.',
-        ],
-        [
-          'status',
-          'Drive status',
-          'Per export: On Drive, or failed with the reason and Retry.',
-        ],
-        [
-          'offline',
-          'Offline files',
-          'Tracks as before; recordings in their own group, delete only.',
-        ],
-        ['Export', null],
-        [
-          'expchoose',
-          'Export',
-          'Recording only or mix; Drive or download; name and folder.',
-        ],
-        ['expprog', 'Exporting', 'Progress and cancel.'],
-        ['expdone', 'Exported', 'Shows the name and where.'],
-        ['expfail', 'Export failed', 'Names the reason; recording unchanged.'],
-        [
-          'expchg',
-          'Original changed',
-          'Warns the mix may not align; confirm to go on.',
-        ],
-        [
-          'expnone',
-          'Mix unavailable',
-          'Original cannot be fetched; recording alone still exports.',
-        ],
-      ];
-      const gal = $('#gallery');
-      G.forEach((g) => {
-        if (g[1] === null) {
-          const h = document.createElement('div');
-          h.className = 'gh';
-          h.innerHTML = `<h2>${g[0]}</h2>`;
-          gal.appendChild(h);
-          return;
-        }
-        const [k, t, d] = g;
-        const cell = document.createElement('div');
-        cell.className = 'gcell';
-        cell.innerHTML = `<div class="gframe">${render(PRESETS[k], false)}</div><div class="cap"><b>${t}</b><span>${d}</span></div>`;
-        gal.appendChild(cell);
-      });
-      function fit() {
-        document.querySelectorAll('.gframe').forEach((f) => {
-          f.firstElementChild.style.transform = `scale(${f.clientWidth / 380})`;
-        });
-      }
-      addEventListener('resize', fit);
-      apply(PRESETS.idle);
-      fit();
-    </script>
-  </body>
+/* gallery */
+const G = [
+  ['Strip and recording', null],
+  ['tools', 'Practice tools menu', 'Recording is the third row; it controls only the strip.'],
+  ['explain', 'First recording', 'Storage and headphones explained before the microphone.'],
+  ['ready', 'Ready', 'Split button: Record now, or Record between…'],
+  ['recording', 'Recording', 'Indicator, elapsed time, marker context, locked shaping.'],
+  ['recloop', 'Recording a loop', 'Owned by the loop; passes counted.'],
+  ['readylow', 'Ready, space getting low', 'Time left appears only when under 30 minutes.'],
+  ['reclow', 'Recording, under 5 minutes left', 'The readout turns to a warning style.'],
+  ['refused', 'Too little space to start', 'Under a minute left: refused, with the way to free space.'],
+  ['full', 'Storage full', 'Stops safely; everything written is kept; offers Export.'],
+  ['stopped', 'Stopped safely', 'Reason shown; what was captured is kept.'],
+  ['save', 'Save sheet', 'Saved on this device, never removed; auto-export status; Export.'],
+  ['saveoff', 'Save sheet, auto-export off', 'Offers Turn on… for auto-export.'],
+  ['more', 'More actions menu', 'Recordings sits here with a muted count; no header badge.'],
+  ['Punch in / out', null],
+  ['punch', 'Setup sheet', 'Drag handles (snap to markers), tap flags, type times, pre-roll.'],
+  ['punchbad', 'Invalid range', 'Out must come after In.'],
+  ['armed', 'Armed', 'Range hatched on the waveform; Play starts from the pre-roll.'],
+  ['count', 'Countdown', 'Pre-roll plays; recording starts at In.'],
+  ['punchrec', 'Recording in range', 'Remaining time to Out; stop works any time.'],
+  ['Where recordings show', null],
+  ['panel', 'Track panel', 'Own recordings plus a Loops section; tool is off.'],
+  ['panelA', 'Adjusted copy panel', 'Its own recordings and its loops.'],
+  ['panelP', 'Parent panel', 'Includes the copy\'s recordings, labelled.'],
+  ['loopview', 'Loop view', 'Only recordings made on this loop.'],
+  ['loopA', 'Loop of an adjusted copy', 'Also listed under the copy and its parent.'],
+  ['Opening a recording', null],
+  ['ctxseg', 'Segment context', 'Only the recorded range; its 0.7× +2 applied; all locked.'],
+  ['ctxloop', 'Loop context', 'The loop opens; passes follow the loop.'],
+  ['ctxadj', 'Adjusted copy context', 'Whole copy with its adjustment locked.'],
+  ['ctxmix', 'Balance and sync, collapsed', 'One line with balance, level and sync; tap to open. Open shows aligned sliders, Normalize and Save as default.'],
+  ['sync', 'Sync sheet', '1 ms and 10 ms steps, ±250 ms, Use for this device.'],
+  ['cal', 'Calibrate (opt-in)', 'Offers adjusting by hand instead.'],
+  ['calfail', 'Clicks not heard', 'Says why; manual path stays.'],
+  ['Library, playlists, queue', null],
+  ['lib', 'Recordings view', 'Search, filter chips, sort, rows with tags and offline state.'],
+  ['libs', 'Search', 'Matches name, track, loop, or marker names.'],
+  ['libf', 'Filter: loops', 'Whole, segment, loop, adjusted, kept, not kept.'],
+  ['libfilter', 'Filters and sort', 'Track picker, original changed, overlay needs a connection.'],
+  ['libmenu', 'Row menu', 'Play, queue, playlist, offline, export, rename, delete.'],
+  ['libsel', 'Selection and bulk', 'The shared bulk bar with recording actions.'],
+  ['addpl', 'Add to playlist', 'From the row menu or a selection.'],
+  ['pl', 'Playlist', 'Recordings sit with tracks and loops; removed ones are skipped.'],
+  ['plq', 'Queue', 'Play next and Add to queue work for recordings.'],
+  ['Storage, settings, auto-export', null],
+  ['settings', 'Settings · Recordings', 'Storage used, auto-export, folder, what to export, and Wi-Fi only.'],
+  ['settingsoff', 'Auto-export off', 'The default; one switch to turn on.'],
+  ['status', 'Drive status', 'Per export: On Drive, or failed with the reason and Retry.'],
+  ['offline', 'Offline files', 'Tracks as before; recordings in their own group, delete only.'],
+  ['Export', null],
+  ['expchoose', 'Export', 'Recording only or mix; Drive or download; name and folder.'],
+  ['expprog', 'Exporting', 'Progress and cancel.'],
+  ['expdone', 'Exported', 'Shows the name and where.'],
+  ['expfail', 'Export failed', 'Names the reason; recording unchanged.'],
+  ['expchg', 'Original changed', 'Warns the mix may not align; confirm to go on.'],
+  ['expnone', 'Mix unavailable', 'Original cannot be fetched; recording alone still exports.']
+];
+const gal = $('#gallery');
+G.forEach((g) => {
+  if (g[1] === null) { const h = document.createElement('div'); h.className = 'gh'; h.innerHTML = `<h2>${g[0]}</h2>`; gal.appendChild(h); return; }
+  const [k, t, d] = g;
+  const cell = document.createElement('div'); cell.className = 'gcell';
+  cell.innerHTML = `<div class="gframe">${render(PRESETS[k], false)}</div><div class="cap"><b>${t}</b><span>${d}</span></div>`;
+  gal.appendChild(cell);
+});
+function fit() { document.querySelectorAll('.gframe').forEach((f) => { f.firstElementChild.style.transform = `scale(${f.clientWidth / 380})`; }); }
+addEventListener('resize', fit);
+apply(PRESETS.idle);
+fit();
+</script>
+</body>
 </html>

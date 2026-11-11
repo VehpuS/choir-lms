@@ -1,11 +1,8 @@
 # mobile-practice-library Specification
 
 ## Purpose
-
 TBD - created by archiving change add-mobile-rehearsal-player. Update Purpose after archive.
-
 ## Requirements
-
 ### Requirement: Users can connect a Google Drive audio library
 
 The system SHALL allow an authenticated user to connect a Google account and authorize access to Google Drive files required for the mobile rehearsal player.
@@ -165,3 +162,4 @@ The system SHALL expose a saved track's readable last-known Drive path and provi
 - **THEN** the system keeps the saved track and its last-known path visible
 - **AND** the requested folder action reports that the current source location cannot be resolved without discarding the user's current context
 - **AND** the system does not silently open the stale last-known parent folder as though it were current
+
