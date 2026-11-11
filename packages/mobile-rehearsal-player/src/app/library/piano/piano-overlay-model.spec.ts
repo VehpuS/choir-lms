@@ -10,7 +10,10 @@ import {
   octaveTicks,
   PIANO_HANDLE_HEIGHT,
   PIANO_SCROLL_STRIP_HEIGHT,
+  pianoKeyHeightFor,
   pianoOverlayHeight,
+  pianoPresentationHeight,
+  resolvePianoPresentation,
   scrollLeftFromMapX,
   snapHeightStep,
 } from './piano-overlay-model.js';
@@ -164,5 +167,32 @@ describe('wheelScrollDelta', () => {
     );
     assert.equal(wheelScrollDelta({ deltaY: 40 }), 0);
     assert.equal(wheelScrollDelta({}), 0);
+  });
+});
+
+describe('piano presentations', () => {
+  it('uses the compact bar in the wide-short layout and the docked piano otherwise', () => {
+    assert.equal(resolvePianoPresentation('wide-short'), 'compact-bar');
+    assert.equal(resolvePianoPresentation('compact'), 'docked');
+  });
+
+  it('draws the compact bar at a fixed 104-point key height whatever the stored step', () => {
+    assert.equal(pianoKeyHeightFor('compact-bar', 'tall'), 104);
+    assert.equal(pianoKeyHeightFor('compact-bar', 'compact'), 104);
+  });
+
+  it('keeps the docked key height by step', () => {
+    assert.equal(pianoKeyHeightFor('docked', 'regular'), 136);
+  });
+
+  it('is 138 points tall as a compact bar: a 34-point bar and 104-point keys', () => {
+    assert.equal(pianoPresentationHeight('compact-bar', 'tall'), 34 + 104);
+  });
+
+  it('keeps the docked height: handle row, keys and minimap', () => {
+    assert.equal(
+      pianoPresentationHeight('docked', 'regular'),
+      pianoOverlayHeight('regular'),
+    );
   });
 });

@@ -28,7 +28,9 @@ export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
   const animationKey = isWideShort ? surface !== null : surface;
   // While the piano is open the shell floats it over the bottom of this
   // sheet, so the sheet stops above it and keeps its transport in view.
-  const pianoDockHeight = usePracticeDockHeight();
+  const pianoDockHeight = usePracticeDockHeight({
+    isPlaybackSurfaceOpen: true,
+  });
   const canRenderQueue = surface === 'queue' && queueSummary;
   const canRenderNowPlaying = surface === 'now-playing' && nowPlayingSummary;
   const canRenderShaping = surface === 'shaping' && nowPlayingSummary;

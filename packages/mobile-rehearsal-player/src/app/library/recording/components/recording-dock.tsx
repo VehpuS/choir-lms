@@ -50,11 +50,16 @@ import { requestRecordingExport } from '../export/recording-export-request';
 import { useRecordingStarter } from './use-recording-starter';
 import { useSavedRecordingMix } from './use-saved-recording-mix';
 import { RecordingSaveSheet } from './recording-save-sheet';
-import { RECORDING_STRIP_HEIGHT, RecordingStrip } from './recording-strip';
+import {
+  RECORDING_STRIP_HEIGHT,
+  RecordingStrip,
+  type RecordingStripPresentation,
+} from './recording-strip';
 
 const MS_PER_SECOND = 1000;
 
-const useIsStripShown = (): boolean => {
+/** Whether the recording tool is on and the platform can record. */
+export const useIsRecordingStripShown = (): boolean => {
   const isOpen = useRecordingStripOpen();
 
   return isOpen && recordingCapabilities().canRecord;
@@ -68,11 +73,14 @@ const PERCENT = 100;
 type RecordingDockProps = {
   item: PlayableItem | null;
   positionSeconds: number;
+  /** `panel` draws the strip for the wide-short layout's trailing panel. */
+  presentation?: RecordingStripPresentation;
 };
 
 const RecordingDockContent = ({
   item,
   positionSeconds,
+  presentation,
 }: RecordingDockProps) => {
   const session = getRecordingSession();
   const state = useSyncExternalStore(
@@ -228,7 +236,11 @@ const RecordingDockContent = ({
 
   return (
     <>
-      <RecordingStrip model={model} onAction={onAction} />
+      <RecordingStrip
+        model={model}
+        onAction={onAction}
+        presentation={presentation}
+      />
       {isPunchSheetOpen && item && trackDurationMs > 0 ? (
         <PunchSheet
           activeLoop={loopOf(item)}
@@ -281,10 +293,12 @@ const RecordingDockContent = ({
 
 /** The strip, only where the platform can record and the user turned the tool on. */
 export const RecordingDock = (props: RecordingDockProps) => {
-  return useIsStripShown() ? <RecordingDockContent {...props} /> : null;
+  return useIsRecordingStripShown() ? (
+    <RecordingDockContent {...props} />
+  ) : null;
 };
 
 /** How tall the shown strip is, or 0 when it is not shown. */
 export const useRecordingDockHeight = (): number => {
-  return useIsStripShown() ? RECORDING_STRIP_HEIGHT : 0;
+  return useIsRecordingStripShown() ? RECORDING_STRIP_HEIGHT : 0;
 };

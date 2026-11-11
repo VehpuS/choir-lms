@@ -1,5 +1,6 @@
 import { midiToNoteName } from '@org/audio-library-models';
 
+import type { LayoutClass } from '../../routing/shell/layout-class';
 import {
   DEFAULT_KEYBOARD_LAYOUT,
   PIANO_HEIGHT_STEPS,
@@ -19,6 +20,43 @@ export const pianoOverlayHeight = (step: PianoHeightStep): number => {
   return (
     PIANO_HANDLE_HEIGHT + PIANO_KEY_HEIGHTS[step] + PIANO_SCROLL_STRIP_HEIGHT
   );
+};
+
+/**
+ * The wide-short layout's piano (a phone on its side): a slim bar for the
+ * controls and a fixed-height keyboard with no grabber, no height steps and no
+ * minimap row (the minimap sits in the bar). It leaves the content its height.
+ */
+export const PIANO_COMPACT_BAR_HEIGHT = 34;
+export const PIANO_COMPACT_KEY_HEIGHT = 104;
+
+/** `docked`: the upright piano with its grabber; `compact-bar`: the wide-short one. */
+export type PianoPresentation = 'docked' | 'compact-bar';
+
+export const resolvePianoPresentation = (
+  layoutClass: LayoutClass,
+): PianoPresentation => {
+  return layoutClass === 'wide-short' ? 'compact-bar' : 'docked';
+};
+
+/** The key height a presentation draws; only the docked piano has steps. */
+export const pianoKeyHeightFor = (
+  presentation: PianoPresentation,
+  step: PianoHeightStep,
+): number => {
+  return presentation === 'compact-bar'
+    ? PIANO_COMPACT_KEY_HEIGHT
+    : PIANO_KEY_HEIGHTS[step];
+};
+
+/** Total height of the piano in a presentation, without its top border. */
+export const pianoPresentationHeight = (
+  presentation: PianoPresentation,
+  step: PianoHeightStep,
+): number => {
+  return presentation === 'compact-bar'
+    ? PIANO_COMPACT_BAR_HEIGHT + PIANO_COMPACT_KEY_HEIGHT
+    : pianoOverlayHeight(step);
 };
 
 /**

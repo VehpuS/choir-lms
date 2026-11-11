@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { appTheme } from '../../../../utils/theme';
 import {
   mapWindow,
+  PIANO_COMPACT_BAR_HEIGHT,
   octaveTicks,
   PIANO_SCROLL_STRIP_HEIGHT,
   scrollLeftFromMapX,
@@ -16,6 +17,8 @@ const TICK_FONT_SIZE = 10;
 const OCTAVE_TICKS = octaveTicks();
 
 type PianoScrollStripProps = {
+  /** The slim bar of the wide-short layout: it fills the row and is 34 pt tall. */
+  isInBar?: boolean;
   onScrollLeftChange: (scrollLeft: number) => void;
   scrollLeft: number;
   /** The width of the whole keyboard at the current key width. */
@@ -28,6 +31,7 @@ type PianoScrollStripProps = {
  * dragging it scrolls the keyboard, so scrolling never competes with playing.
  */
 export const PianoScrollStrip = ({
+  isInBar = false,
   onScrollLeftChange,
   scrollLeft,
   stripWidth,
@@ -69,7 +73,7 @@ export const PianoScrollStrip = ({
       {...webProps}
       accessibilityLabel="Piano position"
       ref={mapRef}
-      style={styles.strip}
+      style={[styles.strip, isInBar ? styles.stripInBar : null]}
       testID="piano-scroll-strip"
     >
       {OCTAVE_TICKS.map((tick) => (
@@ -104,6 +108,7 @@ const styles = StyleSheet.create({
     touchAction: 'none',
     userSelect: 'none',
   } as never,
+  stripInBar: { flex: 1, height: PIANO_COMPACT_BAR_HEIGHT },
   // A zero-width column on the C key's centre, so the label centres on it.
   tick: {
     position: 'absolute',

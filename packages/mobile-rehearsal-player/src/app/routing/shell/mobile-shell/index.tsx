@@ -17,7 +17,7 @@ import { styles } from '../mobile-shell-styles';
 import type { ShellDestinationKey } from '../shell-model';
 import { MobileShellDestinationPanels } from './mobile-shell-destination-panels';
 import { MobileShellMiniPlayerDock } from './mobile-shell-mini-player-dock';
-import { NowPlayingPane } from './now-playing-pane';
+import { ShellTrailingPane } from './shell-trailing-pane';
 import { MobileShellPlaybackSurface } from './mobile-shell-playback-surface';
 import { MobileShellQueuePlaylistDialogs } from './mobile-shell-queue-playlist-dialogs';
 import { useMobileShellPlaybackSummaries } from './use-mobile-shell-playback-summaries';
@@ -234,8 +234,8 @@ export const MobileShell = ({
         ) : (
           mainColumn
         )}
-        {isWideShort && miniPlayerSummary ? (
-          <NowPlayingPane
+        {isWideShort ? (
+          <ShellTrailingPane
             activePlayableItem={activePlayableItem}
             canSkipNextItem={canSkipNextItem}
             canSkipPreviousItem={canSkipPreviousItem}
@@ -243,7 +243,9 @@ export const MobileShell = ({
             isPlaybackLoading={isPlaybackPreparing}
             isPlaybackToggleDisabled={isPlaybackToggleDisabled}
             loopLabel={nowPlayingSummary?.loopRange?.label ?? null}
+            isPlaybackSurfaceOpen={activePlaybackSurface !== null}
             miniPlayerSummary={miniPlayerSummary}
+            playbackPositionSeconds={playbackPositionSeconds}
             onOpenNowPlaying={openNowPlaying}
             onSkipNextItem={onSkipNextItem}
             onSkipPreviousItem={onSkipPreviousItem}

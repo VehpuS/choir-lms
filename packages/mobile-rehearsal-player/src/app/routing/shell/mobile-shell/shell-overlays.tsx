@@ -16,7 +16,11 @@ export const ShellOverlays = () => {
   // them so it, and the tools' own settings, are not squeezed above them.
   const overlayStyle = [
     styles.settingsOverlay,
-    { bottom: getOverlayBottomOffset(usePracticeDockHeight()) },
+    {
+      bottom: getOverlayBottomOffset(
+        usePracticeDockHeight({ isPlaybackSurfaceOpen: false }),
+      ),
+    },
   ];
 
   return (

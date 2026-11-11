@@ -14,7 +14,8 @@ import { runScenario } from './scenario-runner';
 //   compact    bottom tabs along the bottom, the floating + over the list,
 //              the mini-player band above the tabs
 //   wide-short side rail on the leading edge, the + in the header, the Now
-//              Playing pane on the trailing side
+//              Playing pane on the trailing side, pitch and recording in a
+//              trailing panel in its place, a slim piano above the bottom
 //
 // A track plays throughout, so the mini-player or the pane is always there.
 //
@@ -121,6 +122,46 @@ const COMPACT_SIZES: [string, Size][] = [
   ['a desktop window', { height: 800, width: 1280 }],
 ];
 
+const TOOL_SIZES: [string, Size][] = [
+  ['an upright phone', { height: 844, width: 390 }],
+  ['a tablet on its side', { height: 768, width: 1024 }],
+  ['a desktop window', { height: 800, width: 1280 }],
+];
+
+/** Turns a practice tool on from the Tools tab's menu. */
+const turnToolOn = async (page: Page, label: string) => {
+  await page.getByLabel('Practice tools', { exact: true }).click();
+  await page.getByLabel(`${label}, off`).click();
+  await page.getByLabel(`${label}, on`).waitFor({ timeout: WAIT_MS });
+  await page.getByLabel('Close practice tools').first().click();
+};
+
+/**
+ * The practice tools in the compact layout (task 3.5 changes them in
+ * wide-short only): the pitch strip spans the width above the mini-player,
+ * there is no trailing panel and the piano keeps its grabber and minimap.
+ */
+const expectCompactTools = async (page: Page, size: Size, name: string) => {
+  await resizeTo(page, size);
+  const strip = await page.getByLabel('Pitch monitor').boundingBox();
+
+  if (!strip || strip.width < size.width - 4) {
+    throw new Error(`${name}: the pitch monitor is not a full-width strip`);
+  }
+
+  if ((await page.getByTestId('practice-tools-panel').count()) !== 0) {
+    throw new Error(`${name}: a trailing practice panel appeared`);
+  }
+
+  if ((await page.getByLabel('Piano height').count()) !== 1) {
+    throw new Error(`${name}: the piano lost its height grabber`);
+  }
+
+  if ((await page.getByLabel('Piano position').count()) !== 1) {
+    throw new Error(`${name}: the piano lost its minimap row`);
+  }
+};
+
 void runScenario({
   drive: {
     media: { [alto.driveFileId]: buildToneMedia({ seconds: TONE_SECONDS }) },
@@ -128,6 +169,7 @@ void runScenario({
   },
   library: { playlists: [], sources: [alto] },
   mediaProbe: true,
+  microphone: true,
   steps: async ({ page, pass, shot }) => {
     await waitForTrack(page, 'Alto Part');
     await page.getByLabel('Play Alto Part').first().click();
@@ -181,6 +223,20 @@ void runScenario({
     pass(
       'Width hysteresis: 580 stays in either layout, 559 leaves, 600 returns',
     );
+
+    // The practice tools keep their upright arrangement in every compact size.
+    await resizeTo(page, UPRIGHT);
+    await turnToolOn(page, 'Pitch detection');
+    await turnToolOn(page, 'Piano');
+
+    for (const [name, size] of TOOL_SIZES) {
+      await expectCompactTools(page, size, name);
+      pass(`${name}: the pitch strip and the docked piano are as before`);
+    }
+
+    await resizeTo(page, UPRIGHT);
+    await page.getByLabel('Close piano').click();
+    await page.getByLabel('Close pitch detection').click();
 
     // Back upright: the compact layout is whole again.
     await expectLayoutAt(page, { height: 844, width: 390 }, 'compact');
