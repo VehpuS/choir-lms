@@ -205,6 +205,10 @@ export const shapingStyles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: NOTE_TEXT_SIZE,
   },
+  // Reset sits at the top right of the body when the surface has no header.
+  embeddedReset: {
+    alignItems: 'flex-end',
+  },
   resetButton: {
     minHeight: 44,
     justifyContent: 'center',

@@ -107,7 +107,7 @@ void runScenario({
     await page.getByText('Play all', { exact: true }).click();
     await isPlaying(page);
     await page.getByLabel(/^Now playing:/).click();
-    await page.getByLabel('Show queue').click();
+    await page.getByRole('button', { exact: true, name: 'Queue' }).click();
     await page.getByLabel('More actions for Tenor Part').click();
     await page.getByText('Move to position', { exact: true }).last().click();
     await page

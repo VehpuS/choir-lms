@@ -39,7 +39,7 @@ In the wide-short layout, Library, Add, Recents and the Practice tools menu SHAL
 
 ### Requirement: Now Playing stays visible while browsing in wide-short
 
-In the wide-short layout, the mini-player SHALL be a Now Playing pane beside the content with the title, transport, progress, loop and speed. When nothing is playing the pane SHALL be hidden and the content SHALL use the full width. Opening the full playback view SHALL show its controls (waveform, transport, speed, pitch, loop, volume) and one surface (Lyrics, Queue, Shaping, or Mix for a composite) side by side, with no control below the fold.
+In the wide-short layout, the mini-player SHALL be a Now Playing pane beside the content with the title, transport, progress, loop and speed. When nothing is playing the pane SHALL be hidden and the content SHALL use the full width. Opening the full playback view SHALL show its controls (waveform, transport, speed, pitch, loop, volume) and one surface (Lyrics, Queue, Shaping, or Mix for a composite) side by side, with the transport and the speed and pitch controls in view without scrolling. The remaining left-column control, the volume slider, MAY be reached by scrolling that column.
 
 #### Scenario: Browse while playing
 

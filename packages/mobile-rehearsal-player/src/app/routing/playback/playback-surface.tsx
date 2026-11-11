@@ -1,8 +1,3 @@
-import type {
-  PlayableItem,
-  RehearsalQueueMode,
-  RepeatMode,
-} from '@org/audio-library-models';
 import { useEffect, useMemo, useRef } from 'react';
 import {
   Animated,
@@ -13,109 +8,24 @@ import {
 } from 'react-native';
 
 import { useEscapeToDismiss } from '../../components/escape-to-dismiss/use-escape-to-dismiss';
-import { QueueSurface } from '../queue/queue-surface';
-import { ShapingSurface } from './shaping/shaping-surface';
-import type { PlaybackShapingControls } from './shaping/shaping-surface-model';
-import type {
-  NowPlayingSurfaceSummary,
-  UpNextSurfaceSummary,
-} from '../shell/shell-model';
-import { NowPlayingSurface } from './now-playing';
-import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
-
 import { SafeAreaFrame } from '../../components/safe-area-frame';
 import { appTheme } from '../../utils/theme';
 import { usePracticeDockHeight } from '../../library/practice-tools/use-practice-dock-height';
+import { useLayoutClass } from '../shell/layout-class';
 import { SHELL_LAYERS } from '../shell/shell-layers';
+import { CompactPlaybackContent } from './compact-playback-content';
+import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
+import type { PlaybackSurfaceProps } from './playback-surface-props';
+import { WideShortPlaybackContent } from './wide-short-playback-content';
 
-type PlaybackSurfaceMode = 'now-playing' | 'queue' | 'shaping';
-
-type PlaybackSurfaceProps = {
-  activePlayableItem: PlayableItem | null;
-  activeQueueMode: RehearsalQueueMode | null;
-  activeRepeatMode: RepeatMode | null;
-  canSeekActivePlayback: boolean;
-  canSkipNextItem: boolean;
-  canSkipPreviousItem: boolean;
-  downloadLabel: string | null;
-  isPlaybackLoading: boolean;
-  isPlaybackToggleDisabled: boolean;
-  isSavingQueueAsPlaylist: boolean;
-  nowPlayingSummary: NowPlayingSurfaceSummary | null;
-  onAdjustPlaybackVolume: (volumeLevel: number) => void;
-  onMoveQueueItem: (fromIndex: number, toIndex: number) => void;
-  onMoveQueueItemToEnd: (index: number) => void;
-  onMoveQueueItemToStart: (index: number) => void;
-  onClose: () => void;
-  onEditActiveLoop: (loopId: string) => void;
-  onPlayQueueItem: (index: number) => void;
-  onRemoveQueueItem: (index: number) => void;
-  onRequestUpdateQueuePlaylist: (
-    action: NonNullable<
-      NonNullable<UpNextSurfaceSummary['queuePlaylistActions']>['updateAction']
-    >,
-  ) => void;
-  onSeekBackward: () => void;
-  onSeekForward: () => void;
-  onSeekToPosition: (positionSeconds: number) => void;
-  onSelectQueueMode: (mode: RehearsalQueueMode) => void;
-  onSaveQueueAsPlaylist: () => void;
-  onSelectRepeatMode: (mode: RepeatMode) => void;
-  onShowNowPlaying: () => void;
-  onShowQueue: () => void;
-  onShowShaping: () => void;
-  onSkipNextItem: () => void;
-  onSkipPreviousItem: () => void;
-  onTogglePlayback: () => void;
-  playbackPositionSeconds: number;
-  playbackToggleLabel: string;
-  playbackVolumeLevel: number;
-  queueSummary: UpNextSurfaceSummary | null;
-  shaping: PlaybackShapingControls;
-  surface: PlaybackSurfaceMode | null;
-};
-
-export const PlaybackSurface = ({
-  activePlayableItem,
-  activeQueueMode,
-  activeRepeatMode,
-  canSeekActivePlayback,
-  canSkipNextItem,
-  canSkipPreviousItem,
-  downloadLabel,
-  isPlaybackLoading,
-  isPlaybackToggleDisabled,
-  isSavingQueueAsPlaylist,
-  nowPlayingSummary,
-  onAdjustPlaybackVolume,
-  onMoveQueueItem,
-  onMoveQueueItemToEnd,
-  onMoveQueueItemToStart,
-  onClose,
-  onEditActiveLoop,
-  onPlayQueueItem,
-  onRemoveQueueItem,
-  onRequestUpdateQueuePlaylist,
-  onSeekBackward,
-  onSeekForward,
-  onSeekToPosition,
-  onSelectQueueMode,
-  onSaveQueueAsPlaylist,
-  onSelectRepeatMode,
-  onShowNowPlaying,
-  onShowQueue,
-  onShowShaping,
-  onSkipNextItem,
-  onSkipPreviousItem,
-  onTogglePlayback,
-  playbackPositionSeconds,
-  playbackToggleLabel,
-  playbackVolumeLevel,
-  queueSummary,
-  shaping,
-  surface,
-}: PlaybackSurfaceProps) => {
+export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
+  const { nowPlayingSummary, onClose, queueSummary, surface } = props;
+  const isWideShort = useLayoutClass() === 'wide-short';
   const translateY = useRef(new Animated.Value(32)).current;
+  // The compact sheet slides in again when its content is replaced by another
+  // surface; the wide-short sheet keeps its columns and only changes a tab, so
+  // it slides in once, when it opens.
+  const animationKey = isWideShort ? surface !== null : surface;
   // While the piano is open the shell floats it over the bottom of this
   // sheet, so the sheet stops above it and keeps its transport in view.
   const pianoDockHeight = usePracticeDockHeight();
@@ -156,7 +66,7 @@ export const PlaybackSurface = ({
       toValue: 0,
       useNativeDriver: true,
     }).start();
-  }, [surface, translateY]);
+  }, [animationKey, translateY]);
 
   const panResponder = useMemo(() => {
     return PanResponder.create({
@@ -209,76 +119,31 @@ export const PlaybackSurface = ({
         // piano dock needs room (the dock then sits above the home indicator).
         style={[
           styles.sheetContainer,
+          isWideShort ? styles.sheetContainerWide : null,
           pianoDockHeight > 0 ? { paddingBottom: pianoDockHeight } : null,
         ]}
       >
         <Animated.View
           {...sheetFramePanHandlers}
-          style={[styles.sheetFrame, { transform: [{ translateY }] }]}
+          style={[
+            styles.sheetFrame,
+            isWideShort ? styles.sheetFrameWide : null,
+            { transform: [{ translateY }] },
+          ]}
         >
-          {canRenderQueue && queueSummary ? (
-            <QueueSurface
-              activeQueueMode={activeQueueMode ?? 'ordered'}
+          {isWideShort ? (
+            <WideShortPlaybackContent
+              {...props}
               dragHandleProps={panResponder.panHandlers}
-              activeRepeatMode={activeRepeatMode ?? 'off'}
-              isSavingQueueAsPlaylist={isSavingQueueAsPlaylist}
-              isPlaybackLoading={isPlaybackLoading}
-              isPlaybackToggleDisabled={isPlaybackToggleDisabled}
               onClose={dismissSurface}
-              onMoveQueueItem={onMoveQueueItem}
-              onMoveQueueItemToEnd={onMoveQueueItemToEnd}
-              onMoveQueueItemToStart={onMoveQueueItemToStart}
-              onPlayQueueItem={onPlayQueueItem}
-              onRemoveQueueItem={onRemoveQueueItem}
-              onRequestUpdateQueuePlaylist={onRequestUpdateQueuePlaylist}
-              onSaveQueueAsPlaylist={onSaveQueueAsPlaylist}
-              onSelectQueueMode={onSelectQueueMode}
-              onSelectRepeatMode={onSelectRepeatMode}
-              onShowNowPlaying={onShowNowPlaying}
-              onTogglePlayback={onTogglePlayback}
-              playbackToggleLabel={playbackToggleLabel}
-              summary={queueSummary}
             />
-          ) : null}
-          {canRenderNowPlaying && nowPlayingSummary && activePlayableItem ? (
-            <NowPlayingSurface
-              activePlayableItem={activePlayableItem}
-              activeQueueMode={activeQueueMode}
-              activeRepeatMode={activeRepeatMode}
-              canSeekActivePlayback={canSeekActivePlayback}
-              canSkipNextItem={canSkipNextItem}
-              canSkipPreviousItem={canSkipPreviousItem}
-              downloadLabel={downloadLabel}
-              isPlaybackLoading={isPlaybackLoading}
-              isPlaybackToggleDisabled={isPlaybackToggleDisabled}
-              onAdjustPlaybackVolume={onAdjustPlaybackVolume}
+          ) : (
+            <CompactPlaybackContent
+              {...props}
+              dragHandleProps={panResponder.panHandlers}
               onClose={dismissSurface}
-              onEditActiveLoop={onEditActiveLoop}
-              onSeekBackward={onSeekBackward}
-              onSeekForward={onSeekForward}
-              onSeekToPosition={onSeekToPosition}
-              onSelectQueueMode={onSelectQueueMode}
-              onSelectRepeatMode={onSelectRepeatMode}
-              onOpenShaping={onShowShaping}
-              onShowQueue={onShowQueue}
-              onSkipNextItem={onSkipNextItem}
-              onSkipPreviousItem={onSkipPreviousItem}
-              onTogglePlayback={onTogglePlayback}
-              playbackPositionSeconds={playbackPositionSeconds}
-              playbackToggleLabel={playbackToggleLabel}
-              playbackVolumeLevel={playbackVolumeLevel}
-              queueSummary={queueSummary}
-              shaping={shaping}
-              summary={nowPlayingSummary}
             />
-          ) : null}
-          {canRenderShaping && nowPlayingSummary ? (
-            <ShapingSurface
-              controls={shaping}
-              onClose={onShowNowPlaying}
-              summary={nowPlayingSummary}
-            />
-          ) : null}
+          )}
         </Animated.View>
       </SafeAreaFrame>
     </View>
@@ -313,5 +178,13 @@ const styles = StyleSheet.create({
   sheetFrame: {
     width: '100%',
     maxHeight: '100%',
+  },
+  // A short, wide window: a thin strip of backdrop above, and a sheet that
+  // fills the rest so its two columns have a height to share.
+  sheetContainerWide: {
+    paddingTop: appTheme.space.lg,
+  },
+  sheetFrameWide: {
+    flex: 1,
   },
 });
