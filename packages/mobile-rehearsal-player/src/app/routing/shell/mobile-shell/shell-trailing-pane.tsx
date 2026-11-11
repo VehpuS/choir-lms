@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react';
 
+import { PracticeToolsCard } from '../../../library/practice-tools/practice-tools-card/practice-tools-card';
 import { PracticeToolsPanel } from '../../../library/practice-tools/practice-tools-panel';
 import { useIsPianoViewerOpen } from '../../../library/piano/piano-host-store';
 import { useHasPracticePanelTool } from '../../../library/practice-tools/use-practice-panel';
@@ -35,8 +36,15 @@ export const ShellTrailingPane = ({
   // panel steps aside while it is open (one monitor, one set of listeners).
   const isViewerOpen = useIsPianoViewerOpen();
 
-  if (hasPanelTool && !isPlaybackSurfaceOpen && !isViewerOpen) {
-    return (
+  if (hasPanelTool && !isViewerOpen) {
+    // Over the playback view the panel is under the sheet, so the same tools
+    // float in a small draggable card instead (follow-up F.4).
+    return isPlaybackSurfaceOpen ? (
+      <PracticeToolsCard
+        activePlayableItem={paneProps.activePlayableItem}
+        playbackPositionSeconds={playbackPositionSeconds}
+      />
+    ) : (
       <PracticeToolsPanel
         activePlayableItem={paneProps.activePlayableItem}
         playbackPositionSeconds={playbackPositionSeconds}
