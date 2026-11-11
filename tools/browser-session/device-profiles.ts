@@ -50,6 +50,16 @@ export const MATRIX_PROFILES: DeviceProfile[] = [
   buildProfile('Desktop Chrome', 1, 22_050),
 ];
 
+/**
+ * Phones on their side, as Playwright describes them (iPhone 14: 750 × 340,
+ * Pixel 7: 863 × 360, both with touch): the wide-short layout with real touch
+ * input and device pixel ratios. Used by `landscape-device-matrix`.
+ */
+export const LANDSCAPE_PROFILES: DeviceProfile[] = [
+  buildProfile('iPhone 14 landscape', 1, 44_100),
+  buildProfile('Pixel 7 landscape', 1, 48_000),
+];
+
 /** Every device, CPU speed and sample rate, for the matrix target. */
 export const FULL_PROFILES: DeviceProfile[] = DEVICES.flatMap((device) =>
   CPU_THROTTLES.flatMap((cpu) =>
