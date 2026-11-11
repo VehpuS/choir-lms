@@ -11,11 +11,15 @@ import { NowPlayingTransportRow } from '../../playback/now-playing/now-playing-t
 import { paneBleedStyle } from '../dock-bleed';
 import { NOW_PLAYING_PANE_WIDTH } from '../shell-dimensions';
 import { SHELL_LAYERS } from '../shell-layers';
+import { usePaneExpandGesture } from './use-pane-expand-gesture';
 import type { MiniPlayerSummary } from '../shell-model';
 
 const { colors, space } = appTheme;
 
 const PROGRESS_HEIGHT = 3;
+const HANDLE_WIDTH = 36;
+const HANDLE_HEIGHT = 4;
+const HANDLE_OPACITY = 0.6;
 const PERCENT = 100;
 const LYRICS_ICON_SIZE = 18;
 const QUEUE_CONTROLS = [
@@ -76,78 +80,111 @@ export const NowPlayingPane = ({
     (chip): chip is string => chip !== null,
   );
 
+  const gesture = usePaneExpandGesture(onOpenNowPlaying);
+
   return (
     <View style={[styles.pane, paneBleedStyle]}>
+      {/* The whole pane opens the playback view: this backdrop sits behind the
+          controls and takes a tap or an upward drag anywhere they are not. The
+          title below stays the one accessible button, so it is not hidden from
+          assistive technology, and the controls are not nested inside it. */}
       <Pressable
-        accessibilityLabel={miniPlayerSummary.accessibilityLabel}
-        accessibilityRole="button"
-        onPress={onOpenNowPlaying}
-        style={({ pressed }) => [styles.copy, pressed ? styles.pressed : null]}
-        testID="now-playing-pane"
-      >
-        <Text numberOfLines={2} style={styles.title}>
-          {miniPlayerSummary.title}
-        </Text>
-        <Text
-          numberOfLines={2}
-          style={[styles.context, LEFT_TO_RIGHT_LINE_STYLE]}
-        >
-          {downloadLabel ?? miniPlayerSummary.context}
-        </Text>
-      </Pressable>
-      {/* Progress only, not a scrubber: it ignores touches. */}
-      <View pointerEvents="none" style={styles.progressTrack}>
-        <View
-          style={[
-            styles.progressFill,
-            { width: `${miniPlayerSummary.waveformProgressRatio * PERCENT}%` },
-          ]}
-        />
-      </View>
-      <NowPlayingTransportRow
-        canSeekActivePlayback={false}
-        canSkipNextItem={canSkipNextItem}
-        canSkipPreviousItem={canSkipPreviousItem}
-        controls={supportsQueueNavigation ? QUEUE_CONTROLS : SINGLE_CONTROLS}
-        isPlaybackLoading={isPlaybackLoading}
-        isPlaybackToggleDisabled={isPlaybackToggleDisabled}
-        onSeekBackward={onTogglePlayback}
-        onSeekForward={onTogglePlayback}
-        onSkipNextItem={onSkipNextItem}
-        onSkipPreviousItem={onSkipPreviousItem}
-        onTogglePlayback={onTogglePlayback}
-        playbackToggleLabel={playbackToggleLabel}
-        supportsQueueNavigation={supportsQueueNavigation}
-        title={miniPlayerSummary.title}
+        {...gesture.handlers}
+        accessible={false}
+        onPress={() => {
+          if (!gesture.wasDragged.current) {
+            onOpenNowPlaying();
+          }
+        }}
+        style={styles.backdrop}
       />
-      <View style={styles.chipRow}>
-        {chips.map((chip) => (
-          <Text key={chip} style={styles.chip}>
-            {chip}
+      {/* The grabber says the pane pulls up into the playback view. */}
+      <View
+        pointerEvents="none"
+        style={[styles.handle, { transform: [{ translateY: gesture.lift }] }]}
+        testID="now-playing-pane-handle"
+      />
+      <View
+        pointerEvents="box-none"
+        style={[styles.content, { transform: [{ translateY: gesture.lift }] }]}
+      >
+        <Pressable
+          accessibilityLabel={miniPlayerSummary.accessibilityLabel}
+          accessibilityRole="button"
+          onPress={onOpenNowPlaying}
+          style={({ pressed }) => [
+            styles.copy,
+            pressed ? styles.pressed : null,
+          ]}
+          testID="now-playing-pane"
+        >
+          <Text numberOfLines={2} style={styles.title}>
+            {miniPlayerSummary.title}
           </Text>
-        ))}
-        {activePlayableItem && shouldShowMiniPlayerLyrics(lyricsResolution) ? (
-          <Pressable
-            accessibilityLabel="Show lyrics"
-            accessibilityRole="button"
-            onPress={() => {
-              requestLyricsView({
-                mode: 'peek',
-                sourceId: activePlayableItem.sourceId,
-              });
-            }}
-            style={({ pressed }) => [
-              styles.lyricsButton,
-              pressed ? styles.pressed : null,
-            ]}
+          <Text
+            numberOfLines={2}
+            style={[styles.context, LEFT_TO_RIGHT_LINE_STYLE]}
           >
-            <AppIcon
-              color={colors.accentText}
-              name="text-align-left"
-              size={LYRICS_ICON_SIZE}
-            />
-          </Pressable>
-        ) : null}
+            {downloadLabel ?? miniPlayerSummary.context}
+          </Text>
+        </Pressable>
+        {/* Progress only, not a scrubber: it ignores touches. */}
+        <View pointerEvents="none" style={styles.progressTrack}>
+          <View
+            style={[
+              styles.progressFill,
+              {
+                width: `${miniPlayerSummary.waveformProgressRatio * PERCENT}%`,
+              },
+            ]}
+          />
+        </View>
+        <NowPlayingTransportRow
+          canSeekActivePlayback={false}
+          canSkipNextItem={canSkipNextItem}
+          canSkipPreviousItem={canSkipPreviousItem}
+          controls={supportsQueueNavigation ? QUEUE_CONTROLS : SINGLE_CONTROLS}
+          isPlaybackLoading={isPlaybackLoading}
+          isPlaybackToggleDisabled={isPlaybackToggleDisabled}
+          onSeekBackward={onTogglePlayback}
+          onSeekForward={onTogglePlayback}
+          onSkipNextItem={onSkipNextItem}
+          onSkipPreviousItem={onSkipPreviousItem}
+          onTogglePlayback={onTogglePlayback}
+          playbackToggleLabel={playbackToggleLabel}
+          supportsQueueNavigation={supportsQueueNavigation}
+          title={miniPlayerSummary.title}
+        />
+        <View style={styles.chipRow}>
+          {chips.map((chip) => (
+            <Text key={chip} style={styles.chip}>
+              {chip}
+            </Text>
+          ))}
+          {activePlayableItem &&
+          shouldShowMiniPlayerLyrics(lyricsResolution) ? (
+            <Pressable
+              accessibilityLabel="Show lyrics"
+              accessibilityRole="button"
+              onPress={() => {
+                requestLyricsView({
+                  mode: 'peek',
+                  sourceId: activePlayableItem.sourceId,
+                });
+              }}
+              style={({ pressed }) => [
+                styles.lyricsButton,
+                pressed ? styles.pressed : null,
+              ]}
+            >
+              <AppIcon
+                color={colors.accentText}
+                name="text-align-left"
+                size={LYRICS_ICON_SIZE}
+              />
+            </Pressable>
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -157,13 +194,27 @@ const styles = StyleSheet.create({
   pane: {
     width: NOW_PLAYING_PANE_WIDTH,
     zIndex: SHELL_LAYERS.bottomDock,
+    borderLeftWidth: 1,
+    borderLeftColor: colors.borderSubtle,
+    backgroundColor: colors.surfaceRaised,
+  },
+  backdrop: StyleSheet.absoluteFillObject,
+  content: {
+    flex: 1,
     justifyContent: 'center',
     gap: space.md,
     paddingHorizontal: space.md,
     paddingVertical: space.sm,
-    borderLeftWidth: 1,
-    borderLeftColor: colors.borderSubtle,
-    backgroundColor: colors.surfaceRaised,
+  },
+  handle: {
+    alignSelf: 'center',
+    position: 'absolute',
+    top: space.xs,
+    width: HANDLE_WIDTH,
+    height: HANDLE_HEIGHT,
+    borderRadius: appTheme.radius.pill,
+    backgroundColor: colors.textMuted,
+    opacity: HANDLE_OPACITY,
   },
   copy: {
     gap: space.xs,
