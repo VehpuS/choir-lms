@@ -27,6 +27,12 @@ import {
 
 type LyricsSectionProps = {
   item: Pick<PlayableItem, 'kind' | 'loopId' | 'sourceId'>;
+  /**
+   * The section fills a tab of its own (the wide-short playback view's Lyrics
+   * tab): the text always shows and scrolls with the tab, instead of sitting in
+   * a fixed-height window that a short window hides altogether.
+   */
+  isInTab?: boolean;
 };
 
 /**
@@ -37,10 +43,14 @@ type LyricsSectionProps = {
  * on the text size, so changing between two items that have them does not
  * move what is below.
  */
-export const LyricsSection = ({ item }: LyricsSectionProps) => {
+export const LyricsSection = ({
+  item,
+  isInTab = false,
+}: LyricsSectionProps) => {
   const resolution = useLyricsFor(item);
   const textSize = useLyricsTextSize();
-  const showsInlineText = shouldShowInlineLyrics(useWindowDimensions().height);
+  const showsInlineText =
+    isInTab || shouldShowInlineLyrics(useWindowDimensions().height);
   const model = resolveLyricsSectionModel(item, resolution);
 
   if (model.kind === 'hidden') {
@@ -108,8 +118,14 @@ export const LyricsSection = ({ item }: LyricsSectionProps) => {
               {`Lyrics for ${model.sharedFromName}`}
             </Text>
           ) : null}
-          {/* A fixed-height window onto the full text, so it scrolls in place. */}
-          {showsInlineText ? (
+          {/* Compact: a fixed-height window onto the full text, so it scrolls in
+              place. In a tab the text is laid out whole and the tab scrolls. */}
+          {showsInlineText && isInTab ? (
+            <Text selectable style={textStyle}>
+              {model.text}
+            </Text>
+          ) : null}
+          {showsInlineText && !isInTab ? (
             <ScrollView
               nestedScrollEnabled
               style={[darkScrollbarStyle, { height: previewHeight }]}

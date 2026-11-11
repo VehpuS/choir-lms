@@ -63,7 +63,7 @@ export const PlaybackTabsPane = ({
           contentContainerStyle={styles.content}
           style={[darkScrollbarStyle, styles.scroll]}
         >
-          <LyricsSection item={activePlayableItem} />
+          <LyricsSection isInTab item={activePlayableItem} />
         </ScrollView>
       ) : null}
       {selectedTab === 'mix' && activePlayableItem.kind === 'composite' ? (
