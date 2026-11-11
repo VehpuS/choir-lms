@@ -47,8 +47,9 @@ export const ShellPracticeDock = ({
     // (the sheet would be squeezed and clipped), so it is full screen there.
     usePianoPreferences().isFullScreen || isPlaybackSurfaceOpen,
   );
-  const isStripsInPanel =
-    layoutClass === 'wide-short' && !isPlaybackSurfaceOpen;
+  // In wide-short the strips live in the trailing panel, or in the floating
+  // card over the playback view; the dock holds only the piano.
+  const isStripsInPanel = layoutClass === 'wide-short';
 
   if (useIsPianoViewerOpen()) {
     return null;
