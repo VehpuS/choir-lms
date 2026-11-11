@@ -5,3 +5,5 @@
 /.nx/cache
 /.nx/workspace-data
 .nx/self-healing
+# Vendored agent skill (installed by modern-web-guidance; overwritten on reinstall)
+/.agents/skills/modern-web-guidance
