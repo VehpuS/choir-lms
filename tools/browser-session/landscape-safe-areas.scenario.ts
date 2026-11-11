@@ -15,6 +15,10 @@ import { runScenario } from './scenario-runner';
 const TONE_SECONDS = 30;
 const WAIT_MS = 5000;
 const TOLERANCE_PX = 1;
+// The rail and the pane keep their own width however big the insets are: the
+// inset is added to them, not taken out of them (an iPhone's island is 59 wide).
+const RAIL_ENTRY_MIN_WIDTH = 80;
+const PANE_CONTENT_MIN_WIDTH = 240;
 
 type Band = { bottom: number; left: number; right: number } | null;
 
@@ -91,6 +95,19 @@ void runScenario({
       );
     }
 
+    for (const [entry, name] of [
+      [libraryTab, 'the Library entry'],
+      [toolsTab, 'the Practice tools entry'],
+    ] as const) {
+      const box = await entry.boundingBox();
+
+      if (!box || box.width < RAIL_ENTRY_MIN_WIDTH) {
+        throw new Error(
+          `${name} is squeezed to ${Math.round(box?.width ?? 0)}px by the inset (its labels would spill out of the rail)`,
+        );
+      }
+    }
+
     pass('The rail reaches the screen edges and its entries stay clear');
 
     // A bottom sheet: its rows and its Cancel button stay clear of the insets.
@@ -117,6 +134,14 @@ void runScenario({
 
       return state !== null && !state.paused;
     }, 'the track did not start playing');
+    const paneBox = await page.getByLabel(/^Now playing:/).boundingBox();
+
+    if (!paneBox || paneBox.width < PANE_CONTENT_MIN_WIDTH) {
+      throw new Error(
+        `the Now Playing pane content is squeezed to ${Math.round(paneBox?.width ?? 0)}px by the inset`,
+      );
+    }
+
     await page.getByLabel(/^Now playing:/).click();
     await page.getByLabel('Dismiss playback').waitFor({ timeout: WAIT_MS });
     await shot('2-playback-sheet');

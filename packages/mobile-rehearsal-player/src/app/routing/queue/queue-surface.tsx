@@ -243,9 +243,18 @@ export const QueueSurface = ({
             />
           )}
         />
+        {/* Embedded, the actions scroll with the list so it keeps the height. */}
+        {embedded && summary.queuePlaylistActions ? (
+          <QueuePlaylistActionRow
+            actions={summary.queuePlaylistActions}
+            isMutating={isSavingQueueAsPlaylist}
+            onRequestUpdateQueuePlaylist={onRequestUpdateQueuePlaylist}
+            onSaveQueueAsPlaylist={onSaveQueueAsPlaylist}
+          />
+        ) : null}
       </ScrollView>
 
-      {summary.queuePlaylistActions ? (
+      {!embedded && summary.queuePlaylistActions ? (
         <QueuePlaylistActionRow
           actions={summary.queuePlaylistActions}
           isMutating={isSavingQueueAsPlaylist}

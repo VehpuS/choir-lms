@@ -91,8 +91,8 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: space.xs,
     paddingHorizontal: space.sheetInset,
-    paddingTop: space.md,
-    paddingBottom: space.sm,
+    paddingTop: space.sm,
+    paddingBottom: space.xs,
   },
   scroll: {
     flex: 1,

@@ -27,6 +27,7 @@ export const queueStyles = StyleSheet.create({
   // The tab above says what the panel is, so it starts closer to the tabs.
   titleBlockEmbedded: {
     paddingTop: space.xs,
+    paddingBottom: space.xs,
   },
   title: {
     ...type.nowPlayingTitle,

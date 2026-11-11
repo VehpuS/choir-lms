@@ -154,6 +154,31 @@ void runScenario({
       .getByText('Ordered', { exact: true })
       .first()
       .waitFor({ timeout: WAIT_MS });
+    // The playlist actions scroll with the list, so three rows fit in view: the
+    // third row is what you would touch at its centre, not covered by a footer
+    // or cut off by the panel's edge.
+    const thirdRow = page.getByText('Tenor Part', { exact: true }).last();
+
+    await settledBox(thirdRow);
+
+    const isTouchable = await thirdRow.evaluate((row) => {
+      const box = row.getBoundingClientRect();
+      const hit = document.elementFromPoint(
+        box.x + box.width / 2,
+        box.y + box.height / 2,
+      );
+
+      return (
+        box.bottom <= window.innerHeight &&
+        hit !== null &&
+        (row === hit || row.contains(hit) || hit.contains(row))
+      );
+    });
+
+    if (!isTouchable) {
+      throw new Error('the third queue row is covered or cut off');
+    }
+
     await shot('2-queue-tab');
     await expectTransportStill('the queue');
     if ((await page.getByLabel('Dismiss queue').count()) !== 0) {

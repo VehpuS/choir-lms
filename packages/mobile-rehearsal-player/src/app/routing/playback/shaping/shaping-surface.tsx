@@ -102,6 +102,22 @@ export const ShapingSurface = ({
   // A locked recording says why in its own note, not that the controls set the session.
   const overrideNote = isLocked ? null : getItemOverrideNote(controls);
 
+  // Embedded, the note and the save actions scroll with the controls, so the
+  // controls keep the height a fixed footer would take.
+  const footer = isShapingFooterShown(controls.lockedReason) ? (
+    <View style={[styles.footer, embedded ? styles.footerEmbedded : null]}>
+      <View style={styles.footerNote}>
+        <AppIcon
+          color={appTheme.colors.accentText}
+          name="information-outline"
+          size={INFO_ICON_SIZE}
+        />
+        <Text style={styles.footerText}>{SESSION_SCOPE_STATEMENT}</Text>
+      </View>
+      {controls.save ? <SaveActions save={controls.save} /> : null}
+    </View>
+  ) : null;
+
   const resetButton = (
     <Pressable
       accessibilityLabel="Reset speed and pitch"
@@ -191,20 +207,9 @@ export const ShapingSurface = ({
           onSetPitchSemitones={controls.onSetPitchSemitones}
           pitchSemitones={controls.ambient.pitchSemitones}
         />
+        {embedded ? footer : null}
       </ScrollView>
-      {isShapingFooterShown(controls.lockedReason) ? (
-        <View style={styles.footer}>
-          <View style={styles.footerNote}>
-            <AppIcon
-              color={appTheme.colors.accentText}
-              name="information-outline"
-              size={INFO_ICON_SIZE}
-            />
-            <Text style={styles.footerText}>{SESSION_SCOPE_STATEMENT}</Text>
-          </View>
-          {controls.save ? <SaveActions save={controls.save} /> : null}
-        </View>
-      ) : null}
+      {embedded ? null : footer}
     </View>
   );
 };

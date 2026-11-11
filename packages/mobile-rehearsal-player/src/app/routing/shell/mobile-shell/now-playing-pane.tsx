@@ -9,12 +9,12 @@ import { LEFT_TO_RIGHT_LINE_STYLE } from '../../../utils/bidi-isolate';
 import { appTheme } from '../../../utils/theme';
 import { NowPlayingTransportRow } from '../../playback/now-playing/now-playing-transport-row';
 import { paneBleedStyle } from '../dock-bleed';
+import { NOW_PLAYING_PANE_WIDTH } from '../shell-dimensions';
 import { SHELL_LAYERS } from '../shell-layers';
 import type { MiniPlayerSummary } from '../shell-model';
 
 const { colors, space } = appTheme;
 
-const PANE_WIDTH = 280;
 const PROGRESS_HEIGHT = 3;
 const PERCENT = 100;
 const LYRICS_ICON_SIZE = 18;
@@ -155,7 +155,7 @@ export const NowPlayingPane = ({
 
 const styles = StyleSheet.create({
   pane: {
-    width: PANE_WIDTH,
+    width: NOW_PLAYING_PANE_WIDTH,
     zIndex: SHELL_LAYERS.bottomDock,
     justifyContent: 'center',
     gap: space.md,
