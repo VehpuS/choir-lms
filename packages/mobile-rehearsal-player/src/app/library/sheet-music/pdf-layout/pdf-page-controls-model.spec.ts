@@ -4,7 +4,6 @@ import { describe, it } from 'node:test';
 import {
   buildPageControls,
   formatPageIndicator,
-  formatShortPageIndicator,
   pageStateOf,
   stepPage,
 } from './pdf-page-controls-model.js';
@@ -31,23 +30,6 @@ describe('formatPageIndicator with several pages in view', () => {
     assert.equal(
       formatPageIndicator({ lastPage: 2, page: 2, pageCount: 81 }),
       'Page 3 of 81',
-    );
-  });
-});
-
-describe('formatShortPageIndicator', () => {
-  it('counts pages from 1 without the words, for a narrow place', () => {
-    assert.equal(formatShortPageIndicator({ page: 2, pageCount: 81 }), '3/81');
-    assert.equal(
-      formatShortPageIndicator({ lastPage: 4, page: 2, pageCount: 81 }),
-      '3-5/81',
-    );
-  });
-
-  it('is part of the controls once the document has pages', () => {
-    assert.equal(
-      buildPageControls({ page: 2, pageCount: 81 }, 'pages').shortIndicator,
-      '3/81',
     );
   });
 });
@@ -103,7 +85,6 @@ describe('buildPageControls in spread', () => {
 
     assert.equal(controls.showSteps, true);
     assert.equal(controls.indicator, 'Pages 3-4 of 81');
-    assert.equal(controls.shortIndicator, '3-4/81');
   });
 
   it('shows a lone last page as Page 81 of 81 and cannot go on', () => {
@@ -130,7 +111,6 @@ describe('buildPageControls', () => {
       canGoNext: false,
       canGoPrevious: false,
       indicator: undefined,
-      shortIndicator: undefined,
       showSteps: false,
     });
     assert.equal(
