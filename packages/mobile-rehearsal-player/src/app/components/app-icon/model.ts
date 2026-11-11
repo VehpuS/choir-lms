@@ -12,6 +12,7 @@ export type PhosphorGlyph =
   | 'ArrowLineUp'
   | 'ArrowSquareOut'
   | 'ArrowsClockwise'
+  | 'ArrowsIn'
   | 'ArrowsLeftRight'
   | 'ArrowsOut'
   | 'ArrowsVertical'
@@ -208,6 +209,8 @@ export const APP_ICON_GLYPHS = {
   stop: filled('Stop'),
   // Opens the full Pitch view from the monitor strip.
   'arrow-expand': regular('ArrowsOut'),
+  // Leaves a full-screen surface (the piano's full screen), the pair of arrow-expand.
+  'arrow-collapse': regular('ArrowsIn'),
 
   // Account.
   'account-circle-outline': regular('UserCircle'),

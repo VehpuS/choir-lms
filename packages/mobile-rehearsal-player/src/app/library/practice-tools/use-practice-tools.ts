@@ -1,7 +1,9 @@
 import { useState } from 'react';
 
+import { useLayoutClass } from '../../routing/shell/layout-class';
 import { useActiveCompositeEngine } from '../composite/playback/use-active-composite';
 import { pianoCapabilities } from '../piano/piano-capabilities';
+import { resolvePianoPresentation } from '../piano/piano-overlay-model';
 import { pitchCapabilities } from '../pitch/pitch-capabilities';
 import {
   closePitchMonitor,
@@ -36,7 +38,8 @@ export type PracticeTools = {
  * detection` and `Recording`.
  */
 export const usePracticeTools = (): PracticeTools => {
-  const { isOpen: isPianoOpen } = usePianoPreferences();
+  const { isFullScreen, isOpen: isPianoOpen } = usePianoPreferences();
+  const layoutClass = useLayoutClass();
   const isMonitorOpen = usePitchMonitorOpen();
   const isStripOpen = useRecordingStripOpen();
   // Recording follows the media element's clock, which a composite does not
@@ -61,6 +64,15 @@ export const usePracticeTools = (): PracticeTools => {
     toggleTool: (id) => {
       if (id === 'piano') {
         setPianoPreferences({ isOpen: !isPianoOpen });
+
+        // A piano that opens full screen covers the menu, which would be left
+        // open underneath until the piano is left; close it now.
+        if (
+          !isPianoOpen &&
+          resolvePianoPresentation(layoutClass, isFullScreen) === 'fullscreen'
+        ) {
+          setIsMenuOpen(false);
+        }
       } else if (id === 'pitch') {
         // Switching it on starts listening; off stops it (design Decision 6).
         (isMonitorOpen ? closePitchMonitor : openPitchMonitor)();

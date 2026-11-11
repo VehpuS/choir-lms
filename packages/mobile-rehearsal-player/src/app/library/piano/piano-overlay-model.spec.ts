@@ -5,6 +5,7 @@ import { createKeyboardLayout, PIANO_STRIP_WIDTH } from './keyboard-layout.js';
 import {
   capHeightStep,
   clampScrollLeft,
+  fullScreenKeyHeight,
   wheelScrollDelta,
   mapWindow,
   octaveTicks,
@@ -174,6 +175,26 @@ describe('piano presentations', () => {
   it('uses the compact bar in the wide-short layout and the docked piano otherwise', () => {
     assert.equal(resolvePianoPresentation('wide-short'), 'compact-bar');
     assert.equal(resolvePianoPresentation('compact'), 'docked');
+  });
+
+  it('is full screen only in wide-short, and only when chosen', () => {
+    assert.equal(resolvePianoPresentation('wide-short', true), 'fullscreen');
+    assert.equal(resolvePianoPresentation('wide-short', false), 'compact-bar');
+    assert.equal(resolvePianoPresentation('compact', true), 'docked');
+  });
+
+  it('fills the window below the 40-point full screen bar', () => {
+    assert.equal(fullScreenKeyHeight(390), 350);
+    assert.equal(pianoKeyHeightFor('fullscreen', 'regular', 390), 350);
+  });
+
+  it('never draws full screen keys shorter than the compact ones', () => {
+    assert.equal(fullScreenKeyHeight(0), 104);
+    assert.equal(fullScreenKeyHeight(120), 104);
+  });
+
+  it('takes no height from the shell in full screen', () => {
+    assert.equal(pianoPresentationHeight('fullscreen', 'tall'), 0);
   });
 
   it('draws the compact bar at a fixed 104-point key height whatever the stored step', () => {

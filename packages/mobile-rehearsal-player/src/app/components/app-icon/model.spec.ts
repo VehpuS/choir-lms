@@ -48,6 +48,10 @@ describe('app icon glyph map', () => {
     assert.deepEqual(namesUsingGlyph('ArrowsOut'), ['arrow-expand']);
   });
 
+  it('pairs the full screen exit with its own collapse glyph', () => {
+    assert.deepEqual(namesUsingGlyph('ArrowsIn'), ['arrow-collapse']);
+  });
+
   it('gives markers their own flag glyph', () => {
     assert.deepEqual(namesUsingGlyph('Flag'), ['flag-outline']);
   });
