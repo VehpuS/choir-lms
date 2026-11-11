@@ -17,8 +17,8 @@ import type { MiniPlayerSummary } from '../shell-model';
 const { colors, space } = appTheme;
 
 const PROGRESS_HEIGHT = 3;
-const HANDLE_WIDTH = 36;
-const HANDLE_HEIGHT = 4;
+const HANDLE_LENGTH = 36;
+const HANDLE_THICKNESS = 4;
 const HANDLE_OPACITY = 0.6;
 const PERCENT = 100;
 const LYRICS_ICON_SIZE = 18;
@@ -85,7 +85,7 @@ export const NowPlayingPane = ({
   return (
     <View style={[styles.pane, paneBleedStyle]}>
       {/* The whole pane opens the playback view: this backdrop sits behind the
-          controls and takes a tap or an upward drag anywhere they are not. The
+          controls and takes a tap or a drag toward the centre anywhere they are not. The
           title below stays the one accessible button, so it is not hidden from
           assistive technology, and the controls are not nested inside it. */}
       <Pressable
@@ -98,15 +98,16 @@ export const NowPlayingPane = ({
         }}
         style={styles.backdrop}
       />
-      {/* The grabber says the pane pulls up into the playback view. */}
+      {/* The grabber, on the pane's inner edge, says it pulls toward the centre
+          into the playback view. */}
       <View
         pointerEvents="none"
-        style={[styles.handle, { transform: [{ translateY: gesture.lift }] }]}
+        style={[styles.handle, { transform: [{ translateX: gesture.shift }] }]}
         testID="now-playing-pane-handle"
       />
       <View
         pointerEvents="box-none"
-        style={[styles.content, { transform: [{ translateY: gesture.lift }] }]}
+        style={[styles.content, { transform: [{ translateX: gesture.shift }] }]}
       >
         <Pressable
           accessibilityLabel={miniPlayerSummary.accessibilityLabel}
@@ -207,11 +208,12 @@ const styles = StyleSheet.create({
     paddingVertical: space.sm,
   },
   handle: {
-    alignSelf: 'center',
     position: 'absolute',
-    top: space.xs,
-    width: HANDLE_WIDTH,
-    height: HANDLE_HEIGHT,
+    left: space.xs,
+    top: '50%',
+    marginTop: -HANDLE_LENGTH / 2,
+    width: HANDLE_THICKNESS,
+    height: HANDLE_LENGTH,
     borderRadius: appTheme.radius.pill,
     backgroundColor: colors.textMuted,
     opacity: HANDLE_OPACITY,

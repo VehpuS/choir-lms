@@ -10,10 +10,13 @@ import { runScenario } from './scenario-runner';
 
 // User request after the iPhone check: in the wide-short layout the whole Now
 // Playing pane opens the full playback view (not only its title), with a drag
-// handle at its top that says so, and dragging the pane up opens it too. The
-// transport and lyrics controls still do their own job.
+// handle that says so, and dragging the pane opens it too. The pane sits at
+// the window's trailing edge, so the handle is a vertical grabber on its
+// leading (inner) edge, centred, and the drag runs toward the centre of the
+// window (leftward). The transport and lyrics controls still do their own job.
 const LANDSCAPE = { height: 390, width: 844 };
 const TONE_SECONDS = 30;
+const PANE_WIDTH = 280;
 const SHORT_DRAG = 20;
 const LONG_DRAG = 90;
 
@@ -73,14 +76,22 @@ void runScenario({
     await handle.waitFor({ timeout: WAIT_MS });
     const handleBox = await boxOf(handle, 'the drag handle');
 
-    if (handleBox.width < 24 || handleBox.y > 60) {
+    const paneLeft = LANDSCAPE.width - PANE_WIDTH;
+    const handleCentreY = handleBox.y + handleBox.height / 2;
+
+    if (
+      handleBox.height < 24 ||
+      handleBox.width > 12 ||
+      handleBox.x - paneLeft > 24 ||
+      Math.abs(handleCentreY - LANDSCAPE.height / 2) > 40
+    ) {
       throw new Error(
-        `the handle is not a visible grabber at the pane's top (${JSON.stringify(handleBox)})`,
+        `the handle is not a vertical grabber centred on the pane's inner edge (${JSON.stringify(handleBox)})`,
       );
     }
 
     await shot('1-pane-with-handle');
-    pass('The pane shows a drag handle at its top');
+    pass('The pane shows a vertical drag handle on its inner edge, centred');
 
     // A tap on an empty part of the pane opens the playback view.
     await page.mouse.click(paneArea.x, paneArea.bottomY);
@@ -88,10 +99,23 @@ void runScenario({
     await close(page);
     pass('Tapping anywhere on the pane opens the full playback view');
 
-    // A short drag up does not open; a long one does.
+    // A short drag toward the centre does not open; a long one does, and a
+    // drag up (the old direction) does not.
     await page.mouse.move(paneArea.x, paneArea.bottomY);
     await page.mouse.down();
-    await page.mouse.move(paneArea.x, paneArea.bottomY - SHORT_DRAG, {
+    await page.mouse.move(paneArea.x, paneArea.bottomY - LONG_DRAG, {
+      steps: 8,
+    });
+    await page.mouse.up();
+    await page.waitForTimeout(400);
+
+    if (await isOpen(page)) {
+      throw new Error('an upward drag opened the playback view');
+    }
+
+    await page.mouse.move(paneArea.x, paneArea.bottomY);
+    await page.mouse.down();
+    await page.mouse.move(paneArea.x - SHORT_DRAG, paneArea.bottomY, {
       steps: 4,
     });
     await page.mouse.up();
@@ -103,13 +127,15 @@ void runScenario({
 
     await page.mouse.move(paneArea.x, paneArea.bottomY);
     await page.mouse.down();
-    await page.mouse.move(paneArea.x, paneArea.bottomY - LONG_DRAG, {
+    await page.mouse.move(paneArea.x - LONG_DRAG, paneArea.bottomY, {
       steps: 8,
     });
     await page.mouse.up();
     await page.getByLabel('Dismiss playback').waitFor({ timeout: WAIT_MS });
     await close(page);
-    pass('Dragging the pane up opens the playback view; a short drag does not');
+    pass(
+      'Dragging the pane toward the centre opens the playback view; a short drag or an upward one does not',
+    );
 
     // The pane's own controls keep working without opening it.
     await page
