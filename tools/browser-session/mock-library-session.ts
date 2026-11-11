@@ -181,13 +181,18 @@ export const openMockLibrarySession = async (options: {
         ? fakeMicrophoneLaunchArgs(await prepareStemMicrophoneWav())
         : [],
   });
+  const deviceScaleFactor =
+    options.deviceScaleFactor ?? (options.profile ? undefined : 1);
+  const viewport =
+    options.viewport ??
+    (options.profile ? undefined : { height: 844, width: 390 });
   const context = await browser.newContext({
     ...(options.profile ? contextOptionsFor(options.profile) : {}),
-    deviceScaleFactor:
-      options.deviceScaleFactor ?? (options.profile ? undefined : 1),
-    viewport:
-      options.viewport ??
-      (options.profile ? undefined : { height: 844, width: 390 }),
+    // Only what was asked for: an `undefined` here would replace the device
+    // descriptor's own viewport and pixel ratio with Playwright's defaults,
+    // so a profile would run at 1280 x 720 instead of the phone it names.
+    ...(deviceScaleFactor === undefined ? {} : { deviceScaleFactor }),
+    ...(viewport === undefined ? {} : { viewport }),
   });
   const audioTap =
     options.audioTap ??
