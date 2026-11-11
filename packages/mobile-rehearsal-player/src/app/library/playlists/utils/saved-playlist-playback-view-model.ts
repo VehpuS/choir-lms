@@ -37,6 +37,7 @@ export {
   removePlaylistPlaybackQueueItem,
   selectPlaylistPlaybackQueueItem,
 } from './playlist-playback-queue-state';
+import { isolateBidi } from '../../../utils/bidi-isolate';
 
 export type PlaylistPlaybackActionCopy = {
   disabled: boolean;
@@ -127,7 +128,7 @@ export const getPlaylistPlaybackSessionSummary = (
     ? 'Finished session'
     : 'Active session';
 
-  return `${sessionLabel} • ${session.playlistName} • item ${itemPosition} of ${itemCount} • ${getPlaylistQueueModeLabel(session.queue.mode)} • ${getPlaylistRepeatModeLabel(session.queue.repeatMode)}${unavailableSummary}.`;
+  return `${sessionLabel} • ${isolateBidi(session.playlistName)} • item ${itemPosition} of ${itemCount} • ${getPlaylistQueueModeLabel(session.queue.mode)} • ${getPlaylistRepeatModeLabel(session.queue.repeatMode)}${unavailableSummary}.`;
 };
 
 export const buildPlaylistPlaybackSession = (

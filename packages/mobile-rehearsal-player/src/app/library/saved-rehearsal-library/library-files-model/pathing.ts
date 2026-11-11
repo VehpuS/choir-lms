@@ -9,6 +9,7 @@ import type {
   LibraryFilesSearchOptions,
 } from './types';
 import { ROW_META_SEPARATOR } from '../../../components/row-meta-line/model';
+import { isolateBidi } from '../../../utils/bidi-isolate';
 
 export const buildFoldersById = (tree: RehearsalLibraryFileTree) => {
   return new Map(
@@ -99,5 +100,5 @@ export const prefixContainingPath = (options: {
     return options.supportingLabel;
   }
 
-  return `${buildLibraryFolderPathLabel(options.foldersById, containingFolder)}${ROW_META_SEPARATOR}${options.supportingLabel}`;
+  return `${isolateBidi(buildLibraryFolderPathLabel(options.foldersById, containingFolder))}${ROW_META_SEPARATOR}${options.supportingLabel}`;
 };

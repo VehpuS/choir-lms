@@ -8,6 +8,7 @@ import {
   MenuRow,
 } from '../../components/options-menu-sheet/menu-group';
 import type { ExportKindLine } from '../export/row-export-status';
+import { isolateBidi } from '../../../utils/bidi-isolate';
 
 const { colors, radius, space, type } = appTheme;
 
@@ -47,7 +48,7 @@ export const RecordingDriveStatusSheet = ({
       isVisible={true}
       onClose={onClose}
       scrollable={true}
-      title={`Drive status · ${name}`}
+      title={`Drive status · ${isolateBidi(name)}`}
     >
       <View style={styles.body}>
         {destination ? (

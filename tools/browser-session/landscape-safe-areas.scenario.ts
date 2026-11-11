@@ -1,52 +1,20 @@
-import type { Locator, Page } from 'playwright';
-
 import { buildMockSource } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
 import { readMediaState } from './media-probe';
 import { buildToneMedia } from './mock-media';
 import { waitForTrack, waitUntil } from './page-helpers';
+import { emulateInsets, expectClear, LANDSCAPE } from './safe-area-helpers';
 import { runScenario } from './scenario-runner';
 
 // Issue #46: on an iPhone turned sideways the Dynamic Island, the home
 // indicator and the rounded corners cover part of the screen. Chromium can
 // emulate those insets (`Emulation.setSafeAreaInsetsOverride`), so this checks
 // that sheets and the playback overlay keep their controls clear of them while
-// their backdrop still reaches the screen edges. Insets are the same on both
-// sides so the check holds for either landscape direction.
-const LANDSCAPE = { height: 390, width: 844 };
-const INSETS = { bottom: 21, left: 59, right: 59, top: 0 };
-const TOLERANCE_PX = 1;
+// their backdrop still reaches the screen edges (see safe-area-helpers.ts).
 const TONE_SECONDS = 30;
 const WAIT_MS = 5000;
+const TOLERANCE_PX = 1;
 
 const alto = buildMockSource('Alto Part', { durationMs: TONE_SECONDS * 1000 });
-
-const expectClear = async (target: Locator, name: string) => {
-  const box = await target.boundingBox();
-
-  if (!box) {
-    throw new Error(`${name} is not on screen`);
-  }
-
-  const leftEdge = INSETS.left - TOLERANCE_PX;
-  const rightEdge = LANDSCAPE.width - INSETS.right + TOLERANCE_PX;
-  const bottomEdge = LANDSCAPE.height - INSETS.bottom + TOLERANCE_PX;
-
-  if (
-    box.x < leftEdge ||
-    box.x + box.width > rightEdge ||
-    box.y + box.height > bottomEdge
-  ) {
-    throw new Error(
-      `${name} (x ${Math.round(box.x)}..${Math.round(box.x + box.width)}, bottom ${Math.round(box.y + box.height)}) reaches into the safe-area insets (clear: x ${INSETS.left}..${LANDSCAPE.width - INSETS.right}, bottom ${LANDSCAPE.height - INSETS.bottom})`,
-    );
-  }
-};
-
-const emulateInsets = async (page: Page) => {
-  const cdp = await page.context().newCDPSession(page);
-
-  await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets: INSETS });
-};
 
 void runScenario({
   drive: {
@@ -60,6 +28,54 @@ void runScenario({
     await waitForTrack(page, 'Alto Part');
     await emulateInsets(page);
 
+    // The tab bar band reaches the left, right and bottom screen edges (its
+    // colour fills the inset strips) while the tabs stay clear of the insets.
+    const libraryTab = page.getByRole('button', {
+      exact: true,
+      name: 'Library',
+    });
+    const toolsTab = page.getByLabel('Practice tools', { exact: true });
+
+    await shot('0-tab-bar');
+    await expectClear(libraryTab, 'the Library tab');
+    await expectClear(toolsTab, 'the Practice tools tab');
+
+    const band = await libraryTab.evaluate(
+      (first, second) => {
+        // The band is the nearest painted ancestor holding both tabs.
+        let node: HTMLElement | null = first.parentElement;
+
+        while (
+          node &&
+          !(
+            node.contains(second) &&
+            getComputedStyle(node).backgroundColor !== 'rgba(0, 0, 0, 0)'
+          )
+        ) {
+          node = node.parentElement;
+        }
+
+        const rect = node?.getBoundingClientRect();
+
+        return rect
+          ? { bottom: rect.bottom, left: rect.left, right: rect.right }
+          : null;
+      },
+      await toolsTab.elementHandle(),
+    );
+
+    if (
+      !band ||
+      band.left > TOLERANCE_PX ||
+      band.right < LANDSCAPE.width - TOLERANCE_PX ||
+      band.bottom < LANDSCAPE.height - TOLERANCE_PX
+    ) {
+      throw new Error(
+        `the tab bar band does not reach the screen edges: ${JSON.stringify(band)}`,
+      );
+    }
+
+    pass('The tab bar band reaches the screen edges and its tabs stay clear');
     // A bottom sheet: its rows and its Cancel button stay clear of the insets.
     await page.getByLabel('Alto Part options').first().click();
     await page.getByText('Make loop', { exact: true }).waitFor({

@@ -22,6 +22,7 @@ import {
   getPlaylistRepeatModeLabel,
   type PlaylistPlaybackSession,
 } from '../../library/playlists/utils/saved-playlist-playback-view-model';
+import { isolateBidi } from '../../utils/bidi-isolate';
 
 export type MiniPlayerSummary = {
   accessibilityLabel: string;
@@ -118,7 +119,7 @@ export const getPlaybackCollectionLabel = (options: {
 }): string | null => {
   if (!options.activePlaylistSession) {
     return options.activePlayableItem.kind === 'loop'
-      ? `Saved loop from ${options.activePlayableItem.source.name}`
+      ? `Saved loop from ${isolateBidi(options.activePlayableItem.source.name)}`
       : null;
   }
 
@@ -128,7 +129,7 @@ export const getPlaybackCollectionLabel = (options: {
     queueItemCount,
   );
 
-  return `${options.activePlaylistSession.playlistName}${ROW_META_SEPARATOR}${itemPosition} of ${queueItemCount}`;
+  return `${isolateBidi(options.activePlaylistSession.playlistName)}${ROW_META_SEPARATOR}${itemPosition} of ${queueItemCount}`;
 };
 
 export const getPlayableItemRangeLabel = (playableItem: PlayableItem) => {
@@ -202,7 +203,7 @@ const getMiniPlayerBaseContextLabel = (options: {
 
     return [
       options.status,
-      options.activePlaylistSession.playlistName,
+      isolateBidi(options.activePlaylistSession.playlistName),
       `${itemPosition} of ${itemCount}`,
     ].join(ROW_META_SEPARATOR);
   }
@@ -217,7 +218,7 @@ const getMiniPlayerBaseContextLabel = (options: {
       return `${options.status}${ROW_META_SEPARATOR}Saved loop`;
     }
 
-    return `${options.status}${ROW_META_SEPARATOR}Loop from ${options.activePlayableItem.source.name}`;
+    return `${options.status}${ROW_META_SEPARATOR}Loop from ${isolateBidi(options.activePlayableItem.source.name)}`;
   }
 
   return `${options.status}${ROW_META_SEPARATOR}${options.progressLabel}`;

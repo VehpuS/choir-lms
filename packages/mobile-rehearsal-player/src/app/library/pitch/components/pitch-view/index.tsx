@@ -31,6 +31,7 @@ import { PitchReadoutBar } from './pitch-readout-bar';
 import { PitchRoll } from './pitch-roll';
 import { PitchSettingsSheet } from './pitch-settings-sheet';
 import { useTick } from './use-tick';
+import { SafeAreaScreen } from '../../../../components/safe-area-frame';
 
 type PitchViewProps = {
   isVisible: boolean;
@@ -49,7 +50,11 @@ const LANDSCAPE_SIDE_WIDTH = 232;
  */
 export const PitchView = ({ isVisible, onClose }: PitchViewProps) => (
   <Modal animationType="slide" onRequestClose={onClose} visible={isVisible}>
-    {isVisible ? <PitchViewContent onClose={onClose} /> : null}
+    {isVisible ? (
+      <SafeAreaScreen>
+        <PitchViewContent onClose={onClose} />
+      </SafeAreaScreen>
+    ) : null}
   </Modal>
 );
 

@@ -5,6 +5,7 @@ import { CompactPlaybackAction } from '../../../../components/compact-playback-a
 import { SegmentedControl } from '../../../../components/segmented-control';
 import { SurfaceIconButton } from '../../../../components/surface-icon-button';
 import { darkScrollbarStyle } from '../../../../components/dark-scrollbar';
+import { SafeAreaScreen } from '../../../../components/safe-area-frame';
 import { appTheme } from '../../../../utils/theme';
 import {
   LYRICS_TEXT_SIZES,
@@ -56,42 +57,44 @@ export const LyricsReadingMode = ({
 
   return (
     <Modal animationType="slide" onRequestClose={onClose} visible>
-      <View style={styles.screen}>
-        <View style={styles.header}>
-          <Text numberOfLines={1} style={styles.title}>
-            {ownerName}
-          </Text>
-          <SurfaceIconButton
-            accessibilityLabel="Close lyrics"
-            icon="close"
-            onPress={onClose}
+      <SafeAreaScreen>
+        <View style={styles.screen}>
+          <View style={styles.header}>
+            <Text numberOfLines={1} style={styles.title}>
+              {ownerName}
+            </Text>
+            <SurfaceIconButton
+              accessibilityLabel="Close lyrics"
+              icon="close"
+              onPress={onClose}
+            />
+          </View>
+          <SegmentedControl
+            accessibilityLabel="Lyrics text size"
+            onSelect={setLyricsTextSize}
+            options={TEXT_SIZE_OPTIONS}
+            selectedValue={size}
           />
+          {picker}
+          <ScrollView
+            contentContainerStyle={styles.column}
+            style={[darkScrollbarStyle, styles.scroll]}
+          >
+            <Text selectable style={resolveLyricsTextStyle(size)}>
+              {text}
+            </Text>
+          </ScrollView>
+          <View style={styles.transport}>
+            <CompactPlaybackAction
+              accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+              disabled={isPlaybackToggleDisabled}
+              iconName={isPlaying ? 'pause' : 'play'}
+              onPress={onTogglePlayback}
+              variant="card"
+            />
+          </View>
         </View>
-        <SegmentedControl
-          accessibilityLabel="Lyrics text size"
-          onSelect={setLyricsTextSize}
-          options={TEXT_SIZE_OPTIONS}
-          selectedValue={size}
-        />
-        {picker}
-        <ScrollView
-          contentContainerStyle={styles.column}
-          style={[darkScrollbarStyle, styles.scroll]}
-        >
-          <Text selectable style={resolveLyricsTextStyle(size)}>
-            {text}
-          </Text>
-        </ScrollView>
-        <View style={styles.transport}>
-          <CompactPlaybackAction
-            accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
-            disabled={isPlaybackToggleDisabled}
-            iconName={isPlaying ? 'pause' : 'play'}
-            onPress={onTogglePlayback}
-            variant="card"
-          />
-        </View>
-      </View>
+      </SafeAreaScreen>
     </Modal>
   );
 };

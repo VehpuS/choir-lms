@@ -5,6 +5,7 @@ import { AppIcon, type AppIconName } from '../../components/app-icon';
 import { OutlinedActionButton } from '../../components/outlined-action-button';
 import { appTheme } from '../../utils/theme';
 import { INTERACTION_STATE_OPACITY } from './interaction-style-tokens';
+import { LEFT_TO_RIGHT_LINE_STYLE } from '../../utils/bidi-isolate';
 
 const { colors, space } = appTheme;
 const BACK_ICON_SIZE = 20;
@@ -98,7 +99,9 @@ export const SavedLibraryDetailCardShell = ({
         {metadataLabel ? (
           <Text style={styles.metadata}>{metadataLabel}</Text>
         ) : null}
-        {body ? <Text style={styles.body}>{body}</Text> : null}
+        {body ? (
+          <Text style={[styles.body, LEFT_TO_RIGHT_LINE_STYLE]}>{body}</Text>
+        ) : null}
       </View>
 
       {resolvedPlaybackControls ? (

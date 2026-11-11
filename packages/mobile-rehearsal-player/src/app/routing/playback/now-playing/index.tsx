@@ -31,6 +31,7 @@ import type { PlaybackShapingControls } from '../shaping/shaping-surface-model';
 import { nowPlayingStyles as styles } from './styles';
 import { NowPlayingTransportRow } from './now-playing-transport-row';
 import { darkScrollbarStyle } from '../../../components/dark-scrollbar';
+import { LEFT_TO_RIGHT_LINE_STYLE } from '../../../utils/bidi-isolate';
 
 const LOOP_CHIP_ICON_SIZE = 16;
 
@@ -116,7 +117,10 @@ const TitleBlock = ({
         {summary.title}
       </Text>
       {summary.collectionLabel ? (
-        <Text numberOfLines={1} style={styles.contextText}>
+        <Text
+          numberOfLines={1}
+          style={[styles.contextText, LEFT_TO_RIGHT_LINE_STYLE]}
+        >
           {summary.collectionLabel}
         </Text>
       ) : null}

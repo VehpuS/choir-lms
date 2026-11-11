@@ -102,4 +102,58 @@ describe('shell playback summaries', () => {
       waveformProgressRatio: 20 / 185,
     });
   });
+  describe('a playlist with a right-to-left name', () => {
+    const HEBREW_NAME = 'אור-פנד-לנד-2026-12-09';
+    const rightToLeftSession = () => {
+      const session = buildWarmupsPlaybackSession({
+        sources: [PLAYABLE_SOURCE],
+      });
+
+      return { ...session, playlistName: HEBREW_NAME };
+    };
+
+    it('isolates the name in the now-playing collection label', () => {
+      const summary = getNowPlayingSurfaceSummary({
+        activePlayableItem: createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE),
+        activePlaylistSession: rightToLeftSession(),
+        isPlaybackPreparing: false,
+        playbackPositionSeconds: 0,
+        playbackState: 'playing',
+      });
+
+      // The isolate keeps the line left-to-right and the name in one piece.
+      assert.equal(
+        summary?.collectionLabel,
+        `\u2068${HEBREW_NAME}\u2069 · 1 of 2`,
+      );
+    });
+
+    it('isolates the name in the mini-player context', () => {
+      const summary = getMiniPlayerSummary({
+        activePlayableItem: createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE),
+        activePlaylistSession: rightToLeftSession(),
+        isPlaybackPreparing: false,
+        playbackPositionSeconds: 0,
+        playbackState: 'playing',
+      });
+
+      assert.ok(
+        summary?.context?.includes(`\u2068${HEBREW_NAME}\u2069 · 1 of 2`),
+      );
+    });
+
+    it('adds no invisible characters for an English name', () => {
+      const summary = getNowPlayingSurfaceSummary({
+        activePlayableItem: createLoopPlayableItem(SAVED_LOOP, PLAYABLE_SOURCE),
+        activePlaylistSession: buildWarmupsPlaybackSession({
+          sources: [PLAYABLE_SOURCE],
+        }),
+        isPlaybackPreparing: false,
+        playbackPositionSeconds: 0,
+        playbackState: 'playing',
+      });
+
+      assert.equal(summary?.collectionLabel, 'Warmups · 1 of 2');
+    });
+  });
 });
