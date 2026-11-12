@@ -130,8 +130,10 @@ export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
 
   return (
     <View pointerEvents="box-none" style={styles.overlay}>
+      {/* Tap-away only: the sheet has its own named "Dismiss ..." controls, so
+          a second button here would be a duplicate for screen readers. */}
       <Pressable
-        accessibilityRole="button"
+        accessible={false}
         onPress={dismissSurface}
         style={styles.backdrop}
       />

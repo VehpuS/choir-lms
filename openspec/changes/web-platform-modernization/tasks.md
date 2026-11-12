@@ -22,7 +22,7 @@
 
 ## 3. Overlays and preferences (F3–F7, F14)
 
-- [ ] 3.1 Name the backdrop; add dialog role, name and modal semantics to `ModalSurfaceBase`
+- [x] 3.1 Name the backdrop. `ModalSurfaceBase`'s tap-away button is now labelled "Dismiss" (dialog role, name and `aria-modal` were already present, per 1.2a, so nothing to add there). Of the other backdrops, go-to and practice tools were already named and the Now Playing pane's is deliberately not an accessibility element; the playback surface's was the other unnamed one and is now `accessible={false}`, since the sheet has its own named dismiss controls (a second label would duplicate them). `overlay-accessibility` now passes
 - [x] 3.2 Focus trap and restore for web overlays: not needed, 1.2a passes (F4 met by the RN-web Modal)
 - [ ] 3.3 Escape layering already passes (1.2a); Back should close the topmost sheet instead of leaving the app. Decide before building: one history entry per open overlay (push on open, pop on close) in the custom router, versus leaving Back as is
 - [ ] 3.4 Reduced-motion handling for modal transitions and the remaining animation sites, reusing `useReduceMotion` (already used by the playback sheet and pane drag)

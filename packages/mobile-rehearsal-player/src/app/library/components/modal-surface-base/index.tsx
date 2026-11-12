@@ -22,6 +22,10 @@ import {
   type ModalSurfacePresentation,
 } from './model';
 
+// The tap-away area is a button for screen readers and keyboards, so it needs
+// a name; Escape and the surface's own close control stay the usual ways out.
+const BACKDROP_DISMISS_LABEL = 'Dismiss';
+
 type ModalSurfaceBaseProps = {
   backdropColor: string;
   children: ReactNode;
@@ -70,6 +74,7 @@ export const ModalSurfaceBase = ({
       >
         {dismissOnBackdropPress ? (
           <Pressable
+            accessibilityLabel={BACKDROP_DISMISS_LABEL}
             accessibilityRole="button"
             onPress={onRequestClose}
             style={styles.backdrop}
