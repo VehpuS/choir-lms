@@ -233,6 +233,29 @@ describe('authorization persistence', () => {
     assert.equal(restoredState.scope, DEFAULT_SCOPE);
   });
 
+  it('keeps only the access token, its expiry and its scope', async () => {
+    // web-platform-modernization 4.2: the web build keeps this record in
+    // localStorage, where any script on the page can read it, so it holds
+    // nothing beyond what restoring a session needs.
+    const memoryStore = createMemoryStore();
+    const state = createAuthorizedDriveState(
+      {
+        accessToken: 'drive-token',
+        expiresIn: 3600,
+        issuedAt: Math.floor(Date.now() / 1000),
+        scope: DEFAULT_SCOPE,
+      },
+      DEFAULT_SCOPE,
+    );
+
+    await persistDriveAuthorizationState(memoryStore.store, state);
+
+    assert.deepEqual(
+      Object.keys(JSON.parse(memoryStore.read() ?? '{}')).sort(),
+      ['accessToken', 'expiresAt', 'scope'],
+    );
+  });
+
   it('clears any saved session data', async () => {
     const memoryStore = createMemoryStore(
       JSON.stringify({
