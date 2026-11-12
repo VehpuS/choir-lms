@@ -78,13 +78,13 @@ void runScenario({
     // It keeps playing from there.
     const landed = (await readMediaState(page))?.currentTime ?? 0;
 
-    await page.waitForTimeout(2000);
+    // Wait for the position to move on rather than for a fixed time: a slow
+    // runner (Firefox in CI) can take longer than two seconds to buffer.
+    await waitUntil(async () => {
+      const later = await readMediaState(page);
 
-    const later = await readMediaState(page);
-
-    if (!later || later.paused || later.currentTime < landed + 1) {
-      throw new Error('playback did not carry on after the seek');
-    }
+      return Boolean(later && !later.paused && later.currentTime >= landed + 1);
+    }, 'playback did not carry on after the seek');
 
     pass('Playback carries on from the seek position');
   },
