@@ -217,12 +217,21 @@ export const openMockLibrarySession = async (options: {
 
   // The microphone only when the scenario asks for it; the clipboard always,
   // so "Copy" buttons can be checked by reading the clipboard back.
-  await context.grantPermissions(
-    options.microphone
-      ? ['clipboard-read', 'clipboard-write', 'microphone']
-      : ['clipboard-read', 'clipboard-write'],
-    { origin: url },
-  );
+  // Each on its own: Firefox and WebKit refuse a permission they do not know
+  // (clipboard-read is Chromium only), which failed every scenario there when
+  // they were granted together. A scenario that needs the clipboard or the
+  // microphone declares `requires: ['chromium']`.
+  for (const permission of options.microphone
+    ? ['clipboard-read', 'clipboard-write', 'microphone']
+    : ['clipboard-read', 'clipboard-write']) {
+    await context
+      .grantPermissions([permission], { origin: url })
+      .catch((error: Error) => {
+        if (!/Unknown permission/i.test(error.message)) {
+          throw error;
+        }
+      });
+  }
 
   if (options.mediaProbe) {
     await installMediaProbe(context);
