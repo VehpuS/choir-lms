@@ -15,13 +15,18 @@ import { useLayoutClass } from '../shell/layout-class';
 import { SHELL_LAYERS } from '../shell/shell-layers';
 import { CompactPlaybackContent } from './compact-playback-content';
 import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
+import { getPlaybackSurfaceMotion } from './playback-surface-motion';
 import type { PlaybackSurfaceProps } from './playback-surface-props';
+import { useReduceMotion } from './use-reduce-motion';
 import { WideShortPlaybackContent } from './wide-short-playback-content';
 
 export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
   const { nowPlayingSummary, onClose, queueSummary, surface } = props;
   const isWideShort = useLayoutClass() === 'wide-short';
-  const translateY = useRef(new Animated.Value(32)).current;
+  const { axis, enterOffset, exitOffset } =
+    getPlaybackSurfaceMotion(isWideShort);
+  const reduceMotion = useReduceMotion();
+  const offset = useRef(new Animated.Value(enterOffset)).current;
   // The compact sheet slides in again when its content is replaced by another
   // surface; the wide-short sheet keeps its columns and only changes a tab, so
   // it slides in once, when it opens.
@@ -36,20 +41,26 @@ export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
   const canRenderShaping = surface === 'shaping' && nowPlayingSummary;
 
   const dismissSurface = () => {
-    Animated.timing(translateY, {
-      toValue: 420,
+    // Asked for less motion: close at once rather than sliding away.
+    if (reduceMotion) {
+      onClose();
+      return;
+    }
+
+    Animated.timing(offset, {
+      toValue: exitOffset,
       duration: 180,
       useNativeDriver: true,
     }).start(({ finished }) => {
       if (finished) {
-        translateY.setValue(32);
+        offset.setValue(enterOffset);
         onClose();
       }
     });
   };
 
   const resetSurfacePosition = () => {
-    Animated.spring(translateY, {
+    Animated.spring(offset, {
       damping: 20,
       mass: 0.9,
       stiffness: 220,
@@ -59,16 +70,21 @@ export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
   };
 
   useEffect(() => {
-    translateY.setValue(32);
+    if (reduceMotion) {
+      offset.setValue(0);
+      return;
+    }
 
-    Animated.spring(translateY, {
+    offset.setValue(enterOffset);
+
+    Animated.spring(offset, {
       damping: 18,
       mass: 0.9,
       stiffness: 210,
       toValue: 0,
       useNativeDriver: true,
     }).start();
-  }, [animationKey, translateY]);
+  }, [animationKey, enterOffset, offset, reduceMotion]);
 
   const panResponder = useMemo(() => {
     return PanResponder.create({
@@ -80,7 +96,7 @@ export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
         });
       },
       onPanResponderMove: (_, gestureState) => {
-        translateY.setValue(Math.max(0, gestureState.dy));
+        offset.setValue(Math.max(0, gestureState.dy));
       },
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dy > 120 || gestureState.vy > 1.1) {
@@ -94,8 +110,11 @@ export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
         resetSurfacePosition();
       },
     });
-  }, [translateY]);
-  const sheetFramePanHandlers = canRenderQueue ? {} : panResponder.panHandlers;
+  }, [offset, reduceMotion]);
+  // The drag-down dismissal is the upright sheet's; the wide-short sheet slides
+  // along the horizontal axis and closes by its button, the scrim or Escape.
+  const sheetFramePanHandlers =
+    canRenderQueue || isWideShort ? {} : panResponder.panHandlers;
 
   // On web there is no swipe-down: Escape closes the sheet the way the
   // caret-down control does.
@@ -130,7 +149,12 @@ export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
           style={[
             styles.sheetFrame,
             isWideShort ? styles.sheetFrameWide : null,
-            { transform: [{ translateY }] },
+            {
+              transform:
+                axis === 'x'
+                  ? [{ translateX: offset }]
+                  : [{ translateY: offset }],
+            },
           ]}
         >
           {isWideShort ? (

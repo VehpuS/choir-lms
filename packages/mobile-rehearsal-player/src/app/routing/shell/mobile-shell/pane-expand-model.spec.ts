@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  canStartPaneDrag,
   dragShiftOffset,
   EXPAND_DRAG_DISTANCE,
   isDrag,
@@ -44,5 +45,17 @@ describe('the pane expand drag', () => {
   it('tells a drag from a tap by a few points of movement', () => {
     assert.equal(isDrag({ dx: 1, dy: 2 }), false);
     assert.equal(isDrag({ dx: 10, dy: 0 }), true);
+  });
+});
+
+describe('which pointers start a pane drag', () => {
+  it('accepts the main button and the first finger', () => {
+    assert.equal(canStartPaneDrag({ button: 0, isPrimary: true }), true);
+  });
+
+  it('ignores other mouse buttons and extra fingers', () => {
+    assert.equal(canStartPaneDrag({ button: 2, isPrimary: true }), false);
+    assert.equal(canStartPaneDrag({ button: 1, isPrimary: true }), false);
+    assert.equal(canStartPaneDrag({ button: 0, isPrimary: false }), false);
   });
 });

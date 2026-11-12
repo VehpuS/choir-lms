@@ -5,13 +5,14 @@ import {
   readPointer,
 } from '../../../library/piano/components/piano-overlay/pointer-events';
 import {
+  canStartPaneDrag,
   dragShiftOffset,
   isDrag,
   shouldExpandOnDrag,
 } from './pane-expand-model';
 
 /**
- * Web pointer handlers for the Now Playing pane's backdrop: dragging it toward the centre of the window (leftward, as the pane is at
+ * Web pointer handlers for the whole Now Playing pane (its controls included, since pointer events bubble): dragging it toward the centre of the window (leftward, as the pane is at
  * the trailing edge) opens the playback view, and the pane's content shifts with
  * the finger meanwhile. `wasDragged` lets the click that follows a drag be
  * ignored, so a drag that does not open is not taken for a tap. The pane is a
@@ -28,11 +29,29 @@ export const usePaneExpandGesture = (onExpand: () => void) => {
   };
 
   const handlers = {
+    // Bubbles from a child: a touch is first captured by the control it lands
+    // on, and handing that capture to the pane (below) reports the control's
+    // loss here. Only the pane losing the pointer itself ends the drag.
+    onLostPointerCapture: (event: unknown) => {
+      const { currentTarget, target } = event as {
+        currentTarget?: unknown;
+        target?: unknown;
+      };
+
+      if (target === currentTarget) {
+        reset();
+      }
+    },
     onPointerCancel: reset,
     onPointerDown: (event: unknown) => {
       const sample = readPointer(event);
 
-      capturePointer(event);
+      if (!canStartPaneDrag(sample)) {
+        return;
+      }
+
+      // Not captured yet: capturing at once would send the click that ends a
+      // plain tap to the pane instead of the button under the finger.
       wasDragged.current = false;
       start.current = { id: sample.id, x: sample.clientX, y: sample.clientY };
     },
@@ -49,7 +68,12 @@ export const usePaneExpandGesture = (onExpand: () => void) => {
         dy: sample.clientY - origin.y,
       };
 
-      wasDragged.current = wasDragged.current || isDrag(drag);
+      if (!wasDragged.current && isDrag(drag)) {
+        // From here on it is a drag: keep its events coming outside the pane.
+        capturePointer(event);
+        wasDragged.current = true;
+      }
+
       setShift(dragShiftOffset(drag));
     },
     onPointerUp: (event: unknown) => {
