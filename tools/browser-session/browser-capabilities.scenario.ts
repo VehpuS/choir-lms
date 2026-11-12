@@ -1,3 +1,4 @@
+import { selectedBrowserName } from './browser-choice';
 import { buildMockSource } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
 import { waitForTrack } from './page-helpers';
 import { runScenario } from './scenario-runner';
@@ -61,6 +62,17 @@ void runScenario({
 
     for (const [name, value] of Object.entries(facts)) {
       pass(`${name}: ${value}`);
+    }
+
+    // The day Playwright's WebKit can keep a Blob, the scenarios skipped there
+    // for that reason should run again: fail so someone removes the skips.
+    if (
+      selectedBrowserName() === 'webkit' &&
+      facts.indexedDb430kBlob?.startsWith('ok')
+    ) {
+      throw new Error(
+        'WebKit can now store a Blob in IndexedDB: remove `requires: [chromium, firefox]` from drive-offline-and-session, persistent-storage and composites (and re-check playback-long-track)',
+      );
     }
   },
 });
