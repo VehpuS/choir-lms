@@ -38,7 +38,7 @@ Each was reproduced as a scenario on the export built from this branch before an
 | F11 | Not a gap: the window opens with `noopener`.                                                                           | `external-link-opener` (passes)                                  | none; guard    |
 | F14 | Not a gap on the library, a track menu and the playback view.                                                          | `target-sizes` (passes)                                          | none; guard    |
 
-Not yet reproduced: F1 and F2 by `web-document-metadata` (fails as expected), F13 (media session).
+F1, F2 were reproduced by `web-document-metadata`. F13 was checked by reading the `react-native-track-player` web source (no `mediaSession`), then fixed with `media-session` written alongside the fix.
 
 ## Changes on main since the audit
 

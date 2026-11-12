@@ -99,6 +99,15 @@ flowchart TD
 
 This separation keeps background service code lightweight while allowing current in-memory app state and queue logic to stay inside the React/controller layer.
 
+## Web Media Session and Screen Wake Lock
+
+`react-native-track-player`'s web runtime does not touch `navigator.mediaSession`, and `expo-keep-awake`'s web build keeps one wake lock per tag without asking again after the page was hidden. The app covers both itself, as web-only siblings behind a no-op native API:
+
+- `src/app/components/media-session/` (`use-media-session.web.ts`, model in `model.ts`): called from `useSavedTrackPlayback`. It sets the title, the app artwork (relative icon paths, so they follow the base path), the playback state and the scrubber position (reported on a change of item, speed, length or play state, and on a jump, not every progress tick). Its play, pause, next and previous actions go through `dispatchSavedTrackPlaybackRemoteCommand`, the same bridge native remote events use, so the lock screen, notification shade and media keys drive the active controller.
+- `src/app/components/wake-lock/` (`wake-lock-coordinator.ts`, `use-screen-wake-lock.web.ts`): one Screen Wake Lock shared by every holder (a playing track; the sheet music viewer and lyrics reading mode through `use-best-effort-keep-awake.web.ts`). It asks again when the page becomes visible, since the browser drops the lock when the page is hidden, and treats a refusal as nothing to do. Native keeps using `expo-keep-awake` for the viewers and needs nothing for playback.
+
+Scenarios: `media-session` and `screen-wake-lock` in `tools/browser-session/`.
+
 ## Authenticated Drive Playback Flow
 
 1. `createSavedTrackPlaybackRequest` builds a track payload with Drive media URL and `Authorization: Bearer ...` headers.

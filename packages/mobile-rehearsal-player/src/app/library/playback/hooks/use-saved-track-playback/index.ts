@@ -7,6 +7,9 @@ import { isDriveAuthorizationFailure } from '../../../../auth/google-drive/utils
 import { type ActivePlaylistContext } from '../../../playlists/utils/playlist-session-mode';
 import { type PlaylistPlaybackSession } from '../../../playlists/utils/saved-playlist-playback-view-model';
 import { resolvePreviewRangeSync } from '../../utils/loop-preview-item';
+import { useMediaSession } from '../../../../components/media-session/use-media-session';
+import { useScreenWakeLock } from '../../../../components/wake-lock/use-screen-wake-lock';
+import { dispatchSavedTrackPlaybackRemoteCommand } from '../../utils/saved-track-playback-remote-controls';
 import { createSavedTrackPlaybackController } from '../../utils/saved-track-playback-controller';
 import { createSavedTrackPlaybackControllerOptionsProxy } from '../../utils/saved-track-playback-controller/shared';
 import {
@@ -22,6 +25,7 @@ import { createSavedTrackPlaybackActions } from './actions';
 import { useSavedTrackPlaybackEffects } from './effects';
 import {
   DEFAULT_PLAYBACK_VOLUME_LEVEL,
+  trackPlayerState,
   type SyncActivePlaylistContextOptions,
 } from './shared';
 import { createPreparingTracker } from './preparing-tracker';
@@ -178,6 +182,26 @@ export const useSavedTrackPlayback = (
     setVolumeLevel,
     volumeLevel,
     volumeLevelRef,
+  });
+
+  // The screen stays on while a track plays, and the lock screen and media
+  // keys (web) show it and can drive it through the same remote commands the
+  // native lock screen uses.
+  const isPlaying = playbackState === trackPlayerState.Playing;
+
+  useScreenWakeLock(isPlaying);
+  useMediaSession({
+    onCommand: (command) => {
+      void dispatchSavedTrackPlaybackRemoteCommand(command);
+    },
+    snapshot: {
+      durationSeconds: progress.duration,
+      hasItem: activePlayableItem !== null,
+      isPlaying,
+      playbackRate: shaping.effective.speedMultiplier,
+      positionSeconds: progress.position,
+      title: activePlayableItem?.title ?? null,
+    },
   });
 
   const actions = createSavedTrackPlaybackActions({
