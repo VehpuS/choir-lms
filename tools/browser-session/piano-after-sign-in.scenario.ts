@@ -23,6 +23,9 @@ const alto = buildMockSource('Alto Part');
 const runWith = (pianoFirst: boolean) =>
   runScenario({
     audioTap: true,
+    // The mock sign-in answers with a 302 that Playwright's WebKit cannot
+    // fulfil, and a page that redirects instead left the scenario hanging there.
+    requires: ['chromium', 'firefox'],
     drive: { completeSignIn: true, state: 'signed-out' },
     library: { playlists: [], sources: [alto] },
     steps: async ({ page, pass, session, shot }) => {

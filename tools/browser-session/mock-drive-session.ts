@@ -31,6 +31,7 @@ const READ_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
 const WRITE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 const AUTHORIZED_FOR_MS = 60 * 60 * 1000;
 const NOT_FOUND_STATUS = 404;
+const FOUND_STATUS = 302;
 const SIGN_IN_TOKEN_SECONDS = 3600;
 const NO_CONTENT_STATUS = 204;
 const OK_STATUS = 200;
@@ -316,14 +317,11 @@ export const installMockDriveRoutes = async (
     recorder.signInRequests.push(route.request().url());
 
     if (completesSignIn) {
-      // A page that sends the popup on, not a 302: Playwright's WebKit cannot
-      // fulfil a request with a redirect status. The popup ends up at the same
-      // address either way.
       const target = buildSignInRedirect(route.request().url());
 
       return route.fulfill({
-        body: `<title>Mock Google sign-in</title><script>location.replace(${JSON.stringify(target)})</script>`,
-        contentType: 'text/html',
+        headers: { location: target },
+        status: FOUND_STATUS,
       });
     }
 

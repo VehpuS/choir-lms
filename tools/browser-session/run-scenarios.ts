@@ -10,6 +10,7 @@ import { BROWSER_ENV_VARIABLE, isBrowserName } from './browser-choice';
 //
 //   tsx tools/browser-session/run-scenarios.ts <outDir> [--scenario=<text>]
 //     [--lane=default|matrix] [--parallel=<n>] [--browser=chromium|webkit|firefox]
+//     [--timeout=<seconds per scenario>]
 //
 // Lanes: `*.scenario.ts` run by default. `*.matrix.scenario.ts` (device
 // matrices, long tracks, other browsers: slow or sensitive to machine speed)
@@ -19,6 +20,12 @@ const SCENARIO_SUFFIX = '.scenario.ts';
 const MATRIX_SUFFIX = '.matrix.scenario.ts';
 const DEFAULT_PARALLEL_CAP = 3;
 const MS_PER_SECOND = 1000;
+// A scenario that hangs (a browser waiting on something that never comes) must
+// not take the whole run with it: without a limit one WebKit scenario held a CI
+// job for its full 30 minutes and hid every other result. The default lane's
+// slowest scenario takes about a minute; the matrix lane has device profiles
+// and ten-minute tracks.
+const DEFAULT_TIMEOUT_SECONDS = { default: 240, matrix: 900 } as const;
 
 type Lane = 'default' | 'matrix';
 type ScenarioResult = {
@@ -57,30 +64,48 @@ const listScenarios = (lane: Lane, filter: string | undefined): string[] =>
     .filter((file) => !filter || file.includes(filter))
     .sort();
 
-const runScenario = (file: string, outDir: string): Promise<ScenarioResult> =>
+const runScenario = (
+  file: string,
+  outDir: string,
+  timeoutSeconds: number,
+): Promise<ScenarioResult> =>
   new Promise((resolve) => {
     const started = Date.now();
+    // Its own process group, so a timeout can end the browser it started too.
     const child = spawn('npx', ['tsx', join(SCENARIO_DIR, file), outDir], {
+      detached: true,
       env: { ...process.env, ...browserEnvironment() },
     });
     let output = '';
+    let hasTimedOut = false;
+    const timer = setTimeout(() => {
+      hasTimedOut = true;
+
+      if (child.pid !== undefined) {
+        process.kill(-child.pid, 'SIGKILL');
+      }
+    }, timeoutSeconds * MS_PER_SECOND);
 
     child.stdout.on('data', (chunk) => (output += chunk));
     child.stderr.on('data', (chunk) => (output += chunk));
-    child.on('close', (code) =>
+    child.on('close', (code) => {
+      clearTimeout(timer);
       resolve({
         durationSeconds: (Date.now() - started) / MS_PER_SECOND,
         name: basename(file, SCENARIO_SUFFIX),
-        output: output.trim(),
-        passed: code === 0,
-      }),
-    );
+        output: hasTimedOut
+          ? `${output.trim()}\nTIMEOUT: stopped after ${timeoutSeconds} s; the scenario hung`.trim()
+          : output.trim(),
+        passed: code === 0 && !hasTimedOut,
+      });
+    });
   });
 
 const runAll = async (
   files: string[],
   outDir: string,
   parallel: number,
+  timeoutSeconds: number,
 ): Promise<ScenarioResult[]> => {
   const results: ScenarioResult[] = [];
   const queue = [...files];
@@ -88,7 +113,7 @@ const runAll = async (
   // Each worker takes the next scenario when it finishes one.
   const worker = async () => {
     for (let file = queue.shift(); file; file = queue.shift()) {
-      const result = await runScenario(file, outDir);
+      const result = await runScenario(file, outDir, timeoutSeconds);
 
       results.push(result);
       console.log(
@@ -119,7 +144,10 @@ const main = async () => {
   }
 
   const started = Date.now();
-  const results = await runAll(files, outDir, parallel);
+  const timeoutSeconds = Number(
+    readFlag('timeout') ?? DEFAULT_TIMEOUT_SECONDS[lane],
+  );
+  const results = await runAll(files, outDir, parallel, timeoutSeconds);
   const failed = results.filter(({ passed }) => !passed);
 
   console.log(
