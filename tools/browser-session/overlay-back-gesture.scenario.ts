@@ -68,17 +68,25 @@ void runScenario({
     assert.equal(page.url(), appUrl);
     pass('A second Back closes the view');
 
-    // Closing with Escape gives the entry back: the next Back leaves the app,
-    // as it did before any sheet opened, rather than doing nothing.
+    // Closing with Escape gives the entry back. Read from the history itself
+    // rather than by going Back out of the app (browsers differ on whether the
+    // first entry can be reached): a sentinel entry is pushed first, and once
+    // the sheet is closed the page must be on the sentinel, not on a leftover
+    // sheet entry.
+    await page.evaluate("history.pushState({ sentinel: true }, '')");
     await page.getByLabel(/^Now playing:/).click();
     await tools.waitFor({ timeout: WAIT_MS });
+    assert.equal(
+      await page.evaluate('history.state?.choirlmsOverlay === true'),
+      true,
+      'opening the view added no history entry',
+    );
     await page.keyboard.press('Escape');
     await tools.waitFor({ state: 'detached', timeout: WAIT_MS });
-    await page.goBack({ timeout: WAIT_MS }).catch(() => null);
-    assert.notEqual(
-      page.url(),
-      appUrl,
-      'Escape left a stale history entry: Back stayed on the app',
+    await waitUntil(
+      async () =>
+        (await page.evaluate('history.state?.sentinel === true')) === true,
+      'Escape left a stale history entry: the page is not back on the entry before the sheet',
     );
     pass('Closing with Escape leaves no history entry behind');
   },

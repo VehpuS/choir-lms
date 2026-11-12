@@ -48,6 +48,8 @@ const close = async (page: Page) => {
 };
 
 void runScenario({
+  // The finger drag uses Chrome DevTools touch events.
+  requires: ['chromium'],
   drive: {
     media: { [alto.driveFileId]: buildToneMedia({ seconds: TONE_SECONDS }) },
     state: 'authorized',

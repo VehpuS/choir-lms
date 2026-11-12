@@ -216,21 +216,17 @@ export const openMockLibrarySession = async (options: {
   }
 
   // The microphone only when the scenario asks for it; the clipboard always,
-  // so "Copy" buttons can be checked by reading the clipboard back.
-  // Each on its own: Firefox and WebKit refuse a permission they do not know
-  // (clipboard-read is Chromium only), which failed every scenario there when
-  // they were granted together. A scenario that needs the clipboard or the
-  // microphone declares `requires: ['chromium']`.
-  for (const permission of options.microphone
-    ? ['clipboard-read', 'clipboard-write', 'microphone']
-    : ['clipboard-read', 'clipboard-write']) {
-    await context
-      .grantPermissions([permission], { origin: url })
-      .catch((error: Error) => {
-        if (!/Unknown permission/i.test(error.message)) {
-          throw error;
-        }
-      });
+  // so "Copy" buttons can be checked by reading the clipboard back. Only
+  // Chromium knows these permissions: Firefox rejects the grant, and WebKit
+  // accepts it and then fails when the page opens. A scenario that needs the
+  // clipboard or the microphone declares `requires: ['chromium']`.
+  if (browserName === 'chromium') {
+    await context.grantPermissions(
+      options.microphone
+        ? ['clipboard-read', 'clipboard-write', 'microphone']
+        : ['clipboard-read', 'clipboard-write'],
+      { origin: url },
+    );
   }
 
   if (options.mediaProbe) {
@@ -283,18 +279,27 @@ export const openMockLibrarySession = async (options: {
   // Recorded for the whole run; kept only when a scenario fails.
   await context.tracing.start({ screenshots: true, snapshots: true });
 
+  // Content-Security-Policy violations, from the page's own
+  // `securitypolicyviolation` event: its console wording differs per browser,
+  // the event does not. Recorded on this side so a reload does not lose them.
+  const cspViolations: string[] = [];
+
+  await context.exposeFunction('__reportCspViolation', (detail: string) => {
+    cspViolations.push(detail);
+  });
+  // Plain script text: it runs in the page, where the test tooling's helpers do not exist.
+  await context.addInitScript(`
+    document.addEventListener('securitypolicyviolation', (event) => {
+      window.__reportCspViolation(
+        [event.effectiveDirective, event.blockedURI, (event.sample || '').slice(0, 60)].join('|'),
+      );
+    }, true);
+  `);
+
   const page = await context.newPage();
   const consoleLog: { text: string; type: string }[] = [];
 
-  const cspViolations: string[] = [];
-
   page.on('console', (message) => {
-    // The browser reports a blocked load or script as a console error that
-    // names the policy.
-    if (/Content Security Policy|Refused to /i.test(message.text())) {
-      cspViolations.push(message.text().slice(0, 200));
-    }
-
     if (['error', 'warning'].includes(message.type())) {
       consoleLog.push({ text: message.text(), type: message.type() });
     }

@@ -108,6 +108,17 @@ jobs:
       - name: Install the browser
         run: npx playwright install --with-deps ${{ matrix.browser }}
 
+      # Firefox and WebKit start playback only when the machine has an audio
+      # output, which a CI runner lacks; a null sink gives them one. Chromium
+      # does not need it (the harness taps its audio itself).
+      - name: Give the browser an audio output
+        if: matrix.browser != 'chromium'
+        run: |
+          sudo apt-get install -y --no-install-recommends pulseaudio
+          pulseaudio --start --exit-idle-time=-1
+          pactl load-module module-null-sink sink_name=ci_sink
+          pactl set-default-sink ci_sink
+
       - name: Build the browser test export
         run: npm exec -- nx run mobile-rehearsal-player:build-browser-test --outputStyle=static
 

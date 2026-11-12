@@ -47,14 +47,14 @@ void runScenario({
     // timer's (it fires after a task) and claim all three.
     await waitUntil(async () => {
       try {
-        session.expectCspViolation('Evaluating a string');
+        session.expectCspViolation('|eval|');
 
         return true;
       } catch {
         return false;
       }
     }, 'the browser did not refuse the string timer');
-    session.expectCspViolation('inline script');
+    session.expectCspViolation('|inline|');
     session.expectCspViolation('scripts.example.test');
     pass(
       'The browser refused the inline script, the eval and the other-origin script',
