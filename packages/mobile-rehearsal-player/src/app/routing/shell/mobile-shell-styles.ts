@@ -24,8 +24,15 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
   // The wide-short layout puts the side rail and the main column side by side.
+  // The Now Playing pane is pulled over the list by a drag and carries a strip
+  // of its surface out past the window's edge; clipped here, that strip cannot
+  // make the page scroll sideways. `clip`, not `hidden`: a hidden box can still
+  // be scrolled by a focus or `scrollIntoView`, which would carry the playback
+  // sheet inside it along. react-native-web passes it through; the React Native
+  // type does not list it.
   screenRow: {
     flexDirection: 'row',
+    overflow: 'clip' as 'hidden',
   },
   mainColumn: {
     flex: 1,

@@ -1,7 +1,11 @@
 /** How far toward the centre the pane is dragged (in points) before it opens the playback view. */
 export const EXPAND_DRAG_DISTANCE = 48;
-/** The most the pane's content shifts while dragged, as feedback that it is moving. */
-export const MAX_DRAG_SHIFT = 28;
+/**
+ * The furthest the pane can be pulled toward the centre however far the finger
+ * goes: its travel slows as it nears this, like a rubber band, instead of
+ * stopping dead at a cap.
+ */
+export const MAX_DRAG_SHIFT = 120;
 /** A press that moves less than this is a tap. */
 export const DRAG_SLOP = 4;
 
@@ -19,9 +23,19 @@ export const shouldExpandOnDrag = (drag: Drag): boolean => {
   return isInwardDrag(drag) && -drag.dx >= EXPAND_DRAG_DISTANCE;
 };
 
-/** How far (negative, leftward) the content follows the finger: capped, and none for a vertical or outward drag. */
+/**
+ * How far (negative, leftward) the whole pane follows the finger. It tracks the
+ * finger closely at first (a slope of one), then resists more and more, never
+ * passing `MAX_DRAG_SHIFT`; none for a vertical or outward drag.
+ */
 export const dragShiftOffset = (drag: Drag): number => {
-  return isInwardDrag(drag) ? Math.max(drag.dx, -MAX_DRAG_SHIFT) : 0;
+  if (!isInwardDrag(drag)) {
+    return 0;
+  }
+
+  const travel = -drag.dx;
+
+  return -(MAX_DRAG_SHIFT * travel) / (travel + MAX_DRAG_SHIFT);
 };
 
 /** A movement past the slop is a drag, so the click that follows it is not a tap. */

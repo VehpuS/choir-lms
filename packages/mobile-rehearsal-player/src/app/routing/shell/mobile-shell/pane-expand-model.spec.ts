@@ -32,9 +32,31 @@ describe('the pane expand drag', () => {
     assert.equal(shouldExpandOnDrag({ dx: 0, dy: -90 }), false);
   });
 
-  it('shifts the content with the finger, up to a cap', () => {
-    assert.equal(dragShiftOffset({ dx: -10, dy: 0 }), -10);
-    assert.equal(dragShiftOffset({ dx: -200, dy: 0 }), -MAX_DRAG_SHIFT);
+  it('follows the finger closely at first', () => {
+    const shift = dragShiftOffset({ dx: -10, dy: 0 });
+
+    assert.ok(shift < 0 && shift <= -9, `shift was ${shift}`);
+  });
+
+  it('keeps moving the further the finger goes, but never past the cap', () => {
+    const shifts = [-20, -60, -120, -400, -4000].map((dx) =>
+      dragShiftOffset({ dx, dy: 0 }),
+    );
+
+    shifts.forEach((shift, index) => {
+      assert.ok(shift > -MAX_DRAG_SHIFT, `shift ${shift} reached the cap`);
+
+      if (index > 0) {
+        assert.ok(shift < shifts[index - 1], 'the pane stopped following');
+      }
+    });
+  });
+
+  it('has moved well past the open distance by the time it opens', () => {
+    assert.ok(
+      -dragShiftOffset({ dx: -EXPAND_DRAG_DISTANCE, dy: 0 }) >
+        EXPAND_DRAG_DISTANCE / 2,
+    );
   });
 
   it('does not shift for an outward or vertical drag', () => {
