@@ -1,5 +1,5 @@
 import type { PlayableItem } from '@org/audio-library-models';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AppIcon } from '../../../components/app-icon';
 import { useLyricsFor } from '../../../library/components/saved-item-menu/saved-item-availability-context';
@@ -10,6 +10,7 @@ import { appTheme } from '../../../utils/theme';
 import { NowPlayingTransportRow } from '../../playback/now-playing/now-playing-transport-row';
 import { paneBleedStyle } from '../dock-bleed';
 import { NOW_PLAYING_PANE_WIDTH } from '../shell-dimensions';
+import { MAX_DRAG_SHIFT } from './pane-expand-model';
 import { SHELL_LAYERS } from '../shell-layers';
 import { usePaneExpandGesture } from './use-pane-expand-gesture';
 import type { MiniPlayerSummary } from '../shell-model';
@@ -87,10 +88,19 @@ export const NowPlayingPane = ({
   const gesture = usePaneExpandGesture(onOpenNowPlaying);
 
   return (
-    <View
+    <Animated.View
       {...gesture.handlers}
-      style={[styles.pane, paneBleedStyle, PANE_DRAG_SURFACE]}
+      style={[
+        styles.pane,
+        paneBleedStyle,
+        PANE_DRAG_SURFACE,
+        { transform: [{ translateX: gesture.shift }] },
+      ]}
     >
+      {/* The pane moves as a whole, so its raised surface leaves the trailing
+          edge behind; this strip carries the same surface out past it, so the
+          pulled pane never shows a gap (the most it can travel is the width). */}
+      <View pointerEvents="none" style={styles.trailingFill} />
       {/* The whole pane opens the playback view: this backdrop sits behind the
           controls and takes a tap or a drag toward the centre anywhere they are not. The
           title below stays the one accessible button, so it is not hidden from
@@ -108,13 +118,10 @@ export const NowPlayingPane = ({
           into the playback view. */}
       <View
         pointerEvents="none"
-        style={[styles.handle, { transform: [{ translateX: gesture.shift }] }]}
+        style={styles.handle}
         testID="now-playing-pane-handle"
       />
-      <View
-        pointerEvents="box-none"
-        style={[styles.content, { transform: [{ translateX: gesture.shift }] }]}
-      >
+      <View pointerEvents="box-none" style={styles.content}>
         <Pressable
           accessibilityLabel={miniPlayerSummary.accessibilityLabel}
           accessibilityRole="button"
@@ -197,7 +204,7 @@ export const NowPlayingPane = ({
           ) : null}
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -210,6 +217,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceRaised,
   },
   backdrop: StyleSheet.absoluteFillObject,
+  trailingFill: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: '100%',
+    width: MAX_DRAG_SHIFT,
+    backgroundColor: colors.surfaceRaised,
+  },
   content: {
     flex: 1,
     justifyContent: 'center',

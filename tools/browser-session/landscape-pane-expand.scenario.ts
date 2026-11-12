@@ -19,6 +19,8 @@ const TONE_SECONDS = 30;
 const PANE_WIDTH = 280;
 const SHORT_DRAG = 20;
 const LONG_DRAG = 90;
+// The most the pane is pulled (`MAX_DRAG_SHIFT`), with a point of rounding.
+const MAX_PULL = 121;
 
 const alto = buildMockSource('Alto Part', { durationMs: TONE_SECONDS * 1000 });
 
@@ -135,6 +137,54 @@ void runScenario({
     await close(page);
     pass(
       'Dragging the pane toward the centre opens the playback view; a short drag or an upward one does not',
+    );
+
+    // While the finger is down the whole pane follows it: further than the
+    // old 28-point cap, still gaining as the finger goes on, never past the
+    // limit, and it springs back when let go short of opening.
+    const restingX = (await boxOf(handle, 'the drag handle')).x;
+    const handleShift = async () =>
+      restingX - (await boxOf(handle, 'the drag handle')).x;
+
+    await page.mouse.move(paneArea.x, paneArea.bottomY);
+    await page.mouse.down();
+    await page.mouse.move(paneArea.x - 40, paneArea.bottomY, { steps: 6 });
+    const nearShift = await handleShift();
+
+    await page.mouse.move(paneArea.x - 400, paneArea.bottomY, { steps: 10 });
+    const farShift = await handleShift();
+
+    if (nearShift < 28 || farShift <= nearShift || farShift > MAX_PULL) {
+      throw new Error(
+        `the pane did not follow the finger with resistance (${nearShift} then ${farShift}, limit ${MAX_PULL})`,
+      );
+    }
+
+    // The pane's trailing surface reaches past the window: it must not make the
+    // page scrollable sideways (it once did, and carried the sheet with it).
+    const overflow = await page.evaluate<number>(
+      'document.documentElement.scrollWidth - document.documentElement.clientWidth',
+    );
+
+    if (overflow > 0) {
+      throw new Error(`pulling the pane made the page ${overflow}px wider`);
+    }
+
+    await shot('2-pane-pulled');
+    // Back to where it started, then let go: nothing opens.
+    await page.mouse.move(paneArea.x, paneArea.bottomY, { steps: 10 });
+    await page.mouse.up();
+    await waitUntil(
+      async () => Math.abs(await handleShift()) < 1,
+      'the pane did not spring back',
+    );
+
+    if (await isOpen(page)) {
+      throw new Error('letting go back at the start opened the playback view');
+    }
+
+    pass(
+      'The whole pane follows a drag with resistance, past 28 points and under its limit, and springs back',
     );
 
     // A drag may start on the title too, not only on the empty backdrop.
