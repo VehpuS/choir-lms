@@ -3,6 +3,7 @@ import type {
   AudioStoreEntry,
   AudioStoreRecord,
 } from './audio-store-types';
+import { persistentStorage } from '../../storage/persistent-storage-instance';
 
 const DATABASE_NAME = 'choirlms-audio-cache';
 const DATABASE_VERSION = 1;
@@ -177,12 +178,22 @@ export const createIndexedDbAudioStore = (): AudioStore => {
       await transactionDone(transaction);
     },
     async setPinned(driveFileId, pinned) {
+      if (pinned) {
+        void persistentStorage.request();
+      }
+
       await updateEntry(driveFileId, (entry) => ({ ...entry, pinned }));
     },
     async touch(driveFileId, touchedAt) {
       await updateEntry(driveFileId, (entry) => ({ ...entry, touchedAt }));
     },
     async write(entry, blob) {
+      // Only a file the person chose to keep: the request can raise a prompt
+      // (Firefox), which an automatic cache write must not cause.
+      if (entry.pinned) {
+        void persistentStorage.request();
+      }
+
       const database = await getDatabase();
       const transaction = database.transaction(
         [BLOB_STORE, ENTRY_STORE],

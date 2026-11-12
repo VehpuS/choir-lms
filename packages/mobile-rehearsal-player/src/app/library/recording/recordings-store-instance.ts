@@ -1,20 +1,12 @@
 import type { Recording } from '@org/audio-library-models';
 
+import { persistentStorage } from '../storage/persistent-storage-instance';
 import { createIndexedDbRecordingsBackend } from './recordings-backend';
 import {
   createRecordingsStore,
   createUnavailableRecordingsStore,
 } from './recordings-store';
 import type { RecordingsStore } from './recordings-store-types';
-
-type StorageManager = { persist?: () => Promise<boolean> };
-
-const requestPersistentStorage = async () => {
-  const storage = (globalThis as { navigator?: { storage?: StorageManager } })
-    .navigator?.storage;
-
-  return storage?.persist ? storage.persist() : false;
-};
 
 let instance: RecordingsStore | null = null;
 let snapshot: readonly Recording[] = [];
@@ -92,7 +84,7 @@ export const getRecordingsStore = (): RecordingsStore => {
     instance = withSnapshotRefresh(
       backend
         ? createRecordingsStore(backend, {
-            requestPersistence: requestPersistentStorage,
+            requestPersistence: persistentStorage.request,
           })
         : createUnavailableRecordingsStore(),
     );
