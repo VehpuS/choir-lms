@@ -17,6 +17,11 @@ const TONE_SECONDS = 40;
 const alto = buildMockSource('Alto Part', { durationMs: TONE_SECONDS * 1000 });
 
 void runScenario({
+  // Holds a piano key while audio plays, which intermittently hangs Playwright's
+  // WebKit (the WPE build) until the scenario time limit; the same code passes
+  // other runs there. Not reproduced outside CI; confirm on real Safari by hand
+  // (tasks.md follow-up F.3).
+  requires: ['chromium', 'firefox'],
   audioTap: true,
   drive: {
     media: { [alto.driveFileId]: buildToneMedia({ seconds: TONE_SECONDS }) },

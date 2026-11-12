@@ -16,6 +16,11 @@ import { runScenario } from './scenario-runner';
 const alto = buildMockSource('Alto Part');
 
 void runScenario({
+  // Holds a piano key while audio plays, which intermittently hangs Playwright's
+  // WebKit (the WPE build) until the scenario time limit; the same code passes
+  // other runs there. Not reproduced outside CI; confirm on real Safari by hand
+  // (tasks.md follow-up F.3).
+  requires: ['chromium', 'firefox'],
   audioTap: true,
   library: { playlists: [], sources: [alto] },
   steps: async ({ page, pass, session, shot }) => {
