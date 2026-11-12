@@ -5,11 +5,13 @@ import {
   centsBetween,
 } from '../../packages/mobile-rehearsal-player/src/test-support/audio/audio-quality';
 import type { MockLibrarySession } from './mock-library-session';
+import { waitUntil } from './page-helpers';
 
 // Shared steps for the piano scenarios: open the keyboard from the Practice
 // tools tab, hold a key by its C-note label, and measure what the page played.
 export const WAIT_MS = 5000;
 const HOLD_MS = 1200;
+const TONE_START_LIMIT_MS = 5000;
 const PITCH_TOLERANCE_CENTS = 40;
 export const C4_HZ = 261.63;
 const KEYBOARD = '[data-testid="piano-keyboard"]';
@@ -56,6 +58,21 @@ export const holdKey = async (
   try {
     await whileHeld();
     await page.waitForTimeout(HOLD_MS);
+    // A slow runner (Firefox in CI) can start its audio stream after the first
+    // note was pressed, so keep the key down until the tap has heard a pitch
+    // (or the limit passes: `expectTone` then reports what it did hear).
+    await waitUntil(
+      async () => {
+        const output = await session.readAudioOutput();
+
+        return (
+          analyzeAudioQuality(output.samples, output.sampleRate).pitchHz !==
+          null
+        );
+      },
+      'no pitched sound reached the audio output while the key was held',
+      TONE_START_LIMIT_MS,
+    ).catch(() => undefined);
   } finally {
     await page.mouse.up();
   }
