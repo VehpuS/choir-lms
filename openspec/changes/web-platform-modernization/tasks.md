@@ -2,6 +2,12 @@
 
 - [ ] 1.1 Scenario `web-document-metadata`: asserts description, theme-color, manifest link, no `httpEquiv` in served HTML (fails today: F1, F2). Written and confirmed failing for the right reason (no description meta); it passes at 2.3, which is when this box is ticked
 - [ ] 1.2 Scenarios for the "Verify" findings, each asserting intended behaviour: overlay focus trap and restore and backdrop name (F3, F4), Escape layering and back (F5), reduced motion (F6), forced colors focus ring (F7), external link `noopener` (F11), target sizes ≥ 24×24 CSS px for controls in the shell and a sheet (F14)
+- [ ] 1.2a Overlay batch (F3, F4, F5), run on the current export:
+  - `overlay-accessibility` — dialog role, name and `aria-modal` PASS; focus moves in, Tab stays inside over 40 presses, and focus returns to the opener (keyboard- and pointer-opened) all PASS, so F4 is already met by the RN-web Modal and the scenario stays as a guard; the dismiss backdrop is an unnamed button FAIL (F3, fixed in 3.1)
+  - `overlay-escape-layers` — one Escape closes only the menu over the playback view, a second closes the view: PASS, kept as a guard
+  - `overlay-back-gesture` — Back with a sheet open leaves the app (lands on `about:blank`): FAIL (F5). Closing a sheet on Back needs a history entry per overlay, which touches the custom router; a product call, see the checkpoint note in 3.3
+- [ ] 1.2b Reduced motion, forced colors (F6, F7)
+- [ ] 1.2c Links and target sizes (F11, F14)
 - [ ] 1.3 Record which of 1.2 fail; mark the rest in `design.md` as "passes, kept as guard"
 
 ## 2. Page shell and installability (F1, F2)
@@ -13,8 +19,8 @@
 ## 3. Overlays and preferences (F3–F7, F14)
 
 - [ ] 3.1 Name the backdrop; add dialog role, name and modal semantics to `ModalSurfaceBase`
-- [ ] 3.2 Focus trap and restore for web overlays, if 1.2 failed
-- [ ] 3.3 Escape/back layering fixes, if 1.2 failed
+- [x] 3.2 Focus trap and restore for web overlays: not needed, 1.2a passes (F4 met by the RN-web Modal)
+- [ ] 3.3 Escape layering already passes (1.2a); Back should close the topmost sheet instead of leaving the app. Decide before building: one history entry per open overlay (push on open, pop on close) in the custom router, versus leaving Back as is
 - [ ] 3.4 Reduced-motion handling for modal transitions and the remaining animation sites, reusing `useReduceMotion` (already used by the playback sheet and pane drag)
 - [ ] 3.5 Forced-colors and contrast pass for focus rings
 - [ ] 3.6 Raise sub-24px targets found in 1.2
@@ -37,3 +43,7 @@
 - [ ] 6.2 Run `nx run-many -t lint test typecheck build --all` and `browser-test`
 - [ ] 6.3 **Run and pass the full matrix before merge:** `npm exec -- nx run mobile-rehearsal-player:browser-test-matrix`, and the `browser-matrix.yml` workflow (label `browser-matrix` or dispatch) including WebKit and Firefox for 3.x; confirm green on the latest commit
 - [ ] 6.4 PR description includes the merge-gate checklist (see design.md, "Verification and merge gate")
+
+## Follow-ups
+
+- [ ] F.1 In `overlay-accessibility`, a third open of the track options sheet (`Soprano Part options`) after two Escape-closed opens times out on click; `elementFromPoint` at the opener's centre returned a "Show in Add" text node, not the button, with no dialog open. Seen while writing 1.2a; the reopen step was dropped from the scenario. Needs a repro to tell a layout shift in the mock library from a real overlay leftover.
