@@ -12,6 +12,7 @@ import { offlineFilesNavigationStore } from '../../../screens/offline-files/offl
 import { settingsNavigationStore } from '../../../screens/settings/settings-navigation-store';
 import { ShellOverlays } from './shell-overlays';
 import { LayoutClassProvider, useWindowLayoutClass } from '../layout-class';
+import { usePageScrollGuard } from '../page-scroll-guard/use-page-scroll-guard';
 import { ShellTabBar } from '../shell-tab-bar';
 import { styles } from '../mobile-shell-styles';
 import type { ShellDestinationKey } from '../shell-model';
@@ -166,6 +167,8 @@ export const MobileShell = ({
     setActivePlaybackSurface(null);
   }, [requestedDestination, requestedDestinationRequestId]);
 
+  // A page the browser has shifted cannot be scrolled back by the person.
+  usePageScrollGuard();
   const layoutClass = useWindowLayoutClass();
   const isWideShort = layoutClass === 'wide-short';
   const openNowPlaying = () => {
