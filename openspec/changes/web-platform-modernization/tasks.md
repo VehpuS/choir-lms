@@ -9,8 +9,10 @@
 - [x] 1.2b Reduced motion, forced colors (F6, F7):
   - `reduced-motion` — the page runs no animation when idle; opening a track menu runs one without the preference and still runs one under `prefers-reduced-motion: reduce`: FAIL (F6 confirmed for the shared sheet transition, fixed in 3.4)
   - `forced-colors` — the first eight keyboard stops each show an outline or border under forced colors: PASS, kept as a guard. It covers the shell's first Tab stops, not every surface; wider coverage is a follow-up if a surface is reported
-- [ ] 1.2c Links and target sizes (F11, F14)
-- [ ] 1.3 Record which of 1.2 fail; mark the rest in `design.md` as "passes, kept as guard"
+- [x] 1.2c Links and target sizes (F11, F14):
+  - `external-link-opener` — the lyrics editor's web search calls `window.open` (recorded, not performed) with `noopener`: PASS (react-native-web's `Linking.openURL` adds it), kept as a guard. Only this one of the five `Linking.openURL` call sites is exercised; the others use the same call
+  - `target-sizes` — no visible button, tab, switch, link or field under 24 x 24 on the library, an open track menu and the playback view: PASS, kept as a guard (checked it fails when the threshold is raised to 60)
+- [ ] 1.3 Record the 1.2 outcome in `design.md`'s findings table: F3, F5 (Back), F6 confirmed failing; F4, F5 (Escape), F7, F11, F14 pass and stay as guards
 
 ## 2. Page shell and installability (F1, F2)
 
@@ -25,14 +27,14 @@
 - [ ] 3.3 Escape layering already passes (1.2a); Back should close the topmost sheet instead of leaving the app. Decide before building: one history entry per open overlay (push on open, pop on close) in the custom router, versus leaving Back as is
 - [ ] 3.4 Reduced-motion handling for modal transitions and the remaining animation sites, reusing `useReduceMotion` (already used by the playback sheet and pane drag)
 - [x] 3.5 Forced-colors focus rings: not needed for the shell's first stops, 1.2b passes; reopen if a surface is found without an indicator
-- [ ] 3.6 Raise sub-24px targets found in 1.2
+- [x] 3.6 Raise sub-24px targets: none found in 1.2c on the three surfaces checked
 
 ## 4. Storage and security (F8–F11)
 
 - [ ] 4.1 Request persistent storage on first offline write; surface the outcome in storage UI
 - [ ] 4.2 Decide token storage (F9) in review; implement the chosen option
 - [ ] 4.3 Meta CSP from the declared-host allowlist; run the whole scenario set under it
-- [ ] 4.4 `noopener` on external links if 1.2 failed
+- [x] 4.4 `noopener` on external links: not needed, 1.2c passes
 
 ## 5. Optional rehearsal ergonomics (F12, F13) — drop if declined
 
