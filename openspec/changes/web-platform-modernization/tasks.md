@@ -1,6 +1,6 @@
 ## 1. Reproduce first
 
-- [ ] 1.1 Scenario `web-document-metadata`: asserts description, theme-color, manifest link, no `httpEquiv` in served HTML (fails today: F1, F2)
+- [ ] 1.1 Scenario `web-document-metadata`: asserts description, theme-color, manifest link, no `httpEquiv` in served HTML (fails today: F1, F2). Written and confirmed failing for the right reason (no description meta); it passes at 2.3, which is when this box is ticked
 - [ ] 1.2 Scenarios for the "Verify" findings, each asserting intended behaviour: overlay focus trap and restore and backdrop name (F3, F4), Escape layering and back (F5), reduced motion (F6), forced colors focus ring (F7), external link `noopener` (F11), target sizes ≥ 24×24 CSS px for controls in the shell and a sheet (F14)
 - [ ] 1.3 Record which of 1.2 fail; mark the rest in `design.md` as "passes, kept as guard"
 
