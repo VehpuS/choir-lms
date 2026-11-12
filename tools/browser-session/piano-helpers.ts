@@ -4,6 +4,7 @@ import {
   analyzeAudioQuality,
   centsBetween,
 } from '../../packages/mobile-rehearsal-player/src/test-support/audio/audio-quality';
+import { selectedBrowserName } from './browser-choice';
 import type { MockLibrarySession } from './mock-library-session';
 import { waitUntil } from './page-helpers';
 
@@ -59,12 +60,15 @@ export const holdKey = async (
   try {
     await whileHeld();
     await page.waitForTimeout(HOLD_MS);
-    // A slow runner (Firefox in CI) can start its audio stream after the first
-    // note was pressed. If nothing has been heard yet, keep the key down until
-    // something is, then a little longer so there is a tone to measure. The
-    // check runs inside the page and copies nothing out: copying the capture
-    // repeatedly stalled WebKit, which then never released the key.
-    if (!(await session.hasAudioSignal())) {
+    // Firefox in CI can start its audio stream after the first note was
+    // pressed. There, if nothing has been heard yet, keep the key down until
+    // something is, then a little longer so there is a tone to measure. Only
+    // Firefox: asking the page anything while the key is held stalled WebKit
+    // (the scenario never released the key), and Chromium does not need it.
+    if (
+      selectedBrowserName() === 'firefox' &&
+      !(await session.hasAudioSignal())
+    ) {
       await waitUntil(
         () => session.hasAudioSignal(),
         'no sound reached the audio output while the key was held',
