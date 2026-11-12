@@ -14,6 +14,11 @@ The web export SHALL declare its language, a title, a description, a `theme-colo
 - **WHEN** the manifest is fetched from the served export
 - **THEN** it has an `id`, `name`, `start_url` within `scope`, `display` of standalone and icons that load
 
+#### Scenario: Installed standalone mode keeps the page at the top
+
+- **WHEN** the page is shifted from 0, 0 after a sheet closes or a rotation, with no text field focused
+- **THEN** it returns to 0, 0, and while a text field has focus it is left alone
+
 ### Requirement: Overlays are accessible dialogs
 
 Every web sheet and dialog SHALL expose a dialog role with an accessible name, move focus in on open, keep keyboard focus inside while open, return focus to the opener on close, and close from the topmost layer first on Escape. The dismiss backdrop SHALL have an accessible name.

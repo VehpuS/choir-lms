@@ -8,14 +8,14 @@
 
 - [ ] 2.1 Fix the `http-equiv` meta in `public/index.html`; add `description`, `theme-color`, `color-scheme`
 - [ ] 2.2 Add the web manifest and icons via `app.config.ts`, with `id`, standalone display, base-path-correct `start_url`/`scope`
-- [ ] 2.3 Make 1.1 pass; check the export under the GitHub Pages base path
+- [ ] 2.3 Make 1.1 pass; check the export under the GitHub Pages base path, and that `page-scroll-guard` and `landscape-pane-expand` still pass with the manifest and standalone display in place
 
 ## 3. Overlays and preferences (F3–F7, F14)
 
 - [ ] 3.1 Name the backdrop; add dialog role, name and modal semantics to `ModalSurfaceBase`
 - [ ] 3.2 Focus trap and restore for web overlays, if 1.2 failed
 - [ ] 3.3 Escape/back layering fixes, if 1.2 failed
-- [ ] 3.4 Reduced-motion handling for modal transitions and other animation
+- [ ] 3.4 Reduced-motion handling for modal transitions and the remaining animation sites, reusing `useReduceMotion` (already used by the playback sheet and pane drag)
 - [ ] 3.5 Forced-colors and contrast pass for focus rings
 - [ ] 3.6 Raise sub-24px targets found in 1.2
 
