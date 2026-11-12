@@ -46,7 +46,7 @@
 - [x] 6.1 `README.md` has a "The web app" section (install, Back, preferences, storage, screen and lock screen, security policy) and a repository-notes line for `tools/web-icons` and the notices; `tools/browser-session/README.md` documents the CSP check and how to stub browser APIs in a scenario; the playback doc was updated with 5.x
 - [x] 6.2 Run `nx run-many -t lint test typecheck build --all` and `browser-test`: all pass locally on the branch (7 projects, 0 lint errors with the same 14 warnings, every test target 0 failures, `format:check` and `sync:check` clean, `browser-test` 72/72), the Chromium matrix lane 4/4 earlier under the CSP
 - [ ] 6.3 **Run and pass the full matrix before merge:** `npm exec -- nx run mobile-rehearsal-player:browser-test-matrix`, and the `browser-matrix.yml` workflow (label `browser-matrix` or dispatch) including WebKit and Firefox for 3.x; confirm green on the latest commit
-- [ ] 6.4 PR description includes the merge-gate checklist (see design.md, "Verification and merge gate")
+- [x] 6.4 PR #73's title and description were rewritten for what shipped, with the merge-gate checklist (default lanes, the full matrix with the `browser-matrix` label or dispatch, WebKit and Firefox, and a manual device pass). The drafted `PR_BODY.md` in this folder was removed, since the description lives on the PR
 
 ## Follow-ups
 
