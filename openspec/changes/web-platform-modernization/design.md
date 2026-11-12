@@ -24,6 +24,22 @@ The audit read `public/index.html`, `app.config.ts`, the `*.web.ts(x)` files, `m
 
 Checked, no gap: `lang` and `<title>` present; `viewport-fit=cover` and `env(safe-area-inset-*)` used; `100dvh` with a fallback; dark `color-scheme` on `html` and scrollbars; `body` overscroll and scroll lock; live regions on status text and the drive banner (`role=alert`); blob-URL download with delayed revoke; Escape stack closes the topmost layer only.
 
+## Outcome of reproducing the "verify" findings (task 1.2)
+
+Each was reproduced as a scenario on the export built from this branch before any fix.
+
+| #   | Result                                                                                                                 | Scenario                                                         | Next           |
+| --- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | -------------- |
+| F3  | Confirmed: the dismiss backdrop is an unnamed button. The dialog role, name and `aria-modal` are present.              | `overlay-accessibility` (fails)                                  | 3.1            |
+| F4  | Not a gap: focus moves in, Tab stays inside, and focus returns to the opener, for keyboard- and pointer-opened sheets. | `overlay-accessibility` (passing steps)                          | none; guard    |
+| F5  | Escape: not a gap, one press closes the topmost layer only. Back: confirmed, it leaves the app with a sheet open.      | `overlay-escape-layers` (passes), `overlay-back-gesture` (fails) | 3.3 (decision) |
+| F6  | Confirmed: opening a sheet runs an animation under `prefers-reduced-motion: reduce`.                                   | `reduced-motion` (fails)                                         | 3.4            |
+| F7  | Not a gap for the shell's first eight keyboard stops. Other surfaces are unchecked.                                    | `forced-colors` (passes)                                         | none; guard    |
+| F11 | Not a gap: the window opens with `noopener`.                                                                           | `external-link-opener` (passes)                                  | none; guard    |
+| F14 | Not a gap on the library, a track menu and the playback view.                                                          | `target-sizes` (passes)                                          | none; guard    |
+
+Not yet reproduced: F1 and F2 by `web-document-metadata` (fails as expected), F13 (media session).
+
 ## Changes on main since the audit
 
 - **Pane drag and reduced motion (#72, #74).** `useReduceMotion` is now also read where the playback sheet slides in under a drag, and the drag handles only the primary pointer and uses `touch-action: none`. F6 narrows: motion in the playback surface and pane drag already respects the preference; the gap is the remaining shared `Modal` transitions and the other animation sites. Task 3.4 must reuse `useReduceMotion` and not add a second mechanism.

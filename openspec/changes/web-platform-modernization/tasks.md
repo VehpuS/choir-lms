@@ -12,11 +12,11 @@
 - [x] 1.2c Links and target sizes (F11, F14):
   - `external-link-opener` — the lyrics editor's web search calls `window.open` (recorded, not performed) with `noopener`: PASS (react-native-web's `Linking.openURL` adds it), kept as a guard. Only this one of the five `Linking.openURL` call sites is exercised; the others use the same call
   - `target-sizes` — no visible button, tab, switch, link or field under 24 x 24 on the library, an open track menu and the playback view: PASS, kept as a guard (checked it fails when the threshold is raised to 60)
-- [ ] 1.3 Record the 1.2 outcome in `design.md`'s findings table: F3, F5 (Back), F6 confirmed failing; F4, F5 (Escape), F7, F11, F14 pass and stay as guards
+- [x] 1.3 Record the 1.2 outcome in `design.md`'s findings table: F3, F5 (Back), F6 confirmed failing; F4, F5 (Escape), F7, F11, F14 pass and stay as guards
 
 ## 2. Page shell and installability (F1, F2)
 
-- [ ] 2.1 Fix the `http-equiv` meta in `public/index.html`; add `description`, `theme-color`, `color-scheme`
+- [x] 2.1 `public/index.html`: dropped the obsolete, JSX-cased IE `X-UA-Compatible` meta (rather than respelling a tag no current browser reads); added `description`, `theme-color` (`#161826`, the app background) and `color-scheme` (`dark`). `web-entry-html.spec.ts` guards all three; `web-document-metadata` now passes up to the manifest link, which is 2.2
 - [ ] 2.2 Add the web manifest and icons via `app.config.ts`, with `id`, standalone display, base-path-correct `start_url`/`scope`
 - [ ] 2.3 Make 1.1 pass; check the export under the GitHub Pages base path, and that `page-scroll-guard` and `landscape-pane-expand` still pass with the manifest and standalone display in place
 
