@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { CompactPlaybackAction } from '../../../../components/compact-playback-action';
 import { SegmentedControl } from '../../../../components/segmented-control';
@@ -16,6 +16,7 @@ import {
   useLyricsTextSize,
 } from '../../lyrics-text-size';
 import { useBestEffortKeepAwake } from '../../../../hooks/use-best-effort-keep-awake';
+import { MotionModal } from '../../../../components/motion-modal';
 
 // Reading happens with the phone held out, so the screen stays on while this
 // view is open; the hook releases the lock when it unmounts.
@@ -83,7 +84,7 @@ export const LyricsReadingMode = ({
   );
 
   return (
-    <Modal animationType="slide" onRequestClose={onClose} visible>
+    <MotionModal animationType="slide" onRequestClose={onClose} visible>
       <SafeAreaScreen>
         <View style={styles.screen}>
           <View style={styles.header}>
@@ -113,7 +114,7 @@ export const LyricsReadingMode = ({
           {isWideShort ? null : transport}
         </View>
       </SafeAreaScreen>
-    </Modal>
+    </MotionModal>
   );
 };
 

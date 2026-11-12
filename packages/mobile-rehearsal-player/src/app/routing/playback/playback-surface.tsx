@@ -17,7 +17,7 @@ import { CompactPlaybackContent } from './compact-playback-content';
 import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
 import { getPlaybackSurfaceMotion } from './playback-surface-motion';
 import type { PlaybackSurfaceProps } from './playback-surface-props';
-import { useReduceMotion } from './use-reduce-motion';
+import { useReduceMotion } from '../../components/use-reduce-motion';
 import { WideShortPlaybackContent } from './wide-short-playback-content';
 
 export const PlaybackSurface = (props: PlaybackSurfaceProps) => {

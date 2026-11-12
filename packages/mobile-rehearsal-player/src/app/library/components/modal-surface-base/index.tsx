@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import {
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -21,6 +20,7 @@ import {
   type ModalSurfacePlacement,
   type ModalSurfacePresentation,
 } from './model';
+import { MotionModal } from '../../../components/motion-modal';
 
 // The tap-away area is a button for screen readers and keyboards, so it needs
 // a name; Escape and the surface's own close control stay the usual ways out.
@@ -62,7 +62,7 @@ export const ModalSurfaceBase = ({
   const isSideSheet = presentation === 'side-sheet';
 
   return (
-    <Modal
+    <MotionModal
       animationType={animationType}
       onRequestClose={onRequestClose}
       transparent
@@ -113,7 +113,7 @@ export const ModalSurfaceBase = ({
           </View>
         </SafeAreaFrame>
       </KeyboardAvoidingView>
-    </Modal>
+    </MotionModal>
   );
 };
 

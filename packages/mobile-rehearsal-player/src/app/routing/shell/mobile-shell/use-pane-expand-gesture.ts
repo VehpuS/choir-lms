@@ -5,7 +5,7 @@ import {
   capturePointer,
   readPointer,
 } from '../../../library/piano/components/piano-overlay/pointer-events';
-import { useReduceMotion } from '../../playback/use-reduce-motion';
+import { useReduceMotion } from '../../../components/use-reduce-motion';
 import {
   canStartPaneDrag,
   dragShiftOffset,

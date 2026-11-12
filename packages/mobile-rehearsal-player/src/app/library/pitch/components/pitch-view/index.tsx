@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -32,6 +31,7 @@ import { PitchRoll } from './pitch-roll';
 import { PitchSettingsSheet } from './pitch-settings-sheet';
 import { useTick } from './use-tick';
 import { SafeAreaScreen } from '../../../../components/safe-area-frame';
+import { MotionModal } from '../../../../components/motion-modal';
 
 type PitchViewProps = {
   isVisible: boolean;
@@ -49,13 +49,17 @@ const LANDSCAPE_SIDE_WIDTH = 232;
  * playback, and keeps no history of its own (the store's is in memory only).
  */
 export const PitchView = ({ isVisible, onClose }: PitchViewProps) => (
-  <Modal animationType="slide" onRequestClose={onClose} visible={isVisible}>
+  <MotionModal
+    animationType="slide"
+    onRequestClose={onClose}
+    visible={isVisible}
+  >
     {isVisible ? (
       <SafeAreaScreen>
         <PitchViewContent onClose={onClose} />
       </SafeAreaScreen>
     ) : null}
-  </Modal>
+  </MotionModal>
 );
 
 const PitchViewContent = ({ onClose }: { onClose: () => void }) => {

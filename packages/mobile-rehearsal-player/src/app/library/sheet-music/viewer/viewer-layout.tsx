@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import {
-  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,6 +11,7 @@ import { appTheme } from '../../../utils/theme';
 import { ChipRow } from './chip-row';
 import { ChipDivider } from './part-chips';
 import { SafeAreaScreen } from '../../../components/safe-area-frame';
+import { MotionModal } from '../../../components/motion-modal';
 
 // Two 44-point buttons side by side, the gap and the screen inset.
 const RAIL_OVERLAY_OFFSET = 124;
@@ -60,7 +60,7 @@ export const ViewerLayout = ({
 }: ViewerLayoutProps) => {
   if (isCompact) {
     return (
-      <Modal animationType="slide" onRequestClose={onClose} visible>
+      <MotionModal animationType="slide" onRequestClose={onClose} visible>
         <SafeAreaScreen>
           <View style={[styles.screen, styles.screenCompact]}>
             <View style={styles.compactMain}>
@@ -91,12 +91,12 @@ export const ViewerLayout = ({
             {overlay?.(styles.railOverlay)}
           </View>
         </SafeAreaScreen>
-      </Modal>
+      </MotionModal>
     );
   }
 
   return (
-    <Modal animationType="slide" onRequestClose={onClose} visible>
+    <MotionModal animationType="slide" onRequestClose={onClose} visible>
       <SafeAreaScreen>
         <View style={styles.screen}>
           <View style={styles.header}>
@@ -126,7 +126,7 @@ export const ViewerLayout = ({
           {toolbar('row')}
         </View>
       </SafeAreaScreen>
-    </Modal>
+    </MotionModal>
   );
 };
 
