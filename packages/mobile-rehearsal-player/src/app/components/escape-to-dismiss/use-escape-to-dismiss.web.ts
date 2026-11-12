@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 
+import { useBackDismiss } from '../back-stack/use-back-dismiss';
+
 const ESCAPE_KEY = 'Escape';
 
 type KeyEventTarget = {
@@ -86,6 +88,9 @@ export const useEscapeToDismiss = (
   const latest = useRef(onDismiss);
 
   latest.current = onDismiss;
+
+  // The same layers close on the browser's Back, not only on Escape.
+  useBackDismiss(isActive, onDismiss);
 
   useEffect(() => {
     if (!isActive) {
