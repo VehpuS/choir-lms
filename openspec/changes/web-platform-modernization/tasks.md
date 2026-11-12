@@ -6,7 +6,9 @@
   - `overlay-accessibility` — dialog role, name and `aria-modal` PASS; focus moves in, Tab stays inside over 40 presses, and focus returns to the opener (keyboard- and pointer-opened) all PASS, so F4 is already met by the RN-web Modal and the scenario stays as a guard; the dismiss backdrop is an unnamed button FAIL (F3, fixed in 3.1)
   - `overlay-escape-layers` — one Escape closes only the menu over the playback view, a second closes the view: PASS, kept as a guard
   - `overlay-back-gesture` — Back with a sheet open leaves the app (lands on `about:blank`): FAIL (F5). Closing a sheet on Back needs a history entry per overlay, which touches the custom router; a product call, see the checkpoint note in 3.3
-- [ ] 1.2b Reduced motion, forced colors (F6, F7)
+- [x] 1.2b Reduced motion, forced colors (F6, F7):
+  - `reduced-motion` — the page runs no animation when idle; opening a track menu runs one without the preference and still runs one under `prefers-reduced-motion: reduce`: FAIL (F6 confirmed for the shared sheet transition, fixed in 3.4)
+  - `forced-colors` — the first eight keyboard stops each show an outline or border under forced colors: PASS, kept as a guard. It covers the shell's first Tab stops, not every surface; wider coverage is a follow-up if a surface is reported
 - [ ] 1.2c Links and target sizes (F11, F14)
 - [ ] 1.3 Record which of 1.2 fail; mark the rest in `design.md` as "passes, kept as guard"
 
@@ -22,7 +24,7 @@
 - [x] 3.2 Focus trap and restore for web overlays: not needed, 1.2a passes (F4 met by the RN-web Modal)
 - [ ] 3.3 Escape layering already passes (1.2a); Back should close the topmost sheet instead of leaving the app. Decide before building: one history entry per open overlay (push on open, pop on close) in the custom router, versus leaving Back as is
 - [ ] 3.4 Reduced-motion handling for modal transitions and the remaining animation sites, reusing `useReduceMotion` (already used by the playback sheet and pane drag)
-- [ ] 3.5 Forced-colors and contrast pass for focus rings
+- [x] 3.5 Forced-colors focus rings: not needed for the shell's first stops, 1.2b passes; reopen if a surface is found without an indicator
 - [ ] 3.6 Raise sub-24px targets found in 1.2
 
 ## 4. Storage and security (F8–F11)
