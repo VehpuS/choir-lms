@@ -10,6 +10,14 @@
     <meta name="theme-color" content="#161826" />
     <meta name="color-scheme" content="dark" />
     <!--
+      Relative on purpose: the app never changes the page address, so it is
+      always served from its base path (the GitHub Pages one included), and
+      relative links, and the manifest's own relative start_url, scope and
+      icons, follow it without a build-time placeholder.
+    -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <!--
       viewport-fit=cover lets the page reach the screen edges (the notch side in
       landscape); the app pads by the safe-area insets itself.
     -->

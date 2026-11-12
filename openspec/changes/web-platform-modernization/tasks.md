@@ -1,8 +1,8 @@
 ## 1. Reproduce first
 
-- [ ] 1.1 Scenario `web-document-metadata`: asserts description, theme-color, manifest link, no `httpEquiv` in served HTML (fails today: F1, F2). Written and confirmed failing for the right reason (no description meta); it passes at 2.3, which is when this box is ticked
-- [ ] 1.2 Scenarios for the "Verify" findings, each asserting intended behaviour: overlay focus trap and restore and backdrop name (F3, F4), Escape layering and back (F5), reduced motion (F6), forced colors focus ring (F7), external link `noopener` (F11), target sizes ≥ 24×24 CSS px for controls in the shell and a sheet (F14)
-- [ ] 1.2a Overlay batch (F3, F4, F5), run on the current export:
+- [x] 1.1 Scenario `web-document-metadata`: asserts description, theme-color, manifest link, no `httpEquiv` in served HTML (failed first for F1, F2: no description meta)
+- [x] 1.2 Scenarios for the "Verify" findings, each asserting intended behaviour: overlay focus trap and restore and backdrop name (F3, F4), Escape layering and back (F5), reduced motion (F6), forced colors focus ring (F7), external link `noopener` (F11), target sizes ≥ 24×24 CSS px for controls in the shell and a sheet (F14)
+- [x] 1.2a Overlay batch (F3, F4, F5), run on the current export:
   - `overlay-accessibility` — dialog role, name and `aria-modal` PASS; focus moves in, Tab stays inside over 40 presses, and focus returns to the opener (keyboard- and pointer-opened) all PASS, so F4 is already met by the RN-web Modal and the scenario stays as a guard; the dismiss backdrop is an unnamed button FAIL (F3, fixed in 3.1)
   - `overlay-escape-layers` — one Escape closes only the menu over the playback view, a second closes the view: PASS, kept as a guard
   - `overlay-back-gesture` — Back with a sheet open leaves the app (lands on `about:blank`): FAIL (F5). Closing a sheet on Back needs a history entry per overlay, which touches the custom router; a product call, see the checkpoint note in 3.3
@@ -17,8 +17,8 @@
 ## 2. Page shell and installability (F1, F2)
 
 - [x] 2.1 `public/index.html`: dropped the obsolete, JSX-cased IE `X-UA-Compatible` meta (rather than respelling a tag no current browser reads); added `description`, `theme-color` (`#161826`, the app background) and `color-scheme` (`dark`). `web-entry-html.spec.ts` guards all three; `web-document-metadata` now passes up to the manifest link, which is 2.2
-- [ ] 2.2 Add the web manifest and icons via `app.config.ts`, with `id`, standalone display, base-path-correct `start_url`/`scope`
-- [ ] 2.3 Make 1.1 pass; check the export under the GitHub Pages base path, and that `page-scroll-guard` and `landscape-pane-expand` still pass with the manifest and standalone display in place
+- [x] 2.2 Web manifest and icons. Metro does not generate a manifest, so `public/manifest.webmanifest` is static (not `app.config.ts`): `id`, `start_url` and `scope` are `"."` and the icons and links are relative, so it works under any base path without a build placeholder (the app never changes the page address, so the page is always at the base root). Name stays "Choir LMS" (to be renamed later). Icon is option C from the preview (Phosphor Waveform and MusicNotes glyphs composed, centred; the first sketch ran off the bottom edge), `assets/web-icons/*.svg` as sources, rendered by `tools/web-icons/render-web-icons.ts` to `public/icons/` (192, 512, maskable 512 inside the 80% safe zone, Apple 180). `THIRD_PARTY_NOTICES.md` carries the Phosphor MIT notice. `web-manifest.spec.ts` (four tests) pins the links, relative values, colours and that the icons exist
+- [x] 2.3 Make 1.1 pass (it does); checked an export built with `EXPO_BASE_URL=/choir-lms` (manifest and icon links stay relative; only Expo's own favicon link is prefixed), and `page-scroll-guard` and `landscape-pane-expand` still pass. Not checked: a real install on iOS or Android
 
 ## 3. Overlays and preferences (F3–F7, F14)
 

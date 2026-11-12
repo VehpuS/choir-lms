@@ -31,7 +31,7 @@ type DialogProbe = {
 // exposed as a button that has neither a name nor text.
 const probeDialog = (page: Page): Promise<DialogProbe> =>
   page.evaluate(() => {
-    const dialogs = [...document.querySelectorAll('[role="dialog"]')];
+    const dialogs = Array.from(document.querySelectorAll('[role="dialog"]'));
     const dialog = dialogs[dialogs.length - 1];
 
     if (!dialog) {
@@ -50,7 +50,7 @@ const probeDialog = (page: Page): Promise<DialogProbe> =>
     const root = dialog.parentElement ?? dialog;
     let unnamedButtons = 0;
 
-    for (const button of root.querySelectorAll('[role="button"]')) {
+    for (const button of Array.from(root.querySelectorAll('[role="button"]'))) {
       const label = (
         button.getAttribute('aria-label') ??
         button.getAttribute('aria-labelledby') ??
@@ -73,7 +73,7 @@ const probeDialog = (page: Page): Promise<DialogProbe> =>
 
 const focusIsInDialog = (page: Page) =>
   page.evaluate(() => {
-    const dialogs = [...document.querySelectorAll('[role="dialog"]')];
+    const dialogs = Array.from(document.querySelectorAll('[role="dialog"]'));
     const dialog = dialogs[dialogs.length - 1];
 
     return Boolean(dialog?.contains(document.activeElement));
