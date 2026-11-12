@@ -2,13 +2,20 @@ name: Browser matrix
 
 # The slow browser scenarios (`*.matrix.scenario.ts`: device profiles, CPU
 # throttling, sample rates, long tracks) are opt-in so every pull request stays
-# fast. Run them from the Actions tab (workflow dispatch), or put the
-# `browser-matrix` label on a pull request; they then re-run on each push to it.
+# fast. Opt in by labelling the pull request; the runs then repeat on each push:
 #
-# WebKit (or Firefox) runs on demand too: dispatch with `browser` set to it
-# (and `lane` default to run the everyday scenarios there). A scenario that needs
-# a Chromium-only feature (the fake microphone, CPU throttling) is skipped, not
-# failed. The browser is installed only when asked for.
+#   browser-matrix          Chromium, the slow matrix lane
+#   browser-matrix-webkit   WebKit, the everyday (default) lane
+#   browser-matrix-firefox  Firefox, the everyday (default) lane
+#
+# Adding a label runs just that browser; a push runs every browser whose label
+# is on. They are pull request checks, so a session can subscribe to their
+# results. A scenario that needs a Chromium-only feature (the fake microphone,
+# CPU throttling, the clipboard) is skipped on the others, not failed.
+#
+# From the Actions tab (workflow dispatch) one browser and lane can be run on
+# any branch. Each browser has its own concurrency group, so runs for different
+# browsers do not cancel each other.
 on:
   workflow_dispatch:
     inputs:
@@ -30,12 +37,49 @@ permissions:
   contents: read
 
 concurrency:
-  group: browser-matrix-${{ github.ref }}
+  group: browser-matrix-${{ github.ref }}-${{ inputs.browser || github.event.label.name || 'pull-request' }}
   cancel-in-progress: true
 
 jobs:
+  # Decides which browsers this run covers, so the matrix job can be skipped
+  # outright when there is nothing to run.
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      browsers: ${{ steps.plan.outputs.browsers }}
+    steps:
+      - id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          ACTION: ${{ github.event.action }}
+          ADDED_LABEL: ${{ github.event.label.name }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          DISPATCH_BROWSER: ${{ inputs.browser }}
+          DISPATCH_LANE: ${{ inputs.lane }}
+        run: |
+          all='[
+            {"browser":"chromium","lane":"matrix","label":"browser-matrix"},
+            {"browser":"webkit","lane":"default","label":"browser-matrix-webkit"},
+            {"browser":"firefox","lane":"default","label":"browser-matrix-firefox"}
+          ]'
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            browsers=$(jq -c -n --arg b "$DISPATCH_BROWSER" --arg l "$DISPATCH_LANE" '[{browser:$b,lane:$l}]')
+          elif [ "$ACTION" = "labeled" ]; then
+            browsers=$(echo "$all" | jq -c --arg l "$ADDED_LABEL" '[.[] | select(.label == $l)]')
+          else
+            browsers=$(echo "$all" | jq -c --argjson labels "$PR_LABELS" '[.[] | select(.label as $l | $labels | index($l))]')
+          fi
+          echo "browsers=$browsers" >> "$GITHUB_OUTPUT"
+          echo "Running: $browsers"
+
   matrix:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'browser-matrix')
+    name: ${{ matrix.browser }} (${{ matrix.lane }} lane)
+    needs: plan
+    if: needs.plan.outputs.browsers != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.browsers) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -62,18 +106,18 @@ jobs:
             nx-browser-${{ runner.os }}-
 
       - name: Install the browser
-        run: npx playwright install --with-deps ${{ inputs.browser || 'chromium' }}
+        run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Build the browser test export
         run: npm exec -- nx run mobile-rehearsal-player:build-browser-test --outputStyle=static
 
-      - name: Browser tests (${{ inputs.lane || 'matrix' }} lane, ${{ inputs.browser || 'chromium' }})
-        run: npx tsx tools/browser-session/run-scenarios.ts browser-session-output --lane=${{ inputs.lane || 'matrix' }} --browser=${{ inputs.browser || 'chromium' }}
+      - name: Browser tests (${{ matrix.lane }} lane, ${{ matrix.browser }})
+        run: npx tsx tools/browser-session/run-scenarios.ts browser-session-output --lane=${{ matrix.lane }} --browser=${{ matrix.browser }}
 
       - name: Upload browser matrix screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: browser-matrix-screenshots
+          name: browser-matrix-screenshots-${{ matrix.browser }}
           path: browser-session-output/
           if-no-files-found: ignore

@@ -105,7 +105,11 @@ pull request. `*.matrix.scenario.ts` is for the slow or machine-sensitive
 scenarios (device profiles, CPU throttling, sample rates, long tracks); name a
 new one that way when it takes more than a few seconds or needs a quiet CPU.
 It runs on demand: from the Actions tab (`Browser matrix` workflow), or by
-putting the `browser-matrix` label on a pull request.
+putting the `browser-matrix` label on a pull request. The other browsers have
+labels too (`browser-matrix-webkit`, `browser-matrix-firefox`; each runs the default
+lane): adding a label runs just that browser, a push runs every browser whose label
+is on, and the runs are PR checks (so a session can subscribe to them). Each
+browser has its own concurrency group, so they do not cancel each other.
 
 Other browsers: `run-scenarios.ts ... --browser=webkit` (or `firefox`; install it with
 `npx playwright install webkit`), or the `Browser matrix` workflow's `browser` and `lane`
