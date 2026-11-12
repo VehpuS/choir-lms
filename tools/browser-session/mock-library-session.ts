@@ -91,6 +91,8 @@ const BASELINE_CONSOLE_ERRORS = [
   /Failed to load resource: net::ERR_BLOCKED_BY_CLIENT/,
 ];
 
+const FAILURE_CONSOLE_LINES = 8;
+
 export type MockLibrarySession = {
   /**
    * Throws if the app logged console errors or uncaught page errors, apart
@@ -100,9 +102,10 @@ export type MockLibrarySession = {
   /**
    * Writes what a failing scenario needs to be debugged into `outDir`:
    * `failure-trace.zip` (open with `npx playwright show-trace`) and
-   * `failure-console.txt` (the console errors and warnings seen).
+   * `failure-console.txt` (the console errors and warnings seen), and returns
+   * the first console errors as one line for the run's log.
    */
-  saveFailureEvidence: (outDir: string) => Promise<void>;
+  saveFailureEvidence: (outDir: string) => Promise<string>;
   /**
    * Throws if the page requested anything outside the local server that the
    * scenario had not mocked (`runScenario` calls this after the steps).
@@ -383,6 +386,19 @@ export const openMockLibrarySession = async (options: {
         join(outDir, 'failure-console.txt'),
         consoleLog.map(({ text, type }) => `${type}: ${text}`).join('\n'),
       );
+
+      // The console errors, for the run's log: the evidence files are in an
+      // artifact, which is not always at hand when a browser-only failure is
+      // being read from CI.
+      return consoleLog
+        .filter(
+          ({ text, type }) =>
+            type === 'error' &&
+            !BASELINE_CONSOLE_ERRORS.some((pattern) => pattern.test(text)),
+        )
+        .slice(0, FAILURE_CONSOLE_LINES)
+        .map(({ text }) => text.replace(/\s+/g, ' ').slice(0, 220))
+        .join(' || ');
     },
     readAudioOutput: () => readAudioOutput(page),
     resetAudioOutput: () => resetAudioOutput(page),

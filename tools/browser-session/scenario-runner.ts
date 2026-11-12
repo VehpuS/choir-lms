@@ -106,10 +106,15 @@ export const runScenario = async (options: {
     session.assertNoCspViolations();
   } catch (error) {
     await shot('failure');
-    await session.saveFailureEvidence(outDir);
+    const consoleErrors = await session.saveFailureEvidence(outDir);
+
     results.push(
       `FAIL ${(error as Error).message.split('\n').slice(0, 5).join(' | ')}`,
     );
+
+    if (consoleErrors) {
+      results.push(`CONSOLE ${consoleErrors}`);
+    }
     process.exitCode = 1;
   } finally {
     console.log(results.join('\n'));

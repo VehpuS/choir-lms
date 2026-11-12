@@ -11,6 +11,9 @@ const UPLOAD = 'https://www.googleapis.com/upload/drive/v3/files';
 const WRITE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 
 void runScenario({
+  // The mock Drive answers a chunked upload with 308 Resume Incomplete, a
+  // redirect status Playwright's WebKit cannot fulfil.
+  requires: ['chromium', 'firefox'],
   drive: { state: 'authorized', writeAccess: true },
   library: buildDefaultMockLibrary(),
   steps: async ({ page, pass, session }) => {
