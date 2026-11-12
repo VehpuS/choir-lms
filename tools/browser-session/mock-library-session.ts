@@ -108,6 +108,11 @@ export type MockLibrarySession = {
    * scenario had not mocked (`runScenario` calls this after the steps).
    */
   assertNoBlockedRequests: () => void;
+  /**
+   * Throws if the page's Content-Security-Policy blocked anything
+   * (`runScenario` calls this after the steps).
+   */
+  assertNoCspViolations: () => void;
   browser: Browser;
   close: () => Promise<void>;
   /**
@@ -115,6 +120,11 @@ export type MockLibrarySession = {
    * blocked by the guard) and marks it as expected, so the scenario still passes.
    */
   expectBlockedRequest: (urlPart: string) => void;
+  /**
+   * Claims a Content-Security-Policy violation a scenario caused on purpose
+   * (a message containing `part`), so it does not fail the run.
+   */
+  expectCspViolation: (part: string) => void;
   /** Searches the app made of the lyrics lookup service (see `lyricsLookup`). */
   lyricsSearches: MockLyricsRecorder['searches'];
   /** What the mock Drive was asked; empty when the session has no `drive`. */
@@ -267,7 +277,15 @@ export const openMockLibrarySession = async (options: {
   const page = await context.newPage();
   const consoleLog: { text: string; type: string }[] = [];
 
+  const cspViolations: string[] = [];
+
   page.on('console', (message) => {
+    // The browser reports a blocked load or script as a console error that
+    // names the policy.
+    if (/Content Security Policy|Refused to /i.test(message.text())) {
+      cspViolations.push(message.text().slice(0, 200));
+    }
+
     if (['error', 'warning'].includes(message.type())) {
       consoleLog.push({ text: message.text(), type: message.type() });
     }
@@ -286,6 +304,13 @@ export const openMockLibrarySession = async (options: {
   await page.goto(url);
 
   return {
+    assertNoCspViolations: () => {
+      if (cspViolations.length > 0) {
+        throw new Error(
+          `Content-Security-Policy violation(s): ${cspViolations.join(' | ')}`,
+        );
+      }
+    },
     assertNoBlockedRequests: () => {
       if (blockedRequests.length > 0) {
         throw new Error(
@@ -315,6 +340,17 @@ export const openMockLibrarySession = async (options: {
       }
     },
     lyricsSearches: lyricsRecorder.searches,
+    expectCspViolation: (part) => {
+      const index = cspViolations.findIndex((violation) =>
+        violation.includes(part),
+      );
+
+      if (index < 0) {
+        throw new Error(`Expected a CSP violation containing ${part}`);
+      }
+
+      cspViolations.splice(index, 1);
+    },
     expectBlockedRequest: (urlPart) => {
       const index = blockedRequests.findIndex((blocked) =>
         blocked.includes(urlPart),

@@ -102,6 +102,8 @@ export const runScenario = async (options: {
     });
     // Offline guarantee: a request to an undeclared host fails the scenario.
     session.assertNoBlockedRequests();
+    // The page's own policy: nothing the app does may be blocked by it.
+    session.assertNoCspViolations();
   } catch (error) {
     await shot('failure');
     await session.saveFailureEvidence(outDir);
