@@ -8,6 +8,7 @@ import { browserTypeFor, selectedBrowserName } from './browser-choice';
 
 import {
   installAudioOutputTap,
+  hasAudioSignal,
   readAudioOutput,
   resetAudioOutput,
   type AudioOutput,
@@ -134,6 +135,8 @@ export type MockLibrarySession = {
   drive: MockDriveRecorder;
   page: Page;
   /** What reached the speakers since the last reset (needs `audioTap` or a `profile`). */
+  /** Whether anything audible has played since the last reset (cheap to poll). */
+  hasAudioSignal: () => Promise<boolean>;
   readAudioOutput: () => Promise<AudioOutput>;
   /** Forgets the captured audio so far. */
   resetAudioOutput: () => Promise<void>;
@@ -400,6 +403,7 @@ export const openMockLibrarySession = async (options: {
         .map(({ text }) => text.replace(/\s+/g, ' ').slice(0, 220))
         .join(' || ');
     },
+    hasAudioSignal: () => hasAudioSignal(page),
     readAudioOutput: () => readAudioOutput(page),
     resetAudioOutput: () => resetAudioOutput(page),
     readStored: async <T = unknown>(key: string) => {

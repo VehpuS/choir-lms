@@ -136,6 +136,27 @@ export const resetAudioOutput = (page: Page) =>
     ).__audioTap.blocks = [];
   });
 
+/**
+ * Whether anything audible has reached the speakers since the last reset,
+ * decided inside the page: nothing is copied out, so it is cheap to poll (copying
+ * the capture out, as `readAudioOutput` does, stalled the page in WebKit).
+ */
+export const hasAudioSignal = (page: Page): Promise<boolean> =>
+  page.evaluate(() => {
+    const tap = (
+      window as unknown as { __audioTap: { blocks: Float32Array[] } }
+    ).__audioTap;
+    let peak = 0;
+
+    for (const block of tap.blocks) {
+      for (let index = 0; index < block.length; index += 1) {
+        peak = Math.max(peak, Math.abs(block[index]));
+      }
+    }
+
+    return peak > 0.005;
+  });
+
 /** What reached the speakers since the last reset, as one mono signal. */
 export const readAudioOutput = async (page: Page): Promise<AudioOutput> => {
   const captured = await page.evaluate(() => {

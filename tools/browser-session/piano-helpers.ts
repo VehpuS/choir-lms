@@ -12,7 +12,7 @@ import { waitUntil } from './page-helpers';
 export const WAIT_MS = 5000;
 const HOLD_MS = 1200;
 const TONE_START_LIMIT_MS = 5000;
-const TONE_START_GRACE_MS = 1000;
+const TONE_SETTLE_MS = 800;
 const PITCH_TOLERANCE_CENTS = 40;
 export const C4_HZ = 261.63;
 const KEYBOARD = '[data-testid="piano-keyboard"]';
@@ -60,33 +60,18 @@ export const holdKey = async (
     await whileHeld();
     await page.waitForTimeout(HOLD_MS);
     // A slow runner (Firefox in CI) can start its audio stream after the first
-    // note was pressed, so keep the key down until the tap has heard a pitch
-    // (or the limit passes: `expectTone` then reports what it did hear). The
-    // race is a hard stop: a read that never comes back (it did in WebKit, where
-    // copying the capture out of the page stalled) must not hold the scenario.
-    let hardStop: ReturnType<typeof setTimeout> | undefined;
-
-    await Promise.race([
-      waitUntil(
-        async () => {
-          const output = await session.readAudioOutput();
-
-          return (
-            analyzeAudioQuality(output.samples, output.sampleRate).pitchHz !==
-            null
-          );
-        },
-        'no pitched sound reached the audio output while the key was held',
+    // note was pressed. If nothing has been heard yet, keep the key down until
+    // something is, then a little longer so there is a tone to measure. The
+    // check runs inside the page and copies nothing out: copying the capture
+    // repeatedly stalled WebKit, which then never released the key.
+    if (!(await session.hasAudioSignal())) {
+      await waitUntil(
+        () => session.hasAudioSignal(),
+        'no sound reached the audio output while the key was held',
         TONE_START_LIMIT_MS,
-      ).catch(() => undefined),
-      new Promise<void>((resolve) => {
-        hardStop = setTimeout(
-          resolve,
-          TONE_START_LIMIT_MS + TONE_START_GRACE_MS,
-        );
-      }),
-    ]);
-    clearTimeout(hardStop);
+      ).catch(() => undefined);
+      await page.waitForTimeout(TONE_SETTLE_MS);
+    }
   } finally {
     await page.mouse.up();
   }
