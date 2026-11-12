@@ -32,6 +32,8 @@ const boxOf = async (target: Locator, name: string) => {
 };
 
 void runScenario({
+  // The finger part uses Chrome DevTools touch events (see safe-area-helpers).
+  requires: ['chromium'],
   drive: {
     media: { [alto.driveFileId]: buildToneMedia({ seconds: TONE_SECONDS }) },
     state: 'authorized',

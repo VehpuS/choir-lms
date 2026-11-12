@@ -31,6 +31,24 @@ describe('web entry html', () => {
     assert.match(html, /height:\s*100dvh/);
   });
 
+  it('themes the browser UI with the app background', () => {
+    const themeColor = new RegExp(
+      `<meta\\s+name="theme-color"\\s+content="${appTheme.colors.bg}"`,
+      'i',
+    );
+
+    assert.match(html, themeColor);
+  });
+
+  it('describes the app and declares the dark scheme', () => {
+    assert.match(html, /<meta\s+name="description"\s+content="[^"]+/);
+    assert.match(html, /<meta name="color-scheme" content="dark"/);
+  });
+
+  it('uses no framework-cased attributes in plain HTML', () => {
+    assert.doesNotMatch(html, /httpEquiv/);
+  });
+
   it('keeps the placeholders Expo fills in', () => {
     assert.match(html, /%LANG_ISO_CODE%/);
     assert.match(html, /%WEB_TITLE%/);

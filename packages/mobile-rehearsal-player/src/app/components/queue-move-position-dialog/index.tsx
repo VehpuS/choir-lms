@@ -1,6 +1,6 @@
 import { Slider } from '@miblanchard/react-native-slider';
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../utils/theme';
 import {
@@ -12,6 +12,7 @@ import { AccessibleSlider } from '../accessible-slider';
 
 import { clampQueuePosition, resolveQueueMoveTargetIndex } from './model';
 import { SafeAreaFrame } from '../safe-area-frame';
+import { MotionModal } from '../motion-modal';
 
 type QueueMovePositionDialogProps = {
   bodyText?: string;
@@ -57,7 +58,7 @@ export const QueueMovePositionDialog = ({
   const isSubmittingDisabled = targetPosition === currentPosition;
 
   return (
-    <Modal
+    <MotionModal
       animationType="fade"
       onRequestClose={onCancel}
       transparent
@@ -180,7 +181,7 @@ export const QueueMovePositionDialog = ({
           </View>
         </SafeAreaFrame>
       </View>
-    </Modal>
+    </MotionModal>
   );
 };
 

@@ -36,6 +36,7 @@ import { offlineFilesNavigationStore } from './offline-files-navigation-store';
 import { OfflineFileRowView } from './offline-file-row';
 import { RecordingsGroup } from './recordings-group';
 import { useOfflineStorage } from './use-offline-storage';
+import { usePersistentStorageStatus } from '../../library/storage/persistent-storage-instance';
 
 const toSelectionEntry = (row: OfflineFileRow) => ({
   item: row,
@@ -76,6 +77,7 @@ export const OfflineFilesContent = ({
   const screenRef = useRef<View>(null);
   const confirmationFlow = useLibraryFilesConfirmationFlow();
   const recordings = useRecordingsStorage();
+  const persistentStorageStatus = usePersistentStorageStatus();
   const prepared = usePreparedComposites();
   const selection = useSelection<OfflineFileRow>();
   const { cancel, deselectMany, enter, selectMany, selectedKeys, toggle } =
@@ -214,6 +216,11 @@ export const OfflineFilesContent = ({
           <Text style={styles.summaryLine}>
             {getKeptUsageLabel(snapshot.summary)}
           </Text>
+          {persistentStorageStatus === 'denied' ? (
+            <Text style={styles.summaryLine}>
+              {OFFLINE_FILES_COPY.storageNotPersistent}
+            </Text>
+          ) : null}
         </View>
         {isLoading ? null : hasNothing ? (
           <View style={styles.empty}>

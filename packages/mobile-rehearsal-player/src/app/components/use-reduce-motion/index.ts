@@ -26,7 +26,9 @@ export const useReduceMotion = (): boolean => {
 
     return () => {
       isMounted = false;
-      subscription.remove();
+      // react-native-web returns no subscription where there is no matchMedia
+      // (a test renderer), so it is optional despite the type.
+      subscription?.remove();
     };
   }, []);
 

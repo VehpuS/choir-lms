@@ -100,6 +100,8 @@ const runImportShared = () => {
   });
 
   return runScenario({
+    // Reads the clipboard back, which only Chromium lets a test grant.
+    requires: ['chromium'],
     drive: {
       files: [bundle.file],
       inaccessibleFileIds: [sharedSoprano.driveFileId, sharedAlto.driveFileId],

@@ -35,6 +35,10 @@ const gloria = buildMockComposite('Gloria mix', [
 const tone = buildToneMedia({ seconds: TONE_SECONDS });
 
 void runScenario({
+  // Needs a Blob in IndexedDB, which Playwright's WebKit (the WPE build, not
+  // desktop Safari) cannot store: see `browser-capabilities`, which tells us
+  // when that changes. Confirm on real Safari by hand (tasks.md follow-up F.3).
+  requires: ['chromium', 'firefox'],
   drive: {
     media: {
       [alto.driveFileId]: tone,

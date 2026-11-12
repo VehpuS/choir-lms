@@ -2,7 +2,36 @@
 <html lang="%LANG_ISO_CODE%">
   <head>
     <meta charset="utf-8" />
-    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="description"
+      content="Rehearse with your choir's audio from Google Drive: loops, playlists, speed and pitch, sheet music and lyrics."
+    />
+    <!-- The browser's own UI (address bar, task switcher) takes the app background, and the page is dark before its CSS loads. -->
+    <!--
+      Content-Security-Policy, as a meta tag because GitHub Pages sends no
+      headers (so frame-ancestors, which only works as a header, is out of
+      reach). The app loads script only from its own origin, with no inline
+      script and no eval, plus blob: because its audio worklets (pitch
+      shifting, the pitch and recording microphone feeds, the composite
+      engine) are built from source strings and loaded from blob URLs. style-src needs 'unsafe-inline' because
+      react-native-web writes inline style attributes. connect-src and
+      media-src allow any https host because people add audio and score links
+      from anywhere.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' blob: data: https:; connect-src 'self' blob: data: https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <meta name="theme-color" content="#161826" />
+    <meta name="color-scheme" content="dark" />
+    <!--
+      Relative on purpose: the app never changes the page address, so it is
+      always served from its base path (the GitHub Pages one included), and
+      relative links, and the manifest's own relative start_url, scope and
+      icons, follow it without a build-time placeholder.
+    -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <!--
       viewport-fit=cover lets the page reach the screen edges (the notch side in
       landscape); the app pads by the safe-area insets itself.

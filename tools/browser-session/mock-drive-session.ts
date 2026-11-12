@@ -317,8 +317,10 @@ export const installMockDriveRoutes = async (
     recorder.signInRequests.push(route.request().url());
 
     if (completesSignIn) {
+      const target = buildSignInRedirect(route.request().url());
+
       return route.fulfill({
-        headers: { location: buildSignInRedirect(route.request().url()) },
+        headers: { location: target },
         status: FOUND_STATUS,
       });
     }

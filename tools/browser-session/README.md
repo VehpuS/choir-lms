@@ -33,6 +33,19 @@ session that has the pre-installed browser.
   a short baseline of known errors is ignored). A failing scenario also writes
   `failure-trace.zip` (`npx playwright show-trace <file>`) and
   `failure-console.txt` next to `failure.png`; CI uploads them with the screenshots.
+- The page's Content-Security-Policy (the meta tag in `public/index.html`) is
+  enforced in every scenario: `runScenario` fails the run on any violation
+  (`session.assertNoCspViolations`), so a new feature that needs an inline script,
+  an eval or a script from another origin shows up as a failing scenario.
+  `session.expectCspViolation(part)` claims one a scenario causes on purpose
+  (`content-security-policy.scenario.ts`). Playwright's own `evaluate` is exempt
+  from the eval check, so try eval through a string timer.
+- Browser APIs a scenario needs to observe (Screen Wake Lock, the Media Session,
+  `navigator.storage.persist`) are stubbed or wrapped with `page.addInitScript`
+  as plain script text, then `page.reload()`; see `screen-wake-lock`,
+  `media-session` and `persistent-storage`. Code passed to `page.evaluate` must not
+  contain named inner functions (the test runner's transform adds a `__name`
+  helper the page does not have); use inline code or a string.
 - `shell-navigation.scenario.ts` — tabs, Library chip and Files folder kept, reload, phone and desktop layout.
 - `library-files-organize.scenario.ts` / `library-files-bulk.scenario.ts` — Files search, create folder, move, delete with confirmation; selection bar, bulk Add to playlist, and the remembered "Include playlists?" choice.
 - `playlists.scenario.ts` — create, rename, reorder, remove with Undo, delete with confirmation, and finding a played playlist in Recents.
@@ -92,7 +105,11 @@ pull request. `*.matrix.scenario.ts` is for the slow or machine-sensitive
 scenarios (device profiles, CPU throttling, sample rates, long tracks); name a
 new one that way when it takes more than a few seconds or needs a quiet CPU.
 It runs on demand: from the Actions tab (`Browser matrix` workflow), or by
-putting the `browser-matrix` label on a pull request.
+putting the `browser-matrix` label on a pull request. The other browsers have
+labels too (`browser-matrix-webkit`, `browser-matrix-firefox`; each runs the default
+lane): adding a label runs just that browser, a push runs every browser whose label
+is on, and the runs are PR checks (so a session can subscribe to them). Each
+browser has its own concurrency group, so they do not cancel each other.
 
 Other browsers: `run-scenarios.ts ... --browser=webkit` (or `firefox`; install it with
 `npx playwright install webkit`), or the `Browser matrix` workflow's `browser` and `lane`

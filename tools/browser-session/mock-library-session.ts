@@ -8,6 +8,7 @@ import { browserTypeFor, selectedBrowserName } from './browser-choice';
 
 import {
   installAudioOutputTap,
+  hasAudioSignal,
   readAudioOutput,
   resetAudioOutput,
   type AudioOutput,
@@ -91,6 +92,8 @@ const BASELINE_CONSOLE_ERRORS = [
   /Failed to load resource: net::ERR_BLOCKED_BY_CLIENT/,
 ];
 
+const FAILURE_CONSOLE_LINES = 8;
+
 export type MockLibrarySession = {
   /**
    * Throws if the app logged console errors or uncaught page errors, apart
@@ -100,14 +103,20 @@ export type MockLibrarySession = {
   /**
    * Writes what a failing scenario needs to be debugged into `outDir`:
    * `failure-trace.zip` (open with `npx playwright show-trace`) and
-   * `failure-console.txt` (the console errors and warnings seen).
+   * `failure-console.txt` (the console errors and warnings seen), and returns
+   * the first console errors as one line for the run's log.
    */
-  saveFailureEvidence: (outDir: string) => Promise<void>;
+  saveFailureEvidence: (outDir: string) => Promise<string>;
   /**
    * Throws if the page requested anything outside the local server that the
    * scenario had not mocked (`runScenario` calls this after the steps).
    */
   assertNoBlockedRequests: () => void;
+  /**
+   * Throws if the page's Content-Security-Policy blocked anything
+   * (`runScenario` calls this after the steps).
+   */
+  assertNoCspViolations: () => void;
   browser: Browser;
   close: () => Promise<void>;
   /**
@@ -115,12 +124,19 @@ export type MockLibrarySession = {
    * blocked by the guard) and marks it as expected, so the scenario still passes.
    */
   expectBlockedRequest: (urlPart: string) => void;
+  /**
+   * Claims a Content-Security-Policy violation a scenario caused on purpose
+   * (a message containing `part`), so it does not fail the run.
+   */
+  expectCspViolation: (part: string) => void;
   /** Searches the app made of the lyrics lookup service (see `lyricsLookup`). */
   lyricsSearches: MockLyricsRecorder['searches'];
   /** What the mock Drive was asked; empty when the session has no `drive`. */
   drive: MockDriveRecorder;
   page: Page;
   /** What reached the speakers since the last reset (needs `audioTap` or a `profile`). */
+  /** Whether anything audible has played since the last reset (cheap to poll). */
+  hasAudioSignal: () => Promise<boolean>;
   readAudioOutput: () => Promise<AudioOutput>;
   /** Forgets the captured audio so far. */
   resetAudioOutput: () => Promise<void>;
@@ -206,13 +222,18 @@ export const openMockLibrarySession = async (options: {
   }
 
   // The microphone only when the scenario asks for it; the clipboard always,
-  // so "Copy" buttons can be checked by reading the clipboard back.
-  await context.grantPermissions(
-    options.microphone
-      ? ['clipboard-read', 'clipboard-write', 'microphone']
-      : ['clipboard-read', 'clipboard-write'],
-    { origin: url },
-  );
+  // so "Copy" buttons can be checked by reading the clipboard back. Only
+  // Chromium knows these permissions: Firefox rejects the grant, and WebKit
+  // accepts it and then fails when the page opens. A scenario that needs the
+  // clipboard or the microphone declares `requires: ['chromium']`.
+  if (browserName === 'chromium') {
+    await context.grantPermissions(
+      options.microphone
+        ? ['clipboard-read', 'clipboard-write', 'microphone']
+        : ['clipboard-read', 'clipboard-write'],
+      { origin: url },
+    );
+  }
 
   if (options.mediaProbe) {
     await installMediaProbe(context);
@@ -264,6 +285,23 @@ export const openMockLibrarySession = async (options: {
   // Recorded for the whole run; kept only when a scenario fails.
   await context.tracing.start({ screenshots: true, snapshots: true });
 
+  // Content-Security-Policy violations, from the page's own
+  // `securitypolicyviolation` event: its console wording differs per browser,
+  // the event does not. Recorded on this side so a reload does not lose them.
+  const cspViolations: string[] = [];
+
+  await context.exposeFunction('__reportCspViolation', (detail: string) => {
+    cspViolations.push(detail);
+  });
+  // Plain script text: it runs in the page, where the test tooling's helpers do not exist.
+  await context.addInitScript(`
+    document.addEventListener('securitypolicyviolation', (event) => {
+      window.__reportCspViolation(
+        [event.effectiveDirective, event.blockedURI, (event.sample || '').slice(0, 60)].join('|'),
+      );
+    }, true);
+  `);
+
   const page = await context.newPage();
   const consoleLog: { text: string; type: string }[] = [];
 
@@ -286,6 +324,13 @@ export const openMockLibrarySession = async (options: {
   await page.goto(url);
 
   return {
+    assertNoCspViolations: () => {
+      if (cspViolations.length > 0) {
+        throw new Error(
+          `Content-Security-Policy violation(s): ${cspViolations.join(' | ')}`,
+        );
+      }
+    },
     assertNoBlockedRequests: () => {
       if (blockedRequests.length > 0) {
         throw new Error(
@@ -315,6 +360,17 @@ export const openMockLibrarySession = async (options: {
       }
     },
     lyricsSearches: lyricsRecorder.searches,
+    expectCspViolation: (part) => {
+      const index = cspViolations.findIndex((violation) =>
+        violation.includes(part),
+      );
+
+      if (index < 0) {
+        throw new Error(`Expected a CSP violation containing ${part}`);
+      }
+
+      cspViolations.splice(index, 1);
+    },
     expectBlockedRequest: (urlPart) => {
       const index = blockedRequests.findIndex((blocked) =>
         blocked.includes(urlPart),
@@ -333,7 +389,21 @@ export const openMockLibrarySession = async (options: {
         join(outDir, 'failure-console.txt'),
         consoleLog.map(({ text, type }) => `${type}: ${text}`).join('\n'),
       );
+
+      // The console errors, for the run's log: the evidence files are in an
+      // artifact, which is not always at hand when a browser-only failure is
+      // being read from CI.
+      return consoleLog
+        .filter(
+          ({ text, type }) =>
+            type === 'error' &&
+            !BASELINE_CONSOLE_ERRORS.some((pattern) => pattern.test(text)),
+        )
+        .slice(0, FAILURE_CONSOLE_LINES)
+        .map(({ text }) => text.replace(/\s+/g, ' ').slice(0, 220))
+        .join(' || ');
     },
+    hasAudioSignal: () => hasAudioSignal(page),
     readAudioOutput: () => readAudioOutput(page),
     resetAudioOutput: () => resetAudioOutput(page),
     readStored: async <T = unknown>(key: string) => {

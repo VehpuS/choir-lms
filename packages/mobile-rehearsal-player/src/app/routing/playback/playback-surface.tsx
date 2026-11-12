@@ -17,7 +17,7 @@ import { CompactPlaybackContent } from './compact-playback-content';
 import { shouldStartPlaybackSurfaceDismissGesture } from './playback-surface-gestures';
 import { getPlaybackSurfaceMotion } from './playback-surface-motion';
 import type { PlaybackSurfaceProps } from './playback-surface-props';
-import { useReduceMotion } from './use-reduce-motion';
+import { useReduceMotion } from '../../components/use-reduce-motion';
 import { WideShortPlaybackContent } from './wide-short-playback-content';
 
 export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
@@ -130,8 +130,10 @@ export const PlaybackSurface = (props: PlaybackSurfaceProps) => {
 
   return (
     <View pointerEvents="box-none" style={styles.overlay}>
+      {/* Tap-away only: the sheet has its own named "Dismiss ..." controls, so
+          a second button here would be a duplicate for screen readers. */}
       <Pressable
-        accessibilityRole="button"
+        accessible={false}
         onPress={dismissSurface}
         style={styles.backdrop}
       />

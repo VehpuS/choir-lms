@@ -1,6 +1,6 @@
 import type { Playlist } from '@org/audio-library-models';
 import { useEffect, useState } from 'react';
-import { Modal, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { OverflowMenuTrigger } from '../../../components/overflow-menu-trigger';
@@ -22,6 +22,7 @@ import {
 } from './playlist-rename-dialog';
 import { SavedPlaylistDetailItemsList } from './saved-playlist-detail-items-list';
 import { SafeAreaFrame } from '../../../components/safe-area-frame';
+import { MotionModal } from '../../../components/motion-modal';
 
 type PlaylistEntry = Playlist['items'][number];
 
@@ -180,7 +181,7 @@ export const SavedPlaylistDetailCard = (props: {
         playlistName={detailSummary.title}
       />
 
-      <Modal
+      <MotionModal
         animationType="fade"
         onRequestClose={props.onDismissRemovalNotice}
         transparent
@@ -209,7 +210,7 @@ export const SavedPlaylistDetailCard = (props: {
             </View>
           </View>
         </SafeAreaFrame>
-      </Modal>
+      </MotionModal>
     </SavedLibraryDetailCardShell>
   );
 };

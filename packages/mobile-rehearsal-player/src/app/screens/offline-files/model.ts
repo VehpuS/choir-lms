@@ -18,6 +18,8 @@ export const OFFLINE_FILES_COPY = {
     'Play a track and it is saved here automatically. Choose "Keep offline" from a track or loop menu to keep a file on this device until you remove it.',
   emptyTitle: 'Nothing offline yet',
   keptTitle: 'Kept',
+  storageNotPersistent:
+    'This browser may clear offline files when it is short on space.',
   removeLabel: 'Remove from offline',
   title: 'Offline files',
 } as const;

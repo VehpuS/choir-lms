@@ -4,12 +4,16 @@ import {
   analyzeAudioQuality,
   centsBetween,
 } from '../../packages/mobile-rehearsal-player/src/test-support/audio/audio-quality';
+import { selectedBrowserName } from './browser-choice';
 import type { MockLibrarySession } from './mock-library-session';
+import { waitUntil } from './page-helpers';
 
 // Shared steps for the piano scenarios: open the keyboard from the Practice
 // tools tab, hold a key by its C-note label, and measure what the page played.
 export const WAIT_MS = 5000;
 const HOLD_MS = 1200;
+const TONE_START_LIMIT_MS = 5000;
+const TONE_SETTLE_MS = 800;
 const PITCH_TOLERANCE_CENTS = 40;
 export const C4_HZ = 261.63;
 const KEYBOARD = '[data-testid="piano-keyboard"]';
@@ -56,6 +60,22 @@ export const holdKey = async (
   try {
     await whileHeld();
     await page.waitForTimeout(HOLD_MS);
+    // Firefox in CI can start its audio stream after the first note was
+    // pressed. There, if nothing has been heard yet, keep the key down until
+    // something is, then a little longer so there is a tone to measure. Only
+    // Firefox: asking the page anything while the key is held stalled WebKit
+    // (the scenario never released the key), and Chromium does not need it.
+    if (
+      selectedBrowserName() === 'firefox' &&
+      !(await session.hasAudioSignal())
+    ) {
+      await waitUntil(
+        () => session.hasAudioSignal(),
+        'no sound reached the audio output while the key was held',
+        TONE_START_LIMIT_MS,
+      ).catch(() => undefined);
+      await page.waitForTimeout(TONE_SETTLE_MS);
+    }
   } finally {
     await page.mouse.up();
   }
