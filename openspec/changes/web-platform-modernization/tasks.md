@@ -43,7 +43,7 @@
 
 ## 6. Docs and merge gate
 
-- [ ] 6.1 Update `README.md` (the playback doc is done with 5.x)
+- [x] 6.1 `README.md` has a "The web app" section (install, Back, preferences, storage, screen and lock screen, security policy) and a repository-notes line for `tools/web-icons` and the notices; `tools/browser-session/README.md` documents the CSP check and how to stub browser APIs in a scenario; the playback doc was updated with 5.x
 - [ ] 6.2 Run `nx run-many -t lint test typecheck build --all` and `browser-test`
 - [ ] 6.3 **Run and pass the full matrix before merge:** `npm exec -- nx run mobile-rehearsal-player:browser-test-matrix`, and the `browser-matrix.yml` workflow (label `browser-matrix` or dispatch) including WebKit and Firefox for 3.x; confirm green on the latest commit
 - [ ] 6.4 PR description includes the merge-gate checklist (see design.md, "Verification and merge gate")

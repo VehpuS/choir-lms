@@ -143,6 +143,19 @@ The library lives on the device, so it can be saved to Drive and handed to other
 
 Writing needs the `drive.file` scope; reading and importing need only the read-only scope. The format and parser are in `packages/audio-library-models` (`library-bundle*`), the builder, import planner, executor and `replaceLibrary` are in `packages/audio-library-runtime`, the Drive helpers are in `packages/google-drive` (`drive-library-bundle-*`, `drive-file-access`), and the app side is `packages/mobile-rehearsal-player/src/app/library/bundle/`. Recordings are uploaded on backup when chosen and, on the web, can be restored from Drive with a checkbox at restore or import time (off by default); a phone has no recordings store yet and says so. Playlist entries that play a recording travel with it when the recording is included; they are imported either way and play once the recording is restored.
 
+## The web app
+
+The web export is a progressive web app as well as the Pages deployment:
+
+- **Install:** `public/manifest.webmanifest` (name, standalone display, the app colours, a maskable icon) with relative `id`, `start_url` and `scope`, so it works under any Pages base path. The icons are rendered from the SVG sources in `packages/mobile-rehearsal-player/assets/web-icons/` by `npx tsx tools/web-icons/render-web-icons.ts` into `public/icons/` (committed). They are composed from Phosphor glyphs; the notice is in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+- **Back:** the browser's Back (Android gesture, browser button) closes the topmost sheet or menu instead of leaving the app (`src/app/components/back-stack/`).
+- **Preferences:** sheets skip their slide or fade under `prefers-reduced-motion` (`MotionModal`).
+- **Storage:** keeping a file offline asks the browser for persistent storage once; the Offline files screen says when it refused.
+- **Screen and lock screen:** the screen stays on while a track plays or a score or lyrics are open, and the browser's lock screen, notification and media keys show and drive playback (`components/wake-lock/`, `components/media-session/`; see the playback doc).
+- **Security policy:** a Content-Security-Policy meta tag (GitHub Pages sends no headers) limits script to the app's own origin plus `blob:` for the audio worklets. It cannot restrict outgoing requests, since people add audio and score links from anywhere. The Drive access token stays in `localStorage` for about an hour; the policy is the protection against a script reading it.
+
+These came out of an audit against modern-web-guidance; the findings and decisions are in `openspec/changes/web-platform-modernization/`.
+
 ## Product Direction
 
 This repository is intentionally scaffolded as an Nx workspace rather than a single app so the system can grow into a library of apps and shared packages over time.
@@ -163,6 +176,7 @@ The first change proposal for this direction is `add-mobile-rehearsal-player` un
 - Pitch detection third-party licences (both permissive, checked against the installed packages): `pitchy` 4.1.0 (MIT, Copyright 2018-2021 Ian Johnson; its README's licence section is copied from another project, the `LICENSE` file is the authority) and its dependency `fft.js` 4.0.4 (MIT, Copyright Fedor Indutny 2017)
 - `openspec/` contains proposals, designs, specs, and tasks for planned work
 - `nx.json` and the root TypeScript configuration provide workspace-level build and project settings
+- `tools/web-icons/` renders the web app icons from their SVG sources; `THIRD_PARTY_NOTICES.md` carries the Phosphor Icons licence
 - Cross-platform playback architecture details are documented in `docs/mobile-cross-platform-audio-playback.md`
 
 ## Development
