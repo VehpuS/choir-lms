@@ -19,6 +19,10 @@ Reading the code against the platform rules found three causes, two of which can
 
 Not included: a silent-audio-element fallback for iOS older than the Audio Session API (iOS 16.4); the iPhone 17 Pro runs a version that has it.
 
+## Regression found after the first release
+
+The `playback` session the piano asks for has no microphone input on iOS. With the piano open (as on the maintainer's iPhone, home-screen app) pitch detection and recording said "No microphone found", a catch-all message that any start-up failure other than "denied" or "in use" produces; it worked before this change. Fixed by arbitrating the session: the piano's `playback` request applies only while nothing is capturing, and the microphone gives the session back to the browser's own choice (the type before the piano asked, normally `auto`) while it is open, after which the piano's request applies again. Reproduced first by `pitch-with-piano-ios-audio-session`, which stands in for iOS (a capture fails with `NotFoundError`, and a running one is cut, while the type is `playback`) and covers both orders.
+
 ## Capabilities
 
 ### Modified Capabilities

@@ -10,7 +10,9 @@
 - [x] 2.2 `piano-sound-engine.ts`: `prime()` creates the voice (starts the load); `audioSession` lease requested in `ensureContext`, released in `dispose`
 - [x] 2.3 `playback-audio-session.ts` and its wiring in `use-piano-sound.ts`; capture-phase unlock listeners
 
+- [x] 2.5 Regression (reported on the iPhone after the release): pitch detection said "No microphone found" with the piano open. Reproduced first by `pitch-with-piano-ios-audio-session` (failed with exactly that message). `components/audio-session/` (`audio-session-arbiter.ts`, eight specs; `web-audio-session.ts`); the piano uses its `playbackLease`, `pcm-source.web.ts` holds `holdCapture()` for the life of the microphone (released on failure, on an ended stream and on close, including a context that cannot be created). Replaces `piano/playback-audio-session.ts`
+
 ## 3. Verify
 
 - [x] 3.1 The three scenarios and the unit specs pass; the other piano scenarios and the full default lane still pass
-- [ ] 3.2 Maintainer, on the iPhone home-screen app: fully close and reopen the app, open the piano, press a key. Try it with the phone's silent mode on and off, and once with a track already played, and report which of these were silent before and after this build. If it is still silent, say which of: silent in every case; silent only in silent mode; silent only for the first key after opening
+- [ ] 3.2 Maintainer, on the iPhone home-screen app: fully close and reopen the app, open the piano, press a key. Try it with the phone's silent mode on and off, and once with a track already played, and report which of these were silent before and after this build. Also, with the piano open, turn Pitch detection on and then Record: both should find the microphone (and say so if not). If the piano is still silent, say which of: silent in every case; silent only in silent mode; silent only for the first key after opening

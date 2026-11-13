@@ -14,6 +14,7 @@ import type {
   BrowserMicrophoneGlobals,
   MicAudioContextLike,
 } from './web-microphone-types';
+import { webAudioSession } from '../../components/audio-session/web-audio-session';
 
 const PROCESSOR_NAME = 'choirlms-pcm-tap';
 /**
@@ -111,6 +112,11 @@ const openMicrophone = async (emitter: PcmEmitter): Promise<OpenMicrophone> => {
     throw new PcmSourceError('unavailable');
   }
 
+  // The piano may hold the audio session at `playback` (so it is audible on an
+  // iPhone's silent switch), which has no microphone input: while the
+  // microphone is open the session goes back to the browser's choice.
+  const releaseAudioSession = webAudioSession.holdCapture();
+
   // Echo cancellation, noise suppression and auto gain would mangle pitch
   // (and a faithful recording), so all three are off.
   const stream = await navigator.mediaDevices
@@ -123,14 +129,24 @@ const openMicrophone = async (emitter: PcmEmitter): Promise<OpenMicrophone> => {
       },
     })
     .catch((error: unknown) => {
+      releaseAudioSession();
       throw toPcmSourceError(error);
     });
-  const context = new ContextCtor();
   const tracks = stream.getTracks();
+  let context: InstanceType<typeof ContextCtor>;
+
+  try {
+    context = new ContextCtor();
+  } catch (error) {
+    tracks.forEach((track) => track.stop());
+    releaseAudioSession();
+    throw toPcmSourceError(error);
+  }
 
   const closeAll = () => {
     tracks.forEach((track) => track.stop());
     void context.close().catch(() => undefined);
+    releaseAudioSession();
   };
 
   try {
