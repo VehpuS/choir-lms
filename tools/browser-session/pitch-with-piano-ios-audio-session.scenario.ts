@@ -2,7 +2,13 @@ import assert from 'node:assert/strict';
 
 import { buildMockSource } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
 import { waitForTrack, waitUntil } from './page-helpers';
-import { WAIT_MS, openPiano } from './piano-helpers';
+import {
+  C4_HZ,
+  WAIT_MS,
+  expectTone,
+  holdKey,
+  openPiano,
+} from './piano-helpers';
 import { runScenario } from './scenario-runner';
 
 // Pitch detection and the piano open together, as in the home-screen app on an
@@ -10,7 +16,10 @@ import { runScenario } from './scenario-runner';
 // the silent switch on; on iOS that session type has no microphone input, so a
 // page that keeps it while it listens gets "No microphone found". The page gets
 // a stand-in for that: while the session type is `playback`, a new capture
-// fails with NotFoundError and a running one is cut. Both orders are covered.
+// fails with NotFoundError and a running one is cut. The page must ask for
+// `play-and-record`, the type for playing and capturing at once, while the
+// microphone is open, and the piano must still be heard then. Both orders are
+// covered.
 const alto = buildMockSource('Alto Part');
 
 // Plain script text: it runs in the page, where the test tooling's helpers do not exist.
@@ -55,10 +64,11 @@ const turnToolOn = async (page: import('playwright').Page, name: string) => {
 };
 
 void runScenario({
+  audioTap: true,
   library: { playlists: [], sources: [alto] },
   microphone: true,
   requires: ['chromium'],
-  steps: async ({ page, pass }) => {
+  steps: async ({ page, pass, session }) => {
     await page.addInitScript(IOS_AUDIO_SESSION);
     await page.reload();
     await waitForTrack(page, 'Alto Part').catch(() => undefined);
@@ -83,16 +93,36 @@ void runScenario({
     await listening.waitFor({ timeout: WAIT_MS });
     pass('Pitch detection listens while the piano is open');
 
+    // Playing and capturing at once: the type is play-and-record, and the piano
+    // is still heard while the microphone listens.
+    assert.equal(
+      await page.evaluate<string>('navigator.audioSession.type'),
+      'play-and-record',
+      'the page did not ask for play-and-record while the microphone is open',
+    );
+    await holdKey(page, session, 'C4', async () => undefined);
+    await expectTone(session, C4_HZ, 'the piano while the microphone is open');
+    pass('The piano is heard while the microphone is open (play-and-record)');
+
     // The capture survives for as long as the piano stays open.
     await page.waitForTimeout(1500);
     assert.equal(await noMicrophone.count(), 0);
     await listening.waitFor({ timeout: WAIT_MS });
     pass('The microphone is not cut off while both are open');
 
-    // Both off, then the other order: pitch detection first, then the piano.
+    // The microphone closes while the piano stays open: back to playback.
     await page.getByLabel('Practice tools', { exact: true }).click();
     await page.getByLabel('Pitch detection, on').click();
     await page.getByLabel('Pitch detection, off').waitFor({ timeout: WAIT_MS });
+    await waitUntil(
+      async () =>
+        (await page.evaluate<string>('navigator.audioSession.type')) ===
+        'playback',
+      'closing the microphone with the piano still open did not bring back playback',
+    );
+    pass('Closing the microphone with the piano open brings back playback');
+
+    // Both off, then the other order: pitch detection first, then the piano.
     await page.getByLabel('Piano, on').click();
     await page.getByLabel('Piano, off').waitFor({ timeout: WAIT_MS });
     await page.getByLabel('Close practice tools').first().click();

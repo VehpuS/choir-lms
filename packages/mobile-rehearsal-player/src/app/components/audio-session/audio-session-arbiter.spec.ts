@@ -43,7 +43,7 @@ describe('createAudioSessionArbiter', () => {
     assert.deepEqual(changes, ['playback', 'auto']);
   });
 
-  it('gives the session back to the browser while the microphone is open', () => {
+  it('is play-and-record while the microphone is open, so playback and capture coexist', () => {
     const { session } = createSession('auto');
     const arbiter = createAudioSessionArbiter(() => session);
     const lease = arbiter.playbackLease();
@@ -51,28 +51,37 @@ describe('createAudioSessionArbiter', () => {
     lease.request();
     const stopCapture = arbiter.holdCapture();
 
-    // Playback has no microphone input on iOS: it must not stay.
-    assert.equal(session.type, 'auto');
+    // `playback` has no microphone input on iOS: it must not stay.
+    assert.equal(session.type, 'play-and-record');
 
     stopCapture();
     // The piano is still open, so its request applies again.
     assert.equal(session.type, 'playback');
   });
 
+  it('is play-and-record for the microphone alone, and gives the type back after', () => {
+    const { session } = createSession('auto');
+    const stopCapture = createAudioSessionArbiter(() => session).holdCapture();
+
+    assert.equal(session.type, 'play-and-record');
+
+    stopCapture();
+    assert.equal(session.type, 'auto');
+  });
+
   it('does not take playback while the microphone is already open', () => {
-    const { changes, session } = createSession('auto');
+    const { session } = createSession('auto');
     const arbiter = createAudioSessionArbiter(() => session);
     const stopCapture = arbiter.holdCapture();
 
     arbiter.playbackLease().request();
-    assert.equal(session.type, 'auto');
-    assert.deepEqual(changes, []);
+    assert.equal(session.type, 'play-and-record');
 
     stopCapture();
     assert.equal(session.type, 'playback');
   });
 
-  it('keeps the previous type through a capture that ends after the piano closes', () => {
+  it('keeps the original type through overlapping uses, and restores it at the end', () => {
     const { session } = createSession('ambient');
     const arbiter = createAudioSessionArbiter(() => session);
     const lease = arbiter.playbackLease();
@@ -81,8 +90,9 @@ describe('createAudioSessionArbiter', () => {
     const stopCapture = arbiter.holdCapture();
 
     lease.release();
-    stopCapture();
+    assert.equal(session.type, 'play-and-record');
 
+    stopCapture();
     assert.equal(session.type, 'ambient');
   });
 
@@ -97,7 +107,7 @@ describe('createAudioSessionArbiter', () => {
 
     stopFirst();
     stopFirst();
-    assert.equal(session.type, 'auto');
+    assert.equal(session.type, 'play-and-record');
 
     stopSecond();
     assert.equal(session.type, 'playback');
