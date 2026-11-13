@@ -4,13 +4,13 @@ Reported on an iPhone 17 Pro, in the home-screen web app: after fully closing an
 
 Reading the code against the platform rules found three causes, two of which can be reproduced in a browser:
 
-1. **Recordings were fetched at the first key, and a press that waited too long was thrown away.** The piano's 21 recordings only started loading when the first note was played, and a press made while they loaded sounded only if they arrived within 1.5 s. On a cold launch (nothing cached, 21 MP3s to fetch and decode on a phone) the first presses were silent, and a later press sometimes lagged. Reproduced: with slow recordings, a first key pressed after the piano opened is silent.
+1. **Recordings were fetched at the first key (nothing earlier), and a press that waited too long was thrown away.** The piano's 21 recordings only started loading when the first note was played, and a press made while they loaded sounded only if they arrived within 1.5 s. On a cold launch (nothing cached, 21 MP3s to fetch and decode on a phone) the first presses were silent, and a later press sometimes lagged. Reproduced: with slow recordings, a first key pressed after the piano opened is silent.
 2. **The page never asked for the playback audio session.** iOS Safari lets Web Audio on its own follow the ringer/silent switch (the iPhone 17 Pro's Action Button is often set to it) and only makes the page audible once a media element plays, which is why the piano worked during playback and not on launch. Task 10.2 of `piano-pitch-check` found the symptom ("a page already playing media is exempt") and fixed the gesture unlock, but was not verified on a real iPhone. `navigator.audioSession.type = "playback"` is the platform's way to ask. Not reproducible in Chromium; covered by a stand-in for the API.
 3. **A failed recording load was never retried.** One failed fetch among the 21 left the whole session on the fallback sound.
 
 ## What Changes
 
-- The recordings start loading when the piano opens (before any key), so on a fresh launch they have the time it takes to reach for a key.
+- The recordings (21 files, 0.65 MB in all) are fetched in the background soon after the app starts, once, and kept in memory, so the piano is ready the first time it is opened, even on a fresh launch with nothing cached. A data-saver setting or a very slow connection skips this; the piano then loads them when it opens, as a fallback. Opening the piano also starts the load if it has not been.
 - A key is never silent and never late: a press before the recordings are ready sounds at once through the fallback voice; the next press after they arrive plays the recording.
 - A failed load is tried again on a later press or open, at most every 10 s.
 - While the piano is in use the page asks for the `playback` audio session (where the browser has one) and gives the previous type back when the piano closes, so the rest of the app does not claim the speaker.

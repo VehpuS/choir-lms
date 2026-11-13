@@ -4,10 +4,15 @@
 
 The piano SHALL be audible from its first key after the app has been closed and reopened, and SHALL NOT drop or delay a key because its recordings have not finished loading.
 
-#### Scenario: Recordings start loading when the piano opens
+#### Scenario: Recordings are fetched when the app starts
 
-- **WHEN** the piano is opened and no key has been pressed
-- **THEN** the recordings have begun loading
+- **WHEN** the app has started and the piano has not been opened
+- **THEN** the recordings have been fetched in the background, unless the person is on a data-saver or very slow connection
+
+#### Scenario: Opening the piano after the warm-up
+
+- **WHEN** the piano is opened after the recordings were fetched
+- **THEN** it fetches nothing more
 
 #### Scenario: A key pressed while the recordings load
 

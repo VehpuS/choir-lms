@@ -1,5 +1,8 @@
 import { Asset } from 'expo-asset';
 
+import { createPianoSampleCache } from './piano-sample-cache';
+import { SAMPLE_MIDIS } from './piano-samples';
+
 // Metro resolves each recording to an asset module; the file names give the
 // note (`Ds3` is D♯3). Credits and the licence are in the same folder.
 const SAMPLE_MODULES: Record<number, number> = {
@@ -26,8 +29,7 @@ const SAMPLE_MODULES: Record<number, number> = {
   96: require('../../../../assets/audio/piano/C7.mp3'),
 };
 
-/** Fetches one recording as encoded audio, ready for `decodeAudioData`. */
-export const loadPianoSample = async (midi: number): Promise<ArrayBuffer> => {
+const fetchPianoSample = async (midi: number): Promise<ArrayBuffer> => {
   const module = SAMPLE_MODULES[midi];
 
   if (module === undefined) {
@@ -43,4 +45,17 @@ export const loadPianoSample = async (midi: number): Promise<ArrayBuffer> => {
   }
 
   return response.arrayBuffer();
+};
+
+const sampleCache = createPianoSampleCache(fetchPianoSample);
+
+/**
+ * One recording as encoded audio, ready for `decodeAudioData`: from the warm-up
+ * if it has fetched it already, otherwise fetched now (once).
+ */
+export const loadPianoSample = sampleCache.load;
+
+/** Starts fetching all the recordings, without waiting for them. */
+export const warmPianoSamples = () => {
+  sampleCache.warm(SAMPLE_MIDIS);
 };

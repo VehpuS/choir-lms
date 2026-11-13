@@ -31,6 +31,9 @@ void runScenario({
       await route.continue();
     });
 
+    // A fresh launch under the slow network: the app starts (and begins its
+    // background fetch of the recordings) with every recording already slow.
+    await page.reload();
     await waitForTrack(page, 'Alto Part').catch(() => undefined);
     await openPiano(page);
 
