@@ -6,7 +6,7 @@ import { SAMPLE_MIDIS } from './piano-samples.js';
 import type { PianoVoice } from './piano-voice.js';
 import {
   createSampledPianoVoice,
-  QUEUED_PRESS_LIMIT_MS,
+  LOAD_RETRY_MS,
 } from './sampled-piano-voice.js';
 
 const createFallback = () => {
@@ -117,31 +117,49 @@ describe('sampled piano voice', () => {
     assert.ok((source.stoppedAt as number) > 2.25);
   });
 
-  it('plays a press made during the load once the recordings arrive', async () => {
-    const { context, voice } = createVoice();
+  it('sounds a press made during the load at once, through the fallback', async () => {
+    const { context, fallback, voice } = createVoice();
 
     voice.noteOn(60, 1);
 
+    // Heard now, not queued behind the recordings and not dropped.
+    assert.deepEqual(fallback.played, [60]);
     assert.equal(context.sources.length, 0);
 
     await voice.load();
-    await Promise.resolve();
+  });
 
+  it('plays from the recordings once they have arrived', async () => {
+    const { context, fallback, voice } = createVoice();
+
+    voice.noteOn(60, 1);
+    await voice.load();
+    voice.noteOn(64, 1);
+
+    assert.deepEqual(fallback.played, [60]);
     assert.equal(context.sources.length, 1);
   });
 
-  it('drops a queued press that waited past the limit', async () => {
-    const { context, voice } = createVoice();
-    let now = 1_000_000;
+  it('never loses a press however long the recordings take', async () => {
+    const context = createFakeAudioContext();
+    const fallback = createFallback();
+    let arrive: () => void = () => undefined;
+    const slow = new Promise<ArrayBuffer>((resolve) => {
+      arrive = () => resolve(new ArrayBuffer(8));
+    });
+    const voice = createSampledPianoVoice(context, {
+      fallback: fallback.voice,
+      loadSample: () => slow,
+    });
 
-    mock.method(Date, 'now', () => now);
+    // Several presses while nothing has arrived: every one of them sounds.
     voice.noteOn(60, 1);
-    now += QUEUED_PRESS_LIMIT_MS + 1;
-
+    voice.noteOn(64, 1);
+    voice.noteOn(67, 1);
+    arrive();
     await voice.load();
-    await Promise.resolve();
 
-    assert.equal(context.sources.length, 0);
+    assert.deepEqual(fallback.played, [60, 64, 67]);
   });
 
   it('uses the fallback voice when the recordings cannot load', async () => {
@@ -149,9 +167,48 @@ describe('sampled piano voice', () => {
 
     voice.noteOn(60, 1);
     await voice.load();
-    await Promise.resolve();
     voice.noteOn(64, 1);
 
     assert.deepEqual(fallback.played, [60, 64]);
+  });
+
+  it('tries the recordings again after a failed load, but not at once', async () => {
+    const context = createFakeAudioContext();
+    const fallback = createFallback();
+    let isOffline = true;
+    let requests = 0;
+    const voice = createSampledPianoVoice(context, {
+      fallback: fallback.voice,
+      loadSample: async () => {
+        requests += 1;
+
+        if (isOffline) {
+          throw new Error('offline');
+        }
+
+        return new ArrayBuffer(8);
+      },
+    });
+    let now = 1_000_000;
+
+    mock.method(Date, 'now', () => now);
+    await voice.load();
+    const afterFirstTry = requests;
+
+    // Straight away: no second storm of requests.
+    voice.noteOn(60, 1);
+    await voice.load();
+    assert.equal(requests, afterFirstTry);
+
+    // Later, with the network back, the next press tries again and then the
+    // recordings are used.
+    isOffline = false;
+    now += LOAD_RETRY_MS + 1;
+    voice.noteOn(62, 1);
+    await voice.load();
+    voice.noteOn(64, 1);
+
+    assert.ok(requests > afterFirstTry);
+    assert.equal(context.sources.length, 1);
   });
 });

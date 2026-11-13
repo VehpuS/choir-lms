@@ -11,6 +11,12 @@ export type PianoSoundEngineOptions = {
   getSettings: () => { sound: PianoSound; volume: number };
   /** Fetches one recorded piano note as encoded audio. */
   loadSample: (midi: number) => Promise<ArrayBuffer>;
+  /**
+   * The page's audio session, asked for the playback type while the piano is
+   * in use (iOS mutes Web Audio on the silent switch without it). Optional:
+   * there is none on most platforms.
+   */
+  audioSession?: { request: () => void; release: () => void };
 };
 
 export type PianoSoundEngine = {
@@ -21,6 +27,9 @@ export type PianoSoundEngine = {
    * user gesture: browsers only let audio start from certain events (a touch
    * `pointerdown` is not one; `pointerup`, `touchend`, `click`, and `keydown`
    * are), so the engine cannot rely on the key press itself to unlock audio.
+   * It also asks for the playback audio session and starts the recordings
+   * loading, so both are done by the time a key is reached for: on a fresh
+   * launch the recordings used to start only at the first key.
    */
   prime: () => void;
   /** The keys pressed or sounding now; a new set each time it changes. */
@@ -140,6 +149,10 @@ export const createPianoSoundEngine = (
   const ensureContext = () => {
     context ??= options.createContext();
 
+    if (context) {
+      options.audioSession?.request();
+    }
+
     return context;
   };
 
@@ -198,6 +211,9 @@ export const createPianoSoundEngine = (
       const audio = ensureContext();
 
       if (audio) {
+        // Created and loading now, not at the first press; a press meanwhile
+        // sounds through the fallback (see the sampled voice).
+        voiceFor(options.getSettings().sound, audio);
         startContext(audio);
       }
     },
@@ -218,6 +234,7 @@ export const createPianoSoundEngine = (
       voices.clear();
       void context?.close();
       context = null;
+      options.audioSession?.release();
       publish();
     },
   };
