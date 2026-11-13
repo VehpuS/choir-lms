@@ -13,10 +13,8 @@ const STOP_MARGIN_SECONDS = 0.05;
 const NOTE_LEVEL = 0.5;
 /** Floor for exponential ramps, which cannot reach exactly zero. */
 const SILENCE = 0.0001;
-/** A press made while the recordings load sounds only if they arrive in time. */
-export const QUEUED_PRESS_LIMIT_MS = 1500;
-/** A press that ended while it waited still sounds for this long. */
-const MIN_QUEUED_NOTE_MS = 200;
+/** After a failed load, the next press or prime may try again this much later. */
+export const LOAD_RETRY_MS = 10_000;
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'failed';
 
@@ -29,10 +27,13 @@ export type SampledPianoVoiceOptions = {
 
 /**
  * The `Piano` sound: recorded notes, one every minor third, pitch-shifted to
- * the key. The recordings load on the first press (or `load()`) and stay for
- * the session. A press that arrives while they load is held and played on
- * arrival if it is still recent; if they cannot load, the fallback voice
- * plays instead, with no report to the user (they have nothing to act on).
+ * the key. The recordings load on `load()` (the engine asks as soon as the
+ * piano opens) or the first press, and stay for the session. A press made
+ * before they are ready sounds at once through the fallback voice, never later
+ * and never not at all: a first note on a cold start, with 21 files still on
+ * the way, used to be thrown away after waiting too long. A load that failed is
+ * tried again later (a network hiccup at launch must not leave the session on
+ * the fallback sound), with no report to the user (they have nothing to act on).
  */
 export const createSampledPianoVoice = (
   context: AudioContextLike,
@@ -43,6 +44,7 @@ export const createSampledPianoVoice = (
   const live = new Set<() => void>();
   let state: LoadState = 'idle';
   let loading: Promise<void> | null = null;
+  let failedAt = 0;
 
   master.gain.value = 1;
   master.connect(context.destination);
@@ -50,6 +52,12 @@ export const createSampledPianoVoice = (
   const load = (): Promise<void> => {
     if (loading) {
       return loading;
+    }
+
+    // Not again straight after a failure: every gesture asks, and a dead
+    // network would otherwise be hit 21 files at a time on each of them.
+    if (state === 'failed' && Date.now() - failedAt < LOAD_RETRY_MS) {
+      return Promise.resolve();
     }
 
     state = 'loading';
@@ -65,6 +73,8 @@ export const createSampledPianoVoice = (
       },
       () => {
         state = 'failed';
+        failedAt = Date.now();
+        loading = null;
       },
     );
 
@@ -120,38 +130,12 @@ export const createSampledPianoVoice = (
       return playSample(midi, velocity);
     }
 
-    if (state === 'failed') {
-      return options.fallback.noteOn(midi, velocity);
+    // Not ready: start (or retry) the load, and sound this note now.
+    if (state !== 'loading') {
+      void load();
     }
 
-    // Recordings still loading: hold the press and play it on arrival.
-    const pressedAt = Date.now();
-    let isReleased = false;
-    let sounding: PianoNoteHandle | null = null;
-
-    void load().then(() => {
-      if (Date.now() - pressedAt > QUEUED_PRESS_LIMIT_MS) {
-        return;
-      }
-
-      sounding =
-        state === 'ready'
-          ? playSample(midi, velocity)
-          : options.fallback.noteOn(midi, velocity);
-
-      if (isReleased) {
-        setTimeout(() => {
-          sounding?.release();
-        }, MIN_QUEUED_NOTE_MS);
-      }
-    });
-
-    return {
-      release: () => {
-        isReleased = true;
-        sounding?.release();
-      },
-    };
+    return options.fallback.noteOn(midi, velocity);
   };
 
   return {

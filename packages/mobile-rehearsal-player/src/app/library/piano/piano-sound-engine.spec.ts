@@ -7,7 +7,16 @@ import { createPianoSoundEngine } from './piano-sound-engine.js';
 // The recordings are never fetched here (see sampled-piano-voice.spec.ts).
 const loadSample = async () => new ArrayBuffer(8);
 
-const createHarness = (settings = { sound: 'organ', volume: 0.5 } as const) => {
+const createHarness = (
+  settings: { sound: 'piano' | 'organ'; volume: number } = {
+    sound: 'organ',
+    volume: 0.5,
+  },
+  extra: {
+    audioSession?: { request: () => void; release: () => void };
+    loadSample?: (midi: number) => Promise<ArrayBuffer>;
+  } = {},
+) => {
   const contexts: ReturnType<typeof createFakeAudioContext>[] = [];
   let current: { sound: 'piano' | 'organ'; volume: number } = { ...settings };
   const engine = createPianoSoundEngine({
@@ -19,7 +28,8 @@ const createHarness = (settings = { sound: 'organ', volume: 0.5 } as const) => {
       return context;
     },
     getSettings: () => current,
-    loadSample,
+    loadSample: extra.loadSample ?? loadSample,
+    audioSession: extra.audioSession,
   });
 
   return {
@@ -34,6 +44,76 @@ const createHarness = (settings = { sound: 'organ', volume: 0.5 } as const) => {
 // A new context resumes asynchronously, so a press sounds a tick later.
 const untilRunning = () =>
   new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+describe('piano sound engine on a fresh launch', () => {
+  it('starts loading the recordings when primed, before any key is pressed', () => {
+    const requested: number[] = [];
+    const { engine } = createHarness(
+      { sound: 'piano', volume: 0.5 },
+      {
+        loadSample: async (midi) => {
+          requested.push(midi);
+
+          return new ArrayBuffer(8);
+        },
+      },
+    );
+
+    engine.prime();
+
+    assert.ok(
+      requested.length > 0,
+      'nothing was fetched until the first key: a first note on a cold start waited for all of it',
+    );
+  });
+
+  it('does not load the recordings for the organ sound', () => {
+    const requested: number[] = [];
+    const { engine } = createHarness(
+      { sound: 'organ', volume: 0.5 },
+      {
+        loadSample: async (midi) => {
+          requested.push(midi);
+
+          return new ArrayBuffer(8);
+        },
+      },
+    );
+
+    engine.prime();
+
+    assert.deepEqual(requested, []);
+  });
+
+  it('asks for the playback audio session when primed and gives it back on dispose', () => {
+    const events: string[] = [];
+    const { engine } = createHarness(undefined, {
+      audioSession: {
+        request: () => events.push('request'),
+        release: () => events.push('release'),
+      },
+    });
+
+    engine.prime();
+    engine.dispose();
+
+    assert.deepEqual(events, ['request', 'release']);
+  });
+
+  it('asks for the audio session on a press even if never primed', () => {
+    const events: string[] = [];
+    const { engine } = createHarness(undefined, {
+      audioSession: {
+        request: () => events.push('request'),
+        release: () => events.push('release'),
+      },
+    });
+
+    engine.press(60);
+
+    assert.ok(events.includes('request'));
+  });
+});
 
 describe('piano sound engine', () => {
   it('creates and resumes the context only at the first press', () => {
@@ -90,9 +170,16 @@ describe('piano sound engine', () => {
     change({ sound: 'piano', volume: 0.5 });
     engine.press(62);
     await untilRunning();
+    // Heard at once through the fallback (three more oscillators) while the
+    // recordings load, not held back until they are in.
+    assert.equal(contexts[0].oscillators.length, 6);
+    assert.equal(contexts[0].sources.length, 0);
+
+    // Once they have loaded, the next key plays a recording.
     await untilRunning();
-    // The piano plays a recording, not oscillators; the organ's three stay.
-    assert.equal(contexts[0].oscillators.length, 3);
+    await untilRunning();
+    engine.press(64);
+    assert.equal(contexts[0].oscillators.length, 6);
     assert.equal(contexts[0].sources.length, 1);
   });
 

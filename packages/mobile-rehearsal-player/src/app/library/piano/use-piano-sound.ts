@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 
 import { pianoCapabilities } from './piano-capabilities';
 import { getPianoPreferences } from './piano-preferences';
+import { createPlaybackAudioSessionLease } from './playback-audio-session';
 import { loadPianoSample } from './piano-sample-sources';
 import {
   createPianoSoundEngine,
@@ -11,7 +12,10 @@ import type { AudioContextLike } from './web-audio-types';
 
 // The app's TypeScript config carries no DOM library, so the browser
 // constructor is described structurally.
-type WebScope = { AudioContext?: new () => AudioContextLike };
+type WebScope = {
+  AudioContext?: new () => AudioContextLike;
+  navigator?: { audioSession?: { type: string } };
+};
 
 const createWebContext = (): AudioContextLike | null => {
   const AudioContextConstructor = (globalThis as unknown as WebScope)
@@ -29,6 +33,9 @@ const acquireEngine = (): PianoSoundEngine => {
   sharedEngine ??= createPianoSoundEngine({
     createContext: createWebContext,
     loadSample: loadPianoSample,
+    audioSession: createPlaybackAudioSessionLease(
+      () => (globalThis as unknown as WebScope).navigator?.audioSession,
+    ),
     getSettings: () => {
       const { sound, volume } = getPianoPreferences();
 
@@ -48,8 +55,12 @@ const NO_NOTES: ReadonlySet<number> = new Set();
 const UNLOCK_EVENTS = ['pointerup', 'touchend', 'click', 'keydown'] as const;
 
 type UnlockTarget = {
-  addEventListener(type: string, listener: () => void): void;
-  removeEventListener(type: string, listener: () => void): void;
+  addEventListener(type: string, listener: () => void, capture: boolean): void;
+  removeEventListener(
+    type: string,
+    listener: () => void,
+    capture: boolean,
+  ): void;
 };
 
 export type PianoSound = {
@@ -83,14 +94,16 @@ export const usePianoSound = (): PianoSound => {
       engine.prime();
     };
 
+    // Capturing, so a key or sheet that stops the event from bubbling cannot
+    // hide the gesture: iOS only lets audio start inside one.
     UNLOCK_EVENTS.forEach((type) => {
-      target?.addEventListener(type, unlock);
+      target?.addEventListener(type, unlock, true);
     });
     unlock();
 
     return () => {
       UNLOCK_EVENTS.forEach((type) => {
-        target?.removeEventListener(type, unlock);
+        target?.removeEventListener(type, unlock, true);
       });
     };
   }, [engine]);
