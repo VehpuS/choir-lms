@@ -84,7 +84,7 @@
         ],
         "options": {
           "cwd": "packages/mobile-rehearsal-player",
-          "command": "expo export --clear"
+          "command": "expo export --clear && tsx ../../tools/web-csp/inject-csp.ts dist"
         }
       },
       "build-browser-test": {
@@ -104,7 +104,7 @@
         ],
         "options": {
           "cwd": "packages/mobile-rehearsal-player",
-          "command": "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=browser-test-client.apps.googleusercontent.com expo export --clear --output-dir dist-browser-test"
+          "command": "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=browser-test-client.apps.googleusercontent.com expo export --clear --output-dir dist-browser-test && tsx ../../tools/web-csp/inject-csp.ts dist-browser-test"
         }
       },
       "eas-build": {

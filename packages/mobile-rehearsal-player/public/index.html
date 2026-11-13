@@ -8,20 +8,10 @@
     />
     <!-- The browser's own UI (address bar, task switcher) takes the app background, and the page is dark before its CSS loads. -->
     <!--
-      Content-Security-Policy, as a meta tag because GitHub Pages sends no
-      headers (so frame-ancestors, which only works as a header, is out of
-      reach). The app loads script only from its own origin, with no inline
-      script and no eval, plus blob: because its audio worklets (pitch
-      shifting, the pitch and recording microphone feeds, the composite
-      engine) are built from source strings and loaded from blob URLs. style-src needs 'unsafe-inline' because
-      react-native-web writes inline style attributes. connect-src and
-      media-src allow any https host because people add audio and score links
-      from anywhere.
+      The Content-Security-Policy is not written here: it is added to the exported page
+      by tools/web-csp/inject-csp.ts (see src/config/web-content-security-policy.ts),
+      because the Expo dev server serves this file too and needs eval.
     -->
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' blob: data: https:; connect-src 'self' blob: data: https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'"
-    />
     <meta name="theme-color" content="#161826" />
     <meta name="color-scheme" content="dark" />
     <!--

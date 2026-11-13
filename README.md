@@ -149,10 +149,10 @@ The web export is a progressive web app as well as the Pages deployment:
 
 - **Install:** `public/manifest.webmanifest` (name, standalone display, the app colours, a maskable icon) with relative `id`, `start_url` and `scope`, so it works under any Pages base path. The icons are rendered from the SVG sources in `packages/mobile-rehearsal-player/assets/web-icons/` by `npx tsx tools/web-icons/render-web-icons.ts` into `public/icons/` (committed). They are composed from Phosphor glyphs; the notice is in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 - **Back:** the browser's Back (Android gesture, browser button) closes the topmost sheet or menu instead of leaving the app (`src/app/components/back-stack/`).
-- **Preferences:** sheets skip their slide or fade under `prefers-reduced-motion` (`MotionModal`).
+- **Preferences:** sheets skip their slide or fade, and the mini-player's long title stops scrolling, under `prefers-reduced-motion` (`MotionModal`, `PlaybackMarqueeText`).
 - **Storage:** keeping a file offline asks the browser for persistent storage once; the Offline files screen says when it refused.
 - **Screen and lock screen:** the screen stays on while a track plays or a score or lyrics are open, and the browser's lock screen, notification and media keys show and drive playback (`components/wake-lock/`, `components/media-session/`; see the playback doc).
-- **Security policy:** a Content-Security-Policy meta tag (GitHub Pages sends no headers) limits script to the app's own origin plus `blob:` for the audio worklets. It cannot restrict outgoing requests, since people add audio and score links from anywhere. The Drive access token stays in `localStorage` for about an hour; the policy is the protection against a script reading it.
+- **Security policy:** a Content-Security-Policy meta tag (GitHub Pages sends no headers), added to the exported page at build time (`tools/web-csp/inject-csp.ts`; the dev server needs `eval` and has none), limits script to the app's own origin plus `blob:` for the audio worklets. It cannot restrict outgoing requests, since people add audio and score links from anywhere. The Drive access token stays in `localStorage` for about an hour; the policy is the protection against a script reading it.
 
 These came out of an audit against modern-web-guidance; the findings and decisions are in `openspec/changes/web-platform-modernization/`.
 

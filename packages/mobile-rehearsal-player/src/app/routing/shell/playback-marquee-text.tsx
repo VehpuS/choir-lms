@@ -11,6 +11,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { useReduceMotion } from '../../components/use-reduce-motion';
 import {
   getPlaybackMarqueeDistancePx,
   PLAYBACK_MARQUEE_GAP_PX,
@@ -32,7 +33,12 @@ export const PlaybackMarqueeText = ({
 }: PlaybackMarqueeTextProps) => {
   const translateX = useRef(new Animated.Value(0)).current;
   const [measurement, setMeasurement] = useState({ text: '', width: 0 });
-  const shouldAnimate = shouldAnimatePlaybackMarquee({ enabled, text });
+  const reduceMotion = useReduceMotion();
+  const shouldAnimate = shouldAnimatePlaybackMarquee({
+    enabled,
+    reduceMotion,
+    text,
+  });
   const distancePx = getPlaybackMarqueeDistancePx({
     measuredTextWidth: measurement.text === text ? measurement.width : 0,
     text,
