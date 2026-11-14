@@ -1,8 +1,8 @@
 import { useEffect, useSyncExternalStore } from 'react';
 
+import { webAudioSession } from '../../components/audio-session/web-audio-session';
 import { pianoCapabilities } from './piano-capabilities';
 import { getPianoPreferences } from './piano-preferences';
-import { createPlaybackAudioSessionLease } from './playback-audio-session';
 import { loadPianoSample } from './piano-sample-sources';
 import {
   createPianoSoundEngine,
@@ -12,10 +12,7 @@ import type { AudioContextLike } from './web-audio-types';
 
 // The app's TypeScript config carries no DOM library, so the browser
 // constructor is described structurally.
-type WebScope = {
-  AudioContext?: new () => AudioContextLike;
-  navigator?: { audioSession?: { type: string } };
-};
+type WebScope = { AudioContext?: new () => AudioContextLike };
 
 const createWebContext = (): AudioContextLike | null => {
   const AudioContextConstructor = (globalThis as unknown as WebScope)
@@ -33,9 +30,7 @@ const acquireEngine = (): PianoSoundEngine => {
   sharedEngine ??= createPianoSoundEngine({
     createContext: createWebContext,
     loadSample: loadPianoSample,
-    audioSession: createPlaybackAudioSessionLease(
-      () => (globalThis as unknown as WebScope).navigator?.audioSession,
-    ),
+    audioSession: webAudioSession.playbackLease(),
     getSettings: () => {
       const { sound, volume } = getPianoPreferences();
 

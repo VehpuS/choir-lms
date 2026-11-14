@@ -47,3 +47,22 @@ Where the browser has an audio session, the piano SHALL ask for the `playback` t
 
 - **WHEN** the browser has no audio session
 - **THEN** the piano behaves as before
+
+### Requirement: Playing and capturing at once
+
+While the microphone is open (pitch detection or recording), the page SHALL ask for the `play-and-record` audio session, so that the piano and playing tracks stay audible while it listens; the piano's `playback` request SHALL apply only while nothing is capturing.
+
+#### Scenario: Pitch detection with the piano open
+
+- **WHEN** the piano is open and pitch detection or recording starts listening
+- **THEN** the microphone is available (not "No microphone found"), the audio session type is `play-and-record`, and the piano is still heard
+
+#### Scenario: Opening the piano while listening
+
+- **WHEN** pitch detection is listening and the piano opens
+- **THEN** the microphone keeps listening
+
+#### Scenario: The microphone closes
+
+- **WHEN** the microphone closes while the piano is still open
+- **THEN** the audio session type is `playback` again, and after the piano closes too, what it was before
