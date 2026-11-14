@@ -32,23 +32,24 @@ const answerToChoice = (input: MicrophoneInput | undefined) => {
 export const createMicrophoneInputResolver = (
   deps: ResolveMicrophoneInputDeps,
 ) => {
-  const needsNames = (
-    choice: MicrophoneChoice | null,
-    devices: readonly RawMediaDevice[],
-  ) => {
-    if (choice?.kind === 'automatic' || hasInputNames(devices)) {
-      return false;
-    }
-
-    // With nothing remembered and at most one input, there is nothing to ask.
-    return choice !== null || toMicrophoneInputs(devices).length > 1;
-  };
-
   return async (): Promise<string | undefined> => {
     const choice = await deps.getChoice();
     let devices = await deps.listDevices();
 
-    if (needsNames(choice, devices)) {
+    if (choice?.kind === 'automatic') {
+      return undefined;
+    }
+
+    if (!hasInputNames(devices)) {
+      // Safari lists one nameless placeholder (no id) until a microphone has
+      // been opened in the page, so the count means nothing yet. A remembered
+      // input is asked for by its stored id (an unplugged one falls back to
+      // the system's choice); otherwise the system's input is opened and
+      // closed once to learn the real list.
+      if (choice?.kind === 'input') {
+        return choice.input.deviceId;
+      }
+
       await deps.probe();
       devices = await deps.listDevices();
     }
