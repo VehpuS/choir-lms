@@ -84,6 +84,7 @@ const openMicrophoneSettings = async (page: Page) => {
 void runScenario({
   library: { playlists: [], sources: [alto] },
   microphone: true,
+  microphoneChoice: 'ask',
   requires: ['chromium'],
   steps: async ({ page, pass, session, shot }) => {
     await page.addInitScript(TWO_INPUTS);

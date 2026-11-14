@@ -49,6 +49,8 @@ export const runScenario = async (options: {
   recordings?: MockStoredRecording[];
   /** A fake microphone playing the choir stem; see `openMockLibrarySession`. */
   microphone?: boolean;
+  /** See `openMockLibrarySession`: `'ask'` leaves the microphone choice unset. */
+  microphoneChoice?: 'automatic' | 'ask';
   /** Pixel density for the session; see `openMockLibrarySession`. */
   deviceScaleFactor?: number;
   /** Window size in points, for example a landscape phone; see `openMockLibrarySession`. */
@@ -83,6 +85,7 @@ export const runScenario = async (options: {
     lyricsLookup: options.lyricsLookup,
     mediaProbe: options.mediaProbe,
     microphone: options.microphone,
+    microphoneChoice: options.microphoneChoice,
     recordings: options.recordings,
     viewport: options.viewport,
     webFiles: options.webFiles,
