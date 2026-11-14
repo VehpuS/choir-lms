@@ -52,3 +52,22 @@ Settings SHALL show and change the remembered microphone choice.
 
 - **WHEN** the platform cannot capture the microphone
 - **THEN** the category is not shown
+
+### Requirement: Sound while listening (experimental)
+
+Settings SHALL let the person choose what audio session type the page asks for while the microphone is open.
+
+#### Scenario: The default
+
+- **WHEN** the microphone is open and no route was chosen
+- **THEN** the page asks for the play-and-record session type, and the previous type returns when the microphone closes
+
+#### Scenario: Letting the browser decide
+
+- **WHEN** the route is Automatic and the microphone is open
+- **THEN** the page asks for no session type (not even for the piano) and the previous type is kept
+
+#### Scenario: Playback once the microphone is on
+
+- **WHEN** the route is Playback once the microphone is on
+- **THEN** the page asks for play-and-record to start the capture and for playback once the stream is running

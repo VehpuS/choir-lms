@@ -15,6 +15,7 @@ const PROPER_NAMES: ReadonlySet<string> = new Set([
   'Add',
   'Alexander',
   'Android',
+  'Bluetooth',
   'Drive',
   'Expo',
   'Go',

@@ -14,6 +14,8 @@ The page takes whichever input the system picks, and a person cannot choose anot
 - Browsers hide input names until a microphone has been granted, so the first start with no choice opens the system's input to get the grant and the names, closes it, then asks. Once names are known (or the grant exists) the prompt comes first and the chosen input is the only one opened.
 - Web only. Native has no microphone capture yet; the category is hidden there.
 
+- **An experimental "Sound while listening" setting** (Settings > Microphone), added after the iPhone check found that the earbuds still drop to a thin call sound a second or two after each playback start while a microphone is open, even with the iPhone's own microphone chosen and with no sound made. It chooses what the page asks iOS for while the microphone is open: `play-and-record` (default, as now), `auto` (ask for nothing), or `playback` once the stream is running (some iOS versions keep capturing under it). The maintainer tries each on the phone, so no deploy is needed per idea. Per device, applied the next time the microphone starts.
+
 Not included: setting iOS's own Bluetooth output option from the web (the platform does not offer it); switching the input while the microphone is already open (change it, then stop and start).
 
 ## Capabilities
