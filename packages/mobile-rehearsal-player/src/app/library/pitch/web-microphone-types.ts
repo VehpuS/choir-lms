@@ -12,12 +12,22 @@ export type MediaStreamTrackLike = {
 export type MediaStreamLike = { getTracks: () => MediaStreamTrackLike[] };
 
 export type MicrophoneConstraints = {
-  audio: {
-    echoCancellation: boolean;
-    noiseSuppression: boolean;
-    autoGainControl: boolean;
-    channelCount: number;
-  };
+  audio:
+    | true
+    | {
+        echoCancellation: boolean;
+        noiseSuppression: boolean;
+        autoGainControl: boolean;
+        channelCount: number;
+        /** `ideal`, so an input that has been unplugged falls back to the default. */
+        deviceId?: { ideal: string };
+      };
+};
+
+export type MediaDeviceInfoLike = {
+  deviceId: string;
+  kind: string;
+  label: string;
 };
 
 export type WorkletMessageEvent = {
@@ -50,6 +60,9 @@ export type MicAudioContextLike = {
 export type BrowserMicrophoneGlobals = {
   navigator?: {
     mediaDevices?: {
+      enumerateDevices?: () => Promise<MediaDeviceInfoLike[]>;
+      addEventListener?: (type: string, listener: () => void) => void;
+      removeEventListener?: (type: string, listener: () => void) => void;
       getUserMedia?: (
         constraints: MicrophoneConstraints,
       ) => Promise<MediaStreamLike>;

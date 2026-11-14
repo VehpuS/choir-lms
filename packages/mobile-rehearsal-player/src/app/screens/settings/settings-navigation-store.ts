@@ -11,6 +11,7 @@ export type SettingsCategoryKey =
   | 'bulk-selections'
   | 'piano'
   | 'pitch'
+  | 'microphone'
   | 'my-parts'
   | 'search-sources'
   | 'offline-storage'

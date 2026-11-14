@@ -22,6 +22,7 @@ import {
 import { MyPartsSection } from './my-parts-section';
 import { OfflineStorageSection } from './offline-storage-section';
 import { PianoSection } from './piano-section';
+import { MicrophoneSection } from './microphone-section';
 import { PitchSection } from './pitch-section';
 import { RecordingsSection } from './recordings-section';
 import { RenamingSection } from './renaming-section';
@@ -40,6 +41,8 @@ const renderCategoryPage = (page: SettingsCategoryKey) => {
       return <PianoSection />;
     case 'pitch':
       return <PitchSection />;
+    case 'microphone':
+      return <MicrophoneSection />;
     case 'my-parts':
       return <MyPartsSection />;
     case 'offline-storage':

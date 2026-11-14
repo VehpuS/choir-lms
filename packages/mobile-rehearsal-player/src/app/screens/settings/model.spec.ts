@@ -126,6 +126,7 @@ describe('piano settings rows', () => {
         'renaming',
         'piano',
         'pitch',
+        'microphone',
         'my-parts',
         'search-sources',
         'offline-storage',

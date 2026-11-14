@@ -12,6 +12,7 @@ import {
   parsePianoPreferences,
   type PianoPreferences,
 } from '../../library/piano/piano-preferences';
+import { MICROPHONE_COPY } from '../../library/pitch/microphone-choice/microphone-choice-model';
 import type { SettingsCategoryKey } from './settings-navigation-store';
 import type { BulkChoicePreferences } from '../../library/selection/bulk-choices';
 
@@ -56,6 +57,11 @@ export const SETTINGS_CATEGORIES: readonly SettingsCategory[] = [
     summary: 'How quiet a sound may be and still count',
     title: 'Pitch detection',
   },
+  {
+    key: 'microphone',
+    summary: MICROPHONE_COPY.settingsSummary,
+    title: MICROPHONE_COPY.settingsTitle,
+  },
   { key: 'my-parts', summary: 'Your voice parts', title: 'My parts' },
   {
     key: 'search-sources',
@@ -98,7 +104,7 @@ export const visibleSettingsCategories = ({
       return canPlayPiano;
     }
 
-    if (category.key === 'pitch') {
+    if (category.key === 'pitch' || category.key === 'microphone') {
       return canListenForPitch;
     }
 

@@ -18,6 +18,7 @@ import {
   fakeMicrophoneLaunchArgs,
   prepareStemMicrophoneWav,
 } from './fake-microphone';
+import { MICROPHONE_CHOICE_KEY } from '../../packages/mobile-rehearsal-player/src/app/library/pitch/microphone-choice/microphone-choice-storage';
 import { installMediaProbe } from './media-probe';
 import {
   installMockLyricsLookup,
@@ -158,6 +159,13 @@ export const openMockLibrarySession = async (options: {
    */
   microphone?: boolean;
   /**
+   * What the microphone prompt does. By default the app is given a remembered
+   * "Automatic" choice, so the fake device's several inputs never open the
+   * "Which microphone?" prompt in scenarios about something else; `'ask'`
+   * leaves nothing remembered, for the scenario that tests the prompt.
+   */
+  microphoneChoice?: 'automatic' | 'ask';
+  /**
    * Copies the page's audio output into a buffer (`readAudioOutput`), and
    * optionally forces the sample rate its audio contexts run at.
    */
@@ -244,9 +252,12 @@ export const openMockLibrarySession = async (options: {
   }
 
   const drive = options.drive ?? { state: 'signed-out' as const };
-  const entries = {
+  const entries: Record<string, string> = {
     ...buildMockLibraryStorageEntries(options.library),
     ...buildMockDriveStorageEntries(drive),
+    ...(options.microphone && options.microphoneChoice !== 'ask'
+      ? { [MICROPHONE_CHOICE_KEY]: 'automatic' }
+      : {}),
   };
   // Registered first: Playwright runs the most recently added matching route,
   // so every mock installed after this (Drive, web files) wins and the guard
