@@ -14,6 +14,7 @@ import type {
   BrowserMicrophoneGlobals,
   MicAudioContextLike,
 } from './web-microphone-types';
+import { resolveMicrophoneInput } from './microphone-choice/resolve-microphone-input.default';
 import { webAudioSession } from '../../components/audio-session/web-audio-session';
 
 const PROCESSOR_NAME = 'choirlms-pcm-tap';
@@ -116,18 +117,26 @@ const openMicrophone = async (emitter: PcmEmitter): Promise<OpenMicrophone> => {
   // iPhone's silent switch), which has no microphone input: while the
   // microphone is open the session goes back to the browser's choice.
   const releaseAudioSession = webAudioSession.holdCapture();
+  const getUserMedia = navigator.mediaDevices.getUserMedia.bind(
+    navigator.mediaDevices,
+  );
 
-  // Echo cancellation, noise suppression and auto gain would mangle pitch
-  // (and a faithful recording), so all three are off.
-  const stream = await navigator.mediaDevices
-    .getUserMedia({
-      audio: {
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false,
-        channelCount: 1,
-      },
-    })
+  // The input is chosen (or remembered) before the stream opens, so only the
+  // chosen one is ever opened for capture. Closing the prompt means the
+  // system's choice. Echo cancellation, noise suppression and auto gain would
+  // mangle pitch (and a faithful recording), so all three are off.
+  const stream = await resolveMicrophoneInput()
+    .then((deviceId) =>
+      getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+          channelCount: 1,
+          ...(deviceId ? { deviceId: { ideal: deviceId } } : {}),
+        },
+      }),
+    )
     .catch((error: unknown) => {
       releaseAudioSession();
       throw toPcmSourceError(error);
