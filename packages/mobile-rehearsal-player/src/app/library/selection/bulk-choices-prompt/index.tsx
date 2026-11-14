@@ -1,24 +1,17 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { AppIcon } from '../../../components/app-icon';
 import { OutlinedActionButton } from '../../../components/outlined-action-button';
 import { SegmentedControl } from '../../../components/segmented-control';
-import {
-  buttonInteractionGuardStyle,
-  interactionGuardProps,
-} from '../../../components/interaction-guard';
 import { appTheme } from '../../../utils/theme';
 import { CenteredDialogCard } from '../../components/centered-dialog-card';
+import { RememberChoiceRow } from '../../components/remember-choice-row';
 import type { BulkChoiceQuestion } from '../bulk-choices';
 import {
   DEFAULT_PROMPT_ANSWERS,
   getBulkChoicesPromptCopy,
   type BulkChoiceAnswers,
 } from './model';
-import { ariaStateProps } from '../../../components/aria-state';
-
-const CHECKBOX_SIZE = 22;
 
 type BulkChoicesPromptProps = {
   dueQuestions: readonly BulkChoiceQuestion[];
@@ -69,28 +62,13 @@ export const BulkChoicesPrompt = ({
         );
       })}
 
-      <Pressable
-        accessibilityLabel={copy.rememberLabel}
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: remember }}
-        {...ariaStateProps({ checked: remember })}
-        {...interactionGuardProps}
-        onPress={() => {
+      <RememberChoiceRow
+        checked={remember}
+        label={copy.rememberLabel}
+        onToggle={() => {
           setRemember((current) => !current);
         }}
-        style={[styles.rememberRow, buttonInteractionGuardStyle]}
-      >
-        <View style={[styles.checkbox, remember ? styles.checkboxOn : null]}>
-          {remember ? (
-            <AppIcon
-              color={appTheme.colors.accentOnTint}
-              name="check"
-              size={16}
-            />
-          ) : null}
-        </View>
-        <Text style={styles.rememberLabel}>{copy.rememberLabel}</Text>
-      </Pressable>
+      />
 
       <View style={styles.actions}>
         <OutlinedActionButton
@@ -123,33 +101,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
-  checkbox: {
-    alignItems: 'center',
-    borderColor: appTheme.colors.borderButton,
-    borderRadius: appTheme.radius.sm,
-    borderWidth: 1,
-    height: CHECKBOX_SIZE,
-    justifyContent: 'center',
-    width: CHECKBOX_SIZE,
-  },
-  checkboxOn: {
-    backgroundColor: appTheme.colors.surfaceAccent,
-    borderColor: appTheme.colors.accent,
-  },
   question: {
     gap: appTheme.space.xs,
     marginBottom: appTheme.space.sm,
-  },
-  rememberLabel: {
-    color: appTheme.colors.text,
-    fontSize: 15,
-  },
-  // 44pt row, the touch-target minimum, with the box inside it.
-  rememberRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: appTheme.space.sm,
-    minHeight: appTheme.space.touchTarget,
   },
   title: {
     color: appTheme.colors.text,

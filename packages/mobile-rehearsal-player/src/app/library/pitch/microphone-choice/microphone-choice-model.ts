@@ -155,3 +155,68 @@ export const parseMicrophoneChoice = (
     return null;
   }
 };
+
+export type ChoiceRow = { label: string; value: string };
+
+export const ASK_VALUE = 'ask';
+export const AUTOMATIC_ROW_VALUE = 'automatic';
+const INPUT_VALUE_PREFIX = 'input:';
+
+const inputRowValue = (deviceId: string) => `${INPUT_VALUE_PREFIX}${deviceId}`;
+
+/** The rows of the prompt: Automatic first, then each connected input. */
+export const promptRows = (inputs: readonly MicrophoneInput[]): ChoiceRow[] => [
+  { label: MICROPHONE_COPY.automaticLabel, value: AUTOMATIC_ROW_VALUE },
+  ...inputs.map((input) => ({
+    label: input.label,
+    value: inputRowValue(input.deviceId),
+  })),
+];
+
+/** The rows of Settings: the prompt's, with Ask each time first. */
+export const settingsRows = (
+  choice: MicrophoneChoice | null,
+  inputs: readonly MicrophoneInput[],
+): ChoiceRow[] => [
+  { label: MICROPHONE_COPY.askLabel, value: ASK_VALUE },
+  { label: MICROPHONE_COPY.automaticLabel, value: AUTOMATIC_ROW_VALUE },
+  ...listInputOptions(choice, inputs).map((option) => ({
+    label: describeInputOption(option),
+    value: inputRowValue(option.deviceId),
+  })),
+];
+
+export const selectedRowValue = (choice: MicrophoneChoice | null): string => {
+  if (choice === null) {
+    return ASK_VALUE;
+  }
+
+  return choice.kind === 'automatic'
+    ? AUTOMATIC_ROW_VALUE
+    : inputRowValue(choice.input.deviceId);
+};
+
+/**
+ * The input a row stands for, or `undefined` for the system's choice (and for
+ * a row that is not in the list).
+ */
+export const inputForRow = (
+  value: string,
+  inputs: readonly MicrophoneInput[],
+): MicrophoneInput | undefined => {
+  return inputs.find((input) => inputRowValue(input.deviceId) === value);
+};
+
+/** The choice to store for a Settings row; Ask each time clears it. */
+export const choiceFromRow = (
+  value: string,
+  options: readonly MicrophoneInput[],
+): MicrophoneChoice | null => {
+  if (value === AUTOMATIC_ROW_VALUE) {
+    return { kind: 'automatic' };
+  }
+
+  const input = inputForRow(value, options);
+
+  return input ? { kind: 'input', input } : null;
+};

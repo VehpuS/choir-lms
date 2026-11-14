@@ -2,7 +2,12 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  choiceFromRow,
   decideInput,
+  inputForRow,
+  promptRows,
+  selectedRowValue,
+  settingsRows,
   hasInputNames,
   listInputOptions,
   parseMicrophoneChoice,
@@ -121,5 +126,45 @@ describe('stored choice', () => {
     assert.equal(parseMicrophoneChoice('{"deviceId":""}'), null);
     assert.equal(parseMicrophoneChoice('nonsense'), null);
     assert.equal(parseMicrophoneChoice(null), null);
+  });
+});
+
+describe('choice rows', () => {
+  const inputs = [builtIn, earbuds];
+
+  it('offers Automatic then each input in the prompt', () => {
+    assert.deepEqual(
+      promptRows(inputs).map((row) => row.value),
+      ['automatic', 'input:a', 'input:b'],
+    );
+  });
+
+  it('offers Ask each time first in Settings, with a missing input marked', () => {
+    const rows = settingsRows({ kind: 'input', input: earbuds }, [builtIn]);
+
+    assert.deepEqual(
+      rows.map((row) => row.value),
+      ['ask', 'automatic', 'input:a', 'input:b'],
+    );
+    assert.equal(rows[3]?.label, 'Earbuds (not connected)');
+  });
+
+  it('selects the row for the stored choice', () => {
+    assert.equal(selectedRowValue(null), 'ask');
+    assert.equal(selectedRowValue({ kind: 'automatic' }), 'automatic');
+    assert.equal(
+      selectedRowValue({ kind: 'input', input: earbuds }),
+      'input:b',
+    );
+  });
+
+  it('turns a row back into a choice, clearing it for Ask each time', () => {
+    assert.equal(choiceFromRow('ask', inputs), null);
+    assert.deepEqual(choiceFromRow('automatic', inputs), { kind: 'automatic' });
+    assert.deepEqual(choiceFromRow('input:a', inputs), {
+      kind: 'input',
+      input: builtIn,
+    });
+    assert.equal(inputForRow('automatic', inputs), undefined);
   });
 });
