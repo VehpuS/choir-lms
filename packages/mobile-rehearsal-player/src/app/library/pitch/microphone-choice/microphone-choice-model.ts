@@ -39,6 +39,8 @@ export const MICROPHONE_COPY = {
   automaticLabel: 'Automatic (the system’s choice)',
   askLabel: 'Ask each time',
   body: 'Which microphone to use for pitch detection and recording. A headset or earbud microphone can make playback sound thin on some phones; the phone’s own microphone may avoid that.',
+  namesHiddenHint:
+    'The browser shows the inputs once the microphone has been used in this session. Start pitch detection or recording, then come back to pick one.',
   notConnectedSuffix: ' (not connected)',
   promptBody: 'More than one microphone is available.',
   promptTitle: 'Which microphone?',

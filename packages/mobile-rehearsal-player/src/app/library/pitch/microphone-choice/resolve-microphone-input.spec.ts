@@ -108,18 +108,50 @@ describe('resolving the microphone input', () => {
     assert.equal(calls.asked, 1);
   });
 
-  it('does not probe when Automatic is remembered, or for one input', async () => {
-    const automatic = setup({
+  it('does not probe when Automatic is remembered', async () => {
+    const { calls, resolve } = setup({
       choice: { kind: 'automatic' },
       devices: unnamed,
     });
-    const single = setup({ devices: unnamed.slice(0, 1) });
 
-    await automatic.resolve();
-    await single.resolve();
+    assert.equal(await resolve(), undefined);
+    assert.equal(calls.probed, 0);
+  });
 
-    assert.equal(automatic.calls.probed, 0);
-    assert.equal(single.calls.probed, 0);
-    assert.equal(single.calls.asked, 0);
+  it('opens the system input once even when only a placeholder is listed', async () => {
+    // Safari: one nameless input with no id until a microphone was opened.
+    const placeholder = [{ deviceId: '', kind: 'audioinput', label: '' }];
+    const { calls, resolve } = setup({
+      devices: placeholder,
+      devicesAfterProbe: named,
+    });
+
+    await resolve();
+
+    assert.equal(calls.probed, 1);
+    assert.equal(calls.asked, 1);
+  });
+
+  it('does not ask when the real list turns out to be one input', async () => {
+    const placeholder = [{ deviceId: '', kind: 'audioinput', label: '' }];
+    const { calls, resolve } = setup({
+      devices: placeholder,
+      devicesAfterProbe: named.slice(0, 1),
+    });
+
+    assert.equal(await resolve(), undefined);
+    assert.equal(calls.probed, 1);
+    assert.equal(calls.asked, 0);
+  });
+
+  it('asks for a remembered input by its stored id when names are hidden', async () => {
+    const { calls, resolve } = setup({
+      choice: { kind: 'input', input: { deviceId: 'b', label: 'Earbuds' } },
+      devices: unnamed,
+    });
+
+    assert.equal(await resolve(), 'b');
+    assert.equal(calls.probed, 0);
+    assert.equal(calls.asked, 0);
   });
 });

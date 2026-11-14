@@ -8,8 +8,8 @@ import { runScenario } from './scenario-runner';
 
 // Choosing the microphone. The page gets two inputs (the browser's fake device
 // stands behind both) and records what each capture asked for. Checks: the
-// first start shows the names only after a microphone was allowed (an
-// input is opened to learn them), the prompt lists the inputs, a remembered
+// first start sees only a nameless placeholder input until a microphone was
+// opened (an input is opened to learn the names), the prompt lists the inputs, a remembered
 // input is opened without a prompt, Settings shows and changes the choice,
 // Automatic means the system's choice, and an input that is gone falls
 // back without an error and stays listed.
@@ -29,12 +29,12 @@ const TWO_INPUTS = `
     window.__captures = [];
     const media = navigator.mediaDevices;
     const getUserMedia = media.getUserMedia.bind(media);
-    // Browsers hide names until a microphone has been allowed.
+    // Safari lists one placeholder input, with no id and no name, until a
+    // microphone has been opened in the page; only then the real ones.
     media.enumerateDevices = async () =>
-      window.__inputs.map((device) => ({
-        ...device,
-        label: window.__allowed ? device.label : '',
-      }));
+      window.__allowed
+        ? window.__inputs.map((device) => ({ ...device }))
+        : [{ deviceId: '', kind: 'audioinput', groupId: '', label: '' }];
     media.getUserMedia = async (constraints) => {
       const audio = constraints && constraints.audio;
       window.__captures.push(
