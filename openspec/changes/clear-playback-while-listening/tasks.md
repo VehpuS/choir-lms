@@ -8,7 +8,7 @@
 ## 1. Before building
 
 - [x] 1.1 Maintainer (2026-11-15, screen recording): a composite with pitch detection off stops within about a second of the app going to the background and resumes from there on return. The engine does not play in the background; the hand-back in design Decision 4 stands (Decision 5)
-- [ ] 1.2 Remove "Sound while listening": `audio-route-store`, the Settings control, the `AudioRoute` branches of the arbiter, their specs and the `microphone-audio-route` scenario; the arbiter keeps `playback` for the piano and `play-and-record` while capturing
+- [x] 1.2 Remove "Sound while listening": `audio-route-store`, the Settings control, the `AudioRoute` branches of the arbiter, their specs and the `microphone-audio-route` scenario; the arbiter keeps `playback` for the piano and `play-and-record` while capturing
 
 ## 2. Stage 1: pitch detection
 

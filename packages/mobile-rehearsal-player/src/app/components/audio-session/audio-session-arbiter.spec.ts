@@ -141,58 +141,18 @@ describe('createAudioSessionArbiter', () => {
   });
 });
 
-describe('audio route while the microphone is open', () => {
-  it('asks for nothing with the auto route and lets the piano wait', () => {
-    const { changes, session } = createSession('auto');
-    const arbiter = createAudioSessionArbiter(() => session);
-    const stop = arbiter.holdCapture('auto');
-
-    arbiter.playbackLease().request();
-    assert.equal(session.type, 'auto');
-    assert.deepEqual(
-      changes.filter((type) => type === 'playback'),
-      [],
-    );
-
-    stop();
-    assert.equal(session.type, 'playback');
-  });
-
-  it('starts the capture in play-and-record, then settles on playback', () => {
+describe('releasing a capture hold', () => {
+  it('is harmless to release twice, and one release leaves other holds in place', () => {
     const { session } = createSession('auto');
     const arbiter = createAudioSessionArbiter(() => session);
-    const hold = arbiter.holdCapture('playback-after-open');
+    const stopFirst = arbiter.holdCapture();
+    const stopSecond = arbiter.holdCapture();
 
+    stopFirst();
+    stopFirst();
     assert.equal(session.type, 'play-and-record');
 
-    hold.opened();
-    assert.equal(session.type, 'playback');
-
-    hold();
-    assert.equal(session.type, 'auto');
-  });
-
-  it('keeps play-and-record while any capture is still opening', () => {
-    const { session } = createSession('auto');
-    const arbiter = createAudioSessionArbiter(() => session);
-    const first = arbiter.holdCapture('playback-after-open');
-
-    arbiter.holdCapture('playback-after-open');
-    first.opened();
-
-    assert.equal(session.type, 'play-and-record');
-  });
-
-  it('ignores opened() after release, and repeated releases', () => {
-    const { session } = createSession('auto');
-    const hold = createAudioSessionArbiter(() => session).holdCapture(
-      'playback-after-open',
-    );
-
-    hold();
-    hold.opened();
-    hold();
-
+    stopSecond();
     assert.equal(session.type, 'auto');
   });
 });

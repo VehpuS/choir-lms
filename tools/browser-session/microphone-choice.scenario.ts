@@ -160,6 +160,13 @@ void runScenario({
       'Settings did not show the remembered input as selected',
     );
     await shot('2-settings');
+    // The page asks for no session experiment: the setting was removed because
+    // its options could not change how playback sounds.
+    assert.equal(
+      await page.getByText('Sound while listening', { exact: true }).count(),
+      0,
+      'Settings still offers Sound while listening',
+    );
     await page.getByLabel('Ask each time', { exact: true }).click();
     await page.waitForFunction(
       (key) => window.localStorage.getItem(key) === null,

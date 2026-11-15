@@ -24,28 +24,12 @@ export type AudioSessionLease = {
 const PLAYBACK = 'playback';
 const PLAY_AND_RECORD = 'play-and-record';
 
-/**
- * What the session is while the microphone is open (a Settings experiment, to
- * find what keeps Bluetooth earbuds out of iOS's thin call mode):
- *  - `play-and-record`: the type for playing and capturing at once (default);
- *  - `auto`: the page asks for nothing; the browser decides;
- *  - `playback-after-open`: `play-and-record` only to start the capture, then
- *    `playback` once the stream is running (some iOS versions keep capturing).
- */
-export type AudioRoute = 'play-and-record' | 'auto' | 'playback-after-open';
-
-export const DEFAULT_AUDIO_ROUTE: AudioRoute = 'play-and-record';
-
-/** Release it when the microphone closes; `opened` says the stream is running. */
-export type CaptureHold = (() => void) & { opened: () => void };
-
-type Hold = { route: AudioRoute; isOpened: boolean };
-
 export const createAudioSessionArbiter = (
   getSession: () => AudioSessionLike | undefined,
 ) => {
   let wantsPlayback = false;
-  const holds = new Set<Hold>();
+  // One entry per open capture; each is released once.
+  const holds = new Set<object>();
   let previousType: string | null = null;
 
   const setType = (session: AudioSessionLike, type: string) => {
@@ -54,24 +38,6 @@ export const createAudioSessionArbiter = (
     } catch {
       // A browser that refuses the type; things go on as they were.
     }
-  };
-
-  const wantedWhileCapturing = (): string | null => {
-    const types = [...holds].map((hold) => {
-      if (hold.route === 'auto') {
-        return null;
-      }
-
-      return hold.route === 'playback-after-open' && hold.isOpened
-        ? PLAYBACK
-        : PLAY_AND_RECORD;
-    });
-
-    if (types.includes(PLAY_AND_RECORD)) {
-      return PLAY_AND_RECORD;
-    }
-
-    return types.includes(PLAYBACK) ? PLAYBACK : null;
   };
 
   const apply = () => {
@@ -84,7 +50,7 @@ export const createAudioSessionArbiter = (
     // Capturing needs input (and so wins over the piano's request); with no
     // capture the piano's request; otherwise nothing.
     const wanted =
-      holds.size > 0 ? wantedWhileCapturing() : wantsPlayback ? PLAYBACK : null;
+      holds.size > 0 ? PLAY_AND_RECORD : wantsPlayback ? PLAYBACK : null;
 
     if (wanted !== null) {
       if (previousType === null) {
@@ -121,28 +87,20 @@ export const createAudioSessionArbiter = (
       },
     }),
     /**
-     * The microphone is open: the session follows `route` until the returned
-     * function is called (once), whatever else is playing.
+     * The microphone is open: the session is `play-and-record` until the
+     * returned function is called (once), whatever else is playing.
      */
-    holdCapture: (route: AudioRoute = DEFAULT_AUDIO_ROUTE): CaptureHold => {
-      const hold: Hold = { route, isOpened: false };
+    holdCapture: (): (() => void) => {
+      const hold = {};
 
       holds.add(hold);
       apply();
 
-      const release = () => {
+      return () => {
         if (holds.delete(hold)) {
           apply();
         }
       };
-      const opened = () => {
-        if (holds.has(hold) && !hold.isOpened) {
-          hold.isOpened = true;
-          apply();
-        }
-      };
-
-      return Object.assign(release, { opened });
     },
   };
 };

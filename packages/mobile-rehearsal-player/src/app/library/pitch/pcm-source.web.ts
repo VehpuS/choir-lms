@@ -15,7 +15,6 @@ import type {
   MicAudioContextLike,
 } from './web-microphone-types';
 import { resolveMicrophoneInput } from './microphone-choice/resolve-microphone-input.default';
-import { audioRouteStore } from '../../components/audio-session/audio-route-store';
 import { webAudioSession } from '../../components/audio-session/web-audio-session';
 
 const PROCESSOR_NAME = 'choirlms-pcm-tap';
@@ -116,12 +115,8 @@ const openMicrophone = async (emitter: PcmEmitter): Promise<OpenMicrophone> => {
 
   // The piano may hold the audio session at `playback` (so it is audible on an
   // iPhone's silent switch), which has no microphone input: while the
-  // microphone is open the session goes back to the browser's choice.
-  // The audio route is a Settings experiment; read it before the capture starts.
-  await audioRouteStore.hydrate();
-
-  const audioHold = webAudioSession.holdCapture(audioRouteStore.getSnapshot());
-  const releaseAudioSession = audioHold;
+  // microphone is open the session is `play-and-record`.
+  const releaseAudioSession = webAudioSession.holdCapture();
   const getUserMedia = navigator.mediaDevices.getUserMedia.bind(
     navigator.mediaDevices,
   );
@@ -166,8 +161,6 @@ const openMicrophone = async (emitter: PcmEmitter): Promise<OpenMicrophone> => {
   try {
     await loadWorklet(context);
     await context.resume();
-    // The stream is running; the `playback-after-open` route settles here.
-    audioHold.opened();
   } catch (error) {
     closeAll();
     throw toPcmSourceError(error);
