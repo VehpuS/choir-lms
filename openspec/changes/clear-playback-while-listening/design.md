@@ -134,6 +134,7 @@ Preparing writes the track as mono 16-bit PCM at the context's rate: about 5.8 M
 
 The controller decides per load and per microphone change; one module (`listening-engine/handover.ts`) owns the switch so there is a single place that can get position and state wrong.
 
+- **Stage 1 and recording:** recording follows the media element's clock until stage 2. Until then the rule does not apply while the Recording tool is open (the track stays on, or goes back to, the media element), and `Recording` is not offered while the engine plays a track.
 - **A track loads while a microphone is open:** it loads straight onto the engine. Prepared already: it starts as a composite does. Not prepared: the player shows `Preparing for listening · first time only` with progress, then plays. The next item in the queue is prepared ahead while the current one plays.
 - **A microphone opens during a track:** the element keeps playing while the track is prepared (progress in the monitor strip), then the switch happens at the element's position: engine seeks, starts, element pauses and is released. If playback was paused, the switch is silent. Until the switch the sound may be thin on an iPhone with Bluetooth; that is the state before this change, for a few seconds once per track.
 - **The microphone closes during a track** (the last listener stops, or a take ends): the track goes back to the media element at the engine's position, in the same playing or paused state.

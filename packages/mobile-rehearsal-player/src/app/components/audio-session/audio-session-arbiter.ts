@@ -31,6 +31,7 @@ export const createAudioSessionArbiter = (
   // One entry per open capture; each is released once.
   const holds = new Set<object>();
   let previousType: string | null = null;
+  const captureListeners = new Set<() => void>();
 
   const setType = (session: AudioSessionLike, type: string) => {
     try {
@@ -70,6 +71,13 @@ export const createAudioSessionArbiter = (
     }
   };
 
+  // Only the edges matter to listeners: the first hold, and the last release.
+  const notifyCapture = (wasCapturing: boolean) => {
+    if (wasCapturing !== holds.size > 0) {
+      captureListeners.forEach((listener) => listener());
+    }
+  };
+
   return {
     /** The piano: audible on the silent switch (`playback`) while nothing captures. */
     playbackLease: (): AudioSessionLease => ({
@@ -93,13 +101,27 @@ export const createAudioSessionArbiter = (
     holdCapture: (): (() => void) => {
       const hold = {};
 
+      const wasCapturing = holds.size > 0;
+
       holds.add(hold);
       apply();
+      notifyCapture(wasCapturing);
 
       return () => {
         if (holds.delete(hold)) {
           apply();
+          notifyCapture(true);
         }
+      };
+    },
+    /** Whether any microphone is open now. */
+    isCapturing: (): boolean => holds.size > 0,
+    /** Called when the first microphone opens and when the last one closes. */
+    subscribeCapture: (listener: () => void) => {
+      captureListeners.add(listener);
+
+      return () => {
+        captureListeners.delete(listener);
       };
     },
   };

@@ -156,3 +156,36 @@ describe('releasing a capture hold', () => {
     assert.equal(session.type, 'auto');
   });
 });
+
+describe('whether a microphone is open', () => {
+  it('follows the holds and announces only the first open and the last close', () => {
+    const { session } = createSession('auto');
+    const arbiter = createAudioSessionArbiter(() => session);
+    const seen: boolean[] = [];
+    const stop = arbiter.subscribeCapture(() =>
+      seen.push(arbiter.isCapturing()),
+    );
+
+    assert.equal(arbiter.isCapturing(), false);
+
+    const stopFirst = arbiter.holdCapture();
+    const stopSecond = arbiter.holdCapture();
+
+    stopFirst();
+    stopFirst();
+    assert.equal(arbiter.isCapturing(), true);
+
+    stopSecond();
+    assert.deepEqual(seen, [true, false]);
+    stop();
+  });
+
+  it('reports it without an audio session too', () => {
+    const arbiter = createAudioSessionArbiter(() => undefined);
+    const stop = arbiter.holdCapture();
+
+    assert.equal(arbiter.isCapturing(), true);
+    stop();
+    assert.equal(arbiter.isCapturing(), false);
+  });
+});

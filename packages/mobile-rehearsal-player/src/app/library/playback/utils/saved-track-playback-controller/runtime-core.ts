@@ -5,6 +5,10 @@ import {
 
 import { loadCompositeEngine } from '../../../composite/playback/composite-engine-loader';
 import { loadCompositeItemIntoPlayer } from '../../../composite/playback/load-composite-item';
+import { webAudioSession } from '../../../../components/audio-session/web-audio-session';
+import { loadItemOnListeningEngine } from '../../listening-engine/load-listening-item';
+import { isRecordingStripOpen } from '../../../recording/recording-strip-store';
+import { getListeningTrackLoads } from '../../listening-engine/listening-track-loads';
 
 import { type LoadPlayableItemIntoPlayer } from '../saved-track-duration-resolution';
 import {
@@ -125,6 +129,9 @@ export const createSavedTrackPlaybackRuntimeCore = (
     accessToken,
     loadOptions,
   ) => {
+    // Whatever loads now replaces a track still being prepared for the engine.
+    getListeningTrackLoads().supersede();
+
     // A composite has no Drive file or media element: it loads through its own
     // engine (task 3.5), after the player is reset to release the last track.
     if (isCompositeSource(playableItem.source)) {
@@ -164,6 +171,29 @@ export const createSavedTrackPlaybackRuntimeCore = (
 
     await ensureSavedTrackPlayerReady();
     const trackPlayer = getSavedTrackPlayer();
+    const volume = options.volumeLevelRef.current * getTrackGain();
+
+    // While a microphone is open the track plays through the Web Audio engine
+    // (clear-playback-while-listening design Decision 1).
+    const isOnEngine = await loadItemOnListeningEngine({
+      item: playbackRequest.playableItem,
+      accessToken,
+      isMicrophoneOpen: webAudioSession.isCapturing(),
+      isRecordingToolOpen: isRecordingStripOpen(),
+      player: trackPlayer,
+      loads: getListeningTrackLoads(),
+      volume,
+      initialPositionSeconds,
+      shouldPlay: loadOptions?.shouldPlay ?? true,
+      applyShaping: () =>
+        applyAmbientShaping(playbackRequest.playableItem.transform),
+      onFallback: (error) =>
+        console.warn('The track plays on the media element instead.', error),
+    });
+
+    if (isOnEngine) {
+      return playbackRequest.playableItem;
+    }
 
     await trackPlayer.reset();
     await trackPlayer.add({
@@ -172,9 +202,7 @@ export const createSavedTrackPlaybackRuntimeCore = (
         getSavedTrackPlayerModule().PitchAlgorithm,
       ),
     });
-    await trackPlayer.setVolume(
-      options.volumeLevelRef.current * getTrackGain(),
-    );
+    await trackPlayer.setVolume(volume);
     await applyAmbientShaping(playbackRequest.playableItem.transform);
 
     if (initialPositionSeconds > 0) {

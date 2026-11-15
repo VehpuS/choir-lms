@@ -1,5 +1,7 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
+import { getListeningLoadLabel } from '../../../library/playback/listening-engine/listening-load-label';
+import { useListeningLoadState } from '../../../library/playback/listening-engine/listening-load-state';
 import { useSavedTrackDownloadProgress } from '../../../library/playback/hooks/use-saved-track-download-progress';
 import type { SavedTrackPlaybackState } from '../../../library/playback/utils/saved-track-playback-view-model';
 import { getPlaybackDownloadLabel } from '../../../library/playback/utils/saved-track-download-label';
@@ -43,12 +45,14 @@ export const useMobileShellPlaybackSummaries = ({
   // Web playback downloads the whole file before it can play (8.33), so the
   // mini-player and sheet say how far that download has got.
   const downloadProgress = useSavedTrackDownloadProgress();
+  // With a microphone open the track is prepared for the engine instead, once.
+  const listeningLoadLabel = getListeningLoadLabel(useListeningLoadState());
 
   return {
     miniPlayerSummary: getMiniPlayerSummary(summaryOptions),
     nowPlayingSummary: getNowPlayingSurfaceSummary(summaryOptions),
     playbackDownloadLabel: isPlaybackPreparing
-      ? getPlaybackDownloadLabel(downloadProgress)
+      ? (listeningLoadLabel ?? getPlaybackDownloadLabel(downloadProgress))
       : null,
     upNextSummary: getUpNextSurfaceSummary({ activePlaylistSession }),
   };

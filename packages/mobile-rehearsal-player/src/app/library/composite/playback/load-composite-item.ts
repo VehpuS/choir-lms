@@ -1,7 +1,10 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
 import type { CompositeEngine } from '../engine/composite-engine';
-import { setActiveCompositeEngine } from './active-composite';
+import {
+  setActiveCompositeEngine,
+  type ActiveEngineKind,
+} from './active-composite';
 
 const MS_PER_SECOND = 1000;
 
@@ -14,6 +17,8 @@ export type LoadCompositeItemOptions = {
   item: PlayableItem;
   player: CompositeLoadPlayer;
   loadEngine: (item: PlayableItem) => Promise<CompositeEngine>;
+  /** What the engine plays: a composite unless a single track is loaded onto it. */
+  kind?: ActiveEngineKind;
   volume: number;
   initialPositionSeconds: number;
   shouldPlay: boolean;
@@ -34,7 +39,7 @@ export const loadCompositeItemIntoPlayer = async (
 
   const engine = await options.loadEngine(options.item);
 
-  setActiveCompositeEngine(engine);
+  setActiveCompositeEngine(engine, options.kind);
   engine.setVolume(options.volume);
   await options.applyShaping?.();
 
