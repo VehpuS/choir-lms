@@ -49,11 +49,11 @@ options |= AVAudioSessionCategoryOptionAllowBluetooth
 
 What this explains:
 
-- **Why the settings did nothing.** `auto` and `play-and-record` produce the same session (play-and-record, video chat, HFP allowed). `playback` has no input at all. The page has no fourth choice.
+- **Why the settings did nothing.** `auto` and `play-and-record` produce the same session (play-and-record, video chat, HFP allowed). `playback` has no input at all. The session type is therefore not the lever; it does not follow that the page has no lever (Findings 4).
 - **Why Bluetooth only.** With HFP allowed and an input open, iOS routes a headset through the hands-free profile, which carries input and output together as mono narrowband audio. The speaker has no such profile. A screen recording taps the audio before the route.
-- **Not explained by the source:** the one to two clear seconds after each start. The likely reason is that the session or route is re-applied when an element starts and the hands-free link takes that long to come up, with A2DP carrying the sound meanwhile. This is a guess. It does not change the solution.
+- **Not explained by the source:** the one to two clear seconds after each start. The likely reason is that the session or route is re-applied when an element starts and the hands-free link takes that long to come up, with A2DP carrying the sound meanwhile. This is a guess, and it matters: a per-start reset points at the media element's start as the trigger (Findings 4).
 
-A search result describes an open WebKit bug (311451: output degraded and mono after `getUserMedia` on iOS, `echoCancellation: false` not helping, still present in iOS 26.4). The bug tracker was not reachable from the exploration session, so this is unverified; task 1.5 checks it and adds this case to it.
+A search result describes an open WebKit bug (311451: output degraded and mono after `getUserMedia` on iOS, `echoCancellation: false` not helping, still present in iOS 26.4). The bug tracker was not reachable from the exploration session, so this is unverified; task 2.4 checks it.
 
 ### 2. What native apps do
 
@@ -68,9 +68,9 @@ A search result describes an open WebKit bug (311451: output degraded and mono a
 
 - **Developer reports** (Apple forums, a Zenn write-up) agree on the detail that matters: with both Bluetooth options set, the hands-free microphone wins; dropping the HFP option and keeping A2DP gives phone microphone in, earbuds out. Some reports of the output falling back to the speaker involve calling `setPreferredInput` with both options set, which is the combination Safari uses. The proposed session does not need `setPreferredInput` at all.
 - **iOS 26** adds `bluetoothHighQualityRecording` (AirPods microphone at high quality). It is for recording from the earbuds, is not available everywhere, and one project reports playback problems with it (livekit/client-sdk-react-native issue 467). Not needed here: the phone's microphone is closer to what pitch detection wants.
-- **Latency.** GarageBand users report that Bluetooth output is late enough to matter when monitoring. A2DP output is typically 150 to 300 ms behind. The native session reports its output latency, which the app can use (Decision 5).
+- **Latency.** GarageBand users report that Bluetooth output is late enough to matter when monitoring. A2DP output is typically 150 to 300 ms behind. The native session reports its output latency, which a native app can use.
 
-### 3. Libraries that fit this repo
+### 3. Libraries that fit this repo (for the native path, now in `native-playback-follow-ups`)
 
 - **`react-native-track-player` 4.1.2** (already the native player): `setupPlayer` and `updateOptions` take `iosCategory`, `iosCategoryMode` and `iosCategoryOptions`, and `IOSCategoryOptions` has `AllowBluetoothA2DP` (`src/interfaces/PlayerOptions.ts`, `src/constants/IOSCategoryOptions.ts`). The app calls `setupPlayer()` with no options today, so the session is the default playback one.
 - **`react-native-audio-api`** (Software Mansion, MIT; 1.1.0 on `main`), already named in `native-playback-follow-ups` 1.1(a), 1.7 and 1.12:
@@ -78,87 +78,96 @@ A search result describes an open WebKit bug (311451: output degraded and mono a
   - `AudioManager.getDevicesInfo()` gives the current and available inputs and outputs (name and port type), and `setInputDevice(id)` selects an input.
   - `AudioRecorder.onAudioReady({ sampleRate, bufferLength }, callback)` delivers PCM buffers; voice processing (`iosVoiceProcessing`) is off by default, which is what pitch detection needs.
   - `disableSessionManagement` hands the session to the app; the native side also exposes output and input latency.
-  - It has an Expo config plugin and needs a development build. Its fit with Expo 54 / RN 0.81 is unconfirmed (task 1.1).
+  - It has an Expo config plugin and needs a development build. Its fit with Expo 54 / RN 0.81 is unconfirmed.
+
+### 4. A browser DAW does it (maintainer, 2026-11-15), and how this app differs from one
+
+The maintainer retested Soundtrap in the phone's browser, with no app installed: it plays while recording with no noticeable loss of playback quality. Soundtrap runs on the same WebKit and gets the same session options (Findings 1), so **the fixed options do not by themselves force the thin sound, and a web fix is possible.** The first version of this design concluded the opposite from the source alone; that was wrong to conclude without a device.
+
+Still to pin down about that test, because each changes what it proves (task 1.1): the same Bluetooth earbuds were in use; the sound was stereo and full, not only "fine"; which microphone it recorded from; Safari tab or home-screen app.
+
+Soundtrap's code is not public. What a browser DAW does differently from this app, as far as it can be told from outside, and what this app does today:
+
+|                  | A browser DAW                                              | This app                                                                                                                                                                                             |
+| ---------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Playback         | Web Audio (decoded buffers scheduled in an `AudioContext`) | A media element (the track player's web path), on the browser's native output; through an `AudioContext` only once pitch is shifted (`web-pitch-shifter-core.ts`); composites play through Web Audio |
+| Audio contexts   | One for playback and capture                               | Several: the microphone's own (`pcm-source.web.ts`), the piano's, the pitch shifter's, the composite engine's                                                                                        |
+| Microphone graph | Into the same context that plays                           | A separate context, connected to its destination through a silent gain: a second, always-running output                                                                                              |
+| Input device     | A picker inside the studio                                 | `deviceId` as `ideal`; what opened was never read back                                                                                                                                               |
+| Session type     | Unknown, probably none                                     | `play-and-record` set by the page                                                                                                                                                                    |
+
+Hypotheses for the difference, in order of fit with the symptom:
+
+1. **The media element is the trigger.** The thin sound starts one to two seconds after each element start and resets on each new song and each resume. A Web Audio transport has no such per-song start. In WebKit a media element plays through a different path (AVPlayer in the GPU process) than Web Audio and capture (one audio unit), and element starts re-run the session update.
+2. **Two output contexts while capturing.** The microphone's context holds its own output next to the playback output.
+3. **Which input is really open.** With the hands-free option allowed, iOS takes the earbuds' microphone unless another input is preferred; a DAW's picker may end on the phone's microphone where this app's `ideal` request did not.
+4. **The page's own `play-and-record` request**, where a DAW leaves the session alone. The earlier `auto` test argues against this but was done with everything else unchanged.
+
+Two checks need no code, in the deployed app, with the earbuds and pitch detection on (task 1.2):
+
+- **Play a composite track.** It plays through Web Audio only. Clear sound there supports hypothesis 1.
+- **Shift a track's pitch by a semitone and set it back to 0.** From then on that element plays through an `AudioContext` (the dry path). Clear sound after that also supports hypothesis 1 and points at a small fix.
 
 ## Goals / Non-Goals
 
 **Goals**
 
-- On the maintainer's iPhone with Bluetooth earbuds, a queue plays clear, in stereo, for its whole length while pitch detection listens.
-- Prove that on the device before building the feature.
-- The web app is honest where it cannot do it.
+- In the web app on the maintainer's iPhone with Bluetooth earbuds, a queue plays clear for its whole length while pitch detection listens, and recording over a track stays clear.
+- Find the working configuration by listening on the device, with a control (Soundtrap) on the same phone and earbuds, before changing the playback or capture path.
 
 **Non-Goals**
 
-- Native recording, the recording overlay, piano, sheet music and composite tracks on iOS (`native-playback-follow-ups` 1.6, 1.7, 1.13, 1.14).
-- Android. Its Bluetooth handling differs (the SCO link is asked for explicitly), and nothing has been reported there.
-- Recording from the earbuds' microphone.
+- A native audio path. Native parity comes after the web app is stable (maintainer, 2026-11-15); the native findings (Findings 2 and 3) are recorded in `native-playback-follow-ups` 1.12 and 1.13.
+- Recording from the earbuds' microphone at high quality.
 
 ## Decisions
 
-### Decision 1: The fix is native; the web app cannot have one
+### Decision 1: The fix is sought in the web app
 
-The session mode and Bluetooth options are fixed inside WebKit (Findings 1). A wrapper around the web app (a WKWebView or Capacitor shell) captures through the same WebKit code and gets the same session, so it does not help either.
+Soundtrap shows it can be done there (Findings 4). The native session (play-and-record with A2DP only) stays the known-good fallback and is kept with the native follow-ups, not built here.
 
-Alternatives considered:
+### Decision 2: A sound lab in the web app, used on the device, decides the configuration
 
-- _More web experiments with the session type._ Rejected: the source shows the outcomes are the same.
-- _Wait for a WebKit fix._ No sign of one; nothing the repo can do but report it (task 1.5).
-- _A native shell that captures the microphone itself and feeds PCM to the web app in a web view._ It would keep the web app's tools, but two audio sessions in two processes (the shell's recording one and WebKit's playback one) interrupt each other unless both mix, and that interplay is unverified. Kept as a fallback to probe only if feature parity turns out to matter more than a native pitch path (Open questions).
+CI cannot hear a Bluetooth route, and the earlier attempts changed one thing per release and were judged by ear on a music track. The lab is a page in the deployed web app (Settings > Microphone > `Sound lab`, marked experimental) so it can be tried on the phone from GitHub Pages with no build:
 
-### Decision 2: Session while listening is play-and-record, default mode, A2DP only
+- **A test signal that makes the call mode obvious:** a tone that alternates left and right with high-frequency content. In the hands-free mode it is mono and dull; no judgement of "thin" is needed.
+- **One switch per difference in Findings 4**, each independent:
+  - playback: media element / Web Audio in its own context / Web Audio in the microphone's context;
+  - microphone: the system's choice / the phone's microphone by `exact` id, with the label of the input that really opened shown;
+  - microphone graph: silent gain to the destination (today) / a media-stream destination / the playback context;
+  - session type: none / `play-and-record`;
+  - processing constraints: all off (today) / the browser's defaults;
+  - order: context first, then the microphone, and the reverse.
+- **A readout** of what the page can see: the opened input's label and settings, each context's sample rate and state, `navigator.audioSession.type`, and a level meter to show the microphone still hears.
+- **A result line to copy** (the switch states and the readout), so a session's findings can be pasted back into this document.
 
-`category: playAndRecord`, `mode: default`, `options: [allowBluetoothA2DP, defaultToSpeaker]`. Never the HFP option, never a chat mode, no voice processing.
+The lab is the smallest thing that can falsify each hypothesis; it carries no product behavior, and it is removed or kept behind the experimental mark once the fix ships.
 
-- `defaultToSpeaker` because play-and-record without it sends sound to the earpiece when no headphones are connected.
-- `allowAirPlay` is added if the probe shows AirPlay output is otherwise lost.
-- `measurement` mode (no input processing at all) is tried in the probe; it is used only if it changes nothing about the output.
-- No `mixWithOthers`: the app keeps lock-screen controls, which a mixing session loses.
+### Decision 3: The fix follows the lab, most likely one of these
 
-Consequence, to be stated in the app: with Bluetooth earbuds the microphone is always the phone's (or a wired or USB one). The earbuds' microphone is not offered on iOS native.
+Written now so the cost is visible; chosen in task 2.1 from what was heard.
 
-### Decision 3: One owner of the session; play-and-record only while a microphone is open
+- **(a) Element through the playback context while a microphone is open** (if hypothesis 1 holds and the dry-path check is clear). The pitch shifter already builds that graph; the change is to build it when listening starts and not only on the first pitch shift. Small. Cost: `createMediaElementSource` permanently reroutes an element, and the graph adds the context's latency to playback.
+- **(b) One shared context** for capture and the app's Web Audio (if hypothesis 2 holds): the microphone taps into the context that already plays, with no second output. Medium; touches `pcm-source.web.ts`, the piano, the pitch shifter and the composite engine's context ownership.
+- **(c) The phone's microphone by `exact` id** when earbuds are connected (if hypothesis 3 holds). Small; `microphone-choice` already has the picker.
+- **(d) A Web Audio transport for single tracks** (if only pure Web Audio playback is clear and (a) is not). Large: the track player's web path, caching, shaping and lock-screen transport all sit on the media element; the composite engine is the model. This would be its own change.
+- **(e) No session type from the page** (if hypothesis 4 holds). Small, but the piano's `playback` request for the silent switch must keep working.
 
-Both libraries can set the session, and two owners would undo each other's settings. A native session owner (`components/audio-session/`, a native sibling of the web arbiter with the same `holdCapture` shape) is the only code that picks the session:
+Whatever is chosen, the "Sound while listening" setting is removed: its three options cannot differ in a useful way (Findings 1).
 
-- nothing capturing: the playback category, as today;
-- a capture hold: the Decision 2 session.
+### Decision 4: If nothing in the lab is clear, the app says so
 
-It applies the choice through the track player's options and tells `react-native-audio-api` to leave the session alone (`disableSessionManagement`), or the other way round; the probe picks whichever does not glitch (task 1.3). Play-and-record is not kept on all the time because it changes speaker loudness and routing for people who never use the microphone.
-
-Open point for the probe: whether changing the category during playback is audible (a short gap is acceptable when the person has just pressed `Listen`; a stall is not).
-
-### Decision 4: Probe first, as a debug screen in the development build
-
-Nothing about Decisions 2 and 3 has been heard on the device. The probe is a screen reachable only in development builds: play a bundled or saved track through the track player, toggle a recorder, switch between session variants (A2DP only; A2DP and HFP, to reproduce the web behavior; `measurement` mode), and show the input level, `getDevicesInfo()` current input and output, and the reported output latency. Pass means: Bluetooth output stays stereo and clear for a full queue, across pause and resume, with the level meter moving from the phone's microphone.
-
-If the probe fails, the change stops at the web notice (Decision 6) and this document records what was heard.
-
-### Decision 5: Native `PcmSource` on iOS, reusing everything above the seam
-
-`pcm-source.ios.ts` implements the existing `PcmSource` contract through `createSharedPcmSource` (several subscribers, one stream), with `AudioRecorder.onAudioReady` as the block source and the frame assembler unchanged. `pitchCapabilities().canListen` becomes true on iOS. Permission is asked on the first `Listen`, as on web. Capture runs only while the app is visible.
-
-Bluetooth output is late, so a sung note is compared against a track position the singer heard some 200 ms earlier. Where the pitch store pairs a sung note with a track position (score marks need the native sheet music viewer, which does not exist yet), the session's output latency is the correction. In this change the latency is read and exposed by the session owner; using it is a task only where a native surface compares against track time.
-
-### Decision 6: The web app says it, where the microphone is turned on
-
-On iOS Safari (any iPhone or iPad browser, since all use WebKit's capture), the microphone prompt and Settings > Microphone show a short notice: Bluetooth earbuds sound thin while the app listens; the speaker or wired earphones sound right. The web cannot see the output route, so the notice is shown on iOS whenever the microphone is offered, not only when earbuds are connected. An input list with a Bluetooth-labelled entry is used to make it prominent rather than quiet. Once the iOS app can listen, the notice names it.
-
-The "Sound while listening" setting, `audio-route-store` and the `AudioRoute` branches in the arbiter are removed. The arbiter keeps its two real jobs (`playback` for the piano, `play-and-record` while capturing).
-
-One web check is still worth a device pass because it costs a line of UI: show the label of the input that actually opened (`track.label`) in Settings > Microphone. If the iPhone's microphone really was open during the earlier test, the web side is closed for good. If the earbuds' microphone was open despite the choice, `deviceId: { exact }` is tried once; a clear result there would be a web fix for people who choose the iPhone microphone, and the notice would say so. The source suggests this will not help (HFP stays allowed and Safari then calls `setPreferredInput`, the combination with speaker-fallback reports), so it is a check, not a plan.
+Then Soundtrap's result has a cause not listed here; the lab's readout and the Soundtrap control go into a WebKit bug report, and the web app shows a notice where the microphone is turned on in iPhone and iPad browsers (Bluetooth earbuds sound thin while the app listens; the speaker or wired earphones sound right). The spec keeps this as the fallback requirement.
 
 ## Risks / Trade-offs
 
-- **The probe may fail on this phone or these earbuds.** Then the change is the web notice only. Mitigation: the probe is small and comes first.
-- **The native app is behind the web app.** Clear pitch detection on iOS without the piano, the score or recording may not be the rehearsal the maintainer wants. Mitigation: decided explicitly after the probe (Open questions); the probe result also tells whether `native-playback-follow-ups` 1.13 (native recording) is worth scheduling.
-- **A new native dependency** next to the track player, both touching the session. Mitigation: Decision 3, and the probe exercises exactly that pairing.
-- **Phone microphone hears less of a singer wearing earbuds than the earbuds' own microphone would.** The `Minimum volume` default was tuned in a browser; checked on the device (task 2.6).
-- **Category change while playing may glitch.** Probe item; fallback is play-and-record from player setup whenever pitch detection is enabled in Settings.
-- **Distribution.** A development build expires after seven days with a free Apple ID; other singers need TestFlight, which needs a paid developer account.
+- **The Soundtrap test may not be the same case** (other headphones, or the hands-free mode being good enough on those earbuds to pass unnoticed). Mitigation: task 1.1 repeats it with the lab's test signal habits (hard-panned material) on the same earbuds before any code.
+- **The working configuration may be the large one (d).** Mitigation: the two no-code checks and the lab tell this before anything is built; (d) would be proposed as its own change.
+- **Routing the element through a context changes playback for everyone who listens,** including latency against the recording clock. Mitigation: only while a microphone is open, and the recording alignment (clock-anchor fit) is rechecked on the device.
+- **Results by ear on one phone and one pair of earbuds.** Mitigation: the copied result line records the iOS version, the opened input and the switch states; a second pair of earbuds is tried if available.
 
 ## Open Questions
 
-1. After a passing probe: is pitch detection alone on iOS native worth shipping, or does it need native recording (and which other tools) before the maintainer would rehearse in the iOS app instead of the web app?
-2. Is there an Apple developer account for TestFlight, or is this for the maintainer's phone only for now?
-3. The iOS version and earbuds' model of the original report (task 1.4).
+1. The details of the Soundtrap test (task 1.1): same earbuds, stereo or not, which microphone, tab or home-screen app.
+2. The iOS version and the earbuds' model.
+3. Whether the lab stays in Settings after the fix (as a support tool for singers' reports) or goes.
