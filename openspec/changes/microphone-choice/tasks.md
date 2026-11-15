@@ -20,4 +20,4 @@
 ## 5. Verify
 
 - [x] 5.1 Browser scenario: two inputs, prompt, remember, Settings change, dismiss, unplugged input
-- [ ] 5.2 Maintainer, iPhone with Bluetooth earbuds (the prompt works; the thin call sound still starts a second or two after each playback start while the microphone is open): try each "Sound while listening" route, with a track playing and the microphone on, and say which keeps the sound clear, and whether the microphone still hears you under Playback
+- [x] 5.2 (Result: the prompt works; neither "Sound while listening" route helped. The findings and next steps are in `openspec/changes/clear-playback-while-listening/`.) Maintainer, iPhone with Bluetooth earbuds (the prompt works; the thin call sound still starts a second or two after each playback start while the microphone is open): try each "Sound while listening" route, with a track playing and the microphone on, and say which keeps the sound clear, and whether the microphone still hears you under Playback
