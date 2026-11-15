@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { useLayoutClass } from '../../routing/shell/layout-class';
-import { useActiveCompositeEngine } from '../composite/playback/use-active-composite';
+import { useIsCompositePlaying } from '../composite/playback/use-active-composite';
 import { pianoCapabilities } from '../piano/piano-capabilities';
 import { resolvePianoPresentation } from '../piano/piano-overlay-model';
 import { pitchCapabilities } from '../pitch/pitch-capabilities';
@@ -47,9 +47,10 @@ export const usePracticeTools = ({
   const layoutClass = useLayoutClass();
   const isMonitorOpen = usePitchMonitorOpen();
   const isStripOpen = useRecordingStripOpen();
-  // Recording follows the media element's clock, which a composite does not
-  // have, so the entry is hidden while a composite is playing (design Decision 5).
-  const isCompositeActive = useActiveCompositeEngine() !== null;
+  // Recording over a composite is not offered (composite-tracks design
+  // Decision 5), so the entry is hidden while one plays. A single track on the
+  // engine keeps it.
+  const isCompositeActive = useIsCompositePlaying();
   const canListen = pitchCapabilities().canListen;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const model = getPracticeToolsModel({

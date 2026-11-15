@@ -6,6 +6,7 @@ import type {
 } from '../engine/composite-engine';
 import {
   getActiveCompositeEngine,
+  getActiveEngineKind,
   subscribeActiveCompositeEngine,
   subscribeCompositeEnded,
 } from './active-composite';
@@ -27,6 +28,20 @@ export const useActiveCompositeEngine = (): CompositeEngine | null => {
     getActiveCompositeEngine,
     getActiveCompositeEngine,
   );
+};
+
+/**
+ * Whether a composite is what plays now. False for a single track on the
+ * engine, so composite-only surfaces do not appear for it.
+ */
+export const useIsCompositePlaying = (): boolean => {
+  const kind = useSyncExternalStore(
+    subscribeActiveCompositeEngine,
+    getActiveEngineKind,
+    getActiveEngineKind,
+  );
+
+  return kind === 'composite';
 };
 
 /** The engine's state, or undefined without an engine; follows its changes. */

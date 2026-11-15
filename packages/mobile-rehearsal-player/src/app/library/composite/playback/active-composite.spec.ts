@@ -4,6 +4,7 @@ import { afterEach, describe, it } from 'node:test';
 import {
   clearActiveCompositeEngine,
   getActiveCompositeEngine,
+  getActiveEngineKind,
   setActiveCompositeEngine,
   subscribeActiveCompositeEngine,
   subscribeCompositeEnded,
@@ -58,6 +59,36 @@ describe('active composite', () => {
     first.finish();
 
     assert.equal(ended, 1);
+    stop();
+  });
+
+  it('records what the engine plays, a composite unless told otherwise', () => {
+    const composite = createTestEngine();
+    const track = createTestEngine();
+
+    assert.equal(getActiveEngineKind(), null);
+
+    setActiveCompositeEngine(composite.engine);
+    assert.equal(getActiveEngineKind(), 'composite');
+
+    setActiveCompositeEngine(track.engine, 'track');
+    assert.equal(getActiveEngineKind(), 'track');
+
+    clearActiveCompositeEngine();
+    assert.equal(getActiveEngineKind(), null);
+  });
+
+  it('notifies without disposing when the same engine changes kind', () => {
+    const test = createTestEngine();
+    let changes = 0;
+    const stop = subscribeActiveCompositeEngine(() => (changes += 1));
+
+    setActiveCompositeEngine(test.engine, 'track');
+    setActiveCompositeEngine(test.engine, 'composite');
+
+    assert.equal(getActiveEngineKind(), 'composite');
+    assert.equal(test.state.disposed, false);
+    assert.equal(changes, 2);
     stop();
   });
 });
