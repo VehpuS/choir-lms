@@ -26,7 +26,7 @@
 | "Sound while listening" = Automatic                                      | `microphone-choice`           | no difference                                                          |
 | "Sound while listening" = Playback once the microphone is on             | `microphone-choice`           | no help; whether the microphone kept hearing was not reported          |
 
-## Findings from the exploration (2026-11-15)
+## Findings
 
 ### 1. What Safari does when a page captures (WebKit source, `main`, read 2026-11-15)
 
@@ -53,134 +53,126 @@ What this explains:
 - **Why Bluetooth only.** With HFP allowed and an input open, iOS routes a headset through the hands-free profile, which carries input and output together as mono narrowband audio. The speaker has no such profile. A screen recording taps the audio before the route.
 - **Not explained by the source:** the one to two clear seconds after each start. The likely reason is that the session or route is re-applied when an element starts and the hands-free link takes that long to come up, with A2DP carrying the sound meanwhile. This is a guess, and it matters: a per-start reset points at the media element's start as the trigger (Findings 4).
 
-A search result describes an open WebKit bug (311451: output degraded and mono after `getUserMedia` on iOS, `echoCancellation: false` not helping, still present in iOS 26.4). The bug tracker was not reachable from the exploration session, so this is unverified; task 2.4 checks it.
+A search result describes an open WebKit bug (311451: output degraded and mono after `getUserMedia` on iOS, `echoCancellation: false` not helping, still present in iOS 26.4). The bug tracker was not reachable from the exploration session, so this is unverified; task 5.2 checks it.
 
-### 2. What native apps do
+### 2. Native apps (kept for later)
 
-- **AudioKit Cookbook** (`Cookbook/Cookbook/CookbookApp.swift`), the reference app of the most used open-source iOS audio framework, records and plays at once with:
+Native recording apps avoid the hands-free route with a play-and-record session that allows only the A2DP Bluetooth option. That path, with the libraries that fit this repo, is recorded in `native-playback-follow-ups` 1.12(g) and is not part of this change: native parity comes after the web app is stable (maintainer, 2026-11-15).
 
-  ```swift
-  try AVAudioSession.sharedInstance().setCategory(.playAndRecord,
-      options: [.defaultToSpeaker, .mixWithOthers, .allowBluetoothA2DP])
-  ```
+### 3. A browser DAW does it
 
-  A2DP is allowed and HFP is not. A2DP is output only, so the input stays on the phone's microphone (or a wired or USB one) and Bluetooth output stays on the stereo profile. This is the pattern behind "DAWs can play while recording".
+The maintainer retested Soundtrap in a browser tab on the phone, with the same earbuds: it plays while recording without the thin sound (mono material, so stereo was not judged). Soundtrap runs on the same WebKit with the same fixed session, so the session does not force the thin sound by itself. A browser DAW plays through Web Audio; this app plays single tracks through a media element.
 
-- **Developer reports** (Apple forums, a Zenn write-up) agree on the detail that matters: with both Bluetooth options set, the hands-free microphone wins; dropping the HFP option and keeping A2DP gives phone microphone in, earbuds out. Some reports of the output falling back to the speaker involve calling `setPreferredInput` with both options set, which is the combination Safari uses. The proposed session does not need `setPreferredInput` at all.
-- **iOS 26** adds `bluetoothHighQualityRecording` (AirPods microphone at high quality). It is for recording from the earbuds, is not available everywhere, and one project reports playback problems with it (livekit/client-sdk-react-native issue 467). Not needed here: the phone's microphone is closer to what pitch detection wants.
-- **Latency.** GarageBand users report that Bluetooth output is late enough to matter when monitoring. A2DP output is typically 150 to 300 ms behind. The native session reports its output latency, which a native app can use.
+### 4. Device results (maintainer, 2026-11-15)
 
-### 3. Libraries that fit this repo (for the native path, now in `native-playback-follow-ups`)
+iPhone 17 Pro, the maintainer's regular Bluetooth earbuds, pitch detection on. The microphone was set up the same way in every case (its own context, its silent output, the soft input request, the page's `play-and-record` type).
 
-- **`react-native-track-player` 4.1.2** (already the native player): `setupPlayer` and `updateOptions` take `iosCategory`, `iosCategoryMode` and `iosCategoryOptions`, and `IOSCategoryOptions` has `AllowBluetoothA2DP` (`src/interfaces/PlayerOptions.ts`, `src/constants/IOSCategoryOptions.ts`). The app calls `setupPlayer()` with no options today, so the session is the default playback one.
-- **`react-native-audio-api`** (Software Mansion, MIT; 1.1.0 on `main`), already named in `native-playback-follow-ups` 1.1(a), 1.7 and 1.12:
-  - `AudioManager.setSystemOptions({ ios: { category: 'playAndRecord', mode: 'default', options: ['allowBluetoothA2DP', 'defaultToSpeaker'] } })`; the native layer accepts `allowBluetoothA2DP` and `allowBluetoothHFP` as separate options.
-  - `AudioManager.getDevicesInfo()` gives the current and available inputs and outputs (name and port type), and `setInputDevice(id)` selects an input.
-  - `AudioRecorder.onAudioReady({ sampleRate, bufferLength }, callback)` delivers PCM buffers; voice processing (`iosVoiceProcessing`) is off by default, which is what pitch detection needs.
-  - `disableSessionManagement` hands the session to the app; the native side also exposes output and input latency.
-  - It has an Expo config plugin and needs a development build. Its fit with Expo 54 / RN 0.81 is unconfirmed.
+| Playback                                                                                         | Result                        |
+| ------------------------------------------------------------------------------------------------ | ----------------------------- |
+| Single track, media element on the browser's output                                              | thin after one to two seconds |
+| Single track, media element routed through an `AudioContext` (after a pitch shift and back to 0) | still thin                    |
+| The same single track with pitch detection off                                                   | clear                         |
+| Composite track, Web Audio engine, no media element; also with its pitch changed                 | clear                         |
 
-### 4. A browser DAW does it (maintainer, 2026-11-15), and how this app differs from one
+**A playing media element is the trigger while a microphone is open, whatever its sound then passes through. Playback from Web Audio alone is not affected.** The capture arrangement, the input choice and the session type are not the cause.
 
-The maintainer retested Soundtrap in the phone's browser, with no app installed: it plays while recording with no noticeable loss of playback quality. Soundtrap runs on the same WebKit and gets the same session options (Findings 1), so **the fixed options do not by themselves force the thin sound, and a web fix is possible.** The first version of this design concluded the opposite from the source alone; that was wrong to conclude without a device.
-
-Still to pin down about that test, because each changes what it proves (task 1.1): the same Bluetooth earbuds were in use; the sound was stereo and full, not only "fine"; which microphone it recorded from; Safari tab or home-screen app.
-
-Soundtrap's code is not public. What a browser DAW does differently from this app, as far as it can be told from outside, and what this app does today:
-
-|                  | A browser DAW                                              | This app                                                                                                                                                                                             |
-| ---------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Playback         | Web Audio (decoded buffers scheduled in an `AudioContext`) | A media element (the track player's web path), on the browser's native output; through an `AudioContext` only once pitch is shifted (`web-pitch-shifter-core.ts`); composites play through Web Audio |
-| Audio contexts   | One for playback and capture                               | Several: the microphone's own (`pcm-source.web.ts`), the piano's, the pitch shifter's, the composite engine's                                                                                        |
-| Microphone graph | Into the same context that plays                           | A separate context, connected to its destination through a silent gain: a second, always-running output                                                                                              |
-| Input device     | A picker inside the studio                                 | `deviceId` as `ideal`; what opened was never read back                                                                                                                                               |
-| Session type     | Unknown, probably none                                     | `play-and-record` set by the page                                                                                                                                                                    |
-
-Hypotheses for the difference, in order of fit with the symptom:
-
-1. **The media element is the trigger.** The thin sound starts one to two seconds after each element start and resets on each new song and each resume. A Web Audio transport has no such per-song start. In WebKit a media element plays through a different path (AVPlayer in the GPU process) than Web Audio and capture (one audio unit), and element starts re-run the session update.
-2. **Two output contexts while capturing.** The microphone's context holds its own output next to the playback output.
-3. **Which input is really open.** With the hands-free option allowed, iOS takes the earbuds' microphone unless another input is preferred; a DAW's picker may end on the phone's microphone where this app's `ideal` request did not.
-4. **The page's own `play-and-record` request**, where a DAW leaves the session alone. The earlier `auto` test argues against this but was done with everything else unchanged.
-
-Two checks need no code, in the deployed app, with the earbuds and pitch detection on (task 1.2):
-
-- **Play a composite track.** It plays through Web Audio only. Clear sound there supports hypothesis 1.
-- **Shift a track's pitch by a semitone and set it back to 0.** From then on that element plays through an `AudioContext` (the dry path). Clear sound after that also supports hypothesis 1 and points at a small fix.
-
-### 5. Device results (maintainer, 2026-11-15)
-
-iPhone 17 Pro, the maintainer's regular Bluetooth earbuds, pitch detection on:
-
-- **A composite track played clear, including with its pitch changed.** Composites play through Web Audio only (`create-web-composite-engine.web.ts`), with the microphone set up exactly as for a single track: its own context, its silent output, the soft input request and the page's `play-and-record` type. So hypotheses 2, 3 and 4 are not the cause, and **hypothesis 1 holds: the thin sound comes with playback through a media element on the browser's native output while a microphone is open. Web Audio playback is not affected.** (Prepared stems are mono, so this shows full-band sound, not stereo.)
-- **Soundtrap:** same earbuds, in a browser tab (not the home-screen app). The material was mono recordings layered, so stereo could not be judged; which microphone it recorded from was not checked. It agrees with the composite result (a Web Audio transport stays clear) and adds nothing beyond it.
-- **A single track routed through an `AudioContext` was still thin** (check (b): pitch shifted by a semitone and set back to 0, pitch detection on). Without pitch detection the same track was clear. So routing the element's sound into Web Audio is not enough: **a playing media element is itself the trigger while a microphone is open**, whatever its sound then passes through. Fix (a) is ruled out.
-- **Seen on the way, parked** (`tasks.md`, Follow-ups): the composite did not keep playing in the background.
+Seen on the way: the composite did not keep playing when the app went to the background (Decision 5, task 1.1).
 
 ## Goals / Non-Goals
 
 **Goals**
 
-- In the web app on the maintainer's iPhone with Bluetooth earbuds, a queue plays clear for its whole length while pitch detection listens, and recording over a track stays clear.
-- Change the playback path only as far as the device results require.
+- In the web app, while a microphone is open, tracks sound as they do without one, on Bluetooth earbuds included. Stage 1 covers pitch detection, stage 2 recording.
+- Everything else about playing a track stays as it is: the queue, loops, markers, speed and pitch, lyrics, sheet music, the lock screen, and playback without a microphone.
 
 **Non-Goals**
 
-- A native audio path. Native parity comes after the web app is stable (maintainer, 2026-11-15); the native findings (Findings 2 and 3) are recorded in `native-playback-follow-ups` 1.12 and 1.13.
-- Changing how the microphone is captured: the composite result shows the capture side is fine as it is.
-- Stereo on Bluetooth while listening is not yet shown either way (the clear cases so far were mono material).
+- Stereo while a microphone is open. The engine's prepared audio is mono; mono and full is accepted as the first step (maintainer, 2026-11-15). Stereo is a follow-up (`tasks.md`, F2).
+- Background playback from the Web Audio engine. Playback without a microphone stays on the media element, which has it.
+- Recording over a composite (`composite-recording-stems` keeps its own plan; stage 2 gives it the transport it lacked).
+- A native audio path, and changes to how the microphone is captured.
 
 ## Decisions
 
-### Decision 1: The fix is in the web app's playback path, not in capture or the session
+### Decision 1: Two playback strategies, chosen by one rule: is a microphone open
 
-Findings 5: with the same capture arrangement, Web Audio playback is clear and media element playback is not. The session type, the input choice and the microphone's context are left alone.
+- **No microphone open:** the media element, as today.
+- **A microphone open** (pitch detection listening, or a take being recorded): the Web Audio engine that plays composites, with the track as its only stem.
 
-### Decision 2: While a microphone is open, single tracks play through the Web Audio engine (proposed; scope to confirm)
+Why keep the media element at all (the maintainer's question): it is the only one of the two that keeps playing in the background and on the lock screen on a phone, it starts at once from a stream with nothing to prepare or store, it is stereo, and its speed change is the browser's own. The engine has none of those today. Moving all playback to the engine would trade a problem that exists only with a microphone open for regressions in plain listening.
 
-Findings 5 leave one arrangement known to be clear: no media element playing, the track coming from Web Audio. The app has such a player: the composite engine (`composite/engine/`), behind the same player seam (`createCompositeAwarePlayer`), with speed, pitch, seek, loop wrap and the limiter, reading prepared audio from a local store in windows so memory stays small. A single track is played by that engine as one stem.
-
-Routing the element through a context (the earlier fix (a)) was tried on the device and is ruled out.
-
-What the engine does not do today, and so what this fix costs:
-
-| Gap                                                                                       | Why it matters                                                                                      | Proposed handling                                                                                                                                                 |
-| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Prepared audio is mono                                                                    | A single track would lose its stereo image while listening                                          | To decide (Open questions): accept mono at first, or add a stereo prepared format and voice before shipping                                                       |
-| A track must be prepared (downloaded, decoded, written) before it starts                  | First play of each track while listening waits (`Preparing stems · first time only` for composites) | Prepare the current and next queue items when listening turns on; show the same preparing state; storage counts against the prepared-audio budget and `Clear all` |
-| No background playback (Follow-ups F1)                                                    | Rehearsal with the phone locked                                                                     | Listening already stops when the app is hidden; the track is handed back to the media element at that moment, at the same position                                |
-| Hand-over between element and engine                                                      | Turning `Listen` on or off during a song must not restart or jump it                                | Switch at the current position; a short gap on the first switch is acceptable (the person just pressed a button), a jump is not                                   |
-| Recording follows a media element's clock (`Recording` is hidden while a composite plays) | "Recording over a track stays clear" needs a recording transport over the engine's clock            | To decide (Open questions): pitch detection first, recording as a second step tied to `composite-recording-stems`                                                 |
-| Queue, loops, markers, waveform, media session                                            | Must behave as for an element-played track                                                          | They go through the player seam already for composites; each is checked for a one-stem item whose owner is the track, not a composite                             |
-
-Where it applies: only while a microphone is open, and only where the problem exists (iPhone and iPad browsers), so every other platform and all playback without a microphone stay on the media element. The page cannot see a Bluetooth route, so on those browsers it applies with any output.
+Why not a third split by platform: the rule applies on every web browser, not only on iPhone and iPad. One rule means the path that fixes the iPhone is the path CI's Chromium scenarios and the maintainer's Mac exercise every day, the page never has to guess the platform or the output route, and stage 2 needs one recording transport instead of two. The cost is mono playback and a preparing wait on desktop while a microphone is open, where nothing was wrong. That cost is accepted for the single rule; F2 (stereo) removes most of it.
 
 Alternatives considered:
 
-- _Decode the whole track into memory (`decodeAudioData`, one buffer source)._ Simplest, and stereo, but a five-minute stereo track is over 100 MB of samples, on top of the compressed copy, on a phone. The prepared store exists to avoid exactly this.
-- _Streamed decoding (WebCodecs) into Web Audio._ No preparing wait, but a new decode and scheduling path with its own format coverage; the engine already has seek, loop and shaping.
-- _All single tracks through the engine, always._ One path instead of two, but it moves every listener off the element, gives up background playback until F1 is solved, and adds the preparing wait to plain listening.
+- _Route the element through an audio context._ Tried on the device; still thin (Findings 4).
+- _Decode the whole track into memory._ A five-minute stereo track is over 100 MB of samples on a phone; the prepared store exists to avoid this.
+- _Streamed decoding (WebCodecs) into Web Audio._ No preparing wait, but a new decode and scheduling path; the engine already has seek, loop wrap and shaping.
+- _All playback through the engine._ See above.
+- _Only on iPhone and iPad browsers._ Smaller blast radius, but a path CI never runs for real and two recording transports.
 
-### Decision 3: Remove the "Sound while listening" setting
+### Decision 2: A track on the engine is still that track
 
-Its options cannot differ in a useful way (Findings 1), and the cause is elsewhere (Findings 5).
+Only the transport changes. The playable item, its source and its owner stay the track, so markers, loops, lyrics, sheet music, recents, the waveform (the track's own peaks) and the media session need no new branch. Concretely:
 
-### Decision 4: Until the fix ships, and wherever it does not apply, the app says so
+- The active-engine registry (`composite/playback/active-composite.ts`) records what the engine is playing: a composite, or a single track. `getSavedTrackPlayer()`'s wrapper already sends transport calls to an active engine; it does so for both.
+- Code that today reads "an engine is active" to mean "a composite is playing" asks for the kind instead: the Mix panel and stem options stay composite-only, and `use-practice-tools.ts` keeps hiding `Recording` for a composite only.
+- The engine is built with one stem, gain 1, no offset. Speed and pitch go through the engine's rate and pitch stage (`wrapPitchShifterForComposite`), so the session's shaping carries over. The limiter stays in the path with nothing to limit.
+- The engine modules move no further than needed: the single-track loader lives next to the playback controller (`library/playback/listening-engine/`), and reuses `createStemLoader`, the prepared store and `createWebCompositeEngine`. Names inside `composite/` that are now shared (the registry, the wrapper) are not renamed in this change.
 
-A short notice where the microphone is turned on in iPhone and iPad browsers (Bluetooth earbuds sound thin on single tracks while the app listens; the speaker or wired earphones sound right; composites are not affected). It is removed for the cases the fix covers. A WebKit bug is reported: a media element playing while a microphone is open degrades Bluetooth output where Web Audio playback does not.
+### Decision 3: Prepared audio for single tracks is a budgeted cache
+
+Preparing writes the track as mono 16-bit PCM at the context's rate: about 5.8 MB a minute at 48 kHz, 29 MB for a five-minute track. Composites are few and cleared by hand; single tracks are many, so their prepared audio needs a limit.
+
+- Key: the prepared store's key is (composite id, stem id, content version). Single tracks use a reserved owner id (`track:<track id>`) and one stem id, so the same store, backend and reader serve them, and a changed Drive version prepares again.
+- Budget: 500 MB by default, least recently played removed first, never the track that is playing. Shown in the offline files view as its own group (`Prepared for listening`) with `Clear all`, next to `Prepared composites`. A stem prepared for a composite is not shared with the single-track entry in this change (the same audio may be stored twice; noted as F3).
+- No room: the existing room check (`composite-room.ts`) and no-room state; the track then stays on the media element and the app says once that the sound may be thin on Bluetooth while it listens.
+- Source of the bytes: `fetchTrackBlob` (the caches, the offline store, then Drive), as composites do. Offline with no stored copy: the track stays on the media element if that can play it, with the same message.
+
+### Decision 4: Loading and hand-over
+
+The controller decides per load and per microphone change; one module (`listening-engine/handover.ts`) owns the switch so there is a single place that can get position and state wrong.
+
+- **A track loads while a microphone is open:** it loads straight onto the engine. Prepared already: it starts as a composite does. Not prepared: the player shows `Preparing for listening · first time only` with progress, then plays. The next item in the queue is prepared ahead while the current one plays.
+- **A microphone opens during a track:** the element keeps playing while the track is prepared (progress in the monitor strip), then the switch happens at the element's position: engine seeks, starts, element pauses and is released. If playback was paused, the switch is silent. Until the switch the sound may be thin on an iPhone with Bluetooth; that is the state before this change, for a few seconds once per track.
+- **The microphone closes during a track** (the last listener stops, or a take ends): the track goes back to the media element at the engine's position, in the same playing or paused state.
+- **The app is hidden:** listening and recording already stop when the app is hidden (`app-visibility.ts`, the `hidden` stop reason), so the rule above hands the track back to the media element and playback continues in the background as today. The hand-back must start the element before the page is throttled; this is the riskiest step and is checked on the device (task 2.8).
+- **Loop, speed and pitch across a switch:** the loop range, rate and semitones are applied to the incoming side before it starts.
+- **A switch that fails** (decode error, storage error, the engine cannot start) leaves the track on the side it was on, playing, and reports once.
+
+A gap of up to a few hundred milliseconds at a switch is acceptable; a restart, a position jump of more than that, or a stall is not.
+
+### Decision 5: Check the composite background finding first
+
+The hand-back design assumes that Web Audio playback stopping in the background is the platform's behavior for a page with no playing media element, not a bug in the composite path or a side effect of the microphone. Task 1.1 confirms it (composite in the background with pitch detection off) before stage 1 builds on it. If composites can be made to continue in the background cheaply, that is recorded as a follow-up, not folded in here.
+
+### Decision 6: Stage 2, recording over the engine's clock
+
+Recording follows a `Transport` (`@org/audio-mixing`), today built over the media element (`recording-transport.web.ts`). A take opens the microphone, so by Decision 1 the track is on the engine for the whole take.
+
+- **An engine transport:** `getPositionMs`, `isPlaying`, `hasEnded` and play, pause, seek and loop events from the engine's own subscription. `getRecordingTransport()` returns it whenever an engine is active for a single track.
+- **Order at the start of a take:** the microphone opens, the track is handed to the engine (prepared first if needed, with the recorder's countdown held until the switch is done), then the take starts. A take never spans a hand-over: the transport is fixed from its first sample to its last.
+- **Clock:** the anchor fit pairs capture times with track positions on `performance.now()` (rehearsal-recording design Decision 2). The engine's position comes from an audio context clock, mapped to `performance.now()` with the context's output timestamp, as the capture side already does. The engine exposes the position for a given context time so an anchor does not depend on when JavaScript ran.
+- **Output latency:** Bluetooth output is some 150 to 300 ms late. The existing nudge, `Use for this device` and click calibration cover it; the click calibration is rechecked with the track on the engine, and the context's reported output latency is read as the starting value where the browser gives one.
+- **Punch and the overlay voice:** both run against `Transport` and need no change beyond the new transport; reviewing a take has no microphone open and stays on the media element.
+- **Recording over a composite** stays hidden (`composite-recording-stems`).
+
+### Decision 7: Remove the "Sound while listening" setting; no standing notice
+
+The setting's options cannot differ (Findings 1) and the cause is elsewhere. `audio-route-store`, the Settings control and the `AudioRoute` branches of the arbiter go; the arbiter keeps `playback` for the piano and `play-and-record` while capturing. With the fix in place there is no standing notice about Bluetooth; the only messages are the preparing state and the no-room or offline fallback of Decision 3.
 
 ## Risks / Trade-offs
 
-- **Size.** This touches the queue's loading path, the prepared store and the player seam. Mitigation: its own change with its own tasks (task 2.1), built on the composite path that already works on the device.
-- **Two playback paths for one track,** switched mid-song. Mitigation: one hand-over function with specs for position and state, and a browser scenario for `Listen` on and off during playback.
-- **Preparing wait and storage** for every track rehearsed with the microphone on. Mitigation: prepare ahead in the queue; the existing room check and no-room state.
-- **Results by ear on one phone and one pair of earbuds,** on mono material. Mitigation: verify with a wide stereo track if stereo is in scope, and a second pair of earbuds if available.
-- **CI cannot hear any of this.** Browser scenarios assert what the page does (no media element playing while a microphone is open on the affected profile); the device pass is the real check.
+- **The hand-back when the app is hidden may be too late** for the element to start. Mitigation: checked on the device early (task 2.8); fallback is to hand back on the first sign of hiding (`visibilitychange` to hidden, `pagehide`, and the app's own blur) or, failing that, to pause and say so.
+- **Two paths for one track, switched mid-song.** Mitigation: one hand-over module with specs for position, state, loop and shaping, and browser scenarios for each switch.
+- **Preparing wait and storage** for every track rehearsed with a microphone on. Mitigation: prepare ahead in the queue, the budget, and the existing no-room state.
+- **The engine's speed and pitch sound a little different** from the element's (SoundTouch on the sum against the browser's time-stretch). Mitigation: listened for on the device at the common speeds; noted, not hidden.
+- **Recording alignment moves to a different clock.** Mitigation: stage 2 is separate, with its own device check against the click calibration, and the element transport stays until stage 2 passes.
+- **Mono on desktop while a microphone is open,** where nothing was wrong. Mitigation: F2.
+- **CI cannot hear Bluetooth.** Scenarios assert the mechanism (no media element playing while a microphone is open; the engine's position continues across a switch; a take's audio aligns with the generated track). The device passes are the real checks, one per stage.
 
 ## Open Questions
 
-1. Stereo: is mono playback of single tracks acceptable while the microphone is on, as a first step?
-2. Recording: pitch detection first and recording over a track later, or both before this counts as done?
-3. Where it applies: only iPhone and iPad browsers while a microphone is open (proposed), or wider?
-4. Whether composite playback also stops in the background with pitch detection off (Follow-ups F1).
-5. The iOS version and the earbuds' model.
+1. The result of task 1.1 (composite in the background with pitch detection off).
+2. The budget for prepared listening audio: 500 MB proposed; the maintainer's phone and library may suggest another default.
+3. The iOS version and the earbuds' model, for the WebKit report.

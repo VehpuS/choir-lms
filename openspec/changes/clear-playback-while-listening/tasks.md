@@ -1,34 +1,51 @@
-## 0. Findings and exploration (done)
+## 0. Findings (done)
 
-- [x] 0.1 Record the symptom, what was tried and the hypotheses (`design.md`, Context)
-- [x] 0.2 Read how Safari sets the iOS audio session while capturing (WebKit source) and how native audio projects keep Bluetooth output clear while recording (`design.md`, Findings 1 to 3); native findings copied to `native-playback-follow-ups` 1.12 and 1.13
-- [x] 0.3 Record the browser DAW result and how this app differs from one (`design.md`, Findings 4)
+- [x] 0.1 Record the symptom and what was tried in the web app (`design.md`, Context)
+- [x] 0.2 Read how Safari sets the iOS audio session while capturing; native session findings copied to `native-playback-follow-ups` 1.12(g) and 1.13
+- [x] 0.3 Device checks (maintainer, 2026-11-15): composite clear; single track thin, also when routed through an audio context; clear without pitch detection; Soundtrap clear in a browser tab on the same earbuds (`design.md`, Findings 3 and 4)
+- [x] 0.4 Design the fix in two stages (`design.md`, Decisions 1 to 7)
 
-## 1. On the device, no code
+## 1. Before building
 
-- [x] 1.1 Maintainer: the Soundtrap test (2026-11-15): same earbuds, browser tab; mono material, so stereo not judged; which microphone it recorded from not checked. Superseded as evidence by 1.2(a). The iOS version and the earbuds' model are still to be noted
-- [ ] 1.2 Maintainer, deployed web app, earbuds, pitch detection on:
-  - [x] (a) a composite track: clear, including with its pitch changed (2026-11-15)
-  - [x] (b) a single track after a pitch shift and back to 0: still thin with pitch detection on, clear without it (2026-11-15). Routing the element through a context is ruled out
-- [x] 1.3 Record the results in `design.md` (Findings 5) and narrow the hypotheses to the media element
+- [ ] 1.1 Maintainer: play a composite with pitch detection **off**, earbuds in, and send the app to the background. Does it keep playing? Record the answer in `design.md` (Decision 5); if it does keep playing, revisit the hand-back in Decision 4 before 2.5
+- [ ] 1.2 Remove "Sound while listening": `audio-route-store`, the Settings control, the `AudioRoute` branches of the arbiter, their specs and the `microphone-audio-route` scenario; the arbiter keeps `playback` for the piano and `play-and-record` while capturing
 
-## 2. Choose the fix
+## 2. Stage 1: pitch detection
 
-- [ ] 2.1 Checkpoint with the maintainer on design Decision 2 (single tracks through the Web Audio engine while a microphone is open) and its open questions: stereo, recording, where it applies. Then write it as its own change (proposal, design, specs, tasks) and point this change's group 3 at it
-- [ ] 2.2 Look up WebKit bug 311451 and add the finding (a playing media element degrades Bluetooth output while a microphone is open, even when routed through Web Audio; Web Audio playback does not), or file a new bug
+- [ ] 2.1 The active-engine registry records what the engine plays (a composite or a single track); the Mix panel, stem options and `use-practice-tools.ts` ask for the kind, so nothing composite-only appears for a single track. Specs for each reader
+- [ ] 2.2 Prepared audio for single tracks: the reserved owner id and stem id, the content version check, listing by group (`Prepared composites`, `Prepared for listening`), the 500 MB budget with least-recently-played eviction that never removes the playing track, and the room check. Pure model with specs; the offline files view shows the new group with `Clear all`, with a browser scenario
+- [ ] 2.3 Single-track engine loader in `library/playback/listening-engine/`: fetch through `fetchTrackBlob`, prepare through `createStemLoader`, build a one-stem engine with `createWebCompositeEngine`, publish preparing progress. Specs with the composite test fakes
+- [ ] 2.4 The rule and the load branch: a store of "a microphone is open" fed by the capture holds, and `loadIntoPlayer` loading a single track onto the engine while it is true (volume, start position, shaping, loop, autoplay), with the `Preparing for listening · first time only` state. Specs for the branch; browser scenario: with listening on, a track plays with no media element playing, and seek, loop, speed, pitch, next and previous behave as before
+- [ ] 2.5 Hand-over module (`listening-engine/handover.ts`): element to engine when a microphone opens (prepare while the element plays, switch at its position), engine to element when the last one closes, same playing or paused state, loop and shaping applied before the incoming side starts, a failed switch leaves the current side playing and reports once. Specs for each direction, paused and playing, and failure; browser scenarios for `Listen` on and off during a track, checking the position continues within the allowed gap
+- [ ] 2.6 Prepare ahead: the next queue item is prepared while the current one plays with a microphone open; cancelled when the queue changes. Specs; scenario: the second track of a queue starts without a preparing wait
+- [ ] 2.7 Fallbacks: no room, offline with no stored copy, or a decode failure keep the track on the media element with one message that the sound may be thin on Bluetooth while the app listens. Specs and a scenario for no room
+- [ ] 2.8 Hidden app: when the app is hidden with a track on the engine, the track is handed back to the media element and keeps playing; media session and lock-screen controls work after it. Scenario for the page-hidden path; **maintainer, on the phone:** lock the screen during a track with listening on, and say whether playback continues without a gap longer than a moment
+- [ ] 2.9 Update `docs/mobile-cross-platform-audio-playback.md` (the two strategies, the rule, the hand-over, prepared listening audio) and the README if the development focus changes
+- [ ] 2.10 **Maintainer, stage 1 on the phone with the earbuds, home-screen web app:** a queue with pitch detection on stays clear across songs, pause and resume, loops, and a speed and pitch change; turning `Listen` on and off mid-song does not restart or jump; the piano is still audible with the silent switch on; background playback without listening is as before. Chrome on a Mac: the same flows work
 
-## 3. In this change
+## 3. Stage 2: recording
 
-- [ ] 3.1 Notice where the microphone is turned on in iPhone and iPad browsers (design Decision 4), with a browser scenario; narrowed or removed when the fix ships
-- [ ] 3.2 Remove "Sound while listening": `audio-route-store`, the Settings control, the `AudioRoute` branches of the arbiter, their specs and the `microphone-audio-route` scenario; the arbiter keeps `playback` for the piano and `play-and-record` while capturing
-- [ ] 3.3 Update `docs/mobile-cross-platform-audio-playback.md`: a playing media element and an open microphone do not go together on iPhone Bluetooth output, and what the app does about it
+- [ ] 3.1 The engine reports its position for a given context time, and play, pause, seek and loop-wrap events through its subscription. Specs on the engine with the fake context
+- [ ] 3.2 Engine transport for recording (`recording-transport.web.ts`): `getRecordingTransport()` returns it when an engine is active for a single track, the media element transport otherwise. Specs for both and for the selection
+- [ ] 3.3 Start of a take: open the microphone, hand the track to the engine (preparing if needed, with the countdown held), then start; no hand-over during a take; the end of a take follows the stage 1 rule. Specs for the ordering; scenario: a take over the generated track with the fake microphone aligns within the existing tolerance, with no media element playing during it
+- [ ] 3.4 Clock anchors against the engine: capture times and engine positions paired on `performance.now()` through the contexts' output timestamps; the anchor-fit specs run against an engine transport with a drifting fake clock
+- [ ] 3.5 Punch and the overlay voice against the engine transport: specs for the sync controller with it; scenario for a punch over a track
+- [ ] 3.6 Output latency: read the context's reported output latency as the starting value where the browser gives one; nudge, `Use for this device` and click calibration unchanged. Specs for the starting value
+- [ ] 3.7 Update the playback doc's recording section
+- [ ] 3.8 **Maintainer, stage 2 on the phone with the earbuds:** a take over a track is clear while recording, the take is aligned after click calibration, a punch works, a call or locking the phone stops the take as before. Chrome on a Mac: recording, punch and export unchanged
 
-## 4. Verify
+## 4. Verify the change
 
-- [ ] 4.1 Maintainer's iPhone with Bluetooth earbuds, home-screen web app: a queue (including a wide stereo track) with pitch detection on stays clear across songs, pause and resume, and keeps playing in the background as it does today; the piano is still audible with the silent switch on; pitch detection still hears
-- [ ] 4.2 Same setup: recording over a playing track stays clear and the take is aligned to the track
-- [ ] 4.3 Chrome on a Mac: playback, pitch detection and recording unchanged
+- [ ] 4.1 `npm exec -- nx run-many -t lint test typecheck build --all` and `browser-test`, with the new scenarios run several times
+- [ ] 4.2 The spec's scenarios checked off against stage 1 and stage 2 device passes
+
+## 5. Report
+
+- [ ] 5.1 Record the iOS version and the earbuds' model
+- [ ] 5.2 Look up WebKit bug 311451 and add the finding (a playing media element degrades Bluetooth output while a microphone is open, also when routed through Web Audio; Web Audio playback does not), or file a new bug
 
 ## Follow-ups
 
-- [ ] F1 Composite playback stopped when the app went to the background (maintainer's iPhone, home-screen web app, Bluetooth earbuds, pitch detection on, 2026-11-15, seen during 1.2(a)). Not known yet whether it also stops with pitch detection off, or whether it is expected (the composite engine plays through Web Audio with no media element). Check against `composite-tracks` and `docs/mobile-cross-platform-audio-playback.md`; it matters here because the proposed fix (design Decision 2) plays single tracks through the same engine
+- [ ] F1 Composite playback stopped when the app went to the background (maintainer's iPhone, home-screen web app, Bluetooth earbuds, pitch detection on, 2026-11-15). Task 1.1 tells whether it is the platform's behavior for Web Audio without a playing media element. If so, decide separately whether composites should get background playback
+- [ ] F2 Stereo while a microphone is open: a stereo prepared format and voice for single tracks (deferred by the maintainer 2026-11-15; mono first)
+- [ ] F3 A track prepared for a composite and for listening is stored twice; share the prepared audio between the two owners
