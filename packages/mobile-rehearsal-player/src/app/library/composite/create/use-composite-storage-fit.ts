@@ -14,7 +14,8 @@ import type { CreateSheetTrack } from './create-sheet-model';
  */
 export const ESTIMATE_SAMPLE_RATE = 48_000;
 
-const getBrowserEstimator = (): StorageEstimator | undefined => {
+/** `navigator.storage.estimate()` where the browser has it. */
+export const getBrowserEstimator = (): StorageEstimator | undefined => {
   const storage = (
     globalThis as {
       navigator?: { storage?: { estimate?: StorageEstimator['estimate'] } };
