@@ -31,4 +31,4 @@
 
 ## Follow-ups
 
-- [ ] F1 Composite playback stopped when the app went to the background (maintainer's iPhone, home-screen web app, Bluetooth earbuds, pitch detection on, 2026-11-15, seen during 1.2(a)). Not known yet whether it also stops with pitch detection off, or whether it is expected (the composite engine plays through Web Audio with no media element). Check against `composite-tracks` and `docs/mobile-cross-platform-audio-playback.md`; it matters here because fix (b) would inherit it
+- [ ] F1 Composite playback stopped when the app went to the background (maintainer's iPhone, home-screen web app, Bluetooth earbuds, pitch detection on, 2026-11-15, seen during 1.2(a)). Not known yet whether it also stops with pitch detection off, or whether it is expected (the composite engine plays through Web Audio with no media element). Check against `composite-tracks` and `docs/mobile-cross-platform-audio-playback.md`; it matters here because the proposed fix (design Decision 2) plays single tracks through the same engine
