@@ -13,7 +13,11 @@
 
 - [x] 3.1 Microphone category (list of inputs, keeps a disconnected remembered one) with specs
 
-## 4. Verify
+## 4. Experiment: sound while listening
 
-- [x] 4.1 Browser scenario: two inputs, prompt, remember, Settings change, dismiss, unplugged input
-- [ ] 4.2 Maintainer, iPhone with Bluetooth earbuds: pick the phone's microphone, start Pitch detection with a track playing, and say whether playback stays clear compared with the earbuds' microphone
+- [x] 4.0 `AudioRoute` in the arbiter (`holdCapture(route)` returning a hold with `opened()`; four specs), `audio-route-store.ts` (three specs), the Settings control (spec), `pcm-source.web.ts` reads the route and calls `opened()` once the stream runs, scenario `microphone-audio-route` (each route and the type returning)
+
+## 5. Verify
+
+- [x] 5.1 Browser scenario: two inputs, prompt, remember, Settings change, dismiss, unplugged input
+- [ ] 5.2 Maintainer, iPhone with Bluetooth earbuds (the prompt works; the thin call sound still starts a second or two after each playback start while the microphone is open): try each "Sound while listening" route, with a track playing and the microphone on, and say which keeps the sound clear, and whether the microphone still hears you under Playback
